@@ -1,0 +1,60 @@
+@use 'styles/common/component';
+@use 'styles/utilities' as *;
+
+:host {
+    --igc-chat-message-padding: #{rem(12px) rem(16px)};
+    --igc-chat-sent-message-start-margin: auto;
+    --igc-chat-sent-message-end-margin: unset;
+    --igc-chat-message-container-end-margin: auto;
+
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+[part~='message-container'],
+[part='plain-text'] {  
+    @include type-style('body-1') {
+      margin: 0;
+    };
+}
+
+[part~='message-container'] {
+    display: flex;
+    margin-inline-end: var(--igc-chat-message-container-end-margin);
+    flex-direction: column;
+    gap: rem(16px);
+
+    p {
+      margin: 0;
+      padding: 0;
+    }
+
+    a {
+      overflow-wrap: anywhere;
+      color: color(primary, 500);
+    }
+
+    pre, code {
+      white-space: pre-wrap;
+      overflow-wrap: break-word;
+      overflow-x: auto;
+      margin-block: unset;
+    }
+}
+
+[part~='message-header'],
+[part~='message-attachments'],
+[part~='message-actions'] {
+    &:empty {
+      display: none;
+    }
+}
+
+[part~='sent'] {
+    margin-inline: var(--igc-chat-sent-message-start-margin, 0) var(--igc-chat-sent-message-end-margin, 0);
+    padding: var(--igc-chat-message-padding);
+    border-radius: rem(24px) rem(24px) 0;
+    max-width: rem(576px);
+    width: fit-content;
+}

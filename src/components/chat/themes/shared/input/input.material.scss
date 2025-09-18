@@ -1,0 +1,19 @@
+@use 'styles/utilities' as *;
+@use '../../light/themes' as *;
+
+$theme: $material;
+
+[part~='dragging'] {
+    igc-textarea::part(container) {    
+        background: var-get($theme, 'box-background-focus');
+
+        &::after {
+            border-block-end: rem(2px) solid var-get($theme, 'focused-bottom-line-color');
+        }
+    }
+}
+
+igc-textarea::part(input) {
+    margin-block-start: unset;
+    padding-block: rem(12px);
+}

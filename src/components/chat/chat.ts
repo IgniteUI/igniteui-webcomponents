@@ -1,0 +1,535 @@
+import { ContextProvider } from '@lit/context';
+import { html, LitElement, nothing, type PropertyValues } from 'lit';
+import { property, query } from 'lit/decorators.js';
+import { cache } from 'lit/directives/cache.js';
+import { repeat } from 'lit/directives/repeat.js';
+import { addThemingController } from '../../theming/theming-controller.js';
+import IgcButtonComponent from '../button/button.js';
+import { chatContext, chatUserInputContext } from '../common/context.js';
+import { addSlotController, setSlots } from '../common/controllers/slot.js';
+import { registerComponent } from '../common/definitions/register.js';
+import { IgcChatResourceStringEN } from '../common/i18n/chat.resources.js';
+import type { Constructor } from '../common/mixins/constructor.js';
+import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
+import { isEmpty } from '../common/util.js';
+import IgcIconComponent from '../icon/icon.js';
+import IgcListComponent from '../list/list.js';
+import IgcToastComponent from '../toast/toast.js';
+import IgcTooltipComponent from '../tooltip/tooltip.js';
+import IgcChatInputComponent from './chat-input.js';
+import IgcChatMessageComponent from './chat-message.js';
+import { ChatState } from './chat-state.js';
+import { styles } from './themes/chat.base.css.js';
+import { styles as shared } from './themes/shared/chat.common.css.js';
+import { all } from './themes/themes.js';
+import type {
+  ChatRenderContext,
+  ChatTemplateRenderer,
+  IgcChatMessage,
+  IgcChatMessageAttachment,
+  IgcChatMessageReaction,
+  IgcChatOptions,
+} from './types.js';
+
+type DefaultChatRenderers = {
+  typingIndicator: ChatTemplateRenderer<ChatRenderContext>;
+  suggestionPrefix: ChatTemplateRenderer<ChatRenderContext>;
+};
+
+/**
+ * Defines the custom events dispatched by the `<igc-chat>` component.
+ */
+export interface IgcChatComponentEventMap {
+  /**
+   * Dispatched when a new chat message is created (sent).
+   */
+  igcMessageCreated: CustomEvent<IgcChatMessage>;
+
+  /**
+   * Dispatched when a message is reacted to.
+   */
+  igcMessageReact: CustomEvent<IgcChatMessageReaction>;
+
+  /**
+   * Dispatched when a chat message attachment is clicked.
+   */
+  igcAttachmentClick: CustomEvent<IgcChatMessageAttachment>;
+
+  /**
+   * Dispatched when attachment(s) are added either through drag & drop or through
+   * the default file input.
+   */
+  igcAttachmentAdded: CustomEvent<IgcChatMessageAttachment[]>;
+
+  /**
+   * Dispatched when an attachment is removed by the user.
+   */
+  igcAttachmentRemoved: CustomEvent<IgcChatMessageAttachment>;
+
+  /**
+   * Dispatched during an attachment drag operation.
+   */
+  igcAttachmentDrag: CustomEvent<void>;
+
+  /**
+   * Dispatched when an attachment is dropped (e.g., in a drag-and-drop operation).
+   */
+  igcAttachmentDrop: CustomEvent<void>;
+
+  /**
+   * Dispatched when the typing status changes (e.g., user starts or stops typing).
+   */
+  igcTypingChange: CustomEvent<boolean>;
+
+  /**
+   * Dispatched when the chat input field gains focus.
+   */
+  igcInputFocus: CustomEvent<void>;
+
+  /**
+   * Dispatched when the chat input field loses focus.
+   */
+  igcInputBlur: CustomEvent<void>;
+
+  /**
+   * Dispatched when the content of the chat input changes.
+   */
+  igcInputChange: CustomEvent<string>;
+}
+
+const Slots = setSlots(
+  'prefix',
+  'title',
+  'actions',
+  'suggestions-header',
+  'suggestions',
+  'suggestions-actions',
+  'suggestion',
+  'empty-state'
+);
+
+/**
+ * A chat UI component for displaying messages, attachments, and input interaction.
+ *
+ * @element igc-chat
+ *
+ * @fires igcMessageCreated - Dispatched when a new chat message is created (sent).
+ * @fires igcMessageReact - Dispatched when a message is reacted to.
+ * @fires igcAttachmentClick - Dispatched when a chat message attachment is clicked.
+ * @fires igcAttachmentAdded - Dispatched when attachment(s) are added either through drag & drop or through the default file input.
+ * @fires igcAttachmentRemoved - Dispatched when an attachment is removed by the user.
+ * @fires igcAttachmentDrag - Dispatched during an attachment drag operation.
+ * @fires igcAttachmentDrop - Dispatched when an attachment is dropped (e.g., in a drag-and-drop operation).
+ * @fires igcTypingChange - Dispatched when the typing status changes (e.g., user starts or stops typing).
+ * @fires igcInputFocus - Dispatched when the chat input field gains focus.
+ * @fires igcInputBlur - Dispatched when the chat input field loses focus.
+ * @fires igcInputChange - Dispatched when the content of the chat input changes.
+ *
+ * @slot prefix - Slot for injecting content (e.g., avatar or icon) before the chat title.
+ * @slot title - Slot for overriding the chat title content.
+ * @slot actions - Slot for injecting header actions (e.g., buttons, menus).
+ * @slot suggestions-header - Slot for rendering a custom header for the suggestions list.
+ * @slot suggestions - Slot for rendering a custom list of quick reply suggestions.
+ * @slot suggestions-actions - Slot for rendering additional actions.
+ * @slot suggestion - Slot for rendering a single suggestion item.
+ * @slot empty-state - Slot shown when there are no messages.
+ *
+ * @csspart chat-container - Styles the main chat container.
+ * @csspart header - Styles the chat header container.
+ * @csspart prefix - Styles the element before the chat title (e.g., avatar).
+ * @csspart title - Styles the chat header title.
+ *
+ * @csspart message-area-container - Styles the container holding the messages and (optional) suggestions.
+ * @csspart message-list - Styles the message list container.
+ * @csspart message-item - Styles each message wrapper.
+ * @csspart typing-indicator - Styles the typing indicator container.
+ * @csspart typing-dot - Styles individual typing indicator dots.
+ *
+ * @csspart suggestions-container - Styles the container holding all suggestions.
+ * @csspart suggestions-header - Styles the suggestions header.
+ * @csspart suggestion - Styles each suggestion item.
+ * @csspart suggestion-prefix - Styles the icon or prefix in a suggestion.
+ * @csspart suggestion-title - Styles the text/title of a suggestion.
+ *
+ * @csspart empty-state - Styles the empty state container when there are no messages.
+ *
+ * @csspart input-area-container - Styles the wrapper around the chat input area.
+ * @csspart input-container - Styles the main input container.
+ * @csspart input-attachments-container - Styles the container for attachments in the input.
+ * @csspart input-attachment-container - Styles a single attachment in the input area.
+ * @csspart input-attachment-name - Styles the file name of an attachment.
+ * @csspart input-attachment-icon - Styles the icon of an attachment.
+ * @csspart text-input - Styles the text input field for typing messages.
+ * @csspart input-actions-container - Styles the container for input actions.
+ * @csspart input-actions-start - Styles the group of actions at the start of the input after the default file upload.
+ * @csspart input-actions-end - Styles the group of actions at the end of the input.
+ * @csspart file-upload-container - Styles the container for the file upload input.
+ * @csspart file-upload - Styles the file upload input itself.
+ * @csspart send-button-container - Styles the container around the send button.
+ * @csspart send-button - Styles the send button.
+ *
+ * @csspart message-container - Styles the container of a single message.
+ * @csspart message-list (forwarded) - Styles the internal list of messages.
+ * @csspart message-header - Styles the header of a message (e.g., sender, timestamp).
+ * @csspart message-content - Styles the text content of a message.
+ * @csspart message-attachments-container - Styles the container for message attachments.
+ * @csspart message-attachment - Styles a single message attachment.
+ * @csspart message-actions-container - Styles the container holding message actions.
+ * @csspart message-sent - Styles messages marked as sent by the current user.
+ * @csspart attachment-header - Styles the header of an attachment block.
+ * @csspart attachment-content - Styles the content of an attachment block.
+ * @csspart attachment-icon - Styles the icon of an attachment.
+ * @csspart file-name - Styles the file name shown in an attachment.
+ */
+export default class IgcChatComponent extends EventEmitterMixin<
+  IgcChatComponentEventMap,
+  Constructor<LitElement>
+>(LitElement) {
+  public static readonly tagName = 'igc-chat';
+
+  public static styles = [styles, shared];
+
+  /* blazorSuppress */
+  public static register(): void {
+    registerComponent(
+      IgcChatComponent,
+      IgcChatInputComponent,
+      IgcChatMessageComponent,
+      IgcButtonComponent,
+      IgcIconComponent,
+      IgcListComponent,
+      IgcTooltipComponent,
+      IgcToastComponent
+    );
+  }
+
+  private readonly _state = new ChatState(
+    this,
+    this._updateContext,
+    this._updateUserInputContext
+  );
+
+  private readonly _defaults = Object.freeze<DefaultChatRenderers>({
+    typingIndicator: () => this._renderLoadingTemplate(),
+    suggestionPrefix: () => this._renderSuggestionPrefix(),
+  });
+
+  private readonly _slots = addSlotController(this, {
+    slots: Slots,
+  });
+
+  private readonly _context = new ContextProvider(this, {
+    context: chatContext,
+    initialValue: this._state,
+  });
+
+  private readonly _userInputContext = new ContextProvider(this, {
+    context: chatUserInputContext,
+    initialValue: this._state,
+  });
+
+  @query(IgcChatInputComponent.tagName)
+  private readonly _input?: IgcChatInputComponent;
+
+  @query('[part="typing-indicator"]')
+  private readonly _typingIndicator?: HTMLElement;
+
+  @query('[part="suggestions-container"]')
+  private readonly _suggestionsContainer?: HTMLElement;
+
+  @query('[part="message-area-container"]', true)
+  private readonly _scrollContainer!: HTMLElement;
+
+  private _updateContext(): void {
+    this._context.setValue(this._state, true);
+  }
+
+  private _updateUserInputContext(): void {
+    this._userInputContext.setValue(this._state, true);
+  }
+
+  /**
+   * The list of chat messages currently displayed.
+   * Use this property to set or update the message history.
+   */
+  @property({ attribute: false })
+  public set messages(value: IgcChatMessage[]) {
+    this._state.messages = value;
+  }
+
+  public get messages(): IgcChatMessage[] {
+    return this._state.messages;
+  }
+
+  /**
+   * The chat message currently being composed but not yet sent.
+   * Includes the draft text and any attachments.
+   */
+  @property({ attribute: false })
+  public set draftMessage(value: {
+    text: string;
+    attachments?: IgcChatMessageAttachment[];
+  }) {
+    if (this._state && value) {
+      this._state.inputValue = value.text;
+      this._state.inputAttachments = value.attachments || [];
+      this.requestUpdate();
+    }
+  }
+
+  public get draftMessage(): {
+    text: string;
+    attachments?: IgcChatMessageAttachment[];
+  } {
+    return {
+      text: this._state.inputValue,
+      attachments: this._state.inputAttachments,
+    };
+  }
+
+  /**
+   * Controls the chat behavior and appearance through a configuration object.
+   * Use this to toggle UI options, provide suggestions, templates, etc.
+   */
+  @property({ attribute: false })
+  public set options(value: IgcChatOptions) {
+    this._state.options = value;
+  }
+
+  public get options(): IgcChatOptions | undefined {
+    return this._state.options;
+  }
+
+  /**
+   * The resource strings of the chat.
+   */
+  @property({ attribute: false })
+  public resourceStrings = IgcChatResourceStringEN;
+
+  constructor() {
+    super();
+    addThemingController(this, all);
+  }
+
+  private _getRenderer<U extends keyof DefaultChatRenderers>(
+    name: U
+  ): DefaultChatRenderers[U] {
+    return this._state.options?.renderers
+      ? (this._state.options.renderers[name] ?? this._defaults[name])
+      : this._defaults[name];
+  }
+
+  private _handleSuggestionClick(text: string): void {
+    this._state.addMessageWithEvent({ text });
+    this._input?.focusInput();
+  }
+
+  /**
+   * Scrolls the view to a specific message by id.
+   */
+  public scrollToMessage(messageId: string): void {
+    if (!isEmpty(this.messages)) {
+      const message = this.renderRoot.querySelector(`#message-${messageId}`);
+      message?.scrollIntoView({ block: 'end', inline: 'end' });
+    }
+  }
+
+  protected override updated(properties: PropertyValues<this>): void {
+    if (
+      (properties.has('messages') ||
+        this._typingIndicator ||
+        this._suggestionsContainer) &&
+      !this._state.disableAutoScroll
+    ) {
+      this._scrollToBottom();
+    }
+  }
+
+  private _scrollToBottom(): void {
+    const current = this._scrollContainer.scrollTop;
+
+    requestAnimationFrame(() => {
+      const scrollHeight = this._scrollContainer.scrollHeight;
+      if (current < scrollHeight) {
+        this._scrollContainer.scrollBy({
+          top: Math.abs(scrollHeight - current),
+        });
+      }
+    });
+  }
+
+  private _renderHeader() {
+    const hasContent =
+      this._slots.hasAssignedElements('prefix') ||
+      this._slots.hasAssignedElements('title') ||
+      this._slots.hasAssignedElements('actions') ||
+      this._state.options?.headerText;
+
+    return html`
+      <div part="header" ?hidden=${!hasContent}>
+        <slot
+          name="prefix"
+          ?hidden=${!this._slots.hasAssignedElements('prefix')}
+        ></slot>
+        <slot name="title">${this._state.options?.headerText}</slot>
+        <slot name="actions"></slot>
+      </div>
+    `;
+  }
+
+  private _renderMessages() {
+    const ctx = { instance: this };
+
+    return html`
+      <div part="message-list" tabindex="0">
+        ${repeat(
+          this._state.messages,
+          (message) => message.id,
+          (message) => {
+            return html`
+              <igc-chat-message
+                id=${`message-${message.id}`}
+                part="message-item"
+                .message=${message}
+                exportparts="
+                  message-container,
+                  message-list,
+                  message-header,
+                  plain-text: message-content,
+                  message-attachments: message-attachments-container,
+                  attachment: message-attachment,
+                  message-actions: message-actions-container,
+                  sent: message-sent,
+                  attachment-header,
+                  attachment-content,
+                  attachment-icon,
+                  file-name,
+                "
+              >
+              </igc-chat-message>
+            `;
+          }
+        )}
+        ${this._state.options?.isTyping
+          ? html`
+              <div part="typing-indicator">
+                ${this._getRenderer('typingIndicator')(ctx)}
+              </div>
+            `
+          : nothing}
+      </div>
+    `;
+  }
+
+  private _renderLoadingTemplate() {
+    return html`
+      <div part="typing-dot"></div>
+      <div part="typing-dot"></div>
+      <div part="typing-dot"></div>
+      <div part="typing-dot"></div>
+    `;
+  }
+
+  private _renderSuggestionPrefix() {
+    return html`<igc-icon name="auto_suggest"></igc-icon>`;
+  }
+
+  private _renderSuggestions() {
+    const hasContent = this._slots.hasAssignedElements('suggestions-header');
+    const suggestions = this._state.options?.suggestions ?? [];
+    const ctx = { instance: this };
+
+    return html`
+      <div part="suggestions-container">
+        <igc-list>
+          <igc-list-header part="suggestions-header">
+            <span ?hidden=${hasContent}>
+              ${this.resourceStrings.suggestionsHeader}
+            </span>
+            <slot name="suggestions-header"></slot>
+          </igc-list-header>
+          <slot name="suggestions">
+            ${suggestions.map(
+              (suggestion) => html`
+                <slot name="suggestion">
+                  <igc-list-item
+                    part="suggestion"
+                    @click=${() => this._handleSuggestionClick(suggestion)}
+                  >
+                    <span slot="start" part="suggestion-prefix">
+                      ${this._getRenderer('suggestionPrefix')(ctx)}
+                    </span>
+                    <span slot="title" part="suggestion-title"
+                      >${suggestion}</span
+                    >
+                  </igc-list-item>
+                </slot>
+              `
+            )}
+          </slot>
+          <slot name="suggestions-actions"></slot>
+        </igc-list>
+      </div>
+    `;
+  }
+
+  private _renderEmptyState() {
+    return html`
+      <div part="empty-state">
+        <slot name="empty-state"></slot>
+      </div>
+    `;
+  }
+
+  protected override render() {
+    const hasMessages = !isEmpty(this.messages);
+    const suggestions = isEmpty(this._state.options?.suggestions ?? [])
+      ? nothing
+      : this._renderSuggestions();
+
+    return html`
+      <div part="chat-container">
+        ${this._renderHeader()}
+
+        <div part="message-area-container">
+          ${cache(
+            hasMessages || this._state.options?.isTyping
+              ? this._renderMessages()
+              : this._renderEmptyState()
+          )}
+          ${this._state.suggestionsPosition === 'below-messages'
+            ? suggestions
+            : nothing}
+        </div>
+
+        <igc-chat-input
+          exportparts="
+              input-container: input-area-container,
+              input-wrapper: input-container,
+              attachments: input-attachments-container,
+              attachment-wrapper: input-attachment-container,
+              attachment-name: input-attachment-name,
+              attachment-icon: input-attachment-icon,
+              text-input,
+              actions-container: input-actions-container,
+              input-actions-start,
+              input-actions-end,
+              file-upload-container,
+              file-upload,
+              send-button-container,
+              send-button"
+        >
+        </igc-chat-input>
+        ${this._state.suggestionsPosition === 'below-input'
+          ? suggestions
+          : nothing}
+      </div>
+    `;
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'igc-chat': IgcChatComponent;
+  }
+}

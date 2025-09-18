@@ -1,0 +1,18 @@
+@use 'styles/utilities' as *;
+@use '../../light/themes' as *;
+
+$theme: $material;
+
+[part~='sent'] {
+    background: var-get($theme, 'message-background');
+}
+
+[part~='message-container'] {
+    color: var-get($theme, 'message-color');
+}
+
+[part~='message-actions'] {
+    igc-icon-button::part(icon) {
+        color: var-get($theme, 'message-actions-color');
+    }
+}

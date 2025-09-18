@@ -6,7 +6,8 @@
   "license": "SEE LICENSE IN LICENSE",
   "exports": {
     ".": "./src/index.js",
-    "./types": "./src/types.js"
+    "./types": "./src/types.js",
+    "./extras": "./src/extras/index.js"
   },
   "type": "module",
   "repository": {
@@ -59,13 +60,13 @@
   },
   "devDependencies": {
     "@biomejs/biome": "~2.2.4",
-    "@custom-elements-manifest/analyzer": "^0.10.5",
+    "@custom-elements-manifest/analyzer": "^0.10.6",
     "@igniteui/material-icons-extended": "^3.1.0",
     "@open-wc/testing": "^4.0.0",
-    "@storybook/addon-a11y": "^9.1.5",
-    "@storybook/addon-docs": "^9.1.5",
-    "@storybook/addon-links": "^9.1.5",
-    "@storybook/web-components-vite": "^9.1.5",
+    "@storybook/addon-a11y": "^9.1.6",
+    "@storybook/addon-docs": "^9.1.6",
+    "@storybook/addon-links": "^9.1.6",
+    "@storybook/web-components-vite": "^9.1.6",
     "@types/mocha": "^10.0.10",
     "@web/dev-server-esbuild": "^1.0.4",
     "@web/test-runner": "^0.20.2",
@@ -79,8 +80,8 @@
     "globby": "^14.1.0",
     "husky": "^9.1.7",
     "ig-typedoc-theme": "^6.2.3",
-    "igniteui-theming": "^19.3.1",
-    "keep-a-changelog": "^2.7.0",
+    "igniteui-theming": "^20.0.0",
+    "keep-a-changelog": "^2.7.1",
     "lint-staged": "^16.1.6",
     "lit-analyzer": "^2.0.3",
     "madge": "^8.0.0",
@@ -91,7 +92,7 @@
     "rimraf": "^6.0.1",
     "sass-embedded": "~1.92.1",
     "sinon": "^21.0.0",
-    "storybook": "^9.1.5",
+    "storybook": "^9.1.6",
     "stylelint": "^16.24.0",
     "stylelint-config-standard-scss": "^16.0.0",
     "stylelint-prettier": "^5.0.3",
@@ -101,7 +102,13 @@
     "typedoc": "~0.27.9",
     "typedoc-plugin-localization": "^3.0.6",
     "typescript": "^5.8.3",
-    "vite": "^7.1.5"
+    "vite": "^7.1.6"
+  },
+  "peerDependencies": {
+    "dompurify": "^3.2.7",
+    "marked": "^16.3.0",
+    "marked-shiki": "^1.2.1",
+    "shiki": "^3.12.2"
   },
   "browserslist": [
     "defaults"
