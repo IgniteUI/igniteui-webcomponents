@@ -2,6 +2,11 @@
 @use 'styles/utilities' as *;
 
 :host {
+    --igc-chat-message-padding: #{rem(12px) rem(16px)};
+    --igc-chat-sent-message-start-margin: auto;
+    --igc-chat-sent-message-end-margin: unset;
+    --igc-chat-message-container-end-margin: auto;
+
     display: flex;
     flex-direction: column;
     width: 100%;
@@ -16,7 +21,7 @@
 
 [part~='message-container'] {
     display: flex;
-    margin-inline-end: auto;
+    margin-inline-end: var(--igc-chat-message-container-end-margin);
     flex-direction: column;
     gap: rem(16px);
 
@@ -47,9 +52,8 @@
 }
 
 [part~='sent'] {
-    margin-inline-start: auto;
-    margin-inline-end: unset;
-    padding: rem(12px) rem(16px);
+    margin-inline: var(--igc-chat-sent-message-start-margin, 0) var(--igc-chat-sent-message-end-margin, 0);
+    padding: var(--igc-chat-message-padding);
     border-radius: rem(24px) rem(24px) 0;
     max-width: rem(576px);
     width: fit-content;
