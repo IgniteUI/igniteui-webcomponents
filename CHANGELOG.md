@@ -4,9 +4,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [6.3.0] - 2025-09-18
 ### Added
 - Chat component
+
+### Fixed
+- #### List
+  - removed duplicated CSS variables across list components and themes [#1853](https://github.com/IgniteUI/igniteui-webcomponents/pull/1853)
 
 ## [6.2.2] - 2025-09-16
 ### Fixed
@@ -1018,6 +1022,7 @@ Initial release of Ignite UI Web Components
 - Ripple component
 - Switch component
 
+[6.3.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/6.2.2...6.3.0
 [6.2.2]: https://github.com/IgniteUI/igniteui-webcomponents/compare/6.2.1...6.2.2
 [6.2.1]: https://github.com/IgniteUI/igniteui-webcomponents/compare/6.2.0...6.2.1
 [6.2.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/6.1.2...6.2.0
