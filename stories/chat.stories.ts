@@ -116,8 +116,6 @@ And some sample html:
 
 const userMessages: any[] = [];
 
-let isResponseSent: boolean;
-
 const _messageAuthorTemplate = ({ message }: ChatMessageRenderContext) => {
   return message.sender !== 'user'
     ? html`
@@ -134,7 +132,7 @@ const _messageAuthorTemplate = ({ message }: ChatMessageRenderContext) => {
     : nothing;
 };
 const _messageActionsTemplate = ({ message }: ChatMessageRenderContext) => {
-  return message.sender !== 'user' && message.text.trim() && isResponseSent
+  return message.sender !== 'user' && message.text.trim()
     ? html`
         <div>
           <igc-icon-button
@@ -185,7 +183,7 @@ function handleCustomSendClick(chat: IgcChatComponent) {
   chat.draftMessage = { text: '', attachments: [] };
 }
 
-function handleMessageSend(event: CustomEvent<IgcChatMessage>): void {
+async function handleMessageSend(event: CustomEvent<IgcChatMessage>) {
   const chat = event.target as IgcChatComponent;
   const message = event.detail;
 
@@ -205,29 +203,31 @@ function handleMessageSend(event: CustomEvent<IgcChatMessage>): void {
         ]
       : [];
 
-  isResponseSent = false;
-  setTimeout(async () => {
-    chat.messages = [
-      ...chat.messages,
-      { id: crypto.randomUUID(), text: '', sender: 'bot', attachments },
-    ];
+  await new Promise((resolve) => setTimeout(resolve, 1000));
 
-    await showResponse(chat, generateAIResponse(message.text).split(' '));
+  chat.options = { ...chat.options, isTyping: false };
 
-    messages = chat.messages;
-    isResponseSent = true;
-    chat.options = { ...chat.options, suggestions: [], isTyping: false };
-    // TODO: add attachments (if any) to the response message
-  }, 1000);
-}
+  const responseText = generateAIResponse(message.text).split(' ');
 
-async function showResponse(chat: IgcChatComponent, responseParts: string[]) {
-  const lastMessage = chat.messages[chat.messages.length - 1];
+  const aiResponse = {
+    id: Date.now().toString(),
+    sender: 'bot',
+    text: '',
+    attachments,
+  };
 
-  for (const part of responseParts) {
-    await new Promise((resolve) => requestAnimationFrame(resolve));
-    lastMessage.text = `${lastMessage.text} ${part}`;
-    chat.messages = [...chat.messages];
+  chat.messages = [...chat.messages, aiResponse];
+
+  for (const part of responseText) {
+    await new Promise((resolve) => setTimeout(resolve, 30));
+    const updated = [...chat.messages];
+    const currentMessage = updated[updated.length - 1];
+    const updatedMessage = {
+      ...aiResponse,
+      text: `${currentMessage.text} ${part}`,
+    };
+    updated[updated.length - 1] = updatedMessage;
+    chat.messages = updated;
   }
 }
 
@@ -441,15 +441,6 @@ export const Basic: Story = {
   render: () => {
     messages = initialMessages;
     return html`
-      <style>
-        igc-chat::part(typing-dot) {
-          background: var(--igc-background, #f00);
-          border: solid 1px var(--igc-background, #f00);
-          border-radius: 8px;
-          color: var(--igc-color, #932424);
-          width: 12px;
-        }
-      </style>
       <igc-chat
         style="--igc-chat-height: calc(100vh - 32px);"
         .messages=${messages}

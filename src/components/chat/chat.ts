@@ -237,6 +237,9 @@ export default class IgcChatComponent extends EventEmitterMixin<
   @query('[part="suggestions-container"]')
   private readonly _suggestionsContainer?: HTMLElement;
 
+  @query('[part="message-area-container"]', true)
+  private readonly _scrollContainer!: HTMLElement;
+
   private _updateContext(): void {
     this._context.setValue(this._state, true);
   }
@@ -347,15 +350,15 @@ export default class IgcChatComponent extends EventEmitterMixin<
       return;
     }
 
-    const lastMessage = this.renderRoot
-      .querySelectorAll(IgcChatMessageComponent.tagName)
-      .item(this.messages.length - 1);
-
-    const scrollTarget =
-      this._typingIndicator ?? this._suggestionsContainer ?? lastMessage;
+    const current = this._scrollContainer.scrollTop;
 
     requestAnimationFrame(() => {
-      scrollTarget?.scrollIntoView({ block: 'end', inline: 'end' });
+      const scrollHeight = this._scrollContainer.scrollHeight;
+      if (current < scrollHeight) {
+        this._scrollContainer.scrollBy({
+          top: Math.abs(scrollHeight - current),
+        });
+      }
     });
   }
 
