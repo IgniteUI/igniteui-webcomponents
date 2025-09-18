@@ -6,12 +6,12 @@
     }
 }
 
-[part='title'] {
+slot[name='title'] {
     @include type-style('subtitle-2') {
       margin: 0;
     };
 }
 
-[part='prefix'] {
+slot[name='prefix'] {
     margin-inline-end: rem(16px);
 }

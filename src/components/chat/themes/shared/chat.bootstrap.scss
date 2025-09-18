@@ -14,13 +14,13 @@ $theme: $bootstrap;
     border-block-end: rem(1px) solid var-get($theme, 'header-border');
 }
 
-[part='title'] {
+slot[name='title'] {
     @include type-style('h5') {
       margin: 0;
     };
 }
 
-[part='prefix'] {
+slot[name='prefix'] {
     margin-inline-end: rem(16px);
 }
 

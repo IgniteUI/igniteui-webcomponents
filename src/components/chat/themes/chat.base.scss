@@ -30,9 +30,13 @@ $inline-inset: rem(24px);
     grid-template-columns: subgrid;
     overflow: hidden auto;
     grid-column: 1 / -1;
-    grid-template-rows: 1fr auto;
+    grid-template-rows: auto 1fr;
     align-items: start;
     grid-row: 2;
+
+    &:has([part='empty-state']) {
+        grid-template-rows: 1fr auto;
+    }
 }
 
 [part='message-list'],
@@ -104,19 +108,19 @@ $inline-inset: rem(24px);
     }
 }
 
-[part='title'] {
+slot[name='title'] {
     @include type-style('h6') {
       margin: 0;
     };
 }
 
-[part='actions'] {
+slot[name='actions'] {
     display: flex;
     margin-inline-start: auto;
     gap: rem(16px);
 }
 
-[part='prefix'] {
+slot[name='prefix'] {
     display: block;
     margin-inline-end: rem(32px);
 }
