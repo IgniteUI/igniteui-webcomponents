@@ -442,8 +442,16 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
   public prompt = '_';
 
   /**
+   * Sets to always show leading zero regardless of the displayFormat applied or one based on locale.
+   * Leading zero is applied during edit for the inputFormat always, regardless of this option.
+   * @attr
+   */
+  @property({ type: Boolean, attribute: 'always-leading-zero' })
+  public alwaysLeadingZero = false;
+
+  /**
    * Format to display the value in when not editing.
-   * Defaults to the input format if not set.
+   * Defaults to the locale format if not set.
    * @attr display-format
    */
   @property({ attribute: 'display-format' })
@@ -452,8 +460,8 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
     this._updateMaskedRangeValue();
   }
 
-  public get displayFormat(): string {
-    return this._displayFormat ?? this.inputFormat;
+  public get displayFormat(): string | undefined {
+    return this._displayFormat;
   }
 
   /**
@@ -657,7 +665,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
 
   @watch('locale')
   protected _updateDefaultMask(): void {
-    this._defaultMask = DateTimeUtil.getDefaultMask(this.locale);
+    this._defaultMask = DateTimeUtil.getDefaultInputMask(this.locale);
     this._updateMaskedRangeValue();
   }
 
@@ -888,17 +896,26 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
       return;
     }
 
-    const { formatDate, predefinedToDateDisplayFormat } = DateTimeUtil;
-
+    const { formatDisplayDate, predefinedToDateDisplayFormat } = DateTimeUtil;
     const { start, end } = this.value;
-    const format =
-      predefinedToDateDisplayFormat(this._displayFormat) ??
-      this._displayFormat ??
-      this.inputFormat;
+    const displayFormat = predefinedToDateDisplayFormat(this._displayFormat);
 
-    this._maskedRangeValue = format
-      ? `${formatDate(start, this.locale, format)} - ${formatDate(end, this.locale, format)}`
-      : `${start.toLocaleDateString()} - ${end.toLocaleDateString()}`;
+    const startValue = formatDisplayDate(
+      start,
+      this.locale,
+      displayFormat,
+      this.alwaysLeadingZero
+    );
+    const endValue = formatDisplayDate(
+      end,
+      this.locale,
+      displayFormat,
+      this.alwaysLeadingZero
+    );
+    this._maskedRangeValue =
+      displayFormat || this.inputFormat
+        ? `${startValue} - ${endValue}`
+        : `${start.toLocaleDateString()} - ${end.toLocaleDateString()}`;
   }
 
   private _setCalendarRangeValues() {
@@ -1122,7 +1139,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
       picker === 'start' ? this.placeholderStart : this.placeholderEnd;
     const label = picker === 'start' ? this.labelStart : this.labelEnd;
     const format = DateTimeUtil.predefinedToDateDisplayFormat(
-      this._displayFormat!
+      this._displayFormat
     );
     const value = picker === 'start' ? this.value?.start : this.value?.end;
 
