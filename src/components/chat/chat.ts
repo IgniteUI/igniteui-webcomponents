@@ -346,10 +346,6 @@ export default class IgcChatComponent extends EventEmitterMixin<
   }
 
   private _scrollToBottom(): void {
-    if (isEmpty(this.messages)) {
-      return;
-    }
-
     const current = this._scrollContainer.scrollTop;
 
     requestAnimationFrame(() => {

@@ -1,6 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/web-components-vite';
 import { html, nothing } from 'lit';
-import { GoogleGenAI, Modality } from '@google/genai';
 import {
   IgcAvatarComponent,
   IgcChatComponent,
@@ -14,12 +13,7 @@ import type {
   IgcChatMessage,
   IgcChatMessageAttachment,
   ChatMessageRenderContext,
-} from '../src/components/chat/types.js';
-
-const googleGenAIKey = import.meta.env.VITE_GOOGLE_GEN_AI_KEY;
-const ai = new GoogleGenAI({
-  apiKey: googleGenAIKey,
-});
+} from 'igniteui-webcomponents';
 
 defineComponents(IgcChatComponent, IgcAvatarComponent);
 
@@ -114,8 +108,6 @@ And some sample html:
   },
 ];
 
-const userMessages: any[] = [];
-
 const _messageAuthorTemplate = ({ message }: ChatMessageRenderContext) => {
   return message.sender !== 'user'
     ? html`
@@ -145,19 +137,6 @@ const _messageActionsTemplate = ({ message }: ChatMessageRenderContext) => {
     : nothing;
 };
 const _markdownRenderer = await createMarkdownRenderer();
-
-const ai_chat_options: IgcChatOptions = {
-  headerText: 'Chat',
-  inputPlaceholder: 'Type your message here...',
-  suggestions: [
-    'Hello',
-    'What is triskaidekaphobia?',
-    'Show me very short sample typescript code',
-  ],
-  renderers: {
-    messageContent: async ({ message }) => _markdownRenderer(message),
-  },
-};
 
 const chat_options: IgcChatOptions = {
   disableAutoScroll: false,
@@ -279,164 +258,6 @@ function generateAIResponse(message: string): string {
   return 'How can I help? Possible commands: hello, help, feature, weather, thank, code, image, list, heading.';
 }
 
-function fileToGenerativePart(buffer: ArrayBuffer, mimeType: string) {
-  const bytes = new Uint8Array(buffer);
-
-  if ('toBase64' in bytes) {
-    return {
-      inlineData: {
-        data: (bytes as any).toBase64() as string,
-        mimeType,
-      },
-    };
-  }
-
-  // Fallback for browsers which don't support `toBase64`
-
-  let binary = '';
-  const length = bytes.byteLength;
-
-  for (let i = 0; i < length; i++) {
-    binary += String.fromCharCode(bytes[i]);
-  }
-
-  const base64String = btoa(binary);
-
-  return {
-    inlineData: {
-      data: base64String,
-      mimeType,
-    },
-  };
-}
-
-async function handleAIMessageSend(event: CustomEvent<IgcChatMessage>) {
-  const chat = event.target as IgcChatComponent;
-  const newMessage: IgcChatMessage = event.detail;
-
-  chat.options = { ...ai_chat_options, suggestions: [], isTyping: true };
-  setTimeout(async () => {
-    const now = Date.now().toString();
-    let response: any;
-    let responseText = '';
-    const attachments: IgcChatMessageAttachment[] = [];
-    const botResponse: IgcChatMessage = {
-      id: now,
-      text: responseText,
-      sender: 'bot',
-      timestamp: now,
-    };
-
-    userMessages.push({
-      role: 'user',
-      parts: [{ text: newMessage.text }],
-    });
-
-    if (newMessage.attachments && newMessage.attachments.length > 0) {
-      for (const attachment of newMessage.attachments) {
-        if (attachment.file) {
-          const filePart = fileToGenerativePart(
-            await attachment.file.arrayBuffer(),
-            attachment.file.type
-          );
-          userMessages.push({ role: 'user', parts: [filePart] });
-        }
-      }
-    }
-
-    if (newMessage.text.includes('image')) {
-      response = await ai.models.generateContent({
-        model: 'gemini-2.0-flash-preview-image-generation',
-        contents: userMessages,
-        config: {
-          responseModalities: [Modality.TEXT, Modality.IMAGE],
-        },
-      });
-
-      for (const part of response?.candidates?.[0]?.content?.parts || []) {
-        // Based on the part type, either show the text or save the image
-        if (part.text) {
-          responseText = part.text;
-        } else if (part.inlineData) {
-          const _imageData = part.inlineData.data;
-          const byteCharacters = atob(_imageData);
-          const byteNumbers = new Array(byteCharacters.length);
-          for (let i = 0; i < byteCharacters.length; i++) {
-            byteNumbers[i] = byteCharacters.charCodeAt(i);
-          }
-          const byteArray = new Uint8Array(byteNumbers);
-          const type = part.inlineData.type || 'image/png';
-          const blob = new Blob([byteArray], { type: type });
-          const file = new File([blob], 'generated_image.png', {
-            type: type,
-          });
-          const attachment: IgcChatMessageAttachment = {
-            id: Date.now().toString(),
-            name: 'generated_image.png',
-            type: 'image',
-            url: URL.createObjectURL(file),
-            file: file,
-          };
-          attachments.push(attachment);
-        }
-      }
-
-      botResponse.text = responseText;
-      botResponse.attachments = attachments;
-      chat.options = { ...ai_chat_options, isTyping: false };
-      chat.messages = [...chat.messages, botResponse];
-    } else {
-      chat.messages = [...chat.messages, botResponse];
-      response = await ai.models.generateContentStream({
-        model: 'gemini-2.5-flash',
-        contents: userMessages,
-        config: {
-          responseModalities: [Modality.TEXT],
-        },
-      });
-
-      const lastMessageIndex = chat.messages.length - 1;
-      for await (const chunk of response) {
-        chat.messages[lastMessageIndex] = {
-          ...chat.messages[lastMessageIndex],
-          text: `${chat.messages[lastMessageIndex].text}${chunk.text}`,
-        };
-        chat.messages = [...chat.messages];
-      }
-      chat.options = { ...ai_chat_options, suggestions: [], isTyping: false };
-
-      const messagesForSuggestions = [
-        ...chat.messages,
-        `Based on all my previous prompts give me 3 strings that would act like a suggestions for my next prompt. Don't repeat my previous prompts, I want just the suggestions in the format "suggestion1: ***...***, suggestion2: ***...***, suggestion3: ***...***`,
-      ];
-      const responseWithSuggestions = await ai.models.generateContent({
-        model: 'gemini-2.5-flash',
-        contents: messagesForSuggestions,
-        config: {
-          responseModalities: [Modality.TEXT],
-        },
-      });
-      response = responseWithSuggestions?.candidates?.[0]?.content?.parts;
-      if (response && response.length === 1) {
-        const responseText = response[0]?.text ?? '';
-        const regex: RegExp = /\*\*\*(.*?)\*\*\*/g; // suggestions between  *** and ***
-        const matches: IterableIterator<RegExpMatchArray> =
-          responseText.matchAll(regex);
-
-        const suggestionsFromResponse: string[] = Array.from(
-          matches,
-          (match: RegExpMatchArray) => match[1]
-        );
-
-        chat.options = {
-          ...ai_chat_options,
-          suggestions: suggestionsFromResponse,
-        };
-      }
-    }
-  }, 2000);
-}
-
 export const Basic: Story = {
   render: () => {
     messages = initialMessages;
@@ -450,17 +271,6 @@ export const Basic: Story = {
       </igc-chat>
     `;
   },
-};
-
-export const AI: Story = {
-  render: () => html`
-    <igc-chat
-      style="--igc-chat-height: calc(100vh - 32px);"
-      .options=${ai_chat_options}
-      @igcMessageCreated=${handleAIMessageSend}
-    >
-    </igc-chat>
-  `,
 };
 
 let options: IgcChatOptions;
