@@ -1,8 +1,8 @@
+import { getCurrentI18n } from 'igniteui-i18n-core';
 import { html } from 'lit';
 import { eventOptions, property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
-
 import { convertToDate } from '../calendar/helpers.js';
 import {
   addKeybindings,
@@ -88,6 +88,7 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
   });
 
   protected _defaultMask!: string;
+  private _locale?: string;
   private _oldValue: Date | null = null;
   private _min: Date | null = null;
   private _max: Date | null = null;
@@ -166,12 +167,20 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
   }
 
   /**
+   * Sets to always show leading zero regardless of the displayFormat applied or one based on locale.
+   * Leading zero is applied during edit for the inputFormat always, regardless of this option.
+   * @attr
+   */
+  @property({ type: Boolean, attribute: 'always-leading-zero' })
+  public alwaysLeadingZero = false;
+
+  /**
    * Format to display the value in when not editing.
-   * Defaults to the input format if not set.
+   * Defaults to the locale format if not set.
    * @attr display-format
    */
   @property({ attribute: 'display-format' })
-  public displayFormat!: string;
+  public displayFormat?: string;
 
   /**
    * Delta values used to increment or decrement each date part on step actions.
@@ -192,7 +201,13 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
    * @attr
    */
   @property()
-  public locale = 'en';
+  public set locale(value: string) {
+    this._locale = value;
+  }
+
+  public get locale() {
+    return this._locale ?? getCurrentI18n();
+  }
 
   @watch('locale', { waitUntilFirstUpdate: true })
   protected setDefaultMask(): void {
@@ -201,6 +216,13 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
       this.setMask(this._defaultMask);
     }
 
+    if (this.value) {
+      this.updateMask();
+    }
+  }
+
+  @watch('alwaysLeadingZero', { waitUntilFirstUpdate: true })
+  protected setAlwaysLeadingZero(): void {
     if (this.value) {
       this.updateMask();
     }
@@ -347,24 +369,12 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
         return;
       }
 
-      const format = this.displayFormat || this.inputFormat;
-
-      if (this.displayFormat) {
-        this.maskedValue = DateTimeUtil.formatDate(
-          this.value,
-          this.locale,
-          format,
-          true
-        );
-      } else if (this.inputFormat) {
-        this.maskedValue = DateTimeUtil.formatDate(
-          this.value,
-          this.locale,
-          format
-        );
-      } else {
-        this.maskedValue = this.value.toLocaleString();
-      }
+      this.maskedValue = DateTimeUtil.formatDisplayDate(
+        this.value,
+        this.locale,
+        this.displayFormat,
+        this.alwaysLeadingZero
+      );
     }
   }
 
@@ -481,12 +491,12 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
   }
 
   private updateDefaultMask(): void {
-    this._defaultMask = DateTimeUtil.getDefaultMask(this.locale);
+    this._defaultMask = DateTimeUtil.getDefaultInputMask(this.locale);
   }
 
   private setMask(string: string): void {
     const oldFormat = this._inputDateParts?.map((p) => p.format).join('');
-    this._inputDateParts = DateTimeUtil.parseDateTimeFormat(string);
+    this._inputDateParts = DateTimeUtil.parseDateTimeFormat(string, true);
     const value = this._inputDateParts.map((p) => p.format).join('');
 
     this._defaultMask = value;

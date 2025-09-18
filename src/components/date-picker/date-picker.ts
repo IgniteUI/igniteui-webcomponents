@@ -186,7 +186,6 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
   private _max: Date | null = null;
   private _disabledDates?: DateRangeDescriptor[];
   private _dateConstraints?: DateRangeDescriptor[];
-  private _displayFormat?: string;
   private _inputFormat?: string;
 
   protected override readonly _formValue = createFormValueState(this, {
@@ -392,18 +391,20 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
   public showWeekNumbers = false;
 
   /**
+   * Sets to always show leading zero regardless of the displayFormat applied or one based on locale.
+   * Leading zero is applied during edit for the inputFormat always, regardless of this option.
+   * @attr
+   */
+  @property({ type: Boolean, attribute: 'always-leading-zero' })
+  public alwaysLeadingZero = false;
+
+  /**
    * Format to display the value in when not editing.
-   * Defaults to the input format if not set.
+   * Defaults to the locale format if not set.
    * @attr display-format
    */
   @property({ attribute: 'display-format' })
-  public set displayFormat(value: string) {
-    this._displayFormat = value;
-  }
-
-  public get displayFormat(): string {
-    return this._displayFormat ?? this.inputFormat;
-  }
+  public displayFormat?: string;
 
   /**
    * The date format to apply on the input.
@@ -794,7 +795,7 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
 
   protected _renderInput(id: string) {
     const format = DateTimeUtil.predefinedToDateDisplayFormat(
-      this._displayFormat!
+      this.displayFormat
     );
 
     // Dialog mode is always readonly, rest depends on configuration
