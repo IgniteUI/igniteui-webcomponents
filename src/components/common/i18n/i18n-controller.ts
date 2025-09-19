@@ -13,7 +13,7 @@ import {
 } from './utils.js';
 
 interface I18nControllerHost extends ReactiveControllerHost, Element {
-  resourceStrings: any;
+  resourceStrings?: any;
   locale?: string;
 }
 

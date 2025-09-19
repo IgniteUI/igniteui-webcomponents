@@ -307,7 +307,7 @@ describe('Date range picker - common tests for single and two inputs mode', () =
 
       it('should default inputFormat to whatever Intl.DateTimeFormat returns for the current locale', async () => {
         const defaultFormat = 'MM/dd/yyyy';
-        expect(picker.locale).to.equal('en');
+        expect(picker.locale).to.equal('en-US');
         expect(picker.inputFormat).to.equal(defaultFormat);
 
         picker.locale = 'fr';
@@ -317,7 +317,7 @@ describe('Date range picker - common tests for single and two inputs mode', () =
       });
 
       it('should use the value of inputFormat for displayFormat, if it is not defined', async () => {
-        expect(picker.locale).to.equal('en');
+        expect(picker.locale).to.equal('en-US');
         expect(picker.getAttribute('display-format')).to.be.null;
         expect(picker.displayFormat).to.equal(picker.inputFormat);
 
