@@ -143,5 +143,5 @@ const allComponents: IgniteComponent[] = [
 ];
 
 export function defineAllComponents() {
-  defineComponents(...allComponents);
+  /*@__PURE__*/ defineComponents(...allComponents);
 }
