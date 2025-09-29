@@ -6,20 +6,21 @@ import { styles as bootstrapDark } from './dark/chat.bootstrap.css.js';
 import { styles as fluentDark } from './dark/chat.fluent.css.js';
 import { styles as indigoDark } from './dark/chat.indigo.css.js';
 import { styles as materialDark } from './dark/chat.material.css.js';
+import { styles as sharedDark } from './dark/chat.shared.css.js';
 // Light Overrides
 import { styles as bootstrapLight } from './light/chat.bootstrap.css.js';
 import { styles as fluentLight } from './light/chat.fluent.css.js';
 import { styles as indigoLight } from './light/chat.indigo.css.js';
 import { styles as materialLight } from './light/chat.material.css.js';
+import { styles as sharedLight } from './light/chat.shared.css.js';
 // Shared Styles
-import { styles as shared } from './light/chat.shared.css.js';
 import { styles as bootstrap } from './shared/chat.bootstrap.css.js';
 import { styles as fluent } from './shared/chat.fluent.css.js';
 import { styles as indigo } from './shared/chat.indigo.css.js';
 
 const light = {
   shared: css`
-    ${shared}
+    ${sharedLight}
   `,
   bootstrap: css`
     ${bootstrap} ${bootstrapLight}
@@ -37,7 +38,7 @@ const light = {
 
 const dark = {
   shared: css`
-    ${shared}
+    ${sharedDark}
   `,
   bootstrap: css`
     ${bootstrap} ${bootstrapDark}
