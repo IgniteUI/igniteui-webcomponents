@@ -144,6 +144,11 @@ const chat_options: IgcChatOptions = {
   suggestions: ['Hello', 'Hi', 'How are you?'],
   inputPlaceholder: 'Type your message here...',
   headerText: 'Chat',
+  sttOptions: {
+    enable: true,
+    lang: 'en-US',
+    serviceUri: 'https://localhost:5000/sttHub',
+  },
   renderers: {
     messageContent: async ({ message }) => _markdownRenderer(message),
   },
