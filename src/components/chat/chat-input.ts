@@ -186,6 +186,7 @@ export default class IgcChatInputComponent extends LitElement {
       );
       await this._sttClient.start(this._state.options?.sttOptions?.lang);
       this.isRecording = true;
+      this.isStopInProgress = false;
     } else {
       this.isStopInProgress = true;
       this._sttClient?.stop();
@@ -355,7 +356,9 @@ export default class IgcChatInputComponent extends LitElement {
       <igc-textarea
         part="text-input"
         aria-label="Chat text input"
-        placeholder=${ifDefined(this._state.options?.inputPlaceholder)}
+        placeholder=${this.isRecording
+          ? ifDefined(this._state.options?.speakPlaceholder)
+          : ifDefined(this._state.options?.inputPlaceholder)}
         resize="auto"
         rows="1"
         .value=${this._userInputState?.inputValue}

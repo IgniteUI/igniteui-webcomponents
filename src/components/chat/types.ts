@@ -108,6 +108,11 @@ export type IgcChatOptions = {
    */
   inputPlaceholder?: string;
   /**
+   * Optional placeholder text for the chat input area.
+   * Provides a hint to the user about what they can speak to the microphone and get transcribed text (e.g. "Speak...").
+   */
+  speakPlaceholder?: string;
+  /**
    * Suggested text snippets or quick replies that can be shown as user-selectable options.
    */
   suggestions?: string[];

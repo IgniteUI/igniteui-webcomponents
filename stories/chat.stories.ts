@@ -143,6 +143,7 @@ const chat_options: IgcChatOptions = {
   disableInputAttachments: false,
   suggestions: ['Hello', 'Hi', 'How are you?'],
   inputPlaceholder: 'Type your message here...',
+  speakPlaceholder: 'Speak...',
   headerText: 'Chat',
   sttOptions: {
     enable: true,
@@ -284,7 +285,7 @@ export const Chat_Templates: Story = {
     const chat = document.querySelector('igc-chat');
     if (chat) {
       const _actionsStartTemplate = () => html`
-        <igc-icon-button variant="flat">🎤</igc-icon-button>
+        <igc-icon-button variant="flat">📍</igc-icon-button>
       `;
       const _actionsEndTemplate = (ctx: ChatRenderContext) => html`
         <div>

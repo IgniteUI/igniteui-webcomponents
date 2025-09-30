@@ -3,7 +3,7 @@ import * as signalR from '@microsoft/signalr';
 const HUB_TRANSCRIBE_AUDIO_CHUNK = 'TranscribeAudioChunk';
 const HUB_RECEIVE_TRANSCRIPT = 'ReceiveTranscript';
 const HUB_COMPLETE_TRANSCRIBE = 'FinalizeTranscription';
-const SILENCE_TIMEOUT_MS = 3000;
+const SILENCE_TIMEOUT_MS = 4000;
 const SILENCE_GRACE_PERIOD = 1000;
 
 export class SttClient {
