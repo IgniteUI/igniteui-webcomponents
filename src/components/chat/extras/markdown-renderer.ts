@@ -7,8 +7,8 @@ import type { IgcChatMessage } from '../types.js';
 
 const DEFAULT_LANGUAGES = ['javascript', 'typescript', 'html', 'css'];
 const DEFAULT_THEME = {
-  light: 'min-light',
-  dark: 'min-dark',
+  light: 'github-light',
+  dark: 'github-dark',
 };
 
 /**
