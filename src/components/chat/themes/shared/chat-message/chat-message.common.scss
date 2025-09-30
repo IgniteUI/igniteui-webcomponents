@@ -3,16 +3,6 @@
 
 $theme: $material;
 
-:host {
-    --shiki-navy: #24292e;
-    --shiki-dark-blue: #032F62;
-    --shiki-purple: #6f42c1;
-    --shiki-red: #d73a49;
-    --shiki-blue: #005cc5;
-    --shiki-green: #22863a;
-    --shiki-orange: #e36209;
-}
-
 [part~='sent'] {
     background: var-get($theme, 'message-background');
 }

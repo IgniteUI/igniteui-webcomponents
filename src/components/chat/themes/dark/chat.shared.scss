@@ -4,6 +4,8 @@
 $theme: $base;
 
 :host {
+    color-scheme: dark;
+
     @include css-vars-from-theme($theme, 'ig-chat');
 
     igc-chat-message::part(message-container) {

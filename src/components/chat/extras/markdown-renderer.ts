@@ -60,6 +60,15 @@ export async function createMarkdownRenderer(
   if (!options?.noHighlighter) {
     const themes = options?.theme ?? DEFAULT_THEME;
     const langs = options?.languages ?? DEFAULT_LANGUAGES;
+    const colorReplacements = {
+      '#6f42c1': 'var(--shiki-purple)',
+      '#032f62': 'var(--shiki-dark-blue)',
+      '#24292e': 'var(--shiki-navy)',
+      '#d73a49': 'var(--shiki-red)',
+      '#005cc5': 'var(--shiki-blue)',
+      '#22863a': 'var(--shiki-green)',
+      '#e36209': 'var(--shiki-orange)',
+    };
 
     const highlighter = await createHighlighter({
       langs,
@@ -70,33 +79,15 @@ export async function createMarkdownRenderer(
       markedShiki({
         highlight(code, lang, _) {
           try {
-            const html = highlighter.codeToHtml(code, { lang, themes });
-
-            const colorMap: Record<string, string> = {
-              '6f42c1': 'var(--shiki-purple)',
-              '032f62': 'var(--shiki-dark-blue)',
-              '24292e': 'var(--shiki-navy)',
-              'd73a49': 'var(--shiki-red)',
-              '005cc5': 'var(--shiki-blue)',
-              '22863a': 'var(--shiki-green)',
-              'e36209': 'var(--shiki-orange)',
-            };
-
-            const processed = html.replace(
-              /style="([^"]*)"/g,
-              (_m, styleContent) => {
-                const replaced = styleContent.replace(
-                  /#([0-9a-fA-F]{6})/g,
-                  (_full: any, hex: string) => {
-                    const rep = colorMap[hex.toLowerCase()];
-                    return rep ?? `#${hex}`;
-                  }
-                );
-                return `style="${replaced}"`;
-              }
-            );
-
-            return processed;
+            return highlighter.codeToHtml(code, {
+              lang,
+              themes,
+              colorReplacements: {
+                'github-light': colorReplacements,
+                'github-dark': colorReplacements,
+              },
+              defaultColor: 'light-dark()',
+            });
           } catch {
             return `<pre><code>${sanitizer(code)}</code></pre>`;
           }
