@@ -7,8 +7,8 @@ import type { IgcChatMessage } from '../types.js';
 
 const DEFAULT_LANGUAGES = ['javascript', 'typescript', 'html', 'css'];
 const DEFAULT_THEME = {
-  light: 'github-light',
-  dark: 'github-dark',
+  light: 'min-light',
+  dark: 'min-dark',
 };
 
 /**
@@ -83,8 +83,16 @@ export async function createMarkdownRenderer(
               lang,
               themes,
               colorReplacements: {
-                'github-light': colorReplacements,
-                'github-dark': colorReplacements,
+                'github-light': {
+                  ...colorReplacements,
+                  '#fff': 'var(--shiki-bg)',
+                  '#24292e': 'var(--shiki-fg)',
+                },
+                'github-dark': {
+                  ...colorReplacements,
+                  '#24292e': 'var(--shiki-bg)',
+                  '#e1e4e8': 'var(--shiki-fg)',
+                },
               },
               defaultColor: 'light-dark()',
             });
