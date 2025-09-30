@@ -23,6 +23,11 @@ $base-scale-size: (
     [part~='label'] {
         @include ellipsis();
     }
+
+    ::part(helper-text) {
+        @include type-style('caption');
+        @include line-clamp(2, true, true);
+    }
 }
 
 [part~='container'] {

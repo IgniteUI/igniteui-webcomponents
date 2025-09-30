@@ -8,7 +8,7 @@ $theme: $fluent;
     --input-size: var(--component-size);
     --helper-text-top-spacer: rem(5px);
     --input-border-size: #{rem(1px)};
-    --affix-padding: #{pad-inline(rem(8px), rem(12px), rem(16px))};
+    --affix-padding: #{pad-inline(rem(8px), rem(10px), rem(14px))};
 
     [part='prefix'],
     [part='suffix'] {
@@ -22,9 +22,6 @@ $theme: $fluent;
     }
 
     ::part(helper-text) {
-        @include type-style('caption');
-
-        color: var-get($theme, 'helper-text-color');
         margin-block-start: rem(5px);
         grid-auto-rows: minmax(rem(18px), auto);
     }

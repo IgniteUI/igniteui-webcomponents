@@ -15,10 +15,7 @@ $theme: $bootstrap;
     ::part(helper-text) {
         @include type-style('body-2');
 
-        color: var-get($theme, 'helper-text-color');
         grid-auto-rows: minmax(rem(20px), auto);
-        padding-inline-start: 0;
-	    margin-block-start: pad-block(rem(4px));
     }
 }
 
