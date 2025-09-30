@@ -76,10 +76,10 @@ export async function createMarkdownRenderer(
               '6f42c1': 'var(--shiki-purple)',
               '032f62': 'var(--shiki-dark-blue)',
               '24292e': 'var(--shiki-navy)',
-              d73a49: 'var(--shiki-red)',
+              'd73a49': 'var(--shiki-red)',
               '005cc5': 'var(--shiki-blue)',
               '22863a': 'var(--shiki-green)',
-              e36209: 'var(--shiki-orange)',
+              'e36209': 'var(--shiki-orange)',
             };
 
             const processed = html.replace(
