@@ -60,6 +60,15 @@ export async function createMarkdownRenderer(
   if (!options?.noHighlighter) {
     const themes = options?.theme ?? DEFAULT_THEME;
     const langs = options?.languages ?? DEFAULT_LANGUAGES;
+    const colorReplacements = {
+      '#6f42c1': 'var(--shiki-purple)',
+      '#032f62': 'var(--shiki-dark-blue)',
+      '#24292e': 'var(--shiki-navy)',
+      '#d73a49': 'var(--shiki-red)',
+      '#005cc5': 'var(--shiki-blue)',
+      '#22863a': 'var(--shiki-green)',
+      '#e36209': 'var(--shiki-orange)',
+    };
 
     const highlighter = await createHighlighter({
       langs,
@@ -70,7 +79,23 @@ export async function createMarkdownRenderer(
       markedShiki({
         highlight(code, lang, _) {
           try {
-            return highlighter.codeToHtml(code, { lang, themes });
+            return highlighter.codeToHtml(code, {
+              lang,
+              themes,
+              colorReplacements: {
+                'github-light': {
+                  ...colorReplacements,
+                  '#fff': 'var(--shiki-bg)',
+                  '#24292e': 'var(--shiki-fg)',
+                },
+                'github-dark': {
+                  ...colorReplacements,
+                  '#24292e': 'var(--shiki-bg)',
+                  '#e1e4e8': 'var(--shiki-fg)',
+                },
+              },
+              defaultColor: 'light-dark()',
+            });
           } catch {
             return `<pre><code>${sanitizer(code)}</code></pre>`;
           }
