@@ -7,7 +7,7 @@
     align-items: center;
     align-content: flex-start;
     width: 100%;
-    padding: rem(16px);
+    padding: pad(rem(16px));
     box-sizing: border-box;
 }
 
@@ -15,6 +15,11 @@
     margin: 0;
     font: inherit;
     opacity: inherit;
+}
+
+::slotted([slot='thumbnail']),
+::slotted(igc-avatar[slot='thumbnail']) {
+    --ig-size: 1;
 }
 
 header {
@@ -35,5 +40,5 @@ header {
 ::slotted([slot='thumbnail']) {
     display: flex;
     align-self: flex-start;
-    margin-inline-end: rem(16px);
+    margin-inline-end: pad-inline(rem(16px));
 }

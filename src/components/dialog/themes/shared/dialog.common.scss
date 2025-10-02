@@ -21,17 +21,17 @@ $theme: $material;
 
 [part='title'] {
     color: var-get($theme, 'title-color');
-    padding-inline: rem(24px);
-    padding-block-start: rem(16px);
+    padding-inline: pad-inline(rem(24px));
+    padding-block-start: pad-block(rem(16px));
 }
 
 [part='content'] {
     color: var-get($theme, 'message-color');
-    padding: rem(14px) rem(24px);
+    padding: pad-block(rem(14px)) pad-inline(rem(24px));
 }
 
 [part='footer'] {
     color: var-get($theme, 'title-color');
-    padding: rem(8px);
+    padding: pad(rem(8px));
     padding-block-start: 0;
 }

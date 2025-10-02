@@ -11,7 +11,7 @@
     text-align: center;
     inset-inline: 50% auto;
     transform: translateX(calc(-50% + .5px));
-    margin: rem(42px) auto;
+    margin: pad-block(rem(42px)) auto;
     min-width: rem(52px);
 
     &::after {

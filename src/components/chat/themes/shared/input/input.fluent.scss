@@ -1,0 +1,15 @@
+@use 'styles/utilities' as *;
+@use '../../light/themes' as *;
+
+$theme: $fluent;
+
+igc-textarea::part(input) {
+    max-height: rem(150px);
+    padding-block: rem(11px);
+}
+
+[part~='dragging'] {
+    igc-textarea::part(container)::before {    
+        box-shadow: inset 0 0 0 rem(2px) var-get($theme, 'focused-border-color');
+    }
+}

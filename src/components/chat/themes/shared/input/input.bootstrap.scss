@@ -1,0 +1,16 @@
+@use 'styles/utilities' as *;
+@use '../../light/themes' as *;
+
+$theme: $bootstrap;
+
+igc-textarea::part(input) {
+    max-height: rem(170px);
+    padding-block: rem(8px);
+}
+
+[part~='dragging'] {
+    igc-textarea::part(input) {    
+        border: rem(1px) solid var-get($theme, 'focused-border-color');
+        box-shadow: 0 0 0 rem(4px) var-get($theme, 'focused-secondary-color');
+    }
+}

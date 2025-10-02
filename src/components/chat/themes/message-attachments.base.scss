@@ -1,0 +1,81 @@
+@use 'styles/common/component';
+@use 'styles/utilities' as *;
+
+:host {
+    display: block;
+}
+
+[part='attachments-container'] {
+    display: flex;
+    flex-wrap: wrap;
+    gap: rem(16px);
+}
+
+[part='attachment'] {
+    flex: 1 1;
+    border-radius: rem(4px);
+    overflow: hidden;
+    min-width: rem(80px);
+    max-width: rem(400px);
+}
+
+[part='attachment sent'] {
+    border-radius: rem(2px);
+    max-width: rem(80px);
+}
+
+[part~='attachment-header'] {
+    padding: rem(8px) rem(12px) rem(8px) rem(16px);
+    border-top-left-radius: inherit;
+    border-top-right-radius: inherit;
+}
+
+[part='attachment-header sent'] {
+    padding: rem(6px) 0 0;
+}
+
+[part~='attachment-content'] {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-bottom-left-radius: inherit;
+    border-bottom-right-radius: inherit;
+    max-height: rem(240px);
+    overflow: hidden;
+}
+
+[part='attachment-content sent'] {
+    border-top-left-radius: inherit;
+    border-top-right-radius: inherit;
+    width: rem(78px);
+    aspect-ratio: 1;
+}
+
+[part='image-attachment-icon'] {
+    width: 100%;
+    height: 100%;
+    border-radius: inherit;
+    object-fit: cover;
+}
+
+[part~='attachment-icon'] {
+    --ig-size: 1;
+}
+
+[part='file-attachment-icon'] {
+    --size: #{rem(32px)};
+}
+
+[part='details'] {
+    display: flex;
+    align-items: center;
+    gap: rem(8px);
+}
+
+[part='file-name'] {
+    @include type-style('body-2') {
+        margin: 0;
+    };
+
+    @include ellipsis();
+}

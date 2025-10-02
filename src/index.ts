@@ -14,6 +14,7 @@ export { default as IgcCardMediaComponent } from './components/card/card.media.j
 export { default as IgcCarouselComponent } from './components/carousel/carousel.js';
 export { default as IgcCarouselIndicatorComponent } from './components/carousel/carousel-indicator.js';
 export { default as IgcCarouselSlideComponent } from './components/carousel/carousel-slide.js';
+export { default as IgcChatComponent } from './components/chat/chat.js';
 export { default as IgcCheckboxComponent } from './components/checkbox/checkbox.js';
 export { default as IgcCircularProgressComponent } from './components/progress/circular-progress.js';
 export { default as IgcCircularGradientComponent } from './components/progress/circular-gradient.js';
@@ -88,12 +89,17 @@ export {
   IgcCalendarResourceStringEN,
   type IgcCalendarResourceStrings,
 } from './components/common/i18n/calendar.resources.js';
+export {
+  IgcChatResourceStringEN,
+  type IgcChatResourceStrings,
+} from './components/common/i18n/chat.resources.js';
 
 // Event maps
 export type { IgcBannerComponentEventMap } from './components/banner/banner.js';
 export type { IgcButtonGroupComponentEventMap } from './components/button-group/button-group.js';
 export type { IgcCalendarComponentEventMap } from './components/calendar/types.js';
 export type { IgcCarouselComponentEventMap } from './components/carousel/carousel.js';
+export type { IgcChatComponentEventMap } from './components/chat/chat.js';
 export type { IgcCheckboxComponentEventMap } from './components/checkbox/checkbox-base.js';
 export type { IgcCheckboxComponentEventMap as IgcSwitchComponentEventMap } from './components/checkbox/checkbox-base.js';
 export type { IgcChipComponentEventMap } from './components/chip/chip.js';
@@ -154,3 +160,4 @@ export type {
   IgcComboChangeEventArgs,
 } from './components/combo/types.js';
 export type { IconMeta } from './components/icon/registry/types.js';
+export type * from './components/chat/types.js';
