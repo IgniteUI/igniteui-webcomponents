@@ -71,7 +71,7 @@ export class ComboNavigationController<T extends object> {
     return await this.combo._show(true);
   }
 
-  public toggleSelect(index: number): void {
+  protected _toggleSelection(index: number): void {
     // @ts-expect-error protected access
     this.combo.toggleSelect(index);
   }
@@ -88,7 +88,7 @@ export class ComboNavigationController<T extends object> {
 
     const item = this.state.dataState[this._active];
     if (!item.header) {
-      this.toggleSelect(this._active);
+      this._toggleSelection(this._active);
     }
   };
 
@@ -109,9 +109,11 @@ export class ComboNavigationController<T extends object> {
     }
   };
 
-  private _onTab = async (shiftKey?: boolean): Promise<void> => {
+  private _onTab = async ({ shiftKey }: KeyboardEvent): Promise<void> => {
     if (this.combo.open) {
       if (shiftKey) {
+        // Move focus to the main input of the combo
+        // before the Shift+Tab behavior kicks in.
         this.combo.focus();
       }
       await this._hide();
@@ -122,6 +124,7 @@ export class ComboNavigationController<T extends object> {
     if (!this.combo.open) {
       this.combo.clearSelection();
     }
+
     if (await this._hide()) {
       this.input.focus();
     }
@@ -213,8 +216,8 @@ export class ComboNavigationController<T extends object> {
 
     // Combo
     addKeybindings(this.combo, { skip, bindingDefaults })
-      .set(tabKey, () => this._onTab(), { preventDefault: false })
-      .set([shiftKey, tabKey], () => this._onTab(true), {
+      .set(tabKey, this._onTab, { preventDefault: false })
+      .set([shiftKey, tabKey], this._onTab, {
         preventDefault: false,
       })
       .set(escapeKey, this._onEscape);
