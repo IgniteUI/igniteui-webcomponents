@@ -7,7 +7,6 @@ import { blazorIndirectRender } from '../../common/decorators/blazorIndirectRend
 import { blazorSuppressComponent } from '../../common/decorators/blazorSuppressComponent.js';
 import { watch } from '../../common/decorators/watch.js';
 import { registerComponent } from '../../common/definitions/register.js';
-import { IgcCalendarResourceStringEN } from '../../common/i18n/calendar.resources.js';
 import { createDateTimeFormatters } from '../../common/localization/intl-formatters.js';
 import type { Constructor } from '../../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../../common/mixins/event-emitter.js';
@@ -100,10 +99,6 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
   public get rangePreviewDate() {
     return this._rangePreviewDate?.native;
   }
-
-  /** The resource strings. */
-  @property({ attribute: false })
-  public resourceStrings = IgcCalendarResourceStringEN;
 
   /**
    * The format of the days. Defaults to narrow.
