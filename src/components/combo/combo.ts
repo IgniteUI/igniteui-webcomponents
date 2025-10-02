@@ -701,6 +701,7 @@ export default class IgcComboComponent<
       this.emitEvent('igcClosed');
     }
     this._navigation.active = -1;
+    this._input.focus();
     return true;
   }
 
@@ -841,6 +842,15 @@ export default class IgcComboComponent<
 
   protected handleMainInputKeydown(e: KeyboardEvent) {
     this._setTouchedState();
+    if (e.key === 'Escape' && !this.open) {
+      if (this.singleSelect) {
+        this.resetSearchTerm();
+        this.clearSingleSelection();
+      } else {
+        this._selection.deselect([], true);
+      }
+      this.updateValue();
+    }
     this._navigation.navigateMainInput(e, this._list);
   }
 

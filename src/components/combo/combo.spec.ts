@@ -714,6 +714,85 @@ describe('Combo', () => {
       expect(combo.open).to.be.true;
     });
 
+    it('should close the menu by pressing the Tab key', async () => {
+      await combo.show();
+      await list.layoutComplete;
+
+      pressKey(options, 'Tab', 1, { altKey: false });
+      await elementUpdated(combo);
+      expect(combo.open).to.be.false;
+
+      await combo.show();
+      pressKey(searchInput, 'Tab', 1, { altKey: false });
+      await elementUpdated(combo);
+
+      expect(combo.open).to.be.false;
+
+      await combo.show();
+      pressKey(input, 'Tab', 1, { altKey: false });
+      await elementUpdated(combo);
+
+      expect(combo.open).to.be.false;
+    });
+
+    it('should clear the selection by pressing the Escape key when the combo is closed', async () => {
+      combo.autofocusList = true;
+      combo.select(['BG01', 'BG02']);
+      await elementUpdated(combo);
+
+      await combo.show();
+      await list.layoutComplete;
+
+      pressKey(options, 'Escape', 1, { altKey: false });
+      await elementUpdated(combo);
+
+      expect(combo.open).to.be.false;
+      expect(combo.value.length).to.equal(2);
+
+      pressKey(input, 'Escape', 1, { altKey: false });
+      await elementUpdated(combo);
+
+      expect(combo.open).to.be.false;
+      expect(combo.value.length).to.equal(0);
+    });
+
+    it('should close the menu by pressing the Tab key in single selection', async () => {
+      await combo.show();
+      await list.layoutComplete;
+
+      pressKey(options, 'Tab', 1, { altKey: false });
+      await elementUpdated(combo);
+
+      expect(combo.open).to.be.false;
+
+      await combo.show();
+      pressKey(input, 'Tab', 1, { altKey: false });
+      await elementUpdated(combo);
+
+      expect(combo.open).to.be.false;
+    });
+
+    it('should clear the selection by pressing the Escape key in single selection', async () => {
+      combo.singleSelect = true;
+      combo.select('BG01');
+      await elementUpdated(combo);
+
+      await combo.show();
+      await list.layoutComplete;
+
+      pressKey(options, 'Escape', 1, { altKey: false });
+      await elementUpdated(combo);
+
+      expect(combo.open).to.be.false;
+      expect(combo.value.length).to.equal(1);
+
+      pressKey(input, 'Escape', 1, { altKey: false });
+      await elementUpdated(combo);
+
+      expect(combo.open).to.be.false;
+      expect(combo.value.length).to.equal(0);
+    });
+
     it('should select the active item and close the menu by pressing Enter in single selection', async () => {
       combo.singleSelect = true;
       await elementUpdated(combo);

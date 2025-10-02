@@ -35,7 +35,7 @@ export class NavigationController<T extends object>
       Escape: this.escape,
       ArrowUp: this.escape,
       ArrowDown: this.inputArrowDown,
-      Tab: this.inputArrowDown,
+      Tab: this.tab,
     })
   );
 
@@ -252,7 +252,9 @@ export class NavigationController<T extends object>
     event.stopPropagation();
 
     if (this.mainInputHandlers.has(event.key)) {
-      event.preventDefault();
+      if (event.key.toLowerCase() !== 'tab') {
+        event.preventDefault();
+      }
       this.mainInputHandlers.get(event.key)!.call(this, container);
     }
   }
@@ -264,7 +266,9 @@ export class NavigationController<T extends object>
     event.stopPropagation();
 
     if (this.searchInputHandlers.has(event.key)) {
-      event.preventDefault();
+      if (event.key.toLowerCase() !== 'tab') {
+        event.preventDefault();
+      }
       this.searchInputHandlers.get(event.key)!.call(this, container);
     }
   }
@@ -273,7 +277,9 @@ export class NavigationController<T extends object>
     event.stopPropagation();
 
     if (this.listHandlers.has(event.key)) {
-      event.preventDefault();
+      if (event.key.toLowerCase() !== 'tab') {
+        event.preventDefault();
+      }
       this.listHandlers.get(event.key)!.call(this, container);
     }
   }
