@@ -32,6 +32,7 @@ custom-elements.json
 i18nRepo
 
 # Development environment
+.env
 .envrc
 .direnv
 

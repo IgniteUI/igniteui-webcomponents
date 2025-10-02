@@ -11,7 +11,7 @@ $theme: $bootstrap;
     ::part(helper-text) {
         @include type-style('body-2');
 
-        margin-block-start: rem(16px);
+        margin-block-start: pad-block(rem(16px));
         grid-auto-rows: minmax(rem(20px), auto);
     }
 }

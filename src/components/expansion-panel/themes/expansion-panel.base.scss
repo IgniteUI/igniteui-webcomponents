@@ -77,12 +77,12 @@
 }
 
 :host([indicator-position='start']) [part~='indicator'] {
-    margin-inline-end: pad(16px);
+    margin-inline-end: pad-inline(16px);
 }
 
 :host([indicator-position='end']) [part~='indicator'] {
     order: 2;
-    margin-inline-start: pad(16px);
+    margin-inline-start: pad-inline(16px);
 }
 
 :host([indicator-position='none']) [part~='indicator'] {

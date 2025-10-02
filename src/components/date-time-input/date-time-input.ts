@@ -1,4 +1,3 @@
-import { getCurrentI18n } from 'igniteui-i18n-core';
 import { html } from 'lit';
 import { eventOptions, property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
@@ -14,6 +13,7 @@ import {
 } from '../common/controllers/key-bindings.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
+import { addI18nController } from '../common/i18n/i18n-controller.js';
 import type { AbstractConstructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormValueDateTimeTransformers } from '../common/mixins/forms/form-transformers.js';
@@ -85,6 +85,10 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
   protected override readonly _formValue = createFormValueState(this, {
     initialValue: null,
     transformers: FormValueDateTimeTransformers,
+  });
+
+  private readonly _i18nController = addI18nController<object>(this, {
+    defaultEN: {},
   });
 
   protected _defaultMask!: string;
@@ -197,16 +201,16 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
   public spinLoop = true;
 
   /**
-   * The locale settings used to display the value.
-   * @attr
+   * Gets/Sets the locale used for formatting the display value.
+   * @attr locale
    */
   @property()
   public set locale(value: string) {
-    this._locale = value;
+    this._i18nController.locale = value;
   }
 
   public get locale() {
-    return this._locale ?? getCurrentI18n();
+    return this._i18nController.locale;
   }
 
   @watch('locale', { waitUntilFirstUpdate: true })

@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
-    "target": "es2021",
-    "module": "es2020",
+    "target": "es2022",
+    "module": "NodeNext",
     "lib": ["es2023", "DOM", "DOM.Iterable"],
     "outDir": "dist",
     "rootDir": "./",
@@ -19,7 +19,7 @@
     "noImplicitAny": true,
     "noImplicitThis": true,
     "noImplicitOverride": true,
-    "moduleResolution": "node",
+    "moduleResolution": "NodeNext",
     "allowSyntheticDefaultImports": true,
     "experimentalDecorators": true,
     "forceConsistentCasingInFileNames": true,
@@ -32,15 +32,7 @@
         }
       }
     ],
-    "types": ["mocha"],
-    "paths": {
-      "igniteui-i18n-core": [
-        "../node_modules/igniteui-i18n-core/"
-      ],
-      "igniteui-i18n-resources": [
-        "../node_modules/igniteui-i18n-resources/"
-      ],
-    },
+    "types": ["mocha"]
   },
   "include": ["src/**/*.ts"],
   "exclude": ["src/**/*.stories.ts"],

@@ -31,7 +31,7 @@ $outlined-btn-indent: rem(2px);
 }
 
 [part~='base'] {
-    padding: 0 pad(8px, 12px, 16px);
+    padding: 0 pad-inline(8px, 12px, 16px);
     transition: all .1s ease-in-out;
 }
 

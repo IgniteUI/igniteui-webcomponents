@@ -1,0 +1,17 @@
+@use 'styles/utilities' as *;
+@use '../light/themes' as *;
+
+$theme: $material;
+
+:host {
+    background: var-get($theme, 'background');
+}
+
+[part='header'] {
+    background: var-get($theme, 'header-background');
+    color: var-get($theme, 'header-color');
+}
+
+[part='typing-dot']::after {
+    background: var-get($theme, 'progress-indicator-color');
+}

@@ -33,21 +33,21 @@ $theme: $indigo;
     [part='days-view-container'] + [part='days-view-container'] {
         [part='navigation'],
         igc-days-view {
-            padding-inline: rem(22px);
+            padding-inline: pad-inline(rem(22px));
         }
     }
 
     [part='days-view-container']:last-of-type:not(:only-child) {
         [part='navigation'],
         igc-days-view {
-            padding-inline-end: rem(12px);
+            padding-inline-end: pad-inline(rem(12px));
         }
     }
 
     [part='days-view-container']:first-of-type:not(:only-child) {
         [part='navigation'],
         igc-days-view {
-            padding-inline-end: rem(22px);
+            padding-inline-end: pad-inline(rem(22px));
         }
     }
 }
@@ -84,7 +84,7 @@ $theme: $indigo;
 
 [part~='navigation-button'] {
     color: var-get($theme, 'navigation-color');
-    padding: rem(5px);
+    padding: pad(rem(5px));
 
     &:hover {
         color: var-get($theme, 'navigation-hover-color');

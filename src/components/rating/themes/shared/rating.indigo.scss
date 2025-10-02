@@ -19,7 +19,7 @@ $theme: $indigo;
 }
 
 [part~='label'] {
-    padding-inline-start: rem(2px);
+    padding-inline-start: pad-inline(rem(2px));
 }
 
 [part~='symbols'] {
