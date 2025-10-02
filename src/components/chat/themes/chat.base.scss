@@ -1,0 +1,179 @@
+@use 'styles/common/component';
+@use 'styles/utilities' as *;
+
+$inline-inset: rem(24px);
+
+:host {
+    --igc-chat-height: 100%;
+
+    width: 100%;
+    height: var(--igc-chat-height);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    container-type: inline-size;
+
+    ::part(text-input) {
+        --textarea-height: #{rem(48px)};
+    }
+}
+
+[part='chat-container'] {
+    display: grid;
+    grid-template-columns: 1fr minmax(rem(320px), #{calc(rem(760px) + $inline-inset * 2)}) 1fr;
+    grid-template-rows: auto 1fr auto;
+    height: 100%;
+}
+
+[part='message-area-container'] {
+    display: grid;
+    grid-template-columns: subgrid;
+    overflow: hidden auto;
+    grid-column: 1 / -1;
+    grid-template-rows: auto 1fr;
+    align-items: start;
+    grid-row: 2;
+
+    &:has([part='empty-state']) {
+        grid-template-rows: 1fr auto;
+    }
+}
+
+[part='message-list'],
+[part='empty-state'],
+[part='suggestions-container'] {
+    grid-column: 2 / 3;
+    display: grid;
+    grid-template-columns: subgrid;
+    width: 100%;
+    padding-inline: $inline-inset;
+}
+
+[part='message-list'] {
+    padding-block: rem(16px) rem(24px);
+    gap: rem(24px);
+}
+
+[part='empty-state'] {
+    height: 100%;
+}
+
+[part='header'] {
+    display: flex;
+    align-items: center;
+    min-height: rem(56px);
+    padding-inline: rem(16px);
+    box-shadow: var(--ig-elevation-4);
+    width: 100%;
+    z-index: 1;
+    grid-column: 1 / -1;
+    grid-row: 1 / 2;
+}
+
+[part='typing-indicator'] {
+    display: flex;
+    align-items: center;
+    gap: rem(2px);
+}
+
+[part='typing-dot'] {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: rem(8px);
+    aspect-ratio: 1;
+
+    &::after {
+      content: '';
+      display: block;
+      animation: blink 1.2s ease-in-out infinite;
+      animation-fill-mode: both;
+      width: rem(6px);
+      aspect-ratio: 1;
+      border-radius: 50%;
+    }
+
+    &:nth-child(2)::after {
+        animation-delay: .2s;
+        width: rem(4px);
+    }
+
+    &:nth-child(3)::after {
+        animation-delay: .4s;
+    }
+
+    &:nth-child(4)::after {
+        animation-delay: .6s;
+        width: rem(2px);
+    }
+}
+
+slot[name='title'] {
+    @include type-style('h6') {
+      margin: 0;
+    };
+}
+
+slot[name='actions'] {
+    display: flex;
+    margin-inline-start: auto;
+    gap: rem(16px);
+}
+
+slot[name='prefix'] {
+    display: block;
+    margin-inline-end: rem(32px);
+}
+
+igc-chat-input {
+    grid-row: 3;
+}
+
+igc-list {
+    --ig-size: 3;
+
+    padding-block-end: rem(24px);
+    min-height: fit-content;
+    width: fit-content;
+    max-width: rem(576px);
+}
+
+igc-list-item {
+    cursor: pointer;
+}
+
+igc-list,
+igc-list-item:not(:hover),
+igc-list-header {
+    background: initial;
+}
+
+igc-list-item::part(title) {
+    @include line-clamp(2, true, true);
+}
+
+@container (max-width: 400px) {
+    [part='message-list'],
+    [part='empty-state'],
+    [part='suggestions-container'] {
+      padding-inline: rem(16px);
+    }
+
+    [part='message-list'] {
+      padding-block: rem(12px);
+    }
+}
+
+@keyframes blink {
+    0%, 100% {
+      transform: scale(0.9);
+    }
+
+    25%, 75% {
+      transform: scale(1.05);
+    }
+
+    50% {
+      transform: scale(1.1);
+    }
+}

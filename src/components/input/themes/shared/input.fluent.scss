@@ -88,14 +88,14 @@ $theme: $fluent;
         color: var-get($theme, 'idle-text-color');
         background: initial;
         font-size: rem(14px);
-        padding-inline: rem(8px);
+        padding-inline: pad-inline(rem(8px));
         max-height: 100%;
         border: none;
         grid-area: 1 / 2;
     }
 }
 
-:host(:not([readonly], :focus-within):hover) {
+:host(:not([readonly], [disabled], :focus-within):hover) {
     [part^='container'] {
         &::before {
             // The color: here is the actual box-shadow color. If we don't provide color-value to the shadow it
@@ -121,7 +121,7 @@ $theme: $fluent;
     }
 }
 
-:host([aria-haspopup]:not([readonly], :focus-within):hover) {
+:host([aria-haspopup]:not([readonly], [disabled], :focus-within):hover) {
     [part^='container'] {
         &::before {
             color: var-get($theme, 'hover-border-color');

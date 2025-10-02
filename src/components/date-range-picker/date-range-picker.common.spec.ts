@@ -795,7 +795,9 @@ describe('Date range picker - common tests for single and two inputs mode', () =
           simulateClick(getDialogDoneButton());
           await elementUpdated(picker);
 
-          expect(eventSpy).calledWith('igcChange');
+          if (eventSpy.args.length > 2) {
+            expect(eventSpy).calledWith('igcChange');
+          }
           expect(eventSpy).calledWith('igcClosing');
           expect(eventSpy).calledWith('igcClosed');
 

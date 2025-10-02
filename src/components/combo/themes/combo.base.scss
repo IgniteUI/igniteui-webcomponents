@@ -2,6 +2,8 @@
 @use 'styles/utilities' as *;
 
 :host {
+    --item-count: 6;
+
     display: block;
     font-family: var(--ig-font-family);
 
@@ -73,7 +75,7 @@
 }
 
 [part='list'] {
-    min-height: rem(200px) !important;
+    min-height: calc(var(--size) * var(--item-count)) !important;
     outline-style: none;
 }
 
@@ -82,7 +84,7 @@
     justify-content: center;
     align-items: center;
     width: 100%;
-    padding: rem(16px) rem(24px);
+    padding: pad-block(rem(16px)) pad-inline(rem(24px));
     font-size: rem(13px);
 }
 

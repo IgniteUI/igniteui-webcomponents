@@ -9,7 +9,8 @@
 [part~='spacer'] {
     display: flex;
     flex-wrap: wrap;
-    padding: rem(16px) rem(8px);
+    padding-block: pad-block(16px);
+    padding-inline: pad-inline(8px);
     gap: rem(8px);
     justify-content: flex-end;
 }
@@ -45,7 +46,7 @@
 }
 
 ::slotted([slot='prefix']) {
-    margin-inline-end: rem(16px);
+    margin-inline-end: pad-inline(rem(16px));
 }
 
 // OPEN CLOSE BEHAVIOR

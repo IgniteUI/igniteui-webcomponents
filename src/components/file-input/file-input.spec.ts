@@ -264,7 +264,7 @@ describe('Validation message slots', () => {
   });
 });
 
-function simulateFileUpload(input: HTMLInputElement, files: File[]) {
+export function simulateFileUpload(input: HTMLInputElement, files: File[]) {
   const dataTransfer = new DataTransfer();
 
   for (const file of files) {
