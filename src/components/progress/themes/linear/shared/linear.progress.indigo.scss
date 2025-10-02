@@ -11,7 +11,7 @@ $stripe-space: rem(14px);
 :host([label-align='top-start']),
 :host([label-align='top-end']) {
     [part~='track'] {
-        margin-block-start: rem(4px);
+        margin-block-start: pad-block(rem(4px));
     }
 }
 
@@ -19,7 +19,7 @@ $stripe-space: rem(14px);
 :host([label-align='bottom-start']),
 :host([label-align='bottom-end']) {
     [part~='track'] {
-        margin-block-end: rem(4px);
+        margin-block-end: pad-block(rem(4px));
     }
 }
 

@@ -7,9 +7,13 @@
     display: block;
     width: 100%;
     overflow: auto;
-    padding: rem(16px);
+    padding: pad(rem(16px));
 }
 
 ::slotted(*) {
     margin: 0;
+}
+
+::slotted(igc-avatar) {
+    --ig-size: 1;
 }

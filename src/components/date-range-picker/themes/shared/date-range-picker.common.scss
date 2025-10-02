@@ -30,7 +30,7 @@ $theme: $material;
     }
 
     igc-dialog::part(footer) {
-        padding: rem(8px);
+        padding: pad(rem(8px));
         background: var-get($theme, 'content-background');
         border-block-start: rem(1px) solid var-get($theme, 'actions-divider-color');
     }
@@ -55,7 +55,7 @@ $theme: $material;
 
         color: var-get($theme, 'helper-text-color');
         grid-auto-rows: minmax(rem(18px), auto);
-        margin-block-start: rem(4px);
+        margin-block-start: pad-block(rem(4px));
         padding-inline: pad-inline(rem(14px), rem(16px), rem(18px));
     }
 }

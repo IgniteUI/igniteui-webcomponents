@@ -1,0 +1,29 @@
+@use 'styles/utilities' as *;
+@use '../light/themes' as *;
+
+$theme: $bootstrap;
+
+:host {
+    ::part(text-input) {
+        --textarea-height: #{rem(38px)};
+    }
+}
+
+[part='header'] {
+    box-shadow: none;
+    border-block-end: rem(1px) solid var-get($theme, 'header-border');
+}
+
+slot[name='title'] {
+    @include type-style('h5') {
+      margin: 0;
+    };
+}
+
+slot[name='prefix'] {
+    margin-inline-end: rem(16px);
+}
+
+igc-list {
+    border: none;
+}

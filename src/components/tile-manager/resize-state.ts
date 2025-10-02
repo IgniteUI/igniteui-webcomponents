@@ -10,7 +10,7 @@ import type {
   TileResizeDimensions,
 } from './types.js';
 
-const CssValues = new RegExp(/(?<start>\d+)?\s*\/?\s*span\s*(?<span>\d+)?/gi);
+const CssValues = /(?<start>\d+)?\s*\/?\s*span\s*(?<span>\d+)?/gi;
 
 function parseTileGridRect(tile: IgcTileComponent): TileGridPosition {
   const computed = getComputedStyle(tile);
