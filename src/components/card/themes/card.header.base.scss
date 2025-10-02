@@ -17,6 +17,11 @@
     opacity: inherit;
 }
 
+::slotted([slot='thumbnail']),
+::slotted(igc-avatar[slot='thumbnail']) {
+    --ig-size: 1;
+}
+
 header {
     display: flex;
     flex-flow: column nowrap;
@@ -33,8 +38,6 @@ header {
 }
 
 ::slotted([slot='thumbnail']) {
-    --ig-size: 1;
-
     display: flex;
     align-self: flex-start;
     margin-inline-end: rem(16px);
