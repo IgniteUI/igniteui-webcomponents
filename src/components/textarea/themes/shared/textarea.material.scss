@@ -3,7 +3,7 @@
 @use 'igniteui-theming/sass/animations/easings' as *;
 
 $theme: $material;
-$input-top-padding: rem(20px);
+$input-top-padding: pad-block(rem(8px), rem(12px), rem(16px));
 $input-bottom-padding: rem(6px);
 
 :host {
@@ -13,12 +13,8 @@ $input-bottom-padding: rem(6px);
     --affix-padding: #{pad-inline(rem(12px), rem(14px), rem(16px))};
 
     ::part(helper-text) {
-        @include type-style('caption');
-
-        color: var-get($theme, 'helper-text-color');
         grid-auto-rows: minmax(rem(18px), auto);
-        margin-block-start: pad-block(rem(4px));
-        padding-inline: pad-inline(rem(14px), rem(16px), rem(18px));
+        padding-inline: pad-inline(rem(12px), rem(14px), rem(16px));
     }
 }
 
@@ -26,7 +22,7 @@ textarea {
     border: none;
     padding: 0;
     overflow: auto;
-    margin-block-start: pad-block($input-top-padding);
+    margin-block-start: $input-top-padding;
     grid-area: 1 / 2 / span 1 / span 2;
     flex-grow: 1;
     position: relative;
@@ -84,7 +80,13 @@ textarea {
         }
 
         textarea {
-            margin-block-end: pad-block(rem(2px));
+            margin-block: pad-block(rem(8px), rem(12px), rem(16px)) rem(2px);
+        }
+    }
+
+    [part~='labelled'] {
+        textarea {
+            margin-block: pad-block(rem(16px), rem(20px), rem(24px)) rem(2px);
         }
     }
 
@@ -197,7 +199,7 @@ textarea {
 [part='end'] {
     display: flex;
     align-items: center;
-    min-width: pad(rem(10px), rem(12px), rem(14px));
+    min-width: pad(rem(8px), rem(10px), rem(12px));
     min-height: 100%;
     overflow: hidden;
 }

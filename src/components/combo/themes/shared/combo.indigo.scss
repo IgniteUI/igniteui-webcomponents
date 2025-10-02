@@ -17,8 +17,6 @@ $dropdown-theme: dropdown-theme.$indigo;
     }
 
     ::part(helper-text) {
-        @include type-style('caption');
-
         margin-block-start: pad-block(rem(4px));
         grid-auto-rows: minmax(rem(15px), auto);
     }

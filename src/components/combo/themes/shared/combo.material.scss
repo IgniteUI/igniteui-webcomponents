@@ -12,11 +12,9 @@ $dropdown-theme: dropdown-theme.$material;
     --combo-size: var(--component-size);
 
     ::part(helper-text) {
-        @include type-style('caption');
-
         margin-block-start: pad-block(rem(4px));
         grid-auto-rows: minmax(rem(18px), auto);
-        padding-inline: pad-inline(rem(14px), rem(16px), rem(18px));
+        padding-inline: pad-inline(rem(12px), rem(14px), rem(16px));
     }
 
     ::slotted([slot='prefix']),
