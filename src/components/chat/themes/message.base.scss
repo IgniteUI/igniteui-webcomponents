@@ -35,17 +35,21 @@
       color: color(primary, 500);
     }
 
-    pre, code {
-      white-space: pre-wrap;
-      overflow-wrap: break-word;
-      overflow-x: auto;
-      margin-block: unset;
+    pre.shiki {
+      font-size: rem(14px);
+      line-height: rem(24px);
+      padding: rem(16px);
+      border-radius: rem(4px);
+      max-height: rem(320px);
+      max-width: rem(680px);
+      overflow-y: auto;
     }
 }
 
 [part~='message-header'],
 [part~='message-attachments'],
-[part~='message-actions'] {
+[part~='message-actions'],
+[part~='plain-text'] {
     &:empty {
       display: none;
     }
