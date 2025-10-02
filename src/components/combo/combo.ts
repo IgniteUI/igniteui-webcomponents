@@ -799,6 +799,17 @@ export default class IgcComboComponent<
     this.updateValue();
   }
 
+  /** @hidden @internal */
+  public clearSelection() {
+    if (this.singleSelect) {
+      this.resetSearchTerm();
+      this.clearSingleSelection();
+    } else {
+      this._selection.deselect([], true);
+    }
+    this.updateValue();
+  }
+
   protected clearSingleSelection() {
     const _selection = this._selection.asArray;
     const selection = first(_selection);
@@ -812,15 +823,7 @@ export default class IgcComboComponent<
 
   protected handleClearIconClick(e: PointerEvent) {
     e.stopPropagation();
-
-    if (this.singleSelect) {
-      this.resetSearchTerm();
-      this.clearSingleSelection();
-    } else {
-      this._selection.deselect([], true);
-    }
-
-    this.updateValue();
+    this.clearSelection();
     this._navigation.active = -1;
   }
 

@@ -7,8 +7,10 @@ import {
   arrowUp,
   endKey,
   enterKey,
+  escapeKey,
   homeKey,
   spaceBar,
+  tabKey,
 } from '../common/controllers/key-bindings.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import { first } from '../common/util.js';
@@ -716,6 +718,48 @@ describe('Combo', () => {
       expect(combo.open).to.be.true;
     });
 
+    it('should close the menu by pressing the Tab key', async () => {
+      await combo.show();
+      await list.layoutComplete;
+
+      simulateKeyboard(options, tabKey, 1);
+      await elementUpdated(combo);
+      expect(combo.open).to.be.false;
+
+      await combo.show();
+      simulateKeyboard(searchInput, tabKey, 1);
+      await elementUpdated(combo);
+
+      expect(combo.open).to.be.false;
+
+      await combo.show();
+      simulateKeyboard(input, tabKey, 1);
+      await elementUpdated(combo);
+
+      expect(combo.open).to.be.false;
+    });
+
+    it('should clear the selection by pressing the Escape key when the combo is closed', async () => {
+      combo.autofocusList = true;
+      combo.select(['BG01', 'BG02']);
+      await elementUpdated(combo);
+
+      await combo.show();
+      await list.layoutComplete;
+
+      simulateKeyboard(options, escapeKey, 1);
+      await elementUpdated(combo);
+
+      expect(combo.open).to.be.false;
+      expect(combo.value.length).to.equal(2);
+
+      simulateKeyboard(input, escapeKey, 1);
+      await elementUpdated(combo);
+
+      expect(combo.open).to.be.false;
+      expect(combo.value.length).to.equal(0);
+    });
+
     it('should select the active item and close the menu by pressing Enter in single selection', async () => {
       combo.singleSelect = true;
       await elementUpdated(combo);
@@ -748,6 +792,43 @@ describe('Combo', () => {
 
       expect(combo.value).to.eql(['BG01']);
       expect(combo.open).to.be.false;
+    });
+
+    it('should close the menu by pressing the Tab key in single selection', async () => {
+      await combo.show();
+      await list.layoutComplete;
+
+      simulateKeyboard(options, tabKey, 1);
+      await elementUpdated(combo);
+
+      expect(combo.open).to.be.false;
+
+      await combo.show();
+      simulateKeyboard(input, tabKey, 1);
+      await elementUpdated(combo);
+
+      expect(combo.open).to.be.false;
+    });
+
+    it('should clear the selection by pressing the Escape key in single selection', async () => {
+      combo.singleSelect = true;
+      combo.select('BG01');
+      await elementUpdated(combo);
+
+      await combo.show();
+      await list.layoutComplete;
+
+      simulateKeyboard(options, escapeKey, 1);
+      await elementUpdated(combo);
+
+      expect(combo.open).to.be.false;
+      expect(combo.value.length).to.equal(1);
+
+      simulateKeyboard(input, escapeKey, 1);
+      await elementUpdated(combo);
+
+      expect(combo.open).to.be.false;
+      expect(combo.value.length).to.equal(0);
     });
 
     it('should support a single selection variant', async () => {

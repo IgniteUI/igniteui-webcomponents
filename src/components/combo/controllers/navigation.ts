@@ -109,13 +109,19 @@ export class ComboNavigationController<T extends object> {
     }
   };
 
-  private _onTab = async (): Promise<void> => {
+  private _onTab = async (shiftKey?: boolean): Promise<void> => {
     if (this.combo.open) {
+      if (shiftKey) {
+        this.combo.focus();
+      }
       await this._hide();
     }
   };
 
   private _onEscape = async (): Promise<void> => {
+    if (!this.combo.open) {
+      this.combo.clearSelection();
+    }
     if (await this._hide()) {
       this.input.focus();
     }
@@ -207,8 +213,10 @@ export class ComboNavigationController<T extends object> {
 
     // Combo
     addKeybindings(this.combo, { skip, bindingDefaults })
-      .set(tabKey, this._onTab, { preventDefault: false })
-      .set([shiftKey, tabKey], this._onTab, { preventDefault: false })
+      .set(tabKey, () => this._onTab(), { preventDefault: false })
+      .set([shiftKey, tabKey], () => this._onTab(true), {
+        preventDefault: false,
+      })
       .set(escapeKey, this._onEscape);
 
     // Main input
