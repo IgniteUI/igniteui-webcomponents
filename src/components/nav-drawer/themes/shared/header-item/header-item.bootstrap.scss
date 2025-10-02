@@ -3,7 +3,7 @@
 :host {
     @include type-style('caption');
 
-    padding: rem(8px) rem(16px);
+    padding: pad-block(rem(8px)) pad-inline(rem(16px));
     min-height: rem(40px);
 }
 

@@ -1,0 +1,5 @@
+@use 'styles/utilities' as *;
+
+[part~='sent'] {
+    border-radius: rem(8px) rem(8px) 0;
+}

@@ -46,7 +46,7 @@ input[type='checkbox'] {
     display: inline-block;
     cursor: pointer;
     user-select: none;
-    word-wrap: break-word;
+    overflow-wrap: break-word;
 }
 
 :host([disabled]),

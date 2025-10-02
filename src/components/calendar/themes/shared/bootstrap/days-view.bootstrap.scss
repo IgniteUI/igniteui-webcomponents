@@ -7,15 +7,15 @@ $border-size: rem(1px);
 :host([part='days-view']) {
     overflow: hidden;
     position: relative;
-    padding: 0 0 rem(16px);
+    padding: 0 0 pad-block(rem(16px));
 }
 
 [part~='days-row'] {
-    padding: 0 rem(12px);
+    padding: 0 pad-inline(rem(12px));
 }
 
 :host([part='days-view']) + :host([part='days-view']) {
-    margin-inline-start: rem(8px);
+    margin-inline-start: pad-inline(rem(8px));
 }
 
 [part~='days-row'][part~='first'] {

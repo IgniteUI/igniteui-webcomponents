@@ -21,13 +21,13 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: rem(2px);
+    padding: pad(rem(2px));
     gap: rem(2px);
     inset-inline-start: 0;
 }
 
 [part~='label'] {
-    padding-inline-start: rem(4px);
+    padding-inline-start: pad-inline(rem(4px));
     height: auto;
     width: auto;
     min-height: 0;
