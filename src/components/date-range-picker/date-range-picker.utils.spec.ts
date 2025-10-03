@@ -52,17 +52,19 @@ export const checkSelectedRange = (
   } else {
     const input = picker.renderRoot.querySelector(IgcInputComponent.tagName)!;
     const start = expectedValue?.start
-      ? DateTimeUtil.formatDate(
+      ? DateTimeUtil.formatDisplayDate(
           expectedValue.start,
           picker.locale,
-          picker.displayFormat || picker.inputFormat
+          picker.displayFormat,
+          picker.alwaysLeadingZero
         )
       : '';
     const end = expectedValue?.end
-      ? DateTimeUtil.formatDate(
+      ? DateTimeUtil.formatDisplayDate(
           expectedValue.end,
           picker.locale,
-          picker.displayFormat || picker.inputFormat
+          picker.displayFormat,
+          picker.alwaysLeadingZero
         )
       : '';
     expect(input.value).to.equal(`${start} - ${end}`);

@@ -9,10 +9,12 @@ describe('Date Util', () => {
   const DEFAULT_PROMPT = '_';
 
   it('locale default mask', () => {
-    expect(DateTimeUtil.getDefaultMask('')).to.equal('MM/dd/yyyy');
-    expect(DateTimeUtil.getDefaultMask(DEFAULT_LOCALE)).to.equal('MM/dd/yyyy');
-    expect(DateTimeUtil.getDefaultMask('no')).to.equal('dd.MM.yyyy');
-    expect(DateTimeUtil.getDefaultMask('bg').normalize('NFKC')).to.equal(
+    expect(DateTimeUtil.getDefaultInputMask('')).to.equal('MM/dd/yyyy');
+    expect(DateTimeUtil.getDefaultInputMask(DEFAULT_LOCALE)).to.equal(
+      'MM/dd/yyyy'
+    );
+    expect(DateTimeUtil.getDefaultInputMask('no')).to.equal('dd.MM.yyyy');
+    expect(DateTimeUtil.getDefaultInputMask('bg').normalize('NFKC')).to.equal(
       'dd.MM.yyyy г.'
     );
   });

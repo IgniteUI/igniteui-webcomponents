@@ -192,8 +192,8 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
   private _max: Date | null = null;
   private _disabledDates?: DateRangeDescriptor[];
   private _dateConstraints?: DateRangeDescriptor[];
-  private _displayFormat?: string;
   private _inputFormat?: string;
+  private _displayFormat?: string;
 
   protected override readonly _formValue = createFormValueState(this, {
     initialValue: null,
@@ -398,8 +398,16 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
   public showWeekNumbers = false;
 
   /**
+   * Sets to always show leading zero regardless of the displayFormat applied or one based on locale.
+   * Leading zero is applied during edit for the inputFormat always, regardless of this option.
+   * @attr
+   */
+  @property({ type: Boolean, attribute: 'always-leading-zero' })
+  public alwaysLeadingZero = false;
+
+  /**
    * Format to display the value in when not editing.
-   * Defaults to the input format if not set.
+   * Defaults to the locale format if not set.
    * @attr display-format
    */
   @property({ attribute: 'display-format' })
@@ -408,7 +416,7 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
   }
 
   public get displayFormat(): string {
-    return this._displayFormat ?? this.inputFormat;
+    return this._displayFormat ?? this._input?.displayFormat;
   }
 
   /**
@@ -813,7 +821,7 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
 
   protected _renderInput(id: string) {
     const format = DateTimeUtil.predefinedToDateDisplayFormat(
-      this._displayFormat!
+      this._displayFormat
     );
 
     // Dialog mode is always readonly, rest depends on configuration
@@ -830,6 +838,7 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
         label=${ifDefined(isMaterial ? this.label : undefined)}
         input-format=${ifDefined(this._inputFormat)}
         display-format=${ifDefined(format)}
+        ?always-leading-zero=${this.alwaysLeadingZero}
         ?disabled=${this.disabled}
         ?readonly=${readOnly}
         ?required=${this.required}
