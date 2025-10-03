@@ -41,7 +41,7 @@ describe('Date Time Input component', () => {
   describe('', async () => {
     beforeEach(async () => {
       el = await fixture<IgcDateTimeInputComponent>(
-        html`<igc-date-time-input></igc-date-time-input>`
+        html`<igc-date-time-input always-leading-zero></igc-date-time-input>`
       );
       input = el.renderRoot.querySelector('input')!;
       parser.prompt = defaultPrompt;
@@ -78,7 +78,7 @@ describe('Date Time Input component', () => {
       el.inputFormat = 'yyyy#MM#dd';
       await elementUpdated(el);
 
-      expect(el.displayFormat).to.be.undefined;
+      expect((el as any)._displayFormat).to.be.undefined;
       expect(input.placeholder).to.equal('yyyy#MM#dd');
 
       el.value = new Date(2020, 2, 3);
@@ -103,7 +103,7 @@ describe('Date Time Input component', () => {
     });
 
     it('should use displayFormat when defined', async () => {
-      expect(el.displayFormat).to.be.undefined;
+      expect((el as any)._displayFormat).to.be.undefined;
 
       el.value = new Date(2020, 2, 3);
       await elementUpdated(el);
@@ -114,6 +114,7 @@ describe('Date Time Input component', () => {
       await elementUpdated(el);
       expect(input.value).to.equal('03.03/2020');
 
+      el.alwaysLeadingZero = false;
       el.displayFormat = 'd.M';
       await elementUpdated(el);
       expect(input.value).to.equal('3.3');
@@ -154,9 +155,17 @@ describe('Date Time Input component', () => {
       el.value = new Date(2020, 9, 12, 12);
       el.displayFormat = 'd.MM hh:mm ttt';
       await elementUpdated(el);
-      expect(input.value).to.equal('12.10 12:00 noon');
+      expect(input.value).to.equal('12.10 12:00 PM');
 
       el.displayFormat = 'd.MM hh:mm ttttt';
+      await elementUpdated(el);
+      expect(input.value).to.equal('12.10 12:00 p');
+
+      el.displayFormat = 'd.MM hh:mm bbbb';
+      await elementUpdated(el);
+      expect(input.value).to.equal('12.10 12:00 noon');
+
+      el.displayFormat = 'd.MM hh:mm bbbbb';
       await elementUpdated(el);
       expect(input.value).to.equal('12.10 12:00 n');
     });
@@ -200,7 +209,7 @@ describe('Date Time Input component', () => {
 
       let formattedDate = setDateFormat('short', targetDate);
 
-      expect(el.displayFormat).to.be.undefined;
+      expect((el as any)._displayFormat).to.be.undefined;
 
       el.value = new Date(2020, 2, 3);
       el.displayFormat = 'short';
@@ -657,7 +666,7 @@ describe('Date Time Input component', () => {
 
     it('non filled parts have default value set on blur', async () => {
       el.inputFormat = 'dd.MM.yyyy';
-      const parts = DateTimeUtil.parseDateTimeFormat(el.inputFormat);
+      const parts = DateTimeUtil.parseDateTimeFormat(el.inputFormat, 'en');
 
       el.focus();
       await elementUpdated(el);
@@ -708,7 +717,7 @@ describe('Date Time Input component', () => {
 
     it('set value when input is complete', async () => {
       el.inputFormat = 'dd.MM.yyyy';
-      const parts = DateTimeUtil.parseDateTimeFormat(el.inputFormat);
+      const parts = DateTimeUtil.parseDateTimeFormat(el.inputFormat, 'en');
 
       el.focus();
       await elementUpdated(el);
@@ -737,7 +746,7 @@ describe('Date Time Input component', () => {
 
     it('set value to null when input is complete and invalid', async () => {
       el.inputFormat = 'dd.MM.yyyy';
-      const parts = DateTimeUtil.parseDateTimeFormat(el.inputFormat);
+      const parts = DateTimeUtil.parseDateTimeFormat(el.inputFormat, 'en');
 
       el.focus();
       await elementUpdated(el);

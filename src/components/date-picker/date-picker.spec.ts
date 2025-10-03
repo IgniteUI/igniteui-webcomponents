@@ -51,7 +51,7 @@ describe('Date picker', () => {
 
   beforeEach(async () => {
     picker = await fixture<IgcDatePickerComponent>(
-      html`<igc-date-picker></igc-date-picker>`
+      html`<igc-date-picker always-leading-zero></igc-date-picker>`
     );
     dateTimeInput = picker.renderRoot.querySelector(
       IgcDateTimeInputComponent.tagName
@@ -574,7 +574,7 @@ describe('Date picker', () => {
         expect(picker.inputFormat).to.equal('dd/MM/yyyy');
       });
 
-      it('should use the value of inputFormat for displayFormat, if it is not defined', async () => {
+      it('should use the value of locale format for displayFormat, if it is not defined', async () => {
         expect(picker.locale).to.equal('en-US');
         expect(picker.getAttribute('display-format')).to.be.null;
         expect(picker.displayFormat).to.equal(picker.inputFormat);

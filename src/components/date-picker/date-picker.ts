@@ -193,6 +193,7 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
   private _disabledDates?: DateRangeDescriptor[];
   private _dateConstraints?: DateRangeDescriptor[];
   private _inputFormat?: string;
+  private _displayFormat?: string;
 
   protected override readonly _formValue = createFormValueState(this, {
     initialValue: null,
@@ -410,7 +411,13 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
    * @attr display-format
    */
   @property({ attribute: 'display-format' })
-  public displayFormat?: string;
+  public set displayFormat(value: string) {
+    this._displayFormat = value;
+  }
+
+  public get displayFormat(): string {
+    return this._displayFormat ?? this._input?.displayFormat;
+  }
 
   /**
    * The date format to apply on the input.
@@ -814,7 +821,7 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
 
   protected _renderInput(id: string) {
     const format = DateTimeUtil.predefinedToDateDisplayFormat(
-      this.displayFormat
+      this._displayFormat
     );
 
     // Dialog mode is always readonly, rest depends on configuration
@@ -831,6 +838,7 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
         label=${ifDefined(isMaterial ? this.label : undefined)}
         input-format=${ifDefined(this._inputFormat)}
         display-format=${ifDefined(format)}
+        ?always-leading-zero=${this.alwaysLeadingZero}
         ?disabled=${this.disabled}
         ?readonly=${readOnly}
         ?required=${this.required}

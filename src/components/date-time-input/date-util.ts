@@ -133,10 +133,12 @@ export abstract class DateTimeUtil {
 
   public static parseDateTimeFormat(
     mask: string,
+    locale: string,
     leadingZero = false
   ): DatePartInfo[] {
+    const format = mask || DateTimeUtil.getDefaultInputMask(locale);
     const dateTimeParts: DatePartInfo[] = [];
-    const formatArray = Array.from(mask);
+    const formatArray = Array.from(format);
     let currentPart: DatePartInfo | null = null;
     let position = 0;
 
@@ -231,14 +233,13 @@ export abstract class DateTimeUtil {
         if (displayFormat) {
           return getDateFormatter().formatDateCustomFormat(
             value,
-            locale,
             displayFormat,
-            leadingZero
+            { locale, forceLeadingZero: leadingZero }
           );
         }
     }
 
-    if (leadingZero) {
+    if (leadingZero && !displayFormat) {
       options = {
         day: '2-digit',
         month: '2-digit',

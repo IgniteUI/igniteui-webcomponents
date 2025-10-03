@@ -55,14 +55,16 @@ export const checkSelectedRange = (
       ? DateTimeUtil.formatDisplayDate(
           expectedValue.start,
           picker.locale,
-          picker.displayFormat
+          picker.displayFormat,
+          picker.alwaysLeadingZero
         )
       : '';
     const end = expectedValue?.end
       ? DateTimeUtil.formatDisplayDate(
           expectedValue.end,
           picker.locale,
-          picker.displayFormat
+          picker.displayFormat,
+          picker.alwaysLeadingZero
         )
       : '';
     expect(input.value).to.equal(`${start} - ${end}`);

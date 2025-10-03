@@ -1,3 +1,4 @@
+import { getDateFormatter } from 'igniteui-i18n-core';
 import { html, nothing, type TemplateResult } from 'lit';
 import {
   property,
@@ -238,6 +239,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
   private _max: Date | null = null;
   private _disabledDates: DateRangeDescriptor[] = [];
   private _dateConstraints: DateRangeDescriptor[] = [];
+  private _defaultDisplayFormat!: string;
   private _displayFormat?: string;
   private _inputFormat?: string;
   private _placeholder?: string;
@@ -460,8 +462,10 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
     this._updateMaskedRangeValue();
   }
 
-  public get displayFormat(): string | undefined {
-    return this._displayFormat;
+  public get displayFormat(): string {
+    return (
+      this._displayFormat ?? this._inputFormat ?? this._defaultDisplayFormat
+    );
   }
 
   /**
@@ -666,6 +670,19 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
   @watch('locale')
   protected _updateDefaultMask(): void {
     this._defaultMask = DateTimeUtil.getDefaultInputMask(this.locale);
+    this._defaultDisplayFormat = getDateFormatter().getLocaleDateTimeFormat(
+      this.locale,
+      this.alwaysLeadingZero
+    );
+    this._updateMaskedRangeValue();
+  }
+
+  @watch('alwaysLeadingZero')
+  protected _setAlwaysLeadingZero(): void {
+    this._defaultDisplayFormat = getDateFormatter().getLocaleDateTimeFormat(
+      this.locale,
+      this.alwaysLeadingZero
+    );
     this._updateMaskedRangeValue();
   }
 
@@ -1156,6 +1173,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
         aria-haspopup="dialog"
         input-format=${ifDefined(this._inputFormat)}
         display-format=${ifDefined(format)}
+        ?always-leading-zero=${this.alwaysLeadingZero}
         ?disabled=${this.disabled}
         ?readonly=${readOnly}
         .value=${value ?? null}
