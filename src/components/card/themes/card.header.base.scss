@@ -17,7 +17,8 @@
     opacity: inherit;
 }
 
-::slotted(igc-avatar) {
+::slotted([slot='thumbnail']),
+::slotted(igc-avatar[slot='thumbnail']) {
     --ig-size: 1;
 }
 
