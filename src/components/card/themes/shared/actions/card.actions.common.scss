@@ -1,0 +1,8 @@
+@use 'styles/utilities' as *;
+@use '../../light/themes' as *;
+
+$theme: $base;
+
+:host {
+    color: var-get($theme, 'actions-text-color');
+}
