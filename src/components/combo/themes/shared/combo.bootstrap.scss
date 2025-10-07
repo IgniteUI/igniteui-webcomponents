@@ -79,8 +79,10 @@ $dropdown-theme: dropdown-theme.$bootstrap;
 
         &:focus,
         &:focus-within {
+            border-block-end: rem(2px) solid color(primary, 500);
+
             [part~='case-icon'] {
-                border-block-end: rem(1px) solid color(primary, 500);
+                border: none;
             }
         }
     }

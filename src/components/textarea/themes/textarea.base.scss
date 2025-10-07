@@ -27,7 +27,6 @@
     position: relative;
     max-width: 100%;
     font-size: rem(16px);
-    min-height: var(--textarea-height);
 
     &:hover {
         cursor: pointer;
@@ -44,7 +43,6 @@ textarea {
     padding-inline-start: 0;
     width: 100%;
     min-width: 0;
-    min-height: var(--textarea-height);
     height: auto;
     outline-style: none;
     box-shadow: none;

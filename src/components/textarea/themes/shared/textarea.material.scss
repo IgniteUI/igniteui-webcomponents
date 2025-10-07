@@ -11,15 +11,10 @@ $input-bottom-padding: rem(6px);
     --component-size: var(--ig-size, #{var-get($theme, 'default-size')});
     --affix-padding: #{pad-inline(rem(12px), rem(14px), rem(16px))};
     --outlined-top-padding: #{sizable(rem(8px), rem(12px), rem(16px))};
-    --textarea-height: calc((var(--ig-subtitle-1-line-height) * 3) + var(--outlined-top-padding));
 
     ::part(helper-text) {
         grid-auto-rows: minmax(rem(18px), auto);
         padding-inline: pad-inline(rem(12px), rem(14px), rem(16px));
-    }
-
-    [part~='container'] {
-        --textarea-height: calc((var(--ig-subtitle-1-line-height) * 3));
     }
 }
 
@@ -32,7 +27,6 @@ textarea {
     flex-grow: 1;
     position: relative;
     max-width: inherit;
-    min-height: var(--textarea-height);
     padding-inline: pad-inline(rem(4px));
     z-index: 1;
 }
@@ -69,9 +63,15 @@ textarea {
 }
 
 :host(:not([outlined])) {
-    [part~='container'] {
-        --box-bottom-padding: #{rem(2px)};
+    [part~='container']:not([part~='labelled']) {
+        --box-top-padding: #{sizable(rem(8px), rem(12px), rem(16px))};
+    }
 
+    [part~='labelled'] {
+        --box-top-padding: #{sizable(rem(16px), rem(20px), rem(24px))};
+    }
+
+    [part~='container'] {
         overflow: hidden;
         border-start-start-radius: var-get($theme, 'box-border-radius');
         border-start-end-radius: var-get($theme, 'box-border-radius');
@@ -88,27 +88,7 @@ textarea {
         }
 
         textarea {
-            margin-block: pad-block(var(--box-top-padding)) var(--box-bottom-padding);
-            min-height: var(--textarea-height);
-        }
-    }
-
-    [part~='container']:not([part~='labelled']) {
-        --box-top-padding: #{sizable(rem(8px), rem(12px), rem(16px))};
-        --textarea-height: #{calc(rem(80px) + var(--box-top-padding))};
-
-
-        textarea {
-            --textarea-height: #{calc(rem(80px) - var(--box-bottom-padding))};
-        }
-    }
-
-    [part~='labelled'] {
-        --box-top-padding: #{sizable(rem(16px), rem(20px), rem(24px))};
-        --textarea-height: #{calc((var(--ig-subtitle-1-line-height) * 3) + var(--box-top-padding))};
-
-        textarea {
-            --textarea-height: #{calc((var(--ig-subtitle-1-line-height) * 3) - var(--box-bottom-padding))};
+            margin-block: pad-block(var(--box-top-padding)) rem(2px);
         }
     }
 

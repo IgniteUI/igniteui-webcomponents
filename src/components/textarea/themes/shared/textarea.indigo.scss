@@ -10,8 +10,6 @@ $theme: $indigo;
     --component-size: var(--ig-size, #{var-get($theme, 'default-size')});
     --input-icon: #{sizable(rem(14px), rem(16px), rem(16px))};
     --affix-padding: #{pad-inline(rem(2px), rem(4px), rem(6px))};
-    --block-padding: #{sizable(rem(4px), rem(6px), rem(8px))};
-    --textarea-height: calc((var(--ig-body-2-line-height) * 3) + var(--block-padding));
 
     ::slotted(igc-icon) {
         --size: var(--input-icon) !important;
@@ -90,7 +88,7 @@ $theme: $indigo;
 textarea {
     @include type-style('body-2');
 
-    padding-block: pad-block(var(--block-padding)) 0;
+    padding-block: pad-block(rem(4px), rem(6px), rem(8px)) 0;
     padding-inline: pad-inline(rem(2px), rem(4px), rem(6px));
     margin-block-end: pad-block(rem(1px));
 
