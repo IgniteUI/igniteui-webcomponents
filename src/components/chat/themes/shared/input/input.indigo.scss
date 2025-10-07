@@ -1,0 +1,32 @@
+@use 'styles/utilities' as *;
+@use '../../light/themes' as *;
+
+$theme: $indigo;
+
+igc-textarea::part(input) {
+    max-height: rem(140px);
+}
+
+[part~='input-container'] {
+    border-radius: rem(13px);
+}
+
+[part~='dragging'] {
+    igc-textarea::part(container) {  
+        background: var-get($theme, 'box-background-hover');
+
+        &::after {
+            border-block-end-color: var-get($theme, 'focused-bottom-line-color');
+        }
+    }
+
+    igc-textarea::part(input) {
+        color: var-get($theme, 'focused-text-color');
+    }
+}
+
+[part='attachment-wrapper'] {
+    igc-chip {
+        --ig-size: 1;
+    }
+}

@@ -1,0 +1,76 @@
+@use 'styles/common/component';
+@use 'styles/utilities' as *;
+
+:host {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    padding-block: rem(16px);
+    justify-content: center;
+    grid-column: 2 / 3;
+}
+
+[part~='input-container'] {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    margin-inline: rem(24px);
+    border-radius: rem(4px);
+    padding: rem(16px);
+    gap: rem(12px);
+}
+
+[part='actions-container'] {
+    display: flex;
+    align-items: center;
+}
+
+[part='send-button-container'] {
+    margin-inline-start: auto;
+}
+
+[part='file-upload-container'] {
+    position: relative;
+    display: inline-block;
+
+    input {
+        position: absolute;
+        width: 0;
+        aspect-ratio: 1;
+        inset: 0;
+        opacity: 0;
+    }
+}
+
+[part='attachments'] {
+    display: flex;
+    flex-wrap: wrap;
+    gap: rem(8px);
+}
+
+[part='attachment-wrapper'] {
+    min-width: rem(90px);
+    max-width: fit-content;
+    flex: 1 1;
+
+    igc-chip {
+        --ig-size: 2;
+    }
+}
+
+igc-textarea::part(input) {
+    // maximum eight lines
+    max-height: rem(216px);
+    overflow-y: auto;
+}
+
+igc-icon-button,
+igc-textarea {
+    --ig-size: 2;
+}
+
+@container (max-width: 400px) {
+    [part~='input-container'] {
+        margin-inline: rem(12px);
+    }
+}

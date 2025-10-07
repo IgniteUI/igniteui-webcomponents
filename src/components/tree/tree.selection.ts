@@ -141,7 +141,9 @@ export class IgcTreeSelectionService {
       return;
     }
 
-    items.forEach((item: IgcTreeItemComponent) => this.itemSelection.add(item));
+    for (const item of items) {
+      this.itemSelection.add(item);
+    }
 
     this.updateItemsState(oldSelection);
   }
@@ -165,9 +167,9 @@ export class IgcTreeSelectionService {
     if (!items) {
       this.itemSelection.clear();
     } else {
-      items.forEach((item: IgcTreeItemComponent) =>
-        this.itemSelection.delete(item)
-      );
+      for (const item of items) {
+        this.itemSelection.delete(item);
+      }
     }
 
     this.updateItemsState(oldSelection);

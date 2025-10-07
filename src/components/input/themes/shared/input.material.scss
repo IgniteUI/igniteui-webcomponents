@@ -20,12 +20,12 @@ $fs: rem(16px) !default;
     align-items: center;
     width: max-content;
     height: 100%;
-    padding-inline: pad-inline(rem(12px), rem(14px), rem(16px));
 }
 
 :host {
     --component-size: var(--ig-size, #{var-get($theme, 'default-size')});
     --input-size: var(--component-size);
+    --affix-padding: #{pad-inline(rem(12px), rem(14px), rem(16px))};
 
     input:placeholder-shown + [part='notch'] {
         @extend %floated-styles;
@@ -57,7 +57,7 @@ input:placeholder-shown + [part='notch'] [part='label'],
 [part~='input'] {
     color: var-get($theme, 'filled-text-color');
     background: transparent;
-    padding: 0 rem(4px);
+    padding: 0 pad-inline(rem(4px));
     font-size: rem(16px);
     grid-area: 1 / 2 / span 1 / span 2;
 }
@@ -104,7 +104,7 @@ input:placeholder-shown + [part='notch'] [part='label'],
     min-width: 0;
     height: 100%;
     grid-area: 1 / 2;
-    padding: 0 rem(4px);
+    padding: 0 pad-inline(rem(4px));
     overflow: visible;
 
     &:empty {
@@ -145,6 +145,8 @@ input:placeholder-shown + [part='notch'] [part='label'],
 :host(:not([readonly]):focus-within) {
     [part='label'] {
         @include type-style('caption');
+
+        translate: 0 -73%;
     }
 }
 
@@ -256,8 +258,12 @@ input:placeholder-shown + [part='notch'] [part='label'],
             opacity: 1;
         }
     }
+}
 
+:host(:not([outlined],[aria-haspopup='dialog'],[role='combobox'])[readonly]:focus-within) {
     [part='label'] {
+        @include type-style('caption');
+
         translate: 0 -73%;
     }
 }
@@ -319,8 +325,8 @@ input:placeholder-shown + [part='notch'] [part='label'],
 
 :host([outlined][type='search']) {
     [part~='labelled'] [part~='input'] {
-        padding-top: rem(20px);
-        padding-bottom: rem(6px);
+        padding-top: pad-block(rem(20px));
+        padding-bottom: pad-block(rem(6px));
     }
 }
 
@@ -499,6 +505,14 @@ input:placeholder-shown + [part='notch'] [part='label'],
         border: {
             width: $active-border-width;
             color: var-get($theme, 'focused-border-color');
+        }
+    }
+
+    input:placeholder-shown + [part='notch'],
+    [part~='filled'] + [part='notch'] {
+        border: {
+            width: $active-border-width;
+            color: var-get($theme, 'focused-border-color');
             top: $idle-border-width solid transparent;
         }
     }
@@ -524,6 +538,16 @@ input:placeholder-shown + [part='notch'] [part='label'],
     }
 }
 
+:host(:not([type='search'],[aria-haspopup='dialog'],[role='combobox'])[outlined]:focus-within) {
+    [part='notch'] {
+        border: {
+            width: $active-border-width;
+            color: var-get($theme, 'focused-border-color');
+            top: $idle-border-width solid transparent;
+        }
+    }
+}
+
 :host(:not([type='search'])[outlined]:focus),
 :host(:not([type='search'])[outlined]:focus-within) {
     [part='suffix'] {
@@ -537,7 +561,7 @@ input:placeholder-shown + [part='notch'] [part='label'],
     [part='suffix'],
     [part='prefix'] {
         ::slotted(*) {
-            padding-block: pad-block(10px, 12px, 14px);
+            padding-block: pad-block(rem(10px), rem(12px), rem(14px));
         }
     }
 }

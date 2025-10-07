@@ -2,8 +2,6 @@ import { html, nothing } from 'lit';
 import { property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
-
-import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { createFormValueState } from '../common/mixins/forms/form-value.js';
 import { partMap } from '../common/part-map.js';
@@ -12,7 +10,7 @@ import type { MaskInputValueMode } from '../types.js';
 import IgcValidationContainerComponent from '../validation-container/validation-container.js';
 import {
   IgcMaskInputBaseComponent,
-  type MaskRange,
+  type MaskSelection,
 } from './mask-input-base.js';
 import { maskValidators } from './validators.js';
 
@@ -44,9 +42,11 @@ export default class IgcMaskInputComponent extends IgcMaskInputBaseComponent {
   public static readonly tagName = 'igc-mask-input';
 
   /* blazorSuppress */
-  public static register() {
+  public static register(): void {
     registerComponent(IgcMaskInputComponent, IgcValidationContainerComponent);
   }
+
+  //#region Internal attributes and properties
 
   protected override get __validators() {
     return maskValidators;
@@ -56,116 +56,109 @@ export default class IgcMaskInputComponent extends IgcMaskInputBaseComponent {
     initialValue: '',
     transformers: {
       setFormValue: (value) =>
-        this._isRawMode ? value || null : this.maskedValue || null,
+        this._isRawMode ? value || null : this._maskedValue || null,
     },
   });
 
-  protected get _isRawMode() {
+  protected get _isRawMode(): boolean {
     return this.valueMode === 'raw';
   }
+
+  //#endregion
+
+  //#region Public attributes and properties
 
   /**
    * Dictates the behavior when retrieving the value of the control:
    *
    * - `raw` will return the clean user input.
    * - `withFormatting` will return the value with all literals and prompts.
+   *
    * @attr value-mode
+   * @default 'raw'
    */
   @property({ attribute: 'value-mode' })
   public valueMode: MaskInputValueMode = 'raw';
 
+  /* @tsTwoWayProperty(true, "igcChange", "detail", false) */
   /**
    * The value of the input.
    *
    * Regardless of the currently set `value-mode`, an empty value will return an empty string.
+   *
    * @attr
    */
+  @property()
+  public set value(string: string) {
+    const value = string ?? '';
+    this._maskedValue = this._parser.apply(value);
+    this._updateMaskedValue();
+    this._formValue.setValueAndFormState(value);
+  }
+
   public get value(): string {
     const value = this._formValue.value;
 
     if (this._isRawMode) {
       return value;
     }
-    return value ? this.maskedValue : value;
-  }
-
-  /* @tsTwoWayProperty(true, "igcChange", "detail", false) */
-  @property()
-  public set value(string: string) {
-    const value = string ?? '';
-    this.maskedValue = this.parser.apply(value);
-    this.updateMaskedValue();
-    this._formValue.setValueAndFormState(value);
+    return value ? this._maskedValue : value;
   }
 
   /**
-   * The mask pattern to apply on the input.
+   * The masked pattern of the component.
+   *
    * @attr
+   * @default 'CCCCCCCCCC'
    */
   @property()
-  public get mask(): string {
-    return this._mask;
-  }
-
-  /** The mask pattern to apply on the input. */
-  public set mask(value: string) {
-    this._mask = value;
-    this.parser.mask = value;
+  public override set mask(value: string) {
+    super.mask = value;
     if (this.value) {
-      this.maskedValue = this.parser.apply(this._formValue.value);
+      this._maskedValue = this._parser.apply(this._formValue.value);
     }
   }
 
-  @watch('prompt')
-  protected promptChange() {
-    this.parser.prompt = this.prompt;
+  public override get mask(): string {
+    return super.mask;
+  }
+
+  /**
+   * The prompt symbol to use for unfilled parts of the mask pattern.
+   *
+   * @attr
+   * @default '_'
+   */
+  @property()
+  public override set prompt(value: string) {
+    super.prompt = value;
     if (this.value) {
-      this.maskedValue = this.parser.apply(this._formValue.value);
+      this._maskedValue = this._parser.apply(this._formValue.value);
     }
   }
 
-  protected override _restoreDefaultValue(): void {
-    const value = this.defaultValue as string;
-
-    this.maskedValue = this.parser.apply(value);
-    this.updateMaskedValue();
-    this._formValue.setValueAndFormState(value);
+  public override get prompt(): string {
+    return super.prompt;
   }
 
-  protected async updateInput(string: string, range: MaskRange) {
-    const { value, end } = this.parser.replace(
-      this.maskedValue,
-      string,
-      range.start,
-      range.end
-    );
+  //#endregion
 
-    this.maskedValue = value;
-    this._formValue.setValueAndFormState(this.parser.parse(value));
-    this.requestUpdate();
+  //#region Event handlers
 
-    if (range.start !== this.mask.length) {
-      this.emitEvent('igcInput', { detail: this.value });
-    }
-    await this.updateComplete;
-
-    this.input.setSelectionRange(end, end);
-  }
-
-  protected handleDragEnter() {
-    if (!this.focused && !this._formValue.value) {
-      this.maskedValue = this.emptyMask;
+  protected _handleDragEnter(): void {
+    if (!this._focused && !this._formValue.value) {
+      this._maskedValue = this._parser.emptyMask;
     }
   }
 
-  protected handleDragLeave() {
-    if (!this.focused) {
-      this.updateMaskedValue();
+  protected _handleDragLeave(): void {
+    if (!this._focused) {
+      this._updateMaskedValue();
     }
   }
 
-  protected async handleFocus() {
-    this.focused = true;
+  protected async _handleFocus(): Promise<void> {
+    this._focused = true;
 
     if (this.readOnly) {
       return;
@@ -173,33 +166,65 @@ export default class IgcMaskInputComponent extends IgcMaskInputBaseComponent {
 
     if (!this._formValue.value) {
       // In case of empty value, select the whole mask
-      this.maskedValue = this.emptyMask;
+      this._maskedValue = this._parser.emptyMask;
 
       await this.updateComplete;
       this.select();
     }
   }
 
-  protected override _handleBlur() {
-    this.focused = false;
-    this.updateMaskedValue();
+  protected override _handleBlur(): void {
+    this._focused = false;
+    this._updateMaskedValue();
     super._handleBlur();
   }
 
-  protected handleChange() {
+  protected _handleChange(): void {
     this._setTouchedState();
     this.emitEvent('igcChange', { detail: this.value });
   }
 
-  protected updateMaskedValue() {
-    if (this.maskedValue === this.emptyMask) {
-      this.maskedValue = '';
+  //#endregion
+
+  //#region Internal methods
+
+  protected override _restoreDefaultValue(): void {
+    const value = this.defaultValue as string;
+
+    this._maskedValue = this._parser.apply(value);
+    this._updateMaskedValue();
+    this._formValue.setValueAndFormState(value);
+  }
+
+  protected async _updateInput(
+    text: string,
+    { start, end }: MaskSelection
+  ): Promise<void> {
+    const result = this._parser.replace(this._maskedValue, text, start, end);
+
+    this._maskedValue = result.value;
+    this._formValue.setValueAndFormState(this._parser.parse(this._maskedValue));
+    this.requestUpdate();
+
+    if (start !== this.mask.length) {
+      this.emitEvent('igcInput', { detail: this.value });
+    }
+
+    await this.updateComplete;
+    this.input.setSelectionRange(result.end, result.end);
+  }
+
+  protected override _updateSetRangeTextValue(): void {
+    this.value = this._parser.parse(this._maskedValue);
+  }
+
+  private _updateMaskedValue(): void {
+    if (this._maskedValue === this._parser.emptyMask) {
+      this._maskedValue = '';
     }
   }
 
-  protected override _updateSetRangeTextValue() {
-    this.value = this.parser.parse(this.maskedValue);
-  }
+  //#endregion
 
   protected override renderInput() {
     return html`
@@ -207,25 +232,25 @@ export default class IgcMaskInputComponent extends IgcMaskInputBaseComponent {
         type="text"
         part=${partMap(this.resolvePartNames('input'))}
         name=${ifDefined(this.name)}
-        .value=${live(this.maskedValue)}
-        .placeholder=${live(this.placeholder ?? this.parser.escapedMask)}
+        .value=${live(this._maskedValue)}
+        .placeholder=${this.placeholder ?? this._parser.escapedMask}
         ?readonly=${this.readOnly}
         ?disabled=${this.disabled}
-        @dragenter=${this.handleDragEnter}
-        @dragleave=${this.handleDragLeave}
-        @dragstart=${this.handleDragStart}
+        @dragenter=${this._handleDragEnter}
+        @dragleave=${this._handleDragLeave}
+        @dragstart=${this._setMaskSelection}
         @blur=${this._handleBlur}
-        @focus=${this.handleFocus}
-        @cut=${this.handleCut}
-        @change=${this.handleChange}
-        @click=${this.handleClick}
-        @compositionstart=${this.handleCompositionStart}
-        @compositionend=${this.handleCompositionEnd}
-        @input=${this.handleInput}
+        @focus=${this._handleFocus}
+        @cut=${this._setMaskSelection}
+        @change=${this._handleChange}
+        @click=${this._handleClick}
+        @compositionstart=${this._handleCompositionStart}
+        @compositionend=${this._handleCompositionEnd}
+        @input=${this._handleInput}
         aria-describedby=${ifDefined(
           isEmpty(this._helperText) ? nothing : 'helper-text'
         )}
-        @keydown=${this.handleKeydown}
+        @keydown=${this._setMaskSelection}
       />
     `;
   }

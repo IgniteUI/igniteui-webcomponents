@@ -6,7 +6,8 @@
   "license": "SEE LICENSE IN LICENSE",
   "exports": {
     ".": "./src/index.js",
-    "./types": "./src/types.js"
+    "./types": "./src/types.js",
+    "./extras": "./src/extras/index.js"
   },
   "type": "module",
   "repository": {
@@ -52,20 +53,20 @@
     "prepare": "husky"
   },
   "dependencies": {
-    "@floating-ui/dom": "^1.7.2",
+    "@floating-ui/dom": "^1.7.4",
     "@lit-labs/virtualizer": "^2.1.1",
     "@lit/context": "^1.1.6",
     "lit": "^3.3.1"
   },
   "devDependencies": {
-    "@biomejs/biome": "~2.1.2",
-    "@custom-elements-manifest/analyzer": "^0.10.4",
+    "@biomejs/biome": "~2.2.5",
+    "@custom-elements-manifest/analyzer": "^0.10.10",
     "@igniteui/material-icons-extended": "^3.1.0",
     "@open-wc/testing": "^4.0.0",
-    "@storybook/addon-a11y": "^9.0.18",
-    "@storybook/addon-docs": "^9.0.18",
-    "@storybook/addon-links": "^9.0.18",
-    "@storybook/web-components-vite": "^9.0.18",
+    "@storybook/addon-a11y": "^9.1.10",
+    "@storybook/addon-docs": "^9.1.10",
+    "@storybook/addon-links": "^9.1.10",
+    "@storybook/web-components-vite": "^9.1.10",
     "@types/mocha": "^10.0.10",
     "@web/dev-server-esbuild": "^1.0.4",
     "@web/test-runner": "^0.20.2",
@@ -73,27 +74,27 @@
     "autoprefixer": "^10.4.21",
     "browser-sync": "^3.0.4",
     "cem-plugin-expanded-types": "^1.4.0",
-    "concurrently": "^9.2.0",
+    "concurrently": "^9.2.1",
     "custom-element-jet-brains-integration": "^1.7.0",
     "custom-element-vs-code-integration": "^1.5.0",
-    "globby": "^14.1.0",
+    "globby": "^15.0.0",
     "husky": "^9.1.7",
     "ig-typedoc-theme": "^6.2.3",
-    "igniteui-theming": "^19.2.1",
-    "keep-a-changelog": "^2.6.2",
-    "lint-staged": "^16.1.2",
+    "igniteui-theming": "^20.0.0",
+    "keep-a-changelog": "^2.7.1",
+    "lint-staged": "^16.2.3",
     "lit-analyzer": "^2.0.3",
     "madge": "^8.0.0",
     "node-watch": "^0.7.4",
-    "playwright": "^1.54.1",
+    "playwright": "^1.56.0",
     "postcss": "^8.5.6",
     "prettier": "^3.6.2",
     "rimraf": "^6.0.1",
-    "sass-embedded": "~1.78.0",
+    "sass-embedded": "~1.93.2",
     "sinon": "^21.0.0",
-    "storybook": "^9.0.18",
-    "stylelint": "^16.22.0",
-    "stylelint-config-standard-scss": "^15.0.1",
+    "storybook": "^9.1.10",
+    "stylelint": "^16.25.0",
+    "stylelint-config-standard-scss": "^16.0.0",
     "stylelint-prettier": "^5.0.3",
     "stylelint-scss": "^6.12.1",
     "ts-lit-plugin": "^2.0.2",
@@ -101,7 +102,13 @@
     "typedoc": "~0.27.9",
     "typedoc-plugin-localization": "^3.0.6",
     "typescript": "^5.8.3",
-    "vite": "^7.0.6"
+    "vite": "^7.1.9"
+  },
+  "peerDependencies": {
+    "dompurify": "^3.2.7",
+    "marked": "^16.4.0",
+    "marked-shiki": "^1.2.1",
+    "shiki": "^3.13.0"
   },
   "browserslist": [
     "defaults"

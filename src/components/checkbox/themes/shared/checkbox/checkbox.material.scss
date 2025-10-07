@@ -7,7 +7,7 @@ $theme: $material;
     ::part(helper-text) {
         @include type-style('caption');
 
-        margin-block-start: rem(8px);
+        margin-block-start: pad-block(rem(8px));
         grid-auto-rows: minmax(rem(18px), auto);
     }
 }
@@ -19,7 +19,7 @@ $theme: $material;
 [part~='control'] {
     // We expose that css variable to override the padding of
     // the checkbox control in components that we nest it in like List and Tree.
-    padding: var(--control-padding, rem(20px));
+    padding: pad(var(--control-padding, rem(20px)));
     transition: background .15s ease-in;
 
     &::after {

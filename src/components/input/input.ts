@@ -1,4 +1,4 @@
-import { html, nothing } from 'lit';
+import { html } from 'lit';
 import { property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
@@ -6,7 +6,7 @@ import { live } from 'lit/directives/live.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { createFormValueState } from '../common/mixins/forms/form-value.js';
 import { partMap } from '../common/part-map.js';
-import { isEmpty } from '../common/util.js';
+import { bindIf, isEmpty } from '../common/util.js';
 import type { InputType, RangeTextSelectMode } from '../types.js';
 import IgcValidationContainerComponent from '../validation-container/validation-container.js';
 import { IgcInputBaseComponent } from './input-base.js';
@@ -199,12 +199,6 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
   @property({ type: Boolean, reflect: true, attribute: 'validate-only' })
   public validateOnly = false;
 
-  /**
-   * @internal
-   */
-  @property({ type: Number })
-  public override tabIndex = 0;
-
   /* blazorSuppress */
   /** Replaces the selected text in the input. */
   public override setRangeText(
@@ -247,6 +241,9 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
   }
 
   protected renderInput() {
+    const hasNegativeTabIndex = this.getAttribute('tabindex') === '-1';
+    const hasHelperText = !isEmpty(this._helperText);
+
     return html`
       <input
         id=${this.inputId}
@@ -260,17 +257,15 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
         ?disabled=${this.disabled}
         ?required=${this.required}
         ?autofocus=${this.autofocus}
-        tabindex=${this.tabIndex}
+        tabindex=${bindIf(hasNegativeTabIndex, -1)}
         autocomplete=${ifDefined(this.autocomplete as any)}
         inputmode=${ifDefined(this.inputMode)}
-        min=${ifDefined(this.validateOnly ? undefined : this.min)}
-        max=${ifDefined(this.validateOnly ? undefined : this.max)}
+        min=${bindIf(!this.validateOnly, this.min)}
+        max=${bindIf(!this.validateOnly, this.max)}
         minlength=${ifDefined(this.minLength)}
-        maxlength=${ifDefined(this.validateOnly ? undefined : this.maxLength)}
+        maxlength=${bindIf(!this.validateOnly, this.maxLength)}
         step=${ifDefined(this.step)}
-        aria-describedby=${ifDefined(
-          isEmpty(this._helperText) ? nothing : 'helper-text'
-        )}
+        aria-describedby=${bindIf(hasHelperText, 'helper-text')}
         @change=${this.handleChange}
         @input=${this.handleInput}
         @blur=${this._handleBlur}

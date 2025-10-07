@@ -1,6 +1,7 @@
 import { createContext } from '@lit/context';
 import type { Ref } from 'lit/directives/ref.js';
 import type IgcCarouselComponent from '../carousel/carousel.js';
+import type { ChatState } from '../chat/chat-state.js';
 import type IgcTileManagerComponent from '../tile-manager/tile-manager.js';
 
 export type TileManagerContext = {
@@ -18,4 +19,14 @@ const tileManagerContext = createContext<TileManagerContext>(
   Symbol('tile-manager-context')
 );
 
-export { carouselContext, tileManagerContext };
+const chatContext = createContext<ChatState>(Symbol('chat-context'));
+const chatUserInputContext = createContext<ChatState>(
+  Symbol('chat-user-input-context')
+);
+
+export {
+  carouselContext,
+  tileManagerContext,
+  chatContext,
+  chatUserInputContext,
+};

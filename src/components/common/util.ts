@@ -1,4 +1,5 @@
-import { isServer } from 'lit';
+import { html, isServer, nothing, type TemplateResult } from 'lit';
+import type IgcFileInputComponent from '../file-input/file-input.js';
 
 export const asPercent = (part: number, whole: number) => (part / whole) * 100;
 
@@ -244,6 +245,29 @@ export function isObject(value: unknown): value is object {
   return value != null && typeof value === 'object';
 }
 
+export function isPlainObject(
+  value: unknown
+): value is Record<PropertyKey, unknown> {
+  if (!isObject(value)) {
+    return false;
+  }
+
+  const proto = Object.getPrototypeOf(value) as typeof Object.prototype | null;
+
+  const hasObjectPrototype =
+    proto === null ||
+    proto === Object.prototype ||
+    Object.getPrototypeOf(proto) === null;
+
+  return hasObjectPrototype
+    ? Object.prototype.toString.call(value) === '[object Object]'
+    : false;
+}
+
+function isUnsafeProperty(key: PropertyKey) {
+  return key === '__proto__' || key === 'constructor' || key === 'prototype';
+}
+
 export function isEventListenerObject(x: unknown): x is EventListenerObject {
   return isObject(x) && 'handleEvent' in x;
 }
@@ -478,3 +502,128 @@ export function equal<T>(a: unknown, b: T, visited = new WeakSet()): boolean {
 export type RequiredProps<T, K extends keyof T> = T & {
   [P in K]-?: T[P];
 };
+
+export function setStyles(
+  element: HTMLElement,
+  styles: Partial<CSSStyleDeclaration>
+): void {
+  merge(element.style, styles);
+}
+
+/**
+ * Merges the properties of `source` into `target` performing a recursive deep merge over POJOs and arrays.
+ *
+ * @remarks
+ * This function mutates the `target` object.
+ * If that is not the desired outcome, see {@link toMerged} for another approach.
+ */
+export function merge<
+  T extends Record<PropertyKey, any>,
+  S extends Record<PropertyKey, any>,
+>(target: T, source: S): T & S {
+  const sourceKeys = Object.keys(source) as Array<keyof S>;
+  const length = sourceKeys.length;
+
+  for (let i = 0; i < length; i++) {
+    const key = sourceKeys[i];
+
+    if (isUnsafeProperty(key)) {
+      continue;
+    }
+
+    const sourceValue = source[key];
+    const targetValue = target[key];
+
+    if (Array.isArray(sourceValue)) {
+      if (Array.isArray(targetValue)) {
+        target[key] = merge(targetValue, sourceValue);
+      } else {
+        target[key] = merge([], sourceValue);
+      }
+    } else if (isPlainObject(sourceValue)) {
+      if (isPlainObject(targetValue)) {
+        target[key] = merge(targetValue, sourceValue);
+      } else {
+        target[key] = merge({}, sourceValue);
+      }
+    } else if (targetValue === undefined || sourceValue !== undefined) {
+      target[key] = sourceValue;
+    }
+  }
+
+  return target;
+}
+
+/**
+ * Just like {@link merge} but it does not mutate the `target` object instead
+ * mutating a structured clone of it.
+ */
+export function toMerged<
+  T extends Record<PropertyKey, any>,
+  S extends Record<PropertyKey, any>,
+>(target: T, source: S): T & S {
+  return merge(structuredClone(target), source);
+}
+
+/**
+ * Similar to Lit's `ifDefined` directive except one can check `assertion`
+ * and bind a different `value` through this wrapper.
+ */
+export function bindIf<T>(assertion: unknown, value: T): NonNullable<T> {
+  return assertion
+    ? (value ?? (nothing as NonNullable<T>))
+    : (nothing as NonNullable<T>);
+}
+
+let pool: Uint8Array;
+let poolOffset: number;
+const urlAlphabet =
+  'useandom-26T198340PX75pxJACKVERYMINDBUSHWOLF_GQZbfghjklqvwyzrict';
+
+function fillPool(bytes: number): void {
+  if (!pool || pool.length < bytes) {
+    pool = new Uint8Array(new ArrayBuffer(bytes * 128));
+    crypto.getRandomValues(pool);
+    poolOffset = 0;
+  } else if (poolOffset + bytes > pool.length) {
+    crypto.getRandomValues(pool);
+    poolOffset = 0;
+  }
+  poolOffset += bytes;
+}
+
+export function nanoid(size = 21): string {
+  const bytes = size | 0;
+  fillPool(bytes);
+
+  let id = '';
+  for (let i = poolOffset - bytes; i < poolOffset; i++) {
+    id += urlAlphabet[pool[i] & 63];
+  }
+
+  return id;
+}
+
+export function hasFiles(
+  input: HTMLInputElement | IgcFileInputComponent
+): boolean {
+  return input.files != null && input.files.length > 0;
+}
+
+const trimmedCache = new WeakMap<TemplateStringsArray, TemplateStringsArray>();
+
+/** @internal */
+export function trimmedHtml(
+  strings: TemplateStringsArray,
+  ...values: unknown[]
+): TemplateResult {
+  if (!trimmedCache.has(strings)) {
+    const trimmedStrings = strings.map((s) => s.trim().replaceAll('\n', ''));
+    trimmedCache.set(
+      strings,
+      Object.assign([...trimmedStrings], { raw: [...strings.raw] })
+    );
+  }
+
+  return html(trimmedCache.get(strings)!, ...values);
+}

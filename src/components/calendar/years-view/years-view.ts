@@ -67,11 +67,7 @@ export default class IgcYearsViewComponent extends EventEmitterMixin<
     super();
 
     addThemingController(this, all);
-
-    addKeybindings(this, {
-      bindingDefaults: { preventDefault: true },
-    }).setActivateHandler(this.handleInteraction);
-
+    addKeybindings(this).setActivateHandler(this.handleInteraction);
     addSafeEventListener(this, 'click', this.handleInteraction);
   }
 

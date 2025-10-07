@@ -16,7 +16,7 @@ async function waitForPaint(popover: IgcPopoverComponent) {
 }
 
 function getFloater(popover: IgcPopoverComponent) {
-  return popover.shadowRoot!.querySelector('#container') as HTMLElement;
+  return popover.renderRoot.querySelector('#container') as HTMLElement;
 }
 
 function togglePopover() {
@@ -173,7 +173,6 @@ describe('Popover', () => {
         const root = await fixture<HTMLElement>(createNonSlottedPopover(true));
         popover = root.querySelector('igc-popover') as IgcPopoverComponent;
         anchor = root.querySelector('#btn') as HTMLButtonElement;
-        // await waitForPaint(popover);
       });
 
       it('should render a component', async () => {

@@ -10,13 +10,13 @@ $transition-duration: .25s;
     width: max-content;
     align-items: center;
     height: calc(100% - #{rem(1px)});
-    padding-inline: pad-inline(2px, 4px, 6px);
 }
 
 :host {
     --component-size: var(--ig-size, #{var-get($theme, 'default-size')});
     --input-size: var(--component-size);
     --input-icon: #{sizable(rem(14px), rem(16px), rem(18px))};
+    --affix-padding: #{pad-inline(rem(2px), rem(4px), rem(6px))};
 
     ::slotted(igc-icon) {
         --size: var(--input-icon) !important;
@@ -26,7 +26,7 @@ $transition-duration: .25s;
         @include type-style('caption');
 
         color: var-get($theme, 'helper-text-color');
-        margin-block-start: rem(4px);
+        margin-block-start: pad-block(rem(4px));
         grid-auto-rows: minmax(rem(15px), auto);
     }
 
@@ -125,8 +125,8 @@ $transition-duration: .25s;
     }
 }
 
-:host(:not([readonly]):hover),
-:host([readonly][role='combobox']:hover) {
+:host(:not([disabled],[readonly]):hover),
+:host(:not([disabled])[readonly][role='combobox']:hover) {
     [part~='filled'] {
         [part~='input'] {
             color: var-get($theme, 'filled-text-hover-color');

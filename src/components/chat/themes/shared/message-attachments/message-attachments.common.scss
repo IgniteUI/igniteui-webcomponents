@@ -1,0 +1,32 @@
+@use 'styles/utilities' as *;
+@use '../../light/themes' as *;
+
+$theme: $material;
+
+[part='attachment-header'],
+[part='attachment-content'],
+[part='attachment-content sent'] {
+    border: rem(1px) solid var-get($theme, 'image-border');
+}
+
+[part='attachment-header'] {
+    background: var-get($theme, 'image-background');
+    border-block-end: none;
+}
+
+[part~='attachment-content'] {
+    background: var-get($theme, 'file-background');
+}
+
+[part='attachment-content'] {
+    border-block-start: none;
+}
+
+[part~='attachment-icon'] {
+    color: var-get($theme, 'image-attachment-icon');
+}
+
+[part="file-attachment-icon"] {
+    --color: #{var-get($theme, 'file-icon-color')};
+    --accent-color: #{var-get($theme, 'file-icon-accent-color')};
+}

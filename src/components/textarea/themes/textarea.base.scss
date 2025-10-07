@@ -46,7 +46,7 @@ textarea {
     position: relative;
     display: block;
     border: none;
-    padding-block: rem(20px) rem(6px);
+    padding-block: pad-block(rem(20px)) pad-block(rem(6px));
     padding-inline-start: 0;
     width: 100%;
     min-width: 0;
@@ -78,7 +78,6 @@ textarea {
     width: max-content;
     align-items: center;
     height: 100%;
-    padding-inline: pad-inline(rem(8px), rem(12px), rem(16px));
     transition: color .25s $out-cubic, background .25s $out-cubic;
 
     igc-icon {
@@ -110,7 +109,7 @@ textarea {
     justify-content: space-between;
 
     > * {
-        margin-inline-end: rem(8px);
+        margin-inline-end: pad-inline(rem(8px));
 
         &:last-child {
             margin-inline-end: 0;
@@ -131,7 +130,7 @@ textarea {
             content: '*';
             font-size: inherit;
             vertical-align: top;
-            margin-inline-start: rem(2px);
+            margin-inline-start: pad-inline(rem(2px));
             display: inline-block;
         }
     }

@@ -18,7 +18,7 @@ $theme: $bootstrap;
         color: var-get($theme, 'helper-text-color');
         grid-auto-rows: minmax(rem(20px), auto);
         padding-inline-start: 0;
-	    margin-block-start: rem(4px)
+	    margin-block-start: pad-block(rem(4px));
     }
 }
 
@@ -58,4 +58,30 @@ $theme: $bootstrap;
 
 [part='actions'] {
     min-height: #{sizable(rem(47px), rem(54px), rem(64px))};
+}
+
+:host(:not([disabled])),
+:host(:not(:disabled)) {
+    ::slotted([slot^='prefix-']),
+    [part|='calendar-icon'] {
+        border-inline-start: rem(1px) solid var(--border-color);
+    }
+
+    ::slotted([slot^='suffix-']),
+    [part|='clear-icon'] {
+        border-inline-end: rem(1px) solid var(--border-color);
+    }
+}
+
+:host(:disabled),
+:host([disabled]) {
+    ::slotted([slot^='prefix-']),
+    [part|='calendar-icon'] {
+        border-inline-start: rem(1px) solid var(--disabled-border-color);
+    }
+
+    ::slotted([slot^='suffix-']),
+    [part|='clear-icon'] {
+        border-inline-end: rem(1px) solid var(--disabled-border-color);
+    }
 }
