@@ -3,18 +3,7 @@
 @use 'styles/utilities' as *;
 @use 'igniteui-theming/sass/animations/easings' as *;
 
-$base-scale-size: (
-    'large': rem(16px),
-    'medium': rem(19px),
-    'small': rem(22px)
-);
-
 :host {
-    --textarea-height: #{sizable(
-        rem(82px, map.get($base-scale-size, 'small')),
-        rem(82px, map.get($base-scale-size, 'medium')),
-        rem(82px, map.get($base-scale-size, 'large'))
-    )};
     --component-size: var(--ig-size, var(--ig-size-large));
 
     display: block;
@@ -62,16 +51,8 @@ textarea {
     overflow: auto;
     text-overflow: ellipsis;
 
-    /* resets typography styles */
-    line-height: normal;
-
     &::placeholder {
         opacity: 1;
-        line-height: normal;
-    }
-
-    &:not([type='*']) {
-        /* resets typography styles */
         line-height: normal;
     }
 }

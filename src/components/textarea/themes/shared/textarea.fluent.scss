@@ -10,6 +10,8 @@ $border-size: rem(1px);
     --component-size: var(--ig-size, #{var-get($theme, 'default-size')});
     --textarea-border-size: #{rem(1px)};
     --affix-padding: #{pad-inline(rem(8px), rem(10px), rem(14px))};
+    --block-padding: #{sizable(rem(6px), rem(10px), rem(14px))};
+    --textarea-height: calc((var(--ig-body-2-line-height) * 3) + var(--block-padding));
 
     ::part(helper-text) {
         grid-auto-rows: minmax(rem(18px), auto);
@@ -80,7 +82,7 @@ textarea {
     @include type-style('body-2');
 
     padding-inline: pad-inline(rem(8px));
-    padding-block: pad-block(rem(6px), rem(10px), rem(14px)) 0;
+    padding-block: pad-block(var(--block-padding)) 0;
 }
 
 :host([required]:not(:disabled)),

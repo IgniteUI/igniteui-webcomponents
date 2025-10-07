@@ -35,6 +35,12 @@ $dropdown-theme: dropdown-theme.$material;
     background: var-get($dropdown-theme, 'background-color');
     border-radius: var-get($dropdown-theme, 'border-radius');
 
+    igc-input,
+    igc-input::part(container),
+    igc-input::part(input) {
+        height: rem(38px);
+    }
+
     igc-input::part(container) {
         background: transparent;
         border-inline-start: 0;
