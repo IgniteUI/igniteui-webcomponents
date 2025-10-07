@@ -15,8 +15,9 @@
         --component-size: var(--combo-size) !important;
     }
 
-    > igc-input::part(input) {
-        text-overflow: ellipsis;
+    igc-input::part(input) {
+        @include ellipsis();
+
         cursor: pointer;
     }
 
