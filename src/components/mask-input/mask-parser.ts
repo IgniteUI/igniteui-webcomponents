@@ -104,6 +104,13 @@ export class MaskParser {
   }
 
   /**
+   * Returns the result of applying an empty string over the mask pattern.
+   */
+  public get emptyMask(): string {
+    return this.apply();
+  }
+
+  /**
    * Gets the unescaped mask string (the original format string).
    * If the mask has no escape sequences, then `mask === escapedMask`.
    */
