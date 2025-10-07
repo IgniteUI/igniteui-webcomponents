@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [6.3.2] - 2025-10-07
+### Added
+- #### Chat
+  - Updated markdown renderer code styles to integrate with the package theming [#1868](https://github.com/IgniteUI/igniteui-webcomponents/pull/1868)
+
+### Fixed
+- #### Card
+  - Consume colors from themes [#1871](https://github.com/IgniteUI/igniteui-webcomponents/pull/1871)
+  - Avatar size in card header [#1873](https://github.com/IgniteUI/igniteui-webcomponents/pull/1873)
+
 ## [6.3.1] - 2025-09-18
 ### Fixed
 - peerDependencies versions
@@ -1026,6 +1036,7 @@ Initial release of Ignite UI Web Components
 - Ripple component
 - Switch component
 
+[6.3.2]: https://github.com/IgniteUI/igniteui-webcomponents/compare/6.3.1...6.3.2
 [6.3.1]: https://github.com/IgniteUI/igniteui-webcomponents/compare/6.3.0...6.3.1
 [6.3.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/6.2.2...6.3.0
 [6.2.2]: https://github.com/IgniteUI/igniteui-webcomponents/compare/6.2.1...6.2.2
