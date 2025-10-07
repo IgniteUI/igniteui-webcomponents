@@ -379,7 +379,7 @@ export function roundByDPR(value: number): number {
 }
 
 export function scrollIntoView(
-  element?: HTMLElement,
+  element?: HTMLElement | null,
   config?: ScrollIntoViewOptions
 ): void {
   if (!element) {
@@ -514,6 +514,19 @@ export function equal<T>(a: unknown, b: T, visited = new WeakSet()): boolean {
   }
 
   return false;
+}
+
+/**
+ *  Escapes any potential regex syntax characters in a string, and returns a new string
+ *  that can be safely used as a literal pattern for the `RegExp()` constructor.
+ *
+ *  @remarks
+ *  Substitute with `RegExp.escape` once it has enough support:
+ *
+ * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/escape#browser_compatibility
+ */
+export function escapeRegex(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
 /** Required utility type for specific props */
