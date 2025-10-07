@@ -6,6 +6,7 @@ import { registerComponent } from '../common/definitions/register.js';
 import type { ContentOrientation } from '../types.js';
 import { all } from './themes/actions.js';
 import { styles } from './themes/card.actions.base.css.js';
+import { styles as shared } from './themes/shared/actions/card.actions.common.css.js';
 
 /** A container for card action items like buttons
  * @element igc-card-actions
@@ -16,7 +17,7 @@ import { styles } from './themes/card.actions.base.css.js';
  */
 export default class IgcCardActionsComponent extends LitElement {
   public static readonly tagName = 'igc-card-actions';
-  public static override styles = styles;
+  public static override styles = [styles, shared];
 
   /* blazorSuppress */
   public static register(): void {
