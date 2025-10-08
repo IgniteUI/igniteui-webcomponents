@@ -175,7 +175,7 @@ export default class IgcChatMessageComponent extends LitElement {
     const isSent = this.message.sender === this._state.currentUserId;
     const hasText = this.message.text.trim();
     const hasAttachments = !isEmpty(this.message.attachments ?? []);
-    const isTyping = this._state._isTyping;
+    const isTyping = this._state.options?.isTyping;
     const isLastMessage = this.message === this._state.messages.at(-1);
     const resourceStrings = this._state.resourceStrings!;
 
