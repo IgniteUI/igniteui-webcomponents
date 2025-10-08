@@ -69,6 +69,8 @@ export { default as IgcTreeItemComponent } from './components/tree/tree-item.js'
 export { default as IgcStepperComponent } from './components/stepper/stepper.js';
 export { default as IgcStepComponent } from './components/stepper/step.js';
 export { default as IgcTooltipComponent } from './components/tooltip/tooltip.js';
+export { default as IgcBreadcrumbsComponent } from './components/breadcrumb/breadcrumbs.js';
+export { default as IgcBreadcrumbComponent } from './components/breadcrumb/breadcrumb.js';
 
 // definitions
 export { defineComponents } from './components/common/definitions/defineComponents.js';
