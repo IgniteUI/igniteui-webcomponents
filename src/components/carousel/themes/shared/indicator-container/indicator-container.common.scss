@@ -3,10 +3,6 @@
 
 $theme: $material;
 
-[part~='base'] {
-    --indicator-active-color: #{var-get($theme, 'indicator-active-border-color')};
-}
-
 [part='base focused'] {
     --indicator-active-color: #{var-get($theme, 'indicator-focus-color')};
 
