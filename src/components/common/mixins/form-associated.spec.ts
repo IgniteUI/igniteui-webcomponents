@@ -181,7 +181,7 @@ describe('Form associated mixin tests', () => {
 
     expect(instance.checkValidity()).to.be.false;
     expect(hasValidityFlags(instance, 'valueMissing')).to.be.true;
-    expect(instance.validationMessage).to.equal(requiredValidator.message);
+    expect(instance.validationMessage).to.equal('This field is required');
   });
 });
 

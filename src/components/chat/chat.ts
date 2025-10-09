@@ -8,7 +8,7 @@ import IgcButtonComponent from '../button/button.js';
 import { chatContext, chatUserInputContext } from '../common/context.js';
 import { addSlotController, setSlots } from '../common/controllers/slot.js';
 import { registerComponent } from '../common/definitions/register.js';
-import { IgcChatResourceStringEN } from '../common/i18n/chat.resources.js';
+import { IgcChatResourceStringEN } from '../common/i18n/EN/chat.resources.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { isEmpty } from '../common/util.js';

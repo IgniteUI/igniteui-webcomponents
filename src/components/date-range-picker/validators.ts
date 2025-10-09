@@ -1,7 +1,7 @@
 import { calendarRange, isDateInRanges } from '../calendar/helpers.js';
 import { CalendarDay } from '../calendar/model.js';
 import type { DateRangeDescriptor } from '../calendar/types.js';
-import messages from '../common/localization/validation-en.js';
+import { validationResourcesKeys } from '../common/i18n/utils.js';
 import { formatString, isEmpty } from '../common/util.js';
 import type { Validator } from '../common/validators.js';
 import type IgcDateRangePickerComponent from './date-range-picker.js';
@@ -12,7 +12,8 @@ export const minDateRangeValidator: Validator<{
   min?: Date | null;
 }> = {
   key: 'rangeUnderflow',
-  message: ({ min }) => formatString(messages.min, min),
+  messageResourceKey: validationResourcesKeys.min,
+  messageFormat: (message, { min }) => formatString(message, min),
   isValid: ({ value, min }) => {
     if (!min) {
       return true;
@@ -31,7 +32,8 @@ export const maxDateRangeValidator: Validator<{
   max?: Date | null;
 }> = {
   key: 'rangeOverflow',
-  message: ({ max }) => formatString(messages.max, max),
+  messageResourceKey: validationResourcesKeys.max,
+  messageFormat: (message, { max }) => formatString(message, max),
   isValid: ({ value, max }) => {
     if (!max) {
       return true;
@@ -50,7 +52,7 @@ export const requiredDateRangeValidator: Validator<{
   value: DateRangeValue | null;
 }> = {
   key: 'valueMissing',
-  message: messages.required,
+  messageResourceKey: validationResourcesKeys.required,
   isValid: ({ required, value }) => {
     return required ? isCompleteDateRange(value) : true;
   },
@@ -62,7 +64,8 @@ export const badInputDateRangeValidator: Validator<{
   disabledDates?: DateRangeDescriptor[];
 }> = {
   key: 'badInput',
-  message: ({ value }) => formatString(messages.disabledDate, value),
+  messageResourceKey: validationResourcesKeys.disabledDate,
+  messageFormat: (message, { value }) => formatString(message, value),
   isValid: ({ value, disabledDates }) => {
     if (
       !isCompleteDateRange(value) ||
