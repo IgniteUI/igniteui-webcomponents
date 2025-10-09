@@ -82,16 +82,20 @@ $border-size: rem(1px);
 
 [part~='date'] {
     height: var-get($theme, 'size');
-    border-top: $border-size solid transparent;
-    border-bottom: $border-size solid transparent;
+    border-block: $border-size solid transparent;
 
     &[part~='range'],
     &[part~='range'][part~='preview'] {
         background: var-get($theme, 'date-selected-range-background');
-        border-top-style: solid;
-        border-bottom-style: solid;
-        border-top-color: var-get($theme, 'date-range-preview-border-color');
-        border-bottom-color: var-get($theme, 'date-range-preview-border-color');
+        border-block-style: solid;
+    }
+
+    &[part~='range'][part~='preview'] {
+        border-block-color: var-get($theme, 'date-range-preview-border-color');
+
+        &::after {
+            border-block-color: var-get($theme, 'date-range-preview-border-color');
+        }
     }
 
     &[part~='range'][part~='selected'][part~='first'],
@@ -100,15 +104,13 @@ $border-size: rem(1px);
     &[part~='range'][part~='preview'][part~='last'] {
         &::after {
             background: var-get($theme, 'date-selected-range-background');
-            border-color: transparent;
         }
     }
 
     &[part~='range'][part~='first'],
     &[part~='range'][part~='last'] {
         background: transparent;
-        border-top-color: transparent;
-        border-bottom-color: transparent;
+        border-block-color: transparent;
 
         &::before {
             height: var-get($theme, 'size');
@@ -127,8 +129,14 @@ $border-size: rem(1px);
     &[part~='range'][part~='preview'][part~='first'],
     &[part~='range'][part~='preview'][part~='last'] {
         background: transparent;
-        border-top-color: transparent;
-        border-bottom-color: transparent;
+        border-block-color: transparent;
+    }
+
+    &[part~='range'][part~='first']:not([part~='preview']),
+    &[part~='range'][part~='last']:not([part~='preview']) {
+        &::after {
+            border-block-color: transparent;
+        }
     }
 }
 
