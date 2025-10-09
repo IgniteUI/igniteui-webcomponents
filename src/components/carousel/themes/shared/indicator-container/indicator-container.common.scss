@@ -3,8 +3,16 @@
 
 $theme: $material;
 
+[part~='base'] {
+    --indicator-border-active-color: #{var-get($theme, 'indicator-active-border-color')};
+    --indicator-dot-active-color: #{var-get($theme, 'indicator-active-dot-color')};
+    --indicator-active-hover-color: #{var-get($theme, 'indicator-active-hover-dot-color')};
+}
+
 [part='base focused'] {
-    --indicator-active-color: #{var-get($theme, 'indicator-focus-color')};
+    --indicator-border-active-color: #{var-get($theme, 'indicator-focus-color')};
+    --indicator-dot-active-color: #{var-get($theme, 'indicator-focus-color')};
+    --indicator-active-hover-color: #{var-get($theme, 'indicator-focus-color')};
 
     ::slotted(div) {
         &::after {
