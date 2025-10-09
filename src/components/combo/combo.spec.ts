@@ -16,6 +16,7 @@ import { defineComponents } from '../common/definitions/defineComponents.js';
 import { first } from '../common/util.js';
 import {
   createFormAssociatedTestBed,
+  isFocused,
   simulateClick,
   simulateKeyboard,
 } from '../common/utils.spec.js';
@@ -187,16 +188,16 @@ describe('Combo', () => {
         ></igc-combo>`
       );
 
-      options = combo.shadowRoot!.querySelector(
+      options = combo.renderRoot.querySelector(
         '[part="list"]'
       ) as IgcComboListComponent;
-      input = combo.shadowRoot!.querySelector(
+      input = combo.renderRoot.querySelector(
         'igc-input#target'
       ) as IgcInputComponent;
-      searchInput = combo.shadowRoot!.querySelector(
+      searchInput = combo.renderRoot.querySelector(
         '[part="search-input"]'
       ) as IgcInputComponent;
-      list = combo.shadowRoot!.querySelector(
+      list = combo.renderRoot.querySelector(
         'igc-combo-list'
       ) as IgcComboListComponent;
     });
@@ -697,8 +698,8 @@ describe('Combo', () => {
       simulateKeyboard(options, endKey);
       await elementUpdated(combo);
 
-      const itms = items(combo);
-      expect(itms[itms.length - 1].active).to.be.true;
+      const _items = items(combo);
+      expect(_items[_items.length - 1].active).to.be.true;
     });
 
     it('should select the active item by pressing the Space key', async () => {
@@ -712,10 +713,70 @@ describe('Combo', () => {
       simulateKeyboard(options, spaceBar);
       await elementUpdated(combo);
 
-      const itms = items(combo);
-      expect(itms[1].active).to.be.true;
-      expect(itms[1].selected).to.be.true;
+      const _items = items(combo);
+      expect(_items[1].active).to.be.true;
+      expect(_items[1].selected).to.be.true;
       expect(combo.open).to.be.true;
+    });
+
+    it('should move focus to the filter input and the close the dropdown on subsequent Arrow Up keypress', async () => {
+      await combo.show();
+      await list.layoutComplete;
+
+      // Move active state to first item and focus to the dropdown
+      simulateKeyboard(searchInput, arrowDown);
+      await elementUpdated(combo);
+
+      expect(isFocused(list)).to.be.true;
+      expect(isFocused(searchInput)).to.be.false;
+
+      // Move focus to the search input
+      simulateKeyboard(list, arrowUp);
+      await elementUpdated(combo);
+
+      expect(isFocused(list)).to.be.false;
+      expect(isFocused(searchInput)).to.be.true;
+
+      simulateKeyboard(searchInput, arrowUp);
+      await elementUpdated(combo);
+
+      expect(combo.open).to.be.false;
+    });
+
+    it('should close the dropdown on Arrow Up when disable-filtering is set', async () => {
+      combo.disableFiltering = true;
+      await elementUpdated(combo);
+
+      await combo.show();
+      await list.layoutComplete;
+
+      // Activate first item
+      simulateKeyboard(list, arrowDown);
+      await elementUpdated(combo);
+
+      expect(isFocused(list)).to.be.true;
+
+      simulateKeyboard(list, arrowUp);
+      await elementUpdated(combo);
+
+      expect(combo.open).to.be.false;
+    });
+
+    it('should close the dropdown on Arrow Up in single-select mode', async () => {
+      combo.singleSelect = true;
+      await elementUpdated(combo);
+
+      await combo.show();
+      await list.layoutComplete;
+
+      // Activate first item
+      simulateKeyboard(list, arrowDown);
+      await elementUpdated(combo);
+
+      simulateKeyboard(list, arrowUp);
+      await elementUpdated(combo);
+
+      expect(combo.open).to.be.false;
     });
 
     it('should close the menu by pressing the Tab key', async () => {
@@ -1221,7 +1282,7 @@ describe('Combo', () => {
       });
     });
 
-    it('should be able to get the currently selected items by calling the `selectoin` getter', async () => {
+    it('should be able to get the currently selected items by calling the `selection` getter', async () => {
       combo.select([cities[0].id, cities[1].id, cities[2].id]);
       await elementUpdated(combo);
 
