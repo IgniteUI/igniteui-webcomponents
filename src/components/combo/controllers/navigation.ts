@@ -1,280 +1,261 @@
 import type { ReactiveController } from 'lit';
-
+import type { Ref } from 'lit/directives/ref.js';
+import {
+  addKeybindings,
+  altKey,
+  arrowDown,
+  arrowUp,
+  endKey,
+  enterKey,
+  escapeKey,
+  homeKey,
+  type KeyBindingOptions,
+  shiftKey,
+  spaceBar,
+  tabKey,
+} from '../../common/controllers/key-bindings.js';
+import type IgcInputComponent from '../../input/input.js';
 import type IgcComboListComponent from '../combo-list.js';
-import type { ComboHost, ComboRecord } from '../types.js';
+import type { ComboHost } from '../types.js';
 import type { DataController } from './data.js';
 
-const START_INDEX: Readonly<number> = -1;
+type ComboNavigationConfig = {
+  /** The primary input of the combo component. */
+  input: Ref<IgcInputComponent>;
+  /** The search input of the combo component. */
+  search: Ref<IgcInputComponent>;
+  /** The combo virtualized dropdown list. */
+  list: Ref<IgcComboListComponent>;
+};
 
-enum DIRECTION {
-  Up = -1,
-  Down = 1,
-}
+export class ComboNavigationController<T extends object> {
+  private _active = -1;
+  private _config: ComboNavigationConfig;
 
-export class NavigationController<T extends object>
-  implements ReactiveController
-{
-  protected hostHandlers = new Map(
-    Object.entries({
-      Escape: this.escape,
-    })
-  );
-
-  protected mainInputHandlers = new Map(
-    Object.entries({
-      Escape: this.escape,
-      ArrowUp: this.hide,
-      ArrowDown: this.mainInputArrowDown,
-      Tab: this.tab,
-      Enter: this.enter,
-    })
-  );
-
-  protected searchInputHandlers = new Map(
-    Object.entries({
-      Escape: this.escape,
-      ArrowUp: this.escape,
-      ArrowDown: this.inputArrowDown,
-      Tab: this.inputArrowDown,
-    })
-  );
-
-  protected listHandlers = new Map(
-    Object.entries({
-      ArrowDown: this.arrowDown,
-      ArrowUp: this.arrowUp,
-      ' ': this.space,
-      Enter: this.enter,
-      Escape: this.escape,
-      Tab: this.tab,
-      Home: this.home,
-      End: this.end,
-    })
-  );
-
-  protected _active = START_INDEX;
-
-  public get input() {
-    // @ts-expect-error protected access
-    return this.host.singleSelect ? this.host._input : this.host._searchInput;
-  }
-
-  public get dataState() {
-    return this.state.dataState;
-  }
-
-  public show() {
-    // @ts-expect-error protected access
-    this.host._show(true);
-  }
-
-  public hide() {
-    // @ts-expect-error protected access
-    this.host._hide(true);
-  }
-
-  public toggleSelect(index: number) {
-    // @ts-expect-error protected access
-    this.host.toggleSelect(index);
-  }
-
-  public select(index: number) {
-    // @ts-expect-error protected access
-    this.host.selectByIndex(index);
-  }
-
-  protected get currentItem() {
-    const item = this.active;
-    return item === START_INDEX ? START_INDEX : item;
-  }
-
-  protected get firstItem() {
-    return this.dataState.findIndex((i: ComboRecord<T>) => i.header !== true);
-  }
-
-  protected get lastItem() {
-    return this.dataState.length - 1;
-  }
-
-  protected scrollToActive(
-    container: IgcComboListComponent,
-    behavior: ScrollBehavior = 'auto'
-  ) {
-    container.element(this.active)?.scrollIntoView({
-      block: 'center',
-      behavior,
-    });
-
-    container.requestUpdate();
-  }
-
-  public get active() {
+  public get active(): number {
     return this._active;
   }
 
-  public set active(node: number) {
-    this._active = node;
-    this.host.requestUpdate();
+  public set active(value: number) {
+    this._active = value;
+    this.combo.requestUpdate();
   }
 
-  constructor(
-    protected host: ComboHost<T>,
-    protected state: DataController<T>
-  ) {
-    this.host.addController(this);
+  public get input(): IgcInputComponent {
+    return this._config.input.value!;
   }
 
-  protected home(container: IgcComboListComponent) {
-    this.active = this.firstItem;
-    this.scrollToActive(container, 'smooth');
+  public get searchInput(): IgcInputComponent {
+    return this._config.search.value!;
   }
 
-  protected end(container: IgcComboListComponent) {
-    this.active = this.lastItem;
-    this.scrollToActive(container, 'smooth');
+  public get list(): IgcComboListComponent {
+    return this._config.list.value!;
   }
 
-  protected space() {
-    if (this.active === START_INDEX) {
+  protected get _firstItem(): number {
+    return this.state.dataState.findIndex((rec) => !rec.header);
+  }
+
+  protected get _lastItem(): number {
+    return this.state.dataState.length - 1;
+  }
+
+  protected async _hide(): Promise<boolean> {
+    // @ts-expect-error: protected access
+    return await this.combo._hide(true);
+  }
+
+  protected async _show(): Promise<boolean> {
+    // @ts-expect-error: protected access
+    return await this.combo._show(true);
+  }
+
+  protected _toggleSelection(index: number): void {
+    // @ts-expect-error protected access
+    this.combo.toggleSelect(index);
+  }
+
+  protected _select(index: number): void {
+    // @ts-expect-error: protected access
+    this.combo.selectByIndex(index);
+  }
+
+  private _onSpace = (): void => {
+    if (this._active === -1) {
       return;
     }
 
-    const item = this.dataState[this.active];
-
+    const item = this.state.dataState[this._active];
     if (!item.header) {
-      this.toggleSelect(this.active);
+      this._toggleSelection(this._active);
     }
-  }
+  };
 
-  protected escape() {
-    this.hide();
-    this.host.focus();
-  }
-
-  protected enter() {
-    if (this.active === START_INDEX) {
+  private _onEnter = async (): Promise<void> => {
+    if (this._active === -1) {
       return;
     }
 
-    const item = this.dataState[this.active];
+    const item = this.state.dataState[this._active];
 
-    if (!item.header && this.host.singleSelect) {
-      this.select(this.active);
+    if (!item.header && this.combo.singleSelect) {
+      this._select(this.active);
     }
 
-    this.hide();
-    requestAnimationFrame(() => this.input.select());
-    this.host.focus();
-  }
-
-  protected inputArrowDown(container: IgcComboListComponent) {
-    container.focus();
-    this.arrowDown(container);
-  }
-
-  protected async mainInputArrowDown(container: IgcComboListComponent) {
-    this.show();
-    await container.updateComplete;
-
-    if (this.host.singleSelect) {
-      container.focus();
-      this.arrowDown(container);
+    if (await this._hide()) {
+      this.input.select();
+      this.combo.focus();
     }
-  }
+  };
 
-  protected tab() {
-    this.hide();
-    this.host.blur();
-  }
-
-  protected arrowDown(container: IgcComboListComponent) {
-    this.getNextItem(DIRECTION.Down);
-    this.scrollToActive(container);
-  }
-
-  protected arrowUp(container: IgcComboListComponent) {
-    this.getNextItem(DIRECTION.Up);
-    this.scrollToActive(container);
-  }
-
-  protected getNextItem(direction: DIRECTION) {
-    const next = this.getNearestItem(this.currentItem, direction);
-
-    if (next === -1) {
-      if (this.active === this.firstItem) {
-        this.input.focus();
-        this.active = START_INDEX;
+  private _onTab = async ({ shiftKey }: KeyboardEvent): Promise<void> => {
+    if (this.combo.open) {
+      if (shiftKey) {
+        // Move focus to the main input of the combo
+        // before the Shift+Tab behavior kicks in.
+        this.combo.focus();
       }
+      await this._hide();
+    }
+  };
+
+  private _onEscape = async (): Promise<void> => {
+    if (!this.combo.open) {
+      this.combo.clearSelection();
+    }
+
+    if (await this._hide()) {
+      this.input.focus();
+    }
+  };
+
+  private _onMainInputArrowDown = async (): Promise<void> => {
+    if (!this.combo.open && !(await this._show())) {
       return;
+    }
+
+    if (this.combo.singleSelect) {
+      this._onSearchArrowDown();
+    }
+  };
+
+  private _onSearchArrowDown = (): void => {
+    this.list.focus();
+    this._onArrowDown();
+  };
+
+  private _onHome = (): void => {
+    this.active = this._firstItem;
+    this._scrollToActive();
+  };
+
+  private _onEnd = (): void => {
+    this.active = this._lastItem;
+    this._scrollToActive();
+  };
+
+  private _onArrowUp = (): void => {
+    this._getNextItem(-1);
+    this._scrollToActive();
+  };
+
+  private _onArrowDown = (): void => {
+    this._getNextItem(1);
+    this._scrollToActive();
+  };
+
+  private _scrollToActive(behavior?: ScrollBehavior): void {
+    this.list.element(this.active)?.scrollIntoView({
+      block: 'center',
+      behavior: behavior ?? 'auto',
+    });
+
+    this.list.requestUpdate();
+  }
+
+  private _getNearestItem(start: number, delta: -1 | 1): number {
+    let index = start;
+    const items = this.state.dataState;
+
+    while (items[index + delta]?.header) {
+      index += delta;
+    }
+
+    index += delta;
+
+    return index >= 0 && index < items.length ? index : -1;
+  }
+
+  private _getNextItem(delta: -1 | 1): void {
+    const next = this._getNearestItem(this._active, delta);
+
+    if (next === -1 && this.active === this._firstItem) {
+      this.searchInput.checkVisibility() // Non single-select or disable-filtering combo configuration
+        ? this.searchInput.focus() // Delegate to search input handlers
+        : this._onEscape(); // Close dropdown and move focus back to main input
     }
 
     this.active = next;
   }
 
-  protected getNearestItem(startIndex: number, direction: number) {
-    let index = startIndex;
-    const items = this.dataState;
-
-    while (items[index + direction]?.header) {
-      index += direction;
-    }
-
-    index += direction;
-
-    if (index >= 0 && index < items.length) {
-      return index;
-    }
-    return -1;
-  }
-
-  public hostConnected() {}
-
-  public hostDisconnected() {
-    this.active = START_INDEX;
-  }
-
-  public navigateTo(item: T, container: IgcComboListComponent) {
-    this.active = this.dataState.indexOf(item as ComboRecord<T>);
-    this.scrollToActive(container, 'smooth');
-  }
-
-  public navigateHost(event: KeyboardEvent) {
-    if (this.hostHandlers.has(event.key)) {
-      event.preventDefault();
-      this.hostHandlers.get(event.key)!.call(this);
-    }
-  }
-
-  public navigateMainInput(
-    event: KeyboardEvent,
-    container: IgcComboListComponent
+  constructor(
+    protected combo: ComboHost<T>,
+    protected state: DataController<T>,
+    config: ComboNavigationConfig
   ) {
-    event.stopPropagation();
+    this.combo.addController(this as ReactiveController);
+    this._config = config;
 
-    if (this.mainInputHandlers.has(event.key)) {
-      event.preventDefault();
-      this.mainInputHandlers.get(event.key)!.call(this, container);
-    }
+    const bindingDefaults = {
+      triggers: ['keydownRepeat'],
+    } as KeyBindingOptions;
+
+    const skip = (): boolean => this.combo.disabled;
+
+    // Combo
+    addKeybindings(this.combo, { skip, bindingDefaults })
+      .set(tabKey, this._onTab, { preventDefault: false })
+      .set([shiftKey, tabKey], this._onTab, {
+        preventDefault: false,
+      })
+      .set(escapeKey, this._onEscape);
+
+    // Main input
+    addKeybindings(this.combo, {
+      skip,
+      ref: this._config.input,
+      bindingDefaults,
+    })
+      .set(arrowUp, async () => await this._hide())
+      .set([altKey, arrowDown], this._onMainInputArrowDown)
+      .set(arrowDown, this._onMainInputArrowDown)
+      .set(enterKey, this._onEnter);
+
+    // Search input
+    addKeybindings(this.combo, {
+      skip,
+      ref: this._config.search,
+      bindingDefaults,
+    })
+      .set(arrowUp, this._onEscape)
+      .set(arrowDown, this._onSearchArrowDown);
+
+    // List
+    addKeybindings(this.combo, {
+      skip,
+      ref: this._config.list,
+      bindingDefaults,
+    })
+      .set(arrowUp, this._onArrowUp)
+      .set(arrowDown, this._onArrowDown)
+      .set(homeKey, this._onHome)
+      .set(endKey, this._onEnd)
+      .set(spaceBar, this._onSpace)
+      .set(enterKey, this._onEnter);
   }
 
-  public navigateSearchInput(
-    event: KeyboardEvent,
-    container: IgcComboListComponent
-  ) {
-    event.stopPropagation();
-
-    if (this.searchInputHandlers.has(event.key)) {
-      event.preventDefault();
-      this.searchInputHandlers.get(event.key)!.call(this, container);
-    }
-  }
-
-  public navigateList(event: KeyboardEvent, container: IgcComboListComponent) {
-    event.stopPropagation();
-
-    if (this.listHandlers.has(event.key)) {
-      event.preventDefault();
-      this.listHandlers.get(event.key)!.call(this, container);
-    }
+  public hostDisconnected(): void {
+    this._active = -1;
   }
 }
