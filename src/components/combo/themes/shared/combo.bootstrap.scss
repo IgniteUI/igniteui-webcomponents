@@ -32,6 +32,12 @@ $dropdown-theme: dropdown-theme.$bootstrap;
     background: var-get($dropdown-theme, 'background-color');
     border-radius: var-get($dropdown-theme, 'border-radius');
 
+    igc-input,
+    igc-input::part(container),
+    igc-input::part(input) {
+        height: rem(28px);
+    }
+
     igc-input::part(container) {
         background: transparent;
         border-inline-start: 0;
@@ -67,13 +73,16 @@ $dropdown-theme: dropdown-theme.$bootstrap;
     [part='search-input'] {
         [part~='case-icon'] {
             border-block-end: rem(1px) solid color(gray, 400);
+            border-inline: none;
             transition: border 0.15s ease-out;
         }
 
         &:focus,
         &:focus-within {
+            border-block-end: rem(2px) solid color(primary, 500);
+
             [part~='case-icon'] {
-                border-block-end: rem(1px) solid color(primary, 500);
+                border: none;
             }
         }
     }

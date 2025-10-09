@@ -7,14 +7,12 @@ $theme: $bootstrap;
     @include type-style('body-1');
 
     --component-size: var(--ig-size, #{var-get($theme, 'default-size')});
-    --affix-padding: #{pad-inline(rem(10px), rem(12px), rem(12px))};
+    --affix-padding: #{pad-inline(rem(8px), rem(10px), rem(14px))};
 
     ::part(helper-text) {
         @include type-style('body-2');
 
-        color: var-get($theme, 'helper-text-color');
         grid-auto-rows: minmax(rem(20px), auto);
-        margin-block-start: pad-block(rem(4px));
     }
 
     ::slotted([slot="prefix"]),
@@ -98,8 +96,8 @@ textarea {
     @include type-style('body-1');
 
     border: rem(1px) solid var-get($theme, 'border-color');
-    padding-block: pad-block(rem(4px), rem(6px), rem(8px));
-    padding-inline: pad-inline(rem(8px), rem(12px), rem(16px));
+    padding-block: pad-block(rem(4px), rem(8px), rem(12px)) 0;
+    padding-inline: pad-inline(rem(8px), rem(10px), rem(14px));
     border-radius: var-get($theme, 'border-border-radius');
     z-index: 1;
     transition: box-shadow .15s ease-out, border .15s ease-out;

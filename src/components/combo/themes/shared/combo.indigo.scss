@@ -17,8 +17,6 @@ $dropdown-theme: dropdown-theme.$indigo;
     }
 
     ::part(helper-text) {
-        @include type-style('caption');
-
         margin-block-start: pad-block(rem(4px));
         grid-auto-rows: minmax(rem(15px), auto);
     }
@@ -72,7 +70,8 @@ $dropdown-theme: dropdown-theme.$indigo;
 }
 
 [part='filter-input'] {
-    padding: pad-inline(rem(12px));
+    padding-inline: pad-inline(rem(8px), rem(12px), rem(12px));
+    padding-block: pad-block(rem(12px));
 }
 
 :host(:focus-within) {

@@ -15,7 +15,7 @@ $transition-duration: .25s;
 :host {
     --component-size: var(--ig-size, #{var-get($theme, 'default-size')});
     --input-size: var(--component-size);
-    --input-icon: #{sizable(rem(14px), rem(16px), rem(18px))};
+    --input-icon: #{sizable(rem(14px), rem(16px), rem(16px))};
     --affix-padding: #{pad-inline(rem(2px), rem(4px), rem(6px))};
 
     ::slotted(igc-icon) {
@@ -23,10 +23,6 @@ $transition-duration: .25s;
     }
 
     ::part(helper-text) {
-        @include type-style('caption');
-
-        color: var-get($theme, 'helper-text-color');
-        margin-block-start: pad-block(rem(4px));
         grid-auto-rows: minmax(rem(15px), auto);
     }
 

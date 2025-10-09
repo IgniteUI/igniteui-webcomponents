@@ -22,6 +22,11 @@
         border-bottom-left-radius: 0;
         border-bottom-right-radius: 0;
     }
+
+    ::part(helper-text) {
+        @include type-style('caption');
+        @include line-clamp(2, true, true);
+    }
 }
 
 :host([required]) {
@@ -31,7 +36,7 @@
 }
 
 [part='label'] {
-    display: inline-block;
+    display: block;
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;
