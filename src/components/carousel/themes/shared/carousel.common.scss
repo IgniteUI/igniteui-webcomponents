@@ -28,6 +28,7 @@ igc-button::part(base) {
 igc-button::part(focused),
 igc-button::part(focused):hover {
     border: rem(2px) solid var-get($theme, 'button-focus-border-color');
+    background: var-get($theme, 'button-background');
     color: var-get($theme, 'button-focus-arrow-color');
 }
 
@@ -67,21 +68,25 @@ igc-button[disabled]::part(base) {
 
     &:hover {
         border-color: var-get($theme, 'indicator-active-border-color');
+
+        &::after {
+            background: var-get($theme, 'indicator-hover-dot-color');
+        }
     }
 }
 
 [part='dot active'] {
-    border: rem(2px) solid var(--indicator-active-color);
+    border: rem(2px) solid var(--indicator-border-active-color);
 
     &::after {
-        background: var(--indicator-active-color);
+        background: var(--indicator-dot-active-color);
     }
 
     &:hover {
-        border-color: var(--indicator-active-color);
+        border-color: var(--indicator-active-hover-color);
 
         &::after {
-            background: var(--indicator-active-color);
+            background: var(--indicator-active-hover-color);
         }
     }
 }
