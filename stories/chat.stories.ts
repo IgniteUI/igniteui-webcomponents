@@ -145,9 +145,10 @@ const chat_options: IgcChatOptions = {
   inputPlaceholder: 'Type your message here...',
   speakPlaceholder: 'Speak...',
   headerText: 'Chat',
-  sttOptions: {
+  speechToText: {
     enable: true,
     lang: 'en-US',
+    serviceProvider: 'webspeech', // 'webspeech' | 'backend'
     serviceUri: 'https://localhost:5000/sttHub',
   },
   renderers: {

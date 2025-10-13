@@ -165,12 +165,13 @@ export type IgcChatOptions = {
    * Configuration options for enabling and customizing speech-to-text functionality.
    * If provided, it enables a button in the chat input area that allows users to dictate messages using their voice.
    */
-  sttOptions?: SpeechToTextOptions;
+  speechToText?: SpeechToTextOptions;
 };
 
 export interface SpeechToTextOptions {
   enable: boolean;
   lang?: string;
+  serviceProvider: 'webspeech' | 'backend';
   serviceUri?: string;
 }
 /**

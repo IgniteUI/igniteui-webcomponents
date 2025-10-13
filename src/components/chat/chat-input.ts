@@ -15,7 +15,9 @@ import { bindIf, hasFiles, isEmpty, trimmedHtml } from '../common/util.js';
 import IgcIconComponent from '../icon/icon.js';
 import IgcTextareaComponent from '../textarea/textarea.js';
 import type { ChatState } from './chat-state.js';
-import { SttClient } from './extras/stt-client.js';
+import { BackendSttClient } from './extras/stt-client-backend.js';
+import type { ISttClient } from './extras/stt-client-base.js';
+import { WebSpeechSttClient } from './extras/stt-client-webspeech.js';
 import { styles } from './themes/input.base.css.js';
 import { all } from './themes/input.js';
 import { styles as shared } from './themes/shared/input/input.common.css.js';
@@ -113,7 +115,7 @@ export default class IgcChatInputComponent extends LitElement {
     return this._state.acceptedFileTypes;
   }
 
-  private _sttClient?: SttClient;
+  private _sttClient?: ISttClient;
 
   @property()
   isRecording = false;
@@ -175,20 +177,34 @@ export default class IgcChatInputComponent extends LitElement {
 
   async _toggleMic() {
     if (!this.isRecording) {
-      this._sttClient = new SttClient(
-        this._state.options?.sttOptions?.serviceUri!,
-        'this._state.host.sttToken',
-        this.onPulseSignal,
-        this.onStartCountdown,
-        this.onTranscript,
-        this.onStopInProgress,
-        this.onFinishedTranscribing
-      );
-      await this._sttClient.start(this._state.options?.sttOptions?.lang);
+      if (this._state.options?.speechToText?.serviceProvider === 'webspeech') {
+        this._sttClient = new WebSpeechSttClient(
+          this.onPulseSignal,
+          this.onStartCountdown,
+          this.onTranscript,
+          this.onStopInProgress,
+          this.onFinishedTranscribing
+        );
+      } else if (
+        this._state.options?.speechToText?.serviceProvider === 'backend' &&
+        this._state.options?.speechToText?.serviceUri
+      ) {
+        this._sttClient = new BackendSttClient(
+          this._state.options?.speechToText?.serviceUri!,
+          this.onPulseSignal,
+          this.onStartCountdown,
+          this.onTranscript,
+          this.onStopInProgress,
+          this.onFinishedTranscribing
+        );
+      } else {
+        // console.error('No STT service configured');
+      }
+
+      await this._sttClient.start(this._state.options?.speechToText?.lang);
       this.isRecording = true;
       this.isStopInProgress = false;
     } else {
-      this.isStopInProgress = true;
       this._sttClient?.stop();
     }
   }
@@ -401,7 +417,7 @@ export default class IgcChatInputComponent extends LitElement {
   }
 
   private _renderSpeechToTextButton() {
-    const sttEnabled = this._state.options?.sttOptions?.enable;
+    const sttEnabled = this._state.options?.speechToText?.enable;
 
     return html`${cache(
       sttEnabled
@@ -419,12 +435,12 @@ export default class IgcChatInputComponent extends LitElement {
             ${this.isRecording && !this.isStopInProgress
               ? html`
                   <svg class="countdown-ring" viewBox="0 0 36 36">
-                    <circle class="ring-bg" cx="18" cy="18" r="16"></circle>
+                    <circle class="ring-bg" cx="18" cy="18" r="14"></circle>
                     <circle
                       class="ring-progress"
                       cx="18"
                       cy="18"
-                      r="16"
+                      r="14"
                     ></circle>
                   </svg>
                 `

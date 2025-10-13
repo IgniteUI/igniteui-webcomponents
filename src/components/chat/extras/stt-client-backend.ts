@@ -1,32 +1,36 @@
 import * as signalR from '@microsoft/signalr';
+import { BaseSttClient } from './stt-client-base.js';
 
 const HUB_TRANSCRIBE_AUDIO_CHUNK = 'TranscribeAudioChunk';
 const HUB_RECEIVE_TRANSCRIPT = 'ReceiveTranscript';
 const HUB_COMPLETE_TRANSCRIBE = 'FinalizeTranscription';
-const SILENCE_TIMEOUT_MS = 4000;
-const SILENCE_GRACE_PERIOD = 1000;
 
-export class SttClient {
+export class BackendSttClient extends BaseSttClient {
   private hubConnection?: signalR.HubConnection;
   private mediaRecorder?: MediaRecorder;
-  private isRecording = false;
   private isStopInProgress = false;
   private isStopCompleted = false;
   private stopHubTimeout: any;
-  private silenceTimeout: any;
-  private silenceGraceTimeout: any;
-  private isAutoFinished = false;
-  private isCountdownRunning = false;
 
   constructor(
-    private hubUrl: string,
-    private token: string,
-    private onPulseSignal: () => void,
-    private onStartCountdown: (ms: number | null) => void,
-    private onTranscript: (text: string) => void,
-    private onStopInProgress: () => void,
-    private onFinishedTranscribing: (finish: string) => void
-  ) {}
+    hubUrl: string,
+    onPulseSignal: () => void,
+    onStartCountdown: (ms: number | null) => void,
+    onTranscript: (text: string) => void,
+    onStopInProgress: () => void,
+    onFinishedTranscribing: (finish: 'auto' | 'manual') => void
+  ) {
+    super(
+      onPulseSignal,
+      onStartCountdown,
+      onTranscript,
+      onStopInProgress,
+      onFinishedTranscribing
+    );
+    this.hubUrl = hubUrl;
+  }
+
+  private hubUrl: string;
 
   async start(language = 'en-US') {
     if (this.isRecording) {
@@ -103,11 +107,16 @@ export class SttClient {
     ) {
       const buffer = await data.arrayBuffer();
       const base64Audio = btoa(String.fromCharCode(...new Uint8Array(buffer)));
-      await this.hubConnection.invoke(
-        HUB_TRANSCRIBE_AUDIO_CHUNK,
-        base64Audio,
-        language
-      );
+      try {
+        await this.hubConnection.invoke(
+          HUB_TRANSCRIBE_AUDIO_CHUNK,
+          base64Audio,
+          language
+        );
+      } catch {
+        //report.error("STT invoke failed:", err); TOTO
+        this.stop();
+      }
     }
   }
 
@@ -140,8 +149,8 @@ export class SttClient {
 
   private createHubConnection() {
     const hubConnection = new signalR.HubConnectionBuilder()
-      .withUrl(this.hubUrl, { accessTokenFactory: () => this.token })
-      .configureLogging(signalR.LogLevel.Information)
+      .withUrl(this.hubUrl)
+      .configureLogging(signalR.LogLevel.Warning)
       .build();
 
     return hubConnection;
@@ -160,32 +169,6 @@ export class SttClient {
 
       this.onFinishedTranscribing(this.isAutoFinished ? 'auto' : 'manual');
       this.isAutoFinished = false;
-    }
-  }
-
-  private restartGracePeriod() {
-    if (this.silenceGraceTimeout) {
-      clearTimeout(this.silenceGraceTimeout);
-    }
-
-    this.silenceGraceTimeout = setTimeout(() => {
-      this.isCountdownRunning = true;
-      this.onStartCountdown(SILENCE_TIMEOUT_MS - SILENCE_GRACE_PERIOD);
-    }, SILENCE_GRACE_PERIOD);
-  }
-
-  private resetSilenceTimer() {
-    this.clearSilenceTimer();
-    this.silenceTimeout = setTimeout(() => {
-      this.isAutoFinished = true;
-      this.stop();
-    }, SILENCE_TIMEOUT_MS);
-  }
-
-  private clearSilenceTimer() {
-    if (this.silenceTimeout) {
-      clearTimeout(this.silenceTimeout);
-      this.silenceTimeout = null;
     }
   }
 }
