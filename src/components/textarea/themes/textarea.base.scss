@@ -16,6 +16,8 @@
     ::part(helper-text) {
         @include type-style('caption');
         @include line-clamp(2, true, true);
+
+        overflow-wrap: anywhere;
     }
 }
 
