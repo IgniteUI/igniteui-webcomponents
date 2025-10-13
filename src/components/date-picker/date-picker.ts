@@ -600,7 +600,6 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
 
   protected _handleDialogClosed(event: Event): void {
     event.stopPropagation();
-    this._oldValue = this.value;
   }
 
   //#endregion
