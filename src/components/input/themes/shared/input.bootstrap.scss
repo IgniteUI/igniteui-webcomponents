@@ -15,6 +15,7 @@ $theme: $bootstrap;
         @include type-style('body-2');
 
         grid-auto-rows: minmax(rem(20px), auto);
+        margin-block-start: pad-block(rem(4px));
     }
 
     [part='prefix'] {

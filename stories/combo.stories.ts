@@ -359,6 +359,11 @@ export const Form: Story = {
   argTypes: disableStoryControls(metadata),
   render: () => {
     return html`
+      <style>
+        fieldset {
+          min-width: 0;
+        }
+      </style>
       <form @submit=${formSubmitHandler}>
         <fieldset>
           <igc-combo

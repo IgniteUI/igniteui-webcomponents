@@ -12,6 +12,8 @@ $theme: $fluent;
 
     [part='label'] {
         @include type-style('subtitle-2');
+
+        margin-block-end: pad-block(rem(5px));
     }
 
     ::part(helper-text) {

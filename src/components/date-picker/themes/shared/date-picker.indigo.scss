@@ -22,6 +22,8 @@ $input-theme: input-theme.$indigo;
 
     [part~='label'] {
         @include type-style('caption');
+
+        margin-block-end: rem(4px);
     }
 
     ::part(helper-text) {
