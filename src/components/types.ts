@@ -22,6 +22,7 @@ export type TreeSelection = 'none' | 'multiple' | 'cascade';
 //#region component-specific
 export type AvatarShape = 'square' | 'circle' | 'rounded';
 export type BadgeShape = 'rounded' | 'square';
+export type BadgeSize = 'small' | 'medium' | 'large';
 export type ButtonGroupSelection = 'single' | 'single-required' | 'multiple';
 export type ButtonVariant = 'contained' | 'flat' | 'outlined' | 'fab';
 export type CarouselIndicatorsOrientation = 'end' | 'start';

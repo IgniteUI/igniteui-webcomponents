@@ -19,7 +19,7 @@ describe('Badge', () => {
     const el = await fixture<IgcBadgeComponent>(html`<igc-badge></igc-badge>`);
 
     expect(el).dom.to.equal(
-      `<igc-badge shape="rounded" variant="primary"></igc-badge>`
+      `<igc-badge shape="rounded" size="medium" variant="primary"></igc-badge>`
     );
   });
 
@@ -41,7 +41,7 @@ describe('Badge', () => {
     el.variant = 'success';
     await elementUpdated(el);
     expect(el).dom.to.equal(
-      `<igc-badge shape="rounded" variant="success"></igc-badge>`
+      `<igc-badge shape="rounded" size="medium" variant="success"></igc-badge>`
     );
   });
 
@@ -55,7 +55,7 @@ describe('Badge', () => {
     el.shape = 'rounded';
     await elementUpdated(el);
     expect(el).dom.to.equal(
-      `<igc-badge shape="rounded" variant="primary"></igc-badge>`
+      `<igc-badge shape="rounded" size="medium" variant="primary"></igc-badge>`
     );
   });
 
@@ -69,7 +69,44 @@ describe('Badge', () => {
     el.outlined = false;
     await elementUpdated(el);
     expect(el).dom.to.equal(
-      `<igc-badge shape="rounded" variant="primary"></igc-badge>`
+      `<igc-badge shape="rounded" size="medium" variant="primary"></igc-badge>`
     );
+  });
+
+  it('can change size', async () => {
+    const el = await fixture<IgcBadgeComponent>(
+      html`<igc-badge size="small"></igc-badge>`
+    );
+
+    expect(el.size).to.equal('small');
+
+    el.size = 'large';
+    await elementUpdated(el);
+    expect(el).dom.to.equal(
+      `<igc-badge shape="rounded" size="large" variant="primary"></igc-badge>`
+    );
+  });
+
+  it('can be a dot badge', async () => {
+    const el = await fixture<IgcBadgeComponent>(
+      html`<igc-badge dot></igc-badge>`
+    );
+
+    expect(el.dot).to.be.true;
+
+    el.dot = false;
+    await elementUpdated(el);
+    expect(el).dom.to.equal(
+      `<igc-badge shape="rounded" size="medium" variant="primary"></igc-badge>`
+    );
+  });
+
+  it('dot badge works with all variants', async () => {
+    const el = await fixture<IgcBadgeComponent>(
+      html`<igc-badge dot variant="success"></igc-badge>`
+    );
+
+    expect(el.dot).to.be.true;
+    expect(el.variant).to.equal('success');
   });
 });

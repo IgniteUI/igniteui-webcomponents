@@ -4,12 +4,40 @@
 :host {
     --size: #{rem(22px)};
     --_badge-size: var(--size);
+    --_badge-font-size: #{rem(12px)};
+    --_badge-icon-size: #{rem(12px)};
+    --_badge-padding: #{rem(4px)};
 
     width: fit-content;
     height: fit-content;
     display: inline-flex;
     font-weight: 500;
     vertical-align: top;
+}
+
+:host([size='small']) {
+    --size: #{rem(16px)};
+    --_badge-font-size: #{rem(10px)};
+    --_badge-icon-size: #{rem(10px)};
+    --_badge-padding: #{rem(2px)};
+}
+
+:host([size='medium']) {
+    --size: #{rem(22px)};
+    --_badge-font-size: #{rem(12px)};
+    --_badge-icon-size: #{rem(12px)};
+    --_badge-padding: #{rem(4px)};
+}
+
+:host([size='large']) {
+    --size: #{rem(28px)};
+    --_badge-font-size: #{rem(14px)};
+    --_badge-icon-size: #{rem(16px)};
+    --_badge-padding: #{rem(6px)};
+}
+
+:host([dot]) {
+    --size: #{rem(8px)};
 }
 
 [part='base'] {
@@ -22,14 +50,29 @@
     align-items: center;
     overflow: hidden;
     white-space: nowrap;
+    font-size: var(--_badge-font-size);
 }
 
 ::slotted(*) {
-    --size: calc(var(--_badge-size) / 2) !important;
+    --size: var(--_badge-icon-size) !important;
 }
 
-:host(:not(:empty)) [part='base'] {
-    padding-inline: rem(4px);
+::slotted(igc-icon) {
+    --size: var(--_badge-icon-size) !important;
+    --ig-icon-size: var(--_badge-icon-size);
+    --igx-icon-size: var(--_badge-icon-size);
+}
+
+:host(:not(:empty):not([dot])) [part='base'] {
+    padding-inline: var(--_badge-padding);
+}
+
+:host([dot]) [part='base'] {
+    min-width: var(--size);
+    max-width: var(--size);
+    min-height: var(--size);
+    max-height: var(--size);
+    padding: 0;
 }
 
 :host([variant='info']) [part='base'] {
