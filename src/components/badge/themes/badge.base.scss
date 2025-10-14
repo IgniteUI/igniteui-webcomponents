@@ -2,38 +2,48 @@
 @use 'styles/utilities' as *;
 
 :host {
-    --size: #{rem(22px)};
+    --_small-size: #{rem(16px)};
+    --_small-font-size: #{rem(10px)};
+    --_small-icon-size: #{rem(10px)};
+    --_small-padding: #{rem(2px)};
+    
+    --_medium-size: #{rem(22px)};
+    --_medium-font-size: #{rem(12px)};
+    --_medium-icon-size: #{rem(12px)};
+    --_medium-padding: #{rem(4px)};
+    
+    --_large-size: #{rem(28px)};
+    --_large-font-size: #{rem(14px)};
+    --_large-icon-size: #{rem(16px)};
+    --_large-padding: #{rem(6px)};
+
+    --size: calc(
+        (var(--_small-size) * var(--is-small)) +
+        (var(--_medium-size) * var(--is-medium)) +
+        (var(--_large-size) * var(--is-large))
+    );
     --_badge-size: var(--size);
-    --_badge-font-size: #{rem(12px)};
-    --_badge-icon-size: #{rem(12px)};
-    --_badge-padding: #{rem(4px)};
+    --_badge-font-size: calc(
+        (var(--_small-font-size) * var(--is-small)) +
+        (var(--_medium-font-size) * var(--is-medium)) +
+        (var(--_large-font-size) * var(--is-large))
+    );
+    --_badge-icon-size: calc(
+        (var(--_small-icon-size) * var(--is-small)) +
+        (var(--_medium-icon-size) * var(--is-medium)) +
+        (var(--_large-icon-size) * var(--is-large))
+    );
+    --_badge-padding: calc(
+        (var(--_small-padding) * var(--is-small)) +
+        (var(--_medium-padding) * var(--is-medium)) +
+        (var(--_large-padding) * var(--is-large))
+    );
 
     width: fit-content;
     height: fit-content;
     display: inline-flex;
     font-weight: 500;
     vertical-align: top;
-}
-
-:host([size='small']) {
-    --size: #{rem(16px)};
-    --_badge-font-size: #{rem(10px)};
-    --_badge-icon-size: #{rem(10px)};
-    --_badge-padding: #{rem(2px)};
-}
-
-:host([size='medium']) {
-    --size: #{rem(22px)};
-    --_badge-font-size: #{rem(12px)};
-    --_badge-icon-size: #{rem(12px)};
-    --_badge-padding: #{rem(4px)};
-}
-
-:host([size='large']) {
-    --size: #{rem(28px)};
-    --_badge-font-size: #{rem(14px)};
-    --_badge-icon-size: #{rem(16px)};
-    --_badge-padding: #{rem(6px)};
 }
 
 :host([dot]) {

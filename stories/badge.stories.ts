@@ -63,7 +63,6 @@ const metadata: Meta<IgcBadgeComponent> = {
     variant: 'primary',
     outlined: false,
     shape: 'rounded',
-    size: 'medium',
     dot: false,
   },
 };
@@ -77,8 +76,6 @@ interface IgcBadgeArgs {
   outlined: boolean;
   /** The shape of the badge. */
   shape: 'rounded' | 'square';
-  /** The size of the badge. */
-  size: 'small' | 'medium' | 'large';
   /** Sets whether to render a dot badge (minimal badge without content). */
   dot: boolean;
 }
@@ -110,12 +107,11 @@ function renderTabs(args: IgcBadgeArgs) {
 }
 
 export const Basic: Story = {
-  render: ({ outlined, shape, variant, size, dot }) => html`
+  render: ({ outlined, shape, variant, dot }) => html`
     <igc-badge
       ?outlined=${outlined}
       shape=${shape}
       variant=${variant}
-      size=${size}
       ?dot=${dot}
     >
       ${!dot ? html`<igc-icon name="home"></igc-icon>` : ''}
@@ -148,24 +144,33 @@ export const Sizes: Story = {
         width: 100px;
         font-weight: 500;
       }
+      .small-badge {
+        --ig-size: 1;
+      }
+      .medium-badge {
+        --ig-size: 2;
+      }
+      .large-badge {
+        --ig-size: 3;
+      }
     </style>
     <div class="badge-container">
       <span class="badge-label">Small:</span>
-      <igc-badge size="small">1</igc-badge>
-      <igc-badge size="small" variant="info">2</igc-badge>
-      <igc-badge size="small" variant="success">3</igc-badge>
+      <igc-badge class="small-badge">1</igc-badge>
+      <igc-badge class="small-badge" variant="info">2</igc-badge>
+      <igc-badge class="small-badge" variant="success">3</igc-badge>
     </div>
     <div class="badge-container">
       <span class="badge-label">Medium:</span>
-      <igc-badge size="medium">1</igc-badge>
-      <igc-badge size="medium" variant="info">2</igc-badge>
-      <igc-badge size="medium" variant="success">3</igc-badge>
+      <igc-badge class="medium-badge">1</igc-badge>
+      <igc-badge class="medium-badge" variant="info">2</igc-badge>
+      <igc-badge class="medium-badge" variant="success">3</igc-badge>
     </div>
     <div class="badge-container">
       <span class="badge-label">Large:</span>
-      <igc-badge size="large">1</igc-badge>
-      <igc-badge size="large" variant="info">2</igc-badge>
-      <igc-badge size="large" variant="success">3</igc-badge>
+      <igc-badge class="large-badge">1</igc-badge>
+      <igc-badge class="large-badge" variant="info">2</igc-badge>
+      <igc-badge class="large-badge" variant="success">3</igc-badge>
     </div>
   `,
 };

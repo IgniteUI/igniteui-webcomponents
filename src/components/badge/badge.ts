@@ -3,7 +3,7 @@ import { property } from 'lit/decorators.js';
 import { addThemingController } from '../../theming/theming-controller.js';
 import { addInternalsController } from '../common/controllers/internals.js';
 import { registerComponent } from '../common/definitions/register.js';
-import type { BadgeShape, BadgeSize, StyleVariant } from '../types.js';
+import type { BadgeShape, StyleVariant } from '../types.js';
 import { styles } from './themes/badge.base.css.js';
 import { styles as shared } from './themes/shared/badge.common.css.js';
 import { all } from './themes/themes.js';
@@ -51,13 +51,6 @@ export default class IgcBadgeComponent extends LitElement {
    */
   @property({ reflect: true })
   public shape: BadgeShape = 'rounded';
-
-  /**
-   * The size of the badge.
-   * @attr
-   */
-  @property({ reflect: true })
-  public size: BadgeSize = 'medium';
 
   /**
    * Sets whether to render a dot badge (minimal badge without content).
