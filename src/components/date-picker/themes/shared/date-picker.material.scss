@@ -3,6 +3,12 @@
 
 $theme: $material;
 
+:host([outlined]) {
+    igc-date-time-input::part(notch) {
+        border-top: 2px solid transparent;
+    }
+}
+
 :host([outlined][readonly]:hover) {
     igc-date-time-input::part(start),
     igc-date-time-input::part(end),
@@ -83,7 +89,7 @@ $theme: $material;
         border-color: var-get($theme, 'error-secondary-color');
     }
 
-    &::part(notch) {
+    igc-date-time-input::part(notch) {
         border-bottom-color: var-get($theme, 'error-secondary-color');
     }
 }
