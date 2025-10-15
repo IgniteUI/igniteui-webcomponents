@@ -117,10 +117,10 @@ export default class IgcChatInputComponent extends LitElement {
 
   private _sttClient?: ISttClient;
 
-  @property()
+  @property({ type: Boolean })
   isRecording = false;
 
-  @property()
+  @property({ type: Boolean })
   isStopInProgress = false;
 
   onPulseSignal = () => {

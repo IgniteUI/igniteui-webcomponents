@@ -114,7 +114,7 @@ export class BackendSttClient extends BaseSttClient {
           language
         );
       } catch {
-        //report.error("STT invoke failed:", err); TOTO
+        //console.error("STT invoke failed:", err); //TODO
         this.stop();
       }
     }
