@@ -11,7 +11,7 @@ $week-number-radius: var-get($theme, 'week-number-border-radius');
     color: var-get($theme, 'weekday-color');
 
     [part~='week-number-inner'] {
-        color: var-get($theme, 'weekday-color');
+        color: var-get($theme, 'week-number-foreground');
     }
 }
 
@@ -65,11 +65,13 @@ $week-number-radius: var-get($theme, 'week-number-border-radius');
 
     &[part~='range'] {
         background: var-get($theme, 'date-selected-range-background');
+        border-block: $border-width solid var-get($theme, 'date-range-border-color');
     }
 
     &[part~='range'][part~='first'],
     &[part~='range'][part~='last'] {
         background: transparent;
+        border-block-color: transparent;
 
         &::before {
             height: var-get($theme, 'size');
@@ -81,6 +83,7 @@ $week-number-radius: var-get($theme, 'week-number-border-radius');
         &::after {
             height: var-get($theme, 'size');
             background: var-get($theme, 'date-selected-range-background');
+            border-block: $border-width solid var-get($theme, 'date-range-border-color');
         }
     }
 
@@ -145,10 +148,20 @@ $week-number-radius: var-get($theme, 'week-number-border-radius');
         }
 
         &[part~='current'][part~='range']:not([part~='last'], [part~='first']) {
-            color: var-get($theme, 'date-current-foreground');
+            color: var-get($theme, 'date-selected-current-range-foreground');
+            background: var-get($theme, 'date-selected-current-range-background');
+            border-color: var-get($theme, 'date-selected-current-border-color');
+
+            &:hover {
+                color: var-get($theme, 'date-selected-current-range-hover-foreground');
+                background: var-get($theme, 'date-selected-current-range-hover-background');
+                border-color: var-get($theme, 'date-selected-current-hover-border-color');
+            }
 
             &:focus {
-                border-color: var-get($theme, 'date-current-focus-border-color');
+                color: var-get($theme, 'date-selected-current-range-focus-foreground');
+                background: var-get($theme, 'date-selected-current-range-focus-background');
+                border-color: var-get($theme, 'date-selected-current-focus-border-color');
             }
         }
 
@@ -264,6 +277,7 @@ $week-number-radius: var-get($theme, 'week-number-border-radius');
 
         &:hover {
             color: var-get($theme, 'date-special-hover-foreground');
+            background: var-get($theme, 'date-special-hover-background');
 
             &::after {
                 border-color: var-get($theme, 'date-special-hover-border-color')
@@ -272,6 +286,7 @@ $week-number-radius: var-get($theme, 'week-number-border-radius');
 
         &:focus {
             color: var-get($theme, 'date-special-focus-foreground');
+            background: var-get($theme, 'date-special-focus-background');
 
             &::after {
                 border-color: var-get($theme, 'date-special-hover-border-color')
@@ -287,8 +302,8 @@ $week-number-radius: var-get($theme, 'week-number-border-radius');
             }
 
             &:hover {
-                color: var-get($theme, 'date-special-hover-foreground');
-                background: var-get($theme, 'date-hover-background');
+                color: var-get($theme, 'date-special-range-hover-foreground');
+                background: var-get($theme, 'date-special-range-hover-background');
 
                 // stylelint-disable-next-line
                 &::after {
@@ -297,8 +312,8 @@ $week-number-radius: var-get($theme, 'week-number-border-radius');
             }
 
             &:focus {
-                color: var-get($theme, 'date-special-focus-foreground');
-                background: var-get($theme, 'date-focus-background');
+                color: var-get($theme, 'date-special-range-focus-foreground');
+                background: var-get($theme, 'date-special-range-focus-background');
 
                 // stylelint-disable-next-line
                 &::after {
