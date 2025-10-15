@@ -19,8 +19,6 @@ $border-size: rem(1px);
 
 [part~='label'] {
     @include type-style('subtitle-2') {
-        --ig-subtitle-2-line-height: #{rem(16px)};
-
         margin-block: 0 pad-block(rem(5px));
     };
 
