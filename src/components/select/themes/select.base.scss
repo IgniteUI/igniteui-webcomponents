@@ -9,6 +9,10 @@
         @include type-style('caption');
         @include line-clamp(2, true, true);
     }
+
+    slot[name='value-missing'] {
+        @include line-clamp(2, true, true);
+    }
 }
 
 [role='combobox'] {

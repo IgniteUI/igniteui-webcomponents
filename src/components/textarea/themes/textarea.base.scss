@@ -19,6 +19,10 @@
 
         overflow-wrap: anywhere;
     }
+
+    slot[name='value-missing'] {
+        @include line-clamp(2, true, true);
+    }
 }
 
 [part~='container'] {
