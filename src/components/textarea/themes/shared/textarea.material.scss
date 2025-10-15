@@ -12,6 +12,12 @@ $input-bottom-padding: rem(6px);
     --affix-padding: #{pad-inline(rem(12px), rem(14px), rem(16px))};
     --outlined-top-padding: #{sizable(rem(8px), rem(12px), rem(16px))};
 
+    [part~='container']:not([part~='suffixed']) {
+        textarea {
+            padding-inline-end: #{pad-inline(rem(12px), rem(14px), rem(16px))};
+        }
+    }
+
     ::part(helper-text) {
         grid-auto-rows: minmax(rem(18px), auto);
         padding-inline: pad-inline(rem(12px), rem(14px), rem(16px));
