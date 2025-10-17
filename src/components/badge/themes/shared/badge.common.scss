@@ -21,5 +21,52 @@ $theme: $material;
 }
 
 :host([outlined]) [part='base'] {
-    box-shadow: inset 0 0 0 rem(2px) var-get($theme, 'border-color');
+    outline: rem(2px) solid var-get($theme, 'border-color');
+    outline-offset: rem(-2px);
+    background: transparent !important;
+}
+
+:host([outlined][variant='primary']) [part='base'] {
+    outline-color: var-get($theme, 'background-color');
+    color: var-get($theme, 'background-color');
+}
+
+:host([outlined][variant='primary']) ::slotted(igc-icon) {
+    color: var-get($theme, 'background-color');
+}
+
+:host([outlined][variant='info']) [part='base'] {
+    outline-color: color(info, 500);
+    color: color(info, 500);
+}
+
+:host([outlined][variant='info']) ::slotted(igc-icon) {
+    color: color(info, 500);
+}
+
+:host([outlined][variant='success']) [part='base'] {
+    outline-color: color(success, 500);
+    color: color(success, 500);
+}
+
+:host([outlined][variant='success']) ::slotted(igc-icon) {
+    color: color(success, 500);
+}
+
+:host([outlined][variant='warning']) [part='base'] {
+    outline-color: color(warn, 500);
+    color: color(warn, 500);
+}
+
+:host([outlined][variant='warning']) ::slotted(igc-icon) {
+    color: color(warn, 500);
+}
+
+:host([outlined][variant='danger']) [part='base'] {
+    outline-color: color(error, 500);
+    color: color(error, 500);
+}
+
+:host([outlined][variant='danger']) ::slotted(igc-icon) {
+    color: color(error, 500);
 }

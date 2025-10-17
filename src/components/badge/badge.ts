@@ -52,6 +52,13 @@ export default class IgcBadgeComponent extends LitElement {
   @property({ reflect: true })
   public shape: BadgeShape = 'rounded';
 
+  /**
+   * Sets whether to render a dot badge (minimal badge without content).
+   * @attr
+   */
+  @property({ type: Boolean, reflect: true })
+  public dot = false;
+
   constructor() {
     super();
     addThemingController(this, all);

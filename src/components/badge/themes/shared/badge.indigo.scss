@@ -5,12 +5,10 @@ $theme: $indigo;
 
 [part='base'] {
     @include type-style('button');
+}
 
-    ::slotted(igc-icon) {
-        $icon-size: rem(12px);
-
-        --size: #{$icon-size} !important;
-        --ig-icon-size: #{$icon-size};
-        --igx-icon-size: #{$icon-size};
-    }
+::slotted(igc-icon) {
+    --size: var(--_badge-icon-size) !important;
+    --ig-icon-size: var(--_badge-icon-size);
+    --igx-icon-size: var(--_badge-icon-size);
 }
