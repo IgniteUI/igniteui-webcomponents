@@ -165,6 +165,8 @@ const Slots = setSlots(
  * @csspart input-actions-end - Styles the group of actions at the end of the input.
  * @csspart file-upload-container - Styles the container for the file upload input.
  * @csspart file-upload - Styles the file upload input itself.
+ * @csspart speech-to-text-container - Styles the container for the speech to text buttons.
+ * @csspart speech-to-text - Styles the speech to text buttons.
  * @csspart send-button-container - Styles the container around the send button.
  * @csspart send-button - Styles the send button.
  *
@@ -516,6 +518,8 @@ export default class IgcChatComponent extends EventEmitterMixin<
               input-actions-end,
               file-upload-container,
               file-upload,
+              speech-to-text-container,
+              speech-to-text,
               send-button-container,
               send-button"
         >

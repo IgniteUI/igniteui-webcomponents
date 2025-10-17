@@ -108,6 +108,11 @@ export type IgcChatOptions = {
    */
   inputPlaceholder?: string;
   /**
+   * Optional placeholder text for the chat input area.
+   * Provides a hint to the user about what they can speak to the microphone and get transcribed text (e.g. "Speak...").
+   */
+  speakPlaceholder?: string;
+  /**
    * Suggested text snippets or quick replies that can be shown as user-selectable options.
    */
   suggestions?: string[];
@@ -155,8 +160,20 @@ export type IgcChatOptions = {
    * An object containing a collection of custom renderers for different parts of the chat UI.
    */
   renderers?: ChatRenderers;
+
+  /**
+   * Configuration options for enabling and customizing speech-to-text functionality.
+   * If provided, it enables a button in the chat input area that allows users to dictate messages using their voice.
+   */
+  speechToText?: SpeechToTextOptions;
 };
 
+export interface SpeechToTextOptions {
+  enable: boolean;
+  lang?: string;
+  serviceProvider: 'webspeech' | 'backend';
+  serviceUri?: string;
+}
 /**
  * Represents a user's reaction to a specific chat message.
  */
@@ -192,6 +209,10 @@ export interface ChatRenderers {
    * Custom renderer for the file upload button in the input area.
    */
   fileUploadButton?: ChatTemplateRenderer<ChatRenderContext>;
+  /**
+   * Custom renderer for the speech to text button in the input area.
+   */
+  speechToTextButton?: ChatTemplateRenderer<ChatRenderContext>;
   /**
    * Custom renderer for the main chat input field.
    */
