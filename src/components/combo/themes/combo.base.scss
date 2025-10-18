@@ -15,9 +15,21 @@
         --component-size: var(--combo-size) !important;
     }
 
-    > igc-input::part(input) {
-        text-overflow: ellipsis;
+    igc-input::part(input) {
+        @include ellipsis();
+
         cursor: pointer;
+    }
+
+    ::part(helper-text) {
+        @include type-style('caption');
+        @include line-clamp(2, true, true);
+
+        overflow-wrap: anywhere;
+    }
+
+    slot[name='value-missing'] {
+        @include line-clamp(2, true, true);
     }
 }
 
@@ -26,16 +38,6 @@
         &::selection {
             background: transparent;
         }
-    }
-}
-
-[part='helper-text'] {
-    line-height: 1;
-
-    ::slotted([slot='helper-text']) {
-        @include type-style('caption');
-
-        line-height: inherit;
     }
 }
 

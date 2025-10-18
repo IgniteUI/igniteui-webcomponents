@@ -155,7 +155,7 @@ const metadata: Meta<IgcTextareaComponent> = {
     outlined: false,
     readOnly: false,
     resize: 'vertical',
-    rows: 2,
+    rows: 3,
     spellcheck: true,
     wrap: 'soft',
     validateOnly: false,

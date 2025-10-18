@@ -8,7 +8,7 @@ $theme: $indigo;
     @include type-style('body-2');
 
     --component-size: var(--ig-size, #{var-get($theme, 'default-size')});
-    --input-icon: #{sizable(rem(14px), rem(16px), rem(18px))};
+    --input-icon: #{sizable(rem(14px), rem(16px), rem(16px))};
     --affix-padding: #{pad-inline(rem(2px), rem(4px), rem(6px))};
 
     ::slotted(igc-icon) {
@@ -16,11 +16,7 @@ $theme: $indigo;
     }
 
     ::part(helper-text) {
-        @include type-style('caption');
-
-        color: var-get($theme, 'helper-text-color');
         grid-auto-rows: minmax(rem(15px), auto);
-        margin-block-start: pad-block(rem(4px));
     }
 
 }
@@ -92,7 +88,7 @@ $theme: $indigo;
 textarea {
     @include type-style('body-2');
 
-    padding-block: pad-block(rem(6px));
+    padding-block: pad-block(rem(4px), rem(6px), rem(8px)) 0;
     padding-inline: pad-inline(rem(2px), rem(4px), rem(6px));
     margin-block-end: pad-block(rem(1px));
 

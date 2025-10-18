@@ -448,6 +448,11 @@ export const Form: Story = {
     value: new Date(2024, 1, 29),
   },
   render: (args) => html`
+    <style>
+      fieldset {
+        min-width: 0;
+      }
+    </style>
     <form action="" @submit=${formSubmitHandler}>
       <fieldset>
         <igc-date-picker

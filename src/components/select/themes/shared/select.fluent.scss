@@ -13,8 +13,6 @@ $input-theme: input-theme.$fluent;
     --dropdown-size: var(--component-size);
 
     ::part(helper-text) {
-        @include type-style('caption');
-
         color: var-get($theme, 'helper-text-color');
         margin-block-start: pad-block(rem(5px));
         grid-auto-rows: minmax(rem(18px), auto);

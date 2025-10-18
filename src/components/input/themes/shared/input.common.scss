@@ -29,6 +29,13 @@ $theme: $base;
     color: var-get($theme, 'placeholder-color');
 }
 
+:host {
+    ::part(helper-text) {
+        color: var-get($theme, 'helper-text-color');
+        margin-block-start: rem(4px);
+    }
+}
+
 :host(:focus-within),
 :host(:not([readonly],[disabled]):hover) {
     [part~='input']::placeholder {
