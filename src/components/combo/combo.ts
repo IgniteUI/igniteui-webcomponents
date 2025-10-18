@@ -892,7 +892,7 @@ export default class IgcComboComponent<
         slot="suffix"
         part="clear-icon"
         @click=${this.handleClearIconClick}
-        ?hidden=${this._selection.isEmpty || this.disableClear}
+        ?hidden=${this.disableClear || this._selection.isEmpty}
       >
         <slot name="clear-icon">
           <igc-icon
