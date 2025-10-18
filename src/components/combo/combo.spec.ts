@@ -445,6 +445,36 @@ describe('Combo', () => {
       });
     });
 
+    it('should hide the clear button when disableClear is true', async () => {
+      combo.select();
+      await elementUpdated(combo);
+
+      let button = combo.shadowRoot!.querySelector('[part="clear-icon"]');
+      expect(button).to.exist;
+      expect(button?.hasAttribute('hidden')).to.be.false;
+
+      combo.disableClear = true;
+      await elementUpdated(combo);
+
+      button = combo.shadowRoot!.querySelector('[part="clear-icon"]');
+      expect(button?.hasAttribute('hidden')).to.be.true;
+    });
+
+    it('should show the clear button when disableClear is false', async () => {
+      combo.disableClear = true;
+      combo.select();
+      await elementUpdated(combo);
+
+      let button = combo.shadowRoot!.querySelector('[part="clear-icon"]');
+      expect(button?.hasAttribute('hidden')).to.be.true;
+
+      combo.disableClear = false;
+      await elementUpdated(combo);
+
+      button = combo.shadowRoot!.querySelector('[part="clear-icon"]');
+      expect(button?.hasAttribute('hidden')).to.be.false;
+    });
+
     it('should toggle case sensitivity by pressing on the case sensitive icon', async () => {
       const button = combo.shadowRoot!.querySelector(
         '[part~="case-icon"]'
