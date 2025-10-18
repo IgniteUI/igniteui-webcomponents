@@ -77,6 +77,7 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
     onShow: this._showOnInteraction,
     onHide: this._hideOnInteraction,
     onEscape: this._hideOnEscape,
+    onClick: this._stopTimeoutAndAnimation,
   });
 
   private readonly _containerRef = createRef<HTMLElement>();
