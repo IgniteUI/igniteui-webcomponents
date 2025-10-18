@@ -129,6 +129,12 @@ const metadata: Meta<IgcComboComponent> = {
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
+    disableClear: {
+      type: 'boolean',
+      description: 'Hides the clear button.',
+      control: 'boolean',
+      table: { defaultValue: { summary: 'false' } },
+    },
     required: {
       type: 'boolean',
       description:
