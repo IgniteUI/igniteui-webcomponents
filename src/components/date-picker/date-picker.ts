@@ -611,11 +611,6 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
     this._oldValue = this.value;
     this.value = null;
     this._input?.clear();
-
-    if (this.nonEditable || !this._isDropDown) {
-      this._input.blur();
-      Promise.resolve().then(() => this._input.focus());
-    }
   }
 
   /** Increments the passed in date part */
