@@ -11,13 +11,13 @@ import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 import { addThemingController } from '../../theming/theming-controller.js';
 import IgcCalendarComponent, { focusActiveDate } from '../calendar/calendar.js';
-import { convertToDate, convertToDateRange } from '../calendar/helpers.js';
-import { CalendarDay } from '../calendar/model.js';
 import {
-  type DateRangeDescriptor,
-  DateRangeType,
-  type WeekDays,
-} from '../calendar/types.js';
+  convertToDate,
+  convertToDateRange,
+  createDateConstraints,
+} from '../calendar/helpers.js';
+import { CalendarDay } from '../calendar/model.js';
+import type { DateRangeDescriptor, WeekDays } from '../calendar/types.js';
 import {
   addKeybindings,
   altKey,
@@ -856,26 +856,8 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
   }
 
   private _setDateConstraints() {
-    const dates: DateRangeDescriptor[] = [];
-    if (this._min) {
-      dates.push({
-        type: DateRangeType.Before,
-        dateRange: [this._min],
-      });
-    }
-
-    if (this._max) {
-      dates.push({
-        type: DateRangeType.After,
-        dateRange: [this._max],
-      });
-    }
-
-    if (!isEmpty(this.disabledDates)) {
-      dates.push(...this.disabledDates);
-    }
-
-    this._dateConstraints = isEmpty(dates) ? [] : dates;
+    this._dateConstraints =
+      createDateConstraints(this.min, this.max, this.disabledDates) ?? [];
   }
 
   private _updateMaskedRangeValue() {

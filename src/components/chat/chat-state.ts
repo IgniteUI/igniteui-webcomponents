@@ -46,7 +46,7 @@ export class ChatState {
    */
   private _acceptedTypesCache: ChatAcceptedFileTypes | null = null;
 
-  public _isTyping = false;
+  private _isTyping = false;
   private _lastTyped = Date.now();
 
   public resourceStrings = IgcChatResourceStringEN;
