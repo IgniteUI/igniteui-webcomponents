@@ -5,7 +5,7 @@ $theme: $material;
 
 :host([outlined]) {
     igc-date-time-input::part(notch) {
-        border-top: 2px solid transparent;
+        border-block-start: rem(2px) solid transparent;
     }
 }
 
