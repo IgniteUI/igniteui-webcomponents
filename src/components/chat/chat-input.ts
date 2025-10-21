@@ -372,9 +372,11 @@ export default class IgcChatInputComponent extends LitElement {
       <igc-textarea
         part="text-input"
         aria-label="Chat text input"
-        placeholder=${this.isRecording
-          ? ifDefined(this._state.options?.speakPlaceholder)
-          : ifDefined(this._state.options?.inputPlaceholder)}
+        placeholder=${ifDefined(
+          this.isRecording
+            ? this._state.options?.speakPlaceholder
+            : this._state.options?.inputPlaceholder
+        )}
         resize="auto"
         rows="1"
         .value=${this._userInputState?.inputValue}

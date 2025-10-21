@@ -99,21 +99,20 @@ label[part="speech-to-text"] igc-icon-button[disabled] {
     position: absolute;
     top: 0;
     left: 0;
-    width: 100%; 
+    width: 100%;
     height: 100%;
-    transform: rotate(-90deg); /* start progress from top */
+    transform: rotate(-90deg);
     pointer-events: none;
 }
 
 .ring-bg {
     fill: none;
     stroke: transparent;
-    //stroke-width: 3;
 }
 
 .ring-progress {
     fill: none;
-    stroke: rgba(0,0,0,0.5); /* match your disabled color */
+    stroke: rgba(0,0,0,0.5);
     stroke-width: 3;
     stroke-dasharray: 100;
     stroke-dashoffset: 100;
