@@ -74,3 +74,47 @@ igc-textarea {
         margin-inline: rem(12px);
     }
 }
+
+@keyframes pulse {
+    0%   { transform: scale(1); }
+    50%  { transform: scale(1.3); }
+    100% { transform: scale(1); }
+}
+
+.pulsate {
+    animation: pulse 0.2s ease-in-out;
+}
+
+.stop-btn-wrapper {
+    position: relative;
+    display: inline-block;
+}
+
+label[part="speech-to-text"] igc-icon-button[disabled] {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.countdown-ring {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg);
+    pointer-events: none;
+}
+
+.ring-bg {
+    fill: none;
+    stroke: transparent;
+}
+
+.ring-progress {
+    fill: none;
+    stroke: rgb(0 0 0 / 50%);
+    stroke-width: 3;
+    stroke-dasharray: 100;
+    stroke-dashoffset: 100;
+    transition: stroke-dashoffset linear;
+}
