@@ -29,10 +29,10 @@ export const stringValidators: Validator<IgcInputComponent>[] = [
           return true;
       }
     },
-    message: (host) =>
+    messageResourceKey: (host) =>
       (host.type === 'email'
-        ? emailValidator.message
-        : urlValidator.message) as string,
+        ? emailValidator.messageResourceKey
+        : urlValidator.messageResourceKey) as string,
   },
 ];
 
