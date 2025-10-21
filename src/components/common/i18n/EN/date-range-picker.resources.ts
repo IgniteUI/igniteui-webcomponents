@@ -1,3 +1,5 @@
+import { DateRangePickerResourceStringsEN } from 'igniteui-i18n-core';
+import { convertToIgcResource } from '../utils.js';
 import {
   IgcCalendarResourceStringEN,
   type IgcCalendarResourceStrings,
@@ -17,12 +19,6 @@ export interface IgcDateRangePickerResourceStrings
 
 export const IgcDateRangePickerResourceStringsEN: IgcDateRangePickerResourceStrings =
   {
-    separator: 'to',
-    done: 'Done',
-    cancel: 'Cancel',
-    last7Days: 'Last 7 days',
-    last30Days: 'Last 30 days',
-    currentMonth: 'Current month',
-    yearToDate: 'Year to date',
+    ...convertToIgcResource(DateRangePickerResourceStringsEN),
     ...IgcCalendarResourceStringEN,
   };

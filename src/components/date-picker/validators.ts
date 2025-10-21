@@ -1,5 +1,5 @@
 import { isDateInRanges } from '../calendar/helpers.js';
-import messages from '../common/localization/validation-en.js';
+import { validationResourcesKeys } from '../common/i18n/utils.js';
 import { formatString } from '../common/util.js';
 import {
   maxDateValidator,
@@ -15,7 +15,8 @@ export const datePickerValidators: Validator<IgcDatePickerComponent>[] = [
   maxDateValidator,
   {
     key: 'badInput',
-    message: ({ value }) => formatString(messages.disabledDate, value),
+    messageResourceKey: validationResourcesKeys.disabledDate,
+    messageFormat: (message, { value }) => formatString(message, value),
     isValid: ({ value, disabledDates }) =>
       value && disabledDates ? !isDateInRanges(value, disabledDates) : true,
   },
