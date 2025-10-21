@@ -535,6 +535,10 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
       return mask;
     }
 
+    if (this.readOnly) {
+      return '';
+    }
+
     return this._maskedValue === '' ? mask : this._maskedValue;
   }
 

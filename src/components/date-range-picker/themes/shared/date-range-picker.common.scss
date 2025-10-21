@@ -60,6 +60,12 @@ $theme: $material;
     }
 }
 
+:host([outlined]) {
+    igc-date-time-input::part(notch) {
+        border-block-start: rem(2px) solid transparent;
+    }
+}
+
 :host(:not([readonly])) {
     --affix-color: #{var-get($theme, 'input-prefix-color')};
 
