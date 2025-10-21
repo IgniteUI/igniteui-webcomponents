@@ -56,7 +56,8 @@
     "@floating-ui/dom": "^1.7.4",
     "@lit-labs/virtualizer": "^2.1.1",
     "@lit/context": "^1.1.6",
-    "lit": "^3.3.1"
+    "lit": "^3.3.1",
+    "igniteui-i18n-core": "0.6.0-alpha.4"
   },
   "devDependencies": {
     "@biomejs/biome": "~2.2.6",
@@ -80,6 +81,7 @@
     "globby": "^15.0.0",
     "husky": "^9.1.7",
     "ig-typedoc-theme": "^6.2.3",
+    "igniteui-i18n-resources": "0.6.0-alpha.4",
     "igniteui-theming": "^20.0.0",
     "keep-a-changelog": "^2.7.1",
     "lint-staged": "^16.2.4",
