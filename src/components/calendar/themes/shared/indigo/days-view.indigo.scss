@@ -105,7 +105,7 @@ $week-number-radius: var-get($theme, 'week-number-border-radius');
         background: var-get($theme, 'date-hover-background');
     }
 
-    &[part~='inactive']:not([part~='selected'][part~='range'], [part~='disabled']) {
+    &[part~='inactive']:not([part~='selected'][part~='range'] , [part~='disabled']) {
         color: var-get($theme, 'inactive-color');
     }
 

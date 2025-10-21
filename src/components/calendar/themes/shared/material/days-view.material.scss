@@ -110,6 +110,7 @@ $week-number-radius: var-get($theme, 'week-number-border-radius');
         color: var-get($theme, 'inactive-color');
     }
 
+
     &[part~='disabled']:not([part~='selected'],[part~='special'],[part~='current']) {
         color: var-get($theme, 'date-disabled-foreground');
     }

@@ -72,6 +72,12 @@ $fake-bg-position: calc(50% - (var-get($theme, 'size') / 2));
         color: var-get($theme, 'inactive-color');
     }
 
+    &[part~='inactive']:not([part~='preview']) {
+        &:hover {
+            color: var-get($theme, 'date-hover-foreground');
+        }
+    }
+
     &::after {
         content: '';
         position: absolute;

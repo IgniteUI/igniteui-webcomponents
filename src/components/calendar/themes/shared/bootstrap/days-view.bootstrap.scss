@@ -143,7 +143,12 @@ $border-size: rem(1px);
         border-color: var-get($theme, 'date-focus-border-color');
     }
 
-    &[part~='inactive']:not([part~='selected'][part~='range'], [part~='disabled']) {
+    &[part~='inactive'][part~='preview']:not([part~='disabled']),
+    &[part~='inactive'][part~='range']:not([part~='first'], [part~='last']) {
+        color: var-get($theme, 'date-selected-range-foreground');
+    }
+
+    &[part~='inactive']:not([part~='disabled']) {
         color: var-get($theme, 'inactive-color');
     }
 
