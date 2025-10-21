@@ -274,28 +274,28 @@ $week-number-radius: var-get($theme, 'week-number-border-radius');
             color: var-get($theme, 'date-special-range-foreground');
             background: var-get($theme, 'date-special-range-background');
 
+            &:hover {
+                color: var-get($theme, 'date-special-range-hover-foreground');
+                background: var-get($theme, 'date-special-range-hover-background');
+
+                // stylelint-disable-next-line
+                &::after {
+                    border-color: var-get($theme, 'date-special-hover-border-color');
+                }
+            }
+
+            &:focus {
+                color: var-get($theme, 'date-special-range-focus-foreground');
+                background: var-get($theme, 'date-special-range-focus-background');
+
+                // stylelint-disable-next-line
+                &::after {
+                    border-color: var-get($theme, 'date-special-focus-border-color');
+                }
+            }
+
             &::after {
                 border-color: var-get($theme, 'date-special-range-border-color');
-            }
-        }
-
-        &:hover {
-            color: var-get($theme, 'date-special-range-hover-foreground');
-            background: var-get($theme, 'date-special-range-hover-background');
-
-            // stylelint-disable-next-line
-            &::after {
-                border-color: var-get($theme, 'date-special-hover-border-color');
-            }
-        }
-
-        &:focus {
-            color: var-get($theme, 'date-special-range-focus-foreground');
-            background: var-get($theme, 'date-special-range-focus-background');
-
-            // stylelint-disable-next-line
-            &::after {
-                border-color: var-get($theme, 'date-special-focus-border-color');
             }
         }
     }
