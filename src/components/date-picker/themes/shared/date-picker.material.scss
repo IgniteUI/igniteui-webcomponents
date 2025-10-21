@@ -6,6 +6,7 @@ $theme: $material;
 :host {
     ::part(helper-text) {
         padding-inline: pad-inline(rem(12px), rem(14px), rem(16px));
+    }
 }
 
 :host([outlined]) {
