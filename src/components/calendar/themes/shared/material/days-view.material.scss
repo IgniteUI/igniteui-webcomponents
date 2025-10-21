@@ -106,14 +106,8 @@ $week-number-radius: var-get($theme, 'week-number-border-radius');
         background: var-get($theme, 'date-hover-background');
     }
 
-    // inactive dates should not have different styles for selected, current or special states
-    // so we reset everything to the inactive state.
     &[part~='inactive'] {
         color: var-get($theme, 'inactive-color');
-
-        &:hover {
-            color: var-get($theme, 'inactive-color');
-        }
     }
 
     &[part~='disabled']:not([part~='selected'],[part~='special'],[part~='current']) {
@@ -139,7 +133,7 @@ $week-number-radius: var-get($theme, 'week-number-border-radius');
         border-color: var-get($theme, 'date-focus-border-color');
     }
 
-    [part~='weekend'] {
+    &[part~='weekend'] {
         color: var-get($theme, 'weekend-color');
     }
 
