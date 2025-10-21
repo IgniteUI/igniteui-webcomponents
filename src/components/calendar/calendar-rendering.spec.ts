@@ -62,7 +62,7 @@ describe('Calendar Rendering', () => {
         `
       <div part="header">
         <h5 part="header-title">
-          <slot name="title">Select date</slot>
+          <slot name="title">Select Date</slot>
         </h5>
 	      <h2 part="header-date">
           <slot>

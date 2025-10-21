@@ -69,6 +69,12 @@ const metadata: Meta<IgcComboComponent> = {
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
+    locale: {
+      type: 'string',
+      description:
+        'Gets/Sets the locale used for formatting and displaying the dates in the component.',
+      control: 'text',
+    },
     label: {
       type: 'string',
       description: 'The label attribute of the control.',
@@ -83,7 +89,6 @@ const metadata: Meta<IgcComboComponent> = {
       type: 'string',
       description: 'The placeholder attribute of the search input.',
       control: 'text',
-      table: { defaultValue: { summary: 'Search' } },
     },
     open: {
       type: 'boolean',
@@ -159,7 +164,6 @@ const metadata: Meta<IgcComboComponent> = {
     singleSelect: false,
     autofocus: false,
     autofocusList: false,
-    placeholderSearch: 'Search',
     open: false,
     groupSorting: 'asc',
     caseSensitiveIcon: false,
@@ -181,6 +185,8 @@ interface IgcComboArgs {
   autofocus: boolean;
   /** Focuses the list of options when the menu opens. */
   autofocusList: boolean;
+  /** Gets/Sets the locale used for formatting and displaying the dates in the component. */
+  locale: string;
   /** The label attribute of the control. */
   label: string;
   /** The placeholder attribute of the control. */
