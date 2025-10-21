@@ -68,7 +68,7 @@ $fake-bg-position: calc(50% - (var-get($theme, 'size') / 2));
     height: var-get($theme, 'size');
     border-radius: var-get($theme, 'date-border-radius');
 
-    &[part~='inactive']:not([part~='selected']) {
+    &[part~='inactive']:not([part~='selected'][part~='range']) {
         color: var-get($theme, 'inactive-color');
     }
 
@@ -82,7 +82,7 @@ $fake-bg-position: calc(50% - (var-get($theme, 'size') / 2));
         height: var-get($theme, 'inner-size');
     }
 
-    &[part~='disabled']:not([part~='special'],[part~='current']) {
+    &[part~='disabled']:not([part~='special'],[part~='current'], [part~='disabled']) {
         color: var-get($theme, 'date-disabled-foreground');
     }
 

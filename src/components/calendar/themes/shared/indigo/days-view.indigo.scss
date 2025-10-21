@@ -105,21 +105,15 @@ $week-number-radius: var-get($theme, 'week-number-border-radius');
         background: var-get($theme, 'date-hover-background');
     }
 
-    // inactive dates should not have different styles for selected, current or special states
-    // so we reset everything to the inactive state.
-    &[part~='inactive'] {
+    &[part~='inactive']:not([part~='selected'][part~='range'], [part~='disabled']) {
         color: var-get($theme, 'inactive-color');
-
-        &:hover {
-            color: var-get($theme, 'inactive-color');
-        }
     }
 
     &[part~='disabled']:not([part~='selected'],[part~='special'],[part~='current']) {
         color: var-get($theme, 'date-disabled-foreground');
     }
 
-    &[part~='disabled'][part~='range']:not([part~='selected'],[part~='special'],[part~='current']) {
+    &[part~='disabled'][part~='range']:not([part~='selected'],[part~='special'],[part~='current'], [part~='preview']) {
         color: var-get($theme, 'date-disabled-range-foreground');
     }
 }
@@ -541,5 +535,24 @@ $week-number-radius: var-get($theme, 'week-number-border-radius');
             width: var-get($theme, 'inner-size');
             height: var-get($theme, 'inner-size');
         }
+    }
+}
+
+[part~='date-inner'][part~='selected'][part~='inactive'][part~='first'],
+[part~='date-inner'][part~='selected'][part~='inactive'][part~='last'] {
+    color: var-get($theme, 'date-selected-foreground');
+    background: var-get($theme, 'date-selected-background');
+    border-color: var-get($theme, 'date-selected-border-color');
+
+    &:hover {
+        color: var-get($theme, 'date-selected-hover-foreground');
+        background: var-get($theme, 'date-selected-hover-background');
+        border-color: var-get($theme, 'date-selected-hover-border-color');
+    }
+
+    &:focus {
+        color: var-get($theme, 'date-selected-focus-foreground');
+        background: var-get($theme, 'date-selected-focus-background');
+        border-color: var-get($theme, 'date-selected-focus-border-color');
     }
 }
