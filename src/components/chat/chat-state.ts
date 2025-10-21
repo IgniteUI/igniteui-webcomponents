@@ -1,4 +1,4 @@
-import { IgcChatResourceStringEN } from '../common/i18n/chat.resources.js';
+import { IgcChatResourceStringEN } from '../common/i18n/EN/chat.resources.js';
 import { isEmpty, nanoid } from '../common/util.js';
 import IgcToastComponent from '../toast/toast.js';
 import IgcTooltipComponent from '../tooltip/tooltip.js';
@@ -46,7 +46,7 @@ export class ChatState {
    */
   private _acceptedTypesCache: ChatAcceptedFileTypes | null = null;
 
-  public _isTyping = false;
+  private _isTyping = false;
   private _lastTyped = Date.now();
 
   public resourceStrings = IgcChatResourceStringEN;

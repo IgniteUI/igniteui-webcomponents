@@ -79,14 +79,12 @@ const metadata: Meta<IgcCarouselComponent> = {
       description:
         "The format used to set the aria-label on the carousel indicators.\nInstances of '{0}' will be replaced with the index of the corresponding slide.",
       control: 'text',
-      table: { defaultValue: { summary: 'Slide {0}' } },
     },
     slidesLabelFormat: {
       type: 'string',
       description:
         "The format used to set the aria-label on the carousel slides and the text displayed\nwhen the number of indicators is greater than tha maximum indicator count.\nInstances of '{0}' will be replaced with the index of the corresponding slide.\nInstances of '{1}' will be replaced with the total amount of slides.",
       control: 'text',
-      table: { defaultValue: { summary: '{0} of {1}' } },
     },
     interval: {
       type: 'number',
@@ -108,6 +106,12 @@ const metadata: Meta<IgcCarouselComponent> = {
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'slide' } },
     },
+    locale: {
+      type: 'string',
+      description:
+        'Gets/Sets the locale used for formatting and displaying the dates in the component.',
+      control: 'text',
+    },
   },
   args: {
     disableLoop: false,
@@ -116,8 +120,6 @@ const metadata: Meta<IgcCarouselComponent> = {
     hideIndicators: false,
     vertical: false,
     indicatorsOrientation: 'end',
-    indicatorsLabelFormat: 'Slide {0}',
-    slidesLabelFormat: '{0} of {1}',
     maximumIndicatorsCount: 10,
     animationType: 'slide',
   },
@@ -156,6 +158,8 @@ interface IgcCarouselArgs {
   maximumIndicatorsCount: number;
   /** The animation type. */
   animationType: 'slide' | 'fade' | 'none';
+  /** Gets/Sets the locale used for formatting and displaying the dates in the component. */
+  locale: string;
 }
 type Story = StoryObj<IgcCarouselArgs>;
 

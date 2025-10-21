@@ -1,3 +1,7 @@
+import {
+  ChipResourceStringsEN,
+  type IChipResourceStrings,
+} from 'igniteui-i18n-core';
 import { html, LitElement, nothing } from 'lit';
 import { property } from 'lit/decorators.js';
 import { createRef, ref } from 'lit/directives/ref.js';
@@ -5,6 +9,7 @@ import { addThemingController } from '../../theming/theming-controller.js';
 import { addKeybindings } from '../common/controllers/key-bindings.js';
 import { addSlotController, setSlots } from '../common/controllers/slot.js';
 import { registerComponent } from '../common/definitions/register.js';
+import { addI18nController } from '../common/i18n/i18n-controller.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import IgcIconComponent from '../icon/icon.js';
@@ -90,6 +95,38 @@ export default class IgcChipComponent extends EventEmitterMixin<
   @property({ reflect: true })
   public variant!: StyleVariant;
 
+  /**
+   * Gets/Sets the locale used for formatting and displaying the dates in the component.
+   * @attr locale
+   */
+  @property()
+  public set locale(value: string) {
+    this._i18nController.locale = value;
+  }
+
+  public get locale() {
+    return this._i18nController.locale;
+  }
+
+  /**
+   * The resource strings for localization.
+   */
+  @property({ attribute: false })
+  public set resourceStrings(value: IChipResourceStrings) {
+    this._i18nController.resourceStrings = value;
+  }
+
+  public get resourceStrings(): IChipResourceStrings {
+    return this._i18nController.resourceStrings;
+  }
+
+  private readonly _i18nController = addI18nController<IChipResourceStrings>(
+    this,
+    {
+      defaultEN: ChipResourceStringsEN,
+    }
+  );
+
   constructor() {
     super();
 
@@ -122,7 +159,11 @@ export default class IgcChipComponent extends EventEmitterMixin<
       this.selectable && this.selected
         ? html`
             <slot name="select">
-              <igc-icon name="selected" collection="default"></igc-icon>
+              <igc-icon
+                name="selected"
+                collection="default"
+                aria-label=${this.resourceStrings.chip_select ?? 'select chip'}
+              ></igc-icon>
             </slot>
           `
         : nothing;
@@ -154,7 +195,7 @@ export default class IgcChipComponent extends EventEmitterMixin<
                 collection="default"
                 tabindex="0"
                 role="button"
-                aria-label="Remove"
+                aria-label=${this.resourceStrings.chip_remove ?? 'remove chip'}
               ></igc-icon>
             </slot>
           `
