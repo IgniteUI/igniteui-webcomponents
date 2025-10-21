@@ -201,6 +201,10 @@ export default class IgcChatInputComponent extends LitElement {
         // console.error('No STT service configured');
       }
 
+      if (!this._sttClient) {
+        return;
+      }
+
       await this._sttClient.start(this._state.options?.speechToText?.lang);
       this.isRecording = true;
       this.isStopInProgress = false;
