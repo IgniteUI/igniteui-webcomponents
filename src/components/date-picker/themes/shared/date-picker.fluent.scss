@@ -12,15 +12,13 @@ $theme: $fluent;
 
     [part='label'] {
         @include type-style('subtitle-2');
+
+        margin-block-end: pad-block(rem(5px));
     }
 
     ::part(helper-text) {
-        @include type-style('caption');
-
-        color: var-get($theme, 'helper-text-color');
         grid-auto-rows: minmax(rem(18px), auto);
         margin-block-start: pad-block(rem(5px));
-        padding-inline-start: 0;
     }
 }
 

@@ -11,6 +11,17 @@
     display: block;
     font-family: var(--ig-font-family);
     outline-style: none;
+
+    ::part(helper-text) {
+        @include type-style('caption');
+        @include line-clamp(2, true, true);
+
+        overflow-wrap: anywhere;
+    }
+
+    slot[name='value-missing'] {
+        @include line-clamp(2, true, true);
+    }
 }
 
 ::slotted(igc-icon) {

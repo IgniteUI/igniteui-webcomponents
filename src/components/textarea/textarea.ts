@@ -216,12 +216,12 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
 
   /**
    * The number of visible text lines for the control. If it is specified, it must be a positive integer.
-   * If it is not specified, the default value is 2.
+   * If it is not specified, the default value is 3.
    *
    * @attr
    */
   @property({ type: Number })
-  public rows = 2;
+  public rows = 3;
 
   /* @tsTwoWayProperty(true, "igcChange", "detail", false) */
   /**
