@@ -174,6 +174,7 @@ const metadata: Meta<IgcComboComponent> = {
     groupSorting: 'asc',
     caseSensitiveIcon: false,
     disableFiltering: false,
+    disableClear: false,
     required: false,
     disabled: false,
     invalid: false,
@@ -213,6 +214,8 @@ interface IgcComboArgs {
   caseSensitiveIcon: boolean;
   /** Disables the filtering of the list of options. */
   disableFiltering: boolean;
+  /** Hides the clear button. */
+  disableClear: boolean;
   /** When set, makes the component a required field for validation. */
   required: boolean;
   /** The name attribute of the control. */
@@ -329,6 +332,7 @@ export const Default: Story = {
       .groupSorting=${args.groupSorting}
       ?case-sensitive-icon=${args.caseSensitiveIcon}
       ?disable-filtering=${args.disableFiltering}
+      ?disable-clear=${args.disableClear}
       ?open=${args.open}
       ?autofocus=${args.autofocus}
       ?autofocus-list=${args.autofocusList}
