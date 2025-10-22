@@ -111,7 +111,7 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
     onChange: this._handleSlotChange,
   });
 
-  @query('textarea', true)
+  @query('textarea')
   private readonly _input!: HTMLTextAreaElement;
 
   protected override get __validators() {
