@@ -3,7 +3,6 @@
 @use 'igniteui-theming/sass/animations/easings' as *;
 
 $theme: $material;
-$input-top-padding: rem(20px);
 $input-bottom-padding: rem(6px);
 
 :host {
@@ -11,14 +10,17 @@ $input-bottom-padding: rem(6px);
 
     --component-size: var(--ig-size, #{var-get($theme, 'default-size')});
     --affix-padding: #{pad-inline(rem(12px), rem(14px), rem(16px))};
+    --outlined-top-padding: #{sizable(rem(8px), rem(12px), rem(16px))};
+
+    [part~='container']:not([part~='suffixed']) {
+        textarea {
+            padding-inline-end: #{pad-inline(rem(12px), rem(14px), rem(16px))};
+        }
+    }
 
     ::part(helper-text) {
-        @include type-style('caption');
-
-        color: var-get($theme, 'helper-text-color');
         grid-auto-rows: minmax(rem(18px), auto);
-        margin-block-start: pad-block(rem(4px));
-        padding-inline: pad-inline(rem(14px), rem(16px), rem(18px));
+        padding-inline: pad-inline(rem(12px), rem(14px), rem(16px));
     }
 }
 
@@ -26,7 +28,7 @@ textarea {
     border: none;
     padding: 0;
     overflow: auto;
-    margin-block-start: pad-block($input-top-padding);
+    margin-block-start: pad-block(var(--outlined-top-padding));
     grid-area: 1 / 2 / span 1 / span 2;
     flex-grow: 1;
     position: relative;
@@ -36,10 +38,9 @@ textarea {
 }
 
 [part='label'] {
-    position: absolute;
+    position: relative;
     transform-origin: top left;
-    inset-block-start: calc($input-top-padding - #{rem(2px)});
-    padding-inline-end: pad-inline(rem(4px));
+    inset-block-start: calc((var(--outlined-top-padding)) - #{rem(2px)});
     transition:
         transform 150ms cubic-bezier(.4, 0, .2, 1),
         color 150ms cubic-bezier(.4, 0, .2, 1),
@@ -51,7 +52,7 @@ textarea {
     @include type-style('caption');
 
     translate: 0;
-    inset-block-start: calc(#{$input-top-padding} / 4);
+    inset-block-start: calc((var(--outlined-top-padding)) / 4);
 }
 
 %label-outlined-filled {
@@ -67,6 +68,14 @@ textarea {
 }
 
 :host(:not([outlined])) {
+    [part~='container']:not([part~='labelled']) {
+        --box-top-padding: #{sizable(rem(8px), rem(12px), rem(16px))};
+    }
+
+    [part~='labelled'] {
+        --box-top-padding: #{sizable(rem(16px), rem(20px), rem(24px))};
+    }
+
     [part~='container'] {
         overflow: hidden;
         border-start-start-radius: var-get($theme, 'box-border-radius');
@@ -84,7 +93,7 @@ textarea {
         }
 
         textarea {
-            margin-block-end: pad-block(rem(2px));
+            margin-block: pad-block(var(--box-top-padding)) rem(2px);
         }
     }
 
@@ -197,7 +206,7 @@ textarea {
 [part='end'] {
     display: flex;
     align-items: center;
-    min-width: pad(rem(10px), rem(12px), rem(14px));
+    min-width: pad(rem(8px), rem(10px), rem(12px));
     min-height: 100%;
     overflow: hidden;
 }
@@ -377,7 +386,7 @@ textarea {
 
 :host([readonly][outlined]:focus-within) {
     [part='label'] {
-        inset-block-start: calc($input-top-padding - #{rem(3px)});
+        inset-block-start: calc(var(--outlined-top-padding) - #{rem(3px)});
     }
 
     [part='notch'] {
