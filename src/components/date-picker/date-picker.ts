@@ -25,7 +25,8 @@ import { registerComponent } from '../common/definitions/register.js';
 import {
   IgcCalendarResourceStringEN,
   type IgcCalendarResourceStrings,
-} from '../common/i18n/calendar.resources.js';
+} from '../common/i18n/EN/calendar.resources.js';
+import { addI18nController } from '../common/i18n/i18n-controller.js';
 import { IgcBaseComboBoxLikeComponent } from '../common/mixins/combo-box.js';
 import type { AbstractConstructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
@@ -200,6 +201,11 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
   private readonly _slots = addSlotController(this, { slots: Slots });
 
   private _oldValue: Date | null = null;
+  private readonly _i18nController =
+    addI18nController<IgcCalendarResourceStrings>(this, {
+      defaultEN: IgcCalendarResourceStringEN,
+    });
+
   private _activeDate: Date | null = null;
   private _min: Date | null = null;
   private _max: Date | null = null;
@@ -430,23 +436,36 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
     return this._inputFormat ?? this._input?.inputFormat;
   }
 
-  /**
-   * The locale settings used to display the value.
-   * @attr
-   */
-  @property()
-  public locale = 'en';
-
   /** The prompt symbol to use for unfilled parts of the mask.
    *  @attr
    */
   @property()
   public prompt = '_';
 
-  /** The resource strings of the calendar. */
+  /**
+   * Gets/Sets the locale used for formatting the display value.
+   * @attr locale
+   */
+  @property()
+  public set locale(value: string) {
+    this._i18nController.locale = value;
+  }
+
+  public get locale() {
+    return this._i18nController.locale;
+  }
+
+  /**
+   * The resource strings for localization.
+   */
   @property({ attribute: false })
-  public resourceStrings: IgcCalendarResourceStrings =
-    IgcCalendarResourceStringEN;
+  public set resourceStrings(value: IgcCalendarResourceStrings) {
+    this._i18nController.resourceStrings = value;
+  }
+
+  public get resourceStrings(): IgcCalendarResourceStrings {
+    return this._i18nController.resourceStrings;
+  }
 
   /** Sets the start day of the week for the calendar. */
   @property({ attribute: 'week-start' })

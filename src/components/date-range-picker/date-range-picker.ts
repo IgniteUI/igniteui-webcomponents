@@ -30,7 +30,11 @@ import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditio
 import { shadowOptions } from '../common/decorators/shadow-options.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
-import { IgcDateRangePickerResourceStringsEN } from '../common/i18n/date-range-picker.resources.js';
+import {
+  type IgcDateRangePickerResourceStrings,
+  IgcDateRangePickerResourceStringsEN,
+} from '../common/i18n/EN/date-range-picker.resources.js';
+import { addI18nController } from '../common/i18n/i18n-controller.js';
 import { IgcBaseComboBoxLikeComponent } from '../common/mixins/combo-box.js';
 import type { AbstractConstructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
@@ -224,6 +228,11 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
     }
   );
 
+  private readonly _i18nController =
+    addI18nController<IgcDateRangePickerResourceStrings>(this, {
+      defaultEN: IgcDateRangePickerResourceStringsEN,
+    });
+
   private _activeDate: Date | null = null;
   private _min: Date | null = null;
   private _max: Date | null = null;
@@ -334,11 +343,23 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
    * @attr
    */
   @property()
-  public locale = 'en';
+  public set locale(value: string) {
+    this._i18nController.locale = value;
+  }
+
+  public get locale() {
+    return this._i18nController.locale;
+  }
 
   /** The resource strings of the date range picker. */
   @property({ attribute: false })
-  public resourceStrings = IgcDateRangePickerResourceStringsEN;
+  public set resourceStrings(value: IgcDateRangePickerResourceStrings) {
+    this._i18nController.resourceStrings = value;
+  }
+
+  public get resourceStrings(): IgcDateRangePickerResourceStrings {
+    return this._i18nController.resourceStrings;
+  }
 
   // #endregion
 
