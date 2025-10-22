@@ -51,6 +51,12 @@ const metadata: Meta<IgcChipComponent> = {
       options: ['primary', 'info', 'success', 'warning', 'danger'],
       control: { type: 'select' },
     },
+    locale: {
+      type: 'string',
+      description:
+        'Gets/Sets the locale used for formatting and displaying the dates in the component.',
+      control: 'text',
+    },
   },
   args: {
     disabled: false,
@@ -73,6 +79,8 @@ interface IgcChipArgs {
   selected: boolean;
   /** A property that sets the color variant of the chip component. */
   variant: 'primary' | 'info' | 'success' | 'warning' | 'danger';
+  /** Gets/Sets the locale used for formatting and displaying the dates in the component. */
+  locale: string;
 }
 type Story = StoryObj<IgcChipArgs>;
 

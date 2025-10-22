@@ -1,3 +1,7 @@
+import {
+  ComboResourceStringsEN,
+  type IComboResourceStrings,
+} from 'igniteui-i18n-core';
 import { html, LitElement, nothing, type TemplateResult } from 'lit';
 import { property, queryAssignedElements, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
@@ -9,6 +13,7 @@ import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditio
 import { blazorIndirectRender } from '../common/decorators/blazorIndirectRender.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
+import { addI18nController } from '../common/i18n/i18n-controller.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '../common/mixins/forms/associated-required.js';
@@ -150,6 +155,13 @@ export default class IgcComboComponent<
     },
   });
 
+  private readonly _i18nController = addI18nController<IComboResourceStrings>(
+    this,
+    {
+      defaultEN: ComboResourceStringsEN,
+    }
+  );
+
   protected override readonly _formValue = createFormValueState<
     ComboValue<T>[]
   >(this, {
@@ -260,6 +272,19 @@ export default class IgcComboComponent<
   public autofocusList = false;
 
   /**
+   * Gets/Sets the locale used for formatting and displaying the dates in the component.
+   * @attr locale
+   */
+  @property()
+  public set locale(value: string) {
+    this._i18nController.locale = value;
+  }
+
+  public get locale() {
+    return this._i18nController.locale;
+  }
+
+  /**
    * The label attribute of the control.
    * @attr label
    */
@@ -278,7 +303,19 @@ export default class IgcComboComponent<
    * @attr placeholder-search
    */
   @property({ attribute: 'placeholder-search' })
-  public placeholderSearch = 'Search';
+  public set placeholderSearch(value: string) {
+    this._placeholderSearch = value;
+  }
+
+  public get placeholderSearch() {
+    return (
+      this._placeholderSearch ??
+      this.resourceStrings.combo_filter_search_placeholder ??
+      'Search'
+    );
+  }
+
+  private _placeholderSearch: string | undefined;
 
   /**
    * Sets the open state of the component.
@@ -286,6 +323,18 @@ export default class IgcComboComponent<
    */
   @property({ type: Boolean, reflect: true })
   public open = false;
+
+  /**
+   * The resource strings for localization.
+   */
+  @property({ attribute: false })
+  public set resourceStrings(value: IComboResourceStrings) {
+    this._i18nController.resourceStrings = value;
+  }
+
+  public get resourceStrings(): IComboResourceStrings {
+    return this._i18nController.resourceStrings;
+  }
 
   /**
    * The key in the data source used when selecting items.
@@ -393,6 +442,14 @@ export default class IgcComboComponent<
   public get disableFiltering(): boolean {
     return this._disableFiltering;
   }
+
+  /**
+   * Hides the clear button.
+   * @attr disable-clear
+   * @default false
+   */
+  @property({ type: Boolean, attribute: 'disable-clear' })
+  public disableClear = false;
 
   /* blazorSuppress */
   /**
@@ -863,7 +920,7 @@ export default class IgcComboComponent<
         slot="suffix"
         part="clear-icon"
         @click=${this.handleClearIconClick}
-        ?hidden=${this._selection.isEmpty}
+        ?hidden=${this.disableClear || this._selection.isEmpty}
       >
         <slot name="clear-icon">
           <igc-icon
@@ -946,7 +1003,7 @@ export default class IgcComboComponent<
   private renderEmptyTemplate() {
     return html`
       <div part="empty" ?hidden=${!isEmpty(this._state.dataState)}>
-        <slot name="empty">The list is empty</slot>
+        <slot name="empty">${this.resourceStrings.combo_empty_message}</slot>
       </div>
     `;
   }
