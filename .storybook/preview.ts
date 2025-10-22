@@ -4,6 +4,24 @@ import { type CSSResult, html } from 'lit';
 import { configureTheme } from '../src/theming/config';
 import type { Decorator, Preview } from '@storybook/web-components-vite';
 import { withActions } from 'storybook/actions/decorator';
+import { registerI18n } from 'igniteui-i18n-core';
+import {
+  ResourceStringsBG,
+  ResourceStringsDE,
+  ResourceStringsES,
+  ResourceStringsFR,
+  ResourceStringsJA,
+} from 'igniteui-i18n-resources';
+
+const LocalizationResources = new Map(
+  Object.entries({
+    de: ResourceStringsDE,
+    fr: ResourceStringsFR,
+    es: ResourceStringsES,
+    ja: ResourceStringsJA,
+    bg: ResourceStringsBG,
+  })
+);
 
 type ThemeImport = { styles: CSSResult };
 
@@ -62,6 +80,12 @@ const themeProvider: Decorator = (story, context) => {
   `;
 };
 
+const localeProvider: Decorator = (story, context) => {
+  const { localization } = context.globals;
+  document.documentElement.lang = localization ?? 'en';
+  return story();
+};
+
 export default {
   globalTypes: {
     theme: {
@@ -102,6 +126,21 @@ export default {
         ],
       },
     },
+    localization: {
+      name: 'Localization',
+      description: 'Component localization',
+      toolbar: {
+        icon: 'globe',
+        items: [
+          { value: 'en', title: 'English' },
+          { value: 'de', title: 'German' },
+          { value: 'fr', title: 'French' },
+          { value: 'es', title: 'Spanish' },
+          { value: 'ja', title: 'Japanese' },
+          { value: 'bg', title: 'Bulgarian' },
+        ],
+      },
+    },
     size: {
       name: 'Size',
       description: 'Component size',
@@ -120,6 +159,7 @@ export default {
     theme: 'bootstrap',
     variant: 'light',
     direction: 'ltr',
+    localization: 'en',
     size: 'default',
   },
   parameters: {
@@ -127,9 +167,13 @@ export default {
       disable: true,
     },
   },
-  decorators: [themeProvider, withActions],
+  decorators: [themeProvider, withActions, localeProvider],
   loaders: [
     async (context) => {
+      for (const [locale, resources] of LocalizationResources.entries()) {
+        registerI18n(resources, locale);
+      }
+
       const { theme, variant } = context.globals;
       return { theme: getTheme({ theme, variant }) };
     },
