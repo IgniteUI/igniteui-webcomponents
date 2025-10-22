@@ -221,11 +221,7 @@ type Story = StoryObj<IgcComboArgs>;
 // endregion
 
 const itemTemplate: ComboItemTemplate<City> = ({ item }) => {
-  return html`
-    <div>
-      <span><b>${item?.name ?? item}</b> [${item?.zip}]</span>
-    </div>
-  `;
+  return html` <div><b>${item?.name ?? item}</b> [${item?.zip}]</div> `;
 };
 
 const groupHeaderTemplate: ComboItemTemplate<City> = ({ item }) => {
@@ -369,6 +365,11 @@ export const Form: Story = {
   argTypes: disableStoryControls(metadata),
   render: () => {
     return html`
+      <style>
+        fieldset {
+          min-width: 0;
+        }
+      </style>
       <form @submit=${formSubmitHandler}>
         <fieldset>
           <igc-combo
