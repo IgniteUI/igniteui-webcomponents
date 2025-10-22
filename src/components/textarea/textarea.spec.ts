@@ -149,6 +149,21 @@ describe('Textarea component', () => {
       expect(prefixPart.hidden).to.be.true;
       expect(suffixPart.hidden).to.be.true;
     });
+
+    it('correctly recreates internal input query after re-renders', async () => {
+      element = await fixture(html`<igc-textarea></igc-textarea>`);
+      textArea = element.renderRoot.querySelector('textarea')!;
+
+      // Switching to material creates a new internal template with another textarea...
+      configureTheme('material');
+      await elementUpdated(element);
+
+      // ..thus the previously referenced non-material textarea should not match the internal query
+      expect(textArea !== (element as any)._input).to.be.true;
+
+      configureTheme('bootstrap');
+      await elementUpdated(element);
+    });
   });
 
   describe('Events', () => {
