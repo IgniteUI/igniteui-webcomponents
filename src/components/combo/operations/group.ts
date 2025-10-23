@@ -39,7 +39,7 @@ export default class GroupDataOperation<T extends object> {
           header: true,
           dataIndex: -1,
         },
-        ...grouped.get(key)!,
+        ...(grouped.get(key) ?? []),
       ];
     });
   }
