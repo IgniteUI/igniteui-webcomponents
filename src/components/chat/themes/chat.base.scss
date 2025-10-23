@@ -125,9 +125,18 @@ slot[name='prefix'] {
     margin-inline-end: rem(32px);
 }
 
-igc-chat-input {
-    grid-row: 3;
+[part='input-area-container'] {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    z-index: 1;
+    grid-column: 1 / -1;
+    grid-row: 3 / 3;
 }
+// igc-chat-input {
+//     grid-row: 3;
+// }
 
 igc-list {
     --ig-size: 3;
