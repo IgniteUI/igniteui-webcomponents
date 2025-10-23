@@ -12,6 +12,12 @@ $theme: $material;
     }
 }
 
+:host(:hover) {
+    [part='control checked']::after {
+        border-color: var-get($theme, 'fill-color-hover');
+    }
+}
+
 [part~='label'] {
     @include type-style('subtitle-1');
 }
