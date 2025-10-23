@@ -30,6 +30,47 @@ type MaskReplaceResult = {
 const MASK_FLAGS = new Set('aACL09#&?');
 const MASK_REQUIRED_FLAGS = new Set('0#LA&');
 
+const DIGIT_ZERO_CODEPOINTS = [
+  0x0030, // ASCII
+  0x0660, // Arabic-Indic
+  0x06f0, // Extended Arabic-Indic
+  0x0966, // Devanagari
+  0x09e6, // Bengali
+  0x0a66, // Gurmukhi
+  0x0ae6, // Gujarati
+  0x0b66, // Oriya
+  0x0c66, // Telugu
+  0x0ce6, // Kannada
+  0x0d66, // Malayalam
+  0x0e50, // Thai
+  0x0ed0, // Lao
+  0x0f20, // Tibetan
+  0x1040, // Myanmar
+  0x17e0, // Khmer
+  0x1810, // Mongolian
+  0xff10, // Full-width
+] as const;
+
+function replaceUnicodeNumbers(text: string): string {
+  const matcher = /\p{Nd}/gu;
+  const ascii_zero = 0x0030;
+
+  return text.replace(matcher, (digit) => {
+    let digitValue = 0;
+    const codePoint = digit.charCodeAt(0);
+
+    for (const zeroCodePoint of DIGIT_ZERO_CODEPOINTS) {
+      if (codePoint >= zeroCodePoint && codePoint <= zeroCodePoint + 9) {
+        digitValue = zeroCodePoint;
+        break;
+      }
+    }
+
+    digitValue = codePoint - digitValue;
+    return String.fromCharCode(ascii_zero + digitValue);
+  });
+}
+
 const MASK_PATTERNS = new Map([
   ['C', /(?!^$)/u], // Non-empty (any character that is not an empty string)
   ['&', /[^\p{Separator}]/u], // Any non-whitespace character (Unicode-aware)
@@ -41,25 +82,6 @@ const MASK_PATTERNS = new Map([
   ['9', /[\p{Number}\p{Separator}]/u], // Numeric and whitespace (Unicode-aware)
   ['#', /[\p{Number}\-+]/u], // Numeric and sign characters (+, -)
 ]);
-
-function replaceIMENumbers(string: string): string {
-  return string.replace(
-    /[０１２３４５６７８９]/g,
-    (num) =>
-      ({
-        '１': '1',
-        '２': '2',
-        '３': '3',
-        '４': '4',
-        '５': '5',
-        '６': '6',
-        '７': '7',
-        '８': '8',
-        '９': '9',
-        '０': '0',
-      })[num] as string
-  );
-}
 
 function validate(char: string, flag: string): boolean {
   return MASK_PATTERNS.get(flag)?.test(char) ?? false;
@@ -265,7 +287,7 @@ export class MaskParser {
     // Initialize the array for the masked string or get a fresh mask with prompts and/or literals
     const maskedChars = Array.from(maskString || this.apply(''));
 
-    const inputChars = Array.from(replaceIMENumbers(value));
+    const inputChars = Array.from(replaceUnicodeNumbers(value));
     const inputLength = inputChars.length;
 
     // Clear any non-literal positions from `start` to `endBoundary`
