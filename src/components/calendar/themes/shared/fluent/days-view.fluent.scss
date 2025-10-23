@@ -68,6 +68,16 @@ $fake-bg-position: calc(50% - (var-get($theme, 'size') / 2));
     height: var-get($theme, 'size');
     border-radius: var-get($theme, 'date-border-radius');
 
+    &::after {
+        content: '';
+        position: absolute;
+        z-index: 0;
+        border: $border-size solid transparent;
+        border-radius: inherit;
+        width: var-get($theme, 'inner-size');
+        height: var-get($theme, 'inner-size');
+    }
+
     &[part~='inactive']:not([part~='selected'][part~='range']) {
         color: var-get($theme, 'inactive-color');
     }
@@ -76,16 +86,6 @@ $fake-bg-position: calc(50% - (var-get($theme, 'size') / 2));
         &:hover {
             color: var-get($theme, 'date-hover-foreground');
         }
-    }
-
-    &::after {
-        content: '';
-        position: absolute;
-        z-index: 0;
-        border: $border-size solid transparent;
-        border-radius: 50%;
-        width: var-get($theme, 'inner-size');
-        height: var-get($theme, 'inner-size');
     }
 
     &[part~='disabled']:not([part~='special'],[part~='current'], [part~='disabled']) {
@@ -103,6 +103,30 @@ $fake-bg-position: calc(50% - (var-get($theme, 'size') / 2));
 
     &[part~='range'] {
         height: 100%;
+        border-radius: var-get($theme, 'date-range-border-radius');
+    }
+
+    &[part~='selected'][part~='first'][part~='last'] {
+        border-radius: var-get($theme, 'date-range-border-radius');
+    }
+
+    &[part~='special'] {
+        &::after {
+            border-radius: var-get($theme, 'date-special-border-radius');
+        }
+    }
+
+    &[part~='current'] {
+        &::before {
+            border-radius: var-get($theme, 'date-current-border-radius');
+        }
+    }
+
+    &[part~='current'][part~='special'] {
+        &::before,
+        &::after {
+            border-radius: var-get($theme, 'date-current-border-radius');
+        }
     }
 }
 
@@ -128,7 +152,6 @@ $fake-bg-position: calc(50% - (var-get($theme, 'size') / 2));
         position: absolute;
         z-index: 0;
         border: $border-size solid transparent;
-        border-radius: 50%;
         width: var-get($theme, 'inner-size');
         height: var-get($theme, 'inner-size');
     }
@@ -137,33 +160,24 @@ $fake-bg-position: calc(50% - (var-get($theme, 'size') / 2));
     &[part~='selected'][part~='first'][part~='last'] {
         background: transparent;
         border-color: var-get($theme, 'date-range-preview-border-color');
-        border-radius: var-get($theme, 'date-range-border-radius');
     }
 
-    &[part~='selected'] {
+
+    &[part~='selected']:not([part~='range']) {
         color: var-get($theme, 'date-selected-foreground');
         background: var-get($theme, 'date-selected-background');
+        border-color: var-get($theme, 'date-selected-border-color');
 
         &:hover {
             color: var-get($theme, 'date-selected-hover-foreground');
             background: var-get($theme, 'date-selected-hover-background');
-        }
-
-        &:focus {
-            color: var-get($theme, 'date-selected-focus-foreground');
-            background: var-get($theme, 'date-selected-focus-background');
-        }
-    }
-
-    &[part~='selected']:not(&[part~='range']) {
-        border-color: var-get($theme, 'date-selected-border-color');
-
-        &:hover {
             border-color: var-get($theme, 'date-selected-hover-border-color');
 
         }
 
         &:focus {
+            color: var-get($theme, 'date-selected-focus-foreground');
+            background: var-get($theme, 'date-selected-focus-background');
             border-color: var-get($theme, 'date-selected-focus-border-color');
         }
     }
@@ -186,29 +200,12 @@ $fake-bg-position: calc(50% - (var-get($theme, 'size') / 2));
 
         &[part~='selected'][part~='first'],
         &[part~='selected'][part~='last'] {
-            border-top-color: var-get($theme, 'date-range-border-color');
-            border-bottom-color: var-get($theme, 'date-range-border-color');
+            border-inline-color: transparent;
 
             &:hover,
             &:focus {
                 border-inline-start-color: transparent;
             }
-        }
-
-        &[part~='selected'][part~='first'] {
-            border-color: transparent;
-            border-start-start-radius: var-get($theme, 'date-range-border-radius');
-            border-end-start-radius: var-get($theme, 'date-range-border-radius');
-            border-start-end-radius: var-get($theme, 'date-border-radius');
-            border-end-end-radius: var-get($theme, 'date-border-radius');
-        }
-
-        &[part~='selected'][part~='last'] {
-            border-color: transparent;
-            border-start-end-radius: var-get($theme, 'date-range-border-radius');
-            border-end-end-radius: var-get($theme, 'date-range-border-radius');
-            border-start-start-radius: var-get($theme, 'date-border-radius');
-            border-end-start-radius: var-get($theme, 'date-border-radius');
         }
 
         &[part~='selected'] {
@@ -269,7 +266,6 @@ $fake-bg-position: calc(50% - (var-get($theme, 'size') / 2));
             z-index: -1;
             width: var-get($theme, 'inner-size');
             height: var-get($theme, 'inner-size');
-            border-radius: 50%;
             background: var-get($theme, 'date-current-background');
             border-color: var-get($theme, 'date-current-border-color');
         }
@@ -369,12 +365,16 @@ $fake-bg-position: calc(50% - (var-get($theme, 'size') / 2));
         }
 
         &:hover {
+            color: var-get($theme, 'date-current-hover-foreground');
+
             &::after {
                 border-color: var-get($theme, 'date-selected-current-hover-foreground');
             }
         }
 
         &:focus {
+            color: var-get($theme, 'date-current-focus-foreground');
+
             &::after {
                 border-color: var-get($theme, 'date-selected-current-focus-foreground');
             }
@@ -394,20 +394,11 @@ $fake-bg-position: calc(50% - (var-get($theme, 'size') / 2));
 
     &[part~='first'],
     &[part~='last'] {
-        &::after {
-            width: $fake-bg-size;
-        }
-
         background: transparent;
 
         &::before,
         &::after {
             height: var-get($theme, 'size');
-        }
-
-        &::after {
-            background: var-get($theme, 'date-selected-range-background');
-            border-block: $border-size solid var-get($theme, 'date-selected-range-background');
         }
 
         &::before {
@@ -418,11 +409,19 @@ $fake-bg-position: calc(50% - (var-get($theme, 'size') / 2));
             z-index: 3;
             pointer-events: none;
         }
+
+        &::after {
+            width: $fake-bg-size;
+            background: var-get($theme, 'date-selected-range-background');
+            border-block: $border-size solid var-get($theme, 'date-selected-range-background');
+        }
     }
 
     &[part~='first'] {
         &::after {
             inset-inline-start: $fake-bg-position;
+            border-start-start-radius: var-get($theme, 'date-range-border-radius');
+            border-end-start-radius: var-get($theme, 'date-range-border-radius');
         }
 
         &::before {
@@ -438,6 +437,12 @@ $fake-bg-position: calc(50% - (var-get($theme, 'size') / 2));
     }
 
     &[part~='last'] {
+        &::after {
+            inset-inline-end: $fake-bg-position;
+            border-start-end-radius: var-get($theme, 'date-range-border-radius');
+            border-end-end-radius: var-get($theme, 'date-range-border-radius');
+        }
+
         &::before {
             inset-inline-start: initial;
             border-inline: $border-size solid;

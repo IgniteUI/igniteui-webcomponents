@@ -105,13 +105,27 @@ $border-size: rem(1px);
             height: var-get($theme, 'size');
             width: var-get($theme, 'size');
             background: var-get($theme, 'content-background');
-            border-radius: var-get($theme, 'date-border-radius');
+            border-radius: var-get($theme, 'date-range-border-radius');
         }
 
         &::after {
             height: var-get($theme, 'size');
             border-block-width: $border-size;
             border-block-style: solid;
+        }
+    }
+
+    &[part~='range'][part~='first'][part~='special'],
+    &[part~='range'][part~='last'][part~='special'] {
+        &::before {
+            border-radius: var-get($theme, 'date-special-border-radius');
+        }
+    }
+
+    &[part~='range'][part~='first'][part~='current'],
+    &[part~='range'][part~='last'][part~='current'] {
+        &::before {
+            border-radius: var-get($theme, 'date-current-border-radius');
         }
     }
 
@@ -177,6 +191,35 @@ $border-size: rem(1px);
 
     &[part~='disabled'][part~='range']:not([part~='selected'],[part~='special'],[part~='current']) {
         color: var-get($theme, 'date-disabled-range-foreground');
+    }
+
+    &[part~='first'],
+    &[part~='last'] {
+        border-radius: var-get($theme, 'date-range-border-radius');
+
+        &::after {
+            border-radius: var-get($theme, 'date-range-border-radius');
+        }
+    }
+
+    &[part~='special'] {
+        border-radius: var-get($theme, 'date-special-border-radius');
+
+        &::after {
+            border-radius: var-get($theme, 'date-special-border-radius');
+        }
+    }
+
+    &[part~='current'] {
+        border-radius: var-get($theme, 'date-current-border-radius');
+    }
+
+    &[part~='special'][part~='current'] {
+        border-radius: var-get($theme, 'date-current-border-radius');
+
+        &::after {
+            border-radius: var-get($theme, 'date-current-border-radius');
+        }
     }
 }
 
@@ -285,7 +328,6 @@ $border-size: rem(1px);
             position: absolute;
             z-index: 0;
             border: rem(1px) solid var-get($theme, 'date-special-border-color');
-            border-radius: calc(var-get($theme, 'size') / 2);
             width: var-get($theme, 'size');
             height: var-get($theme, 'size');
             box-sizing: border-box;
