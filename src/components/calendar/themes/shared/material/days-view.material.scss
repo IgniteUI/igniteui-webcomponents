@@ -419,12 +419,13 @@ $week-number-radius: var-get($theme, 'week-number-border-radius');
     }
 
     // Dates inside the range, but not the first or last date of the range
-    &[part~='range']:not([part~='first'], [part~='last'], [part~='preview'], [part~='disabled']) {
+    &[part~='range']:not([part~='first'], [part~='last'], [part~='preview'], [part~='disabled'], [part~='special'], [part~='current']) {
         color: var-get($theme, 'date-selected-range-foreground');
 
-        // Since for the idle: selected, current and special dates we have background, we need to
-        // override it here for the range dates, so the range background is visible.
+        // Since for the idle selected dates we have background and border, we need to
+        // override it here, so the range background is visible.
         background: transparent;
+        border-color: transparent;
 
         &:hover {
             color: var-get($theme, 'date-selected-range-hover-foreground');
