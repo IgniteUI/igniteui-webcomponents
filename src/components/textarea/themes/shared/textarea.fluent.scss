@@ -9,12 +9,9 @@ $border-size: rem(1px);
 
     --component-size: var(--ig-size, #{var-get($theme, 'default-size')});
     --textarea-border-size: #{rem(1px)};
-    --affix-padding: #{pad-inline(rem(8px), rem(12px), rem(16px))};
+    --affix-padding: #{pad-inline(rem(8px), rem(10px), rem(14px))};
 
     ::part(helper-text) {
-        @include type-style('caption');
-
-        color: var-get($theme, 'helper-text-color');
         grid-auto-rows: minmax(rem(18px), auto);
         margin-block-start: pad-block(rem(5px));
     }
@@ -22,8 +19,6 @@ $border-size: rem(1px);
 
 [part~='label'] {
     @include type-style('subtitle-2') {
-        --ig-subtitle-2-line-height: #{rem(16px)};
-
         margin-block: 0 pad-block(rem(5px));
     };
 
@@ -82,7 +77,9 @@ $border-size: rem(1px);
 textarea {
     @include type-style('body-2');
 
-    padding: pad(rem(8px));
+    padding-inline: pad-inline(rem(8px));
+    padding-block: pad-block(rem(6px), rem(10px), rem(14px)) 0;
+    margin-block-end: rem(2px);
 }
 
 :host([required]:not(:disabled)),
