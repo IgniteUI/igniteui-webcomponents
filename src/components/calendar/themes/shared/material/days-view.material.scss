@@ -11,7 +11,7 @@ $week-number-radius: var-get($theme, 'week-number-border-radius');
     color: var-get($theme, 'weekday-color');
 
     [part~='week-number-inner'] {
-        color: var-get($theme, 'weekday-color');
+        color: var-get($theme, 'week-number-foreground');
     }
 }
 
