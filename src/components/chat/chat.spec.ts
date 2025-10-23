@@ -312,9 +312,9 @@ describe('Chat', () => {
       await elementUpdated(chat);
 
       const { input, suggestionsContainer } = getChatDOM(chat);
-      expect(suggestionsContainer.getBoundingClientRect().top).lessThanOrEqual(
-        input.self.getBoundingClientRect().bottom
-      );
+      expect(
+        suggestionsContainer.getBoundingClientRect().top
+      ).greaterThanOrEqual(input.self.getBoundingClientRect().bottom);
     });
 
     it('should render typing indicator if `isTyping` is true', async () => {
