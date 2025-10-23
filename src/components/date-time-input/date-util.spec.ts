@@ -20,7 +20,10 @@ describe('Date Util', () => {
   });
 
   it('should correctly parse all date time parts (base)', () => {
-    const result = DateTimeUtil.parseDateTimeFormat('dd/MM/yyyy HH:mm:ss tt');
+    const result = DateTimeUtil.parseDateTimeFormat(
+      'dd/MM/yyyy HH:mm:ss tt',
+      DEFAULT_LOCALE
+    );
     const expected = [
       { start: 0, end: 2, type: DateParts.Date, format: 'dd' },
       { start: 2, end: 3, type: DateParts.Literal, format: '/' },
@@ -42,7 +45,10 @@ describe('Date Util', () => {
   it('parseValueFromMask with valid date', () => {
     let maskedValue = '03/03/2020';
     let date = new Date(2020, 2, 3);
-    let parts = DateTimeUtil.parseDateTimeFormat(DEFAULT_FORMAT);
+    let parts = DateTimeUtil.parseDateTimeFormat(
+      DEFAULT_FORMAT,
+      DEFAULT_LOCALE
+    );
     let parsedDate = DateTimeUtil.parseValueFromMask(
       maskedValue,
       parts,
@@ -51,7 +57,10 @@ describe('Date Util', () => {
 
     expect(parsedDate!.getTime()).to.equal(date.getTime());
 
-    parts = DateTimeUtil.parseDateTimeFormat(DEFAULT_TIME_FORMAT);
+    parts = DateTimeUtil.parseDateTimeFormat(
+      DEFAULT_TIME_FORMAT,
+      DEFAULT_LOCALE
+    );
 
     maskedValue = '03/03/2020 10:00 PM';
     date = new Date(2020, 2, 3, 22, 0, 0, 0);
@@ -74,7 +83,10 @@ describe('Date Util', () => {
 
   it('parseValueFromMask with invalid dates', () => {
     let maskedValue = '13/03/2020';
-    let parts = DateTimeUtil.parseDateTimeFormat(DEFAULT_FORMAT);
+    let parts = DateTimeUtil.parseDateTimeFormat(
+      DEFAULT_FORMAT,
+      DEFAULT_LOCALE
+    );
 
     let parsedDate = DateTimeUtil.parseValueFromMask(
       maskedValue,
@@ -99,7 +111,10 @@ describe('Date Util', () => {
     );
     expect(parsedDate).to.be.null;
 
-    parts = DateTimeUtil.parseDateTimeFormat(DEFAULT_TIME_FORMAT);
+    parts = DateTimeUtil.parseDateTimeFormat(
+      DEFAULT_TIME_FORMAT,
+      DEFAULT_LOCALE
+    );
 
     maskedValue = '03/03/2020 25:62';
     parsedDate = DateTimeUtil.parseValueFromMask(
@@ -112,7 +127,10 @@ describe('Date Util', () => {
 
   it('getPartValue should properly return part values', () => {
     const currentDate = new Date(2020, 6, 17, 16, 15, 59);
-    const parts = DateTimeUtil.parseDateTimeFormat('dd/MM/yy hh:mm:ss tt');
+    const parts = DateTimeUtil.parseDateTimeFormat(
+      'dd/MM/yy hh:mm:ss tt',
+      DEFAULT_LOCALE
+    );
 
     const partsMap = new Map<DateParts, number>([
       [DateParts.Date, currentDate.getDate()],
