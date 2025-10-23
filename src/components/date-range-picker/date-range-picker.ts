@@ -1,4 +1,8 @@
-import { getDateFormatter } from 'igniteui-i18n-core';
+import {
+  getDateFormatter,
+  type IValidationResourceStrings,
+  ValidationResourceStringsEN,
+} from 'igniteui-i18n-core';
 import { html, nothing, type TemplateResult } from 'lit';
 import {
   property,
@@ -229,10 +233,18 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
     }
   );
 
-  private readonly _i18nController =
-    addI18nController<IgcDateRangePickerResourceStrings>(this, {
-      defaultEN: IgcDateRangePickerResourceStringsEN,
-    });
+  /**
+   * For now we use the core validation strings internally only, to avoid mixing with old resources by users.
+   * To Do: Update resourceStrings type when the IgcDateRangePickerResourceStrings is changed to IDateRangePickerResourceStrings
+   */
+  protected override readonly __i18nController = addI18nController<
+    IgcDateRangePickerResourceStrings & IValidationResourceStrings
+  >(this, {
+    defaultEN: {
+      ...IgcDateRangePickerResourceStringsEN,
+      ...ValidationResourceStringsEN,
+    },
+  });
 
   private _activeDate: Date | null = null;
   private _min: Date | null = null;
@@ -346,21 +358,21 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
    */
   @property()
   public set locale(value: string) {
-    this._i18nController.locale = value;
+    this.__i18nController.locale = value;
   }
 
   public get locale() {
-    return this._i18nController.locale;
+    return this.__i18nController.locale;
   }
 
   /** The resource strings of the date range picker. */
   @property({ attribute: false })
   public set resourceStrings(value: IgcDateRangePickerResourceStrings) {
-    this._i18nController.resourceStrings = value;
+    this.__i18nController.resourceStrings = value;
   }
 
   public get resourceStrings(): IgcDateRangePickerResourceStrings {
-    return this._i18nController.resourceStrings;
+    return this.__i18nController.resourceStrings;
   }
 
   // #endregion
