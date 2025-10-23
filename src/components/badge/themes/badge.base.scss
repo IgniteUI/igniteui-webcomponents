@@ -2,87 +2,34 @@
 @use 'styles/utilities' as *;
 
 :host {
-    --_small-size: #{rem(16px)};
-    --_small-font-size: #{rem(10px)};
-    --_small-icon-size: #{rem(10px)};
-    --_small-padding: #{rem(2px)};
-    
-    --_medium-size: #{rem(22px)};
-    --_medium-font-size: #{rem(12px)};
-    --_medium-icon-size: #{rem(12px)};
-    --_medium-padding: #{rem(4px)};
-    
-    --_large-size: #{rem(28px)};
-    --_large-font-size: #{rem(14px)};
-    --_large-icon-size: #{rem(16px)};
-    --_large-padding: #{rem(6px)};
-
-    --size: calc(
-        (var(--_small-size) * var(--is-small)) +
-        (var(--_medium-size) * var(--is-medium)) +
-        (var(--_large-size) * var(--is-large))
-    );
-    --_badge-size: var(--size);
-    --_badge-font-size: calc(
-        (var(--_small-font-size) * var(--is-small)) +
-        (var(--_medium-font-size) * var(--is-medium)) +
-        (var(--_large-font-size) * var(--is-large))
-    );
-    --_badge-icon-size: calc(
-        (var(--_small-icon-size) * var(--is-small)) +
-        (var(--_medium-icon-size) * var(--is-medium)) +
-        (var(--_large-icon-size) * var(--is-large))
-    );
-    --_badge-padding: calc(
-        (var(--_small-padding) * var(--is-small)) +
-        (var(--_medium-padding) * var(--is-medium)) +
-        (var(--_large-padding) * var(--is-large))
-    );
-
     width: fit-content;
     height: fit-content;
     display: inline-flex;
-    font-weight: 500;
     vertical-align: top;
 }
 
-:host([dot]) {
-    --size: #{rem(8px)};
-}
-
 [part='base'] {
-    @include type-style('caption');
-
     display: inline-flex;
-    min-width: var(--size);
-    min-height: var(--size);
+    min-width: var(--_badge-size);
+    min-height: var(--_badge-size);
     justify-content: center;
     align-items: center;
     overflow: hidden;
     white-space: nowrap;
-    font-size: var(--_badge-font-size);
+    font-size: sizable(var(--ig-caption-font-size), var(--ig-body-2-font-size), var(--ig-body-2-font-size));
+    font-weight: sizable(var(--ig-caption-font-weight), var(--ig-body-2-font-weight), var(--ig-body-2-font-weight));
+    line-height: sizable(var(--ig-caption-line-height), var(--ig-body-2-line-height), var(--ig-body-2-line-height));
+    letter-spacing: sizable(var(--ig-caption-letter-spacing), var(--ig-body-2-letter-spacing), var(--ig-body-2-letter-spacing));
+    text-transform: sizable(var(--ig-caption-text-transform), var(--ig-body-2-text-transform), var(--ig-body-2-text-transform));
 }
 
-::slotted(*) {
-    --size: var(--_badge-icon-size) !important;
-}
+:host(:not(:empty, [dot])) [part='base'] {
+    padding-inline: pad-inline(rem(4px), rem(6px), rem(8px));
 
-::slotted(igc-icon) {
-    --size: var(--_badge-icon-size) !important;
-    --ig-icon-size: var(--_badge-icon-size);
-    --igx-icon-size: var(--_badge-icon-size);
-}
-
-:host(:not(:empty):not([dot])) [part='base'] {
-    padding-inline: var(--_badge-padding);
-}
-
-:host([dot]) [part='base'] {
-    min-width: var(--size);
-    max-width: var(--size);
-    min-height: var(--size);
-    max-height: var(--size);
-    padding: 0;
+    //should be fixed
+    &:has(::slotted(igc-icon)) {
+        padding: 0;
+    }
 }
 
 :host([variant='info']) [part='base'] {
@@ -95,13 +42,21 @@
 
 :host([variant='warning']) [part='base'] {
     background: color(warn, 500);
+    color: contrast-color(warn, 500);
+
+    igc-icon,
+    ::slotted(igc-icon) {
+        color: contrast-color(warn, 500);
+    }
 }
 
 :host([variant='danger']) [part='base'] {
     background: color(error, 500);
+    color: contrast-color(error, 900);
 }
 
 :host([shape='rounded']),
-:host([shape='rounded']) [part='base'] {
-    border-radius: calc(var(--size) * 2);
+:host([shape='rounded']) [part='base'],
+:host([dot]) [part='base'] {
+    border-radius: calc(var(--_badge-size) * 2);
 }

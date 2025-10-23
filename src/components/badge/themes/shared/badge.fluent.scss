@@ -1,0 +1,5 @@
+@use 'styles/utilities' as *;
+
+:host([variant='info']) [part='base'] {
+    background: color(info, 700);
+}
