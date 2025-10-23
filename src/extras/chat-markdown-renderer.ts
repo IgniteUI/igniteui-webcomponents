@@ -3,7 +3,7 @@ import { unsafeHTML } from 'lit/directives/unsafe-html.js';
 import { Marked } from 'marked';
 import markedShiki from 'marked-shiki';
 import { bundledThemes, createHighlighter } from 'shiki/bundle/web';
-import type { IgcChatMessage } from '../types.js';
+import type { IgcChatMessage } from '../components/chat/types.js';
 
 const DEFAULT_LANGUAGES = ['javascript', 'typescript', 'html', 'css'];
 const DEFAULT_THEME = {

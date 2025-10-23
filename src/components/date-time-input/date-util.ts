@@ -1,6 +1,6 @@
 import { getDateFormatter } from 'igniteui-i18n-core';
 import { parseISODate } from '../calendar/helpers.js';
-import { MaskParser } from '../mask-input/mask-parser.js';
+import { clamp } from '../common/util.js';
 
 export enum FormatDesc {
   Numeric = 'numeric',
@@ -59,7 +59,6 @@ export abstract class DateTimeUtil {
     'long',
     'full',
   ]);
-  private static _parser = new MaskParser();
 
   public static parseValueFromMask(
     inputData: string,
@@ -280,7 +279,7 @@ export abstract class DateTimeUtil {
       case DateParts.Hours:
         if (datePartInfo.format.indexOf('h') !== -1) {
           maskedValue = DateTimeUtil.prependValue(
-            DateTimeUtil.toTwelveHourFormat(_dateValue!.getHours().toString()),
+            DateTimeUtil.toTwelveHourFormat(_dateValue!.getHours()),
             partLength,
             '0'
           );
@@ -304,6 +303,27 @@ export abstract class DateTimeUtil {
     }
 
     return maskedValue;
+  }
+
+  private static _spinTimePart(
+    newDate: Date,
+    delta: number,
+    max: number,
+    min: number,
+    setter: (value: number) => number,
+    getter: () => number,
+    spinLoop: boolean
+  ): void {
+    const range = max - min + 1;
+    let newValue = getter.call(newDate) + delta;
+
+    if (spinLoop) {
+      newValue = min + ((((newValue - min) % range) + range) % range);
+    } else {
+      newValue = clamp(newValue, min, max);
+    }
+
+    setter.call(newDate, newValue);
   }
 
   public static spinYear(delta: number, newDate: Date): Date {
@@ -369,16 +389,15 @@ export abstract class DateTimeUtil {
     newDate: Date,
     spinLoop: boolean
   ): void {
-    const maxHour = 23;
-    const minHour = 0;
-    let hours = newDate.getHours() + delta;
-    if (hours > maxHour) {
-      hours = spinLoop ? (hours % maxHour) - 1 : maxHour;
-    } else if (hours < minHour) {
-      hours = spinLoop ? maxHour + (hours % maxHour) + 1 : minHour;
-    }
-
-    newDate.setHours(hours);
+    DateTimeUtil._spinTimePart(
+      newDate,
+      delta,
+      23,
+      0,
+      newDate.setHours,
+      newDate.getHours,
+      spinLoop
+    );
   }
 
   public static spinMinutes(
@@ -386,16 +405,15 @@ export abstract class DateTimeUtil {
     newDate: Date,
     spinLoop: boolean
   ): void {
-    const maxMinutes = 59;
-    const minMinutes = 0;
-    let minutes = newDate.getMinutes() + delta;
-    if (minutes > maxMinutes) {
-      minutes = spinLoop ? (minutes % maxMinutes) - 1 : maxMinutes;
-    } else if (minutes < minMinutes) {
-      minutes = spinLoop ? maxMinutes + (minutes % maxMinutes) + 1 : minMinutes;
-    }
-
-    newDate.setMinutes(minutes);
+    DateTimeUtil._spinTimePart(
+      newDate,
+      delta,
+      59,
+      0,
+      newDate.setMinutes,
+      newDate.getMinutes,
+      spinLoop
+    );
   }
 
   public static spinSeconds(
@@ -403,16 +421,15 @@ export abstract class DateTimeUtil {
     newDate: Date,
     spinLoop: boolean
   ): void {
-    const maxSeconds = 59;
-    const minSeconds = 0;
-    let seconds = newDate.getSeconds() + delta;
-    if (seconds > maxSeconds) {
-      seconds = spinLoop ? (seconds % maxSeconds) - 1 : maxSeconds;
-    } else if (seconds < minSeconds) {
-      seconds = spinLoop ? maxSeconds + (seconds % maxSeconds) + 1 : minSeconds;
-    }
-
-    newDate.setSeconds(seconds);
+    DateTimeUtil._spinTimePart(
+      newDate,
+      delta,
+      59,
+      0,
+      newDate.setSeconds,
+      newDate.getSeconds,
+      spinLoop
+    );
   }
 
   public static spinAmPm(
@@ -630,20 +647,8 @@ export abstract class DateTimeUtil {
     return (prependChar + value.toString()).slice(-partLength);
   }
 
-  private static toTwelveHourFormat(value: string): number {
-    let hour = Number.parseInt(
-      value.replace(
-        new RegExp(DateTimeUtil.escapeRegExp(DateTimeUtil._parser.prompt), 'g'),
-        '0'
-      ),
-      10
-    );
-    if (hour > 12) {
-      hour -= 12;
-    } else if (hour === 0) {
-      hour = 12;
-    }
-
-    return hour;
+  private static toTwelveHourFormat(value: number): number {
+    const hour12 = value % 12;
+    return hour12 === 0 ? 12 : hour12;
   }
 }

@@ -1,14 +1,13 @@
 import { html, nothing, type TemplateResult } from 'lit';
-import { property, query, queryAssignedElements } from 'lit/decorators.js';
+import { property, query } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { addThemingController } from '../../theming/theming-controller.js';
 import IgcCalendarComponent, { focusActiveDate } from '../calendar/calendar.js';
-import { convertToDate } from '../calendar/helpers.js';
-import {
-  type CalendarHeaderOrientation,
-  type DateRangeDescriptor,
-  DateRangeType,
-  type WeekDays,
+import { convertToDate, createDateConstraints } from '../calendar/helpers.js';
+import type {
+  CalendarHeaderOrientation,
+  DateRangeDescriptor,
+  WeekDays,
 } from '../calendar/types.js';
 import {
   addKeybindings,
@@ -18,6 +17,7 @@ import {
   escapeKey,
 } from '../common/controllers/key-bindings.js';
 import { addRootClickController } from '../common/controllers/root-click.js';
+import { addSlotController, setSlots } from '../common/controllers/slot.js';
 import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditionalDependencies.js';
 import { shadowOptions } from '../common/decorators/shadow-options.js';
 import { watch } from '../common/decorators/watch.js';
@@ -35,9 +35,9 @@ import { FormValueDateTimeTransformers } from '../common/mixins/forms/form-trans
 import { createFormValueState } from '../common/mixins/forms/form-value.js';
 import {
   addSafeEventListener,
-  createCounter,
+  bindIf,
+  equal,
   findElementFromEventPath,
-  isEmpty,
 } from '../common/util.js';
 import IgcDateTimeInputComponent from '../date-time-input/date-time-input.js';
 import { type DatePart, DateTimeUtil } from '../date-time-input/date-util.js';
@@ -62,9 +62,28 @@ export interface IgcDatePickerComponentEventMap {
   igcOpened: CustomEvent<void>;
   igcClosing: CustomEvent<void>;
   igcClosed: CustomEvent<void>;
-  igcChange: CustomEvent<Date>;
-  igcInput: CustomEvent<Date>;
+  igcChange: CustomEvent<Date | null>;
+  igcInput: CustomEvent<Date | null>;
 }
+
+let nextId = 1;
+const Slots = setSlots(
+  'prefix',
+  'suffix',
+  'helper-text',
+  'bad-input',
+  'value-missing',
+  'range-overflow',
+  'range-underflow',
+  'custom-error',
+  'invalid',
+  'title',
+  'header-date',
+  'clear-icon',
+  'calendar-icon',
+  'calendar-icon-open',
+  'actions'
+);
 
 /* blazorIndirectRender */
 /* blazorSupportsVisualChildren */
@@ -173,20 +192,19 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
 
   //#region Private properties and state
 
-  private static readonly _increment = createCounter();
-  protected _inputId = `date-picker-${IgcDatePickerComponent._increment()}`;
-
-  private readonly _themes = addThemingController(this, all);
-
   protected override get __validators() {
     return datePickerValidators;
   }
 
+  private readonly _inputId = `date-picker-${nextId++}`;
+  private readonly _themes = addThemingController(this, all);
+  private readonly _slots = addSlotController(this, { slots: Slots });
   private readonly _i18nController =
     addI18nController<IgcCalendarResourceStrings>(this, {
       defaultEN: IgcCalendarResourceStringEN,
     });
 
+  private _oldValue: Date | null = null;
   private _activeDate: Date | null = null;
   private _min: Date | null = null;
   private _max: Date | null = null;
@@ -213,20 +231,12 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
   @query(IgcCalendarComponent.tagName)
   private readonly _calendar!: IgcCalendarComponent;
 
-  @queryAssignedElements({ slot: 'prefix' })
-  private readonly _prefixes!: HTMLElement[];
-
-  @queryAssignedElements({ slot: 'suffix' })
-  private readonly _suffixes!: HTMLElement[];
-
-  @queryAssignedElements({ slot: 'actions' })
-  private readonly _actions!: HTMLElement[];
-
-  @queryAssignedElements({ slot: 'header-date' })
-  private readonly _headerSlotItems!: HTMLElement[];
-
   private get _isDropDown(): boolean {
     return this.mode === 'dropdown';
+  }
+
+  private get _isMaterial(): boolean {
+    return this._themes.theme === 'material';
   }
 
   //#endregion
@@ -475,6 +485,9 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
   @watch('open')
   protected _openChange(): void {
     this._rootClickController.update();
+    if (this.open) {
+      this._oldValue = this.value;
+    }
   }
 
   //#endregion
@@ -494,35 +507,16 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
       .set(escapeKey, this._onEscapeKey);
   }
 
-  protected override createRenderRoot(): HTMLElement | DocumentFragment {
-    const root = super.createRenderRoot();
-    root.addEventListener('slotchange', () => this.requestUpdate());
-    return root;
-  }
-
   //#endregion
 
   //#region Private methods
 
   private _setDateConstraints(): void {
-    const dates: DateRangeDescriptor[] = [];
-    if (this._min) {
-      dates.push({
-        type: DateRangeType.Before,
-        dateRange: [this._min],
-      });
-    }
-    if (this._max) {
-      dates.push({
-        type: DateRangeType.After,
-        dateRange: [this._max],
-      });
-    }
-    if (!isEmpty(this._disabledDates ?? [])) {
-      dates.push(...this.disabledDates);
-    }
-
-    this._dateConstraints = isEmpty(dates) ? undefined : dates;
+    this._dateConstraints = createDateConstraints(
+      this.min,
+      this.max,
+      this.disabledDates
+    );
   }
 
   private async _shouldCloseCalendarDropdown(): Promise<void> {
@@ -545,6 +539,12 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
   protected _handleFocusOut({ relatedTarget }: FocusEvent): void {
     if (!this.contains(relatedTarget as Node)) {
       this._handleBlur();
+
+      const readOnly = !this._isDropDown || this.readOnly || this.nonEditable;
+      if (readOnly && !equal(this.value, this._oldValue)) {
+        this.emitEvent('igcChange', { detail: this.value });
+        this._oldValue = this.value;
+      }
     }
   }
 
@@ -620,6 +620,7 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
 
   protected _handleDialogClosing(event: Event): void {
     event.stopPropagation();
+    this._oldValue = this.value;
     this._hide(true);
   }
 
@@ -633,6 +634,7 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
 
   /** Clears the input part of the component of any user input */
   public clear(): void {
+    this._oldValue = this.value;
     this.value = null;
     this._input?.clear();
   }
@@ -682,7 +684,7 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
           <span
             slot="suffix"
             part="clear-icon"
-            @click=${this.readOnly ? nothing : this.clear}
+            @click=${bindIf(!this.readOnly, this.clear)}
           >
             <slot name="clear-icon">
               <igc-icon
@@ -708,7 +710,7 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
         slot="prefix"
         part=${state}
         @pointerdown=${this._handlerCalendarIconSlotPointerDown}
-        @click=${this.readOnly ? nothing : this.handleAnchorClick}
+        @click=${bindIf(!this.readOnly, this.handleAnchorClick)}
       >
         <slot name=${state}>${defaultIcon}</slot>
       </span>
@@ -720,24 +722,28 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
       return nothing;
     }
 
-    const hasHeaderDate = isEmpty(this._headerSlotItems) ? '' : 'header-date';
+    const hasHeaderDate = this._slots.hasAssignedElements('header-date');
 
     return html`
       <slot name="title" slot="title">
         ${this.resourceStrings.selectDate}
       </slot>
-      <slot name="header-date" slot=${hasHeaderDate}></slot>
+      <slot
+        name="header-date"
+        slot=${bindIf(hasHeaderDate, 'header-date')}
+      ></slot>
     `;
   }
 
   private _renderCalendar(id: string) {
     const hideHeader = this._isDropDown ? true : this.hideHeader;
+    const isInert = !this.open || this.disabled;
 
     return html`
       <igc-calendar
         aria-labelledby=${id}
         role="dialog"
-        .inert=${!this.open || this.disabled}
+        .inert=${isInert}
         ?show-week-numbers=${this.showWeekNumbers}
         ?hide-outside-days=${this.hideOutsideDays}
         ?hide-header=${hideHeader}
@@ -763,22 +769,27 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
   }
 
   protected _renderActions() {
-    const hasActions = !isEmpty(this._actions);
-    const slot = this._isDropDown || hasActions ? undefined : 'footer';
+    const hasActions = this._slots.hasAssignedElements('actions');
 
     // If in dialog mode use the dialog footer slot
     return html`
-      <div part="actions" ?hidden=${!hasActions} slot=${ifDefined(slot)}>
+      <div
+        part="actions"
+        ?hidden=${!hasActions}
+        slot=${bindIf(!(this._isDropDown || hasActions), 'footer')}
+      >
         <slot name="actions"></slot>
       </div>
     `;
   }
 
   protected _renderPicker(id: string) {
+    const isDisabled = !this.open || this.disabled;
+
     return this._isDropDown
       ? html`
           <igc-popover ?open=${this.open} anchor=${id} flip shift>
-            <igc-focus-trap ?disabled=${!this.open || this.disabled}>
+            <igc-focus-trap ?disabled=${isDisabled}>
               ${this._renderCalendar(id)}${this._renderActions()}
             </igc-focus-trap>
           </igc-popover>
@@ -807,7 +818,7 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
           <label
             part="label"
             for=${id}
-            @click=${isDisabled ? nothing : this.handleAnchorClick}
+            @click=${bindIf(!isDisabled, this.handleAnchorClick)}
           >
             ${this.label}
           </label>
@@ -827,15 +838,15 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
     // Dialog mode is always readonly, rest depends on configuration
     const readOnly = !this._isDropDown || this.readOnly || this.nonEditable;
 
-    const prefix = isEmpty(this._prefixes) ? undefined : 'prefix';
-    const suffix = isEmpty(this._suffixes) ? undefined : 'suffix';
-    const isMaterial = this._themes.theme === 'material';
+    const hasPrefix = this._slots.hasAssignedElements('prefix');
+    const hasSuffix = this._slots.hasAssignedElements('suffix');
+    const hasClickHandler = !(this._isDropDown || this.readOnly);
 
     return html`
       <igc-date-time-input
         id=${id}
         aria-haspopup="dialog"
-        label=${ifDefined(isMaterial ? this.label : undefined)}
+        label=${bindIf(this._isMaterial, this.label)}
         input-format=${ifDefined(this._inputFormat)}
         display-format=${ifDefined(format)}
         ?always-leading-zero=${this.alwaysLeadingZero}
@@ -852,26 +863,24 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
         .invalid=${this.invalid}
         @igcChange=${this._handleInputChangeEvent}
         @igcInput=${this._handleInputEvent}
-        @click=${this._isDropDown || this.readOnly
-          ? nothing
-          : this._handleInputClick}
+        @click=${bindIf(hasClickHandler, this._handleInputClick)}
         exportparts="input, label, prefix, suffix"
       >
         ${this._renderCalendarIcon()}
-        <slot name="prefix" slot=${ifDefined(prefix)}></slot>
+        <slot name="prefix" slot=${bindIf(hasPrefix, 'prefix')}></slot>
         ${this._renderClearIcon()}
-        <slot name="suffix" slot=${ifDefined(suffix)}></slot>
+        <slot name="suffix" slot=${bindIf(hasSuffix, 'suffix')}></slot>
       </igc-date-time-input>
     `;
   }
 
   protected override render() {
     const id = this.id || this._inputId;
-    const isMaterial = this._themes.theme === 'material';
 
     return html`
-      ${isMaterial ? nothing : this._renderLabel(id)} ${this._renderInput(id)}
-      ${this._renderPicker(id)} ${this._renderHelperText()}
+      ${this._isMaterial ? nothing : this._renderLabel(id)}
+      ${this._renderInput(id)} ${this._renderPicker(id)}
+      ${this._renderHelperText()}
     `;
   }
 

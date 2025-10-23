@@ -22,7 +22,7 @@ import {
 } from './EN/date-range-picker.resources.js';
 import { addI18nController, type I18nController } from './i18n-controller.js';
 
-class TestLocalizedClass<T> extends LitElement {
+class TestLocalizedClass<T extends object> extends LitElement {
   public set locale(value: string) {
     this.i18nController.locale = value;
   }

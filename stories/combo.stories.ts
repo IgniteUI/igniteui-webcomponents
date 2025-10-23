@@ -69,6 +69,12 @@ const metadata: Meta<IgcComboComponent> = {
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
+    locale: {
+      type: 'string',
+      description:
+        'Gets/Sets the locale used for formatting and displaying the dates in the component.',
+      control: 'text',
+    },
     label: {
       type: 'string',
       description: 'The label attribute of the control.',
@@ -83,7 +89,6 @@ const metadata: Meta<IgcComboComponent> = {
       type: 'string',
       description: 'The placeholder attribute of the search input.',
       control: 'text',
-      table: { defaultValue: { summary: 'Search' } },
     },
     open: {
       type: 'boolean',
@@ -159,7 +164,6 @@ const metadata: Meta<IgcComboComponent> = {
     singleSelect: false,
     autofocus: false,
     autofocusList: false,
-    placeholderSearch: 'Search',
     open: false,
     groupSorting: 'asc',
     caseSensitiveIcon: false,
@@ -181,6 +185,8 @@ interface IgcComboArgs {
   autofocus: boolean;
   /** Focuses the list of options when the menu opens. */
   autofocusList: boolean;
+  /** Gets/Sets the locale used for formatting and displaying the dates in the component. */
+  locale: string;
   /** The label attribute of the control. */
   label: string;
   /** The placeholder attribute of the control. */
@@ -215,11 +221,7 @@ type Story = StoryObj<IgcComboArgs>;
 // endregion
 
 const itemTemplate: ComboItemTemplate<City> = ({ item }) => {
-  return html`
-    <div>
-      <span><b>${item?.name ?? item}</b> [${item?.zip}]</span>
-    </div>
-  `;
+  return html` <div><b>${item?.name ?? item}</b> [${item?.zip}]</div> `;
 };
 
 const groupHeaderTemplate: ComboItemTemplate<City> = ({ item }) => {
@@ -363,6 +365,11 @@ export const Form: Story = {
   argTypes: disableStoryControls(metadata),
   render: () => {
     return html`
+      <style>
+        fieldset {
+          min-width: 0;
+        }
+      </style>
       <form @submit=${formSubmitHandler}>
         <fieldset>
           <igc-combo
