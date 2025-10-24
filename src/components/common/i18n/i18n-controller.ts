@@ -166,17 +166,13 @@ class I18nController<T extends object> implements ReactiveController {
     const coreResourceStrings = getI18nManager().getCurrentResourceStrings(
       this.locale
     );
+
     const resourceMap = this._getResourceMapForComponent();
-
-    if (!resourceMap) {
-      return coreResourceStrings as T;
-    }
-
     const normalizedResourceStrings: T = {} as T;
     const defaultComponentKeys = Object.keys(this._defaultEN) as (keyof T)[];
 
     for (const igcKey of defaultComponentKeys) {
-      const coreKey = resourceMap.get(igcKey as string);
+      const coreKey = resourceMap?.get(igcKey as string);
       let resolvedValue: T[keyof T] = this._defaultEN[igcKey];
 
       if (coreKey) {
@@ -184,14 +180,17 @@ class I18nController<T extends object> implements ReactiveController {
           resolvedValue = getDisplayNamesFormatter().getWeekLabel(this.locale, {
             style: 'short',
           }) as T[keyof T];
-        } else {
-          resolvedValue =
-            coreKey in coreResourceStrings
-              ? (coreResourceStrings[
-                  coreKey as keyof IResourceStrings
-                ] as T[keyof T])
-              : this._defaultEN[igcKey];
+        } else if (coreKey in coreResourceStrings) {
+          resolvedValue = coreResourceStrings[
+            coreKey as keyof IResourceStrings
+          ] as T[keyof T];
         }
+      } else if (igcKey in coreResourceStrings) {
+        // For a mix of old and core resources.
+        // Only for internal default resources. Users shouldn't mix them.
+        resolvedValue = coreResourceStrings[
+          igcKey as keyof IResourceStrings
+        ] as T[keyof T];
       }
 
       normalizedResourceStrings[igcKey] = resolvedValue;

@@ -42,7 +42,7 @@ describe('Date range picker - single input', () => {
 
   beforeEach(async () => {
     picker = await fixture<IgcDateRangePickerComponent>(
-      html`<igc-date-range-picker></igc-date-range-picker>`
+      html`<igc-date-range-picker always-leading-zero></igc-date-range-picker>`
     );
     input = picker.renderRoot.querySelector(IgcInputComponent.tagName)!;
 

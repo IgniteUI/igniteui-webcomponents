@@ -41,7 +41,7 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
     //#region Internal state and properties
 
     private readonly __internals = addInternalsController(this);
-    private readonly __i18nController =
+    protected readonly __i18nController =
       addI18nController<IValidationResourceStrings>(this, {
         defaultEN: ValidationResourceStringsEN,
       });

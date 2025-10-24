@@ -1,5 +1,7 @@
+import type { IValidationResourceStrings } from 'igniteui-i18n-core';
 import type { LitElement } from 'lit';
 import type { ElementInternalsController } from '../../controllers/internals.js';
+import type { I18nController } from '../../i18n/i18n-controller.js';
 import type { Validator } from '../../validators.js';
 
 export type FormRestoreMode = 'autocomplete' | 'restore';
@@ -13,6 +15,7 @@ declare class BaseFormAssociatedElement {
   //#region Properties
 
   private readonly __internals: ElementInternalsController;
+  protected readonly __i18nController: I18nController<IValidationResourceStrings>;
   protected readonly _formValue: unknown;
 
   protected _pristine: boolean;
