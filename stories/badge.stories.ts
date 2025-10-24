@@ -44,8 +44,14 @@ const metadata: Meta<IgcBadgeComponent> = {
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'rounded' } },
     },
+    dot: {
+      type: 'boolean',
+      description: 'Sets whether to render a dot type badge.',
+      control: 'boolean',
+      table: { defaultValue: { summary: 'false' } },
+    },
   },
-  args: { variant: 'primary', outlined: false, shape: 'rounded' },
+  args: { variant: 'primary', outlined: false, shape: 'rounded', dot: false },
 };
 
 export default metadata;
@@ -57,6 +63,8 @@ interface IgcBadgeArgs {
   outlined: boolean;
   /** The shape of the badge. */
   shape: 'rounded' | 'square';
+  /** Sets whether to render a dot type badge. */
+  dot: boolean;
 }
 type Story = StoryObj<IgcBadgeArgs>;
 
@@ -77,6 +85,7 @@ function renderTabs(args: IgcBadgeArgs) {
             variant=${variant as IgcBadgeArgs['variant']}
             ?outlined=${args.outlined}
             shape=${args.shape}
+            ?dot=${args.dot}
             >${idx + 1}</igc-badge
           >
         </span>
@@ -86,8 +95,13 @@ function renderTabs(args: IgcBadgeArgs) {
 }
 
 export const Basic: Story = {
-  render: ({ outlined, shape, variant }) => html`
-    <igc-badge ?outlined=${outlined} shape=${shape} variant=${variant}>
+  render: ({ outlined, shape, variant, dot }) => html`
+    <igc-badge
+      ?outlined=${outlined}
+      shape=${shape}
+      variant=${variant}
+      ?dot=${dot}
+    >
       <igc-icon name="home"></igc-icon>
     </igc-badge>
   `,

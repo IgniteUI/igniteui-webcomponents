@@ -72,4 +72,27 @@ describe('Badge', () => {
       `<igc-badge shape="rounded" variant="primary"></igc-badge>`
     );
   });
+
+  it('can be a dot badge', async () => {
+    const el = await fixture<IgcBadgeComponent>(
+      html`<igc-badge dot></igc-badge>`
+    );
+
+    expect(el.dot).to.be.true;
+
+    el.dot = false;
+    await elementUpdated(el);
+    expect(el).dom.to.equal(
+      `<igc-badge shape="rounded" variant="primary"></igc-badge>`
+    );
+  });
+
+  it('dot badge works with all variants', async () => {
+    const el = await fixture<IgcBadgeComponent>(
+      html`<igc-badge dot variant="success"></igc-badge>`
+    );
+
+    expect(el.dot).to.be.true;
+    expect(el.variant).to.equal('success');
+  });
 });
