@@ -191,6 +191,12 @@ $disabled-color: var-get($theme, 'disabled-color');
     }
 }
 
+:host(:not([disabled], :state(ig-invalid))[indeterminate]:hover) {
+    [part='control checked']::after {
+        background: transparent;
+    }
+}
+
 [part~='focused'] {
     position: relative;
 
