@@ -91,6 +91,10 @@ export default class IgcChatInputComponent extends LitElement {
     sendButton: () => this._renderSendButton(),
   });
 
+  private _userIsTyping = false;
+  private _userLastTypeTime = Date.now();
+  private _typingTimeout = 0;
+
   @consume({ context: chatContext, subscribe: true })
   private readonly _state!: ChatState;
 
@@ -148,6 +152,11 @@ export default class IgcChatInputComponent extends LitElement {
     this.focusInput();
   }
 
+  private _setTypingStateAndEmit(state: boolean): void {
+    this._userIsTyping = state;
+    this._userInputState.emitUserTypingState(state);
+  }
+
   private _handleAttachmentRemoved(attachment: IgcChatMessageAttachment): void {
     const current = this._userInputState.inputAttachments;
 
@@ -160,16 +169,33 @@ export default class IgcChatInputComponent extends LitElement {
   }
 
   private _handleKeydown(event: KeyboardEvent): void {
-    const isSendRequest =
-      event.key.toLowerCase() === enterKey.toLowerCase() && !event.shiftKey;
+    this._userLastTypeTime = Date.now();
+    const isEnterKey = event.key.toLowerCase() === enterKey.toLowerCase();
 
-    if (isSendRequest) {
+    if (isEnterKey && !event.shiftKey) {
       event.preventDefault();
       this._sendMessage();
-    } else {
-      // TODO:
-      this._state.handleKeyDown(event);
+
+      if (this._userIsTyping) {
+        clearTimeout(this._typingTimeout);
+        this._setTypingStateAndEmit(false);
+      }
+
+      return;
     }
+
+    clearTimeout(this._typingTimeout);
+    const delay = this._state.stopTypingDelay;
+
+    if (!this._userIsTyping) {
+      this._setTypingStateAndEmit(true);
+    }
+
+    this._typingTimeout = setTimeout(() => {
+      if (this._userIsTyping && this._userLastTypeTime + delay <= Date.now()) {
+        this._setTypingStateAndEmit(false);
+      }
+    }, delay);
   }
 
   private _handleFileInputClick(): void {
@@ -238,6 +264,7 @@ export default class IgcChatInputComponent extends LitElement {
       this._state.attachFilesWithEvent(Array.from(input.files!));
     }
   }
+
   /**
    * Default attachments area template used when no custom template is provided.
    * Renders the list of input attachments as chips.

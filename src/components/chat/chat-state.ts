@@ -46,9 +46,6 @@ export class ChatState {
    */
   private _acceptedTypesCache: ChatAcceptedFileTypes | null = null;
 
-  private _isTyping = false;
-  private _lastTyped = Date.now();
-
   public resourceStrings = IgcChatResourceStringEN;
 
   //#endregion
@@ -217,6 +214,11 @@ export class ChatState {
     return this._host.emitEvent('igcMessageReact', { detail: reaction });
   }
 
+  /** @internal */
+  public emitUserTypingState(state: boolean): boolean {
+    return this._host.emitEvent('igcTypingChange', { detail: state });
+  }
+
   /**
    * @internal
    */
@@ -325,30 +327,6 @@ export class ChatState {
       this.inputAttachments = [...this.inputAttachments, ...newAttachments];
     }
   }
-
-  public handleKeyDown = (_: KeyboardEvent) => {
-    this._lastTyped = Date.now();
-    if (!this._isTyping) {
-      this.emitEvent('igcTypingChange', {
-        detail: { isTyping: true },
-      });
-      this._isTyping = true;
-
-      const stopTypingDelay = this.stopTypingDelay;
-      setTimeout(() => {
-        if (
-          this._isTyping &&
-          stopTypingDelay &&
-          this._lastTyped + stopTypingDelay < Date.now()
-        ) {
-          this.emitEvent('igcTypingChange', {
-            detail: { isTyping: false },
-          });
-          this._isTyping = false;
-        }
-      }, stopTypingDelay);
-    }
-  };
 
   //#endregion
 }
