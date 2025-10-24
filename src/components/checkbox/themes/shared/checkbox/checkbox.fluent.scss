@@ -39,7 +39,6 @@ $disabled-color: var-get($theme, 'disabled-color');
 
 [part~='indicator'] {
     --indicator-size: #{rem(16px)};
-    --mark-stroke: 1.5;
 }
 
 :host(:hover) {
