@@ -139,7 +139,9 @@ $error-color-hover: var-get($theme, 'error-color-hover');
         }
     }
 
-    [part='base focused'] {
+    [part='base focused'],
+    &:focus-visible,
+    [part='base checked focused'] {
         [part~='control'],
         [part='control checked'] {
             box-shadow: 0 0 0 rem(3px) var-get($theme, 'focus-outline-color-error');

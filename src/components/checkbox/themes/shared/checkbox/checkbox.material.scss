@@ -12,7 +12,8 @@ $theme: $material;
     }
 }
 
-:host(:hover) {
+:host(:not([disabled], :state(ig-invalid)):hover),
+:host(:not([disabled], :state(ig-invalid))[indeterminate]:hover) {
     [part='control checked']::after {
         border-color: var-get($theme, 'fill-color-hover');
     }
@@ -68,7 +69,7 @@ $theme: $material;
     &:hover {
         [part~='control'] {
             &::before {
-                background: var-get($theme, 'fill-color');
+                background: var-get($theme, 'fill-color-hover');
                 opacity: .06;
             }
         }
@@ -88,11 +89,16 @@ $theme: $material;
 
 [part='base checked']:focus-visible,
 [part='base checked focused'] {
-    &:hover [part~='control'],
     [part~='control'] {
         &::before {
             background: var-get($theme, 'fill-color');
             opacity: .12;
+        }
+    }
+
+    &:hover [part~='control'] {
+        &::before {
+            background: var-get($theme, 'fill-color-hover');
         }
     }
 }
@@ -105,7 +111,6 @@ $theme: $material;
         }
     }
 
-    [part='base']:hover,
     [part='base']:focus-visible,
     [part='base focused'] {
         [part~='control']::before {
@@ -128,15 +133,50 @@ $theme: $material;
         }
     }
 
-    [part~='base']:hover {
+    [part='base focused'] {
         [part~='control']::before {
             background: var-get($theme, 'error-color');
         }
     }
 
-    [part='base focused'] {
+    [part='base checked']:focus-visible,
+    [part='base checked focused'] {
         [part~='control']::before {
+            background: var-get($theme, 'error-color');
+            opacity: .12;
+        }
+    }
+}
+
+:host(:not([disabled]):state(ig-invalid):hover),
+:host(:not(:disabled):state(ig-invalid):hover),
+:host(:not([disabled]):state(ig-invalid)[indeterminate]:hover),
+:host(:not(:disabled):state(ig-invalid)[indeterminate]:hover) {
+    [part~='control'] {
+        &::after {
+            border-color: var-get($theme, 'error-color-hover');
+        }
+    }
+
+    [part='control checked'] {
+        &::after {
             background: var-get($theme, 'error-color-hover');
+        }
+    }
+
+    [part~='control']::before {
+        background: var-get($theme, 'error-color-hover');
+    }
+
+    [part='base checked']:focus-visible,
+    [part='base checked focused'] {
+        [part~='control'] {
+            &::before {
+                background: var-get($theme, 'error-color-hover');
+            }
+
+            &::after {
+                border-color: var-get($theme, 'error-color-hover');}
         }
     }
 }
@@ -151,14 +191,11 @@ $theme: $material;
     }
 
     [part~='base']:hover {
-        [part~='control']::before {
-            background: var-get($theme, 'error-color-hover');
-        }
-    }
-
-    [part='base focused'] {
-        [part~='control']::before {
-            background: var-get($theme, 'error-color-hover');
+        [part~='control'] {
+            &::after {
+                border-color: var-get($theme, 'error-color-hover');
+                background: var-get($theme, 'error-color-hover');
+            }
         }
     }
 }

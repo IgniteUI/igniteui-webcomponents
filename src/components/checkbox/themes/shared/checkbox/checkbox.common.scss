@@ -9,7 +9,8 @@ $theme: $material;
     color: var-get($theme, 'label-color');
 }
 
-:host(:hover) {
+:host(:not([disabled], :state(ig-invalid)):hover),
+:host(:not([disabled], :state(ig-invalid))[indeterminate]:hover) {
     [part~='label'] {
         color: var-get($theme, 'label-color-hover');
     }
