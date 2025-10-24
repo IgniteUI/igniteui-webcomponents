@@ -89,6 +89,7 @@ $theme: $material;
 
 [part='base checked']:focus-visible,
 [part='base checked focused'] {
+    &:hover [part~='control'],
     [part~='control'] {
         &::before {
             background: var-get($theme, 'fill-color');
