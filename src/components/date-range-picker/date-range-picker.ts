@@ -244,6 +244,9 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
       ...IgcDateRangePickerResourceStringsEN,
       ...ValidationResourceStringsEN,
     },
+    onResourceChange: () => {
+      this._updateDefaultMask();
+    },
   });
 
   private _activeDate: Date | null = null;
@@ -909,7 +912,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
 
     const { formatDisplayDate, predefinedToDateDisplayFormat } = DateTimeUtil;
     const { start, end } = this.value;
-    const displayFormat = predefinedToDateDisplayFormat(this._displayFormat);
+    const displayFormat = predefinedToDateDisplayFormat(this.displayFormat);
 
     const startValue = formatDisplayDate(
       start,
