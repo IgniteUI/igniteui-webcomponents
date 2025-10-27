@@ -15,7 +15,7 @@ $theme: $material;
     }
 }
 
-[part='base'] {
+[part~='base'] {
     box-shadow: var-get($theme, 'elevation');
     color: var-get($theme, 'text-color');
 }
@@ -24,19 +24,19 @@ $theme: $material;
     color: var-get($theme, 'icon-color');
 }
 
-:host([variant='primary']) [part='base'] {
+:host([variant='primary']) [part~='base'] {
     background: var-get($theme, 'background-color');
 }
 
-:host([shape='square']:not([dot])) [part='base'] {
+:host([shape='square']:not([dot])) [part~='base'] {
     border-radius: var-get($theme, 'border-radius');
 }
 
-:host([outlined]) [part='base'] {
+:host([outlined]) [part~='base'] {
     box-shadow: 0 0 0 rem(2px) var-get($theme, 'border-color');
 }
 
-:host([dot]) [part='base'] {
+:host([dot]) [part~='base'] {
     --_dot-size: #{var-get($theme, 'dot-size')};
 
     min-width: var(--_dot-size);

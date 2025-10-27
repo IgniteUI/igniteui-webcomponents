@@ -1,5 +1,5 @@
 @use 'styles/utilities' as *;
 
-:host([variant='danger']) [part='base'] {
+:host([variant='danger']) [part~='base'] {
     color: contrast-color(error, 100);
 }

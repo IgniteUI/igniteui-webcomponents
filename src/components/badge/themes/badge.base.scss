@@ -8,7 +8,7 @@
     vertical-align: top;
 }
 
-[part='base'] {
+[part~='base'] {
     display: inline-flex;
     min-width: var(--_badge-size);
     min-height: var(--_badge-size);
@@ -25,22 +25,17 @@
 
 :host(:not(:empty, [dot])) [part='base'] {
     padding-inline: pad-inline(rem(4px), rem(6px), rem(8px));
-
-    //should be fixed
-    &:has(::slotted(igc-icon)) {
-        padding: 0;
-    }
 }
 
-:host([variant='info']) [part='base'] {
+:host([variant='info']) [part~='base'] {
     background: color(info, 500);
 }
 
-:host([variant='success']) [part='base'] {
+:host([variant='success']) [part~='base'] {
     background: color(success, 500);
 }
 
-:host([variant='warning']) [part='base'] {
+:host([variant='warning']) [part~='base'] {
     background: color(warn, 500);
     color: contrast-color(warn, 500);
 
@@ -50,13 +45,13 @@
     }
 }
 
-:host([variant='danger']) [part='base'] {
+:host([variant='danger']) [part~='base'] {
     background: color(error, 500);
     color: contrast-color(error, 900);
 }
 
 :host([shape='rounded']),
-:host([shape='rounded']) [part='base'],
-:host([dot]) [part='base'] {
+:host([shape='rounded']) [part~='base'],
+:host([dot]) [part~='base'] {
     border-radius: calc(var(--_badge-size) * 2);
 }

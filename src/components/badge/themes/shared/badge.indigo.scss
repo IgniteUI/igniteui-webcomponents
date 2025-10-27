@@ -17,11 +17,11 @@ $theme: $indigo;
     padding-inline: pad-inline(rem(4px), rem(6px), rem(6px));
 }
 
-:host([variant='success']) [part='base'] {
+:host([variant='success']) [part~='base'] {
     background: color(success, 700);
 }
 
-[part='base'] {
+[part~='base'] {
     @include type-style('button', false) {
         font-size: sizable(rem(9px), rem(10px), var(--ig-button-font-size));
         line-height: sizable(rem(12px), rem(14px), var(--ig-button-line-height));

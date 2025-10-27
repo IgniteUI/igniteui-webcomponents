@@ -2,7 +2,9 @@ import { html, LitElement, type PropertyValues } from 'lit';
 import { property } from 'lit/decorators.js';
 import { addThemingController } from '../../theming/theming-controller.js';
 import { addInternalsController } from '../common/controllers/internals.js';
+import { addSlotController } from '../common/controllers/slot.js';
 import { registerComponent } from '../common/definitions/register.js';
+import { partMap } from '../common/part-map.js';
 import type { BadgeShape, StyleVariant } from '../types.js';
 import { styles } from './themes/badge.base.css.js';
 import { styles as shared } from './themes/shared/badge.common.css.js';
@@ -25,6 +27,21 @@ export default class IgcBadgeComponent extends LitElement {
   /* blazorSuppress */
   public static register(): void {
     registerComponent(IgcBadgeComponent);
+  }
+
+  private _iconPart = false;
+
+  private readonly _slots = addSlotController(this, {
+    onChange: this._handleSlotChange,
+  });
+
+  protected _handleSlotChange(): void {
+    const assignedNodes = this._slots.getAssignedNodes('[default]', true);
+    this._iconPart = assignedNodes.some(
+      (node) =>
+        node.nodeType === Node.ELEMENT_NODE &&
+        (node as Element).tagName.toLowerCase() === 'igc-icon'
+    );
   }
 
   private readonly _internals = addInternalsController(this, {
@@ -72,7 +89,7 @@ export default class IgcBadgeComponent extends LitElement {
 
   protected override render() {
     return html`
-      <span part="base">
+      <span part=${partMap({ base: true, icon: this._iconPart })}>
         <slot></slot>
       </span>
     `;
