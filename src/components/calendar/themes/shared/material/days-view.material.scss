@@ -136,8 +136,7 @@ $week-number-radius: var-get($theme, 'week-number-border-radius');
         color: var-get($theme, 'date-disabled-foreground');
     }
 
-    &[part~='disabled'][part~='range']:not([part~='selected'],[part~='special'],[part~='current'], [part~='preview']),
-    &[part~='disabled'][part~='range'][part~='inactive']:not([part~='special'],[part~='current'], [part~='preview'], [part~='first'], [part~='last']) {
+    &[part~='disabled'][part~='range']:not([part~='selected'],[part~='special'],[part~='current'], [part~='preview'], [part~='first'], [part~='last']) {
         color: var-get($theme, 'date-disabled-range-foreground');
     }
 
@@ -331,13 +330,17 @@ $week-number-radius: var-get($theme, 'week-number-border-radius');
             color: var-get($theme, 'date-special-range-foreground');
             background: var-get($theme, 'date-special-range-background');
 
+            &::after {
+                border-color: var-get($theme, 'date-special-range-border-color');
+            }
+
             &:hover {
                 color: var-get($theme, 'date-special-range-hover-foreground');
                 background: var-get($theme, 'date-special-range-hover-background');
 
                 // stylelint-disable-next-line
                 &::after {
-                    border-color: var-get($theme, 'date-special-hover-border-color');
+                    border-color: var-get($theme, 'date-special-range-hover-border-color');
                 }
             }
 
@@ -347,12 +350,8 @@ $week-number-radius: var-get($theme, 'week-number-border-radius');
 
                 // stylelint-disable-next-line
                 &::after {
-                    border-color: var-get($theme, 'date-special-focus-border-color');
+                    border-color: var-get($theme, 'date-special-range-focus-border-color');
                 }
-            }
-
-            &::after {
-                border-color: var-get($theme, 'date-special-range-border-color');
             }
         }
     }
@@ -422,11 +421,6 @@ $week-number-radius: var-get($theme, 'week-number-border-radius');
     &[part~='range']:not([part~='first'], [part~='last'], [part~='preview'], [part~='disabled'], [part~='special'], [part~='current']) {
         color: var-get($theme, 'date-selected-range-foreground');
 
-        // Since for the idle selected dates we have background and border, we need to
-        // override it here, so the range background is visible.
-        background: transparent;
-        border-color: transparent;
-
         &:hover {
             color: var-get($theme, 'date-selected-range-hover-foreground');
             background: var-get($theme, 'date-selected-range-hover-background');
@@ -436,6 +430,15 @@ $week-number-radius: var-get($theme, 'week-number-border-radius');
             color: var-get($theme, 'date-selected-range-focus-foreground');
             background: var-get($theme, 'date-selected-range-focus-background');
         }
+    }
+
+    &[part~='range']:not([part~='first'], [part~='last'], [part~='preview'], [part~='special'], [part~='current']) {
+        background: transparent;
+        border-color: transparent;
+    }
+
+    &[part~='disabled']:not([part~='first'], [part~='last'], [part~='special'], [part~='current']) {
+        border-color: transparent;
     }
 }
 
