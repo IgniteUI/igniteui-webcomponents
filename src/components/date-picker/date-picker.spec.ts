@@ -55,7 +55,7 @@ describe('Date picker', () => {
 
   beforeEach(async () => {
     picker = await fixture<IgcDatePickerComponent>(
-      html`<igc-date-picker always-leading-zero></igc-date-picker>`
+      html`<igc-date-picker></igc-date-picker>`
     );
     dateTimeInput = picker.renderRoot.querySelector(
       IgcDateTimeInputComponent.tagName
@@ -581,18 +581,24 @@ describe('Date picker', () => {
       it('should use the value of locale format for displayFormat, if it is not defined', async () => {
         expect(picker.locale).to.equal('en-US');
         expect(picker.getAttribute('display-format')).to.be.null;
-        expect(picker.displayFormat).to.equal(picker.inputFormat);
+        expect(picker.displayFormat).to.equal('M/d/yyyy');
 
         // updates inputFormat according to changed locale
         picker.locale = 'fr';
         await elementUpdated(picker);
         expect(picker.inputFormat).to.equal('dd/MM/yyyy');
-        expect(picker.displayFormat).to.equal(picker.inputFormat);
+        expect(picker.displayFormat).to.equal('dd/MM/yyyy');
 
         // sets inputFormat as attribute
         picker.setAttribute('input-format', 'dd-MM-yyyy');
         await elementUpdated(picker);
 
+        expect(picker.inputFormat).to.equal('dd-MM-yyyy');
+        expect(picker.displayFormat).to.equal(picker.inputFormat);
+
+        // changing locale after setting input format shouldn't affect it
+        picker.locale = 'de';
+        await elementUpdated(picker);
         expect(picker.inputFormat).to.equal('dd-MM-yyyy');
         expect(picker.displayFormat).to.equal(picker.inputFormat);
       });

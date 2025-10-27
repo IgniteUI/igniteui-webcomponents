@@ -176,14 +176,6 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
   }
 
   /**
-   * Sets to always show leading zero regardless of the displayFormat applied or one based on locale.
-   * Leading zero is applied during edit for the inputFormat always, regardless of this option.
-   * @attr
-   */
-  @property({ type: Boolean, attribute: 'always-leading-zero' })
-  public alwaysLeadingZero = false;
-
-  /**
    * Format to display the value in when not editing.
    * Defaults to the locale format if not set.
    * @attr display-format
@@ -240,14 +232,6 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
     }
   }
 
-  @watch('alwaysLeadingZero', { waitUntilFirstUpdate: true })
-  protected setAlwaysLeadingZero(): void {
-    this.updateDefaultDisplayFormat();
-    if (this.value) {
-      this.updateMask();
-    }
-  }
-
   @watch('displayFormat', { waitUntilFirstUpdate: true })
   protected setDisplayFormat(): void {
     this.updateDefaultDisplayFormat();
@@ -259,11 +243,7 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
   protected get hasDateParts(): boolean {
     const parts =
       this._inputDateParts ||
-      DateTimeUtil.parseDateTimeFormat(
-        this.inputFormat,
-        this.locale,
-        this.alwaysLeadingZero
-      );
+      DateTimeUtil.parseDateTimeFormat(this.inputFormat, this.locale);
 
     return parts.some(
       (p) =>
@@ -276,11 +256,7 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
   protected get hasTimeParts(): boolean {
     const parts =
       this._inputDateParts ||
-      DateTimeUtil.parseDateTimeFormat(
-        this.inputFormat,
-        this.locale,
-        this.alwaysLeadingZero
-      );
+      DateTimeUtil.parseDateTimeFormat(this.inputFormat, this.locale);
     return parts.some(
       (p) =>
         p.type === DateParts.Hours ||
@@ -393,8 +369,7 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
       this._maskedValue = DateTimeUtil.formatDisplayDate(
         this.value,
         this.locale,
-        this.displayFormat,
-        this.alwaysLeadingZero
+        this.displayFormat
       );
     }
   }
@@ -516,8 +491,7 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
 
   private updateDefaultDisplayFormat(): void {
     this._defaultDisplayFormat = getDateFormatter().getLocaleDateTimeFormat(
-      this.locale,
-      this.alwaysLeadingZero
+      this.locale
     );
   }
 

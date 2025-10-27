@@ -421,14 +421,6 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
   public showWeekNumbers = false;
 
   /**
-   * Sets to always show leading zero regardless of the displayFormat applied or one based on locale.
-   * Leading zero is applied during edit for the inputFormat always, regardless of this option.
-   * @attr
-   */
-  @property({ type: Boolean, attribute: 'always-leading-zero' })
-  public alwaysLeadingZero = false;
-
-  /**
    * Format to display the value in when not editing.
    * Defaults to the locale format if not set.
    * @attr display-format
@@ -862,7 +854,6 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
         label=${bindIf(this._isMaterial, this.label)}
         input-format=${ifDefined(this._inputFormat)}
         display-format=${ifDefined(format)}
-        ?always-leading-zero=${this.alwaysLeadingZero}
         ?disabled=${this.disabled}
         ?readonly=${readOnly}
         ?required=${this.required}

@@ -459,14 +459,6 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
   public prompt = '_';
 
   /**
-   * Sets to always show leading zero regardless of the displayFormat applied or one based on locale.
-   * Leading zero is applied during edit for the inputFormat always, regardless of this option.
-   * @attr
-   */
-  @property({ type: Boolean, attribute: 'always-leading-zero' })
-  public alwaysLeadingZero = false;
-
-  /**
    * Format to display the value in when not editing.
    * Defaults to the locale format if not set.
    * @attr display-format
@@ -686,17 +678,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
   protected _updateDefaultMask(): void {
     this._defaultMask = DateTimeUtil.getDefaultInputMask(this.locale);
     this._defaultDisplayFormat = getDateFormatter().getLocaleDateTimeFormat(
-      this.locale,
-      this.alwaysLeadingZero
-    );
-    this._updateMaskedRangeValue();
-  }
-
-  @watch('alwaysLeadingZero')
-  protected _setAlwaysLeadingZero(): void {
-    this._defaultDisplayFormat = getDateFormatter().getLocaleDateTimeFormat(
-      this.locale,
-      this.alwaysLeadingZero
+      this.locale
     );
     this._updateMaskedRangeValue();
   }
@@ -914,18 +896,8 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
     const { start, end } = this.value;
     const displayFormat = predefinedToDateDisplayFormat(this.displayFormat);
 
-    const startValue = formatDisplayDate(
-      start,
-      this.locale,
-      displayFormat,
-      this.alwaysLeadingZero
-    );
-    const endValue = formatDisplayDate(
-      end,
-      this.locale,
-      displayFormat,
-      this.alwaysLeadingZero
-    );
+    const startValue = formatDisplayDate(start, this.locale, displayFormat);
+    const endValue = formatDisplayDate(end, this.locale, displayFormat);
     this._maskedRangeValue =
       displayFormat || this.inputFormat
         ? `${startValue} - ${endValue}`
@@ -1170,7 +1142,6 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
         aria-haspopup="dialog"
         input-format=${ifDefined(this._inputFormat)}
         display-format=${ifDefined(format)}
-        ?always-leading-zero=${this.alwaysLeadingZero}
         ?disabled=${this.disabled}
         ?readonly=${readOnly}
         .value=${value ?? null}

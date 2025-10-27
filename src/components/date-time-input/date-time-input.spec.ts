@@ -41,7 +41,7 @@ describe('Date Time Input component', () => {
   describe('', async () => {
     beforeEach(async () => {
       el = await fixture<IgcDateTimeInputComponent>(
-        html`<igc-date-time-input always-leading-zero></igc-date-time-input>`
+        html`<igc-date-time-input></igc-date-time-input>`
       );
       input = el.renderRoot.querySelector('input')!;
       parser.prompt = defaultPrompt;
@@ -60,18 +60,20 @@ describe('Date Time Input component', () => {
       await elementUpdated(el);
       expect(el.placeholder).to.equal('dd.MM.yyyy');
       expect(el.inputFormat).to.equal('dd.MM.yyyy');
+      expect(el.displayFormat).to.equal('d.M.yyyy');
     });
 
     it('should update inputFormat with value according to locale', async () => {
       el.value = new Date(2020, 2, 3);
       await elementUpdated(el);
-      expect(input.value).to.equal('03/03/2020');
+      expect(input.value).to.equal('3/3/2020');
 
       el.locale = 'no';
       await elementUpdated(el);
       expect(el.placeholder).to.equal('dd.MM.yyyy');
       expect(el.inputFormat).to.equal('dd.MM.yyyy');
-      expect(input.value).to.equal('03.03.2020');
+      expect(el.displayFormat).to.equal('d.M.yyyy');
+      expect(input.value).to.equal('3.3.2020');
     });
 
     it('should use inputFormat if no displayFormat is defined - issue 1114', async () => {
@@ -108,13 +110,12 @@ describe('Date Time Input component', () => {
       el.value = new Date(2020, 2, 3);
       await elementUpdated(el);
 
-      expect(input.value).to.equal('03/03/2020');
+      expect(input.value).to.equal('3/3/2020');
 
       el.displayFormat = 'dd.MM/yyyy';
       await elementUpdated(el);
       expect(input.value).to.equal('03.03/2020');
 
-      el.alwaysLeadingZero = false;
       el.displayFormat = 'd.M';
       await elementUpdated(el);
       expect(input.value).to.equal('3.3');
@@ -201,7 +202,7 @@ describe('Date Time Input component', () => {
       await elementUpdated(el);
 
       expect(eventSpy).calledWith('igcChange');
-      expect(input.value).to.deep.equal('01/01/2000');
+      expect(input.value).to.deep.equal('1/1/2000');
     });
 
     it('should correctly switch between different pre-defined date formats', async () => {
@@ -275,7 +276,7 @@ describe('Date Time Input component', () => {
     it('should clear input date on clear', async () => {
       el.value = new Date(2020, 2, 3);
       await elementUpdated(el);
-      expect(input.value).to.equal('03/03/2020');
+      expect(input.value).to.equal('3/3/2020');
 
       el.clear();
       await elementUpdated(el);
@@ -831,7 +832,7 @@ describe('Date Time Input component', () => {
     it('Drop behavior', async () => {
       el.value = new Date(2020, 2, 3);
       await elementUpdated(el);
-      expect(input.value).to.equal('03/03/2020');
+      expect(input.value).to.equal('3/3/2020');
 
       input.value = '1010';
       input.setSelectionRange(0, 4);

@@ -198,16 +198,14 @@ export abstract class DateTimeUtil {
    * @param locale Locale of the component
    * @param displayFormat Display format specified by the user. Can be undefined.
    * @param inputFormat Input format, so it is not calculated again and used for leading zero format.
-   * @param leadingZero Should leading zero be applied?
    * @returns
    */
   public static formatDisplayDate(
     value: Date,
     locale: string,
-    displayFormat: string | undefined,
-    leadingZero = false
+    displayFormat: string | undefined
   ): string {
-    let options: Intl.DateTimeFormatOptions = {};
+    const options: Intl.DateTimeFormatOptions = {};
     switch (displayFormat) {
       case 'short':
       case 'long':
@@ -233,17 +231,9 @@ export abstract class DateTimeUtil {
           return getDateFormatter().formatDateCustomFormat(
             value,
             displayFormat,
-            { locale, forceLeadingZero: leadingZero }
+            { locale }
           );
         }
-    }
-
-    if (leadingZero && !displayFormat) {
-      options = {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-      } as Intl.DateTimeFormatOptions;
     }
 
     return getDateFormatter().formatDateTime(value, locale, options);
