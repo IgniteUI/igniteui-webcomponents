@@ -894,10 +894,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
 
     const { formatDisplayDate, predefinedToDateDisplayFormat } = DateTimeUtil;
     const { start, end } = this.value;
-    const displayFormat =
-      predefinedToDateDisplayFormat(this._displayFormat) ??
-      this._displayFormat ??
-      this.inputFormat;
+    const displayFormat = predefinedToDateDisplayFormat(this.displayFormat);
 
     const startValue = formatDisplayDate(start, this.locale, displayFormat);
     const endValue = formatDisplayDate(end, this.locale, displayFormat);
