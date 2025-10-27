@@ -229,8 +229,11 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
   @watch('locale', { waitUntilFirstUpdate: true })
   protected setDefaultMask(): void {
     this.updateDefaultDisplayFormat();
-    this.updateDefaultMask();
-    this.setMask(this._defaultMask);
+
+    if (!this._inputFormat) {
+      this.updateDefaultMask();
+      this.setMask(this._defaultMask);
+    }
 
     if (this.value) {
       this.updateMask();
