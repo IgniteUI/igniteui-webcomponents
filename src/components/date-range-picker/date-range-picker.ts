@@ -894,14 +894,14 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
 
     const { formatDisplayDate, predefinedToDateDisplayFormat } = DateTimeUtil;
     const { start, end } = this.value;
-    const displayFormat = predefinedToDateDisplayFormat(this._displayFormat);
+    const displayFormat =
+      predefinedToDateDisplayFormat(this._displayFormat) ??
+      this._displayFormat ??
+      this.inputFormat;
 
     const startValue = formatDisplayDate(start, this.locale, displayFormat);
     const endValue = formatDisplayDate(end, this.locale, displayFormat);
-    this._maskedRangeValue =
-      displayFormat || this.inputFormat
-        ? `${startValue} - ${endValue}`
-        : `${start.toLocaleDateString()} - ${end.toLocaleDateString()}`;
+    this._maskedRangeValue = `${startValue} - ${endValue}`;
   }
 
   private _setCalendarRangeValues() {
