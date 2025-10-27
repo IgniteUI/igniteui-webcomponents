@@ -75,10 +75,6 @@ $dropdown-theme: dropdown-theme.$material;
     }
 }
 
-[part='toggle-icon filled'] {
-    color: var-get($theme, 'toggle-button-foreground-filled');
-}
-
 :host(:not([outlined]):focus-within) {
     igc-input::part(container) {
         --_toggle-focus-background: #{var-get($theme, 'toggle-button-background')};
@@ -86,7 +82,7 @@ $dropdown-theme: dropdown-theme.$material;
 
         &:focus-within {
             --_toggle-focus-background: #{var-get($theme, 'toggle-button-background-focus')};
-            --_toggle-focus-foreground: #{var-get($theme, 'toggle-button-foreground-filled')};
+            --_toggle-focus-foreground: #{var-get($theme, 'toggle-button-foreground-focus')};
         }
     }
 
@@ -103,34 +99,6 @@ $dropdown-theme: dropdown-theme.$material;
 :host([outlined]:focus-within) {
     [part~='toggle-icon'] {
         background: var-get($theme, 'toggle-button-background-focus--border');
-    }
-}
-
-:host(:disabled),
-:host([disabled]) {
-    ::slotted([slot='prefix']),
-    ::slotted([slot='suffix']),
-    igc-input::part(label),
-    igc-input::part(input)::placeholder {
-        color: var-get($theme, 'disabled-text-color');
-    }
-
-    [part~='clear-icon'] {
-        background: inherit;
-        color: var-get($theme, 'disabled-text-color');
-
-        igc-icon {
-            color: inherit;
-        }
-    }
-
-    [part~='toggle-icon'] {
-        background: var-get($theme, 'toggle-button-background-disabled');
-        color: var-get($theme, 'toggle-button-foreground-disabled');
-
-        igc-icon {
-            color: inherit;
-        }
     }
 }
 
