@@ -112,7 +112,8 @@ $error-color-hover: var-get($theme, 'error-color-hover');
     }
 }
 
-:host([indeterminate]:focus-visible) {
+:host([indeterminate]:focus-visible),
+:host([indeterminate]) [part='base focused'] {
     [part~='control'] {
         box-shadow: 0 0 0 rem(3px) var-get($theme, 'focus-outline-color-focused');
     }
