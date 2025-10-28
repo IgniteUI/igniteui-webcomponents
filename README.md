@@ -26,6 +26,7 @@ See the [Storybook Here](https://igniteui.github.io/igniteui-webcomponents)
 
 | Components              | Status |         Documentation          | Released Version |
 | :---------------------- | :----: | :----------------------------: | :--------------: |
+| Chat                    |   ✅   | [Docs][Chat Docs]              |     [6.3.0]      |
 | Date Range Picker       |   ✅   | [Docs][Date Range Picker Docs] |     [6.1.0]      |
 | Tooltip                 |   ✅   |      [Docs][Tooltip Docs]      |     [5.4.0]      |
 | File Input              |   ✅   |    [Docs][File Input Docs]     |     [5.4.0]      |
@@ -256,6 +257,7 @@ npm run storybook:build
 [File Input Docs]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/inputs/file-input
 [Tooltip Docs]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/inputs/tooltip
 [Date Range Picker Docs]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/scheduling/date-range-picker
+[Chat Docs]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/interactivity/chat
 [1.0.0]: https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/1.0.0
 [2.0.0]: https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/2.0.0
 [2.1.0]: https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/2.1.0
@@ -270,3 +272,4 @@ npm run storybook:build
 [5.3.0]: https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/5.3.0
 [5.4.0]: https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/5.4.0
 [6.1.0]: https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/6.1.0
+[6.3.0]: https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/6.3.0
