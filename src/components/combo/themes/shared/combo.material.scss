@@ -100,6 +100,10 @@ $dropdown-theme: dropdown-theme.$material;
     [part~='toggle-icon'] {
         background: var-get($theme, 'toggle-button-background-focus--border');
     }
+
+    [part='toggle-icon filled'] {
+        color: var-get($theme, 'toggle-button-foreground-filled');
+    }
 }
 
 :host(:disabled[outlined]),
