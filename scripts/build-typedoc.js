@@ -15,25 +15,26 @@ const TYPEDOC = {
       'typedoc-plugin-localization/dist/index.js'
     ),
   },
-  OUTPUT: ROOT('dist', 'docs', 'typescript'),
+  OUTPUT: ROOT(path.posix.join('dist', 'docs', 'typescript')),
   EXPORT_JSON_PATH: ROOT(
-    'dist',
-    'docs',
-    'typescript-exported',
-    'ignite-ui-web-components.json'
+    path.posix.join(
+      'dist',
+      'docs',
+      'typescript-exported',
+      'ignite-ui-web-components.json'
+    )
   ),
   IMPORT_JSON_PATH: ROOT(
-    'i18nRepo',
-    'typedoc',
-    'ja',
-    'ignite-ui-web-components.json'
+    path.posix.join(
+      'i18nRepo',
+      'typedoc',
+      'ja',
+      'ignite-ui-web-components.json'
+    )
   ),
-  PROJECT_PATH: ROOT('src', 'index.ts'),
+  PROJECT_PATH: ROOT(path.posix.join('src', 'index.ts')),
   TEMPLATE_STRINGS_PATH: ROOT(
-    'extras',
-    'template',
-    'strings',
-    'shell-strings.json'
+    path.posix.join('extras', 'template', 'strings', 'shell-strings.json')
   ),
 };
 
@@ -99,6 +100,7 @@ async function main() {
     entryPointStrategy,
     plugin: [TYPEDOC.PLUGINS.THEME, TYPEDOC.PLUGINS.LOCALIZATION],
     theme: 'igtheme',
+    router: 'structure',
     excludePrivate: true,
     excludeProtected: true,
     excludeNotDocumented: true,
