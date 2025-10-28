@@ -133,6 +133,10 @@ class TooltipController implements ReactiveController {
     for (const each of this._hideTriggers) {
       addWeakEventListener(anchor, each, this, { passive: true, signal });
     }
+
+    if (!this._showTriggers.has('click') && !this._hideTriggers.has('click')) {
+      addWeakEventListener(anchor, 'click', this, { passive: true, signal });
+    }
   }
 
   private _addTooltipListeners(): void {
@@ -161,6 +165,15 @@ class TooltipController implements ReactiveController {
   }
 
   private async _handleAnchorEvent(event: Event): Promise<void> {
+    if (
+      !this.open &&
+      !this._showTriggers.has(event.type) &&
+      event.type === 'click'
+    ) {
+      this._options.onClick.call(this._host);
+      return;
+    }
+
     if (!this._open && this._showTriggers.has(event.type)) {
       await this._options.onShow.call(this._host);
     }
@@ -283,4 +296,5 @@ type TooltipCallbacks = {
   onShow: (event?: Event) => unknown;
   onHide: (event?: Event) => unknown;
   onEscape: (event?: Event) => unknown;
+  onClick: (event?: Event) => unknown;
 };

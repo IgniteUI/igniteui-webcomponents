@@ -534,7 +534,7 @@ describe('Tooltip', () => {
 
   describe('Behaviors', () => {
     beforeEach(async () => {
-      clock = useFakeTimers({ toFake: ['setTimeout'] });
+      clock = useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
       const container = await fixture(createTooltipWithTarget());
       anchor = container.querySelector('button')!;
       tooltip = container.querySelector(IgcTooltipComponent.tagName)!;
@@ -659,6 +659,40 @@ describe('Tooltip', () => {
       await clock.tickAsync(1);
       await hideComplete(tooltip);
       expect(tooltip.open).to.be.false;
+    });
+
+    it('prevents tooltip from showing when clicking the target - #1828', async () => {
+      const eventSpy = spy(tooltip, 'emitEvent');
+
+      tooltip.showTriggers = 'pointerenter';
+      tooltip.hideTriggers = 'pointerleave';
+
+      simulatePointerEnter(anchor);
+      await clock.tickAsync(199);
+      expect(tooltip.open).to.be.false;
+
+      // Click on the target before the tooltip is shown
+      simulateClick(anchor);
+      await clock.tickAsync(1);
+      await showComplete(tooltip);
+      expect(tooltip.open).to.be.false;
+      expect(eventSpy.callCount).to.equal(1);
+
+      eventSpy.resetHistory();
+
+      // Does not prevent showing when showTriggers includes 'click'
+      tooltip.showTriggers = 'click';
+
+      simulateClick(anchor);
+      await clock.tickAsync(DEFAULT_SHOW_DELAY);
+      await showComplete(tooltip);
+      expect(tooltip.open).to.be.true;
+
+      simulatePointerLeave(anchor);
+      await clock.tickAsync(endTick(DEFAULT_HIDE_DELAY));
+      await hideComplete(tooltip);
+      expect(tooltip.open).to.be.false;
+      expect(eventSpy.callCount).to.equal(4);
     });
   });
 

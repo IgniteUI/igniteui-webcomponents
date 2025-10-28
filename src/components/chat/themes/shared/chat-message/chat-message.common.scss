@@ -1,0 +1,26 @@
+@use 'styles/utilities' as *;
+@use '../../light/themes' as *;
+
+$theme: $material;
+
+:host {
+    --shiki-bg: #{var-get($theme, 'code-background')};
+}
+
+[part~='sent'] {
+    background: var-get($theme, 'message-background');
+}
+
+[part~='message-container'] {
+    color: var-get($theme, 'message-color');
+
+    pre.shiki {
+        border: rem(1px) solid var-get($theme, 'code-border');
+    }
+}
+
+[part~='message-actions'] {
+    igc-icon-button::part(icon) {
+        color: var-get($theme, 'message-actions-color');
+    }
+}

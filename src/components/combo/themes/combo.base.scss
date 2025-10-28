@@ -2,6 +2,8 @@
 @use 'styles/utilities' as *;
 
 :host {
+    --item-count: 6;
+
     display: block;
     font-family: var(--ig-font-family);
 
@@ -13,9 +15,21 @@
         --component-size: var(--combo-size) !important;
     }
 
-    > igc-input::part(input) {
-        text-overflow: ellipsis;
+    igc-input::part(input) {
+        @include ellipsis();
+
         cursor: pointer;
+    }
+
+    ::part(helper-text) {
+        @include type-style('caption');
+        @include line-clamp(2, true, true);
+
+        overflow-wrap: anywhere;
+    }
+
+    slot[name='value-missing'] {
+        @include line-clamp(2, true, true);
     }
 }
 
@@ -24,16 +38,6 @@
         &::selection {
             background: transparent;
         }
-    }
-}
-
-[part='helper-text'] {
-    line-height: 1;
-
-    ::slotted([slot='helper-text']) {
-        @include type-style('caption');
-
-        line-height: inherit;
     }
 }
 
@@ -73,7 +77,7 @@
 }
 
 [part='list'] {
-    min-height: rem(200px) !important;
+    min-height: calc(var(--size) * var(--item-count)) !important;
     outline-style: none;
 }
 
@@ -82,7 +86,7 @@
     justify-content: center;
     align-items: center;
     width: 100%;
-    padding: rem(16px) rem(24px);
+    padding: pad-block(rem(16px)) pad-inline(rem(24px));
     font-size: rem(13px);
 }
 

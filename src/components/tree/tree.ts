@@ -99,7 +99,9 @@ export default class IgcTreeComponent extends EventEmitterMixin<
           }
         });
       } else {
-        this.items.forEach((item) => item.collapseWithEvent());
+        for (const item of this.items) {
+          item.collapseWithEvent();
+        }
       }
     }
   }

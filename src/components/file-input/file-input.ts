@@ -1,6 +1,5 @@
-import { html, nothing } from 'lit';
+import { html } from 'lit';
 import { property, state } from 'lit/decorators.js';
-import { ifDefined } from 'lit/directives/if-defined.js';
 
 import { addThemingController } from '../../theming/theming-controller.js';
 import IgcButtonComponent from '../button/button.js';
@@ -10,7 +9,7 @@ import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormValueFileListTransformers } from '../common/mixins/forms/form-transformers.js';
 import { createFormValueState } from '../common/mixins/forms/form-value.js';
 import { partMap } from '../common/part-map.js';
-import { isEmpty } from '../common/util.js';
+import { bindIf, hasFiles, isEmpty } from '../common/util.js';
 import {
   IgcInputBaseComponent,
   type IgcInputComponentEventMap,
@@ -80,11 +79,11 @@ export default class IgcFileInputComponent extends EventEmitterMixin<
   private _hasActivation = false;
 
   private get _fileNames(): string | null {
-    if (!this.files || this.files.length === 0) return null;
-
-    return Array.from(this.files)
-      .map((file) => file.name)
-      .join(', ');
+    return hasFiles(this)
+      ? Array.from(this.files!)
+          .map((file) => file.name)
+          .join(', ')
+      : null;
   }
 
   /* @tsTwoWayProperty(true, "igcChange", "detail", false) */
@@ -125,12 +124,6 @@ export default class IgcFileInputComponent extends EventEmitterMixin<
    */
   @property({ type: Boolean })
   public override autofocus!: boolean;
-
-  /**
-   * @internal
-   */
-  @property({ type: Number })
-  public override tabIndex = 0;
 
   /** @hidden */
   @property({ type: Boolean, attribute: false, noAccessor: true })
@@ -208,6 +201,9 @@ export default class IgcFileInputComponent extends EventEmitterMixin<
   }
 
   protected renderInput() {
+    const hasNegativeTabIndex = this.getAttribute('tabindex') === '-1';
+    const hasHelperText = !isEmpty(this._helperText);
+
     return html`
       <input
         id=${this.inputId}
@@ -217,11 +213,9 @@ export default class IgcFileInputComponent extends EventEmitterMixin<
         ?required=${this.required}
         ?autofocus=${this.autofocus}
         ?multiple=${this.multiple}
-        tabindex=${this.tabIndex}
-        accept=${ifDefined(this.accept === '' ? undefined : this.accept)}
-        aria-describedby=${ifDefined(
-          isEmpty(this._helperText) ? nothing : 'helper-text'
-        )}
+        tabindex=${bindIf(hasNegativeTabIndex, -1)}
+        accept=${bindIf(this.accept, this.accept)}
+        aria-describedby=${bindIf(hasHelperText, 'helper-text')}
         @click=${this._handleClick}
         @change=${this._handleChange}
         @cancel=${this._handleCancel}

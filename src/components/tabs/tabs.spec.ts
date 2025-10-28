@@ -430,7 +430,10 @@ describe('Tabs component', () => {
       element.select('third');
       await elementUpdated(element);
 
-      element.tabs.slice(0, 2).forEach((el) => el.remove());
+      for (const el of element.tabs.slice(0, 2)) {
+        el.remove();
+      }
+
       await elementUpdated(element);
 
       verifySelection(element, element.tabs[0]);

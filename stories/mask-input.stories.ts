@@ -50,13 +50,16 @@ const metadata: Meta<IgcMaskInputComponent> = {
     },
     mask: {
       type: 'string',
-      description: 'The mask pattern to apply on the input.',
+      description: 'The masked pattern of the component.',
       control: 'text',
+      table: { defaultValue: { summary: 'CCCCCCCCCC' } },
     },
     prompt: {
       type: 'string',
-      description: 'The prompt symbol to use for unfilled parts of the mask.',
+      description:
+        'The prompt symbol to use for unfilled parts of the mask pattern.',
       control: 'text',
+      table: { defaultValue: { summary: '_' } },
     },
     required: {
       type: 'boolean',
@@ -107,6 +110,8 @@ const metadata: Meta<IgcMaskInputComponent> = {
   },
   args: {
     valueMode: 'raw',
+    mask: 'CCCCCCCCCC',
+    prompt: '_',
     required: false,
     disabled: false,
     invalid: false,
@@ -131,9 +136,9 @@ interface IgcMaskInputArgs {
    * Regardless of the currently set `value-mode`, an empty value will return an empty string.
    */
   value: string | Date | DateRangeValue;
-  /** The mask pattern to apply on the input. */
+  /** The masked pattern of the component. */
   mask: string;
-  /** The prompt symbol to use for unfilled parts of the mask. */
+  /** The prompt symbol to use for unfilled parts of the mask pattern. */
   prompt: string;
   /** When set, makes the component a required field for validation. */
   required: boolean;

@@ -2,6 +2,7 @@ import {
   asNumber,
   findElementFromEventPath,
   first,
+  isEmpty,
   isString,
   last,
   modulo,
@@ -254,4 +255,30 @@ export function isDateInRanges(
         return false;
     }
   });
+}
+
+export function createDateConstraints(
+  min: Date | null,
+  max: Date | null,
+  disabledDates?: DateRangeDescriptor[]
+) {
+  const constraints: DateRangeDescriptor[] = [];
+
+  if (min) {
+    constraints.push({
+      type: DateRangeType.Before,
+      dateRange: [min],
+    });
+  }
+
+  if (max) {
+    constraints.push({
+      type: DateRangeType.After,
+      dateRange: [max],
+    });
+  }
+
+  constraints.push(...(disabledDates ?? []));
+
+  return !isEmpty(constraints) ? constraints : undefined;
 }

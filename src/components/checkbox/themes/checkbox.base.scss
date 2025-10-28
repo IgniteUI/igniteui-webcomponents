@@ -39,7 +39,7 @@ $mark-length: 24;
     display: inline-block;
     cursor: pointer;
     user-select: none;
-    word-wrap: break-all;
+    overflow-wrap: break-all;
     transition: color .2s ease-in-out;
 }
 

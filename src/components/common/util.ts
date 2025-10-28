@@ -1,4 +1,5 @@
-import { isServer } from 'lit';
+import { html, isServer, nothing, type TemplateResult } from 'lit';
+import type IgcFileInputComponent from '../file-input/file-input.js';
 
 export const asPercent = (part: number, whole: number) => (part / whole) * 100;
 
@@ -165,24 +166,6 @@ export function findElementFromEventPath<T extends Element>(
     : (e: Element) => predicate(e);
 
   return getElementsFromEventPath(event).find(func) as T | undefined;
-}
-
-export function groupBy<T>(array: T[], key: keyof T | ((item: T) => any)) {
-  const result: Record<string, T[]> = {};
-  const _get = isFunction(key) ? key : (item: T) => item[key];
-
-  for (const item of array) {
-    const category = _get(item);
-    const group = result[category];
-
-    if (Array.isArray(group)) {
-      group.push(item);
-    } else {
-      result[category] = [item];
-    }
-  }
-
-  return result;
 }
 
 export function first<T>(arr: T[]) {
@@ -580,4 +563,67 @@ export function toMerged<
   S extends Record<PropertyKey, any>,
 >(target: T, source: S): T & S {
   return merge(structuredClone(target), source);
+}
+
+/**
+ * Similar to Lit's `ifDefined` directive except one can check `assertion`
+ * and bind a different `value` through this wrapper.
+ */
+export function bindIf<T>(assertion: unknown, value: T): NonNullable<T> {
+  return assertion
+    ? (value ?? (nothing as NonNullable<T>))
+    : (nothing as NonNullable<T>);
+}
+
+let pool: Uint8Array;
+let poolOffset: number;
+const urlAlphabet =
+  'useandom-26T198340PX75pxJACKVERYMINDBUSHWOLF_GQZbfghjklqvwyzrict';
+
+function fillPool(bytes: number): void {
+  if (!pool || pool.length < bytes) {
+    pool = new Uint8Array(new ArrayBuffer(bytes * 128));
+    crypto.getRandomValues(pool);
+    poolOffset = 0;
+  } else if (poolOffset + bytes > pool.length) {
+    crypto.getRandomValues(pool);
+    poolOffset = 0;
+  }
+  poolOffset += bytes;
+}
+
+export function nanoid(size = 21): string {
+  const bytes = size | 0;
+  fillPool(bytes);
+
+  let id = '';
+  for (let i = poolOffset - bytes; i < poolOffset; i++) {
+    id += urlAlphabet[pool[i] & 63];
+  }
+
+  return id;
+}
+
+export function hasFiles(
+  input: HTMLInputElement | IgcFileInputComponent
+): boolean {
+  return input.files != null && input.files.length > 0;
+}
+
+const trimmedCache = new WeakMap<TemplateStringsArray, TemplateStringsArray>();
+
+/** @internal */
+export function trimmedHtml(
+  strings: TemplateStringsArray,
+  ...values: unknown[]
+): TemplateResult {
+  if (!trimmedCache.has(strings)) {
+    const trimmedStrings = strings.map((s) => s.trim().replaceAll('\n', ''));
+    trimmedCache.set(
+      strings,
+      Object.assign([...trimmedStrings], { raw: [...strings.raw] })
+    );
+  }
+
+  return html(trimmedCache.get(strings)!, ...values);
 }

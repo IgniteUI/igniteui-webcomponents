@@ -4,6 +4,11 @@ import { property, state } from 'lit/decorators.js';
 import { blazorDeepImport } from '../common/decorators/blazorDeepImport.js';
 import { blazorIndirectRender } from '../common/decorators/blazorIndirectRender.js';
 import { watch } from '../common/decorators/watch.js';
+import {
+  IgcCalendarResourceStringEN,
+  type IgcCalendarResourceStrings,
+} from '../common/i18n/EN/calendar.resources.js';
+import { addI18nController } from '../common/i18n/i18n-controller.js';
 import { first } from '../common/util.js';
 import { convertToDate, convertToDates, getWeekDayNumber } from './helpers.js';
 import { CalendarDay } from './model.js';
@@ -16,6 +21,10 @@ import type {
 @blazorIndirectRender
 @blazorDeepImport
 export class IgcCalendarBaseComponent extends LitElement {
+  protected readonly _i18nController =
+    addI18nController<IgcCalendarResourceStrings>(this, {
+      defaultEN: IgcCalendarResourceStringEN,
+    });
   private _initialActiveDateSet = false;
 
   protected get _hasValues() {
@@ -130,7 +139,25 @@ export class IgcCalendarBaseComponent extends LitElement {
    * @attr locale
    */
   @property()
-  public locale = 'en';
+  public set locale(value: string) {
+    this._i18nController.locale = value;
+  }
+
+  public get locale() {
+    return this._i18nController.locale;
+  }
+
+  /**
+   * The resource strings for localization.
+   */
+  @property({ attribute: false })
+  public set resourceStrings(value: IgcCalendarResourceStrings) {
+    this._i18nController.resourceStrings = value;
+  }
+
+  public get resourceStrings(): IgcCalendarResourceStrings {
+    return this._i18nController.resourceStrings;
+  }
 
   /** Gets/Sets the special dates for the component. */
   @property({ attribute: false })

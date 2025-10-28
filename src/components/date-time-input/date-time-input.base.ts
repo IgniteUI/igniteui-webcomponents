@@ -19,7 +19,7 @@ import type { DateRangeValue } from '../date-range-picker/date-range-picker.js';
 import type { IgcInputComponentEventMap } from '../input/input-base.js';
 import {
   IgcMaskInputBaseComponent,
-  type MaskRange,
+  type MaskSelection,
 } from '../mask-input/mask-input-base.js';
 import type {
   DatePart,
@@ -218,9 +218,9 @@ export abstract class IgcDateTimeInputBaseComponent<
   @watch('prompt', { waitUntilFirstUpdate: true })
   protected _promptChange(): void {
     if (!this.prompt) {
-      this.prompt = this.parser.prompt;
+      this.prompt = this._parser.prompt;
     } else {
-      this.parser.prompt = this.prompt;
+      this._parser.prompt = this.prompt;
     }
   }
 
@@ -236,7 +236,7 @@ export abstract class IgcDateTimeInputBaseComponent<
       return;
     }
 
-    const { start, end } = this.inputSelection;
+    const { start, end } = this._inputSelection;
     const newValue = this.trySpinValue(targetPart, delta);
     this.value = newValue as TValue;
     this.updateComplete.then(() => this.input.setSelectionRange(start, end));
@@ -250,7 +250,7 @@ export abstract class IgcDateTimeInputBaseComponent<
       return;
     }
 
-    const { start, end } = this.inputSelection;
+    const { start, end } = this._inputSelection;
     const newValue = this.trySpinValue(targetPart, delta, true);
     this.value = newValue;
     this.updateComplete.then(() => this.input.setSelectionRange(start, end));
@@ -258,7 +258,7 @@ export abstract class IgcDateTimeInputBaseComponent<
 
   /** Clears the input element of user input. */
   public clear(): void {
-    this.maskedValue = '';
+    this._maskedValue = '';
     this.value = null;
   }
 
@@ -268,26 +268,26 @@ export abstract class IgcDateTimeInputBaseComponent<
   }
 
   protected handleDragLeave() {
-    if (!this.focused) {
+    if (!this._focused) {
       this.updateMask();
     }
   }
 
   protected handleDragEnter() {
-    if (!this.focused) {
-      this.maskedValue = this.getMaskedValue();
+    if (!this._focused) {
+      this._maskedValue = this.getMaskedValue();
     }
   }
 
-  protected async updateInput(string: string, range: MaskRange) {
-    const { value, end } = this.parser.replace(
-      this.maskedValue,
+  protected override async _updateInput(string: string, range: MaskSelection) {
+    const { value, end } = this._parser.replace(
+      this._maskedValue,
       string,
       range.start,
       range.end
     );
 
-    this.maskedValue = value;
+    this._maskedValue = value;
 
     this.updateValue();
     this.requestUpdate();
@@ -313,7 +313,7 @@ export abstract class IgcDateTimeInputBaseComponent<
   }
 
   protected isComplete(): boolean {
-    return !this.maskedValue.includes(this.prompt);
+    return !this._maskedValue.includes(this.prompt);
   }
 
   protected override _updateSetRangeTextValue() {
@@ -329,19 +329,19 @@ export abstract class IgcDateTimeInputBaseComponent<
     direction === 'up' ? this.stepUp() : this.stepDown();
     this.handleInput();
     await this.updateComplete;
-    this.setSelectionRange(this.selection.start, this.selection.end);
+    this.setSelectionRange(this._maskSelection.start, this._maskSelection.end);
   }
 
   @eventOptions({ passive: false })
-  private async onWheel(event: WheelEvent) {
-    if (!this.focused || this.readOnly) {
+  private async _onWheel(event: WheelEvent) {
+    if (!this._focused || this.readOnly) {
       return;
     }
 
     event.preventDefault();
     event.stopPropagation();
 
-    const { start, end } = this.inputSelection;
+    const { start, end } = this._inputSelection;
     event.deltaY > 0 ? this.stepDown() : this.stepUp();
     this.handleInput();
 
@@ -359,27 +359,27 @@ export abstract class IgcDateTimeInputBaseComponent<
         type="text"
         part=${partMap(this.resolvePartNames('input'))}
         name=${ifDefined(this.name)}
-        .value=${live(this.maskedValue)}
-        .placeholder=${live(this.placeholder || this.emptyMask)}
+        .value=${live(this._maskedValue)}
+        .placeholder=${live(this.placeholder || this._parser.emptyMask)}
         ?readonly=${this.readOnly}
         ?disabled=${this.disabled}
         @blur=${this.handleBlur}
         @focus=${this.handleFocus}
-        @input=${super.handleInput}
-        @wheel=${this.onWheel}
-        @keydown=${super.handleKeydown}
-        @click=${this.handleClick}
-        @cut=${this.handleCut}
-        @compositionstart=${this.handleCompositionStart}
-        @compositionend=${this.handleCompositionEnd}
+        @input=${super._handleInput}
+        @wheel=${this._onWheel}
+        @keydown=${super._setMaskSelection}
+        @click=${super._handleClick}
+        @cut=${super._setMaskSelection}
+        @compositionstart=${super._handleCompositionStart}
+        @compositionend=${super._handleCompositionEnd}
         @dragenter=${this.handleDragEnter}
         @dragleave=${this.handleDragLeave}
-        @dragstart=${this.handleDragStart}
+        @dragstart=${super._setMaskSelection}
       />
     `;
   }
 
-  protected abstract override handleInput(): void;
+  protected abstract handleInput(): void;
   protected abstract updateMask(): void;
   protected abstract updateValue(): void;
   protected abstract getNewPosition(value: string, direction: number): number;

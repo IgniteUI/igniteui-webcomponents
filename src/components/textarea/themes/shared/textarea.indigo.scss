@@ -8,18 +8,15 @@ $theme: $indigo;
     @include type-style('body-2');
 
     --component-size: var(--ig-size, #{var-get($theme, 'default-size')});
-    --input-icon: #{sizable(rem(14px), rem(16px), rem(18px))};
+    --input-icon: #{sizable(rem(14px), rem(16px), rem(16px))};
+    --affix-padding: #{pad-inline(rem(2px), rem(4px), rem(6px))};
 
     ::slotted(igc-icon) {
         --size: var(--input-icon) !important;
     }
 
     ::part(helper-text) {
-        @include type-style('caption');
-
-        color: var-get($theme, 'helper-text-color');
         grid-auto-rows: minmax(rem(15px), auto);
-        margin-block-start: rem(4px);
     }
 
 }
@@ -68,7 +65,7 @@ $theme: $indigo;
     transform-origin: top left;
     margin-top: 0;
     height: auto;
-    margin-block-end: rem(4px);
+    margin-block-end: pad-block(rem(4px));
 }
 
 [part~='container'] {
@@ -91,9 +88,9 @@ $theme: $indigo;
 textarea {
     @include type-style('body-2');
 
-    padding-block: rem(6px);
+    padding-block: pad-block(rem(4px), rem(6px), rem(8px)) 0;
     padding-inline: pad-inline(rem(2px), rem(4px), rem(6px));
-    margin-block-end: rem(1px);
+    margin-block-end: pad-block(rem(1px));
 
     &::placeholder {
         font-style: italic;
@@ -104,11 +101,6 @@ textarea {
     [part~='input'] {
         color: var-get($theme, 'filled-text-color');
     }
-}
-
-[part~='prefixed'] [part='prefix'],
-[part~='suffixed'] [part='suffix'] {
-    padding-inline: pad-inline(rem(2px), rem(4px), rem(6px));
 }
 
 [part~='prefixed'] textarea {

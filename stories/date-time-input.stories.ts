@@ -63,14 +63,22 @@ const metadata: Meta<IgcDateTimeInputComponent> = {
     },
     locale: {
       type: 'string',
-      description: 'The locale settings used to display the value.',
+      description:
+        'Gets/Sets the locale used for formatting the display value.',
       control: 'text',
-      table: { defaultValue: { summary: 'en' } },
+    },
+    mask: {
+      type: 'string',
+      description: 'The masked pattern of the component.',
+      control: 'text',
+      table: { defaultValue: { summary: 'CCCCCCCCCC' } },
     },
     prompt: {
       type: 'string',
-      description: 'The prompt symbol to use for unfilled parts of the mask.',
+      description:
+        'The prompt symbol to use for unfilled parts of the mask pattern.',
       control: 'text',
+      table: { defaultValue: { summary: '_' } },
     },
     required: {
       type: 'boolean',
@@ -121,7 +129,8 @@ const metadata: Meta<IgcDateTimeInputComponent> = {
   },
   args: {
     spinLoop: true,
-    locale: 'en',
+    mask: 'CCCCCCCCCC',
+    prompt: '_',
     required: false,
     disabled: false,
     invalid: false,
@@ -148,9 +157,11 @@ interface IgcDateTimeInputArgs {
   displayFormat: string;
   /** Sets whether to loop over the currently spun segment. */
   spinLoop: boolean;
-  /** The locale settings used to display the value. */
+  /** Gets/Sets the locale used for formatting the display value. */
   locale: string;
-  /** The prompt symbol to use for unfilled parts of the mask. */
+  /** The masked pattern of the component. */
+  mask: string;
+  /** The prompt symbol to use for unfilled parts of the mask pattern. */
   prompt: string;
   /** When set, makes the component a required field for validation. */
   required: boolean;

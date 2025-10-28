@@ -69,6 +69,12 @@ const metadata: Meta<IgcComboComponent> = {
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
+    locale: {
+      type: 'string',
+      description:
+        'Gets/Sets the locale used for formatting and displaying the dates in the component.',
+      control: 'text',
+    },
     label: {
       type: 'string',
       description: 'The label attribute of the control.',
@@ -83,7 +89,6 @@ const metadata: Meta<IgcComboComponent> = {
       type: 'string',
       description: 'The placeholder attribute of the search input.',
       control: 'text',
-      table: { defaultValue: { summary: 'Search' } },
     },
     open: {
       type: 'boolean',
@@ -129,6 +134,12 @@ const metadata: Meta<IgcComboComponent> = {
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
+    disableClear: {
+      type: 'boolean',
+      description: 'Hides the clear button.',
+      control: 'boolean',
+      table: { defaultValue: { summary: 'false' } },
+    },
     required: {
       type: 'boolean',
       description:
@@ -159,11 +170,11 @@ const metadata: Meta<IgcComboComponent> = {
     singleSelect: false,
     autofocus: false,
     autofocusList: false,
-    placeholderSearch: 'Search',
     open: false,
     groupSorting: 'asc',
     caseSensitiveIcon: false,
     disableFiltering: false,
+    disableClear: false,
     required: false,
     disabled: false,
     invalid: false,
@@ -181,6 +192,8 @@ interface IgcComboArgs {
   autofocus: boolean;
   /** Focuses the list of options when the menu opens. */
   autofocusList: boolean;
+  /** Gets/Sets the locale used for formatting and displaying the dates in the component. */
+  locale: string;
   /** The label attribute of the control. */
   label: string;
   /** The placeholder attribute of the control. */
@@ -201,6 +214,8 @@ interface IgcComboArgs {
   caseSensitiveIcon: boolean;
   /** Disables the filtering of the list of options. */
   disableFiltering: boolean;
+  /** Hides the clear button. */
+  disableClear: boolean;
   /** When set, makes the component a required field for validation. */
   required: boolean;
   /** The name attribute of the control. */
@@ -215,11 +230,7 @@ type Story = StoryObj<IgcComboArgs>;
 // endregion
 
 const itemTemplate: ComboItemTemplate<City> = ({ item }) => {
-  return html`
-    <div>
-      <span><b>${item?.name ?? item}</b> [${item?.zip}]</span>
-    </div>
-  `;
+  return html` <div><b>${item?.name ?? item}</b> [${item?.zip}]</div> `;
 };
 
 const groupHeaderTemplate: ComboItemTemplate<City> = ({ item }) => {
@@ -321,6 +332,7 @@ export const Default: Story = {
       .groupSorting=${args.groupSorting}
       ?case-sensitive-icon=${args.caseSensitiveIcon}
       ?disable-filtering=${args.disableFiltering}
+      ?disable-clear=${args.disableClear}
       ?open=${args.open}
       ?autofocus=${args.autofocus}
       ?autofocus-list=${args.autofocusList}
@@ -363,6 +375,11 @@ export const Form: Story = {
   argTypes: disableStoryControls(metadata),
   render: () => {
     return html`
+      <style>
+        fieldset {
+          min-width: 0;
+        }
+      </style>
       <form @submit=${formSubmitHandler}>
         <fieldset>
           <igc-combo

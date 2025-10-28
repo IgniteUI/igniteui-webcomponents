@@ -16,7 +16,11 @@ import {
 } from '../common/controllers/key-bindings.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import { equal } from '../common/util.js';
-import { simulateClick, simulateKeyboard } from '../common/utils.spec.js';
+import {
+  isFocused,
+  simulateClick,
+  simulateKeyboard,
+} from '../common/utils.spec.js';
 import IgcDateTimeInputComponent from '../date-time-input/date-time-input.js';
 import IgcDatePickerComponent from './date-picker.js';
 
@@ -565,7 +569,7 @@ describe('Date picker', () => {
 
       it('should default inputFormat to whatever Intl.DateTimeFormat returns for the current locale', async () => {
         const defaultFormat = 'MM/dd/yyyy';
-        expect(picker.locale).to.equal('en');
+        expect(picker.locale).to.equal('en-US');
         expect(picker.inputFormat).to.equal(defaultFormat);
 
         picker.locale = 'fr';
@@ -575,7 +579,7 @@ describe('Date picker', () => {
       });
 
       it('should use the value of inputFormat for displayFormat, if it is not defined', async () => {
-        expect(picker.locale).to.equal('en');
+        expect(picker.locale).to.equal('en-US');
         expect(picker.getAttribute('display-format')).to.be.null;
         expect(picker.displayFormat).to.equal(picker.inputFormat);
 
@@ -936,6 +940,78 @@ describe('Date picker', () => {
 
       expect(monthNames).lengthOf(12);
       expect(selectedMonths).lengthOf(1);
+    });
+
+    it('should update the calendar view when typing, i.e. switch to other month', async () => {
+      const eventSpy = spy(picker, 'emitEvent');
+      const date = new CalendarDay({ year: 2025, month: 1, date: 1 });
+      picker.value = date.native;
+      picker.open = true;
+      picker.inputFormat = 'MM/dd/yyyy';
+      await elementUpdated(picker);
+
+      dateTimeInput.focus();
+      dateTimeInput.setSelectionRange(0, 1);
+      await elementUpdated(picker);
+
+      simulateKeyboard(dateTimeInput, arrowUp);
+      simulateKeyboard(dateTimeInput, arrowUp);
+
+      await elementUpdated(picker);
+
+      expect(eventSpy).calledWith('igcInput');
+      expect(eventSpy).not.calledWith('igcChange');
+
+      const expectedValue = new CalendarDay({ year: 2025, month: 3, date: 1 })
+        .native;
+      checkDatesEqual(calendar.activeDate, expectedValue);
+    });
+
+    it('issue 1884 - should emit igcChange event in dialog mode after clearing the value and losing focus', async () => {
+      const eventSpy = spy(picker, 'emitEvent');
+      // const nativeInput = dateTimeInput.renderRoot.querySelector('input')!;
+
+      // Dropdown mode
+
+      picker.value = CalendarDay.today.native;
+      picker.focus();
+      picker.blur();
+      await elementUpdated(picker);
+
+      picker.focus();
+      expect(isFocused(dateTimeInput)).to.be.true;
+
+      // Simulate clicking the clear button
+      picker.clear();
+
+      picker.blur();
+      expect(isFocused(dateTimeInput)).to.be.false;
+
+      expect(eventSpy).to.be.calledWith('igcChange', {
+        detail: null,
+      });
+
+      eventSpy.resetHistory();
+
+      // Dialog mode
+      picker.mode = 'dialog';
+      picker.value = CalendarDay.today.native;
+      picker.focus();
+      picker.blur();
+      await elementUpdated(picker);
+
+      picker.focus();
+      expect(isFocused(dateTimeInput)).to.be.true;
+
+      // Simulate clicking the clear button
+      picker.clear();
+
+      picker.blur();
+      expect(isFocused(dateTimeInput)).to.be.false;
+
+      expect(eventSpy).to.be.calledWith('igcChange', {
+        detail: null,
+      });
     });
 
     describe('Readonly state', () => {

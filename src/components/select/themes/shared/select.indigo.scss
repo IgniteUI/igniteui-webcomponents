@@ -11,11 +11,10 @@ $input-theme: input-theme.$indigo;
     --component-size: var(--ig-size, #{var-get($theme, 'default-size')});
     --select-size: var(--component-size);
     --dropdown-size: var(--component-size);
+    --input-icon: #{sizable(rem(14px), rem(16px), rem(18px))};
 
     ::part(helper-text) {
-        @include type-style('caption');
-
-        margin-block-start: rem(4px);
+        margin-block-start: pad-block(rem(4px));
         grid-auto-rows: minmax(rem(15px), auto);
     }
 
@@ -26,11 +25,16 @@ $input-theme: input-theme.$indigo;
     igc-input::part(container) {
         padding-inline: 0;
     }
+
+    igc-icon,
+    ::slotted(igc-icon) {
+        --size: var(--input-icon) !important;
+    }
 }
 
 [part='base'] {
     outline: var-get($dropdown-theme, 'border-width') solid var-get($dropdown-theme, 'border-color');
-    padding: rem(3px);
+    padding: pad(rem(3px));
 }
 
 :host(:hover) {

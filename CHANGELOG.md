@@ -4,6 +4,77 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+### Fixed
+- #### Tooltip
+  - Do not show tooltip when target is clicked [#1828](https://github.com/IgniteUI/igniteui-webcomponents/issues/1828)
+
+## [6.3.4] - 2025-10-22
+### Fixed
+- #### Date picker
+  - Issues when clearing the value and notch border in Material theme [#1894](https://github.com/IgniteUI/igniteui-webcomponents/pull/1894)
+- #### Textarea
+  - Stale internal input reference when switching between themes
+
+## [6.3.3] - 2025-10-14
+### Fixed
+- #### Chat
+  - Message actions not rendered after last message [#1882](https://github.com/IgniteUI/igniteui-webcomponents/pull/1882)
+- #### Date picker
+  - Change event not emitted for non-editable input configuration [#1885](https://github.com/IgniteUI/igniteui-webcomponents/pull/1885)
+
+## [6.3.2] - 2025-10-07
+### Added
+- #### Chat
+  - Updated markdown renderer code styles to integrate with the package theming [#1868](https://github.com/IgniteUI/igniteui-webcomponents/pull/1868)
+
+### Fixed
+- #### Card
+  - Consume colors from themes [#1871](https://github.com/IgniteUI/igniteui-webcomponents/pull/1871)
+  - Avatar size in card header [#1873](https://github.com/IgniteUI/igniteui-webcomponents/pull/1873)
+
+## [6.3.1] - 2025-09-18
+### Fixed
+- peerDependencies versions
+
+## [6.3.0] - 2025-09-18
+### Added
+- Chat component
+
+### Fixed
+- #### List
+  - removed duplicated CSS variables across list components and themes [#1853](https://github.com/IgniteUI/igniteui-webcomponents/pull/1853)
+
+## [6.2.2] - 2025-09-16
+### Fixed
+- Minor bug fixes around styles
+
+## [6.2.1] - 2025-09-01
+### Added
+- #### Date picker
+  - set picker calendar's active date on user input [#1819](https://github.com/IgniteUI/igniteui-webcomponents/pull/1819)
+
+### Fixed
+- #### Calendar
+  - Navigation styling [#1831](https://github.com/IgniteUI/igniteui-webcomponents/pull/1831)
+- #### Card
+  - Slotted `igc-avatar` size styles in supported themes [#1833](https://github.com/IgniteUI/igniteui-webcomponents/pull/1833)
+- #### Combo
+  - Dropdown initial height [#1826](https://github.com/IgniteUI/igniteui-webcomponents/pull/1826)
+  - Icon sizes styles for Indigo theme [#1827](https://github.com/IgniteUI/igniteui-webcomponents/pull/1827)
+- #### Date picker, Date range picker
+  - Disabled styles [#1834](https://github.com/IgniteUI/igniteui-webcomponents/pull/1834)
+- #### Input
+  - Prefix and suffix slot styles for Bootstrap theme [#1820](https://github.com/IgniteUI/igniteui-webcomponents/pull/1820)
+  - Label and border styles for Material theme [#1824](https://github.com/IgniteUI/igniteui-webcomponents/pull/1824)
+  - Removed overridden tabindex property [#1836](https://github.com/IgniteUI/igniteui-webcomponents/pull/1836)
+- #### Select
+  - Icon sizes styles for Indigo theme [#1827](https://github.com/IgniteUI/igniteui-webcomponents/pull/1827)
+- #### Switch
+  - Use the new thumb hover property [#1809](https://github.com/IgniteUI/igniteui-webcomponents/pull/1809)
+- #### Tile manager
+  - Incorrect escape of internal regex [#1837](https://github.com/IgniteUI/igniteui-webcomponents/pull/1837)
+
 ## [6.2.0] - 2025-08-04
 ### Added
 - Form associated custom elements now expose the **ig-invalid** custom state for styling with the `:state()` CSS selector.
@@ -984,6 +1055,13 @@ Initial release of Ignite UI Web Components
 - Ripple component
 - Switch component
 
+[6.3.4]: https://github.com/IgniteUI/igniteui-webcomponents/compare/6.3.3...6.3.4
+[6.3.3]: https://github.com/IgniteUI/igniteui-webcomponents/compare/6.3.2...6.3.3
+[6.3.2]: https://github.com/IgniteUI/igniteui-webcomponents/compare/6.3.1...6.3.2
+[6.3.1]: https://github.com/IgniteUI/igniteui-webcomponents/compare/6.3.0...6.3.1
+[6.3.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/6.2.2...6.3.0
+[6.2.2]: https://github.com/IgniteUI/igniteui-webcomponents/compare/6.2.1...6.2.2
+[6.2.1]: https://github.com/IgniteUI/igniteui-webcomponents/compare/6.2.0...6.2.1
 [6.2.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/6.1.2...6.2.0
 [6.1.2]: https://github.com/IgniteUI/igniteui-webcomponents/compare/6.1.1...6.1.2
 [6.1.1]: https://github.com/IgniteUI/igniteui-webcomponents/compare/6.1.0...6.1.1

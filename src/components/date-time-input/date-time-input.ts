@@ -85,11 +85,11 @@ export default class IgcDateTimeInputComponent extends IgcDateTimeInputBaseCompo
   protected override get targetDatePart(): DatePart | undefined {
     let result: DatePart | undefined;
 
-    if (this.focused) {
+    if (this._focused) {
       const partType = this._inputDateParts.find(
         (p) =>
-          p.start <= this.inputSelection.start &&
-          this.inputSelection.start <= p.end &&
+          p.start <= this._inputSelection.start &&
+          this._inputSelection.start <= p.end &&
           p.type !== DateParts.Literal
       )?.type as string as DatePart;
 
@@ -107,37 +107,37 @@ export default class IgcDateTimeInputComponent extends IgcDateTimeInputBaseCompo
     return result;
   }
 
-  protected updateMask() {
-    if (this.focused) {
-      this.maskedValue = this.getMaskedValue();
+  protected override updateMask() {
+    if (this._focused) {
+      this._maskedValue = this.getMaskedValue();
     } else {
       if (!DateTimeUtil.isValidDate(this.value)) {
-        this.maskedValue = '';
+        this._maskedValue = '';
         return;
       }
 
       const format = this.displayFormat || this.inputFormat;
 
       if (this.displayFormat) {
-        this.maskedValue = DateTimeUtil.formatDate(
+        this._maskedValue = DateTimeUtil.formatDate(
           this.value,
           this.locale,
           format,
           true
         );
       } else if (this.inputFormat) {
-        this.maskedValue = DateTimeUtil.formatDate(
+        this._maskedValue = DateTimeUtil.formatDate(
           this.value,
           this.locale,
           format
         );
       } else {
-        this.maskedValue = this.value.toLocaleString();
+        this._maskedValue = this.value.toLocaleString();
       }
     }
   }
 
-  protected override handleInput() {
+  protected override handleInput(): void {
     this._setTouchedState();
     this.emitEvent('igcInput', { detail: this.value?.toString() });
   }
@@ -175,7 +175,7 @@ export default class IgcDateTimeInputComponent extends IgcDateTimeInputBaseCompo
           (dp) => dp.type === DateParts.AmPm
         );
         if (formatPart !== undefined) {
-          amPmFromMask = this.maskedValue.substring(
+          amPmFromMask = this._maskedValue.substring(
             formatPart!.start,
             formatPart!.end
           );
@@ -187,26 +187,7 @@ export default class IgcDateTimeInputComponent extends IgcDateTimeInputBaseCompo
     return newDate;
   }
 
-  protected override async handleFocus() {
-    this.focused = true;
-
-    if (this.readOnly) {
-      return;
-    }
-
-    this._oldValue = this.value;
-    const areFormatsDifferent = this.displayFormat !== this.inputFormat;
-
-    if (!this.value) {
-      this.maskedValue = this.emptyMask;
-      await this.updateComplete;
-      this.select();
-    } else if (areFormatsDifferent) {
-      this.updateMask();
-    }
-  }
-
-  protected setMask(string: string): void {
+  protected override setMask(string: string): void {
     const oldFormat = this._inputDateParts?.map((p) => p.format).join('');
     this._inputDateParts = DateTimeUtil.parseDateTimeFormat(string);
     const value = this._inputDateParts.map((p) => p.format).join('');
@@ -218,26 +199,15 @@ export default class IgcDateTimeInputComponent extends IgcDateTimeInputBaseCompo
       '0'
     );
 
-    this._mask = newMask.includes('tt')
-      ? newMask.replace(/tt/g, 'LL')
-      : newMask;
-
-    this.parser.mask = this._mask;
-    this.parser.prompt = this.prompt;
+    this.mask = newMask.includes('tt') ? newMask.replace(/tt/g, 'LL') : newMask;
 
     if (!this.placeholder || oldFormat === this.placeholder) {
       this.placeholder = value;
     }
   }
 
-  private _parseDate(val: string) {
-    return val
-      ? DateTimeUtil.parseValueFromMask(val, this._inputDateParts, this.prompt)
-      : null;
-  }
-
-  protected getMaskedValue(): string {
-    let mask = this.emptyMask;
+  protected override getMaskedValue(): string {
+    let mask = this._parser.emptyMask;
 
     if (DateTimeUtil.isValidDate(this.value)) {
       for (const part of this._inputDateParts) {
@@ -251,7 +221,7 @@ export default class IgcDateTimeInputComponent extends IgcDateTimeInputBaseCompo
           this.value
         );
 
-        mask = this.parser.replace(
+        mask = this._parser.replace(
           mask,
           targetValue,
           part.start,
@@ -261,20 +231,28 @@ export default class IgcDateTimeInputComponent extends IgcDateTimeInputBaseCompo
       return mask;
     }
 
-    return this.maskedValue === '' ? mask : this.maskedValue;
+    if (this.readOnly) {
+      return '';
+    }
+
+    return this._maskedValue === '' ? mask : this._maskedValue;
   }
 
-  protected updateValue(): void {
+  protected override updateValue(): void {
     if (this.isComplete()) {
-      const parsedDate = this._parseDate(this.maskedValue);
+      const parsedDate = DateTimeUtil.parseValueFromMask(
+        this._maskedValue,
+        this._inputDateParts,
+        this.prompt
+      );
       this.value = DateTimeUtil.isValidDate(parsedDate) ? parsedDate : null;
     } else {
       this.value = null;
     }
   }
 
-  protected getNewPosition(value: string, direction = 0): number {
-    const cursorPos = this.selection.start;
+  protected override getNewPosition(value: string, direction = 0): number {
+    const cursorPos = this._inputSelection.start;
 
     if (!direction) {
       // Last literal before the current cursor position or start of input value
@@ -291,19 +269,42 @@ export default class IgcDateTimeInputComponent extends IgcDateTimeInputBaseCompo
     return part?.start ?? value.length;
   }
 
-  protected override handleBlur() {
-    const isEmptyMask = this.maskedValue === this.emptyMask;
+  protected override async handleFocus() {
+    this._focused = true;
 
-    this.focused = false;
+    if (this.readOnly) {
+      return;
+    }
+
+    this._oldValue = this.value;
+    const areFormatsDifferent = this.displayFormat !== this.inputFormat;
+
+    if (!this.value) {
+      this._maskedValue = this._parser.emptyMask;
+      await this.updateComplete;
+      this.select();
+    } else if (areFormatsDifferent) {
+      this.updateMask();
+    }
+  }
+
+  protected override handleBlur() {
+    const isEmptyMask = this._maskedValue === this._parser.emptyMask;
+
+    this._focused = false;
 
     if (!(this.isComplete() || isEmptyMask)) {
-      const parse = this._parseDate(this.maskedValue);
+      const parse = DateTimeUtil.parseValueFromMask(
+        this._maskedValue,
+        this._inputDateParts,
+        this.prompt
+      );
 
       if (parse) {
         this.value = parse;
       } else {
         this.value = null;
-        this.maskedValue = '';
+        this._maskedValue = '';
       }
     } else {
       this.updateMask();
@@ -315,7 +316,7 @@ export default class IgcDateTimeInputComponent extends IgcDateTimeInputBaseCompo
       this.emitEvent('igcChange', { detail: this.value });
     }
 
-    super._handleBlur();
+    this._handleBlur();
   }
 }
 

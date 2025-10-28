@@ -71,7 +71,6 @@ const metadata: Meta<IgcDateRangePickerComponent> = {
       type: 'string',
       description: 'The locale settings used to display the value.',
       control: 'text',
-      table: { defaultValue: { summary: 'en' } },
     },
     readOnly: {
       type: 'boolean',
@@ -264,7 +263,6 @@ const metadata: Meta<IgcDateRangePickerComponent> = {
     mode: 'dropdown',
     useTwoInputs: false,
     usePredefinedRanges: false,
-    locale: 'en',
     readOnly: false,
     nonEditable: false,
     outlined: false,

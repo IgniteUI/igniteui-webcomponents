@@ -40,9 +40,9 @@ export default class IgcDateRangeInputComponent extends IgcDateTimeInputBaseComp
 
   // #region Properties
 
-  private static readonly increment = createCounter();
+  private static readonly _increment = createCounter();
 
-  protected override inputId = `date-range-input-${IgcDateRangeInputComponent.increment()}`;
+  protected override inputId = `date-range-input-${IgcDateRangeInputComponent._increment()}`;
   protected override _datePartDeltas: DatePartDeltas = {
     date: 1,
     month: 1,
@@ -61,11 +61,11 @@ export default class IgcDateRangeInputComponent extends IgcDateTimeInputBaseComp
   protected override get targetDatePart(): DateRangePart | undefined {
     let result: DateRangePart | undefined;
 
-    if (this.focused) {
+    if (this._focused) {
       const part = this._inputDateParts.find(
         (p) =>
-          p.start <= this.inputSelection.start &&
-          this.inputSelection.start <= p.end &&
+          p.start <= this._inputSelection.start &&
+          this._inputSelection.start <= p.end &&
           p.type !== DateParts.Literal
       );
       const partType = part?.type as string as DatePart;
@@ -166,13 +166,13 @@ export default class IgcDateRangeInputComponent extends IgcDateTimeInputBaseComp
     this._defaultMask = this._inputDateParts.map((p) => p.format).join('');
 
     const value = this._defaultMask;
-    this._mask = (value || DateTimeUtil.DEFAULT_INPUT_FORMAT).replace(
+    const maskPattern = (value || DateTimeUtil.DEFAULT_INPUT_FORMAT).replace(
       new RegExp(/(?=[^t])[\w]/, 'g'),
       '0'
     );
 
-    this.parser.mask = this._mask;
-    this.parser.prompt = this.prompt;
+    this.mask = maskPattern;
+    this._parser.prompt = this.prompt;
 
     if (!this.placeholder || oldFormat === this.placeholder) {
       this.placeholder = value;
@@ -180,7 +180,7 @@ export default class IgcDateRangeInputComponent extends IgcDateTimeInputBaseComp
   }
 
   protected override getMaskedValue() {
-    let mask = this.emptyMask;
+    let mask = this._parser.emptyMask;
 
     if (DateTimeUtil.isValidDate(this.value?.start)) {
       const startParts = this._inputDateParts.filter(
@@ -196,11 +196,11 @@ export default class IgcDateRangeInputComponent extends IgcDateTimeInputBaseComp
       return mask;
     }
 
-    return this.maskedValue === '' ? mask : this.maskedValue;
+    return this._maskedValue === '' ? mask : this._maskedValue;
   }
 
   protected override getNewPosition(value: string, direction = 0): number {
-    let cursorPos = this.selection.start;
+    let cursorPos = this._maskSelection.start;
 
     const separatorPart = this._inputDateParts.find(
       (part) => part.position === DateRangePosition.Separator
@@ -249,7 +249,7 @@ export default class IgcDateRangeInputComponent extends IgcDateTimeInputBaseComp
 
   protected override updateValue(): void {
     if (this.isComplete()) {
-      const parsedRange = this._parseRangeValue(this.maskedValue);
+      const parsedRange = this._parseRangeValue(this._maskedValue);
       this.value = parsedRange;
     } else {
       this.value = null;
@@ -257,7 +257,7 @@ export default class IgcDateRangeInputComponent extends IgcDateTimeInputBaseComp
   }
 
   protected override async handleFocus() {
-    this.focused = true;
+    this._focused = true;
 
     if (this.readOnly) {
       return;
@@ -266,7 +266,7 @@ export default class IgcDateRangeInputComponent extends IgcDateTimeInputBaseComp
     const areFormatsDifferent = this.displayFormat !== this.inputFormat;
 
     if (!this.value || !this.value.start || !this.value.end) {
-      this.maskedValue = this.emptyMask;
+      this._maskedValue = this._parser.emptyMask;
       await this.updateComplete;
       this.select();
     } else if (areFormatsDifferent) {
@@ -275,19 +275,19 @@ export default class IgcDateRangeInputComponent extends IgcDateTimeInputBaseComp
   }
 
   protected override async handleBlur() {
-    const isEmptyMask = this.maskedValue === this.emptyMask;
+    const isEmptyMask = this._maskedValue === this._parser.emptyMask;
     const isSameValue = equal(this._oldRangeValue, this.value);
 
-    this.focused = false;
+    this._focused = false;
 
     if (!(this.isComplete() || isEmptyMask)) {
-      const parse = this._parseRangeValue(this.maskedValue);
+      const parse = this._parseRangeValue(this._maskedValue);
 
       if (parse) {
         this.value = parse;
       } else {
         this.value = null;
-        this.maskedValue = '';
+        this._maskedValue = '';
       }
     } else {
       this.updateMask();
@@ -336,11 +336,11 @@ export default class IgcDateRangeInputComponent extends IgcDateTimeInputBaseComp
   }
 
   protected override updateMask() {
-    if (this.focused) {
-      this.maskedValue = this.getMaskedValue();
+    if (this._focused) {
+      this._maskedValue = this.getMaskedValue();
     } else {
       if (!isCompleteDateRange(this.value)) {
-        this.maskedValue = '';
+        this._maskedValue = '';
         return;
       }
 
@@ -352,7 +352,7 @@ export default class IgcDateRangeInputComponent extends IgcDateTimeInputBaseComp
         this.displayFormat ??
         this.inputFormat;
 
-      this.maskedValue = format
+      this._maskedValue = format
         ? `${formatDate(start, this.locale, format)} - ${formatDate(end, this.locale, format)}`
         : `${start.toLocaleDateString()} - ${end.toLocaleDateString()}`;
     }
@@ -380,7 +380,7 @@ export default class IgcDateRangeInputComponent extends IgcDateTimeInputBaseComp
         value
       );
 
-      resultMask = this.parser.replace(
+      resultMask = this._parser.replace(
         resultMask,
         targetValue,
         part.start,

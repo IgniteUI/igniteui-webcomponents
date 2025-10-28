@@ -30,7 +30,7 @@ $theme: $material;
     }
 
     igc-dialog::part(footer) {
-        padding: rem(8px);
+        padding: pad(rem(8px));
         background: var-get($theme, 'content-background');
         border-block-start: rem(1px) solid var-get($theme, 'actions-divider-color');
     }
@@ -51,12 +51,15 @@ $theme: $material;
     }
 
     ::part(helper-text) {
-        @include type-style('caption');
-
         color: var-get($theme, 'helper-text-color');
         grid-auto-rows: minmax(rem(18px), auto);
-        margin-block-start: rem(4px);
-        padding-inline: pad-inline(rem(14px), rem(16px), rem(18px));
+        margin-block-start: pad-block(rem(4px));
+    }
+}
+
+:host([outlined]) {
+    igc-date-time-input::part(notch) {
+        border-block-start: rem(2px) solid transparent;
     }
 }
 
@@ -128,4 +131,9 @@ $theme: $material;
 igc-icon,
 ::slotted(igc-icon) {
     --component-size: var(--input-size);
+}
+
+::slotted([slot|='suffix']),
+::slotted([slot|='prefix']) {
+    padding-inline: var(--affix-padding);
 }

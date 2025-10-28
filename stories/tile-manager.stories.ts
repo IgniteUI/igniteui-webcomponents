@@ -822,7 +822,9 @@ function handleMaximizeClick(event: Event) {
 
         const additionalButtons =
           actionsSlot.parentElement?.querySelectorAll('.additional-action');
-        additionalButtons?.forEach((btn) => btn.remove());
+        additionalButtons?.forEach((btn) => {
+          btn.remove();
+        });
       }
     }
   }

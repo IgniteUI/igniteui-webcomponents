@@ -25,6 +25,17 @@
         border-bottom-left-radius: 0;
         border-bottom-right-radius: 0;
     }
+
+    ::part(helper-text) {
+        @include type-style('caption');
+        @include line-clamp(2, true, true);
+
+        overflow-wrap: anywhere;
+    }
+
+    slot[name='value-missing'] {
+        @include line-clamp(2, true, true);
+    }
 }
 
 :host([required]) {
@@ -50,7 +61,7 @@
 [part='actions'] {
     display: flex;
     justify-content: flex-end;
-    padding: rem(8px);
+    padding: pad(rem(8px));
     gap: rem(8px);
 
     ::slotted(*) {
@@ -65,5 +76,8 @@
 }
 
 igc-date-time-input {
+    display: flex;
+    flex-direction: column;
     width: 100%;
+    min-width: 0;
 }

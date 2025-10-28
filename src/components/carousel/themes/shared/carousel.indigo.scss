@@ -23,12 +23,12 @@ igc-button::part(focused):hover {
 
 [part~='indicators'] {
     gap: rem(4px);
-    padding: rem(6px);
+    padding: pad(rem(6px));
 }
 
 [part='label indicators'],
 [part='label indicators start'] {
-    padding: rem(4px) rem(6px);
+    padding: pad-block(rem(4px)) pad-inline(rem(6px));
     min-width: rem(28px);
     border-radius: rem(2px);
 }
@@ -57,7 +57,7 @@ igc-button::part(focused):hover {
 }
 
 [part='dot active'] {
-    border: rem(2px) solid var-get($theme, 'indicator-active-dot-color');
+    border: rem(2px) solid var-get($theme, 'indicator-active-border-color');
     box-shadow: 0 0 0 rem(3px) var(--dot-shadow-color);
 
     &::after {
@@ -75,12 +75,12 @@ igc-button::part(focused):hover {
 
 :host([vertical]) {
     [part~='indicators'] {
-        padding: rem(6px);
+        padding: pad-block(rem(6px));
     }
 
     [part='label indicators'],
     [part='label indicators start'] {
-        padding: rem(4px) rem(6px);
+        padding: pad-block(rem(4px)) pad-inline(rem(6px));
     }
 
     [part~='indicators'],

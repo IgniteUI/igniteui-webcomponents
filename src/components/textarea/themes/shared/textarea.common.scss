@@ -46,6 +46,13 @@ textarea {
     }
 }
 
+:host {
+    ::part(helper-text) {
+        color: var-get($theme, 'helper-text-color');
+        margin-block-start: pad-block(rem(4px));
+    }
+}
+
 :host([readonly]) {
     [part='prefix'],
     [part='suffix'] {
@@ -94,4 +101,9 @@ textarea {
     [part~='label'] {
         color: var-get($theme, 'disabled-text-color');
     }
+}
+
+::slotted([slot='suffix']),
+::slotted([slot='prefix']) {
+    padding-inline: var(--affix-padding);
 }

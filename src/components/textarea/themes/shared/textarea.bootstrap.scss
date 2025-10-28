@@ -7,13 +7,20 @@ $theme: $bootstrap;
     @include type-style('body-1');
 
     --component-size: var(--ig-size, #{var-get($theme, 'default-size')});
+    --affix-padding: #{pad-inline(rem(8px), rem(10px), rem(14px))};
 
     ::part(helper-text) {
         @include type-style('body-2');
 
-        color: var-get($theme, 'helper-text-color');
         grid-auto-rows: minmax(rem(20px), auto);
-        margin-block-start: rem(4px);
+        margin-block-start: pad-block(rem(4px));
+    }
+
+    ::slotted([slot="prefix"]),
+    ::slotted([slot="suffix"]) {
+        height: 100%;
+        display: flex;
+        align-items: center;
     }
 }
 
@@ -23,18 +30,18 @@ $theme: $bootstrap;
     padding: 0;
     transform: translateY(0);
     transform-origin: top left;
-    margin-block: 0 rem(4px);
+    margin-block: 0 pad-block(rem(4px));
     height: auto;
     font-size: rem(16px);
 }
 
 [part~='prefixed'] {
     [part~='prefix'] {
-        border-width: rem(1px);
+        border-block-width: rem(1px);
         border-style: solid;
         border-color: var-get($theme, 'border-color');
         overflow: hidden;
-        border-inline-end-width: 0;
+        border-inline-width: 0;
         border: {
             start: {
                 start-radius: var-get($theme, 'border-border-radius');
@@ -59,11 +66,11 @@ $theme: $bootstrap;
 
 [part~='suffixed'] {
     [part~='suffix'] {
-        border-width: rem(1px);
+        border-block-width: rem(1px);
         border-style: solid;
         border-color: var-get($theme, 'border-color');
         overflow: hidden;
-        border-inline-start-width: 0;
+        border-inline-width: 0;
         border: {
             start: {
                 end-radius: var-get($theme, 'border-border-radius');
@@ -90,11 +97,10 @@ textarea {
     @include type-style('body-1');
 
     border: rem(1px) solid var-get($theme, 'border-color');
-    padding-block: pad-inline(rem(4px), rem(6px), rem(8px));
-    padding-inline: pad-inline(rem(8px), rem(12px), rem(16px));
+    padding-block: pad-block(rem(4px), rem(8px), rem(12px)) 0;
+    padding-inline: pad-inline(rem(8px), rem(10px), rem(14px));
     border-radius: var-get($theme, 'border-border-radius');
     z-index: 1;
-    font-size: pad(rem(14px), rem(16px), rem(20px));
     transition: box-shadow .15s ease-out, border .15s ease-out;
 }
 
@@ -156,5 +162,24 @@ textarea {
         background: var-get($theme, 'border-disabled-background');
         border: rem(1px) solid var-get($theme, 'disabled-border-color');
         box-shadow: none;
+    }
+
+    ::slotted([slot='suffix']) {
+        border-inline-end: rem(1px) solid var(--disabled-border-color);
+    }
+
+    ::slotted([slot='prefix']) {
+        border-inline-start: rem(1px) solid var(--disabled-border-color);
+    }
+}
+
+:host(:not([disabled])),
+:host(:not(:disabled)) {
+    ::slotted([slot='suffix']) {
+        border-inline-end: rem(1px) solid var(--border-color);
+    }
+
+    ::slotted([slot='prefix']) {
+        border-inline-start: rem(1px) solid var(--border-color);
     }
 }

@@ -29,8 +29,15 @@ $theme: $base;
     color: var-get($theme, 'placeholder-color');
 }
 
+:host {
+    ::part(helper-text) {
+        color: var-get($theme, 'helper-text-color');
+        margin-block-start: rem(4px);
+    }
+}
+
 :host(:focus-within),
-:host(:not([readonly]):hover) {
+:host(:not([readonly],[disabled]):hover) {
     [part~='input']::placeholder {
         color: var-get($theme, 'hover-placeholder-color');
     }
@@ -80,4 +87,15 @@ $theme: $base;
 
 ::part(helper-text) {
     display: grid;
+}
+
+[name='suffix']::slotted(:is([part|='toggle'], [part|='clear'])) {
+    padding-inline: var(--affix-padding);
+}
+
+:host(:not([role='combobox'])) {
+    ::slotted([slot='suffix']),
+    ::slotted([slot='prefix']) {
+        padding-inline: var(--affix-padding);
+    }
 }

@@ -5,6 +5,12 @@ $theme: $indigo;
 
 :host {
     --calendar-border-color: #{$indigo-calendar-border-color};
+    --input-icon: #{sizable(rem(14px), rem(16px), rem(16px))};
+
+    igc-icon,
+    ::slotted(igc-icon) {
+        --size: var(--input-icon) !important;
+    }
 
     igc-dialog[open]::part(base) {
         border-radius: rem(6px);
@@ -12,22 +18,18 @@ $theme: $indigo;
     }
 
     igc-dialog::part(footer) {
-        padding: rem(8px) rem(16px);
+        padding: pad-block(rem(8px)) pad-inline(rem(16px));
         gap: rem(8px);
     }
 
     ::part(helper-text) {
-        @include type-style('caption');
-
-        color: var-get($theme, 'helper-text-color');
         grid-auto-rows: minmax(rem(15px), auto);
-        padding-inline-start: 0;
     }
 }
 
 [part='actions'] {
     min-height: #{sizable(rem(40px), rem(44px), rem(48px))};
-    padding: rem(8px) rem(16px);
+    padding: pad-block(rem(8px)) pad-inline(rem(16px));
 }
 
 :host([readonly]) {
@@ -37,7 +39,7 @@ $theme: $indigo;
     }
 }
 
-:host(:not([readonly]):hover) {
+:host(:not([readonly],[disabled]):hover) {
     igc-input[readonly]::part(container),
     igc-date-time-input:hover::part(container) {
         background: var-get($theme, 'box-background-hover');

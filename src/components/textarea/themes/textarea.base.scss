@@ -3,18 +3,7 @@
 @use 'styles/utilities' as *;
 @use 'igniteui-theming/sass/animations/easings' as *;
 
-$base-scale-size: (
-    'large': rem(16px),
-    'medium': rem(19px),
-    'small': rem(22px)
-);
-
 :host {
-    --textarea-height: #{sizable(
-        rem(82px, map.get($base-scale-size, 'small')),
-        rem(82px, map.get($base-scale-size, 'medium')),
-        rem(82px, map.get($base-scale-size, 'large'))
-    )};
     --component-size: var(--ig-size, var(--ig-size-large));
 
     display: block;
@@ -22,6 +11,17 @@ $base-scale-size: (
 
     [part~='label'] {
         @include ellipsis();
+    }
+
+    ::part(helper-text) {
+        @include type-style('caption');
+        @include line-clamp(2, true, true);
+
+        overflow-wrap: anywhere;
+    }
+
+    slot[name='value-missing'] {
+        @include line-clamp(2, true, true);
     }
 }
 
@@ -33,7 +33,6 @@ $base-scale-size: (
     position: relative;
     max-width: 100%;
     font-size: rem(16px);
-    min-height: var(--textarea-height);
 
     &:hover {
         cursor: pointer;
@@ -46,27 +45,18 @@ textarea {
     position: relative;
     display: block;
     border: none;
-    padding-block: rem(20px) rem(6px);
+    padding-block: pad-block(rem(20px)) pad-block(rem(6px));
     padding-inline-start: 0;
     width: 100%;
     min-width: 0;
-    min-height: var(--textarea-height);
     height: auto;
     outline-style: none;
     box-shadow: none;
     overflow: auto;
     text-overflow: ellipsis;
 
-    /* resets typography styles */
-    line-height: normal;
-
     &::placeholder {
         opacity: 1;
-        line-height: normal;
-    }
-
-    &:not([type='*']) {
-        /* resets typography styles */
         line-height: normal;
     }
 }
@@ -78,7 +68,6 @@ textarea {
     width: max-content;
     align-items: center;
     height: 100%;
-    padding-inline: pad-inline(rem(8px), rem(12px), rem(16px));
     transition: color .25s $out-cubic, background .25s $out-cubic;
 
     igc-icon {
@@ -110,7 +99,7 @@ textarea {
     justify-content: space-between;
 
     > * {
-        margin-inline-end: rem(8px);
+        margin-inline-end: pad-inline(rem(8px));
 
         &:last-child {
             margin-inline-end: 0;
@@ -131,7 +120,7 @@ textarea {
             content: '*';
             font-size: inherit;
             vertical-align: top;
-            margin-inline-start: rem(2px);
+            margin-inline-start: pad-inline(rem(2px));
             display: inline-block;
         }
     }

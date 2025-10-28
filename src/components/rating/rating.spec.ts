@@ -240,9 +240,9 @@ describe('Rating component', () => {
 
       expect(projected.max).to.equal(3);
 
-      getProjectedSymbols(projected).forEach((symbol) =>
-        expect(symbol.textContent).to.eq('🐝')
-      );
+      for (const symbol of getProjectedSymbols(projected)) {
+        expect(symbol.textContent).to.eq('🐝');
+      }
     });
 
     it('sets max value correctly when igc-rating-symbols are projected', async () => {

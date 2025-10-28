@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
-    "target": "es2021",
-    "module": "es2020",
-    "lib": ["es2023", "DOM", "DOM.Iterable"],
+    "target": "es2022",
+    "module": "NodeNext",
+    "lib": ["ESNext", "DOM", "DOM.Iterable"],
     "outDir": "dist",
     "rootDir": "./",
     "declaration": true,
@@ -19,7 +19,7 @@
     "noImplicitAny": true,
     "noImplicitThis": true,
     "noImplicitOverride": true,
-    "moduleResolution": "node",
+    "moduleResolution": "NodeNext",
     "allowSyntheticDefaultImports": true,
     "experimentalDecorators": true,
     "forceConsistentCasingInFileNames": true,
