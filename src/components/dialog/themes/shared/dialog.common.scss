@@ -9,6 +9,7 @@ $theme: $material;
 
     background: var-get($theme, 'background');
     border-radius: var-get($theme, 'border-radius');
+    border: 1px solid var-get($theme, 'border-color');
 }
 
 [part~='backdrop'] {
