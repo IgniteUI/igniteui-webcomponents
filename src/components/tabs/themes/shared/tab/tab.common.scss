@@ -34,6 +34,7 @@ $theme: $material;
         &:hover,
         &:focus-within {
             color: var-get($theme, 'item-active-color');
+            background: var-get($theme, 'item-active-background');
 
             ::slotted(igc-icon) {
                 color: var-get($theme, 'item-active-icon-color');
