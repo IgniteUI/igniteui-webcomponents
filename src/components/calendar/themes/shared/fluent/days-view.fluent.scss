@@ -120,7 +120,7 @@ $fake-bg-position: calc(50% - (var-get($theme, 'size') / 2));
     }
 }
 
-[part~='date-inner']:not([part~='preview']) {
+[part~='date-inner']:not([part~='preview'], [part~='first'][part~='last']) {
     &:hover {
         color: var-get($theme, 'date-hover-foreground');
         background: var-get($theme, 'date-hover-background');
@@ -148,7 +148,7 @@ $fake-bg-position: calc(50% - (var-get($theme, 'size') / 2));
         }
     }
 
-    &[part~='selected']:where(:not([part~='range'])) {
+    &[part~='selected']:where(:not([part~='range'], [part~='first'][part~='last'])) {
         color: var-get($theme, 'date-selected-foreground');
         background: var-get($theme, 'date-selected-background');
         border-color: var-get($theme, 'date-selected-border-color');
@@ -203,7 +203,7 @@ $fake-bg-position: calc(50% - (var-get($theme, 'size') / 2));
             }
         }
 
-        &[part~='selected']:not([part~='disabled']) {
+        &[part~='selected']:not([part~='disabled'], [part~='preview']) {
             color: var-get($theme, 'date-selected-range-foreground');
 
             &:hover {
