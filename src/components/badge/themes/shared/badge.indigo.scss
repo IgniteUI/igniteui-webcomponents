@@ -21,6 +21,15 @@ $theme: $indigo;
     background: color(success, 700);
 }
 
+:host([variant='warning']) [part~='base'] {
+    color: color(gray, 900);
+
+    igc-icon,
+    ::slotted(igc-icon) {
+        color: color(gray, 900);
+    }
+}
+
 [part~='base'] {
     @include type-style('button', false) {
         font-size: sizable(rem(9px), rem(10px), var(--ig-button-font-size));
