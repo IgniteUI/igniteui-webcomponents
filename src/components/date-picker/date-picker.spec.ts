@@ -578,21 +578,27 @@ describe('Date picker', () => {
         expect(picker.inputFormat).to.equal('dd/MM/yyyy');
       });
 
-      it('should use the value of inputFormat for displayFormat, if it is not defined', async () => {
+      it('should use the value of locale format for displayFormat, if it is not defined', async () => {
         expect(picker.locale).to.equal('en-US');
         expect(picker.getAttribute('display-format')).to.be.null;
-        expect(picker.displayFormat).to.equal(picker.inputFormat);
+        expect(picker.displayFormat).to.equal('M/d/yyyy');
 
         // updates inputFormat according to changed locale
         picker.locale = 'fr';
         await elementUpdated(picker);
         expect(picker.inputFormat).to.equal('dd/MM/yyyy');
-        expect(picker.displayFormat).to.equal(picker.inputFormat);
+        expect(picker.displayFormat).to.equal('dd/MM/yyyy');
 
         // sets inputFormat as attribute
         picker.setAttribute('input-format', 'dd-MM-yyyy');
         await elementUpdated(picker);
 
+        expect(picker.inputFormat).to.equal('dd-MM-yyyy');
+        expect(picker.displayFormat).to.equal(picker.inputFormat);
+
+        // changing locale after setting input format shouldn't affect it
+        picker.locale = 'de';
+        await elementUpdated(picker);
         expect(picker.inputFormat).to.equal('dd-MM-yyyy');
         expect(picker.displayFormat).to.equal(picker.inputFormat);
       });

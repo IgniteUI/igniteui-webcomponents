@@ -1,8 +1,8 @@
+import { getDateFormatter } from 'igniteui-i18n-core';
 import { html } from 'lit';
 import { eventOptions, property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
-
 import { convertToDate } from '../calendar/helpers.js';
 import {
   addKeybindings,
@@ -90,9 +90,14 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
 
   private readonly _i18nController = addI18nController<object>(this, {
     defaultEN: {},
+    onResourceChange: () => {
+      this.setDefaultMask();
+    },
   });
 
   protected _defaultMask!: string;
+  private _defaultDisplayFormat!: string;
+  private _displayFormat?: string;
   private _oldValue: Date | null = null;
   private _min: Date | null = null;
   private _max: Date | null = null;
@@ -172,11 +177,19 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
 
   /**
    * Format to display the value in when not editing.
-   * Defaults to the input format if not set.
+   * Defaults to the locale format if not set.
    * @attr display-format
    */
   @property({ attribute: 'display-format' })
-  public displayFormat!: string;
+  public set displayFormat(value: string) {
+    this._displayFormat = value;
+  }
+
+  public get displayFormat(): string {
+    return (
+      this._displayFormat ?? this._inputFormat ?? this._defaultDisplayFormat
+    );
+  }
 
   /**
    * Delta values used to increment or decrement each date part on step actions.
@@ -207,6 +220,8 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
 
   @watch('locale', { waitUntilFirstUpdate: true })
   protected setDefaultMask(): void {
+    this.updateDefaultDisplayFormat();
+
     if (!this._inputFormat) {
       this.updateDefaultMask();
       this.setMask(this._defaultMask);
@@ -219,6 +234,7 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
 
   @watch('displayFormat', { waitUntilFirstUpdate: true })
   protected setDisplayFormat(): void {
+    this.updateDefaultDisplayFormat();
     if (this.value) {
       this.updateMask();
     }
@@ -227,7 +243,7 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
   protected get hasDateParts(): boolean {
     const parts =
       this._inputDateParts ||
-      DateTimeUtil.parseDateTimeFormat(this.inputFormat);
+      DateTimeUtil.parseDateTimeFormat(this.inputFormat, this.locale);
 
     return parts.some(
       (p) =>
@@ -240,7 +256,7 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
   protected get hasTimeParts(): boolean {
     const parts =
       this._inputDateParts ||
-      DateTimeUtil.parseDateTimeFormat(this.inputFormat);
+      DateTimeUtil.parseDateTimeFormat(this.inputFormat, this.locale);
     return parts.some(
       (p) =>
         p.type === DateParts.Hours ||
@@ -295,6 +311,7 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
   public override connectedCallback() {
     super.connectedCallback();
     this.updateDefaultMask();
+    this.updateDefaultDisplayFormat();
     this.setMask(this.inputFormat);
     if (this.value) {
       this.updateMask();
@@ -349,24 +366,11 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
         return;
       }
 
-      const format = this.displayFormat || this.inputFormat;
-
-      if (this.displayFormat) {
-        this._maskedValue = DateTimeUtil.formatDate(
-          this.value,
-          this.locale,
-          format,
-          true
-        );
-      } else if (this.inputFormat) {
-        this._maskedValue = DateTimeUtil.formatDate(
-          this.value,
-          this.locale,
-          format
-        );
-      } else {
-        this._maskedValue = this.value.toLocaleString();
-      }
+      this._maskedValue = DateTimeUtil.formatDisplayDate(
+        this.value,
+        this.locale,
+        this.displayFormat
+      );
     }
   }
 
@@ -482,12 +486,22 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
   }
 
   private updateDefaultMask(): void {
-    this._defaultMask = DateTimeUtil.getDefaultMask(this.locale);
+    this._defaultMask = DateTimeUtil.getDefaultInputMask(this.locale);
+  }
+
+  private updateDefaultDisplayFormat(): void {
+    this._defaultDisplayFormat = getDateFormatter().getLocaleDateTimeFormat(
+      this.locale
+    );
   }
 
   private setMask(string: string): void {
     const oldFormat = this._inputDateParts?.map((p) => p.format).join('');
-    this._inputDateParts = DateTimeUtil.parseDateTimeFormat(string);
+    this._inputDateParts = DateTimeUtil.parseDateTimeFormat(
+      string,
+      this.locale,
+      true
+    );
     const value = this._inputDateParts.map((p) => p.format).join('');
 
     this._defaultMask = value;

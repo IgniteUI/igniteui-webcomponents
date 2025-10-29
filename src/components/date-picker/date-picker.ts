@@ -1,3 +1,7 @@
+import {
+  type IValidationResourceStrings,
+  ValidationResourceStringsEN,
+} from 'igniteui-i18n-core';
 import { html, nothing, type TemplateResult } from 'lit';
 import { property, query } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
@@ -200,19 +204,27 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
   private readonly _themes = addThemingController(this, all);
   private readonly _slots = addSlotController(this, { slots: Slots });
 
-  private _oldValue: Date | null = null;
-  private readonly _i18nController =
-    addI18nController<IgcCalendarResourceStrings>(this, {
-      defaultEN: IgcCalendarResourceStringEN,
-    });
+  /**
+   * For now we use the core validation strings internally only, to avoid mixing with old resources by users.
+   * To Do: Update resourceStrings type when the IgcCalendarResourceStrings is changed to ICalendarResourceStrings
+   */
+  protected override readonly __i18nController = addI18nController<
+    IgcCalendarResourceStrings & IValidationResourceStrings
+  >(this, {
+    defaultEN: {
+      ...IgcCalendarResourceStringEN,
+      ...ValidationResourceStringsEN,
+    },
+  });
 
+  private _oldValue: Date | null = null;
   private _activeDate: Date | null = null;
   private _min: Date | null = null;
   private _max: Date | null = null;
   private _disabledDates?: DateRangeDescriptor[];
   private _dateConstraints?: DateRangeDescriptor[];
-  private _displayFormat?: string;
   private _inputFormat?: string;
+  private _displayFormat?: string;
 
   protected override readonly _formValue = createFormValueState(this, {
     initialValue: null,
@@ -410,7 +422,7 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
 
   /**
    * Format to display the value in when not editing.
-   * Defaults to the input format if not set.
+   * Defaults to the locale format if not set.
    * @attr display-format
    */
   @property({ attribute: 'display-format' })
@@ -419,7 +431,7 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
   }
 
   public get displayFormat(): string {
-    return this._displayFormat ?? this.inputFormat;
+    return this._displayFormat ?? this._input?.displayFormat;
   }
 
   /**
@@ -448,11 +460,11 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
    */
   @property()
   public set locale(value: string) {
-    this._i18nController.locale = value;
+    this.__i18nController.locale = value;
   }
 
   public get locale() {
-    return this._i18nController.locale;
+    return this.__i18nController.locale;
   }
 
   /**
@@ -460,11 +472,11 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
    */
   @property({ attribute: false })
   public set resourceStrings(value: IgcCalendarResourceStrings) {
-    this._i18nController.resourceStrings = value;
+    this.__i18nController.resourceStrings = value;
   }
 
   public get resourceStrings(): IgcCalendarResourceStrings {
-    return this._i18nController.resourceStrings;
+    return this.__i18nController.resourceStrings;
   }
 
   /** Sets the start day of the week for the calendar. */
@@ -825,7 +837,7 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
 
   protected _renderInput(id: string) {
     const format = DateTimeUtil.predefinedToDateDisplayFormat(
-      this._displayFormat!
+      this._displayFormat
     );
 
     // Dialog mode is always readonly, rest depends on configuration
