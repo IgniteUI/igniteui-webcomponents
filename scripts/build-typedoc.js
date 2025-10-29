@@ -1,11 +1,17 @@
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { create } from 'browser-sync';
 import watch from 'node-watch';
 import { Application } from 'typedoc';
 import report from './report.mjs';
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const toPosix = (p) => p.replace(/\\/g, '/');
 const browserSync = create();
-const ROOT = path.join.bind(null, path.resolve('./'));
+const ROOT = (...segments) =>
+  toPosix(path.resolve(__dirname, '..', ...segments));
 
 const TYPEDOC = {
   PLUGINS: {
@@ -15,26 +21,25 @@ const TYPEDOC = {
       'typedoc-plugin-localization/dist/index.js'
     ),
   },
-  OUTPUT: ROOT(path.posix.join('dist', 'docs', 'typescript')),
+  OUTPUT: ROOT('dist', 'docs', 'typescript'),
   EXPORT_JSON_PATH: ROOT(
-    path.posix.join(
-      'dist',
-      'docs',
-      'typescript-exported',
-      'ignite-ui-web-components.json'
-    )
+    'dist',
+    'docs',
+    'typescript-exported',
+    'ignite-ui-web-components.json'
   ),
   IMPORT_JSON_PATH: ROOT(
-    path.posix.join(
-      'i18nRepo',
-      'typedoc',
-      'ja',
-      'ignite-ui-web-components.json'
-    )
+    'i18nRepo',
+    'typedoc',
+    'ja',
+    'ignite-ui-web-components.json'
   ),
-  PROJECT_PATH: ROOT(path.posix.join('src', 'index.ts')),
+  PROJECT_PATH: ROOT('src', 'index.ts'),
   TEMPLATE_STRINGS_PATH: ROOT(
-    path.posix.join('extras', 'template', 'strings', 'shell-strings.json')
+    'extras',
+    'template',
+    'strings',
+    'shell-strings.json'
   ),
 };
 
