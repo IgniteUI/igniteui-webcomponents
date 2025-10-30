@@ -55,13 +55,6 @@ $disabled-color: var-get($theme, 'disabled-color');
     }
 }
 
-:host(:hover) [part='control checked'] {
-    &::after {
-        background: $checked-hover-color;
-        box-shadow: inset 0 0 0 rem(1px) $checked-hover-color;
-    }
-}
-
 :host([indeterminate]) {
     [part~='indicator'] {
         display: none;
@@ -195,6 +188,12 @@ $disabled-color: var-get($theme, 'disabled-color');
             box-shadow: inset 0 0 0 rem(1px) $invalid-hover-color;
             background: transparent;
         }
+    }
+}
+
+:host(:not([disabled], :state(ig-invalid))[indeterminate]:hover) {
+    [part='control checked']::after {
+        background: transparent;
     }
 }
 
