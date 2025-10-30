@@ -53,13 +53,8 @@ $theme: $bootstrap;
 }
 
 :host(:hover) {
-    [part~='control']::after {
+    [part='control']::after {
         box-shadow: inset 0 0 0 rem(1px) var-get($theme, 'empty-color-hover');
-    }
-
-    [part='control checked']::after {
-        background: var-get($theme, 'fill-color-hover');
-        box-shadow: inset 0 0 0 rem(1px) var-get($theme, 'fill-color-hover');
     }
 }
 

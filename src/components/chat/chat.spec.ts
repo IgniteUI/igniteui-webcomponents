@@ -3,7 +3,7 @@ import { html, nothing } from 'lit';
 import { spy, stub, useFakeTimers } from 'sinon';
 import type IgcIconButtonComponent from '../button/icon-button.js';
 import IgcChipComponent from '../chip/chip.js';
-import { enterKey } from '../common/controllers/key-bindings.js';
+import { enterKey, tabKey } from '../common/controllers/key-bindings.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import { first, last } from '../common/util.js';
 import {
@@ -11,6 +11,7 @@ import {
   simulateBlur,
   simulateClick,
   simulateFocus,
+  simulateInput,
   simulateKeyboard,
 } from '../common/utils.spec.js';
 import { simulateFileUpload } from '../file-input/file-input.spec.js';
@@ -888,19 +889,67 @@ describe('Chat', () => {
       const textArea = getChatDOM(chat).input.textarea;
 
       chat.options = { stopTypingDelay: 2500 };
-      simulateKeyboard(textArea, 'a');
+      simulateKeyboard(textArea, 'a', 15);
       await elementUpdated(chat);
 
       expect(eventSpy).calledWith('igcTypingChange');
-      expect(eventSpy.firstCall.args[1]?.detail).to.eql({ isTyping: true });
+      expect(eventSpy.firstCall.args[1]?.detail).to.be.true;
 
       clock.setSystemTime(2501);
       await clock.runAllAsync();
 
       expect(eventSpy).calledWith('igcTypingChange');
-      expect(eventSpy.lastCall.args[1]?.detail).to.eql({ isTyping: false });
+      expect(eventSpy.lastCall.args[1]?.detail).to.be.false;
 
       clock.restore();
+    });
+
+    it('emits igcTypingChange after sending a message', async () => {
+      const eventSpy = spy(chat, 'emitEvent');
+      const textArea = getChatDOM(chat).input.textarea;
+      const internalInput = textArea.renderRoot.querySelector('textarea')!;
+
+      chat.options = { stopTypingDelay: 2500 };
+
+      // Simulate typing some text and the event sequence following after sending a message
+
+      // Fires igcTypingChange
+      simulateKeyboard(textArea, 'a', 15);
+      await elementUpdated(textArea);
+
+      // Fires igcInputChange
+      simulateInput(internalInput, { value: 'a'.repeat(15) });
+      await elementUpdated(textArea);
+
+      // Fires igcMessageCreated -> igcTypingChange -> igcInputFocus since sending a message refocuses
+      // the textarea
+      simulateKeyboard(textArea, enterKey);
+      await elementUpdated(chat);
+
+      const expectedEventSequence = [
+        'igcTypingChange',
+        'igcInputChange',
+        'igcMessageCreated',
+        'igcTypingChange',
+        'igcInputFocus',
+      ];
+
+      for (const [idx, event] of expectedEventSequence.entries()) {
+        expect(eventSpy.getCall(idx).firstArg).to.equal(event);
+      }
+    });
+
+    it('should not emit igcTypingChange on Tab key', async () => {
+      const eventSpy = spy(chat, 'emitEvent');
+      const textArea = getChatDOM(chat).input.textarea;
+      const internalInput = textArea.renderRoot.querySelector('textarea')!;
+
+      chat.options = { stopTypingDelay: 2500 };
+
+      simulateKeyboard(internalInput, tabKey);
+      await elementUpdated(chat);
+
+      expect(eventSpy.getCalls()).is.empty;
     });
 
     it('emits igcInputFocus', async () => {

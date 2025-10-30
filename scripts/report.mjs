@@ -1,19 +1,19 @@
 import { stdout } from 'node:process';
-import { format } from 'node:util';
+import { format, styleText } from 'node:util';
 
 export default {
-  error: (s) => console.error('\x1b[31m%s\x1b[0m', s),
-  success: (s) => console.info('\x1b[32m%s\x1b[0m', s),
-  warn: (s) => console.warn('\x1b[33m%s\x1b[0m', s),
-  info: (s) => console.info('\x1b[36m%s\x1b[0m', s),
+  error: (s) => console.error(styleText('red', s)),
+  success: (s) => console.info(styleText('green', s)),
+  warn: (s) => console.warn(styleText('yellow', s)),
+  info: (s) => console.info(styleText('cyan', s)),
 
   stdout: {
     clearLine: () => {
       stdout.clearLine(0);
       stdout.cursorTo(0);
     },
-    success: (s) => stdout.write(format('\x1b[32m%s\x1b[0m', s)),
-    warn: (s) => stdout.write(format('\x1b[33m%s\x1b[0m', s)),
-    info: (s) => stdout.write(format('\x1b[36m%s\x1b[0m', s)),
+    success: (s) => stdout.write(format(styleText('green', s))),
+    warn: (s) => stdout.write(format(styleText('yellow', s))),
+    info: (s) => stdout.write(format(styleText('cyan', s))),
   },
 };
