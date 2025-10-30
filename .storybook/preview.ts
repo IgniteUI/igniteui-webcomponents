@@ -164,7 +164,7 @@ export default {
   },
   parameters: {
     backgrounds: {
-      disable: true,
+      disabled: true,
     },
   },
   decorators: [themeProvider, withActions, localeProvider],
