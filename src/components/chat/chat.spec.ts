@@ -3,7 +3,7 @@ import { html, nothing } from 'lit';
 import { spy, stub, useFakeTimers } from 'sinon';
 import type IgcIconButtonComponent from '../button/icon-button.js';
 import IgcChipComponent from '../chip/chip.js';
-import { enterKey } from '../common/controllers/key-bindings.js';
+import { enterKey, tabKey } from '../common/controllers/key-bindings.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import { first, last } from '../common/util.js';
 import {
@@ -937,6 +937,19 @@ describe('Chat', () => {
       for (const [idx, event] of expectedEventSequence.entries()) {
         expect(eventSpy.getCall(idx).firstArg).to.equal(event);
       }
+    });
+
+    it('should not emit igcTypingChange on Tab key', async () => {
+      const eventSpy = spy(chat, 'emitEvent');
+      const textArea = getChatDOM(chat).input.textarea;
+      const internalInput = textArea.renderRoot.querySelector('textarea')!;
+
+      chat.options = { stopTypingDelay: 2500 };
+
+      simulateKeyboard(internalInput, tabKey);
+      await elementUpdated(chat);
+
+      expect(eventSpy.getCalls()).is.empty;
     });
 
     it('emits igcInputFocus', async () => {

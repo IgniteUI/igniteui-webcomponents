@@ -8,7 +8,7 @@ import { addThemingController } from '../../theming/theming-controller.js';
 import IgcIconButtonComponent from '../button/icon-button.js';
 import IgcChipComponent from '../chip/chip.js';
 import { chatContext, chatUserInputContext } from '../common/context.js';
-import { enterKey } from '../common/controllers/key-bindings.js';
+import { enterKey, tabKey } from '../common/controllers/key-bindings.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { partMap } from '../common/part-map.js';
 import { bindIf, hasFiles, isEmpty, trimmedHtml } from '../common/util.js';
@@ -171,6 +171,11 @@ export default class IgcChatInputComponent extends LitElement {
   private _handleKeydown(event: KeyboardEvent): void {
     this._userLastTypeTime = Date.now();
     const isEnterKey = event.key.toLowerCase() === enterKey.toLowerCase();
+    const isTab = event.key.toLocaleLowerCase() === tabKey.toLowerCase();
+
+    if (isTab && !this._userIsTyping) {
+      return;
+    }
 
     if (isEnterKey && !event.shiftKey) {
       event.preventDefault();
