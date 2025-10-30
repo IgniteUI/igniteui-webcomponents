@@ -29,10 +29,6 @@ $theme: $indigo;
             border-color: var-get($theme, 'hover-bottom-line-color');
         }
     }
-
-    textarea {
-        color: var-get($theme, 'filled-text-hover-color');
-    }
 }
 
 :host(:focus-within),
@@ -42,17 +38,13 @@ $theme: $indigo;
     }
 
     [part~='container'] {
-        background: var-get($theme, 'box-background-hover');
+        background: var-get($theme, 'box-background-focus');
         caret-color: var-get($theme, 'focused-bottom-line-color');
 
         &::after {
             border-block-end-color: var-get($theme, 'focused-bottom-line-color');
             transition: all .25s $out-cubic;
         }
-    }
-
-    textarea {
-        color: var-get($theme, 'focused-text-color');
     }
 }
 
@@ -94,12 +86,6 @@ textarea {
 
     &::placeholder {
         font-style: italic;
-    }
-}
-
-[part~='filled'] {
-    [part~='input'] {
-        color: var-get($theme, 'filled-text-color');
     }
 }
 

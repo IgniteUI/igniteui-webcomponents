@@ -17,6 +17,10 @@ $theme: $base;
     }
 }
 
+[part~='input'] {
+    color: var-get($theme, 'idle-text-color');
+}
+
 [part~='filled'] {
     [part~='input'] {
         color: var-get($theme, 'filled-text-color');
@@ -65,6 +69,34 @@ textarea {
     textarea {
         &::placeholder {
             color: var-get($theme, 'hover-placeholder-color');
+        }
+    }
+}
+
+:host(:not([readonly]):hover) {
+    [part~='filled'] {
+        [part~='input'] {
+            color: var-get($theme, 'filled-text-hover-color');
+        }
+    }
+}
+
+:host(:not([readonly]):focus-within) {
+    [part~='prefix'],
+    [part~='filled'][part~='prefix'] {
+        color: var-get($theme, 'input-prefix-color--focused');
+        background: var-get($theme, 'input-prefix-background--focused');
+    }
+
+    [part~='suffix'],
+    [part~='filled'][part~='suffix'] {
+        color: var-get($theme, 'input-suffix-color--focused');
+        background: var-get($theme, 'input-suffix-background--focused');
+    }
+
+    [part~='filled'] {
+        [part~='input'] {
+            color: var-get($theme, 'focused-text-color');
         }
     }
 }
