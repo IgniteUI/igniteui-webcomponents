@@ -58,21 +58,14 @@ $error-color-hover: var-get($theme, 'error-color-hover');
 }
 
 :host(:hover) {
-    [part~='label'] {
-        color: var-get($theme, 'label-color-hover');
-    }
-
-    [part~='control'] {
+    [part='control'] {
         &::after {
             border-color: var-get($theme, 'empty-color-hover');
         }
     }
 
-    [part='control checked'] {
-        &::after {
-            background: $fill-color-hover;
-            border-color: $fill-color-hover;
-        }
+    [part='control checked']::after {
+        border-color: var-get($theme, 'fill-color-hover');
     }
 }
 
@@ -119,7 +112,8 @@ $error-color-hover: var-get($theme, 'error-color-hover');
     }
 }
 
-:host([indeterminate]:focus-visible) {
+:host([indeterminate]:focus-visible),
+:host([indeterminate]) [part='base focused'] {
     [part~='control'] {
         box-shadow: 0 0 0 rem(3px) var-get($theme, 'focus-outline-color-focused');
     }
@@ -146,7 +140,9 @@ $error-color-hover: var-get($theme, 'error-color-hover');
         }
     }
 
-    [part='base focused'] {
+    [part='base focused'],
+    &:focus-visible,
+    [part='base checked focused'] {
         [part~='control'],
         [part='control checked'] {
             box-shadow: 0 0 0 rem(3px) var-get($theme, 'focus-outline-color-error');
