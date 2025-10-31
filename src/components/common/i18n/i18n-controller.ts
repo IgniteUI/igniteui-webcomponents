@@ -177,6 +177,7 @@ class I18nController<T extends object> implements ReactiveController {
 
       if (coreKey) {
         if (coreKey.includes('getWeekLabel')) {
+          // To be removed once the Calendar switches completely to the new i18n resources.
           resolvedValue = getDisplayNamesFormatter().getWeekLabel(this.locale, {
             style: 'short',
           }) as T[keyof T];
