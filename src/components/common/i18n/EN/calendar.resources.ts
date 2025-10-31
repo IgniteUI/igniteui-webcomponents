@@ -19,5 +19,7 @@ export interface IgcCalendarResourceStrings {
   weekLabel: string;
 }
 
-export const IgcCalendarResourceStringEN: IgcCalendarResourceStrings =
-  convertToIgcResource(CalendarResourceStringsEN);
+export const IgcCalendarResourceStringEN: IgcCalendarResourceStrings = {
+  ...convertToIgcResource(CalendarResourceStringsEN),
+  ...{ weekLabel: 'Wk' },
+};
