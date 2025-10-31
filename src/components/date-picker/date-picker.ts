@@ -1,7 +1,3 @@
-import {
-  type IValidationResourceStrings,
-  ValidationResourceStringsEN,
-} from 'igniteui-i18n-core';
 import { html, nothing, type TemplateResult } from 'lit';
 import { property, query } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
@@ -208,14 +204,10 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
    * For now we use the core validation strings internally only, to avoid mixing with old resources by users.
    * To Do: Update resourceStrings type when the IgcCalendarResourceStrings is changed to ICalendarResourceStrings
    */
-  protected override readonly __i18nController = addI18nController<
-    IgcCalendarResourceStrings & IValidationResourceStrings
-  >(this, {
-    defaultEN: {
-      ...IgcCalendarResourceStringEN,
-      ...ValidationResourceStringsEN,
-    },
-  });
+  protected readonly _i18nController =
+    addI18nController<IgcCalendarResourceStrings>(this, {
+      defaultEN: IgcCalendarResourceStringEN,
+    });
 
   private _oldValue: Date | null = null;
   private _activeDate: Date | null = null;
@@ -460,11 +452,11 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
    */
   @property()
   public set locale(value: string) {
-    this.__i18nController.locale = value;
+    this._i18nController.locale = value;
   }
 
   public get locale() {
-    return this.__i18nController.locale;
+    return this._i18nController.locale;
   }
 
   /**
@@ -472,11 +464,11 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
    */
   @property({ attribute: false })
   public set resourceStrings(value: IgcCalendarResourceStrings) {
-    this.__i18nController.resourceStrings = value;
+    this._i18nController.resourceStrings = value;
   }
 
   public get resourceStrings(): IgcCalendarResourceStrings {
-    return this.__i18nController.resourceStrings;
+    return this._i18nController.resourceStrings;
   }
 
   /** Sets the start day of the week for the calendar. */

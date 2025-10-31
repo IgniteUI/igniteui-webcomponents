@@ -2,7 +2,6 @@ import {
   ComboResourceStringsEN,
   type IComboResourceStrings,
   type IValidationResourceStrings,
-  ValidationResourceStringsEN,
 } from 'igniteui-i18n-core';
 import { html, LitElement, nothing, type TemplateResult } from 'lit';
 import {
@@ -151,11 +150,12 @@ export default class IgcComboComponent<
     },
   });
 
-  protected override readonly __i18nController = addI18nController<
-    IComboResourceStrings & IValidationResourceStrings
-  >(this, {
-    defaultEN: { ...ComboResourceStringsEN, ...ValidationResourceStringsEN },
-  });
+  protected readonly _i18nController = addI18nController<IComboResourceStrings>(
+    this,
+    {
+      defaultEN: ComboResourceStringsEN,
+    }
+  );
 
   protected override readonly _formValue = createFormValueState<
     ComboValue<T>[]
@@ -276,11 +276,11 @@ export default class IgcComboComponent<
    */
   @property()
   public set locale(value: string) {
-    this.__i18nController.locale = value;
+    this._i18nController.locale = value;
   }
 
   public get locale() {
-    return this.__i18nController.locale;
+    return this._i18nController.locale;
   }
 
   /**
@@ -330,12 +330,12 @@ export default class IgcComboComponent<
   public set resourceStrings(
     value: IComboResourceStrings & IValidationResourceStrings
   ) {
-    this.__i18nController.resourceStrings = value;
+    this._i18nController.resourceStrings = value;
   }
 
   public get resourceStrings(): IComboResourceStrings &
     IValidationResourceStrings {
-    return this.__i18nController.resourceStrings;
+    return this._i18nController.resourceStrings;
   }
 
   /**
