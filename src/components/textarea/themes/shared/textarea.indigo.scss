@@ -99,13 +99,13 @@ textarea {
 
 [part~='prefixed'] {
     [part~='prefix'] {
-        border-start-start-radius: var-get($theme, 'border-border-radius');
+        border-start-start-radius: var-get($theme, 'box-border-radius');
     }
 }
 
 [part~='suffixed'] {
     [part~='suffix'] {
-        border-start-end-radius: var-get($theme, 'border-border-radius');
+        border-start-end-radius: var-get($theme, 'box-border-radius');
     }
 }
 

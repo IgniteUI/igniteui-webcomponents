@@ -43,7 +43,6 @@ $theme: $bootstrap;
     border-radius: var-get($theme, 'border-border-radius');
     padding-inline: pad-inline(8px, 10px, 14px);
     padding-block: pad-block(4px, 6px, 8px);
-    color: var-get($theme, 'idle-text-color');
     background: transparent;
     box-shadow: none;
     z-index: 1;

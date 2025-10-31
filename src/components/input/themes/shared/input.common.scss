@@ -3,6 +3,10 @@
 
 $theme: $base;
 
+[part~='input'] {
+    color: var-get($theme, 'idle-text-color');
+}
+
 [part='prefix'] {
     color: var-get($theme, 'input-prefix-color');
     background: var-get($theme, 'input-prefix-background');
@@ -14,6 +18,10 @@ $theme: $base;
 }
 
 [part~='filled'] {
+    [part~='input'] {
+        color: var-get($theme, 'filled-text-color');
+    }
+
     [part='prefix'] {
         color: var-get($theme, 'input-prefix-color--filled');
         background: var-get($theme, 'input-prefix-background--filled');
@@ -40,6 +48,22 @@ $theme: $base;
 :host(:not([readonly],[disabled]):hover) {
     [part~='input']::placeholder {
         color: var-get($theme, 'hover-placeholder-color');
+    }
+}
+
+:host(:not([readonly],[disabled]):hover) {
+    [part~='filled'] {
+        [part~='input'] {
+            color: var-get($theme, 'filled-text-hover-color');
+        }
+    }
+}
+
+:host(:not([readonly],[disabled]):focus-within) {
+    [part~='filled'] {
+        [part~='input'] {
+            color: var-get($theme, 'focused-text-color');
+        }
     }
 }
 
@@ -81,7 +105,12 @@ $theme: $base;
 :host(:disabled),
 :host([disabled]) {
     [part~='input']::placeholder {
-        color: var-get($theme, 'disabled-text-color');
+        color: var-get($theme, 'disabled-placeholder-color');
+    }
+
+    [part='prefix'],
+    [part='suffix'] {
+        background: inherit;
     }
 }
 
