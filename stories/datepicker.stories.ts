@@ -361,6 +361,19 @@ export const Default: Story = {
   `,
 };
 
+export const AutoFill: Story = {
+  argTypes: disableStoryControls(metadata),
+  render: () => html`
+    <form action="" @submit=${formSubmitHandler}>
+      <igc-date-picker
+        label="Pick a date"
+        name="auto-fill-picker"
+      ></igc-date-picker>
+      <igc-button type="submit">Submit</igc-button>
+    </form>
+  `,
+};
+
 function showTrimester() {
   const picker = document.querySelector<IgcDatePickerComponent>('#picker')!;
   picker.visibleMonths = 3;
