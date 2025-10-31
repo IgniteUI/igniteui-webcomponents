@@ -169,8 +169,8 @@ export default class IgcTileComponent extends EventEmitterMixin<
   }
 
   /** Returns the tile manager internal CSS grid container. */
-  private get _cssContainer(): HTMLElement {
-    return this._tileManagerCtx?.grid.value!;
+  private get _cssContainer(): HTMLElement | undefined {
+    return this._tileManagerCtx?.grid.value;
   }
 
   /** Returns the tile manager current resize mode. */
@@ -494,7 +494,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
     this._resizeState.updateState(
       event.detail.state.initial,
       this,
-      this._cssContainer
+      this._cssContainer!
     );
     this._setResizeState();
   }

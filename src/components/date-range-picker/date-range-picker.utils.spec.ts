@@ -69,11 +69,11 @@ export const checkSelectedRange = (
   }
 
   if (expectedValue?.start) {
-    checkDatesEqual(calendar.values[0], expectedValue?.start!);
+    checkDatesEqual(calendar.values[0], expectedValue.start!);
   }
   if (expectedValue?.end) {
     const length = calendar.values.length;
-    checkDatesEqual(calendar.values[length - 1], expectedValue?.end!);
+    checkDatesEqual(calendar.values[length - 1], expectedValue.end!);
   }
   if (!(expectedValue?.start || expectedValue?.end)) {
     expect(calendar.values).to.deep.equal([]);

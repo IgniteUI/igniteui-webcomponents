@@ -110,7 +110,6 @@ export function isImageAttachment(
   );
 }
 
-// REVIEW: Maybe put that behind a configuration flag as this is nasty.
 export function chatMessageAdoptPageStyles(
   message: IgcChatMessageComponent
 ): void {
@@ -120,6 +119,10 @@ export function chatMessageAdoptPageStyles(
     try {
       const constructed = new CSSStyleSheet();
       for (const rule of sheet.cssRules) {
+        // https://drafts.csswg.org/cssom/#dom-cssstylesheet-insertrule:~:text=If%20parsed%20rule%20is%20an%20%40import%20rule
+        if (rule.cssText.startsWith('@import')) {
+          continue;
+        }
         constructed.insertRule(rule.cssText);
       }
       sheets.push(constructed);
