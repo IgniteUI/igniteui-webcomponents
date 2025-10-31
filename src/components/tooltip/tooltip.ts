@@ -1,6 +1,5 @@
 import { html, LitElement, nothing, type PropertyValues } from 'lit';
-import { property, query, state } from 'lit/decorators.js';
-import { classMap } from 'lit/directives/class-map.js';
+import { property, query } from 'lit/decorators.js';
 import { createRef, ref } from 'lit/directives/ref.js';
 import { EaseOut } from '../../animations/easings.js';
 import { addAnimationController } from '../../animations/player.js';
@@ -8,9 +7,11 @@ import { fadeOut } from '../../animations/presets/fade/index.js';
 import { scaleInCenter } from '../../animations/presets/scale/index.js';
 import { addThemingController } from '../../theming/theming-controller.js';
 import { addInternalsController } from '../common/controllers/internals.js';
+import { addSlotController, setSlots } from '../common/controllers/slot.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
+import { partMap } from '../common/part-map.js';
 import { asNumber, isLTR } from '../common/util.js';
 import IgcIconComponent from '../icon/icon.js';
 import IgcPopoverComponent, {
@@ -44,6 +45,7 @@ type TooltipStateOptions = {
  * @slot close-button - Slot for custom sticky-mode close action (e.g., an icon/button).
  *
  * @csspart base - The wrapping container of the tooltip content.
+ * @csspart simple-text - The container where the message property of the tooltip is rendered.
  *
  * @fires igcOpening - Emitted before the tooltip begins to open. Can be canceled to prevent opening.
  * @fires igcOpened - Emitted after the tooltip has successfully opened and is visible.
@@ -83,6 +85,7 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
 
   private readonly _containerRef = createRef<HTMLElement>();
   private readonly _player = addAnimationController(this, this._containerRef);
+  private readonly _slots = addSlotController(this, { slots: setSlots() });
 
   private readonly _showAnimation = scaleInCenter({
     duration: 150,
@@ -101,14 +104,6 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
 
   @query('#arrow')
   private _arrowElement!: HTMLElement;
-
-  @query('slot:not([name])')
-  private _defaultSlot!: HTMLSlotElement;
-
-  @state()
-  private _hasCustomContent = false;
-
-  private _initialCheckDone = false;
 
   private get _arrowOffset() {
     if (this.placement.includes('-')) {
@@ -302,15 +297,6 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
     }
   }
 
-  protected override updated(changedProperties: PropertyValues<this>): void {
-    super.updated(changedProperties);
-    // Check on first update when slot becomes available, or when message changes
-    if (!this._initialCheckDone || changedProperties.has('message')) {
-      this._initialCheckDone = true;
-      this.updateComplete.then(() => this._checkForCustomContent());
-    }
-  }
-
   protected override willUpdate(changedProperties: PropertyValues<this>): void {
     if (changedProperties.has('anchor')) {
       this._controller.resolveAnchor(this.anchor);
@@ -447,19 +433,10 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
     this._emitEvent('igcClosed');
   }
 
-  private _checkForCustomContent(): void {
-    if (!this._defaultSlot) {
-      this._hasCustomContent = false;
-      return;
-    }
-    const assignedNodes = this._defaultSlot.assignedNodes({ flatten: true });
-    // If there are assigned nodes, we have custom content
-    this._hasCustomContent = assignedNodes.length > 0;
-  }
-
   protected override render() {
-    const classes = {
-      'simple-text': !this._hasCustomContent,
+    const parts = {
+      base: true,
+      'simple-text': !this._slots.hasAssignedNodes('[default]', true),
     };
 
     return html`
@@ -475,10 +452,8 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
         flip
         shift
       >
-        <div ${ref(this._containerRef)} part="base" class=${classMap(classes)}>
-          <slot @slotchange=${this._checkForCustomContent}
-            >${this.message}</slot
-          >
+        <div ${ref(this._containerRef)} part=${partMap(parts)}>
+          <slot>${this.message}</slot>
           ${this.sticky
             ? html`
                 <slot name="close-button" @click=${this._setAutoHide}>

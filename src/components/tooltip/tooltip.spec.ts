@@ -287,9 +287,9 @@ describe('Tooltip', () => {
       tooltip = container.querySelector(IgcTooltipComponent.tagName)!;
       await elementUpdated(tooltip);
 
-      const baseElement = tooltip.renderRoot.querySelector('[part="base"]');
+      const baseElement = tooltip.renderRoot.querySelector('[part~="base"]');
       expect(baseElement).not.to.be.null;
-      expect(baseElement?.classList.contains('simple-text')).to.be.true;
+      expect(baseElement?.part.contains('simple-text')).to.be.true;
     });
 
     it('should not apply simple-text class when using custom content', async () => {
@@ -305,9 +305,9 @@ describe('Tooltip', () => {
       tooltip = container.querySelector(IgcTooltipComponent.tagName)!;
       await elementUpdated(tooltip);
 
-      const baseElement = tooltip.renderRoot.querySelector('[part="base"]');
+      const baseElement = tooltip.renderRoot.querySelector('[part~="base"]');
       expect(baseElement).not.to.be.null;
-      expect(baseElement?.classList.contains('simple-text')).to.be.false;
+      expect(baseElement?.part.contains('simple-text')).to.be.false;
     });
 
     it('should render a default close button when in `sticky` mode', async () => {
