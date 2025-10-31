@@ -9,15 +9,15 @@ $theme: $material;
 
     background: var-get($theme, 'background');
     border-radius: var-get($theme, 'border-radius');
-    border: 1px solid var-get($theme, 'border-color');
 }
 
 [part~='backdrop'] {
     background: var-get($theme, 'backdrop');
 }
 
-[part='base'] {
+[part~='base'] {
     box-shadow: var-get($theme, 'elevation');
+    border: 1px solid var-get($theme, 'border-color');
 }
 
 [part='title'] {
