@@ -40,7 +40,7 @@ $transition-duration: .25s;
     }
 
     [part='prefix'] {
-        border-start-start-radius: var-get($theme, 'border-border-radius');
+        border-start-start-radius: var-get($theme, 'box-border-radius');
         grid-area: 1 / 1;
 
         ::slotted(*) {
@@ -49,7 +49,7 @@ $transition-duration: .25s;
     }
 
     [part='suffix'] {
-        border-start-end-radius: var-get($theme, 'border-border-radius');
+        border-start-end-radius: var-get($theme, 'box-border-radius');
         grid-area: 1 / 3;
 
         ::slotted(*) {
@@ -91,7 +91,6 @@ $transition-duration: .25s;
     [part~='input'] {
         @include type-style('body-2');
 
-        color: var-get($theme, 'idle-text-color');
         font-size: rem(12px);
         line-height: rem(16px);
         background: initial;
@@ -115,20 +114,8 @@ $transition-duration: .25s;
     }
 }
 
-[part~='filled'] {
-    [part~='input'] {
-        color: var-get($theme, 'filled-text-color');
-    }
-}
-
 :host(:not([disabled],[readonly]):hover),
 :host(:not([disabled])[readonly][role='combobox']:hover) {
-    [part~='filled'] {
-        [part~='input'] {
-            color: var-get($theme, 'filled-text-hover-color');
-        }
-    }
-
     [part^='container'] {
         background: var-get($theme, 'box-background-hover');
         border-color: var-get($theme, 'hover-bottom-line-color');
@@ -154,12 +141,6 @@ $transition-duration: .25s;
 
     [part='label'] {
         color: var-get($theme, 'focused-secondary-color');
-    }
-
-    [part~='filled'] {
-        [part~='input'] {
-            color: var-get($theme, 'focused-text-color');
-        }
     }
 }
 
