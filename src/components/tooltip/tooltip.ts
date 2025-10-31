@@ -108,6 +108,8 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
   @state()
   private _hasCustomContent = false;
 
+  private _initialCheckDone = false;
+
   private get _arrowOffset() {
     if (this.placement.includes('-')) {
       // Horizontal start | end placement
@@ -298,7 +300,15 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
         this.requestUpdate();
       });
     }
-    this._checkForCustomContent();
+  }
+
+  protected override updated(changedProperties: PropertyValues<this>): void {
+    super.updated(changedProperties);
+    // Check on first update when slot becomes available, or when message changes
+    if (!this._initialCheckDone || changedProperties.has('message')) {
+      this._initialCheckDone = true;
+      this.updateComplete.then(() => this._checkForCustomContent());
+    }
   }
 
   protected override willUpdate(changedProperties: PropertyValues<this>): void {
