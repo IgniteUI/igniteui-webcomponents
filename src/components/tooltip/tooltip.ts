@@ -438,15 +438,13 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
   }
 
   private _checkForCustomContent(): void {
-    if (this._defaultSlot) {
-      const assignedNodes = this._defaultSlot.assignedNodes({ flatten: true });
-      // If there are assigned nodes, we have custom content
-      this._hasCustomContent = assignedNodes.length > 0;
+    if (!this._defaultSlot) {
+      this._hasCustomContent = false;
+      return;
     }
-  }
-
-  private _handleSlotChange(): void {
-    this._checkForCustomContent();
+    const assignedNodes = this._defaultSlot.assignedNodes({ flatten: true });
+    // If there are assigned nodes, we have custom content
+    this._hasCustomContent = assignedNodes.length > 0;
   }
 
   protected override render() {
@@ -468,7 +466,9 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
         shift
       >
         <div ${ref(this._containerRef)} part="base" class=${classMap(classes)}>
-          <slot @slotchange=${this._handleSlotChange}>${this.message}</slot>
+          <slot @slotchange=${this._checkForCustomContent}
+            >${this.message}</slot
+          >
           ${this.sticky
             ? html`
                 <slot name="close-button" @click=${this._setAutoHide}>
