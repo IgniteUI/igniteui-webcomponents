@@ -32,13 +32,6 @@ $input-theme: input-theme.$fluent;
     }
 }
 
-:host(:focus-within) {
-    [part~='toggle-icon'] {
-        background: var-get($theme, 'toggle-button-background-focus');
-    }
-
-}
-
 :host(:not(:state(ig-invalid)):focus-within) {
     igc-input[readonly]:not([disabled])::part(container) {
         &::before {

@@ -34,12 +34,19 @@ $dropdown-theme: dropdown-theme.$material;
 
 :host(:focus-within) {
     [part~='toggle-icon'] {
-        background: var-get($theme, 'toggle-button-background-focus--border');
+        background: var-get($theme, 'toggle-button-background-focus');
         color: var-get($theme, 'toggle-button-foreground-focus');
 
         igc-icon {
             color: inherit;
         }
+    }
+}
+
+:host(:not(:focus-within, [disabled])),
+:host(:not(:focus-within, :disabled)) {
+    [part='toggle-icon filled'] {
+        color: var-get($theme, 'toggle-button-foreground-filled');
     }
 }
 
