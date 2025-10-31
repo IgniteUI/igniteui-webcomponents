@@ -441,6 +441,14 @@ export default class IgcComboComponent<
     return this._disableFiltering;
   }
 
+  /**
+   * Hides the clear button.
+   * @attr disable-clear
+   * @default false
+   */
+  @property({ type: Boolean, attribute: 'disable-clear' })
+  public disableClear = false;
+
   /* blazorSuppress */
   /**
    * The template used for the content of each combo item.
@@ -933,7 +941,7 @@ export default class IgcComboComponent<
         slot="suffix"
         part="clear-icon"
         @click=${this.handleClearIconClick}
-        ?hidden=${this._selection.isEmpty}
+        ?hidden=${this.disableClear || this._selection.isEmpty}
       >
         <slot name="clear-icon">
           <igc-icon
