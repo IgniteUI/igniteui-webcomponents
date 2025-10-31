@@ -3,14 +3,36 @@
 
 $theme: $indigo;
 
-[part='base'] {
-    @include type-style('button');
+:host {
+    --component-size: var(--ig-size, #{var-get($theme, 'default-size')});
+    --badge-size: var(--component-size);
 
+    igc-icon,
     ::slotted(igc-icon) {
-        $icon-size: rem(12px);
+        --size: #{sizable(rem(8px), rem(10px), rem(12px))};
+    }
+}
 
-        --size: #{$icon-size} !important;
-        --ig-icon-size: #{$icon-size};
-        --igx-icon-size: #{$icon-size};
+:host(:not(:empty, [dot])) [part='base'] {
+    padding-inline: pad-inline(rem(4px), rem(6px), rem(6px));
+}
+
+:host([variant='success']) [part~='base'] {
+    background: color(success, 700);
+}
+
+:host([variant='warning']) [part~='base'] {
+    color: color(gray, 900);
+
+    igc-icon,
+    ::slotted(igc-icon) {
+        color: color(gray, 900);
+    }
+}
+
+[part~='base'] {
+    @include type-style('button', false) {
+        font-size: sizable(rem(9px), rem(10px), var(--ig-button-font-size));
+        line-height: sizable(rem(12px), rem(14px), var(--ig-button-line-height));
     }
 }
