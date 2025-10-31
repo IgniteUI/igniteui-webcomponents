@@ -1,5 +1,6 @@
 import { html, LitElement, nothing, type PropertyValues } from 'lit';
-import { property, query } from 'lit/decorators.js';
+import { property, query, state } from 'lit/decorators.js';
+import { classMap } from 'lit/directives/class-map.js';
 import { createRef, ref } from 'lit/directives/ref.js';
 import { EaseOut } from '../../animations/easings.js';
 import { addAnimationController } from '../../animations/player.js';
@@ -100,6 +101,12 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
 
   @query('#arrow')
   private _arrowElement!: HTMLElement;
+
+  @query('slot:not([name])')
+  private _defaultSlot!: HTMLSlotElement;
+
+  @state()
+  private _hasCustomContent = false;
 
   private get _arrowOffset() {
     if (this.placement.includes('-')) {
@@ -291,6 +298,7 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
         this.requestUpdate();
       });
     }
+    this._checkForCustomContent();
   }
 
   protected override willUpdate(changedProperties: PropertyValues<this>): void {
@@ -429,7 +437,23 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
     this._emitEvent('igcClosed');
   }
 
+  private _checkForCustomContent(): void {
+    if (this._defaultSlot) {
+      const assignedNodes = this._defaultSlot.assignedNodes({ flatten: true });
+      // If there are assigned nodes, we have custom content
+      this._hasCustomContent = assignedNodes.length > 0;
+    }
+  }
+
+  private _handleSlotChange(): void {
+    this._checkForCustomContent();
+  }
+
   protected override render() {
+    const classes = {
+      'simple-text': !this._hasCustomContent,
+    };
+
     return html`
       <igc-popover
         .inert=${!this.open}
@@ -443,8 +467,8 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
         flip
         shift
       >
-        <div ${ref(this._containerRef)} part="base">
-          <slot>${this.message}</slot>
+        <div ${ref(this._containerRef)} part="base" class=${classMap(classes)}>
+          <slot @slotchange=${this._handleSlotChange}>${this.message}</slot>
           ${this.sticky
             ? html`
                 <slot name="close-button" @click=${this._setAutoHide}>

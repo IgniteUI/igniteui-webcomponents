@@ -16,11 +16,14 @@
     font-weight: 600;
     line-height: rem(16px);
     text-align: start;
-    max-width: 200px;
     display: flex;
     align-items: flex-start;
     gap: rem(8px);
     position: relative;
+
+    &.simple-text {
+        max-width: 200px;
+    }
 }
 
 #arrow {
