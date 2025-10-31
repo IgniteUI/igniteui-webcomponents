@@ -10,12 +10,10 @@
     @include type-style('body-2');
     @include ellipsis();
 
-    display: grid;
-    grid-auto-flow: column;
-    justify-content: center;
-    align-items: center;
+    display: inline-flex;
+    place-items: center;
     font-family: var(--ig-font-family);
-    border-style: none;
+    border: rem(1px) solid;
     box-shadow: none;
     cursor: pointer;
     padding: 0 pad-inline(rem(2px), rem(6px), rem(12px));
