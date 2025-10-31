@@ -17,7 +17,7 @@ $theme: $material;
 
 [part~='base'] {
     box-shadow: var-get($theme, 'elevation');
-    border: 1px solid var-get($theme, 'border-color');
+    border: rem(1px) solid var-get($theme, 'border-color');
 }
 
 [part='title'] {
