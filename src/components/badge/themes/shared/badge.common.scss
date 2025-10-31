@@ -3,7 +3,19 @@
 
 $theme: $material;
 
-[part='base'] {
+:host {
+    --component-size: var(--ig-size, #{var-get($theme, 'default-size')});
+    --badge-size: var(--component-size);
+    --_badge-size: #{var-get($theme, 'size')};
+
+    igc-icon,
+    ::slotted(igc-icon) {
+        --size: #{sizable(rem(12px), rem(14px), rem(16px))};
+        --component-size: var(--badge-size);
+    }
+}
+
+[part~='base'] {
     box-shadow: var-get($theme, 'elevation');
     color: var-get($theme, 'text-color');
 }
@@ -12,14 +24,26 @@ $theme: $material;
     color: var-get($theme, 'icon-color');
 }
 
-:host([variant='primary']) [part='base'] {
+:host([variant='primary']) [part~='base'] {
     background: var-get($theme, 'background-color');
 }
 
-:host([shape='square']) [part='base'] {
+:host([shape='square']:not([dot])) [part~='base'] {
     border-radius: var-get($theme, 'border-radius');
 }
 
-:host([outlined]) [part='base'] {
-    box-shadow: inset 0 0 0 rem(2px) var-get($theme, 'border-color');
+:host([outlined]) [part~='base'] {
+    box-shadow: 0 0 0 rem(2px) var-get($theme, 'border-color');
+}
+
+:host([dot]) [part~='base'] {
+    --_dot-size: #{var-get($theme, 'dot-size')};
+
+    min-width: var(--_dot-size);
+    min-height: var(--_dot-size);
+
+    igc-icon,
+    > * {
+        display: none;
+    }
 }
