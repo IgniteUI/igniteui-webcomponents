@@ -23,7 +23,7 @@ $theme: $fluent;
             color: var-get($theme, 'item-hover-color');
 
             ::slotted(igc-icon) {
-                color: var-get($theme, 'item-hover-icon-color');
+                color: var-get($theme, 'item-active-icon-color');
             }
         }
     }

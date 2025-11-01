@@ -64,6 +64,7 @@ $theme: $bootstrap;
 :host([selected]) {
     [part='tab-header'] {
         position: relative;
+        background: var-get($theme, 'item-active-background');
 
         &::before {
             box-shadow:
@@ -81,8 +82,7 @@ $theme: $bootstrap;
         &:focus,
         &:focus-within
         {
-            background: var-get($theme, 'item-hover-background');
-            z-index: 1;
+            background: var-get($theme, 'item-active-background');
         }
     }
 }
