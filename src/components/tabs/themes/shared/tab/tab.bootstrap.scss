@@ -42,6 +42,7 @@ $theme: $bootstrap;
                 inset 0 var(--_border-size) 0 0 var-get($theme, 'border-color--hover'),  /* Top */
                 inset calc(var(--_border-size) * -1) 0 0 0 var-get($theme, 'border-color--hover'),  /* Left */
                 inset var(--_border-size) 0 0 0 var-get($theme, 'border-color--hover');  /* Right */
+
             background: var-get($theme, 'item-hover-background');
         }
 

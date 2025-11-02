@@ -7,7 +7,7 @@ $theme: $bootstrap;
     --header-min-height: #{rem(48px)};
 }
 
-[part~=inner] {
+[part~='inner'] {
     flex-grow: 1;
 }
 
