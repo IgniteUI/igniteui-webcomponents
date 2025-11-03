@@ -410,7 +410,7 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
 
   private _stopTimeoutAndAnimation(): void {
     clearTimeout(this._timeoutId);
-    this._player.stopAll();
+    this._player.cancelAll();
   }
 
   private _setAutoHide(): void {

@@ -125,13 +125,7 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
 
   private async _toggleAnimation(dir: 'open' | 'close'): Promise<boolean> {
     const animation = dir === 'open' ? growVerIn : growVerOut;
-
-    const [_, event] = await Promise.all([
-      this._player.stopAll(),
-      this._player.play(animation()),
-    ]);
-
-    return event.type === 'finish';
+    return this._player.playExclusive(animation());
   }
 
   private async _openWithEvent(): Promise<void> {

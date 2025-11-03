@@ -104,13 +104,7 @@ export default class IgcBannerComponent extends EventEmitterMixin<
 
   private async toggleAnimation(dir: 'open' | 'close') {
     const animation = dir === 'open' ? growVerIn : growVerOut;
-
-    const [_, event] = await Promise.all([
-      this._animationPlayer.stopAll(),
-      this._animationPlayer.play(animation()),
-    ]);
-
-    return event.type === 'finish';
+    return this._animationPlayer.playExclusive(animation());
   }
 
   private async handleClick() {
