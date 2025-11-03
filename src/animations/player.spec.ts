@@ -63,7 +63,7 @@ describe('Animations Player', () => {
   it('should cancel running animations', async () => {
     const [playbackEvent] = (await Promise.all([
       el.player.play(fade),
-      el.player.stopAll(),
+      el.player.cancelAll(),
     ])) as AnimationPlaybackEvent[];
 
     expect(playbackEvent.type).to.equal('cancel');

@@ -95,9 +95,9 @@ const metadata: Meta<IgcTextareaComponent> = {
     rows: {
       type: 'number',
       description:
-        'The number of visible text lines for the control. If it is specified, it must be a positive integer.\nIf it is not specified, the default value is 2.',
+        'The number of visible text lines for the control. If it is specified, it must be a positive integer.\nIf it is not specified, the default value is 3.',
       control: 'number',
-      table: { defaultValue: { summary: '2' } },
+      table: { defaultValue: { summary: '3' } },
     },
     value: {
       type: 'string',
@@ -209,7 +209,7 @@ interface IgcTextareaArgs {
   resize: 'vertical' | 'auto' | 'none';
   /**
    * The number of visible text lines for the control. If it is specified, it must be a positive integer.
-   * If it is not specified, the default value is 2.
+   * If it is not specified, the default value is 3.
    */
   rows: number;
   /** The value of the component */
