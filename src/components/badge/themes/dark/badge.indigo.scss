@@ -7,3 +7,12 @@ $theme: $indigo;
 :host {
     @include css-vars-from-theme(diff(light.$base, $theme), 'ig-badge');
 }
+
+:host([variant='warning']) [part~='base'] {
+    color: color(gray, 50);
+
+    igc-icon,
+    ::slotted(igc-icon) {
+        color: color(gray, 50);
+    }
+}

@@ -502,27 +502,29 @@ export default class IgcChatComponent extends EventEmitterMixin<
             : nothing}
         </div>
 
-        <igc-chat-input
-          exportparts="
-              input-container: input-area-container,
-              input-wrapper: input-container,
-              attachments: input-attachments-container,
-              attachment-wrapper: input-attachment-container,
-              attachment-name: input-attachment-name,
-              attachment-icon: input-attachment-icon,
-              text-input,
-              actions-container: input-actions-container,
-              input-actions-start,
-              input-actions-end,
-              file-upload-container,
-              file-upload,
-              send-button-container,
-              send-button"
-        >
-        </igc-chat-input>
-        ${this._state.suggestionsPosition === 'below-input'
-          ? suggestions
-          : nothing}
+        <div part="input-area-container">
+          <igc-chat-input
+            exportparts="
+                input-container: input-area-container,
+                input-wrapper: input-container,
+                attachments: input-attachments-container,
+                attachment-wrapper: input-attachment-container,
+                attachment-name: input-attachment-name,
+                attachment-icon: input-attachment-icon,
+                text-input,
+                actions-container: input-actions-container,
+                input-actions-start,
+                input-actions-end,
+                file-upload-container,
+                file-upload,
+                send-button-container,
+                send-button"
+          >
+          </igc-chat-input>
+          ${this._state.suggestionsPosition === 'below-input'
+            ? suggestions
+            : nothing}
+        </div>
       </div>
     `;
   }

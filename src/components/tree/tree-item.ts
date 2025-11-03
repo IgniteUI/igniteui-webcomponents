@@ -187,13 +187,7 @@ export default class IgcTreeItemComponent extends LitElement {
 
   private async toggleAnimation(dir: 'open' | 'close') {
     const animation = dir === 'open' ? growVerIn : growVerOut;
-
-    const [_, event] = await Promise.all([
-      this.animationPlayer.stopAll(),
-      this.animationPlayer.play(animation()),
-    ]);
-
-    return event.type === 'finish';
+    return this.animationPlayer.playExclusive(animation());
   }
 
   @watch('expanded', { waitUntilFirstUpdate: true })
