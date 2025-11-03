@@ -1,12 +1,12 @@
 import { html, LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
-import { createRef, type Ref, ref } from 'lit/directives/ref.js';
-
+import { createRef, ref } from 'lit/directives/ref.js';
 import { addAnimationController } from '../../animations/player.js';
 import { growVerIn, growVerOut } from '../../animations/presets/grow/index.js';
 import { addThemingController } from '../../theming/theming-controller.js';
 import IgcButtonComponent from '../button/button.js';
 import { addInternalsController } from '../common/controllers/internals.js';
+import { addSlotController, setSlots } from '../common/controllers/slot.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
@@ -50,11 +50,8 @@ export default class IgcBannerComponent extends EventEmitterMixin<
     registerComponent(IgcBannerComponent, IgcButtonComponent);
   }
 
-  private readonly _bannerRef: Ref<HTMLElement> = createRef();
-  private readonly _animationPlayer = addAnimationController(
-    this,
-    this._bannerRef
-  );
+  private readonly _bannerRef = createRef<HTMLElement>();
+  private readonly _player = addAnimationController(this, this._bannerRef);
 
   /**
    * Determines whether the banner is being shown/hidden.
@@ -67,13 +64,20 @@ export default class IgcBannerComponent extends EventEmitterMixin<
     super();
 
     addThemingController(this, all);
-
+    addSlotController(this, { slots: setSlots('prefix', 'actions') });
     addInternalsController(this, {
       initialARIA: {
         role: 'status',
         ariaLive: 'polite',
       },
     });
+  }
+
+  private async _handleClick(): Promise<void> {
+    if (this.emitEvent('igcClosing', { cancelable: true })) {
+      await this.hide();
+      this.emitEvent('igcClosed');
+    }
   }
 
   /** Shows the banner if not already shown. Returns `true` when the animation has completed. */
@@ -83,7 +87,7 @@ export default class IgcBannerComponent extends EventEmitterMixin<
     }
 
     this.open = true;
-    return await this.toggleAnimation('open');
+    return this._player.playExclusive(growVerIn());
   }
 
   /** Hides the banner if not already hidden. Returns `true` when the animation has completed. */
@@ -92,26 +96,14 @@ export default class IgcBannerComponent extends EventEmitterMixin<
       return false;
     }
 
-    await this.toggleAnimation('close');
+    await this._player.playExclusive(growVerOut());
     this.open = false;
     return true;
   }
 
   /** Toggles between shown/hidden state. Returns `true` when the animation has completed. */
   public async toggle(): Promise<boolean> {
-    return this.open ? await this.hide() : await this.show();
-  }
-
-  private async toggleAnimation(dir: 'open' | 'close') {
-    const animation = dir === 'open' ? growVerIn : growVerOut;
-    return this._animationPlayer.playExclusive(animation());
-  }
-
-  private async handleClick() {
-    if (this.emitEvent('igcClosing', { cancelable: true })) {
-      await this.hide();
-      this.emitEvent('igcClosed');
-    }
+    return this.open ? this.hide() : this.show();
   }
 
   protected override render() {
@@ -131,7 +123,7 @@ export default class IgcBannerComponent extends EventEmitterMixin<
               <igc-button
                 type="button"
                 variant="flat"
-                @click=${this.handleClick}
+                @click=${this._handleClick}
                 >OK</igc-button
               >
             </slot>
