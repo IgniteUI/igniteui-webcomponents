@@ -1,7 +1,6 @@
 import {
   ComboResourceStringsEN,
   type IComboResourceStrings,
-  type IValidationResourceStrings,
 } from 'igniteui-i18n-core';
 import { html, LitElement, nothing, type TemplateResult } from 'lit';
 import {
@@ -327,14 +326,11 @@ export default class IgcComboComponent<
    * The resource strings for localization.
    */
   @property({ attribute: false })
-  public set resourceStrings(
-    value: IComboResourceStrings & IValidationResourceStrings
-  ) {
+  public set resourceStrings(value: IComboResourceStrings) {
     this._i18nController.resourceStrings = value;
   }
 
-  public get resourceStrings(): IComboResourceStrings &
-    IValidationResourceStrings {
+  public get resourceStrings(): IComboResourceStrings {
     return this._i18nController.resourceStrings;
   }
 
@@ -915,6 +911,12 @@ export default class IgcComboComponent<
     };
   }
 
+  protected getMainAriaLabel() {
+    return this._selection.isEmpty
+      ? this.resourceStrings.combo_aria_label_no_options!
+      : this.resourceStrings.combo_aria_label_options!;
+  }
+
   private _stopPropagation(e: Event) {
     e.stopPropagation();
   }
@@ -946,6 +948,7 @@ export default class IgcComboComponent<
         part="clear-icon"
         @click=${this.handleClearIconClick}
         ?hidden=${this.disableClear || this._selection.isEmpty}
+        aria-label=${this.resourceStrings.combo_clearItems_placeholder!}
       >
         <slot name="clear-icon">
           <igc-icon
@@ -969,6 +972,7 @@ export default class IgcComboComponent<
         aria-expanded=${this.open}
         aria-describedby="combo-helper-text"
         aria-disabled=${this.disabled}
+        aria-label=${this.getMainAriaLabel()}
         exportparts="container: input, input: native-input, label, prefix, suffix"
         @click=${this._toggle}
         placeholder=${ifDefined(this.placeholder)}
