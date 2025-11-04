@@ -1,6 +1,7 @@
 import { html, LitElement } from 'lit';
 import { property, queryAssignedElements } from 'lit/decorators.js';
 import { addSlotController } from '../common/controllers/slot.js';
+import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { SplitterOrientation } from '../types.js';
 import IgcSplitterBarComponent from './splitter-bar.js';
@@ -37,7 +38,7 @@ export default class IgcSplitterComponent extends LitElement {
   public orientation: SplitterOrientation = 'horizontal';
 
   protected _handleSlotChange(): void {
-    this._assignFlexOrder();
+    this.initPanes();
   }
 
   private _assignFlexOrder() {
@@ -45,6 +46,62 @@ export default class IgcSplitterComponent extends LitElement {
     this.panes.forEach((pane) => {
       pane.order = k;
       k += 2;
+    });
+  }
+
+  /**
+   * @hidden @internal
+   * This method inits panes with properties.
+   */
+  private initPanes() {
+    this.panes.forEach((pane) => {
+      pane.owner = this;
+      if (this.orientation === 'horizontal') {
+        pane.minWidth = pane.minSize ?? '0';
+        pane.maxWidth = pane.maxSize ?? '100%';
+      } else {
+        pane.minHeight = pane.minSize ?? '0';
+        pane.maxHeight = pane.maxSize ?? '100%';
+      }
+    });
+    this._assignFlexOrder();
+    //in igniteui-angular this is added as feature but i haven't checked why
+    // if (this.panes.filter(x => x.collapsed).length > 0) {
+    //   // if any panes are collapsed, reset sizes.
+    //   this.resetPaneSizes();
+    // }
+  }
+
+  /**
+   * @hidden @internal
+   * This method reset pane sizes.
+   */
+  private resetPaneSizes() {
+    if (this.panes) {
+      // if type is changed runtime, should reset sizes.
+      this.panes.forEach((pane) => {
+        pane.size = 'auto';
+        pane.minWidth = '0';
+        pane.maxWidth = '100%';
+        pane.minHeight = '0';
+        pane.maxHeight = '100%';
+      });
+    }
+  }
+
+  @watch('orientation', { waitUntilFirstUpdate: true })
+  protected orientationChange(): void {
+    this.setAttribute('aria-orientation', this.orientation);
+    this.resetPaneSizes();
+    this.initPanes();
+  }
+
+  constructor() {
+    super();
+
+    this.addEventListener('sizeChanged', (event: any) => {
+      event.stopPropagation();
+      this.initPanes();
     });
   }
 

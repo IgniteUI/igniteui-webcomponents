@@ -22,6 +22,10 @@
         height: auto;
         cursor: col-resize;
     }
+
+    ::slotted(igc-splitter-pane[collapsed]) {
+        display: none;
+    }
 }
 
 :host([orientation='vertical']) {
@@ -31,6 +35,10 @@
         height: 5px;
         width: auto;
         cursor: row-resize;
+    }
+
+    ::slotted(igc-splitter-pane[collapsed]) {
+        display: none;
     }
 }
 
