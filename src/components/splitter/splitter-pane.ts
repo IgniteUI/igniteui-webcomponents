@@ -2,11 +2,9 @@ import { html, LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { asNumber } from '../common/util.js';
-import { styles } from './themes/splitter.base.css.js';
 
 export default class IgcSplitterPaneComponent extends LitElement {
   public static readonly tagName = 'igc-splitter-pane';
-  public static override styles = [styles];
 
   /* blazorSuppress */
   public static register() {

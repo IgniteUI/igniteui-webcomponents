@@ -8,6 +8,10 @@
     color: var(--ig-gray-900);
     background: var(--ig-gray-100);
     border: 1px solid var(--ig-gray-200);
+
+    ::slotted(igc-splitter-pane) {
+        flex: 1 1 0;
+    }
 }
 
 :host([orientation='horizontal']) {
@@ -16,10 +20,7 @@
     igc-splitter-bar {
         width: 5px;
         height: auto;
-    }
-
-    igc-splitter-pane {
-        height: 100%;
+        cursor: col-resize;
     }
 }
 
@@ -29,19 +30,14 @@
     igc-splitter-bar {
         height: 5px;
         width: auto;
-    }
-
-    igc-splitter-pane {
-        width: 100%;
+        cursor: row-resize;
     }
 }
 
 igc-splitter-bar {
     background-color: var(--ig-gray-200);
-}
 
-igc-splitter-pane {
-    background: var(--ig-gray-900-contrast);
-    border: 1px solid var(--ig-gray-300);
-    flex: 1 1 0;
+    &:hover {
+        background-color: var(--ig-gray-400);
+    }
 }
