@@ -1,0 +1,47 @@
+@use 'styles/common/component';
+@use 'styles/utilities' as *;
+
+:host {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    color: var(--ig-gray-900);
+    background: var(--ig-gray-100);
+    border: 1px solid var(--ig-gray-200);
+}
+
+:host([orientation='horizontal']) {
+    flex-direction: row;
+
+    igc-splitter-bar {
+        width: 5px;
+        height: auto;
+    }
+
+    igc-splitter-pane {
+        height: 100%;
+    }
+}
+
+:host([orientation='vertical']) {
+    flex-direction: column;
+
+    igc-splitter-bar {
+        height: 5px;
+        width: auto;
+    }
+
+    igc-splitter-pane {
+        width: 100%;
+    }
+}
+
+igc-splitter-bar {
+    background-color: var(--ig-gray-200);
+}
+
+igc-splitter-pane {
+    background: var(--ig-gray-900-contrast);
+    border: 1px solid var(--ig-gray-300);
+    flex: 1 1 0;
+}

@@ -37,11 +37,22 @@ export default metadata;
 type Story = StoryObj;
 
 export const Default: Story = {
-  render: () => html`
-    <igc-splitter>
-      <igc-splitter-pane>Pane 1</igc-splitter-pane>
-      <igc-splitter-pane>Pane 2</igc-splitter-pane>
-      <igc-splitter-pane>Pane 3</igc-splitter-pane>
+  render: ({ orientation }) => html`
+    <style>
+      .pane-content {
+        padding: 12px;
+      }
+    </style>
+    <igc-splitter .orientation=${orientation} style="height: 40vh">
+      <igc-splitter-pane>
+        <div class="pane-content">Pane 1</div>
+      </igc-splitter-pane>
+      <igc-splitter-pane>
+        <div class="pane-content">Pane 2</div>
+      </igc-splitter-pane>
+      <igc-splitter-pane>
+        <div class="pane-content">Pane 3</div>
+      </igc-splitter-pane>
     </igc-splitter>
   `,
 };
