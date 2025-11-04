@@ -276,6 +276,40 @@ describe('Tooltip', () => {
       expect(defaultSlot?.assignedElements()[0].matches('button')).to.be.true;
     });
 
+    it('should apply simple-text class when using message property only', async () => {
+      const template = html`
+        <div>
+          <button>Hover</button>
+          <igc-tooltip message="Simple text tooltip"></igc-tooltip>
+        </div>
+      `;
+      const container = await fixture(template);
+      tooltip = container.querySelector(IgcTooltipComponent.tagName)!;
+      await elementUpdated(tooltip);
+
+      const baseElement = tooltip.renderRoot.querySelector('[part~="base"]');
+      expect(baseElement).not.to.be.null;
+      expect(baseElement?.part.contains('simple-text')).to.be.true;
+    });
+
+    it('should not apply simple-text class when using custom content', async () => {
+      const template = html`
+        <div>
+          <button>Hover</button>
+          <igc-tooltip>
+            <div>Custom content with complex structure</div>
+          </igc-tooltip>
+        </div>
+      `;
+      const container = await fixture(template);
+      tooltip = container.querySelector(IgcTooltipComponent.tagName)!;
+      await elementUpdated(tooltip);
+
+      const baseElement = tooltip.renderRoot.querySelector('[part~="base"]');
+      expect(baseElement).not.to.be.null;
+      expect(baseElement?.part.contains('simple-text')).to.be.false;
+    });
+
     it('should render a default close button when in `sticky` mode', async () => {
       tooltip.sticky = true;
       await elementUpdated(tooltip);
