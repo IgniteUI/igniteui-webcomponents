@@ -105,7 +105,8 @@ const Slots = setSlots(
   'suggestions',
   'suggestions-actions',
   'suggestion',
-  'empty-state'
+  'empty-state',
+  'typing-indicator'
 );
 
 /**
@@ -133,6 +134,7 @@ const Slots = setSlots(
  * @slot suggestions-actions - Slot for rendering additional actions.
  * @slot suggestion - Slot for rendering a single suggestion item.
  * @slot empty-state - Slot shown when there are no messages.
+ * @slot typing-indicator - Slot for the "is typing" indicator.
  *
  * @csspart chat-container - Styles the main chat container.
  * @csspart header - Styles the chat header container.
@@ -413,7 +415,9 @@ export default class IgcChatComponent extends EventEmitterMixin<
         ${this._state.options?.isTyping
           ? html`
               <div part="typing-indicator">
-                ${this._getRenderer('typingIndicator')(ctx)}
+                <slot name="typing-indicator"
+                  >${this._getRenderer('typingIndicator')(ctx)}</slot
+                >
               </div>
             `
           : nothing}
