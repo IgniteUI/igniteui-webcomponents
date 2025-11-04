@@ -168,24 +168,6 @@ export function findElementFromEventPath<T extends Element>(
   return getElementsFromEventPath(event).find(func) as T | undefined;
 }
 
-export function groupBy<T>(array: T[], key: keyof T | ((item: T) => any)) {
-  const result: Record<string, T[]> = {};
-  const _get = isFunction(key) ? key : (item: T) => item[key];
-
-  for (const item of array) {
-    const category = _get(item);
-    const group = result[category];
-
-    if (Array.isArray(group)) {
-      group.push(item);
-    } else {
-      result[category] = [item];
-    }
-  }
-
-  return result;
-}
-
 export function first<T>(arr: T[]) {
   return arr.at(0) as T;
 }

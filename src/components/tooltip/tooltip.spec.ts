@@ -276,6 +276,40 @@ describe('Tooltip', () => {
       expect(defaultSlot?.assignedElements()[0].matches('button')).to.be.true;
     });
 
+    it('should apply simple-text class when using message property only', async () => {
+      const template = html`
+        <div>
+          <button>Hover</button>
+          <igc-tooltip message="Simple text tooltip"></igc-tooltip>
+        </div>
+      `;
+      const container = await fixture(template);
+      tooltip = container.querySelector(IgcTooltipComponent.tagName)!;
+      await elementUpdated(tooltip);
+
+      const baseElement = tooltip.renderRoot.querySelector('[part~="base"]');
+      expect(baseElement).not.to.be.null;
+      expect(baseElement?.part.contains('simple-text')).to.be.true;
+    });
+
+    it('should not apply simple-text class when using custom content', async () => {
+      const template = html`
+        <div>
+          <button>Hover</button>
+          <igc-tooltip>
+            <div>Custom content with complex structure</div>
+          </igc-tooltip>
+        </div>
+      `;
+      const container = await fixture(template);
+      tooltip = container.querySelector(IgcTooltipComponent.tagName)!;
+      await elementUpdated(tooltip);
+
+      const baseElement = tooltip.renderRoot.querySelector('[part~="base"]');
+      expect(baseElement).not.to.be.null;
+      expect(baseElement?.part.contains('simple-text')).to.be.false;
+    });
+
     it('should render a default close button when in `sticky` mode', async () => {
       tooltip.sticky = true;
       await elementUpdated(tooltip);
@@ -534,7 +568,7 @@ describe('Tooltip', () => {
 
   describe('Behaviors', () => {
     beforeEach(async () => {
-      clock = useFakeTimers({ toFake: ['setTimeout'] });
+      clock = useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
       const container = await fixture(createTooltipWithTarget());
       anchor = container.querySelector('button')!;
       tooltip = container.querySelector(IgcTooltipComponent.tagName)!;
@@ -659,6 +693,40 @@ describe('Tooltip', () => {
       await clock.tickAsync(1);
       await hideComplete(tooltip);
       expect(tooltip.open).to.be.false;
+    });
+
+    it('prevents tooltip from showing when clicking the target - #1828', async () => {
+      const eventSpy = spy(tooltip, 'emitEvent');
+
+      tooltip.showTriggers = 'pointerenter';
+      tooltip.hideTriggers = 'pointerleave';
+
+      simulatePointerEnter(anchor);
+      await clock.tickAsync(199);
+      expect(tooltip.open).to.be.false;
+
+      // Click on the target before the tooltip is shown
+      simulateClick(anchor);
+      await clock.tickAsync(1);
+      await showComplete(tooltip);
+      expect(tooltip.open).to.be.false;
+      expect(eventSpy.callCount).to.equal(1);
+
+      eventSpy.resetHistory();
+
+      // Does not prevent showing when showTriggers includes 'click'
+      tooltip.showTriggers = 'click';
+
+      simulateClick(anchor);
+      await clock.tickAsync(DEFAULT_SHOW_DELAY);
+      await showComplete(tooltip);
+      expect(tooltip.open).to.be.true;
+
+      simulatePointerLeave(anchor);
+      await clock.tickAsync(endTick(DEFAULT_HIDE_DELAY));
+      await hideComplete(tooltip);
+      expect(tooltip.open).to.be.false;
+      expect(eventSpy.callCount).to.equal(4);
     });
   });
 

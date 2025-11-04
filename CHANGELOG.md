@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+### Fixed
+- #### Tooltip
+  - Do not show tooltip when target is clicked [#1828](https://github.com/IgniteUI/igniteui-webcomponents/issues/1828)
+
 ## [6.3.4] - 2025-10-22
 ### Fixed
 - #### Date picker

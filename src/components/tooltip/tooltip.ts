@@ -7,9 +7,11 @@ import { fadeOut } from '../../animations/presets/fade/index.js';
 import { scaleInCenter } from '../../animations/presets/scale/index.js';
 import { addThemingController } from '../../theming/theming-controller.js';
 import { addInternalsController } from '../common/controllers/internals.js';
+import { addSlotController, setSlots } from '../common/controllers/slot.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
+import { partMap } from '../common/part-map.js';
 import { asNumber, isLTR } from '../common/util.js';
 import IgcIconComponent from '../icon/icon.js';
 import IgcPopoverComponent, {
@@ -43,6 +45,7 @@ type TooltipStateOptions = {
  * @slot close-button - Slot for custom sticky-mode close action (e.g., an icon/button).
  *
  * @csspart base - The wrapping container of the tooltip content.
+ * @csspart simple-text - The container where the message property of the tooltip is rendered.
  *
  * @fires igcOpening - Emitted before the tooltip begins to open. Can be canceled to prevent opening.
  * @fires igcOpened - Emitted after the tooltip has successfully opened and is visible.
@@ -77,10 +80,12 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
     onShow: this._showOnInteraction,
     onHide: this._hideOnInteraction,
     onEscape: this._hideOnEscape,
+    onClick: this._stopTimeoutAndAnimation,
   });
 
   private readonly _containerRef = createRef<HTMLElement>();
   private readonly _player = addAnimationController(this, this._containerRef);
+  private readonly _slots = addSlotController(this, { slots: setSlots() });
 
   private readonly _showAnimation = scaleInCenter({
     duration: 150,
@@ -405,7 +410,7 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
 
   private _stopTimeoutAndAnimation(): void {
     clearTimeout(this._timeoutId);
-    this._player.stopAll();
+    this._player.cancelAll();
   }
 
   private _setAutoHide(): void {
@@ -429,6 +434,11 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
   }
 
   protected override render() {
+    const parts = {
+      base: true,
+      'simple-text': !this._slots.hasAssignedNodes('[default]', true),
+    };
+
     return html`
       <igc-popover
         .inert=${!this.open}
@@ -442,7 +452,7 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
         flip
         shift
       >
-        <div ${ref(this._containerRef)} part="base">
+        <div ${ref(this._containerRef)} part=${partMap(parts)}>
           <slot>${this.message}</slot>
           ${this.sticky
             ? html`
