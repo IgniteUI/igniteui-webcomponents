@@ -19,7 +19,7 @@ $background: var-get($theme, 'background') !default;
 
 :host([position='start']) [part='mini'],
 :host([position='end']) [part='mini'] {
-    box-shadow: var-get($theme, 'elevation');
+    box-shadow: var(--shadow);
 }
 
 :host([position='start']) [part~='base'],
@@ -41,6 +41,6 @@ $background: var-get($theme, 'background') !default;
 
 :host([open]:not([position='relative'])) {
     [part='base'] {
-        box-shadow: var-get($theme, 'elevation');
+        box-shadow: var(--shadow);
     }
 }
