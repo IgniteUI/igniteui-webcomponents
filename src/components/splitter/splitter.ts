@@ -56,6 +56,15 @@ export default class IgcSplitterComponent extends LitElement {
   @property({ reflect: true })
   public orientation: SplitterOrientation = 'horizontal';
 
+  /**
+   * Sets the visibility of the handle and expanders in the splitter bar.
+   * @remarks
+   * Default value is `false`.
+   * @attr
+   */
+  @property({ type: Boolean, reflect: true })
+  public nonCollapsible = false;
+
   //#endregion
 
   //#region Internal API

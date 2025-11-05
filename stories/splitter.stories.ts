@@ -127,6 +127,7 @@ const metadata: Meta<SplitterStoryArgs> = {
   },
   args: {
     orientation: 'horizontal',
+    nonCollapsible: false,
     pane1Size: 'auto',
     pane1Resizable: true,
     pane1Collapsed: false,
@@ -155,6 +156,7 @@ function changePaneMinMaxSizes() {
 export const Default: Story = {
   render: ({
     orientation,
+    nonCollapsible,
     pane1Size,
     pane1MinSize,
     pane1MaxSize,
@@ -184,7 +186,11 @@ export const Default: Story = {
     </style>
 
     <div class="splitters">
-      <igc-splitter .orientation=${orientation} style="height: 400px">
+      <igc-splitter
+        .orientation=${orientation}
+        .nonCollapsible=${nonCollapsible}
+        style="height: 400px"
+      >
         <igc-splitter-pane
           .size=${pane1Size || 'auto'}
           .minSize=${pane1MinSize}
