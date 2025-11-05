@@ -1,6 +1,7 @@
 import { elementUpdated, expect, fixture } from '@open-wc/testing';
 import { html, nothing } from 'lit';
 import { spy, stub, useFakeTimers } from 'sinon';
+import { configureTheme } from '../../theming/config.js';
 import type IgcIconButtonComponent from '../button/icon-button.js';
 import IgcChipComponent from '../chip/chip.js';
 import { enterKey, tabKey } from '../common/controllers/key-bindings.js';
@@ -22,7 +23,11 @@ import IgcChatComponent from './chat.js';
 import IgcChatInputComponent from './chat-input.js';
 import IgcChatMessageComponent from './chat-message.js';
 import IgcMessageAttachmentsComponent from './message-attachments.js';
-import type { IgcChatMessage, IgcChatMessageAttachment } from './types.js';
+import type {
+  ChatMessageRenderContext,
+  IgcChatMessage,
+  IgcChatMessageAttachment,
+} from './types.js';
 
 describe('Chat', () => {
   before(() => {
@@ -1026,7 +1031,22 @@ describe('Chat', () => {
   });
 
   describe('adoptRootStyles behavior', () => {
-    const customStyles = 'custom-background';
+    const messages: IgcChatMessage[] = [
+      { id: 'id', sender: 'bot', text: 'Hello' },
+    ];
+    const renderer = ({ message }: ChatMessageRenderContext) =>
+      html`<div class="custom-background">${message.text}</div>`;
+
+    function verifyCustomStyles(state: boolean) {
+      const { messages } = getChatDOM(chat);
+      const { backgroundColor } = getComputedStyle(
+        getChatMessageDOM(first(messages)).content.querySelector(
+          '.custom-background'
+        )!
+      );
+
+      expect(backgroundColor === 'rgb(255, 0, 0)').to.equal(state);
+    }
 
     beforeEach(async () => {
       const styles = document.createElement('style');
@@ -1039,48 +1059,51 @@ describe('Chat', () => {
       document.head.append(styles);
     });
 
+    afterEach(() => {
+      // Reset the theme and clean the style tag
+      configureTheme('bootstrap');
+      document.head.querySelector('#adopt-styles-test')?.remove();
+    });
+
     it('correctly applies `adoptRootStyles` when set', async () => {
       chat.options = {
         adoptRootStyles: true,
-        renderers: {
-          messageContent: ({ message }) =>
-            html`<div class=${customStyles}>${message.text}</div>`,
-        },
+        renderers: { messageContent: renderer },
       };
-      chat.messages = [{ id: 'id', sender: 'bot', text: 'Hello' }];
+
+      chat.messages = messages;
 
       await elementUpdated(chat);
-
-      const { messages } = getChatDOM(chat);
-      expect(
-        getComputedStyle(
-          getChatMessageDOM(first(messages)).content.querySelector(
-            `.${customStyles}`
-          )!
-        ).backgroundColor
-      ).equal('rgb(255, 0, 0)');
+      verifyCustomStyles(true);
     });
 
     it('skips `adoptRootStyles` when not set', async () => {
       chat.options = {
-        renderers: {
-          messageContent: ({ message }) =>
-            html`<div class=${customStyles}>${message.text}</div>`,
-        },
+        renderers: { messageContent: renderer },
       };
 
-      chat.messages = [{ id: 'id', sender: 'bot', text: 'Hello' }];
+      chat.messages = messages;
 
       await elementUpdated(chat);
+      verifyCustomStyles(false);
+    });
 
-      const { messages } = getChatDOM(chat);
-      expect(
-        getComputedStyle(
-          getChatMessageDOM(first(messages)).content.querySelector(
-            `.${customStyles}`
-          )!
-        ).backgroundColor
-      ).not.equal('rgb(255, 0, 0)');
+    it('correctly reapplies `adoptRootStyles` when set and the theme is changed', async () => {
+      chat.options = {
+        adoptRootStyles: true,
+        renderers: { messageContent: renderer },
+      };
+
+      chat.messages = messages;
+
+      await elementUpdated(chat);
+      verifyCustomStyles(true);
+
+      // Change the theme
+      configureTheme('material');
+
+      await elementUpdated(chat);
+      verifyCustomStyles(true);
     });
   });
 });

@@ -84,10 +84,10 @@ export default class IgcChatMessageComponent extends LitElement {
 
   constructor() {
     super();
-    addThemingController(this, all);
+    addThemingController(this, all, { themeChange: this._adoptPageStyles });
   }
 
-  protected override firstUpdated(): void {
+  private _adoptPageStyles(): void {
     if (this._state.options?.adoptRootStyles) {
       adoptPageStyles(this);
     }

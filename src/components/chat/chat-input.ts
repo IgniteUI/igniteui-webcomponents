@@ -102,10 +102,10 @@ export default class IgcChatInputComponent extends LitElement {
   private readonly _userInputState!: ChatState;
 
   @query(IgcTextareaComponent.tagName)
-  private readonly _textInputElement!: IgcTextareaComponent;
+  private readonly _textInputElement?: IgcTextareaComponent;
 
   @query('#input_attachments')
-  protected readonly _fileInput!: HTMLInputElement;
+  protected readonly _fileInput?: HTMLInputElement;
 
   @state()
   private _parts = { 'input-container': true, dragging: false };
@@ -116,18 +116,18 @@ export default class IgcChatInputComponent extends LitElement {
 
   constructor() {
     super();
-    addThemingController(this, all);
-  }
-
-  protected override firstUpdated(): void {
-    if (this._state.options?.adoptRootStyles) {
-      adoptPageStyles(this);
-    }
+    addThemingController(this, all, { themeChange: this._adoptPageStyles });
   }
 
   /** @internal */
   public focusInput(): void {
-    this._textInputElement.focus();
+    this._textInputElement?.focus();
+  }
+
+  private _adoptPageStyles(): void {
+    if (this._state.options?.adoptRootStyles) {
+      adoptPageStyles(this);
+    }
   }
 
   private _getRenderer<U extends keyof DefaultInputRenderers>(
@@ -210,7 +210,7 @@ export default class IgcChatInputComponent extends LitElement {
   }
 
   private _handleFileInputClick(): void {
-    this._fileInput.showPicker();
+    this._fileInput?.showPicker();
   }
 
   private _handleFocusState(event: FocusEvent): void {
