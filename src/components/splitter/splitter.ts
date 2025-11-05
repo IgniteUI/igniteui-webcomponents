@@ -1,5 +1,6 @@
 import { html, LitElement } from 'lit';
 import { property, queryAssignedElements } from 'lit/decorators.js';
+import { addInternalsController } from '../common/controllers/internals.js';
 import { addSlotController } from '../common/controllers/slot.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
@@ -21,8 +22,16 @@ export default class IgcSplitterComponent extends LitElement {
     );
   }
 
+  //#region Properties
+
   private readonly _slots = addSlotController(this, {
     onChange: this._handleSlotChange,
+  });
+
+  private readonly _internals = addInternalsController(this, {
+    initialARIA: {
+      ariaOrientation: 'horizontal',
+    },
   });
 
   /** Returns all of the splitter's panes. */
@@ -37,8 +46,28 @@ export default class IgcSplitterComponent extends LitElement {
   @property({ reflect: true })
   public orientation: SplitterOrientation = 'horizontal';
 
+  //#endregion
+
+  //#region Internal API
+
+  @watch('orientation', { waitUntilFirstUpdate: true })
+  protected _orientationChange(): void {
+    this._internals.setARIA({ ariaOrientation: this.orientation });
+    this._resetPaneSizes();
+    this._initPanes();
+  }
+
+  constructor() {
+    super();
+
+    this.addEventListener('sizeChanged', (event: any) => {
+      event.stopPropagation();
+      this._initPanes();
+    });
+  }
+
   protected _handleSlotChange(): void {
-    this.initPanes();
+    this._initPanes();
   }
 
   private _assignFlexOrder() {
@@ -53,7 +82,7 @@ export default class IgcSplitterComponent extends LitElement {
    * @hidden @internal
    * This method inits panes with properties.
    */
-  private initPanes() {
+  private _initPanes() {
     this.panes.forEach((pane) => {
       pane.owner = this;
       if (this.orientation === 'horizontal') {
@@ -76,7 +105,7 @@ export default class IgcSplitterComponent extends LitElement {
    * @hidden @internal
    * This method reset pane sizes.
    */
-  private resetPaneSizes() {
+  private _resetPaneSizes() {
     if (this.panes) {
       // if type is changed runtime, should reset sizes.
       this.panes.forEach((pane) => {
@@ -89,21 +118,9 @@ export default class IgcSplitterComponent extends LitElement {
     }
   }
 
-  @watch('orientation', { waitUntilFirstUpdate: true })
-  protected orientationChange(): void {
-    this.setAttribute('aria-orientation', this.orientation);
-    this.resetPaneSizes();
-    this.initPanes();
-  }
+  //#endregion
 
-  constructor() {
-    super();
-
-    this.addEventListener('sizeChanged', (event: any) => {
-      event.stopPropagation();
-      this.initPanes();
-    });
-  }
+  //#region Rendering
 
   private _renderBar(order: number) {
     return html` <igc-splitter-bar .order=${order}></igc-splitter-bar> `;
@@ -118,6 +135,8 @@ export default class IgcSplitterComponent extends LitElement {
       })}
     `;
   }
+
+  //#endregion
 }
 
 declare global {

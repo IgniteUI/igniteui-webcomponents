@@ -66,6 +66,57 @@ describe('Splitter', () => {
       expect(splitter.orientation).to.equal('vertical');
       expect(splitter.getAttribute('orientation')).to.equal('vertical');
     });
+
+    it('should render nested splitters correctly', async () => {
+      const nestedSplitter = await fixture<IgcSplitterComponent>(
+        createNestedSplitter()
+      );
+      await elementUpdated(nestedSplitter);
+
+      expect(nestedSplitter.panes).to.have.lengthOf(2);
+      expect(nestedSplitter.orientation).to.equal('horizontal');
+
+      const outerBars = Array.from(
+        nestedSplitter.renderRoot.querySelectorAll(
+          IgcSplitterBarComponent.tagName
+        )
+      );
+      expect(outerBars).to.have.lengthOf(1);
+
+      const firstPane = nestedSplitter.panes[0];
+      const leftSplitter = firstPane.querySelector(
+        IgcSplitterComponent.tagName
+      ) as IgcSplitterComponent;
+
+      expect(leftSplitter).to.exist;
+      expect(leftSplitter.orientation).to.equal('vertical');
+
+      expect(leftSplitter.panes).to.have.lengthOf(2);
+
+      const leftBars = Array.from(
+        leftSplitter.renderRoot.querySelectorAll(
+          IgcSplitterBarComponent.tagName
+        )
+      );
+      expect(leftBars).to.have.lengthOf(1);
+
+      const secondPane = nestedSplitter.panes[1];
+      const rightSplitter = secondPane.querySelector(
+        IgcSplitterComponent.tagName
+      ) as IgcSplitterComponent;
+
+      expect(rightSplitter).to.exist;
+      expect(rightSplitter.orientation).to.equal('vertical');
+
+      expect(rightSplitter.panes).to.have.lengthOf(2);
+
+      const rightBars = Array.from(
+        rightSplitter.renderRoot.querySelectorAll(
+          IgcSplitterBarComponent.tagName
+        )
+      );
+      expect(rightBars).to.have.lengthOf(1);
+    });
   });
 });
 
@@ -75,6 +126,25 @@ function createSplitter() {
       <igc-splitter-pane>Pane 1</igc-splitter-pane>
       <igc-splitter-pane>Pane 2</igc-splitter-pane>
       <igc-splitter-pane>Pane 3</igc-splitter-pane>
+    </igc-splitter>
+  `;
+}
+
+function createNestedSplitter() {
+  return html`
+    <igc-splitter orientation="horizontal">
+      <igc-splitter-pane>
+        <igc-splitter orientation="vertical">
+          <igc-splitter-pane>Top Left Pane</igc-splitter-pane>
+          <igc-splitter-pane>Bottom Left Pane</igc-splitter-pane>
+        </igc-splitter>
+      </igc-splitter-pane>
+      <igc-splitter-pane>
+        <igc-splitter orientation="vertical">
+          <igc-splitter-pane>Top Right Pane</igc-splitter-pane>
+          <igc-splitter-pane>Bottom Right Pane</igc-splitter-pane>
+        </igc-splitter>
+      </igc-splitter-pane>
     </igc-splitter>
   `;
 }

@@ -43,7 +43,7 @@ export default class IgcSplitterPaneComponent extends LitElement {
    * The minimum size of the pane.
    * @attr
    */
-  @property({ type: String, reflect: true })
+  @property({ reflect: true })
   public set minSize(value: string) {
     this._minSize = value;
     this.dispatchEvent(new CustomEvent('sizeChanged', { bubbles: true }));
@@ -57,7 +57,7 @@ export default class IgcSplitterPaneComponent extends LitElement {
    * The maximum size of the pane.
    * @attr
    */
-  @property({ type: String, reflect: true })
+  @property({ reflect: true })
   public set maxSize(value: string) {
     this._maxSize = value;
     this.dispatchEvent(new CustomEvent('sizeChanged', { bubbles: true }));
@@ -71,7 +71,7 @@ export default class IgcSplitterPaneComponent extends LitElement {
    * Gets/sets the pane's minWidth.
    * @hidden @internal
    */
-  @property({ type: String })
+  @property()
   public set minWidth(value: string) {
     this._minWidth = value;
     this.style.minWidth = this._minWidth;
@@ -85,7 +85,7 @@ export default class IgcSplitterPaneComponent extends LitElement {
    * Gets/sets the pane's maxWidth.
    * @hidden @internal
    */
-  @property({ type: String })
+  @property()
   public set maxWidth(value: string) {
     this._maxWidth = value;
     this.style.maxWidth = this._maxWidth;
@@ -99,7 +99,7 @@ export default class IgcSplitterPaneComponent extends LitElement {
    * Gets/sets the pane's minHeight.
    * @hidden @internal
    */
-  @property({ type: String })
+  @property()
   public set minHeight(value: string) {
     this._minHeight = value;
     this.style.minHeight = this._minHeight;
@@ -113,7 +113,7 @@ export default class IgcSplitterPaneComponent extends LitElement {
    * Gets/sets the pane's maxHeight.
    * @hidden @internal
    */
-  @property({ type: String })
+  @property()
   public set maxHeight(value: string) {
     this._maxHeight = value;
     this.style.maxHeight = this._maxHeight;
@@ -134,7 +134,7 @@ export default class IgcSplitterPaneComponent extends LitElement {
    * Gets/sets the pane's maxHeight.
    * @hidden @internal
    */
-  @property({ type: String })
+  @property()
   public get flex() {
     //const size = this.dragSize || this.size;
     //const grow = this.isPercentageSize && !this.dragSize ? 1 : 0;
@@ -147,7 +147,7 @@ export default class IgcSplitterPaneComponent extends LitElement {
    * The size of the pane.
    * @attr
    */
-  @property({ type: String, reflect: true })
+  @property({ reflect: true })
   public set size(value: string) {
     this._size = value;
     this.style.flex = this.flex;

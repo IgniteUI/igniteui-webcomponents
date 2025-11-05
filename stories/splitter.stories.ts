@@ -4,6 +4,7 @@ import { html } from 'lit';
 import { defineComponents } from 'igniteui-webcomponents';
 import IgcSplitterComponent from '../src/components/splitter/splitter.js';
 import IgcSplitterPaneComponent from '../src/components/splitter/splitter-pane.js';
+import { disableStoryControls } from './story.js';
 
 defineComponents(IgcSplitterComponent, IgcSplitterPaneComponent);
 
@@ -37,11 +38,11 @@ type Story = StoryObj;
 function changePaneMinMaxSizes() {
   const panes = document.querySelectorAll('igc-splitter-pane');
   panes[0].minSize = '100px';
-  panes[0].maxSize = '300px';
+  panes[0].maxSize = '200px';
   panes[1].minSize = '50px';
-  panes[1].maxSize = '200px';
+  panes[1].maxSize = '100px';
   panes[2].minSize = '150px';
-  panes[2].maxSize = '400px';
+  panes[2].maxSize = '100px';
 }
 
 function changePaneSize() {
@@ -74,7 +75,7 @@ export const Default: Story = {
     </button>
 
     <div class="splitters">
-      <igc-splitter .orientation=${orientation} style="height: 40vh">
+      <igc-splitter .orientation=${orientation} style="height: 400px">
         <igc-splitter-pane>
           <div class="pane-content">Pane 1</div>
         </igc-splitter-pane>
@@ -98,5 +99,46 @@ export const Default: Story = {
         </igc-splitter-pane>
       </igc-splitter>
     </div>
+  `,
+};
+
+export const NestedSplitters: Story = {
+  argTypes: disableStoryControls(metadata),
+  render: () => html`
+    <style>
+      .pane-content {
+        padding: 12px;
+      }
+
+      .nested-splitter {
+        height: 100%;
+      }
+    </style>
+
+    <igc-splitter orientation="horizontal" style="height: 600px">
+      <igc-splitter-pane>
+        <igc-splitter orientation="vertical" class="nested-splitter">
+          <igc-splitter-pane>
+            <div class="pane-content">Top Left Pane</div>
+          </igc-splitter-pane>
+
+          <igc-splitter-pane>
+            <div class="pane-content">Bottom Left Pane</div>
+          </igc-splitter-pane>
+        </igc-splitter>
+      </igc-splitter-pane>
+
+      <igc-splitter-pane>
+        <igc-splitter orientation="vertical" class="nested-splitter">
+          <igc-splitter-pane>
+            <div class="pane-content">Top Right Pane</div>
+          </igc-splitter-pane>
+
+          <igc-splitter-pane>
+            <div class="pane-content">Bottom Right Pane</div>
+          </igc-splitter-pane>
+        </igc-splitter>
+      </igc-splitter-pane>
+    </igc-splitter>
   `,
 };
