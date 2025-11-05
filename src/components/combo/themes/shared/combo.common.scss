@@ -17,6 +17,10 @@ $dropdown-theme: dropdown-theme.$material;
     }
 }
 
+[part='filter-input'] {
+    border-bottom: rem(1px) dashed var-get($theme, 'search-separator-border-color');
+}
+
 [part='empty'] {
     color: var-get($theme, 'empty-list-placeholder-color');
     background: var-get($theme, 'empty-list-background');
