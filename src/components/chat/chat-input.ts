@@ -24,7 +24,7 @@ import type {
   ChatTemplateRenderer,
   IgcChatMessageAttachment,
 } from './types.js';
-import { getChatAcceptedFiles, getIconName } from './utils.js';
+import { adoptPageStyles, getChatAcceptedFiles, getIconName } from './utils.js';
 
 type DefaultInputRenderers = {
   input: ChatTemplateRenderer<ChatInputRenderContext>;
@@ -117,6 +117,12 @@ export default class IgcChatInputComponent extends LitElement {
   constructor() {
     super();
     addThemingController(this, all);
+  }
+
+  protected override firstUpdated(): void {
+    if (this._state.options?.adoptRootStyles) {
+      adoptPageStyles(this);
+    }
   }
 
   /** @internal */

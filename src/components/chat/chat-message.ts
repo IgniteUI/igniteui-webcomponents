@@ -19,7 +19,7 @@ import type {
   ChatTemplateRenderer,
   IgcChatMessage,
 } from './types.js';
-import { chatMessageAdoptPageStyles } from './utils.js';
+import { adoptPageStyles } from './utils.js';
 
 const LIKE_INACTIVE = 'thumb_up_inactive';
 const LIKE_ACTIVE = 'thumb_up_active';
@@ -89,7 +89,7 @@ export default class IgcChatMessageComponent extends LitElement {
 
   protected override firstUpdated(): void {
     if (this._state.options?.adoptRootStyles) {
-      chatMessageAdoptPageStyles(this);
+      adoptPageStyles(this);
     }
   }
 
