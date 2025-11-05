@@ -114,27 +114,6 @@ export function isImageAttachment(
   );
 }
 
-// export function adoptPageStyles(element: LitElement): void {
-//   const sheets: CSSStyleSheet[] = [];
-
-//   for (const sheet of document.styleSheets) {
-//     try {
-//       const constructed = new CSSStyleSheet();
-//       for (const rule of sheet.cssRules) {
-//         // https://drafts.csswg.org/cssom/#dom-cssstylesheet-insertrule:~:text=If%20parsed%20rule%20is%20an%20%40import%20rule
-//         if (rule.cssText.startsWith('@import')) {
-//           continue;
-//         }
-//         constructed.insertRule(rule.cssText);
-//       }
-//       sheets.push(constructed);
-//     } catch {}
-//   }
-
-//   const ctor = element.constructor as typeof LitElement;
-//   adoptStyles(element.shadowRoot!, [...ctor.elementStyles, ...sheets]);
-// }
-
 class AdoptedStylesController implements ReactiveController {
   private readonly _host: ReactiveControllerHost & LitElement;
   private _hasAdoptedStyles = false;
