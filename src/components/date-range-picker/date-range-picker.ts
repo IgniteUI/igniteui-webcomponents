@@ -306,6 +306,11 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
 
   // #region General properties
 
+  /* @tsTwoWayProperty(true, "igcChange", "detail", false) */
+  /**
+   * The value of the picker
+   * @attr
+   */
   @property({ converter: convertToDateRange })
   public set value(value: DateRangeValue | string | null | undefined) {
     this._formValue.setValueAndFormState(convertToDateRange(value));
