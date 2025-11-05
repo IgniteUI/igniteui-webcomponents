@@ -1,6 +1,5 @@
 import { adoptStyles, type LitElement } from 'lit';
 import { last } from '../common/util.js';
-import type IgcChatMessageComponent from './chat-message.js';
 import type { IgcChatMessageAttachment } from './types.js';
 
 export type ChatAcceptedFileTypes = {
@@ -110,9 +109,7 @@ export function isImageAttachment(
   );
 }
 
-export function chatMessageAdoptPageStyles(
-  message: IgcChatMessageComponent
-): void {
+export function adoptPageStyles(element: LitElement): void {
   const sheets: CSSStyleSheet[] = [];
 
   for (const sheet of document.styleSheets) {
@@ -129,6 +126,6 @@ export function chatMessageAdoptPageStyles(
     } catch {}
   }
 
-  const ctor = message.constructor as typeof LitElement;
-  adoptStyles(message.shadowRoot!, [...ctor.elementStyles, ...sheets]);
+  const ctor = element.constructor as typeof LitElement;
+  adoptStyles(element.shadowRoot!, [...ctor.elementStyles, ...sheets]);
 }
