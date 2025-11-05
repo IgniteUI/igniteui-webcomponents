@@ -9,6 +9,16 @@ import IgcSplitterBarComponent from './splitter-bar.js';
 import IgcSplitterPaneComponent from './splitter-pane.js';
 import { styles } from './themes/splitter.base.css.js';
 
+/**
+ * The Splitter component provides a framework for a simple layout, splitting the view horizontally or vertically
+ * into multiple smaller resizable and collapsible areas.
+ *
+ * @element igc-splitter
+ * *
+ * @fires igc... - Emitted when ... .
+ *
+ * @csspart ... - ... .
+ */
 export default class IgcSplitterComponent extends LitElement {
   public static readonly tagName = 'igc-splitter';
   public static override styles = [styles];
