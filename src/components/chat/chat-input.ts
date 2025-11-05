@@ -1,4 +1,4 @@
-import { consume } from '@lit/context';
+import { ContextConsumer, consume } from '@lit/context';
 import { html, LitElement, nothing } from 'lit';
 import { query, state } from 'lit/decorators.js';
 import { cache } from 'lit/directives/cache.js';
@@ -24,7 +24,12 @@ import type {
   ChatTemplateRenderer,
   IgcChatMessageAttachment,
 } from './types.js';
-import { adoptPageStyles, getChatAcceptedFiles, getIconName } from './utils.js';
+import {
+  addAdoptedStylesController,
+  type ChatAcceptedFileTypes,
+  getChatAcceptedFiles,
+  getIconName,
+} from './utils.js';
 
 type DefaultInputRenderers = {
   input: ChatTemplateRenderer<ChatInputRenderContext>;
@@ -95,8 +100,20 @@ export default class IgcChatInputComponent extends LitElement {
   private _userLastTypeTime = Date.now();
   private _typingTimeout = 0;
 
-  @consume({ context: chatContext, subscribe: true })
-  private readonly _state!: ChatState;
+  private readonly _adoptedStyles = addAdoptedStylesController(this);
+
+  private readonly _stateChanged = () => {
+    this._adoptedStyles.shouldAdoptStyles(
+      !!this._state.options?.adoptRootStyles &&
+        !this._adoptedStyles.hasAdoptedStyles
+    );
+  };
+
+  private readonly _stateConsumer = new ContextConsumer(this, {
+    context: chatContext,
+    callback: this._stateChanged,
+    subscribe: true,
+  });
 
   @consume({ context: chatUserInputContext, subscribe: true })
   private readonly _userInputState!: ChatState;
@@ -110,7 +127,11 @@ export default class IgcChatInputComponent extends LitElement {
   @state()
   private _parts = { 'input-container': true, dragging: false };
 
-  private get _acceptedTypes() {
+  private get _state(): ChatState {
+    return this._stateConsumer.value!;
+  }
+
+  private get _acceptedTypes(): ChatAcceptedFileTypes | null {
     return this._state.acceptedFileTypes;
   }
 
@@ -125,9 +146,7 @@ export default class IgcChatInputComponent extends LitElement {
   }
 
   private _adoptPageStyles(): void {
-    if (this._state.options?.adoptRootStyles) {
-      adoptPageStyles(this);
-    }
+    this._adoptedStyles.shouldAdoptStyles(this._adoptedStyles.hasAdoptedStyles);
   }
 
   private _getRenderer<U extends keyof DefaultInputRenderers>(

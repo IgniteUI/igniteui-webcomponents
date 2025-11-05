@@ -27,6 +27,7 @@ import type {
   ChatMessageRenderContext,
   IgcChatMessage,
   IgcChatMessageAttachment,
+  IgcChatOptions,
 } from './types.js';
 
 describe('Chat', () => {
@@ -1031,11 +1032,19 @@ describe('Chat', () => {
   });
 
   describe('adoptRootStyles behavior', () => {
-    const messages: IgcChatMessage[] = [
-      { id: 'id', sender: 'bot', text: 'Hello' },
-    ];
+    let chat: IgcChatComponent;
+
     const renderer = ({ message }: ChatMessageRenderContext) =>
       html`<div class="custom-background">${message.text}</div>`;
+
+    async function createAdoptedStylesChat(options: IgcChatOptions) {
+      chat = await fixture(html`
+        <igc-chat
+          .messages=${[{ id: 'id', sender: 'bot', text: 'Hello' }]}
+          .options=${{ renderers: { messageContent: renderer }, ...options }}
+        ></igc-chat>
+      `);
+    }
 
     function verifyCustomStyles(state: boolean) {
       const { messages } = getChatDOM(chat);
@@ -1060,48 +1069,33 @@ describe('Chat', () => {
     });
 
     afterEach(() => {
-      // Reset the theme and clean the style tag
-      configureTheme('bootstrap');
       document.head.querySelector('#adopt-styles-test')?.remove();
     });
 
     it('correctly applies `adoptRootStyles` when set', async () => {
-      chat.options = {
-        adoptRootStyles: true,
-        renderers: { messageContent: renderer },
-      };
-
-      chat.messages = messages;
-
+      await createAdoptedStylesChat({ adoptRootStyles: true });
       await elementUpdated(chat);
       verifyCustomStyles(true);
     });
 
     it('skips `adoptRootStyles` when not set', async () => {
-      chat.options = {
-        renderers: { messageContent: renderer },
-      };
-
-      chat.messages = messages;
-
+      await createAdoptedStylesChat({ adoptRootStyles: false });
       await elementUpdated(chat);
       verifyCustomStyles(false);
     });
 
     it('correctly reapplies `adoptRootStyles` when set and the theme is changed', async () => {
-      chat.options = {
-        adoptRootStyles: true,
-        renderers: { messageContent: renderer },
-      };
-
-      chat.messages = messages;
-
+      await createAdoptedStylesChat({ adoptRootStyles: true });
       await elementUpdated(chat);
       verifyCustomStyles(true);
 
       // Change the theme
       configureTheme('material');
 
+      await elementUpdated(chat);
+      verifyCustomStyles(true);
+
+      configureTheme('bootstrap');
       await elementUpdated(chat);
       verifyCustomStyles(true);
     });
