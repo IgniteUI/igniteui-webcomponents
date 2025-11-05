@@ -969,7 +969,6 @@ describe('Date picker', () => {
 
     it('issue 1884 - should emit igcChange event in dialog mode after clearing the value and losing focus', async () => {
       const eventSpy = spy(picker, 'emitEvent');
-      // const nativeInput = dateTimeInput.renderRoot.querySelector('input')!;
 
       // Dropdown mode
 
