@@ -681,6 +681,7 @@ describe('Date picker', () => {
       await elementUpdated(picker);
 
       dateTimeInput.focus();
+      await elementUpdated(picker); // Additional waiting needed because display format differs from input format.
       picker.select();
       await elementUpdated(picker);
 
@@ -695,6 +696,7 @@ describe('Date picker', () => {
       await elementUpdated(picker);
 
       dateTimeInput.focus();
+      await elementUpdated(picker); // Additional waiting needed because display format differs from input format.
       picker.setSelectionRange(0, 2);
       await elementUpdated(picker);
 
