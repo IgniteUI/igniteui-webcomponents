@@ -1,4 +1,4 @@
-import { consume } from '@lit/context';
+import { ContextConsumer } from '@lit/context';
 import { html, LitElement, nothing } from 'lit';
 import { property } from 'lit/decorators.js';
 import { cache } from 'lit/directives/cache.js';
@@ -19,7 +19,7 @@ import type {
   ChatTemplateRenderer,
   IgcChatMessage,
 } from './types.js';
-import { chatMessageAdoptPageStyles } from './utils.js';
+import { addAdoptedStylesController } from './utils.js';
 
 const LIKE_INACTIVE = 'thumb_up_inactive';
 const LIKE_ACTIVE = 'thumb_up_active';
@@ -66,6 +66,8 @@ export default class IgcChatMessageComponent extends LitElement {
     );
   }
 
+  private readonly _adoptedStyles = addAdoptedStylesController(this);
+
   private readonly _defaults = Object.freeze<DefaultMessageRenderers>({
     messageHeader: () => this._renderHeader(),
     messageContent: () => this._renderContent(),
@@ -73,8 +75,22 @@ export default class IgcChatMessageComponent extends LitElement {
     messageActions: () => this._renderActions(),
   });
 
-  @consume({ context: chatContext, subscribe: true })
-  private readonly _state!: ChatState;
+  private readonly _stateChanged = () => {
+    this._adoptedStyles.shouldAdoptStyles(
+      !!this._state.options?.adoptRootStyles &&
+        !this._adoptedStyles.hasAdoptedStyles
+    );
+  };
+
+  private readonly _stateConsumer = new ContextConsumer(this, {
+    context: chatContext,
+    callback: this._stateChanged,
+    subscribe: true,
+  });
+
+  private get _state(): ChatState {
+    return this._stateConsumer.value!;
+  }
 
   /**
    * The chat message to render.
@@ -84,13 +100,11 @@ export default class IgcChatMessageComponent extends LitElement {
 
   constructor() {
     super();
-    addThemingController(this, all);
+    addThemingController(this, all, { themeChange: this._adoptPageStyles });
   }
 
-  protected override firstUpdated(): void {
-    if (this._state.options?.adoptRootStyles) {
-      chatMessageAdoptPageStyles(this);
-    }
+  private _adoptPageStyles(): void {
+    this._adoptedStyles.shouldAdoptStyles(this._adoptedStyles.hasAdoptedStyles);
   }
 
   private _getRenderer(name: keyof DefaultMessageRenderers) {
@@ -175,7 +189,7 @@ export default class IgcChatMessageComponent extends LitElement {
     const isSent = this.message.sender === this._state.currentUserId;
     const hasText = this.message.text.trim();
     const hasAttachments = !isEmpty(this.message.attachments ?? []);
-    const isTyping = this._state._isTyping;
+    const isTyping = this._state.options?.isTyping;
     const isLastMessage = this.message === this._state.messages.at(-1);
     const resourceStrings = this._state.resourceStrings!;
 

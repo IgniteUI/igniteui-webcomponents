@@ -4,6 +4,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+### Fixed
+- #### Tooltip
+  - Do not show tooltip when target is clicked [#1828](https://github.com/IgniteUI/igniteui-webcomponents/issues/1828)
+
+## [6.3.4] - 2025-10-22
+### Fixed
+- #### Date picker
+  - Issues when clearing the value and notch border in Material theme [#1894](https://github.com/IgniteUI/igniteui-webcomponents/pull/1894)
+- #### Textarea
+  - Stale internal input reference when switching between themes
+
+## [6.3.3] - 2025-10-14
+### Fixed
+- #### Chat
+  - Message actions not rendered after last message [#1882](https://github.com/IgniteUI/igniteui-webcomponents/pull/1882)
+- #### Date picker
+  - Change event not emitted for non-editable input configuration [#1885](https://github.com/IgniteUI/igniteui-webcomponents/pull/1885)
+
 ## [6.3.2] - 2025-10-07
 ### Added
 - #### Chat
@@ -1036,6 +1055,8 @@ Initial release of Ignite UI Web Components
 - Ripple component
 - Switch component
 
+[6.3.4]: https://github.com/IgniteUI/igniteui-webcomponents/compare/6.3.3...6.3.4
+[6.3.3]: https://github.com/IgniteUI/igniteui-webcomponents/compare/6.3.2...6.3.3
 [6.3.2]: https://github.com/IgniteUI/igniteui-webcomponents/compare/6.3.1...6.3.2
 [6.3.1]: https://github.com/IgniteUI/igniteui-webcomponents/compare/6.3.0...6.3.1
 [6.3.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/6.2.2...6.3.0

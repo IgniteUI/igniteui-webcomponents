@@ -35,3 +35,5 @@ i18nRepo
 .env
 .envrc
 .direnv
+
+.vs

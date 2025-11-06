@@ -8,7 +8,7 @@ import IgcButtonComponent from '../button/button.js';
 import { chatContext, chatUserInputContext } from '../common/context.js';
 import { addSlotController, setSlots } from '../common/controllers/slot.js';
 import { registerComponent } from '../common/definitions/register.js';
-import { IgcChatResourceStringEN } from '../common/i18n/chat.resources.js';
+import { IgcChatResourceStringEN } from '../common/i18n/EN/chat.resources.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { isEmpty } from '../common/util.js';
@@ -105,7 +105,8 @@ const Slots = setSlots(
   'suggestions',
   'suggestions-actions',
   'suggestion',
-  'empty-state'
+  'empty-state',
+  'typing-indicator'
 );
 
 /**
@@ -133,6 +134,7 @@ const Slots = setSlots(
  * @slot suggestions-actions - Slot for rendering additional actions.
  * @slot suggestion - Slot for rendering a single suggestion item.
  * @slot empty-state - Slot shown when there are no messages.
+ * @slot typing-indicator - Slot for the "is typing" indicator.
  *
  * @csspart chat-container - Styles the main chat container.
  * @csspart header - Styles the chat header container.
@@ -413,7 +415,9 @@ export default class IgcChatComponent extends EventEmitterMixin<
         ${this._state.options?.isTyping
           ? html`
               <div part="typing-indicator">
-                ${this._getRenderer('typingIndicator')(ctx)}
+                <slot name="typing-indicator"
+                  >${this._getRenderer('typingIndicator')(ctx)}</slot
+                >
               </div>
             `
           : nothing}
@@ -502,27 +506,29 @@ export default class IgcChatComponent extends EventEmitterMixin<
             : nothing}
         </div>
 
-        <igc-chat-input
-          exportparts="
-              input-container: input-area-container,
-              input-wrapper: input-container,
-              attachments: input-attachments-container,
-              attachment-wrapper: input-attachment-container,
-              attachment-name: input-attachment-name,
-              attachment-icon: input-attachment-icon,
-              text-input,
-              actions-container: input-actions-container,
-              input-actions-start,
-              input-actions-end,
-              file-upload-container,
-              file-upload,
-              send-button-container,
-              send-button"
-        >
-        </igc-chat-input>
-        ${this._state.suggestionsPosition === 'below-input'
-          ? suggestions
-          : nothing}
+        <div part="input-area-container">
+          <igc-chat-input
+            exportparts="
+                input-container: input-area-container,
+                input-wrapper: input-container,
+                attachments: input-attachments-container,
+                attachment-wrapper: input-attachment-container,
+                attachment-name: input-attachment-name,
+                attachment-icon: input-attachment-icon,
+                text-input,
+                actions-container: input-actions-container,
+                input-actions-start,
+                input-actions-end,
+                file-upload-container,
+                file-upload,
+                send-button-container,
+                send-button"
+          >
+          </igc-chat-input>
+          ${this._state.suggestionsPosition === 'below-input'
+            ? suggestions
+            : nothing}
+        </div>
       </div>
     `;
   }
