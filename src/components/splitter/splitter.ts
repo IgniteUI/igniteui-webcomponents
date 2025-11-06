@@ -137,12 +137,130 @@ export default class IgcSplitterComponent extends LitElement {
     }
   }
 
+  private paneBefore!: IgcSplitterPaneComponent;
+  private paneAfter!: IgcSplitterPaneComponent;
+  private initialPaneBeforeSize!: number;
+  private initialPaneAfterSize!: number;
+
+  private _handleMovingStart(event: CustomEvent<IgcSplitterPaneComponent>) {
+    // Handle the moving start event
+    const panes = this.panes;
+    this.paneBefore = event.detail;
+    this.paneAfter = panes[panes.indexOf(this.paneBefore) + 1];
+
+    const paneRect = this.paneBefore.getBoundingClientRect();
+    this.initialPaneBeforeSize =
+      this.orientation === 'horizontal' ? paneRect.width : paneRect.height;
+
+    const siblingRect = this.paneAfter.getBoundingClientRect();
+    this.initialPaneAfterSize =
+      this.orientation === 'horizontal'
+        ? siblingRect.width
+        : siblingRect.height;
+  }
+  private _handleMoving(event: CustomEvent<number>) {
+    const [paneSize, siblingSize] = this.calcNewSizes(event.detail);
+
+    this.paneBefore.size = paneSize + 'px';
+    this.paneAfter.size = siblingSize + 'px';
+  }
+
+  //I am not sure if this code changes anything, it looks like it works without it as well,
+  // however I found a bug, which I am not sure how to reproduce it and still haven't encaountered it with this code
+  private _handleMovingEnd(event: CustomEvent<number>) {
+    const [paneSize, siblingSize] = this.calcNewSizes(event.detail);
+
+    if (this.paneBefore.isPercentageSize) {
+      // handle % resizes
+      const totalSize = this.getTotalSize();
+      const percentPaneSize = (paneSize / totalSize) * 100;
+      this.paneBefore.size = percentPaneSize + '%';
+    } else {
+      // px resize
+      this.paneBefore.size = paneSize + 'px';
+    }
+
+    if (this.paneAfter.isPercentageSize) {
+      // handle % resizes
+      const totalSize = this.getTotalSize();
+      const percentSiblingPaneSize = (siblingSize / totalSize) * 100;
+      this.paneAfter.size = percentSiblingPaneSize + '%';
+    } else {
+      // px resize
+      this.paneAfter.size = siblingSize + 'px';
+    }
+  }
+
+  /**
+   * @hidden @internal
+   * Calculates new sizes for the panes based on move delta and initial sizes
+   */
+  private calcNewSizes(delta: number): [number, number] {
+    let finalDelta: number;
+    const min =
+      Number.parseInt(
+        this.paneBefore.minSize ? this.paneBefore.minSize : '0',
+        10
+      ) || 0;
+    const minSibling =
+      Number.parseInt(
+        this.paneAfter.minSize ? this.paneAfter.minSize : '0',
+        10
+      ) || 0;
+    const max =
+      Number.parseInt(
+        this.paneBefore.maxSize ? this.paneBefore.maxSize : '0',
+        10
+      ) || this.initialPaneBeforeSize + this.initialPaneAfterSize - minSibling;
+    const maxSibling =
+      Number.parseInt(
+        this.paneAfter.maxSize ? this.paneAfter.maxSize : '0',
+        10
+      ) || this.initialPaneBeforeSize + this.initialPaneAfterSize - min;
+
+    if (delta < 0) {
+      const maxPossibleDelta = Math.min(
+        this.initialPaneBeforeSize - min,
+        maxSibling - this.initialPaneAfterSize
+      );
+      finalDelta = Math.min(maxPossibleDelta, Math.abs(delta)) * -1;
+    } else {
+      const maxPossibleDelta = Math.min(
+        max - this.initialPaneBeforeSize,
+        this.initialPaneAfterSize - minSibling
+      );
+      finalDelta = Math.min(maxPossibleDelta, Math.abs(delta));
+    }
+    return [
+      this.initialPaneBeforeSize + finalDelta,
+      this.initialPaneAfterSize - finalDelta,
+    ];
+  }
+
+  private getTotalSize() {
+    const computed = document.defaultView?.getComputedStyle(this);
+    const totalSize =
+      this.orientation === 'horizontal'
+        ? computed?.getPropertyValue('width')
+        : computed?.getPropertyValue('height');
+    return Number.parseFloat(totalSize ? totalSize : '0');
+  }
   //#endregion
 
   //#region Rendering
 
-  private _renderBar(order: number) {
-    return html` <igc-splitter-bar .order=${order}></igc-splitter-bar> `;
+  private _renderBar(order: number, i: number) {
+    return html`
+      <igc-splitter-bar
+        .order=${order}
+        .orientation=${this.orientation}
+        .paneBefore=${this.panes[i]}
+        .paneAfter=${this.panes[i + 1]}
+        @igcMovingStart=${this._handleMovingStart}
+        @igcMoving=${this._handleMoving}
+        @igcMovingEnd=${this._handleMovingEnd}
+      ></igc-splitter-bar>
+    `;
   }
 
   protected override render() {
@@ -150,7 +268,7 @@ export default class IgcSplitterComponent extends LitElement {
       <slot></slot>
       ${this.panes.map((pane, i) => {
         const isLast = i === this.panes.length - 1;
-        return html`${!isLast ? this._renderBar(pane.order + 1) : ''}`;
+        return html`${!isLast ? this._renderBar(pane.order + 1, i) : ''}`;
       })}
     `;
   }

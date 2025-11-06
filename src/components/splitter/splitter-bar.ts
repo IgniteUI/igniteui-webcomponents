@@ -1,9 +1,22 @@
 import { html, LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
 import { registerComponent } from '../common/definitions/register.js';
+import type { Constructor } from '../common/mixins/constructor.js';
+import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { asNumber } from '../common/util.js';
+import { addResizeController } from '../resize-container/resize-controller.js';
+import type { SplitterOrientation } from '../types.js';
+import type IgcSplitterPaneComponent from './splitter-pane.js';
 
-export default class IgcSplitterBarComponent extends LitElement {
+export interface IgcSplitterBarComponentEventMap {
+  igcMovingStart: CustomEvent<IgcSplitterPaneComponent>;
+  igcMoving: CustomEvent<number>;
+  igcMovingEnd: CustomEvent<number>;
+}
+export default class IgcSplitterBarComponent extends EventEmitterMixin<
+  IgcSplitterBarComponentEventMap,
+  Constructor<LitElement>
+>(LitElement) {
   public static readonly tagName = 'igc-splitter-bar';
 
   /* blazorSuppress */
@@ -27,10 +40,55 @@ export default class IgcSplitterBarComponent extends LitElement {
     return this._order;
   }
 
-  // constructor() {
-  //   super();
-  //   //addThemingController(this, all);
-  // }
+  /** Gets/Sets the orientation of the splitter.
+   *
+   * @remarks
+   * Default value is `horizontal`.
+   */
+  @property({ reflect: true })
+  public orientation: SplitterOrientation = 'horizontal';
+
+  @property({ attribute: false })
+  public paneBefore?: IgcSplitterPaneComponent;
+
+  @property({ attribute: false })
+  public paneAfter?: IgcSplitterPaneComponent;
+
+  constructor() {
+    super();
+    addResizeController(this, {
+      mode: 'immediate',
+      resizeTarget: (): HTMLElement => this.paneBefore ?? this, // we don’t resize the bar, we just use the delta
+      start: () => {
+        if (
+          !this.paneBefore?.resizable ||
+          !this.paneAfter?.resizable ||
+          this.paneBefore.collapsed
+        ) {
+          return false;
+        }
+        this.emitEvent('igcMovingStart', { detail: this.paneBefore });
+        return true;
+      },
+      resize: ({ state }) => {
+        const isHorizontal = this.orientation === 'horizontal';
+        const delta = isHorizontal ? state.deltaX : state.deltaY;
+
+        if (delta !== 0) {
+          this.emitEvent('igcMoving', { detail: delta });
+        }
+      },
+      end: ({ state }) => {
+        const isHorizontal = this.orientation === 'horizontal';
+        const delta = isHorizontal ? state.deltaX : state.deltaY;
+        if (delta !== 0) {
+          this.emitEvent('igcMovingEnd', { detail: delta });
+        }
+      },
+      cancel: () => {},
+    });
+    //addThemingController(this, all);
+  }
 
   protected override render() {
     return html`
