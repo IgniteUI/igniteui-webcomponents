@@ -8,13 +8,19 @@ interface MaskOptions {
    * Use `'\'` to escape a flag character if it should be treated as a literal.
    * @default 'CCCCCCCCCC'
    */
-  format: string;
+  format?: string;
 
   /**
    * The character used to prompt for input in unfilled mask positions.
    * Must be a single character.
    * @default '_'
    */
+  promptCharacter?: string;
+}
+
+/** Internal options with all required fields */
+interface MaskOptionsInternal {
+  format: string;
   promptCharacter: string;
 }
 
@@ -30,8 +36,9 @@ type MaskReplaceResult = {
 const MASK_FLAGS = new Set('aACL09#&?');
 const MASK_REQUIRED_FLAGS = new Set('0#LA&');
 
+const ASCII_ZERO = 0x0030;
 const DIGIT_ZERO_CODEPOINTS = [
-  0x0030, // ASCII
+  ASCII_ZERO, // ASCII
   0x0660, // Arabic-Indic
   0x06f0, // Extended Arabic-Indic
   0x0966, // Devanagari
@@ -51,36 +58,37 @@ const DIGIT_ZERO_CODEPOINTS = [
   0xff10, // Full-width
 ] as const;
 
+/**
+ * Precomputed map of Unicode digit codepoints to their ASCII equivalents.
+ * This eliminates the need for iteration during conversion.
+ */
+const UNICODE_DIGIT_TO_ASCII = new Map<number, string>(
+  DIGIT_ZERO_CODEPOINTS.flatMap((zeroCodePoint) =>
+    Array.from({ length: 10 }, (_, i) => [
+      zeroCodePoint + i,
+      String.fromCharCode(ASCII_ZERO + i),
+    ])
+  )
+);
+
 function replaceUnicodeNumbers(text: string): string {
   const matcher = /\p{Nd}/gu;
-  const ascii_zero = 0x0030;
 
   return text.replace(matcher, (digit) => {
-    let digitValue = 0;
-    const codePoint = digit.charCodeAt(0);
-
-    for (const zeroCodePoint of DIGIT_ZERO_CODEPOINTS) {
-      if (codePoint >= zeroCodePoint && codePoint <= zeroCodePoint + 9) {
-        digitValue = zeroCodePoint;
-        break;
-      }
-    }
-
-    digitValue = codePoint - digitValue;
-    return String.fromCharCode(ascii_zero + digitValue);
+    return UNICODE_DIGIT_TO_ASCII.get(digit.charCodeAt(0)) ?? digit;
   });
 }
 
-const MASK_PATTERNS = new Map([
-  ['C', /(?!^$)/u], // Non-empty (any character that is not an empty string)
-  ['&', /[^\p{Separator}]/u], // Any non-whitespace character (Unicode-aware)
-  ['a', /[\p{Letter}\p{Number}\p{Separator}]/u], // Alphanumeric and whitespace (Unicode-aware)
+const MASK_PATTERNS = new Map<string, RegExp>([
+  ['C', /./u], // Any single character
+  ['&', /[^\p{Separator}]/u], // Any non-separator character (excludes spaces, line/paragraph separators)
+  ['a', /[\p{Letter}\p{Number}\p{Separator}]/u], // Alphanumeric and separator characters (Unicode-aware)
   ['A', /[\p{Letter}\p{Number}]/u], // Alphanumeric (Unicode-aware)
-  ['?', /[\p{Letter}\p{Separator}]/u], // Alpha and whitespace (Unicode-aware)
+  ['?', /[\p{Letter}\p{Separator}]/u], // Alphabetic and separator characters (Unicode-aware)
   ['L', /\p{Letter}/u], // Alphabetic (Unicode-aware)
-  ['0', /\p{Number}/u], // Numeric (0-9) (Unicode-aware)
-  ['9', /[\p{Number}\p{Separator}]/u], // Numeric and whitespace (Unicode-aware)
-  ['#', /[\p{Number}\-+]/u], // Numeric and sign characters (+, -)
+  ['0', /\p{Number}/u], // Numeric (Unicode-aware, converted to ASCII 0-9 during processing)
+  ['9', /[\p{Number}\p{Separator}]/u], // Numeric and separator characters (Unicode-aware)
+  ['#', /[\p{Number}+-]/u], // Numeric and sign characters (+, -)
 ]);
 
 function validate(char: string, flag: string): boolean {
@@ -88,7 +96,7 @@ function validate(char: string, flag: string): boolean {
 }
 
 /** Default mask parser options */
-const MaskDefaultOptions: MaskOptions = {
+const MaskDefaultOptions: MaskOptionsInternal = {
   format: 'CCCCCCCCCC',
   promptCharacter: '_',
 };
@@ -98,7 +106,7 @@ const MaskDefaultOptions: MaskOptions = {
  * It handles mask definitions, literals, character validation, and cursor positioning.
  */
 export class MaskParser {
-  protected readonly _options: MaskOptions;
+  protected readonly _options: MaskOptionsInternal;
 
   /** Stores literal characters and their original positions in the mask (e.g., '(', ')', '-'). */
   protected readonly _literals = new Map<number, string>();
@@ -108,6 +116,9 @@ export class MaskParser {
 
   /** The mask format after processing escape characters */
   protected _escapedMask = '';
+
+  /** Cached array of required non-literal positions for validation */
+  protected _requiredPositions: number[] = [];
 
   /**
    * Returns a set of the all the literal positions in the mask.
@@ -158,11 +169,17 @@ export class MaskParser {
 
   /**
    * Sets the prompt character. Only the first character of the provided string is used.
+   * @remarks The prompt character cannot be a mask flag character.
    */
   public set prompt(value: string) {
-    this._options.promptCharacter = value
-      ? value.substring(0, 1)
-      : this._options.promptCharacter;
+    const char = value ? value.substring(0, 1) : this._options.promptCharacter;
+
+    // Silently ignore if prompt character conflicts with mask flags
+    if (MASK_FLAGS.has(char)) {
+      return;
+    }
+
+    this._options.promptCharacter = char;
   }
 
   constructor(options?: MaskOptions) {
@@ -205,16 +222,17 @@ export class MaskParser {
 
     this._escapedMask = escapedMaskChars.join('');
     this._literalPositions = new Set(this._literals.keys());
+    this._requiredPositions = this._computeRequiredPositions();
   }
 
   /**
-   * Gets an array of positions in the escaped mask that correspond to
+   * Computes an array of positions in the escaped mask that correspond to
    * required input flags (e.g., '0', 'L') and are not literal characters.
    *
    * These positions must be filled for the masked string to be valid.
    */
-  protected _getRequiredNonLiteralPositions(): number[] {
-    const literalPositions = this.literalPositions;
+  protected _computeRequiredPositions(): number[] {
+    const literalPositions = this._literalPositions;
     const escapedMask = this._escapedMask;
     const length = escapedMask.length;
     const result: number[] = [];
@@ -234,18 +252,18 @@ export class MaskParser {
    * Useful for backward navigation (e.g., backspace).
    *
    * @remarks
-   * If no non-literal is found before `start`, return `start`.
+   * If no non-literal is found before `start`, return 0.
    */
   public getPreviousNonLiteralPosition(start: number): number {
-    const literalPositions = this.literalPositions;
+    const literalPositions = this._literalPositions;
 
-    for (let i = start; i > 0; i--) {
+    for (let i = start - 1; i >= 0; i--) {
       if (!literalPositions.has(i)) {
         return i;
       }
     }
 
-    return start;
+    return 0;
   }
 
   /**
@@ -253,19 +271,19 @@ export class MaskParser {
    * Useful for forward navigation (e.g., arrow keys, delete key or initial cursor placement).
    *
    * @remarks
-   * If no non-literal is found after `start`, return `start`.
+   * If no non-literal is found after `start`, return the mask length.
    */
   public getNextNonLiteralPosition(start: number): number {
-    const literalPositions = this.literalPositions;
+    const literalPositions = this._literalPositions;
     const length = this._escapedMask.length;
 
-    for (let i = start; i < length; i++) {
+    for (let i = Math.max(0, start); i < length; i++) {
       if (!literalPositions.has(i)) {
         return i;
       }
     }
 
-    return start;
+    return length;
   }
 
   /**
@@ -360,7 +378,7 @@ export class MaskParser {
   public isValidString(input = ''): boolean {
     const prompt = this.prompt;
 
-    return this._getRequiredNonLiteralPositions().every((position) => {
+    return this._requiredPositions.every((position) => {
       const char = input.charAt(position);
       return (
         validate(char, this._escapedMask.charAt(position)) && char !== prompt
@@ -378,7 +396,6 @@ export class MaskParser {
     const prompt = this.prompt;
     const escapedMask = this._escapedMask;
     const length = escapedMask.length;
-    const inputLength = input.length;
 
     // Initialize the result array with prompt characters
     const result = new Array(escapedMask.length).fill(prompt);
@@ -392,6 +409,9 @@ export class MaskParser {
       return result.join('');
     }
 
+    // Normalize Unicode digits to ASCII
+    const normalizedInput = replaceUnicodeNumbers(input);
+    const inputLength = normalizedInput.length;
     let inputIndex = 0;
 
     // Iterate through the mask placing input characters skipping literals and invalid ones
@@ -404,8 +424,8 @@ export class MaskParser {
         continue;
       }
 
-      if (validate(input.charAt(inputIndex), escapedMask.charAt(i))) {
-        result[i] = input.charAt(inputIndex);
+      if (validate(normalizedInput.charAt(inputIndex), escapedMask.charAt(i))) {
+        result[i] = normalizedInput.charAt(inputIndex);
       }
 
       inputIndex++;
