@@ -88,10 +88,6 @@ $active-border-width: rem(2px) !default;
     }
 }
 
-[part='toggle-icon filled'] {
-    color: var-get($theme, 'toggle-button-foreground-filled');
-}
-
 :host([disabled]),
 :host(:disabled) {
     igc-input::part(input)::selection {
