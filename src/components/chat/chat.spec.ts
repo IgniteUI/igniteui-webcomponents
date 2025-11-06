@@ -1,6 +1,7 @@
 import { elementUpdated, expect, fixture } from '@open-wc/testing';
 import { html, nothing } from 'lit';
 import { spy, stub, useFakeTimers } from 'sinon';
+import { configureTheme } from '../../theming/config.js';
 import type IgcIconButtonComponent from '../button/icon-button.js';
 import IgcChipComponent from '../chip/chip.js';
 import { enterKey, tabKey } from '../common/controllers/key-bindings.js';
@@ -22,7 +23,12 @@ import IgcChatComponent from './chat.js';
 import IgcChatInputComponent from './chat-input.js';
 import IgcChatMessageComponent from './chat-message.js';
 import IgcMessageAttachmentsComponent from './message-attachments.js';
-import type { IgcChatMessage, IgcChatMessageAttachment } from './types.js';
+import type {
+  ChatMessageRenderContext,
+  IgcChatMessage,
+  IgcChatMessageAttachment,
+  IgcChatOptions,
+} from './types.js';
 
 describe('Chat', () => {
   before(() => {
@@ -1026,7 +1032,30 @@ describe('Chat', () => {
   });
 
   describe('adoptRootStyles behavior', () => {
-    const customStyles = 'custom-background';
+    let chat: IgcChatComponent;
+
+    const renderer = ({ message }: ChatMessageRenderContext) =>
+      html`<div class="custom-background">${message.text}</div>`;
+
+    async function createAdoptedStylesChat(options: IgcChatOptions) {
+      chat = await fixture(html`
+        <igc-chat
+          .messages=${[{ id: 'id', sender: 'bot', text: 'Hello' }]}
+          .options=${{ renderers: { messageContent: renderer }, ...options }}
+        ></igc-chat>
+      `);
+    }
+
+    function verifyCustomStyles(state: boolean) {
+      const { messages } = getChatDOM(chat);
+      const { backgroundColor } = getComputedStyle(
+        getChatMessageDOM(first(messages)).content.querySelector(
+          '.custom-background'
+        )!
+      );
+
+      expect(backgroundColor === 'rgb(255, 0, 0)').to.equal(state);
+    }
 
     beforeEach(async () => {
       const styles = document.createElement('style');
@@ -1039,48 +1068,36 @@ describe('Chat', () => {
       document.head.append(styles);
     });
 
+    afterEach(() => {
+      document.head.querySelector('#adopt-styles-test')?.remove();
+    });
+
     it('correctly applies `adoptRootStyles` when set', async () => {
-      chat.options = {
-        adoptRootStyles: true,
-        renderers: {
-          messageContent: ({ message }) =>
-            html`<div class=${customStyles}>${message.text}</div>`,
-        },
-      };
-      chat.messages = [{ id: 'id', sender: 'bot', text: 'Hello' }];
-
+      await createAdoptedStylesChat({ adoptRootStyles: true });
       await elementUpdated(chat);
-
-      const { messages } = getChatDOM(chat);
-      expect(
-        getComputedStyle(
-          getChatMessageDOM(first(messages)).content.querySelector(
-            `.${customStyles}`
-          )!
-        ).backgroundColor
-      ).equal('rgb(255, 0, 0)');
+      verifyCustomStyles(true);
     });
 
     it('skips `adoptRootStyles` when not set', async () => {
-      chat.options = {
-        renderers: {
-          messageContent: ({ message }) =>
-            html`<div class=${customStyles}>${message.text}</div>`,
-        },
-      };
+      await createAdoptedStylesChat({ adoptRootStyles: false });
+      await elementUpdated(chat);
+      verifyCustomStyles(false);
+    });
 
-      chat.messages = [{ id: 'id', sender: 'bot', text: 'Hello' }];
+    it('correctly reapplies `adoptRootStyles` when set and the theme is changed', async () => {
+      await createAdoptedStylesChat({ adoptRootStyles: true });
+      await elementUpdated(chat);
+      verifyCustomStyles(true);
+
+      // Change the theme
+      configureTheme('material');
 
       await elementUpdated(chat);
+      verifyCustomStyles(true);
 
-      const { messages } = getChatDOM(chat);
-      expect(
-        getComputedStyle(
-          getChatMessageDOM(first(messages)).content.querySelector(
-            `.${customStyles}`
-          )!
-        ).backgroundColor
-      ).not.equal('rgb(255, 0, 0)');
+      configureTheme('bootstrap');
+      await elementUpdated(chat);
+      verifyCustomStyles(true);
     });
   });
 });

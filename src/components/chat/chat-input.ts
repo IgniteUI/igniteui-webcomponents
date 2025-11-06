@@ -1,4 +1,4 @@
-import { consume } from '@lit/context';
+import { ContextConsumer, consume } from '@lit/context';
 import { html, LitElement, nothing } from 'lit';
 import { query, state } from 'lit/decorators.js';
 import { cache } from 'lit/directives/cache.js';
@@ -24,7 +24,12 @@ import type {
   ChatTemplateRenderer,
   IgcChatMessageAttachment,
 } from './types.js';
-import { adoptPageStyles, getChatAcceptedFiles, getIconName } from './utils.js';
+import {
+  addAdoptedStylesController,
+  type ChatAcceptedFileTypes,
+  getChatAcceptedFiles,
+  getIconName,
+} from './utils.js';
 
 type DefaultInputRenderers = {
   input: ChatTemplateRenderer<ChatInputRenderContext>;
@@ -95,39 +100,53 @@ export default class IgcChatInputComponent extends LitElement {
   private _userLastTypeTime = Date.now();
   private _typingTimeout = 0;
 
-  @consume({ context: chatContext, subscribe: true })
-  private readonly _state!: ChatState;
+  private readonly _adoptedStyles = addAdoptedStylesController(this);
+
+  private readonly _stateChanged = () => {
+    this._adoptedStyles.shouldAdoptStyles(
+      !!this._state.options?.adoptRootStyles &&
+        !this._adoptedStyles.hasAdoptedStyles
+    );
+  };
+
+  private readonly _stateConsumer = new ContextConsumer(this, {
+    context: chatContext,
+    callback: this._stateChanged,
+    subscribe: true,
+  });
 
   @consume({ context: chatUserInputContext, subscribe: true })
   private readonly _userInputState!: ChatState;
 
   @query(IgcTextareaComponent.tagName)
-  private readonly _textInputElement!: IgcTextareaComponent;
+  private readonly _textInputElement?: IgcTextareaComponent;
 
   @query('#input_attachments')
-  protected readonly _fileInput!: HTMLInputElement;
+  protected readonly _fileInput?: HTMLInputElement;
 
   @state()
   private _parts = { 'input-container': true, dragging: false };
 
-  private get _acceptedTypes() {
+  private get _state(): ChatState {
+    return this._stateConsumer.value!;
+  }
+
+  private get _acceptedTypes(): ChatAcceptedFileTypes | null {
     return this._state.acceptedFileTypes;
   }
 
   constructor() {
     super();
-    addThemingController(this, all);
-  }
-
-  protected override firstUpdated(): void {
-    if (this._state.options?.adoptRootStyles) {
-      adoptPageStyles(this);
-    }
+    addThemingController(this, all, { themeChange: this._adoptPageStyles });
   }
 
   /** @internal */
   public focusInput(): void {
-    this._textInputElement.focus();
+    this._textInputElement?.focus();
+  }
+
+  private _adoptPageStyles(): void {
+    this._adoptedStyles.shouldAdoptStyles(this._adoptedStyles.hasAdoptedStyles);
   }
 
   private _getRenderer<U extends keyof DefaultInputRenderers>(
@@ -210,7 +229,7 @@ export default class IgcChatInputComponent extends LitElement {
   }
 
   private _handleFileInputClick(): void {
-    this._fileInput.showPicker();
+    this._fileInput?.showPicker();
   }
 
   private _handleFocusState(event: FocusEvent): void {
