@@ -350,7 +350,9 @@ $fake-bg-position: calc(50% - (var-get($theme, 'size') / 2));
         position: relative;
         overflow: hidden;
         color: var-get($theme, 'date-current-foreground');
+    }
 
+    &[part~='current']:not([part~='selected'], [part~='special'], [part~='preview']) {
         &:hover {
             color: var-get($theme, 'date-current-hover-foreground');
 
