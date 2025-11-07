@@ -1,5 +1,6 @@
 import { createContext } from '@lit/context';
 import type { Ref } from 'lit/directives/ref.js';
+import type { IgcSplitterComponent } from '../../index.js';
 import type IgcCarouselComponent from '../carousel/carousel.js';
 import type { ChatState } from '../chat/chat-state.js';
 import type IgcTileManagerComponent from '../tile-manager/tile-manager.js';
@@ -24,9 +25,14 @@ const chatUserInputContext = createContext<ChatState>(
   Symbol('chat-user-input-context')
 );
 
+const splitterContext = createContext<IgcSplitterComponent>(
+  Symbol('splitter-context')
+);
+
 export {
   carouselContext,
   tileManagerContext,
   chatContext,
   chatUserInputContext,
+  splitterContext,
 };

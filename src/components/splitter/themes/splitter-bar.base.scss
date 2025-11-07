@@ -1,0 +1,19 @@
+@use 'styles/common/component';
+
+:host {
+    display: flex;
+    background-color: var(--ig-gray-200);
+
+    &:hover {
+        background-color: var(--ig-gray-400);
+    }
+
+    [part='base'] {
+        cursor: var(--cursor, default);
+    }
+}
+
+[part='expander-start'],
+[part='expander-end'] {
+    cursor: pointer;
+}

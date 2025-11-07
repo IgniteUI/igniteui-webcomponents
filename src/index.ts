@@ -67,7 +67,7 @@ export { default as IgcTextareaComponent } from './components/textarea/textarea.
 export { default as IgcTreeComponent } from './components/tree/tree.js';
 export { default as IgcTreeItemComponent } from './components/tree/tree-item.js';
 export { default as IgcSplitterBarComponent } from './components/splitter/splitter-bar.js';
-export { default as IgcSpltterComponent } from './components/splitter/splitter.js';
+export { default as IgcSplitterComponent } from './components/splitter/splitter.js';
 export { default as IgcSplitterPaneComponent } from './components/splitter/splitter-pane.js';
 export { default as IgcStepperComponent } from './components/stepper/stepper.js';
 export { default as IgcStepComponent } from './components/stepper/step.js';

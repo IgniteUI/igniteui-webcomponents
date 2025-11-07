@@ -144,7 +144,11 @@ export default metadata;
 type Story = StoryObj<SplitterStoryArgs>;
 
 function changePaneMinMaxSizes() {
-  const panes = document.querySelectorAll('igc-splitter-pane');
+  const splitter = document.querySelector('igc-splitter');
+  const panes = splitter?.panes;
+  if (!panes) {
+    return;
+  }
   panes[0].minSize = '100px';
   panes[0].maxSize = '200px';
   panes[1].minSize = '50px';
@@ -179,9 +183,7 @@ export const Default: Story = {
       }
 
       .splitters {
-        display: flex;
-        flex-direction: column;
-        gap: 40px;
+        height: 400px;
       }
     </style>
 
@@ -189,7 +191,6 @@ export const Default: Story = {
       <igc-splitter
         .orientation=${orientation}
         .nonCollapsible=${nonCollapsible}
-        style="height: 400px"
       >
         <igc-splitter-pane
           .size=${pane1Size || 'auto'}
@@ -235,10 +236,6 @@ export const NestedSplitters: Story = {
     <style>
       .pane-content {
         padding: 12px;
-      }
-
-      .nested-splitter {
-        height: 100%;
       }
     </style>
 

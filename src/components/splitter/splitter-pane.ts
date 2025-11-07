@@ -1,52 +1,62 @@
-import { html, LitElement } from 'lit';
+import { ContextConsumer } from '@lit/context';
+import { html, LitElement, nothing } from 'lit';
 import { property } from 'lit/decorators.js';
+import { type StyleInfo, styleMap } from 'lit/directives/style-map.js';
+import { splitterContext } from '../common/context.js';
 import { registerComponent } from '../common/definitions/register.js';
-import { asNumber } from '../common/util.js';
+import type { SplitterOrientation } from '../types.js';
 import type IgcSplitterComponent from './splitter.js';
+import IgcSplitterBarComponent from './splitter-bar.js';
+import { styles } from './themes/splitter-pane.css.js';
 
 export default class IgcSplitterPaneComponent extends LitElement {
   public static readonly tagName = 'igc-splitter-pane';
+  public static override styles = [styles];
 
   /* blazorSuppress */
   public static register() {
-    registerComponent(IgcSplitterPaneComponent);
+    registerComponent(IgcSplitterPaneComponent, IgcSplitterBarComponent);
   }
 
-  private _order = -1;
+  private _splitterContext = new ContextConsumer(this, {
+    context: splitterContext,
+    subscribe: true,
+    callback: (value) => {
+      this._handleContextChange(value);
+    },
+  });
+
+  private _internalStyles: StyleInfo = {};
   private _minSize?: string;
   private _maxSize?: string;
   private _size = 'auto';
   private _collapsed = false;
-  private _minWidth?: string;
-  private _minHeight?: string;
-  private _maxWidth?: string;
-  private _maxHeight?: string;
+  private _orientation?: SplitterOrientation;
 
-  /** @hidden @internal */
-  public owner: IgcSplitterComponent | undefined;
-
-  /**
-   * Gets/sets the pane's visual position in the layout.
-   * @hidden @internal
-   */
-  @property({ type: Number })
-  public set order(value: number) {
-    this._order = asNumber(value);
-    this.style.order = this._order.toString();
+  private get _isPercentageSize() {
+    return this._size === 'auto' || this._size.indexOf('%') !== -1;
   }
 
-  public get order(): number {
-    return this._order;
+  private get _splitter(): IgcSplitterComponent | undefined {
+    return this._splitterContext.value;
+  }
+
+  private get _flex() {
+    //const size = this.dragSize || this.size;
+    //const grow = this.isPercentageSize && !this.dragSize ? 1 : 0;
+    const grow = this._isPercentageSize ? 1 : 0;
+    return `${grow} ${grow} ${this._size}`;
+    //return `${0} ${0} ${this.size}`;
   }
 
   /**
    * The minimum size of the pane.
    * @attr
    */
-  @property({ reflect: true })
+  @property({ attribute: 'min-size', reflect: true })
   public set minSize(value: string) {
     this._minSize = value;
-    this.dispatchEvent(new CustomEvent('sizeChanged', { bubbles: true }));
+    this._initPane();
   }
 
   public get minSize(): string | undefined {
@@ -57,10 +67,10 @@ export default class IgcSplitterPaneComponent extends LitElement {
    * The maximum size of the pane.
    * @attr
    */
-  @property({ reflect: true })
+  @property({ attribute: 'max-size', reflect: true })
   public set maxSize(value: string) {
     this._maxSize = value;
-    this.dispatchEvent(new CustomEvent('sizeChanged', { bubbles: true }));
+    this._initPane();
   }
 
   public get maxSize(): string | undefined {
@@ -68,59 +78,19 @@ export default class IgcSplitterPaneComponent extends LitElement {
   }
 
   /**
-   * Gets/sets the pane's minWidth.
-   * @hidden @internal
+   * The size of the pane.
+   * @attr
    */
-  @property()
-  public set minWidth(value: string) {
-    this._minWidth = value;
-    this.style.minWidth = this._minWidth;
+  @property({ reflect: true })
+  public set size(value: string) {
+    this._size = value;
+    Object.assign(this._internalStyles, {
+      flex: this._flex,
+    });
   }
 
-  public get minWidth(): string | undefined {
-    return this._minWidth;
-  }
-
-  /**
-   * Gets/sets the pane's maxWidth.
-   * @hidden @internal
-   */
-  @property()
-  public set maxWidth(value: string) {
-    this._maxWidth = value;
-    this.style.maxWidth = this._maxWidth;
-  }
-
-  public get maxWidth(): string | undefined {
-    return this._maxWidth;
-  }
-
-  /**
-   * Gets/sets the pane's minHeight.
-   * @hidden @internal
-   */
-  @property()
-  public set minHeight(value: string) {
-    this._minHeight = value;
-    this.style.minHeight = this._minHeight;
-  }
-
-  public get minHeight(): string | undefined {
-    return this._minHeight;
-  }
-
-  /**
-   * Gets/sets the pane's maxHeight.
-   * @hidden @internal
-   */
-  @property()
-  public set maxHeight(value: string) {
-    this._maxHeight = value;
-    this.style.maxHeight = this._maxHeight;
-  }
-
-  public get maxHeight(): string | undefined {
-    return this._maxHeight;
+  public get size(): string {
+    return this._size;
   }
 
   /**
@@ -131,45 +101,12 @@ export default class IgcSplitterPaneComponent extends LitElement {
   public resizable = true;
 
   /**
-   * Gets/sets the pane's maxHeight.
-   * @hidden @internal
-   */
-  @property()
-  public get flex() {
-    //const size = this.dragSize || this.size;
-    //const grow = this.isPercentageSize && !this.dragSize ? 1 : 0;
-    const grow = this.isPercentageSize ? 1 : 0;
-    return `${grow} ${grow} ${this.size}`;
-    //return `${0} ${0} ${this.size}`;
-  }
-
-  /**
-   * The size of the pane.
-   * @attr
-   */
-  @property({ reflect: true })
-  public set size(value: string) {
-    this._size = value;
-    this.style.flex = this.flex;
-  }
-
-  public get size(): string {
-    return this._size;
-  }
-
-  /** @hidden @internal */
-  public get isPercentageSize() {
-    return this.size === 'auto' || this.size.indexOf('%') !== -1;
-  }
-
-  /**
    * Collapsed state of the pane.
    * @attr
    */
   @property({ type: Boolean, reflect: true })
   public set collapsed(value: boolean) {
     this._collapsed = value;
-    //this.requestUpdate();
   }
 
   public get collapsed(): boolean {
@@ -181,13 +118,213 @@ export default class IgcSplitterPaneComponent extends LitElement {
   //   //addThemingController(this, all);
   // }
 
+  protected override firstUpdated() {
+    this._initPane();
+  }
+
+  private _handleContextChange(splitter: IgcSplitterComponent) {
+    if (this._orientation && this._orientation !== splitter.orientation) {
+      this._resetPane();
+    }
+    this._orientation = splitter.orientation;
+    this.requestUpdate();
+  }
+
+  private _resetPane() {
+    this.size = 'auto';
+    Object.assign(this._internalStyles, {
+      minWidth: 0,
+      maxWidth: '100%',
+      minHeight: 0,
+      maxHeight: '100%',
+      flex: this._flex,
+    });
+  }
+
+  private _initPane() {
+    let sizes = {};
+    if (this._orientation === 'horizontal') {
+      sizes = {
+        minWidth: this.minSize ?? 0,
+        maxWidth: this.maxSize ?? '100%',
+      };
+    } else {
+      sizes = {
+        minHeight: this.minSize ?? 0,
+        maxHeight: this.maxSize ?? '100%',
+      };
+    }
+    Object.assign(this._internalStyles, { ...sizes, flex: this._flex });
+    this.requestUpdate();
+  }
+
+  private paneBefore!: IgcSplitterPaneComponent;
+  private paneAfter!: IgcSplitterPaneComponent;
+  private initialPaneBeforeSize!: number;
+  private initialPaneAfterSize!: number;
+  private isPaneBeforePercentage = false;
+  private isPaneAfterPercentage = false;
+
+  private _handleMovingStart(event: CustomEvent<IgcSplitterPaneComponent>) {
+    // Only handle if this is the pane that owns the bar
+    if (event.detail !== this) {
+      return;
+    }
+
+    // Handle the moving start event
+    const panes = this._splitter!.panes;
+    this.paneBefore = this;
+    this.paneAfter = panes[panes.indexOf(this) + 1];
+
+    // Store original size types before we start changing them
+    this.isPaneBeforePercentage = this.paneBefore._isPercentageSize;
+    this.isPaneAfterPercentage = this.paneAfter._isPercentageSize;
+
+    const paneBeforeBase =
+      this.paneBefore.shadowRoot?.querySelector('[part="base"]');
+    const paneAfterBase =
+      this.paneAfter.shadowRoot?.querySelector('[part="base"]');
+
+    const paneRect = paneBeforeBase!.getBoundingClientRect();
+    this.initialPaneBeforeSize =
+      this._orientation === 'horizontal' ? paneRect.width : paneRect.height;
+
+    const siblingRect = paneAfterBase!.getBoundingClientRect();
+    this.initialPaneAfterSize =
+      this._orientation === 'horizontal'
+        ? siblingRect.width
+        : siblingRect.height;
+  }
+
+  private _handleMoving(event: CustomEvent<number>) {
+    // Only handle if this pane owns the bar (is the one before the bar)
+    if (!this.paneBefore || this.paneBefore !== this) {
+      return;
+    }
+
+    const [paneSize, siblingSize] = this._calcNewSizes(event.detail);
+
+    this.paneBefore.size = `${paneSize}px`;
+    this.paneAfter.size = `${siblingSize}px`;
+  }
+
+  //I am not sure if this code changes anything, it looks like it works without it as well,
+  // however I found a bug, which I am not sure how to reproduce it and still haven't encaountered it with this code
+  private _handleMovingEnd(event: CustomEvent<number>) {
+    // Only handle if this pane owns the bar (is the one before the bar)
+    if (!this.paneBefore || this.paneBefore !== this) {
+      return;
+    }
+
+    const [paneSize, siblingSize] = this._calcNewSizes(event.detail);
+
+    if (this.isPaneBeforePercentage) {
+      // handle % resizes
+      const totalSize = this.getTotalSize();
+      const percentPaneSize = (paneSize / totalSize) * 100;
+      this.paneBefore.size = `${percentPaneSize}%`;
+    } else {
+      // px resize
+      this.paneBefore.size = `${paneSize}px`;
+    }
+
+    if (this.isPaneAfterPercentage) {
+      // handle % resizes
+      const totalSize = this.getTotalSize();
+      const percentSiblingPaneSize = (siblingSize / totalSize) * 100;
+      this.paneAfter.size = `${percentSiblingPaneSize}%`;
+    } else {
+      // px resize
+      this.paneAfter.size = `${siblingSize}px`;
+    }
+  }
+
+  private _calcNewSizes(delta: number): [number, number] {
+    let finalDelta: number;
+    const min =
+      Number.parseInt(
+        this.paneBefore.minSize ? this.paneBefore.minSize : '0',
+        10
+      ) || 0;
+    const minSibling =
+      Number.parseInt(
+        this.paneAfter.minSize ? this.paneAfter.minSize : '0',
+        10
+      ) || 0;
+    const max =
+      Number.parseInt(
+        this.paneBefore.maxSize ? this.paneBefore.maxSize : '0',
+        10
+      ) || this.initialPaneBeforeSize + this.initialPaneAfterSize - minSibling;
+    const maxSibling =
+      Number.parseInt(
+        this.paneAfter.maxSize ? this.paneAfter.maxSize : '0',
+        10
+      ) || this.initialPaneBeforeSize + this.initialPaneAfterSize - min;
+
+    if (delta < 0) {
+      const maxPossibleDelta = Math.min(
+        this.initialPaneBeforeSize - min,
+        maxSibling - this.initialPaneAfterSize
+      );
+      finalDelta = Math.min(maxPossibleDelta, Math.abs(delta)) * -1;
+    } else {
+      const maxPossibleDelta = Math.min(
+        max - this.initialPaneBeforeSize,
+        this.initialPaneAfterSize - minSibling
+      );
+      finalDelta = Math.min(maxPossibleDelta, Math.abs(delta));
+    }
+    return [
+      this.initialPaneBeforeSize + finalDelta,
+      this.initialPaneAfterSize - finalDelta,
+    ];
+  }
+
+  private getTotalSize() {
+    if (!this._splitter) {
+      return 0;
+    }
+    // get the size of part base
+    const splitterBase =
+      this._splitter.shadowRoot?.querySelector('[part="base"]');
+    if (!splitterBase) {
+      return 0;
+    }
+    const rect = splitterBase.getBoundingClientRect();
+    return this._orientation === 'horizontal' ? rect.width : rect.height;
+  }
+
   /** Toggles the collapsed state of the pane. */
   public toggle() {
     this.collapsed = !this.collapsed;
   }
 
+  private get _isLastPane(): boolean {
+    if (!this._splitter || !this._splitter.panes) {
+      return false;
+    }
+    const panes = this._splitter.panes;
+    return panes.indexOf(this) === panes.length - 1;
+  }
+
+  private _renderBar() {
+    return html`
+      <igc-splitter-bar
+        @igcMovingStart=${this._handleMovingStart}
+        @igcMoving=${this._handleMoving}
+        @igcMovingEnd=${this._handleMovingEnd}
+      ></igc-splitter-bar>
+    `;
+  }
+
   protected override render() {
-    return html` <slot></slot> `;
+    return html`
+      <div part="base" style=${styleMap(this._internalStyles)}>
+        <slot></slot>
+      </div>
+      ${this._isLastPane ? nothing : this._renderBar()}
+    `;
   }
 }
 

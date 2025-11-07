@@ -2,51 +2,33 @@
 @use 'styles/utilities' as *;
 
 :host {
-    display: flex;
-    width: 100%;
-    height: 100%;
-    color: var(--ig-gray-900);
-    background: var(--ig-gray-100);
-    border: 1px solid var(--ig-gray-200);
+    [part='base'] {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        color: var(--ig-gray-900);
+        background: var(--ig-gray-100);
+        border: 1px solid var(--ig-gray-200);
+    }
 
     ::slotted(igc-splitter-pane) {
-        flex: 1 1 0;
-        overflow: auto;
-    }
-}
-
-:host([orientation='horizontal']) {
-    flex-direction: row;
-
-    igc-splitter-bar {
-        width: 5px;
-        height: auto;
-        cursor: col-resize;
+        width: 100%;
+        height: 100%;
+        display: contents;
     }
 
     ::slotted(igc-splitter-pane[collapsed]) {
-        display: none;
+        height: 0;
+        width: 0;
     }
 }
 
 :host([orientation='vertical']) {
-    flex-direction: column;
-
-    igc-splitter-bar {
-        height: 5px;
-        width: auto;
-        cursor: row-resize;
+    [part='base'] {
+        flex-direction: column;
     }
 
-    ::slotted(igc-splitter-pane[collapsed]) {
-        display: none;
-    }
-}
-
-igc-splitter-bar {
-    background-color: var(--ig-gray-200);
-
-    &:hover {
-        background-color: var(--ig-gray-400);
+    ::slotted(igc-splitter-pane) {
+        flex-direction: column;
     }
 }
