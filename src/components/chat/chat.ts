@@ -156,7 +156,7 @@ const Slots = setSlots(
  * @csspart empty-state - Styles the empty state container when there are no messages.
  *
  * @csspart input-area-container - Styles the wrapper around the chat input area.
- * @csspart input-container - Styles the main input container.
+ * @csspart input-area - Styles the main text input area.
  * @csspart input-attachments-container - Styles the container for attachments in the input.
  * @csspart input-attachment-container - Styles a single attachment in the input area.
  * @csspart input-attachment-name - Styles the file name of an attachment.
@@ -509,7 +509,7 @@ export default class IgcChatComponent extends EventEmitterMixin<
         <div part="input-area-container">
           <igc-chat-input
             exportparts="
-                input-container: input-area-container,
+                input-container: input-area,
                 input-wrapper: input-container,
                 attachments: input-attachments-container,
                 attachment-wrapper: input-attachment-container,
