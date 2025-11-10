@@ -34,7 +34,7 @@
     "clean:styles": "rimraf --glob \"src/**/*.css.ts\"",
     "clean:docs": "rimraf ./docs",
     "lint": "npm run lint:biome && npm run lint:lit-analyzer && npm run lint:prettier && npm run lint:styles",
-    "lint:biome": "biome check --fix",
+    "lint:biome": "biome lint",
     "lint:lit-analyzer": "lit-analyzer",
     "lint:prettier": "prettier \"**/*.ts\" --check --experimental-cli --ignore-path .gitignore",
     "lint:styles": "stylelint \"src/**/*.scss\"",
