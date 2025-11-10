@@ -45,14 +45,8 @@
     // This is a hack that removes the autofill background and it's essential,
     // otherwise the background is on top of the floating label in material theme.
     // The !important flag is because themes that defin transition delay on that element are overriding the transition delay hack
-    &:-webkit-autofill,
-    &:-webkit-autofill:hover,
-    &:-webkit-autofill:focus,
-    &:-webkit-autofill:active,
-    &:autofill,
-    &:autofill:hover,
-    &:autofill:focus,
-    &:autofill:active{
+    &:is(:-webkit-autofill, :autofill) {
+        transition-property: background-color, color !important;
         transition-delay: 99999s !important;
     }
 }

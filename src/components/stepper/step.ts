@@ -184,16 +184,16 @@ export default class IgcStepComponent extends LitElement {
       height: bodyHeight,
     };
 
-    const [_, event] = await Promise.all([
-      this.bodyAnimationPlayer.stopAll(),
-      this.bodyAnimationPlayer.play(bodyAnimation({ keyframe: options, step })),
-      this.contentAnimationPlayer.stopAll(),
-      this.contentAnimationPlayer.play(
+    const result = await Promise.all([
+      this.bodyAnimationPlayer.playExclusive(
+        bodyAnimation({ keyframe: options, step })
+      ),
+      this.contentAnimationPlayer.playExclusive(
         contentAnimation({ keyframe: options, step })
       ),
     ]);
 
-    return event.type;
+    return result.every(Boolean);
   }
 
   @watch('active', { waitUntilFirstUpdate: true })
