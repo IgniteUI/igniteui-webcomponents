@@ -1,6 +1,6 @@
 import {
-  type IInputResourceStrings,
-  InputResourceStringsEN,
+  FileInputResourceStringsEN,
+  type IFileInputResourceStrings,
 } from 'igniteui-i18n-core';
 import { html } from 'lit';
 import { property, state } from 'lit/decorators.js';
@@ -70,12 +70,10 @@ export default class IgcFileInputComponent extends EventEmitterMixin<
     );
   }
 
-  protected readonly _i18nController = addI18nController<IInputResourceStrings>(
-    this,
-    {
-      defaultEN: InputResourceStringsEN,
-    }
-  );
+  protected readonly _i18nController =
+    addI18nController<IFileInputResourceStrings>(this, {
+      defaultEN: FileInputResourceStringsEN,
+    });
 
   protected override get __validators() {
     return fileValidators;
@@ -117,11 +115,11 @@ export default class IgcFileInputComponent extends EventEmitterMixin<
    * The resource strings for localization.
    */
   @property({ attribute: false })
-  public set resourceStrings(value: IInputResourceStrings) {
+  public set resourceStrings(value: IFileInputResourceStrings) {
     this._i18nController.resourceStrings = value;
   }
 
-  public get resourceStrings(): IInputResourceStrings {
+  public get resourceStrings(): IFileInputResourceStrings {
     return this._i18nController.resourceStrings;
   }
 
@@ -218,14 +216,14 @@ export default class IgcFileInputComponent extends EventEmitterMixin<
 
   protected override renderFileParts() {
     const emptyText =
-      this.placeholder ?? this.resourceStrings.input_file_placeholder!;
+      this.placeholder ?? this.resourceStrings.file_input_placeholder!;
 
     return html`
       <div part="file-parts">
         <div part="file-selector-button">
           <igc-button variant="flat" ?disabled=${this.disabled} tabindex="-1">
             <slot name="file-selector-text"
-              >${this.resourceStrings.input_upload_button}</slot
+              >${this.resourceStrings.file_input_upload_button}</slot
             >
           </igc-button>
         </div>
