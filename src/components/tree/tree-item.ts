@@ -1,7 +1,3 @@
-import {
-  type ITreeResourceStrings,
-  TreeResourceStringsEN,
-} from 'igniteui-i18n-core';
 import { html, LitElement, nothing } from 'lit';
 import {
   property,
@@ -9,6 +5,7 @@ import {
   queryAssignedElements,
   state,
 } from 'lit/decorators.js';
+import { ifDefined } from 'lit/directives/if-defined.js';
 import { createRef, type Ref, ref } from 'lit/directives/ref.js';
 import { addAnimationController } from '../../animations/player.js';
 import { growVerIn, growVerOut } from '../../animations/presets/grow/index.js';
@@ -16,7 +13,6 @@ import { addThemingController } from '../../theming/theming-controller.js';
 import IgcCheckboxComponent from '../checkbox/checkbox.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
-import { addI18nController } from '../common/i18n/i18n-controller.js';
 import { partMap } from '../common/part-map.js';
 import {
   addSafeEventListener,
@@ -72,12 +68,6 @@ export default class IgcTreeItemComponent extends LitElement {
   private groupRef: Ref<HTMLElement> = createRef();
 
   private animationPlayer = addAnimationController(this, this.groupRef);
-  private readonly _i18nController = addI18nController<ITreeResourceStrings>(
-    this,
-    {
-      defaultEN: TreeResourceStringsEN,
-    }
-  );
 
   /* blazorSuppress */
   /** A reference to the tree the item is a part of. */
@@ -159,31 +149,6 @@ export default class IgcTreeItemComponent extends LitElement {
    */
   @property({ attribute: true })
   public value: any = undefined;
-
-  /**
-   * Gets/Sets the locale used for formatting and displaying the dates in the component.
-   * @attr locale
-   */
-  @property()
-  public set locale(value: string) {
-    this._i18nController.locale = value;
-  }
-
-  public get locale() {
-    return this._i18nController.locale;
-  }
-
-  /**
-   * The resource strings for localization.
-   */
-  @property({ attribute: false })
-  public set resourceStrings(value: ITreeResourceStrings) {
-    this._i18nController.resourceStrings = value;
-  }
-
-  public get resourceStrings(): ITreeResourceStrings {
-    return this._i18nController.resourceStrings;
-  }
 
   private async toggleAnimation(dir: 'open' | 'close') {
     const animation = dir === 'open' ? growVerIn : growVerOut;
@@ -575,9 +540,11 @@ export default class IgcTreeItemComponent extends LitElement {
                   ${this.hasChildren
                     ? html`
                         <igc-icon
-                          aria-label=${this.expanded
-                            ? this.resourceStrings.collapse!
-                            : this.resourceStrings.expand!}
+                          aria-label=${ifDefined(
+                            this.expanded
+                              ? this.tree?.resourceStrings.collapse
+                              : this.tree?.resourceStrings.expand
+                          )}
                           name=${this.expanded
                             ? 'tree_collapse'
                             : 'tree_expand'}
