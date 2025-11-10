@@ -132,6 +132,36 @@ $theme: $material;
     [part~='subtitle'] {
         color: var-get($theme, 'invalid-subtitle-color')
     }
+
+    [part~='header'] {
+        background: var-get($theme, 'invalid-step-background');
+
+        &:hover {
+            background: var-get($theme, 'invalid-step-hover-background');
+
+            [part~='title'] {
+                color: var-get($theme, 'invalid-title-hover-color');
+            }
+
+            [part~='subtitle'] {
+                color: var-get($theme, 'invalid-subtitle-hover-color')
+            }
+        }
+
+        &:focus,
+		&:focus-within,
+		&:active {
+            background: var-get($theme, 'invalid-step-focus-background');
+
+			[part~='title'] {
+                color: var-get($theme, 'invalid-title-focus-color');
+            }
+
+            [part~='subtitle'] {
+                color: var-get($theme, 'invalid-subtitle-focus-color')
+            }
+		}
+    }
 }
 
 :host([active]) {
