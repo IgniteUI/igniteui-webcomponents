@@ -83,7 +83,7 @@ export default class IgcTreeComponent extends EventEmitterMixin<
   public selection: TreeSelection = 'none';
 
   /**
-   * Gets/Sets the locale used for setting language, affecting resource strings.
+   * Gets/Sets the locale used for getting language, affecting resource strings.
    * @attr locale
    */
   @property()
@@ -97,6 +97,7 @@ export default class IgcTreeComponent extends EventEmitterMixin<
 
   /**
    * The resource strings for localization.
+   * Currently only aria-labels of the default expand/collapse icons are localized for the tree item.
    */
   @property({ attribute: false })
   public set resourceStrings(value: ITreeResourceStrings) {

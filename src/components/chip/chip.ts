@@ -96,7 +96,7 @@ export default class IgcChipComponent extends EventEmitterMixin<
   public variant!: StyleVariant;
 
   /**
-   * Gets/Sets the locale used for setting language, affecting resource strings.
+   * Gets/Sets the locale used for getting language, affecting resource strings.
    * @attr locale
    */
   @property()
@@ -110,6 +110,7 @@ export default class IgcChipComponent extends EventEmitterMixin<
 
   /**
    * The resource strings for localization.
+   * Currently only aria-labels for the default select/remove icons are localized.
    */
   @property({ attribute: false })
   public set resourceStrings(value: IChipResourceStrings) {

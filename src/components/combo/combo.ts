@@ -272,7 +272,7 @@ export default class IgcComboComponent<
   public autofocusList = false;
 
   /**
-   * Gets/Sets the locale used for setting language, affecting resource strings.
+   * Gets/Sets the locale used for getting language, affecting resource strings.
    * @attr locale
    */
   @property()
