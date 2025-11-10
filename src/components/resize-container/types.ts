@@ -24,6 +24,7 @@ export type ResizeControllerConfiguration = {
   enabled?: boolean;
   ref?: Ref<HTMLElement>[];
   mode?: ResizeMode;
+  updateTarget?: boolean;
   deferredFactory?: ResizeGhostFactory;
   layer?: () => HTMLElement;
   /** Callback invoked at the start of a resize operation. */

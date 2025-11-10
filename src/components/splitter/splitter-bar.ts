@@ -95,7 +95,15 @@ export default class IgcSplitterBarComponent extends EventEmitterMixin<
     super();
     addResizeController(this, {
       mode: 'immediate',
-      resizeTarget: (): HTMLElement => this._siblingPanes[0] ?? this, // we don’t resize the bar, we just use the delta
+      updateTarget: false,
+      resizeTarget: () => {
+        // we don’t resize the bar, we just use the delta
+        const pane = this._siblingPanes[0];
+        return (
+          (pane?.shadowRoot?.querySelector('[part="base"]') as HTMLElement) ??
+          this
+        );
+      },
       start: () => {
         if (
           !this._siblingPanes[0]?.resizable ||

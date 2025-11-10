@@ -149,12 +149,12 @@ function changePaneMinMaxSizes() {
   if (!panes) {
     return;
   }
-  panes[0].minSize = '100px';
+  panes[0].minSize = '50px';
   panes[0].maxSize = '200px';
-  panes[1].minSize = '50px';
-  panes[1].maxSize = '100px';
+  panes[1].minSize = '100px';
+  panes[1].maxSize = '300px';
   panes[2].minSize = '150px';
-  panes[2].maxSize = '100px';
+  panes[2].maxSize = '450px';
 }
 
 export const Default: Story = {
@@ -234,12 +234,15 @@ export const NestedSplitters: Story = {
   argTypes: disableStoryControls(metadata),
   render: () => html`
     <style>
+      igc-splitter {
+        height: 600px;
+      }
       .pane-content {
         padding: 12px;
       }
     </style>
 
-    <igc-splitter orientation="horizontal" style="height: 600px">
+    <igc-splitter orientation="horizontal">
       <igc-splitter-pane>
         <igc-splitter orientation="vertical" class="nested-splitter">
           <igc-splitter-pane>
