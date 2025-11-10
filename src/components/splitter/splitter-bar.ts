@@ -7,6 +7,7 @@ import { createMutationController } from '../common/controllers/mutation-observe
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
+import { partMap } from '../common/part-map.js';
 import { addResizeController } from '../resize-container/resize-controller.js';
 import type { SplitterOrientation } from '../types.js';
 import type IgcSplitterComponent from './splitter.js';
@@ -44,8 +45,18 @@ export default class IgcSplitterBarComponent extends EventEmitterMixin<
     },
   });
 
-  private _internalStyles: StyleInfo = {};
-  private _orientation?: SplitterOrientation;
+  protected _resolvePartNames() {
+    return {
+      base: true,
+      [this._orientation.toString()]: true,
+    };
+  }
+
+  private _internalStyles: StyleInfo = {
+    '--cursor': this._cursor,
+  };
+
+  private _orientation: SplitterOrientation = 'horizontal';
   private _splitter?: IgcSplitterComponent;
 
   private get _siblingPanes(): Array<IgcSplitterPaneComponent | null> {
@@ -63,16 +74,6 @@ export default class IgcSplitterBarComponent extends EventEmitterMixin<
     const currentPane = panes[ownerPaneIndex];
     const nextPane = panes[ownerPaneIndex + 1] || null;
     return [currentPane, nextPane];
-  }
-
-  private get _styles(): StyleInfo {
-    return {
-      display: 'flex',
-      flexDirection: this._orientation === 'horizontal' ? 'column' : 'row',
-      width: this._orientation === 'horizontal' ? '5px' : '100%',
-      height: this._orientation === 'horizontal' ? '100%' : '5px',
-      '--cursor': this._cursor,
-    };
   }
 
   private get _resizeDisallowed() {
@@ -160,7 +161,7 @@ export default class IgcSplitterBarComponent extends EventEmitterMixin<
     if (this._orientation !== splitter.orientation) {
       this._orientation = splitter.orientation;
       this._internals.setARIA({ ariaOrientation: this._orientation });
-      Object.assign(this._internalStyles, this._styles);
+      Object.assign(this._internalStyles, { cursor: this._cursor });
     }
   }
 
@@ -172,23 +173,18 @@ export default class IgcSplitterBarComponent extends EventEmitterMixin<
     const prevButtonHidden = siblings[0]?.collapsed && !siblings[1]?.collapsed;
     const nextButtonHidden = siblings[1]?.collapsed && !siblings[0]?.collapsed;
     return html`
-      <div
-        part="expander-start"
-        ?hidden=${prevButtonHidden}
-        style="width: 5px; height: 5px; background: red;"
-      ></div>
+      <div part="expander-start" ?hidden=${prevButtonHidden}></div>
       <div part="handle"></div>
-      <div
-        part="expander-end"
-        ?hidden=${nextButtonHidden}
-        style="width: 5px; height: 5px; background: green;"
-      ></div>
+      <div part="expander-end" ?hidden=${nextButtonHidden}></div>
     `;
   }
 
   protected override render() {
     return html`
-      <div part="base" style=${styleMap(this._internalStyles)}>
+      <div
+        part=${partMap(this._resolvePartNames())}
+        style=${styleMap(this._internalStyles)}
+      >
         ${this._renderBarControls()}
       </div>
     `;

@@ -8,12 +8,47 @@
         background-color: var(--ig-gray-400);
     }
 
-    [part='base'] {
+    [part~='base'] {
+        display: flex;
         cursor: var(--cursor, default);
+    }
+
+    [part='base horizontal'] {
+        [part='handle'] {
+            height: 50px;
+        }
+
+        flex-direction: column;
+        width: 5px;
+        height: 100%;
+    }
+
+    [part='base vertical'] {
+        [part='handle'] {
+            width: 50px;
+        }
+
+        flex-direction: row;
+        width: 100%;
+        height: 5px;
     }
 }
 
 [part='expander-start'],
 [part='expander-end'] {
     cursor: pointer;
+    width: 5px;
+    height: 5px;
+}
+
+[part='expander-start'] {
+    background-color: red;
+}
+
+[part='expander-end'] {
+    background-color: green;
+}
+
+[part='handle'] {
+    background-color: yellow;
 }
