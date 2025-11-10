@@ -124,7 +124,7 @@ export default class IgcFileInputComponent extends EventEmitterMixin<
   }
 
   /**
-   * Gets/Sets the locale used for resources.
+   * Gets/Sets the locale used for setting language, affecting resource strings.
    * @attr locale
    */
   @property()

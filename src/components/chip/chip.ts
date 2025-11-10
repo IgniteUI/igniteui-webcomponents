@@ -96,7 +96,7 @@ export default class IgcChipComponent extends EventEmitterMixin<
   public variant!: StyleVariant;
 
   /**
-   * Gets/Sets the locale used for formatting and displaying the dates in the component.
+   * Gets/Sets the locale used for setting language, affecting resource strings.
    * @attr locale
    */
   @property()

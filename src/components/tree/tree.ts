@@ -83,7 +83,7 @@ export default class IgcTreeComponent extends EventEmitterMixin<
   public selection: TreeSelection = 'none';
 
   /**
-   * Gets/Sets the locale used for formatting and displaying the dates in the component.
+   * Gets/Sets the locale used for setting language, affecting resource strings.
    * @attr locale
    */
   @property()
