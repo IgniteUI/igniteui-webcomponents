@@ -28,6 +28,7 @@ $theme: $material;
 :host([selected]) {
     [part='tab-header'] {
         color: var-get($theme, 'item-active-color');
+        background: var-get($theme, 'item-active-background');
 
         ::slotted(igc-icon) {
             color: var-get($theme, 'item-active-icon-color');
@@ -35,11 +36,11 @@ $theme: $material;
 
         &:hover,
         &:focus-within {
-            color: var-get($theme, 'item-active-color');
-            background: var-get($theme, 'item-active-background');
+            color: var-get($theme, 'item-active-hover-color');
+            background: var-get($theme, 'item-active-hover-background');
 
             ::slotted(igc-icon) {
-                color: var-get($theme, 'item-active-icon-color');
+                color: var-get($theme, 'item-active-hover-icon-color');
             }
         }
     }

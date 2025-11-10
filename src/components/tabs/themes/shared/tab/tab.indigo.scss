@@ -29,12 +29,3 @@ $theme: $indigo;
 
     text-transform: uppercase;
 }
-
-:host([selected]) {
-    [part='tab-header'] {
-        &:hover,
-        &:focus-within {
-            background: var-get($theme, 'item-hover-background');
-        }
-    }
-}

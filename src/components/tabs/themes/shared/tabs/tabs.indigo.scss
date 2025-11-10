@@ -57,6 +57,10 @@ igc-icon-button:hover::part(base) {
 
 igc-icon-button::part(base) {
     overflow: hidden;
+}
+
+igc-icon-button[disabled]::part(base), 
+igc-icon-button:disabled::part(base) {
     border-bottom: rem(1px) solid var(--nav-btn-border-color);
 }
 

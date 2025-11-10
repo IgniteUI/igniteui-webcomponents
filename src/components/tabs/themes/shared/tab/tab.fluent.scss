@@ -16,15 +16,4 @@ $theme: $fluent;
     [part='content'] {
         font-weight: 700;
     }
-
-    [part='tab-header'] {
-        &:hover,
-        &:focus-within {
-            color: var-get($theme, 'item-hover-color');
-
-            ::slotted(igc-icon) {
-                color: var-get($theme, 'item-active-icon-color');
-            }
-        }
-    }
 }
