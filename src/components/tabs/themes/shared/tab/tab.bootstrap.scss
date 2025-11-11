@@ -83,6 +83,7 @@ $theme: $bootstrap;
                 inset 0 var(--_border-size) 0 0 var-get($theme, 'border-color'),  /* Top */
                 inset calc(var(--_border-size) * -1) 0 0 0 var-get($theme, 'border-color'),  /* Left */
                 inset var(--_border-size) 0 0 0 var-get($theme, 'border-color');  /* Right */
+
             background: var-get($theme, 'item-active-background');
             border-start-start-radius: var-get($theme, 'border-radius');
             border-start-end-radius: var-get($theme, 'border-radius');
@@ -105,10 +106,7 @@ $theme: $bootstrap;
             background: var-get($theme, 'item-background');
 
             &::after{
-                border-top-left-radius: var-get($theme, 'border-radius');
-                border-top-right-radius: var-get($theme, 'border-radius');
-                border-bottom-left-radius: rem(4px);
-                border-bottom-right-radius: rem(4px);
+                border-radius: var-get($theme, 'border-radius') var-get($theme, 'border-radius') rem(4px) rem(4px);
             }
         }
 
