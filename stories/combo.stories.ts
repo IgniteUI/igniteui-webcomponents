@@ -309,6 +309,7 @@ registerIconFromText(
 export const Default: Story = {
   args: {
     label: 'Location(s)',
+    placeholder: 'Cities of interest',
     placeholderSearch: 'Search cities...',
     groupSorting: 'asc',
     valueKey: 'id',
