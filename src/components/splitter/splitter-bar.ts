@@ -3,6 +3,14 @@ import { html, LitElement, nothing } from 'lit';
 import { type StyleInfo, styleMap } from 'lit/directives/style-map.js';
 import { splitterContext } from '../common/context.js';
 import { addInternalsController } from '../common/controllers/internals.js';
+import {
+  addKeybindings,
+  arrowDown,
+  arrowLeft,
+  arrowRight,
+  arrowUp,
+  ctrlKey,
+} from '../common/controllers/key-bindings.js';
 import { createMutationController } from '../common/controllers/mutation-observer.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
@@ -106,14 +114,10 @@ export default class IgcSplitterBarComponent extends EventEmitterMixin<
         );
       },
       start: () => {
-        if (
-          !this._siblingPanes[0]?.resizable ||
-          !this._siblingPanes[1]?.resizable ||
-          this._siblingPanes[0].collapsed
-        ) {
+        if (this._resizeDisallowed) {
           return false;
         }
-        this.emitEvent('igcMovingStart', { detail: this._siblingPanes[0] });
+        this.emitEvent('igcMovingStart', { detail: this._siblingPanes[0]! });
         return true;
       },
       resize: ({ state }) => {
@@ -133,6 +137,16 @@ export default class IgcSplitterBarComponent extends EventEmitterMixin<
       },
       cancel: () => {},
     });
+
+    addKeybindings(this)
+      .set(arrowUp, this.resizePanes)
+      .set(arrowDown, this.resizePanes)
+      .set(arrowLeft, this.resizePanes)
+      .set(arrowRight, this.resizePanes)
+      .set([ctrlKey, arrowUp], () => this._handleExpanderClick(true))
+      .set([ctrlKey, arrowDown], () => this._handleExpanderClick(false))
+      .set([ctrlKey, arrowLeft], () => this._handleExpanderClick(true))
+      .set([ctrlKey, arrowRight], () => this._handleExpanderClick(false));
     //addThemingController(this, all);
   }
 
@@ -141,6 +155,34 @@ export default class IgcSplitterBarComponent extends EventEmitterMixin<
     this._siblingPanes?.forEach((pane) => {
       this._createSiblingPaneMutationController(pane!);
     });
+  }
+
+  private resizePanes(event: KeyboardEvent) {
+    if (this._resizeDisallowed) {
+      return false;
+    }
+    if (
+      (event.key === arrowUp || event.key === arrowDown) &&
+      this._orientation === 'horizontal'
+    ) {
+      return false;
+    }
+    if (
+      (event.key === arrowLeft || event.key === arrowRight) &&
+      this._orientation === 'vertical'
+    ) {
+      return false;
+    }
+    let delta = 0;
+    if (event.key === arrowUp || event.key === arrowLeft) {
+      delta = -10;
+    } else {
+      delta = 10;
+    }
+    this.emitEvent('igcMovingStart', { detail: this._siblingPanes[0]! });
+    this.emitEvent('igcMoving', { detail: delta });
+    this.emitEvent('igcMovingEnd', { detail: delta });
+    return true;
   }
 
   private _createSiblingPaneMutationController(pane: IgcSplitterPaneComponent) {
@@ -167,19 +209,19 @@ export default class IgcSplitterBarComponent extends EventEmitterMixin<
     this.requestUpdate();
   }
 
-  private _handleExpanderClick(start: boolean, event: PointerEvent) {
+  private _handleExpanderClick(start: boolean, event?: PointerEvent) {
     // Prevent resize controller from starting
-    event.stopPropagation();
+    event?.stopPropagation();
 
     const prevSibling = this._siblingPanes[0]!;
     const nextSibling = this._siblingPanes[1]!;
     let target: IgcSplitterPaneComponent;
     if (start) {
-      // if next is clicked when prev pane is hidden, show prev pane, else hide next pane.
-      target = prevSibling.collapsed ? prevSibling : nextSibling;
-    } else {
       // if prev is clicked when next pane is hidden, show next pane, else hide prev pane.
       target = nextSibling.collapsed ? nextSibling : prevSibling;
+    } else {
+      // if next is clicked when prev pane is hidden, show prev pane, else hide next pane.
+      target = prevSibling.collapsed ? prevSibling : nextSibling;
     }
     target.toggle();
   }
@@ -211,6 +253,7 @@ export default class IgcSplitterBarComponent extends EventEmitterMixin<
       <div
         part=${partMap(this._resolvePartNames())}
         style=${styleMap(this._internalStyles)}
+        tabindex="0"
       >
         ${this._renderBarControls()}
       </div>
