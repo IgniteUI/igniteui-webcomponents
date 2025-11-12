@@ -234,15 +234,12 @@ export const NestedSplitters: Story = {
   argTypes: disableStoryControls(metadata),
   render: () => html`
     <style>
-      igc-splitter {
-        height: 600px;
-      }
       .pane-content {
         padding: 12px;
       }
     </style>
 
-    <igc-splitter orientation="horizontal">
+    <igc-splitter orientation="horizontal" style="height: 600px;">
       <igc-splitter-pane>
         <igc-splitter orientation="vertical" class="nested-splitter">
           <igc-splitter-pane>

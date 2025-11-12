@@ -52,9 +52,7 @@ export default class IgcSplitterBarComponent extends EventEmitterMixin<
     };
   }
 
-  private _internalStyles: StyleInfo = {
-    '--cursor': this._cursor,
-  };
+  private _internalStyles: StyleInfo = {};
 
   private _orientation: SplitterOrientation = 'horizontal';
   private _splitter?: IgcSplitterComponent;
@@ -94,6 +92,8 @@ export default class IgcSplitterBarComponent extends EventEmitterMixin<
 
   constructor() {
     super();
+    this._internalStyles = { '--cursor': this._cursor };
+
     addResizeController(this, {
       mode: 'immediate',
       updateTarget: false,
@@ -146,6 +146,7 @@ export default class IgcSplitterBarComponent extends EventEmitterMixin<
   private _createSiblingPaneMutationController(pane: IgcSplitterPaneComponent) {
     createMutationController(pane, {
       callback: () => {
+        Object.assign(this._internalStyles, { '--cursor': this._cursor });
         this.requestUpdate();
       },
       filter: [IgcSplitterPaneComponent.tagName],
@@ -161,8 +162,26 @@ export default class IgcSplitterBarComponent extends EventEmitterMixin<
     if (this._orientation !== splitter.orientation) {
       this._orientation = splitter.orientation;
       this._internals.setARIA({ ariaOrientation: this._orientation });
-      Object.assign(this._internalStyles, { cursor: this._cursor });
+      Object.assign(this._internalStyles, { '--cursor': this._cursor });
     }
+    this.requestUpdate();
+  }
+
+  private _handleExpanderClick(start: boolean, event: PointerEvent) {
+    // Prevent resize controller from starting
+    event.stopPropagation();
+
+    const prevSibling = this._siblingPanes[0]!;
+    const nextSibling = this._siblingPanes[1]!;
+    let target: IgcSplitterPaneComponent;
+    if (start) {
+      // if next is clicked when prev pane is hidden, show prev pane, else hide next pane.
+      target = prevSibling.collapsed ? prevSibling : nextSibling;
+    } else {
+      // if prev is clicked when next pane is hidden, show next pane, else hide prev pane.
+      target = nextSibling.collapsed ? nextSibling : prevSibling;
+    }
+    target.toggle();
   }
 
   private _renderBarControls() {
@@ -173,9 +192,17 @@ export default class IgcSplitterBarComponent extends EventEmitterMixin<
     const prevButtonHidden = siblings[0]?.collapsed && !siblings[1]?.collapsed;
     const nextButtonHidden = siblings[1]?.collapsed && !siblings[0]?.collapsed;
     return html`
-      <div part="expander-start" ?hidden=${prevButtonHidden}></div>
+      <div
+        part="expander-start"
+        ?hidden=${prevButtonHidden}
+        @pointerdown=${(e: PointerEvent) => this._handleExpanderClick(true, e)}
+      ></div>
       <div part="handle"></div>
-      <div part="expander-end" ?hidden=${nextButtonHidden}></div>
+      <div
+        part="expander-end"
+        ?hidden=${nextButtonHidden}
+        @pointerdown=${(e: PointerEvent) => this._handleExpanderClick(false, e)}
+      ></div>
     `;
   }
 

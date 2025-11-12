@@ -3,6 +3,7 @@
 :host {
     [part='base'] {
         overflow: auto;
+        box-sizing: border-box;
     }
 
     display: flex;

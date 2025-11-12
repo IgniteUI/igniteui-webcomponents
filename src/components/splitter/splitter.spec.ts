@@ -1,4 +1,10 @@
-import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
+import {
+  elementUpdated,
+  expect,
+  fixture,
+  html,
+  nextFrame,
+} from '@open-wc/testing';
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import type { SplitterOrientation } from '../types.js';
 import IgcSplitterComponent from './splitter.js';
@@ -97,6 +103,50 @@ describe('Splitter', () => {
 
       const rightBars = getSplitterBars(rightSplitter);
       expect(rightBars).to.have.lengthOf(1);
+    });
+
+    it('should not display the bar elements if the splitter is nonCollapsible', async () => {
+      splitter.nonCollapsible = true;
+      await elementUpdated(splitter);
+
+      const bars = getSplitterBars(splitter);
+      bars.forEach((bar) => {
+        const base = bar.shadowRoot!.querySelector(
+          '[part~="base"]'
+        ) as HTMLElement;
+        expect(base.children).to.have.lengthOf(0);
+      });
+    });
+
+    it('should set a default cursor on the bar in case any of its siblings is not resizable or collapsed', async () => {
+      const firstPane = splitter.panes[0];
+      const secondPane = splitter.panes[1];
+      const bars = getSplitterBars(splitter);
+      const firstBar = bars[0].shadowRoot!.querySelector(
+        '[part~="base"]'
+      ) as HTMLElement;
+
+      const style = getComputedStyle(firstBar);
+      expect(style.cursor).to.equal('col-resize');
+
+      firstPane.resizable = false;
+      await elementUpdated(splitter);
+      await nextFrame();
+
+      expect(style.cursor).to.equal('default');
+
+      firstPane.resizable = true;
+      secondPane.collapsed = true;
+      await elementUpdated(splitter);
+      await nextFrame();
+
+      expect(style.cursor).to.equal('default');
+
+      secondPane.collapsed = false;
+      await elementUpdated(splitter);
+      await nextFrame();
+
+      expect(style.cursor).to.equal('col-resize');
     });
   });
 
@@ -257,7 +307,7 @@ describe('Splitter', () => {
     });
   });
 
-  describe('Methods & Events', () => {
+  describe('Methods, Events & Interactions', () => {
     it('should expand/collapse panes when toggle is invoked', async () => {
       const pane = splitter.panes[0];
       expect(pane.collapsed).to.be.false;
@@ -271,6 +321,74 @@ describe('Splitter', () => {
       await elementUpdated(splitter);
 
       expect(pane.collapsed).to.be.false;
+    });
+
+    it('should toggle the previous pane when the bar expander-end is clicked', async () => {
+      const bars = getSplitterBars(splitter);
+      const firstBar = bars[0];
+      const firstPane = splitter.panes[0];
+      const secondPane = splitter.panes[1];
+
+      expect(firstPane.collapsed).to.be.false;
+
+      const expanderStart = getExpander(firstBar, 'start');
+      const expanderEnd = getExpander(firstBar, 'end');
+
+      expanderEnd.dispatchEvent(
+        new PointerEvent('pointerdown', { bubbles: true })
+      );
+      await elementUpdated(splitter);
+      await nextFrame();
+
+      expect(firstPane.collapsed).to.be.true;
+      expect(secondPane.collapsed).to.be.false;
+      expect(expanderStart.hidden).to.be.true;
+      expect(expanderEnd.hidden).to.be.false;
+
+      expanderEnd.dispatchEvent(
+        new PointerEvent('pointerdown', { bubbles: true })
+      );
+      await elementUpdated(splitter);
+      await nextFrame();
+
+      expect(firstPane.collapsed).to.be.false;
+      expect(secondPane.collapsed).to.be.false;
+      expect(expanderStart.hidden).to.be.false;
+      expect(expanderEnd.hidden).to.be.false;
+    });
+
+    it('should toggle the next pane when the bar expander-start is clicked', async () => {
+      const bars = getSplitterBars(splitter);
+      const firstBar = bars[0];
+      const firstPane = splitter.panes[0];
+      const secondPane = splitter.panes[1];
+
+      expect(secondPane.collapsed).to.be.false;
+
+      const expanderStart = getExpander(firstBar, 'start');
+      const expanderEnd = getExpander(firstBar, 'end');
+
+      expanderStart.dispatchEvent(
+        new PointerEvent('pointerdown', { bubbles: true })
+      );
+      await elementUpdated(splitter);
+      await nextFrame();
+
+      expect(secondPane.collapsed).to.be.true;
+      expect(firstPane.collapsed).to.be.false;
+      expect(expanderStart.hidden).to.be.false;
+      expect(expanderEnd.hidden).to.be.true;
+
+      expanderStart.dispatchEvent(
+        new PointerEvent('pointerdown', { bubbles: true })
+      );
+      await elementUpdated(splitter);
+      await nextFrame();
+
+      expect(firstPane.collapsed).to.be.false;
+      expect(secondPane.collapsed).to.be.false;
+      expect(expanderStart.hidden).to.be.false;
+      expect(expanderEnd.hidden).to.be.false;
     });
   });
 });
@@ -351,4 +469,10 @@ function getSplitterBars(splitter: IgcSplitterComponent) {
     }
   });
   return bars;
+}
+
+function getExpander(bar: IgcSplitterBarComponent, which: 'start' | 'end') {
+  return bar.shadowRoot!.querySelector(
+    `[part="expander-${which}"]`
+  ) as HTMLElement;
 }

@@ -1,6 +1,7 @@
 @use 'styles/common/component';
 
 :host {
+    --bar-size: 5px;
     display: flex;
     background-color: var(--ig-gray-200);
 
@@ -11,6 +12,7 @@
     [part~='base'] {
         display: flex;
         cursor: var(--cursor, default);
+        justify-content: center;
     }
 
     [part='base horizontal'] {
@@ -19,7 +21,7 @@
         }
 
         flex-direction: column;
-        width: 5px;
+        width: var(--bar-size);
         height: 100%;
     }
 
@@ -30,7 +32,7 @@
 
         flex-direction: row;
         width: 100%;
-        height: 5px;
+        height: var(--bar-size);
     }
 }
 
