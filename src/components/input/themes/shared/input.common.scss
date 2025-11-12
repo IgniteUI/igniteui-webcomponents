@@ -68,6 +68,10 @@ $theme: $base;
 }
 
 :host(:focus-within) {
+    [part^='container'] {
+        caret-color: var-get($theme, 'focused-text-color');
+    }
+
     [part='prefix'] {
         color: var-get($theme, 'input-prefix-color--focused');
         background: var-get($theme, 'input-prefix-background--focused');

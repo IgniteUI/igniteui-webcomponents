@@ -167,7 +167,25 @@ $transition-duration: .25s;
     }
 }
 
-:host([type='search']) {
+:host([type='search']:not([disabled])) {
+    [part^='container'] {
+        background: var-get($theme, 'search-background');
+        box-shadow: var-get($theme, 'search-resting-elevation');
+        border-radius: var-get($theme, 'search-border-radius');
+
+        &:focus-within,
+        &:focus-within:hover {
+            background: var-get($theme, 'box-background-focus');
+        }
+    }
+
+    &:focus-within,
+    &:focus-within:hover {
+        [part^='container'] {
+            background: var-get($theme, 'box-background-focus');
+        }
+    }
+
     %suffix-preffix {
         padding-inline: pad-inline(rem(6px), rem(8px), rem(10px));
     }

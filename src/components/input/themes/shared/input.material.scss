@@ -281,8 +281,7 @@ input:placeholder-shown + [part='notch'] [part='label'],
 :host(:not([outlined]):disabled) {
     [part~='container'] {
         background: var-get($theme, 'box-disabled-background');
-        border-color: var-get($theme, 'disabled-border-color');
-        border-block-end-color: var-get( $theme, 'disabled-bottom-line-color');
+        border-block-end-color: var-get($theme, 'disabled-bottom-line-color');
         border-bottom-style: dashed;
     }
 }
@@ -302,6 +301,11 @@ input:placeholder-shown + [part='notch'] [part='label'],
                 display: none;
             }
         }
+    }
+
+    [part='prefix'],
+    [part='suffix'] {
+        max-height: 100%;
     }
 }
 

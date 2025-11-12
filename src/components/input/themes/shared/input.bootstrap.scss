@@ -155,12 +155,6 @@ $theme: $bootstrap;
     }
 }
 
-[part~='filled'] {
-    [part~='input'] {
-        color: var-get($theme, 'input-prefix-color--filled');
-    }
-}
-
 [part~='prefixed'] [part='prefix'],
 [part~='suffixed'] [part='suffix'] {
     ::slotted(*) {
@@ -187,6 +181,18 @@ $theme: $bootstrap;
 :host(:not([disabled])[role='combobox']:state(ig-invalid):focus-within) {
     [part~='input'] {
         box-shadow: 0 0 0 rem(4px) var-get($theme, 'error-shadow-color');
+    }
+}
+
+:host([type='search']) {
+    [part^='container'] {
+        background: var-get($theme, 'search-background');
+        box-shadow: var-get($theme, 'search-resting-elevation');
+        border-radius: var-get($theme, 'search-border-radius');
+
+        &:focus-within {
+            background: var-get($theme, 'search-background');
+        }
     }
 }
 
