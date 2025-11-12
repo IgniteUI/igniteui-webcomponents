@@ -253,16 +253,24 @@ $border-size: rem(1px);
 }
 
 [part~='date-inner']:not([part~='inactive']) {
-    border-color: var-get($theme, 'date-border-color');
+    &:not([part~='selected'][part~='range'], [part~='current'], [part~='special'], [part~='first'], [part~='last'], [part~='range'], [part~='preview'][part~='disabled']) {
+        border-color: var-get($theme, 'date-border-color');
+
+        &:hover {
+            border-color: var-get($theme, 'date-hover-border-color');
+        }
+
+        &:focus {
+            border-color: var-get($theme, 'date-focus-border-color');
+        }
+    }
 
     &:hover {
         color: var-get($theme, 'date-hover-foreground');
-        border-color: var-get($theme, 'date-hover-border-color');
     }
 
     &:focus {
         color: var-get($theme, 'date-hover-foreground');
-        border-color: var-get($theme, 'date-focus-border-color');
     }
 
     &[part~='weekend']:not([part~='selected'][part~='range'], [part~='current'], [part~='special'], [part~='selected'], [part~='preview'], [part~='disabled']) {
@@ -340,9 +348,6 @@ $border-size: rem(1px);
     }
 
     &[part~='special'] {
-        color: var-get($theme, 'date-special-foreground');
-        background: var-get($theme, 'date-special-background');
-
         &::after {
             content: "";
             position: absolute;
@@ -354,21 +359,30 @@ $border-size: rem(1px);
         }
 
         &:hover {
-            color: var-get($theme, 'date-special-hover-foreground');
-            background: var-get($theme, 'date-special-hover-background');
-
             &::after {
                 border-color: var-get($theme, 'date-special-hover-border-color');
             }
         }
 
         &:focus {
-            color: var-get($theme, 'date-special-focus-foreground');
-            background: var-get($theme, 'date-special-focus-background');
-
             &::after {
                 border-color: var-get($theme, 'date-special-focus-border-color');
             }
+        }
+    }
+
+    &[part~='special']:not([part~='current']) {
+        color: var-get($theme, 'date-special-foreground');
+        background: var-get($theme, 'date-special-background');
+
+        &:hover {
+            color: var-get($theme, 'date-special-hover-foreground');
+            background: var-get($theme, 'date-special-hover-background');
+        }
+
+        &:focus {
+            color: var-get($theme, 'date-special-focus-foreground');
+            background: var-get($theme, 'date-special-focus-background');
         }
     }
 
@@ -477,21 +491,6 @@ $border-size: rem(1px);
     }
 
     &:not([part~='range'], [part~='first'][part~='last']) {
-        &[part~='selected'][part~='current'] {
-            color: var-get($theme, 'date-selected-current-foreground');
-            background: var-get($theme, 'date-selected-current-background');
-
-            &:hover {
-                color: var-get($theme, 'date-selected-current-hover-foreground');
-                background: var-get($theme, 'date-selected-current-hover-background');
-            }
-
-            &:focus {
-                color: var-get($theme, 'date-selected-current-focus-foreground');
-                background: var-get($theme, 'date-selected-current-focus-background');
-            }
-        }
-
         &[part~='selected'][part~='special'] {
             color: var-get($theme, 'date-selected-special-foreground');
             background: var-get($theme, 'date-selected-special-background');
@@ -504,6 +503,21 @@ $border-size: rem(1px);
             &:focus {
                 color: var-get($theme, 'date-selected-special-focus-foreground');
                 background: var-get($theme, 'date-selected-special-focus-background');
+            }
+        }
+
+        &[part~='selected'][part~='current'] {
+            color: var-get($theme, 'date-selected-current-foreground');
+            background: var-get($theme, 'date-selected-current-background');
+
+            &:hover {
+                color: var-get($theme, 'date-selected-current-hover-foreground');
+                background: var-get($theme, 'date-selected-current-hover-background');
+            }
+
+            &:focus {
+                color: var-get($theme, 'date-selected-current-focus-foreground');
+                background: var-get($theme, 'date-selected-current-focus-background');
             }
         }
     }
@@ -523,6 +537,21 @@ $border-size: rem(1px);
             &::after {
                 border-color: var-get($theme, 'date-special-range-focus-border-color');
             }
+        }
+    }
+
+    &[part~='range'][part~='selected'][part~='special']:not([part~='first'], [part~='last'], [part~='current']) {
+        color: var-get($theme, 'date-special-range-foreground');
+        background: var-get($theme, 'date-special-range-background');
+
+        &:hover {
+            color: var-get($theme, 'date-special-range-hover-foreground');
+            background: var-get($theme, 'date-special-range-hover-background');
+        }
+
+        &:focus {
+            color: var-get($theme, 'date-special-range-hover-foreground');
+            background: var-get($theme, 'date-special-range-hover-background');
         }
     }
 
