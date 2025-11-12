@@ -45,23 +45,8 @@ export default class IgcSplitterPaneComponent extends LitElement {
     //const size = this.dragSize || this.size;
     //const grow = this.isPercentageSize && !this.dragSize ? 1 : 0;
 
-    //tova ne raboti ako setnem procent na nqkoi pane a ako e dolnoto se mesti malko po-malko nadqsno vupreki che go handelvam
-    // const grow = this._isPercentageSize ? 1 : 0;
-    // return `${grow} ${grow} ${this._size}`;
-
-    // Flex rules:
-    // - Explicit percentage (e.g., 30%): fixed at that size => flex: 0 0 <percent>
-    // - Explicit px (e.g., 200px): fixed => flex: 0 0 <px>
-    // - Auto: participates in remaining space => flex: 1 1 0px
-    if (this._size === 'auto') {
-      return '1 1 0px';
-      // } if (this._isPercentageSize) {
-      //   const basis = this._isLastPane
-      //   ? this._size                // last pane has no internal bar after it
-      //   : `calc(${this._size} - 5px)`;
-      // return `0 0 ${`calc(${this._size} - 3px)`}`;
-    }
-    return `0 0 ${this._size}`;
+    const grow = this._isPercentageSize ? 1 : 0;
+    return `${grow} ${grow} ${this._size}`;
   }
 
   /**
@@ -197,10 +182,6 @@ export default class IgcSplitterPaneComponent extends LitElement {
     this.paneBefore = this;
     this.paneAfter = panes[panes.indexOf(this) + 1];
 
-    // Normalize any 'auto' pane sizes to explicit percentages so flex redistribution
-    // does not modify unaffected panes when only a subset gets pixel / percent updates.
-    //this._normalizeAutoPaneSizes();
-
     // Store original size types before we start changing them
     this.isPaneBeforePercentage = this.paneBefore._isPercentageSize;
     this.isPaneAfterPercentage = this.paneAfter._isPercentageSize;
@@ -234,7 +215,6 @@ export default class IgcSplitterPaneComponent extends LitElement {
   }
 
   private _handleMovingEnd(event: CustomEvent<number>) {
-    let last = false;
     // Only handle if this pane owns the bar (is the one before the bar)
     if (!this.paneBefore || this.paneBefore !== this) {
       return;
@@ -244,11 +224,9 @@ export default class IgcSplitterPaneComponent extends LitElement {
 
     if (this.isPaneBeforePercentage) {
       // handle % resizes
-      last = this.paneBefore._isLastPane;
-
-      this._convertSizeToPercentage(this.paneBefore, last);
-
-      //this._convertSizeToPercentage(this.paneBefore, false);
+      const totalSize = this.getTotalSize();
+      const percentPaneSize = (paneSize / totalSize) * 100;
+      this.paneBefore.size = `${percentPaneSize}%`;
     } else {
       // px resize
       this.paneBefore.size = `${paneSize}px`;
@@ -256,10 +234,9 @@ export default class IgcSplitterPaneComponent extends LitElement {
 
     if (this.isPaneAfterPercentage) {
       // handle % resizes
-      last = this.paneAfter._isLastPane;
-      this._convertSizeToPercentage(this.paneAfter, last);
-
-      //this._convertSizeToPercentage(this.paneAfter, false);
+      const totalSize = this.getTotalSize();
+      const percentPaneSize = (paneSize / totalSize) * 100;
+      this.paneBefore.size = `${percentPaneSize}%`;
     } else {
       // px resize
       this.paneAfter.size = `${siblingSize}px`;
@@ -308,45 +285,6 @@ export default class IgcSplitterPaneComponent extends LitElement {
     }
     const rect = splitterBase.getBoundingClientRect();
     return this._orientation === 'horizontal' ? rect.width : rect.height;
-  }
-
-  /** Converts all panes with size 'auto' to explicit percentage sizes based on their current rendered size. */
-  private _normalizeAutoPaneSizes() {
-    if (!this._splitter || !this._splitter.panes.length) {
-      return;
-    }
-    for (const pane of this._splitter.panes) {
-      if (pane.size === 'auto') {
-        if (this._isLastPane) {
-          this._convertSizeToPercentage(pane, true);
-        } else {
-          this._convertSizeToPercentage(pane, false);
-        }
-      }
-    }
-  }
-
-  private _convertSizeToPercentage(
-    pane: IgcSplitterPaneComponent,
-    last: boolean
-  ) {
-    const base = pane.shadowRoot?.querySelector('[part="base"]');
-    if (!base) {
-      return;
-    }
-    const rect = base.getBoundingClientRect();
-    let currentSize =
-      this._orientation === 'horizontal' ? rect.width : rect.height;
-    if (!last) {
-      currentSize += 5;
-    }
-    const visual = last ? currentSize : currentSize;
-    const totalSize = this.getTotalSize();
-    const percentSize = (visual / totalSize) * 100;
-    // if (!last) {
-    //   percentSize += (5 / totalSize) * 100;
-    // }
-    pane.size = `${percentSize.toFixed(3)}%`;
   }
 
   /** Toggles the collapsed state of the pane. */
