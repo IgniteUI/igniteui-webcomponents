@@ -13,6 +13,7 @@
         color: var(--ig-gray-900);
         background: var(--ig-gray-100);
         border: 1px solid var(--ig-gray-200);
+        user-select: none;
     }
 
     ::slotted(igc-splitter-pane) {
