@@ -43,17 +43,22 @@ export default class IgcSplitterPaneComponent extends LitElement {
   @query('[part~="base"]', true)
   private readonly _base!: HTMLElement;
 
-  private get _isPercentageSize() {
-    return this._size === 'auto' || this._size.indexOf('%') !== -1;
-  }
-
   private get _splitter(): IgcSplitterComponent | undefined {
     return this._splitterContext.value;
   }
 
+  private get _isPercentageSize() {
+    return this._size.indexOf('%') !== -1;
+  }
+
+  private get _isAutoSize() {
+    return this._size === 'auto';
+  }
+
   private get _flex() {
-    const grow = this._isPercentageSize ? 1 : 0;
-    return `${grow} ${grow} ${this._size}`;
+    const grow = this._isAutoSize ? 1 : 0;
+    const shrink = this._isAutoSize || this._isPercentageSize ? 1 : 0;
+    return `${grow} ${shrink} ${this._size}`;
   }
 
   private get _rectSize() {
@@ -188,8 +193,10 @@ export default class IgcSplitterPaneComponent extends LitElement {
     this._nextPane = panes[panes.indexOf(this) + 1];
 
     // Store original size types before we start changing them
-    this._isPrevPanePercentage = this._prevPane._isPercentageSize;
-    this._isNextPanePercentage = this._nextPane._isPercentageSize;
+    this._isPrevPanePercentage =
+      this._prevPane._isPercentageSize || this._prevPane._isAutoSize;
+    this._isNextPanePercentage =
+      this._nextPane._isPercentageSize || this._nextPane._isAutoSize;
 
     this._prevPaneInitialSize = this._rectSize;
     this._nextPaneInitialSize = this._nextPane._rectSize;
@@ -224,17 +231,22 @@ export default class IgcSplitterPaneComponent extends LitElement {
       (pane) => pane !== this && pane !== this._nextPane
     ).forEach((pane) => {
       const size = pane._rectSize;
-      this._adjustPaneSize(pane, pane._isPercentageSize, size, totalSize);
+      this._adjustPaneSize(
+        pane,
+        pane._isPercentageSize || pane._isAutoSize,
+        size,
+        totalSize
+      );
     });
   }
 
   private _adjustPaneSize(
     pane: IgcSplitterPaneComponent,
-    isPercent: boolean,
+    isPercentOrAuto: boolean,
     size: number,
     totalSize: number
   ) {
-    if (isPercent) {
+    if (isPercentOrAuto) {
       const percentPaneSize = (size / totalSize) * 100;
       pane.size = `${percentPaneSize}%`;
     } else {
