@@ -139,14 +139,14 @@ export default class IgcSplitterBarComponent extends EventEmitterMixin<
     });
 
     addKeybindings(this)
-      .set(arrowUp, this.resizePanes)
-      .set(arrowDown, this.resizePanes)
-      .set(arrowLeft, this.resizePanes)
-      .set(arrowRight, this.resizePanes)
-      .set([ctrlKey, arrowUp], () => this._handleExpanderClick(true))
-      .set([ctrlKey, arrowDown], () => this._handleExpanderClick(false))
-      .set([ctrlKey, arrowLeft], () => this._handleExpanderClick(true))
-      .set([ctrlKey, arrowRight], () => this._handleExpanderClick(false));
+      .set(arrowUp, this._handleResizePanes)
+      .set(arrowDown, this._handleResizePanes)
+      .set(arrowLeft, this._handleResizePanes)
+      .set(arrowRight, this._handleResizePanes)
+      .set([ctrlKey, arrowUp], this._handleExpandPanes)
+      .set([ctrlKey, arrowDown], this._handleExpandPanes)
+      .set([ctrlKey, arrowLeft], this._handleExpandPanes)
+      .set([ctrlKey, arrowRight], this._handleExpandPanes);
     //addThemingController(this, all);
   }
 
@@ -157,7 +157,7 @@ export default class IgcSplitterBarComponent extends EventEmitterMixin<
     });
   }
 
-  private resizePanes(event: KeyboardEvent) {
+  private _handleResizePanes(event: KeyboardEvent) {
     if (this._resizeDisallowed) {
       return false;
     }
@@ -183,6 +183,29 @@ export default class IgcSplitterBarComponent extends EventEmitterMixin<
     this.emitEvent('igcMoving', { detail: delta });
     this.emitEvent('igcMovingEnd', { detail: delta });
     return true;
+  }
+
+  private _handleExpandPanes(event: KeyboardEvent) {
+    if (this._splitter?.nonCollapsible) {
+      return;
+    }
+    const { prevButtonHidden, nextButtonHidden } =
+      this._getExpanderHiddenState();
+
+    if (
+      ((event.key === arrowUp && this._orientation === 'vertical') ||
+        (event.key === arrowLeft && this._orientation === 'horizontal')) &&
+      !prevButtonHidden
+    ) {
+      this._handleExpanderClick(true);
+    }
+    if (
+      ((event.key === arrowDown && this._orientation === 'vertical') ||
+        (event.key === arrowRight && this._orientation === 'horizontal')) &&
+      !nextButtonHidden
+    ) {
+      this._handleExpanderClick(false);
+    }
   }
 
   private _createSiblingPaneMutationController(pane: IgcSplitterPaneComponent) {
@@ -215,6 +238,7 @@ export default class IgcSplitterBarComponent extends EventEmitterMixin<
 
     const prevSibling = this._siblingPanes[0]!;
     const nextSibling = this._siblingPanes[1]!;
+
     let target: IgcSplitterPaneComponent;
     if (start) {
       // if prev is clicked when next pane is hidden, show next pane, else hide prev pane.
@@ -224,15 +248,23 @@ export default class IgcSplitterBarComponent extends EventEmitterMixin<
       target = prevSibling.collapsed ? prevSibling : nextSibling;
     }
     target.toggle();
+    target.emitEvent('igcToggle', { detail: target });
+  }
+
+  private _getExpanderHiddenState() {
+    const [prev, next] = this._siblingPanes;
+    return {
+      prevButtonHidden: !!(prev?.collapsed && !next?.collapsed),
+      nextButtonHidden: !!(next?.collapsed && !prev?.collapsed),
+    };
   }
 
   private _renderBarControls() {
     if (this._splitter?.nonCollapsible) {
       return nothing;
     }
-    const siblings = this._siblingPanes;
-    const prevButtonHidden = siblings[0]?.collapsed && !siblings[1]?.collapsed;
-    const nextButtonHidden = siblings[1]?.collapsed && !siblings[0]?.collapsed;
+    const { prevButtonHidden, nextButtonHidden } =
+      this._getExpanderHiddenState();
     return html`
       <div
         part="expander-start"

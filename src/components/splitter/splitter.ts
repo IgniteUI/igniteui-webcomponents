@@ -5,9 +5,22 @@ import { splitterContext } from '../common/context.js';
 import { addInternalsController } from '../common/controllers/internals.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
+import type { Constructor } from '../common/mixins/constructor.js';
+import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import type { SplitterOrientation } from '../types.js';
 import IgcSplitterPaneComponent from './splitter-pane.js';
 import { styles } from './themes/splitter.base.css.js';
+
+export interface IgcSplitterBarResizeEventArgs {
+  pane: IgcSplitterPaneComponent;
+  sibling: IgcSplitterPaneComponent;
+}
+
+export interface IgcSplitterComponentEventMap {
+  igcResizeStart: CustomEvent<IgcSplitterBarResizeEventArgs>;
+  igcResizing: CustomEvent<IgcSplitterBarResizeEventArgs>;
+  igcResizeEnd: CustomEvent<IgcSplitterBarResizeEventArgs>;
+}
 
 /**
  * The Splitter component provides a framework for a simple layout, splitting the view horizontally or vertically
@@ -19,9 +32,12 @@ import { styles } from './themes/splitter.base.css.js';
  *
  * @csspart ... - ... .
  */
-export default class IgcSplitterComponent extends LitElement {
+export default class IgcSplitterComponent extends EventEmitterMixin<
+  IgcSplitterComponentEventMap,
+  Constructor<LitElement>
+>(LitElement) {
   public static readonly tagName = 'igc-splitter';
-  public static override styles = [styles];
+  public static styles = [styles];
 
   /* blazorSuppress */
   public static register() {

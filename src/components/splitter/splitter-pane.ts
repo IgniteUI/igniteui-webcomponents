@@ -4,14 +4,22 @@ import { property, query } from 'lit/decorators.js';
 import { type StyleInfo, styleMap } from 'lit/directives/style-map.js';
 import { splitterContext } from '../common/context.js';
 import { registerComponent } from '../common/definitions/register.js';
+import type { Constructor } from '../common/mixins/constructor.js';
+import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import type { SplitterOrientation } from '../types.js';
 import type IgcSplitterComponent from './splitter.js';
 import IgcSplitterBarComponent from './splitter-bar.js';
 import { styles } from './themes/splitter-pane.css.js';
 
-export default class IgcSplitterPaneComponent extends LitElement {
+export interface IgcSplitterPaneComponentEventMap {
+  igcToggle: CustomEvent<IgcSplitterPaneComponent>;
+}
+export default class IgcSplitterPaneComponent extends EventEmitterMixin<
+  IgcSplitterPaneComponentEventMap,
+  Constructor<LitElement>
+>(LitElement) {
   public static readonly tagName = 'igc-splitter-pane';
-  public static override styles = [styles];
+  public static styles = [styles];
 
   /* blazorSuppress */
   public static register() {
@@ -200,6 +208,10 @@ export default class IgcSplitterPaneComponent extends LitElement {
 
     this._prevPaneInitialSize = this._rectSize;
     this._nextPaneInitialSize = this._nextPane._rectSize;
+
+    this._splitter!.emitEvent('igcResizeStart', {
+      detail: { pane: this, sibling: this._nextPane },
+    });
   }
 
   private _handleMoving(event: CustomEvent<number>) {
@@ -207,6 +219,10 @@ export default class IgcSplitterPaneComponent extends LitElement {
 
     this._prevPane.size = `${paneSize}px`;
     this._nextPane.size = `${siblingSize}px`;
+
+    this._splitter!.emitEvent('igcResizing', {
+      detail: { pane: this, sibling: this._nextPane },
+    });
   }
 
   private _handleMovingEnd(event: CustomEvent<number>) {
@@ -237,6 +253,10 @@ export default class IgcSplitterPaneComponent extends LitElement {
         size,
         totalSize
       );
+    });
+
+    this._splitter!.emitEvent('igcResizeEnd', {
+      detail: { pane: this, sibling: this._nextPane },
     });
   }
 
