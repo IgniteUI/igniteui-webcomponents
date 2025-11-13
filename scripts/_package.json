@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "description": "Ignite UI for Web Components is a complete library of UI components, giving you the ability to build modern web applications using encapsulation and the concept of reusable components in a dependency-free approach.",
   "author": "Infragistics",
-  "license": "SEE LICENSE IN LICENSE",
+  "license": "MIT",
   "homepage": "https://www.infragistics.com/products/ignite-ui-web-components",
   "exports": {
     ".": {
