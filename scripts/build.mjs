@@ -34,7 +34,7 @@ async function runTask(tag, cmd) {
     report.stdout.clearLine();
     report.stdout.success(`[${tag}] Done\n`);
   } catch (e) {
-    report.error(`[${tag}] Failed with: ${e}`);
+    report.error(`[${tag}] Failed with: ${e.message}`);
   }
 }
 

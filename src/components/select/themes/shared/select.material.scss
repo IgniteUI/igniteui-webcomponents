@@ -27,6 +27,12 @@ $active-border-width: rem(2px) !default;
     }
 }
 
+:host([outlined]:focus-within) {
+    [part~='toggle-icon'] {
+        background: var-get($theme, 'toggle-button-background-focus--border');
+    }
+}
+
 :host(:not(:state(ig-invalid))[outlined]:focus-within) {
     igc-input[readonly]:not([disabled])::part(start) {
         border: {
@@ -70,10 +76,6 @@ $active-border-width: rem(2px) !default;
 
     igc-input[readonly]:not([disabled])::part(label) {
         color: $active-color;
-    }
-
-    [part~='toggle-icon'] {
-        background: var-get($theme, 'toggle-button-background-focus--border');
     }
 }
 
