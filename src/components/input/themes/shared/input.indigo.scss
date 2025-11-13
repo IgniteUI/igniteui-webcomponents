@@ -179,6 +179,12 @@ $transition-duration: .25s;
         }
     }
 
+    &:hover {
+        [part^='container'] {
+            background: var-get($theme, 'box-background-hover');
+        }
+    }
+
     &:focus-within,
     &:focus-within:hover {
         [part^='container'] {

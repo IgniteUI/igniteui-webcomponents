@@ -57,6 +57,12 @@ textarea {
     }
 }
 
+:host(:focus-within) {
+    [part~='container'] {
+        caret-color: var-get($theme, 'focused-text-color');
+    }
+}
+
 :host([readonly]) {
     [part='prefix'],
     [part='suffix'] {
