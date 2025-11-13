@@ -171,17 +171,10 @@ $transition-duration: .25s;
     [part^='container'] {
         background: var-get($theme, 'search-background');
         box-shadow: var-get($theme, 'search-resting-elevation');
-        border-radius: var-get($theme, 'search-border-radius');
 
         &:focus-within,
         &:focus-within:hover {
             background: var-get($theme, 'box-background-focus');
-        }
-    }
-
-    &:hover {
-        [part^='container'] {
-            background: var-get($theme, 'box-background-hover');
         }
     }
 
@@ -206,6 +199,13 @@ $transition-duration: .25s;
 
     [part~='suffixed'] {
         padding-inline-end: 0;
+    }
+}
+
+:host([type='search']:not([disabled],[readonly]):hover),
+:host([type='search']:not([disabled])[readonly][role='combobox']:hover) {
+    [part^='container'] {
+        background: var-get($theme, 'box-background-hover');
     }
 }
 

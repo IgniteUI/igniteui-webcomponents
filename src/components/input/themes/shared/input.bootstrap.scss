@@ -188,7 +188,6 @@ $theme: $bootstrap;
     [part^='container'] {
         background: var-get($theme, 'search-background');
         box-shadow: var-get($theme, 'search-resting-elevation');
-        border-radius: var-get($theme, 'search-border-radius');
 
         &:focus-within {
             background: var-get($theme, 'search-background');
