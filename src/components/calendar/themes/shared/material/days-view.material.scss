@@ -464,3 +464,17 @@ $week-number-radius: var-get($theme, 'week-number-border-radius');
         border-color: var-get($theme, 'date-selected-focus-border-color');
     }
 }
+
+[part~='date-inner'][part~='inactive'][part~='range']:not([part~='first'], [part~='last'], [part~='preview']) {
+    color: var-get($theme, 'date-selected-range-foreground');
+
+    &:hover {
+        color: var-get($theme, 'date-selected-range-hover-foreground');
+        background: var-get($theme, 'date-selected-range-hover-background');
+    }
+
+    &:focus {
+        color: var-get($theme, 'date-selected-range-focus-foreground');
+        background: var-get($theme, 'date-selected-range-focus-background');
+    }
+}

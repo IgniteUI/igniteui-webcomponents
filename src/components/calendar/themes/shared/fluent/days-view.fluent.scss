@@ -682,3 +682,17 @@ $fake-bg-position: calc(50% - (var-get($theme, 'size') / 2));
         }
     }
 }
+
+[part~='date-inner'][part~='inactive'][part~='range']:not([part~='first'], [part~='last'], [part~='preview']) {
+    color: var-get($theme, 'date-selected-range-foreground');
+
+    &:hover {
+        color: var-get($theme, 'date-selected-range-hover-foreground');
+        background: var-get($theme, 'date-selected-range-hover-background');
+    }
+
+    &:focus {
+        color: var-get($theme, 'date-selected-range-focus-foreground');
+        background: var-get($theme, 'date-selected-range-focus-background');
+    }
+}
