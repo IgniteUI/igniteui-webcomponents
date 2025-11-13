@@ -122,6 +122,14 @@ $transition-duration: .25s;
     }
 }
 
+:host(:not([disabled],[readonly]):focus-within),
+:host(:not([disabled])[readonly][role='combobox']:focus-within) {
+    [part^='container'] {
+        background: var-get($theme, 'box-background-focus');
+        caret-color: var-get($theme, 'focused-bottom-line-color');
+    }
+}
+
 :host(:focus-within) {
     [part='prefix'],
     [part='suffix'] {
@@ -131,9 +139,6 @@ $transition-duration: .25s;
     }
 
     [part^='container'] {
-        background: var-get($theme, 'box-background-focus');
-        caret-color: var-get($theme, 'focused-bottom-line-color');
-
         &::after {
             transform: scaleY(1);
         }
@@ -172,6 +177,10 @@ $transition-duration: .25s;
         background: var-get($theme, 'search-background');
         box-shadow: var-get($theme, 'search-resting-elevation');
 
+        &:hover {
+            background: var-get($theme, 'box-background-hover');
+        }
+
         &:focus-within,
         &:focus-within:hover {
             background: var-get($theme, 'box-background-focus');
@@ -199,13 +208,6 @@ $transition-duration: .25s;
 
     [part~='suffixed'] {
         padding-inline-end: 0;
-    }
-}
-
-:host([type='search']:not([disabled],[readonly]):hover),
-:host([type='search']:not([disabled])[readonly][role='combobox']:hover) {
-    [part^='container'] {
-        background: var-get($theme, 'box-background-hover');
     }
 }
 
