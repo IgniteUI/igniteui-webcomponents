@@ -1,11 +1,11 @@
-import { html, LitElement, nothing, type TemplateResult } from 'lit';
 import {
-  property,
-  query,
-  queryAssignedElements,
-  state,
-} from 'lit/decorators.js';
+  ComboResourceStringsEN,
+  type IComboResourceStrings,
+} from 'igniteui-i18n-core';
+import { html, LitElement, nothing, type TemplateResult } from 'lit';
+import { property, queryAssignedElements, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
+import { createRef, ref } from 'lit/directives/ref.js';
 
 import { addThemingController } from '../../theming/theming-controller.js';
 import { addRootClickController } from '../common/controllers/root-click.js';
@@ -13,6 +13,7 @@ import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditio
 import { blazorIndirectRender } from '../common/decorators/blazorIndirectRender.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
+import { addI18nController } from '../common/i18n/i18n-controller.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '../common/mixins/forms/associated-required.js';
@@ -34,7 +35,7 @@ import IgcComboHeaderComponent from './combo-header.js';
 import IgcComboItemComponent from './combo-item.js';
 import IgcComboListComponent from './combo-list.js';
 import { DataController } from './controllers/data.js';
-import { NavigationController } from './controllers/navigation.js';
+import { ComboNavigationController } from './controllers/navigation.js';
 import { SelectionController } from './controllers/selection.js';
 import { styles } from './themes/combo.base.css.js';
 import { styles as shared } from './themes/shared/combo.common.css.js';
@@ -66,6 +67,7 @@ import { comboValidators } from './validators.js';
  * @slot suffix - Renders content after the input of the combo.
  * @slot header - Renders a container before the list of options of the combo.
  * @slot footer - Renders a container after the list of options of the combo.
+ * @slot empty - Renders content when the combo dropdown list has no items/data.
  * @slot helper-text - Renders content below the input of the combo.
  * @slot toggle-icon - Renders content inside the suffix container of the combo.
  * @slot clear-icon - Renders content inside the suffix container of the combo.
@@ -132,6 +134,15 @@ export default class IgcComboComponent<
     return comboValidators;
   }
 
+  /** The primary input of the combo component. */
+  private _inputRef = createRef<IgcInputComponent>();
+
+  /** The search input of the combo component. */
+  private _searchRef = createRef<IgcInputComponent>();
+
+  /** The combo virtualized dropdown list. */
+  private _listRef = createRef<IgcComboListComponent>();
+
   private readonly _rootClickController = addRootClickController(this, {
     onHide: async () => {
       if (!this.handleClosing()) {
@@ -144,6 +155,13 @@ export default class IgcComboComponent<
     },
   });
 
+  private readonly _i18nController = addI18nController<IComboResourceStrings>(
+    this,
+    {
+      defaultEN: ComboResourceStringsEN,
+    }
+  );
+
   protected override readonly _formValue = createFormValueState<
     ComboValue<T>[]
   >(this, {
@@ -153,6 +171,7 @@ export default class IgcComboComponent<
       setDefaultValue: asArray,
     },
   });
+
   private _data: T[] = [];
 
   private _valueKey?: Keys<T>;
@@ -177,22 +196,17 @@ export default class IgcComboComponent<
 
   protected _state = new DataController<T>(this);
   protected _selection = new SelectionController<T>(this, this._state);
-  protected _navigation = new NavigationController<T>(this, this._state);
+  protected _navigation = new ComboNavigationController(this, this._state, {
+    input: this._inputRef,
+    search: this._searchRef,
+    list: this._listRef,
+  });
 
   @queryAssignedElements({ slot: 'suffix' })
   protected inputSuffix!: HTMLElement[];
 
   @queryAssignedElements({ slot: 'prefix' })
   protected inputPrefix!: HTMLElement[];
-
-  @query('[part="search-input"]')
-  protected _searchInput!: IgcInputComponent;
-
-  @query('#target', true)
-  private _input!: IgcInputComponent;
-
-  @query(IgcComboListComponent.tagName, true)
-  private _list!: IgcComboListComponent;
 
   /** The data source used to generate the list of options. */
   /* treatAsRef */
@@ -258,6 +272,19 @@ export default class IgcComboComponent<
   public autofocusList = false;
 
   /**
+   * Gets/Sets the locale used for formatting and displaying the dates in the component.
+   * @attr locale
+   */
+  @property()
+  public set locale(value: string) {
+    this._i18nController.locale = value;
+  }
+
+  public get locale() {
+    return this._i18nController.locale;
+  }
+
+  /**
    * The label attribute of the control.
    * @attr label
    */
@@ -276,7 +303,19 @@ export default class IgcComboComponent<
    * @attr placeholder-search
    */
   @property({ attribute: 'placeholder-search' })
-  public placeholderSearch = 'Search';
+  public set placeholderSearch(value: string) {
+    this._placeholderSearch = value;
+  }
+
+  public get placeholderSearch() {
+    return (
+      this._placeholderSearch ??
+      this.resourceStrings.combo_filter_search_placeholder ??
+      'Search'
+    );
+  }
+
+  private _placeholderSearch: string | undefined;
 
   /**
    * Sets the open state of the component.
@@ -284,6 +323,18 @@ export default class IgcComboComponent<
    */
   @property({ type: Boolean, reflect: true })
   public open = false;
+
+  /**
+   * The resource strings for localization.
+   */
+  @property({ attribute: false })
+  public set resourceStrings(value: IComboResourceStrings) {
+    this._i18nController.resourceStrings = value;
+  }
+
+  public get resourceStrings(): IComboResourceStrings {
+    return this._i18nController.resourceStrings;
+  }
 
   /**
    * The key in the data source used when selecting items.
@@ -392,6 +443,14 @@ export default class IgcComboComponent<
     return this._disableFiltering;
   }
 
+  /**
+   * Hides the clear button.
+   * @attr disable-clear
+   * @default false
+   */
+  @property({ type: Boolean, attribute: 'disable-clear' })
+  public disableClear = false;
+
   /* blazorSuppress */
   /**
    * The template used for the content of each combo item.
@@ -475,12 +534,6 @@ export default class IgcComboComponent<
     addThemingController(this, all);
     addSafeEventListener(this, 'blur', this._handleBlur);
     addSafeEventListener(this, 'focusin', this._handleFocusIn);
-
-    // TODO
-    this.addEventListener(
-      'keydown',
-      this._navigation.navigateHost.bind(this._navigation)
-    );
   }
 
   protected override async firstUpdated() {
@@ -542,20 +595,20 @@ export default class IgcComboComponent<
 
     if (!initial) {
       this._validate();
-      this._list.requestUpdate();
+      this._listRef.value!.requestUpdate();
     }
   }
 
   /* alternateName: focusComponent */
   /** Sets focus on the component. */
   public override focus(options?: FocusOptions) {
-    this._input.focus(options);
+    this._inputRef.value!.focus(options);
   }
 
   /* alternateName: blurComponent */
   /** Removes focus from the component. */
   public override blur() {
-    this._input.blur();
+    this._inputRef.value!.blur();
   }
 
   /**
@@ -631,7 +684,7 @@ export default class IgcComboComponent<
     this._navigation.active = detail ? matchIndex : -1;
 
     // update the list after changing the active item
-    this._list.requestUpdate();
+    this._listRef.value!.requestUpdate();
 
     // clear the selection upon typing
     this.clearSingleSelection();
@@ -674,11 +727,11 @@ export default class IgcComboComponent<
     }
 
     if (!this.singleSelect) {
-      this._list.focus();
+      this._listRef.value!.focus();
     }
 
     if (!this.autofocusList) {
-      this._searchInput.focus();
+      this._searchRef.value!.focus();
     }
 
     return true;
@@ -766,17 +819,6 @@ export default class IgcComboComponent<
     `;
   };
 
-  protected listKeydownHandler(event: KeyboardEvent) {
-    const target = findElementFromEventPath<IgcComboListComponent>(
-      IgcComboListComponent.tagName,
-      event
-    );
-
-    if (target) {
-      this._navigation.navigateList(event, target);
-    }
-  }
-
   protected itemClickHandler(event: PointerEvent) {
     this._setTouchedState();
     const target = findElementFromEventPath<IgcComboItemComponent>(
@@ -791,10 +833,10 @@ export default class IgcComboComponent<
     this.toggleSelect(target.index);
 
     if (this.singleSelect) {
-      this._input.focus();
+      this._inputRef.value!.focus();
       this._hide();
     } else {
-      this._searchInput.focus();
+      this._searchRef.value!.focus();
     }
   }
 
@@ -814,6 +856,17 @@ export default class IgcComboComponent<
     this.updateValue();
   }
 
+  /** @hidden @internal */
+  public clearSelection() {
+    if (this.singleSelect) {
+      this.resetSearchTerm();
+      this.clearSingleSelection();
+    } else {
+      this._selection.deselect([], true);
+    }
+    this.updateValue();
+  }
+
   protected clearSingleSelection() {
     const _selection = this._selection.asArray;
     const selection = first(_selection);
@@ -827,25 +880,8 @@ export default class IgcComboComponent<
 
   protected handleClearIconClick(e: PointerEvent) {
     e.stopPropagation();
-
-    if (this.singleSelect) {
-      this.resetSearchTerm();
-      this.clearSingleSelection();
-    } else {
-      this._selection.deselect([], true);
-    }
-
-    this.updateValue();
+    this.clearSelection();
     this._navigation.active = -1;
-  }
-
-  protected handleMainInputKeydown(e: KeyboardEvent) {
-    this._setTouchedState();
-    this._navigation.navigateMainInput(e, this._list);
-  }
-
-  protected handleSearchInputKeydown(e: KeyboardEvent) {
-    this._navigation.navigateSearchInput(e, this._list);
   }
 
   protected toggleCaseSensitivity() {
@@ -884,7 +920,7 @@ export default class IgcComboComponent<
         slot="suffix"
         part="clear-icon"
         @click=${this.handleClearIconClick}
-        ?hidden=${this._selection.isEmpty}
+        ?hidden=${this.disableClear || this._selection.isEmpty}
       >
         <slot name="clear-icon">
           <igc-icon
@@ -900,6 +936,7 @@ export default class IgcComboComponent<
   private renderMainInput() {
     return html`
       <igc-input
+        ${ref(this._inputRef)}
         id="target"
         slot="anchor"
         role="combobox"
@@ -914,7 +951,6 @@ export default class IgcComboComponent<
         label=${ifDefined(this.label)}
         @igcChange=${this._stopPropagation}
         @igcInput=${this.handleMainInput}
-        @keydown=${this.handleMainInputKeydown}
         .value=${this._displayValue}
         .disabled=${this.disabled}
         .required=${this.required}
@@ -942,12 +978,12 @@ export default class IgcComboComponent<
         ?hidden=${this.disableFiltering || this.singleSelect}
       >
         <igc-input
+          ${ref(this._searchRef)}
           .value=${this._state.searchTerm}
           part="search-input"
           placeholder=${this.placeholderSearch}
           exportparts="input: search-input"
           @igcInput=${this.handleSearchInput}
-          @keydown=${this.handleSearchInputKeydown}
         >
           <igc-icon
             slot=${this.caseSensitiveIcon && 'suffix'}
@@ -967,23 +1003,20 @@ export default class IgcComboComponent<
   private renderEmptyTemplate() {
     return html`
       <div part="empty" ?hidden=${!isEmpty(this._state.dataState)}>
-        <slot name="empty">The list is empty</slot>
+        <slot name="empty">${this.resourceStrings.combo_empty_message}</slot>
       </div>
     `;
   }
 
   private renderList() {
     return html`
-      <div
-        .inert=${!this.open}
-        @keydown=${this.listKeydownHandler}
-        part="list-wrapper"
-      >
+      <div .inert=${!this.open} part="list-wrapper">
         ${this.renderSearchInput()}
         <div part="header">
           <slot name="header"></slot>
         </div>
         <igc-combo-list
+          ${ref(this._listRef)}
           aria-multiselectable=${!this.singleSelect}
           id="dropdown"
           part="list"

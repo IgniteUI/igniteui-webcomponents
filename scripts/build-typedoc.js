@@ -1,11 +1,17 @@
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { create } from 'browser-sync';
 import watch from 'node-watch';
 import { Application } from 'typedoc';
 import report from './report.mjs';
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const toPosix = (p) => p.replace(/\\/g, '/');
 const browserSync = create();
-const ROOT = path.join.bind(null, path.resolve('./'));
+const ROOT = (...segments) =>
+  toPosix(path.resolve(__dirname, '..', ...segments));
 
 const TYPEDOC = {
   PLUGINS: {
@@ -99,6 +105,7 @@ async function main() {
     entryPointStrategy,
     plugin: [TYPEDOC.PLUGINS.THEME, TYPEDOC.PLUGINS.LOCALIZATION],
     theme: 'igtheme',
+    router: 'structure',
     excludePrivate: true,
     excludeProtected: true,
     excludeNotDocumented: true,
@@ -141,6 +148,6 @@ async function main() {
 try {
   await main();
 } catch (e) {
-  report.error(e);
+  report.error(e.message ?? e.toString());
   process.exit(1);
 }

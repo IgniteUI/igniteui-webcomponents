@@ -32,12 +32,8 @@ $fs: rem(16px) !default;
     }
 
     ::part(helper-text) {
-        @include type-style('caption');
-
-        color: var-get($theme, 'helper-text-color');
-        margin-block-start: rem(4px);
         grid-auto-rows: minmax(rem(18px), auto);
-        padding-inline: pad-inline(rem(14px), rem(16px), rem(18px));
+        padding-inline: pad-inline(rem(12px), rem(14px), rem(16px));
     }
 }
 
@@ -131,7 +127,7 @@ input:placeholder-shown + [part='notch'] [part='label'],
 [part='start'],
 [part='end'] {
     display: flex;
-    min-width: sizable(rem(10px), rem(12px), rem(14px));
+    min-width: sizable(rem(8px), rem(10px), rem(12px));
     height: var(--size);
     overflow: hidden;
 }
@@ -597,6 +593,20 @@ input:placeholder-shown + [part='notch'] [part='label'],
         border-top: $idle-border-width solid transparent;
     }
 }
+
+:host(:not([disabled], [readonly])[role='combobox'][outlined]:focus-within),
+:host(:not([disabled], [readonly])[role='combobox'][outlined]:state(ig-invalid):focus-within) {
+    :not([part~='filled']) {
+        input:not(:placeholder-shown) + [part='notch'] {
+            border-top: $idle-border-width solid transparent;
+        }
+
+        [part='notch'] {
+            border-block-start-color: transparent;
+        }
+    }
+}
+
 
 :host(:not([disabled],[readonly]):state(ig-invalid)),
 :host(:not([disabled])[role='combobox']:state(ig-invalid)) {

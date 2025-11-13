@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+
+## [Unreleased]
+### Fixed
+- #### Tooltip
+  - Do not show tooltip when target is clicked [#1828](https://github.com/IgniteUI/igniteui-webcomponents/issues/1828)
+
 ## [6.3.5] - 2025-11-13
 ### Changed
 - **License Update**: The project license has been updated to the MIT License, providing greater flexibility and openness for the community. This change reflects our commitment to fostering an inclusive and collaborative development environment while maintaining the high-quality standards you expect from Ignite UI Web Components.

@@ -25,6 +25,7 @@ $inline-inset: rem(24px);
     height: 100%;
 }
 
+[part='input-area-container'],
 [part='message-area-container'] {
     display: grid;
     grid-template-columns: subgrid;
@@ -32,11 +33,18 @@ $inline-inset: rem(24px);
     grid-column: 1 / -1;
     grid-template-rows: auto 1fr;
     align-items: start;
+}
+
+[part='message-area-container'] {
     grid-row: 2;
 
     &:has([part='empty-state']) {
         grid-template-rows: 1fr auto;
     }
+}
+
+[part='input-area-container'] {
+    grid-row: 3;
 }
 
 [part='message-list'],
@@ -123,10 +131,6 @@ slot[name='actions'] {
 slot[name='prefix'] {
     display: block;
     margin-inline-end: rem(32px);
-}
-
-igc-chat-input {
-    grid-row: 3;
 }
 
 igc-list {

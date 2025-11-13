@@ -6,4 +6,15 @@
     // Needed due to how styles are imported in combo-header.ts.
     --component-size: var(--ig-size, var(--default-size));
     --default-size: var(--combo-size) !important;
+
+    width: 100%;
+    white-space: nowrap;
+
+    ::slotted(*) {
+        @include ellipsis();
+
+        display: block;
+        width: 100%;
+        align-items: center;
+    }
 }

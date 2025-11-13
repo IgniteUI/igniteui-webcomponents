@@ -2,6 +2,9 @@
 @use 'styles/utilities' as *;
 
 :host {
+    --transition-duration: 350ms;
+
+    display: contents;
     border-style: none;
     padding: unset;
 }
@@ -80,9 +83,11 @@ dialog::backdrop {
     z-index: 10005;
     pointer-events: none;
     opacity: 0;
-    transition: opacity 350ms ease-out;
+    transition: opacity var(--transition-duration) ease-out;
 }
 
-:host([open]) [part='backdrop'] {
-    opacity: 1;
+:host([open]) {
+    [part='backdrop'] {
+        opacity: 1;
+    }
 }
