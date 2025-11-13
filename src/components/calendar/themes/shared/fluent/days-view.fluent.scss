@@ -121,6 +121,18 @@ $fake-bg-position: calc(50% - (var-get($theme, 'size') / 2));
 }
 
 [part~='date-inner']:not([part~='preview'], [part~='first'][part~='last']) {
+    &:not([part~='selected'], [part~='preview'], [part~='range'], [part~='first'][part~='last']) {
+        border-color: var-get($theme, 'date-border-color');
+
+        &:hover {
+            border-color: var-get($theme, 'date-hover-border-color');
+        }
+
+        &:focus {
+            border-color: var-get($theme, 'date-focus-border-color');
+        }
+    }
+
     &:hover {
         color: var-get($theme, 'date-hover-foreground');
         background: var-get($theme, 'date-hover-background');
@@ -133,19 +145,6 @@ $fake-bg-position: calc(50% - (var-get($theme, 'size') / 2));
 }
 
 [part~='date-inner']:not([part~='inactive']) {
-    &:not([part~='selected'], [part~='preview'], [part~='range'], [part~='first'][part~='last'])
-    {
-        border-color: var-get($theme, 'date-border-color');
-
-        &:hover {
-            border-color: var-get($theme, 'date-hover-border-color');
-        }
-
-        &:focus {
-            border-color: var-get($theme, 'date-focus-border-color');
-        }
-    }
-
     // This selector works only in range selection since firs and last are present only in the range selection
     &[part~='selected'][part~='first'][part~='last'] {
         background: transparent;
