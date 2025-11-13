@@ -683,7 +683,7 @@ $fake-bg-position: calc(50% - (var-get($theme, 'size') / 2));
     }
 }
 
-[part~='date-inner'][part~='inactive'][part~='range']:not([part~='first'], [part~='last'], [part~='preview']) {
+[part~='date-inner'][part~='inactive'][part~='range']:not([part~='preview']) {
     color: var-get($theme, 'date-selected-range-foreground');
 
     &:hover {
