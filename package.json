@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "description": "Ignite UI Web Components",
   "author": "Infragistics",
-  "license": "SEE LICENSE IN LICENSE",
+  "license": "MIT",
   "exports": {
     ".": "./src/index.js",
     "./types": "./src/types.js",
