@@ -14,21 +14,21 @@ type SplitterStoryArgs = IgcSplitterComponent & {
   pane1MinSize?: string;
   pane1MaxSize?: string;
   pane1Collapsed?: boolean;
-  pane1Resizable?: boolean;
+  pane1NonResizable?: boolean;
 
   /* Pane 2 properties */
   pane2Size?: string;
   pane2MinSize?: string;
   pane2MaxSize?: string;
   pane2Collapsed?: boolean;
-  pane2Resizable?: boolean;
+  pane2NonResizable?: boolean;
 
   /* Pane 3 properties */
   pane3Size?: string;
   pane3MinSize?: string;
   pane3MaxSize?: string;
   pane3Collapsed?: boolean;
-  pane3Resizable?: boolean;
+  pane3NonResizable?: boolean;
 };
 
 const metadata: Meta<SplitterStoryArgs> = {
@@ -69,7 +69,7 @@ const metadata: Meta<SplitterStoryArgs> = {
       description: 'Collapsed state of the first pane',
       table: { category: 'Pane 1' },
     },
-    pane1Resizable: {
+    pane1NonResizable: {
       control: 'boolean',
       description: 'Whether the first pane is resizable',
       table: { category: 'Pane 1' },
@@ -94,7 +94,7 @@ const metadata: Meta<SplitterStoryArgs> = {
       description: 'Collapsed state of the second pane',
       table: { category: 'Pane 2' },
     },
-    pane2Resizable: {
+    pane2NonResizable: {
       control: 'boolean',
       description: 'Whether the second pane is resizable',
       table: { category: 'Pane 2' },
@@ -119,7 +119,7 @@ const metadata: Meta<SplitterStoryArgs> = {
       description: 'Collapsed state of the third pane',
       table: { category: 'Pane 3' },
     },
-    pane3Resizable: {
+    pane3NonResizable: {
       control: 'boolean',
       description: 'Whether the third pane is resizable',
       table: { category: 'Pane 3' },
@@ -129,13 +129,13 @@ const metadata: Meta<SplitterStoryArgs> = {
     orientation: 'horizontal',
     nonCollapsible: false,
     pane1Size: 'auto',
-    pane1Resizable: true,
+    pane1NonResizable: false,
     pane1Collapsed: false,
     pane2Size: 'auto',
-    pane2Resizable: true,
+    pane2NonResizable: false,
     pane2Collapsed: false,
     pane3Size: 'auto',
-    pane3Resizable: true,
+    pane3NonResizable: false,
     pane3Collapsed: false,
   },
 };
@@ -165,17 +165,17 @@ export const Default: Story = {
     pane1MinSize,
     pane1MaxSize,
     pane1Collapsed,
-    pane1Resizable,
+    pane1NonResizable,
     pane2Size,
     pane2MinSize,
     pane2MaxSize,
     pane2Collapsed,
-    pane2Resizable,
+    pane2NonResizable,
     pane3Size,
     pane3MinSize,
     pane3MaxSize,
     pane3Collapsed,
-    pane3Resizable,
+    pane3NonResizable,
   }) => html`
     <style>
       .pane-content {
@@ -197,7 +197,7 @@ export const Default: Story = {
           .minSize=${pane1MinSize}
           .maxSize=${pane1MaxSize}
           ?collapsed=${pane1Collapsed}
-          ?resizable=${pane1Resizable}
+          ?non-resizable=${pane1NonResizable}
         >
           <div class="pane-content">Pane 1</div>
         </igc-splitter-pane>
@@ -206,7 +206,7 @@ export const Default: Story = {
           .minSize=${pane2MinSize}
           .maxSize=${pane2MaxSize}
           ?collapsed=${pane2Collapsed}
-          ?resizable=${pane2Resizable}
+          ?non-resizable=${pane2NonResizable}
         >
           <div class="pane-content">Pane 2</div>
         </igc-splitter-pane>
@@ -215,7 +215,7 @@ export const Default: Story = {
           .minSize=${pane3MinSize}
           .maxSize=${pane3MaxSize}
           ?collapsed=${pane3Collapsed}
-          ?resizable=${pane3Resizable}
+          ?non-resizable=${pane3NonResizable}
         >
           <div class="pane-content">Pane 3</div>
         </igc-splitter-pane>

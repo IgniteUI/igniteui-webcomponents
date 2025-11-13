@@ -124,8 +124,8 @@ export default class IgcSplitterPaneComponent extends EventEmitterMixin<
    * Defines if the pane is resizable or not.
    * @attr
    */
-  @property({ type: Boolean, reflect: true })
-  public resizable = true;
+  @property({ type: Boolean, reflect: true, attribute: 'non-resizable' })
+  public nonResizable = false;
 
   /**
    * Collapsed state of the pane.

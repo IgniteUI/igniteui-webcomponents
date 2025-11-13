@@ -19,7 +19,7 @@ import { partMap } from '../common/part-map.js';
 import { addResizeController } from '../resize-container/resize-controller.js';
 import type { SplitterOrientation } from '../types.js';
 import type IgcSplitterComponent from './splitter.js';
-import IgcSplitterPaneComponent from './splitter-pane.js';
+import type IgcSplitterPaneComponent from './splitter-pane.js';
 import { styles } from './themes/splitter-bar.base.css.js';
 
 export interface IgcSplitterBarComponentEventMap {
@@ -84,7 +84,7 @@ export default class IgcSplitterBarComponent extends EventEmitterMixin<
 
   private get _resizeDisallowed() {
     return !!this._siblingPanes.find(
-      (x) => x && (x.resizable === false || x.collapsed === true)
+      (x) => x && (x.nonResizable || x.collapsed)
     );
   }
 
@@ -138,7 +138,7 @@ export default class IgcSplitterBarComponent extends EventEmitterMixin<
       cancel: () => {},
     });
 
-    addKeybindings(this)
+    addKeybindings(this, { skip: this._shouldSkipResize })
       .set(arrowUp, this._handleResizePanes)
       .set(arrowDown, this._handleResizePanes)
       .set(arrowLeft, this._handleResizePanes)
@@ -157,28 +157,30 @@ export default class IgcSplitterBarComponent extends EventEmitterMixin<
     });
   }
 
-  private _handleResizePanes(event: KeyboardEvent) {
-    if (this._resizeDisallowed) {
-      return false;
+  private _shouldSkipResize(_node: Element, event: KeyboardEvent): boolean {
+    if (this._resizeDisallowed && !event.ctrlKey) {
+      return true;
     }
     if (
       (event.key === arrowUp || event.key === arrowDown) &&
-      this._orientation === 'horizontal'
+      this._orientation === 'horizontal' &&
+      !event.ctrlKey
     ) {
-      return false;
+      return true;
     }
     if (
       (event.key === arrowLeft || event.key === arrowRight) &&
-      this._orientation === 'vertical'
+      this._orientation === 'vertical' &&
+      !event.ctrlKey
     ) {
-      return false;
+      return true;
     }
-    let delta = 0;
-    if (event.key === arrowUp || event.key === arrowLeft) {
-      delta = -10;
-    } else {
-      delta = 10;
-    }
+    return false;
+  }
+
+  private _handleResizePanes(event: KeyboardEvent) {
+    const delta = event.key === arrowUp || event.key === arrowLeft ? -10 : 10;
+
     this.emitEvent('igcMovingStart', { detail: this._siblingPanes[0]! });
     this.emitEvent('igcMoving', { detail: delta });
     this.emitEvent('igcMovingEnd', { detail: delta });
@@ -214,10 +216,8 @@ export default class IgcSplitterBarComponent extends EventEmitterMixin<
         Object.assign(this._internalStyles, { '--cursor': this._cursor });
         this.requestUpdate();
       },
-      filter: [IgcSplitterPaneComponent.tagName],
       config: {
-        attributeFilter: ['collapsed', 'resizable'],
-        subtree: true,
+        attributeFilter: ['collapsed', 'non-resizable'],
       },
     });
   }

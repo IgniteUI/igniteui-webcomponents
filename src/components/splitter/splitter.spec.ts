@@ -129,13 +129,13 @@ describe('Splitter', () => {
       const style = getComputedStyle(firstBar);
       expect(style.cursor).to.equal('col-resize');
 
-      firstPane.resizable = false;
+      firstPane.nonResizable = true;
       await elementUpdated(splitter);
       await nextFrame();
 
       expect(style.cursor).to.equal('default');
 
-      firstPane.resizable = true;
+      firstPane.nonResizable = false;
       secondPane.collapsed = true;
       await elementUpdated(splitter);
       await nextFrame();
@@ -249,8 +249,8 @@ describe('Splitter', () => {
 
       expect(splitter.panes[0].size).to.equal('30%');
       expect(splitter.panes[1].size).to.equal('70%');
-      expect(style1.flex).to.equal('1 1 30%');
-      expect(style2.flex).to.equal('1 1 70%');
+      expect(style1.flex).to.equal('0 1 30%');
+      expect(style2.flex).to.equal('0 1 70%');
 
       expect(pane1.minSize).to.equal('20%');
       expect(pane1.maxSize).to.equal('80%');
@@ -323,7 +323,7 @@ describe('Splitter', () => {
       expect(pane.collapsed).to.be.false;
     });
 
-    it('should toggle the previous pane when the bar expander-end is clicked', async () => {
+    it('should toggle the next pane when the bar expander-end is clicked', async () => {
       const bars = getSplitterBars(splitter);
       const firstBar = bars[0];
       const firstPane = splitter.panes[0];
@@ -340,10 +340,10 @@ describe('Splitter', () => {
       await elementUpdated(splitter);
       await nextFrame();
 
-      expect(firstPane.collapsed).to.be.true;
-      expect(secondPane.collapsed).to.be.false;
-      expect(expanderStart.hidden).to.be.true;
-      expect(expanderEnd.hidden).to.be.false;
+      expect(firstPane.collapsed).to.be.false;
+      expect(secondPane.collapsed).to.be.true;
+      expect(expanderStart.hidden).to.be.false;
+      expect(expanderEnd.hidden).to.be.true;
 
       expanderEnd.dispatchEvent(
         new PointerEvent('pointerdown', { bubbles: true })
@@ -357,7 +357,7 @@ describe('Splitter', () => {
       expect(expanderEnd.hidden).to.be.false;
     });
 
-    it('should toggle the next pane when the bar expander-start is clicked', async () => {
+    it('should toggle the previous pane when the bar expander-start is clicked', async () => {
       const bars = getSplitterBars(splitter);
       const firstBar = bars[0];
       const firstPane = splitter.panes[0];
@@ -374,10 +374,10 @@ describe('Splitter', () => {
       await elementUpdated(splitter);
       await nextFrame();
 
-      expect(secondPane.collapsed).to.be.true;
-      expect(firstPane.collapsed).to.be.false;
-      expect(expanderStart.hidden).to.be.false;
-      expect(expanderEnd.hidden).to.be.true;
+      expect(firstPane.collapsed).to.be.true;
+      expect(secondPane.collapsed).to.be.false;
+      expect(expanderStart.hidden).to.be.true;
+      expect(expanderEnd.hidden).to.be.false;
 
       expanderStart.dispatchEvent(
         new PointerEvent('pointerdown', { bubbles: true })
