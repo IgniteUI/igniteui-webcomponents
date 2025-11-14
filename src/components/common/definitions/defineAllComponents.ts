@@ -19,6 +19,7 @@ import IgcChatComponent from '../../chat/chat.js';
 import IgcCheckboxComponent from '../../checkbox/checkbox.js';
 import IgcSwitchComponent from '../../checkbox/switch.js';
 import IgcChipComponent from '../../chip/chip.js';
+import IgcColorPickerComponent from '../../color-picker/color-picker.js';
 import IgcComboComponent from '../../combo/combo.js';
 import IgcDatePickerComponent from '../../date-picker/date-picker.js';
 import IgcDateRangePickerComponent from '../../date-range-picker/date-range-picker.js';
@@ -91,6 +92,7 @@ const allComponents: IgniteComponent[] = [
   IgcChatComponent,
   IgcCheckboxComponent,
   IgcChipComponent,
+  IgcColorPickerComponent,
   IgcComboComponent,
   IgcDatePickerComponent,
   IgcDateRangePickerComponent,
