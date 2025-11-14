@@ -6,6 +6,10 @@
     font-family: var(--ig-font-family);
     inset-inline: 50% auto;
     transform: translateX(calc(-50% + .5px));
+
+    igc-button {
+        --ig-size: 2;
+    }
 }
 
 :host([position='bottom']) {
