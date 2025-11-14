@@ -1,0 +1,35 @@
+@use 'styles/common/component';
+@use 'styles/utilities' as *;
+
+:host {
+    display: flex;
+    width: 100%;
+    height: 100%;
+
+    [part='base'] {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        color: var(--ig-gray-900);
+        background: var(--ig-gray-100);
+        border: 1px solid var(--ig-gray-200);
+        user-select: none;
+    }
+
+    ::slotted(igc-splitter-pane) {
+        width: 100%;
+        height: 100%;
+        display: contents;
+    }
+
+    ::slotted(igc-splitter-pane[collapsed]) {
+        height: 0;
+        width: 0;
+    }
+}
+
+:host([orientation='vertical']) {
+    [part='base'] {
+        flex-direction: column;
+    }
+}
