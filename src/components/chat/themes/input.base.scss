@@ -54,7 +54,8 @@
     flex: 1 1;
 
     igc-chip {
-        --ig-size: 2;
+        --default-size: 2;
+        --component-size: var(--ig-size, var(--default-size));
     }
 }
 
@@ -66,7 +67,8 @@ igc-textarea::part(input) {
 
 igc-icon-button,
 igc-textarea {
-    --ig-size: 2;
+    --default-size: 2;
+    --component-size: var(--ig-size, var(--default-size));
 }
 
 @container (max-width: 400px) {
