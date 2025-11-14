@@ -5,6 +5,7 @@
     content-visibility: auto;
     contain-intrinsic-size: auto;
     contain: strict;
+
     --current-color: #000;
     --hue-slider-track: linear-gradient(
         to right,
@@ -16,10 +17,9 @@
         #f0f 83.33%,
         red 100%
     );
-
     --alpha-slider-track: linear-gradient(
             90deg,
-            rgba(0, 0, 0, 0),
+            rgb(0 0 0 / 0%),
             var(--current-color)
         ),
         repeating-linear-gradient(
@@ -38,7 +38,6 @@
             #aaa 75%,
             #aaa
         );
-
     --alpha-track-position: 0 0, 0 0, 4px 4px;
     --alpha-track-size: contain, 8px 8px, 8px 8px;
 
@@ -125,7 +124,7 @@
         min-width: rem(370px);
         min-height: 12rem;
         grid-template-rows: 2fr 1fr;
-        grid-row-gap: 0.5rem;
+        row-gap: 0.5rem;
         box-shadow: var(--ig-elevation-3);
     }
 }
