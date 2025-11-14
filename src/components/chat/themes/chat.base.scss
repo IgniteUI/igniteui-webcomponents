@@ -135,7 +135,6 @@ slot[name='prefix'] {
 
 igc-list {
     --default-size: 3;
-    --component-size: var(--ig-size, var(--default-size));
 
     padding-block-end: rem(24px);
     min-height: fit-content;
