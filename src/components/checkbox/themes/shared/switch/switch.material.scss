@@ -14,18 +14,22 @@ $ripple-radius: calc(#{$ripple-size} / 2);
 }
 
 [part~='base'] {
+    [part~='thumb'] {
+        &::after {
+            opacity: .06;
+        }
+    }
+
     &:hover {
         [part~='thumb'] {
             &::after {
                 background: color(gray, 600);
-                opacity: .06;
             }
         }
 
         [part~='thumb'][part~='checked'] {
             &::after {
                 background: var-get($theme, 'thumb-on-color');
-                opacity: .06;
             }
         }
 
