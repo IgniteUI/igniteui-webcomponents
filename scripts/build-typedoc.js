@@ -148,6 +148,6 @@ async function main() {
 try {
   await main();
 } catch (e) {
-  report.error(e);
+  report.error(e.message ?? e.toString());
   process.exit(1);
 }

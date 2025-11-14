@@ -74,7 +74,7 @@ export async function buildThemes(isProduction = false) {
     );
   } catch (err) {
     await compiler.dispose();
-    report.error(err);
+    report.error(err.message ?? err.toString());
     process.exit(1);
   }
 
@@ -114,7 +114,7 @@ export async function buildComponents(isProduction = false) {
     );
   } catch (err) {
     await compiler.dispose();
-    report.error(err);
+    report.error(err.message ?? err.toString());
     process.exit(1);
   }
 
