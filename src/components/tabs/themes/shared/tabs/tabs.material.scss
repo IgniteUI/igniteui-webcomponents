@@ -18,3 +18,7 @@ $theme: $material;
         background: var-get($theme, 'indicator-color');
     }
 }
+
+igc-icon-button:hover::part(icon) {
+    color: var(--hover-foreground);
+}
