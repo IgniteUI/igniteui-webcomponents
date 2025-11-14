@@ -12,10 +12,6 @@ $inline-inset: rem(24px);
     display: flex;
     flex-direction: column;
     container-type: inline-size;
-
-    ::part(text-input) {
-        --textarea-height: #{rem(48px)};
-    }
 }
 
 [part='chat-container'] {
