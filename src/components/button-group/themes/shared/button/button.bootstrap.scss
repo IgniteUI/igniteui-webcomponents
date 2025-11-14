@@ -56,4 +56,8 @@ $group-item-border-thickness: rem(1px);
             background: var-get($theme, 'item-selected-focus-background');
         }
     }
+
+    [part='toggle focused'] {
+        box-shadow: 0 0 0 rem(4px) var-get($theme, 'selected-shadow-color');
+    }
 }
