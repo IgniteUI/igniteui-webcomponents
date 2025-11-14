@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [6.3.6] - 2025-11-14
+### Fixed
+- #### Date picker
+  - Value not committed on browser auto-fill behavior [#1932](https://github.com/IgniteUI/igniteui-webcomponents/pull/1932)
+
 ## [6.3.5] - 2025-11-13
 ### Changed
 - **License Update**: The project license has been updated to the MIT License, providing greater flexibility and openness for the community. This change reflects our commitment to fostering an inclusive and collaborative development environment while maintaining the high-quality standards you expect from Ignite UI Web Components.
@@ -1054,6 +1059,7 @@ Initial release of Ignite UI Web Components
 - Ripple component
 - Switch component
 
+[6.3.6]: https://github.com/IgniteUI/igniteui-webcomponents/compare/6.3.5...6.3.6
 [6.3.5]: https://github.com/IgniteUI/igniteui-webcomponents/compare/6.3.4...6.3.5
 [6.3.4]: https://github.com/IgniteUI/igniteui-webcomponents/compare/6.3.3...6.3.4
 [6.3.3]: https://github.com/IgniteUI/igniteui-webcomponents/compare/6.3.2...6.3.3
