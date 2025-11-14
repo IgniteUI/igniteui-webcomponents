@@ -1,5 +1,5 @@
+import { ValidationResourceStringsEN } from 'igniteui-i18n-core';
 import { CalendarDay } from '../calendar/model.js';
-import { validationResourcesKeys } from './i18n/utils.js';
 import {
   asNumber,
   formatString,
@@ -9,14 +9,12 @@ import {
 } from './util.js';
 
 type ValidatorHandler<T> = (host: T) => boolean;
-type ValidatorMessageKeyFormat<T> = (host: T) => string;
-type ValidatorMessageFormat<T> = (message: string, host: T) => string;
+type ValidatorMessageFormat<T> = (host: T) => string;
 
 /** @ignore */
 export interface Validator<T = any> {
   key: keyof ValidityStateFlags;
-  messageResourceKey: string | ValidatorMessageKeyFormat<T>;
-  messageFormat?: ValidatorMessageFormat<T>;
+  message: string | ValidatorMessageFormat<T>;
   isValid: ValidatorHandler<T>;
 }
 
@@ -28,7 +26,7 @@ export const requiredValidator: Validator<{
   value?: unknown;
 }> = {
   key: 'valueMissing',
-  messageResourceKey: validationResourcesKeys.required,
+  message: ValidationResourceStringsEN.required_validation_error!,
   isValid: ({ required, value }) => (required ? !!value : true),
 };
 
@@ -37,7 +35,7 @@ export const requiredBooleanValidator: Validator<{
   checked: boolean;
 }> = {
   key: 'valueMissing',
-  messageResourceKey: validationResourcesKeys.required,
+  message: ValidationResourceStringsEN.required_validation_error!,
   isValid: ({ required, checked }) => (required ? checked : true),
 };
 
@@ -46,8 +44,11 @@ export const minLengthValidator: Validator<{
   value: string;
 }> = {
   key: 'tooShort',
-  messageResourceKey: validationResourcesKeys.minLength,
-  messageFormat: (message, { minLength }) => formatString(message, minLength),
+  message: ({ minLength }) =>
+    formatString(
+      ValidationResourceStringsEN.min_length_validation_error!,
+      minLength
+    ),
   isValid: ({ minLength, value }) =>
     minLength && value ? value.length >= asNumber(minLength) : true,
 };
@@ -57,8 +58,11 @@ export const maxLengthValidator: Validator<{
   value: string;
 }> = {
   key: 'tooLong',
-  messageResourceKey: validationResourcesKeys.maxLength,
-  messageFormat: (message, { maxLength }) => formatString(message, maxLength),
+  message: ({ maxLength }) =>
+    formatString(
+      ValidationResourceStringsEN.max_length_validation_error!,
+      maxLength
+    ),
   isValid: ({ maxLength, value }) =>
     maxLength && value ? value.length <= asNumber(maxLength) : true,
 };
@@ -66,7 +70,7 @@ export const maxLengthValidator: Validator<{
 export const patternValidator: Validator<{ pattern?: string; value: string }> =
   {
     key: 'patternMismatch',
-    messageResourceKey: validationResourcesKeys.pattern,
+    message: ValidationResourceStringsEN.pattern_validation_error!,
     isValid: ({ pattern, value }) =>
       pattern && value ? new RegExp(pattern, 'u').test(value) : true,
   };
@@ -76,8 +80,8 @@ export const minValidator: Validator<{
   value: number | string;
 }> = {
   key: 'rangeUnderflow',
-  messageResourceKey: validationResourcesKeys.min,
-  messageFormat: (message, { min }) => formatString(message, min),
+  message: ({ min }) =>
+    formatString(ValidationResourceStringsEN.min_validation_error!, min),
   isValid: ({ min, value }) =>
     isDefined(value) && value !== '' && isDefined(min)
       ? asNumber(value) >= asNumber(min)
@@ -89,8 +93,8 @@ export const maxValidator: Validator<{
   value: number | string;
 }> = {
   key: 'rangeOverflow',
-  messageResourceKey: validationResourcesKeys.max,
-  messageFormat: (message, { max }) => formatString(message, max),
+  message: ({ max }) =>
+    formatString(ValidationResourceStringsEN.max_validation_error!, max),
   isValid: ({ max, value }) =>
     isDefined(value) && value !== '' && isDefined(max)
       ? asNumber(value) <= asNumber(max)
@@ -103,7 +107,7 @@ export const stepValidator: Validator<{
   value: number | string;
 }> = {
   key: 'stepMismatch',
-  messageResourceKey: 'Value does not conform to step constraint',
+  message: 'Value does not conform to step constraint',
   isValid: ({ min, step, value }) => {
     if (isDefined(value) && value !== '' && isDefined(step)) {
       const _value = asNumber(value) - asNumber(min);
@@ -122,13 +126,13 @@ export const stepValidator: Validator<{
 
 export const emailValidator: Validator<{ value: string }> = {
   key: 'typeMismatch',
-  messageResourceKey: validationResourcesKeys.email,
+  message: ValidationResourceStringsEN.email_validation_error!,
   isValid: ({ value }) => (value ? emailRegex.test(value) : true),
 };
 
 export const urlValidator: Validator<{ value: string }> = {
   key: 'typeMismatch',
-  messageResourceKey: validationResourcesKeys.url,
+  message: ValidationResourceStringsEN.url_validation_error!,
   isValid: ({ value }) => (value ? URL.canParse(value) : true),
 };
 
@@ -137,8 +141,8 @@ export const minDateValidator: Validator<{
   min?: Date | null;
 }> = {
   key: 'rangeUnderflow',
-  messageResourceKey: validationResourcesKeys.min,
-  messageFormat: (message, { min }) => formatString(message, min),
+  message: ({ min }) =>
+    formatString(ValidationResourceStringsEN.min_validation_error!, min),
   isValid: ({ value, min }) =>
     value && min ? CalendarDay.compare(value, min) >= 0 : true,
 };
@@ -148,8 +152,8 @@ export const maxDateValidator: Validator<{
   max?: Date | null;
 }> = {
   key: 'rangeOverflow',
-  messageResourceKey: validationResourcesKeys.max,
-  messageFormat: (message, { max }) => formatString(message, max),
+  message: ({ max }) =>
+    formatString(ValidationResourceStringsEN.max_validation_error!, max),
   isValid: ({ value, max }) =>
     value && max ? CalendarDay.compare(value, max) <= 0 : true,
 };

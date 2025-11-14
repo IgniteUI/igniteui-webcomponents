@@ -1,9 +1,13 @@
+import {
+  FileInputResourceStringsEN,
+  type IFileInputResourceStrings,
+} from 'igniteui-i18n-core';
 import { html } from 'lit';
 import { property, state } from 'lit/decorators.js';
-
 import { addThemingController } from '../../theming/theming-controller.js';
 import IgcButtonComponent from '../button/button.js';
 import { registerComponent } from '../common/definitions/register.js';
+import { addI18nController } from '../common/i18n/i18n-controller.js';
 import type { AbstractConstructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormValueFileListTransformers } from '../common/mixins/forms/form-transformers.js';
@@ -66,6 +70,11 @@ export default class IgcFileInputComponent extends EventEmitterMixin<
     );
   }
 
+  protected readonly _i18nController =
+    addI18nController<IFileInputResourceStrings>(this, {
+      defaultEN: FileInputResourceStringsEN,
+    });
+
   protected override get __validators() {
     return fileValidators;
   }
@@ -100,6 +109,31 @@ export default class IgcFileInputComponent extends EventEmitterMixin<
 
   public get value(): string {
     return this.input?.value ?? '';
+  }
+
+  /**
+   * The resource strings for localization.
+   */
+  @property({ attribute: false })
+  public set resourceStrings(value: IFileInputResourceStrings) {
+    this._i18nController.resourceStrings = value;
+  }
+
+  public get resourceStrings(): IFileInputResourceStrings {
+    return this._i18nController.resourceStrings;
+  }
+
+  /**
+   * Gets/Sets the locale used for getting language, affecting resource strings.
+   * @attr locale
+   */
+  @property()
+  public set locale(value: string) {
+    this._i18nController.locale = value;
+  }
+
+  public get locale() {
+    return this._i18nController.locale;
   }
 
   /**
@@ -181,13 +215,16 @@ export default class IgcFileInputComponent extends EventEmitterMixin<
   }
 
   protected override renderFileParts() {
-    const emptyText = this.placeholder ?? 'No file chosen';
+    const emptyText =
+      this.placeholder ?? this.resourceStrings.file_input_placeholder!;
 
     return html`
       <div part="file-parts">
         <div part="file-selector-button">
           <igc-button variant="flat" ?disabled=${this.disabled} tabindex="-1">
-            <slot name="file-selector-text">Browse</slot>
+            <slot name="file-selector-text"
+              >${this.resourceStrings.file_input_upload_button}</slot
+            >
           </igc-button>
         </div>
         <div part="file-names">
