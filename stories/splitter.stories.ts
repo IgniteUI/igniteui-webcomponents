@@ -3,10 +3,9 @@ import { html } from 'lit';
 
 import { defineComponents } from 'igniteui-webcomponents';
 import IgcSplitterComponent from '../src/components/splitter/splitter.js';
-import IgcSplitterPaneComponent from '../src/components/splitter/splitter-pane.js';
 import { disableStoryControls } from './story.js';
 
-defineComponents(IgcSplitterComponent, IgcSplitterPaneComponent);
+defineComponents(IgcSplitterComponent);
 
 type SplitterStoryArgs = IgcSplitterComponent & {
   /* Pane 1 properties */
@@ -128,6 +127,9 @@ const metadata: Meta<SplitterStoryArgs> = {
   args: {
     orientation: 'horizontal',
     nonCollapsible: false,
+    nonResizable: false,
+    startCollapsed: false,
+    endCollapsed: false,
     pane1Size: 'auto',
     pane1NonResizable: false,
     pane1Collapsed: false,
@@ -143,39 +145,97 @@ const metadata: Meta<SplitterStoryArgs> = {
 export default metadata;
 type Story = StoryObj<SplitterStoryArgs>;
 
-function changePaneMinMaxSizes() {
-  const splitter = document.querySelector('igc-splitter');
-  const panes = splitter?.panes;
-  if (!panes) {
-    return;
-  }
-  panes[0].minSize = '50px';
-  panes[0].maxSize = '200px';
-  panes[1].minSize = '100px';
-  panes[1].maxSize = '300px';
-  panes[2].minSize = '150px';
-  panes[2].maxSize = '450px';
-}
+// function changePaneMinMaxSizes() {
+//   const splitter = document.querySelector('igc-splitter');
+//   const panes = splitter?.panes;
+//   if (!panes) {
+//     return;
+//   }
+//   panes[0].minSize = '50px';
+//   panes[0].maxSize = '200px';
+//   panes[1].minSize = '100px';
+//   panes[1].maxSize = '300px';
+//   panes[2].minSize = '150px';
+//   panes[2].maxSize = '450px';
+// }
 
 export const Default: Story = {
+  // render: ({
+  //   orientation,
+  //   nonCollapsible,
+  //   pane1Size,
+  //   pane1MinSize,
+  //   pane1MaxSize,
+  //   pane1Collapsed,
+  //   pane1NonResizable,
+  //   pane2Size,
+  //   pane2MinSize,
+  //   pane2MaxSize,
+  //   pane2Collapsed,
+  //   pane2NonResizable,
+  //   pane3Size,
+  //   pane3MinSize,
+  //   pane3MaxSize,
+  //   pane3Collapsed,
+  //   pane3NonResizable,
+  // }) => html`
+  //   <style>
+  //     .pane-content {
+  //       padding: 12px;
+  //     }
+
+  //     .splitters {
+  //       height: 400px;
+  //     }
+  //   </style>
+
+  //   <div class="splitters">
+  //     <igc-splitter
+  //       .orientation=${orientation}
+  //       .nonCollapsible=${nonCollapsible}
+  //     >
+  //       <igc-splitter-pane
+  //         .size=${pane1Size || 'auto'}
+  //         .minSize=${pane1MinSize}
+  //         .maxSize=${pane1MaxSize}
+  //         ?collapsed=${pane1Collapsed}
+  //         ?non-resizable=${pane1NonResizable}
+  //       >
+  //         <div class="pane-content">Pane 1</div>
+  //       </igc-splitter-pane>
+  //       <igc-splitter-pane
+  //         .size=${pane2Size || 'auto'}
+  //         .minSize=${pane2MinSize}
+  //         .maxSize=${pane2MaxSize}
+  //         ?collapsed=${pane2Collapsed}
+  //         ?non-resizable=${pane2NonResizable}
+  //       >
+  //         <div class="pane-content">Pane 2</div>
+  //       </igc-splitter-pane>
+  //       <igc-splitter-pane
+  //         .size=${pane3Size || 'auto'}
+  //         .minSize=${pane3MinSize}
+  //         .maxSize=${pane3MaxSize}
+  //         ?collapsed=${pane3Collapsed}
+  //         ?non-resizable=${pane3NonResizable}
+  //       >
+  //         <div class="pane-content">Pane 3</div>
+  //       </igc-splitter-pane>
+  //     </igc-splitter>
+  //   </div>
+  //   <igc-button
+  //     style="margin-top: 16px;"
+  //     variant="outlined"
+  //     @click=${changePaneMinMaxSizes}
+  //     >Change All Panes Min/Max Sizes</igc-button
+  //   >
+  // `,
   render: ({
     orientation,
     nonCollapsible,
-    pane1Size,
-    pane1MinSize,
-    pane1MaxSize,
-    pane1Collapsed,
-    pane1NonResizable,
-    pane2Size,
-    pane2MinSize,
-    pane2MaxSize,
-    pane2Collapsed,
-    pane2NonResizable,
-    pane3Size,
-    pane3MinSize,
-    pane3MaxSize,
-    pane3Collapsed,
-    pane3NonResizable,
+    nonResizable,
+    startCollapsed,
+    endCollapsed,
   }) => html`
     <style>
       .pane-content {
@@ -191,42 +251,16 @@ export const Default: Story = {
       <igc-splitter
         .orientation=${orientation}
         .nonCollapsible=${nonCollapsible}
+        .nonResizable=${nonResizable}
+        .startMinSize=${'100px'}
+        .endMinSize=${'150px'}
+        .startCollapsed=${startCollapsed}
+        .endCollapsed=${endCollapsed}
       >
-        <igc-splitter-pane
-          .size=${pane1Size || 'auto'}
-          .minSize=${pane1MinSize}
-          .maxSize=${pane1MaxSize}
-          ?collapsed=${pane1Collapsed}
-          ?non-resizable=${pane1NonResizable}
-        >
-          <div class="pane-content">Pane 1</div>
-        </igc-splitter-pane>
-        <igc-splitter-pane
-          .size=${pane2Size || 'auto'}
-          .minSize=${pane2MinSize}
-          .maxSize=${pane2MaxSize}
-          ?collapsed=${pane2Collapsed}
-          ?non-resizable=${pane2NonResizable}
-        >
-          <div class="pane-content">Pane 2</div>
-        </igc-splitter-pane>
-        <igc-splitter-pane
-          .size=${pane3Size || 'auto'}
-          .minSize=${pane3MinSize}
-          .maxSize=${pane3MaxSize}
-          ?collapsed=${pane3Collapsed}
-          ?non-resizable=${pane3NonResizable}
-        >
-          <div class="pane-content">Pane 3</div>
-        </igc-splitter-pane>
+        <div slot="start">Pane 1</div>
+        <div slot="end">Pane 2</div>
       </igc-splitter>
     </div>
-    <igc-button
-      style="margin-top: 16px;"
-      variant="outlined"
-      @click=${changePaneMinMaxSizes}
-      >Change All Panes Min/Max Sizes</igc-button
-    >
   `,
 };
 
@@ -240,29 +274,20 @@ export const NestedSplitters: Story = {
     </style>
 
     <igc-splitter orientation="horizontal" style="height: 600px;">
-      <igc-splitter-pane>
+      <div slot="start">
         <igc-splitter orientation="vertical" class="nested-splitter">
-          <igc-splitter-pane>
-            <div class="pane-content">Top Left Pane</div>
-          </igc-splitter-pane>
+          <div slot="start">Top Left Pane</div>
 
-          <igc-splitter-pane>
-            <div class="pane-content">Bottom Left Pane</div>
-          </igc-splitter-pane>
+          <div slot="end">Bottom Left Pane</div>
         </igc-splitter>
-      </igc-splitter-pane>
+      </div>
 
-      <igc-splitter-pane>
+      <div slot="end">
         <igc-splitter orientation="vertical" class="nested-splitter">
-          <igc-splitter-pane>
-            <div class="pane-content">Top Right Pane</div>
-          </igc-splitter-pane>
-
-          <igc-splitter-pane>
-            <div class="pane-content">Bottom Right Pane</div>
-          </igc-splitter-pane>
+          <div slot="start">Top Right Pane</div>
+          <div slot="end">Bottom Right Pane</div>
         </igc-splitter>
-      </igc-splitter-pane>
+      </div>
     </igc-splitter>
   `,
 };

@@ -16,20 +16,104 @@
         user-select: none;
     }
 
-    ::slotted(igc-splitter-pane) {
+    // Styles for the pane wrapper divs (startPane/endPane)
+    [part~='startPane'],
+    [part~='endPane'] {
+        display: flex;
+        flex: 1 1 auto;
         width: 100%;
         height: 100%;
-        display: contents;
+        overflow: auto;
+        box-sizing: border-box;
     }
 
-    ::slotted(igc-splitter-pane[collapsed]) {
-        height: 0;
-        width: 0;
+    ::slotted(*) {
+        flex: 1 1 auto;
+        width: 100%;
+        height: 100%;
+        min-width: 0;
+        min-height: 0;
+    }
+
+    // Bar styles (moved from splitter-bar.base.scss)
+    [part='bar'] {
+        --bar-size: 5px;
+
+        display: flex;
+        background-color: var(--ig-gray-200);
+        justify-content: center;
+        cursor: var(--cursor, default);
+
+        &:hover {
+            background-color: var(--ig-gray-400);
+        }
+
+        [part='expander-start'],
+        [part='expander-end'] {
+            cursor: pointer;
+            width: 5px;
+            height: 5px;
+        }
+
+        [part='expander-start'] {
+            background-color: red;
+        }
+
+        [part='expander-end'] {
+            background-color: green;
+        }
+
+        [part='handle'] {
+            background-color: yellow;
+        }
     }
 }
 
+// Horizontal orientation (default)
+:host(:not([orientation='vertical'])) {
+    [part='base'] {
+        flex-direction: row;
+    }
+
+    [part='bar'] {
+        flex-direction: column;
+        width: var(--bar-size);
+        height: 100%;
+        --cursor: col-resize;
+
+        [part='handle'] {
+            height: 50px;
+        }
+    }
+}
+
+// Vertical orientation
 :host([orientation='vertical']) {
     [part='base'] {
         flex-direction: column;
+    }
+
+    [part='bar'] {
+        flex-direction: row;
+        width: 100%;
+        height: var(--bar-size);
+        --cursor: row-resize;
+
+        [part='handle'] {
+            width: 50px;
+        }
+    }
+}
+
+// Collapsed states
+:host([start-collapsed]) {
+    [part='startPane'] {
+        display: none;
+    }
+}
+
+:host([end-collapsed]) {
+    [part~='endPane'] {
+        display: none;
     }
 }
