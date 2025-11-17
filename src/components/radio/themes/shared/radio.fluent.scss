@@ -124,6 +124,7 @@ $theme: $fluent;
 
         &::before {
             background: var-get($theme, 'error-color-hover');
+            border-color: var-get($theme, 'error-color-hover');
         }
     }
 }

@@ -118,6 +118,7 @@ $theme: $material;
     [part='control checked'] {
         &::before {
             background: var-get($theme, 'error-color-hover');
+            border-color: var-get($theme, 'error-color-hover');
         }
 
         &::after {
