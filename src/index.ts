@@ -90,26 +90,30 @@ export {
   type IgcCalendarResourceStrings,
 } from './components/common/i18n/EN/calendar.resources.js';
 export {
+  IgcDateRangePickerResourceStringsEN,
+  type IgcDateRangePickerResourceStrings,
+} from './components/common/i18n/EN/date-range-picker.resources.js';
+export {
   IgcChatResourceStringEN,
   type IgcChatResourceStrings,
 } from './components/common/i18n/EN/chat.resources.js';
 export {
   type ICalendarResourceStrings,
   type ICarouselResourceStrings,
-  type IComboResourceStrings,
   type IChipResourceStrings,
+  type IComboResourceStrings,
   type IDateRangePickerResourceStrings,
-  type IValidationResourceStrings,
+  type IFileInputResourceStrings,
+  type ITreeResourceStrings,
   CalendarResourceStringsEN,
   CarouselResourceStringsEN,
-  ComboResourceStringsEN,
   ChipResourceStringsEN,
+  ComboResourceStringsEN,
   DateRangePickerResourceStringsEN,
-  ValidationResourceStringsEN,
+  FileInputResourceStringsEN,
+  TreeResourceStringsEN,
   registerI18n,
   setCurrentI18n,
-  getCurrentI18n,
-  getCurrentResourceStrings,
 } from 'igniteui-i18n-core';
 
 // Event maps
