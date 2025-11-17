@@ -281,7 +281,7 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
   public animationType: HorizontalTransitionAnimation = 'slide';
 
   /**
-   * Gets/Sets the locale used for formatting and displaying the dates in the component.
+   * Gets/Sets the locale used for getting language, affecting resource strings.
    * @attr locale
    */
   @property()
@@ -295,6 +295,7 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
 
   /**
    * The resource strings for localization.
+   * Currently only aria-label attributes are localized for the carousel.
    */
   @property({ attribute: false })
   public set resourceStrings(value: ICarouselResourceStrings) {
