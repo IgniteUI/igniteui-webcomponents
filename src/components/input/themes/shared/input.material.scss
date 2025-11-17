@@ -594,6 +594,20 @@ input:placeholder-shown + [part='notch'] [part='label'],
     }
 }
 
+:host(:not([disabled], [readonly])[role='combobox'][outlined]:focus-within),
+:host(:not([disabled], [readonly])[role='combobox'][outlined]:state(ig-invalid):focus-within) {
+    :not([part~='filled']) {
+        input:not(:placeholder-shown) + [part='notch'] {
+            border-top: $idle-border-width solid transparent;
+        }
+
+        [part='notch'] {
+            border-block-start-color: transparent;
+        }
+    }
+}
+
+
 :host(:not([disabled],[readonly]):state(ig-invalid)),
 :host(:not([disabled])[role='combobox']:state(ig-invalid)) {
     [part='label'] {
