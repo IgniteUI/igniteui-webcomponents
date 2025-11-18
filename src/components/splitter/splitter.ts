@@ -56,6 +56,7 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   private readonly _barRef = createRef<HTMLElement>();
   private _startPaneInternalStyles: StyleInfo = {};
   private _endPaneInternalStyles: StyleInfo = {};
+  private _barInternalStyles: StyleInfo = {};
   private _startSize = 'auto';
   private _endSize = 'auto';
   private _startPaneInitialSize!: number;
@@ -133,6 +134,13 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
     const grow = this._isEndAutoSize ? 1 : 0;
     const shrink = this._isEndAutoSize || this._isEndPercentageSize ? 1 : 0;
     return `${grow} ${shrink} ${this._endSize}`;
+  }
+
+  private get _barCursor(): string {
+    if (this._resizeDisallowed) {
+      return 'default';
+    }
+    return this.orientation === 'horizontal' ? 'col-resize' : 'row-resize';
   }
 
   /**
@@ -216,7 +224,13 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   @watch('orientation', { waitUntilFirstUpdate: true })
   protected _orientationChange(): void {
     this._internals.setARIA({ ariaOrientation: this.orientation });
-    this._resetPane();
+    Object.assign(this._barInternalStyles, { '--cursor': this._barCursor });
+    this._resetPanes();
+  }
+
+  @watch('nonResizable')
+  protected _changeCursor(): void {
+    Object.assign(this._barInternalStyles, { '--cursor': this._barCursor });
   }
 
   @watch('startCollapsed', { waitUntilFirstUpdate: true })
@@ -224,6 +238,7 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   protected _collapsedChange(): void {
     this.startSize = 'auto';
     this.endSize = 'auto';
+    this._changeCursor();
   }
 
   protected override willUpdate(changed: PropertyValues) {
@@ -235,18 +250,7 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
       changed.has('endMinSize') ||
       changed.has('endMaxSize')
     ) {
-      this._initPane(
-        this.startMinSize!,
-        this.startMaxSize!,
-        this._startFlex,
-        this._startPaneInternalStyles
-      );
-      this._initPane(
-        this.endMinSize!,
-        this.endMaxSize!,
-        this._endFlex,
-        this._endPaneInternalStyles
-      );
+      this._initPanes();
     }
   }
 
@@ -299,6 +303,10 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
       },
       cancel: () => {},
     });
+  }
+
+  protected override firstUpdated() {
+    this._initPanes();
   }
 
   //#endregion
@@ -473,44 +481,46 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
     return size - barSize;
   }
 
-  private _resetPane() {
+  private _resetPanes() {
     this.startSize = 'auto';
     this.endSize = 'auto';
-    Object.assign(this._startPaneInternalStyles, {
+    const commonStyles = {
       minWidth: 0,
       maxWidth: '100%',
       minHeight: 0,
       maxHeight: '100%',
+    };
+    Object.assign(this._startPaneInternalStyles, {
+      ...commonStyles,
       flex: this._startFlex,
     });
     Object.assign(this._endPaneInternalStyles, {
-      minWidth: 0,
-      maxWidth: '100%',
-      minHeight: 0,
-      maxHeight: '100%',
+      ...commonStyles,
       flex: this._endFlex,
     });
   }
 
-  private _initPane(
-    minSize: string,
-    maxSize: string,
-    flex: string,
-    internalStyles: StyleInfo
-  ) {
+  private _initPanes() {
     let sizes = {};
     if (this.orientation === 'horizontal') {
       sizes = {
-        minWidth: minSize ?? 0,
-        maxWidth: maxSize ?? '100%',
+        minWidth: this.startMinSize ?? 0,
+        maxWidth: this.startMaxSize ?? '100%',
       };
     } else {
       sizes = {
-        minHeight: minSize ?? 0,
-        maxHeight: maxSize ?? '100%',
+        minHeight: this.startMinSize ?? 0,
+        maxHeight: this.startMaxSize ?? '100%',
       };
     }
-    Object.assign(internalStyles, { ...sizes, flex: flex });
+    Object.assign(this._startPaneInternalStyles, {
+      ...sizes,
+      flex: this._startFlex,
+    });
+    Object.assign(this._endPaneInternalStyles, {
+      ...sizes,
+      flex: this._endFlex,
+    });
     this.requestUpdate();
   }
 
@@ -563,7 +573,12 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
         <div part="startPane" style=${styleMap(this._startPaneInternalStyles)}>
           <slot name="start"></slot>
         </div>
-        <div ${ref(this._barRef)} part="bar" tabindex="0">
+        <div
+          ${ref(this._barRef)}
+          part="bar"
+          tabindex="0"
+          style=${styleMap(this._barInternalStyles)}
+        >
           ${this._renderBarControls()}
         </div>
         <div part="endPane" style=${styleMap(this._endPaneInternalStyles)}>

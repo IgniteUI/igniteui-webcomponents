@@ -6,24 +6,25 @@ import {
   nextFrame,
 } from '@open-wc/testing';
 import { defineComponents } from '../common/definitions/defineComponents.js';
+import { roundPrecise } from '../common/util.js';
+import {
+  simulateLostPointerCapture,
+  simulatePointerDown,
+  simulatePointerMove,
+} from '../common/utils.spec.js';
 import type { SplitterOrientation } from '../types.js';
 import IgcSplitterComponent from './splitter.js';
-import IgcSplitterBarComponent from './splitter-bar.js';
-import IgcSplitterPaneComponent from './splitter-pane.js';
 
 describe('Splitter', () => {
   before(() => {
-    defineComponents(
-      IgcSplitterComponent,
-      IgcSplitterPaneComponent,
-      IgcSplitterBarComponent
-    );
+    defineComponents(IgcSplitterComponent);
   });
 
   let splitter: IgcSplitterComponent;
 
   beforeEach(async () => {
     splitter = await fixture<IgcSplitterComponent>(createSplitter());
+    await elementUpdated(splitter);
   });
 
   describe('Rendering', () => {
@@ -37,19 +38,61 @@ describe('Splitter', () => {
       await expect(splitter).shadowDom.to.be.accessible();
     });
 
-    it('should render a split bar for each splitter pane except the last one', async () => {
+    it('should render start and end slots', async () => {
+      let slot = getSplitterSlot(splitter, 'start');
+      let elements = slot.assignedElements();
+      expect(elements).to.have.lengthOf(1);
+      expect(elements[0].textContent).to.equal('Pane 1');
+
+      slot = getSplitterSlot(splitter, 'end');
+      elements = slot.assignedElements();
+      expect(elements).to.have.lengthOf(1);
+      expect(elements[0].textContent).to.equal('Pane 2');
+    });
+
+    it('should render splitter bar between start and end parts', async () => {
+      const base = getSplitterPart(splitter, 'base');
+      const startPart = getSplitterPart(splitter, 'startPane');
+      const endPart = getSplitterPart(splitter, 'endPane');
+      const bar = getSplitterPart(splitter, 'bar');
+
+      expect(base).to.exist;
+      expect(startPart).to.exist;
+      expect(endPart).to.exist;
+      expect(bar).to.exist;
+
+      expect(base.contains(startPart)).to.be.true;
+      expect(base.contains(endPart)).to.be.true;
+      expect(base.contains(bar)).to.be.true;
+
+      expect(startPart.nextElementSibling).to.equal(bar);
+      expect(bar.nextElementSibling).to.equal(endPart);
+    });
+
+    it('should render splitter bar parts', async () => {
+      const bar = getSplitterPart(splitter, 'bar');
+      const expanderStart = getSplitterPart(splitter, 'expander-start');
+      const barHandle = getSplitterPart(splitter, 'handle');
+      const expanderEnd = getSplitterPart(splitter, 'expander-end');
+
+      expect(expanderStart).to.exist;
+      expect(barHandle).to.exist;
+      expect(expanderEnd).to.exist;
+
+      expect(bar.contains(expanderStart)).to.be.true;
+      expect(bar.contains(expanderEnd)).to.be.true;
+      expect(bar.contains(barHandle)).to.be.true;
+
+      expect(expanderStart.nextElementSibling).to.equal(barHandle);
+      expect(barHandle.nextElementSibling).to.equal(expanderEnd);
+    });
+
+    it('should not display the bar elements if the splitter is nonCollapsible', async () => {
+      splitter.nonCollapsible = true;
       await elementUpdated(splitter);
 
-      expect(splitter.panes).to.have.lengthOf(3);
-
-      const bars = getSplitterBars(splitter);
-      expect(bars).to.have.lengthOf(2);
-
-      bars.forEach((bar, index) => {
-        const pane = splitter.panes[index];
-        const paneBase = getSplitterPaneBase(pane) as HTMLElement;
-        expect(bar.previousElementSibling).to.equal(paneBase);
-      });
+      const bar = getSplitterPart(splitter, 'bar');
+      expect(bar.children).to.have.lengthOf(0);
     });
 
     it('should have default horizontal orientation', () => {
@@ -72,81 +115,90 @@ describe('Splitter', () => {
       );
       await elementUpdated(nestedSplitter);
 
-      expect(nestedSplitter.panes).to.have.lengthOf(2);
-      expect(nestedSplitter.orientation).to.equal('horizontal');
+      const outerStartSlot = getSplitterSlot(nestedSplitter, 'start');
+      const startElements = outerStartSlot.assignedElements();
+      expect(startElements).to.have.lengthOf(1);
+      expect(startElements[0].tagName.toLowerCase()).to.equal(
+        IgcSplitterComponent.tagName.toLowerCase()
+      );
 
-      const outerBars = getSplitterBars(nestedSplitter);
-      expect(outerBars).to.have.lengthOf(1);
+      const outerEndSlot = getSplitterSlot(nestedSplitter, 'end');
+      const endElements = outerEndSlot.assignedElements();
+      expect(endElements).to.have.lengthOf(1);
+      expect(endElements[0].tagName.toLowerCase()).to.equal(
+        IgcSplitterComponent.tagName.toLowerCase()
+      );
 
-      const firstPane = nestedSplitter.panes[0];
-      const leftSplitter = firstPane.querySelector(
-        IgcSplitterComponent.tagName
-      ) as IgcSplitterComponent;
+      const innerStartSlot1 = getSplitterSlot(
+        startElements[0] as IgcSplitterComponent,
+        'start'
+      );
+      expect(innerStartSlot1.assignedElements()[0].textContent).to.equal(
+        'Top Left Pane'
+      );
 
-      expect(leftSplitter).to.exist;
-      expect(leftSplitter.orientation).to.equal('vertical');
+      const innerEndSlot1 = getSplitterSlot(
+        startElements[0] as IgcSplitterComponent,
+        'end'
+      );
+      expect(innerEndSlot1.assignedElements()[0].textContent).to.equal(
+        'Bottom Left Pane'
+      );
 
-      expect(leftSplitter.panes).to.have.lengthOf(2);
+      const innerStartSlot2 = getSplitterSlot(
+        endElements[0] as IgcSplitterComponent,
+        'start'
+      );
+      expect(innerStartSlot2.assignedElements()[0].textContent).to.equal(
+        'Top Right Pane'
+      );
 
-      const leftBars = getSplitterBars(leftSplitter);
-      expect(leftBars).to.have.lengthOf(1);
-
-      const secondPane = nestedSplitter.panes[1];
-      const rightSplitter = secondPane.querySelector(
-        IgcSplitterComponent.tagName
-      ) as IgcSplitterComponent;
-
-      expect(rightSplitter).to.exist;
-      expect(rightSplitter.orientation).to.equal('vertical');
-
-      expect(rightSplitter.panes).to.have.lengthOf(2);
-
-      const rightBars = getSplitterBars(rightSplitter);
-      expect(rightBars).to.have.lengthOf(1);
+      const innerEndSlot2 = getSplitterSlot(
+        endElements[0] as IgcSplitterComponent,
+        'end'
+      );
+      expect(innerEndSlot2.assignedElements()[0].textContent).to.equal(
+        'Bottom Right Pane'
+      );
     });
 
-    it('should not display the bar elements if the splitter is nonCollapsible', async () => {
-      splitter.nonCollapsible = true;
-      await elementUpdated(splitter);
+    it('should set a default cursor on the bar in case splitter is not resizable or any pane is collapsed', async () => {
+      const bar = getSplitterPart(splitter, 'bar');
 
-      const bars = getSplitterBars(splitter);
-      bars.forEach((bar) => {
-        const base = bar.shadowRoot!.querySelector(
-          '[part~="base"]'
-        ) as HTMLElement;
-        expect(base.children).to.have.lengthOf(0);
-      });
-    });
-
-    it('should set a default cursor on the bar in case any of its siblings is not resizable or collapsed', async () => {
-      const firstPane = splitter.panes[0];
-      const secondPane = splitter.panes[1];
-      const bars = getSplitterBars(splitter);
-      const firstBar = bars[0].shadowRoot!.querySelector(
-        '[part~="base"]'
-      ) as HTMLElement;
-
-      const style = getComputedStyle(firstBar);
+      const style = getComputedStyle(bar);
       expect(style.cursor).to.equal('col-resize');
 
-      firstPane.nonResizable = true;
+      splitter.nonResizable = true;
       await elementUpdated(splitter);
       await nextFrame();
 
       expect(style.cursor).to.equal('default');
 
-      firstPane.nonResizable = false;
-      secondPane.collapsed = true;
+      splitter.nonResizable = false;
+      splitter.endCollapsed = true;
       await elementUpdated(splitter);
       await nextFrame();
 
       expect(style.cursor).to.equal('default');
 
-      secondPane.collapsed = false;
+      splitter.endCollapsed = false;
       await elementUpdated(splitter);
       await nextFrame();
 
       expect(style.cursor).to.equal('col-resize');
+    });
+
+    it('should change the bar cursor based on the orientation', async () => {
+      const bar = getSplitterPart(splitter, 'bar');
+
+      const style = getComputedStyle(bar);
+      expect(style.cursor).to.equal('col-resize');
+
+      splitter.orientation = 'vertical';
+      await elementUpdated(splitter);
+      await nextFrame();
+
+      expect(style.cursor).to.equal('row-resize');
     });
   });
 
@@ -160,30 +212,29 @@ describe('Splitter', () => {
     });
 
     it('should reset pane sizes when orientation changes', async () => {
-      const pane = splitter.panes[0];
-      pane.size = '200px';
+      splitter.startSize = '200px';
       await elementUpdated(splitter);
 
-      const base = getSplitterPaneBase(pane) as HTMLElement;
-      const style = getComputedStyle(base);
+      const startPart = getSplitterPart(splitter, 'startPane');
+      const style = getComputedStyle(startPart);
       expect(style.flex).to.equal('0 0 200px');
 
       splitter.orientation = 'vertical';
       await elementUpdated(splitter);
 
-      expect(pane.size).to.equal('auto');
+      expect(splitter.startSize).to.equal('auto');
+      expect(style.flex).to.equal('1 1 auto');
     });
 
-    it('should use default min/max values when not specified', async () => {
+    // TODO: verify the attribute type, default value, reflection
+    it('should properly set default min/max values when not specified', async () => {
       await elementUpdated(splitter);
 
-      const pane = splitter.panes[0];
-      const base = getSplitterPaneBase(pane) as HTMLElement;
-      const style = getComputedStyle(base);
+      const startPart = getSplitterPart(splitter, 'startPane');
+      const style = getComputedStyle(startPart);
       expect(style.flex).to.equal('1 1 auto');
 
-      expect(pane.size).to.equal('auto');
-
+      expect(splitter.startSize).to.equal('auto');
       expect(style.minWidth).to.equal('0px');
       expect(style.maxWidth).to.equal('100%');
 
@@ -197,16 +248,15 @@ describe('Splitter', () => {
     it('should apply minSize and maxSize to panes for horizontal orientation', async () => {
       splitter = await fixture<IgcSplitterComponent>(
         createTwoPanesWithSizesAndConstraints({
-          minSize1: '100px',
-          maxSize1: '500px',
+          startMinSize: '100px',
+          startMaxSize: '500px',
         })
       );
 
       await elementUpdated(splitter);
 
-      const pane = splitter.panes[0];
-      const base = getSplitterPaneBase(pane) as HTMLElement;
-      const style = getComputedStyle(base);
+      const startPane = getSplitterPart(splitter, 'startPane');
+      const style = getComputedStyle(startPane);
       expect(style.minWidth).to.equal('100px');
       expect(style.maxWidth).to.equal('500px');
     });
@@ -214,16 +264,15 @@ describe('Splitter', () => {
     it('should apply minSize and maxSize to panes for vertical orientation', async () => {
       splitter = await fixture<IgcSplitterComponent>(
         createTwoPanesWithSizesAndConstraints({
-          minSize1: '100px',
-          maxSize1: '500px',
+          startMinSize: '100px',
+          startMaxSize: '500px',
           orientation: 'vertical',
         })
       );
       await elementUpdated(splitter);
 
-      const pane = splitter.panes[0];
-      const base = getSplitterPaneBase(pane) as HTMLElement;
-      const style = getComputedStyle(base);
+      const startPane = getSplitterPart(splitter, 'startPane');
+      const style = getComputedStyle(startPane);
       expect(style.minHeight).to.equal('100px');
       expect(style.maxHeight).to.equal('500px');
     });
@@ -231,29 +280,27 @@ describe('Splitter', () => {
     it('should handle percentage sizes', async () => {
       const splitter = await fixture<IgcSplitterComponent>(
         createTwoPanesWithSizesAndConstraints({
-          size1: '30%',
-          size2: '70%',
-          minSize1: '20%',
-          maxSize1: '80%',
+          startSize: '30%',
+          endSize: '70%',
+          startMinSize: '20%',
+          startMaxSize: '80%',
         })
       );
       await elementUpdated(splitter);
 
-      const pane1 = splitter.panes[0];
-      const base1 = getSplitterPaneBase(pane1) as HTMLElement;
-      const style1 = getComputedStyle(base1);
+      const startPane = getSplitterPart(splitter, 'startPane');
+      const style1 = getComputedStyle(startPane);
 
-      const pane2 = splitter.panes[1];
-      const base2 = getSplitterPaneBase(pane2) as HTMLElement;
-      const style2 = getComputedStyle(base2);
+      const endPane = getSplitterPart(splitter, 'endPane');
+      const style2 = getComputedStyle(endPane);
 
-      expect(splitter.panes[0].size).to.equal('30%');
-      expect(splitter.panes[1].size).to.equal('70%');
+      expect(splitter.startSize).to.equal('30%');
+      expect(splitter.endSize).to.equal('70%');
       expect(style1.flex).to.equal('0 1 30%');
       expect(style2.flex).to.equal('0 1 70%');
 
-      expect(pane1.minSize).to.equal('20%');
-      expect(pane1.maxSize).to.equal('80%');
+      expect(splitter.startMinSize).to.equal('20%');
+      expect(splitter.startMaxSize).to.equal('80%');
       expect(style1.minWidth).to.equal('20%');
       expect(style1.maxWidth).to.equal('80%');
 
@@ -263,76 +310,48 @@ describe('Splitter', () => {
     it('should handle mixed px and % constraints', async () => {
       const mixedConstraintSplitter = await fixture<IgcSplitterComponent>(
         createTwoPanesWithSizesAndConstraints({
-          minSize1: '100px',
-          maxSize1: '50%',
+          startMinSize: '100px',
+          startMaxSize: '50%',
         })
       );
       await elementUpdated(mixedConstraintSplitter);
 
-      const pane = mixedConstraintSplitter.panes[0];
-      const base1 = getSplitterPaneBase(pane) as HTMLElement;
-      const style = getComputedStyle(base1);
+      const startPane = getSplitterPart(mixedConstraintSplitter, 'startPane');
+      const style = getComputedStyle(startPane);
 
-      expect(pane.minSize).to.equal('100px');
-      expect(pane.maxSize).to.equal('50%');
+      expect(mixedConstraintSplitter.startMinSize).to.equal('100px');
+      expect(mixedConstraintSplitter.startMaxSize).to.equal('50%');
       expect(style.minWidth).to.equal('100px');
       expect(style.maxWidth).to.equal('50%');
 
       // TODO: test with drag
     });
-
-    it('should dynamically update when panes are added', async () => {
-      expect(splitter.panes).to.have.lengthOf(3);
-
-      const newPane = document.createElement(
-        'igc-splitter-pane'
-      ) as IgcSplitterPaneComponent;
-      newPane.textContent = 'New Pane';
-      splitter.appendChild(newPane);
-
-      await elementUpdated(splitter);
-
-      expect(splitter.panes).to.have.lengthOf(4);
-    });
-
-    it('should dynamically update when panes are removed', async () => {
-      expect(splitter.panes).to.have.lengthOf(3);
-
-      const paneToRemove = splitter.panes[1];
-      paneToRemove.remove();
-
-      await elementUpdated(splitter);
-
-      expect(splitter.panes).to.have.lengthOf(2);
-    });
   });
 
   describe('Methods, Events & Interactions', () => {
     it('should expand/collapse panes when toggle is invoked', async () => {
-      const pane = splitter.panes[0];
-      expect(pane.collapsed).to.be.false;
-
-      pane.toggle();
+      splitter.toggle('start');
       await elementUpdated(splitter);
+      expect(splitter.startCollapsed).to.be.true;
 
-      expect(pane.collapsed).to.be.true;
-
-      pane.toggle();
+      splitter.toggle('start');
       await elementUpdated(splitter);
+      expect(splitter.startCollapsed).to.be.false;
 
-      expect(pane.collapsed).to.be.false;
+      splitter.toggle('end');
+      await elementUpdated(splitter);
+      expect(splitter.endCollapsed).to.be.true;
+
+      // edge case: supports collapsing both at a time?
+      splitter.toggle('start');
+      await elementUpdated(splitter);
+      expect(splitter.startCollapsed).to.be.true;
+      expect(splitter.endCollapsed).to.be.true;
     });
 
     it('should toggle the next pane when the bar expander-end is clicked', async () => {
-      const bars = getSplitterBars(splitter);
-      const firstBar = bars[0];
-      const firstPane = splitter.panes[0];
-      const secondPane = splitter.panes[1];
-
-      expect(firstPane.collapsed).to.be.false;
-
-      const expanderStart = getExpander(firstBar, 'start');
-      const expanderEnd = getExpander(firstBar, 'end');
+      const expanderStart = getSplitterPart(splitter, 'expander-start');
+      const expanderEnd = getSplitterPart(splitter, 'expander-end');
 
       expanderEnd.dispatchEvent(
         new PointerEvent('pointerdown', { bubbles: true })
@@ -340,8 +359,8 @@ describe('Splitter', () => {
       await elementUpdated(splitter);
       await nextFrame();
 
-      expect(firstPane.collapsed).to.be.false;
-      expect(secondPane.collapsed).to.be.true;
+      expect(splitter.startCollapsed).to.be.false;
+      expect(splitter.endCollapsed).to.be.true;
       expect(expanderStart.hidden).to.be.false;
       expect(expanderEnd.hidden).to.be.true;
 
@@ -351,22 +370,15 @@ describe('Splitter', () => {
       await elementUpdated(splitter);
       await nextFrame();
 
-      expect(firstPane.collapsed).to.be.false;
-      expect(secondPane.collapsed).to.be.false;
+      expect(splitter.startCollapsed).to.be.false;
+      expect(splitter.endCollapsed).to.be.false;
       expect(expanderStart.hidden).to.be.false;
       expect(expanderEnd.hidden).to.be.false;
     });
 
     it('should toggle the previous pane when the bar expander-start is clicked', async () => {
-      const bars = getSplitterBars(splitter);
-      const firstBar = bars[0];
-      const firstPane = splitter.panes[0];
-      const secondPane = splitter.panes[1];
-
-      expect(secondPane.collapsed).to.be.false;
-
-      const expanderStart = getExpander(firstBar, 'start');
-      const expanderEnd = getExpander(firstBar, 'end');
+      const expanderStart = getSplitterPart(splitter, 'expander-start');
+      const expanderEnd = getSplitterPart(splitter, 'expander-end');
 
       expanderStart.dispatchEvent(
         new PointerEvent('pointerdown', { bubbles: true })
@@ -374,8 +386,8 @@ describe('Splitter', () => {
       await elementUpdated(splitter);
       await nextFrame();
 
-      expect(firstPane.collapsed).to.be.true;
-      expect(secondPane.collapsed).to.be.false;
+      expect(splitter.startCollapsed).to.be.true;
+      expect(splitter.endCollapsed).to.be.false;
       expect(expanderStart.hidden).to.be.true;
       expect(expanderEnd.hidden).to.be.false;
 
@@ -385,20 +397,89 @@ describe('Splitter', () => {
       await elementUpdated(splitter);
       await nextFrame();
 
-      expect(firstPane.collapsed).to.be.false;
-      expect(secondPane.collapsed).to.be.false;
+      expect(splitter.startCollapsed).to.be.false;
+      expect(splitter.endCollapsed).to.be.false;
       expect(expanderStart.hidden).to.be.false;
       expect(expanderEnd.hidden).to.be.false;
     });
+
+    it('should resize horizontally in both directions', async () => {
+      const startPane = getSplitterPart(splitter, 'startPane');
+      const endPane = getSplitterPart(splitter, 'endPane');
+      const startSizeBefore = roundPrecise(
+        startPane.getBoundingClientRect().width
+      );
+      const endSizeBefore = roundPrecise(endPane.getBoundingClientRect().width);
+      let deltaX = 100;
+
+      await resize(splitter, deltaX, 0);
+      await elementUpdated(splitter);
+
+      const startSizeAfter = roundPrecise(
+        startPane.getBoundingClientRect().width
+      );
+      const endSizeAfter = roundPrecise(endPane.getBoundingClientRect().width);
+
+      expect(startSizeAfter).to.equal(startSizeBefore + deltaX);
+      expect(endSizeAfter).to.equal(endSizeBefore - deltaX);
+
+      deltaX *= -1;
+      await resize(splitter, deltaX, 0);
+
+      const startSizeFinal = roundPrecise(
+        startPane.getBoundingClientRect().width
+      );
+      const endSizeFinal = roundPrecise(endPane.getBoundingClientRect().width);
+
+      expect(startSizeFinal).to.equal(startSizeBefore);
+      expect(endSizeFinal).to.equal(endSizeBefore);
+    });
+
+    it('should resize vertically in both directions', async () => {
+      splitter.orientation = 'vertical';
+      await elementUpdated(splitter);
+
+      const startPane = getSplitterPart(splitter, 'startPane');
+      const endPane = getSplitterPart(splitter, 'endPane');
+      const startSizeBefore = roundPrecise(
+        startPane.getBoundingClientRect().height
+      );
+      const endSizeBefore = roundPrecise(
+        endPane.getBoundingClientRect().height
+      );
+      let deltaY = 100;
+
+      await resize(splitter, 0, deltaY);
+
+      const startSizeAfter = roundPrecise(
+        startPane.getBoundingClientRect().height
+      );
+      const endSizeAfter = roundPrecise(endPane.getBoundingClientRect().height);
+
+      expect(startSizeAfter).to.equal(startSizeBefore + deltaY);
+      expect(endSizeAfter).to.equal(endSizeBefore - deltaY);
+
+      deltaY *= -1;
+      await resize(splitter, 0, deltaY);
+
+      const startSizeFinal = roundPrecise(
+        startPane.getBoundingClientRect().height
+      );
+      const endSizeFinal = roundPrecise(endPane.getBoundingClientRect().height);
+
+      expect(startSizeFinal).to.equal(startSizeBefore);
+      expect(endSizeFinal).to.equal(endSizeBefore);
+    });
+    // TODO: test when the slots have assigned sizes/min sizes + edge cases
+    // currently observing issue when resizing to the end and panes have fixed px sizes
   });
 });
 
 function createSplitter() {
   return html`
-    <igc-splitter>
-      <igc-splitter-pane>Pane 1</igc-splitter-pane>
-      <igc-splitter-pane>Pane 2</igc-splitter-pane>
-      <igc-splitter-pane>Pane 3</igc-splitter-pane>
+    <igc-splitter style="width: 500px; height: 500px;">
+      <div slot="start">Pane 1</div>
+      <div slot="end">Pane 2</div>
     </igc-splitter>
   `;
 }
@@ -406,29 +487,25 @@ function createSplitter() {
 function createNestedSplitter() {
   return html`
     <igc-splitter orientation="horizontal">
-      <igc-splitter-pane>
-        <igc-splitter orientation="vertical">
-          <igc-splitter-pane>Top Left Pane</igc-splitter-pane>
-          <igc-splitter-pane>Bottom Left Pane</igc-splitter-pane>
-        </igc-splitter>
-      </igc-splitter-pane>
-      <igc-splitter-pane>
-        <igc-splitter orientation="vertical">
-          <igc-splitter-pane>Top Right Pane</igc-splitter-pane>
-          <igc-splitter-pane>Bottom Right Pane</igc-splitter-pane>
-        </igc-splitter>
-      </igc-splitter-pane>
+      <igc-splitter slot="start" orientation="vertical">
+        <div slot="start">Top Left Pane</div>
+        <div slot="end">Bottom Left Pane</div>
+      </igc-splitter>
+      <igc-splitter slot="end" orientation="vertical">
+        <div slot="start">Top Right Pane</div>
+        <div slot="end">Bottom Right Pane</div>
+      </igc-splitter>
     </igc-splitter>
   `;
 }
 
 type SplitterTestSizesAndConstraints = {
-  size1?: string;
-  size2?: string;
-  minSize1?: string;
-  maxSize1?: string;
-  minSize2?: string;
-  maxSize2?: string;
+  startSize?: string;
+  endSize?: string;
+  startMinSize?: string;
+  startMaxSize?: string;
+  endMinSize?: string;
+  endMaxSize?: string;
   orientation?: SplitterOrientation;
 };
 
@@ -436,43 +513,82 @@ function createTwoPanesWithSizesAndConstraints(
   config: SplitterTestSizesAndConstraints
 ) {
   return html`
-    <igc-splitter .orientation=${config.orientation ?? 'horizontal'}>
-      <igc-splitter-pane
-        .size=${config.size1 ?? 'auto'}
-        .minSize=${config.minSize1}
-        .maxSize=${config.maxSize1}
-      >
-        Pane 1
-      </igc-splitter-pane>
-      <igc-splitter-pane
-        .size=${config.size2 ?? 'auto'}
-        .minSize=${config.minSize2}
-        .maxSize=${config.maxSize2}
-      >
-        Pane 2
-      </igc-splitter-pane>
+    <igc-splitter
+      .orientation=${config.orientation ?? 'horizontal'}
+      .startSize=${config.startSize ?? 'auto'}
+      .endSize=${config.endSize ?? 'auto'}
+      .startMinSize=${config.startMinSize ?? '0px'}
+      .startMaxSize=${config.startMaxSize ?? '100%'}
+      .endMinSize=${config.endMinSize ?? '0px'}
+      .endMaxSize=${config.endMaxSize ?? '100%'}
+    >
+      <div slot="start">Pane 1</div>
+      <div slot="end">Pane 2</div>
     </igc-splitter>
   `;
 }
 
-function getSplitterPaneBase(pane: IgcSplitterPaneComponent) {
-  return pane.shadowRoot!.querySelector('div[part~="base"]');
+function getSplitterSlot(
+  splitter: IgcSplitterComponent,
+  which: 'start' | 'end'
+) {
+  return splitter.renderRoot.querySelector(
+    `slot[name="${which}"]`
+  ) as HTMLSlotElement;
 }
 
-function getSplitterBars(splitter: IgcSplitterComponent) {
-  const bars: IgcSplitterBarComponent[] = [];
+// TODO: more parts and names?
+type SplitterParts =
+  | 'startPane'
+  | 'endPane'
+  | 'bar'
+  | 'base'
+  | 'expander-start'
+  | 'expander-end'
+  | 'handle';
 
-  splitter.panes.forEach((pane) => {
-    const bar = pane.shadowRoot!.querySelector(IgcSplitterBarComponent.tagName);
-    if (bar) {
-      bars.push(bar);
-    }
-  });
-  return bars;
-}
-
-function getExpander(bar: IgcSplitterBarComponent, which: 'start' | 'end') {
-  return bar.shadowRoot!.querySelector(
-    `[part="expander-${which}"]`
+function getSplitterPart(splitter: IgcSplitterComponent, which: SplitterParts) {
+  return splitter.shadowRoot!.querySelector(
+    `[part~="${which}"]`
   ) as HTMLElement;
 }
+
+async function resize(
+  splitter: IgcSplitterComponent,
+  deltaX: number,
+  deltaY: number
+) {
+  const bar = getSplitterPart(splitter, 'bar');
+  const barRect = bar.getBoundingClientRect();
+
+  simulatePointerDown(bar, {
+    clientX: barRect.left,
+    clientY: barRect.top,
+  });
+  await elementUpdated(splitter);
+
+  simulatePointerMove(
+    bar,
+    {
+      clientX: barRect.left,
+      clientY: barRect.top,
+    },
+    { x: deltaX, y: deltaY }
+  );
+  await elementUpdated(splitter);
+
+  simulateLostPointerCapture(bar);
+  await elementUpdated(splitter);
+  await nextFrame();
+}
+
+// function checkPanesAreWithingBounds(
+//   splitter: IgcSplitterComponent,
+//   startSize: number,
+//   endSize: number,
+//   dimension: 'x' | 'y'
+// ) {
+//   const splitterSize =
+//     splitter.getBoundingClientRect()[dimension === 'x' ? 'width' : 'height'];
+//   expect(startSize + endSize).to.be.at.most(splitterSize);
+// }

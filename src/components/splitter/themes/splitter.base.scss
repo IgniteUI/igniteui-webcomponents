@@ -33,6 +33,7 @@
         height: 100%;
         min-width: 0;
         min-height: 0;
+        box-sizing: border-box;
     }
 
     // Bar styles (moved from splitter-bar.base.scss)
@@ -79,7 +80,6 @@
         flex-direction: column;
         width: var(--bar-size);
         height: 100%;
-        --cursor: col-resize;
 
         [part='handle'] {
             height: 50px;
@@ -96,8 +96,8 @@
     [part='bar'] {
         flex-direction: row;
         width: 100%;
+
         height: var(--bar-size);
-        --cursor: row-resize;
 
         [part='handle'] {
             width: 50px;
