@@ -8,6 +8,7 @@ $theme: $indigo;
 :host {
     --header-min-height: #{rem(40px)};
     --scroll-btn-size: #{rem(40px)};
+    --nav-btn-border-color: #{var-get($theme, 'border-color')};
 }
 
 [part='selected-indicator'] {
@@ -27,7 +28,6 @@ $theme: $indigo;
         position: absolute;
         width: 100%;
         height: $indicator-height;
-        background-color: var-get($theme, 'border-color');
         inset-block-end: 100%;
     }
 }
@@ -45,17 +45,23 @@ $theme: $indigo;
 }
 
 igc-icon-button:hover::part(base) {
+    background-color: var-get($theme, 'button-hover-background');
+
     &::after {
         content: '';
         position: absolute;
         inset: 0;
-        background-color: var-get($theme, 'button-hover-background');
         z-index: 1;
     }
 }
 
 igc-icon-button::part(base) {
     overflow: hidden;
+}
+
+igc-icon-button[disabled]::part(base), 
+igc-icon-button:disabled::part(base) {
+    border-bottom: rem(1px) solid var(--nav-btn-border-color);
 }
 
 igc-icon-button::part(icon) {
