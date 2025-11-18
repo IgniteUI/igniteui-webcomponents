@@ -1,14 +1,12 @@
+import { getDateFormatter } from 'igniteui-i18n-core';
 import { html, LitElement } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
 import { range } from 'lit/directives/range.js';
-
 import { addThemingController } from '../../../theming/theming-controller.js';
 import { addKeybindings } from '../../common/controllers/key-bindings.js';
 import { blazorIndirectRender } from '../../common/decorators/blazorIndirectRender.js';
 import { blazorSuppressComponent } from '../../common/decorators/blazorSuppressComponent.js';
-import { watch } from '../../common/decorators/watch.js';
 import { registerComponent } from '../../common/definitions/register.js';
-import { createDateTimeFormatters } from '../../common/localization/intl-formatters.js';
 import type { Constructor } from '../../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../../common/mixins/event-emitter.js';
 import { partMap } from '../../common/part-map.js';
@@ -67,20 +65,14 @@ export default class IgcMonthsViewComponent extends EventEmitterMixin<
   public monthFormat: 'numeric' | '2-digit' | 'long' | 'short' | 'narrow' =
     'long';
 
-  private _intl = createDateTimeFormatters(this.locale, {
-    month: { month: this.monthFormat },
-    ariaMonth: { month: 'long', year: 'numeric' },
-  });
-
-  @watch('locale')
-  protected localeChange() {
-    this._intl.locale = this.locale;
+  private get _monthOptions(): Intl.DateTimeFormatOptions {
+    return { month: this.monthFormat };
   }
 
-  @watch('monthFormat')
-  protected formatChange() {
-    this._intl.update({ month: { month: this.monthFormat } });
-  }
+  private _ariaMonthOptions: Intl.DateTimeFormatOptions = {
+    month: 'long',
+    year: 'numeric',
+  };
 
   constructor() {
     super();
@@ -110,8 +102,16 @@ export default class IgcMonthsViewComponent extends EventEmitterMixin<
   }
 
   protected renderMonth(entry: CalendarDay, now: CalendarDay) {
-    const ariaLabel = this._intl.get('ariaMonth').format(entry.native);
-    const value = this._intl.get('month').format(entry.native);
+    const ariaLabel = getDateFormatter().formatDateTime(
+      entry.native,
+      this.locale,
+      this._ariaMonthOptions
+    );
+    const value = getDateFormatter().formatDateTime(
+      entry.native,
+      this.locale,
+      this._monthOptions
+    );
 
     const active = areSameMonth(this._value, entry);
     const current = areSameMonth(now, entry);

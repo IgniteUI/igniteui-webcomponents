@@ -1,11 +1,6 @@
-import {
-  type IValidationResourceStrings,
-  ValidationResourceStringsEN,
-} from 'igniteui-i18n-core';
 import type { LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
 import { addInternalsController } from '../../controllers/internals.js';
-import { addI18nController } from '../../i18n/i18n-controller.js';
 import { addSafeEventListener, isFunction, isString } from '../../util.js';
 import type { Validator } from '../../validators.js';
 import type { Constructor } from '../constructor.js';
@@ -41,10 +36,6 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
     //#region Internal state and properties
 
     private readonly __internals = addInternalsController(this);
-    private readonly __i18nController =
-      addI18nController<IValidationResourceStrings>(this, {
-        defaultEN: ValidationResourceStringsEN,
-      });
     protected readonly _formValue!: FormValue<unknown>;
 
     private _isFormSubmit = false;
@@ -140,18 +131,6 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
     public get willValidate(): boolean {
       return this.__internals.willValidate;
     }
-
-    /**
-     * The resource strings for localization.
-     */
-    @property({ attribute: false })
-    public set resourceStrings(value: IValidationResourceStrings) {
-      this.__i18nController.resourceStrings = value;
-    }
-
-    public get resourceStrings(): IValidationResourceStrings {
-      return this.__i18nController.resourceStrings;
-    }
     //#endregion
 
     //#region Life-cycle hooks
@@ -209,18 +188,9 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
 
         if (!isValid) {
           validationFailed = true;
-          const resourceKey = (
-            isFunction(validator.messageResourceKey)
-              ? validator.messageResourceKey(this)
-              : validator.messageResourceKey
-          ) as keyof IValidationResourceStrings;
-
-          message =
-            this.resourceStrings[resourceKey] ??
-            "Couldn't retrieve validation resource string!";
-          if (isFunction(validator.messageFormat)) {
-            message = validator.messageFormat(message, this);
-          }
+          message = isFunction(validator.message)
+            ? validator.message(this)
+            : validator.message;
         }
       }
 

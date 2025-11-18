@@ -89,7 +89,7 @@ $outlined-theme: $material-outlined;
     }
 
     &:active {
-        box-shadow: var-get($contained-theme, 'hover-elevation');
+        box-shadow: var-get($contained-theme, 'active-elevation');
     }
 }
 
