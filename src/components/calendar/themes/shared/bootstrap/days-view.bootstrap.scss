@@ -551,8 +551,8 @@ $border-size: rem(1px);
         }
 
         &:focus {
-            color: var-get($theme, 'date-special-range-hover-foreground');
-            background: var-get($theme, 'date-special-range-hover-background');
+            color: var-get($theme, 'date-special-range-focus-foreground');
+            background: var-get($theme, 'date-special-range-focus-background');
         }
     }
 
