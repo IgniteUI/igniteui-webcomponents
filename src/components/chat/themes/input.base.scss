@@ -52,10 +52,6 @@
     min-width: rem(90px);
     max-width: fit-content;
     flex: 1 1;
-
-    igc-chip {
-        --ig-size: 2;
-    }
 }
 
 igc-textarea::part(input) {
@@ -64,9 +60,8 @@ igc-textarea::part(input) {
     overflow-y: auto;
 }
 
-igc-icon-button,
-igc-textarea {
-    --ig-size: 2;
+igc-icon-button {
+    --default-size: 2;
 }
 
 @container (max-width: 400px) {
