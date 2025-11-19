@@ -4,10 +4,12 @@
 $theme: $material;
 
 [part='tab-header'] {
+    --_border-width: #{rem(1px)};
+
     color: var-get($theme, 'item-text-color');
     background: var-get($theme, 'item-background');
     border-radius: var-get($theme, 'border-radius');
-    border: rem(1px) solid var-get($theme, 'border-color');
+    border: var(--_border-width) solid var-get($theme, 'border-color');
 
     ::slotted(igc-icon) {
         color: var-get($theme, 'item-icon-color');
