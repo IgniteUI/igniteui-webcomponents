@@ -11,7 +11,7 @@ import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { partMap } from '../common/part-map.js';
-import { numberInRangeInclusive } from '../common/util.js';
+import { bindIf, numberInRangeInclusive } from '../common/util.js';
 import { styles } from './themes/dialog.base.css.js';
 import { styles as shared } from './themes/shared/dialog.common.css.js';
 import { all } from './themes/themes.js';
@@ -163,6 +163,10 @@ export default class IgcDialogComponent extends EventEmitterMixin<
     return true;
   }
 
+  private _closeWithEvent(): void {
+    this._hide(true);
+  }
+
   protected _handleFormSubmit(event: SubmitEvent): void {
     const form = event.target as HTMLFormElement;
 
@@ -172,7 +176,7 @@ export default class IgcDialogComponent extends EventEmitterMixin<
       }
 
       if (!event.defaultPrevented) {
-        this._hide(true);
+        this._closeWithEvent();
       }
     }
   }
@@ -181,7 +185,16 @@ export default class IgcDialogComponent extends EventEmitterMixin<
     event.preventDefault();
 
     if (!this.keepOpenOnEscape) {
-      this._hide(true);
+      this._closeWithEvent();
+    }
+  }
+
+  private _handleClose(): void {
+    // When a non-cancelable close event is fired (e.g., from repeated Escape presses),
+    // reopen the dialog to prevent the broken state with visible backdrop.
+    // Note that this handler is invoked only when `keepOpenOnEscape` is true.
+    if (this.open) {
+      this._dialog.showModal();
     }
   }
 
@@ -192,7 +205,7 @@ export default class IgcDialogComponent extends EventEmitterMixin<
       const inY = numberInRangeInclusive(clientY, rect.top, rect.bottom);
 
       if (!(inX && inY)) {
-        this._hide(true);
+        this._closeWithEvent();
       }
     }
   }
@@ -262,7 +275,7 @@ export default class IgcDialogComponent extends EventEmitterMixin<
           ${this.hideDefaultAction
             ? nothing
             : html`
-                <igc-button variant="flat" @click=${() => this._hide(true)}>
+                <igc-button variant="flat" @click=${this._closeWithEvent}>
                   OK
                 </igc-button>
               `}
@@ -283,10 +296,11 @@ export default class IgcDialogComponent extends EventEmitterMixin<
         ${ref(this._dialogRef)}
         part=${partMap({ base: true, titled: hasTitle, footed: hasFooter })}
         role="dialog"
-        aria-label=${this.ariaLabel || nothing}
-        aria-labelledby=${labelledBy || nothing}
+        aria-label=${bindIf(this.ariaLabel, this.ariaLabel)}
+        aria-labelledby=${bindIf(labelledBy, labelledBy)}
         @click=${this._handleClick}
         @cancel=${this._handleCancel}
+        @close=${bindIf(this.keepOpenOnEscape, this._handleClose)}
       >
         ${this._renderHeader()} ${this._renderContent()} ${this._renderFooter()}
       </dialog>
