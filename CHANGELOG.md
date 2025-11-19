@@ -5,9 +5,22 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+### Added
+- #### Localization
+  - New localization implementation. Now you can set global localization for all localized Ignite UI components using the `registerI18n` and `setCurrentI18n` methods.
+  - Calendar, Date Input, Date Picker and Date Range Picker components now implement the new localization for formatting as well, which internally uses new implementation of the Intl.
+  - Added localization for Carousel, Chip, Combo, File Input and Tree. They now have `locale` and `resourceStrings` properties as well, which you can set to customize them individually.
+
 ### Fixed
 - #### Tooltip
   - Do not show tooltip when target is clicked [#1828](https://github.com/IgniteUI/igniteui-webcomponents/issues/1828)
+- #### Date input, Date picker, Date range picker
+  - Default display format now follows strictly locale format as per specification without leading zeros.
+
+## [6.3.6] - 2025-11-14
+### Fixed
+- #### Date picker
+  - Value not committed on browser auto-fill behavior [#1932](https://github.com/IgniteUI/igniteui-webcomponents/pull/1932)
 
 ## [6.3.5] - 2025-11-13
 ### Changed
@@ -1059,6 +1072,7 @@ Initial release of Ignite UI Web Components
 - Ripple component
 - Switch component
 
+[6.3.6]: https://github.com/IgniteUI/igniteui-webcomponents/compare/6.3.5...6.3.6
 [6.3.5]: https://github.com/IgniteUI/igniteui-webcomponents/compare/6.3.4...6.3.5
 [6.3.4]: https://github.com/IgniteUI/igniteui-webcomponents/compare/6.3.3...6.3.4
 [6.3.3]: https://github.com/IgniteUI/igniteui-webcomponents/compare/6.3.2...6.3.3

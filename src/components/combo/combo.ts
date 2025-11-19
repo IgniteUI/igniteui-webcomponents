@@ -155,7 +155,7 @@ export default class IgcComboComponent<
     },
   });
 
-  private readonly _i18nController = addI18nController<IComboResourceStrings>(
+  protected readonly _i18nController = addI18nController<IComboResourceStrings>(
     this,
     {
       defaultEN: ComboResourceStringsEN,
@@ -272,7 +272,7 @@ export default class IgcComboComponent<
   public autofocusList = false;
 
   /**
-   * Gets/Sets the locale used for formatting and displaying the dates in the component.
+   * Gets/Sets the locale used for getting language, affecting resource strings.
    * @attr locale
    */
   @property()
@@ -890,6 +890,12 @@ export default class IgcComboComponent<
     };
   }
 
+  protected getMainAriaLabel() {
+    return this._selection.isEmpty
+      ? this.resourceStrings.combo_aria_label_no_options!
+      : this.resourceStrings.combo_aria_label_options!;
+  }
+
   private _stopPropagation(e: Event) {
     e.stopPropagation();
   }
@@ -921,6 +927,7 @@ export default class IgcComboComponent<
         part="clear-icon"
         @click=${this.handleClearIconClick}
         ?hidden=${this.disableClear || this._selection.isEmpty}
+        aria-label=${this.resourceStrings.combo_clearItems_placeholder!}
       >
         <slot name="clear-icon">
           <igc-icon
@@ -945,6 +952,7 @@ export default class IgcComboComponent<
         aria-expanded=${this.open}
         aria-describedby="combo-helper-text"
         aria-disabled=${this.disabled}
+        aria-label=${this.getMainAriaLabel()}
         exportparts="container: input, input: native-input, label, prefix, suffix"
         @click=${this._toggle}
         placeholder=${ifDefined(this.placeholder)}
