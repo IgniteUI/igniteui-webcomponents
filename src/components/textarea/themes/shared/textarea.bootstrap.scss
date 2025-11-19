@@ -38,10 +38,10 @@ $theme: $bootstrap;
 [part~='prefixed'] {
     [part~='prefix'] {
         border-block-width: rem(1px);
+        border-inline-width: 0;
         border-style: solid;
         border-color: var-get($theme, 'border-color');
         overflow: hidden;
-        border-inline-width: 0;
         border: {
             start: {
                 start-radius: var-get($theme, 'border-border-radius');
@@ -67,10 +67,10 @@ $theme: $bootstrap;
 [part~='suffixed'] {
     [part~='suffix'] {
         border-block-width: rem(1px);
+        border-inline-width: 0;
         border-style: solid;
         border-color: var-get($theme, 'border-color');
         overflow: hidden;
-        border-inline-width: 0;
         border: {
             start: {
                 end-radius: var-get($theme, 'border-border-radius');
@@ -164,22 +164,22 @@ textarea {
         box-shadow: none;
     }
 
-    ::slotted([slot='suffix']) {
-        border-inline-end: rem(1px) solid var(--disabled-border-color);
-    }
-
     ::slotted([slot='prefix']) {
         border-inline-start: rem(1px) solid var(--disabled-border-color);
+    }
+
+    ::slotted([slot='suffix']) {
+        border-inline-end: rem(1px) solid var(--disabled-border-color);
     }
 }
 
 :host(:not([disabled])),
 :host(:not(:disabled)) {
-    ::slotted([slot='suffix']) {
-        border-inline-end: rem(1px) solid var(--border-color);
+     ::slotted([slot='prefix']) {
+        border-inline-start: rem(1px) solid var(--border-color);
     }
 
-    ::slotted([slot='prefix']) {
-        border-inline-start: rem(1px) solid var(--border-color);
+    ::slotted([slot='suffix']) {
+        border-inline-end: rem(1px) solid var(--border-color);
     }
 }
