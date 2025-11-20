@@ -1102,10 +1102,7 @@ describe('Date Time Input component', () => {
 
     describe('Validation', () => {
       const spec = createFormAssociatedTestBed<IgcDateTimeInputComponent>(html`
-        <igc-date-time-input
-          name="date-time"
-          .defaultValue=${null}
-        ></igc-date-time-input>
+        <igc-date-time-input name="date-time"></igc-date-time-input>
       `);
 
       beforeEach(async () => {
