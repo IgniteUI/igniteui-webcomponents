@@ -71,8 +71,8 @@ export default class IgcDialogComponent extends EventEmitterMixin<
   @state()
   private _animating = false;
 
-  private get _dialog(): HTMLDialogElement {
-    return this._dialogRef.value!;
+  private get _dialog(): HTMLDialogElement | undefined {
+    return this._dialogRef.value;
   }
 
   //#endregion
@@ -132,13 +132,13 @@ export default class IgcDialogComponent extends EventEmitterMixin<
 
   protected override firstUpdated(): void {
     if (this.open) {
-      this._dialog.showModal();
+      this._dialog?.showModal();
     }
   }
 
   @watch('open', { waitUntilFirstUpdate: true })
   protected _handleOpenState(): void {
-    this.open ? this._dialog.showModal() : this._dialog.close();
+    this.open ? this._dialog?.showModal() : this._dialog?.close();
   }
 
   private _emitClosing(): boolean {
@@ -194,7 +194,7 @@ export default class IgcDialogComponent extends EventEmitterMixin<
     // reopen the dialog to prevent the broken state with visible backdrop.
     // Note that this handler is invoked only when `keepOpenOnEscape` is true.
     if (this.open) {
-      this._dialog.showModal();
+      this._dialog?.showModal();
     }
   }
 
