@@ -321,18 +321,23 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   }
 
   private _shouldSkipResize(_node: Element, event: KeyboardEvent): boolean {
+    const isArrowUp = event.key.toLowerCase() === arrowUp.toLowerCase();
+    const isArrowDown = event.key.toLowerCase() === arrowDown.toLowerCase();
+    const isArrowLeft = event.key.toLowerCase() === arrowLeft.toLowerCase();
+    const isArrowRight = event.key.toLowerCase() === arrowRight.toLowerCase();
+
     if (this._resizeDisallowed && !event.ctrlKey) {
       return true;
     }
     if (
-      (event.key === arrowUp || event.key === arrowDown) &&
+      (isArrowUp || isArrowDown) &&
       this.orientation === 'horizontal' &&
       !event.ctrlKey
     ) {
       return true;
     }
     if (
-      (event.key === arrowLeft || event.key === arrowRight) &&
+      (isArrowLeft || isArrowRight) &&
       this.orientation === 'vertical' &&
       !event.ctrlKey
     ) {
@@ -342,7 +347,9 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   }
 
   private _handleResizePanes(event: KeyboardEvent) {
-    const delta = event.key === arrowUp || event.key === arrowLeft ? -10 : 10;
+    const isArrowUp = event.key.toLowerCase() === arrowUp.toLowerCase();
+    const isArrowLeft = event.key.toLowerCase() === arrowLeft.toLowerCase();
+    const delta = isArrowUp || isArrowLeft ? -10 : 10;
 
     this._resizeStart();
     this._resizing(delta);
@@ -354,19 +361,25 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
     if (this.nonCollapsible) {
       return;
     }
+
+    const isArrowUp = event.key.toLowerCase() === arrowUp.toLowerCase();
+    const isArrowDown = event.key.toLowerCase() === arrowDown.toLowerCase();
+    const isArrowLeft = event.key.toLowerCase() === arrowLeft.toLowerCase();
+    const isArrowRight = event.key.toLowerCase() === arrowRight.toLowerCase();
+
     const { prevButtonHidden, nextButtonHidden } =
       this._getExpanderHiddenState();
 
     if (
-      ((event.key === arrowUp && this.orientation === 'vertical') ||
-        (event.key === arrowLeft && this.orientation === 'horizontal')) &&
+      ((isArrowUp && this.orientation === 'vertical') ||
+        (isArrowLeft && this.orientation === 'horizontal')) &&
       !prevButtonHidden
     ) {
       this._handleExpanderClick(true);
     }
     if (
-      ((event.key === arrowDown && this.orientation === 'vertical') ||
-        (event.key === arrowRight && this.orientation === 'horizontal')) &&
+      ((isArrowDown && this.orientation === 'vertical') ||
+        (isArrowRight && this.orientation === 'horizontal')) &&
       !nextButtonHidden
     ) {
       this._handleExpanderClick(false);
@@ -384,6 +397,7 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
       this._isEndPercentageSize || this._isEndAutoSize;
 
     [this._startPaneInitialSize, this._endPaneInitialSize] = this._rectSize();
+    // TODO: are these event args needed?
     this.emitEvent('igcResizeStart', {
       detail: { pane: this._startPane, sibling: this._endPane },
     });
