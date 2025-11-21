@@ -66,11 +66,13 @@ import { styles as shared } from './themes/shared/date-range-picker.common.css.j
 import { all } from './themes/themes.js';
 import { dateRangeValidators, isCompleteDateRange } from './validators.js';
 
+/* jsonAPIPlainObject */
 export interface DateRangeValue {
   start: Date | null;
   end: Date | null;
 }
 
+/* jsonAPIPlainObject */
 export interface CustomDateRange {
   label: string;
   dateRange: DateRangeValue;
@@ -306,7 +308,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
 
   // #region General properties
 
-  /* @tsTwoWayProperty(true, "igcChange", "detail", false) */
+  /* @tsTwoWayProperty(true, "igcChange", "detail", false, true) */
   /**
    * The value of the picker
    * @attr
