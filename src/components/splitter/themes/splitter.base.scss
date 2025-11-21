@@ -17,8 +17,8 @@
     }
 
     // Styles for the pane wrapper divs (startPane/endPane)
-    [part~='startPane'],
-    [part~='endPane'] {
+    [part~='start-pane'],
+    [part~='end-pane'] {
         display: flex;
         flex: 1 1 auto;
         width: 100%;
@@ -49,18 +49,18 @@
             background-color: var(--ig-gray-400);
         }
 
-        [part='expander-start'],
-        [part='expander-end'] {
+        [part='start-expander'],
+        [part='end-expander'] {
             cursor: pointer;
             width: 5px;
             height: 5px;
         }
 
-        [part='expander-start'] {
+        [part='start-expander'] {
             background-color: red;
         }
 
-        [part='expander-end'] {
+        [part='end-expander'] {
             background-color: green;
         }
 
@@ -96,7 +96,6 @@
     [part='bar'] {
         flex-direction: row;
         width: 100%;
-
         height: var(--bar-size);
 
         [part='handle'] {
@@ -107,13 +106,13 @@
 
 // Collapsed states
 :host([start-collapsed]) {
-    [part='startPane'] {
+    [part='start-pane'] {
         display: none;
     }
 }
 
 :host([end-collapsed]) {
-    [part~='endPane'] {
+    [part~='end-pane'] {
         display: none;
     }
 }

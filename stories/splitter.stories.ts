@@ -17,6 +17,9 @@ const metadata: Meta<IgcSplitterComponent> = {
           'The Splitter lays out panes with draggable bars rendered between each pair of panes.',
       },
     },
+    actions: {
+      handles: ['igcResizeStart', 'igcResizing', 'igcResizeEnd'],
+    },
   },
   argTypes: {
     orientation: {

@@ -16,6 +16,7 @@ import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
+import { isLTR } from '../common/util.js';
 import { addResizeController } from '../resize-container/resize-controller.js';
 import type { SplitterOrientation } from '../types.js';
 import { styles } from './themes/splitter.base.css.js';
@@ -31,13 +32,25 @@ export interface IgcSplitterComponentEventMap {
   igcResizeEnd: CustomEvent<IgcSplitterBarResizeEventArgs>;
 }
 
+interface PaneResizeState {
+  initialSize: number;
+  isPercentageBased: boolean;
+}
+
+interface SplitterResizeState {
+  startPane: PaneResizeState;
+  endPane: PaneResizeState;
+}
+
 /**
  * The Splitter component provides a framework for a simple layout, splitting the view horizontally or vertically
  * into multiple smaller resizable and collapsible areas.
  *
  * @element igc-splitter
  * *
- * @fires igc... - Emitted when ... .
+ * @fires igcResizeStart - Emitted when resizing starts.
+ * @fires igcResizing - Emitted while resizing.
+ * @fires igcResizeEnd - Emitted when resizing ends.
  *
  * @csspart ... - ... .
  */
@@ -53,18 +66,15 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
     registerComponent(IgcSplitterComponent);
   }
 
+  //#region Private Properties
+
   private readonly _barRef = createRef<HTMLElement>();
   private _startPaneInternalStyles: StyleInfo = {};
   private _endPaneInternalStyles: StyleInfo = {};
   private _barInternalStyles: StyleInfo = {};
   private _startSize = 'auto';
   private _endSize = 'auto';
-  private _startPaneInitialSize!: number;
-  private _endPaneInitialSize!: number;
-  private _isStartPanePercentage = false;
-  private _isEndPanePercentage = false;
-
-  //#region Properties
+  private _resizeState: SplitterResizeState | null = null;
 
   private readonly _internals = addInternalsController(this, {
     initialARIA: {
@@ -75,14 +85,43 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   @query('[part~="base"]', true)
   private readonly _base!: HTMLElement;
 
-  @query('[part~="startPane"]', true)
+  @query('[part~="start-pane"]', true)
   private readonly _startPane!: HTMLElement;
 
-  @query('[part~="endPane"]', true)
+  @query('[part~="end-pane"]', true)
   private readonly _endPane!: HTMLElement;
 
   @query('[part~="bar"]', true)
   private readonly _bar!: HTMLElement;
+
+  private get _startFlex() {
+    const grow = this._isAutoSize('start') ? 1 : 0;
+    const shrink =
+      this._isAutoSize('start') || this._isPercentageSize('start') ? 1 : 0;
+    return `${grow} ${shrink} ${this._startSize}`;
+  }
+
+  private get _endFlex() {
+    const grow = this._isAutoSize('end') ? 1 : 0;
+    const shrink =
+      this._isAutoSize('end') || this._isPercentageSize('end') ? 1 : 0;
+    return `${grow} ${shrink} ${this._endSize}`;
+  }
+
+  private get _resizeDisallowed() {
+    return this.nonResizable || this.startCollapsed || this.endCollapsed;
+  }
+
+  private get _barCursor(): string {
+    if (this._resizeDisallowed) {
+      return 'default';
+    }
+    return this.orientation === 'horizontal' ? 'col-resize' : 'row-resize';
+  }
+
+  //#endregion
+
+  //#region Public Properties
 
   /** Gets/Sets the orientation of the splitter.
    *
@@ -107,41 +146,6 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
    */
   @property({ type: Boolean, reflect: true, attribute: 'non-resizable' })
   public nonResizable = false;
-
-  private get _isStartPercentageSize() {
-    return this._startSize.indexOf('%') !== -1;
-  }
-
-  private get _isEndPercentageSize() {
-    return this._endSize.indexOf('%') !== -1;
-  }
-
-  private get _isStartAutoSize() {
-    return this._startSize === 'auto';
-  }
-
-  private get _isEndAutoSize() {
-    return this._endSize === 'auto';
-  }
-
-  private get _startFlex() {
-    const grow = this._isStartAutoSize ? 1 : 0;
-    const shrink = this._isStartAutoSize || this._isStartPercentageSize ? 1 : 0;
-    return `${grow} ${shrink} ${this._startSize}`;
-  }
-
-  private get _endFlex() {
-    const grow = this._isEndAutoSize ? 1 : 0;
-    const shrink = this._isEndAutoSize || this._isEndPercentageSize ? 1 : 0;
-    return `${grow} ${shrink} ${this._endSize}`;
-  }
-
-  private get _barCursor(): string {
-    if (this._resizeDisallowed) {
-      return 'default';
-    }
-    return this.orientation === 'horizontal' ? 'col-resize' : 'row-resize';
-  }
 
   /**
    * The minimum size of the start pane.
@@ -219,7 +223,7 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
 
   //#endregion
 
-  //#region Internal API
+  //#region Watchers
 
   @watch('orientation', { waitUntilFirstUpdate: true })
   protected _orientationChange(): void {
@@ -240,6 +244,10 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
     this.endSize = 'auto';
     this._changeCursor();
   }
+
+  //#endregion
+
+  //#region Lifecycle
 
   protected override willUpdate(changed: PropertyValues) {
     super.willUpdate(changed);
@@ -262,16 +270,23 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
     });
     addKeybindings(this, {
       ref: this._barRef,
-      skip: this._shouldSkipResize,
     })
-      .set(arrowUp, this._handleResizePanes)
-      .set(arrowDown, this._handleResizePanes)
-      .set(arrowLeft, this._handleResizePanes)
-      .set(arrowRight, this._handleResizePanes)
-      .set([ctrlKey, arrowUp], this._handleExpandPanes)
-      .set([ctrlKey, arrowDown], this._handleExpandPanes)
-      .set([ctrlKey, arrowLeft], this._handleExpandPanes)
-      .set([ctrlKey, arrowRight], this._handleExpandPanes);
+      .set(arrowUp, () => this._handleResizePanes(-1, 'vertical'))
+      .set(arrowDown, () => this._handleResizePanes(1, 'vertical'))
+      .set(arrowLeft, () => this._handleResizePanes(-1, 'horizontal'))
+      .set(arrowRight, () => this._handleResizePanes(1, 'horizontal'))
+      .set([ctrlKey, arrowUp], () =>
+        this._handleArrowsExpandCollapse('start', 'vertical')
+      )
+      .set([ctrlKey, arrowDown], () =>
+        this._handleArrowsExpandCollapse('end', 'vertical')
+      )
+      .set([ctrlKey, arrowLeft], () =>
+        this._handleArrowsExpandCollapse('start', 'horizontal')
+      )
+      .set([ctrlKey, arrowRight], () =>
+        this._handleArrowsExpandCollapse('end', 'horizontal')
+      );
 
     addResizeController(this, {
       ref: [this._barRef],
@@ -311,6 +326,8 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
 
   //#endregion
 
+  //#region Public Methods
+
   /** Toggles the collapsed state of the pane. */
   public toggle(position: 'start' | 'end') {
     if (position === 'start') {
@@ -320,36 +337,28 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
     }
   }
 
-  private _shouldSkipResize(_node: Element, event: KeyboardEvent): boolean {
-    const isArrowUp = event.key.toLowerCase() === arrowUp.toLowerCase();
-    const isArrowDown = event.key.toLowerCase() === arrowDown.toLowerCase();
-    const isArrowLeft = event.key.toLowerCase() === arrowLeft.toLowerCase();
-    const isArrowRight = event.key.toLowerCase() === arrowRight.toLowerCase();
+  //#endregion
 
-    if (this._resizeDisallowed && !event.ctrlKey) {
-      return true;
-    }
-    if (
-      (isArrowUp || isArrowDown) &&
-      this.orientation === 'horizontal' &&
-      !event.ctrlKey
-    ) {
-      return true;
-    }
-    if (
-      (isArrowLeft || isArrowRight) &&
-      this.orientation === 'vertical' &&
-      !event.ctrlKey
-    ) {
-      return true;
-    }
-    return false;
+  //#region Internal API
+
+  private _isPercentageSize(which: 'start' | 'end') {
+    const targetSize = which === 'start' ? this._startSize : this._endSize;
+    return targetSize.indexOf('%') !== -1;
   }
 
-  private _handleResizePanes(event: KeyboardEvent) {
-    const isArrowUp = event.key.toLowerCase() === arrowUp.toLowerCase();
-    const isArrowLeft = event.key.toLowerCase() === arrowLeft.toLowerCase();
-    const delta = isArrowUp || isArrowLeft ? -10 : 10;
+  private _isAutoSize(which: 'start' | 'end') {
+    const targetSize = which === 'start' ? this._startSize : this._endSize;
+    return targetSize === 'auto';
+  }
+
+  private _handleResizePanes(
+    direction: -1 | 1,
+    validOrientation: 'horizontal' | 'vertical'
+  ) {
+    if (this._resizeDisallowed || this.orientation !== validOrientation) {
+      return;
+    }
+    const delta = 10 * direction * (isLTR(this) ? 1 : -1);
 
     this._resizeStart();
     this._resizing(delta);
@@ -357,50 +366,49 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
     return true;
   }
 
-  private _handleExpandPanes(event: KeyboardEvent) {
-    if (this.nonCollapsible) {
-      return;
-    }
-
-    const isArrowUp = event.key.toLowerCase() === arrowUp.toLowerCase();
-    const isArrowDown = event.key.toLowerCase() === arrowDown.toLowerCase();
-    const isArrowLeft = event.key.toLowerCase() === arrowLeft.toLowerCase();
-    const isArrowRight = event.key.toLowerCase() === arrowRight.toLowerCase();
-
-    const { prevButtonHidden, nextButtonHidden } =
-      this._getExpanderHiddenState();
-
-    if (
-      ((isArrowUp && this.orientation === 'vertical') ||
-        (isArrowLeft && this.orientation === 'horizontal')) &&
-      !prevButtonHidden
-    ) {
-      this._handleExpanderClick(true);
-    }
-    if (
-      ((isArrowDown && this.orientation === 'vertical') ||
-        (isArrowRight && this.orientation === 'horizontal')) &&
-      !nextButtonHidden
-    ) {
-      this._handleExpanderClick(false);
-    }
+  private _handleExpanderStartAction() {
+    const target = this.endCollapsed ? 'end' : 'start';
+    this.toggle(target);
   }
 
-  private get _resizeDisallowed() {
-    return this.nonResizable || this.startCollapsed || this.endCollapsed;
+  private _handleExpanderEndAction() {
+    const target = this.startCollapsed ? 'start' : 'end';
+    this.toggle(target);
+  }
+
+  private _handleArrowsExpandCollapse(
+    target: 'start' | 'end',
+    validOrientation: 'horizontal' | 'vertical'
+  ) {
+    if (this.nonCollapsible || this.orientation !== validOrientation) {
+      return;
+    }
+    target === 'start'
+      ? this._handleExpanderStartAction()
+      : this._handleExpanderEndAction();
   }
 
   private _resizeStart() {
-    this._isStartPanePercentage =
-      this._isStartPercentageSize || this._isStartAutoSize;
-    this._isEndPanePercentage =
-      this._isEndPercentageSize || this._isEndAutoSize;
+    const [startSize, endSize] = this._rectSize();
 
-    [this._startPaneInitialSize, this._endPaneInitialSize] = this._rectSize();
+    this._resizeState = {
+      startPane: this._createPaneState('start', startSize),
+      endPane: this._createPaneState('end', endSize),
+    };
     // TODO: are these event args needed?
     this.emitEvent('igcResizeStart', {
       detail: { pane: this._startPane, sibling: this._endPane },
     });
+  }
+
+  private _createPaneState(
+    pane: 'start' | 'end',
+    size: number
+  ): PaneResizeState {
+    return {
+      initialSize: size,
+      isPercentageBased: this._isPercentageSize(pane) || this._isAutoSize(pane),
+    };
   }
 
   private _resizing(delta: number) {
@@ -415,8 +423,10 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   }
 
   private _resizeEnd(delta: number) {
+    if (!this._resizeState) return;
+
     const [paneSize, siblingSize] = this._calcNewSizes(delta);
-    if (this._isStartPanePercentage) {
+    if (this._resizeState.startPane.isPercentageBased) {
       // handle % resizes
       const totalSize = this.getTotalSize();
       const percentPaneSize = (paneSize / totalSize) * 100;
@@ -426,7 +436,7 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
       this.startSize = `${paneSize}px`;
     }
 
-    if (this._isEndPanePercentage) {
+    if (this._resizeState.endPane.isPercentageBased) {
       // handle % resizes
       const totalSize = this.getTotalSize();
       const percentSiblingSize = (siblingSize / totalSize) * 100;
@@ -438,6 +448,7 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
     this.emitEvent('igcResizeEnd', {
       detail: { pane: this._startPane, sibling: this._endPane },
     });
+    this._resizeState = null;
   }
 
   private _rectSize() {
@@ -448,33 +459,40 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
     return [startPaneRect[relevantDimension], endPaneRect[relevantDimension]];
   }
 
+  // TODO: handle RTL
   private _calcNewSizes(delta: number): [number, number] {
+    if (!this._resizeState) return [0, 0];
+
     let finalDelta: number;
     const min = Number.parseInt(this.startMinSize ?? '0', 10) || 0;
     const minSibling = Number.parseInt(this.endMinSize ?? '0', 10) || 0;
     const max =
       Number.parseInt(this.startMaxSize ?? '0', 10) ||
-      this._startPaneInitialSize + this._endPaneInitialSize - minSibling;
+      this._resizeState.startPane.initialSize +
+        this._resizeState.endPane.initialSize -
+        minSibling;
     const maxSibling =
       Number.parseInt(this.endMaxSize ?? '0', 10) ||
-      this._startPaneInitialSize + this._endPaneInitialSize - min;
+      this._resizeState.startPane.initialSize +
+        this._resizeState.endPane.initialSize -
+        min;
 
     if (delta < 0) {
       const maxPossibleDelta = Math.min(
-        this._startPaneInitialSize - min,
-        maxSibling - this._endPaneInitialSize
+        this._resizeState.startPane.initialSize - min,
+        maxSibling - this._resizeState.endPane.initialSize
       );
       finalDelta = Math.min(maxPossibleDelta, Math.abs(delta)) * -1;
     } else {
       const maxPossibleDelta = Math.min(
-        max - this._startPaneInitialSize,
-        this._endPaneInitialSize - minSibling
+        max - this._resizeState.startPane.initialSize,
+        this._resizeState.endPane.initialSize - minSibling
       );
       finalDelta = Math.min(maxPossibleDelta, Math.abs(delta));
     }
     return [
-      this._startPaneInitialSize + finalDelta,
-      this._endPaneInitialSize - finalDelta,
+      this._resizeState.startPane.initialSize + finalDelta,
+      this._resizeState.endPane.initialSize - finalDelta,
     ];
   }
 
@@ -515,18 +533,15 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   }
 
   private _initPanes() {
-    let sizes = {};
-    if (this.orientation === 'horizontal') {
-      sizes = {
-        minWidth: this.startMinSize ?? 0,
-        maxWidth: this.startMaxSize ?? '100%',
-      };
-    } else {
-      sizes = {
-        minHeight: this.startMinSize ?? 0,
-        maxHeight: this.startMaxSize ?? '100%',
-      };
-    }
+    const isHorizontal = this.orientation === 'horizontal';
+    const minProp = isHorizontal ? 'minWidth' : 'minHeight';
+    const maxProp = isHorizontal ? 'maxWidth' : 'maxHeight';
+
+    const sizes = {
+      [minProp]: this.startMinSize ?? 0,
+      [maxProp]: this.startMaxSize ?? '100%',
+    };
+
     Object.assign(this._startPaneInternalStyles, {
       ...sizes,
       flex: this._startFlex,
@@ -538,20 +553,18 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
     this.requestUpdate();
   }
 
-  private _handleExpanderClick(start: boolean, event?: PointerEvent) {
+  private _handleExpanderClick(pane: 'start' | 'end', event: PointerEvent) {
     // Prevent resize controller from starting
-    event?.stopPropagation();
+    event.stopPropagation();
 
-    let target: 'start' | 'end';
-    if (start) {
-      // if prev is clicked when next pane is hidden, show next pane, else hide prev pane.
-      target = this.endCollapsed ? 'end' : 'start';
-    } else {
-      // if next is clicked when prev pane is hidden, show prev pane, else hide next pane.
-      target = this.startCollapsed ? 'start' : 'end';
-    }
-    this.toggle(target);
+    pane === 'start'
+      ? this._handleExpanderStartAction()
+      : this._handleExpanderEndAction();
   }
+
+  //#endregion
+
+  //#region Rendering
 
   private _getExpanderHiddenState() {
     return {
@@ -568,15 +581,16 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
       this._getExpanderHiddenState();
     return html`
       <div
-        part="expander-start"
+        part="start-expander"
         ?hidden=${prevButtonHidden}
-        @pointerdown=${(e: PointerEvent) => this._handleExpanderClick(true, e)}
+        @pointerdown=${(e: PointerEvent) =>
+          this._handleExpanderClick('start', e)}
       ></div>
       <div part="handle"></div>
       <div
-        part="expander-end"
+        part="end-expander"
         ?hidden=${nextButtonHidden}
-        @pointerdown=${(e: PointerEvent) => this._handleExpanderClick(false, e)}
+        @pointerdown=${(e: PointerEvent) => this._handleExpanderClick('end', e)}
       ></div>
     `;
   }
@@ -584,7 +598,7 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   protected override render() {
     return html`
       <div part="base">
-        <div part="startPane" style=${styleMap(this._startPaneInternalStyles)}>
+        <div part="start-pane" style=${styleMap(this._startPaneInternalStyles)}>
           <slot name="start"></slot>
         </div>
         <div
@@ -595,12 +609,14 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
         >
           ${this._renderBarControls()}
         </div>
-        <div part="endPane" style=${styleMap(this._endPaneInternalStyles)}>
+        <div part="end-pane" style=${styleMap(this._endPaneInternalStyles)}>
           <slot name="end"></slot>
         </div>
       </div>
     `;
   }
+
+  //#endregion
 }
 
 declare global {

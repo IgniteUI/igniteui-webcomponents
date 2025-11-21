@@ -61,8 +61,8 @@ describe('Splitter', () => {
 
     it('should render splitter bar between start and end parts', async () => {
       const base = getSplitterPart(splitter, 'base');
-      const startPart = getSplitterPart(splitter, 'startPane');
-      const endPart = getSplitterPart(splitter, 'endPane');
+      const startPart = getSplitterPart(splitter, 'start-pane');
+      const endPart = getSplitterPart(splitter, 'end-pane');
       const bar = getSplitterPart(splitter, 'bar');
 
       expect(base).to.exist;
@@ -80,9 +80,9 @@ describe('Splitter', () => {
 
     it('should render splitter bar parts', async () => {
       const bar = getSplitterPart(splitter, 'bar');
-      const expanderStart = getSplitterPart(splitter, 'expander-start');
+      const expanderStart = getSplitterPart(splitter, 'start-expander');
       const barHandle = getSplitterPart(splitter, 'handle');
-      const expanderEnd = getSplitterPart(splitter, 'expander-end');
+      const expanderEnd = getSplitterPart(splitter, 'end-expander');
 
       expect(expanderStart).to.exist;
       expect(barHandle).to.exist;
@@ -216,7 +216,7 @@ describe('Splitter', () => {
       splitter.startSize = '200px';
       await elementUpdated(splitter);
 
-      const startPart = getSplitterPart(splitter, 'startPane');
+      const startPart = getSplitterPart(splitter, 'start-pane');
       const style = getComputedStyle(startPart);
       expect(style.flex).to.equal('0 0 200px');
 
@@ -231,7 +231,7 @@ describe('Splitter', () => {
     it('should properly set default min/max values when not specified', async () => {
       await elementUpdated(splitter);
 
-      const startPart = getSplitterPart(splitter, 'startPane');
+      const startPart = getSplitterPart(splitter, 'start-pane');
       const style = getComputedStyle(startPart);
       expect(style.flex).to.equal('1 1 auto');
 
@@ -256,7 +256,7 @@ describe('Splitter', () => {
 
       await elementUpdated(splitter);
 
-      const startPane = getSplitterPart(splitter, 'startPane');
+      const startPane = getSplitterPart(splitter, 'start-pane');
       const style = getComputedStyle(startPane);
       expect(style.minWidth).to.equal('100px');
       expect(style.maxWidth).to.equal('500px');
@@ -272,7 +272,7 @@ describe('Splitter', () => {
       );
       await elementUpdated(splitter);
 
-      const startPane = getSplitterPart(splitter, 'startPane');
+      const startPane = getSplitterPart(splitter, 'start-pane');
       const style = getComputedStyle(startPane);
       expect(style.minHeight).to.equal('100px');
       expect(style.maxHeight).to.equal('500px');
@@ -289,10 +289,10 @@ describe('Splitter', () => {
       );
       await elementUpdated(splitter);
 
-      const startPane = getSplitterPart(splitter, 'startPane');
+      const startPane = getSplitterPart(splitter, 'start-pane');
       const style1 = getComputedStyle(startPane);
 
-      const endPane = getSplitterPart(splitter, 'endPane');
+      const endPane = getSplitterPart(splitter, 'end-pane');
       const style2 = getComputedStyle(endPane);
 
       expect(splitter.startSize).to.equal('30%');
@@ -317,7 +317,7 @@ describe('Splitter', () => {
       );
       await elementUpdated(mixedConstraintSplitter);
 
-      const startPane = getSplitterPart(mixedConstraintSplitter, 'startPane');
+      const startPane = getSplitterPart(mixedConstraintSplitter, 'start-pane');
       const style = getComputedStyle(startPane);
 
       expect(mixedConstraintSplitter.startMinSize).to.equal('100px');
@@ -351,8 +351,8 @@ describe('Splitter', () => {
     });
 
     it('should toggle the next pane when the bar expander-end is clicked', async () => {
-      const expanderStart = getSplitterPart(splitter, 'expander-start');
-      const expanderEnd = getSplitterPart(splitter, 'expander-end');
+      const expanderStart = getSplitterPart(splitter, 'start-expander');
+      const expanderEnd = getSplitterPart(splitter, 'end-expander');
 
       simulatePointerDown(expanderEnd, { bubbles: true });
       await elementUpdated(splitter);
@@ -363,7 +363,7 @@ describe('Splitter', () => {
       expect(expanderStart.hidden).to.be.false;
       expect(expanderEnd.hidden).to.be.true;
 
-      simulatePointerDown(expanderEnd, { bubbles: true });
+      simulatePointerDown(expanderStart, { bubbles: true });
       await elementUpdated(splitter);
       await nextFrame();
 
@@ -374,8 +374,8 @@ describe('Splitter', () => {
     });
 
     it('should toggle the previous pane when the bar expander-start is clicked', async () => {
-      const expanderStart = getSplitterPart(splitter, 'expander-start');
-      const expanderEnd = getSplitterPart(splitter, 'expander-end');
+      const expanderStart = getSplitterPart(splitter, 'start-expander');
+      const expanderEnd = getSplitterPart(splitter, 'end-expander');
 
       simulatePointerDown(expanderStart, { bubbles: true });
       await elementUpdated(splitter);
@@ -386,7 +386,7 @@ describe('Splitter', () => {
       expect(expanderStart.hidden).to.be.true;
       expect(expanderEnd.hidden).to.be.false;
 
-      simulatePointerDown(expanderStart, { bubbles: true });
+      simulatePointerDown(expanderEnd, { bubbles: true });
       await elementUpdated(splitter);
       await nextFrame();
 
@@ -601,8 +601,8 @@ describe('Splitter', () => {
       await elementUpdated(splitter);
 
       let currentSizes = getPanesSizes(splitter, 'width');
-      const splitterSize = splitter.getBoundingClientRect()['width'];
-      const barSize = bar.getBoundingClientRect()['width'];
+      const splitterSize = splitter.getBoundingClientRect().width;
+      const barSize = bar.getBoundingClientRect().width;
 
       expect(currentSizes.startSize).to.equal(0);
       expect(currentSizes.endSize).to.equal(splitterSize - barSize);
@@ -656,8 +656,8 @@ describe('Splitter', () => {
       await elementUpdated(splitter);
 
       let currentSizes = getPanesSizes(splitter, 'height');
-      const splitterSize = splitter.getBoundingClientRect()['height'];
-      const barSize = bar.getBoundingClientRect()['height'];
+      const splitterSize = splitter.getBoundingClientRect().height;
+      const barSize = bar.getBoundingClientRect().height;
 
       expect(currentSizes.startSize).to.equal(0);
       expect(currentSizes.endSize).to.equal(splitterSize - barSize);
@@ -855,12 +855,12 @@ function getSplitterSlot(
 
 // TODO: more parts and names?
 type SplitterParts =
-  | 'startPane'
-  | 'endPane'
+  | 'start-pane'
+  | 'end-pane'
   | 'bar'
   | 'base'
-  | 'expander-start'
-  | 'expander-end'
+  | 'start-expander'
+  | 'end-expander'
   | 'handle';
 
 function getSplitterPart(splitter: IgcSplitterComponent, which: SplitterParts) {
@@ -902,8 +902,8 @@ function getPanesSizes(
   splitter: IgcSplitterComponent,
   dimension: 'width' | 'height' = 'width'
 ) {
-  const startPane = getSplitterPart(splitter, 'startPane');
-  const endPane = getSplitterPart(splitter, 'endPane');
+  const startPane = getSplitterPart(splitter, 'start-pane');
+  const endPane = getSplitterPart(splitter, 'end-pane');
 
   return {
     startSize: roundPrecise(startPane.getBoundingClientRect()[dimension]),
