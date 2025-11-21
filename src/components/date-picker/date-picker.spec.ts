@@ -927,7 +927,7 @@ describe('Date picker', () => {
       simulateClick(lastOfMay);
       await elementUpdated(picker);
 
-      expect(checkDatesEqual(picker.value!, targetDate));
+      checkDatesEqual(picker.value!, targetDate);
 
       // Open the picker and switch to months view
       await picker.show();

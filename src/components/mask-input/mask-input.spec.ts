@@ -816,12 +816,7 @@ describe('Masked input', () => {
 
     describe('Validation', () => {
       const spec = createFormAssociatedTestBed<IgcMaskInputComponent>(html`
-        <igc-mask-input
-          name="mask"
-          mask="LL"
-          required
-          .defaultValue=${undefined}
-        ></igc-mask-input>
+        <igc-mask-input name="mask" mask="LL" required></igc-mask-input>
       `);
 
       beforeEach(async () => {
