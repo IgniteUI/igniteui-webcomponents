@@ -160,7 +160,14 @@ $week-number-radius: var-get($theme, 'week-number-border-radius');
         border-radius: var-get($theme, 'date-special-border-radius');
 
         &::after {
-            border-radius: calc(var-get($theme, 'date-special-border-radius') - $border-width);
+            border-radius: calc(var-get($theme, 'date-special-border-radius'));
+        }
+    }
+
+    &[part~='special'][part~='current'],
+    &[part~='special'][part~='selected'] {
+        &::after {
+            border-radius: calc(var-get($theme, 'date-special-border-radius') - $inner-border-width);
         }
     }
 
@@ -170,10 +177,6 @@ $week-number-radius: var-get($theme, 'week-number-border-radius');
 
     &[part~='special'][part~='current'] {
         border-radius: var-get($theme, 'date-current-border-radius');
-
-        &::after {
-            border-radius: var-get($theme, 'date-current-border-radius');
-        }
     }
 }
 
@@ -280,6 +283,7 @@ $week-number-radius: var-get($theme, 'week-number-border-radius');
         }
     }
 
+    &[part~='current'][part~='range'][part~='disabled']:not([part~='preview']),
     &[part~='selected'][part~='current'][part~='range'] {
         color: var-get($theme, 'date-selected-current-range-foreground');
         background: var-get($theme, 'date-selected-current-range-background');
@@ -378,6 +382,7 @@ $week-number-radius: var-get($theme, 'week-number-border-radius');
         }
     }
 
+    &[part~='current'][part~='special'][part~='range'][part~='disabled']:not([part~='preview']),
     &[part~='selected'][part~='current'][part~='special'][part~='range'] {
         color: var-get($theme, 'date-special-range-foreground');
         background: var-get($theme, 'date-selected-current-range-background');

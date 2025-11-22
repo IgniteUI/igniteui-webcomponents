@@ -271,6 +271,33 @@ $fake-bg-position: calc(50% - (var-get($theme, 'size') / 2));
         }
     }
 
+    &[part~='special'][part~='range']:not([part~='selected'], [part~='current']) {
+        color: var-get($theme, 'date-special-range-foreground');
+
+        &::after {
+            background: var-get($theme, 'date-special-range-background');
+            border-color: var-get($theme, 'date-special-range-border-color')
+        }
+
+        &:hover {
+            color: var-get($theme, 'date-special-range-hover-foreground');
+
+            &::after {
+                background: var-get($theme, 'date-special-range-hover-background');
+                border-color: var-get($theme, 'date-special-range-hover-border-color')
+            }
+        }
+
+        &:focus {
+            color: var-get($theme, 'date-special-range-focus-foreground');
+
+            &::after {
+                background: var-get($theme, 'date-special-range-focus-background');
+                border-color: var-get($theme, 'date-special-range-focus-border-color')
+            }
+        }
+    }
+
     &[part~='special'][part~='selected']:not([part~='current']) {
         color: var-get($theme, 'date-selected-special-foreground');
 
@@ -317,12 +344,14 @@ $fake-bg-position: calc(50% - (var-get($theme, 'size') / 2));
     &[part~='current']:not([part~='preview'], [part~='first'], [part~='last']) {
         &:hover {
             &::before {
+                background: var-get($theme, 'date-current-hover-background');
                 border-color: var-get($theme, 'date-current-hover-border-color');
             }
         }
 
         &:focus {
             &::before {
+                background: var-get($theme, 'date-current-focus-background');
                 border-color: var-get($theme, 'date-current-focus-border-color');
             }
         }
@@ -386,7 +415,7 @@ $fake-bg-position: calc(50% - (var-get($theme, 'size') / 2));
         &::after {
             width: calc(var-get($theme, 'inner-size') - #{rem(4px)});
             height: calc(var-get($theme, 'inner-size') - #{rem(4px)});
-            border-color: var-get($theme, 'date-current-foreground');
+            border-color: var-get($theme, 'date-special-range-border-color');
         }
     }
 

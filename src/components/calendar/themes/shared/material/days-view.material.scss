@@ -3,7 +3,6 @@
 
 $theme: $material;
 $border-width: rem(1px);
-$inner-border-width: rem(1px);
 $week-number-radius: var-get($theme, 'week-number-border-radius');
 
 [part~='label'] {
@@ -113,11 +112,13 @@ $week-number-radius: var-get($theme, 'week-number-border-radius');
 [part~='date-inner'] {
     width: var-get($theme, 'size');
     height: var-get($theme, 'size');
-    border: $inner-border-width solid transparent;
+    border: $border-width solid transparent;
     border-radius: var-get($theme, 'date-border-radius');
 
     &:hover {
+        color: var-get($theme, 'date-hover-foreground');
         background: var-get($theme, 'date-hover-background');
+        border-color: var-get($theme, 'date-hover-border-color');
     }
 
     &:not([part~='selected'][part~='range'], [part~='current'], [part~='special'], [part~='first'], [part~='last'], [part~='range'], [part~='preview'][part~='disabled']) {
@@ -177,19 +178,16 @@ $week-number-radius: var-get($theme, 'week-number-border-radius');
         border-radius: var-get($theme, 'date-current-border-radius');
 
         &::after {
-            border-radius: var-get($theme, 'date-current-border-radius');
+            border-radius: var-get($theme, 'date-special-border-radius');
         }
     }
 }
 
 [part~='date-inner']:not([part~='inactive']) {
-    &:hover {
-        color: var-get($theme, 'date-hover-foreground');
-    }
-
     &:focus {
         color: var-get($theme, 'date-focus-foreground');
         background: var-get($theme, 'date-focus-background');
+        border-color: var-get($theme, 'date-focus-border-color');
     }
 
     &[part~='weekend']:not([part~='selected'][part~='range'], [part~='current'], [part~='special'], [part~='selected'], [part~='disabled']) {
@@ -240,7 +238,7 @@ $week-number-radius: var-get($theme, 'week-number-border-radius');
         }
     }
 
-    &[part~='selected'][part~='current'] {
+    &[part~='current'][part~='selected'] {
         color: var-get($theme, 'date-selected-current-foreground');
         background: var-get($theme, 'date-selected-current-background');
         border-color: var-get($theme, 'date-selected-current-border-color');
@@ -268,7 +266,7 @@ $week-number-radius: var-get($theme, 'week-number-border-radius');
         }
 
         &:focus {
-            color: var-get($theme, 'date-selected-current-range-foreground');
+            color: var-get($theme, 'date-selected-current-range-focus-foreground');
             background: var-get($theme, 'date-selected-current-range-focus-background');
         }
     }
@@ -281,7 +279,7 @@ $week-number-radius: var-get($theme, 'week-number-border-radius');
             content: "";
             position: absolute;
             z-index: 0;
-            border: $inner-border-width solid var-get($theme, 'date-special-border-color');
+            border: $border-width solid var-get($theme, 'date-special-border-color');
             width: var-get($theme, 'size');
             height: var-get($theme, 'size');
             box-sizing: border-box;
@@ -306,7 +304,7 @@ $week-number-radius: var-get($theme, 'week-number-border-radius');
         }
     }
 
-    &[part~='selected'][part~='special'] {
+    &[part~='special'][part~='selected'] {
         color: var-get($theme, 'date-selected-special-foreground');
         background: var-get($theme, 'date-selected-special-background');
 
@@ -364,8 +362,8 @@ $week-number-radius: var-get($theme, 'week-number-border-radius');
         }
     }
 
-    &[part~='selected'][part~='special'][part~='first'],
-    &[part~='selected'][part~='special'][part~='last'],
+    &[part~='special'][part~='selected'][part~='first'],
+    &[part~='special'][part~='selected'][part~='last'],
     &[part~='special'][part~='range'][part~='first']:not([part~='preview']),
     &[part~='special'][part~='range'][part~='last']:not([part~='preview']) {
         &:hover {
