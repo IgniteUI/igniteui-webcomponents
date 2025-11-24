@@ -442,8 +442,6 @@ describe('Splitter', () => {
       expect(currentSizes.endSize).to.equal(previousSizes.endSize);
       checkResizeEvents(eventSpy);
     });
-    // TODO: test when the slots have assigned sizes/min sizes + edge cases
-    // currently observing issue when resizing to the end and panes have fixed px sizes
 
     it('should resize horizontally by 10px delta with left/right arrow keys', async () => {
       const eventSpy = spy(splitter, 'emitEvent');
@@ -789,6 +787,74 @@ describe('Splitter', () => {
       expect(splitter.endCollapsed).to.be.false;
     });
   });
+
+  // TODO: test when the slots have assigned sizes/min sizes + edge cases
+  describe('Resizing with constraints and edge cases', () => {
+    it('panes should not exceed splitter size when set in px and horizontally resizing to end', async () => {
+      splitter = await fixture<IgcSplitterComponent>(
+        createTwoPanesWithSizesAndConstraints({
+          startSize: '500px',
+          endSize: '500px',
+        })
+      );
+      const totalSplitterSize = 800;
+      splitter.style.width = `${totalSplitterSize}px`;
+      await elementUpdated(splitter);
+
+      const bar = getSplitterPart(splitter, 'bar');
+      const barSize = bar.getBoundingClientRect().width;
+      const previousSizes = getPanesSizes(splitter, 'width');
+      const deltaX = 100;
+
+      await resize(splitter, deltaX, 0);
+
+      const currentSizes = getPanesSizes(splitter, 'width');
+      expect(currentSizes.startSize).to.equal(previousSizes.startSize + deltaX);
+      // end pane size should be decreased to fit the splitter width
+      expect(currentSizes.endSize).to.equal(
+        totalSplitterSize - barSize - currentSizes.startSize
+      );
+      checkPanesAreWithingBounds(
+        splitter,
+        currentSizes.startSize,
+        currentSizes.endSize,
+        'x'
+      );
+    });
+
+    it('panes should not exceed splitter size when set in px and vertically resizing to end', async () => {
+      splitter = await fixture<IgcSplitterComponent>(
+        createTwoPanesWithSizesAndConstraints({
+          orientation: 'vertical',
+          startSize: '500px',
+          endSize: '500px',
+        })
+      );
+      const totalSplitterSize = 800;
+      splitter.style.height = `${totalSplitterSize}px`;
+      await elementUpdated(splitter);
+
+      const bar = getSplitterPart(splitter, 'bar');
+      const barSize = bar.getBoundingClientRect().height;
+      const previousSizes = getPanesSizes(splitter, 'height');
+      const deltaY = 100;
+
+      await resize(splitter, 0, deltaY);
+
+      const currentSizes = getPanesSizes(splitter, 'height');
+      expect(currentSizes.startSize).to.equal(previousSizes.startSize + deltaY);
+      // end pane size should be decreased to fit the splitter height
+      expect(currentSizes.endSize).to.equal(
+        totalSplitterSize - barSize - currentSizes.startSize
+      );
+      checkPanesAreWithingBounds(
+        splitter,
+        currentSizes.startSize,
+        currentSizes.endSize,
+        'y'
+      );
+    });
+  });
 });
 
 function createSplitter() {
@@ -831,12 +897,12 @@ function createTwoPanesWithSizesAndConstraints(
   return html`
     <igc-splitter
       .orientation=${config.orientation ?? 'horizontal'}
-      .startSize=${config.startSize ?? 'auto'}
-      .endSize=${config.endSize ?? 'auto'}
-      .startMinSize=${config.startMinSize ?? '0px'}
-      .startMaxSize=${config.startMaxSize ?? '100%'}
-      .endMinSize=${config.endMinSize ?? '0px'}
-      .endMaxSize=${config.endMaxSize ?? '100%'}
+      .startSize=${config.startSize}
+      .endSize=${config.endSize}
+      .startMinSize=${config.startMinSize}
+      .startMaxSize=${config.startMaxSize}
+      .endMinSize=${config.endMinSize}
+      .endMaxSize=${config.endMaxSize}
     >
       <div slot="start">Pane 1</div>
       <div slot="end">Pane 2</div>
@@ -918,13 +984,13 @@ function checkResizeEvents(eventSpy: sinon.SinonSpy) {
   eventSpy.resetHistory();
 }
 
-// function checkPanesAreWithingBounds(
-//   splitter: IgcSplitterComponent,
-//   startSize: number,
-//   endSize: number,
-//   dimension: 'x' | 'y'
-// ) {
-//   const splitterSize =
-//     splitter.getBoundingClientRect()[dimension === 'x' ? 'width' : 'height'];
-//   expect(startSize + endSize).to.be.at.most(splitterSize);
-// }
+function checkPanesAreWithingBounds(
+  splitter: IgcSplitterComponent,
+  startSize: number,
+  endSize: number,
+  dimension: 'x' | 'y'
+) {
+  const splitterSize =
+    splitter.getBoundingClientRect()[dimension === 'x' ? 'width' : 'height'];
+  expect(startSize + endSize).to.be.at.most(splitterSize);
+}

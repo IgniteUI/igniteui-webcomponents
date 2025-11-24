@@ -187,7 +187,7 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
     });
   }
 
-  public get startSize(): string {
+  public get startSize(): string | undefined {
     return this._startSize;
   }
 
@@ -203,7 +203,7 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
     });
   }
 
-  public get endSize(): string {
+  public get endSize(): string | undefined {
     return this._endSize;
   }
 
@@ -343,12 +343,12 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
 
   private _isPercentageSize(which: 'start' | 'end') {
     const targetSize = which === 'start' ? this._startSize : this._endSize;
-    return targetSize.indexOf('%') !== -1;
+    return !!targetSize && targetSize.indexOf('%') !== -1;
   }
 
   private _isAutoSize(which: 'start' | 'end') {
     const targetSize = which === 'start' ? this._startSize : this._endSize;
-    return targetSize === 'auto';
+    return !!targetSize && targetSize === 'auto';
   }
 
   private _handleResizePanes(
