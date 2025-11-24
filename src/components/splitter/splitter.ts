@@ -412,7 +412,14 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   }
 
   private _resizing(delta: number) {
-    const [paneSize, siblingSize] = this._calcNewSizes(delta);
+    let [paneSize, siblingSize] = this._calcNewSizes(delta);
+    const totalSize = this.getTotalSize();
+    [paneSize, siblingSize] = this._fitInSplitter(
+      totalSize,
+      paneSize,
+      siblingSize,
+      delta
+    );
 
     this.startSize = `${paneSize}px`;
     this.endSize = `${siblingSize}px`;
@@ -424,11 +431,18 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
 
   private _resizeEnd(delta: number) {
     if (!this._resizeState) return;
+    let [paneSize, siblingSize] = this._calcNewSizes(delta);
+    const totalSize = this.getTotalSize();
 
-    const [paneSize, siblingSize] = this._calcNewSizes(delta);
+    [paneSize, siblingSize] = this._fitInSplitter(
+      totalSize,
+      paneSize,
+      siblingSize,
+      delta
+    );
+
     if (this._resizeState.startPane.isPercentageBased) {
       // handle % resizes
-      const totalSize = this.getTotalSize();
       const percentPaneSize = (paneSize / totalSize) * 100;
       this.startSize = `${percentPaneSize}%`;
     } else {
@@ -438,7 +452,6 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
 
     if (this._resizeState.endPane.isPercentageBased) {
       // handle % resizes
-      const totalSize = this.getTotalSize();
       const percentSiblingSize = (siblingSize / totalSize) * 100;
       this.endSize = `${percentSiblingSize}%`;
     } else {
@@ -457,6 +470,22 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
     const startPaneRect = this._startPane.getBoundingClientRect();
     const endPaneRect = this._endPane.getBoundingClientRect();
     return [startPaneRect[relevantDimension], endPaneRect[relevantDimension]];
+  }
+
+  private _fitInSplitter(
+    total: number,
+    startSize: number,
+    endSize: number,
+    delta: number
+  ): [number, number] {
+    let newStartSize = startSize;
+    let newEndSize = endSize;
+    if (startSize + endSize > total && delta > 0) {
+      newEndSize = total - newStartSize;
+    } else if (newStartSize + newEndSize > total && delta < 0) {
+      newStartSize = total - newEndSize;
+    }
+    return [newStartSize, newEndSize];
   }
 
   // TODO: handle RTL
