@@ -415,7 +415,7 @@ $fake-bg-position: calc(50% - (var-get($theme, 'size') / 2));
         &::after {
             width: calc(var-get($theme, 'inner-size') - #{rem(4px)});
             height: calc(var-get($theme, 'inner-size') - #{rem(4px)});
-            border-color: var-get($theme, 'date-special-range-border-color');
+            border-color: var-get($theme, 'date-current-foreground');
         }
     }
 
