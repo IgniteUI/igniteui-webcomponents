@@ -80,7 +80,7 @@ function replaceUnicodeNumbers(text: string): string {
 }
 
 const MASK_PATTERNS = new Map<string, RegExp>([
-  ['C', /./u], // Any single character
+  ['C', /[\s\S]/u], // Any single character (including newlines)
   ['&', /[^\p{Separator}]/u], // Any non-separator character (excludes spaces, line/paragraph separators)
   ['a', /[\p{Letter}\p{Number}\p{Separator}]/u], // Alphanumeric and separator characters (Unicode-aware)
   ['A', /[\p{Letter}\p{Number}]/u], // Alphanumeric (Unicode-aware)
@@ -88,7 +88,7 @@ const MASK_PATTERNS = new Map<string, RegExp>([
   ['L', /\p{Letter}/u], // Alphabetic (Unicode-aware)
   ['0', /\p{Number}/u], // Numeric (Unicode-aware, converted to ASCII 0-9 during processing)
   ['9', /[\p{Number}\p{Separator}]/u], // Numeric and separator characters (Unicode-aware)
-  ['#', /[\p{Number}+-]/u], // Numeric and sign characters (+, -)
+  ['#', /[\p{Number}\-+]/u], // Numeric and sign characters (+, -)
 ]);
 
 function validate(char: string, flag: string): boolean {
