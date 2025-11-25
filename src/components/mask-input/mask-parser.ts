@@ -36,6 +36,10 @@ type MaskReplaceResult = {
 const MASK_FLAGS = new Set('aACL09#&?');
 const MASK_REQUIRED_FLAGS = new Set('0#LA&');
 
+const ESCAPE_CHAR = '\\';
+const DEFAULT_FORMAT = 'CCCCCCCCCC';
+const DEFAULT_PROMPT = '_';
+
 const ASCII_ZERO = 0x0030;
 const DIGIT_ZERO_CODEPOINTS = [
   ASCII_ZERO, // ASCII
@@ -97,8 +101,8 @@ function validate(char: string, flag: string): boolean {
 
 /** Default mask parser options */
 const MaskDefaultOptions: MaskOptionsInternal = {
-  format: 'CCCCCCCCCC',
-  promptCharacter: '_',
+  format: DEFAULT_FORMAT,
+  promptCharacter: DEFAULT_PROMPT,
 };
 
 /**
@@ -124,7 +128,7 @@ export class MaskParser {
    * Returns a set of the all the literal positions in the mask.
    * These positions are fixed characters that are not part of the input.
    */
-  public get literalPositions(): Set<number> {
+  public get literalPositions(): ReadonlySet<number> {
     return this._literalPositions;
   }
 
@@ -187,6 +191,10 @@ export class MaskParser {
     this._parseMaskLiterals();
   }
 
+  private _isEscapedFlag(char: string, nextChar: string): boolean {
+    return char === ESCAPE_CHAR && MASK_FLAGS.has(nextChar);
+  }
+
   /**
    * Parses the mask format string to identify literal characters and
    * create the escaped mask. This method is called whenever the mask format changes.
@@ -203,7 +211,7 @@ export class MaskParser {
     for (let i = 0; i < length; i++) {
       const [current, next] = [mask.charAt(i), mask.charAt(i + 1)];
 
-      if (current === '\\' && MASK_FLAGS.has(next)) {
+      if (this._isEscapedFlag(current, next)) {
         // Escaped character - push next as a literal character and skip processing it
         this._literals.set(currentPos, next);
         escapedMaskChars.push(next);
@@ -289,6 +297,14 @@ export class MaskParser {
   /**
    * Replaces a segment of the masked string with new input, simulating typing or pasting.
    * It handles clearing the selected range and inserting new characters according to the mask.
+   *
+   * @example
+   * ```ts
+   * const parser = new MaskParser({ format: '00/00/0000' });
+   * const current = '__/__/____';
+   * const result = parser.replace(current, '12', 0, 0);
+   * // result.value = '12/__/____', result.end = 2
+   * ```
    */
   public replace(
     maskString: string,
@@ -298,12 +314,12 @@ export class MaskParser {
   ): MaskReplaceResult {
     const literalPositions = this.literalPositions;
     const escapedMask = this._escapedMask;
-    const length = this._escapedMask.length;
+    const length = escapedMask.length;
     const prompt = this.prompt;
     const endBoundary = Math.min(end, length);
 
     // Initialize the array for the masked string or get a fresh mask with prompts and/or literals
-    const maskedChars = Array.from(maskString || this.apply(''));
+    const maskedChars = maskString ? [...maskString] : [...this.apply('')];
 
     const inputChars = Array.from(replaceUnicodeNumbers(value));
     const inputLength = inputChars.length;
@@ -358,17 +374,16 @@ export class MaskParser {
     const literalPositions = this.literalPositions;
     const prompt = this.prompt;
     const length = masked.length;
-
-    let result = '';
+    const result: string[] = [];
 
     for (let i = 0; i < length; i++) {
       const char = masked[i];
       if (!literalPositions.has(i) && char !== prompt) {
-        result += char;
+        result.push(char);
       }
     }
 
-    return result;
+    return result.join('');
   }
 
   /**
@@ -379,10 +394,8 @@ export class MaskParser {
     const prompt = this.prompt;
 
     return this._requiredPositions.every((position) => {
-      const char = input.charAt(position);
-      return (
-        validate(char, this._escapedMask.charAt(position)) && char !== prompt
-      );
+      const char = input[position];
+      return validate(char, this._escapedMask[position]) && char !== prompt;
     });
   }
 
@@ -390,6 +403,12 @@ export class MaskParser {
    * Applies the mask format to an input string. This attempts to fit the input
    * into the mask from left to right, filling valid positions and skipping invalid
    * input characters.
+   *
+   * @example
+   * ```ts
+   * const parser = new MaskParser({ format: '00/00/0000' });
+   * parser.apply('12252023'); // Returns '12/25/2023'
+   * ```
    */
   public apply(input = ''): string {
     const literals = this._literals;
@@ -398,7 +417,7 @@ export class MaskParser {
     const length = escapedMask.length;
 
     // Initialize the result array with prompt characters
-    const result = new Array(escapedMask.length).fill(prompt);
+    const result = new Array(length).fill(prompt);
 
     // Place all literal characters into the result array
     for (const [position, literal] of literals.entries()) {
@@ -424,10 +443,11 @@ export class MaskParser {
         continue;
       }
 
-      if (validate(normalizedInput.charAt(inputIndex), escapedMask.charAt(i))) {
-        result[i] = normalizedInput.charAt(inputIndex);
+      if (validate(normalizedInput[inputIndex], escapedMask[i])) {
+        result[i] = normalizedInput[inputIndex];
       }
 
+      // Always advance - invalid characters are consumed/skipped
       inputIndex++;
     }
 
