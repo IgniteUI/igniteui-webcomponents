@@ -88,7 +88,7 @@ export abstract class IgcMaskInputBaseComponent extends IgcInputBaseComponent {
         if (isComposing) return;
         return this._updateInput('', {
           start: this._parser.getPreviousNonLiteralPosition(
-            this._inputSelection.start
+            this._inputSelection.start + 1
           ),
           end,
         });
