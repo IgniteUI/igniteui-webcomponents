@@ -88,7 +88,7 @@ export abstract class IgcMaskInputBaseComponent extends IgcInputBaseComponent {
         if (isComposing) return;
         return this._updateInput('', {
           start: this._parser.getPreviousNonLiteralPosition(
-            this._inputSelection.start
+            this._inputSelection.start + 1
           ),
           end,
         });
@@ -115,6 +115,16 @@ export abstract class IgcMaskInputBaseComponent extends IgcInputBaseComponent {
         return this._updateInput(
           value.substring(this._inputSelection.start, this._inputSelection.end),
           { ...this._inputSelection }
+        );
+
+      // Potential browser auto-fill behavior
+      case undefined:
+        return this._updateInput(
+          value.substring(start, this._inputSelection.end),
+          {
+            start,
+            end: this._inputSelection.end,
+          }
         );
     }
   }

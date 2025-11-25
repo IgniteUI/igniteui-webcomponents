@@ -1,13 +1,12 @@
+import { getDateFormatter } from 'igniteui-i18n-core';
 import { html, nothing } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
-
 import { addThemingController } from '../../../theming/theming-controller.js';
 import { addKeybindings } from '../../common/controllers/key-bindings.js';
 import { blazorIndirectRender } from '../../common/decorators/blazorIndirectRender.js';
 import { blazorSuppressComponent } from '../../common/decorators/blazorSuppressComponent.js';
 import { watch } from '../../common/decorators/watch.js';
 import { registerComponent } from '../../common/definitions/register.js';
-import { createDateTimeFormatters } from '../../common/localization/intl-formatters.js';
 import type { Constructor } from '../../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../../common/mixins/event-emitter.js';
 import { partMap } from '../../common/part-map.js';
@@ -107,21 +106,17 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
   @property({ attribute: 'week-day-format' })
   public weekDayFormat: 'long' | 'short' | 'narrow' = 'narrow';
 
-  private _intl = createDateTimeFormatters(this.locale, {
-    weekday: { weekday: this.weekDayFormat },
-    label: { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' },
-    ariaWeekday: { weekday: 'long' },
-  });
-
-  @watch('locale')
-  protected localeChange() {
-    this._intl.locale = this.locale;
+  private get _weekdayOptions(): Intl.DateTimeFormatOptions {
+    return { weekday: this.weekDayFormat };
   }
 
-  @watch('weekDayFormat')
-  protected weekDayFormatChange() {
-    this._intl.update({ weekday: { weekday: this.weekDayFormat } });
-  }
+  private _labelOptions: Intl.DateTimeFormatOptions = {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  };
+  private _ariaWeekdayOptions: Intl.DateTimeFormatOptions = { weekday: 'long' };
 
   @watch('weekStart')
   @watch('activeDate')
@@ -336,7 +331,10 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
   }
 
   private intlFormatDay(day: CalendarDay) {
-    const fmt = this._intl.get('label');
+    const fmt = getDateFormatter().getIntlFormatter(
+      this.locale,
+      this._labelOptions
+    );
 
     // Range selection in progress
     if (this._rangePreviewDate?.equalTo(day)) {
@@ -444,8 +442,14 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
   }
 
   protected renderHeaders() {
-    const label = this._intl.get('weekday');
-    const aria = this._intl.get('ariaWeekday');
+    const label = getDateFormatter().getIntlFormatter(
+      this.locale,
+      this._weekdayOptions
+    );
+    const aria = getDateFormatter().getIntlFormatter(
+      this.locale,
+      this._ariaWeekdayOptions
+    );
     const days = take(
       generateMonth(this._activeDate, this._firstDayOfWeek),
       daysInWeek

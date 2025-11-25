@@ -67,9 +67,9 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
 
   private _panelId = `${IgcExpansionPanelComponent.tagName}-${nextId++}`;
   private readonly _headerRef = createRef<HTMLElement>();
-  private readonly _contentRef = createRef<HTMLElement>();
+  private readonly _panelRef = createRef<HTMLElement>();
 
-  private readonly _player = addAnimationController(this, this._contentRef);
+  private readonly _player = addAnimationController(this, this._panelRef);
   private readonly _slots = addSlotController(this, {
     slots: setSlots('title', 'subtitle', 'indicator', 'indicator-expanded'),
   });
@@ -104,60 +104,59 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
       ref: this._headerRef,
       skip: () => this.disabled,
     })
-      .setActivateHandler(this._toggleWithEvent)
-      .set([altKey, arrowDown], this._openWithEvent)
-      .set([altKey, arrowUp], this._closeWithEvent);
+      .setActivateHandler(this._toggle)
+      .set([altKey, arrowDown], this._show)
+      .set([altKey, arrowUp], this._hide);
   }
 
+  /** @internal */
   public override connectedCallback(): void {
     super.connectedCallback();
     this._panelId = this.id || this._panelId;
   }
 
   private _handleClick(): void {
-    this._headerRef.value!.focus();
-    this._toggleWithEvent();
+    this._headerRef.value?.focus();
+    this._toggle();
   }
 
-  private _toggleWithEvent(): void {
-    this.open ? this._closeWithEvent() : this._openWithEvent();
-  }
+  private async _setOpenState({
+    state,
+    withEvent,
+  }: {
+    state: boolean;
+    withEvent?: boolean;
+  }): Promise<void> {
+    if (this.open === state) return;
 
-  private async _toggleAnimation(dir: 'open' | 'close'): Promise<boolean> {
-    const animation = dir === 'open' ? growVerIn : growVerOut;
-    return this._player.playExclusive(animation());
-  }
+    const args = { detail: this };
+    const event = state ? 'igcOpening' : 'igcClosing';
+    const eventDone = state ? 'igcOpened' : 'igcClosed';
+    const animation = state ? growVerIn : growVerOut;
 
-  private async _openWithEvent(): Promise<void> {
-    if (
-      this.open ||
-      !this.emitEvent('igcOpening', { cancelable: true, detail: this })
-    ) {
+    if (withEvent && !this.emitEvent(event, { cancelable: true, ...args })) {
       return;
     }
 
-    this.open = true;
+    this.open = state;
 
-    if (await this._toggleAnimation('open')) {
-      this.emitEvent('igcOpened', { detail: this });
+    if (await this._player.playExclusive(animation())) {
+      if (withEvent) {
+        this.emitEvent(eventDone, args);
+      }
     }
   }
 
-  private async _closeWithEvent(): Promise<void> {
-    if (
-      !(
-        this.open &&
-        this.emitEvent('igcClosing', { cancelable: true, detail: this })
-      )
-    ) {
-      return;
-    }
+  private async _toggle(): Promise<void> {
+    this.open ? await this._hide() : await this._show();
+  }
 
-    this.open = false;
+  private async _show(): Promise<void> {
+    await this._setOpenState({ state: true, withEvent: true });
+  }
 
-    if (await this._toggleAnimation('close')) {
-      this.emitEvent('igcClosed', { detail: this });
-    }
+  private async _hide(): Promise<void> {
+    await this._setOpenState({ state: false, withEvent: true });
   }
 
   /** Toggles the panel open/close state. */
@@ -167,23 +166,17 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
 
   /** Hides the panel content. */
   public async hide(): Promise<boolean> {
-    if (!this.open) {
-      return false;
-    }
+    if (!this.open) return false;
 
-    this.open = false;
-    await this._toggleAnimation('close');
+    await this._setOpenState({ state: false });
     return true;
   }
 
   /** Shows the panel content. */
   public async show(): Promise<boolean> {
-    if (this.open) {
-      return false;
-    }
+    if (this.open) return false;
 
-    this.open = true;
-    await this._toggleAnimation('open');
+    await this._setOpenState({ state: true });
     return true;
   }
 
@@ -227,7 +220,7 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
   private _renderPanel() {
     return html`
       <div
-        ${ref(this._contentRef)}
+        ${ref(this._panelRef)}
         part="content"
         role="region"
         id="${this._panelId}-content"

@@ -3,19 +3,7 @@
 
 $theme: $indigo;
 
-:host {
-    igc-button {
-        --ig-size: 2;
-    }
-}
-
 [part~='base'] {
     min-height: rem(36px);
     padding: pad-block(rem(4px)) pad-inline(rem(16px));
-}
-
-igc-button::part(base),
-igc-button::part(base):hover {
-    color: var-get($theme, 'button-color');
-    box-shadow: none;
 }

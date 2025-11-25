@@ -1,3 +1,4 @@
+import { getDateFormatter } from 'igniteui-i18n-core';
 import { html, nothing } from 'lit';
 import { property, query, queryAll, state } from 'lit/decorators.js';
 import { choose } from 'lit/directives/choose.js';
@@ -15,9 +16,7 @@ import {
   pageUpKey,
   shiftKey,
 } from '../common/controllers/key-bindings.js';
-import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
-import { createDateTimeFormatters } from '../common/localization/intl-formatters.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { partMap } from '../common/part-map.js';
@@ -219,29 +218,20 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
   public formatOptions: Pick<Intl.DateTimeFormatOptions, 'month' | 'weekday'> =
     { month: 'long', weekday: 'narrow' };
 
-  private _intl = createDateTimeFormatters(this.locale, {
-    month: {
-      month: this.formatOptions.month,
-    },
-    monthLabel: { month: 'long' },
-    weekday: { weekday: 'short' },
-    monthDay: { month: 'short', day: 'numeric' },
-    yearLabel: { month: 'long', year: 'numeric' },
-  });
-
-  @watch('locale')
-  protected localeChange() {
-    this._intl.locale = this.locale;
+  private get _monthOptions(): Intl.DateTimeFormatOptions {
+    return { month: this.formatOptions.month };
   }
 
-  @watch('formatOptions')
-  protected formatOptionsChange() {
-    this._intl.update({
-      month: {
-        month: this.formatOptions.month,
-      },
-    });
-  }
+  private _monthLabelOptions: Intl.DateTimeFormatOptions = { month: 'long' };
+  private _weekdayOptions: Intl.DateTimeFormatOptions = { weekday: 'short' };
+  private _monthDayOptions: Intl.DateTimeFormatOptions = {
+    month: 'short',
+    day: 'numeric',
+  };
+  private _yearLabelOptions: Intl.DateTimeFormatOptions = {
+    month: 'long',
+    year: 'numeric',
+  };
 
   /** @private @hidden @internal */
   public async [focusActiveDate](options?: FocusOptions) {
@@ -462,9 +452,17 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
     active: CalendarDay,
     viewIndex: number
   ) {
-    const labelFmt = this._intl.get('monthLabel').format;
-    const valueFmt = this._intl.get('month').format;
-    const ariaLabel = `${labelFmt(active.native)}, ${this.resourceStrings.selectMonth}`;
+    const label = getDateFormatter().formatDateTime(
+      active.native,
+      this.locale,
+      this._monthLabelOptions
+    );
+    const value = getDateFormatter().formatDateTime(
+      active.native,
+      this.locale,
+      this._monthOptions
+    );
+    const ariaLabel = `${label}, ${this.resourceStrings.selectMonth}`;
 
     return html`
       <button
@@ -472,13 +470,16 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
         aria-label=${ariaLabel}
         @click=${() => this.switchToMonths(viewIndex)}
       >
-        ${valueFmt(active.native)}
+        ${value}
       </button>
     `;
   }
 
   protected renderYearButtonNavigation(active: CalendarDay, viewIndex: number) {
-    const fmt = this._intl.get('yearLabel').format;
+    const fmt = getDateFormatter().getIntlFormatter(
+      this.locale,
+      this._yearLabelOptions
+    ).format;
     const ariaLabel = `${active.year}, ${this.resourceStrings.selectYear}`;
     const ariaSkip = this._isDayView ? fmt(active.native) : active.year;
 
@@ -548,19 +549,30 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
 
   protected renderHeaderDateSingle() {
     const date = this.value ?? CalendarDay.today.native;
-    const day = this._intl.get('weekday').format(date);
-    const month = this._intl.get('monthDay').format(date);
+    const weekday = getDateFormatter().formatDateTime(
+      date,
+      this.locale,
+      this._weekdayOptions
+    );
+    const monthDay = getDateFormatter().formatDateTime(
+      date,
+      this.locale,
+      this._monthDayOptions
+    );
     const separator =
       this.headerOrientation === 'vertical' ? html`<br />` : ' ';
 
-    const formatted = html`${day},${separator}${month}`;
+    const formatted = html`${weekday},${separator}${monthDay}`;
 
     return html`<slot name="header-date">${formatted}</slot>`;
   }
 
   protected renderHeaderDateRange() {
     const values = this.values;
-    const fmt = this._intl.get('monthDay').format;
+    const fmt = getDateFormatter().getIntlFormatter(
+      this.locale,
+      this._monthDayOptions
+    ).format;
     const { startDate, endDate } = this.resourceStrings;
 
     const start = this._hasValues ? fmt(first(values)) : startDate;

@@ -55,11 +55,16 @@ $theme: $material;
 [part~='base'] {
     gap: rem(2px);
 
+    [part~='control'] {
+        &::before {
+            opacity: .06;
+        }
+    }
+
     &:hover {
         [part~='control'] {
             &::before {
                 background: var-get($theme, 'empty-color');
-                opacity: .06;
             }
         }
     }
@@ -70,7 +75,6 @@ $theme: $material;
         [part~='control'] {
             &::before {
                 background: var-get($theme, 'fill-color-hover');
-                opacity: .06;
             }
         }
     }
