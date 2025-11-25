@@ -36,6 +36,21 @@ $theme: $material;
     }
 }
 
+:host([selected]) {
+    [part='tab-header'] {
+        &::before {
+            background: var-get($theme, 'item-active-background');
+        }
+
+        &:hover,
+        &:focus-within {
+            &::after {
+                background: var-get($theme, 'item-active-hover-background');
+            }
+        }
+    }
+}
+
 ::slotted(igc-icon) {
     --size: #{rem(24px)};
 }
