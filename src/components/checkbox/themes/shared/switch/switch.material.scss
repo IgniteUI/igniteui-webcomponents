@@ -32,14 +32,6 @@ $ripple-radius: calc(#{$ripple-size} / 2);
                 background: var-get($theme, 'thumb-on-color');
             }
         }
-
-        [part~='control'] {
-            border-color: var-get($theme, 'border-hover-color');
-        }
-
-        [part~='control'][part~='checked'] {
-            border-color: var-get($theme, 'border-on-hover-color');
-        }
     }
 
     &:focus-visible,
@@ -98,6 +90,10 @@ $ripple-radius: calc(#{$ripple-size} / 2);
         overflow: hidden;
         z-index: -1;
     }
+
+    &:hover {
+        box-shadow: var-get($theme, 'hover-elevation');
+    }
 }
 
 [part~='thumb'][part~='checked'] {
@@ -106,4 +102,11 @@ $ripple-radius: calc(#{$ripple-size} / 2);
     animation-name: thumb-on;
     animation-duration: .2s;
     animation-fill-mode: forwards;
+}
+
+:host([disabled]),
+:host(:disabled) {
+    [part~='thumb'] {
+        box-shadow: var-get($theme, 'disabled-elevation');
+    }
 }
