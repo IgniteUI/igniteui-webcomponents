@@ -49,6 +49,12 @@ $outlined-btn-indent: rem(2px);
 
 :host(:not([disabled])[variant='flat']) [part='base focused'],
 :host(:not(:disabled)[variant='flat']) [part='base focused'] {
+    &,
+    &:hover,
+    &:active {
+        border: rem(1px) solid var-get($flat-theme, 'active-border-color');
+    }
+
     &::after {
         box-shadow: 0 0 0 rem(1px) var-get($flat-theme, 'focus-visible-border-color');
     }
@@ -65,6 +71,11 @@ $outlined-btn-indent: rem(2px);
 
 :host(:not([disabled])[variant='outlined']) [part='base focused'],
 :host(:not(:disabled)[variant='outlined']) [part='base focused'] {
+    &,
+    &:active {
+        border: rem(1px) solid var-get($outlined-theme, 'focus-border-color');
+    }
+
     &::after {
         inset-block-start: $outlined-btn-indent;
         inset-inline-start: $outlined-btn-indent;
@@ -76,8 +87,7 @@ $outlined-btn-indent: rem(2px);
 
 :host(:not([disabled])[variant='contained']) [part='base focused'],
 :host(:not(:disabled)[variant='contained']) [part='base focused'] {
-    color: var-get($contained-theme, 'focus-visible-foreground');
-    background: var-get($contained-theme, 'focus-visible-background');
+    border: rem(1px) solid var-get($contained-theme, 'active-border-color');
     position: relative;
 
     &::after {
@@ -87,8 +97,7 @@ $outlined-btn-indent: rem(2px);
 
 :host(:not([disabled])[variant='fab']) [part='base focused'],
 :host(:not(:disabled)[variant='fab']) [part='base focused'] {
-    color: var-get($fab-theme, 'focus-visible-foreground');
-    background: var-get($fab-theme, 'focus-visible-background');
+    border: rem(1px) solid var-get($fab-theme, 'active-border-color');
     position: relative;
 
     &::after {
