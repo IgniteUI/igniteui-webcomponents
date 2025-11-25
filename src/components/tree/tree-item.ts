@@ -5,8 +5,8 @@ import {
   queryAssignedElements,
   state,
 } from 'lit/decorators.js';
+import { ifDefined } from 'lit/directives/if-defined.js';
 import { createRef, type Ref, ref } from 'lit/directives/ref.js';
-
 import { addAnimationController } from '../../animations/player.js';
 import { growVerIn, growVerOut } from '../../animations/presets/grow/index.js';
 import { addThemingController } from '../../theming/theming-controller.js';
@@ -540,6 +540,11 @@ export default class IgcTreeItemComponent extends LitElement {
                   ${this.hasChildren
                     ? html`
                         <igc-icon
+                          aria-label=${ifDefined(
+                            this.expanded
+                              ? this.tree?.resourceStrings.collapse
+                              : this.tree?.resourceStrings.expand
+                          )}
                           name=${this.expanded
                             ? 'tree_collapse'
                             : 'tree_expand'}

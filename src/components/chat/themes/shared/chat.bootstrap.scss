@@ -3,12 +3,6 @@
 
 $theme: $bootstrap;
 
-:host {
-    ::part(text-input) {
-        --textarea-height: #{rem(38px)};
-    }
-}
-
 [part='header'] {
     box-shadow: none;
     border-block-end: rem(1px) solid var-get($theme, 'header-border');

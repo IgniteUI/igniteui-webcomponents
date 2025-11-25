@@ -1,8 +1,0 @@
-@use 'styles/utilities' as *;
-@use '../light/themes' as *;
-
-$theme: $bootstrap;
-
-igc-button::part(base):hover {
-    color: var-get($theme, 'button-color');
-}

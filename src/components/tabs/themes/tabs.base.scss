@@ -43,7 +43,6 @@
     grid-template-rows: minmax(var(--header-min-height), auto) auto 1fr;
     align-items: center;
     position: relative;
-    flex-grow: 1;
 
     ::slotted(igc-tab) {
         display: contents;
