@@ -96,7 +96,7 @@ $outlined-theme: $material-outlined;
     &:active {
         color: var-get($flat-theme, 'focus-foreground');
         background: var-get($flat-theme, 'focus-background');
-        border-color: var-get($flat-theme, 'focus-visible-border-color');
+        border-color: var-get($flat-theme, 'focus-border-color');
 
         ::slotted(igc-icon) {
             color: var-get($flat-theme, 'focus-foreground');
