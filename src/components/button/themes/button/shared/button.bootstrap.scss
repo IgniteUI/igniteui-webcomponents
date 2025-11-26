@@ -29,11 +29,11 @@ $outlined-theme: $bootstrap-outlined;
 
 :host(:not([disabled])[variant='outlined']) [part='base focused'],
 :host(:not(:disabled)[variant='outlined']) [part='base focused'] {
+    box-shadow: 0 0 0 rem(4px) var-get($outlined-theme, 'shadow-color');
+
     ::slotted(igc-icon) {
         color: var-get($outlined-theme, 'icon-color-hover');
     }
-
-    box-shadow: 0 0 0 rem(4px) var-get($outlined-theme, 'shadow-color');
 }
 
 :host(:not([disabled])[variant='contained']) [part='base focused'],
