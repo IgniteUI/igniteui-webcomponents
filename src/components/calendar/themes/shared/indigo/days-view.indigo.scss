@@ -407,7 +407,7 @@ $week-number-radius: var-get($theme, 'week-number-border-radius');
 
             /* stylelint-disable max-nesting-depth */
             &::after {
-                border-color: var-get($theme, 'date-special-range-hover-border-color');
+                border-color: var-get($theme, 'date-special-range-focus-border-color');
             }
             /* stylelint-enable */
         }
