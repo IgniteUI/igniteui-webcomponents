@@ -276,7 +276,7 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
   // XXX: Ranges
 
   private isFirstInRange(day: CalendarDay) {
-    if (this._isSingle || !this._hasValues) {
+    if (!this._isRange || !this._hasValues) {
       return false;
     }
 
@@ -288,7 +288,7 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
   }
 
   private isLastInRange(day: CalendarDay) {
-    if (this._isSingle || !this._hasValues) {
+    if (!this._isRange || !this._hasValues) {
       return false;
     }
 
