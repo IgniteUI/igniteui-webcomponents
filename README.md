@@ -36,7 +36,7 @@ See the [Storybook Here](https://igniteui.github.io/igniteui-webcomponents)
 | Divider                 |   ✅   |      [Docs][Divider Docs]      |     [4.10.0]     | [MIT](LICENSE) |
 | Banner                  |   ✅   |      [Docs][Banner Docs]       |     [4.10.0]     | [MIT](LICENSE) |
 | Button group            |   ✅   |   [Docs][Button Group Docs]    |     [4.5.0]      | [MIT](LICENSE) |
-| Textarea                |   ✅   |     [Docs][Textarea Docs]      |     [4.5.0]      | [MIT](LICENSE) |
+| Text area                |   ✅   |     [Docs][Textarea Docs]      |     [4.5.0]      | [MIT](LICENSE) |
 | Combo                   |   ✅   |       [Docs][Combo Docs]       |     [4.1.0]      | [MIT](LICENSE) |
 | Stepper                 |   ✅   |      [Docs][Stepper Docs]      |     [4.1.0]      | [MIT](LICENSE) |
 | Select                  |   ✅   |      [Docs][Select Docs]       |     [3.4.0]      | [MIT](LICENSE) |
