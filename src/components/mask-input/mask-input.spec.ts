@@ -622,6 +622,23 @@ describe('Masked input', () => {
       expect(element.value).to.equal('xxba');
       expect(input.value).to.equal(parser.apply(element.value));
     });
+
+    it('auto-fill behavior for mask with literals', async () => {
+      element.mask = '(+35\\9) CCC-CCC';
+
+      await elementUpdated(element);
+      syncParser();
+
+      simulateInput(input, {
+        inputType: undefined, // auto-fill event
+        skipValueProperty: false,
+        value: '(+359) 123-456',
+      });
+      await elementUpdated(element);
+
+      expect(element.value).to.equal('123456');
+      expect(input.value).to.equal(parser.apply(element.value));
+    });
   });
 
   describe('Form integration', () => {

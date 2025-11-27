@@ -20,7 +20,7 @@
     gap: rem(16px);
 }
 
-[part='base'] {
+[part~='base'] {
     ::slotted(igc-button) {
         --ig-size: 2;
     }
