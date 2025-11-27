@@ -79,18 +79,10 @@ $outlined-theme: $material-outlined;
     background: var-get($flat-theme, 'focus-visible-background');
     border-color: var-get($flat-theme, 'focus-visible-border-color');
 
-    ::slotted(igc-icon) {
-        color: var-get($flat-theme, 'icon-color');
-    }
-
     &:hover {
         color: var-get($flat-theme, 'focus-hover-foreground');
         background: var-get($flat-theme, 'focus-hover-background');
         border-color: var-get($flat-theme, 'focus-visible-border-color');
-
-        ::slotted(igc-icon) {
-            color: var-get($flat-theme, 'icon-color-hover');
-        }
     }
 
     &:active {
@@ -140,17 +132,9 @@ $outlined-theme: $material-outlined;
     background: var-get($outlined-theme, 'focus-visible-background');
     border-color: var-get($outlined-theme, 'focus-visible-border-color');
 
-    ::slotted(igc-icon) {
-        color: var-get($outlined-theme, 'icon-color');
-    }
-
     &:hover {
         color: var-get($outlined-theme, 'focus-hover-foreground');
         background: var-get($outlined-theme, 'focus-hover-background');
-
-        ::slotted(igc-icon) {
-            color: var-get($outlined-theme, 'icon-color-hover');
-        }
     }
 
     &:active {
@@ -200,17 +184,9 @@ $outlined-theme: $material-outlined;
     background: var-get($contained-theme, 'focus-visible-background');
     border-color: var-get($contained-theme, 'focus-visible-border-color');
 
-    ::slotted(igc-icon) {
-        color: var-get($contained-theme, 'icon-color');
-    }
-
     &:hover {
         color: var-get($contained-theme, 'focus-hover-foreground');
         background: var-get($contained-theme, 'focus-hover-background');
-
-        ::slotted(igc-icon) {
-            color: var-get($contained-theme, 'icon-color-hover');
-        }
     }
 
     &:active {
@@ -260,17 +236,9 @@ $outlined-theme: $material-outlined;
     background: var-get($fab-theme, 'focus-visible-background');
     border-color: var-get($fab-theme, 'focus-visible-border-color');
 
-    ::slotted(igc-icon) {
-        color: var-get($fab-theme, 'icon-color');
-    }
-
     &:hover {
         color: var-get($fab-theme, 'focus-hover-foreground');
         background: var-get($fab-theme, 'focus-hover-background');
-
-        ::slotted(igc-icon) {
-            color: var-get($fab-theme, 'icon-color-hover');
-        }
     }
 
     &:active {

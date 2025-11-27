@@ -50,9 +50,12 @@ $outlined-btn-indent: rem(2px);
 :host(:not([disabled])[variant='flat']) [part='base focused'],
 :host(:not(:disabled)[variant='flat']) [part='base focused'] {
     &,
-    &:hover,
-    &:active {
+    &:hover {
         border: rem(1px) solid var-get($flat-theme, 'active-border-color');
+    }
+
+    &:active {
+        border: rem(1px) solid var-get($flat-theme, 'focus-border-color');
     }
 
     &::after {
