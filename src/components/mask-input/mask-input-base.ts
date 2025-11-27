@@ -119,8 +119,9 @@ export abstract class IgcMaskInputBaseComponent extends IgcInputBaseComponent {
 
       // Potential browser auto-fill behavior
       case undefined:
+      case '':
         return this._updateInput(
-          value.substring(start, this._inputSelection.end),
+          this._parser.parse(value.substring(start, this._inputSelection.end)),
           {
             start,
             end: this._inputSelection.end,
