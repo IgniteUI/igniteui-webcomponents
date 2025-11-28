@@ -346,13 +346,20 @@ export function partition<T>(
 }
 
 /** Returns the center x/y coordinate of a given element. */
-export function getCenterPoint(element: Element) {
+export function getCenterPoint(element: Element): { x: number; y: number } {
   const { left, top, width, height } = element.getBoundingClientRect();
 
   return {
     x: left + width * 0.5,
     y: top + height * 0.5,
   };
+}
+
+/** Returns the scale factor of a given element based on its bounding client rect and offset dimensions. */
+export function getScaleFactor(element: HTMLElement): { x: number; y: number } {
+  const { offsetWidth, offsetHeight } = element;
+  const { width, height } = element.getBoundingClientRect();
+  return { x: offsetWidth / width || 1, y: offsetHeight / height || 1 };
 }
 
 export function roundByDPR(value: number): number {
