@@ -229,10 +229,7 @@ describe('igc-datepicker form integration', () => {
 
     describe('Validation', () => {
       const spec = createFormAssociatedTestBed<IgcDatePickerComponent>(html`
-        <igc-date-picker
-          name="datePicker"
-          .defaultValue=${null}
-        ></igc-date-picker>
+        <igc-date-picker name="datePicker"></igc-date-picker>
       `);
 
       beforeEach(async () => {

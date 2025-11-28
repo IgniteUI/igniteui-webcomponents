@@ -13,6 +13,15 @@ $theme: $indigo;
 
 [part='tab-header'] {
     padding: pad-block(rem(12px)) pad-inline(rem(16px));
+    border-top: rem(1px) solid transparent;
+    border-inline: none;
+
+    &:hover,
+    &:focus-within {
+        border-top: rem(1px) solid transparent;
+        border-inline: none;
+        border-bottom: rem(1px) solid var-get($theme, 'border-color--hover');
+    }
 }
 
 [part='content'] {

@@ -72,7 +72,7 @@ const metadata: Meta<IgcComboComponent> = {
     locale: {
       type: 'string',
       description:
-        'Gets/Sets the locale used for formatting and displaying the dates in the component.',
+        'Gets/Sets the locale used for getting language, affecting resource strings.',
       control: 'text',
     },
     label: {
@@ -192,7 +192,7 @@ interface IgcComboArgs {
   autofocus: boolean;
   /** Focuses the list of options when the menu opens. */
   autofocusList: boolean;
-  /** Gets/Sets the locale used for formatting and displaying the dates in the component. */
+  /** Gets/Sets the locale used for getting language, affecting resource strings. */
   locale: string;
   /** The label attribute of the control. */
   label: string;

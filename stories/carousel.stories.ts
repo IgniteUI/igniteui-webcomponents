@@ -109,7 +109,7 @@ const metadata: Meta<IgcCarouselComponent> = {
     locale: {
       type: 'string',
       description:
-        'Gets/Sets the locale used for formatting and displaying the dates in the component.',
+        'Gets/Sets the locale used for getting language, affecting resource strings.',
       control: 'text',
     },
   },
@@ -158,7 +158,7 @@ interface IgcCarouselArgs {
   maximumIndicatorsCount: number;
   /** The animation type. */
   animationType: 'slide' | 'fade' | 'none';
-  /** Gets/Sets the locale used for formatting and displaying the dates in the component. */
+  /** Gets/Sets the locale used for getting language, affecting resource strings. */
   locale: string;
 }
 type Story = StoryObj<IgcCarouselArgs>;

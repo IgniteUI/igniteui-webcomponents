@@ -223,7 +223,7 @@ describe('Date picker', () => {
     it('should be successfully initialized with value', async () => {
       const expectedValue = new Date(2024, 1, 29);
       picker = await fixture<IgcDatePickerComponent>(
-        html`<igc-date-picker .value="${expectedValue}"></igc-date-picker>`
+        html`<igc-date-picker .value=${expectedValue}></igc-date-picker>`
       );
       dateTimeInput = picker.renderRoot.querySelector(
         IgcDateTimeInputComponent.tagName
@@ -578,21 +578,27 @@ describe('Date picker', () => {
         expect(picker.inputFormat).to.equal('dd/MM/yyyy');
       });
 
-      it('should use the value of inputFormat for displayFormat, if it is not defined', async () => {
+      it('should use the value of locale format for displayFormat, if it is not defined', async () => {
         expect(picker.locale).to.equal('en-US');
         expect(picker.getAttribute('display-format')).to.be.null;
-        expect(picker.displayFormat).to.equal(picker.inputFormat);
+        expect(picker.displayFormat).to.equal('M/d/yyyy');
 
         // updates inputFormat according to changed locale
         picker.locale = 'fr';
         await elementUpdated(picker);
         expect(picker.inputFormat).to.equal('dd/MM/yyyy');
-        expect(picker.displayFormat).to.equal(picker.inputFormat);
+        expect(picker.displayFormat).to.equal('dd/MM/yyyy');
 
         // sets inputFormat as attribute
         picker.setAttribute('input-format', 'dd-MM-yyyy');
         await elementUpdated(picker);
 
+        expect(picker.inputFormat).to.equal('dd-MM-yyyy');
+        expect(picker.displayFormat).to.equal(picker.inputFormat);
+
+        // changing locale after setting input format shouldn't affect it
+        picker.locale = 'de';
+        await elementUpdated(picker);
         expect(picker.inputFormat).to.equal('dd-MM-yyyy');
         expect(picker.displayFormat).to.equal(picker.inputFormat);
       });
@@ -675,6 +681,7 @@ describe('Date picker', () => {
       await elementUpdated(picker);
 
       dateTimeInput.focus();
+      await elementUpdated(picker); // Additional waiting needed because display format differs from input format.
       picker.select();
       await elementUpdated(picker);
 
@@ -689,6 +696,7 @@ describe('Date picker', () => {
       await elementUpdated(picker);
 
       dateTimeInput.focus();
+      await elementUpdated(picker); // Additional waiting needed because display format differs from input format.
       picker.setSelectionRange(0, 2);
       await elementUpdated(picker);
 
@@ -919,7 +927,7 @@ describe('Date picker', () => {
       simulateClick(lastOfMay);
       await elementUpdated(picker);
 
-      expect(checkDatesEqual(picker.value!, targetDate));
+      checkDatesEqual(picker.value!, targetDate);
 
       // Open the picker and switch to months view
       await picker.show();

@@ -6,8 +6,7 @@ import {
 } from './calendar.resources.js';
 
 /* blazorSuppress */
-export interface IgcDateRangePickerResourceStrings
-  extends IgcCalendarResourceStrings {
+export interface IgcDateRangePickerResourceStrings extends IgcCalendarResourceStrings {
   separator: string;
   done: string;
   cancel: string;

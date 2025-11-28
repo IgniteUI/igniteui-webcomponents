@@ -9,3 +9,9 @@ $theme: $material;
     background: var-get($theme, 'background');
     box-shadow: var-get($theme, 'elevation');
 }
+
+igc-button::part(base),
+igc-button::part(base):hover {
+    color: var-get($theme, 'button-color');
+    background: transparent;
+}

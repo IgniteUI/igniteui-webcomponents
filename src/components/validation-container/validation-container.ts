@@ -2,7 +2,6 @@ import { html, LitElement, nothing, type TemplateResult } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { cache } from 'lit/directives/cache.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import { addThemingController } from '../../theming/theming-controller.js';
 import { createAbortHandle } from '../common/abort-handler.js';
 import { registerComponent } from '../common/definitions/register.js';
 import {
@@ -14,7 +13,6 @@ import { partMap } from '../common/part-map.js';
 import { isEmpty, toKebabCase } from '../common/util.js';
 import IgcIconComponent from '../icon/icon.js';
 import { styles as shared } from './themes/shared/validator.common.css.js';
-import { all } from './themes/themes.js';
 import { styles } from './themes/validator.base.css.js';
 
 /** Configuration for the validation container. */
@@ -138,11 +136,6 @@ export default class IgcValidationContainerComponent extends LitElement {
 
   public get target(): IgcFormControl {
     return this._target;
-  }
-
-  constructor() {
-    super();
-    addThemingController(this, all);
   }
 
   protected override createRenderRoot(): HTMLElement | DocumentFragment {

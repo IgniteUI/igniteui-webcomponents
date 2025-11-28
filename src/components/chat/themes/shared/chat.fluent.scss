@@ -1,11 +1,5 @@
 @use 'styles/utilities' as *;
 
-:host {
-    ::part(text-input) {
-        --textarea-height: #{rem(40px)};
-    }
-}
-
 slot[name='title'] {
     @include type-style('subtitle-2') {
       margin: 0;

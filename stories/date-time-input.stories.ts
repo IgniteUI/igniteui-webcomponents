@@ -51,7 +51,7 @@ const metadata: Meta<IgcDateTimeInputComponent> = {
     displayFormat: {
       type: 'string',
       description:
-        'Format to display the value in when not editing.\nDefaults to the input format if not set.',
+        'Format to display the value in when not editing.\nDefaults to the locale format if not set.',
       control: 'text',
     },
     spinLoop: {
@@ -151,7 +151,7 @@ interface IgcDateTimeInputArgs {
   max: Date;
   /**
    * Format to display the value in when not editing.
-   * Defaults to the input format if not set.
+   * Defaults to the locale format if not set.
    */
   displayFormat: string;
   /** Sets whether to loop over the currently spun segment. */

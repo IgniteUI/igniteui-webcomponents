@@ -11,9 +11,9 @@ import type {
 } from '../types.js';
 import type { DataController } from './data.js';
 
-export class SelectionController<T extends object>
-  implements ReactiveController
-{
+export class SelectionController<
+  T extends object,
+> implements ReactiveController {
   private _selected: Set<T> = new Set();
 
   /** Whether the current selection is empty */

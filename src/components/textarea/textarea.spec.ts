@@ -240,15 +240,14 @@ describe('Textarea component', () => {
     });
 
     it('scroll()', async () => {
-      const text = new Text(
-        Array.from({ length: 100 }, (_, idx) => ` ${idx}`.repeat(250)).join(
-          '\n'
-        )
-      );
+      const text = Array.from({ length: 100 }, (_, idx) =>
+        ` ${idx}`.repeat(250)
+      ).join('\n');
+
       const [xDelta, yDelta] = [250, 250];
 
       element.wrap = 'off';
-      element.appendChild(text);
+      element.appendChild(document.createTextNode(text));
       await elementUpdated(element);
 
       element.scrollTo({ top: yDelta, left: xDelta });
@@ -385,11 +384,7 @@ describe('Textarea component', () => {
 
     describe('Validation', () => {
       const spec = createFormAssociatedTestBed<IgcTextareaComponent>(html`
-        <igc-textarea
-          name="textarea"
-          required
-          .defaultValue=${undefined}
-        ></igc-textarea>
+        <igc-textarea name="textarea" required></igc-textarea>
       `);
 
       beforeEach(async () => {

@@ -23,7 +23,15 @@ $theme: $material;
 
     &:hover {
         background: var-get($theme, 'step-hover-background');
-        color: var-get($theme, 'title-hover-color')
+        color: var-get($theme, 'title-hover-color');
+
+        [part~='title'] {
+            color: var-get($theme, 'title-hover-color');
+        }
+
+        [part~='subtitle'] {
+            color: var-get($theme, 'subtitle-hover-color')
+        }
     }
 
     &:focus,
@@ -31,6 +39,14 @@ $theme: $material;
     &:active {
         background: var-get($theme, 'step-focus-background');
         color: var-get($theme, 'title-focus-color');
+
+        [part~='title'] {
+            color: var-get($theme, 'title-focus-color');
+        }
+
+        [part~='subtitle'] {
+            color: var-get($theme, 'subtitle-focus-color')
+        }
     }
 }
 
@@ -83,27 +99,6 @@ $theme: $material;
     }
 }
 
-:host([complete]) {
-	[part~='header'] {
-		&:hover {
-			background: var-get($theme, 'complete-step-hover-background');
-		}
-
-		&:focus,
-		&:focus-within,
-		&:active {
-			background: var-get($theme, 'complete-step-focus-background');
-		}
-	}
-
-    [part~='body'] {
-        &::before {
-            border-inline-start-style: var-get($theme, 'complete-step-separator-style');
-            border-inline-start-color: var-get($theme, 'complete-step-separator-color');
-        }
-    }
-}
-
 [part~='complete-end'] {
     &::before {
         border-block-start-style: var-get($theme, 'complete-step-separator-style');
@@ -132,18 +127,105 @@ $theme: $material;
     [part~='subtitle'] {
         color: var-get($theme, 'invalid-subtitle-color')
     }
+
+    [part~='header'] {
+        background: var-get($theme, 'invalid-step-background');
+
+        &:hover {
+            background: var-get($theme, 'invalid-step-hover-background');
+
+            [part~='title'] {
+                color: var-get($theme, 'invalid-title-hover-color');
+            }
+
+            [part~='subtitle'] {
+                color: var-get($theme, 'invalid-subtitle-hover-color')
+            }
+        }
+
+        &:focus,
+		&:focus-within,
+		&:active {
+            background: var-get($theme, 'invalid-step-focus-background');
+
+			[part~='title'] {
+                color: var-get($theme, 'invalid-title-focus-color');
+            }
+
+            [part~='subtitle'] {
+                color: var-get($theme, 'invalid-subtitle-focus-color')
+            }
+		}
+    }
+}
+
+:host([complete]:not([active])) {
+	[part~='header'] {
+        background: var-get($theme, 'complete-step-background');
+
+		&:hover {
+			background: var-get($theme, 'complete-step-hover-background');
+
+            [part~='title'] {
+                color: var-get($theme, 'complete-title-hover-color');
+            }
+
+            [part~='subtitle'] {
+                color: var-get($theme, 'complete-subtitle-hover-color');
+            }
+		}
+
+		&:focus,
+		&:focus-within,
+		&:active {
+			background: var-get($theme, 'complete-step-focus-background');
+            
+            [part~='title'] {
+                color: var-get($theme, 'complete-title-focus-color');
+            }
+
+            [part~='subtitle'] {
+                color: var-get($theme, 'complete-subtitle-focus-color');
+            }
+		}
+	}
+
+    [part~='body'] {
+        &::before {
+            border-inline-start-style: var-get($theme, 'complete-step-separator-style');
+            border-inline-start-color: var-get($theme, 'complete-step-separator-color');
+        }
+    }
 }
 
 :host([active]) {
 	[part~='header'] {
+        background: var-get($theme, 'current-step-background');
+
 		&:hover {
 			background: var-get($theme, 'current-step-hover-background');
+
+            [part~='title'] {
+                color: var-get($theme, 'current-title-hover-color');
+            }
+
+            [part~='subtitle'] {
+                color: var-get($theme, 'current-subtitle-hover-color');
+            }
 		}
 
 		&:focus,
 		&:focus-within,
 		&:active {
 			background: var-get($theme, 'current-step-focus-background');
+
+            [part~='title'] {
+                color: var-get($theme, 'current-title-focus-color');
+            }
+
+            [part~='subtitle'] {
+                color: var-get($theme, 'current-subtitle-focus-color');
+            }
 		}
 	}
 
@@ -163,6 +245,12 @@ $theme: $material;
     }
 }
 
+[part~='content'] {
+    @include type-style('body-2');
+
+    color: var-get($theme, 'content-foreground');
+}
+
 [part~='disabled'] {
     &:focus,
     &:focus-visible,
@@ -171,6 +259,14 @@ $theme: $material;
     &:hover {
         [part='header'] {
             background: var-get($theme, 'step-background');
+        }
+
+        [part~='title'] {
+            color: var-get($theme, 'disabled-title-color');
+        }
+
+        [part~='subtitle'] {
+            color: var-get($theme, 'disabled-subtitle-color');
         }
     }
 

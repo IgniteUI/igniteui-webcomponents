@@ -12,6 +12,7 @@ permissions:
 
 jobs:
   deploy:
+    if: "!contains(github.ref, '-alpha.') && !contains(github.ref, '-beta.') && !contains(github.ref, '-rc.')"
     environment:
       name: github-pages
       url: ${{ steps.build-publish.outputs.page_url }}

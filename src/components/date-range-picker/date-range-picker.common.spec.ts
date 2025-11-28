@@ -166,7 +166,7 @@ describe('Date range picker - common tests for single and two inputs mode', () =
       const expectedValue = { start: today.native, end: tomorrow.native };
       picker = await fixture<IgcDateRangePickerComponent>(
         html`<igc-date-range-picker
-          .value="${expectedValue}"
+          .value=${expectedValue}
         ></igc-date-range-picker>`
       );
       checkSelectedRange(picker, expectedValue, false);
@@ -316,10 +316,10 @@ describe('Date range picker - common tests for single and two inputs mode', () =
         expect(picker.inputFormat).to.equal('dd/MM/yyyy');
       });
 
-      it('should use the value of inputFormat for displayFormat, if it is not defined', async () => {
+      it('should use the value of locale format for displayFormat, if it is not defined', async () => {
         expect(picker.locale).to.equal('en-US');
         expect(picker.getAttribute('display-format')).to.be.null;
-        expect(picker.displayFormat).to.equal(picker.inputFormat);
+        expect(picker.displayFormat).to.equal('M/d/yyyy');
 
         // updates inputFormat according to changed locale
         picker.locale = 'fr';

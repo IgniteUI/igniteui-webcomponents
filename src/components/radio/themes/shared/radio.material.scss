@@ -57,6 +57,7 @@ $theme: $material;
 [part~='control'] {
     border-radius: var(--size);
     position: relative;
+    background: unset;
 
     &::before,
     &::after {
@@ -65,6 +66,7 @@ $theme: $material;
 
     &::after {
         border: calc(var(--size) / 10) solid var-get($theme, 'empty-color');
+        background: var-get($theme, 'empty-fill-color');
     }
 }
 
@@ -81,10 +83,8 @@ $theme: $material;
 
 :host(:not([disabled]):state(ig-invalid)),
 :host(:not(:disabled):state(ig-invalid)) {
-    [part~='control'] {
-        &::after {
-            border-color: var-get($theme, 'error-color');
-        }
+    [part~='control']::after {
+        border-color: var-get($theme, 'error-color');
     }
 
     [part='control checked'] {
@@ -109,18 +109,20 @@ $theme: $material;
     }
 }
 
-:host([disabled]),
-:host(:disabled) {
-    [part~='control'] {
-        &::after {
-            border-color: var-get($theme, 'disabled-color');
-        }
+:host(:not([disabled]):state(ig-invalid):hover),
+:host(:not(:disabled):state(ig-invalid):hover) {
+    [part~='control']::after {
+        border-color: var-get($theme, 'error-color');
     }
 
     [part='control checked'] {
         &::before {
-            background: var-get($theme, 'disabled-color');
-            border-color: var-get($theme, 'disabled-color');
+            background: var-get($theme, 'error-color-hover');
+            border-color: var-get($theme, 'error-color-hover');
+        }
+
+        &::after {
+            border-color: var-get($theme, 'error-color-hover');
         }
     }
 }
