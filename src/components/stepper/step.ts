@@ -326,9 +326,9 @@ export default class IgcStepComponent extends LitElement {
       <div part=${partMap(this.headerContainerParts)}>
         <div
           part="header"
-          tabindex="${this.active ? '0' : '-1'}"
+          tabindex=${this.active ? '0' : '-1'}
           role="tab"
-          aria-selected="${this.active}"
+          aria-selected=${this.active}
           @click=${this.handleClick}
           @keydown=${this.handleKeydown}
         >
