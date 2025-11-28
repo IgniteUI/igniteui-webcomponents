@@ -60,14 +60,14 @@
     "lit": "^3.3.1"
   },
   "devDependencies": {
-    "@biomejs/biome": "~2.3.7",
+    "@biomejs/biome": "~2.3.8",
     "@custom-elements-manifest/analyzer": "^0.11.0",
     "@igniteui/material-icons-extended": "^3.1.0",
     "@open-wc/testing": "^4.0.0",
-    "@storybook/addon-a11y": "^10.0.8",
-    "@storybook/addon-docs": "^10.0.8",
-    "@storybook/addon-links": "^10.0.8",
-    "@storybook/web-components-vite": "^10.0.8",
+    "@storybook/addon-a11y": "^10.1.0",
+    "@storybook/addon-docs": "^10.1.0",
+    "@storybook/addon-links": "^10.1.0",
+    "@storybook/web-components-vite": "^10.1.0",
     "@types/mocha": "^10.0.10",
     "@web/dev-server-esbuild": "^1.0.4",
     "@web/test-runner": "^0.20.2",
@@ -82,7 +82,7 @@
     "husky": "^9.1.7",
     "ig-typedoc-theme": "^7.0.0",
     "igniteui-i18n-resources": "0.7.0-alpha.8",
-    "igniteui-theming": "^24.0.0",
+    "igniteui-theming": "^24.0.1",
     "keep-a-changelog": "^2.7.1",
     "lint-staged": "^16.2.7",
     "lit-analyzer": "^2.0.3",
@@ -90,11 +90,11 @@
     "node-watch": "^0.7.4",
     "playwright": "^1.57.0",
     "postcss": "^8.5.6",
-    "prettier": "^3.6.2",
+    "prettier": "^3.7.1",
     "rimraf": "^6.1.2",
     "sass-embedded": "~1.93.3",
     "sinon": "^21.0.0",
-    "storybook": "^10.0.8",
+    "storybook": "^10.1.0",
     "stylelint": "^16.26.0",
     "stylelint-config-standard-scss": "^16.0.0",
     "stylelint-prettier": "^5.0.3",
@@ -110,7 +110,7 @@
     "dompurify": "^3.3.0",
     "marked": "^17.0.1",
     "marked-shiki": "^1.2.1",
-    "shiki": "^3.15.0"
+    "shiki": "^3.17.0"
   },
   "browserslist": [
     "defaults"

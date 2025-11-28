@@ -119,7 +119,7 @@ describe('Date range picker - single input', () => {
       const expectedValue = { start: today.native, end: tomorrow.native };
       picker = await fixture<IgcDateRangePickerComponent>(
         html`<igc-date-range-picker
-          .value="${expectedValue}"
+          .value=${expectedValue}
         ></igc-date-range-picker>`
       );
 

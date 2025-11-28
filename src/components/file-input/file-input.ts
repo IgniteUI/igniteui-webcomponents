@@ -23,8 +23,10 @@ import { styles } from './themes/file-input.base.css.js';
 import { all } from './themes/themes.js';
 import { fileValidators } from './validators.js';
 
-export interface IgcFileInputComponentEventMap
-  extends Omit<IgcInputComponentEventMap, 'igcChange' | 'igcInput'> {
+export interface IgcFileInputComponentEventMap extends Omit<
+  IgcInputComponentEventMap,
+  'igcChange' | 'igcInput'
+> {
   igcCancel: CustomEvent<FileList>;
   igcChange: CustomEvent<FileList>;
 }

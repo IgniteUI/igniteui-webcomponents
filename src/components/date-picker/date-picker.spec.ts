@@ -223,7 +223,7 @@ describe('Date picker', () => {
     it('should be successfully initialized with value', async () => {
       const expectedValue = new Date(2024, 1, 29);
       picker = await fixture<IgcDatePickerComponent>(
-        html`<igc-date-picker .value="${expectedValue}"></igc-date-picker>`
+        html`<igc-date-picker .value=${expectedValue}></igc-date-picker>`
       );
       dateTimeInput = picker.renderRoot.querySelector(
         IgcDateTimeInputComponent.tagName

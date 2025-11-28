@@ -35,8 +35,10 @@ import {
 } from './date-util.js';
 import { dateTimeInputValidators } from './validators.js';
 
-export interface IgcDateTimeInputComponentEventMap
-  extends Omit<IgcInputComponentEventMap, 'igcChange'> {
+export interface IgcDateTimeInputComponentEventMap extends Omit<
+  IgcInputComponentEventMap,
+  'igcChange'
+> {
   igcChange: CustomEvent<Date | null>;
 }
 
