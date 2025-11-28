@@ -19,6 +19,7 @@ import {
   isFocused,
   simulateClick,
   simulateKeyboard,
+  simulatePointerDown,
 } from '../common/utils.spec.js';
 import {
   runValidationContainerTests,
@@ -1400,6 +1401,22 @@ describe('Combo', () => {
       await list.layoutComplete;
 
       expect(items(combo).length).to.equal(cities.length);
+    });
+
+    it('issue 1987 - do not close the dropdown on user pointer selection', async () => {
+      await combo.show();
+      await list.layoutComplete;
+
+      // Trigger a pointerdown event inside the list element
+      simulatePointerDown(list);
+      await elementUpdated(combo);
+
+      // Then a click outside the list element (for example user selection with a pointer device)
+      simulateClick(document.body);
+      await elementUpdated(combo);
+
+      // The dropdown should remain open
+      expect(combo.open).to.be.true;
     });
   });
 

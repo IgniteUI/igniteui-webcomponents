@@ -1,4 +1,5 @@
 import type { ReactiveController, ReactiveControllerHost } from 'lit';
+import { createAbortHandle } from '../abort-handler.js';
 import { findElementFromEventPath, isEmpty } from '../util.js';
 
 /** Configuration options for the RootClickController */
@@ -33,25 +34,49 @@ interface RootClickControllerHost extends ReactiveControllerHost, HTMLElement {
 }
 
 let rootClickListenerActive = false;
+let pointerDownInsideHost = false;
 
-const HostConfigs = new WeakMap<
+const HOST_CONFIGURATIONS = new WeakMap<
   RootClickControllerHost,
   RootClickControllerConfig
 >();
 
-const ActiveHosts = new Set<RootClickControllerHost>();
+const ACTIVE_HOSTS = new Set<RootClickControllerHost>();
 
-function handleRootClick(event: MouseEvent): void {
-  for (const host of ActiveHosts) {
-    const config = HostConfigs.get(host);
+function handlePointerDown(event: PointerEvent): void {
+  // Check if the pointerdown occurred inside any active host or its target
+  for (const host of ACTIVE_HOSTS) {
+    const config = HOST_CONFIGURATIONS.get(host);
+    const targets: Set<Element> = new Set(
+      config?.target ? [host, config.target] : [host]
+    );
+
+    if (findElementFromEventPath((node) => targets.has(node), event)) {
+      pointerDownInsideHost = true;
+      return;
+    }
+  }
+
+  pointerDownInsideHost = false;
+}
+
+function handleRootClick(event: PointerEvent): void {
+  // If the interaction started inside a host, don't trigger hide
+  if (pointerDownInsideHost) {
+    pointerDownInsideHost = false;
+    return;
+  }
+
+  for (const host of ACTIVE_HOSTS) {
+    const config = HOST_CONFIGURATIONS.get(host);
 
     if (host.keepOpenOnOutsideClick) {
       continue;
     }
 
-    const targets: Set<Element> = config?.target
-      ? new Set([host, config.target])
-      : new Set([host]);
+    const targets: Set<Element> = new Set(
+      config?.target ? [host, config.target] : [host]
+    );
 
     if (!findElementFromEventPath((node) => targets.has(node), event)) {
       config?.onHide ? config.onHide.call(host) : host.hide();
@@ -71,6 +96,7 @@ function handleRootClick(event: MouseEvent): void {
  */
 class RootClickController implements ReactiveController {
   private readonly _host: RootClickControllerHost;
+  private readonly _abortHandler = createAbortHandle();
   private _config?: RootClickControllerConfig;
 
   constructor(
@@ -82,7 +108,7 @@ class RootClickController implements ReactiveController {
     this._host.addController(this);
 
     if (this._config) {
-      HostConfigs.set(this._host, this._config);
+      HOST_CONFIGURATIONS.set(this._host, this._config);
     }
   }
 
@@ -91,13 +117,16 @@ class RootClickController implements ReactiveController {
    * document click listener is active if needed.
    */
   private _addActiveHost(): void {
-    ActiveHosts.add(this._host);
+    ACTIVE_HOSTS.add(this._host);
 
     if (this._config) {
-      HostConfigs.set(this._host, this._config);
+      HOST_CONFIGURATIONS.set(this._host, this._config);
 
       if (!rootClickListenerActive) {
-        document.addEventListener('click', handleRootClick, { capture: true });
+        const options = { capture: true, signal: this._abortHandler.signal };
+
+        document.addEventListener('pointerdown', handlePointerDown, options);
+        document.addEventListener('click', handleRootClick, options);
         rootClickListenerActive = true;
       }
     }
@@ -108,10 +137,10 @@ class RootClickController implements ReactiveController {
    * document click listener if no other hosts are active.
    */
   private _removeActiveHost(): void {
-    ActiveHosts.delete(this._host);
+    ACTIVE_HOSTS.delete(this._host);
 
-    if (isEmpty(ActiveHosts) && rootClickListenerActive) {
-      document.removeEventListener('click', handleRootClick, { capture: true });
+    if (isEmpty(ACTIVE_HOSTS) && rootClickListenerActive) {
+      this._abortHandler.abort();
       rootClickListenerActive = false;
     }
   }
@@ -130,7 +159,7 @@ class RootClickController implements ReactiveController {
   public update(config?: RootClickControllerConfig): void {
     if (config) {
       this._config = { ...this._config, ...config };
-      HostConfigs.set(this._host, this._config);
+      HOST_CONFIGURATIONS.set(this._host, this._config);
     }
 
     this._configureListeners();
