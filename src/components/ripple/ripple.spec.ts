@@ -1,5 +1,4 @@
-import { expect, fixture, html } from '@open-wc/testing';
-
+import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import IgcButtonComponent from '../button/button.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import { simulatePointerDown } from '../common/utils.spec.js';
@@ -38,5 +37,17 @@ describe('Ripple', () => {
     );
 
     simulatePointerDown(ripple);
+  });
+
+  it('No ripple on non-primary pointer button', async () => {
+    ripple.addEventListener(
+      'animationstart',
+      () =>
+        expect.fail('Ripple animation should not start on non-primary button'),
+      { once: true }
+    );
+
+    simulatePointerDown(ripple, { button: 1 });
+    await elementUpdated(ripple);
   });
 });
