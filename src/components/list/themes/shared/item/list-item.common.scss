@@ -25,6 +25,10 @@ $theme: $material;
 
 [part='start'] {
     color: var-get($theme, 'item-thumbnail-color');
+
+    ::slotted(igc-avatar) {
+        --icon-color: #{var-get($theme, 'item-thumbnail-color')};
+    }
 }
 
 [part='end'] {
@@ -45,6 +49,10 @@ $theme: $material;
 
     [part='start'] {
         color: var-get($theme, 'item-thumbnail-color-selected');
+
+        ::slotted(igc-avatar) {
+            --icon-color: #{var-get($theme, 'item-thumbnail-color-selected')};
+        }
     }
 
     [part='end'] {
@@ -67,6 +75,10 @@ $theme: $material;
 
     [part='start'] {
         color: var-get($theme, 'item-thumbnail-color-hover');
+
+        ::slotted(igc-avatar) {
+            --icon-color: #{var-get($theme, 'item-thumbnail-color-hover')};
+        }
     }
 
     [part='end'] {
@@ -88,6 +100,10 @@ $theme: $material;
 
     [part='start'] {
         color: var-get($theme, 'item-thumbnail-color-active');
+
+        ::slotted(igc-avatar) {
+            --icon-color: #{var-get($theme, 'item-thumbnail-color-active')};
+        }
     }
 
     [part='end'] {
