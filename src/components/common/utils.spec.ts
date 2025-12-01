@@ -239,6 +239,23 @@ export function simulatePointerDown(
   }
 }
 
+export function simulatePointerUp(
+  node: Element,
+  options?: PointerEventInit,
+  times = 1
+): void {
+  for (let i = 0; i < times; i++) {
+    node.dispatchEvent(
+      new PointerEvent('pointerup', {
+        bubbles: true,
+        composed: true,
+        pointerId: 1,
+        ...options,
+      })
+    );
+  }
+}
+
 export function simulateLostPointerCapture(
   node: Element,
   options?: PointerEventInit

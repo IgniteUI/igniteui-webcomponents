@@ -166,7 +166,7 @@ describe('Date range picker - common tests for single and two inputs mode', () =
       const expectedValue = { start: today.native, end: tomorrow.native };
       picker = await fixture<IgcDateRangePickerComponent>(
         html`<igc-date-range-picker
-          .value="${expectedValue}"
+          .value=${expectedValue}
         ></igc-date-range-picker>`
       );
       checkSelectedRange(picker, expectedValue, false);
