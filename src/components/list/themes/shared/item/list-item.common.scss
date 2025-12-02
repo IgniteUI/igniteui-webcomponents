@@ -35,31 +35,6 @@ $theme: $material;
     color: var-get($theme, 'item-action-color');
 }
 
-:host([selected]) {
-    color: var-get($theme, 'item-text-color-selected');
-    background: var-get($theme, 'item-background-selected');
-
-    [part='title'] {
-        color: var-get($theme, 'item-title-color-selected');
-    }
-
-    [part='subtitle'] {
-        color: var-get($theme, 'item-subtitle-color-selected');
-    }
-
-    [part='start'] {
-        color: var-get($theme, 'item-thumbnail-color-selected');
-
-        ::slotted(igc-avatar) {
-            --icon-color: #{var-get($theme, 'item-thumbnail-color-selected')};
-        }
-    }
-
-    [part='end'] {
-        color: var-get($theme, 'item-action-color-selected');
-    }
-}
-
 :host(:hover),
 :host(:focus-within) {
     background: var-get($theme, 'item-background-hover');
@@ -108,5 +83,30 @@ $theme: $material;
 
     [part='end'] {
         color: var-get($theme, 'item-action-color-active');
+    }
+}
+
+:host([selected]) {
+    color: var-get($theme, 'item-text-color-selected');
+    background: var-get($theme, 'item-background-selected');
+
+    [part='title'] {
+        color: var-get($theme, 'item-title-color-selected');
+    }
+
+    [part='subtitle'] {
+        color: var-get($theme, 'item-subtitle-color-selected');
+    }
+
+    [part='start'] {
+        color: var-get($theme, 'item-thumbnail-color-selected');
+
+        ::slotted(igc-avatar) {
+            --icon-color: #{var-get($theme, 'item-thumbnail-color-selected')};
+        }
+    }
+
+    [part='end'] {
+        color: var-get($theme, 'item-action-color-selected');
     }
 }
