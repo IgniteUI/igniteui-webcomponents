@@ -794,8 +794,6 @@ describe('Carousel', () => {
         await elementUpdated(carousel);
 
         await vi.advanceTimersByTimeAsync(199);
-        vi.runAllTicks();
-        await nextFrame();
 
         expect(carousel.isPlaying).to.be.true;
         expect(carousel.isPaused).to.be.false;
@@ -806,8 +804,6 @@ describe('Carousel', () => {
         await elementUpdated(carousel);
 
         await vi.advanceTimersByTimeAsync(1);
-        vi.runAllTicks();
-        await nextFrame();
 
         expect(carousel.isPlaying).to.be.false;
         expect(carousel.isPaused).to.be.true;
@@ -822,8 +818,6 @@ describe('Carousel', () => {
         await elementUpdated(carousel);
 
         await vi.advanceTimersByTimeAsync(200);
-        vi.runAllTicks();
-        await nextFrame();
 
         // an interactive element is focused
         // -> should not start rotation on pointerleave
