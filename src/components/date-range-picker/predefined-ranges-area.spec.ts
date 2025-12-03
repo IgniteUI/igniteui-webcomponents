@@ -1,15 +1,15 @@
-import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
+import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { spy } from 'sinon';
 import { CalendarDay } from '../calendar/model.js';
 import IgcChipComponent from '../chip/chip.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
+import { elementUpdated, fixture, html } from '../common/helpers.spec.js';
 import { simulateClick } from '../common/utils.spec.js';
 import type { CustomDateRange } from './date-range-picker.js';
 import IgcPredefinedRangesAreaComponent from './predefined-ranges-area.js';
 
 describe('Predefined Area', () => {
-  before(() => {
+  beforeAll(() => {
     defineComponents(IgcPredefinedRangesAreaComponent);
   });
 
@@ -121,7 +121,7 @@ describe('Predefined Area', () => {
         createComponentWithCustomRanges()
       );
 
-      const eventSpy = spy();
+      const eventSpy = vi.fn();
       component.addEventListener('igcRangeSelect', eventSpy);
 
       const chips = getChips();
@@ -134,8 +134,9 @@ describe('Predefined Area', () => {
         simulateClick(chip);
         await elementUpdated(component);
 
-        expect(eventSpy.calledWithMatch({ detail: ranges[idx].dateRange })).to
-          .be.true;
+        expect(eventSpy).toHaveBeenCalledWith(
+          expect.objectContaining({ detail: ranges[idx].dateRange })
+        );
       }
     });
   });

@@ -1,7 +1,15 @@
-import { elementUpdated, expect, waitUntil } from '@open-wc/testing';
-import { spy } from 'sinon';
-
-import { defineComponents } from '../../index.js';
+import {
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  type MockInstance,
+  vi,
+} from 'vitest';
+import { defineComponents } from '../common/definitions/defineComponents.js';
+import { elementUpdated, waitUntil } from '../common/helpers.spec.js';
+import { eventMatch } from '../common/utils.spec.js';
 import type { TreeSelectionEventInit } from './tree.common.js';
 import IgcTreeComponent from './tree.js';
 import type { IgcTreeNavigationService } from './tree.navigation.js';
@@ -9,20 +17,20 @@ import IgcTreeItemComponent from './tree-item.js';
 import { navigationTree, SLOTS, TreeTestFunctions } from './tree-utils.spec.js';
 
 describe('Tree Navigation', () => {
-  before(() => {
+  beforeAll(() => {
     defineComponents(IgcTreeItemComponent, IgcTreeComponent);
   });
 
   let tree: IgcTreeComponent;
   let treeNavService: IgcTreeNavigationService;
   let topLevelItems: IgcTreeItemComponent[];
-  let eventSpy: any;
+  let spy: MockInstance;
 
   beforeEach(async () => {
     tree = await TreeTestFunctions.createTreeElement(navigationTree);
     treeNavService = tree.navService;
     topLevelItems = tree.items.filter((i) => i.level === 0);
-    eventSpy = spy(tree, 'emitEvent');
+    spy = vi.spyOn(tree, 'emitEvent');
   });
 
   it('Should focus and activate the first tree item on Home key press and the last tree item on End key press', async () => {
@@ -38,10 +46,10 @@ describe('Tree Navigation', () => {
     expect(treeNavService.activeItem).to.equal(tree.items[0]);
     expect(treeNavService.focusedItem).to.equal(tree.items[0]);
 
-    expect(eventSpy).calledOnceWithExactly('igcActiveItem', {
+    expect(spy).toHaveBeenCalledExactlyOnceWith('igcActiveItem', {
       detail: tree.items[0],
     });
-    eventSpy.resetHistory();
+    spy.mockClear();
 
     treeNavService.focusedItem?.dispatchEvent(
       new KeyboardEvent('keydown', {
@@ -59,10 +67,10 @@ describe('Tree Navigation', () => {
     expect(treeNavService.activeItem).to.equal(lastItem);
     expect(treeNavService.focusedItem).to.equal(lastItem);
 
-    expect(eventSpy).calledOnceWithExactly('igcActiveItem', {
+    expect(spy).toHaveBeenCalledExactlyOnceWith('igcActiveItem', {
       detail: lastItem,
     });
-    eventSpy.resetHistory();
+    spy.mockClear();
   });
 
   it('Should not navigate when a tree item has no parent and item is collapsed on Arrow Left key press', async () => {
@@ -86,7 +94,7 @@ describe('Tree Navigation', () => {
     expect(topLevelItems[0].expanded).to.be.false;
     expect(treeNavService.activeItem).to.equal(topLevelItems[0]);
     expect(treeNavService.focusedItem).to.equal(topLevelItems[0]);
-    expect(eventSpy.called).to.be.false;
+    expect(spy).toHaveBeenCalledTimes(0);
   });
 
   it('Should navigate to the parent item of a tree item w/ expanded === true on Arrow Left key press, moving focus and active', async () => {
@@ -106,10 +114,10 @@ describe('Tree Navigation', () => {
     expect(treeNavService.activeItem).to.equal(item2);
     expect(treeNavService.focusedItem).to.equal(item2);
 
-    expect(eventSpy).calledOnceWithExactly('igcActiveItem', {
+    expect(spy).toHaveBeenCalledExactlyOnceWith('igcActiveItem', {
       detail: item2,
     });
-    eventSpy.resetHistory();
+    spy.mockClear();
 
     // Should collapse expanded tree items on Arrow Left key press
     item2.dispatchEvent(
@@ -119,7 +127,7 @@ describe('Tree Navigation', () => {
         cancelable: true,
       })
     );
-    await waitUntil(() => eventSpy.calledWith('igcItemCollapsed'));
+    await waitUntil(() => eventMatch(spy, 'igcItemCollapsed'));
 
     expect(item2.active).to.be.true;
     expect(item2.expanded).to.be.false;
@@ -128,13 +136,13 @@ describe('Tree Navigation', () => {
       detail: item2,
       cancelable: true,
     };
-    expect(eventSpy.callCount).to.equal(2);
-    expect(eventSpy.firstCall).calledWith('igcItemCollapsing', collapsingArgs);
-    expect(eventSpy.secondCall).calledWith('igcItemCollapsed', {
+    expect(spy).toHaveBeenCalledTimes(2);
+    expect(spy).toHaveBeenNthCalledWith(1, 'igcItemCollapsing', collapsingArgs);
+    expect(spy).toHaveBeenNthCalledWith(2, 'igcItemCollapsed', {
       detail: item2,
     });
 
-    eventSpy.resetHistory();
+    spy.mockClear();
   });
 
   it('Should not navigate when a tree item has no children on Arrow Right key press', async () => {
@@ -150,7 +158,7 @@ describe('Tree Navigation', () => {
     expect(item4.active).to.be.true;
     expect(treeNavService.activeItem).to.equal(item4);
     expect(treeNavService.focusedItem).to.equal(item4);
-    expect(eventSpy.called).to.be.false;
+    expect(spy).toHaveBeenCalledTimes(0);
   });
 
   it('Should navigate to the first child of an expanded on Arrow Right key press, moving focus and active', async () => {
@@ -167,10 +175,10 @@ describe('Tree Navigation', () => {
     expect(treeNavService.activeItem).to.equal(item2Children[0]);
     expect(treeNavService.focusedItem).to.equal(item2Children[0]);
 
-    expect(eventSpy).calledOnceWithExactly('igcActiveItem', {
+    expect(spy).toHaveBeenCalledExactlyOnceWith('igcActiveItem', {
       detail: item2Children[0],
     });
-    eventSpy.resetHistory();
+    spy.mockClear();
 
     const item21Children = item2Children[0].getChildren();
 
@@ -187,7 +195,7 @@ describe('Tree Navigation', () => {
     expect(treeNavService.activeItem).to.equal(item21Children[0]);
     expect(treeNavService.focusedItem).to.equal(item21Children[0]);
 
-    expect(eventSpy).calledOnceWithExactly('igcActiveItem', {
+    expect(spy).toHaveBeenCalledExactlyOnceWith('igcActiveItem', {
       detail: item21Children[0],
     });
   });
@@ -202,7 +210,7 @@ describe('Tree Navigation', () => {
     await elementUpdated(tree);
 
     TreeTestFunctions.setFocusAndTriggerKeydown(item1, tree, 'ArrowRight');
-    await waitUntil(() => eventSpy.calledWith('igcItemExpanded'));
+    await waitUntil(() => eventMatch(spy, 'igcItemExpanded'));
 
     expect(item1.expanded).to.be.true;
 
@@ -210,9 +218,9 @@ describe('Tree Navigation', () => {
       detail: item1,
       cancelable: true,
     };
-    expect(eventSpy.callCount).to.equal(2);
-    expect(eventSpy.firstCall).calledWith('igcItemExpanding', expandingArgs);
-    expect(eventSpy.secondCall).calledWith('igcItemExpanded', {
+    expect(spy).toHaveBeenCalledTimes(2);
+    expect(spy).toHaveBeenNthCalledWith(1, 'igcItemExpanding', expandingArgs);
+    expect(spy).toHaveBeenNthCalledWith(2, 'igcItemExpanded', {
       detail: item1,
     });
   });
@@ -236,10 +244,10 @@ describe('Tree Navigation', () => {
       expect(treeNavService.activeItem).to.equal(item3Hierarchy[i + 1]);
       expect(treeNavService.focusedItem).to.equal(item3Hierarchy[i + 1]);
 
-      expect(eventSpy).calledOnceWithExactly('igcActiveItem', {
+      expect(spy).toHaveBeenCalledExactlyOnceWith('igcActiveItem', {
         detail: item3Hierarchy[i + 1],
       });
-      eventSpy.resetHistory();
+      spy.mockClear();
     }
 
     // Arrow Down on last tree item
@@ -251,7 +259,7 @@ describe('Tree Navigation', () => {
 
     expect(treeNavService.activeItem).to.equal(item4);
     expect(treeNavService.focusedItem).to.equal(item4);
-    expect(eventSpy.called).to.be.false;
+    expect(spy).toHaveBeenCalledTimes(0);
   });
 
   it('Should only focus the next visible tree item on Arrow Down + Ctrl key press', async () => {
@@ -276,7 +284,7 @@ describe('Tree Navigation', () => {
       expect(item3Hierarchy[i + 1].active).to.be.false;
       expect(treeNavService.activeItem).to.equal(item3Hierarchy[0]);
       expect(treeNavService.focusedItem).to.equal(item3Hierarchy[i + 1]);
-      expect(eventSpy.called).to.be.false;
+      expect(spy).toHaveBeenCalledTimes(0);
     }
   });
 
@@ -298,10 +306,10 @@ describe('Tree Navigation', () => {
       expect(item3Hierarchy[i - 1].active).to.be.true;
       expect(treeNavService.activeItem).to.equal(item3Hierarchy[i - 1]);
       expect(treeNavService.focusedItem).to.equal(item3Hierarchy[i - 1]);
-      expect(eventSpy).calledOnceWithExactly('igcActiveItem', {
+      expect(spy).toHaveBeenCalledExactlyOnceWith('igcActiveItem', {
         detail: item3Hierarchy[i - 1],
       });
-      eventSpy.resetHistory();
+      spy.mockClear();
     }
 
     // Arrow Up on first tree item
@@ -313,7 +321,7 @@ describe('Tree Navigation', () => {
 
     expect(treeNavService.activeItem).to.equal(item1);
     expect(treeNavService.focusedItem).to.equal(item1);
-    expect(eventSpy.called).to.be.false;
+    expect(spy).toHaveBeenCalledTimes(0);
   });
 
   it('Should only focus the previous visible tree item on Arrow Up + Ctrl key press', async () => {
@@ -338,7 +346,7 @@ describe('Tree Navigation', () => {
         item3Hierarchy[item3Hierarchy.length - 1]
       );
       expect(treeNavService.focusedItem).to.equal(item3Hierarchy[i - 1]);
-      expect(eventSpy.called).to.be.false;
+      expect(spy).toHaveBeenCalledTimes(0);
     }
   });
 
@@ -351,7 +359,7 @@ describe('Tree Navigation', () => {
     item3.active = true;
     await elementUpdated(tree);
     TreeTestFunctions.setFocusAndTriggerKeydown(item3, tree, '*');
-    await waitUntil(() => eventSpy.calledWith('igcItemExpanded'));
+    await waitUntil(() => eventMatch(spy, 'igcItemExpanded'));
 
     expect(topLevelItems[3].expanded).to.be.false; // Item4 does not have children => not expanded
     topLevelItems.pop();
@@ -386,13 +394,13 @@ describe('Tree Navigation', () => {
       cancelable: true,
     };
     // Item2 is already expanded, and Item4 has no children => no expanding events emitted for them
-    expect(eventSpy.callCount).to.equal(4);
-    expect(eventSpy.firstCall).calledWith('igcItemExpanding', expandingArgs1);
-    expect(eventSpy.secondCall).calledWith('igcItemExpanding', expandingArgs2);
-    expect(eventSpy.thirdCall).calledWith('igcItemExpanded', {
+    expect(spy).toHaveBeenCalledTimes(4);
+    expect(spy).toHaveBeenNthCalledWith(1, 'igcItemExpanding', expandingArgs1);
+    expect(spy).toHaveBeenNthCalledWith(2, 'igcItemExpanding', expandingArgs2);
+    expect(spy).toHaveBeenNthCalledWith(3, 'igcItemExpanded', {
       detail: topLevelItems[0],
     });
-    expect(eventSpy.lastCall).calledWith('igcItemExpanded', {
+    expect(spy).toHaveBeenNthCalledWith(4, 'igcItemExpanded', {
       detail: item3,
     });
   });
@@ -416,7 +424,7 @@ describe('Tree Navigation', () => {
     expect(treeNavService.activeItem).to.equal(topLevelItems[0]);
     expect(treeNavService.focusedItem).to.equal(topLevelItems[0]);
 
-    expect(eventSpy).calledOnceWithExactly('igcActiveItem', {
+    expect(spy).toHaveBeenCalledExactlyOnceWith('igcActiveItem', {
       detail: topLevelItems[0],
     });
   });
@@ -443,12 +451,12 @@ describe('Tree Navigation', () => {
       },
       cancelable: true,
     };
-    expect(eventSpy.callCount).to.equal(2);
-    expect(eventSpy.firstCall).calledWith('igcActiveItem', {
+    expect(spy).toHaveBeenCalledTimes(2);
+    expect(spy).toHaveBeenNthCalledWith(1, 'igcActiveItem', {
       detail: topLevelItems[0],
     });
-    expect(eventSpy.secondCall).calledWith('igcSelection', args);
-    eventSpy.resetHistory();
+    expect(spy).toHaveBeenNthCalledWith(2, 'igcSelection', args);
+    spy.mockClear();
 
     const expectedSelection: IgcTreeItemComponent[] = [];
 
@@ -472,8 +480,8 @@ describe('Tree Navigation', () => {
       cancelable: true,
     };
 
-    expect(eventSpy.callCount).to.equal(1);
-    expect(eventSpy.firstCall).calledWith('igcSelection', args);
+    expect(spy).toHaveBeenCalledTimes(1);
+    expect(spy).toHaveBeenNthCalledWith(1, 'igcSelection', args);
   });
 
   it("Should only activate the tree item when tree.selection === 'None' on Space key press and also select it when tree.selection !== 'None'", async () => {
@@ -494,11 +502,11 @@ describe('Tree Navigation', () => {
     expect(treeNavService.activeItem).to.equal(topLevelItems[0]);
     expect(treeNavService.focusedItem).to.equal(topLevelItems[0]);
 
-    expect(eventSpy).calledOnceWithExactly('igcActiveItem', {
+    expect(spy).toHaveBeenCalledExactlyOnceWith('igcActiveItem', {
       detail: topLevelItems[0],
     });
 
-    eventSpy.resetHistory();
+    spy.mockClear();
 
     tree.selection = 'multiple';
     await elementUpdated(tree);
@@ -516,11 +524,11 @@ describe('Tree Navigation', () => {
       },
       cancelable: true,
     };
-    expect(eventSpy.callCount).to.equal(2);
-    expect(eventSpy.firstCall).calledWith('igcActiveItem', {
+    expect(spy).toHaveBeenCalledTimes(2);
+    expect(spy).toHaveBeenNthCalledWith(1, 'igcActiveItem', {
       detail: topLevelItems[1],
     });
-    expect(eventSpy.secondCall).calledWith('igcSelection', args);
+    expect(spy).toHaveBeenNthCalledWith(2, 'igcSelection', args);
   });
 
   it("Should select item range when tree.selection !== 'None' on Space + Shift keys press, moving active", async () => {
@@ -549,12 +557,12 @@ describe('Tree Navigation', () => {
       },
       cancelable: true,
     };
-    expect(eventSpy.callCount).to.equal(2);
-    expect(eventSpy.firstCall).calledWith('igcActiveItem', {
+    expect(spy).toHaveBeenCalledTimes(2);
+    expect(spy).toHaveBeenNthCalledWith(1, 'igcActiveItem', {
       detail: topLevelItems[0],
     });
-    expect(eventSpy.secondCall).calledWith('igcSelection', args);
-    eventSpy.resetHistory();
+    expect(spy).toHaveBeenNthCalledWith(2, 'igcSelection', args);
+    spy.mockClear();
 
     const expectedSelection = [
       topLevelItems[0],
@@ -582,11 +590,11 @@ describe('Tree Navigation', () => {
       cancelable: true,
     };
 
-    expect(eventSpy.callCount).to.equal(2);
-    expect(eventSpy.firstCall).calledWith('igcActiveItem', {
+    expect(spy).toHaveBeenCalledTimes(2);
+    expect(spy).toHaveBeenNthCalledWith(1, 'igcActiveItem', {
       detail: topLevelItems[1],
     });
-    expect(eventSpy.secondCall).calledWith('igcSelection', args);
+    expect(spy).toHaveBeenNthCalledWith(2, 'igcSelection', args);
   });
 
   it('Should assign proper tabIndex for tree item labels containing tabbable elements on focus', async () => {

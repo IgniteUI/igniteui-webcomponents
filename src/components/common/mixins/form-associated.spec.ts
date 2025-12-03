@@ -1,13 +1,8 @@
-import {
-  defineCE,
-  expect,
-  fixture,
-  html,
-  unsafeStatic,
-} from '@open-wc/testing';
 import { LitElement } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import type { StaticValue } from 'lit/static-html.js';
+import { beforeAll, describe, expect, it } from 'vitest';
+import { defineCE, fixture, html, unsafeStatic } from '../helpers.spec.js';
 import {
   maxLengthValidator,
   minLengthValidator,
@@ -39,7 +34,7 @@ describe('Form associated mixin tests', () => {
   let tagName: StaticValue;
   let instance: FormAssociatedTestInstance;
 
-  before(() => {
+  beforeAll(() => {
     tag = defineCE(
       class Foo extends FormAssociatedRequiredMixin(LitElement) {
         static override properties = {

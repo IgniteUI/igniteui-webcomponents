@@ -1,10 +1,10 @@
-import { expect, fixture, html } from '@open-wc/testing';
-
+import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { defineComponents } from '../common/definitions/defineComponents.js';
+import { fixture, html } from '../common/helpers.spec.js';
 import IgcListComponent from './list.js';
 
 describe('List', () => {
-  before(() => {
+  beforeAll(() => {
     defineComponents(IgcListComponent);
   });
 

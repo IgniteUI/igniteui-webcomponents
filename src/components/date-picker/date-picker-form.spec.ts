@@ -1,7 +1,8 @@
-import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
+import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { CalendarDay, toCalendarDay } from '../calendar/model.js';
 import { type DateRangeDescriptor, DateRangeType } from '../calendar/types.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
+import { elementUpdated, fixture, html } from '../common/helpers.spec.js';
 import { equal } from '../common/util.js';
 import {
   createFormAssociatedTestBed,
@@ -16,7 +17,7 @@ import IgcDateTimeInputComponent from '../date-time-input/date-time-input.js';
 import IgcDatePickerComponent from './date-picker.js';
 
 describe('igc-datepicker form integration', () => {
-  before(() => defineComponents(IgcDatePickerComponent));
+  beforeAll(() => defineComponents(IgcDatePickerComponent));
 
   function checkDatesEqual(a: CalendarDay | Date, b: CalendarDay | Date) {
     expect(equal(toCalendarDay(a), toCalendarDay(b))).to.be.true;

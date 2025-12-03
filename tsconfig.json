@@ -31,8 +31,7 @@
           "no-incompatible-type-binding": "warning"
         }
       }
-    ],
-    "types": ["mocha"]
+    ]
   },
   "include": ["src/**/*.ts"],
   "exclude": ["src/**/*.stories.ts"],

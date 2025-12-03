@@ -1,7 +1,7 @@
-import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
-import { spy } from 'sinon';
+import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { configureTheme } from '../../theming/config.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
+import { elementUpdated, fixture, html } from '../common/helpers.spec.js';
 import {
   createFormAssociatedTestBed,
   isFocused,
@@ -13,7 +13,7 @@ import {
 import IgcCheckboxComponent from './checkbox.js';
 
 describe('Checkbox', () => {
-  before(() => {
+  beforeAll(() => {
     defineComponents(IgcCheckboxComponent);
   });
 
@@ -171,21 +171,21 @@ describe('Checkbox', () => {
     });
 
     it('should emit click event only once', async () => {
-      const eventSpy = spy(element, 'click');
+      const spy = vi.spyOn(element, 'click');
 
-      element.addEventListener('click', eventSpy);
+      element.addEventListener('click', spy);
       element.click();
 
       await elementUpdated(element);
-      expect(eventSpy.callCount).to.equal(1);
+      expect(spy.mock.calls.length).to.equal(1);
     });
 
     it('should emit igcChange event when the checkbox checked state changes', async () => {
-      const eventSpy = spy(element, 'emitEvent');
+      const spy = vi.spyOn(element, 'emitEvent');
       element.click();
 
       await elementUpdated(element);
-      expect(eventSpy).calledWithExactly('igcChange', {
+      expect(spy).toHaveBeenCalledWith('igcChange', {
         detail: { checked: true, value: undefined },
       });
     });

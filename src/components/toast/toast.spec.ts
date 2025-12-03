@@ -1,21 +1,26 @@
 import {
-  elementUpdated,
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe,
   expect,
+  it,
+  vi,
+} from 'vitest';
+import { defineComponents } from '../common/definitions/defineComponents.js';
+import {
+  elementUpdated,
   fixture,
   html,
   nextFrame,
-} from '@open-wc/testing';
-
-import { type SinonFakeTimers, useFakeTimers } from 'sinon';
-import { defineComponents } from '../common/definitions/defineComponents.js';
+} from '../common/helpers.spec.js';
 import { finishAnimationsFor } from '../common/utils.spec.js';
 import IgcToastComponent from './toast.js';
 
 describe('Toast', () => {
-  before(() => defineComponents(IgcToastComponent));
+  beforeAll(() => defineComponents(IgcToastComponent));
 
   let toast: IgcToastComponent;
-  let clock: SinonFakeTimers;
 
   describe('ARIA', () => {
     beforeEach(async () => {
@@ -32,14 +37,14 @@ describe('Toast', () => {
 
   describe('API', () => {
     beforeEach(async () => {
-      clock = useFakeTimers({ toFake: ['setTimeout'] });
+      vi.useFakeTimers({ toFake: ['setTimeout'] });
       toast = await fixture<IgcToastComponent>(
         html`<igc-toast>Hello world</igc-toast>`
       );
     });
 
     afterEach(() => {
-      clock.restore();
+      vi.useRealTimers();
     });
 
     const checkOpenState = (state = false) => {
@@ -69,11 +74,11 @@ describe('Toast', () => {
       await toast.show();
       checkOpenState(true);
 
-      await clock.tickAsync(399);
+      await vi.advanceTimersByTimeAsync(399);
       expect(toast.open).to.be.true;
       checkOpenState(true);
 
-      await clock.tickAsync(1);
+      await vi.advanceTimersByTimeAsync(1);
       finishAnimationsFor(toast);
       await nextFrame();
 
@@ -88,7 +93,7 @@ describe('Toast', () => {
       await toast.show();
       checkOpenState(true);
 
-      await clock.tickAsync(400);
+      await vi.advanceTimersByTimeAsync(400);
       expect(toast.open).to.be.true;
       checkOpenState(true);
     });

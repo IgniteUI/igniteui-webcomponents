@@ -1,9 +1,16 @@
-import { aTimeout, elementUpdated, expect, waitUntil } from '@open-wc/testing';
-import { spy } from 'sinon';
-
+import {
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  type MockInstance,
+  vi,
+} from 'vitest';
 import type IgcCheckboxComponent from '../checkbox/checkbox.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
-import { scrolledIntoView } from '../common/utils.spec.js';
+import { aTimeout, elementUpdated, waitUntil } from '../common/helpers.spec.js';
+import { eventMatch, scrolledIntoView } from '../common/utils.spec.js';
 import IgcTreeComponent from './tree.js';
 import type IgcTreeItemComponent from './tree-item.js';
 import {
@@ -22,7 +29,7 @@ import {
 } from './tree-utils.spec.js';
 
 describe('Tree', () => {
-  before(() => {
+  beforeAll(() => {
     defineComponents(IgcTreeComponent);
   });
 
@@ -370,7 +377,7 @@ describe('Tree', () => {
     it('Should emit igcActiveItem event when the active item changes', async () => {
       tree = await TreeTestFunctions.createTreeElement(simpleHierarchyTree);
 
-      const eventSpy = spy(tree, 'emitEvent');
+      const spy = vi.spyOn(tree, 'emitEvent');
       await elementUpdated(tree);
 
       tree.items.forEach((item) => {
@@ -381,25 +388,25 @@ describe('Tree', () => {
       tree.items[0].dispatchEvent(new PointerEvent('click'));
       await elementUpdated(tree);
       expect(tree.navService.activeItem).to.equal(tree.items[0]);
-      expect(eventSpy).calledOnceWithExactly('igcActiveItem', {
+      expect(spy).toHaveBeenCalledExactlyOnceWith('igcActiveItem', {
         detail: tree.items[0],
       });
 
-      eventSpy.resetHistory();
+      spy.mockClear();
 
       tree.navService.setActiveItem(tree.items[1], true);
       await elementUpdated(tree);
       expect(tree.navService.activeItem).to.equal(tree.items[1]);
-      expect(eventSpy).calledOnceWithExactly('igcActiveItem', {
+      expect(spy).toHaveBeenCalledExactlyOnceWith('igcActiveItem', {
         detail: tree.items[1],
       });
 
-      eventSpy.resetHistory();
+      spy.mockClear();
 
       tree.navService.setActiveItem(tree.items[2], false);
       await elementUpdated(tree);
       expect(tree.navService.activeItem).to.equal(tree.items[2]);
-      expect(eventSpy).not.called;
+      expect(spy).not.toHaveBeenCalled();
     });
 
     it('Should activate the last tree item set as active if there are multiple', async () => {
@@ -505,19 +512,19 @@ describe('Tree', () => {
 
   describe('Expand/Collapse', async () => {
     let topLevelItems: IgcTreeItemComponent[];
-    let eventSpy: any;
+    let spy: MockInstance;
 
     beforeEach(async () => {
       tree = await TreeTestFunctions.createTreeElement(expandCollapseTree);
       topLevelItems = tree.items.filter((i) => i.level === 0);
-      eventSpy = spy(tree, 'emitEvent');
+      spy = vi.spyOn(tree, 'emitEvent');
     });
 
     it('Should expand all collapsed (including the disabled) items w/ tree.expand()', async () => {
       tree.expand();
       await elementUpdated(tree);
 
-      expect(eventSpy.called).to.be.false; // event is not emitted when expanding through API
+      expect(spy).not.toHaveBeenCalled(); // event is not emitted when expanding through API
       tree.items.forEach((item) => {
         expect(item.expanded).to.be.true;
       });
@@ -529,7 +536,7 @@ describe('Tree', () => {
       tree.expand(items);
       await elementUpdated(tree);
 
-      expect(eventSpy.called).to.be.false; // event is not emitted when expanding through API
+      expect(spy).not.toHaveBeenCalled(); // event is not emitted when expanding through API
       items.forEach((item) => {
         expect(item.expanded).to.be.true;
       });
@@ -539,7 +546,7 @@ describe('Tree', () => {
       tree.collapse();
       await elementUpdated(tree);
 
-      expect(eventSpy.called).to.be.false; // event is not emitted when collapsing through API
+      expect(spy).not.toHaveBeenCalled(); // event is not emitted when collapsing through API
       tree.items.forEach((item) => {
         expect(item.expanded).to.be.false;
       });
@@ -551,7 +558,7 @@ describe('Tree', () => {
       tree.collapse(items);
       await elementUpdated(tree);
 
-      expect(eventSpy.called).to.be.false; // event is not emitted when collapsing through API
+      expect(spy).not.toHaveBeenCalled(); // event is not emitted when collapsing through API
       items.forEach((item) => {
         expect(item.expanded).to.be.false;
       });
@@ -568,7 +575,7 @@ describe('Tree', () => {
       );
 
       item2IndSlot?.dispatchEvent(new MouseEvent('click'));
-      await waitUntil(() => eventSpy.calledWith('igcItemCollapsed'));
+      await waitUntil(() => eventMatch(spy, 'igcItemCollapsed'));
 
       TreeTestFunctions.verifyExpansionState(topLevelItems[1], false);
 
@@ -577,16 +584,17 @@ describe('Tree', () => {
         detail: topLevelItems[1],
         cancelable: true,
       };
-      expect(eventSpy.callCount).to.equal(2);
-      expect(eventSpy.firstCall).calledWith(
+      expect(spy).toHaveBeenCalledTimes(2);
+      expect(spy).toHaveBeenNthCalledWith(
+        1,
         'igcItemCollapsing',
         collapsingArgs
       );
-      expect(eventSpy.secondCall).calledWith('igcItemCollapsed', {
+      expect(spy).toHaveBeenNthCalledWith(2, 'igcItemCollapsed', {
         detail: topLevelItems[1],
       });
 
-      eventSpy.resetHistory();
+      spy.mockClear();
 
       const item21IndSlot = TreeTestFunctions.getSlot(
         childItem21,
@@ -599,7 +607,7 @@ describe('Tree', () => {
       // Should not collapse disabled item
       expect(childItem21.disabled).to.be.true;
       TreeTestFunctions.verifyExpansionState(childItem21, true);
-      expect(eventSpy.called).to.be.false;
+      expect(spy).not.toHaveBeenCalled();
     });
 
     it('Should expand items when user interacts w/ indicator and item.expanded === true', async () => {
@@ -613,7 +621,7 @@ describe('Tree', () => {
       );
 
       item1IndSlot?.dispatchEvent(new MouseEvent('click'));
-      await waitUntil(() => eventSpy.calledWith('igcItemExpanded'));
+      await waitUntil(() => eventMatch(spy, 'igcItemExpanded'));
 
       TreeTestFunctions.verifyExpansionState(topLevelItems[0], true);
 
@@ -622,13 +630,13 @@ describe('Tree', () => {
         detail: topLevelItems[0],
         cancelable: true,
       };
-      expect(eventSpy.callCount).to.equal(2);
-      expect(eventSpy.firstCall).calledWith('igcItemExpanding', expandingArgs);
-      expect(eventSpy.secondCall).calledWith('igcItemExpanded', {
+      expect(spy).toHaveBeenCalledTimes(2);
+      expect(spy).toHaveBeenNthCalledWith(1, 'igcItemExpanding', expandingArgs);
+      expect(spy).toHaveBeenNthCalledWith(2, 'igcItemExpanded', {
         detail: topLevelItems[0],
       });
 
-      eventSpy.resetHistory();
+      spy.mockClear();
 
       const item11IndSlot = TreeTestFunctions.getSlot(
         childItem11,
@@ -641,7 +649,7 @@ describe('Tree', () => {
       // Should not expand disabled item
       expect(childItem11.disabled).to.be.true;
       TreeTestFunctions.verifyExpansionState(childItem11, false);
-      expect(eventSpy.called).to.be.false;
+      expect(spy).not.toHaveBeenCalled();
     });
 
     it('Should collapse items when item.expanded is set to false', async () => {
@@ -652,7 +660,7 @@ describe('Tree', () => {
 
       TreeTestFunctions.verifyExpansionState(topLevelItems[1], false);
       // Should not emit event when collapsed through API
-      expect(eventSpy.called).to.be.false;
+      expect(spy).not.toHaveBeenCalled();
     });
 
     it('Should expand items when item.expanded is set to true', async () => {
@@ -663,7 +671,7 @@ describe('Tree', () => {
 
       TreeTestFunctions.verifyExpansionState(topLevelItems[0], true);
       // Should not emit event when collapsed through API
-      expect(eventSpy.called).to.be.false;
+      expect(spy).not.toHaveBeenCalled();
     });
 
     it('Should expand items when item.expand() is called', async () => {
@@ -674,14 +682,14 @@ describe('Tree', () => {
 
       TreeTestFunctions.verifyExpansionState(topLevelItems[0], true);
       // Should not emit event when collapsed through API
-      expect(eventSpy.called).to.be.false;
+      expect(spy).not.toHaveBeenCalled();
 
       // Should not expand with event an already expanded item
       topLevelItems[0].expandWithEvent();
       await elementUpdated(tree);
 
       TreeTestFunctions.verifyExpansionState(topLevelItems[0], true);
-      expect(eventSpy.called).to.be.false;
+      expect(spy).not.toHaveBeenCalled();
     });
 
     it('Should collapse items when item.collapse() is called', async () => {
@@ -692,7 +700,7 @@ describe('Tree', () => {
 
       TreeTestFunctions.verifyExpansionState(topLevelItems[1], false);
       // Should not emit event when collapsed through API
-      expect(eventSpy.called).to.be.false;
+      expect(spy).not.toHaveBeenCalled();
     });
 
     it('Should expand/collapse nodes when clicking over them if `toggleNodeOnClick` is set to `true`', async () => {
@@ -705,38 +713,39 @@ describe('Tree', () => {
       await elementUpdated(tree);
 
       TreeTestFunctions.verifyExpansionState(topLevelItems[0], true);
-      await waitUntil(() => eventSpy.calledWith('igcItemExpanded'));
+      await waitUntil(() => eventMatch(spy, 'igcItemExpanded'));
 
       // Should emit ing and ed events when item state is toggled through UI
       const expandingArgs = {
         detail: topLevelItems[0],
         cancelable: true,
       };
-      expect(eventSpy.callCount).to.equal(2);
-      expect(eventSpy.firstCall).calledWith('igcItemExpanding', expandingArgs);
-      expect(eventSpy.secondCall).calledWith('igcItemExpanded', {
+      expect(spy).toHaveBeenCalledTimes(2);
+      expect(spy).toHaveBeenNthCalledWith(1, 'igcItemExpanding', expandingArgs);
+      expect(spy).toHaveBeenNthCalledWith(2, 'igcItemExpanded', {
         detail: topLevelItems[0],
       });
 
-      eventSpy.resetHistory();
+      spy.mockClear();
 
       topLevelItems[0].dispatchEvent(new MouseEvent('click'));
       await elementUpdated(tree);
 
       TreeTestFunctions.verifyExpansionState(topLevelItems[0], false);
-      await waitUntil(() => eventSpy.calledWith('igcItemCollapsed'));
+      await waitUntil(() => eventMatch(spy, 'igcItemCollapsed'));
 
       // Should emit ing and ed events when item state is toggled through UI
       const collapsingArgs = {
         detail: topLevelItems[0],
         cancelable: true,
       };
-      expect(eventSpy.callCount).to.equal(2);
-      expect(eventSpy.firstCall).calledWith(
+      expect(spy).toHaveBeenCalledTimes(2);
+      expect(spy).toHaveBeenNthCalledWith(
+        1,
         'igcItemCollapsing',
         collapsingArgs
       );
-      expect(eventSpy.secondCall).calledWith('igcItemCollapsed', {
+      expect(spy).toHaveBeenNthCalledWith(2, 'igcItemCollapsed', {
         detail: topLevelItems[0],
       });
     });
@@ -791,13 +800,13 @@ describe('Tree', () => {
 
       TreeTestFunctions.verifyExpansionState(topLevelItems[1], false);
       // Should not emit event when collapsed through API
-      expect(eventSpy.called).to.be.false;
+      expect(spy).not.toHaveBeenCalled();
 
       topLevelItems[1].toggle();
       await elementUpdated(tree);
 
       TreeTestFunctions.verifyExpansionState(topLevelItems[1], true);
-      expect(eventSpy.called).to.be.false;
+      expect(spy).not.toHaveBeenCalled();
     });
 
     it('Should be able to prevent the expansion/collapsing through the ing events.', async () => {
@@ -819,9 +828,9 @@ describe('Tree', () => {
         detail: topLevelItems[0],
         cancelable: true,
       };
-      expect(eventSpy.callCount).to.equal(1);
-      expect(eventSpy.firstCall).calledWith('igcItemExpanding', expandingArgs);
-      eventSpy.resetHistory();
+      expect(spy).toHaveBeenCalledTimes(1);
+      expect(spy).toHaveBeenNthCalledWith(1, 'igcItemExpanding', expandingArgs);
+      spy.mockClear();
 
       const item2IndSlot = TreeTestFunctions.getSlot(
         topLevelItems[1],
@@ -841,8 +850,9 @@ describe('Tree', () => {
         detail: topLevelItems[1],
         cancelable: true,
       };
-      expect(eventSpy.callCount).to.equal(1);
-      expect(eventSpy.firstCall).calledWith(
+      expect(spy).toHaveBeenCalledTimes(1);
+      expect(spy).toHaveBeenNthCalledWith(
+        1,
         'igcItemCollapsing',
         collapsingArgs
       );
@@ -999,13 +1009,13 @@ describe('Tree', () => {
   describe('Disabled item', async () => {
     let disabledItems: IgcTreeItemComponent[];
     let topLevelItems: IgcTreeItemComponent[];
-    let eventSpy: any;
+    let spy: MockInstance;
 
     beforeEach(async () => {
       tree = await TreeTestFunctions.createTreeElement(disabledItemsTree);
       topLevelItems = tree.items.filter((i) => i.level === 0);
       disabledItems = tree.items.filter((i) => i.disabled === true);
-      eventSpy = spy(tree, 'emitEvent');
+      spy = vi.spyOn(tree, 'emitEvent');
     });
 
     it('Should be able to select/activate/expand disabled item through API', async () => {
@@ -1023,7 +1033,7 @@ describe('Tree', () => {
       expect(cb.checked).to.be.true;
       expect(cb.indeterminate).to.be.false;
 
-      expect(eventSpy).not.to.be.called; // event not emitted when interacting through API
+      expect(spy).not.toHaveBeenCalled(); // event not emitted when interacting through API
 
       const item11 = disabledItems[1];
       expect(item11.disabled).to.be.true;
@@ -1034,7 +1044,7 @@ describe('Tree', () => {
       TreeTestFunctions.verifyItemSelection(item11, true);
       expect(cb.checked).to.be.true;
       expect(cb.indeterminate).to.be.false;
-      expect(eventSpy).not.to.be.called;
+      expect(spy).not.toHaveBeenCalled();
 
       const item12 = disabledItems[2];
       expect(item12.disabled).to.be.true;
@@ -1044,13 +1054,13 @@ describe('Tree', () => {
       await elementUpdated(tree);
 
       expect(item12.active).to.be.true;
-      expect(eventSpy).not.to.be.called;
+      expect(spy).not.toHaveBeenCalled();
 
       item12.expand();
       await elementUpdated(tree);
 
       expect(item12.expanded).to.be.true;
-      expect(eventSpy).not.to.be.called;
+      expect(spy).not.toHaveBeenCalled();
     });
 
     it('Should not be able to interact with disabled item through UI', async () => {
@@ -1066,7 +1076,7 @@ describe('Tree', () => {
 
       TreeTestFunctions.verifyExpansionState(item11, true);
       expect(item11.active).to.be.false;
-      expect(eventSpy).not.to.be.called;
+      expect(spy).not.toHaveBeenCalled();
       expect(tree.navService.focusedItem).not.to.equal(item11);
 
       const item11LabelSlot = TreeTestFunctions.getSlot(item11, SLOTS.label);
@@ -1077,14 +1087,14 @@ describe('Tree', () => {
       TreeTestFunctions.verifyExpansionState(item11, true);
       expect(tree.navService.focusedItem).not.to.equal(item11);
       expect(item11.active).to.be.false;
-      expect(eventSpy).not.to.be.called;
+      expect(spy).not.toHaveBeenCalled();
 
       item11.dispatchEvent(new MouseEvent('click'));
       await elementUpdated(tree);
 
       expect(item11.active).to.be.false;
       expect(tree.navService.focusedItem).not.to.equal(item11);
-      expect(eventSpy).not.to.be.called;
+      expect(spy).not.toHaveBeenCalled();
 
       item11.dispatchEvent(new Event('focus'));
       await elementUpdated(tree);
@@ -1288,12 +1298,12 @@ describe('Tree', () => {
 
   describe('RTL', () => {
     let topLevelItems: IgcTreeItemComponent[];
-    let eventSpy: any;
+    let spy: MockInstance;
 
     beforeEach(async () => {
       tree = await TreeTestFunctions.createTreeElement(navigationTree);
       topLevelItems = tree.items.filter((i) => i.level === 0);
-      eventSpy = spy(tree, 'emitEvent');
+      spy = vi.spyOn(tree, 'emitEvent');
       tree.dir = 'rtl';
       await elementUpdated(tree);
     });
@@ -1304,7 +1314,7 @@ describe('Tree', () => {
       await elementUpdated(tree);
 
       TreeTestFunctions.setFocusAndTriggerKeydown(item2, tree, 'ArrowRight');
-      await waitUntil(() => eventSpy.calledWith('igcItemCollapsed'));
+      await waitUntil(() => eventMatch(spy, 'igcItemCollapsed'));
 
       expect(item2.expanded).to.be.false;
 
@@ -1312,12 +1322,13 @@ describe('Tree', () => {
         detail: item2,
         cancelable: true,
       };
-      expect(eventSpy.callCount).to.equal(2);
-      expect(eventSpy.firstCall).calledWith(
+      expect(spy).toHaveBeenCalledTimes(2);
+      expect(spy).toHaveBeenNthCalledWith(
+        1,
         'igcItemCollapsing',
         collapsingArgs
       );
-      expect(eventSpy.secondCall).calledWith('igcItemCollapsed', {
+      expect(spy).toHaveBeenNthCalledWith(2, 'igcItemCollapsed', {
         detail: item2,
       });
     });
@@ -1332,7 +1343,7 @@ describe('Tree', () => {
       await elementUpdated(tree);
 
       TreeTestFunctions.setFocusAndTriggerKeydown(item1, tree, 'ArrowLeft');
-      await waitUntil(() => eventSpy.calledWith('igcItemExpanded'));
+      await waitUntil(() => eventMatch(spy, 'igcItemExpanded'));
 
       expect(item1.expanded).to.be.true;
 
@@ -1340,9 +1351,9 @@ describe('Tree', () => {
         detail: item1,
         cancelable: true,
       };
-      expect(eventSpy.callCount).to.equal(2);
-      expect(eventSpy.firstCall).calledWith('igcItemExpanding', expandingArgs);
-      expect(eventSpy.secondCall).calledWith('igcItemExpanded', {
+      expect(spy).toHaveBeenCalledTimes(2);
+      expect(spy).toHaveBeenNthCalledWith(1, 'igcItemExpanding', expandingArgs);
+      expect(spy).toHaveBeenNthCalledWith(2, 'igcItemExpanded', {
         detail: item1,
       });
     });

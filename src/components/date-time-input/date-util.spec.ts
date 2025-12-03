@@ -1,5 +1,4 @@
-import { expect } from '@open-wc/testing';
-
+import { describe, expect, it } from 'vitest';
 import { DateParts, DateTimeUtil } from './date-util.js';
 
 describe('Date Util', () => {

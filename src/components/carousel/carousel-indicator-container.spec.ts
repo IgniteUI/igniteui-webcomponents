@@ -1,7 +1,7 @@
-import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
-
+import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { tabKey } from '../common/controllers/key-bindings.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
+import { elementUpdated, fixture, html } from '../common/helpers.spec.js';
 import { first } from '../common/util.js';
 import {
   simulateClick,
@@ -13,7 +13,7 @@ import IgcCarouselIndicatorComponent from './carousel-indicator.js';
 import IgcCarouselIndicatorContainerComponent from './carousel-indicator-container.js';
 
 describe('Carousel Indicator Container', () => {
-  before(() => {
+  beforeAll(() => {
     defineComponents(
       IgcCarouselIndicatorContainerComponent,
       IgcCarouselIndicatorComponent

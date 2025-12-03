@@ -1,7 +1,14 @@
-import { elementUpdated, expect } from '@open-wc/testing';
-import { spy } from 'sinon';
-
-import { defineComponents } from '../../index.js';
+import {
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  type MockInstance,
+  vi,
+} from 'vitest';
+import { defineComponents } from '../common/definitions/defineComponents.js';
+import { elementUpdated } from '../common/helpers.spec.js';
 import IgcStepComponent from './step.js';
 import IgcStepperComponent from './stepper.js';
 import {
@@ -14,12 +21,12 @@ import {
 } from './stepper-utils.spec.js';
 
 describe('Stepper', () => {
-  before(() => {
+  beforeAll(() => {
     defineComponents(IgcStepperComponent);
   });
 
   let stepper: IgcStepperComponent;
-  let eventSpy: any;
+  let spy: MockInstance;
 
   describe('Basic', async () => {
     beforeEach(async () => {
@@ -185,7 +192,7 @@ describe('Stepper', () => {
     });
 
     it('Should emit ing and ed events when a step is activated through UI', async () => {
-      eventSpy = spy(stepper, 'emitEvent');
+      spy = vi.spyOn(stepper, 'emitEvent');
       await elementUpdated(stepper);
 
       const argsIng = {
@@ -210,13 +217,13 @@ describe('Stepper', () => {
       stepHeader?.dispatchEvent(new MouseEvent('click'));
       await elementUpdated(stepper);
 
-      expect(eventSpy.callCount).to.equal(2);
-      expect(eventSpy.firstCall).calledWith('igcActiveStepChanging', argsIng);
-      expect(eventSpy.secondCall).calledWith('igcActiveStepChanged', argsEd);
+      expect(spy).toHaveBeenCalledTimes(2);
+      expect(spy).toHaveBeenNthCalledWith(1, 'igcActiveStepChanging', argsIng);
+      expect(spy).toHaveBeenNthCalledWith(2, 'igcActiveStepChanged', argsEd);
     });
 
     it('Should not emit events when a step is activated through API', async () => {
-      eventSpy = spy(stepper, 'emitEvent');
+      spy = vi.spyOn(stepper, 'emitEvent');
       await elementUpdated(stepper);
 
       expect(stepper.steps[0].active).to.be.true;
@@ -225,19 +232,19 @@ describe('Stepper', () => {
       await elementUpdated(stepper);
 
       expect(stepper.steps[1].active).to.be.true;
-      expect(eventSpy.callCount).to.equal(0);
+      expect(spy).toHaveBeenCalledTimes(0);
 
       stepper.prev();
       await elementUpdated(stepper);
 
       expect(stepper.steps[0].active).to.be.true;
-      expect(eventSpy.callCount).to.equal(0);
+      expect(spy).toHaveBeenCalledTimes(0);
 
       stepper.navigateTo(2);
       await elementUpdated(stepper);
 
       expect(stepper.steps[2].active).to.be.true;
-      expect(eventSpy.callCount).to.equal(0);
+      expect(spy).toHaveBeenCalledTimes(0);
     });
 
     it('Should be able to cancel the igcActiveStepChanging event', async () => {
@@ -1028,7 +1035,7 @@ describe('Stepper', () => {
   describe('Keyboard navigation', async () => {
     beforeEach(async () => {
       stepper = await StepperTestFunctions.createStepperElement(simpleStepper);
-      eventSpy = spy(stepper, 'emitEvent');
+      spy = vi.spyOn(stepper, 'emitEvent');
     });
 
     it('Should navigate to the first/last step on Home/End key press', async () => {
@@ -1404,7 +1411,7 @@ describe('Stepper', () => {
   describe('Aria', async () => {
     beforeEach(async () => {
       stepper = await StepperTestFunctions.createStepperElement(simpleStepper);
-      eventSpy = spy(stepper, 'emitEvent');
+      spy = vi.spyOn(stepper, 'emitEvent');
     });
 
     it('Should render proper role and orientation attributes for the stepper', async () => {

@@ -1,14 +1,13 @@
+import type { TemplateResult } from 'lit';
+import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import { configureTheme } from '../../theming/config.js';
+import { defineComponents } from '../common/definitions/defineComponents.js';
 import {
   elementUpdated,
-  expect,
   fixture,
   html,
   nextFrame,
-} from '@open-wc/testing';
-import type { TemplateResult } from 'lit';
-import { spy } from 'sinon';
-import { configureTheme } from '../../theming/config.js';
-import { defineComponents } from '../common/definitions/defineComponents.js';
+} from '../common/helpers.spec.js';
 import {
   createFormAssociatedTestBed,
   isFocused,
@@ -21,7 +20,7 @@ import {
 import IgcTextareaComponent from './textarea.js';
 
 describe('Textarea component', () => {
-  before(() => {
+  beforeAll(() => {
     defineComponents(IgcTextareaComponent);
   });
 
@@ -172,22 +171,24 @@ describe('Textarea component', () => {
     });
 
     it('igcInput', async () => {
-      const eventSpy = spy(element, 'emitEvent');
+      const spy = vi.spyOn(element, 'emitEvent');
 
       simulateInput(textArea, { value: '123' });
       await elementUpdated(element);
 
-      expect(eventSpy).calledOnceWithExactly('igcInput', { detail: '123' });
+      expect(spy).toHaveBeenCalledExactlyOnceWith('igcInput', {
+        detail: '123',
+      });
       expect(element.value).to.equal(textArea.value);
     });
 
     it('igcChange', async () => {
-      const eventSpy = spy(element, 'emitEvent');
+      const spy = vi.spyOn(element, 'emitEvent');
 
       textArea.value = '20230317';
       textArea.dispatchEvent(new Event('change'));
 
-      expect(eventSpy).calledOnceWithExactly('igcChange', {
+      expect(spy).toHaveBeenCalledExactlyOnceWith('igcChange', {
         detail: '20230317',
       });
       expect(element.value).to.equal(textArea.value);

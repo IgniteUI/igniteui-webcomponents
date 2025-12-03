@@ -1,6 +1,6 @@
-import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
-import { spy } from 'sinon';
+import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { defineComponents } from '../common/definitions/defineComponents.js';
+import { elementUpdated, fixture, html } from '../common/helpers.spec.js';
 import {
   createFormAssociatedTestBed,
   isFocused,
@@ -8,7 +8,7 @@ import {
 import IgcSwitchComponent from './switch.js';
 
 describe('Switch', () => {
-  before(() => {
+  beforeAll(() => {
     defineComponents(IgcSwitchComponent);
   });
 
@@ -133,11 +133,11 @@ describe('Switch', () => {
     });
 
     it('should emit igcChange event when the switch checked state changes', async () => {
-      const eventSpy = spy(element, 'emitEvent');
+      const spy = vi.spyOn(element, 'emitEvent');
       element.click();
 
       await elementUpdated(element);
-      expect(eventSpy).calledWithExactly('igcChange', {
+      expect(spy).toHaveBeenCalledWith('igcChange', {
         detail: { checked: true, value: undefined },
       });
     });

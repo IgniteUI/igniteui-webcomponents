@@ -1,15 +1,14 @@
-import {
-  elementUpdated,
-  expect,
-  fixture,
-  html,
-  nextFrame,
-} from '@open-wc/testing';
 import { range } from 'lit/directives/range.js';
-import { restore, spy, stub } from 'sinon';
+import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import IgcIconButtonComponent from '../button/icon-button.js';
 import { escapeKey } from '../common/controllers/key-bindings.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
+import {
+  elementUpdated,
+  fixture,
+  html,
+  nextFrame,
+} from '../common/helpers.spec.js';
 import { getCenterPoint } from '../common/util.js';
 import {
   simulateClick,
@@ -23,7 +22,7 @@ import IgcTileComponent from './tile.js';
 import IgcTileManagerComponent from './tile-manager.js';
 
 describe('Tile drag and drop', () => {
-  before(() => {
+  beforeAll(() => {
     defineComponents(IgcTileManagerComponent);
   });
 
@@ -79,6 +78,10 @@ describe('Tile drag and drop', () => {
   }
 
   async function dragAndDrop(tile: IgcTileComponent, target: IgcTileComponent) {
+    // Ensure target is visible in viewport for elementsFromPoint to work
+    target.scrollIntoView({ block: 'center' });
+    await nextFrame();
+
     const { x, y } = getCenterPoint(target);
 
     simulatePointerDown(tile);
@@ -116,11 +119,11 @@ describe('Tile drag and drop', () => {
       const draggedTile = getTile(0);
       const dropTarget = getTile(1);
 
-      const eventSpy = spy(draggedTile, 'emitEvent');
+      const spy = vi.spyOn(draggedTile, 'emitEvent');
 
       await dragAndDrop(draggedTile, dropTarget);
 
-      expect(eventSpy).not.called;
+      expect(spy).not.toHaveBeenCalled();
       expect(draggedTile.position).to.equal(0);
       expect(dropTarget.position).to.equal(1);
     });
@@ -158,12 +161,12 @@ describe('Tile drag and drop', () => {
 
     it('should correctly fire `igcTileDragStart` event', async () => {
       const tile = getTile(0);
-      const eventSpy = spy(tile, 'emitEvent');
+      const spy = vi.spyOn(tile, 'emitEvent');
 
       simulatePointerDown(tile);
       await elementUpdated(tile);
 
-      expect(eventSpy).calledOnceWithExactly('igcTileDragStart', {
+      expect(spy).toHaveBeenCalledWith('igcTileDragStart', {
         detail: tile,
         cancelable: true,
       });
@@ -171,7 +174,7 @@ describe('Tile drag and drop', () => {
 
     it('should stop drag operation when `igcTileDragStart` is prevented', async () => {
       const [tile, target] = [getTile(0), getTile(4)];
-      const eventSpy = spy(tile, 'emitEvent');
+      const spy = vi.spyOn(tile, 'emitEvent');
 
       tile.addEventListener('igcTileDragStart', (event) => {
         event.preventDefault();
@@ -179,19 +182,22 @@ describe('Tile drag and drop', () => {
 
       await dragAndDrop(tile, target);
 
-      expect(eventSpy).calledOnceWith('igcTileDragStart');
-      expect(eventSpy).not.calledWith('igcTileDragEnd');
-      expect(eventSpy.callCount).to.equal(1);
+      expect(spy).toHaveBeenCalledWith('igcTileDragStart', {
+        detail: tile,
+        cancelable: true,
+      });
+      expect(spy).not.toHaveBeenCalledWith('igcTileDragEnd');
+      expect(spy).toHaveBeenCalledTimes(1);
     });
 
     it('should correctly fire `igcTileDragEnd` event', async () => {
       const [tile, target] = [getTile(0), getTile(4)];
-      const eventSpy = spy(tile, 'emitEvent');
+      const spy = vi.spyOn(tile, 'emitEvent');
 
       await dragAndDrop(tile, target);
 
-      expect(eventSpy).calledTwice;
-      expect(eventSpy).calledWith('igcTileDragEnd', {
+      expect(spy).toHaveBeenCalledTimes(2);
+      expect(spy).toHaveBeenCalledWith('igcTileDragEnd', {
         detail: tile,
       });
     });
@@ -199,23 +205,34 @@ describe('Tile drag and drop', () => {
     it('should cancel dragging with Escape', async () => {
       const draggedTile = getTile(0);
       const dropTarget = getTile(4);
-      const eventSpy = spy(draggedTile, 'emitEvent');
+      const spy = vi.spyOn(draggedTile, 'emitEvent');
+
+      // Scroll the target into view before getting coordinates
+      dropTarget.scrollIntoView({ block: 'center' });
+      await nextFrame();
+
       const { x, y } = getCenterPoint(dropTarget);
 
       expect(draggedTile.position).to.equal(0);
       expect(dropTarget.position).to.equal(4);
 
       simulatePointerDown(draggedTile);
-      simulateTileDragOver(draggedTile, { x, y });
+      await elementUpdated(draggedTile);
 
+      simulateTileDragOver(draggedTile, { x, y });
+      await elementUpdated(tileManager);
       await viewTransitionComplete();
+
       expect(draggedTile.position).to.equal(4);
       expect(dropTarget.position).to.equal(0);
 
       simulateKeyboard(tileManager, escapeKey);
+      await elementUpdated(tileManager);
       await viewTransitionComplete();
 
-      expect(eventSpy).calledWith('igcTileDragCancel');
+      expect(spy).toHaveBeenCalledWith('igcTileDragCancel', {
+        detail: draggedTile,
+      });
 
       expect(draggedTile.position).to.equal(0);
       expect(dropTarget.position).to.equal(4);
@@ -272,6 +289,10 @@ describe('Tile drag and drop', () => {
       dropTarget.rowSpan = 3;
       dropTarget.colSpan = 3;
       await elementUpdated(tileManager);
+
+      // Ensure target is visible in viewport for elementsFromPoint to work
+      dropTarget.scrollIntoView({ block: 'center' });
+      await nextFrame();
 
       const { x, y } = getCenterPoint(dropTarget);
 
@@ -350,6 +371,9 @@ describe('Tile drag and drop', () => {
       const draggedTile = getTile(0);
       const dropTarget = getTile(1);
 
+      // Ensure enough columns for the explicit positioning
+      tileManager.columnCount = 4;
+
       draggedTile.colStart = 2;
       draggedTile.rowStart = 2;
 
@@ -399,7 +423,7 @@ describe('Tile drag and drop', () => {
     it('should rearrange tiles when the tile is dropped', async () => {
       const draggedTile = getTile(3);
       const dropTarget = getTile(1);
-      const eventSpy = spy(draggedTile, 'emitEvent');
+      const spy = vi.spyOn(draggedTile, 'emitEvent');
 
       await dragAndDropFromHeader(draggedTile, dropTarget);
 
@@ -411,7 +435,7 @@ describe('Tile drag and drop', () => {
         'tile4',
       ];
 
-      expect(eventSpy).calledTwice;
+      expect(spy).toHaveBeenCalledTimes(2);
       tileManager.tiles.forEach((tile, index) => {
         expect(tile.id).to.equal(expectedIdsAfterDrag[index]);
       });
@@ -422,7 +446,7 @@ describe('Tile drag and drop', () => {
     it('should not start dragging if pointer is not over the header', async () => {
       const draggedTile = getTile(0);
       const dropTarget = getTile(1);
-      const eventSpy = spy(draggedTile, 'emitEvent');
+      const spy = vi.spyOn(draggedTile, 'emitEvent');
 
       const contentContainer = getTileContentContainer(draggedTile);
       const { x, y } = getCenterPoint(dropTarget);
@@ -435,7 +459,7 @@ describe('Tile drag and drop', () => {
       simulateLostPointerCapture(draggedTile);
       await elementUpdated(tileManager);
 
-      expect(eventSpy).not.called;
+      expect(spy).not.toHaveBeenCalled();
       expect(draggedTile.position).to.equal(0);
       expect(dropTarget.position).to.equal(1);
     });
@@ -462,14 +486,14 @@ describe('Tile drag and drop', () => {
     it('should disable drag and drop when tile is maximized', async () => {
       const draggedTile = getTile(0);
       const dropTarget = getTile(1);
-      const eventSpy = spy(draggedTile, 'emitEvent');
+      const spy = vi.spyOn(draggedTile, 'emitEvent');
 
       draggedTile.maximized = true;
       await elementUpdated(tileManager);
 
       await dragAndDrop(draggedTile, dropTarget);
 
-      expect(eventSpy).not.called;
+      expect(spy).not.toHaveBeenCalled();
       expect(draggedTile.position).to.equal(0);
       expect(dropTarget.position).to.equal(1);
     });
@@ -477,13 +501,13 @@ describe('Tile drag and drop', () => {
     it('should disable drag and drop when tile is in fullscreen mode', async () => {
       const draggedTile = getTile(0);
       const dropTarget = getTile(1);
-      const eventSpy = spy(draggedTile, 'emitEvent');
+      const spy = vi.spyOn(draggedTile, 'emitEvent');
 
       const buttonFullscreen = draggedTile.renderRoot.querySelector(
         '[name="fullscreen"]'
       )!;
 
-      draggedTile.requestFullscreen = stub().callsFake(() => {
+      draggedTile.requestFullscreen = vi.fn().mockImplementation(() => {
         Object.defineProperty(document, 'fullscreenElement', {
           value: draggedTile,
           configurable: true,
@@ -498,8 +522,8 @@ describe('Tile drag and drop', () => {
 
       await dragAndDrop(draggedTile, dropTarget);
 
-      expect(eventSpy).not.calledWith('igcTileDragStart');
-      expect(eventSpy).not.calledWith('igcTileDragEnd');
+      expect(spy).not.toHaveBeenCalledWith('igcTileDragStart');
+      expect(spy).not.toHaveBeenCalledWith('igcTileDragEnd');
 
       const expectedIdsAfterDrag = [
         'tile0',
@@ -519,21 +543,21 @@ describe('Tile drag and drop', () => {
         configurable: true,
       });
 
-      restore();
+      vi.restoreAllMocks();
     });
 
     it('should not start a drag operation when interacting with the default tile actions in `tile-header` drag mode', async () => {
       tileManager.dragMode = 'tile-header';
       const tile = getTile(0);
       const [maximize, _] = getActionButtons(tile);
-      const eventSpy = spy(tile, 'emitEvent');
+      const spy = vi.spyOn(tile, 'emitEvent');
 
       // Wait for maximized transition trigger from UI
       maximize.click();
       await viewTransitionComplete();
 
       expect(tile.maximized).to.be.true;
-      expect(eventSpy).not.calledWith('igcTileDragStart');
+      expect(spy).not.toHaveBeenCalledWith('igcTileDragStart');
 
       // Wait for maximized transition trigger from UI
       maximize.click();
@@ -546,14 +570,14 @@ describe('Tile drag and drop', () => {
       tileManager.dragMode = 'tile';
       const tile = getTile(0);
       const [maximize, _] = getActionButtons(tile);
-      const eventSpy = spy(tile, 'emitEvent');
+      const spy = vi.spyOn(tile, 'emitEvent');
 
       // Wait for maximized transition trigger from UI
       maximize.click();
       await viewTransitionComplete();
 
       expect(tile.maximized).to.be.true;
-      expect(eventSpy).not.calledWith('igcTileDragStart');
+      expect(spy).not.toHaveBeenCalledWith('igcTileDragStart');
 
       // Wait for maximized transition trigger from UI
       maximize.click();
@@ -564,7 +588,7 @@ describe('Tile drag and drop', () => {
 
     it('should not start a drag operation when interacting with the slotted tile actions in `tile-header` drag mode', async () => {
       const { tile, button } = createSlottedActionTile();
-      const eventSpy = spy(tile, 'emitEvent');
+      const spy = vi.spyOn(tile, 'emitEvent');
 
       tileManager.dragMode = 'tile-header';
       tileManager.append(tile);
@@ -573,12 +597,12 @@ describe('Tile drag and drop', () => {
       button.click();
       await elementUpdated(tile);
 
-      expect(eventSpy).not.calledWith('igcTileDragStart');
+      expect(spy).not.toHaveBeenCalledWith('igcTileDragStart');
     });
 
     it('should not start a drag operation when interacting with the slotted tile actions in `tile` drag mode', async () => {
       const { tile, button } = createSlottedActionTile();
-      const eventSpy = spy(tile, 'emitEvent');
+      const spy = vi.spyOn(tile, 'emitEvent');
 
       tileManager.dragMode = 'tile';
       tileManager.append(tile);
@@ -587,7 +611,7 @@ describe('Tile drag and drop', () => {
       button.click();
       await elementUpdated(tile);
 
-      expect(eventSpy).not.calledWith('igcTileDragStart');
+      expect(spy).not.toHaveBeenCalledWith('igcTileDragStart');
     });
   });
 });

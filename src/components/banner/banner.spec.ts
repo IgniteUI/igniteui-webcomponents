@@ -1,19 +1,17 @@
+import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import { defineComponents } from '../common/definitions/defineComponents.js';
 import {
   elementUpdated,
-  expect,
   fixture,
   html,
   nextFrame,
-} from '@open-wc/testing';
-import { spy } from 'sinon';
-
-import { defineComponents } from '../common/definitions/defineComponents.js';
+} from '../common/helpers.spec.js';
 import { finishAnimationsFor, simulateClick } from '../common/utils.spec.js';
 import IgcIconComponent from '../icon/icon.js';
 import IgcBannerComponent from './banner.js';
 
 describe('Banner', () => {
-  before(() => {
+  beforeAll(() => {
     defineComponents(IgcBannerComponent, IgcIconComponent);
   });
 
@@ -246,7 +244,7 @@ describe('Banner', () => {
     });
 
     it('should emit correct event sequence for the default action button', async () => {
-      const eventSpy = spy(banner, 'emitEvent');
+      const spy = vi.spyOn(banner, 'emitEvent');
       const button = banner.renderRoot.querySelector('igc-button')!;
 
       expect(banner.open).to.be.false;
@@ -256,19 +254,19 @@ describe('Banner', () => {
 
       simulateClick(button);
 
-      expect(eventSpy.callCount).to.equal(1);
-      expect(eventSpy).calledWith('igcClosing', { cancelable: true });
+      expect(spy).toHaveBeenCalledTimes(1);
+      expect(spy).toHaveBeenCalledWith('igcClosing', { cancelable: true });
 
-      eventSpy.resetHistory();
+      spy.mockClear();
       await elementUpdated(banner);
       await clickHideComplete();
 
-      expect(eventSpy).calledWith('igcClosed');
+      expect(spy).toHaveBeenCalledWith('igcClosed');
       expect(banner.open).to.be.false;
     });
 
     it('can cancel `igcClosing` event', async () => {
-      const eventSpy = spy(banner, 'emitEvent');
+      const spy = vi.spyOn(banner, 'emitEvent');
       const button = banner.renderRoot.querySelector('igc-button')!;
 
       banner.addEventListener('igcClosing', (event) => {
@@ -282,8 +280,8 @@ describe('Banner', () => {
       await elementUpdated(banner);
       await clickHideComplete();
 
-      expect(eventSpy).calledWith('igcClosing');
-      expect(eventSpy).not.calledWith('igcClosed');
+      expect(spy).toHaveBeenCalledWith('igcClosing', { cancelable: true });
+      expect(spy).not.toHaveBeenCalledWith('igcClosed');
       expect(banner.open).to.be.true;
     });
   });

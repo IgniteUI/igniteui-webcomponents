@@ -1,5 +1,4 @@
-import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
-import { spy } from 'sinon';
+import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { CalendarDay, toCalendarDay } from '../calendar/model.js';
 import {
   altKey,
@@ -10,8 +9,10 @@ import {
   ctrlKey,
 } from '../common/controllers/key-bindings.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
+import { elementUpdated, fixture, html } from '../common/helpers.spec.js';
 import {
   createFormAssociatedTestBed,
+  expectCalledWith,
   isFocused,
   simulateInput,
   simulateKeyboard,
@@ -27,7 +28,7 @@ import IgcDateTimeInputComponent from './date-time-input.js';
 import { DatePart, type DatePartDeltas, DateTimeUtil } from './date-util.js';
 
 describe('Date Time Input component', () => {
-  before(() => {
+  beforeAll(() => {
     defineComponents(IgcDateTimeInputComponent);
   });
 
@@ -188,7 +189,7 @@ describe('Date Time Input component', () => {
     });
 
     it('should emit igcChange on blur after an incomplete mask has been parsed - issue #1695', async () => {
-      const eventSpy = spy(el, 'emitEvent');
+      const spy = vi.spyOn(el, 'emitEvent');
       el.focus();
       await elementUpdated(el);
 
@@ -201,7 +202,7 @@ describe('Date Time Input component', () => {
       el.blur();
       await elementUpdated(el);
 
-      expect(eventSpy).calledWith('igcChange');
+      expectCalledWith(spy, 'igcChange');
       expect(input.value).to.deep.equal('1/1/2000');
     });
 
@@ -568,17 +569,17 @@ describe('Date Time Input component', () => {
       el.focus();
       await elementUpdated(el);
 
-      const eventSpy = spy(el, 'emitEvent');
+      const spy = vi.spyOn(el, 'emitEvent');
 
       simulateKeyboard(input, [altKey, arrowUp]);
       await elementUpdated(el);
 
-      expect(eventSpy).not.to.have.been.called;
+      expect(spy).not.toHaveBeenCalled();
 
       simulateKeyboard(input, [altKey, arrowDown]);
       await elementUpdated(el);
 
-      expect(eventSpy).not.to.have.been.called;
+      expect(spy).not.toHaveBeenCalled();
     });
 
     it('Alt + ArrowUp/Down is a no-op', async () => {
@@ -587,22 +588,21 @@ describe('Date Time Input component', () => {
       el.focus();
       await elementUpdated(el);
 
-      const eventSpy = spy(el, 'emitEvent');
+      const spy = vi.spyOn(el, 'emitEvent');
 
       simulateKeyboard(input, [altKey, arrowUp]);
       await elementUpdated(el);
 
-      expect(eventSpy).not.to.have.been.called;
+      expect(spy).not.toHaveBeenCalled();
 
       simulateKeyboard(input, [altKey, arrowDown]);
       await elementUpdated(el);
 
-      expect(eventSpy).not.to.have.been.called;
+      expect(spy).not.toHaveBeenCalled();
     });
 
     it('should not emit change event when readonly', async () => {
-      const eventSpy = spy(el, 'emitEvent');
-
+      const spy = vi.spyOn(el, 'emitEvent');
       el.value = new Date(2023, 5, 1);
       el.readOnly = true;
       el.focus();
@@ -611,7 +611,7 @@ describe('Date Time Input component', () => {
       el.blur();
       await elementUpdated(el);
 
-      expect(eventSpy.getCalls()).empty;
+      expect(spy).not.toHaveBeenCalled();
     });
 
     it('should not move input selection (caret) from a focused part when stepUp/stepDown are invoked', async () => {
@@ -890,7 +890,7 @@ describe('Date Time Input component', () => {
     });
 
     it('should emit events correctly', async () => {
-      const eventSpy = spy(el, 'emitEvent');
+      const spy = vi.spyOn(el, 'emitEvent');
 
       el.focus();
       await elementUpdated(el);
@@ -899,24 +899,24 @@ describe('Date Time Input component', () => {
       simulateKeyboard(input, arrowUp);
       await elementUpdated(el);
 
-      expect(eventSpy).calledWith('igcInput');
-      eventSpy.resetHistory();
+      expectCalledWith(spy, 'igcInput');
+      spy.mockClear();
 
       simulateKeyboard(input, arrowDown);
       await elementUpdated(el);
 
-      expect(eventSpy).calledWith('igcInput');
-      eventSpy.resetHistory();
+      expectCalledWith(spy, 'igcInput');
+      spy.mockClear();
 
       simulateWheel(input, { deltaY: -125 });
       await elementUpdated(el);
-      expect(eventSpy).calledWith('igcInput');
-      eventSpy.resetHistory();
+      expectCalledWith(spy, 'igcInput');
+      spy.mockClear();
 
       el.blur();
       await elementUpdated(el);
       expect(isFocused(el)).to.be.false;
-      expect(eventSpy).calledWith('igcChange');
+      expectCalledWith(spy, 'igcChange');
 
       el.clear();
       await elementUpdated(el);
@@ -930,7 +930,7 @@ describe('Date Time Input component', () => {
       el.blur();
       await elementUpdated(el);
       expect(isFocused(el)).to.be.false;
-      expect(eventSpy).calledWith('igcChange');
+      expectCalledWith(spy, 'igcChange');
     });
   });
 

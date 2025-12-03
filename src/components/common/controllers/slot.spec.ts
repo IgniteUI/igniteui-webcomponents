@@ -1,12 +1,12 @@
+import { LitElement } from 'lit';
+import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import {
   defineCE,
   elementUpdated,
-  expect,
   fixture,
   html,
   unsafeStatic,
-} from '@open-wc/testing';
-import { LitElement } from 'lit';
+} from '../helpers.spec.js';
 import { first, last } from '../util.js';
 import {
   addSlotController,
@@ -27,7 +27,7 @@ describe('Slots controller', () => {
   };
   let slots: TestSlotController;
 
-  before(() => {
+  beforeAll(() => {
     tag = defineCE(
       class extends LitElement {
         public readonly slotsCallbackResults: SlotChangeCallbackParameters<
@@ -162,11 +162,9 @@ describe('Slots controller', () => {
 
   describe('Slot onChange callback', () => {
     beforeEach(async () => {
-      beforeEach(async () => {
-        const tagName = unsafeStatic(tag);
-        instance = await fixture(html`<${tagName}></${tagName}`);
-        slots = instance.slotController;
-      });
+      const tagName = unsafeStatic(tag);
+      instance = await fixture(html`<${tagName}></${tagName}`);
+      slots = instance.slotController;
     });
 
     it('should have an initial callback state invoked on first update', () => {

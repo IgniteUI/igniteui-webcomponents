@@ -1,13 +1,5 @@
-import {
-  elementUpdated,
-  expect,
-  fixture,
-  fixtureCleanup,
-  html,
-} from '@open-wc/testing';
-import { nothing } from 'lit';
-import { spy } from 'sinon';
-
+import { html, nothing } from 'lit';
+import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   arrowDown,
   arrowLeft,
@@ -17,6 +9,7 @@ import {
   homeKey,
 } from '../common/controllers/key-bindings.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
+import { cleanup, elementUpdated, fixture } from '../common/helpers.spec.js';
 import {
   createFormAssociatedTestBed,
   simulateClick,
@@ -27,7 +20,7 @@ import IgcRatingComponent from './rating.js';
 import IgcRatingSymbolComponent from './rating-symbol.js';
 
 describe('Rating component', () => {
-  before(() => {
+  beforeAll(() => {
     defineComponents(IgcRatingComponent);
   });
 
@@ -219,7 +212,7 @@ describe('Rating component', () => {
         expect(symbol.getClientRects()).to.not.be.empty;
       });
 
-      fixtureCleanup();
+      cleanup();
       rating = await fixture<IgcRatingComponent>(renderRating(true));
 
       expect(getProjectedSymbols(rating)).to.have.lengthOf(3);
@@ -284,17 +277,17 @@ describe('Rating component', () => {
     });
 
     it('correctly updates value on click', async () => {
-      const eventSpy = spy(el, 'emitEvent');
+      const spy = vi.spyOn(el, 'emitEvent');
       const symbol = getRatingSymbols(el).item(2);
       const { x, width } = getBoundingRect(symbol);
       simulateClick(symbol, { clientX: x + width / 2 });
 
-      expect(eventSpy).calledOnceWithExactly('igcChange', { detail: 3 });
+      expect(spy).toHaveBeenCalledWith('igcChange', { detail: 3 });
       expect(el.value).to.equal(3);
     });
 
     it('correctly updates value on click [precision != 1]', async () => {
-      const eventSpy = spy(el, 'emitEvent');
+      const spy = vi.spyOn(el, 'emitEvent');
       el.step = 0.5;
       await elementUpdated(el);
 
@@ -302,12 +295,12 @@ describe('Rating component', () => {
       const { x, width } = getBoundingRect(symbol);
       simulateClick(symbol, { clientX: x + width / 4 });
 
-      expect(eventSpy).calledOnceWithExactly('igcChange', { detail: 2.5 });
+      expect(spy).toHaveBeenCalledWith('igcChange', { detail: 2.5 });
       expect(el.value).to.equal(2.5);
     });
 
     it('rounds correctly to the next step, when the step is different than 1', async () => {
-      const eventSpy = spy(el, 'emitEvent');
+      const spy = vi.spyOn(el, 'emitEvent');
       el.step = 0.4;
       await elementUpdated(el);
 
@@ -315,24 +308,24 @@ describe('Rating component', () => {
       const { x, width } = getBoundingRect(symbol);
       simulateClick(symbol, { clientX: x + width * 0.55 }); // Click 55% across the width of the symbol
 
-      expect(eventSpy).calledOnceWithExactly('igcChange', { detail: 0.8 });
+      expect(spy).toHaveBeenCalledWith('igcChange', { detail: 0.8 });
       expect(el.value).to.equal(0.8);
     });
 
     it('issue-1548 - Inaccurate value calculation when precision == 1', async () => {
-      const eventSpy = spy(el, 'emitEvent');
+      const spy = vi.spyOn(el, 'emitEvent');
 
       const symbol = getRatingSymbols(el).item(2);
       const { x, width } = getBoundingRect(symbol);
       // Simulate offset click when precision == 1
       simulateClick(symbol, { clientX: x + width / 4 });
 
-      expect(eventSpy).calledOnceWithExactly('igcChange', { detail: 3 });
+      expect(spy).toHaveBeenCalledWith('igcChange', { detail: 3 });
       expect(el.value).to.equal(3);
     });
 
     it('correctly reflects hover state', async () => {
-      const eventSpy = spy(el, 'emitEvent');
+      const spy = vi.spyOn(el, 'emitEvent');
       el.value = 2;
       el.hoverPreview = true;
       await elementUpdated(el);
@@ -340,12 +333,12 @@ describe('Rating component', () => {
       const { x, width } = getBoundingRect(symbol);
       simulatePointerMove(symbol, { clientX: x + width / 2 });
 
-      expect(eventSpy).calledOnceWithExactly('igcHover', { detail: 3 });
+      expect(spy).toHaveBeenCalledWith('igcHover', { detail: 3 });
       expect(el.value).to.equal(2);
     });
 
     it('does not reset value if the same rating value is clicked with allow-reset = false', async () => {
-      const eventSpy = spy(el, 'emitEvent');
+      const spy = vi.spyOn(el, 'emitEvent');
       const symbol = getRatingSymbols(el).item(4);
       const { x, width } = getBoundingRect(symbol);
 
@@ -354,11 +347,11 @@ describe('Rating component', () => {
       simulateClick(symbol, { clientX: x + width / 2 });
 
       expect(el.value).to.equal(5);
-      expect(eventSpy).not.to.be.called;
+      expect(spy).not.toHaveBeenCalled();
     });
 
     it('correctly resets value if the same rating value is clicked with allow-reset = true', async () => {
-      const eventSpy = spy(el, 'emitEvent');
+      const spy = vi.spyOn(el, 'emitEvent');
       const symbol = getRatingSymbols(el).item(4);
       const { x, width } = getBoundingRect(symbol);
 
@@ -369,40 +362,40 @@ describe('Rating component', () => {
       simulateClick(symbol, { clientX: x + width / 2 });
 
       expect(el.value).to.equal(0);
-      expect(eventSpy).to.have.been.calledOnceWith('igcChange', { detail: 0 });
+      expect(spy).toHaveBeenCalledWith('igcChange', { detail: 0 });
     });
 
     it('does nothing on click if disabled', async () => {
-      const eventSpy = spy(el, 'emitEvent');
+      const spy = vi.spyOn(el, 'emitEvent');
       el.disabled = true;
       await elementUpdated(el);
 
       getRatingSymbols(el).item(3).click();
-      expect(eventSpy).to.not.called;
+      expect(spy).not.toHaveBeenCalled();
       expect(el.value).to.equal(0);
     });
 
     it('does nothing on click if readonly', async () => {
-      const eventSpy = spy(el, 'emitEvent');
+      const spy = vi.spyOn(el, 'emitEvent');
       el.readOnly = true;
       await elementUpdated(el);
 
       getRatingSymbols(el).item(3).click();
       await elementUpdated(el);
 
-      expect(eventSpy).to.not.be.called;
+      expect(spy).not.toHaveBeenCalled();
       expect(el.value).to.equal(0);
     });
 
     it('does nothing on keyboard interaction if readonly', async () => {
-      const eventSpy = spy(el, 'emitEvent');
+      const spy = vi.spyOn(el, 'emitEvent');
       el.readOnly = true;
       await elementUpdated(el);
 
       simulateKeyboard(el, arrowRight);
       await elementUpdated(el);
 
-      expect(eventSpy).to.not.be.called;
+      expect(spy).not.toHaveBeenCalled();
       expect(el.value).to.equal(0);
     });
 
@@ -477,13 +470,13 @@ describe('Rating component', () => {
     });
 
     it('should not emit a change event if the value is unchanged', async () => {
-      const eventSpy = spy(el, 'emitEvent');
+      const spy = vi.spyOn(el, 'emitEvent');
       el.value = 5;
 
       await elementUpdated(el);
 
       simulateKeyboard(el, arrowRight);
-      expect(eventSpy).to.not.be.calledOnce;
+      expect(spy).not.toHaveBeenCalled();
     });
 
     it('sets step to 1 if in single selection mode', async () => {

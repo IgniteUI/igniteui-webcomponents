@@ -1,12 +1,12 @@
-import { expect, fixture, html } from '@open-wc/testing';
 import type { TemplateResult } from 'lit';
-
+import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { defineComponents } from '../common/definitions/defineComponents.js';
+import { fixture, html } from '../common/helpers.spec.js';
 import IgcIconComponent from '../icon/icon.js';
 import IgcNavDrawerComponent from './nav-drawer.js';
 
 describe('Navigation Drawer', () => {
-  before(() => {
+  beforeAll(() => {
     defineComponents(IgcNavDrawerComponent, IgcIconComponent);
   });
 

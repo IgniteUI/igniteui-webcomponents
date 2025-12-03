@@ -1,14 +1,14 @@
-import { expect, fixture, html } from '@open-wc/testing';
-
+import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { defineComponents } from '../common/definitions/defineComponents.js';
+import { fixture, html } from '../common/helpers.spec.js';
 import IgcDividerComponent from './divider.js';
 
 describe('Divider', () => {
-  before(() => {
+  beforeAll(() => {
     defineComponents(IgcDividerComponent);
   });
 
-  const createDefaultDivider = () => html` <igc-divider></igc-divider> `;
+  const createDefaultDivider = () => html`<igc-divider></igc-divider>`;
 
   const createVerticalDashedDivider = () => html`
     <igc-divider vertical type="dashed"></igc-divider>

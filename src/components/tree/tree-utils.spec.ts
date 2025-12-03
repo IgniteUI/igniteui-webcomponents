@@ -1,4 +1,5 @@
-import { expect, fixture, html, unsafeStatic } from '@open-wc/testing';
+import { expect } from 'vitest';
+import { fixture, html, unsafeStatic } from '../common/helpers.spec.js';
 import type IgcTreeComponent from './tree.js';
 import type IgcTreeItemComponent from './tree-item.js';
 
