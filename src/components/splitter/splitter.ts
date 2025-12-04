@@ -75,6 +75,7 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   private _startSize = 'auto';
   private _endSize = 'auto';
   private _resizeState: SplitterResizeState | null = null;
+  private _baseResizeObserver?: ResizeObserver;
 
   private readonly _internals = addInternalsController(this, {
     initialARIA: {
@@ -262,6 +263,14 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
     }
   }
 
+  public override disconnectedCallback(): void {
+    super.disconnectedCallback();
+    if (this._baseResizeObserver) {
+      this._baseResizeObserver.disconnect();
+      this._baseResizeObserver = undefined;
+    }
+  }
+
   constructor() {
     super();
 
@@ -322,6 +331,10 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
 
   protected override firstUpdated() {
     this._initPanes();
+    this._baseResizeObserver = new ResizeObserver(() =>
+      this._onContainerResized()
+    );
+    this._baseResizeObserver.observe(this._base);
   }
 
   //#endregion
@@ -340,6 +353,27 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   //#endregion
 
   //#region Internal API
+
+  private _onContainerResized = () => {
+    window.setTimeout(() => {
+      const [startSize, endSize] = this._rectSize();
+      const total = this.getTotalSize();
+      if (
+        !this._isPercentageSize('end') &&
+        !this._isAutoSize('end') &&
+        startSize + endSize > total
+      ) {
+        this.endSize = `${total - startSize}px`;
+      }
+      if (
+        !this._isPercentageSize('start') &&
+        !this._isAutoSize('start') &&
+        startSize + endSize > total
+      ) {
+        this.startSize = `${total - endSize}px`;
+      }
+    }, 100);
+  };
 
   private _isPercentageSize(which: 'start' | 'end') {
     const targetSize = which === 'start' ? this._startSize : this._endSize;
@@ -566,17 +600,22 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
     const minProp = isHorizontal ? 'minWidth' : 'minHeight';
     const maxProp = isHorizontal ? 'maxWidth' : 'maxHeight';
 
-    const sizes = {
+    const startSizes = {
       [minProp]: this.startMinSize ?? 0,
       [maxProp]: this.startMaxSize ?? '100%',
     };
 
+    const endSizes = {
+      [minProp]: this.endMinSize ?? 0,
+      [maxProp]: this.endMaxSize ?? '100%',
+    };
+
     Object.assign(this._startPaneInternalStyles, {
-      ...sizes,
+      ...startSizes,
       flex: this._startFlex,
     });
     Object.assign(this._endPaneInternalStyles, {
-      ...sizes,
+      ...endSizes,
       flex: this._endFlex,
     });
     this.requestUpdate();
