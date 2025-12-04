@@ -1,12 +1,12 @@
+import { css, LitElement } from 'lit';
+import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import {
   defineCE,
   elementUpdated,
-  expect,
   fixture,
   html,
   unsafeStatic,
-} from '@open-wc/testing';
-import { css, LitElement } from 'lit';
+} from '../../common/helpers.spec.js';
 import { partMap } from '../part-map.js';
 import {
   simulateClick,
@@ -21,7 +21,7 @@ describe('Focus ring controller', () => {
   let tag: string;
   let instance: LitElement & { button: HTMLButtonElement };
 
-  before(() => {
+  beforeAll(() => {
     tag = defineCE(
       class extends LitElement {
         public static override styles = css`

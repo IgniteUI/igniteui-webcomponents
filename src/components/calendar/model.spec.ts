@@ -1,5 +1,4 @@
-import { expect } from '@open-wc/testing';
-
+import { describe, expect, it } from 'vitest';
 import { first, last } from '../common/util.js';
 import { calendarRange, isDateInRanges } from './helpers.js';
 import { CalendarDay } from './model.js';

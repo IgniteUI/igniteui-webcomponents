@@ -1,14 +1,14 @@
-import { expect, fixture, html } from '@open-wc/testing';
-
+import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import IgcButtonComponent from '../button/button.js';
 import IgcCalendarComponent from '../calendar/calendar.js';
 import type IgcDaysViewComponent from '../calendar/days-view/days-view.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
+import { fixture, html } from '../common/helpers.spec.js';
 import IgcInputComponent from '../input/input.js';
 import IgcFocusTrapComponent from './focus-trap.js';
 
 describe('Focus trap', () => {
-  before(() =>
+  beforeAll(() =>
     defineComponents(
       IgcFocusTrapComponent,
       IgcCalendarComponent,

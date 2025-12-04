@@ -1,19 +1,17 @@
+import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import IgcButtonComponent from '../button/button.js';
+import { defineComponents } from '../common/definitions/defineComponents.js';
 import {
   elementUpdated,
-  expect,
   fixture,
   html,
   nextFrame,
-} from '@open-wc/testing';
-import { type SinonFakeTimers, spy, useFakeTimers } from 'sinon';
-
-import IgcButtonComponent from '../button/button.js';
-import { defineComponents } from '../common/definitions/defineComponents.js';
+} from '../common/helpers.spec.js';
 import { finishAnimationsFor } from '../common/utils.spec.js';
 import IgcSnackbarComponent from './snackbar.js';
 
 describe('Snackbar', () => {
-  before(() => {
+  beforeAll(() => {
     defineComponents(IgcSnackbarComponent);
   });
 
@@ -21,7 +19,6 @@ describe('Snackbar', () => {
   const defaultContent = 'Hello world';
 
   let snackbar: IgcSnackbarComponent;
-  let clock: SinonFakeTimers;
 
   describe('DOM', () => {
     beforeEach(async () => {
@@ -110,14 +107,9 @@ describe('Snackbar', () => {
     };
 
     beforeEach(async () => {
-      clock = useFakeTimers({ toFake: ['setTimeout'] });
       snackbar = await fixture<IgcSnackbarComponent>(
         html`<igc-snackbar>${defaultContent}</igc-snackbar>`
       );
-    });
-
-    afterEach(() => {
-      clock.restore();
     });
 
     it('`open` property', async () => {
@@ -133,16 +125,17 @@ describe('Snackbar', () => {
     });
 
     it('`displayTime` property', async () => {
+      vi.useFakeTimers({ toFake: ['setTimeout'] });
       snackbar.displayTime = 400;
       await snackbar.show();
       checkOpenState(true);
 
-      await clock.tickAsync(399);
+      await vi.advanceTimersByTimeAsync(399);
       checkOpenState(true);
       expect(snackbar.open).to.be.true;
 
       // hide timer triggers after this tick
-      await clock.tickAsync(1);
+      await vi.advanceTimersByTimeAsync(1);
 
       // Stop running animations and repaint
       finishAnimationsFor(snackbar.shadowRoot!);
@@ -150,18 +143,23 @@ describe('Snackbar', () => {
 
       expect(snackbar.open).to.be.false;
       checkOpenState(false);
+
+      vi.useRealTimers();
     });
 
     it('`keepOpen` overrides `displayTime`', async () => {
+      vi.useFakeTimers({ toFake: ['setTimeout'] });
       snackbar.displayTime = 200;
       snackbar.keepOpen = true;
 
       await snackbar.show();
       checkOpenState(true);
 
-      await clock.tickAsync(400);
+      await vi.advanceTimersByTimeAsync(400);
       expect(snackbar.open).to.be.true;
       checkOpenState(true);
+
+      vi.useRealTimers();
     });
 
     it('`show()` and `hide()`', async () => {
@@ -209,10 +207,10 @@ describe('Snackbar', () => {
       snackbar.actionText = defaultActionText;
       await elementUpdated(snackbar);
 
-      const eventSpy = spy(snackbar, 'emitEvent');
+      const spy = vi.spyOn(snackbar, 'emitEvent');
 
       getDefaultActionButton().click();
-      expect(eventSpy).calledOnceWithExactly('igcAction');
+      expect(spy).toHaveBeenCalledExactlyOnceWith('igcAction');
     });
 
     it('emit `igcAction` with slotted content', async () => {
@@ -224,10 +222,10 @@ describe('Snackbar', () => {
       snackbar.appendChild(button);
       await elementUpdated(snackbar);
 
-      const eventSpy = spy(snackbar, 'emitEvent');
+      const spy = vi.spyOn(snackbar, 'emitEvent');
 
       button.click();
-      expect(eventSpy).calledOnceWithExactly('igcAction');
+      expect(spy).toHaveBeenCalledExactlyOnceWith('igcAction');
     });
   });
 });

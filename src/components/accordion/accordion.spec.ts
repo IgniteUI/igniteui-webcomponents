@@ -1,5 +1,4 @@
-import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
-
+import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import {
   altKey,
   arrowDown,
@@ -9,12 +8,13 @@ import {
   shiftKey,
 } from '../common/controllers/key-bindings.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
+import { elementUpdated, fixture, html } from '../common/helpers.spec.js';
 import { simulateClick, simulateKeyboard } from '../common/utils.spec.js';
 import IgcExpansionPanelComponent from '../expansion-panel/expansion-panel.js';
 import IgcAccordionComponent from './accordion.js';
 
 describe('Accordion', () => {
-  before(() => {
+  beforeAll(() => {
     defineComponents(IgcAccordionComponent);
   });
 

@@ -1,15 +1,14 @@
+import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { defineComponents, IgcIconButtonComponent } from '../../index.js';
 import {
   elementUpdated,
-  expect,
   fixture,
   html,
   unsafeStatic,
-} from '@open-wc/testing';
-
-import { defineComponents, IgcIconButtonComponent } from '../../index.js';
+} from '../common/helpers.spec.js';
 
 describe('IconButton component', () => {
-  before(() => {
+  beforeAll(() => {
     defineComponents(IgcIconButtonComponent);
   });
 

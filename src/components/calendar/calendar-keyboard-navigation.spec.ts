@@ -1,5 +1,4 @@
-import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
-
+import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import {
   arrowDown,
   arrowLeft,
@@ -14,6 +13,7 @@ import {
   spaceBar,
 } from '../common/controllers/key-bindings.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
+import { elementUpdated, fixture, html } from '../common/helpers.spec.js';
 import { asNumber, first } from '../common/util.js';
 import { simulateClick, simulateKeyboard } from '../common/utils.spec.js';
 import IgcCalendarComponent from './calendar.js';
@@ -26,7 +26,7 @@ import { DateRangeType } from './types.js';
 import type IgcYearsViewComponent from './years-view/years-view.js';
 
 describe('Calendar keyboard interaction', () => {
-  before(() => defineComponents(IgcCalendarComponent));
+  beforeAll(() => defineComponents(IgcCalendarComponent));
 
   let calendar: IgcCalendarComponent;
   const activeDate = new Date(2021, 6, 17);

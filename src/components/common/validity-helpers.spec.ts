@@ -1,6 +1,7 @@
-import { elementUpdated, expect } from '@open-wc/testing';
+import { expect } from 'vitest';
 import IgcValidationContainerComponent from '../validation-container/validation-container.js';
 import type { IgniteComponent } from './definitions/register.js';
+import { elementUpdated } from './helpers.spec.js';
 import type { Constructor } from './mixins/constructor.js';
 import type { IgcFormControl } from './mixins/forms/types.js';
 import { isEmpty, toKebabCase } from './util.js';

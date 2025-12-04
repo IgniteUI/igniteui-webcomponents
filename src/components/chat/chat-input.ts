@@ -98,7 +98,7 @@ export default class IgcChatInputComponent extends LitElement {
 
   private _userIsTyping = false;
   private _userLastTypeTime = Date.now();
-  private _typingTimeout = 0;
+  private _typingTimeout?: ReturnType<typeof setTimeout>;
 
   private readonly _adoptedStyles = addAdoptedStylesController(this);
 

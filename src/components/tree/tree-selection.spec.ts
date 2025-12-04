@@ -1,7 +1,15 @@
-import { elementUpdated, expect } from '@open-wc/testing';
-import { spy } from 'sinon';
-
-import { defineComponents, type IgcCheckboxComponent } from '../../index.js';
+import {
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  type MockInstance,
+  vi,
+} from 'vitest';
+import type IgcCheckboxComponent from '../checkbox/checkbox.js';
+import { defineComponents } from '../common/definitions/defineComponents.js';
+import { elementUpdated } from '../common/helpers.spec.js';
 import type { TreeSelectionEventInit } from './tree.common.js';
 import IgcTreeComponent from './tree.js';
 import type { IgcTreeSelectionService } from './tree.selection.js';
@@ -15,7 +23,7 @@ import {
 } from './tree-utils.spec.js';
 
 describe('Tree Selection', () => {
-  before(() => {
+  beforeAll(() => {
     defineComponents(IgcTreeItemComponent, IgcTreeComponent);
   });
 
@@ -176,14 +184,14 @@ describe('Tree Selection', () => {
 
   describe('Multiple', () => {
     let topLevelItems: IgcTreeItemComponent[];
-    let eventSpy: any;
+    let spy: MockInstance;
 
     beforeEach(async () => {
       tree = await TreeTestFunctions.createTreeElement(selectedItemsTree);
       treeSelectionService = tree.selectionService;
       initialSelection = tree.items.filter((item) => item.selected === true);
       topLevelItems = tree.items.filter((i) => i.level === 0);
-      eventSpy = spy(tree, 'emitEvent');
+      spy = vi.spyOn(tree, 'emitEvent');
     });
 
     it('Should be able to set item.selected correctly', async () => {
@@ -224,8 +232,8 @@ describe('Tree Selection', () => {
         },
         cancelable: true,
       };
-      expect(eventSpy).calledWith('igcSelection', args);
-      eventSpy.resetHistory();
+      expect(spy).toHaveBeenCalledWith('igcSelection', args);
+      spy.mockClear();
 
       const item12 = topLevelItems[0].getChildren()[1];
       TreeTestFunctions.verifyItemSelection(item12, false);
@@ -247,8 +255,8 @@ describe('Tree Selection', () => {
         },
         cancelable: true,
       };
-      expect(eventSpy).calledOnceWith('igcSelection', args);
-      eventSpy.resetHistory();
+      expect(spy).toHaveBeenCalledExactlyOnceWith('igcSelection', args);
+      spy.mockClear();
     });
 
     it('Should be able to prevent the igcSelection event.', async () => {
@@ -275,7 +283,7 @@ describe('Tree Selection', () => {
         cancelable: true,
       };
 
-      expect(eventSpy).calledOnceWith('igcSelection', args);
+      expect(spy).toHaveBeenCalledExactlyOnceWith('igcSelection', args);
       TreeTestFunctions.verifyItemSelection(item12, false);
 
       tree.items.forEach((item) => {
@@ -315,8 +323,8 @@ describe('Tree Selection', () => {
       await elementUpdated(tree);
 
       TreeTestFunctions.verifyItemSelection(topLevelItems[0], true);
-      expect(eventSpy).calledOnceWith('igcSelection', args);
-      eventSpy.resetHistory();
+      expect(spy).toHaveBeenCalledExactlyOnceWith('igcSelection', args);
+      spy.mockClear();
 
       const endOfSelectionRage = topLevelItems[1].getChildren()[1];
 
@@ -344,8 +352,8 @@ describe('Tree Selection', () => {
         }
       });
 
-      expect(eventSpy).calledOnceWith('igcSelection', args);
-      eventSpy.resetHistory();
+      expect(spy).toHaveBeenCalledExactlyOnceWith('igcSelection', args);
+      spy.mockClear();
 
       // Select the same range and verify no event is emitted
       selectionPart = expectedSelection[0].shadowRoot!.querySelector(
@@ -355,7 +363,7 @@ describe('Tree Selection', () => {
       cb?.dispatchEvent(new MouseEvent('click', { shiftKey: true }));
       await elementUpdated(tree);
 
-      expect(eventSpy).not.to.be.called;
+      expect(spy).not.toHaveBeenCalled();
     });
 
     it('Should select a single item when there are no selected items and selction is performed with Shift + click', async () => {
@@ -377,8 +385,8 @@ describe('Tree Selection', () => {
       await elementUpdated(tree);
 
       TreeTestFunctions.verifyItemSelection(topLevelItems[2], true);
-      expect(eventSpy).calledOnceWith('igcSelection', args);
-      eventSpy.resetHistory();
+      expect(spy).toHaveBeenCalledExactlyOnceWith('igcSelection', args);
+      spy.mockClear();
     });
   });
 
@@ -689,7 +697,7 @@ describe('Tree Selection', () => {
     });
 
     it('Should be able to prevent the igcSelection event', async () => {
-      const eventSpy = spy(tree, 'emitEvent');
+      const spy = vi.spyOn(tree, 'emitEvent');
 
       const item2Children = topLevelItems[1].getChildren();
       const item211 = item2Children[0].getChildren()[0];
@@ -714,7 +722,7 @@ describe('Tree Selection', () => {
         cancelable: true,
       };
 
-      expect(eventSpy).calledOnceWith('igcSelection', args);
+      expect(spy).toHaveBeenCalledExactlyOnceWith('igcSelection', args);
 
       tree.items.forEach((item) => {
         if (initialSelection.indexOf(item) === -1) {

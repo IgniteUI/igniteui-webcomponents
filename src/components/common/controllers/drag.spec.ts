@@ -1,13 +1,21 @@
+import { css, LitElement } from 'lit';
+import {
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  type MockInstance,
+  vi,
+} from 'vitest';
 import {
   defineCE,
   elementUpdated,
-  expect,
   fixture,
   html,
   unsafeStatic,
-} from '@open-wc/testing';
-import { css, LitElement } from 'lit';
-import { type SinonSpy, spy } from 'sinon';
+} from '../helpers.spec.js';
 import { getCenterPoint, last } from '../util.js';
 import {
   compareStyles,
@@ -27,7 +35,7 @@ describe('Drag controller', () => {
   let tag: string;
   let instance: DragElement;
 
-  before(() => {
+  beforeAll(() => {
     tag = defineCE(
       class extends LitElement {
         public static override styles = css`
@@ -48,7 +56,7 @@ describe('Drag controller', () => {
   });
 
   describe('Immediate mode - basic element dragging', () => {
-    const dragStart = spy();
+    const dragStart = vi.fn();
 
     beforeEach(async () => {
       const tagName = unsafeStatic(tag);
@@ -66,7 +74,7 @@ describe('Drag controller', () => {
     });
 
     afterEach(() => {
-      dragStart.resetHistory();
+      dragStart.mockClear();
     });
 
     it('should not start drag operation when disabled', async () => {
@@ -75,7 +83,7 @@ describe('Drag controller', () => {
       simulatePointerDown(instance);
       await elementUpdated(instance);
 
-      expect(dragStart.called).is.false;
+      expect(dragStart).not.toHaveBeenCalled();
     });
 
     it('should not start a drag operation on a non-primary button interaction', async () => {
@@ -84,18 +92,18 @@ describe('Drag controller', () => {
       simulatePointerDown(instance, { button: 1 });
       await elementUpdated(instance);
 
-      expect(dragStart.called).is.false;
+      expect(dragStart).not.toHaveBeenCalled();
     });
 
     it('should not start a drag operation when a skip callback returns true', async () => {
-      const skip = spy(() => true);
+      const skip = vi.fn(() => true);
       instance.controller.set({ skip, start: dragStart });
 
       simulatePointerDown(instance);
       await elementUpdated(instance);
 
-      expect(skip.called).is.true;
-      expect(dragStart.called).is.false;
+      expect(skip).toHaveBeenCalled();
+      expect(dragStart).not.toHaveBeenCalled();
     });
 
     it('should apply correct internal styles on drag operation', async () => {
@@ -109,25 +117,25 @@ describe('Drag controller', () => {
     });
 
     it('should not create a ghost element in "immediate" mode', async () => {
-      const ghost = spy();
+      const ghost = vi.fn();
       instance.controller.set({ start: dragStart, ghost });
 
       simulatePointerDown(instance);
       await elementUpdated(instance);
 
-      expect(dragStart.called).is.true;
-      expect(ghost.called).is.false;
+      expect(dragStart).toHaveBeenCalled();
+      expect(ghost).not.toHaveBeenCalled();
     });
 
     it('should not invoke the `layer` configuration callback in "immediate" mode', async () => {
-      const layer = spy();
+      const layer = vi.fn();
       instance.controller.set({ start: dragStart, layer });
 
       simulatePointerDown(instance);
       await elementUpdated(instance);
 
-      expect(dragStart.called).is.true;
-      expect(layer.called).is.false;
+      expect(dragStart).toHaveBeenCalled();
+      expect(layer).not.toHaveBeenCalled();
     });
 
     it('should invoke start callback on drag operation', async () => {
@@ -136,23 +144,23 @@ describe('Drag controller', () => {
       simulatePointerDown(instance);
       await elementUpdated(instance);
 
-      expect(dragStart.called).is.true;
-      expect(dragStart.callCount).to.equal(1);
+      expect(dragStart).toHaveBeenCalled();
+      expect(dragStart).toHaveBeenCalledTimes(1);
     });
 
     it('should not invoke move unless a start is invoked', async () => {
-      const dragMove = spy();
+      const dragMove = vi.fn();
       instance.controller.set({ start: dragStart, move: dragMove });
 
       simulatePointerMove(instance);
       await elementUpdated(instance);
 
-      expect(dragStart.called).is.false;
-      expect(dragMove.called).is.false;
+      expect(dragStart).not.toHaveBeenCalled();
+      expect(dragMove).not.toHaveBeenCalled();
     });
 
     it('should invoke move when moving the dragged element around the viewport', async () => {
-      const dragMove = spy();
+      const dragMove = vi.fn();
       instance.controller.set({ start: dragStart, move: dragMove });
 
       simulatePointerDown(instance);
@@ -164,55 +172,55 @@ describe('Drag controller', () => {
       );
       await elementUpdated(instance);
 
-      expect(dragStart.called).is.true;
-      expect(dragMove.called).is.true;
-      expect(dragMove.callCount).to.equal(10);
+      expect(dragStart).toHaveBeenCalled();
+      expect(dragMove).toHaveBeenCalled();
+      expect(dragMove).toHaveBeenCalledTimes(10);
     });
 
     it('should invoke end when releasing the dragged element', async () => {
-      const dragEnd = spy();
+      const dragEnd = vi.fn();
       instance.controller.set({ start: dragStart, end: dragEnd });
 
       simulatePointerDown(instance);
       simulateLostPointerCapture(instance);
       await elementUpdated(instance);
 
-      expect(dragStart.callCount).to.equal(1);
-      expect(dragEnd.callCount).to.equal(1);
+      expect(dragStart).toHaveBeenCalledTimes(1);
+      expect(dragEnd).toHaveBeenCalledTimes(1);
     });
 
     it('should invoke cancel when pressing Escape during a drag operation', async () => {
-      const dragCancel = spy();
+      const dragCancel = vi.fn();
       instance.controller.set({ start: dragStart, cancel: dragCancel });
 
       simulatePointerDown(instance);
       await elementUpdated(instance);
 
-      expect(dragStart.called).is.true;
+      expect(dragStart).toHaveBeenCalled();
 
       simulateKeyboard(instance, escapeKey);
       await elementUpdated(instance);
 
-      expect(dragCancel.called).is.true;
+      expect(dragCancel).toHaveBeenCalled();
     });
 
     it('should not invoke cancel when pressing Escape outside of drag operation', async () => {
       // Sanity check since the Escape key handler is a root level dynamic listener.
-      const dragCancel = spy();
+      const dragCancel = vi.fn();
       instance.controller.set({ cancel: dragCancel });
 
       simulateKeyboard(instance, escapeKey);
       await elementUpdated(instance);
 
-      expect(dragCancel.called).is.false;
+      expect(dragCancel).not.toHaveBeenCalled();
     });
   });
 
   describe('Immediate mode - advanced element dragging', () => {
-    const dragStart = spy();
+    const dragStart = vi.fn();
 
-    function getCallbackArgs(fn: SinonSpy) {
-      return last(last(fn.args)) as DragCallbackParameters;
+    function getCallbackArgs(fn: MockInstance) {
+      return last(last(fn.mock.calls)) as DragCallbackParameters;
     }
 
     beforeEach(async () => {
@@ -234,45 +242,45 @@ describe('Drag controller', () => {
     });
 
     afterEach(() => {
-      dragStart.resetHistory();
+      dragStart.mockClear();
     });
 
     it('should not start a drag operation when `skip` is set and returns true', async () => {
       const button = instance.querySelector('button')!;
-      const skip = spy((event: PointerEvent) => event.target === button);
+      const skip = vi.fn((event: PointerEvent) => event.target === button);
 
       instance.controller.set({ start: dragStart, skip });
 
       simulatePointerDown(button);
       await elementUpdated(instance);
 
-      expect(dragStart.called).is.false;
-      expect(skip.called).is.true;
-      expect(skip.returned(true)).is.true;
+      expect(dragStart).not.toHaveBeenCalled();
+      expect(skip).toHaveBeenCalled();
+      expect(skip).toHaveReturnedWith(true);
 
       simulatePointerDown(instance);
       await elementUpdated(instance);
 
-      expect(dragStart.called).is.true;
-      expect(skip.called).is.true;
-      expect(skip.returned(false)).is.true;
+      expect(dragStart).toHaveBeenCalled();
+      expect(skip).toHaveBeenCalled();
+      expect(skip).toHaveReturnedWith(false);
     });
 
     it('should start a drag operation only from the element returned from the `trigger` invocation', async () => {
       const button = instance.querySelector('button')!;
-      const trigger = spy(() => button);
+      const trigger = vi.fn(() => button);
 
       instance.controller.set({ start: dragStart, trigger });
 
       simulatePointerDown(instance);
       await elementUpdated(instance);
 
-      expect(dragStart.called).is.false;
+      expect(dragStart).not.toHaveBeenCalled();
 
       simulatePointerDown(button);
       await elementUpdated(instance);
 
-      expect(dragStart.called).is.true;
+      expect(dragStart).toHaveBeenCalled();
     });
 
     it('should adhere to `snapToCursor` option on drag start', async () => {
@@ -321,7 +329,7 @@ describe('Drag controller', () => {
     });
 
     it('should pass correct parameter state in the move callback', async () => {
-      const move = spy();
+      const move = vi.fn();
       instance.controller.set({ start: dragStart, move });
 
       const { x: clientX, y: clientY } = getCenterPoint(instance);
@@ -341,7 +349,7 @@ describe('Drag controller', () => {
     });
 
     it('should pass correct parameter state in end callback', async () => {
-      const end = spy();
+      const end = vi.fn();
       instance.controller.set({ end });
 
       const { x: clientX, y: clientY } = getCenterPoint(instance);
@@ -359,8 +367,8 @@ describe('Drag controller', () => {
 
     it('should invoke the `enter` callback when the `match` callback returns true', async () => {
       const target = document.querySelector<HTMLElement>('.target')!;
-      const matchTarget = spy((element: Element) => target === element);
-      const enter = spy();
+      const matchTarget = vi.fn((element: Element) => target === element);
+      const enter = vi.fn();
 
       const { x: clientX, y: clientY } = target.getBoundingClientRect();
 
@@ -370,16 +378,16 @@ describe('Drag controller', () => {
       simulatePointerMove(instance, { clientX, clientY });
       await elementUpdated(instance);
 
-      expect(matchTarget.called).is.true;
-      expect(enter.called).is.true;
+      expect(matchTarget).toHaveBeenCalled();
+      expect(enter).toHaveBeenCalled();
 
       expect(getCallbackArgs(enter).state.element).to.eql(target);
     });
 
     it('should not invoke the `enter` callback when the `match` callback returns false', async () => {
       const target = document.querySelector<HTMLElement>('.target')!;
-      const matchTarget = spy(() => false);
-      const enter = spy();
+      const matchTarget = vi.fn(() => false);
+      const enter = vi.fn();
 
       const { x: clientX, y: clientY } = target.getBoundingClientRect();
 
@@ -389,15 +397,15 @@ describe('Drag controller', () => {
       simulatePointerMove(instance, { clientX, clientY });
       await elementUpdated(instance);
 
-      expect(matchTarget.called).is.true;
-      expect(enter.called).is.false;
+      expect(matchTarget).toHaveBeenCalled();
+      expect(enter).not.toHaveBeenCalled();
     });
 
     it('should invoke the `leave` callback when leaving the boundaries of a matched element', async () => {
       const target = document.querySelector<HTMLElement>('.target')!;
-      const matchTarget = spy((element: Element) => target === element);
-      const enter = spy();
-      const leave = spy();
+      const matchTarget = vi.fn((element: Element) => target === element);
+      const enter = vi.fn();
+      const leave = vi.fn();
 
       const { x: clientX, y: clientY } = target.getBoundingClientRect();
 
@@ -407,22 +415,22 @@ describe('Drag controller', () => {
       simulatePointerMove(instance, { clientX, clientY });
       await elementUpdated(instance);
 
-      expect(matchTarget.called).is.true;
-      expect(enter.called).is.true;
+      expect(matchTarget).toHaveBeenCalled();
+      expect(enter).toHaveBeenCalled();
 
       expect(getCallbackArgs(enter).state.element).to.eql(target);
 
       simulatePointerMove(instance, { clientX: 0, clientY: 0 });
       await elementUpdated(instance);
 
-      expect(leave.called).is.true;
+      expect(leave).toHaveBeenCalled();
       expect(getCallbackArgs(leave).state.element).to.eql(target);
     });
 
     it('should invoke the `over` callback while dragging over a matched element', async () => {
       const target = document.querySelector<HTMLElement>('.target')!;
-      const matchTarget = spy((element: Element) => target === element);
-      const over = spy();
+      const matchTarget = vi.fn((element: Element) => target === element);
+      const over = vi.fn();
 
       instance.controller.set({ matchTarget, over });
 
@@ -433,19 +441,19 @@ describe('Drag controller', () => {
       await elementUpdated(instance);
 
       // Not called on initial drag enter
-      expect(over.called).is.false;
+      expect(over).not.toHaveBeenCalled();
 
       // 5 pointer moves over the matched element
       simulatePointerMove(instance, { clientX, clientY }, { x: 5, y: 5 }, 5);
       await elementUpdated(instance);
 
-      expect(over.callCount).to.equal(5);
+      expect(over).toHaveBeenCalledTimes(5);
       expect(getCallbackArgs(over).state.element).to.eql(target);
     });
   });
 
   describe('Deferred mode - basic element dragging', () => {
-    const dragStart = spy();
+    const dragStart = vi.fn();
 
     function createGhost() {
       const clone = instance.cloneNode() as HTMLElement;
@@ -479,7 +487,7 @@ describe('Drag controller', () => {
     });
 
     afterEach(() => {
-      dragStart.resetHistory();
+      dragStart.mockClear();
     });
 
     it('should not start drag operation when disabled', async () => {
@@ -488,7 +496,7 @@ describe('Drag controller', () => {
       simulatePointerDown(instance);
       await elementUpdated(instance);
 
-      expect(dragStart.called).is.false;
+      expect(dragStart).not.toHaveBeenCalled();
     });
 
     it('should not start a drag operation on a non-primary button interaction', async () => {
@@ -497,18 +505,18 @@ describe('Drag controller', () => {
       simulatePointerDown(instance, { button: 1 });
       await elementUpdated(instance);
 
-      expect(dragStart.called).is.false;
+      expect(dragStart).not.toHaveBeenCalled();
     });
 
     it('should not start a drag operation when a skip callback returns true', async () => {
-      const skip = spy(() => true);
+      const skip = vi.fn(() => true);
       instance.controller.set({ skip, start: dragStart });
 
       simulatePointerDown(instance);
       await elementUpdated(instance);
 
-      expect(skip.called).is.true;
-      expect(dragStart.called).is.false;
+      expect(skip).toHaveBeenCalled();
+      expect(dragStart).not.toHaveBeenCalled();
     });
 
     it('should apply correct internal styles on drag operation', async () => {
@@ -553,7 +561,7 @@ describe('Drag controller', () => {
     });
 
     it('should correctly fallback to the host as a container if the layer callbacks return falsy', async () => {
-      const layer = spy((): HTMLElement => null as unknown as HTMLElement);
+      const layer = vi.fn((): HTMLElement => null as unknown as HTMLElement);
       instance.controller.set({ layer });
 
       simulatePointerDown(instance);
@@ -563,7 +571,7 @@ describe('Drag controller', () => {
     });
 
     it('should correctly place the ghost element in the configured layer container', async () => {
-      const layer = spy(() => instance.parentElement!);
+      const layer = vi.fn(() => instance.parentElement!);
       instance.controller.set({ layer });
 
       simulatePointerDown(instance);
@@ -578,23 +586,23 @@ describe('Drag controller', () => {
       simulatePointerDown(instance);
       await elementUpdated(instance);
 
-      expect(dragStart.called).is.true;
-      expect(dragStart.callCount).to.equal(1);
+      expect(dragStart).toHaveBeenCalled();
+      expect(dragStart).toHaveBeenCalledTimes(1);
     });
 
     it('should not invoke move unless a start is invoked', async () => {
-      const dragMove = spy();
+      const dragMove = vi.fn();
       instance.controller.set({ start: dragStart, move: dragMove });
 
       simulatePointerMove(instance);
       await elementUpdated(instance);
 
-      expect(dragStart.called).is.false;
-      expect(dragMove.called).is.false;
+      expect(dragStart).not.toHaveBeenCalled();
+      expect(dragMove).not.toHaveBeenCalled();
     });
 
     it('should invoke move when moving the dragged element around the viewport', async () => {
-      const dragMove = spy();
+      const dragMove = vi.fn();
       instance.controller.set({ start: dragStart, move: dragMove });
 
       simulatePointerDown(instance);
@@ -606,57 +614,57 @@ describe('Drag controller', () => {
       );
       await elementUpdated(instance);
 
-      expect(dragStart.called).is.true;
-      expect(dragMove.called).is.true;
-      expect(dragMove.callCount).to.equal(10);
+      expect(dragStart).toHaveBeenCalled();
+      expect(dragMove).toHaveBeenCalled();
+      expect(dragMove).toHaveBeenCalledTimes(10);
     });
 
     it('should invoke end when releasing the dragged element', async () => {
-      const dragEnd = spy();
+      const dragEnd = vi.fn();
       instance.controller.set({ start: dragStart, end: dragEnd });
 
       simulatePointerDown(instance);
       simulateLostPointerCapture(instance);
       await elementUpdated(instance);
 
-      expect(dragStart.callCount).to.equal(1);
-      expect(dragEnd.callCount).to.equal(1);
+      expect(dragStart).toHaveBeenCalledTimes(1);
+      expect(dragEnd).toHaveBeenCalledTimes(1);
       expect(getDefaultGhost()).is.null;
     });
 
     it('should invoke cancel when pressing Escape during a drag operation', async () => {
-      const dragCancel = spy(() => instance.controller.dispose());
+      const dragCancel = vi.fn(() => instance.controller.dispose());
       instance.controller.set({ start: dragStart, cancel: dragCancel });
 
       simulatePointerDown(instance);
       await elementUpdated(instance);
 
-      expect(dragStart.called).is.true;
+      expect(dragStart).toHaveBeenCalled();
 
       simulateKeyboard(instance, escapeKey);
       await elementUpdated(instance);
 
-      expect(dragCancel.called).is.true;
+      expect(dragCancel).toHaveBeenCalled();
       expect(getDefaultGhost()).is.null;
     });
 
     it('should not invoke cancel when pressing Escape outside of drag operation', async () => {
       // Sanity check since the Escape key handler is a root level dynamic listener.
-      const dragCancel = spy();
+      const dragCancel = vi.fn();
       instance.controller.set({ cancel: dragCancel });
 
       simulateKeyboard(instance, escapeKey);
       await elementUpdated(instance);
 
-      expect(dragCancel.called).is.false;
+      expect(dragCancel).not.toHaveBeenCalled();
     });
   });
 
   describe('Deferred mode - advanced element dragging', () => {
-    const dragStart = spy();
+    const dragStart = vi.fn();
 
-    function getCallbackArgs(fn: SinonSpy) {
-      return last(last(fn.args)) as DragCallbackParameters;
+    function getCallbackArgs(fn: MockInstance) {
+      return last(last(fn.mock.calls)) as DragCallbackParameters;
     }
 
     beforeEach(async () => {
@@ -678,45 +686,45 @@ describe('Drag controller', () => {
     });
 
     afterEach(() => {
-      dragStart.resetHistory();
+      dragStart.mockClear();
     });
 
     it('should not start a drag operation when `skip` is set and returns true', async () => {
       const button = instance.querySelector('button')!;
-      const skip = spy((event: PointerEvent) => event.target === button);
+      const skip = vi.fn((event: PointerEvent) => event.target === button);
 
       instance.controller.set({ start: dragStart, skip });
 
       simulatePointerDown(button);
       await elementUpdated(instance);
 
-      expect(dragStart.called).is.false;
-      expect(skip.called).is.true;
-      expect(skip.returned(true)).is.true;
+      expect(dragStart).not.toHaveBeenCalled();
+      expect(skip).toHaveBeenCalled();
+      expect(skip).toHaveReturnedWith(true);
 
       simulatePointerDown(instance);
       await elementUpdated(instance);
 
-      expect(dragStart.called).is.true;
-      expect(skip.called).is.true;
-      expect(skip.returned(false)).is.true;
+      expect(dragStart).toHaveBeenCalled();
+      expect(skip).toHaveBeenCalled();
+      expect(skip).toHaveReturnedWith(false);
     });
 
     it('should start a drag operation only from the element returned from the `trigger` invocation', async () => {
       const button = instance.querySelector('button')!;
-      const trigger = spy(() => button);
+      const trigger = vi.fn(() => button);
 
       instance.controller.set({ start: dragStart, trigger });
 
       simulatePointerDown(instance);
       await elementUpdated(instance);
 
-      expect(dragStart.called).is.false;
+      expect(dragStart).not.toHaveBeenCalled();
 
       simulatePointerDown(button);
       await elementUpdated(instance);
 
-      expect(dragStart.called).is.true;
+      expect(dragStart).toHaveBeenCalled();
     });
 
     it('should adhere to `snapToCursor` option on drag start', async () => {
@@ -765,7 +773,7 @@ describe('Drag controller', () => {
     });
 
     it('should pass correct parameter state in the move callback', async () => {
-      const move = spy();
+      const move = vi.fn();
       instance.controller.set({ start: dragStart, move });
 
       const { x: clientX, y: clientY } = getCenterPoint(instance);
@@ -785,7 +793,7 @@ describe('Drag controller', () => {
     });
 
     it('should pass correct parameter state in end callback', async () => {
-      const end = spy();
+      const end = vi.fn();
       instance.controller.set({ end });
 
       const { x: clientX, y: clientY } = getCenterPoint(instance);
@@ -803,8 +811,8 @@ describe('Drag controller', () => {
 
     it('should invoke the `enter` callback when the `match` callback returns true', async () => {
       const target = document.querySelector<HTMLElement>('.target')!;
-      const matchTarget = spy((element: Element) => target === element);
-      const enter = spy();
+      const matchTarget = vi.fn((element: Element) => target === element);
+      const enter = vi.fn();
 
       const { x: clientX, y: clientY } = target.getBoundingClientRect();
 
@@ -814,16 +822,16 @@ describe('Drag controller', () => {
       simulatePointerMove(instance, { clientX, clientY });
       await elementUpdated(instance);
 
-      expect(matchTarget.called).is.true;
-      expect(enter.called).is.true;
+      expect(matchTarget).toHaveBeenCalled();
+      expect(enter).toHaveBeenCalled();
 
       expect(getCallbackArgs(enter).state.element).to.eql(target);
     });
 
     it('should not invoke the `enter` callback when the `match` callback returns false', async () => {
       const target = document.querySelector<HTMLElement>('.target')!;
-      const matchTarget = spy(() => false);
-      const enter = spy();
+      const matchTarget = vi.fn(() => false);
+      const enter = vi.fn();
 
       const { x: clientX, y: clientY } = target.getBoundingClientRect();
 
@@ -833,15 +841,15 @@ describe('Drag controller', () => {
       simulatePointerMove(instance, { clientX, clientY });
       await elementUpdated(instance);
 
-      expect(matchTarget.called).is.true;
-      expect(enter.called).is.false;
+      expect(matchTarget).toHaveBeenCalled();
+      expect(enter).not.toHaveBeenCalled();
     });
 
     it('should invoke the `leave` callback when leaving the boundaries of a matched element', async () => {
       const target = document.querySelector<HTMLElement>('.target')!;
-      const matchTarget = spy((element: Element) => target === element);
-      const enter = spy();
-      const leave = spy();
+      const matchTarget = vi.fn((element: Element) => target === element);
+      const enter = vi.fn();
+      const leave = vi.fn();
 
       const { x: clientX, y: clientY } = target.getBoundingClientRect();
 
@@ -851,22 +859,22 @@ describe('Drag controller', () => {
       simulatePointerMove(instance, { clientX, clientY });
       await elementUpdated(instance);
 
-      expect(matchTarget.called).is.true;
-      expect(enter.called).is.true;
+      expect(matchTarget).toHaveBeenCalled();
+      expect(enter).toHaveBeenCalled();
 
       expect(getCallbackArgs(enter).state.element).to.eql(target);
 
       simulatePointerMove(instance, { clientX: 0, clientY: 0 });
       await elementUpdated(instance);
 
-      expect(leave.called).is.true;
+      expect(leave).toHaveBeenCalled();
       expect(getCallbackArgs(leave).state.element).to.eql(target);
     });
 
     it('should invoke the `over` callback while dragging over a matched element', async () => {
       const target = document.querySelector<HTMLElement>('.target')!;
-      const matchTarget = spy((element: Element) => target === element);
-      const over = spy();
+      const matchTarget = vi.fn((element: Element) => target === element);
+      const over = vi.fn();
 
       instance.controller.set({ matchTarget, over });
 
@@ -877,13 +885,13 @@ describe('Drag controller', () => {
       await elementUpdated(instance);
 
       // Not called on initial drag enter
-      expect(over.called).is.false;
+      expect(over).not.toHaveBeenCalled();
 
       // 5 pointer moves over the matched element
       simulatePointerMove(instance, { clientX, clientY }, { x: 5, y: 5 }, 5);
       await elementUpdated(instance);
 
-      expect(over.callCount).to.equal(5);
+      expect(over).toHaveBeenCalledTimes(5);
       expect(getCallbackArgs(over).state.element).to.eql(target);
     });
   });

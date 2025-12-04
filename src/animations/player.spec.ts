@@ -1,11 +1,11 @@
+import { css, LitElement } from 'lit';
+import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import {
   defineCE,
-  expect,
   fixture,
   html,
   unsafeStatic,
-} from '@open-wc/testing';
-import { css, LitElement } from 'lit';
+} from '../components/common/helpers.spec.js';
 
 import { EaseOut } from './easings.js';
 import { addAnimationController } from './player.js';
@@ -27,7 +27,7 @@ describe('Animations Player', () => {
   let tag: string;
   let el: HTMLElement & { player: ReturnType<typeof addAnimationController> };
 
-  before(() => {
+  beforeAll(() => {
     tag = defineCE(
       class extends LitElement {
         public static override styles = css`

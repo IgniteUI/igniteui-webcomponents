@@ -1,6 +1,7 @@
-import { elementUpdated, fixture, html } from '@open-wc/testing';
-import type { TemplateResult } from 'lit';
+import { html, type TemplateResult } from 'lit';
+import { beforeAll, describe, it } from 'vitest';
 import { defineComponents } from '../common/definitions/defineComponents.js';
+import { elementUpdated, fixture } from '../common/helpers.spec.js';
 import { ValidityHelpers } from '../common/validity-helpers.spec.js';
 import IgcInputComponent from '../input/input.js';
 
@@ -10,7 +11,7 @@ describe('Validation container', () => {
   const helperSlot = 'helper-text';
   const valueMissingSlot = 'value-missing';
 
-  before(() => {
+  beforeAll(() => {
     defineComponents(IgcInputComponent);
   });
 

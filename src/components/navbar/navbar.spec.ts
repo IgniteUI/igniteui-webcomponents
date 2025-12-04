@@ -1,9 +1,10 @@
-import { expect, fixture, html } from '@open-wc/testing';
-
-import { defineComponents, IgcNavbarComponent } from '../../index.js';
+import { beforeAll, describe, expect, it } from 'vitest';
+import { defineComponents } from '../common/definitions/defineComponents.js';
+import { fixture, html } from '../common/helpers.spec.js';
+import IgcNavbarComponent from './navbar.js';
 
 describe('Navbar component', () => {
-  before(() => {
+  beforeAll(() => {
     defineComponents(IgcNavbarComponent);
   });
 

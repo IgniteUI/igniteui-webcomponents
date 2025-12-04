@@ -1,7 +1,8 @@
-import { elementUpdated, expect } from '@open-wc/testing';
+import { expect } from 'vitest';
 import IgcCalendarComponent from '../calendar/calendar.js';
 import { getCalendarDOM, getDOMDate } from '../calendar/helpers.spec.js';
 import type { CalendarDay } from '../calendar/model.js';
+import { elementUpdated } from '../common/helpers.spec.js';
 import { equal } from '../common/util.js';
 import { checkDatesEqual, simulateClick } from '../common/utils.spec.js';
 import IgcDateTimeInputComponent from '../date-time-input/date-time-input.js';

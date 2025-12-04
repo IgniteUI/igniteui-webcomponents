@@ -1,13 +1,23 @@
-import { elementUpdated, expect, fixture } from '@open-wc/testing';
 import { html, nothing } from 'lit';
-import { spy, stub, useFakeTimers } from 'sinon';
+import {
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from 'vitest';
 import { configureTheme } from '../../theming/config.js';
 import type IgcIconButtonComponent from '../button/icon-button.js';
 import IgcChipComponent from '../chip/chip.js';
 import { enterKey, tabKey } from '../common/controllers/key-bindings.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
+import { elementUpdated, fixture } from '../common/helpers.spec.js';
 import { first, last } from '../common/util.js';
 import {
+  expectCalledWith,
+  getEvents,
   isFocused,
   simulateBlur,
   simulateClick,
@@ -31,7 +41,7 @@ import type {
 } from './types.js';
 
 describe('Chat', () => {
-  before(() => {
+  beforeAll(() => {
     defineComponents(IgcChatComponent, IgcInputComponent);
   });
 
@@ -617,7 +627,7 @@ describe('Chat', () => {
   describe('Interactions', () => {
     describe('Click', () => {
       it('should update messages properly on send button click', async () => {
-        const eventSpy = spy(chat, 'emitEvent');
+        const spy = vi.spyOn(chat, 'emitEvent');
         const { textarea, sendButton } = getChatDOM(chat).input!;
         textarea.setAttribute('value', 'Hello!');
         textarea.dispatchEvent(
@@ -628,8 +638,11 @@ describe('Chat', () => {
         simulateClick(sendButton);
         await elementUpdated(chat);
 
-        expect(eventSpy).calledWith('igcMessageCreated');
-        const eventArgs = eventSpy.getCall(1).args[1]?.detail as IgcChatMessage;
+        expect(spy).toHaveBeenCalledWith(
+          'igcMessageCreated',
+          expect.anything()
+        );
+        const eventArgs = spy.mock.calls[1]?.[1]?.detail as IgcChatMessage;
         const args = { ...eventArgs, text: 'Hello!', sender: 'user' };
         expect(eventArgs).to.deep.equal(args);
         expect(chat.messages.length).to.equal(1);
@@ -640,7 +653,7 @@ describe('Chat', () => {
       });
 
       it('should update messages properly on suggestion chip click', async () => {
-        const eventSpy = spy(chat, 'emitEvent');
+        const spy = vi.spyOn(chat, 'emitEvent');
         chat.options = {
           suggestions: ['Suggestion 1', 'Suggestion 2'],
         };
@@ -654,8 +667,11 @@ describe('Chat', () => {
         simulateClick(suggestionItems[0]);
         await elementUpdated(chat);
 
-        expect(eventSpy).calledWith('igcMessageCreated');
-        const eventArgs = eventSpy.getCall(0).args[1]?.detail;
+        expect(spy).toHaveBeenCalledWith(
+          'igcMessageCreated',
+          expect.anything()
+        );
+        const eventArgs = spy.mock.calls[0]?.[1]?.detail;
         const args =
           eventArgs && typeof eventArgs === 'object'
             ? { ...eventArgs, text: 'Suggestion 1', sender: 'user' }
@@ -670,13 +686,16 @@ describe('Chat', () => {
       });
 
       it('should remove attachment on chip remove button click', async () => {
-        const eventSpy = spy(chat, 'emitEvent');
+        const spy = vi.spyOn(chat, 'emitEvent');
         const fileInput = getChatDOM(chat).input.fileInput;
         simulateFileUpload(fileInput, files);
         await elementUpdated(chat);
 
-        expect(eventSpy).calledOnce;
-        expect(eventSpy.calledWith('igcAttachmentAdded')).to.be.true;
+        expect(spy).toHaveBeenCalledTimes(1);
+        expect(spy).toHaveBeenCalledWith(
+          'igcAttachmentAdded',
+          expect.anything()
+        );
 
         const attachments = getChatDOM(chat).input.chips;
         expect(attachments.length).to.equal(2);
@@ -686,9 +705,12 @@ describe('Chat', () => {
         simulateClick(removeFileButton);
         await elementUpdated(chat);
 
-        expect(eventSpy).calledTwice;
-        expect(eventSpy.calledWith('igcAttachmentRemoved')).to.be.true;
-        const detail = eventSpy.getCall(1).args[1]?.detail;
+        expect(spy).toHaveBeenCalledTimes(2);
+        expect(spy).toHaveBeenCalledWith(
+          'igcAttachmentRemoved',
+          expect.anything()
+        );
+        const detail = spy.mock.calls[1]?.[1]?.detail;
         expect((detail as IgcChatMessageAttachment).name).to.equal(
           files[1].name
         );
@@ -761,14 +783,13 @@ describe('Chat', () => {
       });
 
       it('should handle the copy action properly', async () => {
-        const clipboardWriteText = stub(
-          navigator.clipboard,
-          'writeText'
-        ).resolves();
+        const clipboardWriteText = vi
+          .spyOn(navigator.clipboard, 'writeText')
+          .mockResolvedValue();
         chat.messages = [messages[0]];
         await elementUpdated(chat);
 
-        expect(clipboardWriteText.called).to.be.false;
+        expect(clipboardWriteText).not.toHaveBeenCalled();
         const firstMessage =
           chat.shadowRoot?.querySelectorAll('igc-chat-message')[0];
         // click on copy icon
@@ -777,7 +798,7 @@ describe('Chat', () => {
         ) as HTMLElement;
         simulateClick(copyIcon);
         await elementUpdated(chat);
-        expect(clipboardWriteText.called).to.be.true;
+        expect(clipboardWriteText).toHaveBeenCalled();
       });
     });
 
@@ -792,7 +813,7 @@ describe('Chat', () => {
       });
 
       it('should be able to drag & drop files based on the types listed in `acceptedFiles`', async () => {
-        const eventSpy = spy(chat, 'emitEvent');
+        const spy = vi.spyOn(chat, 'emitEvent');
         const inputArea = getChatDOM(chat).input.self!;
         const dropZone = inputArea?.renderRoot.querySelector(
           `div[part='input-container']`
@@ -817,8 +838,7 @@ describe('Chat', () => {
           dropZone?.dispatchEvent(dragEnterEvent);
           await elementUpdated(chat);
 
-          expect(eventSpy).calledOnce;
-          expect(eventSpy).calledWith('igcAttachmentDrag');
+          expectCalledWith(spy, 'igcAttachmentDrag');
 
           const dropEvent = new DragEvent('drop', {
             bubbles: true,
@@ -831,19 +851,21 @@ describe('Chat', () => {
           dropZone.dispatchEvent(dropEvent);
           await elementUpdated(chat);
 
-          expect(eventSpy).calledWith('igcAttachmentDrop');
+          expectCalledWith(spy, 'igcAttachmentDrop');
           const attachments = getChatDOM(chat).input.chips;
           expect(attachments?.length).to.equal(1);
           expect(attachments?.[0]?.textContent?.trim()).to.equal('test.txt');
-          expect(eventSpy).calledWith('igcAttachmentDrop');
-          expect(eventSpy).calledWith('igcAttachmentAdded');
+          expect(spy).toHaveBeenCalledWith(
+            'igcAttachmentAdded',
+            expect.anything()
+          );
         }
       });
     });
 
     describe('Keyboard', () => {
       it('should update messages properly on `Enter` keypress when the textarea is focused', async () => {
-        const eventSpy = spy(chat, 'emitEvent');
+        const spy = vi.spyOn(chat, 'emitEvent');
         const textArea = getChatDOM(chat).input.textarea;
 
         textArea.setAttribute('value', 'Hello!');
@@ -855,8 +877,11 @@ describe('Chat', () => {
         simulateKeyboard(textArea, enterKey);
         await elementUpdated(chat);
 
-        expect(eventSpy).calledWith('igcMessageCreated');
-        const eventArgs = eventSpy.getCall(2).args[1]?.detail;
+        expect(spy).toHaveBeenCalledWith(
+          'igcMessageCreated',
+          expect.anything()
+        );
+        const eventArgs = spy.mock.calls[2]?.[1]?.detail;
         const args =
           eventArgs && typeof eventArgs === 'object'
             ? { ...eventArgs, text: 'Hello!', sender: 'user' }
@@ -874,7 +899,7 @@ describe('Chat', () => {
 
   describe('Events', () => {
     it('emits igcAttachmentClick', async () => {
-      const eventSpy = spy(chat, 'emitEvent');
+      const spy = vi.spyOn(chat, 'emitEvent');
       chat.messages = [messages[1]];
       await elementUpdated(chat);
 
@@ -883,35 +908,37 @@ describe('Chat', () => {
       const attachmentHeader = getChatAttachmentDOM(attachment).header;
 
       simulateClick(attachmentHeader);
-      expect(eventSpy).calledWith('igcAttachmentClick', {
+      expect(spy).toHaveBeenCalledWith('igcAttachmentClick', {
         detail: { ...messages[1].attachments?.at(0) },
       });
     });
 
     it('emits igcTypingChange', async () => {
-      const clock = useFakeTimers({ now: 0, toFake: ['Date', 'setTimeout'] });
+      vi.useFakeTimers({ now: 0, toFake: ['Date', 'setTimeout'] });
 
-      const eventSpy = spy(chat, 'emitEvent');
+      const spy = vi.spyOn(chat, 'emitEvent');
       const textArea = getChatDOM(chat).input.textarea;
 
       chat.options = { stopTypingDelay: 2500 };
       simulateKeyboard(textArea, 'a', 15);
       await elementUpdated(chat);
 
-      expect(eventSpy).calledWith('igcTypingChange');
-      expect(eventSpy.firstCall.args[1]?.detail).to.be.true;
+      expect(spy).toHaveBeenCalledWith('igcTypingChange', expect.anything());
+      expect(last<any>(first(getEvents(spy, 'igcTypingChange'))).detail).to.be
+        .true;
 
-      clock.setSystemTime(2501);
-      await clock.runAllAsync();
+      vi.setSystemTime(2501);
+      await vi.runAllTimersAsync();
 
-      expect(eventSpy).calledWith('igcTypingChange');
-      expect(eventSpy.lastCall.args[1]?.detail).to.be.false;
+      expect(spy).toHaveBeenCalledWith('igcTypingChange', expect.anything());
+      expect(last<any>(last(getEvents(spy, 'igcTypingChange'))).detail).to.be
+        .false;
 
-      clock.restore();
+      vi.useRealTimers();
     });
 
     it('emits igcTypingChange after sending a message', async () => {
-      const eventSpy = spy(chat, 'emitEvent');
+      const spy = vi.spyOn(chat, 'emitEvent');
       const textArea = getChatDOM(chat).input.textarea;
       const internalInput = textArea.renderRoot.querySelector('textarea')!;
 
@@ -941,12 +968,12 @@ describe('Chat', () => {
       ];
 
       for (const [idx, event] of expectedEventSequence.entries()) {
-        expect(eventSpy.getCall(idx).firstArg).to.equal(event);
+        expect(spy.mock.calls[idx][0]).to.equal(event);
       }
     });
 
     it('should not emit igcTypingChange on Tab key', async () => {
-      const eventSpy = spy(chat, 'emitEvent');
+      const spy = vi.spyOn(chat, 'emitEvent');
       const textArea = getChatDOM(chat).input.textarea;
       const internalInput = textArea.renderRoot.querySelector('textarea')!;
 
@@ -955,37 +982,37 @@ describe('Chat', () => {
       simulateKeyboard(internalInput, tabKey);
       await elementUpdated(chat);
 
-      expect(eventSpy.getCalls()).is.empty;
+      expect(spy.mock.calls).to.be.empty;
     });
 
     it('emits igcInputFocus', async () => {
-      const eventSpy = spy(chat, 'emitEvent');
+      const spy = vi.spyOn(chat, 'emitEvent');
 
       simulateFocus(getChatDOM(chat).input.textarea);
-      expect(eventSpy).calledWith('igcInputFocus');
+      expectCalledWith(spy, 'igcInputFocus');
     });
 
     it('emits igcInputBlur', async () => {
-      const eventSpy = spy(chat, 'emitEvent');
+      const spy = vi.spyOn(chat, 'emitEvent');
 
       simulateBlur(getChatDOM(chat).input.textarea);
-      expect(eventSpy).calledWith('igcInputBlur');
+      expectCalledWith(spy, 'igcInputBlur');
     });
 
     it('emits igcInputChange', async () => {
-      const eventSpy = spy(chat, 'emitEvent');
+      const spy = vi.spyOn(chat, 'emitEvent');
       const textArea = getChatDOM(chat).input.textarea!;
 
       textArea.setAttribute('value', 'Hello!');
       textArea.dispatchEvent(new CustomEvent('igcInput', { detail: 'Hello!' }));
       await elementUpdated(chat);
-      expect(eventSpy).calledWith('igcInputChange', {
+      expect(spy).toHaveBeenCalledWith('igcInputChange', {
         detail: { value: 'Hello!' },
       });
     });
 
     it('emits igcMessageReact', async () => {
-      const eventSpy = spy(chat, 'emitEvent');
+      const spy = vi.spyOn(chat, 'emitEvent');
       chat.messages = [messages[0]];
       await elementUpdated(chat);
 
@@ -994,7 +1021,7 @@ describe('Chat', () => {
         getChatMessageDOM(messageElement).defaultActionButtons[1];
 
       simulateClick(likeIcon);
-      expect(eventSpy).calledWith('igcMessageReact', {
+      expect(spy).toHaveBeenCalledWith('igcMessageReact', {
         detail: { message: messages[0], reaction: 'thumb_up_active' },
       });
     });

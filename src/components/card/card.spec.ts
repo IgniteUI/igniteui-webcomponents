@@ -1,9 +1,10 @@
-import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
-
-import { defineComponents, IgcCardComponent } from '../../index.js';
+import { beforeAll, describe, expect, it } from 'vitest';
+import { defineComponents } from '../common/definitions/defineComponents.js';
+import { elementUpdated, fixture, html } from '../common/helpers.spec.js';
+import IgcCardComponent from './card.js';
 
 describe('Card Component', () => {
-  before(() => {
+  beforeAll(() => {
     defineComponents(IgcCardComponent);
   });
 
