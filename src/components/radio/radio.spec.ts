@@ -171,8 +171,8 @@ describe('Radio Component', () => {
     it('should be able to use external elements as label', async () => {
       const labelId = 'my-label';
       const radio = await fixture<IgcRadioComponent>(
-        html`<igc-radio aria-labelledby="${labelId}"></igc-radio>
-          <span id="${labelId}">My Label</span>`
+        html`<igc-radio aria-labelledby=${labelId}></igc-radio>
+          <span id=${labelId}>My Label</span>`
       );
       const input = radio.renderRoot.querySelector('input') as HTMLInputElement;
 

@@ -12,12 +12,6 @@ $outlined-theme: $bootstrap-outlined;
 
 :host([variant='outlined']) {
     --component-size: var(--ig-size, #{var-get($outlined-theme, 'default-size')});
-
-    [part~='base'] {
-        &:focus {
-            border: rem(1px) solid var-get($outlined-theme, 'focus-border-color');
-        }
-    }
 }
 
 :host([variant='contained']) {
@@ -28,29 +22,9 @@ $outlined-theme: $bootstrap-outlined;
     --component-size: var(--ig-size, #{var-get($fab-theme, 'default-size')});
 }
 
-:host(:not([disabled])[variant='flat']) [part~='base'],
-:host(:not(:disabled)[variant='flat']) [part~='base'] {
-    &:active {
-        ::slotted(igc-icon) {
-            color: var-get($flat-theme, 'active-foreground');
-        }
-    }
-}
-
 :host(:not([disabled])[variant='flat']) [part='base focused'],
 :host(:not(:disabled)[variant='flat']) [part='base focused'] {
     box-shadow: 0 0 0 rem(4px) var-get($flat-theme, 'shadow-color');
-}
-
-:host(:not([disabled])[variant='outlined']) [part~='base'],
-:host(:not(:disabled)[variant='outlined']) [part~='base'] {
-    &:active {
-        border-color: var-get($outlined-theme, 'active-border-color');
-
-        ::slotted(igc-icon) {
-            color: var-get($outlined-theme, 'active-foreground');
-        }
-    }
 }
 
 :host(:not([disabled])[variant='outlined']) [part='base focused'],
@@ -60,33 +34,11 @@ $outlined-theme: $bootstrap-outlined;
     ::slotted(igc-icon) {
         color: var-get($outlined-theme, 'icon-color-hover');
     }
-
-    &:active {
-        border-color: var-get($outlined-theme, 'active-border-color');
-    }
-}
-
-:host(:not([disabled])[variant='contained']) [part~='base'],
-:host(:not(:disabled)[variant='contained']) [part~='base'] {
-    &:active {
-        ::slotted(igc-icon) {
-            color: var-get($contained-theme, 'active-foreground');
-        }
-    }
 }
 
 :host(:not([disabled])[variant='contained']) [part='base focused'],
 :host(:not(:disabled)[variant='contained']) [part='base focused'] {
     box-shadow: 0 0 0 rem(4px) var-get($contained-theme, 'shadow-color');
-}
-
-:host(:not([disabled])[variant='fab']) [part~='base'],
-:host(:not(:disabled)[variant='fab']) [part~='base'] {
-    &:active {
-        ::slotted(igc-icon) {
-            color: var-get($fab-theme, 'active-foreground');
-        }
-    }
 }
 
 :host(:not([disabled])[variant='fab']) [part='base focused'],
