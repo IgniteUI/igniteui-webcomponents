@@ -880,8 +880,7 @@ describe('Splitter', () => {
         expect(sizes.startSize + sizes.endSize).to.be.at.most(totalAvailable);
       });
 
-      // TODO: very broken scenario (same in Angular)
-      xit('should honor minSize and maxSize constraints when resizing, constraints in %', async () => {
+      it('should honor minSize and maxSize constraints when resizing, constraints in %', async () => {
         const constraintSplitter = await fixture<IgcSplitterComponent>(
           createTwoPanesWithSizesAndConstraints({
             startSize: '30%',
@@ -930,7 +929,7 @@ describe('Splitter', () => {
     });
 
     describe('Vertical orientation', () => {
-      it('should honor minSize and maxSize constraints when resizing - constraints in px', async () => {
+      it('should honor minSize and maxSize constraints when resizing - constraints in px - vertical', async () => {
         const mixedConstraintSplitter = await fixture<IgcSplitterComponent>(
           createTwoPanesWithSizesAndConstraints({
             orientation: 'vertical',
@@ -966,6 +965,54 @@ describe('Splitter', () => {
 
         sizes = getPanesSizes(mixedConstraintSplitter, 'height');
         expect(sizes.endSize).to.equal(300);
+      });
+
+      it('should honor minSize and maxSize constraints when resizing, constraints in % - vertical', async () => {
+        const constraintSplitter = await fixture<IgcSplitterComponent>(
+          createTwoPanesWithSizesAndConstraints({
+            orientation: 'vertical',
+            startSize: '30%',
+            startMinSize: '10%',
+            startMaxSize: '80%',
+            endSize: '70%',
+            endMinSize: '20%',
+            endMaxSize: '90%',
+          })
+        );
+        await elementUpdated(constraintSplitter);
+
+        const bar = getSplitterPart(constraintSplitter, 'bar');
+        const barSize = bar.getBoundingClientRect().height;
+        const totalAvailable = 500 - barSize;
+        expect(totalAvailable).to.equal(495);
+
+        let deltaY = 1000;
+        await resize(constraintSplitter, 0, deltaY);
+
+        let sizes = getPanesSizes(constraintSplitter, 'height');
+        const expectedStartMax = Math.round((totalAvailable * 80) / 100);
+        expect(sizes.startSize).to.be.closeTo(expectedStartMax, 2);
+
+        deltaY = -1000;
+        await resize(constraintSplitter, 0, deltaY);
+
+        sizes = getPanesSizes(constraintSplitter, 'height');
+        const expectedStartMin = Math.round((totalAvailable * 10) / 100);
+        expect(sizes.startSize).to.be.closeTo(expectedStartMin, 2);
+
+        deltaY = 1000;
+        await resize(constraintSplitter, 0, deltaY);
+
+        sizes = getPanesSizes(constraintSplitter, 'height');
+        const expectedEndMin = Math.round((totalAvailable * 20) / 100);
+        expect(sizes.endSize).to.be.closeTo(expectedEndMin, 2);
+
+        deltaY = -1000;
+        await resize(constraintSplitter, 0, deltaY);
+
+        sizes = getPanesSizes(constraintSplitter, 'height');
+        const expectedEndMax = Math.round((totalAvailable * 90) / 100);
+        expect(sizes.endSize).to.be.closeTo(expectedEndMax, 2);
       });
     });
 

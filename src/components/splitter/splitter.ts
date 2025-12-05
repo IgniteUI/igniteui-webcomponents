@@ -35,6 +35,8 @@ export interface IgcSplitterComponentEventMap {
 interface PaneResizeState {
   initialSize: number;
   isPercentageBased: boolean;
+  minSizePx?: number;
+  maxSizePx?: number;
 }
 
 interface SplitterResizeState {
@@ -438,7 +440,33 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
     return {
       initialSize: size,
       isPercentageBased: this._isPercentageSize(pane) || this._isAutoSize(pane),
+      minSizePx: this._setMinMaxInPx(pane, 'min'),
+      maxSizePx: this._setMinMaxInPx(pane, 'max'),
     };
+  }
+
+  private _setMinMaxInPx(
+    pane: 'start' | 'end',
+    type: 'min' | 'max'
+  ): number | undefined {
+    let value: string | undefined;
+    if (type === 'max') {
+      value = pane === 'start' ? this.startMaxSize : this.endMaxSize;
+    } else {
+      value = pane === 'start' ? this.startMinSize : this.endMinSize;
+    }
+    if (!value) {
+      return undefined;
+    }
+    const totalSize = this.getTotalSize();
+    let result: number;
+    if (value.indexOf('%') !== -1) {
+      const percentageValue = Number.parseInt(value ?? '0', 10) || 0;
+      result = (percentageValue / 100) * totalSize;
+    } else {
+      result = Number.parseInt(value ?? '0', 10) || 0;
+    }
+    return result;
   }
 
   private _resizing(delta: number) {
@@ -523,15 +551,15 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
     if (!this._resizeState) return [0, 0];
 
     let finalDelta: number;
-    const min = Number.parseInt(this.startMinSize ?? '0', 10) || 0;
-    const minSibling = Number.parseInt(this.endMinSize ?? '0', 10) || 0;
+    const min = this._resizeState.startPane.minSizePx || 0;
+    const minSibling = this._resizeState.endPane.minSizePx || 0;
     const max =
-      Number.parseInt(this.startMaxSize ?? '0', 10) ||
+      this._resizeState.startPane.maxSizePx ||
       this._resizeState.startPane.initialSize +
         this._resizeState.endPane.initialSize -
         minSibling;
     const maxSibling =
-      Number.parseInt(this.endMaxSize ?? '0', 10) ||
+      this._resizeState.endPane.maxSizePx ||
       this._resizeState.startPane.initialSize +
         this._resizeState.endPane.initialSize -
         min;

@@ -103,7 +103,7 @@ interface IgcSplitterArgs {
 
 type Story = StoryObj<IgcSplitterArgs>;
 
-function changePaneMinMaxSizes() {
+function changePaneMinMaxSizesPx() {
   const splitter = document.querySelector('igc-splitter');
   if (!splitter) {
     return;
@@ -112,6 +112,19 @@ function changePaneMinMaxSizes() {
   splitter.startMaxSize = '200px';
   splitter.endMinSize = '100px';
   splitter.endMaxSize = '300px';
+}
+
+function changePaneMinMaxSizesPercent() {
+  const splitter = document.querySelector('igc-splitter');
+  if (!splitter) {
+    return;
+  }
+  splitter.startMinSize = '10%';
+  splitter.startMaxSize = '80%';
+  splitter.endMinSize = '20%';
+  splitter.endMaxSize = '90%';
+  splitter.startSize = '30%';
+  splitter.endSize = '70%';
 }
 
 export const Default: Story = {
@@ -135,6 +148,7 @@ export const Default: Story = {
 
       .splitters {
         height: 400px;
+        /*width: 1000px;*/ /* useful for testing % values */
       }
     </style>
 
@@ -152,15 +166,44 @@ export const Default: Story = {
         .endMinSize=${endMinSize}
         .endMaxSize=${endMaxSize}
       >
-        <div slot="start" class="pane-content">Pane 1</div>
-        <div slot="end" class="pane-content">Pane 2</div>
+        <div slot="start" class="pane-content">
+          Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque
+          scelerisque elementum ante, et tincidunt eros ultrices sit amet.
+          Mauris non consectetur nunc. In hac habitasse platea dictumst.
+          Pellentesque ornare et tellus sit amet varius. Nulla in augue rhoncus,
+          finibus mauris semper, tincidunt sem. Cras vitae semper neque, eget
+          tempus massa. Maecenas gravida turpis quis interdum bibendum. Nam quis
+          ultricies est. Fusce ante erat, iaculis quis iaculis ut, iaculis sed
+          nunc. Cras iaculis condimentum lacus nec tempus. Nam ex massa, mattis
+          vitae iaculis in, suscipit ut nibh.
+        </div>
+        <div slot="end" class="pane-content">
+          Maecenas sit amet ipsum non ipsum scelerisque varius. Maecenas
+          scelerisque nisl scelerisque nulla ultricies eleifend. Aliquam sit
+          amet velit mauris. Duis at nulla vitae risus condimentum semper. Nam
+          ornare arcu vitae euismod pharetra. Morbi facilisis tincidunt lorem at
+          consequat. Aliquam varius quam non eros suscipit, ac tincidunt sapien
+          porttitor. Sed sed lorem quam. Praesent blandit aliquam arcu a
+          vestibulum. Mauris porta faucibus ex in vehicula. Pellentesque ut
+          risus quis felis molestie facilisis eget et est. Proin interdum urna
+          vitae porttitor suscipit. Curabitur lobortis aliquet dolor sit amet
+          varius. Proin a semper velit, non molestie libero. Suspendisse
+          potenti. Aliquam vestibulum dui id lacus suscipit, eget posuere justo
+          venenatis. Vestibulum id velit ac dui posuere pretium.
+        </div>
       </igc-splitter>
     </div>
     <igc-button
       style="margin-top: 16px;"
       variant="outlined"
-      @click=${changePaneMinMaxSizes}
-      >Change All Panes Min/Max Sizes</igc-button
+      @click=${changePaneMinMaxSizesPx}
+      >Change All Panes Min/Max Sizes (px)</igc-button
+    >
+    <igc-button
+      style="margin-top: 16px;"
+      variant="outlined"
+      @click=${changePaneMinMaxSizesPercent}
+      >Change All Panes Min/Max Sizes (%)</igc-button
     >
   `,
 };
