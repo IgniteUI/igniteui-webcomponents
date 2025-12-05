@@ -461,10 +461,10 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
     const totalSize = this.getTotalSize();
     let result: number;
     if (value.indexOf('%') !== -1) {
-      const percentageValue = Number.parseInt(value ?? '0', 10) || 0;
+      const percentageValue = Number.parseInt(value, 10) || 0;
       result = (percentageValue / 100) * totalSize;
     } else {
-      result = Number.parseInt(value ?? '0', 10) || 0;
+      result = Number.parseInt(value, 10) || 0;
     }
     return result;
   }
