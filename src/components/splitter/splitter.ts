@@ -183,9 +183,7 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   @property({ attribute: 'start-size', reflect: true })
   public set startSize(value: string) {
     this._startSize = value;
-    Object.assign(this._startPaneInternalStyles, {
-      flex: this._startFlex,
-    });
+    this._setPaneFlex(this._startPaneInternalStyles, this._startFlex);
   }
 
   public get startSize(): string | undefined {
@@ -199,9 +197,7 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   @property({ attribute: 'end-size', reflect: true })
   public set endSize(value: string) {
     this._endSize = value;
-    Object.assign(this._endPaneInternalStyles, {
-      flex: this._endFlex,
-    });
+    this._setPaneFlex(this._endPaneInternalStyles, this._endFlex);
   }
 
   public get endSize(): string | undefined {
@@ -579,46 +575,58 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   private _resetPanes() {
     this.startSize = 'auto';
     this.endSize = 'auto';
-    const commonStyles = {
-      minWidth: 0,
-      maxWidth: '100%',
-      minHeight: 0,
-      maxHeight: '100%',
-    };
-    Object.assign(this._startPaneInternalStyles, {
-      ...commonStyles,
-      flex: this._startFlex,
-    });
-    Object.assign(this._endPaneInternalStyles, {
-      ...commonStyles,
-      flex: this._endFlex,
-    });
+
+    this._setPaneFlex(this._startPaneInternalStyles, this._startFlex);
+    this._setPaneMinMaxSizes(this._startPaneInternalStyles, '0', '100%');
+    this._setPaneFlex(this._endPaneInternalStyles, this._endFlex);
+    this._setPaneMinMaxSizes(this._endPaneInternalStyles, '0', '100%');
   }
 
   private _initPanes() {
+    // TODO: discuss if panes should be reset if one is collapsed (as in Angular currently)
+    if (this.startCollapsed || this.endCollapsed) {
+      this._resetPanes();
+    } else {
+      this._setPaneMinMaxSizes(
+        this._startPaneInternalStyles,
+        this.startMinSize,
+        this.startMaxSize
+      );
+      this._setPaneMinMaxSizes(
+        this._endPaneInternalStyles,
+        this.endMinSize,
+        this.endMaxSize
+      );
+    }
+
+    this._setPaneFlex(this._startPaneInternalStyles, this._startFlex);
+    this._setPaneFlex(this._endPaneInternalStyles, this._endFlex);
+    this.requestUpdate();
+  }
+
+  private _setPaneMinMaxSizes(
+    styles: StyleInfo,
+    minSize?: string,
+    maxSize?: string
+  ) {
     const isHorizontal = this.orientation === 'horizontal';
     const minProp = isHorizontal ? 'minWidth' : 'minHeight';
     const maxProp = isHorizontal ? 'maxWidth' : 'maxHeight';
 
-    const startSizes = {
-      [minProp]: this.startMinSize ?? 0,
-      [maxProp]: this.startMaxSize ?? '100%',
+    const sizes = {
+      [minProp]: minSize ?? 0,
+      [maxProp]: maxSize ?? '100%',
     };
 
-    const endSizes = {
-      [minProp]: this.endMinSize ?? 0,
-      [maxProp]: this.endMaxSize ?? '100%',
-    };
+    Object.assign(styles, {
+      ...sizes,
+    });
+  }
 
-    Object.assign(this._startPaneInternalStyles, {
-      ...startSizes,
-      flex: this._startFlex,
+  private _setPaneFlex(styles: StyleInfo, flex: string) {
+    Object.assign(styles, {
+      flex: flex,
     });
-    Object.assign(this._endPaneInternalStyles, {
-      ...endSizes,
-      flex: this._endFlex,
-    });
-    this.requestUpdate();
   }
 
   private _handleExpanderClick(pane: 'start' | 'end', event: PointerEvent) {
