@@ -855,7 +855,7 @@ describe('Splitter', () => {
     });
   });
 
-  describe('Resizing with constraints and edge cases', () => {
+  describe('Resizing with constraints', () => {
     const testMinMaxConstraintsPx = async (
       orientation: SplitterOrientation
     ) => {
@@ -1249,6 +1249,214 @@ describe('Splitter', () => {
     });
 
     //TODO: others
+  });
+
+  describe('RTL', () => {
+    beforeEach(async () => {
+      splitter.dir = 'rtl';
+      await elementUpdated(splitter);
+    });
+
+    it('should resize correctly with pointer in RTL', async () => {
+      const previousSizes = getPanesSizes(splitter, 'width');
+      let deltaX = 100;
+
+      await resize(splitter, deltaX, 0);
+      await elementUpdated(splitter);
+
+      let currentSizes = getPanesSizes(splitter, 'width');
+      // In RTL, moving pointer to the right (positive mouse delta) decreases start pane size
+      expect(currentSizes.startSize).to.equal(previousSizes.startSize - deltaX);
+      expect(currentSizes.endSize).to.equal(previousSizes.endSize + deltaX);
+
+      deltaX *= -1;
+      await resize(splitter, deltaX, 0);
+
+      currentSizes = getPanesSizes(splitter, 'width');
+      expect(currentSizes.startSize).to.equal(previousSizes.startSize);
+      expect(currentSizes.endSize).to.equal(previousSizes.endSize);
+    });
+
+    it('should resize correctly with keyboard in RTL', async () => {
+      const bar = getSplitterPart(splitter, 'bar');
+      let previousSizes = getPanesSizes(splitter, 'width');
+      const resizeDelta = 10;
+
+      bar.focus();
+      await elementUpdated(splitter);
+
+      // arrowLeft should increase start pane size in RTL, as opposed to LTR, where arrowLeft decreases it
+      simulateKeyboard(bar, arrowLeft);
+      await elementUpdated(splitter);
+
+      let currentSizes = getPanesSizes(splitter, 'width');
+      expect(currentSizes.startSize).to.equal(
+        previousSizes.startSize + resizeDelta
+      );
+      expect(currentSizes.endSize).to.equal(
+        previousSizes.endSize - resizeDelta
+      );
+
+      simulateKeyboard(bar, arrowLeft);
+      await elementUpdated(splitter);
+
+      currentSizes = getPanesSizes(splitter, 'width');
+      expect(currentSizes.startSize).to.equal(
+        previousSizes.startSize + resizeDelta * 2
+      );
+      expect(currentSizes.endSize).to.equal(
+        previousSizes.endSize - resizeDelta * 2
+      );
+
+      previousSizes = getPanesSizes(splitter, 'width');
+      simulateKeyboard(bar, arrowRight);
+      await elementUpdated(splitter);
+
+      currentSizes = getPanesSizes(splitter, 'width');
+
+      expect(currentSizes.startSize).to.equal(
+        previousSizes.startSize - resizeDelta
+      );
+      expect(currentSizes.endSize).to.equal(
+        previousSizes.endSize + resizeDelta
+      );
+    });
+
+    it('should expand/collapse correctly with keyboard in RTL', async () => {
+      const bar = getSplitterPart(splitter, 'bar');
+      bar.focus();
+      await elementUpdated(splitter);
+
+      simulateKeyboard(bar, [ctrlKey, arrowRight]);
+      await elementUpdated(splitter);
+
+      let currentSizes = getPanesSizes(splitter, 'width');
+      const splitterSize = splitter.getBoundingClientRect().width;
+      const barSize = bar.getBoundingClientRect().width;
+
+      expect(currentSizes.startSize).to.equal(0);
+      expect(currentSizes.endSize).to.equal(splitterSize - barSize);
+      expect(splitter.startCollapsed).to.be.true;
+      expect(splitter.endCollapsed).to.be.false;
+
+      simulateKeyboard(bar, [ctrlKey, arrowLeft]);
+      await elementUpdated(splitter);
+
+      currentSizes = getPanesSizes(splitter, 'width');
+
+      expect(currentSizes.startSize).to.be.greaterThan(0);
+      expect(currentSizes.endSize).to.equal(
+        splitterSize - barSize - currentSizes.startSize
+      );
+      expect(splitter.startCollapsed).to.be.false;
+      expect(splitter.endCollapsed).to.be.false;
+
+      simulateKeyboard(bar, [ctrlKey, arrowLeft]);
+      await elementUpdated(splitter);
+
+      currentSizes = getPanesSizes(splitter, 'width');
+
+      expect(currentSizes.startSize).to.equal(splitterSize - barSize);
+      expect(currentSizes.endSize).to.equal(0);
+      expect(splitter.startCollapsed).to.be.false;
+      expect(splitter.endCollapsed).to.be.true;
+
+      simulateKeyboard(bar, [ctrlKey, arrowRight]);
+      await elementUpdated(splitter);
+
+      currentSizes = getPanesSizes(splitter, 'width');
+
+      expect(currentSizes.startSize).to.equal(
+        splitterSize - barSize - currentSizes.endSize
+      );
+      expect(currentSizes.endSize).to.be.greaterThan(0);
+      expect(splitter.startCollapsed).to.be.false;
+      expect(splitter.endCollapsed).to.be.false;
+    });
+
+    it('direction should not affect interactions in vertical orientation', async () => {
+      splitter.orientation = 'vertical';
+      await elementUpdated(splitter);
+
+      // 1. Resize with keyboard
+      const bar = getSplitterPart(splitter, 'bar');
+      let previousSizes = getPanesSizes(splitter, 'height');
+      const resizeDelta = 10;
+
+      bar.focus();
+      await elementUpdated(splitter);
+
+      simulateKeyboard(bar, arrowUp);
+      await elementUpdated(splitter);
+
+      let currentSizes = getPanesSizes(splitter, 'height');
+      expect(currentSizes.startSize).to.equal(
+        previousSizes.startSize - resizeDelta
+      );
+      expect(currentSizes.endSize).to.equal(
+        previousSizes.endSize + resizeDelta
+      );
+
+      previousSizes = getPanesSizes(splitter, 'height');
+      simulateKeyboard(bar, arrowDown);
+      await elementUpdated(splitter);
+
+      currentSizes = getPanesSizes(splitter, 'height');
+
+      expect(currentSizes.startSize).to.equal(
+        previousSizes.startSize + resizeDelta
+      );
+      expect(currentSizes.endSize).to.equal(
+        previousSizes.endSize - resizeDelta
+      );
+
+      // 2. Resize with pointer
+      previousSizes = getPanesSizes(splitter, 'height');
+      let deltaY = 100;
+
+      await resize(splitter, 0, deltaY);
+
+      currentSizes = getPanesSizes(splitter, 'height');
+
+      expect(currentSizes.startSize).to.equal(previousSizes.startSize + deltaY);
+      expect(currentSizes.endSize).to.equal(previousSizes.endSize - deltaY);
+
+      deltaY *= -1;
+      await resize(splitter, 0, deltaY);
+
+      currentSizes = getPanesSizes(splitter, 'height');
+
+      expect(currentSizes.startSize).to.equal(previousSizes.startSize);
+      expect(currentSizes.endSize).to.equal(previousSizes.endSize);
+
+      // 3. Expand/collapse with keyboard
+      bar.focus();
+      await elementUpdated(splitter);
+
+      simulateKeyboard(bar, [ctrlKey, arrowUp]);
+      await elementUpdated(splitter);
+
+      currentSizes = getPanesSizes(splitter, 'height');
+      const splitterSize = splitter.getBoundingClientRect().height;
+      const barSize = bar.getBoundingClientRect().height;
+
+      expect(currentSizes.startSize).to.equal(0);
+      expect(currentSizes.endSize).to.equal(splitterSize - barSize);
+      expect(splitter.startCollapsed).to.be.true;
+      expect(splitter.endCollapsed).to.be.false;
+
+      simulateKeyboard(bar, [ctrlKey, arrowDown]);
+      await elementUpdated(splitter);
+
+      currentSizes = getPanesSizes(splitter, 'height');
+
+      expect(currentSizes.startSize).to.be.greaterThan(0);
+      expect(currentSizes.endSize).to.equal(
+        splitterSize - barSize - currentSizes.startSize
+      );
+      expect(splitter.startCollapsed).to.be.false;
+      expect(splitter.endCollapsed).to.be.false;
+    });
   });
 });
 

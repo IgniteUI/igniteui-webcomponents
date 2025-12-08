@@ -277,7 +277,9 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
       mode: 'immediate',
       updateTarget: false,
       resizeTarget: () => {
-        return this._startPane;
+        return this.orientation === 'horizontal' && !isLTR(this)
+          ? this._endPane
+          : this._startPane;
       },
       start: () => {
         if (this._resizeDisallowed) {
@@ -287,15 +289,13 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
         return true;
       },
       resize: ({ state }) => {
-        const isHorizontal = this.orientation === 'horizontal';
-        const delta = isHorizontal ? state.deltaX : state.deltaY;
+        const delta = this._resolveDelta(state.deltaX, state.deltaY);
         if (delta !== 0) {
           this._resizing(delta);
         }
       },
       end: ({ state }) => {
-        const isHorizontal = this.orientation === 'horizontal';
-        const delta = isHorizontal ? state.deltaX : state.deltaY;
+        const delta = this._resolveDelta(state.deltaX, state.deltaY);
         if (delta !== 0) {
           this._resizeEnd(delta);
         }
@@ -353,12 +353,23 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
     if (this._resizeDisallowed || this.orientation !== validOrientation) {
       return;
     }
-    const delta = 10 * direction * (isLTR(this) ? 1 : -1);
+    const delta = this._resolveDelta(10, 10, direction);
 
     this._resizeStart();
     this._resizing(delta);
     this._resizeEnd(delta);
     return true;
+  }
+
+  private _resolveDelta(
+    deltaX: number,
+    deltaY: number,
+    direction?: -1 | 1
+  ): number {
+    const isHorizontal = this.orientation === 'horizontal';
+    const rtlMultiplier = isHorizontal && !isLTR(this) ? -1 : 1;
+    const delta = isHorizontal ? deltaX : deltaY;
+    return delta * rtlMultiplier * (direction ?? 1);
   }
 
   private _handleExpanderStartAction() {
@@ -378,7 +389,12 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
     if (this.nonCollapsible || this.orientation !== validOrientation) {
       return;
     }
-    target === 'start'
+    let effectiveTarget = target;
+    if (validOrientation === 'horizontal' && !isLTR(this)) {
+      effectiveTarget = target === 'start' ? 'end' : 'start';
+    }
+
+    effectiveTarget === 'start'
       ? this._handleExpanderStartAction()
       : this._handleExpanderEndAction();
   }
@@ -473,7 +489,6 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
     return [startPaneRect[relevantDimension], endPaneRect[relevantDimension]];
   }
 
-  // TODO: handle RTL
   private _calcNewSizes(delta: number): [number, number] {
     if (!this._resizeState) return [0, 0];
 
