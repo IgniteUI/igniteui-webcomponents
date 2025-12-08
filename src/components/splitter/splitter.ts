@@ -77,7 +77,6 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   private _startSize = 'auto';
   private _endSize = 'auto';
   private _resizeState: SplitterResizeState | null = null;
-  private _baseResizeObserver?: ResizeObserver;
 
   private readonly _internals = addInternalsController(this, {
     initialARIA: {
@@ -96,20 +95,6 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
 
   @query('[part~="bar"]', true)
   private readonly _bar!: HTMLElement;
-
-  private get _startFlex() {
-    const grow = this._isAutoSize('start') ? 1 : 0;
-    const shrink =
-      this._isAutoSize('start') || this._isPercentageSize('start') ? 1 : 0;
-    return `${grow} ${shrink} ${this._startSize}`;
-  }
-
-  private get _endFlex() {
-    const grow = this._isAutoSize('end') ? 1 : 0;
-    const shrink =
-      this._isAutoSize('end') || this._isPercentageSize('end') ? 1 : 0;
-    return `${grow} ${shrink} ${this._endSize}`;
-  }
 
   private get _resizeDisallowed() {
     return this.nonResizable || this.startCollapsed || this.endCollapsed;
@@ -183,9 +168,9 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
    * @attr
    */
   @property({ attribute: 'start-size', reflect: true })
-  public set startSize(value: string) {
-    this._startSize = value;
-    this._setPaneFlex(this._startPaneInternalStyles, this._startFlex);
+  public set startSize(value: string | undefined) {
+    this._startSize = value ? value : 'auto';
+    this._setPaneFlex(this._startPaneInternalStyles, this._getFlex('start'));
   }
 
   public get startSize(): string | undefined {
@@ -197,9 +182,9 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
    * @attr
    */
   @property({ attribute: 'end-size', reflect: true })
-  public set endSize(value: string) {
-    this._endSize = value;
-    this._setPaneFlex(this._endPaneInternalStyles, this._endFlex);
+  public set endSize(value: string | undefined) {
+    this._endSize = value ? value : 'auto';
+    this._setPaneFlex(this._endPaneInternalStyles, this._getFlex('end'));
   }
 
   public get endSize(): string | undefined {
@@ -258,14 +243,6 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
       changed.has('endMaxSize')
     ) {
       this._initPanes();
-    }
-  }
-
-  public override disconnectedCallback(): void {
-    super.disconnectedCallback();
-    if (this._baseResizeObserver) {
-      this._baseResizeObserver.disconnect();
-      this._baseResizeObserver = undefined;
     }
   }
 
@@ -329,10 +306,6 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
 
   protected override firstUpdated() {
     this._initPanes();
-    this._baseResizeObserver = new ResizeObserver(() =>
-      this._onContainerResized()
-    );
-    this._baseResizeObserver.observe(this._base);
   }
 
   //#endregion
@@ -352,27 +325,6 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
 
   //#region Internal API
 
-  private _onContainerResized = () => {
-    window.setTimeout(() => {
-      const [startSize, endSize] = this._rectSize();
-      const total = this.getTotalSize();
-      if (
-        !this._isPercentageSize('end') &&
-        !this._isAutoSize('end') &&
-        startSize + endSize > total
-      ) {
-        this.endSize = `${total - startSize}px`;
-      }
-      if (
-        !this._isPercentageSize('start') &&
-        !this._isAutoSize('start') &&
-        startSize + endSize > total
-      ) {
-        this.startSize = `${total - endSize}px`;
-      }
-    }, 100);
-  };
-
   private _isPercentageSize(which: 'start' | 'end') {
     const targetSize = which === 'start' ? this._startSize : this._endSize;
     return !!targetSize && targetSize.indexOf('%') !== -1;
@@ -381,6 +333,17 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   private _isAutoSize(which: 'start' | 'end') {
     const targetSize = which === 'start' ? this._startSize : this._endSize;
     return !!targetSize && targetSize === 'auto';
+  }
+
+  private _getFlex(which: 'start' | 'end'): string {
+    const grow = this._isAutoSize(which) ? 1 : 0;
+    const shrink = 1;
+    const size = this._isAutoSize(which)
+      ? '0px'
+      : which === 'start'
+        ? this._startSize
+        : this._endSize;
+    return `${grow} ${shrink} ${size}`;
   }
 
   private _handleResizePanes(
@@ -470,14 +433,7 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   }
 
   private _resizing(delta: number) {
-    let [paneSize, siblingSize] = this._calcNewSizes(delta);
-    const totalSize = this.getTotalSize();
-    [paneSize, siblingSize] = this._fitInSplitter(
-      totalSize,
-      paneSize,
-      siblingSize,
-      delta
-    );
+    const [paneSize, siblingSize] = this._calcNewSizes(delta);
 
     this.startSize = `${paneSize}px`;
     this.endSize = `${siblingSize}px`;
@@ -487,35 +443,22 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
     });
   }
 
+  private _computeSize(pane: PaneResizeState, paneSize: number): string {
+    const totalSize = this.getTotalSize();
+    if (pane.isPercentageBased) {
+      const percentPaneSize = (paneSize / totalSize) * 100;
+      return `${percentPaneSize}%`;
+    }
+    return `${paneSize}px`;
+  }
+
   private _resizeEnd(delta: number) {
     if (!this._resizeState) return;
-    let [paneSize, siblingSize] = this._calcNewSizes(delta);
-    const totalSize = this.getTotalSize();
+    const [paneSize, siblingSize] = this._calcNewSizes(delta);
 
-    [paneSize, siblingSize] = this._fitInSplitter(
-      totalSize,
-      paneSize,
-      siblingSize,
-      delta
-    );
+    this.startSize = this._computeSize(this._resizeState.startPane, paneSize);
+    this.endSize = this._computeSize(this._resizeState.endPane, siblingSize);
 
-    if (this._resizeState.startPane.isPercentageBased) {
-      // handle % resizes
-      const percentPaneSize = (paneSize / totalSize) * 100;
-      this.startSize = `${percentPaneSize}%`;
-    } else {
-      // px resize
-      this.startSize = `${paneSize}px`;
-    }
-
-    if (this._resizeState.endPane.isPercentageBased) {
-      // handle % resizes
-      const percentSiblingSize = (siblingSize / totalSize) * 100;
-      this.endSize = `${percentSiblingSize}%`;
-    } else {
-      // px resize
-      this.endSize = `${siblingSize}px`;
-    }
     this.emitEvent('igcResizeEnd', {
       detail: { pane: this._startPane, sibling: this._endPane },
     });
@@ -530,57 +473,35 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
     return [startPaneRect[relevantDimension], endPaneRect[relevantDimension]];
   }
 
-  private _fitInSplitter(
-    total: number,
-    startSize: number,
-    endSize: number,
-    delta: number
-  ): [number, number] {
-    let newStartSize = startSize;
-    let newEndSize = endSize;
-    if (startSize + endSize > total && delta > 0) {
-      newEndSize = total - newStartSize;
-    } else if (newStartSize + newEndSize > total && delta < 0) {
-      newStartSize = total - newEndSize;
-    }
-    return [newStartSize, newEndSize];
-  }
-
   // TODO: handle RTL
   private _calcNewSizes(delta: number): [number, number] {
     if (!this._resizeState) return [0, 0];
 
+    const start = this._resizeState.startPane;
+    const end = this._resizeState.endPane;
+    const minStart = start.minSizePx || 0;
+    const minEnd = end.minSizePx || 0;
+    const maxStart =
+      start.maxSizePx || start.initialSize + end.initialSize - minEnd;
+    const maxEnd =
+      end.maxSizePx || start.initialSize + end.initialSize - minStart;
+
     let finalDelta: number;
-    const min = this._resizeState.startPane.minSizePx || 0;
-    const minSibling = this._resizeState.endPane.minSizePx || 0;
-    const max =
-      this._resizeState.startPane.maxSizePx ||
-      this._resizeState.startPane.initialSize +
-        this._resizeState.endPane.initialSize -
-        minSibling;
-    const maxSibling =
-      this._resizeState.endPane.maxSizePx ||
-      this._resizeState.startPane.initialSize +
-        this._resizeState.endPane.initialSize -
-        min;
 
     if (delta < 0) {
       const maxPossibleDelta = Math.min(
-        this._resizeState.startPane.initialSize - min,
-        maxSibling - this._resizeState.endPane.initialSize
+        start.initialSize - minStart,
+        maxEnd - end.initialSize
       );
       finalDelta = Math.min(maxPossibleDelta, Math.abs(delta)) * -1;
     } else {
       const maxPossibleDelta = Math.min(
-        max - this._resizeState.startPane.initialSize,
-        this._resizeState.endPane.initialSize - minSibling
+        maxStart - start.initialSize,
+        end.initialSize - minEnd
       );
       finalDelta = Math.min(maxPossibleDelta, Math.abs(delta));
     }
-    return [
-      this._resizeState.startPane.initialSize + finalDelta,
-      this._resizeState.endPane.initialSize - finalDelta,
-    ];
+    return [start.initialSize + finalDelta, end.initialSize - finalDelta];
   }
 
   private getTotalSize() {
@@ -604,9 +525,9 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
     this.startSize = 'auto';
     this.endSize = 'auto';
 
-    this._setPaneFlex(this._startPaneInternalStyles, this._startFlex);
+    this._setPaneFlex(this._startPaneInternalStyles, this._getFlex('start'));
     this._setPaneMinMaxSizes(this._startPaneInternalStyles, '0', '100%');
-    this._setPaneFlex(this._endPaneInternalStyles, this._endFlex);
+    this._setPaneFlex(this._endPaneInternalStyles, this._getFlex('end'));
     this._setPaneMinMaxSizes(this._endPaneInternalStyles, '0', '100%');
   }
 
@@ -627,8 +548,8 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
       );
     }
 
-    this._setPaneFlex(this._startPaneInternalStyles, this._startFlex);
-    this._setPaneFlex(this._endPaneInternalStyles, this._endFlex);
+    this._setPaneFlex(this._startPaneInternalStyles, this._getFlex('start'));
+    this._setPaneFlex(this._endPaneInternalStyles, this._getFlex('end'));
     this.requestUpdate();
   }
 

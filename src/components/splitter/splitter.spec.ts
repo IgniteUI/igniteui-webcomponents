@@ -241,13 +241,13 @@ describe('Splitter', () => {
 
       const startPart = getSplitterPart(splitter, 'start-pane');
       const style = getComputedStyle(startPart);
-      expect(style.flex).to.equal('0 0 200px');
+      expect(style.flex).to.equal('0 1 200px');
 
       splitter.orientation = 'vertical';
       await elementUpdated(splitter);
 
       expect(splitter.startSize).to.equal('auto');
-      expect(style.flex).to.equal('1 1 auto');
+      expect(style.flex).to.equal('1 1 0px');
     });
 
     // TODO: verify the attribute type, default value, reflection
@@ -256,7 +256,7 @@ describe('Splitter', () => {
 
       const startPart = getSplitterPart(splitter, 'start-pane');
       const style = getComputedStyle(startPart);
-      expect(style.flex).to.equal('1 1 auto');
+      expect(style.flex).to.equal('1 1 0px');
 
       expect(splitter.startSize).to.equal('auto');
       expect(style.minWidth).to.equal('0px');
@@ -368,7 +368,7 @@ describe('Splitter', () => {
 
         const startPart = getSplitterPart(splitter, 'start-pane');
         const style = getComputedStyle(startPart);
-        expect(style.flex).to.equal('1 1 auto');
+        expect(style.flex).to.equal('1 1 0px');
 
         const sizes = getPanesSizes(
           splitter,
