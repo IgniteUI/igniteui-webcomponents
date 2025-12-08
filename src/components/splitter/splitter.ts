@@ -539,6 +539,10 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   private _resetPanes() {
     this.startSize = 'auto';
     this.endSize = 'auto';
+    this.startMinSize = undefined;
+    this.startMaxSize = undefined;
+    this.endMinSize = undefined;
+    this.endMaxSize = undefined;
 
     this._setPaneFlex(this._startPaneInternalStyles, this._getFlex('start'));
     this._setPaneMinMaxSizes(this._startPaneInternalStyles, '0', '100%');
@@ -547,7 +551,6 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   }
 
   private _initPanes() {
-    // TODO: discuss if panes should be reset if one is collapsed (as in Angular currently)
     if (this.startCollapsed || this.endCollapsed) {
       this._resetPanes();
     } else {
@@ -574,13 +577,23 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
     maxSize?: string
   ) {
     const isHorizontal = this.orientation === 'horizontal';
-    const minProp = isHorizontal ? 'minWidth' : 'minHeight';
-    const maxProp = isHorizontal ? 'maxWidth' : 'maxHeight';
 
-    const sizes = {
-      [minProp]: minSize ?? 0,
-      [maxProp]: maxSize ?? '100%',
-    };
+    const min = minSize ?? 0;
+    const max = maxSize ?? '100%';
+
+    const sizes = isHorizontal
+      ? {
+          minWidth: min,
+          maxWidth: max,
+          minHeight: 0,
+          maxHeight: '100%',
+        }
+      : {
+          minWidth: 0,
+          maxWidth: '100%',
+          minHeight: min,
+          maxHeight: max,
+        };
 
     Object.assign(styles, {
       ...sizes,

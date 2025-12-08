@@ -210,7 +210,6 @@ describe('Splitter', () => {
       expect(style.cursor).to.equal('row-resize');
     });
 
-    //TODO: this is the behavior in Angular - to discuss
     it('should reset sizes when pane is initially collapsed.', async () => {
       splitter = await fixture<IgcSplitterComponent>(
         createSplitterWithCollapsedPane()
@@ -236,7 +235,17 @@ describe('Splitter', () => {
 
   describe('Properties', () => {
     it('should reset pane sizes when orientation changes', async () => {
-      splitter.startSize = '200px';
+      splitter = await fixture<IgcSplitterComponent>(
+        createTwoPanesWithSizesAndConstraints({
+          orientation: 'horizontal',
+          startSize: '200px',
+          startMinSize: '100px',
+          startMaxSize: '300px',
+          endSize: '100px',
+          endMinSize: '100px',
+          endMaxSize: '300px',
+        })
+      );
       await elementUpdated(splitter);
 
       const startPart = getSplitterPart(splitter, 'start-pane');
@@ -248,6 +257,14 @@ describe('Splitter', () => {
 
       expect(splitter.startSize).to.equal('auto');
       expect(style.flex).to.equal('1 1 0px');
+
+      expect(splitter.startMinSize).to.be.undefined;
+      expect(splitter.startMaxSize).to.be.undefined;
+
+      expect(style.minHeight).to.equal('0px');
+      expect(style.maxHeight).to.equal('100%');
+      expect(style.minWidth).to.equal('0px');
+      expect(style.maxWidth).to.equal('100%');
     });
 
     // TODO: verify the attribute type, default value, reflection
@@ -1236,6 +1253,35 @@ describe('Splitter', () => {
         currentSizes.endSize,
         'y'
       );
+    });
+
+    it('should properly resize after switching orientation (horizontal -> vertical -> horizontal) w/ constraints', async () => {
+      splitter = await fixture<IgcSplitterComponent>(
+        createTwoPanesWithSizesAndConstraints({
+          orientation: 'horizontal',
+          startSize: '100px',
+          startMinSize: '100px',
+          startMaxSize: '300px',
+          endSize: '100px',
+          endMinSize: '100px',
+          endMaxSize: '300px',
+        })
+      );
+      splitter.orientation = 'vertical';
+      await elementUpdated(splitter);
+
+      splitter.orientation = 'horizontal';
+      await elementUpdated(splitter);
+
+      const previousSizes = getPanesSizes(splitter, 'width');
+      const deltaX = 100;
+
+      await resize(splitter, deltaX, 0);
+      await elementUpdated(splitter);
+
+      const currentSizes = getPanesSizes(splitter, 'width');
+      expect(currentSizes.startSize).to.equal(previousSizes.startSize + deltaX);
+      expect(currentSizes.endSize).to.equal(previousSizes.endSize - deltaX);
     });
   });
 
