@@ -11,7 +11,9 @@ $thumb-label-height: rem(30px);
 $tick-width: rem(2px);
 
 :host {
-    display: block;
+    display: flex;
+    flex-grow: 1;
+    flex-direction: column;
 }
 
 slot {
