@@ -22,8 +22,8 @@ import type { SplitterOrientation } from '../types.js';
 import { styles } from './themes/splitter.base.css.js';
 
 export interface IgcSplitterBarResizeEventArgs {
-  pane: HTMLElement;
-  sibling: HTMLElement;
+  startPane: HTMLElement;
+  endPane: HTMLElement;
 }
 
 export interface IgcSplitterComponentEventMap {
@@ -408,7 +408,7 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
     };
     // TODO: are these event args needed?
     this.emitEvent('igcResizeStart', {
-      detail: { pane: this._startPane, sibling: this._endPane },
+      detail: { startPane: this._startPane, endPane: this._endPane },
     });
   }
 
@@ -449,13 +449,13 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   }
 
   private _resizing(delta: number) {
-    const [paneSize, siblingSize] = this._calcNewSizes(delta);
+    const [startPaneSize, endPaneSize] = this._calcNewSizes(delta);
 
-    this.startSize = `${paneSize}px`;
-    this.endSize = `${siblingSize}px`;
+    this.startSize = `${startPaneSize}px`;
+    this.endSize = `${endPaneSize}px`;
 
     this.emitEvent('igcResizing', {
-      detail: { pane: this._startPane, sibling: this._endPane },
+      detail: { startPane: this._startPane, endPane: this._endPane },
     });
   }
 
@@ -470,13 +470,16 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
 
   private _resizeEnd(delta: number) {
     if (!this._resizeState) return;
-    const [paneSize, siblingSize] = this._calcNewSizes(delta);
+    const [startPaneSize, endPaneSize] = this._calcNewSizes(delta);
 
-    this.startSize = this._computeSize(this._resizeState.startPane, paneSize);
-    this.endSize = this._computeSize(this._resizeState.endPane, siblingSize);
+    this.startSize = this._computeSize(
+      this._resizeState.startPane,
+      startPaneSize
+    );
+    this.endSize = this._computeSize(this._resizeState.endPane, endPaneSize);
 
     this.emitEvent('igcResizeEnd', {
-      detail: { pane: this._startPane, sibling: this._endPane },
+      detail: { startPane: this._startPane, endPane: this._endPane },
     });
     this._resizeState = null;
   }
