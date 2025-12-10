@@ -372,6 +372,7 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
     return delta * rtlMultiplier * (direction ?? 1);
   }
 
+  // TODO: should there be events on expand/collapse?
   private _handleExpanderStartAction() {
     const target = this.endCollapsed ? 'end' : 'start';
     this.toggle(target);
@@ -635,6 +636,7 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
     }
     const { prevButtonHidden, nextButtonHidden } =
       this._getExpanderHiddenState();
+    // TODO: expander button icons direction should be reversed in RTL
     return html`
       <div
         part="start-expander"

@@ -267,7 +267,6 @@ describe('Splitter', () => {
       expect(style.maxWidth).to.equal('100%');
     });
 
-    // TODO: verify the attribute type, default value, reflection
     it('should properly set default min/max values when not specified', async () => {
       await elementUpdated(splitter);
 
@@ -1116,6 +1115,101 @@ describe('Splitter', () => {
       expect(sizesAfterSecondResize.endSize).to.equal(totalAvailable - 100);
     };
 
+    const testConstraintsPxAndAutoSizes = async (
+      orientation: SplitterOrientation
+    ) => {
+      const startMaxSize = 400;
+      const startMinSize = 100;
+      const endMaxSize = 350;
+      const endMinSize = 150;
+      const constraintSplitter = await fixture<IgcSplitterComponent>(
+        createTwoPanesWithSizesAndConstraints({
+          orientation,
+          endSize: '200px',
+          startMinSize: `${startMinSize}px`,
+          startMaxSize: `${startMaxSize}px`,
+          endMinSize: `${endMinSize}px`,
+          endMaxSize: `${endMaxSize}px`,
+        })
+      );
+      await elementUpdated(constraintSplitter);
+
+      const isX = orientation === 'horizontal';
+
+      const totalAvailable = getTotalSize(
+        constraintSplitter,
+        isX ? 'width' : 'height'
+      );
+
+      const initialSizes = getPanesSizes(
+        constraintSplitter,
+        isX ? 'width' : 'height'
+      );
+      const initialCombinedSize = initialSizes.startSize + initialSizes.endSize;
+
+      // Try to grow start pane to max, but end pane has min (150px)
+      // Result: Start pane can only grow as much as end pane allows
+      const delta = 1000;
+      await resize(constraintSplitter, isX ? delta : 0, isX ? 0 : delta);
+
+      const sizes = getPanesSizes(constraintSplitter, isX ? 'width' : 'height');
+
+      // Start pane can only grow until end pane hits its minSize
+      expect(sizes.startSize).to.equal(totalAvailable - endMinSize);
+      expect(sizes.endSize).to.equal(endMinSize);
+
+      expect(sizes.startSize + sizes.endSize).to.equal(initialCombinedSize);
+      expect(sizes.startSize + sizes.endSize).to.be.at.most(totalAvailable);
+    };
+
+    const testConstraintsPercentAndAutoSizes = async (
+      orientation: SplitterOrientation
+    ) => {
+      const constraintSplitter = await fixture<IgcSplitterComponent>(
+        createTwoPanesWithSizesAndConstraints({
+          orientation,
+          endSize: '40%',
+          startMinSize: '20%',
+          startMaxSize: '80%',
+          endMinSize: '30%',
+          endMaxSize: '70%',
+        })
+      );
+      await elementUpdated(constraintSplitter);
+
+      const isX = orientation === 'horizontal';
+      const totalAvailable = getTotalSize(
+        constraintSplitter,
+        isX ? 'width' : 'height'
+      );
+
+      const initialSizes = getPanesSizes(
+        constraintSplitter,
+        isX ? 'width' : 'height'
+      );
+      const initialCombinedSize = initialSizes.startSize + initialSizes.endSize;
+
+      // Try to grow start pane to max (80%), but end pane has min (30%)
+      // Result: Start pane can only grow as much as end pane allows
+      const delta = 1000;
+      await resize(constraintSplitter, isX ? delta : 0, isX ? 0 : delta);
+
+      const sizes = getPanesSizes(constraintSplitter, isX ? 'width' : 'height');
+
+      // Start pane can only grow until end pane hits its minSize (30% of total)
+      const expectedEndMin = Math.round((totalAvailable * 30) / 100);
+      const expectedStartAfterResize = totalAvailable - expectedEndMin;
+
+      expect(sizes.startSize).to.be.closeTo(expectedStartAfterResize, 2);
+      expect(sizes.endSize).to.be.closeTo(expectedEndMin, 2);
+
+      expect(sizes.startSize + sizes.endSize).to.be.closeTo(
+        initialCombinedSize,
+        2
+      );
+      expect(sizes.startSize + sizes.endSize).to.be.at.most(totalAvailable);
+    };
+
     describe('Horizontal orientation', () => {
       it('should honor minSize and maxSize constraints when resizing, constraints in px', async () => {
         await testMinMaxConstraintsPx('horizontal');
@@ -1138,11 +1232,11 @@ describe('Splitter', () => {
       });
 
       it('should handle resize with mixed % and auto size', async () => {
-        // TODO
+        await testConstraintsPercentAndAutoSizes('horizontal');
       });
 
       it('should handle mixed px and auto size', async () => {
-        // TODO
+        await testConstraintsPxAndAutoSizes('horizontal');
       });
     });
 
@@ -1168,11 +1262,11 @@ describe('Splitter', () => {
       });
 
       it('should handle resize with mixed % and auto size - vertical', async () => {
-        // TODO
+        await testConstraintsPercentAndAutoSizes('vertical');
       });
 
       it('should handle resize with mixed px and auto size - vertical', async () => {
-        // TODO
+        await testConstraintsPxAndAutoSizes('vertical');
       });
     });
 
@@ -1285,16 +1379,83 @@ describe('Splitter', () => {
     });
   });
 
-  describe('Behavior on window resize', () => {
-    it('should maintain panes sizes in px on window resize', async () => {
-      //TODO
+  describe('Behavior on splitter resize', () => {
+    it('should maintain panes sizes in px on splitter resize', async () => {
+      const splitter = await fixture<IgcSplitterComponent>(
+        createTwoPanesWithSizesAndConstraints({
+          startSize: '200px',
+          endSize: '200px',
+          splitterWidth: '600px',
+        })
+      );
+      await elementUpdated(splitter);
+
+      splitter.style.width = '800px';
+      await elementUpdated(splitter);
+
+      const newSizes = getPanesSizes(splitter, 'width');
+
+      expect(newSizes.startSize).to.equal(200);
+      expect(newSizes.endSize).to.equal(200);
     });
 
-    it('should maintain panes sizes in % on window resize', async () => {
-      //TODO
+    it('should handle panes sizes in % on window resize', async () => {
+      const splitter = await fixture<IgcSplitterComponent>(
+        createTwoPanesWithSizesAndConstraints({
+          startSize: '20%',
+          endSize: '20%',
+          splitterWidth: '1000px',
+        })
+      );
+      await elementUpdated(splitter);
+
+      splitter.style.width = '800px';
+      await elementUpdated(splitter);
+
+      const newSizes = getPanesSizes(splitter, 'width');
+
+      expect(newSizes.startSize).to.equal(0.2 * 800);
+      expect(newSizes.endSize).to.equal(0.2 * 800);
     });
 
-    //TODO: others
+    it('should handle panes sizes with mixed px and % on window resize', async () => {
+      const splitter = await fixture<IgcSplitterComponent>(
+        createTwoPanesWithSizesAndConstraints({
+          startSize: '200px',
+          endSize: '20%',
+          splitterWidth: '1000px',
+        })
+      );
+      await elementUpdated(splitter);
+
+      splitter.style.width = '800px';
+      await elementUpdated(splitter);
+
+      const newSizes = getPanesSizes(splitter, 'width');
+      const totalAvailable = getTotalSize(splitter, 'width');
+
+      expect(newSizes.startSize).to.equal(200);
+      expect(newSizes.endSize).to.be.closeTo(totalAvailable * 0.2, 2);
+    });
+
+    it('should handle sizes on window resize with auto and % sizes', async () => {
+      const splitter = await fixture<IgcSplitterComponent>(
+        createTwoPanesWithSizesAndConstraints({
+          endSize: '30%',
+          splitterWidth: '1000px',
+        })
+      );
+      await elementUpdated(splitter);
+
+      splitter.style.width = '800px';
+      await elementUpdated(splitter);
+
+      const newSizes = getPanesSizes(splitter, 'width');
+      const totalAvailable = getTotalSize(splitter, 'width');
+
+      expect(newSizes.endSize).to.be.closeTo(totalAvailable * 0.3, 2);
+      expect(newSizes.startSize).to.equal(totalAvailable - newSizes.endSize);
+    });
   });
 
   describe('RTL', () => {
@@ -1414,6 +1575,60 @@ describe('Splitter', () => {
 
       expect(currentSizes.startSize).to.equal(
         splitterSize - barSize - currentSizes.endSize
+      );
+      expect(currentSizes.endSize).to.be.greaterThan(0);
+      expect(splitter.startCollapsed).to.be.false;
+      expect(splitter.endCollapsed).to.be.false;
+    });
+
+    it('should expand/collapse the correct pane through the expander buttons in RTL', async () => {
+      const startExpander = getSplitterPart(splitter, 'start-expander');
+      const endExpander = getSplitterPart(splitter, 'end-expander');
+
+      simulatePointerDown(startExpander, { bubbles: true });
+      await elementUpdated(splitter);
+      await nextFrame();
+
+      const totalAvailable = getTotalSize(splitter, 'width');
+      let currentSizes = getPanesSizes(splitter, 'width');
+
+      expect(currentSizes.startSize).to.equal(0);
+      expect(currentSizes.endSize).to.equal(totalAvailable);
+      expect(splitter.startCollapsed).to.be.true;
+      expect(splitter.endCollapsed).to.be.false;
+
+      simulatePointerDown(startExpander, { bubbles: true });
+      await elementUpdated(splitter);
+      await nextFrame();
+
+      currentSizes = getPanesSizes(splitter, 'width');
+
+      expect(currentSizes.startSize).to.be.greaterThan(0);
+      expect(currentSizes.endSize).to.equal(
+        totalAvailable - currentSizes.startSize
+      );
+      expect(splitter.startCollapsed).to.be.false;
+      expect(splitter.endCollapsed).to.be.false;
+
+      simulatePointerDown(endExpander, { bubbles: true });
+      await elementUpdated(splitter);
+      await nextFrame();
+
+      currentSizes = getPanesSizes(splitter, 'width');
+
+      expect(currentSizes.startSize).to.equal(totalAvailable);
+      expect(currentSizes.endSize).to.equal(0);
+      expect(splitter.startCollapsed).to.be.false;
+      expect(splitter.endCollapsed).to.be.true;
+
+      simulatePointerDown(endExpander, { bubbles: true });
+      await elementUpdated(splitter);
+      await nextFrame();
+
+      currentSizes = getPanesSizes(splitter, 'width');
+
+      expect(currentSizes.startSize).to.equal(
+        totalAvailable - currentSizes.endSize
       );
       expect(currentSizes.endSize).to.be.greaterThan(0);
       expect(splitter.startCollapsed).to.be.false;
