@@ -40,15 +40,6 @@ export default class IgcCarouselSlideComponent extends LitElement {
 
   private _carousel?: IgcCarouselComponent;
 
-  // Set carousel reference once provider is ready
-  private readonly _context = createAsyncContext(
-    this,
-    carouselContext,
-    (carousel) => {
-      this._carousel = carousel;
-    }
-  );
-
   protected get _index(): number {
     return this._carousel ? this._carousel.slides.indexOf(this) : 0;
   }
@@ -81,6 +72,15 @@ export default class IgcCarouselSlideComponent extends LitElement {
   /* blazorSuppress */
   @property({ type: Boolean, reflect: true })
   public previous = false;
+
+  constructor() {
+    super();
+
+    // Set carousel reference once provider is ready (addresses Blazor timing issue)
+    createAsyncContext(this, carouselContext, (carousel) => {
+      this._carousel = carousel;
+    });
+  }
 
   /**
    * @hidden @internal
