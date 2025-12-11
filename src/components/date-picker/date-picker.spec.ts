@@ -1,5 +1,4 @@
-import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
-import { spy } from 'sinon';
+import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import IgcCalendarComponent from '../calendar/calendar.js';
 import {
   getCalendarDOM,
@@ -15,8 +14,11 @@ import {
   escapeKey,
 } from '../common/controllers/key-bindings.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
+import { elementUpdated, fixture, html } from '../common/helpers.spec.js';
 import { equal } from '../common/util.js';
 import {
+  expectCalledWith,
+  expectNotCalledWith,
   isFocused,
   simulateClick,
   simulateKeyboard,
@@ -25,7 +27,7 @@ import IgcDateTimeInputComponent from '../date-time-input/date-time-input.js';
 import IgcDatePickerComponent from './date-picker.js';
 
 describe('Date picker', () => {
-  before(() => defineComponents(IgcDatePickerComponent));
+  beforeAll(() => defineComponents(IgcDatePickerComponent));
 
   const pickerShowIcon = 'today';
   const pickerClearIcon = 'input_clear';
@@ -307,17 +309,17 @@ describe('Date picker', () => {
     it('should show/hide the picker based on the value of the open attribute', async () => {
       expect(picker.open).to.equal(false);
       picker.open = true;
-      const eventSpy = spy(picker, 'emitEvent');
+      const spy = vi.spyOn(picker, 'emitEvent');
       await elementUpdated(picker);
 
       expect(picker.open).to.equal(true);
-      expect(eventSpy).not.called;
+      expect(spy).not.toHaveBeenCalled();
 
       picker.open = false;
       await elementUpdated(picker);
 
       expect(picker.open).to.equal(false);
-      expect(eventSpy).not.called;
+      expect(spy).not.toHaveBeenCalled();
     });
 
     it('should set prompt char correctly', async () => {
@@ -334,12 +336,12 @@ describe('Date picker', () => {
 
       await picker.show();
 
-      const eventSpy = spy(picker, 'emitEvent');
+      const spy = vi.spyOn(picker, 'emitEvent');
 
       selectCurrentDate(calendar);
       await elementUpdated(picker);
 
-      expect(eventSpy).calledOnce;
+      expect(spy).toHaveBeenCalledTimes(1);
 
       checkDatesEqual(picker.value as Date, currentDate);
       checkDatesEqual(calendar.value as Date, currentDate);
@@ -369,19 +371,19 @@ describe('Date picker', () => {
 
       await picker.show();
 
-      const eventSpy = spy(picker, 'emitEvent');
+      const spy = vi.spyOn(picker, 'emitEvent');
 
       selectCurrentDate(calendar);
       await elementUpdated(picker);
 
-      expect(eventSpy).calledWith('igcChange');
+      expectCalledWith(spy, 'igcChange');
       checkDatesEqual(picker.value as Date, currentDate);
 
-      eventSpy.resetHistory();
+      spy.mockClear();
       simulateKeyboard(dateTimeInput, '1');
       await elementUpdated(picker);
 
-      expect(eventSpy).not.called;
+      expect(spy).not.toHaveBeenCalled();
       checkDatesEqual(picker.value as Date, currentDate);
     });
 
@@ -394,22 +396,22 @@ describe('Date picker', () => {
 
       await picker.show();
 
-      const eventSpy = spy(picker, 'emitEvent');
-      const calendarEventSpy = spy(calendar, 'emitEvent');
+      const spy = vi.spyOn(picker, 'emitEvent');
+      const calendarEventSpy = vi.spyOn(calendar, 'emitEvent');
 
       selectCurrentDate(calendar);
       await elementUpdated(picker);
 
-      expect(eventSpy).not.calledWith('igcChange');
-      expect(calendarEventSpy).calledWith('igcChange');
+      expect(spy).not.toHaveBeenCalledWith('igcChange');
+      expectCalledWith(calendarEventSpy, 'igcChange');
       checkDatesEqual(picker.value as Date, tomorrowDate);
       checkDatesEqual(calendar.value as Date, tomorrowDate);
 
-      eventSpy.resetHistory();
+      spy.mockClear();
       simulateKeyboard(dateTimeInput, '1');
       await elementUpdated(picker);
 
-      expect(eventSpy).not.called;
+      expect(spy).not.toHaveBeenCalled();
       checkDatesEqual(picker.value as Date, tomorrowDate);
     });
 
@@ -569,7 +571,7 @@ describe('Date picker', () => {
 
       it('should default inputFormat to whatever Intl.DateTimeFormat returns for the current locale', async () => {
         const defaultFormat = 'MM/dd/yyyy';
-        expect(picker.locale).to.equal('en-US');
+        expect(picker.locale).to.equal('en');
         expect(picker.inputFormat).to.equal(defaultFormat);
 
         picker.locale = 'fr';
@@ -579,7 +581,7 @@ describe('Date picker', () => {
       });
 
       it('should use the value of locale format for displayFormat, if it is not defined', async () => {
-        expect(picker.locale).to.equal('en-US');
+        expect(picker.locale).to.equal('en');
         expect(picker.getAttribute('display-format')).to.be.null;
         expect(picker.displayFormat).to.equal('M/d/yyyy');
 
@@ -624,27 +626,27 @@ describe('Date picker', () => {
     });
 
     it('should open/close the picker on invoking show/hide/toggle and not emit events', async () => {
-      const eventSpy = spy(picker, 'emitEvent');
+      const spy = vi.spyOn(picker, 'emitEvent');
 
       expect(picker.open).to.be.false;
       await picker.show();
 
-      expect(eventSpy).not.called;
+      expect(spy).not.toHaveBeenCalled();
       expect(picker.open).to.be.true;
 
       await picker.hide();
 
-      expect(eventSpy).not.called;
+      expect(spy).not.toHaveBeenCalled();
       expect(picker.open).to.be.false;
 
       await picker.toggle();
 
-      expect(eventSpy).not.called;
+      expect(spy).not.toHaveBeenCalled();
       expect(picker.open).to.be.true;
 
       await picker.toggle();
 
-      expect(eventSpy).not.called;
+      expect(spy).not.toHaveBeenCalled();
       expect(picker.open).to.be.false;
     });
 
@@ -661,22 +663,22 @@ describe('Date picker', () => {
     });
 
     it('should delegate stepUp and stepDown to the igc-date-time-input', async () => {
-      const stepUpSpy = spy(dateTimeInput, 'stepUp');
-      const stepDownSpy = spy(dateTimeInput, 'stepDown');
+      const stepUpSpy = vi.spyOn(dateTimeInput, 'stepUp');
+      const stepDownSpy = vi.spyOn(dateTimeInput, 'stepDown');
 
       picker.stepUp();
       await elementUpdated(picker);
 
-      expect(stepUpSpy).called;
+      expect(stepUpSpy).toHaveBeenCalled();
 
       picker.stepDown();
       await elementUpdated(picker);
 
-      expect(stepDownSpy).called;
+      expect(stepDownSpy).toHaveBeenCalled();
     });
 
     it('should select the text in the input with the select method', async () => {
-      const selectSpy = spy(dateTimeInput, 'select');
+      const selectSpy = vi.spyOn(dateTimeInput, 'select');
       picker.value = new Date();
       await elementUpdated(picker);
 
@@ -685,13 +687,13 @@ describe('Date picker', () => {
       picker.select();
       await elementUpdated(picker);
 
-      expect(selectSpy).to.be.called;
+      expect(selectSpy).toHaveBeenCalled();
       expect(input.selectionStart).to.eq(0);
       expect(input.selectionEnd).to.eq(input.value.length);
     });
 
     it('should set the text selection range in the input with setSelectionRange()', async () => {
-      const selectionRangeSpy = spy(dateTimeInput, 'setSelectionRange');
+      const selectionRangeSpy = vi.spyOn(dateTimeInput, 'setSelectionRange');
       picker.value = new Date();
       await elementUpdated(picker);
 
@@ -700,13 +702,13 @@ describe('Date picker', () => {
       picker.setSelectionRange(0, 2);
       await elementUpdated(picker);
 
-      expect(selectionRangeSpy).to.be.called;
+      expect(selectionRangeSpy).toHaveBeenCalled();
       expect(input.selectionStart).to.eq(0);
       expect(input.selectionEnd).to.eq(2);
     });
 
     it('should replace the selected text in the input and re-apply the mask with setRangeText()', async () => {
-      const setRangeTextSpy = spy(dateTimeInput, 'setRangeText');
+      const setRangeTextSpy = vi.spyOn(dateTimeInput, 'setRangeText');
       picker.value = new Date(2024, 2, 21);
       const expectedValue = new Date(2023, 2, 21);
       await elementUpdated(picker);
@@ -715,7 +717,7 @@ describe('Date picker', () => {
       picker.setRangeText('2023', 6, 10);
       await elementUpdated(picker);
 
-      expect(setRangeTextSpy).to.be.called;
+      expect(setRangeTextSpy).toHaveBeenCalled();
 
       checkDatesEqual(new Date(input.value), expectedValue);
       checkDatesEqual(picker.value!, expectedValue);
@@ -725,22 +727,22 @@ describe('Date picker', () => {
 
   describe('Interactions', () => {
     it('should close the picker when in open state on pressing Escape', async () => {
-      const eventSpy = spy(picker, 'emitEvent');
+      const eventSpy = vi.spyOn(picker, 'emitEvent');
       picker.focus();
       simulateKeyboard(picker, escapeKey);
       await elementUpdated(picker);
 
-      expect(eventSpy).not.called;
+      expect(eventSpy).not.toHaveBeenCalled();
 
       await picker.show();
 
       simulateKeyboard(picker, escapeKey);
       await elementUpdated(picker);
 
-      expect(eventSpy).calledTwice;
-      expect(eventSpy).calledWith('igcClosing');
-      expect(eventSpy).calledWith('igcClosed');
-      eventSpy.resetHistory();
+      expect(eventSpy).toHaveBeenCalledTimes(2);
+      expectCalledWith(eventSpy, 'igcClosing');
+      expectCalledWith(eventSpy, 'igcClosed');
+      eventSpy.mockClear();
 
       // dialog mode
       picker.mode = 'dialog';
@@ -749,13 +751,13 @@ describe('Date picker', () => {
       simulateKeyboard(picker, escapeKey);
       await elementUpdated(picker);
 
-      expect(eventSpy).calledTwice;
-      expect(eventSpy).calledWith('igcClosing');
-      expect(eventSpy).calledWith('igcClosed');
+      expect(eventSpy).toHaveBeenCalledTimes(2);
+      expectCalledWith(eventSpy, 'igcClosing');
+      expectCalledWith(eventSpy, 'igcClosed');
     });
 
     it('should open the calendar picker on Alt + ArrowDown and close it on Alt + ArrowUp - dropdown mode', async () => {
-      const eventSpy = spy(picker, 'emitEvent');
+      const eventSpy = vi.spyOn(picker, 'emitEvent');
       expect(picker.open).to.be.false;
       picker.focus();
       simulateKeyboard(picker, [altKey, arrowDown]);
@@ -763,22 +765,21 @@ describe('Date picker', () => {
 
       expect(picker.open).to.be.true;
 
-      expect(eventSpy).calledWith('igcOpening');
-      expect(eventSpy).calledWith('igcOpened');
+      expect(eventSpy).toHaveBeenCalledWith('igcOpening', { cancelable: true });
+      expect(eventSpy).toHaveBeenCalledWith('igcOpened');
 
-      eventSpy.resetHistory();
-
+      eventSpy.mockClear();
       simulateKeyboard(picker, [altKey, arrowUp]);
       await elementUpdated(picker);
 
       expect(picker.open).to.be.false;
-      expect(eventSpy).calledWith('igcClosing');
-      expect(eventSpy).calledWith('igcClosed');
-      eventSpy.resetHistory();
+      expect(eventSpy).toHaveBeenCalledWith('igcClosing', { cancelable: true });
+      expect(eventSpy).toHaveBeenCalledWith('igcClosed');
+      eventSpy.mockClear();
     });
 
     it('should open the calendar picker on Alt + ArrowDown and close it on Alt + ArrowUp - dialog mode', async () => {
-      const eventSpy = spy(picker, 'emitEvent');
+      const eventSpy = vi.spyOn(picker, 'emitEvent');
       expect(picker.open).to.be.false;
       picker.focus();
       picker.mode = 'dialog';
@@ -791,28 +792,28 @@ describe('Date picker', () => {
       expect(picker.open).to.be.true;
       expect(dialog).not.to.be.undefined;
       expect(dialog?.open).to.be.true;
-      expect(eventSpy).calledWith('igcOpening');
-      expect(eventSpy).calledWith('igcOpened');
-      eventSpy.resetHistory();
+      expect(eventSpy).toHaveBeenCalledWith('igcOpening', { cancelable: true });
+      expect(eventSpy).toHaveBeenCalledWith('igcOpened');
+      eventSpy.mockClear();
 
       simulateKeyboard(picker, [altKey, arrowUp]);
       await elementUpdated(picker);
 
       expect(picker.open).to.be.false;
-      expect(eventSpy).calledWith('igcClosing');
-      expect(eventSpy).calledWith('igcClosed');
+      expect(eventSpy).toHaveBeenCalledWith('igcClosing', { cancelable: true });
+      expect(eventSpy).toHaveBeenCalledWith('igcClosed');
     });
 
     it('should emit or not igcInput according to nonEditable property', async () => {
       const expectedValue = new Date();
-      const eventSpy = spy(picker, 'emitEvent');
+      const eventSpy = vi.spyOn(picker, 'emitEvent');
 
       dateTimeInput.focus();
       simulateKeyboard(dateTimeInput, arrowUp);
       await elementUpdated(picker);
 
-      expect(eventSpy).calledOnceWith('igcInput');
-      eventSpy.resetHistory();
+      expectCalledWith(eventSpy, 'igcInput');
+      eventSpy.mockClear();
       checkDatesEqual(picker.value as Date, expectedValue);
 
       picker.value = null;
@@ -823,7 +824,7 @@ describe('Date picker', () => {
       simulateKeyboard(dateTimeInput, arrowUp);
       await elementUpdated(picker);
 
-      expect(eventSpy).not.called;
+      expect(eventSpy).not.toHaveBeenCalled();
       expect(picker.value).to.be.null;
 
       dateTimeInput.dispatchEvent(
@@ -831,7 +832,7 @@ describe('Date picker', () => {
       );
       await elementUpdated(picker);
 
-      expect(eventSpy).not.called;
+      expect(eventSpy).not.toHaveBeenCalled();
       expect(picker.value).to.be.null;
     });
 
@@ -951,7 +952,7 @@ describe('Date picker', () => {
     });
 
     it('should update the calendar view when typing, i.e. switch to other month', async () => {
-      const eventSpy = spy(picker, 'emitEvent');
+      const eventSpy = vi.spyOn(picker, 'emitEvent');
       const date = new CalendarDay({ year: 2025, month: 1, date: 1 });
       picker.value = date.native;
       picker.open = true;
@@ -967,8 +968,8 @@ describe('Date picker', () => {
 
       await elementUpdated(picker);
 
-      expect(eventSpy).calledWith('igcInput');
-      expect(eventSpy).not.calledWith('igcChange');
+      expectCalledWith(eventSpy, 'igcInput');
+      expectNotCalledWith(eventSpy, 'igcChange');
 
       const expectedValue = new CalendarDay({ year: 2025, month: 3, date: 1 })
         .native;
@@ -976,7 +977,7 @@ describe('Date picker', () => {
     });
 
     it('issue 1884 - should emit igcChange event in dialog mode after clearing the value and losing focus', async () => {
-      const eventSpy = spy(picker, 'emitEvent');
+      const eventSpy = vi.spyOn(picker, 'emitEvent');
 
       // Dropdown mode
 
@@ -994,11 +995,11 @@ describe('Date picker', () => {
       picker.blur();
       expect(isFocused(dateTimeInput)).to.be.false;
 
-      expect(eventSpy).to.be.calledWith('igcChange', {
+      expect(eventSpy).toHaveBeenCalledWith('igcChange', {
         detail: null,
       });
 
-      eventSpy.resetHistory();
+      eventSpy.mockClear();
 
       // Dialog mode
       picker.mode = 'dialog';
@@ -1016,7 +1017,7 @@ describe('Date picker', () => {
       picker.blur();
       expect(isFocused(dateTimeInput)).to.be.false;
 
-      expect(eventSpy).to.be.calledWith('igcChange', {
+      expect(eventSpy).toHaveBeenCalledWith('igcChange', {
         detail: null,
       });
     });

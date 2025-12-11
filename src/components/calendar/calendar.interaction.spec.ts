@@ -1,9 +1,9 @@
-import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
-import { spy } from 'sinon';
-
-import { defineComponents, IgcCalendarComponent } from '../../index.js';
+import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import { defineComponents } from '../common/definitions/defineComponents.js';
+import { elementUpdated, fixture, html } from '../common/helpers.spec.js';
 import { first, last } from '../common/util.js';
 import { simulateClick } from '../common/utils.spec.js';
+import IgcCalendarComponent from './calendar.js';
 import type IgcDaysViewComponent from './days-view/days-view.js';
 import {
   calendarRange,
@@ -19,7 +19,7 @@ describe('Calendar interactions', () => {
   let calendar: IgcCalendarComponent;
   let daysView: IgcDaysViewComponent;
 
-  before(() => defineComponents(IgcCalendarComponent));
+  beforeAll(() => defineComponents(IgcCalendarComponent));
 
   beforeEach(async () => {
     const value = new CalendarDay({ year: 2021, month: 8, date: 29 });
@@ -177,7 +177,7 @@ describe('Calendar interactions', () => {
   });
 
   it('single selection', async () => {
-    const eventSpy = spy(calendar, 'emitEvent');
+    const spy = vi.spyOn(calendar, 'emitEvent');
 
     const current = CalendarDay.from(calendar.value!);
     const previous = current.add('day', -1);
@@ -187,7 +187,7 @@ describe('Calendar interactions', () => {
     simulateClick(previousDOM);
     await elementUpdated(calendar);
 
-    expect(eventSpy).calledOnceWithExactly('igcChange', {
+    expect(spy).toHaveBeenCalledExactlyOnceWith('igcChange', {
       detail: previous.native,
     });
 
@@ -196,7 +196,7 @@ describe('Calendar interactions', () => {
   });
 
   it('issue-1443', async () => {
-    const eventSpy = spy(calendar, 'emitEvent');
+    const spy = vi.spyOn(calendar, 'emitEvent');
     const anchor = new CalendarDay({
       year: 681,
       month: 0,
@@ -214,7 +214,7 @@ describe('Calendar interactions', () => {
     simulateClick(previousDOM);
     await elementUpdated(calendar);
 
-    expect(eventSpy).calledOnceWithExactly('igcChange', {
+    expect(spy).toHaveBeenCalledExactlyOnceWith('igcChange', {
       detail: previous.native,
     });
 
@@ -235,7 +235,7 @@ describe('Calendar interactions', () => {
   });
 
   it('multiple selection', async () => {
-    const eventSpy = spy(calendar, 'emitEvent');
+    const spy = vi.spyOn(calendar, 'emitEvent');
     const start = CalendarDay.from(calendar.value!).set({ date: 15 });
     const dates = Array.from(calendarRange({ start, end: 7 }));
     const elements = dates.map((date) => getDOMDate(date, daysView));
@@ -247,12 +247,14 @@ describe('Calendar interactions', () => {
 
     for (const element of elements) {
       simulateClick(element);
-      expect(eventSpy).calledWith('igcChange', { detail: calendar.values });
+      expect(spy).toHaveBeenCalledWith('igcChange', {
+        detail: calendar.values,
+      });
     }
     await elementUpdated(calendar);
 
     expect(calendar.values).lengthOf(7);
-    expect(eventSpy.callCount).equal(7);
+    expect(spy).toHaveBeenCalledTimes(7);
     expect(first(dates).equalTo(first(calendar.values))).to.be.true;
     expect(last(dates).equalTo(last(calendar.values))).to.be.true;
 
@@ -305,23 +307,25 @@ describe('Calendar interactions', () => {
     }
   });
 
-  it('should emit `igcACtiveDateChange` event when the active date is selected', async () => {
-    const eventSpy = spy(daysView, 'emitEvent');
+  it('should emit `igcActiveDateChange` event when the active date is selected', async () => {
+    const spy = vi.spyOn(daysView, 'emitEvent');
     const date = CalendarDay.from(calendar.value!).set({ date: 28 });
     const element = getDOMDate(date, daysView);
 
     simulateClick(element);
     await elementUpdated(calendar);
 
-    const argDate = CalendarDay.from(eventSpy.getCall(1).lastArg.detail);
+    const argDate = CalendarDay.from(spy.mock.lastCall?.[1]?.detail as Date);
 
-    expect(eventSpy).calledWith('igcActiveDateChange');
+    expect(spy).toBeCalledWith('igcActiveDateChange', {
+      detail: argDate.native,
+    });
     expect(argDate.equalTo(date)).to.be.true;
     expect(argDate.equalTo(calendar.activeDate)).to.be.true;
   });
 
   it('should emit `igcRangePreviewDateChange` event', async () => {
-    const eventSpy = spy(daysView, 'emitEvent');
+    const spy = vi.spyOn(daysView, 'emitEvent');
     const start = CalendarDay.from(calendar.value!).set({ date: 26 });
     const dates = Array.from(calendarRange({ start, end: 7 }));
     const elements = dates.map((date) => getDOMDate(date, daysView));
@@ -333,7 +337,7 @@ describe('Calendar interactions', () => {
     last(elements).focus();
     await elementUpdated(calendar);
 
-    expect(eventSpy).calledWithExactly('igcRangePreviewDateChange', {
+    expect(spy).toHaveBeenCalledWith('igcRangePreviewDateChange', {
       detail: last(dates).native,
     });
   });

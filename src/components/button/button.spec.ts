@@ -1,6 +1,6 @@
-import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
-
+import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { defineComponents } from '../common/definitions/defineComponents.js';
+import { elementUpdated, fixture, html } from '../common/helpers.spec.js';
 import {
   createFormAssociatedTestBed,
   isFocused,
@@ -18,7 +18,9 @@ const Types: Array<IgcButtonComponent['type']> = ['button', 'reset', 'submit'];
 
 describe('Button tests', () => {
   let button: IgcButtonComponent;
-  before(() => defineComponents(IgcButtonComponent, IgcInputComponent));
+  beforeAll(() => {
+    defineComponents(IgcButtonComponent, IgcInputComponent);
+  });
 
   describe('Button component', () => {
     const ignored_DOM_parts = {

@@ -1,7 +1,8 @@
-import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
+import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { CalendarDay } from '../calendar/model.js';
 import { type DateRangeDescriptor, DateRangeType } from '../calendar/types.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
+import { elementUpdated, fixture, html } from '../common/helpers.spec.js';
 import {
   createFormAssociatedTestBed,
   simulateClick,
@@ -24,7 +25,7 @@ import {
 } from './date-range-picker.utils.spec.js';
 
 describe('Date Range Picker Two Inputs - Form integration', () => {
-  before(() => defineComponents(IgcDateRangePickerComponent));
+  beforeAll(() => defineComponents(IgcDateRangePickerComponent));
 
   let picker: IgcDateRangePickerComponent;
   let dateTimeInputs: IgcDateTimeInputComponent[];

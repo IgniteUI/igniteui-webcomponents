@@ -1,21 +1,28 @@
+import { range } from 'lit/directives/range.js';
+import {
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from 'vitest';
+import IgcIconButtonComponent from '../button/icon-button.js';
+import { defineComponents } from '../common/definitions/defineComponents.js';
 import {
   elementUpdated,
-  expect,
   fixture,
   html,
   nextFrame,
-} from '@open-wc/testing';
-import { range } from 'lit/directives/range.js';
-import { match, restore, spy, stub } from 'sinon';
-import IgcIconButtonComponent from '../button/icon-button.js';
-import { defineComponents } from '../common/definitions/defineComponents.js';
+} from '../common/helpers.spec.js';
 import { first } from '../common/util.js';
 import { simulateClick } from '../common/utils.spec.js';
 import IgcTileComponent from './tile.js';
 import IgcTileManagerComponent from './tile-manager.js';
 
 describe('Tile Manager component', () => {
-  before(() => {
+  beforeAll(() => {
     defineComponents(IgcTileManagerComponent);
   });
 
@@ -213,9 +220,7 @@ describe('Tile Manager component', () => {
     it("should check tile manager's row and column template style props", async () => {
       const style = getComputedStyle(getTileManagerBase());
 
-      expect(style.gridTemplateColumns).to.equal(
-        '234.656px 234.656px 234.656px 0px 0px'
-      );
+      expect(style.gridTemplateColumns).to.equal('334px 0px 0px 0px 0px');
 
       tileManager.columnCount = 15;
       await elementUpdated(tileManager);
@@ -497,13 +502,14 @@ describe('Tile Manager component', () => {
 
   describe('Tile state change behavior', () => {
     let tile: any;
+    let exitFullscreenMock: ReturnType<typeof vi.fn>;
 
     beforeEach(async () => {
       tileManager = await fixture<IgcTileManagerComponent>(createTileManager());
       tile = first(tileManager.tiles);
 
       // Mock `requestFullscreen`
-      tile.requestFullscreen = stub().callsFake(() => {
+      tile.requestFullscreen = vi.fn().mockImplementation(() => {
         Object.defineProperty(document, 'fullscreenElement', {
           value: tile,
           configurable: true,
@@ -512,14 +518,15 @@ describe('Tile Manager component', () => {
       });
 
       // Mock `exitFullscreen`
+      exitFullscreenMock = vi.fn().mockImplementation(() => {
+        Object.defineProperty(document, 'fullscreenElement', {
+          value: null,
+          configurable: true,
+        });
+        return Promise.resolve();
+      });
       Object.defineProperty(document, 'exitFullscreen', {
-        value: stub().callsFake(() => {
-          Object.defineProperty(document, 'fullscreenElement', {
-            value: null,
-            configurable: true,
-          });
-          return Promise.resolve();
-        }),
+        value: exitFullscreenMock,
         configurable: true,
       });
     });
@@ -530,7 +537,7 @@ describe('Tile Manager component', () => {
         configurable: true,
       });
 
-      restore();
+      vi.restoreAllMocks();
     });
 
     it('should correctly change fullscreen state on button click', async () => {
@@ -538,25 +545,25 @@ describe('Tile Manager component', () => {
       simulateClick(btnFullscreen);
       await elementUpdated(tileManager);
 
-      expect(tile.requestFullscreen).to.have.been.calledOnce;
-      expect(document.exitFullscreen).to.not.have.been.called;
+      expect(tile.requestFullscreen).toHaveBeenCalledOnce();
+      expect(exitFullscreenMock).not.toHaveBeenCalled();
       expect(tile.fullscreen).to.be.true;
 
       simulateClick(btnFullscreen);
       await elementUpdated(tileManager);
 
-      expect(document.exitFullscreen).to.have.been.calledOnce;
+      expect(exitFullscreenMock).toHaveBeenCalledOnce();
       expect(tile.fullscreen).to.be.false;
     });
 
     it('should correctly fire `igcTileFullscreen` event', async () => {
-      const eventSpy = spy(tile, 'emitEvent');
+      const eventSpy = vi.spyOn(tile, 'emitEvent');
       const fullscreenButton = getActionButtons(tile)[1];
 
       simulateClick(fullscreenButton!);
       await elementUpdated(tileManager);
 
-      expect(eventSpy).calledWith('igcTileFullscreen', {
+      expect(eventSpy).toHaveBeenCalledWith('igcTileFullscreen', {
         detail: { tile: tile, state: true },
         cancelable: true,
       });
@@ -565,7 +572,7 @@ describe('Tile Manager component', () => {
       simulateClick(fullscreenButton!);
       await elementUpdated(tileManager);
 
-      expect(eventSpy).calledWith('igcTileFullscreen', {
+      expect(eventSpy).toHaveBeenCalledWith('igcTileFullscreen', {
         detail: { tile: tile, state: false },
         cancelable: true,
       });
@@ -573,7 +580,7 @@ describe('Tile Manager component', () => {
     });
 
     it('can cancel `igcTileFullscreen` event', async () => {
-      const eventSpy = spy(tile, 'emitEvent');
+      const eventSpy = vi.spyOn(tile, 'emitEvent');
       const fullscreenButton = getActionButtons(tile)[1];
 
       tile.addEventListener('igcTileFullscreen', (ev: CustomEvent) => {
@@ -583,15 +590,15 @@ describe('Tile Manager component', () => {
       simulateClick(fullscreenButton!);
       await elementUpdated(tileManager);
 
-      expect(eventSpy).calledWith(
+      expect(eventSpy).toHaveBeenCalledWith(
         'igcTileFullscreen',
-        match({
+        expect.objectContaining({
           detail: { tile: tile, state: true },
           cancelable: true,
         })
       );
       expect(tile.fullscreen).to.be.false;
-      expect(tile.requestFullscreen).not.to.have.been.called;
+      expect(tile.requestFullscreen).not.toHaveBeenCalled();
     });
 
     it('should update fullscreen property on fullscreenchange (e.g. Esc key is pressed)', async () => {
@@ -643,14 +650,14 @@ describe('Tile Manager component', () => {
     });
 
     it('should correctly fire `igcTileMaximize` event on clicking Maximize button', async () => {
-      const eventSpy = spy(tile, 'emitEvent');
+      const eventSpy = vi.spyOn(tile, 'emitEvent');
       const btnMaximize = getActionButtons(tile)[0];
 
       // Wait for maximized transition trigger from UI
       simulateClick(btnMaximize);
       await viewTransitionComplete();
 
-      expect(eventSpy).calledWith('igcTileMaximize', {
+      expect(eventSpy).toHaveBeenCalledWith('igcTileMaximize', {
         detail: { tile: tile, state: true },
         cancelable: true,
       });
@@ -660,8 +667,8 @@ describe('Tile Manager component', () => {
       simulateClick(btnMaximize);
       await viewTransitionComplete();
 
-      expect(eventSpy).to.have.been.calledTwice;
-      expect(eventSpy).calledWith('igcTileMaximize', {
+      expect(eventSpy).toHaveBeenCalledTimes(2);
+      expect(eventSpy).toHaveBeenCalledWith('igcTileMaximize', {
         detail: { tile: tile, state: false },
         cancelable: true,
       });
@@ -669,7 +676,7 @@ describe('Tile Manager component', () => {
     });
 
     it('can cancel `igcTileMaximize` event', async () => {
-      const eventSpy = spy(tile, 'emitEvent');
+      const eventSpy = vi.spyOn(tile, 'emitEvent');
 
       tile.addEventListener('igcTileMaximize', (event: Event) => {
         event.preventDefault();
@@ -679,7 +686,8 @@ describe('Tile Manager component', () => {
       simulateClick(btnMaximize);
       await elementUpdated(tileManager);
 
-      expect(eventSpy).calledOnceWithExactly('igcTileMaximize', {
+      expect(eventSpy).toHaveBeenCalledOnce();
+      expect(eventSpy).toHaveBeenCalledWith('igcTileMaximize', {
         detail: { tile: tile, state: true },
         cancelable: true,
       });

@@ -1,11 +1,11 @@
+import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { defineComponents } from '../common/definitions/defineComponents.js';
 import {
   elementUpdated,
-  expect,
   fixture,
   html,
   nextFrame,
-} from '@open-wc/testing';
-import { defineComponents } from '../common/definitions/defineComponents.js';
+} from '../common/helpers.spec.js';
 import { first } from '../common/util.js';
 import IgcCircularGradientComponent from './circular-gradient.js';
 import IgcCircularProgressComponent from './circular-progress.js';
@@ -24,7 +24,7 @@ describe('Circular progress component', () => {
     await nextFrame();
   };
 
-  before(() => {
+  beforeAll(() => {
     defineComponents(IgcCircularProgressComponent);
   });
 

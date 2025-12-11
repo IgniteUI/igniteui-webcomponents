@@ -1,8 +1,8 @@
 import { html, LitElement, type PropertyValues } from 'lit';
-import { property } from 'lit/decorators.js';
+import { property, state } from 'lit/decorators.js';
 import { addThemingController } from '../../theming/theming-controller.js';
 import { addInternalsController } from '../common/controllers/internals.js';
-import { addSlotController } from '../common/controllers/slot.js';
+import { addSlotController, setSlots } from '../common/controllers/slot.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { partMap } from '../common/part-map.js';
 import type { BadgeShape, StyleVariant } from '../types.js';
@@ -29,24 +29,18 @@ export default class IgcBadgeComponent extends LitElement {
     registerComponent(IgcBadgeComponent);
   }
 
-  private _iconPart = false;
-
-  private readonly _slots = addSlotController(this, {
-    onChange: this._handleSlotChange,
-  });
-
-  protected _handleSlotChange(): void {
-    const assignedNodes = this._slots.getAssignedNodes('[default]', true);
-    this._iconPart = assignedNodes.some(
-      (node) =>
-        node.nodeType === Node.ELEMENT_NODE &&
-        (node as Element).tagName.toLowerCase() === 'igc-icon'
-    );
-  }
-
   private readonly _internals = addInternalsController(this, {
     initialARIA: { role: 'status' },
   });
+
+  private readonly _slots = addSlotController(this, {
+    slots: setSlots(),
+    onChange: this._handleSlotChange,
+    initial: true,
+  });
+
+  @state()
+  private _iconPart = false;
 
   /**
    * The type of badge.
@@ -85,6 +79,13 @@ export default class IgcBadgeComponent extends LitElement {
     if (changedProperties.has('variant')) {
       this._internals.setARIA({ ariaRoleDescription: `badge ${this.variant}` });
     }
+  }
+
+  protected _handleSlotChange(): void {
+    this._iconPart = this._slots.hasAssignedElements('[default]', {
+      flatten: true,
+      selector: 'igc-icon',
+    });
   }
 
   protected override render() {

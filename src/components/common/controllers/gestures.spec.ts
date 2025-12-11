@@ -1,12 +1,14 @@
-import {
-  defineCE,
-  expect,
-  fixture,
-  html,
-  unsafeStatic,
-} from '@open-wc/testing';
 import { css, LitElement } from 'lit';
-import { type SinonFakeTimers, useFakeTimers } from 'sinon';
+import {
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from 'vitest';
+import { defineCE, fixture, html, unsafeStatic } from '../helpers.spec.js';
 import {
   simulateLostPointerCapture,
   simulatePointerDown,
@@ -15,14 +17,13 @@ import {
 import { addGesturesController, type SwipeEvent } from './gestures.js';
 
 describe('Gestures controller', () => {
-  let clock: SinonFakeTimers;
   let tag: string;
   let instance: LitElement & {
     gestures: ReturnType<typeof addGesturesController>;
     events: SwipeEvent[];
   };
 
-  before(() => {
+  beforeAll(() => {
     tag = defineCE(
       class extends LitElement {
         public static override styles = css`
@@ -64,10 +65,10 @@ describe('Gestures controller', () => {
   });
 
   describe('Options', () => {
-    afterEach(() => clock.restore());
+    afterEach(() => vi.useRealTimers());
 
     beforeEach(async () => {
-      clock = useFakeTimers({ toFake: ['Date'] });
+      vi.useFakeTimers({ toFake: ['Date'] });
     });
 
     it('correct default options', () => {
@@ -97,14 +98,14 @@ describe('Gestures controller', () => {
     it('correctly takes `thresholdTime` into account', () => {
       instance.gestures.updateOptions({ thresholdTime: 350 });
       simulatePointerDown(instance);
-      clock.tick(500);
+      vi.advanceTimersByTime(500);
       simulatePointerMove(instance, {}, { x: 250 });
       simulateLostPointerCapture(instance);
 
       expect(instance.events).lengthOf(0);
 
       simulatePointerDown(instance);
-      clock.tick(350);
+      vi.advanceTimersByTime(350);
       simulatePointerMove(instance, {}, { x: 250 });
       simulateLostPointerCapture(instance);
 

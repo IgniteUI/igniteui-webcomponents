@@ -1,15 +1,10 @@
-import {
-  elementUpdated,
-  expect,
-  fixture,
-  html,
-  nextFrame,
-} from '@open-wc/testing';
-import type { TemplateResult } from 'lit';
+import { html, type TemplateResult } from 'lit';
+import { expect, type MockInstance } from 'vitest';
 import { type CalendarDay, toCalendarDay } from '../calendar/model.js';
 import { parseKeys } from './controllers/key-bindings.js';
+import { elementUpdated, fixture, nextFrame } from './helpers.spec.js';
 import type { IgcFormControl } from './mixins/forms/types.js';
-import { toKebabCase } from './util.js';
+import { equal, toKebabCase } from './util.js';
 
 export function createFormAssociatedTestBed<T extends IgcFormControl>(
   template: TemplateResult
@@ -463,4 +458,56 @@ export function compareStyles(
  */
 export function checkDatesEqual(a: CalendarDay | Date, b: CalendarDay | Date) {
   expect(toCalendarDay(a).equalTo(toCalendarDay(b))).to.be.true;
+}
+
+/** * Checks whether a spy was called with a specific event name. */
+export function eventMatch(spy: MockInstance, eventName: string): boolean {
+  return spy.mock.calls.some((call: unknown[]) => call[0] === eventName);
+}
+
+/** * Checks whether a spy was called with a specific event name and arguments. */
+export function eventArgsMatch(
+  spy: MockInstance,
+  eventName: string,
+  args: unknown
+): boolean {
+  return spy.mock.calls.some((call: unknown[]) => {
+    return call[0] === eventName && equal(call[1], args);
+  });
+}
+
+/** * Returns all calls of a spy with a specific event name. */
+export function getEvents(spy: MockInstance, eventName: string): any[] {
+  return spy.mock.calls.filter((call: unknown[]) => call[0] === eventName);
+}
+
+/** * Expects a spy to have been called with a specific event name. */
+export function expectCalledWith(spy: MockInstance, eventName: string): void {
+  expect(eventMatch(spy, eventName)).to.be.true;
+}
+
+/** * Expects a spy to not have been called with a specific event name. */
+export function expectNotCalledWith(
+  spy: MockInstance,
+  eventName: string
+): void {
+  expect(eventMatch(spy, eventName)).to.be.false;
+}
+
+/** * Expects a spy to have been called with a specific event name and arguments. */
+export function expectCalledWithArgs(
+  spy: MockInstance,
+  eventName: string,
+  args: unknown
+): void {
+  expect(eventArgsMatch(spy, eventName, args)).to.be.true;
+}
+
+/** * Expects a spy to not have been called with a specific event name and arguments. */
+export function expectNotCalledWithArgs(
+  spy: MockInstance,
+  eventName: string,
+  args: unknown
+): void {
+  expect(eventArgsMatch(spy, eventName, args)).to.be.false;
 }

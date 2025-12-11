@@ -1,13 +1,12 @@
 import {
-  elementUpdated,
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe,
   expect,
-  fixture,
-  html,
-  nextFrame,
-  waitUntil,
-} from '@open-wc/testing';
-
-import { type SinonFakeTimers, spy, stub, useFakeTimers } from 'sinon';
+  it,
+  vi,
+} from 'vitest';
 import IgcButtonComponent from '../button/button.js';
 import {
   arrowLeft,
@@ -19,7 +18,17 @@ import {
 } from '../common/controllers/key-bindings.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import {
+  elementUpdated,
+  fixture,
+  html,
+  nextFrame,
+  waitUntil,
+} from '../common/helpers.spec.js';
+import {
+  eventArgsMatch,
+  eventMatch,
   finishAnimationsFor,
+  getEvents,
   simulateClick,
   simulateKeyboard,
   simulateLostPointerCapture,
@@ -31,7 +40,7 @@ import IgcCarouselIndicatorComponent from './carousel-indicator.js';
 import IgcCarouselSlideComponent from './carousel-slide.js';
 
 describe('Carousel', () => {
-  before(() => {
+  beforeAll(() => {
     defineComponents(IgcCarouselComponent);
   });
 
@@ -70,7 +79,6 @@ describe('Carousel', () => {
   let nextButton: IgcButtonComponent;
   let prevButton: IgcButtonComponent;
   let defaultIndicators: IgcCarouselIndicatorComponent[];
-  let clock: SinonFakeTimers;
 
   beforeEach(async () => {
     carousel = await fixture<IgcCarouselComponent>(createCarouselComponent());
@@ -494,71 +502,69 @@ describe('Carousel', () => {
   describe('Interactions', () => {
     describe('Click', () => {
       it('should change slide when clicking next button', async () => {
-        const eventSpy = spy(carousel, 'emitEvent');
+        const spy = vi.spyOn(carousel, 'emitEvent');
         expect(carousel.current).to.equal(0);
         expect(defaultIndicators[0].active).to.be.true;
 
         simulateClick(nextButton!);
-        await waitUntil(() => eventSpy.calledWith('igcSlideChanged'));
+        await waitUntil(() => eventMatch(spy, 'igcSlideChanged'));
 
         expect(carousel.current).to.equal(1);
         expect(defaultIndicators[0].active).to.be.false;
         expect(defaultIndicators[1].active).to.be.true;
-        expect(eventSpy.firstCall).calledWith('igcSlideChanged', { detail: 1 });
+        expect(spy).toHaveBeenCalledWith('igcSlideChanged', { detail: 1 });
       });
 
       it('should change slide when clicking previous button', async () => {
-        const eventSpy = spy(carousel, 'emitEvent');
+        const spy = vi.spyOn(carousel, 'emitEvent');
         expect(carousel.current).to.equal(0);
         expect(defaultIndicators[0].active).to.be.true;
 
         simulateClick(prevButton!);
-        await waitUntil(() => eventSpy.calledWith('igcSlideChanged'));
+        await waitUntil(() => eventMatch(spy, 'igcSlideChanged'));
 
         expect(carousel.current).to.equal(2);
         expect(defaultIndicators[0].active).to.be.false;
         expect(defaultIndicators[2].active).to.be.true;
-        expect(eventSpy.firstCall).calledWith('igcSlideChanged', { detail: 2 });
+        expect(spy).toHaveBeenCalledWith('igcSlideChanged', { detail: 2 });
       });
 
       it('should change slide when clicking indicators', async () => {
-        const eventSpy = spy(carousel, 'emitEvent');
+        const spy = vi.spyOn(carousel, 'emitEvent');
         expect(carousel.current).to.equal(0);
         expect(defaultIndicators[0].active).to.be.true;
 
         // select second slide
         simulateClick(defaultIndicators[1]);
         await waitUntil(() =>
-          eventSpy.calledWith('igcSlideChanged', { detail: 1 })
+          eventArgsMatch(spy, 'igcSlideChanged', { detail: 1 })
         );
 
         expect(carousel.current).to.equal(1);
         expect(defaultIndicators[0].active).to.be.false;
         expect(defaultIndicators[1].active).to.be.true;
-        expect(eventSpy.firstCall).calledWith('igcSlideChanged', { detail: 1 });
+        expect(spy).toHaveBeenCalledWith('igcSlideChanged', { detail: 1 });
 
         // select first slide
         simulateClick(defaultIndicators[0]);
         await waitUntil(() =>
-          eventSpy.calledWith('igcSlideChanged', { detail: 0 })
+          eventArgsMatch(spy, 'igcSlideChanged', { detail: 0 })
         );
 
         expect(carousel.current).to.equal(0);
         expect(defaultIndicators[0].active).to.be.true;
         expect(defaultIndicators[1].active).to.be.false;
-        expect(eventSpy.secondCall).calledWith('igcSlideChanged', {
+        expect(spy).toHaveBeenCalledWith('igcSlideChanged', {
           detail: 0,
         });
       });
 
       it('should properly call `igcSlideChanged` event', async () => {
-        const eventSpy = spy(carousel, 'emitEvent');
+        const spy = vi.spyOn(carousel, 'emitEvent');
 
-        stub(carousel, 'select')
-          .onFirstCall()
-          .resolves(true)
-          .onSecondCall()
-          .resolves(false);
+        vi.spyOn(carousel, 'select')
+          .mockResolvedValueOnce(true)
+          .mockResolvedValueOnce(false);
 
         // select second indicator
         simulateClick(defaultIndicators[1]);
@@ -568,7 +574,7 @@ describe('Carousel', () => {
         simulateClick(defaultIndicators[1]);
         await slideChangeComplete(slides[0], slides[1]);
 
-        expect(eventSpy.callCount).to.equal(1);
+        expect(getEvents(spy, 'igcSlideChanged').length).to.equal(1);
       });
     });
 
@@ -658,10 +664,10 @@ describe('Carousel', () => {
 
     describe('Automatic rotation', () => {
       beforeEach(async () => {
-        clock = useFakeTimers({ toFake: ['setInterval'] });
+        vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval'] });
       });
 
-      afterEach(() => clock.restore());
+      afterEach(() => vi.useRealTimers());
 
       it('should automatically change slides', async () => {
         expect(carousel.current).to.equal(0);
@@ -669,14 +675,14 @@ describe('Carousel', () => {
         carousel.interval = 200;
         await elementUpdated(carousel);
 
-        await clock.tickAsync(200);
+        await vi.advanceTimersByTimeAsync(200);
         await slideChangeComplete(slides[0], slides[1]);
 
         expect(carousel.current).to.equal(1);
       });
 
       it('should properly call `igcSlideChanged` event', async () => {
-        const eventSpy = spy(carousel, 'emitEvent');
+        const spy = vi.spyOn(carousel, 'emitEvent');
 
         carousel.disableLoop = true;
         carousel.interval = 100;
@@ -684,15 +690,15 @@ describe('Carousel', () => {
 
         expect(carousel.current).to.equal(0);
 
-        await clock.tickAsync(300);
+        await vi.advanceTimersByTimeAsync(300);
 
         expect(carousel.current).to.equal(2);
-        expect(eventSpy.callCount).to.equal(2);
+        expect(getEvents(spy, 'igcSlideChanged').length).to.equal(2);
       });
 
       it('should pause/play on pointerenter/pointerleave', async () => {
-        const eventSpy = spy(carousel, 'emitEvent');
-        const divContainer = carousel.shadowRoot?.querySelector(
+        const spy = vi.spyOn(carousel, 'emitEvent');
+        const divContainer = carousel.renderRoot.querySelector(
           'div[aria-live]'
         ) as HTMLDivElement;
 
@@ -719,14 +725,14 @@ describe('Carousel', () => {
         expect(carousel.isPaused).to.be.false;
         expect(divContainer.ariaLive).to.equal('off');
 
-        expect(eventSpy.callCount).to.equal(2);
-        expect(eventSpy.firstCall).calledWith('igcPaused');
-        expect(eventSpy.secondCall).calledWith('igcPlaying');
+        expect(spy.mock.calls.length).to.equal(2);
+        expect(spy).toHaveBeenNthCalledWith(1, 'igcPaused');
+        expect(spy).toHaveBeenNthCalledWith(2, 'igcPlaying');
       });
 
       it('should pause/play on keyboard interaction', async () => {
-        const eventSpy = spy(carousel, 'emitEvent');
-        const divContainer = carousel.shadowRoot?.querySelector(
+        const spy = vi.spyOn(carousel, 'emitEvent');
+        const divContainer = carousel.renderRoot.querySelector(
           'div[aria-live]'
         ) as HTMLDivElement;
 
@@ -778,16 +784,16 @@ describe('Carousel', () => {
         expect(carousel.isPaused).to.be.false;
         expect(divContainer.ariaLive).to.equal('off');
 
-        expect(eventSpy.callCount).to.equal(2);
-        expect(eventSpy.firstCall).calledWith('igcPaused');
-        expect(eventSpy.secondCall).calledWith('igcPlaying');
+        expect(spy.mock.calls.length).to.equal(2);
+        expect(spy).toHaveBeenNthCalledWith(1, 'igcPaused');
+        expect(spy).toHaveBeenNthCalledWith(2, 'igcPlaying');
       });
 
       it('should pause when focusing an interactive element - issue #1731', async () => {
         carousel.interval = 200;
         await elementUpdated(carousel);
 
-        await clock.tickAsync(199);
+        await vi.advanceTimersByTimeAsync(199);
 
         expect(carousel.isPlaying).to.be.true;
         expect(carousel.isPaused).to.be.false;
@@ -797,7 +803,7 @@ describe('Carousel', () => {
         carousel.dispatchEvent(new PointerEvent('pointerenter'));
         await elementUpdated(carousel);
 
-        await clock.tickAsync(1);
+        await vi.advanceTimersByTimeAsync(1);
 
         expect(carousel.isPlaying).to.be.false;
         expect(carousel.isPaused).to.be.true;
@@ -811,7 +817,7 @@ describe('Carousel', () => {
         carousel.dispatchEvent(new PointerEvent('pointerleave'));
         await elementUpdated(carousel);
 
-        await clock.tickAsync(200);
+        await vi.advanceTimersByTimeAsync(200);
 
         // an interactive element is focused
         // -> should not start rotation on pointerleave
@@ -823,7 +829,11 @@ describe('Carousel', () => {
         carousel.dispatchEvent(new FocusEvent('focusout'));
         await elementUpdated(carousel);
 
-        await clock.tickAsync(200);
+        await vi.advanceTimersByTimeAsync(200);
+        await slideChangeComplete(slides[0], slides[1]);
+
+        await vi.advanceTimersByTimeAsync(200);
+        await slideChangeComplete(slides[1], slides[2]);
 
         // the interactive element loses focus
         // -> should start rotation
@@ -833,7 +843,7 @@ describe('Carousel', () => {
       });
 
       it('should not pause on interaction if `disablePauseOnInteraction` is true', async () => {
-        const eventSpy = spy(carousel, 'emitEvent');
+        const spy = vi.spyOn(carousel, 'emitEvent');
         const divContainer = carousel.shadowRoot?.querySelector(
           'div[aria-live]'
         ) as HTMLDivElement;
@@ -862,7 +872,7 @@ describe('Carousel', () => {
         expect(carousel.isPaused).to.be.false;
         expect(divContainer.ariaLive).to.equal('off');
 
-        expect(eventSpy.callCount).to.equal(0);
+        expect(spy.mock.calls.length).to.equal(0);
       });
     });
 
@@ -1073,13 +1083,13 @@ describe('Carousel', () => {
           'div[aria-live="polite"]'
         ) as Element;
 
-        const eventSpy = spy(carousel, 'emitEvent');
+        const spy = vi.spyOn(carousel, 'emitEvent');
 
-        const prevStub = stub(carousel, 'prev');
-        const nextStub = stub(carousel, 'next');
-
-        prevStub.resolves(false);
-        nextStub.onFirstCall().resolves(true).onSecondCall().resolves(false);
+        const prevStub = vi.spyOn(carousel, 'prev').mockResolvedValue(false);
+        const nextStub = vi
+          .spyOn(carousel, 'next')
+          .mockResolvedValueOnce(true)
+          .mockResolvedValueOnce(false);
 
         carousel.disableLoop = true;
         await elementUpdated(carousel);
@@ -1104,19 +1114,19 @@ describe('Carousel', () => {
         simulateLostPointerCapture(carouselSlidesContainer);
         await slideChangeComplete(slides[0], slides[1]);
 
-        expect(eventSpy.callCount).to.equal(1);
+        expect(getEvents(spy, 'igcSlideChanged').length).to.equal(1);
 
-        eventSpy.resetHistory();
-        prevStub.resetHistory();
-        nextStub.resetHistory();
+        spy.mockClear();
+        prevStub.mockClear();
+        nextStub.mockClear();
 
-        prevStub.resolves(false);
-        nextStub.onFirstCall().resolves(true).onSecondCall().resolves(false);
+        prevStub.mockResolvedValue(false);
+        nextStub.mockResolvedValueOnce(true).mockResolvedValueOnce(false);
 
         carousel.vertical = true;
         await elementUpdated(carousel);
 
-        expect(eventSpy.callCount).to.equal(0);
+        expect(spy.mock.calls.length).to.equal(0);
 
         // swipe down - disabled
         simulatePointerDown(carouselSlidesContainer);
@@ -1136,7 +1146,7 @@ describe('Carousel', () => {
         simulateLostPointerCapture(carouselSlidesContainer);
         await slideChangeComplete(slides[1], slides[0]);
 
-        expect(eventSpy.callCount).to.equal(1);
+        expect(getEvents(spy, 'igcSlideChanged').length).to.equal(1);
       });
     });
   });

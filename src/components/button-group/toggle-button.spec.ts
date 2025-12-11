@@ -1,15 +1,15 @@
+import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { defineComponents } from '../common/definitions/defineComponents.js';
 import {
   elementUpdated,
-  expect,
   fixture,
   html,
   unsafeStatic,
-} from '@open-wc/testing';
-
-import { defineComponents, IgcToggleButtonComponent } from '../../index.js';
+} from '../common/helpers.spec.js';
+import IgcToggleButtonComponent from './toggle-button.js';
 
 describe('Toggle Button', () => {
-  before(() => {
+  beforeAll(() => {
     defineComponents(IgcToggleButtonComponent);
   });
 

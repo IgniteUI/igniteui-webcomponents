@@ -1,5 +1,5 @@
-import { aTimeout, expect, oneEvent } from '@open-wc/testing';
-
+import { describe, expect, it } from 'vitest';
+import { aTimeout } from '../components/common/helpers.spec.js';
 import { configureTheme, getTheme } from './config.js';
 import { CHANGE_THEME_EVENT } from './theming-event.js';
 import { getAllCssVariables } from './utils.js';
@@ -37,12 +37,20 @@ describe('Theming Config', () => {
     const theme = 'material';
     const themeVariant = 'light';
 
+    const eventPromise = new Promise<CustomEvent>((resolve) => {
+      window.addEventListener(
+        CHANGE_THEME_EVENT,
+        (e) => resolve(e as CustomEvent),
+        { once: true }
+      );
+    });
+
     setTimeout(() => {
       configureTheme(theme, themeVariant);
       expect(getTheme()).to.deep.equal({ theme, themeVariant });
     });
 
-    const { detail } = await oneEvent(window, CHANGE_THEME_EVENT);
+    const { detail } = await eventPromise;
     expect(detail.theme).to.equal(theme);
     expect(detail.themeVariant).to.equal(themeVariant);
   });

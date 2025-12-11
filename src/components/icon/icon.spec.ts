@@ -1,13 +1,19 @@
 import {
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from 'vitest';
+import { defineComponents } from '../common/definitions/defineComponents.js';
+import {
   aTimeout,
   elementUpdated,
-  expect,
   fixture,
   html,
-} from '@open-wc/testing';
-import { stub } from 'sinon';
-
-import { defineComponents } from '../common/definitions/defineComponents.js';
+} from '../common/helpers.spec.js';
 import { first, last } from '../common/util.js';
 import IgcIconComponent from './icon.js';
 import {
@@ -39,14 +45,12 @@ const searchSvgContent =
 const searchSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">${searchSvgContent}</svg>`;
 
 function mockResponse() {
-  const response = new globalThis.Response(bugSvg, {
+  return new globalThis.Response(bugSvg, {
     status: 200,
     headers: {
       'Content-Type': 'image/svg+xml',
     },
   });
-
-  return Promise.resolve(response);
 }
 
 describe('Icon registry', () => {
@@ -54,8 +58,7 @@ describe('Icon registry', () => {
   const collection = 'test-collection';
 
   beforeEach(() => {
-    const mocked = stub(globalThis, 'fetch');
-    mocked.onCall(0).returns(mockResponse());
+    vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(mockResponse());
   });
 
   it('is registered', async () => {
@@ -82,7 +85,7 @@ describe('Icon registry', () => {
   });
 
   describe('Referential Icons', () => {
-    before(() => {
+    beforeAll(() => {
       defineComponents(IgcIconComponent);
     });
 
@@ -127,7 +130,7 @@ describe('Icon registry', () => {
   });
 
   afterEach(() => {
-    (globalThis.fetch as any).restore();
+    vi.restoreAllMocks();
   });
 });
 
@@ -162,7 +165,7 @@ describe('Icon broadcast service', () => {
       const iconName = 'bug';
 
       registerIconFromText(iconName, bugSvg, collectionName);
-      await aTimeout(0);
+      await aTimeout(50);
 
       const { actionType, collections } = first(events).data;
       expect(actionType).to.equal(ActionType.RegisterIcon);
@@ -182,7 +185,7 @@ describe('Icon broadcast service', () => {
       for (const each of icons) {
         registerIconFromText(each[0], each[1], collectionName);
       }
-      await aTimeout(0);
+      await aTimeout(50);
 
       expect(events).lengthOf(icons.length);
       for (const [idx, event] of events.entries()) {
@@ -206,7 +209,7 @@ describe('Icon broadcast service', () => {
         name: 'reference-test',
         collection: collectionName,
       });
-      await aTimeout(0);
+      await aTimeout(50);
 
       const { actionType, collections, references } = last(events).data;
 
@@ -226,7 +229,7 @@ describe('Icon broadcast service', () => {
       meta.name = 'reference-test';
       meta.collection = collectionName;
       setIconRef(refName, refCollectionName, meta);
-      await aTimeout(0);
+      await aTimeout(50);
 
       const { actionType, collections, references } = last(events).data;
 
@@ -249,7 +252,7 @@ describe('Icon broadcast service', () => {
         },
         overwrite: true,
       });
-      await aTimeout(0);
+      await aTimeout(50);
 
       expect(events.length).to.equal(0);
     });
@@ -264,7 +267,7 @@ describe('Icon broadcast service', () => {
 
       // a peer is requesting a state sync
       channel.postMessage({ actionType: ActionType.SyncState });
-      await aTimeout(20);
+      await aTimeout(200);
 
       // all icon broadcasts must respond with their state
       // 2 from broadcast service + 1 from global.
@@ -285,7 +288,7 @@ describe('Icon broadcast service', () => {
 
       // a peer is requesting a state sync
       channel.postMessage({ actionType: ActionType.SyncState });
-      await aTimeout(0);
+      await aTimeout(50);
 
       expect(events).lengthOf(2); // [ActionType.RegisterIcon, ActionType.SyncState]
 
@@ -310,7 +313,7 @@ describe('Icon broadcast service', () => {
 
       // a peer is requesting a state sync
       channel.postMessage({ actionType: ActionType.SyncState });
-      await aTimeout(0);
+      await aTimeout(50);
 
       expect(events).lengthOf(1); // [ActionType.SyncState]
 
@@ -322,7 +325,7 @@ describe('Icon broadcast service', () => {
 });
 
 describe('Icon component', () => {
-  before(() => {
+  beforeAll(() => {
     defineComponents(IgcIconComponent);
   });
 

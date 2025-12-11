@@ -1,5 +1,6 @@
-import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
+import { beforeAll, describe, expect, it } from 'vitest';
 import { defineComponents } from '../common/definitions/defineComponents.js';
+import { elementUpdated, fixture, html } from '../common/helpers.spec.js';
 import IgcChipComponent from './chip.js';
 
 describe('Chip', () => {
@@ -7,7 +8,7 @@ describe('Chip', () => {
     ignoreAttributes: ['style'],
   };
 
-  before(() => {
+  beforeAll(() => {
     defineComponents(IgcChipComponent);
   });
 

@@ -1,20 +1,16 @@
+import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import { defineComponents } from '../common/definitions/defineComponents.js';
 import {
   elementUpdated,
-  expect,
   fixture,
   html,
   unsafeStatic,
-} from '@open-wc/testing';
-import { spy } from 'sinon';
-
-import {
-  defineComponents,
-  IgcButtonGroupComponent,
-  IgcToggleButtonComponent,
-} from '../../index.js';
+} from '../common/helpers.spec.js';
+import IgcButtonGroupComponent from './button-group.js';
+import IgcToggleButtonComponent from './toggle-button.js';
 
 describe('Button Group', () => {
-  before(() => {
+  beforeAll(() => {
     defineComponents(IgcButtonGroupComponent);
   });
 
@@ -600,14 +596,14 @@ describe('Button Group', () => {
       });
 
       it('should emit `igcSelect` event on select', async () => {
-        const eventSpy = spy(buttonGroup, 'emitEvent');
+        const spy = vi.spyOn(buttonGroup, 'emitEvent');
 
         buttons[0].dispatchEvent(new MouseEvent('click', { bubbles: true }));
         await elementUpdated(buttonGroup);
 
         const args = { detail: buttons[0].value };
 
-        expect(eventSpy).calledWith('igcSelect', args);
+        expect(spy).toHaveBeenCalledWith('igcSelect', args);
 
         buttonGroup.addEventListener('igcSelect', (event) => {
           expect(buttonGroup.selectedItems.length).to.equal(1);
@@ -618,7 +614,7 @@ describe('Button Group', () => {
       });
 
       it('should emit `igcDeselect` event on deselect', async () => {
-        const eventSpy = spy(buttonGroup, 'emitEvent');
+        const spy = vi.spyOn(buttonGroup, 'emitEvent');
 
         buttons[0].selected = true;
         await elementUpdated(buttonGroup);
@@ -629,7 +625,7 @@ describe('Button Group', () => {
 
         const args = { detail: buttons[0].value };
 
-        expect(eventSpy).calledWith('igcDeselect', args);
+        expect(spy).toHaveBeenCalledWith('igcDeselect', args);
 
         buttonGroup.addEventListener('igcDeselect', () => {
           expect(buttonGroup.selectedItems.length).to.equal(0);
@@ -637,7 +633,7 @@ describe('Button Group', () => {
       });
 
       it('events are correctly emitted on user interaction (single mode)', async () => {
-        const eventSpy = spy(buttonGroup, 'emitEvent');
+        const spy = vi.spyOn(buttonGroup, 'emitEvent');
         const selectArgs = { detail: '' };
         const deselectArgs = { detail: '' };
 
@@ -647,7 +643,7 @@ describe('Button Group', () => {
 
         selectArgs.detail = buttons[0].value;
 
-        expect(eventSpy).calledWith('igcSelect', selectArgs);
+        expect(spy).toHaveBeenCalledWith('igcSelect', selectArgs);
         expect(buttonGroup.selectedItems.length).to.equal(1);
         expect(buttonGroup.selectedItems).to.have.same.members([
           buttons[0].value,
@@ -660,8 +656,8 @@ describe('Button Group', () => {
         selectArgs.detail = buttons[1].value;
         deselectArgs.detail = buttons[0].value;
 
-        expect(eventSpy).calledWith('igcDeselect', deselectArgs);
-        expect(eventSpy).calledWith('igcSelect', selectArgs);
+        expect(spy).toHaveBeenCalledWith('igcDeselect', deselectArgs);
+        expect(spy).toHaveBeenCalledWith('igcSelect', selectArgs);
         expect(buttonGroup.selectedItems.length).to.equal(1);
         expect(buttonGroup.selectedItems).to.have.same.members([
           buttons[1].value,
@@ -669,7 +665,7 @@ describe('Button Group', () => {
       });
 
       it('events are correctly emitted on user interaction (single-required mode)', async () => {
-        const eventSpy = spy(buttonGroup, 'emitEvent');
+        const spy = vi.spyOn(buttonGroup, 'emitEvent');
         const selectArgs = { detail: '' };
         const deselectArgs = { detail: '' };
 
@@ -682,21 +678,21 @@ describe('Button Group', () => {
 
         selectArgs.detail = buttons[0].value;
 
-        expect(eventSpy).calledWith('igcSelect', selectArgs);
+        expect(spy).toHaveBeenCalledWith('igcSelect', selectArgs);
         expect(buttonGroup.selectedItems.length).to.equal(1);
         expect(buttonGroup.selectedItems).to.have.same.members([
           buttons[0].value,
         ]);
 
-        eventSpy.resetHistory();
+        spy.mockClear();
 
         // deselect first button
         // should not emit events when interacting with an already selected button
         buttons[0].dispatchEvent(new MouseEvent('click', { bubbles: true }));
         await elementUpdated(buttonGroup);
 
-        expect(eventSpy).not.calledWith('igcDeselect');
-        expect(eventSpy).not.calledWith('igcSelect');
+        expect(spy).not.toHaveBeenCalledWith('igcDeselect');
+        expect(spy).not.toHaveBeenCalledWith('igcSelect');
         expect(buttonGroup.selectedItems.length).to.equal(1);
         expect(buttonGroup.selectedItems).to.have.same.members([
           buttons[0].value,
@@ -709,8 +705,8 @@ describe('Button Group', () => {
         selectArgs.detail = buttons[1].value;
         deselectArgs.detail = buttons[0].value;
 
-        expect(eventSpy).calledWith('igcDeselect', deselectArgs);
-        expect(eventSpy).calledWith('igcSelect', selectArgs);
+        expect(spy).toHaveBeenCalledWith('igcDeselect', deselectArgs);
+        expect(spy).toHaveBeenCalledWith('igcSelect', selectArgs);
         expect(buttonGroup.selectedItems.length).to.equal(1);
         expect(buttonGroup.selectedItems).to.have.same.members([
           buttons[1].value,
@@ -718,7 +714,7 @@ describe('Button Group', () => {
       });
 
       it('events are correctly emitted on user interaction (multiple mode)', async () => {
-        const eventSpy = spy(buttonGroup, 'emitEvent');
+        const spy = vi.spyOn(buttonGroup, 'emitEvent');
         const selectArgs = { detail: '' };
         const deselectArgs = { detail: '' };
 
@@ -731,7 +727,7 @@ describe('Button Group', () => {
 
         selectArgs.detail = buttons[0].value;
 
-        expect(eventSpy).calledWith('igcSelect', selectArgs);
+        expect(spy).toHaveBeenCalledWith('igcSelect', selectArgs);
         expect(buttonGroup.selectedItems.length).to.equal(1);
         expect(buttonGroup.selectedItems).to.have.same.members([
           buttons[0].value,
@@ -743,8 +739,8 @@ describe('Button Group', () => {
 
         selectArgs.detail = buttons[1].value;
 
-        expect(eventSpy).not.calledWith('igcDeselect');
-        expect(eventSpy).calledWith('igcSelect', selectArgs);
+        expect(spy).not.toHaveBeenCalledWith('igcDeselect');
+        expect(spy).toHaveBeenCalledWith('igcSelect', selectArgs);
         expect(buttonGroup.selectedItems.length).to.equal(2);
         expect(buttonGroup.selectedItems).to.have.same.members([
           buttons[0].value,
@@ -757,7 +753,7 @@ describe('Button Group', () => {
 
         deselectArgs.detail = buttons[0].value;
 
-        expect(eventSpy).calledWith('igcDeselect', deselectArgs);
+        expect(spy).toHaveBeenCalledWith('igcDeselect', deselectArgs);
         expect(buttonGroup.selectedItems.length).to.equal(1);
         expect(buttonGroup.selectedItems).to.have.same.members([
           buttons[1].value,

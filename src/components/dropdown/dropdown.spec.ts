@@ -1,6 +1,4 @@
-import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
-import { spy } from 'sinon';
-
+import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import IgcButtonComponent from '../button/button.js';
 import {
   arrowDown,
@@ -12,6 +10,7 @@ import {
   tabKey,
 } from '../common/controllers/key-bindings.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
+import { elementUpdated, fixture, html } from '../common/helpers.spec.js';
 import {
   simulateClick,
   simulateKeyboard,
@@ -28,7 +27,7 @@ type ItemState = {
 };
 
 describe('Dropdown', () => {
-  before(() => defineComponents(IgcDropdownComponent, IgcButtonComponent));
+  beforeAll(() => defineComponents(IgcDropdownComponent, IgcButtonComponent));
 
   let dropDown: IgcDropdownComponent;
   const Items = [
@@ -144,15 +143,18 @@ describe('Dropdown', () => {
     });
 
     it('`close` behavior', async () => {
-      const eventSpy = spy(dropDown, 'emitEvent');
+      const spy = vi.spyOn(dropDown, 'emitEvent');
 
       dropDown.scrollStrategy = 'close';
       await openDropdown();
       await simulateScroll(container, { top: 200 });
 
       expect(dropDown.open).to.be.false;
-      expect(eventSpy.firstCall).calledWith('igcClosing');
-      expect(eventSpy.lastCall).calledWith('igcClosed');
+      expect(spy.mock.calls).lengthOf(2);
+      expect(spy).toHaveBeenNthCalledWith(1, 'igcClosing', {
+        cancelable: true,
+      });
+      expect(spy).toHaveBeenNthCalledWith(2, 'igcClosed');
     });
 
     it('`block behavior`', async () => {
@@ -205,7 +207,7 @@ describe('Dropdown', () => {
     });
 
     it('relevant events are fired in order', async () => {
-      const eventSpy = spy(dropDown, 'emitEvent');
+      const spy = vi.spyOn(dropDown, 'emitEvent');
 
       // No opening sequence of events since detached dropdowns are opened with API invocation
 
@@ -217,11 +219,13 @@ describe('Dropdown', () => {
       simulateKeyboard(btn, enterKey);
       await elementUpdated(dropDown);
 
-      expect(eventSpy.firstCall).calledWith('igcChange', {
+      expect(spy).toHaveBeenNthCalledWith(1, 'igcChange', {
         detail: dropDown.selectedItem,
       });
-      expect(eventSpy.secondCall).calledWith('igcClosing');
-      expect(eventSpy.thirdCall).calledWith('igcClosed');
+      expect(spy).toHaveBeenNthCalledWith(2, 'igcClosing', {
+        cancelable: true,
+      });
+      expect(spy).toHaveBeenNthCalledWith(3, 'igcClosed');
     });
 
     it('outside click behavior is enforced', async () => {
@@ -676,32 +680,34 @@ describe('Dropdown', () => {
     });
 
     it('does not emit events on API calls', async () => {
-      const eventSpy = spy(dropDown, 'emitEvent');
+      const spy = vi.spyOn(dropDown, 'emitEvent');
 
       await openDropdown();
-      expect(eventSpy).not.to.be.called;
+      expect(spy).not.toHaveBeenCalled();
 
       await closeDropdown();
-      expect(eventSpy).not.to.be.called;
+      expect(spy).not.toHaveBeenCalled();
 
       dropDown.select('Testing');
       await elementUpdated(dropDown);
-      expect(eventSpy).not.to.be.called;
+      expect(spy).not.toHaveBeenCalled();
     });
 
     it('emits correct order of events on opening', async () => {
-      const eventSpy = spy(dropDown, 'emitEvent');
+      const spy = vi.spyOn(dropDown, 'emitEvent');
 
       simulateClick(getTarget());
       await elementUpdated(dropDown);
 
       expect(dropDown.open).to.be.true;
-      expect(eventSpy.firstCall).calledWith('igcOpening');
-      expect(eventSpy.secondCall).calledWith('igcOpened');
+      expect(spy).toHaveBeenNthCalledWith(1, 'igcOpening', {
+        cancelable: true,
+      });
+      expect(spy).toHaveBeenNthCalledWith(2, 'igcOpened');
     });
 
     it('emits correct order of events on closing', async () => {
-      const eventSpy = spy(dropDown, 'emitEvent');
+      const spy = vi.spyOn(dropDown, 'emitEvent');
 
       await openDropdown();
 
@@ -709,12 +715,14 @@ describe('Dropdown', () => {
       await elementUpdated(dropDown);
 
       expect(dropDown.open).to.be.false;
-      expect(eventSpy.firstCall).calledWith('igcClosing');
-      expect(eventSpy.secondCall).calledWith('igcClosed');
+      expect(spy).toHaveBeenNthCalledWith(1, 'igcClosing', {
+        cancelable: true,
+      });
+      expect(spy).toHaveBeenNthCalledWith(2, 'igcClosed');
     });
 
     it('emits correct order of events on selection', async () => {
-      const eventSpy = spy(dropDown, 'emitEvent');
+      const spy = vi.spyOn(dropDown, 'emitEvent');
       let targetItem = dropDown.items[3];
 
       // Selection through click
@@ -724,13 +732,15 @@ describe('Dropdown', () => {
       await elementUpdated(dropDown);
 
       expect(dropDown.open).to.be.false;
-      expect(eventSpy.firstCall).calledWithExactly('igcChange', {
+      expect(spy).toHaveBeenNthCalledWith(1, 'igcChange', {
         detail: targetItem,
       });
-      expect(eventSpy.secondCall).calledWith('igcClosing');
-      expect(eventSpy.thirdCall).calledWith('igcClosed');
+      expect(spy).toHaveBeenNthCalledWith(2, 'igcClosing', {
+        cancelable: true,
+      });
+      expect(spy).toHaveBeenNthCalledWith(3, 'igcClosed');
 
-      eventSpy.resetHistory();
+      spy.mockClear();
 
       // Selection through keyboard
       targetItem = dropDown.items[2];
@@ -742,15 +752,17 @@ describe('Dropdown', () => {
       await elementUpdated(dropDown);
 
       expect(dropDown.open).to.be.false;
-      expect(eventSpy.firstCall).calledWithExactly('igcChange', {
+      expect(spy).toHaveBeenNthCalledWith(1, 'igcChange', {
         detail: targetItem,
       });
-      expect(eventSpy.secondCall).calledWith('igcClosing');
-      expect(eventSpy.thirdCall).calledWith('igcClosed');
+      expect(spy).toHaveBeenNthCalledWith(2, 'igcClosing', {
+        cancelable: true,
+      });
+      expect(spy).toHaveBeenNthCalledWith(3, 'igcClosed');
     });
 
     it('can halt opening event sequence', async () => {
-      const eventSpy = spy(dropDown, 'emitEvent');
+      const spy = vi.spyOn(dropDown, 'emitEvent');
       dropDown.addEventListener('igcOpening', (e) => e.preventDefault(), {
         once: true,
       });
@@ -759,12 +771,14 @@ describe('Dropdown', () => {
       await elementUpdated(dropDown);
 
       expect(dropDown.open).to.be.false;
-      expect(eventSpy.firstCall).calledWith('igcOpening');
-      expect(eventSpy.secondCall).to.be.null;
+      expect(spy.mock.calls).lengthOf(1);
+      expect(spy).toHaveBeenNthCalledWith(1, 'igcOpening', {
+        cancelable: true,
+      });
     });
 
     it('can halt closing event sequence', async () => {
-      const eventSpy = spy(dropDown, 'emitEvent');
+      const spy = vi.spyOn(dropDown, 'emitEvent');
       dropDown.addEventListener('igcClosing', (e) => e.preventDefault(), {
         once: true,
       });
@@ -776,10 +790,12 @@ describe('Dropdown', () => {
       await elementUpdated(dropDown);
 
       expect(dropDown.open).to.be.true;
-      expect(eventSpy.firstCall).calledWith('igcClosing');
-      expect(eventSpy.secondCall).to.be.null;
+      expect(spy.mock.calls).lengthOf(1);
+      expect(spy).toHaveBeenNthCalledWith(1, 'igcClosing', {
+        cancelable: true,
+      });
 
-      eventSpy.resetHistory();
+      spy.mockClear();
 
       // With selection
       dropDown.addEventListener('igcClosing', (e) => e.preventDefault(), {
@@ -793,13 +809,17 @@ describe('Dropdown', () => {
       await elementUpdated(dropDown);
 
       expect(dropDown.open).to.be.true;
-      expect(eventSpy.firstCall).calledWith('igcChange');
-      expect(eventSpy.secondCall).calledWith('igcClosing');
-      expect(eventSpy.thirdCall).to.be.null;
+      expect(spy.mock.calls).lengthOf(2);
+      expect(spy).toHaveBeenNthCalledWith(1, 'igcChange', {
+        detail: dropDown.selectedItem,
+      });
+      expect(spy).toHaveBeenNthCalledWith(2, 'igcClosing', {
+        cancelable: true,
+      });
     });
 
     it('can halt closing event sequence on outside click', async () => {
-      const eventSpy = spy(dropDown, 'emitEvent');
+      const spy = vi.spyOn(dropDown, 'emitEvent');
 
       await openDropdown();
 
@@ -811,8 +831,10 @@ describe('Dropdown', () => {
       await elementUpdated(dropDown);
 
       expect(dropDown.open).to.be.true;
-      expect(eventSpy.firstCall).calledWith('igcClosing');
-      expect(eventSpy.secondCall).to.be.null;
+      expect(spy.mock.calls).lengthOf(1);
+      expect(spy).toHaveBeenNthCalledWith(1, 'igcClosing', {
+        cancelable: true,
+      });
     });
   });
 
