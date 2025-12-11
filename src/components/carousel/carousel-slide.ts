@@ -49,34 +49,26 @@ export default class IgcCarouselSlideComponent extends LitElement {
     }
   );
 
-  private get _carouselInstance(): IgcCarouselComponent | undefined {
-    return this._carousel ?? this._context.value;
-  }
-
   protected get _index(): number {
-    return this._carouselInstance
-      ? this._carouselInstance.slides.indexOf(this)
-      : 0;
+    return this._carousel ? this._carousel.slides.indexOf(this) : 0;
   }
 
   protected get _total(): number {
-    return this._carouselInstance ? this._carouselInstance.slides.length : 0;
+    return this._carousel ? this._carousel.slides.length : 0;
   }
 
   protected get _animation() {
-    const animation = this._carouselInstance?.animationType ?? 'slide';
+    const animation = this._carousel?.animationType ?? 'slide';
 
     if (animation === 'slide') {
-      return this._carouselInstance?.vertical ? 'slideVer' : 'slideHor';
+      return this._carousel?.vertical ? 'slideVer' : 'slideHor';
     }
 
     return animation;
   }
 
   protected get _labelFormat(): string {
-    return this._carouselInstance
-      ? this._carouselInstance.slidesLabelFormat
-      : '';
+    return this._carousel ? this._carousel.slidesLabelFormat : '';
   }
 
   /**
