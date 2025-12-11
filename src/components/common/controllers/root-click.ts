@@ -33,8 +33,13 @@ interface RootClickControllerHost extends ReactiveControllerHost, HTMLElement {
   hide(): void;
 }
 
-let rootClickListenerActive = false;
-let pointerDownInsideHost = false;
+let ROOT_CLICK_LISTENER_ACTIVE = false;
+
+/** Shared abort handler for the singleton document listeners. */
+const SHARED_ABORT_HANDLER = createAbortHandle();
+
+/** Tracks which hosts had a pointerdown event inside them. */
+const POINTER_DOWN_HOSTS = new Set<RootClickControllerHost>();
 
 const HOST_CONFIGURATIONS = new WeakMap<
   RootClickControllerHost,
@@ -43,45 +48,42 @@ const HOST_CONFIGURATIONS = new WeakMap<
 
 const ACTIVE_HOSTS = new Set<RootClickControllerHost>();
 
+/** Returns the set of elements that should be considered as "inside" the host. */
+function getHostTargets(
+  host: RootClickControllerHost,
+  config?: RootClickControllerConfig
+): Set<Element> {
+  return new Set(config?.target ? [host, config.target] : [host]);
+}
+
 function handlePointerDown(event: PointerEvent): void {
-  // Check if the pointerdown occurred inside any active host or its target
+  POINTER_DOWN_HOSTS.clear();
+
   for (const host of ACTIVE_HOSTS) {
     const config = HOST_CONFIGURATIONS.get(host);
-    const targets: Set<Element> = new Set(
-      config?.target ? [host, config.target] : [host]
-    );
+    const targets = getHostTargets(host, config);
 
     if (findElementFromEventPath((node) => targets.has(node), event)) {
-      pointerDownInsideHost = true;
-      return;
+      POINTER_DOWN_HOSTS.add(host);
     }
   }
-
-  pointerDownInsideHost = false;
 }
 
 function handleRootClick(event: PointerEvent): void {
-  // If the interaction started inside a host, don't trigger hide
-  if (pointerDownInsideHost) {
-    pointerDownInsideHost = false;
-    return;
-  }
-
-  for (const host of ACTIVE_HOSTS) {
-    const config = HOST_CONFIGURATIONS.get(host);
-
-    if (host.keepOpenOnOutsideClick) {
+  for (const host of [...ACTIVE_HOSTS]) {
+    if (host.keepOpenOnOutsideClick || POINTER_DOWN_HOSTS.has(host)) {
       continue;
     }
 
-    const targets: Set<Element> = new Set(
-      config?.target ? [host, config.target] : [host]
-    );
+    const config = HOST_CONFIGURATIONS.get(host);
+    const targets = getHostTargets(host, config);
 
     if (!findElementFromEventPath((node) => targets.has(node), event)) {
       config?.onHide ? config.onHide.call(host) : host.hide();
     }
   }
+
+  POINTER_DOWN_HOSTS.clear();
 }
 
 /* blazorSuppress */
@@ -96,7 +98,6 @@ function handleRootClick(event: PointerEvent): void {
  */
 class RootClickController implements ReactiveController {
   private readonly _host: RootClickControllerHost;
-  private readonly _abortHandler = createAbortHandle();
   private _config?: RootClickControllerConfig;
 
   constructor(
@@ -121,14 +122,20 @@ class RootClickController implements ReactiveController {
 
     if (this._config) {
       HOST_CONFIGURATIONS.set(this._host, this._config);
+    }
 
-      if (!rootClickListenerActive) {
-        const options = { capture: true, signal: this._abortHandler.signal };
+    if (!ROOT_CLICK_LISTENER_ACTIVE) {
+      const options: AddEventListenerOptions = {
+        capture: true,
+        signal: SHARED_ABORT_HANDLER.signal,
+      };
 
-        document.addEventListener('pointerdown', handlePointerDown, options);
-        document.addEventListener('click', handleRootClick, options);
-        rootClickListenerActive = true;
-      }
+      document.addEventListener('pointerdown', handlePointerDown, {
+        ...options,
+        passive: true,
+      });
+      document.addEventListener('click', handleRootClick, options);
+      ROOT_CLICK_LISTENER_ACTIVE = true;
     }
   }
 
@@ -138,10 +145,12 @@ class RootClickController implements ReactiveController {
    */
   private _removeActiveHost(): void {
     ACTIVE_HOSTS.delete(this._host);
+    HOST_CONFIGURATIONS.delete(this._host);
+    POINTER_DOWN_HOSTS.delete(this._host);
 
-    if (isEmpty(ACTIVE_HOSTS) && rootClickListenerActive) {
-      this._abortHandler.abort();
-      rootClickListenerActive = false;
+    if (isEmpty(ACTIVE_HOSTS) && ROOT_CLICK_LISTENER_ACTIVE) {
+      SHARED_ABORT_HANDLER.abort();
+      ROOT_CLICK_LISTENER_ACTIVE = false;
     }
   }
 
