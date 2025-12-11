@@ -1,9 +1,9 @@
-import { consume } from '@lit/context';
 import { html, LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
 import { EaseInOut } from '../../animations/easings.js';
 import { addAnimationController } from '../../animations/player.js';
 import { carouselContext } from '../common/context.js';
+import { createAsyncContext } from '../common/controllers/async-consumer.js';
 import { addInternalsController } from '../common/controllers/internals.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { formatString } from '../common/util.js';
@@ -38,29 +38,44 @@ export default class IgcCarouselSlideComponent extends LitElement {
 
   private readonly _player = addAnimationController(this);
 
-  @consume({ context: carouselContext, subscribe: true })
-  private readonly _carousel?: IgcCarouselComponent;
+  private _carousel?: IgcCarouselComponent;
+
+  private readonly _context = createAsyncContext(
+    this,
+    carouselContext,
+    (carousel) => {
+      this._carousel = carousel;
+    }
+  );
+
+  private get _carouselInstance(): IgcCarouselComponent | undefined {
+    return this._carousel ?? this._context.value;
+  }
 
   protected get _index(): number {
-    return this._carousel ? this._carousel.slides.indexOf(this) : 0;
+    return this._carouselInstance
+      ? this._carouselInstance.slides.indexOf(this)
+      : 0;
   }
 
   protected get _total(): number {
-    return this._carousel ? this._carousel.slides.length : 0;
+    return this._carouselInstance ? this._carouselInstance.slides.length : 0;
   }
 
   protected get _animation() {
-    const animation = this._carousel?.animationType ?? 'slide';
+    const animation = this._carouselInstance?.animationType ?? 'slide';
 
     if (animation === 'slide') {
-      return this._carousel?.vertical ? 'slideVer' : 'slideHor';
+      return this._carouselInstance?.vertical ? 'slideVer' : 'slideHor';
     }
 
     return animation;
   }
 
   protected get _labelFormat(): string {
-    return this._carousel ? this._carousel.slidesLabelFormat : '';
+    return this._carouselInstance
+      ? this._carouselInstance.slidesLabelFormat
+      : '';
   }
 
   /**
