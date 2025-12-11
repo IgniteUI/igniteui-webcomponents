@@ -40,6 +40,7 @@ export default class IgcCarouselSlideComponent extends LitElement {
 
   private _carousel?: IgcCarouselComponent;
 
+  // Set carousel reference once provider is ready
   private readonly _context = createAsyncContext(
     this,
     carouselContext,
