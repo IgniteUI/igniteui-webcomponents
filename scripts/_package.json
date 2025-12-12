@@ -83,13 +83,15 @@
     "@floating-ui/dom": "^1.7.0",
     "@lit-labs/virtualizer": "^2.1.0",
     "@lit/context": "^1.1.0",
-    "lit": "^3.3.0"
+    "lit": "^3.3.0",
+    "igniteui-i18n-core": "^1.0.1"
   },
   "peerDependencies": {
     "dompurify": "^3.3.0",
     "marked": "^17.0.0",
     "marked-shiki": "^1.2.0",
-    "shiki": "^3.15.0"
+    "shiki": "^3.15.0",
+    "igniteui-i18n-resources": "^1.0.1"
   },
   "peerDependenciesMeta": {
     "dompurify": {
@@ -102,6 +104,9 @@
       "optional": true
     },
     "shiki": {
+      "optional": true
+    },
+    "igniteui-i18n-resources": {
       "optional": true
     }
   }
