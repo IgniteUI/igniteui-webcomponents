@@ -430,9 +430,11 @@ export abstract class DateTimeUtil {
     let date = new Date(newDate);
 
     switch (amPmFromMask) {
+      case 'am':
       case 'AM':
         date = new Date(newDate.setHours(newDate.getHours() + 12));
         break;
+      case 'pm':
       case 'PM':
         date = new Date(newDate.setHours(newDate.getHours() - 12));
         break;
