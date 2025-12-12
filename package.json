@@ -64,10 +64,10 @@
     "@custom-elements-manifest/analyzer": "^0.11.0",
     "@igniteui/material-icons-extended": "^3.1.0",
     "@open-wc/testing": "^4.0.0",
-    "@storybook/addon-a11y": "^10.1.6",
-    "@storybook/addon-docs": "^10.1.6",
-    "@storybook/addon-links": "^10.1.6",
-    "@storybook/web-components-vite": "^10.1.6",
+    "@storybook/addon-a11y": "^10.1.7",
+    "@storybook/addon-docs": "^10.1.7",
+    "@storybook/addon-links": "^10.1.7",
+    "@storybook/web-components-vite": "^10.1.7",
     "@types/mocha": "^10.0.10",
     "@web/dev-server-esbuild": "^1.0.4",
     "@web/test-runner": "^0.20.2",
@@ -94,11 +94,11 @@
     "rimraf": "^6.1.2",
     "sass-embedded": "~1.93.3",
     "sinon": "^21.0.0",
-    "storybook": "^10.1.6",
+    "storybook": "^10.1.7",
     "stylelint": "^16.26.1",
     "stylelint-config-standard-scss": "^16.0.0",
     "stylelint-prettier": "^5.0.3",
-    "stylelint-scss": "^6.13.0",
+    "stylelint-scss": "~6.12.1",
     "ts-lit-plugin": "^2.0.2",
     "tslib": "^2.8.1",
     "typedoc": "~0.28.15",
@@ -110,7 +110,7 @@
     "dompurify": "^3.3.1",
     "marked": "^17.0.1",
     "marked-shiki": "^1.2.1",
-    "shiki": "^3.19.0"
+    "shiki": "^3.20.0"
   },
   "browserslist": [
     "defaults"
