@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [6.4.0] - 2025-12-15
 ### Added
 - #### Localization
   - New localization implementation. Now you can set global localization for all localized Ignite UI components using the `registerI18n` and `setCurrentI18n` methods.
@@ -80,10 +80,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - #### Tabs
   - Add active pseudo-elements backgrounds for the active tab in Material theme. [#1998](https://github.com/IgniteUI/igniteui-webcomponents/issues/1998)
   - Take scale factor when positioning the active tab indicator. [#2008](https://github.com/IgniteUI/igniteui-webcomponents/issues/2008)
+  - Selected indicator alignment [#2028](https://github.com/IgniteUI/igniteui-webcomponents/issues/2028)
 - #### Tooltip
   - Do not show the tooltip when the tooltip target is clicked. [#1828](https://github.com/IgniteUI/igniteui-webcomponents/issues/1828)
   - Removed the **max-width** constraint for slotted content. [#1936](https://github.com/IgniteUI/igniteui-webcomponents/issues/1936)
-
 
 ## [6.3.6] - 2025-11-14
 ### Fixed
@@ -1140,6 +1140,7 @@ Initial release of Ignite UI Web Components
 - Ripple component
 - Switch component
 
+[6.4.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/6.3.6...6.4.0
 [6.3.6]: https://github.com/IgniteUI/igniteui-webcomponents/compare/6.3.5...6.3.6
 [6.3.5]: https://github.com/IgniteUI/igniteui-webcomponents/compare/6.3.4...6.3.5
 [6.3.4]: https://github.com/IgniteUI/igniteui-webcomponents/compare/6.3.3...6.3.4
