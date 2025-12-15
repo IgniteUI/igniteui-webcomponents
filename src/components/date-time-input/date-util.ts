@@ -1,6 +1,6 @@
 import { getDateFormatter } from 'igniteui-i18n-core';
 import { parseISODate } from '../calendar/helpers.js';
-import { clamp } from '../common/util.js';
+import { clamp, escapeRegex } from '../common/util.js';
 
 export enum FormatDesc {
   Numeric = 'numeric',
@@ -615,13 +615,9 @@ export abstract class DateTimeUtil {
     );
   }
 
-  private static escapeRegExp(string: string) {
-    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  }
-
   private static trimEmptyPlaceholders(value: string, prompt?: string): string {
     const result = value.replace(
-      new RegExp(DateTimeUtil.escapeRegExp(prompt ?? '_'), 'g'),
+      new RegExp(escapeRegex(prompt ?? '_'), 'g'),
       ''
     );
     return result;
