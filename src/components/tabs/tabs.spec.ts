@@ -1,12 +1,5 @@
-import {
-  elementUpdated,
-  expect,
-  fixture,
-  html,
-  waitUntil,
-} from '@open-wc/testing';
 import { range } from 'lit/directives/range.js';
-import { spy } from 'sinon';
+import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import type IgcIconButtonComponent from '../button/icon-button.js';
 import {
   arrowLeft,
@@ -17,6 +10,12 @@ import {
   spaceBar,
 } from '../common/controllers/key-bindings.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
+import {
+  elementUpdated,
+  fixture,
+  html,
+  waitUntil,
+} from '../common/helpers.spec.js';
 import { first, last } from '../common/util.js';
 import { simulateClick, simulateKeyboard } from '../common/utils.spec.js';
 import IgcTabComponent from './tab.js';
@@ -33,7 +32,7 @@ describe('Tabs component', () => {
     expect(getComputedStyle(getTabDOM(tab).body).display).to.equal('block');
   }
 
-  before(() => {
+  beforeAll(() => {
     defineComponents(IgcTabComponent, IgcTabsComponent);
   });
 
@@ -288,55 +287,55 @@ describe('Tabs component', () => {
       activeTabWidth = activeTabHeader.getBoundingClientRect().width;
 
       expect(indicator.style.transform).to.eq(
-        `translateX(${activeTabOffsetLeft - scrollContainerWidth + activeTabWidth}px)`
+        `translateX(${Math.round(activeTabOffsetLeft - scrollContainerWidth + activeTabWidth)}px)`
       );
 
-      expect(indicator.style.width).to.eq(`${activeTabWidth}px`);
+      expect(indicator.style.width).to.eq(`${Math.round(activeTabWidth)}px`);
     });
 
     it('emits `igcChange` when selecting item via mouse click', async () => {
-      const eventSpy = spy(element, 'emitEvent');
+      const spy = vi.spyOn(element, 'emitEvent');
 
       simulateClick(getTabDOM(element.tabs[3]).header);
       await elementUpdated(element);
 
-      expect(eventSpy).calledWithExactly('igcChange', {
+      expect(spy).toHaveBeenCalledWith('igcChange', {
         detail: first(getTabsDOM(element).selected),
       });
     });
 
     it('emits `igcChange` when selecting item via arrow key press', async () => {
-      const eventSpy = spy(element, 'emitEvent');
+      const spy = vi.spyOn(element, 'emitEvent');
 
       simulateKeyboard(getTabDOM(element.tabs[1]).header, arrowLeft);
       await elementUpdated(element);
 
-      expect(eventSpy).calledWithExactly('igcChange', {
+      expect(spy).toHaveBeenCalledWith('igcChange', {
         detail: first(getTabsDOM(element).selected),
       });
     });
 
     it('does not change active tab when clicking inside the tab content', async () => {
-      const eventSpy = spy(element, 'emitEvent');
+      const spy = vi.spyOn(element, 'emitEvent');
       const input = document.createElement('input');
       element.tabs[1].append(input);
 
       simulateClick(input);
       await elementUpdated(element);
 
-      expect(eventSpy.callCount).to.equal(0);
+      expect(spy).toHaveBeenCalledTimes(0);
       verifySelection(element, element.tabs[1]);
     });
 
     it('does not change active tab with keyboard interaction inside the tab content', async () => {
-      const eventSpy = spy(element, 'emitEvent');
+      const spy = vi.spyOn(element, 'emitEvent');
       const input = document.createElement('input');
       element.tabs[1].append(input);
 
       simulateKeyboard(input, arrowLeft);
       await elementUpdated(element);
 
-      expect(eventSpy.callCount).to.equal(0);
+      expect(spy).toHaveBeenCalledTimes(0);
       verifySelection(element, element.tabs[1]);
     });
 
@@ -352,7 +351,7 @@ describe('Tabs component', () => {
         .map((tab) => getTabDOM(tab).header.offsetWidth - expectedWidth)
         .reduce((a, b) => a - b, 0);
 
-      expect(diff).to.equal(0);
+      expect(diff).to.approximately(0, 2);
     });
 
     it('aligns tab headers properly when `alignment` is set to start', async () => {

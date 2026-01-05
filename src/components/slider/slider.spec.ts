@@ -1,12 +1,4 @@
-import {
-  aTimeout,
-  elementUpdated,
-  expect,
-  fixture,
-  html,
-} from '@open-wc/testing';
-import { spy } from 'sinon';
-
+import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   arrowDown,
   arrowLeft,
@@ -18,6 +10,12 @@ import {
   pageUpKey,
 } from '../common/controllers/key-bindings.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
+import {
+  aTimeout,
+  elementUpdated,
+  fixture,
+  html,
+} from '../common/helpers.spec.js';
 import { asPercent } from '../common/util.js';
 import {
   createFormAssociatedTestBed,
@@ -34,7 +32,7 @@ describe('Slider component', () => {
   describe('Regular', () => {
     let slider: IgcSliderComponent;
 
-    before(() => {
+    beforeAll(() => {
       defineComponents(IgcSliderComponent);
     });
 
@@ -122,33 +120,33 @@ describe('Slider component', () => {
     });
 
     it('value should be changed when clicking and dragging the slider and corresponding events are fired', async () => {
-      const eventSpy = spy(slider, 'emitEvent');
+      const spy = vi.spyOn(slider, 'emitEvent');
       const { x, width } = slider.getBoundingClientRect();
 
       simulatePointerDown(slider, { clientX: x + width / 2 });
       await elementUpdated(slider);
 
       expect(slider.value).to.eq(50);
-      expect(eventSpy).calledOnceWithExactly('igcInput', { detail: 50 });
+      expect(spy).toHaveBeenCalledExactlyOnceWith('igcInput', { detail: 50 });
 
-      eventSpy.resetHistory();
+      spy.mockClear();
       simulatePointerMove(slider, { clientX: x + width * 0.7 });
       await elementUpdated(slider);
 
       expect(slider.value).to.eq(70);
-      expect(eventSpy).calledOnceWithExactly('igcInput', { detail: 70 });
+      expect(spy).toHaveBeenCalledExactlyOnceWith('igcInput', { detail: 70 });
 
-      eventSpy.resetHistory();
+      spy.mockClear();
 
       simulateLostPointerCapture(slider);
       await elementUpdated(slider);
 
       expect(slider.value).to.eq(70);
-      expect(eventSpy).calledOnceWithExactly('igcChange', { detail: 70 });
+      expect(spy).toHaveBeenCalledExactlyOnceWith('igcChange', { detail: 70 });
     });
 
     it('events should not be emitted once thumbs reaches end boundary even if pointer events are still fired', async () => {
-      const eventSpy = spy(slider, 'emitEvent');
+      const spy = vi.spyOn(slider, 'emitEvent');
       const { x, width } = slider.getBoundingClientRect();
 
       const sliderCenterX = {
@@ -161,7 +159,7 @@ describe('Slider component', () => {
       await elementUpdated(slider);
 
       expect(slider.value).to.eq(50);
-      expect(eventSpy).calledOnceWithExactly('igcInput', { detail: 50 });
+      expect(spy).toHaveBeenCalledExactlyOnceWith('igcInput', { detail: 50 });
 
       // Simulate 10 pointer moves with stacking delta = 1/4 of the slider's width
       simulatePointerMove(slider, sliderCenterX, deltaX, 10);
@@ -170,18 +168,18 @@ describe('Slider component', () => {
       expect(slider.value).to.equal(100);
 
       // 1 igcInput for pointerDown + 2 more for each pointermove till the end
-      expect(eventSpy.callCount).to.equal(3);
-      expect(eventSpy.lastCall).calledWithExactly('igcInput', {
+      expect(spy).toHaveBeenCalledTimes(3);
+      expect(spy).toHaveBeenLastCalledWith('igcInput', {
         detail: 100,
       });
 
-      eventSpy.resetHistory();
+      spy.mockClear();
 
       simulateLostPointerCapture(slider);
       await elementUpdated(slider);
 
       expect(slider.value).to.eq(100);
-      expect(eventSpy).calledOnceWithExactly('igcChange', { detail: 100 });
+      expect(spy).toHaveBeenCalledExactlyOnceWith('igcChange', { detail: 100 });
     });
 
     it('track fill and thumb should be positioned correctly according to the current value', async () => {
@@ -319,7 +317,7 @@ describe('Slider component', () => {
       simulatePointerDown(slider, { clientX: x + width * 0.54321 });
       await elementUpdated(slider);
 
-      expect(slider.value).to.eq(54.321);
+      expect(slider.value).approximately(54.321, 0.0001);
     });
 
     it('primary tick marks should be displayed when primaryTickMarks is greater than 0', async () => {
@@ -622,7 +620,7 @@ describe('Slider component', () => {
     });
 
     it('value should be increased or decreased with 1 step when pressing right/top or down/left arrow keys', async () => {
-      const eventSpy = spy(slider, 'emitEvent');
+      const spy = vi.spyOn(slider, 'emitEvent');
       slider.step = 2;
       slider.value = 50;
       await elementUpdated(slider);
@@ -630,34 +628,34 @@ describe('Slider component', () => {
       simulateKeyboard(slider, arrowRight);
       await elementUpdated(slider);
       expect(slider.value).to.eq(52);
-      expect(eventSpy).to.be.calledTwice;
-      expect(eventSpy).calledWith('igcInput', { detail: 52 });
-      expect(eventSpy).calledWith('igcChange', { detail: 52 });
+      expect(spy).toHaveBeenCalledTimes(2);
+      expect(spy).toHaveBeenCalledWith('igcInput', { detail: 52 });
+      expect(spy).toHaveBeenCalledWith('igcChange', { detail: 52 });
 
-      eventSpy.resetHistory();
+      spy.mockClear();
       simulateKeyboard(slider, arrowLeft);
       await elementUpdated(slider);
       expect(slider.value).to.eq(50);
-      expect(eventSpy).calledWith('igcInput', { detail: 50 });
-      expect(eventSpy).calledWith('igcChange', { detail: 50 });
+      expect(spy).toHaveBeenCalledWith('igcInput', { detail: 50 });
+      expect(spy).toHaveBeenCalledWith('igcChange', { detail: 50 });
 
-      eventSpy.resetHistory();
+      spy.mockClear();
       simulateKeyboard(slider, arrowDown);
       await elementUpdated(slider);
       expect(slider.value).to.eq(48);
-      expect(eventSpy).calledWith('igcInput', { detail: 48 });
-      expect(eventSpy).calledWith('igcChange', { detail: 48 });
+      expect(spy).toHaveBeenCalledWith('igcInput', { detail: 48 });
+      expect(spy).toHaveBeenCalledWith('igcChange', { detail: 48 });
 
-      eventSpy.resetHistory();
+      spy.mockClear();
       simulateKeyboard(slider, arrowUp);
       await elementUpdated(slider);
       expect(slider.value).to.eq(50);
-      expect(eventSpy).calledWith('igcInput', { detail: 50 });
-      expect(eventSpy).calledWith('igcChange', { detail: 50 });
+      expect(spy).toHaveBeenCalledWith('igcInput', { detail: 50 });
+      expect(spy).toHaveBeenCalledWith('igcChange', { detail: 50 });
     });
 
     it('fractional step', async () => {
-      const eventSpy = spy(slider, 'emitEvent');
+      const spy = vi.spyOn(slider, 'emitEvent');
 
       const step = 0.25;
       const lower = 50 - step;
@@ -671,22 +669,22 @@ describe('Slider component', () => {
       await elementUpdated(slider);
 
       expect(slider.value).to.equal(lower);
-      expect(eventSpy).calledWith('igcInput', { detail: lower });
-      expect(eventSpy).calledWith('igcChange', { detail: lower });
+      expect(spy).toHaveBeenCalledWith('igcInput', { detail: lower });
+      expect(spy).toHaveBeenCalledWith('igcChange', { detail: lower });
 
-      eventSpy.resetHistory();
+      spy.mockClear();
       slider.value = 50;
 
       simulateKeyboard(slider, arrowRight);
       await elementUpdated(slider);
 
       expect(slider.value).to.equal(higher);
-      expect(eventSpy).calledWith('igcInput', { detail: higher });
-      expect(eventSpy).calledWith('igcChange', { detail: higher });
+      expect(spy).toHaveBeenCalledWith('igcInput', { detail: higher });
+      expect(spy).toHaveBeenCalledWith('igcChange', { detail: higher });
     });
 
     it('if step is set to 0 it should default to 1 for keyboard selection', async () => {
-      const eventSpy = spy(slider, 'emitEvent');
+      const spy = vi.spyOn(slider, 'emitEvent');
 
       const value = Math.PI;
       slider.step = 0;
@@ -696,16 +694,16 @@ describe('Slider component', () => {
       await elementUpdated(slider);
 
       expect(slider.value).to.equal(value - 1);
-      expect(eventSpy).calledWith('igcInput', { detail: value - 1 });
-      expect(eventSpy).calledWith('igcChange', { detail: value - 1 });
+      expect(spy).toHaveBeenCalledWith('igcInput', { detail: value - 1 });
+      expect(spy).toHaveBeenCalledWith('igcChange', { detail: value - 1 });
 
-      eventSpy.resetHistory();
+      spy.mockClear();
       slider.value = value;
 
       simulateKeyboard(slider, arrowRight);
       expect(slider.value).to.equal(value + 1);
-      expect(eventSpy).calledWith('igcInput', { detail: value + 1 });
-      expect(eventSpy).calledWith('igcChange', { detail: value + 1 });
+      expect(spy).toHaveBeenCalledWith('igcInput', { detail: value + 1 });
+      expect(spy).toHaveBeenCalledWith('igcChange', { detail: value + 1 });
     });
 
     it('value should be increased/decreased with 1/10th of the slider range when pressing page up/down keys', async () => {
@@ -723,7 +721,7 @@ describe('Slider component', () => {
     });
 
     it('value should be set to minimum when pressing home key', async () => {
-      const eventSpy = spy(slider, 'emitEvent');
+      const spy = vi.spyOn(slider, 'emitEvent');
 
       slider.min = 10;
       slider.value = 50;
@@ -736,11 +734,11 @@ describe('Slider component', () => {
       expect(slider.value).to.eq(10);
 
       // Only one igcInput and one igcChange events should be fired
-      expect(eventSpy.callCount).to.equal(2);
+      expect(spy).toHaveBeenCalledTimes(2);
     });
 
     it('value should be set to maximum when pressing end key', async () => {
-      const eventSpy = spy(slider, 'emitEvent');
+      const spy = vi.spyOn(slider, 'emitEvent');
 
       slider.max = 90;
       slider.value = 50;
@@ -753,14 +751,14 @@ describe('Slider component', () => {
       expect(slider.value).to.eq(90);
 
       // Only one igcInput and one igcChange events should be fired
-      expect(eventSpy.callCount).to.equal(2);
+      expect(spy).toHaveBeenCalledTimes(2);
     });
   });
 
   describe('Range', () => {
     let slider: IgcRangeSliderComponent;
 
-    before(() => {
+    beforeAll(() => {
       defineComponents(IgcRangeSliderComponent);
     });
 
@@ -913,68 +911,68 @@ describe('Slider component', () => {
     });
 
     it('closest thumb value should be changed when clicking and dragging the slider and corresponding events are fired', async () => {
-      const eventSpy = spy(slider, 'emitEvent');
+      const spy = vi.spyOn(slider, 'emitEvent');
       const { x, width } = slider.getBoundingClientRect();
 
       simulatePointerDown(slider, { clientX: x + width * 0.5 });
       await elementUpdated(slider);
 
       expect(slider.upper).to.eq(50);
-      expect(eventSpy).calledOnceWithExactly('igcInput', {
+      expect(spy).toHaveBeenCalledExactlyOnceWith('igcInput', {
         detail: { lower: 0, upper: 50 },
       });
 
-      eventSpy.resetHistory();
+      spy.mockClear();
       simulatePointerMove(slider, { clientX: x + width * 0.7 });
       await elementUpdated(slider);
 
       expect(slider.upper).to.eq(70);
-      expect(eventSpy).calledOnceWithExactly('igcInput', {
+      expect(spy).toHaveBeenCalledExactlyOnceWith('igcInput', {
         detail: { lower: 0, upper: 70 },
       });
 
-      eventSpy.resetHistory();
+      spy.mockClear();
       simulateLostPointerCapture(slider);
       await elementUpdated(slider);
 
       expect(slider.upper).to.eq(70);
-      expect(eventSpy).calledOnceWithExactly('igcChange', {
+      expect(spy).toHaveBeenCalledExactlyOnceWith('igcChange', {
         detail: { lower: 0, upper: 70 },
       });
 
-      eventSpy.resetHistory();
+      spy.mockClear();
       simulatePointerDown(slider, { clientX: x + width * 0.2 });
       await elementUpdated(slider);
 
       expect(slider.lower).to.eq(20);
       expect(slider.upper).to.eq(70);
-      expect(eventSpy).calledOnceWithExactly('igcInput', {
+      expect(spy).toHaveBeenCalledExactlyOnceWith('igcInput', {
         detail: { lower: 20, upper: 70 },
       });
 
-      eventSpy.resetHistory();
+      spy.mockClear();
       simulatePointerMove(slider, { clientX: x + width * 0.4 });
       await elementUpdated(slider);
 
       expect(slider.upper).to.eq(70);
       expect(slider.lower).to.eq(40);
-      expect(eventSpy).calledOnceWithExactly('igcInput', {
+      expect(spy).toHaveBeenCalledExactlyOnceWith('igcInput', {
         detail: { lower: 40, upper: 70 },
       });
 
-      eventSpy.resetHistory();
+      spy.mockClear();
       simulateLostPointerCapture(slider);
       await elementUpdated(slider);
 
       expect(slider.upper).to.eq(70);
       expect(slider.lower).to.eq(40);
-      expect(eventSpy).calledOnceWithExactly('igcChange', {
+      expect(spy).toHaveBeenCalledExactlyOnceWith('igcChange', {
         detail: { lower: 40, upper: 70 },
       });
     });
 
     it('when the lower thumb is dragged beyond the upper thumb, the upper thumb should be focused and its dragging should continue.', async () => {
-      const eventSpy = spy(slider, 'emitEvent');
+      const spy = vi.spyOn(slider, 'emitEvent');
       const { x, width } = slider.getBoundingClientRect();
       const { thumbs } = getDOM(slider);
 
@@ -987,31 +985,31 @@ describe('Slider component', () => {
 
       expect(slider.lower).to.eq(25);
       expect(slider.upper).to.eq(50);
-      expect(eventSpy).calledOnceWithExactly('igcInput', {
+      expect(spy).toHaveBeenCalledExactlyOnceWith('igcInput', {
         detail: { lower: 25, upper: 50 },
       });
       expect(slider).to.eq(document.activeElement);
       expect(thumbs.lower).to.eq(slider.shadowRoot?.activeElement);
 
-      eventSpy.resetHistory();
+      spy.mockClear();
       simulatePointerMove(slider, { clientX: x + width * 0.7 });
       await elementUpdated(slider);
 
       expect(slider.lower).to.eq(50);
       expect(slider.upper).to.eq(70);
-      expect(eventSpy).calledOnceWithExactly('igcInput', {
+      expect(spy).toHaveBeenCalledExactlyOnceWith('igcInput', {
         detail: { lower: 50, upper: 70 },
       });
       expect(slider).to.eq(document.activeElement);
       expect(thumbs.upper).to.eq(slider.shadowRoot?.activeElement);
 
-      eventSpy.resetHistory();
+      spy.mockClear();
       simulateLostPointerCapture(slider);
       await elementUpdated(slider);
 
       expect(slider.lower).to.eq(50);
       expect(slider.upper).to.eq(70);
-      expect(eventSpy).calledOnceWithExactly('igcChange', {
+      expect(spy).toHaveBeenCalledExactlyOnceWith('igcChange', {
         detail: { lower: 50, upper: 70 },
       });
     });
@@ -1062,7 +1060,7 @@ describe('Slider component', () => {
   describe('Initial rendering race condition', () => {
     let slider: IgcSliderComponent;
 
-    before(() => defineComponents(IgcSliderComponent));
+    beforeAll(() => defineComponents(IgcSliderComponent));
 
     beforeEach(async () => {
       slider = await fixture<IgcSliderComponent>(

@@ -1,7 +1,7 @@
-import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import type { TemplateResult } from 'lit';
-
+import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { defineComponents } from '../common/definitions/defineComponents.js';
+import { elementUpdated, fixture, html } from '../common/helpers.spec.js';
 import { first } from '../common/util.js';
 import IgcCalendarComponent from './calendar.js';
 import { getCalendarDOM, getDayViewDOM, getDOMDate } from './helpers.spec.js';
@@ -9,7 +9,7 @@ import { CalendarDay } from './model.js';
 import { type DateRangeDescriptor, DateRangeType } from './types.js';
 
 describe('Calendar Rendering', () => {
-  before(() => {
+  beforeAll(() => {
     defineComponents(IgcCalendarComponent);
   });
 

@@ -1,6 +1,12 @@
-import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
-import { spy } from 'sinon';
-
+import {
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  type MockInstance,
+  vi,
+} from 'vitest';
 import {
   arrowDown,
   arrowLeft,
@@ -8,13 +14,18 @@ import {
   arrowUp,
 } from '../common/controllers/key-bindings.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
+import { elementUpdated, fixture, html } from '../common/helpers.spec.js';
 import { first, last } from '../common/util.js';
-import { isFocused, simulateKeyboard } from '../common/utils.spec.js';
+import {
+  expectCalledWith,
+  isFocused,
+  simulateKeyboard,
+} from '../common/utils.spec.js';
 import IgcRadioComponent from '../radio/radio.js';
 import IgcRadioGroupComponent from './radio-group.js';
 
 describe('Radio Group Component', () => {
-  before(() => {
+  beforeAll(() => {
     defineComponents(IgcRadioGroupComponent);
   });
 
@@ -94,7 +105,7 @@ describe('Radio Group Component', () => {
       });
 
       describe('Keyboard navigation', () => {
-        let spies: unknown[];
+        let spies: MockInstance[];
 
         async function waitForUpdate() {
           await Promise.all(radios.map((radio) => elementUpdated(radio)));
@@ -109,7 +120,7 @@ describe('Radio Group Component', () => {
           radios = Array.from(
             group.querySelectorAll(IgcRadioComponent.tagName)
           );
-          spies = radios.map((radio) => spy(radio, 'emitEvent'));
+          spies = radios.map((radio) => vi.spyOn(radio, 'emitEvent'));
         });
 
         it('should be able to navigate through radios using arrow keys', async () => {
@@ -121,7 +132,7 @@ describe('Radio Group Component', () => {
 
           validateGroupSelected(first);
           expect(isFocused(first)).to.be.true;
-          expect(firstSpy).calledWith('igcChange');
+          expectCalledWith(firstSpy, 'igcChange');
 
           simulateKeyboard(first, arrowDown);
           await waitForUpdate();
@@ -129,7 +140,7 @@ describe('Radio Group Component', () => {
           validateGroupSelected(second);
           expect(isFocused(first)).to.be.false;
           expect(isFocused(second)).to.be.true;
-          expect(secondSpy).calledWith('igcChange');
+          expectCalledWith(secondSpy, 'igcChange');
 
           simulateKeyboard(second, arrowUp);
           await waitForUpdate();
@@ -137,7 +148,7 @@ describe('Radio Group Component', () => {
           validateGroupSelected(first);
           expect(isFocused(second)).to.be.false;
           expect(isFocused(first)).to.be.true;
-          expect(firstSpy).to.be.calledWith('igcChange');
+          expectCalledWith(firstSpy, 'igcChange');
 
           simulateKeyboard(first, arrowRight);
           await waitForUpdate();
@@ -145,7 +156,7 @@ describe('Radio Group Component', () => {
           validateGroupSelected(second);
           expect(isFocused(first)).to.be.false;
           expect(isFocused(second)).to.be.true;
-          expect(secondSpy).to.be.calledWith('igcChange');
+          expectCalledWith(secondSpy, 'igcChange');
 
           simulateKeyboard(second, arrowLeft);
           await waitForUpdate();
@@ -153,7 +164,7 @@ describe('Radio Group Component', () => {
           validateGroupSelected(first);
           expect(isFocused(second)).to.be.false;
           expect(isFocused(first)).to.be.true;
-          expect(firstSpy).to.be.calledWith('igcChange');
+          expectCalledWith(firstSpy, 'igcChange');
 
           simulateKeyboard(first, arrowLeft);
           await waitForUpdate();
@@ -161,7 +172,7 @@ describe('Radio Group Component', () => {
           validateGroupSelected(third);
           expect(isFocused(first)).to.be.false;
           expect(isFocused(third)).to.be.true;
-          expect(thirdSpy).to.be.calledWith('igcChange');
+          expectCalledWith(thirdSpy, 'igcChange');
 
           simulateKeyboard(third, arrowDown);
           await waitForUpdate();
@@ -169,7 +180,7 @@ describe('Radio Group Component', () => {
           validateGroupSelected(first);
           expect(isFocused(third)).to.be.false;
           expect(isFocused(first)).to.be.true;
-          expect(firstSpy).to.be.calledWith('igcChange');
+          expectCalledWith(firstSpy, 'igcChange');
         });
 
         it('should skip disabled radios when navigating', async () => {
@@ -190,8 +201,8 @@ describe('Radio Group Component', () => {
           validateGroupSelected(third);
           expect(isFocused(first)).to.be.false;
           expect(isFocused(third)).to.be.true;
-          expect(secondSpy).to.not.be.called;
-          expect(thirdSpy).calledWith('igcChange');
+          expect(secondSpy).not.toHaveBeenCalled();
+          expectCalledWith(thirdSpy, 'igcChange');
         });
       });
     });

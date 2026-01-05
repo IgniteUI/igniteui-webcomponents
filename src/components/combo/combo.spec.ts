@@ -1,6 +1,4 @@
-import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
-import { spy } from 'sinon';
-
+import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   altKey,
   arrowDown,
@@ -13,9 +11,12 @@ import {
   tabKey,
 } from '../common/controllers/key-bindings.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
+import { elementUpdated, fixture, html } from '../common/helpers.spec.js';
 import { first } from '../common/util.js';
 import {
   createFormAssociatedTestBed,
+  expectCalledWith,
+  expectNotCalledWith,
   isFocused,
   simulateClick,
   simulateKeyboard,
@@ -174,7 +175,7 @@ describe('Combo', () => {
         .shadowRoot!.querySelector('igc-combo-list')!
         .querySelectorAll('[part~="group-header"]'),
     ] as IgcComboHeaderComponent[];
-  before(() => {
+  beforeAll(() => {
     defineComponents(IgcComboComponent);
   });
 
@@ -279,25 +280,25 @@ describe('Combo', () => {
     });
 
     it('should open the menu upon clicking on the input', async () => {
-      const eventSpy = spy(combo, 'emitEvent');
+      const spy = vi.spyOn(combo, 'emitEvent');
 
       simulateClick(input);
       await elementUpdated(combo);
 
-      expect(eventSpy).calledWith('igcOpening');
-      expect(eventSpy).calledWith('igcOpened');
+      expectCalledWith(spy, 'igcOpening');
+      expectCalledWith(spy, 'igcOpened');
       expect(combo.open).to.be.true;
     });
 
     it('should hide the menu upon clicking on the input', async () => {
-      const eventSpy = spy(combo, 'emitEvent');
+      const spy = vi.spyOn(combo, 'emitEvent');
       await combo.show();
 
       simulateClick(input);
       await elementUpdated(combo);
 
-      expect(eventSpy).calledWith('igcClosing');
-      expect(eventSpy).calledWith('igcClosed');
+      expectCalledWith(spy, 'igcClosing');
+      expectCalledWith(spy, 'igcClosed');
       expect(combo.open).to.be.false;
     });
 
@@ -306,15 +307,15 @@ describe('Combo', () => {
       combo.addEventListener('igcOpening', (event: CustomEvent) => {
         event.preventDefault();
       });
-      const eventSpy = spy(combo, 'emitEvent');
+      const spy = vi.spyOn(combo, 'emitEvent');
 
       simulateClick(input);
       await elementUpdated(combo);
 
-      expect(eventSpy).calledOnceWithExactly('igcOpening', {
+      expect(spy).toHaveBeenCalledExactlyOnceWith('igcOpening', {
         cancelable: true,
       });
-      expect(eventSpy).not.calledWith('igcOpened');
+      expectNotCalledWith(spy, 'igcOpened');
     });
 
     it('should be able to cancel the igcClosing event', async () => {
@@ -322,15 +323,15 @@ describe('Combo', () => {
       combo.addEventListener('igcClosing', (event: CustomEvent) => {
         event.preventDefault();
       });
-      const eventSpy = spy(combo, 'emitEvent');
+      const spy = vi.spyOn(combo, 'emitEvent');
 
       simulateClick(input);
       await elementUpdated(combo);
 
-      expect(eventSpy).calledOnceWithExactly('igcClosing', {
+      expect(spy).toHaveBeenCalledExactlyOnceWith('igcClosing', {
         cancelable: true,
       });
-      expect(eventSpy).not.calledWith('igcClosed');
+      expectNotCalledWith(spy, 'igcClosed');
     });
 
     it('should focus the input when the host is focused', async () => {
@@ -507,12 +508,12 @@ describe('Combo', () => {
         event.preventDefault()
       );
 
-      const eventSpy = spy(combo, 'emitEvent');
-      expect(eventSpy).not.calledWith('igcChange');
+      const spy = vi.spyOn(combo, 'emitEvent');
+      expectNotCalledWith(spy, 'igcChange');
     });
 
     it('should fire igcChange selection type event on mouse click', async () => {
-      const eventSpy = spy(combo, 'emitEvent');
+      const spy = vi.spyOn(combo, 'emitEvent');
       const args = {
         cancelable: true,
         detail: {
@@ -528,11 +529,11 @@ describe('Combo', () => {
 
       first(items(combo)).click();
       expect(combo.value).to.eql(['BG01']);
-      expect(eventSpy).calledWithExactly('igcChange', args);
+      expect(spy).toHaveBeenCalledWith('igcChange', args);
     });
 
     it('should fire igcChange deselection type event on mouse click', async () => {
-      const eventSpy = spy(combo, 'emitEvent');
+      const spy = vi.spyOn(combo, 'emitEvent');
       const args = {
         cancelable: true,
         detail: {
@@ -553,14 +554,14 @@ describe('Combo', () => {
       await elementUpdated(combo);
       expect(combo.value).to.eql(['BG02', 'BG03']);
 
-      expect(eventSpy).calledWithExactly('igcChange', args);
+      expect(spy).toHaveBeenCalledWith('igcChange', args);
     });
 
     it('should be able to cancel the selection event', async () => {
       combo.addEventListener('igcChange', (event: CustomEvent) => {
         event.preventDefault();
       });
-      const eventSpy = spy(combo, 'emitEvent');
+      const spy = vi.spyOn(combo, 'emitEvent');
       combo.open = true;
 
       await elementUpdated(combo);
@@ -569,7 +570,7 @@ describe('Combo', () => {
       first(items(combo)).click();
       await elementUpdated(combo);
 
-      expect(eventSpy).calledWith('igcChange');
+      expectCalledWith(spy, 'igcChange');
       expect(combo.value).to.be.empty;
     });
 
@@ -577,7 +578,7 @@ describe('Combo', () => {
       combo.addEventListener('igcChange', (event: CustomEvent) => {
         event.preventDefault();
       });
-      const eventSpy = spy(combo, 'emitEvent');
+      const spy = vi.spyOn(combo, 'emitEvent');
       combo.select(['BG01', 'BG02']);
       combo.open = true;
 
@@ -587,7 +588,7 @@ describe('Combo', () => {
       first(items(combo)).click();
       await elementUpdated(combo);
 
-      expect(eventSpy).calledWith('igcChange');
+      expectCalledWith(spy, 'igcChange');
       expect(combo.value).lengthOf(2);
     });
 

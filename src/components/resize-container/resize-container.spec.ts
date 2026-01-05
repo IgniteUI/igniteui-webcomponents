@@ -1,10 +1,18 @@
-import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
-import type Sinon from 'sinon';
-import { spy } from 'sinon';
-
+import {
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  type MockInstance,
+  vi,
+} from 'vitest';
 import { escapeKey } from '../common/controllers/key-bindings.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
+import { elementUpdated, fixture, html } from '../common/helpers.spec.js';
 import {
+  expectCalledWith,
+  expectNotCalledWith,
   simulateKeyboard,
   simulateLostPointerCapture,
   simulatePointerDown,
@@ -12,15 +20,13 @@ import {
   simulatePointerLeave,
   simulatePointerMove,
 } from '../common/utils.spec.js';
-import IgcResizeContainerComponent, {
-  type IgcResizeContainerComponentEventMap,
-} from './resize-container.js';
+import IgcResizeContainerComponent from './resize-container.js';
 import type { ResizeCallbackParams } from './types.js';
 
 describe('Resize container', () => {
   let element: IgcResizeContainerComponent;
 
-  before(() => {
+  beforeAll(() => {
     defineComponents(IgcResizeContainerComponent);
   });
 
@@ -113,67 +119,67 @@ describe('Resize container', () => {
       it('resize behavior should only start when interacting with the trigger element', async () => {
         await setResizeActiveState(element);
 
-        const eventSpy = spy(element, 'emitEvent');
+        const spy = vi.spyOn(element, 'emitEvent');
 
         simulatePointerDown(element);
         await elementUpdated(element);
 
-        expect(eventSpy).not.calledWith('igcResizeStart');
+        expectNotCalledWith(spy, 'igcResizeStart');
       });
 
       it('should not start resize behavior with non-primary "button"', async () => {
         await setResizeActiveState(element);
 
-        const eventSpy = spy(element, 'emitEvent');
+        const spy = vi.spyOn(element, 'emitEvent');
         const DOM = getDOM(element);
 
         simulatePointerDown(DOM.adorners.corner, { button: 1 });
         await elementUpdated(element);
 
-        expect(eventSpy).not.calledWith('igcResizeStart');
+        expectNotCalledWith(spy, 'igcResizeStart');
       });
 
       it('should not have a ghost element when in immediate mode', async () => {
         await setResizeActiveState(element);
 
-        const eventSpy = spy(element, 'emitEvent');
+        const spy = vi.spyOn(element, 'emitEvent');
         const { adorners } = getDOM(element);
 
         simulatePointerDown(adorners.corner);
         await elementUpdated(element);
 
-        const { ghost } = getResizeEventState(eventSpy);
+        const { ghost } = getResizeEventState(spy);
         expect(ghost).is.null;
       });
 
       it('should fire `resizeStart` on pointer interaction', async () => {
         await setResizeActiveState(element);
 
-        const eventSpy = spy(element, 'emitEvent');
+        const spy = vi.spyOn(element, 'emitEvent');
         const { adorners } = getDOM(element);
 
         simulatePointerDown(adorners.corner);
         await elementUpdated(element);
 
-        expect(eventSpy).calledWith('igcResizeStart');
+        expectCalledWith(spy, 'igcResizeStart');
       });
 
       it('should not fire `resize` unless `resizeStart` is triggered', async () => {
         await setResizeActiveState(element);
 
-        const eventSpy = spy(element, 'emitEvent');
+        const spy = vi.spyOn(element, 'emitEvent');
         const { adorners } = getDOM(element);
 
         simulatePointerMove(adorners.corner);
         await elementUpdated(element);
 
-        expect(eventSpy).not.calledWith('igcResizeStart');
+        expectNotCalledWith(spy, 'igcResizeStart');
       });
 
       it('should fire `resize` when resizing behavior is triggered', async () => {
         await setResizeActiveState(element);
 
-        const eventSpy = spy(element, 'emitEvent');
+        const spy = vi.spyOn(element, 'emitEvent');
         const { adorners } = getDOM(element);
 
         simulatePointerDown(adorners.corner);
@@ -182,7 +188,7 @@ describe('Resize container', () => {
         simulatePointerMove(adorners.corner);
         await elementUpdated(element);
 
-        expect(eventSpy).calledWith('igcResize');
+        expectCalledWith(spy, 'igcResize');
       });
 
       it('should fire `resizeEnd` when resizing is finished', async () => {
@@ -193,22 +199,21 @@ describe('Resize container', () => {
         simulatePointerDown(adorners.corner);
         await elementUpdated(element);
 
-        const eventSpy = spy(element, 'emitEvent');
+        const spy = vi.spyOn(element, 'emitEvent');
 
         simulateLostPointerCapture(adorners.corner);
         await elementUpdated(element);
 
-        expect(eventSpy).calledWith('igcResizeEnd');
+        expectCalledWith(spy, 'igcResizeEnd');
       });
 
       it('should not fire `resizeCancel` when escape key is pressed without active resizing', async () => {
-        const eventSpy = spy(element, 'emitEvent');
-
+        const spy = vi.spyOn(element, 'emitEvent');
         // Default state
         simulateKeyboard(element, escapeKey);
         await elementUpdated(element);
 
-        expect(eventSpy).not.calledWith('igcResizeCancel');
+        expectNotCalledWith(spy, 'igcResizeCancel');
 
         // While in "active" state but not in resize mode
         await setResizeActiveState(element);
@@ -216,8 +221,7 @@ describe('Resize container', () => {
         simulateKeyboard(element, escapeKey);
         await elementUpdated(element);
 
-        expect(eventSpy).not.calledWith('igcResizeCancel');
-        expect(eventSpy.getCalls()).to.be.empty;
+        expectNotCalledWith(spy, 'igcResizeCancel');
       });
 
       it('should fire `resizeCancel` when escape key is pressed during resizing', async () => {
@@ -228,12 +232,12 @@ describe('Resize container', () => {
         simulatePointerDown(adorners.corner);
         await elementUpdated(element);
 
-        const eventSpy = spy(element, 'emitEvent');
+        const spy = vi.spyOn(element, 'emitEvent');
 
         simulateKeyboard(element, escapeKey);
         await elementUpdated(element);
 
-        expect(eventSpy).calledWith('igcResizeCancel');
+        expectCalledWith(spy, 'igcResizeCancel');
       });
     });
 
@@ -241,18 +245,16 @@ describe('Resize container', () => {
       it('`resizeStart` event parameters match initial state', async () => {
         await setResizeActiveState(element);
 
-        const eventSpy = spy(element, 'emitEvent');
+        const spy = vi.spyOn(element, 'emitEvent');
         const DOM = getDOM(element);
 
         simulatePointerDown(DOM.adorners.corner);
         await elementUpdated(element);
 
-        expect(eventSpy).calledWith('igcResizeStart');
+        expectCalledWith(spy, 'igcResizeStart');
 
         const targetRect = DOM.container.getBoundingClientRect();
-        const { initial, current, deltaX, deltaY } =
-          getResizeEventState(eventSpy);
-
+        const { initial, current, deltaX, deltaY } = getResizeEventState(spy);
         // Assert the resize container DOM rect matches the event parameters state
         expect(initial).to.eql(targetRect);
         expect(current).to.eql(targetRect);
@@ -264,7 +266,7 @@ describe('Resize container', () => {
       it('`resize` event parameters match resize target state', async () => {
         await setResizeActiveState(element);
 
-        const eventSpy = spy(element, 'emitEvent');
+        const spy = vi.spyOn(element, 'emitEvent');
         const DOM = getDOM(element);
 
         simulatePointerDown(DOM.adorners.corner);
@@ -281,7 +283,7 @@ describe('Resize container', () => {
           await elementUpdated(element);
 
           rect = DOM.container.getBoundingClientRect();
-          current = getResizeEventState(eventSpy);
+          current = getResizeEventState(spy);
 
           // Correct deltas
           expect([current.deltaX, current.deltaY]).to.eql([
@@ -300,13 +302,13 @@ describe('Resize container', () => {
       it('`resizeEnd` event parameters match resize target end state', async () => {
         await setResizeActiveState(element);
 
-        const eventSpy = spy(element, 'emitEvent');
+        const spy = vi.spyOn(element, 'emitEvent');
         const DOM = getDOM(element);
 
         simulatePointerDown(DOM.adorners.corner);
         await elementUpdated(element);
 
-        let state = getResizeEventState(eventSpy);
+        let state = getResizeEventState(spy);
 
         simulatePointerMove(
           DOM.adorners.corner,
@@ -319,7 +321,7 @@ describe('Resize container', () => {
         simulateLostPointerCapture(DOM.adorners.corner);
         await elementUpdated(element);
 
-        state = getResizeEventState(eventSpy);
+        state = getResizeEventState(spy);
         const rect = DOM.container.getBoundingClientRect();
 
         expect([
@@ -336,14 +338,14 @@ describe('Resize container', () => {
       it('`resizeCancel` correctly restores initial state', async () => {
         await setResizeActiveState(element);
 
-        const eventSpy = spy(element, 'emitEvent');
+        const spy = vi.spyOn(element, 'emitEvent');
         const DOM = getDOM(element);
 
         simulatePointerDown(DOM.adorners.corner);
         await elementUpdated(element);
 
         let rect: DOMRect;
-        let state = getResizeEventState(eventSpy);
+        let state = getResizeEventState(spy);
 
         simulatePointerMove(
           DOM.adorners.corner,
@@ -355,7 +357,7 @@ describe('Resize container', () => {
         );
         await elementUpdated(element);
 
-        state = getResizeEventState(eventSpy);
+        state = getResizeEventState(spy);
         rect = DOM.container.getBoundingClientRect();
 
         expect([rect.width, rect.height]).to.eql([
@@ -385,15 +387,15 @@ describe('Resize container', () => {
         await setResizeActiveState(element);
 
         const DOM = getDOM(element);
-        const eventSpy = spy(element, 'emitEvent');
+        const spy = vi.spyOn(element, 'emitEvent');
         const rect = DOM.container.getBoundingClientRect();
 
         simulatePointerDown(DOM.adorners.side);
         await elementUpdated(element);
 
-        let state = getResizeEventState(eventSpy);
+        let state = getResizeEventState(spy);
 
-        expect(eventSpy).calledWith('igcResizeStart');
+        expectCalledWith(spy, 'igcResizeStart');
         expect(state.trigger).to.equal(DOM.adorners.side);
 
         simulatePointerMove(DOM.adorners.side, {
@@ -402,18 +404,18 @@ describe('Resize container', () => {
         });
         await elementUpdated(element);
 
-        state = getResizeEventState(eventSpy);
+        state = getResizeEventState(spy);
 
-        expect(eventSpy).calledWith('igcResize');
+        expectCalledWith(spy, 'igcResize');
         expect(state.current.height).to.equal(rect.height);
         expect(state.current.width).to.equal(rect.width + 500);
 
         simulateLostPointerCapture(DOM.adorners.side);
         await elementUpdated(element);
 
-        state = getResizeEventState(eventSpy);
+        state = getResizeEventState(spy);
 
-        expect(eventSpy).calledWith('igcResizeEnd');
+        expectCalledWith(spy, 'igcResizeEnd');
         expect(state.current).to.eql(DOM.container.getBoundingClientRect());
       });
 
@@ -421,15 +423,15 @@ describe('Resize container', () => {
         await setResizeActiveState(element);
 
         const DOM = getDOM(element);
-        const eventSpy = spy(element, 'emitEvent');
+        const spy = vi.spyOn(element, 'emitEvent');
         const rect = DOM.container.getBoundingClientRect();
 
         simulatePointerDown(DOM.adorners.bottom);
         await elementUpdated(element);
 
-        let state = getResizeEventState(eventSpy);
+        let state = getResizeEventState(spy);
 
-        expect(eventSpy).calledWith('igcResizeStart');
+        expectCalledWith(spy, 'igcResizeStart');
         expect(state.trigger).to.equal(DOM.adorners.bottom);
 
         simulatePointerMove(DOM.adorners.bottom, {
@@ -438,18 +440,18 @@ describe('Resize container', () => {
         });
         await elementUpdated(element);
 
-        state = getResizeEventState(eventSpy);
+        state = getResizeEventState(spy);
 
-        expect(eventSpy).calledWith('igcResize');
+        expectCalledWith(spy, 'igcResize');
         expect(state.current.width).to.equal(rect.width);
         expect(state.current.height).to.equal(rect.height + 500);
 
         simulateLostPointerCapture(DOM.adorners.bottom);
         await elementUpdated(element);
 
-        state = getResizeEventState(eventSpy);
+        state = getResizeEventState(spy);
 
-        expect(eventSpy).calledWith('igcResizeEnd');
+        expectCalledWith(spy, 'igcResizeEnd');
         expect(state.current).to.eql(DOM.container.getBoundingClientRect());
       });
     });
@@ -520,24 +522,24 @@ describe('Resize container', () => {
       it('resize behavior should only start when interacting with the trigger element', async () => {
         await setResizeActiveState(element);
 
-        const eventSpy = spy(element, 'emitEvent');
+        const spy = vi.spyOn(element, 'emitEvent');
 
         simulatePointerDown(element);
         await elementUpdated(element);
 
-        expect(eventSpy).not.calledWith('igcResizeStart');
+        expectNotCalledWith(spy, 'igcResizeStart');
       });
 
       it('should not start resize behavior with non-primary "button"', async () => {
         await setResizeActiveState(element);
 
-        const eventSpy = spy(element, 'emitEvent');
+        const spy = vi.spyOn(element, 'emitEvent');
         const DOM = getDOM(element);
 
         simulatePointerDown(DOM.adorners.corner, { button: 1 });
         await elementUpdated(element);
 
-        expect(eventSpy).not.calledWith('igcResizeStart');
+        expectNotCalledWith(spy, 'igcResizeStart');
       });
 
       it('should initialize the default ghost on pointerdown', async () => {
@@ -574,25 +576,25 @@ describe('Resize container', () => {
       it('should fire `resizeStart` on pointer interaction', async () => {
         await setResizeActiveState(element);
 
-        const eventSpy = spy(element, 'emitEvent');
+        const spy = vi.spyOn(element, 'emitEvent');
         const { adorners } = getDOM(element);
 
         simulatePointerDown(adorners.corner);
         await elementUpdated(element);
 
-        expect(eventSpy).calledWith('igcResizeStart');
+        expectCalledWith(spy, 'igcResizeStart');
       });
 
       it('should not fire `resize` unless `resizeStart` is triggered', async () => {
         await setResizeActiveState(element);
 
-        const eventSpy = spy(element, 'emitEvent');
+        const spy = vi.spyOn(element, 'emitEvent');
         const { adorners } = getDOM(element);
 
         simulatePointerMove(adorners.corner);
         await elementUpdated(element);
 
-        expect(eventSpy).not.calledWith('igcResizeStart');
+        expectNotCalledWith(spy, 'igcResizeStart');
       });
 
       it('should fire `resize` event', async () => {
@@ -603,12 +605,12 @@ describe('Resize container', () => {
         simulatePointerDown(adorners.corner);
         await elementUpdated(element);
 
-        const eventSpy = spy(element, 'emitEvent');
+        const spy = vi.spyOn(element, 'emitEvent');
 
         simulatePointerMove(adorners.corner);
         await elementUpdated(element);
 
-        expect(eventSpy).calledWith('igcResize');
+        expectCalledWith(spy, 'igcResize');
       });
 
       it('should fire `resizeEnd` when resizing is finished', async () => {
@@ -619,12 +621,12 @@ describe('Resize container', () => {
         simulatePointerDown(adorners.corner);
         await elementUpdated(element);
 
-        const eventSpy = spy(element, 'emitEvent');
+        const spy = vi.spyOn(element, 'emitEvent');
 
         simulateLostPointerCapture(adorners.corner);
         await elementUpdated(element);
 
-        expect(eventSpy).calledWith('igcResizeEnd');
+        expectCalledWith(spy, 'igcResizeEnd');
       });
 
       it('should remove ghost element when resizing is done', async () => {
@@ -635,23 +637,23 @@ describe('Resize container', () => {
         simulatePointerDown(DOM.adorners.corner);
         await elementUpdated(element);
 
-        const eventSpy = spy(element, 'emitEvent');
+        const spy = vi.spyOn(element, 'emitEvent');
 
         simulateLostPointerCapture(DOM.adorners.corner);
         await elementUpdated(element);
 
-        expect(eventSpy).calledWith('igcResizeEnd');
+        expectCalledWith(spy, 'igcResizeEnd');
         expect(DOM.ghostElement).is.null;
       });
 
       it('should not fire `resizeCancel` when escape key is pressed without active resizing', async () => {
-        const eventSpy = spy(element, 'emitEvent');
+        const spy = vi.spyOn(element, 'emitEvent');
 
         // Default state
         simulateKeyboard(element, escapeKey);
         await elementUpdated(element);
 
-        expect(eventSpy).not.calledWith('igcResizeCancel');
+        expectNotCalledWith(spy, 'igcResizeCancel');
 
         // While in "active" state but not in resize mode
         await setResizeActiveState(element);
@@ -659,8 +661,8 @@ describe('Resize container', () => {
         simulateKeyboard(element, escapeKey);
         await elementUpdated(element);
 
-        expect(eventSpy).not.calledWith('igcResizeCancel');
-        expect(eventSpy.getCalls()).to.be.empty;
+        expectNotCalledWith(spy, 'igcResizeCancel');
+        expect(spy.mock.calls).to.be.empty;
       });
 
       it('should fire `resizeCancel` when escape key is pressed during resizing', async () => {
@@ -671,12 +673,12 @@ describe('Resize container', () => {
         simulatePointerDown(adorners.corner);
         await elementUpdated(element);
 
-        const eventSpy = spy(element, 'emitEvent');
+        const spy = vi.spyOn(element, 'emitEvent');
 
         simulateKeyboard(element, escapeKey);
         await elementUpdated(element);
 
-        expect(eventSpy).calledWith('igcResizeCancel');
+        expectCalledWith(spy, 'igcResizeCancel');
       });
 
       it('should remove ghost element on `resizeCancel`', async () => {
@@ -687,12 +689,12 @@ describe('Resize container', () => {
         simulatePointerDown(DOM.adorners.corner);
         await elementUpdated(element);
 
-        const eventSpy = spy(element, 'emitEvent');
+        const spy = vi.spyOn(element, 'emitEvent');
 
         simulateKeyboard(element, escapeKey);
         await elementUpdated(element);
 
-        expect(eventSpy).calledWith('igcResizeCancel');
+        expectCalledWith(spy, 'igcResizeCancel');
         expect(DOM.ghostElement).is.null;
       });
     });
@@ -701,18 +703,16 @@ describe('Resize container', () => {
       it('`resizeStart` event parameters match initial state', async () => {
         await setResizeActiveState(element);
 
-        const eventSpy = spy(element, 'emitEvent');
+        const spy = vi.spyOn(element, 'emitEvent');
         const DOM = getDOM(element);
 
         simulatePointerDown(DOM.adorners.corner);
         await elementUpdated(element);
 
-        expect(eventSpy).calledWith('igcResizeStart');
+        expectCalledWith(spy, 'igcResizeStart');
 
         const targetRect = DOM.ghostElement.getBoundingClientRect();
-        const { initial, current, deltaX, deltaY } =
-          getResizeEventState(eventSpy);
-
+        const { initial, current, deltaX, deltaY } = getResizeEventState(spy);
         // Assert the resize container DOM rect matches the event parameters state
         expect(initial).to.eql(targetRect);
         expect(current).to.eql(targetRect);
@@ -724,7 +724,7 @@ describe('Resize container', () => {
       it('`resize` event parameters match resize target state', async () => {
         await setResizeActiveState(element);
 
-        const eventSpy = spy(element, 'emitEvent');
+        const spy = vi.spyOn(element, 'emitEvent');
         const DOM = getDOM(element);
 
         simulatePointerDown(DOM.adorners.corner);
@@ -741,7 +741,7 @@ describe('Resize container', () => {
           await elementUpdated(element);
 
           rect = DOM.ghostElement.getBoundingClientRect();
-          current = getResizeEventState(eventSpy);
+          current = getResizeEventState(spy);
 
           // Correct deltas
           expect([current.deltaX, current.deltaY]).to.eql([
@@ -760,13 +760,13 @@ describe('Resize container', () => {
       it('`resizeEnd` event parameters match resize target end state', async () => {
         await setResizeActiveState(element);
 
-        const eventSpy = spy(element, 'emitEvent');
+        const spy = vi.spyOn(element, 'emitEvent');
         const DOM = getDOM(element);
 
         simulatePointerDown(DOM.adorners.corner);
         await elementUpdated(element);
 
-        let state = getResizeEventState(eventSpy);
+        let state = getResizeEventState(spy);
 
         simulatePointerMove(
           DOM.adorners.corner,
@@ -779,7 +779,7 @@ describe('Resize container', () => {
         simulateLostPointerCapture(DOM.adorners.corner);
         await elementUpdated(element);
 
-        state = getResizeEventState(eventSpy);
+        state = getResizeEventState(spy);
         const rect = DOM.container.getBoundingClientRect();
 
         expect([
@@ -796,14 +796,14 @@ describe('Resize container', () => {
       it('`resizeCancel` correctly restores initial state', async () => {
         await setResizeActiveState(element);
 
-        const eventSpy = spy(element, 'emitEvent');
+        const spy = vi.spyOn(element, 'emitEvent');
         const DOM = getDOM(element);
 
         simulatePointerDown(DOM.adorners.corner);
         await elementUpdated(element);
 
         let rect: DOMRect;
-        let state = getResizeEventState(eventSpy);
+        let state = getResizeEventState(spy);
 
         simulatePointerMove(
           DOM.adorners.corner,
@@ -815,7 +815,7 @@ describe('Resize container', () => {
         );
         await elementUpdated(element);
 
-        state = getResizeEventState(eventSpy);
+        state = getResizeEventState(spy);
         rect = DOM.ghostElement.getBoundingClientRect();
 
         expect([rect.width, rect.height]).to.eql([
@@ -845,16 +845,16 @@ describe('Resize container', () => {
         await setResizeActiveState(element);
 
         const DOM = getDOM(element);
-        const eventSpy = spy(element, 'emitEvent');
+        const spy = vi.spyOn(element, 'emitEvent');
         const rect = DOM.container.getBoundingClientRect();
 
         simulatePointerDown(DOM.adorners.side);
         await elementUpdated(element);
 
         const ghostRect = DOM.ghostElement.getBoundingClientRect();
-        let state = getResizeEventState(eventSpy);
+        let state = getResizeEventState(spy);
 
-        expect(eventSpy).calledWith('igcResizeStart');
+        expectCalledWith(spy, 'igcResizeStart');
         expect(state.trigger).to.equal(DOM.adorners.side);
 
         simulatePointerMove(DOM.adorners.side, {
@@ -863,18 +863,18 @@ describe('Resize container', () => {
         });
         await elementUpdated(element);
 
-        state = getResizeEventState(eventSpy);
+        state = getResizeEventState(spy);
 
-        expect(eventSpy).calledWith('igcResize');
+        expectCalledWith(spy, 'igcResize');
         expect(state.current.height).to.equal(ghostRect.height);
         expect(state.current.width).to.equal(ghostRect.width + 500);
 
         simulateLostPointerCapture(DOM.adorners.side);
         await elementUpdated(element);
 
-        state = getResizeEventState(eventSpy);
+        state = getResizeEventState(spy);
 
-        expect(eventSpy).calledWith('igcResizeEnd');
+        expectCalledWith(spy, 'igcResizeEnd');
         expect(state.current).to.eql(DOM.container.getBoundingClientRect());
       });
 
@@ -882,16 +882,16 @@ describe('Resize container', () => {
         await setResizeActiveState(element);
 
         const DOM = getDOM(element);
-        const eventSpy = spy(element, 'emitEvent');
+        const spy = vi.spyOn(element, 'emitEvent');
         const rect = DOM.container.getBoundingClientRect();
 
         simulatePointerDown(DOM.adorners.bottom);
         await elementUpdated(element);
 
         const ghostRect = DOM.ghostElement.getBoundingClientRect();
-        let state = getResizeEventState(eventSpy);
+        let state = getResizeEventState(spy);
 
-        expect(eventSpy).calledWith('igcResizeStart');
+        expectCalledWith(spy, 'igcResizeStart');
         expect(state.trigger).to.equal(DOM.adorners.bottom);
 
         simulatePointerMove(DOM.adorners.bottom, {
@@ -900,18 +900,18 @@ describe('Resize container', () => {
         });
         await elementUpdated(element);
 
-        state = getResizeEventState(eventSpy);
+        state = getResizeEventState(spy);
 
-        expect(eventSpy).calledWith('igcResize');
+        expectCalledWith(spy, 'igcResize');
         expect(state.current.width).to.equal(ghostRect.width);
         expect(state.current.height).to.equal(ghostRect.height + 500);
 
         simulateLostPointerCapture(DOM.adorners.bottom);
         await elementUpdated(element);
 
-        state = getResizeEventState(eventSpy);
+        state = getResizeEventState(spy);
 
-        expect(eventSpy).calledWith('igcResizeEnd');
+        expectCalledWith(spy, 'igcResizeEnd');
         expect(state.current).to.eql(DOM.container.getBoundingClientRect());
       });
     });
@@ -953,14 +953,6 @@ async function setResizeActiveState(
   await elementUpdated(resizeElement);
 }
 
-function getResizeEventState(
-  eventSpy: Sinon.SinonSpy<
-    [
-      type: keyof IgcResizeContainerComponentEventMap,
-      eventInitDict?: CustomEventInit<unknown> | undefined,
-    ],
-    boolean
-  >
-): ResizeCallbackParams['state'] {
-  return eventSpy.lastCall.lastArg.detail.state;
+function getResizeEventState(spy: MockInstance): ResizeCallbackParams['state'] {
+  return spy.mock.lastCall![1].detail.state;
 }

@@ -1,11 +1,6 @@
-import {
-  defineCE,
-  expect,
-  fixture,
-  html,
-  unsafeStatic,
-} from '@open-wc/testing';
 import { LitElement } from 'lit';
+import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { defineCE, fixture, html, unsafeStatic } from '../helpers.spec.js';
 import { simulateKeyboard } from '../utils.spec.js';
 import {
   addKeybindings,
@@ -24,7 +19,7 @@ describe('Key bindings controller', () => {
     input: HTMLInputElement;
   };
 
-  before(() => {
+  beforeAll(() => {
     tag = defineCE(
       class extends LitElement {
         public key?: string;

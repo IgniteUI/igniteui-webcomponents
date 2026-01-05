@@ -1,12 +1,4 @@
 import {
-  defineCE,
-  elementUpdated,
-  expect,
-  fixture,
-  html,
-  unsafeStatic,
-} from '@open-wc/testing';
-import {
   ComboResourceStringsEN,
   getI18nManager,
   type IComboResourceStrings,
@@ -16,6 +8,14 @@ import {
 } from 'igniteui-i18n-core';
 import { ResourceStringsBG } from 'igniteui-i18n-resources';
 import { LitElement } from 'lit';
+import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import {
+  defineCE,
+  elementUpdated,
+  fixture,
+  html,
+  unsafeStatic,
+} from '../helpers.spec.js';
 import {
   type IgcDateRangePickerResourceStrings,
   IgcDateRangePickerResourceStringsEN,
@@ -56,7 +56,7 @@ describe('Localization', () => {
     i18nController: I18nController<any>;
   };
 
-  before(() => {
+  beforeAll(() => {
     tagOld = defineCE(
       class extends TestLocalizedClass<IgcDateRangePickerResourceStrings> {
         public override get defaultEN() {

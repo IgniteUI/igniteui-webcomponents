@@ -1,6 +1,6 @@
-import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
-import { spy } from 'sinon';
+import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { defineComponents } from '../common/definitions/defineComponents.js';
+import { elementUpdated, fixture, html } from '../common/helpers.spec.js';
 import { first, last } from '../common/util.js';
 import {
   createFormAssociatedTestBed,
@@ -14,7 +14,7 @@ import {
 import IgcRadioComponent from './radio.js';
 
 describe('Radio Component', () => {
-  before(() => {
+  beforeAll(() => {
     defineComponents(IgcRadioComponent);
   });
 
@@ -144,11 +144,11 @@ describe('Radio Component', () => {
     });
 
     it('should emit igcChange event when radio is checked', async () => {
-      const eventSpy = spy(radio, 'emitEvent');
+      const spy = vi.spyOn(radio, 'emitEvent');
       radio.click();
 
       await elementUpdated(radio);
-      expect(eventSpy).calledWithExactly('igcChange', {
+      expect(spy).toHaveBeenCalledWith('igcChange', {
         detail: {
           checked: true,
           value: undefined,
@@ -157,15 +157,16 @@ describe('Radio Component', () => {
     });
 
     it('it should not emit igcChange event on already checked radio', async () => {
-      const eventSpy = spy(radio, 'emitEvent');
+      const spy = vi.spyOn(radio, 'emitEvent');
 
       radio.click();
       await elementUpdated(radio);
-      expect(eventSpy.getCalls()).lengthOf(1);
+
+      expect(spy).toHaveBeenCalledTimes(1);
 
       radio.click();
       await elementUpdated(radio);
-      expect(eventSpy.getCalls()).lengthOf(1);
+      expect(spy).toHaveBeenCalledTimes(1);
     });
 
     it('should be able to use external elements as label', async () => {
@@ -181,13 +182,13 @@ describe('Radio Component', () => {
     });
 
     it('should emit click event only once', async () => {
-      const eventSpy = spy(radio, 'click');
+      const spy = vi.spyOn(radio, 'click');
 
-      radio.addEventListener('click', eventSpy);
+      radio.addEventListener('click', spy);
       simulateClick(radio);
 
       await elementUpdated(radio);
-      expect(eventSpy.callCount).to.equal(1);
+      expect(spy).toHaveBeenCalledTimes(1);
     });
 
     it('should update the validity state of the group when a single radio is validated', async () => {

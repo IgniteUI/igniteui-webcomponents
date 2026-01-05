@@ -2,6 +2,7 @@
   "extends": "../tsconfig.json",
   "exclude": [
     "../vite.config.ts",
+    "../vitest.setup.ts",
     "../**/*.spec.ts",
     "../stories"
   ],
@@ -12,7 +13,5 @@
     "declarationMap": false,
     "removeComments": true
   },
-  "include": [
-    "../**/*.ts"
-  ]
+  "include": ["../**/*.ts"]
 }

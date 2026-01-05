@@ -1,12 +1,11 @@
+import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { defineComponents } from '../common/definitions/defineComponents.js';
 import {
   elementUpdated,
-  expect,
   fixture,
   html,
   nextFrame,
-} from '@open-wc/testing';
-
-import { defineComponents } from '../common/definitions/defineComponents.js';
+} from '../common/helpers.spec.js';
 import IgcPopoverComponent from './popover.js';
 
 async function waitForPaint(popover: IgcPopoverComponent) {
@@ -52,7 +51,7 @@ function createNonSlottedPopover(isOpen = false) {
 }
 
 describe('Popover', () => {
-  before(() => {
+  beforeAll(() => {
     defineComponents(IgcPopoverComponent);
   });
 

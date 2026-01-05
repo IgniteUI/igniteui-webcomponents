@@ -1,19 +1,22 @@
+import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import IgcButtonComponent from '../button/button.js';
+import { defineComponents } from '../common/definitions/defineComponents.js';
 import {
   elementUpdated,
-  expect,
   fixture,
   html,
   waitUntil,
-} from '@open-wc/testing';
-import { spy } from 'sinon';
-
-import IgcButtonComponent from '../button/button.js';
-import { defineComponents } from '../common/definitions/defineComponents.js';
-import { simulateClick } from '../common/utils.spec.js';
+} from '../common/helpers.spec.js';
+import {
+  eventMatch,
+  expectCalledWith,
+  expectNotCalledWith,
+  simulateClick,
+} from '../common/utils.spec.js';
 import IgcDialogComponent from './dialog.js';
 
 describe('Dialog', () => {
-  before(() => {
+  beforeAll(() => {
     defineComponents(IgcDialogComponent);
   });
 
@@ -159,21 +162,21 @@ describe('Dialog', () => {
     });
 
     it('does not emit events through API calls', async () => {
-      const eventSpy = spy(dialog, 'emitEvent');
+      const spy = vi.spyOn(dialog, 'emitEvent');
 
       await dialog.show();
       expect(dialog.open).to.be.true;
-      expect(eventSpy.getCalls()).is.empty;
+      expect(spy.mock.calls).to.be.empty;
 
       await dialog.hide();
       expect(dialog.open).to.be.false;
-      expect(eventSpy.getCalls()).is.empty;
+      expect(spy.mock.calls).to.be.empty;
 
       dialog.open = false;
       await elementUpdated(dialog);
 
       expect(dialog.open).to.be.false;
-      expect(eventSpy.getCalls()).is.empty;
+      expect(spy.mock.calls).to.be.empty;
     });
   });
 
@@ -186,20 +189,22 @@ describe('Dialog', () => {
     });
 
     it('should close the dialog when the user presses Escape', async () => {
-      const eventSpy = spy(dialog, 'emitEvent');
+      const spy = vi.spyOn(dialog, 'emitEvent');
       await dialog.show();
 
       nativeDialog.dispatchEvent(new Event('cancel'));
       await elementUpdated(dialog);
       await waitUntil(() => !dialog.open);
 
-      expect(eventSpy.getCalls()).lengthOf(2);
-      expect(eventSpy.firstCall).calledWith('igcClosing');
-      expect(eventSpy.secondCall).calledWith('igcClosed');
+      expect(spy.mock.calls).lengthOf(2);
+      expect(spy).toHaveBeenNthCalledWith(1, 'igcClosing', {
+        cancelable: true,
+      });
+      expect(spy).toHaveBeenNthCalledWith(2, 'igcClosed');
     });
 
     it('should not close the dialog when the user presses Escape and `keepOpenOnEscape` is set', async () => {
-      const eventSpy = spy(dialog, 'emitEvent');
+      const spy = vi.spyOn(dialog, 'emitEvent');
 
       dialog.keepOpenOnEscape = true;
       await dialog.show();
@@ -208,11 +213,11 @@ describe('Dialog', () => {
       await elementUpdated(dialog);
 
       expect(dialog.open).to.be.true;
-      expect(eventSpy.getCalls()).is.empty;
+      expect(spy.mock.calls).to.be.empty;
     });
 
     it('default action button emits closing events', async () => {
-      const eventSpy = spy(dialog, 'emitEvent');
+      const spy = vi.spyOn(dialog, 'emitEvent');
       await dialog.show();
 
       simulateClick(
@@ -221,16 +226,18 @@ describe('Dialog', () => {
       await elementUpdated(dialog);
       await waitUntil(() => !dialog.open);
 
-      expect(eventSpy.getCalls()).lengthOf(2);
-      expect(eventSpy.firstCall).calledWith('igcClosing');
-      expect(eventSpy.secondCall).calledWith('igcClosed');
+      expect(spy.mock.calls).lengthOf(2);
+      expect(spy).toHaveBeenNthCalledWith(1, 'igcClosing', {
+        cancelable: true,
+      });
+      expect(spy).toHaveBeenNthCalledWith(2, 'igcClosed');
     });
 
     it('can cancel `igcClosing` events when clicking outside the dialog area', async () => {
       dialog.closeOnOutsideClick = true;
       await dialog.show();
 
-      const eventSpy = spy(dialog, 'emitEvent');
+      const spy = vi.spyOn(dialog, 'emitEvent');
       dialog.addEventListener('igcClosing', (e) => e.preventDefault(), {
         once: true,
       });
@@ -239,8 +246,8 @@ describe('Dialog', () => {
       simulateClick(nativeDialog, { clientX: x - 1, clientY: y - 1 });
       await elementUpdated(dialog);
 
-      expect(eventSpy).calledWith('igcClosing');
-      expect(eventSpy).not.calledWith('igcClosed');
+      expectCalledWith(spy, 'igcClosing');
+      expectNotCalledWith(spy, 'igcClosed');
     });
 
     it('does not close the dialog on clicking outside when `closeOnOutsideClick` is not set', async () => {
@@ -257,13 +264,13 @@ describe('Dialog', () => {
       dialog.closeOnOutsideClick = true;
       await dialog.show();
 
-      const eventSpy = spy(dialog, 'emitEvent');
+      const spy = vi.spyOn(dialog, 'emitEvent');
 
       const { x, y } = dialog.getBoundingClientRect();
       simulateClick(nativeDialog, { clientX: x + 1, clientY: y - 1 });
       await elementUpdated(dialog);
 
-      await waitUntil(() => eventSpy.calledWith('igcClosed'));
+      await waitUntil(() => eventMatch(spy, 'igcClosed'));
       expect(dialog.open).to.be.false;
     });
 

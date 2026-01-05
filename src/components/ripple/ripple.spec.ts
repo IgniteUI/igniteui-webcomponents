@@ -1,6 +1,7 @@
-import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
+import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import IgcButtonComponent from '../button/button.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
+import { elementUpdated, fixture, html } from '../common/helpers.spec.js';
 import { simulatePointerDown } from '../common/utils.spec.js';
 import IgcRippleComponent from './ripple.js';
 
@@ -8,7 +9,7 @@ describe('Ripple', () => {
   let ripple: IgcRippleComponent;
   let button: IgcButtonComponent;
 
-  before(() => {
+  beforeAll(() => {
     defineComponents(IgcRippleComponent, IgcButtonComponent);
   });
 

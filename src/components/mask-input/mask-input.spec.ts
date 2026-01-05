@@ -1,7 +1,6 @@
-import { elementUpdated, expect, fixture } from '@open-wc/testing';
-import { html } from 'lit';
-import { spy } from 'sinon';
+import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { defineComponents } from '../common/definitions/defineComponents.js';
+import { elementUpdated, fixture, html } from '../common/helpers.spec.js';
 import {
   createFormAssociatedTestBed,
   simulateInput,
@@ -16,7 +15,7 @@ import IgcMaskInputComponent from './mask-input.js';
 import { MaskParser } from './mask-parser.js';
 
 describe('Masked input', () => {
-  before(() => defineComponents(IgcMaskInputComponent));
+  beforeAll(() => defineComponents(IgcMaskInputComponent));
 
   const parser = new MaskParser();
   const defaultPrompt = '_';
@@ -269,24 +268,26 @@ describe('Masked input', () => {
     it('igcChange event', async () => {
       syncParser();
 
-      const eventSpy = spy(element, 'emitEvent');
+      const spy = vi.spyOn(element, 'emitEvent');
       element.value = 'abc';
       await elementUpdated(element);
 
       input.dispatchEvent(new Event('change'));
-      expect(eventSpy).calledWith('igcChange', { detail: 'abc' });
+      expect(spy).toHaveBeenCalledExactlyOnceWith('igcChange', {
+        detail: 'abc',
+      });
     });
 
     it('igcChange event with literals', async () => {
       syncParser();
 
-      const eventSpy = spy(element, 'emitEvent');
+      const spy = vi.spyOn(element, 'emitEvent');
       element.value = 'abc';
       element.valueMode = 'withFormatting';
       await elementUpdated(element);
 
       input.dispatchEvent(new Event('change'));
-      expect(eventSpy).calledWith('igcChange', {
+      expect(spy).toHaveBeenCalledExactlyOnceWith('igcChange', {
         detail: parser.apply(element.value),
       });
     });
@@ -296,17 +297,18 @@ describe('Masked input', () => {
       await elementUpdated(element);
       syncParser();
 
-      const eventSpy = spy(element, 'emitEvent');
+      const spy = vi.spyOn(element, 'emitEvent');
       element.value = '111';
       element.setSelectionRange(2, 3);
       await elementUpdated(element);
 
-      // fireInputEvent(input, 'insertText');
       simulateInput(input, {
         inputType: 'insertText',
         skipValueProperty: true,
       });
-      expect(eventSpy).calledWith('igcInput', { detail: '111' });
+      expect(spy).toHaveBeenCalledExactlyOnceWith('igcInput', {
+        detail: '111',
+      });
     });
 
     it('igInput event (end of pattern)', async () => {
@@ -314,7 +316,7 @@ describe('Masked input', () => {
       await elementUpdated(element);
       syncParser();
 
-      const eventSpy = spy(element, 'emitEvent');
+      const spy = vi.spyOn(element, 'emitEvent');
       element.value = '111';
       element.setSelectionRange(3, 3);
       await elementUpdated(element);
@@ -323,7 +325,7 @@ describe('Masked input', () => {
         inputType: 'insertText',
         skipValueProperty: true,
       });
-      expect(eventSpy).not.calledWith('igcInput', { detail: '111' });
+      expect(spy).not.toHaveBeenCalledWith('igcInput', { detail: '111' });
     });
 
     it('is accessible', async () => {

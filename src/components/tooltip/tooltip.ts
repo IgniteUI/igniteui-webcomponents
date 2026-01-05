@@ -97,7 +97,7 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
     easing: EaseOut.Sine,
   });
 
-  private _timeoutId?: number;
+  private _timeoutId?: ReturnType<typeof setTimeout>;
   private _autoHideDelay = 180;
   private _showDelay = 200;
   private _hideDelay = 300;

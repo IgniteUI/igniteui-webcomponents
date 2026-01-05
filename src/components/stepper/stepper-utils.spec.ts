@@ -1,5 +1,4 @@
-import { fixture, html, unsafeStatic } from '@open-wc/testing';
-
+import { fixture, html, unsafeStatic } from '../common/helpers.spec.js';
 import type IgcStepComponent from './step.js';
 import type IgcStepperComponent from './stepper.js';
 

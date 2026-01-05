@@ -1,7 +1,7 @@
-import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import type { TemplateResult } from 'lit';
-import { spy } from 'sinon';
+import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { defineComponents } from '../common/definitions/defineComponents.js';
+import { elementUpdated, fixture, html } from '../common/helpers.spec.js';
 import { first } from '../common/util.js';
 import { createFormAssociatedTestBed } from '../common/utils.spec.js';
 import {
@@ -16,7 +16,7 @@ describe('File Input component', () => {
     new File(['image data'], 'image.png', { type: 'image/png' }),
   ];
 
-  before(() => {
+  beforeAll(() => {
     defineComponents(IgcFileInputComponent);
   });
 
@@ -151,23 +151,23 @@ describe('File Input component', () => {
 
     it('emits igcChange', async () => {
       await createFixture(html`<igc-file-input></igc-file-input>`);
-      const eventSpy = spy(element, 'emitEvent');
+      const spy = vi.spyOn(element, 'emitEvent');
 
       simulateFileUpload(input, [first(files)]);
       await elementUpdated(element);
 
-      expect(eventSpy).calledWith('igcChange', {
+      expect(spy).toHaveBeenCalledWith('igcChange', {
         detail: input.files,
       });
     });
 
     it('emits igcCancel', async () => {
-      const eventSpy = spy(element, 'emitEvent');
+      const spy = vi.spyOn(element, 'emitEvent');
 
       input.dispatchEvent(new Event('cancel', { bubbles: true }));
       await elementUpdated(element);
 
-      expect(eventSpy).calledOnceWith('igcCancel', {
+      expect(spy).toHaveBeenCalledWith('igcCancel', {
         detail: input.files,
       });
     });

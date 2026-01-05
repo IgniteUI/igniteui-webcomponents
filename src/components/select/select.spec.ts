@@ -1,5 +1,4 @@
-import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
-import { spy, useFakeTimers } from 'sinon';
+import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   altKey,
   arrowDown,
@@ -12,8 +11,11 @@ import {
   tabKey,
 } from '../common/controllers/key-bindings.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
+import { elementUpdated, fixture, html } from '../common/helpers.spec.js';
 import {
   createFormAssociatedTestBed,
+  expectCalledWith,
+  expectNotCalledWith,
   isFocused,
   simulateClick,
   simulateKeyboard,
@@ -46,7 +48,7 @@ type SelectSlots =
   | 'toggle-icon-expanded';
 
 describe('Select', () => {
-  before(() => defineComponents(IgcSelectComponent));
+  beforeAll(() => defineComponents(IgcSelectComponent));
 
   let select: IgcSelectComponent;
 
@@ -322,15 +324,17 @@ describe('Select', () => {
     });
 
     it('`close` behavior', async () => {
-      const eventSpy = spy(select, 'emitEvent');
+      const spy = vi.spyOn(select, 'emitEvent');
 
       select.scrollStrategy = 'close';
       await openSelect();
       await simulateScroll(container, { top: 200 });
 
       expect(select.open).to.be.false;
-      expect(eventSpy.firstCall).calledWith('igcClosing');
-      expect(eventSpy.lastCall).calledWith('igcClosed');
+      expect(spy).toHaveBeenNthCalledWith(1, 'igcClosing', {
+        cancelable: true,
+      });
+      expect(spy).toHaveBeenNthCalledWith(2, 'igcClosed');
     });
 
     it('`block behavior`', async () => {
@@ -616,13 +620,13 @@ describe('Select', () => {
     });
 
     it('keyboard selection works (closed)', async () => {
-      const eventSpy = spy(select, 'emitEvent');
+      const spy = vi.spyOn(select, 'emitEvent');
 
       for (const item of select.items) {
         simulateKeyboard(select, arrowDown);
         await elementUpdated(select);
 
-        expect(eventSpy).calledWith('igcChange', { detail: item });
+        expect(spy).toHaveBeenCalledWith('igcChange', { detail: item });
         checkItemState(item, { selected: true });
       }
     });
@@ -834,13 +838,13 @@ describe('Select', () => {
     // Search selection
 
     it('does not select disabled items when searching (closed state)', async () => {
-      const eventSpy = spy(select, 'emitEvent');
+      const spy = vi.spyOn(select, 'emitEvent');
 
       simulateKeyboard(select, 'tes'.split(''));
       await elementUpdated(select);
 
       const item = select.items[2];
-      expect(eventSpy).not.calledWith('igcChange', { detail: item });
+      expect(spy).not.toHaveBeenCalledWith('igcChange', { detail: item });
 
       checkItemState(item, { active: false, selected: false });
       expect(select.value).to.be.undefined;
@@ -848,14 +852,14 @@ describe('Select', () => {
     });
 
     it('does not activates disabled items when searching (open state)', async () => {
-      const eventSpy = spy(select, 'emitEvent');
+      const spy = vi.spyOn(select, 'emitEvent');
       await openSelect();
 
       simulateKeyboard(select, 'tes'.split(''));
       await elementUpdated(select);
 
       const item = select.items[2];
-      expect(eventSpy).not.calledWith('igcChange', { detail: item });
+      expect(spy).not.toHaveBeenCalledWith('igcChange', { detail: item });
 
       checkItemState(item, { active: false, selected: false });
       expect(select.value).to.be.undefined;
@@ -863,31 +867,31 @@ describe('Select', () => {
     });
 
     it('resumes search after default timeout', async () => {
-      const clock = useFakeTimers({ now: 0, toFake: ['Date'] });
+      vi.useFakeTimers({ now: 0, toFake: ['Date'] });
 
       simulateKeyboard(select, 'null'.split(''));
       await elementUpdated(select);
 
       expect(select.selectedItem).to.be.null;
 
-      await clock.tickAsync(501);
+      await vi.advanceTimersByTimeAsync(501);
 
       simulateKeyboard(select, 'impl'.split(''));
       await elementUpdated(select);
 
       expect(select.selectedItem?.value).to.equal('implementation');
-      clock.restore();
+      vi.useRealTimers();
     });
 
     it('activates the correct item when searching with character keys (open state)', async () => {
-      const eventSpy = spy(select, 'emitEvent');
+      const spy = vi.spyOn(select, 'emitEvent');
       await openSelect();
 
       simulateKeyboard(select, 'doc'.split(''));
       await elementUpdated(select);
 
       const item = select.items.at(-2)!;
-      expect(eventSpy).not.calledWith('igcChange', { detail: item });
+      expect(spy).not.toHaveBeenCalledWith('igcChange', { detail: item });
 
       checkItemState(item, { active: true, selected: false });
       expect(select.value).to.be.undefined;
@@ -896,13 +900,13 @@ describe('Select', () => {
     });
 
     it('selects the correct item when searching (closed state)', async () => {
-      const eventSpy = spy(select, 'emitEvent');
+      const spy = vi.spyOn(select, 'emitEvent');
 
       simulateKeyboard(select, 'doc'.split(''));
       await elementUpdated(select);
 
       const item = select.items.at(-2)!;
-      expect(eventSpy).calledWith('igcChange', { detail: item });
+      expect(spy).toHaveBeenCalledWith('igcChange', { detail: item });
 
       checkItemState(item, { active: true, selected: true });
       expect(select.value).to.equal(item.value);
@@ -929,13 +933,15 @@ describe('Select', () => {
     });
 
     it('Home key (closed state)', async () => {
-      const eventSpy = spy(select, 'emitEvent');
+      const spy = vi.spyOn(select, 'emitEvent');
 
       simulateKeyboard(select, homeKey);
       await elementUpdated(select);
 
       const item = select.items[0];
-      expect(eventSpy).calledOnceWith('igcChange', { detail: item });
+      expect(spy).toHaveBeenCalledExactlyOnceWith('igcChange', {
+        detail: item,
+      });
 
       checkItemState(item, { active: true, selected: true });
       expect(select.value).to.equal(item.value);
@@ -944,14 +950,14 @@ describe('Select', () => {
     });
 
     it('Home key (open state)', async () => {
-      const eventSpy = spy(select, 'emitEvent');
+      const spy = vi.spyOn(select, 'emitEvent');
       await openSelect();
 
       simulateKeyboard(select, homeKey);
       await elementUpdated(select);
 
       const item = select.items[0];
-      expect(eventSpy).not.calledWith('igcChange', { detail: item });
+      expect(spy).not.toHaveBeenCalledWith('igcChange', { detail: item });
 
       checkItemState(item, { active: true, selected: false });
       expect(select.value).to.be.undefined;
@@ -960,13 +966,15 @@ describe('Select', () => {
     });
 
     it('End key (closed state)', async () => {
-      const eventSpy = spy(select, 'emitEvent');
+      const spy = vi.spyOn(select, 'emitEvent');
 
       simulateKeyboard(select, endKey);
       await elementUpdated(select);
 
       const item = select.items.at(-2)!;
-      expect(eventSpy).calledOnceWith('igcChange', { detail: item });
+      expect(spy).toHaveBeenCalledExactlyOnceWith('igcChange', {
+        detail: item,
+      });
 
       checkItemState(item, { active: true, selected: true });
       expect(select.value).to.equal(item.value);
@@ -975,14 +983,14 @@ describe('Select', () => {
     });
 
     it('End key (open state)', async () => {
-      const eventSpy = spy(select, 'emitEvent');
+      const spy = vi.spyOn(select, 'emitEvent');
       await openSelect();
 
       simulateKeyboard(select, endKey);
       await elementUpdated(select);
 
       const item = select.items.at(-2)!;
-      expect(eventSpy).not.calledWith('igcChange', { detail: item });
+      expect(spy).not.toHaveBeenCalledWith('igcChange', { detail: item });
 
       checkItemState(item, { active: true, selected: false });
       expect(select.value).to.be.undefined;
@@ -991,7 +999,7 @@ describe('Select', () => {
     });
 
     it('ArrowDown (closed state)', async () => {
-      const eventSpy = spy(select, 'emitEvent');
+      const spy = vi.spyOn(select, 'emitEvent');
       const activeItems = Items.filter((item) => !item.disabled);
       const { value: lastValue } = activeItems.at(-1)!;
 
@@ -1000,7 +1008,9 @@ describe('Select', () => {
         simulateKeyboard(select, arrowDown);
         await elementUpdated(select);
 
-        expect(eventSpy).calledWith('igcChange', { detail: getActiveItem() });
+        expect(spy).toHaveBeenCalledWith('igcChange', {
+          detail: getActiveItem(),
+        });
         expect(getActiveItem()?.value).to.equal(value);
         expect(select.value).to.equal(value);
         expect(select.selectedItem).to.equal(getActiveItem());
@@ -1010,14 +1020,14 @@ describe('Select', () => {
       simulateKeyboard(select, arrowDown);
       await elementUpdated(select);
 
-      expect(eventSpy.callCount).to.equal(activeItems.length);
+      expect(spy).toHaveBeenCalledTimes(activeItems.length);
       expect(getActiveItem()?.value).to.equal(lastValue);
       expect(select.value).to.equal(lastValue);
       expect(select.selectedItem?.value).to.equal(lastValue);
     });
 
     it('ArrowDown (open state)', async () => {
-      const eventSpy = spy(select, 'emitEvent');
+      const spy = vi.spyOn(select, 'emitEvent');
       const activeItems = Items.filter((item) => !item.disabled);
       await openSelect();
 
@@ -1026,7 +1036,7 @@ describe('Select', () => {
         simulateKeyboard(select, arrowDown);
         await elementUpdated(select);
 
-        expect(eventSpy).not.calledWith('igChange');
+        expectNotCalledWith(spy, 'igcChange');
         expect(getActiveItem()?.value).to.equal(value);
         expect(select.value).to.be.undefined;
         expect(select.selectedItem).to.be.null;
@@ -1036,14 +1046,14 @@ describe('Select', () => {
       simulateKeyboard(select, arrowDown);
       await elementUpdated(select);
 
-      expect(eventSpy).not.calledWith('igChange');
+      expectNotCalledWith(spy, 'igcChange');
       expect(getActiveItem()?.value).to.equal(activeItems.at(-1)?.value);
       expect(select.value).to.be.undefined;
       expect(select.selectedItem).to.be.null;
     });
 
     it('ArrowUp (closed state)', async () => {
-      const eventSpy = spy(select, 'emitEvent');
+      const spy = vi.spyOn(select, 'emitEvent');
       const activeItems = Items.filter((item) => !item.disabled).reverse();
       const { value: lastValue } = activeItems.at(-1)!;
 
@@ -1054,7 +1064,9 @@ describe('Select', () => {
         simulateKeyboard(select, arrowUp);
         await elementUpdated(select);
 
-        expect(eventSpy).calledWith('igcChange', { detail: getActiveItem() });
+        expect(spy).toHaveBeenCalledWith('igcChange', {
+          detail: getActiveItem(),
+        });
         expect(getActiveItem()?.value).to.equal(value);
         expect(select.value).to.equal(value);
         expect(select.selectedItem).to.equal(getActiveItem());
@@ -1064,14 +1076,14 @@ describe('Select', () => {
       simulateKeyboard(select, arrowUp);
       await elementUpdated(select);
 
-      expect(eventSpy.callCount).to.equal(activeItems.length);
+      expect(spy).toHaveBeenCalledTimes(activeItems.length);
       expect(getActiveItem()?.value).to.equal(lastValue);
       expect(select.value).to.equal(lastValue);
       expect(select.selectedItem?.value).to.equal(lastValue);
     });
 
     it('ArrowUp (open state)', async () => {
-      const eventSpy = spy(select, 'emitEvent');
+      const spy = vi.spyOn(select, 'emitEvent');
       const activeItems = Items.filter((item) => !item.disabled).reverse();
       await openSelect();
 
@@ -1082,7 +1094,7 @@ describe('Select', () => {
         simulateKeyboard(select, arrowUp);
         await elementUpdated(select);
 
-        expect(eventSpy).not.calledWith('igChange');
+        expectNotCalledWith(spy, 'igcChange');
         expect(getActiveItem()?.value).to.equal(value);
         expect(select.value).to.be.undefined;
         expect(select.selectedItem).to.be.null;
@@ -1092,7 +1104,7 @@ describe('Select', () => {
       simulateKeyboard(select, arrowUp);
       await elementUpdated(select);
 
-      expect(eventSpy).not.calledWith('igChange');
+      expectNotCalledWith(spy, 'igcChange');
       expect(getActiveItem()?.value).to.equal(activeItems.at(-1)?.value);
       expect(select.value).to.be.undefined;
       expect(select.selectedItem).to.be.null;
@@ -1105,41 +1117,44 @@ describe('Select', () => {
     });
 
     it('correct sequence of events', async () => {
-      const eventSpy = spy(select, 'emitEvent');
+      const spy = vi.spyOn(select, 'emitEvent');
 
       simulateClick(getInput());
       await elementUpdated(select);
 
-      expect(eventSpy.firstCall).calledWith('igcOpening');
-      expect(eventSpy.secondCall).calledWith('igcOpened');
-
-      eventSpy.resetHistory();
+      expect(spy).toHaveBeenNthCalledWith(1, 'igcOpening', {
+        cancelable: true,
+      });
+      expect(spy).toHaveBeenNthCalledWith(2, 'igcOpened');
+      spy.mockClear();
 
       simulateClick(select.items[0]);
       await elementUpdated(select);
 
-      expect(eventSpy.firstCall).calledWith('igcChange', {
+      expect(spy).toHaveBeenNthCalledWith(1, 'igcChange', {
         detail: select.items[0],
       });
-      expect(eventSpy.secondCall).calledWith('igcClosing');
-      expect(eventSpy.thirdCall).calledWith('igcClosed');
+      expect(spy).toHaveBeenNthCalledWith(2, 'igcClosing', {
+        cancelable: true,
+      });
+      expect(spy).toHaveBeenNthCalledWith(3, 'igcClosed');
     });
 
     it('does not emit events on API calls', async () => {
-      const eventSpy = spy(select, 'emitEvent');
+      const spy = vi.spyOn(select, 'emitEvent');
 
       await openSelect();
-      expect(eventSpy).not.to.be.called;
+      expect(spy).not.toHaveBeenCalled();
 
       await select.hide();
-      expect(eventSpy).not.to.be.called;
+      expect(spy).not.toHaveBeenCalled();
 
       select.select('testing');
-      expect(eventSpy).not.to.be.called;
+      expect(spy).not.toHaveBeenCalled();
     });
 
     it('can halt opening event sequence', async () => {
-      const eventSpy = spy(select, 'emitEvent');
+      const spy = vi.spyOn(select, 'emitEvent');
       select.addEventListener('igcOpening', (e) => e.preventDefault(), {
         once: true,
       });
@@ -1148,12 +1163,12 @@ describe('Select', () => {
       await elementUpdated(select);
 
       expect(select.open).to.be.false;
-      expect(eventSpy.firstCall).calledWith('igcOpening');
-      expect(eventSpy.secondCall).to.be.null;
+      expectCalledWith(spy, 'igcOpening');
+      expectNotCalledWith(spy, 'igcOpened');
     });
 
     it('can halt closing event sequence', async () => {
-      const eventSpy = spy(select, 'emitEvent');
+      const spy = vi.spyOn(select, 'emitEvent');
       select.addEventListener('igcClosing', (e) => e.preventDefault(), {
         once: true,
       });
@@ -1165,10 +1180,9 @@ describe('Select', () => {
       await elementUpdated(select);
 
       expect(select.open).to.be.true;
-      expect(eventSpy.firstCall).calledWith('igcClosing');
-      expect(eventSpy.secondCall).to.be.null;
-
-      eventSpy.resetHistory();
+      expectCalledWith(spy, 'igcClosing');
+      expectNotCalledWith(spy, 'igcClosed');
+      spy.mockClear();
 
       // With selection
       select.addEventListener('igcClosing', (e) => e.preventDefault(), {
@@ -1182,13 +1196,12 @@ describe('Select', () => {
       await elementUpdated(select);
 
       expect(select.open).to.be.true;
-      expect(eventSpy.firstCall).calledWith('igcChange');
-      expect(eventSpy.secondCall).calledWith('igcClosing');
-      expect(eventSpy.thirdCall).to.be.null;
+      expectCalledWith(spy, 'igcChange');
+      expectCalledWith(spy, 'igcClosing');
     });
 
     it('can halt closing event sequence on outside click', async () => {
-      const eventSpy = spy(select, 'emitEvent');
+      const spy = vi.spyOn(select, 'emitEvent');
       select.addEventListener('igcClosing', (e) => e.preventDefault(), {
         once: true,
       });
@@ -1199,8 +1212,8 @@ describe('Select', () => {
       await elementUpdated(select);
 
       expect(select.open).to.be.true;
-      expect(eventSpy.firstCall).calledWith('igcClosing');
-      expect(eventSpy.secondCall).to.be.null;
+      expectCalledWith(spy, 'igcClosing');
+      expectNotCalledWith(spy, 'igcClosed');
     });
   });
 

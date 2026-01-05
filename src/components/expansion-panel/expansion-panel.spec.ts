@@ -1,12 +1,12 @@
 import {
-  elementUpdated,
+  beforeAll,
+  beforeEach,
+  describe,
   expect,
-  fixture,
-  html,
-  waitUntil,
-} from '@open-wc/testing';
-import { spy } from 'sinon';
-
+  it,
+  type MockInstance,
+  vi,
+} from 'vitest';
 import {
   altKey,
   arrowDown,
@@ -15,7 +15,17 @@ import {
   spaceBar,
 } from '../common/controllers/key-bindings.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
-import { simulateClick, simulateKeyboard } from '../common/utils.spec.js';
+import {
+  elementUpdated,
+  fixture,
+  html,
+  waitUntil,
+} from '../common/helpers.spec.js';
+import {
+  eventMatch,
+  simulateClick,
+  simulateKeyboard,
+} from '../common/utils.spec.js';
 import type IgcIconComponent from '../icon/icon.js';
 import IgcExpansionPanelComponent from './expansion-panel.js';
 
@@ -29,12 +39,12 @@ type ExpansionSlots =
 type ExpansionParts = 'header' | 'title' | 'subtitle' | 'content' | 'indicator';
 
 describe('Expansion Panel', () => {
-  before(() => {
+  beforeAll(() => {
     defineComponents(IgcExpansionPanelComponent);
   });
 
   let panel: IgcExpansionPanelComponent;
-  let eventSpy: ReturnType<typeof spy>;
+  let spy: MockInstance;
 
   const getSlot = (name: ExpansionSlots = '') => {
     return panel.shadowRoot!.querySelector<HTMLSlotElement>(
@@ -58,12 +68,17 @@ describe('Expansion Panel', () => {
     state: { open: boolean } = { open: false }
   ) => {
     expect(panel.open).to.equal(state.open);
-    expect(eventSpy.callCount).to.equal(2);
-    expect(eventSpy.firstCall).calledWith(
+    expect(spy.mock.calls).lengthOf(2);
+    expect(spy).toHaveBeenNthCalledWith(
+      1,
       state.open ? 'igcOpening' : 'igcClosing',
-      { cancelable: true, detail: panel }
+      {
+        cancelable: true,
+        detail: panel,
+      }
     );
-    expect(eventSpy.secondCall).calledWith(
+    expect(spy).toHaveBeenNthCalledWith(
+      2,
       state.open ? 'igcOpened' : 'igcClosed',
       {
         detail: panel,
@@ -280,21 +295,21 @@ describe('Expansion Panel', () => {
   describe('User interactions', () => {
     beforeEach(async () => {
       panel = await fixture<IgcExpansionPanelComponent>(createDefaultPanel());
-      eventSpy = spy(panel, 'emitEvent');
+      spy = vi.spyOn(panel, 'emitEvent');
     });
 
     it('should expand/collapse on header click', async () => {
       const header = getDOMPart('header');
 
       simulateClick(header);
-      await waitUntil(() => eventSpy.calledWith('igcOpened'));
+      await waitUntil(() => eventMatch(spy, 'igcOpened'));
 
       verifyStateAndEventSequence({ open: true });
 
-      eventSpy.resetHistory();
+      spy.mockClear();
 
       simulateClick(header);
-      await waitUntil(() => eventSpy.calledWith('igcClosed'));
+      await waitUntil(() => eventMatch(spy, 'igcClosed'));
 
       verifyStateAndEventSequence({ open: false });
     });
@@ -303,14 +318,14 @@ describe('Expansion Panel', () => {
       const header = getDOMPart('header');
 
       simulateKeyboard(header, spaceBar);
-      await waitUntil(() => eventSpy.calledWith('igcOpened'));
+      await waitUntil(() => eventMatch(spy, 'igcOpened'));
 
       verifyStateAndEventSequence({ open: true });
 
-      eventSpy.resetHistory();
+      spy.mockClear();
 
       simulateKeyboard(header, enterKey);
-      await waitUntil(() => eventSpy.calledWith('igcClosed'));
+      await waitUntil(() => eventMatch(spy, 'igcClosed'));
 
       verifyStateAndEventSequence({ open: false });
     });
@@ -319,14 +334,14 @@ describe('Expansion Panel', () => {
       const header = getDOMPart('header');
 
       simulateKeyboard(header, [altKey, arrowDown]);
-      await waitUntil(() => eventSpy.calledWith('igcOpened'));
+      await waitUntil(() => eventMatch(spy, 'igcOpened'));
 
       verifyStateAndEventSequence({ open: true });
 
-      eventSpy.resetHistory();
+      spy.mockClear();
 
       simulateKeyboard(header, [altKey, arrowUp]);
-      await waitUntil(() => eventSpy.calledWith('igcClosed'));
+      await waitUntil(() => eventMatch(spy, 'igcClosed'));
 
       verifyStateAndEventSequence({ open: false });
     });
@@ -341,46 +356,46 @@ describe('Expansion Panel', () => {
       await elementUpdated(panel);
 
       expect(panel.open).to.be.false;
-      expect(eventSpy.callCount).to.equal(0);
+      expect(spy.mock.calls).lengthOf(0);
 
       simulateClick(header);
       await elementUpdated(panel);
 
       expect(panel.open).to.be.false;
-      expect(eventSpy.callCount).to.equal(0);
+      expect(spy.mock.calls).lengthOf(0);
     });
   });
 
   describe('Events', () => {
     beforeEach(async () => {
       panel = await fixture<IgcExpansionPanelComponent>(createDefaultPanel());
-      eventSpy = spy(panel, 'emitEvent');
+      spy = vi.spyOn(panel, 'emitEvent');
     });
 
     it('does not emit duplicate events for expanded/collapsed state on Alt + Arrow keys', async () => {
       const header = getDOMPart('header');
 
       simulateKeyboard(header, [altKey, arrowDown]);
-      await waitUntil(() => eventSpy.calledWith('igcOpened'));
+      await waitUntil(() => eventMatch(spy, 'igcOpened'));
 
       verifyStateAndEventSequence({ open: true });
 
       simulateKeyboard(header, [altKey, arrowDown]);
       await elementUpdated(panel);
 
-      expect(eventSpy.callCount).to.equal(2);
+      expect(spy.mock.calls).lengthOf(2);
 
-      eventSpy.resetHistory();
+      spy.mockClear();
 
       simulateKeyboard(header, [altKey, arrowUp]);
-      await waitUntil(() => eventSpy.calledWith('igcClosed'));
+      await waitUntil(() => eventMatch(spy, 'igcClosed'));
 
       verifyStateAndEventSequence({ open: false });
 
       simulateKeyboard(header, [altKey, arrowUp]);
       await elementUpdated(panel);
 
-      expect(eventSpy.callCount).to.equal(2);
+      expect(spy.mock.calls).lengthOf(2);
     });
 
     it('should be able to cancel -ing events', async () => {
@@ -394,12 +409,12 @@ describe('Expansion Panel', () => {
       await elementUpdated(panel);
 
       expect(panel.open).to.be.false;
-      expect(eventSpy).calledOnceWith('igcOpening', {
+      expect(spy).toHaveBeenCalledExactlyOnceWith('igcOpening', {
         cancelable: true,
         detail: panel,
       });
 
-      eventSpy.resetHistory();
+      spy.mockClear();
 
       panel.open = true;
       await elementUpdated(panel);
@@ -412,7 +427,7 @@ describe('Expansion Panel', () => {
       await elementUpdated(panel);
 
       expect(panel.open).to.be.true;
-      expect(eventSpy).calledOnceWith('igcClosing', {
+      expect(spy).toHaveBeenCalledExactlyOnceWith('igcClosing', {
         cancelable: true,
         detail: panel,
       });

@@ -1,14 +1,13 @@
+import type { TemplateResult } from 'lit';
+import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import { configureTheme } from '../../theming/config.js';
+import { defineComponents } from '../common/definitions/defineComponents.js';
 import {
   elementUpdated,
-  expect,
   fixture,
   html,
   nextFrame,
-} from '@open-wc/testing';
-import type { TemplateResult } from 'lit';
-import { spy } from 'sinon';
-import { configureTheme } from '../../theming/config.js';
-import { defineComponents } from '../common/definitions/defineComponents.js';
+} from '../common/helpers.spec.js';
 import {
   createFormAssociatedTestBed,
   isFocused,
@@ -21,7 +20,7 @@ import {
 import IgcInputComponent from './input.js';
 
 describe('Input component', () => {
-  before(() => {
+  beforeAll(() => {
     defineComponents(IgcInputComponent);
   });
 
@@ -280,22 +279,26 @@ describe('Input component', () => {
       });
 
       it('emits igcInput', async () => {
-        const eventSpy = spy(element, 'emitEvent');
+        const spy = vi.spyOn(element, 'emitEvent');
 
         simulateInput(input, { value: '123' });
         await elementUpdated(element);
 
-        expect(eventSpy).calledOnceWithExactly('igcInput', { detail: '123' });
+        expect(spy).toHaveBeenCalledExactlyOnceWith('igcInput', {
+          detail: '123',
+        });
       });
 
       it('emits igcChange', async () => {
         simulateInput(input, { value: '123' });
         await elementUpdated(element);
 
-        const eventSpy = spy(element, 'emitEvent');
+        const spy = vi.spyOn(element, 'emitEvent');
         input.dispatchEvent(new Event('change'));
 
-        expect(eventSpy).calledOnceWithExactly('igcChange', { detail: '123' });
+        expect(spy).toHaveBeenCalledExactlyOnceWith('igcChange', {
+          detail: '123',
+        });
       });
     });
   });
