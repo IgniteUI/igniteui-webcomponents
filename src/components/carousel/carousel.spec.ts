@@ -698,7 +698,7 @@ describe('Carousel', () => {
 
       it('should pause/play on pointerenter/pointerleave', async () => {
         const spy = vi.spyOn(carousel, 'emitEvent');
-        const divContainer = carousel.shadowRoot?.querySelector(
+        const divContainer = carousel.renderRoot.querySelector(
           'div[aria-live]'
         ) as HTMLDivElement;
 
@@ -732,7 +732,7 @@ describe('Carousel', () => {
 
       it('should pause/play on keyboard interaction', async () => {
         const spy = vi.spyOn(carousel, 'emitEvent');
-        const divContainer = carousel.shadowRoot?.querySelector(
+        const divContainer = carousel.renderRoot.querySelector(
           'div[aria-live]'
         ) as HTMLDivElement;
 
