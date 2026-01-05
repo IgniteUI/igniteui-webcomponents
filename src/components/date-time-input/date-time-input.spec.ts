@@ -157,7 +157,7 @@ describe('Date Time Input component', () => {
       el.value = new Date(2020, 9, 12, 12);
       el.displayFormat = 'd.MM hh:mm ttt';
       await elementUpdated(el);
-      expect(input.value).to.equal('12.10 12:00 PM');
+      expect(input.value).to.equal('12.10 12:00 pm');
 
       el.displayFormat = 'd.MM hh:mm ttttt';
       await elementUpdated(el);

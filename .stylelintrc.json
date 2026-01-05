@@ -68,6 +68,7 @@
     "scss/double-slash-comment-inline": "never",
     "scss/dollar-variable-colon-newline-after": null,
     "scss/dollar-variable-colon-space-after": "always",
-    "scss/selector-no-redundant-nesting-selector": true
+    "scss/selector-no-redundant-nesting-selector": true,
+    "scss/dollar-variable-no-missing-interpolation": null
   }
 }
