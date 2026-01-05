@@ -47,6 +47,7 @@ describe('Tooltip', () => {
     finishAnimationsFor(instance.shadowRoot!);
     await elementUpdated(instance);
     await nextFrame();
+    await nextFrame();
   }
 
   async function hideComplete(instance: IgcTooltipComponent = tooltip) {
@@ -403,7 +404,7 @@ describe('Tooltip', () => {
 
       expect(tooltip.open).to.be.true;
 
-      const closeIcon = tooltip.shadowRoot!.querySelector('igc-icon')!;
+      const closeIcon = tooltip.renderRoot.querySelector('igc-icon')!;
 
       simulateClick(closeIcon);
       await clock.advanceTimersByTimeAsync(endTick(DEFAULT_HIDE_DELAY));
@@ -418,7 +419,7 @@ describe('Tooltip', () => {
 
       expect(tooltip.open).to.be.true;
 
-      document.documentElement.dispatchEvent(
+      tooltip.ownerDocument.body.dispatchEvent(
         new KeyboardEvent('keydown', {
           key: 'Escape',
           bubbles: true,
@@ -824,7 +825,7 @@ describe('Tooltip', () => {
 
       spy.mockClear();
 
-      document.documentElement.dispatchEvent(
+      tooltip.ownerDocument.body.dispatchEvent(
         new KeyboardEvent('keydown', {
           key: 'Escape',
           bubbles: true,
@@ -863,7 +864,7 @@ describe('Tooltip', () => {
 
       expect(tooltip.open).to.be.true;
 
-      document.documentElement.dispatchEvent(
+      tooltip.ownerDocument.body.dispatchEvent(
         new KeyboardEvent('keydown', {
           key: 'Escape',
           bubbles: true,
@@ -888,7 +889,7 @@ describe('Tooltip', () => {
       expect(first.open).to.be.true;
       expect(last.open).to.be.true;
 
-      document.documentElement.dispatchEvent(
+      tooltip.ownerDocument.body.dispatchEvent(
         new KeyboardEvent('keydown', {
           key: 'Escape',
           bubbles: true,
@@ -903,7 +904,7 @@ describe('Tooltip', () => {
       expect(last.open).to.be.false;
       expect(first.open).to.be.true;
 
-      document.documentElement.dispatchEvent(
+      tooltip.ownerDocument.body.dispatchEvent(
         new KeyboardEvent('keydown', {
           key: 'Escape',
           bubbles: true,
