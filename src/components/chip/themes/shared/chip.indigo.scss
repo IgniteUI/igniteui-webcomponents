@@ -62,11 +62,19 @@ $theme: $indigo;
             color: contrast-color($variant-color, 900);
         }
 
+        @if $variant == 'success' {
+            background: color(success, 800);
+        } @else if $variant == 'danger' {
+            background: color(error, 600);
+        }
+
         border-color: transparent;
 
         &:focus {
             @if $variant == 'warning' or $variant == 'info' {
                 background: color($variant-color, 500);
+            } @else if $variant == 'danger' {
+                background: color(error, 600);
             }
 
             @if $variant != 'warning' {
@@ -77,6 +85,10 @@ $theme: $indigo;
         &:hover {
             @if $variant == 'warning' or $variant == 'info' {
                 background: color($variant-color, 400);
+            } @else if $variant == 'success' {
+                background: color(success, 700);
+            } @else if $variant == 'danger' {
+                background: color(error, 500);
             }
 
             @if $variant != 'warning' {

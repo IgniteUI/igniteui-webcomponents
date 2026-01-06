@@ -16,14 +16,8 @@ $theme: $indigo;
 
 :host([variant='success']) button,
 :host([selected][variant='success']) button:not([disabled]) {
-    background: color(success, 800);
-
     &:focus {
         box-shadow: 0 0 0 rem(3px) color(success, 200);
-    }
-
-    &:hover {
-        background: color(success, 700);
     }
 }
 
@@ -43,15 +37,8 @@ $theme: $indigo;
 
 :host([variant='danger']) button,
 :host([selected][variant='danger']) button:not([disabled]) {
-    background: color(error, 600);
-
     &:focus {
-        background: color(error, 600);
         box-shadow: 0 0 0 rem(3px) color(error, 100);
-    }
-
-    &:hover {
-        background: color(error, 500);
     }
 }
 
