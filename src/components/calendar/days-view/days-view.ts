@@ -1,11 +1,10 @@
 import { getDateFormatter } from 'igniteui-i18n-core';
-import { html, nothing } from 'lit';
+import { html, nothing, type PropertyValues, type TemplateResult } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
 import { addThemingController } from '../../../theming/theming-controller.js';
 import { addKeybindings } from '../../common/controllers/key-bindings.js';
 import { blazorIndirectRender } from '../../common/decorators/blazorIndirectRender.js';
 import { blazorSuppressComponent } from '../../common/decorators/blazorSuppressComponent.js';
-import { watch } from '../../common/decorators/watch.js';
 import { registerComponent } from '../../common/definitions/register.js';
 import type { Constructor } from '../../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../../common/mixins/event-emitter.js';
@@ -37,6 +36,21 @@ export interface IgcDaysViewEventMap extends IgcCalendarComponentEventMap {
   igcRangePreviewDateChange: CustomEvent<Date>;
 }
 
+interface DayProperties {
+  disabled: boolean;
+  first: boolean;
+  last: boolean;
+  range: boolean;
+  preview: boolean;
+  current: boolean;
+  inactive: boolean;
+  hidden: boolean;
+  weekend: boolean;
+  single: boolean;
+  selected: boolean;
+  special: boolean;
+}
+
 /**
  * Instantiate a days view as a separate component in the calendar.
  *
@@ -61,15 +75,31 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
   public static styles = styles;
 
   /* blazorSuppress */
-  public static register() {
+  public static register(): void {
     registerComponent(IgcDaysViewComponent);
   }
 
+  //#region Internal properties and state
+
   @state()
-  private dates!: CalendarDay[];
+  private _dates: CalendarDay[] = [];
 
   @query('[tabindex="0"]')
-  private activeDay!: HTMLElement;
+  private _activeDay?: HTMLElement;
+
+  /** Returns the first date in the current range selection. */
+  private get _rangeStart(): CalendarDay | undefined {
+    return this._hasValues ? first(this._values) : undefined;
+  }
+
+  /** Returns the last date in the current range selection. */
+  private get _rangeEnd(): CalendarDay | undefined {
+    return this._hasValues ? last(this._values) : undefined;
+  }
+
+  //#endregion
+
+  //#region Public attributes and properties
 
   /** The active state of the component. */
   @property({ type: Boolean })
@@ -91,11 +121,11 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
 
   /** The range preview date. */
   @property({ attribute: false })
-  public set rangePreviewDate(value) {
+  public set rangePreviewDate(value: Date | undefined) {
     this._rangePreviewDate = value ? CalendarDay.from(value) : undefined;
   }
 
-  public get rangePreviewDate() {
+  public get rangePreviewDate(): Date | undefined {
     return this._rangePreviewDate?.native;
   }
 
@@ -106,235 +136,245 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
   @property({ attribute: 'week-day-format' })
   public weekDayFormat: 'long' | 'short' | 'narrow' = 'narrow';
 
-  private get _weekdayOptions(): Intl.DateTimeFormatOptions {
-    return { weekday: this.weekDayFormat };
-  }
+  //#endregion
 
-  private _labelOptions: Intl.DateTimeFormatOptions = {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  };
-  private _ariaWeekdayOptions: Intl.DateTimeFormatOptions = { weekday: 'long' };
-
-  @watch('weekStart')
-  @watch('activeDate')
-  protected datesChange() {
-    this.dates = Array.from(
-      generateMonth(this._activeDate, this._firstDayOfWeek)
-    );
-  }
+  //#region Lifecycle hooks
 
   constructor() {
     super();
 
     addThemingController(this, all);
-    addKeybindings(this).setActivateHandler(this.handleInteraction);
-    addSafeEventListener(this, 'click', this.handleInteraction);
+    addKeybindings(this).setActivateHandler(this._handleInteraction);
+    addSafeEventListener(this, 'click', this._handleInteraction);
   }
 
-  public override connectedCallback() {
+  /** @internal */
+  public override connectedCallback(): void {
     super.connectedCallback();
     this.role = 'grid';
   }
 
-  /** Focuses the active date. */
-  public focusActiveDate(options?: FocusOptions) {
-    this.activeDay.focus(options);
+  /** @internal */
+  protected override update(props: PropertyValues<this>): void {
+    if (props.has('activeDate') || props.has('weekStart')) {
+      this._dates = Array.from(
+        generateMonth(this._activeDate, this._firstDayOfWeek)
+      );
+    }
+
+    super.update(props);
   }
 
-  protected handleInteraction(event: Event) {
+  //#endregion
+
+  //#region Event handlers
+
+  protected _handleInteraction(event: Event): void {
     const value = getViewElement(event);
 
     if (value !== -1) {
       const date = CalendarDay.from(new Date(value));
 
       if (this._rangePreviewDate) {
-        this.setRangePreviewDate();
+        this._setRangePreviewDate();
       }
 
-      if (this.selectDate(date)) {
+      if (this._selectDate(date)) {
         this.emitEvent('igcChange', { detail: date.native });
       }
 
       if (event.type === 'click') {
-        // XXX: Why ?
-        event.stopPropagation();
         this.emitEvent('igcActiveDateChange', { detail: date.native });
         this._activeDate = date;
       }
     }
   }
 
-  private _selectMultiple(day: CalendarDay) {
-    const values = this._values;
-    const idx = values.findIndex((v) => v.equalTo(day));
+  //#endregion
 
-    idx < 0 ? values.push(day) : values.splice(idx, 1);
-    values.sort((a, b) => a.timestamp - b.timestamp);
-    this._values = Array.from(values);
-  }
+  //#region Internal selection methods
 
-  private _selectRange(day: CalendarDay) {
-    let values = this._values;
-
-    if (values.length !== 1) {
-      values = [day];
-    } else {
-      const beginning = first(values);
-
-      if (beginning.equalTo(day)) {
-        this._values = [];
-        return;
-      }
-
-      values = beginning.greaterThan(day)
-        ? Array.from(calendarRange({ start: day, end: beginning }))
-        : Array.from(calendarRange({ start: beginning, end: day }));
-
-      values.push(last(values).add('day', 1));
-    }
-
-    this._values = values.filter(
-      (v) => !isDateInRanges(v, this._disabledDates)
-    );
-  }
-
-  private selectDate(value: CalendarDay) {
+  private _selectDate(value: CalendarDay): boolean {
     if (isDateInRanges(value, this._disabledDates)) {
       return false;
     }
 
-    if (this._isSingle) {
-      if (this._value?.equalTo(value)) {
-        return false;
-      }
-      this._value = value;
-    }
-
-    if (this._isMultiple) {
-      this._selectMultiple(value);
-    }
-
-    if (this._isRange) {
-      this._selectRange(value);
+    switch (this.selection) {
+      case 'single':
+        if (this._value?.equalTo(value)) {
+          return false;
+        }
+        this._value = value;
+        break;
+      case 'multiple':
+        this._selectMultiple(value);
+        break;
+      case 'range':
+        this._selectRange(value);
+        break;
     }
 
     return true;
   }
 
-  private isSelected(day: CalendarDay) {
+  private _selectMultiple(day: CalendarDay): void {
+    const idx = this._values.findIndex((v) => v.equalTo(day));
+
+    if (idx < 0) {
+      this._values.push(day);
+    } else {
+      this._values.splice(idx, 1);
+    }
+
+    this._values = this._values.toSorted((a, b) => a.timestamp - b.timestamp);
+  }
+
+  private _selectRange(day: CalendarDay): void {
+    // Start a new range selection
+    if (this._values.length !== 1) {
+      this._values = [day];
+      return;
+    }
+
+    const rangeStart = this._rangeStart!;
+
+    // Clicking the same date clears the selection
+    if (rangeStart.equalTo(day)) {
+      this._values = [];
+      return;
+    }
+
+    // Build the complete range, ensuring correct order
+    const [start, end] = rangeStart.greaterThan(day)
+      ? [day, rangeStart]
+      : [rangeStart, day];
+
+    const range = Array.from(calendarRange({ start, end }));
+    range.push(last(range).add('day', 1));
+
+    // Filter out disabled dates
+    this._values = range.filter((v) => !isDateInRanges(v, this._disabledDates));
+  }
+
+  private _isSelected(day: CalendarDay): boolean {
     if (isDateInRanges(day, this._disabledDates)) {
       return false;
     }
 
-    if (this._isSingle) {
-      return !!this._value && this._value.equalTo(day);
-    }
+    switch (this.selection) {
+      case 'single':
+        return Boolean(this._value?.equalTo(day));
 
-    if (!this._hasValues) {
-      return false;
-    }
+      case 'multiple':
+        return (
+          this._hasValues &&
+          isDateInRanges(day, [
+            { type: DateRangeType.Specific, dateRange: this.values },
+          ])
+        );
 
-    if (this._isMultiple) {
-      return isDateInRanges(day, [
-        {
-          type: DateRangeType.Specific,
-          dateRange: this.values,
-        },
-      ]);
+      case 'range':
+        return (
+          this._hasValues &&
+          isDateInRanges(day, [
+            {
+              type: DateRangeType.Between,
+              dateRange: [this._rangeStart!.native, this._rangeEnd!.native],
+            },
+          ])
+        );
     }
-    return isDateInRanges(day, [
-      {
-        type: DateRangeType.Between,
-        dateRange: [first(this._values).native, last(this._values).native],
-      },
-    ]);
   }
 
-  // XXX: Range interaction
-  private setRangePreviewDate(day?: CalendarDay) {
+  //#endregion
+
+  //#region Range helpers
+
+  private _setRangePreviewDate(day?: CalendarDay): void {
     this._rangePreviewDate = day;
     this.emitEvent('igcRangePreviewDateChange', {
       detail: day ? day.native : undefined,
     });
   }
 
-  private changeRangePreview(day: CalendarDay) {
+  private _changeRangePreview(day: CalendarDay): void {
     if (this._values.length === 1 && !first(this._values).equalTo(day)) {
-      this.setRangePreviewDate(day);
+      this._setRangePreviewDate(day);
     }
   }
 
-  private clearRangePreview() {
+  private _clearRangePreview(): void {
     if (this._rangePreviewDate) {
-      this.setRangePreviewDate();
+      this._setRangePreviewDate();
     }
   }
 
-  // XXX: Ranges
+  /** Gets the effective start of the visual range, accounting for preview. */
+  private _getEffectiveRangeStart(): CalendarDay | undefined {
+    if (!this._rangeStart) return undefined;
 
-  private isFirstInRange(day: CalendarDay) {
-    if (!this._isRange || !this._hasValues) {
-      return false;
-    }
-
-    const target = this._rangePreviewDate?.lessThan(first(this._values))
+    return this._rangePreviewDate?.lessThan(this._rangeStart)
       ? this._rangePreviewDate
-      : first(this._values);
-
-    return target.equalTo(day);
+      : this._rangeStart;
   }
 
-  private isLastInRange(day: CalendarDay) {
-    if (!this._isRange || !this._hasValues) {
-      return false;
-    }
+  /** Gets the effective end of the visual range, accounting for preview. */
+  private _getEffectiveRangeEnd(): CalendarDay | undefined {
+    if (!this._rangeEnd) return undefined;
 
-    const target = this._rangePreviewDate?.greaterThan(last(this._values))
+    return this._rangePreviewDate?.greaterThan(this._rangeEnd)
       ? this._rangePreviewDate
-      : last(this._values);
-
-    return target.equalTo(day);
+      : this._rangeEnd;
   }
 
-  private isRangeDate(day: CalendarDay) {
-    const isSingleRange = this._values.length === 1;
+  private _isFirstInRange(day: CalendarDay): boolean {
+    const effectiveStart = this._getEffectiveRangeStart();
+    return this._isRange && Boolean(effectiveStart?.equalTo(day));
+  }
 
-    if (!this._hasValues || (isSingleRange && !this._rangePreviewDate)) {
-      return false;
-    }
+  private _isLastInRange(day: CalendarDay): boolean {
+    const effectiveEnd = this._getEffectiveRangeEnd();
+    return this._isRange && Boolean(effectiveEnd?.equalTo(day));
+  }
 
-    const min = first(this._values);
-    const max = isSingleRange ? this._rangePreviewDate! : last(this._values);
+  private _isRangeDate(day: CalendarDay): boolean {
+    if (!this._hasValues) return false;
+
+    const isSingleSelection = this._values.length === 1;
+    if (isSingleSelection && !this._rangePreviewDate) return false;
+
+    const max = isSingleSelection ? this._rangePreviewDate! : this._rangeEnd!;
 
     return isDateInRanges(day, [
       {
         type: DateRangeType.Between,
-        dateRange: [min.native, max.native],
+        dateRange: [this._rangeStart!.native, max.native],
       },
     ]);
   }
 
-  private isRangePreview(day: CalendarDay) {
-    if (!(this._hasValues && this._rangePreviewDate)) {
-      return false;
-    }
+  private _isRangePreview(day: CalendarDay): boolean {
+    if (!this._hasValues || !this._rangePreviewDate) return false;
 
     return isDateInRanges(day, [
       {
         type: DateRangeType.Between,
-        dateRange: [first(this._values).native, this._rangePreviewDate.native],
+        dateRange: [this._rangeStart!.native, this._rangePreviewDate.native],
       },
     ]);
   }
 
-  private intlFormatDay(day: CalendarDay) {
-    const fmt = getDateFormatter().getIntlFormatter(
-      this.locale,
-      this._labelOptions
-    );
+  //#endregion
+
+  //#region Internal methods
+
+  private _intlFormatDay(day: CalendarDay): string {
+    const fmt = getDateFormatter().getIntlFormatter(this.locale, {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
 
     // Range selection in progress
     if (this._rangePreviewDate?.equalTo(day)) {
@@ -345,7 +385,7 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
     }
 
     // Range selection finished
-    if (this.isFirstInRange(day) || this.isLastInRange(day)) {
+    if (this._isFirstInRange(day) || this._isLastInRange(day)) {
       return fmt.formatRange(
         first(this._values).native,
         last(this._values).native
@@ -356,49 +396,61 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
     return fmt.format(day.native);
   }
 
-  private getDayHandlers(day: CalendarDay) {
-    const range = this._isRange;
-    const changePreview = range
-      ? this.changeRangePreview.bind(this, day)
-      : nothing;
-    const clearPreview = range ? this.clearRangePreview : nothing;
+  private _getDayHandlers(day: CalendarDay) {
+    if (!this._isRange) {
+      return { changePreview: nothing, clearPreview: nothing };
+    }
 
-    return { changePreview, clearPreview };
+    return {
+      changePreview: this._changeRangePreview.bind(this, day),
+      clearPreview: this._clearRangePreview.bind(this),
+    };
   }
 
-  private getDayProperties(day: CalendarDay, today: CalendarDay) {
-    const isRange = this._isRange;
+  private _getDayProperties(
+    day: CalendarDay,
+    today: CalendarDay
+  ): DayProperties {
+    const inactive = !areSameMonth(day, this._activeDate);
     const disabled = isDateInRanges(day, this._disabledDates);
 
-    const hiddenLeading =
-      this.hideLeadingDays && isPreviousMonth(day, this._activeDate);
-    const hiddenTrailing =
-      this.hideTrailingDays && isNextMonth(day, this._activeDate);
-
-    const hidden = hiddenLeading || hiddenTrailing;
-    const inactive = !areSameMonth(day, this._activeDate);
+    const hidden =
+      (this.hideLeadingDays && isPreviousMonth(day, this._activeDate)) ||
+      (this.hideTrailingDays && isNextMonth(day, this._activeDate));
 
     return {
       disabled: disabled || hidden,
-      first: this.isFirstInRange(day),
-      last: this.isLastInRange(day),
-      range: isRange && this.isRangeDate(day),
-      preview: isRange && this.isRangePreview(day),
+      first: this._isFirstInRange(day),
+      last: this._isLastInRange(day),
+      range: this._isRange && this._isRangeDate(day),
+      preview: this._isRange && this._isRangePreview(day),
       current: !inactive && day.equalTo(today),
       inactive,
       hidden,
       weekend: day.weekend,
-      single: !isRange,
-      selected: !disabled && this.isSelected(day),
-      special: isDateInRanges(day, this._specialDates) && !inactive,
+      single: !this._isRange,
+      selected: !disabled && this._isSelected(day),
+      special: !inactive && isDateInRanges(day, this._specialDates),
     };
   }
 
-  protected renderDay(day: CalendarDay, today: CalendarDay) {
-    const ariaLabel = this.intlFormatDay(day);
-    const { changePreview, clearPreview } = this.getDayHandlers(day);
+  //#endregion
 
-    const props = this.getDayProperties(day, today);
+  //#region Public methods
+
+  /** Focuses the active date. */
+  public focusActiveDate(options?: FocusOptions): void {
+    this._activeDay?.focus(options);
+  }
+
+  //#endregion
+
+  protected _renderDayWithProps(
+    day: CalendarDay,
+    props: DayProperties
+  ): TemplateResult {
+    const ariaLabel = this._intlFormatDay(day);
+    const { changePreview, clearPreview } = this._getDayHandlers(day);
 
     return html`
       <span part=${partMap({ date: true, ...props })}>
@@ -412,8 +464,8 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
           tabindex=${day.equalTo(this._activeDate) ? 0 : -1}
           @focus=${changePreview}
           @blur=${clearPreview}
-          @mouseenter=${changePreview}
-          @mouseleave=${clearPreview}
+          @pointerenter=${changePreview}
+          @pointerleave=${clearPreview}
         >
           ${day.date}
         </span>
@@ -421,7 +473,7 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
     `;
   }
 
-  protected renderHeaderWeekNumber() {
+  protected _renderHeaderWeekNumber() {
     return html`
       <span role="columnheader" part="label week-number first">
         <span part="week-number-inner first">
@@ -431,7 +483,7 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
     `;
   }
 
-  protected renderWeekNumber(start: CalendarDay, last: boolean) {
+  protected _renderWeekNumber(start: CalendarDay, last: boolean) {
     return html`
       <span role="rowheader" part=${partMap({ 'week-number': true, last })}>
         <span part=${partMap({ 'week-number-inner': true, last })}>
@@ -441,22 +493,20 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
     `;
   }
 
-  protected renderHeaders() {
-    const label = getDateFormatter().getIntlFormatter(
-      this.locale,
-      this._weekdayOptions
-    );
-    const aria = getDateFormatter().getIntlFormatter(
-      this.locale,
-      this._ariaWeekdayOptions
-    );
+  protected _renderHeaders() {
+    const label = getDateFormatter().getIntlFormatter(this.locale, {
+      weekday: this.weekDayFormat,
+    });
+    const aria = getDateFormatter().getIntlFormatter(this.locale, {
+      weekday: 'long',
+    });
     const days = take(
       generateMonth(this._activeDate, this._firstDayOfWeek),
       daysInWeek
     );
 
     const weekNumber = this.showWeekNumbers
-      ? this.renderHeaderWeekNumber()
+      ? this._renderHeaderWeekNumber()
       : nothing;
 
     const headers = days.map(
@@ -476,29 +526,41 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
     `;
   }
 
-  protected *renderWeeks() {
+  protected *_renderWeeks(): Generator<TemplateResult> {
     const today = CalendarDay.today;
-    const weeks = Array.from(chunk(this.dates, daysInWeek));
-    const last = weeks.length - 1;
+    const weeks = Array.from(chunk(this._dates, daysInWeek));
+    const lastIndex = weeks.length - 1;
+
+    // Pre-compute day properties for all dates to avoid redundant calculations
+    const dayPropertiesMap = new Map<number, DayProperties>();
+    for (const day of this._dates) {
+      dayPropertiesMap.set(day.timestamp, this._getDayProperties(day, today));
+    }
 
     for (const [idx, week] of weeks.entries()) {
-      let hidden = false;
-      if (idx === 0 || idx === last) {
-        hidden = week.every((day) => this.getDayProperties(day, today).hidden);
-      }
+      const isEdgeWeek = idx === 0 || idx === lastIndex;
+      const isLast = idx === lastIndex;
+
+      // Only check hidden state for first and last weeks
+      const hidden =
+        isEdgeWeek &&
+        week.every((day) => dayPropertiesMap.get(day.timestamp)!.hidden);
+
       yield html`
         <div role="row" part="days-row" aria-hidden=${hidden}>
           ${this.showWeekNumbers
-            ? this.renderWeekNumber(week[0], idx === last)
+            ? this._renderWeekNumber(week[0], isLast)
             : nothing}
-          ${week.map((day) => this.renderDay(day, today))}
+          ${week.map((day) =>
+            this._renderDayWithProps(day, dayPropertiesMap.get(day.timestamp)!)
+          )}
         </div>
       `;
     }
   }
 
   protected override render() {
-    return html`${this.renderHeaders()}${this.renderWeeks()}`;
+    return html`${this._renderHeaders()}${this._renderWeeks()}`;
   }
 }
 
