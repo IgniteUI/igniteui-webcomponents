@@ -18,14 +18,21 @@ $theme: $indigo;
 :host([variant='success']) button,
 :host([selected][variant='success']) button:not([disabled]) {
     &:focus {
-        box-shadow: 0 0 0 rem(3px) color(success, 800);
+        box-shadow: 0 0 0 rem(3px) color(success, 900);
     }
 }
 
 :host([variant='warning']) button,
 :host([selected][variant='warning']) button:not([disabled]) {
+    color: color(gray, 50);
+
     &:focus {
+        color: color(gray, 50);
         box-shadow: 0 0 0 rem(3px) color(warn, 900);
+    }
+
+    &:hover {
+        color: color(gray, 50);
     }
 }
 
