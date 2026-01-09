@@ -141,7 +141,7 @@ export function convertToDates(
     }
   }
 
-  return values.length > 0 ? values : null;
+  return values;
 }
 
 /**
