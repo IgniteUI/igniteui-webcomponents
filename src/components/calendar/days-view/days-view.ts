@@ -26,7 +26,7 @@ import {
   isNextMonth,
   isPreviousMonth,
 } from '../helpers.js';
-import { CalendarDay, daysInWeek } from '../model.js';
+import { CalendarDay, DAYS_IN_WEEK } from '../model.js';
 import { all } from '../themes/days.js';
 import { styles } from '../themes/days-view.base.css.js';
 import { DateRangeType, type IgcCalendarComponentEventMap } from '../types.js';
@@ -502,7 +502,7 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
     });
     const days = take(
       generateMonth(this._activeDate, this._firstDayOfWeek),
-      daysInWeek
+      DAYS_IN_WEEK
     );
 
     const weekNumber = this.showWeekNumbers
@@ -528,7 +528,7 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
 
   protected *_renderWeeks(): Generator<TemplateResult> {
     const today = CalendarDay.today;
-    const weeks = Array.from(chunk(this._dates, daysInWeek));
+    const weeks = Array.from(chunk(this._dates, DAYS_IN_WEEK));
     const lastIndex = weeks.length - 1;
 
     // Pre-compute day properties for all dates to avoid redundant calculations

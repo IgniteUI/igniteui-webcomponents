@@ -2,7 +2,7 @@ import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import type { TemplateResult } from 'lit';
 
 import { defineComponents } from '../common/definitions/defineComponents.js';
-import { first } from '../common/util.js';
+import { first, last } from '../common/util.js';
 import IgcCalendarComponent from './calendar.js';
 import { getCalendarDOM, getDayViewDOM, getDOMDate } from './helpers.spec.js';
 import { CalendarDay } from './model.js';
@@ -455,6 +455,21 @@ describe('Calendar Rendering', () => {
         expect(dateDOM.part.contains('special')).to.be.true;
         expect(dateDOM.part.contains('inactive')).to.be.false;
       }
+    });
+
+    it('issue #2035 - Incorrect ISO 8601 week numbering', async () => {
+      const date = new CalendarDay({ year: 2025, month: 11, date: 31 });
+
+      calendar.activeDate = date.native;
+      calendar.weekStart = 'wednesday';
+      calendar.showWeekNumbers = true;
+      await elementUpdated(calendar);
+
+      const calendarDOM = getCalendarDOM(calendar);
+      const daysViewDOM = getDayViewDOM(calendarDOM.views.days);
+      const lastWeekNumber = last(daysViewDOM.weekNumbers);
+
+      expect(lastWeekNumber.innerText).to.equal('1');
     });
   });
 });

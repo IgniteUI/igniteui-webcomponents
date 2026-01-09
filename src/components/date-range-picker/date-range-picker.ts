@@ -843,7 +843,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
    * or its current active date and its active day view index to always be the first one.
    */
   private _setCalendarActiveDateAndViewIndex() {
-    const activeDaysViewIndex = 'activeDaysViewIndex';
+    const activeDaysViewIndex = '_activeDaysViewIndex';
 
     this._calendar.activeDate =
       this._firstDefinedInRange ?? this._calendar.activeDate;
