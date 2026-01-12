@@ -47,6 +47,7 @@ export type MaskInputValueMode = 'raw' | 'withFormatting';
 export type NavDrawerPosition = 'start' | 'end' | 'top' | 'bottom' | 'relative';
 export type SliderTickLabelRotation = 0 | 90 | -90;
 export type SliderTickOrientation = 'end' | 'mirror' | 'start';
+export type SplitterOrientation = 'horizontal' | 'vertical';
 export type StepperOrientation = 'horizontal' | 'vertical';
 export type StepperStepType = 'full' | 'indicator' | 'title';
 export type StepperTitlePosition = 'auto' | 'bottom' | 'top' | 'end' | 'start';
