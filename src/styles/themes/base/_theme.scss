@@ -18,9 +18,6 @@
     :root {
         --ig-theme: #{map.get($palette, '_meta', 'variant')};
         --ig-theme-variant: #{$variant};
-        --ig-size-small: 1;
-        --ig-size-medium: 2;
-        --ig-size-large: 3;
         --ig-scrollbar-size: #{rem(16px)};
     }
 
@@ -34,6 +31,7 @@
         $font-family: $typeface,
         $type-scale: $type-scale
     );
+    @include sizing();
     @include spacing();
 }
 
