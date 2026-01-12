@@ -106,7 +106,7 @@ describe('Focus trap', () => {
     it('correctly focuses first/last focusable element', () => {
       const calendar = trap.querySelector(IgcCalendarComponent.tagName)!;
       // @ts-expect-error private access
-      const daysView = calendar.daysViews[0] as IgcDaysViewComponent;
+      const daysView = calendar._daysViews[0] as IgcDaysViewComponent;
 
       expect(document.activeElement).to.equal(document.body);
 
