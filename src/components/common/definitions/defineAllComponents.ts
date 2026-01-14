@@ -61,6 +61,7 @@ import IgcStepperComponent from '../../stepper/stepper.js';
 import IgcTabComponent from '../../tabs/tab.js';
 import IgcTabsComponent from '../../tabs/tabs.js';
 import IgcTextareaComponent from '../../textarea/textarea.js';
+import IgcThemeProviderComponent from '../../theme-provider/theme-provider.js';
 import IgcTileComponent from '../../tile-manager/tile.js';
 import IgcTileManagerComponent from '../../tile-manager/tile-manager.js';
 import IgcToastComponent from '../../toast/toast.js';
@@ -140,6 +141,7 @@ const allComponents: IgniteComponent[] = [
   IgcTileComponent,
   IgcTileManagerComponent,
   IgcTooltipComponent,
+  IgcThemeProviderComponent,
 ];
 
 export function defineAllComponents() {

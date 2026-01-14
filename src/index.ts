@@ -69,6 +69,7 @@ export { default as IgcTreeItemComponent } from './components/tree/tree-item.js'
 export { default as IgcStepperComponent } from './components/stepper/stepper.js';
 export { default as IgcStepComponent } from './components/stepper/step.js';
 export { default as IgcTooltipComponent } from './components/tooltip/tooltip.js';
+export { default as IgcThemeProviderComponent } from './components/theme-provider/theme-provider.js';
 
 // definitions
 export { defineComponents } from './components/common/definitions/defineComponents.js';
@@ -83,6 +84,7 @@ export {
 
 // theming configuration
 export { configureTheme } from './theming/config.js';
+export type { Theme, ThemeVariant } from './theming/types.js';
 
 // localization objects
 export {
