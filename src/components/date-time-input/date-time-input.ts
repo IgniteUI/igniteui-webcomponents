@@ -3,6 +3,7 @@ import { html } from 'lit';
 import { eventOptions, property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
+import { addThemingController } from '../../theming/theming-controller.js';
 import { convertToDate } from '../calendar/helpers.js';
 import {
   addKeybindings,
@@ -12,6 +13,7 @@ import {
   arrowUp,
   ctrlKey,
 } from '../common/controllers/key-bindings.js';
+import { addSlotController, setSlots } from '../common/controllers/slot.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { addI18nController } from '../common/i18n/i18n-controller.js';
@@ -21,6 +23,9 @@ import { FormValueDateTimeTransformers } from '../common/mixins/forms/form-trans
 import { createFormValueState } from '../common/mixins/forms/form-value.js';
 import { partMap } from '../common/part-map.js';
 import type { IgcInputComponentEventMap } from '../input/input-base.js';
+import { styles } from '../input/themes/input.base.css.js';
+import { styles as shared } from '../input/themes/shared/input.common.css.js';
+import { all } from '../input/themes/themes.js';
 import {
   IgcMaskInputBaseComponent,
   type MaskSelection,
@@ -41,6 +46,17 @@ export interface IgcDateTimeInputComponentEventMap extends Omit<
 > {
   igcChange: CustomEvent<Date | null>;
 }
+
+const Slots = setSlots(
+  'prefix',
+  'suffix',
+  'helper-text',
+  'value-missing',
+  'range-overflow',
+  'range-underflow',
+  'custom-error',
+  'invalid'
+);
 
 /**
  * A date time input is an input field that lets you set and edit the date and time in a chosen input element
@@ -72,9 +88,10 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
   AbstractConstructor<IgcMaskInputBaseComponent>
 >(IgcMaskInputBaseComponent) {
   public static readonly tagName = 'igc-date-time-input';
+  public static styles = [styles, shared];
 
   /* blazorSuppress */
-  public static register() {
+  public static register(): void {
     registerComponent(
       IgcDateTimeInputComponent,
       IgcValidationContainerComponent
@@ -84,6 +101,12 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
   protected override get __validators() {
     return dateTimeInputValidators;
   }
+
+  protected override readonly _themes = addThemingController(this, all);
+
+  protected override readonly _slots = addSlotController(this, {
+    slots: Slots,
+  });
 
   protected override readonly _formValue = createFormValueState(this, {
     initialValue: null,
@@ -216,7 +239,7 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
     this._i18nController.locale = value;
   }
 
-  public get locale() {
+  public get locale(): string {
     return this._i18nController.locale;
   }
 
@@ -331,7 +354,7 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
     const { start, end } = this._inputSelection;
     const newValue = this.trySpinValue(targetPart, delta);
     this.value = newValue;
-    this.updateComplete.then(() => this.input.setSelectionRange(start, end));
+    this.updateComplete.then(() => this._input?.setSelectionRange(start, end));
   }
 
   /** Decrements a date/time portion. */
@@ -345,7 +368,7 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
     const { start, end } = this._inputSelection;
     const newValue = this.trySpinValue(targetPart, delta, true);
     this.value = newValue;
-    this.updateComplete.then(() => this.input.setSelectionRange(start, end));
+    this.updateComplete.then(() => this._input?.setSelectionRange(start, end));
   }
 
   /** Clears the input element of user input. */
@@ -409,7 +432,7 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
     }
 
     await this.updateComplete;
-    this.input.setSelectionRange(result.end, result.end);
+    this._input?.setSelectionRange(result.end, result.end);
   }
 
   private trySpinValue(
@@ -640,7 +663,7 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
   }
 
   protected navigateParts(delta: number) {
-    const position = this.getNewPosition(this.input.value, delta);
+    const position = this.getNewPosition(this._input?.value ?? '', delta);
     this.setSelectionRange(position, position);
   }
 
@@ -651,11 +674,11 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
     this.setSelectionRange(this._maskSelection.start, this._maskSelection.end);
   }
 
-  protected override renderInput() {
+  protected override _renderInput() {
     return html`
       <input
         type="text"
-        part=${partMap(this.resolvePartNames('input'))}
+        part=${partMap(this._resolvePartNames('input'))}
         name=${ifDefined(this.name)}
         .value=${live(this._maskedValue)}
         .placeholder=${this.placeholder || this._parser.emptyMask}

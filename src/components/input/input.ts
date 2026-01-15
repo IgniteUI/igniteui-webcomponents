@@ -2,15 +2,39 @@ import { html } from 'lit';
 import { property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
-
+import { addThemingController } from '../../theming/theming-controller.js';
+import { addSlotController, setSlots } from '../common/controllers/slot.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { createFormValueState } from '../common/mixins/forms/form-value.js';
 import { partMap } from '../common/part-map.js';
-import { bindIf, isEmpty } from '../common/util.js';
-import type { InputType, RangeTextSelectMode } from '../types.js';
+import { bindIf } from '../common/util.js';
+import type {
+  InputType,
+  RangeTextSelectMode,
+  SelectionRangeDirection,
+} from '../types.js';
 import IgcValidationContainerComponent from '../validation-container/validation-container.js';
 import { IgcInputBaseComponent } from './input-base.js';
+import { styles } from './themes/input.base.css.js';
+import { styles as shared } from './themes/shared/input.common.css.js';
+import { all } from './themes/themes.js';
 import { numberValidators, stringValidators } from './validators.js';
+
+const Slots = setSlots(
+  'prefix',
+  'suffix',
+  'helper-text',
+  'value-missing',
+  'type-mismatch',
+  'pattern-mismatch',
+  'too-long',
+  'too-short',
+  'range-overflow',
+  'range-underflow',
+  'step-mismatch',
+  'custom-error',
+  'invalid'
+);
 
 /**
  * @element igc-input
@@ -41,11 +65,18 @@ import { numberValidators, stringValidators } from './validators.js';
  */
 export default class IgcInputComponent extends IgcInputBaseComponent {
   public static readonly tagName = 'igc-input';
+  public static styles = [styles, shared];
 
   /* blazorSuppress */
-  public static register() {
+  public static register(): void {
     registerComponent(IgcInputComponent, IgcValidationContainerComponent);
   }
+
+  protected override readonly _themes = addThemingController(this, all);
+
+  protected override readonly _slots = addSlotController(this, {
+    slots: Slots,
+  });
 
   protected override readonly _formValue = createFormValueState(this, {
     initialValue: '',
@@ -83,6 +114,15 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
    */
   @property({ reflect: true })
   public type: InputType = 'text';
+
+  /**
+   * Makes the control a readonly field.
+   *
+   * @attr readonly
+   * @default false
+   */
+  @property({ type: Boolean, reflect: true })
+  public readOnly = false;
 
   /**
    * The input mode attribute of the control.
@@ -195,59 +235,65 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
    * string-type inputs or allows spin buttons to exceed the predefined `min/max` limits for number-type inputs.
    *
    * @attr validate-only
+   * @default false
    */
   @property({ type: Boolean, reflect: true, attribute: 'validate-only' })
   public validateOnly = false;
 
   /* blazorSuppress */
   /** Replaces the selected text in the input. */
-  public override setRangeText(
+  public setRangeText(
     replacement: string,
-    start: number,
-    end: number,
+    start?: number,
+    end?: number,
     selectMode: RangeTextSelectMode = 'preserve'
-  ) {
-    super.setRangeText(replacement, start, end, selectMode);
-    this.value = this.input.value;
+  ): void {
+    this._input?.setRangeText(replacement, start!, end!, selectMode);
+    this.value = this._input?.value ?? '';
   }
 
-  /** Selects all text within the input. */
-  public select() {
-    return this.input.select();
+  /* blazorSuppress */
+  /** Sets the text selection range of the control */
+  public setSelectionRange(
+    start?: number,
+    end?: number,
+    direction: SelectionRangeDirection = 'none'
+  ): void {
+    this._input?.setSelectionRange(start ?? null, end ?? null, direction);
   }
 
   /** Increments the numeric value of the input by one or more steps. */
-  public stepUp(n?: number) {
-    this.input.stepUp(n);
-    this.value = this.input.value;
+  public stepUp(n?: number): void {
+    this._input?.stepUp(n);
+    this.value = this._input?.value ?? '';
   }
 
   /** Decrements the numeric value of the input by one or more steps. */
-  public stepDown(n?: number) {
-    this.input.stepDown(n);
-    this.value = this.input.value;
+  public stepDown(n?: number): void {
+    this._input?.stepDown(n);
+    this.value = this._input?.value ?? '';
   }
 
-  private handleInput() {
+  private _handleInput(): void {
     this._setTouchedState();
-    this.value = this.input.value;
+    this.value = this._input?.value ?? '';
     this.emitEvent('igcInput', { detail: this.value });
   }
 
-  private handleChange() {
+  private _handleChange(): void {
     this._setTouchedState();
-    this.value = this.input.value;
+    this.value = this._input?.value ?? '';
     this.emitEvent('igcChange', { detail: this.value });
   }
 
-  protected renderInput() {
+  protected _renderInput() {
     const hasNegativeTabIndex = this.getAttribute('tabindex') === '-1';
-    const hasHelperText = !isEmpty(this._helperText);
+    const hasHelperText = this._slots.hasAssignedElements('helper-text');
 
     return html`
       <input
-        id=${this.inputId}
-        part=${partMap(this.resolvePartNames('input'))}
+        id=${this._inputId}
+        part=${partMap(this._resolvePartNames('input'))}
         name=${ifDefined(this.name)}
         type=${ifDefined(this.type)}
         pattern=${ifDefined(this.pattern)}
@@ -266,8 +312,8 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
         maxlength=${bindIf(!this.validateOnly, this.maxLength)}
         step=${ifDefined(this.step)}
         aria-describedby=${bindIf(hasHelperText, 'helper-text')}
-        @change=${this.handleChange}
-        @input=${this.handleInput}
+        @change=${this._handleChange}
+        @input=${this._handleInput}
         @blur=${this._handleBlur}
       />
     `;

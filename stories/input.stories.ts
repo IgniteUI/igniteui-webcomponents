@@ -45,6 +45,12 @@ const metadata: Meta<IgcInputComponent> = {
       control: { type: 'select' },
       table: { defaultValue: { summary: 'text' } },
     },
+    readOnly: {
+      type: 'boolean',
+      description: 'Makes the control a readonly field.',
+      control: 'boolean',
+      table: { defaultValue: { summary: 'false' } },
+    },
     inputMode: {
       type: 'string',
       description:
@@ -129,12 +135,6 @@ const metadata: Meta<IgcInputComponent> = {
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
-    readOnly: {
-      type: 'boolean',
-      description: 'Makes the control a readonly field.',
-      control: 'boolean',
-      table: { defaultValue: { summary: 'false' } },
-    },
     placeholder: {
       type: 'string',
       description: 'The placeholder attribute of the control.',
@@ -148,13 +148,13 @@ const metadata: Meta<IgcInputComponent> = {
   },
   args: {
     type: 'text',
+    readOnly: false,
     autofocus: false,
     validateOnly: false,
     required: false,
     disabled: false,
     invalid: false,
     outlined: false,
-    readOnly: false,
   },
 };
 
@@ -165,6 +165,8 @@ interface IgcInputArgs {
   value: string | Date;
   /** The type attribute of the control. */
   type: 'text' | 'email' | 'number' | 'password' | 'search' | 'tel' | 'url';
+  /** Makes the control a readonly field. */
+  readOnly: boolean;
   /**
    * The input mode attribute of the control.
    * See [relevant MDN article](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/inputmode)
@@ -201,8 +203,6 @@ interface IgcInputArgs {
   invalid: boolean;
   /** Whether the control will have outlined appearance. */
   outlined: boolean;
-  /** Makes the control a readonly field. */
-  readOnly: boolean;
   /** The placeholder attribute of the control. */
   placeholder: string;
   /** The label for the control. */

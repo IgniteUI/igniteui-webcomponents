@@ -35,7 +35,7 @@ const metadata: Meta<IgcMaskInputComponent> = {
     valueMode: {
       type: '"raw" | "withFormatting"',
       description:
-        'Dictates the behavior when retrieving the value of the control:\n\n- `raw` will return the clean user input.\n- `withFormatting` will return the value with all literals and prompts.',
+        'Dictates the behavior when retrieving the value of the control:\n\n- `raw`: Returns clean input (e.g. "5551234567")\n- `withFormatting`: Returns with mask formatting (e.g. "(555) 123-4567")\n\nEmpty values always return an empty string, regardless of the value mode.',
       options: ['raw', 'withFormatting'],
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'raw' } },
@@ -59,6 +59,12 @@ const metadata: Meta<IgcMaskInputComponent> = {
         'The prompt symbol to use for unfilled parts of the mask pattern.',
       control: 'text',
       table: { defaultValue: { summary: '_' } },
+    },
+    readOnly: {
+      type: 'boolean',
+      description: 'Makes the control a readonly field.',
+      control: 'boolean',
+      table: { defaultValue: { summary: 'false' } },
     },
     required: {
       type: 'boolean',
@@ -90,12 +96,6 @@ const metadata: Meta<IgcMaskInputComponent> = {
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
-    readOnly: {
-      type: 'boolean',
-      description: 'Makes the control a readonly field.',
-      control: 'boolean',
-      table: { defaultValue: { summary: 'false' } },
-    },
     placeholder: {
       type: 'string',
       description: 'The placeholder attribute of the control.',
@@ -111,11 +111,11 @@ const metadata: Meta<IgcMaskInputComponent> = {
     valueMode: 'raw',
     mask: 'CCCCCCCCCC',
     prompt: '_',
+    readOnly: false,
     required: false,
     disabled: false,
     invalid: false,
     outlined: false,
-    readOnly: false,
   },
 };
 
@@ -125,8 +125,10 @@ interface IgcMaskInputArgs {
   /**
    * Dictates the behavior when retrieving the value of the control:
    *
-   * - `raw` will return the clean user input.
-   * - `withFormatting` will return the value with all literals and prompts.
+   * - `raw`: Returns clean input (e.g. "5551234567")
+   * - `withFormatting`: Returns with mask formatting (e.g. "(555) 123-4567")
+   *
+   * Empty values always return an empty string, regardless of the value mode.
    */
   valueMode: 'raw' | 'withFormatting';
   /**
@@ -139,6 +141,8 @@ interface IgcMaskInputArgs {
   mask: string;
   /** The prompt symbol to use for unfilled parts of the mask pattern. */
   prompt: string;
+  /** Makes the control a readonly field. */
+  readOnly: boolean;
   /** When set, makes the component a required field for validation. */
   required: boolean;
   /** The name attribute of the control. */
@@ -149,8 +153,6 @@ interface IgcMaskInputArgs {
   invalid: boolean;
   /** Whether the control will have outlined appearance. */
   outlined: boolean;
-  /** Makes the control a readonly field. */
-  readOnly: boolean;
   /** The placeholder attribute of the control. */
   placeholder: string;
   /** The label for the control. */
