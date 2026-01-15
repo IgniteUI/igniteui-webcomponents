@@ -72,6 +72,7 @@ import { defineComponents } from './defineComponents.js';
 import type { IgniteComponent } from './register.js';
 
 const allComponents: IgniteComponent[] = [
+  IgcThemeProviderComponent,
   IgcAvatarComponent,
   IgcAccordionComponent,
   IgcBadgeComponent,
@@ -141,7 +142,6 @@ const allComponents: IgniteComponent[] = [
   IgcTileComponent,
   IgcTileManagerComponent,
   IgcTooltipComponent,
-  IgcThemeProviderComponent,
 ];
 
 export function defineAllComponents() {

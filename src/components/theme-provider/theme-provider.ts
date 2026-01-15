@@ -23,6 +23,18 @@ import { registerComponent } from '../common/definitions/register.js';
  *
  * @slot - Default slot for content that should receive the provided theme.
  *
+ * @remarks
+ * When using the theme provider, it must be registered **before** any descendant components
+ * that will consume the theme context. This ensures the context provider is available
+ * when descendant components attempt to consume it.
+ *
+ * ```typescript
+ * import { defineComponents, IgcThemeProviderComponent, IgcButtonComponent } from 'igniteui-webcomponents';
+ *
+ * // Register theme provider first, then descendant components
+ * defineComponents(IgcThemeProviderComponent, IgcButtonComponent);
+ * ```
+ *
  * @example
  * ```html
  * <!-- Scope material theme to a section -->

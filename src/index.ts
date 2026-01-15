@@ -85,6 +85,7 @@ export {
 // theming configuration
 export { configureTheme } from './theming/config.js';
 export type { Theme, ThemeVariant } from './theming/types.js';
+export { addThemingController as θaddThemingController } from './theming/theming-controller.js';
 
 // localization objects
 export {

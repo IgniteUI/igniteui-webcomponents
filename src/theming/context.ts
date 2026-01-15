@@ -34,6 +34,4 @@ export interface ThemeContext {
  * }
  * ```
  */
-export const themeContext = createContext<ThemeContext>(
-  Symbol('igc-theme-context')
-);
+export const themeContext = createContext<ThemeContext>('ig-theme-context');
