@@ -1,9 +1,9 @@
-import { consume } from '@lit/context';
 import { html, LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
 import { EaseInOut } from '../../animations/easings.js';
 import { addAnimationController } from '../../animations/player.js';
 import { carouselContext } from '../common/context.js';
+import { createAsyncContext } from '../common/controllers/async-consumer.js';
 import { addInternalsController } from '../common/controllers/internals.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { formatString } from '../common/util.js';
@@ -38,8 +38,7 @@ export default class IgcCarouselSlideComponent extends LitElement {
 
   private readonly _player = addAnimationController(this);
 
-  @consume({ context: carouselContext, subscribe: true })
-  private readonly _carousel?: IgcCarouselComponent;
+  private _carousel?: IgcCarouselComponent;
 
   protected get _index(): number {
     return this._carousel ? this._carousel.slides.indexOf(this) : 0;
@@ -73,6 +72,15 @@ export default class IgcCarouselSlideComponent extends LitElement {
   /* blazorSuppress */
   @property({ type: Boolean, reflect: true })
   public previous = false;
+
+  constructor() {
+    super();
+
+    // Set carousel reference once provider is ready (addresses Blazor timing issue)
+    createAsyncContext(this, carouselContext, (carousel) => {
+      this._carousel = carousel;
+    });
+  }
 
   /**
    * @hidden @internal
