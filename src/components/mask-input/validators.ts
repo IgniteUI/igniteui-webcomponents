@@ -7,7 +7,6 @@ export const maskValidators: Validator<IgcMaskInputComponent>[] = [
   {
     key: 'badInput',
     message: ValidationResourceStringsEN.mask_validation_error!,
-    // @ts-expect-error - protected access
-    isValid: ({ _parser, _maskedValue }) => _parser.isValidString(_maskedValue),
+    isValid: (host) => host.isValidMaskPattern(),
   },
 ];
