@@ -614,13 +614,14 @@ export default class IgcTileComponent extends EventEmitterMixin<
   }
 
   protected _renderHeader() {
-    const hasNoContent = !(
-      this._slots.hasAssignedElements('title') &&
-      this._slots.hasAssignedElements('actions')
-    );
+    const hasTitle = this._slots.hasAssignedElements('title');
+    const hasActions = this._slots.hasAssignedElements('actions');
 
     const hideHeader =
-      hasNoContent && this.disableMaximize && this.disableFullscreen;
+      !hasTitle &&
+      !hasActions &&
+      this.disableMaximize &&
+      this.disableFullscreen;
 
     const hasMaximizeSlot = !(this.disableMaximize || this.fullscreen);
     const hasFullscreenSlot = !this.disableFullscreen;
