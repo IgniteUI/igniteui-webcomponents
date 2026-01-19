@@ -12,38 +12,10 @@ const DEFAULT_THEME = {
 };
 
 /**
- * Options to configure the MarkdownMessageRenderer.
- */
-export interface MarkdownRendererOptions {
-  /**
-   * If true, disables syntax highlighting entirely.
-   */
-  noHighlighter?: boolean;
-
-  /**
-   * List of programming languages to support in syntax highlighting.
-   */
-  languages?: string[];
-
-  /**
-   * The theme used by the syntax highlighter (e.g., 'github-light').
-   */
-  theme?: {
-    light?: string;
-    dark?: string;
-  };
-
-  /**
-   * A custom HTML sanitization function. Defaults to DOMPurify.sanitize.
-   */
-  sanitizer?: (html: string) => string;
-}
-
-/**
  * Configuration options for setting up the markdown parser and highlighter.
  * This provides more granular control over the markdown processing pipeline.
  */
-export interface MarkdownSetupOptions {
+export interface MarkdownRendererOptions {
   /**
    * If true, disables syntax highlighting entirely.
    */
@@ -119,7 +91,7 @@ export interface MarkdownRenderer {
  * ```
  */
 export async function setupMarkdownRenderer(
-  options?: MarkdownSetupOptions
+  options?: MarkdownRendererOptions
 ): Promise<MarkdownRenderer> {
   const sanitizer = options?.sanitizer ?? DOMPurify.sanitize;
 
