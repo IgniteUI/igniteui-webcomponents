@@ -1,18 +1,19 @@
+@use 'sass:map';
 @use 'styles/utilities' as *;
 @use '../../../input/themes/light/themes' as input-theme;
 
 $input-theme: input-theme.$base;
 
 [part~='helper-text'] {
-    color: var-get($input-theme, 'helper-text-color');
+    color: map.get($input-theme, 'helper-text-color');
     row-gap: rem(8px);
 }
 
 [part~='validation-icon'] {
-    color: var-get($input-theme, 'icon-error-color');
+    color: map.get($input-theme, 'icon-error-color');
 }
 
 [part~='validation-message'] {
     gap: rem(4px);
-    color: var-get($input-theme, 'text-error-color')
+    color: map.get($input-theme, 'text-error-color')
 }
