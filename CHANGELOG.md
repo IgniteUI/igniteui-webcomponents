@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [6.5.0] - 2026-01-20
 ### Added
 - Added theming scoping container [#2056](https://github.com/IgniteUI/igniteui-webcomponents/pull/2056)
   - The `igc-theme-provider` component allows you to scope themes to specific parts of your page using Lit's context API. This enables having multiple different themes on the same page.
@@ -1201,6 +1201,7 @@ Initial release of Ignite UI Web Components
 - Ripple component
 - Switch component
 
+[6.5.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/6.4.0...6.5.0
 [6.4.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/6.3.6...6.4.0
 [6.3.6]: https://github.com/IgniteUI/igniteui-webcomponents/compare/6.3.5...6.3.6
 [6.3.5]: https://github.com/IgniteUI/igniteui-webcomponents/compare/6.3.4...6.3.5
