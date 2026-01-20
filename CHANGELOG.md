@@ -4,6 +4,67 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+### Added
+- Added theming scoping container [#2056](https://github.com/IgniteUI/igniteui-webcomponents/pull/2056)
+  - The `igc-theme-provider` component allows you to scope themes to specific parts of your page using Lit's context API. This enables having multiple different themes on the same page.
+  - Works both in Shadow and Light DOM.
+  - **Shadow DOM Usage**: When building custom web components with Shadow DOM, you can apply scoped themes by importing the theme CSS and wrapping your content with `igc-theme-provider`:
+    ```typescript
+    import { LitElement, html } from 'lit';
+    import { styles as materialDark } from 'igniteui-webcomponents/themes/dark/material.css.js';
+
+    class MyComponent extends LitElement {
+      static styles = [materialDark];
+
+      render() {
+        return html`
+          <style>
+            /* Additional component-specific styles */
+          </style>
+          <igc-theme-provider theme="material" variant="dark">
+            <igc-button>Scoped Material Dark Button</igc-button>
+            <igc-input label="Scoped Input"></igc-input>
+          </igc-theme-provider>
+        `;
+      }
+    }
+    ```
+  - **Light DOM with @scope**: For Light DOM usage, you can leverage CSS `@scope` to apply themes to specific page sections:
+    ```html
+    <style>
+      @scope (#fluent-section) {
+        @import 'node_modules/igniteui-webcomponents/themes/light/fluent.css';
+      }
+
+      @scope (#material-section) {
+        @import 'node_modules/igniteui-webcomponents/themes/dark/material.css';
+      }
+    </style>
+
+    <div id="fluent-section">
+      <igc-theme-provider theme="fluent" variant="light">
+        <igc-button>Fluent Light Button</igc-button>
+        <igc-card>
+          <igc-card-header>Fluent Theme Card</igc-card-header>
+        </igc-card>
+      </igc-theme-provider>
+    </div>
+
+    <div id="material-section">
+      <igc-theme-provider theme="material" variant="dark">
+        <igc-button>Material Dark Button</igc-button>
+        <igc-input label="Material Input"></igc-input>
+      </igc-theme-provider>
+    </div>
+    ```
+
+### Fixed
+- #### Tile manager
+  - Header is hidden only when there is no content and maximize/fullscreen are disabled [#2059](https://github.com/IgniteUI/igniteui-webcomponents/pull/2059)
+- #### Theming
+  - Resolve initial theme based on document computed styles rather than stylesheets [#2061](https://github.com/IgniteUI/igniteui-webcomponents/pull/2061)
+
 ## [6.4.0] - 2025-12-15
 ### Added
 - #### Localization
