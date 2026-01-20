@@ -301,7 +301,6 @@ describe('Masked input', () => {
       element.setSelectionRange(2, 3);
       await elementUpdated(element);
 
-      // fireInputEvent(input, 'insertText');
       simulateInput(input, {
         inputType: 'insertText',
         skipValueProperty: true,
@@ -328,6 +327,7 @@ describe('Masked input', () => {
 
     it('is accessible', async () => {
       await expect(element).to.be.accessible();
+      await expect(element).shadowDom.to.be.accessible();
     });
 
     it('focus updates underlying input mask', async () => {
