@@ -1,18 +1,18 @@
 @use 'styles/utilities' as *;
 @use '../../../input/themes/light/themes' as input-theme;
 
-$theme: input-theme.$base;
+$input-theme: input-theme.$base;
 
 [part~='helper-text'] {
-    color: var-get($theme, 'helper-text-color');
+    color: var-get($input-theme, 'helper-text-color');
     row-gap: rem(8px);
 }
 
 [part~='validation-icon'] {
-    color: var-get($theme, 'icon-error-color');
+    color: var-get($input-theme, 'icon-error-color');
 }
 
 [part~='validation-message'] {
     gap: rem(4px);
-    color: var-get($theme, 'text-error-color');
+    color: var-get($input-theme, 'text-error-color');
 }
