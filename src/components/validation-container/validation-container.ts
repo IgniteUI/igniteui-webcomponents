@@ -2,6 +2,7 @@ import { html, LitElement, nothing, type TemplateResult } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { cache } from 'lit/directives/cache.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
+import { addThemingController } from '../../theming/theming-controller.js';
 import { createAbortHandle } from '../common/abort-handler.js';
 import { registerComponent } from '../common/definitions/register.js';
 import {
@@ -12,6 +13,7 @@ import {
 import { partMap } from '../common/part-map.js';
 import { isEmpty, toKebabCase } from '../common/util.js';
 import IgcIconComponent from '../icon/icon.js';
+import { all as inputThemes } from '../input/themes/themes.js';
 import { styles as shared } from './themes/shared/validator.common.css.js';
 import { styles } from './themes/validator.base.css.js';
 
@@ -73,6 +75,8 @@ function hasProjectedValidation(
 export default class IgcValidationContainerComponent extends LitElement {
   public static readonly tagName = 'igc-validator';
   public static override styles = [styles, shared];
+
+  protected readonly _themes = addThemingController(this, inputThemes);
 
   /* blazorSuppress */
   public static register(): void {
