@@ -14,5 +14,5 @@ $input-theme: input-theme.$base;
 
 [part~='validation-message'] {
     gap: rem(4px);
-    color: var-get($input-theme, 'text-error-color')
+    color: var-get($input-theme, 'text-error-color');
 }
