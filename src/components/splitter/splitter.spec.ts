@@ -17,9 +17,9 @@ import { defineComponents } from '../common/definitions/defineComponents.js';
 import { roundPrecise } from '../common/util.js';
 import {
   simulateKeyboard,
-  simulateLostPointerCapture,
   simulatePointerDown,
   simulatePointerMove,
+  simulatePointerUp,
 } from '../common/utils.spec.js';
 import type { SplitterOrientation } from '../types.js';
 import IgcSplitterComponent from './splitter.js';
@@ -1827,6 +1827,7 @@ async function resize(
   simulatePointerDown(bar, {
     clientX: barRect.left,
     clientY: barRect.top,
+    pointerId: 1,
   });
   await elementUpdated(splitter);
 
@@ -1835,12 +1836,17 @@ async function resize(
     {
       clientX: barRect.left,
       clientY: barRect.top,
+      pointerId: 1,
     },
     { x: deltaX, y: deltaY }
   );
   await elementUpdated(splitter);
 
-  simulateLostPointerCapture(bar);
+  simulatePointerUp(bar, {
+    clientX: barRect.left + deltaX,
+    clientY: barRect.top + deltaY,
+    pointerId: 1,
+  });
   await elementUpdated(splitter);
   await nextFrame();
 }

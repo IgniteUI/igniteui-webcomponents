@@ -17,7 +17,6 @@ import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { isLTR } from '../common/util.js';
-import { addResizeController } from '../resize-container/resize-controller.js';
 import type { SplitterOrientation } from '../types.js';
 import { styles } from './themes/splitter.base.css.js';
 
@@ -77,6 +76,9 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   private _startSize = 'auto';
   private _endSize = 'auto';
   private _resizeState: SplitterResizeState | null = null;
+  private _isDragging = false;
+  private _dragPointerId = -1;
+  private _dragStartPosition = { x: 0, y: 0 };
 
   private readonly _internals = addInternalsController(this, {
     initialARIA: {
@@ -271,41 +273,76 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
       .set([ctrlKey, arrowRight], () =>
         this._handleArrowsExpandCollapse('end', 'horizontal')
       );
-
-    addResizeController(this, {
-      ref: [this._barRef],
-      mode: 'immediate',
-      updateTarget: false,
-      resizeTarget: () => {
-        return this.orientation === 'horizontal' && !isLTR(this)
-          ? this._endPane
-          : this._startPane;
-      },
-      start: () => {
-        if (this._resizeDisallowed) {
-          return false;
-        }
-        this._resizeStart();
-        return true;
-      },
-      resize: ({ state }) => {
-        const delta = this._resolveDelta(state.deltaX, state.deltaY);
-        if (delta !== 0) {
-          this._resizing(delta);
-        }
-      },
-      end: ({ state }) => {
-        const delta = this._resolveDelta(state.deltaX, state.deltaY);
-        if (delta !== 0) {
-          this._resizeEnd(delta);
-        }
-      },
-      cancel: () => {},
-    });
   }
 
   protected override firstUpdated() {
     this._initPanes();
+  }
+
+  //#endregion
+
+  //#region Resize Event Handlers
+
+  private _handleBarPointerDown(e: PointerEvent) {
+    if (e.button !== 0 || this._resizeDisallowed) {
+      return;
+    }
+
+    e.preventDefault();
+
+    this._isDragging = true;
+    this._dragPointerId = e.pointerId;
+    this._dragStartPosition = { x: e.clientX, y: e.clientY };
+
+    this._resizeStart();
+    this._bar.setPointerCapture(this._dragPointerId);
+  }
+
+  private _handleBarPointerMove(e: PointerEvent) {
+    if (!this._isDragging || e.pointerId !== this._dragPointerId) {
+      return;
+    }
+
+    const deltaX = e.clientX - this._dragStartPosition.x;
+    const deltaY = e.clientY - this._dragStartPosition.y;
+    const delta = this._resolveDelta(deltaX, deltaY);
+
+    if (delta !== 0) {
+      this._resizing(delta);
+    }
+  }
+
+  private _handleEndDrag(e: PointerEvent) {
+    if (!this._isDragging || e.pointerId !== this._dragPointerId) {
+      return;
+    }
+
+    const deltaX = e.clientX - this._dragStartPosition.x;
+    const deltaY = e.clientY - this._dragStartPosition.y;
+    const delta = this._resolveDelta(deltaX, deltaY);
+
+    if (delta !== 0) {
+      this._resizeEnd(delta);
+    }
+
+    this._endDrag();
+  }
+
+  private _handleBarPointerCancel() {
+    if (!this._isDragging) {
+      return;
+    }
+
+    this._resizeState = null;
+    this._endDrag();
+  }
+
+  private _endDrag() {
+    if (this._isDragging && this._dragPointerId !== -1) {
+      this._bar.releasePointerCapture(this._dragPointerId);
+    }
+    this._isDragging = false;
+    this._dragPointerId = -1;
   }
 
   //#endregion
@@ -664,6 +701,13 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
           part="bar"
           tabindex="0"
           style=${styleMap(this._barInternalStyles)}
+          @touchstart=${(e: TouchEvent) => e.preventDefault()}
+          @contextmenu=${(e: PointerEvent) => e.preventDefault()}
+          @pointerdown=${this._handleBarPointerDown}
+          @pointermove=${this._handleBarPointerMove}
+          @pointerup=${this._handleEndDrag}
+          @lostpointercapture=${this._handleEndDrag}
+          @pointercancel=${this._handleBarPointerCancel}
         >
           ${this._renderBarControls()}
         </div>
