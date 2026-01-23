@@ -82,7 +82,6 @@ textarea {
 
     padding-block: pad-block(rem(4px), rem(6px), rem(8px));
     padding-inline: pad-inline(rem(2px), rem(4px), rem(6px));
-    margin-block-end: pad-block(rem(1px));
 
     &::placeholder {
         font-style: italic;
