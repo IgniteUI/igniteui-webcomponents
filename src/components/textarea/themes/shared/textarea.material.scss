@@ -100,7 +100,7 @@ textarea {
         }
 
         textarea {
-            margin-block: pad-block(var(--box-top-padding)) rem(2px);
+            padding-block-start: pad-block(var(--box-top-padding));
         }
     }
 

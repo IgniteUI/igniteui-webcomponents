@@ -89,7 +89,6 @@ textarea {
 
     padding-inline: pad-inline(rem(8px));
     padding-block: pad-block(rem(6px), rem(10px), rem(14px));
-    margin-block-end: rem(2px);
 }
 
 :host([required]:not(:disabled)),
