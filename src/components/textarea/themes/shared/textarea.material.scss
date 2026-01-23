@@ -10,7 +10,7 @@ $input-bottom-padding: rem(6px);
 
     --component-size: var(--ig-size, #{var-get($theme, 'default-size')});
     --affix-padding: #{pad-inline(rem(12px), rem(14px), rem(16px))};
-    --outlined-top-padding: #{sizable(rem(8px), rem(12px), rem(16px))};
+    --block-padding: #{sizable(rem(8px), rem(12px), rem(16px))};
 
     [part~='container']:not([part~='suffixed']) {
         textarea {
@@ -28,7 +28,7 @@ textarea {
     border: none;
     padding: 0;
     overflow: auto;
-    margin-block-start: pad-block(var(--outlined-top-padding));
+    padding-block: pad-block(var(--block-padding));
     grid-area: 1 / 2 / span 1 / span 2;
     flex-grow: 1;
     position: relative;
@@ -40,7 +40,7 @@ textarea {
 [part='label'] {
     position: relative;
     transform-origin: top left;
-    inset-block-start: calc((var(--outlined-top-padding)) - #{rem(2px)});
+    inset-block-start: calc((var(--block-padding)) - #{rem(2px)});
     transition:
         transform 150ms cubic-bezier(.4, 0, .2, 1),
         color 150ms cubic-bezier(.4, 0, .2, 1),
@@ -52,7 +52,7 @@ textarea {
     @include type-style('caption');
 
     translate: 0;
-    inset-block-start: calc((var(--outlined-top-padding)) / 4);
+    inset-block-start: calc((var(--block-padding)) / 4);
 }
 
 %label-outlined-filled {
@@ -387,7 +387,7 @@ textarea {
 
 :host([readonly][outlined]:focus-within) {
     [part='label'] {
-        inset-block-start: calc(var(--outlined-top-padding) - #{rem(3px)});
+        inset-block-start: calc(var(--block-padding) - #{rem(3px)});
     }
 
     [part='notch'] {
