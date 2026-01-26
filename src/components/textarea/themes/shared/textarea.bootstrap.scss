@@ -105,8 +105,6 @@ textarea {
 }
 
 :host(:focus-within) {
-    color: var-get($theme, 'input-prefix-color--focused');
-
     [part~='prefix'] {
         color: var-get($theme, 'input-prefix-color--focused');
         background: var-get($theme, 'input-prefix-background--focused');
