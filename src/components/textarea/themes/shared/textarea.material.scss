@@ -26,10 +26,9 @@ $input-bottom-padding: rem(6px);
 
 textarea {
     border: none;
-    bottom: rem(2px);
     padding: 0;
     overflow: auto;
-    margin-block-start: pad-block(var(--block-padding));
+    margin-block: pad-block(var(--block-padding)) rem(2px);
     padding-block-end: pad-block(var(--block-padding));
     grid-area: 1 / 2 / span 1 / span 2;
     flex-grow: 1;
