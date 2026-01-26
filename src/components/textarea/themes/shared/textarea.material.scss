@@ -28,7 +28,7 @@ textarea {
     border: none;
     padding: 0;
     overflow: auto;
-    padding-block: pad-block(var(--block-padding));
+    margin-block: pad-block(var(--block-padding));
     grid-area: 1 / 2 / span 1 / span 2;
     flex-grow: 1;
     position: relative;
@@ -100,7 +100,7 @@ textarea {
         }
 
         textarea {
-            padding-block-start: pad-block(var(--box-top-padding));
+            margin-block-start: pad-block(var(--box-top-padding));
         }
     }
 
