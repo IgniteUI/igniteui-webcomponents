@@ -149,7 +149,6 @@ $theme: $bootstrap;
 
 :host(:focus-within) {
     [part~='input'] {
-        color: var-get($theme, 'input-prefix-color--focused');
         border-color: var-get($theme, 'focused-border-color');
         box-shadow: 0 0 0 rem(4px) var-get($theme, 'focused-secondary-color');
     }

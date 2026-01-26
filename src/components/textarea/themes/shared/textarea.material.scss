@@ -162,8 +162,6 @@ textarea {
 }
 
 :host(:not([outlined]):focus-within) {
-    color: var-get($theme, 'input-prefix-color--focused');
-
     [part~='container'] {
         background: var-get($theme, 'box-background-focus');
 
