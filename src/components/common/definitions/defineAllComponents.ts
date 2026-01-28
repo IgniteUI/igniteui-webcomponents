@@ -30,6 +30,7 @@ import IgcDropdownGroupComponent from '../../dropdown/dropdown-group.js';
 import IgcDropdownHeaderComponent from '../../dropdown/dropdown-header.js';
 import IgcDropdownItemComponent from '../../dropdown/dropdown-item.js';
 import IgcExpansionPanelComponent from '../../expansion-panel/expansion-panel.js';
+import IgcHighlightComponent from '../../highlight/highlight.js';
 import IgcIconComponent from '../../icon/icon.js';
 import IgcInputComponent from '../../input/input.js';
 import IgcListComponent from '../../list/list.js';
@@ -104,6 +105,7 @@ const allComponents: IgniteComponent[] = [
   IgcDividerComponent,
   IgcSwitchComponent,
   IgcExpansionPanelComponent,
+  IgcHighlightComponent,
   IgcIconComponent,
   IgcInputComponent,
   IgcListHeaderComponent,
