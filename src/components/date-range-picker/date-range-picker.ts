@@ -35,7 +35,12 @@ import {
   type IgcDateRangePickerResourceStrings,
   IgcDateRangePickerResourceStringsEN,
 } from '../common/i18n/EN/date-range-picker.resources.js';
-import { addI18nController } from '../common/i18n/i18n-controller.js';
+import {
+  addI18nController,
+  formatDisplayDate,
+  getDateTimeFormat,
+  getDefaultDateTimeFormat,
+} from '../common/i18n/i18n-controller.js';
 import { IgcBaseComboBoxLikeComponent } from '../common/mixins/combo-box.js';
 import type { AbstractConstructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
@@ -52,7 +57,6 @@ import {
   isEmpty,
 } from '../common/util.js';
 import IgcDateTimeInputComponent from '../date-time-input/date-time-input.js';
-import { DateTimeUtil } from '../date-time-input/date-util.js';
 import IgcDialogComponent from '../dialog/dialog.js';
 import IgcFocusTrapComponent from '../focus-trap/focus-trap.js';
 import IgcIconComponent from '../icon/icon.js';
@@ -238,9 +242,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
   protected readonly _i18nController =
     addI18nController<IgcDateRangePickerResourceStrings>(this, {
       defaultEN: IgcDateRangePickerResourceStringsEN,
-      onResourceChange: () => {
-        this._updateDefaultMask();
-      },
+      onResourceChange: this._updateDefaultMask,
     });
 
   private _activeDate: Date | null = null;
@@ -675,7 +677,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
 
   @watch('locale')
   protected _updateDefaultMask(): void {
-    this._defaultMask = DateTimeUtil.getDefaultInputMask(this.locale);
+    this._defaultMask = getDefaultDateTimeFormat(this.locale);
     this._defaultDisplayFormat = getDateFormatter().getLocaleDateTimeFormat(
       this.locale
     );
@@ -891,9 +893,8 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
       return;
     }
 
-    const { formatDisplayDate, predefinedToDateDisplayFormat } = DateTimeUtil;
     const { start, end } = this.value;
-    const displayFormat = predefinedToDateDisplayFormat(this.displayFormat);
+    const displayFormat = getDateTimeFormat(this.displayFormat);
 
     const startValue = formatDisplayDate(start, this.locale, displayFormat);
     const endValue = formatDisplayDate(end, this.locale, displayFormat);
@@ -1120,9 +1121,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
     const placeholder =
       picker === 'start' ? this.placeholderStart : this.placeholderEnd;
     const label = picker === 'start' ? this.labelStart : this.labelEnd;
-    const format = DateTimeUtil.predefinedToDateDisplayFormat(
-      this._displayFormat
-    );
+    const format = getDateTimeFormat(this._displayFormat);
     const value = picker === 'start' ? this.value?.start : this.value?.end;
 
     const prefixes =
