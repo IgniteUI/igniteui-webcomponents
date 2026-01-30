@@ -31,6 +31,11 @@ export abstract class IgcMaskInputBaseComponent extends IgcInputBaseComponent {
     };
   }
 
+  /** Indicates whether the current mask value is empty. */
+  protected get _isEmptyMask(): boolean {
+    return this._maskedValue === this._parser.emptyMask;
+  }
+
   //#endregion
 
   //#region Public attributes and properties

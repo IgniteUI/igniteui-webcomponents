@@ -26,7 +26,10 @@ import {
   IgcCalendarResourceStringEN,
   type IgcCalendarResourceStrings,
 } from '../common/i18n/EN/calendar.resources.js';
-import { addI18nController } from '../common/i18n/i18n-controller.js';
+import {
+  addI18nController,
+  getDateTimeFormat,
+} from '../common/i18n/i18n-controller.js';
 import { IgcBaseComboBoxLikeComponent } from '../common/mixins/combo-box.js';
 import type { AbstractConstructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
@@ -39,8 +42,8 @@ import {
   equal,
   findElementFromEventPath,
 } from '../common/util.js';
+import type { DatePart } from '../date-time-input/date-part.js';
 import IgcDateTimeInputComponent from '../date-time-input/date-time-input.js';
-import { type DatePart, DateTimeUtil } from '../date-time-input/date-util.js';
 import IgcDialogComponent from '../dialog/dialog.js';
 import IgcFocusTrapComponent from '../focus-trap/focus-trap.js';
 import IgcIconComponent from '../icon/icon.js';
@@ -828,9 +831,7 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
   }
 
   protected _renderInput(id: string) {
-    const format = DateTimeUtil.predefinedToDateDisplayFormat(
-      this._displayFormat
-    );
+    const format = getDateTimeFormat(this._displayFormat);
 
     // Dialog mode is always readonly, rest depends on configuration
     const readOnly = !this._isDropDown || this.readOnly || this.nonEditable;
