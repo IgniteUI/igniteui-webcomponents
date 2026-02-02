@@ -542,7 +542,7 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
       const isLast = idx === lastIndex;
 
       const hidden = week.every(
-        (day) => dayPropertiesMap.get(day.timestamp)?.hidden
+        (day) => dayPropertiesMap.get(day.timestamp)!.hidden
       );
 
       yield html`
