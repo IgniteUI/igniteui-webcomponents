@@ -773,7 +773,7 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
       <div
         part="actions"
         ?hidden=${!hasActions}
-        slot=${bindIf(!(this._isDropDown || hasActions), 'footer')}
+        slot=${bindIf(!(this._isDropDown && hasActions), 'footer')}
       >
         <slot name="actions"></slot>
       </div>

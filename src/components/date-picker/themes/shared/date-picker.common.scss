@@ -13,6 +13,10 @@ $input-theme: input-theme.$material;
         box-shadow: none;
         border: none;
 
+        [part="actions"] {
+            border: none;
+        }
+
         igc-calendar {
             box-shadow: none;
         }
