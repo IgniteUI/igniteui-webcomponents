@@ -533,18 +533,17 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
 
     // Pre-compute day properties for all dates to avoid redundant calculations
     const dayPropertiesMap = new Map<number, DayProperties>();
+
     for (const day of this._dates) {
       dayPropertiesMap.set(day.timestamp, this._getDayProperties(day, today));
     }
 
     for (const [idx, week] of weeks.entries()) {
-      const isEdgeWeek = idx === 0 || idx === lastIndex;
       const isLast = idx === lastIndex;
 
-      // Only check hidden state for first and last weeks
-      const hidden =
-        isEdgeWeek &&
-        week.every((day) => dayPropertiesMap.get(day.timestamp)!.hidden);
+      const hidden = week.every(
+        (day) => dayPropertiesMap.get(day.timestamp)!.hidden
+      );
 
       yield html`
         <div role="row" part="days-row" aria-hidden=${hidden}>
