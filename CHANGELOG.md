@@ -4,6 +4,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [6.5.1] - 2026-02-04
+### Fixed
+- #### Calendar
+  - aria-hidden state for weeks outside of the current month [#2079](https://github.com/IgniteUI/igniteui-webcomponents/pull/2079)
+- #### Date picker
+  - CSS border for slotted actions in dialog mode [#2078](https://github.com/IgniteUI/igniteui-webcomponents/pull/2078)
+- #### Input
+  - Placeholder color on focus [#2068](https://github.com/IgniteUI/igniteui-webcomponents/pull/2068)
+  - CSS border when suffix slot content is present [#2073](https://github.com/IgniteUI/igniteui-webcomponents/pull/2073)
+- #### Textarea
+  - Algin bottom padding to the design system [#2069](https://github.com/IgniteUI/igniteui-webcomponents/pull/2069)
+- #### Validation
+  - Slotted validation text follows the current theme [#2063](https://github.com/IgniteUI/igniteui-webcomponents/pull/2063)
+
 ## [6.5.0] - 2026-01-20
 ### Added
 - Added theming scoping container [#2056](https://github.com/IgniteUI/igniteui-webcomponents/pull/2056)
@@ -1201,6 +1215,7 @@ Initial release of Ignite UI Web Components
 - Ripple component
 - Switch component
 
+[6.5.1]: https://github.com/IgniteUI/igniteui-webcomponents/compare/6.5.0...6.5.1
 [6.5.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/6.4.0...6.5.0
 [6.4.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/6.3.6...6.4.0
 [6.3.6]: https://github.com/IgniteUI/igniteui-webcomponents/compare/6.3.5...6.3.6
