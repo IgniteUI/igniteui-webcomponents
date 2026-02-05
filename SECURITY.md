@@ -23,4 +23,5 @@ For critical security vulnerabilities, we will backport fixes to the **last rele
 
 ## Reporting a Vulnerability
 
-Please report any suspected vulnerability through the [issues](../../issues) section.
+If you have discovered a security vulnerability in this project, please report it privately.
+**Do not disclose it as a public issue**. This gives us time to work with you to fix the issue before public exposure, reducing the chance that the exploit will be used before a patch is released. Please disclose it at [security advisory](https://github.com/IgniteUI/igniteui-webcomponents/security/advisories/new).
