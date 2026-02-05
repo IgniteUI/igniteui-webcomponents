@@ -1,5 +1,6 @@
 import {
   getCurrentI18n,
+  getDateFormatter,
   getDisplayNamesFormatter,
   getI18nManager,
   type IResourceChangeEventArgs,
@@ -119,7 +120,7 @@ class I18nController<T extends object> implements ReactiveController {
   /** @internal */
   public handleEvent(event: CustomEvent<IResourceChangeEventArgs>): void {
     this._defaultResourceStrings = this._getCurrentResourceStrings();
-    this._resourceChangeCallback?.(event);
+    this._resourceChangeCallback?.call(this._host, event);
     this._host.requestUpdate();
   }
 
@@ -201,6 +202,71 @@ class I18nController<T extends object> implements ReactiveController {
   }
 
   //#endregion
+}
+
+/**
+ * Formats a date for display based on the specified format and locale.
+ */
+type DateTimeStyle = 'short' | 'long' | 'medium' | 'full';
+
+const DATE_TIME_STYLES = new Set<string>(['short', 'long', 'medium', 'full']);
+
+function extractStyle(format: string, suffix: string): DateTimeStyle {
+  return format.toLowerCase().split(suffix)[0] as DateTimeStyle;
+}
+
+/** Returns the default date-time input format for a given locale */
+export function getDefaultDateTimeFormat(locale: string): string {
+  return getDateFormatter().getLocaleDateTimeFormat(locale, true);
+}
+
+/** Returns the date-time format string with the appropriate suffix if it's a predefined style */
+export function getDateTimeFormat(
+  format?: string,
+  suffix: 'Date' | 'Time' = 'Date'
+): string | undefined {
+  return format && DATE_TIME_STYLES.has(format) ? `${format}${suffix}` : format;
+}
+
+/**
+ * Formats a date for display using the specified format.
+ */
+export function formatDisplayDate(
+  value: Date,
+  locale: string,
+  displayFormat?: string
+): string {
+  if (!displayFormat) {
+    return getDateFormatter().formatDateTime(value, locale, {});
+  }
+
+  // Full date+time styles (short, long, medium, full)
+  if (DATE_TIME_STYLES.has(displayFormat)) {
+    const style = displayFormat as DateTimeStyle;
+    return getDateFormatter().formatDateTime(value, locale, {
+      dateStyle: style,
+      timeStyle: style,
+    });
+  }
+
+  // Date-only styles (shortDate, longDate, etc.)
+  if (displayFormat.endsWith('Date')) {
+    return getDateFormatter().formatDateTime(value, locale, {
+      dateStyle: extractStyle(displayFormat, 'date'),
+    });
+  }
+
+  // Time-only styles (shortTime, longTime, etc.)
+  if (displayFormat.endsWith('Time')) {
+    return getDateFormatter().formatDateTime(value, locale, {
+      timeStyle: extractStyle(displayFormat, 'time'),
+    });
+  }
+
+  // Custom format string
+  return getDateFormatter().formatDateCustomFormat(value, displayFormat, {
+    locale,
+  });
 }
 
 /** Factory function to create and attach the I18nController to a host. */

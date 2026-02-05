@@ -242,7 +242,7 @@ export default class IgcMaskInputComponent extends IgcMaskInputBaseComponent {
   }
 
   private _updateMaskedValue(): void {
-    if (this._maskedValue === this._parser.emptyMask) {
+    if (this._isEmptyMask) {
       this._maskedValue = '';
     }
   }
