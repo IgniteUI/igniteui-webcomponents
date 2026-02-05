@@ -7,6 +7,10 @@
     display: block;
     font-family: var(--ig-font-family);
 
+    igc-input {
+        cursor: pointer;
+    }
+
     igc-icon,
     ::slotted(igc-icon),
     igc-input:not([part='search-input']) {
@@ -17,8 +21,6 @@
 
     igc-input::part(input) {
         @include ellipsis();
-
-        cursor: pointer;
     }
 
     ::part(helper-text) {
@@ -41,12 +43,6 @@
     }
 }
 
-[part='clear-icon'],
-[part='toggle-icon'],
-[part~='case-icon'] {
-    display: flex;
-    cursor: pointer;
-}
 
 [part='list-wrapper'] {
     @include border-radius(rem(4px));
@@ -74,6 +70,10 @@
     padding-inline: pad-inline(rem(4px), rem(8px), rem(16px));
     padding-block: pad-block(rem(8px));
     z-index: 26;
+
+    igc-input::part(input) {
+        cursor: text;
+    }
 }
 
 [part='list'] {
