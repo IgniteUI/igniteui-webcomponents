@@ -14,7 +14,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - Placeholder color on focus [#2068](https://github.com/IgniteUI/igniteui-webcomponents/pull/2068)
   - CSS border when suffix slot content is present [#2073](https://github.com/IgniteUI/igniteui-webcomponents/pull/2073)
 - #### Textarea
-  - Algin bottom padding to the design system [#2069](https://github.com/IgniteUI/igniteui-webcomponents/pull/2069)
+  - Align bottom padding to the design system [#2069](https://github.com/IgniteUI/igniteui-webcomponents/pull/2069)
 - #### Validation
   - Slotted validation text follows the current theme [#2063](https://github.com/IgniteUI/igniteui-webcomponents/pull/2063)
 
