@@ -88,8 +88,7 @@ textarea {
     @include type-style('body-2');
 
     padding-inline: pad-inline(rem(8px));
-    padding-block: pad-block(rem(6px), rem(10px), rem(14px)) 0;
-    margin-block-end: rem(2px);
+    padding-block: pad-block(rem(6px), rem(10px), rem(14px));
 }
 
 :host([required]:not(:disabled)),
