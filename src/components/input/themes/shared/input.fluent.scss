@@ -13,7 +13,6 @@ $theme: $fluent;
     [part='prefix'],
     [part='suffix'] {
         font-size: rem(14px);
-        cursor: default;
         z-index: 0;
 
         ::slotted(*) {
@@ -56,7 +55,6 @@ $theme: $fluent;
         border: var(--input-border-size) solid transparent;
         border-radius: var-get($theme, 'border-border-radius');
         transition: none;
-        cursor: text;
         grid-template-columns: auto 1fr auto;
 
         &::before {
