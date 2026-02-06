@@ -21,6 +21,8 @@
 
     igc-input::part(input) {
         @include ellipsis();
+
+        cursor: pointer;
     }
 
     ::part(helper-text) {
