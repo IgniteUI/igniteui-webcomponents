@@ -1,4 +1,4 @@
-import { html, LitElement, type PropertyValues } from 'lit';
+import { html, LitElement, nothing, type PropertyValues } from 'lit';
 import { property, query } from 'lit/decorators.js';
 import { createRef, ref } from 'lit/directives/ref.js';
 import { type StyleInfo, styleMap } from 'lit/directives/style-map.js';
@@ -10,6 +10,8 @@ import {
   arrowRight,
   arrowUp,
   ctrlKey,
+  endKey,
+  homeKey,
 } from '../common/controllers/key-bindings.js';
 import { addSlotController, setSlots } from '../common/controllers/slot.js';
 import { watch } from '../common/decorators/watch.js';
@@ -129,6 +131,10 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
       return 'default';
     }
     return this.orientation === 'horizontal' ? 'col-resize' : 'row-resize';
+  }
+
+  private get _barTabIndex(): number {
+    return this.disableCollapse && this.disableResize ? -1 : 0;
   }
 
   //#endregion
@@ -329,6 +335,8 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
       .set(arrowDown, () => this._handleResizePanes(1, 'vertical'))
       .set(arrowLeft, () => this._handleResizePanes(-1, 'horizontal'))
       .set(arrowRight, () => this._handleResizePanes(1, 'horizontal'))
+      .set(homeKey, () => this._handleMinMaxResize('min'))
+      .set(endKey, () => this._handleMinMaxResize('max'))
       .set([ctrlKey, arrowUp], () =>
         this._handleArrowsExpandCollapse('start', 'vertical')
       )
@@ -345,6 +353,21 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
 
   protected override firstUpdated() {
     this._initPanes();
+    this._updateBarARIA();
+  }
+
+  protected override updated(changed: PropertyValues): void {
+    super.updated(changed);
+    if (
+      changed.has('startSize') ||
+      changed.has('endSize') ||
+      changed.has('startMinSize') ||
+      changed.has('startMaxSize') ||
+      changed.has('startCollapsed') ||
+      changed.has('endCollapsed')
+    ) {
+      this._updateBarARIA();
+    }
   }
 
   //#endregion
@@ -431,6 +454,55 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
 
   //#region Internal API
 
+  private _sizeToPercent(sizeValue: string | undefined): number {
+    const totalSize = this._getTotalSize();
+    if (totalSize === 0) {
+      return 0;
+    }
+
+    if (!sizeValue || sizeValue === 'auto') {
+      const [startSize] = this._rectSize();
+      return Math.round((startSize / totalSize) * 100);
+    }
+
+    if (sizeValue.indexOf('%') !== -1) {
+      return Number.parseInt(sizeValue, 10) || 0;
+    }
+
+    const pxValue = Number.parseInt(sizeValue, 10) || 0;
+    return Math.round((pxValue / totalSize) * 100);
+  }
+
+  private _getStartPaneSizePercent(): number {
+    if (!this._startPane || this.startCollapsed) {
+      return 0;
+    }
+    if (this.endCollapsed) {
+      return 100;
+    }
+    return this._sizeToPercent(this.startSize);
+  }
+
+  private _getMinMaxAsPercent(type: 'min' | 'max'): number {
+    const value = type === 'min' ? this.startMinSize : this.startMaxSize;
+    const defaultValue = type === 'min' ? 0 : 100;
+
+    return value ? this._sizeToPercent(value) : defaultValue;
+  }
+
+  private _updateBarARIA(): void {
+    if (!this._bar) {
+      return;
+    }
+    const valuenow = this._getStartPaneSizePercent();
+    const valuemin = this._getMinMaxAsPercent('min');
+    const valuemax = this._getMinMaxAsPercent('max');
+
+    this._bar.setAttribute('aria-valuenow', valuenow.toString());
+    this._bar.setAttribute('aria-valuemin', valuemin.toString());
+    this._bar.setAttribute('aria-valuemax', valuemax.toString());
+  }
+
   private _isPercentageSize(which: 'start' | 'end') {
     const targetSize = which === 'start' ? this._startSize : this._endSize;
     return !!targetSize && targetSize.indexOf('%') !== -1;
@@ -482,6 +554,31 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
     const rtlMultiplier = isHorizontal && !isLTR(this) ? -1 : 1;
     const delta = isHorizontal ? deltaX : deltaY;
     return delta * rtlMultiplier * (direction ?? 1);
+  }
+
+  private _handleMinMaxResize(type: 'min' | 'max') {
+    if (this._resizeDisallowed) {
+      return;
+    }
+
+    const totalSize = this._getTotalSize();
+    const boundaryValue =
+      type === 'min' ? this.startMinSize : this.startMaxSize;
+    const isPercentage = boundaryValue
+      ? boundaryValue.includes('%')
+      : type === 'max';
+
+    const targetStartSizePx =
+      this._setMinMaxInPx('start', type) ?? (type === 'min' ? 0 : totalSize);
+    const targetEndSizePx = totalSize - targetStartSizePx;
+
+    if (isPercentage) {
+      this.startSize = `${(targetStartSizePx / totalSize) * 100}%`;
+      this.endSize = `${(targetEndSizePx / totalSize) * 100}%`;
+    } else {
+      this.startSize = `${targetStartSizePx}px`;
+      this.endSize = `${targetEndSizePx}px`;
+    }
   }
 
   // TODO: should there be events on expand/collapse - existing resize events or others?
@@ -549,7 +646,7 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
     if (!value) {
       return undefined;
     }
-    const totalSize = this.getTotalSize();
+    const totalSize = this._getTotalSize();
     let result: number;
     if (value.indexOf('%') !== -1) {
       const percentageValue = Number.parseInt(value, 10) || 0;
@@ -576,7 +673,7 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   }
 
   private _computeSize(pane: PaneResizeState, paneSize: number): string {
-    const totalSize = this.getTotalSize();
+    const totalSize = this._getTotalSize();
     if (pane.isPercentageBased) {
       const percentPaneSize = (paneSize / totalSize) * 100;
       return `${percentPaneSize}%`;
@@ -642,7 +739,7 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
     return [start.initialSize + finalDelta, end.initialSize - finalDelta];
   }
 
-  private getTotalSize() {
+  private _getTotalSize() {
     if (!this._base) {
       return 0;
     }
@@ -772,10 +869,23 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
       'end-collapse-btn': !this.startCollapsed,
     };
 
+    const startLabel = prevButtonHidden
+      ? nothing
+      : this.endCollapsed
+        ? 'Expand end pane'
+        : 'Collapse start pane';
+    const endLabel = nextButtonHidden
+      ? nothing
+      : this.startCollapsed
+        ? 'Expand start pane'
+        : 'Collapse end pane';
+
     return html`
       <div
         part="${partMap(startExpanderParts)}"
         ?hidden=${prevButtonHidden}
+        role="button"
+        aria-label=${startLabel}
         @pointerdown=${(e: PointerEvent) =>
           this._handleExpanderClick('start', e)}
       >
@@ -787,6 +897,8 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
       <div
         part="${partMap(endExpanderParts)}"
         ?hidden=${nextButtonHidden}
+        role="button"
+        aria-label=${endLabel}
         @pointerdown=${(e: PointerEvent) => this._handleExpanderClick('end', e)}
       >
         <slot name="${endExpanderSlot}"></slot>
@@ -799,6 +911,7 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
       <div part="base">
         <div
           part="start-panel"
+          id="start-panel"
           style=${styleMap(this._startPaneInternalStyles)}
         >
           <slot name="start"></slot>
@@ -806,7 +919,10 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
         <div
           ${ref(this._barRef)}
           part="splitter-bar"
-          tabindex="0"
+          role="separator"
+          tabindex=${this._barTabIndex}
+          aria-controls="start-panel end-panel"
+          aria-orientation=${this.orientation}
           style=${styleMap(this._barInternalStyles)}
           @touchstart=${(e: TouchEvent) => e.preventDefault()}
           @contextmenu=${(e: PointerEvent) => e.preventDefault()}
@@ -818,7 +934,11 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
         >
           ${this._renderBarControls()}
         </div>
-        <div part="end-panel" style=${styleMap(this._endPaneInternalStyles)}>
+        <div
+          part="end-panel"
+          id="end-panel"
+          style=${styleMap(this._endPaneInternalStyles)}
+        >
           <slot name="end"></slot>
         </div>
       </div>

@@ -12,6 +12,8 @@ import {
   arrowRight,
   arrowUp,
   ctrlKey,
+  endKey,
+  homeKey,
 } from '../common/controllers/key-bindings.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import { roundPrecise } from '../common/util.js';
@@ -201,6 +203,9 @@ describe('Splitter', () => {
       expect(splitter.orientation).to.equal('horizontal');
       expect(splitter.hasAttribute('orientation')).to.be.true;
       expect(splitter.getAttribute('orientation')).to.equal('horizontal');
+
+      const bar = getSplitterPart(splitter, BAR_PART);
+      expect(bar.getAttribute('aria-orientation')).to.equal('horizontal');
     });
 
     it('should change orientation to vertical', async () => {
@@ -209,6 +214,9 @@ describe('Splitter', () => {
 
       expect(splitter.orientation).to.equal('vertical');
       expect(splitter.getAttribute('orientation')).to.equal('vertical');
+
+      const bar = getSplitterPart(splitter, BAR_PART);
+      expect(bar.getAttribute('aria-orientation')).to.equal('vertical');
     });
 
     it('should render nested splitters correctly', async () => {
@@ -469,6 +477,11 @@ describe('Splitter', () => {
         expect(splitter.startMinSize).to.equal('20%');
         expect(splitter.startMaxSize).to.equal('80%');
 
+        const bar = getSplitterPart(splitter, BAR_PART);
+        expect(bar.getAttribute('aria-valuenow')).to.equal('30');
+        expect(bar.getAttribute('aria-valuemin')).to.equal('20');
+        expect(bar.getAttribute('aria-valuemax')).to.equal('80');
+
         const minProp = orientation === 'horizontal' ? 'minWidth' : 'minHeight';
         expect(style1[minProp]).to.equal('20%');
         const maxProp = orientation === 'horizontal' ? 'maxWidth' : 'maxHeight';
@@ -553,6 +566,9 @@ describe('Splitter', () => {
 
     it('should toggle the next pane when the bar expander-end parts are clicked', async () => {
       let parts = getButtonParts(splitter);
+      expect(parts.endCollapseBtn.getAttribute('aria-label')).to.equal(
+        'Collapse end pane'
+      );
 
       simulatePointerDown(parts.endCollapseBtn, { bubbles: true });
       await elementUpdated(splitter);
@@ -567,6 +583,9 @@ describe('Splitter', () => {
       expect(parts.endCollapseBtn.hidden).to.be.true;
       expect(parts.startExpander).to.be.null;
       expect(parts.endExpander.hidden).to.be.false;
+      expect(parts.endExpander.getAttribute('aria-label')).to.equal(
+        'Expand end pane'
+      );
 
       simulatePointerDown(parts.endExpander, { bubbles: true });
       await elementUpdated(splitter);
@@ -577,10 +596,19 @@ describe('Splitter', () => {
       expect(parts.endCollapseBtn.hidden).to.be.false;
       expect(parts.startExpander).to.be.null;
       expect(parts.endExpander).to.be.null;
+      expect(parts.startCollapseBtn.getAttribute('aria-label')).to.equal(
+        'Collapse start pane'
+      );
+      expect(parts.endCollapseBtn.getAttribute('aria-label')).to.equal(
+        'Collapse end pane'
+      );
     });
 
     it('should toggle the previous pane when the bar expander-start parts are clicked', async () => {
       let parts = getButtonParts(splitter);
+      expect(parts.startCollapseBtn.getAttribute('aria-label')).to.equal(
+        'Collapse start pane'
+      );
 
       simulatePointerDown(parts.startCollapseBtn, { bubbles: true });
       await elementUpdated(splitter);
@@ -595,6 +623,9 @@ describe('Splitter', () => {
       expect(parts.startExpander.hidden).to.be.false;
       expect(parts.endCollapseBtn).to.be.null;
       expect(parts.endExpander).to.be.null;
+      expect(parts.startExpander.getAttribute('aria-label')).to.equal(
+        'Expand start pane'
+      );
 
       simulatePointerDown(parts.startExpander, { bubbles: true });
       await elementUpdated(splitter);
@@ -609,6 +640,31 @@ describe('Splitter', () => {
       expect(parts.endCollapseBtn.hidden).to.be.false;
       expect(parts.startExpander).to.be.null;
       expect(parts.endExpander).to.be.null;
+      expect(parts.startCollapseBtn.getAttribute('aria-label')).to.equal(
+        'Collapse start pane'
+      );
+      expect(parts.endCollapseBtn.getAttribute('aria-label')).to.equal(
+        'Collapse end pane'
+      );
+    });
+
+    it('should set tabindex correctly on the bar based on interactivity', async () => {
+      const bar = getSplitterPart(splitter, BAR_PART);
+
+      expect(bar.getAttribute('tabindex')).to.equal('0');
+
+      splitter.disableResize = true;
+      await elementUpdated(splitter);
+      expect(bar.getAttribute('tabindex')).to.equal('0');
+
+      splitter.disableResize = false;
+      splitter.disableCollapse = true;
+      await elementUpdated(splitter);
+      expect(bar.getAttribute('tabindex')).to.equal('0');
+
+      splitter.disableResize = true;
+      await elementUpdated(splitter);
+      expect(bar.getAttribute('tabindex')).to.equal('-1');
     });
 
     it('should resize horizontally in both directions', async () => {
@@ -825,6 +881,57 @@ describe('Splitter', () => {
         previousSizes.endSize + resizeDelta
       );
       checkResizeEvents(eventSpy);
+    });
+
+    it('should set start pane size to minSize/maxSize with Home/End key in horizontal orientation', async () => {
+      splitter.startMinSize = '100px';
+      splitter.startMaxSize = '80%';
+      await elementUpdated(splitter);
+
+      const totalAvailable = getTotalSize(splitter, 'width');
+      const bar = getSplitterPart(splitter, BAR_PART);
+      bar.focus();
+      await elementUpdated(splitter);
+
+      simulateKeyboard(bar, homeKey);
+      await elementUpdated(splitter);
+
+      expect(splitter.startSize).to.equal('100px');
+      expect(splitter.endSize).to.equal(`${totalAvailable - 100}px`);
+
+      const minPercent = Math.round((100 / totalAvailable) * 100);
+      expect(bar.getAttribute('aria-valuenow')).to.equal(minPercent.toString());
+
+      simulateKeyboard(bar, endKey);
+      await elementUpdated(splitter);
+
+      expect(splitter.startSize).to.equal('80%');
+      expect(splitter.endSize).to.equal('20%');
+
+      expect(bar.getAttribute('aria-valuenow')).to.equal('80');
+      expect(bar.getAttribute('aria-valuemax')).to.equal('80');
+    });
+
+    it('should set start pane size to minSize/maxSize with Home/End key in vertical orientation', async () => {
+      splitter.orientation = 'vertical';
+      await elementUpdated(splitter);
+
+      const totalAvailable = getTotalSize(splitter, 'height');
+      const bar = getSplitterPart(splitter, BAR_PART);
+      bar.focus();
+      await elementUpdated(splitter);
+
+      simulateKeyboard(bar, homeKey);
+      await elementUpdated(splitter);
+
+      expect(splitter.startSize).to.equal('0px');
+      expect(splitter.endSize).to.equal(`${totalAvailable}px`);
+
+      simulateKeyboard(bar, endKey);
+      await elementUpdated(splitter);
+
+      expect(splitter.startSize).to.equal('100%');
+      expect(splitter.endSize).to.equal('0%');
     });
 
     it('should not resize with left/right keys when in vertical orientation', async () => {
