@@ -20,15 +20,19 @@ import { isLTR } from '../common/util.js';
 import type { SplitterOrientation } from '../types.js';
 import { styles } from './themes/splitter.base.css.js';
 
-export interface IgcSplitterBarResizeEventArgs {
-  startPane: HTMLElement;
-  endPane: HTMLElement;
+export interface IgcSplitterResizeEventDetail {
+  /** The current size of the start panel in pixels */
+  startPanelSize: number;
+  /** The current size of the end panel in pixels */
+  endPanelSize: number;
+  /** The change in size since the resize operation started (only for igcResizing and igcResizeEnd) */
+  delta?: number;
 }
 
 export interface IgcSplitterComponentEventMap {
-  igcResizeStart: CustomEvent<IgcSplitterBarResizeEventArgs>;
-  igcResizing: CustomEvent<IgcSplitterBarResizeEventArgs>;
-  igcResizeEnd: CustomEvent<IgcSplitterBarResizeEventArgs>;
+  igcResizeStart: CustomEvent<IgcSplitterResizeEventDetail>;
+  igcResizing: CustomEvent<IgcSplitterResizeEventDetail>;
+  igcResizeEnd: CustomEvent<IgcSplitterResizeEventDetail>;
 }
 
 interface PaneResizeState {
@@ -444,9 +448,8 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
       startPane: this._createPaneState('start', startSize),
       endPane: this._createPaneState('end', endSize),
     };
-    // TODO: are these event args needed?
     this.emitEvent('igcResizeStart', {
-      detail: { startPane: this._startPane, endPane: this._endPane },
+      detail: { startPanelSize: startSize, endPanelSize: endSize },
     });
   }
 
@@ -493,7 +496,11 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
     this.endSize = `${endPaneSize}px`;
 
     this.emitEvent('igcResizing', {
-      detail: { startPane: this._startPane, endPane: this._endPane },
+      detail: {
+        startPanelSize: startPaneSize,
+        endPanelSize: endPaneSize,
+        delta,
+      },
     });
   }
 
@@ -517,7 +524,11 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
     this.endSize = this._computeSize(this._resizeState.endPane, endPaneSize);
 
     this.emitEvent('igcResizeEnd', {
-      detail: { startPane: this._startPane, endPane: this._endPane },
+      detail: {
+        startPanelSize: startPaneSize,
+        endPanelSize: endPaneSize,
+        delta,
+      },
     });
     this._resizeState = null;
   }

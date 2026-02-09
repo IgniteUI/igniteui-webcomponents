@@ -140,72 +140,90 @@ export const Default: Story = {
     startMaxSize,
     endMinSize,
     endMaxSize,
-  }) => html`
-    <style>
-      .pane-content {
-        padding: 12px;
-      }
+  }) => {
+    document.addEventListener('DOMContentLoaded', () => {
+      // const splitter = document.getElementById(
+      //   'splitter'
+      // ) as IgcSplitterComponent;
+      // splitter.addEventListener('igcResizeStart', (event) =>
+      //   console.log(event.detail)
+      // );
+      // splitter.addEventListener('igcResizing', (event) =>
+      //   console.log(event.detail)
+      // );
+      // splitter.addEventListener('igcResizeEnd', (event) =>
+      //   console.log(event.detail)
+      // );
+    });
 
-      .splitters {
-        height: 400px;
-        /*width: 1000px;*/ /* useful for testing % values */
-      }
-    </style>
+    return html`
+      <style>
+        .pane-content {
+          padding: 12px;
+        }
 
-    <div class="splitters">
-      <igc-splitter
-        .orientation=${orientation}
-        .nonCollapsible=${nonCollapsible}
-        .nonResizable=${nonResizable}
-        .startCollapsed=${startCollapsed}
-        .endCollapsed=${endCollapsed}
-        .startSize=${startSize || 'auto'}
-        .endSize=${endSize || 'auto'}
-        .startMinSize=${startMinSize}
-        .startMaxSize=${startMaxSize}
-        .endMinSize=${endMinSize}
-        .endMaxSize=${endMaxSize}
+        .splitters {
+          height: 400px;
+          /*width: 1000px;*/ /* useful for testing % values */
+        }
+      </style>
+
+      <div class="splitters">
+        <igc-splitter
+          id="splitter"
+          .orientation=${orientation}
+          .nonCollapsible=${nonCollapsible}
+          .nonResizable=${nonResizable}
+          .startCollapsed=${startCollapsed}
+          .endCollapsed=${endCollapsed}
+          .startSize=${startSize || 'auto'}
+          .endSize=${endSize || 'auto'}
+          .startMinSize=${startMinSize}
+          .startMaxSize=${startMaxSize}
+          .endMinSize=${endMinSize}
+          .endMaxSize=${endMaxSize}
+        >
+          <div slot="start" class="pane-content">
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+            Pellentesque scelerisque elementum ante, et tincidunt eros ultrices
+            sit amet. Mauris non consectetur nunc. In hac habitasse platea
+            dictumst. Pellentesque ornare et tellus sit amet varius. Nulla in
+            augue rhoncus, finibus mauris semper, tincidunt sem. Cras vitae
+            semper neque, eget tempus massa. Maecenas gravida turpis quis
+            interdum bibendum. Nam quis ultricies est. Fusce ante erat, iaculis
+            quis iaculis ut, iaculis sed nunc. Cras iaculis condimentum lacus
+            nec tempus. Nam ex massa, mattis vitae iaculis in, suscipit ut nibh.
+          </div>
+          <div slot="end" class="pane-content">
+            Maecenas sit amet ipsum non ipsum scelerisque varius. Maecenas
+            scelerisque nisl scelerisque nulla ultricies eleifend. Aliquam sit
+            amet velit mauris. Duis at nulla vitae risus condimentum semper. Nam
+            ornare arcu vitae euismod pharetra. Morbi facilisis tincidunt lorem
+            at consequat. Aliquam varius quam non eros suscipit, ac tincidunt
+            sapien porttitor. Sed sed lorem quam. Praesent blandit aliquam arcu
+            a vestibulum. Mauris porta faucibus ex in vehicula. Pellentesque ut
+            risus quis felis molestie facilisis eget et est. Proin interdum urna
+            vitae porttitor suscipit. Curabitur lobortis aliquet dolor sit amet
+            varius. Proin a semper velit, non molestie libero. Suspendisse
+            potenti. Aliquam vestibulum dui id lacus suscipit, eget posuere
+            justo venenatis. Vestibulum id velit ac dui posuere pretium.
+          </div>
+        </igc-splitter>
+      </div>
+      <igc-button
+        style="margin-top: 16px;"
+        variant="outlined"
+        @click=${changePaneMinMaxSizesPx}
+        >Change All Panes Min/Max Sizes (px)</igc-button
       >
-        <div slot="start" class="pane-content">
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque
-          scelerisque elementum ante, et tincidunt eros ultrices sit amet.
-          Mauris non consectetur nunc. In hac habitasse platea dictumst.
-          Pellentesque ornare et tellus sit amet varius. Nulla in augue rhoncus,
-          finibus mauris semper, tincidunt sem. Cras vitae semper neque, eget
-          tempus massa. Maecenas gravida turpis quis interdum bibendum. Nam quis
-          ultricies est. Fusce ante erat, iaculis quis iaculis ut, iaculis sed
-          nunc. Cras iaculis condimentum lacus nec tempus. Nam ex massa, mattis
-          vitae iaculis in, suscipit ut nibh.
-        </div>
-        <div slot="end" class="pane-content">
-          Maecenas sit amet ipsum non ipsum scelerisque varius. Maecenas
-          scelerisque nisl scelerisque nulla ultricies eleifend. Aliquam sit
-          amet velit mauris. Duis at nulla vitae risus condimentum semper. Nam
-          ornare arcu vitae euismod pharetra. Morbi facilisis tincidunt lorem at
-          consequat. Aliquam varius quam non eros suscipit, ac tincidunt sapien
-          porttitor. Sed sed lorem quam. Praesent blandit aliquam arcu a
-          vestibulum. Mauris porta faucibus ex in vehicula. Pellentesque ut
-          risus quis felis molestie facilisis eget et est. Proin interdum urna
-          vitae porttitor suscipit. Curabitur lobortis aliquet dolor sit amet
-          varius. Proin a semper velit, non molestie libero. Suspendisse
-          potenti. Aliquam vestibulum dui id lacus suscipit, eget posuere justo
-          venenatis. Vestibulum id velit ac dui posuere pretium.
-        </div>
-      </igc-splitter>
-    </div>
-    <igc-button
-      style="margin-top: 16px;"
-      variant="outlined"
-      @click=${changePaneMinMaxSizesPx}
-      >Change All Panes Min/Max Sizes (px)</igc-button
-    >
-    <igc-button
-      style="margin-top: 16px;"
-      variant="outlined"
-      @click=${changePaneMinMaxSizesPercent}
-      >Change All Panes Min/Max Sizes (%)</igc-button
-    >
-  `,
+      <igc-button
+        style="margin-top: 16px;"
+        variant="outlined"
+        @click=${changePaneMinMaxSizesPercent}
+        >Change All Panes Min/Max Sizes (%)</igc-button
+      >
+    `;
+  },
 };
 
 export const NestedSplitters: Story = {

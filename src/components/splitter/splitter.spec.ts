@@ -22,7 +22,9 @@ import {
   simulatePointerUp,
 } from '../common/utils.spec.js';
 import type { SplitterOrientation } from '../types.js';
-import IgcSplitterComponent from './splitter.js';
+import IgcSplitterComponent, {
+  type IgcSplitterResizeEventDetail,
+} from './splitter.js';
 
 describe('Splitter', () => {
   before(() => {
@@ -480,7 +482,22 @@ describe('Splitter', () => {
       let currentSizes = getPanesSizes(splitter, 'width');
       expect(currentSizes.startSize).to.equal(previousSizes.startSize + deltaX);
       expect(currentSizes.endSize).to.equal(previousSizes.endSize - deltaX);
-      checkResizeEvents(eventSpy);
+
+      const newStart = previousSizes.startSize + deltaX;
+      const newEnd = previousSizes.endSize - deltaX;
+
+      let startArgs = {
+        startPanelSize: previousSizes.startSize,
+        endPanelSize: previousSizes.endSize,
+      };
+      let resizingArgs = {
+        startPanelSize: newStart,
+        endPanelSize: newEnd,
+        delta: deltaX,
+      };
+      let endArgs = resizingArgs;
+
+      checkResizeEvents(eventSpy, startArgs, resizingArgs, endArgs);
 
       deltaX *= -1;
       await resize(splitter, deltaX, 0);
@@ -488,7 +505,19 @@ describe('Splitter', () => {
       currentSizes = getPanesSizes(splitter, 'width');
       expect(currentSizes.startSize).to.equal(previousSizes.startSize);
       expect(currentSizes.endSize).to.equal(previousSizes.endSize);
-      checkResizeEvents(eventSpy);
+
+      startArgs = {
+        startPanelSize: newStart,
+        endPanelSize: newEnd,
+      };
+      resizingArgs = {
+        startPanelSize: currentSizes.startSize,
+        endPanelSize: currentSizes.endSize,
+        delta: deltaX,
+      };
+      endArgs = resizingArgs;
+
+      checkResizeEvents(eventSpy, startArgs, resizingArgs, endArgs);
     });
 
     it('should resize vertically in both directions', async () => {
@@ -504,7 +533,22 @@ describe('Splitter', () => {
 
       expect(currentSizes.startSize).to.equal(previousSizes.startSize + deltaY);
       expect(currentSizes.endSize).to.equal(previousSizes.endSize - deltaY);
-      checkResizeEvents(eventSpy);
+
+      const newStart = previousSizes.startSize + deltaY;
+      const newEnd = previousSizes.endSize - deltaY;
+
+      let startArgs = {
+        startPanelSize: previousSizes.startSize,
+        endPanelSize: previousSizes.endSize,
+      };
+      let resizingArgs = {
+        startPanelSize: newStart,
+        endPanelSize: newEnd,
+        delta: deltaY,
+      };
+      let endArgs = resizingArgs;
+
+      checkResizeEvents(eventSpy, startArgs, resizingArgs, endArgs);
 
       deltaY *= -1;
       await resize(splitter, 0, deltaY);
@@ -513,7 +557,17 @@ describe('Splitter', () => {
 
       expect(currentSizes.startSize).to.equal(previousSizes.startSize);
       expect(currentSizes.endSize).to.equal(previousSizes.endSize);
-      checkResizeEvents(eventSpy);
+      startArgs = {
+        startPanelSize: newStart,
+        endPanelSize: newEnd,
+      };
+      resizingArgs = {
+        startPanelSize: currentSizes.startSize,
+        endPanelSize: previousSizes.endSize,
+        delta: deltaY,
+      };
+      endArgs = resizingArgs;
+      checkResizeEvents(eventSpy, startArgs, resizingArgs, endArgs);
     });
 
     it('should resize horizontally by 10px delta with left/right arrow keys', async () => {
@@ -529,25 +583,44 @@ describe('Splitter', () => {
       await elementUpdated(splitter);
 
       let currentSizes = getPanesSizes(splitter, 'width');
-      expect(currentSizes.startSize).to.equal(
-        previousSizes.startSize + resizeDelta
-      );
-      expect(currentSizes.endSize).to.equal(
-        previousSizes.endSize - resizeDelta
-      );
-      checkResizeEvents(eventSpy);
+      let newStart = previousSizes.startSize + resizeDelta;
+      let newEnd = previousSizes.endSize - resizeDelta;
+      expect(currentSizes.startSize).to.equal(newStart);
+      expect(currentSizes.endSize).to.equal(newEnd);
+
+      let startArgs = {
+        startPanelSize: previousSizes.startSize,
+        endPanelSize: previousSizes.endSize,
+      };
+      let resizingArgs = {
+        startPanelSize: newStart,
+        endPanelSize: newEnd,
+        delta: resizeDelta,
+      };
+      let endArgs = resizingArgs;
+
+      checkResizeEvents(eventSpy, startArgs, resizingArgs, endArgs);
 
       simulateKeyboard(bar, arrowRight);
       await elementUpdated(splitter);
 
       currentSizes = getPanesSizes(splitter, 'width');
-      expect(currentSizes.startSize).to.equal(
-        previousSizes.startSize + resizeDelta * 2
-      );
-      expect(currentSizes.endSize).to.equal(
-        previousSizes.endSize - resizeDelta * 2
-      );
-      checkResizeEvents(eventSpy);
+      newStart = previousSizes.startSize + resizeDelta * 2;
+      newEnd = previousSizes.endSize - resizeDelta * 2;
+      expect(currentSizes.startSize).to.equal(newStart);
+      expect(currentSizes.endSize).to.equal(newEnd);
+
+      startArgs = {
+        startPanelSize: previousSizes.startSize + resizeDelta,
+        endPanelSize: previousSizes.endSize - resizeDelta,
+      };
+      resizingArgs = {
+        startPanelSize: newStart,
+        endPanelSize: newEnd,
+        delta: resizeDelta,
+      };
+      endArgs = resizingArgs;
+      checkResizeEvents(eventSpy, startArgs, resizingArgs, endArgs);
 
       previousSizes = getPanesSizes(splitter, 'width');
       simulateKeyboard(bar, arrowLeft);
@@ -555,12 +628,11 @@ describe('Splitter', () => {
 
       currentSizes = getPanesSizes(splitter, 'width');
 
-      expect(currentSizes.startSize).to.equal(
-        previousSizes.startSize - resizeDelta
-      );
-      expect(currentSizes.endSize).to.equal(
-        previousSizes.endSize + resizeDelta
-      );
+      newStart = previousSizes.startSize - resizeDelta;
+      newEnd = previousSizes.endSize + resizeDelta;
+      expect(currentSizes.startSize).to.equal(newStart);
+      expect(currentSizes.endSize).to.equal(newEnd);
+
       checkResizeEvents(eventSpy);
     });
 
@@ -1864,10 +1936,31 @@ function getPanesSizes(
   };
 }
 
-function checkResizeEvents(eventSpy: sinon.SinonSpy) {
+function checkResizeEvents(
+  eventSpy: sinon.SinonSpy,
+  startArgs?: IgcSplitterResizeEventDetail,
+  resizingArgs?: IgcSplitterResizeEventDetail,
+  endArgs?: IgcSplitterResizeEventDetail
+) {
   expect(eventSpy.calledWith('igcResizeStart')).to.be.true;
   expect(eventSpy.calledWith('igcResizing')).to.be.true;
   expect(eventSpy.calledWith('igcResizeEnd')).to.be.true;
+
+  if (startArgs) {
+    expect(
+      eventSpy.withArgs('igcResizeStart').lastCall.lastArg.detail
+    ).to.deep.equal(startArgs);
+  }
+  if (resizingArgs) {
+    expect(
+      eventSpy.withArgs('igcResizing').lastCall.lastArg.detail
+    ).to.deep.equal(resizingArgs);
+  }
+  if (endArgs) {
+    expect(
+      eventSpy.withArgs('igcResizeEnd').lastCall.lastArg.detail
+    ).to.deep.equal(endArgs);
+  }
   eventSpy.resetHistory();
 }
 
