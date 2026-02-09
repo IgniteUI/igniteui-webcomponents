@@ -327,6 +327,26 @@ describe('Splitter', () => {
   });
 
   describe('Properties', () => {
+    it('should change panels state from the startExpanded and endExpanded properties', async () => {
+      splitter.startCollapsed = true;
+      await elementUpdated(splitter);
+
+      expect(splitter.startCollapsed).to.be.true;
+      expect(splitter.endCollapsed).to.be.false;
+
+      splitter.endCollapsed = true;
+      await elementUpdated(splitter);
+
+      expect(splitter.startCollapsed).to.be.false;
+      expect(splitter.endCollapsed).to.be.true;
+
+      splitter.startCollapsed = true;
+      await elementUpdated(splitter);
+
+      expect(splitter.startCollapsed).to.be.true;
+      expect(splitter.endCollapsed).to.be.false;
+    });
+
     it('should reset pane sizes when orientation changes', async () => {
       splitter = await fixture<IgcSplitterComponent>(
         createTwoPanesWithSizesAndConstraints({
@@ -509,11 +529,26 @@ describe('Splitter', () => {
       await elementUpdated(splitter);
       expect(splitter.endCollapsed).to.be.true;
 
-      // edge case: supports collapsing both at a time?
+      // Single collapsed pane constraint
       splitter.toggle('start');
       await elementUpdated(splitter);
       expect(splitter.startCollapsed).to.be.true;
+      expect(splitter.endCollapsed).to.be.false;
+
+      splitter.toggle('start');
+      await elementUpdated(splitter);
+      expect(splitter.startCollapsed).to.be.false;
+      expect(splitter.endCollapsed).to.be.false;
+
+      splitter.toggle('end');
+      await elementUpdated(splitter);
+      expect(splitter.startCollapsed).to.be.false;
       expect(splitter.endCollapsed).to.be.true;
+
+      splitter.toggle('start');
+      await elementUpdated(splitter);
+      expect(splitter.startCollapsed).to.be.true;
+      expect(splitter.endCollapsed).to.be.false;
     });
 
     it('should toggle the next pane when the bar expander-end parts are clicked', async () => {

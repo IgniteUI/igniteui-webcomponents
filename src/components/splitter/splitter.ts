@@ -18,7 +18,6 @@ import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { partMap } from '../common/part-map.js';
 import { isLTR } from '../common/util.js';
-import IgcIconComponent from '../icon/icon.js';
 import type { SplitterOrientation } from '../types.js';
 import { styles } from './themes/splitter.base.css.js';
 
@@ -85,7 +84,7 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
 
   /* blazorSuppress */
   public static register() {
-    registerComponent(IgcSplitterComponent, IgcIconComponent);
+    registerComponent(IgcSplitterComponent);
   }
 
   //#region Private Properties
@@ -94,6 +93,8 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   private _startPaneInternalStyles: StyleInfo = {};
   private _endPaneInternalStyles: StyleInfo = {};
   private _barInternalStyles: StyleInfo = {};
+  private _startCollapsed = false;
+  private _endCollapsed = false;
   private _startSize = 'auto';
   private _endSize = 'auto';
   private _resizeState: SplitterResizeState | null = null;
@@ -245,14 +246,34 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
    * @attr
    */
   @property({ type: Boolean, attribute: 'start-collapsed', reflect: true })
-  public startCollapsed = false;
+  public get startCollapsed() {
+    return this._startCollapsed;
+  }
+
+  public set startCollapsed(value: boolean) {
+    this._startCollapsed = value;
+    if (this._startCollapsed && this._endCollapsed) {
+      this.endCollapsed = false;
+    }
+    this._collapsedChange();
+  }
 
   /**
    * Collapsed state of the end pane.
    * @attr
    */
   @property({ type: Boolean, attribute: 'end-collapsed', reflect: true })
-  public endCollapsed = false;
+  public get endCollapsed() {
+    return this._endCollapsed;
+  }
+
+  public set endCollapsed(value: boolean) {
+    this._endCollapsed = value;
+    if (this._startCollapsed && this._endCollapsed) {
+      this.startCollapsed = false;
+    }
+    this._collapsedChange();
+  }
 
   //#endregion
 
@@ -268,14 +289,6 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   @watch('disableResize')
   protected _changeCursor(): void {
     Object.assign(this._barInternalStyles, { '--cursor': this._barCursor });
-  }
-
-  @watch('startCollapsed', { waitUntilFirstUpdate: true })
-  @watch('endCollapsed', { waitUntilFirstUpdate: true })
-  protected _collapsedChange(): void {
-    this.startSize = 'auto';
-    this.endSize = 'auto';
-    this._changeCursor();
   }
 
   //#endregion
@@ -439,6 +452,12 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
     return `${grow} ${shrink} ${size}`;
   }
 
+  private _collapsedChange(): void {
+    this.startSize = 'auto';
+    this.endSize = 'auto';
+    this._changeCursor();
+  }
+
   private _handleResizePanes(
     direction: -1 | 1,
     validOrientation: 'horizontal' | 'vertical'
@@ -465,7 +484,7 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
     return delta * rtlMultiplier * (direction ?? 1);
   }
 
-  // TODO: should there be events on expand/collapse?
+  // TODO: should there be events on expand/collapse - existing resize events or others?
   private _handleExpanderStartAction() {
     const target = this.endCollapsed ? 'end' : 'start';
     this.toggle(target);
@@ -711,7 +730,7 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   }
 
   private _handleExpanderClick(pane: 'start' | 'end', event: PointerEvent) {
-    // Prevent resize controller from starting
+    // Prevent resize action being initiated
     event.stopPropagation();
 
     pane === 'start'
