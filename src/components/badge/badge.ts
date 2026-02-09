@@ -16,9 +16,17 @@ import { all } from './themes/themes.js';
  *
  * @element igc-badge
  *
- * @slot - Default slot for the badge.
+ * @slot - Default slot for the badge content.
  *
  * @csspart base - The base wrapper of the badge.
+ * @csspart icon - The icon container, present when an igc-icon element is slotted.
+ *
+ * @example
+ * ```html
+ * <igc-badge variant="success">New</igc-badge>
+ * <igc-badge variant="danger" shape="square">5</igc-badge>
+ * <igc-badge dot></igc-badge>
+ * ```
  */
 export default class IgcBadgeComponent extends LitElement {
   public static readonly tagName = 'igc-badge';
@@ -29,56 +37,56 @@ export default class IgcBadgeComponent extends LitElement {
     registerComponent(IgcBadgeComponent);
   }
 
-  private _iconPart = false;
-
-  private readonly _slots = addSlotController(this, {
-    onChange: this._handleSlotChange,
-  });
-
-  protected _handleSlotChange(): void {
-    const assignedNodes = this._slots.getAssignedNodes('[default]', true);
-    this._iconPart = assignedNodes.some(
-      (node) =>
-        node.nodeType === Node.ELEMENT_NODE &&
-        (node as Element).tagName.toLowerCase() === 'igc-icon'
-    );
-  }
-
   private readonly _internals = addInternalsController(this, {
     initialARIA: { role: 'status' },
   });
 
+  private _hasIcon = false;
+
   /**
-   * The type of badge.
-   * @attr
+   * The type (style variant) of the badge.
+   *
+   * @attr variant
+   * @default 'primary'
    */
   @property({ reflect: true })
   public variant: StyleVariant = 'primary';
 
   /**
    * Sets whether to draw an outlined version of the badge.
-   * @attr
+   *
+   * @attr outlined
+   * @default false
    */
   @property({ type: Boolean, reflect: true })
   public outlined = false;
 
   /**
    * The shape of the badge.
-   * @attr
+   *
+   * @attr shape
+   * @default 'rounded'
    */
   @property({ reflect: true })
   public shape: BadgeShape = 'rounded';
 
   /**
    * Sets whether to render a dot type badge.
-   * @attr
+   * When enabled, the badge appears as a small dot without any content.
+   *
+   * @attr dot
+   * @default false
    */
   @property({ type: Boolean, reflect: true })
   public dot = false;
 
   constructor() {
     super();
+
     addThemingController(this, all);
+    addSlotController(this, {
+      onChange: this._handleSlotChange,
+    });
   }
 
   protected override willUpdate(changedProperties: PropertyValues<this>): void {
@@ -87,9 +95,13 @@ export default class IgcBadgeComponent extends LitElement {
     }
   }
 
+  protected _handleSlotChange(): void {
+    this._hasIcon = !!this.querySelector('igc-icon');
+  }
+
   protected override render() {
     return html`
-      <span part=${partMap({ base: true, icon: this._iconPart })}>
+      <span part=${partMap({ base: true, icon: this._hasIcon })}>
         <slot></slot>
       </span>
     `;
