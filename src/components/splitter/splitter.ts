@@ -16,6 +16,7 @@ import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
+import { partMap } from '../common/part-map.js';
 import { isLTR } from '../common/util.js';
 import IgcIconComponent from '../icon/icon.js';
 import type { SplitterOrientation } from '../types.js';
@@ -66,7 +67,14 @@ interface SplitterResizeState {
  * @slot end-expand - Optional slot to customize the icon for expanding the end panel.
  * @slot end-collapse - Optional slot to customize the icon for collapsing the end panel.
  *
- * @csspart ... - ... .
+ * @csspart splitter-bar - The resizable bar element between the two panels.
+ * @csspart drag-handle - The drag handle icon/element on the splitter bar.
+ * @csspart start-panel - The container for the start panel content.
+ * @csspart end-panel - The container for the end panel content.
+ * @csspart start-collapse-btn - The button to collapse the start panel.
+ * @csspart end-collapse-btn - The button to collapse the end panel.
+ * @csspart start-expand-btn - The button to expand the start panel when collapsed.
+ * @csspart end-expand-btn - The button to expand the end panel when collapsed.
  */
 export default class IgcSplitterComponent extends EventEmitterMixin<
   IgcSplitterComponentEventMap,
@@ -102,13 +110,13 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   @query('[part~="base"]', true)
   private readonly _base!: HTMLElement;
 
-  @query('[part~="start-pane"]', true)
+  @query('[part~="start-panel"]', true)
   private readonly _startPane!: HTMLElement;
 
-  @query('[part~="end-pane"]', true)
+  @query('[part~="end-panel"]', true)
   private readonly _endPane!: HTMLElement;
 
-  @query('[part~="bar"]', true)
+  @query('[part~="splitter-bar"]', true)
   private readonly _bar!: HTMLElement;
 
   private get _resizeDisallowed() {
@@ -709,20 +717,30 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
       ? 'start-expand'
       : 'end-collapse';
 
+    const startExpanderParts = {
+      'end-expand-btn': this.endCollapsed,
+      'start-collapse-btn': !this.endCollapsed,
+    };
+
+    const endExpanderParts = {
+      'start-expand-btn': this.startCollapsed,
+      'end-collapse-btn': !this.startCollapsed,
+    };
+
     return html`
       <div
-        part="start-expander"
+        part="${partMap(startExpanderParts)}"
         ?hidden=${prevButtonHidden}
         @pointerdown=${(e: PointerEvent) =>
           this._handleExpanderClick('start', e)}
       >
         <slot name="${startExpanderSlot}"></slot>
       </div>
-      <div part="handle">
+      <div part="drag-handle">
         <slot name="drag-handle"></slot>
       </div>
       <div
-        part="end-expander"
+        part="${partMap(endExpanderParts)}"
         ?hidden=${nextButtonHidden}
         @pointerdown=${(e: PointerEvent) => this._handleExpanderClick('end', e)}
       >
@@ -734,12 +752,15 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   protected override render() {
     return html`
       <div part="base">
-        <div part="start-pane" style=${styleMap(this._startPaneInternalStyles)}>
+        <div
+          part="start-panel"
+          style=${styleMap(this._startPaneInternalStyles)}
+        >
           <slot name="start"></slot>
         </div>
         <div
           ${ref(this._barRef)}
-          part="bar"
+          part="splitter-bar"
           tabindex="0"
           style=${styleMap(this._barInternalStyles)}
           @touchstart=${(e: TouchEvent) => e.preventDefault()}
@@ -752,7 +773,7 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
         >
           ${this._renderBarControls()}
         </div>
-        <div part="end-pane" style=${styleMap(this._endPaneInternalStyles)}>
+        <div part="end-panel" style=${styleMap(this._endPaneInternalStyles)}>
           <slot name="end"></slot>
         </div>
       </div>

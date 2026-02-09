@@ -17,8 +17,8 @@
     }
 
     // Styles for the pane wrapper divs (startPane/endPane)
-    [part~='start-pane'],
-    [part~='end-pane'] {
+    [part~='start-panel'],
+    [part~='end-panel'] {
         display: flex;
         flex: 1 1 auto;
         width: 100%;
@@ -37,7 +37,7 @@
     }
 
     // Bar styles (moved from splitter-bar.base.scss)
-    [part='bar'] {
+    [part='splitter-bar'] {
         --bar-size: 5px;
 
         display: flex;
@@ -50,22 +50,24 @@
             background-color: var(--ig-gray-400);
         }
 
-        [part='start-expander'],
-        [part='end-expander'] {
+        [part*='collapse-btn'],
+        [part*='expand-btn'] {
             cursor: pointer;
             width: 5px;
             height: 5px;
         }
 
-        [part='start-expander'] {
+        [part='start-collapse-btn'],
+        [part='start-expand-btn'] {
             background-color: red;
         }
 
-        [part='end-expander'] {
+        [part='end-collapse-btn'],
+        [part='end-expand-btn'] {
             background-color: green;
         }
 
-        [part='handle'] {
+        [part='drag-handle'] {
             background-color: yellow;
         }
     }
@@ -77,12 +79,12 @@
         flex-direction: row;
     }
 
-    [part='bar'] {
+    [part='splitter-bar'] {
         flex-direction: column;
         width: var(--bar-size);
         height: 100%;
 
-        [part='handle'] {
+        [part='drag-handle'] {
             height: 50px;
         }
     }
@@ -94,12 +96,12 @@
         flex-direction: column;
     }
 
-    [part='bar'] {
+    [part='splitter-bar'] {
         flex-direction: row;
         width: 100%;
         height: var(--bar-size);
 
-        [part='handle'] {
+        [part='drag-handle'] {
             width: 50px;
         }
     }
@@ -107,13 +109,13 @@
 
 // Collapsed states
 :host([start-collapsed]) {
-    [part='start-pane'] {
+    [part='start-panel'] {
         display: none;
     }
 }
 
 :host([end-collapsed]) {
-    [part~='end-pane'] {
+    [part~='end-panel'] {
         display: none;
     }
 }

@@ -26,6 +26,15 @@ import IgcSplitterComponent, {
   type IgcSplitterResizeEventDetail,
 } from './splitter.js';
 
+const BAR_PART = 'splitter-bar';
+const START_PART = 'start-panel';
+const END_PART = 'end-panel';
+const START_EXPANDER_PART = 'start-expand-btn';
+const END_EXPANDER_PART = 'end-expand-btn';
+const START_COLLAPSE_PART = 'start-collapse-btn';
+const END_COLLAPSE_PART = 'end-collapse-btn';
+const DRAG_HANDLE_PART = 'drag-handle';
+
 describe('Splitter', () => {
   before(() => {
     defineComponents(IgcSplitterComponent);
@@ -63,9 +72,9 @@ describe('Splitter', () => {
 
     it('should render splitter bar between start and end parts', async () => {
       const base = getSplitterPart(splitter, 'base');
-      const startPart = getSplitterPart(splitter, 'start-pane');
-      const endPart = getSplitterPart(splitter, 'end-pane');
-      const bar = getSplitterPart(splitter, 'bar');
+      const startPart = getSplitterPart(splitter, START_PART);
+      const endPart = getSplitterPart(splitter, END_PART);
+      const bar = getSplitterPart(splitter, BAR_PART);
 
       expect(base).to.exist;
       expect(startPart).to.exist;
@@ -81,28 +90,34 @@ describe('Splitter', () => {
     });
 
     it('should render splitter bar parts', async () => {
-      const bar = getSplitterPart(splitter, 'bar');
-      const expanderStart = getSplitterPart(splitter, 'start-expander');
-      const barHandle = getSplitterPart(splitter, 'handle');
-      const expanderEnd = getSplitterPart(splitter, 'end-expander');
+      const bar = getSplitterPart(splitter, BAR_PART);
+      const expanderStartCollapseBtn = getSplitterPart(
+        splitter,
+        START_COLLAPSE_PART
+      );
+      const barHandle = getSplitterPart(splitter, DRAG_HANDLE_PART);
+      const expanderEndCollapseBtn = getSplitterPart(
+        splitter,
+        END_COLLAPSE_PART
+      );
 
-      expect(expanderStart).to.exist;
+      expect(expanderStartCollapseBtn).to.exist;
       expect(barHandle).to.exist;
-      expect(expanderEnd).to.exist;
+      expect(expanderEndCollapseBtn).to.exist;
 
-      expect(bar.contains(expanderStart)).to.be.true;
-      expect(bar.contains(expanderEnd)).to.be.true;
+      expect(bar.contains(expanderStartCollapseBtn)).to.be.true;
+      expect(bar.contains(expanderEndCollapseBtn)).to.be.true;
       expect(bar.contains(barHandle)).to.be.true;
 
-      expect(expanderStart.nextElementSibling).to.equal(barHandle);
-      expect(barHandle.nextElementSibling).to.equal(expanderEnd);
+      expect(expanderStartCollapseBtn.nextElementSibling).to.equal(barHandle);
+      expect(barHandle.nextElementSibling).to.equal(expanderEndCollapseBtn);
     });
 
     it('should not display the bar elements if the splitter is nonCollapsible', async () => {
       splitter.nonCollapsible = true;
       await elementUpdated(splitter);
 
-      const bar = getSplitterPart(splitter, 'bar');
+      const bar = getSplitterPart(splitter, BAR_PART);
       expect(bar.children).to.have.lengthOf(0);
     });
 
@@ -174,7 +189,7 @@ describe('Splitter', () => {
     });
 
     it('should set a default cursor on the bar in case splitter is not resizable or any pane is collapsed', async () => {
-      const bar = getSplitterPart(splitter, 'bar');
+      const bar = getSplitterPart(splitter, BAR_PART);
 
       const style = getComputedStyle(bar);
       expect(style.cursor).to.equal('col-resize');
@@ -200,7 +215,7 @@ describe('Splitter', () => {
     });
 
     it('should change the bar cursor based on the orientation', async () => {
-      const bar = getSplitterPart(splitter, 'bar');
+      const bar = getSplitterPart(splitter, BAR_PART);
 
       const style = getComputedStyle(bar);
       expect(style.cursor).to.equal('col-resize');
@@ -250,7 +265,7 @@ describe('Splitter', () => {
       );
       await elementUpdated(splitter);
 
-      const startPart = getSplitterPart(splitter, 'start-pane');
+      const startPart = getSplitterPart(splitter, START_PART);
       const style = getComputedStyle(startPart);
       expect(style.flex).to.equal('0 1 200px');
 
@@ -272,7 +287,7 @@ describe('Splitter', () => {
     it('should properly set default min/max values when not specified', async () => {
       await elementUpdated(splitter);
 
-      const startPart = getSplitterPart(splitter, 'start-pane');
+      const startPart = getSplitterPart(splitter, START_PART);
       const style = getComputedStyle(startPart);
       expect(style.flex).to.equal('1 1 0px');
 
@@ -297,7 +312,7 @@ describe('Splitter', () => {
 
       await elementUpdated(splitter);
 
-      const startPane = getSplitterPart(splitter, 'start-pane');
+      const startPane = getSplitterPart(splitter, START_PART);
       const style = getComputedStyle(startPane);
       expect(style.minWidth).to.equal('100px');
       expect(style.maxWidth).to.equal('500px');
@@ -313,7 +328,7 @@ describe('Splitter', () => {
       );
       await elementUpdated(splitter);
 
-      const startPane = getSplitterPart(splitter, 'start-pane');
+      const startPane = getSplitterPart(splitter, START_PART);
       const style = getComputedStyle(startPane);
       expect(style.minHeight).to.equal('100px');
       expect(style.maxHeight).to.equal('500px');
@@ -337,10 +352,10 @@ describe('Splitter', () => {
           splitter,
           orientation === 'horizontal' ? 'width' : 'height'
         );
-        const startPane = getSplitterPart(splitter, 'start-pane');
+        const startPane = getSplitterPart(splitter, START_PART);
         const style1 = getComputedStyle(startPane);
 
-        const endPane = getSplitterPart(splitter, 'end-pane');
+        const endPane = getSplitterPart(splitter, END_PART);
         const style2 = getComputedStyle(endPane);
         const sizes = getPanesSizes(
           splitter,
@@ -384,7 +399,7 @@ describe('Splitter', () => {
           orientation === 'horizontal' ? 'width' : 'height'
         );
 
-        const startPart = getSplitterPart(splitter, 'start-pane');
+        const startPart = getSplitterPart(splitter, START_PART);
         const style = getComputedStyle(startPart);
         expect(style.flex).to.equal('1 1 0px');
 
@@ -395,7 +410,7 @@ describe('Splitter', () => {
         const expectedEndSize = roundPrecise((30 / 100) * totalAvailable, 2);
         expect(sizes.endSize).to.be.closeTo(expectedEndSize, 2);
 
-        const endPart = getSplitterPart(splitter, 'end-pane');
+        const endPart = getSplitterPart(splitter, END_PART);
         const styleEnd = getComputedStyle(endPart);
         expect(styleEnd.flex).to.equal('0 1 30%');
       };
@@ -425,50 +440,64 @@ describe('Splitter', () => {
       expect(splitter.endCollapsed).to.be.true;
     });
 
-    it('should toggle the next pane when the bar expander-end is clicked', async () => {
-      const expanderStart = getSplitterPart(splitter, 'start-expander');
-      const expanderEnd = getSplitterPart(splitter, 'end-expander');
+    it('should toggle the next pane when the bar expander-end parts are clicked', async () => {
+      let parts = getButtonParts(splitter);
 
-      simulatePointerDown(expanderEnd, { bubbles: true });
+      simulatePointerDown(parts.endCollapseBtn, { bubbles: true });
       await elementUpdated(splitter);
       await nextFrame();
+
+      parts = getButtonParts(splitter);
 
       expect(splitter.startCollapsed).to.be.false;
       expect(splitter.endCollapsed).to.be.true;
-      expect(expanderStart.hidden).to.be.false;
-      expect(expanderEnd.hidden).to.be.true;
 
-      simulatePointerDown(expanderStart, { bubbles: true });
+      expect(parts.startCollapseBtn).to.be.null;
+      expect(parts.endCollapseBtn.hidden).to.be.true;
+      expect(parts.startExpander).to.be.null;
+      expect(parts.endExpander.hidden).to.be.false;
+
+      simulatePointerDown(parts.endExpander, { bubbles: true });
       await elementUpdated(splitter);
       await nextFrame();
 
-      expect(splitter.startCollapsed).to.be.false;
-      expect(splitter.endCollapsed).to.be.false;
-      expect(expanderStart.hidden).to.be.false;
-      expect(expanderEnd.hidden).to.be.false;
+      parts = getButtonParts(splitter);
+      expect(parts.startCollapseBtn.hidden).to.be.false;
+      expect(parts.endCollapseBtn.hidden).to.be.false;
+      expect(parts.startExpander).to.be.null;
+      expect(parts.endExpander).to.be.null;
     });
 
-    it('should toggle the previous pane when the bar expander-start is clicked', async () => {
-      const expanderStart = getSplitterPart(splitter, 'start-expander');
-      const expanderEnd = getSplitterPart(splitter, 'end-expander');
+    it('should toggle the previous pane when the bar expander-start parts are clicked', async () => {
+      let parts = getButtonParts(splitter);
 
-      simulatePointerDown(expanderStart, { bubbles: true });
+      simulatePointerDown(parts.startCollapseBtn, { bubbles: true });
       await elementUpdated(splitter);
       await nextFrame();
+
+      parts = getButtonParts(splitter);
 
       expect(splitter.startCollapsed).to.be.true;
       expect(splitter.endCollapsed).to.be.false;
-      expect(expanderStart.hidden).to.be.true;
-      expect(expanderEnd.hidden).to.be.false;
 
-      simulatePointerDown(expanderEnd, { bubbles: true });
+      expect(parts.startCollapseBtn.hidden).to.be.true;
+      expect(parts.startExpander.hidden).to.be.false;
+      expect(parts.endCollapseBtn).to.be.null;
+      expect(parts.endExpander).to.be.null;
+
+      simulatePointerDown(parts.startExpander, { bubbles: true });
       await elementUpdated(splitter);
       await nextFrame();
 
+      parts = getButtonParts(splitter);
+
       expect(splitter.startCollapsed).to.be.false;
       expect(splitter.endCollapsed).to.be.false;
-      expect(expanderStart.hidden).to.be.false;
-      expect(expanderEnd.hidden).to.be.false;
+
+      expect(parts.startCollapseBtn.hidden).to.be.false;
+      expect(parts.endCollapseBtn.hidden).to.be.false;
+      expect(parts.startExpander).to.be.null;
+      expect(parts.endExpander).to.be.null;
     });
 
     it('should resize horizontally in both directions', async () => {
@@ -572,7 +601,7 @@ describe('Splitter', () => {
 
     it('should resize horizontally by 10px delta with left/right arrow keys', async () => {
       const eventSpy = spy(splitter, 'emitEvent');
-      const bar = getSplitterPart(splitter, 'bar');
+      const bar = getSplitterPart(splitter, BAR_PART);
       let previousSizes = getPanesSizes(splitter, 'width');
       const resizeDelta = 10;
 
@@ -641,7 +670,7 @@ describe('Splitter', () => {
       splitter.orientation = 'vertical';
       await elementUpdated(splitter);
 
-      const bar = getSplitterPart(splitter, 'bar');
+      const bar = getSplitterPart(splitter, BAR_PART);
       let previousSizes = getPanesSizes(splitter, 'height');
       const resizeDelta = 10;
 
@@ -692,7 +721,7 @@ describe('Splitter', () => {
       await elementUpdated(splitter);
 
       const eventSpy = spy(splitter, 'emitEvent');
-      const bar = getSplitterPart(splitter, 'bar');
+      const bar = getSplitterPart(splitter, BAR_PART);
       const previousSizes = getPanesSizes(splitter, 'height');
 
       bar.focus();
@@ -714,7 +743,7 @@ describe('Splitter', () => {
 
     it('should not resize with up/down keys when in horizontal orientation', async () => {
       const eventSpy = spy(splitter, 'emitEvent');
-      const bar = getSplitterPart(splitter, 'bar');
+      const bar = getSplitterPart(splitter, BAR_PART);
       const previousSizes = getPanesSizes(splitter, 'width');
 
       bar.focus();
@@ -736,7 +765,7 @@ describe('Splitter', () => {
 
     // TODO: should there be events on expand/collapse?
     it('should expand/collapse panes with Ctrl + left/right arrow keys in horizontal orientation', async () => {
-      const bar = getSplitterPart(splitter, 'bar');
+      const bar = getSplitterPart(splitter, BAR_PART);
       bar.focus();
       await elementUpdated(splitter);
 
@@ -791,7 +820,7 @@ describe('Splitter', () => {
       splitter.orientation = 'vertical';
       await elementUpdated(splitter);
 
-      const bar = getSplitterPart(splitter, 'bar');
+      const bar = getSplitterPart(splitter, BAR_PART);
       bar.focus();
       await elementUpdated(splitter);
 
@@ -848,7 +877,7 @@ describe('Splitter', () => {
 
       const eventSpy = spy(splitter, 'emitEvent');
       let previousSizes = getPanesSizes(splitter, 'width');
-      const bar = getSplitterPart(splitter, 'bar');
+      const bar = getSplitterPart(splitter, BAR_PART);
 
       await resize(splitter, 100, 0);
 
@@ -896,7 +925,7 @@ describe('Splitter', () => {
       expect(splitter.nonCollapsible).to.be.true;
       expect(splitter.hasAttribute('non-collapsible')).to.be.true;
 
-      const bar = getSplitterPart(splitter, 'bar');
+      const bar = getSplitterPart(splitter, BAR_PART);
       bar.focus();
       await elementUpdated(splitter);
 
@@ -1147,7 +1176,7 @@ describe('Splitter', () => {
       );
       await elementUpdated(mixedConstraintSplitter);
 
-      const startPane = getSplitterPart(mixedConstraintSplitter, 'start-pane');
+      const startPane = getSplitterPart(mixedConstraintSplitter, START_PART);
       const style = getComputedStyle(startPane);
 
       expect(mixedConstraintSplitter.startMinSize).to.equal('100px');
@@ -1367,7 +1396,7 @@ describe('Splitter', () => {
       splitter.style.width = `${totalSplitterSize}px`;
       await elementUpdated(splitter);
 
-      const bar = getSplitterPart(splitter, 'bar');
+      const bar = getSplitterPart(splitter, BAR_PART);
       const barSize = bar.getBoundingClientRect().width;
       const previousSizes = getPanesSizes(splitter, 'width');
       const deltaX = 100;
@@ -1400,7 +1429,7 @@ describe('Splitter', () => {
       splitter.style.height = `${totalSplitterSize}px`;
       await elementUpdated(splitter);
 
-      const bar = getSplitterPart(splitter, 'bar');
+      const bar = getSplitterPart(splitter, BAR_PART);
       const barSize = bar.getBoundingClientRect().height;
       const previousSizes = getPanesSizes(splitter, 'height');
       const deltaY = 100;
@@ -1557,7 +1586,7 @@ describe('Splitter', () => {
     });
 
     it('should resize correctly with keyboard in RTL', async () => {
-      const bar = getSplitterPart(splitter, 'bar');
+      const bar = getSplitterPart(splitter, BAR_PART);
       let previousSizes = getPanesSizes(splitter, 'width');
       const resizeDelta = 10;
 
@@ -1602,7 +1631,7 @@ describe('Splitter', () => {
     });
 
     it('should expand/collapse correctly with keyboard in RTL', async () => {
-      const bar = getSplitterPart(splitter, 'bar');
+      const bar = getSplitterPart(splitter, BAR_PART);
       bar.focus();
       await elementUpdated(splitter);
 
@@ -1654,10 +1683,9 @@ describe('Splitter', () => {
     });
 
     it('should expand/collapse the correct pane through the expander buttons in RTL', async () => {
-      const startExpander = getSplitterPart(splitter, 'start-expander');
-      const endExpander = getSplitterPart(splitter, 'end-expander');
+      let parts = getButtonParts(splitter);
 
-      simulatePointerDown(startExpander, { bubbles: true });
+      simulatePointerDown(parts.startCollapseBtn, { bubbles: true });
       await elementUpdated(splitter);
       await nextFrame();
 
@@ -1666,10 +1694,17 @@ describe('Splitter', () => {
 
       expect(currentSizes.startSize).to.equal(0);
       expect(currentSizes.endSize).to.equal(totalAvailable);
+
       expect(splitter.startCollapsed).to.be.true;
       expect(splitter.endCollapsed).to.be.false;
 
-      simulatePointerDown(startExpander, { bubbles: true });
+      parts = getButtonParts(splitter);
+      expect(parts.startCollapseBtn.hidden).to.be.true;
+      expect(parts.startExpander.hidden).to.be.false;
+      expect(parts.endCollapseBtn).to.be.null;
+      expect(parts.endExpander).to.be.null;
+
+      simulatePointerDown(parts.startExpander, { bubbles: true });
       await elementUpdated(splitter);
       await nextFrame();
 
@@ -1682,7 +1717,13 @@ describe('Splitter', () => {
       expect(splitter.startCollapsed).to.be.false;
       expect(splitter.endCollapsed).to.be.false;
 
-      simulatePointerDown(endExpander, { bubbles: true });
+      parts = getButtonParts(splitter);
+      expect(parts.startCollapseBtn.hidden).to.be.false;
+      expect(parts.startExpander).to.be.null;
+      expect(parts.endCollapseBtn.hidden).to.be.false;
+      expect(parts.endExpander).to.be.null;
+
+      simulatePointerDown(parts.endCollapseBtn, { bubbles: true });
       await elementUpdated(splitter);
       await nextFrame();
 
@@ -1693,7 +1734,13 @@ describe('Splitter', () => {
       expect(splitter.startCollapsed).to.be.false;
       expect(splitter.endCollapsed).to.be.true;
 
-      simulatePointerDown(endExpander, { bubbles: true });
+      parts = getButtonParts(splitter);
+      expect(parts.startCollapseBtn).to.be.null;
+      expect(parts.startExpander).to.be.null;
+      expect(parts.endCollapseBtn.hidden).to.be.true;
+      expect(parts.endExpander.hidden).to.be.false;
+
+      simulatePointerDown(parts.endExpander, { bubbles: true });
       await elementUpdated(splitter);
       await nextFrame();
 
@@ -1705,6 +1752,12 @@ describe('Splitter', () => {
       expect(currentSizes.endSize).to.be.greaterThan(0);
       expect(splitter.startCollapsed).to.be.false;
       expect(splitter.endCollapsed).to.be.false;
+
+      parts = getButtonParts(splitter);
+      expect(parts.startCollapseBtn.hidden).to.be.false;
+      expect(parts.startExpander).to.be.null;
+      expect(parts.endCollapseBtn.hidden).to.be.false;
+      expect(parts.endExpander).to.be.null;
     });
 
     it('direction should not affect interactions in vertical orientation', async () => {
@@ -1712,7 +1765,7 @@ describe('Splitter', () => {
       await elementUpdated(splitter);
 
       // 1. Resize with keyboard
-      const bar = getSplitterPart(splitter, 'bar');
+      const bar = getSplitterPart(splitter, BAR_PART);
       let previousSizes = getPanesSizes(splitter, 'height');
       const resizeDelta = 10;
 
@@ -1872,15 +1925,16 @@ function getSplitterSlot(
   ) as HTMLSlotElement;
 }
 
-// TODO: more parts and names?
 type SplitterParts =
-  | 'start-pane'
-  | 'end-pane'
-  | 'bar'
   | 'base'
-  | 'start-expander'
-  | 'end-expander'
-  | 'handle';
+  | typeof START_PART
+  | typeof END_PART
+  | typeof BAR_PART
+  | typeof START_EXPANDER_PART
+  | typeof END_EXPANDER_PART
+  | typeof START_COLLAPSE_PART
+  | typeof END_COLLAPSE_PART
+  | typeof DRAG_HANDLE_PART;
 
 function getSplitterPart(splitter: IgcSplitterComponent, which: SplitterParts) {
   return splitter.shadowRoot!.querySelector(
@@ -1888,12 +1942,21 @@ function getSplitterPart(splitter: IgcSplitterComponent, which: SplitterParts) {
   ) as HTMLElement;
 }
 
+function getButtonParts(splitter: IgcSplitterComponent) {
+  return {
+    startExpander: getSplitterPart(splitter, START_EXPANDER_PART),
+    endExpander: getSplitterPart(splitter, END_EXPANDER_PART),
+    startCollapseBtn: getSplitterPart(splitter, START_COLLAPSE_PART),
+    endCollapseBtn: getSplitterPart(splitter, END_COLLAPSE_PART),
+  };
+}
+
 async function resize(
   splitter: IgcSplitterComponent,
   deltaX: number,
   deltaY: number
 ) {
-  const bar = getSplitterPart(splitter, 'bar');
+  const bar = getSplitterPart(splitter, BAR_PART);
   const barRect = bar.getBoundingClientRect();
 
   simulatePointerDown(bar, {
@@ -1927,8 +1990,8 @@ function getPanesSizes(
   splitter: IgcSplitterComponent,
   dimension: 'width' | 'height' = 'width'
 ) {
-  const startPane = getSplitterPart(splitter, 'start-pane');
-  const endPane = getSplitterPart(splitter, 'end-pane');
+  const startPane = getSplitterPart(splitter, START_PART);
+  const endPane = getSplitterPart(splitter, END_PART);
 
   return {
     startSize: roundPrecise(startPane.getBoundingClientRect()[dimension]),
@@ -1979,7 +2042,7 @@ function getTotalSize(
   splitter: IgcSplitterComponent,
   dimension: 'width' | 'height'
 ) {
-  const bar = getSplitterPart(splitter, 'bar');
+  const bar = getSplitterPart(splitter, BAR_PART);
   const barSize = bar.getBoundingClientRect()[dimension];
   const splitterSize = splitter.getBoundingClientRect()[dimension];
   const totalAvailable = splitterSize - barSize;
