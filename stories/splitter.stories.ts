@@ -1,11 +1,11 @@
 import type { Meta, StoryObj } from '@storybook/web-components-vite';
 import { html } from 'lit';
 
-import { defineComponents } from 'igniteui-webcomponents';
+import { defineComponents, IgcIconComponent } from 'igniteui-webcomponents';
 import IgcSplitterComponent from '../src/components/splitter/splitter.js';
 import { disableStoryControls } from './story.js';
 
-defineComponents(IgcSplitterComponent);
+defineComponents(IgcSplitterComponent, IgcIconComponent);
 
 const metadata: Meta<IgcSplitterComponent> = {
   title: 'Splitter',
@@ -250,6 +250,61 @@ export const NestedSplitters: Story = {
           <div slot="end">Bottom Right Pane</div>
         </igc-splitter>
       </div>
+    </igc-splitter>
+  `,
+};
+
+export const Slots: Story = {
+  render: ({
+    orientation,
+    nonCollapsible,
+    nonResizable,
+    startCollapsed,
+    endCollapsed,
+  }) => html`
+    <style>
+      .pane-content {
+        padding: 12px;
+      }
+
+      .custom-icon {
+        display: inline-block;
+        font-size: 20px;
+        user-select: none;
+      }
+    </style>
+
+    <igc-splitter
+      .orientation="${orientation}"
+      .nonCollapsible="${nonCollapsible}"
+      .nonResizable="${nonResizable}"
+      .startCollapsed="${startCollapsed}"
+      .endCollapsed="${endCollapsed}"
+      style="height: 400px;"
+    >
+      <div slot="start" class="pane-content">Start panel with custom icons</div>
+      <div slot="end" class="pane-content">End panel with custom icons</div>
+
+      <!-- Drag handle icon -->
+      <span slot="drag-handle" class="custom-icon">
+        ${orientation === 'horizontal' ? '⋮' : '⋯'}
+      </span>
+
+      <!-- Start panel expand/collapse icons -->
+      <span slot="start-expand" class="custom-icon">
+        ${orientation === 'horizontal' ? '➡️' : '⬇️'}
+      </span>
+      <span slot="start-collapse" class="custom-icon">
+        ${orientation === 'horizontal' ? '⬅️' : '⬆️'}
+      </span>
+
+      <!-- End panel expand/collapse icons -->
+      <span slot="end-expand" class="custom-icon">
+        ${orientation === 'horizontal' ? '🔙' : '🔼'}
+      </span>
+      <span slot="end-collapse" class="custom-icon">
+        ${orientation === 'horizontal' ? '🔜' : '🔽'}
+      </span>
     </igc-splitter>
   `,
 };

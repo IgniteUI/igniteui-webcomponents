@@ -17,6 +17,7 @@ import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { isLTR } from '../common/util.js';
+import IgcIconComponent from '../icon/icon.js';
 import type { SplitterOrientation } from '../types.js';
 import { styles } from './themes/splitter.base.css.js';
 
@@ -57,6 +58,14 @@ interface SplitterResizeState {
  * @fires igcResizing - Emitted while resizing.
  * @fires igcResizeEnd - Emitted when resizing ends.
  *
+ * @slot start - Content for the start pane.
+ * @slot end - Content for the end pane.
+ * @slot drag-handle - Optional slot for custom cursor content (not visually rendered, can be used for cursor customization).
+ * @slot start-expand - Optional slot to customize the icon for expanding the start panel.
+ * @slot start-collapse - Optional slot to customize the icon for collapsing the start panel.
+ * @slot end-expand - Optional slot to customize the icon for expanding the end panel.
+ * @slot end-collapse - Optional slot to customize the icon for collapsing the end panel.
+ *
  * @csspart ... - ... .
  */
 export default class IgcSplitterComponent extends EventEmitterMixin<
@@ -68,7 +77,7 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
 
   /* blazorSuppress */
   public static register() {
-    registerComponent(IgcSplitterComponent);
+    registerComponent(IgcSplitterComponent, IgcIconComponent);
   }
 
   //#region Private Properties
@@ -256,7 +265,15 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
     super();
 
     addSlotController(this, {
-      slots: setSlots('start', 'end'),
+      slots: setSlots(
+        'start',
+        'end',
+        'drag-handle',
+        'start-expand',
+        'start-collapse',
+        'end-expand',
+        'end-collapse'
+      ),
     });
     addKeybindings(this, {
       ref: this._barRef,
@@ -684,20 +701,33 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
     }
     const { prevButtonHidden, nextButtonHidden } =
       this._getExpanderHiddenState();
-    // TODO: expander button icons direction should be reversed in RTL
+
+    const startExpanderSlot = this.endCollapsed
+      ? 'end-expand'
+      : 'start-collapse';
+    const endExpanderSlot = this.startCollapsed
+      ? 'start-expand'
+      : 'end-collapse';
+
     return html`
       <div
         part="start-expander"
         ?hidden=${prevButtonHidden}
         @pointerdown=${(e: PointerEvent) =>
           this._handleExpanderClick('start', e)}
-      ></div>
-      <div part="handle"></div>
+      >
+        <slot name="${startExpanderSlot}"></slot>
+      </div>
+      <div part="handle">
+        <slot name="drag-handle"></slot>
+      </div>
       <div
         part="end-expander"
         ?hidden=${nextButtonHidden}
         @pointerdown=${(e: PointerEvent) => this._handleExpanderClick('end', e)}
-      ></div>
+      >
+        <slot name="${endExpanderSlot}"></slot>
+      </div>
     `;
   }
 
