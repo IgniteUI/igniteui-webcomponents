@@ -113,12 +113,88 @@ describe('Splitter', () => {
       expect(barHandle.nextElementSibling).to.equal(expanderEndCollapseBtn);
     });
 
-    it('should not display the bar elements if the splitter is nonCollapsible', async () => {
-      splitter.nonCollapsible = true;
+    it('should not display the collapse/expand button parts if disableCollapse is true', async () => {
+      splitter.disableCollapse = true;
       await elementUpdated(splitter);
 
       const bar = getSplitterPart(splitter, BAR_PART);
-      expect(bar.children).to.have.lengthOf(0);
+      expect(bar.children).to.have.lengthOf(3);
+
+      let startCollapseBtn = getSplitterPart(splitter, START_COLLAPSE_PART);
+      let endCollapseBtn = getSplitterPart(splitter, END_COLLAPSE_PART);
+      let dragHandle = getSplitterPart(splitter, DRAG_HANDLE_PART);
+
+      expect(startCollapseBtn.hidden).to.be.true;
+      expect(endCollapseBtn.hidden).to.be.true;
+      expect(dragHandle.hidden).to.be.false;
+
+      // verify this with programmatic expand/collapse as well
+      splitter.toggle('start');
+      await elementUpdated(splitter);
+
+      startCollapseBtn = getSplitterPart(splitter, START_COLLAPSE_PART);
+      endCollapseBtn = getSplitterPart(splitter, END_COLLAPSE_PART);
+      dragHandle = getSplitterPart(splitter, DRAG_HANDLE_PART);
+
+      const startExpandButton = getSplitterPart(splitter, START_EXPANDER_PART);
+
+      expect(startExpandButton.hidden).to.be.true;
+      expect(startCollapseBtn.hidden).to.be.true;
+      expect(endCollapseBtn).to.be.null;
+      expect(dragHandle.hidden).to.be.false;
+    });
+
+    it('should not display the collapse/expand button parts if hideCollapseButtons is true', async () => {
+      splitter.hideCollapseButtons = true;
+      await elementUpdated(splitter);
+      const bar = getSplitterPart(splitter, BAR_PART);
+      expect(bar.children).to.have.lengthOf(3);
+
+      let startCollapseBtn = getSplitterPart(splitter, START_COLLAPSE_PART);
+      let endCollapseBtn = getSplitterPart(splitter, END_COLLAPSE_PART);
+      let dragHandle = getSplitterPart(splitter, DRAG_HANDLE_PART);
+
+      expect(startCollapseBtn.hidden).to.be.true;
+      expect(endCollapseBtn.hidden).to.be.true;
+      expect(dragHandle.hidden).to.be.false;
+
+      splitter.toggle('end');
+      await elementUpdated(splitter);
+
+      startCollapseBtn = getSplitterPart(splitter, START_COLLAPSE_PART);
+      endCollapseBtn = getSplitterPart(splitter, END_COLLAPSE_PART);
+      dragHandle = getSplitterPart(splitter, DRAG_HANDLE_PART);
+
+      const startExpandButton = getSplitterPart(splitter, START_EXPANDER_PART);
+
+      expect(startExpandButton).to.be.null;
+      expect(startCollapseBtn).to.be.null;
+      expect(endCollapseBtn.hidden).to.be.true;
+      expect(dragHandle.hidden).to.be.false;
+    });
+
+    it('should not display bar handle if disableResize is true', async () => {
+      splitter.disableResize = true;
+      await elementUpdated(splitter);
+
+      const barHandle = getSplitterPart(splitter, DRAG_HANDLE_PART);
+      const startCollapseBtn = getSplitterPart(splitter, START_COLLAPSE_PART);
+      const endCollapseBtn = getSplitterPart(splitter, END_COLLAPSE_PART);
+      expect(barHandle.hidden).to.be.true;
+      expect(startCollapseBtn.hidden).to.be.false;
+      expect(endCollapseBtn.hidden).to.be.false;
+    });
+
+    it('should not display bar handle if hideDragHandle is true', async () => {
+      splitter.hideDragHandle = true;
+      await elementUpdated(splitter);
+
+      const barHandle = getSplitterPart(splitter, DRAG_HANDLE_PART);
+      const startCollapseBtn = getSplitterPart(splitter, START_COLLAPSE_PART);
+      const endCollapseBtn = getSplitterPart(splitter, END_COLLAPSE_PART);
+      expect(barHandle.hidden).to.be.true;
+      expect(startCollapseBtn.hidden).to.be.false;
+      expect(endCollapseBtn.hidden).to.be.false;
     });
 
     it('should have default horizontal orientation', () => {
@@ -194,13 +270,13 @@ describe('Splitter', () => {
       const style = getComputedStyle(bar);
       expect(style.cursor).to.equal('col-resize');
 
-      splitter.nonResizable = true;
+      splitter.disableResize = true;
       await elementUpdated(splitter);
       await nextFrame();
 
       expect(style.cursor).to.equal('default');
 
-      splitter.nonResizable = false;
+      splitter.disableResize = false;
       splitter.endCollapsed = true;
       await elementUpdated(splitter);
       await nextFrame();
@@ -871,8 +947,8 @@ describe('Splitter', () => {
       expect(splitter.endCollapsed).to.be.false;
     });
 
-    it('should not resize when nonResizable is true', async () => {
-      splitter.nonResizable = true;
+    it('should not resize when disableResize is true', async () => {
+      splitter.disableResize = true;
       await elementUpdated(splitter);
 
       const eventSpy = spy(splitter, 'emitEvent');
@@ -918,12 +994,12 @@ describe('Splitter', () => {
       expect(eventSpy.called).to.be.false;
     });
 
-    it('should not expand/collapse panes with Ctrl + arrow keys when nonCollapsible is true', async () => {
-      splitter.nonCollapsible = true;
+    it('should not expand/collapse panes with Ctrl + arrow keys when disableCollapse is true', async () => {
+      splitter.disableCollapse = true;
       await elementUpdated(splitter);
 
-      expect(splitter.nonCollapsible).to.be.true;
-      expect(splitter.hasAttribute('non-collapsible')).to.be.true;
+      expect(splitter.disableCollapse).to.be.true;
+      expect(splitter.hasAttribute('disable-collapse')).to.be.true;
 
       const bar = getSplitterPart(splitter, BAR_PART);
       bar.focus();
@@ -958,6 +1034,75 @@ describe('Splitter', () => {
       await nextFrame();
 
       expect(splitter.startCollapsed).to.be.false;
+      expect(splitter.endCollapsed).to.be.false;
+    });
+
+    it('should expand/collapse panes via keyboard and API when hideCollapseButtons is true', async () => {
+      splitter.hideCollapseButtons = true;
+      await elementUpdated(splitter);
+
+      expect(splitter.hideCollapseButtons).to.be.true;
+      expect(splitter.hasAttribute('hide-collapse-buttons')).to.be.true;
+
+      const bar = getSplitterPart(splitter, BAR_PART);
+
+      bar.focus();
+      await elementUpdated(splitter);
+
+      simulateKeyboard(bar, [ctrlKey, arrowLeft]);
+      await elementUpdated(splitter);
+
+      let currentSizes = getPanesSizes(splitter, 'width');
+      const splitterSize = splitter.getBoundingClientRect().width;
+      const barSize = bar.getBoundingClientRect().width;
+
+      expect(currentSizes.startSize).to.equal(0);
+      expect(currentSizes.endSize).to.equal(splitterSize - barSize);
+      expect(splitter.startCollapsed).to.be.true;
+      expect(splitter.endCollapsed).to.be.false;
+
+      simulateKeyboard(bar, [ctrlKey, arrowRight]);
+      await elementUpdated(splitter);
+
+      currentSizes = getPanesSizes(splitter, 'width');
+
+      expect(currentSizes.startSize).to.be.greaterThan(0);
+      expect(currentSizes.endSize).to.equal(
+        splitterSize - barSize - currentSizes.startSize
+      );
+      expect(splitter.startCollapsed).to.be.false;
+      expect(splitter.endCollapsed).to.be.false;
+
+      simulateKeyboard(bar, [ctrlKey, arrowRight]);
+      await elementUpdated(splitter);
+
+      currentSizes = getPanesSizes(splitter, 'width');
+
+      expect(currentSizes.startSize).to.equal(splitterSize - barSize);
+      expect(currentSizes.endSize).to.equal(0);
+      expect(splitter.startCollapsed).to.be.false;
+      expect(splitter.endCollapsed).to.be.true;
+
+      simulateKeyboard(bar, [ctrlKey, arrowLeft]);
+      await elementUpdated(splitter);
+
+      currentSizes = getPanesSizes(splitter, 'width');
+
+      expect(currentSizes.startSize).to.equal(
+        splitterSize - barSize - currentSizes.endSize
+      );
+      expect(currentSizes.endSize).to.be.greaterThan(0);
+      expect(splitter.startCollapsed).to.be.false;
+      expect(splitter.endCollapsed).to.be.false;
+
+      splitter.toggle('start');
+      await elementUpdated(splitter);
+
+      currentSizes = getPanesSizes(splitter, 'width');
+
+      expect(currentSizes.startSize).to.equal(0);
+      expect(currentSizes.endSize).to.equal(splitterSize - barSize);
+      expect(splitter.startCollapsed).to.be.true;
       expect(splitter.endCollapsed).to.be.false;
     });
 

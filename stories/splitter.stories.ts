@@ -28,13 +28,25 @@ const metadata: Meta<IgcSplitterComponent> = {
       description: 'Orientation of the splitter.',
       table: { defaultValue: { summary: 'horizontal' } },
     },
-    nonCollapsible: {
+    disableCollapse: {
       type: 'boolean',
       description: 'Disables pane collapsing.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
-    nonResizable: {
+    hideCollapseButtons: {
+      type: 'boolean',
+      description: 'Hides the collapse buttons on the splitter bar.',
+      control: 'boolean',
+      table: { defaultValue: { summary: 'false' } },
+    },
+    hideDragHandle: {
+      type: 'boolean',
+      description: 'Hides the drag handle on the splitter bar.',
+      control: 'boolean',
+      table: { defaultValue: { summary: 'false' } },
+    },
+    disableResize: {
       type: 'boolean',
       description: 'Disables pane resizing.',
       control: 'boolean',
@@ -78,8 +90,10 @@ const metadata: Meta<IgcSplitterComponent> = {
   },
   args: {
     orientation: 'horizontal',
-    nonCollapsible: false,
-    nonResizable: false,
+    disableCollapse: false,
+    hideCollapseButtons: false,
+    hideDragHandle: false,
+    disableResize: false,
     startCollapsed: false,
     endCollapsed: false,
   },
@@ -89,8 +103,10 @@ export default metadata;
 
 interface IgcSplitterArgs {
   orientation: 'horizontal' | 'vertical';
-  nonCollapsible: boolean;
-  nonResizable: boolean;
+  disableCollapse: boolean;
+  hideCollapseButtons: boolean;
+  hideDragHandle: boolean;
+  disableResize: boolean;
   startCollapsed: boolean;
   endCollapsed: boolean;
   startSize?: string;
@@ -130,8 +146,10 @@ function changePaneMinMaxSizesPercent() {
 export const Default: Story = {
   render: ({
     orientation,
-    nonCollapsible,
-    nonResizable,
+    disableCollapse,
+    hideCollapseButtons,
+    hideDragHandle,
+    disableResize,
     startCollapsed,
     endCollapsed,
     startSize,
@@ -172,8 +190,10 @@ export const Default: Story = {
         <igc-splitter
           id="splitter"
           .orientation=${orientation}
-          .nonCollapsible=${nonCollapsible}
-          .nonResizable=${nonResizable}
+          .disableCollapse=${disableCollapse}
+          .hideCollapseButtons=${hideCollapseButtons}
+          .hideDragHandle=${hideDragHandle}
+          .disableResize=${disableResize}
           .startCollapsed=${startCollapsed}
           .endCollapsed=${endCollapsed}
           .startSize=${startSize || 'auto'}
@@ -257,8 +277,10 @@ export const NestedSplitters: Story = {
 export const Slots: Story = {
   render: ({
     orientation,
-    nonCollapsible,
-    nonResizable,
+    disableCollapse,
+    disableResize,
+    hideCollapseButtons,
+    hideDragHandle,
     startCollapsed,
     endCollapsed,
   }) => html`
@@ -276,8 +298,10 @@ export const Slots: Story = {
 
     <igc-splitter
       .orientation="${orientation}"
-      .nonCollapsible="${nonCollapsible}"
-      .nonResizable="${nonResizable}"
+      .disableCollapse="${disableCollapse}"
+      .disableResize="${disableResize}"
+      .hideCollapseButtons="${hideCollapseButtons}"
+      .hideDragHandle="${hideDragHandle}"
       .startCollapsed="${startCollapsed}"
       .endCollapsed="${endCollapsed}"
       style="height: 400px;"

@@ -1,4 +1,4 @@
-import { html, LitElement, nothing, type PropertyValues } from 'lit';
+import { html, LitElement, type PropertyValues } from 'lit';
 import { property, query } from 'lit/decorators.js';
 import { createRef, ref } from 'lit/directives/ref.js';
 import { type StyleInfo, styleMap } from 'lit/directives/style-map.js';
@@ -120,7 +120,7 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   private readonly _bar!: HTMLElement;
 
   private get _resizeDisallowed() {
-    return this.nonResizable || this.startCollapsed || this.endCollapsed;
+    return this.disableResize || this.startCollapsed || this.endCollapsed;
   }
 
   private get _barCursor(): string {
@@ -143,20 +143,46 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   public orientation: SplitterOrientation = 'horizontal';
 
   /**
-   * Sets the visibility of the handle and expanders in the splitter bar.
+   * Sets whether the user can resize the panels by interacting with the splitter bar.
    * @remarks
    * Default value is `false`.
    * @attr
    */
-  @property({ type: Boolean, attribute: 'non-collapsible', reflect: true })
-  public nonCollapsible = false;
+  @property({ type: Boolean, attribute: 'disable-collapse', reflect: true })
+  public disableCollapse = false;
 
   /**
-   * Defines if the splitter is resizable or not.
+   * Sets whether the user can resize the panels by interacting with the splitter bar.
    * @attr
    */
-  @property({ type: Boolean, reflect: true, attribute: 'non-resizable' })
-  public nonResizable = false;
+  @property({ type: Boolean, reflect: true, attribute: 'disable-resize' })
+  public disableResize = false;
+
+  /**
+   * Controls the visibility of the expand/collapse buttons on the splitter bar.
+   * @remarks
+   * Default value is `false`.
+   * @attr
+   */
+  @property({
+    type: Boolean,
+    attribute: 'hide-collapse-buttons',
+    reflect: true,
+  })
+  public hideCollapseButtons = false;
+
+  /**
+   * Controls the visibility of the drag handle on the splitter bar.
+   * @remarks
+   * Default value is `false`.
+   * @attr
+   */
+  @property({
+    type: Boolean,
+    attribute: 'hide-drag-handle',
+    reflect: true,
+  })
+  public hideDragHandle = false;
 
   /**
    * The minimum size of the start pane.
@@ -239,7 +265,7 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
     this._resetPanes();
   }
 
-  @watch('nonResizable')
+  @watch('disableResize')
   protected _changeCursor(): void {
     Object.assign(this._barInternalStyles, { '--cursor': this._barCursor });
   }
@@ -380,6 +406,7 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
 
   /** Toggles the collapsed state of the pane. */
   public toggle(position: 'start' | 'end') {
+    // TODO: determine behavior when disableCollapsed is true
     if (position === 'start') {
       this.startCollapsed = !this.startCollapsed;
     } else {
@@ -453,7 +480,7 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
     target: 'start' | 'end',
     validOrientation: 'horizontal' | 'vertical'
   ) {
-    if (this.nonCollapsible || this.orientation !== validOrientation) {
+    if (this.disableCollapse || this.orientation !== validOrientation) {
       return;
     }
     let effectiveTarget = target;
@@ -697,18 +724,17 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   //#region Rendering
 
   private _getExpanderHiddenState() {
+    const hidden = this.disableCollapse || this.hideCollapseButtons;
     return {
-      prevButtonHidden: !!(this.startCollapsed && !this.endCollapsed),
-      nextButtonHidden: !!(this.endCollapsed && !this.startCollapsed),
+      prevButtonHidden: hidden || !!(this.startCollapsed && !this.endCollapsed),
+      nextButtonHidden: hidden || !!(this.endCollapsed && !this.startCollapsed),
     };
   }
 
   private _renderBarControls() {
-    if (this.nonCollapsible) {
-      return nothing;
-    }
     const { prevButtonHidden, nextButtonHidden } =
       this._getExpanderHiddenState();
+    const dragHandleHidden = this.hideDragHandle || this.disableResize;
 
     const startExpanderSlot = this.endCollapsed
       ? 'end-expand'
@@ -736,7 +762,7 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
       >
         <slot name="${startExpanderSlot}"></slot>
       </div>
-      <div part="drag-handle">
+      <div part="drag-handle" ?hidden=${dragHandleHidden}>
         <slot name="drag-handle"></slot>
       </div>
       <div
