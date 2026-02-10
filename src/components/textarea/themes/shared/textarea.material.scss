@@ -10,7 +10,7 @@ $input-bottom-padding: rem(6px);
 
     --component-size: var(--ig-size, #{var-get($theme, 'default-size')});
     --affix-padding: #{pad-inline(rem(12px), rem(14px), rem(16px))};
-    --outlined-top-padding: #{sizable(rem(8px), rem(12px), rem(16px))};
+    --block-padding: #{sizable(rem(8px), rem(12px), rem(16px))};
 
     [part~='container']:not([part~='suffixed']) {
         textarea {
@@ -28,7 +28,8 @@ textarea {
     border: none;
     padding: 0;
     overflow: auto;
-    margin-block-start: pad-block(var(--outlined-top-padding));
+    margin-block: pad-block(var(--block-padding)) rem(2px);
+    padding-block-end: pad-block(var(--block-padding));
     grid-area: 1 / 2 / span 1 / span 2;
     flex-grow: 1;
     position: relative;
@@ -40,7 +41,7 @@ textarea {
 [part='label'] {
     position: relative;
     transform-origin: top left;
-    inset-block-start: calc((var(--outlined-top-padding)) - #{rem(2px)});
+    inset-block-start: calc((var(--block-padding)) - #{rem(2px)});
     transition:
         transform 150ms cubic-bezier(.4, 0, .2, 1),
         color 150ms cubic-bezier(.4, 0, .2, 1),
@@ -52,7 +53,7 @@ textarea {
     @include type-style('caption');
 
     translate: 0;
-    inset-block-start: calc((var(--outlined-top-padding)) / 4);
+    inset-block-start: calc((var(--block-padding)) / 4);
 }
 
 %label-outlined-filled {
@@ -81,7 +82,14 @@ textarea {
         border-start-start-radius: var-get($theme, 'box-border-radius');
         border-start-end-radius: var-get($theme, 'box-border-radius');
         background: var-get($theme, 'box-background');
-        padding-inline-end: pad-inline(rem(1px));
+
+        &:not([part~='suffixed']) {
+            padding-inline-end: pad-inline(rem(1px));
+
+            textarea {
+                grid-area: 1 / 2 / span 1 / span 3;
+            }
+        }
 
         &::after {
             content: '';
@@ -93,13 +101,7 @@ textarea {
         }
 
         textarea {
-            margin-block: pad-block(var(--box-top-padding)) rem(2px);
-        }
-    }
-
-    [part~='container']:not([part~='suffixed']) {
-        textarea {
-            grid-area: 1 / 2 / span 1 / span 3;
+            margin-block-start: pad-block(var(--box-top-padding));
         }
     }
 
@@ -161,8 +163,6 @@ textarea {
 }
 
 :host(:not([outlined]):focus-within) {
-    color: var-get($theme, 'input-prefix-color--focused');
-
     [part~='container'] {
         background: var-get($theme, 'box-background-focus');
 
@@ -245,11 +245,11 @@ textarea {
     align-items: initial;
     padding: 0;
     box-shadow: none;
-    border-radius: var-get($theme, 'border-border-radius');
-    background: var-get($theme, 'border-background');
     overflow: initial;
 
     [part~='container'] {
+        border-radius: var-get($theme, 'border-border-radius');
+        background: var-get($theme, 'border-background');
         grid-template-columns: auto auto 1fr auto;
         display: grid;
     }
@@ -339,10 +339,6 @@ textarea {
             }
         }
     }
-
-    textarea {
-        bottom: rem(2px);
-    }
 }
 
 :host(:not([readonly], :focus-within)[outlined]:hover) {
@@ -386,7 +382,7 @@ textarea {
 
 :host([readonly][outlined]:focus-within) {
     [part='label'] {
-        inset-block-start: calc(var(--outlined-top-padding) - #{rem(3px)});
+        inset-block-start: calc(var(--block-padding) - #{rem(3px)});
     }
 
     [part='notch'] {

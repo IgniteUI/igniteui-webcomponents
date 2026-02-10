@@ -25,12 +25,6 @@ $theme: $indigo;
     }
 }
 
-[part~='content'] {
-    @include type-style('body-2');
-
-    color: var-get($theme, 'content-foreground');
-}
-
 [part~='disabled'] {
     [part~='indicator'] {
         box-shadow: inset 0 0 0 var(--indicator-box-shadow-size) var-get($theme, 'disabled-indicator-outline');

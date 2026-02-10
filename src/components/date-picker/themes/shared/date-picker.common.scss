@@ -81,7 +81,7 @@ $input-theme: input-theme.$material;
         color: var(--affix-color);
     }
 
-    igc-input:focus-within {
+    igc-date-time-input:focus-within {
         --affix-color: #{var-get($theme, 'input-prefix-color--focused')};
 
         &::part(filled) {

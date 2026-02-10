@@ -11,10 +11,30 @@ import { styles } from './themes/container.base.css.js';
 import { all } from './themes/container.js';
 import { styles as shared } from './themes/shared/container/card.common.css.js';
 
-/** A container which wraps different elements related to a single subject
+/**
+ * A container component that wraps different elements related to a single subject.
+ * The card component provides a flexible container for organizing content such as headers,
+ * media, text content, and actions.
+ *
  * @element igc-card
  *
- * @slot - Renders card content
+ * @slot - Renders the card content. Typically contains igc-card-header, igc-card-media, igc-card-content, and igc-card-actions.
+ *
+ * @example
+ * ```html
+ * <igc-card>
+ *   <igc-card-header>
+ *     <h3 slot="title">Card Title</h3>
+ *     <h5 slot="subtitle">Card Subtitle</h5>
+ *   </igc-card-header>
+ *   <igc-card-content>
+ *     <p>Card content goes here</p>
+ *   </igc-card-content>
+ *   <igc-card-actions>
+ *     <button slot="start">Action</button>
+ *   </igc-card-actions>
+ * </igc-card>
+ * ```
  */
 export default class IgcCardComponent extends LitElement {
   public static readonly tagName = 'igc-card';
@@ -32,8 +52,11 @@ export default class IgcCardComponent extends LitElement {
   }
 
   /**
-   * Sets card elevated style, otherwise card looks outlined.
-   * @attr
+   * Sets the card to have an elevated appearance with shadow.
+   * When false, the card uses an outlined style with a border.
+   *
+   * @attr elevated
+   * @default false
    */
   @property({ type: Boolean, reflect: true })
   public elevated = false;

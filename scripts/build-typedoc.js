@@ -105,7 +105,7 @@ async function main() {
     entryPointStrategy,
     plugin: [TYPEDOC.PLUGINS.THEME, TYPEDOC.PLUGINS.LOCALIZATION],
     theme: 'igtheme',
-    router: 'structure',
+    router: 'kind',
     excludePrivate: true,
     excludeProtected: true,
     excludeNotDocumented: true,

@@ -97,10 +97,16 @@ describe('Localization', () => {
     beforeEach(async () => {
       const tagName = unsafeStatic(tagOld);
       instance = await fixture(html`<${tagName}></${tagName}`);
-      (getI18nManager() as any)._resourcesMap = new Map<
-        string,
-        IResourceStrings
-      >([[getI18nManager().defaultLang, {}]]);
+      (getI18nManager() as any)._resourcesMap = new Map<string, any>([
+        [
+          'en',
+          {
+            default: 'US',
+            scripts: new Map<string, IResourceStrings>(),
+            regions: new Map<string, IResourceStrings>([['US', {}]]),
+          },
+        ],
+      ]);
     });
 
     it('should initialize correct resource strings', () => {
@@ -158,10 +164,16 @@ describe('Localization', () => {
     beforeEach(async () => {
       const tagName = unsafeStatic(tagNew);
       instance = await fixture(html`<${tagName}></${tagName}`);
-      (getI18nManager() as any)._resourcesMap = new Map<
-        string,
-        IResourceStrings
-      >([[getI18nManager().defaultLang, {}]]);
+      (getI18nManager() as any)._resourcesMap = new Map<string, any>([
+        [
+          'en',
+          {
+            default: 'US',
+            scripts: new Map<string, IResourceStrings>(),
+            regions: new Map<string, IResourceStrings>([['US', {}]]),
+          },
+        ],
+      ]);
     });
 
     it('should initialize correct resource strings', () => {

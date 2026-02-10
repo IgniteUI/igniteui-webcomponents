@@ -1,8 +1,9 @@
+import { getDateFormatter } from 'igniteui-i18n-core';
 import { html } from 'lit';
 import { eventOptions, property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
-
+import { addThemingController } from '../../theming/theming-controller.js';
 import { convertToDate } from '../calendar/helpers.js';
 import {
   addKeybindings,
@@ -12,6 +13,7 @@ import {
   arrowUp,
   ctrlKey,
 } from '../common/controllers/key-bindings.js';
+import { addSlotController, setSlots } from '../common/controllers/slot.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { addI18nController } from '../common/i18n/i18n-controller.js';
@@ -21,6 +23,9 @@ import { FormValueDateTimeTransformers } from '../common/mixins/forms/form-trans
 import { createFormValueState } from '../common/mixins/forms/form-value.js';
 import { partMap } from '../common/part-map.js';
 import type { IgcInputComponentEventMap } from '../input/input-base.js';
+import { styles } from '../input/themes/input.base.css.js';
+import { styles as shared } from '../input/themes/shared/input.common.css.js';
+import { all } from '../input/themes/themes.js';
 import {
   IgcMaskInputBaseComponent,
   type MaskSelection,
@@ -35,10 +40,23 @@ import {
 } from './date-util.js';
 import { dateTimeInputValidators } from './validators.js';
 
-export interface IgcDateTimeInputComponentEventMap
-  extends Omit<IgcInputComponentEventMap, 'igcChange'> {
+export interface IgcDateTimeInputComponentEventMap extends Omit<
+  IgcInputComponentEventMap,
+  'igcChange'
+> {
   igcChange: CustomEvent<Date | null>;
 }
+
+const Slots = setSlots(
+  'prefix',
+  'suffix',
+  'helper-text',
+  'value-missing',
+  'range-overflow',
+  'range-underflow',
+  'custom-error',
+  'invalid'
+);
 
 /**
  * A date time input is an input field that lets you set and edit the date and time in a chosen input element
@@ -70,9 +88,10 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
   AbstractConstructor<IgcMaskInputBaseComponent>
 >(IgcMaskInputBaseComponent) {
   public static readonly tagName = 'igc-date-time-input';
+  public static styles = [styles, shared];
 
   /* blazorSuppress */
-  public static register() {
+  public static register(): void {
     registerComponent(
       IgcDateTimeInputComponent,
       IgcValidationContainerComponent
@@ -83,6 +102,12 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
     return dateTimeInputValidators;
   }
 
+  protected override readonly _themes = addThemingController(this, all);
+
+  protected override readonly _slots = addSlotController(this, {
+    slots: Slots,
+  });
+
   protected override readonly _formValue = createFormValueState(this, {
     initialValue: null,
     transformers: FormValueDateTimeTransformers,
@@ -90,9 +115,14 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
 
   private readonly _i18nController = addI18nController<object>(this, {
     defaultEN: {},
+    onResourceChange: () => {
+      this.setDefaultMask();
+    },
   });
 
   protected _defaultMask!: string;
+  private _defaultDisplayFormat!: string;
+  private _displayFormat?: string;
   private _oldValue: Date | null = null;
   private _min: Date | null = null;
   private _max: Date | null = null;
@@ -172,11 +202,19 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
 
   /**
    * Format to display the value in when not editing.
-   * Defaults to the input format if not set.
+   * Defaults to the locale format if not set.
    * @attr display-format
    */
   @property({ attribute: 'display-format' })
-  public displayFormat!: string;
+  public set displayFormat(value: string) {
+    this._displayFormat = value;
+  }
+
+  public get displayFormat(): string {
+    return (
+      this._displayFormat ?? this._inputFormat ?? this._defaultDisplayFormat
+    );
+  }
 
   /**
    * Delta values used to increment or decrement each date part on step actions.
@@ -201,12 +239,14 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
     this._i18nController.locale = value;
   }
 
-  public get locale() {
+  public get locale(): string {
     return this._i18nController.locale;
   }
 
   @watch('locale', { waitUntilFirstUpdate: true })
   protected setDefaultMask(): void {
+    this.updateDefaultDisplayFormat();
+
     if (!this._inputFormat) {
       this.updateDefaultMask();
       this.setMask(this._defaultMask);
@@ -219,6 +259,7 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
 
   @watch('displayFormat', { waitUntilFirstUpdate: true })
   protected setDisplayFormat(): void {
+    this.updateDefaultDisplayFormat();
     if (this.value) {
       this.updateMask();
     }
@@ -227,7 +268,7 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
   protected get hasDateParts(): boolean {
     const parts =
       this._inputDateParts ||
-      DateTimeUtil.parseDateTimeFormat(this.inputFormat);
+      DateTimeUtil.parseDateTimeFormat(this.inputFormat, this.locale);
 
     return parts.some(
       (p) =>
@@ -240,7 +281,7 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
   protected get hasTimeParts(): boolean {
     const parts =
       this._inputDateParts ||
-      DateTimeUtil.parseDateTimeFormat(this.inputFormat);
+      DateTimeUtil.parseDateTimeFormat(this.inputFormat, this.locale);
     return parts.some(
       (p) =>
         p.type === DateParts.Hours ||
@@ -295,6 +336,7 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
   public override connectedCallback() {
     super.connectedCallback();
     this.updateDefaultMask();
+    this.updateDefaultDisplayFormat();
     this.setMask(this.inputFormat);
     if (this.value) {
       this.updateMask();
@@ -312,7 +354,7 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
     const { start, end } = this._inputSelection;
     const newValue = this.trySpinValue(targetPart, delta);
     this.value = newValue;
-    this.updateComplete.then(() => this.input.setSelectionRange(start, end));
+    this.updateComplete.then(() => this._input?.setSelectionRange(start, end));
   }
 
   /** Decrements a date/time portion. */
@@ -326,7 +368,7 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
     const { start, end } = this._inputSelection;
     const newValue = this.trySpinValue(targetPart, delta, true);
     this.value = newValue;
-    this.updateComplete.then(() => this.input.setSelectionRange(start, end));
+    this.updateComplete.then(() => this._input?.setSelectionRange(start, end));
   }
 
   /** Clears the input element of user input. */
@@ -349,24 +391,11 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
         return;
       }
 
-      const format = this.displayFormat || this.inputFormat;
-
-      if (this.displayFormat) {
-        this._maskedValue = DateTimeUtil.formatDate(
-          this.value,
-          this.locale,
-          format,
-          true
-        );
-      } else if (this.inputFormat) {
-        this._maskedValue = DateTimeUtil.formatDate(
-          this.value,
-          this.locale,
-          format
-        );
-      } else {
-        this._maskedValue = this.value.toLocaleString();
-      }
+      this._maskedValue = DateTimeUtil.formatDisplayDate(
+        this.value,
+        this.locale,
+        this.displayFormat
+      );
     }
   }
 
@@ -403,7 +432,7 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
     }
 
     await this.updateComplete;
-    this.input.setSelectionRange(result.end, result.end);
+    this._input?.setSelectionRange(result.end, result.end);
   }
 
   private trySpinValue(
@@ -482,12 +511,22 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
   }
 
   private updateDefaultMask(): void {
-    this._defaultMask = DateTimeUtil.getDefaultMask(this.locale);
+    this._defaultMask = DateTimeUtil.getDefaultInputMask(this.locale);
+  }
+
+  private updateDefaultDisplayFormat(): void {
+    this._defaultDisplayFormat = getDateFormatter().getLocaleDateTimeFormat(
+      this.locale
+    );
   }
 
   private setMask(string: string): void {
     const oldFormat = this._inputDateParts?.map((p) => p.format).join('');
-    this._inputDateParts = DateTimeUtil.parseDateTimeFormat(string);
+    this._inputDateParts = DateTimeUtil.parseDateTimeFormat(
+      string,
+      this.locale,
+      true
+    );
     const value = this._inputDateParts.map((p) => p.format).join('');
 
     this._defaultMask = value;
@@ -624,7 +663,7 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
   }
 
   protected navigateParts(delta: number) {
-    const position = this.getNewPosition(this.input.value, delta);
+    const position = this.getNewPosition(this._input?.value ?? '', delta);
     this.setSelectionRange(position, position);
   }
 
@@ -635,11 +674,11 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
     this.setSelectionRange(this._maskSelection.start, this._maskSelection.end);
   }
 
-  protected override renderInput() {
+  protected override _renderInput() {
     return html`
       <input
         type="text"
-        part=${partMap(this.resolvePartNames('input'))}
+        part=${partMap(this._resolvePartNames('input'))}
         name=${ifDefined(this.name)}
         .value=${live(this._maskedValue)}
         .placeholder=${this.placeholder || this._parser.emptyMask}

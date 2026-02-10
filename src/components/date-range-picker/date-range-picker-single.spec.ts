@@ -119,7 +119,7 @@ describe('Date range picker - single input', () => {
       const expectedValue = { start: today.native, end: tomorrow.native };
       picker = await fixture<IgcDateRangePickerComponent>(
         html`<igc-date-range-picker
-          .value="${expectedValue}"
+          .value=${expectedValue}
         ></igc-date-range-picker>`
       );
 
@@ -205,7 +205,7 @@ describe('Date range picker - single input', () => {
     });
 
     it('should update the masked value with the locale', async () => {
-      expect(picker.displayFormat).to.equal(picker.inputFormat);
+      expect(picker.displayFormat).to.equal('M/d/yyyy');
 
       picker.value = {
         start: CalendarDay.from(new Date(2025, 3, 9)).native,
@@ -213,13 +213,13 @@ describe('Date range picker - single input', () => {
       };
       await elementUpdated(picker);
       const input = picker.renderRoot.querySelector(IgcInputComponent.tagName)!;
-      expect(input.value).to.equal('04/09/2025 - 04/10/2025');
+      expect(input.value).to.equal('4/9/2025 - 4/10/2025');
 
       picker.locale = 'bg';
       await elementUpdated(picker);
 
       expect(input.value.normalize('NFKC')).to.equal(
-        '09.04.2025 г. - 10.04.2025 г.'
+        '9.04.2025 г. - 10.04.2025 г.'
       );
     });
     it('should set the default placeholder of the single input to the input format (like dd/MM/yyyy - dd/MM/yyyy)', async () => {
@@ -238,7 +238,7 @@ describe('Date range picker - single input', () => {
     it('should set the mask of the single input per the display format (like dd/MM/yyyy - dd/MM/yyyy)', async () => {
       picker.useTwoInputs = false;
       await elementUpdated(picker);
-      expect(picker.displayFormat).to.equal(picker.inputFormat);
+      expect(picker.displayFormat).to.equal('M/d/yyyy');
 
       picker.value = {
         start: CalendarDay.from(new Date(2025, 3, 9)).native,
@@ -247,7 +247,7 @@ describe('Date range picker - single input', () => {
       await elementUpdated(picker);
 
       const input = picker.renderRoot.querySelector(IgcInputComponent.tagName)!;
-      expect(input.value).to.equal('04/09/2025 - 04/10/2025');
+      expect(input.value).to.equal('4/9/2025 - 4/10/2025');
 
       picker.displayFormat = 'yyyy-MM-dd';
       await elementUpdated(picker);
@@ -264,7 +264,7 @@ describe('Date range picker - single input', () => {
       };
       await elementUpdated(picker);
 
-      expect(input.value).to.equal('04/09/2025 - 04/10/2025');
+      expect(input.value).to.equal('4/9/2025 - 4/10/2025');
 
       picker.clear();
       await elementUpdated(picker);
@@ -288,7 +288,7 @@ describe('Date range picker - single input', () => {
         start,
         end,
       });
-      expect(input.value).to.equal('04/09/2025 - 04/10/2025');
+      expect(input.value).to.equal('4/9/2025 - 4/10/2025');
       expect(eventSpy).not.called;
     });
   });

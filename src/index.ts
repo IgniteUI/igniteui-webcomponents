@@ -70,6 +70,7 @@ export { default as IgcTreeItemComponent } from './components/tree/tree-item.js'
 export { default as IgcStepperComponent } from './components/stepper/stepper.js';
 export { default as IgcStepComponent } from './components/stepper/step.js';
 export { default as IgcTooltipComponent } from './components/tooltip/tooltip.js';
+export { default as IgcThemeProviderComponent } from './components/theme-provider/theme-provider.js';
 
 // definitions
 export { defineComponents } from './components/common/definitions/defineComponents.js';
@@ -84,6 +85,8 @@ export {
 
 // theming configuration
 export { configureTheme } from './theming/config.js';
+export type { Theme, ThemeVariant } from './theming/types.js';
+export { addThemingController as θaddThemingController } from './theming/theming-controller.js';
 
 // localization objects
 export {
@@ -91,26 +94,30 @@ export {
   type IgcCalendarResourceStrings,
 } from './components/common/i18n/EN/calendar.resources.js';
 export {
+  IgcDateRangePickerResourceStringsEN,
+  type IgcDateRangePickerResourceStrings,
+} from './components/common/i18n/EN/date-range-picker.resources.js';
+export {
   IgcChatResourceStringEN,
   type IgcChatResourceStrings,
 } from './components/common/i18n/EN/chat.resources.js';
 export {
   type ICalendarResourceStrings,
   type ICarouselResourceStrings,
-  type IComboResourceStrings,
   type IChipResourceStrings,
+  type IComboResourceStrings,
   type IDateRangePickerResourceStrings,
-  type IValidationResourceStrings,
+  type IFileInputResourceStrings,
+  type ITreeResourceStrings,
   CalendarResourceStringsEN,
   CarouselResourceStringsEN,
-  ComboResourceStringsEN,
   ChipResourceStringsEN,
+  ComboResourceStringsEN,
   DateRangePickerResourceStringsEN,
-  ValidationResourceStringsEN,
+  FileInputResourceStringsEN,
+  TreeResourceStringsEN,
   registerI18n,
   setCurrentI18n,
-  getCurrentI18n,
-  getCurrentResourceStrings,
 } from 'igniteui-i18n-core';
 
 // Event maps
