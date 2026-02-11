@@ -2,7 +2,6 @@ import { html, LitElement, nothing, type PropertyValues } from 'lit';
 import { property, query } from 'lit/decorators.js';
 import { createRef, ref } from 'lit/directives/ref.js';
 import { type StyleInfo, styleMap } from 'lit/directives/style-map.js';
-import { addInternalsController } from '../common/controllers/internals.js';
 import {
   addKeybindings,
   arrowDown,
@@ -103,12 +102,6 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   private _isDragging = false;
   private _dragPointerId = -1;
   private _dragStartPosition = { x: 0, y: 0 };
-
-  private readonly _internals = addInternalsController(this, {
-    initialARIA: {
-      ariaOrientation: 'horizontal',
-    },
-  });
 
   @query('[part~="base"]', true)
   private readonly _base!: HTMLElement;
@@ -287,7 +280,6 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
 
   @watch('orientation', { waitUntilFirstUpdate: true })
   protected _orientationChange(): void {
-    this._internals.setARIA({ ariaOrientation: this.orientation });
     Object.assign(this._barInternalStyles, { '--cursor': this._barCursor });
     this._resetPanes();
   }
@@ -353,21 +345,6 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
 
   protected override firstUpdated() {
     this._initPanes();
-    this._updateBarARIA();
-  }
-
-  protected override updated(changed: PropertyValues): void {
-    super.updated(changed);
-    if (
-      changed.has('startSize') ||
-      changed.has('endSize') ||
-      changed.has('startMinSize') ||
-      changed.has('startMaxSize') ||
-      changed.has('startCollapsed') ||
-      changed.has('endCollapsed')
-    ) {
-      this._updateBarARIA();
-    }
   }
 
   //#endregion
@@ -448,6 +425,10 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
     } else {
       this.endCollapsed = !this.endCollapsed;
     }
+
+    if (!this.startCollapsed || !this.endCollapsed) {
+      this.updateComplete.then(() => this.requestUpdate());
+    }
   }
 
   //#endregion
@@ -488,19 +469,6 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
     const defaultValue = type === 'min' ? 0 : 100;
 
     return value ? this._sizeToPercent(value) : defaultValue;
-  }
-
-  private _updateBarARIA(): void {
-    if (!this._bar) {
-      return;
-    }
-    const valuenow = this._getStartPaneSizePercent();
-    const valuemin = this._getMinMaxAsPercent('min');
-    const valuemax = this._getMinMaxAsPercent('max');
-
-    this._bar.setAttribute('aria-valuenow', valuenow.toString());
-    this._bar.setAttribute('aria-valuemin', valuemin.toString());
-    this._bar.setAttribute('aria-valuemax', valuemax.toString());
   }
 
   private _isPercentageSize(which: 'start' | 'end') {
@@ -923,6 +891,9 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
           tabindex=${this._barTabIndex}
           aria-controls="start-panel end-panel"
           aria-orientation=${this.orientation}
+          aria-valuenow=${this._getStartPaneSizePercent()}
+          aria-valuemin=${this._getMinMaxAsPercent('min')}
+          aria-valuemax=${this._getMinMaxAsPercent('max')}
           style=${styleMap(this._barInternalStyles)}
           @touchstart=${(e: TouchEvent) => e.preventDefault()}
           @contextmenu=${(e: PointerEvent) => e.preventDefault()}

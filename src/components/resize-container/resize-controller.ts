@@ -21,7 +21,6 @@ class ResizeController implements ReactiveController {
 
   private readonly _options: ResizeControllerConfiguration = {
     enabled: true,
-    updateTarget: true,
     layer: getDefaultLayer,
   };
 
@@ -167,9 +166,7 @@ class ResizeController implements ReactiveController {
     const parameters = { event, state: this._stateParameters };
     this._options.resize?.call(this._host, parameters);
     this._state.current = parameters.state.current;
-    if (this._options.updateTarget) {
-      this._updatePosition(this._isDeferred ? this._ghost : this._resizeTarget);
-    }
+    this._updatePosition(this._isDeferred ? this._ghost : this._resizeTarget);
   }
 
   private _handlePointerEnd(event: PointerEvent): void {
@@ -178,9 +175,7 @@ class ResizeController implements ReactiveController {
     this._options.end?.call(this._host, parameters);
     this._state.current = parameters.state.current;
 
-    if (this._options.updateTarget) {
-      parameters.state.commit?.() ?? this._updatePosition(this._resizeTarget);
-    }
+    parameters.state.commit?.() ?? this._updatePosition(this._resizeTarget);
     this.dispose();
   }
 
