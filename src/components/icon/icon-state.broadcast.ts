@@ -7,65 +7,107 @@ import type {
 } from './registry/types.js';
 import { ActionType } from './registry/types.js';
 
+type IconBroadcastEvent =
+  | MessageEvent<BroadcastIconsChangeMessage>
+  | PageTransitionEvent;
+
+/**
+ * Manages cross-context synchronization of icon state using the BroadcastChannel API.
+ *
+ * @remarks
+ * This class enables icon registry state to be shared between different browsing contexts
+ * (e.g., iframes, tabs) within the same origin. It specifically handles synchronization
+ * with Angular elements that may be running in separate contexts.
+ *
+ * The broadcast channel is automatically created on page show and disposed on page hide
+ * to properly handle bfcache (back/forward cache) scenarios.
+ */
 export class IconsStateBroadcast {
-  private channel!: BroadcastChannel | null;
-  private collections: IconsCollection<SvgIcon>;
-  private refsCollection: IconsCollection<IconMeta>;
-  private static readonly origin = 'igniteui-webcomponents';
+  private static readonly _origin = 'igniteui-webcomponents';
 
+  private readonly _iconsCollection: IconsCollection<SvgIcon>;
+  private readonly _iconReferences: IconsCollection<IconMeta>;
+
+  private _channel: BroadcastChannel | null = null;
+
+  /**
+   * Creates an instance of IconsStateBroadcast.
+   *
+   * @param iconsCollection - The collection of registered SVG icons.
+   * @param iconReferences - The collection of icon references/aliases.
+   */
   constructor(
-    collections: IconsCollection<SvgIcon>,
-    refsCollection: IconsCollection<IconMeta>
+    iconsCollection: IconsCollection<SvgIcon>,
+    iconReferences: IconsCollection<IconMeta>
   ) {
-    this.collections = collections;
-    this.refsCollection = refsCollection;
-    this.create();
+    this._iconsCollection = iconsCollection;
+    this._iconReferences = iconReferences;
 
-    globalThis.addEventListener('pageshow', () => this.create());
-    globalThis.addEventListener('pagehide', () => this.dispose());
+    globalThis.addEventListener('pageshow', this);
+    globalThis.addEventListener('pagehide', this);
+
+    this._create();
   }
 
-  public send(data: BroadcastIconsChangeMessage) {
-    if (this.channel) {
-      this.channel.postMessage(data);
+  /**
+   * Sends a message to other browsing contexts via the broadcast channel.
+   */
+  public send(data: BroadcastIconsChangeMessage): void {
+    this._channel?.postMessage(data);
+  }
+
+  /** @internal */
+  public handleEvent(event: IconBroadcastEvent): void {
+    switch (event.type) {
+      case 'message':
+        this._syncState(event as MessageEvent<BroadcastIconsChangeMessage>);
+        break;
+      case 'pageshow':
+        this._create();
+        break;
+      case 'pagehide':
+        this._dispose();
+        break;
     }
   }
 
-  public handleEvent({ data }: MessageEvent<BroadcastIconsChangeMessage>) {
+  private _syncState({
+    data: { actionType, origin },
+  }: MessageEvent<BroadcastIconsChangeMessage>): void {
     // no need to sync with other wc icon services, just with angular elements
     if (
-      data.actionType !== ActionType.SyncState ||
-      data.origin === IconsStateBroadcast.origin
+      actionType !== ActionType.SyncState ||
+      origin === IconsStateBroadcast._origin
     ) {
       return;
     }
 
     this.send({
       actionType: ActionType.SyncState,
-      collections: this.getUserSetCollection(this.collections).toMap(),
-      references: this.getUserRefsCollection(this.refsCollection).toMap(),
-      origin: IconsStateBroadcast.origin,
+      collections: this._getUserSetCollection(this._iconsCollection),
+      references: this._getUserRefsCollection(this._iconReferences),
+      origin: IconsStateBroadcast._origin,
     });
   }
 
-  private create() {
-    if (!this.channel) {
-      this.channel = new BroadcastChannel('ignite-ui-icon-channel');
-      this.channel.addEventListener('message', this);
+  private _create(): void {
+    if (!this._channel) {
+      this._channel = new BroadcastChannel('ignite-ui-icon-channel');
+      this._channel.addEventListener('message', this);
     }
   }
 
-  /* c8 ignore next 7 */
-  private dispose() {
-    if (this.channel) {
-      this.channel.removeEventListener('message', this);
-      this.channel.close();
-      this.channel = null;
-    }
+  private _dispose(): void {
+    this._channel?.removeEventListener('message', this);
+    this._channel?.close();
+    this._channel = null;
   }
 
-  private getUserRefsCollection(collections: IconsCollection<IconMeta>) {
+  private _getUserRefsCollection(
+    collections: IconsCollection<IconMeta>
+  ): IconsCollection<IconMeta> {
     const userSetIcons = createIconDefaultMap<string, IconMeta>();
+
     for (const [collectionKey, collection] of collections.entries()) {
       for (const [iconKey, icon] of collection.entries()) {
         if (icon.external) {
@@ -73,10 +115,13 @@ export class IconsStateBroadcast {
         }
       }
     }
+
     return userSetIcons;
   }
 
-  private getUserSetCollection(collections: IconsCollection<SvgIcon>) {
+  private _getUserSetCollection(
+    collections: IconsCollection<SvgIcon>
+  ): IconsCollection<SvgIcon> {
     const userSetIcons = createIconDefaultMap<string, SvgIcon>();
 
     for (const [collectionKey, collection] of collections.entries()) {
@@ -87,6 +132,7 @@ export class IconsStateBroadcast {
         userSetIcons.getOrCreate(collectionKey).set(iconKey, icon);
       }
     }
+
     return userSetIcons;
   }
 }

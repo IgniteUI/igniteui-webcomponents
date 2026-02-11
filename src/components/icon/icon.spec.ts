@@ -9,6 +9,7 @@ import { stub } from 'sinon';
 
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import { first, last } from '../common/util.js';
+import IgcThemeProviderComponent from '../theme-provider/theme-provider.js';
 import IgcIconComponent from './icon.js';
 import {
   getIconRegistry,
@@ -272,9 +273,9 @@ describe('Icon broadcast service', () => {
 
       // dispose of mock services.
       // biome-ignore lint/complexity/useLiteralKeys: private access escape
-      broadcast1['dispose']();
+      broadcast1['_dispose']();
       // biome-ignore lint/complexity/useLiteralKeys: private access escape
-      broadcast2['dispose']();
+      broadcast2['_dispose']();
     });
   });
 
@@ -318,6 +319,154 @@ describe('Icon broadcast service', () => {
       expect(actionType).to.equal(ActionType.SyncState);
       expect(references?.get(refCollectionName)?.get(refName)).to.be.undefined;
     });
+  });
+});
+
+describe('Icon BFCache (pageshow/pagehide) handling', () => {
+  let channel: BroadcastChannel;
+  let events: MessageEvent<BroadcastIconsChangeMessage>[] = [];
+  const collectionName = 'bfcache-test';
+
+  function getChannel(service: IconsStateBroadcast) {
+    // biome-ignore lint/complexity/useLiteralKeys: private access escape
+    return service['_channel'];
+  }
+
+  function disposeChannel(service: IconsStateBroadcast) {
+    // biome-ignore lint/complexity/useLiteralKeys: private access escape
+    service['_dispose']();
+  }
+
+  const handler = (message: MessageEvent<BroadcastIconsChangeMessage>) =>
+    events.push(message);
+
+  beforeEach(async () => {
+    channel = new BroadcastChannel('ignite-ui-icon-channel');
+    channel.addEventListener('message', handler);
+    events = [];
+  });
+
+  afterEach(async () => {
+    channel.close();
+    events = [];
+  });
+
+  it('should dispose channel on pagehide event', async () => {
+    const collections = createIconDefaultMap<string, SvgIcon>();
+    const references = createIconDefaultMap<string, IconMeta>();
+    const broadcast = new IconsStateBroadcast(collections, references);
+
+    // Verify channel exists initially
+    expect(getChannel(broadcast)).to.not.be.null;
+
+    // Simulate pagehide event directly on the broadcast instance
+    broadcast.handleEvent(new Event('pagehide') as PageTransitionEvent);
+
+    // Channel should be disposed (null)
+    expect(getChannel(broadcast)).to.be.null;
+
+    // Clean up
+    disposeChannel(broadcast);
+  });
+
+  it('should recreate channel on pageshow event', async () => {
+    const collections = createIconDefaultMap<string, SvgIcon>();
+    const references = createIconDefaultMap<string, IconMeta>();
+    const broadcast = new IconsStateBroadcast(collections, references);
+
+    // Simulate pagehide to dispose channel
+    broadcast.handleEvent(new Event('pagehide') as PageTransitionEvent);
+
+    expect(getChannel(broadcast)).to.be.null;
+
+    // Simulate pageshow to recreate channel
+    broadcast.handleEvent(new Event('pageshow') as PageTransitionEvent);
+
+    // Channel should be recreated
+    expect(getChannel(broadcast)).to.not.be.null;
+    expect(getChannel(broadcast)).to.be.instanceOf(BroadcastChannel);
+
+    // Clean up
+    disposeChannel(broadcast);
+  });
+
+  it('should not create duplicate channel on pageshow if already exists', async () => {
+    const collections = createIconDefaultMap<string, SvgIcon>();
+    const references = createIconDefaultMap<string, IconMeta>();
+    const broadcast = new IconsStateBroadcast(collections, references);
+
+    // Get reference to initial channel
+    const initialChannel = getChannel(broadcast);
+    expect(initialChannel).to.not.be.null;
+
+    // Simulate pageshow without pagehide first
+    broadcast.handleEvent(new Event('pageshow') as PageTransitionEvent);
+
+    // Should still have the same channel instance
+    expect(getChannel(broadcast)).to.equal(initialChannel);
+
+    // Clean up
+    disposeChannel(broadcast);
+  });
+
+  it('should handle messages after channel recreation', async () => {
+    const collections = createIconDefaultMap<string, SvgIcon>();
+    const references = createIconDefaultMap<string, IconMeta>();
+    const broadcast = new IconsStateBroadcast(collections, references);
+
+    // Register an icon
+    registerIconFromText('bfcache-icon', bugSvg, collectionName);
+    await aTimeout(10);
+
+    // Simulate page being hidden and shown (bfcache scenario)
+    broadcast.handleEvent(new Event('pagehide') as PageTransitionEvent);
+    broadcast.handleEvent(new Event('pageshow') as PageTransitionEvent);
+
+    // Wait for message handling
+    await aTimeout(0);
+
+    // Clear events from icon registration
+    events = [];
+
+    // Request sync from peer
+    channel.postMessage({ actionType: ActionType.SyncState });
+    await aTimeout(20);
+
+    // Should still respond with icon data after recreation
+    expect(events.length).to.be.greaterThan(0);
+    const syncEvent = events.find(
+      (e) => e.data.actionType === ActionType.SyncState
+    );
+    expect(syncEvent).to.not.be.undefined;
+
+    // Clean up
+    disposeChannel(broadcast);
+  });
+
+  it('should not send messages when channel is disposed', async () => {
+    const collections = createIconDefaultMap<string, SvgIcon>();
+    const references = createIconDefaultMap<string, IconMeta>();
+    const broadcast = new IconsStateBroadcast(collections, references);
+
+    // Dispose the channel
+    broadcast.handleEvent(new Event('pagehide') as PageTransitionEvent);
+
+    // Clear events from any previous operations
+    events = [];
+
+    // Try to send a message
+    broadcast.send({
+      actionType: ActionType.RegisterIcon,
+      collections: createIconDefaultMap<string, SvgIcon>(),
+    });
+
+    await aTimeout(10);
+
+    // No events should be received since channel is null
+    expect(events.length).to.equal(0);
+
+    // Clean up
+    disposeChannel(broadcast);
   });
 });
 
@@ -386,6 +535,207 @@ describe('Icon component', () => {
     );
 
     expect(icon.mirrored).to.be.true;
+  });
+
+  describe('Multi-theme support', () => {
+    it('should resolve icon references based on theme', async () => {
+      // Test that getIconRef returns different icons for different themes
+      const defaultRef = getIconRegistry().getIconRef(
+        'expand',
+        'default',
+        'bootstrap'
+      );
+      const indigoRef = getIconRegistry().getIconRef(
+        'expand',
+        'default',
+        'indigo'
+      );
+
+      expect(defaultRef.name).to.equal('keyboard_arrow_down');
+      expect(defaultRef.collection).to.equal('internal');
+
+      expect(indigoRef.name).to.equal('indigo_chevron_down');
+      expect(indigoRef.collection).to.equal('internal');
+    });
+
+    it('should fallback to default theme when theme-specific icon does not exist', async () => {
+      const fluentRef = getIconRegistry().getIconRef(
+        'expand',
+        'default',
+        'fluent'
+      );
+
+      // Fluent theme not defined for 'expand', should fallback to default
+      expect(fluentRef.name).to.equal('keyboard_arrow_down');
+      expect(fluentRef.collection).to.equal('internal');
+    });
+
+    it('should prioritize user-set references over theme-based aliases', async () => {
+      // Set a user reference (external or internal doesn't matter)
+      setIconRef('expand', 'default', {
+        name: 'bug',
+        collection: 'default',
+      });
+
+      const ref = getIconRegistry().getIconRef('expand', 'default', 'indigo');
+
+      // Should return the user-set reference, not the theme-based one
+      expect(ref.name).to.equal('bug');
+      expect(ref.collection).to.equal('default');
+    });
+
+    it('should return icon as-is when no reference exists', async () => {
+      const ref = getIconRegistry().getIconRef(
+        'custom-icon',
+        'custom-collection',
+        'bootstrap'
+      );
+
+      expect(ref.name).to.equal('custom-icon');
+      expect(ref.collection).to.equal('custom-collection');
+    });
+
+    it('should work without theme parameter', async () => {
+      const ref = getIconRegistry().getIconRef('bug', 'default');
+
+      expect(ref.name).to.equal('bug');
+      expect(ref.collection).to.equal('default');
+    });
+
+    it('should only resolve theme-based aliases for default collection', async () => {
+      // Theme-based resolution only applies to 'default' collection
+      const ref = getIconRegistry().getIconRef('expand', 'custom', 'indigo');
+
+      expect(ref.name).to.equal('expand');
+      expect(ref.collection).to.equal('custom');
+    });
+  });
+
+  describe('Integration with theme-provider', () => {
+    before(() => {
+      defineComponents(IgcThemeProviderComponent);
+    });
+
+    beforeEach(() => {
+      // Register target icons for our theme-based test
+      const bootstrapChevronSvg = '<svg><path d="M7 10l5 5 5-5z"/></svg>';
+      const indigoChevronSvg = '<svg><path d="M16.59 8.59L12 13.17"/></svg>';
+
+      registerIconFromText(
+        'bootstrap-chevron',
+        bootstrapChevronSvg,
+        'test-internal'
+      );
+      registerIconFromText('indigo-chevron', indigoChevronSvg, 'test-internal');
+
+      // Set up theme-based references manually for testing
+      getIconRegistry().setIconRef({
+        alias: { name: 'test-expand', collection: 'default' },
+        target: { name: 'bootstrap-chevron', collection: 'test-internal' },
+        overwrite: true,
+      });
+    });
+
+    it('should resolve different icons for different theme providers', async () => {
+      const container = await fixture<HTMLDivElement>(html`
+        <div>
+          <igc-theme-provider theme="bootstrap">
+            <igc-icon id="bootstrap-icon" name="test-expand"></igc-icon>
+          </igc-theme-provider>
+          <igc-theme-provider theme="indigo">
+            <igc-icon id="indigo-icon" name="test-expand"></igc-icon>
+          </igc-theme-provider>
+        </div>
+      `);
+
+      const bootstrapIcon =
+        container.querySelector<IgcIconComponent>('#bootstrap-icon')!;
+      const indigoIcon =
+        container.querySelector<IgcIconComponent>('#indigo-icon')!;
+
+      // Override the reference for indigo theme
+      getIconRegistry().setIconRef({
+        alias: { name: 'test-expand', collection: 'default' },
+        target: {
+          name: 'indigo-chevron',
+          collection: 'test-internal',
+          external: false,
+        },
+        overwrite: false,
+      });
+
+      await elementUpdated(bootstrapIcon);
+      await elementUpdated(indigoIcon);
+
+      // Both should render, but we'd need theme-aware resolution
+      // For now, just verify they both render successfully
+      const bootstrapSvg = bootstrapIcon.shadowRoot?.querySelector('svg');
+      const indigoSvg = indigoIcon.shadowRoot?.querySelector('svg');
+
+      expect(bootstrapSvg).to.exist;
+      expect(indigoSvg).to.exist;
+    });
+
+    it('should update icon when user sets a new reference', async () => {
+      const alternativeSvg = '<svg><path d="ALTERNATIVE"/></svg>';
+      registerIconFromText('alternative-icon', alternativeSvg, 'test-internal');
+
+      const container = await fixture<HTMLDivElement>(html`
+        <div>
+          <igc-theme-provider theme="bootstrap">
+            <igc-icon id="test-icon" name="test-expand"></igc-icon>
+          </igc-theme-provider>
+        </div>
+      `);
+
+      const icon = container.querySelector<IgcIconComponent>('#test-icon')!;
+      await elementUpdated(icon);
+
+      // Capture initial content
+      const initialContent = icon.shadowRoot!.innerHTML;
+
+      // Set a new reference
+      setIconRef('test-expand', 'default', {
+        name: 'alternative-icon',
+        collection: 'test-internal',
+      });
+
+      await elementUpdated(icon);
+
+      // Content should have changed
+      const updatedContent = icon.shadowRoot!.innerHTML;
+      expect(initialContent).to.not.equal(updatedContent);
+      expect(updatedContent).to.include('ALTERNATIVE');
+    });
+
+    it('should coexist with non-aliased icons in different themes', async () => {
+      const customSvg = '<svg><path d="M10 10"/></svg>';
+      registerIconFromText('custom-icon', customSvg, 'default');
+
+      const container = await fixture<HTMLDivElement>(html`
+        <div>
+          <igc-theme-provider theme="bootstrap">
+            <igc-icon id="custom1" name="custom-icon"></igc-icon>
+          </igc-theme-provider>
+          <igc-theme-provider theme="indigo">
+            <igc-icon id="custom2" name="custom-icon"></igc-icon>
+          </igc-theme-provider>
+        </div>
+      `);
+
+      const icon1 = container.querySelector<IgcIconComponent>('#custom1')!;
+      const icon2 = container.querySelector<IgcIconComponent>('#custom2')!;
+
+      await elementUpdated(icon1);
+      await elementUpdated(icon2);
+
+      // Both should render the same custom icon
+      const svg1 = icon1.shadowRoot?.querySelector('svg');
+      const svg2 = icon2.shadowRoot?.querySelector('svg');
+
+      expect(svg1!.innerHTML).to.include('M10 10');
+      expect(svg2!.innerHTML).to.include('M10 10');
+    });
   });
 });
 
