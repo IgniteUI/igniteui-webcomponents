@@ -1,43 +1,34 @@
 @use 'sass:map';
 @use 'styles/utilities' as *;
 @use 'igniteui-theming/sass/themes/schemas/components/light/date-range-picker' as *;
-@use 'igniteui-theming/sass/themes/schemas/components/light/input-group' as input-theme;
+@use 'igniteui-theming/sass/themes/schemas/components/light/input-group' as *;
 @use 'components/calendar/themes/light/themes' as calendar-theme;
+@use 'components/date-picker/themes/shared/date-picker.utils' as *;
 
-$material: map.merge(digest-schema($material-date-range-picker), digest-schema(input-theme.$material-input-group));
-$bootstrap: map.merge(digest-schema($bootstrap-date-range-picker), digest-schema(input-theme.$bootstrap-input-group));
-$fluent: map.merge(digest-schema($fluent-date-range-picker), digest-schema(input-theme.$fluent-input-group));
-$indigo: map.merge(digest-schema($indigo-date-range-picker), digest-schema(input-theme.$indigo-input-group));
-$base: digest-schema($light-date-range-picker);
-$material: map.merge($material, (
-    default-size: map.get(calendar-theme.$material, 'default-size'),
-    border-radius: map.get(calendar-theme.$material, 'border-radius'),
-    border-color: map.get(calendar-theme.$material, 'border-color'),
-    content-background: map.get(calendar-theme.$material, 'content-background'),
-    actions-divider-color: map.get(calendar-theme.$material, 'actions-divider-color'),
-));
-$material-calendar-border-color: map.get(calendar-theme.$material, 'border-color');
-$bootstrap: map.merge($bootstrap, (
-    default-size: map.get(calendar-theme.$bootstrap, 'default-size'),
-    border-radius: map.get(calendar-theme.$bootstrap, 'border-radius'),
-    border-color: map.get(calendar-theme.$bootstrap, 'border-color'),
-    content-background: map.get(calendar-theme.$bootstrap, 'content-background'),
-    actions-divider-color: map.get(calendar-theme.$bootstrap, 'actions-divider-color'),
-));
-$bootstrap-calendar-border-color: map.get(calendar-theme.$bootstrap, 'border-color');
-$fluent: map.merge($fluent, (
-    default-size: map.get(calendar-theme.$fluent, 'default-size'),
-    border-radius: map.get(calendar-theme.$fluent, 'border-radius'),
-    border-color: map.get(calendar-theme.$fluent, 'border-color'),
-    content-background: map.get(calendar-theme.$fluent, 'content-background'),
-    actions-divider-color: map.get(calendar-theme.$fluent, 'actions-divider-color'),
-));
-$fluent-calendar-border-color: map.get(calendar-theme.$fluent, 'border-color');
-$indigo: map.merge($indigo, (
-    default-size: map.get(calendar-theme.$indigo, 'default-size'),
-    border-radius: map.get(calendar-theme.$indigo, 'border-radius'),
-    border-color: map.get(calendar-theme.$indigo, 'border-color'),
-    content-background: map.get(calendar-theme.$indigo, 'content-background'),
-    actions-divider-color: map.get(calendar-theme.$indigo, 'actions-divider-color')
-));
-$indigo-calendar-border-color: map.get(calendar-theme.$indigo, 'border-color');
+$material: digest-schema(
+    map.merge(
+        $material-date-range-picker,
+        date-picker-theme(calendar-theme.$material)
+    )
+);
+$bootstrap: digest-schema(
+    map.merge(
+        $bootstrap-date-range-picker,
+        date-picker-theme(calendar-theme.$bootstrap)
+    )
+);
+$fluent: digest-schema(
+    map.merge(
+        $fluent-date-range-picker,
+        date-picker-theme(calendar-theme.$fluent)
+    )
+);
+$indigo: digest-schema(
+    map.merge(
+        $indigo-date-range-picker,
+        date-picker-theme(calendar-theme.$indigo)
+    )
+);
+$bootstrap-input: digest-schema(input-theme($bootstrap-input-group));
+$fluent-input: digest-schema(input-theme($fluent-input-group));
+$indigo-input: digest-schema(input-theme($indigo-input-group));

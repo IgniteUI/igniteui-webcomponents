@@ -1,6 +1,6 @@
 @use 'styles/utilities' as *;
 @use '../light/themes' as *;
-@use '../../../input/themes/light/themes' as input-theme;
+@use 'components/input/themes/light/themes' as input-theme;
 
 $theme: $material;
 $input-theme: input-theme.$material;
@@ -11,6 +11,7 @@ $input-theme: input-theme.$material;
     igc-dialog {
         box-shadow: none;
         border: none;
+        background: transparent;
 
         [part='actions'] {
             border: none;
@@ -24,7 +25,7 @@ $input-theme: input-theme.$material;
 
     igc-dialog[open]::part(base) {
         box-shadow: var(--ig-elevation-24);
-        border: rem(1px) solid var(--calendar-border-color);
+        border: none;
     }
 
     igc-dialog::part(content),

@@ -1,15 +1,17 @@
 @use 'styles/utilities' as *;
 @use '../light/themes' as *;
+@use 'components/input/themes/light/themes' as input-theme;
 
 $theme: $material;
+$input-theme: input-theme.$material;
 
 :host {
     --component-size: var(--ig-size, #{var-get($theme, 'default-size')});
-    --calendar-border-color: #{$material-calendar-border-color};
 
     igc-dialog {
         box-shadow: none;
         border: none;
+        background: transparent;
 
         [part='actions'] {
             border: none;
@@ -17,12 +19,13 @@ $theme: $material;
 
         igc-calendar {
             box-shadow: none;
+            border-radius: 0;
         }
     }
 
     igc-dialog[open]::part(base) {
         box-shadow: var(--ig-elevation-24);
-        border: rem(1px) solid var(--calendar-border-color);
+        border: none;
     }
 
     igc-dialog::part(content) {
@@ -42,7 +45,7 @@ $theme: $material;
 
         border-radius: var-get($theme, 'border-radius');
         background: var-get($theme, 'content-background');
-        box-shadow: 0 0 0 rem(1px) var(--calendar-border-color);
+        box-shadow: 0 0 0 rem(1px) var-get($theme, 'border-color');
     }
 
     igc-popover::part(container) {
@@ -51,7 +54,7 @@ $theme: $material;
     }
 
     ::part(helper-text) {
-        color: var-get($theme, 'helper-text-color');
+        color: var-get($input-theme, 'helper-text-color');
         grid-auto-rows: minmax(rem(18px), auto);
         margin-block-start: pad-block(rem(4px));
     }
@@ -64,10 +67,10 @@ $theme: $material;
 }
 
 :host(:not([readonly])) {
-    --affix-color: #{var-get($theme, 'input-prefix-color')};
+    --affix-color: #{var-get($input-theme, 'input-prefix-color')};
 
     igc-date-time-input[readonly] {
-        --affix-color: #{var-get($theme, 'input-prefix-color')};
+        --affix-color: #{var-get($input-theme, 'input-prefix-color')};
 
         &::part(prefix),
         &::part(suffix) {
@@ -82,43 +85,44 @@ $theme: $material;
     }
 
     igc-input:focus-within {
-        --affix-color: #{var-get($theme, 'input-prefix-color--focused')};
+        --affix-color: #{var-get($input-theme, 'input-prefix-color--focused')};
 
         &::part(filled) {
-            --affix-color: #{var-get($theme, 'input-prefix-color--focused')};
+            --affix-color: #{var-get($input-theme, 'input-prefix-color--focused')};
         }
     }
 
     ::part(filled) {
-        --affix-color: #{var-get($theme, 'input-prefix-color--filled')};
+        --affix-color: #{var-get($input-theme, 'input-prefix-color--filled')};
     }
 }
 
 :host(:not([disabled],[readonly]):state(ig-invalid)),
 :host(:not(:disabled,[readonly]):state(ig-invalid)) {
     ::part(helper-text) {
-        color: var-get($theme, 'error-secondary-color');
+        color: var-get($input-theme, 'error-secondary-color');
     }
 }
 
 :host(:disabled),
 :host([disabled]) {
-    --affix-color: #{var-get($theme, 'disabled-text-color')};
+    --affix-color: #{var-get($input-theme, 'disabled-text-color')};
 
     ::part(filled) {
-        --affix-color: #{var-get($theme, 'disabled-text-color')};
+        --affix-color: #{var-get($input-theme, 'disabled-text-color')};
     }
 
     ::part(helper-text),
     [part='label'],
     igc-validator {
-        color: var-get($theme, 'disabled-text-color');
+        color: var-get($input-theme, 'disabled-text-color');
     }
 }
 
 [part='actions'] {
     min-height: #{sizable(rem(40px), rem(46px), rem(52px))};
     border-block-start: rem(1px) solid var-get($theme, 'actions-divider-color');
+    background: var-get($theme, 'content-background');
 }
 
 [part='separator'] {

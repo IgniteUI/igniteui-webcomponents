@@ -5,4 +5,5 @@
 
 :host {
     @include css-vars-from-theme($indigo);
+    @include css-vars-from-theme($indigo-input);
 }

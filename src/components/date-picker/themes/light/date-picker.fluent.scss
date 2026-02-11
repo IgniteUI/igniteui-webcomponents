@@ -3,4 +3,5 @@
 
 :host {
     @include css-vars-from-theme($fluent);
+    @include css-vars-from-theme($fluent-input);
 }

@@ -1,10 +1,9 @@
 @use 'sass:map';
 @use 'styles/utilities' as *;
 @use '../light/themes' as *;
-@use '../../../input/themes/light/themes' as input-theme;
+@use 'components/input/themes/light/themes' as input-theme;
 
-$theme: map.get($indigo, 'calendar');
-$input-theme: input-theme.$indigo;
+$theme: input-theme.$indigo;
 
 :host {
     --input-icon: #{sizable(rem(14px), rem(16px), rem(16px))};
@@ -32,27 +31,27 @@ $input-theme: input-theme.$indigo;
 
 :host(:focus-within) {
     [part='label'] {
-        color: var-get($input-theme, 'focused-secondary-color');
+        color: var-get($theme, 'focused-secondary-color');
     }
 }
 
 :host([readonly]) {
     igc-date-time-input::part(container) {
-        border-color: var-get($input-theme, 'disabled-text-color');
+        border-color: var-get($theme, 'disabled-text-color');
     }
 }
 
 :host(:not([disabled],[readonly]):state(ig-invalid)),
 :host(:not(:disabled,[readonly]):state(ig-invalid)) {
     ::part(helper-text) {
-        color: var-get($input-theme, 'helper-text-color');
+        color: var-get($theme, 'helper-text-color');
     }
 
     igc-date-time-input::part(container) {
-        border-color: var-get($input-theme, 'error-secondary-color');
+        border-color: var-get($theme, 'error-secondary-color');
 
         &::after {
-            background: var-get($input-theme, 'error-secondary-color');
+            background: var-get($theme, 'error-secondary-color');
         }
     }
 }

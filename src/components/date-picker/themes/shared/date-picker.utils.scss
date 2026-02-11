@@ -11,6 +11,19 @@
         'border-radius': map.get($theme, 'border-radius'),
         'actions-divider-color': map.get($theme, 'actions-divider-color'),
         'default-size': map.get($theme, 'default-size'),
-        _meta: map.get($theme, _meta),
-    )
+        _meta: map.get($theme, _meta)
+    );
+}
+
+// We need to extract some properties from the input theme in order to style the label of the date-picker.
+// This is done because the label is a custom element in the date-picker component and is not part of the input.
+@function input-theme($theme) {
+    @return (
+        'idle-secondary-color': map.get($theme, 'idle-secondary-color'),
+        'disabled-text-color': map.get($theme, 'disabled-text-color'),
+        'input-prefix-color': map.get($theme, 'input-prefix-color'),
+        _meta: (
+            name: map.get($theme, _meta, name),
+        )
+    );
 }

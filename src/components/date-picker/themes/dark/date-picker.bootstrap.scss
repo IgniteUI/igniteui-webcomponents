@@ -3,4 +3,5 @@
 
 :host {
     @include css-vars-from-theme($bootstrap);
+    @include css-vars-from-theme($bootstrap-input);
 }

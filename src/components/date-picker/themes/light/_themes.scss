@@ -1,9 +1,13 @@
 @use 'sass:map';
 @use 'styles/utilities' as *;
 @use 'igniteui-theming/sass/themes/schemas/components/light/calendar' as *;
+@use 'igniteui-theming/sass/themes/schemas/components/light/input-group' as *;
 @use '../shared/date-picker.utils' as *;
 
 $material: digest-schema(date-picker-theme($material-calendar));
 $bootstrap: digest-schema(date-picker-theme($bootstrap-calendar));
 $fluent: digest-schema(date-picker-theme($fluent-calendar));
 $indigo: digest-schema(date-picker-theme($indigo-calendar));
+$bootstrap-input: digest-schema(input-theme($bootstrap-input-group));
+$fluent-input: digest-schema(input-theme($fluent-input-group));
+$indigo-input: digest-schema(input-theme($indigo-input-group));

@@ -1,10 +1,10 @@
 @use 'styles/utilities' as *;
 @use '../light/themes' as *;
+@use 'components/input/themes/light/themes' as input-theme;
 
-$theme: $indigo;
+$theme: input-theme.$indigo;
 
 :host {
-    --calendar-border-color: #{$indigo-calendar-border-color};
     --input-icon: #{sizable(rem(14px), rem(16px), rem(16px))};
 
     igc-icon,
