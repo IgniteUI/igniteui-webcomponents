@@ -26,7 +26,7 @@ const metadata: Meta<IgcBadgeComponent> = {
   argTypes: {
     variant: {
       type: '"primary" | "info" | "success" | "warning" | "danger"',
-      description: 'The type of badge.',
+      description: 'The type (style variant) of the badge.',
       options: ['primary', 'info', 'success', 'warning', 'danger'],
       control: { type: 'select' },
       table: { defaultValue: { summary: 'primary' } },
@@ -46,7 +46,8 @@ const metadata: Meta<IgcBadgeComponent> = {
     },
     dot: {
       type: 'boolean',
-      description: 'Sets whether to render a dot type badge.',
+      description:
+        'Sets whether to render a dot type badge.\nWhen enabled, the badge appears as a small dot without any content.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
@@ -57,13 +58,16 @@ const metadata: Meta<IgcBadgeComponent> = {
 export default metadata;
 
 interface IgcBadgeArgs {
-  /** The type of badge. */
+  /** The type (style variant) of the badge. */
   variant: 'primary' | 'info' | 'success' | 'warning' | 'danger';
   /** Sets whether to draw an outlined version of the badge. */
   outlined: boolean;
   /** The shape of the badge. */
   shape: 'rounded' | 'square';
-  /** Sets whether to render a dot type badge. */
+  /**
+   * Sets whether to render a dot type badge.
+   * When enabled, the badge appears as a small dot without any content.
+   */
   dot: boolean;
 }
 type Story = StoryObj<IgcBadgeArgs>;
