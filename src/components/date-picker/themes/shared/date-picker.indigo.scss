@@ -3,11 +3,10 @@
 @use '../light/themes' as *;
 @use '../../../input/themes/light/themes' as input-theme;
 
-$theme: $indigo;
+$theme: map.get($indigo, 'calendar');
 $input-theme: input-theme.$indigo;
 
 :host {
-    --calendar-border-color: #{$indigo-calendar-border-color};
     --input-icon: #{sizable(rem(14px), rem(16px), rem(16px))};
 
     igc-icon,
@@ -39,7 +38,7 @@ $input-theme: input-theme.$indigo;
 
 :host([readonly]) {
     igc-date-time-input::part(container) {
-        border-color: var-get($theme, 'disabled-text-color');
+        border-color: var-get($input-theme, 'disabled-text-color');
     }
 }
 
@@ -50,10 +49,10 @@ $input-theme: input-theme.$indigo;
     }
 
     igc-date-time-input::part(container) {
-        border-color: var-get($theme, 'error-secondary-color');
+        border-color: var-get($input-theme, 'error-secondary-color');
 
         &::after {
-            background: var-get($theme, 'error-secondary-color');
+            background: var-get($input-theme, 'error-secondary-color');
         }
     }
 }

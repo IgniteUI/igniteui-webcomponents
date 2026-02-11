@@ -1,17 +1,8 @@
+@use 'sass:map';
 @use 'styles/utilities' as *;
 @use 'themes' as *;
 @use '../light/themes' as light;
 
 :host {
-    @include css-vars-from-theme(diff(light.$base, $indigo), 'ig-datepicker');
-
-    --calendar-border-color: #{$indigo-calendar-border-color};
-
-    igc-dialog[open]::part(base) {
-        box-shadow: var(--ig-elevation-7);
-    }
-
-    igc-popover::part(container) {
-        box-shadow: var(--ig-elevation-2);
-    }
+    @include css-vars-from-theme($indigo);
 }

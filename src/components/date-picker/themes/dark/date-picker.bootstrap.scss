@@ -1,9 +1,6 @@
 @use 'styles/utilities' as *;
 @use 'themes' as *;
-@use '../light/themes' as light;
 
 :host {
-    @include css-vars-from-theme(diff(light.$base, $bootstrap), 'ig-datepicker');
-
-    --calendar-border-color: #{$bootstrap-calendar-border-color};
+    @include css-vars-from-theme($bootstrap);
 }

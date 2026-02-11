@@ -1,0 +1,16 @@
+@use 'sass:map';
+
+// We pick the properties of the calendar theme that are relevant for the date-picker component.
+// In this instance, we only need the content background and border properties that will be applied for the
+// dropdown/dialog parts respectively. Getting the meta is done so varialbes are prefixed correctly.
+@function date-picker-theme($theme) {
+    // Pick properties from calendar schemas that are relevant to the date-picker component
+    @return (
+        'content-background': map.get($theme, 'content-background'),
+        'border-color': map.get($theme, 'border-color'),
+        'border-radius': map.get($theme, 'border-radius'),
+        'actions-divider-color': map.get($theme, 'actions-divider-color'),
+        'default-size': map.get($theme, 'default-size'),
+        _meta: map.get($theme, _meta),
+    )
+}

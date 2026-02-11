@@ -3,7 +3,5 @@
 @use '../light/themes' as light;
 
 :host {
-    @include css-vars-from-theme(diff(light.$base, $fluent), 'ig-datepicker');
-
-    --calendar-border-color: #{$fluent-calendar-border-color};
+    @include css-vars-from-theme($fluent);
 }
