@@ -1,7 +1,12 @@
+@use 'sass:map';
 @use 'styles/utilities' as *;
 @use 'themes' as *;
 
 :host {
     @include css-vars-from-theme($bootstrap);
     @include css-vars-from-theme($bootstrap-input);
+
+    igc-dialog {
+        @include css-vars-from-theme($bootstrap-dialog);
+    }
 }

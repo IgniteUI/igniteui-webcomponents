@@ -4,4 +4,8 @@
 
 :host {
     @include css-vars-from-theme($material);
+
+    igc-dialog {
+        @include css-vars-from-theme($material-dialog);
+    }
 }

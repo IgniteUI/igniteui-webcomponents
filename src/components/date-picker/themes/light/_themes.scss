@@ -11,3 +11,7 @@ $indigo: digest-schema(date-picker-theme($indigo-calendar));
 $bootstrap-input: digest-schema(input-theme($bootstrap-input-group));
 $fluent-input: digest-schema(input-theme($fluent-input-group));
 $indigo-input: digest-schema(input-theme($indigo-input-group));
+$material-dialog: digest-schema(dialog-theme($material-calendar));
+$bootstrap-dialog: digest-schema(dialog-theme($bootstrap-calendar));
+$fluent-dialog: digest-schema(dialog-theme($fluent-calendar));
+$indigo-dialog: digest-schema(dialog-theme($indigo-calendar));

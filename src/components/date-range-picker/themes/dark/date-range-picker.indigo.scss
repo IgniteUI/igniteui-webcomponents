@@ -5,6 +5,9 @@
     @include css-vars-from-theme($indigo);
     @include css-vars-from-theme($indigo-input);
 
+    igc-dialog {
+        @include css-vars-from-theme($indigo-dialog);
+    }
 
     igc-dialog[open]::part(base) {
         box-shadow: var(--ig-elevation-7);

@@ -28,3 +28,13 @@
         )
     );
 }
+
+// We need to the border-color property from the calendar theme to style the igc-dialog part of the date-picker.
+@function dialog-theme($theme) {
+    @return (
+        'border-color': map.get($theme, 'border-color'),
+        _meta: (
+            name: map.get($theme, _meta, name),
+        )
+    );
+}

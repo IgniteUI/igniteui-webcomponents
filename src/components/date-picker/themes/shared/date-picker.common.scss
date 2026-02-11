@@ -25,7 +25,6 @@ $input-theme: input-theme.$material;
 
     igc-dialog[open]::part(base) {
         box-shadow: var(--ig-elevation-24);
-        border: none;
     }
 
     igc-dialog::part(content),
