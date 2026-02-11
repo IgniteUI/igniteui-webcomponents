@@ -20,6 +20,7 @@
 @function input-theme($theme) {
     @return (
         'idle-secondary-color': map.get($theme, 'idle-secondary-color'),
+        'focused-secondary-color': map.get($theme, 'focused-secondary-color'),
         'disabled-text-color': map.get($theme, 'disabled-text-color'),
         'input-prefix-color': map.get($theme, 'input-prefix-color'),
         _meta: (
