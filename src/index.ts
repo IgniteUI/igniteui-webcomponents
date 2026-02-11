@@ -164,8 +164,8 @@ export type {
 } from './components/calendar/types.js';
 export { DateRangeType } from './components/calendar/types.js';
 export type { IgcCheckboxChangeEventArgs } from './components/checkbox/checkbox-base.js';
-export { DatePart } from './components/date-time-input/date-util.js';
-export type { DatePartDeltas } from './components/date-time-input/date-util.js';
+export { DatePart } from './components/date-time-input/date-part.js';
+export type { DatePartDeltas } from './components/date-time-input/date-part.js';
 export type {
   CustomDateRange,
   DateRangeValue,
