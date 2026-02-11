@@ -58,6 +58,9 @@ describe('Splitter', () => {
     it('is accessible', async () => {
       await expect(splitter).to.be.accessible();
       await expect(splitter).shadowDom.to.be.accessible();
+
+      const bar = getSplitterPart(splitter, BAR_PART);
+      expect(bar.getAttribute('role')).to.equal('separator');
     });
 
     it('should render start and end slots', async () => {
@@ -70,6 +73,39 @@ describe('Splitter', () => {
       elements = slot.assignedElements();
       expect(elements).to.have.lengthOf(1);
       expect(elements[0].textContent).to.equal('Pane 2');
+    });
+
+    it('should render both panes with equal sizes if no explicit sizes set', async () => {
+      const startPart = getSplitterPart(splitter, START_PART);
+      const endPart = getSplitterPart(splitter, END_PART);
+
+      const startStyle = getComputedStyle(startPart);
+      const endStyle = getComputedStyle(endPart);
+
+      const totalWidth = getTotalSize(splitter, 'width');
+      const startWidth = Number.parseFloat(startStyle.width);
+      const endWidth = Number.parseFloat(endStyle.width);
+
+      expect(startWidth).to.be.closeTo(totalWidth / 2, 1);
+      expect(endWidth).to.be.closeTo(totalWidth / 2, 1);
+    });
+
+    it('should render both panes with equal sizes if no explicit sizes set - vertical', async () => {
+      splitter.orientation = 'vertical';
+      await elementUpdated(splitter);
+
+      const startPart = getSplitterPart(splitter, START_PART);
+      const endPart = getSplitterPart(splitter, END_PART);
+
+      const startStyle = getComputedStyle(startPart);
+      const endStyle = getComputedStyle(endPart);
+
+      const totalHeight = getTotalSize(splitter, 'height');
+      const startHeight = Number.parseFloat(startStyle.height);
+      const endHeight = Number.parseFloat(endStyle.height);
+
+      expect(startHeight).to.be.closeTo(totalHeight / 2, 1);
+      expect(endHeight).to.be.closeTo(totalHeight / 2, 1);
     });
 
     it('should render splitter bar between start and end parts', async () => {
@@ -197,6 +233,26 @@ describe('Splitter', () => {
       expect(barHandle.hidden).to.be.true;
       expect(startCollapseBtn.hidden).to.be.false;
       expect(endCollapseBtn.hidden).to.be.false;
+
+      // Splitter bar is still focusable
+      const bar = getSplitterPart(splitter, BAR_PART);
+      bar.focus();
+      await elementUpdated(splitter);
+
+      expect(splitter.shadowRoot!.activeElement).to.equal(bar);
+
+      const previousSizes = getPanesSizes(splitter, 'width');
+      const resizeDelta = 10;
+
+      // Splitter bar is still interactive for resizing
+      simulateKeyboard(bar, arrowRight);
+      await elementUpdated(splitter);
+
+      const currentSizes = getPanesSizes(splitter, 'width');
+      const newStart = previousSizes.startSize + resizeDelta;
+      const newEnd = previousSizes.endSize - resizeDelta;
+      expect(currentSizes.startSize).to.equal(newStart);
+      expect(currentSizes.endSize).to.equal(newEnd);
     });
 
     it('should have default horizontal orientation', () => {
@@ -388,6 +444,37 @@ describe('Splitter', () => {
       expect(style.maxWidth).to.equal('100%');
     });
 
+    it('should set pane sizes to alternative CSS units such as em, rem, etc.', async () => {
+      splitter = await fixture<IgcSplitterComponent>(
+        createTwoPanesWithSizesAndConstraints({
+          startSize: '5em',
+          endSize: '2rem',
+          splitterWidth: '1000px',
+        })
+      );
+      await elementUpdated(splitter);
+
+      document.body.style.fontSize = '16px';
+      splitter.style.fontSize = '10px';
+      await elementUpdated(splitter);
+
+      const startPart = getSplitterPart(splitter, START_PART);
+      const style = getComputedStyle(startPart);
+
+      const expectedStartSizeInPixels = 5 * 10; // 5em with font size of 10px
+      expect(style.flex).to.equal(
+        `0 1 ${expectedStartSizeInPixels.toString()}px`
+      );
+
+      const endPart = getSplitterPart(splitter, END_PART);
+      const style2 = getComputedStyle(endPart);
+
+      const expectedEndSizeInPixels = 2 * 16; // 2rem with root font size of 16px
+      expect(style2.flex).to.equal(
+        `0 1 ${expectedEndSizeInPixels.toString()}px`
+      );
+    });
+
     it('should properly set default min/max values when not specified', async () => {
       await elementUpdated(splitter);
 
@@ -518,6 +605,12 @@ describe('Splitter', () => {
         );
         const expectedEndSize = roundPrecise((30 / 100) * totalAvailable, 2);
         expect(sizes.endSize).to.be.closeTo(expectedEndSize, 2);
+
+        // When only one size is set, the other panel fills remaining space
+        expect(sizes.startSize).to.be.closeTo(
+          totalAvailable - expectedEndSize,
+          2
+        );
 
         const endPart = getSplitterPart(splitter, END_PART);
         const styleEnd = getComputedStyle(endPart);
@@ -775,6 +868,8 @@ describe('Splitter', () => {
       bar.focus();
       await elementUpdated(splitter);
 
+      expect(bar.getAttribute('tabindex')).to.equal('0');
+
       simulateKeyboard(bar, arrowRight);
       await elementUpdated(splitter);
 
@@ -783,6 +878,9 @@ describe('Splitter', () => {
       let newEnd = previousSizes.endSize - resizeDelta;
       expect(currentSizes.startSize).to.equal(newStart);
       expect(currentSizes.endSize).to.equal(newEnd);
+
+      // Focus is not lost during resize
+      expect(bar.getAttribute('tabindex')).to.equal('0');
 
       let startArgs = {
         startPanelSize: previousSizes.startSize,
@@ -805,6 +903,8 @@ describe('Splitter', () => {
       newEnd = previousSizes.endSize - resizeDelta * 2;
       expect(currentSizes.startSize).to.equal(newStart);
       expect(currentSizes.endSize).to.equal(newEnd);
+
+      expect(bar.getAttribute('tabindex')).to.equal('0');
 
       startArgs = {
         startPanelSize: previousSizes.startSize + resizeDelta,
@@ -987,6 +1087,8 @@ describe('Splitter', () => {
       bar.focus();
       await elementUpdated(splitter);
 
+      expect(bar.getAttribute('tabindex')).to.equal('0');
+
       simulateKeyboard(bar, [ctrlKey, arrowLeft]);
       await elementUpdated(splitter);
 
@@ -999,6 +1101,9 @@ describe('Splitter', () => {
       expect(splitter.startCollapsed).to.be.true;
       expect(splitter.endCollapsed).to.be.false;
 
+      // Focus is not lost during collapse
+      expect(bar.getAttribute('tabindex')).to.equal('0');
+
       simulateKeyboard(bar, [ctrlKey, arrowRight]);
       await elementUpdated(splitter);
 
@@ -1020,6 +1125,7 @@ describe('Splitter', () => {
       expect(currentSizes.endSize).to.equal(0);
       expect(splitter.startCollapsed).to.be.false;
       expect(splitter.endCollapsed).to.be.true;
+      expect(bar.getAttribute('tabindex')).to.equal('0');
 
       simulateKeyboard(bar, [ctrlKey, arrowLeft]);
       await elementUpdated(splitter);
@@ -1032,6 +1138,7 @@ describe('Splitter', () => {
       expect(currentSizes.endSize).to.be.greaterThan(0);
       expect(splitter.startCollapsed).to.be.false;
       expect(splitter.endCollapsed).to.be.false;
+      expect(bar.getAttribute('tabindex')).to.equal('0');
     });
 
     it('should expand/collapse panes with Ctrl + up/down arrow keys in vertical orientation', async () => {
@@ -1041,6 +1148,7 @@ describe('Splitter', () => {
       const bar = getSplitterPart(splitter, BAR_PART);
       bar.focus();
       await elementUpdated(splitter);
+      expect(bar.getAttribute('tabindex')).to.equal('0');
 
       simulateKeyboard(bar, [ctrlKey, arrowUp]);
       await elementUpdated(splitter);
@@ -1053,6 +1161,7 @@ describe('Splitter', () => {
       expect(currentSizes.endSize).to.equal(splitterSize - barSize);
       expect(splitter.startCollapsed).to.be.true;
       expect(splitter.endCollapsed).to.be.false;
+      expect(bar.getAttribute('tabindex')).to.equal('0');
 
       simulateKeyboard(bar, [ctrlKey, arrowDown]);
       await elementUpdated(splitter);
@@ -1075,6 +1184,7 @@ describe('Splitter', () => {
       expect(currentSizes.endSize).to.equal(0);
       expect(splitter.startCollapsed).to.be.false;
       expect(splitter.endCollapsed).to.be.true;
+      expect(bar.getAttribute('tabindex')).to.equal('0');
 
       simulateKeyboard(bar, [ctrlKey, arrowUp]);
       await elementUpdated(splitter);
@@ -1096,6 +1206,13 @@ describe('Splitter', () => {
       const eventSpy = spy(splitter, 'emitEvent');
       let previousSizes = getPanesSizes(splitter, 'width');
       const bar = getSplitterPart(splitter, BAR_PART);
+      // Splitter bar is still visible but non-interactive
+      expect(bar).to.exist;
+      expect(bar.hidden).to.be.false;
+      // Bar handle is hidden
+      const barHandle = getSplitterPart(splitter, DRAG_HANDLE_PART);
+      expect(barHandle).to.exist;
+      expect(barHandle.hidden).to.be.true;
 
       await resize(splitter, 100, 0);
 
