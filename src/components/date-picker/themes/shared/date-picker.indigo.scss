@@ -9,8 +9,8 @@ $theme: input-theme.$indigo;
     --input-icon: #{sizable(rem(14px), rem(16px), rem(16px))};
 
     igc-icon,
-    ::slotted(igc-icon) {
-        --size: var(--input-icon) !important;
+    ::slotted(*) {
+        --ig-icon-size: var(--input-icon);
     }
 
     igc-dialog[open]::part(base) {
