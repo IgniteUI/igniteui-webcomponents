@@ -2,7 +2,7 @@ import { html, LitElement, type PropertyValues } from 'lit';
 import { property } from 'lit/decorators.js';
 import { addThemingController } from '../../theming/theming-controller.js';
 import { addInternalsController } from '../common/controllers/internals.js';
-import { addSlotController } from '../common/controllers/slot.js';
+import { addSlotController, setSlots } from '../common/controllers/slot.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { partMap } from '../common/part-map.js';
 import type { BadgeShape, StyleVariant } from '../types.js';
@@ -39,6 +39,11 @@ export default class IgcBadgeComponent extends LitElement {
 
   private readonly _internals = addInternalsController(this, {
     initialARIA: { role: 'status' },
+  });
+
+  private readonly _slots = addSlotController(this, {
+    slots: setSlots(),
+    onChange: this._handleSlotChange,
   });
 
   private _hasIcon = false;
@@ -84,9 +89,6 @@ export default class IgcBadgeComponent extends LitElement {
     super();
 
     addThemingController(this, all);
-    addSlotController(this, {
-      onChange: this._handleSlotChange,
-    });
   }
 
   protected override willUpdate(changedProperties: PropertyValues<this>): void {
@@ -96,7 +98,9 @@ export default class IgcBadgeComponent extends LitElement {
   }
 
   protected _handleSlotChange(): void {
-    this._hasIcon = !!this.querySelector('igc-icon');
+    this._hasIcon = this._slots.hasAssignedElements('[default]', {
+      selector: 'igc-icon',
+    });
   }
 
   protected override render() {
