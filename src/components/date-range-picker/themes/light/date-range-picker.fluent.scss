@@ -4,6 +4,7 @@
 :host {
     @include css-vars-from-theme($fluent);
     @include css-vars-from-theme($fluent-input);
+    @include css-vars-from-theme($fluent-calendar);
 
     igc-dialog {
         @include css-vars-from-theme($fluent-dialog);

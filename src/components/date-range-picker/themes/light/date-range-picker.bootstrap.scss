@@ -4,6 +4,7 @@
 :host {
     @include css-vars-from-theme($bootstrap);
     @include css-vars-from-theme($bootstrap-input);
+    @include css-vars-from-theme($bootstrap-calendar);
 
     igc-dialog {
         @include css-vars-from-theme($bootstrap-dialog);

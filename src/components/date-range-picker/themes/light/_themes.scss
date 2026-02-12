@@ -5,30 +5,14 @@
 @use 'components/calendar/themes/light/themes' as calendar-theme;
 @use 'components/date-picker/themes/shared/date-picker.utils' as *;
 
-$material: digest-schema(
-    map.merge(
-        $material-date-range-picker,
-        date-picker-theme(calendar-theme.$material)
-    )
-);
-$bootstrap: digest-schema(
-    map.merge(
-        $bootstrap-date-range-picker,
-        date-picker-theme(calendar-theme.$bootstrap)
-    )
-);
-$fluent: digest-schema(
-    map.merge(
-        $fluent-date-range-picker,
-        date-picker-theme(calendar-theme.$fluent)
-    )
-);
-$indigo: digest-schema(
-    map.merge(
-        $indigo-date-range-picker,
-        date-picker-theme(calendar-theme.$indigo)
-    )
-);
+$material: digest-schema($material-date-range-picker);
+$bootstrap: digest-schema($bootstrap-date-range-picker);
+$fluent: digest-schema($fluent-date-range-picker);
+$indigo: digest-schema($indigo-date-range-picker);
+$bootstrap-calendar: digest-schema(calendar-theme(calendar-theme.$bootstrap));
+$fluent-calendar: digest-schema(calendar-theme(calendar-theme.$fluent));
+$material-calendar: digest-schema(calendar-theme(calendar-theme.$material));
+$indigo-calendar: digest-schema(calendar-theme(calendar-theme.$indigo));
 $bootstrap-input: digest-schema(input-theme($bootstrap-input-group));
 $fluent-input: digest-schema(input-theme($fluent-input-group));
 $indigo-input: digest-schema(input-theme($indigo-input-group));

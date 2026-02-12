@@ -4,10 +4,10 @@
 @use 'igniteui-theming/sass/themes/schemas/components/dark/input-group' as *;
 @use '../shared/date-picker.utils' as *;
 
-$material: digest-schema(date-picker-theme($dark-material-calendar));
-$bootstrap: digest-schema(date-picker-theme($dark-bootstrap-calendar));
-$fluent: digest-schema(date-picker-theme($dark-fluent-calendar));
-$indigo: digest-schema(date-picker-theme($dark-indigo-calendar));
+$material: digest-schema(calendar-theme($dark-material-calendar));
+$bootstrap: digest-schema(calendar-theme($dark-bootstrap-calendar));
+$fluent: digest-schema(calendar-theme($dark-fluent-calendar));
+$indigo: digest-schema(calendar-theme($dark-indigo-calendar));
 $bootstrap-input: digest-schema(input-theme($dark-bootstrap-input-group));
 $fluent-input: digest-schema(input-theme($dark-fluent-input-group));
 $indigo-input: digest-schema(input-theme($dark-indigo-input-group));

@@ -4,6 +4,7 @@
 :host {
     @include css-vars-from-theme($indigo);
     @include css-vars-from-theme($indigo-input);
+    @include css-vars-from-theme($indigo-calendar);
 
     igc-dialog {
         @include css-vars-from-theme($indigo-dialog);

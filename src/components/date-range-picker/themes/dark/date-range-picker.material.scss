@@ -3,6 +3,7 @@
 
 :host {
     @include css-vars-from-theme($material);
+    @include css-vars-from-theme($material-calendar);
 
     igc-dialog {
         @include css-vars-from-theme($material-dialog);

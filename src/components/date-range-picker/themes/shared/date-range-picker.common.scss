@@ -1,9 +1,11 @@
 @use 'styles/utilities' as *;
 @use '../light/themes' as *;
 @use 'components/input/themes/light/themes' as input-theme;
+@use 'components/calendar/themes/light/themes' as calendar-theme;
 
 $theme: $material;
 $input-theme: input-theme.$material;
+$calendar-theme: calendar-theme.$material;
 
 :host {
     --component-size: var(--ig-size, #{var-get($theme, 'default-size')});
@@ -33,8 +35,8 @@ $input-theme: input-theme.$material;
 
     igc-dialog::part(footer) {
         padding: pad(rem(8px));
-        background: var-get($theme, 'content-background');
-        border-block-start: rem(1px) solid var-get($theme, 'actions-divider-color');
+        background: var-get($calendar-theme, 'content-background');
+        border-block-start: rem(1px) solid var-get($calendar-theme, 'actions-divider-color');
     }
 
     igc-focus-trap {
@@ -42,14 +44,14 @@ $input-theme: input-theme.$material;
 
         --component-size: var(--ig-size, #{var-get($theme, 'default-size')});
 
-        border-radius: var-get($theme, 'border-radius');
-        background: var-get($theme, 'content-background');
-        box-shadow: 0 0 0 rem(1px) var-get($theme, 'border-color');
+        border-radius: var-get($calendar-theme, 'border-radius');
+        background: var-get($calendar-theme, 'content-background');
+        box-shadow: 0 0 0 rem(1px) var-get($calendar-theme, 'border-color');
     }
 
     igc-popover::part(container) {
         box-shadow: var(--ig-elevation-3);
-        border-radius: var-get($theme, 'border-radius');
+        border-radius: var-get($calendar-theme, 'border-radius');
     }
 
     ::part(helper-text) {
@@ -120,8 +122,8 @@ $input-theme: input-theme.$material;
 
 [part='actions'] {
     min-height: #{sizable(rem(40px), rem(46px), rem(52px))};
-    border-block-start: rem(1px) solid var-get($theme, 'actions-divider-color');
-    background: var-get($theme, 'content-background');
+    border-block-start: rem(1px) solid var-get($calendar-theme, 'actions-divider-color');
+    background: var-get($calendar-theme, 'content-background');
 }
 
 [part='separator'] {
