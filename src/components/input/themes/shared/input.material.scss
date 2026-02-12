@@ -51,11 +51,14 @@ input:placeholder-shown + [part='notch'] [part='label'],
 }
 
 [part~='input'] {
-    color: var-get($theme, 'filled-text-color');
     background: transparent;
     padding: 0 pad-inline(rem(4px));
     font-size: rem(16px);
     grid-area: 1 / 2 / span 1 / span 2;
+}
+
+[part~='input filled'] {
+    color: var-get($theme, 'filled-text-color');
 }
 
 [part='label'] {

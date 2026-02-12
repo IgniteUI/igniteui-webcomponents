@@ -16,7 +16,7 @@ export abstract class IgcMaskInputBaseComponent extends IgcInputBaseComponent {
   protected readonly _parser = new MaskParser();
 
   protected _maskSelection: MaskSelection = { start: 0, end: 0 };
-  protected compositionStart = 0;
+  protected _compositionStart = 0;
 
   @state()
   protected _focused = false;
@@ -26,14 +26,28 @@ export abstract class IgcMaskInputBaseComponent extends IgcInputBaseComponent {
 
   protected get _inputSelection(): MaskSelection {
     return {
-      start: this.input.selectionStart || 0,
-      end: this.input.selectionEnd || 0,
+      start: this._input?.selectionStart || 0,
+      end: this._input?.selectionEnd || 0,
     };
+  }
+
+  /** Indicates whether the current mask value is empty. */
+  protected get _isEmptyMask(): boolean {
+    return this._maskedValue === this._parser.emptyMask;
   }
 
   //#endregion
 
   //#region Public attributes and properties
+
+  /**
+   * Makes the control a readonly field.
+   *
+   * @attr readonly
+   * @default false
+   */
+  @property({ type: Boolean, reflect: true })
+  public readOnly = false;
 
   /**
    * The masked pattern of the component.
@@ -73,7 +87,7 @@ export abstract class IgcMaskInputBaseComponent extends IgcInputBaseComponent {
     inputType,
     isComposing,
   }: InputEvent): Promise<void> {
-    const value = this.input.value;
+    const value = this._input?.value ?? '';
     const { start, end } = this._maskSelection;
     const deletePosition = this._parser.getNextNonLiteralPosition(end) + 1;
     this._setTouchedState();
@@ -82,7 +96,7 @@ export abstract class IgcMaskInputBaseComponent extends IgcInputBaseComponent {
       case 'deleteContentForward':
         this._updateInput('', { start, end: deletePosition });
         await this.updateComplete;
-        return this.input.setSelectionRange(deletePosition, deletePosition);
+        return this._input?.setSelectionRange(deletePosition, deletePosition);
 
       case 'deleteContentBackward':
         if (isComposing) return;
@@ -135,18 +149,21 @@ export abstract class IgcMaskInputBaseComponent extends IgcInputBaseComponent {
   }
 
   protected _handleCompositionStart(): void {
-    this.compositionStart = this._inputSelection.start;
+    this._compositionStart = this._inputSelection.start;
   }
 
   protected _handleCompositionEnd({ data }: CompositionEvent): void {
     this._updateInput(data, {
-      start: this.compositionStart,
+      start: this._compositionStart,
       end: this._inputSelection.end,
     });
   }
 
   protected _handleClick(): void {
-    const { selectionStart: start, selectionEnd: end } = this.input;
+    const { selectionStart: start, selectionEnd: end } = this._input ?? {
+      selectionStart: 0,
+      selectionEnd: 0,
+    };
 
     // Clicking at the end of the input field will select the entire mask
     if (start === end && start === this._maskedValue.length) {
@@ -165,29 +182,25 @@ export abstract class IgcMaskInputBaseComponent extends IgcInputBaseComponent {
 
   //#region Public methods
 
-  /** Selects all text within the input. */
-  public select(): void {
-    this.input.select();
-  }
-
   /* blazorSuppress */
-  public override setSelectionRange(
-    start: number,
-    end: number,
-    direction?: SelectionRangeDirection
+  /** Sets the text selection range of the control */
+  public setSelectionRange(
+    start?: number,
+    end?: number,
+    direction: SelectionRangeDirection = 'none'
   ): void {
-    super.setSelectionRange(start, end, direction);
-    this._maskSelection = { start, end };
+    this._input?.setSelectionRange(start ?? null, end ?? null, direction);
+    this._maskSelection = { start: start ?? 0, end: end ?? 0 };
   }
 
   /* blazorSuppress */
   /** Replaces the selected text in the control and re-applies the mask */
-  public override setRangeText(
+  public setRangeText(
     replacement: string,
     start?: number,
     end?: number,
     selectMode?: RangeTextSelectMode
-  ) {
+  ): void {
     const current = this._inputSelection;
     const _start = start ?? current.start;
     const _end = end ?? current.end;
