@@ -2248,6 +2248,154 @@ describe('Splitter', () => {
       expect(splitter.endCollapsed).to.be.false;
     });
   });
+
+  describe('Nested Splitters', () => {
+    let outerSplitter: IgcSplitterComponent;
+    let leftInnerSplitter: IgcSplitterComponent;
+    let rightInnerSplitter: IgcSplitterComponent;
+
+    beforeEach(async () => {
+      outerSplitter = await fixture<IgcSplitterComponent>(
+        createNestedSplitter()
+      );
+      await elementUpdated(outerSplitter);
+
+      const outerStartSlot = getSplitterSlot(outerSplitter, 'start');
+      const outerEndSlot = getSplitterSlot(outerSplitter, 'end');
+      leftInnerSplitter =
+        outerStartSlot.assignedElements()[0] as IgcSplitterComponent;
+      rightInnerSplitter =
+        outerEndSlot.assignedElements()[0] as IgcSplitterComponent;
+
+      await elementUpdated(leftInnerSplitter);
+      await elementUpdated(rightInnerSplitter);
+    });
+
+    it('should maintain independent state in nested splitters', async () => {
+      outerSplitter.startSize = '60%';
+      leftInnerSplitter.startSize = '40%';
+      rightInnerSplitter.startSize = '30%';
+
+      await elementUpdated(outerSplitter);
+      await elementUpdated(leftInnerSplitter);
+      await elementUpdated(rightInnerSplitter);
+
+      expect(outerSplitter.startSize).to.equal('60%');
+      expect(outerSplitter.orientation).to.equal('horizontal');
+      expect(leftInnerSplitter.startSize).to.equal('40%');
+      expect(leftInnerSplitter.orientation).to.equal('vertical');
+      expect(rightInnerSplitter.startSize).to.equal('30%');
+      expect(rightInnerSplitter.orientation).to.equal('vertical');
+
+      outerSplitter.startCollapsed = true;
+      await elementUpdated(outerSplitter);
+      await elementUpdated(leftInnerSplitter);
+
+      expect(outerSplitter.startCollapsed).to.be.true;
+      expect(leftInnerSplitter.startCollapsed).to.be.false;
+      expect(rightInnerSplitter.startCollapsed).to.be.false;
+
+      leftInnerSplitter.startCollapsed = true;
+      await elementUpdated(leftInnerSplitter);
+
+      expect(outerSplitter.startCollapsed).to.be.true;
+      expect(leftInnerSplitter.startCollapsed).to.be.true;
+      expect(rightInnerSplitter.startCollapsed).to.be.false;
+
+      outerSplitter.startCollapsed = false;
+      await elementUpdated(outerSplitter);
+      await elementUpdated(leftInnerSplitter);
+
+      expect(outerSplitter.startCollapsed).to.be.false;
+      expect(leftInnerSplitter.startCollapsed).to.be.true;
+      expect(rightInnerSplitter.startCollapsed).to.be.false;
+    });
+
+    it('should not interfere with parent/child resize operations', async () => {
+      const outerEventSpy = spy(outerSplitter, 'emitEvent');
+      const innerEventSpy = spy(leftInnerSplitter, 'emitEvent');
+
+      await resize(outerSplitter, 50, 0);
+
+      checkResizeEvents(outerEventSpy);
+      expect(innerEventSpy.called).to.be.false;
+
+      await resize(leftInnerSplitter, 0, 30);
+
+      checkResizeEvents(innerEventSpy);
+      expect(outerEventSpy.called).to.be.false;
+    });
+
+    it('should handle focus management correctly with nested splitters', async () => {
+      const outerBar = getSplitterPart(outerSplitter, BAR_PART);
+      const innerBar = getSplitterPart(leftInnerSplitter, BAR_PART);
+      const resizeDelta = 10;
+
+      outerBar.focus();
+      await elementUpdated(outerSplitter);
+
+      expect(outerSplitter.shadowRoot!.activeElement).to.equal(outerBar);
+
+      const outerPreviousSizes = getPanesSizes(outerSplitter, 'width');
+
+      simulateKeyboard(outerBar, arrowRight);
+      await elementUpdated(outerSplitter);
+
+      const outerCurrentSizes = getPanesSizes(outerSplitter, 'width');
+      expect(outerCurrentSizes.startSize).to.equal(
+        outerPreviousSizes.startSize + resizeDelta
+      );
+      expect(outerSplitter.shadowRoot!.activeElement).to.equal(outerBar);
+
+      innerBar.focus();
+      await elementUpdated(leftInnerSplitter);
+
+      expect(leftInnerSplitter.shadowRoot!.activeElement).to.equal(innerBar);
+
+      const innerPreviousSizes = getPanesSizes(leftInnerSplitter, 'height');
+
+      simulateKeyboard(innerBar, arrowDown);
+      await elementUpdated(leftInnerSplitter);
+
+      const innerCurrentSizes = getPanesSizes(leftInnerSplitter, 'height');
+      expect(innerCurrentSizes.startSize).to.equal(
+        innerPreviousSizes.startSize + resizeDelta
+      );
+      expect(leftInnerSplitter.shadowRoot!.activeElement).to.equal(innerBar);
+
+      const outerFinalSizes = getPanesSizes(outerSplitter, 'width');
+      expect(outerFinalSizes.startSize).to.equal(outerCurrentSizes.startSize);
+    });
+
+    it('should handle tabindex correctly for nested splitters', async () => {
+      const outerBar = getSplitterPart(outerSplitter, BAR_PART);
+      const leftInnerBar = getSplitterPart(leftInnerSplitter, BAR_PART);
+      const rightInnerBar = getSplitterPart(rightInnerSplitter, BAR_PART);
+
+      expect(outerBar.tabIndex).to.equal(0);
+      expect(leftInnerBar.tabIndex).to.equal(0);
+      expect(rightInnerBar.tabIndex).to.equal(0);
+
+      outerSplitter.disableResize = true;
+      outerSplitter.disableCollapse = true;
+      await elementUpdated(outerSplitter);
+
+      expect(outerBar.tabIndex).to.equal(-1);
+      expect(leftInnerBar.tabIndex).to.equal(0);
+      expect(rightInnerBar.tabIndex).to.equal(0);
+
+      outerSplitter.disableResize = false;
+      outerSplitter.disableCollapse = false;
+      leftInnerSplitter.disableResize = true;
+      leftInnerSplitter.disableCollapse = true;
+      await elementUpdated(outerSplitter);
+      await elementUpdated(leftInnerSplitter);
+
+      expect(outerBar.tabIndex).to.equal(0);
+      expect(leftInnerBar.tabIndex).to.equal(-1);
+      expect(rightInnerBar.tabIndex).to.equal(0);
+    });
+  });
 });
 
 function createSplitter() {
@@ -2261,12 +2409,20 @@ function createSplitter() {
 
 function createNestedSplitter() {
   return html`
-    <igc-splitter orientation="horizontal">
-      <igc-splitter slot="start" orientation="vertical">
+    <igc-splitter orientation="horizontal" style="width: 500px; height: 500px;">
+      <igc-splitter
+        slot="start"
+        orientation="vertical"
+        style="width: 100%; height: 100%;"
+      >
         <div slot="start">Top Left Pane</div>
         <div slot="end">Bottom Left Pane</div>
       </igc-splitter>
-      <igc-splitter slot="end" orientation="vertical">
+      <igc-splitter
+        slot="end"
+        orientation="vertical"
+        style="width: 100%; height: 100%;"
+      >
         <div slot="start">Top Right Pane</div>
         <div slot="end">Bottom Right Pane</div>
       </igc-splitter>
