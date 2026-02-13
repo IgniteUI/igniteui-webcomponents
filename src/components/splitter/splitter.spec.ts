@@ -23,6 +23,8 @@ import {
   simulatePointerMove,
   simulatePointerUp,
 } from '../common/utils.spec.js';
+import IgcTreeComponent from '../tree/tree.js';
+import IgcTreeItemComponent from '../tree/tree-item.js';
 import type { SplitterOrientation } from '../types.js';
 import IgcSplitterComponent, {
   type IgcSplitterResizeEventDetail,
@@ -61,18 +63,6 @@ describe('Splitter', () => {
 
       const bar = getSplitterPart(splitter, BAR_PART);
       expect(bar.getAttribute('role')).to.equal('separator');
-    });
-
-    it('should render start and end slots', async () => {
-      let slot = getSplitterSlot(splitter, 'start');
-      let elements = slot.assignedElements();
-      expect(elements).to.have.lengthOf(1);
-      expect(elements[0].textContent).to.equal('Pane 1');
-
-      slot = getSplitterSlot(splitter, 'end');
-      elements = slot.assignedElements();
-      expect(elements).to.have.lengthOf(1);
-      expect(elements[0].textContent).to.equal('Pane 2');
     });
 
     it('should render both panes with equal sizes if no explicit sizes set', async () => {
@@ -275,59 +265,6 @@ describe('Splitter', () => {
       expect(bar.getAttribute('aria-orientation')).to.equal('vertical');
     });
 
-    it('should render nested splitters correctly', async () => {
-      const nestedSplitter = await fixture<IgcSplitterComponent>(
-        createNestedSplitter()
-      );
-      await elementUpdated(nestedSplitter);
-
-      const outerStartSlot = getSplitterSlot(nestedSplitter, 'start');
-      const startElements = outerStartSlot.assignedElements();
-      expect(startElements).to.have.lengthOf(1);
-      expect(startElements[0].tagName.toLowerCase()).to.equal(
-        IgcSplitterComponent.tagName.toLowerCase()
-      );
-
-      const outerEndSlot = getSplitterSlot(nestedSplitter, 'end');
-      const endElements = outerEndSlot.assignedElements();
-      expect(endElements).to.have.lengthOf(1);
-      expect(endElements[0].tagName.toLowerCase()).to.equal(
-        IgcSplitterComponent.tagName.toLowerCase()
-      );
-
-      const innerStartSlot1 = getSplitterSlot(
-        startElements[0] as IgcSplitterComponent,
-        'start'
-      );
-      expect(innerStartSlot1.assignedElements()[0].textContent).to.equal(
-        'Top Left Pane'
-      );
-
-      const innerEndSlot1 = getSplitterSlot(
-        startElements[0] as IgcSplitterComponent,
-        'end'
-      );
-      expect(innerEndSlot1.assignedElements()[0].textContent).to.equal(
-        'Bottom Left Pane'
-      );
-
-      const innerStartSlot2 = getSplitterSlot(
-        endElements[0] as IgcSplitterComponent,
-        'start'
-      );
-      expect(innerStartSlot2.assignedElements()[0].textContent).to.equal(
-        'Top Right Pane'
-      );
-
-      const innerEndSlot2 = getSplitterSlot(
-        endElements[0] as IgcSplitterComponent,
-        'end'
-      );
-      expect(innerEndSlot2.assignedElements()[0].textContent).to.equal(
-        'Bottom Right Pane'
-      );
-    });
-
     it('should set a default cursor on the bar in case splitter is not resizable or any pane is collapsed', async () => {
       const bar = getSplitterPart(splitter, BAR_PART);
 
@@ -387,6 +324,146 @@ describe('Splitter', () => {
 
       expect(splitter.startSize).to.equal('auto');
       expect(splitter.endSize).to.equal('auto');
+    });
+  });
+
+  describe('Slotted content', () => {
+    it('should render start and end slots', async () => {
+      let slot = getSplitterSlot(splitter, 'start');
+      let elements = slot.assignedElements();
+      expect(elements).to.have.lengthOf(1);
+      expect(elements[0].textContent).to.equal('Pane 1');
+
+      slot = getSplitterSlot(splitter, 'end');
+      elements = slot.assignedElements();
+      expect(elements).to.have.lengthOf(1);
+      expect(elements[0].textContent).to.equal('Pane 2');
+    });
+
+    it('should update content when slot content changes', async () => {
+      let slot = getSplitterSlot(splitter, 'start');
+      let elements = slot.assignedElements();
+      expect(elements[0].textContent).to.equal('Pane 1');
+
+      elements[0].textContent = 'Updated Pane 1';
+      await elementUpdated(splitter);
+
+      slot = getSplitterSlot(splitter, 'start');
+      elements = slot.assignedElements();
+      expect(elements[0].textContent).to.equal('Updated Pane 1');
+    });
+
+    it('should render complex content (forms, tables, etc.) correctly', async () => {
+      splitter = await fixture<IgcSplitterComponent>(
+        createSplitterWithComplexContent()
+      );
+      await elementUpdated(splitter);
+
+      const startSlot = getSplitterSlot(splitter, 'start');
+      let elements = startSlot.assignedElements();
+      let slottedDiv = elements.find(
+        (el) => el.tagName.toLowerCase() === 'div'
+      )!;
+      let children = slottedDiv.children!;
+      expect(children).to.have.lengthOf(3);
+      expect(children[0].tagName.toLowerCase()).to.equal('h1');
+      expect(children[1].tagName.toLowerCase()).to.equal('form');
+      const formElements = children[1].children;
+      expect(formElements).to.have.lengthOf(2);
+      expect(formElements[0].tagName.toLowerCase()).to.equal('input');
+      expect(formElements[1].tagName.toLowerCase()).to.equal('button');
+      expect(children[2].tagName.toLowerCase()).to.equal('button');
+
+      const endSlot = getSplitterSlot(splitter, 'end');
+      elements = endSlot.assignedElements();
+      slottedDiv = elements.find((el) => el.tagName.toLowerCase() === 'div')!;
+      children = slottedDiv.children!;
+      expect(children).to.have.lengthOf(2);
+      expect(children[0].tagName.toLowerCase()).to.equal('h1');
+      expect(children[1].tagName.toLowerCase()).to.equal('igc-tree');
+    });
+
+    describe('Custom icons', () => {
+      beforeEach(async () => {
+        splitter = await fixture<IgcSplitterComponent>(
+          createSplitterWithCustomSlots()
+        );
+      });
+
+      it('should render custom drag handle via drag-handle slot', async () => {
+        const dragHandlePart = getSplitterPart(splitter, DRAG_HANDLE_PART);
+        const dragHandleSlot = getSplitterSlot(splitter, 'drag-handle');
+        const assignedElements = dragHandleSlot.assignedElements();
+        expect(assignedElements).to.have.lengthOf(1);
+
+        const customIcon = assignedElements[0] as HTMLElement;
+        expect(customIcon.tagName.toLowerCase()).to.equal('span');
+        expect(customIcon.textContent?.trim()).to.equal('drag-handle-icon');
+        expect(dragHandlePart.contains(dragHandleSlot)).to.be.true;
+      });
+
+      it('should render custom expand icons via start-expand and end-expand slots', async () => {
+        splitter.toggle('start');
+        await elementUpdated(splitter);
+
+        const startExpandPart = getSplitterPart(splitter, START_EXPANDER_PART);
+        const startExpandSlot = getSplitterSlot(splitter, 'start-expand');
+        const startAssignedElements = startExpandSlot.assignedElements();
+
+        expect(startAssignedElements).to.have.lengthOf(1);
+        const startCustomIcon = startAssignedElements[0] as HTMLElement;
+        expect(startCustomIcon.tagName.toLowerCase()).to.equal('span');
+        expect(startCustomIcon.classList.contains('custom-icon')).to.be.true;
+        expect(startCustomIcon.textContent?.trim()).to.equal(
+          'start-expand-icon'
+        );
+        expect(startExpandPart.contains(startExpandSlot)).to.be.true;
+
+        splitter.toggle('start');
+        await elementUpdated(splitter);
+        splitter.toggle('end');
+        await elementUpdated(splitter);
+
+        const endExpandPart = getSplitterPart(splitter, END_EXPANDER_PART);
+        const endExpandSlot = getSplitterSlot(splitter, 'end-expand');
+        const endAssignedElements = endExpandSlot.assignedElements();
+
+        expect(endAssignedElements).to.have.lengthOf(1);
+        const endCustomIcon = endAssignedElements[0] as HTMLElement;
+        expect(endCustomIcon.tagName.toLowerCase()).to.equal('span');
+        expect(endCustomIcon.classList.contains('custom-icon')).to.be.true;
+        expect(endCustomIcon.textContent?.trim()).to.equal('end-expand-icon');
+        expect(endExpandPart.contains(endExpandSlot)).to.be.true;
+      });
+
+      it('should render custom collapse icons via start-collapse and end-collapse slots', async () => {
+        const startCollapsePart = getSplitterPart(
+          splitter,
+          START_COLLAPSE_PART
+        );
+        const startCollapseSlot = getSplitterSlot(splitter, 'start-collapse');
+        const startAssignedElements = startCollapseSlot.assignedElements();
+
+        expect(startAssignedElements).to.have.lengthOf(1);
+        const startCustomIcon = startAssignedElements[0] as HTMLElement;
+        expect(startCustomIcon.tagName.toLowerCase()).to.equal('span');
+        expect(startCustomIcon.classList.contains('custom-icon')).to.be.true;
+        expect(startCustomIcon.textContent?.trim()).to.equal(
+          'start-collapse-icon'
+        );
+        expect(startCollapsePart.contains(startCollapseSlot)).to.be.true;
+
+        const endCollapsePart = getSplitterPart(splitter, END_COLLAPSE_PART);
+        const endCollapseSlot = getSplitterSlot(splitter, 'end-collapse');
+        const endAssignedElements = endCollapseSlot.assignedElements();
+
+        expect(endAssignedElements).to.have.lengthOf(1);
+        const endCustomIcon = endAssignedElements[0] as HTMLElement;
+        expect(endCustomIcon.tagName.toLowerCase()).to.equal('span');
+        expect(endCustomIcon.classList.contains('custom-icon')).to.be.true;
+        expect(endCustomIcon.textContent?.trim()).to.equal('end-collapse-icon');
+        expect(endCollapsePart.contains(endCollapseSlot)).to.be.true;
+      });
     });
   });
 
@@ -2253,6 +2330,8 @@ describe('Splitter', () => {
     let outerSplitter: IgcSplitterComponent;
     let leftInnerSplitter: IgcSplitterComponent;
     let rightInnerSplitter: IgcSplitterComponent;
+    let outerStartSlot: HTMLSlotElement;
+    let outerEndSlot: HTMLSlotElement;
 
     beforeEach(async () => {
       outerSplitter = await fixture<IgcSplitterComponent>(
@@ -2260,8 +2339,8 @@ describe('Splitter', () => {
       );
       await elementUpdated(outerSplitter);
 
-      const outerStartSlot = getSplitterSlot(outerSplitter, 'start');
-      const outerEndSlot = getSplitterSlot(outerSplitter, 'end');
+      outerStartSlot = getSplitterSlot(outerSplitter, 'start');
+      outerEndSlot = getSplitterSlot(outerSplitter, 'end');
       leftInnerSplitter =
         outerStartSlot.assignedElements()[0] as IgcSplitterComponent;
       rightInnerSplitter =
@@ -2269,6 +2348,52 @@ describe('Splitter', () => {
 
       await elementUpdated(leftInnerSplitter);
       await elementUpdated(rightInnerSplitter);
+    });
+
+    it('should render nested splitters correctly', async () => {
+      const startElements = outerStartSlot.assignedElements();
+      expect(startElements).to.have.lengthOf(1);
+      expect(startElements[0].tagName.toLowerCase()).to.equal(
+        IgcSplitterComponent.tagName.toLowerCase()
+      );
+
+      const endElements = outerEndSlot.assignedElements();
+      expect(endElements).to.have.lengthOf(1);
+      expect(endElements[0].tagName.toLowerCase()).to.equal(
+        IgcSplitterComponent.tagName.toLowerCase()
+      );
+
+      const innerStartSlot1 = getSplitterSlot(
+        startElements[0] as IgcSplitterComponent,
+        'start'
+      );
+      expect(innerStartSlot1.assignedElements()[0].textContent).to.equal(
+        'Top Left Pane'
+      );
+
+      const innerEndSlot1 = getSplitterSlot(
+        startElements[0] as IgcSplitterComponent,
+        'end'
+      );
+      expect(innerEndSlot1.assignedElements()[0].textContent).to.equal(
+        'Bottom Left Pane'
+      );
+
+      const innerStartSlot2 = getSplitterSlot(
+        endElements[0] as IgcSplitterComponent,
+        'start'
+      );
+      expect(innerStartSlot2.assignedElements()[0].textContent).to.equal(
+        'Top Right Pane'
+      );
+
+      const innerEndSlot2 = getSplitterSlot(
+        endElements[0] as IgcSplitterComponent,
+        'end'
+      );
+      expect(innerEndSlot2.assignedElements()[0].textContent).to.equal(
+        'Bottom Right Pane'
+      );
     });
 
     it('should maintain independent state in nested splitters', async () => {
@@ -2476,10 +2601,61 @@ function createSplitterWithCollapsedPane() {
   `;
 }
 
-function getSplitterSlot(
-  splitter: IgcSplitterComponent,
-  which: 'start' | 'end'
-) {
+function createSplitterWithComplexContent() {
+  defineComponents(IgcTreeComponent, IgcTreeItemComponent);
+  return html`
+    <igc-splitter style="width: 500px; height: 500px;">
+      <div slot="start">
+        <h1>Pane 1</h1>
+        <form>
+          <input type="text" placeholder="Input in Pane 1" />
+          <button type="submit">Submit</button>
+        </form>
+        <button>Button in Pane 1</button>
+      </div>
+      <div slot="end">
+        <h1>Pane 2</h1>
+        <igc-tree>
+          <igc-tree-item expanded
+            >Item 1
+            <igc-tree-item>Subitem 1.1</igc-tree-item>
+            <igc-tree-item>Subitem 1.2</igc-tree-item>
+          </igc-tree-item>
+          <igc-tree-item
+            >Item 2
+            <igc-tree-item>Subitem 2.1</igc-tree-item>
+          </igc-tree-item>
+          <igc-tree-item>Item 3</igc-tree-item>
+        </igc-tree>
+      </div>
+    </igc-splitter>
+  `;
+}
+
+function createSplitterWithCustomSlots() {
+  return html` <igc-splitter style="width: 500px; height: 500px;">
+    <div slot="start">Pane 1</div>
+    <div slot="end">Pane 2</div>
+    <span slot="drag-handle" class="custom-icon"> drag-handle-icon </span>
+
+    <span slot="start-expand" class="custom-icon"> start-expand-icon </span>
+    <span slot="start-collapse" class="custom-icon"> start-collapse-icon </span>
+
+    <span slot="end-expand" class="custom-icon"> end-expand-icon </span>
+    <span slot="end-collapse" class="custom-icon"> end-collapse-icon </span>
+  </igc-splitter>`;
+}
+
+type SplitterSlot =
+  | 'start'
+  | 'end'
+  | 'drag-handle'
+  | 'start-expand'
+  | 'start-collapse'
+  | 'end-expand'
+  | 'end-collapse';
+
+function getSplitterSlot(splitter: IgcSplitterComponent, which: SplitterSlot) {
   return splitter.renderRoot.querySelector(
     `slot[name="${which}"]`
   ) as HTMLSlotElement;
