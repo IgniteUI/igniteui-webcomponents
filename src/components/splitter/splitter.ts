@@ -1,4 +1,4 @@
-import { html, LitElement, nothing, type PropertyValues } from 'lit';
+import { html, LitElement, type PropertyValues } from 'lit';
 import { property, query } from 'lit/decorators.js';
 import { createRef, ref } from 'lit/directives/ref.js';
 import { type StyleInfo, styleMap } from 'lit/directives/style-map.js';
@@ -17,7 +17,6 @@ import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { partMap } from '../common/part-map.js';
 import { isLTR } from '../common/util.js';
 import type { SplitterOrientation } from '../types.js';
 import { styles } from './themes/splitter.base.css.js';
@@ -47,6 +46,13 @@ interface PaneResizeState {
 interface SplitterResizeState {
   startPane: PaneResizeState;
   endPane: PaneResizeState;
+}
+
+interface ExpanderConfig {
+  slotName: string;
+  partName: string;
+  label: string;
+  hidden: boolean;
 }
 
 /**
@@ -815,61 +821,56 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
     };
   }
 
-  private _renderBarControls() {
+  private _getExpanderConfig(position: 'start' | 'end'): ExpanderConfig {
     const { prevButtonHidden, nextButtonHidden } =
       this._getExpanderHiddenState();
+
+    if (position === 'start') {
+      const isExpandingEnd = this.endCollapsed;
+      return {
+        slotName: isExpandingEnd ? 'end-expand' : 'start-collapse',
+        partName: isExpandingEnd ? 'end-expand-btn' : 'start-collapse-btn',
+        label: isExpandingEnd ? 'Expand end pane' : 'Collapse start pane',
+        hidden: prevButtonHidden,
+      };
+    }
+
+    const isExpandingStart = this.startCollapsed;
+    return {
+      slotName: isExpandingStart ? 'start-expand' : 'end-collapse',
+      partName: isExpandingStart ? 'start-expand-btn' : 'end-collapse-btn',
+      label: isExpandingStart ? 'Expand start pane' : 'Collapse end pane',
+      hidden: nextButtonHidden,
+    };
+  }
+
+  private _renderBarControls() {
     const dragHandleHidden = this.hideDragHandle || this.disableResize;
-
-    const startExpanderSlot = this.endCollapsed
-      ? 'end-expand'
-      : 'start-collapse';
-    const endExpanderSlot = this.startCollapsed
-      ? 'start-expand'
-      : 'end-collapse';
-
-    const startExpanderParts = {
-      'end-expand-btn': this.endCollapsed,
-      'start-collapse-btn': !this.endCollapsed,
-    };
-
-    const endExpanderParts = {
-      'start-expand-btn': this.startCollapsed,
-      'end-collapse-btn': !this.startCollapsed,
-    };
-
-    const startLabel = prevButtonHidden
-      ? nothing
-      : this.endCollapsed
-        ? 'Expand end pane'
-        : 'Collapse start pane';
-    const endLabel = nextButtonHidden
-      ? nothing
-      : this.startCollapsed
-        ? 'Expand start pane'
-        : 'Collapse end pane';
+    const startConfig = this._getExpanderConfig('start');
+    const endConfig = this._getExpanderConfig('end');
 
     return html`
       <div
-        part="${partMap(startExpanderParts)}"
-        ?hidden=${prevButtonHidden}
+        part="${startConfig.partName}"
+        ?hidden=${startConfig.hidden}
+        aria-label=${startConfig.label}
         role="button"
-        aria-label=${startLabel}
         @pointerdown=${(e: PointerEvent) =>
           this._handleExpanderClick('start', e)}
       >
-        <slot name="${startExpanderSlot}"></slot>
+        <slot name="${startConfig.slotName}"></slot>
       </div>
       <div part="drag-handle" ?hidden=${dragHandleHidden}>
         <slot name="drag-handle"></slot>
       </div>
       <div
-        part="${partMap(endExpanderParts)}"
-        ?hidden=${nextButtonHidden}
+        part="${endConfig.partName}"
+        ?hidden=${endConfig.hidden}
+        aria-label=${endConfig.label}
         role="button"
-        aria-label=${endLabel}
         @pointerdown=${(e: PointerEvent) => this._handleExpanderClick('end', e)}
       >
-        <slot name="${endExpanderSlot}"></slot>
+        <slot name="${endConfig.slotName}"></slot>
       </div>
     `;
   }
