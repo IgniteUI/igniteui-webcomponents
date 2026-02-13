@@ -936,6 +936,76 @@ describe('Splitter', () => {
       checkResizeEvents(eventSpy, startArgs, resizingArgs, endArgs);
     });
 
+    it('should respect minSize and maxSize constraints when resizing with arrows', async () => {
+      splitter.style.width = '1000px';
+      splitter.startMinSize = '100px';
+      splitter.startMaxSize = '400px';
+      splitter.endMinSize = '50px';
+      splitter.startSize = '250px';
+      await elementUpdated(splitter);
+
+      const bar = getSplitterPart(splitter, BAR_PART);
+      let barSize = bar.getBoundingClientRect().width;
+      bar.focus();
+      await elementUpdated(splitter);
+
+      // resize below minSize
+      for (let i = 0; i < 20; i++) {
+        simulateKeyboard(bar, arrowLeft);
+        await elementUpdated(splitter);
+      }
+
+      let currentSizes = getPanesSizes(splitter, 'width');
+      // should stop at minSize (100px)
+      expect(currentSizes.startSize).to.be.closeTo(100, 1);
+
+      splitter.startSize = '250px';
+      await elementUpdated(splitter);
+
+      // resize beyond maxSize
+      for (let i = 0; i < 20; i++) {
+        simulateKeyboard(bar, arrowRight);
+        await elementUpdated(splitter);
+      }
+
+      currentSizes = getPanesSizes(splitter, 'width');
+      // should stop at maxSize (400px)
+      expect(currentSizes.startSize).to.be.closeTo(400 - barSize, 2);
+
+      splitter.orientation = 'vertical';
+      await elementUpdated(splitter);
+
+      splitter.startMinSize = '150px';
+      splitter.startMaxSize = '350px';
+      splitter.endMinSize = '50px';
+      splitter.style.height = '1000px';
+      splitter.startSize = '250px';
+      await elementUpdated(splitter);
+
+      barSize = bar.getBoundingClientRect().height;
+      bar.focus();
+      await elementUpdated(splitter);
+
+      for (let i = 0; i < 15; i++) {
+        simulateKeyboard(bar, arrowUp);
+        await elementUpdated(splitter);
+      }
+
+      currentSizes = getPanesSizes(splitter, 'height');
+      expect(currentSizes.startSize).to.be.closeTo(150, 2);
+
+      splitter.startSize = '250px';
+      await elementUpdated(splitter);
+
+      for (let i = 0; i < 15; i++) {
+        simulateKeyboard(bar, arrowDown);
+        await elementUpdated(splitter);
+      }
+
+      currentSizes = getPanesSizes(splitter, 'height');
+      expect(currentSizes.startSize).to.be.closeTo(350, 2);
+    });
+
     it('should resize horizontally by 10px delta with left/right arrow keys', async () => {
       const eventSpy = spy(splitter, 'emitEvent');
       const bar = getSplitterPart(splitter, BAR_PART);
@@ -1961,7 +2031,7 @@ describe('Splitter', () => {
     });
   });
 
-  describe('Behavior on splitter resize', () => {
+  describe('Behavior on splitter/container resize', () => {
     it('should maintain panes sizes in px on splitter resize', async () => {
       const splitter = await fixture<IgcSplitterComponent>(
         createTwoPanesWithSizesAndConstraints({
@@ -2037,6 +2107,115 @@ describe('Splitter', () => {
 
       expect(newSizes.endSize).to.be.closeTo(totalAvailable * 0.3, 2);
       expect(newSizes.startSize).to.equal(totalAvailable - newSizes.endSize);
+    });
+
+    it('component adapts when container size changes', async () => {
+      const container = await fixture<HTMLDivElement>(
+        createSplitterInContainer({
+          startSize: '300px',
+          endSize: '40%',
+          containerWidth: '800px',
+        })
+      );
+      const splitter = container.querySelector(
+        'igc-splitter'
+      ) as IgcSplitterComponent;
+      await elementUpdated(splitter);
+
+      container.style.width = '1200px';
+      await elementUpdated(splitter);
+
+      let newSizes = getPanesSizes(splitter, 'width');
+      let totalAvailable = getTotalSize(splitter, 'width');
+
+      expect(newSizes.startSize).to.equal(300);
+      expect(newSizes.endSize).to.be.closeTo(totalAvailable * 0.4, 2);
+
+      container.style.width = '600px';
+      await elementUpdated(splitter);
+
+      newSizes = getPanesSizes(splitter, 'width');
+      totalAvailable = getTotalSize(splitter, 'width');
+
+      expect(newSizes.startSize).to.equal(300);
+      expect(newSizes.endSize).to.be.closeTo(totalAvailable * 0.4, 2);
+      expect(newSizes.startSize + newSizes.endSize).to.be.at.most(
+        totalAvailable
+      );
+    });
+
+    it('relative sizes (percentages) update correctly', async () => {
+      const container = await fixture<HTMLDivElement>(
+        createSplitterInContainer({
+          startSize: '25%',
+          endSize: '50%',
+          containerWidth: '1000px',
+        })
+      );
+      const splitter = container.querySelector(
+        'igc-splitter'
+      ) as IgcSplitterComponent;
+      await elementUpdated(splitter);
+
+      const initialSizes = getPanesSizes(splitter, 'width');
+      const initialTotal = getTotalSize(splitter, 'width');
+
+      // increase tolerance to 3px to account for rounding differences in percentage calculations across browsers
+      expect(initialSizes.startSize).to.be.closeTo(initialTotal * 0.25, 3);
+      expect(initialSizes.endSize).to.be.closeTo(initialTotal * 0.5, 3);
+
+      container.style.width = '1600px';
+      await elementUpdated(splitter);
+
+      let newSizes = getPanesSizes(splitter, 'width');
+      let totalAvailable = getTotalSize(splitter, 'width');
+
+      expect(newSizes.startSize).to.be.closeTo(totalAvailable * 0.25, 3);
+      expect(newSizes.endSize).to.be.closeTo(totalAvailable * 0.5, 3);
+
+      container.style.width = '500px';
+      await elementUpdated(splitter);
+
+      newSizes = getPanesSizes(splitter, 'width');
+      totalAvailable = getTotalSize(splitter, 'width');
+
+      expect(newSizes.startSize).to.be.closeTo(totalAvailable * 0.25, 3);
+      expect(newSizes.endSize).to.be.closeTo(totalAvailable * 0.5, 3);
+    });
+
+    it('absolute sizes are maintained when possible', async () => {
+      const container = await fixture<HTMLDivElement>(
+        createSplitterInContainer({
+          startSize: '250px',
+          endSize: '350px',
+          containerWidth: '800px',
+        })
+      );
+      const splitter = container.querySelector(
+        'igc-splitter'
+      ) as IgcSplitterComponent;
+      await elementUpdated(splitter);
+
+      const initialSizes = getPanesSizes(splitter, 'width');
+
+      expect(initialSizes.startSize).to.equal(250);
+      expect(initialSizes.endSize).to.equal(350);
+
+      container.style.width = '1200px';
+      await elementUpdated(splitter);
+
+      let newSizes = getPanesSizes(splitter, 'width');
+
+      expect(newSizes.startSize).to.equal(250);
+      expect(newSizes.endSize).to.equal(350);
+
+      container.style.width = '700px';
+      await elementUpdated(splitter);
+
+      newSizes = getPanesSizes(splitter, 'width');
+
+      expect(newSizes.startSize).to.equal(250);
+      expect(newSizes.endSize).to.equal(350);
     });
   });
 
@@ -2521,6 +2700,93 @@ describe('Splitter', () => {
       expect(rightInnerBar.tabIndex).to.equal(0);
     });
   });
+
+  describe('Edge scenarios', () => {
+    it('invalid size values should be handled gracefully', async () => {
+      // TODO: determine expected behavior for invalid size values (negative, non-numeric, etc.)
+    });
+
+    it('should handle invalid constraint values gracefully', async () => {
+      // TODO: determine how
+    });
+
+    it('should predictably handle the case where min sizes exceed container', async () => {
+      // TODO: determine how
+    });
+
+    it('should predictably handle the case where max sizes are smaller than container', async () => {
+      const splitter = await fixture<IgcSplitterComponent>(
+        createTwoPanesWithSizesAndConstraints({
+          startSize: '250px',
+          endSize: '350px',
+          startMaxSize: '200px',
+          endMaxSize: '300px',
+          splitterWidth: '800px',
+        })
+      );
+      await elementUpdated(splitter);
+
+      const sizes = getPanesSizes(splitter, 'width');
+      const totalAvailable = getTotalSize(splitter, 'width');
+
+      expect(sizes.startSize).to.be.at.most(200);
+      expect(sizes.endSize).to.be.at.most(300);
+
+      expect(sizes.startSize + sizes.endSize).to.be.lessThan(totalAvailable);
+    });
+
+    it('invalid orientation values should fall back to default', async () => {
+      splitter.orientation = 'diagonal' as unknown as SplitterOrientation;
+      await elementUpdated(splitter);
+
+      const bar = getSplitterPart(splitter, BAR_PART);
+      expect(bar).to.exist;
+
+      splitter.orientation = 'horizontal';
+      await elementUpdated(splitter);
+      expect(splitter.orientation).to.equal('horizontal');
+      expect(splitter.getAttribute('orientation')).to.equal('horizontal');
+    });
+
+    it('missing slot content should not break rendering', async () => {
+      const emptySplitter = await fixture<IgcSplitterComponent>(html`
+        <igc-splitter style="width: 500px; height: 500px;"> </igc-splitter>
+      `);
+      await elementUpdated(emptySplitter);
+
+      expect(emptySplitter).to.exist;
+
+      const startPane = getSplitterPart(emptySplitter, START_PART);
+      const endPane = getSplitterPart(emptySplitter, END_PART);
+      const bar = getSplitterPart(emptySplitter, BAR_PART);
+
+      expect(startPane).to.exist;
+      expect(endPane).to.exist;
+      expect(bar).to.exist;
+
+      const partialSplitter = await fixture<IgcSplitterComponent>(html`
+        <igc-splitter style="width: 500px; height: 500px;">
+          <div slot="start">Only Start Pane</div>
+        </igc-splitter>
+      `);
+      await elementUpdated(partialSplitter);
+
+      expect(partialSplitter).to.exist;
+
+      const partialStartPane = getSplitterPart(partialSplitter, START_PART);
+      const partialEndPane = getSplitterPart(partialSplitter, END_PART);
+      const partialBar = getSplitterPart(partialSplitter, BAR_PART);
+
+      expect(partialStartPane).to.exist;
+      expect(partialEndPane).to.exist;
+      expect(partialBar).to.exist;
+
+      partialSplitter.startSize = '300px';
+      await elementUpdated(partialSplitter);
+
+      expect(partialSplitter.startSize).to.equal('300px');
+    });
+  });
 });
 
 function createSplitter() {
@@ -2565,6 +2831,8 @@ type SplitterTestSizesAndConstraints = {
   orientation?: SplitterOrientation;
   splitterWidth?: string;
   splitterHeight?: string;
+  containerWidth?: string;
+  containerHeight?: string;
 };
 
 function createTwoPanesWithSizesAndConstraints(
@@ -2644,6 +2912,31 @@ function createSplitterWithCustomSlots() {
     <span slot="end-expand" class="custom-icon"> end-expand-icon </span>
     <span slot="end-collapse" class="custom-icon"> end-collapse-icon </span>
   </igc-splitter>`;
+}
+
+function createSplitterInContainer(
+  config: SplitterTestSizesAndConstraints = {}
+) {
+  return html`
+    <div
+      style="width: ${config.containerWidth ??
+      '800px'}; height: ${config.containerHeight ?? '800px'};"
+    >
+      <igc-splitter
+        style="width: 100%; height: 100%;"
+        .orientation=${config.orientation ?? 'horizontal'}
+        .startSize=${config.startSize ?? '300px'}
+        .endSize=${config.endSize ?? '40%'}
+        .startMinSize=${config.startMinSize}
+        .startMaxSize=${config.startMaxSize}
+        .endMinSize=${config.endMinSize}
+        .endMaxSize=${config.endMaxSize}
+      >
+        <div slot="start">Pane 1</div>
+        <div slot="end">Pane 2</div>
+      </igc-splitter>
+    </div>
+  `;
 }
 
 type SplitterSlot =
