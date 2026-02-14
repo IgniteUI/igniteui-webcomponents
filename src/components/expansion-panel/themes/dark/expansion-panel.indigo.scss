@@ -4,5 +4,5 @@
 $theme: $indigo;
 
 :host {
-    @include css-vars-from-theme(diff($base, $theme), 'ig-expansion-panel');
+    @include css-vars-from-theme(diff($base, $theme));
 }

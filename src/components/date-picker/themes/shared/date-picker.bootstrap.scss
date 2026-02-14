@@ -1,11 +1,10 @@
 @use 'styles/utilities' as *;
 @use '../light/themes' as *;
+@use 'components/input/themes/light/themes' as input-theme;
 
-$theme: $bootstrap;
+$theme: input-theme.$bootstrap;
 
 :host {
-    --calendar-border-color: #{$bootstrap-calendar-border-color};
-
     igc-dialog {
         igc-calendar {
             border: none;

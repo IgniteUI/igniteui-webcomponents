@@ -1,14 +1,17 @@
 @use 'sass:map';
 @use 'styles/utilities' as *;
 @use 'igniteui-theming/sass/themes/schemas/components/light/calendar' as *;
-@use 'igniteui-theming/sass/themes/schemas/components/light/input-group' as input-theme;
+@use 'igniteui-theming/sass/themes/schemas/components/light/input-group' as *;
+@use '../shared/date-picker.utils' as *;
 
-$base: digest-schema($light-calendar);
-$material: map.merge(digest-schema($material-calendar), digest-schema(input-theme.$material-input-group));
-$material-calendar-border-color: map.get(digest-schema($material-calendar), 'border-color');
-$bootstrap: map.merge(digest-schema($bootstrap-calendar), digest-schema(input-theme.$bootstrap-input-group));
-$bootstrap-calendar-border-color: map.get(digest-schema($bootstrap-calendar), 'border-color');
-$fluent: map.merge(digest-schema($fluent-calendar), digest-schema(input-theme.$fluent-input-group));
-$fluent-calendar-border-color: map.get(digest-schema($fluent-calendar), 'border-color');
-$indigo: map.merge(digest-schema($indigo-calendar), digest-schema(input-theme.$indigo-input-group));
-$indigo-calendar-border-color: map.get(digest-schema($indigo-calendar), 'border-color');
+$material: digest-schema(calendar-theme($material-calendar));
+$bootstrap: digest-schema(calendar-theme($bootstrap-calendar));
+$fluent: digest-schema(calendar-theme($fluent-calendar));
+$indigo: digest-schema(calendar-theme($indigo-calendar));
+$bootstrap-input: digest-schema(input-theme($bootstrap-input-group));
+$fluent-input: digest-schema(input-theme($fluent-input-group));
+$indigo-input: digest-schema(input-theme($indigo-input-group));
+$material-dialog: digest-schema(dialog-theme($material-calendar));
+$bootstrap-dialog: digest-schema(dialog-theme($bootstrap-calendar));
+$fluent-dialog: digest-schema(dialog-theme($fluent-calendar));
+$indigo-dialog: digest-schema(dialog-theme($indigo-calendar));

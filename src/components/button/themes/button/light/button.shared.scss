@@ -2,17 +2,17 @@
 @use 'themes' as *;
 
 :host([variant='flat']) {
-    @include css-vars-from-theme($base-flat, 'ig-button');
+    @include css-vars-from-theme($base-flat);
 }
 
 :host([variant='outlined']) {
-    @include css-vars-from-theme($base-outlined, 'ig-button');
+    @include css-vars-from-theme($base-outlined);
 }
 
 :host([variant='contained']) {
-    @include css-vars-from-theme($base-contained, 'ig-button');
+    @include css-vars-from-theme($base-contained);
 }
 
 :host([variant='fab']) {
-    @include css-vars-from-theme($base-fab, 'ig-button');
+    @include css-vars-from-theme($base-fab);
 }

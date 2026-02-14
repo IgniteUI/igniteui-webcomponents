@@ -71,7 +71,7 @@ $dropdown-theme: dropdown-theme.$material;
 :host(:not([disabled]):state(ig-invalid)),
 :host(:not(:disabled):state(ig-invalid)) {
     ::part(helper-text) {
-        color: var-get($theme, 'error-secondary-color');
+        color: var-get($input-theme, 'error-secondary-color');
     }
 }
 

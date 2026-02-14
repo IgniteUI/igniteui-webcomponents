@@ -1,8 +1,11 @@
 @use 'styles/utilities' as *;
 @use 'themes' as *;
 
-$theme: $fluent;
-
 :host {
-    @include css-vars-from-theme(diff($base, $theme), 'ig-datepicker');
+    @include css-vars-from-theme($fluent);
+    @include css-vars-from-theme($fluent-input);
+
+    igc-dialog {
+        @include css-vars-from-theme($fluent-dialog);
+    }
 }

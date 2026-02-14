@@ -2,5 +2,5 @@
 @use 'themes' as *;
 
 :host {
-    @include css-vars-from-theme($base, 'ig-calendar');
+    @include css-vars-from-theme($base);
 }

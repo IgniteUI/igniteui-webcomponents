@@ -1,11 +1,14 @@
 @use 'styles/utilities' as *;
 @use 'themes' as *;
-@use '../light/themes' as light;
 
 :host {
-    @include css-vars-from-theme(diff(light.$base, $indigo), 'ig-daterangepicker');
+    @include css-vars-from-theme($indigo);
+    @include css-vars-from-theme($indigo-input);
+    @include css-vars-from-theme($indigo-calendar);
 
-    --calendar-border-color: #{$indigo-calendar-border-color};
+    igc-dialog {
+        @include css-vars-from-theme($indigo-dialog);
+    }
 
     igc-dialog[open]::part(base) {
         box-shadow: var(--ig-elevation-7);

@@ -5,5 +5,5 @@
 $theme: $material;
 
 :host {
-    @include css-vars-from-theme(diff(light.$base, $theme), 'ig-snackbar');
+    @include css-vars-from-theme(diff(light.$base, $theme));
 }
