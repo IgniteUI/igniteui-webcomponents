@@ -51,7 +51,7 @@
 }
 
 // Horizontal orientation (default)
-:host(:not([orientation='vertical'])) {
+:host([orientation='horizontal']) {
     [part='base'] {
         flex-direction: row;
     }
@@ -109,8 +109,8 @@
     }
 }
 
-:host([disable-resize]:not([orientation='vertical'])),
-:host([hide-drag-handle]:not([orientation='vertical'])) {
+:host([disable-resize][orientation='horizontal']),
+:host([hide-drag-handle][orientation='horizontal']) {
     [part='start-collapse-btn'] {
         margin-block-end: rem(48px);
     }
