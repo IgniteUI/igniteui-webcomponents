@@ -1,0 +1,120 @@
+@use 'sass:map';
+@use 'igniteui-theming/sass/animations/easings' as *;
+@use 'styles/utilities' as *;
+@use '../light/themes' as *;
+
+$theme: $material;
+$splitter-color: var-get($theme, 'bar-color');
+$bar-size: var-get($theme, 'size');
+$expander-border: $bar-size solid var-get($theme, 'expander-color');
+$expander-border-active: $bar-size solid var-get($theme, 'expander-color-active');
+
+[part='splitter-bar'] {
+    background: hsla(from $splitter-color h s l / 68%);
+    transition: all .15s $out-quad;
+
+    [part='drag-handle'] {
+        background: var-get($theme, 'handle-color');
+        border-radius: var-get($theme, 'border-radius');
+    }
+
+    &:focus-visible {
+        outline: none;
+        box-shadow: 0 0 0 rem(2px) var-get($theme, 'focus-color');
+        transition: box-shadow 0.15s $out-quad;
+    }
+
+    &:hover,
+    &:focus-visible:hover {
+        background: $splitter-color;
+        box-shadow: none;
+        transition: all 0.25s ease-out;
+    }
+
+    &:active {
+        background: var-get($theme, 'bar-color-active');
+
+        [part='drag-handle'] {
+            background: var-get($theme, 'handle-color-active');
+        }
+    }
+}
+
+
+:host(:not([orientation='vertical'])) {
+    [part='splitter-bar'] {
+        width: $bar-size;
+        padding-inline: rem(1px);
+
+        &:active {
+            [part='start-expand-btn'],
+            [part='end-collapse-btn'] {
+                border-inline-start: $expander-border-active;
+            }
+
+            [part='start-collapse-btn'],
+            [part='end-expand-btn'] {
+                border-inline-end: $expander-border-active;
+            }
+        }
+    }
+
+    [part='drag-handle'] {
+        width: $bar-size;
+    }
+
+    [part='start-expand-btn'],
+    [part='end-collapse-btn'] {
+        border-inline-start: $expander-border;
+    }
+
+    [part='start-collapse-btn'],
+    [part='end-expand-btn'] {
+        border-inline-end: $expander-border;
+    }
+}
+
+:host(:not([orientation='vertical'])[hide-collapse-buttons][hide-drag-handle]) {
+    [part='splitter-bar'] {
+        width: $bar-size;
+    }
+}
+
+:host([orientation='vertical']) {
+    [part='splitter-bar'] {
+        height: $bar-size;
+        padding-block: rem(1px);
+
+        &:active {
+            [part='start-expand-btn'],
+            [part='end-collapse-btn'] {
+                border-block-start: $expander-border-active;
+            }
+
+            [part='start-collapse-btn'],
+            [part='end-expand-btn'] {
+                border-block-end: $expander-border-active;
+            }
+        }
+    }
+
+    [part='drag-handle'] {
+        height: $bar-size;
+    }
+
+    [part='start-expand-btn'],
+    [part='end-collapse-btn'] {
+        border-block-start: $expander-border;
+    }
+
+    [part='start-collapse-btn'],
+    [part='end-expand-btn'] {
+        border-block-end: $expander-border;
+    }
+}
+
+:host([orientation='vertical'][hide-collapse-buttons][hide-drag-handle]) {
+    [part='splitter-bar'] {
+        height: $bar-size;
+    }
+}

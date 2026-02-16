@@ -10,9 +10,6 @@
         width: 100%;
         height: 100%;
         display: flex;
-        color: var(--ig-gray-900);
-        background: var(--ig-gray-100);
-        border: 1px solid var(--ig-gray-200);
         user-select: none;
     }
 
@@ -38,37 +35,17 @@
 
     // Bar styles (moved from splitter-bar.base.scss)
     [part='splitter-bar'] {
-        --bar-size: 5px;
-
         display: flex;
         flex-shrink: 0;
-        background-color: var(--ig-gray-200);
         justify-content: center;
         cursor: var(--cursor, default);
-
-        &:hover {
-            background-color: var(--ig-gray-400);
-        }
+        box-sizing: content-box;
 
         [part*='collapse-btn'],
         [part*='expand-btn'] {
             cursor: pointer;
-            width: 5px;
-            height: 5px;
-        }
-
-        [part='start-collapse-btn'],
-        [part='start-expand-btn'] {
-            background-color: red;
-        }
-
-        [part='end-collapse-btn'],
-        [part='end-expand-btn'] {
-            background-color: green;
-        }
-
-        [part='drag-handle'] {
-            background-color: yellow;
+            width: 0;
+            height: 0;
         }
     }
 }
@@ -81,12 +58,18 @@
 
     [part='splitter-bar'] {
         flex-direction: column;
-        width: var(--bar-size);
         height: 100%;
+    }
 
-        [part='drag-handle'] {
-            height: 50px;
-        }
+    [part='drag-handle'] {
+        height: 25%;
+        margin: rem(48px) 0;
+    }
+
+    [part*='collapse-btn'],
+    [part*='expand-btn'] {
+        border-top: 5px solid transparent;
+        border-bottom: 5px solid transparent;
     }
 }
 
@@ -99,11 +82,17 @@
     [part='splitter-bar'] {
         flex-direction: row;
         width: 100%;
-        height: var(--bar-size);
+    }
 
-        [part='drag-handle'] {
-            width: 50px;
-        }
+    [part='drag-handle'] {
+        width: 25%;
+        margin: 0 rem(48px);
+    }
+
+    [part*='collapse-btn'],
+    [part*='expand-btn'] {
+        border-left: 5px solid transparent;
+        border-right: 5px solid transparent;
     }
 }
 
@@ -117,5 +106,19 @@
 :host([end-collapsed]) {
     [part~='end-panel'] {
         display: none;
+    }
+}
+
+:host([disable-resize]:not([orientation='vertical'])),
+:host([hide-drag-handle]:not([orientation='vertical'])) {
+    [part='start-collapse-btn'] {
+        margin-block-end: rem(48px);
+    }
+}
+
+:host([disable-resize][orientation='vertical']),
+:host([hide-drag-handle][orientation='vertical']) {
+    [part='start-collapse-btn'] {
+        margin-inline-end: rem(48px);
     }
 }

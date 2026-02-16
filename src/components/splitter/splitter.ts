@@ -2,6 +2,7 @@ import { html, LitElement, nothing, type PropertyValues } from 'lit';
 import { property, query } from 'lit/decorators.js';
 import { createRef, ref } from 'lit/directives/ref.js';
 import { type StyleInfo, styleMap } from 'lit/directives/style-map.js';
+import { addThemingController } from '../../theming/theming-controller.js';
 import {
   addKeybindings,
   arrowDown,
@@ -20,7 +21,9 @@ import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { partMap } from '../common/part-map.js';
 import { isLTR } from '../common/util.js';
 import type { SplitterOrientation } from '../types.js';
+import { styles as shared } from './themes/shared/splitter.common.css.js';
 import { styles } from './themes/splitter.base.css.js';
+import { all } from './themes/themes.js';
 
 export interface IgcSplitterResizeEventDetail {
   /** The current size of the start panel in pixels */
@@ -81,7 +84,7 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   Constructor<LitElement>
 >(LitElement) {
   public static readonly tagName = 'igc-splitter';
-  public static styles = [styles];
+  public static styles = [styles, shared];
 
   /* blazorSuppress */
   public static register() {
@@ -308,6 +311,7 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
 
   constructor() {
     super();
+    addThemingController(this, all);
 
     addSlotController(this, {
       slots: setSlots(
