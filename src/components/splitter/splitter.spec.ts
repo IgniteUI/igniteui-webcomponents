@@ -2702,16 +2702,199 @@ describe('Splitter', () => {
   });
 
   describe('Edge scenarios', () => {
-    it('invalid size values should be handled gracefully', async () => {
-      // TODO: determine expected behavior for invalid size values (negative, non-numeric, etc.)
+    it('invalid size values should fallback to "auto"', async () => {
+      splitter.startSize = '-100px';
+      await elementUpdated(splitter);
+      expect(splitter.startSize).to.equal('auto');
+
+      splitter.endSize = '-20%';
+      await elementUpdated(splitter);
+      expect(splitter.endSize).to.equal('auto');
+
+      splitter.startSize = 'abc';
+      await elementUpdated(splitter);
+      expect(splitter.startSize).to.equal('auto');
+
+      splitter.startSize = 'px100';
+      await elementUpdated(splitter);
+      expect(splitter.startSize).to.equal('auto');
+
+      splitter.startSize = '%%20';
+      await elementUpdated(splitter);
+      expect(splitter.startSize).to.equal('auto');
+
+      // percentages over 100% are also considered invalid
+      splitter.startSize = '150%';
+      await elementUpdated(splitter);
+      expect(splitter.startSize).to.equal('auto');
+
+      splitter.endSize = '200%';
+      await elementUpdated(splitter);
+      expect(splitter.endSize).to.equal('auto');
+
+      splitter.startSize = '';
+      await elementUpdated(splitter);
+      expect(splitter.startSize).to.equal('auto');
+
+      splitter.endSize = '   ';
+      await elementUpdated(splitter);
+      expect(splitter.endSize).to.equal('auto');
+
+      // values with spaces should be trimmed and accepted if numeric part is valid
+      splitter.startSize = '  200px  ';
+      await elementUpdated(splitter);
+      expect(splitter.startSize).to.equal('200px');
+
+      // 0% and 100% are valid
+      splitter.startSize = '0%';
+      await elementUpdated(splitter);
+      expect(splitter.startSize).to.equal('0%');
+
+      splitter.endSize = '100%';
+      await elementUpdated(splitter);
+      expect(splitter.endSize).to.equal('100%');
     });
 
-    it('should handle invalid constraint values gracefully', async () => {
-      // TODO: determine how
+    it('should fallback to undefined for invalid constraint values', async () => {
+      splitter.startMinSize = '-50px';
+      await elementUpdated(splitter);
+      expect(splitter.startMinSize).to.be.undefined;
+
+      splitter.endMaxSize = '-20%';
+      await elementUpdated(splitter);
+      expect(splitter.endMaxSize).to.be.undefined;
+
+      splitter.startMaxSize = 'large';
+      await elementUpdated(splitter);
+      expect(splitter.startMaxSize).to.be.undefined;
+
+      splitter.endMinSize = 'small';
+      await elementUpdated(splitter);
+      expect(splitter.endMinSize).to.be.undefined;
+
+      splitter.startMaxSize = '150%';
+      await elementUpdated(splitter);
+      expect(splitter.startMaxSize).to.be.undefined;
+
+      splitter.endMinSize = '200%';
+      await elementUpdated(splitter);
+      expect(splitter.endMinSize).to.be.undefined;
+
+      splitter.startMinSize = '';
+      await elementUpdated(splitter);
+      expect(splitter.startMinSize).to.be.undefined;
+
+      splitter.endMaxSize = '   ';
+      await elementUpdated(splitter);
+      expect(splitter.endMaxSize).to.be.undefined;
     });
 
     it('should predictably handle the case where min sizes exceed container', async () => {
-      // TODO: determine how
+      // combined mins exceed total (600 + 400 > 800)
+      const splitter = await fixture<IgcSplitterComponent>(
+        createTwoPanesWithSizesAndConstraints({
+          startMinSize: '600px',
+          endMinSize: '400px',
+          splitterWidth: '800px',
+        })
+      );
+      await elementUpdated(splitter);
+
+      // constraints exceed container, use auto sizing for both panes
+      const startPane = getSplitterPart(splitter, START_PART);
+      const endPane = getSplitterPart(splitter, END_PART);
+
+      const startComputedStyle = getComputedStyle(startPane);
+      const endComputedStyle = getComputedStyle(endPane);
+
+      expect(startComputedStyle.minWidth).to.equal('0px');
+      expect(endComputedStyle.minWidth).to.equal('0px');
+
+      // component should remain functional
+      expect(splitter).to.exist;
+      const bar = getSplitterPart(splitter, BAR_PART);
+      expect(bar).to.exist;
+
+      // percentages exceeding 100% (70% + 60% > 100%)
+      const splitter2 = await fixture<IgcSplitterComponent>(
+        createTwoPanesWithSizesAndConstraints({
+          startMinSize: '70%',
+          endMinSize: '60%',
+          splitterWidth: '1000px',
+        })
+      );
+      await elementUpdated(splitter2);
+
+      const startPane2 = getSplitterPart(splitter2, START_PART);
+      const endPane2 = getSplitterPart(splitter2, END_PART);
+
+      const startComputedStyle2 = getComputedStyle(startPane2);
+      const endComputedStyle2 = getComputedStyle(endPane2);
+
+      expect(startComputedStyle2.minWidth).to.equal('0px');
+      expect(endComputedStyle2.minWidth).to.equal('0px');
+
+      // individual min exceeds total (900px > 800px)
+      const splitter3 = await fixture<IgcSplitterComponent>(
+        createTwoPanesWithSizesAndConstraints({
+          startMinSize: '900px',
+          endMinSize: '100px',
+          splitterWidth: '800px',
+        })
+      );
+      await elementUpdated(splitter3);
+
+      const startPane3 = getSplitterPart(splitter3, START_PART);
+      const endPane3 = getSplitterPart(splitter3, END_PART);
+
+      const startComputedStyle3 = getComputedStyle(startPane3);
+      const endComputedStyle3 = getComputedStyle(endPane3);
+
+      expect(startComputedStyle3.minWidth).to.equal('0px');
+      expect(endComputedStyle3.minWidth).to.equal('0px');
+    });
+
+    it('minSizes outside the total available space should be respected once container grows', async () => {
+      const splitter = await fixture<IgcSplitterComponent>(
+        createTwoPanesWithSizesAndConstraints({
+          startMinSize: '600px',
+          endMinSize: '400px',
+          splitterWidth: '800px',
+        })
+      );
+      await elementUpdated(splitter);
+
+      const startPane = getSplitterPart(splitter, START_PART);
+      const endPane = getSplitterPart(splitter, END_PART);
+
+      let startComputedStyle = getComputedStyle(startPane);
+      let endComputedStyle = getComputedStyle(endPane);
+
+      expect(startComputedStyle.minWidth).to.equal('0px');
+      expect(endComputedStyle.minWidth).to.equal('0px');
+
+      // grow the container to accommodate the constraints
+      splitter.style.width = '1200px';
+      await elementUpdated(splitter);
+      await nextFrame();
+      await nextFrame();
+
+      startComputedStyle = getComputedStyle(startPane);
+      endComputedStyle = getComputedStyle(endPane);
+
+      expect(startComputedStyle.minWidth).to.equal('600px');
+      expect(endComputedStyle.minWidth).to.equal('400px');
+
+      // try to shrink start pane by 700px - should stop at minSize (600px)
+      await resize(splitter, -700, 0);
+      await elementUpdated(splitter);
+
+      const currentSizes = getPanesSizes(splitter, 'width');
+      // start pane should not go below its minSize of 600px
+      expect(currentSizes.startSize).to.equal(600);
+      expect(currentSizes.endSize).to.equal(
+        getTotalSize(splitter, 'width') - 600
+      );
     });
 
     it('should predictably handle the case where max sizes are smaller than container', async () => {

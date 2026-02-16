@@ -60,7 +60,7 @@ interface ExpanderConfig {
  * into multiple smaller resizable and collapsible areas.
  *
  * @element igc-splitter
- * *
+ *
  * @fires igcResizeStart - Emitted when resizing starts.
  * @fires igcResizing - Emitted while resizing.
  * @fires igcResizeEnd - Emitted when resizing ends.
@@ -104,10 +104,15 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   private _endCollapsed = false;
   private _startSize = 'auto';
   private _endSize = 'auto';
+  private _startMinSize: string | undefined;
+  private _startMaxSize: string | undefined;
+  private _endMinSize: string | undefined;
+  private _endMaxSize: string | undefined;
   private _resizeState: SplitterResizeState | null = null;
   private _isDragging = false;
   private _dragPointerId = -1;
   private _dragStartPosition = { x: 0, y: 0 };
+  private _resizeObserver?: ResizeObserver;
 
   @query('[part~="base"]', true)
   private readonly _base!: HTMLElement;
@@ -195,28 +200,52 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
    * @attr
    */
   @property({ attribute: 'start-min-size', reflect: true })
-  public startMinSize: string | undefined;
+  public set startMinSize(value: string | undefined) {
+    this._startMinSize = this._normalizeValue(value);
+  }
+
+  public get startMinSize(): string | undefined {
+    return this._startMinSize;
+  }
 
   /**
    * The minimum size of the end pane.
    * @attr
    */
   @property({ attribute: 'end-min-size', reflect: true })
-  public endMinSize: string | undefined;
+  public set endMinSize(value: string | undefined) {
+    this._endMinSize = this._normalizeValue(value);
+  }
+
+  public get endMinSize(): string | undefined {
+    return this._endMinSize;
+  }
 
   /**
    * The maximum size of the start pane.
    * @attr
    */
   @property({ attribute: 'start-max-size', reflect: true })
-  public startMaxSize: string | undefined;
+  public set startMaxSize(value: string | undefined) {
+    this._startMaxSize = this._normalizeValue(value);
+  }
+
+  public get startMaxSize(): string | undefined {
+    return this._startMaxSize;
+  }
 
   /**
    * The maximum size of the end pane.
    * @attr
    */
   @property({ attribute: 'end-max-size', reflect: true })
-  public endMaxSize: string | undefined;
+  public set endMaxSize(value: string | undefined) {
+    this._endMaxSize = this._normalizeValue(value);
+  }
+
+  public get endMaxSize(): string | undefined {
+    return this._endMaxSize;
+  }
 
   /**
    * The size of the start pane.
@@ -224,7 +253,7 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
    */
   @property({ attribute: 'start-size', reflect: true })
   public set startSize(value: string | undefined) {
-    this._startSize = value ? value : 'auto';
+    this._startSize = this._normalizeValue(value, 'auto') as string;
     this._setPaneFlex(this._startPaneInternalStyles, this._getFlex('start'));
   }
 
@@ -238,7 +267,7 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
    */
   @property({ attribute: 'end-size', reflect: true })
   public set endSize(value: string | undefined) {
-    this._endSize = value ? value : 'auto';
+    this._endSize = this._normalizeValue(value, 'auto') as string;
     this._setPaneFlex(this._endPaneInternalStyles, this._getFlex('end'));
   }
 
@@ -351,6 +380,17 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
 
   protected override firstUpdated() {
     this._initPanes();
+
+    // update panes on container size changes
+    this._resizeObserver = new ResizeObserver(() => {
+      this._initPanes();
+    });
+    this._resizeObserver.observe(this._base);
+  }
+
+  public override disconnectedCallback() {
+    super.disconnectedCallback();
+    this._resizeObserver?.disconnect();
   }
 
   //#endregion
@@ -485,6 +525,31 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   private _isAutoSize(which: 'start' | 'end') {
     const targetSize = which === 'start' ? this._startSize : this._endSize;
     return !!targetSize && targetSize === 'auto';
+  }
+
+  private _normalizeValue(
+    value: string | undefined,
+    fallback: 'auto' | undefined = undefined
+  ): string | undefined {
+    if (!value || value.trim() === '') {
+      return fallback;
+    }
+
+    const trimmed = value.trim();
+    if (trimmed === 'auto') {
+      return fallback;
+    }
+
+    const numericValue = Number.parseInt(trimmed, 10);
+    if (Number.isNaN(numericValue) || numericValue < 0) {
+      return fallback;
+    }
+
+    if (trimmed.includes('%') && numericValue > 100) {
+      return fallback;
+    }
+
+    return trimmed;
   }
 
   private _getFlex(which: 'start' | 'end'): string {
@@ -739,25 +804,17 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
     this.endMaxSize = undefined;
 
     this._setPaneFlex(this._startPaneInternalStyles, this._getFlex('start'));
-    this._setPaneMinMaxSizes(this._startPaneInternalStyles, '0', '100%');
+    this._setPaneMinMaxSizes('start', '0', '100%');
     this._setPaneFlex(this._endPaneInternalStyles, this._getFlex('end'));
-    this._setPaneMinMaxSizes(this._endPaneInternalStyles, '0', '100%');
+    this._setPaneMinMaxSizes('end', '0', '100%');
   }
 
   private _initPanes() {
     if (this.startCollapsed || this.endCollapsed) {
       this._resetPanes();
     } else {
-      this._setPaneMinMaxSizes(
-        this._startPaneInternalStyles,
-        this.startMinSize,
-        this.startMaxSize
-      );
-      this._setPaneMinMaxSizes(
-        this._endPaneInternalStyles,
-        this.endMinSize,
-        this.endMaxSize
-      );
+      this._setPaneMinMaxSizes('start', this.startMinSize, this.startMaxSize);
+      this._setPaneMinMaxSizes('end', this.endMinSize, this.endMaxSize);
     }
 
     this._setPaneFlex(this._startPaneInternalStyles, this._getFlex('start'));
@@ -766,14 +823,18 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   }
 
   private _setPaneMinMaxSizes(
-    styles: StyleInfo,
+    pane: 'start' | 'end',
     minSize?: string,
     maxSize?: string
   ) {
     const isHorizontal = this.orientation === 'horizontal';
 
-    const min = minSize ?? 0;
+    const min = this._ensureMinConstraintIsWithinBounds(minSize, pane) ?? 0;
     const max = maxSize ?? '100%';
+    const styles =
+      pane === 'start'
+        ? this._startPaneInternalStyles
+        : this._endPaneInternalStyles;
 
     const sizes = isHorizontal
       ? {
@@ -792,6 +853,30 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
     Object.assign(styles, {
       ...sizes,
     });
+  }
+
+  private _ensureMinConstraintIsWithinBounds(
+    minSize: string | undefined,
+    pane: 'start' | 'end'
+  ): string | undefined {
+    const totalSize = this._getTotalSize();
+
+    let validatedMin = minSize;
+    if (minSize && totalSize > 0) {
+      const minPx = this._setMinMaxInPx(pane, 'min') ?? 0;
+
+      const otherMinSize =
+        pane === 'start' ? this._endMinSize : this._startMinSize;
+      const otherMinPx = otherMinSize
+        ? (this._setMinMaxInPx(pane === 'start' ? 'end' : 'start', 'min') ?? 0)
+        : 0;
+
+      // Ignore constraint if it exceeds total or combined exceeds total, to prevent content overflow
+      if (minPx > totalSize || minPx + otherMinPx > totalSize) {
+        validatedMin = undefined;
+      }
+    }
+    return validatedMin;
   }
 
   private _setPaneFlex(styles: StyleInfo, flex: string) {
