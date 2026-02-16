@@ -22,6 +22,7 @@ $expander-border-active: $bar-size solid var-get($theme, 'expander-color-active'
         outline: none;
         box-shadow: 0 0 0 rem(2px) var-get($theme, 'focus-color');
         transition: box-shadow 0.15s $out-quad;
+        z-index: 99;
     }
 
     &:hover,
