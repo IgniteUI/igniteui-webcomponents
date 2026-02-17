@@ -69,8 +69,8 @@ $expander-border-active: $bar-size solid var-get($theme, 'expander-color-active'
 
     [part*='collapse-btn'],
     [part*='expand-btn'] {
-        border-top: $bar-size solid transparent;
-        border-bottom: $bar-size solid transparent;
+        border-block-start: $bar-size solid transparent;
+        border-block-end: $bar-size solid transparent;
     }
 
     [part='start-expand-btn'],
@@ -114,8 +114,8 @@ $expander-border-active: $bar-size solid var-get($theme, 'expander-color-active'
 
     [part*='collapse-btn'],
     [part*='expand-btn'] {
-        border-left: $bar-size solid transparent;
-        border-right: $bar-size solid transparent;
+        border-inline-start: $bar-size solid transparent;
+        border-inline-end: $bar-size solid transparent;
     }
 
     [part='start-expand-btn'],
