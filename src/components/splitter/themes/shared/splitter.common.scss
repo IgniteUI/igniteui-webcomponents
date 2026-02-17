@@ -42,7 +42,6 @@ $expander-border-active: $bar-size solid var-get($theme, 'expander-color-active'
     }
 }
 
-
 :host([orientation='horizontal']) {
     [part='splitter-bar'] {
         width: $bar-size;
@@ -64,8 +63,6 @@ $expander-border-active: $bar-size solid var-get($theme, 'expander-color-active'
     [part='drag-handle'] {
         width: $bar-size;
     }
-
-
 
     [part*='collapse-btn'],
     [part*='expand-btn'] {
