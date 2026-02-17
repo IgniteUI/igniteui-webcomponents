@@ -1,4 +1,4 @@
-import { html, LitElement, type PropertyValues } from 'lit';
+import { html, LitElement } from 'lit';
 import { property, query } from 'lit/decorators.js';
 import { createRef, ref } from 'lit/directives/ref.js';
 import { type StyleInfo, styleMap } from 'lit/directives/style-map.js';
@@ -17,6 +17,7 @@ import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
+import { partMap } from '../common/part-map.js';
 import { isLTR } from '../common/util.js';
 import type { SplitterOrientation } from '../types.js';
 import { styles } from './themes/splitter.base.css.js';
@@ -46,13 +47,6 @@ interface PaneResizeState {
 interface SplitterResizeState {
   startPane: PaneResizeState;
   endPane: PaneResizeState;
-}
-
-interface ExpanderConfig {
-  slotName: string;
-  partName: string;
-  label: string;
-  hidden: boolean;
 }
 
 /**
@@ -327,19 +321,6 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   //#endregion
 
   //#region Lifecycle
-
-  protected override willUpdate(changed: PropertyValues) {
-    super.willUpdate(changed);
-
-    if (
-      changed.has('startMinSize') ||
-      changed.has('startMaxSize') ||
-      changed.has('endMinSize') ||
-      changed.has('endMaxSize')
-    ) {
-      this._initPanes();
-    }
-  }
 
   constructor() {
     super();
@@ -898,6 +879,34 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
 
   //#region Rendering
 
+  private _resolvePartNames(expander: 'start' | 'end') {
+    if (expander === 'start') {
+      return {
+        'end-expand-btn': this.endCollapsed,
+        'start-collapse-btn': !this.endCollapsed,
+      };
+    }
+
+    return {
+      'start-expand-btn': this.startCollapsed,
+      'end-collapse-btn': !this.startCollapsed,
+    };
+  }
+
+  private _resolveExpanderSlot(expander: 'start' | 'end'): string {
+    if (expander === 'start') {
+      return this.endCollapsed ? 'end-expand' : 'start-collapse';
+    }
+    return this.startCollapsed ? 'start-expand' : 'end-collapse';
+  }
+
+  private _resolveExpanderLabel(expander: 'start' | 'end'): string {
+    if (expander === 'start') {
+      return this.endCollapsed ? 'Expand end pane' : 'Collapse start pane';
+    }
+    return this.startCollapsed ? 'Expand start pane' : 'Collapse end pane';
+  }
+
   private _getExpanderHiddenState() {
     const hidden = this.disableCollapse || this.hideCollapseButtons;
     return {
@@ -906,56 +915,33 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
     };
   }
 
-  private _getExpanderConfig(position: 'start' | 'end'): ExpanderConfig {
+  private _renderBarControls() {
+    const dragHandleHidden = this.hideDragHandle || this.disableResize;
     const { prevButtonHidden, nextButtonHidden } =
       this._getExpanderHiddenState();
 
-    if (position === 'start') {
-      const isExpandingEnd = this.endCollapsed;
-      return {
-        slotName: isExpandingEnd ? 'end-expand' : 'start-collapse',
-        partName: isExpandingEnd ? 'end-expand-btn' : 'start-collapse-btn',
-        label: isExpandingEnd ? 'Expand end pane' : 'Collapse start pane',
-        hidden: prevButtonHidden,
-      };
-    }
-
-    const isExpandingStart = this.startCollapsed;
-    return {
-      slotName: isExpandingStart ? 'start-expand' : 'end-collapse',
-      partName: isExpandingStart ? 'start-expand-btn' : 'end-collapse-btn',
-      label: isExpandingStart ? 'Expand start pane' : 'Collapse end pane',
-      hidden: nextButtonHidden,
-    };
-  }
-
-  private _renderBarControls() {
-    const dragHandleHidden = this.hideDragHandle || this.disableResize;
-    const startConfig = this._getExpanderConfig('start');
-    const endConfig = this._getExpanderConfig('end');
-
     return html`
       <div
-        part="${startConfig.partName}"
-        ?hidden=${startConfig.hidden}
-        aria-label=${startConfig.label}
+        part="${partMap(this._resolvePartNames('start'))}"
+        ?hidden=${prevButtonHidden}
         role="button"
+        aria-label=${this._resolveExpanderLabel('start')}
         @pointerdown=${(e: PointerEvent) =>
           this._handleExpanderClick('start', e)}
       >
-        <slot name="${startConfig.slotName}"></slot>
+        <slot name="${this._resolveExpanderSlot('start')}"></slot>
       </div>
       <div part="drag-handle" ?hidden=${dragHandleHidden}>
         <slot name="drag-handle"></slot>
       </div>
       <div
-        part="${endConfig.partName}"
-        ?hidden=${endConfig.hidden}
-        aria-label=${endConfig.label}
+        part="${partMap(this._resolvePartNames('end'))}"
+        ?hidden=${nextButtonHidden}
         role="button"
+        aria-label=${this._resolveExpanderLabel('end')}
         @pointerdown=${(e: PointerEvent) => this._handleExpanderClick('end', e)}
       >
-        <slot name="${endConfig.slotName}"></slot>
+        <slot name="${this._resolveExpanderSlot('end')}"></slot>
       </div>
     `;
   }
