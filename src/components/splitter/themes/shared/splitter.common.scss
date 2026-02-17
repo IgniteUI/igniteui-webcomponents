@@ -32,6 +32,7 @@ $expander-border-active: $bar-size solid var-get($theme, 'expander-color-active'
         transition: all 0.25s ease-out;
     }
 
+    &:focus-visible:active,
     &:active {
         background: var-get($theme, 'bar-color-active');
 
@@ -62,6 +63,14 @@ $expander-border-active: $bar-size solid var-get($theme, 'expander-color-active'
 
     [part='drag-handle'] {
         width: $bar-size;
+    }
+
+
+
+    [part*='collapse-btn'],
+    [part*='expand-btn'] {
+        border-top: $bar-size solid transparent;
+        border-bottom: $bar-size solid transparent;
     }
 
     [part='start-expand-btn'],
@@ -101,6 +110,12 @@ $expander-border-active: $bar-size solid var-get($theme, 'expander-color-active'
 
     [part='drag-handle'] {
         height: $bar-size;
+    }
+
+    [part*='collapse-btn'],
+    [part*='expand-btn'] {
+        border-left: $bar-size solid transparent;
+        border-right: $bar-size solid transparent;
     }
 
     [part='start-expand-btn'],
