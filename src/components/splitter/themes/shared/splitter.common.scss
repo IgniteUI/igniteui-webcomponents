@@ -81,12 +81,6 @@ $expander-border-active: $bar-size solid var-get($theme, 'expander-color-active'
     }
 }
 
-:host([orientation='horizontal'][hide-collapse-buttons][hide-drag-handle]) {
-    [part='splitter-bar'] {
-        width: $bar-size;
-    }
-}
-
 :host([orientation='vertical']) {
     [part='splitter-bar'] {
         height: $bar-size;
@@ -123,11 +117,5 @@ $expander-border-active: $bar-size solid var-get($theme, 'expander-color-active'
     [part='start-collapse-btn'],
     [part='end-expand-btn'] {
         border-block-end: $expander-border;
-    }
-}
-
-:host([orientation='vertical'][hide-collapse-buttons][hide-drag-handle]) {
-    [part='splitter-bar'] {
-        height: $bar-size;
     }
 }
