@@ -242,8 +242,8 @@ Run tests and verify in Storybook:
 # Run tests
 npm run test
 
-# Build project
-npm run build
+# Check that the project will transpile
+npm run check-types
 
 # Start Storybook
 npm run storybook

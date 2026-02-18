@@ -372,13 +372,13 @@ export { default as Igc[ComponentName]Component } from './components/[component-
 export { default as IgcProgressBarComponent } from './components/progress-bar/progress-bar.js';
 ```
 
-### 10. Build and Test
+### 10. Type-Check and Test
 
-Run the full build and test suite:
+Run type-checking and test suite:
 
 ```bash
-# Build the project
-npm run build
+# Check that the project will transpile
+npm run check-types
 
 # Run tests
 npm run test
@@ -401,7 +401,7 @@ Verify all of the following:
 - [ ] Test file with accessibility tests
 - [ ] Storybook story file
 - [ ] Exported from `src/index.ts` alphabetically
-- [ ] TypeScript compiles (`npm run build`)
+- [ ] TypeScript compiles (`npm run check-types`)
 - [ ] Tests pass (`npm run test`)
 - [ ] Component appears in Storybook
 - [ ] All theme variants render correctly

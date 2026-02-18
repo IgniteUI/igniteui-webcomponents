@@ -369,7 +369,7 @@ describe('Component', () => {
 
 ### 13. Build & Compilation
 
-- [ ] **TypeScript compiles** without errors: `npm run build`
+- [ ] **TypeScript compiles** without errors: `npm run check-types`
 - [ ] **No linting errors**: Check biome/eslint output
 - [ ] **SCSS transpiled** to `.css.js` files
 - [ ] **All tests pass**: `npm run test`
