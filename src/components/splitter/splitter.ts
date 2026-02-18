@@ -247,7 +247,7 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
    */
   @property({ attribute: 'start-size', reflect: true })
   public set startSize(value: string | undefined) {
-    this._startSize = this._normalizeValue(value, 'auto') as string;
+    this._startSize = this._normalizeValue(value, 'auto')!;
     this._setPaneFlex(this._startPaneInternalStyles, this._getFlex('start'));
   }
 
@@ -261,7 +261,7 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
    */
   @property({ attribute: 'end-size', reflect: true })
   public set endSize(value: string | undefined) {
-    this._endSize = this._normalizeValue(value, 'auto') as string;
+    this._endSize = this._normalizeValue(value, 'auto')!;
     this._setPaneFlex(this._endPaneInternalStyles, this._getFlex('end'));
   }
 
@@ -309,7 +309,7 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
 
   @watch('orientation', { waitUntilFirstUpdate: true })
   protected _orientationChange(): void {
-    Object.assign(this._barInternalStyles, { '--cursor': this._barCursor });
+    this._changeCursor();
     this._resetPanes();
   }
 
@@ -446,15 +446,10 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
 
   /** Toggles the collapsed state of the pane. */
   public toggle(position: 'start' | 'end') {
-    // TODO: determine behavior when disableCollapsed is true
     if (position === 'start') {
       this.startCollapsed = !this.startCollapsed;
     } else {
       this.endCollapsed = !this.endCollapsed;
-    }
-
-    if (!this.startCollapsed || !this.endCollapsed) {
-      this.updateComplete.then(() => this.requestUpdate());
     }
   }
 
@@ -510,7 +505,7 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
 
   private _normalizeValue(
     value: string | undefined,
-    fallback: 'auto' | undefined = undefined
+    fallback?: 'auto'
   ): string | undefined {
     if (!value || value.trim() === '') {
       return fallback;
@@ -810,7 +805,7 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   ) {
     const isHorizontal = this.orientation === 'horizontal';
 
-    const min = this._ensureMinConstraintIsWithinBounds(minSize, pane) ?? 0;
+    const min = this._ensureMinConstraintIsWithinBounds(pane, minSize) ?? 0;
     const max = maxSize ?? '100%';
     const styles =
       pane === 'start'
@@ -837,8 +832,8 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   }
 
   private _ensureMinConstraintIsWithinBounds(
-    minSize: string | undefined,
-    pane: 'start' | 'end'
+    pane: 'start' | 'end',
+    minSize?: string
   ): string | undefined {
     const totalSize = this._getTotalSize();
 
@@ -852,7 +847,8 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
         ? (this._setMinMaxInPx(pane === 'start' ? 'end' : 'start', 'min') ?? 0)
         : 0;
 
-      // Ignore constraint if it exceeds total or combined exceeds total, to prevent content overflow
+      // Ignore constraint if it exceeds total or combined exceeds total to prevent content overflow
+      // Once container grows to accommodate the constraint, it will be applied
       if (minPx > totalSize || minPx + otherMinPx > totalSize) {
         validatedMin = undefined;
       }
