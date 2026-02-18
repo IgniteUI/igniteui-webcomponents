@@ -37,25 +37,31 @@ const WEEK_DAYS_MAP = {
   thursday: 4,
   friday: 5,
   saturday: 6,
-};
+} as const;
 
 /* Converter functions */
 
-export function isValidDate(date: Date): Date | null {
-  return Number.isNaN(date.valueOf()) ? null : date;
+/**
+ * Type guard to check if a value is a valid Date object.
+ */
+export function isValidDate(value: unknown): value is Date {
+  if (value instanceof Date) {
+    return !Number.isNaN(value.getTime());
+  }
+  return false;
 }
 
 export function parseISODate(string: string): Date | null {
   // ISO date format (YYYY-MM-DD)
   if (ISO_DATE_PATTERN.test(string)) {
     const timeComponent = !string.includes('T') ? 'T00:00:00' : '';
-    return isValidDate(new Date(`${string}${timeComponent}`));
+    return getValidDate(new Date(`${string}${timeComponent}`));
   }
 
   // Time format (HH:MM:SS)
   if (TIME_PATTERN.test(string)) {
     const today = first(new Date().toISOString().split('T'));
-    return isValidDate(new Date(`${today}T${string}`));
+    return getValidDate(new Date(`${today}T${string}`));
   }
 
   return null;
@@ -74,7 +80,7 @@ export function convertToDate(value?: Date | string | null): Date | null {
     return null;
   }
 
-  return isString(value) ? parseISODate(value) : isValidDate(value);
+  return isString(value) ? parseISODate(value) : getValidDate(value);
 }
 
 /**
@@ -310,4 +316,73 @@ export function createDateConstraints(
   constraints.push(...(disabledDates ?? []));
 
   return constraints.length > 0 ? constraints : undefined;
+}
+
+function getValidDate(date: Date): Date | null {
+  return Number.isNaN(date.valueOf()) ? null : date;
+}
+
+/**
+ * Checks if a date is greater than a maximum date value.
+ */
+export function isDateExceedingMax(
+  value: Date,
+  maxValue: Date,
+  includeTime = true,
+  includeDate = true
+): boolean {
+  return compareDates(
+    value,
+    maxValue,
+    (a, b) => a > b,
+    includeTime,
+    includeDate
+  );
+}
+
+/**
+ * Checks if a date is less than a minimum date value.
+ */
+export function isDateLessThanMin(
+  value: Date,
+  minValue: Date,
+  includeTime = true,
+  includeDate = true
+): boolean {
+  return compareDates(
+    value,
+    minValue,
+    (a, b) => a < b,
+    includeTime,
+    includeDate
+  );
+}
+
+/**
+ * Compares two dates with optional time/date exclusions.
+ */
+function compareDates(
+  value: Date,
+  boundary: Date,
+  comparator: (a: number, b: number) => boolean,
+  includeTime: boolean,
+  includeDate: boolean
+): boolean {
+  if (includeTime && includeDate) {
+    return comparator(value.getTime(), boundary.getTime());
+  }
+
+  const v = new Date(value.getTime());
+  const b = new Date(boundary.getTime());
+
+  if (!includeTime) {
+    v.setHours(0, 0, 0, 0);
+    b.setHours(0, 0, 0, 0);
+  }
+  if (!includeDate) {
+    v.setFullYear(0, 0, 0);
+    b.setFullYear(0, 0, 0);
+  }
+
+  return comparator(v.getTime(), b.getTime());
 }
