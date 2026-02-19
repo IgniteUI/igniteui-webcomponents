@@ -1,5 +1,5 @@
 @use 'sass:map';
-@use 'igniteui-theming/sass/utils/math' as *;
+@use 'igniteui-theming/sass/utils/math' as theming-math;
 @use 'igniteui-theming/sass/animations/easings' as *;
 @use 'styles/utilities' as *;
 @use '../light/themes' as *;
@@ -8,7 +8,7 @@ $theme: $indigo;
 $base-font-size: 16;
 
 // splitter-size + padding (convert rem to px)
-$splitter-size: unitless(map.get($theme, 'size')) * $base-font-size + 2;
+$splitter-size: theming-math.unitless(map.get($theme, 'size')) * $base-font-size + 2;
 
 // calculate the value for the slim splitter
 $slim-splitter: calc( 1 / $splitter-size);
