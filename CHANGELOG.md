@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+### Breaking Changes
+- #### Themes
+  - Changed global prefixes for CSS custom properties for component themes to be better aligned with other Ignite UI component frameworks.
+
 ## [6.5.1] - 2026-02-04
 ### Fixed
 - #### Calendar
