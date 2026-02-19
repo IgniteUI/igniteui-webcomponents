@@ -33,6 +33,16 @@ import type {
 describe('Chat', () => {
   before(() => {
     defineComponents(IgcChatComponent, IgcInputComponent);
+
+    // Suppress ResizeObserver loop errors that can occur during tests from
+    // the underlying igc-textarea component. These errors do not affect the tests and are not actionable.
+    const errorHandler = window.onerror;
+    window.onerror = (message, ...args) => {
+      if (typeof message === 'string' && message.match(/ResizeObserver loop/)) {
+        return true;
+      }
+      return errorHandler ? errorHandler(message, ...args) : false;
+    };
   });
 
   const textInputTemplate = (text: string) => html`
@@ -1096,6 +1106,49 @@ describe('Chat', () => {
       verifyCustomStyles(true);
 
       configureTheme('bootstrap');
+      await elementUpdated(chat);
+      verifyCustomStyles(true);
+    });
+
+    it('correctly adopts styles when toggling from false to true', async () => {
+      await createAdoptedStylesChat({ adoptRootStyles: false });
+      await elementUpdated(chat);
+      verifyCustomStyles(false);
+
+      // Toggle to true
+      chat.options = { ...chat.options, adoptRootStyles: true };
+      await elementUpdated(chat);
+      verifyCustomStyles(true);
+    });
+
+    it('correctly removes adopted styles when toggling from true to false', async () => {
+      await createAdoptedStylesChat({ adoptRootStyles: true });
+      await elementUpdated(chat);
+      verifyCustomStyles(true);
+
+      // Toggle to false
+      chat.options = { ...chat.options, adoptRootStyles: false };
+      await elementUpdated(chat);
+      verifyCustomStyles(false);
+    });
+
+    it('correctly handles multiple toggles of adoptRootStyles', async () => {
+      await createAdoptedStylesChat({ adoptRootStyles: false });
+      await elementUpdated(chat);
+      verifyCustomStyles(false);
+
+      // Toggle to true
+      chat.options = { ...chat.options, adoptRootStyles: true };
+      await elementUpdated(chat);
+      verifyCustomStyles(true);
+
+      // Toggle back to false
+      chat.options = { ...chat.options, adoptRootStyles: false };
+      await elementUpdated(chat);
+      verifyCustomStyles(false);
+
+      // Toggle to true again
+      chat.options = { ...chat.options, adoptRootStyles: true };
       await elementUpdated(chat);
       verifyCustomStyles(true);
     });

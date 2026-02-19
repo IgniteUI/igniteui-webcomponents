@@ -6,6 +6,7 @@ import { html } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { addThemingController } from '../../theming/theming-controller.js';
 import IgcButtonComponent from '../button/button.js';
+import { addSlotController, setSlots } from '../common/controllers/slot.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { addI18nController } from '../common/i18n/i18n-controller.js';
 import type { AbstractConstructor } from '../common/mixins/constructor.js';
@@ -13,21 +14,36 @@ import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormValueFileListTransformers } from '../common/mixins/forms/form-transformers.js';
 import { createFormValueState } from '../common/mixins/forms/form-value.js';
 import { partMap } from '../common/part-map.js';
-import { bindIf, hasFiles, isEmpty } from '../common/util.js';
+import { bindIf, hasFiles } from '../common/util.js';
 import {
   IgcInputBaseComponent,
   type IgcInputComponentEventMap,
 } from '../input/input-base.js';
+import { styles as baseStyle } from '../input/themes/input.base.css.js';
+import { styles as shared } from '../input/themes/shared/input.common.css.js';
 import IgcValidationContainerComponent from '../validation-container/validation-container.js';
 import { styles } from './themes/file-input.base.css.js';
 import { all } from './themes/themes.js';
 import { fileValidators } from './validators.js';
 
-export interface IgcFileInputComponentEventMap
-  extends Omit<IgcInputComponentEventMap, 'igcChange' | 'igcInput'> {
+export interface IgcFileInputComponentEventMap extends Omit<
+  IgcInputComponentEventMap,
+  'igcChange' | 'igcInput'
+> {
   igcCancel: CustomEvent<FileList>;
   igcChange: CustomEvent<FileList>;
 }
+
+const Slots = setSlots(
+  'prefix',
+  'suffix',
+  'helper-text',
+  'file-selector-text',
+  'file-missing-text',
+  'value-missing',
+  'custom-error',
+  'invalid'
+);
 
 /* blazorSuppress */
 /**
@@ -59,7 +75,7 @@ export default class IgcFileInputComponent extends EventEmitterMixin<
   AbstractConstructor<IgcInputBaseComponent>
 >(IgcInputBaseComponent) {
   public static readonly tagName = 'igc-file-input';
-  public static styles = [...IgcInputBaseComponent.styles, styles];
+  public static styles = [baseStyle, shared, styles];
 
   /* blazorSuppress */
   public static register(): void {
@@ -70,45 +86,63 @@ export default class IgcFileInputComponent extends EventEmitterMixin<
     );
   }
 
-  protected readonly _i18nController =
-    addI18nController<IFileInputResourceStrings>(this, {
-      defaultEN: FileInputResourceStringsEN,
-    });
+  //#region Internal attributes and properties
 
-  protected override get __validators() {
-    return fileValidators;
-  }
+  protected override readonly _themes = addThemingController(this, all);
+
+  protected override readonly _slots = addSlotController(this, {
+    slots: Slots,
+  });
 
   protected override readonly _formValue = createFormValueState(this, {
     initialValue: null,
     transformers: FormValueFileListTransformers,
   });
 
-  @state()
-  private _hasActivation = false;
+  protected readonly _i18nController = addI18nController(this, {
+    defaultEN: FileInputResourceStringsEN,
+  });
+
+  protected override get __validators() {
+    return fileValidators;
+  }
 
   private get _fileNames(): string | null {
-    return hasFiles(this)
-      ? Array.from(this.files!)
-          .map((file) => file.name)
-          .join(', ')
-      : null;
+    if (!hasFiles(this)) {
+      return null;
+    }
+
+    return Array.from(this.files)
+      .map((file) => file.name || 'unnamed')
+      .join(', ');
   }
+
+  /**
+   * Indicates whether the file picker dialog is currently active.
+   * Used to manage validation on blur.
+   */
+  @state()
+  private _filePickerActive = false;
+
+  //#endregion
+
+  //#region Public attributes and properties
 
   /* @tsTwoWayProperty(true, "igcChange", "detail", false) */
   /**
    * The value of the control.
+   * Similar to native file input, this property is read-only and cannot be set programmatically.
    * @attr
    */
   @property()
   public set value(value: string) {
-    if (value === '' && this.input) {
-      this.input.value = value;
+    if (value === '' && this._input) {
+      this._input.value = value;
     }
   }
 
   public get value(): string {
-    return this.input?.value ?? '';
+    return this._input?.value ?? '';
   }
 
   /**
@@ -132,16 +166,18 @@ export default class IgcFileInputComponent extends EventEmitterMixin<
     this._i18nController.locale = value;
   }
 
-  public get locale() {
+  public get locale(): string {
     return this._i18nController.locale;
   }
 
   /**
    * The multiple attribute of the control.
    * Used to indicate that a file input allows the user to select more than one file.
+   *
    * @attr
+   * @default false
    */
-  @property({ type: Boolean })
+  @property({ type: Boolean, reflect: true })
   public multiple = false;
 
   /**
@@ -149,7 +185,7 @@ export default class IgcFileInputComponent extends EventEmitterMixin<
    * Defines the file types as a list of comma-separated values that the file input should accept.
    * @attr
    */
-  @property({ type: String })
+  @property()
   public accept = '';
 
   /**
@@ -159,64 +195,57 @@ export default class IgcFileInputComponent extends EventEmitterMixin<
   @property({ type: Boolean })
   public override autofocus!: boolean;
 
-  /** @hidden */
-  @property({ type: Boolean, attribute: false, noAccessor: true })
-  public override readonly readOnly = false;
-
-  /** Returns the selected files, if any; otherwise returns null. */
-  public get files(): FileList | null {
-    return this.input?.files ?? null;
+  /** Returns the list of selected files. */
+  public get files(): FileList {
+    return this._input?.files ?? new DataTransfer().files;
   }
 
-  constructor() {
-    super();
-    addThemingController(this, all);
-  }
+  //#endregion
+
+  //#region Internal methods
 
   protected override _restoreDefaultValue(): void {
-    this.input.value = '';
+    if (this._input) {
+      this._input.value = '';
+    }
     super._restoreDefaultValue();
   }
 
-  /* c8 ignore next 2 */
-  /** @hidden */
-  public override setSelectionRange(): void {}
+  //#endregion
 
-  /* c8 ignore next 2 */
-  /** @hidden */
-  public override setRangeText(): void {}
+  //#region Event Handlers
 
   private _handleChange(): void {
-    this._hasActivation = false;
+    this._filePickerActive = false;
     this._setTouchedState();
     this._formValue.setValueAndFormState(this.files);
 
     this.requestUpdate();
-    this.emitEvent('igcChange', { detail: this.files! });
+    this.emitEvent('igcChange', { detail: this.files });
   }
 
   private _handleCancel(): void {
-    this._hasActivation = false;
+    this._filePickerActive = false;
     this._setTouchedState();
     this._validate();
 
-    this.emitEvent('igcCancel', {
-      detail: this.files!,
-    });
+    this.emitEvent('igcCancel', { detail: this.files });
   }
 
   protected override _handleBlur(): void {
-    this._hasActivation ? this._validate() : super._handleBlur();
+    this._filePickerActive ? this._validate() : super._handleBlur();
   }
 
   /* c8 ignore next 3 */
   protected _handleClick(): void {
-    this._hasActivation = true;
+    this._filePickerActive = true;
   }
 
-  protected override renderFileParts() {
+  //#endregion
+
+  protected override _renderFileParts() {
     const emptyText =
-      this.placeholder ?? this.resourceStrings.file_input_placeholder!;
+      this.placeholder ?? this.resourceStrings.file_input_placeholder;
 
     return html`
       <div part="file-parts">
@@ -237,14 +266,14 @@ export default class IgcFileInputComponent extends EventEmitterMixin<
     `;
   }
 
-  protected renderInput() {
+  protected override _renderInput() {
     const hasNegativeTabIndex = this.getAttribute('tabindex') === '-1';
-    const hasHelperText = !isEmpty(this._helperText);
+    const hasHelperText = this._slots.hasAssignedElements('helper-text');
 
     return html`
       <input
-        id=${this.inputId}
-        part=${partMap(this.resolvePartNames('input'))}
+        id=${this._inputId}
+        part=${partMap(this._resolvePartNames('input'))}
         type="file"
         ?disabled=${this.disabled}
         ?required=${this.required}

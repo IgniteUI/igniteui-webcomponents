@@ -11,6 +11,7 @@
     overflow: hidden;
     position: relative;
     height: 100%;
+    text-align: initial;
 }
 
 %fake-column {
@@ -136,6 +137,7 @@ igc-icon-button::part(base) {
     position: relative;
     grid-row: 2;
     grid-column: 1 / -1;
+    text-align: initial;
 
     span {
         position: absolute;

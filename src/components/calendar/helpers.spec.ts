@@ -15,7 +15,7 @@ export function getDayViewDOM(element: IgcDaysViewComponent) {
     },
     get weekNumbers() {
       return Array.from(
-        root.querySelectorAll<HTMLElement>('[part="week-number"]')
+        root.querySelectorAll<HTMLElement>('[part~="week-number"]')
       );
     },
     dayRows: {

@@ -7,6 +7,7 @@ import {
   simulateClick,
   simulateKeyboard,
   simulatePointerDown,
+  simulatePointerUp,
 } from '../common/utils.spec.js';
 import IgcCarouselIndicatorComponent from './carousel-indicator.js';
 import IgcCarouselIndicatorContainerComponent from './carousel-indicator-container.js';
@@ -78,6 +79,7 @@ describe('Carousel Indicator Container', () => {
     );
 
     simulatePointerDown(first(buttons));
+    simulatePointerUp(first(buttons));
     simulateClick(first(buttons));
     await elementUpdated(container);
 

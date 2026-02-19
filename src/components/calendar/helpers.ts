@@ -2,7 +2,6 @@ import {
   asNumber,
   findElementFromEventPath,
   first,
-  isEmpty,
   isString,
   last,
   modulo,
@@ -11,8 +10,8 @@ import type { DateRangeValue } from '../date-range-picker/date-range-picker.js';
 import {
   CalendarDay,
   type CalendarRangeParams,
+  DAYS_IN_WEEK,
   type DayParameter,
-  daysInWeek,
   toCalendarDay,
 } from './model.js';
 import {
@@ -27,7 +26,10 @@ export const MONTHS_PER_ROW = 3;
 export const YEARS_PER_ROW = 3;
 export const YEARS_PER_PAGE = 15;
 
-const DaysMap = {
+const CALENDAR_CELLS = 42; // 6 weeks × 7 days
+const ISO_DATE_PATTERN = /^\d{4}/;
+const TIME_PATTERN = /^\d{2}/;
+const WEEK_DAYS_MAP = {
   sunday: 0,
   monday: 1,
   tuesday: 2,
@@ -35,23 +37,31 @@ const DaysMap = {
   thursday: 4,
   friday: 5,
   saturday: 6,
-};
+} as const;
 
 /* Converter functions */
 
-export function isValidDate(date: Date) {
-  return Number.isNaN(date.valueOf()) ? null : date;
+/**
+ * Type guard to check if a value is a valid Date object.
+ */
+export function isValidDate(value: unknown): value is Date {
+  if (value instanceof Date) {
+    return !Number.isNaN(value.getTime());
+  }
+  return false;
 }
 
-export function parseISODate(string: string) {
-  if (/^\d{4}/.test(string)) {
-    const time = !string.includes('T') ? 'T00:00:00' : '';
-    return isValidDate(new Date(`${string}${time}`));
+export function parseISODate(string: string): Date | null {
+  // ISO date format (YYYY-MM-DD)
+  if (ISO_DATE_PATTERN.test(string)) {
+    const timeComponent = !string.includes('T') ? 'T00:00:00' : '';
+    return getValidDate(new Date(`${string}${timeComponent}`));
   }
 
-  if (/^\d{2}/.test(string)) {
-    const date = first(new Date().toISOString().split('T'));
-    return isValidDate(new Date(`${date}T${string}`));
+  // Time format (HH:MM:SS)
+  if (TIME_PATTERN.test(string)) {
+    const today = first(new Date().toISOString().split('T'));
+    return getValidDate(new Date(`${today}T${string}`));
   }
 
   return null;
@@ -70,7 +80,7 @@ export function convertToDate(value?: Date | string | null): Date | null {
     return null;
   }
 
-  return isString(value) ? parseISODate(value) : isValidDate(value);
+  return isString(value) ? parseISODate(value) : getValidDate(value);
 }
 
 /**
@@ -106,7 +116,7 @@ export function convertToDateRange(
  * If the `value` is a `Date` object, it is converted to an ISO 8601 string.
  * If the `value` is null or undefined, null is returned.
  */
-export function getDateFormValue(value: Date | null) {
+export function getDateFormValue(value: Date | null): string | null {
   return value ? value.toISOString() : null;
 }
 
@@ -119,16 +129,19 @@ export function getDateFormValue(value: Date | null) {
  * If the `value` is a string, it is split by commas and each part is parsed into a `Date` object.
  * If the parsing fails for any date, it is skipped.
  */
-export function convertToDates(value?: (Date | string)[] | string | null) {
+export function convertToDates(
+  value?: (Date | string)[] | string | null
+): Date[] | null {
   if (!value) {
     return null;
   }
 
   const values: Date[] = [];
-  const iterator = isString(value) ? value.split(',') : value;
+  const sources = isString(value) ? value.split(',') : value;
 
-  for (const each of iterator) {
-    const date = convertToDate(isString(each) ? each.trim() : each);
+  for (const source of sources) {
+    const trimmed = isString(source) ? source.trim() : source;
+    const date = convertToDate(trimmed);
     if (date) {
       values.push(date);
     }
@@ -140,27 +153,39 @@ export function convertToDates(value?: (Date | string)[] | string | null) {
 /**
  * Returns the value of the selected/activated element (day/month/year) in the calendar view.
  */
-export function getViewElement(event: Event) {
+export function getViewElement(event: Event): number {
   const element = findElementFromEventPath<HTMLElement>('[data-value]', event);
   return element ? asNumber(element.dataset.value, -1) : -1;
 }
 
-export function getWeekDayNumber(value: WeekDays) {
-  return DaysMap[value];
+export function getWeekDayNumber(value: WeekDays): number {
+  return WEEK_DAYS_MAP[value];
 }
 
-export function areSameMonth(first: DayParameter, second: DayParameter) {
-  const [a, b] = [toCalendarDay(first), toCalendarDay(second)];
+export function areSameMonth(
+  first: DayParameter,
+  second: DayParameter
+): boolean {
+  const a = toCalendarDay(first);
+  const b = toCalendarDay(second);
   return a.year === b.year && a.month === b.month;
 }
 
-export function isNextMonth(target: DayParameter, origin: DayParameter) {
-  const [a, b] = [toCalendarDay(target), toCalendarDay(origin)];
+export function isNextMonth(
+  target: DayParameter,
+  origin: DayParameter
+): boolean {
+  const a = toCalendarDay(target);
+  const b = toCalendarDay(origin);
   return a.year === b.year ? a.month > b.month : a.year > b.year;
 }
 
-export function isPreviousMonth(target: DayParameter, origin: DayParameter) {
-  const [a, b] = [toCalendarDay(target), toCalendarDay(origin)];
+export function isPreviousMonth(
+  target: DayParameter,
+  origin: DayParameter
+): boolean {
+  const a = toCalendarDay(target);
+  const b = toCalendarDay(origin);
   return a.year === b.year ? a.month < b.month : a.year < b.year;
 }
 
@@ -203,18 +228,24 @@ export function* calendarRange(
   }
 }
 
-export function* generateMonth(value: DayParameter, firstWeekDay: number) {
+export function* generateMonth(
+  value: DayParameter,
+  firstWeekDay: number
+): Generator<CalendarDay, void, unknown> {
   const { year, month } = toCalendarDay(value);
 
   const start = new CalendarDay({ year, month });
-  const offset = modulo(start.day - firstWeekDay, daysInWeek);
+  const offset = modulo(start.day - firstWeekDay, DAYS_IN_WEEK);
   yield* calendarRange({
     start: start.add('day', -offset),
-    end: 42,
+    end: CALENDAR_CELLS,
   });
 }
 
-export function getYearRange(current: DayParameter, range: number) {
+export function getYearRange(
+  current: DayParameter,
+  range: number
+): { start: number; end: number } {
   const year = toCalendarDay(current).year;
   const start = Math.floor(year / range) * range;
   return { start, end: start + range - 1 };
@@ -223,33 +254,37 @@ export function getYearRange(current: DayParameter, range: number) {
 export function isDateInRanges(
   date: DayParameter,
   ranges: DateRangeDescriptor[]
-) {
+): boolean {
   const value = toCalendarDay(date);
 
   return ranges.some((range) => {
-    const days = (range.dateRange ?? []).map((day) => toCalendarDay(day));
+    if (!range.dateRange?.length) {
+      return range.type === DateRangeType.Weekdays
+        ? !value.weekend
+        : range.type === DateRangeType.Weekends
+          ? value.weekend
+          : false;
+    }
+
+    const days = range.dateRange.map((day) => toCalendarDay(day));
+    const firstDay = first(days);
 
     switch (range.type) {
       case DateRangeType.After:
-        return value.greaterThan(first(days));
+        return value.greaterThan(firstDay);
 
       case DateRangeType.Before:
-        return value.lessThan(first(days));
+        return value.lessThan(firstDay);
 
       case DateRangeType.Between: {
-        const min = Math.min(first(days).timestamp, last(days).timestamp);
-        const max = Math.max(first(days).timestamp, last(days).timestamp);
+        const lastDay = last(days);
+        const min = Math.min(firstDay.timestamp, lastDay.timestamp);
+        const max = Math.max(firstDay.timestamp, lastDay.timestamp);
         return value.timestamp >= min && value.timestamp <= max;
       }
 
       case DateRangeType.Specific:
         return days.some((day) => day.equalTo(value));
-
-      case DateRangeType.Weekdays:
-        return !value.weekend;
-
-      case DateRangeType.Weekends:
-        return value.weekend;
 
       default:
         return false;
@@ -261,7 +296,7 @@ export function createDateConstraints(
   min: Date | null,
   max: Date | null,
   disabledDates?: DateRangeDescriptor[]
-) {
+): DateRangeDescriptor[] | undefined {
   const constraints: DateRangeDescriptor[] = [];
 
   if (min) {
@@ -280,5 +315,74 @@ export function createDateConstraints(
 
   constraints.push(...(disabledDates ?? []));
 
-  return !isEmpty(constraints) ? constraints : undefined;
+  return constraints.length > 0 ? constraints : undefined;
+}
+
+function getValidDate(date: Date): Date | null {
+  return Number.isNaN(date.valueOf()) ? null : date;
+}
+
+/**
+ * Checks if a date is greater than a maximum date value.
+ */
+export function isDateExceedingMax(
+  value: Date,
+  maxValue: Date,
+  includeTime = true,
+  includeDate = true
+): boolean {
+  return compareDates(
+    value,
+    maxValue,
+    (a, b) => a > b,
+    includeTime,
+    includeDate
+  );
+}
+
+/**
+ * Checks if a date is less than a minimum date value.
+ */
+export function isDateLessThanMin(
+  value: Date,
+  minValue: Date,
+  includeTime = true,
+  includeDate = true
+): boolean {
+  return compareDates(
+    value,
+    minValue,
+    (a, b) => a < b,
+    includeTime,
+    includeDate
+  );
+}
+
+/**
+ * Compares two dates with optional time/date exclusions.
+ */
+function compareDates(
+  value: Date,
+  boundary: Date,
+  comparator: (a: number, b: number) => boolean,
+  includeTime: boolean,
+  includeDate: boolean
+): boolean {
+  if (includeTime && includeDate) {
+    return comparator(value.getTime(), boundary.getTime());
+  }
+
+  const v = new Date(value.getTime());
+  const b = new Date(boundary.getTime());
+
+  if (!includeTime) {
+    v.setHours(0, 0, 0, 0);
+    b.setHours(0, 0, 0, 0);
+  }
+  if (!includeDate) {
+    v.setFullYear(0, 0, 0);
+    b.setFullYear(0, 0, 0);
+  }
+
+  return comparator(v.getTime(), b.getTime());
 }

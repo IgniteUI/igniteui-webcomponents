@@ -3,25 +3,9 @@
 @use 'igniteui-theming/sass/themes/schemas/components/light/combo' as *;
 @use 'components/input/themes/light/themes' as input-theme;
 
-
 $base: digest-schema($light-combo);
-$material: map.merge(digest-schema($material-combo), (
-    helper-text-color: map.get(input-theme.$material, 'helper-text-color'),
-    disabled-text-color: map.get(input-theme.$material, 'disabled-text-color'),
-    error-secondary-color: map.get(input-theme.$material, 'error-secondary-color')
-));
-$bootstrap: map.merge(digest-schema($bootstrap-combo), (
-    helper-text-color: map.get(input-theme.$bootstrap, 'helper-text-color'),
-    disabled-text-color: map.get(input-theme.$bootstrap, 'disabled-text-color'),
-    error-secondary-color: map.get(input-theme.$bootstrap, 'error-secondary-color')
-));
-$fluent: map.merge(digest-schema($fluent-combo), (
-    helper-text-color: map.get(input-theme.$fluent, 'helper-text-color'),
-    disabled-text-color: map.get(input-theme.$fluent, 'disabled-text-color'),
-    error-secondary-color: map.get(input-theme.$fluent, 'error-secondary-color')
-));
-$indigo: map.merge(digest-schema($indigo-combo), (
-    helper-text-color: map.get(input-theme.$indigo, 'helper-text-color'),
-    disabled-text-color: map.get(input-theme.$indigo, 'disabled-text-color'),
-    error-secondary-color: map.get(input-theme.$indigo, 'error-secondary-color')
-));
+$material: digest-schema($material-combo);
+$bootstrap: digest-schema($bootstrap-combo);
+$fluent: digest-schema($fluent-combo);
+$indigo: digest-schema($indigo-combo);
+

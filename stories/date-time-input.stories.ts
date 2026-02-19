@@ -51,7 +51,7 @@ const metadata: Meta<IgcDateTimeInputComponent> = {
     displayFormat: {
       type: 'string',
       description:
-        'Format to display the value in when not editing.\nDefaults to the input format if not set.',
+        'Format to display the value in when not editing.\nDefaults to the locale format if not set.',
       control: 'text',
     },
     spinLoop: {
@@ -65,6 +65,12 @@ const metadata: Meta<IgcDateTimeInputComponent> = {
       description:
         'Gets/Sets the locale used for formatting the display value.',
       control: 'text',
+    },
+    readOnly: {
+      type: 'boolean',
+      description: 'Makes the control a readonly field.',
+      control: 'boolean',
+      table: { defaultValue: { summary: 'false' } },
     },
     mask: {
       type: 'string',
@@ -109,12 +115,6 @@ const metadata: Meta<IgcDateTimeInputComponent> = {
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
-    readOnly: {
-      type: 'boolean',
-      description: 'Makes the control a readonly field.',
-      control: 'boolean',
-      table: { defaultValue: { summary: 'false' } },
-    },
     placeholder: {
       type: 'string',
       description: 'The placeholder attribute of the control.',
@@ -128,13 +128,13 @@ const metadata: Meta<IgcDateTimeInputComponent> = {
   },
   args: {
     spinLoop: true,
+    readOnly: false,
     mask: 'CCCCCCCCCC',
     prompt: '_',
     required: false,
     disabled: false,
     invalid: false,
     outlined: false,
-    readOnly: false,
   },
 };
 
@@ -151,13 +151,15 @@ interface IgcDateTimeInputArgs {
   max: Date;
   /**
    * Format to display the value in when not editing.
-   * Defaults to the input format if not set.
+   * Defaults to the locale format if not set.
    */
   displayFormat: string;
   /** Sets whether to loop over the currently spun segment. */
   spinLoop: boolean;
   /** Gets/Sets the locale used for formatting the display value. */
   locale: string;
+  /** Makes the control a readonly field. */
+  readOnly: boolean;
   /** The masked pattern of the component. */
   mask: string;
   /** The prompt symbol to use for unfilled parts of the mask pattern. */
@@ -172,8 +174,6 @@ interface IgcDateTimeInputArgs {
   invalid: boolean;
   /** Whether the control will have outlined appearance. */
   outlined: boolean;
-  /** Makes the control a readonly field. */
-  readOnly: boolean;
   /** The placeholder attribute of the control. */
   placeholder: string;
   /** The label for the control. */

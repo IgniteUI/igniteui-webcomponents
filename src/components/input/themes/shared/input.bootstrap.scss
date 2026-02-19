@@ -59,19 +59,14 @@ $theme: $bootstrap;
     height: var-get($theme, 'size');
 }
 
-[part*='input prefixed'] {
+[part~='input'][part~='prefixed'] {
     border-start-start-radius: 0;
     border-end-start-radius: 0;
 }
 
-[part*='input suffixed'] {
+[part~='input'][part~='suffixed'] {
     border-start-end-radius: 0;
     border-end-end-radius: 0;
-}
-
-[part*='input prefixed suffixed'],
-[part*='input filled prefixed suffixed'] {
-    border-radius: 0;
 }
 
 [part~='label'],
@@ -149,7 +144,6 @@ $theme: $bootstrap;
 
 :host(:focus-within) {
     [part~='input'] {
-        color: var-get($theme, 'input-prefix-color--focused');
         border-color: var-get($theme, 'focused-border-color');
         box-shadow: 0 0 0 rem(4px) var-get($theme, 'focused-secondary-color');
     }

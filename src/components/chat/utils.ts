@@ -1,9 +1,3 @@
-import {
-  adoptStyles,
-  type LitElement,
-  type ReactiveController,
-  type ReactiveControllerHost,
-} from 'lit';
 import { last } from '../common/util.js';
 import type { IgcChatMessageAttachment } from './types.js';
 
@@ -113,58 +107,3 @@ export function isImageAttachment(
     attachment.type === 'image' || attachment.file?.type.startsWith('image/')
   );
 }
-
-class AdoptedStylesController implements ReactiveController {
-  private readonly _host: ReactiveControllerHost & LitElement;
-  private _hasAdoptedStyles = false;
-
-  public get hasAdoptedStyles(): boolean {
-    return this._hasAdoptedStyles;
-  }
-
-  private _adoptRootStyles(): void {
-    const sheets: CSSStyleSheet[] = [];
-
-    for (const sheet of document.styleSheets) {
-      try {
-        const constructed = new CSSStyleSheet();
-        for (const rule of sheet.cssRules) {
-          // https://drafts.csswg.org/cssom/#dom-cssstylesheet-insertrule:~:text=If%20parsed%20rule%20is%20an%20%40import%20rule
-          if (rule.cssText.startsWith('@import')) {
-            continue;
-          }
-          constructed.insertRule(rule.cssText);
-        }
-        sheets.push(constructed);
-      } catch {}
-    }
-
-    const ctor = this._host.constructor as typeof LitElement;
-    adoptStyles(this._host.shadowRoot!, [...ctor.elementStyles, ...sheets]);
-  }
-
-  constructor(host: ReactiveControllerHost & LitElement) {
-    this._host = host;
-    host.addController(this);
-  }
-
-  public shouldAdoptStyles(condition: boolean): void {
-    if (condition) {
-      this._adoptRootStyles();
-      this._hasAdoptedStyles = true;
-    }
-  }
-
-  /** @internal */
-  public hostDisconnected(): void {
-    this._hasAdoptedStyles = false;
-  }
-}
-
-export function addAdoptedStylesController(
-  host: ReactiveControllerHost & LitElement
-): AdoptedStylesController {
-  return new AdoptedStylesController(host);
-}
-
-export type { AdoptedStylesController };

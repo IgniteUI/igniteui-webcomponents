@@ -44,7 +44,7 @@ $theme: $bootstrap;
     background: var-get($theme, 'picker-background');
 }
 
-:host([hide-header]) {
+:host([hide-header][visible-months='1']) {
     [part~='navigation'] {
         border-start-start-radius: var-get($theme, 'border-radius');
         border-start-end-radius: var-get($theme, 'border-radius');

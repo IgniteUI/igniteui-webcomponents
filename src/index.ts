@@ -69,6 +69,7 @@ export { default as IgcTreeItemComponent } from './components/tree/tree-item.js'
 export { default as IgcStepperComponent } from './components/stepper/stepper.js';
 export { default as IgcStepComponent } from './components/stepper/step.js';
 export { default as IgcTooltipComponent } from './components/tooltip/tooltip.js';
+export { default as IgcThemeProviderComponent } from './components/theme-provider/theme-provider.js';
 
 // definitions
 export { defineComponents } from './components/common/definitions/defineComponents.js';
@@ -83,6 +84,9 @@ export {
 
 // theming configuration
 export { configureTheme } from './theming/config.js';
+export type { Theme, ThemeVariant } from './theming/types.js';
+export { addThemingController as θaddThemingController } from './theming/theming-controller.js';
+export { addAdoptedStylesController as θaddAdoptedStylesController } from './components/common/controllers/adopt-styles.js';
 
 // localization objects
 export {
@@ -160,8 +164,8 @@ export type {
 } from './components/calendar/types.js';
 export { DateRangeType } from './components/calendar/types.js';
 export type { IgcCheckboxChangeEventArgs } from './components/checkbox/checkbox-base.js';
-export { DatePart } from './components/date-time-input/date-util.js';
-export type { DatePartDeltas } from './components/date-time-input/date-util.js';
+export { DatePart } from './components/date-time-input/date-part.js';
+export type { DatePartDeltas } from './components/date-time-input/date-part.js';
 export type {
   CustomDateRange,
   DateRangeValue,
