@@ -438,6 +438,10 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
     } else {
       this.endCollapsed = !this.endCollapsed;
     }
+
+    if (!this.startCollapsed || !this.endCollapsed) {
+      this.updateComplete.then(() => this.requestUpdate());
+    }
   }
 
   //#endregion
