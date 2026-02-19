@@ -61,11 +61,6 @@ interface SplitterResizeState {
  *
  * @slot start - Content for the start pane.
  * @slot end - Content for the end pane.
- * @slot drag-handle - Optional slot for custom cursor content (not visually rendered, can be used for cursor customization).
- * @slot start-expand - Optional slot to customize the icon for expanding the start panel.
- * @slot start-collapse - Optional slot to customize the icon for collapsing the start panel.
- * @slot end-expand - Optional slot to customize the icon for expanding the end panel.
- * @slot end-collapse - Optional slot to customize the icon for collapsing the end panel.
  *
  * @csspart splitter-bar - The resizable bar element between the two panels.
  * @csspart drag-handle - The drag handle icon/element on the splitter bar.
@@ -326,15 +321,7 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
     super();
 
     addSlotController(this, {
-      slots: setSlots(
-        'start',
-        'end',
-        'drag-handle',
-        'start-expand',
-        'start-collapse',
-        'end-expand',
-        'end-collapse'
-      ),
+      slots: setSlots('start', 'end'),
     });
     addKeybindings(this, {
       ref: this._barRef,
@@ -596,7 +583,6 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
     }
   }
 
-  // TODO: should there be events on expand/collapse - existing resize events or others?
   private _handleExpanderStartAction() {
     const target = this.endCollapsed ? 'end' : 'start';
     this.toggle(target);
@@ -889,13 +875,6 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
     };
   }
 
-  private _resolveExpanderSlot(expander: 'start' | 'end'): string {
-    if (expander === 'start') {
-      return this.endCollapsed ? 'end-expand' : 'start-collapse';
-    }
-    return this.startCollapsed ? 'start-expand' : 'end-collapse';
-  }
-
   private _resolveExpanderLabel(expander: 'start' | 'end'): string {
     if (expander === 'start') {
       return this.endCollapsed ? 'Expand end pane' : 'Collapse start pane';
@@ -924,21 +903,15 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
         aria-label=${this._resolveExpanderLabel('start')}
         @pointerdown=${(e: PointerEvent) =>
           this._handleExpanderClick('start', e)}
-      >
-        <slot name="${this._resolveExpanderSlot('start')}"></slot>
-      </div>
-      <div part="drag-handle" ?hidden=${dragHandleHidden}>
-        <slot name="drag-handle"></slot>
-      </div>
+      ></div>
+      <div part="drag-handle" ?hidden=${dragHandleHidden}></div>
       <div
         part="${partMap(this._resolvePartNames('end'))}"
         ?hidden=${nextButtonHidden}
         role="button"
         aria-label=${this._resolveExpanderLabel('end')}
         @pointerdown=${(e: PointerEvent) => this._handleExpanderClick('end', e)}
-      >
-        <slot name="${this._resolveExpanderSlot('end')}"></slot>
-      </div>
+      ></div>
     `;
   }
 

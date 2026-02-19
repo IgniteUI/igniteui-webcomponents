@@ -382,89 +382,6 @@ describe('Splitter', () => {
       expect(children[0].tagName.toLowerCase()).to.equal('h1');
       expect(children[1].tagName.toLowerCase()).to.equal('igc-tree');
     });
-
-    describe('Custom icons', () => {
-      beforeEach(async () => {
-        splitter = await fixture<IgcSplitterComponent>(
-          createSplitterWithCustomSlots()
-        );
-      });
-
-      it('should render custom drag handle via drag-handle slot', async () => {
-        const dragHandlePart = getSplitterPart(splitter, DRAG_HANDLE_PART);
-        const dragHandleSlot = getSplitterSlot(splitter, 'drag-handle');
-        const assignedElements = dragHandleSlot.assignedElements();
-        expect(assignedElements).to.have.lengthOf(1);
-
-        const customIcon = assignedElements[0] as HTMLElement;
-        expect(customIcon.tagName.toLowerCase()).to.equal('span');
-        expect(customIcon.textContent?.trim()).to.equal('drag-handle-icon');
-        expect(dragHandlePart.contains(dragHandleSlot)).to.be.true;
-      });
-
-      it('should render custom expand icons via start-expand and end-expand slots', async () => {
-        splitter.toggle('start');
-        await elementUpdated(splitter);
-
-        const startExpandPart = getSplitterPart(splitter, START_EXPANDER_PART);
-        const startExpandSlot = getSplitterSlot(splitter, 'start-expand');
-        const startAssignedElements = startExpandSlot.assignedElements();
-
-        expect(startAssignedElements).to.have.lengthOf(1);
-        const startCustomIcon = startAssignedElements[0] as HTMLElement;
-        expect(startCustomIcon.tagName.toLowerCase()).to.equal('span');
-        expect(startCustomIcon.classList.contains('custom-icon')).to.be.true;
-        expect(startCustomIcon.textContent?.trim()).to.equal(
-          'start-expand-icon'
-        );
-        expect(startExpandPart.contains(startExpandSlot)).to.be.true;
-
-        splitter.toggle('start');
-        await elementUpdated(splitter);
-        splitter.toggle('end');
-        await elementUpdated(splitter);
-
-        const endExpandPart = getSplitterPart(splitter, END_EXPANDER_PART);
-        const endExpandSlot = getSplitterSlot(splitter, 'end-expand');
-        const endAssignedElements = endExpandSlot.assignedElements();
-
-        expect(endAssignedElements).to.have.lengthOf(1);
-        const endCustomIcon = endAssignedElements[0] as HTMLElement;
-        expect(endCustomIcon.tagName.toLowerCase()).to.equal('span');
-        expect(endCustomIcon.classList.contains('custom-icon')).to.be.true;
-        expect(endCustomIcon.textContent?.trim()).to.equal('end-expand-icon');
-        expect(endExpandPart.contains(endExpandSlot)).to.be.true;
-      });
-
-      it('should render custom collapse icons via start-collapse and end-collapse slots', async () => {
-        const startCollapsePart = getSplitterPart(
-          splitter,
-          START_COLLAPSE_PART
-        );
-        const startCollapseSlot = getSplitterSlot(splitter, 'start-collapse');
-        const startAssignedElements = startCollapseSlot.assignedElements();
-
-        expect(startAssignedElements).to.have.lengthOf(1);
-        const startCustomIcon = startAssignedElements[0] as HTMLElement;
-        expect(startCustomIcon.tagName.toLowerCase()).to.equal('span');
-        expect(startCustomIcon.classList.contains('custom-icon')).to.be.true;
-        expect(startCustomIcon.textContent?.trim()).to.equal(
-          'start-collapse-icon'
-        );
-        expect(startCollapsePart.contains(startCollapseSlot)).to.be.true;
-
-        const endCollapsePart = getSplitterPart(splitter, END_COLLAPSE_PART);
-        const endCollapseSlot = getSplitterSlot(splitter, 'end-collapse');
-        const endAssignedElements = endCollapseSlot.assignedElements();
-
-        expect(endAssignedElements).to.have.lengthOf(1);
-        const endCustomIcon = endAssignedElements[0] as HTMLElement;
-        expect(endCustomIcon.tagName.toLowerCase()).to.equal('span');
-        expect(endCustomIcon.classList.contains('custom-icon')).to.be.true;
-        expect(endCustomIcon.textContent?.trim()).to.equal('end-collapse-icon');
-        expect(endCollapsePart.contains(endCollapseSlot)).to.be.true;
-      });
-    });
   });
 
   describe('Properties', () => {
@@ -1228,7 +1145,6 @@ describe('Splitter', () => {
       expect(eventSpy.called).to.be.false;
     });
 
-    // TODO: should there be events on expand/collapse?
     it('should expand/collapse panes with Ctrl + left/right arrow keys in horizontal orientation', async () => {
       const bar = getSplitterPart(splitter, BAR_PART);
       bar.focus();
@@ -3083,20 +2999,6 @@ function createSplitterWithComplexContent() {
   `;
 }
 
-function createSplitterWithCustomSlots() {
-  return html` <igc-splitter style="width: 500px; height: 500px;">
-    <div slot="start">Pane 1</div>
-    <div slot="end">Pane 2</div>
-    <span slot="drag-handle" class="custom-icon"> drag-handle-icon </span>
-
-    <span slot="start-expand" class="custom-icon"> start-expand-icon </span>
-    <span slot="start-collapse" class="custom-icon"> start-collapse-icon </span>
-
-    <span slot="end-expand" class="custom-icon"> end-expand-icon </span>
-    <span slot="end-collapse" class="custom-icon"> end-collapse-icon </span>
-  </igc-splitter>`;
-}
-
 function createSplitterInContainer(
   config: SplitterTestSizesAndConstraints = {}
 ) {
@@ -3122,14 +3024,7 @@ function createSplitterInContainer(
   `;
 }
 
-type SplitterSlot =
-  | 'start'
-  | 'end'
-  | 'drag-handle'
-  | 'start-expand'
-  | 'start-collapse'
-  | 'end-expand'
-  | 'end-collapse';
+type SplitterSlot = 'start' | 'end';
 
 function getSplitterSlot(splitter: IgcSplitterComponent, which: SplitterSlot) {
   return splitter.renderRoot.querySelector(
