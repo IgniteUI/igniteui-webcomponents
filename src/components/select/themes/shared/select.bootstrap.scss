@@ -1,9 +1,11 @@
 @use 'styles/utilities' as *;
 @use '../light/themes' as *;
+@use 'components/dropdown/themes/light/themes' as dropdown-theme;
 @use 'components/input/themes/light/themes' as input-theme;
 
 $theme: $bootstrap;
 $input-theme: input-theme.$bootstrap;
+$dropdown-theme: dropdown-theme.$bootstrap;
 
 :host {
     --component-size: var(--ig-size, #{var-get($theme, 'default-size')});
@@ -13,7 +15,7 @@ $input-theme: input-theme.$bootstrap;
     ::part(helper-text) {
         @include type-style('body-2');
 
-        color: var-get($theme, 'helper-text-color');
+        color: var-get($input-theme, 'helper-text-color');
         grid-auto-rows: minmax(rem(20px), auto);
         margin-block-start: pad-block(rem(4px));
     }
@@ -27,7 +29,7 @@ $input-theme: input-theme.$bootstrap;
 }
 
 [part='base'] {
-    border: rem(1px) solid var(--dd-border-color);
+    border: rem(1px) solid var-get($dropdown-theme, 'border-color');
     padding: pad-block(rem(8px)) 0;
 }
 
@@ -41,7 +43,7 @@ $input-theme: input-theme.$bootstrap;
 :host([disabled]),
 :host(:disabled) {
     igc-validator {
-        color: var-get($theme, 'disabled-text-color');
+        color: var-get($input-theme, 'disabled-text-color');
     }
 
     [part~='toggle-icon'] {

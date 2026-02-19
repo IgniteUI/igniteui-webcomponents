@@ -145,6 +145,10 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
     initialValue: this,
   });
 
+  private _setCarouselContext(): void {
+    this._context.setValue(this, true);
+  }
+
   @queryAll(IgcCarouselIndicatorComponent.tagName)
   private readonly _defaultIndicators!: NodeListOf<IgcCarouselIndicatorComponent>;
 
@@ -350,7 +354,7 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
   @watch('slidesLabelFormat')
   @watch('indicatorsLabelFormat')
   protected _contextChanged(): void {
-    this._context.setValue(this, true);
+    this._setCarouselContext();
   }
 
   @watch('interval')
@@ -421,6 +425,7 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
 
   protected override async firstUpdated(): Promise<void> {
     await this.updateComplete;
+    this._setCarouselContext();
 
     if (!isEmpty(this._slides)) {
       this._activateSlide(

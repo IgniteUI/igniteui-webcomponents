@@ -4,6 +4,6 @@
 $theme: $indigo;
 
 :host {
-    @include css-vars-from-theme(diff($base, $theme), 'ig-nav-drawer');
-    @include css-vars-from-theme(diff($base, $overlay-indigo), 'ig-nav-drawer');
+    @include css-vars-from-theme(diff($base, $theme));
+    @include css-vars-from-theme(diff($base, $overlay-indigo));
 }
