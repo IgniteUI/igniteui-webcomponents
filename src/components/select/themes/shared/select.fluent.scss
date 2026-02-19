@@ -13,7 +13,7 @@ $input-theme: input-theme.$fluent;
     --dropdown-size: var(--component-size);
 
     ::part(helper-text) {
-        color: var-get($theme, 'helper-text-color');
+        color: var-get($input-theme, 'helper-text-color');
         margin-block-start: pad-block(rem(5px));
         grid-auto-rows: minmax(rem(18px), auto);
     }
@@ -43,7 +43,7 @@ $input-theme: input-theme.$fluent;
 :host(:disabled),
 :host([disabled]) {
     igc-validator {
-        color: var-get($fluent, 'disabled-text-color');
+        color: var-get($input-theme, 'disabled-text-color');
     }
 
     [part~='toggle-icon'] {

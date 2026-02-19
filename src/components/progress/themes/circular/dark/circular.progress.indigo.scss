@@ -4,5 +4,5 @@
 $theme: $indigo;
 
 :host {
-    @include css-vars-from-theme(diff($base, $theme), 'ig-circular-progress');
+    @include css-vars-from-theme(diff($base, $theme));
 }
