@@ -146,8 +146,6 @@ export type IgcChatOptions = {
    * global styles unexpectedly bleed into the component, breaking encapsulation and causing
    * unpredictable visual issues.
    *
-   * **WARNING**: This is a once time shot. Changing this property in runtime won't reflect
-   * its value.
    */
   adoptRootStyles?: boolean;
 
