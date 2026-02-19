@@ -4,5 +4,5 @@
 $theme: $material;
 
 :host {
-    @include css-vars-from-theme($theme, 'ig-banner');
+    @include css-vars-from-theme($theme);
 }
