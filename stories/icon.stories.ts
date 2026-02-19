@@ -37,13 +37,14 @@ const metadata: Meta<IgcIconComponent> = {
     collection: {
       type: 'string',
       description:
-        'The name of the registered collection for look up of icons.\nDefaults to `default`.',
+        'The name of the registered collection for look up of icons.',
       control: 'text',
       table: { defaultValue: { summary: 'default' } },
     },
     mirrored: {
       type: 'boolean',
-      description: 'Whether to flip the icon. Useful for RTL layouts.',
+      description:
+        'Whether to flip the icon horizontally. Useful for RTL (right-to-left) layouts.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
@@ -56,12 +57,9 @@ export default metadata;
 interface IgcIconArgs {
   /** The name of the icon glyph to draw. */
   name: string;
-  /**
-   * The name of the registered collection for look up of icons.
-   * Defaults to `default`.
-   */
+  /** The name of the registered collection for look up of icons. */
   collection: string;
-  /** Whether to flip the icon. Useful for RTL layouts. */
+  /** Whether to flip the icon horizontally. Useful for RTL (right-to-left) layouts. */
   mirrored: boolean;
 }
 type Story = StoryObj<IgcIconArgs>;
