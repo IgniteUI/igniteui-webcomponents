@@ -301,7 +301,6 @@ describe('Masked input', () => {
       element.setSelectionRange(2, 3);
       await elementUpdated(element);
 
-      // fireInputEvent(input, 'insertText');
       simulateInput(input, {
         inputType: 'insertText',
         skipValueProperty: true,
@@ -328,6 +327,7 @@ describe('Masked input', () => {
 
     it('is accessible', async () => {
       await expect(element).to.be.accessible();
+      await expect(element).shadowDom.to.be.accessible();
     });
 
     it('focus updates underlying input mask', async () => {
@@ -622,6 +622,23 @@ describe('Masked input', () => {
       expect(element.value).to.equal('xxba');
       expect(input.value).to.equal(parser.apply(element.value));
     });
+
+    it('auto-fill behavior for mask with literals', async () => {
+      element.mask = '(+35\\9) CCC-CCC';
+
+      await elementUpdated(element);
+      syncParser();
+
+      simulateInput(input, {
+        inputType: undefined, // auto-fill event
+        skipValueProperty: false,
+        value: '(+359) 123-456',
+      });
+      await elementUpdated(element);
+
+      expect(element.value).to.equal('123456');
+      expect(input.value).to.equal(parser.apply(element.value));
+    });
   });
 
   describe('Form integration', () => {
@@ -816,12 +833,7 @@ describe('Masked input', () => {
 
     describe('Validation', () => {
       const spec = createFormAssociatedTestBed<IgcMaskInputComponent>(html`
-        <igc-mask-input
-          name="mask"
-          mask="LL"
-          required
-          .defaultValue=${undefined}
-        ></igc-mask-input>
+        <igc-mask-input name="mask" mask="LL" required></igc-mask-input>
       `);
 
       beforeEach(async () => {

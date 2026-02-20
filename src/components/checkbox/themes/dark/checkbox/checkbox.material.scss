@@ -5,7 +5,7 @@
 $theme: $material;
 
 :host {
-    @include css-vars-from-theme(diff(light.$base, $theme), 'ig-checkbox');
+    @include css-vars-from-theme(diff(light.$base, $theme));
 }
 
 [part~='base']:hover {

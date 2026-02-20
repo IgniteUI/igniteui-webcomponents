@@ -1,3 +1,4 @@
+import { isDateExceedingMax, isDateLessThanMin } from '../calendar/helpers.js';
 import {
   maxDateValidator,
   minDateValidator,
@@ -5,7 +6,6 @@ import {
   type Validator,
 } from '../common/validators.js';
 import type IgcDateTimeInputComponent from './date-time-input.js';
-import { DateTimeUtil } from './date-util.js';
 
 export const dateTimeInputValidators: Validator<IgcDateTimeInputComponent>[] = [
   requiredValidator,
@@ -13,12 +13,10 @@ export const dateTimeInputValidators: Validator<IgcDateTimeInputComponent>[] = [
     ...minDateValidator,
     isValid: (host) =>
       host.value && host.min
-        ? !DateTimeUtil.lessThanMinValue(
-            host.value || new Date(),
+        ? !isDateLessThanMin(
+            host.value,
             host.min,
-            // @ts-expect-error - private access
             host.hasTimeParts,
-            // @ts-expect-error - private access
             host.hasDateParts
           )
         : true,
@@ -27,12 +25,10 @@ export const dateTimeInputValidators: Validator<IgcDateTimeInputComponent>[] = [
     ...maxDateValidator,
     isValid: (host) =>
       host.value && host.max
-        ? !DateTimeUtil.greaterThanMaxValue(
-            host.value || new Date(),
+        ? !isDateExceedingMax(
+            host.value,
             host.max,
-            // @ts-expect-error - private access
             host.hasTimeParts,
-            // @ts-expect-error - private access
             host.hasDateParts
           )
         : true,

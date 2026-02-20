@@ -1,9 +1,10 @@
 import { elementUpdated, expect, fixture } from '@open-wc/testing';
 import { html, nothing } from 'lit';
 import { spy, stub, useFakeTimers } from 'sinon';
+import { configureTheme } from '../../theming/config.js';
 import type IgcIconButtonComponent from '../button/icon-button.js';
 import IgcChipComponent from '../chip/chip.js';
-import { enterKey } from '../common/controllers/key-bindings.js';
+import { enterKey, tabKey } from '../common/controllers/key-bindings.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import { first, last } from '../common/util.js';
 import {
@@ -11,6 +12,7 @@ import {
   simulateBlur,
   simulateClick,
   simulateFocus,
+  simulateInput,
   simulateKeyboard,
 } from '../common/utils.spec.js';
 import { simulateFileUpload } from '../file-input/file-input.spec.js';
@@ -21,11 +23,26 @@ import IgcChatComponent from './chat.js';
 import IgcChatInputComponent from './chat-input.js';
 import IgcChatMessageComponent from './chat-message.js';
 import IgcMessageAttachmentsComponent from './message-attachments.js';
-import type { IgcChatMessage, IgcChatMessageAttachment } from './types.js';
+import type {
+  ChatMessageRenderContext,
+  IgcChatMessage,
+  IgcChatMessageAttachment,
+  IgcChatOptions,
+} from './types.js';
 
 describe('Chat', () => {
   before(() => {
     defineComponents(IgcChatComponent, IgcInputComponent);
+
+    // Suppress ResizeObserver loop errors that can occur during tests from
+    // the underlying igc-textarea component. These errors do not affect the tests and are not actionable.
+    const errorHandler = window.onerror;
+    window.onerror = (message, ...args) => {
+      if (typeof message === 'string' && message.match(/ResizeObserver loop/)) {
+        return true;
+      }
+      return errorHandler ? errorHandler(message, ...args) : false;
+    };
   });
 
   const textInputTemplate = (text: string) => html`
@@ -888,19 +905,67 @@ describe('Chat', () => {
       const textArea = getChatDOM(chat).input.textarea;
 
       chat.options = { stopTypingDelay: 2500 };
-      simulateKeyboard(textArea, 'a');
+      simulateKeyboard(textArea, 'a', 15);
       await elementUpdated(chat);
 
       expect(eventSpy).calledWith('igcTypingChange');
-      expect(eventSpy.firstCall.args[1]?.detail).to.eql({ isTyping: true });
+      expect(eventSpy.firstCall.args[1]?.detail).to.be.true;
 
       clock.setSystemTime(2501);
       await clock.runAllAsync();
 
       expect(eventSpy).calledWith('igcTypingChange');
-      expect(eventSpy.lastCall.args[1]?.detail).to.eql({ isTyping: false });
+      expect(eventSpy.lastCall.args[1]?.detail).to.be.false;
 
       clock.restore();
+    });
+
+    it('emits igcTypingChange after sending a message', async () => {
+      const eventSpy = spy(chat, 'emitEvent');
+      const textArea = getChatDOM(chat).input.textarea;
+      const internalInput = textArea.renderRoot.querySelector('textarea')!;
+
+      chat.options = { stopTypingDelay: 2500 };
+
+      // Simulate typing some text and the event sequence following after sending a message
+
+      // Fires igcTypingChange
+      simulateKeyboard(textArea, 'a', 15);
+      await elementUpdated(textArea);
+
+      // Fires igcInputChange
+      simulateInput(internalInput, { value: 'a'.repeat(15) });
+      await elementUpdated(textArea);
+
+      // Fires igcMessageCreated -> igcTypingChange -> igcInputFocus since sending a message refocuses
+      // the textarea
+      simulateKeyboard(textArea, enterKey);
+      await elementUpdated(chat);
+
+      const expectedEventSequence = [
+        'igcTypingChange',
+        'igcInputChange',
+        'igcMessageCreated',
+        'igcTypingChange',
+        'igcInputFocus',
+      ];
+
+      for (const [idx, event] of expectedEventSequence.entries()) {
+        expect(eventSpy.getCall(idx).firstArg).to.equal(event);
+      }
+    });
+
+    it('should not emit igcTypingChange on Tab key', async () => {
+      const eventSpy = spy(chat, 'emitEvent');
+      const textArea = getChatDOM(chat).input.textarea;
+      const internalInput = textArea.renderRoot.querySelector('textarea')!;
+
+      chat.options = { stopTypingDelay: 2500 };
+
+      simulateKeyboard(internalInput, tabKey);
+      await elementUpdated(chat);
+
+      expect(eventSpy.getCalls()).is.empty;
     });
 
     it('emits igcInputFocus', async () => {
@@ -977,7 +1042,30 @@ describe('Chat', () => {
   });
 
   describe('adoptRootStyles behavior', () => {
-    const customStyles = 'custom-background';
+    let chat: IgcChatComponent;
+
+    const renderer = ({ message }: ChatMessageRenderContext) =>
+      html`<div class="custom-background">${message.text}</div>`;
+
+    async function createAdoptedStylesChat(options: IgcChatOptions) {
+      chat = await fixture(html`
+        <igc-chat
+          .messages=${[{ id: 'id', sender: 'bot', text: 'Hello' }]}
+          .options=${{ renderers: { messageContent: renderer }, ...options }}
+        ></igc-chat>
+      `);
+    }
+
+    function verifyCustomStyles(state: boolean) {
+      const { messages } = getChatDOM(chat);
+      const { backgroundColor } = getComputedStyle(
+        getChatMessageDOM(first(messages)).content.querySelector(
+          '.custom-background'
+        )!
+      );
+
+      expect(backgroundColor === 'rgb(255, 0, 0)').to.equal(state);
+    }
 
     beforeEach(async () => {
       const styles = document.createElement('style');
@@ -990,48 +1078,79 @@ describe('Chat', () => {
       document.head.append(styles);
     });
 
+    afterEach(() => {
+      document.head.querySelector('#adopt-styles-test')?.remove();
+    });
+
     it('correctly applies `adoptRootStyles` when set', async () => {
-      chat.options = {
-        adoptRootStyles: true,
-        renderers: {
-          messageContent: ({ message }) =>
-            html`<div class=${customStyles}>${message.text}</div>`,
-        },
-      };
-      chat.messages = [{ id: 'id', sender: 'bot', text: 'Hello' }];
-
+      await createAdoptedStylesChat({ adoptRootStyles: true });
       await elementUpdated(chat);
-
-      const { messages } = getChatDOM(chat);
-      expect(
-        getComputedStyle(
-          getChatMessageDOM(first(messages)).content.querySelector(
-            `.${customStyles}`
-          )!
-        ).backgroundColor
-      ).equal('rgb(255, 0, 0)');
+      verifyCustomStyles(true);
     });
 
     it('skips `adoptRootStyles` when not set', async () => {
-      chat.options = {
-        renderers: {
-          messageContent: ({ message }) =>
-            html`<div class=${customStyles}>${message.text}</div>`,
-        },
-      };
+      await createAdoptedStylesChat({ adoptRootStyles: false });
+      await elementUpdated(chat);
+      verifyCustomStyles(false);
+    });
 
-      chat.messages = [{ id: 'id', sender: 'bot', text: 'Hello' }];
+    it('correctly reapplies `adoptRootStyles` when set and the theme is changed', async () => {
+      await createAdoptedStylesChat({ adoptRootStyles: true });
+      await elementUpdated(chat);
+      verifyCustomStyles(true);
+
+      // Change the theme
+      configureTheme('material');
 
       await elementUpdated(chat);
+      verifyCustomStyles(true);
 
-      const { messages } = getChatDOM(chat);
-      expect(
-        getComputedStyle(
-          getChatMessageDOM(first(messages)).content.querySelector(
-            `.${customStyles}`
-          )!
-        ).backgroundColor
-      ).not.equal('rgb(255, 0, 0)');
+      configureTheme('bootstrap');
+      await elementUpdated(chat);
+      verifyCustomStyles(true);
+    });
+
+    it('correctly adopts styles when toggling from false to true', async () => {
+      await createAdoptedStylesChat({ adoptRootStyles: false });
+      await elementUpdated(chat);
+      verifyCustomStyles(false);
+
+      // Toggle to true
+      chat.options = { ...chat.options, adoptRootStyles: true };
+      await elementUpdated(chat);
+      verifyCustomStyles(true);
+    });
+
+    it('correctly removes adopted styles when toggling from true to false', async () => {
+      await createAdoptedStylesChat({ adoptRootStyles: true });
+      await elementUpdated(chat);
+      verifyCustomStyles(true);
+
+      // Toggle to false
+      chat.options = { ...chat.options, adoptRootStyles: false };
+      await elementUpdated(chat);
+      verifyCustomStyles(false);
+    });
+
+    it('correctly handles multiple toggles of adoptRootStyles', async () => {
+      await createAdoptedStylesChat({ adoptRootStyles: false });
+      await elementUpdated(chat);
+      verifyCustomStyles(false);
+
+      // Toggle to true
+      chat.options = { ...chat.options, adoptRootStyles: true };
+      await elementUpdated(chat);
+      verifyCustomStyles(true);
+
+      // Toggle back to false
+      chat.options = { ...chat.options, adoptRootStyles: false };
+      await elementUpdated(chat);
+      verifyCustomStyles(false);
+
+      // Toggle to true again
+      chat.options = { ...chat.options, adoptRootStyles: true };
+      await elementUpdated(chat);
+      verifyCustomStyles(true);
     });
   });
 });

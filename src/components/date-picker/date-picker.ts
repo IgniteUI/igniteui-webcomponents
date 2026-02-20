@@ -26,7 +26,10 @@ import {
   IgcCalendarResourceStringEN,
   type IgcCalendarResourceStrings,
 } from '../common/i18n/EN/calendar.resources.js';
-import { addI18nController } from '../common/i18n/i18n-controller.js';
+import {
+  addI18nController,
+  getDateTimeFormat,
+} from '../common/i18n/i18n-controller.js';
 import { IgcBaseComboBoxLikeComponent } from '../common/mixins/combo-box.js';
 import type { AbstractConstructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
@@ -39,8 +42,8 @@ import {
   equal,
   findElementFromEventPath,
 } from '../common/util.js';
+import type { DatePart } from '../date-time-input/date-part.js';
 import IgcDateTimeInputComponent from '../date-time-input/date-time-input.js';
-import { type DatePart, DateTimeUtil } from '../date-time-input/date-util.js';
 import IgcDialogComponent from '../dialog/dialog.js';
 import IgcFocusTrapComponent from '../focus-trap/focus-trap.js';
 import IgcIconComponent from '../icon/icon.js';
@@ -200,19 +203,23 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
   private readonly _themes = addThemingController(this, all);
   private readonly _slots = addSlotController(this, { slots: Slots });
 
-  private _oldValue: Date | null = null;
-  private readonly _i18nController =
+  /**
+   * For now we use the core validation strings internally only, to avoid mixing with old resources by users.
+   * To Do: Update resourceStrings type when the IgcCalendarResourceStrings is changed to ICalendarResourceStrings
+   */
+  protected readonly _i18nController =
     addI18nController<IgcCalendarResourceStrings>(this, {
       defaultEN: IgcCalendarResourceStringEN,
     });
 
+  private _oldValue: Date | null = null;
   private _activeDate: Date | null = null;
   private _min: Date | null = null;
   private _max: Date | null = null;
   private _disabledDates?: DateRangeDescriptor[];
   private _dateConstraints?: DateRangeDescriptor[];
-  private _displayFormat?: string;
   private _inputFormat?: string;
+  private _displayFormat?: string;
 
   protected override readonly _formValue = createFormValueState(this, {
     initialValue: null,
@@ -410,7 +417,7 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
 
   /**
    * Format to display the value in when not editing.
-   * Defaults to the input format if not set.
+   * Defaults to the locale format if not set.
    * @attr display-format
    */
   @property({ attribute: 'display-format' })
@@ -419,7 +426,7 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
   }
 
   public get displayFormat(): string {
-    return this._displayFormat ?? this.inputFormat;
+    return this._displayFormat ?? this._input?.displayFormat;
   }
 
   /**
@@ -769,7 +776,7 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
       <div
         part="actions"
         ?hidden=${!hasActions}
-        slot=${bindIf(!(this._isDropDown || hasActions), 'footer')}
+        slot=${bindIf(!this._isDropDown && hasActions, 'footer')}
       >
         <slot name="actions"></slot>
       </div>
@@ -824,9 +831,7 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
   }
 
   protected _renderInput(id: string) {
-    const format = DateTimeUtil.predefinedToDateDisplayFormat(
-      this._displayFormat!
-    );
+    const format = getDateTimeFormat(this._displayFormat);
 
     // Dialog mode is always readonly, rest depends on configuration
     const readOnly = !this._isDropDown || this.readOnly || this.nonEditable;

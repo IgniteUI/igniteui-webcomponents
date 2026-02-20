@@ -26,7 +26,7 @@ const metadata: Meta<IgcBadgeComponent> = {
   argTypes: {
     variant: {
       type: '"primary" | "info" | "success" | "warning" | "danger"',
-      description: 'The type of badge.',
+      description: 'The type (style variant) of the badge.',
       options: ['primary', 'info', 'success', 'warning', 'danger'],
       control: { type: 'select' },
       table: { defaultValue: { summary: 'primary' } },
@@ -44,19 +44,31 @@ const metadata: Meta<IgcBadgeComponent> = {
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'rounded' } },
     },
+    dot: {
+      type: 'boolean',
+      description:
+        'Sets whether to render a dot type badge.\nWhen enabled, the badge appears as a small dot without any content.',
+      control: 'boolean',
+      table: { defaultValue: { summary: 'false' } },
+    },
   },
-  args: { variant: 'primary', outlined: false, shape: 'rounded' },
+  args: { variant: 'primary', outlined: false, shape: 'rounded', dot: false },
 };
 
 export default metadata;
 
 interface IgcBadgeArgs {
-  /** The type of badge. */
+  /** The type (style variant) of the badge. */
   variant: 'primary' | 'info' | 'success' | 'warning' | 'danger';
   /** Sets whether to draw an outlined version of the badge. */
   outlined: boolean;
   /** The shape of the badge. */
   shape: 'rounded' | 'square';
+  /**
+   * Sets whether to render a dot type badge.
+   * When enabled, the badge appears as a small dot without any content.
+   */
+  dot: boolean;
 }
 type Story = StoryObj<IgcBadgeArgs>;
 
@@ -77,6 +89,7 @@ function renderTabs(args: IgcBadgeArgs) {
             variant=${variant as IgcBadgeArgs['variant']}
             ?outlined=${args.outlined}
             shape=${args.shape}
+            ?dot=${args.dot}
             >${idx + 1}</igc-badge
           >
         </span>
@@ -86,8 +99,13 @@ function renderTabs(args: IgcBadgeArgs) {
 }
 
 export const Basic: Story = {
-  render: ({ outlined, shape, variant }) => html`
-    <igc-badge ?outlined=${outlined} shape=${shape} variant=${variant}>
+  render: ({ outlined, shape, variant, dot }) => html`
+    <igc-badge
+      ?outlined=${outlined}
+      shape=${shape}
+      variant=${variant}
+      ?dot=${dot}
+    >
       <igc-icon name="home"></igc-icon>
     </igc-badge>
   `,

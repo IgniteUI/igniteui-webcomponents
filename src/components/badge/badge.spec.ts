@@ -1,11 +1,11 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
-
 import { defineComponents } from '../common/definitions/defineComponents.js';
+import IgcIconComponent from '../icon/icon.js';
 import IgcBadgeComponent from './badge.js';
 
 describe('Badge', () => {
   before(() => {
-    defineComponents(IgcBadgeComponent);
+    defineComponents(IgcBadgeComponent, IgcIconComponent);
   });
 
   it('passes the a11y audit', async () => {
@@ -71,5 +71,36 @@ describe('Badge', () => {
     expect(el).dom.to.equal(
       `<igc-badge shape="rounded" variant="primary"></igc-badge>`
     );
+  });
+
+  it('can be a dot badge', async () => {
+    const el = await fixture<IgcBadgeComponent>(
+      html`<igc-badge dot></igc-badge>`
+    );
+
+    expect(el.dot).to.be.true;
+
+    el.dot = false;
+    await elementUpdated(el);
+    expect(el).dom.to.equal(
+      `<igc-badge shape="rounded" variant="primary"></igc-badge>`
+    );
+  });
+
+  it('dot badge works with all variants', async () => {
+    const el = await fixture<IgcBadgeComponent>(
+      html`<igc-badge dot variant="success"></igc-badge>`
+    );
+
+    expect(el.dot).to.be.true;
+    expect(el.variant).to.equal('success');
+  });
+
+  it('should apply correct part for slotted igc-icon', async () => {
+    const el = await fixture<IgcBadgeComponent>(
+      html`<igc-badge><igc-icon name="home"></igc-icon></igc-badge>`
+    );
+
+    expect(el.renderRoot.querySelector('[part~="icon"]')).to.exist;
   });
 });

@@ -15,7 +15,7 @@ $theme: $material;
     --active-background: #{var-get($theme, 'button-hover-background')};
     --border-color: #{var-get($theme, 'button-background')};
     --disabled-foreground: #{var-get($theme, 'button-disabled-color')};
-    --disabled-background: #{var-get($theme, 'item-background')};
+    --disabled-background: #{var-get($theme, 'button-background')};
 
     [part~='base'] {
         transition: all 0ms;

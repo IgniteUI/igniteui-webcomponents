@@ -19,11 +19,7 @@ import { createAbortHandle } from '../abort-handler.js';
  * strategies like ARIA attributes, managing `tabindex`, or a bespoke implementation if needed.
  */
 class KeyboardFocusRingController implements ReactiveController {
-  private static readonly _events = [
-    'keyup',
-    'focusout',
-    'pointerdown',
-  ] as const;
+  private static readonly _events = ['keyup', 'focusout', 'pointerup'] as const;
 
   private readonly _host: ReactiveControllerHost & HTMLElement;
   private readonly _abortHandle = createAbortHandle();

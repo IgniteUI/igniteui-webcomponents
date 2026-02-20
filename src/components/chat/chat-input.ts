@@ -1,5 +1,5 @@
-import { consume } from '@lit/context';
-import { html, LitElement, nothing } from 'lit';
+import { ContextConsumer, consume } from '@lit/context';
+import { html, LitElement, nothing, type PropertyValues } from 'lit';
 import { query, state } from 'lit/decorators.js';
 import { cache } from 'lit/directives/cache.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
@@ -8,7 +8,8 @@ import { addThemingController } from '../../theming/theming-controller.js';
 import IgcIconButtonComponent from '../button/icon-button.js';
 import IgcChipComponent from '../chip/chip.js';
 import { chatContext, chatUserInputContext } from '../common/context.js';
-import { enterKey } from '../common/controllers/key-bindings.js';
+import { addAdoptedStylesController } from '../common/controllers/adopt-styles.js';
+import { enterKey, tabKey } from '../common/controllers/key-bindings.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { partMap } from '../common/part-map.js';
 import { bindIf, hasFiles, isEmpty, trimmedHtml } from '../common/util.js';
@@ -24,7 +25,11 @@ import type {
   ChatTemplateRenderer,
   IgcChatMessageAttachment,
 } from './types.js';
-import { getChatAcceptedFiles, getIconName } from './utils.js';
+import {
+  type ChatAcceptedFileTypes,
+  getChatAcceptedFiles,
+  getIconName,
+} from './utils.js';
 
 type DefaultInputRenderers = {
   input: ChatTemplateRenderer<ChatInputRenderContext>;
@@ -91,33 +96,65 @@ export default class IgcChatInputComponent extends LitElement {
     sendButton: () => this._renderSendButton(),
   });
 
-  @consume({ context: chatContext, subscribe: true })
-  private readonly _state!: ChatState;
+  private _userIsTyping = false;
+  private _userLastTypeTime = Date.now();
+  private _typingTimeout = 0;
+
+  private readonly _adoptedStyles = addAdoptedStylesController(this);
+
+  private readonly _stateChanged = () => {
+    this._shouldAdoptRootStyles = Boolean(this._state.options?.adoptRootStyles);
+  };
+
+  private readonly _stateConsumer = new ContextConsumer(this, {
+    context: chatContext,
+    callback: this._stateChanged,
+    subscribe: true,
+  });
 
   @consume({ context: chatUserInputContext, subscribe: true })
   private readonly _userInputState!: ChatState;
 
   @query(IgcTextareaComponent.tagName)
-  private readonly _textInputElement!: IgcTextareaComponent;
+  private readonly _textInputElement?: IgcTextareaComponent;
 
   @query('#input_attachments')
-  protected readonly _fileInput!: HTMLInputElement;
+  protected readonly _fileInput?: HTMLInputElement;
 
   @state()
   private _parts = { 'input-container': true, dragging: false };
 
-  private get _acceptedTypes() {
+  @state()
+  private _shouldAdoptRootStyles = false;
+
+  private get _state(): ChatState {
+    return this._stateConsumer.value!;
+  }
+
+  private get _acceptedTypes(): ChatAcceptedFileTypes | null {
     return this._state.acceptedFileTypes;
   }
 
   constructor() {
     super();
-    addThemingController(this, all);
+    addThemingController(this, all, { themeChange: this._adoptPageStyles });
+  }
+
+  protected override update(props: PropertyValues): void {
+    if (props.has('_shouldAdoptRootStyles')) {
+      this._adoptedStyles.shouldAdoptStyles(this._shouldAdoptRootStyles);
+    }
+    super.update(props);
   }
 
   /** @internal */
   public focusInput(): void {
-    this._textInputElement.focus();
+    this._textInputElement?.focus();
+  }
+
+  private _adoptPageStyles(): void {
+    this._adoptedStyles.invalidateCache(this.ownerDocument);
+    this._adoptedStyles.shouldAdoptStyles(this._shouldAdoptRootStyles);
   }
 
   private _getRenderer<U extends keyof DefaultInputRenderers>(
@@ -148,6 +185,11 @@ export default class IgcChatInputComponent extends LitElement {
     this.focusInput();
   }
 
+  private _setTypingStateAndEmit(state: boolean): void {
+    this._userIsTyping = state;
+    this._userInputState.emitUserTypingState(state);
+  }
+
   private _handleAttachmentRemoved(attachment: IgcChatMessageAttachment): void {
     const current = this._userInputState.inputAttachments;
 
@@ -160,20 +202,42 @@ export default class IgcChatInputComponent extends LitElement {
   }
 
   private _handleKeydown(event: KeyboardEvent): void {
-    const isSendRequest =
-      event.key.toLowerCase() === enterKey.toLowerCase() && !event.shiftKey;
+    this._userLastTypeTime = Date.now();
+    const isEnterKey = event.key.toLowerCase() === enterKey.toLowerCase();
+    const isTab = event.key.toLocaleLowerCase() === tabKey.toLowerCase();
 
-    if (isSendRequest) {
+    if (isTab && !this._userIsTyping) {
+      return;
+    }
+
+    if (isEnterKey && !event.shiftKey) {
       event.preventDefault();
       this._sendMessage();
-    } else {
-      // TODO:
-      this._state.handleKeyDown(event);
+
+      if (this._userIsTyping) {
+        clearTimeout(this._typingTimeout);
+        this._setTypingStateAndEmit(false);
+      }
+
+      return;
     }
+
+    clearTimeout(this._typingTimeout);
+    const delay = this._state.stopTypingDelay;
+
+    if (!this._userIsTyping) {
+      this._setTypingStateAndEmit(true);
+    }
+
+    this._typingTimeout = setTimeout(() => {
+      if (this._userIsTyping && this._userLastTypeTime + delay <= Date.now()) {
+        this._setTypingStateAndEmit(false);
+      }
+    }, delay);
   }
 
   private _handleFileInputClick(): void {
-    this._fileInput.showPicker();
+    this._fileInput?.showPicker();
   }
 
   private _handleFocusState(event: FocusEvent): void {
@@ -238,6 +302,7 @@ export default class IgcChatInputComponent extends LitElement {
       this._state.attachFilesWithEvent(Array.from(input.files!));
     }
   }
+
   /**
    * Default attachments area template used when no custom template is provided.
    * Renders the list of input attachments as chips.

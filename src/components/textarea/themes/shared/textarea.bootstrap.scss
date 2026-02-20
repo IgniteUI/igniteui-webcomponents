@@ -38,10 +38,10 @@ $theme: $bootstrap;
 [part~='prefixed'] {
     [part~='prefix'] {
         border-block-width: rem(1px);
+        border-inline-width: 0;
         border-style: solid;
         border-color: var-get($theme, 'border-color');
         overflow: hidden;
-        border-inline-width: 0;
         border: {
             start: {
                 start-radius: var-get($theme, 'border-border-radius');
@@ -67,10 +67,10 @@ $theme: $bootstrap;
 [part~='suffixed'] {
     [part~='suffix'] {
         border-block-width: rem(1px);
+        border-inline-width: 0;
         border-style: solid;
         border-color: var-get($theme, 'border-color');
         overflow: hidden;
-        border-inline-width: 0;
         border: {
             start: {
                 end-radius: var-get($theme, 'border-border-radius');
@@ -97,7 +97,7 @@ textarea {
     @include type-style('body-1');
 
     border: rem(1px) solid var-get($theme, 'border-color');
-    padding-block: pad-block(rem(4px), rem(8px), rem(12px)) 0;
+    padding-block: pad-block(rem(4px), rem(8px), rem(12px));
     padding-inline: pad-inline(rem(8px), rem(10px), rem(14px));
     border-radius: var-get($theme, 'border-border-radius');
     z-index: 1;
@@ -105,8 +105,6 @@ textarea {
 }
 
 :host(:focus-within) {
-    color: var-get($theme, 'input-prefix-color--focused');
-
     [part~='prefix'] {
         color: var-get($theme, 'input-prefix-color--focused');
         background: var-get($theme, 'input-prefix-background--focused');
@@ -164,22 +162,22 @@ textarea {
         box-shadow: none;
     }
 
-    ::slotted([slot='suffix']) {
-        border-inline-end: rem(1px) solid var(--disabled-border-color);
-    }
-
     ::slotted([slot='prefix']) {
         border-inline-start: rem(1px) solid var(--disabled-border-color);
+    }
+
+    ::slotted([slot='suffix']) {
+        border-inline-end: rem(1px) solid var(--disabled-border-color);
     }
 }
 
 :host(:not([disabled])),
 :host(:not(:disabled)) {
-    ::slotted([slot='suffix']) {
-        border-inline-end: rem(1px) solid var(--border-color);
+     ::slotted([slot='prefix']) {
+        border-inline-start: rem(1px) solid var(--border-color);
     }
 
-    ::slotted([slot='prefix']) {
-        border-inline-start: rem(1px) solid var(--border-color);
+    ::slotted([slot='suffix']) {
+        border-inline-end: rem(1px) solid var(--border-color);
     }
 }

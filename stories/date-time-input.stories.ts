@@ -5,7 +5,6 @@ import {
   IgcDateTimeInputComponent,
   defineComponents,
 } from 'igniteui-webcomponents';
-import type { DateRangeValue } from '../src/components/date-range-picker/date-range-picker.js';
 import {
   disableStoryControls,
   formControls,
@@ -28,10 +27,23 @@ const metadata: Meta<IgcDateTimeInputComponent> = {
     actions: { handles: ['igcInput', 'igcChange'] },
   },
   argTypes: {
+    displayFormat: {
+      type: 'string',
+      description:
+        'Format to display the value in when not editing.\nDefaults to the input format if not set.',
+      control: 'text',
+      table: { defaultValue: { summary: '' } },
+    },
+    locale: {
+      type: 'string',
+      description: 'The locale settings used to display the value.',
+      control: 'text',
+      table: { defaultValue: { summary: 'en' } },
+    },
     value: {
-      type: 'string | Date | DateRangeValue',
+      type: 'string | Date',
       description: 'The value of the input.',
-      options: ['string', 'Date', 'DateRangeValue'],
+      options: ['string', 'Date'],
       control: 'text',
     },
     inputFormat: {
@@ -49,23 +61,17 @@ const metadata: Meta<IgcDateTimeInputComponent> = {
       description: 'The maximum value required for the input to remain valid.',
       control: 'date',
     },
-    displayFormat: {
-      type: 'string',
-      description:
-        'Format to display the value in when not editing.\nDefaults to the input format if not set.',
-      control: 'text',
-    },
     spinLoop: {
       type: 'boolean',
       description: 'Sets whether to loop over the currently spun segment.',
       control: 'boolean',
       table: { defaultValue: { summary: 'true' } },
     },
-    locale: {
-      type: 'string',
-      description:
-        'Gets/Sets the locale used for formatting the display value.',
-      control: 'text',
+    readOnly: {
+      type: 'boolean',
+      description: 'Makes the control a readonly field.',
+      control: 'boolean',
+      table: { defaultValue: { summary: 'false' } },
     },
     mask: {
       type: 'string',
@@ -110,12 +116,6 @@ const metadata: Meta<IgcDateTimeInputComponent> = {
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
-    readOnly: {
-      type: 'boolean',
-      description: 'Makes the control a readonly field.',
-      control: 'boolean',
-      table: { defaultValue: { summary: 'false' } },
-    },
     placeholder: {
       type: 'string',
       description: 'The placeholder attribute of the control.',
@@ -128,37 +128,41 @@ const metadata: Meta<IgcDateTimeInputComponent> = {
     },
   },
   args: {
+    displayFormat: '',
+    locale: 'en',
     spinLoop: true,
+    readOnly: false,
     mask: 'CCCCCCCCCC',
     prompt: '_',
     required: false,
     disabled: false,
     invalid: false,
     outlined: false,
-    readOnly: false,
   },
 };
 
 export default metadata;
 
 interface IgcDateTimeInputArgs {
+  /**
+   * Format to display the value in when not editing.
+   * Defaults to the input format if not set.
+   */
+  displayFormat: string;
+  /** The locale settings used to display the value. */
+  locale: string;
   /** The value of the input. */
-  value: string | Date | DateRangeValue;
+  value: string | Date;
   /** The date format to apply on the input. */
   inputFormat: string;
   /** The minimum value required for the input to remain valid. */
   min: Date;
   /** The maximum value required for the input to remain valid. */
   max: Date;
-  /**
-   * Format to display the value in when not editing.
-   * Defaults to the input format if not set.
-   */
-  displayFormat: string;
   /** Sets whether to loop over the currently spun segment. */
   spinLoop: boolean;
-  /** Gets/Sets the locale used for formatting the display value. */
-  locale: string;
+  /** Makes the control a readonly field. */
+  readOnly: boolean;
   /** The masked pattern of the component. */
   mask: string;
   /** The prompt symbol to use for unfilled parts of the mask pattern. */
@@ -173,8 +177,6 @@ interface IgcDateTimeInputArgs {
   invalid: boolean;
   /** Whether the control will have outlined appearance. */
   outlined: boolean;
-  /** Makes the control a readonly field. */
-  readOnly: boolean;
   /** The placeholder attribute of the control. */
   placeholder: string;
   /** The label for the control. */

@@ -169,7 +169,7 @@ describe('Date range picker - common tests for single and two inputs mode', () =
       const expectedValue = { start: today.native, end: tomorrow.native };
       picker = await fixture<IgcDateRangePickerComponent>(
         html`<igc-date-range-picker
-          .value="${expectedValue}"
+          .value=${expectedValue}
         ></igc-date-range-picker>`
       );
       checkSelectedRange(picker, expectedValue, false);
@@ -319,10 +319,10 @@ describe('Date range picker - common tests for single and two inputs mode', () =
         expect(picker.inputFormat).to.equal('dd/MM/yyyy');
       });
 
-      it('should use the value of inputFormat for displayFormat, if it is not defined', async () => {
+      it('should use the value of locale format for displayFormat, if it is not defined', async () => {
         expect(picker.locale).to.equal('en-US');
         expect(picker.getAttribute('display-format')).to.be.null;
-        expect(picker.displayFormat).to.equal(picker.inputFormat);
+        expect(picker.displayFormat).to.equal('M/d/yyyy');
 
         // updates inputFormat according to changed locale
         picker.locale = 'fr';
@@ -383,7 +383,7 @@ describe('Date range picker - common tests for single and two inputs mode', () =
 
         const predefinedArea = picker.renderRoot.querySelector(
           IgcPredefinedRangesAreaComponent.tagName
-        );
+        )!;
 
         for (const test of tests) {
           expect(predefinedArea?.resourceStrings[test.key]).to.equal(
@@ -391,7 +391,7 @@ describe('Date range picker - common tests for single and two inputs mode', () =
           );
         }
 
-        const chipElements = predefinedArea?.shadowRoot!.querySelectorAll(
+        const chipElements = predefinedArea.renderRoot.querySelectorAll(
           'igc-chip'
         ) as NodeListOf<IgcChipComponent>;
         for (const test of tests) {
@@ -423,14 +423,14 @@ describe('Date range picker - common tests for single and two inputs mode', () =
 
         const predefinedArea = picker.renderRoot.querySelector(
           IgcPredefinedRangesAreaComponent.tagName
-        );
+        )!;
         for (const test of tests) {
           expect(predefinedArea?.resourceStrings[test.key]).to.equal(
             test.value
           );
         }
 
-        const chipElements = predefinedArea?.shadowRoot!.querySelectorAll(
+        const chipElements = predefinedArea.renderRoot.querySelectorAll(
           'igc-chip'
         ) as NodeListOf<IgcChipComponent>;
         for (const test of tests) {
@@ -711,7 +711,7 @@ describe('Date range picker - common tests for single and two inputs mode', () =
       function getPredefinedArea() {
         return picker.renderRoot.querySelector(
           IgcPredefinedRangesAreaComponent.tagName
-        );
+        )!;
       }
 
       function getPopover() {
@@ -729,7 +729,7 @@ describe('Date range picker - common tests for single and two inputs mode', () =
       }
 
       function getRangeChips() {
-        return getPredefinedArea()?.renderRoot.querySelectorAll(
+        return getPredefinedArea().renderRoot.querySelectorAll(
           IgcChipComponent.tagName
         )!;
       }

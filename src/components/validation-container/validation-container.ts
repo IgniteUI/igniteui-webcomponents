@@ -13,8 +13,8 @@ import {
 import { partMap } from '../common/part-map.js';
 import { isEmpty, toKebabCase } from '../common/util.js';
 import IgcIconComponent from '../icon/icon.js';
+import { all as inputThemes } from '../input/themes/themes.js';
 import { styles as shared } from './themes/shared/validator.common.css.js';
-import { all } from './themes/themes.js';
 import { styles } from './themes/validator.base.css.js';
 
 /** Configuration for the validation container. */
@@ -75,6 +75,8 @@ function hasProjectedValidation(
 export default class IgcValidationContainerComponent extends LitElement {
   public static readonly tagName = 'igc-validator';
   public static override styles = [styles, shared];
+
+  protected readonly _themes = addThemingController(this, inputThemes);
 
   /* blazorSuppress */
   public static register(): void {
@@ -138,11 +140,6 @@ export default class IgcValidationContainerComponent extends LitElement {
 
   public get target(): IgcFormControl {
     return this._target;
-  }
-
-  constructor() {
-    super();
-    addThemingController(this, all);
   }
 
   protected override createRenderRoot(): HTMLElement | DocumentFragment {

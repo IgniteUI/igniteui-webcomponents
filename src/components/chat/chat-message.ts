@@ -1,11 +1,12 @@
-import { consume } from '@lit/context';
-import { html, LitElement, nothing } from 'lit';
-import { property } from 'lit/decorators.js';
+import { ContextConsumer } from '@lit/context';
+import { html, LitElement, nothing, type PropertyValues } from 'lit';
+import { property, state } from 'lit/decorators.js';
 import { cache } from 'lit/directives/cache.js';
 import { until } from 'lit/directives/until.js';
 import { addThemingController } from '../../theming/theming-controller.js';
 import IgcIconButtonComponent from '../button/icon-button.js';
 import { chatContext } from '../common/context.js';
+import { addAdoptedStylesController } from '../common/controllers/adopt-styles.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { partMap } from '../common/part-map.js';
 import { isEmpty, trimmedHtml } from '../common/util.js';
@@ -19,7 +20,6 @@ import type {
   ChatTemplateRenderer,
   IgcChatMessage,
 } from './types.js';
-import { chatMessageAdoptPageStyles } from './utils.js';
 
 const LIKE_INACTIVE = 'thumb_up_inactive';
 const LIKE_ACTIVE = 'thumb_up_active';
@@ -66,6 +66,8 @@ export default class IgcChatMessageComponent extends LitElement {
     );
   }
 
+  private readonly _adoptedStyles = addAdoptedStylesController(this);
+
   private readonly _defaults = Object.freeze<DefaultMessageRenderers>({
     messageHeader: () => this._renderHeader(),
     messageContent: () => this._renderContent(),
@@ -73,8 +75,22 @@ export default class IgcChatMessageComponent extends LitElement {
     messageActions: () => this._renderActions(),
   });
 
-  @consume({ context: chatContext, subscribe: true })
-  private readonly _state!: ChatState;
+  private readonly _stateChanged = () => {
+    this._shouldAdoptRootStyles = Boolean(this._state.options?.adoptRootStyles);
+  };
+
+  private readonly _stateConsumer = new ContextConsumer(this, {
+    context: chatContext,
+    callback: this._stateChanged,
+    subscribe: true,
+  });
+
+  @state()
+  private _shouldAdoptRootStyles = false;
+
+  private get _state(): ChatState {
+    return this._stateConsumer.value!;
+  }
 
   /**
    * The chat message to render.
@@ -84,13 +100,19 @@ export default class IgcChatMessageComponent extends LitElement {
 
   constructor() {
     super();
-    addThemingController(this, all);
+    addThemingController(this, all, { themeChange: this._adoptPageStyles });
   }
 
-  protected override firstUpdated(): void {
-    if (this._state.options?.adoptRootStyles) {
-      chatMessageAdoptPageStyles(this);
+  protected override update(props: PropertyValues): void {
+    if (props.has('_shouldAdoptRootStyles')) {
+      this._adoptedStyles.shouldAdoptStyles(this._shouldAdoptRootStyles);
     }
+    super.update(props);
+  }
+
+  private _adoptPageStyles(): void {
+    this._adoptedStyles.invalidateCache(this.ownerDocument);
+    this._adoptedStyles.shouldAdoptStyles(this._shouldAdoptRootStyles);
   }
 
   private _getRenderer(name: keyof DefaultMessageRenderers) {

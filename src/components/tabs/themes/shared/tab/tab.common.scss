@@ -4,9 +4,12 @@
 $theme: $material;
 
 [part='tab-header'] {
+    --_border-width: #{rem(1px)};
+
     color: var-get($theme, 'item-text-color');
     background: var-get($theme, 'item-background');
     border-radius: var-get($theme, 'border-radius');
+    border: var(--_border-width) solid var-get($theme, 'border-color');
 
     ::slotted(igc-icon) {
         color: var-get($theme, 'item-icon-color');
@@ -16,6 +19,7 @@ $theme: $material;
     &:focus-within {
         color: var-get($theme, 'item-hover-color');
         background: var-get($theme, 'item-hover-background');
+        border: rem(1px) solid var-get($theme, 'border-color--hover');
 
         ::slotted(igc-icon) {
             color: var-get($theme, 'item-hover-icon-color');
@@ -26,6 +30,7 @@ $theme: $material;
 :host([selected]) {
     [part='tab-header'] {
         color: var-get($theme, 'item-active-color');
+        background: var-get($theme, 'item-active-background');
 
         ::slotted(igc-icon) {
             color: var-get($theme, 'item-active-icon-color');
@@ -33,10 +38,11 @@ $theme: $material;
 
         &:hover,
         &:focus-within {
-            color: var-get($theme, 'item-active-color');
+            color: var-get($theme, 'item-active-hover-color');
+            background: var-get($theme, 'item-active-hover-background');
 
             ::slotted(igc-icon) {
-                color: var-get($theme, 'item-active-icon-color');
+                color: var-get($theme, 'item-active-hover-icon-color');
             }
         }
     }

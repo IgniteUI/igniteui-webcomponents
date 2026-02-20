@@ -1,7 +1,8 @@
 @use 'styles/utilities' as *;
 @use '../light/themes' as *;
+@use 'components/input/themes/light/themes' as input-theme;
 
-$theme: $material;
+$theme: input-theme.$material;
 
 :host {
     ::part(helper-text) {

@@ -4,7 +4,7 @@
 $theme: $indigo;
 
 :host {
-    @include css-vars-from-theme(diff($base, $theme), 'ig-chip');
+    @include css-vars-from-theme(diff($base, $theme));
 }
 
 :host([variant='info']) button,
@@ -23,8 +23,15 @@ $theme: $indigo;
 
 :host([variant='warning']) button,
 :host([selected][variant='warning']) button:not([disabled]) {
+    color: color(gray, 900);
+
     &:focus {
+        color: color(gray, 900);
         box-shadow: 0 0 0 rem(3px) color(warn, 100);
+    }
+
+    &:hover {
+        color: color(gray, 900);
     }
 }
 

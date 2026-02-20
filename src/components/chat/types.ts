@@ -146,8 +146,6 @@ export type IgcChatOptions = {
    * global styles unexpectedly bleed into the component, breaking encapsulation and causing
    * unpredictable visual issues.
    *
-   * **WARNING**: This is a once time shot. Changing this property in runtime won't reflect
-   * its value.
    */
   adoptRootStyles?: boolean;
 
@@ -234,6 +232,8 @@ export interface ChatRenderers {
   messageHeader?: ChatTemplateRenderer<ChatMessageRenderContext>;
   /**
    * Custom renderer for the "is typing" indicator.
+   *
+   * @deprecated since 6.4.0. Use the `typing-indicator` slot.
    */
   typingIndicator?: ChatTemplateRenderer<ChatRenderContext>;
   /**

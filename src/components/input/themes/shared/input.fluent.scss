@@ -13,7 +13,6 @@ $theme: $fluent;
     [part='prefix'],
     [part='suffix'] {
         font-size: rem(14px);
-        cursor: default;
         z-index: 0;
 
         ::slotted(*) {
@@ -56,7 +55,6 @@ $theme: $fluent;
         border: var(--input-border-size) solid transparent;
         border-radius: var-get($theme, 'border-border-radius');
         transition: none;
-        cursor: text;
         grid-template-columns: auto 1fr auto;
 
         &::before {
@@ -77,10 +75,19 @@ $theme: $fluent;
             pointer-events: none;
             z-index: 1;
         }
+
+        [part='prefix']:first-child {
+            border-start-start-radius: calc(var-get($theme, 'border-border-radius') - rem(1px));
+            border-end-start-radius: calc(var-get($theme, 'border-border-radius') - rem(1px));
+        }
+
+        [part='suffix']:last-child {
+            border-start-end-radius: calc(var-get($theme, 'border-border-radius') - rem(1px));
+            border-end-end-radius: calc(var-get($theme, 'border-border-radius') - rem(1px));
+        }
     }
 
     [part~='input'] {
-        color: var-get($theme, 'idle-text-color');
         background: initial;
         font-size: rem(14px);
         padding-inline: pad-inline(rem(8px));
