@@ -43,6 +43,22 @@ Instead of manually searching documentation, the MCP server gives your AI assist
 - User wants to override default component styles
 - User needs guidance on CSS custom properties or CSS parts
 
+## Prerequisites
+
+- A project with `igniteui-webcomponents` & `igniteui-theming` installed
+- The **Ignite UI Theming MCP server** (`igniteui-theming`) available as a tool provider
+
+> **AGENT INSTRUCTION — MCP Server Setup (REQUIRED)**
+>
+> Before using any theming tools, you MUST verify the MCP server is available
+> by calling `detect_platform`. If the tool is not available or the call fails,
+> you MUST automatically configure it by following the setup process steps described below.
+>
+> After writing the file, inform the user that the MCP server has been
+> configured and they may need to reload the editor for the tools to activate.
+> Start the MCP server and wait for that MCP server to start before continuing the theming related work.
+> Do NOT skip this step or ask the user to do it manually.
+
 ## Setup: Connect to the igniteui-theming MCP Server
 
 To enable AI-assisted theming, you need to configure your AI assistant (like GitHub Copilot, Claude Desktop, or other MCP-compatible tools) to connect to the igniteui-theming MCP server.
