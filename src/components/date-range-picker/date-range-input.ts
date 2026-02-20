@@ -87,6 +87,7 @@ export default class IgcDateRangeInputComponent extends IgcDateTimeInputBaseComp
     transformers: FormValueDateRangeTransformers,
   });
 
+  protected override readonly _parser = new DateTimeMaskParser();
   private _startParser: DateTimeMaskParser = new DateTimeMaskParser();
   private _endParser: DateTimeMaskParser = new DateTimeMaskParser();
 
@@ -96,9 +97,7 @@ export default class IgcDateRangeInputComponent extends IgcDateTimeInputBaseComp
     year: 1,
   };
 
-  private _oldRangeValue: DateRangeValue | null = null;
-
-  protected override _inputFormat!: string;
+  protected override _inputFormat = '';
 
   /**
    * Format to display the value in when not editing.
@@ -123,11 +122,11 @@ export default class IgcDateRangeInputComponent extends IgcDateTimeInputBaseComp
     return this._startParser.hasTimeParts();
   }
 
-  protected override get targetDatePart(): DateRangePart | undefined {
+  protected override get _targetDatePart(): DateRangePart | undefined {
     let result: DateRangePart | undefined;
 
     if (this._focused) {
-      const part = this._inputDateParts.find(
+      const part = this._inputDateParts?.find(
         (p) =>
           p.start <= this._inputSelection.start &&
           this._inputSelection.start <= p.end &&
@@ -139,11 +138,13 @@ export default class IgcDateRangeInputComponent extends IgcDateTimeInputBaseComp
         result = { part: partType, position: part!.position! };
       }
     } else {
-      const firstPart = this._inputDateParts[0];
-      result = {
-        part: firstPart?.type as string as DatePart,
-        position: DateRangePosition.Start,
-      };
+      const firstPart = this._inputDateParts?.[0];
+      if (firstPart) {
+        result = {
+          part: firstPart.type as string as DatePart,
+          position: DateRangePosition.Start,
+        };
+      }
     }
 
     return result;
@@ -186,6 +187,14 @@ export default class IgcDateRangeInputComponent extends IgcDateTimeInputBaseComp
   @watch('displayFormat')
   protected _onDisplayFormatChange() {
     this.updateMask();
+  }
+
+  protected override updateDefaultMask(): void {
+    if (!this._inputFormat) {
+      // Use a default date format from the start parser
+      const defaultFormat = 'MM/dd/yyyy';
+      this.setMask(defaultFormat);
+    }
   }
 
   protected override setMask(string: string): void {
@@ -321,7 +330,7 @@ export default class IgcDateRangeInputComponent extends IgcDateTimeInputBaseComp
   }
 
   protected override updateValue(): void {
-    if (this.isComplete()) {
+    if (this._isMaskComplete()) {
       const parsedRange = this._parseRangeValue(this._maskedValue);
       this.value = parsedRange;
     } else {
@@ -335,7 +344,7 @@ export default class IgcDateRangeInputComponent extends IgcDateTimeInputBaseComp
     if (this.readOnly) {
       return;
     }
-    this._oldRangeValue = this.value;
+    this._oldValue = this.value;
     const areFormatsDifferent = this.displayFormat !== this.inputFormat;
 
     if (!this.value || !this.value.start || !this.value.end) {
@@ -349,11 +358,11 @@ export default class IgcDateRangeInputComponent extends IgcDateTimeInputBaseComp
 
   public override handleBlur(): void {
     const isEmptyMask = this._maskedValue === this._parser.emptyMask;
-    const isSameValue = equal(this._oldRangeValue, this.value);
+    const isSameValue = equal(this._oldValue, this.value);
 
     this._focused = false;
 
-    if (!(this.isComplete() || isEmptyMask)) {
+    if (!(this._isMaskComplete() || isEmptyMask)) {
       const parse = this._parseRangeValue(this._maskedValue);
 
       if (parse) {
@@ -371,6 +380,18 @@ export default class IgcDateRangeInputComponent extends IgcDateTimeInputBaseComp
     }
 
     super._handleBlur();
+  }
+
+  private _parseRangeValue(value: string): DateRangeValue | null {
+    const dates = value.split(SINGLE_INPUT_SEPARATOR);
+    if (dates.length !== 2) {
+      return null;
+    }
+
+    const start = this._startParser.parseDate(dates[0]);
+    const end = this._endParser.parseDate(dates[1]);
+
+    return { start: start ?? null, end: end ?? null };
   }
 
   protected override spinValue(
@@ -431,11 +452,6 @@ export default class IgcDateRangeInputComponent extends IgcDateTimeInputBaseComp
     }
   }
 
-  protected override handleInput() {
-    this._setTouchedState();
-    this.emitEvent('igcInput', { detail: JSON.stringify(this.value) });
-  }
-
   private _setDatePartInMask(
     mask: string,
     parts: DateRangePartInfo[],
@@ -472,18 +488,6 @@ export default class IgcDateRangeInputComponent extends IgcDateTimeInputBaseComp
       ).value;
     }
     return resultMask;
-  }
-
-  private _parseRangeValue(value: string): DateRangeValue | null {
-    const dates = value.split(SINGLE_INPUT_SEPARATOR);
-    if (dates.length !== 2) {
-      return null;
-    }
-
-    const start = this._startParser.parseDate(dates[0]);
-    const end = this._endParser.parseDate(dates[1]);
-
-    return { start: start ?? null, end: end ?? null };
   }
 }
 

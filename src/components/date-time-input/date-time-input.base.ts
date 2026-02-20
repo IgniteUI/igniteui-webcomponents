@@ -43,15 +43,17 @@ export abstract class IgcDateTimeInputBaseComponent<
   protected override get __validators() {
     return dateTimeInputValidators;
   }
+
   protected _min: Date | null = null;
   protected _max: Date | null = null;
   protected _defaultMask!: string;
   protected _oldValue: TValue | null = null;
   protected _inputDateParts!: TPartInfo[];
   protected _inputFormat = '';
+  protected _defaultDisplayFormat = '';
 
-  protected abstract _datePartDeltas: any;
-  protected abstract get targetDatePart(): TPart | undefined;
+  protected abstract get _datePartDeltas(): any;
+  protected abstract get _targetDatePart(): TPart | undefined;
 
   protected get hasDateParts(): boolean {
     // Override in subclass with specific implementation
@@ -61,10 +63,6 @@ export abstract class IgcDateTimeInputBaseComponent<
   protected get hasTimeParts(): boolean {
     // Override in subclass with specific implementation
     return false;
-  }
-
-  protected get datePartDeltas(): any {
-    return Object.assign({}, this._datePartDeltas, this.spinDelta);
   }
 
   // #endregion
@@ -134,7 +132,7 @@ export abstract class IgcDateTimeInputBaseComponent<
    * All values default to `1`.
    */
   @property({ attribute: false })
-  public spinDelta: any = {};
+  public spinDelta?: any;
 
   /**
    * Sets whether to loop over the currently spun segment.
@@ -161,11 +159,11 @@ export abstract class IgcDateTimeInputBaseComponent<
       skip: () => this.readOnly,
       bindingDefaults: { triggers: ['keydownRepeat'] },
     })
-      .set([ctrlKey, ';'], this.setToday)
-      .set(arrowUp, this.keyboardSpin.bind(this, 'up'))
-      .set(arrowDown, this.keyboardSpin.bind(this, 'down'))
-      .set([ctrlKey, arrowLeft], this.navigateParts.bind(this, 0))
-      .set([ctrlKey, arrowRight], this.navigateParts.bind(this, 1));
+      .set([ctrlKey, ';'], this._setCurrentDateTime)
+      .set(arrowUp, this._keyboardSpin.bind(this, 'up'))
+      .set(arrowDown, this._keyboardSpin.bind(this, 'down'))
+      .set([ctrlKey, arrowLeft], this._navigateParts.bind(this, 0))
+      .set([ctrlKey, arrowRight], this._navigateParts.bind(this, 1));
   }
 
   public override connectedCallback() {
@@ -229,13 +227,30 @@ export abstract class IgcDateTimeInputBaseComponent<
     delta: number | undefined,
     isDecrement: boolean
   ): void {
-    const targetPart = datePart || this.targetDatePart;
-    if (!targetPart) return;
+    const part = datePart || this._targetDatePart;
+    if (!part) return;
 
     const { start, end } = this._inputSelection;
-    const newValue = this.trySpinValue(targetPart, delta, isDecrement);
+    const newValue = this._calculateSpunValue(part, delta, isDecrement);
     this.value = newValue as TValue;
     this.updateComplete.then(() => this._input?.setSelectionRange(start, end));
+  }
+
+  /**
+   * Calculates the new value after spinning a date part.
+   */
+  protected _calculateSpunValue(
+    datePart: TPart,
+    delta: number | undefined,
+    isDecrement: boolean
+  ): TValue {
+    // Default to 1 if delta is 0 or undefined
+    const effectiveDelta =
+      delta || (this._datePartDeltas as any)[datePart as any] || 1;
+    const spinAmount = isDecrement
+      ? -Math.abs(effectiveDelta)
+      : Math.abs(effectiveDelta);
+    return this.spinValue(datePart, spinAmount);
   }
 
   /** Clears the input element of user input. */
@@ -244,18 +259,27 @@ export abstract class IgcDateTimeInputBaseComponent<
     this.value = null;
   }
 
-  protected setToday() {
+  /**
+   * Sets the value to the current date/time.
+   */
+  protected _setCurrentDateTime(): void {
     this.value = new Date() as TValue;
-    this.handleInput();
+    this._emitInputEvent();
   }
 
-  protected handleDragLeave() {
+  /**
+   * Handles drag leave events.
+   */
+  protected _handleDragLeave(): void {
     if (!this._focused) {
       this.updateMask();
     }
   }
 
-  protected handleDragEnter() {
+  /**
+   * Handles drag enter events.
+   */
+  protected _handleDragEnter(): void {
     if (!this._focused) {
       this._maskedValue = this.getMaskedValue();
     }
@@ -275,25 +299,16 @@ export abstract class IgcDateTimeInputBaseComponent<
     this.requestUpdate();
 
     if (range.start !== this.inputFormat.length) {
-      this.handleInput();
+      this._emitInputEvent();
     }
     await this.updateComplete;
     this._input?.setSelectionRange(end, end);
   }
 
-  protected trySpinValue(
-    datePart: TPart,
-    delta?: number,
-    negative = false
-  ): TValue {
-    // default to 1 if a delta is set to 0 or any other falsy value
-    const _delta = delta || this.datePartDeltas[datePart as any] || 1;
-
-    const spinValue = negative ? -Math.abs(_delta) : Math.abs(_delta);
-    return this.spinValue(datePart, spinValue);
-  }
-
-  protected isComplete(): boolean {
+  /**
+   * Checks if all mask positions are filled (no prompt characters remain).
+   */
+  protected _isMaskComplete(): boolean {
     return !this._maskedValue.includes(this.prompt);
   }
 
@@ -303,39 +318,35 @@ export abstract class IgcDateTimeInputBaseComponent<
 
   /**
    * Navigates to the previous or next date part.
-   * @internal
    */
-  protected navigateParts(delta: number): void {
-    const position = this.getNewPosition(this._input?.value ?? '', delta);
+  protected _navigateParts(direction: number): void {
+    const position = this.getNewPosition(this._input?.value ?? '', direction);
     this.setSelectionRange(position, position);
   }
 
   /**
    * Emits the input event after user interaction.
-   * @internal
    */
-  protected emitInputEvent(): void {
+  protected _emitInputEvent(): void {
     this._setTouchedState();
     this.emitEvent('igcInput', { detail: this.value?.toString() });
   }
 
   /**
    * Handles keyboard-triggered spinning (arrow up/down).
-   * @internal
    */
-  protected async keyboardSpin(direction: 'up' | 'down'): Promise<void> {
+  protected async _keyboardSpin(direction: 'up' | 'down'): Promise<void> {
     direction === 'up' ? this.stepUp() : this.stepDown();
-    this.handleInput();
+    this._emitInputEvent();
     await this.updateComplete;
     this.setSelectionRange(this._maskSelection.start, this._maskSelection.end);
   }
 
   /**
    * Handles wheel events for spinning date parts.
-   * @internal
    */
   @eventOptions({ passive: false })
-  protected async handleWheel(event: WheelEvent): Promise<void> {
+  protected async _handleWheel(event: WheelEvent): Promise<void> {
     if (!this._focused || this.readOnly) return;
 
     event.preventDefault();
@@ -343,7 +354,7 @@ export abstract class IgcDateTimeInputBaseComponent<
 
     const { start, end } = this._inputSelection;
     event.deltaY > 0 ? this.stepDown() : this.stepUp();
-    this.handleInput();
+    this._emitInputEvent();
 
     await this.updateComplete;
     this.setSelectionRange(start, end);
@@ -366,20 +377,19 @@ export abstract class IgcDateTimeInputBaseComponent<
         @blur=${this.handleBlur}
         @focus=${this.handleFocus}
         @input=${super._handleInput}
-        @wheel=${this.handleWheel}
+        @wheel=${this._handleWheel}
         @keydown=${super._setMaskSelection}
         @click=${super._handleClick}
         @cut=${super._setMaskSelection}
         @compositionstart=${super._handleCompositionStart}
         @compositionend=${super._handleCompositionEnd}
-        @dragenter=${this.handleDragEnter}
-        @dragleave=${this.handleDragLeave}
+        @dragenter=${this._handleDragEnter}
+        @dragleave=${this._handleDragLeave}
         @dragstart=${super._setMaskSelection}
       />
     `;
   }
 
-  protected abstract handleInput(): void;
   protected abstract updateMask(): void;
   protected abstract updateValue(): void;
   protected abstract getNewPosition(value: string, direction: number): number;
