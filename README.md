@@ -62,7 +62,6 @@ See the [Storybook Here](https://igniteui.github.io/igniteui-webcomponents)
 | Calendar                |   ✅   |     [Docs][Calendar Docs]      |     [1.0.0]      | [MIT](LICENSE) |
 | Card                    |   ✅   |       [Docs][Card Docs]        |     [1.0.0]      | [MIT](LICENSE) |
 | Checkbox                |   ✅   |     [Docs][Checkbox Docs]      |     [1.0.0]      | [MIT](LICENSE) |
-| Form                    |   ✅   |       [Docs][Form Docs]        |     [1.0.0]      | [MIT](LICENSE) |
 | Icon                    |   ✅   |       [Docs][Icon Docs]        |     [1.0.0]      | [MIT](LICENSE) |
 | Icon Button             |   ✅   |    [Docs][Icon Button Docs]    |     [1.0.0]      | [MIT](LICENSE) |
 | Input                   |   ✅   |       [Docs][Input Docs]       |     [1.0.0]      | [MIT](LICENSE) |
@@ -228,7 +227,6 @@ npm run storybook:build
 [Input Docs]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/inputs/input
 [Icon Button Docs]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/inputs/icon-button
 [Icon Docs]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/layouts/icon
-[Form Docs]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/inputs/form
 [Checkbox Docs]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/inputs/checkbox
 [Card Docs]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/layouts/card
 [Calendar Docs]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/scheduling/calendar
