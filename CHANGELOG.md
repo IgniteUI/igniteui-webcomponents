@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - Changed global prefixes for CSS custom properties for component themes to align with other Ignite UI component libraries.
 
 ### Removed
+- #### Chat
+  - Removed the **typingIndicator** template renderer. Users can use the **typing-indicator** slot instead.
 - #### Tooltip
   - Removed the **disableArrow** deprecated property.
 

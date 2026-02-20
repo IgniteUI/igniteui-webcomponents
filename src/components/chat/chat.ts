@@ -32,7 +32,6 @@ import type {
 } from './types.js';
 
 type DefaultChatRenderers = {
-  typingIndicator: ChatTemplateRenderer<ChatRenderContext>;
   suggestionPrefix: ChatTemplateRenderer<ChatRenderContext>;
 };
 
@@ -212,7 +211,6 @@ export default class IgcChatComponent extends EventEmitterMixin<
   );
 
   private readonly _defaults = Object.freeze<DefaultChatRenderers>({
-    typingIndicator: () => this._renderLoadingTemplate(),
     suggestionPrefix: () => this._renderSuggestionPrefix(),
   });
 
@@ -380,8 +378,6 @@ export default class IgcChatComponent extends EventEmitterMixin<
   }
 
   private _renderMessages() {
-    const ctx = { instance: this };
-
     return html`
       <div part="message-list" tabindex="0">
         ${repeat(
@@ -416,7 +412,7 @@ export default class IgcChatComponent extends EventEmitterMixin<
           ? html`
               <div part="typing-indicator">
                 <slot name="typing-indicator"
-                  >${this._getRenderer('typingIndicator')(ctx)}</slot
+                  >${this._renderLoadingTemplate()}</slot
                 >
               </div>
             `
