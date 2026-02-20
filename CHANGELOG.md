@@ -5,9 +5,23 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+### Added
+- #### Chat
+  - **adoptRootStyles** can now be toggled on/off at runtime. [#2093](https://github.com/IgniteUI/igniteui-webcomponents/pull/2093)
+
 ### Changed
+- #### Library
+  - Minimum Node version required is now >= 22.
 - #### Themes - **Breaking change**
   - Changed global prefixes for CSS custom properties for component themes to align with other Ignite UI component libraries.
+
+### Fixed
+- #### Carousel
+  - Context instantiation in Blazor. [#2033](https://github.com/IgniteUI/igniteui-webcomponents/pull/2033)
+- #### Combo
+  - Correct cursor style over non input parts. [#2085](https://github.com/IgniteUI/igniteui-webcomponents/pull/2085)
+- #### Textarea
+  - Correct cursor style over non input parts. [#2085](https://github.com/IgniteUI/igniteui-webcomponents/pull/2085)
 
 ### Removed
 - #### Chat
