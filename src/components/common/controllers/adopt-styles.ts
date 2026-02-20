@@ -172,7 +172,8 @@ class AdoptedStylesController implements ReactiveController {
           }
 
           try {
-            constructed.insertRule(rule.cssText);
+            // insert last to keep rules/override order:
+            constructed.insertRule(rule.cssText, constructed.cssRules.length);
             hasRules = true;
           } catch {
             // Skip rules that cannot be cloned (e.g., invalid syntax)

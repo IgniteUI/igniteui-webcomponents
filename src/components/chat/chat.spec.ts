@@ -1077,6 +1077,11 @@ describe('Chat', () => {
       styles.setAttribute('id', 'adopt-styles-test');
       styles.innerHTML = `
         .custom-background {
+          background-color: rgb(255, 255, 0);
+        }
+
+        /* override */
+        .custom-background {
           background-color: rgb(255, 0, 0);
         }
       `;
