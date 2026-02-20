@@ -5,9 +5,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
-### Breaking Changes
-- #### Themes
-  - Changed global prefixes for CSS custom properties for component themes to be better aligned with other Ignite UI component frameworks.
+### Changed
+- #### Themes - **Breaking change**
+  - Changed global prefixes for CSS custom properties for component themes to align with other Ignite UI component libraries.
+
+### Removed
+- #### Tooltip
+  - Removed the **disableArrow** deprecated property.
 
 ## [6.5.1] - 2026-02-04
 ### Fixed
