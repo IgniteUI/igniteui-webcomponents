@@ -35,6 +35,25 @@ Before starting, ensure:
 - [ ] Package manager (npm, yarn, pnpm) is available
 - [ ] Project is already initialized
 
+## Theming
+
+Ignite UI Web Components require a theme CSS file to render correctly. The package ships with four themes in both light and dark variants:
+
+| Theme | Light | Dark |
+|-------|-------|------|
+| Bootstrap | `igniteui-webcomponents/themes/light/bootstrap.css` | `igniteui-webcomponents/themes/dark/bootstrap.css` |
+| Material | `igniteui-webcomponents/themes/light/material.css` | `igniteui-webcomponents/themes/dark/material.css` |
+| Fluent | `igniteui-webcomponents/themes/light/fluent.css` | `igniteui-webcomponents/themes/dark/fluent.css` |
+| Indigo | `igniteui-webcomponents/themes/light/indigo.css` | `igniteui-webcomponents/themes/dark/indigo.css` |
+
+Import the theme in your application's entry point:
+
+```typescript
+import 'igniteui-webcomponents/themes/light/bootstrap.css';
+```
+
+All framework sections below include this step.
+
 ## Common Integration Patterns
 
 ### 1. Vanilla JavaScript / HTML
@@ -45,9 +64,12 @@ Before starting, ensure:
 npm install igniteui-webcomponents
 ```
 
-**Import and register components (in your main JS file):**
+**Import and register components, and import a theme (in your main JS file):**
 
 ```typescript
+// Import a theme (required for correct styling)
+import 'igniteui-webcomponents/themes/light/bootstrap.css';
+
 // Option 1: Import specific components (recommended)
 import { defineComponents, IgcButtonComponent, IgcInputComponent } from 'igniteui-webcomponents';
 
@@ -90,7 +112,13 @@ For React applications, we provide a dedicated **`igniteui-react`** package that
 **Installation:**
 
 ```bash
-npm install igniteui-react
+npm install igniteui-react igniteui-webcomponents
+```
+
+**Import a theme in your entry point (`src/main.tsx` or `src/index.tsx`):**
+
+```typescript
+import 'igniteui-webcomponents/themes/light/bootstrap.css';
 ```
 
 **Usage:**
@@ -158,6 +186,7 @@ npm install igniteui-webcomponents
 **Create a setup file (e.g., `src/igniteui-setup.ts`):**
 
 ```typescript
+import 'igniteui-webcomponents/themes/light/bootstrap.css';
 import { defineComponents, IgcButtonComponent, IgcInputComponent } from 'igniteui-webcomponents';
 
 // Register components once at app startup
@@ -294,6 +323,7 @@ export class AppModule {}
 import { bootstrapApplication } from '@angular/platform-browser';
 import { appConfig } from './app/app.config';
 import { AppComponent } from './app/app.component';
+import 'igniteui-webcomponents/themes/light/bootstrap.css';
 import { defineComponents, IgcButtonComponent, IgcInputComponent } from 'igniteui-webcomponents';
 
 // Register components before bootstrapping
@@ -407,6 +437,7 @@ module.exports = {
 ```typescript
 import { createApp } from 'vue';
 import App from './App.vue';
+import 'igniteui-webcomponents/themes/light/bootstrap.css';
 import { defineComponents, IgcButtonComponent, IgcInputComponent } from 'igniteui-webcomponents';
 
 // Register components
