@@ -586,7 +586,7 @@ document.body.innerHTML = '<igc-button>Click</igc-button>';
 import { IgrButton } from 'igniteui-react';
 
 // ✅ Events work naturally with igniteui-react
-<IgrButton onIgcClick={handleClick}>Click</IgrButton>
+<IgrButton onClick={handleClick}>Click</IgrButton>
 ```
 
 **Alternative Solution (using web components directly):** Use `addEventListener` with refs:
