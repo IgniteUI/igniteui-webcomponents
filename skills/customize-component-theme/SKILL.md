@@ -1,52 +1,25 @@
 ---
 name: customize-component-theme
-description: Customize Ignite UI Web Components styling using the igniteui-theming MCP server for AI-assisted theming
+description: Customize Ignite UI Web Components styling using CSS custom properties, optional Sass, and the igniteui-theming MCP server for AI-assisted theming
 user-invokable: true
 ---
 
-# Customize Component Theme
+# Ignite UI Web Components — Theming Skill
 
-This skill helps you customize the appearance of Ignite UI Web Components by connecting you with the **igniteui-theming MCP server** - a specialized AI assistant for theming and styling these components.
+## Description
 
-## What is the igniteui-theming MCP?
+This skill teaches AI agents how to theme Ignite UI Web Components (and React via `igniteui-react`) applications. Two approaches are supported:
 
-The igniteui-theming MCP (Model Context Protocol) server is a specialized tool that provides AI assistants like GitHub Copilot with deep knowledge about:
+- **CSS custom properties** — works in any project without additional build tooling
+- **Sass** — available when the project has Sass configured; provides the full palette/typography/elevation API
 
-- 🎨 Component theming system and CSS custom properties
-- 🎯 Available CSS parts for styling Shadow DOM internals
-- 🌗 Light/dark mode theming strategies
-- 🔧 Framework-specific styling patterns
-- 📚 Complete theming API documentation
-- 🎭 Pre-built theme configurations (Material, Fluent, Bootstrap, Indigo)
-
-Instead of manually searching documentation, the MCP server gives your AI assistant direct access to theming expertise.
-
-## Example Usage
-
-- "How do I change the button colors?"
-- "Customize the input component styling"
-- "Apply my brand colors to all components"
-- "Create a dark mode theme"
-- "Style the internal parts of a component"
-- "What CSS custom properties are available for the card component?"
-
-## Related Skills
-
-- [integrate-with-framework](../integrate-with-framework/) - Set up components first
-- [optimize-bundle-size](../optimize-bundle-size/) - Optimize after theming
-
-## When to Use
-
-- User wants to apply custom colors or styling
-- User needs to match components to their brand
-- User asks about theming or styling components
-- User wants to override default component styles
-- User needs guidance on CSS custom properties or CSS parts
+The skill also covers component-level theming, layout controls (spacing, sizing, roundness), and how to use the **Ignite UI Theming MCP server** for AI-assisted code generation.
 
 ## Prerequisites
 
-- A project with `igniteui-webcomponents` & `igniteui-theming` installed
+- A project with `igniteui-webcomponents` (or `igniteui-react`) installed
 - The **Ignite UI Theming MCP server** (`igniteui-theming`) available as a tool provider
+- **Optional**: Sass configured in the project (enables the Sass-based theming API)
 
 > **AGENT INSTRUCTION — MCP Server Setup (REQUIRED)**
 >
@@ -59,492 +32,584 @@ Instead of manually searching documentation, the MCP server gives your AI assist
 > Start the MCP server and wait for that MCP server to start before continuing the theming related work.
 > Do NOT skip this step or ask the user to do it manually.
 
-## Setup: Connect to the igniteui-theming MCP Server
+## Setting Up the Theming MCP Server
 
-To enable AI-assisted theming, you need to configure your AI assistant (like GitHub Copilot, Claude Desktop, or other MCP-compatible tools) to connect to the igniteui-theming MCP server.
+The Ignite UI Theming MCP server enables AI assistants to generate production-ready theming code. It must be configured in your editor before the theming tools become available.
 
-The MCP server is included in the `igniteui-theming` package and provides tools for theme generation, color system management, and component styling guidance.
+### VS Code
 
-### Prerequisites
+Create or edit `.vscode/mcp.json` in your project:
 
-- **Node.js** v18 or later installed
-- **npm** or **npx** available
-- An MCP-compatible AI tool (Claude Desktop, GitHub Copilot with MCP support, etc.)
-
-### For Claude Desktop
-
-1. **Download and install Claude Desktop** from [claude.ai](https://claude.ai/download)
-
-2. **Configure the MCP server** by editing Claude's configuration file:
-
-   **On macOS:**
-   ```bash
-   code ~/Library/Application\ Support/Claude/claude_desktop_config.json
-   ```
-
-   **On Windows:**
-   ```bash
-   code %APPDATA%\Claude\claude_desktop_config.json
-   ```
-
-   **On Linux:**
-   ```bash
-   code ~/.config/Claude/claude_desktop_config.json
-   ```
-
-3. **Add the igniteui-theming MCP configuration:**
-
-   ```json
-   {
-     "mcpServers": {
-       "igniteui-theming": {
-         "command": "npx",
-         "args": [
-           "-y",
-           "igniteui-theming@latest",
-           "node_modules/igniteui-theming/dist/mcp/index.js"
-         ]
-       }
-     }
-   }
-   ```
-
-   **Alternative: Use local installation**
-
-   If you prefer to install the package locally first:
-
-   ```bash
-   npm install -g igniteui-theming
-   ```
-
-   Then configure Claude Desktop to use the installed package:
-
-   ```json
-   {
-     "mcpServers": {
-       "igniteui-theming": {
-         "command": "node",
-         "args": [
-           "/usr/local/lib/node_modules/igniteui-theming/dist/mcp/index.js"
-         ]
-       }
-     }
-   }
-   ```
-
-   **For project-local installation:**
-
-   Install in your project:
-   ```bash
-   npm install igniteui-theming
-   ```
-
-   Configure with relative path:
-   ```json
-   {
-     "mcpServers": {
-       "igniteui-theming": {
-         "command": "node",
-         "args": [
-           "node_modules/igniteui-theming/dist/mcp/index.js"
-         ],
-         "cwd": "/path/to/your/project"
-       }
-     }
-   }
-   ```
-
-4. **Restart Claude Desktop** to load the MCP server
-
-5. **Verify the connection:**
-   - Open Claude Desktop
-   - Look for a hammer icon (🔨) or MCP indicator in the interface
-   - Ask: "What theming tools are available?"
-   - Claude should respond with information about available tools like:
-     - `generate_theme` - Generate complete theme configurations
-     - `get_color_palette` - Get color palettes for themes
-     - `get_component_info` - Get component styling information
-     - And more...
-
-### For GitHub Copilot in VS Code
-
-**Note:** GitHub Copilot's MCP support may vary by version. Check the [latest Copilot documentation](https://code.visualstudio.com/docs/copilot/chat) for current MCP support status.
-
-If MCP support is available, configure it similarly to Claude Desktop using VS Code's MCP settings.
-
-### For Other MCP-Compatible Tools
-
-Consult your tool's documentation for MCP server configuration. Use these connection details:
-
-- **Package:** `igniteui-theming`
-- **MCP Server Path:** `node_modules/igniteui-theming/dist/mcp/index.js`
-- **Installation:** `npm install igniteui-theming`
-- **Source:** [GitHub - IgniteUI/igniteui-theming](https://github.com/IgniteUI/igniteui-theming)
-- **MCP Documentation:** [MCP README](https://github.com/IgniteUI/igniteui-theming/blob/master/src/mcp/README.md)
-
-## How to Use the MCP Server for Theming
-
-Once connected, your AI assistant has access to specialized theming tools through the MCP server. The server provides several tools that can be invoked to help with theming tasks:
-
-### Available Tools
-
-- **`generate_theme`** - Creates complete theme configurations based on your requirements
-- **`get_color_palette`** - Retrieves color palettes and provides color system guidance
-- **`get_component_info`** - Returns styling information for specific components
-
-### Getting Started with Basic Theming
-
-**Ask natural questions:**
-
-```
-"Generate a theme with primary color #FF5733"
-
-"How do I change the primary color of all Ignite UI components to #FF5733?"
-
-"Show me how to create a custom theme with my brand colors"
-
-"What CSS custom properties control the button appearance?"
-
-"How do I make all inputs larger?"
-```
-
-**The MCP server provides:**
-- ✅ Complete theme generation using the `generate_theme` tool
-- ✅ Exact CSS custom property names
-- ✅ Complete code examples
-- ✅ HSL color conversion help
-- ✅ Component-specific styling guidance
-
-### Working with Specific Components
-
-**Ask component-specific questions:**
-
-```
-"Get component info for igc-button"
-
-"How do I style the igc-button component?"
-
-"What CSS parts are available for igc-input?"
-
-"Show me all theming options for igc-card"
-
-"How do I customize the igc-select dropdown?"
-```
-
-**The MCP server knows:**
-- All available CSS custom properties per component (via `get_component_info`)
-- CSS part names and their purpose
-- Component-specific theming patterns
-- Common customization scenarios
-
-### Creating Complete Themes
-
-**Request theme generation:**
-
-```
-"Generate a dark mode theme for my app"
-
-"Create a Material Design theme with purple as primary color"
-
-"Generate a theme matching these brand colors: #1E3A8A (primary), #10B981 (success)"
-
-"Generate a Fluent-style theme configuration"
-
-"Create a custom theme with these HSL values: h=211, s=100%, l=50%"
-```
-
-**The MCP server can:**
-- Generate complete theme configurations using the `generate_theme` tool
-- Provide light and dark mode variants with the `get_color_palette` tool
-- Create themed component examples
-- Suggest complementary color palettes
-- Output ready-to-use CSS custom properties
-
-### Framework-Specific Theming
-
-**Get framework-tailored advice:**
-
-```
-"How do I apply custom CSS properties to components in React?"
-
-"Show me Angular template syntax for theming components"
-
-"What's the best way to theme components in Vue 3?"
-
-"Help me set up dynamic theming in my Next.js app"
-```
-
-**The MCP server provides:**
-- Framework-specific code examples
-- Integration patterns
-- Dynamic theming strategies
-- Best practices per framework
-
-## Common Theming Workflows
-
-### Workflow 1: Brand Color Application
-
-1. **Ask the MCP:** "Generate a theme with primary color #0066CC for Ignite UI components"
-
-2. **The MCP uses its tools** to:
-   - Use `generate_theme` to create a complete theme configuration
-   - Convert hex to HSL automatically
-   - Generate CSS custom properties
-   - Provide implementation guidance
-
-3. **Receive complete code** including:
-   - CSS custom property definitions
-   - Where to place the theme CSS
-   - How to test the changes
-
-4. **Apply the theme** using the provided code
-
-5. **Iterate** by asking follow-up questions like:
-   - "How do I make it darker for hover states?"
-   - "Generate success and error colors to match this theme"
-
-### Workflow 2: Component-Specific Customization
-
-1. **Ask the MCP:** "Get styling information for igc-card component"
-
-2. **The MCP uses `get_component_info`** to provide:
-   - Available CSS custom properties
-   - CSS parts for styling with `::part()`
-   - Example customizations
-   - Browser compatibility notes
-
-3. **Ask for customization:** "I want rounded corners and a shadow on the card"
-
-4. **Receive specific code** for your requirement
-
-5. **Implement and refine** using the guidance
-
-### Workflow 3: Dark Mode Implementation
-
-1. **Ask the MCP:** "Generate a dark mode theme for my Ignite UI components"
-
-2. **The MCP uses `generate_theme`** to provide:
-   - Complete dark mode configuration
-   - CSS custom property setup for light/dark variants
-   - Media query patterns with `prefers-color-scheme`
-   - JavaScript toggle implementation (if needed)
-   - Framework integration examples
-
-3. **Receive a complete implementation:**
-   - Light and dark theme CSS
-   - Toggle mechanism code
-   - Best practices for theme switching
-
-4. **Deploy** with confidence using tested patterns
-
-### Workflow 4: Debugging Styles
-
-1. **Ask the MCP:** "Why isn't my CSS applying to the button's text?"
-
-2. **Get diagnostic help:**
-   - Shadow DOM explanation
-   - Correct selector syntax (use `::part()` or CSS custom properties)
-   - Available styling approaches
-   - Browser DevTools tips
-
-3. **Ask for component details:** "Get component info for igc-button to see available parts"
-
-4. **Resolve the issue** with expert guidance
-
-## What the MCP Server Knows
-
-The igniteui-theming MCP server (located at `igniteui-theming/dist/mcp/index.js`) provides specialized tools and comprehensive knowledge for theming Ignite UI Web Components:
-
-### Available MCP Tools
-
-- **`generate_theme`** - Generate complete theme configurations with custom colors and styles
-- **`get_color_palette`** - Retrieve color palettes and color system information
-- **`get_component_info`** - Get detailed styling information for specific components
-- **Theme analysis tools** - Analyze and optimize theme configurations
-- **CSS custom property lookup** - Find available CSS variables for components
-
-### CSS Custom Properties (Design Tokens)
-
-### CSS Custom Properties (Design Tokens)
-
-- **Color system:**
-  - `--ig-primary-h/s/l` - Primary color (HSL)
-  - `--ig-surface-h/s/l` - Surface color
-  - `--ig-error-h/s/l`, `--ig-success-h/s/l`, `--ig-warning-h/s/l`, `--ig-info-h/s/l`
-  - And many more semantic colors
-
-- **Typography:**
-  - `--ig-font-family` - Base font
-  - `--ig-body-1-font-size`, `--ig-h1-font-size`, etc.
-  - Font weight and line height tokens
-
-- **Spacing & Layout:**
-  - `--ig-spacing` - Base spacing unit
-  - `--ig-size` - Component size variants
-  - `--ig-radius` - Border radius
-
-### CSS Parts (Shadow DOM Styling)
-
-- Part names for all components
-- Which parts control which visual elements
-- How to style parts with `::part()` selector
-- Common part styling patterns
-
-### Pre-Built Themes
-
-- Material Design theme
-- Fluent Design theme
-- Bootstrap theme
-- Indigo theme
-- Custom theme creation patterns
-
-### Advanced Theming
-
-- Dynamic theme switching
-- CSS-in-JS theming
-- Theme generation from brand guidelines
-- Color palette generation
-- Accessibility considerations (WCAG contrast)
-
-## Benefits of Using the MCP Server
-
-### For Developers
-
-✅ **Instant answers** - No documentation searching needed
-✅ **Context-aware** - Knows your framework and setup
-✅ **Code examples** - Get working code immediately
-✅ **Best practices** - Learn proper patterns as you go
-✅ **Error prevention** - Avoid common pitfalls
-
-### For Teams
-
-✅ **Consistent theming** - Everyone uses the same patterns
-✅ **Faster onboarding** - New team members get guided help
-✅ **Knowledge sharing** - AI assistant knows team conventions
-✅ **Documentation as code** - Themes are self-documenting
-
-## Troubleshooting MCP Connection
-
-### Issue: MCP server not showing up
-
-**Check:**
-1. Configuration file syntax is valid JSON
-2. File is saved in the correct location
-3. Claude Desktop (or your tool) has been restarted
-4. You have internet connection (for npx download)
-5. Node.js v18+ is installed
-
-**Solution:**
-```bash
-# Verify Node.js version
-node --version
-
-# Test running the MCP server directly
-npm install igniteui-theming
-node node_modules/igniteui-theming/dist/mcp/index.js
-```
-
-### Issue: "Cannot find module" errors
-
-**Solution:**
-```bash
-# Install the package locally
-npm install igniteui-theming
-
-# Update your config to use the local path
+```json
 {
-  "mcpServers": {
+  "servers": {
     "igniteui-theming": {
-      "command": "node",
-      "args": ["node_modules/igniteui-theming/dist/mcp/index.js"]
+      "command": "npx",
+      "args": ["-y", "igniteui-theming", "igniteui-theming-mcp"]
     }
   }
 }
 ```
 
-### Issue: "Permission denied" errors
+This works whether `igniteui-theming` is installed locally in `node_modules` or needs to be pulled from the npm registry — `npx -y` handles both cases.
 
-**On macOS/Linux:**
-```bash
-# Ensure the config file is readable
-chmod 644 ~/.config/Claude/claude_desktop_config.json
+### Cursor
 
-# Ensure the MCP server file is executable
-chmod +x node_modules/igniteui-theming/dist/mcp/index.js
+Create or edit `.cursor/mcp.json`:
+
+```json
+{
+  "mcpServers": {
+    "igniteui-theming": {
+      "command": "npx",
+      "args": ["-y", "igniteui-theming", "igniteui-theming-mcp"]
+    }
+  }
+}
 ```
 
-### Issue: MCP server crashes or disconnects
+### Claude Desktop
 
-**Check:**
-1. Node.js is installed (v18 or later recommended)
-2. The `igniteui-theming` package is properly installed
-3. Firewall isn't blocking the connection
-4. Check Claude Desktop logs for error messages
+Edit the Claude Desktop config file:
+- **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
+- **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
 
-**Debug with verbose output:**
-```bash
-# Run the server manually to see error messages
-node node_modules/igniteui-theming/dist/mcp/index.js
+```json
+{
+  "mcpServers": {
+    "igniteui-theming": {
+      "command": "npx",
+      "args": ["-y", "igniteui-theming", "igniteui-theming-mcp"]
+    }
+  }
+}
 ```
 
-### Issue: Tools not appearing in Claude
+### WebStorm / JetBrains IDEs
 
-**Solution:**
-After configuring the server, restart Claude Desktop completely (quit and reopen). The MCP tools should appear under the hammer icon (🔨) in the chat interface.
+1. Go to **Settings → Tools → AI Assistant → MCP Servers**
+2. Click **+ Add MCP Server**
+3. Set Command to `npx` and Arguments to `igniteui-theming igniteui-theming-mcp`
+4. Click OK and restart the AI Assistant
 
-**Available tools should include:**
-- `generate_theme` - Generate theme configurations
-- `get_color_palette` - Retrieve color palettes
-- `get_component_info` - Get component styling details
-- Additional theming tools
+### Verifying the Setup
 
-For more detailed troubleshooting, see the [MCP documentation](https://github.com/IgniteUI/igniteui-theming/blob/master/src/mcp/README.md).
+After configuring the MCP server, ask your AI assistant:
 
-## Alternative: Manual Theming Reference
+> "Detect which Ignite UI platform my project uses"
 
-If you cannot use the MCP server, here are the basic theming approaches:
+If the MCP server is running, the `detect_platform` tool will analyze your `package.json` and return the detected platform (e.g., `webcomponents`).
 
-### CSS Custom Properties
+## Theming Architecture
+
+The Ignite UI theming system is built on four pillars:
+
+| Concept | Purpose |
+|---|---|
+| **Palette** | Color system with primary, secondary, surface, gray, info, success, warn, error families, each with shades 50–900 + accents A100–A700 |
+| **Typography** | Font family, type scale (h1–h6, subtitle, body, button, caption, overline) |
+| **Elevations** | Box-shadow levels 0–24 for visual depth |
+| **Schema** | Per-component recipes mapping palette colors to component tokens |
+
+### Design Systems
+
+Four built-in design systems are available:
+
+- **Material** (default) — Material Design 3
+- **Bootstrap** — Bootstrap-inspired
+- **Fluent** — Microsoft Fluent Design
+- **Indigo** — Infragistics Indigo Design
+
+Each has light and dark variants (e.g., `$light-material-schema`, `$dark-fluent-schema`).
+
+## Pre-built Themes
+
+The quickest way to theme an app is to import a pre-built CSS file in your entry point:
+
+```typescript
+import 'igniteui-webcomponents/themes/light/bootstrap.css';
+```
+
+Available pre-built CSS files:
+
+| Import path | Theme |
+|---|---|
+| `igniteui-webcomponents/themes/light/bootstrap.css` | Bootstrap Light |
+| `igniteui-webcomponents/themes/dark/bootstrap.css` | Bootstrap Dark |
+| `igniteui-webcomponents/themes/light/material.css` | Material Light |
+| `igniteui-webcomponents/themes/dark/material.css` | Material Dark |
+| `igniteui-webcomponents/themes/light/fluent.css` | Fluent Light |
+| `igniteui-webcomponents/themes/dark/fluent.css` | Fluent Dark |
+| `igniteui-webcomponents/themes/light/indigo.css` | Indigo Light |
+| `igniteui-webcomponents/themes/dark/indigo.css` | Indigo Dark |
+
+## Custom Theme via CSS Custom Properties
+
+> No Sass required. Works in any project after importing a pre-built theme.
+
+After importing a pre-built theme, override individual design tokens with CSS custom properties on `:root` or a scoped selector:
 
 ```css
 :root {
+  /* Override palette hue/saturation/lightness channels */
   --ig-primary-h: 211deg;
   --ig-primary-s: 100%;
   --ig-primary-l: 50%;
+
+  --ig-secondary-h: 33deg;
+  --ig-secondary-s: 100%;
+  --ig-secondary-l: 50%;
 }
 ```
 
-### CSS Parts
+To scope overrides to a specific container:
 
 ```css
-igc-button::part(base) {
-  padding: 12px 24px;
+.admin-panel {
+  --ig-primary-h: 260deg;
+  --ig-primary-s: 60%;
+  --ig-primary-l: 45%;
 }
 ```
 
-### For complete theming documentation
-Visit the [official documentation](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/themes/overview).
+For dark mode, either import a dark theme CSS file directly or toggle overrides with a class or media query:
 
-However, we **strongly recommend using the MCP server** for:
-- Interactive guidance
-- Context-aware help
-- Framework-specific examples
-- Real-time problem solving
+```css
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ig-surface-h: 0deg;
+    --ig-surface-s: 0%;
+    --ig-surface-l: 7%;
+  }
+}
 
-## Next Steps
+/* Or manually with a class */
+.dark-theme {
+  --ig-surface-h: 0deg;
+  --ig-surface-s: 0%;
+  --ig-surface-l: 7%;
+}
+```
 
-1. **Set up the MCP server** using the instructions above
-2. **Ask your AI assistant** theming questions naturally
-3. **Iterate quickly** with instant feedback
-4. **Share your theme** configurations with your team
+## Custom Theme via Sass
 
-For component integration, see the [integrate-with-framework](../integrate-with-framework/) skill.
+> Requires Sass configured in the project. First check whether the project has a Sass setup (e.g., a `styles.scss` entry file, `sass` in `devDependencies`, or a Vite/webpack Sass plugin).
 
-## Additional Resources
+The Sass API for `igniteui-webcomponents` uses `@use 'igniteui-theming'` with individual mixins — **not** the Angular-specific `core()` / `theme()` combined mixins.
 
-- [igniteui-theming Package on GitHub](https://github.com/IgniteUI/igniteui-theming)
-- [igniteui-theming MCP Documentation](https://github.com/IgniteUI/igniteui-theming/blob/master/src/mcp/README.md)
-- [Model Context Protocol Documentation](https://modelcontextprotocol.io/)
-- [Claude Desktop Download](https://claude.ai/download)
-- [Ignite UI Theming Documentation](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/themes/overview)
-- [igniteui-webcomponents on npm](https://www.npmjs.com/package/igniteui-webcomponents)
+```scss
+@use 'igniteui-theming' as *;
+
+// 1. Define a palette
+$my-palette: palette(
+  $primary: #1976D2,
+  $secondary: #FF9800,
+  $surface: #FAFAFA
+);
+
+// 2. Apply the palette
+@include palette($my-palette);
+
+// 3. Optional: Typography
+@include typography($font-family: "'Roboto', sans-serif");
+
+// 4. Optional: Elevations
+@include elevations();
+
+// 5. Optional: Spacing
+@include spacing();
+```
+
+For dark themes, use a dark surface color and a dark schema:
+
+```scss
+@use 'igniteui-theming' as *;
+
+$dark-palette: palette(
+  $primary: #90CAF9,
+  $secondary: #FFB74D,
+  $surface: #121212
+);
+
+@include palette($dark-palette, $schema: $dark-material-schema);
+```
+
+To scope a Sass theme to a container:
+
+```scss
+.admin-panel {
+  @include palette($admin-palette, $schema: $light-indigo-schema);
+}
+```
+
+## Component-Level Theming
+
+Override individual component appearance using component theme functions and the `tokens` mixin.
+
+> **AGENT INSTRUCTION — No Hardcoded Colors (CRITICAL)**
+>
+> Once a palette has been generated (via `palette()` in Sass or `create_palette` / `create_theme` via MCP),
+> **every color reference MUST come from the generated palette tokens** — never hardcode hex/RGB/HSL values.
+>
+> Use `var(--ig-primary-500)`, `var(--ig-secondary-300)`, `var(--ig-surface-500)`, etc. in CSS,
+> or the `get_color` MCP tool to obtain the correct token reference.
+>
+> **WRONG** (hardcoded hex — breaks theme switching, ignores the palette):
+> ```css
+> igc-avatar {
+>   --ig-avatar-background: #E91E63;  /* ✗ hardcoded */
+>   --ig-avatar-color: #FFFFFF;       /* ✗ hardcoded */
+> }
+> ```
+>
+> **RIGHT — CSS** (palette token — stays in sync with the theme):
+> ```css
+> igc-avatar {
+>   --ig-avatar-background: var(--ig-primary-500);
+>   --ig-avatar-color: var(--ig-primary-500-contrast);
+> }
+> ```
+>
+> **RIGHT — Sass** (when Sass is configured):
+> ```scss
+> $custom-avatar: avatar-theme(
+>   $schema: $light-material-schema,
+>   $background: var(--ig-primary-500),
+>   $color: var(--ig-primary-500-contrast)
+> );
+> ```
+>
+> This applies to **all** style code: component themes, custom CSS rules, and inline styles.
+> The only place raw hex values belong is the **initial `palette()` call** that seeds the color system.
+> Everything downstream must reference the palette.
+
+```css
+igc-avatar {
+  --ig-avatar-background: var(--ig-primary-500);
+  --ig-avatar-color: var(--ig-primary-500-contrast);
+}
+```
+
+When Sass is available, use the component theme function and `tokens` mixin:
+
+```scss
+@use 'igniteui-theming' as *;
+
+$custom-avatar: avatar-theme(
+  $schema: $light-material-schema,
+  $background: var(--ig-primary-500),
+  $color: var(--ig-primary-500-contrast)
+);
+
+igc-avatar {
+  @include tokens($custom-avatar);
+}
+```
+
+### Discovering Available Tokens
+
+Each component has its own set of design tokens (themeable CSS custom properties). Before theming a component, you must know which tokens exist. Use the **MCP tool** `get_component_design_tokens` to discover them.
+
+### Compound Components
+
+Some components (e.g., `combo`, `grid`, `date-picker`, `select`) are **compound** — they contain internal child components, each requiring their own theme. For example, `date-picker` uses `calendar`, `flat-button`, and `input-group` internally.
+
+Workflow for compound components:
+1. Call `get_component_design_tokens` for the parent (e.g., `date-picker`)
+2. The response lists related themes and scope selectors
+3. Call `create_component_theme` for each child, using the parent's selector as the wrapper
+
+## Layout Controls
+
+### Sizing
+
+Controls the size of components via `--ig-size` (values: 1 = small, 2 = medium, 3 = large):
+
+```css
+/* Global */
+:root { --ig-size: 2; }
+
+/* Component-scoped */
+igc-grid { --ig-size: 1; }
+```
+
+### Spacing
+
+Controls internal padding via `--ig-spacing` (1 = default, 0.5 = compact, 2 = spacious):
+
+```css
+:root { --ig-spacing: 1; }
+.compact-section { --ig-spacing: 0.75; }
+```
+
+### Roundness
+
+Controls border-radius via `--ig-radius-factor` (0 = square, 1 = maximum radius):
+
+```css
+:root { --ig-radius-factor: 1; }
+igc-avatar { --ig-radius-factor: 0.5; }
+```
+
+## Using the Theming MCP Server
+
+The Ignite UI Theming MCP server provides tools for AI-assisted theme code generation.
+
+> **IMPORTANT — File Safety Rule**: When generating or updating theme code, **never overwrite existing style files directly**. Instead, always **propose the changes as an update** and let the user review and approve before writing to disk. If a `styles.scss` (or any target file) already exists, show the generated code as a diff or suggestion rather than replacing the file contents. This prevents accidental loss of custom styles the user has already written.
+
+Always follow this workflow:
+
+### Step 1 — Detect Platform
+
+```
+Tool: detect_platform
+```
+This auto-detects `webcomponents` from `package.json` and sets the correct import paths.
+
+### Step 2 — Generate a Full Theme
+
+```
+Tool: create_theme
+Params: {
+  platform: "webcomponents",
+  designSystem: "material",
+  primaryColor: "#1976D2",
+  secondaryColor: "#FF9800",
+  surfaceColor: "#FAFAFA",
+  variant: "light",
+  fontFamily: "'Roboto', sans-serif",
+  includeTypography: true,
+  includeElevations: true
+}
+```
+
+Generates a complete Sass file with palette, typography, elevations, and the `theme()` mixin call.
+
+### Step 3 — Customize Individual Components
+
+```
+Tool: get_component_design_tokens
+Params: { component: "grid" }
+```
+
+Then use **palette token references** (not hardcoded hex values) for every color:
+
+```
+Tool: create_component_theme
+Params: {
+  platform: "webcomponents",
+  designSystem: "material",
+  variant: "light",
+  component: "grid",
+  tokens: {
+    "header-background": "var(--ig-primary-50)",
+    "header-text-color": "var(--ig-primary-800)"
+  }
+}
+```
+
+> **Reminder**: After a palette is generated, all token values passed to
+> `create_component_theme` must reference palette CSS custom properties
+> (e.g., `var(--ig-primary-500)`, `var(--ig-secondary-A200)`,
+> `var(--ig-gray-100)`). Never pass raw hex values like `"#E3F2FD"`.
+
+### Step 4 — Generate a Palette
+
+For simple mid-luminance base colors:
+
+```
+Tool: create_palette
+Params: {
+  platform: "webcomponents",
+  primary: "#1976D2",
+  secondary: "#FF9800",
+  surface: "#FAFAFA",
+  variant: "light"
+}
+```
+
+For brand-specific exact shade values, use `create_custom_palette` with `mode: "explicit"` for full control over each shade.
+
+### Step 5 — Adjust Layout
+
+By default, layout tools emit **CSS**. If the project has Sass configured, add `output: "sass"` to get Sass output:
+
+```
+Tool: set_size      → { size: "medium" }                                   # CSS (default)
+Tool: set_size      → { size: "medium", output: "sass" }                   # Sass
+Tool: set_spacing   → { spacing: 0.75, component: "grid" }                 # CSS (default)
+Tool: set_spacing   → { spacing: 0.75, component: "grid", output: "sass" } # Sass
+Tool: set_roundness → { radiusFactor: 0.8 }                                # CSS (default)
+Tool: set_roundness → { radiusFactor: 0.8, output: "sass" }                # Sass
+```
+
+### Step 6 — Reference Palette Colors (MANDATORY for All Color Usage)
+
+After a palette is generated, **always** use the `get_color` tool to obtain the correct CSS custom property reference. Never hardcode hex/RGB/HSL values in component themes, custom CSS, or Sass variables.
+
+```
+Tool: get_color
+Params: { color: "primary", variant: "600" }
+→ var(--ig-primary-600)
+
+Params: { color: "primary", variant: "600", contrast: true }
+→ var(--ig-primary-600-contrast)
+
+Params: { color: "primary", opacity: 0.5 }
+→ hsl(from var(--ig-primary-500) h s l / 0.5)
+```
+
+Use these token references everywhere:
+- Component theme `tokens` values
+- Custom CSS rules (`color`, `background`, `border-color`, `fill`, `stroke`, etc.)
+
+The **only** place raw hex values are acceptable is in the initial `palette()` call or the `create_palette` / `create_theme` MCP tool inputs that seed the color system.
+
+### Loading Reference Data
+
+Use `read_resource` with these URIs for preset values and documentation:
+
+| URI | Content |
+|---|---|
+| `theming://presets/palettes` | Preset palette colors |
+| `theming://presets/typography` | Typography presets |
+| `theming://presets/elevations` | Elevation shadow presets |
+| `theming://guidance/colors/usage` | Which shades for which purpose |
+| `theming://guidance/colors/roles` | Semantic color roles |
+| `theming://guidance/colors/rules` | Light/dark theme rules |
+| `theming://platforms/webcomponents` | Web Components platform specifics |
+| `theming://platforms` | All supported platforms |
+
+## Referencing Colors in Custom Styles
+
+After a theme is applied, the palette is available as CSS custom properties on `:root`. Use these tokens in all custom CSS — never introduce standalone hex/RGB variables for colors that the palette already provides.
+
+### Correct: Palette Tokens
+
+```css
+/* All colors come from the theme — respects palette changes and dark/light switching */
+.sidebar {
+  background: var(--ig-surface-500);
+  color: var(--ig-gray-900);
+  border-right: 1px solid var(--ig-gray-200);
+}
+
+.accent-badge {
+  background: var(--ig-secondary-500);
+  color: var(--ig-secondary-500-contrast);
+}
+
+.hero-section {
+  /* Semi-transparent primary overlay */
+  background: hsl(from var(--ig-primary-500) h s l / 0.12);
+}
+```
+
+### Incorrect: Hardcoded Values
+
+```css
+/* WRONG — these break when the palette changes and ignore dark/light mode */
+.sidebar {
+  background: #F0F5FA;  /* ✗ not a palette token */
+  color: #333;          /* ✗ not a palette token */
+}
+```
+
+### When Raw Hex Values Are OK
+
+Raw hex values are acceptable **only** in these contexts:
+
+1. **`palette()` call** — the initial seed colors that generate the full palette
+2. **`create_palette` / `create_theme` MCP tool inputs** — the base colors passed to the tool
+3. **Non-palette decorative values** — e.g., a one-off SVG illustration color that intentionally stays fixed regardless of theme
+
+Everything else must use `var(--ig-<family>-<shade>)` tokens.
+
+## Common Patterns
+
+### Switching Between Light and Dark Themes — CSS approach
+
+Import the appropriate theme CSS and toggle with a class or media query:
+
+```typescript
+// In your entry point — choose one variant as the default
+import 'igniteui-webcomponents/themes/light/bootstrap.css';
+```
+
+```css
+/* Override surface tokens for dark mode */
+.dark-theme {
+  --ig-surface-h: 0deg;
+  --ig-surface-s: 0%;
+  --ig-surface-l: 7%;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ig-surface-h: 0deg;
+    --ig-surface-s: 0%;
+    --ig-surface-l: 7%;
+  }
+}
+```
+
+Or dynamically swap the stylesheet at runtime:
+
+```typescript
+function setTheme(variant: 'light' | 'dark', design = 'bootstrap') {
+  const link = document.getElementById('igc-theme') as HTMLLinkElement;
+  link.href = `node_modules/igniteui-webcomponents/themes/${variant}/${design}.css`;
+}
+```
+
+### Switching Between Light and Dark Themes — Sass approach
+
+When Sass is configured, define both palettes and apply them under separate selectors:
+
+```scss
+@use 'igniteui-theming' as *;
+
+$light-palette: palette($primary: #1976D2, $secondary: #FF9800, $surface: #FAFAFA);
+$dark-palette: palette($primary: #90CAF9, $secondary: #FFB74D, $surface: #121212);
+
+@include typography($font-family: "'Roboto', sans-serif");
+@include elevations();
+
+// Light is default
+@include palette($light-palette, $schema: $light-material-schema);
+
+// Dark via class on <body> or <html>
+.dark-theme {
+  @include palette($dark-palette, $schema: $dark-material-schema);
+}
+```
+
+### Scoping a Theme to a Container — CSS approach
+
+```css
+.admin-panel {
+  --ig-primary-h: 260deg;
+  --ig-primary-s: 60%;
+  --ig-primary-l: 45%;
+}
+```
+
+### Scoping a Theme to a Container — Sass approach
+
+```scss
+.admin-panel {
+  @include palette($admin-palette, $schema: $light-indigo-schema);
+}
+```
+
+## Key Rules
+
+1. **Never overwrite existing files directly** — always propose theme code as an update for user review; do not replace existing style files without confirmation
+2. **Always call `detect_platform` first** when using MCP tools
+3. **Always call `get_component_design_tokens` before `create_component_theme`** to discover valid token names
+4. **Palette shades 50 = lightest, 900 = darkest** for all chromatic colors — never invert for dark themes (only gray inverts)
+5. **Surface color must match the variant** — light color for `light`, dark color for `dark`
+6. **Sass only**: Use `@include palette()`, `@include typography()`, and `@include elevations()` individually — `@use 'igniteui-theming'` is the correct module for web components and React (not `igniteui-angular/theming`); the Angular-specific `core()` / `theme()` combined mixins do **not** apply here
+7. **Sass only**: Component themes use `@include tokens($theme)` inside a selector to emit CSS custom properties
+8. **For compound components**, follow the full checklist returned by `get_component_design_tokens` — theme each child component with its scoped selector
+9. **Never hardcode colors after palette generation** — once a palette is created, every color in component themes, custom CSS, and Sass variables must use `var(--ig-<family>-<shade>)` palette tokens (e.g., `var(--ig-primary-500)`, `var(--ig-gray-200)`). Raw hex/RGB/HSL values are only acceptable in the initial `palette()` seed call. This ensures themes remain consistent, switchable (light/dark), and maintainable
