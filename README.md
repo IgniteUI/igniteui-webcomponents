@@ -264,7 +264,7 @@ npm run storybook:build
 [Chat Docs]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/interactivity/chat
 [Commercial License]: https://www.infragistics.com/legal/license
 [Grid Lite]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/grid-lite/overview
-[Ignite UI Web Components Grid Lite]: https://www.npmjs.com/package/igniteui-webcomponents-grid-lite
+[Ignite UI Web Components Grid Lite]: https://www.npmjs.com/package/igniteui-grid-lite
 [1.0.0]: https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/1.0.0
 [2.0.0]: https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/2.0.0
 [2.1.0]: https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/2.1.0
