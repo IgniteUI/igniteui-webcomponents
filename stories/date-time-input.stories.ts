@@ -27,15 +27,25 @@ const metadata: Meta<IgcDateTimeInputComponent> = {
     actions: { handles: ['igcInput', 'igcChange'] },
   },
   argTypes: {
-    inputFormat: {
-      type: 'string',
-      description: 'The date format to apply on the input.',
-      control: 'text',
-    },
     value: {
       type: 'string | Date',
       description: 'The value of the input.',
       options: ['string', 'Date'],
+      control: 'text',
+    },
+    min: {
+      type: 'Date',
+      description: 'The minimum value required for the input to remain valid.',
+      control: 'date',
+    },
+    max: {
+      type: 'Date',
+      description: 'The maximum value required for the input to remain valid.',
+      control: 'date',
+    },
+    inputFormat: {
+      type: 'string',
+      description: 'The date format to apply on the input.',
       control: 'text',
     },
     displayFormat: {
@@ -55,16 +65,6 @@ const metadata: Meta<IgcDateTimeInputComponent> = {
       description:
         'Gets/Sets the locale used for formatting the display value.',
       control: 'text',
-    },
-    min: {
-      type: 'Date',
-      description: 'The minimum value required for the input to remain valid.',
-      control: 'date',
-    },
-    max: {
-      type: 'Date',
-      description: 'The maximum value required for the input to remain valid.',
-      control: 'date',
     },
     readOnly: {
       type: 'boolean',
@@ -141,10 +141,14 @@ const metadata: Meta<IgcDateTimeInputComponent> = {
 export default metadata;
 
 interface IgcDateTimeInputArgs {
-  /** The date format to apply on the input. */
-  inputFormat: string;
   /** The value of the input. */
   value: string | Date;
+  /** The minimum value required for the input to remain valid. */
+  min: Date;
+  /** The maximum value required for the input to remain valid. */
+  max: Date;
+  /** The date format to apply on the input. */
+  inputFormat: string;
   /**
    * Format to display the value in when not editing.
    * Defaults to the locale format if not set.
@@ -154,10 +158,6 @@ interface IgcDateTimeInputArgs {
   spinLoop: boolean;
   /** Gets/Sets the locale used for formatting the display value. */
   locale: string;
-  /** The minimum value required for the input to remain valid. */
-  min: Date;
-  /** The maximum value required for the input to remain valid. */
-  max: Date;
   /** Makes the control a readonly field. */
   readOnly: boolean;
   /** The masked pattern of the component. */

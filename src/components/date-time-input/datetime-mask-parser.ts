@@ -67,7 +67,7 @@ const DEFAULT_DATE_VALUES = {
 } as const;
 
 /** Default date/time format */
-const DEFAULT_DATETIME_FORMAT = 'MM/dd/yyyy';
+export const DEFAULT_DATETIME_FORMAT = 'MM/dd/yyyy';
 
 //#endregion
 

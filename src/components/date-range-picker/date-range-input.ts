@@ -6,6 +6,10 @@ import { CalendarDay } from '../calendar/model.js';
 import { addSlotController, setSlots } from '../common/controllers/slot.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
+import {
+  formatDisplayDate,
+  getDefaultDateTimeFormat,
+} from '../common/i18n/i18n-controller.js';
 import { FormValueDateRangeTransformers } from '../common/mixins/forms/form-transformers.js';
 import { createFormValueState } from '../common/mixins/forms/form-value.js';
 import { equal } from '../common/util.js';
@@ -15,17 +19,16 @@ import {
   DatePartType,
 } from '../date-time-input/date-part.js';
 import { IgcDateTimeInputBaseComponent } from '../date-time-input/date-time-input.base.js';
-import {
-  type DatePartInfo,
-  DateTimeMaskParser,
-} from '../date-time-input/datetime-mask-parser.js';
+import { DateParts } from '../date-time-input/datetime-mask-parser.js';
 import { styles } from '../input/themes/input.base.css.js';
 import { styles as shared } from '../input/themes/shared/input.common.css.js';
 import { all } from '../input/themes/themes.js';
+import {
+  DateRangeMaskParser,
+  DateRangePosition,
+} from './date-range-mask-parser.js';
 import type { DateRangeValue } from './date-range-picker.js';
 import { isCompleteDateRange } from './validators.js';
-
-const SINGLE_INPUT_SEPARATOR = ' - ';
 
 const Slots = setSlots(
   'prefix',
@@ -38,27 +41,14 @@ const Slots = setSlots(
 );
 
 /** @ignore */
-export enum DateRangePosition {
-  Start = 'start',
-  End = 'end',
-  Separator = 'separator',
-}
-
-/** @ignore */
 export interface DateRangePart {
   part: DatePart;
   position: DateRangePosition;
 }
 
-/** @ignore */
-export interface DateRangePartInfo extends DatePartInfo {
-  position?: DateRangePosition;
-}
-
 export default class IgcDateRangeInputComponent extends IgcDateTimeInputBaseComponent<
   DateRangeValue | null,
-  DateRangePart,
-  DateRangePartInfo
+  DateRangePart
 > {
   public static readonly tagName = 'igc-date-range-input';
 
@@ -87,9 +77,7 @@ export default class IgcDateRangeInputComponent extends IgcDateTimeInputBaseComp
     transformers: FormValueDateRangeTransformers,
   });
 
-  protected override readonly _parser = new DateTimeMaskParser();
-  private _startParser: DateTimeMaskParser = new DateTimeMaskParser();
-  private _endParser: DateTimeMaskParser = new DateTimeMaskParser();
+  protected override readonly _parser = new DateRangeMaskParser();
 
   protected override _datePartDeltas: DatePartDeltas = {
     date: 1,
@@ -97,242 +85,235 @@ export default class IgcDateRangeInputComponent extends IgcDateTimeInputBaseComp
     year: 1,
   };
 
-  protected override _inputFormat = '';
-
-  /**
-   * Format to display the value in when not editing.
-   * Defaults to the input format if not set.
-   * @attr display-format
-   */
-  @property({ attribute: 'display-format' })
-  public displayFormat = '';
-
-  /**
-   * The locale settings used to display the value.
-   * @attr
-   */
-  @property()
-  public locale = 'en';
-
-  protected override get hasDateParts(): boolean {
-    return this._startParser.hasDateParts();
-  }
-
-  protected override get hasTimeParts(): boolean {
-    return this._startParser.hasTimeParts();
-  }
-
   protected override get _targetDatePart(): DateRangePart | undefined {
-    let result: DateRangePart | undefined;
-
     if (this._focused) {
-      const part = this._inputDateParts?.find(
-        (p) =>
-          p.start <= this._inputSelection.start &&
-          this._inputSelection.start <= p.end &&
-          p.type !== DatePartType.Literal
+      const part = this._parser.getDateRangePartForCursor(
+        this._inputSelection.start
       );
-      const partType = part?.type as string as DatePart;
 
-      if (partType) {
-        result = { part: partType, position: part!.position! };
+      if (part && part.type !== DatePartType.Literal) {
+        return {
+          part: part.type as string as DatePart,
+          position: part.position,
+        };
       }
     } else {
-      const firstPart = this._inputDateParts?.[0];
+      const firstPart = this._parser.getFirstDatePartForPosition(
+        DateRangePosition.Start
+      );
       if (firstPart) {
-        result = {
+        return {
           part: firstPart.type as string as DatePart,
           position: DateRangePosition.Start,
         };
       }
     }
 
-    return result;
+    return undefined;
+  }
+
+  // #endregion
+
+  // #region Public properties
+
+  /* @tsTwoWayProperty(true, "igcChange", "detail", false, true) */
+  /**
+   * The value of the date range input.
+   * @attr
+   */
+  @property({ attribute: false })
+  public set value(value: DateRangeValue | null) {
+    this._formValue.setValueAndFormState(value);
+    this._updateMaskDisplay();
   }
 
   public get value(): DateRangeValue | null {
     return this._formValue.value;
   }
 
-  public set value(value: DateRangeValue | null) {
-    this._formValue.setValueAndFormState(value as DateRangeValue | null);
-    this.updateMask();
-  }
+  // #endregion
 
-  /**
-   * The date format to apply on the input.
-   * @attr input-format
-   */
-  @property({ attribute: 'input-format' })
-  public override get inputFormat(): string {
-    return (
-      this._inputFormat || this._defaultMask?.split(SINGLE_INPUT_SEPARATOR)[0]
-    );
-  }
+  // #region Lifecycle
 
-  public override set inputFormat(value: string) {
-    if (value) {
-      this._inputFormat = value;
-      this.setMask(value);
-      if (this.value) {
-        this.updateMask();
-      }
-    }
+  public override connectedCallback(): void {
+    super.connectedCallback();
+    // Initialize with locale-aware format on first connection
+    this._initializeDefaultMask();
   }
 
   // #endregion
 
   // #region Methods
 
-  @watch('displayFormat')
-  protected _onDisplayFormatChange() {
-    this.updateMask();
+  @watch('locale', { waitUntilFirstUpdate: true })
+  protected _localeChanged(): void {
+    this.updateDefaultMask();
+    this._updateMaskDisplay();
+  }
+
+  protected override _initializeDefaultMask(): void {
+    // Call base to update _defaultDisplayFormat
+    super._initializeDefaultMask();
+
+    // Apply range-specific mask if no custom input format
+    if (!this._inputFormat) {
+      const singleFormat = getDefaultDateTimeFormat(this.locale);
+      this._parser.mask = singleFormat;
+      this._defaultMask = singleFormat;
+      this.placeholder = `${singleFormat}${this._parser.separator}${singleFormat}`;
+    }
+  }
+
+  protected override hasDateParts(): boolean {
+    return this._parser.rangeParts.some(
+      (p) =>
+        p.type === DatePartType.Date ||
+        p.type === DatePartType.Month ||
+        p.type === DatePartType.Year
+    );
+  }
+
+  protected override hasTimeParts(): boolean {
+    return this._parser.rangeParts.some(
+      (p) =>
+        p.type === DatePartType.Hours ||
+        p.type === DatePartType.Minutes ||
+        p.type === DatePartType.Seconds
+    );
+  }
+
+  protected override buildMaskedValue(): string {
+    return isCompleteDateRange(this.value) &&
+      isValidDate(this.value.start) &&
+      isValidDate(this.value.end)
+      ? this._parser.formatDateRange(this.value)
+      : this._maskedValue || this._parser.emptyMask;
   }
 
   protected override updateDefaultMask(): void {
     if (!this._inputFormat) {
-      // Use a default date format from the start parser
-      const defaultFormat = 'MM/dd/yyyy';
-      this.setMask(defaultFormat);
+      const singleFormat = getDefaultDateTimeFormat(this.locale);
+      this._parser.mask = singleFormat;
+      this._defaultMask = singleFormat;
+      this.placeholder = `${singleFormat}${this._parser.separator}${singleFormat}`;
     }
   }
 
-  protected override setMask(string: string): void {
-    const oldFormat = this._inputDateParts?.map((p) => p.format).join('');
+  protected override _applyMask(string: string): void {
+    const oldPlaceholder = this.placeholder;
+    const oldFormat = this._defaultMask;
 
-    // Set both parsers to the same format
-    this._startParser.mask = string;
-    this._endParser.mask = string;
-
-    // Get date parts from the start parser
-    const baseParts = Array.from(this._startParser.dateParts);
-
-    // Create start parts with position
-    const startParts = baseParts.map((part) => ({
-      ...part,
-      position: DateRangePosition.Start,
-    })) as DateRangePartInfo[];
-
-    const separatorStart = startParts[startParts.length - 1].end;
-    const separatorParts: DateRangePartInfo[] = [];
-
-    // Add separator parts
-    for (let i = 0; i < SINGLE_INPUT_SEPARATOR.length; i++) {
-      const element = SINGLE_INPUT_SEPARATOR.charAt(i);
-
-      separatorParts.push({
-        type: DatePartType.Literal,
-        format: element,
-        start: separatorStart + i,
-        end: separatorStart + i + 1,
-        position: DateRangePosition.Separator,
-      } as DateRangePartInfo);
-    }
-
-    let currentPosition = separatorStart + SINGLE_INPUT_SEPARATOR.length;
-
-    // Clone parts for end date, adjusting positions
-    const endParts: DateRangePartInfo[] = baseParts.map((part) => {
-      const length = part.end - part.start;
-      const newPart: DateRangePartInfo = {
-        type: part.type,
-        format: part.format,
-        start: currentPosition,
-        end: currentPosition + length,
-        position: DateRangePosition.End,
-      } as DateRangePartInfo;
-      currentPosition += length;
-      return newPart;
-    });
-
-    this._inputDateParts = [...startParts, ...separatorParts, ...endParts];
-
-    this._defaultMask = this._inputDateParts.map((p) => p.format).join('');
-
-    const value = this._defaultMask;
-
-    // Build compound mask pattern
-    this.mask =
-      this._startParser.mask + SINGLE_INPUT_SEPARATOR + this._endParser.mask;
+    // string is the single date format
+    this._parser.mask = string;
+    this._defaultMask = string;
     this._parser.prompt = this.prompt;
 
-    if (!this.placeholder || oldFormat === this.placeholder) {
-      this.placeholder = value;
+    // Update placeholder if it was using the old format
+    if (!this.placeholder || oldFormat === oldPlaceholder) {
+      this.placeholder = `${string}${this._parser.separator}${string}`;
     }
   }
 
-  protected override getMaskedValue(): string {
-    let mask = this._parser.emptyMask;
-
-    if (isValidDate(this.value?.start)) {
-      const startParts = this._inputDateParts.filter(
-        (p) => p.position === DateRangePosition.Start
-      );
-      mask = this._setDatePartInMask(mask, startParts, this.value.start);
-    }
-    if (isValidDate(this.value?.end)) {
-      const endParts = this._inputDateParts.filter(
-        (p) => p.position === DateRangePosition.End
-      );
-      mask = this._setDatePartInMask(mask, endParts, this.value.end);
-      return mask;
+  protected override _updateMaskDisplay(): void {
+    if (this._focused) {
+      this._maskedValue = this.buildMaskedValue();
+      return;
     }
 
-    return this._maskedValue === '' ? mask : this._maskedValue;
+    if (!this.value || (!this.value.start && !this.value.end)) {
+      this._maskedValue = '';
+      return;
+    }
+
+    // If custom display format is set (different from input format)
+    if (this._displayFormat) {
+      const { start, end } = this.value;
+      const startStr = start
+        ? formatDisplayDate(start, this.locale, this.displayFormat)
+        : '';
+      const endStr = end
+        ? formatDisplayDate(end, this.locale, this.displayFormat)
+        : '';
+      this._maskedValue =
+        startStr && endStr
+          ? `${startStr}${this._parser.separator}${endStr}`
+          : '';
+    } else {
+      // Use input format (from parser)
+      this._maskedValue = this._parser.formatDateRange(this.value);
+    }
   }
 
-  protected override getNewPosition(value: string, direction = 0): number {
-    let cursorPos = this._maskSelection.start;
+  protected override calculatePartNavigationPosition(
+    inputValue: string,
+    direction: number
+  ): number {
+    const cursorPos = this._maskSelection.start;
+    const rangeParts = this._parser.rangeParts;
 
-    const separatorPart = this._inputDateParts.find(
-      (part) => part.position === DateRangePosition.Separator
-    );
-
-    if (!direction) {
-      const firstSeparator =
-        this._inputDateParts.find(
-          (p) => p.position === DateRangePosition.Separator
-        )?.start ?? 0;
-      const lastSeparator =
-        this._inputDateParts.findLast(
-          (p) => p.position === DateRangePosition.Separator
-        )?.end ?? 0;
-      // Last literal before the current cursor position or start of input value
-      let part = this._inputDateParts.findLast(
-        (part) => part.type === DatePartType.Literal && part.end < cursorPos
-      );
-      // skip over the separator parts
-      if (
-        part?.position === DateRangePosition.Separator &&
-        cursorPos === lastSeparator
-      ) {
-        cursorPos = firstSeparator;
-        part = this._inputDateParts.findLast(
-          (part) => part.type === DatePartType.Literal && part.end < cursorPos
-        );
-      }
+    if (direction === 0) {
+      // Navigate backwards: find last literal before cursor
+      const part = [...rangeParts]
+        .reverse()
+        .find((p) => p.type === DateParts.Literal && p.end < cursorPos);
       return part?.end ?? 0;
     }
 
-    if (
-      separatorPart &&
-      cursorPos >= separatorPart.start &&
-      cursorPos <= separatorPart.end
-    ) {
-      // Cursor is inside the separator; skip over it
-      cursorPos = separatorPart.end + 1;
-    }
-    // First literal after the current cursor position or end of input value
-    const part = this._inputDateParts.find(
-      (part) => part.type === DatePartType.Literal && part.start > cursorPos
+    // Navigate forwards: find first literal after cursor
+    const part = rangeParts.find(
+      (p) => p.type === DateParts.Literal && p.start > cursorPos
     );
-    return part?.start ?? value.length;
+    return part?.start ?? inputValue.length;
   }
 
-  protected override updateValue(): void {
-    if (this._isMaskComplete()) {
-      const parsedRange = this._parseRangeValue(this._maskedValue);
-      this.value = parsedRange;
+  protected override calculateSpunValue(
+    datePart: DateRangePart,
+    delta: number | undefined,
+    isDecrement: boolean
+  ): DateRangeValue {
+    // Get the part from the parser
+    const part = this._parser.getPartByTypeAndPosition(
+      datePart.part as DatePartType,
+      datePart.position
+    );
+
+    if (!part) {
+      // Fallback if part not found
+      return (
+        this.value || {
+          start: CalendarDay.today.native,
+          end: CalendarDay.today.native,
+        }
+      );
+    }
+
+    // Default to 1 if delta is 0 or undefined
+    const effectiveDelta =
+      delta || this._datePartDeltas[datePart.part as keyof DatePartDeltas] || 1;
+
+    const spinAmount = isDecrement
+      ? -Math.abs(effectiveDelta)
+      : Math.abs(effectiveDelta);
+
+    // Use the parser's spinDateRangePart method
+    return this._parser.spinDateRangePart(
+      part,
+      spinAmount,
+      this.value,
+      this.spinLoop
+    );
+  }
+
+  protected override updateValueFromMask(): void {
+    if (!this._isMaskComplete()) {
+      // Don't update value if mask is incomplete
+      this._updateMaskDisplay();
+      return;
+    }
+
+    const parsed = this._parser.parseDateRange(this._maskedValue);
+    if (parsed && (parsed.start || parsed.end)) {
+      this.value = parsed;
     } else {
       this.value = null;
     }
@@ -344,6 +325,7 @@ export default class IgcDateRangeInputComponent extends IgcDateTimeInputBaseComp
     if (this.readOnly) {
       return;
     }
+
     this._oldValue = this.value;
     const areFormatsDifferent = this.displayFormat !== this.inputFormat;
 
@@ -352,27 +334,27 @@ export default class IgcDateRangeInputComponent extends IgcDateTimeInputBaseComp
       await this.updateComplete;
       this.select();
     } else if (areFormatsDifferent) {
-      this.updateMask();
+      this._updateMaskDisplay();
     }
   }
 
-  public override handleBlur(): void {
+  public override _handleBlur(): void {
     const isEmptyMask = this._maskedValue === this._parser.emptyMask;
     const isSameValue = equal(this._oldValue, this.value);
 
     this._focused = false;
 
     if (!(this._isMaskComplete() || isEmptyMask)) {
-      const parse = this._parseRangeValue(this._maskedValue);
+      const parsed = this._parser.parseDateRange(this._maskedValue);
 
-      if (parse) {
-        this.value = parse;
+      if (parsed && (parsed.start || parsed.end)) {
+        this.value = parsed;
       } else {
         this.value = null;
         this._maskedValue = '';
       }
     } else {
-      this.updateMask();
+      this._updateMaskDisplay();
     }
 
     if (!(this.readOnly || isSameValue)) {
@@ -382,113 +364,16 @@ export default class IgcDateRangeInputComponent extends IgcDateTimeInputBaseComp
     super._handleBlur();
   }
 
-  private _parseRangeValue(value: string): DateRangeValue | null {
-    const dates = value.split(SINGLE_INPUT_SEPARATOR);
-    if (dates.length !== 2) {
-      return null;
-    }
-
-    const start = this._startParser.parseDate(dates[0]);
-    const end = this._endParser.parseDate(dates[1]);
-
-    return { start: start ?? null, end: end ?? null };
+  /**
+   * Sets the value to a range of the current date/time as start and end.
+   */
+  protected override _setCurrentDateTime(): void {
+    const today = CalendarDay.today.native;
+    this.value = { start: today, end: today };
+    this._emitInputEvent();
   }
 
-  protected override spinValue(
-    datePart: DateRangePart,
-    delta: number
-  ): DateRangeValue {
-    if (!isCompleteDateRange(this.value)) {
-      return { start: CalendarDay.today.native, end: CalendarDay.today.native };
-    }
-
-    let newDate = this.value?.start
-      ? CalendarDay.from(this.value.start).native
-      : CalendarDay.today.native;
-    if (datePart.position === DateRangePosition.End) {
-      newDate = this.value?.end
-        ? CalendarDay.from(this.value.end).native
-        : CalendarDay.today.native;
-    }
-
-    const parser =
-      datePart.position === DateRangePosition.End
-        ? this._endParser
-        : this._startParser;
-    const part = parser.getPartByType(datePart.part as DatePartType);
-
-    if (part) {
-      part.spin(delta, {
-        date: newDate,
-        spinLoop: this.spinLoop,
-      });
-    }
-
-    const value = {
-      ...this.value,
-      [datePart.position]: newDate,
-    } as DateRangeValue;
-    return value;
-  }
-
-  protected override updateMask(): void {
-    if (this._focused) {
-      this._maskedValue = this.getMaskedValue();
-    } else {
-      if (!isCompleteDateRange(this.value)) {
-        this._maskedValue = '';
-        return;
-      }
-
-      const { start, end } = this.value;
-
-      if (this.displayFormat) {
-        // Use locale-based formatting for display format
-        this._maskedValue = `${start.toLocaleDateString(this.locale)} - ${end.toLocaleDateString(this.locale)}`;
-      } else {
-        // Use parser formatting for input format
-        this._maskedValue = `${this._startParser.formatDate(start)} - ${this._endParser.formatDate(end)}`;
-      }
-    }
-  }
-
-  private _setDatePartInMask(
-    mask: string,
-    parts: DateRangePartInfo[],
-    value: Date | null
-  ): string {
-    if (!isValidDate(value)) {
-      return mask;
-    }
-
-    let resultMask = mask;
-    const parser =
-      parts[0]?.position === DateRangePosition.End
-        ? this._endParser
-        : this._startParser;
-
-    for (const part of parts) {
-      if (part.type === DatePartType.Literal) {
-        continue;
-      }
-
-      // Get the corresponding part from the parser
-      const datePart = parser.getPartByType(part.type);
-      if (!datePart) {
-        continue;
-      }
-
-      const targetValue = datePart.getValue(value);
-
-      resultMask = this._parser.replace(
-        resultMask,
-        targetValue,
-        part.start,
-        part.end
-      ).value;
-    }
-    return resultMask;
-  }
+  // #endregion
 }
 
 declare global {

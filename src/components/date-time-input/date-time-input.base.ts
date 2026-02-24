@@ -1,8 +1,9 @@
-import { html } from 'lit';
+import { getDateFormatter } from 'igniteui-i18n-core';
+import { html, type PropertyValues } from 'lit';
 import { eventOptions, property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
-import { convertToDate } from '../calendar/helpers.js';
+import { convertToDate, isValidDate } from '../calendar/helpers.js';
 import {
   addKeybindings,
   arrowDown,
@@ -12,6 +13,11 @@ import {
   ctrlKey,
 } from '../common/controllers/key-bindings.js';
 import { watch } from '../common/decorators/watch.js';
+import {
+  addI18nController,
+  formatDisplayDate,
+  getDefaultDateTimeFormat,
+} from '../common/i18n/i18n-controller.js';
 import type { AbstractConstructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { partMap } from '../common/part-map.js';
@@ -33,7 +39,6 @@ export interface IgcDateTimeInputComponentEventMap extends Omit<
 export abstract class IgcDateTimeInputBaseComponent<
   TValue extends Date | DateRangeValue | string | null,
   TPart,
-  TPartInfo,
 > extends EventEmitterMixin<
   IgcDateTimeInputComponentEventMap,
   AbstractConstructor<IgcMaskInputBaseComponent>
@@ -44,23 +49,33 @@ export abstract class IgcDateTimeInputBaseComponent<
     return dateTimeInputValidators;
   }
 
+  private readonly _i18nController = addI18nController(this, {
+    defaultEN: {},
+    onResourceChange: this._handleResourceChange,
+  });
+
+  // Value tracking
+  protected _oldValue: TValue | null = null;
   protected _min: Date | null = null;
   protected _max: Date | null = null;
+
   protected _defaultMask!: string;
-  protected _oldValue: TValue | null = null;
-  protected _inputDateParts!: TPartInfo[];
-  protected _inputFormat = '';
+
+  // Format and mask state
+  protected _displayFormat?: string;
+  protected _inputFormat?: string;
+
   protected _defaultDisplayFormat = '';
 
   protected abstract get _datePartDeltas(): any;
   protected abstract get _targetDatePart(): TPart | undefined;
 
-  protected get hasDateParts(): boolean {
+  protected hasDateParts(): boolean {
     // Override in subclass with specific implementation
     return false;
   }
 
-  protected get hasTimeParts(): boolean {
+  protected hasTimeParts(): boolean {
     // Override in subclass with specific implementation
     return false;
   }
@@ -78,16 +93,14 @@ export abstract class IgcDateTimeInputBaseComponent<
    */
   @property({ attribute: 'input-format' })
   public get inputFormat(): string {
-    return this._inputFormat || this._defaultMask;
+    return this._inputFormat || this._parser.mask;
   }
 
   public set inputFormat(val: string) {
     if (val) {
-      this.setMask(val);
+      this._applyMask(val);
       this._inputFormat = val;
-      if (this.value) {
-        this.updateMask();
-      }
+      this._updateMaskDisplay();
     }
   }
 
@@ -121,11 +134,19 @@ export abstract class IgcDateTimeInputBaseComponent<
 
   /**
    * Format to display the value in when not editing.
-   * Defaults to the input format if not set.
+   * Defaults to the locale format if not set.
    * @attr display-format
    */
   @property({ attribute: 'display-format' })
-  public abstract displayFormat: string;
+  public set displayFormat(value: string) {
+    this._displayFormat = value;
+  }
+
+  public get displayFormat(): string {
+    return (
+      this._displayFormat ?? this._inputFormat ?? this._defaultDisplayFormat
+    );
+  }
 
   /**
    * Delta values used to increment or decrement each date part on step actions.
@@ -142,11 +163,17 @@ export abstract class IgcDateTimeInputBaseComponent<
   public spinLoop = true;
 
   /**
-   * The locale settings used to display the value.
-   * @attr
+   * Gets/Sets the locale used for formatting the display value.
+   * @attr locale
    */
   @property()
-  public abstract locale: string;
+  public set locale(value: string) {
+    this._i18nController.locale = value;
+  }
+
+  public get locale(): string {
+    return this._i18nController.locale;
+  }
 
   // #endregion
 
@@ -166,34 +193,40 @@ export abstract class IgcDateTimeInputBaseComponent<
       .set([ctrlKey, arrowRight], this._navigateParts.bind(this, 1));
   }
 
-  public override connectedCallback() {
-    super.connectedCallback();
-    this.updateDefaultMask();
-    this.setMask(this.inputFormat);
-    this._validate();
-    if (this.value) {
-      this.updateMask();
-    }
-  }
+  //#region Lifecycle Hooks
 
-  @watch('locale', { waitUntilFirstUpdate: true })
-  protected _setDefaultMask(): void {
-    if (!this._inputFormat) {
-      this.updateDefaultMask();
-      this.setMask(this._defaultMask);
+  protected override update(props: PropertyValues<this>): void {
+    if (props.has('displayFormat')) {
+      this._updateDefaultDisplayFormat();
     }
 
-    if (this.value) {
-      this.updateMask();
+    if (props.has('locale')) {
+      this._initializeDefaultMask();
     }
+
+    if (props.has('displayFormat') || props.has('locale')) {
+      this._updateMaskDisplay();
+    }
+
+    super.update(props);
   }
 
-  @watch('displayFormat', { waitUntilFirstUpdate: true })
-  protected _setDisplayFormat(): void {
-    if (this.value) {
-      this.updateMask();
-    }
+  //#endregion
+
+  //#region Overrides
+
+  protected override _resolvePartNames(base: string) {
+    const result = super._resolvePartNames(base);
+    // Apply `filled` part when the mask is not empty
+    result.filled = result.filled || !this._isEmptyMask;
+    return result;
   }
+
+  protected override _updateSetRangeTextValue(): void {
+    this.updateValueFromMask();
+  }
+
+  //#endregion
 
   @watch('prompt', { waitUntilFirstUpdate: true })
   protected _promptChange(): void {
@@ -231,26 +264,9 @@ export abstract class IgcDateTimeInputBaseComponent<
     if (!part) return;
 
     const { start, end } = this._inputSelection;
-    const newValue = this._calculateSpunValue(part, delta, isDecrement);
+    const newValue = this.calculateSpunValue(part, delta, isDecrement);
     this.value = newValue as TValue;
     this.updateComplete.then(() => this._input?.setSelectionRange(start, end));
-  }
-
-  /**
-   * Calculates the new value after spinning a date part.
-   */
-  protected _calculateSpunValue(
-    datePart: TPart,
-    delta: number | undefined,
-    isDecrement: boolean
-  ): TValue {
-    // Default to 1 if delta is 0 or undefined
-    const effectiveDelta =
-      delta || (this._datePartDeltas as any)[datePart as any] || 1;
-    const spinAmount = isDecrement
-      ? -Math.abs(effectiveDelta)
-      : Math.abs(effectiveDelta);
-    return this.spinValue(datePart, spinAmount);
   }
 
   /** Clears the input element of user input. */
@@ -267,21 +283,15 @@ export abstract class IgcDateTimeInputBaseComponent<
     this._emitInputEvent();
   }
 
-  /**
-   * Handles drag leave events.
-   */
   protected _handleDragLeave(): void {
     if (!this._focused) {
-      this.updateMask();
+      this._updateMaskDisplay();
     }
   }
 
-  /**
-   * Handles drag enter events.
-   */
   protected _handleDragEnter(): void {
     if (!this._focused) {
-      this._maskedValue = this.getMaskedValue();
+      this._maskedValue = this.buildMaskedValue();
     }
   }
 
@@ -295,7 +305,7 @@ export abstract class IgcDateTimeInputBaseComponent<
 
     this._maskedValue = value;
 
-    this.updateValue();
+    this.updateValueFromMask();
     this.requestUpdate();
 
     if (range.start !== this.inputFormat.length) {
@@ -306,21 +316,42 @@ export abstract class IgcDateTimeInputBaseComponent<
   }
 
   /**
+   * Updates the displayed mask value based on focus state.
+   * When focused, shows the editable mask. When unfocused, shows formatted display value.
+   */
+  protected _updateMaskDisplay(): void {
+    if (this._focused) {
+      this._maskedValue = this.buildMaskedValue();
+      return;
+    }
+
+    if (!isValidDate(this.value)) {
+      this._maskedValue = '';
+      return;
+    }
+
+    this._maskedValue = formatDisplayDate(
+      this.value,
+      this.locale,
+      this.displayFormat
+    );
+  }
+
+  /**
    * Checks if all mask positions are filled (no prompt characters remain).
    */
   protected _isMaskComplete(): boolean {
     return !this._maskedValue.includes(this.prompt);
   }
 
-  protected override _updateSetRangeTextValue() {
-    this.updateValue();
-  }
-
   /**
    * Navigates to the previous or next date part.
    */
   protected _navigateParts(direction: number): void {
-    const position = this.getNewPosition(this._input?.value ?? '', direction);
+    const position = this.calculatePartNavigationPosition(
+      this._input?.value ?? '',
+      direction
+    );
     this.setSelectionRange(position, position);
   }
 
@@ -364,6 +395,41 @@ export abstract class IgcDateTimeInputBaseComponent<
     // Override in subclass with specific implementation
   }
 
+  private _handleResourceChange(): void {
+    this._initializeDefaultMask();
+    this._updateMaskDisplay();
+  }
+
+  /**
+   * Applies a mask pattern to the input, parsing the format string into date parts.
+   */
+  protected _applyMask(formatString: string): void {
+    const previous = this._parser.mask;
+    this._parser.mask = formatString;
+
+    // Update placeholder if not set or if it matches the old format
+    if (!this.placeholder || previous === this.placeholder) {
+      this.placeholder = this._parser.mask;
+    }
+  }
+
+  /**
+   * Updates the default display format based on current locale.
+   */
+  private _updateDefaultDisplayFormat(): void {
+    this._defaultDisplayFormat = getDateFormatter().getLocaleDateTimeFormat(
+      this.locale
+    );
+  }
+
+  protected _initializeDefaultMask(): void {
+    this._updateDefaultDisplayFormat();
+
+    if (!this._inputFormat) {
+      this._applyMask(getDefaultDateTimeFormat(this.locale));
+    }
+  }
+
   protected override _renderInput() {
     return html`
       <input
@@ -371,33 +437,37 @@ export abstract class IgcDateTimeInputBaseComponent<
         part=${partMap(this._resolvePartNames('input'))}
         name=${ifDefined(this.name)}
         .value=${live(this._maskedValue)}
-        .placeholder=${live(this.placeholder || this._parser.emptyMask)}
+        .placeholder=${this.placeholder || this._parser.emptyMask}
         ?readonly=${this.readOnly}
         ?disabled=${this.disabled}
-        @blur=${this.handleBlur}
+        @blur=${this._handleBlur}
         @focus=${this.handleFocus}
-        @input=${super._handleInput}
+        @input=${this._handleInput}
         @wheel=${this._handleWheel}
-        @keydown=${super._setMaskSelection}
-        @click=${super._handleClick}
-        @cut=${super._setMaskSelection}
-        @compositionstart=${super._handleCompositionStart}
-        @compositionend=${super._handleCompositionEnd}
+        @keydown=${this._setMaskSelection}
+        @click=${this._handleClick}
+        @cut=${this._setMaskSelection}
+        @compositionstart=${this._handleCompositionStart}
+        @compositionend=${this._handleCompositionEnd}
         @dragenter=${this._handleDragEnter}
         @dragleave=${this._handleDragLeave}
-        @dragstart=${super._setMaskSelection}
+        @dragstart=${this._setMaskSelection}
       />
     `;
   }
 
-  protected abstract updateMask(): void;
-  protected abstract updateValue(): void;
-  protected abstract getNewPosition(value: string, direction: number): number;
-  protected abstract spinValue(datePart: TPart, delta: number): TValue;
-  protected abstract setMask(string: string): void;
-  protected abstract getMaskedValue(): string;
-  public abstract handleBlur(): void;
-  public abstract handleFocus(): Promise<void>;
-
+  protected abstract buildMaskedValue(): string;
+  protected abstract updateValueFromMask(): void;
+  protected abstract calculatePartNavigationPosition(
+    value: string,
+    direction: number
+  ): number;
+  protected abstract calculateSpunValue(
+    part: TPart,
+    delta: number | undefined,
+    isDecrement: boolean
+  ): TValue;
+  // protected abstract spinDatePart(datePart: TPart, delta: number): TValue;
+  protected abstract handleFocus(): Promise<void>;
   // #endregion
 }

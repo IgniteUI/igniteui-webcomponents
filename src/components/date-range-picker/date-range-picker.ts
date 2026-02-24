@@ -61,9 +61,8 @@ import IgcIconComponent from '../icon/icon.js';
 import IgcPopoverComponent from '../popover/popover.js';
 import type { ContentOrientation, PickerMode } from '../types.js';
 import IgcValidationContainerComponent from '../validation-container/validation-container.js';
-import IgcDateRangeInputComponent, {
-  DateRangePosition,
-} from './date-range-input.js';
+import IgcDateRangeInputComponent from './date-range-input.js';
+import { DateRangePosition } from './date-range-mask-parser.js';
 import { styles } from './date-range-picker.base.css.js';
 import IgcPredefinedRangesAreaComponent from './predefined-ranges-area.js';
 import { styles as shared } from './themes/shared/date-range-picker.common.css.js';
@@ -1183,7 +1182,8 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
 
   private _renderSingleInput(id: string) {
     const readOnly = !this._isDropDown || this.readOnly || this.nonEditable;
-    const format = getDateTimeFormat(this._displayFormat);
+    const format =
+      getDateTimeFormat(this._displayFormat) ?? this._defaultDisplayFormat;
     const prefix = isEmpty(this._prefixes) ? undefined : 'prefix';
     const suffix = isEmpty(this._suffixes) ? undefined : 'suffix';
 
@@ -1200,7 +1200,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
         ?invalid=${live(this.invalid)}
         .disabled=${this.disabled}
         .inputFormat=${live(this.inputFormat)}
-        .displayFormat=${live(format ?? '')}
+        .displayFormat=${live(format)}
         .locale=${live(this.locale)}
         .prompt=${this.prompt}
         @igcInput=${this._handleDateRangeInputEvent}
