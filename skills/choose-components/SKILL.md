@@ -21,9 +21,9 @@ This skill helps AI agents and developers identify the best Ignite UI components
 
 ## Related Skills
 
-- [integrate-with-framework](../integrate-with-framework/) — Set up chosen components in React, Angular, Vue, or vanilla JS
-- [customize-component-theme](../customize-component-theme/) — Style and theme the components you select
-- [optimize-bundle-size](../optimize-bundle-size/) — Import only the components you actually use
+- [integrate-with-framework](../integrate-with-framework/SKILL.md) — Set up chosen components in React, Angular, Vue, or vanilla JS
+- [customize-component-theme](../customize-component-theme/SKILL.md) — Style and theme the components you select
+- [optimize-bundle-size](../optimize-bundle-size/SKILL.md) — Import only the components you actually use
 
 ## When to Use
 
@@ -131,7 +131,7 @@ All inputs are form-associated and integrate natively with `<form>`.
 |---|---|---|---|
 | Top application bar / toolbar | Navbar | `<igc-navbar>` | [Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/menus/navbar) |
 | Side navigation drawer | Navigation Drawer | `<igc-nav-drawer>` | [Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/menus/navigation-drawer) |
-| Context menu / actions dropdown | Drop Down | `<igc-dropdown>` | [Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/notifications/toast) |
+| Context menu / actions dropdown | Drop Down | `<igc-dropdown>` | [Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/inputs/dropdown) |
 
 ### Lists & Data Display
 
@@ -320,7 +320,7 @@ defineComponents(
 ### "I can't find a component for X"
 
 1. Check the [full component list](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/general-getting-started) in the official docs
-3. Consider composing two simpler components (e.g., `<igc-card>` + `<igc-list>` for a list card)
+2. Consider composing two simpler components (e.g., `<igc-card>` + `<igc-list>` for a list card)
 
 ### "Which grid should I use?"
 

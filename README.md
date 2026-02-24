@@ -240,7 +240,7 @@ npm run storybook:build
 [Chip Docs]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/inputs/chip
 [Circular Progress Docs]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/inputs/circular-progress
 [Linear Progress Docs]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/inputs/linear-progress
-[Dropdown Docs]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/notifications/toast
+[Dropdown Docs]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/inputs/dropdown
 [Tree Docs]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/grids/tree
 [Expansion Panel Docs]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/layouts/expansion-panel
 [Masked Input Docs]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/inputs/input

@@ -18,8 +18,8 @@ This skill helps users minimize their application's bundle size when using Ignit
 
 ## Related Skills
 
-- [integrate-with-framework](../integrate-with-framework/) - Proper integration setup
-- [customize-component-theme](../customize-component-theme/) - Theming after optimization
+- [integrate-with-framework](../integrate-with-framework/SKILL.md) - Proper integration setup
+- [customize-component-theme](../customize-component-theme/SKILL.md) - Theming after optimization
 
 ## When to Use
 

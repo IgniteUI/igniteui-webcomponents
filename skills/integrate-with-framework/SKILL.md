@@ -17,8 +17,8 @@ This skill helps users integrate Ignite UI Web Components into their application
 
 ## Related Skills
 
-- [optimize-bundle-size](../optimize-bundle-size/) - Reduce bundle size after integration
-- [customize-component-theme](../customize-component-theme/) - Style components after setup
+- [optimize-bundle-size](../optimize-bundle-size/SKILL.md) - Reduce bundle size after integration
+- [customize-component-theme](../customize-component-theme/SKILL.md) - Style components after setup
 
 ## When to Use
 
