@@ -1,5 +1,5 @@
 import { exec as _exec } from 'node:child_process';
-import { copyFile, writeFile } from 'node:fs/promises';
+import { copyFile, writeFile, cp } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
@@ -86,6 +86,10 @@ async function runTask(tag, cmd) {
       ),
     ])
   );
+
+  await runTask('Copy skills directory', () => {
+    cp('skills', DEST_DIR('skills'), { recursive: true });
+  });
 
   report.success('Done! 🎉');
 })();
