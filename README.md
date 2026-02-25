@@ -211,7 +211,7 @@ npm run storybook:build
 [safari_48x48]: https://user-images.githubusercontent.com/2188411/168109527-6c58f2cf-7386-4b97-98b1-cfe0ab4e8626.png
 [Contribution Guidelines]: https://github.com/IgniteUI/igniteui-webcomponents/blob/master/.github/CONTRIBUTING.md
 [Data Grid]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/grids/data-grid
-[Hierarchical Grid]: https://www.infragistics.com/webcomponentssite/components/grids/hierarchical-grid/overview
+[Hierarchical Grid]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/grids/hierarchical-grid/overview
 [Charts]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/charts/chart-overview
 [Dock Manager]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/layouts/dock-manager
 [Pivot Grid Docs]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/grids/pivot-grid/overview
