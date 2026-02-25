@@ -214,6 +214,7 @@ import {
   IgcCardComponent,
   IgcIconComponent,
   IgcButtonComponent,
+  registerIconFromText,
 } from 'igniteui-webcomponents';
 
 defineComponents(
@@ -223,21 +224,25 @@ defineComponents(
   IgcIconComponent,
   IgcButtonComponent
 );
+
+registerIconFromText('menu', '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>', 'material');
+registerIconFromText('home', '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>', 'material');
+registerIconFromText('build', '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M22.7 19l-9.1-9.1c.9-2.3.4-5-1.5-6.9-2-2-5-2.4-7.4-1.3L9 6 6 9 1.6 4.7C.4 7.1.9 10.1 2.9 12.1c1.9 1.9 4.6 2.4 6.9 1.5l9.1 9.1c.4.4 1 .4 1.4 0l2.3-2.3c.5-.4.5-1.1.1-1.4z"/></svg>', 'material');
 ```
 
 ```html
 <igc-navbar>
-  <igc-icon name="menu" slot="start"></igc-icon>
+  <igc-icon name="menu" collection="material" slot="start"></igc-icon>
   <h1>My Dashboard</h1>
 </igc-navbar>
 
 <igc-nav-drawer>
   <igc-nav-drawer-item>
-    <igc-icon name="home" slot="icon"></igc-icon>
+    <igc-icon name="home" collection="material" slot="icon"></igc-icon>
     <span slot="content">Home</span>
   </igc-nav-drawer-item>
   <igc-nav-drawer-item>
-    <igc-icon name="settings" slot="icon"></igc-icon>
+    <igc-icon name="build" collection="material" slot="icon"></igc-icon>
     <span slot="content">Settings</span>
   </igc-nav-drawer-item>
 </igc-nav-drawer>
