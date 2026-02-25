@@ -4,8 +4,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [7.0.0] - 2026-02-25
 ### Added
+- #### AI-Assisted Development - Copilot Skills
+  - Four end-user skills are now shipped with the package under the `skills/` directory. They provide step-by-step guidance to GitHub Copilot and other LLM agents for common tasks:
+    - **igniteui-wc-choose-components** - Identify the right component for a given UI pattern.
+    - **igniteui-wc-integrate-with-framework** - Set up and use components in React, Angular, Vue, or vanilla JS.
+    - **igniteui-wc-customize-component-theme** - Apply custom styles via CSS custom properties, parts, and the theming system.
+    - **igniteui-wc-optimize-bundle-size** - Reduce production bundle size through selective imports and lazy loading.
+
+  To enable the skills in your project, reference the skill files from your `.github/copilot-instructions.md` (or the equivalent configuration for your AI agent):
+  ```markdown
+  <!-- .github/copilot-instructions.md -->
+  Use the skills in `node_modules/igniteui-webcomponents/skills/` when helping with Ignite UI Web Components tasks.
+  ```
+  Alternatively, point VS Code's Copilot to individual skill files via the `github.copilot.chat.codeGeneration.instructions` setting in `.vscode/settings.json`.
 - #### Chat
   - **adoptRootStyles** can now be toggled on/off at runtime. [#2093](https://github.com/IgniteUI/igniteui-webcomponents/pull/2093)
 
@@ -15,6 +28,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - #### Themes - **Breaking change**
   - Changed global prefixes for CSS custom properties for component themes to align with other Ignite UI component libraries.
 
+### Removed
+- #### Chat
+  - Removed the **typingIndicator** template renderer. Users can use the **typing-indicator** slot instead.
+- #### Tooltip
+  - Removed the **disableArrow** deprecated property.
+
 ### Fixed
 - #### Carousel
   - Context instantiation in Blazor. [#2033](https://github.com/IgniteUI/igniteui-webcomponents/pull/2033)
@@ -22,12 +41,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - Correct cursor style over non input parts. [#2085](https://github.com/IgniteUI/igniteui-webcomponents/pull/2085)
 - #### Textarea
   - Correct cursor style over non input parts. [#2085](https://github.com/IgniteUI/igniteui-webcomponents/pull/2085)
-
-### Removed
-- #### Chat
-  - Removed the **typingIndicator** template renderer. Users can use the **typing-indicator** slot instead.
-- #### Tooltip
-  - Removed the **disableArrow** deprecated property.
 
 ## [6.5.1] - 2026-02-04
 ### Fixed
@@ -1240,6 +1253,7 @@ Initial release of Ignite UI Web Components
 - Ripple component
 - Switch component
 
+[7.0.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/6.5.1...7.0.0
 [6.5.1]: https://github.com/IgniteUI/igniteui-webcomponents/compare/6.5.0...6.5.1
 [6.5.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/6.4.0...6.5.0
 [6.4.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/6.3.6...6.4.0
