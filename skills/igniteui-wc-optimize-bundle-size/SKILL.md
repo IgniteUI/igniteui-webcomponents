@@ -273,7 +273,7 @@ async function showDialog() {
 ### React (using igniteui-react)
 
 ```tsx
-import React, { lazy, Suspense } from 'react';
+import React, { lazy, Suspense, useState } from 'react';
 
 // Lazy load the dialog component
 const IgrDialog = lazy(() =>
