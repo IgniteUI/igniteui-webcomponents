@@ -1,5 +1,5 @@
 ---
-name: integrate-with-framework
+name: igniteui-wc-integrate-with-framework
 description: Integrate igniteui-webcomponents into React, Angular, Vue, or vanilla JS applications with framework-specific configurations
 user-invokable: true
 ---
@@ -17,8 +17,8 @@ This skill helps users integrate Ignite UI Web Components into their application
 
 ## Related Skills
 
-- [optimize-bundle-size](../optimize-bundle-size/SKILL.md) - Reduce bundle size after integration
-- [customize-component-theme](../customize-component-theme/SKILL.md) - Style components after setup
+- [igniteui-wc-optimize-bundle-size](../igniteui-wc-optimize-bundle-size/SKILL.md) - Reduce bundle size after integration
+- [igniteui-wc-customize-component-theme](../igniteui-wc-customize-component-theme/SKILL.md) - Style components after setup
 
 ## When to Use
 

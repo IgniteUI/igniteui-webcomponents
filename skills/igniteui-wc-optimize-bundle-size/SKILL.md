@@ -1,5 +1,5 @@
 ---
-name: optimize-bundle-size
+name: igniteui-wc-optimize-bundle-size
 description: Optimize application bundle size by importing only necessary components and using tree-shaking effectively
 user-invokable: true
 ---
@@ -18,8 +18,8 @@ This skill helps users minimize their application's bundle size when using Ignit
 
 ## Related Skills
 
-- [integrate-with-framework](../integrate-with-framework/SKILL.md) - Proper integration setup
-- [customize-component-theme](../customize-component-theme/SKILL.md) - Theming after optimization
+- [igniteui-wc-integrate-with-framework](../igniteui-wc-integrate-with-framework/SKILL.md) - Proper integration setup
+- [igniteui-wc-customize-component-theme](../igniteui-wc-customize-component-theme/SKILL.md) - Theming after optimization
 
 ## When to Use
 
@@ -93,7 +93,7 @@ function MyComponent() {
 - No need for component registration overhead
 - Better integration with React build tools
 
-For more details, see the [integrate-with-framework](../integrate-with-framework/) skill.
+For more details, see the [igniteui-wc-integrate-with-framework](../igniteui-wc-integrate-with-framework/SKILL.md) skill.
 
 ## Analyzing Your Bundle
 
@@ -699,7 +699,7 @@ After optimization, you should see:
 - Implement lazy loading for heavy components
 - Consider using CDN for static assets
 - Enable HTTP/2 for better resource loading
-- Check [integrate-with-framework](../integrate-with-framework/) for proper setup
+- Check [igniteui-wc-integrate-with-framework](../igniteui-wc-integrate-with-framework/SKILL.md) for proper setup
 
 ## Additional Resources
 

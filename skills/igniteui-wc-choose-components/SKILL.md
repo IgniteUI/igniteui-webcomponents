@@ -1,5 +1,5 @@
 ---
-name: choose-components
+name: igniteui-wc-choose-components
 description: Identify and select the right Ignite UI Web Components for your app UI, then navigate to official docs, usage examples, and API references
 user-invokable: true
 ---
@@ -21,9 +21,9 @@ This skill helps AI agents and developers identify the best Ignite UI components
 
 ## Related Skills
 
-- [integrate-with-framework](../integrate-with-framework/SKILL.md) — Set up chosen components in React, Angular, Vue, or vanilla JS
-- [customize-component-theme](../customize-component-theme/SKILL.md) — Style and theme the components you select
-- [optimize-bundle-size](../optimize-bundle-size/SKILL.md) — Import only the components you actually use
+- [igniteui-wc-integrate-with-framework](../igniteui-wc-integrate-with-framework/SKILL.md) — Set up chosen components in React, Angular, Vue, or vanilla JS
+- [igniteui-wc-customize-component-theme](../igniteui-wc-customize-component-theme/SKILL.md) — Style and theme the components you select
+- [igniteui-wc-optimize-bundle-size](../igniteui-wc-optimize-bundle-size/SKILL.md) — Import only the components you actually use
 
 ## When to Use
 
@@ -334,7 +334,7 @@ defineComponents(
 
 ### "I need React support"
 
-Use the [`igniteui-react`](https://www.npmjs.com/package/igniteui-react) package. Components are wrapped with React-friendly event bindings and props. See the [integrate-with-framework](../integrate-with-framework/) skill for setup.
+Use the [`igniteui-react`](https://www.npmjs.com/package/igniteui-react) package. Components are wrapped with React-friendly event bindings and props. See the [igniteui-wc-integrate-with-framework](../igniteui-wc-integrate-with-framework/SKILL.md) skill for setup.
 
 ### "How do I get commercial components?"
 

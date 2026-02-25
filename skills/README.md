@@ -10,10 +10,10 @@ Skills are structured instructions that help AI agents understand and execute co
 
 | Skill                                                       | Description                                                                        | Use When                              |
 | ----------------------------------------------------------- | ---------------------------------------------------------------------------------- | ------------------------------------- |
-| [choose-components](./choose-components/)                   | Identify the right components for a UI pattern and navigate to official docs/demos | Deciding which components to use      |
-| [integrate-with-framework](./integrate-with-framework/)     | Integrate components into React, Angular, Vue, or vanilla JS applications          | Setting up components in your project |
-| [customize-component-theme](./customize-component-theme/)   | Customize styling using CSS custom properties, parts, and theming system           | Applying custom brand colors/styles   |
-| [optimize-bundle-size](./optimize-bundle-size/)             | Reduce bundle size by importing only needed components and lazy loading            | Optimizing production performance     |
+| [igniteui-wc-choose-components](./igniteui-wc-choose-components/SKILL.md)                   | Identify the right components for a UI pattern and navigate to official docs/demos | Deciding which components to use      |
+| [igniteui-wc-integrate-with-framework](./igniteui-wc-integrate-with-framework/SKILL.md)     | Integrate components into React, Angular, Vue, or vanilla JS applications          | Setting up components in your project |
+| [igniteui-wc-customize-component-theme](./igniteui-wc-customize-component-theme/SKILL.md)   | Customize styling using CSS custom properties, parts, and theming system           | Applying custom brand colors/styles   |
+| [igniteui-wc-optimize-bundle-size](./igniteui-wc-optimize-bundle-size/SKILL.md)             | Reduce bundle size by importing only needed components and lazy loading            | Optimizing production performance     |
 
 ## How to Use
 
