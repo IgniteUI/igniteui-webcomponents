@@ -141,9 +141,9 @@ All inputs are form-associated and integrate natively with `<form>`.
 | Hierarchical / tree data | Tree | `<igc-tree>` | [Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/grids/tree) |
 | Tabular data (MIT, lightweight) | Grid Lite | `<igc-grid>` | [Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/grid-lite/overview) |
 | Full-featured tabular data grid | Data Grid | `<igc-grid>` | [Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/grids/grid/overview) |
-| Nested / master-detail grid | Hierarchical Grid | `<igc-hierarchical-grid>` | [Docs](https://www.infragistics.com/webcomponentssite/components/grids/hierarchical-grid/overview) |
+| Nested / master-detail grid | Hierarchical Grid | `<igc-hierarchical-grid>` | [Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/grids/hierarchical-grid/overview) |
 | Parent-child relational tree grid | Tree Grid | `<igc-tree-grid>` | [Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/grids/tree-grid/overview) |
-| Cross-tabulation / BI pivot table | Pivot Grid | `<igc-pivot-grid>` | [Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/grids/pivot-grid/overview) |
+| Cross-tabulation / BI pivot table | Pivot Grid | `<igc-pivot-grid>` | [Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/web-components/components/grids/pivot-grid/overview) |
 
 ### Conversational / AI
 
