@@ -13,12 +13,23 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
     - **igniteui-wc-customize-component-theme** - Apply custom styles via CSS custom properties, parts, and the theming system.
     - **igniteui-wc-optimize-bundle-size** - Reduce production bundle size through selective imports and lazy loading.
 
-  To enable the skills in your project, reference the skill files from your `.github/copilot-instructions.md` (or the equivalent configuration for your AI agent):
-  ```markdown
-  <!-- .github/copilot-instructions.md -->
-  Use the skills in `node_modules/igniteui-webcomponents/skills/` when helping with Ignite UI Web Components tasks.
+  To enable the skills in your project, copy the skill folders into your repository's `.github/skills/` directory so Copilot can automatically discover them:
+
+  **Unix/macOS:**
+  ```sh
+  cp -r node_modules/igniteui-webcomponents/skills/* .github/skills/
   ```
-  Alternatively, point VS Code's Copilot to individual skill files via the `github.copilot.chat.codeGeneration.instructions` setting in `.vscode/settings.json`.
+
+  **Windows (PowerShell):**
+  ```powershell
+  Copy-Item -Recurse node_modules\igniteui-webcomponents\skills\* .github\skills\
+  ```
+
+  **Windows (Command Prompt):**
+  ```cmd
+  xcopy /E /I node_modules\igniteui-webcomponents\skills .github\skills
+  ```
+  Copilot supports project skills stored in `.github/skills` or `.claude/skills` in your repository, and personal skills stored in `~/.copilot/skills` or `~/.claude/skills` (shared across projects; Copilot coding agent and GitHub Copilot CLI only).
 - #### Chat
   - **adoptRootStyles** can now be toggled on/off at runtime. [#2093](https://github.com/IgniteUI/igniteui-webcomponents/pull/2093)
 
