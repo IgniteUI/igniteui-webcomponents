@@ -44,7 +44,7 @@ function MyComponent() {
   const handleClick = (e: React.MouseEvent) => console.log('Clicked');
 
   // onChange receives the component's change event
-  const handleChange = (e: CustomEvent) => console.log(`Changed: ${event.detail}`);
+  const handleChange = (e: CustomEvent) => console.log(`Changed: ${e.detail}`);
 
   return (
     <div>
@@ -110,7 +110,7 @@ Ensure you import a theme CSS file in your entry point. Without it, components r
 
 ## Next Steps
 
-- [Optimize bundle size](../../optimize-bundle-size/) — import only the components you use
-- [Customize themes](../../customize-component-theme/) — apply your brand colors
+- [Optimize bundle size](../../igniteui-wc-optimize-bundle-size/) — import only the components you use
+- [Customize themes](../../igniteui-wc-customize-component-theme/) — apply your brand colors
 - [igniteui-react on npm](https://www.npmjs.com/package/igniteui-react) — React wrapper documentation
 - [Component documentation](https://igniteui.github.io/igniteui-webcomponents) — full API reference

@@ -180,6 +180,6 @@ Use `[property]="value"` binding for complex or reactive data. Attribute strings
 
 ## Next Steps
 
-- [Optimize bundle size](../../optimize-bundle-size/) — import only the components you use
-- [Customize themes](../../customize-component-theme/) — apply your brand colors
+- [Optimize bundle size](../../igniteui-wc-optimize-bundle-size/) — import only the components you use
+- [Customize themes](../../igniteui-wc-customize-component-theme/) — apply your brand colors
 - [Component documentation](https://igniteui.github.io/igniteui-webcomponents) — full API reference

@@ -43,7 +43,7 @@ Ignite UI for Web Components is distributed across several packages depending on
 | Package | License | Install | Best For |
 |---|---|---|---|
 | [`igniteui-webcomponents`](https://www.npmjs.com/package/igniteui-webcomponents) | MIT | `npm install igniteui-webcomponents` | General UI components (inputs, layouts, notifications, scheduling) |
-| [`igniteui-webcomponents-grids`](https://www.npmjs.com/package/igniteui-webcomponents-grids) | Commercial | `npm install igniteui-webcomponents-grids` (trial) | Advanced data grids (Data Grid, Tree Grid, Hierarchical Grid, Pivot Grid) with many built-in functionaries  |
+| [`igniteui-webcomponents-grids`](https://www.npmjs.com/package/igniteui-webcomponents-grids) | Commercial | `npm install igniteui-webcomponents-grids` (trial) | Advanced data grids (Data Grid, Tree Grid, Hierarchical Grid, Pivot Grid) with many built-in functionalities  |
 | [`igniteui-grid-lite`](https://www.npmjs.com/package/igniteui-grid-lite) | MIT | `npm install igniteui-grid-lite` | Lightweight data grid for simpler tabular data |
 | [`igniteui-dockmanager`](https://www.npmjs.com/package/igniteui-dockmanager) | Commercial | `npm install igniteui-dockmanager` (trial) | Windowing / docking layouts (IDE-style panels) |
 

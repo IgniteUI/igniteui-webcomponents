@@ -301,7 +301,7 @@ function MyComponent() {
 ### React (using web components directly)
 
 ```tsx
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 
 // Lazy load component registration
 const lazyLoadDialog = async () => {
