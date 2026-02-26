@@ -125,6 +125,64 @@ export class DateRangeMaskParser extends MaskParser {
     this._buildRangeParts();
   }
 
+  //#region Mask Format Conversion
+
+  /**
+   * Overrides base class to convert date format to mask format
+   * before parsing literals. This ensures date format characters
+   * (M, d, y, etc.) are properly converted to mask characters (0, L).
+   */
+  protected override _parseMaskLiterals(): void {
+    // Convert the range format to mask format
+    // e.g., "M/d/yyyy - M/d/yyyy" → "0/0/0000 - 0/0/0000"
+    const dateFormat = this._options.format;
+    const maskFormat = this._convertDateFormatToMaskFormat(dateFormat);
+
+    // Temporarily set the converted format for base class parsing
+    const originalFormat = this._options.format;
+    this._options.format = maskFormat;
+
+    super._parseMaskLiterals();
+
+    // Restore the original date format
+    this._options.format = originalFormat;
+  }
+
+  /**
+   * Converts date format characters to mask format characters.
+   * Date parts become '0' (numeric) and time markers become 'L' (alpha).
+   */
+  private _convertDateFormatToMaskFormat(dateFormat: string): string {
+    // Set of date/time format characters
+    const dateChars = new Set([
+      'M',
+      'd',
+      'y',
+      'Y',
+      'D',
+      'h',
+      'H',
+      'm',
+      's',
+      'S',
+      't',
+      'T',
+    ]);
+
+    let result = '';
+    for (const char of dateFormat) {
+      if (dateChars.has(char)) {
+        // AM/PM markers are alphabetic, others are numeric
+        result += char === 't' || char === 'T' ? 'L' : '0';
+      } else {
+        result += char;
+      }
+    }
+    return result;
+  }
+
+  //#endregion
+
   /**
    * Builds the range parts array by combining parts from start and end parsers
    * and adding position information.
@@ -227,8 +285,13 @@ export class DateRangeMaskParser extends MaskParser {
    * Formats a DateRangeValue into a masked string using the two internal parsers.
    */
   public formatDateRange(range: DateRangeValue | null): string {
+    // If range is completely null/undefined, return the empty masks
     if (!range) {
-      return '';
+      return (
+        this._startParser.emptyMask +
+        this._separator +
+        this._endParser.emptyMask
+      );
     }
 
     // Delegate formatting to the individual parsers
@@ -306,21 +369,6 @@ export class DateRangeMaskParser extends MaskParser {
   //#endregion
 
   //#region Override for Date Range Mask
-
-  /**
-   * Builds the internal mask pattern from the date range format.
-   * Delegates to the start parser's conversion logic.
-   */
-  protected override _parseMaskLiterals(): void {
-    // The parent MaskParser will handle the mask literals
-    // We just need to rebuild range parts after parsing
-    super._parseMaskLiterals();
-
-    // Rebuild range parts if parsers are initialized
-    if (this._startParser && this._endParser) {
-      this._buildRangeParts();
-    }
-  }
 
   //#endregion
 

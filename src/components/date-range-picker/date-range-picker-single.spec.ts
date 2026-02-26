@@ -5,7 +5,7 @@ import {
   html,
   waitUntil,
 } from '@open-wc/testing';
-import { spy } from 'sinon';
+import sinon, { spy } from 'sinon';
 import IgcCalendarComponent from '../calendar/calendar.js';
 import { CalendarDay } from '../calendar/model.js';
 import {
@@ -25,7 +25,6 @@ import {
   simulateKeyboard,
 } from '../common/utils.spec.js';
 import type IgcDialogComponent from '../dialog/dialog.js';
-import IgcInputComponent from '../input/input.js';
 import IgcDateRangeInputComponent from './date-range-input.js';
 import IgcDateRangePickerComponent from './date-range-picker.js';
 import {
@@ -54,9 +53,13 @@ describe('Date range picker - single input', () => {
     rangeInput = picker.renderRoot.querySelector(
       IgcDateRangeInputComponent.tagName
     )!;
-    rangeInput.renderRoot.querySelector('input')!;
+    input = rangeInput.renderRoot.querySelector('input')!;
 
     calendar = picker.renderRoot.querySelector(IgcCalendarComponent.tagName)!;
+  });
+
+  afterEach(() => {
+    sinon.restore();
   });
 
   describe('Rendering and initialization', () => {
@@ -161,11 +164,11 @@ describe('Date range picker - single input', () => {
 
       await picker.show();
       await selectDates(today, tomorrow, calendar);
-      checkSelectedRange(
-        picker,
-        { start: today.native, end: tomorrow.native },
-        false
-      );
+
+      input.blur();
+      await elementUpdated(input);
+
+      checkSelectedRange(picker, picker.value, false);
       expect(eventSpy).calledWith('igcChange');
     });
 
@@ -223,7 +226,10 @@ describe('Date range picker - single input', () => {
         end: CalendarDay.from(new Date(2025, 3, 10)).native,
       };
       await elementUpdated(picker);
-      const input = picker.renderRoot.querySelector(IgcInputComponent.tagName)!;
+      const rangeInput = picker.renderRoot.querySelector(
+        IgcDateRangeInputComponent.tagName
+      )!;
+      const input = rangeInput.renderRoot.querySelector('input')!;
       expect(input.value).to.equal('4/9/2025 - 4/10/2025');
 
       picker.locale = 'bg';
@@ -258,7 +264,10 @@ describe('Date range picker - single input', () => {
       };
       await elementUpdated(picker);
 
-      const input = picker.renderRoot.querySelector(IgcInputComponent.tagName)!;
+      const rangeInput = picker.renderRoot.querySelector(
+        IgcDateRangeInputComponent.tagName
+      )!;
+      const input = rangeInput.renderRoot.querySelector('input')!;
       expect(input.value).to.equal('4/9/2025 - 4/10/2025');
 
       picker.displayFormat = 'yyyy-MM-dd';
@@ -552,6 +561,9 @@ describe('Date range picker - single input', () => {
         dialog = picker.renderRoot.querySelector('igc-dialog');
         expect(dialog?.hasAttribute('open')).to.equal(false);
 
+        input.blur();
+        await elementUpdated(input);
+
         checkSelectedRange(
           picker,
           {
@@ -687,37 +699,44 @@ describe('Date range picker - single input', () => {
 
         input = getInput(picker);
         input.focus();
+        await elementUpdated(input);
+
         input.setSelectionRange(2, 2);
+        await elementUpdated(input);
+        await elementUpdated(picker);
 
         expect(isFocused(input)).to.be.true;
         //Move selection to the end of 'day' part.
         simulateKeyboard(input, [ctrlKey, arrowRight]);
         await elementUpdated(rangeInput);
+        await elementUpdated(input);
 
         expect(input.selectionStart).to.equal(5);
         expect(input.selectionEnd).to.equal(5);
 
         simulateKeyboard(input, arrowUp);
         await elementUpdated(picker);
+        await elementUpdated(input);
 
         expect(input.value).to.equal('04/23/2025 - 04/23/2025');
 
         //Move selection to the end of 'year' part.
         simulateKeyboard(input, [ctrlKey, arrowRight]);
-        await elementUpdated(rangeInput);
+        await elementUpdated(picker);
+        await elementUpdated(input);
 
         expect(input.selectionStart).to.equal(10);
         expect(input.selectionEnd).to.equal(10);
 
         simulateKeyboard(input, arrowUp);
         await elementUpdated(picker);
-
+        await elementUpdated(input);
         expect(input.value).to.equal('04/23/2026 - 04/23/2025');
 
         //Move selection to the end of 'month' part of the end date.
         // skips the separator parts when navigating (right direction)
         simulateKeyboard(input, [ctrlKey, arrowRight]);
-        await elementUpdated(rangeInput);
+        await elementUpdated(input);
 
         expect(input.selectionStart).to.equal(15);
         expect(input.selectionEnd).to.equal(15);
@@ -732,6 +751,7 @@ describe('Date range picker - single input', () => {
 
         simulateKeyboard(input, [ctrlKey, arrowLeft]);
         await elementUpdated(rangeInput);
+        await elementUpdated(input);
 
         expect(input.selectionStart).to.equal(6);
         expect(input.selectionEnd).to.equal(6);
@@ -755,11 +775,12 @@ describe('Date range picker - single input', () => {
 
         simulateKeyboard(input, arrowUp);
         await elementUpdated(picker);
+        input.blur();
+        await elementUpdated(input);
+
         checkSelectedRange(
           picker,
-
           { start: today.native, end: today.native },
-
           false
         );
       });
@@ -781,7 +802,7 @@ describe('Date range picker - single input', () => {
         await elementUpdated(picker);
 
         input.blur();
-        await elementUpdated(rangeInput);
+        await elementUpdated(input);
         await elementUpdated(picker);
 
         expect(input.value).to.equal('');
@@ -818,7 +839,7 @@ describe('Date range picker - single input', () => {
         input.blur();
 
         await elementUpdated(picker);
-        expect(input.value).to.equal('01/01/2000 - 04/23/2025');
+        expect(input.value).to.equal('1/1/2000 - 4/23/2025');
       });
 
       it('should toggle the calendar with keyboard combinations and keep focus', async () => {

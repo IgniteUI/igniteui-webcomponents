@@ -1,7 +1,6 @@
 import { LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
 import { addThemingController } from '../../theming/theming-controller.js';
-import { isValidDate } from '../calendar/helpers.js';
 import { CalendarDay } from '../calendar/model.js';
 import { addSlotController, setSlots } from '../common/controllers/slot.js';
 import { watch } from '../common/decorators/watch.js';
@@ -28,7 +27,6 @@ import {
   DateRangePosition,
 } from './date-range-mask-parser.js';
 import type { DateRangeValue } from './date-range-picker.js';
-import { isCompleteDateRange } from './validators.js';
 
 const Slots = setSlots(
   'prefix',
@@ -87,9 +85,26 @@ export default class IgcDateRangeInputComponent extends IgcDateTimeInputBaseComp
 
   protected override get _targetDatePart(): DateRangePart | undefined {
     if (this._focused) {
-      const part = this._parser.getDateRangePartForCursor(
-        this._inputSelection.start
-      );
+      const cursorPos = this._inputSelection.start;
+      let part = this._parser.getDateRangePartForCursor(cursorPos);
+
+      // If cursor is at a literal, find the nearest non-literal part
+      if (part && part.type === DatePartType.Literal) {
+        // Try to find the next non-literal part after the cursor
+        const nextPart = this._parser.rangeParts.find(
+          (p) => p.start >= cursorPos && p.type !== DatePartType.Literal
+        );
+
+        if (nextPart) {
+          part = nextPart;
+        } else {
+          // If no next part, find the previous non-literal part
+          const prevPart = [...this._parser.rangeParts]
+            .reverse()
+            .find((p) => p.end <= cursorPos && p.type !== DatePartType.Literal);
+          part = prevPart;
+        }
+      }
 
       if (part && part.type !== DatePartType.Literal) {
         return {
@@ -139,6 +154,8 @@ export default class IgcDateRangeInputComponent extends IgcDateTimeInputBaseComp
     super.connectedCallback();
     // Initialize with locale-aware format on first connection
     this._initializeDefaultMask();
+    // Set initial display value
+    this._updateMaskDisplay();
   }
 
   // #endregion
@@ -183,11 +200,9 @@ export default class IgcDateRangeInputComponent extends IgcDateTimeInputBaseComp
   }
 
   protected override buildMaskedValue(): string {
-    return isCompleteDateRange(this.value) &&
-      isValidDate(this.value.start) &&
-      isValidDate(this.value.end)
-      ? this._parser.formatDateRange(this.value)
-      : this._maskedValue || this._parser.emptyMask;
+    // Format the range - parser handles null/undefined values gracefully
+    // by returning empty masks for missing start/end dates
+    return this._parser.formatDateRange(this.value);
   }
 
   protected override updateDefaultMask(): void {
@@ -216,7 +231,14 @@ export default class IgcDateRangeInputComponent extends IgcDateTimeInputBaseComp
 
   protected override _updateMaskDisplay(): void {
     if (this._focused) {
-      this._maskedValue = this.buildMaskedValue();
+      // Only reset mask from value when value is non-null (e.g. after spinning or programmatic set).
+      // When value is null the user is mid-typing — leave _maskedValue unchanged.
+      if (this.value && (this.value.start || this.value.end)) {
+        this._maskedValue = this.buildMaskedValue();
+      } else if (!this._maskedValue) {
+        // Not yet initialised — show the empty mask so prompts are visible.
+        this._maskedValue = this._parser.emptyMask;
+      }
       return;
     }
 
@@ -225,23 +247,19 @@ export default class IgcDateRangeInputComponent extends IgcDateTimeInputBaseComp
       return;
     }
 
-    // If custom display format is set (different from input format)
-    if (this._displayFormat) {
-      const { start, end } = this.value;
-      const startStr = start
-        ? formatDisplayDate(start, this.locale, this.displayFormat)
-        : '';
-      const endStr = end
-        ? formatDisplayDate(end, this.locale, this.displayFormat)
-        : '';
-      this._maskedValue =
-        startStr && endStr
-          ? `${startStr}${this._parser.separator}${endStr}`
-          : '';
-    } else {
-      // Use input format (from parser)
-      this._maskedValue = this._parser.formatDateRange(this.value);
-    }
+    // When unfocused always use formatDisplayDate (locale-aware, un-padded).
+    // displayFormat can be undefined — formatDisplayDate handles that by using locale defaults.
+    const { start, end } = this.value;
+    const startStr = start
+      ? formatDisplayDate(start, this.locale, this._displayFormat)
+      : '';
+    const endStr = end
+      ? formatDisplayDate(end, this.locale, this._displayFormat)
+      : '';
+    this._maskedValue =
+      startStr && endStr
+        ? `${startStr}${this._parser.separator}${endStr}`
+        : startStr || endStr;
   }
 
   protected override calculatePartNavigationPosition(
@@ -251,19 +269,59 @@ export default class IgcDateRangeInputComponent extends IgcDateTimeInputBaseComp
     const cursorPos = this._maskSelection.start;
     const rangeParts = this._parser.rangeParts;
 
+    // Find the current non-literal part containing the cursor
+    const currentPart = rangeParts.find(
+      (p) =>
+        p.type !== DateParts.Literal &&
+        cursorPos >= p.start &&
+        cursorPos <= p.end
+    );
+
+    // Only apply start/end jump for start/end parts
+    const isStartOrEndPart =
+      currentPart &&
+      (currentPart.position === DateRangePosition.Start ||
+        currentPart.position === DateRangePosition.End);
+
     if (direction === 0) {
-      // Navigate backwards: find last literal before cursor
-      const part = [...rangeParts]
+      // Backward: if inside a start/end part, move to its start; else, move to previous part's start
+      if (isStartOrEndPart && cursorPos !== currentPart.start) {
+        return currentPart.start;
+      }
+      const prevPart = [...rangeParts]
         .reverse()
-        .find((p) => p.type === DateParts.Literal && p.end < cursorPos);
-      return part?.end ?? 0;
+        .find((p) => p.type !== DateParts.Literal && p.end < cursorPos);
+      return prevPart?.start ?? 0;
     }
 
-    // Navigate forwards: find first literal after cursor
-    const part = rangeParts.find(
-      (p) => p.type === DateParts.Literal && p.start > cursorPos
+    // Forward: if inside a start/end part, move to its end; else, move to next part's end
+    if (isStartOrEndPart && cursorPos !== currentPart.end) {
+      return currentPart.end;
+    }
+    const nextPart = rangeParts.find(
+      (p) => p.type !== DateParts.Literal && p.start > cursorPos
     );
-    return part?.start ?? inputValue.length;
+    return nextPart?.end ?? inputValue.length;
+  }
+
+  protected override _performStep(
+    datePart: DateRangePart | undefined,
+    delta: number | undefined,
+    isDecrement: boolean
+  ): void {
+    // If no value exists, set to today's date first
+    if (!this.value || (!this.value.start && !this.value.end)) {
+      const today = CalendarDay.today.native;
+      this.value = { start: today, end: today };
+      const { start, end } = this._inputSelection;
+      this.updateComplete.then(() =>
+        this._input?.setSelectionRange(start, end)
+      );
+      return;
+    }
+
+    // Otherwise, use the base class implementation
+    super._performStep(datePart, delta, isDecrement);
   }
 
   protected override calculateSpunValue(
@@ -304,19 +362,46 @@ export default class IgcDateRangeInputComponent extends IgcDateTimeInputBaseComp
     );
   }
 
+  /**
+   * Checks if the mask has actual user input (not just prompts or empty).
+   */
+  protected override _isMaskComplete(): boolean {
+    // Check if ALL non-literal positions are filled (no prompts remaining)
+    return !this._maskedValue.split('').some((char, index) => {
+      if (char === this.prompt && !this._parser.literalPositions.has(index)) {
+        return true; // Found a prompt in a non-literal position = incomplete
+      }
+      return false;
+    });
+  }
+
   protected override updateValueFromMask(): void {
+    // Only parse and update value if the mask is complete
+    // This prevents filling in default dates (01/01/2000) for incomplete masks
     if (!this._isMaskComplete()) {
-      // Don't update value if mask is incomplete
-      this._updateMaskDisplay();
+      // Don't parse incomplete masks - just emit igcInput with null
+      this.value = null;
       return;
     }
 
+    // Parse the date range from the current masked value
     const parsed = this._parser.parseDateRange(this._maskedValue);
+
     if (parsed && (parsed.start || parsed.end)) {
       this.value = parsed;
     } else {
       this.value = null;
     }
+  }
+
+  /**
+   * Emits the input event with the DateRangeValue detail.
+   */
+  protected override _emitInputEvent(): void {
+    this._setTouchedState();
+    // Cast to any to bypass type checking - the event map doesn't define igcInput for date range
+    // but runtime emits the DateRangeValue as detail
+    this.emitEvent('igcInput' as any, { detail: this.value });
   }
 
   public override async handleFocus(): Promise<void> {
@@ -327,14 +412,14 @@ export default class IgcDateRangeInputComponent extends IgcDateTimeInputBaseComp
     }
 
     this._oldValue = this.value;
-    const areFormatsDifferent = this.displayFormat !== this.inputFormat;
 
-    if (!this.value || !this.value.start || !this.value.end) {
-      this._maskedValue = this._parser.emptyMask;
+    // Always update mask display when focused to show the editable format
+    this._updateMaskDisplay();
+
+    // If no value, select all to allow immediate typing
+    if (!this.value || (!this.value.start && !this.value.end)) {
       await this.updateComplete;
       this.select();
-    } else if (areFormatsDifferent) {
-      this._updateMaskDisplay();
     }
   }
 
