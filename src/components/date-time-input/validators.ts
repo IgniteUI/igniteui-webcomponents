@@ -16,8 +16,8 @@ export const dateTimeInputValidators: Validator<IgcDateTimeInputComponent>[] = [
         ? !isDateLessThanMin(
             host.value,
             host.min,
-            host.hasTimeParts(),
-            host.hasDateParts()
+            host.hasTimeParts,
+            host.hasDateParts
           )
         : true,
   },
@@ -28,8 +28,8 @@ export const dateTimeInputValidators: Validator<IgcDateTimeInputComponent>[] = [
         ? !isDateExceedingMax(
             host.value,
             host.max,
-            host.hasTimeParts(),
-            host.hasDateParts()
+            host.hasTimeParts,
+            host.hasDateParts
           )
         : true,
   },

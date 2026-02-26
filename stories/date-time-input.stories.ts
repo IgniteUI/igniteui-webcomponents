@@ -27,15 +27,28 @@ const metadata: Meta<IgcDateTimeInputComponent> = {
     actions: { handles: ['igcInput', 'igcChange'] },
   },
   argTypes: {
-    inputFormat: {
+    displayFormat: {
       type: 'string',
-      description: 'The date format to apply on the input.',
+      description:
+        'Format to display the value in when not editing.\nDefaults to the input format if not set.',
       control: 'text',
+      table: { defaultValue: { summary: '' } },
+    },
+    locale: {
+      type: 'string',
+      description: 'The locale settings used to display the value.',
+      control: 'text',
+      table: { defaultValue: { summary: 'en' } },
     },
     value: {
       type: 'string | Date',
       description: 'The value of the input.',
       options: ['string', 'Date'],
+      control: 'text',
+    },
+    inputFormat: {
+      type: 'string',
+      description: 'The date format to apply on the input.',
       control: 'text',
     },
     min: {
@@ -48,23 +61,11 @@ const metadata: Meta<IgcDateTimeInputComponent> = {
       description: 'The maximum value required for the input to remain valid.',
       control: 'date',
     },
-    displayFormat: {
-      type: 'string',
-      description:
-        'Format to display the value in when not editing.\nDefaults to the locale format if not set.',
-      control: 'text',
-    },
     spinLoop: {
       type: 'boolean',
       description: 'Sets whether to loop over the currently spun segment.',
       control: 'boolean',
       table: { defaultValue: { summary: 'true' } },
-    },
-    locale: {
-      type: 'string',
-      description:
-        'Gets/Sets the locale used for formatting the display value.',
-      control: 'text',
     },
     readOnly: {
       type: 'boolean',
@@ -127,6 +128,8 @@ const metadata: Meta<IgcDateTimeInputComponent> = {
     },
   },
   args: {
+    displayFormat: '',
+    locale: 'en',
     spinLoop: true,
     readOnly: false,
     mask: 'CCCCCCCCCC',
@@ -141,23 +144,23 @@ const metadata: Meta<IgcDateTimeInputComponent> = {
 export default metadata;
 
 interface IgcDateTimeInputArgs {
-  /** The date format to apply on the input. */
-  inputFormat: string;
+  /**
+   * Format to display the value in when not editing.
+   * Defaults to the input format if not set.
+   */
+  displayFormat: string;
+  /** The locale settings used to display the value. */
+  locale: string;
   /** The value of the input. */
   value: string | Date;
+  /** The date format to apply on the input. */
+  inputFormat: string;
   /** The minimum value required for the input to remain valid. */
   min: Date;
   /** The maximum value required for the input to remain valid. */
   max: Date;
-  /**
-   * Format to display the value in when not editing.
-   * Defaults to the locale format if not set.
-   */
-  displayFormat: string;
   /** Sets whether to loop over the currently spun segment. */
   spinLoop: boolean;
-  /** Gets/Sets the locale used for formatting the display value. */
-  locale: string;
   /** Makes the control a readonly field. */
   readOnly: boolean;
   /** The masked pattern of the component. */
