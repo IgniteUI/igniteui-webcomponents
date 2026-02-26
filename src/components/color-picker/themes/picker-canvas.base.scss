@@ -1,0 +1,23 @@
+@use 'styles/common/component';
+@use 'styles/utilities' as *;
+
+:host {
+    contain-intrinsic-size: auto;
+    content-visibility: auto;
+    contain: strict;
+    display: flex;
+    position: relative;
+    height: 100%;
+    background-image: linear-gradient(rgb(0 0 0 / 0%), #000),
+        linear-gradient(90deg, #fff, currentColor);
+    cursor: pointer;
+}
+
+[part='marker'] {
+    position: absolute;
+    width: 0.75rem;
+    height: 0.75rem;
+    border: 1px solid #fff;
+    border-radius: 50%;
+    cursor: pointer;
+}
