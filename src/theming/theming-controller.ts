@@ -122,8 +122,8 @@ class ThemingController implements ReactiveController {
 
   /** @internal */
   public hostConnected(): void {
-    // Apply the global theme; if a context provider is present, the callback will be synchronously invoked
-    // and override it with the context value before the first update cycle.
+    // Apply the global theme initially. When the host's first update cycle begins, if a context provider is
+    // present and has set its value, the callback will be invoked and override with the context value.
     this._applyGlobalTheme();
   }
 
