@@ -122,12 +122,9 @@ class ThemingController implements ReactiveController {
 
   /** @internal */
   public hostConnected(): void {
-    // Check if we have a context value immediately when connected usually after the parent provider
-    // is already in the DOM (i.e. creation of the component after initial render)
-    const contextValue = this._contextConsumer.value;
-    contextValue
-      ? this._applyContextTheme(contextValue)
-      : this._applyGlobalTheme();
+    // Apply the global theme; if a context provider is present, the callback will be synchronously invoked
+    // and override it with the context value before the first update cycle.
+    this._applyGlobalTheme();
   }
 
   /** @internal */
@@ -135,6 +132,11 @@ class ThemingController implements ReactiveController {
     if (this._themeSource === 'global') {
       _themeChangedEmitter.removeEventListener(CHANGED_THEME_EVENT, this);
     }
+
+    // Reset to initial state so that if the host reconnects in a different part of the tree,
+    // it can properly re-resolve the theme source.
+    this._themeSource = 'uninitialized';
+    this._contextConsumer.value = undefined;
   }
 
   //#endregion

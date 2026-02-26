@@ -159,6 +159,7 @@ describe('Theming Controller', () => {
       );
 
       expect(el.themingController.theme).to.equal('bootstrap');
+      expect(el.themingController.variant).to.equal('light');
     });
 
     it('should respond to global theme changes', async () => {
@@ -168,6 +169,7 @@ describe('Theming Controller', () => {
       );
 
       expect(el.themingController.theme).to.equal('bootstrap');
+      expect(el.themingController.variant).to.equal('light');
 
       // Change global theme
       setTimeout(() => configureTheme('material', 'light'));
@@ -175,6 +177,7 @@ describe('Theming Controller', () => {
       await elementUpdated(el);
 
       expect(el.themingController.theme).to.equal('material');
+      expect(el.themingController.variant).to.equal('light');
     });
 
     it('should call themeChange callback when global theme changes', async () => {
@@ -192,6 +195,7 @@ describe('Theming Controller', () => {
 
       expect(el.themeChangeCallCount).to.be.greaterThan(initialCallCount);
       expect(el.lastTheme).to.equal('fluent');
+      expect(el.themingController.variant).to.equal('dark');
     });
 
     it('should work without themeChange callback', async () => {
@@ -201,6 +205,7 @@ describe('Theming Controller', () => {
       );
 
       expect(el.themingController.theme).to.equal('bootstrap');
+      expect(el.themingController.variant).to.equal('light');
 
       // Should not throw when changing theme
       setTimeout(() => configureTheme('indigo', 'light'));
@@ -208,6 +213,7 @@ describe('Theming Controller', () => {
       await elementUpdated(el);
 
       expect(el.themingController.theme).to.equal('indigo');
+      expect(el.themingController.variant).to.equal('light');
     });
 
     it('should stop listening to global events when disconnected', async () => {
@@ -247,6 +253,7 @@ describe('Theming Controller', () => {
       await elementUpdated(el);
 
       expect(el.themingController.theme).to.equal('material');
+      expect(el.themingController.variant).to.equal('dark');
     });
 
     it('should update when theme provider theme changes', async () => {
@@ -268,12 +275,14 @@ describe('Theming Controller', () => {
 
       await elementUpdated(el);
       expect(el.themingController.theme).to.equal('bootstrap');
+      expect(el.themingController.variant).to.equal('light');
 
       provider.theme = 'fluent';
       await elementUpdated(provider);
       await elementUpdated(el);
 
       expect(el.themingController.theme).to.equal('fluent');
+      expect(el.themingController.variant).to.equal('light');
     });
 
     it('should update when theme provider variant changes', async () => {
@@ -321,6 +330,7 @@ describe('Theming Controller', () => {
       await elementUpdated(el);
 
       expect(el.themingController.theme).to.equal('material');
+      expect(el.themingController.variant).to.equal('dark');
 
       // Change global theme - should not affect component inside provider
       setTimeout(() => configureTheme('bootstrap', 'light'));
@@ -329,6 +339,7 @@ describe('Theming Controller', () => {
 
       // Should still be material, not bootstrap
       expect(el.themingController.theme).to.equal('material');
+      expect(el.themingController.variant).to.equal('dark');
     });
 
     it('should call themeChange callback when context theme changes', async () => {
@@ -357,6 +368,7 @@ describe('Theming Controller', () => {
 
       expect(el.themeChangeCallCount).to.be.greaterThan(initialCallCount);
       expect(el.lastTheme).to.equal('indigo');
+      expect(el.themingController.variant).to.equal('light');
     });
 
     it('should use nearest theme provider when nested', async () => {
@@ -383,7 +395,9 @@ describe('Theming Controller', () => {
       await elementUpdated(innerEl);
 
       expect(outerEl.themingController.theme).to.equal('material');
+      expect(outerEl.themingController.variant).to.equal('light');
       expect(innerEl.themingController.theme).to.equal('fluent');
+      expect(innerEl.themingController.variant).to.equal('dark');
     });
   });
 
@@ -409,6 +423,7 @@ describe('Theming Controller', () => {
       await elementUpdated(el);
 
       expect(el.themingController.theme).to.equal('indigo');
+      expect(el.themingController.variant).to.equal('dark');
     });
 
     it('should fall back to global theme when moved outside provider', async () => {
@@ -427,17 +442,28 @@ describe('Theming Controller', () => {
       const el = container.querySelector(
         themedTag
       ) as ThemedTestComponentElement;
+      const provider = container.querySelector(
+        IgcThemeProviderComponent.tagName
+      )!;
       await elementUpdated(el);
 
+      // After initial render, should have provider theme
       expect(el.themingController.theme).to.equal('material');
+      expect(el.themingController.variant).to.equal('dark');
 
       // Move outside the provider
       container.appendChild(el);
       await elementUpdated(el);
 
-      // Note: The component should now use global theme
-      // However, the context consumer may still hold the previous value
-      // This tests the disconnect/reconnect behavior
+      expect(el.themingController.theme).to.equal('bootstrap');
+      expect(el.themingController.variant).to.equal('light');
+
+      // Move back inside provider scope
+      provider.appendChild(el);
+      await elementUpdated(el);
+
+      expect(el.themingController.theme).to.equal('material');
+      expect(el.themingController.variant).to.equal('dark');
     });
   });
 
@@ -503,6 +529,7 @@ describe('Theming Controller', () => {
           await elementUpdated(el);
 
           expect(el.themingController.theme).to.equal(theme);
+          expect(el.themingController.variant).to.equal(variant);
         });
       }
     }
