@@ -76,8 +76,8 @@ class ThemingController implements ReactiveController {
     ReactiveElement
   >;
 
-  private _theme: Theme;
-  private _variant: ThemeVariant;
+  private _theme: Theme = 'bootstrap';
+  private _variant: ThemeVariant = 'light';
   private _themeSource: ThemeProviderSource = 'uninitialized';
 
   //#endregion
@@ -101,10 +101,6 @@ class ThemingController implements ReactiveController {
     themes: Themes,
     config?: ThemingControllerConfig
   ) {
-    const { theme, themeVariant } = getTheme();
-
-    this._theme = theme;
-    this._variant = themeVariant;
     this._host = host;
     this._themes = themes;
     this._options = config;
