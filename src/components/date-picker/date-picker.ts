@@ -654,6 +654,7 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
     this._input.select();
   }
 
+  /* blazorSuppress */
   /** Sets the text selection range in the input of the component */
   public setSelectionRange(
     start: number,
@@ -663,6 +664,7 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
     this._input.setSelectionRange(start, end, direction);
   }
 
+  /* blazorSuppress */
   /* Replaces the selected text in the input and re-applies the mask */
   public setRangeText(
     replacement: string,
