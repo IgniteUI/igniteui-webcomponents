@@ -63,7 +63,9 @@ export default class IgcThemeProviderComponent extends LitElement {
     registerComponent(IgcThemeProviderComponent);
   }
 
-  private readonly _provider: ContextProvider<typeof themeContext>;
+  private readonly _provider = new ContextProvider(this, {
+    context: themeContext,
+  });
 
   /**
    * The theme to provide to descendant components.
@@ -83,27 +85,12 @@ export default class IgcThemeProviderComponent extends LitElement {
   @property({ reflect: true })
   public variant: ThemeVariant = 'light';
 
-  constructor() {
-    super();
-
-    this._provider = new ContextProvider(this, {
-      context: themeContext,
-      initialValue: this._getContextValue(),
-    });
-  }
-
   protected override update(changedProperties: PropertyValues<this>): void {
     if (changedProperties.has('theme') || changedProperties.has('variant')) {
       this._provider.setValue(this._getContextValue());
     }
 
     super.update(changedProperties);
-  }
-
-  protected override firstUpdated(): void {
-    this.updateComplete.then(() => {
-      this._provider.setValue(this._getContextValue());
-    });
   }
 
   private _getContextValue(): ThemeContext {
