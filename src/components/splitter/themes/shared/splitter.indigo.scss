@@ -18,7 +18,7 @@ $slim-splitter: calc( 1 / $splitter-size);
     [part*='collapse-btn'],
     [part*='expand-btn'] {
         opacity: 0;
-        transition: opacity .25s .5s ease;
+        transition: opacity .15s .5s ease;
         pointer-events: none;
     }
 }
@@ -28,7 +28,7 @@ $slim-splitter: calc( 1 / $splitter-size);
     [part*='collapse-btn'],
     [part*='expand-btn'] {
         opacity: 0.68;
-        transition: opacity .25s ease;
+        transition: opacity .15s ease;
         pointer-events: auto;
     }
 }
@@ -37,7 +37,7 @@ $slim-splitter: calc( 1 / $splitter-size);
     [part='splitter-bar'] {
         @extend %hide-controls;
 
-        transition: all .25s .5s $in-out-quad;
+        transition: all .15s .5s $in-out-quad;
 
         &:focus-visible {
             @extend %show-controls;
@@ -49,6 +49,7 @@ $slim-splitter: calc( 1 / $splitter-size);
             [part*='collapse-btn'],
             [part*='expand-btn'] {
                 opacity: 1;
+                transition: opacity .15s ease;
             }
         }
     }
