@@ -85,7 +85,9 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
 
   private readonly _containerRef = createRef<HTMLElement>();
   private readonly _player = addAnimationController(this, this._containerRef);
-  private readonly _slots = addSlotController(this, { slots: setSlots() });
+  private readonly _slots = addSlotController(this, {
+    slots: setSlots('close-button'),
+  });
 
   private readonly _showAnimation = scaleInCenter({
     duration: 150,
@@ -144,25 +146,6 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
 
   public get open(): boolean {
     return this._controller.open;
-  }
-
-  /**
-   * Whether to disable the rendering of the arrow indicator for the tooltip.
-   *
-   * @deprecated since 6.1.0. Use `with-arrow` to control the behavior of the tooltip arrow.
-   * @attr disable-arrow
-   * @default false
-   */
-  @property({ type: Boolean, attribute: 'disable-arrow' })
-  public set disableArrow(value: boolean) {
-    this.withArrow = !value;
-  }
-
-  /**
-   * @deprecated since 6.1.0. Use `with-arrow` to control the behavior of the tooltip arrow.
-   */
-  public get disableArrow(): boolean {
-    return !this.withArrow;
   }
 
   /**
