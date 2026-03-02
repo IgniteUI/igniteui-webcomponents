@@ -16,6 +16,13 @@ $expander-border-active: $bar-size solid var-get($theme, 'expander-color-active'
     [part='drag-handle'] {
         background: var-get($theme, 'handle-color');
         border-radius: var-get($theme, 'border-radius');
+        opacity: 0.68;
+    }
+
+    [part*='collapse-btn'],
+    [part*='expand-btn'] {
+        opacity: 0.68;
+        transition: opacity .15s ease;
     }
 
     &:focus-visible {
@@ -24,20 +31,38 @@ $expander-border-active: $bar-size solid var-get($theme, 'expander-color-active'
         transition: box-shadow 0.15s $out-quad;
         z-index: 99;
     }
+}
 
-    &:hover,
-    &:focus-visible:hover {
+:host(:not([disable-resize])) {
+    [part='splitter-bar']:hover,
+    [part='splitter-bar']:focus-visible:hover {
         background: $splitter-color;
         box-shadow: none;
         transition: all 0.25s ease-out;
+
+        [part='drag-handle'],
+        [part*='collapse-btn'],
+        [part*='expand-btn'] {
+            opacity: 1;
+        }
     }
 
-    &:focus-visible:active,
-    &:active {
+    [part='splitter-bar']:focus-visible:active,
+    [part='splitter-bar']:active {
         background: var-get($theme, 'bar-color-active');
 
         [part='drag-handle'] {
             background: var-get($theme, 'handle-color-active');
+        }
+    }
+}
+
+:host([disable-resize]) {
+    [part='splitter-bar']:hover,
+    [part='splitter-bar']:focus-visible:hover {
+        [part*='collapse-btn'],
+        [part*='expand-btn'] {
+            opacity: 1;
         }
     }
 }

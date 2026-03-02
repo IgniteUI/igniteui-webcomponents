@@ -27,7 +27,7 @@ $slim-splitter: calc( 1 / $splitter-size);
     [part='drag-handle'],
     [part*='collapse-btn'],
     [part*='expand-btn'] {
-        opacity: 1;
+        opacity: 0.68;
         transition: opacity .25s ease;
         pointer-events: auto;
     }
@@ -39,17 +39,18 @@ $slim-splitter: calc( 1 / $splitter-size);
 
         transition: all .25s .5s $in-out-quad;
 
-        &:hover,
         &:focus-visible {
             @extend %show-controls;
         }
-    }
-}
 
-:host([disable-resize][disable-collapse]) {
-    [part='splitter-bar']:hover,
-    [part='splitter-bar']:focus-visible {
-        opacity: .68;
+        &:hover,
+        &:focus-visible:hover {
+            [part='drag-handle'],
+            [part*='collapse-btn'],
+            [part*='expand-btn'] {
+                opacity: 1;
+            }
+        }
     }
 }
 
