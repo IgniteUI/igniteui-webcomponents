@@ -37,8 +37,7 @@ $expander-border-active: $bar-size solid var-get($theme, 'expander-color-active'
     [part='splitter-bar']:hover,
     [part='splitter-bar']:focus-visible:hover {
         background: $splitter-color;
-        box-shadow: none;
-        transition: all 0.25s ease-out;
+        transition: all 0.15s ease-out;
 
         [part='drag-handle'],
         [part*='collapse-btn'],
