@@ -1,0 +1,94 @@
+@use 'sass:map';
+@use 'igniteui-theming/sass/utils/math' as theming-math;
+@use 'igniteui-theming/sass/animations/easings' as *;
+@use 'styles/utilities' as *;
+@use '../light/themes' as *;
+
+$theme: $indigo;
+$base-font-size: 16;
+
+// splitter-size + padding (convert rem to px)
+$splitter-size: theming-math.unitless(map.get($theme, 'size')) * $base-font-size + 2;
+
+// calculate the value for the slim splitter
+$slim-splitter: calc( 1 / $splitter-size);
+
+%hide-controls {
+    [part='drag-handle'],
+    [part*='collapse-btn'],
+    [part*='expand-btn'] {
+        opacity: 0;
+        transition: opacity .15s .5s ease;
+        pointer-events: none;
+    }
+}
+
+%show-controls {
+    [part='drag-handle'],
+    [part*='collapse-btn'],
+    [part*='expand-btn'] {
+        opacity: 0.68;
+        transition: opacity .15s ease;
+        pointer-events: auto;
+    }
+}
+
+:host {
+    [part='splitter-bar'] {
+        @extend %hide-controls;
+
+        transition: all .15s .5s $in-out-quad;
+
+        &:focus-visible {
+            @extend %show-controls;
+        }
+
+        &:hover,
+        &:focus-visible:hover {
+            [part='drag-handle'],
+            [part*='collapse-btn'],
+            [part*='expand-btn'] {
+                opacity: 1;
+                transition: opacity .15s ease;
+            }
+        }
+    }
+}
+
+:host([orientation='horizontal']) {
+    [part='splitter-bar'] {
+        transform: scaleX($slim-splitter);
+
+        &:hover,
+        &:focus-visible {
+            transform: scaleX(1);
+            transition-delay: 0s;
+        }
+    }
+}
+
+:host([orientation='horizontal'][disable-resize][disable-collapse]) {
+    [part='splitter-bar']:hover,
+    [part='splitter-bar']:focus-visible {
+        transform: scaleX($slim-splitter);
+    }
+}
+
+:host([orientation='vertical']) {
+    [part='splitter-bar'] {
+        transform: scaleY($slim-splitter);
+
+        &:hover,
+        &:focus-visible {
+            transform: scaleY(1);
+            transition-delay: 0s;
+        }
+    }
+}
+
+:host([orientation='vertical'][disable-resize][disable-collapse]) {
+    [part='splitter-bar']:hover,
+    [part='splitter-bar']:focus-visible {
+        transform: scaleY($slim-splitter);
+    }
+}

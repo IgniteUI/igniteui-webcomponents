@@ -66,6 +66,7 @@ export { default as IgcSwitchComponent } from './components/checkbox/switch.js';
 export { default as IgcTextareaComponent } from './components/textarea/textarea.js';
 export { default as IgcTreeComponent } from './components/tree/tree.js';
 export { default as IgcTreeItemComponent } from './components/tree/tree-item.js';
+export { default as IgcSplitterComponent } from './components/splitter/splitter.js';
 export { default as IgcStepperComponent } from './components/stepper/stepper.js';
 export { default as IgcStepComponent } from './components/stepper/step.js';
 export { default as IgcTooltipComponent } from './components/tooltip/tooltip.js';
