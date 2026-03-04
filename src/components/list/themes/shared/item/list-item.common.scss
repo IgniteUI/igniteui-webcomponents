@@ -25,31 +25,14 @@ $theme: $material;
 
 [part='start'] {
     color: var-get($theme, 'item-thumbnail-color');
+
+    ::slotted(igc-avatar) {
+        --icon-color: #{var-get($theme, 'item-thumbnail-color')};
+    }
 }
 
 [part='end'] {
     color: var-get($theme, 'item-action-color');
-}
-
-:host([selected]) {
-    color: var-get($theme, 'item-text-color-selected');
-    background: var-get($theme, 'item-background-selected');
-
-    [part='title'] {
-        color: var-get($theme, 'item-title-color-selected');
-    }
-
-    [part='subtitle'] {
-        color: var-get($theme, 'item-subtitle-color-selected');
-    }
-
-    [part='start'] {
-        color: var-get($theme, 'item-thumbnail-color-selected');
-    }
-
-    [part='end'] {
-        color: var-get($theme, 'item-action-color-selected');
-    }
 }
 
 :host(:hover),
@@ -67,6 +50,10 @@ $theme: $material;
 
     [part='start'] {
         color: var-get($theme, 'item-thumbnail-color-hover');
+
+        ::slotted(igc-avatar) {
+            --icon-color: #{var-get($theme, 'item-thumbnail-color-hover')};
+        }
     }
 
     [part='end'] {
@@ -88,9 +75,38 @@ $theme: $material;
 
     [part='start'] {
         color: var-get($theme, 'item-thumbnail-color-active');
+
+        ::slotted(igc-avatar) {
+            --icon-color: #{var-get($theme, 'item-thumbnail-color-active')};
+        }
     }
 
     [part='end'] {
         color: var-get($theme, 'item-action-color-active');
+    }
+}
+
+:host([selected]) {
+    color: var-get($theme, 'item-text-color-selected');
+    background: var-get($theme, 'item-background-selected');
+
+    [part='title'] {
+        color: var-get($theme, 'item-title-color-selected');
+    }
+
+    [part='subtitle'] {
+        color: var-get($theme, 'item-subtitle-color-selected');
+    }
+
+    [part='start'] {
+        color: var-get($theme, 'item-thumbnail-color-selected');
+
+        ::slotted(igc-avatar) {
+            --icon-color: #{var-get($theme, 'item-thumbnail-color-selected')};
+        }
+    }
+
+    [part='end'] {
+        color: var-get($theme, 'item-action-color-selected');
     }
 }

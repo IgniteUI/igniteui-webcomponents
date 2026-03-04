@@ -8,7 +8,7 @@ import {
 import { spy } from 'sinon';
 
 import { defineComponents } from '../common/definitions/defineComponents.js';
-import { finishAnimationsFor } from '../common/utils.spec.js';
+import { finishAnimationsFor, simulateClick } from '../common/utils.spec.js';
 import IgcIconComponent from '../icon/icon.js';
 import IgcBannerComponent from './banner.js';
 
@@ -231,15 +231,15 @@ describe('Banner', () => {
 
   describe('Action Tests', () => {
     it('should close the banner when clicking the default button', async () => {
+      const button = banner.renderRoot.querySelector('igc-button')!;
+
       expect(banner.open).to.be.false;
 
       await banner.show();
-
       expect(banner.open).to.be.true;
 
-      const button = banner.shadowRoot!.querySelector('igc-button');
-
-      button?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      simulateClick(button);
+      await elementUpdated(banner);
       await clickHideComplete();
 
       expect(banner.open).to.be.false;
@@ -247,20 +247,20 @@ describe('Banner', () => {
 
     it('should emit correct event sequence for the default action button', async () => {
       const eventSpy = spy(banner, 'emitEvent');
+      const button = banner.renderRoot.querySelector('igc-button')!;
 
       expect(banner.open).to.be.false;
 
       await banner.show();
-
       expect(banner.open).to.be.true;
 
-      const button = banner.shadowRoot!.querySelector('igc-button');
-      button?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      simulateClick(button);
 
       expect(eventSpy.callCount).to.equal(1);
       expect(eventSpy).calledWith('igcClosing', { cancelable: true });
 
       eventSpy.resetHistory();
+      await elementUpdated(banner);
       await clickHideComplete();
 
       expect(eventSpy).calledWith('igcClosed');
@@ -269,17 +269,17 @@ describe('Banner', () => {
 
     it('can cancel `igcClosing` event', async () => {
       const eventSpy = spy(banner, 'emitEvent');
-      const button = banner.shadowRoot!.querySelector('igc-button');
+      const button = banner.renderRoot.querySelector('igc-button')!;
 
       banner.addEventListener('igcClosing', (event) => {
         event.preventDefault();
       });
 
       await banner.show();
-
       expect(banner.open).to.be.true;
 
-      button?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      simulateClick(button);
+      await elementUpdated(banner);
       await clickHideComplete();
 
       expect(eventSpy).calledWith('igcClosing');

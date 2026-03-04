@@ -1,9 +1,7 @@
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { mkdir, writeFile, glob } from 'node:fs/promises';
 import path from 'node:path';
-import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import autoprefixer from 'autoprefixer';
-import { globby } from 'globby';
 import postcss from 'postcss';
 import * as sass from 'sass-embedded';
 import report from './report.mjs';
@@ -23,14 +21,13 @@ const stripComments = () => {
 };
 stripComments.postcss = true;
 
-const _template = await readFile(
-  resolve(process.argv[1], '../styles.tmpl'),
-  'utf8'
-);
 const _postProcessor = postcss([autoprefixer, stripComments]);
 
 export function fromTemplate(content) {
-  return _template.replace(/<%\s*content\s*%>/, content);
+  return `
+  import { css } from 'lit';
+  export const styles = css\`${content}\`;
+  `;
 }
 
 export async function compileSass(src, compiler) {
@@ -48,7 +45,7 @@ export async function buildThemes(isProduction = false) {
 
   const [compiler, paths] = await Promise.all([
     sass.initAsyncCompiler(),
-    globby('src/styles/themes/{light,dark}/*.scss'),
+    Array.fromAsync(glob('src/styles/themes/{light,dark}/*.scss')),
   ]);
 
   try {
@@ -62,9 +59,13 @@ export async function buildThemes(isProduction = false) {
 
         if (isProduction) {
           await mkdir(path.dirname(outputFile), { recursive: true });
-          writeFile(outputFile, await compileSass(sassFile, compiler), 'utf-8');
+          await writeFile(
+            outputFile,
+            await compileSass(sassFile, compiler),
+            'utf-8'
+          );
         } else {
-          writeFile(
+          await writeFile(
             outputFile,
             fromTemplate(await compileSass(sassFile, compiler)),
             'utf-8'
@@ -74,7 +75,7 @@ export async function buildThemes(isProduction = false) {
     );
   } catch (err) {
     await compiler.dispose();
-    report.error(err);
+    report.error(err.message ?? err.toString());
     process.exit(1);
   }
 
@@ -91,30 +92,26 @@ export async function buildComponents(isProduction = false) {
   const start = performance.now();
   const [compiler, paths] = await Promise.all([
     sass.initAsyncCompiler(),
-    globby([
-      'src/components/**/*.base.scss',
-      'src/components/**/*.common.scss',
-      'src/components/**/*.shared.scss',
-      'src/components/**/*.material.scss',
-      'src/components/**/*.bootstrap.scss',
-      'src/components/**/*.indigo.scss',
-      'src/components/**/*.fluent.scss',
-    ]),
+    Array.fromAsync(
+      glob(
+        'src/components/**/*.{base,common,shared,material,bootstrap,indigo,fluent}.scss'
+      )
+    ),
   ]);
 
   try {
     await Promise.all(
-      paths.map(async (path) =>
+      paths.map(async (filePath) =>
         writeFile(
-          path.replace(/\.scss$/, '.css.ts'),
-          fromTemplate(await compileSass(path, compiler)),
+          filePath.replace(/\.scss$/, '.css.ts'),
+          fromTemplate(await compileSass(filePath, compiler)),
           'utf-8'
         )
       )
     );
   } catch (err) {
     await compiler.dispose();
-    report.error(err);
+    report.error(err.message ?? err.toString());
     process.exit(1);
   }
 

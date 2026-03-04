@@ -4,5 +4,5 @@
 $theme: $material;
 
 :host {
-    @include css-vars-from-theme(diff($base, $theme), 'ig-dropdown');
+    @include css-vars-from-theme(diff($base, $theme));
 }

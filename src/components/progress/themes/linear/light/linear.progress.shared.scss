@@ -4,5 +4,5 @@
 $theme: $base;
 
 :host {
-    @include css-vars-from-theme($theme, 'ig-linear-progress');
+    @include css-vars-from-theme($theme);
 }

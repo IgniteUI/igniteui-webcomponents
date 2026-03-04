@@ -32,7 +32,7 @@ import type {
 
 type Icon = { [key in IconThemeKey]?: IconMeta };
 
-export const iconReferences: IconReference[] = [];
+export const ICON_REFERENCES: IconReference[] = [];
 const makeIconRefs = (icons: Icon) => {
   return new Map(
     Object.entries(icons).map((icon) => {
@@ -50,7 +50,7 @@ const addIcon = (name: string, target: Icon) => {
     target: makeIconRefs(target),
   };
 
-  iconReferences.push(icon as IconReference);
+  ICON_REFERENCES.push(icon as IconReference);
 };
 
 addIcon('expand', {

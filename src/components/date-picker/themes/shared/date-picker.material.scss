@@ -1,7 +1,20 @@
 @use 'styles/utilities' as *;
 @use '../light/themes' as *;
+@use 'components/input/themes/light/themes' as input-theme;
 
-$theme: $material;
+$theme: input-theme.$material;
+
+:host {
+    ::part(helper-text) {
+        padding-inline: pad-inline(rem(12px), rem(14px), rem(16px));
+    }
+}
+
+:host([outlined]) {
+    igc-date-time-input::part(notch) {
+        border-block-start: rem(2px) solid transparent;
+    }
+}
 
 :host([outlined][readonly]:hover) {
     igc-date-time-input::part(start),
@@ -83,7 +96,7 @@ $theme: $material;
         border-color: var-get($theme, 'error-secondary-color');
     }
 
-    &::part(notch) {
+    igc-date-time-input::part(notch) {
         border-bottom-color: var-get($theme, 'error-secondary-color');
     }
 }

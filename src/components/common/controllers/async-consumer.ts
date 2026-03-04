@@ -15,8 +15,7 @@ type AsyncContextOptions<T extends Context<unknown, unknown>> = {
 export class AsyncContextConsumer<
   T extends Context<unknown, unknown>,
   Host extends ReactiveControllerHost & HTMLElement,
-> implements ReactiveController
-{
+> implements ReactiveController {
   protected _host: Host;
   protected _options: AsyncContextOptions<T>;
   protected _consumer?: ContextConsumer<T, Host>;

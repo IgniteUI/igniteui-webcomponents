@@ -1343,7 +1343,7 @@ describe('Select', () => {
 
     describe('Validation', () => {
       const spec = createFormAssociatedTestBed<IgcSelectComponent>(html`
-        <igc-select name="select" required .defaultValue=${undefined}>
+        <igc-select name="select" required>
           <igc-select-item value="1">1</igc-select-item>
           <igc-select-item value="2">2</igc-select-item>
           <igc-select-item value="3">3</igc-select-item>

@@ -565,7 +565,7 @@ describe('Input component', () => {
 
     describe('Validation', () => {
       const spec = createFormAssociatedTestBed<IgcInputComponent>(html`
-        <igc-input name="input" required .defaultValue=${undefined}></igc-input>
+        <igc-input name="input" required></igc-input>
       `);
 
       beforeEach(async () => {

@@ -53,6 +53,12 @@ const metadata: Meta<IgcTreeComponent> = {
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'none' } },
     },
+    locale: {
+      type: 'string',
+      description:
+        'Gets/Sets the locale used for getting language, affecting resource strings.',
+      control: 'text',
+    },
   },
   args: {
     singleBranchExpand: false,
@@ -70,6 +76,8 @@ interface IgcTreeArgs {
   toggleNodeOnClick: boolean;
   /** The selection state of the tree. */
   selection: 'none' | 'multiple' | 'cascade';
+  /** Gets/Sets the locale used for getting language, affecting resource strings. */
+  locale: string;
 }
 type Story = StoryObj<IgcTreeArgs>;
 

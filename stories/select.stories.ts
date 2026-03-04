@@ -5,14 +5,12 @@ import {
 } from '@igniteui/material-icons-extended';
 import type { Meta, StoryObj } from '@storybook/web-components-vite';
 import { html } from 'lit';
-
 import {
   IgcIconComponent,
   IgcSelectComponent,
   defineComponents,
   registerIconFromText,
 } from 'igniteui-webcomponents';
-import { groupBy } from '../src/components/common/util.js';
 import {
   disableStoryControls,
   formControls,
@@ -265,8 +263,16 @@ const items = [
     >`
 );
 
+type CountryInfo = {
+  continent: string;
+  country: string;
+  value: string;
+  selected: boolean;
+  disabled: boolean;
+};
+
 const countries = Object.entries(
-  groupBy(
+  Object.groupBy(
     [
       {
         continent: 'Europe',
@@ -310,9 +316,9 @@ const countries = Object.entries(
         selected: false,
         disabled: true,
       },
-    ],
-    'continent'
-  )
+    ] as CountryInfo[],
+    (item) => item.continent
+  ) as Record<string, CountryInfo[]>
 );
 
 export const Basic: Story = {
@@ -479,6 +485,11 @@ export const Form: Story = {
   argTypes: disableStoryControls(metadata),
   render: () => {
     return html`
+      <style>
+        fieldset {
+          min-width: 0;
+        }
+      </style>
       <form @submit=${formSubmitHandler}>
         <fieldset>
           <legend>Default select</legend>

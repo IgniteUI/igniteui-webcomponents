@@ -7,11 +7,6 @@ $theme: $fluent;
     @include type-style('caption');
 }
 
-igc-button::part(base),
-igc-button::part(base):hover {
-    color: var-get($theme, 'button-color');
-}
-
 igc-button::part(base):focus-visible::after {
     display: none;
 }

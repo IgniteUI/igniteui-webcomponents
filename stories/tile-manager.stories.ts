@@ -363,7 +363,7 @@ const trendContent = (value: number, trend: number) => html`
   </style>
   <div class="trends">
     <h3>${value.toLocaleString()}</h3>
-    <h4 class="${trend > 0 ? 'increase' : 'decrease'}">
+    <h4 class=${trend > 0 ? 'increase' : 'decrease'}>
       ${trend.toLocaleString()}%
     </h4>
     <h6>vs previous year</h6>
@@ -396,7 +396,7 @@ const imageContent = (img: string) => html`
       }
     }
   </style>
-  <div class="picture"><img src="${img}" alt="picture" /></div>
+  <div class="picture"><img src=${img} alt="picture" /></div>
 `;
 
 const cardContent = () =>

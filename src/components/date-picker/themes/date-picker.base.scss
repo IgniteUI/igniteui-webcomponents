@@ -14,6 +14,7 @@
 
         igc-calendar {
             border: none;
+            border-radius: 0;
             box-shadow: none;
         }
     }
@@ -21,6 +22,17 @@
     igc-calendar[header-orientation='vertical'] {
         border-bottom-left-radius: 0;
         border-bottom-right-radius: 0;
+    }
+
+    ::part(helper-text) {
+        @include type-style('caption');
+        @include line-clamp(2, true, true);
+
+        overflow-wrap: anywhere;
+    }
+
+    slot[name='value-missing'] {
+        @include line-clamp(2, true, true);
     }
 }
 
@@ -31,7 +43,7 @@
 }
 
 [part='label'] {
-    display: inline-block;
+    display: block;
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;

@@ -5,5 +5,5 @@
 $theme: $bootstrap;
 
 :host {
-    @include css-vars-from-theme(diff(light.$base, $theme), 'ig-input');
+    @include css-vars-from-theme(diff(light.$base, $theme));
 }

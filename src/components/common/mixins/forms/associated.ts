@@ -131,7 +131,6 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
     public get willValidate(): boolean {
       return this.__internals.willValidate;
     }
-
     //#endregion
 
     //#region Life-cycle hooks

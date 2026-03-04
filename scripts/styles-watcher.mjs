@@ -29,7 +29,7 @@ const watcher = watch(['src'], watchOptions, async (_, fileName) => {
       'utf8'
     );
   } catch (err) {
-    report.error(err);
+    report.error(err.message ?? err.toString());
   }
 
   report.success('Styles rebuilt 🎨');

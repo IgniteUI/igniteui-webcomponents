@@ -190,14 +190,12 @@ const createMiniContent = () => html`
 const createControlButtons = (position: string) => html`
   ${position === 'relative'
     ? html`
-        <igc-button @click="${handleToggle}">Toggle</igc-button>
-        <igc-button variant="outlined" @click="${handleClose}"
-          >Close</igc-button
-        >
+        <igc-button @click=${handleToggle}>Toggle</igc-button>
+        <igc-button variant="outlined" @click=${handleClose}>Close</igc-button>
       `
     : ''}
 
-  <igc-button variant="outlined" @click="${handleOpen}">Open</igc-button>
+  <igc-button variant="outlined" @click=${handleOpen}>Open</igc-button>
 `;
 
 // Main template function
@@ -211,11 +209,7 @@ const createTemplate = (options: {
     ${commonStyles}
 
     <div class="ig-scrollbar main">
-      <igc-nav-drawer
-        .open=${open}
-        .position=${position}
-        @click="${handleClick}"
-      >
+      <igc-nav-drawer .open=${open} .position=${position} @click=${handleClick}>
         ${createDrawerContent(
           options.headerText || 'Sample Drawer',
           options.itemCount

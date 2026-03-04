@@ -2,19 +2,37 @@
 
 # Current Milestone
 
-## Milestone 17 (Due Jun, 2025)
+## Milestone 21 (Due Jan, 2026)
 
-1. Date range picker [1596](https://github.com/IgniteUI/igniteui-webcomponents/issues/1596)
-2. Tooltip component [1615](https://github.com/IgniteUI/igniteui-webcomponents/issues/1615)
+1. **[DONE]** Grids Localization
+2. **[DONE]** Grid PDF exporter service
+3. **[DONE]** Grids filtering performance improvements
 
 ## Going down the road
 
-1. Bottom navigation component [#169](https://github.com/IgniteUI/igniteui-webcomponents/issues/169)
-2. Splitter component [#184](https://github.com/IgniteUI/igniteui-webcomponents/issues/184)
-3. Chat UI component
+1. Query Builder component
 
 # Previous Milestone
 
+## Milestone 20, version 6.3.0, Released Nov 18th, 2025
+
+1. **[DONE]** Chat component
+2. **[DONE]** Grids Cell Merging feature
+3. **[DONE]** Grids Pinning on both sides feature
+4. **[DONE]** New Tooltip component
+
+## Milestone 19, version 6.3.0, Released Nov 18th, 2025
+
+1. **[DONE]** [Bugs fixes](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/general-changelog-dv-wc#bug-fixes-3)
+
+## Milestone 18, version 6.1.0, Released Jun 12th, 2025
+
+1. **[DONE]** Date range picker [1596](https://github.com/IgniteUI/igniteui-webcomponents/issues/1596)
+
+## Milestone 17, version 5.4.0, Released Apr 23rd, 2025
+
+1. **[DONE]** Tooltip component [1615](https://github.com/IgniteUI/igniteui-webcomponents/issues/1615)
+   
 ## Milestone 16, version 5.3.0, Released Mar 13th, 2025
 
 1. **[DONE]** Tile manager component [#1402](https://github.com/IgniteUI/igniteui-webcomponents/pull/1402) 

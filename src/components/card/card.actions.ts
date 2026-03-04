@@ -8,12 +8,24 @@ import { all } from './themes/actions.js';
 import { styles } from './themes/card.actions.base.css.js';
 import { styles as shared } from './themes/shared/actions/card.actions.common.css.js';
 
-/** A container for card action items like buttons
+/**
+ * A container component for card action items such as buttons or icon buttons.
+ * Actions can be positioned at the start, center, or end of the container.
+ *
  * @element igc-card-actions
  *
- * @slot start - Renders items at the beginning of actions area
- * @slot - Renders items at the middle of actions area
- * @slot end - Renders items at the end of actions area
+ * @slot start - Renders items at the beginning of the actions area.
+ * @slot - Renders items in the center of the actions area.
+ * @slot end - Renders items at the end of the actions area.
+ *
+ * @example
+ * ```html
+ * <igc-card-actions>
+ *   <igc-button slot="start" variant="flat">Like</igc-button>
+ *   <igc-button slot="start" variant="flat">Share</igc-button>
+ *   <igc-icon-button slot="end" name="more_vert"></igc-icon-button>
+ * </igc-card-actions>
+ * ```
  */
 export default class IgcCardActionsComponent extends LitElement {
   public static readonly tagName = 'igc-card-actions';
@@ -30,8 +42,10 @@ export default class IgcCardActionsComponent extends LitElement {
   }
 
   /**
-   * The orientation of the actions.
-   * @attr
+   * The orientation of the actions layout.
+   *
+   * @attr orientation
+   * @default 'horizontal'
    */
   @property({ reflect: true })
   public orientation: ContentOrientation = 'horizontal';

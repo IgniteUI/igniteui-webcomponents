@@ -12,6 +12,7 @@ import {
   simulateClick,
   simulateKeyboard,
   simulatePointerDown,
+  simulatePointerUp,
 } from '../utils.spec.js';
 import { addKeyboardFocusRing } from './focus-ring.js';
 import { tabKey } from './key-bindings.js';
@@ -93,6 +94,11 @@ describe('Focus ring controller', () => {
     expect(hasKeyboardFocusStyles(instance.button)).to.be.true;
 
     simulatePointerDown(instance.button);
+    await elementUpdated(instance);
+
+    expect(hasKeyboardFocusStyles(instance.button)).to.be.true;
+
+    simulatePointerUp(instance.button);
     await elementUpdated(instance);
 
     expect(hasKeyboardFocusStyles(instance.button)).to.be.false;

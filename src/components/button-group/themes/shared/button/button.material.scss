@@ -61,11 +61,11 @@ $theme: $material;
 :host([selected]) {
     [part~='toggle']:active {
         background: var-get($theme, 'item-selected-background');
-        color: var-get($theme, 'item-selected-text-color');
+        color: var-get($theme, 'item-selected-hover-text-color');
         border-color: var-get($theme, 'item-selected-border-color');
 
         ::slotted(igc-icon) {
-            color: var-get($theme, 'item-selected-icon-color');
+            color: var-get($theme, 'item-selected-hover-icon-color');
         }
         
         &::before {

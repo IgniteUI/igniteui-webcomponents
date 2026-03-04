@@ -1,5 +1,5 @@
 import type { Ref } from 'lit/directives/ref.js';
-import { isLTR } from '../common/util.js';
+import { getScaleFactor, isLTR, setStyles } from '../common/util.js';
 import type IgcTabComponent from './tab.js';
 import type IgcTabsComponent from './tabs.js';
 
@@ -151,22 +151,23 @@ class TabsHelpers {
     await this._host.updateComplete;
 
     if (active) {
-      const tabHeader = getTabHeader(active);
-      const { width } = tabHeader.getBoundingClientRect();
+      const header = getTabHeader(active);
+      const { offsetLeft: containerLeft, offsetWidth: containerWidth } =
+        this.container;
+      const scaledWidth =
+        header.getBoundingClientRect().width * getScaleFactor(header).x;
 
       const offset = this._isLeftToRight
-        ? tabHeader.offsetLeft - this.container.offsetLeft
-        : width +
-          tabHeader.offsetLeft -
-          this.container.getBoundingClientRect().width;
+        ? header.offsetLeft - containerLeft
+        : header.offsetLeft + scaledWidth - containerWidth;
 
       Object.assign(styles, {
-        width: `${width}px`,
+        width: `${scaledWidth}px`,
         transform: `translateX(${offset}px)`,
       });
     }
 
-    Object.assign(this.indicator.style, styles);
+    setStyles(this.indicator, styles);
   }
 }
 

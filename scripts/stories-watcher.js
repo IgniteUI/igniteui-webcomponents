@@ -33,7 +33,7 @@ async function addToQueue(fileName) {
     updating = false;
     report.info('Metadata build completed. Stories updated.');
   } catch (e) {
-    report.error('ERROR:', e);
+    report.error('ERROR:', e.message);
   }
 }
 

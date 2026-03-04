@@ -266,6 +266,17 @@ describe('Dialog', () => {
       await waitUntil(() => eventSpy.calledWith('igcClosed'));
       expect(dialog.open).to.be.false;
     });
+
+    it('issue 1983 - does not close the dialog when keepOpenOnEscape is true and a non-cancelable close event is fired', async () => {
+      dialog.keepOpenOnEscape = true;
+      await dialog.show();
+
+      nativeDialog.dispatchEvent(new Event('close'));
+      await elementUpdated(dialog);
+
+      expect(dialog.open).to.be.true;
+      expect(nativeDialog.open).to.be.true;
+    });
   });
 
   describe('Form', () => {

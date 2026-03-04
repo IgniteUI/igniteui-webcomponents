@@ -9,6 +9,46 @@ $theme: $material;
 
 [part='tab-header'] {
     padding: pad-block(rem(12px)) pad-inline(rem(16px));
+    background: initial;
+
+    &::before,
+    &::after {
+        position: absolute;
+        inset: calc(var(--_border-width) * -1);
+        content: '';
+        border: inherit;
+    }
+
+    &::before {
+        background: var-get($theme, 'item-background');
+        z-index: -2;
+    }
+
+    &::after {
+        z-index: -1;
+    }
+
+    &:hover,
+    &:focus-within {
+        &::after {
+            background: var-get($theme, 'item-hover-background');
+        }
+    }
+}
+
+:host([selected]) {
+    [part='tab-header'] {
+        &::before {
+            background: var-get($theme, 'item-active-background');
+        }
+
+        &:hover,
+        &:focus-within {
+            &::after {
+                background: var-get($theme, 'item-active-hover-background');
+            }
+        }
+    }
 }
 
 ::slotted(igc-icon) {

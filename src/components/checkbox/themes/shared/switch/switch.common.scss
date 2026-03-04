@@ -20,6 +20,18 @@ $theme: $material;
     }
 }
 
+:host(:not([disabled]):hover),
+:host(:not(:disabled):hover) {
+    [part~='control'] {
+        border-color: var-get($theme, 'border-hover-color');
+    }
+
+    [part~='control'][part~='checked'] {
+        background: var-get($theme, 'track-on-hover-color');
+        border-color: var-get($theme, 'border-on-hover-color');
+    }
+}
+
 :host([disabled]),
 :host(:disabled) {
     [part~='label'] {

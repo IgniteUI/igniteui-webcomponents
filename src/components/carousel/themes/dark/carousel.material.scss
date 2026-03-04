@@ -4,7 +4,7 @@
 $theme: $material;
 
 :host {
-    @include css-vars-from-theme(diff($base, $theme), 'ig-carousel');
+    @include css-vars-from-theme(diff($base, $theme));
 
     --navigation-border-radius: #{var-get($theme, 'border-radius')};
 }

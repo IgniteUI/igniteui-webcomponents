@@ -16,13 +16,13 @@ For detailed information on issue and pull request statuses, process for testing
 
 ## Set up
 
-You will need at least [Node >= 20.19.0](https://nodejs.org/en) installed on your machine.
+You will need at least [Node >= 22.22.0](https://nodejs.org/en) installed on your machine.
 
 Once you have the minimum Node version installed, you can continue with the rest of the repo setup.
 
 ```shell
 node -v
-v20.19.0
+v22.22.0
 
 git clone https://github.com/IgniteUI/igniteui-webcomponents.git
 cd igniteui-webcomponents

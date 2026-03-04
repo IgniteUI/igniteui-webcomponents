@@ -3,9 +3,8 @@
 
 $theme: $bootstrap;
 
-[part='base'] {
+[part~='base'] {
     min-width: rem(288px);
-    border: 1px solid var-get($theme, 'border-color');
 }
 
 [part='title'],

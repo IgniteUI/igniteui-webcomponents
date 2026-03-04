@@ -16,7 +16,11 @@ import {
 } from '../common/controllers/key-bindings.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import { equal } from '../common/util.js';
-import { simulateClick, simulateKeyboard } from '../common/utils.spec.js';
+import {
+  isFocused,
+  simulateClick,
+  simulateKeyboard,
+} from '../common/utils.spec.js';
 import IgcDateTimeInputComponent from '../date-time-input/date-time-input.js';
 import IgcDatePickerComponent from './date-picker.js';
 
@@ -219,7 +223,7 @@ describe('Date picker', () => {
     it('should be successfully initialized with value', async () => {
       const expectedValue = new Date(2024, 1, 29);
       picker = await fixture<IgcDatePickerComponent>(
-        html`<igc-date-picker .value="${expectedValue}"></igc-date-picker>`
+        html`<igc-date-picker .value=${expectedValue}></igc-date-picker>`
       );
       dateTimeInput = picker.renderRoot.querySelector(
         IgcDateTimeInputComponent.tagName
@@ -565,7 +569,7 @@ describe('Date picker', () => {
 
       it('should default inputFormat to whatever Intl.DateTimeFormat returns for the current locale', async () => {
         const defaultFormat = 'MM/dd/yyyy';
-        expect(picker.locale).to.equal('en');
+        expect(picker.locale).to.equal('en-US');
         expect(picker.inputFormat).to.equal(defaultFormat);
 
         picker.locale = 'fr';
@@ -574,21 +578,27 @@ describe('Date picker', () => {
         expect(picker.inputFormat).to.equal('dd/MM/yyyy');
       });
 
-      it('should use the value of inputFormat for displayFormat, if it is not defined', async () => {
-        expect(picker.locale).to.equal('en');
+      it('should use the value of locale format for displayFormat, if it is not defined', async () => {
+        expect(picker.locale).to.equal('en-US');
         expect(picker.getAttribute('display-format')).to.be.null;
-        expect(picker.displayFormat).to.equal(picker.inputFormat);
+        expect(picker.displayFormat).to.equal('M/d/yyyy');
 
         // updates inputFormat according to changed locale
         picker.locale = 'fr';
         await elementUpdated(picker);
         expect(picker.inputFormat).to.equal('dd/MM/yyyy');
-        expect(picker.displayFormat).to.equal(picker.inputFormat);
+        expect(picker.displayFormat).to.equal('dd/MM/yyyy');
 
         // sets inputFormat as attribute
         picker.setAttribute('input-format', 'dd-MM-yyyy');
         await elementUpdated(picker);
 
+        expect(picker.inputFormat).to.equal('dd-MM-yyyy');
+        expect(picker.displayFormat).to.equal(picker.inputFormat);
+
+        // changing locale after setting input format shouldn't affect it
+        picker.locale = 'de';
+        await elementUpdated(picker);
         expect(picker.inputFormat).to.equal('dd-MM-yyyy');
         expect(picker.displayFormat).to.equal(picker.inputFormat);
       });
@@ -671,6 +681,7 @@ describe('Date picker', () => {
       await elementUpdated(picker);
 
       dateTimeInput.focus();
+      await elementUpdated(picker); // Additional waiting needed because display format differs from input format.
       picker.select();
       await elementUpdated(picker);
 
@@ -685,6 +696,7 @@ describe('Date picker', () => {
       await elementUpdated(picker);
 
       dateTimeInput.focus();
+      await elementUpdated(picker); // Additional waiting needed because display format differs from input format.
       picker.setSelectionRange(0, 2);
       await elementUpdated(picker);
 
@@ -915,7 +927,7 @@ describe('Date picker', () => {
       simulateClick(lastOfMay);
       await elementUpdated(picker);
 
-      expect(checkDatesEqual(picker.value!, targetDate));
+      checkDatesEqual(picker.value!, targetDate);
 
       // Open the picker and switch to months view
       await picker.show();
@@ -961,6 +973,52 @@ describe('Date picker', () => {
       const expectedValue = new CalendarDay({ year: 2025, month: 3, date: 1 })
         .native;
       checkDatesEqual(calendar.activeDate, expectedValue);
+    });
+
+    it('issue 1884 - should emit igcChange event in dialog mode after clearing the value and losing focus', async () => {
+      const eventSpy = spy(picker, 'emitEvent');
+
+      // Dropdown mode
+
+      picker.value = CalendarDay.today.native;
+      picker.focus();
+      picker.blur();
+      await elementUpdated(picker);
+
+      picker.focus();
+      expect(isFocused(dateTimeInput)).to.be.true;
+
+      // Simulate clicking the clear button
+      picker.clear();
+
+      picker.blur();
+      expect(isFocused(dateTimeInput)).to.be.false;
+
+      expect(eventSpy).to.be.calledWith('igcChange', {
+        detail: null,
+      });
+
+      eventSpy.resetHistory();
+
+      // Dialog mode
+      picker.mode = 'dialog';
+      picker.value = CalendarDay.today.native;
+      picker.focus();
+      picker.blur();
+      await elementUpdated(picker);
+
+      picker.focus();
+      expect(isFocused(dateTimeInput)).to.be.true;
+
+      // Simulate clicking the clear button
+      picker.clear();
+
+      picker.blur();
+      expect(isFocused(dateTimeInput)).to.be.false;
+
+      expect(eventSpy).to.be.calledWith('igcChange', {
+        detail: null,
+      });
     });
 
     describe('Readonly state', () => {

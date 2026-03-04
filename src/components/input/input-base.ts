@@ -1,19 +1,15 @@
 import { html, LitElement, nothing, type TemplateResult } from 'lit';
-import { property, query, queryAssignedElements } from 'lit/decorators.js';
-
-import { addThemingController } from '../../theming/theming-controller.js';
+import { property, query } from 'lit/decorators.js';
+import { cache } from 'lit/directives/cache.js';
+import type { ThemingController } from '../../theming/theming-controller.js';
+import type { SlotController } from '../common/controllers/slot.js';
 import { blazorDeepImport } from '../common/decorators/blazorDeepImport.js';
 import { shadowOptions } from '../common/decorators/shadow-options.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '../common/mixins/forms/associated-required.js';
 import { partMap } from '../common/part-map.js';
-import { createCounter } from '../common/util.js';
-import type { RangeTextSelectMode, SelectionRangeDirection } from '../types.js';
 import IgcValidationContainerComponent from '../validation-container/validation-container.js';
-import { styles } from './themes/input.base.css.js';
-import { styles as shared } from './themes/shared/input.common.css.js';
-import { all } from './themes/themes.js';
 
 export interface IgcInputComponentEventMap {
   /* alternateName: inputOcurred */
@@ -27,6 +23,8 @@ export interface IgcInputComponentEventMap {
   blur: FocusEvent;
 }
 
+let nextId = 1;
+
 @blazorDeepImport
 @shadowOptions({ delegatesFocus: true })
 export abstract class IgcInputBaseComponent extends FormAssociatedRequiredMixin(
@@ -34,48 +32,28 @@ export abstract class IgcInputBaseComponent extends FormAssociatedRequiredMixin(
     LitElement
   )
 ) {
-  public static styles = [styles, shared];
-  private static readonly increment = createCounter();
+  protected abstract readonly _themes: ThemingController;
+  protected abstract readonly _slots: SlotController<any>;
 
-  protected readonly _themes = addThemingController(this, all);
-
-  protected inputId = `input-${IgcInputBaseComponent.increment()}`;
-
-  /* blazorSuppress */
-  /** The value attribute of the control. */
-  public abstract value: string | Date | null;
+  protected readonly _inputId = `input-${nextId++}`;
 
   @query('input')
-  protected input!: HTMLInputElement;
+  protected readonly _input?: HTMLInputElement;
 
-  @queryAssignedElements({ slot: 'helper-text' })
-  protected _helperText!: Array<HTMLElement>;
-
-  @queryAssignedElements({
-    slot: 'prefix',
-    selector: '[slot="prefix"]:not([hidden])',
-  })
-  protected prefixes!: Array<HTMLElement>;
-
-  @queryAssignedElements({
-    slot: 'suffix',
-    selector: '[slot="suffix"]:not([hidden])',
-  })
-  protected suffixes!: Array<HTMLElement>;
+  /* blazorSuppress */
+  /** The value attribute of the control.
+   * Type varies based on the input type and can be string, Date or null.
+   */
+  public abstract value: string | Date | null;
 
   /**
    * Whether the control will have outlined appearance.
+   *
    * @attr
+   * @default false
    */
-  @property({ reflect: true, type: Boolean })
+  @property({ type: Boolean, reflect: true })
   public outlined = false;
-
-  /**
-   * Makes the control a readonly field.
-   * @attr readonly
-   */
-  @property({ type: Boolean, reflect: true, attribute: 'readonly' })
-  public readOnly = false;
 
   /**
    * The placeholder attribute of the control.
@@ -91,110 +69,106 @@ export abstract class IgcInputBaseComponent extends FormAssociatedRequiredMixin(
   @property()
   public label!: string;
 
-  protected override createRenderRoot() {
-    const root = super.createRenderRoot();
-    root.addEventListener('slotchange', () => this.requestUpdate());
-    return root;
-  }
-
-  /* alternateName: focusComponent */
-  /** Sets focus on the control. */
-  public override focus(options?: FocusOptions) {
-    this.input.focus(options);
-  }
-
-  /* alternateName: blurComponent */
-  /** Removes focus from the control. */
-  public override blur() {
-    this.input.blur();
-  }
-
-  protected abstract renderInput(): TemplateResult;
-
-  protected renderValidatorContainer(): TemplateResult {
-    return IgcValidationContainerComponent.create(this);
-  }
-
-  protected resolvePartNames(base: string) {
+  /**
+   * Resolves the part names for the container based on the current state.
+   * Used to apply conditional styling via CSS parts.
+   */
+  protected _resolvePartNames(base: string) {
     return {
       [base]: true,
-      prefixed: this.prefixes.length > 0,
-      suffixed: this.suffixes.length > 0,
+      prefixed: this._slots.hasAssignedElements('prefix', {
+        selector: '[slot="prefix"]:not([hidden])',
+      }),
+      suffixed: this._slots.hasAssignedElements('suffix', {
+        selector: '[slot="suffix"]:not([hidden])',
+      }),
       filled: !!this.value,
     };
   }
 
-  protected renderFileParts(): TemplateResult | typeof nothing {
+  /** Selects all the text inside the input. */
+  public select(): void {
+    this._input?.select();
+  }
+
+  /* alternateName: focusComponent */
+  /** Sets focus on the control. */
+  public override focus(options?: FocusOptions): void {
+    this._input?.focus(options);
+  }
+
+  /* alternateName: blurComponent */
+  /** Removes focus from the control. */
+  public override blur(): void {
+    this._input?.blur();
+  }
+
+  protected abstract _renderInput(): TemplateResult;
+
+  protected _renderFileParts(): TemplateResult | typeof nothing {
     return nothing;
   }
 
-  /** Sets the text selection range of the control */
-  public setSelectionRange(
-    start: number,
-    end: number,
-    direction: SelectionRangeDirection = 'none'
-  ) {
-    this.input.setSelectionRange(start, end, direction);
+  private _renderValidatorContainer(): TemplateResult {
+    return IgcValidationContainerComponent.create(this);
   }
 
-  /** Replaces the selected text in the input. */
-  public setRangeText(
-    replacement: string,
-    start: number,
-    end: number,
-    selectMode: RangeTextSelectMode = 'preserve'
-  ) {
-    this.input.setRangeText(replacement, start, end, selectMode);
-  }
-
-  private renderPrefix() {
-    return html`<div part="prefix">
-      <slot name="prefix"></slot>
-    </div>`;
-  }
-
-  private renderSuffix() {
-    return html`<div part="suffix">
-      <slot name="suffix"></slot>
-    </div>`;
-  }
-
-  private renderLabel() {
-    return this.label
-      ? html`<label part="label" for=${this.inputId}> ${this.label} </label>`
-      : nothing;
-  }
-
-  private renderMaterial() {
+  private _renderPrefix() {
     return html`
-      <div
-        part=${partMap({
-          ...this.resolvePartNames('container'),
-          labelled: !!this.label,
-        })}
-      >
-        <div part="start">${this.renderPrefix()}</div>
-        ${this.renderInput()} ${this.renderFileParts()}
-        <div part="notch">${this.renderLabel()}</div>
-        <div part="filler"></div>
-        <div part="end">${this.renderSuffix()}</div>
+      <div part="prefix">
+        <slot name="prefix"></slot>
       </div>
-      ${this.renderValidatorContainer()}
     `;
   }
 
-  private renderStandard() {
-    return html`${this.renderLabel()}
-      <div part=${partMap(this.resolvePartNames('container'))}>
-        ${this.renderPrefix()} ${this.renderFileParts()} ${this.renderInput()}
-        ${this.renderSuffix()}
+  private _renderSuffix() {
+    return html`
+      <div part="suffix">
+        <slot name="suffix"></slot>
       </div>
-      ${this.renderValidatorContainer()}`;
+    `;
+  }
+
+  private _renderLabel() {
+    return this.label
+      ? html`<label part="label" for=${this._inputId}>${this.label}</label>`
+      : nothing;
+  }
+
+  private _renderMaterial() {
+    return html`
+      <div
+        part=${partMap({
+          ...this._resolvePartNames('container'),
+          labelled: !!this.label,
+        })}
+      >
+        <div part="start">${this._renderPrefix()}</div>
+        ${this._renderInput()} ${this._renderFileParts()}
+        <div part="notch">${this._renderLabel()}</div>
+        <div part="filler"></div>
+        <div part="end">${this._renderSuffix()}</div>
+      </div>
+      ${this._renderValidatorContainer()}
+    `;
+  }
+
+  private _renderStandard() {
+    return html`
+      ${this._renderLabel()}
+      <div part=${partMap(this._resolvePartNames('container'))}>
+        ${this._renderPrefix()}${this._renderFileParts()}
+        ${this._renderInput()}${this._renderSuffix()}
+      </div>
+      ${this._renderValidatorContainer()}
+    `;
   }
 
   protected override render() {
-    return this._themes.theme === 'material'
-      ? this.renderMaterial()
-      : this.renderStandard();
+    return cache(
+      this._themes.theme === 'material'
+        ? this._renderMaterial()
+        : this._renderStandard()
+    );
   }
 }

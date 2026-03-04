@@ -44,7 +44,11 @@ const metadata: Meta<IgcDateRangePickerComponent> = {
     },
   },
   argTypes: {
-    value: { type: 'DateRangeValue', control: 'date' },
+    value: {
+      type: 'DateRangeValue',
+      description: 'The value of the picker',
+      control: 'date',
+    },
     mode: {
       type: '"dropdown" | "dialog"',
       description:
@@ -71,7 +75,6 @@ const metadata: Meta<IgcDateRangePickerComponent> = {
       type: 'string',
       description: 'The locale settings used to display the value.',
       control: 'text',
-      table: { defaultValue: { summary: 'en' } },
     },
     readOnly: {
       type: 'boolean',
@@ -134,7 +137,7 @@ const metadata: Meta<IgcDateRangePickerComponent> = {
     displayFormat: {
       type: 'string',
       description:
-        'Format to display the value in when not editing.\nDefaults to the input format if not set.',
+        'Format to display the value in when not editing.\nDefaults to the locale format if not set.',
       control: 'text',
     },
     inputFormat: {
@@ -264,7 +267,6 @@ const metadata: Meta<IgcDateRangePickerComponent> = {
     mode: 'dropdown',
     useTwoInputs: false,
     usePredefinedRanges: false,
-    locale: 'en',
     readOnly: false,
     nonEditable: false,
     outlined: false,
@@ -291,6 +293,7 @@ const metadata: Meta<IgcDateRangePickerComponent> = {
 export default metadata;
 
 interface IgcDateRangePickerArgs {
+  /** The value of the picker */
   value: DateRangeValue;
   /** Determines whether the calendar is opened in a dropdown or a modal dialog */
   mode: 'dropdown' | 'dialog';
@@ -322,7 +325,7 @@ interface IgcDateRangePickerArgs {
   prompt: string;
   /**
    * Format to display the value in when not editing.
-   * Defaults to the input format if not set.
+   * Defaults to the locale format if not set.
    */
   displayFormat: string;
   /**
@@ -560,7 +563,7 @@ export const Slots: Story = {
         .max=${new Date(args.max)}
         .visibleMonths=${args.visibleMonths}
         ?use-two-inputs=${true}
-        ?use-predefined-ranges="${args.usePredefinedRanges}"
+        ?use-predefined-ranges=${args.usePredefinedRanges}
         ?disabled=${args.disabled}
         ?invalid=${args.invalid}
         ?readonly=${args.readOnly}

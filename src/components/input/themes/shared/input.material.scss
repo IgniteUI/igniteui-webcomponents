@@ -32,12 +32,8 @@ $fs: rem(16px) !default;
     }
 
     ::part(helper-text) {
-        @include type-style('caption');
-
-        color: var-get($theme, 'helper-text-color');
-        margin-block-start: rem(4px);
         grid-auto-rows: minmax(rem(18px), auto);
-        padding-inline: pad-inline(rem(14px), rem(16px), rem(18px));
+        padding-inline: pad-inline(rem(12px), rem(14px), rem(16px));
     }
 }
 
@@ -55,11 +51,14 @@ input:placeholder-shown + [part='notch'] [part='label'],
 }
 
 [part~='input'] {
-    color: var-get($theme, 'filled-text-color');
     background: transparent;
     padding: 0 pad-inline(rem(4px));
     font-size: rem(16px);
     grid-area: 1 / 2 / span 1 / span 2;
+}
+
+[part~='input filled'] {
+    color: var-get($theme, 'filled-text-color');
 }
 
 [part='label'] {
@@ -86,7 +85,7 @@ input:placeholder-shown + [part='notch'] [part='label'],
 }
 
 [part='start'] {
-    border-start-start-radius: var-get($theme, 'border-border-radius');
+    border-start-start-radius: var-get($theme, 'box-border-radius');
     justify-content: flex-start;
     grid-area: 1 / 1;
 
@@ -117,7 +116,7 @@ input:placeholder-shown + [part='notch'] [part='label'],
 }
 
 [part='end'] {
-    border-start-end-radius: var-get($theme, 'border-border-radius');
+    border-start-end-radius: var-get($theme, 'box-border-radius');
     justify-content: flex-end;
     grid-area: 1 / 4;
 
@@ -131,7 +130,7 @@ input:placeholder-shown + [part='notch'] [part='label'],
 [part='start'],
 [part='end'] {
     display: flex;
-    min-width: sizable(rem(10px), rem(12px), rem(14px));
+    min-width: sizable(rem(8px), rem(10px), rem(12px));
     height: var(--size);
     overflow: hidden;
 }
@@ -285,7 +284,7 @@ input:placeholder-shown + [part='notch'] [part='label'],
 :host(:not([outlined]):disabled) {
     [part~='container'] {
         background: var-get($theme, 'box-disabled-background');
-        border-color: var-get($theme, 'disabled-border-color');
+        border-block-end-color: var-get($theme, 'disabled-bottom-line-color');
         border-bottom-style: dashed;
     }
 }
@@ -305,6 +304,11 @@ input:placeholder-shown + [part='notch'] [part='label'],
                 display: none;
             }
         }
+    }
+
+    [part='prefix'],
+    [part='suffix'] {
+        max-height: 100%;
     }
 }
 
@@ -598,6 +602,20 @@ input:placeholder-shown + [part='notch'] [part='label'],
     }
 }
 
+:host(:not([disabled], [readonly])[role='combobox'][outlined]:focus-within),
+:host(:not([disabled], [readonly])[role='combobox'][outlined]:state(ig-invalid):focus-within) {
+    :not([part~='filled']) {
+        input:not(:placeholder-shown) + [part='notch'] {
+            border-top: $idle-border-width solid transparent;
+        }
+
+        [part='notch'] {
+            border-block-start-color: transparent;
+        }
+    }
+}
+
+
 :host(:not([disabled],[readonly]):state(ig-invalid)),
 :host(:not([disabled])[role='combobox']:state(ig-invalid)) {
     [part='label'] {
@@ -612,6 +630,10 @@ input:placeholder-shown + [part='notch'] [part='label'],
     [part='notch'],
     [part='end'] {
         border-color: var-get($theme, 'disabled-border-color');
+    }
+
+    [part~='container'] {
+        background: var-get($theme, 'border-disabled-background');
     }
 
     input:placeholder-shown + [part='notch'],

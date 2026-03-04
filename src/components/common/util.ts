@@ -168,24 +168,6 @@ export function findElementFromEventPath<T extends Element>(
   return getElementsFromEventPath(event).find(func) as T | undefined;
 }
 
-export function groupBy<T>(array: T[], key: keyof T | ((item: T) => any)) {
-  const result: Record<string, T[]> = {};
-  const _get = isFunction(key) ? key : (item: T) => item[key];
-
-  for (const item of array) {
-    const category = _get(item);
-    const group = result[category];
-
-    if (Array.isArray(group)) {
-      group.push(item);
-    } else {
-      result[category] = [item];
-    }
-  }
-
-  return result;
-}
-
 export function first<T>(arr: T[]) {
   return arr.at(0) as T;
 }
@@ -364,13 +346,20 @@ export function partition<T>(
 }
 
 /** Returns the center x/y coordinate of a given element. */
-export function getCenterPoint(element: Element) {
+export function getCenterPoint(element: Element): { x: number; y: number } {
   const { left, top, width, height } = element.getBoundingClientRect();
 
   return {
     x: left + width * 0.5,
     y: top + height * 0.5,
   };
+}
+
+/** Returns the scale factor of a given element based on its bounding client rect and offset dimensions. */
+export function getScaleFactor(element: HTMLElement): { x: number; y: number } {
+  const { offsetWidth, offsetHeight } = element;
+  const { width, height } = element.getBoundingClientRect();
+  return { x: offsetWidth / width || 1, y: offsetHeight / height || 1 };
 }
 
 export function roundByDPR(value: number): number {

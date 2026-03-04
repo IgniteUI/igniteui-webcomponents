@@ -14,7 +14,9 @@ import { styles as materialLight } from './light/badge.material.css.js';
 import { styles as shared } from './light/badge.shared.css.js';
 // Shared Styles
 import { styles as bootstrap } from './shared/badge.bootstrap.css.js';
+import { styles as fluent } from './shared/badge.fluent.css.js';
 import { styles as indigo } from './shared/badge.indigo.css.js';
+import { styles as material } from './shared/badge.material.css.js';
 
 const light = {
   shared: css`
@@ -24,10 +26,10 @@ const light = {
     ${bootstrap} ${bootstrapLight}
   `,
   material: css`
-    ${materialLight}
+    ${material} ${materialLight}
   `,
   fluent: css`
-    ${fluentLight}
+    ${fluent} ${fluentLight}
   `,
   indigo: css`
     ${indigo} ${indigoLight}
@@ -42,10 +44,10 @@ const dark = {
     ${bootstrap} ${bootstrapDark}
   `,
   material: css`
-    ${materialDark}
+    ${material} ${materialDark}
   `,
   fluent: css`
-    ${fluentDark}
+    ${fluent} ${fluentDark}
   `,
   indigo: css`
     ${indigo} ${indigoDark}

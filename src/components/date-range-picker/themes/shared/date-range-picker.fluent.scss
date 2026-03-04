@@ -1,22 +1,17 @@
 @use 'styles/utilities' as *;
 @use '../light/themes' as *;
+@use 'components/input/themes/light/themes' as input-theme;
 
-$theme: $fluent;
+$theme: input-theme.$fluent;
 
 :host {
-    --calendar-border-color: #{$fluent-calendar-border-color};
-
     igc-dialog[open]::part(base) {
         border-radius: 0;
     }
 
     ::part(helper-text) {
-        @include type-style('caption');
-
-        color: var-get($theme, 'helper-text-color');
         grid-auto-rows: minmax(rem(18px), auto);
         margin-block-start: pad-block(rem(5px));
-        padding-inline-start: 0;
     }
 }
 

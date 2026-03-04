@@ -56,8 +56,8 @@ const checkIcon =
 
 registerIconFromText('success', checkIcon, 'material');
 
-const BasicTemplate = ({ open }: IgcBannerArgs) => {
-  return html`
+export const Basic: Story = {
+  render: (args) => html`
     <style>
       igc-button {
         margin-block-start: 12px;
@@ -66,21 +66,21 @@ const BasicTemplate = ({ open }: IgcBannerArgs) => {
     <igc-navbar style="height:30px">
       <h2>Title</h2>
     </igc-navbar>
-    <igc-banner id="banner" .open=${open}>
+    <igc-banner id="banner" ?open=${args.open}>
       You are currently not logged in! Please, log into your account first.
     </igc-banner>
     <igc-button onclick="banner.toggle()">Toggle Banner</igc-button>
-  `;
+  `,
 };
 
-const SlottedContentTemplate = ({ open }: IgcBannerArgs) => {
-  return html`
+export const SlottedContent: Story = {
+  render: (args) => html`
     <style>
       igc-banner[open] + igc-button {
         margin-block-start: 12px;
       }
     </style>
-    <igc-banner id="banner" .open=${open}>
+    <igc-banner id="banner" ?open=${args.open}>
       <igc-icon name="success" collection="material" slot="prefix"></igc-icon>
 
       Build f58a1815-c069-429d-ab20-860849e96a59 completed!
@@ -91,8 +91,5 @@ const SlottedContentTemplate = ({ open }: IgcBannerArgs) => {
       </div>
     </igc-banner>
     <igc-button onclick="banner.toggle()">Toggle Banner</igc-button>
-  `;
+  `,
 };
-
-export const Basic: Story = BasicTemplate.bind({});
-export const SlottedContent: Story = SlottedContentTemplate.bind({});

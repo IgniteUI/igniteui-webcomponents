@@ -104,7 +104,7 @@ $theme: $fluent;
 
         &::before {
             background: var-get($theme, 'fill-color-hover');
-            border-color: var-get($theme, 'fill-hover-border-color');
+            border: rem(1px) solid var-get($theme, 'fill-hover-border-color');
         }
     }
 }
@@ -112,10 +112,6 @@ $theme: $fluent;
 :host(:not([disabled]):state(ig-invalid):hover),
 :host(:not(:disabled):state(ig-invalid):hover) {
     [part='control'] {
-        &::after {
-            border-color: var-get($theme, 'error-color-hover');
-        }
-
         &::before {
             background: var-get($theme, 'error-color');
         }
@@ -128,6 +124,7 @@ $theme: $fluent;
 
         &::before {
             background: var-get($theme, 'error-color-hover');
+            border-color: var-get($theme, 'error-color-hover');
         }
     }
 }
@@ -153,22 +150,6 @@ $theme: $fluent;
 
         &::before {
             background: var-get($theme, 'error-color');
-        }
-    }
-}
-
-:host([disabled]),
-:host(:disabled) {
-    [part~='control'] {
-        &::after {
-            border-color: var-get($theme, 'disabled-color');
-        }
-    }
-
-    [part='control checked'] {
-        &::before {
-            background: var-get($theme, 'disabled-color');
-            border-color: var-get($theme, 'disabled-color');
         }
     }
 }

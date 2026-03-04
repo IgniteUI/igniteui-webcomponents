@@ -5,11 +5,6 @@ $theme: $bootstrap;
 
 :host {
     box-shadow: var(--ig-elevation-0);
-    padding: 0 pad-inline(rem(8px));
-}
-
-[part='base'] {
-    padding-inline: pad-inline(rem(4px));
 }
 
 ::slotted(*) {

@@ -1,7 +1,5 @@
-import { html, LitElement } from 'lit';
+import { html, LitElement, type TemplateResult } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
-import { range } from 'lit/directives/range.js';
-
 import { addThemingController } from '../../../theming/theming-controller.js';
 import { addKeybindings } from '../../common/controllers/key-bindings.js';
 import { blazorIndirectRender } from '../../common/decorators/blazorIndirectRender.js';
@@ -36,15 +34,21 @@ export default class IgcYearsViewComponent extends EventEmitterMixin<
   public static styles = styles;
 
   /* blazorSuppress */
-  public static register() {
+  public static register(): void {
     registerComponent(IgcYearsViewComponent);
   }
+
+  //#region Internal State
 
   @state()
   private _value = CalendarDay.today;
 
   @query('[tabindex="0"]')
-  private activeYear!: HTMLElement;
+  private _activeYear?: HTMLElement;
+
+  //#endregion
+
+  //#region Public attributes and properties
 
   /** Тhe current value of the calendar. */
   @property({ attribute: false })
@@ -52,7 +56,7 @@ export default class IgcYearsViewComponent extends EventEmitterMixin<
     this._value = CalendarDay.from(value);
   }
 
-  public get value() {
+  public get value(): Date {
     return this._value.native;
   }
 
@@ -63,35 +67,48 @@ export default class IgcYearsViewComponent extends EventEmitterMixin<
   @property({ type: Number, attribute: 'years-per-page' })
   public yearsPerPage = 15;
 
+  //#endregion
+
+  //#region Lifecycle
+
   constructor() {
     super();
 
     addThemingController(this, all);
-    addKeybindings(this).setActivateHandler(this.handleInteraction);
-    addSafeEventListener(this, 'click', this.handleInteraction);
+    addKeybindings(this).setActivateHandler(this._handleInteraction);
+    addSafeEventListener(this, 'click', this._handleInteraction);
   }
 
-  public override connectedCallback() {
+  public override connectedCallback(): void {
     super.connectedCallback();
     this.role = 'grid';
   }
 
-  public focusActiveDate(options?: FocusOptions) {
-    this.activeYear.focus(options);
-  }
+  //#endregion
 
-  protected handleInteraction(event: Event) {
+  //#region Event Handlers
+
+  protected _handleInteraction(event: Event): void {
     const value = getViewElement(event);
 
     if (value !== -1) {
-      this._value = this._value.set({
-        year: value,
-      });
+      this._value = this._value.set({ year: value });
       this.emitEvent('igcChange', { detail: this.value });
     }
   }
 
-  protected renderYear(year: number, now: CalendarDay) {
+  //#endregion
+
+  //#region Public Methods
+
+  /** Focuses the active year element. */
+  public focusActiveDate(options?: FocusOptions): void {
+    this._activeYear?.focus(options);
+  }
+
+  //#endregion
+
+  protected _renderYear(year: number, now: CalendarDay): TemplateResult {
     const selected = this._value.year === year;
     const current = year === now.year;
 
@@ -110,15 +127,18 @@ export default class IgcYearsViewComponent extends EventEmitterMixin<
     `;
   }
 
-  protected override *render() {
+  protected override *render(): Generator<TemplateResult> {
     const now = CalendarDay.today;
     const { start } = getYearRange(this._value, this.yearsPerPage);
-    const years = Array.from(range(start, start + this.yearsPerPage));
+    const years = Array.from(
+      { length: this.yearsPerPage },
+      (_, i) => start + i
+    );
 
     for (const row of chunk(years, YEARS_PER_ROW)) {
       yield html`
         <div part="years-row" role="row">
-          ${row.map((year) => this.renderYear(year, now))}
+          ${row.map((year) => this._renderYear(year, now))}
         </div>
       `;
     }

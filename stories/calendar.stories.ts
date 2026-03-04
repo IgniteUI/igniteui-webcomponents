@@ -112,7 +112,6 @@ const metadata: Meta<IgcCalendarComponent> = {
       description:
         'Gets/Sets the locale used for formatting and displaying the dates in the component.',
       control: 'text',
-      table: { defaultValue: { summary: 'en' } },
     },
   },
   args: {
@@ -125,7 +124,6 @@ const metadata: Meta<IgcCalendarComponent> = {
     selection: 'single',
     showWeekNumbers: false,
     weekStart: 'sunday',
-    locale: 'en',
   },
 };
 

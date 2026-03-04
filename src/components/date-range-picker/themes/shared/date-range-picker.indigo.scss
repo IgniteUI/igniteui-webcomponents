@@ -1,10 +1,16 @@
 @use 'styles/utilities' as *;
 @use '../light/themes' as *;
+@use 'components/input/themes/light/themes' as input-theme;
 
-$theme: $indigo;
+$theme: input-theme.$indigo;
 
 :host {
-    --calendar-border-color: #{$indigo-calendar-border-color};
+    --input-icon: #{sizable(rem(14px), rem(16px), rem(16px))};
+
+    igc-icon,
+    ::slotted(*) {
+        --ig-icon-size: var(--input-icon);
+    }
 
     igc-dialog[open]::part(base) {
         border-radius: rem(6px);
@@ -17,11 +23,7 @@ $theme: $indigo;
     }
 
     ::part(helper-text) {
-        @include type-style('caption');
-
-        color: var-get($theme, 'helper-text-color');
         grid-auto-rows: minmax(rem(15px), auto);
-        padding-inline-start: 0;
     }
 }
 

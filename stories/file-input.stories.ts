@@ -30,8 +30,15 @@ const metadata: Meta<IgcFileInputComponent> = {
   argTypes: {
     value: {
       type: 'string | Date',
-      description: 'The value of the control.',
+      description:
+        'The value of the control.\nSimilar to native file input, this property is read-only and cannot be set programmatically.',
       options: ['string', 'Date'],
+      control: 'text',
+    },
+    locale: {
+      type: 'string',
+      description:
+        'Gets/Sets the locale used for getting language, affecting resource strings.',
       control: 'text',
     },
     multiple: {
@@ -109,8 +116,13 @@ const metadata: Meta<IgcFileInputComponent> = {
 export default metadata;
 
 interface IgcFileInputArgs {
-  /** The value of the control. */
+  /**
+   * The value of the control.
+   * Similar to native file input, this property is read-only and cannot be set programmatically.
+   */
   value: string | Date;
+  /** Gets/Sets the locale used for getting language, affecting resource strings. */
+  locale: string;
   /**
    * The multiple attribute of the control.
    * Used to indicate that a file input allows the user to select more than one file.

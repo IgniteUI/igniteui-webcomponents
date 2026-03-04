@@ -13,7 +13,6 @@ import { styles as indigoLight } from './light/snackbar.indigo.css.js';
 import { styles as materialLight } from './light/snackbar.material.css.js';
 import { styles as shared } from './light/snackbar.shared.css.js';
 // Shared Styles
-import { styles as bootstrap } from './shared/snackbar.bootstrap.css.js';
 import { styles as fluent } from './shared/snackbar.fluent.css.js';
 import { styles as indigo } from './shared/snackbar.indigo.css.js';
 
@@ -22,7 +21,7 @@ const light = {
     ${shared}
   `,
   bootstrap: css`
-    ${bootstrap} ${bootstrapLight}
+    ${bootstrapLight}
   `,
   material: css`
     ${materialLight}
@@ -40,7 +39,7 @@ const dark = {
     ${shared}
   `,
   bootstrap: css`
-    ${bootstrap} ${bootstrapDark}
+    ${bootstrapDark}
   `,
   material: css`
     ${materialDark}

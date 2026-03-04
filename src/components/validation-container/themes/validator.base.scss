@@ -1,10 +1,9 @@
 @use 'styles/utilities' as *;
 
 :host {
-    display: block;
-
     --ig-size: 1;
 
+    display: block;
     grid-row: 2;
     grid-column: 1 / -1;
 
@@ -26,7 +25,6 @@
 [part~='validation-message'] {
     display: flex;
     align-items: center;
-
 }
 
 [part~='empty'] {

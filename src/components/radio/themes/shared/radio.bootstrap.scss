@@ -31,7 +31,6 @@ $theme: $bootstrap;
     width: var(--size);
     height: var(--size);
     min-width: var(--size);
-    background: var-get($theme, 'empty-fill-color');
     transition: transparent;
 
     &::before,
@@ -86,6 +85,10 @@ $theme: $bootstrap;
             background: var-get($theme, 'fill-color-hover');
             border-color: var-get($theme, 'fill-color-hover');
         }
+
+        &::before {
+            background: var-get($theme, 'fill-hover-border-color');
+        }
     }
 
     [part~='focused'] [part='control'] {
@@ -114,10 +117,6 @@ $theme: $bootstrap;
 
 :host(:not([disabled]):state(ig-invalid):hover),
 :host(:not(:disabled):state(ig-invalid):hover) {
-    [part~='control']::after {
-        border-color: var-get($theme, 'error-color-hover');
-    }
-
     [part='control checked'] {
         &::after {
             background: var-get($theme, 'error-color-hover');
@@ -127,16 +126,14 @@ $theme: $bootstrap;
 
 :host([disabled]),
 :host(:disabled) {
-    [part='control'] {
-        &::after {
-            border-color: var-get($theme, 'disabled-color');
-        }
-    }
-
     [part='control checked'] {
+        &::before {
+            background: var-get($theme, 'fill-hover-border-color');
+            border-color: var-get($theme, 'fill-hover-border-color');
+        }
+
         &::after {
             background: var-get($theme, 'disabled-fill-color');
-            border-color: var-get($theme, 'disabled-fill-color');
         }
     }
 }

@@ -1,3 +1,4 @@
+import { getDateFormatter } from 'igniteui-i18n-core';
 import { html, nothing, type TemplateResult } from 'lit';
 import {
   property,
@@ -11,13 +12,13 @@ import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 import { addThemingController } from '../../theming/theming-controller.js';
 import IgcCalendarComponent, { focusActiveDate } from '../calendar/calendar.js';
-import { convertToDate, convertToDateRange } from '../calendar/helpers.js';
-import { CalendarDay } from '../calendar/model.js';
 import {
-  type DateRangeDescriptor,
-  DateRangeType,
-  type WeekDays,
-} from '../calendar/types.js';
+  convertToDate,
+  convertToDateRange,
+  createDateConstraints,
+} from '../calendar/helpers.js';
+import { CalendarDay } from '../calendar/model.js';
+import type { DateRangeDescriptor, WeekDays } from '../calendar/types.js';
 import {
   addKeybindings,
   altKey,
@@ -30,7 +31,16 @@ import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditio
 import { shadowOptions } from '../common/decorators/shadow-options.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
-import { IgcDateRangePickerResourceStringsEN } from '../common/i18n/date-range-picker.resources.js';
+import {
+  type IgcDateRangePickerResourceStrings,
+  IgcDateRangePickerResourceStringsEN,
+} from '../common/i18n/EN/date-range-picker.resources.js';
+import {
+  addI18nController,
+  formatDisplayDate,
+  getDateTimeFormat,
+  getDefaultDateTimeFormat,
+} from '../common/i18n/i18n-controller.js';
 import { IgcBaseComboBoxLikeComponent } from '../common/mixins/combo-box.js';
 import type { AbstractConstructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
@@ -47,7 +57,6 @@ import {
   isEmpty,
 } from '../common/util.js';
 import IgcDateTimeInputComponent from '../date-time-input/date-time-input.js';
-import { DateTimeUtil } from '../date-time-input/date-util.js';
 import IgcDialogComponent from '../dialog/dialog.js';
 import IgcFocusTrapComponent from '../focus-trap/focus-trap.js';
 import IgcIconComponent from '../icon/icon.js';
@@ -61,11 +70,13 @@ import { styles as shared } from './themes/shared/date-range-picker.common.css.j
 import { all } from './themes/themes.js';
 import { dateRangeValidators, isCompleteDateRange } from './validators.js';
 
+/* jsonAPIPlainObject */
 export interface DateRangeValue {
   start: Date | null;
   end: Date | null;
 }
 
+/* jsonAPIPlainObject */
 export interface CustomDateRange {
   label: string;
   dateRange: DateRangeValue;
@@ -224,11 +235,22 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
     }
   );
 
+  /**
+   * For now we use the core validation strings internally only, to avoid mixing with old resources by users.
+   * To Do: Update resourceStrings type when the IgcDateRangePickerResourceStrings is changed to IDateRangePickerResourceStrings
+   */
+  protected readonly _i18nController =
+    addI18nController<IgcDateRangePickerResourceStrings>(this, {
+      defaultEN: IgcDateRangePickerResourceStringsEN,
+      onResourceChange: this._updateDefaultMask,
+    });
+
   private _activeDate: Date | null = null;
   private _min: Date | null = null;
   private _max: Date | null = null;
   private _disabledDates: DateRangeDescriptor[] = [];
   private _dateConstraints: DateRangeDescriptor[] = [];
+  private _defaultDisplayFormat!: string;
   private _displayFormat?: string;
   private _inputFormat?: string;
   private _placeholder?: string;
@@ -288,6 +310,11 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
 
   // #region General properties
 
+  /* @tsTwoWayProperty(true, "igcChange", "detail", false, true) */
+  /**
+   * The value of the picker
+   * @attr
+   */
   @property({ converter: convertToDateRange })
   public set value(value: DateRangeValue | string | null | undefined) {
     this._formValue.setValueAndFormState(convertToDateRange(value));
@@ -334,11 +361,23 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
    * @attr
    */
   @property()
-  public locale = 'en';
+  public set locale(value: string) {
+    this._i18nController.locale = value;
+  }
+
+  public get locale() {
+    return this._i18nController.locale;
+  }
 
   /** The resource strings of the date range picker. */
   @property({ attribute: false })
-  public resourceStrings = IgcDateRangePickerResourceStringsEN;
+  public set resourceStrings(value: IgcDateRangePickerResourceStrings) {
+    this._i18nController.resourceStrings = value;
+  }
+
+  public get resourceStrings(): IgcDateRangePickerResourceStrings {
+    return this._i18nController.resourceStrings;
+  }
 
   // #endregion
 
@@ -422,7 +461,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
 
   /**
    * Format to display the value in when not editing.
-   * Defaults to the input format if not set.
+   * Defaults to the locale format if not set.
    * @attr display-format
    */
   @property({ attribute: 'display-format' })
@@ -432,7 +471,9 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
   }
 
   public get displayFormat(): string {
-    return this._displayFormat ?? this.inputFormat;
+    return (
+      this._displayFormat ?? this._inputFormat ?? this._defaultDisplayFormat
+    );
   }
 
   /**
@@ -636,7 +677,10 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
 
   @watch('locale')
   protected _updateDefaultMask(): void {
-    this._defaultMask = DateTimeUtil.getDefaultMask(this.locale);
+    this._defaultMask = getDefaultDateTimeFormat(this.locale);
+    this._defaultDisplayFormat = getDateFormatter().getLocaleDateTimeFormat(
+      this.locale
+    );
     this._updateMaskedRangeValue();
   }
 
@@ -801,7 +845,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
    * or its current active date and its active day view index to always be the first one.
    */
   private _setCalendarActiveDateAndViewIndex() {
-    const activeDaysViewIndex = 'activeDaysViewIndex';
+    const activeDaysViewIndex = '_activeDaysViewIndex';
 
     this._calendar.activeDate =
       this._firstDefinedInRange ?? this._calendar.activeDate;
@@ -835,26 +879,8 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
   }
 
   private _setDateConstraints() {
-    const dates: DateRangeDescriptor[] = [];
-    if (this._min) {
-      dates.push({
-        type: DateRangeType.Before,
-        dateRange: [this._min],
-      });
-    }
-
-    if (this._max) {
-      dates.push({
-        type: DateRangeType.After,
-        dateRange: [this._max],
-      });
-    }
-
-    if (!isEmpty(this.disabledDates)) {
-      dates.push(...this.disabledDates);
-    }
-
-    this._dateConstraints = isEmpty(dates) ? [] : dates;
+    this._dateConstraints =
+      createDateConstraints(this.min, this.max, this.disabledDates) ?? [];
   }
 
   private _updateMaskedRangeValue() {
@@ -867,17 +893,12 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
       return;
     }
 
-    const { formatDate, predefinedToDateDisplayFormat } = DateTimeUtil;
-
     const { start, end } = this.value;
-    const format =
-      predefinedToDateDisplayFormat(this._displayFormat) ??
-      this._displayFormat ??
-      this.inputFormat;
+    const displayFormat = getDateTimeFormat(this.displayFormat);
 
-    this._maskedRangeValue = format
-      ? `${formatDate(start, this.locale, format)} - ${formatDate(end, this.locale, format)}`
-      : `${start.toLocaleDateString()} - ${end.toLocaleDateString()}`;
+    const startValue = formatDisplayDate(start, this.locale, displayFormat);
+    const endValue = formatDisplayDate(end, this.locale, displayFormat);
+    this._maskedRangeValue = `${startValue} - ${endValue}`;
   }
 
   private _setCalendarRangeValues() {
@@ -1100,9 +1121,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
     const placeholder =
       picker === 'start' ? this.placeholderStart : this.placeholderEnd;
     const label = picker === 'start' ? this.labelStart : this.labelEnd;
-    const format = DateTimeUtil.predefinedToDateDisplayFormat(
-      this._displayFormat!
-    );
+    const format = getDateTimeFormat(this._displayFormat);
     const value = picker === 'start' ? this.value?.start : this.value?.end;
 
     const prefixes =
