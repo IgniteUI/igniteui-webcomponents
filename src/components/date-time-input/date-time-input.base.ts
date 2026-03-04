@@ -12,7 +12,7 @@ import {
   arrowUp,
   ctrlKey,
 } from '../common/controllers/key-bindings.js';
-import { watch } from '../common/decorators/watch.js';
+import { addSlotController, setSlots } from '../common/controllers/slot.js';
 import {
   addI18nController,
   formatDisplayDate,
@@ -27,8 +27,19 @@ import {
   IgcMaskInputBaseComponent,
   type MaskSelection,
 } from '../mask-input/mask-input-base.js';
-// Note: Concrete implementations should define their own date part types
+import type { DatePartDeltas } from './date-part.js';
 import { dateTimeInputValidators } from './validators.js';
+
+const Slots = setSlots(
+  'prefix',
+  'suffix',
+  'helper-text',
+  'value-missing',
+  'range-overflow',
+  'range-underflow',
+  'custom-error',
+  'invalid'
+);
 
 export interface IgcDateTimeInputComponentEventMap extends Omit<
   IgcInputComponentEventMap,
@@ -43,11 +54,15 @@ export abstract class IgcDateTimeInputBaseComponent<
   IgcDateTimeInputComponentEventMap,
   AbstractConstructor<IgcMaskInputBaseComponent>
 >(IgcMaskInputBaseComponent) {
-  // #region Internal state & properties
+  // #region Private state & properties
 
   protected override get __validators() {
     return dateTimeInputValidators;
   }
+
+  protected override readonly _slots = addSlotController(this, {
+    slots: Slots,
+  });
 
   private readonly _i18nController = addI18nController(this, {
     defaultEN: {},
@@ -62,29 +77,14 @@ export abstract class IgcDateTimeInputBaseComponent<
   protected _defaultMask!: string;
 
   // Format and mask state
+  protected _defaultDisplayFormat = '';
   protected _displayFormat?: string;
   protected _inputFormat?: string;
 
-  protected _defaultDisplayFormat = '';
-
-  protected abstract get _datePartDeltas(): any;
-  protected abstract get _targetDatePart(): TPart | undefined;
-
-  protected hasDateParts(): boolean {
-    // Override in subclass with specific implementation
-    return false;
-  }
-
-  protected hasTimeParts(): boolean {
-    // Override in subclass with specific implementation
-    return false;
-  }
-
   // #endregion
 
-  // #region Public properties
+  // #region Public attributes and properties
 
-  // @ts-expect-error - TValue can include DateRangeValue which is not in base type
   public abstract override value: TValue | null;
 
   /**
@@ -153,7 +153,7 @@ export abstract class IgcDateTimeInputBaseComponent<
    * All values default to `1`.
    */
   @property({ attribute: false })
-  public spinDelta?: any;
+  public spinDelta?: DatePartDeltas;
 
   /**
    * Sets whether to loop over the currently spun segment.
@@ -177,7 +177,7 @@ export abstract class IgcDateTimeInputBaseComponent<
 
   // #endregion
 
-  // #region Lifecycle & observers
+  //#region Lifecycle Hooks
 
   constructor() {
     super();
@@ -192,8 +192,6 @@ export abstract class IgcDateTimeInputBaseComponent<
       .set([ctrlKey, arrowLeft], this._navigateParts.bind(this, 0))
       .set([ctrlKey, arrowRight], this._navigateParts.bind(this, 1));
   }
-
-  //#region Lifecycle Hooks
 
   protected override update(props: PropertyValues<this>): void {
     if (props.has('displayFormat')) {
@@ -223,76 +221,7 @@ export abstract class IgcDateTimeInputBaseComponent<
   }
 
   protected override _updateSetRangeTextValue(): void {
-    this.updateValueFromMask();
-  }
-
-  //#endregion
-
-  @watch('prompt', { waitUntilFirstUpdate: true })
-  protected _promptChange(): void {
-    if (!this.prompt) {
-      this.prompt = this._parser.prompt;
-    } else {
-      this._parser.prompt = this.prompt;
-    }
-  }
-
-  // #endregion
-
-  // #region Methods
-
-  /** Increments a date/time portion. */
-  public stepUp(datePart?: TPart, delta?: number): void {
-    this._performStep(datePart, delta, false);
-  }
-
-  /** Decrements a date/time portion. */
-  public stepDown(datePart?: TPart, delta?: number): void {
-    this._performStep(datePart, delta, true);
-  }
-
-  /**
-   * Common logic for stepping up or down a date part.
-   * @internal
-   */
-  protected _performStep(
-    datePart: TPart | undefined,
-    delta: number | undefined,
-    isDecrement: boolean
-  ): void {
-    const part = datePart || this._targetDatePart;
-    if (!part) return;
-
-    const { start, end } = this._inputSelection;
-    const newValue = this.calculateSpunValue(part, delta, isDecrement);
-    this.value = newValue as TValue;
-    this.updateComplete.then(() => this._input?.setSelectionRange(start, end));
-  }
-
-  /** Clears the input element of user input. */
-  public clear(): void {
-    this._maskedValue = '';
-    this.value = null;
-  }
-
-  /**
-   * Sets the value to the current date/time.
-   */
-  protected _setCurrentDateTime(): void {
-    this.value = new Date() as TValue;
-    this._emitInputEvent();
-  }
-
-  protected _handleDragLeave(): void {
-    if (!this._focused) {
-      this._updateMaskDisplay();
-    }
-  }
-
-  protected _handleDragEnter(): void {
-    if (!this._focused) {
-      this._maskedValue = this.buildMaskedValue();
-    }
+    this._updateValueFromMask();
   }
 
   protected override async _updateInput(string: string, range: MaskSelection) {
@@ -305,7 +234,7 @@ export abstract class IgcDateTimeInputBaseComponent<
 
     this._maskedValue = value;
 
-    this.updateValueFromMask();
+    this._updateValueFromMask();
     this.requestUpdate();
 
     if (range.start !== this.inputFormat.length) {
@@ -315,45 +244,9 @@ export abstract class IgcDateTimeInputBaseComponent<
     this._input?.setSelectionRange(end, end);
   }
 
-  /**
-   * Updates the displayed mask value based on focus state.
-   * When focused, shows the editable mask. When unfocused, shows formatted display value.
-   */
-  protected _updateMaskDisplay(): void {
-    if (this._focused) {
-      this._maskedValue = this.buildMaskedValue();
-      return;
-    }
+  // #endregion
 
-    if (!isValidDate(this.value)) {
-      this._maskedValue = '';
-      return;
-    }
-
-    this._maskedValue = formatDisplayDate(
-      this.value,
-      this.locale,
-      this.displayFormat
-    );
-  }
-
-  /**
-   * Checks if all mask positions are filled (no prompt characters remain).
-   */
-  protected _isMaskComplete(): boolean {
-    return !this._maskedValue.includes(this.prompt);
-  }
-
-  /**
-   * Navigates to the previous or next date part.
-   */
-  protected _navigateParts(direction: number): void {
-    const position = this.calculatePartNavigationPosition(
-      this._input?.value ?? '',
-      direction
-    );
-    this.setSelectionRange(position, position);
-  }
+  // #region Event handlers
 
   /**
    * Emits the input event after user interaction.
@@ -363,14 +256,21 @@ export abstract class IgcDateTimeInputBaseComponent<
     this.emitEvent('igcInput', { detail: this.value?.toString() });
   }
 
-  /**
-   * Handles keyboard-triggered spinning (arrow up/down).
-   */
-  protected async _keyboardSpin(direction: 'up' | 'down'): Promise<void> {
-    direction === 'up' ? this.stepUp() : this.stepDown();
-    this._emitInputEvent();
-    await this.updateComplete;
-    this.setSelectionRange(this._maskSelection.start, this._maskSelection.end);
+  private _handleResourceChange(): void {
+    this._initializeDefaultMask();
+    this._updateMaskDisplay();
+  }
+
+  protected _handleDragLeave(): void {
+    if (!this._focused) {
+      this._updateMaskDisplay();
+    }
+  }
+
+  protected _handleDragEnter(): void {
+    if (!this._focused) {
+      this._maskedValue = this._buildMaskedValue();
+    }
   }
 
   /**
@@ -391,13 +291,88 @@ export abstract class IgcDateTimeInputBaseComponent<
     this.setSelectionRange(start, end);
   }
 
-  protected updateDefaultMask(): void {
-    // Override in subclass with specific implementation
+  // #endregion
+
+  //#region Keybindings
+
+  /**
+   * Sets the value to the current date/time.
+   */
+  protected _setCurrentDateTime(): void {
+    this.value = new Date() as TValue;
+    this._emitInputEvent();
   }
 
-  private _handleResourceChange(): void {
-    this._initializeDefaultMask();
-    this._updateMaskDisplay();
+  /**
+   * Navigates to the previous or next date part.
+   */
+  protected _navigateParts(direction: number): void {
+    const position = this._calculatePartNavigationPosition(
+      this._input?.value ?? '',
+      direction
+    );
+    this.setSelectionRange(position, position);
+  }
+
+  /**
+   * Handles keyboard-triggered spinning (arrow up/down).
+   */
+  protected async _keyboardSpin(direction: 'up' | 'down'): Promise<void> {
+    direction === 'up' ? this.stepUp() : this.stepDown();
+    this._emitInputEvent();
+    await this.updateComplete;
+    this.setSelectionRange(this._maskSelection.start, this._maskSelection.end);
+  }
+
+  // #endregion
+
+  //#region Internal API
+
+  /**
+   * Common logic for stepping up or down a date part.
+   * @internal
+   */
+  protected _performStep(
+    datePart: TPart | undefined,
+    delta: number | undefined,
+    isDecrement: boolean
+  ): void {
+    const part = datePart || this._targetDatePart;
+    if (!part) return;
+
+    const { start, end } = this._inputSelection;
+    const newValue = this._calculateSpunValue(part, delta, isDecrement);
+    this.value = newValue as TValue;
+    this.updateComplete.then(() => this._input?.setSelectionRange(start, end));
+  }
+
+  /**
+   * Updates the displayed mask value based on focus state.
+   * When focused, shows the editable mask. When unfocused, shows formatted display value.
+   */
+  protected _updateMaskDisplay(): void {
+    if (this._focused) {
+      this._maskedValue = this._buildMaskedValue();
+      return;
+    }
+
+    if (!isValidDate(this.value)) {
+      this._maskedValue = '';
+      return;
+    }
+
+    this._maskedValue = formatDisplayDate(
+      this.value,
+      this.locale,
+      this.displayFormat
+    );
+  }
+
+  /**
+   * Checks if all mask positions are filled (no prompt characters remain).
+   */
+  protected _isMaskComplete(): boolean {
+    return !this._maskedValue.includes(this.prompt);
   }
 
   /**
@@ -430,6 +405,26 @@ export abstract class IgcDateTimeInputBaseComponent<
     }
   }
 
+  // #region Public API
+
+  /** Increments a date/time portion. */
+  public stepUp(datePart?: TPart, delta?: number): void {
+    this._performStep(datePart, delta, false);
+  }
+
+  /** Decrements a date/time portion. */
+  public stepDown(datePart?: TPart, delta?: number): void {
+    this._performStep(datePart, delta, true);
+  }
+
+  /** Clears the input element of user input. */
+  public clear(): void {
+    this._maskedValue = '';
+    this.value = null;
+  }
+
+  //#endregion
+
   protected override _renderInput() {
     return html`
       <input
@@ -441,7 +436,7 @@ export abstract class IgcDateTimeInputBaseComponent<
         ?readonly=${this.readOnly}
         ?disabled=${this.disabled}
         @blur=${this._handleBlur}
-        @focus=${this.handleFocus}
+        @focus=${this._handleFocus}
         @input=${this._handleInput}
         @wheel=${this._handleWheel}
         @keydown=${this._setMaskSelection}
@@ -456,18 +451,26 @@ export abstract class IgcDateTimeInputBaseComponent<
     `;
   }
 
-  protected abstract buildMaskedValue(): string;
-  protected abstract updateValueFromMask(): void;
-  protected abstract calculatePartNavigationPosition(
+  // #region Abstract methods and properties
+
+  protected abstract get _datePartDeltas(): any;
+  protected abstract get _targetDatePart(): TPart | undefined;
+
+  protected abstract _buildMaskedValue(): string;
+  protected abstract _updateValueFromMask(): void;
+  protected abstract _calculatePartNavigationPosition(
     value: string,
     direction: number
   ): number;
-  protected abstract calculateSpunValue(
+  protected abstract _calculateSpunValue(
     part: TPart,
     delta: number | undefined,
     isDecrement: boolean
   ): TValue;
-  // protected abstract spinDatePart(datePart: TPart, delta: number): TValue;
-  protected abstract handleFocus(): Promise<void>;
+  protected abstract _handleFocus(): Promise<void>;
+
+  public abstract hasDateParts(): boolean;
+  public abstract hasTimeParts(): boolean;
+
   // #endregion
 }

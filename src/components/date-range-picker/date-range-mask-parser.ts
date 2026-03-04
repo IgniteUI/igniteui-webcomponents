@@ -1,4 +1,5 @@
 import {
+  type DatePart,
   DatePartType,
   type IDatePart,
   type SpinOptions,
@@ -11,6 +12,11 @@ import { MaskParser } from '../mask-input/mask-parser.js';
 import type { DateRangeValue } from './date-range-picker.js';
 
 //#region Types and Enums
+
+export interface DateRangePart {
+  part: DatePart;
+  position: DateRangePosition;
+}
 
 /** Position of a date part within the date range */
 export enum DateRangePosition {
@@ -60,10 +66,7 @@ const DEFAULT_SEPARATOR = ' - ';
  * ```
  */
 export class DateRangeMaskParser extends MaskParser {
-  /** Parser for the start date */
   private _startParser: DateTimeMaskParser;
-
-  /** Parser for the end date */
   private _endParser: DateTimeMaskParser;
 
   /** Cached date range parts with position information */

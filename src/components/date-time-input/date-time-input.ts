@@ -1,8 +1,6 @@
 import { property } from 'lit/decorators.js';
-
 import { addThemingController } from '../../theming/theming-controller.js';
 import { convertToDate, isValidDate } from '../calendar/helpers.js';
-import { addSlotController, setSlots } from '../common/controllers/slot.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { FormValueDateTimeTransformers } from '../common/mixins/forms/form-transformers.js';
 import { createFormValueState } from '../common/mixins/forms/form-value.js';
@@ -22,17 +20,6 @@ import {
   DateTimeMaskParser,
 } from './datetime-mask-parser.js';
 import { dateTimeInputValidators } from './validators.js';
-
-const Slots = setSlots(
-  'prefix',
-  'suffix',
-  'helper-text',
-  'value-missing',
-  'range-overflow',
-  'range-underflow',
-  'custom-error',
-  'invalid'
-);
 
 /**
  * A date time input is an input field that lets you set and edit the date and time in a chosen input element
@@ -76,12 +63,8 @@ export default class IgcDateTimeInputComponent extends IgcDateTimeInputBaseCompo
 
   //#region Private state and properties
 
-  protected override readonly _parser = new DateTimeMaskParser();
   protected override readonly _themes = addThemingController(this, all);
-  protected override readonly _slots = addSlotController(this, {
-    slots: Slots,
-  });
-
+  protected override readonly _parser = new DateTimeMaskParser();
   protected override readonly _formValue = createFormValueState(this, {
     initialValue: null,
     transformers: FormValueDateTimeTransformers,
@@ -157,7 +140,7 @@ export default class IgcDateTimeInputComponent extends IgcDateTimeInputBaseCompo
 
   //#region Event handlers
 
-  protected async handleFocus(): Promise<void> {
+  protected async _handleFocus(): Promise<void> {
     this._focused = true;
 
     if (this.readOnly) {
@@ -208,7 +191,7 @@ export default class IgcDateTimeInputComponent extends IgcDateTimeInputBaseCompo
    * direction = 0: navigate to start of previous part
    * direction = 1: navigate to start of next part
    */
-  protected override calculatePartNavigationPosition(
+  protected override _calculatePartNavigationPosition(
     inputValue: string,
     direction: number
   ): number {
@@ -235,16 +218,6 @@ export default class IgcDateTimeInputComponent extends IgcDateTimeInputBaseCompo
   //#region Internal API
 
   /**
-   * Builds the masked value string from the current date value.
-   * Returns empty mask if no value, or existing masked value if incomplete.
-   */
-  protected override buildMaskedValue(): string {
-    return isValidDate(this.value)
-      ? this._parser.formatDate(this.value)
-      : this._maskedValue || this._parser.emptyMask;
-  }
-
-  /**
    * Gets the date part at the current cursor position.
    * Uses inclusive end to handle cursor at the end of the last part.
    * Returns undefined if cursor is not within a valid date part.
@@ -265,9 +238,19 @@ export default class IgcDateTimeInputComponent extends IgcDateTimeInputBaseCompo
   }
 
   /**
+   * Builds the masked value string from the current date value.
+   * Returns empty mask if no value, or existing masked value if incomplete.
+   */
+  protected override _buildMaskedValue(): string {
+    return isValidDate(this.value)
+      ? this._parser.formatDate(this.value)
+      : this._maskedValue || this._parser.emptyMask;
+  }
+
+  /**
    * Calculates the new date value after spinning a date part.
    */
-  protected calculateSpunValue(
+  protected override _calculateSpunValue(
     datePart: DatePart,
     delta: number | undefined,
     isDecrement: boolean
@@ -328,7 +311,7 @@ export default class IgcDateTimeInputComponent extends IgcDateTimeInputBaseCompo
    * Updates the internal value based on the current masked input.
    * Only sets a value if the mask is complete and parses to a valid date.
    */
-  protected override updateValueFromMask(): void {
+  protected override _updateValueFromMask(): void {
     if (!this._isMaskComplete()) {
       this.value = null;
       return;

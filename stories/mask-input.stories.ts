@@ -41,10 +41,10 @@ const metadata: Meta<IgcMaskInputComponent> = {
       table: { defaultValue: { summary: 'raw' } },
     },
     value: {
-      type: 'string | Date',
+      type: 'string | Date | DateRangeValue',
       description:
         'The value of the input.\n\nRegardless of the currently set `value-mode`, an empty value will return an empty string.',
-      options: ['string', 'Date'],
+      options: ['string', 'Date', 'DateRangeValue'],
       control: 'text',
     },
     mask: {
@@ -136,7 +136,7 @@ interface IgcMaskInputArgs {
    *
    * Regardless of the currently set `value-mode`, an empty value will return an empty string.
    */
-  value: string | Date;
+  value: string | Date | DateRangeValue;
   /** The masked pattern of the component. */
   mask: string;
   /** The prompt symbol to use for unfilled parts of the mask pattern. */

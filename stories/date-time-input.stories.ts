@@ -28,9 +28,9 @@ const metadata: Meta<IgcDateTimeInputComponent> = {
   },
   argTypes: {
     value: {
-      type: 'string | Date',
+      type: 'string | Date | DateRangeValue',
       description: 'The value of the input.',
-      options: ['string', 'Date'],
+      options: ['string', 'Date', 'DateRangeValue'],
       control: 'text',
     },
     min: {
@@ -142,7 +142,7 @@ export default metadata;
 
 interface IgcDateTimeInputArgs {
   /** The value of the input. */
-  value: string | Date;
+  value: string | Date | DateRangeValue;
   /** The minimum value required for the input to remain valid. */
   min: Date;
   /** The maximum value required for the input to remain valid. */

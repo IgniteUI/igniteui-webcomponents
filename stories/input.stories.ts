@@ -33,9 +33,9 @@ const metadata: Meta<IgcInputComponent> = {
   },
   argTypes: {
     value: {
-      type: 'string | Date',
+      type: 'string | Date | DateRangeValue',
       description: 'The value of the control.',
-      options: ['string', 'Date'],
+      options: ['string', 'Date', 'DateRangeValue'],
       control: 'text',
     },
     type: {
@@ -162,7 +162,7 @@ export default metadata;
 
 interface IgcInputArgs {
   /** The value of the control. */
-  value: string | Date;
+  value: string | Date | DateRangeValue;
   /** The type attribute of the control. */
   type: 'text' | 'email' | 'number' | 'password' | 'search' | 'tel' | 'url';
   /** Makes the control a readonly field. */
