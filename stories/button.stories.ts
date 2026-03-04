@@ -2,13 +2,18 @@ import type { Meta, StoryObj } from '@storybook/web-components-vite';
 import { html } from 'lit';
 
 import {
+  IgcAnchorPopoverComponent,
   IgcButtonComponent,
   IgcIconComponent,
   defineComponents,
   registerIcon,
 } from 'igniteui-webcomponents';
 
-defineComponents(IgcButtonComponent, IgcIconComponent);
+defineComponents(
+  IgcButtonComponent,
+  IgcIconComponent,
+  IgcAnchorPopoverComponent
+);
 
 // region default
 const metadata: Meta<IgcButtonComponent> = {
@@ -154,4 +159,73 @@ export const LinkButtonWithSlots: Story = {
       Open in new tab
       <igc-icon name="home" slot="suffix"></igc-icon>
     </igc-button>`,
+};
+
+function togglePopover() {
+  const popover = document.getElementById('pop') as IgcAnchorPopoverComponent;
+  popover.open = !popover.open;
+}
+
+function toggleAnotherPopover() {
+  const popover = document.querySelector(
+    'igc-anchor-popover[anchor="another-button"]'
+  ) as IgcAnchorPopoverComponent;
+  popover.open = !popover.open;
+}
+
+export const AnchorPopoverButton: Story = {
+  render: () => html`
+    <style>
+      .popover-content {
+        padding: 1rem;
+        display: flex;
+        flex-direction: column;
+        border: 1px dashed var(--ig-primary-500);
+        background-color: #fff;
+        gap: 0.5rem;
+      }
+      #another-button {
+        margin-top: 600px;
+      }
+    </style>
+
+    <igc-button id="popover-anchor" @click=${togglePopover}
+      >Open popover</igc-button
+    >
+    <igc-anchor-popover
+      id="pop"
+      anchor="popover-anchor"
+      placement="bottom-start"
+      shift
+      offset="1rem"
+    >
+      <div class="popover-content">
+        <h3>Popover Title</h3>
+        <p>This is the content of the popover.</p>
+        <igc-button @click=${togglePopover}>Close</igc-button>
+      </div>
+    </igc-anchor-popover>
+
+    <div style="min-height: 1400px; min-width: 2400px;">
+      <igc-button id="another-button" @click=${toggleAnotherPopover}>
+        Another button to test flipping behavior when popover is open
+      </igc-button>
+      <igc-anchor-popover
+        anchor="another-button"
+        placement="bottom"
+        offset="1rem"
+        flip
+        shift
+      >
+        <div class="popover-content">
+          <h3>Another Popover</h3>
+          <p>
+            This popover should flip to the top if there is not enough space
+            below.
+          </p>
+          <igc-button @click=${toggleAnotherPopover}>Close</igc-button>
+        </div>
+      </igc-anchor-popover>
+    </div>
+  `,
 };

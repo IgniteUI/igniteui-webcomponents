@@ -6,7 +6,7 @@
 }
 
 :popover-open {
-    position: absolute;
+    position: fixed;
     overflow: visible;
     isolation: isolate;
     height: fit-content;
@@ -14,4 +14,16 @@
     border: none;
     padding: 0;
     background: transparent;
+    margin: var(--ig-popover-offset, 0);
+    position-area: var(--ig-popover-position-area, auto);
+    position-try-fallbacks: var(--ig-popover-fallbacks);
+    position-visibility: anchors-visible;
+    width: var(--ig-popover-same-size, max-content);
+    transition: all 0.3s cubic-bezier(0.19, 1, 0.22, 1);
+    will-change: transform, opacity;
+
+    @starting-style {
+        opacity: 0;
+        transform: scale(0.75) translateY(-4rem);
+    }
 }
