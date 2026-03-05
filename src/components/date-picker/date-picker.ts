@@ -462,6 +462,7 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
     return this._i18nController.locale;
   }
 
+  /* blazorCSSuppress */
   /**
    * The resource strings for localization.
    */

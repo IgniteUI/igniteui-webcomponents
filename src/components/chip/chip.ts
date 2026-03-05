@@ -108,6 +108,7 @@ export default class IgcChipComponent extends EventEmitterMixin<
     return this._i18nController.locale;
   }
 
+  /* blazorCSSuppress */
   /**
    * The resource strings for localization.
    * Currently only aria-labels for the default select/remove icons are localized.

@@ -324,6 +324,7 @@ export default class IgcComboComponent<
   @property({ type: Boolean, reflect: true })
   public open = false;
 
+  /* blazorCSSuppress */
   /**
    * The resource strings for localization.
    */
