@@ -1183,7 +1183,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
   private _renderSingleInput(id: string) {
     const readOnly = !this._isDropDown || this.readOnly || this.nonEditable;
     const format =
-      getDateTimeFormat(this._displayFormat) ?? this._defaultDisplayFormat;
+      getDateTimeFormat(this.displayFormat) ?? this._defaultDisplayFormat;
     const prefix = isEmpty(this._prefixes) ? undefined : 'prefix';
     const suffix = isEmpty(this._suffixes) ? undefined : 'suffix';
 

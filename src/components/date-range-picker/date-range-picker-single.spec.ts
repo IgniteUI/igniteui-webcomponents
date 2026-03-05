@@ -275,6 +275,71 @@ describe('Date range picker - single input', () => {
 
       expect(input.value).to.equal('2025-04-09 - 2025-04-10');
     });
+
+    it('should use inputFormat for display when displayFormat is not set', async () => {
+      picker.useTwoInputs = false;
+      picker.inputFormat = 'yyyy-MM-dd';
+      await elementUpdated(picker);
+
+      input = getInput(picker);
+      expect(input.placeholder).to.equal('yyyy-MM-dd - yyyy-MM-dd');
+
+      picker.value = {
+        start: CalendarDay.from(new Date(2025, 3, 9)).native,
+        end: CalendarDay.from(new Date(2025, 3, 10)).native,
+      };
+      await elementUpdated(picker);
+
+      expect(input.value).to.equal('2025-04-09 - 2025-04-10');
+
+      input.focus();
+      await elementUpdated(input);
+      expect(input.value).to.equal('2025-04-09 - 2025-04-10');
+
+      input.blur();
+      await elementUpdated(input);
+
+      expect(input.value).to.equal('2025-04-09 - 2025-04-10');
+    });
+
+    it('should apply inputFormat to empty mask and display value when set initially', async () => {
+      picker = await fixture<IgcDateRangePickerComponent>(
+        html`<igc-date-range-picker
+          display-format="yyyy-MM-dd hh:mm tt"
+        ></igc-date-range-picker>`
+      );
+      picker.useTwoInputs = false;
+      await elementUpdated(picker);
+
+      const rangeInput = picker.renderRoot.querySelector(
+        IgcDateRangeInputComponent.tagName
+      )!;
+      input = rangeInput.renderRoot.querySelector('input')!;
+
+      // Placeholder uses inputFormat (the default locale format)
+      expect(input.placeholder).to.equal('MM/dd/yyyy - MM/dd/yyyy');
+
+      input.focus();
+      await elementUpdated(input);
+
+      // When focused, the mask uses inputFormat, not displayFormat
+      expect(input.value).to.contain('__/__/____');
+
+      picker.value = {
+        start: new Date(2025, 3, 9, 14, 30, 0),
+        end: new Date(2025, 3, 10, 9, 15, 0),
+      };
+      await elementUpdated(picker);
+
+      // When focused with a value, still uses inputFormat for editing
+      expect(input.value).to.equal('04/09/2025 - 04/10/2025');
+
+      input.blur();
+      await elementUpdated(input);
+
+      // When blurred (not focused), uses displayFormat for display
+      expect(input.value).to.equal('2025-04-09 02:30 PM - 2025-04-10 09:15 AM');
+    });
   });
   describe('Methods', () => {
     it('should clear the input on invoking clear()', async () => {
@@ -783,6 +848,37 @@ describe('Date range picker - single input', () => {
           { start: today.native, end: today.native },
           false
         );
+      });
+
+      it('should spin AM/PM with arrow keys', async () => {
+        const startDate = new Date(2025, 3, 14, 9, 30, 0); // 9:30 AM
+        const endDate = new Date(2025, 3, 15, 10, 45, 0); // 10:45 AM
+
+        picker.useTwoInputs = false;
+        picker.inputFormat = 'MM/dd/yyyy hh:mm tt';
+        picker.value = { start: startDate, end: endDate };
+        await elementUpdated(picker);
+
+        input = getInput(picker);
+        input.focus();
+        await elementUpdated(input);
+
+        // hh format uses leading zeros for hours (09, 10), tt is AM/PM
+        expect(input.value).to.contain('09:30 AM');
+        expect(input.value).to.contain('10:45 AM');
+
+        const amIndex = input.value.indexOf('AM');
+        input.focus();
+        input.setSelectionRange(amIndex, amIndex);
+        await elementUpdated(picker);
+        await elementUpdated(input);
+
+        simulateKeyboard(input, arrowUp);
+        await elementUpdated(picker);
+        await elementUpdated(input);
+
+        expect(input.value).to.contain('09:30 PM');
+        expect(input.value).to.contain('10:45 AM');
       });
 
       it('should delete the value on pressing enter (single input)', async () => {

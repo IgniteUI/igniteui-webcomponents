@@ -81,6 +81,12 @@ export abstract class IgcDateTimeInputBaseComponent<
   protected _displayFormat?: string;
   protected _inputFormat?: string;
 
+  protected get _targetDatePart(): TPart | undefined {
+    return this._focused
+      ? this._getDatePartAtCursor()
+      : this._getDefaultDatePart();
+  }
+
   // #endregion
 
   // #region Public attributes and properties
@@ -454,7 +460,6 @@ export abstract class IgcDateTimeInputBaseComponent<
   // #region Abstract methods and properties
 
   protected abstract get _datePartDeltas(): any;
-  protected abstract get _targetDatePart(): TPart | undefined;
 
   protected abstract _buildMaskedValue(): string;
   protected abstract _updateValueFromMask(): void;
@@ -468,6 +473,8 @@ export abstract class IgcDateTimeInputBaseComponent<
     isDecrement: boolean
   ): TValue;
   protected abstract _handleFocus(): Promise<void>;
+  protected abstract _getDatePartAtCursor(): TPart | undefined;
+  protected abstract _getDefaultDatePart(): TPart | undefined;
 
   public abstract hasDateParts(): boolean;
   public abstract hasTimeParts(): boolean;

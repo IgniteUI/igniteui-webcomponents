@@ -74,17 +74,6 @@ export default class IgcDateTimeInputComponent extends IgcDateTimeInputBaseCompo
     return dateTimeInputValidators;
   }
 
-  /**
-   * Determines which date/time part is currently targeted based on cursor position.
-   * When focused, returns the part under the cursor.
-   * When unfocused, returns a default part based on available parts.
-   */
-  protected override get _targetDatePart(): DatePart | undefined {
-    return this._focused
-      ? this._getDatePartAtCursor()
-      : this._getDefaultDatePart();
-  }
-
   protected override get _datePartDeltas(): DatePartDeltas {
     return { ...DEFAULT_DATE_PARTS_SPIN_DELTAS, ...this.spinDelta };
   }
@@ -222,7 +211,7 @@ export default class IgcDateTimeInputComponent extends IgcDateTimeInputBaseCompo
    * Uses inclusive end to handle cursor at the end of the last part.
    * Returns undefined if cursor is not within a valid date part.
    */
-  private _getDatePartAtCursor(): DatePart | undefined {
+  protected override _getDatePartAtCursor(): DatePart | undefined {
     return this._parser.getDatePartForCursor(this._inputSelection.start)
       ?.type as DatePart | undefined;
   }
@@ -231,7 +220,7 @@ export default class IgcDateTimeInputComponent extends IgcDateTimeInputBaseCompo
    * Gets the default date part to target when the input is not focused.
    * Prioritizes: Date > Hours > First available part
    */
-  private _getDefaultDatePart(): DatePart | undefined {
+  protected override _getDefaultDatePart(): DatePart | undefined {
     return (this._parser.getPartByType(DateParts.Date)?.type ??
       this._parser.getPartByType(DateParts.Hours)?.type ??
       this._parser.getFirstDatePart()?.type) as DatePart | undefined;
