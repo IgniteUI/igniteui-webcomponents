@@ -1,9 +1,9 @@
-import { html } from 'lit';
-import { property, state } from 'lit/decorators.js';
 import {
   FileInputResourceStringsEN,
   type IFileInputResourceStrings,
-} from '../../index.js';
+} from 'igniteui-i18n-core';
+import { html } from 'lit';
+import { property, state } from 'lit/decorators.js';
 import { addThemingController } from '../../theming/theming-controller.js';
 import IgcButtonComponent from '../button/button.js';
 import { addSlotController, setSlots } from '../common/controllers/slot.js';
