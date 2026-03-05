@@ -1,6 +1,5 @@
-import { mkdir, readFile, writeFile, glob } from 'node:fs/promises';
+import { mkdir, writeFile, glob } from 'node:fs/promises';
 import path from 'node:path';
-import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import autoprefixer from 'autoprefixer';
 import postcss from 'postcss';
@@ -22,14 +21,13 @@ const stripComments = () => {
 };
 stripComments.postcss = true;
 
-const _template = await readFile(
-  resolve(process.argv[1], '../styles.tmpl'),
-  'utf8'
-);
 const _postProcessor = postcss([autoprefixer, stripComments]);
 
 export function fromTemplate(content) {
-  return _template.replace(/<%\s*content\s*%>/, content);
+  return `
+  import { css } from 'lit';
+  export const styles = css\`${content}\`;
+  `;
 }
 
 export async function compileSass(src, compiler) {
@@ -61,9 +59,13 @@ export async function buildThemes(isProduction = false) {
 
         if (isProduction) {
           await mkdir(path.dirname(outputFile), { recursive: true });
-          writeFile(outputFile, await compileSass(sassFile, compiler), 'utf-8');
+          await writeFile(
+            outputFile,
+            await compileSass(sassFile, compiler),
+            'utf-8'
+          );
         } else {
-          writeFile(
+          await writeFile(
             outputFile,
             fromTemplate(await compileSass(sassFile, compiler)),
             'utf-8'
@@ -99,10 +101,10 @@ export async function buildComponents(isProduction = false) {
 
   try {
     await Promise.all(
-      paths.map(async (path) =>
+      paths.map(async (filePath) =>
         writeFile(
-          path.replace(/\.scss$/, '.css.ts'),
-          fromTemplate(await compileSass(path, compiler)),
+          filePath.replace(/\.scss$/, '.css.ts'),
+          fromTemplate(await compileSass(filePath, compiler)),
           'utf-8'
         )
       )
