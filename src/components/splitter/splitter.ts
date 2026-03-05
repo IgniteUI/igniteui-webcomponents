@@ -19,7 +19,7 @@ import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { partMap } from '../common/part-map.js';
-import { isLTR } from '../common/util.js';
+import { isLTR, roundPrecise } from '../common/util.js';
 import type { SplitterOrientation } from '../types.js';
 import { styles as shared } from './themes/shared/splitter.common.css.js';
 import { styles } from './themes/splitter.base.css.js';
@@ -583,8 +583,8 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
     const targetEndSizePx = totalSize - targetStartSizePx;
 
     if (isPercentage) {
-      this.startSize = `${(targetStartSizePx / totalSize) * 100}%`;
-      this.endSize = `${(targetEndSizePx / totalSize) * 100}%`;
+      this.startSize = `${roundPrecise((targetStartSizePx / totalSize) * 100, 2)}%`;
+      this.endSize = `${roundPrecise((targetEndSizePx / totalSize) * 100, 2)}%`;
     } else {
       this.startSize = `${targetStartSizePx}px`;
       this.endSize = `${targetEndSizePx}px`;
@@ -687,7 +687,7 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
       const percentPaneSize = (paneSize / totalSize) * 100;
       return `${percentPaneSize}%`;
     }
-    return `${paneSize}px`;
+    return `${roundPrecise(paneSize, 0)}px`;
   }
 
   private _resizeEnd(delta: number) {
@@ -753,15 +753,13 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
       return 0;
     }
 
+    const dimension = this.orientation === 'horizontal' ? 'width' : 'height';
     const barSize = this._bar
-      ? Number.parseInt(
-          getComputedStyle(this._bar).getPropertyValue('--bar-size').trim(),
-          10
-        ) || 0
+      ? roundPrecise(this._bar.getBoundingClientRect()[dimension])
       : 0;
 
     const rect = this._base.getBoundingClientRect();
-    const size = this.orientation === 'horizontal' ? rect.width : rect.height;
+    const size = rect[dimension];
     return size - barSize;
   }
 

@@ -18,6 +18,7 @@ import {
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import { roundPrecise } from '../common/util.js';
 import {
+  finishAnimationsFor,
   simulateKeyboard,
   simulatePointerDown,
   simulatePointerMove,
@@ -807,6 +808,8 @@ describe('Splitter', () => {
       const eventSpy = spy(splitter, 'emitEvent');
       splitter.orientation = 'vertical';
       await elementUpdated(splitter);
+      await finishAnimationsFor(splitter.shadowRoot!);
+
       const previousSizes = getPanesSizes(splitter, 'height');
       let deltaY = 100;
 
@@ -1000,6 +1003,7 @@ describe('Splitter', () => {
       const eventSpy = spy(splitter, 'emitEvent');
       splitter.orientation = 'vertical';
       await elementUpdated(splitter);
+      await finishAnimationsFor(splitter.shadowRoot!);
 
       const bar = getSplitterPart(splitter, BAR_PART);
       let previousSizes = getPanesSizes(splitter, 'height');
@@ -1079,6 +1083,7 @@ describe('Splitter', () => {
     it('should set start pane size to minSize/maxSize with Home/End key in vertical orientation', async () => {
       splitter.orientation = 'vertical';
       await elementUpdated(splitter);
+      await finishAnimationsFor(splitter.shadowRoot!);
 
       const totalAvailable = getTotalSize(splitter, 'height');
       const bar = getSplitterPart(splitter, BAR_PART);
@@ -1101,6 +1106,7 @@ describe('Splitter', () => {
     it('should not resize with left/right keys when in vertical orientation', async () => {
       splitter.orientation = 'vertical';
       await elementUpdated(splitter);
+      await finishAnimationsFor(splitter.shadowRoot!);
 
       const eventSpy = spy(splitter, 'emitEvent');
       const bar = getSplitterPart(splitter, BAR_PART);
@@ -2045,7 +2051,7 @@ describe('Splitter', () => {
       let totalAvailable = getTotalSize(splitter, 'width');
 
       expect(newSizes.startSize).to.equal(300);
-      expect(newSizes.endSize).to.be.closeTo(totalAvailable * 0.4, 2);
+      expect(newSizes.endSize).to.be.closeTo(totalAvailable * 0.4, 3);
 
       container.style.width = '600px';
       await elementUpdated(splitter);
@@ -2054,7 +2060,7 @@ describe('Splitter', () => {
       totalAvailable = getTotalSize(splitter, 'width');
 
       expect(newSizes.startSize).to.equal(300);
-      expect(newSizes.endSize).to.be.closeTo(totalAvailable * 0.4, 2);
+      expect(newSizes.endSize).to.be.closeTo(totalAvailable * 0.4, 3);
       expect(newSizes.startSize + newSizes.endSize).to.be.at.most(
         totalAvailable
       );
@@ -2339,6 +2345,7 @@ describe('Splitter', () => {
     it('direction should not affect interactions in vertical orientation', async () => {
       splitter.orientation = 'vertical';
       await elementUpdated(splitter);
+      await finishAnimationsFor(splitter.shadowRoot!);
 
       // 1. Resize with keyboard
       const bar = getSplitterPart(splitter, BAR_PART);
