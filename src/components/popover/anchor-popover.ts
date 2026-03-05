@@ -46,6 +46,17 @@ const POPOVER_CSS_VARIABLES = Object.freeze({
   offset: { name: '--ig-popover-offset', value: '0' },
 });
 
+/**
+ * A proof of concept component that extends the native popover element with support for an anchor
+ * and additional features such as flip, shift, offset and same-width.
+ *
+ * @element igc-anchor-popover
+ *
+ * @slot - The content of the popover.
+ * @slot anchor - The element that the popover will be anchored to. Can also be set via the `anchor` property.
+ *
+ * @csspart container - The container wrapping the slotted content in the popover.
+ */
 export default class IgcAnchorPopoverComponent extends LitElement {
   public static readonly tagName = 'igc-anchor-popover';
   public static override styles = styles;

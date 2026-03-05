@@ -4,15 +4,19 @@ import { html } from 'lit';
 import {
   IgcAnchorPopoverComponent,
   IgcButtonComponent,
+  IgcCardComponent,
   IgcIconComponent,
+  type PopoverPlacement,
   defineComponents,
   registerIcon,
 } from 'igniteui-webcomponents';
+import { range } from 'lit/directives/range.js';
 
 defineComponents(
   IgcButtonComponent,
   IgcIconComponent,
-  IgcAnchorPopoverComponent
+  IgcAnchorPopoverComponent,
+  IgcCardComponent
 );
 
 // region default
@@ -161,14 +165,32 @@ export const LinkButtonWithSlots: Story = {
     </igc-button>`,
 };
 
-function togglePopover() {
-  const popover = document.getElementById('pop') as IgcAnchorPopoverComponent;
-  popover.open = !popover.open;
-}
+const cards = [...range(12)];
+const placements: PopoverPlacement[] = [
+  'top',
+  'right',
+  'bottom',
+  'left',
+  'bottom-start',
+  'bottom-end',
+  'left-end',
+  'left-start',
+  'right-start',
+  'right-end',
+  'top-start',
+  'top-end',
+];
+function toggle(event: PointerEvent) {
+  const button = event.currentTarget as IgcButtonComponent;
+  if (!button.id) {
+    const popover = button.closest(IgcAnchorPopoverComponent.tagName)!;
+    popover.open = !popover.open;
+    return;
+  }
 
-function toggleAnotherPopover() {
-  const popover = document.querySelector(
-    'igc-anchor-popover[anchor="another-button"]'
+  const popoverId = button.id.replace('internal', 'internal-popover');
+  const popover = document.getElementById(
+    popoverId
   ) as IgcAnchorPopoverComponent;
   popover.open = !popover.open;
 }
@@ -184,48 +206,114 @@ export const AnchorPopoverButton: Story = {
         background-color: #fff;
         gap: 0.5rem;
       }
-      #another-button {
-        margin-top: 600px;
+      .blah {
+        max-inline-size: 1600px;
+        max-block-size: 800px;
+        overflow: auto;
+        background-color: var(--ig-secondary-500);
+      }
+      .container {
+        display: flex;
+        flex-direction: row;
+        gap: 1rem;
+        margin-block: 2rem;
+      }
+      .card {
+        display: grid;
+        position: relative;
+        min-inline-size: 64rem;
+        min-block-size: 192rem;
+        border: 1px solid var(--ig-primary-500);
+        border-radius: 4px;
+        background-color: var(--ig-surface-300);
+
+        &:before {
+          display: block;
+          position: absolute;
+          content: attr(data-id);
+          font-size: 48rem;
+          inset-block-start: 50%;
+          inset-inline-start: 50%;
+          transform: translate(-50%, -50%);
+          color: var(--ig-gray-300);
+        }
+      }
+      .internal-wrapper {
+        padding: 1rem;
+        place-self: center;
+      }
+      #main-anchor {
+        margin: 12rem 24rem;
+        min-inline-size: 24rem;
+        min-block-size: 24rem;
       }
     </style>
 
-    <igc-button id="popover-anchor" @click=${togglePopover}
-      >Open popover</igc-button
-    >
-    <igc-anchor-popover
-      id="pop"
-      anchor="popover-anchor"
-      placement="bottom-start"
-      shift
-      offset="1rem"
-    >
-      <div class="popover-content">
-        <h3>Popover Title</h3>
-        <p>This is the content of the popover.</p>
-        <igc-button @click=${togglePopover}>Close</igc-button>
-      </div>
-    </igc-anchor-popover>
+    <igc-card id="main-anchor">
+      <igc-card-header>
+        <h3>Possible popover positions</h3>
+      </igc-card-header>
+    </igc-card>
+    ${placements.map(
+      (placement) => html`
+        <igc-anchor-popover
+          anchor="main-anchor"
+          placement=${placement}
+          open
+          offset="1rem"
+        >
+          <div class="popover-content">
+            <span>Popover with placement: ${placement}</span>
+          </div>
+        </igc-anchor-popover>
+      `
+    )}
 
-    <div style="min-height: 1400px; min-width: 2400px;">
-      <igc-button id="another-button" @click=${toggleAnotherPopover}>
-        Another button to test flipping behavior when popover is open
-      </igc-button>
-      <igc-anchor-popover
-        anchor="another-button"
-        placement="bottom"
-        offset="1rem"
-        flip
-        shift
-      >
-        <div class="popover-content">
-          <h3>Another Popover</h3>
-          <p>
-            This popover should flip to the top if there is not enough space
-            below.
-          </p>
-          <igc-button @click=${toggleAnotherPopover}>Close</igc-button>
-        </div>
-      </igc-anchor-popover>
+    <!-- Uncomment the wrapper section to test popover behavior within an overflowed container -->
+    <!-- <section class="blah"> -->
+    <div class="container">
+      ${cards.map(
+        (i) => html`
+          <div class="card" data-id=${i + 1}>
+            <div class="internal-wrapper">
+              <igc-button
+                id="internal-${i + 1}"
+                class="internal"
+                @click=${toggle}
+              >
+                Internal popover ${i + 1}
+              </igc-button>
+
+              <igc-anchor-popover
+                id="internal-popover-${i + 1}"
+                anchor="internal-${i + 1}"
+                placement=${placements[i]}
+                offset="1rem"
+                flip
+              >
+                <div class="popover-content">
+                  <h3>Popover for card ${i + 1}: ${placements[i]}</h3>
+                  <igc-card>
+                    <igc-card-header>Card header</igc-card-header>
+                    <igc-card-content style="max-inline-size: 24rem">
+                      This is some content inside the card within the popover.
+                      Lorem ipsum dolor sit amet consectetur adipisicing elit.
+                      Modi magnam molestiae, quidem nulla iure labore minima,
+                      quasi necessitatibus impedit quia dignissimos, rerum
+                      laborum tempora nostrum! Reiciendis quaerat quae
+                      consequatur! Voluptas!
+                    </igc-card-content>
+                    <igc-card-actions>
+                      <igc-button @click=${toggle}>Action</igc-button>
+                    </igc-card-actions>
+                  </igc-card>
+                </div>
+              </igc-anchor-popover>
+            </div>
+          </div>
+        `
+      )}
     </div>
+    <!-- </section> -->
   `,
 };
