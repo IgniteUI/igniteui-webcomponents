@@ -1,4 +1,3 @@
-import { createIconDefaultMap } from './registry/default-map.js';
 import type {
   BroadcastIconsChangeMessage,
   IconMeta,
@@ -105,13 +104,16 @@ export class IconsStateBroadcast {
 
   private _getUserRefsCollection(
     collections: IconsCollection<IconMeta>
-  ): IconsCollection<IconMeta> {
-    const userSetIcons = createIconDefaultMap<string, IconMeta>();
+  ): Map<string, Map<string, IconMeta>> {
+    const userSetIcons = new Map<string, Map<string, IconMeta>>();
 
     for (const [collectionKey, collection] of collections.entries()) {
       for (const [iconKey, icon] of collection.entries()) {
         if (icon.external) {
-          userSetIcons.getOrCreate(collectionKey).set(iconKey, icon);
+          if (!userSetIcons.has(collectionKey)) {
+            userSetIcons.set(collectionKey, new Map());
+          }
+          userSetIcons.get(collectionKey)!.set(iconKey, icon);
         }
       }
     }
@@ -121,15 +123,18 @@ export class IconsStateBroadcast {
 
   private _getUserSetCollection(
     collections: IconsCollection<SvgIcon>
-  ): IconsCollection<SvgIcon> {
-    const userSetIcons = createIconDefaultMap<string, SvgIcon>();
+  ): Map<string, Map<string, SvgIcon>> {
+    const userSetIcons = new Map<string, Map<string, SvgIcon>>();
 
     for (const [collectionKey, collection] of collections.entries()) {
       if (collectionKey === 'internal') {
         continue;
       }
       for (const [iconKey, icon] of collection.entries()) {
-        userSetIcons.getOrCreate(collectionKey).set(iconKey, icon);
+        if (!userSetIcons.has(collectionKey)) {
+          userSetIcons.set(collectionKey, new Map());
+        }
+        userSetIcons.get(collectionKey)!.set(iconKey, icon);
       }
     }
 

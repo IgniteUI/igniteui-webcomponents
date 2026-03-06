@@ -80,8 +80,8 @@ class IconsRegistry {
     const svgIcon = this._svgIconParser.parse(iconText);
     this._collections.getOrCreate(collection).set(name, svgIcon);
 
-    const icons = createIconDefaultMap<string, SvgIcon>();
-    icons.getOrCreate(collection).set(name, svgIcon);
+    const icons = new Map<string, Map<string, SvgIcon>>();
+    icons.set(collection, new Map([[name, svgIcon]]));
 
     this._broadcast.send({
       actionType: ActionType.RegisterIcon,
@@ -140,11 +140,19 @@ class IconsRegistry {
       this._notifyAll(alias.name, alias.collection);
     }
     if (target.external) {
-      const refs = createIconDefaultMap<string, IconMeta>();
-      refs.getOrCreate(alias.collection).set(alias.name, {
-        name: target.name,
-        collection: target.collection,
-      });
+      const refs = new Map<string, Map<string, IconMeta>>();
+      refs.set(
+        alias.collection,
+        new Map([
+          [
+            alias.name,
+            {
+              name: target.name,
+              collection: target.collection,
+            },
+          ],
+        ])
+      );
 
       this._broadcast.send({
         actionType: ActionType.UpdateIconReference,
