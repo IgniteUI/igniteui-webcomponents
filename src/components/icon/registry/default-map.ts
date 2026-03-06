@@ -55,6 +55,27 @@ class DefaultMap<K, V> extends Map<K, V> {
 
     return this.get(key) as V;
   }
+
+  /**
+   * Converts the DefaultMap to a plain Map for structured cloning.
+   *
+   * @remarks
+   * This method helps with cross-browser compatibility when using BroadcastChannel
+   * or postMessage, as custom Map subclasses are not properly cloned in Safari.
+   * Returns a plain Map that is guarantied to be structured cloneable across all browsers.
+   *
+   * @returns A plain Map with the same entries as this DefaultMap.
+   *
+   * @example
+   * ```typescript
+   * const defaultMap = new DefaultMap<string, Set<number>>();
+   * const plainMap = defaultMap.toPlainMap();
+   * channel.postMessage({ data: plainMap });
+   * ```
+   */
+  public toPlainMap(): Map<K, V> {
+    return new Map(this.entries());
+  }
 }
 
 /**

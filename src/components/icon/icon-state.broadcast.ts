@@ -84,8 +84,12 @@ export class IconsStateBroadcast {
 
     this.send({
       actionType: ActionType.SyncState,
-      collections: this._getUserSetCollection(this._iconsCollection),
-      references: this._getUserRefsCollection(this._iconReferences),
+      collections: this._getUserSetCollection(
+        this._iconsCollection.toPlainMap()
+      ),
+      references: this._getUserRefsCollection(
+        this._iconReferences.toPlainMap()
+      ),
       origin: IconsStateBroadcast._origin,
     });
   }
@@ -104,7 +108,7 @@ export class IconsStateBroadcast {
   }
 
   private _getUserRefsCollection(
-    collections: IconsCollection<IconMeta>
+    collections: Map<string, Map<string, IconMeta>>
   ): IconsCollection<IconMeta> {
     const userSetIcons = createIconDefaultMap<string, IconMeta>();
 
@@ -120,7 +124,7 @@ export class IconsStateBroadcast {
   }
 
   private _getUserSetCollection(
-    collections: IconsCollection<SvgIcon>
+    collections: Map<string, Map<string, SvgIcon>>
   ): IconsCollection<SvgIcon> {
     const userSetIcons = createIconDefaultMap<string, SvgIcon>();
 
