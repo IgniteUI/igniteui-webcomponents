@@ -320,6 +320,66 @@ describe('Icon broadcast service', () => {
       expect(references?.get(refCollectionName)?.get(refName)).to.be.undefined;
     });
   });
+
+  describe('Structured cloneability (Safari compatibility)', () => {
+    it('broadcast payloads for registered icons are structured-cloneable', async () => {
+      registerIconFromText('clone-icon', bugSvg, collectionName);
+      await aTimeout(0);
+
+      expect(events).lengthOf(1);
+      const { collections } = first(events).data;
+
+      // Verify the payload is a plain Map (not DefaultMap with non-cloneable _factoryFn)
+      expect(collections).to.be.instanceOf(Map);
+      expect(collections!.constructor).to.equal(Map);
+      expect(() => structuredClone(collections)).to.not.throw();
+    });
+
+    it('broadcast payloads for icon references are structured-cloneable', async () => {
+      registerIconFromText('ref-clone-target', bugSvg, collectionName);
+      setIconRef('ref-clone-alias', collectionName, {
+        name: 'ref-clone-target',
+        collection: collectionName,
+      });
+      await aTimeout(0);
+
+      const refEvent = events.find(
+        (e) => e.data.actionType === ActionType.UpdateIconReference
+      );
+      expect(refEvent).to.not.be.undefined;
+
+      const { references } = refEvent!.data;
+
+      // Verify the payload is a plain Map (not DefaultMap with non-cloneable _factoryFn)
+      expect(references).to.be.instanceOf(Map);
+      expect(references!.constructor).to.equal(Map);
+      expect(() => structuredClone(references)).to.not.throw();
+    });
+
+    it('broadcast payloads for sync state are structured-cloneable', async () => {
+      registerIconFromText('sync-clone-icon', bugSvg, collectionName);
+
+      // a peer is requesting a state sync
+      channel.postMessage({ actionType: ActionType.SyncState });
+      await aTimeout(0);
+
+      const syncEvent = events.find(
+        (e) => e.data.actionType === ActionType.SyncState
+      );
+      expect(syncEvent).to.not.be.undefined;
+
+      const { collections, references } = syncEvent!.data;
+
+      // Both collections and references must be plain Maps
+      expect(collections).to.be.instanceOf(Map);
+      expect(collections!.constructor).to.equal(Map);
+      expect(() => structuredClone(collections)).to.not.throw();
+
+      expect(references).to.be.instanceOf(Map);
+      expect(references!.constructor).to.equal(Map);
+      expect(() => structuredClone(references)).to.not.throw();
+    });
+  });
 });
 
 describe('Icon BFCache (pageshow/pagehide) handling', () => {
