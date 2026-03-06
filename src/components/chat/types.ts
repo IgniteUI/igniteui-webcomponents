@@ -231,12 +231,6 @@ export interface ChatRenderers {
    */
   messageHeader?: ChatTemplateRenderer<ChatMessageRenderContext>;
   /**
-   * Custom renderer for the "is typing" indicator.
-   *
-   * @deprecated since 6.4.0. Use the `typing-indicator` slot.
-   */
-  typingIndicator?: ChatTemplateRenderer<ChatRenderContext>;
-  /**
    * Custom renderer for the message send button.
    */
   sendButton?: ChatTemplateRenderer<ChatRenderContext>;

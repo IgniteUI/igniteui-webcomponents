@@ -5,7 +5,7 @@
 $theme: $indigo;
 
 :host {
-    @include css-vars-from-theme(diff(light.$base, $theme), 'ig-chip');
+    @include css-vars-from-theme(diff(light.$base, $theme));
 }
 
 :host([variant='info']) button,

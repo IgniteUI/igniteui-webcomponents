@@ -5,5 +5,5 @@
 $theme: $fluent;
 
 :host {
-    @include css-vars-from-theme(diff(light.$base, $theme), 'ig-avatar');
+    @include css-vars-from-theme(diff(light.$base, $theme));
 }

@@ -36,14 +36,15 @@ const metadata: Meta<IgcCardComponent> = {
     docs: {
       description: {
         component:
-          'A container which wraps different elements related to a single subject',
+          'A container component that wraps different elements related to a single subject.\nThe card component provides a flexible container for organizing content such as headers,\nmedia, text content, and actions.',
       },
     },
   },
   argTypes: {
     elevated: {
       type: 'boolean',
-      description: 'Sets card elevated style, otherwise card looks outlined.',
+      description:
+        'Sets the card to have an elevated appearance with shadow.\nWhen false, the card uses an outlined style with a border.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
@@ -54,7 +55,10 @@ const metadata: Meta<IgcCardComponent> = {
 export default metadata;
 
 interface IgcCardArgs {
-  /** Sets card elevated style, otherwise card looks outlined. */
+  /**
+   * Sets the card to have an elevated appearance with shadow.
+   * When false, the card uses an outlined style with a border.
+   */
   elevated: boolean;
 }
 type Story = StoryObj<IgcCardArgs>;

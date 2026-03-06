@@ -75,7 +75,6 @@ describe('Tooltip', () => {
     it('is correctly initialized with its default component state', () => {
       expect(tooltip.dir).to.be.empty;
       expect(tooltip.open).to.be.false;
-      expect(tooltip.disableArrow).to.be.true;
       expect(tooltip.withArrow).to.be.false;
       expect(tooltip.offset).to.equal(6);
       expect(tooltip.placement).to.equal('bottom');

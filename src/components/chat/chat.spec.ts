@@ -567,16 +567,21 @@ describe('Chat', () => {
     });
 
     it('should render custom typingIndicator', async () => {
+      const indicator = document.createElement('span');
+      indicator.slot = 'typing-indicator';
+      indicator.innerText = 'loading...';
+      chat.appendChild(indicator);
+
       chat.messages = [messages[0]];
-      chat.options = {
-        isTyping: true,
-        renderers: {
-          typingIndicator: () => html`<span>loading...</span>`,
-        },
-      };
+      chat.options = { isTyping: true };
       await elementUpdated(chat);
 
-      expect(getChatDOM(chat).typingIndicator.innerText).to.equal('loading...');
+      const typingIndicator = getChatDOM(chat).typingIndicator;
+      const assignedElements = typingIndicator
+        ?.querySelector('slot')
+        ?.assignedElements();
+
+      expect(first(assignedElements!).textContent).to.equal('loading...');
     });
 
     it('should render text area templates', async () => {
@@ -1071,6 +1076,11 @@ describe('Chat', () => {
       const styles = document.createElement('style');
       styles.setAttribute('id', 'adopt-styles-test');
       styles.innerHTML = `
+        .custom-background {
+          background-color: rgb(255, 255, 0);
+        }
+
+        /* override */
         .custom-background {
           background-color: rgb(255, 0, 0);
         }

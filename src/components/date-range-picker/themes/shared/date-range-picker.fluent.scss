@@ -1,11 +1,10 @@
 @use 'styles/utilities' as *;
 @use '../light/themes' as *;
+@use 'components/input/themes/light/themes' as input-theme;
 
-$theme: $fluent;
+$theme: input-theme.$fluent;
 
 :host {
-    --calendar-border-color: #{$fluent-calendar-border-color};
-
     igc-dialog[open]::part(base) {
         border-radius: 0;
     }

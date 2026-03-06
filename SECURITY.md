@@ -6,20 +6,19 @@ We provide security support for the **latest major version** of the package only
 
 For critical security vulnerabilities, we will backport fixes to the **last relevant minor version** of the current major version to ensure users can apply security patches without upgrading to a new minor release.
 
-**Current package version: 6.5.0**
+**Current package version: 7.0.x**
 
 | Version | Supported          |
 | ------- | ------------------ |
+| 7.x.x   | :white_check_mark: |
 | 6.x.x   | :white_check_mark: |
 | < 6.0.0 | :x:                |
 
 ### Examples
 
-- **Version 6.5.0** (current): ✅ Fully supported with security updates
-- **Version 6.4.x**: ✅ Will receive backported fixes for critical security vulnerabilities
-- **Version 6.0.x**: ✅ Supported, but recommended to upgrade to the latest 6.x.x version
-- **Version 5.x.x**: ❌ Deprecated - no security updates provided
-- **Version 4.x.x or below**: ❌ Deprecated - no security updates provided
+- **Version 7.x.x** (current): Fully supported with security updates.
+- **Version 6.x.x**: ✅ Will receive backported fixes for critical security vulnerabilities, but recommended to upgrade to the latest version.
+- **Version < 6.x.x**: ❌ Deprecated - no security updates provided.
 
 ## Reporting a Vulnerability
 

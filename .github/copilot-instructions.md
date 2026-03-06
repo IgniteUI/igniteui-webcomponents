@@ -10,12 +10,15 @@ This project involves creating a library of reusable web components using the Li
 
 - Use standard ESM imports.
 - TypeScript imports end with `.js` extension.
+- Internal API (properties, methods) must be prefixed with `_`.
+- Use `readonly` for immutable properties and specify explicit return types.
 - Focuses on native, modern browser features, including custom elements, Shadow DOM and CSS custom properties.
 - Follows latest ECMAScript standards and best practices with the exception of native private fields.
 - Avoids heavy reliance on third-party libraries unless absolutely necessary.
 - Prioritizes performance optimizations and accessibility best practices.
 - Writes clean, maintainable, and well-documented code.
 - Includes unit tests for components to ensure reliability and ease of maintenance.
+- Uses `@open-wc/testing` for component tests with mandatory accessibility audits.
 
 ### TypeScript Best Practices
 
@@ -27,10 +30,12 @@ This project involves creating a library of reusable web components using the Li
 
 - Components should be self-contained and encapsulated.
 - Use Shadow DOM to encapsulate styles and markup.
-- Ensure components are accessible, following WCAG guidelines.
+- Organize code with region comments: Internal state, Public properties, Lit lifecycle, Event handlers, Internal API, Public API.
+- Accessibility is **mandatory** - all components must pass accessibility audits and follow WCAG guidelines.
 - Optimize for performance, minimizing re-renders and unnecessary DOM updates.
 - Expose component attributes **only** for "primitive" types (string, number, boolean).
 - Prefer composition over inheritance for component reuse.
+- Use `update()` or `willUpdate()` for derived state; avoid `@watch` decorator.
 
 ### Styling Guidelines
 
@@ -49,3 +54,5 @@ This project involves creating a library of reusable web components using the Li
 - [Lit Cheat Sheet](https://lit.dev/articles/lit-cheat-sheet/)
 - [Lit Context API](https://lit.dev/docs/data/context/)
 - [Web Components Basics](https://developer.mozilla.org/en-US/docs/Web/Web_Components)
+- [Coding Guidelines](CODING_GUIDELINES.md) - Comprehensive coding standards and best practices
+- [Skills Directory](skills/) - Step-by-step guides for common tasks (creating components, adding properties, updating styles, reviewing PRs)

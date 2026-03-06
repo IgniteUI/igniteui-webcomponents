@@ -8,17 +8,17 @@ $fab-theme: $fluent-fab;
 $outlined-theme: $fluent-outlined;
 
 :host([variant='flat']) {
-    @include css-vars-from-theme(diff(light.$base-flat, $flat-theme), 'ig-button');
+    @include css-vars-from-theme(diff(light.$base-flat, $flat-theme));
 }
 
 :host([variant='outlined']) {
-    @include css-vars-from-theme(diff(light.$base-outlined, $outlined-theme), 'ig-button');
+    @include css-vars-from-theme(diff(light.$base-outlined, $outlined-theme));
 }
 
 :host([variant='contained']) {
-    @include css-vars-from-theme(diff(light.$base-contained, $contained-theme), 'ig-button');
+    @include css-vars-from-theme(diff(light.$base-contained, $contained-theme));
 }
 
 :host([variant='fab']) {
-    @include css-vars-from-theme(diff(light.$base-fab, $fab-theme), 'ig-button');
+    @include css-vars-from-theme(diff(light.$base-fab, $fab-theme));
 }
