@@ -1,7 +1,7 @@
 ---
 name: igniteui-wc-customize-component-theme
 description: Customize Ignite UI Web Components styling using CSS custom properties, optional Sass, and the igniteui-theming MCP server for AI-assisted theming
-user-invokable: true
+user-invocable: true
 ---
 
 # Ignite UI Web Components — Theming Skill

@@ -1,7 +1,7 @@
 ---
 name: igniteui-wc-optimize-bundle-size
 description: Optimize application bundle size by importing only necessary components and using tree-shaking effectively
-user-invokable: true
+user-invocable: true
 ---
 
 # Optimize Bundle Size

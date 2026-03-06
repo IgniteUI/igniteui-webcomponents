@@ -1,7 +1,7 @@
 ---
 name: igniteui-wc-choose-components
 description: Identify and select the right Ignite UI Web Components for your app UI, then navigate to official docs, usage examples, and API references
-user-invokable: true
+user-invocable: true
 ---
 
 # Choose the Right Ignite UI Components
