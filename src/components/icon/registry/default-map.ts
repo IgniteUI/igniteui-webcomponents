@@ -62,7 +62,9 @@ class DefaultMap<K, V> extends Map<K, V> {
    * @remarks
    * This method helps with cross-browser compatibility when using BroadcastChannel
    * or postMessage, as custom Map subclasses are not properly cloned in Safari.
-   * Returns a plain Map that is guaranteed to be structured cloneable across all browsers.
+   * Returns a plain Map instance so that the container itself can be structured-cloned
+   * consistently across browsers. Structured cloning will still only succeed if the
+   * map's keys and values are themselves structured-cloneable.
    *
    * @returns A plain Map with the same entries as this DefaultMap.
    *
