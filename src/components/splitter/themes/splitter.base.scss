@@ -1,0 +1,112 @@
+@use 'styles/common/component';
+@use 'styles/utilities' as *;
+
+:host {
+    display: flex;
+    width: 100%;
+    height: 100%;
+
+    [part='base'] {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        user-select: none;
+    }
+
+    // Styles for the pane wrapper divs (startPane/endPane)
+    [part~='start-panel'],
+    [part~='end-panel'] {
+        display: flex;
+        flex: 1 1 auto;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        box-sizing: border-box;
+    }
+
+    ::slotted(*) {
+        flex: 1 1 auto;
+        width: 100%;
+        height: 100%;
+        min-width: 0;
+        min-height: 0;
+        box-sizing: border-box;
+    }
+
+    // Bar styles (moved from splitter-bar.base.scss)
+    [part='splitter-bar'] {
+        display: flex;
+        flex-shrink: 0;
+        justify-content: center;
+        cursor: var(--cursor, default);
+        box-sizing: content-box;
+
+        [part*='collapse-btn'],
+        [part*='expand-btn'] {
+            cursor: pointer;
+            width: 0;
+            height: 0;
+        }
+    }
+}
+
+// Horizontal orientation (default)
+:host([orientation='horizontal']) {
+    [part='base'] {
+        flex-direction: row;
+    }
+
+    [part='splitter-bar'] {
+        flex-direction: column;
+        height: 100%;
+    }
+
+    [part='drag-handle'] {
+        height: 25%;
+        margin: rem(48px) 0;
+    }
+}
+
+// Vertical orientation
+:host([orientation='vertical']) {
+    [part='base'] {
+        flex-direction: column;
+    }
+
+    [part='splitter-bar'] {
+        flex-direction: row;
+        width: 100%;
+    }
+
+    [part='drag-handle'] {
+        width: 25%;
+        margin: 0 rem(48px);
+    }
+}
+
+// Collapsed states
+:host([start-collapsed]) {
+    [part='start-panel'] {
+        display: none;
+    }
+}
+
+:host([end-collapsed]) {
+    [part~='end-panel'] {
+        display: none;
+    }
+}
+
+:host([disable-resize][orientation='horizontal']),
+:host([hide-drag-handle][orientation='horizontal']) {
+    [part='start-collapse-btn'] {
+        margin-block-end: rem(48px);
+    }
+}
+
+:host([disable-resize][orientation='vertical']),
+:host([hide-drag-handle][orientation='vertical']) {
+    [part='start-collapse-btn'] {
+        margin-inline-end: rem(48px);
+    }
+}
