@@ -559,21 +559,18 @@ describe('DefaultMap serialization for cross-browser compatibility', () => {
 
     const { collections } = first(events).data;
 
-    // Simulate structured clone via JSON roundtrip (simplified test)
-    // In reality, BroadcastChannel uses structured clone internally
-    const serialized = JSON.stringify(collections, (_key, value) => {
-      if (value instanceof Map) {
-        return {
-          __type: 'Map',
-          entries: Array.from(value.entries()),
-        };
-      }
-      return value;
-    });
+    // Verify that nested plain Maps can be structured-cloned (as BroadcastChannel would do)
+    const clonedCollections = structuredClone(collections);
 
-    // Verify that Map data was serializable
-    expect(serialized).to.include('__type');
-    expect(JSON.parse(serialized).entries).to.be.an('array');
+    // Outer structure should remain a Map
+    expect(clonedCollections?.[Symbol.toStringTag]).to.equal('Map');
+
+    // Inner collection for the test collection should also remain a Map
+    const clonedInnerCollection = clonedCollections?.get(collectionName);
+    expect(clonedInnerCollection?.[Symbol.toStringTag]).to.equal('Map');
+
+    // The nested icon entry should be preserved after cloning
+    expect(clonedInnerCollection?.has('nested-icon')).to.be.true;
   });
 
   it('toPlainMap preserves nested Map structures for icon collections', () => {
@@ -591,9 +588,9 @@ describe('DefaultMap serialization for cross-browser compatibility', () => {
     const plainMap = defaultMap.toPlainMap();
 
     // Verify structure is preserved
-    expect(plainMap).lengthOf(2);
-    expect(plainMap.get('material')).lengthOf(2);
-    expect(plainMap.get('bootstrap')).lengthOf(1);
+    expect(plainMap.size).to.equal(2);
+    expect(plainMap.get('material')!.size).to.equal(2);
+    expect(plainMap.get('bootstrap')!.size).to.equal(1);
 
     // Verify nested data integrity
     expect(plainMap.get('material')?.get('home')?.svg).to.include('<svg');
