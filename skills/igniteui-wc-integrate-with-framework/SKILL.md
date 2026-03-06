@@ -1,7 +1,7 @@
 ---
 name: igniteui-wc-integrate-with-framework
 description: Integrate igniteui-webcomponents into React, Angular, Vue, or vanilla JS applications with framework-specific configurations
-user-invokable: true
+user-invocable: true
 ---
 
 # Integrate with Framework
