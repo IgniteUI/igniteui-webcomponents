@@ -340,6 +340,55 @@ describe('Date range picker - single input', () => {
       // When blurred (not focused), uses displayFormat for display
       expect(input.value).to.equal('2025-04-09 02:30 PM - 2025-04-10 09:15 AM');
     });
+
+    it('should initialize default mask based on locale when no inputFormat is set', async () => {
+      picker = await fixture<IgcDateRangePickerComponent>(
+        html`<igc-date-range-picker></igc-date-range-picker>`
+      );
+      picker.useTwoInputs = false;
+      await elementUpdated(picker);
+
+      const rangeInput = picker.renderRoot.querySelector(
+        IgcDateRangeInputComponent.tagName
+      )!;
+      input = rangeInput.renderRoot.querySelector('input')!;
+
+      expect(input.placeholder).to.equal('MM/dd/yyyy - MM/dd/yyyy');
+
+      picker.locale = 'de';
+      await elementUpdated(picker);
+
+      expect(input.placeholder).to.equal('dd.MM.yyyy - dd.MM.yyyy');
+    });
+
+    it('should target the last end position date part when the input receives focus by default', async () => {
+      picker.useTwoInputs = false;
+      await elementUpdated(picker);
+
+      input = getInput(picker);
+      input.focus();
+      await elementUpdated(input);
+
+      // Press arrow up without selecting a specific part
+      // Should increment the last end position part (year)
+      const initialDate = new Date(2025, 0, 15); // Jan 15, 2025
+      picker.value = { start: initialDate, end: initialDate };
+      await elementUpdated(picker);
+
+      expect(input.value).to.equal('01/15/2025 - 01/15/2025');
+
+      // Blur and refocus to reset cursor
+      input.blur();
+      await elementUpdated(input);
+      input.focus();
+      await elementUpdated(input);
+
+      // Arrow up should increment the year (last date part)
+      simulateKeyboard(input, arrowUp);
+      await elementUpdated(input);
+
+      expect(input.value).to.equal('01/15/2025 - 01/15/2026');
+    });
   });
   describe('Methods', () => {
     it('should clear the input on invoking clear()', async () => {
@@ -376,6 +425,35 @@ describe('Date range picker - single input', () => {
       });
       expect(input.value).to.equal('4/9/2025 - 4/10/2025');
       expect(eventSpy).not.called;
+    });
+
+    it('should stepUp/stepDown when input is not focused', async () => {
+      picker.useTwoInputs = false;
+      picker.value = {
+        start: new Date(2025, 0, 15), // Jan 15, 2025
+        end: new Date(2025, 0, 16), // Jan 16, 2025
+      };
+      await elementUpdated(picker);
+
+      input = getInput(picker);
+      expect(isFocused(input)).to.be.false;
+      expect(input.value).to.equal('1/15/2025 - 1/16/2025');
+
+      // stepUp should increment the default date part (first start position part - Month)
+      rangeInput.stepUp();
+      await elementUpdated(rangeInput);
+
+      expect(rangeInput.value?.start?.getMonth()).to.equal(1);
+      expect(rangeInput.value?.start?.getDate()).to.equal(15);
+      expect(input.value).to.equal('2/15/2025 - 1/16/2025');
+
+      // stepDown should decrement the default date part (Month)
+      rangeInput.stepDown();
+      await elementUpdated(rangeInput);
+
+      expect(rangeInput.value?.start?.getMonth()).to.equal(0);
+      expect(rangeInput.value?.start?.getDate()).to.equal(15);
+      expect(input.value).to.equal('1/15/2025 - 1/16/2025');
     });
   });
   describe('Interactions', () => {
@@ -840,6 +918,38 @@ describe('Date range picker - single input', () => {
 
         simulateKeyboard(input, arrowUp);
         await elementUpdated(picker);
+        input.blur();
+        await elementUpdated(input);
+
+        checkSelectedRange(
+          picker,
+          { start: today.native, end: today.native },
+          false
+        );
+      });
+
+      it('should set the range to current date with Ctrl+; keyboard combination', async () => {
+        const eventSpy = spy(picker, 'emitEvent');
+        picker.useTwoInputs = false;
+        picker.value = {
+          start: new Date(2025, 0, 1),
+          end: new Date(2025, 0, 2),
+        };
+        await elementUpdated(picker);
+
+        input = getInput(picker);
+        input.focus();
+        await elementUpdated(input);
+
+        expect(input.value).to.equal('01/01/2025 - 01/02/2025');
+
+        simulateKeyboard(input, [ctrlKey, ';']);
+        await elementUpdated(picker);
+
+        expect(eventSpy).calledWith('igcInput', {
+          detail: { start: today.native, end: today.native },
+        });
+
         input.blur();
         await elementUpdated(input);
 

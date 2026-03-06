@@ -98,7 +98,11 @@ export class DateRangeMaskParser extends MaskParser {
     // Build the combined range format for the parent MaskParser
     const rangeFormat = `${format}${separator}${format}`;
 
-    super({ format: rangeFormat, promptCharacter });
+    super(
+      options?.promptCharacter
+        ? { format: rangeFormat, promptCharacter: options.promptCharacter }
+        : { format: rangeFormat }
+    );
 
     // Create two parsers for start and end dates
     this._startParser = new DateTimeMaskParser({ format, promptCharacter });
@@ -257,15 +261,6 @@ export class DateRangeMaskParser extends MaskParser {
     return this._rangeParts.find(
       (part) => position >= part.start && position <= part.end
     );
-  }
-
-  /**
-   * Gets all parts for a specific position (start or end).
-   */
-  public getPartsForPosition(
-    position: DateRangePosition
-  ): ReadonlyArray<IDateRangePart> {
-    return this._rangeParts.filter((p) => p.position === position);
   }
 
   /**

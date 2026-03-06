@@ -2,10 +2,7 @@ import { property } from 'lit/decorators.js';
 import { addThemingController } from '../../theming/theming-controller.js';
 import { CalendarDay } from '../calendar/model.js';
 import { registerComponent } from '../common/definitions/register.js';
-import {
-  formatDisplayDate,
-  getDefaultDateTimeFormat,
-} from '../common/i18n/i18n-controller.js';
+import { formatDisplayDate } from '../common/i18n/i18n-controller.js';
 import { FormValueDateRangeTransformers } from '../common/mixins/forms/form-transformers.js';
 import { createFormValueState } from '../common/mixins/forms/form-value.js';
 import { equal } from '../common/util.js';
@@ -269,17 +266,6 @@ export default class IgcDateRangeInputComponent extends IgcDateTimeInputBaseComp
       this.spinLoop,
       amPmValue
     );
-  }
-
-  protected override _initializeDefaultMask(): void {
-    super._initializeDefaultMask();
-
-    if (!this._inputFormat) {
-      const singleFormat = getDefaultDateTimeFormat(this.locale);
-      this._parser.mask = singleFormat;
-      this._defaultMask = singleFormat;
-      this.placeholder = `${singleFormat}${this._parser.separator}${singleFormat}`;
-    }
   }
 
   /**
