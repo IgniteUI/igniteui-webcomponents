@@ -27,15 +27,10 @@ const metadata: Meta<IgcDateTimeInputComponent> = {
     actions: { handles: ['igcInput', 'igcChange'] },
   },
   argTypes: {
-    inputFormat: {
-      type: 'string',
-      description: 'The date format to apply on the input.',
-      control: 'text',
-    },
     value: {
-      type: 'string | Date',
+      type: 'string | Date | DateRangeValue',
       description: 'The value of the input.',
-      options: ['string', 'Date'],
+      options: ['string', 'Date', 'DateRangeValue'],
       control: 'text',
     },
     min: {
@@ -47,6 +42,11 @@ const metadata: Meta<IgcDateTimeInputComponent> = {
       type: 'Date',
       description: 'The maximum value required for the input to remain valid.',
       control: 'date',
+    },
+    inputFormat: {
+      type: 'string',
+      description: 'The date format to apply on the input.',
+      control: 'text',
     },
     displayFormat: {
       type: 'string',
@@ -141,14 +141,14 @@ const metadata: Meta<IgcDateTimeInputComponent> = {
 export default metadata;
 
 interface IgcDateTimeInputArgs {
-  /** The date format to apply on the input. */
-  inputFormat: string;
   /** The value of the input. */
-  value: string | Date;
+  value: string | Date | DateRangeValue;
   /** The minimum value required for the input to remain valid. */
   min: Date;
   /** The maximum value required for the input to remain valid. */
   max: Date;
+  /** The date format to apply on the input. */
+  inputFormat: string;
   /**
    * Format to display the value in when not editing.
    * Defaults to the locale format if not set.

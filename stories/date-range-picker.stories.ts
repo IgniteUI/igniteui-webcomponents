@@ -451,7 +451,6 @@ export const Default: Story = {
   render: (args) => html`
     <igc-date-range-picker
       id="picker"
-      .value=${{ start: today.native, end: tomorrow.native }}
       .displayFormat=${args.displayFormat}
       .inputFormat=${args.inputFormat}
       .locale=${args.locale}

@@ -29,10 +29,10 @@ const metadata: Meta<IgcFileInputComponent> = {
   },
   argTypes: {
     value: {
-      type: 'string | Date',
+      type: 'string | Date | DateRangeValue',
       description:
         'The value of the control.\nSimilar to native file input, this property is read-only and cannot be set programmatically.',
-      options: ['string', 'Date'],
+      options: ['string', 'Date', 'DateRangeValue'],
       control: 'text',
     },
     locale: {
@@ -120,7 +120,7 @@ interface IgcFileInputArgs {
    * The value of the control.
    * Similar to native file input, this property is read-only and cannot be set programmatically.
    */
-  value: string | Date;
+  value: string | Date | DateRangeValue;
   /** Gets/Sets the locale used for getting language, affecting resource strings. */
   locale: string;
   /**
