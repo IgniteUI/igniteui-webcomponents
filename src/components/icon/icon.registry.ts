@@ -85,7 +85,7 @@ class IconsRegistry {
 
     this._broadcast.send({
       actionType: ActionType.RegisterIcon,
-      collections: icons,
+      collections: icons.toPlainMap(),
     });
 
     this._notifyAll(name, collection);
@@ -148,7 +148,7 @@ class IconsRegistry {
 
       this._broadcast.send({
         actionType: ActionType.UpdateIconReference,
-        references: refs,
+        references: refs.toPlainMap(),
       });
     }
   }
