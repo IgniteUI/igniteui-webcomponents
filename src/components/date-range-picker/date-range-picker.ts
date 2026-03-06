@@ -639,6 +639,22 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
 
   // #region Public API methods
 
+  /* blazorSuppress */
+  /** @internal */
+  public hasDateParts(): boolean {
+    return this.useTwoInputs
+      ? this._inputs[0].hasDateParts()
+      : this._input.hasDateParts();
+  }
+
+  /* blazorSuppress */
+  /** @internal */
+  public hasTimeParts(): boolean {
+    return this.useTwoInputs
+      ? this._inputs[0].hasTimeParts()
+      : this._input.hasTimeParts();
+  }
+
   /** Clears the input parts of the component of any user input */
   public clear() {
     this._oldValue = this.value;

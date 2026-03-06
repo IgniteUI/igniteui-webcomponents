@@ -209,10 +209,6 @@ export class DateRangeMaskParser extends MaskParser {
     const start = this._startParser.parseDate(startString);
     const end = this._endParser.parseDate(endString);
 
-    if (!start && !end) {
-      return null;
-    }
-
     return { start, end };
   }
 
