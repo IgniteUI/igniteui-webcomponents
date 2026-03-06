@@ -84,8 +84,12 @@ export class IconsStateBroadcast {
 
     this.send({
       actionType: ActionType.SyncState,
-      collections: this._getUserSetCollection(this._iconsCollection),
-      references: this._getUserRefsCollection(this._iconReferences),
+      collections: this._getUserSetCollection(
+        this._iconsCollection
+      ).toPlainMap(),
+      references: this._getUserRefsCollection(
+        this._iconReferences
+      ).toPlainMap(),
       origin: IconsStateBroadcast._origin,
     });
   }
