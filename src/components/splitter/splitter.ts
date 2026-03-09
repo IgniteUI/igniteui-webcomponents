@@ -463,7 +463,7 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
       return Math.round((startSize / totalSize) * 100);
     }
 
-    if (sizeValue.indexOf('%') !== -1) {
+    if (sizeValue.includes('%')) {
       return Number.parseInt(sizeValue, 10) || 0;
     }
 
@@ -490,7 +490,7 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
 
   private _isPercentageSize(which: 'start' | 'end') {
     const targetSize = which === 'start' ? this._startSize : this._endSize;
-    return !!targetSize && targetSize.indexOf('%') !== -1;
+    return !!targetSize && targetSize.includes('%');
   }
 
   private _isAutoSize(which: 'start' | 'end') {
@@ -657,7 +657,7 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
     }
     const totalSize = this._getTotalSize();
     let result: number;
-    if (value.indexOf('%') !== -1) {
+    if (value.includes('%')) {
       const percentageValue = Number.parseInt(value, 10) || 0;
       result = (percentageValue / 100) * totalSize;
     } else {
