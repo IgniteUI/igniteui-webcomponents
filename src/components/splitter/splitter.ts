@@ -67,8 +67,8 @@ interface SplitterResizeState {
  *
  * @csspart splitter-bar - The resizable bar element between the two panels.
  * @csspart drag-handle - The drag handle icon/element on the splitter bar.
- * @csspart start-panel - The container for the start panel content.
- * @csspart end-panel - The container for the end panel content.
+ * @csspart start-pane - The container for the start panel content.
+ * @csspart end-pane - The container for the end panel content.
  * @csspart start-collapse-btn - The button to collapse the start panel.
  * @csspart end-collapse-btn - The button to collapse the end panel.
  * @csspart start-expand-btn - The button to expand the start panel when collapsed.
@@ -109,10 +109,10 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   @query('[part~="base"]', true)
   private readonly _base!: HTMLElement;
 
-  @query('[part~="start-panel"]', true)
+  @query('[part~="start-pane"]', true)
   private readonly _startPane!: HTMLElement;
 
-  @query('[part~="end-panel"]', true)
+  @query('[part~="end-pane"]', true)
   private readonly _endPane!: HTMLElement;
 
   @query('[part~="splitter-bar"]', true)
@@ -925,8 +925,8 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
     return html`
       <div part="base">
         <div
-          part="start-panel"
-          id="start-panel"
+          part="start-pane"
+          id="start-pane"
           style=${styleMap(this._startPaneInternalStyles)}
         >
           <slot name="start"></slot>
@@ -936,7 +936,7 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
           part="splitter-bar"
           role="separator"
           tabindex=${this._barTabIndex}
-          aria-controls="start-panel end-panel"
+          aria-controls="start-pane end-pane"
           aria-orientation=${this.orientation}
           aria-valuenow=${this._getStartPaneSizePercent()}
           aria-valuemin=${this._getMinMaxAsPercent('min')}
@@ -953,8 +953,8 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
           ${this._renderBarControls()}
         </div>
         <div
-          part="end-panel"
-          id="end-panel"
+          part="end-pane"
+          id="end-pane"
           style=${styleMap(this._endPaneInternalStyles)}
         >
           <slot name="end"></slot>

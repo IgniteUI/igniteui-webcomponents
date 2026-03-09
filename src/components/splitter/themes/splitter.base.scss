@@ -14,8 +14,8 @@
     }
 
     // Styles for the pane wrapper divs (startPane/endPane)
-    [part~='start-panel'],
-    [part~='end-panel'] {
+    [part~='start-pane'],
+    [part~='end-pane'] {
         display: flex;
         flex: 1 1 auto;
         width: 100%;
@@ -86,13 +86,13 @@
 
 // Collapsed states
 :host([start-collapsed]) {
-    [part='start-panel'] {
+    [part='start-pane'] {
         display: none;
     }
 }
 
 :host([end-collapsed]) {
-    [part~='end-panel'] {
+    [part~='end-pane'] {
         display: none;
     }
 }

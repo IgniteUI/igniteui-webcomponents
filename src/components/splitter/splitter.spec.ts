@@ -32,8 +32,8 @@ import IgcSplitterComponent, {
 } from './splitter.js';
 
 const BAR_PART = 'splitter-bar';
-const START_PART = 'start-panel';
-const END_PART = 'end-panel';
+const START_PART = 'start-pane';
+const END_PART = 'end-pane';
 const START_EXPANDER_PART = 'start-expand-btn';
 const END_EXPANDER_PART = 'end-expand-btn';
 const START_COLLAPSE_PART = 'start-collapse-btn';
