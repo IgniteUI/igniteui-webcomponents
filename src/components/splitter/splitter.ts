@@ -1,5 +1,5 @@
 import { html, LitElement } from 'lit';
-import { property, query, state } from 'lit/decorators.js';
+import { eventOptions, property, query, state } from 'lit/decorators.js';
 import { createRef, ref } from 'lit/directives/ref.js';
 import { type StyleInfo, styleMap } from 'lit/directives/style-map.js';
 import { addThemingController } from '../../theming/theming-controller.js';
@@ -550,6 +550,11 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
     return true;
   }
 
+  @eventOptions({ passive: false })
+  private _preventDefaultForEvent(e: Event) {
+    e.preventDefault();
+  }
+
   private _resolveDelta(
     deltaX: number,
     deltaY: number,
@@ -942,8 +947,8 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
           aria-valuemin=${this._getMinMaxAsPercent('min')}
           aria-valuemax=${this._getMinMaxAsPercent('max')}
           style=${styleMap(this._barInternalStyles)}
-          @touchstart=${(e: TouchEvent) => e.preventDefault()}
-          @contextmenu=${(e: PointerEvent) => e.preventDefault()}
+          @touchstart=${this._preventDefaultForEvent}
+          @contextmenu=${this._preventDefaultForEvent}
           @pointerdown=${bindIf(canResize, this._handleBarPointerDown)}
           @pointermove=${bindIf(isDragging, this._handleBarPointerMove)}
           @pointerup=${bindIf(isDragging, this._handleEndDrag)}
