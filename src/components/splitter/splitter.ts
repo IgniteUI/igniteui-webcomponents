@@ -1,5 +1,5 @@
 import { html, LitElement } from 'lit';
-import { property, query } from 'lit/decorators.js';
+import { property, query, state } from 'lit/decorators.js';
 import { createRef, ref } from 'lit/directives/ref.js';
 import { type StyleInfo, styleMap } from 'lit/directives/style-map.js';
 import { addThemingController } from '../../theming/theming-controller.js';
@@ -20,7 +20,7 @@ import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { partMap } from '../common/part-map.js';
-import { isLTR, roundPrecise } from '../common/util.js';
+import { bindIf, isLTR, roundPrecise } from '../common/util.js';
 import type { SplitterOrientation } from '../types.js';
 import { styles as shared } from './themes/shared/splitter.common.css.js';
 import { styles } from './themes/splitter.base.css.js';
@@ -41,7 +41,7 @@ export interface IgcSplitterComponentEventMap {
   igcResizeEnd: CustomEvent<IgcSplitterResizeEventDetail>;
 }
 
-interface PaneResizeState {
+interface PaneResizeSnapshot {
   initialSize: number;
   isPercentageBased: boolean;
   minSizePx?: number;
@@ -49,9 +49,20 @@ interface PaneResizeState {
 }
 
 interface SplitterResizeState {
-  startPane: PaneResizeState;
-  endPane: PaneResizeState;
+  startPane: PaneResizeSnapshot | null;
+  endPane: PaneResizeSnapshot | null;
+  isDragging: boolean;
+  dragStartPosition: { x: number; y: number };
+  dragPointerId: number;
 }
+
+const INITIAL_RESIZE_STATE: SplitterResizeState = {
+  startPane: null,
+  endPane: null,
+  isDragging: false,
+  dragStartPosition: { x: 0, y: 0 },
+  dragPointerId: -1,
+};
 
 /**
  * The Splitter component provides a framework for a simple layout, splitting the view horizontally or vertically
@@ -101,10 +112,9 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   private _startMaxSize: string | undefined;
   private _endMinSize: string | undefined;
   private _endMaxSize: string | undefined;
-  private _resizeState: SplitterResizeState | null = null;
-  private _isDragging = false;
-  private _dragPointerId = -1;
-  private _dragStartPosition = { x: 0, y: 0 };
+
+  @state()
+  private _resizeState: SplitterResizeState = { ...INITIAL_RESIZE_STATE };
 
   @query('[part~="base"]', true)
   private readonly _base!: HTMLElement;
@@ -143,7 +153,7 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   public orientation: SplitterOrientation = 'horizontal';
 
   /**
-   * Sets whether the user can resize the panels by interacting with the splitter bar.
+   * Sets whether collapsing the panes is disabled.
    * @remarks
    * Default value is `false`.
    * @attr
@@ -360,27 +370,30 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   //#region Resize Event Handlers
 
   private _handleBarPointerDown(e: PointerEvent) {
-    if (e.button !== 0 || this._resizeDisallowed) {
+    if (e.button !== 0) {
       return;
     }
 
     e.preventDefault();
 
-    this._isDragging = true;
-    this._dragPointerId = e.pointerId;
-    this._dragStartPosition = { x: e.clientX, y: e.clientY };
+    this._resizeState = {
+      ...this._resizeState,
+      isDragging: true,
+      dragPointerId: e.pointerId,
+      dragStartPosition: { x: e.clientX, y: e.clientY },
+    };
 
     this._resizeStart();
-    this._barRef.value?.setPointerCapture(this._dragPointerId);
+    this._barRef.value?.setPointerCapture(this._resizeState.dragPointerId);
   }
 
   private _handleBarPointerMove(e: PointerEvent) {
-    if (!this._isDragging || e.pointerId !== this._dragPointerId) {
+    if (e.pointerId !== this._resizeState.dragPointerId) {
       return;
     }
 
-    const deltaX = e.clientX - this._dragStartPosition.x;
-    const deltaY = e.clientY - this._dragStartPosition.y;
+    const deltaX = e.clientX - this._resizeState.dragStartPosition.x;
+    const deltaY = e.clientY - this._resizeState.dragStartPosition.y;
     const delta = this._resolveDelta(deltaX, deltaY);
 
     if (delta !== 0) {
@@ -389,12 +402,12 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   }
 
   private _handleEndDrag(e: PointerEvent) {
-    if (!this._isDragging || e.pointerId !== this._dragPointerId) {
+    if (e.pointerId !== this._resizeState.dragPointerId) {
       return;
     }
 
-    const deltaX = e.clientX - this._dragStartPosition.x;
-    const deltaY = e.clientY - this._dragStartPosition.y;
+    const deltaX = e.clientX - this._resizeState.dragStartPosition.x;
+    const deltaY = e.clientY - this._resizeState.dragStartPosition.y;
     const delta = this._resolveDelta(deltaX, deltaY);
 
     if (delta !== 0) {
@@ -404,21 +417,13 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
     this._endDrag();
   }
 
-  private _handleBarPointerCancel() {
-    if (!this._isDragging) {
-      return;
-    }
-
-    this._resizeState = null;
-    this._endDrag();
-  }
-
   private _endDrag() {
-    if (this._isDragging && this._dragPointerId !== -1) {
-      this._barRef.value?.releasePointerCapture(this._dragPointerId);
+    if (this._resizeState.dragPointerId !== -1) {
+      this._barRef.value?.releasePointerCapture(
+        this._resizeState.dragPointerId
+      );
     }
-    this._isDragging = false;
-    this._dragPointerId = -1;
+    this._resizeState = { ...INITIAL_RESIZE_STATE };
   }
 
   //#endregion
@@ -612,6 +617,7 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
     const [startSize, endSize] = this._rectSize();
 
     this._resizeState = {
+      ...this._resizeState,
       startPane: this._createPaneState('start', startSize),
       endPane: this._createPaneState('end', endSize),
     };
@@ -623,7 +629,7 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   private _createPaneState(
     pane: 'start' | 'end',
     size: number
-  ): PaneResizeState {
+  ): PaneResizeSnapshot {
     return {
       initialSize: size,
       isPercentageBased: this._isPercentageSize(pane) || this._isAutoSize(pane),
@@ -671,7 +677,7 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
     });
   }
 
-  private _computeSize(pane: PaneResizeState, paneSize: number): string {
+  private _computeSize(pane: PaneResizeSnapshot, paneSize: number): string {
     const totalSize = this._getTotalSize();
     if (pane.isPercentageBased) {
       const percentPaneSize = (paneSize / totalSize) * 100;
@@ -681,7 +687,7 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   }
 
   private _resizeEnd(delta: number) {
-    if (!this._resizeState) return;
+    if (!this._resizeState.startPane || !this._resizeState.endPane) return;
     const [startPaneSize, endPaneSize] = this._calcNewSizes(delta);
 
     this.startSize = this._computeSize(
@@ -697,7 +703,7 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
         delta,
       },
     });
-    this._resizeState = null;
+    this._resizeState = { ...INITIAL_RESIZE_STATE };
   }
 
   private _rectSize() {
@@ -709,7 +715,8 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   }
 
   private _calcNewSizes(delta: number): [number, number] {
-    if (!this._resizeState) return [0, 0];
+    if (!this._resizeState.startPane || !this._resizeState.endPane)
+      return [0, 0];
 
     const start = this._resizeState.startPane;
     const end = this._resizeState.endPane;
@@ -912,6 +919,9 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   }
 
   protected override render() {
+    const isDragging = this._resizeState.isDragging;
+    const canResize = !this._resizeDisallowed;
+
     return html`
       <div part="base">
         <div
@@ -934,11 +944,11 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
           style=${styleMap(this._barInternalStyles)}
           @touchstart=${(e: TouchEvent) => e.preventDefault()}
           @contextmenu=${(e: PointerEvent) => e.preventDefault()}
-          @pointerdown=${this._handleBarPointerDown}
-          @pointermove=${this._handleBarPointerMove}
-          @pointerup=${this._handleEndDrag}
-          @lostpointercapture=${this._handleEndDrag}
-          @pointercancel=${this._handleBarPointerCancel}
+          @pointerdown=${bindIf(canResize, this._handleBarPointerDown)}
+          @pointermove=${bindIf(isDragging, this._handleBarPointerMove)}
+          @pointerup=${bindIf(isDragging, this._handleEndDrag)}
+          @lostpointercapture=${bindIf(isDragging, this._handleEndDrag)}
+          @pointercancel=${bindIf(isDragging, this._endDrag)}
         >
           ${this._renderBarControls()}
         </div>
