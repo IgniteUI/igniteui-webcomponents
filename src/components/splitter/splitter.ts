@@ -115,9 +115,6 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   @query('[part~="end-pane"]', true)
   private readonly _endPane!: HTMLElement;
 
-  @query('[part~="splitter-bar"]', true)
-  private readonly _bar!: HTMLElement;
-
   private get _resizeDisallowed() {
     return this.disableResize || this.startCollapsed || this.endCollapsed;
   }
@@ -374,7 +371,7 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
     this._dragStartPosition = { x: e.clientX, y: e.clientY };
 
     this._resizeStart();
-    this._bar.setPointerCapture(this._dragPointerId);
+    this._barRef.value?.setPointerCapture(this._dragPointerId);
   }
 
   private _handleBarPointerMove(e: PointerEvent) {
@@ -418,7 +415,7 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
 
   private _endDrag() {
     if (this._isDragging && this._dragPointerId !== -1) {
-      this._bar.releasePointerCapture(this._dragPointerId);
+      this._barRef.value?.releasePointerCapture(this._dragPointerId);
     }
     this._isDragging = false;
     this._dragPointerId = -1;
@@ -747,8 +744,8 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
     }
 
     const dimension = this.orientation === 'horizontal' ? 'width' : 'height';
-    const barSize = this._bar
-      ? roundPrecise(this._bar.getBoundingClientRect()[dimension])
+    const barSize = this._barRef.value
+      ? roundPrecise(this._barRef.value?.getBoundingClientRect()[dimension])
       : 0;
 
     const rect = this._base.getBoundingClientRect();
