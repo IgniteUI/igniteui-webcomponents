@@ -20,7 +20,14 @@ import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { partMap } from '../common/part-map.js';
-import { bindIf, isLTR, roundPrecise } from '../common/util.js';
+import {
+  asNumber,
+  asPercent,
+  bindIf,
+  clamp,
+  isLTR,
+  roundPrecise,
+} from '../common/util.js';
 import type { SplitterOrientation } from '../types.js';
 import { styles as shared } from './themes/shared/splitter.common.css.js';
 import { styles } from './themes/splitter.base.css.js';
@@ -455,15 +462,15 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
 
     if (!sizeValue || sizeValue === 'auto') {
       const [startSize] = this._rectSize();
-      return Math.round((startSize / totalSize) * 100);
+      return roundPrecise(asPercent(startSize, totalSize), 0);
     }
 
     if (sizeValue.includes('%')) {
-      return Number.parseInt(sizeValue, 10) || 0;
+      return asNumber(sizeValue);
     }
 
-    const pxValue = Number.parseInt(sizeValue, 10) || 0;
-    return Math.round((pxValue / totalSize) * 100);
+    const pxValue = asNumber(sizeValue);
+    return roundPrecise(asPercent(pxValue, totalSize), 0);
   }
 
   private _getStartPaneSizePercent(): number {
@@ -497,23 +504,14 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
     value: string | undefined,
     fallback?: 'auto'
   ): string | undefined {
-    if (!value || value.trim() === '') {
+    const trimmed = value?.trim();
+    if (!trimmed || trimmed === 'auto') {
       return fallback;
     }
 
-    const trimmed = value.trim();
-    if (trimmed === 'auto') {
-      return fallback;
-    }
-
-    const numericValue = Number.parseInt(trimmed, 10);
-    if (Number.isNaN(numericValue) || numericValue < 0) {
-      return fallback;
-    }
-
-    if (trimmed.includes('%') && numericValue > 100) {
-      return fallback;
-    }
+    const numericValue = asNumber(trimmed, -1);
+    if (numericValue < 0) return fallback;
+    if (trimmed.includes('%') && numericValue > 100) return fallback;
 
     return trimmed;
   }
@@ -583,8 +581,8 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
     const targetEndSizePx = totalSize - targetStartSizePx;
 
     if (isPercentage) {
-      this.startSize = `${roundPrecise((targetStartSizePx / totalSize) * 100, 2)}%`;
-      this.endSize = `${roundPrecise((targetEndSizePx / totalSize) * 100, 2)}%`;
+      this.startSize = `${roundPrecise(asPercent(targetStartSizePx, totalSize), 2)}%`;
+      this.endSize = `${roundPrecise(asPercent(targetEndSizePx, totalSize), 2)}%`;
     } else {
       this.startSize = `${targetStartSizePx}px`;
       this.endSize = `${targetEndSizePx}px`;
@@ -657,13 +655,9 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
       return undefined;
     }
     const totalSize = this._getTotalSize();
-    let result: number;
-    if (value.includes('%')) {
-      const percentageValue = Number.parseInt(value, 10) || 0;
-      result = (percentageValue / 100) * totalSize;
-    } else {
-      result = Number.parseInt(value, 10) || 0;
-    }
+    const result = value.includes('%')
+      ? (asNumber(value) / 100) * totalSize
+      : asNumber(value);
     return result;
   }
 
@@ -685,7 +679,7 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   private _computeSize(pane: PaneResizeSnapshot, paneSize: number): string {
     const totalSize = this._getTotalSize();
     if (pane.isPercentageBased) {
-      const percentPaneSize = (paneSize / totalSize) * 100;
+      const percentPaneSize = asPercent(paneSize, totalSize);
       return `${percentPaneSize}%`;
     }
     return `${roundPrecise(paneSize, 0)}px`;
@@ -732,21 +726,16 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
     const maxEnd =
       end.maxSizePx || start.initialSize + end.initialSize - minStart;
 
-    let finalDelta: number;
+    const maxPosDelta = Math.min(
+      maxStart - start.initialSize,
+      end.initialSize - minEnd
+    );
+    const maxNegDelta = Math.min(
+      start.initialSize - minStart,
+      maxEnd - end.initialSize
+    );
+    const finalDelta = clamp(delta, -maxNegDelta, maxPosDelta);
 
-    if (delta < 0) {
-      const maxPossibleDelta = Math.min(
-        start.initialSize - minStart,
-        maxEnd - end.initialSize
-      );
-      finalDelta = Math.min(maxPossibleDelta, Math.abs(delta)) * -1;
-    } else {
-      const maxPossibleDelta = Math.min(
-        maxStart - start.initialSize,
-        end.initialSize - minEnd
-      );
-      finalDelta = Math.min(maxPossibleDelta, Math.abs(delta));
-    }
     return [start.initialSize + finalDelta, end.initialSize - finalDelta];
   }
 
@@ -757,7 +746,7 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
 
     const dimension = this.orientation === 'horizontal' ? 'width' : 'height';
     const barSize = this._barRef.value
-      ? roundPrecise(this._barRef.value?.getBoundingClientRect()[dimension])
+      ? roundPrecise(this._barRef.value.getBoundingClientRect()[dimension])
       : 0;
 
     const rect = this._base.getBoundingClientRect();
@@ -820,9 +809,7 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
           maxHeight: max,
         };
 
-    Object.assign(styles, {
-      ...sizes,
-    });
+    Object.assign(styles, sizes);
   }
 
   private _ensureMinConstraintIsWithinBounds(
