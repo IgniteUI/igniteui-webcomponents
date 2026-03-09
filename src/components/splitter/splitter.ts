@@ -119,6 +119,8 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   private _startMaxSize: string | undefined;
   private _endMinSize: string | undefined;
   private _endMaxSize: string | undefined;
+  private _savedStartSize: string | undefined;
+  private _savedEndSize: string | undefined;
 
   @state()
   private _resizeState: SplitterResizeState = { ...INITIAL_RESIZE_STATE };
@@ -291,11 +293,14 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   }
 
   public set startCollapsed(value: boolean) {
+    if (value && !this._startCollapsed && this._getTotalSize() > 0) {
+      this._savedStartSize = `${this._sizeToPercent(undefined, 0)}%`;
+    }
     this._startCollapsed = value;
     if (this._startCollapsed && this._endCollapsed) {
       this.endCollapsed = false;
     }
-    this._collapsedChange();
+    this._collapsedChange(value);
   }
 
   /**
@@ -308,11 +313,14 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   }
 
   public set endCollapsed(value: boolean) {
+    if (value && !this._endCollapsed && this._getTotalSize() > 0) {
+      this._savedEndSize = `${this._sizeToPercent(undefined, 1)}%`;
+    }
     this._endCollapsed = value;
     if (this._startCollapsed && this._endCollapsed) {
       this.startCollapsed = false;
     }
-    this._collapsedChange();
+    this._collapsedChange(value);
   }
 
   //#endregion
@@ -454,15 +462,14 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
 
   //#region Internal API
 
-  private _sizeToPercent(sizeValue: string | undefined): number {
+  private _sizeToPercent(sizeValue?: string, paneIndex: 0 | 1 = 0): number {
     const totalSize = this._getTotalSize();
     if (totalSize === 0) {
       return 0;
     }
 
     if (!sizeValue || sizeValue === 'auto') {
-      const [startSize] = this._rectSize();
-      return roundPrecise(asPercent(startSize, totalSize), 0);
+      return roundPrecise(asPercent(this._rectSize()[paneIndex], totalSize), 0);
     }
 
     if (sizeValue.includes('%')) {
@@ -527,10 +534,15 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
     return `${grow} ${shrink} ${size}`;
   }
 
-  private _collapsedChange(): void {
+  private _collapsedChange(isCollapsed: boolean): void {
     this.startSize = 'auto';
     this.endSize = 'auto';
     this._changeCursor();
+    if (isCollapsed) {
+      return;
+    }
+    this.startSize = this._savedStartSize ?? this.startSize;
+    this.endSize = this._savedEndSize ?? this.endSize;
   }
 
   private _handleResizePanes(

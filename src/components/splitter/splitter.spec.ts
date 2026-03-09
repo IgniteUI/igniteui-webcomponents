@@ -652,6 +652,41 @@ describe('Splitter', () => {
       expect(splitter.endCollapsed).to.be.false;
     });
 
+    it('should restore pane sizes as percentages after collapse then expand', async () => {
+      splitter.startSize = '200px';
+      splitter.endSize = '30%';
+      await elementUpdated(splitter);
+      const totalSize = getTotalSize(splitter, 'width');
+
+      const { startSize: initialStart } = getPanesSizes(splitter, 'width');
+      const expectedStartPercent = `${roundPrecise((initialStart / totalSize) * 100, 0)}%`;
+
+      splitter.toggle('start');
+      await elementUpdated(splitter);
+
+      expect(splitter.startSize).to.equal('auto');
+      expect(splitter.endSize).to.equal('auto');
+
+      splitter.toggle('start');
+      await elementUpdated(splitter);
+
+      expect(splitter.startSize).to.equal(expectedStartPercent);
+
+      const { endSize: currentEnd } = getPanesSizes(splitter, 'width');
+      const expectedEndPercent = `${roundPrecise((currentEnd / totalSize) * 100, 0)}%`;
+
+      splitter.toggle('end');
+      await elementUpdated(splitter);
+
+      expect(splitter.startSize).to.equal('auto');
+      expect(splitter.endSize).to.equal('auto');
+
+      splitter.toggle('end');
+      await elementUpdated(splitter);
+
+      expect(splitter.endSize).to.equal(expectedEndPercent);
+    });
+
     it('should toggle the next pane when the bar expander-end parts are clicked', async () => {
       let parts = getButtonParts(splitter);
       expect(parts.endCollapseBtn.getAttribute('aria-label')).to.equal(
