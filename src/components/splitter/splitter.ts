@@ -13,6 +13,7 @@ import {
   endKey,
   homeKey,
 } from '../common/controllers/key-bindings.js';
+import { createResizeObserverController } from '../common/controllers/resize-observer.js';
 import { addSlotController, setSlots } from '../common/controllers/slot.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
@@ -104,7 +105,6 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   private _isDragging = false;
   private _dragPointerId = -1;
   private _dragStartPosition = { x: 0, y: 0 };
-  private _resizeObserver?: ResizeObserver;
 
   @query('[part~="base"]', true)
   private readonly _base!: HTMLElement;
@@ -353,16 +353,9 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   protected override firstUpdated() {
     this._initPanes();
 
-    // update panes on container size changes
-    this._resizeObserver = new ResizeObserver(() => {
-      this._initPanes();
+    createResizeObserverController(this, {
+      callback: this._initPanes,
     });
-    this._resizeObserver.observe(this._base);
-  }
-
-  public override disconnectedCallback() {
-    super.disconnectedCallback();
-    this._resizeObserver?.disconnect();
   }
 
   //#endregion
