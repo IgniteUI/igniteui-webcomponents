@@ -68,7 +68,7 @@ $theme: $material;
     border-radius: var-get($theme, 'border-radius-indicator');
     background: var-get($theme, 'indicator-background');
     color: var-get($theme, 'indicator-color');
-    box-shadow: 0 0 0 rem(1px) var-get($theme, 'indicator-outline');
+    box-shadow: 0 0 0 var(--indicator-box-shadow-size) var-get($theme, 'indicator-outline');
 }
 
 [part~='complete-start'] {
@@ -87,7 +87,7 @@ $theme: $material;
     [part~='indicator'] {
         background: var-get($theme, 'complete-indicator-background');
         color: var-get($theme, 'complete-indicator-color');
-        box-shadow: 0 0 0 rem(1px) var-get($theme, 'complete-indicator-outline');
+        box-shadow: 0 0 0 var(--indicator-box-shadow-size) var-get($theme, 'complete-indicator-outline');
     }
 
     [part~='title'] {
@@ -232,7 +232,7 @@ $theme: $material;
     [part~='indicator'] {
         background: var-get($theme, 'current-indicator-background');
         color: var-get($theme, 'current-indicator-color');
-        box-shadow: 0 0 0 rem(1px) var-get($theme, 'current-indicator-outline');
+        box-shadow: 0 0 0 var(--indicator-box-shadow-size) var-get($theme, 'current-indicator-outline');
     }
 
     [part~='title'] {
@@ -273,7 +273,7 @@ $theme: $material;
     [part~='indicator'] {
         color: var-get($theme, 'disabled-indicator-color');
         background: var-get($theme, 'disabled-indicator-background');
-        box-shadow: 0 0 0 rem(1px) var-get($theme, 'disabled-indicator-outline');
+        box-shadow: 0 0 0 var(--indicator-box-shadow-size) var-get($theme, 'disabled-indicator-outline');
     }
 
     [part~='title'] {
