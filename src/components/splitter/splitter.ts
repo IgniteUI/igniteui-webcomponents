@@ -1,4 +1,4 @@
-import { html, LitElement } from 'lit';
+import { html, LitElement, type PropertyValues } from 'lit';
 import { eventOptions, property, query, state } from 'lit/decorators.js';
 import { createRef, ref } from 'lit/directives/ref.js';
 import { type StyleInfo, styleMap } from 'lit/directives/style-map.js';
@@ -15,7 +15,6 @@ import {
 } from '../common/controllers/key-bindings.js';
 import { createResizeObserverController } from '../common/controllers/resize-observer.js';
 import { addSlotController, setSlots } from '../common/controllers/slot.js';
-import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
@@ -71,6 +70,22 @@ const INITIAL_RESIZE_STATE: SplitterResizeState = {
   dragPointerId: -1,
 };
 
+interface SplitterPaneState {
+  size: string;
+  minSize: string | undefined;
+  maxSize: string | undefined;
+  savedSize: string | undefined;
+}
+
+function createInitialPaneState(): SplitterPaneState {
+  return {
+    size: 'auto',
+    minSize: undefined,
+    maxSize: undefined,
+    savedSize: undefined,
+  };
+}
+
 /**
  * The Splitter component provides a framework for a simple layout, splitting the view horizontally or vertically
  * into multiple smaller resizable and collapsible areas.
@@ -111,19 +126,21 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   private _startPaneInternalStyles: StyleInfo = {};
   private _endPaneInternalStyles: StyleInfo = {};
   private _barInternalStyles: StyleInfo = {};
-  private _startCollapsed = false;
-  private _endCollapsed = false;
-  private _startSize = 'auto';
-  private _endSize = 'auto';
-  private _startMinSize: string | undefined;
-  private _startMaxSize: string | undefined;
-  private _endMinSize: string | undefined;
-  private _endMaxSize: string | undefined;
-  private _savedStartSize: string | undefined;
-  private _savedEndSize: string | undefined;
+
+  @state()
+  private _collapsedPane: string | null = null;
+
+  @state()
+  private _startPaneState: SplitterPaneState = createInitialPaneState();
+
+  @state()
+  private _endPaneState: SplitterPaneState = createInitialPaneState();
 
   @state()
   private _resizeState: SplitterResizeState = { ...INITIAL_RESIZE_STATE };
+
+  @state()
+  private _ariaValues = { now: 0, min: 0, max: 100 };
 
   @query('[part~="base"]', true)
   private readonly _base!: HTMLElement;
@@ -135,7 +152,7 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   private readonly _endPane!: HTMLElement;
 
   private get _resizeDisallowed() {
-    return this.disableResize || this.startCollapsed || this.endCollapsed;
+    return this.disableResize || this._collapsedPane !== null;
   }
 
   private get _barCursor(): string {
@@ -209,11 +226,14 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
    */
   @property({ attribute: 'start-min-size', reflect: true })
   public set startMinSize(value: string | undefined) {
-    this._startMinSize = this._normalizeValue(value);
+    this._startPaneState = {
+      ...this._startPaneState,
+      minSize: this._normalizeValue(value),
+    };
   }
 
   public get startMinSize(): string | undefined {
-    return this._startMinSize;
+    return this._startPaneState.minSize;
   }
 
   /**
@@ -222,11 +242,14 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
    */
   @property({ attribute: 'end-min-size', reflect: true })
   public set endMinSize(value: string | undefined) {
-    this._endMinSize = this._normalizeValue(value);
+    this._endPaneState = {
+      ...this._endPaneState,
+      minSize: this._normalizeValue(value),
+    };
   }
 
   public get endMinSize(): string | undefined {
-    return this._endMinSize;
+    return this._endPaneState.minSize;
   }
 
   /**
@@ -235,11 +258,14 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
    */
   @property({ attribute: 'start-max-size', reflect: true })
   public set startMaxSize(value: string | undefined) {
-    this._startMaxSize = this._normalizeValue(value);
+    this._startPaneState = {
+      ...this._startPaneState,
+      maxSize: this._normalizeValue(value),
+    };
   }
 
   public get startMaxSize(): string | undefined {
-    return this._startMaxSize;
+    return this._startPaneState.maxSize;
   }
 
   /**
@@ -248,11 +274,14 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
    */
   @property({ attribute: 'end-max-size', reflect: true })
   public set endMaxSize(value: string | undefined) {
-    this._endMaxSize = this._normalizeValue(value);
+    this._endPaneState = {
+      ...this._endPaneState,
+      maxSize: this._normalizeValue(value),
+    };
   }
 
   public get endMaxSize(): string | undefined {
-    return this._endMaxSize;
+    return this._endPaneState.maxSize;
   }
 
   /**
@@ -261,12 +290,14 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
    */
   @property({ attribute: 'start-size', reflect: true })
   public set startSize(value: string | undefined) {
-    this._startSize = this._normalizeValue(value, 'auto')!;
-    this._setPaneFlex(this._startPaneInternalStyles, this._getFlex('start'));
+    this._startPaneState = {
+      ...this._startPaneState,
+      size: this._normalizeValue(value, 'auto')!,
+    };
   }
 
   public get startSize(): string | undefined {
-    return this._startSize;
+    return this._startPaneState.size;
   }
 
   /**
@@ -275,67 +306,14 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
    */
   @property({ attribute: 'end-size', reflect: true })
   public set endSize(value: string | undefined) {
-    this._endSize = this._normalizeValue(value, 'auto')!;
-    this._setPaneFlex(this._endPaneInternalStyles, this._getFlex('end'));
+    this._endPaneState = {
+      ...this._endPaneState,
+      size: this._normalizeValue(value, 'auto')!,
+    };
   }
 
   public get endSize(): string | undefined {
-    return this._endSize;
-  }
-
-  /**
-   * Collapsed state of the start pane.
-   * @attr
-   */
-  @property({ type: Boolean, attribute: 'start-collapsed', reflect: true })
-  public get startCollapsed() {
-    return this._startCollapsed;
-  }
-
-  public set startCollapsed(value: boolean) {
-    if (value && !this._startCollapsed && this._getTotalSize() > 0) {
-      this._savedStartSize = `${this._sizeToPercent(undefined, 0)}%`;
-    }
-    this._startCollapsed = value;
-    if (this._startCollapsed && this._endCollapsed) {
-      this.endCollapsed = false;
-    }
-    this._collapsedChange(value);
-  }
-
-  /**
-   * Collapsed state of the end pane.
-   * @attr
-   */
-  @property({ type: Boolean, attribute: 'end-collapsed', reflect: true })
-  public get endCollapsed() {
-    return this._endCollapsed;
-  }
-
-  public set endCollapsed(value: boolean) {
-    if (value && !this._endCollapsed && this._getTotalSize() > 0) {
-      this._savedEndSize = `${this._sizeToPercent(undefined, 1)}%`;
-    }
-    this._endCollapsed = value;
-    if (this._startCollapsed && this._endCollapsed) {
-      this.startCollapsed = false;
-    }
-    this._collapsedChange(value);
-  }
-
-  //#endregion
-
-  //#region Watchers
-
-  @watch('orientation', { waitUntilFirstUpdate: true })
-  protected _orientationChange(): void {
-    this._changeCursor();
-    this._resetPanes();
-  }
-
-  @watch('disableResize')
-  protected _changeCursor(): void {
-    Object.assign(this._barInternalStyles, { '--cursor': this._barCursor });
+    return this._endPaneState.size;
   }
 
   //#endregion
@@ -370,6 +348,55 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
       .set([ctrlKey, arrowRight], () =>
         this._handleArrowsExpandCollapse('end', 'horizontal')
       );
+  }
+
+  protected override update(changed: PropertyValues<this>): void {
+    const ch = changed as Map<PropertyKey, unknown>;
+
+    if (ch.has('_collapsedPane')) {
+      // Update host attributes to reflect collapsed state
+      this.toggleAttribute('start-collapsed', this._collapsedPane === 'start');
+      this.toggleAttribute('end-collapsed', this._collapsedPane === 'end');
+
+      // Update pane sizes based on collapsed state
+      if (this._collapsedPane !== null) {
+        // When a pane is collapsed, set both sizes to auto (CSS handles the collapsed visual)
+        this._startPaneState = { ...this._startPaneState, size: 'auto' };
+        this._endPaneState = { ...this._endPaneState, size: 'auto' };
+      } else {
+        // When expanding, restore the saved sizes
+        this._startPaneState = {
+          ...this._startPaneState,
+          size: this._startPaneState.savedSize ?? this._startPaneState.size,
+        };
+        this._endPaneState = {
+          ...this._endPaneState,
+          size: this._endPaneState.savedSize ?? this._endPaneState.size,
+        };
+      }
+    }
+
+    if (changed.has('orientation') && ch.get('orientation') !== undefined) {
+      this._resetPanes();
+    }
+
+    if (
+      changed.has('disableResize') ||
+      ch.has('_startPaneState') ||
+      ch.has('_endPaneState')
+    ) {
+      Object.assign(this._barInternalStyles, { '--cursor': this._barCursor });
+    }
+
+    if (ch.has('_startPaneState')) {
+      this._setPaneFlex(this._startPaneInternalStyles, this._getFlex('start'));
+    }
+
+    if (ch.has('_endPaneState')) {
+      this._setPaneFlex(this._endPaneInternalStyles, this._getFlex('end'));
+    }
+    this._updateAriaValues();
+    super.update(changed);
   }
 
   protected override firstUpdated() {
@@ -445,17 +472,23 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
 
   //#region Public Methods
 
-  /** Toggles the collapsed state of the pane. */
-  public toggle(position: 'start' | 'end') {
-    if (position === 'start') {
-      this.startCollapsed = !this.startCollapsed;
-    } else {
-      this.endCollapsed = !this.endCollapsed;
+  /** Toggles the collapsed state of the specified pane. */
+  public toggle(position: 'start' | 'end'): void {
+    // Save current sizes before any collapse operation (only when currently expanded)
+    if (this._collapsedPane === null && this._getTotalSize() > 0) {
+      this._startPaneState = {
+        ...this._startPaneState,
+        savedSize: `${this._sizeToPercent(undefined, 0)}%`,
+      };
+      this._endPaneState = {
+        ...this._endPaneState,
+        savedSize: `${this._sizeToPercent(undefined, 1)}%`,
+      };
     }
 
-    if (!this.startCollapsed || !this.endCollapsed) {
-      this.updateComplete.then(() => this.requestUpdate());
-    }
+    // If the requested pane is already collapsed, expand it (set to null)
+    // Otherwise, collapse the requested pane (this also handles switching from one collapsed pane to another)
+    this._collapsedPane = this._collapsedPane === position ? null : position;
   }
 
   //#endregion
@@ -481,10 +514,10 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   }
 
   private _getStartPaneSizePercent(): number {
-    if (!this._startPane || this.startCollapsed) {
+    if (!this._startPane || this._collapsedPane === 'start') {
       return 0;
     }
-    if (this.endCollapsed) {
+    if (this._collapsedPane === 'end') {
       return 100;
     }
     return this._sizeToPercent(this.startSize);
@@ -497,13 +530,23 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
     return value ? this._sizeToPercent(value) : defaultValue;
   }
 
+  private _updateAriaValues(): void {
+    this._ariaValues = {
+      now: this._getStartPaneSizePercent(),
+      min: this._getMinMaxAsPercent('min'),
+      max: this._getMinMaxAsPercent('max'),
+    };
+  }
+
   private _isPercentageSize(which: 'start' | 'end') {
-    const targetSize = which === 'start' ? this._startSize : this._endSize;
+    const targetSize =
+      which === 'start' ? this._startPaneState.size : this._endPaneState.size;
     return !!targetSize && targetSize.includes('%');
   }
 
   private _isAutoSize(which: 'start' | 'end') {
-    const targetSize = which === 'start' ? this._startSize : this._endSize;
+    const targetSize =
+      which === 'start' ? this._startPaneState.size : this._endPaneState.size;
     return !!targetSize && targetSize === 'auto';
   }
 
@@ -529,20 +572,9 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
     const size = this._isAutoSize(which)
       ? '0px'
       : which === 'start'
-        ? this._startSize
-        : this._endSize;
+        ? this._startPaneState.size
+        : this._endPaneState.size;
     return `${grow} ${shrink} ${size}`;
-  }
-
-  private _collapsedChange(isCollapsed: boolean): void {
-    this.startSize = 'auto';
-    this.endSize = 'auto';
-    this._changeCursor();
-    if (isCollapsed) {
-      return;
-    }
-    this.startSize = this._savedStartSize ?? this.startSize;
-    this.endSize = this._savedEndSize ?? this.endSize;
   }
 
   private _handleResizePanes(
@@ -602,12 +634,12 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   }
 
   private _handleExpanderStartAction() {
-    const target = this.endCollapsed ? 'end' : 'start';
+    const target = this._collapsedPane === 'end' ? 'end' : 'start';
     this.toggle(target);
   }
 
   private _handleExpanderEndAction() {
-    const target = this.startCollapsed ? 'start' : 'end';
+    const target = this._collapsedPane === 'start' ? 'start' : 'end';
     this.toggle(target);
   }
 
@@ -657,12 +689,9 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
     pane: 'start' | 'end',
     type: 'min' | 'max'
   ): number | undefined {
-    let value: string | undefined;
-    if (type === 'max') {
-      value = pane === 'start' ? this.startMaxSize : this.endMaxSize;
-    } else {
-      value = pane === 'start' ? this.startMinSize : this.endMinSize;
-    }
+    const paneState =
+      pane === 'start' ? this._startPaneState : this._endPaneState;
+    const value = type === 'max' ? paneState.maxSize : paneState.minSize;
     if (!value) {
       return undefined;
     }
@@ -767,29 +796,42 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   }
 
   private _resetPanes() {
-    this.startSize = 'auto';
-    this.endSize = 'auto';
-    this.startMinSize = undefined;
-    this.startMaxSize = undefined;
-    this.endMinSize = undefined;
-    this.endMaxSize = undefined;
+    this._startPaneState = {
+      ...this._startPaneState,
+      size: 'auto',
+      minSize: undefined,
+      maxSize: undefined,
+    };
+    this._endPaneState = {
+      ...this._endPaneState,
+      size: 'auto',
+      minSize: undefined,
+      maxSize: undefined,
+    };
 
-    this._setPaneFlex(this._startPaneInternalStyles, this._getFlex('start'));
     this._setPaneMinMaxSizes('start', '0', '100%');
-    this._setPaneFlex(this._endPaneInternalStyles, this._getFlex('end'));
     this._setPaneMinMaxSizes('end', '0', '100%');
   }
 
   private _initPanes() {
-    if (this.startCollapsed || this.endCollapsed) {
+    if (this._collapsedPane) {
       this._resetPanes();
     } else {
-      this._setPaneMinMaxSizes('start', this.startMinSize, this.startMaxSize);
-      this._setPaneMinMaxSizes('end', this.endMinSize, this.endMaxSize);
+      this._setPaneMinMaxSizes(
+        'start',
+        this._startPaneState.minSize,
+        this._startPaneState.maxSize
+      );
+      this._setPaneMinMaxSizes(
+        'end',
+        this._endPaneState.minSize,
+        this._endPaneState.maxSize
+      );
     }
 
     this._setPaneFlex(this._startPaneInternalStyles, this._getFlex('start'));
     this._setPaneFlex(this._endPaneInternalStyles, this._getFlex('end'));
+    this._updateAriaValues();
     this.requestUpdate();
   }
 
@@ -802,10 +844,6 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
 
     const min = this._ensureMinConstraintIsWithinBounds(pane, minSize) ?? 0;
     const max = maxSize ?? '100%';
-    const styles =
-      pane === 'start'
-        ? this._startPaneInternalStyles
-        : this._endPaneInternalStyles;
 
     const sizes = isHorizontal
       ? {
@@ -821,7 +859,17 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
           maxHeight: max,
         };
 
-    Object.assign(styles, sizes);
+    if (pane === 'start') {
+      this._startPaneInternalStyles = {
+        ...this._startPaneInternalStyles,
+        ...sizes,
+      };
+    } else {
+      this._endPaneInternalStyles = {
+        ...this._endPaneInternalStyles,
+        ...sizes,
+      };
+    }
   }
 
   private _ensureMinConstraintIsWithinBounds(
@@ -835,7 +883,9 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
       const minPx = this._setMinMaxInPx(pane, 'min') ?? 0;
 
       const otherMinSize =
-        pane === 'start' ? this._endMinSize : this._startMinSize;
+        pane === 'start'
+          ? this._endPaneState.minSize
+          : this._startPaneState.minSize;
       const otherMinPx = otherMinSize
         ? (this._setMinMaxInPx(pane === 'start' ? 'end' : 'start', 'min') ?? 0)
         : 0;
@@ -871,29 +921,33 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   private _resolvePartNames(expander: 'start' | 'end') {
     if (expander === 'start') {
       return {
-        'end-expand-btn': this.endCollapsed,
-        'start-collapse-btn': !this.endCollapsed,
+        'end-expand-btn': this._collapsedPane === 'end',
+        'start-collapse-btn': this._collapsedPane !== 'end',
       };
     }
 
     return {
-      'start-expand-btn': this.startCollapsed,
-      'end-collapse-btn': !this.startCollapsed,
+      'start-expand-btn': this._collapsedPane === 'start',
+      'end-collapse-btn': this._collapsedPane !== 'start',
     };
   }
 
   private _resolveExpanderLabel(expander: 'start' | 'end'): string {
     if (expander === 'start') {
-      return this.endCollapsed ? 'Expand end pane' : 'Collapse start pane';
+      return this._collapsedPane === 'end'
+        ? 'Expand end pane'
+        : 'Collapse start pane';
     }
-    return this.startCollapsed ? 'Expand start pane' : 'Collapse end pane';
+    return this._collapsedPane === 'start'
+      ? 'Expand start pane'
+      : 'Collapse end pane';
   }
 
   private _getExpanderHiddenState() {
     const hidden = this.disableCollapse || this.hideCollapseButtons;
     return {
-      prevButtonHidden: hidden || !!(this.startCollapsed && !this.endCollapsed),
-      nextButtonHidden: hidden || !!(this.endCollapsed && !this.startCollapsed),
+      prevButtonHidden: hidden || !!(this._collapsedPane === 'start'),
+      nextButtonHidden: hidden || !!(this._collapsedPane === 'end'),
     };
   }
 
@@ -942,9 +996,9 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
           tabindex=${this._barTabIndex}
           aria-controls="start-pane end-pane"
           aria-orientation=${this.orientation}
-          aria-valuenow=${this._getStartPaneSizePercent()}
-          aria-valuemin=${this._getMinMaxAsPercent('min')}
-          aria-valuemax=${this._getMinMaxAsPercent('max')}
+          aria-valuenow=${this._ariaValues.now}
+          aria-valuemin=${this._ariaValues.min}
+          aria-valuemax=${this._ariaValues.max}
           style=${styleMap(this._barInternalStyles)}
           @touchstart=${this._preventDefaultForEvent}
           @contextmenu=${this._preventDefaultForEvent}
