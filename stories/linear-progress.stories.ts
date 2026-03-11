@@ -6,6 +6,7 @@ import {
   IgcLinearProgressComponent,
   defineComponents,
 } from 'igniteui-webcomponents';
+import { disableStoryControls } from './story.js';
 
 defineComponents(IgcLinearProgressComponent);
 
@@ -135,20 +136,27 @@ type Story = StoryObj<IgcLinearProgressArgs>;
 
 // endregion
 
-const Template = ({
-  striped,
-  variant,
-  hideLabel,
-  value,
-  max,
-  animationDuration,
-  indeterminate,
-  labelAlign,
-  labelFormat,
-}: IgcLinearProgressArgs) => html`
-  <div
-    style="display: flex; flex-direction: column; justify-content: center; gap: 16px"
-  >
+export const Default: Story = {
+  args: { value: 60 },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'A basic linear progress indicator. Use the controls panel to explore all available properties interactively, including `striped`, `variant`, `labelAlign`, `labelFormat`, and `indeterminate`.',
+      },
+    },
+  },
+  render: ({
+    striped,
+    variant,
+    hideLabel,
+    value,
+    max,
+    animationDuration,
+    indeterminate,
+    labelAlign,
+    labelFormat,
+  }) => html`
     <igc-linear-progress
       ?striped=${striped}
       ?indeterminate=${indeterminate}
@@ -159,9 +167,129 @@ const Template = ({
       variant=${ifDefined(variant)}
       label-align=${labelAlign}
       label-format=${ifDefined(labelFormat)}
-    >
-    </igc-linear-progress>
-  </div>
-`;
+    ></igc-linear-progress>
+  `,
+};
 
-export const Basic: Story = Template.bind({});
+export const Variants: Story = {
+  argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'The `variant` property applies a semantic color to the progress track. Available values are **primary** (default), **info**, **success**, **warning**, and **danger**.',
+      },
+    },
+  },
+  render: () => html`
+    <div
+      style="display: flex; flex-direction: column; gap: 1.5rem; padding: 1rem;"
+    >
+      <igc-linear-progress
+        value="70"
+        variant="primary"
+        label-format="Primary: {0}%"
+      ></igc-linear-progress>
+      <igc-linear-progress
+        value="70"
+        variant="info"
+        label-format="Info: {0}%"
+      ></igc-linear-progress>
+      <igc-linear-progress
+        value="70"
+        variant="success"
+        label-format="Success: {0}%"
+      ></igc-linear-progress>
+      <igc-linear-progress
+        value="70"
+        variant="warning"
+        label-format="Warning: {0}%"
+      ></igc-linear-progress>
+      <igc-linear-progress
+        value="70"
+        variant="danger"
+        label-format="Danger: {0}%"
+      ></igc-linear-progress>
+    </div>
+  `,
+};
+
+export const Striped: Story = {
+  argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'The `striped` property adds a diagonal stripe pattern to the filled portion of the track, available for all semantic variants.',
+      },
+    },
+  },
+  render: () => html`
+    <div
+      style="display: flex; flex-direction: column; gap: 1.5rem; padding: 1rem;"
+    >
+      <igc-linear-progress
+        striped
+        value="70"
+        variant="primary"
+        label-format="Primary: {0}%"
+      ></igc-linear-progress>
+      <igc-linear-progress
+        striped
+        value="70"
+        variant="info"
+        label-format="Info: {0}%"
+      ></igc-linear-progress>
+      <igc-linear-progress
+        striped
+        value="70"
+        variant="success"
+        label-format="Success: {0}%"
+      ></igc-linear-progress>
+      <igc-linear-progress
+        striped
+        value="70"
+        variant="warning"
+        label-format="Warning: {0}%"
+      ></igc-linear-progress>
+      <igc-linear-progress
+        striped
+        value="70"
+        variant="danger"
+        label-format="Danger: {0}%"
+      ></igc-linear-progress>
+    </div>
+  `,
+};
+
+export const Indeterminate: Story = {
+  argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Setting `indeterminate` switches the indicator into a continuous animation, used when the duration of an operation is unknown.',
+      },
+    },
+  },
+  render: () => html`
+    <div
+      style="display: flex; flex-direction: column; gap: 1.5rem; padding: 1rem;"
+    >
+      <igc-linear-progress
+        indeterminate
+        variant="primary"
+      ></igc-linear-progress>
+      <igc-linear-progress indeterminate variant="info"></igc-linear-progress>
+      <igc-linear-progress
+        indeterminate
+        variant="success"
+      ></igc-linear-progress>
+      <igc-linear-progress
+        indeterminate
+        variant="warning"
+      ></igc-linear-progress>
+      <igc-linear-progress indeterminate variant="danger"></igc-linear-progress>
+    </div>
+  `,
+};
