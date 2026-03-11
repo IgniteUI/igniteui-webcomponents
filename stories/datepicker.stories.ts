@@ -325,6 +325,14 @@ type Story = StoryObj<IgcDatepickerArgs>;
 // endregion
 
 export const Default: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'A fully interactive date picker in dropdown mode. Use the controls panel to explore all available properties such as `mode`, `displayFormat`, `inputFormat`, `locale`, calendar options, and validation constraints.',
+      },
+    },
+  },
   args: {
     label: 'Pick a date',
   },
@@ -377,7 +385,86 @@ function selectToday() {
   picker.hide();
 }
 
+export const DialogMode: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Setting `mode="dialog"` opens the calendar in a centered modal overlay rather than an inline dropdown. This mode is better suited to mobile viewports and constrained layouts where a popover would be clipped.',
+      },
+    },
+  },
+  args: {
+    label: 'Pick a date',
+  },
+  render: (args) => html`
+    <igc-date-picker
+      mode="dialog"
+      .label=${args.label}
+      .locale=${args.locale}
+      .weekStart=${args.weekStart}
+      .visibleMonths=${args.visibleMonths}
+      ?show-week-numbers=${args.showWeekNumbers}
+      ?hide-outside-days=${args.hideOutsideDays}
+      ?disabled=${args.disabled}
+      ?readonly=${args.readOnly}
+    >
+      <p slot="helper-text">Opens as a modal dialog.</p>
+    </igc-date-picker>
+  `,
+};
+
+export const DisabledDates: Story = {
+  argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'The `disabledDates` property accepts an array of `DateRangeDescriptor` objects that mark specific dates or ranges as unselectable in the calendar. Supported types include `Between`, `Before`, `After`, `Specific`, and `Weekends`. Selecting a disabled date marks the control as invalid and shows the `bad-input` slot.',
+      },
+    },
+  },
+  render: () => {
+    const today = new Date();
+    const nextMonday = new Date(today);
+    nextMonday.setDate(today.getDate() + ((8 - today.getDay()) % 7 || 7));
+    const twoWeeksOut = new Date(nextMonday);
+    twoWeeksOut.setDate(nextMonday.getDate() + 13);
+
+    const disabled: DateRangeDescriptor[] = [
+      { type: DateRangeType.Weekends },
+      {
+        type: DateRangeType.Between,
+        dateRange: [nextMonday, twoWeeksOut],
+      },
+    ];
+
+    return html`
+      <igc-date-picker
+        label="Working days only (weekends + a two-week block disabled)"
+        .disabledDates=${disabled}
+        style="max-width: 320px"
+      >
+        <p slot="helper-text">
+          Weekends and the next two-week block are disabled.
+        </p>
+        <p slot="bad-input">
+          That date is not available. Please pick a working day.
+        </p>
+      </igc-date-picker>
+    `;
+  },
+};
+
 export const Slots: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'All named slots demonstrated: `prefix`, `suffix`, `helper-text`, `title`, `calendar-icon`, `calendar-icon-open`, `clear-icon`, and `actions`. The `actions` slot accepts buttons that can call the picker API methods such as `select()`, `hide()`, and setting `visibleMonths`.',
+      },
+    },
+  },
   args: {
     label: 'Pick a date',
   },
@@ -444,6 +531,14 @@ const disabledDates: DateRangeDescriptor[] = [
 
 export const Form: Story = {
   argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Demonstrates the date picker inside an HTML `<form>`, covering default state, pre-filled value, read-only, disabled fieldset, required validation, `min`/`max` date constraints, and disabled date ranges — each with appropriate validation slot messages.',
+      },
+    },
+  },
   args: {
     value: new Date(2024, 1, 29),
   },
