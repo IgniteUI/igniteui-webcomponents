@@ -279,13 +279,13 @@ describe('Splitter', () => {
       expect(style.cursor).to.equal('default');
 
       splitter.disableResize = false;
-      splitter['_collapsedPane'] = 'end';
+      splitter.toggle('end');
       await elementUpdated(splitter);
       await nextFrame();
 
       expect(style.cursor).to.equal('default');
 
-      splitter['_collapsedPane'] = null;
+      splitter.toggle('end');
       await elementUpdated(splitter);
       await nextFrame();
 
@@ -377,19 +377,19 @@ describe('Splitter', () => {
 
   describe('Properties', () => {
     it('should change panels state from the startExpanded and endExpanded properties', async () => {
-      splitter['_collapsedPane'] = 'start';
+      splitter.toggle('start');
       await elementUpdated(splitter);
 
-      expect(splitter['_collapsedPane']).to.equal('start');
+      expect(splitter.hasAttribute('start-collapsed')).to.be.true;
 
-      splitter['_collapsedPane'] = 'end';
+      splitter.toggle('end');
       await elementUpdated(splitter);
 
-      expect(splitter['_collapsedPane']).to.equal('end');
-      splitter['_collapsedPane'] = 'start';
+      expect(splitter.hasAttribute('end-collapsed')).to.be.true;
+      splitter.toggle('start');
       await elementUpdated(splitter);
 
-      expect(splitter['_collapsedPane']).to.equal('start');
+      expect(splitter.hasAttribute('start-collapsed')).to.be.true;
     });
 
     it('should reset pane sizes when orientation changes', async () => {
@@ -606,32 +606,32 @@ describe('Splitter', () => {
     it('should expand/collapse panes when toggle is invoked', async () => {
       splitter.toggle('start');
       await elementUpdated(splitter);
-      expect(splitter['_collapsedPane']).to.equal('start');
+      expect(splitter.hasAttribute('start-collapsed')).to.be.true;
 
       splitter.toggle('start');
       await elementUpdated(splitter);
-      expect(splitter['_collapsedPane']).to.be.null;
+      expect(splitter.hasAttribute('start-collapsed')).to.be.false;
 
       splitter.toggle('end');
       await elementUpdated(splitter);
-      expect(splitter['_collapsedPane']).to.equal('end');
+      expect(splitter.hasAttribute('end-collapsed')).to.be.true;
 
       // Single collapsed pane constraint
       splitter.toggle('start');
       await elementUpdated(splitter);
-      expect(splitter['_collapsedPane']).to.equal('start');
+      expect(splitter.hasAttribute('start-collapsed')).to.be.true;
 
       splitter.toggle('start');
       await elementUpdated(splitter);
-      expect(splitter['_collapsedPane']).to.be.null;
+      expect(splitter.hasAttribute('start-collapsed')).to.be.false;
 
       splitter.toggle('end');
       await elementUpdated(splitter);
-      expect(splitter['_collapsedPane']).to.equal('end');
+      expect(splitter.hasAttribute('end-collapsed')).to.be.true;
 
       splitter.toggle('start');
       await elementUpdated(splitter);
-      expect(splitter['_collapsedPane']).to.equal('start');
+      expect(splitter.hasAttribute('start-collapsed')).to.be.true;
     });
 
     it('should restore pane sizes as percentages after collapse then expand', async () => {
@@ -681,7 +681,7 @@ describe('Splitter', () => {
 
       parts = getButtonParts(splitter);
 
-      expect(splitter['_collapsedPane']).to.equal('end');
+      expect(splitter.hasAttribute('end-collapsed')).to.be.true;
       expect(parts.startCollapseBtn).to.be.null;
       expect(parts.endCollapseBtn.hidden).to.be.true;
       expect(parts.startExpander).to.be.null;
@@ -719,7 +719,7 @@ describe('Splitter', () => {
 
       parts = getButtonParts(splitter);
 
-      expect(splitter['_collapsedPane']).to.equal('start');
+      expect(splitter.hasAttribute('start-collapsed')).to.be.true;
       expect(parts.startCollapseBtn.hidden).to.be.true;
       expect(parts.startExpander.hidden).to.be.false;
       expect(parts.endCollapseBtn).to.be.null;
@@ -734,7 +734,8 @@ describe('Splitter', () => {
 
       parts = getButtonParts(splitter);
 
-      expect(splitter['_collapsedPane']).to.be.null;
+      expect(splitter.hasAttribute('start-collapsed')).to.be.false;
+      expect(splitter.hasAttribute('end-collapsed')).to.be.false;
       expect(parts.startCollapseBtn.hidden).to.be.false;
       expect(parts.endCollapseBtn.hidden).to.be.false;
       expect(parts.startExpander).to.be.null;
@@ -1178,7 +1179,7 @@ describe('Splitter', () => {
 
       expect(currentSizes.startSize).to.equal(0);
       expect(currentSizes.endSize).to.equal(splitterSize - barSize);
-      expect(splitter['_collapsedPane']).to.equal('start');
+      expect(splitter.hasAttribute('start-collapsed')).to.be.true;
 
       // Focus is not lost during collapse
       expect(bar.getAttribute('tabindex')).to.equal('0');
@@ -1192,7 +1193,8 @@ describe('Splitter', () => {
       expect(currentSizes.endSize).to.equal(
         splitterSize - barSize - currentSizes.startSize
       );
-      expect(splitter['_collapsedPane']).to.be.null;
+      expect(splitter.hasAttribute('start-collapsed')).to.be.false;
+      expect(splitter.hasAttribute('end-collapsed')).to.be.false;
 
       simulateKeyboard(bar, [ctrlKey, arrowRight]);
       await elementUpdated(splitter);
@@ -1201,7 +1203,7 @@ describe('Splitter', () => {
 
       expect(currentSizes.startSize).to.equal(splitterSize - barSize);
       expect(currentSizes.endSize).to.equal(0);
-      expect(splitter['_collapsedPane']).to.equal('end');
+      expect(splitter.hasAttribute('end-collapsed')).to.be.true;
       expect(bar.getAttribute('tabindex')).to.equal('0');
 
       simulateKeyboard(bar, [ctrlKey, arrowLeft]);
@@ -1213,7 +1215,8 @@ describe('Splitter', () => {
         splitterSize - barSize - currentSizes.endSize
       );
       expect(currentSizes.endSize).to.be.greaterThan(0);
-      expect(splitter['_collapsedPane']).to.be.null;
+      expect(splitter.hasAttribute('start-collapsed')).to.be.false;
+      expect(splitter.hasAttribute('end-collapsed')).to.be.false;
       expect(bar.getAttribute('tabindex')).to.equal('0');
     });
 
@@ -1235,7 +1238,7 @@ describe('Splitter', () => {
 
       expect(currentSizes.startSize).to.equal(0);
       expect(currentSizes.endSize).to.equal(splitterSize - barSize);
-      expect(splitter['_collapsedPane']).to.equal('start');
+      expect(splitter.hasAttribute('start-collapsed')).to.be.true;
       expect(bar.getAttribute('tabindex')).to.equal('0');
 
       simulateKeyboard(bar, [ctrlKey, arrowDown]);
@@ -1247,7 +1250,8 @@ describe('Splitter', () => {
       expect(currentSizes.endSize).to.equal(
         splitterSize - barSize - currentSizes.startSize
       );
-      expect(splitter['_collapsedPane']).to.be.null;
+      expect(splitter.hasAttribute('start-collapsed')).to.be.false;
+      expect(splitter.hasAttribute('end-collapsed')).to.be.false;
 
       simulateKeyboard(bar, [ctrlKey, arrowDown]);
       await elementUpdated(splitter);
@@ -1256,7 +1260,7 @@ describe('Splitter', () => {
 
       expect(currentSizes.startSize).to.equal(splitterSize - barSize);
       expect(currentSizes.endSize).to.equal(0);
-      expect(splitter['_collapsedPane']).to.equal('end');
+      expect(splitter.hasAttribute('end-collapsed')).to.be.true;
       expect(bar.getAttribute('tabindex')).to.equal('0');
 
       simulateKeyboard(bar, [ctrlKey, arrowUp]);
@@ -1268,7 +1272,8 @@ describe('Splitter', () => {
         splitterSize - barSize - currentSizes.endSize
       );
       expect(currentSizes.endSize).to.be.greaterThan(0);
-      expect(splitter['_collapsedPane']).to.be.null;
+      expect(splitter.hasAttribute('start-collapsed')).to.be.false;
+      expect(splitter.hasAttribute('end-collapsed')).to.be.false;
     });
 
     it('should not resize when disableResize is true', async () => {
@@ -1340,13 +1345,15 @@ describe('Splitter', () => {
       await elementUpdated(splitter);
       await nextFrame();
 
-      expect(splitter['_collapsedPane']).to.be.null;
+      expect(splitter.hasAttribute('start-collapsed')).to.be.false;
+      expect(splitter.hasAttribute('end-collapsed')).to.be.false;
 
       simulateKeyboard(bar, [ctrlKey, arrowRight]);
       await elementUpdated(splitter);
       await nextFrame();
 
-      expect(splitter['_collapsedPane']).to.be.null;
+      expect(splitter.hasAttribute('start-collapsed')).to.be.false;
+      expect(splitter.hasAttribute('end-collapsed')).to.be.false;
 
       splitter.orientation = 'vertical';
       await elementUpdated(splitter);
@@ -1355,13 +1362,15 @@ describe('Splitter', () => {
       await elementUpdated(splitter);
       await nextFrame();
 
-      expect(splitter['_collapsedPane']).to.be.null;
+      expect(splitter.hasAttribute('start-collapsed')).to.be.false;
+      expect(splitter.hasAttribute('end-collapsed')).to.be.false;
 
       simulateKeyboard(bar, [ctrlKey, arrowDown]);
       await elementUpdated(splitter);
       await nextFrame();
 
-      expect(splitter['_collapsedPane']).to.be.null;
+      expect(splitter.hasAttribute('start-collapsed')).to.be.false;
+      expect(splitter.hasAttribute('end-collapsed')).to.be.false;
     });
 
     it('should expand/collapse panes via keyboard and API when hideCollapseButtons is true', async () => {
@@ -1385,7 +1394,7 @@ describe('Splitter', () => {
 
       expect(currentSizes.startSize).to.equal(0);
       expect(currentSizes.endSize).to.equal(splitterSize - barSize);
-      expect(splitter['_collapsedPane']).to.equal('start');
+      expect(splitter.hasAttribute('start-collapsed')).to.be.true;
 
       simulateKeyboard(bar, [ctrlKey, arrowRight]);
       await elementUpdated(splitter);
@@ -1396,7 +1405,8 @@ describe('Splitter', () => {
       expect(currentSizes.endSize).to.equal(
         splitterSize - barSize - currentSizes.startSize
       );
-      expect(splitter['_collapsedPane']).to.be.null;
+      expect(splitter.hasAttribute('start-collapsed')).to.be.false;
+      expect(splitter.hasAttribute('end-collapsed')).to.be.false;
 
       simulateKeyboard(bar, [ctrlKey, arrowRight]);
       await elementUpdated(splitter);
@@ -1405,7 +1415,7 @@ describe('Splitter', () => {
 
       expect(currentSizes.startSize).to.equal(splitterSize - barSize);
       expect(currentSizes.endSize).to.equal(0);
-      expect(splitter['_collapsedPane']).to.equal('end');
+      expect(splitter.hasAttribute('end-collapsed')).to.be.true;
 
       simulateKeyboard(bar, [ctrlKey, arrowLeft]);
       await elementUpdated(splitter);
@@ -1416,7 +1426,8 @@ describe('Splitter', () => {
         splitterSize - barSize - currentSizes.endSize
       );
       expect(currentSizes.endSize).to.be.greaterThan(0);
-      expect(splitter['_collapsedPane']).to.be.null;
+      expect(splitter.hasAttribute('start-collapsed')).to.be.false;
+      expect(splitter.hasAttribute('end-collapsed')).to.be.false;
 
       splitter.toggle('start');
       await elementUpdated(splitter);
@@ -1425,7 +1436,7 @@ describe('Splitter', () => {
 
       expect(currentSizes.startSize).to.equal(0);
       expect(currentSizes.endSize).to.equal(splitterSize - barSize);
-      expect(splitter['_collapsedPane']).to.equal('start');
+      expect(splitter.hasAttribute('start-collapsed')).to.be.true;
     });
 
     it('should not be able to resize a pane when it is collapsed', async () => {
@@ -2220,7 +2231,7 @@ describe('Splitter', () => {
 
       expect(currentSizes.startSize).to.equal(0);
       expect(currentSizes.endSize).to.equal(splitterSize - barSize);
-      expect(splitter['_collapsedPane']).to.equal('start');
+      expect(splitter.hasAttribute('start-collapsed')).to.be.true;
 
       simulateKeyboard(bar, [ctrlKey, arrowLeft]);
       await elementUpdated(splitter);
@@ -2231,7 +2242,8 @@ describe('Splitter', () => {
       expect(currentSizes.endSize).to.equal(
         splitterSize - barSize - currentSizes.startSize
       );
-      expect(splitter['_collapsedPane']).to.be.null;
+      expect(splitter.hasAttribute('start-collapsed')).to.be.false;
+      expect(splitter.hasAttribute('end-collapsed')).to.be.false;
 
       simulateKeyboard(bar, [ctrlKey, arrowLeft]);
       await elementUpdated(splitter);
@@ -2240,7 +2252,7 @@ describe('Splitter', () => {
 
       expect(currentSizes.startSize).to.equal(splitterSize - barSize);
       expect(currentSizes.endSize).to.equal(0);
-      expect(splitter['_collapsedPane']).to.equal('end');
+      expect(splitter.hasAttribute('end-collapsed')).to.be.true;
 
       simulateKeyboard(bar, [ctrlKey, arrowRight]);
       await elementUpdated(splitter);
@@ -2251,7 +2263,8 @@ describe('Splitter', () => {
         splitterSize - barSize - currentSizes.endSize
       );
       expect(currentSizes.endSize).to.be.greaterThan(0);
-      expect(splitter['_collapsedPane']).to.be.null;
+      expect(splitter.hasAttribute('start-collapsed')).to.be.false;
+      expect(splitter.hasAttribute('end-collapsed')).to.be.false;
     });
 
     it('should expand/collapse the correct pane through the expander buttons in RTL', async () => {
@@ -2267,7 +2280,7 @@ describe('Splitter', () => {
       expect(currentSizes.startSize).to.equal(0);
       expect(currentSizes.endSize).to.equal(totalAvailable);
 
-      expect(splitter['_collapsedPane']).to.equal('start');
+      expect(splitter.hasAttribute('start-collapsed')).to.be.true;
 
       parts = getButtonParts(splitter);
       expect(parts.startCollapseBtn.hidden).to.be.true;
@@ -2285,7 +2298,8 @@ describe('Splitter', () => {
       expect(currentSizes.endSize).to.equal(
         totalAvailable - currentSizes.startSize
       );
-      expect(splitter['_collapsedPane']).to.be.null;
+      expect(splitter.hasAttribute('start-collapsed')).to.be.false;
+      expect(splitter.hasAttribute('end-collapsed')).to.be.false;
 
       parts = getButtonParts(splitter);
       expect(parts.startCollapseBtn.hidden).to.be.false;
@@ -2301,7 +2315,7 @@ describe('Splitter', () => {
 
       expect(currentSizes.startSize).to.equal(totalAvailable);
       expect(currentSizes.endSize).to.equal(0);
-      expect(splitter['_collapsedPane']).to.equal('end');
+      expect(splitter.hasAttribute('end-collapsed')).to.be.true;
 
       parts = getButtonParts(splitter);
       expect(parts.startCollapseBtn).to.be.null;
@@ -2319,7 +2333,8 @@ describe('Splitter', () => {
         totalAvailable - currentSizes.endSize
       );
       expect(currentSizes.endSize).to.be.greaterThan(0);
-      expect(splitter['_collapsedPane']).to.be.null;
+      expect(splitter.hasAttribute('start-collapsed')).to.be.false;
+      expect(splitter.hasAttribute('end-collapsed')).to.be.false;
 
       parts = getButtonParts(splitter);
       expect(parts.startCollapseBtn.hidden).to.be.false;
@@ -2397,7 +2412,7 @@ describe('Splitter', () => {
 
       expect(currentSizes.startSize).to.equal(0);
       expect(currentSizes.endSize).to.equal(splitterSize - barSize);
-      expect(splitter['_collapsedPane']).to.equal('start');
+      expect(splitter.hasAttribute('start-collapsed')).to.be.true;
 
       simulateKeyboard(bar, [ctrlKey, arrowDown]);
       await elementUpdated(splitter);
@@ -2408,7 +2423,8 @@ describe('Splitter', () => {
       expect(currentSizes.endSize).to.equal(
         splitterSize - barSize - currentSizes.startSize
       );
-      expect(splitter['_collapsedPane']).to.be.null;
+      expect(splitter.hasAttribute('start-collapsed')).to.be.false;
+      expect(splitter.hasAttribute('end-collapsed')).to.be.false;
     });
   });
 
@@ -2498,28 +2514,28 @@ describe('Splitter', () => {
       expect(rightInnerSplitter.startSize).to.equal('30%');
       expect(rightInnerSplitter.orientation).to.equal('vertical');
 
-      outerSplitter['_collapsedPane'] = 'start';
+      outerSplitter.toggle('start');
       await elementUpdated(outerSplitter);
       await elementUpdated(leftInnerSplitter);
 
-      expect(outerSplitter['_collapsedPane']).to.equal('start');
-      expect(leftInnerSplitter['_collapsedPane']).to.be.null;
-      expect(rightInnerSplitter['_collapsedPane']).to.be.null;
+      expect(outerSplitter.hasAttribute('start-collapsed')).to.be.true;
+      expect(leftInnerSplitter.hasAttribute('start-collapsed')).to.be.false;
+      expect(rightInnerSplitter.hasAttribute('start-collapsed')).to.be.false;
 
-      leftInnerSplitter['_collapsedPane'] = 'start';
+      leftInnerSplitter.toggle('start');
       await elementUpdated(leftInnerSplitter);
 
-      expect(outerSplitter['_collapsedPane']).to.equal('start');
-      expect(leftInnerSplitter['_collapsedPane']).to.equal('start');
-      expect(rightInnerSplitter['_collapsedPane']).to.be.null;
+      expect(outerSplitter.hasAttribute('start-collapsed')).to.be.true;
+      expect(leftInnerSplitter.hasAttribute('start-collapsed')).to.be.true;
+      expect(rightInnerSplitter.hasAttribute('start-collapsed')).to.be.false;
 
-      outerSplitter['_collapsedPane'] = null;
+      outerSplitter.toggle('start');
       await elementUpdated(outerSplitter);
       await elementUpdated(leftInnerSplitter);
 
-      expect(outerSplitter['_collapsedPane']).to.be.null;
-      expect(leftInnerSplitter['_collapsedPane']).to.equal('start');
-      expect(rightInnerSplitter['_collapsedPane']).to.be.null;
+      expect(outerSplitter.hasAttribute('start-collapsed')).to.be.false;
+      expect(leftInnerSplitter.hasAttribute('start-collapsed')).to.be.true;
+      expect(rightInnerSplitter.hasAttribute('start-collapsed')).to.be.false;
     });
 
     it('should not interfere with parent/child resize operations', async () => {
