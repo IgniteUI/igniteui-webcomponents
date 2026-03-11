@@ -226,11 +226,7 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
    * The minimum size of the start pane.
    * @attr
    */
-  @property({ attribute: 'start-min-size', reflect: true })
-  public get startMinSize(): string | undefined {
-    return this._startPaneState.minSize;
-  }
-
+  @property({ attribute: 'start-min-size' })
   public set startMinSize(value: string | undefined) {
     this._startPaneState = {
       ...this._startPaneState,
@@ -238,15 +234,15 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
     };
   }
 
+  public get startMinSize(): string | undefined {
+    return this._startPaneState.minSize;
+  }
+
   /**
    * The minimum size of the end pane.
    * @attr
    */
-  @property({ attribute: 'end-min-size', reflect: true })
-  public get endMinSize(): string | undefined {
-    return this._endPaneState.minSize;
-  }
-
+  @property({ attribute: 'end-min-size' })
   public set endMinSize(value: string | undefined) {
     this._endPaneState = {
       ...this._endPaneState,
@@ -254,15 +250,15 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
     };
   }
 
+  public get endMinSize(): string | undefined {
+    return this._endPaneState.minSize;
+  }
+
   /**
    * The maximum size of the start pane.
    * @attr
    */
-  @property({ attribute: 'start-max-size', reflect: true })
-  public get startMaxSize(): string | undefined {
-    return this._startPaneState.maxSize;
-  }
-
+  @property({ attribute: 'start-max-size' })
   public set startMaxSize(value: string | undefined) {
     this._startPaneState = {
       ...this._startPaneState,
@@ -270,15 +266,15 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
     };
   }
 
+  public get startMaxSize(): string | undefined {
+    return this._startPaneState.maxSize;
+  }
+
   /**
    * The maximum size of the end pane.
    * @attr
    */
-  @property({ attribute: 'end-max-size', reflect: true })
-  public get endMaxSize(): string | undefined {
-    return this._endPaneState.maxSize;
-  }
-
+  @property({ attribute: 'end-max-size' })
   public set endMaxSize(value: string | undefined) {
     this._endPaneState = {
       ...this._endPaneState,
@@ -286,15 +282,15 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
     };
   }
 
+  public get endMaxSize(): string | undefined {
+    return this._endPaneState.maxSize;
+  }
+
   /**
    * The size of the start pane.
    * @attr
    */
-  @property({ attribute: 'start-size', reflect: true })
-  public get startSize(): string | undefined {
-    return this._startPaneState.size;
-  }
-
+  @property({ attribute: 'start-size' })
   public set startSize(value: string | undefined) {
     this._startPaneState = {
       ...this._startPaneState,
@@ -302,20 +298,24 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
     };
   }
 
+  public get startSize(): string | undefined {
+    return this._startPaneState.size;
+  }
+
   /**
    * The size of the end pane.
    * @attr
    */
-  @property({ attribute: 'end-size', reflect: true })
-  public get endSize(): string | undefined {
-    return this._endPaneState.size;
-  }
-
+  @property({ attribute: 'end-size' })
   public set endSize(value: string | undefined) {
     this._endPaneState = {
       ...this._endPaneState,
       size: this._normalizeValue(value, 'auto')!,
     };
+  }
+
+  public get endSize(): string | undefined {
+    return this._endPaneState.size;
   }
 
   //#endregion
@@ -539,9 +539,9 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
     const bar = this._barRef.value;
     if (!bar) return;
 
-    bar.setAttribute('aria-valuenow', String(this._getStartPaneSizePercent()));
-    bar.setAttribute('aria-valuemin', String(this._getMinMaxAsPercent('min')));
-    bar.setAttribute('aria-valuemax', String(this._getMinMaxAsPercent('max')));
+    bar.ariaValueNow = this._getStartPaneSizePercent().toString();
+    bar.ariaValueMin = this._getMinMaxAsPercent('min').toString();
+    bar.ariaValueMax = this._getMinMaxAsPercent('max').toString();
   }
 
   private _isPercentageSize(which: PanePosition): boolean {
@@ -935,13 +935,6 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
     };
   }
 
-  private _resolveExpanderLabel(expander: PanePosition): string {
-    if (expander === 'start') {
-      return this._isEndCollapsed ? 'Expand end pane' : 'Collapse start pane';
-    }
-    return this._isStartCollapsed ? 'Expand start pane' : 'Collapse end pane';
-  }
-
   private _getExpanderHiddenState(): {
     prevButtonHidden: boolean;
     nextButtonHidden: boolean;
@@ -962,8 +955,6 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
       <div
         part="${partMap(this._resolvePartNames('start'))}"
         ?hidden=${prevButtonHidden}
-        role="img"
-        aria-label=${this._resolveExpanderLabel('start')}
         @pointerdown=${(e: PointerEvent) =>
           this._handleExpanderClick('start', e)}
       ></div>
@@ -971,8 +962,6 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
       <div
         part="${partMap(this._resolvePartNames('end'))}"
         ?hidden=${nextButtonHidden}
-        role="img"
-        aria-label=${this._resolveExpanderLabel('end')}
         @pointerdown=${(e: PointerEvent) => this._handleExpanderClick('end', e)}
       ></div>
     `;

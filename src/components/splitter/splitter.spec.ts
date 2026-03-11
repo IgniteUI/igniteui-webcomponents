@@ -668,9 +668,6 @@ describe('Splitter', () => {
 
     it('should toggle the next pane when the bar expander-end parts are clicked', async () => {
       let parts = getButtonParts(splitter);
-      expect(parts.endCollapseBtn.getAttribute('aria-label')).to.equal(
-        'Collapse end pane'
-      );
 
       simulatePointerDown(parts.endCollapseBtn, { bubbles: true });
       await elementUpdated(splitter);
@@ -683,9 +680,6 @@ describe('Splitter', () => {
       expect(parts.endCollapseBtn.hidden).to.be.true;
       expect(parts.startExpander).to.be.null;
       expect(parts.endExpander.hidden).to.be.false;
-      expect(parts.endExpander.getAttribute('aria-label')).to.equal(
-        'Expand end pane'
-      );
 
       simulatePointerDown(parts.endExpander, { bubbles: true });
       await elementUpdated(splitter);
@@ -696,19 +690,10 @@ describe('Splitter', () => {
       expect(parts.endCollapseBtn.hidden).to.be.false;
       expect(parts.startExpander).to.be.null;
       expect(parts.endExpander).to.be.null;
-      expect(parts.startCollapseBtn.getAttribute('aria-label')).to.equal(
-        'Collapse start pane'
-      );
-      expect(parts.endCollapseBtn.getAttribute('aria-label')).to.equal(
-        'Collapse end pane'
-      );
     });
 
     it('should toggle the previous pane when the bar expander-start parts are clicked', async () => {
       let parts = getButtonParts(splitter);
-      expect(parts.startCollapseBtn.getAttribute('aria-label')).to.equal(
-        'Collapse start pane'
-      );
 
       simulatePointerDown(parts.startCollapseBtn, { bubbles: true });
       await elementUpdated(splitter);
@@ -721,9 +706,6 @@ describe('Splitter', () => {
       expect(parts.startExpander.hidden).to.be.false;
       expect(parts.endCollapseBtn).to.be.null;
       expect(parts.endExpander).to.be.null;
-      expect(parts.startExpander.getAttribute('aria-label')).to.equal(
-        'Expand start pane'
-      );
 
       simulatePointerDown(parts.startExpander, { bubbles: true });
       await elementUpdated(splitter);
@@ -737,12 +719,6 @@ describe('Splitter', () => {
       expect(parts.endCollapseBtn.hidden).to.be.false;
       expect(parts.startExpander).to.be.null;
       expect(parts.endExpander).to.be.null;
-      expect(parts.startCollapseBtn.getAttribute('aria-label')).to.equal(
-        'Collapse start pane'
-      );
-      expect(parts.endCollapseBtn.getAttribute('aria-label')).to.equal(
-        'Collapse end pane'
-      );
     });
 
     it('should set tabindex correctly on the bar based on interactivity', async () => {
