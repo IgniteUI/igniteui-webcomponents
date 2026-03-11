@@ -167,72 +167,75 @@ type Story = StoryObj<IgcRatingArgs>;
 
 // endregion
 
+const renderRating = ({
+  single,
+  label,
+  disabled,
+  allowReset,
+  hoverPreview,
+  invalid,
+  max,
+  readOnly,
+  step,
+  value,
+  valueFormat,
+}: IgcRatingArgs) =>
+  html`<igc-rating
+    label=${ifDefined(label)}
+    ?single=${single}
+    ?allow-reset=${allowReset}
+    ?hover-preview=${hoverPreview}
+    ?readonly=${readOnly}
+    ?invalid=${invalid}
+    ?disabled=${disabled}
+    .max=${max}
+    .step=${step}
+    .value=${value}
+    .valueFormat=${valueFormat}
+  ></igc-rating>`;
+
 export const Default: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'A basic star rating control. Use the controls panel to interactively explore all available properties such as `max`, `step`, `hoverPreview`, `allowReset`, and `readOnly`.',
+      },
+    },
+  },
   args: {
     label: 'Default rating',
+    value: 3,
   },
-  render: ({
-    single,
-    label,
-    disabled,
-    allowReset,
-    hoverPreview,
-    invalid,
-    max,
-    readOnly,
-    step,
-    value,
-    valueFormat,
-  }) =>
-    html`<igc-rating
-      label=${ifDefined(label)}
-      ?single=${single}
-      ?allow-reset=${allowReset}
-      ?hover-preview=${hoverPreview}
-      ?readonly=${readOnly}
-      ?invalid=${invalid}
-      ?disabled=${disabled}
-      .max=${max}
-      .step=${step}
-      .value=${value}
-      .valueFormat=${valueFormat}
-    ></igc-rating>`,
+  render: renderRating,
 };
 
 export const SingleSelection: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'When `single` is enabled only the selected symbol is filled, instead of filling all symbols up to the chosen value — useful for pick-one scenarios like mood or category selectors.',
+      },
+    },
+  },
   args: {
     label: 'Single selection',
     single: true,
+    value: 3,
   },
-  render: ({
-    single,
-    label,
-    disabled,
-    allowReset,
-    hoverPreview,
-    invalid,
-    max,
-    readOnly,
-    step,
-    value,
-    valueFormat,
-  }) =>
-    html`<igc-rating
-      label=${ifDefined(label)}
-      ?single=${single}
-      ?allow-reset=${allowReset}
-      ?hover-preview=${hoverPreview}
-      ?readonly=${readOnly}
-      ?invalid=${invalid}
-      ?disabled=${disabled}
-      .max=${max}
-      .step=${step}
-      .value=${value}
-      .valueFormat=${valueFormat}
-    ></igc-rating>`,
+  render: renderRating,
 };
 
 export const Slots: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Custom symbols can be projected into the rating using `igc-rating-symbol` elements. Each symbol has a default (filled) slot and an `empty` slot. Shown here: icon-based symbols, inline SVG symbols, and emoji symbols with a dynamic value label.',
+      },
+    },
+  },
   render: ({
     allowReset,
     disabled,
@@ -323,6 +326,14 @@ export const Slots: Story = {
 
 export const Form: Story = {
   argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Demonstrates the rating component in an HTML form with a default star rating, a single-selection SVG rating, a fractional step rating, and readonly/disabled states.',
+      },
+    },
+  },
   render: () => {
     return html`
       <form action="" @submit=${formSubmitHandler}>
