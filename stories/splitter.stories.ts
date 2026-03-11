@@ -1,9 +1,9 @@
+import { IgcIconComponent, defineComponents } from 'igniteui-webcomponents';
 import type { Meta, StoryObj } from '@storybook/web-components-vite';
-import { html } from 'lit';
 
-import { defineComponents, IgcIconComponent } from 'igniteui-webcomponents';
 import IgcSplitterComponent from '../src/components/splitter/splitter.js';
 import { disableStoryControls } from './story.js';
+import { html } from 'lit';
 
 defineComponents(IgcSplitterComponent, IgcIconComponent);
 
@@ -52,17 +52,6 @@ const metadata: Meta<IgcSplitterComponent> = {
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
-    startCollapsed: {
-      type: 'boolean',
-      description: 'Collapses the start pane.',
-      table: { defaultValue: { summary: 'false' } },
-    },
-    endCollapsed: {
-      type: 'boolean',
-      description: 'Collapses the end pane.',
-      control: 'boolean',
-      table: { defaultValue: { summary: 'false' } },
-    },
     startSize: {
       control: { type: 'text' },
       description: 'Size of the start pane (e.g., "200px", "50%", "auto").',
@@ -94,8 +83,6 @@ const metadata: Meta<IgcSplitterComponent> = {
     hideCollapseButtons: false,
     hideDragHandle: false,
     disableResize: false,
-    startCollapsed: false,
-    endCollapsed: false,
   },
 };
 
@@ -150,8 +137,6 @@ export const Default: Story = {
     hideCollapseButtons,
     hideDragHandle,
     disableResize,
-    startCollapsed,
-    endCollapsed,
     startSize,
     endSize,
     startMinSize,
@@ -194,8 +179,6 @@ export const Default: Story = {
           .hideCollapseButtons=${hideCollapseButtons}
           .hideDragHandle=${hideDragHandle}
           .disableResize=${disableResize}
-          .startCollapsed=${startCollapsed}
-          .endCollapsed=${endCollapsed}
           .startSize=${startSize || 'auto'}
           .endSize=${endSize || 'auto'}
           .startMinSize=${startMinSize}
