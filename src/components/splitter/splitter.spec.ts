@@ -1887,7 +1887,7 @@ describe('Splitter', () => {
       expect(currentSizes.endSize).to.equal(
         totalSplitterSize - barSize - currentSizes.startSize
       );
-      checkPanesAreWithingBounds(
+      checkPanesAreWithinBounds(
         splitter,
         currentSizes.startSize,
         currentSizes.endSize,
@@ -1920,7 +1920,7 @@ describe('Splitter', () => {
       expect(currentSizes.endSize).to.equal(
         totalSplitterSize - barSize - currentSizes.startSize
       );
-      checkPanesAreWithingBounds(
+      checkPanesAreWithinBounds(
         splitter,
         currentSizes.startSize,
         currentSizes.endSize,
@@ -3127,7 +3127,7 @@ function checkResizeEvents(
   eventSpy.resetHistory();
 }
 
-function checkPanesAreWithingBounds(
+function checkPanesAreWithinBounds(
   splitter: IgcSplitterComponent,
   startSize: number,
   endSize: number,

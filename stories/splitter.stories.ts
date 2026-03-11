@@ -1,11 +1,15 @@
-import { IgcIconComponent, defineComponents } from 'igniteui-webcomponents';
+import {
+  IgcButtonComponent,
+  IgcIconComponent,
+  defineComponents,
+} from 'igniteui-webcomponents';
 import type { Meta, StoryObj } from '@storybook/web-components-vite';
 
 import IgcSplitterComponent from '../src/components/splitter/splitter.js';
 import { disableStoryControls } from './story.js';
 import { html } from 'lit';
 
-defineComponents(IgcSplitterComponent, IgcIconComponent);
+defineComponents(IgcSplitterComponent, IgcIconComponent, IgcButtonComponent);
 
 const metadata: Meta<IgcSplitterComponent> = {
   title: 'Splitter',
@@ -144,21 +148,6 @@ export const Default: Story = {
     endMinSize,
     endMaxSize,
   }) => {
-    document.addEventListener('DOMContentLoaded', () => {
-      // const splitter = document.getElementById(
-      //   'splitter'
-      // ) as IgcSplitterComponent;
-      // splitter.addEventListener('igcResizeStart', (event) =>
-      //   console.log(event.detail)
-      // );
-      // splitter.addEventListener('igcResizing', (event) =>
-      //   console.log(event.detail)
-      // );
-      // splitter.addEventListener('igcResizeEnd', (event) =>
-      //   console.log(event.detail)
-      // );
-    });
-
     return html`
       <style>
         .pane-content {
