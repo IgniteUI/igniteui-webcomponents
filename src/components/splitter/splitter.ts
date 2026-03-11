@@ -81,18 +81,6 @@ const DEFAULT_PANE_STATE: SplitterPaneState = {
   size: 'auto',
 };
 
-interface SplitterARIAValues {
-  now: number;
-  min: number;
-  max: number;
-}
-
-const DEFAULT_ARIA_VALUES: SplitterARIAValues = {
-  now: 0,
-  min: 0,
-  max: 100,
-};
-
 type PanePosition = 'start' | 'end';
 
 /**
@@ -135,7 +123,6 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   private _startPaneInternalStyles: StyleInfo = {};
   private _endPaneInternalStyles: StyleInfo = {};
   private _barInternalStyles: StyleInfo = {};
-  private _ariaValues: SplitterARIAValues = { ...DEFAULT_ARIA_VALUES };
 
   @state()
   private _collapsedPane: PanePosition | null = null;
@@ -383,6 +370,10 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
     super.update(changed);
   }
 
+  protected override updated(): void {
+    this._updateBarAria();
+  }
+
   //#endregion
 
   //#region Resize Event Handlers
@@ -534,9 +525,7 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
     if (this._isEndCollapsed) {
       return 100;
     }
-    return this.startSize && this.startSize !== 'auto'
-      ? this._sizeToPercent(this.startSize)
-      : this._paneRectAsPercent(0);
+    return this._paneRectAsPercent(0);
   }
 
   private _getMinMaxAsPercent(type: 'min' | 'max'): number {
@@ -546,12 +535,13 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
     return value ? this._sizeToPercent(value) : defaultValue;
   }
 
-  private _updateAriaValues(): void {
-    this._ariaValues = {
-      now: this._getStartPaneSizePercent(),
-      min: this._getMinMaxAsPercent('min'),
-      max: this._getMinMaxAsPercent('max'),
-    };
+  private _updateBarAria(): void {
+    const bar = this._barRef.value;
+    if (!bar) return;
+
+    bar.setAttribute('aria-valuenow', String(this._getStartPaneSizePercent()));
+    bar.setAttribute('aria-valuemin', String(this._getMinMaxAsPercent('min')));
+    bar.setAttribute('aria-valuemax', String(this._getMinMaxAsPercent('max')));
   }
 
   private _isPercentageSize(which: PanePosition): boolean {
@@ -847,7 +837,6 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
     this._setPaneFlex(this._startPaneInternalStyles, this._getFlex('start'));
     this._setPaneFlex(this._endPaneInternalStyles, this._getFlex('end'));
     this._updateCursor();
-    this._updateAriaValues();
   }
 
   private _setPaneMinMaxSizes(
@@ -1010,9 +999,6 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
           tabindex=${this._barTabIndex}
           aria-controls="start-pane end-pane"
           aria-orientation=${this.orientation}
-          aria-valuenow=${this._ariaValues.now}
-          aria-valuemin=${this._ariaValues.min}
-          aria-valuemax=${this._ariaValues.max}
           style=${styleMap(this._barInternalStyles)}
           @touchstart=${this._preventDefaultForEvent}
           @contextmenu=${this._preventDefaultForEvent}

@@ -437,6 +437,8 @@ describe('Splitter', () => {
 
       document.body.style.fontSize = '16px';
       splitter.style.fontSize = '10px';
+      // reflect changes in the document body styles
+      splitter.requestUpdate();
       await elementUpdated(splitter);
 
       const startPart = getSplitterPart(splitter, START_PART);
@@ -453,6 +455,17 @@ describe('Splitter', () => {
       const expectedEndSizeInPixels = 2 * 16; // 2rem with root font size of 16px
       expect(style2.flex).to.equal(
         `0 1 ${expectedEndSizeInPixels.toString()}px`
+      );
+
+      // ARIA values should reflect the resolved pixel sizes as percentages
+      const bar = getSplitterPart(splitter, BAR_PART);
+      const totalSize = getTotalSize(splitter, 'width');
+      const expectedAriaValueNow = roundPrecise(
+        (expectedStartSizeInPixels / totalSize) * 100,
+        0
+      );
+      expect(bar.getAttribute('aria-valuenow')).to.equal(
+        expectedAriaValueNow.toString()
       );
     });
 
