@@ -8,6 +8,7 @@ import {
   IgcCalendarComponent,
   defineComponents,
 } from 'igniteui-webcomponents';
+import { disableStoryControls } from './story.js';
 
 defineComponents(IgcCalendarComponent);
 
@@ -232,6 +233,7 @@ export const Basic: Story = {
 };
 
 export const RangeSelection: Story = {
+  argTypes: disableStoryControls(metadata),
   render: () => {
     const start = new Date(currentYear, currentMonth, 5);
     const end = new Date(currentYear, currentMonth, 18);
@@ -246,6 +248,7 @@ export const RangeSelection: Story = {
 };
 
 export const MultipleSelection: Story = {
+  argTypes: disableStoryControls(metadata),
   render: () => {
     const values = [
       new Date(currentYear, currentMonth, 3),
@@ -264,6 +267,7 @@ export const MultipleSelection: Story = {
 };
 
 export const MultipleMonths: Story = {
+  argTypes: disableStoryControls(metadata),
   render: () => {
     const start = new Date(currentYear, currentMonth, 20);
     const end = new Date(currentYear, currentMonth + 1, 10);
@@ -279,6 +283,7 @@ export const MultipleMonths: Story = {
 };
 
 export const DisabledDates: Story = {
+  argTypes: disableStoryControls(metadata),
   render: () => {
     const disabledDates: DateRangeDescriptor[] = [
       { type: DateRangeType.Weekends },
@@ -297,6 +302,7 @@ export const DisabledDates: Story = {
 };
 
 export const SpecialDates: Story = {
+  argTypes: disableStoryControls(metadata),
   render: () => {
     const specialDates: DateRangeDescriptor[] = [
       {

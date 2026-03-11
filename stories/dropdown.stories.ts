@@ -11,6 +11,7 @@ import {
   defineComponents,
   registerIconFromText,
 } from 'igniteui-webcomponents';
+import { disableStoryControls } from './story.js';
 
 const icons = [github, whiteHouse1];
 
@@ -185,7 +186,15 @@ const overflowItems = Array.from(range(1, 51)).map(
     html`<igc-dropdown-item value=${each}>Item ${each}</igc-dropdown-item>`
 );
 
-export const Basic: Story = {
+export const Default: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'A basic dropdown anchored to a button target via the `target` slot. All placement, scroll strategy, and open/close behavior can be configured from the controls panel.',
+      },
+    },
+  },
   render: ({
     open,
     flip,
@@ -217,6 +226,14 @@ export const Basic: Story = {
 export const Overflow: Story = {
   args: {
     sameWidth: true,
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'A dropdown with a large number of items whose list height is constrained via `::part(list)`. Demonstrates vertical scrolling inside the list and the `scrollStrategy` behavior when scrolling the page.',
+      },
+    },
   },
   render: ({
     distance,
@@ -311,6 +328,14 @@ export const GroupsAndHeaders: Story = {
   args: {
     sameWidth: true,
   },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Items organized into `igc-dropdown-group` elements with group labels and `igc-dropdown-header` separators. Each item uses the `prefix` slot for a flag image.',
+      },
+    },
+  },
   render: ({
     open,
     keepOpenOnOutsideClick,
@@ -372,6 +397,15 @@ function setVersion(event: Event) {
 }
 
 export const OpenFromInteraction: Story = {
+  argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Demonstrates calling `toggle()` and `show()` programmatically via `id` references, letting an external button and an input focus event control the same dropdown.',
+      },
+    },
+  },
   render: () => html`
     <style>
       .version-container {
@@ -412,6 +446,14 @@ export const OpenFromInteraction: Story = {
 };
 
 export const WithNonSlottedTarget: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Shows how to drive a single dropdown from multiple external targets — buttons and an input — by passing the target element reference to `show()`. The dropdown has no `target` slot and is positioned relative to whichever element triggered it.',
+      },
+    },
+  },
   render: ({
     distance,
     open,
