@@ -113,7 +113,7 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   public static styles = [styles, shared];
 
   /* blazorSuppress */
-  public static register() {
+  public static register(): void {
     registerComponent(IgcSplitterComponent);
   }
 
@@ -748,7 +748,6 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
         delta,
       },
     });
-    this._resizeState = { ...DEFAULT_RESIZE_STATE };
   }
 
   private _rectSize(): [number, number] {
@@ -1000,8 +999,8 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
           aria-controls="start-pane end-pane"
           aria-orientation=${this.orientation}
           style=${styleMap(this._barInternalStyles)}
-          @touchstart=${this._preventDefaultForEvent}
-          @contextmenu=${this._preventDefaultForEvent}
+          @touchstart=${bindIf(canResize, this._preventDefaultForEvent)}
+          @contextmenu=${bindIf(canResize, this._preventDefaultForEvent)}
           @pointerdown=${bindIf(canResize, this._handleBarPointerDown)}
           @pointermove=${bindIf(isDragging, this._handleBarPointerMove)}
           @pointerup=${bindIf(isDragging, this._handleEndDrag)}

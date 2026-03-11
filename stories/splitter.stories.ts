@@ -1,11 +1,11 @@
 import {
   IgcButtonComponent,
   IgcIconComponent,
+  IgcSplitterComponent,
   defineComponents,
 } from 'igniteui-webcomponents';
 import type { Meta, StoryObj } from '@storybook/web-components-vite';
 
-import IgcSplitterComponent from '../src/components/splitter/splitter.js';
 import { disableStoryControls } from './story.js';
 import { html } from 'lit';
 
@@ -98,8 +98,6 @@ interface IgcSplitterArgs {
   hideCollapseButtons: boolean;
   hideDragHandle: boolean;
   disableResize: boolean;
-  startCollapsed: boolean;
-  endCollapsed: boolean;
   startSize?: string;
   endSize?: string;
   startMinSize?: string;

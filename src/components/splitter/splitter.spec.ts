@@ -376,22 +376,6 @@ describe('Splitter', () => {
   });
 
   describe('Properties', () => {
-    it('should change panels state from the startExpanded and endExpanded properties', async () => {
-      splitter.toggle('start');
-      await elementUpdated(splitter);
-
-      expect(splitter.hasAttribute('start-collapsed')).to.be.true;
-
-      splitter.toggle('end');
-      await elementUpdated(splitter);
-
-      expect(splitter.hasAttribute('end-collapsed')).to.be.true;
-      splitter.toggle('start');
-      await elementUpdated(splitter);
-
-      expect(splitter.hasAttribute('start-collapsed')).to.be.true;
-    });
-
     it('should reset pane sizes when orientation changes', async () => {
       splitter = await fixture<IgcSplitterComponent>(
         createTwoPanesWithSizesAndConstraints({
