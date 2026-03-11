@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [7.0.1] - 2026-03-06
+### Fixed
+- #### Icon service
+  - Browser Safari: Use a plain Map instance for synchronizing state between actors [#2128](https://github.com/IgniteUI/igniteui-webcomponents/pull/2128)
+
 ## [7.0.0] - 2026-02-25
 ### Added
 - #### AI-Assisted Development - Copilot Skills
@@ -1264,6 +1269,7 @@ Initial release of Ignite UI Web Components
 - Ripple component
 - Switch component
 
+[7.0.1]: https://github.com/IgniteUI/igniteui-webcomponents/compare/7.0.0...7.0.1
 [7.0.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/6.5.1...7.0.0
 [6.5.1]: https://github.com/IgniteUI/igniteui-webcomponents/compare/6.5.0...6.5.1
 [6.5.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/6.4.0...6.5.0

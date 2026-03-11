@@ -470,6 +470,134 @@ describe('Icon BFCache (pageshow/pagehide) handling', () => {
   });
 });
 
+describe('DefaultMap serialization for cross-browser compatibility', () => {
+  let channel: BroadcastChannel;
+  let events: MessageEvent<BroadcastIconsChangeMessage>[] = [];
+  const collectionName = 'serialization-test';
+
+  const handler = (message: MessageEvent<BroadcastIconsChangeMessage>) =>
+    events.push(message);
+
+  beforeEach(async () => {
+    channel = new BroadcastChannel('ignite-ui-icon-channel');
+    channel.addEventListener('message', handler);
+    events = [];
+  });
+
+  afterEach(async () => {
+    channel.close();
+    events = [];
+  });
+
+  it('DefaultMap.toPlainMap() returns a plain Map instance, not DefaultMap', () => {
+    const defaultMap = createIconDefaultMap<string, SvgIcon>();
+    const plainMap = defaultMap.toPlainMap();
+
+    // Verify that plainMap is a Map but not a DefaultMap
+    expect(plainMap).to.be.instanceOf(Map);
+    expect(plainMap[Symbol.toStringTag]).to.equal('Map');
+    expect(defaultMap[Symbol.toStringTag]).to.equal('DefaultMap');
+  });
+
+  it('toPlainMap() preserves all entries from DefaultMap', () => {
+    const defaultMap = createIconDefaultMap<string, SvgIcon>();
+    const testData: SvgIcon = { svg: bugSvg };
+
+    // Add data to DefaultMap
+    const collection = defaultMap.getOrCreate('test-collection');
+    collection.set('bug', testData);
+
+    // Convert to plain Map
+    const plainMap = defaultMap.toPlainMap();
+
+    // Verify entries are preserved
+    expect(plainMap.has('test-collection')).to.be.true;
+    const plainCollection = plainMap.get('test-collection');
+    expect(plainCollection?.get('bug')).to.eql(testData);
+  });
+
+  it('broadcasted collections data is sent as plain Maps', async () => {
+    registerIconFromText('test-icon', bugSvg, collectionName);
+    await aTimeout(0);
+
+    const { collections } = first(events).data;
+
+    expect(collections?.[Symbol.toStringTag]).to.equal('Map');
+    // Verify the inner collection is also a Map
+    const innerCollection = collections?.get(collectionName);
+    expect(innerCollection?.[Symbol.toStringTag]).to.equal('Map');
+    expect(innerCollection?.get('test-icon')).to.eql(
+      getIconRegistry().get('test-icon', collectionName)
+    );
+  });
+
+  it('broadcasted references data is sent as plain Maps', async () => {
+    registerIconFromText('ref-test', bugSvg, collectionName);
+    const refName = 'bug-ref';
+    const refCollection = 'ref-collection';
+
+    setIconRef(refName, refCollection, {
+      name: 'ref-test',
+      collection: collectionName,
+    });
+    await aTimeout(0);
+
+    const { references } = last(events).data;
+
+    expect(references?.[Symbol.toStringTag]).to.equal('Map');
+    // Verify the inner reference collection is also a Map
+    const refInnerCollection = references?.get(refCollection);
+    expect(refInnerCollection?.[Symbol.toStringTag]).to.equal('Map');
+    expect(refInnerCollection?.get(refName)).to.eql(
+      getIconRegistry().getIconRef(refName, refCollection)
+    );
+  });
+
+  it('nested plain Maps can be structured cloned and transmitted safely', async () => {
+    registerIconFromText('nested-icon', bugSvg, collectionName);
+    await aTimeout(0);
+
+    const { collections } = first(events).data;
+
+    // Verify that nested plain Maps can be structured-cloned (as BroadcastChannel would do)
+    const clonedCollections = structuredClone(collections);
+
+    // Outer structure should remain a Map
+    expect(clonedCollections?.[Symbol.toStringTag]).to.equal('Map');
+
+    // Inner collection for the test collection should also remain a Map
+    const clonedInnerCollection = clonedCollections?.get(collectionName);
+    expect(clonedInnerCollection?.[Symbol.toStringTag]).to.equal('Map');
+
+    // The nested icon entry should be preserved after cloning
+    expect(clonedInnerCollection?.has('nested-icon')).to.be.true;
+  });
+
+  it('toPlainMap preserves nested Map structures for icon collections', () => {
+    const defaultMap = createIconDefaultMap<string, SvgIcon>();
+
+    // Create nested DefaultMap with icons
+    const collection1 = defaultMap.getOrCreate('material');
+    collection1.set('home', { svg: bugSvg });
+    collection1.set('settings', { svg: virusSvg });
+
+    const collection2 = defaultMap.getOrCreate('bootstrap');
+    collection2.set('star', { svg: searchSvg });
+
+    // Convert to plain Map
+    const plainMap = defaultMap.toPlainMap();
+
+    // Verify structure is preserved
+    expect(plainMap.size).to.equal(2);
+    expect(plainMap.get('material')!.size).to.equal(2);
+    expect(plainMap.get('bootstrap')!.size).to.equal(1);
+
+    // Verify nested data integrity
+    expect(plainMap.get('material')?.get('home')?.svg).to.include('<svg');
+    expect(plainMap.get('bootstrap')?.get('star')?.svg).to.include('<svg');
+  });
+});
+
 describe('Icon component', () => {
   before(() => {
     defineComponents(IgcIconComponent);
