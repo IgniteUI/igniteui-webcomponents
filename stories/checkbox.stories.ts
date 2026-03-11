@@ -108,6 +108,14 @@ type Story = StoryObj<IgcCheckboxArgs>;
 // endregion
 
 export const Default: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'A basic checkbox illustrating all available properties. Use the controls panel to explore available properties interactively.',
+      },
+    },
+  },
   render: (args) => html`
     <igc-checkbox
       ?checked=${args.checked}
@@ -124,8 +132,113 @@ export const Default: Story = {
   `,
 };
 
+export const Indeterminate: Story = {
+  argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'The **indeterminate** state visually indicates a partially selected condition and is commonly used in "select all" patterns. Toggling the parent updates all child checkboxes; toggling any child recalculates the parent state.',
+      },
+    },
+  },
+  render: () => {
+    const onParentChange = (e: Event) => {
+      const parent = e.target as IgcCheckboxComponent;
+      document
+        .querySelectorAll<IgcCheckboxComponent>('.child-cb')
+        .forEach((cb) => {
+          cb.checked = parent.checked;
+        });
+    };
+    const onChildChange = () => {
+      const children = [
+        ...document.querySelectorAll<IgcCheckboxComponent>('.child-cb'),
+      ];
+      const checkedCount = children.filter((cb) => cb.checked).length;
+      const parent =
+        document.querySelector<IgcCheckboxComponent>('#parent-cb')!;
+      parent.indeterminate = checkedCount > 0 && checkedCount < children.length;
+      parent.checked = checkedCount === children.length;
+    };
+    return html`
+      <div
+        style="display: flex; flex-direction: column; gap: 0.5rem; padding: 1rem;"
+      >
+        <igc-checkbox id="parent-cb" indeterminate @igcChange=${onParentChange}>
+          Select all
+        </igc-checkbox>
+        <div
+          style="margin-inline-start: 1.5rem; display: flex; flex-direction: column; gap: 0.5rem;"
+        >
+          <igc-checkbox class="child-cb" checked @igcChange=${onChildChange}>
+            Option 1
+          </igc-checkbox>
+          <igc-checkbox class="child-cb" @igcChange=${onChildChange}>
+            Option 2
+          </igc-checkbox>
+          <igc-checkbox class="child-cb" checked @igcChange=${onChildChange}>
+            Option 3
+          </igc-checkbox>
+        </div>
+      </div>
+    `;
+  },
+};
+
+export const LabelPosition: Story = {
+  argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          "The `labelPosition` property controls whether the label appears before or after the checkbox indicator. Defaults to `'after'`.",
+      },
+    },
+  },
+  render: () => html`
+    <div
+      style="display: flex; flex-direction: column; gap: 1rem; padding: 1rem;"
+    >
+      <igc-checkbox label-position="after">Label after (default)</igc-checkbox>
+      <igc-checkbox label-position="before">Label before</igc-checkbox>
+    </div>
+  `,
+};
+
+export const States: Story = {
+  argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Visual overview of all checkbox states: unchecked, checked, indeterminate, disabled, disabled checked, invalid, and checked invalid.',
+      },
+    },
+  },
+  render: () => html`
+    <div style="display: flex; flex-wrap: wrap; gap: 1.5rem; padding: 1rem;">
+      <igc-checkbox>Unchecked</igc-checkbox>
+      <igc-checkbox checked>Checked</igc-checkbox>
+      <igc-checkbox indeterminate>Indeterminate</igc-checkbox>
+      <igc-checkbox disabled>Disabled</igc-checkbox>
+      <igc-checkbox checked disabled>Checked &amp; Disabled</igc-checkbox>
+      <igc-checkbox invalid>Invalid</igc-checkbox>
+      <igc-checkbox checked invalid>Checked &amp; Invalid</igc-checkbox>
+    </div>
+  `,
+};
+
 export const Form: Story = {
   argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Demonstrates checkbox behaviour inside an HTML `<form>` element, including required validation, indeterminate state, initial checked state, and disabled fieldsets.',
+      },
+    },
+  },
   render: () => {
     return html`
       <form action="" @submit=${formSubmitHandler}>
