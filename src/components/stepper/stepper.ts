@@ -1,12 +1,30 @@
-import { html, LitElement } from 'lit';
-import { property, queryAssignedElements } from 'lit/decorators.js';
-
+import { ContextProvider } from '@lit/context';
+import { html, LitElement, type PropertyValues } from 'lit';
+import { property } from 'lit/decorators.js';
 import { addThemingController } from '../../theming/theming-controller.js';
-import { watch } from '../common/decorators/watch.js';
+import { addInternalsController } from '../common/controllers/internals.js';
+import {
+  addKeybindings,
+  arrowDown,
+  arrowLeft,
+  arrowRight,
+  arrowUp,
+  endKey,
+  homeKey,
+} from '../common/controllers/key-bindings.js';
+import { addSlotController, setSlots } from '../common/controllers/slot.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { isLTR } from '../common/util.js';
+import {
+  addSafeEventListener,
+  findElementFromEventPath,
+  first,
+  getRoot,
+  isLTR,
+  last,
+  wrap,
+} from '../common/util.js';
 import type {
   HorizontalTransitionAnimation,
   StepperOrientation,
@@ -14,247 +32,351 @@ import type {
   StepperTitlePosition,
   StepperVerticalAnimation,
 } from '../types.js';
+import { STEPPER_CONTEXT } from './common/context.js';
+import { createStepperState } from './common/state.js';
+import type {
+  IgcActiveStepChangedEventArgs,
+  IgcActiveStepChangingEventArgs,
+  IgcStepperComponentEventMap,
+} from './common/types.js';
 import IgcStepComponent from './step.js';
-import type { IgcStepperComponentEventMap } from './stepper.common.js';
 import { styles } from './themes/stepper/stepper.base.css.js';
 import { styles as bootstrap } from './themes/stepper/stepper.bootstrap.css.js';
 import { styles as fluent } from './themes/stepper/stepper.fluent.css.js';
 import { styles as indigo } from './themes/stepper/stepper.indigo.css.js';
 
+const STEPPER_SYNC_PROPERTIES: (keyof IgcStepperComponent)[] = [
+  'orientation',
+  'stepType',
+  'contentTop',
+  'verticalAnimation',
+  'horizontalAnimation',
+  'animationDuration',
+  'titlePosition',
+];
+
 /**
- * IgxStepper provides a wizard-like workflow by dividing content into logical steps.
+ * A stepper component that provides a wizard-like workflow by dividing content into logical steps.
  *
  * @remarks
- * The stepper component allows the user to navigate between multiple steps.
- * It supports horizontal and vertical orientation as well as keyboard navigation and provides API methods to control the active step.
+ * The stepper component allows the user to navigate between multiple `igc-step` elements.
+ * It supports horizontal and vertical orientation, linear and non-linear navigation,
+ * keyboard navigation, and provides API methods to control the active step.
+ *
+ * In linear mode, the user can only advance to the next step if the current step is valid
+ * (not marked as `invalid`).
  *
  * @element igc-stepper
  *
- * @slot - Renders the step components inside default slot.
+ * @slot - Renders `igc-step` components inside the default slot.
  *
- * @fires igcActiveStepChanging - Emitted when the active step is about to change.
- * @fires igcActiveStepChanged - Emitted when the active step is changed.
+ * @fires igcActiveStepChanging - Emitted when the active step is about to change. Cancelable.
+ * @fires igcActiveStepChanged - Emitted after the active step has changed.
+ *
+ * @example
+ * ```html
+ * <igc-stepper>
+ *   <igc-step>
+ *     <span slot="title">Step 1</span>
+ *     <p>Step 1 content</p>
+ *   </igc-step>
+ *   <igc-step>
+ *     <span slot="title">Step 2</span>
+ *     <p>Step 2 content</p>
+ *   </igc-step>
+ * </igc-stepper>
+ * ```
+ *
+ * @example Linear stepper with vertical orientation
+ * ```html
+ * <igc-stepper orientation="vertical" linear>
+ *   <igc-step complete>
+ *     <span slot="title">Completed step</span>
+ *     <p>This step is already complete.</p>
+ *   </igc-step>
+ *   <igc-step active>
+ *     <span slot="title">Current step</span>
+ *     <p>Fill in the details to proceed.</p>
+ *   </igc-step>
+ *   <igc-step>
+ *     <span slot="title">Next step</span>
+ *     <p>Upcoming content.</p>
+ *   </igc-step>
+ * </igc-stepper>
+ * ```
  */
-
 export default class IgcStepperComponent extends EventEmitterMixin<
   IgcStepperComponentEventMap,
   Constructor<LitElement>
 >(LitElement) {
   public static readonly tagName = 'igc-stepper';
-  protected static styles = styles;
+  public static styles = styles;
 
   /* blazorSuppress */
-  public static register() {
+  public static register(): void {
     registerComponent(IgcStepperComponent, IgcStepComponent);
   }
 
-  // biome-ignore lint/complexity/noBannedTypes: No easy fix as the callback shapes are wildly different
-  private readonly keyDownHandlers: Map<string, Function> = new Map(
-    Object.entries({
-      Enter: this.activateStep,
-      Space: this.activateStep,
-      SpaceBar: this.activateStep,
-      ' ': this.activateStep,
-      ArrowUp: this.onArrowUpKeyDown,
-      ArrowDown: this.onArrowDownKeyDown,
-      ArrowLeft: this.onArrowLeftKeyDown,
-      ArrowRight: this.onArrowRightKeyDown,
-      Home: this.onHomeKey,
-      End: this.onEndKey,
-    })
-  );
+  //#region Internal state and properties
 
-  private activeStep!: IgcStepComponent;
-  private _shouldUpdateLinearState = false;
+  private readonly _state = createStepperState();
+
+  private readonly _contextProvider = new ContextProvider(this, {
+    context: STEPPER_CONTEXT,
+    initialValue: {
+      stepper: this,
+      state: this._state,
+    },
+  });
+
+  private readonly _internals = addInternalsController(this, {
+    initialARIA: {
+      role: 'tablist',
+    },
+  });
+
+  private readonly _slots = addSlotController(this, {
+    slots: setSlots(),
+    onChange: this._handleSlotChange,
+  });
+
+  private get _isHorizontal(): boolean {
+    return this.orientation === 'horizontal';
+  }
+
+  //#endregion
+
+  //#region Public attributes and properties
 
   /** Returns all of the stepper's steps. */
-  @queryAssignedElements({ selector: 'igc-step' })
-  public steps!: Array<IgcStepComponent>;
+  public get steps(): readonly IgcStepComponent[] {
+    return this._state.steps;
+  }
 
-  /** Gets/Sets the orientation of the stepper.
+  /**
+   * The orientation of the stepper.
    *
-   * @remarks
-   * Default value is `horizontal`.
+   * @attr orientation
+   * @default 'horizontal'
    */
   @property({ reflect: true })
   public orientation: StepperOrientation = 'horizontal';
 
-  /** Get/Set the type of the steps.
+  /**
+   * The visual type of the steps.
    *
-   * @remarks
-   * Default value is `full`.
+   * @attr step-type
+   * @default 'full'
    */
   @property({ reflect: true, attribute: 'step-type' })
   public stepType: StepperStepType = 'full';
 
   /**
-   * Get/Set whether the stepper is linear.
+   * Whether the stepper is linear.
    *
    * @remarks
    * If the stepper is in linear mode and if the active step is valid only then the user is able to move forward.
+   *
+   * @attr linear
+   * @default false
    */
-  @property({ type: Boolean })
+  @property({ type: Boolean, reflect: true })
   public linear = false;
 
   /**
-   * Get/Set whether the content is displayed above the steps.
+   * Whether the content is displayed above the steps.
    *
-   * @remarks
-   * Default value is `false` and the content is below the steps.
+   * @attr content-top
+   * @default false
    */
-  @property({ reflect: true, type: Boolean, attribute: 'content-top' })
+  @property({ type: Boolean, reflect: true, attribute: 'content-top' })
   public contentTop = false;
 
   /**
    * The animation type when in vertical mode.
+   *
    * @attr vertical-animation
+   * @default 'grow'
    */
   @property({ attribute: 'vertical-animation' })
   public verticalAnimation: StepperVerticalAnimation = 'grow';
 
   /**
    * The animation type when in horizontal mode.
+   *
    * @attr horizontal-animation
+   * @default 'slide'
    */
   @property({ attribute: 'horizontal-animation' })
   public horizontalAnimation: HorizontalTransitionAnimation = 'slide';
 
   /**
-   * The animation duration in either vertical or horizontal mode.
+   * The animation duration in either vertical or horizontal mode in milliseconds.
+   *
    * @attr animation-duration
+   * @default 320
    */
-  @property({ attribute: 'animation-duration', type: Number })
+  @property({ type: Number, attribute: 'animation-duration' })
   public animationDuration = 320;
 
   /**
-   * Get/Set the position of the steps title.
+   * The position of the steps title.
    *
    * @remarks
-   * The default value is auto.
    * When the stepper is horizontally orientated the title is positioned below the indicator.
-   * When the stepper is horizontally orientated the title is positioned on the right side of the indicator.
+   * When the stepper is vertically orientated the title is positioned on the right side of the indicator.
+   *
+   * @attr title-position
+   * @default 'auto'
    */
   @property({ reflect: false, attribute: 'title-position' })
   public titlePosition: StepperTitlePosition = 'auto';
 
-  @watch('orientation', { waitUntilFirstUpdate: true })
-  protected orientationChange(): void {
-    this.setAttribute('aria-orientation', this.orientation);
-    this.steps.forEach((step: IgcStepComponent) => {
-      step.orientation = this.orientation;
-      this.updateAnimation(step);
-    });
-  }
-
-  @watch('stepType', { waitUntilFirstUpdate: true })
-  protected stepTypeChange(): void {
-    this.steps.forEach((step: IgcStepComponent) => {
-      step.stepType = this.stepType;
-    });
-  }
-
-  @watch('titlePosition', { waitUntilFirstUpdate: true })
-  protected titlePositionChange(): void {
-    this.steps.forEach((step: IgcStepComponent) => {
-      step.titlePosition = this.titlePosition;
-    });
-  }
-
-  @watch('contentTop', { waitUntilFirstUpdate: true })
-  protected contentTopChange(): void {
-    this.steps.forEach((step: IgcStepComponent) => {
-      step.contentTop = this.contentTop;
-    });
-  }
-
-  @watch('linear', { waitUntilFirstUpdate: true })
-  protected linearChange(): void {
-    if (!this.activeStep) {
-      this._shouldUpdateLinearState = true;
-      return;
-    }
-    this.steps.forEach((step: IgcStepComponent) => {
-      step.linearDisabled = this.linear;
-      if (step.index <= this.activeStep.index) {
-        step.visited = true;
-      } else {
-        step.visited = false;
-      }
-    });
-    if (this.linear) {
-      this.updateStepsLinearDisabled();
-    }
-  }
-
-  @watch('verticalAnimation', { waitUntilFirstUpdate: true })
-  @watch('horizontalAnimation', { waitUntilFirstUpdate: true })
-  protected animationTypeChange() {
-    this.steps.forEach((step: IgcStepComponent) => {
-      this.updateAnimation(step);
-    });
-  }
-
-  @watch('animationDuration', { waitUntilFirstUpdate: true })
-  protected animationDurationChange() {
-    this.steps.forEach((step: IgcStepComponent) => {
-      step.animationDuration = this.animationDuration;
-    });
-  }
+  //#endregion
 
   constructor() {
     super();
+
+    addSafeEventListener(this, 'click', this._handleInteraction);
 
     addThemingController(this, {
       light: { bootstrap, fluent, indigo },
       dark: { bootstrap, fluent, indigo },
     });
 
-    this.addEventListener('stepActiveChanged', (event: any) => {
-      event.stopPropagation();
-      this.activateStep(event.target, event.detail);
-    });
-
-    this.addEventListener('stepDisabledInvalidChanged', (event: any) => {
-      event.stopPropagation();
-      if (this.linear) {
-        this.updateStepsLinearDisabled();
-      }
-    });
-
-    this.addEventListener('stepCompleteChanged', (event: any) => {
-      event.stopPropagation();
-      const nextStep = this.steps[event.target.index + 1];
-      if (nextStep) {
-        nextStep.previousComplete = event.target.complete;
-      }
-    });
-
-    this.addEventListener('stepHeaderKeydown', (event: any) => {
-      event.stopPropagation();
-      this.handleKeydown(event.detail.event, event.detail.focusedStep);
-    });
+    addKeybindings(this, {
+      skip: this._skipKeyboard,
+    })
+      .set(arrowUp, this._handleArrowUp)
+      .set(arrowDown, this._handleArrowDown)
+      .set(arrowLeft, this._handleArrowLeft)
+      .set(arrowRight, this._handleArrowRight)
+      .set(homeKey, this._handleHomeKey)
+      .set(endKey, this._handleEndKey)
+      .setActivateHandler(this._handleInteraction);
   }
 
-  public override connectedCallback(): void {
-    super.connectedCallback();
-    this.setAttribute('role', 'tablist');
-    this.setAttribute('aria-orientation', this.orientation);
+  //#region Lifecycle hooks
+
+  protected override update(properties: PropertyValues<this>): void {
+    this._syncStepperAttributes(properties);
+
+    if (properties.has('orientation')) {
+      this._internals.setARIA({ ariaOrientation: this.orientation });
+    }
+
+    if (properties.has('linear')) {
+      this._state.setVisitedState(this.linear);
+    }
+
+    super.update(properties);
   }
 
-  private activateFirstStep() {
-    const firstEnabledStep = this.steps.find(
-      (s: IgcStepComponent) => !s.disabled
-    );
-    if (firstEnabledStep) {
-      this.activateStep(firstEnabledStep, false);
+  //#endregion
+
+  //#region Keyboard navigation handlers
+
+  private _skipKeyboard(_: Element, event: KeyboardEvent): boolean {
+    return !findElementFromEventPath('[data-step-header]', event);
+  }
+
+  private _handleHomeKey(): void {
+    this._getStepHeader(first(this._state.accessibleSteps))?.focus();
+  }
+
+  private _handleEndKey(): void {
+    this._getStepHeader(last(this._state.accessibleSteps))?.focus();
+  }
+
+  private _handleArrowDown(): void {
+    if (!this._isHorizontal) {
+      const step = this._getActiveStepComponent();
+
+      if (step) {
+        this._getStepHeader(this._getNextStep(step))?.focus();
+      }
     }
   }
 
-  private animateSteps(
+  private _handleArrowUp(): void {
+    if (!this._isHorizontal) {
+      const step = this._getActiveStepComponent();
+
+      if (step) {
+        this._getStepHeader(this._getPreviousStep(step))?.focus();
+      }
+    }
+  }
+
+  private _handleArrowLeft(): void {
+    const step = this._getActiveStepComponent();
+
+    if (step) {
+      const next =
+        isLTR(this) && this._isHorizontal
+          ? this._getPreviousStep(step)
+          : this._getNextStep(step);
+
+      this._getStepHeader(next)?.focus();
+    }
+  }
+
+  private _handleArrowRight(): void {
+    const step = this._getActiveStepComponent();
+
+    if (step) {
+      const next =
+        isLTR(this) && this._isHorizontal
+          ? this._getNextStep(step)
+          : this._getPreviousStep(step);
+
+      this._getStepHeader(next)?.focus();
+    }
+  }
+
+  //#endregion
+
+  //#region Event handlers
+
+  private _handleInteraction(event: Event): void {
+    const step = findElementFromEventPath<IgcStepComponent>(
+      IgcStepComponent.tagName,
+      event
+    );
+
+    if (step && this._state.isAccessible(step)) {
+      this._activateStep(step);
+    }
+  }
+
+  private _handleSlotChange(): void {
+    this._state.setSteps(
+      this._slots.getAssignedElements('[default]', {
+        selector: IgcStepComponent.tagName,
+      })
+    );
+
+    this._state.stepsChanged();
+    this.style.setProperty('--steps-count', this.steps.length.toString());
+  }
+
+  //#endregion
+
+  //#region Internal methods
+
+  private _syncStepperAttributes(properties: PropertyValues<this>): void {
+    if (STEPPER_SYNC_PROPERTIES.some((p) => properties.has(p))) {
+      this._contextProvider.updateObservers();
+    }
+  }
+
+  private _animateSteps(
     nextStep: IgcStepComponent,
     currentStep: IgcStepComponent
-  ) {
-    if (nextStep.index > currentStep.index) {
+  ): void {
+    const steps = this._state.steps;
+
+    if (steps.indexOf(nextStep) > steps.indexOf(currentStep)) {
       // Animate steps in ascending/next direction
       currentStep.toggleAnimation('out');
       nextStep.toggleAnimation('in');
@@ -265,254 +387,102 @@ export default class IgcStepperComponent extends EventEmitterMixin<
     }
   }
 
-  private async activateStep(step: IgcStepComponent, shouldEmit = true) {
-    if (step === this.activeStep) {
-      return;
-    }
-
-    if (shouldEmit) {
-      const args = {
-        detail: {
-          owner: this,
-          oldIndex: this.activeStep.index,
-          newIndex: step.index,
-        },
-        cancelable: true,
-      };
-
-      this.animateSteps(step, this.activeStep);
-
-      const allowed = this.emitEvent('igcActiveStepChanging', args);
-
-      if (!allowed) {
-        return;
-      }
-      this.changeActiveStep(step);
-      this.emitEvent('igcActiveStepChanged', {
-        detail: { owner: this, index: step.index },
-      });
-    } else {
-      this.changeActiveStep(step);
-    }
-  }
-
-  private changeActiveStep(step: IgcStepComponent) {
-    if (this.activeStep) {
-      this.activeStep.active = false;
-    }
-    step.active = true;
-    step.visited = true;
-    this.activeStep = step;
-  }
-
-  private moveToNextStep(next = true) {
-    let steps = this.steps;
-    let activeStepIndex = this.activeStep.index;
-    if (!next) {
-      steps = this.steps.reverse();
-      activeStepIndex = steps.findIndex(
-        (step: IgcStepComponent) => step === this.activeStep
-      );
-    }
-
-    const nextStep = steps.find(
-      (step: IgcStepComponent, i: number) =>
-        i > activeStepIndex && step.isAccessible
-    );
-
-    if (nextStep) {
-      this.animateSteps(nextStep, this.activeStep);
-      this.activateStep(nextStep, false);
-    }
-  }
-
-  private handleKeydown(event: KeyboardEvent, focusedStep: IgcStepComponent) {
-    const key = event.key.toLowerCase();
-
-    if (this.keyDownHandlers.has(event.key)) {
-      event.preventDefault();
-      this.keyDownHandlers.get(event.key)?.call(this, focusedStep);
-    }
-    if (key === 'tab' && this.orientation === 'vertical') {
-      return;
-    }
-    if (key === 'tab' && this.activeStep.index !== focusedStep.index) {
-      this.activeStep.header.focus();
-    }
-  }
-
-  private onHomeKey() {
-    this.steps
-      .filter((step: IgcStepComponent) => step.isAccessible)[0]
-      ?.header?.focus();
-  }
-
-  private onEndKey() {
-    this.steps
-      .filter((step: IgcStepComponent) => step.isAccessible)
-      .pop()
-      ?.header?.focus();
-  }
-
-  private onArrowDownKeyDown(focusedStep: IgcStepComponent) {
-    if (this.orientation === 'horizontal') {
-      return;
-    }
-    this.getNextStep(focusedStep)?.header?.focus();
-  }
-
-  private onArrowUpKeyDown(focusedStep: IgcStepComponent) {
-    if (this.orientation === 'horizontal') {
-      return;
-    }
-    this.getPreviousStep(focusedStep)?.header?.focus();
-  }
-
-  private onArrowRightKeyDown(focusedStep: IgcStepComponent) {
-    if (!isLTR(this) && this.orientation === 'horizontal') {
-      this.getPreviousStep(focusedStep)?.header?.focus();
-    } else {
-      this.getNextStep(focusedStep)?.header?.focus();
-    }
-  }
-
-  private onArrowLeftKeyDown(focusedStep: IgcStepComponent) {
-    if (!isLTR(this) && this.orientation === 'horizontal') {
-      this.getNextStep(focusedStep)?.header?.focus();
-    } else {
-      this.getPreviousStep(focusedStep)?.header?.focus();
-    }
-  }
-
-  private getNextStep(
-    focusedStep: IgcStepComponent
-  ): IgcStepComponent | undefined {
-    if (focusedStep.index === this.steps.length - 1) {
-      return this.steps.find((step: IgcStepComponent) => step.isAccessible);
-    }
-
-    const nextAccessible = this.steps.find(
-      (step: IgcStepComponent, i: number) =>
-        i > focusedStep.index && step.isAccessible
-    );
-    return nextAccessible
-      ? nextAccessible
-      : this.steps.find((step: IgcStepComponent) => step.isAccessible);
-  }
-
-  private getPreviousStep(
-    focusedStep: IgcStepComponent
-  ): IgcStepComponent | undefined {
-    if (focusedStep.index === 0) {
-      return this.steps
-        .filter((step: IgcStepComponent) => step.isAccessible)
-        .pop();
-    }
-
-    let prevStep: IgcStepComponent | undefined;
-    for (let i = focusedStep.index - 1; i >= 0; i--) {
-      const step = this.steps[i];
-      if (step.isAccessible) {
-        prevStep = step;
-        break;
-      }
-    }
-
-    return prevStep
-      ? prevStep
-      : this.steps.filter((step: IgcStepComponent) => step.isAccessible).pop();
-  }
-
-  private updateStepsLinearDisabled(): void {
-    const firstInvalidStep = this.steps
-      .filter((step: IgcStepComponent) => !step.disabled && !step.optional)
-      .find((step: IgcStepComponent) => step.invalid);
-    if (firstInvalidStep) {
-      this.steps.forEach((step: IgcStepComponent) => {
-        if (step.index <= firstInvalidStep.index) {
-          step.linearDisabled = false;
-        } else {
-          step.linearDisabled = true;
-        }
-      });
-    } else {
-      this.steps.forEach((step: IgcStepComponent) => {
-        step.linearDisabled = false;
-      });
-    }
-  }
-
-  private updateAnimation(step: IgcStepComponent) {
-    if (this.orientation === 'horizontal') {
-      step.animation = this.horizontalAnimation;
-    }
-
-    if (this.orientation === 'vertical') {
-      step.animation = this.verticalAnimation;
-    }
-  }
-
-  private syncProperties(): void {
-    this.steps.forEach((step: IgcStepComponent, index: number) => {
-      step.orientation = this.orientation;
-      step.stepType = this.stepType;
-      step.titlePosition = this.titlePosition;
-      step.contentTop = this.contentTop;
-      step.index = index;
-      step.active = this.activeStep === step;
-      step.header?.setAttribute('aria-posinset', (index + 1).toString());
-      step.header?.setAttribute('aria-setsize', this.steps.length.toString());
-      step.header?.setAttribute('id', `igc-step-header-${index}`);
-      step.header?.setAttribute('aria-controls', `igc-step-content-${index}`);
-      if (index > 0) {
-        step.previousComplete = this.steps[index - 1].complete;
-      }
-      step.animationDuration = this.animationDuration;
-      this.updateAnimation(step);
+  private _emitChanging(args: IgcActiveStepChangingEventArgs): boolean {
+    return this.emitEvent('igcActiveStepChanging', {
+      detail: args,
+      cancelable: true,
     });
   }
 
-  private stepsChanged(): void {
-    this.style.setProperty('--steps-count', this.steps.length.toString());
+  private _emitChanged(args: IgcActiveStepChangedEventArgs): void {
+    this.emitEvent('igcActiveStepChanged', {
+      detail: args,
+    });
+  }
 
-    const lastActiveStep = this.steps
-      .reverse()
-      .find((step: IgcStepComponent) => step.active);
-    if (!lastActiveStep) {
-      // initially when there isn't a predefined active step or when the active step is removed
-      this.activateFirstStep();
-    } else {
-      // activate the last step marked as active
-      this.activateStep(lastActiveStep, false);
+  private _activateStep(step: IgcStepComponent, shouldEmit = true): void {
+    if (step === this._state.activeStep) {
+      return;
     }
 
-    this.syncProperties();
-    if (this._shouldUpdateLinearState) {
-      this.linearChange();
-      this._shouldUpdateLinearState = false;
+    if (!shouldEmit) {
+      this._state.changeActiveStep(step);
+      return;
     }
-    if (this.linear) {
-      this.updateStepsLinearDisabled();
+
+    const steps = this._state.steps;
+    const activeIndex = steps.indexOf(this._state.activeStep!);
+    const index = steps.indexOf(step);
+
+    const args = { oldIndex: activeIndex, newIndex: index };
+
+    if (!this._emitChanging(args)) {
+      return;
+    }
+
+    if (this._state.activeStep) {
+      this._animateSteps(step, this._state.activeStep);
+    }
+
+    this._state.changeActiveStep(step);
+    this._emitChanged({ index });
+  }
+
+  private _moveToNextStep(next = true): void {
+    const step = this._state.getAdjacentStep(next);
+
+    if (step) {
+      if (this._state.activeStep) {
+        this._animateSteps(step, this._state.activeStep);
+      }
+      this._state.changeActiveStep(step);
     }
   }
 
+  private _getNextStep(step: IgcStepComponent): IgcStepComponent {
+    const steps = this._state.accessibleSteps;
+    const next = wrap(0, steps.length - 1, steps.indexOf(step) + 1);
+
+    return steps[next];
+  }
+
+  private _getPreviousStep(step: IgcStepComponent): IgcStepComponent {
+    const steps = this._state.accessibleSteps;
+    const previous = wrap(0, steps.length - 1, steps.indexOf(step) - 1);
+
+    return steps[previous];
+  }
+
+  private _getActiveStepComponent(): IgcStepComponent | null {
+    const active = getRoot(this).activeElement;
+    return active ? active.closest(IgcStepComponent.tagName) : null;
+  }
+
+  private _getStepHeader(step?: IgcStepComponent): HTMLElement | null {
+    return step?.renderRoot.querySelector('[data-step-header]') ?? null;
+  }
+
+  //#endregion
+
+  //#region Public API
+
   /** Activates the step at a given index. */
-  public navigateTo(index: number) {
-    const step = this.steps[index];
-    if (!step) {
-      return;
+  public navigateTo(index: number): void {
+    const step = this._state.steps[index];
+
+    if (step) {
+      this._activateStep(step, false);
     }
-    this.activateStep(step, false);
   }
 
   /** Activates the next enabled step. */
   public next(): void {
-    this.moveToNextStep();
+    this._moveToNextStep();
   }
 
   /** Activates the previous enabled step. */
   public prev(): void {
-    this.moveToNextStep(false);
+    this._moveToNextStep(false);
   }
 
   /**
@@ -522,14 +492,13 @@ export default class IgcStepperComponent extends EventEmitterMixin<
    * The steps' content will not be automatically reset.
    */
   public reset(): void {
-    this.steps.forEach((step) => {
-      step.visited = false;
-    });
-    this.activateFirstStep();
+    this._state.reset();
   }
 
+  //#endregion
+
   protected override render() {
-    return html`<slot @slotchange=${this.stepsChanged}></slot>`;
+    return html`<slot></slot>`;
   }
 }
 

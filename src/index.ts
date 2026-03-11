@@ -145,7 +145,7 @@ export type { IgcSelectComponentEventMap } from './components/select/select.js';
 export type { IgcSliderComponentEventMap } from './components/slider/slider.js';
 export type { IgcRangeSliderComponentEventMap } from './components/slider/range-slider.js';
 export type { IgcSnackbarComponentEventMap } from './components/snackbar/snackbar.js';
-export type { IgcStepperComponentEventMap } from './components/stepper/stepper.common.js';
+export type { IgcStepperComponentEventMap } from './components/stepper/common/types.js';
 export type { IgcTabsComponentEventMap } from './components/tabs/tabs.js';
 export type { IgcTextareaComponentEventMap } from './components/textarea/textarea.js';
 export type { IgcTileComponentEventMap } from './components/tile-manager/tile.js';
@@ -176,7 +176,7 @@ export type { IgcRangeSliderValueEventArgs } from './components/slider/range-sli
 export type {
   IgcActiveStepChangingEventArgs,
   IgcActiveStepChangedEventArgs,
-} from './components/stepper/stepper.common.js';
+} from './components/stepper/common/types.js';
 export type { IgcTreeSelectionEventArgs } from './components/tree/tree.common.js';
 export type {
   ComboItemTemplate,
