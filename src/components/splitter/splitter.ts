@@ -963,7 +963,7 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
       <div
         part="${partMap(this._resolvePartNames('start'))}"
         ?hidden=${prevButtonHidden}
-        role="button"
+        role="img"
         aria-label=${this._resolveExpanderLabel('start')}
         @pointerdown=${(e: PointerEvent) =>
           this._handleExpanderClick('start', e)}
@@ -972,7 +972,7 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
       <div
         part="${partMap(this._resolvePartNames('end'))}"
         ?hidden=${nextButtonHidden}
-        role="button"
+        role="img"
         aria-label=${this._resolveExpanderLabel('end')}
         @pointerdown=${(e: PointerEvent) => this._handleExpanderClick('end', e)}
       ></div>
