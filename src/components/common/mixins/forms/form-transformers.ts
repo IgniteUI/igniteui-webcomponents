@@ -81,6 +81,7 @@ export const FormValueDateRangeTransformers: Partial<
   },
 };
 
+/* blazorSuppress */
 export const FormValueFileListTransformers: FormValueTransformers<FileList | null> =
   {
     setValue: (value) => value || null,
