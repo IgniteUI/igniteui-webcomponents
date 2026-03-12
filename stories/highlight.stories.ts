@@ -179,16 +179,16 @@ export const CustomStyling: Story = {
   render: () => html`
     <style>
       .blue-highlight {
-        --resting-background: royalblue;
-        --resting-color: white;
-        --active-background: dodgerblue;
-        --active-color: white;
+        --background: royalblue;
+        --foreground: white;
+        --background-active: dodgerblue;
+        --foreground-active: white;
       }
       .dark-highlight {
-        --active-color: #000;
-        --resting-color: yellow;
-        --active-background: yellow;
-        --resting-background: #000;
+        --foreground-active: #000;
+        --foreground: yellow;
+        --background-active: yellow;
+        --background: #000;
       }
     </style>
     <igc-highlight search-text="lorem" class="blue-highlight">
@@ -350,10 +350,10 @@ export const Performance: Story = {
     return html`
       <style>
         .perf-highlight {
-          --active-color: #222;
-          --active-background: yellow;
-          --resting-color: yellow;
-          --resting-background: #222;
+          --foreground-active: #222;
+          --background-active: yellow;
+          --foreground: yellow;
+          --background: #222;
         }
         .search-bar {
           position: sticky;

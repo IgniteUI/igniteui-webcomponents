@@ -14,10 +14,10 @@ import {
  *
  * @slot - The default slot of the component.
  *
- * @cssproperty --resting-color - The text color for a highlighted text node.
- * @cssproperty --resting-background - The background color for a highlighted text node.
- * @cssproperty --active-color - The text color for the active highlighted text node.
- * @cssproperty --active-background - The background color for the active highlighted text node.
+ * @cssproperty --foreground - The text color for a highlighted text node.
+ * @cssproperty --background - The background color for a highlighted text node.
+ * @cssproperty --foreground-active - The text color for the active highlighted text node.
+ * @cssproperty --background-active - The background color for the active highlighted text node.
  */
 export default class IgcHighlightComponent extends LitElement {
   public static readonly tagName = 'igc-highlight';

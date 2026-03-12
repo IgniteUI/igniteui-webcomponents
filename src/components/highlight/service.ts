@@ -3,6 +3,7 @@ import {
   escapeRegex,
   first,
   iterNodes,
+  nanoid,
   scrollIntoView,
   wrap,
 } from '../common/util.js';
@@ -17,8 +18,6 @@ export type HighlightNavigation = {
   /** If true, prevents the component from scrolling the new active match into view. */
   preventScroll?: boolean;
 };
-
-let nextKey = 0;
 
 function* matchText(
   nodes: IterableIterator<Node>,
@@ -37,21 +36,10 @@ class HighlightService implements ReactiveController {
   //#region Private properties
 
   private readonly _host: IgcHighlightComponent;
-
-  private readonly _key = `igc-highlight-${nextKey++}`;
-  private readonly _activeKey = `${this._key}-active`;
-
-  private readonly _styles = `
-  ::highlight(${this._key}) {
-    background-color: var(--resting-background, hsla(var(--ig-gray-300), var(--ig-gray-a)));
-    color: var(--resting-color, white);
-  }
-  ::highlight(${this._activeKey}) {
-    background-color: var(--active-background, hsla(333deg , calc( 78% * 1.23), calc( 49% * 1.34), 1));
-    color: var(--active-color, white);
-  }` as const;
-
-  private readonly _styleSheet!: CSSStyleSheet;
+  private readonly _id: string;
+  private readonly _activeId: string;
+  private readonly _styles: string;
+  private readonly _styleSheet?: CSSStyleSheet;
 
   private _highlight!: Highlight;
   private _activeHighlight!: Highlight;
@@ -75,6 +63,18 @@ class HighlightService implements ReactiveController {
   constructor(host: IgcHighlightComponent) {
     this._host = host;
     this._host.addController(this);
+    this._id = `igc-highlight-${nanoid()}`;
+    this._activeId = `${this._id}-active`;
+
+    this._styles = `
+      ::highlight(${this._id}) {
+        background-color: var(--background, var(--ig-secondary-700));
+        color: var(--foreground, var(--ig-secondary-700-contrast));
+      }
+      ::highlight(${this._activeId}) {
+        background-color: var(--background-active, var(--ig-primary-500));
+        color: var(--foreground-active, var(--ig-primary-500-contrast));
+      }`;
 
     if (!isServer) {
       this._styleSheet = new CSSStyleSheet();
@@ -103,15 +103,20 @@ class HighlightService implements ReactiveController {
 
   private _addStylesheet(): void {
     const root = this._host.renderRoot as ShadowRoot;
-    root.adoptedStyleSheets.push(this._styleSheet);
+
+    if (this._styleSheet) {
+      root.adoptedStyleSheets.push(this._styleSheet);
+    }
   }
 
   private _removeStyleSheet(): void {
     const root = this._host.renderRoot as ShadowRoot;
 
-    root.adoptedStyleSheets = root.adoptedStyleSheets.filter(
-      (sheet) => sheet !== this._styleSheet
-    );
+    if (this._styleSheet) {
+      root.adoptedStyleSheets = root.adoptedStyleSheets.filter(
+        (sheet) => sheet !== this._styleSheet
+      );
+    }
   }
 
   private _createHighlightEntries(): void {
@@ -121,18 +126,18 @@ class HighlightService implements ReactiveController {
     this._activeHighlight = new Highlight();
     this._activeHighlight.priority = 1;
 
-    CSS.highlights.set(this._key, this._highlight);
-    CSS.highlights.set(this._activeKey, this._activeHighlight);
+    CSS.highlights.set(this._id, this._highlight);
+    CSS.highlights.set(this._activeId, this._activeHighlight);
   }
 
   private _removeHighlightEntries(): void {
-    CSS.highlights.delete(this._key);
-    CSS.highlights.delete(this._activeKey);
+    CSS.highlights.delete(this._id);
+    CSS.highlights.delete(this._activeId);
   }
 
   private _createRegex(value: string): RegExp {
     return new RegExp(
-      `${escapeRegex(value)}`,
+      escapeRegex(value),
       this._host.caseSensitive ? 'dg' : 'dgi'
     );
   }
@@ -143,6 +148,7 @@ class HighlightService implements ReactiveController {
 
   private _updateActiveHighlight(): void {
     if (this.size) {
+      this._activeHighlight.clear();
       this._activeHighlight.add(
         this._getRangeByIndex(this._current).cloneRange()
       );
