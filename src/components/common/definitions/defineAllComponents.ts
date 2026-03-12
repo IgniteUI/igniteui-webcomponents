@@ -56,6 +56,7 @@ import IgcRangeSliderComponent from '../../slider/range-slider.js';
 import IgcSliderComponent from '../../slider/slider.js';
 import IgcSliderLabelComponent from '../../slider/slider-label.js';
 import IgcSnackbarComponent from '../../snackbar/snackbar.js';
+import IgcSplitterComponent from '../../splitter/splitter.js';
 import IgcStepComponent from '../../stepper/step.js';
 import IgcStepperComponent from '../../stepper/stepper.js';
 import IgcTabComponent from '../../tabs/tab.js';
@@ -136,6 +137,7 @@ const allComponents: IgniteComponent[] = [
   IgcCircularGradientComponent,
   IgcSnackbarComponent,
   IgcDateTimeInputComponent,
+  IgcSplitterComponent,
   IgcStepperComponent,
   IgcStepComponent,
   IgcTextareaComponent,
