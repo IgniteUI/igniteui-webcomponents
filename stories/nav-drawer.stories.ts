@@ -64,58 +64,33 @@ registerIcon(
   'search',
   'https://unpkg.com/material-design-icons@3.0.1/action/svg/production/ic_search_24px.svg'
 );
+
+const getDrawer = (ev: Event) =>
+  (ev.target as HTMLElement)
+    .closest('.main')
+    ?.querySelector('igc-nav-drawer') as IgcNavDrawerComponent | null;
+
 const handleClick = (ev: PointerEvent) => {
-  let drawerItem: IgcNavDrawerItemComponent | undefined;
+  const drawerItem = (ev.target as HTMLElement).closest(
+    'igc-nav-drawer-item'
+  ) as IgcNavDrawerItemComponent | null;
 
-  const eventTarget = ev.target as HTMLElement;
-
-  if (eventTarget.tagName.toLowerCase() === 'igc-nav-drawer-item') {
-    drawerItem = eventTarget as IgcNavDrawerItemComponent;
-  }
-
-  if (
-    eventTarget.parentElement?.tagName.toLowerCase() === 'igc-nav-drawer-item'
-  ) {
-    drawerItem = eventTarget.parentElement as IgcNavDrawerItemComponent;
-  }
-
-  if (drawerItem !== undefined) {
+  if (drawerItem) {
     drawerItem.active = true;
-
-    const navDrawer = document.querySelector(
+    const navDrawer = drawerItem.closest(
       'igc-nav-drawer'
     ) as IgcNavDrawerComponent;
-
-    const items = Array.from<IgcNavDrawerItemComponent>(
-      navDrawer.querySelectorAll('igc-nav-drawer-item')
-    ).filter((item) => item !== drawerItem);
-
-    items.forEach((item) => {
-      item.active = false;
-    });
+    navDrawer
+      ?.querySelectorAll<IgcNavDrawerItemComponent>('igc-nav-drawer-item')
+      .forEach((item) => {
+        if (item !== drawerItem) item.active = false;
+      });
   }
 };
 
-const handleOpen = () => {
-  const drawer = document.querySelector(
-    'igc-nav-drawer'
-  ) as IgcNavDrawerComponent;
-  drawer?.show();
-};
-
-const handleClose = () => {
-  const drawer = document.querySelector(
-    'igc-nav-drawer'
-  ) as IgcNavDrawerComponent;
-  drawer?.hide();
-};
-
-const handleToggle = () => {
-  const drawer = document.querySelector(
-    'igc-nav-drawer'
-  ) as IgcNavDrawerComponent;
-  drawer?.toggle();
-};
+const handleOpen = (ev: MouseEvent) => getDrawer(ev)?.show();
+const handleClose = (ev: MouseEvent) => getDrawer(ev)?.hide();
+const handleToggle = (ev: MouseEvent) => getDrawer(ev)?.toggle();
 
 const commonStyles = html`
   <style>
@@ -186,16 +161,11 @@ const createMiniContent = () => html`
   </div>
 `;
 
-// Create a function for control buttons
-const createControlButtons = (position: string) => html`
-  ${position === 'relative'
-    ? html`
-        <igc-button @click=${handleToggle}>Toggle</igc-button>
-        <igc-button variant="outlined" @click=${handleClose}>Close</igc-button>
-      `
-    : ''}
-
-  <igc-button variant="outlined" @click=${handleOpen}>Open</igc-button>
+// Create a function for control buttons — always show Open / Toggle / Close
+const createControlButtons = () => html`
+  <igc-button @click=${handleOpen}>Open</igc-button>
+  <igc-button variant="outlined" @click=${handleToggle}>Toggle</igc-button>
+  <igc-button variant="outlined" @click=${handleClose}>Close</igc-button>
 `;
 
 // Main template function
@@ -219,7 +189,7 @@ const createTemplate = (options: {
 
       <section class="content ${position === 'relative' ? 'relative' : ''}">
         <p>${options.contentText}</p>
-        ${createControlButtons(position)}
+        ${createControlButtons()}
       </section>
     </div>
   `;
@@ -227,23 +197,60 @@ const createTemplate = (options: {
 
 // Now create your stories using the template factory
 export const Basic: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'A navigation drawer overlaying the page content. Use the **position** arg to place it at the start, end, top, or bottom of the viewport. Click a nav item to mark it active.',
+      },
+    },
+  },
   render: createTemplate({
     headerText: 'Drawer header',
     itemCount: 15,
     includeMini: false,
-    contentText: 'Basic drawer example',
+    contentText: 'Use the buttons below to control the drawer.',
   }),
 };
 
 export const MiniVariant: Story = {
-  render: createTemplate({
-    headerText: 'Drawer header',
-    itemCount: 5,
-    includeMini: true,
-    contentText: 'Mini drawer example ',
-  }),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Populates the **mini** slot to show a compact icon-only rail when the drawer is closed, giving users quick access to navigation without taking up full width.',
+      },
+    },
+  },
   args: {
     position: 'start',
     open: false,
   },
+  render: createTemplate({
+    headerText: 'Drawer header',
+    itemCount: 5,
+    includeMini: true,
+    contentText: 'Open the drawer to see the full labels alongside the icons.',
+  }),
+};
+
+export const Relative: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'When `position` is set to **relative**, the drawer sits inline with the page content instead of overlaying it, shifting the adjacent content as it opens and closes.',
+      },
+    },
+  },
+  args: {
+    position: 'relative',
+    open: true,
+  },
+  render: createTemplate({
+    headerText: 'Relative drawer',
+    itemCount: 8,
+    includeMini: false,
+    contentText: 'The drawer pushes the content rather than overlaying it.',
+  }),
 };

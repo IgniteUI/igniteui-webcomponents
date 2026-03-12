@@ -8,6 +8,7 @@ import {
   IgcSelectComponent,
   defineComponents,
 } from 'igniteui-webcomponents';
+import { disableStoryControls } from './story.js';
 
 defineComponents(IgcDialogComponent, IgcInputComponent, IgcSelectComponent);
 
@@ -98,25 +99,23 @@ function closeDialog(id: string) {
 
 const authMethods = ['Basic', 'Bearer', 'Digest', 'OAuth'];
 
-export const Basic: Story = {
+export const Default: Story = {
   args: {
-    title: 'Default dialog',
+    title: 'Dialog title',
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'A basic dialog with a title and message content. Use the controls panel to toggle `open`, enable `closeOnOutsideClick`, `keepOpenOnEscape`, or `hideDefaultAction`.',
+      },
+    },
   },
   render: (args) => html`
     <div
-      style="display: flex; align-items: flex-start; position: relative; height: 400px; gap: 1rem"
+      style="display: flex; align-items: flex-start; position: relative; height: 400px"
     >
-      <igc-button @click=${() => openDialog('default')}>
-        Default dialog
-      </igc-button>
-
-      <igc-button @click=${() => openDialog('projected')}>
-        Projected content
-      </igc-button>
-
-      <igc-button @click=${() => openDialog('with-form')}>
-        With Form
-      </igc-button>
+      <igc-button @click=${() => openDialog('default')}>Open dialog</igc-button>
 
       <igc-dialog
         id="default"
@@ -133,37 +132,68 @@ export const Basic: Story = {
           perspiciatis? Iusto, iure.
         </span>
       </igc-dialog>
+    </div>
+  `,
+};
 
-      <igc-dialog
-        id="projected"
-        ?keep-open-on-escape=${args.keepOpenOnEscape}
-        ?close-on-outside-click=${args.closeOnOutsideClick}
-      >
-        <h4 slot="title">Danger</h4>
-        <p>Doing this action is irrevocable!</p>
+export const Slots: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Demonstrates the `title` and `footer` slot projections. When a `footer` slot is provided, the `hideDefaultAction` property has no effect.',
+      },
+    },
+  },
+  render: () => html`
+    <div
+      style="display: flex; align-items: flex-start; position: relative; height: 400px"
+    >
+      <igc-button @click=${() => openDialog('slots-dialog')}>
+        Open dialog
+      </igc-button>
+
+      <igc-dialog id="slots-dialog">
+        <h4 slot="title">Danger zone</h4>
+        <p>This action is irreversible. Are you sure you want to proceed?</p>
         <igc-button
           slot="footer"
           variant="flat"
-          @click=${() => closeDialog('projected')}
+          @click=${() => closeDialog('slots-dialog')}
         >
           Cancel
         </igc-button>
-
         <igc-button
           slot="footer"
           variant="contained"
-          @click=${() => closeDialog('projected')}
+          @click=${() => closeDialog('slots-dialog')}
         >
-          OK
+          Confirm
         </igc-button>
       </igc-dialog>
+    </div>
+  `,
+};
 
-      <igc-dialog
-        id="with-form"
-        hide-default-action
-        ?keep-open-on-escape=${args.keepOpenOnEscape}
-        ?close-on-outside-click=${args.closeOnOutsideClick}
-      >
+export const Form: Story = {
+  argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'A dialog containing a native `<form method="dialog">`. Submitting the form automatically closes the dialog, and the `returnValue` is set to the submitter button\'s value.',
+      },
+    },
+  },
+  render: () => html`
+    <div
+      style="display: flex; align-items: flex-start; position: relative; height: 400px"
+    >
+      <igc-button @click=${() => openDialog('form-dialog')}>
+        Open form dialog
+      </igc-button>
+
+      <igc-dialog id="form-dialog" hide-default-action>
         <h3 slot="title">Your credentials</h3>
         <form method="dialog">
           <div style="display: flex; flex-flow: column; gap: 1rem">
@@ -188,7 +218,7 @@ export const Basic: Story = {
 
           <div style="display: flex; gap: 1rem; margin-top: 1rem">
             <igc-button type="reset" variant="flat">Reset</igc-button>
-            <igc-button type="submit" variant="flat">Confirm</igc-button>
+            <igc-button type="submit" variant="flat"> Confirm </igc-button>
           </div>
         </form>
       </igc-dialog>

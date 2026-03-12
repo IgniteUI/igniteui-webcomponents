@@ -307,6 +307,14 @@ registerIconFromText(
 );
 
 export const Default: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'A fully-featured combo with grouped city data, a custom item template, a prefix icon, and helper text. Use the controls panel to explore all available properties interactively.',
+      },
+    },
+  },
   args: {
     label: 'Location(s)',
     placeholder: 'Cities of interest',
@@ -350,6 +358,14 @@ export const Default: Story = {
 
 export const NoData: Story = {
   argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'When no data is bound the combo renders an empty-state area. The default template shows a generic message; slot `empty` accepts arbitrary content for a fully custom empty state.',
+      },
+    },
+  },
   render: () => html`
     <style>
       igc-combo {
@@ -371,8 +387,125 @@ export const NoData: Story = {
   `,
 };
 
+export const SingleSelect: Story = {
+  argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Setting `singleSelect` restricts the combo to one selected item and moves the filtering input into the main trigger field, making it behave like a searchable select. The selection is cleared when the user types to search.',
+      },
+    },
+  },
+  render: () => html`
+    <igc-combo
+      label="Single-select city"
+      placeholder="Pick a city"
+      placeholder-search="Search cities…"
+      .data=${cities}
+      value-key="id"
+      display-key="name"
+      group-key="country"
+      single-select
+      style="max-width: 320px"
+    >
+      <igc-icon slot="prefix" name="location"></igc-icon>
+    </igc-combo>
+  `,
+};
+
+export const Grouping: Story = {
+  argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'When `groupKey` is set the items are partitioned into labelled groups. The `groupSorting` property controls the sort order of groups: **asc** (default), **desc**, or **none** (preserves data-source order).',
+      },
+    },
+  },
+  render: () => html`
+    <div
+      style="display: flex; flex-wrap: wrap; gap: 1.5rem; padding: 1rem; align-items: flex-start;"
+    >
+      <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+        <span style="font-weight: 600;">Ascending (default)</span>
+        <igc-combo
+          label="Cities"
+          .data=${cities}
+          value-key="id"
+          display-key="name"
+          group-key="country"
+          group-sorting="asc"
+          style="width: 260px"
+        ></igc-combo>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+        <span style="font-weight: 600;">Descending</span>
+        <igc-combo
+          label="Cities"
+          .data=${cities}
+          value-key="id"
+          display-key="name"
+          group-key="country"
+          group-sorting="desc"
+          style="width: 260px"
+        ></igc-combo>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+        <span style="font-weight: 600;">None (data-source order)</span>
+        <igc-combo
+          label="Cities"
+          .data=${cities}
+          value-key="id"
+          display-key="name"
+          group-key="country"
+          group-sorting="none"
+          style="width: 260px"
+        ></igc-combo>
+      </div>
+    </div>
+  `,
+};
+
+export const CustomTemplate: Story = {
+  argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'The `itemTemplate` and `groupHeaderTemplate` properties accept render functions that receive the bound data item, enabling fully custom list-item and group-header markup. The example below renders each city with its ZIP code and replaces the default group header.',
+      },
+    },
+  },
+  render: () => html`
+    <igc-combo
+      label="Location(s)"
+      placeholder="Cities of interest"
+      placeholder-search="Search cities…"
+      .data=${cities}
+      .itemTemplate=${itemTemplate}
+      .groupHeaderTemplate=${groupHeaderTemplate}
+      value-key="id"
+      display-key="name"
+      group-key="country"
+      style="max-width: 360px"
+    >
+      <igc-icon slot="prefix" name="location"></igc-icon>
+    </igc-combo>
+  `,
+};
+
 export const Form: Story = {
   argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Demonstrates combo behavior inside an HTML `<form>`, covering multi-select with an initial value, no-value-key binding, single-select mode, primitive data, disabled fieldset, and required validation.',
+      },
+    },
+  },
   render: () => {
     return html`
       <style>
