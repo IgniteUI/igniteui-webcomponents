@@ -66,6 +66,7 @@ export { default as IgcSwitchComponent } from './components/checkbox/switch.js';
 export { default as IgcTextareaComponent } from './components/textarea/textarea.js';
 export { default as IgcTreeComponent } from './components/tree/tree.js';
 export { default as IgcTreeItemComponent } from './components/tree/tree-item.js';
+export { default as IgcSplitterComponent } from './components/splitter/splitter.js';
 export { default as IgcStepperComponent } from './components/stepper/stepper.js';
 export { default as IgcStepComponent } from './components/stepper/step.js';
 export { default as IgcHighlightComponent } from './components/highlight/highlight.js';
@@ -146,6 +147,7 @@ export type { IgcSelectComponentEventMap } from './components/select/select.js';
 export type { IgcSliderComponentEventMap } from './components/slider/slider.js';
 export type { IgcRangeSliderComponentEventMap } from './components/slider/range-slider.js';
 export type { IgcSnackbarComponentEventMap } from './components/snackbar/snackbar.js';
+export type { IgcSplitterComponentEventMap } from './components/splitter/splitter.js';
 export type { IgcStepperComponentEventMap } from './components/stepper/stepper.common.js';
 export type { IgcTabsComponentEventMap } from './components/tabs/tabs.js';
 export type { IgcTextareaComponentEventMap } from './components/textarea/textarea.js';
@@ -174,6 +176,7 @@ export type {
 export type { PopoverPlacement } from './components/popover/popover.js';
 export type { IgcRadioChangeEventArgs } from './components/radio/radio.js';
 export type { IgcRangeSliderValueEventArgs } from './components/slider/range-slider.js';
+export type { IgcSplitterResizeEventDetail } from './components/splitter/splitter.js';
 export type {
   IgcActiveStepChangingEventArgs,
   IgcActiveStepChangedEventArgs,
