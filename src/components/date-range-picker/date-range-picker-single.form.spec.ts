@@ -11,7 +11,6 @@ import {
   type ValidationContainerTestsParams,
   ValidityHelpers,
 } from '../common/validity-helpers.spec.js';
-import type IgcDateRangeInputComponentComponent from './date-range-input.js';
 import IgcDateRangeInputComponent from './date-range-input.js';
 import IgcDateRangePickerComponent, {
   type DateRangeValue,
@@ -22,7 +21,7 @@ describe('Date Range Picker Single Input - Form integration', () => {
   before(() => defineComponents(IgcDateRangePickerComponent));
 
   let picker: IgcDateRangePickerComponent;
-  let input: IgcDateRangeInputComponentComponent;
+  let input: IgcDateRangeInputComponent;
   let startKey = '';
   let endKey = '';
 
