@@ -48,7 +48,7 @@ $dropdown-theme: dropdown-theme.$material;
     }
 }
 
-:host(:focus-within) {
+igc-input[slot='anchor']:focus-within {
     [part~='toggle-icon'] {
         background: var-get($theme, 'toggle-button-background-focus');
         color: var-get($theme, 'toggle-button-foreground-focus');

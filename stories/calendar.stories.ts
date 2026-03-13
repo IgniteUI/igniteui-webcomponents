@@ -8,6 +8,7 @@ import {
   IgcCalendarComponent,
   defineComponents,
 } from 'igniteui-webcomponents';
+import { disableStoryControls } from './story.js';
 
 defineComponents(IgcCalendarComponent);
 
@@ -175,14 +176,6 @@ type Story = StoryObj<IgcCalendarArgs>;
 
 // endregion
 
-// Enhance the calendar args with extra properties
-interface IgcCalendarArgs {
-  weekDayFormat: '"long" | "short" | "narrow"';
-  monthFormat: '"numeric" | "2-digit" | "long" | "short" | "narrow"';
-  title: string;
-  values: string;
-}
-
 // Add additional configuration options
 Object.assign(metadata.argTypes!, {
   weekDayFormat: {
@@ -214,72 +207,126 @@ Object.assign(metadata.args!, {
   monthFormat: 'long',
 });
 
-const Template = ({
-  showWeekNumbers,
-  hideOutsideDays,
-  weekStart,
-  locale,
-  weekDayFormat,
-  monthFormat,
-  selection,
-  activeView,
-  hideHeader = false,
-  headerOrientation,
-  orientation,
-  title,
-  visibleMonths,
-  value,
-  values,
-  activeDate,
-}: IgcCalendarArgs) => {
-  const formatOptions: Intl.DateTimeFormatOptions = {
-    month: monthFormat,
-    weekday: weekDayFormat,
-  };
+const today = new Date();
+const currentYear = today.getFullYear();
+const currentMonth = today.getMonth();
 
-  const currentYear = new Date().getFullYear();
-  const currentMonth = new Date().getMonth();
-
-  const disabledDates: DateRangeDescriptor[] = [
-    {
-      type: DateRangeType.Specific,
-      dateRange: [new Date(currentYear, currentMonth, 7)],
-    },
-  ];
-
-  const specialDates: DateRangeDescriptor[] = [
-    {
-      type: DateRangeType.Specific,
-      dateRange: [new Date(currentYear, currentMonth, 22)],
-    },
-    {
-      type: DateRangeType.Specific,
-      dateRange: [new Date(currentYear, currentMonth, 23)],
-    },
-  ];
-
-  return html`
+export const Basic: Story = {
+  render: (args) => html`
     <igc-calendar
-      ?hide-header=${hideHeader}
-      ?show-week-numbers=${showWeekNumbers}
-      ?hide-outside-days=${hideOutsideDays}
-      header-orientation=${ifDefined(headerOrientation)}
-      orientation=${ifDefined(orientation)}
-      week-start=${ifDefined(weekStart)}
-      locale=${ifDefined(locale)}
-      selection=${ifDefined(selection)}
-      active-view=${ifDefined(activeView)}
-      .formatOptions=${formatOptions}
-      .disabledDates=${disabledDates}
-      .specialDates=${specialDates}
-      .activeDate=${activeDate ? new Date(activeDate) : new Date()}
-      .value=${value ? new Date(value as Date) : undefined}
-      values=${ifDefined(values)}
-      visible-months=${ifDefined(visibleMonths)}
+      ?hide-header=${args.hideHeader}
+      ?show-week-numbers=${args.showWeekNumbers}
+      ?hide-outside-days=${args.hideOutsideDays}
+      header-orientation=${ifDefined(args.headerOrientation)}
+      orientation=${ifDefined(args.orientation)}
+      week-start=${ifDefined(args.weekStart)}
+      locale=${ifDefined(args.locale)}
+      selection=${ifDefined(args.selection)}
+      active-view=${ifDefined(args.activeView)}
+      .activeDate=${args.activeDate ? new Date(args.activeDate) : new Date()}
+      .value=${args.value ? new Date(args.value as Date) : undefined}
+      values=${ifDefined(args.values)}
+      visible-months=${ifDefined(args.visibleMonths)}
     >
-      ${title ? html`<span slot="title">${title}</span>` : ''}
     </igc-calendar>
-  `;
+  `,
 };
 
-export const Basic: Story = Template.bind({});
+export const RangeSelection: Story = {
+  argTypes: disableStoryControls(metadata),
+  render: () => {
+    const start = new Date(currentYear, currentMonth, 5);
+    const end = new Date(currentYear, currentMonth, 18);
+    return html`
+      <igc-calendar
+        selection="range"
+        .values=${[start, end]}
+        .activeDate=${new Date(currentYear, currentMonth, 1)}
+      ></igc-calendar>
+    `;
+  },
+};
+
+export const MultipleSelection: Story = {
+  argTypes: disableStoryControls(metadata),
+  render: () => {
+    const values = [
+      new Date(currentYear, currentMonth, 3),
+      new Date(currentYear, currentMonth, 8),
+      new Date(currentYear, currentMonth, 15),
+      new Date(currentYear, currentMonth, 22),
+    ];
+    return html`
+      <igc-calendar
+        selection="multiple"
+        .values=${values}
+        .activeDate=${new Date(currentYear, currentMonth, 1)}
+      ></igc-calendar>
+    `;
+  },
+};
+
+export const MultipleMonths: Story = {
+  argTypes: disableStoryControls(metadata),
+  render: () => {
+    const start = new Date(currentYear, currentMonth, 20);
+    const end = new Date(currentYear, currentMonth + 1, 10);
+    return html`
+      <igc-calendar
+        selection="range"
+        visible-months="2"
+        .values=${[start, end]}
+        .activeDate=${new Date(currentYear, currentMonth, 1)}
+      ></igc-calendar>
+    `;
+  },
+};
+
+export const DisabledDates: Story = {
+  argTypes: disableStoryControls(metadata),
+  render: () => {
+    const disabledDates: DateRangeDescriptor[] = [
+      { type: DateRangeType.Weekends },
+      {
+        type: DateRangeType.Before,
+        dateRange: [new Date(currentYear, currentMonth, 5)],
+      },
+    ];
+    return html`
+      <igc-calendar
+        .disabledDates=${disabledDates}
+        .activeDate=${new Date(currentYear, currentMonth, 1)}
+      ></igc-calendar>
+    `;
+  },
+};
+
+export const SpecialDates: Story = {
+  argTypes: disableStoryControls(metadata),
+  render: () => {
+    const specialDates: DateRangeDescriptor[] = [
+      {
+        type: DateRangeType.Specific,
+        dateRange: [
+          new Date(currentYear, currentMonth, 10),
+          new Date(currentYear, currentMonth, 15),
+          new Date(currentYear, currentMonth, 20),
+        ],
+      },
+      {
+        type: DateRangeType.Between,
+        dateRange: [
+          new Date(currentYear, currentMonth, 22),
+          new Date(currentYear, currentMonth, 25),
+        ],
+      },
+    ];
+    return html`
+      <igc-calendar
+        show-week-numbers
+        .specialDates=${specialDates}
+        .activeDate=${new Date(currentYear, currentMonth, 1)}
+      ></igc-calendar>
+    `;
+  },
+};

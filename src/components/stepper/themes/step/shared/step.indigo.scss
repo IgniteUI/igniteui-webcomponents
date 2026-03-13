@@ -5,28 +5,10 @@ $theme: $indigo;
 
 [part~='indicator'] {
     @include type-style('button');
-
-    box-shadow: inset 0 0 0 var(--indicator-box-shadow-size) var-get($theme, 'indicator-outline');
-}
-
-[part~='complete-start'] {
-    [part~='indicator'] {
-        box-shadow: inset 0 0 0 var(--indicator-box-shadow-size) var-get($theme, 'complete-indicator-outline');
-    }
 }
 
 :host([active]) {
     [part~='title'] {
         @include type-style('subtitle-2');
-    }
-
-    [part~='indicator'] {
-        box-shadow: inset 0 0 0 var(--indicator-box-shadow-size) var-get($theme, 'current-indicator-outline');
-    }
-}
-
-[part~='disabled'] {
-    [part~='indicator'] {
-        box-shadow: inset 0 0 0 var(--indicator-box-shadow-size) var-get($theme, 'disabled-indicator-outline');
     }
 }
