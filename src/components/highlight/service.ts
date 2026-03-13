@@ -50,10 +50,16 @@ class HighlightService implements ReactiveController {
 
   //#region Public properties
 
+  /**
+   * The total number of matches found in the component's content.
+   */
   public get size(): number {
     return this._highlight.size;
   }
 
+  /**
+   * The index of the currently active match. Returns 0 if there are no matches.
+   */
   public get current(): number {
     return this._current;
   }
@@ -87,7 +93,6 @@ class HighlightService implements ReactiveController {
   /** @internal */
   public hostConnected(): void {
     this._createHighlightEntries();
-    this._addStylesheet();
     this.find(this._host.searchText);
   }
 
@@ -100,14 +105,6 @@ class HighlightService implements ReactiveController {
   //#endregion
 
   //#region Private methods
-
-  private _addStylesheet(): void {
-    const root = this._host.renderRoot as ShadowRoot;
-
-    if (this._styleSheet) {
-      root.adoptedStyleSheets.push(this._styleSheet);
-    }
-  }
 
   private _removeStyleSheet(): void {
     const root = this._host.renderRoot as ShadowRoot;
@@ -178,6 +175,22 @@ class HighlightService implements ReactiveController {
 
   //#region Public methods
 
+  /**
+   * Attaches the service's stylesheet to the render root.
+   * Necessary for the component to apply highlight styles to its content.
+   */
+  public attachStylesheet(): void {
+    const adoptedSheets = (this._host.renderRoot as ShadowRoot)
+      .adoptedStyleSheets;
+
+    if (this._styleSheet && !adoptedSheets.includes(this._styleSheet)) {
+      adoptedSheets.push(this._styleSheet);
+    }
+  }
+
+  /**
+   * Finds matches for the given search text in the component's content and creates highlight ranges for them.
+   */
   public find(value: string): void {
     if (!value) {
       return;
