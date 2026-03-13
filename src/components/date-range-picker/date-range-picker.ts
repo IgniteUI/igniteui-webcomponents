@@ -744,7 +744,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
     this._hide(true);
   }
 
-  protected _handleInputEvent(event: CustomEvent<Date | null>) {
+  protected _handleInput(event: CustomEvent<string>) {
     event.stopPropagation();
     if (this.nonEditable) {
       event.preventDefault();
@@ -760,7 +760,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
     this.emitEvent('igcInput', { detail: this.value });
   }
 
-  protected _handleInputChangeEvent(event: CustomEvent<Date | null>) {
+  protected _handleInputChange(event: CustomEvent<Date | null>) {
     event.stopPropagation();
 
     const input = event.target as IgcDateTimeInputComponent;
@@ -777,7 +777,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
     this.emitEvent('igcChange', { detail: this.value });
   }
 
-  protected async _handleDateRangeInputEvent(event: CustomEvent<any>) {
+  protected async _handleDateRangeInput(event: CustomEvent<string>) {
     event.stopPropagation();
     if (this.nonEditable) {
       event.preventDefault();
@@ -792,7 +792,9 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
     this.emitEvent('igcInput', { detail: this.value });
   }
 
-  protected _handleDateRangeInputChangeEvent(event: CustomEvent<any>) {
+  protected _handleDateRangeInputChange(
+    event: CustomEvent<DateRangeValue | null>
+  ) {
     event.stopPropagation();
 
     const input = event.target as IgcDateRangeInputComponent;
@@ -1168,8 +1170,8 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
         .max=${this._max}
         label=${label}
         ?invalid=${live(this.invalid)}
-        @igcChange=${this._handleInputChangeEvent}
-        @igcInput=${this._handleInputEvent}
+        @igcChange=${this._handleInputChange}
+        @igcInput=${this._handleInput}
         @click=${this._isDropDown || this.readOnly
           ? nothing
           : this._handleInputClick}
@@ -1219,8 +1221,8 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
         .displayFormat=${live(format)}
         .locale=${live(this.locale)}
         .prompt=${this.prompt}
-        @igcInput=${this._handleDateRangeInputEvent}
-        @igcChange=${this._handleDateRangeInputChangeEvent}
+        @igcInput=${this._handleDateRangeInput}
+        @igcChange=${this._handleDateRangeInputChange}
         @click=${this._isDropDown || this.readOnly
           ? nothing
           : this._handleInputClick}

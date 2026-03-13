@@ -252,13 +252,13 @@ export default class IgcDateTimeInputComponent extends IgcDateTimeInputBaseCompo
       ? -Math.abs(effectiveDelta)
       : Math.abs(effectiveDelta);
 
-    return this.spinDatePart(datePart, spinAmount);
+    return this._spinDatePart(datePart, spinAmount);
   }
 
   /**
    * Spins a specific date part by the given delta.
    */
-  protected spinDatePart(datePart: DatePart, delta: number): Date {
+  protected _spinDatePart(datePart: DatePart, delta: number): Date {
     if (!isValidDate(this.value)) {
       return new Date();
     }

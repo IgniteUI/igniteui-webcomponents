@@ -10,7 +10,7 @@ import {
   DEFAULT_DATETIME_FORMAT,
 } from '../date-time-input/datetime-mask-parser.js';
 import { MaskParser } from '../mask-input/mask-parser.js';
-import type { DateRangeValue } from './date-range-picker.js';
+import type { DateRangeValue } from '../types.js';
 
 //#region Types and Enums
 

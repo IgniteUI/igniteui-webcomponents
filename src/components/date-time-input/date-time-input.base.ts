@@ -21,12 +21,12 @@ import {
 import type { AbstractConstructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { partMap } from '../common/part-map.js';
-import type { DateRangeValue } from '../date-range-picker/date-range-picker.js';
 import type { IgcInputComponentEventMap } from '../input/input-base.js';
 import {
   IgcMaskInputBaseComponent,
   type MaskSelection,
 } from '../mask-input/mask-input-base.js';
+import type { DateRangeValue } from '../types.js';
 import type { DatePartDeltas } from './date-part.js';
 import { dateTimeInputValidators } from './validators.js';
 

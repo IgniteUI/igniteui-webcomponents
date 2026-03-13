@@ -7,8 +7,8 @@ import {
 } from '../calendar/helpers.js';
 import { formatString, isEmpty } from '../common/util.js';
 import type { Validator } from '../common/validators.js';
+import type { DateRangeValue } from '../types.js';
 import type IgcDateRangePickerComponent from './date-range-picker.js';
-import type { DateRangeValue } from './date-range-picker.js';
 
 export const minDateRangeValidator: Validator<IgcDateRangePickerComponent> = {
   key: 'rangeUnderflow',

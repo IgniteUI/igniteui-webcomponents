@@ -9,7 +9,7 @@ import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '../common/mixins/forms/associated-required.js';
 import { partMap } from '../common/part-map.js';
-import type { DateRangeValue } from '../date-range-picker/date-range-picker.js';
+import type { DateRangeValue } from '../types.js';
 import IgcValidationContainerComponent from '../validation-container/validation-container.js';
 
 export interface IgcInputComponentEventMap {

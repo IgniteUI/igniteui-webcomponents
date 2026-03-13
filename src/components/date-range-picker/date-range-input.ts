@@ -16,12 +16,12 @@ import { DateParts } from '../date-time-input/datetime-mask-parser.js';
 import { styles } from '../input/themes/input.base.css.js';
 import { styles as shared } from '../input/themes/shared/input.common.css.js';
 import { all } from '../input/themes/themes.js';
+import type { DateRangeValue } from '../types.js';
 import {
   DateRangeMaskParser,
   type DateRangePart,
   DateRangePosition,
 } from './date-range-mask-parser.js';
-import type { DateRangeValue } from './date-range-picker.js';
 
 export default class IgcDateRangeInputComponent extends IgcDateTimeInputBaseComponent<
   DateRangeValue | null,
@@ -52,8 +52,6 @@ export default class IgcDateRangeInputComponent extends IgcDateTimeInputBaseComp
       year: 1,
     };
   }
-
-  // #endregion
 
   // #endregion
 
@@ -106,7 +104,7 @@ export default class IgcDateRangeInputComponent extends IgcDateTimeInputBaseComp
     }
   }
 
-  public override _handleBlur(): void {
+  protected override _handleBlur(): void {
     const isSameValue = equal(this._oldValue, this.value);
 
     this._focused = false;
