@@ -1,10 +1,13 @@
-import { css, html, LitElement } from 'lit';
+import { html, LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
+import { addThemingController } from '../../theming/theming-controller.js';
 import { registerComponent } from '../common/definitions/register.js';
 import {
   createHighlightController,
   type HighlightNavigation,
 } from './service.js';
+import { styles as shared } from './themes/shared/highlight.common.css.js';
+import { all } from './themes/themes.js';
 
 /**
  * The highlight component provides a way for efficient searching and highlighting of
@@ -22,11 +25,7 @@ import {
 export default class IgcHighlightComponent extends LitElement {
   public static readonly tagName = 'igc-highlight';
 
-  public static override styles = css`
-    :host {
-      display: contents;
-    }
-  `;
+  public static override styles = [shared];
 
   /* blazorSuppress */
   public static register(): void {
@@ -102,6 +101,11 @@ export default class IgcHighlightComponent extends LitElement {
       this._service.clear();
       this._service.find(this.searchText);
     }
+  }
+
+  constructor() {
+    super();
+    addThemingController(this, all);
   }
 
   protected override render() {
