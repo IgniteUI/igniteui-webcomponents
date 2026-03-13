@@ -1,19 +1,19 @@
-import { github } from '@igniteui/material-icons-extended';
-import type { Meta, StoryObj } from '@storybook/web-components-vite';
-import { html } from 'lit';
-import { ifDefined } from 'lit/directives/if-defined.js';
-
 import {
   IgcIconComponent,
   IgcMaskInputComponent,
   defineComponents,
   registerIconFromText,
 } from 'igniteui-webcomponents';
+import type { Meta, StoryObj } from '@storybook/web-components-vite';
 import {
   disableStoryControls,
   formControls,
   formSubmitHandler,
 } from './story.js';
+
+import { github } from '@igniteui/material-icons-extended';
+import { html } from 'lit';
+import { ifDefined } from 'lit/directives/if-defined.js';
 
 defineComponents(IgcMaskInputComponent, IgcIconComponent);
 registerIconFromText(github.name, github.value);
@@ -41,10 +41,10 @@ const metadata: Meta<IgcMaskInputComponent> = {
       table: { defaultValue: { summary: 'raw' } },
     },
     value: {
-      type: 'string | Date | DateRangeValue',
+      type: 'string | Date',
       description:
         'The value of the input.\n\nRegardless of the currently set `value-mode`, an empty value will return an empty string.',
-      options: ['string', 'Date', 'DateRangeValue'],
+      options: ['string', 'Date'],
       control: 'text',
     },
     mask: {
@@ -136,7 +136,7 @@ interface IgcMaskInputArgs {
    *
    * Regardless of the currently set `value-mode`, an empty value will return an empty string.
    */
-  value: string | Date | DateRangeValue;
+  value: string | Date;
   /** The masked pattern of the component. */
   mask: string;
   /** The prompt symbol to use for unfilled parts of the mask pattern. */

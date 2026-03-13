@@ -459,7 +459,7 @@ export abstract class IgcDateTimeInputBaseComponent<
 
   // #region Abstract methods and properties
 
-  protected abstract get _datePartDeltas(): any;
+  protected abstract get _datePartDeltas(): DatePartDeltas;
 
   protected abstract _buildMaskedValue(): string;
   protected abstract _updateValueFromMask(): void;

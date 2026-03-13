@@ -1,15 +1,15 @@
-import type { Meta, StoryObj } from '@storybook/web-components-vite';
-import { html } from 'lit';
-
 import {
   IgcDateTimeInputComponent,
   defineComponents,
 } from 'igniteui-webcomponents';
+import type { Meta, StoryObj } from '@storybook/web-components-vite';
 import {
   disableStoryControls,
   formControls,
   formSubmitHandler,
 } from './story.js';
+
+import { html } from 'lit';
 
 defineComponents(IgcDateTimeInputComponent);
 
@@ -28,9 +28,9 @@ const metadata: Meta<IgcDateTimeInputComponent> = {
   },
   argTypes: {
     value: {
-      type: 'string | Date | DateRangeValue',
+      type: 'string | Date',
       description: 'The value of the input.',
-      options: ['string', 'Date', 'DateRangeValue'],
+      options: ['string', 'Date'],
       control: 'text',
     },
     min: {
@@ -142,7 +142,7 @@ export default metadata;
 
 interface IgcDateTimeInputArgs {
   /** The value of the input. */
-  value: string | Date | DateRangeValue;
+  value: string | Date;
   /** The minimum value required for the input to remain valid. */
   min: Date;
   /** The maximum value required for the input to remain valid. */

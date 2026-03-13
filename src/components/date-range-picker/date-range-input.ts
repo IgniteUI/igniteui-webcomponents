@@ -45,11 +45,13 @@ export default class IgcDateRangeInputComponent extends IgcDateTimeInputBaseComp
   protected override readonly _themes = addThemingController(this, all);
   protected override readonly _parser = new DateRangeMaskParser();
 
-  protected override _datePartDeltas: DatePartDeltas = {
-    date: 1,
-    month: 1,
-    year: 1,
-  };
+  protected override get _datePartDeltas(): DatePartDeltas {
+    return {
+      date: 1,
+      month: 1,
+      year: 1,
+    };
+  }
 
   // #endregion
 
@@ -182,6 +184,11 @@ export default class IgcDateRangeInputComponent extends IgcDateTimeInputBaseComp
   // #endregion
 
   // #region Internal API Overrides
+
+  protected override _emitInputEvent(): void {
+    this._setTouchedState();
+    this.emitEvent('igcInput', { detail: this._maskedValue });
+  }
 
   protected override _updateMaskDisplay(): void {
     if (this._focused) {
