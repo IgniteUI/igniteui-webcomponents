@@ -36,23 +36,11 @@ const metadata: Meta<IgcNavbarComponent> = {
       },
     },
   },
-  argTypes: {
-    content: {
-      type: 'string',
-      description: 'Text content rendered in the default (title) slot.',
-      control: 'text',
-    },
-  },
-  args: { content: 'Application Title' },
 };
 
 export default metadata;
 
-interface IgcNavbarArgs {
-  /** Text content rendered in the default (title) slot. */
-  content: string;
-}
-type Story = StoryObj<IgcNavbarArgs>;
+type Story = StoryObj;
 
 // endregion
 

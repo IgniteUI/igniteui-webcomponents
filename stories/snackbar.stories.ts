@@ -9,6 +9,7 @@ import {
   defineComponents,
   registerIconFromText,
 } from 'igniteui-webcomponents';
+import { disableStoryControls } from './story.js';
 
 registerIconFromText(radioactive.name, radioactive.value);
 defineComponents(IgcSnackbarComponent, IgcButtonComponent, IgcIconComponent);
@@ -21,7 +22,7 @@ const metadata: Meta<IgcSnackbarComponent> = {
     docs: {
       description: {
         component:
-          'A snackbar component is used to provide feedback about an operation\nby showing a brief message at the bottom of the screen.',
+          'A snackbar provides brief feedback about an operation by displaying a short message near the bottom of the screen. It disappears automatically after a configurable `displayTime`, or can stay open with `keepOpen`. An optional action button lets users respond (e.g. Undo).',
       },
     },
     actions: { handles: ['igcAction'] },
@@ -82,6 +83,14 @@ type Story = StoryObj<IgcSnackbarArgs>;
 // endregion
 
 export const Basic: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'A snackbar with a built-in action button set via `actionText`. Clicking the action dispatches `igcAction`. Use the **Controls** panel to toggle `keepOpen`, change `displayTime`, and switch `position`.',
+      },
+    },
+  },
   render: ({
     open,
     keepOpen,
@@ -106,6 +115,15 @@ export const Basic: Story = {
 };
 
 export const SlottedAction: Story = {
+  argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Uses the `action` slot to replace the built-in action button with a fully custom `igc-button` containing an icon. The `igcAction` event is still emitted when the slotted button is clicked.',
+      },
+    },
+  },
   render: ({ open, keepOpen, displayTime, position }) => html`
     <igc-snackbar
       id="snackbar"
@@ -124,5 +142,61 @@ export const SlottedAction: Story = {
 
     <igc-button onclick="snackbar.show()">Open snackbar</igc-button>
     <igc-button onclick="snackbar.hide()">Close snackbar</igc-button>
+  `,
+};
+
+export const Positions: Story = {
+  argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Demonstrates the three `position` values — `bottom` (default), `middle`, and `top`. Each button opens a separate snackbar pinned to that region of the viewport.',
+      },
+    },
+  },
+  render: () => html`
+    <style>
+      .positions-demo {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+      }
+    </style>
+    <div class="positions-demo">
+      <igc-button onclick="snackbarBottom.show()">Bottom (default)</igc-button>
+      <igc-button onclick="snackbarMiddle.show()">Middle</igc-button>
+      <igc-button onclick="snackbarTop.show()">Top</igc-button>
+    </div>
+
+    <igc-snackbar
+      id="snackbarBottom"
+      position="bottom"
+      action-text="Dismiss"
+      @igcAction=${({ target }: { target: IgcSnackbarComponent }) =>
+        target.hide()}
+    >
+      Snackbar — bottom
+    </igc-snackbar>
+
+    <igc-snackbar
+      id="snackbarMiddle"
+      position="middle"
+      action-text="Dismiss"
+      @igcAction=${({ target }: { target: IgcSnackbarComponent }) =>
+        target.hide()}
+    >
+      Snackbar — middle
+    </igc-snackbar>
+
+    <igc-snackbar
+      id="snackbarTop"
+      position="top"
+      action-text="Dismiss"
+      @igcAction=${({ target }: { target: IgcSnackbarComponent }) =>
+        target.hide()}
+    >
+      Snackbar — top
+    </igc-snackbar>
   `,
 };

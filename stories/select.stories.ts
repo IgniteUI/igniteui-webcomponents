@@ -326,7 +326,14 @@ export const Basic: Story = {
     label: 'Assign task',
     value: 'docs',
   },
-
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'A fully interactive select with a `header` slot and a `helper-text` slot. Use the **Controls** panel to explore `outlined`, `disabled`, `placeholder`, `placement`, `scrollStrategy`, and all other properties.',
+      },
+    },
+  },
   render: (args) => html`
     <igc-select
       .value=${args.value}
@@ -356,7 +363,14 @@ export const WithGroups: Story = {
   args: {
     label: 'Select a country',
   },
-
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Demonstrates `igc-select-group` and `igc-select-header` for organizing items into labeled sections. Disabled items within a group are also shown.',
+      },
+    },
+  },
   render: (args) => html`
     <igc-select
       .value=${args.value}
@@ -396,6 +410,14 @@ export const WithGroups: Story = {
 
 export const InitialValue: Story = {
   args: { value: '1' },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Demonstrates the three ways to set an initial value: via the `value` attribute on the select, via the `selected` attribute on an `igc-select-item`, or both simultaneously. When both are set, the `selected` attribute on the child item wins.',
+      },
+    },
+  },
   render: ({ value }) => html`
     <style>
       igc-select {
@@ -435,9 +457,18 @@ export const InitialValue: Story = {
 };
 
 export const Slots: Story = {
+  argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Showcases all available slots: `prefix`, `suffix`, `toggle-icon`, `toggle-icon-expanded`, `header`, `footer`, and `helper-text`. Open the dropdown to see the header and footer slots.',
+      },
+    },
+  },
   render: () => html`
     <style>
-      .template {
+      .slot-template {
         background-color: var(--ig-primary-A200);
         color: var(--ig-primary-A200-contrast);
         padding: 0.5rem;
@@ -454,8 +485,8 @@ export const Slots: Story = {
       <igc-icon name=${arrowDownLeft.name} slot="toggle-icon"></igc-icon>
       <igc-icon name=${arrowUpLeft.name} slot="toggle-icon-expanded"></igc-icon>
 
-      <section class="template" slot="header">This is a header</section>
-      <section class="template" slot="footer">This is a footer</section>
+      <section class="slot-template" slot="header">This is a header</section>
+      <section class="slot-template" slot="footer">This is a footer</section>
 
       <span slot="helper-text">Helper text</span>
 
@@ -483,6 +514,14 @@ export const Slots: Story = {
 
 export const Form: Story = {
   argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Form integration demo covering initial value via attribute, initial value via `selected` item, required validation with a `value-missing` error message, and a disabled fieldset.',
+      },
+    },
+  },
   render: () => {
     return html`
       <style>
