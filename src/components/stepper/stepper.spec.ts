@@ -859,6 +859,37 @@ describe('Stepper', () => {
       expect(step0Header).to.equal(stepper.steps[0].shadowRoot!.activeElement);
     });
 
+    it('should navigate with ArrowLeft/Right in vertical position as well', async () => {
+      stepper.orientation = 'vertical';
+      await elementUpdated(stepper);
+
+      const step0Header = getStepDOM(stepper.steps[0]).parts.header;
+      const step1Header = getStepDOM(stepper.steps[1]).parts.header;
+
+      step0Header.focus();
+      simulateKeyboard(step0Header, 'ArrowRight');
+      expect(step1Header).to.equal(stepper.steps[1].shadowRoot!.activeElement);
+
+      simulateKeyboard(step1Header, 'ArrowLeft');
+      expect(step0Header).to.equal(stepper.steps[0].shadowRoot!.activeElement);
+    });
+
+    it('should navigate with ArrowLeft/Right in vertical orientation (RTL)', async () => {
+      stepper.orientation = 'vertical';
+      stepper.dir = 'rtl';
+      await elementUpdated(stepper);
+
+      const step0Header = getStepDOM(stepper.steps[0]).parts.header;
+      const step1Header = getStepDOM(stepper.steps[1]).parts.header;
+
+      step0Header.focus();
+      simulateKeyboard(step0Header, 'ArrowLeft');
+      expect(step1Header).to.equal(stepper.steps[1].shadowRoot!.activeElement);
+
+      simulateKeyboard(step1Header, 'ArrowRight');
+      expect(step0Header).to.equal(stepper.steps[0].shadowRoot!.activeElement);
+    });
+
     it('should navigate with ArrowDown/Up in vertical orientation', async () => {
       stepper.orientation = 'vertical';
       await elementUpdated(stepper);

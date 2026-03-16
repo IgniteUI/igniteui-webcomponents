@@ -312,10 +312,9 @@ export default class IgcStepperComponent extends EventEmitterMixin<
     const step = this._getActiveStepComponent();
 
     if (step) {
-      const next =
-        isLTR(this) && this._isHorizontal
-          ? this._getPreviousStep(step)
-          : this._getNextStep(step);
+      const next = isLTR(this)
+        ? this._getPreviousStep(step)
+        : this._getNextStep(step);
 
       this._getStepHeader(next)?.focus();
     }
@@ -325,10 +324,9 @@ export default class IgcStepperComponent extends EventEmitterMixin<
     const step = this._getActiveStepComponent();
 
     if (step) {
-      const next =
-        isLTR(this) && this._isHorizontal
-          ? this._getNextStep(step)
-          : this._getPreviousStep(step);
+      const next = isLTR(this)
+        ? this._getNextStep(step)
+        : this._getPreviousStep(step);
 
       this._getStepHeader(next)?.focus();
     }
