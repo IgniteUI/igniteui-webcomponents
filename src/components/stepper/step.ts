@@ -1,31 +1,39 @@
-import { html, LitElement, nothing } from 'lit';
-import { property, query, queryAssignedElements } from 'lit/decorators.js';
-import { createRef, type Ref, ref } from 'lit/directives/ref.js';
-import { when } from 'lit/directives/when.js';
-
+import { consume } from '@lit/context';
+import { html, LitElement, nothing, type PropertyValues } from 'lit';
+import { property } from 'lit/decorators.js';
+import { cache } from 'lit/directives/cache.js';
+import { createRef, ref } from 'lit/directives/ref.js';
 import { EaseInOut } from '../../animations/easings.js';
 import { addAnimationController } from '../../animations/player.js';
 import { addThemingController } from '../../theming/theming-controller.js';
-import { watch } from '../common/decorators/watch.js';
+import { addSlotController, setSlots } from '../common/controllers/slot.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { partMap } from '../common/part-map.js';
 import type {
+  HorizontalTransitionAnimation,
   StepperOrientation,
   StepperStepType,
   StepperTitlePosition,
+  StepperVerticalAnimation,
 } from '../types.js';
-import {
-  type Animation,
-  bodyAnimations,
-  contentAnimations,
-} from './animations.js';
+import { bodyAnimations, contentAnimations } from './common/animations.js';
+import { STEPPER_CONTEXT, type StepperContext } from './common/context.js';
+import type { StepperState } from './common/state.js';
+import type IgcStepperComponent from './stepper.js';
 import { styles as shared } from './themes/step/shared/step.common.css.js';
 import { styles } from './themes/step/step.base.css.js';
 import { all } from './themes/step/themes.js';
 
 /**
- * The step component is used within the `igc-stepper` element and it holds the content of each step.
- * It also supports custom indicators, title and subtitle.
+ * A step component used within an `igc-stepper` to represent an individual step in a wizard-like workflow.
+ *
+ * @remarks
+ * Each step has a header (with an indicator, title, and subtitle) and a content area.
+ * Steps can be marked as `active`, `complete`, `disabled`, `optional`, or `invalid`
+ * to control their appearance and behavior within the stepper.
+ *
+ * Custom indicators can be provided via the `indicator` slot, and the content area
+ * is rendered in the default slot.
  *
  * @element igc-step
  *
@@ -47,117 +55,209 @@ import { all } from './themes/step/themes.js';
  * @csspart header - Wrapper of the step's `indicator` and `text`.
  * @csspart indicator - The indicator of the step.
  * @csspart text - Wrapper of the step's `title` and `subtitle`.
- * @csspart empty - Indicates that no title and subtitle has been provided to the step. Applies to `text`.
+ * @csspart empty - Indicates that no title and subtitle have been provided to the step. Applies to `text`.
  * @csspart title - The title of the step.
  * @csspart subtitle - The subtitle of the step.
  * @csspart body - Wrapper of the step's `content`.
- * @csspart content - The steps `content`.
+ * @csspart content - The step's `content`.
+ *
+ * @example
+ * ```html
+ * <igc-step>
+ *   <igc-icon slot="indicator" name="home"></igc-icon>
+ *   <span slot="title">Home</span>
+ *   <span slot="subtitle">Return to the home page</span>
+ *   <p>Welcome! This is the first step.</p>
+ * </igc-step>
+ * ```
+ *
+ * @example Step with state attributes
+ * ```html
+ * <igc-step complete>
+ *   <span slot="title">Completed step</span>
+ *   <p>This step has been completed.</p>
+ * </igc-step>
+ *
+ * <igc-step active invalid>
+ *   <span slot="title">Current step</span>
+ *   <p>This step has validation errors.</p>
+ * </igc-step>
+ *
+ * <igc-step disabled>
+ *   <span slot="title">Disabled step</span>
+ *   <p>This step is not accessible.</p>
+ * </igc-step>
+ * ```
  */
 export default class IgcStepComponent extends LitElement {
   public static readonly tagName = 'igc-step';
   public static override styles = [styles, shared];
 
   /* blazorSuppress */
-  public static register() {
+  public static register(): void {
     registerComponent(IgcStepComponent);
   }
 
-  private bodyRef: Ref<HTMLElement> = createRef();
-  private contentRef: Ref<HTMLElement> = createRef();
+  //#region Internal state and properties
 
-  private bodyAnimationPlayer = addAnimationController(this, this.bodyRef);
-  private contentAnimationPlayer = addAnimationController(
+  private readonly _bodyRef = createRef<HTMLElement>();
+  private readonly _contentRef = createRef<HTMLElement>();
+
+  private readonly _bodyPlayer = addAnimationController(this, this._bodyRef);
+  private readonly _contentPlayer = addAnimationController(
     this,
-    this.contentRef
+    this._contentRef
   );
 
-  @queryAssignedElements({ slot: 'title' })
-  private _titleChildren!: Array<HTMLElement>;
+  private readonly _slots = addSlotController(this, {
+    slots: setSlots('indicator', 'title', 'subtitle'),
+  });
 
-  @queryAssignedElements({ slot: 'subtitle' })
-  private _subTitleChildren!: Array<HTMLElement>;
+  @consume({ context: STEPPER_CONTEXT, subscribe: true })
+  private readonly _stepperContext?: StepperContext;
 
-  /* blazorSuppress */
-  @query('[part~="header"]')
-  public header!: HTMLElement;
+  private get _stepper(): IgcStepperComponent | undefined {
+    return this._stepperContext?.stepper;
+  }
 
-  /* blazorSuppress */
-  @query('[part~="body"]')
-  public contentBody!: HTMLElement;
+  private get _state(): StepperState | undefined {
+    return this._stepperContext?.state;
+  }
 
-  /** Gets/sets whether the step is invalid. */
-  @property({ reflect: true, type: Boolean })
+  private get _isHorizontal(): boolean {
+    return this._orientation === 'horizontal';
+  }
+
+  private get _hasTitle(): boolean {
+    return this._slots.hasAssignedElements('title');
+  }
+
+  private get _hasSubtitle(): boolean {
+    return this._slots.hasAssignedElements('subtitle');
+  }
+
+  private get _animation():
+    | StepperVerticalAnimation
+    | HorizontalTransitionAnimation {
+    const animation = this._isHorizontal
+      ? this._stepper?.horizontalAnimation
+      : this._stepper?.verticalAnimation;
+
+    return animation ?? (this._isHorizontal ? 'slide' : 'grow');
+  }
+
+  private get _animationDuration(): number {
+    return this._stepper?.animationDuration ?? 320;
+  }
+
+  private get _contentTop(): boolean {
+    return this._stepper?.contentTop ?? false;
+  }
+
+  private get _index(): number {
+    return this._stepper?.steps.indexOf(this) ?? -1;
+  }
+
+  private get _orientation(): StepperOrientation {
+    return this._stepper?.orientation ?? 'horizontal';
+  }
+
+  private get _titlePosition(): StepperTitlePosition {
+    return this._stepper?.titlePosition ?? 'auto';
+  }
+
+  private get _stepType(): StepperStepType {
+    return this._stepper?.stepType ?? 'full';
+  }
+
+  private get _previousComplete(): boolean {
+    return this._state?.get(this)?.previousCompleted ?? false;
+  }
+
+  private get _visited(): boolean {
+    return this._state?.get(this)?.visited ?? false;
+  }
+
+  private get _isAccessible(): boolean {
+    return this._state?.isAccessible(this) ?? true;
+  }
+
+  //#endregion
+
+  //#region Public attributes and properties
+
+  /**
+   * Whether the step is invalid.
+   *
+   * Invalid steps are styled with an error state and are not
+   * interactive when the stepper is in linear mode.
+   *
+   * @attr invalid
+   * @default false
+   */
+  @property({ type: Boolean, reflect: true })
   public invalid = false;
 
-  /** Gets/sets whether the step is activе. */
-  @property({ reflect: true, type: Boolean })
+  /**
+   * Whether the step is active.
+   *
+   * Active steps are styled with an active state and their content is visible.
+   *
+   * @attr active
+   * @default false
+   */
+  @property({ type: Boolean, reflect: true })
   public active = false;
 
   /**
-   * Gets/sets whether the step is optional.
+   * Whether the step is optional.
    *
-   * @remarks
    * Optional steps validity does not affect the default behavior when the stepper is in linear mode i.e.
    * if optional step is invalid the user could still move to the next step.
+   *
+   * @attr optional
+   * @default false
    */
-  @property({ type: Boolean })
+  @property({ type: Boolean, reflect: true })
   public optional = false;
 
-  /** Gets/sets whether the step is interactable. */
-  @property({ reflect: true, type: Boolean })
+  /**
+   * Whether the step is disabled.
+   *
+   * Disabled steps are styled with a disabled state and are not interactive.
+   *
+   * @attr disabled
+   * @default false
+   */
+  @property({ type: Boolean, reflect: true })
   public disabled = false;
 
-  /** Gets/sets whether the step is completed.
+  /**
+   * Whether the step is completed.
    *
-   * @remarks
-   * When set to `true` the following separator is styled `solid`.
+   * @attr complete
+   * @default false
    */
-  @property({ reflect: true, type: Boolean })
+  @property({ type: Boolean, reflect: true })
   public complete = false;
 
-  /** @hidden @internal @private */
-  @property({ attribute: false })
-  public previousComplete = false;
-
-  /** @hidden @internal @private */
-  @property({ attribute: false })
-  public stepType: StepperStepType = 'full';
-
-  /** @hidden @internal @private */
-  @property({ attribute: false })
-  public titlePosition: StepperTitlePosition = 'auto';
-
-  /** @hidden @internal @private */
-  @property({ attribute: false })
-  public orientation: StepperOrientation = 'horizontal';
-
-  /** @hidden @internal @private */
-  @property({ attribute: false })
-  public index = -1;
-
-  /** @hidden @internal @private */
-  @property({ attribute: false })
-  public contentTop = false;
-
-  /** @hidden @internal @private */
-  @property({ attribute: false })
-  public linearDisabled = false;
-
-  /** @hidden @internal @private */
-  @property({ attribute: false })
-  public visited = false;
-
-  /** @hidden @internal @private */
-  @property({ attribute: false })
-  public animation: Animation = 'fade';
-
-  /** @hidden @internal @private */
-  @property({ attribute: false })
-  public animationDuration = 350;
+  //#endregion
 
   constructor() {
     super();
     addThemingController(this, all);
+  }
+
+  protected override willUpdate(changed: PropertyValues<this>): void {
+    if (
+      changed.has('active') ||
+      changed.has('complete') ||
+      changed.has('disabled') ||
+      changed.has('invalid') ||
+      changed.has('optional')
+    ) {
+      this._state?.onStepPropertyChanged(this, changed);
+    }
   }
 
   /**
@@ -168,14 +268,14 @@ export default class IgcStepComponent extends LitElement {
     type: 'in' | 'out',
     direction: 'normal' | 'reverse' = 'normal'
   ) {
-    const bodyAnimation = bodyAnimations.get(this.animation)!.get(type)!;
-    const contentAnimation = contentAnimations.get(this.animation)!.get(type)!;
-    const bodyHeight = window
-      .getComputedStyle(this)
-      .getPropertyValue('--vertical-body-height');
+    const bodyAnimation = bodyAnimations.get(this._animation)!.get(type)!;
+    const contentAnimation = contentAnimations.get(this._animation)!.get(type)!;
+    const bodyHeight = getComputedStyle(this).getPropertyValue(
+      '--vertical-body-height'
+    );
 
     const options: KeyframeAnimationOptions = {
-      duration: this.animationDuration,
+      duration: this._animationDuration,
       easing: EaseInOut.Quad,
       direction,
     };
@@ -185,10 +285,10 @@ export default class IgcStepComponent extends LitElement {
     };
 
     const result = await Promise.all([
-      this.bodyAnimationPlayer.playExclusive(
+      this._bodyPlayer.playExclusive(
         bodyAnimation({ keyframe: options, step })
       ),
-      this.contentAnimationPlayer.playExclusive(
+      this._contentPlayer.playExclusive(
         contentAnimation({ keyframe: options, step })
       ),
     ]);
@@ -196,102 +296,52 @@ export default class IgcStepComponent extends LitElement {
     return result.every(Boolean);
   }
 
-  @watch('active', { waitUntilFirstUpdate: true })
-  protected activeChange() {
-    if (this.active) {
-      this.dispatchEvent(
-        new CustomEvent('stepActiveChanged', { bubbles: true, detail: false })
-      );
-    }
-  }
-
-  @watch('disabled', { waitUntilFirstUpdate: true })
-  @watch('invalid', { waitUntilFirstUpdate: true })
-  @watch('optional', { waitUntilFirstUpdate: true })
-  protected disabledInvalidOptionalChange() {
-    this.dispatchEvent(
-      new CustomEvent('stepDisabledInvalidChanged', { bubbles: true })
-    );
-  }
-
-  @watch('complete', { waitUntilFirstUpdate: true })
-  protected completeChange() {
-    this.dispatchEvent(
-      new CustomEvent('stepCompleteChanged', { bubbles: true })
-    );
-  }
-
-  private handleClick(event: MouseEvent): void {
-    event.stopPropagation();
-    if (this.isAccessible) {
-      this.dispatchEvent(
-        new CustomEvent('stepActiveChanged', { bubbles: true, detail: true })
-      );
-    }
-  }
-
-  private handleKeydown(event: KeyboardEvent): void {
-    this.dispatchEvent(
-      new CustomEvent('stepHeaderKeydown', {
-        bubbles: true,
-        detail: { event, focusedStep: this },
-      })
-    );
-  }
-
-  /** @hidden @internal */
-  public get isAccessible(): boolean {
-    return !this.disabled && !this.linearDisabled;
-  }
-
-  private get headerContainerParts() {
+  private get _headerContainerParts() {
     return {
       'header-container': true,
-      disabled: !this.isAccessible,
+      disabled: !this._isAccessible,
       'complete-start': this.complete,
-      'complete-end': this.previousComplete,
+      'complete-end': this._previousComplete,
       optional: this.optional,
       invalid:
-        this.invalid && this.visited && !this.active && this.isAccessible,
-      top: this.titlePosition === 'top',
+        this.invalid && this._visited && !this.active && this._isAccessible,
+      top: this._titlePosition === 'top',
       bottom:
-        this.titlePosition === 'bottom' ||
-        (this.orientation === 'horizontal' && this.titlePosition === 'auto'),
-      start: this.titlePosition === 'start',
+        this._titlePosition === 'bottom' ||
+        (this._isHorizontal && this._titlePosition === 'auto'),
+      start: this._titlePosition === 'start',
       end:
-        this.titlePosition === 'end' ||
-        (this.orientation === 'vertical' && this.titlePosition === 'auto'),
+        this._titlePosition === 'end' ||
+        (!this._isHorizontal && this._titlePosition === 'auto'),
     };
   }
 
-  private get textParts() {
+  private get _textParts() {
+    const hasText = this._hasTitle || this._hasSubtitle;
+
     return {
       text: true,
       empty:
-        this.stepType === 'indicator'
-          ? true
-          : this.stepType === 'full' &&
-            !this._titleChildren.length &&
-            !this._subTitleChildren.length,
+        this._stepType === 'indicator' ||
+        (this._stepType === 'full' && !hasText),
     };
   }
 
-  protected renderIndicator() {
-    if (this.stepType !== 'title') {
-      return html`
-        <div part="indicator">
-          <slot name="indicator">
-            <span>${this.index + 1}</span>
-          </slot>
-        </div>
-      `;
-    }
-    return nothing;
+  private _renderIndicator() {
+    return this._stepType !== 'title'
+      ? html`
+          <div part="indicator">
+            <slot name="indicator">
+              <span>${this._index + 1}</span>
+            </slot>
+          </div>
+        `
+      : nothing;
   }
 
-  protected renderTitleAndSubtitle() {
+  private _renderTitleAndSubtitle() {
     return html`
-      <div part=${partMap(this.textParts)}>
+      <div part=${partMap(this._textParts)}>
         <div part="title">
           <slot name="title"></slot>
         </div>
@@ -302,43 +352,55 @@ export default class IgcStepComponent extends LitElement {
     `;
   }
 
-  protected renderContent() {
-    return html`<div
-      ${ref(this.bodyRef)}
-      id="igc-step-content-${this.index}"
-      part="body"
-      role="tabpanel"
-      aria-labelledby="igc-step-header-${this.index}"
-    >
-      <div part="content" ${ref(this.contentRef)}>
-        <slot></slot>
+  private _renderHeader() {
+    const index = this._index + 1;
+    const size = this._stepper?.steps.length ?? 0;
+
+    return html`
+      <div part=${partMap(this._headerContainerParts)}>
+        <div
+          data-step-header
+          role="tab"
+          part="header"
+          id="igc-step-header-${index}"
+          aria-selected=${this.active}
+          aria-controls="igc-step-content-${index}"
+          aria-posinset=${index}
+          aria-setsize=${size}
+          tabindex=${this.active ? 0 : -1}
+        >
+          ${this._renderIndicator()} ${this._renderTitleAndSubtitle()}
+        </div>
       </div>
-    </div>`;
+    `;
+  }
+
+  private _renderContent() {
+    const index = this._index + 1;
+
+    return html`
+      <div
+        ${ref(this._bodyRef)}
+        id="igc-step-content-${index}"
+        part="body"
+        role="tabpanel"
+        aria-labelledby="igc-step-header-${index}"
+      >
+        <div ${ref(this._contentRef)} part="content">
+          <slot></slot>
+        </div>
+      </div>
+    `;
   }
 
   protected override render() {
+    const renderBeforeHeader = this._contentTop && this._isHorizontal;
+
     return html`
-      ${when(
-        this.contentTop && this.orientation === 'horizontal',
-        () => this.renderContent(),
-        () => nothing
-      )}
-      <div part=${partMap(this.headerContainerParts)}>
-        <div
-          part="header"
-          tabindex=${this.active ? '0' : '-1'}
-          role="tab"
-          aria-selected=${this.active}
-          @click=${this.handleClick}
-          @keydown=${this.handleKeydown}
-        >
-          ${this.renderIndicator()} ${this.renderTitleAndSubtitle()}
-        </div>
-      </div>
-      ${when(
-        this.orientation === 'vertical' || !this.contentTop,
-        () => this.renderContent(),
-        () => nothing
+      ${cache(
+        renderBeforeHeader
+          ? html`${this._renderContent()} ${this._renderHeader()}`
+          : html`${this._renderHeader()} ${this._renderContent()}`
       )}
     `;
   }
