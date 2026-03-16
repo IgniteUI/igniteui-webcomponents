@@ -297,6 +297,7 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
     return this._i18nController.locale;
   }
 
+  /* blazorCSSuppress */
   /**
    * The resource strings for localization.
    * Currently only aria-label attributes are localized for the carousel.
