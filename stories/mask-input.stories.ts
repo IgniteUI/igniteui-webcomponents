@@ -163,6 +163,14 @@ type Story = StoryObj<IgcMaskInputArgs>;
 // endregion
 
 export const Basic: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'A basic mask input. Use the controls panel to explore all available properties interactively. The default mask `CCCCCCCCCC` accepts any 10 characters.',
+      },
+    },
+  },
   args: {
     label: 'Default mask input',
   },
@@ -185,6 +193,14 @@ export const Basic: Story = {
 };
 
 export const Slots: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Mask input supports **prefix**, **suffix**, and **helper-text** slots for decorating the field with icons and guidance text.',
+      },
+    },
+  },
   args: {
     label: 'Mask input with slots',
   },
@@ -210,8 +226,74 @@ export const Slots: Story = {
   `,
 };
 
+export const Patterns: Story = {
+  argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story: `Demonstrates common real-world mask patterns using the available mask characters:
+
+| Character | Matches |
+|---|---|
+| \`C\` | Any single character |
+| \`0\` | Numeric digit |
+| \`9\` | Numeric digit or space |
+| \`#\` | Numeric digit or sign (\`+\`, \`-\`) |
+| \`L\` | Alphabetic letter |
+| \`A\` | Alphanumeric |
+| \`a\` | Alphanumeric or space |
+| \`&\` | Any non-separator character |`,
+      },
+    },
+  },
+  render: () => html`
+    <div
+      style="display: flex; flex-direction: column; gap: 1.5rem; max-width: 24rem;"
+    >
+      <igc-mask-input
+        label="Phone number"
+        mask="(000) 000-0000"
+        placeholder="(555) 123-4567"
+      ></igc-mask-input>
+      <igc-mask-input
+        label="Date (MM/DD/YYYY)"
+        mask="00/00/0000"
+        placeholder="MM/DD/YYYY"
+      ></igc-mask-input>
+      <igc-mask-input
+        label="Credit card number"
+        mask="0000 0000 0000 0000"
+        placeholder="1234 5678 9012 3456"
+      ></igc-mask-input>
+      <igc-mask-input
+        label="IP address"
+        mask="099.099.099.099"
+        placeholder="192.168.000.001"
+      ></igc-mask-input>
+      <igc-mask-input
+        label="Social Security Number"
+        mask="000-00-0000"
+        placeholder="123-45-6789"
+      ></igc-mask-input>
+      <igc-mask-input
+        label="ZIP+4 code"
+        mask="00000-0000"
+        placeholder="12345-6789"
+      ></igc-mask-input>
+    </div>
+  `,
+};
+
 export const Form: Story = {
   argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Demonstrates mask input inside an HTML form with various validation constraints — required fields, `withFormatting` value mode, and custom validation messages via named slots.',
+      },
+    },
+  },
   render: () => {
     return html`<form action="" @submit=${formSubmitHandler}>
       <fieldset>

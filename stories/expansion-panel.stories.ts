@@ -6,6 +6,7 @@ import {
   defineComponents,
   registerIconFromText,
 } from 'igniteui-webcomponents';
+import { disableStoryControls } from './story.js';
 
 defineComponents(IgcExpansionPanelComponent);
 
@@ -143,17 +144,6 @@ registerIconFromText(
 </svg>`
 );
 
-// Replace internal icons by icon reference
-//setIconRef('expand', 'default', {
-//  name: 'ferris',
-//  collection: 'default',
-//});
-//
-//setIconRef('collapse', 'default', {
-//  name: 'ferris-greet',
-//  collection: 'default',
-//});
-
 function onOpening({ detail }: CustomEvent<IgcExpansionPanelComponent>) {
   detail.querySelector('[slot="indicator"]')!.textContent = '💥';
 }
@@ -162,7 +152,15 @@ function onClosing({ detail }: CustomEvent<IgcExpansionPanelComponent>) {
   detail.querySelector('[slot="indicator"]')!.textContent = '💣';
 }
 
-export const Basic: Story = {
+export const Default: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'A basic expansion panel with a title, subtitle, and body content. Use the controls panel to toggle `open`, `disabled`, and `indicatorPosition`.',
+      },
+    },
+  },
   render: (args) => html`
     <igc-expansion-panel
       indicator-position=${args.indicatorPosition}
@@ -182,13 +180,18 @@ export const Basic: Story = {
 };
 
 export const IndicatorSlots: Story = {
-  render: ({ disabled, indicatorPosition, open }) => html`
+  argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Demonstrates the three indicator customization approaches: the default chevron icon, static `indicator` / `indicator-expanded` slot pair (using custom SVG icons), and a fully dynamic indicator whose content is swapped programmatically inside `igcOpening` / `igcClosing` event handlers.',
+      },
+    },
+  },
+  render: () => html`
     <h3>Default indicator</h3>
-    <igc-expansion-panel
-      ?open=${open}
-      ?disabled=${disabled}
-      .indicatorPosition=${indicatorPosition}
-    >
+    <igc-expansion-panel>
       <p slot="title">TypeScript</p>
       <p slot="subtitle">functional, generic, imperative, object-oriented</p>
       <p>
@@ -202,11 +205,7 @@ export const IndicatorSlots: Story = {
     </igc-expansion-panel>
 
     <h3>With indicator and indicator-expanded slots</h3>
-    <igc-expansion-panel
-      ?open=${open}
-      ?disabled=${disabled}
-      .indicatorPosition=${indicatorPosition}
-    >
+    <igc-expansion-panel>
       <p slot="title">Rust</p>
       <p slot="subtitle">
         concurrent, functional, generic, imperative, structured
@@ -234,13 +233,7 @@ export const IndicatorSlots: Story = {
     </igc-expansion-panel>
 
     <h3>Switching indicator slot based on the expansion panel open state</h3>
-    <igc-expansion-panel
-      ?open=${open}
-      ?disabled=${disabled}
-      .indicatorPosition=${indicatorPosition}
-      @igcOpening=${onOpening}
-      @igcClosing=${onClosing}
-    >
+    <igc-expansion-panel @igcOpening=${onOpening} @igcClosing=${onClosing}>
       <p slot="title">C</p>
       <p slot="subtitle">imperative, procedural, structured</p>
       <span slot="indicator" style="font-size: 1.5rem">💣</span>
