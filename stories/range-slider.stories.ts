@@ -3,11 +3,12 @@ import { html } from 'lit';
 
 import {
   IgcRangeSliderComponent,
+  IgcSliderLabelComponent,
   defineComponents,
 } from 'igniteui-webcomponents';
 import { disableStoryControls } from './story.js';
 
-defineComponents(IgcRangeSliderComponent);
+defineComponents(IgcRangeSliderComponent, IgcSliderLabelComponent);
 
 // region default
 const metadata: Meta<IgcRangeSliderComponent> = {
@@ -243,6 +244,14 @@ export const Default: Story = {
     lower: 0,
     upper: 25,
   },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'A fully interactive range slider. Use the **Controls** panel to adjust `lower`/`upper` values, set `min`/`max`/`step`, toggle `discreteTrack`, configure ticks, and explore all available properties.',
+      },
+    },
+  },
   render: (args) => html`
     <style>
       igc-range-slider {
@@ -295,7 +304,13 @@ const temperatureFormat: Intl.NumberFormatOptions = {
 export const ValueFormat: Story = {
   argTypes: disableStoryControls(metadata),
   parameters: {
-    actions: { handles: ['igcChange'] },
+    docs: {
+      description: {
+        story:
+          'Demonstrates formatting thumb tooltip and tick label values using `valueFormat` (template string with `{0}` placeholder) and `valueFormatOptions` (`Intl.NumberFormatOptions`). Shows currency, distance, and temperature formats.',
+      },
+    },
+    actions: { handles: ['igcInput', 'igcChange'] },
   },
   render: () => html`
     <style>
@@ -336,8 +351,94 @@ export const ValueFormat: Story = {
   `,
 };
 
+export const Ticks: Story = {
+  argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Demonstrates tick configuration: primary and secondary tick counts, `tickOrientation` (`start`, `end`, `mirror`), tick label rotation, and `discreteTrack` for snapping the thumb to step positions.',
+      },
+    },
+  },
+  render: () => html`
+    <style>
+      .ticks-demo {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        padding: 1rem;
+      }
+
+      .ticks-demo igc-range-slider {
+        padding-inline: 1.5rem;
+        padding-block: 3.5rem;
+      }
+
+      .ticks-demo label {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: var(--ig-gray-700);
+      }
+    </style>
+    <div class="ticks-demo">
+      <label>Primary ticks (end)</label>
+      <igc-range-slider
+        lower="20"
+        upper="70"
+        primary-ticks="5"
+        thumb-label-lower="Lower"
+        thumb-label-upper="Upper"
+      ></igc-range-slider>
+
+      <label>Primary + secondary ticks (mirror)</label>
+      <igc-range-slider
+        lower="20"
+        upper="70"
+        primary-ticks="5"
+        secondary-ticks="4"
+        tick-orientation="mirror"
+        thumb-label-lower="Lower"
+        thumb-label-upper="Upper"
+      ></igc-range-slider>
+
+      <label>Discrete track with ticks (start)</label>
+      <igc-range-slider
+        lower="20"
+        upper="60"
+        step="10"
+        discrete-track
+        primary-ticks="2"
+        secondary-ticks="4"
+        tick-orientation="start"
+        thumb-label-lower="Lower"
+        thumb-label-upper="Upper"
+      ></igc-range-slider>
+
+      <label>Rotated tick labels</label>
+      <igc-range-slider
+        lower="25"
+        upper="75"
+        primary-ticks="5"
+        secondary-ticks="4"
+        tick-label-rotation="90"
+        thumb-label-lower="Lower"
+        thumb-label-upper="Upper"
+      ></igc-range-slider>
+    </div>
+  `,
+};
+
 export const Labels: Story = {
   argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Demonstrates the discrete label mode using projected `igc-slider-label` elements. When labels are provided the slider snaps to each label position, `min`/`max` are derived from the label count, and `step` is always 1.',
+      },
+    },
+  },
   render: () => html`
     <igc-range-slider
       style="padding: 60px"

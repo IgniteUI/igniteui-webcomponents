@@ -1,17 +1,25 @@
-import type { Meta, StoryObj } from '@storybook/web-components';
+import type { Meta, StoryObj } from '@storybook/web-components-vite';
 import { html } from 'lit';
-import { ifDefined } from 'lit/directives/if-defined.js';
 
 import {
-  defineComponents,
-  IgcThemeProviderComponent,
   IgcButtonComponent,
-  IgcInputComponent,
   IgcCardComponent,
-  IgcCardHeaderComponent,
   IgcCardContentComponent,
-  IgcDatePickerComponent,
+  IgcCardHeaderComponent,
+  IgcInputComponent,
+  IgcThemeProviderComponent,
+  defineComponents,
 } from 'igniteui-webcomponents';
+import { disableStoryControls } from './story.js';
+import { styles as bootstrapDarkStyles } from '../src/styles/themes/dark/bootstrap.css.js';
+
+// The theme file uses :root selectors for CSS custom properties. Replace them
+// with :scope so they are set on the igc-theme-provider element instead of the
+// document root, allowing them to cascade into its Shadow DOM descendants.
+const bootstrapDarkScopedCSS = bootstrapDarkStyles.cssText.replace(
+  /:root\b/g,
+  ':scope'
+);
 
 defineComponents(
   IgcThemeProviderComponent,
@@ -19,8 +27,7 @@ defineComponents(
   IgcInputComponent,
   IgcCardComponent,
   IgcCardHeaderComponent,
-  IgcCardContentComponent,
-  IgcDatePickerComponent
+  IgcCardContentComponent
 );
 
 // region default
@@ -67,130 +74,180 @@ type Story = StoryObj<IgcThemeProviderArgs>;
 // endregion
 
 export const Default: Story = {
-  args: {
-    theme: 'material',
-    variant: 'light',
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Use the **Controls** panel to switch `theme` and `variant`. The right column is wrapped in an `igc-theme-provider` and updates to the selected theme independently of the global Storybook theme shown on the left.',
+      },
+    },
   },
   render: ({ theme, variant }, { globals }) => html`
-    <style>
-      /* Custom light variant - Purple/Teal color scheme */
-      @scope (igc-theme-provider[variant='light']) {
-        :scope {
-          /* Primary palette - Purple */
-          --ig-primary-500: #7c3aed;
-          --ig-primary-500-contrast: white;
-
-          /* Secondary palette - Teal */
-          --ig-secondary-500: #14b8a6;
-          --ig-secondary-500-contrast: white;
-
-          /* Surface - Light lavender (light color for light theme) */
-          --ig-surface-500: #faf5ff;
-
-          /* Gray palette - Dark grays for light theme (to contrast light surface) */
-          --ig-gray-500: hsl(250, 10%, 46%);
-        }
-
-        .scoped-theme-wrapper {
-          background-color: #faf5ff;
-          color: #27272a;
-        }
-
-        .scoped-theme-wrapper h3,
-        .scoped-theme-wrapper h5,
-        .scoped-theme-wrapper p {
-          color: #27272a;
-        }
-      }
-
-      /* Custom dark variant - Cyan/Pink color scheme */
-      @scope (igc-theme-provider[variant='dark']) {
-        :scope {
-          /* Primary palette - Cyan */
-          --ig-primary-500: #22d3ee;
-          --ig-primary-500-contrast: black;
-
-          /* Secondary palette - Pink */
-          --ig-secondary-500: #f472b6;
-          --ig-secondary-500-contrast: black;
-
-          /* Surface - Dark slate (dark color for dark theme) */
-          --ig-surface-500: #0f172a;
-
-          /* Gray palette - Light grays for dark theme (to contrast dark surface) */
-          --ig-gray-500: hsl(215, 20%, 75%);
-        }
-
-        .scoped-theme-wrapper {
-          background-color: #0f172a;
-          color: #e2e8f0;
-        }
-
-        .scoped-theme-wrapper h3,
-        .scoped-theme-wrapper h5,
-        .scoped-theme-wrapper p {
-          color: #e2e8f0;
-        }
-      }
-    </style>
-
-    <div
-      style="display: flex; flex-direction: column; gap: 2rem; padding: 2rem;"
-    >
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
       <igc-card>
         <igc-card-header>
-          <h3>Global Theme:</h3>
-          <h5>Theme: ${globals.theme} | Variant: ${globals.variant}</h5>
+          <h3>Global: ${globals.theme} / ${globals.variant}</h3>
         </igc-card-header>
         <igc-card-content>
-          <p>These components use the global theme.</p>
-          <div
-            style="display: flex; gap: 1rem; flex-direction: column; margin-top: 1rem;"
-          >
+          <div style="display: flex; flex-direction: column; gap: .75rem;">
             <igc-input
               outlined
-              label="Input Field"
-              placeholder="Type something..."
+              label="Username"
+              placeholder="Enter username..."
             ></igc-input>
-            <igc-date-picker label="Select a Date" outlined></igc-date-picker>
-            <div style="display: flex; gap: 1rem;">
-              <igc-button>Primary Button</igc-button>
-              <igc-button variant="outlined">Outlined Button</igc-button>
+            <igc-input
+              outlined
+              label="Password"
+              placeholder="Enter password..."
+            ></igc-input>
+            <div style="display: flex; gap: .5rem;">
+              <igc-button>Sign In</igc-button>
+              <igc-button variant="outlined">Cancel</igc-button>
             </div>
           </div>
         </igc-card-content>
       </igc-card>
-    </div>
 
-    <igc-theme-provider theme=${ifDefined(theme)} variant=${ifDefined(variant)}>
-      <div
-        class="scoped-theme-wrapper"
-        style="display: flex; flex-direction: column; gap: 2rem; padding: 2rem; border-radius: 8px;"
-      >
+      <igc-theme-provider theme=${theme} variant=${variant}>
         <igc-card>
           <igc-card-header>
-            <h3>Scoped Theme:</h3>
-            <h5>Theme: ${theme} | Variant: ${variant}</h5>
+            <h3>Scoped: ${theme} / ${variant}</h3>
           </igc-card-header>
           <igc-card-content>
-            <p>These components use the scoped theme from the provider.</p>
-            <div
-              style="display: flex; gap: 1rem; flex-direction: column; margin-top: 1rem;"
-            >
+            <div style="display: flex; flex-direction: column; gap: .75rem;">
               <igc-input
                 outlined
-                label="Input Field"
-                placeholder="Type something..."
+                label="Username"
+                placeholder="Enter username..."
               ></igc-input>
-              <igc-date-picker label="Select a Date" outlined></igc-date-picker>
-              <div style="display: flex; gap: 1rem;">
-                <igc-button>Primary Button</igc-button>
-                <igc-button variant="outlined">Outlined Button</igc-button>
+              <igc-input
+                outlined
+                label="Password"
+                placeholder="Enter password..."
+              ></igc-input>
+              <div style="display: flex; gap: .5rem;">
+                <igc-button>Sign In</igc-button>
+                <igc-button variant="outlined">Cancel</igc-button>
               </div>
             </div>
           </igc-card-content>
         </igc-card>
-      </div>
-    </igc-theme-provider>
+      </igc-theme-provider>
+    </div>
+  `,
+};
+
+export const AllThemes: Story = {
+  argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'All four built-in themes — Bootstrap, Material, Fluent, and Indigo — shown side by side in the light variant, each scoped by its own `igc-theme-provider`.',
+      },
+    },
+  },
+  render: () => html`
+    <div
+      style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem;"
+    >
+      <igc-theme-provider theme="bootstrap" variant="light">
+        <igc-card>
+          <igc-card-header><h3>Bootstrap</h3></igc-card-header>
+          <igc-card-content>
+            <igc-input outlined label="Username"></igc-input>
+            <div style="margin-top: .75rem; display: flex; gap: .5rem;">
+              <igc-button>Submit</igc-button>
+              <igc-button variant="outlined">Cancel</igc-button>
+            </div>
+          </igc-card-content>
+        </igc-card>
+      </igc-theme-provider>
+
+      <igc-theme-provider theme="material" variant="light">
+        <igc-card>
+          <igc-card-header><h3>Material</h3></igc-card-header>
+          <igc-card-content>
+            <igc-input outlined label="Username"></igc-input>
+            <div style="margin-top: .75rem; display: flex; gap: .5rem;">
+              <igc-button>Submit</igc-button>
+              <igc-button variant="outlined">Cancel</igc-button>
+            </div>
+          </igc-card-content>
+        </igc-card>
+      </igc-theme-provider>
+
+      <igc-theme-provider theme="fluent" variant="light">
+        <igc-card>
+          <igc-card-header><h3>Fluent</h3></igc-card-header>
+          <igc-card-content>
+            <igc-input outlined label="Username"></igc-input>
+            <div style="margin-top: .75rem; display: flex; gap: .5rem;">
+              <igc-button>Submit</igc-button>
+              <igc-button variant="outlined">Cancel</igc-button>
+            </div>
+          </igc-card-content>
+        </igc-card>
+      </igc-theme-provider>
+
+      <igc-theme-provider theme="indigo" variant="light">
+        <igc-card>
+          <igc-card-header><h3>Indigo</h3></igc-card-header>
+          <igc-card-content>
+            <igc-input outlined label="Username"></igc-input>
+            <div style="margin-top: .75rem; display: flex; gap: .5rem;">
+              <igc-button>Submit</igc-button>
+              <igc-button variant="outlined">Cancel</igc-button>
+            </div>
+          </igc-card-content>
+        </igc-card>
+      </igc-theme-provider>
+    </div>
+  `,
+};
+
+export const LightAndDark: Story = {
+  argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'The Bootstrap theme in both light and dark variants shown simultaneously. Each `igc-theme-provider` scopes its variant to its own subtree, leaving the rest of the page unaffected.',
+      },
+    },
+  },
+  render: () => html`
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+      <igc-theme-provider theme="bootstrap" variant="light">
+        <igc-card>
+          <igc-card-header><h3>Bootstrap / Light</h3></igc-card-header>
+          <igc-card-content>
+            <igc-input outlined label="Username"></igc-input>
+            <div style="margin-top: .75rem; display: flex; gap: .5rem;">
+              <igc-button>Submit</igc-button>
+              <igc-button variant="outlined">Cancel</igc-button>
+            </div>
+          </igc-card-content>
+        </igc-card>
+      </igc-theme-provider>
+
+      <igc-theme-provider theme="bootstrap" variant="dark">
+        <style>
+          @scope {
+            ${bootstrapDarkScopedCSS}
+          }
+        </style>
+        <igc-card>
+          <igc-card-header><h3>Bootstrap / Dark</h3></igc-card-header>
+          <igc-card-content>
+            <igc-input outlined label="Username"></igc-input>
+            <div style="margin-top: .75rem; display: flex; gap: .5rem;">
+              <igc-button>Submit</igc-button>
+              <igc-button variant="outlined">Cancel</igc-button>
+            </div>
+          </igc-card-content>
+        </igc-card>
+      </igc-theme-provider>
+    </div>
   `,
 };
