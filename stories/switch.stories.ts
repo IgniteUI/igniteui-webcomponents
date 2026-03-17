@@ -1,6 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/web-components-vite';
 import { html } from 'lit';
-import { ifDefined } from 'lit/directives/if-defined.js';
 
 import { IgcSwitchComponent, defineComponents } from 'igniteui-webcomponents';
 import {
@@ -19,7 +18,7 @@ const metadata: Meta<IgcSwitchComponent> = {
     docs: {
       description: {
         component:
-          'Similar to a checkbox, a switch controls the state of a single setting on or off.',
+          'A switch toggles a single setting on or off, providing immediate feedback. It is semantically equivalent to a checkbox but communicates a binary state change that takes effect right away — without requiring a form submission.',
       },
     },
     actions: { handles: ['igcChange'] },
@@ -99,22 +98,102 @@ type Story = StoryObj<IgcSwitchArgs>;
 
 // endregion
 
-const Template = ({ labelPosition, checked, disabled }: IgcSwitchArgs) => {
-  return html`
+export const Basic: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'A single interactive switch. Use the **Controls** panel to toggle `checked`, `disabled`, `invalid`, `required`, and `labelPosition`.',
+      },
+    },
+  },
+  render: ({
+    labelPosition,
+    checked,
+    disabled,
+    required,
+    invalid,
+    value,
+    name,
+  }) => html`
     <igc-switch
-      label-position=${ifDefined(labelPosition)}
-      .checked=${checked}
-      .disabled=${disabled}
+      .labelPosition=${labelPosition}
+      .name=${name}
+      .value=${value}
+      ?checked=${checked}
+      ?disabled=${disabled}
+      ?required=${required}
+      ?invalid=${invalid}
     >
       Label
     </igc-switch>
-  `;
+  `,
 };
 
-export const Basic: Story = Template.bind({});
+export const LabelPosition: Story = {
+  argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Demonstrates the two `label-position` values — `after` (default) and `before`.',
+      },
+    },
+  },
+  render: () => html`
+    <style>
+      .label-position-demo {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+      }
+    </style>
+    <div class="label-position-demo">
+      <igc-switch label-position="after" checked
+        >Label after (default)</igc-switch
+      >
+      <igc-switch label-position="before">Label before</igc-switch>
+    </div>
+  `,
+};
+
+export const States: Story = {
+  argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Overview of all visual states: default, checked, disabled, disabled-checked, and invalid.',
+      },
+    },
+  },
+  render: () => html`
+    <style>
+      .states-demo {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+      }
+    </style>
+    <div class="states-demo">
+      <igc-switch>Default</igc-switch>
+      <igc-switch checked>Checked</igc-switch>
+      <igc-switch disabled>Disabled</igc-switch>
+      <igc-switch disabled checked>Disabled &amp; checked</igc-switch>
+    </div>
+  `,
+};
 
 export const Form: Story = {
   argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Form integration demo covering default, pre-checked, required validation, and disabled states. Submit the form to inspect the switch values in the submission data.',
+      },
+    },
+  },
   render: () => {
     return html`
       <form action="" @submit=${formSubmitHandler}>
