@@ -1,7 +1,6 @@
 import { isServer, type ReactiveController } from 'lit';
 import {
   escapeRegex,
-  first,
   iterNodes,
   nanoid,
   scrollIntoView,
@@ -26,7 +25,8 @@ function* matchText(
   for (const node of nodes) {
     if (node.textContent) {
       for (const match of node.textContent.matchAll(regexp)) {
-        yield { node, indices: first(match.indices!) } satisfies Match;
+        const [[start, end]] = match.indices!;
+        yield { node, indices: [start, end] } satisfies Match;
       }
     }
   }
@@ -43,6 +43,7 @@ class HighlightService implements ReactiveController {
 
   private _highlight!: Highlight;
   private _activeHighlight!: Highlight;
+  private _ranges: Range[] = [];
 
   private _current = 0;
 
@@ -54,7 +55,7 @@ class HighlightService implements ReactiveController {
    * The total number of matches found in the component's content.
    */
   public get size(): number {
-    return this._highlight.size;
+    return this._ranges.length;
   }
 
   /**
@@ -130,6 +131,7 @@ class HighlightService implements ReactiveController {
   private _removeHighlightEntries(): void {
     CSS.highlights.delete(this._id);
     CSS.highlights.delete(this._activeId);
+    this._ranges.length = 0;
   }
 
   private _createRegex(value: string): RegExp {
@@ -139,16 +141,10 @@ class HighlightService implements ReactiveController {
     );
   }
 
-  private _getRangeByIndex(index: number): Range {
-    return this._highlight.values().drop(index).next().value as Range;
-  }
-
   private _updateActiveHighlight(): void {
     if (this.size) {
       this._activeHighlight.clear();
-      this._activeHighlight.add(
-        this._getRangeByIndex(this._current).cloneRange()
-      );
+      this._activeHighlight.add(this._ranges[this._current]);
     }
   }
 
@@ -158,10 +154,10 @@ class HighlightService implements ReactiveController {
     }
 
     this._current = wrap(0, this.size - 1, index);
-    const range = this._getRangeByIndex(this._current);
+    const range = this._ranges[this._current];
 
     this._activeHighlight.clear();
-    this._activeHighlight.add(range.cloneRange());
+    this._activeHighlight.add(range);
 
     if (!options?.preventScroll) {
       scrollIntoView(range.commonAncestorContainer.parentElement, {
@@ -192,21 +188,24 @@ class HighlightService implements ReactiveController {
    * Finds matches for the given search text in the component's content and creates highlight ranges for them.
    */
   public find(value: string): void {
-    if (!value) {
+    if (!value?.trim()) {
       return;
     }
 
-    const nodes = iterNodes(this._host, {
-      show: 'SHOW_TEXT',
-      filter: (node) => !!node.textContent,
-    });
+    const iterator = matchText(
+      iterNodes(this._host, { show: 'SHOW_TEXT' }),
+      this._createRegex(value)
+    );
 
-    const iterator = matchText(nodes, this._createRegex(value));
-
-    for (const { node, indices } of iterator) {
+    for (const {
+      node,
+      indices: [start, end],
+    } of iterator) {
       const range = new Range();
-      range.setStart(node, indices[0]);
-      range.setEnd(node, indices[1]);
+      range.setStart(node, start);
+      range.setEnd(node, end);
+
+      this._ranges.push(range);
       this._highlight.add(range);
     }
 
@@ -232,6 +231,7 @@ class HighlightService implements ReactiveController {
   public clear(): void {
     this._activeHighlight.clear();
     this._highlight.clear();
+    this._ranges.length = 0;
     this._current = 0;
   }
 
