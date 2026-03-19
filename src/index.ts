@@ -69,6 +69,7 @@ export { default as IgcTreeItemComponent } from './components/tree/tree-item.js'
 export { default as IgcSplitterComponent } from './components/splitter/splitter.js';
 export { default as IgcStepperComponent } from './components/stepper/stepper.js';
 export { default as IgcStepComponent } from './components/stepper/step.js';
+export { default as IgcHighlightComponent } from './components/highlight/highlight.js';
 export { default as IgcTooltipComponent } from './components/tooltip/tooltip.js';
 export { default as IgcThemeProviderComponent } from './components/theme-provider/theme-provider.js';
 

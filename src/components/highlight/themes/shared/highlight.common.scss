@@ -1,0 +1,13 @@
+@use 'styles/utilities' as *;
+@use '../light/themes' as *;
+
+$theme: $material;
+
+:host {
+    --background: #{var-get($theme, 'resting-background')};
+    --foreground: #{var-get($theme, 'resting-color')};
+    --background-active: #{var-get($theme, 'active-background')};
+    --foreground-active: #{var-get($theme, 'active-color')};
+
+    display: contents;
+}
