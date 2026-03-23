@@ -32,7 +32,6 @@
     // Hide the scrollbar for mobile devices
 
     scrollbar-width: none;
-    overscroll-behavior: none;
 
     &::-webkit-scrollbar {
         display: none;
@@ -52,17 +51,27 @@
 
 [part~='scrollable'] {
     /* stylelint-disable-next-line max-line-length */
-    grid-template-columns: var(--scroll-btn-size) repeat(var(--_tabs-count), minmax(max-content, auto)) var(--scroll-btn-size);
+    grid-template-columns:
+        var(--scroll-btn-size) repeat(
+            var(--_tabs-count),
+            minmax(max-content, auto)
+        )
+        var(--scroll-btn-size);
 }
 
 [part~='inner']:not([part~='scrollable']) {
-    grid-template-columns: repeat(var(--_tabs-count), minmax(auto, min-content));
+    grid-template-columns: repeat(
+        var(--_tabs-count),
+        minmax(auto, min-content)
+    );
     min-width: $tab-min-width;
 }
 
 :host([alignment='start']) {
     [part~='inner']:not([part~='scrollable']) {
-        grid-template-columns: repeat(var(--_tabs-count), minmax(max-content, auto)) 1fr;
+        grid-template-columns:
+            repeat(var(--_tabs-count), minmax(max-content, auto))
+            1fr;
 
         &::after {
             @extend %fake-column;
@@ -72,7 +81,9 @@
 
 :host([alignment='center']) {
     [part~='inner']:not([part~='scrollable']) {
-        grid-template-columns: 1fr repeat(var(--_tabs-count), minmax(max-content, auto)) 1fr;
+        grid-template-columns:
+            1fr repeat(var(--_tabs-count), minmax(max-content, auto))
+            1fr;
 
         &::before,
         &::after {
@@ -83,7 +94,10 @@
 
 :host([alignment='end']) {
     [part~='inner']:not([part~='scrollable']) {
-        grid-template-columns: 1fr repeat(var(--_tabs-count), minmax(max-content, auto));
+        grid-template-columns: 1fr repeat(
+                var(--_tabs-count),
+                minmax(max-content, auto)
+            );
 
         &::before {
             @extend %fake-column;
@@ -96,11 +110,19 @@
 
     [part~='scrollable'] {
         /* stylelint-disable-next-line max-line-length */
-        grid-template-columns: var(--scroll-btn-size) repeat(var(--_tabs-count), minmax($tab-min-width, 1fr)) var(--scroll-btn-size);
+        grid-template-columns:
+            var(--scroll-btn-size) repeat(
+                var(--_tabs-count),
+                minmax($tab-min-width, 1fr)
+            )
+            var(--scroll-btn-size);
     }
 
     [part~='inner']:not([part~='scrollable']) {
-        grid-template-columns: repeat(var(--_tabs-count), minmax($tab-min-width, auto));
+        grid-template-columns: repeat(
+            var(--_tabs-count),
+            minmax($tab-min-width, auto)
+        );
     }
 }
 
@@ -142,7 +164,9 @@ igc-icon-button::part(base) {
     span {
         position: absolute;
         display: inline-block;
-        transition: transform .3s $tabs-animation-function, width .2s $tabs-animation-function;
+        transition:
+            transform 0.3s $tabs-animation-function,
+            width 0.2s $tabs-animation-function;
         z-index: map.get($tabs-z-index, 'selected-indicator');
     }
 }

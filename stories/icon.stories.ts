@@ -6,10 +6,10 @@ import {
   IgcButtonComponent,
   IgcIconComponent,
   defineComponents,
-  registerIcon,
   registerIconFromText,
   setIconRef,
 } from 'igniteui-webcomponents';
+import { disableStoryControls } from './story.js';
 
 defineComponents(IgcIconComponent, IgcButtonComponent);
 
@@ -84,129 +84,330 @@ registerIconFromText(
   '<svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" data-prefix="fas" data-icon="biking" class="svg-inline--fa fa-biking fa-w-20" role="img" viewBox="0 0 640 512"><path fill="currentColor" d="M400 96a48 48 0 1 0-48-48 48 48 0 0 0 48 48zm-4 121a31.9 31.9 0 0 0 20 7h64a32 32 0 0 0 0-64h-52.78L356 103a31.94 31.94 0 0 0-40.81.68l-112 96a32 32 0 0 0 3.08 50.92L288 305.12V416a32 32 0 0 0 64 0V288a32 32 0 0 0-14.25-26.62l-41.36-27.57 58.25-49.92zm116 39a128 128 0 1 0 128 128 128 128 0 0 0-128-128zm0 192a64 64 0 1 1 64-64 64 64 0 0 1-64 64zM128 256a128 128 0 1 0 128 128 128 128 0 0 0-128-128zm0 192a64 64 0 1 1 64-64 64 64 0 0 1-64 64z"/></svg>'
 );
 icons.push('biking');
-icons.push('search');
 icons.sort();
-
-const registerIconClick = () => {
-  registerIcon(
-    'search',
-    'https://unpkg.com/material-design-icons@3.0.1/action/svg/production/ic_search_24px.svg',
-    'material'
-  );
-};
-
-const Template = ({
-  name = 'biking',
-  collection = 'default',
-  mirrored = false,
-}: IgcIconArgs) => {
-  return html`
-    <div style="display: flex;">
-      <igc-icon .name=${name} .collection=${collection} .mirrored=${mirrored}>
-      </igc-icon>
-
-      <button @click=${registerIconClick}>Register Icon</button>
-    </div>
-  `;
-};
 
 setIconRef('aliased', 'example', {
   name: 'biking',
   collection: 'default',
 });
 
-const IconReference = ({
-  name = 'bacteria',
-  collection = 'default',
-}: IgcIconArgs) => {
-  const updateRef = () => {
-    setIconRef('aliased', 'example', {
-      name,
-      collection,
-    });
-  };
+export const Basic: Story = {
+  render: ({ name, collection, mirrored }) => html`
+    <igc-icon
+      .name=${name}
+      .collection=${collection}
+      .mirrored=${mirrored}
+    ></igc-icon>
+  `,
+};
 
-  return html`
-    <link
-      href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css"
-      rel="stylesheet"
-    />
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+export const Mirrored: Story = {
+  argTypes: disableStoryControls(metadata),
+  render: () => html`
     <style>
-      .ref {
+      .mirrored-demo {
         display: flex;
         align-items: center;
-        gap: 1rem;
-        padding-block: 1rem;
-        border: 1px solid var(--ig-gray-300);
-        color: var(--ig-gray-800);
-
-        igc-icon {
-          --size: 2.5rem;
-          color: var(--ig-primary-500);
-
-          padding-inline: 1rem;
-          border-inline-end: 1px solid var(--ig-gray-300);
-        }
+        gap: 3rem;
       }
 
-      p,
-      h5 {
+      .mirrored-demo figure {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+        margin: 0;
+      }
+
+      .mirrored-demo igc-icon {
+        --size: 3rem;
+        color: var(--ig-primary-500);
+      }
+
+      .mirrored-demo figcaption {
+        font-size: 0.875rem;
+        color: var(--ig-gray-600);
+      }
+    </style>
+    <div class="mirrored-demo">
+      <figure>
+        <igc-icon name="biking"></igc-icon>
+        <figcaption>Default (LTR)</figcaption>
+      </figure>
+      <figure>
+        <igc-icon name="biking" mirrored></igc-icon>
+        <figcaption>Mirrored (RTL)</figcaption>
+      </figure>
+    </div>
+  `,
+};
+
+export const Sizing: Story = {
+  argTypes: disableStoryControls(metadata),
+  render: () => html`
+    <style>
+      .sizing-demo {
+        display: flex;
+        align-items: flex-end;
+        gap: 2rem;
+        flex-wrap: wrap;
+      }
+
+      .sizing-demo figure {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+        margin: 0;
+      }
+
+      .sizing-demo igc-icon {
+        color: var(--ig-primary-500);
+      }
+
+      .sizing-demo figcaption {
+        font-size: 0.75rem;
+        color: var(--ig-gray-600);
+      }
+    </style>
+    <div class="sizing-demo">
+      <figure>
+        <igc-icon name="biking" style="--size: 1rem"></igc-icon>
+        <figcaption>1rem</figcaption>
+      </figure>
+      <figure>
+        <igc-icon name="biking" style="--size: 1.5rem"></igc-icon>
+        <figcaption>1.5rem</figcaption>
+      </figure>
+      <figure>
+        <igc-icon name="biking" style="--size: 2rem"></igc-icon>
+        <figcaption>2rem</figcaption>
+      </figure>
+      <figure>
+        <igc-icon name="biking" style="--size: 3rem"></igc-icon>
+        <figcaption>3rem</figcaption>
+      </figure>
+      <figure>
+        <igc-icon name="biking" style="--size: 4rem"></igc-icon>
+        <figcaption>4rem</figcaption>
+      </figure>
+      <figure>
+        <igc-icon name="biking" style="--size: 6rem"></igc-icon>
+        <figcaption>6rem</figcaption>
+      </figure>
+    </div>
+  `,
+};
+
+export const Coloring: Story = {
+  argTypes: disableStoryControls(metadata),
+  render: () => html`
+    <style>
+      .coloring-demo {
+        display: flex;
+        gap: 2rem;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+
+      .coloring-demo figure {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+        margin: 0;
+      }
+
+      .coloring-demo igc-icon {
+        --size: 2.5rem;
+      }
+
+      .coloring-demo figcaption {
+        font-size: 0.75rem;
+        color: var(--ig-gray-600);
+      }
+    </style>
+    <div class="coloring-demo">
+      <figure>
+        <igc-icon name="biking" style="color: var(--ig-primary-500)"></igc-icon>
+        <figcaption>Primary</figcaption>
+      </figure>
+      <figure>
+        <igc-icon
+          name="biking"
+          style="color: var(--ig-secondary-500)"
+        ></igc-icon>
+        <figcaption>Secondary</figcaption>
+      </figure>
+      <figure>
+        <igc-icon name="biking" style="color: var(--ig-info-500)"></igc-icon>
+        <figcaption>Info</figcaption>
+      </figure>
+      <figure>
+        <igc-icon name="biking" style="color: var(--ig-success-500)"></igc-icon>
+        <figcaption>Success</figcaption>
+      </figure>
+      <figure>
+        <igc-icon name="biking" style="color: var(--ig-warn-500)"></igc-icon>
+        <figcaption>Warning</figcaption>
+      </figure>
+      <figure>
+        <igc-icon name="biking" style="color: var(--ig-error-500)"></igc-icon>
+        <figcaption>Error</figcaption>
+      </figure>
+      <figure>
+        <igc-icon name="biking" style="color: var(--ig-gray-500)"></igc-icon>
+        <figcaption>Gray</figcaption>
+      </figure>
+    </div>
+  `,
+};
+
+export const Gallery: Story = {
+  argTypes: disableStoryControls(metadata),
+  render: () => html`
+    <style>
+      .icon-gallery {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(6rem, 1fr));
+        gap: 0.5rem;
+        max-height: 70vh;
+        overflow-y: auto;
+        padding: 0.5rem;
+      }
+
+      .icon-gallery .icon-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        padding: 0.75rem 0.25rem;
+        border: 1px solid var(--ig-gray-200);
+        border-radius: 4px;
+        cursor: default;
+        transition: background-color 0.2s;
+      }
+
+      .icon-gallery .icon-item:hover {
+        background-color: var(--ig-gray-100);
+      }
+
+      .icon-gallery .icon-item igc-icon {
+        --size: 1.5rem;
         color: var(--ig-gray-700);
       }
 
-      pre[class*='language-'] {
-        padding: unset;
-        margin-block: 1rem;
-        font-size: 0.75rem;
-        background: var(--ig-surface-500);
-        border: 1px solid var(--ig-gray-100);
-
-        code {
-          text-shadow: none;
-        }
-      }
-
-      .token.operator {
-        background: none;
+      .icon-gallery .icon-item span {
+        font-size: 0.625rem;
+        text-align: center;
+        color: var(--ig-gray-600);
+        word-break: break-all;
+        line-height: 1.2;
       }
     </style>
-    <h3>Icon References</h3>
-    <p>
-      This sample showcases how icons can be declared and used by reference.
-    </p>
-    <h5>JavaScript:</h5>
-    <pre>
-      <code class="language-js">
-  setIconRef('aliased', 'example', {
-    name: 'biking',
-    collection: 'default',
-  });</code>
-    </pre>
-    <h5>Markup:</h5>
-    <pre><code class="language-markup">
-  &lt;igc-icon name="aliased" collection="example">&lt;igc-icon>
-    </code></pre>
-
-    <p>
-      <small>
-        <i>The code above results in following icon when rendered:</i>
-      </small>
-    </p>
-
-    <div class="ref">
-      <igc-icon name="aliased" collection="example"></igc-icon>
-      <small>
-        To see how this will affect the icon at runtime, choose an icon name
-        from the dropdown list in the <b>Controls</b> section bellow and press
-        the <b>Update Reference</b> button.
-      </small>
+    <div class="icon-gallery">
+      ${icons.map(
+        (icon) => html`
+          <div class="icon-item" title=${icon}>
+            <igc-icon name=${icon}></igc-icon>
+            <span>${icon}</span>
+          </div>
+        `
+      )}
     </div>
-    <br />
-
-    <igc-button @click=${updateRef}>Update Reference</igc-button>
-  `;
+  `,
 };
 
-export const Basic: Story = Template.bind({});
-export const Reference: Story = IconReference.bind({});
+export const Reference: Story = {
+  render: ({ name, collection }) => {
+    const updateRef = () => {
+      setIconRef('aliased', 'example', { name, collection });
+    };
+
+    return html`
+      <style>
+        .ref-demo {
+          display: flex;
+          flex-direction: column;
+          gap: 1.5rem;
+          max-width: 42rem;
+        }
+
+        .ref-demo p {
+          margin: 0;
+          color: var(--ig-gray-700);
+        }
+
+        .ref-demo pre {
+          background: var(--ig-gray-100);
+          border: 1px solid var(--ig-gray-200);
+          border-radius: 4px;
+          padding: 1rem;
+          font-family: monospace;
+          font-size: 0.8125rem;
+          white-space: pre;
+          overflow-x: auto;
+          color: var(--ig-gray-800);
+          margin: 0.5rem 0 0;
+        }
+
+        .ref-preview {
+          display: flex;
+          align-items: center;
+          gap: 1rem;
+          padding: 1rem;
+          border: 1px solid var(--ig-gray-300);
+          border-radius: 4px;
+        }
+
+        .ref-preview igc-icon {
+          --size: 2.5rem;
+          color: var(--ig-primary-500);
+          padding-inline: 1rem;
+          border-inline-end: 1px solid var(--ig-gray-300);
+        }
+
+        .ref-preview small {
+          color: var(--ig-gray-600);
+        }
+      </style>
+      <div class="ref-demo">
+        <h3 style="margin: 0">Icon References</h3>
+        <p>
+          Icons can be declared by reference — an alias that resolves to a
+          concrete icon at runtime. This makes theming and icon swapping
+          straightforward without touching the markup.
+        </p>
+
+        <div>
+          <p><strong>Setting a reference in JavaScript:</strong></p>
+          <pre>
+setIconRef('aliased', 'example', {
+  name: 'biking',
+  collection: 'default',
+});</pre
+          >
+        </div>
+
+        <div>
+          <p><strong>Using the reference in markup:</strong></p>
+          <pre>
+&lt;igc-icon name="aliased" collection="example"&gt;&lt;/igc-icon&gt;</pre
+          >
+        </div>
+
+        <div class="ref-preview">
+          <igc-icon name="aliased" collection="example"></igc-icon>
+          <small>
+            Choose an icon from the <strong>Controls</strong> panel and press
+            <strong>Update Reference</strong> to swap the aliased icon at
+            runtime.
+          </small>
+        </div>
+
+        <igc-button @click=${updateRef}>Update Reference</igc-button>
+      </div>
+    `;
+  },
+};

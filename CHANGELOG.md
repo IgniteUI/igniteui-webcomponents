@@ -4,6 +4,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [7.1.0] - 2026-03-19
+### Added
+- Splitter component
+- Highlight container component
+
+### Fixed
+- #### Combo
+  - Use focus color for clear button background #[2140](https://github.com/IgniteUI/igniteui-webcomponents/pull/2140)
+- #### Stepper
+  - Box shadow values for step indicators #[2133](https://github.com/IgniteUI/igniteui-webcomponents/pull/2133)
+- #### Tabs
+  - Scrolling behavior for tabs content #[2149](https://github.com/IgniteUI/igniteui-webcomponents/pull/2149)
+
 ## [7.0.1] - 2026-03-06
 ### Fixed
 - #### Icon service
@@ -1269,6 +1282,7 @@ Initial release of Ignite UI Web Components
 - Ripple component
 - Switch component
 
+[7.1.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/7.0.1...7.1.0
 [7.0.1]: https://github.com/IgniteUI/igniteui-webcomponents/compare/7.0.0...7.0.1
 [7.0.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/6.5.1...7.0.0
 [6.5.1]: https://github.com/IgniteUI/igniteui-webcomponents/compare/6.5.0...6.5.1

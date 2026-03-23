@@ -1,0 +1,245 @@
+import { isServer, type ReactiveController } from 'lit';
+import {
+  escapeRegex,
+  iterNodes,
+  nanoid,
+  scrollIntoView,
+  wrap,
+} from '../common/util.js';
+import type IgcHighlightComponent from './highlight.js';
+
+type Match = { node: Node; indices: [start: number, end: number] };
+
+/**
+ * Options for controlling navigation behavior when moving the active highlight.
+ */
+export type HighlightNavigation = {
+  /** If true, prevents the component from scrolling the new active match into view. */
+  preventScroll?: boolean;
+};
+
+function* matchText(
+  nodes: IterableIterator<Node>,
+  regexp: RegExp
+): Generator<Match> {
+  for (const node of nodes) {
+    if (node.textContent) {
+      for (const match of node.textContent.matchAll(regexp)) {
+        const [[start, end]] = match.indices!;
+        yield { node, indices: [start, end] } satisfies Match;
+      }
+    }
+  }
+}
+
+class HighlightService implements ReactiveController {
+  //#region Private properties
+
+  private readonly _host: IgcHighlightComponent;
+  private readonly _id: string;
+  private readonly _activeId: string;
+  private readonly _styles: string;
+  private readonly _styleSheet?: CSSStyleSheet;
+
+  private _highlight!: Highlight;
+  private _activeHighlight!: Highlight;
+  private _ranges: Range[] = [];
+
+  private _current = 0;
+
+  //#endregion
+
+  //#region Public properties
+
+  /**
+   * The total number of matches found in the component's content.
+   */
+  public get size(): number {
+    return this._ranges.length;
+  }
+
+  /**
+   * The index of the currently active match. Returns 0 if there are no matches.
+   */
+  public get current(): number {
+    return this._current;
+  }
+
+  //#endregion
+
+  constructor(host: IgcHighlightComponent) {
+    this._host = host;
+    this._host.addController(this);
+    this._id = `igc-highlight-${nanoid()}`;
+    this._activeId = `${this._id}-active`;
+
+    this._styles = `
+      ::highlight(${this._id}) {
+        background-color: var(--background, var(--ig-secondary-700));
+        color: var(--foreground, var(--ig-secondary-700-contrast));
+      }
+      ::highlight(${this._activeId}) {
+        background-color: var(--background-active, var(--ig-primary-500));
+        color: var(--foreground-active, var(--ig-primary-500-contrast));
+      }`;
+
+    if (!isServer) {
+      this._styleSheet = new CSSStyleSheet();
+      this._styleSheet.replaceSync(this._styles);
+    }
+  }
+
+  //#region Controller life-cycle
+
+  /** @internal */
+  public hostConnected(): void {
+    this._createHighlightEntries();
+    this.find(this._host.searchText);
+  }
+
+  /** @internal */
+  public hostDisconnected(): void {
+    this._removeHighlightEntries();
+    this._removeStyleSheet();
+  }
+
+  //#endregion
+
+  //#region Private methods
+
+  private _removeStyleSheet(): void {
+    const root = this._host.renderRoot as ShadowRoot;
+
+    if (this._styleSheet) {
+      root.adoptedStyleSheets = root.adoptedStyleSheets.filter(
+        (sheet) => sheet !== this._styleSheet
+      );
+    }
+  }
+
+  private _createHighlightEntries(): void {
+    this._highlight = new Highlight();
+    this._highlight.priority = 0;
+
+    this._activeHighlight = new Highlight();
+    this._activeHighlight.priority = 1;
+
+    CSS.highlights.set(this._id, this._highlight);
+    CSS.highlights.set(this._activeId, this._activeHighlight);
+  }
+
+  private _removeHighlightEntries(): void {
+    CSS.highlights.delete(this._id);
+    CSS.highlights.delete(this._activeId);
+    this._ranges.length = 0;
+  }
+
+  private _createRegex(value: string): RegExp {
+    return new RegExp(
+      escapeRegex(value),
+      this._host.caseSensitive ? 'dg' : 'dgi'
+    );
+  }
+
+  private _updateActiveHighlight(): void {
+    if (this.size) {
+      this._activeHighlight.clear();
+      this._activeHighlight.add(this._ranges[this._current]);
+    }
+  }
+
+  private _goTo(index: number, options?: HighlightNavigation): void {
+    if (!this.size) {
+      return;
+    }
+
+    this._current = wrap(0, this.size - 1, index);
+    const range = this._ranges[this._current];
+
+    this._activeHighlight.clear();
+    this._activeHighlight.add(range);
+
+    if (!options?.preventScroll) {
+      scrollIntoView(range.commonAncestorContainer.parentElement, {
+        block: 'center',
+        inline: 'center',
+      });
+    }
+  }
+
+  //#endregion
+
+  //#region Public methods
+
+  /**
+   * Attaches the service's stylesheet to the render root.
+   * Necessary for the component to apply highlight styles to its content.
+   */
+  public attachStylesheet(): void {
+    const adoptedSheets = (this._host.renderRoot as ShadowRoot)
+      .adoptedStyleSheets;
+
+    if (this._styleSheet && !adoptedSheets.includes(this._styleSheet)) {
+      adoptedSheets.push(this._styleSheet);
+    }
+  }
+
+  /**
+   * Finds matches for the given search text in the component's content and creates highlight ranges for them.
+   */
+  public find(value: string): void {
+    if (!value?.trim()) {
+      return;
+    }
+
+    const iterator = matchText(
+      iterNodes(this._host, { show: 'SHOW_TEXT' }),
+      this._createRegex(value)
+    );
+
+    for (const {
+      node,
+      indices: [start, end],
+    } of iterator) {
+      const range = new Range();
+      range.setStart(node, start);
+      range.setEnd(node, end);
+
+      this._ranges.push(range);
+      this._highlight.add(range);
+    }
+
+    this._updateActiveHighlight();
+  }
+
+  /** Moves the active state to the next match. */
+  public next(options?: HighlightNavigation): void {
+    this._goTo(this._current + 1, options);
+  }
+
+  /** Moves the active state to the previous match. */
+  public previous(options?: HighlightNavigation): void {
+    this._goTo(this._current - 1, options);
+  }
+
+  /** Moves the active state to the given index. */
+  public setActive(index: number, options?: HighlightNavigation): void {
+    this._goTo(index, options);
+  }
+
+  /** Clears highlight collections. */
+  public clear(): void {
+    this._activeHighlight.clear();
+    this._highlight.clear();
+    this._ranges.length = 0;
+    this._current = 0;
+  }
+
+  //#endregion
+}
+
+export function createHighlightController(
+  host: IgcHighlightComponent
+): HighlightService {
+  return new HighlightService(host);
+}
