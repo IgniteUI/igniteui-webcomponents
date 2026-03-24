@@ -22,7 +22,7 @@ const metadata: Meta<IgcSnackbarComponent> = {
     docs: {
       description: {
         component:
-          'A snackbar provides brief feedback about an operation by displaying a short message near the bottom of the screen. It disappears automatically after a configurable `displayTime`, or can stay open with `keepOpen`. An optional action button lets users respond (e.g. Undo).',
+          'A snackbar component is used to provide feedback about an operation\nby showing a brief message at the bottom of the screen.',
       },
     },
     actions: { handles: ['igcAction'] },
