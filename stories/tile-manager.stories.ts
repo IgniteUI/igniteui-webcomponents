@@ -1,18 +1,12 @@
 import type { Meta, StoryObj } from '@storybook/web-components-vite';
 import { type TemplateResult, html } from 'lit';
-import { map } from 'lit/directives/map.js';
 import { range } from 'lit/directives/range.js';
 
 import {
   IgcAvatarComponent,
   IgcButtonComponent,
-  IgcCalendarComponent,
-  IgcCardActionsComponent,
   IgcCardComponent,
-  IgcCardContentComponent,
-  IgcCardMediaComponent,
   IgcChipComponent,
-  IgcDatePickerComponent,
   IgcDividerComponent,
   IgcIconButtonComponent,
   IgcIconComponent,
@@ -21,10 +15,6 @@ import {
   IgcListComponent,
   IgcListItemComponent,
   IgcRatingComponent,
-  IgcRippleComponent,
-  IgcStepComponent,
-  IgcStepperComponent,
-  IgcTabsComponent,
   type IgcTileComponent,
   IgcTileManagerComponent,
   defineComponents,
@@ -39,23 +29,14 @@ defineComponents(
   IgcButtonComponent,
   IgcRatingComponent,
   IgcInputComponent,
-  IgcStepComponent,
-  IgcStepperComponent,
   IgcLinearProgressComponent,
-  IgcDatePickerComponent,
   IgcChipComponent,
-  IgcCalendarComponent,
   IgcListComponent,
   IgcListItemComponent,
   IgcAvatarComponent,
-  IgcTabsComponent,
   IgcCardComponent,
-  IgcCardMediaComponent,
-  IgcCardActionsComponent,
   IgcIconButtonComponent,
-  IgcRippleComponent,
-  IgcDividerComponent,
-  IgcCardContentComponent
+  IgcDividerComponent
 );
 
 // region default
@@ -146,23 +127,104 @@ const indicatorIcon =
 
 registerIconFromText('indicator', indicatorIcon);
 
-const tiles = Array.from(
-  map(
-    range(10),
-    (i) => html`
-      <igc-tile .disableResize=${i === 0}>
-        <h3 slot="title">Tile ${i + 1} Title</h3>
-
-        <p>Text in Tile ${i + 1}</p>
-        <div class="picture">
-          <img
-            src="https://images.unsplash.com/photo-1518235506717-e1ed3306a89b?ixlib=rb-1.2.1&auto=format&fit=crop&w=320&q=180"
-          />
+const dashboardTiles = () => html`
+  <igc-tile col-span="2" disable-resize>
+    <span slot="title">Welcome back, Alex</span>
+    <div class="db-welcome">
+      <igc-avatar shape="circle">AX</igc-avatar>
+      <div class="db-welcome-info">
+        <p>Monday, March 24 2026</p>
+        <div class="db-chips">
+          <igc-chip>Online</igc-chip>
+          <igc-chip>Sprint 12</igc-chip>
+          <igc-chip>v2.4.1</igc-chip>
         </div>
-      </igc-tile>
-    `
-  )
-);
+      </div>
+    </div>
+  </igc-tile>
+
+  <igc-tile col-span="2">
+    <span slot="title">CPU Usage</span>
+    <div class="db-kpi">
+      <p class="db-kpi-value">67%</p>
+      <igc-linear-progress value="67"></igc-linear-progress>
+      <p class="db-kpi-sub">4 cores · 2.4 GHz</p>
+    </div>
+  </igc-tile>
+
+  <igc-tile col-span="2">
+    <span slot="title">Memory</span>
+    <div class="db-kpi">
+      <p class="db-kpi-value">4.2 / 16 GB</p>
+      <igc-linear-progress value="26"></igc-linear-progress>
+      <p class="db-kpi-sub">26% utilization</p>
+    </div>
+  </igc-tile>
+
+  <igc-tile row-span="2" col-span="2">
+    <span slot="title">Recent Activity</span>
+    <igc-list>
+      <igc-list-item>
+        <igc-avatar slot="start" shape="circle">PR</igc-avatar>
+        <span slot="title">Pull request merged</span>
+        <span slot="subtitle">feature/auth-refactor · 2h ago</span>
+      </igc-list-item>
+      <igc-list-item>
+        <igc-avatar slot="start" shape="circle">CI</igc-avatar>
+        <span slot="title">Build #482 passed</span>
+        <span slot="subtitle">main branch · 3h ago</span>
+      </igc-list-item>
+      <igc-list-item>
+        <igc-avatar slot="start" shape="circle">IS</igc-avatar>
+        <span slot="title">Issue #1204 closed</span>
+        <span slot="subtitle">Fix OAuth redirect · 5h ago</span>
+      </igc-list-item>
+      <igc-list-item>
+        <igc-avatar slot="start" shape="circle">DP</igc-avatar>
+        <span slot="title">Deployed to staging</span>
+        <span slot="subtitle">v2.4.1 · yesterday</span>
+      </igc-list-item>
+    </igc-list>
+  </igc-tile>
+
+  <igc-tile col-span="2">
+    <span slot="title">Quick Search</span>
+    <div class="db-search">
+      <igc-input
+        placeholder="Search docs, issues, PRs…"
+        type="search"
+      ></igc-input>
+    </div>
+  </igc-tile>
+
+  <igc-tile col-span="2">
+    <span slot="title">Sprint Score</span>
+    <div class="db-kpi">
+      <igc-rating value="4"></igc-rating>
+      <p class="db-kpi-sub">Sprint Alpha · 4 of 5 stories done</p>
+    </div>
+  </igc-tile>
+
+  <igc-tile col-span="2">
+    <span slot="title">Active Labels</span>
+    <div class="db-chips">
+      <igc-chip>Frontend</igc-chip>
+      <igc-chip>Backend</igc-chip>
+      <igc-chip>DevOps</igc-chip>
+      <igc-chip>Accessibility</igc-chip>
+      <igc-chip>API</igc-chip>
+    </div>
+  </igc-tile>
+
+  <igc-tile col-span="2">
+    <span slot="title">Disk Storage</span>
+    <div class="db-kpi">
+      <p class="db-kpi-value">128 / 512 GB</p>
+      <igc-linear-progress value="25"></igc-linear-progress>
+      <p class="db-kpi-sub">384 GB free</p>
+    </div>
+  </igc-tile>
+`;
 
 const pictures = Array.from(range(25)).map(() => ({
   width: randomIntBetween(300, 600),
@@ -170,6 +232,14 @@ const pictures = Array.from(range(25)).map(() => ({
 }));
 
 export const AutoInfer: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Demonstrates the auto-inferred responsive layout. Tiles automatically adapt their sizes based on the image dimensions fetched from a random image service.',
+      },
+    },
+  },
   argTypes: disableStoryControls(metadata),
   render: (args) => html`
     <style>
@@ -478,11 +548,7 @@ const renderDashboardTM = (
   >
     ${items?.map(
       (viz) => html`
-        <igc-tile
-          .colSpan=${viz.columnSpan}
-          .rowSpan=${viz.rowSpan}
-          .disableResize=${false}
-        >
+        <igc-tile .colSpan=${viz.columnSpan} .rowSpan=${viz.rowSpan}>
           <span slot="title">${viz.title}</span>
           ${viz.content || 'TEST CONTENT'}
         </igc-tile>
@@ -574,12 +640,19 @@ const salesVisualizations: Visualization[] = [
   },
 ];
 
-export const FinDashboard: Story = {
+export const OrderDashboard: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'An order details dashboard demonstrating a complex layout with a list, product cards, and KPI tiles using a fine-grained 60-column grid.',
+      },
+    },
+  },
   args: {
     resizeMode: 'hover',
     dragMode: 'tile-header',
   },
-
   render: (args) => html`
     <style>
       igc-tile::part(content-container) {
@@ -590,26 +663,84 @@ export const FinDashboard: Story = {
   `,
 };
 
-export const FinDashboard1: Story = {
-  render: (args) => html` ${renderDashboardTM(salesVisualizations, args)} `,
+export const SalesDashboard: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'A sales analytics dashboard showcasing KPI trends, revenue charts, and bar graphs arranged across a fine-grained 60-column grid.',
+      },
+    },
+  },
+  args: {
+    resizeMode: 'hover',
+    dragMode: 'tile-header',
+  },
+  render: (args) => html`${renderDashboardTM(salesVisualizations, args)}`,
 };
 
 export const Default: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'A developer dashboard showing real-world KPI tiles, activity feed, search input, sprint rating, and chip labels. The Welcome tile has resize disabled. Use the button to toggle resize on the CPU Usage tile.',
+      },
+    },
+  },
+  args: {
+    resizeMode: 'hover',
+    dragMode: 'tile-header',
+  },
   render: (args) => html`
     <style>
-      .picture {
+      .db-welcome {
         display: flex;
-        width: 100%;
-        height: 100%;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem;
+      }
 
-        img {
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-        }
+      .db-welcome-info p {
+        margin: 0 0 0.5rem;
+      }
+
+      .db-chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+      }
+
+      .db-kpi {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        padding: 1rem;
+      }
+
+      .db-kpi-value {
+        margin: 0;
+        font-size: 1.5rem;
+        font-weight: 600;
+      }
+
+      .db-kpi-sub {
+        margin: 0;
+        font-size: 0.8rem;
+        opacity: 0.7;
+      }
+
+      .db-search {
+        padding: 0.5rem 1rem;
+      }
+
+      igc-tile::part(content-container) {
+        height: 100%;
       }
     </style>
     <igc-tile-manager
+      id="default-tile-manager"
       .gap=${args.gap}
       .dragMode=${args.dragMode}
       .resizeMode=${args.resizeMode}
@@ -617,12 +748,11 @@ export const Default: Story = {
       .minColumnWidth=${args.minColumnWidth}
       .minRowHeight=${args.minRowHeight}
     >
-      <p>This text won't be displayed in Tile Manager</p>
-      ${tiles}
+      ${dashboardTiles()}
     </igc-tile-manager>
 
     <igc-button @click=${disableTileResize}>
-      Toggle Tile 2 Resizing
+      Toggle CPU Usage Tile Resizing
     </igc-button>
   `,
 };
@@ -633,19 +763,86 @@ function toggleMaximizedTile() {
 }
 
 function disableTileResize() {
-  const tileManager =
-    document.querySelector<IgcTileManagerComponent>('igc-tile-manager')!;
+  const tileManager = document.querySelector<IgcTileManagerComponent>(
+    '#default-tile-manager'
+  )!;
   tileManager.tiles[1].disableResize = !tileManager.tiles[1].disableResize;
 }
 
-function cancelStateChangeEvent(e: CustomEvent) {
+function preventFullscreenChange(e: CustomEvent) {
   e.preventDefault();
 }
 
 export const Maximized: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'A Q1 performance report viewer. The main tile starts maximized with KPI metrics and summary text. Fullscreen is prevented via event cancellation. Use the button to toggle the expanded view.',
+      },
+    },
+  },
+  args: {
+    resizeMode: 'hover',
+    dragMode: 'tile-header',
+    columnCount: 3,
+  },
   render: (args) => html`
+    <style>
+      .report-content {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        padding: 1rem;
+      }
+
+      .report-kpis {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 2rem;
+      }
+
+      .report-kpi {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+      }
+
+      .report-kpi-value {
+        margin: 0;
+        font-size: 1.5rem;
+        font-weight: 600;
+      }
+
+      .report-kpi-label {
+        margin: 0;
+        font-size: 0.8rem;
+        opacity: 0.7;
+      }
+
+      .report-summary {
+        margin: 0;
+        line-height: 1.6;
+      }
+
+      .region-bars {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        padding: 1rem;
+      }
+
+      .region-bar {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+        font-size: 0.85rem;
+      }
+    </style>
     <igc-tile-manager
+      style="min-height: 600px"
       .gap=${args.gap}
+      .resizeMode=${args.resizeMode}
       .dragMode=${args.dragMode}
       .columnCount=${args.columnCount}
       .minColumnWidth=${args.minColumnWidth}
@@ -653,16 +850,81 @@ export const Maximized: Story = {
     >
       <igc-tile
         id="max-tile"
+        col-span="2"
+        row-span="2"
         maximized
-        @igcTileFullscreen=${cancelStateChangeEvent}
+        @igcTileFullscreen=${preventFullscreenChange}
       >
-        <h1>I am Maximized</h1>
-        <igc-button @click=${toggleMaximizedTile}
-          >Toggle maximized state</igc-button
-        >
+        <span slot="title">Q1 2026 Performance Report</span>
+        <div class="report-content">
+          <div class="report-kpis">
+            <div class="report-kpi">
+              <p class="report-kpi-value">$4.2M</p>
+              <p class="report-kpi-label">Q1 Revenue</p>
+            </div>
+            <div class="report-kpi">
+              <p class="report-kpi-value">+24%</p>
+              <p class="report-kpi-label">YoY Growth</p>
+            </div>
+            <div class="report-kpi">
+              <p class="report-kpi-value">1,284</p>
+              <p class="report-kpi-label">New Customers</p>
+            </div>
+            <div class="report-kpi">
+              <p class="report-kpi-value">91%</p>
+              <p class="report-kpi-label">Retention Rate</p>
+            </div>
+          </div>
+          <igc-divider></igc-divider>
+          <p class="report-summary">
+            Revenue increased by 24% year-over-year, driven by expansion into
+            EMEA markets and the successful launch of the Enterprise tier.
+            Customer acquisition costs dropped 11% following the optimized
+            onboarding funnel rolled out in February.
+          </p>
+          <igc-button @click=${toggleMaximizedTile}
+            >Toggle expanded view</igc-button
+          >
+        </div>
       </igc-tile>
-      <igc-tile row-start="5">
-        <h2>I am not maximized and will be under the maximized tile</h2>
+
+      <igc-tile row-span="2">
+        <span slot="title">Recent Highlights</span>
+        <igc-list>
+          <igc-list-item>
+            <igc-avatar slot="start" shape="circle">Q1</igc-avatar>
+            <span slot="title">EMEA expansion launched</span>
+            <span slot="subtitle">3 regional offices · January 2026</span>
+          </igc-list-item>
+          <igc-list-item>
+            <igc-avatar slot="start" shape="circle">ET</igc-avatar>
+            <span slot="title">Enterprise tier released</span>
+            <span slot="subtitle">72 sign-ups in first 30 days</span>
+          </igc-list-item>
+          <igc-list-item>
+            <igc-avatar slot="start" shape="circle">UX</igc-avatar>
+            <span slot="title">Onboarding funnel optimized</span>
+            <span slot="subtitle">CAC reduced by 11% · February 2026</span>
+          </igc-list-item>
+        </igc-list>
+      </igc-tile>
+
+      <igc-tile row-span="2">
+        <span slot="title">Revenue by Region</span>
+        <div class="region-bars">
+          <div class="region-bar">
+            <span>North America · 72%</span>
+            <igc-linear-progress value="72"></igc-linear-progress>
+          </div>
+          <div class="region-bar">
+            <span>EMEA · 48%</span>
+            <igc-linear-progress value="48"></igc-linear-progress>
+          </div>
+          <div class="region-bar">
+            <span>APAC · 31%</span>
+            <igc-linear-progress value="31"></igc-linear-progress>
+          </div>
+        </div>
       </igc-tile>
     </igc-tile-manager>
   `,
@@ -671,28 +933,51 @@ export const Maximized: Story = {
 function addTile() {
   const tileManager =
     document.querySelector<IgcTileManagerComponent>('#tile-manager1')!;
-  const tiles = tileManager.querySelectorAll('igc-tile');
+  const count = tileManager.tiles.length + 1;
   const newTile = document.createElement('igc-tile');
-  const content = document.createElement('h2');
-  content.textContent = `Tile ${tileManager.tiles.length + 1}`;
-  newTile.position = 0;
-  newTile.append(content);
-  // tileManager.appendChild(newTile);
-  tileManager.insertBefore(newTile, tiles[3]);
+
+  const titleEl = document.createElement('span');
+  titleEl.slot = 'title';
+  titleEl.textContent = `Panel ${count}`;
+
+  const body = document.createElement('p');
+  body.style.padding = '1rem';
+  body.textContent = `Dynamically added tile ${count}.`;
+
+  newTile.append(titleEl, body);
+  tileManager.appendChild(newTile);
 }
 
 function removeTile() {
   const tileManager =
     document.querySelector<IgcTileManagerComponent>('#tile-manager1')!;
-  const firstTile = tileManager.querySelector('igc-tile:first-of-type');
-
-  if (firstTile) {
-    firstTile.remove();
-  }
+  tileManager.tiles.at(-1)?.remove();
 }
 
 export const DynamicTiles: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'A sprint task board demonstrating dynamic tile management. Each tile represents a work item with a priority chip and description. Use the buttons to add new panels or remove the last one.',
+      },
+    },
+  },
   render: (args) => html`
+    <style>
+      .task-body {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        padding: 0.75rem 1rem;
+      }
+
+      .task-body p {
+        margin: 0;
+        font-size: 0.9rem;
+        opacity: 0.8;
+      }
+    </style>
     <igc-button @click=${addTile}>Add Tile</igc-button>
     <igc-button @click=${removeTile}>Remove Tile</igc-button>
     <igc-tile-manager
@@ -704,29 +989,71 @@ export const DynamicTiles: Story = {
       .minColumnWidth=${args.minColumnWidth}
       .minRowHeight=${args.minRowHeight}
     >
-      <igc-tile id="tile1" position="1">
-        <h1>Tile1</h1>
+      <igc-tile col-span="2">
+        <span slot="title">Fix login regression</span>
+        <div class="task-body">
+          <igc-chip>Critical</igc-chip>
+          <p>
+            Investigate and resolve the OAuth2 redirect loop affecting mobile
+            browsers on iOS 17+.
+          </p>
+        </div>
       </igc-tile>
-      <igc-tile id="tile2">
-        <h2>Tile2</h2>
+      <igc-tile col-span="2">
+        <span slot="title">Design system migration</span>
+        <div class="task-body">
+          <igc-chip>High</igc-chip>
+          <p>
+            Migrate remaining components to the v3 design token system and
+            update all theme overrides.
+          </p>
+        </div>
       </igc-tile>
-      <igc-tile id="tile3">
-        <h2>Tile3</h2>
+      <igc-tile col-span="2">
+        <span slot="title">Write auth unit tests</span>
+        <div class="task-body">
+          <igc-chip>Medium</igc-chip>
+          <p>
+            Increase test coverage for the authentication module from 64% to the
+            90% target.
+          </p>
+        </div>
       </igc-tile>
-      <igc-tile id="tile4">
-        <h2>Tile4</h2>
+      <igc-tile col-span="2">
+        <span slot="title">Update API documentation</span>
+        <div class="task-body">
+          <igc-chip>Low</igc-chip>
+          <p>
+            Sync OpenAPI spec with the latest endpoints and regenerate the
+            developer portal.
+          </p>
+        </div>
       </igc-tile>
-      <igc-tile id="tile5">
-        <h2>Tile5</h2>
+      <igc-tile col-span="2">
+        <span slot="title">Set up CI/CD pipeline</span>
+        <div class="task-body">
+          <igc-chip>High</igc-chip>
+          <p>
+            Configure GitHub Actions workflows for automated builds, tests, and
+            staging deployments.
+          </p>
+        </div>
       </igc-tile>
-      <igc-tile id="tile6" position="2">
-        <h2>Tile6</h2>
+      <igc-tile col-span="2">
+        <span slot="title">Accessibility audit</span>
+        <div class="task-body">
+          <igc-chip>Medium</igc-chip>
+          <p>
+            Run WCAG 2.1 AA audit and resolve all reported violations across the
+            public-facing pages.
+          </p>
+        </div>
       </igc-tile>
     </igc-tile-manager>
   `,
 };
 
-let serializedData: string;
+let serializedData = '';
 
 function saveTileManager() {
   const tileManager =
@@ -736,6 +1063,8 @@ function saveTileManager() {
 }
 
 function loadTileManager() {
+  if (!serializedData) return;
+
   const tileManager =
     document.querySelector<IgcTileManagerComponent>('#tile-manager1')!;
 
@@ -743,11 +1072,39 @@ function loadTileManager() {
 }
 
 export const Serialization: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'An analytics workspace with revenue, user, and conversion KPI tiles. Save the current layout, rearrange or add panels, then restore it with Load Layout. The Revenue tile has resize disabled.',
+      },
+    },
+  },
   render: (args) => html`
+    <style>
+      .db-kpi {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        padding: 1rem;
+      }
+
+      .db-kpi-value {
+        margin: 0;
+        font-size: 1.5rem;
+        font-weight: 600;
+      }
+
+      .db-kpi-sub {
+        margin: 0;
+        font-size: 0.8rem;
+        opacity: 0.7;
+      }
+    </style>
     <igc-button @click=${saveTileManager}>Save Layout</igc-button>
     <igc-button @click=${loadTileManager}>Load Layout</igc-button>
-    <igc-button @click=${addTile}>Add Tile</igc-button>
-    <igc-button @click=${removeTile}>Remove Tile</igc-button>
+    <igc-button @click=${addTile}>Add Panel</igc-button>
+    <igc-button @click=${removeTile}>Remove Panel</igc-button>
     <igc-tile-manager
       id="tile-manager1"
       .gap=${args.gap}
@@ -758,14 +1115,28 @@ export const Serialization: Story = {
       .minRowHeight=${args.minRowHeight}
     >
       <igc-tile disable-resize>
-        <span slot="title">Header 1</span>
-        <h1>Tile1</h1>
+        <span slot="title">Monthly Revenue</span>
+        <div class="db-kpi">
+          <p class="db-kpi-value">$142,850</p>
+          <igc-linear-progress value="78"></igc-linear-progress>
+          <p class="db-kpi-sub">78% of $182K target</p>
+        </div>
       </igc-tile>
-      <igc-tile id="tile2">
-        <h2>Tile2</h2>
+      <igc-tile>
+        <span slot="title">Active Users</span>
+        <div class="db-kpi">
+          <p class="db-kpi-value">8,421</p>
+          <igc-linear-progress value="62"></igc-linear-progress>
+          <p class="db-kpi-sub">+12% vs last month</p>
+        </div>
       </igc-tile>
-      <igc-tile id="tile3">
-        <h2>Tile3</h2>
+      <igc-tile>
+        <span slot="title">Conversion Rate</span>
+        <div class="db-kpi">
+          <p class="db-kpi-value">3.4%</p>
+          <igc-linear-progress value="68"></igc-linear-progress>
+          <p class="db-kpi-sub">Goal: 5.0%</p>
+        </div>
       </igc-tile>
     </igc-tile-manager>
   `,
@@ -831,6 +1202,14 @@ function handleMaximizeClick(event: Event) {
 }
 
 export const CustomActions: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Demonstrates custom tile header slots: side, corner, and bottom adorners, custom maximize/fullscreen action buttons, and various header configurations.',
+      },
+    },
+  },
   render: (args) => html`
     <style>
       .side,

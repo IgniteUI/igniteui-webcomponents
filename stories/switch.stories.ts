@@ -18,7 +18,7 @@ const metadata: Meta<IgcSwitchComponent> = {
     docs: {
       description: {
         component:
-          'A switch toggles a single setting on or off, providing immediate feedback. It is semantically equivalent to a checkbox but communicates a binary state change that takes effect right away — without requiring a form submission.',
+          'Similar to a checkbox, a switch controls the state of a single setting on or off.',
       },
     },
     actions: { handles: ['igcChange'] },
