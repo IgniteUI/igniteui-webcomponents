@@ -45,4 +45,19 @@ $theme: $material;
     [part~='indicator'] {
         stroke: var-get($theme, 'disabled-tick-color');
     }
+
+    [part='control checked'] {
+        &::after {
+            background: var-get($theme, 'disabled-fill-color');
+        }
+    }
+}
+
+:host([disabled][indeterminate]),
+:host(:disabled[indeterminate]) {
+    [part~='control'] {
+        &::after {
+            background: var-get($theme, 'disabled-indeterminate-color');
+        }
+    }
 }

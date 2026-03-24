@@ -226,7 +226,7 @@ $theme: $material;
 
     [part='control checked'] {
         &::after {
-            background: var-get($theme, 'disabled-color');
+            border-color: transparent;
         }
     }
 }
@@ -235,8 +235,7 @@ $theme: $material;
 :host(:disabled[indeterminate]) {
     [part~='control'] {
         &::after {
-            background: var-get($theme, 'disabled-indeterminate-color');
-            border-color: var-get($theme, 'disabled-indeterminate-color');
+            border-color: transparent;
         }
     }
 }
