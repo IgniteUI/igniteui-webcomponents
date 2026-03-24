@@ -28,7 +28,7 @@ import IgcTreeComponent from '../tree/tree.js';
 import IgcTreeItemComponent from '../tree/tree-item.js';
 import type { SplitterOrientation } from '../types.js';
 import IgcSplitterComponent, {
-  type IgcSplitterResizeEventDetail,
+  type IgcSplitterResizeEventArgs,
 } from './splitter.js';
 
 const BAR_PART = 'splitter-bar';
@@ -3074,9 +3074,9 @@ function getPanesSizes(
 
 function checkResizeEvents(
   eventSpy: sinon.SinonSpy,
-  startArgs?: IgcSplitterResizeEventDetail,
-  resizingArgs?: IgcSplitterResizeEventDetail,
-  endArgs?: IgcSplitterResizeEventDetail
+  startArgs?: IgcSplitterResizeEventArgs,
+  resizingArgs?: IgcSplitterResizeEventArgs,
+  endArgs?: IgcSplitterResizeEventArgs
 ) {
   expect(eventSpy.calledWith('igcResizeStart')).to.be.true;
   expect(eventSpy.calledWith('igcResizing')).to.be.true;
