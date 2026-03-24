@@ -88,7 +88,7 @@
 }
 
 // Auto-alternating layout for even vertical items (not forced by position attr)
-:host(:nth-child(even):not([position]):not([data-orientation='horizontal'])) {
+:host(:nth-child(even):not([position], [data-orientation='horizontal'])) {
     [part='opposite'] {
         grid-column: 3;
         text-align: start;
