@@ -35,15 +35,5 @@
     "types": ["mocha"]
   },
   "include": ["src/**/*.ts"],
-  "exclude": ["src/**/*.stories.ts"],
-  "typedocOptions": {
-    "out": "dist/docs/typescript",
-    "exclude": ["src/**/*.spec.ts", "src/**/*.stories.ts"],
-    "theme": "igtheme",
-    "excludePrivate": true,
-    "excludeProtected": true,
-    "excludeExternals": true,
-    "name": "Ignite UI for Web Components",
-    "readme": "none"
-  }
+  "exclude": ["src/**/*.stories.ts"]
 }
