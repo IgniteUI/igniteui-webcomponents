@@ -25,7 +25,7 @@ function* matchText(
   for (const node of nodes) {
     if (node.textContent) {
       for (const match of node.textContent.matchAll(regexp)) {
-        const [[start, end]] = match.indices!;
+        const [start, end] = match.indices![0]!;
         yield { node, indices: [start, end] } satisfies Match;
       }
     }
