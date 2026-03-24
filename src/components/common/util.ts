@@ -595,7 +595,7 @@ export function bindIf<T>(assertion: unknown, value: T): NonNullable<T> {
     : (nothing as NonNullable<T>);
 }
 
-let pool: Uint8Array;
+let pool: Uint8Array<ArrayBuffer>;
 let poolOffset: number;
 const urlAlphabet =
   'useandom-26T198340PX75pxJACKVERYMINDBUSHWOLF_GQZbfghjklqvwyzrict';

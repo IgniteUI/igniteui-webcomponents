@@ -37,7 +37,7 @@ describe('Key bindings controller', () => {
         constructor() {
           super();
           addKeybindings(this, {
-            skip: () => this.hidden,
+            skip: () => !!this.hidden,
           })
             .setActivateHandler(this.handleKeyboardEvent)
             .set('a', this.handleKeyboardEvent, { triggers: ['keydown'] })
