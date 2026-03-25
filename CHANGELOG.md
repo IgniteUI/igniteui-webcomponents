@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [7.1.1] - 2026-03-25
+### Changed
+- #### Checkbox
+  - Updated disabled and indeterminate styles [#2158](https://github.com/IgniteUI/igniteui-webcomponents/pull/2158)
+
 ## [7.1.0] - 2026-03-19
 ### Added
 - Splitter component
@@ -1282,6 +1287,7 @@ Initial release of Ignite UI Web Components
 - Ripple component
 - Switch component
 
+[7.1.1]: https://github.com/IgniteUI/igniteui-webcomponents/compare/7.1.0...7.1.1
 [7.1.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/7.0.1...7.1.0
 [7.0.1]: https://github.com/IgniteUI/igniteui-webcomponents/compare/7.0.0...7.0.1
 [7.0.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/6.5.1...7.0.0
