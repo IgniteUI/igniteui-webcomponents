@@ -436,7 +436,7 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   }
 
   private _handleClick(event: PointerEvent): void {
-    const item = findElementFromEventPath<IgcSelectItemComponent>(
+    const item = findElementFromEventPath(
       IgcSelectItemComponent.tagName,
       event
     );

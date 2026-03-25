@@ -337,10 +337,7 @@ export default class IgcStepperComponent extends EventEmitterMixin<
   //#region Event handlers
 
   private _handleInteraction(event: Event): void {
-    const step = findElementFromEventPath<IgcStepComponent>(
-      IgcStepComponent.tagName,
-      event
-    );
+    const step = findElementFromEventPath(IgcStepComponent.tagName, event);
 
     if (step && this._state.isAccessible(step)) {
       this._activateStep(step);

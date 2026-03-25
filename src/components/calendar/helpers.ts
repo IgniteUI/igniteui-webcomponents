@@ -154,7 +154,10 @@ export function convertToDates(
  * Returns the value of the selected/activated element (day/month/year) in the calendar view.
  */
 export function getViewElement(event: Event): number {
-  const element = findElementFromEventPath<HTMLElement>('[data-value]', event);
+  const element = findElementFromEventPath(
+    '[data-value]',
+    event
+  ) as HTMLElement;
   return element ? asNumber(element.dataset.value, -1) : -1;
 }
 

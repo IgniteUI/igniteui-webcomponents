@@ -3,10 +3,11 @@ import { property } from 'lit/decorators.js';
 
 import { addThemingController } from '../../theming/theming-controller.js';
 import { registerComponent } from '../common/definitions/register.js';
-import { createCounter } from '../common/util.js';
 import { styles as shared } from './themes/shared/tab/tab.common.css.js';
 import { styles } from './themes/tab.base.css.js';
 import { all } from './themes/tab-themes.js';
+
+let nextId = 1;
 
 /**
  * A tab element slotted into an `igc-tabs` container.
@@ -24,7 +25,6 @@ import { all } from './themes/tab-themes.js';
  * @csspart suffix - Tab header's label suffix.
  * @csspart tab-body - Holds the body content of a single tab, only the body of the selected tab is visible.
  */
-
 export default class IgcTabComponent extends LitElement {
   public static readonly tagName = 'igc-tab';
   public static override styles = [styles, shared];
@@ -33,8 +33,6 @@ export default class IgcTabComponent extends LitElement {
   public static register(): void {
     registerComponent(IgcTabComponent);
   }
-
-  private static increment = createCounter();
 
   /**
    * The tab item label.
@@ -65,7 +63,7 @@ export default class IgcTabComponent extends LitElement {
   /** @internal */
   public override connectedCallback(): void {
     super.connectedCallback();
-    this.id = this.id || `igc-tab-${IgcTabComponent.increment()}`;
+    this.id = this.id || `igc-tab-${nextId++}`;
   }
 
   protected override render() {
