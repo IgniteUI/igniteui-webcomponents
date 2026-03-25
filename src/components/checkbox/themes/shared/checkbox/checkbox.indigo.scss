@@ -207,7 +207,6 @@ $error-color-hover: var-get($theme, 'error-color-hover');
     }
 
     [part='control checked']::after {
-        background: $disabled-indeterminate-color;
         border-color: transparent;
     }
 
@@ -220,7 +219,6 @@ $error-color-hover: var-get($theme, 'error-color-hover');
 :host([disabled][indeterminate]),
 :host(:disabled[indeterminate]) {
     [part~='control']::after {
-        background: $disabled-indeterminate-color;
         border-color: transparent;
     }
 
