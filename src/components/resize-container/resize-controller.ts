@@ -200,10 +200,8 @@ class ResizeController implements ReactiveController {
     const refs = this._options.ref?.map(({ value }) => value) ?? [this._host];
 
     this._activeRef =
-      findElementFromEventPath<HTMLElement>(
-        (e) => refs.includes(e as HTMLElement),
-        event
-      ) ?? null;
+      findElementFromEventPath((e) => refs.includes(e as HTMLElement), event) ??
+      null;
   }
 
   private _setResizeState(enabled = true): void {

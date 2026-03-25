@@ -10,7 +10,7 @@ import { styles } from './themes/combo-item.base.css.js';
 
 /* blazorSuppress */
 export default class IgcComboItemComponent extends LitElement {
-  public static readonly tagName: string = 'igc-combo-item';
+  public static readonly tagName = 'igc-combo-item';
   public static override styles = [styles, shared];
 
   /* blazorSuppress */

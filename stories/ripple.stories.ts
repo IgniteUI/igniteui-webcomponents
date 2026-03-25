@@ -17,7 +17,7 @@ const metadata: Meta<IgcRippleComponent> = {
     docs: {
       description: {
         component:
-          'The ripple component adds a touch-feedback wave animation to any interactive surface. Place `<igc-ripple>` inside a `position: relative; overflow: hidden` container — the ripple fills the parent and plays the animation on each `pointerdown` event. Use the `--color` CSS custom property to tint the effect.',
+          'A ripple can be applied to an element to represent\ninteractive surface.',
       },
     },
   },

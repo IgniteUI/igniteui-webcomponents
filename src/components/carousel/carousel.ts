@@ -501,7 +501,7 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
   }
 
   private async _handleIndicatorClick(event: PointerEvent): Promise<void> {
-    const indicator = findElementFromEventPath<IgcCarouselIndicatorComponent>(
+    const indicator = findElementFromEventPath(
       IgcCarouselIndicatorComponent.tagName,
       event
     )!;

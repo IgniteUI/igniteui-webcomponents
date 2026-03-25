@@ -167,7 +167,7 @@ export default class IgcButtonGroupComponent extends EventEmitterMixin<
   }
 
   private handleClick(event: MouseEvent) {
-    const button = findElementFromEventPath<IgcToggleButtonComponent>(
+    const button = findElementFromEventPath(
       IgcToggleButtonComponent.tagName,
       event
     );
