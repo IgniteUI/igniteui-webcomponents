@@ -11,7 +11,7 @@ import {
   type ValidationContainerTestsParams,
   ValidityHelpers,
 } from '../common/validity-helpers.spec.js';
-import IgcInputComponent from '../input/input.js';
+import IgcDateRangeInputComponent from './date-range-input.js';
 import IgcDateRangePickerComponent, {
   type DateRangeValue,
 } from './date-range-picker.js';
@@ -21,7 +21,7 @@ describe('Date Range Picker Single Input - Form integration', () => {
   before(() => defineComponents(IgcDateRangePickerComponent));
 
   let picker: IgcDateRangePickerComponent;
-  let input: IgcInputComponent;
+  let input: IgcDateRangeInputComponent;
   let startKey = '';
   let endKey = '';
 
@@ -67,8 +67,8 @@ describe('Date Range Picker Single Input - Form integration', () => {
       await elementUpdated(spec.element);
 
       input = picker.renderRoot.querySelector(
-        IgcInputComponent.tagName
-      ) as IgcInputComponent;
+        IgcDateRangeInputComponent.tagName
+      ) as IgcDateRangeInputComponent;
 
       checkSelectedRange(spec.element, value, false);
 
@@ -76,7 +76,7 @@ describe('Date Range Picker Single Input - Form integration', () => {
       await elementUpdated(spec.element);
 
       expect(spec.element.value).to.deep.equal(initial);
-      expect(input.value).to.equal('');
+      expect(input.value).to.deep.equal({ start: null, end: null });
     });
 
     it('should not be in invalid state on reset for a required control which previously had value', () => {
@@ -84,7 +84,9 @@ describe('Date Range Picker Single Input - Form integration', () => {
       spec.setProperties({ required: true });
 
       spec.assertSubmitPasses();
-      const input = picker.renderRoot.querySelector(IgcInputComponent.tagName)!;
+      const input = picker.renderRoot.querySelector(
+        IgcDateRangeInputComponent.tagName
+      )!;
       expect(input.invalid).to.be.false;
 
       spec.setProperties({ value: null });
@@ -100,7 +102,7 @@ describe('Date Range Picker Single Input - Form integration', () => {
       spec.assertSubmitFails();
       await elementUpdated(spec.element);
       const input = spec.element.renderRoot.querySelector(
-        IgcInputComponent.tagName
+        IgcDateRangeInputComponent.tagName
       )!;
       expect(input.invalid).to.be.true;
 
@@ -118,10 +120,10 @@ describe('Date Range Picker Single Input - Form integration', () => {
       await elementUpdated(spec.element);
 
       input = spec.element.renderRoot.querySelector(
-        IgcInputComponent.tagName
-      ) as IgcInputComponent;
+        IgcDateRangeInputComponent.tagName
+      ) as IgcDateRangeInputComponent;
 
-      expect(input.value).to.equal('');
+      expect(input.value).to.deep.equal({ start: null, end: null });
 
       spec.reset();
       await elementUpdated(spec.element);
@@ -146,7 +148,7 @@ describe('Date Range Picker Single Input - Form integration', () => {
       spec.assertSubmitFails();
       await elementUpdated(spec.element);
       const input = spec.element.renderRoot.querySelector(
-        IgcInputComponent.tagName
+        IgcDateRangeInputComponent.tagName
       )!;
       expect(input.invalid).to.be.true;
 
@@ -162,7 +164,7 @@ describe('Date Range Picker Single Input - Form integration', () => {
       spec.assertSubmitPasses();
       await elementUpdated(spec.element);
       const input = spec.element.renderRoot.querySelector(
-        IgcInputComponent.tagName
+        IgcDateRangeInputComponent.tagName
       )!;
       expect(input.invalid).to.be.false;
 
@@ -205,7 +207,7 @@ describe('Date Range Picker Single Input - Form integration', () => {
       spec.assertSubmitPasses();
       await elementUpdated(spec.element);
       const input = spec.element.renderRoot.querySelector(
-        IgcInputComponent.tagName
+        IgcDateRangeInputComponent.tagName
       )!;
       expect(input.invalid).to.be.false;
 
@@ -246,7 +248,7 @@ describe('Date Range Picker Single Input - Form integration', () => {
       spec.assertSubmitPasses();
       await elementUpdated(spec.element);
       const input = spec.element.renderRoot.querySelector(
-        IgcInputComponent.tagName
+        IgcDateRangeInputComponent.tagName
       )!;
       expect(input.invalid).to.be.false;
 
@@ -279,7 +281,7 @@ describe('Date Range Picker Single Input - Form integration', () => {
       spec.assertSubmitPasses();
       await elementUpdated(spec.element);
       const input = spec.element.renderRoot.querySelector(
-        IgcInputComponent.tagName
+        IgcDateRangeInputComponent.tagName
       )!;
       expect(input.invalid).to.be.false;
 
@@ -323,7 +325,7 @@ describe('Date Range Picker Single Input - Form integration', () => {
       spec.assertSubmitFails();
       await elementUpdated(spec.element);
       const input = spec.element.renderRoot.querySelector(
-        IgcInputComponent.tagName
+        IgcDateRangeInputComponent.tagName
       )!;
       expect(input.invalid).to.be.true;
 
@@ -383,7 +385,7 @@ describe('Date Range Picker Single Input - Form integration', () => {
       spec.assertSubmitFails();
       await elementUpdated(spec.element);
       const input = spec.element.renderRoot.querySelector(
-        IgcInputComponent.tagName
+        IgcDateRangeInputComponent.tagName
       )!;
       expect(input.invalid).to.be.true;
 
@@ -416,8 +418,8 @@ describe('Date Range Picker Single Input - Form integration', () => {
         html`<igc-date-range-picker required></igc-date-range-picker>`
       );
       const input = picker.renderRoot.querySelector(
-        IgcInputComponent.tagName
-      ) as IgcInputComponent;
+        IgcDateRangeInputComponent.tagName
+      ) as IgcDateRangeInputComponent;
 
       expect(picker.invalid).to.be.false;
       expect(input.invalid).to.be.false;

@@ -34,7 +34,7 @@ export interface DateTimeMaskOptions {
 //#region Constants
 
 /** Maps format characters to their corresponding DatePartType */
-const FORMAT_CHAR_TO_DATE_PART = new Map<string, DatePartType>([
+export const FORMAT_CHAR_TO_DATE_PART = new Map<string, DatePartType>([
   ['d', DatePartType.Date],
   ['D', DatePartType.Date],
   ['M', DatePartType.Month],
@@ -50,7 +50,7 @@ const FORMAT_CHAR_TO_DATE_PART = new Map<string, DatePartType>([
 ]);
 
 /** Set of valid date/time format characters */
-const DATE_FORMAT_CHARS = new Set(FORMAT_CHAR_TO_DATE_PART.keys());
+export const DATE_FORMAT_CHARS = new Set(FORMAT_CHAR_TO_DATE_PART.keys());
 
 /** Century threshold for two-digit year interpretation */
 const CENTURY_THRESHOLD = 50;
@@ -67,7 +67,7 @@ const DEFAULT_DATE_VALUES = {
 } as const;
 
 /** Default date/time format */
-const DEFAULT_DATETIME_FORMAT = 'MM/dd/yyyy';
+export const DEFAULT_DATETIME_FORMAT = 'MM/dd/yyyy';
 
 //#endregion
 
@@ -460,7 +460,8 @@ export class DateTimeMaskParser extends MaskParser {
   protected override _parseMaskLiterals(): void {
     // First, convert date format to mask format
     const dateFormat = this._options.format;
-    const maskFormat = this._convertToMaskFormat(dateFormat);
+    const maskFormat =
+      DateTimeMaskParser.convertDateFormatToMaskFormat(dateFormat);
 
     // Temporarily set the converted format for the base class parsing
     const originalFormat = this._options.format;
@@ -474,12 +475,19 @@ export class DateTimeMaskParser extends MaskParser {
     // Parse date-specific format structure
     this._parseDateFormat();
   }
+  //#endregion
+
+  //#region Static Utilities
 
   /**
    * Converts a date format string to a mask format string.
    * Date format chars become '0' (numeric) or 'L' (alpha for AM/PM).
+   * This is a static utility that can be reused by other parsers.
+   *
+   * @param dateFormat - The date format string to convert (e.g., 'MM/dd/yyyy')
+   * @returns The mask format string (e.g., '00/00/0000')
    */
-  private _convertToMaskFormat(dateFormat: string): string {
+  public static convertDateFormatToMaskFormat(dateFormat: string): string {
     let result = '';
 
     for (const char of dateFormat) {
