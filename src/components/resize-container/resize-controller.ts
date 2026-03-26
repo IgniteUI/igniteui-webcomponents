@@ -1,6 +1,6 @@
 import type { ReactiveController, ReactiveControllerHost } from 'lit';
 import { createAbortHandle } from '../common/abort-handler.js';
-import { findElementFromEventPath } from '../common/util.js';
+import { getElementFromPath } from '../common/util.js';
 import { createDefaultGhostElement, getDefaultLayer } from './default-ghost.js';
 import type { ResizeControllerConfiguration, ResizeState } from './types.js';
 
@@ -200,8 +200,7 @@ class ResizeController implements ReactiveController {
     const refs = this._options.ref?.map(({ value }) => value) ?? [this._host];
 
     this._activeRef =
-      findElementFromEventPath((e) => refs.includes(e as HTMLElement), event) ??
-      null;
+      getElementFromPath((e) => refs.includes(e as HTMLElement), event) ?? null;
   }
 
   private _setResizeState(enabled = true): void {

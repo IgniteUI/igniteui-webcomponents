@@ -26,14 +26,14 @@ import {
   getItems,
   getNextActiveItem,
   getPreviousActiveItem,
-  IgcBaseComboBoxLikeComponent,
+  IgcComboBoxBaseLikeComponent,
   setInitialSelectionState,
 } from '../common/mixins/combo-box.js';
 import type { AbstractConstructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import {
-  findElementFromEventPath,
   getElementByIdFromRoot,
+  getElementFromPath,
   isString,
 } from '../common/util.js';
 import IgcPopoverComponent, {
@@ -77,8 +77,8 @@ export interface IgcDropdownComponentEventMap {
 )
 export default class IgcDropdownComponent extends EventEmitterMixin<
   IgcDropdownComponentEventMap,
-  AbstractConstructor<IgcBaseComboBoxLikeComponent>
->(IgcBaseComboBoxLikeComponent) {
+  AbstractConstructor<IgcComboBoxBaseLikeComponent>
+>(IgcComboBoxBaseLikeComponent) {
   public static readonly tagName = 'igc-dropdown';
   public static styles = [styles, shared];
 
@@ -241,10 +241,7 @@ export default class IgcDropdownComponent extends EventEmitterMixin<
   }
 
   private handleListBoxClick(event: MouseEvent) {
-    const item = findElementFromEventPath(
-      IgcDropdownItemComponent.tagName,
-      event
-    );
+    const item = getElementFromPath(IgcDropdownItemComponent.tagName, event);
     if (item && this._activeItems.includes(item)) {
       this._selectItem(item);
     }
@@ -423,7 +420,7 @@ export default class IgcDropdownComponent extends EventEmitterMixin<
         id="dropdown-target"
         name="target"
         slot="anchor"
-        @click=${this.handleAnchorClick}
+        @click=${this._handleAnchorClick}
         @slotchange=${this.handleSlotChange}
       ></slot>
       <div part="base" @click=${this.handleListBoxClick} .inert=${!this.open}>

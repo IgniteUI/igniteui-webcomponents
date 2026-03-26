@@ -27,7 +27,7 @@ import {
   getItems,
   getNextActiveItem,
   getPreviousActiveItem,
-  IgcBaseComboBoxLikeComponent,
+  IgcComboBoxBaseLikeComponent,
   setInitialSelectionState,
 } from '../common/mixins/combo-box.js';
 import type { AbstractConstructor } from '../common/mixins/constructor.js';
@@ -38,7 +38,7 @@ import { createFormValueState } from '../common/mixins/forms/form-value.js';
 import { partMap } from '../common/part-map.js';
 import {
   addSafeEventListener,
-  findElementFromEventPath,
+  getElementFromPath,
   isString,
 } from '../common/util.js';
 import IgcIconComponent from '../icon/icon.js';
@@ -119,8 +119,8 @@ const Slots = setSlots(
 export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   EventEmitterMixin<
     IgcSelectComponentEventMap,
-    AbstractConstructor<IgcBaseComboBoxLikeComponent>
-  >(IgcBaseComboBoxLikeComponent)
+    AbstractConstructor<IgcComboBoxBaseLikeComponent>
+  >(IgcComboBoxBaseLikeComponent)
 ) {
   public static readonly tagName = 'igc-select';
   public static styles = [styles, shared];
@@ -364,12 +364,12 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   private _handleEnter(): void {
     this.open && this._activeItem
       ? this._selectItem(this._activeItem)
-      : this.handleAnchorClick();
+      : this._handleAnchorClick();
   }
 
   private _handleSpace(): void {
     if (!this.open) {
-      this.handleAnchorClick();
+      this._handleAnchorClick();
     }
   }
 
@@ -436,10 +436,7 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   }
 
   private _handleClick(event: PointerEvent): void {
-    const item = findElementFromEventPath(
-      IgcSelectItemComponent.tagName,
-      event
-    );
+    const item = getElementFromPath(IgcSelectItemComponent.tagName, event);
     if (item && this._activeItems.includes(item)) {
       this._selectItem(item);
     }
@@ -454,8 +451,8 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
     this._hide(true);
   }
 
-  protected override handleAnchorClick(): void {
-    super.handleAnchorClick();
+  protected override _handleAnchorClick(): void {
+    super._handleAnchorClick();
     this._focusItemOnOpen();
   }
 
@@ -670,7 +667,7 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
         .required=${this.required}
         .invalid=${this.invalid}
         .outlined=${this.outlined}
-        @click=${this.handleAnchorClick}
+        @click=${this._handleAnchorClick}
       >
         ${this._renderInputSlots()} ${this._renderToggleIcon()}
       </igc-input>
