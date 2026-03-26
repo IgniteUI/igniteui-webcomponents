@@ -241,7 +241,7 @@ export default class IgcDropdownComponent extends EventEmitterMixin<
   }
 
   private handleListBoxClick(event: MouseEvent) {
-    const item = findElementFromEventPath<IgcDropdownItemComponent>(
+    const item = findElementFromEventPath(
       IgcDropdownItemComponent.tagName,
       event
     );

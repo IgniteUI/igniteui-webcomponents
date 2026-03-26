@@ -176,7 +176,10 @@ export type {
 export type { PopoverPlacement } from './components/popover/popover.js';
 export type { IgcRadioChangeEventArgs } from './components/radio/radio.js';
 export type { IgcRangeSliderValueEventArgs } from './components/slider/range-slider.js';
-export type { IgcSplitterResizeEventDetail } from './components/splitter/splitter.js';
+export type {
+  IgcSplitterResizeEventArgs,
+  IgcSplitterResizeEventDetail,
+} from './components/splitter/splitter.js';
 export type {
   IgcActiveStepChangingEventArgs,
   IgcActiveStepChangedEventArgs,

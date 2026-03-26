@@ -49,7 +49,6 @@ import {
   addSafeEventListener,
   asNumber,
   clamp,
-  createCounter,
   equal,
   findElementFromEventPath,
   isEmpty,
@@ -88,6 +87,8 @@ export interface IgcDateRangePickerComponentEventMap {
   igcChange: CustomEvent<DateRangeValue | null>;
   igcInput: CustomEvent<DateRangeValue | null>;
 }
+
+let nextId = 1;
 
 /* blazorIndirectRender */
 /* blazorSupportsVisualChildren */
@@ -216,9 +217,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
 
   // #region Internal state & properties
 
-  private static readonly _increment = createCounter();
-
-  protected readonly _inputId = `date-range-picker-${IgcDateRangePickerComponent._increment()}`;
+  protected readonly _inputId = `date-range-picker-${nextId++}`;
 
   private readonly _themes = addThemingController(this, all);
 

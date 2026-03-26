@@ -365,10 +365,7 @@ export default class IgcTabsComponent extends EventEmitterMixin<
       return;
     }
 
-    const tab = findElementFromEventPath<IgcTabComponent>(
-      IgcTabComponent.tagName,
-      event
-    );
+    const tab = findElementFromEventPath(IgcTabComponent.tagName, event);
 
     if (!(tab && this._tabs.includes(tab)) || tab?.disabled) {
       return;

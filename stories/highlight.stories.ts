@@ -4,21 +4,41 @@ import { ifDefined } from 'lit/directives/if-defined.js';
 import { createRef, ref } from 'lit/directives/ref.js';
 
 import {
+  IgcAvatarComponent,
+  IgcButtonComponent,
+  IgcCardActionsComponent,
+  IgcCardComponent,
+  IgcCardContentComponent,
+  IgcCardHeaderComponent,
+  IgcChipComponent,
   IgcDividerComponent,
   IgcExpansionPanelComponent,
   IgcHighlightComponent,
   IgcIconButtonComponent,
   IgcInputComponent,
+  IgcListComponent,
+  IgcListHeaderComponent,
+  IgcListItemComponent,
   defineComponents,
 } from 'igniteui-webcomponents';
 import { disableStoryControls } from './story.js';
 
 defineComponents(
-  IgcIconButtonComponent,
+  IgcAvatarComponent,
+  IgcButtonComponent,
+  IgcCardActionsComponent,
+  IgcCardComponent,
+  IgcCardContentComponent,
+  IgcCardHeaderComponent,
+  IgcChipComponent,
+  IgcDividerComponent,
   IgcExpansionPanelComponent,
-  IgcInputComponent,
   IgcHighlightComponent,
-  IgcDividerComponent
+  IgcIconButtonComponent,
+  IgcInputComponent,
+  IgcListComponent,
+  IgcListHeaderComponent,
+  IgcListItemComponent
 );
 
 // region default
@@ -29,7 +49,7 @@ const metadata: Meta<IgcHighlightComponent> = {
     docs: {
       description: {
         component:
-          'The highlight component provides a way for efficient searching and highlighting of\ntext projected into it.',
+          'The highlight component provides efficient searching and highlighting of text\nprojected into it via its default slot. It uses the native CSS Custom Highlight API\nto apply highlight styles to matched text nodes without modifying the DOM.\n\nThe component supports case-sensitive matching, programmatic navigation between\nmatches, and automatic scroll-into-view of the active match.',
       },
     },
   },
@@ -37,14 +57,14 @@ const metadata: Meta<IgcHighlightComponent> = {
     caseSensitive: {
       type: 'boolean',
       description:
-        'Whether to match the searched text with case sensitivity in mind.',
+        'Whether to match the searched text with case sensitivity in mind.\nWhen `true`, only exact-case occurrences of `searchText` are highlighted.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
     searchText: {
       type: 'string',
       description:
-        'The string to search and highlight in the DOM content of the component.',
+        'The string to search and highlight in the DOM content of the component.\nSetting this property triggers a new search automatically.\nAn empty string clears all highlights.',
       control: 'text',
     },
   },
@@ -54,9 +74,16 @@ const metadata: Meta<IgcHighlightComponent> = {
 export default metadata;
 
 interface IgcHighlightArgs {
-  /** Whether to match the searched text with case sensitivity in mind. */
+  /**
+   * Whether to match the searched text with case sensitivity in mind.
+   * When `true`, only exact-case occurrences of `searchText` are highlighted.
+   */
   caseSensitive: boolean;
-  /** The string to search and highlight in the DOM content of the component. */
+  /**
+   * The string to search and highlight in the DOM content of the component.
+   * Setting this property triggers a new search automatically.
+   * An empty string clears all highlights.
+   */
   searchText: string;
 }
 type Story = StoryObj<IgcHighlightArgs>;
@@ -224,7 +251,12 @@ export const SearchUI: Story = {
           position: sticky;
           top: 0;
           z-index: 1;
-          background-color: var(--ig-surface-color, #fff);
+          background-color: #fff;
+        }
+        @container style(--ig-theme-variant: dark) {
+          .search-bar {
+            background-color: #000;
+          }
         }
       </style>
 
@@ -359,7 +391,12 @@ export const Performance: Story = {
           position: sticky;
           top: 0;
           z-index: 1;
-          background-color: var(--ig-surface-color, #fff);
+          background-color: #fff;
+        }
+        @container style(--ig-theme-variant: dark) {
+          .search-bar {
+            background-color: #000;
+          }
         }
       </style>
 
@@ -367,6 +404,187 @@ export const Performance: Story = {
 
       <igc-highlight ${ref(controller.highlightRef)} class="perf-highlight">
         ${paragraphs.map((p) => html`<p>${p}</p>`)}
+      </igc-highlight>
+    `;
+  },
+};
+
+const articles = [
+  {
+    initials: 'AJ',
+    title: 'Getting Started with Web Components',
+    author: 'Alice Johnson',
+    date: 'Mar 15, 2026',
+    category: 'Tutorial',
+    tags: ['web-components', 'custom-elements', 'beginner'],
+    excerpt:
+      'Web Components are a suite of web platform APIs that allow you to create reusable custom elements with encapsulated functionality. Built on Custom Elements, Shadow DOM, and HTML Templates, they work in any JavaScript framework or without one at all. This tutorial walks you through defining your first custom element, attaching a shadow root, and using HTML templates to stamp out reusable markup.',
+  },
+  {
+    initials: 'ML',
+    title: 'Reactive Rendering with the Lit Framework',
+    author: 'Marcus Lee',
+    date: 'Mar 10, 2026',
+    category: 'Framework',
+    tags: ['lit', 'reactive', 'performance'],
+    excerpt:
+      "Lit is a lightweight library built on top of the Web Components standard that adds reactive properties and a declarative template system. Its efficient update cycle batches property changes and only re-renders the portions of the DOM that actually changed. By leveraging tagged template literals and the browser's native custom element lifecycle, Lit components stay small, fast, and framework-agnostic.",
+  },
+  {
+    initials: 'ST',
+    title: 'Accessibility in Component Design',
+    author: 'Sarah Torres',
+    date: 'Mar 5, 2026',
+    category: 'Accessibility',
+    tags: ['accessibility', 'aria', 'wcag'],
+    excerpt:
+      'Building accessible components means more than adding an aria-label. Every interactive element must be keyboard-navigable, focusable in a logical order, and communicate its state through ARIA roles and properties. Shadow DOM complicates accessibility trees, so authors must ensure focus management and screen-reader announcements work correctly across shadow boundaries. Following WCAG 2.2 guidelines from the start is far less costly than retrofitting them later.',
+  },
+  {
+    initials: 'DK',
+    title: 'Deep Dive into Shadow DOM',
+    author: 'David Kim',
+    date: 'Feb 28, 2026',
+    category: 'Web Standards',
+    tags: ['shadow-dom', 'encapsulation', 'css'],
+    excerpt:
+      'Shadow DOM creates an isolated DOM subtree attached to a host element, preventing styles and scripts from leaking in or out. Selectors like :host and ::slotted let component authors style the host and slotted light-DOM content respectively, while CSS custom properties pierce the shadow boundary, enabling external theming. Understanding the difference between open and closed shadow roots is essential for building well-encapsulated, themeable custom elements.',
+  },
+  {
+    initials: 'EC',
+    title: 'TypeScript Patterns for Lit Components',
+    author: 'Emily Chen',
+    date: 'Feb 22, 2026',
+    category: 'TypeScript',
+    tags: ['typescript', 'decorators', 'types'],
+    excerpt:
+      "Strong TypeScript typing transforms large component libraries into self-documenting, refactor-safe codebases. Property decorators like @property and @state provide both the Lit reactive system and TypeScript's type checker with metadata at once. Defining strict interfaces for component events and using generic types for slot-aware helpers makes cross-component composition predictable and IDE-friendly across the entire library.",
+  },
+  {
+    initials: 'JR',
+    title: 'Theming with CSS Custom Properties',
+    author: 'James Rivera',
+    date: 'Feb 18, 2026',
+    category: 'Styling',
+    tags: ['css', 'custom-properties', 'design-tokens'],
+    excerpt:
+      'CSS custom properties — often called CSS variables — pierce the shadow boundary, making them the natural choice for theming custom elements. By mapping design tokens to custom properties at the :root or :host level, a single theme change cascades through an entire component library. Pairing this approach with a dedicated theming package lets consumers switch between light, dark, and brand-specific palettes without touching component internals.',
+  },
+];
+
+export const KnowledgeBase: Story = {
+  argTypes: disableStoryControls(metadata),
+  render: () => {
+    const controller = createSearchController();
+
+    return html`
+      <style>
+        .kb-layout {
+          display: flex;
+          flex-direction: column;
+          gap: 2rem;
+          padding: 1rem 0;
+        }
+        .kb-section-title {
+          font-size: 1rem;
+          font-weight: 600;
+          margin: 0 0 0.75rem;
+          color: var(--ig-gray-700, #374151);
+        }
+        .kb-card-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+          gap: 1rem;
+        }
+        .kb-card-excerpt {
+          font-size: 0.875rem;
+          line-height: 1.6;
+          color: var(--ig-gray-600, #4b5563);
+          margin: 0;
+        }
+        .kb-tags {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 4px;
+          margin-top: 0.75rem;
+        }
+        .search-bar {
+          position: sticky;
+          top: 0;
+          z-index: 1;
+          background-color: #fff;
+        }
+        @container style(--ig-theme-variant: dark) {
+          .search-bar {
+            background-color: #000;
+          }
+        }
+      </style>
+
+      ${SearchBar(controller)}
+
+      <igc-highlight ${ref(controller.highlightRef)}>
+        <div class="kb-layout">
+          <section>
+            <p class="kb-section-title">Article Index</p>
+            <igc-list>
+              <igc-list-header><h4>Recent Publications</h4></igc-list-header>
+              ${articles.map(
+                (a) => html`
+                  <igc-list-item>
+                    <igc-avatar
+                      slot="start"
+                      initials=${a.initials}
+                      shape="circle"
+                    ></igc-avatar>
+                    <span slot="title">${a.title}</span>
+                    <span slot="subtitle"
+                      >${a.author} &middot; ${a.date} &middot;
+                      ${a.category}</span
+                    >
+                  </igc-list-item>
+                `
+              )}
+            </igc-list>
+          </section>
+
+          <igc-divider></igc-divider>
+
+          <section>
+            <p class="kb-section-title">Featured Articles</p>
+            <div class="kb-card-grid">
+              ${articles.map(
+                (a) => html`
+                  <igc-card>
+                    <igc-card-header>
+                      <igc-avatar
+                        slot="thumbnail"
+                        initials=${a.initials}
+                        shape="circle"
+                      ></igc-avatar>
+                      <h3 slot="title">${a.title}</h3>
+                      <h5 slot="subtitle">${a.author} &middot; ${a.date}</h5>
+                    </igc-card-header>
+                    <igc-card-content>
+                      <p class="kb-card-excerpt">${a.excerpt}</p>
+                      <div class="kb-tags">
+                        ${a.tags.map(
+                          (t) => html`<igc-chip tabindex="-1">${t}</igc-chip>`
+                        )}
+                      </div>
+                    </igc-card-content>
+                    <igc-card-actions>
+                      <igc-button slot="start" variant="flat"
+                        >Read More</igc-button
+                      >
+                      <span slot="end">${a.category}</span>
+                    </igc-card-actions>
+                  </igc-card>
+                `
+              )}
+            </div>
+          </section>
+        </div>
       </igc-highlight>
     `;
   },

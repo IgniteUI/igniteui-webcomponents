@@ -24,14 +24,6 @@ export function numberInRangeInclusive(
   return value >= min && value <= max;
 }
 
-export function createCounter() {
-  let i = 0;
-  return () => {
-    i++;
-    return i;
-  };
-}
-
 /**
  * Returns whether an element has a Left-to-Right directionality.
  */
@@ -153,11 +145,15 @@ export function isElement(node: unknown): node is Element {
   return node instanceof Node && node.nodeType === Node.ELEMENT_NODE;
 }
 
-export function getElementsFromEventPath<T extends Element>(event: Event) {
-  return event.composedPath().filter((item) => isElement(item)) as T[];
-}
-
+export function findElementFromEventPath<K extends keyof HTMLElementTagNameMap>(
+  predicate: K,
+  event: Event
+): HTMLElementTagNameMap[K] | undefined;
 export function findElementFromEventPath<T extends Element>(
+  predicate: string | ((element: Element) => boolean),
+  event: Event
+): T | undefined;
+export function findElementFromEventPath(
   predicate: string | ((element: Element) => boolean),
   event: Event
 ) {
@@ -165,7 +161,9 @@ export function findElementFromEventPath<T extends Element>(
     ? (e: Element) => e.matches(predicate)
     : (e: Element) => predicate(e);
 
-  return getElementsFromEventPath(event).find(func) as T | undefined;
+  return Iterator.from(event.composedPath()).find(
+    (item) => isElement(item) && func(item)
+  ) as Element | undefined;
 }
 
 export function first<T>(arr: T[]) {
@@ -181,44 +179,27 @@ export function modulo(n: number, d: number) {
 }
 
 /**
- * Creates an array of `n` elements from a given iterator.
- *
- */
-export function take<T>(iterable: IterableIterator<T>, n: number) {
-  const result: T[] = [];
-  let i = 0;
-  let current = iterable.next();
-
-  while (i < n && !current.done) {
-    result.push(current.value);
-    current = iterable.next();
-    i++;
-  }
-
-  return result;
-}
-
-/**
- * Splits an array into chunks of length `size` and returns a generator
- * yielding each chunk.
- * The last chunk may contain less than `size` elements.
+ * Splits an array into chunks of a specified size and returns a generator that yields each chunk.
  *
  * @example
  * ```typescript
- * const arr = [0,1,2,3,4,5,6,7,8,9];
- *
- * Array.from(chunk(arr, 2)) // [[0, 1], [2, 3], [4, 5], [6, 7], [8, 9]]
- * Array.from(chunk(arr, 3)) // [[0, 1, 2], [3, 4, 5], [6, 7, 8], [9]]
- * Array.from(chunk([], 3)) // []
- * Array.from(chunk(arr, -3)) // Error
+ * [...chunk([1, 2, 3, 4, 5], 2)]; // [[1, 2], [3, 4], [5]]
  * ```
+ *
+ * @throws If the `size` parameter is not a safe integer greater than or equal to 1.
  */
-export function* chunk<T>(arr: T[], size: number) {
-  if (size < 1) {
+export function* chunk<T>(arr: T[], size: number): Generator<T[]> {
+  if (!Number.isSafeInteger(size) || size < 1) {
     throw new Error('size must be an integer >= 1');
   }
-  for (let i = 0; i < arr.length; i += size) {
-    yield arr.slice(i, i + size);
+
+  const iterator = Iterator.from(arr);
+  const length = arr.length;
+  let i = 0;
+
+  while (i < length) {
+    yield iterator.take(size).toArray();
+    i += size;
   }
 }
 
@@ -595,7 +576,7 @@ export function bindIf<T>(assertion: unknown, value: T): NonNullable<T> {
     : (nothing as NonNullable<T>);
 }
 
-let pool: Uint8Array;
+let pool: Uint8Array<ArrayBuffer>;
 let poolOffset: number;
 const urlAlphabet =
   'useandom-26T198340PX75pxJACKVERYMINDBUSHWOLF_GQZbfghjklqvwyzrict';

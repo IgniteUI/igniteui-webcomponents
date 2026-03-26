@@ -821,7 +821,7 @@ export default class IgcComboComponent<
 
   protected itemClickHandler(event: PointerEvent) {
     this._setTouchedState();
-    const target = findElementFromEventPath<IgcComboItemComponent>(
+    const target = findElementFromEventPath(
       IgcComboItemComponent.tagName,
       event
     );

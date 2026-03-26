@@ -17,8 +17,7 @@ const metadata: Meta<IgcToastComponent> = {
   parameters: {
     docs: {
       description: {
-        component:
-          'A toast provides brief, non-intrusive notifications that appear temporarily in the viewport. It supports three vertical positions (top, middle, bottom), a configurable display duration, and a `keep-open` mode for persistent messages that require manual dismissal.',
+        component: 'A toast component is used to show a notification',
       },
     },
   },
