@@ -1028,7 +1028,6 @@ describe('Combo', () => {
       simulateKeyboard(options, spaceBar);
 
       await elementUpdated(combo);
-      await list.layoutComplete;
 
       expect(items(combo)[1].selected).to.be.false;
       expect(items(combo)[2].selected).to.be.true;
@@ -1516,6 +1515,14 @@ describe('Combo', () => {
 
       expect(spec.element.value).to.eql(['US01']);
       spec.assertSubmitHasValue('US01');
+    });
+
+    it('should handle invalid JSON in value attribute gracefully', () => {
+      const defaultValue = spec.element.defaultValue;
+
+      spec.setAttributes({ value: 'invalid' });
+      expect(spec.element.value).to.be.empty;
+      expect(spec.element.defaultValue).to.equal(defaultValue);
     });
 
     it('reflects disabled ancestor state', () => {

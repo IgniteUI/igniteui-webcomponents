@@ -145,15 +145,32 @@ export function isElement(node: unknown): node is Element {
   return node instanceof Node && node.nodeType === Node.ELEMENT_NODE;
 }
 
-export function findElementFromEventPath<K extends keyof HTMLElementTagNameMap>(
+/**
+ * Finds the first element in the event's composed path that matches the provided predicate, which can be either a string selector or a function.
+ *
+ * @param predicate - A string representing a CSS selector or a function that takes an Element and returns a boolean indicating a match.
+ * @param event - The event whose composed path will be searched for the matching element.
+ * @returns The first Element that matches the predicate, or undefined if no match is found.
+ *
+ * @example
+ * ```typescript
+ * // Using a string selector
+ * const button = getElementFromPath('button', event);
+ * ```
+ * ```typescript
+ * // Using a predicate function
+ * const customElement = getElementFromPath((el) => el.tagName === 'MY-ELEMENT', event);
+ * ```
+ */
+export function getElementFromPath<K extends keyof HTMLElementTagNameMap>(
   predicate: K,
   event: Event
 ): HTMLElementTagNameMap[K] | undefined;
-export function findElementFromEventPath<T extends Element>(
+export function getElementFromPath<T extends Element>(
   predicate: string | ((element: Element) => boolean),
   event: Event
 ): T | undefined;
-export function findElementFromEventPath(
+export function getElementFromPath(
   predicate: string | ((element: Element) => boolean),
   event: Event
 ) {
@@ -164,6 +181,10 @@ export function findElementFromEventPath(
   return Iterator.from(event.composedPath()).find(
     (item) => isElement(item) && func(item)
   ) as Element | undefined;
+}
+
+export function stopPropagation(event: Event): void {
+  event.stopPropagation();
 }
 
 export function first<T>(arr: T[]) {
@@ -308,7 +329,7 @@ export function isEmpty<T, U extends object>(
 }
 
 export function asArray<T>(value?: T | T[]): T[] {
-  if (!isDefined(value)) return [];
+  if (value == null) return [];
   return Array.isArray(value) ? value : [value];
 }
 

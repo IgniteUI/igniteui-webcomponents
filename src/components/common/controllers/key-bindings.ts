@@ -1,12 +1,7 @@
 import type { ReactiveController, ReactiveControllerHost } from 'lit';
 import type { Ref } from 'lit/directives/ref.js';
 import { createAbortHandle } from '../abort-handler.js';
-import {
-  asArray,
-  findElementFromEventPath,
-  isFunction,
-  toMerged,
-} from '../util.js';
+import { asArray, getElementFromPath, isFunction, toMerged } from '../util.js';
 
 //#region Keys and modifiers
 
@@ -266,7 +261,7 @@ class KeyBindingController implements ReactiveController {
       return true;
     }
 
-    if (!findElementFromEventPath((e) => e === this._element, event)) {
+    if (!getElementFromPath((e) => e === this._element, event)) {
       return true;
     }
 
@@ -275,7 +270,7 @@ class KeyBindingController implements ReactiveController {
         return false;
       }
 
-      return Boolean(findElementFromEventPath(this._skipSelector, event));
+      return Boolean(getElementFromPath(this._skipSelector, event));
     }
 
     if (isFunction(skip)) {
