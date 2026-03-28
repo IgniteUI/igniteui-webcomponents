@@ -149,6 +149,7 @@ export class IgcCalendarBaseComponent extends LitElement {
     return this._i18nController.locale;
   }
 
+  /* blazorCSSuppress */
   /**
    * The resource strings for localization.
    */

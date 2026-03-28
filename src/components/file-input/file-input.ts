@@ -146,6 +146,7 @@ export default class IgcFileInputComponent extends EventEmitterMixin<
     return this._input?.value ?? '';
   }
 
+  /* blazorCSSuppress */
   /**
    * The resource strings for localization.
    */
