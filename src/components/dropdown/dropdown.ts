@@ -212,7 +212,7 @@ export default class IgcDropdownComponent extends EventEmitterMixin<
 
     this._keyBindings = addKeybindings(this, {
       skip: () => !this.open,
-      bindingDefaults: { preventDefault: true, triggers: ['keydownRepeat'] },
+      bindingDefaults: { preventDefault: true, repeat: true },
     })
       .set(tabKey, this.onTabKey, {
         preventDefault: false,
