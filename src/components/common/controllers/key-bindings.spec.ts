@@ -66,13 +66,19 @@ describe('Key bindings controller', () => {
     );
   });
 
-  function dispatch(node: Element, type: 'keydown' | 'keyup', key: string) {
+  function dispatch(
+    node: Element,
+    type: 'keydown' | 'keyup',
+    key: string,
+    repeat = false
+  ) {
     node.dispatchEvent(
       new KeyboardEvent(type, {
         key,
         bubbles: true,
         composed: true,
         cancelable: true,
+        repeat,
       })
     );
   }
@@ -165,5 +171,45 @@ describe('Key bindings controller', () => {
 
     simulateKeyboard(instance, [shiftKey, altKey, arrowUp]);
     expect(instance.key).to.equal(arrowUp.toLowerCase());
+  });
+
+  describe('repeat option', () => {
+    let repeatTag: string;
+    let repeatInstance: LitElement & { callCount: number };
+
+    before(() => {
+      repeatTag = defineCE(
+        class extends LitElement {
+          public callCount = 0;
+
+          constructor() {
+            super();
+            addKeybindings(this)
+              .set('a', () => this.callCount++)
+              .set('b', () => this.callCount++, { repeat: true });
+          }
+        }
+      );
+    });
+
+    beforeEach(async () => {
+      const tagName = unsafeStatic(repeatTag);
+      repeatInstance = await fixture(html`<${tagName}></${tagName}>`);
+    });
+
+    it('should not fire on repeated keydown by default', () => {
+      dispatch(repeatInstance, 'keydown', 'a', true);
+      expect(repeatInstance.callCount).to.equal(0);
+    });
+
+    it('should fire on initial keydown regardless of repeat option', () => {
+      dispatch(repeatInstance, 'keydown', 'b');
+      expect(repeatInstance.callCount).to.equal(1);
+    });
+
+    it('should fire on repeated keydown when repeat is enabled', () => {
+      dispatch(repeatInstance, 'keydown', 'b', true);
+      expect(repeatInstance.callCount).to.equal(1);
+    });
   });
 });

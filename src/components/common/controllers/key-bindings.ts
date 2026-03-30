@@ -294,7 +294,8 @@ class KeyBindingController implements ReactiveController {
       (mod) => event[`${mod}Key` as keyof KeyboardEvent]
     );
 
-    const combination = createCombinationKey([key], activeModifiers);
+    const keys = MODIFIERS.has(key) ? [] : [key];
+    const combination = createCombinationKey(keys, activeModifiers);
     const binding = this._bindings.get(combination);
 
     if (binding && this._bindingMatches(binding, event)) {
