@@ -307,11 +307,31 @@ export function isEmpty<T, U extends object>(
   return 'length' in x ? x.length < 1 : x.size < 1;
 }
 
+/**
+ * Ensures the given value is wrapped in an array. If the value is already an array, it is returned as-is. If the value is undefined, an empty array is returned.
+ *
+ * @example
+ * ```typescript
+ * asArray(5); // [5]
+ * asArray([1, 2, 3]); // [1, 2, 3]
+ * asArray(undefined); // []
+ * ```
+ */
 export function asArray<T>(value?: T | T[]): T[] {
   if (!isDefined(value)) return [];
   return Array.isArray(value) ? value : [value];
 }
 
+/**
+ * Splits an array into two based on a predicate function, returning a tuple of [truthy, falsy] arrays.
+ *
+ * @example
+ * ```typescript
+ * const [evens, odds] = partition([1, 2, 3, 4], x => x % 2 === 0);
+ * console.log(evens); // [2, 4]
+ * console.log(odds); // [1, 3]
+ * ```
+ */
 export function partition<T>(
   array: T[],
   isTruthy: (value: T) => boolean

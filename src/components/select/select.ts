@@ -292,7 +292,7 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
 
     addKeybindings(this, {
       skip: () => this.disabled,
-      bindingDefaults: { preventDefault: true, triggers: ['keydownRepeat'] },
+      bindingDefaults: { preventDefault: true, repeat: true },
     })
       .set([altKey, arrowDown], this._handleAltArrowDown)
       .set([altKey, arrowUp], this._handleAltArrowUp)
