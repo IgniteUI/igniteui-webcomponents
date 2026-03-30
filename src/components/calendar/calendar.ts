@@ -248,7 +248,7 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
     addKeybindings(this, {
       skip: this._shouldSkipKeyboardEvent,
       ref: this._contentRef,
-      bindingDefaults: { triggers: ['keydownRepeat'] },
+      bindingDefaults: { repeat: true },
     })
       .set(arrowLeft, this._handleArrowKey.bind(this, 'day', -1))
       .set(arrowRight, this._handleArrowKey.bind(this, 'day', 1))
