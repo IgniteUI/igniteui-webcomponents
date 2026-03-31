@@ -1,16 +1,15 @@
 import {
   getCurrentI18n,
   getDateFormatter,
-  getDisplayNamesFormatter,
   getI18nManager,
   type IResourceChangeEventArgs,
   type IResourceStrings,
 } from 'igniteui-i18n-core';
 import type { ReactiveController, ReactiveControllerHost } from 'lit';
 import {
-  calendarResourcesMap,
   convertToCoreResource,
-  dateRangePickerResourcesMap,
+  convertToIgcResource,
+  type I18nResourceMapNames,
 } from './utils.js';
 
 /**
@@ -29,8 +28,10 @@ type ResourceChangeCallback = (
 
 /** Configuration object for the I18nController. */
 type I18nControllerConfig<T extends object> = {
-  /** The full default English resource strings object for the component. */
+  /** The full default English resource strings object for the component. Should always come from igniteui-i18n-core. */
   defaultEN: T;
+  /** @deprecated Optional name if component uses mixed resource strings. To be removed with deprecated resources. */
+  resourceMapName?: I18nResourceMapNames;
   /** An optional callback to execute when the global locale changes. */
   onResourceChange?: ResourceChangeCallback;
 };
@@ -49,6 +50,7 @@ class I18nController<T extends object> implements ReactiveController {
   private _resourceChangeCallback?: ResourceChangeCallback;
   private _defaultResourceStrings: T;
   private _locale?: string;
+  private _resourceMapName?: I18nResourceMapNames;
   private _resourceStrings?: T;
 
   //#endregion
@@ -62,7 +64,7 @@ class I18nController<T extends object> implements ReactiveController {
   public set locale(value: string | undefined) {
     if (this._locale !== value) {
       this._locale = value;
-      this._defaultResourceStrings = this._getCurrentResourceStrings();
+      this._defaultResourceStrings = this._getDefaultResourceStrings();
       this._host.requestUpdate();
     }
   }
@@ -82,7 +84,10 @@ class I18nController<T extends object> implements ReactiveController {
    */
   public set resourceStrings(value: T | undefined) {
     if (this._resourceStrings !== value) {
-      this._resourceStrings = value;
+      this._resourceStrings =
+        this._resourceMapName && value
+          ? this.getMixedResourceStrings(value)
+          : value;
       this._host.requestUpdate();
     }
   }
@@ -99,10 +104,14 @@ class I18nController<T extends object> implements ReactiveController {
   constructor(host: I18nControllerHost, config: I18nControllerConfig<T>) {
     this._host = host;
     this._defaultEN = config.defaultEN;
+    this._resourceMapName = config.resourceMapName;
     this._resourceChangeCallback = config.onResourceChange;
 
-    this._defaultResourceStrings = this._getCurrentResourceStrings();
-    this._registerResources(this._defaultEN);
+    this._defaultResourceStrings = this._getDefaultResourceStrings();
+    getI18nManager().registerI18n(
+      this._defaultEN,
+      getI18nManager().defaultLocale
+    );
 
     this._host.addController(this);
   }
@@ -119,7 +128,7 @@ class I18nController<T extends object> implements ReactiveController {
 
   /** @internal */
   public handleEvent(event: CustomEvent<IResourceChangeEventArgs>): void {
-    this._defaultResourceStrings = this._getCurrentResourceStrings();
+    this._defaultResourceStrings = this._getDefaultResourceStrings();
     this._resourceChangeCallback?.call(this._host, event);
     this._host.requestUpdate();
   }
@@ -128,34 +137,6 @@ class I18nController<T extends object> implements ReactiveController {
 
   //#region Internal API
 
-  /** Registers the default English resources with the global i18n manager. */
-  private _registerResources(resource: T): void {
-    const convertedResource = convertToCoreResource(resource);
-    const manager = getI18nManager();
-
-    manager.registerI18n(convertedResource, manager.defaultLocale);
-  }
-
-  /**
-   * Helper to find the correct resource map based on the component's default resources (`#defaultEN`).
-   * This relies on structural checking (the component's key names).
-   */
-  private _getResourceMapForComponent():
-    | Map<string, string | undefined>
-    | undefined {
-    const keys = Object.keys(this._defaultEN);
-
-    if (keys.includes('last7Days')) {
-      return dateRangePickerResourcesMap;
-    }
-
-    if (keys.includes('selectMonth')) {
-      return calendarResourcesMap;
-    }
-
-    return undefined;
-  }
-
   /**
    * Gets the current, locale-specific resource strings for the component.
    * The logic maps component keys (from defaultEN) to core library keys
@@ -163,42 +144,39 @@ class I18nController<T extends object> implements ReactiveController {
    *
    * Result is truncated, containing only relevant locale strings.
    */
-  private _getCurrentResourceStrings(): T {
+  private _getDefaultResourceStrings(): T {
     const coreResourceStrings = getI18nManager().getCurrentResourceStrings(
       this.locale
     );
 
-    const resourceMap = this._getResourceMapForComponent();
+    // Get all related resources to the component, based on the default resources.
     const normalizedResourceStrings: T = {} as T;
     const defaultComponentKeys = Object.keys(this._defaultEN) as (keyof T)[];
-
-    for (const igcKey of defaultComponentKeys) {
-      const coreKey = resourceMap?.get(igcKey as string);
-      let resolvedValue: T[keyof T] = this._defaultEN[igcKey];
-
-      if (coreKey) {
-        if (coreKey.includes('getWeekLabel')) {
-          // To be removed once the Calendar switches completely to the new i18n resources.
-          resolvedValue = getDisplayNamesFormatter().getWeekLabel(this.locale, {
-            style: 'short',
-          }) as T[keyof T];
-        } else if (coreKey in coreResourceStrings) {
-          resolvedValue = coreResourceStrings[
-            coreKey as keyof IResourceStrings
-          ] as T[keyof T];
-        }
-      } else if (igcKey in coreResourceStrings) {
+    for (const key of defaultComponentKeys) {
+      let resolvedValue: T[keyof T] = this._defaultEN[key];
+      if (key in coreResourceStrings) {
         // For a mix of old and core resources.
         // Only for internal default resources. Users shouldn't mix them.
         resolvedValue = coreResourceStrings[
-          igcKey as keyof IResourceStrings
+          key as keyof IResourceStrings
         ] as T[keyof T];
       }
 
-      normalizedResourceStrings[igcKey] = resolvedValue;
+      normalizedResourceStrings[key] = resolvedValue;
     }
 
-    return normalizedResourceStrings;
+    return this.getMixedResourceStrings(normalizedResourceStrings);
+  }
+
+  private getMixedResourceStrings(value: T): T {
+    if (this._resourceMapName) {
+      return Object.assign(
+        {},
+        convertToCoreResource(value, this._resourceMapName),
+        convertToIgcResource(value, this._resourceMapName)
+      ) as T;
+    }
+    return value;
   }
 
   //#endregion

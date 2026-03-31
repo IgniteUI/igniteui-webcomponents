@@ -6,6 +6,7 @@ import {
 } from './calendar.resources.js';
 
 /* blazorSuppress */
+/** @deprecated Please use the newly provided ICalendarResourceStrings and IDateRangePickerResources interface or set global resource strings using `registerI18n` method. */
 export interface IgcDateRangePickerResourceStrings extends IgcCalendarResourceStrings {
   separator: string;
   done: string;
@@ -16,8 +17,12 @@ export interface IgcDateRangePickerResourceStrings extends IgcCalendarResourceSt
   yearToDate: string;
 }
 
+/** @deprecated Please use the newly provided resources from the igniteui-i18n-resources package. */
 export const IgcDateRangePickerResourceStringsEN: IgcDateRangePickerResourceStrings =
   {
-    ...convertToIgcResource(DateRangePickerResourceStringsEN),
+    ...convertToIgcResource(
+      DateRangePickerResourceStringsEN,
+      'date-range-picker'
+    ),
     ...IgcCalendarResourceStringEN,
   };

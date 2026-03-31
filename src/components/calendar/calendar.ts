@@ -1,4 +1,7 @@
-import { getDateFormatter } from 'igniteui-i18n-core';
+import {
+  getDateFormatter,
+  type ICalendarResourceStrings,
+} from 'igniteui-i18n-core';
 import { html, nothing, type TemplateResult } from 'lit';
 import { property, query, queryAll, state } from 'lit/decorators.js';
 import { choose } from 'lit/directives/choose.js';
@@ -141,11 +144,17 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
   private get _previousButtonLabel(): string {
     switch (this.activeView) {
       case 'days':
-        return this.resourceStrings.previousMonth;
+        return (this.resourceStrings as ICalendarResourceStrings)
+          .calendar_previous_month!;
       case 'months':
-        return this.resourceStrings.previousYear;
+        return (this.resourceStrings as ICalendarResourceStrings)
+          .calendar_previous_year!;
       case 'years':
-        return formatString(this.resourceStrings.previousYears, YEARS_PER_PAGE);
+        return formatString(
+          (this.resourceStrings as ICalendarResourceStrings)
+            .calendar_previous_years!,
+          YEARS_PER_PAGE
+        );
       default:
         return '';
     }
@@ -154,11 +163,17 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
   private get _nextButtonLabel(): string {
     switch (this.activeView) {
       case 'days':
-        return this.resourceStrings.nextMonth;
+        return (this.resourceStrings as ICalendarResourceStrings)
+          .calendar_next_month!;
       case 'months':
-        return this.resourceStrings.nextYear;
+        return (this.resourceStrings as ICalendarResourceStrings)
+          .calendar_next_year!;
       case 'years':
-        return formatString(this.resourceStrings.nextYears, YEARS_PER_PAGE);
+        return formatString(
+          (this.resourceStrings as ICalendarResourceStrings)
+            .calendar_next_years!,
+          YEARS_PER_PAGE
+        );
       default:
         return '';
     }
@@ -581,7 +596,7 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
     const value = formatter.formatDateTime(active.native, this.locale, {
       month: this.formatOptions.month,
     });
-    const ariaLabel = `${label}, ${this.resourceStrings.selectMonth}`;
+    const ariaLabel = `${label}, ${(this.resourceStrings as ICalendarResourceStrings).calendar_select_month}`;
 
     return html`
       <button
@@ -602,7 +617,7 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
       month: 'long',
       year: 'numeric',
     });
-    const ariaLabel = `${active.year}, ${this.resourceStrings.selectYear}`;
+    const ariaLabel = `${active.year}, ${(this.resourceStrings as ICalendarResourceStrings).calendar_select_year}`;
     const ariaSkip = this._isDayView ? format(active.native) : active.year;
 
     return html`
@@ -656,8 +671,9 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
     }
 
     const title = this._isSingle
-      ? this.resourceStrings.selectDate
-      : this.resourceStrings.selectRange;
+      ? (this.resourceStrings as ICalendarResourceStrings).calendar_select_date
+      : (this.resourceStrings as ICalendarResourceStrings)
+          .calendar_range_placeholder;
 
     return html`
       <div part="header">
@@ -693,11 +709,16 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
       month: 'short',
       day: 'numeric',
     });
-    const { startDate, endDate } = this.resourceStrings;
+    const { calendar_range_label_start, calendar_range_label_end } = this
+      .resourceStrings as ICalendarResourceStrings;
 
-    const start = this._hasValues ? format(first(values)) : startDate;
+    const start = this._hasValues
+      ? format(first(values))
+      : calendar_range_label_start;
     const end =
-      this._hasValues && values.length > 1 ? format(last(values)) : endDate;
+      this._hasValues && values.length > 1
+        ? format(last(values))
+        : calendar_range_label_end;
 
     return html`
       <slot name="header-date">
