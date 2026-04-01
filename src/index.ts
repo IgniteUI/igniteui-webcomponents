@@ -106,6 +106,7 @@ export {
 export {
   type ICalendarResourceStrings,
   type ICarouselResourceStrings,
+  type IChatResourceStrings,
   type IChipResourceStrings,
   type IComboResourceStrings,
   type IDatePickerResourceStrings,
@@ -114,6 +115,7 @@ export {
   type ITreeResourceStrings,
   CalendarResourceStringsEN,
   CarouselResourceStringsEN,
+  ChatResourceStringsEN,
   ChipResourceStringsEN,
   ComboResourceStringsEN,
   DatePickerResourceStringsEN,
