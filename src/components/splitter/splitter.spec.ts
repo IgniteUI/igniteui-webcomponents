@@ -887,7 +887,6 @@ describe('Splitter', () => {
       splitter.startSize = '250px';
       await elementUpdated(splitter);
 
-      barSize = bar.getBoundingClientRect().height;
       bar.focus();
       await elementUpdated(splitter);
 
