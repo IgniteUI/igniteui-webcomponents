@@ -1,4 +1,8 @@
 import { ContextProvider } from '@lit/context';
+import {
+  ChatResourceStringsEN,
+  type IChatResourceStrings,
+} from 'igniteui-i18n-core';
 import { html, LitElement, nothing, type PropertyValues } from 'lit';
 import { property, query } from 'lit/decorators.js';
 import { cache } from 'lit/directives/cache.js';
@@ -8,7 +12,8 @@ import IgcButtonComponent from '../button/button.js';
 import { chatContext, chatUserInputContext } from '../common/context.js';
 import { addSlotController, setSlots } from '../common/controllers/slot.js';
 import { registerComponent } from '../common/definitions/register.js';
-import { IgcChatResourceStringEN } from '../common/i18n/EN/chat.resources.js';
+import type { IgcChatResourceStrings } from '../common/i18n/EN/chat.resources.js';
+import { addI18nController } from '../common/i18n/i18n-controller.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { isEmpty } from '../common/util.js';
@@ -228,6 +233,13 @@ export default class IgcChatComponent extends EventEmitterMixin<
     initialValue: this._state,
   });
 
+  private readonly _i18nController = addI18nController<
+    IgcChatResourceStrings | IChatResourceStrings
+  >(this, {
+    defaultEN: ChatResourceStringsEN,
+    resourceMapName: 'chat',
+  });
+
   @query(IgcChatInputComponent.tagName)
   private readonly _input?: IgcChatInputComponent;
 
@@ -304,7 +316,15 @@ export default class IgcChatComponent extends EventEmitterMixin<
    * The resource strings of the chat.
    */
   @property({ attribute: false })
-  public resourceStrings = IgcChatResourceStringEN;
+  public set resourceStrings(
+    value: IgcChatResourceStrings | IChatResourceStrings
+  ) {
+    this._i18nController.resourceStrings = value;
+  }
+
+  public get resourceStrings(): IgcChatResourceStrings & IChatResourceStrings {
+    return this._i18nController.resourceStrings;
+  }
 
   constructor() {
     super();
@@ -444,7 +464,7 @@ export default class IgcChatComponent extends EventEmitterMixin<
         <igc-list>
           <igc-list-header part="suggestions-header">
             <span ?hidden=${hasContent}>
-              ${this.resourceStrings.suggestionsHeader}
+              ${this.resourceStrings.chat_suggestions_header}
             </span>
             <slot name="suggestions-header"></slot>
           </igc-list-header>
