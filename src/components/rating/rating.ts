@@ -1,15 +1,8 @@
 import { html, LitElement, nothing } from 'lit';
-import {
-  property,
-  query,
-  queryAssignedElements,
-  queryAssignedNodes,
-  state,
-} from 'lit/decorators.js';
-import { guard } from 'lit/directives/guard.js';
-import { ifDefined } from 'lit/directives/if-defined.js';
+import { property, query, state } from 'lit/decorators.js';
+import { range } from 'lit/directives/range.js';
+import { repeat } from 'lit/directives/repeat.js';
 import { styleMap } from 'lit/directives/style-map.js';
-
 import { addThemingController } from '../../theming/theming-controller.js';
 import {
   addKeybindings,
@@ -20,6 +13,12 @@ import {
   endKey,
   homeKey,
 } from '../common/controllers/key-bindings.js';
+import {
+  addSlotController,
+  type InferSlotNames,
+  type SlotChangeCallbackParameters,
+  setSlots,
+} from '../common/controllers/slot.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
@@ -28,9 +27,9 @@ import { FormValueNumberTransformers } from '../common/mixins/forms/form-transfo
 import { createFormValueState } from '../common/mixins/forms/form-value.js';
 import {
   asNumber,
+  bindIf,
   clamp,
   formatString,
-  isEmpty,
   isLTR,
   numberOfDecimals,
   roundPrecise,
@@ -46,11 +45,44 @@ export interface IgcRatingComponentEventMap {
   igcHover: CustomEvent<number>;
 }
 
+const Slots = setSlots('symbol', 'value-label');
+
 /**
- * Rating provides insight regarding others' opinions and experiences,
- * and can allow the user to submit a rating of their own
+ * A rating component that allows users to view and provide ratings using customizable symbols.
+ * It supports fractional values, hover previews, keyboard navigation, single-selection mode,
+ * and integrates with forms as a number input.
+ *
+ * @example
+ * ```html
+ * <!-- Basic rating -->
+ * <igc-rating value="3" max="5" label="Rate this product"></igc-rating>
+ * ```
+ *
+ * @example
+ * ```html
+ * <!-- Half-star rating with hover preview -->
+ * <igc-rating step="0.5" hover-preview value-format="{0} out of {1} stars"></igc-rating>
+ * ```
+ *
+ * @example
+ * ```html
+ * <!-- Custom symbols via projected rating symbols -->
+ * <igc-rating>
+ *   <igc-rating-symbol>
+ *     <igc-icon name="heart_filled" collection="default"></igc-icon>
+ *     <igc-icon name="heart_outlined" collection="default" slot="empty"></igc-icon>
+ *   </igc-rating-symbol>
+ *   <igc-rating-symbol>
+ *     <igc-icon name="heart_filled" collection="default"></igc-icon>
+ *     <igc-icon name="heart_outlined" collection="default" slot="empty"></igc-icon>
+ *   </igc-rating-symbol>
+ * </igc-rating>
+ * ```
  *
  * @element igc-rating
+ *
+ * @slot symbol - Slot for projecting custom `igc-rating-symbol` elements. When used, the number of symbols determines the `max` value.
+ * @slot value-label - Slot for custom content displayed alongside the rating value.
  *
  * @fires igcChange - Emitted when the value of the control changes.
  * @fires igcHover - Emitted when hover is enabled and the user mouses over a symbol of the rating.
@@ -78,13 +110,21 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
   public static styles = [styles, shared];
 
   /* blazorSuppress */
-  public static register() {
+  public static register(): void {
     registerComponent(
       IgcRatingComponent,
       IgcIconComponent,
       IgcRatingSymbolComponent
     );
   }
+
+  //#region Internal state and properties
+
+  protected readonly _slots = addSlotController(this, {
+    slots: Slots,
+    onChange: this._handleSlotChange,
+    initial: true,
+  });
 
   protected override readonly _formValue = createFormValueState(this, {
     initialValue: 0,
@@ -94,40 +134,36 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
   private _max = 5;
   private _step = 1;
   private _single = false;
-
-  @queryAssignedElements({
-    selector: IgcRatingSymbolComponent.tagName,
-    slot: 'symbol',
-  })
-  protected ratingSymbols!: IgcRatingSymbolComponent[];
+  private _symbols: IgcRatingSymbolComponent[] = [];
 
   @query('[part="symbols"]', true)
-  protected container!: HTMLElement;
-
-  @queryAssignedNodes({ slot: 'value-label', flatten: true })
-  protected valueLabel!: Node[];
+  private _container?: HTMLElement;
 
   @state()
-  protected hoverValue = -1;
+  private _hoverValue = -1;
 
   @state()
-  protected hoverState = false;
+  private _hoverState = false;
 
-  protected get isInteractive() {
+  private get _isInteractive(): boolean {
     return !(this.readOnly || this.disabled);
   }
 
-  protected get hasProjectedSymbols() {
-    return this.ratingSymbols.length > 0;
+  private get _hasProjectedSymbols(): boolean {
+    return this._symbols.length > 0;
   }
 
-  protected get valueText() {
+  private get _valueText(): string {
     // Skip IEEE 754 representation for screen readers
-    const value = this.round(this.value);
+    const value = this._round(this.value);
     return this.valueFormat
       ? formatString(this.valueFormat, value, this.max)
       : `${value} of ${this.max}`;
   }
+
+  //#endregion
+
+  //#region Public attributes and properties
 
   /**
    * The maximum value for the rating.
@@ -139,8 +175,8 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
    */
   @property({ type: Number })
   public set max(value: number) {
-    this._max = this.hasProjectedSymbols
-      ? this.ratingSymbols.length
+    this._max = this._hasProjectedSymbols
+      ? this._symbols.length
       : Math.max(0, value);
 
     if (this._max < this.value) {
@@ -173,7 +209,7 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
    * @attr label
    */
   @property()
-  public label!: string;
+  public label?: string;
 
   /**
    * A format string which sets aria-valuetext. Instances of '{0}' will be replaced
@@ -183,7 +219,7 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
    * @attr value-format
    */
   @property({ attribute: 'value-format' })
-  public valueFormat!: string;
+  public valueFormat?: string;
 
   /* @tsTwoWayProperty(true, "igcChange", "detail", false) */
   /**
@@ -239,9 +275,14 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
   /**
    * Whether to reset the rating when the user selects the same value.
    * @attr allow-reset
+   * @default false
    */
   @property({ type: Boolean, reflect: true, attribute: 'allow-reset' })
   public allowReset = false;
+
+  //#endregion
+
+  //#region Lit lifecycle hooks
 
   constructor() {
     super();
@@ -249,91 +290,134 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
     addThemingController(this, all);
 
     addKeybindings(this, {
-      skip: () => !this.isInteractive,
+      skip: () => !this._isInteractive,
     })
-      .set(arrowUp, () => this.emitValueUpdate(this.value + this.step))
+      .set(arrowUp, () => this._emitValueUpdate(this.value + this.step))
       .set(arrowRight, () =>
-        this.emitValueUpdate(
+        this._emitValueUpdate(
           isLTR(this) ? this.value + this.step : this.value - this.step
         )
       )
-      .set(arrowDown, () => this.emitValueUpdate(this.value - this.step))
+      .set(arrowDown, () => this._emitValueUpdate(this.value - this.step))
       .set(arrowLeft, () =>
-        this.emitValueUpdate(
+        this._emitValueUpdate(
           isLTR(this) ? this.value - this.step : this.value + this.step
         )
       )
-      .set(homeKey, () => this.emitValueUpdate(this.step))
-      .set(endKey, () => this.emitValueUpdate(this.max));
+      .set(homeKey, () => this._emitValueUpdate(this.step))
+      .set(endKey, () => this._emitValueUpdate(this.max));
   }
 
-  protected override async firstUpdated() {
-    await this.updateComplete;
+  protected override firstUpdated(): void {
     this._formValue.setValueAndFormState(clamp(this.value, 0, this.max));
     this._pristine = true;
   }
 
-  protected handleClick({ clientX }: PointerEvent) {
-    const value = this.calcNewValue(clientX);
+  protected override updated(): void {
+    if (this._hasProjectedSymbols) {
+      this._updateProjectedSymbols();
+    }
+  }
+
+  //#endregion
+
+  //#region Event handlers
+
+  private _handleClick({ clientX }: PointerEvent): void {
+    const value = this._calcNewValue(clientX);
     const sameValue = this.value === value;
 
     if (this.allowReset && sameValue) {
-      this.emitValueUpdate(0);
+      this._emitValueUpdate(0);
     } else if (!sameValue) {
-      this.emitValueUpdate(value);
+      this._emitValueUpdate(value);
     }
   }
 
-  protected handlePointerMove({ clientX }: PointerEvent) {
-    const value = this.calcNewValue(clientX);
+  private _handlePointerMove({ clientX }: PointerEvent): void {
+    const value = this._calcNewValue(clientX);
 
-    if (this.hoverValue !== value) {
+    if (this._hoverValue !== value) {
       // Since pointermove spams a lot, only emit on a value change
-      this.hoverValue = value;
-      this.emitEvent('igcHover', { detail: this.hoverValue });
+      this._hoverValue = value;
+      this.emitEvent('igcHover', { detail: this._hoverValue });
     }
   }
 
-  protected emitValueUpdate(value: number) {
+  private _handleSlotChange({
+    slot,
+  }: SlotChangeCallbackParameters<InferSlotNames<typeof Slots>>): void {
+    if (slot === 'symbol') {
+      this._symbols = this._slots.getAssignedElements('symbol', {
+        selector: IgcRatingSymbolComponent.tagName,
+      });
+
+      if (this._hasProjectedSymbols) {
+        this.max = this._symbols.length;
+      }
+    }
+  }
+
+  private _handleHoverEnabled(): void {
+    this._hoverState = true;
+  }
+
+  private _handleHoverDisabled(): void {
+    this._hoverState = false;
+  }
+
+  //#endregion
+
+  //#region Private methods
+
+  private _emitValueUpdate(next: number): void {
     this._setTouchedState();
-    this.value = clamp(value, 0, this.max);
-    if (value === this.value) {
+
+    const clamped = clamp(next, 0, this.max);
+    if (clamped !== this.value) {
+      this.value = clamped;
       this.emitEvent('igcChange', { detail: this.value });
     }
   }
 
-  protected handleSlotChange() {
-    if (this.hasProjectedSymbols) {
-      this.max = this.ratingSymbols.length;
-      this.requestUpdate();
-    }
-  }
-
-  protected handleHoverEnabled() {
-    this.hoverState = true;
-  }
-
-  protected handleHoverDisabled() {
-    this.hoverState = false;
-  }
-
-  protected calcNewValue(x: number) {
-    const { width, left, right } = this.container.getBoundingClientRect();
+  private _calcNewValue(x: number): number {
+    const { width, left, right } =
+      this._container?.getBoundingClientRect() ?? new DOMRect(1, 1, 1, 1);
     const percent = isLTR(this) ? (x - left) / width : (right - x) / width;
-    const value = this.round(this.max * percent);
+    const value = this._round(this.max * percent);
 
     return clamp(value, this.step, this.max);
   }
 
-  protected round(value: number) {
+  private _round(value: number): number {
     return roundPrecise(
       Math.ceil(value / this.step) * this.step,
       numberOfDecimals(this.step)
     );
   }
 
-  protected clipSymbol(index: number, isLTR = true) {
-    const value = this.hoverState ? this.hoverValue : this.value;
+  private _updateProjectedSymbols(): void {
+    const ltr = isLTR(this);
+    const partFull = '[part="symbol full"]';
+    const partEmpty = '[part="symbol empty"]';
+
+    for (const [i, symbol] of this._symbols.entries()) {
+      const full = symbol.renderRoot.querySelector<HTMLElement>(partFull);
+      const empty = symbol.renderRoot.querySelector<HTMLElement>(partEmpty);
+      const { forward, backward } = this._clipSymbol(i, ltr);
+
+      if (full) {
+        full.style.clipPath = forward;
+      }
+
+      if (empty) {
+        empty.style.clipPath = backward;
+      }
+    }
+  }
+
+  private _clipSymbol(index: number, isLTR = true) {
+    const value = this._hoverState ? this._hoverValue : this.value;
     const progress = index + 1 - value;
     const exclusive = progress === 0 || this.value === index + 1 ? 0 : 1;
     const selection = this.single ? exclusive : progress;
@@ -352,74 +436,60 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
     };
   }
 
+  //#endregion
+
+  //#region Public methods
+
   /**
    * Increments the value of the control by `n` steps multiplied by the
    * step factor.
    */
-  public stepUp(n = 1) {
-    this.value += this.round(n * this.step);
+  public stepUp(n = 1): void {
+    this.value += this._round(n * this.step);
   }
 
   /**
    * Decrements the value of the control by `n` steps multiplied by
    * the step factor.
    */
-  public stepDown(n = 1) {
-    this.value -= this.round(n * this.step);
+  public stepDown(n = 1): void {
+    this.value -= this._round(n * this.step);
   }
 
-  protected *renderSymbols() {
+  //#endregion
+
+  private _renderSymbols() {
     const ltr = isLTR(this);
-    for (let i = 0; i < this.max; i++) {
-      const { forward, backward } = this.clipSymbol(i, ltr);
-      yield html`<igc-rating-symbol exportparts="symbol, full, empty">
-        <igc-icon
-          collection="default"
-          name="star_filled"
-          style=${styleMap({ clipPath: forward })}
-        ></igc-icon>
-        <igc-icon
-          collection="default"
-          name="star_outlined"
-          style=${styleMap({ clipPath: backward })}
-          slot="empty"
-        ></igc-icon>
-      </igc-rating-symbol>`;
-    }
-  }
 
-  protected clipProjected() {
-    const ltr = isLTR(this);
-    const partFull = '[part="symbol full"]';
-    const partEmpty = '[part="symbol empty"]';
-
-    for (const [i, symbol] of this.ratingSymbols.entries()) {
-      const full = symbol.renderRoot.querySelector<HTMLElement>(partFull);
-      const empty = symbol.renderRoot.querySelector<HTMLElement>(partEmpty);
-      const { forward, backward } = this.clipSymbol(i, ltr);
-
-      if (full) {
-        full.style.clipPath = forward;
-      }
-
-      if (empty) {
-        empty.style.clipPath = backward;
-      }
-    }
+    return html`
+      ${repeat(
+        range(this.max),
+        (i) => i,
+        (i) => {
+          const { forward, backward } = this._clipSymbol(i, ltr);
+          return html`
+            <igc-rating-symbol exportparts="symbol, full, empty">
+              <igc-icon
+                collection="default"
+                name="star_filled"
+                style=${styleMap({ clipPath: forward })}
+              ></igc-icon>
+              <igc-icon
+                collection="default"
+                name="star_outlined"
+                style=${styleMap({ clipPath: backward })}
+                slot="empty"
+              ></igc-icon>
+            </igc-rating-symbol>
+          `;
+        }
+      )}
+    `;
   }
 
   protected override render() {
-    const props = [
-      this.value,
-      this.hoverValue,
-      this.max,
-      this.step,
-      this.single,
-      this.hoverState,
-      this.ratingSymbols,
-    ];
-
-    const hoverActive = this.hoverPreview && this.isInteractive;
+    const hoverActive = this.hoverPreview && this._isInteractive;
+    const valueLabelHidden = !this._slots.hasAssignedNodes('value-label', true);
 
     return html`
       <label part="label" id="rating-label" ?hidden=${!this.label}
@@ -428,30 +498,27 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
       <div
         part="base"
         role="slider"
-        tabindex=${ifDefined(this.disabled ? undefined : 0)}
+        tabindex=${this.disabled ? -1 : 0}
         aria-labelledby="rating-label"
         aria-valuemin="0"
         aria-valuenow=${this.value}
         aria-valuemax=${this.max}
-        aria-valuetext=${this.valueText}
+        aria-valuetext=${this._valueText}
       >
         <div
           aria-hidden="true"
           part="symbols"
-          @click=${this.isInteractive ? this.handleClick : nothing}
-          @pointerenter=${hoverActive ? this.handleHoverEnabled : nothing}
-          @pointerleave=${hoverActive ? this.handleHoverDisabled : nothing}
-          @pointermove=${hoverActive ? this.handlePointerMove : nothing}
+          @click=${bindIf(this._isInteractive, this._handleClick)}
+          @pointerenter=${bindIf(hoverActive, this._handleHoverEnabled)}
+          @pointerleave=${bindIf(hoverActive, this._handleHoverDisabled)}
+          @pointercancel=${bindIf(hoverActive, this._handleHoverDisabled)}
+          @pointermove=${bindIf(hoverActive, this._handlePointerMove)}
         >
-          <slot name="symbol" @slotchange=${this.handleSlotChange}>
-            ${guard(props, () =>
-              this.hasProjectedSymbols
-                ? this.clipProjected()
-                : this.renderSymbols()
-            )}
+          <slot name="symbol">
+            ${this._hasProjectedSymbols ? nothing : this._renderSymbols()}
           </slot>
         </div>
-        <label part="value-label" ?hidden=${isEmpty(this.valueLabel)}>
+        <label part="value-label" ?hidden=${valueLabelHidden}>
           <slot name="value-label"></slot>
         </label>
       </div>
