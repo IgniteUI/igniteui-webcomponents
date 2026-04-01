@@ -483,8 +483,9 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
     this._i18nController.resourceStrings = value;
   }
 
-  public get resourceStrings(): IgcCalendarResourceStrings {
-    return this._i18nController.resourceStrings as IgcCalendarResourceStrings;
+  public get resourceStrings(): IgcCalendarResourceStrings &
+    DatePickerResourceStringsType {
+    return this._i18nController.resourceStrings;
   }
 
   /** Sets the start day of the week for the calendar. */
@@ -721,10 +722,8 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
         aria-hidden="true"
         title=${ifDefined(
           this.value
-            ? (this.resourceStrings as DatePickerResourceStringsType)
-                .date_picker_change_date
-            : (this.resourceStrings as DatePickerResourceStringsType)
-                .date_picker_choose_date
+            ? this.resourceStrings.date_picker_change_date
+            : this.resourceStrings.date_picker_choose_date
         )}
       ></igc-icon>
     `;
@@ -752,8 +751,7 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
 
     return html`
       <slot name="title" slot="title">
-        ${(this._calendar.resourceStrings as DatePickerResourceStringsType)
-          .calendar_select_date}
+        ${this.resourceStrings.calendar_select_date}
       </slot>
       <slot
         name="header-date"
@@ -825,10 +823,8 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
           <igc-dialog
             aria-label=${ifDefined(
               this.value
-                ? (this.resourceStrings as DatePickerResourceStringsType)
-                    .date_picker_change_date
-                : (this.resourceStrings as DatePickerResourceStringsType)
-                    .date_picker_choose_date
+                ? this.resourceStrings.date_picker_change_date
+                : this.resourceStrings.date_picker_choose_date
             )}
             role="dialog"
             ?open=${this.open}

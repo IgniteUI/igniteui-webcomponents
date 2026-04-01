@@ -4,20 +4,20 @@ import { convertToIgcResource } from '../utils.js';
 /* blazorSuppress */
 /** @deprecated Please use the newly provided ICalendarResourceStrings interface or set global resource strings using `registerI18n` method. */
 export interface IgcCalendarResourceStrings {
-  selectMonth: string;
-  selectYear: string;
-  selectDate: string;
-  selectRange: string;
-  selectedDate: string;
-  startDate: string;
-  endDate: string;
-  previousMonth: string;
-  nextMonth: string;
-  previousYear: string;
-  nextYear: string;
-  previousYears: string;
-  nextYears: string;
-  weekLabel: string;
+  selectMonth?: string;
+  selectYear?: string;
+  selectDate?: string;
+  selectRange?: string;
+  selectedDate?: string;
+  startDate?: string;
+  endDate?: string;
+  previousMonth?: string;
+  nextMonth?: string;
+  previousYear?: string;
+  nextYear?: string;
+  previousYears?: string;
+  nextYears?: string;
+  weekLabel?: string;
 }
 
 // Because weekLabel should be retrieved from the i18n formatter, but previously was present in resources.

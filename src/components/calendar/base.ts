@@ -162,8 +162,9 @@ export class IgcCalendarBaseComponent extends LitElement {
     this._i18nController.resourceStrings = value;
   }
 
-  public get resourceStrings(): IgcCalendarResourceStrings {
-    return this._i18nController.resourceStrings as IgcCalendarResourceStrings;
+  public get resourceStrings(): IgcCalendarResourceStrings &
+    ICalendarResourceStrings {
+    return this._i18nController.resourceStrings;
   }
 
   /** Gets/Sets the special dates for the component. */

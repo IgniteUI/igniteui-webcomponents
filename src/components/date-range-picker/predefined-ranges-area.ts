@@ -78,9 +78,9 @@ export default class IgcPredefinedRangesAreaComponent extends LitElement {
     this._i18nController.resourceStrings = value;
   }
 
-  public get resourceStrings(): IgcDateRangePickerResourceStrings {
-    return this._i18nController
-      .resourceStrings as IgcDateRangePickerResourceStrings;
+  public get resourceStrings(): IgcDateRangePickerResourceStrings &
+    DateRangePickerResourceStringsType {
+    return this._i18nController.resourceStrings;
   }
 
   constructor() {
@@ -90,9 +90,7 @@ export default class IgcPredefinedRangesAreaComponent extends LitElement {
 
   @watch('resourceStrings')
   protected _updatePredefinedRanges(): void {
-    this._predefinedRanges = getPredefinedRanges(
-      this.resourceStrings as DateRangePickerResourceStringsType
-    );
+    this._predefinedRanges = getPredefinedRanges(this.resourceStrings);
   }
 
   private _handleRangeSelect(range: DateRangeValue): void {

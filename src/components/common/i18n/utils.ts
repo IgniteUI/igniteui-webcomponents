@@ -106,16 +106,15 @@ export function convertToIgcResource<T extends object>(
     return resource as T;
   }
 
-  for (const [componentKey, coreKey] of resourceMap) {
-    if (componentKey && componentKey in resource) {
-      return resource as T;
-    }
-    if (coreKey && coreKey in resource) {
-      const resolvedResource = resource as IResourceStrings;
-      const coreValue = resolvedResource[coreKey as keyof IResourceStrings];
-
-      if (isString(coreValue)) {
-        result[componentKey as keyof T] = coreValue as T[keyof T];
+  for (const [igcKey, coreKey] of resourceMap) {
+    if (igcKey in resource) {
+      result[igcKey as keyof T] = resource[
+        igcKey as keyof IResourceStrings
+      ] as T[keyof T];
+    } else if (coreKey && coreKey in resource) {
+      const value = resource[coreKey as keyof IResourceStrings];
+      if (isString(value)) {
+        result[igcKey as keyof T] = value as T[keyof T];
       }
     }
   }
@@ -130,21 +129,21 @@ export function convertToCoreResource<T extends object>(
   const result: IResourceStrings = {};
   const resourceMap = getResourceMap(resourceMapName);
 
-  if (resourceMap) {
-    for (const [key, coreKey] of resourceMap) {
-      if (coreKey) {
-        let value: T[keyof T];
-        if (coreKey in resource) {
-          return resource as IResourceStrings;
-        }
-        value = resource[key as keyof T];
-        if (isString(value)) {
-          result[coreKey as keyof IResourceStrings] = value;
-        }
+  if (!resourceMap) {
+    return resource as IResourceStrings;
+  }
+
+  for (const [igcKey, coreKey] of resourceMap) {
+    if (coreKey && coreKey in resource) {
+      result[coreKey as keyof IResourceStrings] = resource[
+        coreKey as keyof T
+      ] as string;
+    } else if (coreKey) {
+      const value = resource[igcKey as keyof T];
+      if (isString(value)) {
+        result[coreKey as keyof IResourceStrings] = value;
       }
     }
-  } else {
-    return resource as IResourceStrings;
   }
 
   return result;

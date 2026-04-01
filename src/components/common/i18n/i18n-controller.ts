@@ -46,11 +46,16 @@ class I18nController<T extends object> implements ReactiveController {
 
   private readonly _host: I18nControllerHost;
   private readonly _defaultEN: T;
+  /** @deprecated Resource name to use when converting new to old and vice versa resource objects. */
+  private readonly _resourceMapName?: I18nResourceMapNames;
+  private readonly _resourceChangeCallback?: ResourceChangeCallback;
 
-  private _resourceChangeCallback?: ResourceChangeCallback;
-  private _defaultResourceStrings: T;
   private _locale?: string;
-  private _resourceMapName?: I18nResourceMapNames;
+  /** Cache of default resource strings coming from i18n Manager. */
+  private _defaultResourceStrings: T;
+  /** Collection containing only custom resource strings provided. Allows for partial override of resource strings. */
+  private _customResourceStrings?: T;
+  /** Merged collection of custom resource strings and default resource strings. */
   private _resourceStrings?: T;
 
   //#endregion
@@ -84,10 +89,20 @@ class I18nController<T extends object> implements ReactiveController {
    */
   public set resourceStrings(value: T | undefined) {
     if (this._resourceStrings !== value) {
-      this._resourceStrings =
-        this._resourceMapName && value
+      if (value) {
+        this._customResourceStrings = this._resourceMapName
           ? this.getMixedResourceStrings(value)
           : value;
+        this._resourceStrings = Object.assign(
+          {},
+          this._defaultResourceStrings,
+          this._customResourceStrings
+        );
+      } else {
+        this._customResourceStrings = value;
+        this._resourceStrings = value;
+      }
+
       this._host.requestUpdate();
     }
   }
@@ -129,6 +144,13 @@ class I18nController<T extends object> implements ReactiveController {
   /** @internal */
   public handleEvent(event: CustomEvent<IResourceChangeEventArgs>): void {
     this._defaultResourceStrings = this._getDefaultResourceStrings();
+    if (this._customResourceStrings) {
+      this._resourceStrings = Object.assign(
+        {},
+        this._defaultResourceStrings,
+        this._customResourceStrings
+      );
+    }
     this._resourceChangeCallback?.call(this._host, event);
     this._host.requestUpdate();
   }

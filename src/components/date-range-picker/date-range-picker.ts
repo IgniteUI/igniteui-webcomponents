@@ -390,9 +390,9 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
     this._i18nController.resourceStrings = value;
   }
 
-  public get resourceStrings(): IgcDateRangePickerResourceStrings {
-    return this._i18nController
-      .resourceStrings as IgcDateRangePickerResourceStrings;
+  public get resourceStrings(): IgcDateRangePickerResourceStrings &
+    DateRangePickerResourceStringsType {
+    return this._i18nController.resourceStrings;
   }
 
   // #endregion
@@ -1021,8 +1021,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
 
     return html`
       <slot name="title" slot="title">
-        ${(this.resourceStrings as DateRangePickerResourceStringsType)
-          .calendar_select_date}
+        ${this.resourceStrings.calendar_select_date}
       </slot>
       <slot name="header-date" slot=${hasHeaderDate}></slot>
     `;
@@ -1102,10 +1101,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
         `
       : html`
           <igc-dialog
-            aria-label=${ifDefined(
-              (this.resourceStrings as DateRangePickerResourceStringsType)
-                .calendar_select_date
-            )}
+            aria-label=${ifDefined(this.resourceStrings.calendar_select_date)}
             role="dialog"
             ?open=${this.open}
             ?close-on-outside-click=${!this.keepOpenOnOutsideClick}
@@ -1120,15 +1116,14 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
               slot="footer"
               @click=${this._dialogCancel}
               variant=${isIndigo ? 'outlined' : 'flat'}
-              >${(this.resourceStrings as DateRangePickerResourceStringsType)
+              >${this.resourceStrings
                 .date_range_picker_cancel_button}</igc-button
             >
             <igc-button
               slot="footer"
               @click=${this._dialogDone}
               variant=${isIndigo ? 'contained' : 'flat'}
-              >${(this.resourceStrings as DateRangePickerResourceStringsType)
-                .date_range_picker_done_button}</igc-button
+              >${this.resourceStrings.date_range_picker_done_button}</igc-button
             >
           </igc-dialog>
         `;
@@ -1191,8 +1186,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
         ${this._renderInput(idStart, 'start')}
         <div part="separator">
           <slot name="separator">
-            ${(this.resourceStrings as DateRangePickerResourceStringsType)
-              .date_range_picker_date_separator}
+            ${this.resourceStrings.date_range_picker_date_separator}
           </slot>
         </div>
         ${this._renderInput(idEnd, 'end')}
