@@ -123,7 +123,6 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
   protected readonly _slots = addSlotController(this, {
     slots: Slots,
     onChange: this._handleSlotChange,
-    initial: true,
   });
 
   protected override readonly _formValue = createFormValueState(this, {
@@ -419,7 +418,7 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
   private _clipSymbol(index: number, isLTR = true) {
     const value = this._hoverState ? this._hoverValue : this.value;
     const progress = index + 1 - value;
-    const exclusive = progress === 0 || this.value === index + 1 ? 0 : 1;
+    const exclusive = progress === 0 || value === index + 1 ? 0 : 1;
     const selection = this.single ? exclusive : progress;
     const activate = (p: number) => clamp(p * 100, 0, 100);
 
