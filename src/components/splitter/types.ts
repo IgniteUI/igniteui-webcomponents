@@ -47,11 +47,11 @@ interface IgcSplitterComponentEventMap {
 }
 
 export type {
-  PanePosition,
-  SplitterPaneState,
-  PaneResizeSnapshot,
-  SplitterResizeState,
+  IgcSplitterComponentEventMap,
   IgcSplitterResizeEventArgs,
   IgcSplitterResizeEventDetail,
-  IgcSplitterComponentEventMap,
+  PanePosition,
+  PaneResizeSnapshot,
+  SplitterPaneState,
+  SplitterResizeState,
 };
