@@ -8,12 +8,10 @@ import { createDatePart, DatePartType, type IDatePart } from './date-part.js';
  * Types of date/time parts that can appear in a format string.
  * Re-exported from date-part.ts for backward compatibility.
  */
-export { DatePartType as DateParts };
-
 /**
  * Re-export createDatePart factory for creating standalone parts.
  */
-export { createDatePart };
+export { createDatePart, DatePartType as DateParts };
 
 /**
  * Information about a parsed date part within a format string.
