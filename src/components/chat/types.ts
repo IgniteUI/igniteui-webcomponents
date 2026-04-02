@@ -1,5 +1,6 @@
 import type IgcChatComponent from './chat.js';
 
+/* marshalByValue */
 /* jsonAPIPlainObject */
 /**
  * Represents a single chat message in the conversation.
@@ -37,6 +38,7 @@ export interface IgcChatMessage {
   reactions?: string[];
 }
 
+/* marshalByValue */
 /* jsonAPIPlainObject */
 /**
  * Represents an attachment associated with a chat message.
@@ -160,6 +162,7 @@ export interface IgcChatOptions {
   renderers?: ChatRenderers;
 }
 
+/* marshalByValue */
 /* jsonAPIPlainObject */
 /**
  * Represents a draft message that is being composed by the user, including the text and any attachments.

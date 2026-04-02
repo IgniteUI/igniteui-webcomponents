@@ -253,6 +253,7 @@ export default class IgcChatComponent extends EventEmitterMixin<
 
   /* blazorCollectionName: MessagesCollection */
   /* blazorTreatAsCollection */
+  /* blazorAlwaysWriteback */
   /**
    * The list of chat messages currently displayed.
    * Use this property to set or update the message history.
