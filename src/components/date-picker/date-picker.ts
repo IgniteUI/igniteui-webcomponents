@@ -1,3 +1,9 @@
+import {
+  CalendarResourceStringsEN,
+  DatePickerResourceStringsEN,
+  type ICalendarResourceStrings,
+  type IDatePickerResourceStrings,
+} from 'igniteui-i18n-core';
 import { html, nothing, type TemplateResult } from 'lit';
 import { property, query } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
@@ -22,10 +28,7 @@ import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditio
 import { shadowOptions } from '../common/decorators/shadow-options.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
-import {
-  IgcCalendarResourceStringEN,
-  type IgcCalendarResourceStrings,
-} from '../common/i18n/EN/calendar.resources.js';
+import type { IgcCalendarResourceStrings } from '../common/i18n/EN/calendar.resources.js';
 import {
   addI18nController,
   getDateTimeFormat,
@@ -87,6 +90,8 @@ const Slots = setSlots(
   'calendar-icon-open',
   'actions'
 );
+type DatePickerResourceStringsType = IDatePickerResourceStrings &
+  ICalendarResourceStrings;
 
 /* blazorIndirectRender */
 /* blazorSupportsVisualChildren */
@@ -207,10 +212,16 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
    * For now we use the core validation strings internally only, to avoid mixing with old resources by users.
    * To Do: Update resourceStrings type when the IgcCalendarResourceStrings is changed to ICalendarResourceStrings
    */
-  protected readonly _i18nController =
-    addI18nController<IgcCalendarResourceStrings>(this, {
-      defaultEN: IgcCalendarResourceStringEN,
-    });
+  protected readonly _i18nController = addI18nController<
+    IgcCalendarResourceStrings | DatePickerResourceStringsType
+  >(this, {
+    defaultEN: Object.assign(
+      {},
+      DatePickerResourceStringsEN,
+      CalendarResourceStringsEN
+    ),
+    resourceMapName: 'date-picker',
+  });
 
   private _oldValue: Date | null = null;
   private _activeDate: Date | null = null;
@@ -466,11 +477,14 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
    * The resource strings for localization.
    */
   @property({ attribute: false })
-  public set resourceStrings(value: IgcCalendarResourceStrings) {
+  public set resourceStrings(
+    value: IgcCalendarResourceStrings | DatePickerResourceStringsType
+  ) {
     this._i18nController.resourceStrings = value;
   }
 
-  public get resourceStrings(): IgcCalendarResourceStrings {
+  public get resourceStrings(): IgcCalendarResourceStrings &
+    DatePickerResourceStringsType {
     return this._i18nController.resourceStrings;
   }
 
@@ -702,7 +716,16 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
 
   private _renderCalendarIcon() {
     const defaultIcon = html`
-      <igc-icon name="today" collection="default" aria-hidden="true"></igc-icon>
+      <igc-icon
+        name="today"
+        collection="default"
+        aria-hidden="true"
+        title=${ifDefined(
+          this.value
+            ? this.resourceStrings.date_picker_change_date
+            : this.resourceStrings.date_picker_choose_date
+        )}
+      ></igc-icon>
     `;
 
     const state = this.open ? 'calendar-icon-open' : 'calendar-icon';
@@ -728,7 +751,7 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
 
     return html`
       <slot name="title" slot="title">
-        ${this.resourceStrings.selectDate}
+        ${this.resourceStrings.calendar_select_date}
       </slot>
       <slot
         name="header-date"
@@ -798,7 +821,11 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
         `
       : html`
           <igc-dialog
-            aria-label=${ifDefined(this.resourceStrings.selectDate)}
+            aria-label=${ifDefined(
+              this.value
+                ? this.resourceStrings.date_picker_change_date
+                : this.resourceStrings.date_picker_choose_date
+            )}
             role="dialog"
             ?open=${this.open}
             ?close-on-outside-click=${!this.keepOpenOnOutsideClick}

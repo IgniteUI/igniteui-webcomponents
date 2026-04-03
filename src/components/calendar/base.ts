@@ -1,11 +1,12 @@
+import {
+  CalendarResourceStringsEN,
+  type ICalendarResourceStrings,
+} from 'igniteui-i18n-core';
 import { LitElement, type PropertyValues } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { blazorDeepImport } from '../common/decorators/blazorDeepImport.js';
 import { blazorIndirectRender } from '../common/decorators/blazorIndirectRender.js';
-import {
-  IgcCalendarResourceStringEN,
-  type IgcCalendarResourceStrings,
-} from '../common/i18n/EN/calendar.resources.js';
+import type { IgcCalendarResourceStrings } from '../common/i18n/EN/calendar.resources.js';
 import { addI18nController } from '../common/i18n/i18n-controller.js';
 import { first } from '../common/util.js';
 import { convertToDate, convertToDates, getWeekDayNumber } from './helpers.js';
@@ -19,10 +20,12 @@ import type {
 @blazorIndirectRender
 @blazorDeepImport
 export class IgcCalendarBaseComponent extends LitElement {
-  protected readonly _i18nController =
-    addI18nController<IgcCalendarResourceStrings>(this, {
-      defaultEN: IgcCalendarResourceStringEN,
-    });
+  protected readonly _i18nController = addI18nController<
+    IgcCalendarResourceStrings | ICalendarResourceStrings
+  >(this, {
+    defaultEN: CalendarResourceStringsEN,
+    resourceMapName: 'calendar',
+  });
 
   private _initialActiveDateSet = false;
 
@@ -153,11 +156,14 @@ export class IgcCalendarBaseComponent extends LitElement {
    * The resource strings for localization.
    */
   @property({ attribute: false })
-  public set resourceStrings(value: IgcCalendarResourceStrings) {
+  public set resourceStrings(
+    value: IgcCalendarResourceStrings | ICalendarResourceStrings
+  ) {
     this._i18nController.resourceStrings = value;
   }
 
-  public get resourceStrings(): IgcCalendarResourceStrings {
+  public get resourceStrings(): IgcCalendarResourceStrings &
+    ICalendarResourceStrings {
     return this._i18nController.resourceStrings;
   }
 
