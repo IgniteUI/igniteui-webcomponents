@@ -224,5 +224,5 @@ function createStepperState(): StepperState {
   return new StepperState();
 }
 
-export { createStepperState };
 export type { StepperState };
+export { createStepperState };

@@ -207,9 +207,7 @@ export class ComboNavigationController<T extends object> {
     this.combo.addController(this as ReactiveController);
     this._config = config;
 
-    const bindingDefaults = {
-      triggers: ['keydownRepeat'],
-    } as KeyBindingOptions;
+    const bindingDefaults = { repeat: true } as KeyBindingOptions;
 
     const skip = (): boolean => this.combo.disabled;
 

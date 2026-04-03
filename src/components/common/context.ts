@@ -26,7 +26,7 @@ const chatUserInputContext = createContext<ChatState>(
 
 export {
   carouselContext,
-  tileManagerContext,
   chatContext,
   chatUserInputContext,
+  tileManagerContext,
 };

@@ -31,4 +31,4 @@ enum EaseInOut {
   Back = 'cubic-bezier(0.680, -0.550, 0.265, 1.550)',
 }
 
-export { EaseIn, EaseOut, EaseInOut };
+export { EaseIn, EaseInOut, EaseOut };
