@@ -850,7 +850,7 @@ describe('Splitter', () => {
       await elementUpdated(splitter);
 
       const bar = getSplitterPart(splitter, BAR_PART);
-      let barSize = bar.getBoundingClientRect().width;
+      const barSize = bar.getBoundingClientRect().width;
       bar.focus();
       await elementUpdated(splitter);
 
