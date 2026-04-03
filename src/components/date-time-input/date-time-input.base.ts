@@ -190,7 +190,7 @@ export abstract class IgcDateTimeInputBaseComponent<
 
     addKeybindings(this, {
       skip: () => this.readOnly,
-      bindingDefaults: { triggers: ['keydownRepeat'] },
+      bindingDefaults: { repeat: true },
     })
       .set([ctrlKey, ';'], this._setCurrentDateTime)
       .set(arrowUp, this._keyboardSpin.bind(this, 'up'))
