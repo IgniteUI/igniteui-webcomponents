@@ -42,9 +42,9 @@ import { partMap } from '../common/part-map.js';
 import {
   addSafeEventListener,
   asNumber,
-  findElementFromEventPath,
   first,
   formatString,
+  getElementFromPath,
   isEmpty,
   isLTR,
   last,
@@ -501,7 +501,7 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
   }
 
   private async _handleIndicatorClick(event: PointerEvent): Promise<void> {
-    const indicator = findElementFromEventPath(
+    const indicator = getElementFromPath(
       IgcCarouselIndicatorComponent.tagName,
       event
     )!;
