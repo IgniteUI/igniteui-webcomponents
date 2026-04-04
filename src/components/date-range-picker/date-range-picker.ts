@@ -368,6 +368,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
     return this._i18nController.locale;
   }
 
+  /* blazorCSSuppress */
   /** The resource strings of the date range picker. */
   @property({ attribute: false })
   public set resourceStrings(value: IgcDateRangePickerResourceStrings) {

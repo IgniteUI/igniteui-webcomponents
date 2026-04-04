@@ -95,6 +95,7 @@ export default class IgcTreeComponent extends EventEmitterMixin<
     return this._i18nController.locale;
   }
 
+  /* blazorCSSuppress */
   /**
    * The resource strings for localization.
    * Currently only aria-labels of the default expand/collapse icons are localized for the tree item.
