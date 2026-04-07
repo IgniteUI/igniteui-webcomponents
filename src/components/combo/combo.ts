@@ -787,7 +787,7 @@ export default class IgcComboComponent<
         : this._formValue.value;
 
       if (this.singleSelect && values.length !== this._formValue.value.length) {
-        this._formValue.value = values;
+        this._formValue.setValueAndFormState(values);
       }
 
       const items = Iterator.from(values)
@@ -861,7 +861,7 @@ export default class IgcComboComponent<
 
     if (selection) {
       this._deselectItems(this._resolveItemValue(selection), true);
-      this._formValue.value = [];
+      this._formValue.setValueAndFormState([]);
     }
   }
 
