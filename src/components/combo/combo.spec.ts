@@ -1525,6 +1525,18 @@ describe('Combo', () => {
       expect(spec.element.defaultValue).to.equal(defaultValue);
     });
 
+    it('should handle empty string in value attribute gracefully', () => {
+      spec.setAttributes({ value: '' });
+      expect(spec.element.value).to.be.empty;
+      expect(spec.element.defaultValue).to.be.empty;
+    });
+
+    it('should handle null in value attribute gracefully', () => {
+      spec.setAttributes({ value: null as any });
+      expect(spec.element.value).to.be.empty;
+      expect(spec.element.defaultValue).to.be.empty;
+    });
+
     it('reflects disabled ancestor state', () => {
       spec.setAncestorDisabledState(true);
       expect(spec.element.disabled).to.be.true;

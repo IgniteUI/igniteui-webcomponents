@@ -603,7 +603,7 @@ export default class IgcComboComponent<
 
   protected override _setDefaultValue(current: string | null): void {
     try {
-      this.defaultValue = JSON.parse(current ?? '');
+      this.defaultValue = JSON.parse(current || '[]');
     } catch {}
   }
 
