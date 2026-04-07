@@ -10,6 +10,7 @@ import { simulateKeyboard } from '../utils.spec.js';
 import {
   addKeybindings,
   altKey,
+  arrowDown,
   arrowUp,
   enterKey,
   shiftKey,
@@ -244,6 +245,69 @@ describe('Key bindings controller', () => {
     it('should fire on repeated keydown when repeat is enabled', () => {
       dispatch(repeatInstance, 'keydown', 'b', true);
       expect(repeatInstance.callCount).to.equal(1);
+    });
+
+    it('should fire the correct binding when keys overlap (keyup not yet fired for previous key)', () => {
+      // Simulate pressing ArrowDown a couple of times, then pressing ArrowUp before
+      // ArrowDown's keyup fires — mimicking rapid navigation where keys overlap.
+      let repeatInstance2: LitElement & {
+        lastKey: string | undefined;
+        downCount: number;
+        upCount: number;
+      };
+
+      const repeatTag2 = defineCE(
+        class extends LitElement {
+          public lastKey: string | undefined = undefined;
+          public downCount = 0;
+          public upCount = 0;
+
+          constructor() {
+            super();
+            addKeybindings(this)
+              .set(
+                arrowDown,
+                () => {
+                  this.lastKey = arrowDown;
+                  this.downCount++;
+                },
+                { repeat: true }
+              )
+              .set(
+                arrowUp,
+                () => {
+                  this.lastKey = arrowUp;
+                  this.upCount++;
+                },
+                { repeat: true }
+              );
+          }
+        }
+      );
+
+      return fixture<typeof repeatInstance2>(
+        html`<${unsafeStatic(repeatTag2)}></${unsafeStatic(repeatTag2)}>`
+      ).then((el) => {
+        repeatInstance2 = el;
+
+        // Press ArrowDown twice (with repeat)
+        dispatch(repeatInstance2, 'keydown', arrowDown);
+        dispatch(repeatInstance2, 'keydown', arrowDown, true);
+
+        // Press ArrowUp while ArrowDown is still "held" (no keyup yet)
+        dispatch(repeatInstance2, 'keydown', arrowUp);
+
+        expect(repeatInstance2.upCount).to.equal(1);
+        expect(repeatInstance2.lastKey).to.equal(arrowUp);
+
+        // Release both keys
+        dispatch(repeatInstance2, 'keyup', arrowDown);
+        dispatch(repeatInstance2, 'keyup', arrowUp);
+
+        // Press ArrowDown again — should still work cleanly after the overlap
+        dispatch(repeatInstance2, 'keydown', arrowDown);
+        expect(repeatInstance2.downCount).to.equal(3);
+      });
     });
   });
 });
