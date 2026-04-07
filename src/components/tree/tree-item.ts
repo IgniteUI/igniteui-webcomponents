@@ -16,7 +16,7 @@ import { registerComponent } from '../common/definitions/register.js';
 import { partMap } from '../common/part-map.js';
 import {
   addSafeEventListener,
-  findElementFromEventPath,
+  getElementFromPath,
   isLTR,
 } from '../common/util.js';
 import IgcIconComponent from '../icon/icon.js';
@@ -288,10 +288,7 @@ export default class IgcTreeItemComponent extends LitElement {
   }
 
   private itemClick(event: MouseEvent): void {
-    if (
-      this.disabled ||
-      this !== findElementFromEventPath(this.tagName, event)
-    ) {
+    if (this.disabled || this !== getElementFromPath(this.tagName, event)) {
       return;
     }
     this.tabIndex = 0;

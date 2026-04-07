@@ -10,7 +10,7 @@ import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { findElementFromEventPath, last } from '../common/util.js';
+import { getElementFromPath, last } from '../common/util.js';
 import type { ButtonGroupSelection, ContentOrientation } from '../types.js';
 import { styles } from './themes/group.base.css.js';
 import { all } from './themes/group.js';
@@ -167,10 +167,7 @@ export default class IgcButtonGroupComponent extends EventEmitterMixin<
   }
 
   private handleClick(event: MouseEvent) {
-    const button = findElementFromEventPath(
-      IgcToggleButtonComponent.tagName,
-      event
-    );
+    const button = getElementFromPath(IgcToggleButtonComponent.tagName, event);
 
     if (button) {
       this.isMultiple

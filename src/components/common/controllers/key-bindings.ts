@@ -3,7 +3,7 @@ import type { Ref } from 'lit/directives/ref.js';
 import { createAbortHandle } from '../abort-handler.js';
 import {
   asArray,
-  findElementFromEventPath,
+  getElementFromPath,
   isFunction,
   partition,
   toMerged,
@@ -273,7 +273,7 @@ class KeyBindingController implements ReactiveController {
       return true;
     }
 
-    if (!findElementFromEventPath((e) => e === this._element, event)) {
+    if (!getElementFromPath((e) => e === this._element, event)) {
       return true;
     }
 
@@ -282,7 +282,7 @@ class KeyBindingController implements ReactiveController {
         return false;
       }
 
-      return Boolean(findElementFromEventPath(this._skipSelector, event));
+      return Boolean(getElementFromPath(this._skipSelector, event));
     }
 
     if (isFunction(skip)) {
