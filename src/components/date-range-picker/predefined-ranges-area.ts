@@ -135,12 +135,12 @@ function getPredefinedRanges(
 
   const ranges: {
     key: PredefinedRangeKey;
-    resource_key: keyof DateRangePickerResourceStringsType;
+    resourceKey: keyof DateRangePickerResourceStringsType;
     getDateRange: () => { start: Date; end: Date };
   }[] = [
     {
       key: 'last7Days',
-      resource_key: 'date_range_picker_last7Days',
+      resourceKey: 'date_range_picker_last7Days',
       getDateRange: () => ({
         start: today.add('day', -7).native,
         end: today.native,
@@ -148,7 +148,7 @@ function getPredefinedRanges(
     },
     {
       key: 'currentMonth',
-      resource_key: 'date_range_picker_currentMonth',
+      resourceKey: 'date_range_picker_currentMonth',
       getDateRange: () => ({
         start: today.set({ date: 1 }).native,
         end: today.set({ date: 1 }).add('month', 1).add('day', -1).native,
@@ -156,7 +156,7 @@ function getPredefinedRanges(
     },
     {
       key: 'last30Days',
-      resource_key: 'date_range_picker_last30Days',
+      resourceKey: 'date_range_picker_last30Days',
       getDateRange: () => ({
         start: today.add('day', -29).native,
         end: today.native,
@@ -164,7 +164,7 @@ function getPredefinedRanges(
     },
     {
       key: 'yearToDate',
-      resource_key: 'date_range_picker_yearToDate',
+      resourceKey: 'date_range_picker_yearToDate',
       getDateRange: () => ({
         start: today.set({ year: today.year, month: 0, date: 1 }).native,
         end: today.native,
@@ -173,7 +173,7 @@ function getPredefinedRanges(
   ];
 
   return ranges.map((range) => ({
-    label: resourceStrings[range.resource_key]!,
+    label: resourceStrings[range.resourceKey]!,
     dateRange: range.getDateRange(),
   }));
 }
