@@ -30,6 +30,27 @@ $group-item-border-thickness: rem(1px);
     }
 }
 
+:host([part='toggle focused']),
+:host(:focus-within) {
+    ::slotted(igc-icon) {
+        color: var-get($theme, 'item-icon-color');
+    }
+}
+
+:host([part='toggle focused']:hover),
+:host(:focus-within:hover) {
+    ::slotted(igc-icon) {
+        color: var-get($theme, 'item-hover-icon-color');
+    }
+}
+
+:host([selected][part='toggle focused']:hover),
+:host([selected]:focus-within:hover) {
+    [part~='toggle'] {
+        border-color: var-get($theme, 'item-selected-hover-border-color');
+    }
+}
+
 :host([selected]:disabled),
 :host([selected][disabled]) {
     [part~='toggle'] {
