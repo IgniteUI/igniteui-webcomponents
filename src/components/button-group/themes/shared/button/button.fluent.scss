@@ -12,8 +12,6 @@ $outline-btn-indent: rem(2px);
     }
 
     [part='toggle focused'] {
-        background: var-get($theme, 'item-background');
-
         &::after {
             content: '';
             position: absolute;
@@ -27,48 +25,10 @@ $outline-btn-indent: rem(2px);
     }
 }
 
-:host(:hover) {
-    [part='toggle focused'] {
-        background: var-get($theme, 'item-hover-background');
-    }
-}
-
-[part~='toggle']:active {
-    background: var-get($theme, 'item-focused-background');
-}
-
-[part='toggle focused'] {
-    &:active {
-        background: var-get($theme, 'item-focused-background');
-    }
-}
-
-:host([selected]:hover) {
+:host([part='toggle focused']),
+:host(:focus-within) {
     [part~='toggle'] {
-        background: var-get($theme, 'item-selected-background');
-
-        &::before {
-            content: '';
-            position: absolute;
-            pointer-events: none;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-            background: var-get($theme, 'item-selected-hover-background');
-        }
+        border-color: var-get($theme, 'item-border-color');
     }
 }
 
-:host([selected]) {
-    [part~='toggle']:active {
-        background: var-get($theme, 'item-selected-focus-background');
-    }
-
-    [part='toggle focused'] {
-        background: var-get($theme, 'item-selected-background');
-
-        &:active {
-            background: var-get($theme, 'item-selected-focus-background');
-        }
-    }
-}
