@@ -130,7 +130,7 @@ $theme: $material;
     [part~='toggle'] {
         color: var-get($theme, 'item-selected-text-color');
         background: var-get($theme, 'item-selected-focus-background');
-        border-color: var-get($theme, 'item-focused-hover-border-color');
+        border-color: var-get($theme, 'item-selected-border-color');
 
         &:hover {
             background: var-get($theme, 'item-selected-focus-hover-background');
