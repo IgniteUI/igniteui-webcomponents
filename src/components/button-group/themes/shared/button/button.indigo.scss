@@ -21,46 +21,28 @@ $group-item-border-thickness: rem(1px);
 
     [part='toggle focused'] {
         box-shadow: 0 0 0 rem(3px) var-get($theme, 'idle-shadow-color');
-    }
-}
 
-:host([selected]) {
-    [part='toggle focused'] {
-        box-shadow: 0 0 0 rem(3px) var-get($theme, 'selected-shadow-color');
-    }
-}
-
-:host([part='toggle focused']),
-:host(:focus-within) {
-    [part~='toggle'] {
         ::slotted(igc-icon) {
             color: var-get($theme, 'item-icon-color');
         }
-
-        &:hover {
-            ::slotted(igc-icon) {
-                color: var-get($theme, 'item-hover-icon-color');
-            }
-        }
-
-        &:active {
-            ::slotted(igc-icon) {
-                color: var-get($theme, 'item-hover-icon-color');
-            }
-        }
     }
 }
 
-:host([selected][part='toggle focused']),
-:host([selected]:focus-within) {
-    [part~='toggle'] {
-        border-color: var-get($theme, 'item-selected-border-color');
-
-        &:hover,
-        &:active {
-            border-color: var-get($theme, 'item-selected-hover-border-color');
-        }
+:host(:hover) [part='toggle focused'],
+[part='toggle focused']:active {
+    ::slotted(igc-icon) {
+        color: var-get($theme, 'item-hover-icon-color');
     }
+}
+
+:host([selected]) [part='toggle focused'] {
+    box-shadow: 0 0 0 rem(3px) var-get($theme, 'selected-shadow-color');
+    border-color: var-get($theme, 'item-selected-border-color');
+}
+
+:host([selected]:hover) [part='toggle focused'],
+:host([selected]) [part='toggle focused']:active {
+    border-color: var-get($theme, 'item-selected-hover-border-color');
 }
 
 :host([selected]:disabled),

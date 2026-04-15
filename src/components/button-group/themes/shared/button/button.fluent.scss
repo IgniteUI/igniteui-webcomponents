@@ -12,6 +12,8 @@ $outline-btn-indent: rem(2px);
     }
 
     [part='toggle focused'] {
+        border-color: var-get($theme, 'item-border-color');
+
         &::after {
             content: '';
             position: absolute;
@@ -24,11 +26,3 @@ $outline-btn-indent: rem(2px);
         }
     }
 }
-
-:host([part='toggle focused']),
-:host(:focus-within) {
-    [part~='toggle'] {
-        border-color: var-get($theme, 'item-border-color');
-    }
-}
-

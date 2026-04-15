@@ -3,11 +3,8 @@
 
 $theme: $material;
 
-:host([selected][part='toggle focused']),
-:host([selected]:focus-within) {
-    [part~='toggle'] {
-        color: var-get($theme, 'item-selected-hover-text-color');
-    }
+:host([selected]) [part='toggle focused'] {
+    color: var-get($theme, 'item-selected-hover-text-color');
 
     ::slotted(igc-icon) {
         color: var-get($theme, 'item-selected-hover-icon-color');
