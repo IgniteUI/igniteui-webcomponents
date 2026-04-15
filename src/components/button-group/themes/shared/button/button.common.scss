@@ -60,6 +60,7 @@ $theme: $material;
     }
 
     [part='toggle focused'] {
+        z-index: 2;
         background: var-get($theme, 'item-focused-hover-background');
         border-color: var-get($theme, 'item-focused-hover-border-color');
         color: var-get($theme, 'item-focused-hover-text-color');
