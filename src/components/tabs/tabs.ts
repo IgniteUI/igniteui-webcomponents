@@ -29,8 +29,8 @@ import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { partMap } from '../common/part-map.js';
 import {
-  findElementFromEventPath,
   first,
+  getElementFromPath,
   getRoot,
   isEmpty,
   isLTR,
@@ -328,7 +328,7 @@ export default class IgcTabsComponent extends EventEmitterMixin<
   }
 
   private _isEventFromTabHeader(event: Event) {
-    return findElementFromEventPath('[part~="tab-header"]', event);
+    return getElementFromPath('[part~="tab-header"]', event);
   }
 
   //#endregion
@@ -365,7 +365,7 @@ export default class IgcTabsComponent extends EventEmitterMixin<
       return;
     }
 
-    const tab = findElementFromEventPath(IgcTabComponent.tagName, event);
+    const tab = getElementFromPath(IgcTabComponent.tagName, event);
 
     if (!(tab && this._tabs.includes(tab)) || tab?.disabled) {
       return;

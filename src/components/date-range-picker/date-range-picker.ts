@@ -39,7 +39,7 @@ import {
   getDateTimeFormat,
   getDefaultDateTimeFormat,
 } from '../common/i18n/i18n-controller.js';
-import { IgcBaseComboBoxLikeComponent } from '../common/mixins/combo-box.js';
+import { IgcComboBoxBaseLikeComponent } from '../common/mixins/combo-box.js';
 import type { AbstractConstructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '../common/mixins/forms/associated-required.js';
@@ -50,7 +50,7 @@ import {
   asNumber,
   clamp,
   equal,
-  findElementFromEventPath,
+  getElementFromPath,
   isEmpty,
 } from '../common/util.js';
 import IgcDateTimeInputComponent from '../date-time-input/date-time-input.js';
@@ -193,8 +193,8 @@ let nextId = 1;
 export default class IgcDateRangePickerComponent extends FormAssociatedRequiredMixin(
   EventEmitterMixin<
     IgcDateRangePickerComponentEventMap,
-    AbstractConstructor<IgcBaseComboBoxLikeComponent>
-  >(IgcBaseComboBoxLikeComponent)
+    AbstractConstructor<IgcComboBoxBaseLikeComponent>
+  >(IgcComboBoxBaseLikeComponent)
 ) {
   public static readonly tagName = 'igc-date-range-picker';
   public static styles = [styles, shared];
@@ -613,7 +613,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
     addKeybindings(this, {
       skip: () => this.disabled || this.readOnly,
     })
-      .set([altKey, arrowDown], this.handleAnchorClick)
+      .set([altKey, arrowDown], this._handleAnchorClick)
       .set([altKey, arrowUp], this._onEscapeKey)
       .set(escapeKey, this._onEscapeKey);
   }
@@ -816,9 +816,9 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
   }
 
   protected _handleInputClick(event: Event) {
-    if (findElementFromEventPath('input', event)) {
+    if (getElementFromPath('input', event)) {
       // Open only if the click originates from the underlying input
-      this.handleAnchorClick();
+      this._handleAnchorClick();
     }
   }
 
@@ -831,8 +831,8 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
     }
   }
 
-  protected override async handleAnchorClick() {
-    super.handleAnchorClick();
+  protected override async _handleAnchorClick() {
+    super._handleAnchorClick();
     this._setCalendarActiveDateAndViewIndex();
     await this.updateComplete;
     this._calendar[focusActiveDate]({ preventScroll: true });
@@ -1004,7 +1004,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
         slot="prefix"
         part=${calendarIcon}
         @pointerdown=${this._handleCalendarIconSlotPointerDown}
-        @click=${this.readOnly ? nothing : this.handleAnchorClick}
+        @click=${this.readOnly ? nothing : this._handleAnchorClick}
       >
         <slot name=${calendarIcon}>${defaultIcon}</slot>
       </span>

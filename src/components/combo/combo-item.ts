@@ -1,5 +1,6 @@
 import { html, LitElement, nothing, type PropertyValues } from 'lit';
 import { property } from 'lit/decorators.js';
+import { cache } from 'lit/directives/cache.js';
 import { addThemingController } from '../../theming/theming-controller.js';
 import IgcCheckboxComponent from '../checkbox/checkbox.js';
 import { addInternalsController } from '../common/controllers/internals.js';
@@ -38,6 +39,8 @@ export default class IgcComboItemComponent extends LitElement {
 
   /**
    * Determines whether the item is active.
+   * @attr active
+   * @default false
    */
   @property({ type: Boolean, reflect: true })
   public active = false;
@@ -45,6 +48,7 @@ export default class IgcComboItemComponent extends LitElement {
   /**
    * Determines whether the item is active.
    * @attr hide-checkbox
+   * @default false
    */
   @property({ type: Boolean, attribute: 'hide-checkbox' })
   public hideCheckbox = false;
@@ -54,18 +58,19 @@ export default class IgcComboItemComponent extends LitElement {
     addThemingController(this, all);
   }
 
-  public override connectedCallback() {
+  /** @internal */
+  public override connectedCallback(): void {
     super.connectedCallback();
     this.role = 'option';
   }
 
-  protected override willUpdate(changedProperties: PropertyValues<this>): void {
-    if (changedProperties.has('selected')) {
+  protected override willUpdate(props: PropertyValues<this>): void {
+    if (props.has('selected')) {
       this._internals.setARIA({ ariaSelected: this.selected.toString() });
     }
   }
 
-  private renderCheckbox() {
+  private _renderCheckbox() {
     return html`
       <section part="prefix">
         <igc-checkbox
@@ -79,7 +84,7 @@ export default class IgcComboItemComponent extends LitElement {
 
   protected override render() {
     return html`
-      ${!this.hideCheckbox ? this.renderCheckbox() : nothing}
+      ${cache(this.hideCheckbox ? nothing : this._renderCheckbox())}
       <section id="content" part="content">
         <slot></slot>
       </section>

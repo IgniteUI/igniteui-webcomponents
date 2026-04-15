@@ -3,7 +3,7 @@ import type { Ref } from 'lit/directives/ref.js';
 import { createAbortHandle } from '../abort-handler.js';
 import {
   asArray,
-  findElementFromEventPath,
+  getElementFromPath,
   isFunction,
   partition,
   toMerged,
@@ -27,7 +27,7 @@ export const tabKey = 'Tab' as const;
 
 /* Modifiers */
 export const altKey = 'Alt' as const;
-export const ctrlKey = 'Ctrl' as const;
+export const ctrlKey = 'Control' as const;
 export const metaKey = 'Meta' as const;
 export const shiftKey = 'Shift' as const;
 
@@ -135,8 +135,19 @@ interface KeyBinding {
 
 //#region Internal functions and constants
 
-const MODIFIERS = new Set(['alt', 'ctrl', 'meta', 'shift']);
+const MODIFIERS = new Set(['alt', 'control', 'meta', 'shift']);
 const ALL_MODIFIER_VALUES = Array.from(MODIFIERS).sort();
+
+/**
+ * Maps internal modifier names to their corresponding `KeyboardEvent` boolean property names.
+ * Needed because `ctrlKey` in the DOM is the property for the `'control'` modifier (not `'controlKey'`).
+ */
+export const MODIFIER_EVENT_KEYS: Record<string, string> = {
+  alt: 'altKey',
+  control: 'ctrlKey',
+  meta: 'metaKey',
+  shift: 'shiftKey',
+};
 
 function normalizeKeys(keys: string | string[]): string[] {
   return asArray(keys).map((key) => key.toLowerCase());
@@ -273,7 +284,7 @@ class KeyBindingController implements ReactiveController {
       return true;
     }
 
-    if (!findElementFromEventPath((e) => e === this._element, event)) {
+    if (!getElementFromPath((e) => e === this._element, event)) {
       return true;
     }
 
@@ -282,14 +293,12 @@ class KeyBindingController implements ReactiveController {
         return false;
       }
 
-      return Boolean(findElementFromEventPath(this._skipSelector, event));
+      return Boolean(getElementFromPath(this._skipSelector, event));
     }
 
-    if (isFunction(skip)) {
-      return skip.call(this._host, event.target as Element, event);
-    }
-
-    return false;
+    return isFunction(skip)
+      ? skip.call(this._host, event.target as Element, event)
+      : false;
   }
 
   //#endregion
@@ -335,6 +344,11 @@ class KeyBindingController implements ReactiveController {
    */
   private _handleKeyEvent(event: KeyboardEvent): void {
     if (this._shouldSkip(event)) {
+      // Always clean up on keyup regardless of whether the event is otherwise skipped.
+      const key = event.key.toLowerCase();
+      if (!MODIFIERS.has(key) && isKeyup(event)) {
+        this._pressedKeys.delete(key);
+      }
       return;
     }
 
@@ -345,14 +359,24 @@ class KeyBindingController implements ReactiveController {
     }
 
     const activeModifiers = ALL_MODIFIER_VALUES.filter(
-      (mod) => event[`${mod}Key` as keyof KeyboardEvent]
+      (mod) => event[MODIFIER_EVENT_KEYS[mod] as keyof KeyboardEvent]
     );
 
     const combination = createCombinationKey(
       Array.from(this._pressedKeys),
       activeModifiers
     );
-    const binding = this._bindings.get(combination);
+    let binding = this._bindings.get(combination);
+
+    // When multiple non-modifier keys are simultaneously in _pressedKeys (due to overlapping
+    // key presses, e.g. pressing ArrowUp before ArrowDown's keyup fires), the full combination
+    // won't match any single-key binding. Fall back to just the current key + modifiers so that
+    // single-key bindings continue to fire even when other keys are still "held".
+    if (!binding && this._pressedKeys.size > 1) {
+      binding = this._bindings.get(
+        createCombinationKey([key], activeModifiers)
+      );
+    }
 
     if (binding && this._bindingMatches(binding, event)) {
       this._applyEventModifiers(binding, event);
@@ -445,9 +469,11 @@ class KeyBindingController implements ReactiveController {
 
     return {
       unsubscribe: () => {
-        this._observedElement?.removeEventListener('keydown', this);
-        this._observedElement?.removeEventListener('keyup', this);
-        this._observedElement = undefined;
+        element.removeEventListener('keydown', this);
+        element.removeEventListener('keyup', this);
+        if (this._observedElement === element) {
+          this._observedElement = undefined;
+        }
       },
     };
   }

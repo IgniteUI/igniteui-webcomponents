@@ -7,12 +7,7 @@ import type { Ref } from 'lit/directives/ref.js';
 
 import { getDefaultLayer } from '../../resize-container/default-ghost.js';
 import { createAbortHandle } from '../abort-handler.js';
-import {
-  findElementFromEventPath,
-  getRoot,
-  isLTR,
-  roundByDPR,
-} from '../util.js';
+import { getElementFromPath, getRoot, isLTR, roundByDPR } from '../util.js';
 
 type DragCallback = (parameters: DragCallbackParameters) => unknown;
 type DragCancelCallback = (state: DragState) => unknown;
@@ -457,7 +452,7 @@ class DragController implements ReactiveController {
     return (
       Boolean(event.button) ||
       this._options.skip?.call(this._host, event) ||
-      !findElementFromEventPath((e) => e === this._element, event)
+      !getElementFromPath((e) => e === this._element, event)
     );
   }
 }
