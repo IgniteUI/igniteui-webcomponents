@@ -222,7 +222,7 @@ export default class IgcChipComponent extends EventEmitterMixin<
         @click=${this._handleSelect}
       >
         ${this._renderPrefix()}
-        <slot></slot>
+        <span part="content"><slot></slot></span>
         ${this._renderSuffix()}
       </button>
     `;
