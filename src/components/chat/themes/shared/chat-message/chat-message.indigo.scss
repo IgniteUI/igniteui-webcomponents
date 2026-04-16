@@ -1,7 +1,7 @@
 @use 'styles/utilities' as *;
 @use '../../light/themes' as *;
 
-$theme: $material;
+$theme: $indigo;
 
 :host {
     --message-corner-radius: #{var-get($theme, 'message-border-radius')};
