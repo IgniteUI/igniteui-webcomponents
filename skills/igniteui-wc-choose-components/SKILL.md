@@ -158,7 +158,7 @@ All inputs are form-associated and integrate natively with `<form>`.
 | Spline chart (smooth curved lines) | Category Chart | `<igc-category-chart>` | [Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/charts/types/spline-chart) |
 | Step chart (stepped line or area) | Category Chart | `<igc-category-chart>` | [Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/charts/types/step-chart) |
 | Pie chart (part-to-whole, small data sets) | Pie Chart | `<igc-pie-chart>` | [Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/charts/types/pie-chart) |
-| Donut chart (part-to-whole with center label) | Donut Chart | `<igc-doughnut-chart>` | [Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/charts/types/donut-chart) |
+| Doughnut chart (part-to-whole with center label) | Doughnut Chart | `<igc-doughnut-chart>` | [Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/charts/types/donut-chart) |
 | Financial / stock chart (OHLC, candlestick, price series) | Financial Chart | `<igc-financial-chart>` | [Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/charts/types/stock-chart) |
 | Bar chart (horizontal bars, category comparison) | Data Chart | `<igc-data-chart>` | [Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/charts/types/bar-chart) |
 | Scatter chart (X/Y data correlation) | Data Chart | `<igc-data-chart>` | [Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/charts/types/scatter-chart) |
