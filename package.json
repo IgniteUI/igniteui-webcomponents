@@ -81,7 +81,7 @@
     "husky": "^9.1.7",
     "ig-typedoc-theme": "^7.0.1",
     "igniteui-i18n-resources": "^1.0.4",
-    "igniteui-theming": "^25.2.0",
+    "igniteui-theming": "^26.0.0",
     "keep-a-changelog": "^3.0.2",
     "lint-staged": "^16.4.0",
     "lit-analyzer": "^2.0.3",
