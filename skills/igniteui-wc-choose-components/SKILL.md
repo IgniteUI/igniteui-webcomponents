@@ -46,7 +46,7 @@ Ignite UI for Web Components is distributed across several packages depending on
 | [`igniteui-webcomponents-grids`](https://www.npmjs.com/package/igniteui-webcomponents-grids) | Commercial | `npm install igniteui-webcomponents-grids` (trial) | Advanced data grids (Data Grid, Tree Grid, Hierarchical Grid, Pivot Grid) with many built-in functionalities  |
 | [`igniteui-grid-lite`](https://www.npmjs.com/package/igniteui-grid-lite) | MIT | `npm install igniteui-grid-lite` | Lightweight data grid for simpler tabular data |
 | [`igniteui-dockmanager`](https://www.npmjs.com/package/igniteui-dockmanager) | Commercial | `npm install igniteui-dockmanager` (trial) | Windowing / docking layouts (IDE-style panels) |
-| [`igniteui-webcomponents-charts`](https://www.npmjs.com/package/igniteui-webcomponents-charts) | Commercial | `npm install igniteui-webcomponents-charts` (trial) | Charts and data visualizations (65+ chart types) |
+| [`igniteui-webcomponents-charts`](https://www.npmjs.com/package/igniteui-webcomponents-charts) | Commercial | `npm install igniteui-webcomponents-core igniteui-webcomponents-charts` (trial) | Charts and data visualizations (65+ chart types) |
 
 ---
 
