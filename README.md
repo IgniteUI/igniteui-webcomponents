@@ -55,6 +55,7 @@ See the [Storybook Here](https://igniteui.github.io/igniteui-webcomponents)
 | Toast                   |   ✅   |       [Docs][Toast Docs]       |     [2.1.0]      | [MIT](LICENSE) |
 | Rating                  |   ✅   |      [Docs][Rating Docs]       |     [2.1.0]      | [MIT](LICENSE) |
 | Slider                  |   ✅   |      [Docs][Slider Docs]       |     [2.0.0]      | [MIT](LICENSE) |
+| Splitter                |   ✅   |      [Docs][Splitter Docs]     |     [7.1.0]      | [MIT](LICENSE) |
 | Range Slider            |   ✅   |      [Docs][Slider Docs]       |     [2.0.0]      | [MIT](LICENSE) |
 | Avatar                  |   ✅   |      [Docs][Avatar Docs]       |     [1.0.0]      | [MIT](LICENSE) |
 | Badge                   |   ✅   |       [Docs][Badge Docs]       |     [1.0.0]      | [MIT](LICENSE) |
@@ -265,6 +266,7 @@ npm run storybook:build
 [Commercial License]: https://www.infragistics.com/legal/license
 [Grid Lite]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/grid-lite/overview
 [Ignite UI Web Components Grid Lite]: https://www.npmjs.com/package/igniteui-grid-lite
+[Splitter Docs]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/layouts/splitter
 [1.0.0]: https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/1.0.0
 [2.0.0]: https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/2.0.0
 [2.1.0]: https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/2.1.0
