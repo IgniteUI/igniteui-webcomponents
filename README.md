@@ -26,6 +26,7 @@ See the [Storybook Here](https://igniteui.github.io/igniteui-webcomponents)
 
 | Components              | Status |         Documentation          | Released Version |   License   |
 | :---------------------- | :----: | :----------------------------: | :--------------: | :---------: |
+| Splitter                |   ✅   |      [Docs][Splitter Docs]     |     [7.1.0]      | [MIT](LICENSE) |
 | Chat                    |   ✅   | [Docs][Chat Docs]              |     [6.3.0]      | [MIT](LICENSE) |
 | Date Range Picker       |   ✅   | [Docs][Date Range Picker Docs] |     [6.1.0]      | [MIT](LICENSE) |
 | Tooltip                 |   ✅   |      [Docs][Tooltip Docs]      |     [5.4.0]      | [MIT](LICENSE) |
@@ -55,7 +56,6 @@ See the [Storybook Here](https://igniteui.github.io/igniteui-webcomponents)
 | Toast                   |   ✅   |       [Docs][Toast Docs]       |     [2.1.0]      | [MIT](LICENSE) |
 | Rating                  |   ✅   |      [Docs][Rating Docs]       |     [2.1.0]      | [MIT](LICENSE) |
 | Slider                  |   ✅   |      [Docs][Slider Docs]       |     [2.0.0]      | [MIT](LICENSE) |
-| Splitter                |   ✅   |      [Docs][Splitter Docs]     |     [7.1.0]      | [MIT](LICENSE) |
 | Range Slider            |   ✅   |      [Docs][Slider Docs]       |     [2.0.0]      | [MIT](LICENSE) |
 | Avatar                  |   ✅   |      [Docs][Avatar Docs]       |     [1.0.0]      | [MIT](LICENSE) |
 | Badge                   |   ✅   |       [Docs][Badge Docs]       |     [1.0.0]      | [MIT](LICENSE) |
