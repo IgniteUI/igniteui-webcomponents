@@ -129,9 +129,8 @@
   },
   "customElements": "custom-elements.json",
   "overrides": {
-    "storybook": "$storybook",
     "madge": {
-      "typescript": "$typescript"
+      "typescript": "6.0.2"
     }
   }
 }
