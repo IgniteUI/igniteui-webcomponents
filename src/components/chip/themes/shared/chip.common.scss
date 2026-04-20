@@ -16,6 +16,10 @@ $theme: $material;
     outline: none;
     height: var-get($theme, 'size');
 
+    [part='content'] {
+        padding-inline: pad-inline(rem(3px), rem(6px), rem(8px));
+    }
+
     &:focus {
         background: var-get($theme, 'focus-background');
         color: var-get($theme, 'focus-text-color');
