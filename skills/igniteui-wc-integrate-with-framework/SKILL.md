@@ -18,10 +18,10 @@ This skill helps users integrate Ignite UI Web Components into their application
 | Component family | Package |
 |---|---|
 | General UI components | `igniteui-webcomponents` |
-| Advanced grids | `igniteui-webcomponents-grids` |
+| Advanced grids | `igniteui-webcomponents-grids` (trial) `@infragistics/igniteui-webcomponents-grids` (licensed) |
 | Grid Lite | `igniteui-grid-lite` |
-| Dock Manager | `igniteui-dockmanager` |
-| Charts | `igniteui-webcomponents-charts` |
+| Dock Manager | `igniteui-dockmanager` (trial) `@infragistics/igniteui-dockmanager` (licensed) |
+| Charts | `igniteui-webcomponents-charts` (trial) `@infragistics/igniteui-webcomponents-charts` (licensed) |
 
 If the request only says "grid", infer the package from the requested features:
 
