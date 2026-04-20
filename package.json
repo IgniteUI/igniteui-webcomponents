@@ -26,7 +26,7 @@
     "build:meta": "node scripts/build-stories.mjs",
     "watch-meta": "node scripts/stories-watcher.js ",
     "watch-scss": "node scripts/styles-watcher.mjs",
-    "check-imports": "madge --circular --warning --no-spinner --ts-config ./tsconfig.json --extensions ts src/index.ts",
+    "check-imports": "dependency-cruise -c .dependency-cruiser.cjs src",
     "check-types": "tsc -p scripts/tsconfig-ci.json",
     "check": "npm run check-imports && npm run check-types",
     "clean": "npm run clean:dist && npm run clean:styles && npm run clean:docs",
@@ -78,6 +78,7 @@
     "concurrently": "^9.2.1",
     "custom-element-jet-brains-integration": "^1.7.0",
     "custom-element-vs-code-integration": "^1.5.0",
+    "dependency-cruiser": "^17.3.10",
     "husky": "^9.1.7",
     "ig-typedoc-theme": "^7.0.1",
     "igniteui-i18n-resources": "^1.0.4",
@@ -85,7 +86,6 @@
     "keep-a-changelog": "^3.0.2",
     "lint-staged": "^16.4.0",
     "lit-analyzer": "^2.0.3",
-    "madge": "^8.0.0",
     "node-watch": "^0.7.4",
     "playwright": "^1.59.1",
     "postcss": "^8.5.10",
@@ -102,7 +102,7 @@
     "tslib": "^2.8.1",
     "typedoc": "~0.28.19",
     "typedoc-plugin-localization": "^3.1.0",
-    "typescript": "^6.0.2",
+    "typescript": "^6.0.3",
     "vite": "^8.0.9"
   },
   "peerDependencies": {
@@ -120,17 +120,5 @@
       "prettier --write"
     ]
   },
-  "madge": {
-    "detectiveOptions": {
-      "ts": {
-        "skipTypeImports": true
-      }
-    }
-  },
-  "customElements": "custom-elements.json",
-  "overrides": {
-    "madge": {
-      "typescript": "6.0.2"
-    }
-  }
+  "customElements": "custom-elements.json"
 }
