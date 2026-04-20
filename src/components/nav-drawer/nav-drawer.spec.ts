@@ -172,6 +172,49 @@ describe('Navigation Drawer', () => {
       nativeDialog = navDrawer.renderRoot.querySelector('dialog')!;
     });
 
+    it('should correctly render with initial open state', async () => {
+      navDrawer = await createNavDrawer(html`
+        <igc-nav-drawer open>
+          <igc-nav-drawer-item></igc-nav-drawer-item>
+        </igc-nav-drawer>
+      `);
+      nativeDialog = navDrawer.renderRoot.querySelector('dialog')!;
+
+      expect(navDrawer.open).to.be.true;
+      expect(nativeDialog.open).to.be.true;
+    });
+
+    it('should open dialog when position changes from relative to non-relative while open', async () => {
+      navDrawer = await createNavDrawer(html`
+        <igc-nav-drawer position="relative" open>
+          <igc-nav-drawer-item></igc-nav-drawer-item>
+        </igc-nav-drawer>
+      `);
+
+      expect(navDrawer.open).to.be.true;
+      expect(navDrawer.renderRoot.querySelector('dialog')).to.be.null;
+
+      navDrawer.position = 'start';
+      await elementUpdated(navDrawer);
+
+      nativeDialog = navDrawer.renderRoot.querySelector('dialog')!;
+      expect(nativeDialog).to.exist;
+      expect(nativeDialog.open).to.be.true;
+    });
+
+    it('should close the native dialog when position changes to relative while open', async () => {
+      await navDrawer.show();
+      await elementUpdated(navDrawer);
+
+      expect(nativeDialog.open).to.be.true;
+
+      navDrawer.position = 'relative';
+      await elementUpdated(navDrawer);
+
+      expect(navDrawer.open).to.be.true;
+      expect(navDrawer.renderRoot.querySelector('dialog')).to.be.null;
+    });
+
     it('should close when the user presses Escape', async () => {
       const eventSpy = spy(navDrawer, 'emitEvent');
       await navDrawer.show();
@@ -228,17 +271,22 @@ describe('Navigation Drawer', () => {
     });
 
     it('should not close when clicking outside in relative position', async () => {
-      navDrawer.position = 'relative';
-      await navDrawer.show();
-      await elementUpdated(navDrawer);
+      const relativeNavDrawer = await createNavDrawer(html`
+        <igc-nav-drawer position="relative">
+          <igc-nav-drawer-item></igc-nav-drawer-item>
+        </igc-nav-drawer>
+      `);
 
-      const eventSpy = spy(navDrawer, 'emitEvent');
-      const { x, y } = navDrawer.getBoundingClientRect();
-      simulateClick(nativeDialog, { clientX: x + 1, clientY: y - 1 });
-      await elementUpdated(navDrawer);
+      await relativeNavDrawer.show();
+      await elementUpdated(relativeNavDrawer);
+
+      const eventSpy = spy(relativeNavDrawer, 'emitEvent');
+      const { x, y } = relativeNavDrawer.getBoundingClientRect();
+      simulateClick(relativeNavDrawer, { clientX: x + 1, clientY: y - 1 });
+      await elementUpdated(relativeNavDrawer);
 
       expect(eventSpy.calledWith('igcClosed')).to.be.false;
-      expect(navDrawer.open).to.be.true;
+      expect(relativeNavDrawer.open).to.be.true;
     });
 
     it('can cancel `igcClosing` event', async () => {

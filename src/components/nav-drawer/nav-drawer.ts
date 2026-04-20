@@ -113,11 +113,17 @@ export default class IgcNavDrawerComponent extends EventEmitterMixin<
   }
 
   protected override update(properties: PropertyValues<this>): void {
-    if (properties.has('open')) {
-      this._handleOpenState();
+    if (properties.has('position') && this._isRelative) {
+      this._dialog?.close();
     }
 
     super.update(properties);
+  }
+
+  protected override updated(properties: PropertyValues<this>): void {
+    if (properties.has('open') || properties.has('position')) {
+      this._handleOpenState();
+    }
   }
 
   //#endregion
