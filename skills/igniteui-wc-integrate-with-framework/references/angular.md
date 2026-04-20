@@ -1,6 +1,6 @@
 # Integrating Ignite UI Web Components — Angular
 
-> Package note: This page shows the default setup for `igniteui-webcomponents`. If the routing step selected `igniteui-webcomponents-grids`, `igniteui-grid-lite`, or `igniteui-dockmanager`, replace the package-specific install, import, and registration steps below with that package's setup instead of the default one.
+> Package note: This page shows the default setup for `igniteui-webcomponents`. If the routing step selected `igniteui-webcomponents-grids`, `igniteui-grid-lite`, or `igniteui-dockmanager`, replace the install, import, and registration steps below with the setup for the selected package instead of the default one. Use that package's own setup instructions as the source of truth.
 
 ## Installation
 
