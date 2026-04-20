@@ -8,6 +8,25 @@ user-invocable: true
 
 This skill helps users integrate Ignite UI Web Components into their application. It detects the framework or platform in use and loads the appropriate step-by-step integration reference.
 
+## Before You Answer
+
+- Choose the package first, then load the framework reference.
+- Do not assume every setup flow uses `igniteui-webcomponents`.
+
+### Package Routing
+
+| Component family | Package |
+|---|---|
+| General UI components | `igniteui-webcomponents` |
+| Advanced grids | `igniteui-webcomponents-grids` |
+| Grid Lite | `igniteui-grid-lite` |
+| Dock Manager | `igniteui-dockmanager` |
+
+If the request only says "grid", infer the package from the requested features:
+
+- Use `igniteui-webcomponents-grids` for editing, paging, sorting, filtering, summaries, grouping, hierarchical data, or pivot features.
+- Use `igniteui-grid-lite` for lightweight tabular data.
+
 ## Example Usage
 
 - "How do I use igniteui-webcomponents in my React app?"

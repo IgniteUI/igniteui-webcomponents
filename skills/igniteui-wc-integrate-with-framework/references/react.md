@@ -11,6 +11,8 @@ React integration uses the **`igniteui-react`** package, which provides React-na
 
 Components use the `Igr` prefix (e.g. `IgrButton`, `IgrInput`, `IgrCombo`).
 
+> Package note: This page shows the default React wrapper setup for general UI components. If the routing step selected `igniteui-webcomponents-grids`, `igniteui-grid-lite`, or `igniteui-dockmanager`, do not reuse the `igniteui-react` and `Igr*` guidance below as-is; switch to the selected package's setup instead.
+
 ### Installation
 
 ```bash

@@ -8,6 +8,11 @@ user-invocable: true
 
 This skill helps AI agents and developers identify the best Ignite UI components for any UI requirement, then provides direct links to official documentation, usage examples, and API references.
 
+## Before You Answer
+
+- Choose the package before writing imports or install steps.
+- If the user also needs setup or code, then load [igniteui-wc-integrate-with-framework](../igniteui-wc-integrate-with-framework/SKILL.md).
+
 ## Example Usage
 
 - "What component should I use to display a list of items with actions?"
@@ -46,9 +51,22 @@ Ignite UI for Web Components is distributed across several packages depending on
 | [`igniteui-webcomponents-grids`](https://www.npmjs.com/package/igniteui-webcomponents-grids) | Commercial | `npm install igniteui-webcomponents-grids` (trial) | Advanced data grids (Data Grid, Tree Grid, Hierarchical Grid, Pivot Grid) with many built-in functionalities  |
 | [`igniteui-grid-lite`](https://www.npmjs.com/package/igniteui-grid-lite) | MIT | `npm install igniteui-grid-lite` | Lightweight data grid for simpler tabular data |
 | [`igniteui-dockmanager`](https://www.npmjs.com/package/igniteui-dockmanager) | Commercial | `npm install igniteui-dockmanager` (trial) | Windowing / docking layouts (IDE-style panels) |
-| [`igniteui-webcomponents-charts`](https://www.npmjs.com/package/igniteui-webcomponents-charts) | Commercial | `npm install igniteui-webcomponents-core igniteui-webcomponents-charts` (trial) | Charts and data visualizations (65+ chart types) |
 
 ---
+
+## Package Routing
+
+| Component family | Package |
+|---|---|
+| General UI components | `igniteui-webcomponents` |
+| Advanced grids | `igniteui-webcomponents-grids` |
+| Grid Lite | `igniteui-grid-lite` |
+| Dock Manager | `igniteui-dockmanager` |
+
+If the request only says "grid", choose by features:
+
+- Advanced features such as editing, paging, summaries, grouping, hierarchical data, or pivot behavior -> `igniteui-webcomponents-grids`
+- Lightweight table -> `igniteui-grid-lite`
 
 ## Component Catalogue by UI Pattern
 
@@ -146,30 +164,6 @@ All inputs are form-associated and integrate natively with `<form>`.
 | Parent-child relational tree grid | Tree Grid | `<igc-tree-grid>` | [Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/grids/tree-grid/overview) |
 | Cross-tabulation / BI pivot table | Pivot Grid | `<igc-pivot-grid>` | [Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/web-components/components/grids/pivot-grid/overview) |
 
-### Charting & Visualization
-
-> Charts are provided by the **`igniteui-webcomponents-charts`** package (commercial). Use `IgcCategoryChartComponent` or `IgcFinancialChartComponent` for simpler domain-specific scenarios; use `IgcDataChartComponent` for full flexibility (mixed series, numeric/time axes, scatter, polar, etc.).
-
-| UI Need | Component | Tag | Docs |
-|---|---|---|---|
-| Column chart (vertical bars, category comparison) | Category Chart | `<igc-category-chart>` | [Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/charts/types/column-chart) |
-| Line chart (continuous data over time) | Category Chart | `<igc-category-chart>` | [Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/charts/types/line-chart) |
-| Area chart (filled line, change over time) | Category Chart | `<igc-category-chart>` | [Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/charts/types/area-chart) |
-| Spline chart (smooth curved lines) | Category Chart | `<igc-category-chart>` | [Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/charts/types/spline-chart) |
-| Step chart (stepped line or area) | Category Chart | `<igc-category-chart>` | [Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/charts/types/step-chart) |
-| Pie chart (part-to-whole, small data sets) | Pie Chart | `<igc-pie-chart>` | [Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/charts/types/pie-chart) |
-| Doughnut chart (part-to-whole with center label) | Doughnut Chart | `<igc-doughnut-chart>` | [Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/charts/types/donut-chart) |
-| Financial / stock chart (OHLC, candlestick, price series) | Financial Chart | `<igc-financial-chart>` | [Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/charts/types/stock-chart) |
-| Bar chart (horizontal bars, category comparison) | Data Chart | `<igc-data-chart>` | [Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/charts/types/bar-chart) |
-| Scatter chart (X/Y data correlation) | Data Chart | `<igc-data-chart>` | [Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/charts/types/scatter-chart) |
-| Bubble chart (3-value scatter with size dimension) | Data Chart | `<igc-data-chart>` | [Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/charts/types/bubble-chart) |
-| Polar chart (angle/radius coordinate system) | Data Chart | `<igc-data-chart>` | [Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/charts/types/polar-chart) |
-| Composite / combo chart (mixed series types) | Data Chart | `<igc-data-chart>` | [Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/charts/types/composite-chart) |
-| Shape chart (polygons / polylines on a Cartesian plane) | Data Chart | `<igc-data-chart>` | [Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/charts/types/shape-chart) |
-| Sparkline (word-sized inline mini-chart) | Sparkline | `<igc-sparkline>` | [Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/charts/types/sparkline-chart) |
-| Treemap (hierarchical data as proportional nested nodes) | Treemap | `<igc-treemap>` | [Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/charts/types/treemap-chart) |
-
-
 ### Conversational / AI
 
 | UI Need | Component | Tag | Docs |
@@ -216,7 +210,6 @@ Confirm which package provides the component:
 - **Advanced grids** (Data Grid, Tree Grid, Hierarchical Grid, Pivot Grid) → `igniteui-webcomponents-grids` *(commercial)*
 - **Lightweight grid** (Grid Lite) → `igniteui-grid-lite` *(MIT)*
 - **Docking layout** → `igniteui-dockmanager` *(commercial)*
-- **Charts & visualizations** (Category Chart, Data Chart, Financial Chart, Pie Chart, Sparkline, Treemap, etc.) → `igniteui-webcomponents-charts` *(commercial)*
 
 ### Step 4 — Link to official resources
 
