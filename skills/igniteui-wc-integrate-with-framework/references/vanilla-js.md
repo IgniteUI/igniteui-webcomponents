@@ -1,6 +1,9 @@
 # Integrating Ignite UI Web Components — Vanilla JavaScript / HTML
 
-> Package note: This page shows the default setup for `igniteui-webcomponents`. If the routing step selected `igniteui-webcomponents-grids`, `igniteui-grid-lite`, or `igniteui-dockmanager`, replace the package-specific install, import, and registration steps below with that package's setup instead of the default one.
+> Package note: The installation and setup steps on this page are the default instructions for `igniteui-webcomponents`. If you selected a different package in the routing step, use that package's reference instead:
+> - [`igniteui-webcomponents-grids`](./vanilla-js-grids.md)
+> - [`igniteui-grid-lite`](./vanilla-js-grid-lite.md)
+> - [`igniteui-dockmanager`](./vanilla-js-dockmanager.md)
 
 ## Installation
 
