@@ -1,6 +1,6 @@
 ---
 name: igniteui-wc-integrate-with-framework
-description: Integrate igniteui-webcomponents into React, Angular, Vue, or vanilla JS applications with framework-specific configurations
+description: Integrate Ignite UI Web Components packages into React, Angular, Vue, or vanilla JS applications with framework-specific configurations
 user-invocable: true
 ---
 
@@ -21,6 +21,7 @@ This skill helps users integrate Ignite UI Web Components into their application
 | Advanced grids | `igniteui-webcomponents-grids` |
 | Grid Lite | `igniteui-grid-lite` |
 | Dock Manager | `igniteui-dockmanager` |
+| Charts | `igniteui-webcomponents-charts` |
 
 If the request only says "grid", infer the package from the requested features:
 
