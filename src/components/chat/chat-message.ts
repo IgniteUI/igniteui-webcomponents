@@ -295,6 +295,7 @@ export default class IgcChatMessageComponent extends LitElement {
 
     const parts = {
       'message-container': true,
+      received: !this._state.isCurrentUserMessage(this.message),
       sent: this._state.isCurrentUserMessage(this.message),
     };
 
