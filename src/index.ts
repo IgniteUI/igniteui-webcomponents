@@ -140,6 +140,7 @@ export type { IgcDropdownComponentEventMap } from './components/dropdown/dropdow
 export type { IgcExpansionPanelComponentEventMap } from './components/expansion-panel/expansion-panel.js';
 export type { IgcInputComponentEventMap } from './components/input/input-base.js';
 export type { IgcInputComponentEventMap as IgcMaskInputComponentEventMap } from './components/input/input-base.js';
+export type { IgcNavDrawerComponentEventMap } from './components/nav-drawer/nav-drawer.js';
 export type { IgcFileInputComponentEventMap } from './components/file-input/file-input.js';
 export type { IgcRadioComponentEventMap } from './components/radio/radio.js';
 export type { IgcRatingComponentEventMap } from './components/rating/rating.js';
