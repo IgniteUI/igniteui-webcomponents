@@ -66,10 +66,10 @@ Ignite UI for Web Components is distributed across several packages depending on
 | Component family | Package |
 |---|---|
 | General UI components | `igniteui-webcomponents` |
-| Advanced grids | `igniteui-webcomponents-grids` |
+| Advanced grids | `igniteui-webcomponents-grids` (trial) `@infragistics/igniteui-webcomponents-grids` (licensed) |
 | Grid Lite | `igniteui-grid-lite` |
-| Dock Manager | `igniteui-dockmanager` |
-| Charts | `igniteui-webcomponents-charts` |
+| Dock Manager | `igniteui-dockmanager` (trial) `@infragistics/igniteui-dockmanager` (licensed) |
+| Charts | `igniteui-webcomponents-charts` (trial) `@infragistics/igniteui-webcomponents-charts` (licensed) |
 
 If the request only says "grid", choose by features:
 
