@@ -38,6 +38,7 @@ export interface IgcChipComponentEventMap {
  * @fires igcSelect - Emits event when the chip component is selected/deselected and any related animations and transitions also end.
  *
  * @csspart base - The base wrapper of the chip.
+ * @csspart content - The wrapper element around the default slot of the chip.
  * @csspart prefix - The prefix container of the chip.
  * @csspart suffix - The suffix container of the chip.
  */
@@ -222,7 +223,9 @@ export default class IgcChipComponent extends EventEmitterMixin<
         @click=${this._handleSelect}
       >
         ${this._renderPrefix()}
-        <span part="content"><slot></slot></span>
+        <span part="content">
+          <slot></slot>
+        </span>
         ${this._renderSuffix()}
       </button>
     `;
