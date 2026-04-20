@@ -51,7 +51,13 @@ Ignite UI for Web Components is distributed across several packages depending on
 | [`igniteui-webcomponents-grids`](https://www.npmjs.com/package/igniteui-webcomponents-grids) | Commercial | `npm install igniteui-webcomponents-grids` (trial) | Advanced data grids (Data Grid, Tree Grid, Hierarchical Grid, Pivot Grid) with many built-in functionalities  |
 | [`igniteui-grid-lite`](https://www.npmjs.com/package/igniteui-grid-lite) | MIT | `npm install igniteui-grid-lite` | Lightweight data grid for simpler tabular data |
 | [`igniteui-dockmanager`](https://www.npmjs.com/package/igniteui-dockmanager) | Commercial | `npm install igniteui-dockmanager` (trial) | Windowing / docking layouts (IDE-style panels) |
+| [`igniteui-webcomponents-grids`](https://www.npmjs.com/package/igniteui-webcomponents-grids) | Commercial | `npm install igniteui-webcomponents-grids` (trial) | Advanced data grids (Data Grid, Tree Grid, Hierarchical Grid, Pivot Grid) with many built-in functionalities  |
+| [`@infragistics/igniteui-webcomponents-grids`](https://packages.infragistics.com/feeds/js-licensed/@infragistics/igniteui-webcomponents-grids) | Commercial | `npm install @infragistics/igniteui-webcomponents-grids` (licensed) | Advanced data grids (Data Grid, Tree Grid, Hierarchical Grid, Pivot Grid) with many built-in functionalities  |
+| [`igniteui-grid-lite`](https://www.npmjs.com/package/igniteui-grid-lite) | MIT | `npm install igniteui-grid-lite` | Lightweight data grid for simpler tabular data |
+| [`igniteui-dockmanager`](https://www.npmjs.com/package/igniteui-dockmanager) | Commercial | `npm install igniteui-dockmanager` (trial) | Windowing / docking layouts (IDE-style panels) |
+| [`@infragistics/igniteui-dockmanager`](https://packages.infragistics.com/feeds/js-licensed/@infragistics/igniteui-dockmanager) | Commercial | `npm install @infragistics/igniteui-dockmanager` (licensed) | Windowing / docking layouts (IDE-style panels) |
 | [`igniteui-webcomponents-charts`](https://www.npmjs.com/package/igniteui-webcomponents-charts) | Commercial | `npm install igniteui-webcomponents-core igniteui-webcomponents-charts` (trial) | Charts and data visualizations (65+ chart types) |
+| [`@infragistics/igniteui-webcomponents-charts`](https://packages.infragistics.com/feeds/js-licensed/@infragistics/igniteui-webcomponents-charts) | Commercial | `npm install @infragistics/igniteui-webcomponents-core @infragistics/igniteui-webcomponents-charts` (licensed) | Charts and data visualizations (65+ chart types) |
 
 ---
 
