@@ -12,6 +12,7 @@ This skill helps users integrate Ignite UI Web Components into their application
 
 - Choose the package first, then load the framework reference.
 - Do not assume every setup flow uses `igniteui-webcomponents`.
+- If the required package is not present in `package.json`, add or install the correct Ignite UI dependency first. Absence from `package.json` does not mean the package is invalid.
 
 ### Package Routing
 

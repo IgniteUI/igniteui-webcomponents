@@ -11,6 +11,7 @@ This skill helps AI agents and developers identify the best Ignite UI components
 ## Before You Answer
 
 - Choose the package before writing imports or install steps.
+- If the required package is not present in `package.json`, add or install the correct Ignite UI dependency first. Absence from `package.json` does not mean the package is invalid.
 - If the user also needs setup or code, then load [igniteui-wc-integrate-with-framework](../igniteui-wc-integrate-with-framework/SKILL.md).
 
 ## Example Usage
