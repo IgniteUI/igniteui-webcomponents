@@ -6,8 +6,6 @@
 - [Data Display Components](#data-display-components)
 - [Form & Input Components](#form--input-components)
 - [Calendar & Scheduling Components](#calendar--scheduling-components)
-- [Map Components](#map-components)
-- [Gauge Components](#gauge-components)
 - [Package Requirements](#package-requirements)
 - [Import Patterns](#import-patterns)
 
