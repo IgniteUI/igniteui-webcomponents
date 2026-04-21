@@ -6,7 +6,6 @@
 - [Chart Properties](#chart-properties)
 - [Component Properties](#component-properties)
 - [Theming Pitfalls](#theming-pitfalls)
-- [Missing Direct Mappings](#missing-direct-mappings)
 - [Dark Theme Specifics](#dark-theme-specifics)
 
 ## Sass Conflicts
