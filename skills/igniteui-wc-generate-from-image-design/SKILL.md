@@ -184,7 +184,7 @@ If required packages are missing, identify the exact packages and versions requi
 
 ### Implementation Checks
 
-- Follow repo conventions from `AGENTS.md` and `.github/copilot-instructions.md`.
+- Follow repo conventions from `.github/copilot-instructions.md` and `.github/CODING_GUIDELINES.md`.
 - Use [references/component-mapping.md](references/component-mapping.md) for component-choice and semantic-fallback rules.
 - Use [references/gotchas.md](references/gotchas.md) for components, theming, registration, and API edge cases instead of re-encoding those rules inline.
 - Favor Ignite UI components over custom HTML when both approaches can reach similar visual fidelity.
