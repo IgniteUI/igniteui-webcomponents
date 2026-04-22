@@ -6,22 +6,22 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 ### Changed
-- #### AI assisted development
-  - Updated and enhanced the library provided skills #[2189](https://github.com/IgniteUI/igniteui-webcomponents/pull/2189) #[2195](https://github.com/IgniteUI/igniteui-webcomponents/pull/2195)
+- #### AI-Assisted Development
+  - Updated and enhanced the library provided skills [#2189](https://github.com/IgniteUI/igniteui-webcomponents/pull/2189) [#2195](https://github.com/IgniteUI/igniteui-webcomponents/pull/2195)
 - #### Button group
-  - Themes colors alignment #[2182](https://github.com/IgniteUI/igniteui-webcomponents/pull/2182)
+  - Themes colors alignment [#2182](https://github.com/IgniteUI/igniteui-webcomponents/pull/2182)
 - #### Circular progressbar
-  - Unified track color CSS variable between progress bars #[2185](https://github.com/IgniteUI/igniteui-webcomponents/pull/2185)
+  - Unified track color CSS variable between progress bars [#2185](https://github.com/IgniteUI/igniteui-webcomponents/pull/2185)
 - #### Chip
-  - Wrap content inside a new part container and update styles #[2190](https://github.com/IgniteUI/igniteui-webcomponents/pull/2190)
+  - Wrap content inside a new part container and update styles [#2190](https://github.com/IgniteUI/igniteui-webcomponents/pull/2190)
 
 ### Fixed
 - #### Dropdown
-  - Selected item styles #[2168](https://github.com/IgniteUI/igniteui-webcomponents/pull/2168)
-- ### Linear progressbar
-  - Unified display size across platforms #[2184](https://github.com/IgniteUI/igniteui-webcomponents/pull/2184)
+  - Selected item styles [#2168](https://github.com/IgniteUI/igniteui-webcomponents/pull/2168)
+- #### Linear progressbar
+  - Unified display size across platforms [#2184](https://github.com/IgniteUI/igniteui-webcomponents/pull/2184)
 - #### Tree
-  - Background style discrepancies #[2173](https://github.com/IgniteUI/igniteui-webcomponents/pull/2173)
+  - Background style discrepancies [#2173](https://github.com/IgniteUI/igniteui-webcomponents/pull/2173)
 
 ## [7.1.1] - 2026-03-25
 ### Changed
