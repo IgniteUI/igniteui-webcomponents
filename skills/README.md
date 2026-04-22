@@ -13,6 +13,7 @@ Skills are structured instructions that help AI agents understand and execute co
 | [igniteui-wc-choose-components](./igniteui-wc-choose-components/SKILL.md)                   | Identify the right components for a UI pattern and navigate to official docs/demos | Deciding which components to use      |
 | [igniteui-wc-integrate-with-framework](./igniteui-wc-integrate-with-framework/SKILL.md)     | Integrate components into React, Angular, Vue, or vanilla JS applications          | Setting up components in your project |
 | [igniteui-wc-customize-component-theme](./igniteui-wc-customize-component-theme/SKILL.md)   | Customize styling using CSS custom properties, parts, and theming system           | Applying custom brand colors/styles   |
+| [igniteui-wc-generate-from-image-design](./igniteui-wc-generate-from-image-design/SKILL.md) | Implement a view from a screenshot or mockup using Ignite UI Web Components        | Converting a design image into UI     |
 | [igniteui-wc-optimize-bundle-size](./igniteui-wc-optimize-bundle-size/SKILL.md)             | Reduce bundle size by importing only needed components and lazy loading            | Optimizing production performance     |
 
 ## How to Use
@@ -22,12 +23,14 @@ When working with an AI agent like GitHub Copilot, reference skills by name or a
 ### Natural Questions
 - "How do I integrate igniteui-webcomponents with React?"
 - "Help me customize the button colors to match my brand"
+- "Build this screenshot with Ignite UI Web Components"
 - "My bundle size is too large, how can I reduce it?"
 - "Show me how to use these components in Vue"
 
 ### Direct Skill Reference
 - "Follow the integrate-with-framework skill for my Angular app"
 - "Use the customize-component-theme skill to help me style components"
+- "Use the generate-from-image-design skill to implement this mockup"
 - "Apply the optimize-bundle-size skill to reduce my bundle"
 
 ## Skill Structure
