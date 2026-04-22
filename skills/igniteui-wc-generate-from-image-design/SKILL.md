@@ -23,7 +23,7 @@ Before writing any implementation code, you must complete these steps in order:
 2. **Confirm package layout if needed** - Web Components packages are split by component family; check package layout or licensing only when package choice, component registration, or theming depend on it.
 3. **Discover components** - Call `list_components` with targeted filters to find matching components for each UI pattern.
 4. **Look up component docs** - Call `get_doc` for every chosen component family before coding.
-5. **Generate theme** - (a) To generate a theme, first extract colors and create a color palette using `create_palette` or `create_custom_palette` depending on the scenario. Then extract elevations and call `create_elevations`. Then extract typography and call `create_typography`. Then call `create_theme` when Sass is configured, or import the closest pre-built theme CSS and layer token overrides when Sass is not configured. (b) After a theme exists, prefer using design tokens or scoped semantic CSS variables over raw literals. (c) For every Ignite UI component family that exposes design tokens, call `get_component_design_tokens`, map extracted image tokens to token roles, then call `create_component_theme` with the tokens differing from the global theme for the specific component.
+5. **Generate theme** - (a) To generate a theme, first extract colors and create a color palette using `create_palette` or `create_custom_palette` depending on the scenario. Then extract elevations and call `create_elevations`. Then extract typography and call `create_typography`. Then call `create_theme` when Sass is configured, or import the closest pre-built theme CSS. (b) After a theme exists, prefer using design tokens or scoped semantic CSS variables over raw literals. (c) For every Ignite UI component family that exposes design tokens, call `get_component_design_tokens`, map extracted image tokens to token roles, then call `create_component_theme` with the tokens differing from the global theme for the specific component.
 6. **Implement** - Build the screenshot-first layout, data, and view components.
 7. **Refine** - Use the `set_size`, `set_spacing`, `set_roundness` tools to refine the view's visual fidelity against the image, then iterate on implementation and theming until the view matches the design closely.
 8. **Validate** - Build, test, run, compare against the image, and fix differences.
@@ -94,17 +94,17 @@ Use this skill for the image-to-view theming workflow only. The dedicated [`igni
 
 ### 5a - Existing app guard (always run first)
 
-Before generating any theme code, inspect the project's entry point and main stylesheet(s) (commonly `main.ts`, `main.js`, `index.ts`, `app.ts`, `styles.css`, or `styles.scss`). Look for:
+Before generating any theme code, inspect the project's entry point and main stylesheet(s) (commonly `main.ts`, `main.js`, `index.ts`, `app.ts`, `styles.css`, or the app's main theme stylesheet). Look for:
 
 - an imported pre-built theme CSS file such as `igniteui-webcomponents/themes/light/material.css`
-- active `@include palette(...)`, `@include typography(...)`, or `@include elevations(...)` calls when Sass is configured
 - existing palette tokens or semantic CSS variables already exposed by the app
+- existing app-level typography or elevation variables already exposed by the app
 
-- **Existing theme found** -> the global theme is already set. Do **not** call `create_theme` or `create_palette` unless the user explicitly wants a global theme change. Instead:
+- **Existing theme found** -> the global theme is already set. Do **not** call `create_palette` unless the user explicitly wants a global theme change. Instead:
   1. Inspect the existing theme import, palette definition, and any exposed semantic CSS variables.
   2. Reuse the current design system, variant, and palette tokens wherever they already match the design image.
   3. Skip to **5c** and apply only minimal scoped overrides for the new view's components.
-- **No theme found / blank theme setup** -> proceed with **5b** to generate a fresh global theme.
+- **No theme found / blank theme setup** -> proceed with **5b** to generate a fresh CSS-based theme baseline.
 
 ### 5b - Global theme generation (new projects only)
 
@@ -113,22 +113,19 @@ Follow this order - MCP guidance first, image extraction second:
 1. **Read MCP guidance first** - call `theming://guidance/colors/rules` (or `get_theming_guidance`) before looking at the image. This tells you the available theme inputs and any luminance or variant constraints.
 2. **Resolve the design system** - infer it from the existing workspace, explicit user request, or the closest visual match in the design. Do not assume one if a stronger signal exists.
 3. **Extract from the image** - now that you know the available slots, extract values only for the inputs you actually need.
-4. **Call `create_theme` or `create_palette`** with the extracted seed values:
+4. **Call `create_palette` or `create_custom_palette`** with the extracted seed values:
 
 ```
-create_theme({
-  primaryColor: "<color extracted from image for primary slot>",
-  secondaryColor: "<color extracted from image for secondary slot>",
-  surfaceColor: "<color extracted from image for surface/background slot>",
+create_palette({
+  primary: "<color extracted from image for primary slot>",
+  secondary: "<color extracted from image for secondary slot>",
+  surface: "<color extracted from image for surface/background slot>",
   variant: "<resolved theme variant>",
-  platform: "webcomponents",
-  licensed: <detected licensing state>,
-  fontFamily: "<font extracted from image or existing app>",
-  designSystem: "<resolved design system>"
+  platform: "webcomponents"
 })
 ```
 
-If Sass is not configured, still use `create_palette`, `get_color`, and component theme generation to derive palette-backed values and import the closest built-in theme CSS instead of assuming a Sass theme file can be dropped into the project.
+Import the closest built-in theme CSS for the resolved design system and variant, then use `get_color` to translate the generated palette into CSS custom properties, semantic app tokens, and component token values. Apply typography decisions with standard CSS `font-family`, `font-size`, and `font-weight` rules, and apply elevations with CSS box-shadow values or semantic shadow variables.
 
 Read and act on any luminance warnings returned. If the design needs multiple surface depths that a single generated surface color does not cover, use `create_custom_palette` or define semantic CSS variables for the additional depths in the main stylesheet.
 
@@ -142,7 +139,7 @@ For **every** chosen Ignite UI component family in Steps 3-4, follow this MCP-fi
 
 1. **Discover (MCP first)** - call `get_component_design_tokens(component)` before looking at the image for that component. Read the full token list with names, types, and descriptions. Identify which tokens correspond to visible surfaces, text, borders, icons, and interaction states.
 2. **Extract (image second)** - now that you know the exact token names, go to the image region for that component and read the exact token value for each relevant token slot. Do not guess; zoom into the component region.
-3. **Generate** - call `create_component_theme(component, platform, licensed, tokens)` passing only the tokens whose resolved value differs from the global theme. This produces scoped CSS or Sass with the minimal override set.
+3. **Generate** - call `create_component_theme(component, platform, licensed, tokens)` passing only the tokens whose resolved value differs from the global theme. This produces the minimal scoped theme override set for the component.
 
 **Example - theming a grid:**
 - `get_component_design_tokens("grid")` returns `header-background`, `content-background`, `row-hover-background` among many others.
@@ -159,11 +156,11 @@ Do not run `create_component_theme` for regions built with custom HTML/CSS only.
 Apply in this exact order:
 
 1. Inspect the entry point and main stylesheet(s) -> existing theme or blank?
-2. Create or update a theme: `create_theme` or pre-built theme import plus token overrides (Step 5b)
+2. Create or update a theme baseline: pre-built theme import plus palette-backed CSS variables and token overrides (Step 5b)
 3. For each Ignite UI component: `get_component_design_tokens` -> map image design tokens -> resolve values to design tokens or semantic CSS variables -> `create_component_theme` (Step 5c)
 4. Use `get_color` after palette generation whenever a palette token can represent the final color intent
 
-If you use typography mixins with a comma-separated font family list, wrap the font families in parentheses as described in [references/gotchas.md](references/gotchas.md).
+Use standard CSS `font-family` lists in stylesheets or CSS variables for typography. Do not emit Sass typography mixins for Ignite UI Web Components apps.
 
 ## Step 6: Install Required Packages
 
@@ -179,7 +176,7 @@ If required packages are missing, identify the exact packages and versions requi
 
 - **Layout**: use Ignite UI layout and data-display components as the starting point for standard regions, then apply CSS Grid/Flexbox and component overrides to match the screenshot. Only substitute plain semantic HTML when an Ignite UI component remains structurally incompatible after a genuine attempt.
 - **Data**: use typed mock data that matches the design's density and domain; add models/services only when they help the implementation.
-- **View**: keep layout, spacing, typography, and surface styling in CSS or SCSS rather than inline attributes.
+- **View**: keep layout, spacing, typography, and surface styling in CSS rather than inline attributes.
 - **Theming**: apply the resolved design system and theme variant from Step 5, and keep color usage aligned with palette tokens or local semantic CSS variables.
 
 ### Implementation Checks
