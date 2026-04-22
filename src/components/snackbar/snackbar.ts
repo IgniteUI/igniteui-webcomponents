@@ -1,7 +1,5 @@
 import { html, nothing } from 'lit';
 import { property } from 'lit/decorators.js';
-import { createRef, ref } from 'lit/directives/ref.js';
-import { addAnimationController } from '../../animations/player.js';
 import { addThemingController } from '../../theming/theming-controller.js';
 import IgcButtonComponent from '../button/button.js';
 import { registerComponent } from '../common/definitions/register.js';
@@ -44,12 +42,6 @@ export default class IgcSnackbarComponent extends EventEmitterMixin<
     registerComponent(IgcSnackbarComponent, IgcButtonComponent);
   }
 
-  protected readonly _contentRef = createRef<HTMLElement>();
-  protected override readonly _player = addAnimationController(
-    this,
-    this._contentRef
-  );
-
   /**
    * The snackbar action button.
    * @attr action-text
@@ -68,16 +60,18 @@ export default class IgcSnackbarComponent extends EventEmitterMixin<
 
   protected override render() {
     return html`
-      <div ${ref(this._contentRef)} part="base" .inert=${!this.open}>
+      <div part="base" .inert=${!this.open}>
         <span part="message">
           <slot></slot>
         </span>
 
         <slot name="action" part="action-container" @click=${this._handleClick}>
           ${this.actionText
-            ? html`<igc-button type="button" part="action" variant="flat">
-                ${this.actionText}
-              </igc-button>`
+            ? html`
+                <igc-button type="button" part="action" variant="flat">
+                  ${this.actionText}
+                </igc-button>
+              `
             : nothing}
         </slot>
       </div>
