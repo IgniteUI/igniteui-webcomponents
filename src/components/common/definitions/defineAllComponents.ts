@@ -53,6 +53,7 @@ import IgcSelectComponent from '../../select/select.js';
 import IgcSelectGroupComponent from '../../select/select-group.js';
 import IgcSelectHeaderComponent from '../../select/select-header.js';
 import IgcSelectItemComponent from '../../select/select-item.js';
+import IgcSkeletonComponent from '../../skeleton/skeleton.js';
 import IgcRangeSliderComponent from '../../slider/range-slider.js';
 import IgcSliderComponent from '../../slider/slider.js';
 import IgcSliderLabelComponent from '../../slider/slider-label.js';
@@ -146,6 +147,7 @@ const allComponents: IgniteComponent[] = [
   IgcTileComponent,
   IgcTileManagerComponent,
   IgcTooltipComponent,
+  IgcSkeletonComponent,
 ];
 
 export function defineAllComponents() {

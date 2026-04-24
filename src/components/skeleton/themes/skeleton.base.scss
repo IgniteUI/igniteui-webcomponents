@@ -1,0 +1,150 @@
+@use 'styles/common/component';
+@use 'styles/utilities' as *;
+
+@keyframes breathe {
+    0%,
+    100% {
+        opacity: 0.6;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1.02);
+    }
+}
+
+@keyframes pulse {
+    0%,
+    100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.4;
+    }
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: -200% 0;
+    }
+    100% {
+        background-position: 200% 0;
+    }
+}
+
+@keyframes wave {
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-6px);
+    }
+}
+
+@keyframes glow {
+    0%,
+    100% {
+        box-shadow: none;
+    }
+    50% {
+        box-shadow: 0 0 10px 4px rgba(180, 180, 180, 0.6);
+    }
+}
+
+@keyframes reveal-content {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+:host {
+    --_fallback-radius: clamp(
+        0rem,
+        var(--ig-radius-factor, 0.25) * 1.5rem,
+        1.5rem
+    );
+    display: block;
+    position: relative;
+    width: fit-content;
+    height: fit-content;
+}
+
+:host([loading]) [part='content'] {
+    opacity: 0;
+    pointer-events: none;
+    user-select: none;
+}
+
+:host(:state(revealing)) [part='content'] {
+    animation: reveal-content 0.6s ease-out both;
+    will-change: opacity, transform;
+}
+
+[part='overlay'] {
+    position: absolute;
+    inset: 0;
+    background-color: var(--ig-skeleton-overlay-color, #eee);
+    pointer-events: none;
+    user-select: none;
+    border-radius: var(--border-radius, var(--_fallback-radius, 0));
+    transition: opacity 0.3s ease-out;
+}
+
+[part~='shape'] {
+    position: absolute;
+    contain: strict;
+    background-color: var(--ig-skeleton-shape-color, #cdcdcd);
+    pointer-events: none;
+    user-select: none;
+    will-change: opacity, transform;
+}
+
+[part~='pulse'] {
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+[part~='breathe'] {
+    animation: breathe 1.5s ease-in-out infinite;
+}
+
+[part~='shimmer'] {
+    background: linear-gradient(
+        90deg,
+        var(--ig-skeleton-shape-color, #cdcdcd) 25%,
+        color-mix(in srgb, var(--ig-skeleton-shape-color, #cdcdcd) 60%, white)
+            50%,
+        var(--ig-skeleton-shape-color, #cdcdcd) 75%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.5s linear infinite;
+    will-change: background-position;
+}
+
+[part~='wave'] {
+    animation: wave 1s ease-in-out var(--_wave-delay, 0s) infinite;
+}
+
+[part~='glow'] {
+    animation: glow 1.5s ease-in-out infinite;
+    will-change: box-shadow;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    [part~='pulse'],
+    [part~='breathe'],
+    [part~='shimmer'],
+    [part~='wave'],
+    [part~='glow'] {
+        animation: none;
+    }
+
+    :host(:state(revealing)) [part='content'] {
+        animation: none;
+    }
+}
