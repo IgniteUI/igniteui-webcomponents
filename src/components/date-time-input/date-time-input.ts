@@ -13,7 +13,10 @@ import {
   type DatePartDeltas,
   DEFAULT_DATE_PARTS_SPIN_DELTAS,
 } from './date-part.js';
-import { IgcDateTimeInputBaseComponent } from './date-time-input.base.js';
+import {
+  IgcDateTimeInputBaseComponent,
+  type IgcDateTimeInputComponentEventMap,
+} from './date-time-input.base.js';
 import {
   createDatePart,
   DateParts,
@@ -46,6 +49,8 @@ import { dateTimeInputValidators } from './validators.js';
  * @csspart suffix - The suffix wrapper.
  * @csspart helper-text - The helper text wrapper.
  */
+export interface IgcDateTimeInputEventMap extends IgcDateTimeInputComponentEventMap<Date | null> {}
+
 export default class IgcDateTimeInputComponent extends IgcDateTimeInputBaseComponent<
   Date | null,
   DatePart

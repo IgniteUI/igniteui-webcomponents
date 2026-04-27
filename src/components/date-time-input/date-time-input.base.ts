@@ -41,12 +41,12 @@ const Slots = setSlots(
   'invalid'
 );
 
-export interface IgcDateTimeInputComponentEventMap extends Omit<
-  IgcInputComponentEventMap,
-  'igcChange'
-> {
-  igcChange: CustomEvent<Date | DateRangeValue | null>;
+export interface IgcDateTimeInputComponentEventMap<
+  TChange = Date | DateRangeValue | null,
+> extends Omit<IgcInputComponentEventMap, 'igcChange'> {
+  igcChange: CustomEvent<TChange>;
 }
+
 export abstract class IgcDateTimeInputBaseComponent<
   TValue extends Date | DateRangeValue | string | null,
   TPart,

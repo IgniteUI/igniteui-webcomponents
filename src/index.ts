@@ -135,6 +135,8 @@ export type { IgcComboComponentEventMap } from './components/combo/types.js';
 export type { IgcDatePickerComponentEventMap } from './components/date-picker/date-picker.js';
 export type { IgcDateRangePickerComponentEventMap } from './components/date-range-picker/date-range-picker.js';
 export type { IgcDateTimeInputComponentEventMap } from './components/date-time-input/date-time-input.base.js';
+export type { IgcDateTimeInputEventMap } from './components/date-time-input/date-time-input.js';
+export type { IgcDateRangeInputEventMap } from './components/date-range-picker/date-range-input.js';
 export type { IgcDialogComponentEventMap } from './components/dialog/dialog.js';
 export type { IgcDropdownComponentEventMap } from './components/dropdown/dropdown.js';
 export type { IgcExpansionPanelComponentEventMap } from './components/expansion-panel/expansion-panel.js';

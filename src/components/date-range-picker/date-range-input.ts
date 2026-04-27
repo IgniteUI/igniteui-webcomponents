@@ -11,7 +11,10 @@ import {
   type DatePartDeltas,
   DatePartType,
 } from '../date-time-input/date-part.js';
-import { IgcDateTimeInputBaseComponent } from '../date-time-input/date-time-input.base.js';
+import {
+  IgcDateTimeInputBaseComponent,
+  type IgcDateTimeInputComponentEventMap,
+} from '../date-time-input/date-time-input.base.js';
 import { DateParts } from '../date-time-input/datetime-mask-parser.js';
 import { styles } from '../input/themes/input.base.css.js';
 import { styles as shared } from '../input/themes/shared/input.common.css.js';
@@ -22,6 +25,8 @@ import {
   type DateRangePart,
   DateRangePosition,
 } from './date-range-mask-parser.js';
+
+export interface IgcDateRangeInputEventMap extends IgcDateTimeInputComponentEventMap<DateRangeValue | null> {}
 
 export default class IgcDateRangeInputComponent extends IgcDateTimeInputBaseComponent<
   DateRangeValue | null,
