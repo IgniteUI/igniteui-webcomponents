@@ -16,7 +16,8 @@ This skill helps AI agents and developers identify the best Ignite UI components
 >
 > Before using the Ignite UI CLI MCP tools, you MUST verify the MCP server is available
 > by calling `list_components`. If the tool is not available or the call fails,
-> you MUST automatically configure it by following the setup process steps described below.
+> you MUST automatically configure it by following the setup instructions in
+> [`reference/mcp-setup.md`](./reference/mcp-setup.md).
 >
 > After writing the file, inform the user that the MCP server has been
 > configured and they may need to reload the editor for the tools to activate.
