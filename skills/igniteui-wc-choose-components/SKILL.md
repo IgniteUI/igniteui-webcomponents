@@ -8,6 +8,25 @@ user-invocable: true
 
 This skill helps AI agents and developers identify the best Ignite UI components for any UI requirement, then provides direct links to official documentation, usage examples, and API references.
 
+## Prerequisites
+
+- The **Ignite UI CLI MCP server** (`igniteui-cli`) available as a tool provider
+
+> **AGENT INSTRUCTION — MCP Server Setup (REQUIRED)**
+>
+> Before using the Ignite UI CLI MCP tools, you MUST verify the MCP server is available
+> by calling `list_components`. If the tool is not available or the call fails,
+> you MUST automatically configure it by following the setup process steps described below.
+>
+> After writing the file, inform the user that the MCP server has been
+> configured and they may need to reload the editor for the tools to activate.
+> Start the MCP server and wait for that MCP server to start before continuing the component-related work.
+> Do NOT skip this step or ask the user to do it manually.
+
+## Setting Up the Ignite UI CLI MCP Server
+
+> **Full setup instructions for VS Code, Cursor, Claude Desktop, and JetBrains IDEs are in [`reference/mcp-setup.md`](./reference/mcp-setup.md).** Read that file for editor-specific configuration steps and verification.
+
 ## Before You Answer
 
 - Choose the package before writing imports or install steps.
