@@ -12,6 +12,8 @@
 
 The Ignite UI CLI MCP server enables AI assistants to discover Ignite UI components, access component documentation, and support related Ignite UI workflows. It must be configured in your editor before these tools become available.
 
+> **Note:** The MCP server feature is currently only available in the `@next` pre-release channel of `igniteui-cli`. Once MCP support is promoted to the stable release, you can replace `igniteui-cli@next` with `igniteui-cli` (or a specific stable version) in the configurations below.
+
 ## VS Code
 
 Create or edit `.vscode/mcp.json` in your project:
@@ -67,6 +69,8 @@ Edit the Claude Desktop config file:
 2. Click **+ Add MCP Server**
 3. Set Command to `npx` and Arguments to `-y igniteui-cli@next mcp`
 4. Click OK and restart the AI Assistant
+
+> The `-y` flag skips interactive prompts if `igniteui-cli` is not already installed locally.
 
 ## Verifying the Setup
 
