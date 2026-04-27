@@ -24,9 +24,10 @@ See the [Storybook Here](https://igniteui.github.io/igniteui-webcomponents)
 <details open>
 <summary>Components</summary>
 
-| Components              | Status |         Documentation          | Released Version |   License   |
-| :---------------------- | :----: | :----------------------------: | :--------------: | :---------: |
-| Chat                    |   ✅   | [Docs][Chat Docs]              |     [6.3.0]      | [MIT](LICENSE) |
+| Components              | Status |         Documentation          | Released Version |    License     |
+| :---------------------- | :----: | :----------------------------: | :--------------: | :------------: |
+| Splitter                |   ✅   |     [Docs][Splitter Docs]      |     [7.1.0]      | [MIT](LICENSE) |
+| Chat                    |   ✅   |       [Docs][Chat Docs]        |     [6.3.0]      | [MIT](LICENSE) |
 | Date Range Picker       |   ✅   | [Docs][Date Range Picker Docs] |     [6.1.0]      | [MIT](LICENSE) |
 | Tooltip                 |   ✅   |      [Docs][Tooltip Docs]      |     [5.4.0]      | [MIT](LICENSE) |
 | File Input              |   ✅   |    [Docs][File Input Docs]     |     [5.4.0]      | [MIT](LICENSE) |
@@ -73,18 +74,17 @@ See the [Storybook Here](https://igniteui.github.io/igniteui-webcomponents)
 | Ripple                  |   ✅   |      [Docs][Ripple Docs]       |     [1.0.0]      | [MIT](LICENSE) |
 | Switch                  |   ✅   |      [Docs][Switch Docs]       |     [1.0.0]      | [MIT](LICENSE) |
 
-
 </details>
 
 ## Components available in Ignite UI for WebComponents Grids & Grid Lite
 
-| Components        | Status |         Documentation          |   License   |   Package   |
-| :---------------- | :----: | :----------------------------: | :---------: | :---------: |
-| Pivot Grid        |   ✅   |    [Docs][Pivot Grid Docs]     | [Commercial][Commercial License] | [Ignite UI Web Components Grids][Ignite UI for WebComponents Grids] |
-| Data Grid         |   ✅   |     [Docs][Data Grid Docs]     | [Commercial][Commercial License] | [Ignite UI Web Components Grids][Ignite UI for WebComponents Grids] |
-| Tree Grid         |   ✅   |     [Docs][Tree Grid Docs]     | [Commercial][Commercial License] | [Ignite UI Web Components Grids][Ignite UI for WebComponents Grids] |
-| Hierarchical Grid |   ✅   | [Docs][Hierarchical Grid Docs] | [Commercial][Commercial License] | [Ignite UI Web Components Grids][Ignite UI for WebComponents Grids] |
-| Grid Lite         |   ✅   |        [Docs][Grid Lite]       | [MIT](LICENSE)           | [Ignite UI Web Components Grid Lite][Ignite UI Web Components Grid Lite]
+| Components        | Status |         Documentation          |             License              |                                 Package                                  |
+| :---------------- | :----: | :----------------------------: | :------------------------------: | :----------------------------------------------------------------------: |
+| Pivot Grid        |   ✅   |    [Docs][Pivot Grid Docs]     | [Commercial][Commercial License] |   [Ignite UI Web Components Grids][Ignite UI for WebComponents Grids]    |
+| Data Grid         |   ✅   |     [Docs][Data Grid Docs]     | [Commercial][Commercial License] |   [Ignite UI Web Components Grids][Ignite UI for WebComponents Grids]    |
+| Tree Grid         |   ✅   |     [Docs][Tree Grid Docs]     | [Commercial][Commercial License] |   [Ignite UI Web Components Grids][Ignite UI for WebComponents Grids]    |
+| Hierarchical Grid |   ✅   | [Docs][Hierarchical Grid Docs] | [Commercial][Commercial License] |   [Ignite UI Web Components Grids][Ignite UI for WebComponents Grids]    |
+| Grid Lite         |   ✅   |       [Docs][Grid Lite]        |          [MIT](LICENSE)          | [Ignite UI Web Components Grid Lite][Ignite UI Web Components Grid Lite] |
 
 ### The Lightweight Web Components Data Grid and Data Table
 
@@ -265,6 +265,7 @@ npm run storybook:build
 [Commercial License]: https://www.infragistics.com/legal/license
 [Grid Lite]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/grid-lite/overview
 [Ignite UI Web Components Grid Lite]: https://www.npmjs.com/package/igniteui-grid-lite
+[Splitter Docs]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/layouts/splitter
 [1.0.0]: https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/1.0.0
 [2.0.0]: https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/2.0.0
 [2.1.0]: https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/2.1.0
@@ -280,3 +281,4 @@ npm run storybook:build
 [5.4.0]: https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/5.4.0
 [6.1.0]: https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/6.1.0
 [6.3.0]: https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/6.3.0
+[7.1.0]: https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/7.1.0
