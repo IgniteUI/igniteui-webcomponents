@@ -24,7 +24,10 @@ const chatUserInputContext = createContext<ChatState>(
   Symbol('chat-user-input-context')
 );
 
+const breadcrumbsContext = createContext<string>(Symbol('breadcrumbs-context'));
+
 export {
+  breadcrumbsContext,
   carouselContext,
   chatContext,
   chatUserInputContext,

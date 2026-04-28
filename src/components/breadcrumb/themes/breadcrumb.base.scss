@@ -1,0 +1,55 @@
+@use 'styles/common/component';
+@use 'styles/utilities' as *;
+
+:host {
+    --_link-color: var(--ig-breadcrumb-link-color, var(--ig-primary-500));
+    --_link-color-hover: var(
+        --ig-breadcrumb-link-color-hover,
+        var(--ig-primary-700)
+    );
+    --_current-color: var(--ig-breadcrumb-current-color, var(--ig-gray-900));
+    --_separator-color: var(
+        --ig-breadcrumb-separator-color,
+        var(--ig-gray-500)
+    );
+
+    display: inline-flex;
+    flex: 0 0 auto;
+    gap: 0.5rem;
+
+    ::slotted(a) {
+        color: var(--_link-color);
+        text-decoration: none;
+
+        &:hover {
+            color: var(--_link-color-hover);
+            text-decoration: underline;
+        }
+
+        &:focus-visible {
+            outline: 2px solid var(--_link-color);
+            outline-offset: 2px;
+            border-radius: 2px;
+        }
+    }
+}
+
+[part='separator'] {
+    color: var(--_separator-color);
+
+    &:dir(rtl) igc-icon,
+    &:dir(rtl) ::slotted(igc-icon) {
+        transform: rotateY(180deg);
+    }
+}
+
+:host([current]) {
+    ::slotted(a) {
+        color: var(--_current-color);
+        pointer-events: none;
+    }
+}
+
+:host(:last-of-type) [part='separator'] {
+    display: none;
+}
