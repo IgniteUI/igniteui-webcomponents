@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+### Fixed
+- #### Stepper
+  - In horizontal orientation, the content area height can now driven by the active step's content instead of always being sized to the tallest step. A new `--body-grid-rows` CSS custom property controls the internal row sizing of each step body — its default value of `1fr` expands the body to fit its content, while setting it to `0fr` collapses the body to zero height, enabling fully variable step heights. [#2209](https://github.com/IgniteUI/igniteui-webcomponents/issues/2209)
+
 ## [7.1.2] - 2026-04-22
 ### Changed
 - #### AI-Assisted Development
