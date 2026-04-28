@@ -6,7 +6,7 @@ import {
   last,
   modulo,
 } from '../common/util.js';
-import type { DateRangeValue } from '../date-range-picker/date-range-picker.js';
+import type { DateRangeValue } from '../types.js';
 import {
   CalendarDay,
   type CalendarRangeParams,

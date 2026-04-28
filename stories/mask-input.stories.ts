@@ -1,19 +1,19 @@
-import { github } from '@igniteui/material-icons-extended';
-import type { Meta, StoryObj } from '@storybook/web-components-vite';
-import { html } from 'lit';
-import { ifDefined } from 'lit/directives/if-defined.js';
-
 import {
   IgcIconComponent,
   IgcMaskInputComponent,
   defineComponents,
   registerIconFromText,
 } from 'igniteui-webcomponents';
+import type { Meta, StoryObj } from '@storybook/web-components-vite';
 import {
   disableStoryControls,
   formControls,
   formSubmitHandler,
 } from './story.js';
+
+import { github } from '@igniteui/material-icons-extended';
+import { html } from 'lit';
+import { ifDefined } from 'lit/directives/if-defined.js';
 
 defineComponents(IgcMaskInputComponent, IgcIconComponent);
 registerIconFromText(github.name, github.value);
