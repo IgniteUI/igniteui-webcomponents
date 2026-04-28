@@ -1,15 +1,14 @@
+import type { Meta, StoryObj } from '@storybook/web-components-vite';
+import { html } from 'lit';
 import {
   IgcDateTimeInputComponent,
   defineComponents,
 } from 'igniteui-webcomponents';
-import type { Meta, StoryObj } from '@storybook/web-components-vite';
 import {
   disableStoryControls,
   formControls,
   formSubmitHandler,
 } from './story.js';
-
-import { html } from 'lit';
 
 defineComponents(IgcDateTimeInputComponent);
 

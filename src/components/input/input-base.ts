@@ -1,4 +1,4 @@
-import { html, LitElement, nothing, type TemplateResult } from 'lit';
+import { LitElement, nothing, type TemplateResult } from 'lit';
 import { property, query } from 'lit/decorators.js';
 import { cache } from 'lit/directives/cache.js';
 import type { ThemingController } from '../../theming/theming-controller.js';
@@ -8,9 +8,10 @@ import { shadowOptions } from '../common/decorators/shadow-options.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '../common/mixins/forms/associated-required.js';
-import { partMap } from '../common/part-map.js';
-import type { DateRangeValue } from '../types.js';
-import IgcValidationContainerComponent from '../validation-container/validation-container.js';
+import {
+  nextInputId,
+  renderInputShell,
+} from '../common/templates/input-shell.js';
 
 export interface IgcInputComponentEventMap {
   /* alternateName: inputOcurred */
@@ -24,8 +25,6 @@ export interface IgcInputComponentEventMap {
   blur: FocusEvent;
 }
 
-let nextId = 1;
-
 @blazorDeepImport
 @shadowOptions({ delegatesFocus: true })
 export abstract class IgcInputBaseComponent extends FormAssociatedRequiredMixin(
@@ -36,16 +35,14 @@ export abstract class IgcInputBaseComponent extends FormAssociatedRequiredMixin(
   protected abstract readonly _themes: ThemingController;
   protected abstract readonly _slots: SlotController<any>;
 
-  protected readonly _inputId = `input-${nextId++}`;
+  protected readonly _inputId = nextInputId();
 
   @query('input')
   protected readonly _input?: HTMLInputElement;
 
   /* blazorSuppress */
-  /** The value attribute of the control.
-   * Type varies based on the input type and can be string, Date or null.
-   */
-  public abstract value: string | Date | DateRangeValue | null;
+  /** The value attribute of the control. */
+  public abstract value: string;
 
   /**
    * Whether the control will have outlined appearance.
@@ -110,66 +107,16 @@ export abstract class IgcInputBaseComponent extends FormAssociatedRequiredMixin(
     return nothing;
   }
 
-  private _renderValidatorContainer(): TemplateResult {
-    return IgcValidationContainerComponent.create(this);
-  }
-
-  private _renderPrefix() {
-    return html`
-      <div part="prefix">
-        <slot name="prefix"></slot>
-      </div>
-    `;
-  }
-
-  private _renderSuffix() {
-    return html`
-      <div part="suffix">
-        <slot name="suffix"></slot>
-      </div>
-    `;
-  }
-
-  private _renderLabel() {
-    return this.label
-      ? html`<label part="label" for=${this._inputId}>${this.label}</label>`
-      : nothing;
-  }
-
-  private _renderMaterial() {
-    return html`
-      <div
-        part=${partMap({
-          ...this._resolvePartNames('container'),
-          labelled: !!this.label,
-        })}
-      >
-        <div part="start">${this._renderPrefix()}</div>
-        ${this._renderInput()} ${this._renderFileParts()}
-        <div part="notch">${this._renderLabel()}</div>
-        <div part="filler"></div>
-        <div part="end">${this._renderSuffix()}</div>
-      </div>
-      ${this._renderValidatorContainer()}
-    `;
-  }
-
-  private _renderStandard() {
-    return html`
-      ${this._renderLabel()}
-      <div part=${partMap(this._resolvePartNames('container'))}>
-        ${this._renderPrefix()}${this._renderFileParts()}
-        ${this._renderInput()}${this._renderSuffix()}
-      </div>
-      ${this._renderValidatorContainer()}
-    `;
-  }
-
   protected override render() {
     return cache(
-      this._themes.theme === 'material'
-        ? this._renderMaterial()
-        : this._renderStandard()
+      renderInputShell(this, {
+        theme: this._themes.theme,
+        label: this.label,
+        labelId: this._inputId,
+        containerParts: this._resolvePartNames('container'),
+        renderInput: () => this._renderInput(),
+        renderFileParts: () => this._renderFileParts(),
+      })
     );
   }
 }
