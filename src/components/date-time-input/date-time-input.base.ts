@@ -437,13 +437,19 @@ export abstract class IgcDateTimeInputBaseComponent extends MaskBehaviorMixin(
   //#region Render
 
   protected _renderInput(): TemplateResult {
+    const hasNegativeTabIndex = this.getAttribute('tabindex') === '-1';
+    const hasHelperText = this._slots.hasAssignedElements('helper-text');
+
     return renderMaskedNativeInput({
+      id: this._inputId,
       partNames: this._resolvePartNames('input'),
       name: this.name,
       value: this._maskedValue,
       placeholder: this.placeholder || this._parser.emptyMask,
       readOnly: this.readOnly,
       disabled: this.disabled,
+      tabindex: hasNegativeTabIndex ? -1 : undefined,
+      ariaDescribedBy: hasHelperText ? 'helper-text' : undefined,
       onInput: (e) => this._handleInput(e),
       onFocus: () => this._handleFocus(),
       onBlur: () => this._handleBlur(),

@@ -243,6 +243,15 @@ export default class IgcDateTimeInputComponent extends IgcDateTimeInputBaseCompo
   }
 
   /**
+   * Emits an `igcInput` event whose `detail` is the parsed value as an ISO
+   * string (preserving the legacy contract for this component).
+   */
+  protected override _emitInputEvent(): void {
+    this._setTouchedState();
+    this.emitEvent('igcInput', { detail: this.value?.toString() });
+  }
+
+  /**
    * Calculates the new date value after spinning a date part.
    */
   protected override _calculateSpunValue(

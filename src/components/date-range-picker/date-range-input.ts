@@ -204,22 +204,7 @@ export default class IgcDateRangeInputComponent extends IgcDateTimeInputBaseComp
       return;
     }
 
-    if (!this.value?.start && !this.value?.end) {
-      this._maskedValue = '';
-      return;
-    }
-
-    const { start, end } = this.value;
-    const startStr = start
-      ? formatDisplayDate(start, this.locale, this.displayFormat)
-      : '';
-    const endStr = end
-      ? formatDisplayDate(end, this.locale, this.displayFormat)
-      : '';
-    this._maskedValue =
-      startStr && endStr
-        ? `${startStr}${this._parser.separator}${endStr}`
-        : startStr || endStr;
+    this._maskedValue = this._buildDisplayValue();
   }
 
   protected override _performStep(
