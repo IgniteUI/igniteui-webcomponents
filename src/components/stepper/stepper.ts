@@ -269,6 +269,16 @@ export default class IgcStepperComponent extends EventEmitterMixin<
       this._state.setVisitedState(this.linear);
     }
 
+    if (
+      properties.has('horizontalAnimation') ||
+      properties.has('animationDuration')
+    ) {
+      const duration =
+        this.horizontalAnimation !== 'none' ? this.animationDuration : 0;
+
+      this.style.setProperty('--animation-duration', `${duration}ms`);
+    }
+
     super.update(properties);
   }
 
