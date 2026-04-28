@@ -4,15 +4,15 @@
 
 ## Contents
 
-- [VS Code](#vs-code)
-- [Cursor](#cursor)
-- [Claude Desktop](#claude-desktop)
-- [WebStorm / JetBrains IDEs](#webstorm--jetbrains-ides)
-- [Verifying the Setup](#verifying-the-setup)
+- [Setting Up the Ignite UI CLI MCP Server](#setting-up-the-ignite-ui-cli-mcp-server)
+  - [Contents](#contents)
+  - [VS Code](#vs-code)
+  - [Cursor](#cursor)
+  - [Claude Desktop](#claude-desktop)
+  - [WebStorm / JetBrains IDEs](#webstorm--jetbrains-ides)
+  - [Verifying the Setup](#verifying-the-setup)
 
 The Ignite UI CLI MCP server enables AI assistants to discover Ignite UI components, access component documentation, and support related Ignite UI workflows. It must be configured in your editor before these tools become available.
-
-> **Note:** The MCP server feature is currently only available in the `@next` pre-release channel of `igniteui-cli`. Once MCP support is promoted to the stable release, you can replace `igniteui-cli@next` with `igniteui-cli` (or a specific stable version) in the configurations below.
 
 ## VS Code
 
@@ -23,7 +23,7 @@ Create or edit `.vscode/mcp.json` in your project:
   "servers": {
     "igniteui-cli": {
       "command": "npx",
-      "args": ["-y", "igniteui-cli@next", "mcp"]
+      "args": ["-y", "igniteui-cli", "mcp"]
     }
   }
 }
@@ -40,7 +40,7 @@ Create or edit `.cursor/mcp.json`:
   "mcpServers": {
     "igniteui-cli": {
       "command": "npx",
-      "args": ["-y", "igniteui-cli@next", "mcp"]
+      "args": ["-y", "igniteui-cli", "mcp"]
     }
   }
 }
@@ -49,6 +49,7 @@ Create or edit `.cursor/mcp.json`:
 ## Claude Desktop
 
 Edit the Claude Desktop config file:
+
 - **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
 - **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
 
@@ -57,7 +58,7 @@ Edit the Claude Desktop config file:
   "mcpServers": {
     "igniteui-cli": {
       "command": "npx",
-      "args": ["-y", "igniteui-cli@next", "mcp"]
+      "args": ["-y", "igniteui-cli", "mcp"]
     }
   }
 }
@@ -67,7 +68,7 @@ Edit the Claude Desktop config file:
 
 1. Go to **Settings → Tools → AI Assistant → MCP Servers**
 2. Click **+ Add MCP Server**
-3. Set Command to `npx` and Arguments to `-y igniteui-cli@next mcp`
+3. Set Command to `npx` and Arguments to `-y igniteui-cli mcp`
 4. Click OK and restart the AI Assistant
 
 > The `-y` flag skips interactive prompts if `igniteui-cli` is not already installed locally.
