@@ -112,7 +112,7 @@
     grid-column: 1 / span var(--steps-count);
     padding-inline-start: calc(var(--body-indent--vertical) / 2);
     z-index: 1;
-    transition: grid-template-rows var(--animation-duration) var(--body-transition-delay, 0ms);
+    transition: grid-template-rows var(--animation-duration, 320ms) var(--body-transition-delay, 0ms);
     position: relative;
     overflow: hidden;
 
