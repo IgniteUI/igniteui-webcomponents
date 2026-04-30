@@ -5,6 +5,7 @@ import { registerComponent } from '../common/definitions/register.js';
 import { formatDisplayDate } from '../common/i18n/i18n-controller.js';
 import { FormValueDateTimeTransformers } from '../common/mixins/forms/form-transformers.js';
 import { createFormValueState } from '../common/mixins/forms/form-value.js';
+import { equal } from '../common/util.js';
 import { styles } from '../input/themes/input.base.css.js';
 import { styles as shared } from '../input/themes/shared/input.common.css.js';
 import { all } from '../input/themes/themes.js';
@@ -146,7 +147,7 @@ export default class IgcDateTimeInputComponent extends IgcDateTimeInputBaseCompo
     }
 
     // Emit change event if value changed
-    if (!this.readOnly && this._oldValue !== this.value) {
+    if (!this.readOnly && !equal(this._oldValue, this.value)) {
       this.emitEvent('igcChange', { detail: this.value });
     }
 
@@ -248,7 +249,7 @@ export default class IgcDateTimeInputComponent extends IgcDateTimeInputBaseCompo
    */
   protected override _emitInputEvent(): void {
     this._setTouchedState();
-    this.emitEvent('igcInput', { detail: this.value?.toString() });
+    this.emitEvent('igcInput', { detail: this.value?.toISOString() });
   }
 
   /**
