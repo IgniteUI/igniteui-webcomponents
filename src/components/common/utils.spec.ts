@@ -7,7 +7,7 @@ import {
 } from '@open-wc/testing';
 import type { TemplateResult } from 'lit';
 import { type CalendarDay, toCalendarDay } from '../calendar/model.js';
-import { parseKeys } from './controllers/key-bindings.js';
+import { MODIFIER_EVENT_KEYS, parseKeys } from './controllers/key-bindings.js';
 import type { IgcFormControl } from './mixins/forms/types.js';
 import { toKebabCase } from './util.js';
 
@@ -348,7 +348,7 @@ export function simulateKeyboard(
   const eventOptions: Record<string, boolean> = {};
 
   for (const each of modifiers) {
-    eventOptions[`${each}Key`] = true;
+    eventOptions[MODIFIER_EVENT_KEYS[each]] = true;
   }
 
   for (const key of keys) {

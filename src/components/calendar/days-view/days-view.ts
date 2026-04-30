@@ -9,13 +9,7 @@ import { registerComponent } from '../../common/definitions/register.js';
 import type { Constructor } from '../../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../../common/mixins/event-emitter.js';
 import { partMap } from '../../common/part-map.js';
-import {
-  addSafeEventListener,
-  chunk,
-  first,
-  last,
-  take,
-} from '../../common/util.js';
+import { addSafeEventListener, chunk, first, last } from '../../common/util.js';
 import { IgcCalendarBaseComponent } from '../base.js';
 import {
   areSameMonth,
@@ -500,26 +494,25 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
     const aria = getDateFormatter().getIntlFormatter(this.locale, {
       weekday: 'long',
     });
-    const days = take(
-      generateMonth(this._activeDate, this._firstDayOfWeek),
-      DAYS_IN_WEEK
-    );
 
     const weekNumber = this.showWeekNumbers
       ? this._renderHeaderWeekNumber()
       : nothing;
 
-    const headers = days.map(
-      (day) => html`
-        <span
-          role="columnheader"
-          part="label"
-          aria-label=${aria.format(day.native)}
-        >
-          <span part="label-inner">${label.format(day.native)}</span>
-        </span>
-      `
-    );
+    const headers = generateMonth(this._activeDate, this._firstDayOfWeek)
+      .take(DAYS_IN_WEEK)
+      .map(
+        (day) => html`
+          <span
+            role="columnheader"
+            part="label"
+            aria-label=${aria.format(day.native)}
+          >
+            <span part="label-inner">${label.format(day.native)}</span>
+          </span>
+        `
+      )
+      .toArray();
 
     return html`
       <div role="row" part="days-row first">${weekNumber}${headers}</div>

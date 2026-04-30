@@ -101,7 +101,7 @@ $theme: $indigo;
         @if $variant != 'warning' {
             color: contrast-color($variant-color, 900);
         }
-        
+
         @if $variant == 'warning' or $variant == 'info' {
             background: color($variant-color, 500);
         }

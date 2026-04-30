@@ -30,7 +30,7 @@ import {
   addI18nController,
   getDateTimeFormat,
 } from '../common/i18n/i18n-controller.js';
-import { IgcBaseComboBoxLikeComponent } from '../common/mixins/combo-box.js';
+import { IgcComboBoxBaseLikeComponent } from '../common/mixins/combo-box.js';
 import type { AbstractConstructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '../common/mixins/forms/associated-required.js';
@@ -40,7 +40,7 @@ import {
   addSafeEventListener,
   bindIf,
   equal,
-  findElementFromEventPath,
+  getElementFromPath,
 } from '../common/util.js';
 import type { DatePart } from '../date-time-input/date-part.js';
 import IgcDateTimeInputComponent from '../date-time-input/date-time-input.js';
@@ -173,8 +173,8 @@ const Slots = setSlots(
 export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
   EventEmitterMixin<
     IgcDatePickerComponentEventMap,
-    AbstractConstructor<IgcBaseComboBoxLikeComponent>
-  >(IgcBaseComboBoxLikeComponent)
+    AbstractConstructor<IgcComboBoxBaseLikeComponent>
+  >(IgcComboBoxBaseLikeComponent)
 ) {
   public static readonly tagName = 'igc-date-picker';
   public static styles = [styles, shared];
@@ -502,7 +502,7 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
     addKeybindings(this, {
       skip: () => this.disabled || this.readOnly,
     })
-      .set([altKey, arrowDown], this.handleAnchorClick)
+      .set([altKey, arrowDown], this._handleAnchorClick)
       .set([altKey, arrowUp], this._onEscapeKey)
       .set(escapeKey, this._onEscapeKey);
   }
@@ -557,16 +557,16 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
   }
 
   protected _handleInputClick(event: Event): void {
-    if (findElementFromEventPath('input', event)) {
+    if (getElementFromPath('input', event)) {
       // Open only if the click originates from the underlying input
-      this.handleAnchorClick();
+      this._handleAnchorClick();
     }
   }
 
-  protected override async handleAnchorClick(): Promise<void> {
+  protected override async _handleAnchorClick(): Promise<void> {
     this._calendar.activeDate = this.value ?? this._calendar.activeDate;
 
-    super.handleAnchorClick();
+    super._handleAnchorClick();
     await this.updateComplete;
     this._calendar[focusActiveDate]({ preventScroll: true });
   }
@@ -712,7 +712,7 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
         slot="prefix"
         part=${state}
         @pointerdown=${this._handlerCalendarIconSlotPointerDown}
-        @click=${bindIf(!this.readOnly, this.handleAnchorClick)}
+        @click=${bindIf(!this.readOnly, this._handleAnchorClick)}
       >
         <slot name=${state}>${defaultIcon}</slot>
       </span>
@@ -820,7 +820,7 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
           <label
             part="label"
             for=${id}
-            @click=${bindIf(!isDisabled, this.handleAnchorClick)}
+            @click=${bindIf(!isDisabled, this._handleAnchorClick)}
           >
             ${this.label}
           </label>

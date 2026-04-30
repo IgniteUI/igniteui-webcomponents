@@ -1,12 +1,33 @@
 ---
 name: igniteui-wc-integrate-with-framework
-description: Integrate igniteui-webcomponents into React, Angular, Vue, or vanilla JS applications with framework-specific configurations
+description: Integrate Ignite UI Web Components packages into React, Angular, Vue, or vanilla JS applications with framework-specific configurations
 user-invocable: true
 ---
 
 # Integrate with Framework
 
 This skill helps users integrate Ignite UI Web Components into their application. It detects the framework or platform in use and loads the appropriate step-by-step integration reference.
+
+## Before You Answer
+
+- Choose the package first, then load the framework reference.
+- Do not assume every setup flow uses `igniteui-webcomponents`.
+- If the required package is not present in `package.json`, add or install the correct Ignite UI dependency first. Absence from `package.json` does not mean the package is invalid.
+
+### Package Routing
+
+| Component family | Package |
+|---|---|
+| General UI components | `igniteui-webcomponents` |
+| Advanced grids | `igniteui-webcomponents-grids` (trial) `@infragistics/igniteui-webcomponents-grids` (licensed) |
+| Grid Lite | `igniteui-grid-lite` |
+| Dock Manager | `igniteui-dockmanager` (trial) `@infragistics/igniteui-dockmanager` (licensed) |
+| Charts | `igniteui-webcomponents-charts` (trial) `@infragistics/igniteui-webcomponents-charts` (licensed) |
+
+If the request only says "grid", infer the package from the requested features:
+
+- Use `igniteui-webcomponents-grids` for editing, paging, sorting, filtering, summaries, grouping, hierarchical data, or pivot features.
+- Use `igniteui-grid-lite` for lightweight tabular data.
 
 ## Example Usage
 

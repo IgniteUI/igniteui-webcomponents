@@ -38,6 +38,9 @@
     --horizontal-content-disply: block;
     --vertical-separator-visibility: none;
     --horizontal-body-padding: #{rem(16px)};
+    --body-display: grid;
+    --body-grid-rows: 1fr;
+    --body-transition-delay: var(--animation-duration, 320ms);
 
     display: grid;
     /* stylelint-disable */
@@ -52,6 +55,11 @@
 
         --align-text: center;
         --align-items: center;
+    }
+
+    ::slotted(igc-step[active]) {
+        --body-grid-rows: 1fr;
+        --body-transition-delay: 0ms;
     }
 
     // FIRST STEP

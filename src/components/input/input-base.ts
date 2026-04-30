@@ -9,6 +9,7 @@ import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '../common/mixins/forms/associated-required.js';
 import { partMap } from '../common/part-map.js';
+import type { DateRangeValue } from '../types.js';
 import IgcValidationContainerComponent from '../validation-container/validation-container.js';
 
 export interface IgcInputComponentEventMap {
@@ -44,7 +45,7 @@ export abstract class IgcInputBaseComponent extends FormAssociatedRequiredMixin(
   /** The value attribute of the control.
    * Type varies based on the input type and can be string, Date or null.
    */
-  public abstract value: string | Date | null;
+  public abstract value: string | Date | DateRangeValue | null;
 
   /**
    * Whether the control will have outlined appearance.

@@ -28,7 +28,7 @@ const metadata: Meta<IgcRatingComponent> = {
     docs: {
       description: {
         component:
-          "Rating provides insight regarding others' opinions and experiences,\nand can allow the user to submit a rating of their own",
+          'A rating component that allows users to view and provide ratings using customizable symbols.\nIt supports fractional values, hover previews, keyboard navigation, single-selection mode,\nand integrates with forms as a number input.',
       },
     },
     actions: { handles: ['igcChange', 'igcHover'] },

@@ -1,7 +1,7 @@
 import { LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
 import type { RootClickController } from '../controllers/root-click.js';
-import { iterNodes } from '../util.js';
+import { iterNodes, last } from '../util.js';
 import type { UnpackCustomEvent } from './event-emitter.js';
 
 interface IgcBaseComboBoxEventMap {
@@ -12,7 +12,7 @@ interface IgcBaseComboBoxEventMap {
 }
 
 /* blazorIndirectRender */
-export abstract class IgcBaseComboBoxLikeComponent extends LitElement {
+export abstract class IgcBaseComboBoxComponent extends LitElement {
   declare public emitEvent: <
     K extends keyof IgcBaseComboBoxEventMap,
     D extends UnpackCustomEvent<IgcBaseComboBoxEventMap[K]>,
@@ -24,52 +24,35 @@ export abstract class IgcBaseComboBoxLikeComponent extends LitElement {
   protected abstract _rootClickController: RootClickController;
 
   /**
-   * Whether the component dropdown should be kept open on selection.
-   * @attr keep-open-on-select
-   */
-  @property({ type: Boolean, reflect: true, attribute: 'keep-open-on-select' })
-  public keepOpenOnSelect = false;
-
-  /**
-   * Whether the component dropdown should be kept open on clicking outside of it.
-   * @attr keep-open-on-outside-click
-   */
-  @property({
-    type: Boolean,
-    reflect: true,
-    attribute: 'keep-open-on-outside-click',
-  })
-  public keepOpenOnOutsideClick = false;
-
-  /**
    * Sets the open state of the component.
-   * @attr
+   * @attr open
+   * @default false
    */
   @property({ type: Boolean, reflect: true })
   public open = false;
 
-  protected emitClosing() {
+  protected _emitClosing(): boolean {
     return this.emitEvent('igcClosing', { cancelable: true });
   }
 
-  protected emitClosed() {
+  protected _emitClosed(): boolean {
     return this.emitEvent('igcClosed');
   }
 
-  protected emitOpening() {
+  protected _emitOpening(): boolean {
     return this.emitEvent('igcOpening', { cancelable: true });
   }
 
-  protected emitOpened() {
+  protected _emitOpened(): boolean {
     return this.emitEvent('igcOpened');
   }
 
-  protected handleAnchorClick() {
+  protected _handleAnchorClick(): void {
     this.open ? this._hide(true) : this._show(true);
   }
 
-  protected async _hide(emitEvent = false) {
-    if (!this.open || (emitEvent && !this.emitClosing())) {
+  protected async _hide(emitEvent = false): Promise<boolean> {
+    if (!this.open || (emitEvent && !this._emitClosing())) {
       return false;
     }
 
@@ -77,14 +60,14 @@ export abstract class IgcBaseComboBoxLikeComponent extends LitElement {
 
     if (emitEvent) {
       await this.updateComplete;
-      this.emitClosed();
+      this._emitClosed();
     }
 
     return true;
   }
 
-  protected async _show(emitEvent = false) {
-    if (this.open || (emitEvent && !this.emitOpening())) {
+  protected async _show(emitEvent = false): Promise<boolean> {
+    if (this.open || (emitEvent && !this._emitOpening())) {
       return false;
     }
 
@@ -92,7 +75,7 @@ export abstract class IgcBaseComboBoxLikeComponent extends LitElement {
 
     if (emitEvent) {
       await this.updateComplete;
-      this.emitOpened();
+      this._emitOpened();
     }
 
     return true;
@@ -114,7 +97,33 @@ export abstract class IgcBaseComboBoxLikeComponent extends LitElement {
   }
 }
 
-export function getItems<T extends HTMLElement>(root: Node, tagName: string) {
+/* blazorIndirectRender */
+export abstract class IgcComboBoxBaseLikeComponent extends IgcBaseComboBoxComponent {
+  /**
+   * Whether the component dropdown should be kept open on selection.
+   * @attr keep-open-on-select
+   * @default false
+   */
+  @property({ type: Boolean, reflect: true, attribute: 'keep-open-on-select' })
+  public keepOpenOnSelect = false;
+
+  /**
+   * Whether the component dropdown should be kept open on clicking outside of it.
+   * @attr keep-open-on-outside-click
+   * @default false
+   */
+  @property({
+    type: Boolean,
+    reflect: true,
+    attribute: 'keep-open-on-outside-click',
+  })
+  public keepOpenOnOutsideClick = false;
+}
+
+export function getItems<T extends HTMLElement>(
+  root: Node,
+  tagName: string
+): Generator<T> {
   return iterNodes<T>(root, {
     show: 'SHOW_ELEMENT',
     filter: (item) => item.matches(tagName),
@@ -124,7 +133,7 @@ export function getItems<T extends HTMLElement>(root: Node, tagName: string) {
 export function getActiveItems<T extends HTMLElement & { disabled: boolean }>(
   root: Node,
   tagName: string
-) {
+): Generator<T> {
   return iterNodes<T>(root, {
     show: 'SHOW_ELEMENT',
     filter: (item) => item.matches(tagName) && !item.disabled,
@@ -133,7 +142,7 @@ export function getActiveItems<T extends HTMLElement & { disabled: boolean }>(
 
 export function getNextActiveItem<
   T extends HTMLElement & { disabled: boolean },
->(items: T[], from: T) {
+>(items: T[], from: T): T {
   const current = items.indexOf(from);
 
   for (let i = current + 1; i < items.length; i++) {
@@ -147,7 +156,7 @@ export function getNextActiveItem<
 
 export function getPreviousActiveItem<
   T extends HTMLElement & { disabled: boolean },
->(items: T[], from: T) {
+>(items: T[], from: T): T {
   const current = items.indexOf(from);
 
   for (let i = current - 1; i >= 0; i--) {
@@ -161,14 +170,12 @@ export function getPreviousActiveItem<
 
 export function setInitialSelectionState<
   T extends HTMLElement & { selected: boolean },
->(items: T[]) {
-  const lastSelected = items.filter((item) => item.selected).at(-1) ?? null;
+>(items: T[]): T | null {
+  const lastSelected = last(items.filter((item) => item.selected));
 
   for (const item of items) {
-    if (item !== lastSelected) {
-      item.selected = false;
-    }
+    item.selected = item === lastSelected;
   }
 
-  return lastSelected;
+  return lastSelected ?? null;
 }

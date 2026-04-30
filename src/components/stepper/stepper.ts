@@ -18,8 +18,8 @@ import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import {
   addSafeEventListener,
-  findElementFromEventPath,
   first,
+  getElementFromPath,
   getRoot,
   isLTR,
   last,
@@ -269,6 +269,16 @@ export default class IgcStepperComponent extends EventEmitterMixin<
       this._state.setVisitedState(this.linear);
     }
 
+    if (
+      properties.has('horizontalAnimation') ||
+      properties.has('animationDuration')
+    ) {
+      const duration =
+        this.horizontalAnimation !== 'none' ? this.animationDuration : 0;
+
+      this.style.setProperty('--animation-duration', `${duration}ms`);
+    }
+
     super.update(properties);
   }
 
@@ -277,7 +287,7 @@ export default class IgcStepperComponent extends EventEmitterMixin<
   //#region Keyboard navigation handlers
 
   private _skipKeyboard(_: Element, event: KeyboardEvent): boolean {
-    return !findElementFromEventPath('[data-step-header]', event);
+    return !getElementFromPath('[data-step-header]', event);
   }
 
   private _handleHomeKey(): void {
@@ -337,10 +347,7 @@ export default class IgcStepperComponent extends EventEmitterMixin<
   //#region Event handlers
 
   private _handleInteraction(event: Event): void {
-    const step = findElementFromEventPath<IgcStepComponent>(
-      IgcStepComponent.tagName,
-      event
-    );
+    const step = getElementFromPath(IgcStepComponent.tagName, event);
 
     if (step && this._state.isAccessible(step)) {
       this._activateStep(step);

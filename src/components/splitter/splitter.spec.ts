@@ -28,7 +28,7 @@ import IgcTreeComponent from '../tree/tree.js';
 import IgcTreeItemComponent from '../tree/tree-item.js';
 import type { SplitterOrientation } from '../types.js';
 import IgcSplitterComponent, {
-  type IgcSplitterResizeEventDetail,
+  type IgcSplitterResizeEventArgs,
 } from './splitter.js';
 
 const BAR_PART = 'splitter-bar';
@@ -850,7 +850,7 @@ describe('Splitter', () => {
       await elementUpdated(splitter);
 
       const bar = getSplitterPart(splitter, BAR_PART);
-      let barSize = bar.getBoundingClientRect().width;
+      const barSize = bar.getBoundingClientRect().width;
       bar.focus();
       await elementUpdated(splitter);
 
@@ -887,7 +887,6 @@ describe('Splitter', () => {
       splitter.startSize = '250px';
       await elementUpdated(splitter);
 
-      barSize = bar.getBoundingClientRect().height;
       bar.focus();
       await elementUpdated(splitter);
 
@@ -3074,9 +3073,9 @@ function getPanesSizes(
 
 function checkResizeEvents(
   eventSpy: sinon.SinonSpy,
-  startArgs?: IgcSplitterResizeEventDetail,
-  resizingArgs?: IgcSplitterResizeEventDetail,
-  endArgs?: IgcSplitterResizeEventDetail
+  startArgs?: IgcSplitterResizeEventArgs,
+  resizingArgs?: IgcSplitterResizeEventArgs,
+  endArgs?: IgcSplitterResizeEventArgs
 ) {
   expect(eventSpy.calledWith('igcResizeStart')).to.be.true;
   expect(eventSpy.calledWith('igcResizing')).to.be.true;

@@ -35,6 +35,7 @@ import { styles } from './themes/splitter.base.css.js';
 import { all } from './themes/themes.js';
 import type {
   IgcSplitterComponentEventMap,
+  IgcSplitterResizeEventArgs,
   IgcSplitterResizeEventDetail,
   PanePosition,
   PaneResizeSnapshot,
@@ -989,7 +990,11 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   //#endregion
 }
 
-export type { IgcSplitterComponentEventMap, IgcSplitterResizeEventDetail };
+export type {
+  IgcSplitterComponentEventMap,
+  IgcSplitterResizeEventArgs,
+  IgcSplitterResizeEventDetail,
+};
 
 declare global {
   interface HTMLElementTagNameMap {

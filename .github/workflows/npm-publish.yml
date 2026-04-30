@@ -20,7 +20,7 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
 
       - name: Update NPM
-        run: npm install -g npm@latest
+        run: npm install -g npm@10.9.8 && npm install -g npm@latest
 
       - run: echo "VERSION=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_ENV
       - run: echo ${VERSION}
@@ -32,8 +32,8 @@ jobs:
 
       - name: Define npm tag
         run: |
-            if [[ ${VERSION} == *"alpha"* || ${VERSION} == *"beta"* || ${VERSION} == *"rc"* ]]; then echo "NPM_TAG=next"; else echo "NPM_TAG=latest"; fi >> $GITHUB_ENV
-            echo ${NPM_TAG}
+          if [[ ${VERSION} == *"alpha"* || ${VERSION} == *"beta"* || ${VERSION} == *"rc"* ]]; then echo "NPM_TAG=next"; else echo "NPM_TAG=latest"; fi >> $GITHUB_ENV
+          echo ${NPM_TAG}
 
       - name: Version the package
         run: npm version ${VERSION} --no-git-tag-version --save --verbose

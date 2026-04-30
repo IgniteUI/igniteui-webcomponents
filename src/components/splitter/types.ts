@@ -25,7 +25,7 @@ interface SplitterResizeState {
   dragPointerId: number;
 }
 
-interface IgcSplitterResizeEventDetail {
+interface IgcSplitterResizeEventArgs {
   /** The current size of the start panel in pixels */
   startPanelSize: number;
   /** The current size of the end panel in pixels */
@@ -34,17 +34,24 @@ interface IgcSplitterResizeEventDetail {
   delta?: number;
 }
 
+/**
+ * @hidden
+ * @deprecated use IgcSplitterResizeEventArgs instead
+ */
+interface IgcSplitterResizeEventDetail extends IgcSplitterResizeEventArgs {}
+
 interface IgcSplitterComponentEventMap {
-  igcResizeStart: CustomEvent<IgcSplitterResizeEventDetail>;
-  igcResizing: CustomEvent<IgcSplitterResizeEventDetail>;
-  igcResizeEnd: CustomEvent<IgcSplitterResizeEventDetail>;
+  igcResizeStart: CustomEvent<IgcSplitterResizeEventArgs>;
+  igcResizing: CustomEvent<IgcSplitterResizeEventArgs>;
+  igcResizeEnd: CustomEvent<IgcSplitterResizeEventArgs>;
 }
 
 export type {
-  PanePosition,
-  SplitterPaneState,
-  PaneResizeSnapshot,
-  SplitterResizeState,
-  IgcSplitterResizeEventDetail,
   IgcSplitterComponentEventMap,
+  IgcSplitterResizeEventArgs,
+  IgcSplitterResizeEventDetail,
+  PanePosition,
+  PaneResizeSnapshot,
+  SplitterPaneState,
+  SplitterResizeState,
 };

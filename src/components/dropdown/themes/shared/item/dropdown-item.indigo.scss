@@ -22,21 +22,3 @@ $theme: $indigo;
     outline: rem(2px) solid var-get($theme, 'focused-item-border-color');
     outline-offset: rem(-2px);
 }
-
-:host([selected][active]) {
-    background: var-get($theme, 'selected-item-background');
-    color: var-get($theme, 'selected-item-text-color');
-
-    ::slotted(igc-icon) {
-        color: var-get($theme, 'selected-item-icon-color');
-    }
-}
-
-:host([selected][active]:hover) {
-    background: var-get($theme, 'selected-hover-item-background');
-    color: var-get($theme, 'selected-hover-item-text-color');
-
-    ::slotted(igc-icon) {
-        color: var-get($theme, 'selected-hover-item-icon-color');
-    }
-}

@@ -1,6 +1,6 @@
 import type { ReactiveController, ReactiveControllerHost } from 'lit';
 import { createAbortHandle } from '../abort-handler.js';
-import { findElementFromEventPath, isEmpty } from '../util.js';
+import { getElementFromPath, isEmpty } from '../util.js';
 
 /** Configuration options for the RootClickController */
 type RootClickControllerConfig = {
@@ -63,7 +63,7 @@ function handlePointerDown(event: PointerEvent): void {
     const config = HOST_CONFIGURATIONS.get(host);
     const targets = getHostTargets(host, config);
 
-    if (findElementFromEventPath((node) => targets.has(node), event)) {
+    if (getElementFromPath((node) => targets.has(node), event)) {
       POINTER_DOWN_HOSTS.add(host);
     }
   }
@@ -78,7 +78,7 @@ function handleRootClick(event: PointerEvent): void {
     const config = HOST_CONFIGURATIONS.get(host);
     const targets = getHostTargets(host, config);
 
-    if (!findElementFromEventPath((node) => targets.has(node), event)) {
+    if (!getElementFromPath((node) => targets.has(node), event)) {
       config?.onHide ? config.onHide.call(host) : host.hide();
     }
   }

@@ -25,6 +25,7 @@ export type BadgeShape = 'rounded' | 'square';
 export type ButtonGroupSelection = 'single' | 'single-required' | 'multiple';
 export type ButtonVariant = 'contained' | 'flat' | 'outlined' | 'fab';
 export type CarouselIndicatorsOrientation = 'end' | 'start';
+export type DateRangeValue = { start: Date | null; end: Date | null };
 export type DividerType = 'solid' | 'dashed';
 export type ExpansionPanelIndicatorPosition = 'start' | 'end' | 'none';
 export type IconButtonVariant = 'contained' | 'flat' | 'outlined';

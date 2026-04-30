@@ -12,7 +12,7 @@ export default class IgcComboHeaderComponent extends LitElement {
   public static override styles = [styles, shared];
 
   /* blazorSuppress */
-  public static register() {
+  public static register(): void {
     registerComponent(IgcComboHeaderComponent);
   }
 
