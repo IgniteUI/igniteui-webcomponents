@@ -125,22 +125,27 @@ export default class IgcChatMessageComponent extends LitElement {
     const text = this.message.text;
     const separator = text ? '\n\n' : '';
     const attachments = this.message.attachments ?? [];
-    const { attachmentLabel, attachmentsListLabel, messageCopied } =
-      this._state.resourceStrings!;
+    const {
+      chat_attachment_label,
+      chat_attachments_list_label,
+      chat_message_copied,
+    } = this._state.resourceStrings;
 
     const attachmentsText = isEmpty(attachments)
       ? ''
       : attachments
-          .map(({ name, url }) => `${name ?? attachmentLabel}: ${url ?? ''}`)
+          .map(
+            ({ name, url }) => `${name ?? chat_attachment_label}: ${url ?? ''}`
+          )
           .join('\n');
 
     const payload = attachmentsText
-      ? `${text}${separator}${attachmentsListLabel}:\n${attachmentsText}`
+      ? `${text}${separator}${chat_attachments_list_label}:\n${attachmentsText}`
       : text;
 
     try {
       await navigator.clipboard.writeText(payload);
-      this._state.showActionToast(messageCopied);
+      this._state.showActionToast(chat_message_copied!);
     } catch (err) {
       throw new Error(`Failed to copy message: ${err}`);
     }
@@ -206,22 +211,25 @@ export default class IgcChatMessageComponent extends LitElement {
     }
 
     return html`
-      ${this._renderActionButton(COPY_CONTENT, resourceStrings.reactionCopy)}
+      ${this._renderActionButton(
+        COPY_CONTENT,
+        resourceStrings.chat_reaction_copy!
+      )}
       ${this._renderActionButton(
         this.message.reactions?.includes(LIKE_ACTIVE)
           ? LIKE_ACTIVE
           : LIKE_INACTIVE,
-        resourceStrings.reactionLike
+        resourceStrings.chat_reaction_like!
       )}
       ${this._renderActionButton(
         this.message.reactions?.includes(DISLIKE_ACTIVE)
           ? DISLIKE_ACTIVE
           : DISLIKE_INACTIVE,
-        resourceStrings.reactionDislike
+        resourceStrings.chat_reaction_dislike!
       )}
       ${this._renderActionButton(
         REGENERATE,
-        resourceStrings.reactionRegenerate
+        resourceStrings.chat_reaction_regenerate!
       )}
     `;
   }
