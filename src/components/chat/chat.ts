@@ -25,6 +25,7 @@ import { all } from './themes/themes.js';
 import type {
   ChatRenderContext,
   ChatTemplateRenderer,
+  IgcChatDraftMessage,
   IgcChatMessage,
   IgcChatMessageAttachment,
   IgcChatMessageReaction,
@@ -108,6 +109,8 @@ const Slots = setSlots(
   'typing-indicator'
 );
 
+/* blazorIndirectRender */
+/* blazorSupportsVisualChildren */
 /**
  * A chat UI component for displaying messages, attachments, and input interaction.
  *
@@ -248,6 +251,8 @@ export default class IgcChatComponent extends EventEmitterMixin<
     this._userInputContext.setValue(this._state, true);
   }
 
+  /* blazorCollectionName: MessagesCollection */
+  /* blazorTreatAsCollection */
   /**
    * The list of chat messages currently displayed.
    * Use this property to set or update the message history.
@@ -266,10 +271,7 @@ export default class IgcChatComponent extends EventEmitterMixin<
    * Includes the draft text and any attachments.
    */
   @property({ attribute: false })
-  public set draftMessage(value: {
-    text: string;
-    attachments?: IgcChatMessageAttachment[];
-  }) {
+  public set draftMessage(value: IgcChatDraftMessage) {
     if (this._state && value) {
       this._state.inputValue = value.text;
       this._state.inputAttachments = value.attachments || [];
@@ -277,10 +279,7 @@ export default class IgcChatComponent extends EventEmitterMixin<
     }
   }
 
-  public get draftMessage(): {
-    text: string;
-    attachments?: IgcChatMessageAttachment[];
-  } {
+  public get draftMessage(): IgcChatDraftMessage {
     return {
       text: this._state.inputValue,
       attachments: this._state.inputAttachments,
