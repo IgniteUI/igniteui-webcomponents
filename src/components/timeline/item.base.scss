@@ -1,0 +1,191 @@
+@use 'styles/common/component';
+
+// ---- Vertical (default) ------------------------------------------------
+
+:host {
+    display: grid;
+    grid-template-columns: 1fr var(--connector-column, 3rem) 1fr;
+    align-items: center;
+    min-height: var(--item-min-height, 5rem);
+    flex-shrink: 0;
+}
+
+// Explicit grid-row: 1 on every part so auto-placement never shifts them
+// to a new row regardless of DOM source order.
+[part='opposite'] {
+    grid-column: 1;
+    grid-row: 1;
+    text-align: end;
+    padding-inline-end: 0.875rem;
+    padding-block: 0.875rem;
+    align-self: center;
+}
+
+[part='connector'] {
+    grid-column: 2;
+    grid-row: 1;
+    align-self: stretch;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    &::before,
+    &::after {
+        content: '';
+        flex: 1;
+        width: var(--connector-width, 2px);
+        background: var(
+            --connector-background,
+            linear-gradient(
+                to bottom,
+                color-mix(in oklab, currentColor 15%, transparent),
+                color-mix(in oklab, currentColor 35%, transparent)
+            )
+        );
+        min-height: 0.75rem;
+    }
+}
+
+[part='indicator'] {
+    flex-shrink: 0;
+    width: var(--indicator-size, 2.5rem);
+    height: var(--indicator-size, 2.5rem);
+    border-radius: 50%;
+    border: var(--indicator-border-width, 2px) solid
+        var(
+            --indicator-border-color,
+            color-mix(in oklab, currentColor 40%, transparent)
+        );
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--indicator-background, transparent);
+    box-shadow: var(
+        --indicator-shadow,
+        0 0 0 4px color-mix(in oklab, currentColor 8%, transparent)
+    );
+    transition:
+        transform 0.25s ease,
+        box-shadow 0.25s ease;
+    z-index: 1;
+}
+
+:host(:hover) [part='indicator'] {
+    transform: scale(1.12);
+    box-shadow: var(
+        --indicator-shadow-hover,
+        0 0 0 6px color-mix(in oklab, currentColor 14%, transparent)
+    );
+}
+
+[part='content'] {
+    grid-column: 3;
+    grid-row: 1;
+    text-align: start;
+    padding-inline-start: 0.875rem;
+    padding-block: 0.875rem;
+    align-self: center;
+}
+
+// Auto-alternating layout for even vertical items (not forced by position attr)
+:host(:nth-child(even):not([position], [data-orientation='horizontal'])) {
+    [part='opposite'] {
+        grid-column: 3;
+        text-align: start;
+        padding-inline: 0.875rem 0;
+    }
+
+    [part='content'] {
+        grid-column: 1;
+        text-align: end;
+        padding-inline: 0 0.875rem;
+    }
+}
+
+// Manual position overrides
+:host([position='start']) {
+    [part='content'] {
+        grid-column: 1;
+        text-align: end;
+        padding-inline: 0 0.875rem;
+    }
+
+    [part='opposite'] {
+        grid-column: 3;
+        text-align: start;
+        padding-inline: 0.875rem 0;
+    }
+}
+
+:host([position='end']) {
+    [part='content'] {
+        grid-column: 3;
+        text-align: start;
+        padding-inline: 0.875rem 0;
+    }
+
+    [part='opposite'] {
+        grid-column: 1;
+        text-align: end;
+        padding-inline: 0 0.875rem;
+    }
+}
+
+// Trim connector ends for the outermost items
+:host(:first-child) [part='connector']::before {
+    visibility: hidden;
+}
+
+:host(:last-child) [part='connector']::after {
+    visibility: hidden;
+}
+
+// ---- Horizontal --------------------------------------------------------
+
+:host([data-orientation='horizontal']) {
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr var(--connector-row, 3rem) 1fr;
+    min-height: unset;
+    min-width: var(--item-min-width, 5rem);
+
+    [part='opposite'] {
+        grid-row: 1;
+        grid-column: 1;
+        align-self: end;
+        text-align: center;
+        padding-inline: 0.875rem;
+        padding-block: 0 0.875rem;
+    }
+
+    [part='connector'] {
+        grid-row: 2;
+        grid-column: 1;
+        flex-direction: row;
+        align-self: center;
+
+        &::before,
+        &::after {
+            width: auto;
+            height: var(--connector-width, 2px);
+            min-height: unset;
+            min-width: 0.75rem;
+            background: var(
+                --connector-background,
+                linear-gradient(
+                    to right,
+                    color-mix(in oklab, currentColor 15%, transparent),
+                    color-mix(in oklab, currentColor 35%, transparent)
+                )
+            );
+        }
+    }
+
+    [part='content'] {
+        grid-row: 3;
+        grid-column: 1;
+        align-self: start;
+        text-align: center;
+        padding-inline: 0.875rem;
+        padding-block: 0.875rem 0;
+    }
+}
