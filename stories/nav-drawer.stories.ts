@@ -24,6 +24,7 @@ const metadata: Meta<IgcNavDrawerComponent> = {
           'Represents a side navigation container that provides\nquick access between views.',
       },
     },
+    actions: { handles: ['igcClosing', 'igcClosed'] },
   },
   argTypes: {
     position: {
@@ -39,8 +40,15 @@ const metadata: Meta<IgcNavDrawerComponent> = {
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
+    keepOpenOnEscape: {
+      type: 'boolean',
+      description:
+        'Determines whether the drawer should remain open when the Escape key is pressed.\n\nThis attribute is only applicable when the drawer is in a non-relative position,\nas the Escape key does not trigger the closing of relative drawers.',
+      control: 'boolean',
+      table: { defaultValue: { summary: 'false' } },
+    },
   },
-  args: { position: 'start', open: false },
+  args: { position: 'start', open: false, keepOpenOnEscape: false },
 };
 
 export default metadata;
@@ -50,6 +58,13 @@ interface IgcNavDrawerArgs {
   position: 'start' | 'end' | 'top' | 'bottom' | 'relative';
   /** Determines whether the drawer is opened. */
   open: boolean;
+  /**
+   * Determines whether the drawer should remain open when the Escape key is pressed.
+   *
+   * This attribute is only applicable when the drawer is in a non-relative position,
+   * as the Escape key does not trigger the closing of relative drawers.
+   */
+  keepOpenOnEscape: boolean;
 }
 type Story = StoryObj<IgcNavDrawerArgs>;
 
@@ -133,7 +148,7 @@ const createDrawerContent = (headerText: string, itemCount = 15) => html`
     (i) => html`
       <igc-nav-drawer-item>
         <igc-icon slot="icon" name="home"></igc-icon>
-        <span slot="content">Navbar item ${i + 1}</span>
+        <span tabindex="0" slot="content">Drawer item ${i + 1}</span>
       </igc-nav-drawer-item>
     `
   )}
@@ -175,11 +190,20 @@ const createTemplate = (options: {
   includeMini?: boolean;
   contentText?: string;
 }) => {
-  return ({ open = false, position }: IgcNavDrawerArgs) => html`
+  return ({
+    open = false,
+    position,
+    keepOpenOnEscape = false,
+  }: IgcNavDrawerArgs) => html`
     ${commonStyles}
 
     <div class="ig-scrollbar main">
-      <igc-nav-drawer .open=${open} .position=${position} @click=${handleClick}>
+      <igc-nav-drawer
+        .open=${open}
+        .position=${position}
+        ?keep-open-on-escape=${keepOpenOnEscape}
+        @click=${handleClick}
+      >
         ${createDrawerContent(
           options.headerText || 'Sample Drawer',
           options.itemCount
