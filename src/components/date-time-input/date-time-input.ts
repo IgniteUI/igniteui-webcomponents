@@ -2,8 +2,10 @@ import { property } from 'lit/decorators.js';
 import { addThemingController } from '../../theming/theming-controller.js';
 import { convertToDate, isValidDate } from '../calendar/helpers.js';
 import { registerComponent } from '../common/definitions/register.js';
+import { formatDisplayDate } from '../common/i18n/i18n-controller.js';
 import { FormValueDateTimeTransformers } from '../common/mixins/forms/form-transformers.js';
 import { createFormValueState } from '../common/mixins/forms/form-value.js';
+import { equal } from '../common/util.js';
 import { styles } from '../input/themes/input.base.css.js';
 import { styles as shared } from '../input/themes/shared/input.common.css.js';
 import { all } from '../input/themes/themes.js';
@@ -49,12 +51,14 @@ import { dateTimeInputValidators } from './validators.js';
  * @csspart suffix - The suffix wrapper.
  * @csspart helper-text - The helper text wrapper.
  */
-export interface IgcDateTimeInputEventMap extends IgcDateTimeInputComponentEventMap<Date | null> {}
-
-export default class IgcDateTimeInputComponent extends IgcDateTimeInputBaseComponent<
-  Date | null,
-  DatePart
+export interface IgcDateTimeInputEventMap extends Omit<
+  IgcDateTimeInputComponentEventMap,
+  'igcChange'
 > {
+  igcChange: CustomEvent<Date | null>;
+}
+
+export default class IgcDateTimeInputComponent extends IgcDateTimeInputBaseComponent {
   public static readonly tagName = 'igc-date-time-input';
   public static styles = [styles, shared];
 
@@ -83,6 +87,8 @@ export default class IgcDateTimeInputComponent extends IgcDateTimeInputBaseCompo
     return { ...DEFAULT_DATE_PARTS_SPIN_DELTAS, ...this.spinDelta };
   }
 
+  protected _oldValue: Date | null = null;
+
   //#endregion
 
   //#region Public attributes and properties
@@ -100,34 +106,6 @@ export default class IgcDateTimeInputComponent extends IgcDateTimeInputBaseCompo
 
   public get value(): Date | null {
     return this._formValue.value;
-  }
-
-  /**
-   * The minimum value required for the input to remain valid.
-   * @attr
-   */
-  @property({ converter: convertToDate })
-  public override set min(value: Date | string | null | undefined) {
-    this._min = convertToDate(value);
-    this._validate();
-  }
-
-  public override get min(): Date | null {
-    return this._min;
-  }
-
-  /**
-   * The maximum value required for the input to remain valid.
-   * @attr
-   */
-  @property({ converter: convertToDate })
-  public override set max(value: Date | string | null | undefined) {
-    this._max = convertToDate(value);
-    this._validate();
-  }
-
-  public override get max(): Date | null {
-    return this._max;
   }
 
   //#endregion
@@ -169,7 +147,7 @@ export default class IgcDateTimeInputComponent extends IgcDateTimeInputBaseCompo
     }
 
     // Emit change event if value changed
-    if (!this.readOnly && this._oldValue !== this.value) {
+    if (!this.readOnly && !equal(this._oldValue, this.value)) {
       this.emitEvent('igcChange', { detail: this.value });
     }
 
@@ -242,6 +220,39 @@ export default class IgcDateTimeInputComponent extends IgcDateTimeInputBaseCompo
   }
 
   /**
+   * Builds the formatted display value shown when the input is not focused.
+   */
+  protected override _buildDisplayValue(): string {
+    return isValidDate(this.value)
+      ? formatDisplayDate(this.value, this.locale, this.displayFormat)
+      : '';
+  }
+
+  /**
+   * Commits a value produced by spinning a date part.
+   */
+  protected override _commitSpunValue(value: unknown): void {
+    this.value = value as Date;
+  }
+
+  /**
+   * Sets the value to the current date/time.
+   */
+  protected override _setCurrentDateTime(): void {
+    this.value = new Date();
+    this._emitInputEvent();
+  }
+
+  /**
+   * Emits an `igcInput` event whose `detail` is the parsed value as an ISO
+   * string (preserving the legacy contract for this component).
+   */
+  protected override _emitInputEvent(): void {
+    this._setTouchedState();
+    this.emitEvent('igcInput', { detail: this.value?.toISOString() });
+  }
+
+  /**
    * Calculates the new date value after spinning a date part.
    */
   protected override _calculateSpunValue(
@@ -305,7 +316,7 @@ export default class IgcDateTimeInputComponent extends IgcDateTimeInputBaseCompo
    * Updates the internal value based on the current masked input.
    * Only sets a value if the mask is complete and parses to a valid date.
    */
-  protected override _updateValueFromMask(): void {
+  protected override _syncValueFromMask(): void {
     if (!this._isMaskComplete()) {
       this.value = null;
       return;
@@ -318,6 +329,22 @@ export default class IgcDateTimeInputComponent extends IgcDateTimeInputBaseCompo
   //#endregion
 
   //#region Public API
+
+  /** Increments a date/time portion. */
+  public override stepUp(datePart?: DatePart, delta?: number): void {
+    super.stepUp(datePart, delta);
+  }
+
+  /** Decrements a date/time portion. */
+  public override stepDown(datePart?: DatePart, delta?: number): void {
+    super.stepDown(datePart, delta);
+  }
+
+  /** Clears the input element of user input. */
+  public override clear(): void {
+    this._maskedValue = '';
+    this.value = null;
+  }
 
   /* blazorSuppress */
   /**

@@ -1,9 +1,9 @@
 import { getDateFormatter } from 'igniteui-i18n-core';
-import { html, type PropertyValues } from 'lit';
-import { eventOptions, property } from 'lit/decorators.js';
-import { ifDefined } from 'lit/directives/if-defined.js';
-import { live } from 'lit/directives/live.js';
-import { convertToDate, isValidDate } from '../calendar/helpers.js';
+import { LitElement, type PropertyValues, type TemplateResult } from 'lit';
+import { eventOptions, property, query } from 'lit/decorators.js';
+import { cache } from 'lit/directives/cache.js';
+import type { ThemingController } from '../../theming/theming-controller.js';
+import { convertToDate } from '../calendar/helpers.js';
 import {
   addKeybindings,
   arrowDown,
@@ -13,22 +13,29 @@ import {
   ctrlKey,
 } from '../common/controllers/key-bindings.js';
 import { addSlotController, setSlots } from '../common/controllers/slot.js';
+import { blazorDeepImport } from '../common/decorators/blazorDeepImport.js';
+import { shadowOptions } from '../common/decorators/shadow-options.js';
 import {
   addI18nController,
-  formatDisplayDate,
   getDefaultDateTimeFormat,
 } from '../common/i18n/i18n-controller.js';
-import type { AbstractConstructor } from '../common/mixins/constructor.js';
+import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { partMap } from '../common/part-map.js';
-import type { IgcInputComponentEventMap } from '../input/input-base.js';
+import { FormAssociatedRequiredMixin } from '../common/mixins/forms/associated-required.js';
 import {
-  IgcMaskInputBaseComponent,
+  MaskBehaviorMixin,
   type MaskSelection,
-} from '../mask-input/mask-input-base.js';
-import type { DateRangeValue } from '../types.js';
+} from '../common/mixins/mask-behavior.js';
+import {
+  nextInputId,
+  renderInputShell,
+} from '../common/templates/input-shell.js';
+import { renderMaskedNativeInput } from '../common/templates/masked-input.js';
+import type { IgcInputComponentEventMap } from '../input/input-base.js';
 import type { DatePartDeltas } from './date-part.js';
 import { dateTimeInputValidators } from './validators.js';
+
+export type { MaskSelection };
 
 const Slots = setSlots(
   'prefix',
@@ -41,47 +48,53 @@ const Slots = setSlots(
   'invalid'
 );
 
-export interface IgcDateTimeInputComponentEventMap<
-  TChange = Date | DateRangeValue | null,
-> extends Omit<IgcInputComponentEventMap, 'igcChange'> {
-  igcChange: CustomEvent<TChange>;
+export interface IgcDateTimeInputComponentEventMap extends Omit<
+  IgcInputComponentEventMap,
+  'igcChange'
+> {
+  igcChange: CustomEvent<unknown>;
 }
 
-export abstract class IgcDateTimeInputBaseComponent<
-  TValue extends Date | DateRangeValue | string | null,
-  TPart,
-> extends EventEmitterMixin<
-  IgcDateTimeInputComponentEventMap,
-  AbstractConstructor<IgcMaskInputBaseComponent>
->(IgcMaskInputBaseComponent) {
-  // #region Private state & properties
+@blazorDeepImport
+@shadowOptions({ delegatesFocus: true })
+export abstract class IgcDateTimeInputBaseComponent extends MaskBehaviorMixin(
+  FormAssociatedRequiredMixin(
+    EventEmitterMixin<
+      IgcDateTimeInputComponentEventMap,
+      Constructor<LitElement>
+    >(LitElement)
+  )
+) {
+  // #region Internal state and properties
+
+  protected abstract readonly _themes: ThemingController;
+
+  protected readonly _slots = addSlotController(this, { slots: Slots });
+
+  protected readonly _inputId = nextInputId();
+
+  @query('input')
+  protected override readonly _input?: HTMLInputElement;
 
   protected override get __validators() {
     return dateTimeInputValidators;
   }
-
-  protected override readonly _slots = addSlotController(this, {
-    slots: Slots,
-  });
 
   private readonly _i18nController = addI18nController(this, {
     defaultEN: {},
     onResourceChange: this._handleResourceChange,
   });
 
-  // Value tracking
-  protected _oldValue: TValue | null = null;
   protected _min: Date | null = null;
   protected _max: Date | null = null;
 
   protected _defaultMask!: string;
 
-  // Format and mask state
   protected _defaultDisplayFormat = '';
   protected _displayFormat?: string;
   protected _inputFormat?: string;
 
-  protected get _targetDatePart(): TPart | undefined {
+  protected get _targetDatePart(): unknown {
     return this._focused
       ? this._getDatePartAtCursor()
       : this._getDefaultDatePart();
@@ -91,7 +104,28 @@ export abstract class IgcDateTimeInputBaseComponent<
 
   // #region Public attributes and properties
 
-  public abstract override value: TValue | null;
+  /**
+   * Whether the control will have outlined appearance.
+   *
+   * @attr
+   * @default false
+   */
+  @property({ type: Boolean, reflect: true })
+  public outlined = false;
+
+  /**
+   * The placeholder attribute of the control.
+   * @attr
+   */
+  @property()
+  public placeholder!: string;
+
+  /**
+   * The label for the control.
+   * @attr
+   */
+  @property()
+  public label!: string;
 
   /**
    * The date format to apply on the input.
@@ -217,50 +251,7 @@ export abstract class IgcDateTimeInputBaseComponent<
 
   //#endregion
 
-  //#region Overrides
-
-  protected override _resolvePartNames(base: string) {
-    const result = super._resolvePartNames(base);
-    // Apply `filled` part when the mask is not empty
-    result.filled = result.filled || !this._isEmptyMask;
-    return result;
-  }
-
-  protected override _updateSetRangeTextValue(): void {
-    this._updateValueFromMask();
-  }
-
-  protected override async _updateInput(string: string, range: MaskSelection) {
-    const { value, end } = this._parser.replace(
-      this._maskedValue,
-      string,
-      range.start,
-      range.end
-    );
-
-    this._maskedValue = value;
-
-    this._updateValueFromMask();
-    this.requestUpdate();
-
-    if (range.start !== this.inputFormat.length) {
-      this._emitInputEvent();
-    }
-    await this.updateComplete;
-    this._input?.setSelectionRange(end, end);
-  }
-
-  // #endregion
-
   // #region Event handlers
-
-  /**
-   * Emits the input event after user interaction.
-   */
-  protected _emitInputEvent(): void {
-    this._setTouchedState();
-    this.emitEvent('igcInput', { detail: this.value?.toString() });
-  }
 
   private _handleResourceChange(): void {
     this._initializeDefaultMask();
@@ -302,14 +293,6 @@ export abstract class IgcDateTimeInputBaseComponent<
   //#region Keybindings
 
   /**
-   * Sets the value to the current date/time.
-   */
-  protected _setCurrentDateTime(): void {
-    this.value = new Date() as TValue;
-    this._emitInputEvent();
-  }
-
-  /**
    * Navigates to the previous or next date part.
    */
   protected _navigateParts(direction: number): void {
@@ -339,7 +322,7 @@ export abstract class IgcDateTimeInputBaseComponent<
    * @internal
    */
   protected _performStep(
-    datePart: TPart | undefined,
+    datePart: unknown,
     delta: number | undefined,
     isDecrement: boolean
   ): void {
@@ -348,30 +331,18 @@ export abstract class IgcDateTimeInputBaseComponent<
 
     const { start, end } = this._inputSelection;
     const newValue = this._calculateSpunValue(part, delta, isDecrement);
-    this.value = newValue as TValue;
+    this._commitSpunValue(newValue);
     this.updateComplete.then(() => this._input?.setSelectionRange(start, end));
   }
 
   /**
    * Updates the displayed mask value based on focus state.
-   * When focused, shows the editable mask. When unfocused, shows formatted display value.
+   * When focused, shows the editable mask. When unfocused, defers to the leaf's display formatter.
    */
   protected _updateMaskDisplay(): void {
-    if (this._focused) {
-      this._maskedValue = this._buildMaskedValue();
-      return;
-    }
-
-    if (!isValidDate(this.value)) {
-      this._maskedValue = '';
-      return;
-    }
-
-    this._maskedValue = formatDisplayDate(
-      this.value,
-      this.locale,
-      this.displayFormat
-    );
+    this._maskedValue = this._focused
+      ? this._buildMaskedValue()
+      : this._buildDisplayValue();
   }
 
   /**
@@ -411,70 +382,122 @@ export abstract class IgcDateTimeInputBaseComponent<
     }
   }
 
+  /**
+   * Resolves the part names for the container based on the current state.
+   */
+  protected _resolvePartNames(base: string): Record<string, boolean> {
+    return {
+      [base]: true,
+      prefixed: this._slots.hasAssignedElements('prefix', {
+        selector: '[slot="prefix"]:not([hidden])',
+      }),
+      suffixed: this._slots.hasAssignedElements('suffix', {
+        selector: '[slot="suffix"]:not([hidden])',
+      }),
+      filled: !this._isEmptyMask,
+    };
+  }
+
+  // #endregion
+
   // #region Public API
 
+  /** Selects all the text inside the input. */
+  public select(): void {
+    this._input?.select();
+  }
+
+  /* alternateName: focusComponent */
+  /** Sets focus on the control. */
+  public override focus(options?: FocusOptions): void {
+    this._input?.focus(options);
+  }
+
+  /* alternateName: blurComponent */
+  /** Removes focus from the control. */
+  public override blur(): void {
+    this._input?.blur();
+  }
+
   /** Increments a date/time portion. */
-  public stepUp(datePart?: TPart, delta?: number): void {
+  public stepUp(datePart?: unknown, delta?: number): void {
     this._performStep(datePart, delta, false);
   }
 
   /** Decrements a date/time portion. */
-  public stepDown(datePart?: TPart, delta?: number): void {
+  public stepDown(datePart?: unknown, delta?: number): void {
     this._performStep(datePart, delta, true);
   }
 
   /** Clears the input element of user input. */
-  public clear(): void {
-    this._maskedValue = '';
-    this.value = null;
-  }
+  public abstract clear(): void;
 
   //#endregion
 
-  protected override _renderInput() {
-    return html`
-      <input
-        type="text"
-        part=${partMap(this._resolvePartNames('input'))}
-        name=${ifDefined(this.name)}
-        .value=${live(this._maskedValue)}
-        .placeholder=${this.placeholder || this._parser.emptyMask}
-        ?readonly=${this.readOnly}
-        ?disabled=${this.disabled}
-        @blur=${this._handleBlur}
-        @focus=${this._handleFocus}
-        @input=${this._handleInput}
-        @wheel=${this._handleWheel}
-        @keydown=${this._setMaskSelection}
-        @click=${this._handleClick}
-        @cut=${this._setMaskSelection}
-        @compositionstart=${this._handleCompositionStart}
-        @compositionend=${this._handleCompositionEnd}
-        @dragenter=${this._handleDragEnter}
-        @dragleave=${this._handleDragLeave}
-        @dragstart=${this._setMaskSelection}
-      />
-    `;
+  //#region Render
+
+  protected _renderInput(): TemplateResult {
+    const hasNegativeTabIndex = this.getAttribute('tabindex') === '-1';
+    const hasHelperText = this._slots.hasAssignedElements('helper-text');
+
+    return renderMaskedNativeInput({
+      id: this._inputId,
+      partNames: this._resolvePartNames('input'),
+      name: this.name,
+      value: this._maskedValue,
+      placeholder: this.placeholder || this._parser.emptyMask,
+      readOnly: this.readOnly,
+      disabled: this.disabled,
+      tabindex: hasNegativeTabIndex ? -1 : undefined,
+      ariaDescribedBy: hasHelperText ? 'helper-text' : undefined,
+      onInput: this._handleInput,
+      onFocus: this._handleFocus,
+      onBlur: this._handleBlur,
+      onClick: this._handleClick,
+      onSetMaskSelection: this._setMaskSelection,
+      onCompositionStart: this._handleCompositionStart,
+      onCompositionEnd: this._handleCompositionEnd,
+      onWheel: this._handleWheel,
+      onDragEnter: this._handleDragEnter,
+      onDragLeave: this._handleDragLeave,
+    });
   }
+
+  protected override render() {
+    return cache(
+      renderInputShell(this, {
+        theme: this._themes.theme,
+        label: this.label,
+        labelId: this._inputId,
+        containerParts: this._resolvePartNames('container'),
+        renderInput: () => this._renderInput(),
+      })
+    );
+  }
+
+  //#endregion
 
   // #region Abstract methods and properties
 
   protected abstract get _datePartDeltas(): DatePartDeltas;
 
   protected abstract _buildMaskedValue(): string;
-  protected abstract _updateValueFromMask(): void;
+  protected abstract _buildDisplayValue(): string;
+  protected abstract override _syncValueFromMask(): void;
   protected abstract _calculatePartNavigationPosition(
     value: string,
     direction: number
   ): number;
   protected abstract _calculateSpunValue(
-    part: TPart,
+    part: unknown,
     delta: number | undefined,
     isDecrement: boolean
-  ): TValue;
+  ): unknown;
+  protected abstract _commitSpunValue(value: unknown): void;
+  protected abstract _setCurrentDateTime(): void;
   protected abstract _handleFocus(): Promise<void>;
-  protected abstract _getDatePartAtCursor(): TPart | undefined;
-  protected abstract _getDefaultDatePart(): TPart | undefined;
+  protected abstract _getDatePartAtCursor(): unknown;
+  protected abstract _getDefaultDatePart(): unknown;
 
   public abstract hasDateParts(): boolean;
   public abstract hasTimeParts(): boolean;
