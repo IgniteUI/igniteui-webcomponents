@@ -1,17 +1,49 @@
 import { LitElement, type PropertyValues } from 'lit';
 import { property } from 'lit/decorators.js';
-import type { AnimationController } from '../../../animations/player.js';
+import { addAnimationController } from '../../../animations/player.js';
 import { fadeIn, fadeOut } from '../../../animations/presets/fade/index.js';
 import type { AbsolutePosition } from '../../types.js';
 import { addInternalsController } from '../controllers/internals.js';
 
-// It'd be better to have this as a mixin rather than a base class once the analyzer
-// knows how to resolve multiple mixin chains
+function getVisibleAncestor(startNode: Node): HTMLElement | null {
+  let node: Node | null = startNode.parentNode;
+
+  while (node) {
+    if (node instanceof ShadowRoot) {
+      node = node.host;
+      continue;
+    }
+
+    if (node instanceof HTMLElement && node.checkVisibility()) {
+      return node;
+    }
+
+    node = node.parentNode;
+  }
+
+  return null;
+}
 
 export abstract class IgcBaseAlertLikeComponent extends LitElement {
-  declare protected abstract readonly _player: AnimationController;
+  protected readonly _player = addAnimationController(this);
 
   protected _autoHideTimeout?: ReturnType<typeof setTimeout>;
+
+  private get _isContained(): boolean {
+    return this.positioning === 'container';
+  }
+
+  // TODO: Move this to styles, i.e. :host([position="top"]) { top: anchor(top); } etc.
+  private get _containerPosition(): string {
+    switch (this.position) {
+      case 'top':
+        return 'anchor(top)';
+      case 'bottom':
+        return 'calc(anchor(bottom) - 25%)';
+      default:
+        return 'anchor(center)';
+    }
+  }
 
   /**
    * Whether the component is in shown state.
@@ -41,6 +73,9 @@ export abstract class IgcBaseAlertLikeComponent extends LitElement {
   @property({ reflect: true })
   public position: AbsolutePosition = 'bottom';
 
+  @property({ reflect: true })
+  public positioning: 'viewport' | 'container' = 'viewport';
+
   constructor() {
     super();
 
@@ -52,13 +87,53 @@ export abstract class IgcBaseAlertLikeComponent extends LitElement {
     });
   }
 
-  protected override updated(props: PropertyValues<this>): void {
+  public override connectedCallback(): void {
+    super.connectedCallback();
+    this.popover = 'manual';
+  }
+
+  protected override update(props: PropertyValues<this>): void {
     if (props.has('displayTime')) {
       this._setAutoHideTimer();
     }
 
     if (props.has('keepOpen')) {
-      clearTimeout(this._autoHideTimeout);
+      this.keepOpen
+        ? clearTimeout(this._autoHideTimeout)
+        : this._setAutoHideTimer();
+    }
+
+    if (this.open && (props.has('positioning') || props.has('position'))) {
+      this._hidePopover();
+      this._showPopover();
+    }
+
+    super.update(props);
+  }
+
+  private _showPopover(): boolean {
+    if (!this._isContained) {
+      this.showPopover();
+      return true;
+    }
+
+    const visibleAncestor = getVisibleAncestor(this);
+    if (!visibleAncestor) {
+      return false;
+    }
+
+    this.style.top = this._containerPosition;
+    this.style.left = 'anchor(center)';
+    this.showPopover({ source: visibleAncestor });
+    return true;
+  }
+
+  private _hidePopover(): void {
+    this.hidePopover();
+
+    if (this._isContained) {
+      this.style.removeProperty('top');
+      this.style.removeProperty('left');
     }
   }
 
@@ -67,11 +142,18 @@ export abstract class IgcBaseAlertLikeComponent extends LitElement {
 
     if (open) {
       this.open = open;
+
+      if (!this._showPopover()) {
+        this.open = false;
+        return false;
+      }
+
       state = await this._player.playExclusive(fadeIn());
       this._setAutoHideTimer();
     } else {
       clearTimeout(this._autoHideTimeout);
       state = await this._player.playExclusive(fadeOut());
+      this._hidePopover();
       this.open = open;
     }
 
