@@ -7,7 +7,7 @@ import { addSlotController, setSlots } from '../common/controllers/slot.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { createFormValueState } from '../common/mixins/forms/form-value.js';
 import { partMap } from '../common/part-map.js';
-import { bindIf } from '../common/util.js';
+import { addSafeEventListener, bindIf } from '../common/util.js';
 import type {
   InputType,
   RangeTextSelectMode,
@@ -239,6 +239,11 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
    */
   @property({ type: Boolean, reflect: true, attribute: 'validate-only' })
   public validateOnly = false;
+
+  constructor() {
+    super();
+    addSafeEventListener(this, 'keydown', this._handleEnterKeydown);
+  }
 
   /* blazorSuppress */
   /** Replaces the selected text in the input. */

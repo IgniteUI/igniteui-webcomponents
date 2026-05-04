@@ -46,17 +46,25 @@ function renderSuffix() {
  */
 export function renderInputShell(
   host: IgcFormControl,
-  opts: InputShellOptions
+  {
+    containerParts,
+    renderFileParts,
+    renderInput,
+    theme,
+    label,
+    labelId,
+  }: InputShellOptions
 ): TemplateResult {
   const validator = IgcValidationContainerComponent.create(host);
-  const fileParts = opts.renderFileParts?.() ?? nothing;
+  const input = renderInput.call(host);
+  const fileParts = renderFileParts?.call(host) ?? nothing;
 
-  if (opts.theme === 'material') {
+  if (theme === 'material') {
     return html`
-      <div part=${partMap({ ...opts.containerParts, labelled: !!opts.label })}>
+      <div part=${partMap({ ...containerParts, labelled: !!label })}>
         <div part="start">${renderPrefix()}</div>
-        ${opts.renderInput()} ${fileParts}
-        <div part="notch">${renderLabel(opts.labelId, opts.label)}</div>
+        ${input}${fileParts}
+        <div part="notch">${renderLabel(labelId, label)}</div>
         <div part="filler"></div>
         <div part="end">${renderSuffix()}</div>
       </div>
@@ -65,9 +73,9 @@ export function renderInputShell(
   }
 
   return html`
-    ${renderLabel(opts.labelId, opts.label)}
-    <div part=${partMap(opts.containerParts)}>
-      ${renderPrefix()}${fileParts}${opts.renderInput()}${renderSuffix()}
+    ${renderLabel(labelId, label)}
+    <div part=${partMap(containerParts)}>
+      ${renderPrefix()}${fileParts}${input}${renderSuffix()}
     </div>
     ${validator}
   `;

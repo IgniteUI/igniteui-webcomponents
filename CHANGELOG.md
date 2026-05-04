@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+### Added
+- #### Form controls
+  - `IgcInput`, `IgcMaskInput`, `IgcDateTimeInput`, `IgcCheckbox`, `IgcRadio`, `IgcSwitch`, `IgcDatePicker`, and `IgcDateRangePicker` now submit their associated form on **Enter** key press, matching native browser behavior.
+
 ## [7.1.3] - 2026-04-28
 ### Changed
 - #### AI-Assisted Development

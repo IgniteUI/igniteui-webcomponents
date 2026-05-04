@@ -285,6 +285,15 @@ describe('Radio Component', () => {
       spec.assertSubmitHasValue(last(radios).value);
     });
 
+    it('is correctly submitted on pressing Enter', () => {
+      expect(spec.submitWithEnter()).to.be.true;
+    });
+
+    it('should not submit on pressing Enter when value is invalid', () => {
+      spec.setProperties({ required: true, checked: false });
+      expect(spec.submitWithEnter()).to.be.false;
+    });
+
     it('reflects disabled ancestor state', () => {
       spec.setAncestorDisabledState(true);
       radios.every((radio) => expect(radio.disabled).to.be.true);

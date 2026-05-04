@@ -10,6 +10,7 @@ import {
   arrowLeft,
   arrowRight,
   arrowUp,
+  enterKey,
 } from '../common/controllers/key-bindings.js';
 import { addSlotController, setSlots } from '../common/controllers/slot.js';
 import { registerComponent } from '../common/definitions/register.js';
@@ -188,7 +189,8 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
       .set(arrowLeft, () => this._navigate(isLTR(this) ? -1 : 1))
       .set(arrowRight, () => this._navigate(isLTR(this) ? 1 : -1))
       .set(arrowUp, () => this._navigate(-1))
-      .set(arrowDown, () => this._navigate(1));
+      .set(arrowDown, () => this._navigate(1))
+      .set(enterKey, this._handleEnterKeydown);
   }
 
   protected override async firstUpdated(): Promise<void> {

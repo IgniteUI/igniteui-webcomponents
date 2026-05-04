@@ -184,6 +184,16 @@ describe('Switch', () => {
       expect(spec.element.checked).to.be.true;
     });
 
+    it('is correctly submitted on pressing Enter', () => {
+      spec.setProperties({ value: 'cba' });
+      expect(spec.submitWithEnter()).to.be.true;
+    });
+
+    it('should not submit on pressing Enter when value is invalid', () => {
+      spec.setProperties({ required: true, value: '' });
+      expect(spec.submitWithEnter()).to.be.false;
+    });
+
     it('reflects disabled ancestor state', () => {
       spec.setAncestorDisabledState(true);
       expect(spec.element.disabled).to.be.true;
