@@ -107,6 +107,7 @@ export default class IgcCheckboxComponent extends IgcCheckboxBaseComponent {
           .indeterminate=${live(this.indeterminate)}
           aria-labelledby=${labelledBy ? labelledBy : this._labelId}
           aria-describedby=${describedBy}
+          @keydown=${this._handleEnterKeydown}
           @click=${this._handleClick}
           @blur=${this._handleBlur}
         />

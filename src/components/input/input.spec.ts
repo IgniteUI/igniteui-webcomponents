@@ -561,6 +561,20 @@ describe('Input component', () => {
 
         expect(spec.element.value).to.equal('abc');
       });
+
+      it('is correctly submitted on pressing Enter', () => {
+        spec.setProperties({ value: 'cba' });
+        expect(
+          spec.submitWithEnter(spec.element.renderRoot.querySelector('input'))
+        ).to.be.true;
+      });
+
+      it('should not submit on pressing Enter when value is invalid', () => {
+        spec.setProperties({ required: true, value: '' });
+        expect(
+          spec.submitWithEnter(spec.element.renderRoot.querySelector('input'))
+        ).to.be.false;
+      });
     });
 
     describe('Validation', () => {
