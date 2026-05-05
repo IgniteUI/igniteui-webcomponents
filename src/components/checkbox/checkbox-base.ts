@@ -8,7 +8,6 @@ import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedCheckboxRequiredMixin } from '../common/mixins/forms/associated-required.js';
 import { FormValueBooleanTransformers } from '../common/mixins/forms/form-transformers.js';
 import { createFormValueState } from '../common/mixins/forms/form-value.js';
-import { addSafeEventListener } from '../common/util.js';
 import type { ToggleLabelPosition } from '../types.js';
 import { checkBoxValidators } from './validators.js';
 
@@ -90,11 +89,6 @@ export class IgcCheckboxBaseComponent extends FormAssociatedCheckboxRequiredMixi
    */
   @property({ reflect: true, attribute: 'label-position' })
   public labelPosition: ToggleLabelPosition = 'after';
-
-  constructor() {
-    super();
-    addSafeEventListener(this, 'keydown', this._handleEnterKeydown);
-  }
 
   /** Simulates a click on the control. */
   public override click(): void {

@@ -64,7 +64,7 @@ declare class BaseFormAssociatedElement {
   //#region Methods
 
   /**
-   * Default implementation for handle `Enter` key press on the component.
+   * Default implementation for handling the `Enter` key press on the component.
    * Checks if the component is inside a form and if so, submits it.
    */
   protected _handleEnterKeydown(event: KeyboardEvent): void;

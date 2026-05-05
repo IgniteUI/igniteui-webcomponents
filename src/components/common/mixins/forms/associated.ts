@@ -155,6 +155,7 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
 
     protected _handleEnterKeydown(event: KeyboardEvent): void {
       if (event.key !== enterKey) return;
+      if (event.repeat) return;
 
       const canSubmit =
         this.form && (this.form.noValidate || this.checkValidity());

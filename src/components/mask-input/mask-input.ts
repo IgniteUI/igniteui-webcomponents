@@ -8,7 +8,6 @@ import {
   type MaskSelection,
 } from '../common/mixins/mask-behavior.js';
 import { renderMaskedNativeInput } from '../common/templates/masked-input.js';
-import { addSafeEventListener } from '../common/util.js';
 import { IgcInputBaseComponent } from '../input/input-base.js';
 import { styles } from '../input/themes/input.base.css.js';
 import { styles as shared } from '../input/themes/shared/input.common.css.js';
@@ -171,11 +170,6 @@ export default class IgcMaskInputComponent extends MaskBehaviorMixin(
   }
 
   //#endregion
-
-  constructor() {
-    super();
-    addSafeEventListener(this, 'keydown', this._handleEnterKeydown);
-  }
 
   //#region Event handlers
 

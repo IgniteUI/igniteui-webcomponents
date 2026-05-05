@@ -286,12 +286,16 @@ describe('Radio Component', () => {
     });
 
     it('is correctly submitted on pressing Enter', () => {
-      expect(spec.submitWithEnter()).to.be.true;
+      expect(
+        spec.submitWithEnter(spec.element.renderRoot.querySelector('input'))
+      ).to.be.true;
     });
 
     it('should not submit on pressing Enter when value is invalid', () => {
       spec.setProperties({ required: true, checked: false });
-      expect(spec.submitWithEnter()).to.be.false;
+      expect(
+        spec.submitWithEnter(spec.element.renderRoot.querySelector('input'))
+      ).to.be.false;
     });
 
     it('reflects disabled ancestor state', () => {

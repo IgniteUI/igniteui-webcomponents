@@ -11,7 +11,6 @@ import {
   arrowRight,
   arrowUp,
   ctrlKey,
-  enterKey,
 } from '../common/controllers/key-bindings.js';
 import { addSlotController, setSlots } from '../common/controllers/slot.js';
 import { blazorDeepImport } from '../common/decorators/blazorDeepImport.js';
@@ -231,8 +230,7 @@ export abstract class IgcDateTimeInputBaseComponent extends MaskBehaviorMixin(
       .set(arrowUp, this._keyboardSpin.bind(this, 'up'))
       .set(arrowDown, this._keyboardSpin.bind(this, 'down'))
       .set([ctrlKey, arrowLeft], this._navigateParts.bind(this, 0))
-      .set([ctrlKey, arrowRight], this._navigateParts.bind(this, 1))
-      .set(enterKey, this._handleEnterKeydown);
+      .set([ctrlKey, arrowRight], this._navigateParts.bind(this, 1));
   }
 
   protected override update(props: PropertyValues<this>): void {
