@@ -1,0 +1,5 @@
+@use 'styles/utilities' as *;
+
+:host {
+    --component-size: var(--ig-size, #{rem(48px)});
+}

@@ -1,0 +1,71 @@
+@use 'styles/common/component';
+@use 'styles/utilities' as *;
+
+:host {
+    display: block;
+    position: relative;
+
+    --_cell-size: #{rem(48px)};
+    --_cell-border-color: var(--ig-gray-400);
+    --_cell-background: transparent;
+    --_cell-focus-border-color: var(--ig-primary-500);
+    --_cell-invalid-border-color: var(--ig-error-500);
+    --_cell-color: var(--ig-gray-900);
+    --_cell-border-radius: #{rem(4px)};
+    --_cell-gap: #{rem(8px)};
+}
+
+[part='label'] {
+    display: block;
+    margin-block-end: rem(4px);
+    color: var(--ig-gray-700);
+}
+
+[part='inputs'] {
+    display: flex;
+    flex-direction: row;
+    gap: var(--_cell-gap);
+    align-items: center;
+}
+
+[part~='input'] {
+    width: var(--_cell-size);
+    height: var(--_cell-size);
+    border: 1px solid var(--_cell-border-color);
+    border-radius: var(--_cell-border-radius);
+    background: var(--_cell-background);
+    color: var(--_cell-color);
+    font-size: rem(20px);
+    text-align: center;
+    caret-color: var(--_cell-focus-border-color);
+    outline: none;
+    transition: border-color 0.2s ease;
+    -webkit-appearance: none;
+    -moz-appearance: textfield;
+
+    &::-webkit-inner-spin-button,
+    &::-webkit-outer-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+
+    &:focus {
+        border-color: var(--_cell-focus-border-color);
+        box-shadow: 0 0 0 3px
+            color-mix(in srgb, var(--_cell-focus-border-color) 20%, transparent);
+    }
+
+    &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+}
+
+:host([invalid]) [part~='input'],
+:host(:state(ig-invalid)) [part~='input'] {
+    --_cell-border-color: var(--_cell-invalid-border-color);
+}
+
+:host([disabled]) [part='inputs'] {
+    pointer-events: none;
+}

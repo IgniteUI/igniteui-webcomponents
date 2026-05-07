@@ -47,6 +47,7 @@ export { default as IgcNavDrawerComponent } from './components/nav-drawer/nav-dr
 export { default as IgcNavDrawerHeaderItemComponent } from './components/nav-drawer/nav-drawer-header-item.js';
 export { default as IgcNavDrawerItemComponent } from './components/nav-drawer/nav-drawer-item.js';
 export { default as IgcNavbarComponent } from './components/navbar/navbar.js';
+export { default as IgcPinInputComponent } from './components/pin-input/pin-input.js';
 export { default as IgcRadioGroupComponent } from './components/radio-group/radio-group.js';
 export { default as IgcRadioComponent } from './components/radio/radio.js';
 export { default as IgcRatingComponent } from './components/rating/rating.js';
@@ -143,6 +144,7 @@ export type { IgcExpansionPanelComponentEventMap } from './components/expansion-
 export type { IgcInputComponentEventMap } from './components/input/input-base.js';
 export type { IgcInputComponentEventMap as IgcMaskInputComponentEventMap } from './components/input/input-base.js';
 export type { IgcFileInputComponentEventMap } from './components/file-input/file-input.js';
+export type { IgcPinInputComponentEventMap } from './components/pin-input/pin-input.js';
 export type { IgcRadioComponentEventMap } from './components/radio/radio.js';
 export type { IgcRatingComponentEventMap } from './components/rating/rating.js';
 export type { IgcSelectComponentEventMap } from './components/select/select.js';
