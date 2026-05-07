@@ -1,0 +1,9 @@
+@use 'sass:map';
+@use 'styles/utilities' as *;
+@use 'igniteui-theming/sass/themes/schemas/components/dark/highlight' as *;
+
+$base: digest-schema($dark-base-highlight);
+$material: digest-schema($dark-material-highlight);
+$bootstrap: digest-schema($dark-bootstrap-highlight);
+$fluent: digest-schema($dark-fluent-highlight);
+$indigo: digest-schema($dark-indigo-highlight);

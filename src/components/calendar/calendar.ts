@@ -22,9 +22,9 @@ import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { partMap } from '../common/part-map.js';
 import {
   clamp,
-  findElementFromEventPath,
   first,
   formatString,
+  getElementFromPath,
   last,
 } from '../common/util.js';
 import IgcIconComponent from '../icon/icon.js';
@@ -248,7 +248,7 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
     addKeybindings(this, {
       skip: this._shouldSkipKeyboardEvent,
       ref: this._contentRef,
-      bindingDefaults: { triggers: ['keydownRepeat'] },
+      bindingDefaults: { repeat: true },
     })
       .set(arrowLeft, this._handleArrowKey.bind(this, 'day', -1))
       .set(arrowRight, this._handleArrowKey.bind(this, 'day', 1))
@@ -267,7 +267,7 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
   //#region Keyboard event handlers
 
   private _shouldSkipKeyboardEvent(_: Element, event: KeyboardEvent): boolean {
-    return !findElementFromEventPath(
+    return !getElementFromPath(
       `${IgcDaysViewComponent.tagName}, ${IgcMonthsViewComponent.tagName}, ${IgcYearsViewComponent.tagName}`,
       event
     );
