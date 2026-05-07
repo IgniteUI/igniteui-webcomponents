@@ -1,19 +1,19 @@
-import { github } from '@igniteui/material-icons-extended';
-import type { Meta, StoryObj } from '@storybook/web-components-vite';
-import { html } from 'lit';
-import { ifDefined } from 'lit/directives/if-defined.js';
-
 import {
   IgcIconComponent,
   IgcInputComponent,
   defineComponents,
   registerIconFromText,
 } from 'igniteui-webcomponents';
+import type { Meta, StoryObj } from '@storybook/web-components-vite';
 import {
   disableStoryControls,
   formControls,
   formSubmitHandler,
 } from './story.js';
+
+import { github } from '@igniteui/material-icons-extended';
+import { html } from 'lit';
+import { ifDefined } from 'lit/directives/if-defined.js';
 
 defineComponents(IgcInputComponent, IgcIconComponent);
 registerIconFromText(github.name, github.value);
@@ -32,9 +32,8 @@ const metadata: Meta<IgcInputComponent> = {
   },
   argTypes: {
     value: {
-      type: 'string | Date',
+      type: 'string',
       description: 'The value of the control.',
-      options: ['string', 'Date'],
       control: 'text',
     },
     type: {
@@ -161,7 +160,7 @@ export default metadata;
 
 interface IgcInputArgs {
   /** The value of the control. */
-  value: string | Date;
+  value: string;
   /** The type attribute of the control. */
   type: 'text' | 'email' | 'number' | 'password' | 'search' | 'tel' | 'url';
   /** Makes the control a readonly field. */
