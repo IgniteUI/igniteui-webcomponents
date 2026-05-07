@@ -30,7 +30,7 @@ export interface MaskedInputOptions {
   onBlur: (event: FocusEvent) => void;
   onClick: () => void;
   /** Wired to `keydown`, `cut`, and `dragstart` to capture the current selection. */
-  onSetMaskSelection: () => void;
+  onSetMaskSelection: (event: Event) => void;
   onCompositionStart: () => void;
   onCompositionEnd: (event: CompositionEvent) => void;
 

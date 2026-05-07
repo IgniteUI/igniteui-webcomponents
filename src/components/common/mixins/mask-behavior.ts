@@ -26,6 +26,9 @@ export declare class MaskBehaviorElementInterface {
   /** Reflects the current parser state into the host's public value. */
   protected _syncValueFromMask(): void;
 
+  /** Delegates Enter-key handling to the form-associated base. */
+  protected _handleEnterKeydown(event: KeyboardEvent): void;
+
   //#endregion
 
   //#region Internal state
@@ -71,7 +74,7 @@ export declare class MaskBehaviorElementInterface {
   protected _handleInput(event: InputEvent): Promise<void>;
   protected _updateInput(text: string, range: MaskSelection): Promise<void>;
   protected _emitInputEvent(): void;
-  protected _setMaskSelection(): void;
+  protected _setMaskSelection(event: Event): void;
   protected _handleCompositionStart(): void;
   protected _handleCompositionEnd(event: CompositionEvent): void;
   protected _handleClick(): void;
@@ -126,6 +129,7 @@ export function MaskBehaviorMixin<T extends AbstractConstructor<LitElement>>(
     public abstract emitEvent(name: string, init?: CustomEventInit): boolean;
 
     protected abstract _syncValueFromMask(): void;
+    protected abstract _handleEnterKeydown(event: KeyboardEvent): void;
 
     //#endregion
 
@@ -303,8 +307,11 @@ export function MaskBehaviorMixin<T extends AbstractConstructor<LitElement>>(
       this.emitEvent('igcInput', { detail: this._maskedValue });
     }
 
-    protected _setMaskSelection(): void {
+    protected _setMaskSelection(event: Event): void {
       this._maskSelection = this._inputSelection;
+      if (event instanceof KeyboardEvent) {
+        this._handleEnterKeydown(event);
+      }
     }
 
     protected _handleCompositionStart(): void {

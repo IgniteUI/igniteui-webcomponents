@@ -1171,6 +1171,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
         ?invalid=${live(this.invalid)}
         @igcChange=${this._handleInputChange}
         @igcInput=${this._handleInput}
+        @keydown=${this._handleEnterKeydown}
         @click=${this._isDropDown || this.readOnly
           ? nothing
           : this._handleInputClick}
@@ -1222,6 +1223,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
         .prompt=${this.prompt}
         @igcInput=${this._handleDateRangeInput}
         @igcChange=${this._handleDateRangeInputChange}
+        @keydown=${this._handleEnterKeydown}
         @click=${this._isDropDown || this.readOnly
           ? nothing
           : this._handleInputClick}

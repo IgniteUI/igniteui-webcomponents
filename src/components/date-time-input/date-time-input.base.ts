@@ -470,7 +470,7 @@ export abstract class IgcDateTimeInputBaseComponent extends MaskBehaviorMixin(
         label: this.label,
         labelId: this._inputId,
         containerParts: this._resolvePartNames('container'),
-        renderInput: () => this._renderInput(),
+        renderInput: this._renderInput,
       })
     );
   }

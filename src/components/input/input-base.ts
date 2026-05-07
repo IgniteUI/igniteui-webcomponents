@@ -114,8 +114,8 @@ export abstract class IgcInputBaseComponent extends FormAssociatedRequiredMixin(
         label: this.label,
         labelId: this._inputId,
         containerParts: this._resolvePartNames('container'),
-        renderInput: () => this._renderInput(),
-        renderFileParts: () => this._renderFileParts(),
+        renderInput: this._renderInput,
+        renderFileParts: this._renderFileParts,
       })
     );
   }
