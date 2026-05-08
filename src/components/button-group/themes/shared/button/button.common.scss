@@ -105,7 +105,7 @@ $theme: $material;
 
     [part='toggle focused'] {
         background: var-get($theme, 'item-selected-focus-background');
-        border-color: var-get($theme, 'item-selected-hover-border-color');
+        border-color: var-get($theme, 'item-selected-border-color');
     }
 }
 
@@ -122,7 +122,7 @@ $theme: $material;
 
     [part='toggle focused'] {
         background: var-get($theme, 'item-selected-focus-hover-background');
-        border-color: var-get($theme, 'item-selected-border-color');
+        border-color: var-get($theme, 'item-selected-hover-border-color');
     }
 }
 
