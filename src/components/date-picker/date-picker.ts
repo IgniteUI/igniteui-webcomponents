@@ -889,6 +889,7 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
         .invalid=${this.invalid}
         @igcChange=${this._handleInputChangeEvent}
         @igcInput=${this._handleInputEvent}
+        @keydown=${this._handleEnterKeydown}
         @click=${bindIf(hasClickHandler, this._handleInputClick)}
         exportparts="input, label, prefix, suffix"
       >

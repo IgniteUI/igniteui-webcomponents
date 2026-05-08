@@ -767,6 +767,48 @@ describe('Stepper', () => {
     });
   });
 
+  describe('Animation duration CSS property', () => {
+    beforeEach(async () => {
+      stepper = await fixture(createStepper());
+    });
+
+    it('should set `--animation-duration` to the default `animationDuration` on initialization', () => {
+      expect(stepper.style.getPropertyValue('--animation-duration')).to.equal(
+        `${stepper.animationDuration}ms`
+      );
+    });
+
+    it('should update `--animation-duration` when `animationDuration` changes', async () => {
+      stepper.animationDuration = 500;
+      await elementUpdated(stepper);
+
+      expect(stepper.style.getPropertyValue('--animation-duration')).to.equal(
+        '500ms'
+      );
+    });
+
+    it('should set `--animation-duration` to `0ms` when `horizontalAnimation` is `none`', async () => {
+      stepper.horizontalAnimation = 'none';
+      await elementUpdated(stepper);
+
+      expect(stepper.style.getPropertyValue('--animation-duration')).to.equal(
+        '0ms'
+      );
+    });
+
+    it('should restore `--animation-duration` when `horizontalAnimation` changes from `none` to an animation type', async () => {
+      stepper.horizontalAnimation = 'none';
+      await elementUpdated(stepper);
+
+      stepper.horizontalAnimation = 'slide';
+      await elementUpdated(stepper);
+
+      expect(stepper.style.getPropertyValue('--animation-duration')).to.equal(
+        `${stepper.animationDuration}ms`
+      );
+    });
+  });
+
   describe('Keyboard navigation', () => {
     beforeEach(async () => {
       stepper = await fixture(createStepper());

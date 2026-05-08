@@ -4,6 +4,39 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+### Added
+- #### Form controls
+  - `IgcInput`, `IgcMaskInput`, `IgcDateTimeInput`, `IgcCheckbox`, `IgcRadio`, `IgcSwitch`, `IgcDatePicker`, and `IgcDateRangePicker` now submit their associated form on **Enter** key press, matching native browser behavior.
+
+## [7.1.3] - 2026-04-28
+### Changed
+- #### AI-Assisted Development
+  - Updated and enhanced the library provided skills [#2207](https://github.com/IgniteUI/igniteui-webcomponents/pull/2207)
+
+### Fixed
+- #### Stepper
+  - In horizontal orientation, the content area height can now driven by the active step's content instead of always being sized to the tallest step. A new `--body-grid-rows` CSS custom property controls the internal row sizing of each step body — its default value of `1fr` expands the body to fit its content, while setting it to `0fr` collapses the body to zero height, enabling fully variable step heights. [#2209](https://github.com/IgniteUI/igniteui-webcomponents/issues/2209)
+
+## [7.1.2] - 2026-04-22
+### Changed
+- #### AI-Assisted Development
+  - Updated and enhanced the library provided skills [#2189](https://github.com/IgniteUI/igniteui-webcomponents/pull/2189) [#2195](https://github.com/IgniteUI/igniteui-webcomponents/pull/2195) [#2198](https://github.com/IgniteUI/igniteui-webcomponents/pull/2198)
+- #### Button group
+  - Themes colors alignment [#2182](https://github.com/IgniteUI/igniteui-webcomponents/pull/2182)
+- #### Circular progressbar
+  - Unified track color CSS variable between progress bars [#2185](https://github.com/IgniteUI/igniteui-webcomponents/pull/2185)
+- #### Chip
+  - Wrap content inside a new part container and update styles [#2190](https://github.com/IgniteUI/igniteui-webcomponents/pull/2190)
+
+### Fixed
+- #### Dropdown
+  - Selected item styles [#2168](https://github.com/IgniteUI/igniteui-webcomponents/pull/2168)
+- #### Linear progressbar
+  - Unified display size across platforms [#2184](https://github.com/IgniteUI/igniteui-webcomponents/pull/2184)
+- #### Tree
+  - Background style discrepancies [#2173](https://github.com/IgniteUI/igniteui-webcomponents/pull/2173)
+
 ## [7.1.1] - 2026-03-25
 ### Changed
 - #### Checkbox
@@ -1287,6 +1320,8 @@ Initial release of Ignite UI Web Components
 - Ripple component
 - Switch component
 
+[7.1.3]: https://github.com/IgniteUI/igniteui-webcomponents/compare/7.1.2...7.1.3
+[7.1.2]: https://github.com/IgniteUI/igniteui-webcomponents/compare/7.1.1...7.1.2
 [7.1.1]: https://github.com/IgniteUI/igniteui-webcomponents/compare/7.1.0...7.1.1
 [7.1.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/7.0.1...7.1.0
 [7.0.1]: https://github.com/IgniteUI/igniteui-webcomponents/compare/7.0.0...7.0.1

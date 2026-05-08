@@ -8,6 +8,32 @@ user-invocable: true
 
 This skill helps AI agents and developers identify the best Ignite UI components for any UI requirement, then provides direct links to official documentation, usage examples, and API references.
 
+## Prerequisites
+
+- The **Ignite UI CLI MCP server** (`igniteui-cli`) available as a tool provider
+
+> **AGENT INSTRUCTION — MCP Server Setup (REQUIRED)**
+>
+> Before using the Ignite UI CLI MCP tools, you MUST verify the MCP server is available
+> by calling `list_components`. If the tool is not available or the call fails,
+> you MUST automatically configure it by following the setup instructions in
+> [`reference/mcp-setup.md`](./reference/mcp-setup.md).
+>
+> After writing the file, inform the user that the MCP server has been
+> configured and they may need to reload the editor for the tools to activate.
+> Start the MCP server and wait for that MCP server to start before continuing the component-related work.
+> Do NOT skip this step or ask the user to do it manually.
+
+## Setting Up the Ignite UI CLI MCP Server
+
+> **Full setup instructions for VS Code, Cursor, Claude Desktop, and JetBrains IDEs are in [`reference/mcp-setup.md`](./reference/mcp-setup.md).** Read that file for editor-specific configuration steps and verification.
+
+## Before You Answer
+
+- Choose the package before writing imports or install steps.
+- If the required package is not present in `package.json`, add or install the correct Ignite UI dependency first. Absence from `package.json` does not mean the package is invalid.
+- If the user also needs setup or code, then load [igniteui-wc-integrate-with-framework](../igniteui-wc-integrate-with-framework/SKILL.md).
+
 ## Example Usage
 
 - "What component should I use to display a list of items with actions?"
@@ -46,9 +72,30 @@ Ignite UI for Web Components is distributed across several packages depending on
 | [`igniteui-webcomponents-grids`](https://www.npmjs.com/package/igniteui-webcomponents-grids) | Commercial | `npm install igniteui-webcomponents-grids` (trial) | Advanced data grids (Data Grid, Tree Grid, Hierarchical Grid, Pivot Grid) with many built-in functionalities  |
 | [`igniteui-grid-lite`](https://www.npmjs.com/package/igniteui-grid-lite) | MIT | `npm install igniteui-grid-lite` | Lightweight data grid for simpler tabular data |
 | [`igniteui-dockmanager`](https://www.npmjs.com/package/igniteui-dockmanager) | Commercial | `npm install igniteui-dockmanager` (trial) | Windowing / docking layouts (IDE-style panels) |
+| [`igniteui-webcomponents-grids`](https://www.npmjs.com/package/igniteui-webcomponents-grids) | Commercial | `npm install igniteui-webcomponents-grids` (trial) | Advanced data grids (Data Grid, Tree Grid, Hierarchical Grid, Pivot Grid) with many built-in functionalities  |
+| [`@infragistics/igniteui-webcomponents-grids`](https://packages.infragistics.com/feeds/js-licensed/@infragistics/igniteui-webcomponents-grids) | Commercial | `npm install @infragistics/igniteui-webcomponents-grids` (licensed) | Advanced data grids (Data Grid, Tree Grid, Hierarchical Grid, Pivot Grid) with many built-in functionalities  |
+| [`igniteui-grid-lite`](https://www.npmjs.com/package/igniteui-grid-lite) | MIT | `npm install igniteui-grid-lite` | Lightweight data grid for simpler tabular data |
+| [`igniteui-dockmanager`](https://www.npmjs.com/package/igniteui-dockmanager) | Commercial | `npm install igniteui-dockmanager` (trial) | Windowing / docking layouts (IDE-style panels) |
+| [`@infragistics/igniteui-dockmanager`](https://packages.infragistics.com/feeds/js-licensed/@infragistics/igniteui-dockmanager) | Commercial | `npm install @infragistics/igniteui-dockmanager` (licensed) | Windowing / docking layouts (IDE-style panels) |
 | [`igniteui-webcomponents-charts`](https://www.npmjs.com/package/igniteui-webcomponents-charts) | Commercial | `npm install igniteui-webcomponents-core igniteui-webcomponents-charts` (trial) | Charts and data visualizations (65+ chart types) |
+| [`@infragistics/igniteui-webcomponents-charts`](https://packages.infragistics.com/feeds/js-licensed/@infragistics/igniteui-webcomponents-charts) | Commercial | `npm install @infragistics/igniteui-webcomponents-core @infragistics/igniteui-webcomponents-charts` (licensed) | Charts and data visualizations (65+ chart types) |
 
 ---
+
+## Package Routing
+
+| Component family | Package |
+|---|---|
+| General UI components | `igniteui-webcomponents` |
+| Advanced grids | `igniteui-webcomponents-grids` (trial) `@infragistics/igniteui-webcomponents-grids` (licensed) |
+| Grid Lite | `igniteui-grid-lite` |
+| Dock Manager | `igniteui-dockmanager` (trial) `@infragistics/igniteui-dockmanager` (licensed) |
+| Charts | `igniteui-webcomponents-charts` (trial) `@infragistics/igniteui-webcomponents-charts` (licensed) |
+
+If the request only says "grid", choose by features:
+
+- Advanced features such as editing, paging, summaries, grouping, hierarchical data, or pivot behavior -> `igniteui-webcomponents-grids`
+- Lightweight table -> `igniteui-grid-lite`
 
 ## Component Catalogue by UI Pattern
 
