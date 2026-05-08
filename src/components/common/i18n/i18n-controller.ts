@@ -30,7 +30,7 @@ type ResourceChangeCallback = (
 type I18nControllerConfig<T extends object> = {
   /** The full default English resource strings object for the component. Should always come from igniteui-i18n-core. */
   defaultEN: T;
-  /** @deprecated Optional name if component uses mixed resource strings. To be removed with deprecated resources. */
+  /** @deprecated since 7.2.0. Optional name if component uses mixed resource strings. To be removed with deprecated resources. */
   resourceMapName?: I18nResourceMapNames;
   /** An optional callback to execute when the global locale changes. */
   onResourceChange?: ResourceChangeCallback;
@@ -46,7 +46,7 @@ class I18nController<T extends object> implements ReactiveController {
 
   private readonly _host: I18nControllerHost;
   private readonly _defaultEN: T;
-  /** @deprecated Resource name to use when converting new to old and vice versa resource objects. */
+  /** @deprecated since 7.2.0. Resource name to use when converting new to old and vice versa resource objects. */
   private readonly _resourceMapName?: I18nResourceMapNames;
   private readonly _resourceChangeCallback?: ResourceChangeCallback;
 

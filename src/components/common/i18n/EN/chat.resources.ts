@@ -1,5 +1,5 @@
 /* blazorSuppress */
-/** @deprecated Please use the newly provided IChatResourceStrings interfaces from or set global resource strings using `registerI18n` method. */
+/** @deprecated since 7.2.0. Please use the newly provided `IChatResourceStrings` interfaces from or set global resource strings using `registerI18n` method. */
 export interface IgcChatResourceStrings {
   suggestionsHeader?: string;
   reactionCopy?: string;
@@ -11,7 +11,7 @@ export interface IgcChatResourceStrings {
   messageCopied?: string;
 }
 
-/** @deprecated Please use the newly provided resources from the igniteui-i18n-resources package. */
+/** @deprecated since 7.2.0. Please use the newly provided resources from the igniteui-i18n-resources package. */
 export const IgcChatResourceStringEN: IgcChatResourceStrings = {
   suggestionsHeader: 'Suggestions',
   reactionCopy: 'Copy',
