@@ -1,4 +1,4 @@
-import { getDateFormatter } from 'igniteui-i18n-core';
+import { getDateFormatter, getDisplayNamesFormatter } from 'igniteui-i18n-core';
 import { html, nothing, type PropertyValues, type TemplateResult } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
 import { addThemingController } from '../../../theming/theming-controller.js';
@@ -89,6 +89,12 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
   /** Returns the last date in the current range selection. */
   private get _rangeEnd(): CalendarDay | undefined {
     return this._hasValues ? last(this._values) : undefined;
+  }
+
+  private get _weekLabel(): string {
+    return getDisplayNamesFormatter().getWeekLabel(this.locale, {
+      style: 'short',
+    });
   }
 
   //#endregion
@@ -470,9 +476,7 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
   protected _renderHeaderWeekNumber() {
     return html`
       <span role="columnheader" part="label week-number first">
-        <span part="week-number-inner first">
-          ${this.resourceStrings.weekLabel}
-        </span>
+        <span part="week-number-inner first"> ${this._weekLabel} </span>
       </span>
     `;
   }

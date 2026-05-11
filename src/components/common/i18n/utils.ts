@@ -1,7 +1,16 @@
 import type { IResourceStrings } from 'igniteui-i18n-core';
-import { isObject, isString } from '../util.js';
+import { isString } from '../util.js';
 import type { IgcCalendarResourceStrings } from './EN/calendar.resources.js';
+import type { IgcChatResourceStrings } from './EN/chat.resources.js';
+import type { IgcDatePickerResourceStrings } from './EN/date-picker.resources.js';
 import type { IgcDateRangePickerResourceStrings } from './EN/date-range-picker.resources.js';
+
+/** Names of components currently handling a mix of old and new resource strings. */
+export type I18nResourceMapNames =
+  | 'calendar'
+  | 'date-picker'
+  | 'date-range-picker'
+  | 'chat';
 
 export const calendarResourcesMap = new Map<
   keyof IgcCalendarResourceStrings,
@@ -23,6 +32,17 @@ export const calendarResourcesMap = new Map<
   ['weekLabel', 'i18n/getWeekLabel'],
 ]);
 
+export const chatResourcesMap = new Map<keyof IgcChatResourceStrings, string>([
+  ['suggestionsHeader', 'chat_suggestions_header'],
+  ['reactionCopy', 'chat_reaction_copy'],
+  ['reactionLike', 'chat_reaction_like'],
+  ['reactionDislike', 'chat_reaction_dislike'],
+  ['reactionRegenerate', 'chat_reaction_regenerate'],
+  ['attachmentLabel', 'chat_attachment_label'],
+  ['attachmentsListLabel', 'chat_attachments_list_label'],
+  ['messageCopied', 'chat_message_copied'],
+]);
+
 export const dateRangePickerResourcesMap = new Map<
   keyof IgcDateRangePickerResourceStrings,
   string | undefined
@@ -42,66 +62,59 @@ export const dateRangePickerResourcesMap = new Map<
   ).entries(),
 ]);
 
-function isCalendarResource(
-  resource: unknown
-): resource is IgcCalendarResourceStrings {
-  return (
-    isObject(resource) &&
-    'selectMonth' in resource &&
-    !isDateRangePickerResource(resource)
-  );
-}
+export const datePickerResourcesMap = new Map<
+  keyof IgcDatePickerResourceStrings,
+  string | undefined
+>([
+  ['changeDate', 'date_picker_change_date'],
+  ['chooseDate', 'date_picker_choose_date'],
+  ...(
+    calendarResourcesMap as Map<
+      keyof IgcCalendarResourceStrings,
+      string | undefined
+    >
+  ).entries(),
+]);
 
-function isDateRangePickerResource(
-  resource: unknown
-): resource is IgcDateRangePickerResourceStrings {
-  return isObject(resource) && 'last7Days' in resource;
-}
-
-function getResourceMap<T>(
-  resource: T
+function getResourceMap(
+  name: I18nResourceMapNames
 ): Map<string, string | undefined> | undefined {
-  if (isCalendarResource(resource)) {
-    return calendarResourcesMap;
+  switch (name) {
+    case 'calendar':
+      return calendarResourcesMap;
+    case 'chat':
+      return chatResourcesMap;
+    case 'date-picker':
+      return datePickerResourcesMap;
+    case 'date-range-picker':
+      return dateRangePickerResourcesMap;
+    default:
+      break;
   }
 
-  if (isDateRangePickerResource(resource)) {
-    return dateRangePickerResourcesMap;
-  }
-
-  return undefined;
-}
-
-function getResourceMapForCore<T extends IResourceStrings>(
-  resource: T
-): Map<string, string | undefined> | undefined {
-  if ('date_range_picker_last7Days' in resource) {
-    return dateRangePickerResourcesMap;
-  }
-
-  if ('calendar_select_month' in resource) {
-    return calendarResourcesMap;
-  }
-
-  return undefined;
+  return new Map<string, string | undefined>();
 }
 
 export function convertToIgcResource<T extends object>(
-  resource: IResourceStrings
+  resource: IResourceStrings,
+  resourceMapName: I18nResourceMapNames
 ): T {
   const result = {} as T;
-  const resourceMap = getResourceMapForCore(resource);
+  const resourceMap = getResourceMap(resourceMapName);
 
   if (!resourceMap) {
     return resource as T;
   }
 
-  for (const [componentKey, coreKey] of resourceMap) {
-    if (coreKey && coreKey in resource) {
-      const coreValue = resource[coreKey as keyof IResourceStrings];
-
-      if (isString(coreValue)) {
-        result[componentKey as keyof T] = coreValue as T[keyof T];
+  for (const [igcKey, coreKey] of resourceMap) {
+    if (igcKey in resource) {
+      result[igcKey as keyof T] = resource[
+        igcKey as keyof IResourceStrings
+      ] as T[keyof T];
+    } else if (coreKey && coreKey in resource) {
+      const value = resource[coreKey as keyof IResourceStrings];
+      if (isString(value)) {
+        result[igcKey as keyof T] = value as T[keyof T];
       }
     }
   }
@@ -109,21 +122,28 @@ export function convertToIgcResource<T extends object>(
   return result;
 }
 
-export function convertToCoreResource<T>(resource: T): IResourceStrings {
+export function convertToCoreResource<T extends object>(
+  resource: T,
+  resourceMapName: I18nResourceMapNames
+): IResourceStrings {
   const result: IResourceStrings = {};
-  const resourceMap = getResourceMap(resource);
+  const resourceMap = getResourceMap(resourceMapName);
 
-  if (resourceMap) {
-    for (const [key, coreKey] of resourceMap) {
-      if (coreKey) {
-        const value = resource[key as keyof T];
-        if (isString(value)) {
-          result[coreKey as keyof IResourceStrings] = value;
-        }
+  if (!resourceMap) {
+    return resource as IResourceStrings;
+  }
+
+  for (const [igcKey, coreKey] of resourceMap) {
+    if (coreKey && coreKey in resource) {
+      result[coreKey as keyof IResourceStrings] = resource[
+        coreKey as keyof T
+      ] as string;
+    } else if (coreKey) {
+      const value = resource[igcKey as keyof T];
+      if (isString(value)) {
+        result[coreKey as keyof IResourceStrings] = value;
       }
     }
-  } else {
-    return resource as IResourceStrings;
   }
 
   return result;
