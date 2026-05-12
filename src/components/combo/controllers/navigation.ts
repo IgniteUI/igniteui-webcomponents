@@ -152,12 +152,8 @@ export class ComboNavigationController<T extends object> {
         this._host.focus();
       }
 
-      if (this._host.singleSelect) {
-        if (this.active > -1) {
-          this._config.interactions.select(this.active);
-        } else {
-          this._config.interactions.clearSelection();
-        }
+      if (this._host.singleSelect && this.active > -1) {
+        this._config.interactions.select(this.active);
       }
 
       await this._config.interactions.hide();
