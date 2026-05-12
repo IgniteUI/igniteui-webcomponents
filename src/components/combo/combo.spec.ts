@@ -1417,6 +1417,36 @@ describe('Combo', () => {
       // The dropdown should remain open
       expect(combo.open).to.be.true;
     });
+
+    it('issue 2221 - invalid state when tabbing out of a single select combo', async () => {
+      combo.singleSelect = true;
+      await combo.show();
+      await list.layoutComplete;
+
+      // Has matches, selects first on tab out
+      await filterCombo('sof');
+      expect(items(combo)).lengthOf(1);
+
+      simulateKeyboard(input, tabKey);
+      await elementUpdated(combo);
+
+      expect(combo.open).to.be.false;
+      expect(combo.value).to.eql(['BG01']);
+
+      combo.deselect();
+      await combo.show();
+      await list.layoutComplete;
+
+      // No matches, should clear value on tab out
+      await filterCombo('xxx');
+      expect(items(combo)).to.be.empty;
+
+      simulateKeyboard(input, tabKey);
+      await elementUpdated(combo);
+
+      expect(combo.open).to.be.false;
+      expect(combo.value).to.be.empty;
+    });
   });
 
   describe('Form integration', () => {
