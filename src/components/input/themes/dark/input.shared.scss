@@ -1,8 +1,8 @@
 @use 'styles/utilities' as *;
-@use 'themes' as *;
+@use '../light/themes' as *;
 
 :host {
     @include css-vars-from-theme($base);
 
-    color-scheme: light;
+    color-scheme: dark;
 }
