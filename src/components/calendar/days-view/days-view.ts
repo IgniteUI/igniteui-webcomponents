@@ -1,4 +1,4 @@
-import { getDateFormatter } from 'igniteui-i18n-core';
+import { getDateFormatter, getDisplayNamesFormatter } from 'igniteui-i18n-core';
 import { html, nothing, type PropertyValues, type TemplateResult } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
 import { addThemingController } from '../../../theming/theming-controller.js';
@@ -9,13 +9,7 @@ import { registerComponent } from '../../common/definitions/register.js';
 import type { Constructor } from '../../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../../common/mixins/event-emitter.js';
 import { partMap } from '../../common/part-map.js';
-import {
-  addSafeEventListener,
-  chunk,
-  first,
-  last,
-  take,
-} from '../../common/util.js';
+import { addSafeEventListener, chunk, first, last } from '../../common/util.js';
 import { IgcCalendarBaseComponent } from '../base.js';
 import {
   areSameMonth,
@@ -95,6 +89,12 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
   /** Returns the last date in the current range selection. */
   private get _rangeEnd(): CalendarDay | undefined {
     return this._hasValues ? last(this._values) : undefined;
+  }
+
+  private get _weekLabel(): string {
+    return getDisplayNamesFormatter().getWeekLabel(this.locale, {
+      style: 'short',
+    });
   }
 
   //#endregion
@@ -476,9 +476,7 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
   protected _renderHeaderWeekNumber() {
     return html`
       <span role="columnheader" part="label week-number first">
-        <span part="week-number-inner first">
-          ${this.resourceStrings.weekLabel}
-        </span>
+        <span part="week-number-inner first"> ${this._weekLabel} </span>
       </span>
     `;
   }
@@ -500,26 +498,25 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
     const aria = getDateFormatter().getIntlFormatter(this.locale, {
       weekday: 'long',
     });
-    const days = take(
-      generateMonth(this._activeDate, this._firstDayOfWeek),
-      DAYS_IN_WEEK
-    );
 
     const weekNumber = this.showWeekNumbers
       ? this._renderHeaderWeekNumber()
       : nothing;
 
-    const headers = days.map(
-      (day) => html`
-        <span
-          role="columnheader"
-          part="label"
-          aria-label=${aria.format(day.native)}
-        >
-          <span part="label-inner">${label.format(day.native)}</span>
-        </span>
-      `
-    );
+    const headers = generateMonth(this._activeDate, this._firstDayOfWeek)
+      .take(DAYS_IN_WEEK)
+      .map(
+        (day) => html`
+          <span
+            role="columnheader"
+            part="label"
+            aria-label=${aria.format(day.native)}
+          >
+            <span part="label-inner">${label.format(day.native)}</span>
+          </span>
+        `
+      )
+      .toArray();
 
     return html`
       <div role="row" part="days-row first">${weekNumber}${headers}</div>

@@ -7,6 +7,9 @@ $theme: $bootstrap;
 $dropdown: map.remove(dropdown.$bootstrap, 'default-size');
 
 :host {
-    @include css-vars-from-theme(diff($base, $theme), 'ig-combo');
-    @include css-vars-from-theme($dropdown, 'ig-combo-list');
+    @include css-vars-from-theme(diff($base, $theme));
+
+    igc-popover {
+        @include css-vars-from-theme($dropdown);
+    }
 }

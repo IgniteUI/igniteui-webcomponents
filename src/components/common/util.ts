@@ -24,14 +24,6 @@ export function numberInRangeInclusive(
   return value >= min && value <= max;
 }
 
-export function createCounter() {
-  let i = 0;
-  return () => {
-    i++;
-    return i;
-  };
-}
-
 /**
  * Returns whether an element has a Left-to-Right directionality.
  */
@@ -153,11 +145,32 @@ export function isElement(node: unknown): node is Element {
   return node instanceof Node && node.nodeType === Node.ELEMENT_NODE;
 }
 
-export function getElementsFromEventPath<T extends Element>(event: Event) {
-  return event.composedPath().filter((item) => isElement(item)) as T[];
-}
-
-export function findElementFromEventPath<T extends Element>(
+/**
+ * Finds the first element in the event's composed path that matches the provided predicate, which can be either a string selector or a function.
+ *
+ * @param predicate - A string representing a CSS selector or a function that takes an Element and returns a boolean indicating a match.
+ * @param event - The event whose composed path will be searched for the matching element.
+ * @returns The first Element that matches the predicate, or undefined if no match is found.
+ *
+ * @example
+ * ```typescript
+ * // Using a string selector
+ * const button = getElementFromPath('button', event);
+ * ```
+ * ```typescript
+ * // Using a predicate function
+ * const customElement = getElementFromPath((el) => el.tagName === 'MY-ELEMENT', event);
+ * ```
+ */
+export function getElementFromPath<K extends keyof HTMLElementTagNameMap>(
+  predicate: K,
+  event: Event
+): HTMLElementTagNameMap[K] | undefined;
+export function getElementFromPath<T extends Element>(
+  predicate: string | ((element: Element) => boolean),
+  event: Event
+): T | undefined;
+export function getElementFromPath(
   predicate: string | ((element: Element) => boolean),
   event: Event
 ) {
@@ -165,7 +178,13 @@ export function findElementFromEventPath<T extends Element>(
     ? (e: Element) => e.matches(predicate)
     : (e: Element) => predicate(e);
 
-  return getElementsFromEventPath(event).find(func) as T | undefined;
+  return Iterator.from(event.composedPath()).find(
+    (item) => isElement(item) && func(item)
+  ) as Element | undefined;
+}
+
+export function stopPropagation(event: Event): void {
+  event.stopPropagation();
 }
 
 export function first<T>(arr: T[]) {
@@ -181,44 +200,27 @@ export function modulo(n: number, d: number) {
 }
 
 /**
- * Creates an array of `n` elements from a given iterator.
- *
- */
-export function take<T>(iterable: IterableIterator<T>, n: number) {
-  const result: T[] = [];
-  let i = 0;
-  let current = iterable.next();
-
-  while (i < n && !current.done) {
-    result.push(current.value);
-    current = iterable.next();
-    i++;
-  }
-
-  return result;
-}
-
-/**
- * Splits an array into chunks of length `size` and returns a generator
- * yielding each chunk.
- * The last chunk may contain less than `size` elements.
+ * Splits an array into chunks of a specified size and returns a generator that yields each chunk.
  *
  * @example
  * ```typescript
- * const arr = [0,1,2,3,4,5,6,7,8,9];
- *
- * Array.from(chunk(arr, 2)) // [[0, 1], [2, 3], [4, 5], [6, 7], [8, 9]]
- * Array.from(chunk(arr, 3)) // [[0, 1, 2], [3, 4, 5], [6, 7, 8], [9]]
- * Array.from(chunk([], 3)) // []
- * Array.from(chunk(arr, -3)) // Error
+ * [...chunk([1, 2, 3, 4, 5], 2)]; // [[1, 2], [3, 4], [5]]
  * ```
+ *
+ * @throws If the `size` parameter is not a safe integer greater than or equal to 1.
  */
-export function* chunk<T>(arr: T[], size: number) {
-  if (size < 1) {
+export function* chunk<T>(arr: T[], size: number): Generator<T[]> {
+  if (!Number.isSafeInteger(size) || size < 1) {
     throw new Error('size must be an integer >= 1');
   }
-  for (let i = 0; i < arr.length; i += size) {
-    yield arr.slice(i, i + size);
+
+  const iterator = Iterator.from(arr);
+  const length = arr.length;
+  let i = 0;
+
+  while (i < length) {
+    yield iterator.take(size).toArray();
+    i += size;
   }
 }
 
@@ -326,11 +328,31 @@ export function isEmpty<T, U extends object>(
   return 'length' in x ? x.length < 1 : x.size < 1;
 }
 
+/**
+ * Ensures the given value is wrapped in an array. If the value is already an array, it is returned as-is. If the value is undefined, an empty array is returned.
+ *
+ * @example
+ * ```typescript
+ * asArray(5); // [5]
+ * asArray([1, 2, 3]); // [1, 2, 3]
+ * asArray(undefined); // []
+ * ```
+ */
 export function asArray<T>(value?: T | T[]): T[] {
-  if (!isDefined(value)) return [];
+  if (value == null) return [];
   return Array.isArray(value) ? value : [value];
 }
 
+/**
+ * Splits an array into two based on a predicate function, returning a tuple of [truthy, falsy] arrays.
+ *
+ * @example
+ * ```typescript
+ * const [evens, odds] = partition([1, 2, 3, 4], x => x % 2 === 0);
+ * console.log(evens); // [2, 4]
+ * console.log(odds); // [1, 3]
+ * ```
+ */
 export function partition<T>(
   array: T[],
   isTruthy: (value: T) => boolean
@@ -368,7 +390,7 @@ export function roundByDPR(value: number): number {
 }
 
 export function scrollIntoView(
-  element?: HTMLElement,
+  element?: HTMLElement | null,
   config?: ScrollIntoViewOptions
 ): void {
   if (!element) {
@@ -505,6 +527,19 @@ export function equal<T>(a: unknown, b: T, visited = new WeakSet()): boolean {
   return false;
 }
 
+/**
+ *  Escapes any potential regex syntax characters in a string, and returns a new string
+ *  that can be safely used as a literal pattern for the `RegExp()` constructor.
+ *
+ *  @remarks
+ *  Substitute with `RegExp.escape` once it has enough support:
+ *
+ * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/escape#browser_compatibility
+ */
+export function escapeRegex(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 /** Required utility type for specific props */
 export type RequiredProps<T, K extends keyof T> = T & {
   [P in K]-?: T[P];
@@ -582,7 +617,7 @@ export function bindIf<T>(assertion: unknown, value: T): NonNullable<T> {
     : (nothing as NonNullable<T>);
 }
 
-let pool: Uint8Array;
+let pool: Uint8Array<ArrayBuffer>;
 let poolOffset: number;
 const urlAlphabet =
   'useandom-26T198340PX75pxJACKVERYMINDBUSHWOLF_GQZbfghjklqvwyzrict';

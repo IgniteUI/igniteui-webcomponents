@@ -64,14 +64,14 @@ $input-theme: input-theme.$indigo;
     }
 
     ::part(validation-icon) {
-        color: var-get($theme, 'error-secondary-color');
+        color: var-get($input-theme, 'error-secondary-color');
     }
 }
 
 :host(:disabled),
 :host([disabled]) {
     igc-input::part(input) {
-        color: var-get($theme, 'disabled-text-color');
+        color: var-get($input-theme, 'disabled-text-color');
     }
 
     [part~='toggle-icon'] {

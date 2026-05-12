@@ -1,41 +1,134 @@
-/* blazorSuppress */
-export class DefaultMap<T, U> {
-  private _defaultValue: () => U;
-  private _map = new Map<T, U>();
+/**
+ * A Map that automatically creates default values for missing keys.
+ *
+ * @remarks
+ * Extends the native `Map` class with a `getOrCreate` method that returns
+ * an existing value or creates a new one using the provided factory function.
+ *
+ * @example
+ * Creating a DefaultMap with a factory function:
+ * ```typescript
+ * const map = new DefaultMap<string, number[]>(undefined, () => []);
+ * map.getOrCreate('items').push(1, 2, 3);
+ * ```
+ *
+ * @example
+ * Creating a DefaultMap with initial entries:
+ * ```typescript
+ * const initial: [string, Set<number>][] = [
+ *   ['evens', new Set([2, 4, 6])],
+ *   ['odds', new Set([1, 3, 5])],
+ * ];
+ * const map = new DefaultMap(initial, () => new Set<number>());
+ * map.getOrCreate('primes').add(2).add(3).add(5);
+ * ```
+ */
+class DefaultMap<K, V> extends Map<K, V> {
+  private readonly _factoryFn: () => V;
 
-  constructor(defaultValue: () => U) {
-    this._defaultValue = defaultValue;
+  public override get [Symbol.toStringTag](): string {
+    return 'DefaultMap';
   }
 
-  public getOrCreate(key: T) {
-    if (!this._map.has(key)) {
-      this._map.set(key, this._defaultValue());
+  /**
+   * Creates a new DefaultMap instance.
+   *
+   * @param entries - Optional iterable of key-value pairs to initialize the map.
+   * @param factoryFn - Factory function that creates default values for missing keys.
+   *                    Defaults to creating a new `Map` instance.
+   */
+  constructor(entries?: Iterable<readonly [K, V]>, factoryFn?: () => V) {
+    super(entries);
+    this._factoryFn = factoryFn ?? (() => new Map() as V);
+  }
+
+  /**
+   * Returns the value for the given key, creating it if it doesn't exist.
+   *
+   * @param key - The key to look up or create a value for.
+   * @returns The existing or newly created value for the key.
+   */
+  public getOrCreate(key: K): V {
+    if (!this.has(key)) {
+      this.set(key, this._factoryFn());
     }
 
-    return this._map.get(key) as U;
+    return this.get(key) as V;
   }
 
-  public get(key: T) {
-    return this._map.get(key);
-  }
-
-  public set(key: T, value: U) {
-    this._map.set(key, value);
-  }
-
-  public has(key: T) {
-    return this._map.has(key);
-  }
-
-  public toMap() {
-    return this._map;
-  }
-
-  public entries() {
-    return this._map.entries();
+  /**
+   * Converts the DefaultMap to a plain Map for structured cloning.
+   *
+   * @remarks
+   * This method helps with cross-browser compatibility when using BroadcastChannel
+   * or postMessage, as custom Map subclasses are not properly cloned in Safari.
+   * Returns a plain Map instance so that the container itself can be structured-cloned
+   * consistently across browsers. Structured cloning will still only succeed if the
+   * map's keys and values are themselves structured-cloneable.
+   *
+   * @returns A plain Map with the same entries as this DefaultMap.
+   *
+   * @example
+   * ```typescript
+   * const defaultMap = new DefaultMap<string, Set<number>>();
+   * const plainMap = defaultMap.toPlainMap();
+   * channel.postMessage({ data: plainMap });
+   * ```
+   */
+  public toPlainMap(): Map<K, V> {
+    return new Map(this.entries());
   }
 }
 
-export function createIconDefaultMap<T, U>() {
-  return new DefaultMap<T, Map<T, U>>(() => new Map());
+/**
+ * Creates a new DefaultMap with the specified entries and factory function.
+ *
+ * @param entries - Optional iterable of key-value pairs to initialize the map.
+ * @param factoryFn - Factory function that creates default values for missing keys.
+ * @returns A new DefaultMap instance.
+ *
+ * @example
+ * Creating a DefaultMap with a factory function:
+ * ```typescript
+ * const counters = createDefaultMap<string, number>(undefined, () => 0);
+ * counters.set('visits', counters.getOrCreate('visits') + 1);
+ * ```
+ *
+ * @example
+ * Creating a DefaultMap with initial entries:
+ * ```typescript
+ * const defaults: [string, string[]][] = [
+ *   ['fruits', ['apple', 'banana']],
+ *   ['vegetables', ['carrot', 'broccoli']],
+ * ];
+ * const categories = createDefaultMap(defaults, () => [] as string[]);
+ * categories.getOrCreate('dairy').push('milk', 'cheese');
+ * ```
+ */
+export function createDefaultMap<K, V>(
+  entries?: Iterable<readonly [K, V]>,
+  factoryFn?: () => V
+): DefaultMap<K, V> {
+  return new DefaultMap<K, V>(entries, factoryFn);
 }
+
+/**
+ * Creates a DefaultMap for icon collections with nested Map values.
+ *
+ * @remarks
+ * This is a convenience function for creating the nested map structure
+ * used by the icon registry to organize icons by collection and name.
+ *
+ * @returns A DefaultMap where each value is itself a Map.
+ *
+ * @example
+ * ```typescript
+ * const icons = createIconDefaultMap<string, SvgIcon>();
+ * icons.getOrCreate('material').set('home', { svg: '...' });
+ * ```
+ */
+export function createIconDefaultMap<K, V>() {
+  return new DefaultMap<K, Map<K, V>>();
+}
+
+export type { DefaultMap };

@@ -1,12 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/web-components-vite';
-import {
-  IgcButtonComponent,
-  IgcDividerComponent,
-  defineComponents,
-} from 'igniteui-webcomponents';
+import { IgcDividerComponent, defineComponents } from 'igniteui-webcomponents';
 import { html } from 'lit';
+import { disableStoryControls } from './story.js';
 
-defineComponents(IgcDividerComponent, IgcButtonComponent);
+defineComponents(IgcDividerComponent);
 
 // region default
 const metadata: Meta<IgcDividerComponent> = {
@@ -59,50 +56,99 @@ type Story = StoryObj<IgcDividerArgs>;
 
 // endregion
 
-const BasicTemplate = (args: IgcDividerArgs) => {
-  return html`
+export const Default: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Basic horizontal divider separating content. Use the controls to switch between `solid` and `dashed` line types or enable the `middle` option (requires an `--inset` value to be visible).',
+      },
+    },
+  },
+  render: (args) => html`
     <p>First paragraph</p>
     <igc-divider ?middle=${args.middle} type=${args.type}></igc-divider>
     <p>Second paragraph</p>
-  `;
+  `,
 };
 
-const VerticalDashedTemplate = (args: IgcDividerArgs) => {
-  return html`
-    <div style="display:flex; gap: 16px">
-      <p style="text-align: justify">
+export const Vertical: Story = {
+  argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'A vertical divider placed inside a flex container to visually separate side-by-side content.',
+      },
+    },
+  },
+  render: () => html`
+    <div style="display: flex; gap: 1rem; height: 200px">
+      <p style="text-align: justify; flex: 1">
         Lorem ipsum dolor sit amet, consectetur adipisicing elit. Culpa officiis
         suscipit veniam vitae. Ab ad, dolores iure nostrum quo ratione rerum
         sapiente ullam. Adipisci alias architecto eligendi est, expedita,
-        explicabo fugiat iure laudantium minima molestiae molestias nam
-        obcaecati placeat provident, quam repellendus vitae! Cupiditate eveniet,
-        facere harum hic quisquam sed.
+        explicabo fugiat iure laudantium.
       </p>
-      <igc-divider vertical ?middle=${args.middle} type="dashed"></igc-divider>
-      <p style="text-align: justify">
+      <igc-divider vertical></igc-divider>
+      <p style="text-align: justify; flex: 1">
         Lorem ipsum dolor sit amet, consectetur adipisicing elit. Culpa officiis
         suscipit veniam vitae. Ab ad, dolores iure nostrum quo ratione rerum
         sapiente ullam. Adipisci alias architecto eligendi est, expedita,
-        explicabo fugiat iure laudantium minima molestiae molestias nam
-        obcaecati placeat provident, quam repellendus vitae! Cupiditate eveniet,
-        facere harum hic quisquam sed.
+        explicabo fugiat iure laudantium.
       </p>
     </div>
-  `;
+  `,
 };
 
-const MiddleInsetTemplate = (args: IgcDividerArgs) => {
-  return html`
+export const Dashed: Story = {
+  argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Demonstrates the `dashed` line type for both horizontal and vertical orientations.',
+      },
+    },
+  },
+  render: () => html`
     <p>First paragraph</p>
-    <igc-divider
-      ?middle=${args.middle}
-      type=${args.type}
-      style="--inset: 100px;"
-    ></igc-divider>
+    <igc-divider type="dashed"></igc-divider>
     <p>Second paragraph</p>
-  `;
+
+    <div style="display: flex; gap: 1rem; height: 200px; margin-top: 1rem">
+      <p style="text-align: justify; flex: 1">
+        Lorem ipsum dolor sit amet, consectetur adipisicing elit. Culpa officiis
+        suscipit veniam vitae. Ab ad, dolores iure nostrum quo ratione rerum
+        sapiente ullam. Adipisci alias architecto eligendi est, expedita,
+        explicabo fugiat iure laudantium.
+      </p>
+      <igc-divider vertical type="dashed"></igc-divider>
+      <p style="text-align: justify; flex: 1">
+        Lorem ipsum dolor sit amet, consectetur adipisicing elit. Culpa officiis
+        suscipit veniam vitae. Ab ad, dolores iure nostrum quo ratione rerum
+        sapiente ullam. Adipisci alias architecto eligendi est, expedita,
+        explicabo fugiat iure laudantium.
+      </p>
+    </div>
+  `,
 };
 
-export const Basic: Story = BasicTemplate.bind({});
-export const VerticalDashed: Story = VerticalDashedTemplate.bind({});
-export const MiddleInset: Story = MiddleInsetTemplate.bind({});
+export const MiddleInset: Story = {
+  argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'The `--inset` CSS custom property shrinks the divider from the leading side. When `middle` is also set the line is shrunk symmetrically from both sides.',
+      },
+    },
+  },
+  render: () => html`
+    <p>Inset from start (100px)</p>
+    <igc-divider style="--inset: 100px;"></igc-divider>
+
+    <p>Inset from both sides — middle (100px)</p>
+    <igc-divider middle style="--inset: 100px;"></igc-divider>
+  `,
+};

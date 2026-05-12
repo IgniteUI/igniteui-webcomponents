@@ -9,6 +9,7 @@ import {
   defineComponents,
   registerIconFromText,
 } from 'igniteui-webcomponents';
+import { disableStoryControls } from './story.js';
 
 defineComponents(IgcIconButtonComponent, IgcRippleComponent);
 
@@ -137,21 +138,30 @@ icons.push('biking');
 icons.push('search');
 icons.sort();
 
-const Template = ({
-  name = 'biking',
-  collection = 'default',
-  mirrored,
-  href,
-  download,
-  target,
-  rel,
-  variant,
-  disabled,
-}: IgcIconButtonArgs) => {
-  return html`
+export const Default: Story = {
+  args: { name: 'biking' },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'An interactive icon button. Use the `name` select to swap icons, switch `variant` between contained/flat/outlined, toggle `disabled` or `mirrored`, or set `href` to render the button as an anchor link.',
+      },
+    },
+  },
+  render: ({
+    name,
+    collection,
+    mirrored,
+    href,
+    download,
+    target,
+    rel,
+    variant,
+    disabled,
+  }) => html`
     <igc-icon-button
-      .name=${name}
-      .collection=${collection}
+      .name=${name ?? 'biking'}
+      .collection=${collection ?? 'default'}
       .mirrored=${mirrored}
       href=${ifDefined(href)}
       target=${ifDefined(target)}
@@ -162,6 +172,20 @@ const Template = ({
     >
       <igc-ripple></igc-ripple>
     </igc-icon-button>
+  `,
+};
+
+export const ContentSlot: Story = {
+  argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Any content can be projected into the default slot: a registered SVG icon (with a ripple effect), a Unicode emoji, a Material Icons ligature, or a Font Awesome icon class.',
+      },
+    },
+  },
+  render: () => html`
     <link
       href="https://fonts.googleapis.com/icon?family=Material+Icons"
       rel="stylesheet"
@@ -170,38 +194,18 @@ const Template = ({
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css"
       rel="stylesheet"
     />
-    <igc-icon-button
-      href=${ifDefined(href)}
-      target=${ifDefined(target)}
-      rel=${ifDefined(rel)}
-      download=${ifDefined(download)}
-      variant=${ifDefined(variant)}
-      .disabled=${disabled}
-    >
-      <igc-ripple></igc-ripple>
-      💙
-    </igc-icon-button>
-    <igc-icon-button
-      href=${ifDefined(href)}
-      target=${ifDefined(target)}
-      rel=${ifDefined(rel)}
-      download=${ifDefined(download)}
-      variant=${ifDefined(variant)}
-      .disabled=${disabled}
-    >
-      <span class="material-icons">favorite</span>
-    </igc-icon-button>
-    <igc-icon-button
-      href=${ifDefined(href)}
-      target=${ifDefined(target)}
-      rel=${ifDefined(rel)}
-      download=${ifDefined(download)}
-      variant=${ifDefined(variant)}
-      .disabled=${disabled}
-    >
-      <i class="fa-solid fa-droplet"></i>
-    </igc-icon-button>
-  `;
+    <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap">
+      <igc-icon-button>
+        <igc-ripple></igc-ripple>
+        <igc-icon name="biking"></igc-icon>
+      </igc-icon-button>
+      <igc-icon-button>💙<igc-ripple></igc-ripple></igc-icon-button>
+      <igc-icon-button>
+        <span class="material-icons">favorite</span>
+      </igc-icon-button>
+      <igc-icon-button>
+        <i class="fa-solid fa-droplet"></i>
+      </igc-icon-button>
+    </div>
+  `,
 };
-
-export const Basic: Story = Template.bind({});

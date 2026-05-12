@@ -26,6 +26,7 @@ import { styles } from './themes/file-input.base.css.js';
 import { all } from './themes/themes.js';
 import { fileValidators } from './validators.js';
 
+/* blazorSuppress */
 export interface IgcFileInputComponentEventMap extends Omit<
   IgcInputComponentEventMap,
   'igcChange' | 'igcInput'

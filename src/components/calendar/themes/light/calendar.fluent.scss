@@ -4,5 +4,5 @@
 $theme: $fluent;
 
 :host {
-    @include css-vars-from-theme(diff($base, $theme), 'ig-calendar');
+    @include css-vars-from-theme(diff($base, $theme));
 }

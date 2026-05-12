@@ -4,6 +4,111 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+### Added
+- #### Form controls
+  - `IgcInput`, `IgcMaskInput`, `IgcDateTimeInput`, `IgcCheckbox`, `IgcRadio`, `IgcSwitch`, `IgcDatePicker`, and `IgcDateRangePicker` now submit their associated form on **Enter** key press, matching native browser behavior.
+
+## [7.1.3] - 2026-04-28
+### Changed
+- #### AI-Assisted Development
+  - Updated and enhanced the library provided skills [#2207](https://github.com/IgniteUI/igniteui-webcomponents/pull/2207)
+
+### Fixed
+- #### Stepper
+  - In horizontal orientation, the content area height can now driven by the active step's content instead of always being sized to the tallest step. A new `--body-grid-rows` CSS custom property controls the internal row sizing of each step body — its default value of `1fr` expands the body to fit its content, while setting it to `0fr` collapses the body to zero height, enabling fully variable step heights. [#2209](https://github.com/IgniteUI/igniteui-webcomponents/issues/2209)
+
+## [7.1.2] - 2026-04-22
+### Changed
+- #### AI-Assisted Development
+  - Updated and enhanced the library provided skills [#2189](https://github.com/IgniteUI/igniteui-webcomponents/pull/2189) [#2195](https://github.com/IgniteUI/igniteui-webcomponents/pull/2195) [#2198](https://github.com/IgniteUI/igniteui-webcomponents/pull/2198)
+- #### Button group
+  - Themes colors alignment [#2182](https://github.com/IgniteUI/igniteui-webcomponents/pull/2182)
+- #### Circular progressbar
+  - Unified track color CSS variable between progress bars [#2185](https://github.com/IgniteUI/igniteui-webcomponents/pull/2185)
+- #### Chip
+  - Wrap content inside a new part container and update styles [#2190](https://github.com/IgniteUI/igniteui-webcomponents/pull/2190)
+
+### Fixed
+- #### Dropdown
+  - Selected item styles [#2168](https://github.com/IgniteUI/igniteui-webcomponents/pull/2168)
+- #### Linear progressbar
+  - Unified display size across platforms [#2184](https://github.com/IgniteUI/igniteui-webcomponents/pull/2184)
+- #### Tree
+  - Background style discrepancies [#2173](https://github.com/IgniteUI/igniteui-webcomponents/pull/2173)
+
+## [7.1.1] - 2026-03-25
+### Changed
+- #### Checkbox
+  - Updated disabled and indeterminate styles [#2158](https://github.com/IgniteUI/igniteui-webcomponents/pull/2158)
+
+## [7.1.0] - 2026-03-19
+### Added
+- Splitter component
+- Highlight container component
+
+### Fixed
+- #### Combo
+  - Use focus color for clear button background #[2140](https://github.com/IgniteUI/igniteui-webcomponents/pull/2140)
+- #### Stepper
+  - Box shadow values for step indicators #[2133](https://github.com/IgniteUI/igniteui-webcomponents/pull/2133)
+- #### Tabs
+  - Scrolling behavior for tabs content #[2149](https://github.com/IgniteUI/igniteui-webcomponents/pull/2149)
+
+## [7.0.1] - 2026-03-06
+### Fixed
+- #### Icon service
+  - Browser Safari: Use a plain Map instance for synchronizing state between actors [#2128](https://github.com/IgniteUI/igniteui-webcomponents/pull/2128)
+
+## [7.0.0] - 2026-02-25
+### Added
+- #### AI-Assisted Development - Copilot Skills
+  - Four end-user skills are now shipped with the package under the `skills/` directory. They provide step-by-step guidance to GitHub Copilot and other LLM agents for common tasks:
+    - **igniteui-wc-choose-components** - Identify the right component for a given UI pattern.
+    - **igniteui-wc-integrate-with-framework** - Set up and use components in React, Angular, Vue, or vanilla JS.
+    - **igniteui-wc-customize-component-theme** - Apply custom styles via CSS custom properties, parts, and the theming system.
+    - **igniteui-wc-optimize-bundle-size** - Reduce production bundle size through selective imports and lazy loading.
+
+  To enable the skills in your project, copy the skill folders into your repository's `.github/skills/` directory so Copilot can automatically discover them:
+
+  **Unix/macOS:**
+  ```sh
+  cp -r node_modules/igniteui-webcomponents/skills/* .github/skills/
+  ```
+
+  **Windows (PowerShell):**
+  ```powershell
+  Copy-Item -Recurse node_modules\igniteui-webcomponents\skills\* .github\skills\
+  ```
+
+  **Windows (Command Prompt):**
+  ```cmd
+  xcopy /E /I node_modules\igniteui-webcomponents\skills .github\skills
+  ```
+  Copilot supports project skills stored in `.github/skills` or `.claude/skills` in your repository, and personal skills stored in `~/.copilot/skills` or `~/.claude/skills` (shared across projects; Copilot coding agent and GitHub Copilot CLI only).
+- #### Chat
+  - **adoptRootStyles** can now be toggled on/off at runtime. [#2093](https://github.com/IgniteUI/igniteui-webcomponents/pull/2093)
+
+### Changed
+- #### Library
+  - Minimum Node version required is now >= 22.
+- #### Themes - **Breaking change**
+  - Changed global prefixes for CSS custom properties for component themes to align with other Ignite UI component libraries.
+
+### Removed
+- #### Chat
+  - Removed the **typingIndicator** template renderer. Users can use the **typing-indicator** slot instead.
+- #### Tooltip
+  - Removed the **disableArrow** deprecated property.
+
+### Fixed
+- #### Carousel
+  - Context instantiation in Blazor. [#2033](https://github.com/IgniteUI/igniteui-webcomponents/pull/2033)
+- #### Combo
+  - Correct cursor style over non input parts. [#2085](https://github.com/IgniteUI/igniteui-webcomponents/pull/2085)
+- #### Textarea
+  - Correct cursor style over non input parts. [#2085](https://github.com/IgniteUI/igniteui-webcomponents/pull/2085)
+
 ## [6.5.1] - 2026-02-04
 ### Fixed
 - #### Calendar
@@ -1215,6 +1320,12 @@ Initial release of Ignite UI Web Components
 - Ripple component
 - Switch component
 
+[7.1.3]: https://github.com/IgniteUI/igniteui-webcomponents/compare/7.1.2...7.1.3
+[7.1.2]: https://github.com/IgniteUI/igniteui-webcomponents/compare/7.1.1...7.1.2
+[7.1.1]: https://github.com/IgniteUI/igniteui-webcomponents/compare/7.1.0...7.1.1
+[7.1.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/7.0.1...7.1.0
+[7.0.1]: https://github.com/IgniteUI/igniteui-webcomponents/compare/7.0.0...7.0.1
+[7.0.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/6.5.1...7.0.0
 [6.5.1]: https://github.com/IgniteUI/igniteui-webcomponents/compare/6.5.0...6.5.1
 [6.5.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/6.4.0...6.5.0
 [6.4.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/6.3.6...6.4.0

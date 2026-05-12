@@ -1,5 +1,5 @@
 import { ContextConsumer, consume } from '@lit/context';
-import { html, LitElement, nothing } from 'lit';
+import { html, LitElement, nothing, type PropertyValues } from 'lit';
 import { query, state } from 'lit/decorators.js';
 import { cache } from 'lit/directives/cache.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
@@ -8,6 +8,7 @@ import { addThemingController } from '../../theming/theming-controller.js';
 import IgcIconButtonComponent from '../button/icon-button.js';
 import IgcChipComponent from '../chip/chip.js';
 import { chatContext, chatUserInputContext } from '../common/context.js';
+import { addAdoptedStylesController } from '../common/controllers/adopt-styles.js';
 import { enterKey, tabKey } from '../common/controllers/key-bindings.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { partMap } from '../common/part-map.js';
@@ -25,7 +26,6 @@ import type {
   IgcChatMessageAttachment,
 } from './types.js';
 import {
-  addAdoptedStylesController,
   type ChatAcceptedFileTypes,
   getChatAcceptedFiles,
   getIconName,
@@ -103,10 +103,7 @@ export default class IgcChatInputComponent extends LitElement {
   private readonly _adoptedStyles = addAdoptedStylesController(this);
 
   private readonly _stateChanged = () => {
-    this._adoptedStyles.shouldAdoptStyles(
-      !!this._state.options?.adoptRootStyles &&
-        !this._adoptedStyles.hasAdoptedStyles
-    );
+    this._shouldAdoptRootStyles = Boolean(this._state.options?.adoptRootStyles);
   };
 
   private readonly _stateConsumer = new ContextConsumer(this, {
@@ -127,6 +124,9 @@ export default class IgcChatInputComponent extends LitElement {
   @state()
   private _parts = { 'input-container': true, dragging: false };
 
+  @state()
+  private _shouldAdoptRootStyles = false;
+
   private get _state(): ChatState {
     return this._stateConsumer.value!;
   }
@@ -140,13 +140,21 @@ export default class IgcChatInputComponent extends LitElement {
     addThemingController(this, all, { themeChange: this._adoptPageStyles });
   }
 
+  protected override update(props: PropertyValues): void {
+    if (props.has('_shouldAdoptRootStyles')) {
+      this._adoptedStyles.shouldAdoptStyles(this._shouldAdoptRootStyles);
+    }
+    super.update(props);
+  }
+
   /** @internal */
   public focusInput(): void {
     this._textInputElement?.focus();
   }
 
   private _adoptPageStyles(): void {
-    this._adoptedStyles.shouldAdoptStyles(this._adoptedStyles.hasAdoptedStyles);
+    this._adoptedStyles.invalidateCache(this.ownerDocument);
+    this._adoptedStyles.shouldAdoptStyles(this._shouldAdoptRootStyles);
   }
 
   private _getRenderer<U extends keyof DefaultInputRenderers>(
