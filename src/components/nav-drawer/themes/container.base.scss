@@ -3,8 +3,12 @@
 
 :host {
     --menu-full-width: #{rem(240px)};
+    --menu-height: 50vh;
+    --transition-function: cubic-bezier(0.445, 0.05, 0.55, 0.95);
+    --transition-duration: 0.35s;
 
-    display: flex;
+    display: grid;
+    grid-template-columns: repeat(2, max-content);
     flex-shrink: 0;
     font-family: var(--ig-font-family);
 
@@ -12,18 +16,9 @@
     [part~='mini'] {
         --ig-scrollbar-size: rem(8px);
 
-        position: fixed;
         height: 100%;
         min-height: 100%;
         overflow-x: hidden;
-        inset-block: 0;
-        z-index: 999;
-        opacity: 1;
-        transition:
-            translate ease-out 0.3s,
-            0.3s,
-            opacity ease-out 0.3s,
-            0.3s;
     }
 
     [part~='mini'] {
@@ -32,20 +27,37 @@
 
     [part='base'] {
         width: var(--menu-full-width);
+        margin: unset;
+        border-color: transparent;
+        padding: unset;
+        outline-style: none;
+        transition:
+            translate var(--transition-function) var(--transition-duration),
+            opacity var(--transition-function) var(--transition-duration),
+            overlay var(--transition-function) var(--transition-duration)
+                allow-discrete,
+            display var(--transition-function) var(--transition-duration)
+                allow-discrete;
+
+        &::backdrop {
+            transition: opacity var(--transition-function)
+                var(--transition-duration);
+
+            @starting-style {
+                opacity: 0;
+            }
+        }
     }
 
     [part='main'] {
         width: 100%;
     }
+}
 
-    [part='overlay'] {
-        position: fixed;
-        inset: 0;
-        z-index: 2;
-        opacity: 1;
-        transition:
-            opacity ease-out 0.3s,
-            0.3s;
+:host(:not([open])[position='relative']) {
+    [part='base'] {
+        margin-inline-start: calc(var(--menu-full-width) * -1);
+        overflow: hidden;
     }
 }
 
@@ -57,16 +69,13 @@
         z-index: initial;
         border-inline-end-style: solid;
         border-inline-end-width: rem(1px);
+        transition: margin var(--transition-function) var(--transition-duration);
     }
 
     [part~='mini'] {
         position: relative;
         border-inline-end-style: solid;
         border-inline-end-width: rem(1px);
-    }
-
-    [part='overlay'] {
-        display: none;
     }
 }
 
@@ -77,10 +86,10 @@
     }
 
     [part='base'] {
-        height: 50vh;
+        height: var(--menu-height);
         min-height: initial;
-        width: 100%;
-        inset-inline: 0;
+        min-width: 100vw;
+        margin: revert;
     }
 }
 
@@ -97,57 +106,73 @@
 :host([position='start']) {
     [part='base'],
     [part~='mini'] {
-        inset-inline-start: 0;
         border-inline-end-style: solid;
         border-inline-end-width: rem(1px);
+    }
+
+    [part='base'] {
+        margin-inline-end: auto;
     }
 }
 
 :host([position='end']) {
     [part='base'],
     [part~='mini'] {
-        inset-inline-end: 0;
         border-inline-start-style: solid;
         border-inline-start-width: rem(1px);
     }
+
+    [part='base'] {
+        margin-inline-start: auto;
+    }
 }
 
-:host(:not([open])[position='start']),
-:host([dir='rtl']:not([open])[position='end']) {
+:host([position='start']),
+:host([dir='rtl'][position='end']) {
     --dir: #{direction($rtl: true)};
 }
 
-:host(:not([open])[position='end']),
-:host([dir='rtl']:not([open])[position='start']) {
+:host([position='end']),
+:host([dir='rtl'][position='start']) {
     --dir: #{direction($rtl: false)};
-}
-
-:host(:not([open])[position='relative']) {
-    [part='base'] {
-        margin-inline-start: calc(var(--menu-full-width) * -1);
-        opacity: 1;
-        overflow: hidden;
-    }
-
-    [part='main'] {
-        opacity: 0;
-    }
 }
 
 :host(:not([open])[position='top']),
 :host(:not([open])[position='bottom']) {
-    [part='base'] {
-        translate: 0 -60vh;
-    }
-
     [part='mini'] {
         display: none;
     }
 }
 
+:host(:not([open])[position='top']) {
+    [part='base'] {
+        translate: 0 calc(var(--menu-height) * -1);
+    }
+}
+
+:host([open][position='top']) {
+    [part='base'] {
+        translate: 0;
+
+        @starting-style {
+            translate: 0 calc(var(--menu-height) * -1);
+        }
+    }
+}
+
 :host(:not([open])[position='bottom']) {
     [part='base'] {
-        translate: 0 60vh;
+        translate: 0 var(--menu-height);
+    }
+}
+
+:host([open][position='bottom']) {
+    [part='base'] {
+        translate: 0;
+
+        @starting-style {
+            translate: 0 var(--menu-height);
+        }
     }
 }
 
@@ -159,26 +184,33 @@
     }
 }
 
-:host([open]) [part='mini'],
-[part='mini hidden'] {
-    display: none;
+:host(:not([open]):where([position='start'], [position='end'])) {
+    [part='base'] {
+        translate: calc(100% * var(--dir)) 0;
+    }
 }
 
-:host([open]:not([position='relative'])) {
+:host([open]:where([position='start'], [position='end'])) {
     [part='base'] {
         border-inline-end-style: solid;
         border-inline-end-width: rem(1px);
+
+        @starting-style {
+            translate: calc(100% * var(--dir)) 0;
+        }
+    }
+}
+
+:host([open][position='relative']) {
+    [part~='mini'] {
+        display: none;
     }
 }
 
 :host(:not([open])) {
     [part='base'] {
-        translate: calc(100% * var(--dir)) 0;
-        opacity: 0;
-    }
-
-    [part='overlay'] {
-        pointer-events: none;
-        opacity: 0;
+        &::backdrop {
+            opacity: 0;
+        }
     }
 }

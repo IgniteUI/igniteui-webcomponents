@@ -4,13 +4,13 @@
 $theme: $material;
 $background: var-get($theme, 'background') !default;
 
-[part='overlay'] {
-    background: var-get($overlay-material, 'background-color');
-}
-
 [part='base'] {
     border-radius: var-get($theme, 'border-radius');
     background: $background;
+
+    &::backdrop {
+        background: var-get($overlay-material, 'background-color');
+    }
 }
 
 [part='mini'] {
