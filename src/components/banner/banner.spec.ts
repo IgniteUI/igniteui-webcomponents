@@ -4,9 +4,11 @@ import {
   fixture,
   html,
   nextFrame,
+  waitUntil,
 } from '@open-wc/testing';
 import { spy } from 'sinon';
 
+import IgcButtonComponent from '../button/button.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import { finishAnimationsFor, simulateClick } from '../common/utils.spec.js';
 import IgcIconComponent from '../icon/icon.js';
@@ -14,7 +16,7 @@ import IgcBannerComponent from './banner.js';
 
 describe('Banner', () => {
   before(() => {
-    defineComponents(IgcBannerComponent, IgcIconComponent);
+    defineComponents(IgcBannerComponent, IgcButtonComponent, IgcIconComponent);
   });
 
   const createDefaultBanner = () => html`
@@ -285,6 +287,165 @@ describe('Banner', () => {
       expect(eventSpy).calledWith('igcClosing');
       expect(eventSpy).not.calledWith('igcClosed');
       expect(banner.open).to.be.true;
+    });
+  });
+
+  describe('Invoker Commands API', () => {
+    afterEach(async () => {
+      if (banner.open) {
+        await banner.hide();
+      }
+    });
+
+    describe('with igc-button', () => {
+      let invoker: IgcButtonComponent;
+
+      beforeEach(async () => {
+        const container = await fixture<HTMLElement>(html`
+          <div>
+            <igc-button command="--show" commandfor="invoker-banner"
+              >Show</igc-button
+            >
+            <igc-banner id="invoker-banner"
+              >You are currently offline.</igc-banner
+            >
+          </div>
+        `);
+
+        invoker = container.querySelector<IgcButtonComponent>('igc-button')!;
+        banner = container.querySelector<IgcBannerComponent>('igc-banner')!;
+      });
+
+      it('`--show` opens the banner', async () => {
+        expect(banner.open).to.be.false;
+
+        invoker.click();
+        await waitUntil(() => banner.open);
+
+        expect(banner.open).to.be.true;
+      });
+
+      it('`--hide` closes an open banner', async () => {
+        await banner.show();
+        expect(banner.open).to.be.true;
+
+        invoker.command = '--hide';
+        await elementUpdated(invoker);
+
+        invoker.click();
+        await waitUntil(() => !banner.open);
+
+        expect(banner.open).to.be.false;
+      });
+
+      it('`--toggle` opens a closed banner', async () => {
+        expect(banner.open).to.be.false;
+
+        invoker.command = '--toggle';
+        await elementUpdated(invoker);
+
+        invoker.click();
+        await waitUntil(() => banner.open);
+
+        expect(banner.open).to.be.true;
+      });
+
+      it('`--toggle` closes an open banner', async () => {
+        await banner.show();
+        expect(banner.open).to.be.true;
+
+        invoker.command = '--toggle';
+        await elementUpdated(invoker);
+
+        invoker.click();
+        await waitUntil(() => !banner.open);
+
+        expect(banner.open).to.be.false;
+      });
+
+      it('a disabled igc-button does not invoke commands', async () => {
+        invoker.disabled = true;
+        await elementUpdated(invoker);
+
+        invoker.click();
+        await elementUpdated(banner);
+
+        expect(banner.open).to.be.false;
+      });
+    });
+
+    describe('with native button', () => {
+      let invoker: HTMLButtonElement;
+
+      beforeEach(async () => {
+        const container = await fixture<HTMLElement>(html`
+          <div>
+            <button>Show</button>
+            <igc-banner id="native-invoker-banner"
+              >You are currently offline.</igc-banner
+            >
+          </div>
+        `);
+
+        invoker = container.querySelector<HTMLButtonElement>('button')!;
+        banner = container.querySelector<IgcBannerComponent>('igc-banner')!;
+
+        invoker.setAttribute('command', '--show');
+        invoker.setAttribute('commandfor', 'native-invoker-banner');
+      });
+
+      it('`--show` opens the banner', async () => {
+        expect(banner.open).to.be.false;
+
+        invoker.click();
+        await waitUntil(() => banner.open);
+
+        expect(banner.open).to.be.true;
+      });
+
+      it('`--hide` closes an open banner', async () => {
+        await banner.show();
+        expect(banner.open).to.be.true;
+
+        invoker.setAttribute('command', '--hide');
+
+        invoker.click();
+        await waitUntil(() => !banner.open);
+
+        expect(banner.open).to.be.false;
+      });
+
+      it('`--toggle` opens a closed banner', async () => {
+        expect(banner.open).to.be.false;
+
+        invoker.setAttribute('command', '--toggle');
+
+        invoker.click();
+        await waitUntil(() => banner.open);
+
+        expect(banner.open).to.be.true;
+      });
+
+      it('`--toggle` closes an open banner', async () => {
+        await banner.show();
+        expect(banner.open).to.be.true;
+
+        invoker.setAttribute('command', '--toggle');
+
+        invoker.click();
+        await waitUntil(() => !banner.open);
+
+        expect(banner.open).to.be.false;
+      });
+
+      it('a disabled native button does not invoke commands', async () => {
+        invoker.disabled = true;
+
+        invoker.click();
+        await elementUpdated(banner);
+
+        expect(banner.open).to.be.false;
+      });
     });
   });
 });
