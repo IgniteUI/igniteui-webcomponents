@@ -7,8 +7,7 @@
     --transition-function: cubic-bezier(0.445, 0.05, 0.55, 0.95);
     --transition-duration: 0.35s;
 
-    display: grid;
-    grid-template-columns: repeat(2, max-content);
+    display: flex;
     flex-shrink: 0;
     font-family: var(--ig-font-family);
 
@@ -21,8 +20,12 @@
         overflow-x: hidden;
     }
 
-    [part~='mini'] {
-        min-width: var(--menu-mini-width);
+    [part='mini'] {
+        width: var(--menu-mini-width);
+        border-inline-end-style: solid;
+        border-inline-end-width: rem(1px);
+        opacity: 1;
+        transition-delay: 50ms;
     }
 
     [part='base'] {
@@ -67,15 +70,21 @@
         width: var(--menu-full-width);
         box-shadow: none;
         z-index: initial;
-        border-inline-end-style: solid;
-        border-inline-end-width: rem(1px);
         transition: margin var(--transition-function) var(--transition-duration);
     }
 
-    [part~='mini'] {
-        position: relative;
+    [part='base']:has(~ [part~='hidden']) {
         border-inline-end-style: solid;
         border-inline-end-width: rem(1px);
+    }
+
+    [part='mini'] {
+        position: relative;
+        overflow: hidden;
+        transition:
+            width var(--transition-function) var(--transition-duration),
+            min-width var(--transition-function) var(--transition-duration),
+            padding var(--transition-function) var(--transition-duration);
     }
 }
 
@@ -104,24 +113,12 @@
 }
 
 :host([position='start']) {
-    [part='base'],
-    [part~='mini'] {
-        border-inline-end-style: solid;
-        border-inline-end-width: rem(1px);
-    }
-
     [part='base'] {
         margin-inline-end: auto;
     }
 }
 
 :host([position='end']) {
-    [part='base'],
-    [part~='mini'] {
-        border-inline-start-style: solid;
-        border-inline-start-width: rem(1px);
-    }
-
     [part='base'] {
         margin-inline-start: auto;
     }
@@ -176,14 +173,6 @@
     }
 }
 
-:host([open][position='end']) {
-    [part='base'] {
-        border-inline-end: none;
-        border-inline-start-style: solid;
-        border-inline-start-width: rem(1px);
-    }
-}
-
 :host(:not([open]):where([position='start'], [position='end'])) {
     [part='base'] {
         translate: calc(100% * var(--dir)) 0;
@@ -202,8 +191,14 @@
 }
 
 :host([open][position='relative']) {
+    [part='base'] {
+        transition-delay: 50ms;
+    }
+
     [part~='mini'] {
-        display: none;
+        width: 0;
+        min-width: 0;
+        padding-inline: 0;
     }
 }
 
