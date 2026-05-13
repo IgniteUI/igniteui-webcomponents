@@ -29,6 +29,7 @@
     }
 
     [part='base'] {
+        box-sizing: border-box;
         width: var(--menu-full-width);
         margin: unset;
         border-color: transparent;
@@ -132,13 +133,6 @@
 :host([position='end']),
 :host([dir='rtl'][position='start']) {
     --dir: #{direction($rtl: false)};
-}
-
-:host(:not([open])[position='top']),
-:host(:not([open])[position='bottom']) {
-    [part='mini'] {
-        display: none;
-    }
 }
 
 :host(:not([open])[position='top']) {
