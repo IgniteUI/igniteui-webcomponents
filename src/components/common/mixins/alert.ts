@@ -29,10 +29,6 @@ export abstract class IgcBaseAlertLikeComponent extends LitElement {
 
   protected _autoHideTimeout?: ReturnType<typeof setTimeout>;
 
-  private get _isContained(): boolean {
-    return this.positioning === 'container';
-  }
-
   // TODO: Move this to styles, i.e. :host([position="top"]) { top: anchor(top); } etc.
   private get _containerPosition(): string {
     switch (this.position) {
@@ -47,32 +43,53 @@ export abstract class IgcBaseAlertLikeComponent extends LitElement {
 
   /**
    * Whether the component is in shown state.
-   * @attr
+   *
+   * @attr open
+   * @default false
    */
   @property({ type: Boolean, reflect: true })
   public open = false;
 
   /**
-   * Determines the duration in ms in which the component will be visible.
+   * Determines the duration in milliseconds in which the component will be visible.
+   *
    * @attr display-time
+   * @default 4000
    */
   @property({ type: Number, attribute: 'display-time' })
   public displayTime = 4000;
 
   /**
    * Determines whether the component should close after the `displayTime` is over.
+   *
    * @attr keep-open
+   * @default false
    */
   @property({ type: Boolean, reflect: true, attribute: 'keep-open' })
   public keepOpen = false;
 
   /**
    * Sets the position of the component in the viewport.
-   * @attr
+   *
+   * `bottom` - positions the component at the bottom. This is the default.
+   * `middle` - positions the component at the center.
+   * `top` - positions the component at the top.
+   *
+   * @attr position
+   * @default 'bottom'
    */
   @property({ reflect: true })
   public position: AbsolutePosition = 'bottom';
 
+  /**
+   * Sets the positioning strategy of the component.
+   *
+   * `viewport` - positions the component relative to the viewport, ignoring any ancestor elements. This is the default behavior.
+   * `container` - positions the component relative to the nearest visible ancestor. In this mode, the component will be constrained within the bounding box of the ancestor and will be positioned according to the `position` attribute.
+   *
+   * @attr positioning
+   * @default 'viewport'
+   */
   @property({ reflect: true })
   public positioning: 'viewport' | 'container' = 'viewport';
 
@@ -93,14 +110,12 @@ export abstract class IgcBaseAlertLikeComponent extends LitElement {
   }
 
   protected override update(props: PropertyValues<this>): void {
-    if (props.has('displayTime')) {
-      this._setAutoHideTimer();
-    }
-
-    if (props.has('keepOpen')) {
-      this.keepOpen
-        ? clearTimeout(this._autoHideTimeout)
-        : this._setAutoHideTimer();
+    if (props.has('open')) {
+      if (this.open && !this.matches(':popover-open')) {
+        this._showPopover();
+      } else if (!this.open && this.matches(':popover-open')) {
+        this._hidePopover();
+      }
     }
 
     if (this.open && (props.has('positioning') || props.has('position'))) {
@@ -108,11 +123,19 @@ export abstract class IgcBaseAlertLikeComponent extends LitElement {
       this._showPopover();
     }
 
+    if (
+      props.has('open') ||
+      props.has('displayTime') ||
+      props.has('keepOpen')
+    ) {
+      this._setAutoHideTimer();
+    }
+
     super.update(props);
   }
 
   private _showPopover(): boolean {
-    if (!this._isContained) {
+    if (this.positioning !== 'container') {
       this.showPopover();
       return true;
     }
@@ -130,33 +153,28 @@ export abstract class IgcBaseAlertLikeComponent extends LitElement {
 
   private _hidePopover(): void {
     this.hidePopover();
-
-    if (this._isContained) {
-      this.style.removeProperty('top');
-      this.style.removeProperty('left');
-    }
+    this.style.removeProperty('top');
+    this.style.removeProperty('left');
   }
 
   private async _setOpenState(open: boolean): Promise<boolean> {
-    let state: boolean;
-
     if (open) {
-      this.open = open;
+      this.open = true;
 
       if (!this._showPopover()) {
         this.open = false;
         return false;
       }
 
-      state = await this._player.playExclusive(fadeIn());
+      const state = await this._player.playExclusive(fadeIn());
       this._setAutoHideTimer();
-    } else {
-      clearTimeout(this._autoHideTimeout);
-      state = await this._player.playExclusive(fadeOut());
-      this._hidePopover();
-      this.open = open;
+      return state;
     }
 
+    clearTimeout(this._autoHideTimeout);
+    const state = await this._player.playExclusive(fadeOut());
+    this._hidePopover();
+    this.open = false;
     return state;
   }
 
@@ -167,17 +185,32 @@ export abstract class IgcBaseAlertLikeComponent extends LitElement {
     }
   }
 
-  /** Opens the component. */
+  /**
+   * Opens the component.
+   *
+   * Returns a promise that resolves to `true` if the component was successfully opened, or `false`
+   * if it was already open or could not be shown (e.g., in `container` positioning mode with no visible ancestors).
+   */
   public async show(): Promise<boolean> {
     return this.open ? false : this._setOpenState(true);
   }
 
-  /** Closes the component. */
+  /**
+   * Closes the component.
+   *
+   * Returns a promise that resolves to `true` if the component was successfully closed, or `false`
+   * if it was already closed.
+   */
   public async hide(): Promise<boolean> {
     return this.open ? this._setOpenState(false) : false;
   }
 
-  /** Toggles the open state of the component. */
+  /**
+   * Toggles the open state of the component.
+   *
+   * Returns a promise that resolves to `true` if the operation completed successfully, or `false`
+   * if it was already in the desired state.
+   */
   public async toggle(): Promise<boolean> {
     return this.open ? this.hide() : this.show();
   }

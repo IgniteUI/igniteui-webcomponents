@@ -11,6 +11,8 @@ import { styles } from './themes/toast.base.css.js';
  *
  * @element igc-toast
  *
+ * @slot - Default slot for the toast content.
+ *
  * @csspart base - The base wrapper of the toast.
  */
 export default class IgcToastComponent extends IgcBaseAlertLikeComponent {

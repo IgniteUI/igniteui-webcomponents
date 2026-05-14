@@ -45,9 +45,11 @@ describe('Toast', () => {
     const checkOpenState = (state = false) => {
       if (state) {
         expect(toast).dom.to.have.attribute('open');
+        expect(toast.matches(':popover-open')).to.be.true;
         expect(toast).shadowDom.to.equal('<slot></slot>');
       } else {
         expect(toast).dom.not.to.have.attribute('open');
+        expect(toast.matches(':popover-open')).to.be.false;
         expect(toast).shadowDom.to.equal('<slot inert></slot>');
       }
     };
@@ -121,6 +123,67 @@ describe('Toast', () => {
       await toast.toggle();
       expect(toast.open).to.be.false;
       checkOpenState(false);
+    });
+
+    describe('positioning', () => {
+      it('defaults to `viewport` with no inline anchor styles', async () => {
+        expect(toast.positioning).to.equal('viewport');
+
+        await toast.show();
+
+        expect(toast.matches(':popover-open')).to.be.true;
+        expect(toast.style.top).to.equal('');
+        expect(toast.style.left).to.equal('');
+      });
+
+      it('`container` positioning sets inline anchor styles when shown', async () => {
+        toast.positioning = 'container';
+        await toast.show();
+
+        expect(toast.matches(':popover-open')).to.be.true;
+        expect(toast.style.top).to.not.equal('');
+        expect(toast.style.left).to.not.equal('');
+      });
+
+      it('switching `container → viewport` while open removes inline styles', async () => {
+        toast.positioning = 'container';
+        await toast.show();
+
+        expect(toast.style.top).to.not.equal('');
+        expect(toast.style.left).to.not.equal('');
+
+        toast.positioning = 'viewport';
+        await elementUpdated(toast);
+
+        expect(toast.matches(':popover-open')).to.be.true;
+        expect(toast.style.top).to.equal('');
+        expect(toast.style.left).to.equal('');
+      });
+
+      it('switching `viewport → container` while open sets inline styles', async () => {
+        await toast.show();
+
+        expect(toast.style.top).to.equal('');
+        expect(toast.style.left).to.equal('');
+
+        toast.positioning = 'container';
+        await elementUpdated(toast);
+
+        expect(toast.matches(':popover-open')).to.be.true;
+        expect(toast.style.top).to.not.equal('');
+        expect(toast.style.left).to.not.equal('');
+      });
+
+      it('`position` changes in `viewport` mode do not set inline styles', async () => {
+        await toast.show();
+
+        toast.position = 'top';
+        await elementUpdated(toast);
+
+        expect(toast.matches(':popover-open')).to.be.true;
+        expect(toast.style.top).to.equal('');
+        expect(toast.style.left).to.equal('');
+      });
     });
   });
 });

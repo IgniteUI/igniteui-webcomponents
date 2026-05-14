@@ -98,11 +98,13 @@ describe('Snackbar', () => {
     const checkOpenState = (state = false) => {
       if (state) {
         expect(snackbar).dom.to.have.attribute('open');
+        expect(snackbar.matches(':popover-open')).to.be.true;
         expect(snackbar).shadowDom.to.equal(`<div part="base"></div>`, {
           ignoreTags: ['span', 'slot'],
         });
       } else {
         expect(snackbar).dom.not.to.have.attribute('open');
+        expect(snackbar.matches(':popover-open')).to.be.false;
         expect(snackbar).shadowDom.to.equal(`<div part="base" inert></div>`, {
           ignoreTags: ['span', 'slot'],
         });
@@ -192,6 +194,83 @@ describe('Snackbar', () => {
       await snackbar.toggle();
       expect(snackbar.open).to.be.false;
       checkOpenState(false);
+    });
+
+    describe('positioning', () => {
+      it('defaults to `viewport` with no inline anchor styles', async () => {
+        expect(snackbar.positioning).to.equal('viewport');
+
+        await snackbar.show();
+
+        expect(snackbar.matches(':popover-open')).to.be.true;
+        expect(snackbar.style.top).to.equal('');
+        expect(snackbar.style.left).to.equal('');
+      });
+
+      it('`container` positioning sets inline anchor styles when shown', async () => {
+        snackbar.positioning = 'container';
+        await snackbar.show();
+
+        expect(snackbar.matches(':popover-open')).to.be.true;
+        expect(snackbar.style.top).to.not.equal('');
+        expect(snackbar.style.left).to.not.equal('');
+      });
+
+      it('`position` values map to the correct `top` anchor expression in `container` mode', async () => {
+        snackbar.positioning = 'container';
+        await snackbar.show();
+
+        // default position is 'bottom'
+        expect(snackbar.style.top).to.equal('calc(-25% + anchor(bottom))');
+
+        snackbar.position = 'top';
+        await elementUpdated(snackbar);
+        expect(snackbar.style.top).to.equal('anchor(top)');
+
+        snackbar.position = 'middle';
+        await elementUpdated(snackbar);
+        expect(snackbar.style.top).to.equal('anchor(center)');
+      });
+
+      it('switching `container → viewport` while open removes inline styles', async () => {
+        snackbar.positioning = 'container';
+        await snackbar.show();
+
+        expect(snackbar.style.top).to.not.equal('');
+        expect(snackbar.style.left).to.not.equal('');
+
+        snackbar.positioning = 'viewport';
+        await elementUpdated(snackbar);
+
+        expect(snackbar.matches(':popover-open')).to.be.true;
+        expect(snackbar.style.top).to.equal('');
+        expect(snackbar.style.left).to.equal('');
+      });
+
+      it('switching `viewport → container` while open sets inline styles', async () => {
+        await snackbar.show();
+
+        expect(snackbar.style.top).to.equal('');
+        expect(snackbar.style.left).to.equal('');
+
+        snackbar.positioning = 'container';
+        await elementUpdated(snackbar);
+
+        expect(snackbar.matches(':popover-open')).to.be.true;
+        expect(snackbar.style.top).to.not.equal('');
+        expect(snackbar.style.left).to.not.equal('');
+      });
+
+      it('`position` changes in `viewport` mode do not set inline styles', async () => {
+        await snackbar.show();
+
+        snackbar.position = 'top';
+        await elementUpdated(snackbar);
+
+        expect(snackbar.matches(':popover-open')).to.be.true;
+        expect(snackbar.style.top).to.equal('');
+        expect(snackbar.style.left).to.equal('');
+      });
     });
   });
 

@@ -43,7 +43,7 @@ export default class IgcSnackbarComponent extends EventEmitterMixin<
   }
 
   /**
-   * The snackbar action button.
+   * The text of the action button.
    * @attr action-text
    */
   @property({ attribute: 'action-text' })
