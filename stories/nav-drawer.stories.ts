@@ -21,7 +21,7 @@ const metadata: Meta<IgcNavDrawerComponent> = {
     docs: {
       description: {
         component:
-          'Represents a side navigation container that provides\nquick access between views.',
+          '`igc-nav-drawer` is a side navigation container that provides\nquick access between views within an application.\n\nFor non-relative positions the drawer is rendered as a native modal `<dialog>` element,\nproviding built-in accessibility support and Escape key handling.\nIn `relative` position mode it renders as an inline element and applies `inert`\nto the content when closed.\n\nWhen content is provided in the `mini` slot, a compact icon-only variant is\ndisplayed alongside the main drawer.',
       },
     },
     actions: { handles: ['igcClosing', 'igcClosed'] },
@@ -29,14 +29,15 @@ const metadata: Meta<IgcNavDrawerComponent> = {
   argTypes: {
     position: {
       type: '"start" | "end" | "top" | "bottom" | "relative"',
-      description: 'The position of the drawer.',
+      description:
+        'Sets the position of the drawer.\n\n- `start` — anchored to the inline-start edge (default).\n- `end` — anchored to the inline-end edge.\n- `top` — anchored to the block-start edge.\n- `bottom` — anchored to the block-end edge.\n- `relative` — rendered inline within the page flow; no modal backdrop.',
       options: ['start', 'end', 'top', 'bottom', 'relative'],
       control: { type: 'select' },
       table: { defaultValue: { summary: 'start' } },
     },
     open: {
       type: 'boolean',
-      description: 'Determines whether the drawer is opened.',
+      description: 'Whether the drawer is open.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
@@ -54,9 +55,17 @@ const metadata: Meta<IgcNavDrawerComponent> = {
 export default metadata;
 
 interface IgcNavDrawerArgs {
-  /** The position of the drawer. */
+  /**
+   * Sets the position of the drawer.
+   *
+   * - `start` — anchored to the inline-start edge (default).
+   * - `end` — anchored to the inline-end edge.
+   * - `top` — anchored to the block-start edge.
+   * - `bottom` — anchored to the block-end edge.
+   * - `relative` — rendered inline within the page flow; no modal backdrop.
+   */
   position: 'start' | 'end' | 'top' | 'bottom' | 'relative';
-  /** Determines whether the drawer is opened. */
+  /** Whether the drawer is open. */
   open: boolean;
   /**
    * Determines whether the drawer should remain open when the Escape key is pressed.

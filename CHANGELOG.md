@@ -6,6 +6,16 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 ### Added
+- #### Nav Drawer
+  - The drawer for non-relative positions is now implemented using a native `<dialog>` element, providing built-in modal semantics, focus trapping, and accessibility support.
+  - Added `keepOpenOnEscape` property — prevents the drawer from closing when the user presses the **Escape** key (non-relative positions only).
+  - Added `igcClosing` event — emitted just before the drawer is closed by user interaction. Cancelable.
+  - Added `igcClosed` event — emitted just after the drawer is closed by user interaction.
+  - The `mini` slot content is now always visible whenever it is provided, regardless of the drawer's position or open state.
+
+### Changed
+- #### Nav Drawer
+  - The `overlay` CSS part has been removed. The native `<dialog>` element's `::backdrop` pseudo-element should be used for backdrop styling instead.
 - #### Form controls
   - `IgcInput`, `IgcMaskInput`, `IgcDateTimeInput`, `IgcCheckbox`, `IgcRadio`, `IgcSwitch`, `IgcDatePicker`, and `IgcDateRangePicker` now submit their associated form on **Enter** key press, matching native browser behavior.
 

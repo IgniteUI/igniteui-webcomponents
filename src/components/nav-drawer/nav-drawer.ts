@@ -22,20 +22,28 @@ export interface IgcNavDrawerComponentEventMap {
 }
 
 /**
- * Represents a side navigation container that provides
- * quick access between views.
+ * `igc-nav-drawer` is a side navigation container that provides
+ * quick access between views within an application.
+ *
+ * For non-relative positions the drawer is rendered as a native modal `<dialog>` element,
+ * providing built-in accessibility support and Escape key handling.
+ * In `relative` position mode it renders as an inline element and applies `inert`
+ * to the content when closed.
+ *
+ * When content is provided in the `mini` slot, a compact icon-only variant is
+ * displayed alongside the main drawer.
  *
  * @element igc-nav-drawer
  *
  * @fires igcClosing - Emitted just before the drawer is closed by a user interaction. Cancelable.
  * @fires igcClosed - Emitted just after the drawer is closed by a user interaction.
  *
- * @slot - The default slot for the igc-navigation-drawer.
- * @slot mini - The slot for the mini variant of the igc-navigation-drawer.
+ * @slot - Renders the main navigation content of the drawer.
+ * @slot mini - Renders the compact mini variant of the drawer.
  *
- * @csspart base - The base wrapper of the igc-navigation-drawer.
- * @csspart main - The main container of the igc-navigation-drawer.
- * @csspart mini - The mini container of the igc-navigation-drawer.
+ * @csspart base - The base wrapper of the drawer. A `<dialog>` element for non-relative positions, a `<div>` for relative.
+ * @csspart main - The main content container of the drawer.
+ * @csspart mini - The mini variant container of the drawer.
  */
 export default class IgcNavDrawerComponent extends EventEmitterMixin<
   IgcNavDrawerComponentEventMap,
@@ -74,7 +82,13 @@ export default class IgcNavDrawerComponent extends EventEmitterMixin<
   //#region Public properties
 
   /**
-   * The position of the drawer.
+   * Sets the position of the drawer.
+   *
+   * - `start` — anchored to the inline-start edge (default).
+   * - `end` — anchored to the inline-end edge.
+   * - `top` — anchored to the block-start edge.
+   * - `bottom` — anchored to the block-end edge.
+   * - `relative` — rendered inline within the page flow; no modal backdrop.
    *
    * @attr position
    * @default 'start'
@@ -83,7 +97,7 @@ export default class IgcNavDrawerComponent extends EventEmitterMixin<
   public position: NavDrawerPosition = 'start';
 
   /**
-   * Determines whether the drawer is opened.
+   * Whether the drawer is open.
    *
    * @attr open
    * @default false
@@ -105,7 +119,7 @@ export default class IgcNavDrawerComponent extends EventEmitterMixin<
 
   //#endregion
 
-  //#region Lifecycle
+  //#region Lit Lifecycle
 
   constructor() {
     super();
@@ -188,7 +202,7 @@ export default class IgcNavDrawerComponent extends EventEmitterMixin<
 
   //#region Public API
 
-  /** Opens the drawer. */
+  /** Opens the drawer. Returns `true` if the operation was successful, `false` if the drawer was already open. */
   public async show(): Promise<boolean> {
     if (this.open) {
       return false;
@@ -200,7 +214,7 @@ export default class IgcNavDrawerComponent extends EventEmitterMixin<
     return true;
   }
 
-  /** Closes the drawer. */
+  /** Closes the drawer. Returns `true` if the operation was successful, `false` if the drawer was already closed. */
   public async hide(): Promise<boolean> {
     if (!this.open) {
       return false;
@@ -212,8 +226,8 @@ export default class IgcNavDrawerComponent extends EventEmitterMixin<
     return true;
   }
 
-  /** Toggles the open state of the drawer. */
-  public async toggle(): Promise<boolean> {
+  /** Toggles the open state of the drawer. Delegates to `show()` or `hide()` depending on the current state. */
+  public toggle(): Promise<boolean> {
     return this.open ? this.hide() : this.show();
   }
 
