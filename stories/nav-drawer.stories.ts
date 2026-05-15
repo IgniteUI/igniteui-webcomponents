@@ -49,20 +49,14 @@ const metadata: Meta<IgcNavDrawerComponent> = {
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
-    ariaLabel: {
+    label: {
       type: 'string',
       description:
         'Sets an accessible label for the drawer.\n\nIn non-relative positions this label is applied to the modal `<dialog>` element.\nIn `relative` position it labels the `<nav>` landmark.\n\nWhen multiple navigation landmarks exist on the page each should receive a\ndistinct label so screen-reader users can differentiate between them.',
       control: 'text',
-      table: { defaultValue: { summary: 'null' } },
     },
   },
-  args: {
-    position: 'start',
-    open: false,
-    keepOpenOnEscape: false,
-    ariaLabel: 'null',
-  },
+  args: { position: 'start', open: false, keepOpenOnEscape: false },
 };
 
 export default metadata;
@@ -96,7 +90,7 @@ interface IgcNavDrawerArgs {
    * When multiple navigation landmarks exist on the page each should receive a
    * distinct label so screen-reader users can differentiate between them.
    */
-  ariaLabel: string;
+  label: string;
 }
 type Story = StoryObj<IgcNavDrawerArgs>;
 
@@ -231,7 +225,7 @@ const createTemplate = (options: {
 
     <div class="ig-scrollbar main">
       <igc-nav-drawer
-        aria-label=${ifDefined(options.headerText ?? undefined)}
+        label=${ifDefined(options.headerText ?? undefined)}
         .open=${open}
         .position=${position}
         ?keep-open-on-escape=${keepOpenOnEscape}

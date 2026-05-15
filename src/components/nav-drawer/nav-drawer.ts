@@ -127,10 +127,10 @@ export default class IgcNavDrawerComponent extends EventEmitterMixin<
    * When multiple navigation landmarks exist on the page each should receive a
    * distinct label so screen-reader users can differentiate between them.
    *
-   * @attr aria-label
+   * @attr label
    */
-  @property({ attribute: 'aria-label', reflect: true })
-  public override ariaLabel: string | null = null;
+  @property()
+  public label?: string;
 
   //#endregion
 
@@ -275,7 +275,7 @@ export default class IgcNavDrawerComponent extends EventEmitterMixin<
         ${ref(this._dialogRef)}
         part="base"
         aria-modal="true"
-        aria-label=${ifDefined(this.ariaLabel ?? undefined)}
+        aria-label=${ifDefined(this.label)}
         @click=${this._handleClick}
         @cancel=${this._handleCancel}
         @close=${bindIf(this.keepOpenOnEscape, this._handleClose)}
@@ -288,11 +288,7 @@ export default class IgcNavDrawerComponent extends EventEmitterMixin<
 
   private _renderRelative() {
     return html`
-      <nav
-        part="base"
-        aria-label=${ifDefined(this.ariaLabel ?? undefined)}
-        .inert=${!this.open}
-      >
+      <nav part="base" aria-label=${ifDefined(this.label)} .inert=${!this.open}>
         ${this._renderContent()}
       </nav>
       ${this._renderMiniVariant()}
