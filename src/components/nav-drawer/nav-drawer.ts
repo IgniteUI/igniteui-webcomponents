@@ -1,6 +1,7 @@
 import { html, LitElement, type PropertyValues } from 'lit';
 import { property } from 'lit/decorators.js';
 import { cache } from 'lit/directives/cache.js';
+import { ifDefined } from 'lit/directives/if-defined.js';
 import { createRef, ref } from 'lit/directives/ref.js';
 import { addThemingController } from '../../theming/theming-controller.js';
 import { addSlotController, setSlots } from '../common/controllers/slot.js';
@@ -116,6 +117,20 @@ export default class IgcNavDrawerComponent extends EventEmitterMixin<
    */
   @property({ type: Boolean, attribute: 'keep-open-on-escape' })
   public keepOpenOnEscape = false;
+
+  /**
+   * Sets an accessible label for the drawer.
+   *
+   * In non-relative positions this label is applied to the modal `<dialog>` element.
+   * In `relative` position it labels the `<nav>` landmark.
+   *
+   * When multiple navigation landmarks exist on the page each should receive a
+   * distinct label so screen-reader users can differentiate between them.
+   *
+   * @attr aria-label
+   */
+  @property({ attribute: 'aria-label', reflect: true })
+  public override ariaLabel: string | null = null;
 
   //#endregion
 
@@ -259,6 +274,8 @@ export default class IgcNavDrawerComponent extends EventEmitterMixin<
       <dialog
         ${ref(this._dialogRef)}
         part="base"
+        aria-modal="true"
+        aria-label=${ifDefined(this.ariaLabel ?? undefined)}
         @click=${this._handleClick}
         @cancel=${this._handleCancel}
         @close=${bindIf(this.keepOpenOnEscape, this._handleClose)}
@@ -271,7 +288,13 @@ export default class IgcNavDrawerComponent extends EventEmitterMixin<
 
   private _renderRelative() {
     return html`
-      <div part="base" .inert=${!this.open}>${this._renderContent()}</div>
+      <nav
+        part="base"
+        aria-label=${ifDefined(this.ariaLabel ?? undefined)}
+        .inert=${!this.open}
+      >
+        ${this._renderContent()}
+      </nav>
       ${this._renderMiniVariant()}
     `;
   }

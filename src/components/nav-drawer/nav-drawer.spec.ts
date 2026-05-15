@@ -69,7 +69,7 @@ describe('Navigation Drawer', () => {
       navDrawer = await createNavDrawer();
 
       expect(navDrawer).shadowDom.equal(`
-        <dialog part="base">
+        <dialog aria-modal="true" part="base">
           <div part="main">
             <slot></slot>
           </div>
@@ -80,7 +80,7 @@ describe('Navigation Drawer', () => {
       `);
     });
 
-    it('renders div-based shadow DOM for relative position', async () => {
+    it('renders nav-based shadow DOM for relative position', async () => {
       navDrawer = await createNavDrawer(html`
         <igc-nav-drawer position="relative">
           <igc-nav-drawer-item></igc-nav-drawer-item>
@@ -88,11 +88,11 @@ describe('Navigation Drawer', () => {
       `);
 
       expect(navDrawer).shadowDom.equal(`
-        <div inert part="base">
+        <nav inert part="base">
           <div part="main">
             <slot></slot>
           </div>
-        </div>
+        </nav>
         <div part="mini hidden">
           <slot name="mini"></slot>
         </div>
