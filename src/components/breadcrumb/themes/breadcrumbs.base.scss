@@ -1,0 +1,11 @@
+@use 'styles/common/component';
+@use 'styles/utilities' as *;
+
+:host {
+    --_gap: var(--ig-breadcrumbs-gap, 0.5rem);
+
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--_gap);
+}
