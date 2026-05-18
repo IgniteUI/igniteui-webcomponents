@@ -159,6 +159,72 @@
     }
 }
 
+@supports not selector(:open) {
+    :host [part='base'] {
+        transition-property: translate, opacity;
+
+        &::backdrop {
+            transition-property: opacity;
+        }
+    }
+
+    :host([open]) [part='base'] {
+        &::backdrop {
+            opacity: 1;
+
+            @starting-style {
+                opacity: 0;
+            }
+        }
+    }
+
+    :host([open][position='top']) {
+        [part='base'] {
+            translate: 0;
+
+            @starting-style {
+                translate: 0 calc(var(--menu-height) * -1);
+            }
+        }
+    }
+
+    :host(:not([open])[position='top']) {
+        [part='base'] {
+            translate: 0 calc(var(--menu-height) * -1);
+        }
+    }
+
+    :host([open][position='bottom']) {
+        [part='base'] {
+            translate: 0;
+
+            @starting-style {
+                translate: 0 var(--menu-height);
+            }
+        }
+    }
+
+    :host(:not([open])[position='bottom']) {
+        [part='base'] {
+            translate: 0 var(--menu-height);
+        }
+    }
+
+    :host([open]:where([position='start'], [position='end'])) {
+        [part='base'] {
+            @starting-style {
+                translate: calc(100% * var(--dir)) 0;
+            }
+        }
+    }
+
+    :host(:not([open]):where([position='start'], [position='end'])) {
+        [part='base'] {
+            translate: calc(100% * var(--dir)) 0;
+        }
+    }
+}
+
 :host([position='relative']) {
     [part='base'] {
         position: relative;
