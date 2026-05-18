@@ -23,13 +23,9 @@ export interface IgcNavDrawerComponentEventMap {
 }
 
 /**
- * `igc-nav-drawer` is a side navigation container that provides
+ * A side navigation container that provides
  * quick access between views within an application.
  *
- * For non-relative positions the drawer is rendered as a native modal `<dialog>` element,
- * providing built-in accessibility support and Escape key handling.
- * In `relative` position mode it renders as an inline element and applies `inert`
- * to the content when closed.
  *
  * When content is provided in the `mini` slot, a compact icon-only variant is
  * displayed alongside the main drawer.
@@ -42,7 +38,7 @@ export interface IgcNavDrawerComponentEventMap {
  * @slot - Renders the main navigation content of the drawer.
  * @slot mini - Renders the compact mini variant of the drawer.
  *
- * @csspart base - The base wrapper of the drawer. A `<dialog>` element for non-relative positions, a `<div>` for relative.
+ * @csspart base - The base wrapper of the drawer.
  * @csspart main - The main content container of the drawer.
  * @csspart mini - The mini variant container of the drawer.
  */
@@ -65,13 +61,23 @@ export default class IgcNavDrawerComponent extends EventEmitterMixin<
   //#region Internal state
 
   private readonly _dialogRef = createRef<HTMLDialogElement>();
+  private readonly _miniRef = createRef<HTMLDivElement>();
 
   private readonly _slots = addSlotController(this, {
     slots: setSlots('mini'),
+    onChange: this._handleMiniState,
   });
 
   private get _dialog(): HTMLDialogElement | undefined {
     return this._dialogRef.value;
+  }
+
+  private get _mini(): HTMLDivElement | undefined {
+    return this._miniRef.value;
+  }
+
+  private get _hasMiniContent(): boolean {
+    return this._slots.hasAssignedElements('mini');
   }
 
   private get _isRelative(): boolean {
@@ -144,6 +150,10 @@ export default class IgcNavDrawerComponent extends EventEmitterMixin<
   protected override update(properties: PropertyValues<this>): void {
     if (properties.has('position') && this._isRelative) {
       this._dialog?.close();
+      const mini = this._mini;
+      if (mini?.matches(':popover-open')) {
+        mini.hidePopover();
+      }
     }
 
     super.update(properties);
@@ -152,6 +162,7 @@ export default class IgcNavDrawerComponent extends EventEmitterMixin<
   protected override updated(properties: PropertyValues<this>): void {
     if (properties.has('open') || properties.has('position')) {
       this._handleOpenState();
+      this._handleMiniState();
     }
   }
 
@@ -165,6 +176,27 @@ export default class IgcNavDrawerComponent extends EventEmitterMixin<
     }
 
     this.open ? this._dialog?.showModal() : this._dialog?.close();
+  }
+
+  private _handleMiniState(): void {
+    if (this._isRelative) {
+      return;
+    }
+
+    const mini = this._mini;
+    if (!mini) {
+      return;
+    }
+
+    const isPopoverOpen = mini.matches(':popover-open');
+
+    if (!this._hasMiniContent || this.open) {
+      if (isPopoverOpen) {
+        mini.hidePopover();
+      }
+    } else if (!isPopoverOpen) {
+      mini.showPopover();
+    }
   }
 
   private _handleCancel(event: Event): void {
@@ -251,10 +283,13 @@ export default class IgcNavDrawerComponent extends EventEmitterMixin<
   private _renderMiniVariant() {
     return html`
       <div
+        ${ref(this._miniRef)}
         part=${partMap({
           mini: true,
-          hidden: !this._slots.hasAssignedElements('mini'),
+          hidden: !this._hasMiniContent,
         })}
+        .inert=${this.open}
+        .popover=${!this._isRelative ? 'manual' : null}
       >
         <slot name="mini"></slot>
       </div>

@@ -22,7 +22,7 @@ const metadata: Meta<IgcNavDrawerComponent> = {
     docs: {
       description: {
         component:
-          '`igc-nav-drawer` is a side navigation container that provides\nquick access between views within an application.\n\nFor non-relative positions the drawer is rendered as a native modal `<dialog>` element,\nproviding built-in accessibility support and Escape key handling.\nIn `relative` position mode it renders as an inline element and applies `inert`\nto the content when closed.\n\nWhen content is provided in the `mini` slot, a compact icon-only variant is\ndisplayed alongside the main drawer.',
+          'A side navigation container that provides\nquick access between views within an application.\n\n\nWhen content is provided in the `mini` slot, a compact icon-only variant is\ndisplayed alongside the main drawer.',
       },
     },
     actions: { handles: ['igcClosing', 'igcClosed'] },

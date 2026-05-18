@@ -74,7 +74,7 @@ describe('Navigation Drawer', () => {
             <slot></slot>
           </div>
         </dialog>
-        <div part="mini hidden">
+        <div part="mini hidden" popover="manual">
           <slot name="mini"></slot>
         </div>
       `);
@@ -326,6 +326,89 @@ describe('Navigation Drawer', () => {
     });
   });
 
+  describe('Mini slot popover', () => {
+    function getMiniElement(drawer: IgcNavDrawerComponent): HTMLDivElement {
+      return drawer.renderRoot.querySelector<HTMLDivElement>('[part~="mini"]')!;
+    }
+
+    it('is shown when the drawer is initially closed with mini content', async () => {
+      navDrawer = await createNavDrawerWithMini();
+      expect(getMiniElement(navDrawer).matches(':popover-open')).to.be.true;
+    });
+
+    it('is hidden when the drawer opens', async () => {
+      navDrawer = await createNavDrawerWithMini();
+      await navDrawer.show();
+      await elementUpdated(navDrawer);
+      expect(getMiniElement(navDrawer).matches(':popover-open')).to.be.false;
+    });
+
+    it('is shown again when the drawer closes', async () => {
+      navDrawer = await createNavDrawerWithMini();
+      await navDrawer.show();
+      await elementUpdated(navDrawer);
+      await navDrawer.hide();
+      await elementUpdated(navDrawer);
+      expect(getMiniElement(navDrawer).matches(':popover-open')).to.be.true;
+    });
+
+    it('is not shown when there is no mini slot content', async () => {
+      navDrawer = await createNavDrawer();
+      expect(getMiniElement(navDrawer).matches(':popover-open')).to.be.false;
+    });
+
+    it('is hidden when position changes to relative', async () => {
+      navDrawer = await createNavDrawerWithMini();
+      expect(getMiniElement(navDrawer).matches(':popover-open')).to.be.true;
+
+      navDrawer.position = 'relative';
+      await elementUpdated(navDrawer);
+
+      expect(getMiniElement(navDrawer).matches(':popover-open')).to.be.false;
+    });
+
+    it('is shown when position changes from relative to non-relative while closed', async () => {
+      navDrawer = await fixture<IgcNavDrawerComponent>(html`
+        <igc-nav-drawer position="relative">
+          <igc-nav-drawer-item slot="mini"></igc-nav-drawer-item>
+        </igc-nav-drawer>
+      `);
+
+      expect(getMiniElement(navDrawer).matches(':popover-open')).to.be.false;
+
+      navDrawer.position = 'start';
+      await elementUpdated(navDrawer);
+
+      expect(getMiniElement(navDrawer).matches(':popover-open')).to.be.true;
+    });
+
+    it('is shown when mini content is dynamically added', async () => {
+      navDrawer = await createNavDrawer();
+      expect(getMiniElement(navDrawer).matches(':popover-open')).to.be.false;
+
+      const item = document.createElement('igc-nav-drawer-item');
+      item.slot = 'mini';
+      navDrawer.appendChild(item);
+
+      await waitUntil(
+        () => getMiniElement(navDrawer).matches(':popover-open'),
+        'Expected mini popover to be shown after adding mini content'
+      );
+    });
+
+    it('is hidden when all mini content is removed', async () => {
+      navDrawer = await createNavDrawerWithMini();
+      expect(getMiniElement(navDrawer).matches(':popover-open')).to.be.true;
+
+      navDrawer.querySelector('[slot="mini"]')!.remove();
+
+      await waitUntil(
+        () => !getMiniElement(navDrawer).matches(':popover-open'),
+        'Expected mini popover to be hidden after removing mini content'
+      );
+    });
+  });
+
   async function createNavDrawer(template?: TemplateResult) {
     return await fixture<IgcNavDrawerComponent>(
       template ??
@@ -335,5 +418,13 @@ describe('Navigation Drawer', () => {
           </igc-nav-drawer>
         `
     );
+  }
+
+  async function createNavDrawerWithMini() {
+    return await fixture<IgcNavDrawerComponent>(html`
+      <igc-nav-drawer>
+        <igc-nav-drawer-item slot="mini"></igc-nav-drawer-item>
+      </igc-nav-drawer>
+    `);
   }
 });
