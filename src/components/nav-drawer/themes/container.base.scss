@@ -25,6 +25,10 @@
 
     [part='mini'] {
         width: var(--menu-mini-width);
+        transition-behavior: allow-discrete;
+        transition-duration: var(--transition-duration);
+        transition-timing-function: var(--transition-function);
+        transition-property: display, translate, overlay;
 
         &::backdrop {
             display: none;
@@ -103,6 +107,7 @@
 
     [part='mini'] {
         display: none;
+        transition: none;
     }
 }
 
@@ -157,12 +162,24 @@
     }
 
     [part='base']:not(:open) {
-        translate: calc(100% * var(--dir)) 0;
+        translate: calc(200% * var(--dir)) 0;
+
+        + [part~='mini'] {
+            translate: 0;
+
+            @starting-style {
+                translate: calc(200% * var(--dir)) 0;
+            }
+        }
     }
 
     [part='base']:open {
+        + [part~='mini'] {
+            translate: calc(200% * var(--dir)) 0;
+        }
+
         @starting-style {
-            translate: calc(100% * var(--dir)) 0;
+            translate: calc(200% * var(--dir)) 0;
         }
     }
 }
@@ -221,14 +238,14 @@
     :host([open]:where([position='start'], [position='end'])) {
         [part='base'] {
             @starting-style {
-                translate: calc(100% * var(--dir)) 0;
+                translate: calc(200% * var(--dir)) 0;
             }
         }
     }
 
     :host(:not([open]):where([position='start'], [position='end'])) {
         [part='base'] {
-            translate: calc(100% * var(--dir)) 0;
+            translate: calc(200% * var(--dir)) 0;
         }
     }
 }
@@ -247,12 +264,12 @@
 
     [part='mini'] {
         position: relative;
-        transition-delay: 50ms;
+        transition:
+            width var(--transition-duration) var(--transition-function) 50ms,
+            min-width var(--transition-duration) var(--transition-function) 50ms,
+            padding var(--transition-duration) var(--transition-function) 50ms;
         border-inline-end-width: rem(1px);
         border-inline-end-style: solid;
-        transition-duration: var(--transition-duration);
-        transition-timing-function: var(--transition-function);
-        transition-property: width, min-width, padding;
     }
 }
 
