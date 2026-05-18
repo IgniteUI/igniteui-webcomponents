@@ -488,3 +488,15 @@ export function compareStyles(
 export function checkDatesEqual(a: CalendarDay | Date, b: CalendarDay | Date) {
   expect(toCalendarDay(a).equalTo(toCalendarDay(b))).to.be.true;
 }
+
+export function suppressResizeObserverLoopError(): void {
+  // Suppress ResizeObserver loop errors that can occur during tests.
+  // These are benign and do not affect test correctness.
+  const errorHandler = window.onerror;
+  window.onerror = (message, ...args) => {
+    if (typeof message === 'string' && message.match(/ResizeObserver loop/)) {
+      return true;
+    }
+    return errorHandler ? errorHandler(message, ...args) : false;
+  };
+}
