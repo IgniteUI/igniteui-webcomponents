@@ -15,6 +15,9 @@
     [part='mini'] {
         --ig-scrollbar-size: rem(8px);
 
+        margin: unset;
+        border: unset;
+        outline-style: none;
         height: 100%;
         min-height: 100%;
         overflow-x: hidden;
@@ -22,17 +25,16 @@
 
     [part='mini'] {
         width: var(--menu-mini-width);
-        border-inline-end-style: solid;
-        border-inline-end-width: rem(1px);
+
+        &::backdrop {
+            display: none;
+        }
     }
 
     [part='base'] {
         box-sizing: border-box;
         width: var(--menu-full-width);
-        margin: unset;
-        border: unset;
         padding: unset;
-        outline-style: none;
         transition-behavior: allow-discrete;
         transition-duration: var(--transition-duration);
         transition-timing-function: var(--transition-function);
@@ -61,7 +63,8 @@
 }
 
 :host([position='start']) {
-    [part='base'] {
+    [part='base'],
+    [part='mini'] {
         border: none;
         border-inline-end-style: solid;
         border-inline-end-width: rem(1px);
@@ -70,7 +73,8 @@
 }
 
 :host([position='end']) {
-    [part='base'] {
+    [part='base'],
+    [part='mini'] {
         border: none;
         border-inline-start-style: solid;
         border-inline-start-width: rem(1px);
@@ -95,6 +99,10 @@
         min-height: initial;
         min-width: 100vw;
         margin: revert;
+    }
+
+    [part='mini'] {
+        display: none;
     }
 }
 
@@ -239,8 +247,9 @@
 
     [part='mini'] {
         position: relative;
-        overflow: hidden;
         transition-delay: 50ms;
+        border-inline-end-width: rem(1px);
+        border-inline-end-style: solid;
         transition-duration: var(--transition-duration);
         transition-timing-function: var(--transition-function);
         transition-property: width, min-width, padding;

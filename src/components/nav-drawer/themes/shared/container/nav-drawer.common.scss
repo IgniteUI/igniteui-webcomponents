@@ -21,7 +21,8 @@ $background: var-get($theme, 'background') !default;
 }
 
 :host(:is([position='start'], [position='end'])) {
-    [part='base'] {
+    [part='base'],
+    [part='mini'] {
         border-inline-color: var-get($theme, 'border-color');
     }
 
