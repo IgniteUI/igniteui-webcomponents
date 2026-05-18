@@ -35,17 +35,17 @@
         border-color: transparent;
         padding: unset;
         outline-style: none;
-        transition:
-            translate var(--transition-function) var(--transition-duration),
-            opacity var(--transition-function) var(--transition-duration),
-            overlay var(--transition-function) var(--transition-duration)
-                allow-discrete,
-            display var(--transition-function) var(--transition-duration)
-                allow-discrete;
+        transition-behavior: allow-discrete;
+        transition-duration: var(--transition-duration);
+        transition-timing-function: var(--transition-function);
+        transition-property: translate, opacity, overlay, display;
 
         &::backdrop {
-            transition: opacity var(--transition-function)
-                var(--transition-duration);
+            transition-behavior: allow-discrete;
+            transition-duration: var(--transition-duration);
+            transition-timing-function: var(--transition-function);
+            transition-property: opacity, display;
+            opacity: 1;
 
             @starting-style {
                 opacity: 0;
@@ -82,10 +82,9 @@
     [part='mini'] {
         position: relative;
         overflow: hidden;
-        transition:
-            width var(--transition-function) var(--transition-duration),
-            min-width var(--transition-function) var(--transition-duration),
-            padding var(--transition-function) var(--transition-duration);
+        transition-duration: var(--transition-duration);
+        transition-timing-function: var(--transition-function);
+        transition-property: width, min-width, padding;
     }
 }
 
@@ -141,8 +140,8 @@
     }
 }
 
-:host([open][position='top']) {
-    [part='base'] {
+:host([position='top']) {
+    [part='base']:open {
         translate: 0;
 
         @starting-style {
@@ -157,8 +156,8 @@
     }
 }
 
-:host([open][position='bottom']) {
-    [part='base'] {
+:host([position='bottom']) {
+    [part='base']:open {
         translate: 0;
 
         @starting-style {
@@ -173,8 +172,8 @@
     }
 }
 
-:host([open]:where([position='start'], [position='end'])) {
-    [part='base'] {
+:host(:where([position='start'], [position='end'])) {
+    [part='base']:open {
         border-inline-end-style: solid;
         border-inline-end-width: rem(1px);
 
@@ -196,10 +195,8 @@
     }
 }
 
-:host(:not([open])) {
-    [part='base'] {
-        &::backdrop {
-            opacity: 0;
-        }
+:host(:not([open])) [part='base'] {
+    &::backdrop {
+        opacity: 0;
     }
 }
