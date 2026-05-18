@@ -21,6 +21,7 @@ export type TreeSelection = 'none' | 'multiple' | 'cascade';
 
 //#region component-specific
 export type AvatarShape = 'square' | 'circle' | 'rounded';
+export type CopyFormat = 'plain' | 'preserve';
 export type BadgeShape = 'rounded' | 'square';
 export type ButtonGroupSelection = 'single' | 'single-required' | 'multiple';
 export type ButtonVariant = 'contained' | 'flat' | 'outlined' | 'fab';
