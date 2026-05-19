@@ -251,43 +251,53 @@
 }
 
 :host([position='relative']) {
+    &:has([part='mini']) {
+        --transition-duration: 0.2s;
+    }
+
     [part='base'] {
         position: relative;
         box-shadow: none;
-        transition: margin var(--transition-duration) var(--transition-function);
-    }
-
-    [part='base']:has(~ [part~='hidden']) {
         border-inline-end-style: solid;
         border-inline-end-width: rem(1px);
+        transition-duration: var(--transition-duration);
+        transition-timing-function: var(--transition-function);
+        transition-property: margin, border;
     }
 
     [part='mini'] {
         position: relative;
-        transition:
-            width var(--transition-duration) var(--transition-function) 50ms,
-            min-width var(--transition-duration) var(--transition-function) 50ms,
-            padding var(--transition-duration) var(--transition-function) 50ms;
         border-inline-end-width: rem(1px);
         border-inline-end-style: solid;
+        transition-duration: var(--transition-duration);
+        transition-timing-function: var(--transition-function);
+        transition-property: width, min-width, padding, border;
+        order: -1;
+        z-index: 1;
     }
 }
 
 :host(:not([open])[position='relative']) {
     [part='base'] {
         margin-inline-start: calc(var(--menu-full-width) * -1);
+        border-color: transparent;
         overflow: hidden;
+    }
+
+    [part='mini'] {
+        transition-delay: var(--transition-duration);
     }
 }
 
 :host([open][position='relative']) {
-    [part='base'] {
-        transition-delay: 50ms;
+    [part='base']:has(+ [part='mini']) {
+        transition-delay: var(--transition-duration);
     }
 
     [part='mini'] {
         width: 0;
         min-width: 0;
         padding-inline: 0;
+        border-color: transparent;
     }
 }
