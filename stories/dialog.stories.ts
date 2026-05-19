@@ -4,53 +4,66 @@ import { ifDefined } from 'lit/directives/if-defined.js';
 
 import {
   IgcDialogComponent,
+  IgcIconButtonComponent,
   IgcInputComponent,
   IgcSelectComponent,
   defineComponents,
 } from 'igniteui-webcomponents';
 import { disableStoryControls } from './story.js';
 
-defineComponents(IgcDialogComponent, IgcInputComponent, IgcSelectComponent);
+defineComponents(
+  IgcDialogComponent,
+  IgcInputComponent,
+  IgcSelectComponent,
+  IgcIconButtonComponent
+);
 
 // region default
 const metadata: Meta<IgcDialogComponent> = {
   title: 'Dialog',
   component: 'igc-dialog',
   parameters: {
-    docs: { description: { component: 'Represents a Dialog component.' } },
+    docs: {
+      description: {
+        component:
+          'A modal dialog component built on the native `<dialog>` element.\n\nThe dialog traps focus while open and blocks interaction with the rest\nof the page (modal semantics). It supports animated open/close\ntransitions, an optional backdrop overlay, and multiple content areas\nthrough named slots.\n\nThe component integrates with the\n[Invoker Commands API](https://developer.mozilla.org/en-US/docs/Web/API/Invoker_Commands_API):\nan `igc-button` or a native `<button>` with `command="--show"` / `"--hide"` / `"--toggle"`\nand `commandfor` pointing to this element will call the corresponding method\ndeclaratively without any JavaScript.',
+      },
+    },
     actions: { handles: ['igcClosing', 'igcClosed'] },
   },
   argTypes: {
     keepOpenOnEscape: {
       type: 'boolean',
       description:
-        "Whether the dialog should be kept open when pressing the 'Escape' button.",
+        'When set, pressing the `Escape` key will not close the dialog.\n\nBy default the browser closes a modal dialog on `Escape`. Enable this\noption when the dialog guards unsaved work and should require an explicit\nuser action to dismiss.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
     closeOnOutsideClick: {
       type: 'boolean',
       description:
-        'Whether the dialog should be closed when clicking outside of it.',
+        'When set, clicking on the backdrop area outside the dialog surface\nwill close it (emitting `igcClosing` / `igcClosed`).\n\nHas no effect when the dialog is not yet open.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
     hideDefaultAction: {
       type: 'boolean',
       description:
-        'Whether to hide the default action button for the dialog.\n\nWhen there is projected content in the `footer` slot this property\nhas no effect.',
+        'When set, the built-in "OK" close button in the footer is not rendered.\n\nHas no effect when content is projected into the `footer` slot, since\nthe slot content replaces the default button entirely.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
     open: {
       type: 'boolean',
-      description: 'Whether the dialog is opened.',
+      description:
+        'Whether the dialog is open.\n\nSetting this property programmatically will open or close the dialog\nwithout animation and without emitting `igcClosing` / `igcClosed`.\nPrefer the `show()`, `hide()`, and `toggle()` methods for animated\ntransitions, and note that events are only emitted when the dialog is\nclosed through user interaction (the default action button, outside click,\nor the Escape key).',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
     title: {
       type: 'string',
-      description: 'Sets the title of the dialog.',
+      description:
+        'The title displayed in the dialog header.\n\nOverridden by any content projected into the `title` slot.',
       control: 'text',
     },
   },
@@ -65,20 +78,44 @@ const metadata: Meta<IgcDialogComponent> = {
 export default metadata;
 
 interface IgcDialogArgs {
-  /** Whether the dialog should be kept open when pressing the 'Escape' button. */
+  /**
+   * When set, pressing the `Escape` key will not close the dialog.
+   *
+   * By default the browser closes a modal dialog on `Escape`. Enable this
+   * option when the dialog guards unsaved work and should require an explicit
+   * user action to dismiss.
+   */
   keepOpenOnEscape: boolean;
-  /** Whether the dialog should be closed when clicking outside of it. */
+  /**
+   * When set, clicking on the backdrop area outside the dialog surface
+   * will close it (emitting `igcClosing` / `igcClosed`).
+   *
+   * Has no effect when the dialog is not yet open.
+   */
   closeOnOutsideClick: boolean;
   /**
-   * Whether to hide the default action button for the dialog.
+   * When set, the built-in "OK" close button in the footer is not rendered.
    *
-   * When there is projected content in the `footer` slot this property
-   * has no effect.
+   * Has no effect when content is projected into the `footer` slot, since
+   * the slot content replaces the default button entirely.
    */
   hideDefaultAction: boolean;
-  /** Whether the dialog is opened. */
+  /**
+   * Whether the dialog is open.
+   *
+   * Setting this property programmatically will open or close the dialog
+   * without animation and without emitting `igcClosing` / `igcClosed`.
+   * Prefer the `show()`, `hide()`, and `toggle()` methods for animated
+   * transitions, and note that events are only emitted when the dialog is
+   * closed through user interaction (the default action button, outside click,
+   * or the Escape key).
+   */
   open: boolean;
-  /** Sets the title of the dialog. */
+  /**
+   * The title displayed in the dialog header.
+   *
+   * Overridden by any content projected into the `title` slot.
+   */
   title: string;
 }
 type Story = StoryObj<IgcDialogArgs>;
@@ -223,5 +260,41 @@ export const Form: Story = {
         </form>
       </igc-dialog>
     </div>
+  `,
+};
+
+export const InvokerActions: Story = {
+  argTypes: disableStoryControls(metadata),
+  render: () => html`
+    <style>
+      igc-dialog::part(title) {
+        justify-content: space-between;
+        align-content: center;
+      }
+      igc-dialog::part(base) {
+        max-width: 25rem;
+      }
+    </style>
+
+    <igc-button command="--show" commandfor="invoker-actions"
+      >Show the dialog using invoker actions</igc-button
+    >
+
+    <igc-dialog id="invoker-actions" hide-default-action>
+      <h2 slot="title">Dialog with invoker actions</h2>
+      <igc-icon-button
+        command="--hide"
+        commandfor="invoker-actions"
+        slot="title"
+        name="clear"
+        variant="outlined"
+        collection="internal"
+      ></igc-icon-button>
+      <p>
+        This dialog was opened using invoker actions. You can close the dialog
+        by clicking the icon button in the title bar, which uses invoker actions
+        as well.
+      </p>
+    </igc-dialog>
   `,
 };

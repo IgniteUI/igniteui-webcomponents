@@ -4,6 +4,7 @@ import { cache } from 'lit/directives/cache.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { createRef, ref } from 'lit/directives/ref.js';
 import { addThemingController } from '../../theming/theming-controller.js';
+import { addCommandController } from '../common/controllers/command.js';
 import { addSlotController, setSlots } from '../common/controllers/slot.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
@@ -26,13 +27,25 @@ export interface IgcNavDrawerComponentEventMap {
  * A side navigation container that provides
  * quick access between views within an application.
  *
+ * For non-relative positions (`start`, `end`, `top`, `bottom`) the drawer is
+ * rendered as a native `<dialog>` element, providing modal semantics, automatic
+ * focus trapping, and a backdrop. For the `relative` position it is rendered
+ * inline as a `<nav>` landmark.
  *
  * When content is provided in the `mini` slot, a compact icon-only variant is
- * displayed alongside the main drawer.
+ * always displayed alongside the main drawer (hidden only while the full drawer
+ * is open).
+ *
+ * The component integrates with the
+ * [Invoker Commands API](https://developer.mozilla.org/en-US/docs/Web/API/Invoker_Commands_API):
+ * an `igc-button` or a native `<button>` with `command="--show"` / `"--hide"` / `"--toggle"`
+ * and `commandfor` pointing to this element will call the corresponding method
+ * declaratively without any JavaScript.
  *
  * @element igc-nav-drawer
  *
- * @fires igcClosing - Emitted just before the drawer is closed by a user interaction. Cancelable.
+ * @fires igcClosing - Emitted just before the drawer is closed by a user interaction. Cancelable —
+ *   call `event.preventDefault()` to abort the closing sequence.
  * @fires igcClosed - Emitted just after the drawer is closed by a user interaction.
  *
  * @slot - Renders the main navigation content of the drawer.
@@ -41,6 +54,21 @@ export interface IgcNavDrawerComponentEventMap {
  * @csspart base - The base wrapper of the drawer.
  * @csspart main - The main content container of the drawer.
  * @csspart mini - The mini variant container of the drawer.
+ *
+ * @example
+ * <!-- Basic usage with programmatic control -->
+ * <igc-button onclick="drawer.show()">Open</igc-button>
+ * <igc-nav-drawer id="drawer">
+ *   <igc-nav-drawer-item>Home</igc-nav-drawer-item>
+ *   <igc-nav-drawer-item>Settings</igc-nav-drawer-item>
+ * </igc-nav-drawer>
+ *
+ * @example
+ * <!-- Declarative control via the Invoker Commands API -->
+ * <igc-button command="--toggle" commandfor="main-nav">Toggle</igc-button>
+ * <igc-nav-drawer id="main-nav">
+ *   <igc-nav-drawer-item>Home</igc-nav-drawer-item>
+ * </igc-nav-drawer>
  */
 export default class IgcNavDrawerComponent extends EventEmitterMixin<
   IgcNavDrawerComponentEventMap,
@@ -144,7 +172,12 @@ export default class IgcNavDrawerComponent extends EventEmitterMixin<
 
   constructor() {
     super();
+
     addThemingController(this, all);
+    addCommandController(this)
+      .set('--show', this.show)
+      .set('--hide', this.hide)
+      .set('--toggle', this.toggle);
   }
 
   protected override update(properties: PropertyValues<this>): void {

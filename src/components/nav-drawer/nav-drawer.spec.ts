@@ -7,6 +7,7 @@ import {
 } from '@open-wc/testing';
 import type { TemplateResult } from 'lit';
 import { spy } from 'sinon';
+import IgcButtonComponent from '../button/button.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import { simulateClick } from '../common/utils.spec.js';
 import IgcIconComponent from '../icon/icon.js';
@@ -14,7 +15,11 @@ import IgcNavDrawerComponent from './nav-drawer.js';
 
 describe('Navigation Drawer', () => {
   before(() => {
-    defineComponents(IgcNavDrawerComponent, IgcIconComponent);
+    defineComponents(
+      IgcNavDrawerComponent,
+      IgcButtonComponent,
+      IgcIconComponent
+    );
   });
 
   let navDrawer: IgcNavDrawerComponent;
@@ -427,6 +432,167 @@ describe('Navigation Drawer', () => {
         () => !getMiniElement(navDrawer).matches(':popover-open'),
         'Expected mini popover to be hidden after removing mini content'
       );
+    });
+  });
+
+  describe('Invoker Commands API', () => {
+    afterEach(async () => {
+      if (navDrawer.open) {
+        await navDrawer.hide();
+      }
+    });
+
+    describe('with igc-button', () => {
+      let invoker: IgcButtonComponent;
+
+      beforeEach(async () => {
+        const container = await fixture<HTMLElement>(html`
+          <div>
+            <igc-button command="--show" commandfor="invoker-nav-drawer"
+              >Open</igc-button
+            >
+            <igc-nav-drawer id="invoker-nav-drawer">
+              <igc-nav-drawer-item>Home</igc-nav-drawer-item>
+            </igc-nav-drawer>
+          </div>
+        `);
+
+        invoker = container.querySelector<IgcButtonComponent>('igc-button')!;
+        navDrawer =
+          container.querySelector<IgcNavDrawerComponent>('igc-nav-drawer')!;
+      });
+
+      it('`--show` opens the drawer', async () => {
+        expect(navDrawer.open).to.be.false;
+
+        invoker.click();
+        await waitUntil(() => navDrawer.open);
+
+        expect(navDrawer.open).to.be.true;
+      });
+
+      it('`--hide` closes an open drawer', async () => {
+        await navDrawer.show();
+        expect(navDrawer.open).to.be.true;
+
+        invoker.command = '--hide';
+        await elementUpdated(invoker);
+
+        invoker.click();
+        await waitUntil(() => !navDrawer.open);
+
+        expect(navDrawer.open).to.be.false;
+      });
+
+      it('`--toggle` opens a closed drawer', async () => {
+        expect(navDrawer.open).to.be.false;
+
+        invoker.command = '--toggle';
+        await elementUpdated(invoker);
+
+        invoker.click();
+        await waitUntil(() => navDrawer.open);
+
+        expect(navDrawer.open).to.be.true;
+      });
+
+      it('`--toggle` closes an open drawer', async () => {
+        await navDrawer.show();
+        expect(navDrawer.open).to.be.true;
+
+        invoker.command = '--toggle';
+        await elementUpdated(invoker);
+
+        invoker.click();
+        await waitUntil(() => !navDrawer.open);
+
+        expect(navDrawer.open).to.be.false;
+      });
+
+      it('a disabled igc-button does not invoke commands', async () => {
+        invoker.disabled = true;
+        await elementUpdated(invoker);
+
+        invoker.click();
+        await elementUpdated(navDrawer);
+
+        expect(navDrawer.open).to.be.false;
+      });
+    });
+
+    describe('with native button', () => {
+      let invoker: HTMLButtonElement;
+
+      beforeEach(async () => {
+        const container = await fixture<HTMLElement>(html`
+          <div>
+            <button>Open</button>
+            <igc-nav-drawer id="native-invoker-nav-drawer">
+              <igc-nav-drawer-item>Home</igc-nav-drawer-item>
+            </igc-nav-drawer>
+          </div>
+        `);
+
+        invoker = container.querySelector<HTMLButtonElement>('button')!;
+        navDrawer =
+          container.querySelector<IgcNavDrawerComponent>('igc-nav-drawer')!;
+
+        invoker.setAttribute('command', '--show');
+        invoker.setAttribute('commandfor', 'native-invoker-nav-drawer');
+      });
+
+      it('`--show` opens the drawer', async () => {
+        expect(navDrawer.open).to.be.false;
+
+        invoker.click();
+        await waitUntil(() => navDrawer.open);
+
+        expect(navDrawer.open).to.be.true;
+      });
+
+      it('`--hide` closes an open drawer', async () => {
+        await navDrawer.show();
+        expect(navDrawer.open).to.be.true;
+
+        invoker.setAttribute('command', '--hide');
+
+        invoker.click();
+        await waitUntil(() => !navDrawer.open);
+
+        expect(navDrawer.open).to.be.false;
+      });
+
+      it('`--toggle` opens a closed drawer', async () => {
+        expect(navDrawer.open).to.be.false;
+
+        invoker.setAttribute('command', '--toggle');
+
+        invoker.click();
+        await waitUntil(() => navDrawer.open);
+
+        expect(navDrawer.open).to.be.true;
+      });
+
+      it('`--toggle` closes an open drawer', async () => {
+        await navDrawer.show();
+        expect(navDrawer.open).to.be.true;
+
+        invoker.setAttribute('command', '--toggle');
+
+        invoker.click();
+        await waitUntil(() => !navDrawer.open);
+
+        expect(navDrawer.open).to.be.false;
+      });
+
+      it('a disabled native button does not invoke commands', async () => {
+        invoker.disabled = true;
+
+        invoker.click();
+        await elementUpdated(navDrawer);
+
+        expect(navDrawer.open).to.be.false;
+      });
     });
   });
 
