@@ -14,7 +14,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 - #### Nav Drawer
-  - The `overlay` CSS part has been removed. The native `<dialog>` element's `::backdrop` pseudo-element should be used for backdrop styling instead.
+  - The `overlay` CSS part has been removed. Users of the component can target the `base` part's `::backdrop` pseudo-element, the
+    `--ig-overlay-background-color` variable or use the theming package.
 - #### Form controls
   - `IgcInput`, `IgcMaskInput`, `IgcDateTimeInput`, `IgcCheckbox`, `IgcRadio`, `IgcSwitch`, `IgcDatePicker`, and `IgcDateRangePicker` now submit their associated form on **Enter** key press, matching native browser behavior.
 
