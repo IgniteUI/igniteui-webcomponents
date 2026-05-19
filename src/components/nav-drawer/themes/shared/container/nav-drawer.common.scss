@@ -4,43 +4,41 @@
 $theme: $material;
 $background: var-get($theme, 'background') !default;
 
-[part='overlay'] {
-    background: var-get($overlay-material, 'background-color');
-}
+:host {
+    [part='base'] {
+        background: $background;
+        border-color: var-get($theme, 'border-color');
 
-[part='base'] {
-    border-radius: var-get($theme, 'border-radius');
-    background: $background;
-}
+        &::backdrop {
+            background: var-get($overlay-material, 'background-color');
+        }
+    }
 
-[part='mini'] {
-    background: $background;
-}
-
-:host([position='start']) [part='mini'],
-:host([position='end']) [part='mini'] {
-    box-shadow: var-get($theme, 'elevation');
-}
-
-:host([position='start']) [part~='base'],
-:host([position='start']) [part~='mini'] {
-    border-inline-end-color: var-get($theme, 'border-color');
-}
-
-:host([position='end']) [part~='base'],
-:host([position='end']) [part~='mini'] {
-    border-inline-start-color: var-get($theme, 'border-color');
-}
-
-:host([position='relative']) {
-    [part~='base'],
-    [part~='mini'] {
-        border-inline-end-color: var-get($theme, 'border-color');
+    [part='mini'] {
+        background: $background;
+        border-color: var-get($theme, 'border-color');
     }
 }
 
-:host([open]:not([position='relative'])) {
+:host(:is([position='start'], [position='end'])) {
+    [part='base'],
+    [part='mini'] {
+        border-inline-color: var-get($theme, 'border-color');
+    }
+
+    [part='mini'] {
+        box-shadow: var-get($theme, 'elevation');
+    }
+}
+
+:host(:is([position='top'], [position='bottom'])) {
     [part='base'] {
+        border-block-color: var-get($theme, 'border-color');
+    }
+}
+
+:host(:not([position='relative'])) {
+    [part='base']:open {
         box-shadow: var-get($theme, 'elevation');
     }
 }
