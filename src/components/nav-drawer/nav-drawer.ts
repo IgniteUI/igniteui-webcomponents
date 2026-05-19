@@ -9,7 +9,11 @@ import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { partMap } from '../common/part-map.js';
-import { bindIf, numberInRangeInclusive } from '../common/util.js';
+import {
+  bindIf,
+  isPopoverOpen,
+  numberInRangeInclusive,
+} from '../common/util.js';
 import type { NavDrawerPosition } from '../types.js';
 import IgcNavDrawerHeaderItemComponent from './nav-drawer-header-item.js';
 import IgcNavDrawerItemComponent from './nav-drawer-item.js';
@@ -150,9 +154,8 @@ export default class IgcNavDrawerComponent extends EventEmitterMixin<
   protected override update(properties: PropertyValues<this>): void {
     if (properties.has('position') && this._isRelative) {
       this._dialog?.close();
-      const mini = this._mini;
-      if (mini?.matches(':popover-open')) {
-        mini.hidePopover();
+      if (isPopoverOpen(this._mini)) {
+        this._mini?.hidePopover();
       }
     }
 
@@ -188,13 +191,13 @@ export default class IgcNavDrawerComponent extends EventEmitterMixin<
       return;
     }
 
-    const isPopoverOpen = mini.matches(':popover-open');
+    const popOverOpen = isPopoverOpen(mini);
 
     if (!this._hasMiniContent || this.open) {
-      if (isPopoverOpen) {
+      if (popOverOpen) {
         mini.hidePopover();
       }
-    } else if (!isPopoverOpen) {
+    } else if (!popOverOpen) {
       mini.showPopover();
     }
   }

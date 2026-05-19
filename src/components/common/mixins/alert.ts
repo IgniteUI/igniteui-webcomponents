@@ -4,25 +4,7 @@ import { addAnimationController } from '../../../animations/player.js';
 import { fadeIn, fadeOut } from '../../../animations/presets/fade/index.js';
 import type { AbsolutePosition } from '../../types.js';
 import { addInternalsController } from '../controllers/internals.js';
-
-function getVisibleAncestor(startNode: Node): HTMLElement | null {
-  let node: Node | null = startNode.parentNode;
-
-  while (node) {
-    if (node instanceof ShadowRoot) {
-      node = node.host;
-      continue;
-    }
-
-    if (node instanceof HTMLElement && node.checkVisibility()) {
-      return node;
-    }
-
-    node = node.parentNode;
-  }
-
-  return null;
-}
+import { getVisibleAncestor, isPopoverOpen } from '../util.js';
 
 export abstract class IgcBaseAlertLikeComponent extends LitElement {
   protected readonly _player = addAnimationController(this);
@@ -99,15 +81,15 @@ export abstract class IgcBaseAlertLikeComponent extends LitElement {
 
   protected override update(props: PropertyValues<this>): void {
     if (props.has('open')) {
-      if (this.open && !this.matches(':popover-open')) {
+      if (this.open && !isPopoverOpen(this)) {
         this._showPopover();
-      } else if (!this.open && this.matches(':popover-open')) {
-        this._hidePopover();
+      } else if (!this.open && isPopoverOpen(this)) {
+        this.hidePopover();
       }
     }
 
     if (this.open && (props.has('positioning') || props.has('position'))) {
-      this._hidePopover();
+      this.hidePopover();
       this._showPopover();
     }
 
@@ -137,12 +119,6 @@ export abstract class IgcBaseAlertLikeComponent extends LitElement {
     return true;
   }
 
-  private _hidePopover(): void {
-    this.hidePopover();
-    this.style.removeProperty('top');
-    this.style.removeProperty('left');
-  }
-
   private async _setOpenState(open: boolean): Promise<boolean> {
     if (open) {
       this.open = true;
@@ -159,7 +135,7 @@ export abstract class IgcBaseAlertLikeComponent extends LitElement {
 
     clearTimeout(this._autoHideTimeout);
     const state = await this._player.playExclusive(fadeOut());
-    this._hidePopover();
+    this.hidePopover();
     this.open = false;
     return state;
   }
