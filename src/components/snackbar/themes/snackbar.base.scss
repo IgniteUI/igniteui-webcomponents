@@ -2,28 +2,28 @@
 @use 'styles/utilities' as *;
 
 :host {
-    position: fixed;
+    --margin-block: #{rem(8px)};
+
+    position: absolute;
     font-family: var(--ig-font-family);
-    inset-inline: 50% auto;
-    transform: translateX(calc(-50% + .5px));
+    margin-block: var(--margin-block);
+    position-area: center;
 
     igc-button {
         --ig-size: 2;
     }
 }
 
-:host([position='bottom']) {
-    inset-block: auto 0;
+:host([position='top']) {
+    align-self: start;
 }
 
 :host([position='middle']) {
-    inset-block: 50% auto;
-    transform: translate(calc(-50% + .5px), calc(-50% + .5px));
-    margin: auto;
+    align-self: anchor-center;
 }
 
-:host([position='top']) {
-    inset-block: 0 auto;
+:host([position='bottom']) {
+    align-self: end;
 }
 
 [part~='base'] {
