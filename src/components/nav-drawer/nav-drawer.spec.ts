@@ -74,9 +74,9 @@ describe('Navigation Drawer', () => {
             <slot></slot>
           </div>
         </dialog>
-        <div part="mini hidden" popover="manual">
+        <nav part="mini hidden" popover="manual">
           <slot name="mini"></slot>
-        </div>
+        </nav>
       `);
     });
 
@@ -93,9 +93,9 @@ describe('Navigation Drawer', () => {
             <slot></slot>
           </div>
         </nav>
-        <div part="mini hidden">
+        <nav part="mini hidden">
           <slot name="mini"></slot>
-        </div>
+        </nav>
       `);
     });
 
