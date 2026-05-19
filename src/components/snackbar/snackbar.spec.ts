@@ -6,9 +6,9 @@ import {
   nextFrame,
 } from '@open-wc/testing';
 import { type SinonFakeTimers, spy, useFakeTimers } from 'sinon';
-
 import IgcButtonComponent from '../button/button.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
+import { isPopoverOpen } from '../common/util.js';
 import { finishAnimationsFor } from '../common/utils.spec.js';
 import IgcSnackbarComponent from './snackbar.js';
 
@@ -98,11 +98,13 @@ describe('Snackbar', () => {
     const checkOpenState = (state = false) => {
       if (state) {
         expect(snackbar).dom.to.have.attribute('open');
+        expect(isPopoverOpen(snackbar)).to.be.true;
         expect(snackbar).shadowDom.to.equal(`<div part="base"></div>`, {
           ignoreTags: ['span', 'slot'],
         });
       } else {
         expect(snackbar).dom.not.to.have.attribute('open');
+        expect(isPopoverOpen(snackbar)).to.be.false;
         expect(snackbar).shadowDom.to.equal(`<div part="base" inert></div>`, {
           ignoreTags: ['span', 'slot'],
         });
@@ -192,6 +194,55 @@ describe('Snackbar', () => {
       await snackbar.toggle();
       expect(snackbar.open).to.be.false;
       checkOpenState(false);
+    });
+
+    describe('positioning', () => {
+      it('defaults to `viewport` with no inline anchor styles', async () => {
+        expect(snackbar.positioning).to.equal('viewport');
+
+        await snackbar.show();
+
+        expect(isPopoverOpen(snackbar)).to.be.true;
+        expect(snackbar.style.top).to.equal('');
+        expect(snackbar.style.left).to.equal('');
+      });
+
+      it('`container` positioning shows popover when there is a visible ancestor', async () => {
+        snackbar.positioning = 'container';
+        await snackbar.show();
+
+        expect(isPopoverOpen(snackbar)).to.be.true;
+      });
+
+      it('switching `container → viewport` while open maintains open state', async () => {
+        snackbar.positioning = 'container';
+        await snackbar.show();
+
+        snackbar.positioning = 'viewport';
+        await elementUpdated(snackbar);
+
+        expect(isPopoverOpen(snackbar)).to.be.true;
+      });
+
+      it('switching `viewport → container` while open maintains open state', async () => {
+        await snackbar.show();
+
+        snackbar.positioning = 'container';
+        await elementUpdated(snackbar);
+
+        expect(isPopoverOpen(snackbar)).to.be.true;
+      });
+
+      it('`position` changes in `viewport` mode do not set inline styles', async () => {
+        await snackbar.show();
+
+        snackbar.position = 'top';
+        await elementUpdated(snackbar);
+
+        expect(isPopoverOpen(snackbar)).to.be.true;
+        expect(snackbar.style.top).to.equal('');
+        expect(snackbar.style.left).to.equal('');
+      });
     });
   });
 

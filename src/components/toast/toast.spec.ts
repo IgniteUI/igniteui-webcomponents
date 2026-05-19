@@ -5,9 +5,9 @@ import {
   html,
   nextFrame,
 } from '@open-wc/testing';
-
 import { type SinonFakeTimers, useFakeTimers } from 'sinon';
 import { defineComponents } from '../common/definitions/defineComponents.js';
+import { isPopoverOpen } from '../common/util.js';
 import { finishAnimationsFor } from '../common/utils.spec.js';
 import IgcToastComponent from './toast.js';
 
@@ -45,9 +45,11 @@ describe('Toast', () => {
     const checkOpenState = (state = false) => {
       if (state) {
         expect(toast).dom.to.have.attribute('open');
+        expect(isPopoverOpen(toast)).to.be.true;
         expect(toast).shadowDom.to.equal('<slot></slot>');
       } else {
         expect(toast).dom.not.to.have.attribute('open');
+        expect(isPopoverOpen(toast)).to.be.false;
         expect(toast).shadowDom.to.equal('<slot inert></slot>');
       }
     };
@@ -121,6 +123,55 @@ describe('Toast', () => {
       await toast.toggle();
       expect(toast.open).to.be.false;
       checkOpenState(false);
+    });
+
+    describe('positioning', () => {
+      it('defaults to `viewport` with no inline anchor styles', async () => {
+        expect(toast.positioning).to.equal('viewport');
+
+        await toast.show();
+
+        expect(isPopoverOpen(toast)).to.be.true;
+        expect(toast.style.top).to.equal('');
+        expect(toast.style.left).to.equal('');
+      });
+
+      it('`container` positioning shows popover when there is a visible ancestor', async () => {
+        toast.positioning = 'container';
+        await toast.show();
+
+        expect(isPopoverOpen(toast)).to.be.true;
+      });
+
+      it('switching `container → viewport` while open maintains open state', async () => {
+        toast.positioning = 'container';
+        await toast.show();
+
+        toast.positioning = 'viewport';
+        await elementUpdated(toast);
+
+        expect(isPopoverOpen(toast)).to.be.true;
+      });
+
+      it('switching `viewport → container` while open maintains open state', async () => {
+        await toast.show();
+
+        toast.positioning = 'container';
+        await elementUpdated(toast);
+
+        expect(isPopoverOpen(toast)).to.be.true;
+      });
+
+      it('`position` changes in `viewport` mode do not set inline styles', async () => {
+        await toast.show();
+
+        toast.position = 'top';
+        await elementUpdated(toast);
+
+        expect(isPopoverOpen(toast)).to.be.true;
+        expect(toast.style.top).to.equal('');
+        expect(toast.style.left).to.equal('');
+      });
     });
   });
 });
