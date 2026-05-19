@@ -74,7 +74,7 @@ describe('Navigation Drawer', () => {
             <slot></slot>
           </div>
         </dialog>
-        <nav part="mini hidden" popover="manual">
+        <nav part="mini hidden" popover="manual" inert>
           <slot name="mini"></slot>
         </nav>
       `);
@@ -93,7 +93,7 @@ describe('Navigation Drawer', () => {
             <slot></slot>
           </div>
         </nav>
-        <nav part="mini hidden">
+        <nav part="mini hidden" inert>
           <slot name="mini"></slot>
         </nav>
       `);
@@ -134,6 +134,27 @@ describe('Navigation Drawer', () => {
       expect(navDrawer.open).to.be.false;
       expect(navDrawer.renderRoot.querySelector<Element>('[part="mini"]')).to
         .exist;
+    });
+
+    it('correctly binds label to the mini nav for accessibility', async () => {
+      const label = 'Main navigation';
+
+      navDrawer = await createNavDrawer(html`
+        <igc-nav-drawer label=${label}>
+          <div slot="mini">
+            <igc-nav-drawer-item></igc-nav-drawer-item>
+            <igc-nav-drawer-item></igc-nav-drawer-item>
+          </div>
+          <igc-nav-drawer-item></igc-nav-drawer-item>
+          <igc-nav-drawer-item></igc-nav-drawer-item>
+        </igc-nav-drawer>
+      `);
+
+      const dialog = navDrawer.renderRoot.querySelector('dialog')!;
+      const miniNav =
+        navDrawer.renderRoot.querySelector<HTMLElement>('[part="mini"]')!;
+      expect(dialog.getAttribute('aria-label')).to.equal(label);
+      expect(miniNav.getAttribute('aria-label')).to.equal(label);
     });
   });
 

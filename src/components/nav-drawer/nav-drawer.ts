@@ -284,11 +284,12 @@ export default class IgcNavDrawerComponent extends EventEmitterMixin<
     return html`
       <nav
         ${ref(this._miniRef)}
+        aria-label=${ifDefined(this.label)}
         part=${partMap({
           mini: true,
           hidden: !this._hasMiniContent,
         })}
-        .inert=${this.open}
+        .inert=${this.open || !this._hasMiniContent}
         .popover=${!this._isRelative ? 'manual' : null}
       >
         <slot name="mini"></slot>
