@@ -84,7 +84,7 @@ type Story = StoryObj<IgcToastArgs>;
 
 export const Basic: Story = {
   args: {
-    position: 'top',
+    position: 'middle',
   },
   parameters: {
     docs: {
