@@ -47,7 +47,7 @@
     "build:typedoc:export": "node scripts/build-typedoc.js export",
     "build:typedoc:import": "node scripts/build-typedoc.js import",
     "build:typedoc:watch": "node scripts/build-typedoc.js watch",
-    "build:typedoc:serve": "node scripts/build-typedoc.js serve && concurrently -k -r \"npm:build:typedoc:watch\"",
+    "build:typedoc:serve": "node scripts/build-typedoc.js watch",
     "build:typedoc:ja": "set NODE_ENV=production && node scripts/build-typedoc.js buildJA",
     "build:typedoc:en": "set NODE_ENV=production && node scripts/build-typedoc.js buildEN",
     "prepare": "husky"
@@ -73,7 +73,6 @@
     "@web/test-runner": "^0.20.2",
     "@web/test-runner-playwright": "^0.11.1",
     "autoprefixer": "^10.5.0",
-    "browser-sync": "^3.0.4",
     "cem-plugin-expanded-types": "^1.4.0",
     "concurrently": "^9.2.1",
     "custom-element-jet-brains-integration": "^1.7.0",
