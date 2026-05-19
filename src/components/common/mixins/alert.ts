@@ -29,18 +29,6 @@ export abstract class IgcBaseAlertLikeComponent extends LitElement {
 
   protected _autoHideTimeout?: ReturnType<typeof setTimeout>;
 
-  // TODO: Move this to styles, i.e. :host([position="top"]) { top: anchor(top); } etc.
-  private get _containerPosition(): string {
-    switch (this.position) {
-      case 'top':
-        return 'anchor(top)';
-      case 'bottom':
-        return 'calc(anchor(bottom) - 25%)';
-      default:
-        return 'anchor(center)';
-    }
-  }
-
   /**
    * Whether the component is in shown state.
    *
@@ -145,8 +133,6 @@ export abstract class IgcBaseAlertLikeComponent extends LitElement {
       return false;
     }
 
-    this.style.top = this._containerPosition;
-    this.style.left = 'anchor(center)';
     this.showPopover({ source: visibleAncestor });
     return true;
   }
