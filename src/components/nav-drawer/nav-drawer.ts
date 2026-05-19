@@ -61,7 +61,7 @@ export default class IgcNavDrawerComponent extends EventEmitterMixin<
   //#region Internal state
 
   private readonly _dialogRef = createRef<HTMLDialogElement>();
-  private readonly _miniRef = createRef<HTMLDivElement>();
+  private readonly _miniRef = createRef<HTMLElement>();
 
   private readonly _slots = addSlotController(this, {
     slots: setSlots('mini'),
@@ -72,7 +72,7 @@ export default class IgcNavDrawerComponent extends EventEmitterMixin<
     return this._dialogRef.value;
   }
 
-  private get _mini(): HTMLDivElement | undefined {
+  private get _mini(): HTMLElement | undefined {
     return this._miniRef.value;
   }
 
@@ -282,7 +282,7 @@ export default class IgcNavDrawerComponent extends EventEmitterMixin<
 
   private _renderMiniVariant() {
     return html`
-      <div
+      <nav
         ${ref(this._miniRef)}
         part=${partMap({
           mini: true,
@@ -292,7 +292,7 @@ export default class IgcNavDrawerComponent extends EventEmitterMixin<
         .popover=${!this._isRelative ? 'manual' : null}
       >
         <slot name="mini"></slot>
-      </div>
+      </nav>
     `;
   }
 
