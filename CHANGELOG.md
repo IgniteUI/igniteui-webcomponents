@@ -11,6 +11,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - Added `keepOpenOnEscape` property — prevents the drawer from closing when the user presses the **Escape** key (non-relative positions only).
   - Added `igcClosing` event — emitted just before the drawer is closed by user interaction. Cancelable.
   - Added `igcClosed` event — emitted just after the drawer is closed by user interaction.
+- #### Invoker Commands API
+  - `igc-button` and `igc-icon-button` now support `command` and `commandfor` properties, enabling declarative control of target components without JavaScript.
+  - `igc-banner`, `igc-dialog`, `igc-nav-drawer`, `igc-snackbar`, and `igc-toast` now respond to `--show`, `--hide`, and `--toggle` commands dispatched by an invoker button.
 
 ### Changed
 - #### Nav Drawer
