@@ -1,5 +1,4 @@
 import { html } from 'lit';
-import { addAnimationController } from '../../animations/player.js';
 import { addThemingController } from '../../theming/theming-controller.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { IgcBaseAlertLikeComponent } from '../common/mixins/alert.js';
@@ -12,13 +11,13 @@ import { styles } from './themes/toast.base.css.js';
  *
  * @element igc-toast
  *
+ * @slot - Default slot for the toast content.
+ *
  * @csspart base - The base wrapper of the toast.
  */
 export default class IgcToastComponent extends IgcBaseAlertLikeComponent {
   public static readonly tagName = 'igc-toast';
   public static override styles = [styles, shared];
-
-  protected override readonly _player = addAnimationController(this);
 
   /* blazorSuppress */
   public static register(): void {
