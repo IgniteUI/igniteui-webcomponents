@@ -18,10 +18,16 @@ export interface IgcSnackbarComponentEventMap {
  * A snackbar component is used to provide feedback about an operation
  * by showing a brief message at the bottom of the screen.
  *
+ * The component integrates with the
+ * [Invoker Commands API](https://developer.mozilla.org/en-US/docs/Web/API/Invoker_Commands_API):
+ * an `igc-button` or a native `<button>` with `command="--show"` / `"--hide"` /
+ * `"--toggle"` and `commandfor` pointing to this element will call the
+ * corresponding method declaratively without any JavaScript.
+ *
  * @element igc-snackbar
  *
  * @slot - Default slot to render the snackbar content.
- * @slot action - Renders the action part of the snackbar. Usually an interactive element (button)
+ * @slot action - Renders the action part of the snackbar. Usually an interactive element (button).
  *
  * @fires igcAction - Emitted when the snackbar action button is clicked.
  *
@@ -29,6 +35,16 @@ export interface IgcSnackbarComponentEventMap {
  * @csspart message - The snackbar message.
  * @csspart action - The default snackbar action button.
  * @csspart action-container - The area holding the actions.
+ *
+ * @example
+ * <!-- Basic usage with programmatic control -->
+ * <igc-button onclick="snackbar.show()">Show</igc-button>
+ * <igc-snackbar id="snackbar" keep-open>Your changes have been saved.</igc-snackbar>
+ *
+ * @example
+ * <!-- Declarative control via the Invoker Commands API -->
+ * <igc-button command="--show" commandfor="status-snackbar">Show</igc-button>
+ * <igc-snackbar id="status-snackbar" keep-open>Your changes have been saved.</igc-snackbar>
  */
 export default class IgcSnackbarComponent extends EventEmitterMixin<
   IgcSnackbarComponentEventMap,
@@ -47,7 +63,7 @@ export default class IgcSnackbarComponent extends EventEmitterMixin<
    * @attr action-text
    */
   @property({ attribute: 'action-text' })
-  public actionText!: string;
+  public actionText?: string;
 
   constructor() {
     super();
