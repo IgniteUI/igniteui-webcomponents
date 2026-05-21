@@ -100,15 +100,14 @@ const metadata: Meta<IgcButtonComponent> = {
     command: {
       type: 'string',
       description:
-        "The command to invoke on the target element specified by `commandForElement`.\nPart of the [Invoker Commands](https://developer.mozilla.org/en-US/docs/Web/API/Invoker_Commands_API)\nAPI. Built-in values include `'show-popover'`, `'hide-popover'`,\n`'toggle-popover'`, and `'open'`. Custom commands must start with two\ndashes (e.g. `'--my-command'`).",
+        "The command to invoke on the target element specified by `commandfor`.\nPart of the [Invoker Commands](https://developer.mozilla.org/en-US/docs/Web/API/Invoker_Commands_API) API.\nCustom commands must start with two dashes (e.g. `'--my-command'`).",
       control: 'text',
     },
-    commandForElement: {
-      type: 'Element | string',
+    commandfor: {
+      type: 'string',
       description:
-        "The element that the button's command is associated with.\nThis can be an actual Element or a string ID of an element in the same document.\nIf this property is set, the button will dispatch its command to the specified element instead of itself.",
-      options: ['Element', 'string'],
-      control: { type: 'inline-radio' },
+        'The ID of the target element for the invoker command.\nPart of the [Invoker Commands API](https://developer.mozilla.org/en-US/docs/Web/API/Invoker_Commands_API).',
+      control: 'text',
     },
   },
   args: { variant: 'contained', type: 'button', disabled: false },
@@ -164,19 +163,16 @@ interface IgcButtonArgs {
   /** When set, the button will be disabled and non-interactive. */
   disabled: boolean;
   /**
-   * The command to invoke on the target element specified by `commandForElement`.
-   * Part of the [Invoker Commands](https://developer.mozilla.org/en-US/docs/Web/API/Invoker_Commands_API)
-   * API. Built-in values include `'show-popover'`, `'hide-popover'`,
-   * `'toggle-popover'`, and `'open'`. Custom commands must start with two
-   * dashes (e.g. `'--my-command'`).
+   * The command to invoke on the target element specified by `commandfor`.
+   * Part of the [Invoker Commands](https://developer.mozilla.org/en-US/docs/Web/API/Invoker_Commands_API) API.
+   * Custom commands must start with two dashes (e.g. `'--my-command'`).
    */
   command: string;
   /**
-   * The element that the button's command is associated with.
-   * This can be an actual Element or a string ID of an element in the same document.
-   * If this property is set, the button will dispatch its command to the specified element instead of itself.
+   * The ID of the target element for the invoker command.
+   * Part of the [Invoker Commands API](https://developer.mozilla.org/en-US/docs/Web/API/Invoker_Commands_API).
    */
-  commandForElement: Element | string;
+  commandfor: string;
 }
 type Story = StoryObj<IgcButtonArgs>;
 

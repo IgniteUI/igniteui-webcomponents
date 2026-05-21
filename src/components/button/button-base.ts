@@ -1,19 +1,15 @@
-import {
-  html,
-  LitElement,
-  type PropertyValues,
-  type TemplateResult,
-} from 'lit';
+import { html, LitElement, type TemplateResult } from 'lit';
 import { property, query } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { addKeyboardFocusRing } from '../common/controllers/focus-ring.js';
+import { addIdRefResolver } from '../common/controllers/id-resolver.js';
 import { addInternalsController } from '../common/controllers/internals.js';
 import { blazorDeepImport } from '../common/decorators/blazorDeepImport.js';
 import { shadowOptions } from '../common/decorators/shadow-options.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common//mixins/event-emitter.js';
 import { partMap } from '../common/part-map.js';
-import { bindIf, getRoot, isString } from '../common/util.js';
+import { bindIf } from '../common/util.js';
 
 export interface IgcButtonEventMap {
   // For analyzer meta only:
@@ -44,9 +40,15 @@ export abstract class IgcButtonBaseComponent extends EventEmitterMixin<
   //#region Internal state
 
   private readonly _focusRingManager = addKeyboardFocusRing(this);
-  protected readonly _internals = addInternalsController(this);
+  private readonly _internals = addInternalsController(this);
+  private readonly _resolver = addIdRefResolver(
+    this,
+    this._resolveCommandForElement
+  );
 
-  protected _disabled = false;
+  private _disabled = false;
+  private _commandfor: string | null = null;
+  private _commandForElement: Element | null = null;
 
   @query('[part="base"]', true)
   private readonly _nativeButton?: HTMLButtonElement;
@@ -125,24 +127,46 @@ export abstract class IgcButtonBaseComponent extends EventEmitterMixin<
   }
 
   /**
-   * The command to invoke on the target element specified by `commandForElement`.
-   * Part of the [Invoker Commands](https://developer.mozilla.org/en-US/docs/Web/API/Invoker_Commands_API)
-   * API. Built-in values include `'show-popover'`, `'hide-popover'`,
-   * `'toggle-popover'`, and `'open'`. Custom commands must start with two
-   * dashes (e.g. `'--my-command'`).
+   * The command to invoke on the target element specified by `commandfor`.
+   * Part of the [Invoker Commands](https://developer.mozilla.org/en-US/docs/Web/API/Invoker_Commands_API) API.
+   * Custom commands must start with two dashes (e.g. `'--my-command'`).
    * @attr command
    */
   @property({ reflect: true })
   public command?: string;
 
   /**
-   * The element that the button's command is associated with.
-   * This can be an actual Element or a string ID of an element in the same document.
-   * If this property is set, the button will dispatch its command to the specified element instead of itself.
+   * The ID of the target element for the invoker command.
+   * Part of the [Invoker Commands API](https://developer.mozilla.org/en-US/docs/Web/API/Invoker_Commands_API).
    * @attr commandfor
    */
   @property({ attribute: 'commandfor' })
-  public commandForElement?: Element | string | null;
+  public set commandfor(value: string | null) {
+    this._commandfor = value;
+    if (value) {
+      this._resolver.observe();
+      this._commandForElement = this._resolver.resolve(value);
+    } else {
+      this._commandForElement = null;
+      this._resolver.unobserve();
+    }
+  }
+
+  public get commandfor(): string | null {
+    return this._commandfor;
+  }
+
+  /**
+   * The target element for the invoker command. Resolved from the `commandfor` ID.
+   */
+  public get commandForElement(): Element | null {
+    return this._commandForElement;
+  }
+
+  public set commandForElement(value: Element | null) {
+    this._commandForElement = value;
+    this.requestUpdate();
+  }
 
   /* blazorCSSuppress */
   /* alternateType: object */
@@ -159,14 +183,13 @@ export abstract class IgcButtonBaseComponent extends EventEmitterMixin<
 
   //#endregion
 
-  //#region Lifecycle hooks
+  //#region Lifecycle
 
-  protected override update(properties: PropertyValues<this>): void {
-    if (properties.has('commandForElement')) {
-      this.commandForElement = this._resolveCommandTarget();
+  protected override firstUpdated(): void {
+    if (this._commandfor) {
+      this._commandForElement = this._resolver.resolve(this._commandfor);
+      this.requestUpdate();
     }
-
-    super.update(properties);
   }
 
   //#endregion
@@ -191,21 +214,12 @@ export abstract class IgcButtonBaseComponent extends EventEmitterMixin<
 
   //#endregion
 
-  //#region Internal API
-
-  private _resolveCommandTarget(): Element | null {
-    const commandForElement = this.commandForElement;
-
-    if (commandForElement instanceof Element) {
-      return commandForElement;
+  private _resolveCommandForElement(ids: Set<string>): void {
+    if (this._commandfor && ids.has(this._commandfor)) {
+      this._commandForElement = this._resolver.resolve(this._commandfor);
+      this.requestUpdate();
     }
-
-    return isString(commandForElement)
-      ? getRoot(this).getElementById(commandForElement)
-      : null;
   }
-
-  //#endregion
 
   //#region Public API
 
@@ -229,12 +243,10 @@ export abstract class IgcButtonBaseComponent extends EventEmitterMixin<
   //#endregion
 
   private _renderButton() {
-    const commandForElement = (this.commandForElement as Element) ?? null;
-
     return html`
       <button
         command=${ifDefined(this.command)}
-        .commandForElement=${commandForElement}
+        .commandForElement=${this._commandForElement}
         part=${partMap({ base: true, focused: this._focusRingManager.focused })}
         aria-label=${bindIf(this.ariaLabel, this.ariaLabel)}
         ?disabled=${this.disabled}

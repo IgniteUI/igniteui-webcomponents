@@ -22,7 +22,7 @@ const metadata: Meta<IgcNavDrawerComponent> = {
     docs: {
       description: {
         component:
-          'A side navigation container that provides\nquick access between views within an application.\n\n\nWhen content is provided in the `mini` slot, a compact icon-only variant is\ndisplayed alongside the main drawer.',
+          'A side navigation container that provides\nquick access between views within an application.\n\nFor non-relative positions (`start`, `end`, `top`, `bottom`) the drawer is\nrendered as a native `<dialog>` element, providing modal semantics, automatic\nfocus trapping, and a backdrop. For the `relative` position it is rendered\ninline as a `<nav>` landmark.\n\nWhen content is provided in the `mini` slot, a compact icon-only variant is\nalways displayed alongside the main drawer (hidden only while the full drawer\nis open).\n\nThe component integrates with the\n[Invoker Commands API](https://developer.mozilla.org/en-US/docs/Web/API/Invoker_Commands_API):\nan `igc-button` or a native `<button>` with `command="--show"` / `"--hide"` / `"--toggle"`\nand `commandfor` pointing to this element will call the corresponding method\ndeclaratively without any JavaScript.',
       },
     },
     actions: { handles: ['igcClosing', 'igcClosed'] },
@@ -106,11 +106,6 @@ registerIcon(
   'https://unpkg.com/material-design-icons@3.0.1/action/svg/production/ic_search_24px.svg'
 );
 
-const getDrawer = (ev: Event) =>
-  (ev.target as HTMLElement)
-    .closest('.main')
-    ?.querySelector('igc-nav-drawer') as IgcNavDrawerComponent | null;
-
 const handleClick = (ev: PointerEvent) => {
   const drawerItem = (ev.target as HTMLElement).closest(
     'igc-nav-drawer-item'
@@ -128,10 +123,6 @@ const handleClick = (ev: PointerEvent) => {
       });
   }
 };
-
-const handleOpen = (ev: MouseEvent) => getDrawer(ev)?.show();
-const handleClose = (ev: MouseEvent) => getDrawer(ev)?.hide();
-const handleToggle = (ev: MouseEvent) => getDrawer(ev)?.toggle();
 
 const commonStyles = html`
   <style>
@@ -204,9 +195,13 @@ const createMiniContent = () => html`
 
 // Create a function for control buttons — always show Open / Toggle / Close
 const createControlButtons = () => html`
-  <igc-button @click=${handleOpen}>Open</igc-button>
-  <igc-button variant="outlined" @click=${handleToggle}>Toggle</igc-button>
-  <igc-button variant="outlined" @click=${handleClose}>Close</igc-button>
+  <igc-button command="--show" commandfor="nav-drawer">Open</igc-button>
+  <igc-button variant="outlined" command="--toggle" commandfor="nav-drawer"
+    >Toggle</igc-button
+  >
+  <igc-button variant="outlined" command="--hide" commandfor="nav-drawer"
+    >Close</igc-button
+  >
 `;
 
 // Main template function
@@ -225,6 +220,7 @@ const createTemplate = (options: {
 
     <div class="ig-scrollbar main">
       <igc-nav-drawer
+        id="nav-drawer"
         label=${ifDefined(options.headerText ?? undefined)}
         .open=${open}
         .position=${position}

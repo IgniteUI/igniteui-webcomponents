@@ -122,18 +122,6 @@ type Story = StoryObj<IgcDialogArgs>;
 
 // endregion
 
-function getDialog(id: string) {
-  return document.getElementById(id) as IgcDialogComponent;
-}
-
-function openDialog(id: string) {
-  getDialog(id).show();
-}
-
-function closeDialog(id: string) {
-  getDialog(id).hide();
-}
-
 const authMethods = ['Basic', 'Bearer', 'Digest', 'OAuth'];
 
 export const Default: Story = {
@@ -152,7 +140,7 @@ export const Default: Story = {
     <div
       style="display: flex; align-items: flex-start; position: relative; height: 400px"
     >
-      <igc-button @click=${() => openDialog('default')}>Open dialog</igc-button>
+      <igc-button command="--show" commandfor="default">Open dialog</igc-button>
 
       <igc-dialog
         id="default"
@@ -186,7 +174,7 @@ export const Slots: Story = {
     <div
       style="display: flex; align-items: flex-start; position: relative; height: 400px"
     >
-      <igc-button @click=${() => openDialog('slots-dialog')}>
+      <igc-button command="--show" commandfor="slots-dialog">
         Open dialog
       </igc-button>
 
@@ -196,14 +184,16 @@ export const Slots: Story = {
         <igc-button
           slot="footer"
           variant="flat"
-          @click=${() => closeDialog('slots-dialog')}
+          command="--hide"
+          commandfor="slots-dialog"
         >
           Cancel
         </igc-button>
         <igc-button
           slot="footer"
           variant="contained"
-          @click=${() => closeDialog('slots-dialog')}
+          command="--hide"
+          commandfor="slots-dialog"
         >
           Confirm
         </igc-button>
@@ -226,7 +216,7 @@ export const Form: Story = {
     <div
       style="display: flex; align-items: flex-start; position: relative; height: 400px"
     >
-      <igc-button @click=${() => openDialog('form-dialog')}>
+      <igc-button command="--show" commandfor="form-dialog">
         Open form dialog
       </igc-button>
 

@@ -270,6 +270,23 @@ describe('Button tests', () => {
 
         expect(button.commandForElement).to.equal(target);
       });
+
+      it('resolves commandfor when target is appended to the DOM after initial render', async () => {
+        button = await fixture<IgcButtonComponent>(
+          html`<igc-button commandfor="dynamic-target">Click</igc-button>`
+        );
+
+        expect(button.commandForElement).to.be.null;
+
+        const target = document.createElement('div');
+        target.id = 'dynamic-target';
+        document.body.appendChild(target);
+        await elementUpdated(button);
+
+        expect(button.commandForElement).to.equal(target);
+
+        target.remove();
+      });
     });
 
     describe('Popover control', () => {
