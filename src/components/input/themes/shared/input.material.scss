@@ -54,7 +54,6 @@ $fs: rem(16px) !default;
 ) + [part='notch'] [part='label'],
 [part~='filled'] + [part='notch'] [part='label'] {
     @include type-style('caption');
-
     @extend %label;
 }
 
@@ -174,7 +173,7 @@ $fs: rem(16px) !default;
             input[type='week'],
             input[type='month']
         ) + [part='notch'] [part='label'],
-        input:has(:not(:placeholder-shown)) + [part='notch'] [part='label'] {
+        input:not(:placeholder-shown)+ [part='notch'] [part='label'] {
             translate: 0;
             font-size: initial;
         }
@@ -527,13 +526,13 @@ $fs: rem(16px) !default;
     :not(:state(ig-invalid), [type='search'])[readonly][outlined]:focus-within
 ) {
     :not([part~='filled']) {
-        input:has(:not(:placeholder-shown)) + [part='notch'] [part='label'] {
+        input:not(:placeholder-shown) + [part='notch'] [part='label'] {
             translate: 0;
             font-size: initial;
             align-self: center;
         }
 
-        input:has(:not(:placeholder-shown)) + [part='notch'] {
+        input:not(:placeholder-shown) + [part='notch'] {
             border: {
                 width: $active-border-width;
                 color: var-get($theme, 'focused-border-color');
