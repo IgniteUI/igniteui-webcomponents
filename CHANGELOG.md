@@ -6,6 +6,16 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 ### Added
+- #### Nav Drawer
+  - The drawer for non-relative positions are now implemented using the native Popover API, providing built-in modal semantics, focus trapping, and accessibility support.
+  - Added `keepOpenOnEscape` property — prevents the drawer from closing when the user presses the **Escape** key (non-relative positions only).
+  - Added `igcClosing` event — emitted just before the drawer is closed by user interaction. Cancelable.
+  - Added `igcClosed` event — emitted just after the drawer is closed by user interaction.
+
+### Changed
+- #### Nav Drawer
+  - The `overlay` CSS part has been removed. Users of the component can target the `base` part's `::backdrop` pseudo-element, the
+    `--ig-overlay-background-color` variable or use the theming package.
 - #### Form controls
   - `IgcInput`, `IgcMaskInput`, `IgcDateTimeInput`, `IgcCheckbox`, `IgcRadio`, `IgcSwitch`, `IgcDatePicker`, and `IgcDateRangePicker` now submit their associated form on **Enter** key press, matching native browser behavior.
 
