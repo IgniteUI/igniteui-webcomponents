@@ -292,7 +292,11 @@ export default class IgcChatInputComponent extends LitElement {
 
   private _handleInput({ detail }: CustomEvent<string>): void {
     this._state.inputValue = detail;
-    this._state.emitEvent('igcInputChange', { detail: { value: detail } });
+    // Emit the new value directly, matching the declared event payload
+    // `CustomEvent<string>` on IgcChatComponentEventMap. Previously this
+    // wrapped the value in `{ value: detail }` which mismatched the type
+    // and broke consumers that take args.Detail at face value.
+    this._state.emitEvent('igcInputChange', { detail });
   }
 
   private _handleFileUpload(event: Event): void {

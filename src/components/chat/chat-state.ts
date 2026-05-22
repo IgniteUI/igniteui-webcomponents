@@ -9,6 +9,7 @@ import type {
   IgcChatMessage,
   IgcChatMessageAttachment,
   IgcChatMessageReaction,
+  IgcChatMessagesChange,
   IgcChatOptions,
 } from './types.js';
 import {
@@ -16,6 +17,151 @@ import {
   isImageAttachment,
   parseAcceptedFileTypes,
 } from './utils.js';
+
+/**
+ * Action info passed to MessagesArray change listeners.
+ */
+export type MessagesChangeAction =
+  | { type: 'add'; index: number; item: IgcChatMessage }
+  | { type: 'remove'; index: number; item: IgcChatMessage }
+  | {
+      type: 'replace';
+      index: number;
+      oldItem: IgcChatMessage;
+      newItem: IgcChatMessage;
+    }
+  | { type: 'reset' };
+
+/**
+ * Array subclass that retains full Array semantics (length, indexing, iteration,
+ * Array.isArray) for backward-compatible customer access, while also exposing
+ * collection-style methods (add/insert/remove/removeAt/clear/item/count) and a
+ * change listener so the Blazor wrapper's SyncableObservableCollection can
+ * propagate single-item deltas across the JS/.NET bridge.
+ */
+export class MessagesArray extends Array<IgcChatMessage> {
+  // Listeners
+  private readonly _listeners: Set<(args: MessagesChangeAction) => void> =
+    new Set();
+  // multicast `collectionChanged` field for parity with ObservableCollection$1
+  public collectionChanged:
+    | ((sender: any, e: MessagesChangeAction) => void)
+    | null = null;
+
+  static override get [Symbol.species]() {
+    // Ensure derived ops like slice/map return plain arrays (avoids accidentally
+    // creating fresh MessagesArray instances that lack listeners).
+    return Array;
+  }
+
+  addListener(listener: (args: MessagesChangeAction) => void): void {
+    this._listeners.add(listener);
+  }
+  removeListener(listener: (args: MessagesChangeAction) => void): void {
+    this._listeners.delete(listener);
+  }
+  private _fire(args: MessagesChangeAction): void {
+    for (const l of this._listeners) {
+      l(args);
+    }
+    if (this.collectionChanged != null) {
+      this.collectionChanged(this, args);
+    }
+  }
+
+  // Mutating Array methods that fire events
+  override push(...items: IgcChatMessage[]): number {
+    const start = this.length;
+    const result = super.push(...items);
+    for (let i = 0; i < items.length; i++) {
+      this._fire({ type: 'add', index: start + i, item: items[i] });
+    }
+    return result;
+  }
+  override splice(
+    start: number,
+    deleteCount?: number,
+    ...items: IgcChatMessage[]
+  ): IgcChatMessage[] {
+    const removed = super.splice(start, deleteCount ?? 0, ...items);
+    for (let i = 0; i < removed.length; i++) {
+      this._fire({ type: 'remove', index: start, item: removed[i] });
+    }
+    for (let i = 0; i < items.length; i++) {
+      this._fire({ type: 'add', index: start + i, item: items[i] });
+    }
+    return removed;
+  }
+  override pop(): IgcChatMessage | undefined {
+    const idx = this.length - 1;
+    const item = super.pop();
+    if (item !== undefined) {
+      this._fire({ type: 'remove', index: idx, item });
+    }
+    return item;
+  }
+  override shift(): IgcChatMessage | undefined {
+    const item = super.shift();
+    if (item !== undefined) {
+      this._fire({ type: 'remove', index: 0, item });
+    }
+    return item;
+  }
+  override unshift(...items: IgcChatMessage[]): number {
+    const result = super.unshift(...items);
+    for (let i = 0; i < items.length; i++) {
+      this._fire({ type: 'add', index: i, item: items[i] });
+    }
+    return result;
+  }
+
+  // ObservableCollection-style API
+  add(item: IgcChatMessage): void {
+    this.push(item);
+  }
+  insert(index: number, item: IgcChatMessage): void {
+    this.splice(index, 0, item);
+  }
+  remove(item: IgcChatMessage): boolean {
+    const idx = this.indexOf(item);
+    if (idx < 0) {
+      return false;
+    }
+    this.splice(idx, 1);
+    return true;
+  }
+  removeAt(index: number): void {
+    this.splice(index, 1);
+  }
+  clear(): void {
+    if (this.length === 0) {
+      return;
+    }
+    super.splice(0, this.length);
+    this._fire({ type: 'reset' });
+  }
+  item(index: number, value?: IgcChatMessage): IgcChatMessage {
+    if (value !== undefined) {
+      const oldItem = this[index];
+      this[index] = value;
+      this._fire({ type: 'replace', index, oldItem, newItem: value });
+      return value;
+    }
+    return this[index];
+  }
+  get count(): number {
+    return this.length;
+  }
+
+  /** Replace contents in place (preserving identity + listeners). */
+  replaceAll(values: readonly IgcChatMessage[]): void {
+    super.splice(0, this.length);
+    for (const v of values) {
+      super.push(v);
+    }
+    this._fire({ type: 'reset' });
+  }
+}
 
 /**
  * Internal state manager for the `<igc-chat>` component.
@@ -32,8 +178,17 @@ export class ChatState {
   private _actionsTooltip?: IgcTooltipComponent;
   private _actionToast?: IgcToastComponent;
 
-  /** The current list of messages */
-  private _messages: IgcChatMessage[] = [];
+  /**
+   * The current list of messages.
+   *
+   * Stored as a `MessagesArray` (an Array subclass with observable methods)
+   * so that the Blazor wrapper's `SyncableObservableCollection` can hook into
+   * single-item add/remove/replace deltas instead of re-reading the full
+   * collection on every change. From a customer perspective this remains an
+   * `IgcChatMessage[]` — `Array.isArray`, indexing, `.length`, `.push`,
+   * iteration all work identically.
+   */
+  private _messages: MessagesArray = new MessagesArray();
   /** Chat options/configuration */
   private _options?: IgcChatOptions;
 
@@ -73,9 +228,19 @@ export class ChatState {
 
   /**
    * Sets the list of chat messages.
+   *
+   * Replaces the contents of the existing `MessagesArray` in place so that
+   * the observable identity (and any attached listeners on the JS side)
+   * is preserved across assignments. Customers can still pass a plain
+   * `IgcChatMessage[]`.
    */
   public set messages(value: IgcChatMessage[]) {
-    this._messages = value;
+    if (value instanceof MessagesArray) {
+      // Replace contents in place to preserve the existing observable identity.
+      this._messages.replaceAll(value);
+    } else {
+      this._messages.replaceAll(value ?? []);
+    }
   }
 
   /**
@@ -171,6 +336,58 @@ export class ChatState {
     this._host = chat;
     this._contextUpdateFn = contextUpdateFn;
     this._userInputContextUpdateFn = userInputContextUpdateFn;
+
+    // Bridge MessagesArray mutations to a public `igcMessagesChanged` CustomEvent
+    // so external consumers (e.g. the Blazor wrapper) can mirror the collection
+    // with single-item deltas instead of re-reading the full array.
+    //
+    // Also call `requestUpdate('messages')` so Lit re-renders the chat UI on
+    // every mutation path. The original `set messages(value) { this._messages = value }`
+    // reassigned the property, which Lit's reactivity machinery detected
+    // automatically; in-place mutations on the new MessagesArray (push, splice,
+    // replaceAll, etc.) don't trigger that, so we have to nudge Lit ourselves.
+    this._messages.addListener((change) => {
+      this._host.requestUpdate('messages');
+
+      let detail: IgcChatMessagesChange;
+      switch (change.type) {
+        case 'add':
+          detail = {
+            action: 'add',
+            index: change.index,
+            oldItems: [],
+            newItems: [change.item],
+          };
+          break;
+        case 'remove':
+          detail = {
+            action: 'remove',
+            index: change.index,
+            oldItems: [change.item],
+            newItems: [],
+          };
+          break;
+        case 'replace':
+          detail = {
+            action: 'replace',
+            index: change.index,
+            oldItems: [change.oldItem],
+            newItems: [change.newItem],
+          };
+          break;
+        case 'reset':
+          detail = {
+            action: 'reset',
+            index: -1,
+            oldItems: [],
+            // Send the full new state on reset — the only O(N) path, used for
+            // bulk reassignments like `chat.messages = [...]`.
+            newItems: [...this._messages],
+          };
+          break;
+      }
+      this._host.emitEvent('igcMessagesChanged', { detail });
+    });
   }
 
   public isCurrentUserMessage(message?: IgcChatMessage): boolean {

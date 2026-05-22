@@ -29,6 +29,7 @@ import type {
   IgcChatMessage,
   IgcChatMessageAttachment,
   IgcChatMessageReaction,
+  IgcChatMessagesChange,
   IgcChatOptions,
 } from './types.js';
 
@@ -95,6 +96,19 @@ export interface IgcChatComponentEventMap {
    * Dispatched when the content of the chat input changes.
    */
   igcInputChange: CustomEvent<string>;
+
+  /**
+   * Dispatched when the chat `messages` collection mutates from any source —
+   * an internal `addMessage()`, a direct `.push()` / `.splice()` / `.pop()` /
+   * `.shift()` / `.unshift()` on the public array, or a bulk reassignment via
+   * `chat.messages = [...]`.
+   *
+   * Carries delta info (oldItems / newItems / index) rather than the full
+   * collection, so consumers mirroring the messages can apply single-item
+   * changes incrementally. For `'reset'` (bulk reassignment) `newItems` carries
+   * the full new state.
+   */
+  igcMessagesChanged: CustomEvent<IgcChatMessagesChange>;
 }
 
 const Slots = setSlots(

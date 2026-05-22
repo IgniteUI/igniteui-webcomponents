@@ -178,6 +178,35 @@ export interface IgcChatDraftMessage {
   attachments?: IgcChatMessageAttachment[];
 }
 
+/* marshalByValue */
+/* jsonAPIPlainObject */
+/**
+ * Detail payload for the `igcMessagesChanged` event.
+ *
+ * Describes a single delta against the chat's `messages` collection so the
+ * change can be applied to mirrored collections (e.g. on the .NET side)
+ * without re-reading the full array.
+ *
+ * - For `'add'`: `newItems` carries the inserted message(s), `oldItems` is empty,
+ *   `index` is the insertion position.
+ * - For `'remove'`: `oldItems` carries the removed message(s), `newItems` is empty,
+ *   `index` is the position the item was at.
+ * - For `'replace'`: both arrays are populated and same length, `index` is the
+ *   start of the replacement.
+ * - For `'reset'` (bulk reassignment of `messages`): `newItems` carries the full
+ *   new state, `oldItems` is empty, `index` is `-1`.
+ */
+export interface IgcChatMessagesChange {
+  /** The kind of change: `'add' | 'remove' | 'replace' | 'reset'`. */
+  action: string;
+  /** Position of the change (0-based); `-1` for `'reset'`. */
+  index: number;
+  /** Messages that left the collection. */
+  oldItems: IgcChatMessage[];
+  /** Messages that entered the collection. */
+  newItems: IgcChatMessage[];
+}
+
 /* jsonAPIPlainObject */
 /**
  * Represents a user's reaction to a specific chat message.
