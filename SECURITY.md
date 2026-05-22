@@ -6,7 +6,7 @@ We provide security support for the **latest major version** of the package only
 
 For critical security vulnerabilities, we will backport fixes to the **last relevant minor version** of the current major version to ensure users can apply security patches without upgrading to a new minor release.
 
-**Current package version: 7.0.x**
+**Current package version: 7.1.x**
 
 | Version | Supported          |
 | ------- | ------------------ |

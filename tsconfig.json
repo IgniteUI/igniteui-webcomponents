@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
     "target": "es2022",
-    "module": "NodeNext",
-    "lib": ["ESNext", "DOM", "DOM.Iterable"],
+    "module": "nodenext",
+    "lib": ["ESNext", "DOM"],
     "outDir": "dist",
     "rootDir": "./",
     "declaration": true,
@@ -19,7 +19,7 @@
     "noImplicitAny": true,
     "noImplicitThis": true,
     "noImplicitOverride": true,
-    "moduleResolution": "NodeNext",
+    "moduleResolution": "nodenext",
     "allowSyntheticDefaultImports": true,
     "experimentalDecorators": true,
     "forceConsistentCasingInFileNames": true,

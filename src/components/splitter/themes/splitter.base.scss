@@ -85,13 +85,13 @@
 }
 
 // Collapsed states
-:host([start-collapsed]) {
+:host(:state(start-collapsed)) {
     [part='start-pane'] {
         display: none;
     }
 }
 
-:host([end-collapsed]) {
+:host(:state(end-collapsed)) {
     [part~='end-pane'] {
         display: none;
     }

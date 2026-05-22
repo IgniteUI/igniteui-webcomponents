@@ -1,8 +1,3 @@
-import { github } from '@igniteui/material-icons-extended';
-import type { Meta, StoryObj } from '@storybook/web-components-vite';
-import { html } from 'lit';
-import { ifDefined } from 'lit/directives/if-defined.js';
-
 import {
   IgcFileInputComponent,
   IgcIconComponent,
@@ -11,10 +6,14 @@ import {
   registerIconFromText,
 } from 'igniteui-webcomponents';
 import {
+  disableStoryControls,
   formControls,
   formSubmitHandler,
-  disableStoryControls,
 } from './story.js';
+import type { Meta, StoryObj } from '@storybook/web-components-vite';
+import { github } from '@igniteui/material-icons-extended';
+import { html } from 'lit';
+import { ifDefined } from 'lit/directives/if-defined.js';
 
 defineComponents(IgcFileInputComponent, IgcIconComponent);
 registerIconFromText(github.name, github.value);
@@ -33,10 +32,9 @@ const metadata: Meta<IgcFileInputComponent> = {
   },
   argTypes: {
     value: {
-      type: 'string | Date',
+      type: 'string',
       description:
         'The value of the control.\nSimilar to native file input, this property is read-only and cannot be set programmatically.',
-      options: ['string', 'Date'],
       control: 'text',
     },
     locale: {
@@ -124,7 +122,7 @@ interface IgcFileInputArgs {
    * The value of the control.
    * Similar to native file input, this property is read-only and cannot be set programmatically.
    */
-  value: string | Date;
+  value: string;
   /** Gets/Sets the locale used for getting language, affecting resource strings. */
   locale: string;
   /**

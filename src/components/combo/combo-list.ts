@@ -1,5 +1,4 @@
 import { LitVirtualizer } from '@lit-labs/virtualizer/LitVirtualizer.js';
-
 import { registerComponent } from '../common/definitions/register.js';
 
 /* blazorSuppress */
@@ -9,7 +8,7 @@ export default class IgcComboListComponent extends LitVirtualizer {
   public override scroller = true;
 
   /* blazorSuppress */
-  public static register() {
+  public static register(): void {
     registerComponent(IgcComboListComponent);
   }
 }

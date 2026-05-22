@@ -1,0 +1,8 @@
+@use 'styles/utilities' as *;
+@use 'themes' as *;
+
+$theme: $bootstrap;
+
+:host {
+    @include css-vars-from-theme(diff($base, $theme));
+}

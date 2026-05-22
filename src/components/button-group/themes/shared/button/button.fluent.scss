@@ -12,7 +12,7 @@ $outline-btn-indent: rem(2px);
     }
 
     [part='toggle focused'] {
-        background: var-get($theme, 'item-background');
+        border-color: var-get($theme, 'item-border-color');
 
         &::after {
             content: '';
@@ -23,52 +23,6 @@ $outline-btn-indent: rem(2px);
             width: calc(100% - (#{$outline-btn-indent} * 2));
             height: calc(100% - (#{$outline-btn-indent} * 2));
             box-shadow: 0 0 0 rem(1px) var-get($theme, 'item-focused-border-color');
-        }
-    }
-}
-
-:host(:hover) {
-    [part='toggle focused'] {
-        background: var-get($theme, 'item-hover-background');
-    }
-}
-
-[part~='toggle']:active {
-    background: var-get($theme, 'item-focused-background');
-}
-
-[part='toggle focused'] {
-    &:active {
-        background: var-get($theme, 'item-focused-background');
-    }
-}
-
-:host([selected]:hover) {
-    [part~='toggle'] {
-        background: var-get($theme, 'item-selected-background');
-
-        &::before {
-            content: '';
-            position: absolute;
-            pointer-events: none;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-            background: var-get($theme, 'item-selected-hover-background');
-        }
-    }
-}
-
-:host([selected]) {
-    [part~='toggle']:active {
-        background: var-get($theme, 'item-selected-focus-background');
-    }
-
-    [part='toggle focused'] {
-        background: var-get($theme, 'item-selected-background');
-
-        &:active {
-            background: var-get($theme, 'item-selected-focus-background');
         }
     }
 }

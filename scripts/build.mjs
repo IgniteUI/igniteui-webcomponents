@@ -26,26 +26,26 @@ const RELEASE_FILES = [
 ];
 
 async function runTask(tag, cmd) {
-  const frames = ['   ', '.  ', '.. ', '...'];
+  const frames = ['◑', '◒', '◐', '◓'];
   let frame = 0;
 
-  const writeProgress = (dots) =>
-    report.stdout.info(`\r[${tag}] Processing${dots}`);
+  const writeProgress = (progress) =>
+    report.stdout.plain(`\r${report.format.magentaBright(progress)}  ${tag}`);
 
   writeProgress(frames[0]);
   const timer = setInterval(() => {
     frame = (frame + 1) % frames.length;
     writeProgress(frames[frame]);
-  }, 300);
+  }, 120);
 
   try {
     await cmd();
     clearInterval(timer);
     report.stdout.clearLine();
-    report.success(`[${tag}] Done!`);
+    report.stdout.plain(report.format.greenBright(`[${tag}] ✔\n`));
   } catch (e) {
     clearInterval(timer);
-    report.error(`[${tag}] Failed with: ${e.stderr || e.message}`);
+    report.error(`\n[${tag}] ✖\n${e.stderr || e.message}`);
     process.exit(1);
   }
 }

@@ -170,7 +170,6 @@ $theme: $bootstrap;
     }
 
     [part='control checked']::after {
-        background: var-get($theme, 'disabled-indeterminate-color');
         box-shadow: none;
     }
 }
@@ -178,7 +177,6 @@ $theme: $bootstrap;
 :host([disabled][indeterminate]),
 :host(:disabled[indeterminate]) {
     [part~='control']::after {
-        background: var-get($theme, 'disabled-indeterminate-color');
         box-shadow: none;
     }
 }

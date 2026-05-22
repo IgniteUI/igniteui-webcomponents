@@ -90,12 +90,6 @@ const metadata: Meta<IgcComboComponent> = {
       description: 'The placeholder attribute of the search input.',
       control: 'text',
     },
-    open: {
-      type: 'boolean',
-      description: 'Sets the open state of the component.',
-      control: 'boolean',
-      table: { defaultValue: { summary: 'false' } },
-    },
     valueKey: {
       type: 'string',
       description: 'The key in the data source used when selecting items.',
@@ -164,13 +158,18 @@ const metadata: Meta<IgcComboComponent> = {
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
+    open: {
+      type: 'boolean',
+      description: 'Sets the open state of the component.',
+      control: 'boolean',
+      table: { defaultValue: { summary: 'false' } },
+    },
   },
   args: {
     outlined: false,
     singleSelect: false,
     autofocus: false,
     autofocusList: false,
-    open: false,
     groupSorting: 'asc',
     caseSensitiveIcon: false,
     disableFiltering: false,
@@ -178,6 +177,7 @@ const metadata: Meta<IgcComboComponent> = {
     required: false,
     disabled: false,
     invalid: false,
+    open: false,
   },
 };
 
@@ -200,8 +200,6 @@ interface IgcComboArgs {
   placeholder: string;
   /** The placeholder attribute of the search input. */
   placeholderSearch: string;
-  /** Sets the open state of the component. */
-  open: boolean;
   /** The key in the data source used when selecting items. */
   valueKey: string;
   /** The key in the data source used to display items in the list. */
@@ -224,6 +222,8 @@ interface IgcComboArgs {
   disabled: boolean;
   /** Sets the control into invalid state (visual state only). */
   invalid: boolean;
+  /** Sets the open state of the component. */
+  open: boolean;
 }
 type Story = StoryObj<IgcComboArgs>;
 
