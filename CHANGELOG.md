@@ -4,6 +4,30 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+### Added
+- #### Nav Drawer
+  - The drawer for non-relative positions are now implemented using the native Popover API, providing built-in modal semantics, focus trapping, and accessibility support.
+  - Added `keepOpenOnEscape` property — prevents the drawer from closing when the user presses the **Escape** key (non-relative positions only).
+  - Added `igcClosing` event — emitted just before the drawer is closed by user interaction. Cancelable.
+  - Added `igcClosed` event — emitted just after the drawer is closed by user interaction.
+
+### Changed
+- #### Nav Drawer
+  - The `overlay` CSS part has been removed. Users of the component can target the `base` part's `::backdrop` pseudo-element, the
+    `--ig-overlay-background-color` variable or use the theming package.
+- #### Form controls
+  - `IgcInput`, `IgcMaskInput`, `IgcDateTimeInput`, `IgcCheckbox`, `IgcRadio`, `IgcSwitch`, `IgcDatePicker`, and `IgcDateRangePicker` now submit their associated form on **Enter** key press, matching native browser behavior.
+
+## [7.1.3] - 2026-04-28
+### Changed
+- #### AI-Assisted Development
+  - Updated and enhanced the library provided skills [#2207](https://github.com/IgniteUI/igniteui-webcomponents/pull/2207)
+
+### Fixed
+- #### Stepper
+  - In horizontal orientation, the content area height can now driven by the active step's content instead of always being sized to the tallest step. A new `--body-grid-rows` CSS custom property controls the internal row sizing of each step body — its default value of `1fr` expands the body to fit its content, while setting it to `0fr` collapses the body to zero height, enabling fully variable step heights. [#2209](https://github.com/IgniteUI/igniteui-webcomponents/issues/2209)
+
 ## [7.1.2] - 2026-04-22
 ### Changed
 - #### AI-Assisted Development
@@ -1306,6 +1330,7 @@ Initial release of Ignite UI Web Components
 - Ripple component
 - Switch component
 
+[7.1.3]: https://github.com/IgniteUI/igniteui-webcomponents/compare/7.1.2...7.1.3
 [7.1.2]: https://github.com/IgniteUI/igniteui-webcomponents/compare/7.1.1...7.1.2
 [7.1.1]: https://github.com/IgniteUI/igniteui-webcomponents/compare/7.1.0...7.1.1
 [7.1.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/7.0.1...7.1.0
