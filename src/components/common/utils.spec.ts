@@ -95,6 +95,30 @@ class FormAssociatedTestBed<T extends IgcFormControl> {
   }
 
   /**
+   * Simulates pressing the `Enter` key while the focus is on the given target element (or the component itself if no target is provided).
+   * If the component is inside a form, this will attempt to submit the form.
+   * Returns whether the form submission was triggered.
+   */
+  public submitWithEnter(target?: HTMLElement | null): boolean {
+    let called = false;
+    const element = target ?? this.element;
+    const handler = (event: SubmitEvent) => {
+      event.preventDefault();
+      called = true;
+    };
+
+    this.form.addEventListener('submit', handler, { once: true });
+    element.dispatchEvent(
+      new KeyboardEvent('keydown', {
+        key: 'Enter',
+        bubbles: true,
+        composed: true,
+      })
+    );
+    return called;
+  }
+
+  /**
    * Assigns properties to the element and optionally waits for the update.
    *
    * This function takes an object of properties to assign to the element.

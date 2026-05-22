@@ -6,8 +6,3 @@ $theme: $fluent;
 :host {
     --menu-mini-width: #{rem(40px)};
 }
-
-[part='base'],
-[part~='mini'] {
-    border: rem(1px) solid var-get($theme, 'border-color');
-}

@@ -958,6 +958,50 @@ describe('Stepper', () => {
       expect(step1Header).to.equal(stepper.steps[1].shadowRoot!.activeElement);
     });
   });
+
+  describe('Context binding', () => {
+    it('should correctly bind context when a step is connected before its stepper parent', async () => {
+      // Connect the step in isolation — the AsyncContextConsumer defers ContextConsumer
+      // creation until after updateComplete, but no provider exists at that point so
+      // the context remains unresolved.
+      const step = document.createElement(
+        IgcStepComponent.tagName
+      ) as IgcStepComponent;
+
+      document.body.appendChild(step);
+      await elementUpdated(step);
+
+      // No stepper context yet — step is not active and not part of any stepper.
+      expect(step.active).to.be.false;
+
+      // Create the stepper, adopt the step, and connect it to the document.
+      // The step first disconnects from body, then reconnects as a child of the
+      // stepper. On reconnect, the ContextConsumer (subscribe: true) re-dispatches
+      // a context-request event that the stepper's ContextProvider answers,
+      // completing the binding via createAsyncContext.
+      const stepperEl = document.createElement(
+        IgcStepperComponent.tagName
+      ) as IgcStepperComponent;
+
+      stepperEl.appendChild(step);
+      document.body.appendChild(stepperEl);
+      await elementUpdated(stepperEl);
+
+      // Context is now bound — the stepper recognizes the step.
+      expect(stepperEl.steps).to.include(step);
+      expect(stepperEl.steps).to.have.lengthOf(1);
+
+      // The sole step is activated by default.
+      expect(stepperEl.steps[0].active).to.be.true;
+
+      // Indicator reflects the correct step index (1-based).
+      expect(
+        getStepDOM(step).parts.indicator.querySelector('span')!.textContent
+      ).to.equal('1');
+
+      stepperEl.remove();
+    });
+  });
 });
 
 function isStepAccessible(step: IgcStepComponent): boolean {

@@ -358,6 +358,7 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
           aria-labelledby=${labelledBy ? labelledBy : this._labelId}
           aria-describedby=${describedBy}
           @click=${this._handleClick}
+          @keydown=${this._handleEnterKeydown}
         />
         <span part=${partMap({ control: true, checked })}>
           <span

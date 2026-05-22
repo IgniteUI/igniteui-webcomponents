@@ -1,23 +1,23 @@
-import { html } from 'lit';
 import { property } from 'lit/decorators.js';
-import { ifDefined } from 'lit/directives/if-defined.js';
-import { live } from 'lit/directives/live.js';
 import { addThemingController } from '../../theming/theming-controller.js';
 import { addSlotController, setSlots } from '../common/controllers/slot.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { createFormValueState } from '../common/mixins/forms/form-value.js';
-import { partMap } from '../common/part-map.js';
-import { bindIf } from '../common/util.js';
+import {
+  MaskBehaviorMixin,
+  type MaskSelection,
+} from '../common/mixins/mask-behavior.js';
+import { renderMaskedNativeInput } from '../common/templates/masked-input.js';
+import { IgcInputBaseComponent } from '../input/input-base.js';
 import { styles } from '../input/themes/input.base.css.js';
 import { styles as shared } from '../input/themes/shared/input.common.css.js';
 import { all } from '../input/themes/themes.js';
 import type { MaskInputValueMode } from '../types.js';
 import IgcValidationContainerComponent from '../validation-container/validation-container.js';
-import {
-  IgcMaskInputBaseComponent,
-  type MaskSelection,
-} from './mask-input-base.js';
+import { MaskParser } from './mask-parser.js';
 import { maskValidators } from './validators.js';
+
+export type { MaskSelection };
 
 const Slots = setSlots(
   'prefix',
@@ -53,7 +53,10 @@ const Slots = setSlots(
  * @csspart suffix - The suffix wrapper
  * @csspart helper-text - The helper text wrapper
  */
-export default class IgcMaskInputComponent extends IgcMaskInputBaseComponent {
+
+export default class IgcMaskInputComponent extends MaskBehaviorMixin(
+  IgcInputBaseComponent
+) {
   public static readonly tagName = 'igc-mask-input';
   public static styles = [styles, shared];
 
@@ -63,6 +66,8 @@ export default class IgcMaskInputComponent extends IgcMaskInputBaseComponent {
   }
 
   //#region Internal attributes and properties
+
+  protected override readonly _parser = new MaskParser();
 
   protected override get __validators() {
     return maskValidators;
@@ -219,7 +224,7 @@ export default class IgcMaskInputComponent extends IgcMaskInputBaseComponent {
     this._formValue.setValueAndFormState(value);
   }
 
-  protected async _updateInput(
+  protected override async _updateInput(
     text: string,
     { start, end }: MaskSelection
   ): Promise<void> {
@@ -237,7 +242,7 @@ export default class IgcMaskInputComponent extends IgcMaskInputBaseComponent {
     this._input?.setSelectionRange(result.end, result.end);
   }
 
-  protected override _updateSetRangeTextValue(): void {
+  protected override _syncValueFromMask(): void {
     this.value = this._parser.parse(this._maskedValue);
   }
 
@@ -263,34 +268,29 @@ export default class IgcMaskInputComponent extends IgcMaskInputBaseComponent {
     const hasNegativeTabIndex = this.getAttribute('tabindex') === '-1';
     const hasHelperText = this._slots.hasAssignedElements('helper-text');
 
-    return html`
-      <input
-        id=${this._inputId}
-        type="text"
-        part=${partMap(this._resolvePartNames('input'))}
-        name=${ifDefined(this.name)}
-        .value=${live(this._maskedValue)}
-        .placeholder=${this.placeholder ?? this._parser.escapedMask}
-        ?readonly=${this.readOnly}
-        ?disabled=${this.disabled}
-        ?autofocus=${this.autofocus}
-        inputmode=${ifDefined(this.inputMode)}
-        tabindex=${bindIf(hasNegativeTabIndex, -1)}
-        aria-describedby=${bindIf(hasHelperText, 'helper-text')}
-        @dragenter=${this._handleDragEnter}
-        @dragleave=${this._handleDragLeave}
-        @dragstart=${this._setMaskSelection}
-        @blur=${this._handleBlur}
-        @focus=${this._handleFocus}
-        @cut=${this._setMaskSelection}
-        @change=${this._handleChange}
-        @click=${this._handleClick}
-        @compositionstart=${this._handleCompositionStart}
-        @compositionend=${this._handleCompositionEnd}
-        @input=${this._handleInput}
-        @keydown=${this._setMaskSelection}
-      />
-    `;
+    return renderMaskedNativeInput({
+      id: this._inputId,
+      partNames: this._resolvePartNames('input'),
+      name: this.name,
+      value: this._maskedValue,
+      placeholder: this.placeholder ?? this._parser.escapedMask,
+      readOnly: this.readOnly,
+      disabled: this.disabled,
+      autofocus: this.autofocus,
+      inputMode: this.inputMode,
+      tabindex: hasNegativeTabIndex ? -1 : undefined,
+      ariaDescribedBy: hasHelperText ? 'helper-text' : undefined,
+      onInput: this._handleInput,
+      onFocus: this._handleFocus,
+      onBlur: this._handleBlur,
+      onClick: this._handleClick,
+      onSetMaskSelection: this._setMaskSelection,
+      onCompositionStart: this._handleCompositionStart,
+      onCompositionEnd: this._handleCompositionEnd,
+      onChange: this._handleChange,
+      onDragEnter: this._handleDragEnter,
+      onDragLeave: this._handleDragLeave,
+    });
   }
 }
 

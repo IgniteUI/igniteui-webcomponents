@@ -64,6 +64,12 @@ declare class BaseFormAssociatedElement {
   //#region Methods
 
   /**
+   * Default implementation for handling the `Enter` key press on the component.
+   * Checks if the component is inside a form and if so, submits it.
+   */
+  protected _handleEnterKeydown(event: KeyboardEvent): void;
+
+  /**
    * Sets the **touched** state of the component and invokes {@link BaseFormAssociatedElement._validate | `_validate()`} method.
    *
    * As the naming of the method suggests, this should be invoked either on **blur** or **focusout**, depending

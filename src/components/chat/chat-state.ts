@@ -1,4 +1,5 @@
-import { IgcChatResourceStringEN } from '../common/i18n/EN/chat.resources.js';
+import type { IChatResourceStrings } from 'igniteui-i18n-core';
+import type { IgcChatResourceStrings } from '../common/i18n/EN/chat.resources.js';
 import { isEmpty, nanoid } from '../common/util.js';
 import IgcToastComponent from '../toast/toast.js';
 import IgcTooltipComponent from '../tooltip/tooltip.js';
@@ -45,8 +46,6 @@ export class ChatState {
    * Cache of accepted file types, organized into extensions, mimeTypes, and wildcardTypes
    */
   private _acceptedTypesCache: ChatAcceptedFileTypes | null = null;
-
-  public resourceStrings = IgcChatResourceStringEN;
 
   //#endregion
 
@@ -159,6 +158,10 @@ export class ChatState {
    */
   public get hasInputAttachments(): boolean {
     return !isEmpty(this._inputAttachments);
+  }
+
+  public get resourceStrings(): IgcChatResourceStrings & IChatResourceStrings {
+    return this._host.resourceStrings;
   }
 
   //#endregion

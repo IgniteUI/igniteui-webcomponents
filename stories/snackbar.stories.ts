@@ -30,7 +30,7 @@ const metadata: Meta<IgcSnackbarComponent> = {
   argTypes: {
     actionText: {
       type: 'string',
-      description: 'The snackbar action button.',
+      description: 'The text of the action button.',
       control: 'text',
     },
     open: {
@@ -42,7 +42,7 @@ const metadata: Meta<IgcSnackbarComponent> = {
     displayTime: {
       type: 'number',
       description:
-        'Determines the duration in ms in which the component will be visible.',
+        'Determines the duration in milliseconds in which the component will be visible.',
       control: 'number',
       table: { defaultValue: { summary: '4000' } },
     },
@@ -55,28 +55,56 @@ const metadata: Meta<IgcSnackbarComponent> = {
     },
     position: {
       type: '"bottom" | "middle" | "top"',
-      description: 'Sets the position of the component in the viewport.',
+      description:
+        'Sets the position of the component in the viewport.\n\n`bottom` - positions the component at the bottom. This is the default.\n`middle` - positions the component at the center.\n`top` - positions the component at the top.',
       options: ['bottom', 'middle', 'top'],
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'bottom' } },
     },
+    positioning: {
+      type: '"viewport" | "container"',
+      description:
+        'Sets the positioning strategy of the component.\n\n`viewport` - positions the component relative to the viewport, ignoring any ancestor elements. This is the default behavior.\n`container` - positions the component relative to the nearest visible ancestor. In this mode, the component will be constrained within the bounding box of the ancestor and will be positioned according to the `position` attribute.',
+      options: ['viewport', 'container'],
+      control: { type: 'inline-radio' },
+      table: { defaultValue: { summary: 'viewport' } },
+    },
   },
-  args: { open: false, displayTime: 4000, keepOpen: false, position: 'bottom' },
+  args: {
+    open: false,
+    displayTime: 4000,
+    keepOpen: false,
+    position: 'bottom',
+    positioning: 'viewport',
+  },
 };
 
 export default metadata;
 
 interface IgcSnackbarArgs {
-  /** The snackbar action button. */
+  /** The text of the action button. */
   actionText: string;
   /** Whether the component is in shown state. */
   open: boolean;
-  /** Determines the duration in ms in which the component will be visible. */
+  /** Determines the duration in milliseconds in which the component will be visible. */
   displayTime: number;
   /** Determines whether the component should close after the `displayTime` is over. */
   keepOpen: boolean;
-  /** Sets the position of the component in the viewport. */
+  /**
+   * Sets the position of the component in the viewport.
+   *
+   * `bottom` - positions the component at the bottom. This is the default.
+   * `middle` - positions the component at the center.
+   * `top` - positions the component at the top.
+   */
   position: 'bottom' | 'middle' | 'top';
+  /**
+   * Sets the positioning strategy of the component.
+   *
+   * `viewport` - positions the component relative to the viewport, ignoring any ancestor elements. This is the default behavior.
+   * `container` - positions the component relative to the nearest visible ancestor. In this mode, the component will be constrained within the bounding box of the ancestor and will be positioned according to the `position` attribute.
+   */
+  positioning: 'viewport' | 'container';
 }
 type Story = StoryObj<IgcSnackbarArgs>;
 
@@ -198,5 +226,125 @@ export const Positions: Story = {
     >
       Snackbar — top
     </igc-snackbar>
+  `,
+};
+
+export const ContainerPositioning: Story = {
+  argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'When `positioning` is set to `"container"`, the snackbar is anchored to its nearest visible ancestor instead of the viewport. Toggle each position independently to see how the snackbar is constrained within the boundary.',
+      },
+    },
+  },
+  render: () => html`
+    <style>
+      .snackbar-container-demo {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        min-height: 420px;
+        padding: 1.25rem;
+        border: 2px dashed #888;
+        border-radius: 8px;
+      }
+
+      .snackbar-container-demo__label {
+        margin: 0;
+        font-size: 0.7rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        opacity: 0.5;
+      }
+
+      .snackbar-container-demo__actions {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+      }
+
+      .snackbar-container-demo__content {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0.35;
+        font-size: 0.875rem;
+        font-style: italic;
+      }
+    </style>
+
+    <div class="snackbar-container-demo">
+      <p class="snackbar-container-demo__label">Container boundary</p>
+
+      <div class="snackbar-container-demo__actions">
+        <igc-button
+          @click=${() =>
+            (
+              document.getElementById('cs-snackbar-top') as IgcSnackbarComponent
+            ).toggle()}
+          >Toggle Top</igc-button
+        >
+        <igc-button
+          @click=${() =>
+            (
+              document.getElementById(
+                'cs-snackbar-middle'
+              ) as IgcSnackbarComponent
+            ).toggle()}
+          >Toggle Middle</igc-button
+        >
+        <igc-button
+          @click=${() =>
+            (
+              document.getElementById(
+                'cs-snackbar-bottom'
+              ) as IgcSnackbarComponent
+            ).toggle()}
+          >Toggle Bottom</igc-button
+        >
+      </div>
+
+      <p class="snackbar-container-demo__content">
+        Snackbars are anchored within this container
+      </p>
+
+      <igc-snackbar
+        id="cs-snackbar-top"
+        positioning="container"
+        position="top"
+        keep-open
+        action-text="Dismiss"
+        @igcAction=${({ target }: { target: IgcSnackbarComponent }) =>
+          target.hide()}
+      >
+        Top — container-positioned
+      </igc-snackbar>
+      <igc-snackbar
+        id="cs-snackbar-middle"
+        positioning="container"
+        position="middle"
+        keep-open
+        action-text="Dismiss"
+        @igcAction=${({ target }: { target: IgcSnackbarComponent }) =>
+          target.hide()}
+      >
+        Middle — container-positioned
+      </igc-snackbar>
+      <igc-snackbar
+        id="cs-snackbar-bottom"
+        positioning="container"
+        position="bottom"
+        keep-open
+        action-text="Dismiss"
+        @igcAction=${({ target }: { target: IgcSnackbarComponent }) =>
+          target.hide()}
+      >
+        Bottom — container-positioned
+      </igc-snackbar>
+    </div>
   `,
 };

@@ -312,6 +312,7 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
         maxlength=${bindIf(!this.validateOnly, this.maxLength)}
         step=${ifDefined(this.step)}
         aria-describedby=${bindIf(hasHelperText, 'helper-text')}
+        @keydown=${this._handleEnterKeydown}
         @change=${this._handleChange}
         @input=${this._handleInput}
         @blur=${this._handleBlur}

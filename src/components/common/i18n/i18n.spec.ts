@@ -7,7 +7,9 @@ import {
   unsafeStatic,
 } from '@open-wc/testing';
 import {
+  CalendarResourceStringsEN,
   ComboResourceStringsEN,
+  DateRangePickerResourceStringsEN,
   getI18nManager,
   type IComboResourceStrings,
   type IResourceStrings,
@@ -16,10 +18,8 @@ import {
 } from 'igniteui-i18n-core';
 import { ResourceStringsBG } from 'igniteui-i18n-resources';
 import { LitElement } from 'lit';
-import {
-  type IgcDateRangePickerResourceStrings,
-  IgcDateRangePickerResourceStringsEN,
-} from './EN/date-range-picker.resources.js';
+import type { DateRangePickerResourceStringsType } from '../../date-range-picker/date-range-picker.js';
+import type { IgcDateRangePickerResourceStrings } from './EN/date-range-picker.resources.js';
 import { addI18nController, type I18nController } from './i18n-controller.js';
 
 class TestLocalizedClass<T extends object> extends LitElement {
@@ -58,10 +58,36 @@ describe('Localization', () => {
 
   before(() => {
     tagOld = defineCE(
-      class extends TestLocalizedClass<IgcDateRangePickerResourceStrings> {
+      class extends TestLocalizedClass<
+        IgcDateRangePickerResourceStrings | DateRangePickerResourceStringsType
+      > {
         public override get defaultEN() {
-          return IgcDateRangePickerResourceStringsEN;
+          return Object.assign(
+            {},
+            DateRangePickerResourceStringsEN,
+            CalendarResourceStringsEN
+          );
         }
+
+        public override set resourceStrings(
+          value:
+            | IgcDateRangePickerResourceStrings
+            | DateRangePickerResourceStringsType
+        ) {
+          this.i18nController.resourceStrings = value;
+        }
+
+        public override get resourceStrings(): IgcDateRangePickerResourceStrings &
+          DateRangePickerResourceStringsType {
+          return this.i18nController.resourceStrings;
+        }
+
+        public override readonly i18nController = addI18nController<
+          IgcDateRangePickerResourceStrings | DateRangePickerResourceStringsType
+        >(this, {
+          defaultEN: this.defaultEN,
+          resourceMapName: 'date-range-picker',
+        });
 
         protected override render() {
           return html`

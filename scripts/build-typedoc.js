@@ -1,7 +1,7 @@
+import { watch as fsWatch } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { create } from 'browser-sync';
-import watch from 'node-watch';
+import { createServer } from 'vite';
 import { Application } from 'typedoc';
 import report from './report.mjs';
 
@@ -9,7 +9,6 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const toPosix = (p) => p.replace(/\\/g, '/');
-const browserSync = create();
 const ROOT = (...segments) =>
   toPosix(path.resolve(__dirname, '..', ...segments));
 
@@ -43,16 +42,18 @@ const TYPEDOC = {
   ),
 };
 
-const browserReload = async () => browserSync.reload();
-
 const serve = async () => {
-  const config = {
+  const server = await createServer({
+    configFile: false,
+    root: TYPEDOC.OUTPUT,
+    appType: 'mpa',
     server: {
-      baseDir: TYPEDOC.OUTPUT,
+      port: 3000,
     },
-    port: 3000,
-  };
-  browserSync.init(config);
+  });
+  await server.listen();
+  server.printUrls();
+  return server;
 };
 
 const buildTheme = async (app) => {
@@ -61,20 +62,19 @@ const buildTheme = async (app) => {
 };
 
 const watchFunc = async (app) => {
-  const options = {
-    delay: 1000,
-    recursive: true,
-    filter: (path) => {
-      return /.(?:ts|js|scss|sass|hbs|png|jpg|gif)$/.test(path);
-    },
-  };
-
   await buildTheme(app);
-  await serve();
+  const server = await serve();
 
-  watch([ROOT('src')], options, async () => {
-    await buildTheme(app);
-    await browserReload();
+  let debounceTimer = null;
+  const filter = /\.(?:ts|js|scss|sass|hbs|png|jpg|gif)$/;
+
+  fsWatch(ROOT('src'), { recursive: true }, (_, filename) => {
+    if (!filename || !filter.test(filename)) return;
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(async () => {
+      await buildTheme(app);
+      server.hot.send({ type: 'full-reload' });
+    }, 1000);
   });
 };
 

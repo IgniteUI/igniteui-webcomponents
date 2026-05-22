@@ -681,6 +681,20 @@ describe('Masked input', () => {
       expect(spec.element.value).to.be.empty;
     });
 
+    it('is correctly submitted on pressing Enter', () => {
+      spec.setProperties({ value: 'cba' });
+      expect(
+        spec.submitWithEnter(spec.element.renderRoot.querySelector('input'))
+      ).to.be.true;
+    });
+
+    it('should not submit on pressing Enter when value is invalid', () => {
+      spec.setProperties({ required: true, value: '' });
+      expect(
+        spec.submitWithEnter(spec.element.renderRoot.querySelector('input'))
+      ).to.be.false;
+    });
+
     it('is with correct input value and placeholder after a form reset', async () => {
       const input = spec.element.renderRoot.querySelector('input')!;
       const placeholder = 'Type something';
