@@ -51,7 +51,8 @@ Component decision matrix (by visual pattern, domain-neutral):
 |---|---|---|
 | Area chart | `IgcCategoryChartComponent` | `chartType`, `markerTypes`, `brushes`, `outlines` |
 | Line chart | `IgcCategoryChartComponent` | `chartType`, `markerTypes`, `brushes` |
-| Column/bar chart | `IgcCategoryChartComponent` or `IgcDataChartComponent` | `chartType`, `markerTypes`, series configuration |
+| Column chart | `IgcCategoryChartComponent` | `chartType`, `markerTypes`|
+| Bar chart | `IgcDataChartComponent` | `IgxBarSeriesComponent`, `valueMemberPath`, `argumentMemberPath` |
 | Sparkline (mini chart) | `IgcSparklineComponent` | `displayType`, `valueMemberPath` |
 | Pie chart | `IgcPieChartComponent` | `valueMemberPath`, `labelMemberPath` |
 | Donut chart | `IgcDoughnutChartComponent` | `innerExtent`; bind data via child `IgcRingSeriesBaseComponent` with `valueMemberPath`, `labelMemberPath` |
