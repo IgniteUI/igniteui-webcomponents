@@ -67,9 +67,12 @@ export { default as IgcSwitchComponent } from './components/checkbox/switch.js';
 export { default as IgcTextareaComponent } from './components/textarea/textarea.js';
 export { default as IgcTreeComponent } from './components/tree/tree.js';
 export { default as IgcTreeItemComponent } from './components/tree/tree-item.js';
+export { default as IgcSplitterComponent } from './components/splitter/splitter.js';
 export { default as IgcStepperComponent } from './components/stepper/stepper.js';
 export { default as IgcStepComponent } from './components/stepper/step.js';
+export { default as IgcHighlightComponent } from './components/highlight/highlight.js';
 export { default as IgcTooltipComponent } from './components/tooltip/tooltip.js';
+export { default as IgcThemeProviderComponent } from './components/theme-provider/theme-provider.js';
 
 // definitions
 export { defineComponents } from './components/common/definitions/defineComponents.js';
@@ -84,6 +87,9 @@ export {
 
 // theming configuration
 export { configureTheme } from './theming/config.js';
+export type { Theme, ThemeVariant } from './theming/types.js';
+export { addThemingController as θaddThemingController } from './theming/theming-controller.js';
+export { addAdoptedStylesController as θaddAdoptedStylesController } from './components/common/controllers/adopt-styles.js';
 
 // localization objects
 export {
@@ -101,15 +107,19 @@ export {
 export {
   type ICalendarResourceStrings,
   type ICarouselResourceStrings,
+  type IChatResourceStrings,
   type IChipResourceStrings,
   type IComboResourceStrings,
+  type IDatePickerResourceStrings,
   type IDateRangePickerResourceStrings,
   type IFileInputResourceStrings,
   type ITreeResourceStrings,
   CalendarResourceStringsEN,
   CarouselResourceStringsEN,
+  ChatResourceStringsEN,
   ChipResourceStringsEN,
   ComboResourceStringsEN,
+  DatePickerResourceStringsEN,
   DateRangePickerResourceStringsEN,
   FileInputResourceStringsEN,
   TreeResourceStringsEN,
@@ -129,12 +139,15 @@ export type { IgcChipComponentEventMap } from './components/chip/chip.js';
 export type { IgcComboComponentEventMap } from './components/combo/types.js';
 export type { IgcDatePickerComponentEventMap } from './components/date-picker/date-picker.js';
 export type { IgcDateRangePickerComponentEventMap } from './components/date-range-picker/date-range-picker.js';
-export type { IgcDateTimeInputComponentEventMap } from './components/date-time-input/date-time-input.js';
+export type { IgcDateTimeInputComponentEventMap } from './components/date-time-input/date-time-input.base.js';
+export type { IgcDateTimeInputEventMap } from './components/date-time-input/date-time-input.js';
+export type { IgcDateRangeInputEventMap } from './components/date-range-picker/date-range-input.js';
 export type { IgcDialogComponentEventMap } from './components/dialog/dialog.js';
 export type { IgcDropdownComponentEventMap } from './components/dropdown/dropdown.js';
 export type { IgcExpansionPanelComponentEventMap } from './components/expansion-panel/expansion-panel.js';
 export type { IgcInputComponentEventMap } from './components/input/input-base.js';
 export type { IgcInputComponentEventMap as IgcMaskInputComponentEventMap } from './components/input/input-base.js';
+export type { IgcNavDrawerComponentEventMap } from './components/nav-drawer/nav-drawer.js';
 export type { IgcFileInputComponentEventMap } from './components/file-input/file-input.js';
 export type { IgcRadioComponentEventMap } from './components/radio/radio.js';
 export type { IgcRatingComponentEventMap } from './components/rating/rating.js';
@@ -142,7 +155,8 @@ export type { IgcSelectComponentEventMap } from './components/select/select.js';
 export type { IgcSliderComponentEventMap } from './components/slider/slider.js';
 export type { IgcRangeSliderComponentEventMap } from './components/slider/range-slider.js';
 export type { IgcSnackbarComponentEventMap } from './components/snackbar/snackbar.js';
-export type { IgcStepperComponentEventMap } from './components/stepper/stepper.common.js';
+export type { IgcSplitterComponentEventMap } from './components/splitter/splitter.js';
+export type { IgcStepperComponentEventMap } from './components/stepper/common/types.js';
 export type { IgcTabsComponentEventMap } from './components/tabs/tabs.js';
 export type { IgcTextareaComponentEventMap } from './components/textarea/textarea.js';
 export type { IgcTileComponentEventMap } from './components/tile-manager/tile.js';
@@ -161,8 +175,8 @@ export type {
 } from './components/calendar/types.js';
 export { DateRangeType } from './components/calendar/types.js';
 export type { IgcCheckboxChangeEventArgs } from './components/checkbox/checkbox-base.js';
-export { DatePart } from './components/date-time-input/date-util.js';
-export type { DatePartDeltas } from './components/date-time-input/date-util.js';
+export { DatePart } from './components/date-time-input/date-part.js';
+export type { DatePartDeltas } from './components/date-time-input/date-part.js';
 export type {
   CustomDateRange,
   DateRangeValue,
@@ -171,9 +185,13 @@ export type { PopoverPlacement } from './components/popover/popover.js';
 export type { IgcRadioChangeEventArgs } from './components/radio/radio.js';
 export type { IgcRangeSliderValueEventArgs } from './components/slider/range-slider.js';
 export type {
+  IgcSplitterResizeEventArgs,
+  IgcSplitterResizeEventDetail,
+} from './components/splitter/splitter.js';
+export type {
   IgcActiveStepChangingEventArgs,
   IgcActiveStepChangedEventArgs,
-} from './components/stepper/stepper.common.js';
+} from './components/stepper/common/types.js';
 export type { IgcTreeSelectionEventArgs } from './components/tree/tree.common.js';
 export type {
   ComboItemTemplate,

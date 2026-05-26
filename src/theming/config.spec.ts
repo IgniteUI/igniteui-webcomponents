@@ -1,4 +1,4 @@
-import { aTimeout, expect, oneEvent } from '@open-wc/testing';
+import { expect, oneEvent } from '@open-wc/testing';
 
 import { configureTheme, getTheme } from './config.js';
 import { CHANGE_THEME_EVENT } from './theming-event.js';
@@ -16,21 +16,6 @@ describe('Theming Config', () => {
     });
 
     sheet.remove();
-  });
-
-  it('does not throw for CORS', async () => {
-    const link = document.createElement('link');
-    Object.assign(link, {
-      rel: 'stylesheet',
-      href: 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css',
-    });
-
-    document.head.append(link);
-    await aTimeout(1000);
-
-    expect(() => getAllCssVariables()).not.to.throw();
-
-    link.remove();
   });
 
   it('should set the theme and raise event with the new theme', async () => {

@@ -23,6 +23,7 @@ export type ComboRenderFunction<T extends object> = RenderItemFunction<
 >;
 export type ComboValue<T> = T | Values<T>;
 
+/* jsonAPIPlainObject */
 export interface FilteringOptions<T extends object> {
   filterKey: Keys<T> | undefined;
   caseSensitive?: boolean;

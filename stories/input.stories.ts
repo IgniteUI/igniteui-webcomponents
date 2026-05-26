@@ -1,26 +1,25 @@
-import { github } from '@igniteui/material-icons-extended';
-import type { Meta, StoryObj } from '@storybook/web-components-vite';
-import { html } from 'lit';
-import { ifDefined } from 'lit/directives/if-defined.js';
-
 import {
   IgcIconComponent,
   IgcInputComponent,
   defineComponents,
-  registerIcon,
   registerIconFromText,
 } from 'igniteui-webcomponents';
+import type { Meta, StoryObj } from '@storybook/web-components-vite';
 import {
   disableStoryControls,
   formControls,
   formSubmitHandler,
 } from './story.js';
 
+import { github } from '@igniteui/material-icons-extended';
+import { html } from 'lit';
+import { ifDefined } from 'lit/directives/if-defined.js';
+
 defineComponents(IgcInputComponent, IgcIconComponent);
 registerIconFromText(github.name, github.value);
-registerIcon(
+registerIconFromText(
   'search',
-  'https://unpkg.com/material-design-icons@3.0.1/action/svg/production/ic_search_24px.svg'
+  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>`
 );
 
 // region default
@@ -33,9 +32,8 @@ const metadata: Meta<IgcInputComponent> = {
   },
   argTypes: {
     value: {
-      type: 'string | Date',
+      type: 'string',
       description: 'The value of the control.',
-      options: ['string', 'Date'],
       control: 'text',
     },
     type: {
@@ -44,6 +42,12 @@ const metadata: Meta<IgcInputComponent> = {
       options: ['text', 'email', 'number', 'password', 'search', 'tel', 'url'],
       control: { type: 'select' },
       table: { defaultValue: { summary: 'text' } },
+    },
+    readOnly: {
+      type: 'boolean',
+      description: 'Makes the control a readonly field.',
+      control: 'boolean',
+      table: { defaultValue: { summary: 'false' } },
     },
     inputMode: {
       type: 'string',
@@ -129,12 +133,6 @@ const metadata: Meta<IgcInputComponent> = {
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
-    readOnly: {
-      type: 'boolean',
-      description: 'Makes the control a readonly field.',
-      control: 'boolean',
-      table: { defaultValue: { summary: 'false' } },
-    },
     placeholder: {
       type: 'string',
       description: 'The placeholder attribute of the control.',
@@ -148,13 +146,13 @@ const metadata: Meta<IgcInputComponent> = {
   },
   args: {
     type: 'text',
+    readOnly: false,
     autofocus: false,
     validateOnly: false,
     required: false,
     disabled: false,
     invalid: false,
     outlined: false,
-    readOnly: false,
   },
 };
 
@@ -162,9 +160,11 @@ export default metadata;
 
 interface IgcInputArgs {
   /** The value of the control. */
-  value: string | Date;
+  value: string;
   /** The type attribute of the control. */
   type: 'text' | 'email' | 'number' | 'password' | 'search' | 'tel' | 'url';
+  /** Makes the control a readonly field. */
+  readOnly: boolean;
   /**
    * The input mode attribute of the control.
    * See [relevant MDN article](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/inputmode)
@@ -201,8 +201,6 @@ interface IgcInputArgs {
   invalid: boolean;
   /** Whether the control will have outlined appearance. */
   outlined: boolean;
-  /** Makes the control a readonly field. */
-  readOnly: boolean;
   /** The placeholder attribute of the control. */
   placeholder: string;
   /** The label for the control. */
@@ -215,6 +213,14 @@ type Story = StoryObj<IgcInputArgs>;
 export const Basic: Story = {
   args: {
     label: 'Default input',
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'A fully interactive input with all available controls wired up. Use the **Controls** panel to explore different types, validation constraints, and visual states.',
+      },
+    },
   },
   render: (args) => html`
     <igc-input
@@ -240,9 +246,73 @@ export const Basic: Story = {
   `,
 };
 
+export const Types: Story = {
+  argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Demonstrates all supported `type` values: `text`, `email`, `number`, `password`, `search`, `tel`, and `url`.',
+      },
+    },
+  },
+  render: () => html`
+    <style>
+      .types-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+        gap: 1.5rem;
+        align-items: start;
+      }
+    </style>
+    <div class="types-grid">
+      <igc-input type="text" label="Text" placeholder="Enter text"></igc-input>
+      <igc-input
+        type="email"
+        label="Email"
+        placeholder="name@example.com"
+      ></igc-input>
+      <igc-input
+        type="number"
+        label="Number"
+        placeholder="0"
+        min="0"
+        max="100"
+        step="1"
+      ></igc-input>
+      <igc-input
+        type="password"
+        label="Password"
+        placeholder="••••••••"
+      ></igc-input>
+      <igc-input type="search" label="Search" placeholder="Search…">
+        <igc-icon name="search" slot="prefix"></igc-icon>
+      </igc-input>
+      <igc-input
+        type="tel"
+        label="Tel"
+        placeholder="+1 (555) 000-0000"
+      ></igc-input>
+      <igc-input
+        type="url"
+        label="URL"
+        placeholder="https://example.com"
+      ></igc-input>
+    </div>
+  `,
+};
+
 export const Slots: Story = {
   args: {
     label: 'Input with slots',
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Demonstrates the available content slots: `prefix` and `suffix` for inline decorations, and `helper-text` for guidance below the input.',
+      },
+    },
   },
   render: (args) => html`
     <igc-input
@@ -274,6 +344,14 @@ export const Slots: Story = {
 
 export const Validation: Story = {
   argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Showcases built-in constraint validation with custom slot-based error messages. Submit the form to trigger validation feedback for `required`, `type`, `pattern`, `minlength`, and `too-short` constraints.',
+      },
+    },
+  },
   render: () => html`
     <style>
       fieldset {
@@ -344,6 +422,14 @@ export const Validation: Story = {
 
 export const Form: Story = {
   argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Comprehensive form integration demo covering readonly, disabled, required, min/max length, numeric min/max, `validate-only`, pattern, email, and URL validators.',
+      },
+    },
+  },
   render: () => {
     return html`
       <style>
@@ -353,7 +439,7 @@ export const Form: Story = {
       </style>
       <form action="" @submit=${formSubmitHandler}>
         <fieldset>
-          <igc-input name="input" label="Default" label="Username">
+          <igc-input name="input" label="Username">
             <p slot="helper-text">
               Default state with no initial value and no validation.
             </p>

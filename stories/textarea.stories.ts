@@ -6,9 +6,9 @@ import {
   IgcIconComponent,
   IgcTextareaComponent,
   defineComponents,
+  registerIconFromText,
 } from 'igniteui-webcomponents';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import { registerIconFromText } from '../src/components/icon/icon.registry.js';
 import {
   disableStoryControls,
   formControls,
@@ -242,6 +242,14 @@ type Story = StoryObj<IgcTextareaArgs>;
 
 export const Default: Story = {
   args: { label: 'Your feedback' },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'A fully interactive textarea. Use the **Controls** panel to explore `resize`, `rows`, `outlined`, `readonly`, `disabled`, `required`, validation constraints, and all other properties.',
+      },
+    },
+  },
   render: (args) => html`
     <igc-textarea
       autocapitalize=${ifDefined(args.autocapitalize)}
@@ -261,26 +269,47 @@ export const Default: Story = {
       ?invalid=${args.invalid}
       ?validate-only=${args.validateOnly}
       ?spellcheck=${args.spellcheck}
-    >
+    ></igc-textarea>
+  `,
+};
+
+export const Slots: Story = {
+  args: { label: 'Textarea with slots' },
+  argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Demonstrates the available content slots: `prefix` and `suffix` for inline decorations, and `helper-text` for guidance below the input.',
+      },
+    },
+  },
+  render: () => html`
+    <igc-textarea label="Textarea with slots">
       <igc-icon name="source-code" aria-hidden="true" slot="prefix"></igc-icon>
       <igc-icon name="source-code" aria-hidden="true" slot="suffix"></igc-icon>
+      <span slot="helper-text">Sample helper text.</span>
     </igc-textarea>
   `,
 };
 
 export const ProjectContent: Story = {
-  render: (
-    { rows, resize, required, disabled, outlined, readOnly },
-    { globals: { direction } }
-  ) => {
+  argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Shows how initial content can be projected into the textarea via the default slot instead of using the `value` attribute. Projected text becomes the initial value and is restored on form reset.',
+      },
+    },
+  },
+  render: ({ rows, resize, required, disabled, outlined, readOnly }) => {
     return html`
       <igc-textarea
         id="comment"
-        dir=${direction}
         spellcheck="false"
         .outlined=${outlined}
         ?readonly=${readOnly}
-        autofocus
         label="Leave your comment"
         .rows=${rows}
         .resize=${resize}
@@ -311,35 +340,55 @@ function getInput(event: CustomEvent<string>) {
 }
 
 export const Validation: Story = {
+  argTypes: disableStoryControls(metadata),
   play: async () => {
     setMaxChars();
   },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Showcases constraint validation with custom slot-based error messages. The second field uses `resize="auto"` and `validate-only` to allow typing beyond `maxlength` while showing live character count and an error when exceeded. Submit the form to trigger all validation messages.',
+      },
+    },
+  },
   render: () => html`
-    <fieldset>
-      <igc-textarea label="Required" required>
-        <p slot="value-missing">This field is required!</p>
-      </igc-textarea>
-    </fieldset>
+    <form @submit=${formSubmitHandler}>
+      <fieldset>
+        <igc-textarea label="Required" required>
+          <p slot="value-missing">This field is required!</p>
+        </igc-textarea>
+      </fieldset>
 
-    <fieldset>
-      <igc-textarea
-        resize="auto"
-        @igcInput=${getInput}
-        label="Max characters"
-        required
-        maxlength="255"
-        validate-only
-      >
-        <p id="max-chars" slot="helper-text"></p>
-        <p slot="value-missing">This field is required!</p>
-        <p slot="too-long">Please, stick to the maximum of 255 characters!</p>
-      </igc-textarea>
-    </fieldset>
+      <fieldset>
+        <igc-textarea
+          resize="auto"
+          @igcInput=${getInput}
+          label="Max characters"
+          required
+          maxlength="255"
+          validate-only
+        >
+          <p id="max-chars" slot="helper-text"></p>
+          <p slot="value-missing">This field is required!</p>
+          <p slot="too-long">Please, stick to the maximum of 255 characters!</p>
+        </igc-textarea>
+      </fieldset>
+      ${formControls()}
+    </form>
   `,
 };
 
 export const Form: Story = {
   argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Comprehensive form integration demo covering default, initial value via `value` attribute, initial value via slot projection, disabled, readonly, required, min/max length, and `validate-only` states.',
+      },
+    },
+  },
   render: () => {
     return html`
       <form action="" @submit=${formSubmitHandler}>

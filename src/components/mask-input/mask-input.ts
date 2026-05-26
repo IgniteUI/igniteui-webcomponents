@@ -1,18 +1,33 @@
-import { html, nothing } from 'lit';
 import { property } from 'lit/decorators.js';
-import { ifDefined } from 'lit/directives/if-defined.js';
-import { live } from 'lit/directives/live.js';
+import { addThemingController } from '../../theming/theming-controller.js';
+import { addSlotController, setSlots } from '../common/controllers/slot.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { createFormValueState } from '../common/mixins/forms/form-value.js';
-import { partMap } from '../common/part-map.js';
-import { isEmpty } from '../common/util.js';
+import {
+  MaskBehaviorMixin,
+  type MaskSelection,
+} from '../common/mixins/mask-behavior.js';
+import { renderMaskedNativeInput } from '../common/templates/masked-input.js';
+import { IgcInputBaseComponent } from '../input/input-base.js';
+import { styles } from '../input/themes/input.base.css.js';
+import { styles as shared } from '../input/themes/shared/input.common.css.js';
+import { all } from '../input/themes/themes.js';
 import type { MaskInputValueMode } from '../types.js';
 import IgcValidationContainerComponent from '../validation-container/validation-container.js';
-import {
-  IgcMaskInputBaseComponent,
-  type MaskSelection,
-} from './mask-input-base.js';
+import { MaskParser } from './mask-parser.js';
 import { maskValidators } from './validators.js';
+
+export type { MaskSelection };
+
+const Slots = setSlots(
+  'prefix',
+  'suffix',
+  'helper-text',
+  'value-missing',
+  'bad-input',
+  'custom-error',
+  'invalid'
+);
 
 /**
  * A masked input is an input field where a developer can control user input and format the visible value,
@@ -38,8 +53,12 @@ import { maskValidators } from './validators.js';
  * @csspart suffix - The suffix wrapper
  * @csspart helper-text - The helper text wrapper
  */
-export default class IgcMaskInputComponent extends IgcMaskInputBaseComponent {
+
+export default class IgcMaskInputComponent extends MaskBehaviorMixin(
+  IgcInputBaseComponent
+) {
   public static readonly tagName = 'igc-mask-input';
+  public static styles = [styles, shared];
 
   /* blazorSuppress */
   public static register(): void {
@@ -48,9 +67,17 @@ export default class IgcMaskInputComponent extends IgcMaskInputBaseComponent {
 
   //#region Internal attributes and properties
 
+  protected override readonly _parser = new MaskParser();
+
   protected override get __validators() {
     return maskValidators;
   }
+
+  protected override readonly _themes = addThemingController(this, all);
+
+  protected override readonly _slots = addSlotController(this, {
+    slots: Slots,
+  });
 
   protected override readonly _formValue = createFormValueState(this, {
     initialValue: '',
@@ -71,9 +98,10 @@ export default class IgcMaskInputComponent extends IgcMaskInputBaseComponent {
   /**
    * Dictates the behavior when retrieving the value of the control:
    *
-   * - `raw` will return the clean user input.
-   * - `withFormatting` will return the value with all literals and prompts.
+   * - `raw`: Returns clean input (e.g. "5551234567")
+   * - `withFormatting`: Returns with mask formatting (e.g. "(555) 123-4567")
    *
+   * Empty values always return an empty string, regardless of the value mode.
    * @attr value-mode
    * @default 'raw'
    */
@@ -196,7 +224,7 @@ export default class IgcMaskInputComponent extends IgcMaskInputBaseComponent {
     this._formValue.setValueAndFormState(value);
   }
 
-  protected async _updateInput(
+  protected override async _updateInput(
     text: string,
     { start, end }: MaskSelection
   ): Promise<void> {
@@ -211,48 +239,58 @@ export default class IgcMaskInputComponent extends IgcMaskInputBaseComponent {
     }
 
     await this.updateComplete;
-    this.input.setSelectionRange(result.end, result.end);
+    this._input?.setSelectionRange(result.end, result.end);
   }
 
-  protected override _updateSetRangeTextValue(): void {
+  protected override _syncValueFromMask(): void {
     this.value = this._parser.parse(this._maskedValue);
   }
 
   private _updateMaskedValue(): void {
-    if (this._maskedValue === this._parser.emptyMask) {
+    if (this._isEmptyMask) {
       this._maskedValue = '';
     }
   }
 
   //#endregion
 
-  protected override renderInput() {
-    return html`
-      <input
-        type="text"
-        part=${partMap(this.resolvePartNames('input'))}
-        name=${ifDefined(this.name)}
-        .value=${live(this._maskedValue)}
-        .placeholder=${this.placeholder ?? this._parser.escapedMask}
-        ?readonly=${this.readOnly}
-        ?disabled=${this.disabled}
-        @dragenter=${this._handleDragEnter}
-        @dragleave=${this._handleDragLeave}
-        @dragstart=${this._setMaskSelection}
-        @blur=${this._handleBlur}
-        @focus=${this._handleFocus}
-        @cut=${this._setMaskSelection}
-        @change=${this._handleChange}
-        @click=${this._handleClick}
-        @compositionstart=${this._handleCompositionStart}
-        @compositionend=${this._handleCompositionEnd}
-        @input=${this._handleInput}
-        aria-describedby=${ifDefined(
-          isEmpty(this._helperText) ? nothing : 'helper-text'
-        )}
-        @keydown=${this._setMaskSelection}
-      />
-    `;
+  //#region Public methods
+
+  /* blazorSuppress */
+  /** Returns whether the current masked input is valid according to the mask pattern. */
+  public isValidMaskPattern(): boolean {
+    return this._parser.isValidString(this._maskedValue);
+  }
+
+  //#endregion
+
+  protected override _renderInput() {
+    const hasNegativeTabIndex = this.getAttribute('tabindex') === '-1';
+    const hasHelperText = this._slots.hasAssignedElements('helper-text');
+
+    return renderMaskedNativeInput({
+      id: this._inputId,
+      partNames: this._resolvePartNames('input'),
+      name: this.name,
+      value: this._maskedValue,
+      placeholder: this.placeholder ?? this._parser.escapedMask,
+      readOnly: this.readOnly,
+      disabled: this.disabled,
+      autofocus: this.autofocus,
+      inputMode: this.inputMode,
+      tabindex: hasNegativeTabIndex ? -1 : undefined,
+      ariaDescribedBy: hasHelperText ? 'helper-text' : undefined,
+      onInput: this._handleInput,
+      onFocus: this._handleFocus,
+      onBlur: this._handleBlur,
+      onClick: this._handleClick,
+      onSetMaskSelection: this._setMaskSelection,
+      onCompositionStart: this._handleCompositionStart,
+      onCompositionEnd: this._handleCompositionEnd,
+      onChange: this._handleChange,
+      onDragEnter: this._handleDragEnter,
+      onDragLeave: this._handleDragLeave,
+    });
   }
 }
 

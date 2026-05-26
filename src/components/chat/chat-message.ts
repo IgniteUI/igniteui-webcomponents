@@ -1,11 +1,12 @@
 import { ContextConsumer } from '@lit/context';
-import { html, LitElement, nothing } from 'lit';
-import { property } from 'lit/decorators.js';
+import { html, LitElement, nothing, type PropertyValues } from 'lit';
+import { property, state } from 'lit/decorators.js';
 import { cache } from 'lit/directives/cache.js';
 import { until } from 'lit/directives/until.js';
 import { addThemingController } from '../../theming/theming-controller.js';
 import IgcIconButtonComponent from '../button/icon-button.js';
 import { chatContext } from '../common/context.js';
+import { addAdoptedStylesController } from '../common/controllers/adopt-styles.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { partMap } from '../common/part-map.js';
 import { isEmpty, trimmedHtml } from '../common/util.js';
@@ -19,7 +20,6 @@ import type {
   ChatTemplateRenderer,
   IgcChatMessage,
 } from './types.js';
-import { addAdoptedStylesController } from './utils.js';
 
 const LIKE_INACTIVE = 'thumb_up_inactive';
 const LIKE_ACTIVE = 'thumb_up_active';
@@ -76,10 +76,7 @@ export default class IgcChatMessageComponent extends LitElement {
   });
 
   private readonly _stateChanged = () => {
-    this._adoptedStyles.shouldAdoptStyles(
-      !!this._state.options?.adoptRootStyles &&
-        !this._adoptedStyles.hasAdoptedStyles
-    );
+    this._shouldAdoptRootStyles = Boolean(this._state.options?.adoptRootStyles);
   };
 
   private readonly _stateConsumer = new ContextConsumer(this, {
@@ -87,6 +84,9 @@ export default class IgcChatMessageComponent extends LitElement {
     callback: this._stateChanged,
     subscribe: true,
   });
+
+  @state()
+  private _shouldAdoptRootStyles = false;
 
   private get _state(): ChatState {
     return this._stateConsumer.value!;
@@ -103,8 +103,16 @@ export default class IgcChatMessageComponent extends LitElement {
     addThemingController(this, all, { themeChange: this._adoptPageStyles });
   }
 
+  protected override update(props: PropertyValues): void {
+    if (props.has('_shouldAdoptRootStyles')) {
+      this._adoptedStyles.shouldAdoptStyles(this._shouldAdoptRootStyles);
+    }
+    super.update(props);
+  }
+
   private _adoptPageStyles(): void {
-    this._adoptedStyles.shouldAdoptStyles(this._adoptedStyles.hasAdoptedStyles);
+    this._adoptedStyles.invalidateCache(this.ownerDocument);
+    this._adoptedStyles.shouldAdoptStyles(this._shouldAdoptRootStyles);
   }
 
   private _getRenderer(name: keyof DefaultMessageRenderers) {
@@ -117,22 +125,27 @@ export default class IgcChatMessageComponent extends LitElement {
     const text = this.message.text;
     const separator = text ? '\n\n' : '';
     const attachments = this.message.attachments ?? [];
-    const { attachmentLabel, attachmentsListLabel, messageCopied } =
-      this._state.resourceStrings!;
+    const {
+      chat_attachment_label,
+      chat_attachments_list_label,
+      chat_message_copied,
+    } = this._state.resourceStrings;
 
     const attachmentsText = isEmpty(attachments)
       ? ''
       : attachments
-          .map(({ name, url }) => `${name ?? attachmentLabel}: ${url ?? ''}`)
+          .map(
+            ({ name, url }) => `${name ?? chat_attachment_label}: ${url ?? ''}`
+          )
           .join('\n');
 
     const payload = attachmentsText
-      ? `${text}${separator}${attachmentsListLabel}:\n${attachmentsText}`
+      ? `${text}${separator}${chat_attachments_list_label}:\n${attachmentsText}`
       : text;
 
     try {
       await navigator.clipboard.writeText(payload);
-      this._state.showActionToast(messageCopied);
+      this._state.showActionToast(chat_message_copied!);
     } catch (err) {
       throw new Error(`Failed to copy message: ${err}`);
     }
@@ -198,22 +211,25 @@ export default class IgcChatMessageComponent extends LitElement {
     }
 
     return html`
-      ${this._renderActionButton(COPY_CONTENT, resourceStrings.reactionCopy)}
+      ${this._renderActionButton(
+        COPY_CONTENT,
+        resourceStrings.chat_reaction_copy!
+      )}
       ${this._renderActionButton(
         this.message.reactions?.includes(LIKE_ACTIVE)
           ? LIKE_ACTIVE
           : LIKE_INACTIVE,
-        resourceStrings.reactionLike
+        resourceStrings.chat_reaction_like!
       )}
       ${this._renderActionButton(
         this.message.reactions?.includes(DISLIKE_ACTIVE)
           ? DISLIKE_ACTIVE
           : DISLIKE_INACTIVE,
-        resourceStrings.reactionDislike
+        resourceStrings.chat_reaction_dislike!
       )}
       ${this._renderActionButton(
         REGENERATE,
-        resourceStrings.reactionRegenerate
+        resourceStrings.chat_reaction_regenerate!
       )}
     `;
   }
@@ -279,6 +295,7 @@ export default class IgcChatMessageComponent extends LitElement {
 
     const parts = {
       'message-container': true,
+      received: !this._state.isCurrentUserMessage(this.message),
       sent: this._state.isCurrentUserMessage(this.message),
     };
 

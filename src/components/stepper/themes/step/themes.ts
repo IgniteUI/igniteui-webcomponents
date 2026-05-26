@@ -15,7 +15,6 @@ import { styles as materialLight } from './light/step.material.css.js';
 import { styles as sharedLight } from './light/step.shared.css.js';
 // Shared Styles
 import { styles as bootstrap } from './shared/step.bootstrap.css.js';
-import { styles as fluent } from './shared/step.fluent.css.js';
 import { styles as indigo } from './shared/step.indigo.css.js';
 
 const light = {
@@ -29,7 +28,7 @@ const light = {
     ${materialLight}
   `,
   fluent: css`
-    ${fluent} ${fluentLight}
+    ${fluentLight}
   `,
   indigo: css`
     ${indigo} ${indigoLight}
@@ -47,7 +46,7 @@ const dark = {
     ${materialDark}
   `,
   fluent: css`
-    ${fluent} ${fluentDark}
+    ${fluentDark}
   `,
   indigo: css`
     ${indigo} ${indigoDark}

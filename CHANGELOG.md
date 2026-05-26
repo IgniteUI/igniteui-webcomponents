@@ -6,16 +6,274 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 ### Added
+- #### Nav Drawer
+  - The drawer for non-relative positions are now implemented using the native Popover API, providing built-in modal semantics, focus trapping, and accessibility support.
+  - Added `keepOpenOnEscape` property — prevents the drawer from closing when the user presses the **Escape** key (non-relative positions only).
+  - Added `igcClosing` event — emitted just before the drawer is closed by user interaction. Cancelable.
+  - Added `igcClosed` event — emitted just after the drawer is closed by user interaction.
+
+### Changed
+- #### Nav Drawer
+  - The `overlay` CSS part has been removed. Users of the component can target the `base` part's `::backdrop` pseudo-element, the
+    `--ig-overlay-background-color` variable or use the theming package.
+- #### Form controls
+  - `IgcInput`, `IgcMaskInput`, `IgcDateTimeInput`, `IgcCheckbox`, `IgcRadio`, `IgcSwitch`, `IgcDatePicker`, and `IgcDateRangePicker` now submit their associated form on **Enter** key press, matching native browser behavior.
+
+## [7.1.3] - 2026-04-28
+### Changed
+- #### AI-Assisted Development
+  - Updated and enhanced the library provided skills [#2207](https://github.com/IgniteUI/igniteui-webcomponents/pull/2207)
+
+### Fixed
+- #### Stepper
+  - In horizontal orientation, the content area height can now driven by the active step's content instead of always being sized to the tallest step. A new `--body-grid-rows` CSS custom property controls the internal row sizing of each step body — its default value of `1fr` expands the body to fit its content, while setting it to `0fr` collapses the body to zero height, enabling fully variable step heights. [#2209](https://github.com/IgniteUI/igniteui-webcomponents/issues/2209)
+
+## [7.1.2] - 2026-04-22
+### Changed
+- #### AI-Assisted Development
+  - Updated and enhanced the library provided skills [#2189](https://github.com/IgniteUI/igniteui-webcomponents/pull/2189) [#2195](https://github.com/IgniteUI/igniteui-webcomponents/pull/2195) [#2198](https://github.com/IgniteUI/igniteui-webcomponents/pull/2198)
+- #### Button group
+  - Themes colors alignment [#2182](https://github.com/IgniteUI/igniteui-webcomponents/pull/2182)
+- #### Circular progressbar
+  - Unified track color CSS variable between progress bars [#2185](https://github.com/IgniteUI/igniteui-webcomponents/pull/2185)
+- #### Chip
+  - Wrap content inside a new part container and update styles [#2190](https://github.com/IgniteUI/igniteui-webcomponents/pull/2190)
+
+### Fixed
+- #### Dropdown
+  - Selected item styles [#2168](https://github.com/IgniteUI/igniteui-webcomponents/pull/2168)
+- #### Linear progressbar
+  - Unified display size across platforms [#2184](https://github.com/IgniteUI/igniteui-webcomponents/pull/2184)
+- #### Tree
+  - Background style discrepancies [#2173](https://github.com/IgniteUI/igniteui-webcomponents/pull/2173)
+
+## [7.1.1] - 2026-03-25
+### Changed
+- #### Checkbox
+  - Updated disabled and indeterminate styles [#2158](https://github.com/IgniteUI/igniteui-webcomponents/pull/2158)
+
+## [7.1.0] - 2026-03-19
+### Added
+- Splitter component
+- Highlight container component
+
+### Fixed
+- #### Combo
+  - Use focus color for clear button background #[2140](https://github.com/IgniteUI/igniteui-webcomponents/pull/2140)
+- #### Stepper
+  - Box shadow values for step indicators #[2133](https://github.com/IgniteUI/igniteui-webcomponents/pull/2133)
+- #### Tabs
+  - Scrolling behavior for tabs content #[2149](https://github.com/IgniteUI/igniteui-webcomponents/pull/2149)
+
+## [7.0.1] - 2026-03-06
+### Fixed
+- #### Icon service
+  - Browser Safari: Use a plain Map instance for synchronizing state between actors [#2128](https://github.com/IgniteUI/igniteui-webcomponents/pull/2128)
+
+## [7.0.0] - 2026-02-25
+### Added
+- #### AI-Assisted Development - Copilot Skills
+  - Four end-user skills are now shipped with the package under the `skills/` directory. They provide step-by-step guidance to GitHub Copilot and other LLM agents for common tasks:
+    - **igniteui-wc-choose-components** - Identify the right component for a given UI pattern.
+    - **igniteui-wc-integrate-with-framework** - Set up and use components in React, Angular, Vue, or vanilla JS.
+    - **igniteui-wc-customize-component-theme** - Apply custom styles via CSS custom properties, parts, and the theming system.
+    - **igniteui-wc-optimize-bundle-size** - Reduce production bundle size through selective imports and lazy loading.
+
+  To enable the skills in your project, copy the skill folders into your repository's `.github/skills/` directory so Copilot can automatically discover them:
+
+  **Unix/macOS:**
+  ```sh
+  cp -r node_modules/igniteui-webcomponents/skills/* .github/skills/
+  ```
+
+  **Windows (PowerShell):**
+  ```powershell
+  Copy-Item -Recurse node_modules\igniteui-webcomponents\skills\* .github\skills\
+  ```
+
+  **Windows (Command Prompt):**
+  ```cmd
+  xcopy /E /I node_modules\igniteui-webcomponents\skills .github\skills
+  ```
+  Copilot supports project skills stored in `.github/skills` or `.claude/skills` in your repository, and personal skills stored in `~/.copilot/skills` or `~/.claude/skills` (shared across projects; Copilot coding agent and GitHub Copilot CLI only).
+- #### Chat
+  - **adoptRootStyles** can now be toggled on/off at runtime. [#2093](https://github.com/IgniteUI/igniteui-webcomponents/pull/2093)
+
+### Changed
+- #### Library
+  - Minimum Node version required is now >= 22.
+- #### Themes - **Breaking change**
+  - Changed global prefixes for CSS custom properties for component themes to align with other Ignite UI component libraries.
+
+### Removed
+- #### Chat
+  - Removed the **typingIndicator** template renderer. Users can use the **typing-indicator** slot instead.
+- #### Tooltip
+  - Removed the **disableArrow** deprecated property.
+
+### Fixed
+- #### Carousel
+  - Context instantiation in Blazor. [#2033](https://github.com/IgniteUI/igniteui-webcomponents/pull/2033)
+- #### Combo
+  - Correct cursor style over non input parts. [#2085](https://github.com/IgniteUI/igniteui-webcomponents/pull/2085)
+- #### Textarea
+  - Correct cursor style over non input parts. [#2085](https://github.com/IgniteUI/igniteui-webcomponents/pull/2085)
+
+## [6.5.1] - 2026-02-04
+### Fixed
+- #### Calendar
+  - aria-hidden state for weeks outside of the current month [#2079](https://github.com/IgniteUI/igniteui-webcomponents/pull/2079)
+- #### Date picker
+  - CSS border for slotted actions in dialog mode [#2078](https://github.com/IgniteUI/igniteui-webcomponents/pull/2078)
+- #### Input
+  - Placeholder color on focus [#2068](https://github.com/IgniteUI/igniteui-webcomponents/pull/2068)
+  - CSS border when suffix slot content is present [#2073](https://github.com/IgniteUI/igniteui-webcomponents/pull/2073)
+- #### Textarea
+  - Align bottom padding to the design system [#2069](https://github.com/IgniteUI/igniteui-webcomponents/pull/2069)
+- #### Validation
+  - Slotted validation text follows the current theme [#2063](https://github.com/IgniteUI/igniteui-webcomponents/pull/2063)
+
+## [6.5.0] - 2026-01-20
+### Added
+- Added theming scoping container [#2056](https://github.com/IgniteUI/igniteui-webcomponents/pull/2056)
+  - The `igc-theme-provider` component allows you to scope themes to specific parts of your page using Lit's context API. This enables having multiple different themes on the same page.
+  - Works both in Shadow and Light DOM.
+  - **Shadow DOM Usage**: When building custom web components with Shadow DOM, you can apply scoped themes by importing the theme CSS and wrapping your content with `igc-theme-provider`:
+    ```typescript
+    import { LitElement, html } from 'lit';
+    import { styles as materialDark } from 'igniteui-webcomponents/themes/dark/material.css.js';
+
+    class MyComponent extends LitElement {
+      static styles = [materialDark];
+
+      render() {
+        return html`
+          <style>
+            /* Additional component-specific styles */
+          </style>
+          <igc-theme-provider theme="material" variant="dark">
+            <igc-button>Scoped Material Dark Button</igc-button>
+            <igc-input label="Scoped Input"></igc-input>
+          </igc-theme-provider>
+        `;
+      }
+    }
+    ```
+  - **Light DOM with @scope**: For Light DOM usage, you can leverage CSS `@scope` to apply themes to specific page sections:
+    ```html
+    <style>
+      @scope (#fluent-section) {
+        @import 'node_modules/igniteui-webcomponents/themes/light/fluent.css';
+      }
+
+      @scope (#material-section) {
+        @import 'node_modules/igniteui-webcomponents/themes/dark/material.css';
+      }
+    </style>
+
+    <div id="fluent-section">
+      <igc-theme-provider theme="fluent" variant="light">
+        <igc-button>Fluent Light Button</igc-button>
+        <igc-card>
+          <igc-card-header>Fluent Theme Card</igc-card-header>
+        </igc-card>
+      </igc-theme-provider>
+    </div>
+
+    <div id="material-section">
+      <igc-theme-provider theme="material" variant="dark">
+        <igc-button>Material Dark Button</igc-button>
+        <igc-input label="Material Input"></igc-input>
+      </igc-theme-provider>
+    </div>
+    ```
+
+### Fixed
+- #### Tile manager
+  - Header is hidden only when there is no content and maximize/fullscreen are disabled [#2059](https://github.com/IgniteUI/igniteui-webcomponents/pull/2059)
+- #### Theming
+  - Resolve initial theme based on document computed styles rather than stylesheets [#2061](https://github.com/IgniteUI/igniteui-webcomponents/pull/2061)
+
+## [6.4.0] - 2025-12-15
+### Added
 - #### Localization
   - New localization implementation. Now you can set global localization for all localized Ignite UI components using the `registerI18n` and `setCurrentI18n` methods.
   - Calendar, Date Input, Date Picker and Date Range Picker components now implement the new localization for formatting as well, which internally uses new implementation of the Intl.
   - Added localization for Carousel, Chip, Combo, File Input and Tree. They now have `locale` and `resourceStrings` properties as well, which you can set to customize them individually.
+- #### Badge
+  - New **dot** type, improved outline implementation following WCAG AA accessibility standards and theme based sizing. [#1889](https://github.com/IgniteUI/igniteui-webcomponents/pull/1889)
+- #### Checkbox
+  - New `--tick-width` CSS property. [#1897](https://github.com/IgniteUI/igniteui-webcomponents/pull/1897)
+- #### Combo
+  - New `disableClear` property which disables the clear button of the combo component. [#1896](https://github.com/IgniteUI/igniteui-webcomponents/pull/1896)
+- #### Mask input
+  - Transform unicode digit code points to ASCII numbers for numeric patterns. [#1907](https://github.com/IgniteUI/igniteui-webcomponents/pull/1907)
+
+### Changed
+- **License Update**: The project license has been updated to the MIT License, providing greater flexibility and openness for the community. This change reflects our commitment to fostering an inclusive and collaborative development environment while maintaining the high-quality standards you expect from Ignite UI Web Components.
+- #### Accessibility
+  - Accessibility color adjustments. [#1959](https://github.com/IgniteUI/igniteui-webcomponents/pull/1959)
+- #### Button
+  - Updated and aligned styles with the design kit. [#1996](https://github.com/IgniteUI/igniteui-webcomponents/pull/1996)
+- #### Calendar
+  - Updated and aligned styles with the design kit. [#1899](https://github.com/IgniteUI/igniteui-webcomponents/pull/1899)
+- #### Carousel
+  - Updated and aligned styles with the design kit. [#1883](https://github.com/IgniteUI/igniteui-webcomponents/pull/1883)
+- #### Chat
+  - `adoptRootStyles` now also affects the input area custom renderers. [#1945](https://github.com/IgniteUI/igniteui-webcomponents/pull/1945)
+  - Renamed `input-container` part to `input-area`. [#1954](https://github.com/IgniteUI/igniteui-webcomponents/pull/1954)
+- #### Combo
+  - Use the native `Map.groupBy` for grouping. [#1802](https://github.com/IgniteUI/igniteui-webcomponents/pull/1802)
+  - Improved the keyboard navigation experience. [#1529](https://github.com/IgniteUI/igniteui-webcomponents/pull/1529)
+  - Updated and aligned styles with the design kit. [#1870](https://github.com/IgniteUI/igniteui-webcomponents/pull/1870)
+- #### Date picker
+  - Updated and aligned styles with the design kit. [#1870](https://github.com/IgniteUI/igniteui-webcomponents/pull/1870)
+- #### Date range picker
+  - Updated and aligned styles with the design kit. [#1870](https://github.com/IgniteUI/igniteui-webcomponents/pull/1870)
+- #### Input
+  - Updated and aligned styles with the design kit. [#1870](https://github.com/IgniteUI/igniteui-webcomponents/pull/1870)
+- #### Select
+  - Updated and aligned styles with the design kit. [#1870](https://github.com/IgniteUI/igniteui-webcomponents/pull/1870)
+- #### Textarea
+  - Updated and aligned styles with the design kit. [#1870](https://github.com/IgniteUI/igniteui-webcomponents/pull/1870)
 
 ### Fixed
-- #### Tooltip
-  - Do not show tooltip when target is clicked [#1828](https://github.com/IgniteUI/igniteui-webcomponents/issues/1828)
+- #### Sass theme support
+  - Components can be styled using the Sass tools from the theming package. [#1909](https://github.com/IgniteUI/igniteui-webcomponents/issues/1909) [#1926](https://github.com/IgniteUI/igniteui-webcomponents/issues/1926) [#1920](https://github.com/IgniteUI/igniteui-webcomponents/issues/1920) [#1933](https://github.com/IgniteUI/igniteui-webcomponents/issues/1933) [#1966](https://github.com/IgniteUI/igniteui-webcomponents/issues/1966) [#1972](https://github.com/IgniteUI/igniteui-webcomponents/issues/1972) [#1929](https://github.com/IgniteUI/igniteui-webcomponents/issues/1929) [#1935](https://github.com/IgniteUI/igniteui-webcomponents/issues/1935) [#1980](https://github.com/IgniteUI/igniteui-webcomponents/issues/1980) [#1991](https://github.com/IgniteUI/igniteui-webcomponents/issues/1991) [#2015](https://github.com/IgniteUI/igniteui-webcomponents/issues/2015)
+- #### Calendar
+  - Focus styles for month/year views. [#2030](https://github.com/IgniteUI/igniteui-webcomponents/issues/2030)
+- #### Combo
+  - Notch border styles. [#1965](https://github.com/IgniteUI/igniteui-webcomponents/issues/1965)
+- #### Chat
+  - Suggestions rendered at the wrong location when no header is present. [#1908](https://github.com/IgniteUI/igniteui-webcomponents/pull/1908)
+  - Correct sequence and type for chat user typing events. [#1906](https://github.com/IgniteUI/igniteui-webcomponents/pull/1906)
+  - `adoptRootStyles` correctly skips `@import` CSS rules from the page stylesheets. [#1931](https://github.com/IgniteUI/igniteui-webcomponents/pull/1931)
+  - `adoptRootStyles` is correctly re-applied on theme swap. [#1950](https://github.com/IgniteUI/igniteui-webcomponents/pull/1950)
+  - Replaced hardcoded `ig-size` style variable. [#1975](https://github.com/IgniteUI/igniteui-webcomponents/pull/1975)
+- #### Checkbox & Switch
+  - Internal ripple opacity when hovering over slotted content in the **helper-text** slot. [#1964](https://github.com/IgniteUI/igniteui-webcomponents/issues/1964)
 - #### Date input, Date picker, Date range picker
   - Default display format now follows strictly locale format as per specification without leading zeros.
+- #### Dialog
+  - Underlying dialog element now has `display: contents` and won't participate in DOM layout. [#1947](https://github.com/IgniteUI/igniteui-webcomponents/issues/1947)
+  - `keepOpenOnEscape` not preventing the dialog from closing when **Escape** is pressed. [#1986](https://github.com/IgniteUI/igniteui-webcomponents/issues/1986)
+  - Base styles and theming. [#1997](https://github.com/IgniteUI/igniteui-webcomponents/issues/1997)
+- #### List & List item
+  - Added missing styles for slotted **igc-icon** in the list item. [#1985](https://github.com/IgniteUI/igniteui-webcomponents/issues/1985)
+  - Icon and icon button sizes for the Indigo theme. [#2010](https://github.com/IgniteUI/igniteui-webcomponents/issues/2010)
+- #### Mask input
+  - Auto-fill behavior for mask patterns with literals. [#2006](https://github.com/IgniteUI/igniteui-webcomponents/issues/2006)
+- #### Navbar
+  - Icon and icon button sizes. [#1956](https://github.com/IgniteUI/igniteui-webcomponents/issues/1956)
+- #### Select
+  - Color for outlined type. [#1957](https://github.com/IgniteUI/igniteui-webcomponents/issues/1957)
+- #### Tabs
+  - Add active pseudo-elements backgrounds for the active tab in Material theme. [#1998](https://github.com/IgniteUI/igniteui-webcomponents/issues/1998)
+  - Take scale factor when positioning the active tab indicator. [#2008](https://github.com/IgniteUI/igniteui-webcomponents/issues/2008)
+  - Selected indicator alignment [#2028](https://github.com/IgniteUI/igniteui-webcomponents/issues/2028)
+- #### Tooltip
+  - Do not show the tooltip when the tooltip target is clicked. [#1828](https://github.com/IgniteUI/igniteui-webcomponents/issues/1828)
+  - Removed the **max-width** constraint for slotted content. [#1936](https://github.com/IgniteUI/igniteui-webcomponents/issues/1936)
 
 ## [6.3.6] - 2025-11-14
 ### Fixed
@@ -1072,6 +1330,15 @@ Initial release of Ignite UI Web Components
 - Ripple component
 - Switch component
 
+[7.1.3]: https://github.com/IgniteUI/igniteui-webcomponents/compare/7.1.2...7.1.3
+[7.1.2]: https://github.com/IgniteUI/igniteui-webcomponents/compare/7.1.1...7.1.2
+[7.1.1]: https://github.com/IgniteUI/igniteui-webcomponents/compare/7.1.0...7.1.1
+[7.1.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/7.0.1...7.1.0
+[7.0.1]: https://github.com/IgniteUI/igniteui-webcomponents/compare/7.0.0...7.0.1
+[7.0.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/6.5.1...7.0.0
+[6.5.1]: https://github.com/IgniteUI/igniteui-webcomponents/compare/6.5.0...6.5.1
+[6.5.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/6.4.0...6.5.0
+[6.4.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/6.3.6...6.4.0
 [6.3.6]: https://github.com/IgniteUI/igniteui-webcomponents/compare/6.3.5...6.3.6
 [6.3.5]: https://github.com/IgniteUI/igniteui-webcomponents/compare/6.3.4...6.3.5
 [6.3.4]: https://github.com/IgniteUI/igniteui-webcomponents/compare/6.3.3...6.3.4

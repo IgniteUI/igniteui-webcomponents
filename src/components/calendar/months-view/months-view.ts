@@ -1,7 +1,6 @@
 import { getDateFormatter } from 'igniteui-i18n-core';
-import { html, LitElement } from 'lit';
+import { html, LitElement, type TemplateResult } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
-import { range } from 'lit/directives/range.js';
 import { addThemingController } from '../../../theming/theming-controller.js';
 import { addKeybindings } from '../../common/controllers/key-bindings.js';
 import { blazorIndirectRender } from '../../common/decorators/blazorIndirectRender.js';
@@ -16,6 +15,8 @@ import { CalendarDay } from '../model.js';
 import { all } from '../themes/year-month.js';
 import { styles } from '../themes/year-month-view.base.css.js';
 import type { IgcCalendarComponentEventMap } from '../types.js';
+
+const MONTHS = Array.from({ length: 12 }, (_, i) => i);
 
 /**
  * Instantiate a months view as a separate component in the calendar.
@@ -36,15 +37,21 @@ export default class IgcMonthsViewComponent extends EventEmitterMixin<
   public static styles = styles;
 
   /* blazorSuppress */
-  public static register() {
+  public static register(): void {
     registerComponent(IgcMonthsViewComponent);
   }
+
+  //#region Internal State
 
   @state()
   private _value = CalendarDay.today;
 
   @query('[tabindex="0"]')
-  private activeMonth!: HTMLElement;
+  private _activeMonth?: HTMLElement;
+
+  //#endregion
+
+  //#region Public attributes and properties
 
   /** Тhe current value of the calendar. */
   @property({ attribute: false })
@@ -52,7 +59,7 @@ export default class IgcMonthsViewComponent extends EventEmitterMixin<
     this._value = CalendarDay.from(value);
   }
 
-  public get value() {
+  public get value(): Date {
     return this._value.native;
   }
 
@@ -65,34 +72,29 @@ export default class IgcMonthsViewComponent extends EventEmitterMixin<
   public monthFormat: 'numeric' | '2-digit' | 'long' | 'short' | 'narrow' =
     'long';
 
-  private get _monthOptions(): Intl.DateTimeFormatOptions {
-    return { month: this.monthFormat };
-  }
+  //#endregion
 
-  private _ariaMonthOptions: Intl.DateTimeFormatOptions = {
-    month: 'long',
-    year: 'numeric',
-  };
+  //#region Lifecycle methods
 
   constructor() {
     super();
 
     addThemingController(this, all);
-    addKeybindings(this).setActivateHandler(this.handleInteraction);
-    addSafeEventListener(this, 'click', this.handleInteraction);
+    addKeybindings(this).setActivateHandler(this._handleInteraction);
+    addSafeEventListener(this, 'click', this._handleInteraction);
   }
 
-  public override connectedCallback() {
+  /** @internal */
+  public override connectedCallback(): void {
     super.connectedCallback();
     this.role = 'grid';
   }
 
-  /** Focuses the active date. */
-  public focusActiveDate(options?: FocusOptions) {
-    this.activeMonth.focus(options);
-  }
+  //#endregion
 
-  protected handleInteraction(event: Event) {
+  //#region Event Handlers
+
+  protected _handleInteraction(event: Event): void {
     const value = getViewElement(event);
 
     if (value !== -1) {
@@ -101,47 +103,64 @@ export default class IgcMonthsViewComponent extends EventEmitterMixin<
     }
   }
 
-  protected renderMonth(entry: CalendarDay, now: CalendarDay) {
-    const ariaLabel = getDateFormatter().formatDateTime(
-      entry.native,
-      this.locale,
-      this._ariaMonthOptions
-    );
-    const value = getDateFormatter().formatDateTime(
-      entry.native,
-      this.locale,
-      this._monthOptions
-    );
+  //#endregion
 
-    const active = areSameMonth(this._value, entry);
-    const current = areSameMonth(now, entry);
-    const selected = this._value.month === entry.month;
+  //#region Public Methods
+
+  /** Focuses the active date. */
+  public focusActiveDate(options?: FocusOptions): void {
+    this._activeMonth?.focus(options);
+  }
+
+  //#endregion
+
+  protected _renderMonth(
+    month: CalendarDay,
+    now: CalendarDay,
+    ariaFormatter: Intl.DateTimeFormat,
+    labelFormatter: Intl.DateTimeFormat
+  ): TemplateResult {
+    const active = areSameMonth(this._value, month);
+    const current = areSameMonth(now, month);
+    const selected = this._value.month === month.month;
 
     return html`
       <span part=${partMap({ month: true, selected, current })}>
         <span
           role="gridcell"
-          data-value=${entry.month}
+          data-value=${month.month}
           part=${partMap({ 'month-inner': true, selected, current })}
           aria-selected=${selected}
-          aria-label=${ariaLabel}
+          aria-label=${ariaFormatter.format(month.native)}
           tabindex=${active ? 0 : -1}
         >
-          ${value}
+          ${labelFormatter.format(month.native)}
         </span>
       </span>
     `;
   }
 
-  protected override *render() {
+  protected override *render(): Generator<TemplateResult> {
     const now = CalendarDay.today;
-    const months = Array.from(range(12));
 
-    for (const row of chunk(months, MONTHS_PER_ROW)) {
+    const ariaFormatter = getDateFormatter().getIntlFormatter(this.locale, {
+      month: 'long',
+      year: 'numeric',
+    });
+    const labelFormatter = getDateFormatter().getIntlFormatter(this.locale, {
+      month: this.monthFormat,
+    });
+
+    for (const row of chunk(MONTHS, MONTHS_PER_ROW)) {
       yield html`
         <div part="months-row" role="row">
           ${row.map((month) =>
-            this.renderMonth(this._value.set({ month }), now)
+            this._renderMonth(
+              this._value.set({ month }),
+              now,
+              ariaFormatter,
+              labelFormatter
+            )
           )}
         </div>
       `;

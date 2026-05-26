@@ -33,10 +33,6 @@
     position: relative;
     max-width: 100%;
     font-size: rem(16px);
-
-    &:hover {
-        cursor: pointer;
-    }
 }
 
 textarea {
@@ -133,9 +129,5 @@ textarea {
     [part='prefix'],
     [part='suffix'] {
         pointer-events: none;
-    }
-
-    [part~='container'] {
-        cursor: default;
     }
 }

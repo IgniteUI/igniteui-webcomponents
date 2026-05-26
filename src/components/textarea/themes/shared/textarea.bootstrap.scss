@@ -97,7 +97,7 @@ textarea {
     @include type-style('body-1');
 
     border: rem(1px) solid var-get($theme, 'border-color');
-    padding-block: pad-block(rem(4px), rem(8px), rem(12px)) 0;
+    padding-block: pad-block(rem(4px), rem(8px), rem(12px));
     padding-inline: pad-inline(rem(8px), rem(10px), rem(14px));
     border-radius: var-get($theme, 'border-border-radius');
     z-index: 1;
@@ -105,8 +105,6 @@ textarea {
 }
 
 :host(:focus-within) {
-    color: var-get($theme, 'input-prefix-color--focused');
-
     [part~='prefix'] {
         color: var-get($theme, 'input-prefix-color--focused');
         background: var-get($theme, 'input-prefix-background--focused');

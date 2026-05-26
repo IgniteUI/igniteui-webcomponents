@@ -1,9 +1,12 @@
 @use 'styles/utilities' as *;
 @use 'themes' as *;
-@use '../light/themes' as light;
 
 :host {
-    @include css-vars-from-theme(diff(light.$base, $bootstrap), 'ig-daterangepicker');
+    @include css-vars-from-theme($bootstrap);
+    @include css-vars-from-theme($bootstrap-input);
+    @include css-vars-from-theme($bootstrap-calendar);
 
-    --calendar-border-color: #{$bootstrap-calendar-border-color};
+    igc-dialog {
+        @include css-vars-from-theme($bootstrap-dialog);
+    }
 }

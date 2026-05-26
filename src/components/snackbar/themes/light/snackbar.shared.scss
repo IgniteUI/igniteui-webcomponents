@@ -4,5 +4,5 @@
 $theme: $base;
 
 :host {
-    @include css-vars-from-theme($theme, 'ig-snackbar');
+    @include css-vars-from-theme($theme);
 }

@@ -1,13 +1,12 @@
-import { LitElement } from 'lit';
+import {
+  CalendarResourceStringsEN,
+  type ICalendarResourceStrings,
+} from 'igniteui-i18n-core';
+import { LitElement, type PropertyValues } from 'lit';
 import { property, state } from 'lit/decorators.js';
-
 import { blazorDeepImport } from '../common/decorators/blazorDeepImport.js';
 import { blazorIndirectRender } from '../common/decorators/blazorIndirectRender.js';
-import { watch } from '../common/decorators/watch.js';
-import {
-  IgcCalendarResourceStringEN,
-  type IgcCalendarResourceStrings,
-} from '../common/i18n/EN/calendar.resources.js';
+import type { IgcCalendarResourceStrings } from '../common/i18n/EN/calendar.resources.js';
 import { addI18nController } from '../common/i18n/i18n-controller.js';
 import { first } from '../common/util.js';
 import { convertToDate, convertToDates, getWeekDayNumber } from './helpers.js';
@@ -21,25 +20,28 @@ import type {
 @blazorIndirectRender
 @blazorDeepImport
 export class IgcCalendarBaseComponent extends LitElement {
-  protected readonly _i18nController =
-    addI18nController<IgcCalendarResourceStrings>(this, {
-      defaultEN: IgcCalendarResourceStringEN,
-    });
+  protected readonly _i18nController = addI18nController<
+    IgcCalendarResourceStrings | ICalendarResourceStrings
+  >(this, {
+    defaultEN: CalendarResourceStringsEN,
+    resourceMapName: 'calendar',
+  });
+
   private _initialActiveDateSet = false;
 
-  protected get _hasValues() {
+  protected get _hasValues(): boolean {
     return this._values && this._values.length > 0;
   }
 
-  protected get _isSingle() {
+  protected get _isSingle(): boolean {
     return this.selection === 'single';
   }
 
-  protected get _isMultiple() {
+  protected get _isMultiple(): boolean {
     return this.selection === 'multiple';
   }
 
-  protected get _isRange() {
+  protected get _isRange(): boolean {
     return this.selection === 'range';
   }
 
@@ -116,6 +118,7 @@ export class IgcCalendarBaseComponent extends LitElement {
   /**
    * Sets the type of selection in the component.
    * @attr selection
+   * @default single
    */
   @property()
   public selection: CalendarSelection = 'single';
@@ -123,6 +126,7 @@ export class IgcCalendarBaseComponent extends LitElement {
   /**
    * Whether to show the week numbers.
    * @attr show-week-numbers
+   * @default false
    */
   @property({ type: Boolean, reflect: true, attribute: 'show-week-numbers' })
   public showWeekNumbers = false;
@@ -130,6 +134,7 @@ export class IgcCalendarBaseComponent extends LitElement {
   /**
    * Gets/Sets the first day of the week.
    * @attr week-start
+   * @default sunday
    */
   @property({ attribute: 'week-start' })
   public weekStart: WeekDays = 'sunday';
@@ -151,11 +156,14 @@ export class IgcCalendarBaseComponent extends LitElement {
    * The resource strings for localization.
    */
   @property({ attribute: false })
-  public set resourceStrings(value: IgcCalendarResourceStrings) {
+  public set resourceStrings(
+    value: IgcCalendarResourceStrings | ICalendarResourceStrings
+  ) {
     this._i18nController.resourceStrings = value;
   }
 
-  public get resourceStrings(): IgcCalendarResourceStrings {
+  public get resourceStrings(): IgcCalendarResourceStrings &
+    ICalendarResourceStrings {
     return this._i18nController.resourceStrings;
   }
 
@@ -179,19 +187,23 @@ export class IgcCalendarBaseComponent extends LitElement {
     return this._disabledDates.length ? this._disabledDates : undefined;
   }
 
-  @watch('weekStart')
-  protected weekStartChanged() {
-    this._firstDayOfWeek = getWeekDayNumber(this.weekStart);
+  /** @internal */
+  protected override update(props: PropertyValues<this>): void {
+    if (props.has('weekStart')) {
+      this._firstDayOfWeek = getWeekDayNumber(this.weekStart);
+    }
+
+    if (props.has('selection') && this.hasUpdated) {
+      this._rangePreviewDate = undefined;
+      this._value = null;
+      this._values = [];
+    }
+
+    super.update(props);
   }
 
-  @watch('selection', { waitUntilFirstUpdate: true })
-  protected selectionChanged() {
-    this._rangePreviewDate = undefined;
-    this._value = null;
-    this._values = [];
-  }
-
-  protected override firstUpdated() {
+  /** @internal */
+  protected override firstUpdated(): void {
     if (this._initialActiveDateSet) {
       return;
     }

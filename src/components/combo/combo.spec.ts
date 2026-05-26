@@ -17,8 +17,10 @@ import { first } from '../common/util.js';
 import {
   createFormAssociatedTestBed,
   isFocused,
+  simulateBlur,
   simulateClick,
   simulateKeyboard,
+  simulatePointerDown,
 } from '../common/utils.spec.js';
 import {
   runValidationContainerTests,
@@ -1027,7 +1029,6 @@ describe('Combo', () => {
       simulateKeyboard(options, spaceBar);
 
       await elementUpdated(combo);
-      await list.layoutComplete;
 
       expect(items(combo)[1].selected).to.be.false;
       expect(items(combo)[2].selected).to.be.true;
@@ -1401,6 +1402,105 @@ describe('Combo', () => {
 
       expect(items(combo).length).to.equal(cities.length);
     });
+
+    it('issue 1987 - do not close the dropdown on user pointer selection', async () => {
+      await combo.show();
+      await list.layoutComplete;
+
+      // Trigger a pointerdown event inside the list element
+      simulatePointerDown(list);
+      await elementUpdated(combo);
+
+      // Then a click outside the list element (for example user selection with a pointer device)
+      simulateClick(document.body);
+      await elementUpdated(combo);
+
+      // The dropdown should remain open
+      expect(combo.open).to.be.true;
+    });
+
+    it('issue 2221 - invalid state when tabbing out of a single select combo', async () => {
+      combo.singleSelect = true;
+      await combo.show();
+      await list.layoutComplete;
+
+      // Has matches, selects first on tab out
+      await filterCombo('sof');
+      expect(items(combo)).lengthOf(1);
+
+      simulateKeyboard(input, tabKey);
+      await elementUpdated(combo);
+
+      expect(combo.open).to.be.false;
+      expect(combo.value).to.eql(['BG01']);
+
+      combo.deselect();
+      await combo.show();
+      await list.layoutComplete;
+
+      // No matches, should clear value on tab out
+      await filterCombo('xxx');
+      expect(items(combo)).to.be.empty;
+
+      simulateKeyboard(input, tabKey);
+      await elementUpdated(combo);
+
+      expect(combo.open).to.be.false;
+      expect(combo.value).to.be.empty;
+    });
+
+    it('issue 2221 - tabbing out with an existing selection preserves the selection', async () => {
+      combo.singleSelect = true;
+      combo.select('BG01');
+      await elementUpdated(combo);
+
+      expect(input.value).to.equal('Sofia');
+
+      await combo.show();
+      await list.layoutComplete;
+
+      simulateKeyboard(input, tabKey);
+      await elementUpdated(combo);
+
+      expect(combo.open).to.be.false;
+      expect(combo.value).to.eql(['BG01']);
+      expect(input.value).to.equal('Sofia');
+    });
+
+    it('issue 2221 - clicking outside with partial text and no selection clears the input', async () => {
+      combo.singleSelect = true;
+      await combo.show();
+      await list.layoutComplete;
+
+      await filterCombo('sof');
+      expect(items(combo)).lengthOf(1);
+
+      // Simulate click outside by dispatching blur without confirming a selection
+      simulateBlur(combo);
+      await elementUpdated(combo);
+
+      expect(combo.value).to.be.empty;
+      expect(input.value).to.equal('');
+    });
+
+    it('issue 2221 - clicking outside after partial search over existing selection clears the input', async () => {
+      combo.singleSelect = true;
+      combo.select('BG01');
+      await elementUpdated(combo);
+
+      expect(input.value).to.equal('Sofia');
+
+      // Typing clears the existing selection immediately
+      await filterCombo('sof');
+      expect(combo.value).to.be.empty;
+
+      // Clicking outside (blur) should clear the partial text
+      simulateBlur(combo);
+      await elementUpdated(combo);
+
+      expect(combo.value).to.be.empty;
+      expect(input.value).to.equal('');
+    });
   });
 
   describe('Form integration', () => {
@@ -1499,6 +1599,26 @@ describe('Combo', () => {
 
       expect(spec.element.value).to.eql(['US01']);
       spec.assertSubmitHasValue('US01');
+    });
+
+    it('should handle invalid JSON in value attribute gracefully', () => {
+      const defaultValue = spec.element.defaultValue;
+
+      spec.setAttributes({ value: 'invalid' });
+      expect(spec.element.value).to.be.empty;
+      expect(spec.element.defaultValue).to.equal(defaultValue);
+    });
+
+    it('should handle empty string in value attribute gracefully', () => {
+      spec.setAttributes({ value: '' });
+      expect(spec.element.value).to.be.empty;
+      expect(spec.element.defaultValue).to.be.empty;
+    });
+
+    it('should handle null in value attribute gracefully', () => {
+      spec.setAttributes({ value: null as any });
+      expect(spec.element.value).to.be.empty;
+      expect(spec.element.defaultValue).to.be.empty;
     });
 
     it('reflects disabled ancestor state', () => {

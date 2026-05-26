@@ -6,7 +6,7 @@ $theme: $base;
 :host {
     color-scheme: dark;
 
-    @include css-vars-from-theme($theme, 'ig-chat');
+    @include css-vars-from-theme($theme);
 
     igc-chat-message::part(message-container) {
         --shiki-purple: #b392f0;

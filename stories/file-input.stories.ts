@@ -1,8 +1,3 @@
-import { github } from '@igniteui/material-icons-extended';
-import type { Meta, StoryObj } from '@storybook/web-components-vite';
-import { html } from 'lit';
-import { ifDefined } from 'lit/directives/if-defined.js';
-
 import {
   IgcFileInputComponent,
   IgcIconComponent,
@@ -10,7 +5,15 @@ import {
   registerIcon,
   registerIconFromText,
 } from 'igniteui-webcomponents';
-import { formControls, formSubmitHandler } from './story.js';
+import {
+  disableStoryControls,
+  formControls,
+  formSubmitHandler,
+} from './story.js';
+import type { Meta, StoryObj } from '@storybook/web-components-vite';
+import { github } from '@igniteui/material-icons-extended';
+import { html } from 'lit';
+import { ifDefined } from 'lit/directives/if-defined.js';
 
 defineComponents(IgcFileInputComponent, IgcIconComponent);
 registerIconFromText(github.name, github.value);
@@ -29,9 +32,9 @@ const metadata: Meta<IgcFileInputComponent> = {
   },
   argTypes: {
     value: {
-      type: 'string | Date',
-      description: 'The value of the control.',
-      options: ['string', 'Date'],
+      type: 'string',
+      description:
+        'The value of the control.\nSimilar to native file input, this property is read-only and cannot be set programmatically.',
       control: 'text',
     },
     locale: {
@@ -115,8 +118,11 @@ const metadata: Meta<IgcFileInputComponent> = {
 export default metadata;
 
 interface IgcFileInputArgs {
-  /** The value of the control. */
-  value: string | Date;
+  /**
+   * The value of the control.
+   * Similar to native file input, this property is read-only and cannot be set programmatically.
+   */
+  value: string;
   /** Gets/Sets the locale used for getting language, affecting resource strings. */
   locale: string;
   /**
@@ -150,9 +156,17 @@ type Story = StoryObj<IgcFileInputArgs>;
 
 // endregion
 
-export const Basic: Story = {
+export const Default: Story = {
   args: {
     label: 'File input',
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'A basic file input. Use the controls panel to configure `accept`, `multiple`, `outlined`, `disabled`, `required`, and other properties.',
+      },
+    },
   },
   render: (args) => html`
     <igc-file-input
@@ -172,23 +186,17 @@ export const Basic: Story = {
 };
 
 export const Slots: Story = {
-  args: {
-    label: 'Input with slots',
+  argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Demonstrates the available content slots: `prefix` and `suffix` for inline icons, and `helper-text` for guidance below the input.',
+      },
+    },
   },
-  render: (args) => html`
-    <igc-file-input
-      name=${ifDefined(args.name)}
-      label=${ifDefined(args.label)}
-      placeholder=${ifDefined(args.placeholder)}
-      value=${ifDefined(args.value)}
-      accept=${ifDefined(args.accept === '' ? undefined : args.accept)}
-      ?autofocus=${args.autofocus}
-      ?disabled=${args.disabled}
-      ?invalid=${args.invalid}
-      ?multiple=${args.multiple}
-      ?outlined=${args.outlined}
-      ?required=${args.required}
-    >
+  render: () => html`
+    <igc-file-input label="Input with slots" outlined>
       <igc-icon name="github" slot="prefix"></igc-icon>
       <igc-icon name="github" slot="suffix"></igc-icon>
       <span slot="helper-text">Sample helper text.</span>
@@ -197,27 +205,19 @@ export const Slots: Story = {
 };
 
 export const Validation: Story = {
-  args: {
-    label: 'Required field',
-    name: 'files',
-    required: true,
+  argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'File input inside an HTML form demonstrating constraint validation. The field is `required` and shows a custom `value-missing` message when the form is submitted without selecting a file.',
+      },
+    },
   },
-  render: (args) => html`
+  render: () => html`
     <form enctype="multipart/form-data" @submit=${formSubmitHandler}>
       <fieldset>
-        <igc-file-input
-          name=${ifDefined(args.name)}
-          label=${ifDefined(args.label)}
-          placeholder=${ifDefined(args.placeholder)}
-          value=${ifDefined(args.value)}
-          accept=${ifDefined(args.accept === '' ? undefined : args.accept)}
-          ?autofocus=${args.autofocus}
-          ?disabled=${args.disabled}
-          ?invalid=${args.invalid}
-          ?multiple=${args.multiple}
-          ?outlined=${args.outlined}
-          ?required=${args.required}
-        >
+        <igc-file-input name="files" label="Required field" required>
           <p slot="helper-text">Your life's work</p>
           <p slot="value-missing">You must upload a file</p>
         </igc-file-input>

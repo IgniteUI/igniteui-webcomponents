@@ -301,7 +301,6 @@ describe('Masked input', () => {
       element.setSelectionRange(2, 3);
       await elementUpdated(element);
 
-      // fireInputEvent(input, 'insertText');
       simulateInput(input, {
         inputType: 'insertText',
         skipValueProperty: true,
@@ -328,6 +327,7 @@ describe('Masked input', () => {
 
     it('is accessible', async () => {
       await expect(element).to.be.accessible();
+      await expect(element).shadowDom.to.be.accessible();
     });
 
     it('focus updates underlying input mask', async () => {
@@ -679,6 +679,20 @@ describe('Masked input', () => {
 
       spec.reset();
       expect(spec.element.value).to.be.empty;
+    });
+
+    it('is correctly submitted on pressing Enter', () => {
+      spec.setProperties({ value: 'cba' });
+      expect(
+        spec.submitWithEnter(spec.element.renderRoot.querySelector('input'))
+      ).to.be.true;
+    });
+
+    it('should not submit on pressing Enter when value is invalid', () => {
+      spec.setProperties({ required: true, value: '' });
+      expect(
+        spec.submitWithEnter(spec.element.renderRoot.querySelector('input'))
+      ).to.be.false;
     });
 
     it('is with correct input value and placeholder after a form reset', async () => {

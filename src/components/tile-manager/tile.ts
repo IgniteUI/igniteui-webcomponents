@@ -19,7 +19,7 @@ import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { partMap } from '../common/part-map.js';
-import { asNumber, findElementFromEventPath, isLTR } from '../common/util.js';
+import { asNumber, getElementFromPath, isLTR } from '../common/util.js';
 import IgcDividerComponent from '../divider/divider.js';
 import IgcResizeContainerComponent from '../resize-container/resize-container.js';
 import type { ResizeCallbackParams } from '../resize-container/types.js';
@@ -460,7 +460,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
     }
 
     return Boolean(
-      findElementFromEventPath(
+      getElementFromPath(
         (e) => e.matches('[part*=trigger]') || e.matches('#tile-actions'),
         event
       )
@@ -614,13 +614,14 @@ export default class IgcTileComponent extends EventEmitterMixin<
   }
 
   protected _renderHeader() {
-    const hasNoContent = !(
-      this._slots.hasAssignedElements('title') &&
-      this._slots.hasAssignedElements('actions')
-    );
+    const hasTitle = this._slots.hasAssignedElements('title');
+    const hasActions = this._slots.hasAssignedElements('actions');
 
     const hideHeader =
-      hasNoContent && this.disableMaximize && this.disableFullscreen;
+      !hasTitle &&
+      !hasActions &&
+      this.disableMaximize &&
+      this.disableFullscreen;
 
     const hasMaximizeSlot = !(this.disableMaximize || this.fullscreen);
     const hasFullscreenSlot = !this.disableFullscreen;

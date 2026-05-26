@@ -5,7 +5,7 @@
 $theme: $material;
 
 :host {
-    @include css-vars-from-theme(diff(light.$base, $theme), 'ig-radio');
+    @include css-vars-from-theme(diff(light.$base, $theme));
 }
 
 [part~='base'] {

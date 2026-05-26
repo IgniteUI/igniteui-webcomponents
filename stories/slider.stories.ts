@@ -1,14 +1,18 @@
 import type { Meta, StoryObj } from '@storybook/web-components-vite';
 import { html } from 'lit';
 
-import { IgcSliderComponent, defineComponents } from 'igniteui-webcomponents';
+import {
+  IgcSliderComponent,
+  IgcSliderLabelComponent,
+  defineComponents,
+} from 'igniteui-webcomponents';
 import {
   disableStoryControls,
   formControls,
   formSubmitHandler,
 } from './story.js';
 
-defineComponents(IgcSliderComponent);
+defineComponents(IgcSliderComponent, IgcSliderLabelComponent);
 
 // region default
 const metadata: Meta<IgcSliderComponent> = {
@@ -233,6 +237,17 @@ type Story = StoryObj<IgcSliderArgs>;
 // endregion
 
 export const Default: Story = {
+  args: {
+    value: 50,
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'A fully interactive slider. Use the **Controls** panel to adjust `value`, set `min`/`max`/`step`, toggle `discreteTrack`, configure ticks, and explore all available properties.',
+      },
+    },
+  },
   render: (args) => html`
     <style>
       igc-slider {
@@ -283,7 +298,13 @@ const temperatureFormat: Intl.NumberFormatOptions = {
 export const ValueFormat: Story = {
   argTypes: disableStoryControls(metadata),
   parameters: {
-    actions: { handles: ['igcChange'] },
+    docs: {
+      description: {
+        story:
+          'Demonstrates formatting the thumb tooltip and tick label values using `valueFormat` (template string with `{0}` placeholder) and `valueFormatOptions` (`Intl.NumberFormatOptions`). Shows currency, distance with a custom locale, and temperature formats.',
+      },
+    },
+    actions: { handles: ['igcInput', 'igcChange'] },
   },
   render: () => html`
     <style>
@@ -319,8 +340,86 @@ export const ValueFormat: Story = {
   `,
 };
 
+export const Ticks: Story = {
+  argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Demonstrates tick configuration: primary and secondary tick counts, `tickOrientation` (`start`, `end`, `mirror`), tick label rotation, and `discreteTrack` for snapping the thumb to step positions.',
+      },
+    },
+  },
+  render: () => html`
+    <style>
+      .ticks-demo {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        padding: 1rem;
+      }
+
+      .ticks-demo igc-slider {
+        padding-inline: 1.5rem;
+        padding-block: 3.5rem;
+      }
+
+      .ticks-demo label {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: var(--ig-gray-700);
+      }
+    </style>
+    <div class="ticks-demo">
+      <label>Primary ticks (end)</label>
+      <igc-slider
+        aria-label="Primary ticks"
+        value="40"
+        primary-ticks="5"
+      ></igc-slider>
+
+      <label>Primary + secondary ticks (mirror)</label>
+      <igc-slider
+        aria-label="Primary and secondary ticks"
+        value="40"
+        primary-ticks="5"
+        secondary-ticks="4"
+        tick-orientation="mirror"
+      ></igc-slider>
+
+      <label>Discrete track with ticks (start)</label>
+      <igc-slider
+        aria-label="Discrete ticks"
+        value="40"
+        step="10"
+        discrete-track
+        primary-ticks="2"
+        secondary-ticks="4"
+        tick-orientation="start"
+      ></igc-slider>
+
+      <label>Rotated tick labels</label>
+      <igc-slider
+        aria-label="Rotated labels"
+        value="40"
+        primary-ticks="5"
+        secondary-ticks="4"
+        tick-label-rotation="90"
+      ></igc-slider>
+    </div>
+  `,
+};
+
 export const Labels: Story = {
   argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Demonstrates the discrete label mode using projected `igc-slider-label` elements. The slider snaps to each label position, `min`/`max` are derived from the label count, and `step` is always 1.',
+      },
+    },
+  },
   render: () => html`
     <igc-slider
       style="max-width: 300px; margin-top: 40px"
@@ -337,6 +436,14 @@ export const Labels: Story = {
 
 export const Form: Story = {
   argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Form integration demo showing a default slider and a disabled fieldset. Submit the form to see the named slider values in the submission data.',
+      },
+    },
+  },
   render: () => {
     return html`
       <form action="" @submit=${formSubmitHandler}>

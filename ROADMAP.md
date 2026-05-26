@@ -2,20 +2,28 @@
 
 # Current Milestone
 
-## Milestone 20 (Due Nov, 2025)
+## Milestone 21 (Due Jan, 2026)
 
-1. Grids Cell Merging feature
-2. Grids Pining on both sides feature
+1. **[DONE]** Grids Localization
+2. **[DONE]** Grid PDF exporter service
+3. **[DONE]** Grids filtering performance improvements
 
 ## Going down the road
 
-1. Grids localization 
+1. Query Builder component
 
 # Previous Milestone
 
-## Milestone 19, version 6.3.0, Released Sep 18th, 2025
+## Milestone 20, version 6.3.0, Released Nov 18th, 2025
 
 1. **[DONE]** Chat component
+2. **[DONE]** Grids Cell Merging feature
+3. **[DONE]** Grids Pinning on both sides feature
+4. **[DONE]** New Tooltip component
+
+## Milestone 19, version 6.3.0, Released Nov 18th, 2025
+
+1. **[DONE]** [Bugs fixes](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/general-changelog-dv-wc#bug-fixes-3)
 
 ## Milestone 18, version 6.1.0, Released Jun 12th, 2025
 

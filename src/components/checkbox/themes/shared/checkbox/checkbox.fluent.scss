@@ -8,6 +8,8 @@ $checked-hover-color: var-get($theme, 'fill-color-hover');
 $invalid-color: var-get($theme, 'error-color');
 $invalid-hover-color: var-get($theme, 'error-color-hover');
 $disabled-color: var-get($theme, 'disabled-color');
+$disabled-indeterminate-color: var-get($theme, 'disabled-indeterminate-color');
+$disabled-fill-color: var-get($theme, 'disabled-fill-color');
 
 :host {
     ::part(helper-text) {
@@ -223,7 +225,7 @@ $disabled-color: var-get($theme, 'disabled-color');
 
     [part='control checked'] {
         &::after {
-            background: $disabled-color;
+            box-shadow: none;
         }
     }
 }
@@ -232,11 +234,11 @@ $disabled-color: var-get($theme, 'disabled-color');
 :host(:disabled[indeterminate]) {
     [part~='control'] {
         &::before {
-            background: $disabled-color;
+            background: $disabled-indeterminate-color;
         }
 
         &::after {
-            box-shadow: inset 0 0 0 rem(1px) $disabled-color;
+            box-shadow: inset 0 0 0 rem(1px) $disabled-indeterminate-color;
             background: transparent;
         }
     }

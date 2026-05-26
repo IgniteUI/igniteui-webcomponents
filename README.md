@@ -24,9 +24,10 @@ See the [Storybook Here](https://igniteui.github.io/igniteui-webcomponents)
 <details open>
 <summary>Components</summary>
 
-| Components              | Status |         Documentation          | Released Version |   License   |
-| :---------------------- | :----: | :----------------------------: | :--------------: | :---------: |
-| Chat                    |   ✅   | [Docs][Chat Docs]              |     [6.3.0]      | [MIT](LICENSE) |
+| Components              | Status |         Documentation          | Released Version |    License     |
+| :---------------------- | :----: | :----------------------------: | :--------------: | :------------: |
+| Splitter                |   ✅   |     [Docs][Splitter Docs]      |     [7.1.0]      | [MIT](LICENSE) |
+| Chat                    |   ✅   |       [Docs][Chat Docs]        |     [6.3.0]      | [MIT](LICENSE) |
 | Date Range Picker       |   ✅   | [Docs][Date Range Picker Docs] |     [6.1.0]      | [MIT](LICENSE) |
 | Tooltip                 |   ✅   |      [Docs][Tooltip Docs]      |     [5.4.0]      | [MIT](LICENSE) |
 | File Input              |   ✅   |    [Docs][File Input Docs]     |     [5.4.0]      | [MIT](LICENSE) |
@@ -62,7 +63,6 @@ See the [Storybook Here](https://igniteui.github.io/igniteui-webcomponents)
 | Calendar                |   ✅   |     [Docs][Calendar Docs]      |     [1.0.0]      | [MIT](LICENSE) |
 | Card                    |   ✅   |       [Docs][Card Docs]        |     [1.0.0]      | [MIT](LICENSE) |
 | Checkbox                |   ✅   |     [Docs][Checkbox Docs]      |     [1.0.0]      | [MIT](LICENSE) |
-| Form                    |   ✅   |       [Docs][Form Docs]        |     [1.0.0]      | [MIT](LICENSE) |
 | Icon                    |   ✅   |       [Docs][Icon Docs]        |     [1.0.0]      | [MIT](LICENSE) |
 | Icon Button             |   ✅   |    [Docs][Icon Button Docs]    |     [1.0.0]      | [MIT](LICENSE) |
 | Input                   |   ✅   |       [Docs][Input Docs]       |     [1.0.0]      | [MIT](LICENSE) |
@@ -74,18 +74,17 @@ See the [Storybook Here](https://igniteui.github.io/igniteui-webcomponents)
 | Ripple                  |   ✅   |      [Docs][Ripple Docs]       |     [1.0.0]      | [MIT](LICENSE) |
 | Switch                  |   ✅   |      [Docs][Switch Docs]       |     [1.0.0]      | [MIT](LICENSE) |
 
-
 </details>
 
 ## Components available in Ignite UI for WebComponents Grids & Grid Lite
 
-| Components        | Status |         Documentation          |   License   |   Package   |
-| :---------------- | :----: | :----------------------------: | :---------: | :---------: |
-| Pivot Grid        |   ✅   |    [Docs][Pivot Grid Docs]     | [Commercial][Commercial License] | [Ignite UI Web Components Grids][Ignite UI for WebComponents Grids] |
-| Data Grid         |   ✅   |     [Docs][Data Grid Docs]     | [Commercial][Commercial License] | [Ignite UI Web Components Grids][Ignite UI for WebComponents Grids] |
-| Tree Grid         |   ✅   |     [Docs][Tree Grid Docs]     | [Commercial][Commercial License] | [Ignite UI Web Components Grids][Ignite UI for WebComponents Grids] |
-| Hierarchical Grid |   ✅   | [Docs][Hierarchical Grid Docs] | [Commercial][Commercial License] | [Ignite UI Web Components Grids][Ignite UI for WebComponents Grids] |
-| Grid Lite         |   ✅   |        [Docs][Grid Lite]       | [MIT](LICENSE)           | [Ignite UI Web Components Grid Lite][Ignite UI Web Components Grid Lite]
+| Components        | Status |         Documentation          |             License              |                                 Package                                  |
+| :---------------- | :----: | :----------------------------: | :------------------------------: | :----------------------------------------------------------------------: |
+| Pivot Grid        |   ✅   |    [Docs][Pivot Grid Docs]     | [Commercial][Commercial License] |   [Ignite UI Web Components Grids][Ignite UI for WebComponents Grids]    |
+| Data Grid         |   ✅   |     [Docs][Data Grid Docs]     | [Commercial][Commercial License] |   [Ignite UI Web Components Grids][Ignite UI for WebComponents Grids]    |
+| Tree Grid         |   ✅   |     [Docs][Tree Grid Docs]     | [Commercial][Commercial License] |   [Ignite UI Web Components Grids][Ignite UI for WebComponents Grids]    |
+| Hierarchical Grid |   ✅   | [Docs][Hierarchical Grid Docs] | [Commercial][Commercial License] |   [Ignite UI Web Components Grids][Ignite UI for WebComponents Grids]    |
+| Grid Lite         |   ✅   |       [Docs][Grid Lite]        |          [MIT](LICENSE)          | [Ignite UI Web Components Grid Lite][Ignite UI Web Components Grid Lite] |
 
 ### The Lightweight Web Components Data Grid and Data Table
 
@@ -212,7 +211,7 @@ npm run storybook:build
 [safari_48x48]: https://user-images.githubusercontent.com/2188411/168109527-6c58f2cf-7386-4b97-98b1-cfe0ab4e8626.png
 [Contribution Guidelines]: https://github.com/IgniteUI/igniteui-webcomponents/blob/master/.github/CONTRIBUTING.md
 [Data Grid]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/grids/data-grid
-[Hierarchical Grid]: https://www.infragistics.com/webcomponentssite/components/grids/hierarchical-grid/overview
+[Hierarchical Grid]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/grids/hierarchical-grid/overview
 [Charts]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/charts/chart-overview
 [Dock Manager]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/layouts/dock-manager
 [Pivot Grid Docs]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/grids/pivot-grid/overview
@@ -228,7 +227,6 @@ npm run storybook:build
 [Input Docs]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/inputs/input
 [Icon Button Docs]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/inputs/icon-button
 [Icon Docs]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/layouts/icon
-[Form Docs]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/inputs/form
 [Checkbox Docs]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/inputs/checkbox
 [Card Docs]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/layouts/card
 [Calendar Docs]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/scheduling/calendar
@@ -242,7 +240,7 @@ npm run storybook:build
 [Chip Docs]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/inputs/chip
 [Circular Progress Docs]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/inputs/circular-progress
 [Linear Progress Docs]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/inputs/linear-progress
-[Dropdown Docs]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/notifications/toast
+[Dropdown Docs]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/inputs/dropdown
 [Tree Docs]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/grids/tree
 [Expansion Panel Docs]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/layouts/expansion-panel
 [Masked Input Docs]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/inputs/input
@@ -266,7 +264,8 @@ npm run storybook:build
 [Chat Docs]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/interactivity/chat
 [Commercial License]: https://www.infragistics.com/legal/license
 [Grid Lite]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/grid-lite/overview
-[Ignite UI Web Components Grid Lite]: https://www.npmjs.com/package/igniteui-webcomponents-grid-lite
+[Ignite UI Web Components Grid Lite]: https://www.npmjs.com/package/igniteui-grid-lite
+[Splitter Docs]: https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/layouts/splitter
 [1.0.0]: https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/1.0.0
 [2.0.0]: https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/2.0.0
 [2.1.0]: https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/2.1.0
@@ -282,3 +281,4 @@ npm run storybook:build
 [5.4.0]: https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/5.4.0
 [6.1.0]: https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/6.1.0
 [6.3.0]: https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/6.3.0
+[7.1.0]: https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/7.1.0

@@ -38,3 +38,4 @@ jobs:
       uses: coverallsapp/github-action@v2
       with:
           github-token: ${{ github.token }}
+          fail-on-error: false

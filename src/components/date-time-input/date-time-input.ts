@@ -1,46 +1,30 @@
-import { getDateFormatter } from 'igniteui-i18n-core';
-import { html } from 'lit';
-import { eventOptions, property } from 'lit/decorators.js';
-import { ifDefined } from 'lit/directives/if-defined.js';
-import { live } from 'lit/directives/live.js';
-import { convertToDate } from '../calendar/helpers.js';
-import {
-  addKeybindings,
-  arrowDown,
-  arrowLeft,
-  arrowRight,
-  arrowUp,
-  ctrlKey,
-} from '../common/controllers/key-bindings.js';
-import { watch } from '../common/decorators/watch.js';
+import { property } from 'lit/decorators.js';
+import { addThemingController } from '../../theming/theming-controller.js';
+import { convertToDate, isValidDate } from '../calendar/helpers.js';
 import { registerComponent } from '../common/definitions/register.js';
-import { addI18nController } from '../common/i18n/i18n-controller.js';
-import type { AbstractConstructor } from '../common/mixins/constructor.js';
-import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
+import { formatDisplayDate } from '../common/i18n/i18n-controller.js';
 import { FormValueDateTimeTransformers } from '../common/mixins/forms/form-transformers.js';
 import { createFormValueState } from '../common/mixins/forms/form-value.js';
-import { partMap } from '../common/part-map.js';
-import type { IgcInputComponentEventMap } from '../input/input-base.js';
-import {
-  IgcMaskInputBaseComponent,
-  type MaskSelection,
-} from '../mask-input/mask-input-base.js';
+import { equal } from '../common/util.js';
+import { styles } from '../input/themes/input.base.css.js';
+import { styles as shared } from '../input/themes/shared/input.common.css.js';
+import { all } from '../input/themes/themes.js';
 import IgcValidationContainerComponent from '../validation-container/validation-container.js';
 import {
   DatePart,
   type DatePartDeltas,
-  type DatePartInfo,
+  DEFAULT_DATE_PARTS_SPIN_DELTAS,
+} from './date-part.js';
+import {
+  IgcDateTimeInputBaseComponent,
+  type IgcDateTimeInputComponentEventMap,
+} from './date-time-input.base.js';
+import {
+  createDatePart,
   DateParts,
-  DateTimeUtil,
-} from './date-util.js';
+  DateTimeMaskParser,
+} from './datetime-mask-parser.js';
 import { dateTimeInputValidators } from './validators.js';
-
-export interface IgcDateTimeInputComponentEventMap extends Omit<
-  IgcInputComponentEventMap,
-  'igcChange'
-> {
-  igcChange: CustomEvent<Date | null>;
-}
 
 /**
  * A date time input is an input field that lets you set and edit the date and time in a chosen input element
@@ -67,76 +51,47 @@ export interface IgcDateTimeInputComponentEventMap extends Omit<
  * @csspart suffix - The suffix wrapper.
  * @csspart helper-text - The helper text wrapper.
  */
-export default class IgcDateTimeInputComponent extends EventEmitterMixin<
+export interface IgcDateTimeInputEventMap extends Omit<
   IgcDateTimeInputComponentEventMap,
-  AbstractConstructor<IgcMaskInputBaseComponent>
->(IgcMaskInputBaseComponent) {
+  'igcChange'
+> {
+  igcChange: CustomEvent<Date | null>;
+}
+
+export default class IgcDateTimeInputComponent extends IgcDateTimeInputBaseComponent {
   public static readonly tagName = 'igc-date-time-input';
+  public static styles = [styles, shared];
 
   /* blazorSuppress */
-  public static register() {
+  public static register(): void {
     registerComponent(
       IgcDateTimeInputComponent,
       IgcValidationContainerComponent
     );
   }
 
-  protected override get __validators() {
-    return dateTimeInputValidators;
-  }
+  //#region Private state and properties
 
+  protected override readonly _themes = addThemingController(this, all);
+  protected override readonly _parser = new DateTimeMaskParser();
   protected override readonly _formValue = createFormValueState(this, {
     initialValue: null,
     transformers: FormValueDateTimeTransformers,
   });
 
-  private readonly _i18nController = addI18nController<object>(this, {
-    defaultEN: {},
-    onResourceChange: () => {
-      this.setDefaultMask();
-    },
-  });
-
-  protected _defaultMask!: string;
-  private _defaultDisplayFormat!: string;
-  private _displayFormat?: string;
-  private _oldValue: Date | null = null;
-  private _min: Date | null = null;
-  private _max: Date | null = null;
-
-  private _inputDateParts!: DatePartInfo[];
-  private _inputFormat!: string;
-  private _datePartDeltas: DatePartDeltas = {
-    date: 1,
-    month: 1,
-    year: 1,
-    hours: 1,
-    minutes: 1,
-    seconds: 1,
-  };
-
-  /**
-   * The date format to apply on the input.
-   * @attr input-format
-   */
-  @property({ attribute: 'input-format' })
-  public get inputFormat(): string {
-    return this._inputFormat || this._defaultMask;
+  protected override get __validators() {
+    return dateTimeInputValidators;
   }
 
-  public set inputFormat(val: string) {
-    if (val) {
-      this.setMask(val);
-      this._inputFormat = val;
-      if (this.value) {
-        this.updateMask();
-      }
-    }
+  protected override get _datePartDeltas(): DatePartDeltas {
+    return { ...DEFAULT_DATE_PARTS_SPIN_DELTAS, ...this.spinDelta };
   }
 
-  public get value(): Date | null {
-    return this._formValue.value;
-  }
+  protected _oldValue: Date | null = null;
+
+  //#endregion
+
+  //#region Public attributes and properties
 
   /* @tsTwoWayProperty(true, "igcChange", "detail", false) */
   /**
@@ -146,454 +101,18 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
   @property({ converter: convertToDate })
   public set value(value: Date | string | null | undefined) {
     this._formValue.setValueAndFormState(value as Date | null);
-    this.updateMask();
+    this._updateMaskDisplay();
   }
 
-  /**
-   * The minimum value required for the input to remain valid.
-   * @attr
-   */
-  @property({ converter: convertToDate })
-  public set min(value: Date | string | null | undefined) {
-    this._min = convertToDate(value);
-    this._validate();
+  public get value(): Date | null {
+    return this._formValue.value;
   }
 
-  public get min(): Date | null {
-    return this._min;
-  }
+  //#endregion
 
-  /**
-   * The maximum value required for the input to remain valid.
-   * @attr
-   */
-  @property({ converter: convertToDate })
-  public set max(value: Date | string | null | undefined) {
-    this._max = convertToDate(value);
-    this._validate();
-  }
+  //#region Event handlers
 
-  public get max(): Date | null {
-    return this._max;
-  }
-
-  /**
-   * Format to display the value in when not editing.
-   * Defaults to the locale format if not set.
-   * @attr display-format
-   */
-  @property({ attribute: 'display-format' })
-  public set displayFormat(value: string) {
-    this._displayFormat = value;
-  }
-
-  public get displayFormat(): string {
-    return (
-      this._displayFormat ?? this._inputFormat ?? this._defaultDisplayFormat
-    );
-  }
-
-  /**
-   * Delta values used to increment or decrement each date part on step actions.
-   * All values default to `1`.
-   */
-  @property({ attribute: false })
-  public spinDelta!: DatePartDeltas;
-
-  /**
-   * Sets whether to loop over the currently spun segment.
-   * @attr spin-loop
-   */
-  @property({ type: Boolean, attribute: 'spin-loop' })
-  public spinLoop = true;
-
-  /**
-   * Gets/Sets the locale used for formatting the display value.
-   * @attr locale
-   */
-  @property()
-  public set locale(value: string) {
-    this._i18nController.locale = value;
-  }
-
-  public get locale() {
-    return this._i18nController.locale;
-  }
-
-  @watch('locale', { waitUntilFirstUpdate: true })
-  protected setDefaultMask(): void {
-    this.updateDefaultDisplayFormat();
-
-    if (!this._inputFormat) {
-      this.updateDefaultMask();
-      this.setMask(this._defaultMask);
-    }
-
-    if (this.value) {
-      this.updateMask();
-    }
-  }
-
-  @watch('displayFormat', { waitUntilFirstUpdate: true })
-  protected setDisplayFormat(): void {
-    this.updateDefaultDisplayFormat();
-    if (this.value) {
-      this.updateMask();
-    }
-  }
-
-  protected get hasDateParts(): boolean {
-    const parts =
-      this._inputDateParts ||
-      DateTimeUtil.parseDateTimeFormat(this.inputFormat, this.locale);
-
-    return parts.some(
-      (p) =>
-        p.type === DateParts.Date ||
-        p.type === DateParts.Month ||
-        p.type === DateParts.Year
-    );
-  }
-
-  protected get hasTimeParts(): boolean {
-    const parts =
-      this._inputDateParts ||
-      DateTimeUtil.parseDateTimeFormat(this.inputFormat, this.locale);
-    return parts.some(
-      (p) =>
-        p.type === DateParts.Hours ||
-        p.type === DateParts.Minutes ||
-        p.type === DateParts.Seconds
-    );
-  }
-
-  private get targetDatePart(): DatePart | undefined {
-    let result: DatePart | undefined;
-
-    if (this._focused) {
-      const partType = this._inputDateParts.find(
-        (p) =>
-          p.start <= this._inputSelection.start &&
-          this._inputSelection.start <= p.end &&
-          p.type !== DateParts.Literal
-      )?.type as string as DatePart;
-
-      if (partType) {
-        result = partType;
-      }
-    } else if (this._inputDateParts.some((p) => p.type === DateParts.Date)) {
-      result = DatePart.Date;
-    } else if (this._inputDateParts.some((p) => p.type === DateParts.Hours)) {
-      result = DatePart.Hours;
-    } else {
-      result = this._inputDateParts[0].type as string as DatePart;
-    }
-
-    return result;
-  }
-
-  private get datePartDeltas(): DatePartDeltas {
-    return Object.assign({}, this._datePartDeltas, this.spinDelta);
-  }
-
-  constructor() {
-    super();
-
-    addKeybindings(this, {
-      skip: () => this.readOnly,
-      bindingDefaults: { triggers: ['keydownRepeat'] },
-    })
-      .set([ctrlKey, ';'], this.setToday)
-      .set(arrowUp, this.keyboardSpin.bind(this, 'up'))
-      .set(arrowDown, this.keyboardSpin.bind(this, 'down'))
-      .set([ctrlKey, arrowLeft], this.navigateParts.bind(this, 0))
-      .set([ctrlKey, arrowRight], this.navigateParts.bind(this, 1));
-  }
-
-  public override connectedCallback() {
-    super.connectedCallback();
-    this.updateDefaultMask();
-    this.updateDefaultDisplayFormat();
-    this.setMask(this.inputFormat);
-    if (this.value) {
-      this.updateMask();
-    }
-  }
-
-  /** Increments a date/time portion. */
-  public stepUp(datePart?: DatePart, delta?: number): void {
-    const targetPart = datePart || this.targetDatePart;
-
-    if (!targetPart) {
-      return;
-    }
-
-    const { start, end } = this._inputSelection;
-    const newValue = this.trySpinValue(targetPart, delta);
-    this.value = newValue;
-    this.updateComplete.then(() => this.input.setSelectionRange(start, end));
-  }
-
-  /** Decrements a date/time portion. */
-  public stepDown(datePart?: DatePart, delta?: number): void {
-    const targetPart = datePart || this.targetDatePart;
-
-    if (!targetPart) {
-      return;
-    }
-
-    const { start, end } = this._inputSelection;
-    const newValue = this.trySpinValue(targetPart, delta, true);
-    this.value = newValue;
-    this.updateComplete.then(() => this.input.setSelectionRange(start, end));
-  }
-
-  /** Clears the input element of user input. */
-  public clear(): void {
-    this._maskedValue = '';
-    this.value = null;
-  }
-
-  protected setToday() {
-    this.value = new Date();
-    this._fireInputEvent();
-  }
-
-  protected updateMask() {
-    if (this._focused) {
-      this._maskedValue = this.getMaskedValue();
-    } else {
-      if (!DateTimeUtil.isValidDate(this.value)) {
-        this._maskedValue = '';
-        return;
-      }
-
-      this._maskedValue = DateTimeUtil.formatDisplayDate(
-        this.value,
-        this.locale,
-        this.displayFormat
-      );
-    }
-  }
-
-  private _fireInputEvent(): void {
-    this._setTouchedState();
-    this.emitEvent('igcInput', { detail: this.value?.toString() });
-  }
-
-  protected handleDragLeave() {
-    if (!this._focused) {
-      this.updateMask();
-    }
-  }
-
-  protected handleDragEnter() {
-    if (!this._focused) {
-      this._maskedValue = this.getMaskedValue();
-    }
-  }
-
-  protected async _updateInput(
-    text: string,
-    { start, end }: MaskSelection
-  ): Promise<void> {
-    const result = this._parser.replace(this._maskedValue, text, start, end);
-
-    this._maskedValue = result.value;
-
-    this.updateValue();
-    this.requestUpdate();
-
-    if (start !== this.inputFormat.length) {
-      this._fireInputEvent();
-    }
-
-    await this.updateComplete;
-    this.input.setSelectionRange(result.end, result.end);
-  }
-
-  private trySpinValue(
-    datePart: DatePart,
-    delta?: number,
-    negative = false
-  ): Date {
-    // default to 1 if a delta is set to 0 or any other falsy value
-    const _delta =
-      delta || this.datePartDeltas[datePart as keyof DatePartDeltas] || 1;
-
-    const spinValue = negative ? -Math.abs(_delta) : Math.abs(_delta);
-    return this.spinValue(datePart, spinValue);
-  }
-
-  private spinValue(datePart: DatePart, delta: number): Date {
-    if (!(this.value && DateTimeUtil.isValidDate(this.value))) {
-      return new Date();
-    }
-
-    const newDate = new Date(this.value.getTime());
-    let formatPart: DatePartInfo | undefined;
-    let amPmFromMask: string;
-
-    switch (datePart) {
-      case DatePart.Date:
-        DateTimeUtil.spinDate(delta, newDate, this.spinLoop);
-        break;
-      case DatePart.Month:
-        DateTimeUtil.spinMonth(delta, newDate, this.spinLoop);
-        break;
-      case DatePart.Year:
-        DateTimeUtil.spinYear(delta, newDate);
-        break;
-      case DatePart.Hours:
-        DateTimeUtil.spinHours(delta, newDate, this.spinLoop);
-        break;
-      case DatePart.Minutes:
-        DateTimeUtil.spinMinutes(delta, newDate, this.spinLoop);
-        break;
-      case DatePart.Seconds:
-        DateTimeUtil.spinSeconds(delta, newDate, this.spinLoop);
-        break;
-      case DatePart.AmPm:
-        formatPart = this._inputDateParts.find(
-          (dp) => dp.type === DateParts.AmPm
-        );
-        if (formatPart !== undefined) {
-          amPmFromMask = this._maskedValue.substring(
-            formatPart!.start,
-            formatPart!.end
-          );
-          return DateTimeUtil.spinAmPm(newDate, this.value, amPmFromMask);
-        }
-        break;
-    }
-
-    return newDate;
-  }
-
-  @eventOptions({ passive: false })
-  private async onWheel(event: WheelEvent) {
-    if (!this._focused || this.readOnly) {
-      return;
-    }
-
-    event.preventDefault();
-    event.stopPropagation();
-
-    const { start, end } = this._inputSelection;
-    event.deltaY > 0 ? this.stepDown() : this.stepUp();
-    this._fireInputEvent();
-
-    await this.updateComplete;
-    this.setSelectionRange(start, end);
-  }
-
-  private updateDefaultMask(): void {
-    this._defaultMask = DateTimeUtil.getDefaultInputMask(this.locale);
-  }
-
-  private updateDefaultDisplayFormat(): void {
-    this._defaultDisplayFormat = getDateFormatter().getLocaleDateTimeFormat(
-      this.locale
-    );
-  }
-
-  private setMask(string: string): void {
-    const oldFormat = this._inputDateParts?.map((p) => p.format).join('');
-    this._inputDateParts = DateTimeUtil.parseDateTimeFormat(
-      string,
-      this.locale,
-      true
-    );
-    const value = this._inputDateParts.map((p) => p.format).join('');
-
-    this._defaultMask = value;
-
-    const newMask = (value || DateTimeUtil.DEFAULT_INPUT_FORMAT).replace(
-      new RegExp(/(?=[^t])[\w]/, 'g'),
-      '0'
-    );
-
-    this.mask = newMask.includes('tt') ? newMask.replace(/tt/g, 'LL') : newMask;
-
-    if (!this.placeholder || oldFormat === this.placeholder) {
-      this.placeholder = value;
-    }
-  }
-
-  private parseDate(val: string) {
-    return val
-      ? DateTimeUtil.parseValueFromMask(val, this._inputDateParts, this.prompt)
-      : null;
-  }
-
-  private getMaskedValue(): string {
-    let mask = this._parser.emptyMask;
-
-    if (DateTimeUtil.isValidDate(this.value)) {
-      for (const part of this._inputDateParts) {
-        if (part.type === DateParts.Literal) {
-          continue;
-        }
-
-        const targetValue = DateTimeUtil.getPartValue(
-          part,
-          part.format.length,
-          this.value
-        );
-
-        mask = this._parser.replace(
-          mask,
-          targetValue,
-          part.start,
-          part.end
-        ).value;
-      }
-      return mask;
-    }
-
-    if (this.readOnly) {
-      return '';
-    }
-
-    return this._maskedValue === '' ? mask : this._maskedValue;
-  }
-
-  private isComplete(): boolean {
-    return !this._maskedValue.includes(this.prompt);
-  }
-
-  private updateValue(): void {
-    if (this.isComplete()) {
-      const parsedDate = this.parseDate(this._maskedValue);
-      this.value = DateTimeUtil.isValidDate(parsedDate) ? parsedDate : null;
-    } else {
-      this.value = null;
-    }
-  }
-
-  protected override _updateSetRangeTextValue() {
-    this.updateValue();
-  }
-
-  private getNewPosition(value: string, direction = 0): number {
-    const cursorPos = this._maskSelection.start;
-
-    if (!direction) {
-      // Last literal before the current cursor position or start of input value
-      const part = this._inputDateParts.findLast(
-        (part) => part.type === DateParts.Literal && part.end < cursorPos
-      );
-      return part?.end ?? 0;
-    }
-
-    // First literal after the current cursor position or end of input value
-    const part = this._inputDateParts.find(
-      (part) => part.type === DateParts.Literal && part.start > cursorPos
-    );
-    return part?.start ?? value.length;
-  }
-
-  protected async handleFocus() {
+  protected async _handleFocus(): Promise<void> {
     this._focused = true;
 
     if (this.readOnly) {
@@ -601,81 +120,251 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
     }
 
     this._oldValue = this.value;
-    const areFormatsDifferent = this.displayFormat !== this.inputFormat;
 
     if (!this.value) {
       this._maskedValue = this._parser.emptyMask;
       await this.updateComplete;
       this.select();
-    } else if (areFormatsDifferent) {
-      this.updateMask();
+    } else if (this.displayFormat !== this.inputFormat) {
+      this._updateMaskDisplay();
     }
   }
 
-  protected handleBlur() {
-    const isEmptyMask = this._maskedValue === this._parser.emptyMask;
-
+  protected override _handleBlur(): void {
     this._focused = false;
 
-    if (!(this.isComplete() || isEmptyMask)) {
-      const parse = this.parseDate(this._maskedValue);
+    // Handle incomplete mask input
+    if (!(this._isMaskComplete() || this._isEmptyMask)) {
+      const parsedDate = this._parser.parseDate(this._maskedValue);
 
-      if (parse) {
-        this.value = parse;
+      if (parsedDate) {
+        this.value = parsedDate;
       } else {
-        this.value = null;
-        this._maskedValue = '';
+        this.clear();
       }
     } else {
-      this.updateMask();
+      this._updateMaskDisplay();
     }
 
-    const isSameValue = this._oldValue === this.value;
-
-    if (!(this.readOnly || isSameValue)) {
+    // Emit change event if value changed
+    if (!this.readOnly && !equal(this._oldValue, this.value)) {
       this.emitEvent('igcChange', { detail: this.value });
     }
 
     super._handleBlur();
   }
 
-  protected navigateParts(delta: number) {
-    const position = this.getNewPosition(this.input.value, delta);
-    this.setSelectionRange(position, position);
+  //#endregion
+
+  //#region Navigation
+
+  /**
+   * Calculates the new cursor position when navigating between date parts.
+   * direction = 0: navigate to start of previous part
+   * direction = 1: navigate to start of next part
+   */
+  protected override _calculatePartNavigationPosition(
+    inputValue: string,
+    direction: number
+  ): number {
+    const cursorPos = this._maskSelection.start;
+    const dateParts = this._parser.dateParts;
+
+    if (direction === 0) {
+      // Navigate backwards: find last literal before cursor
+      const part = dateParts.findLast(
+        (part) => part.type === DateParts.Literal && part.end < cursorPos
+      );
+      return part?.end ?? 0;
+    }
+
+    // Navigate forwards: find first literal after cursor
+    const part = dateParts.find(
+      (part) => part.type === DateParts.Literal && part.start > cursorPos
+    );
+    return part?.start ?? inputValue.length;
   }
 
-  protected async keyboardSpin(direction: 'up' | 'down') {
-    direction === 'up' ? this.stepUp() : this.stepDown();
-    this._fireInputEvent();
-    await this.updateComplete;
-    this.setSelectionRange(this._maskSelection.start, this._maskSelection.end);
+  //#endregion
+
+  //#region Internal API
+
+  /**
+   * Gets the date part at the current cursor position.
+   * Uses inclusive end to handle cursor at the end of the last part.
+   * Returns undefined if cursor is not within a valid date part.
+   */
+  protected override _getDatePartAtCursor(): DatePart | undefined {
+    return this._parser.getDatePartForCursor(this._inputSelection.start)
+      ?.type as DatePart | undefined;
   }
 
-  protected override renderInput() {
-    return html`
-      <input
-        type="text"
-        part=${partMap(this.resolvePartNames('input'))}
-        name=${ifDefined(this.name)}
-        .value=${live(this._maskedValue)}
-        .placeholder=${this.placeholder || this._parser.emptyMask}
-        ?readonly=${this.readOnly}
-        ?disabled=${this.disabled}
-        @blur=${this.handleBlur}
-        @focus=${this.handleFocus}
-        @input=${this._handleInput}
-        @wheel=${this.onWheel}
-        @keydown=${this._setMaskSelection}
-        @click=${this._handleClick}
-        @cut=${this._setMaskSelection}
-        @compositionstart=${this._handleCompositionStart}
-        @compositionend=${this._handleCompositionEnd}
-        @dragenter=${this.handleDragEnter}
-        @dragleave=${this.handleDragLeave}
-        @dragstart=${this._setMaskSelection}
-      />
-    `;
+  /**
+   * Gets the default date part to target when the input is not focused.
+   * Prioritizes: Date > Hours > First available part
+   */
+  protected override _getDefaultDatePart(): DatePart | undefined {
+    return (this._parser.getPartByType(DateParts.Date)?.type ??
+      this._parser.getPartByType(DateParts.Hours)?.type ??
+      this._parser.getFirstDatePart()?.type) as DatePart | undefined;
   }
+
+  /**
+   * Builds the masked value string from the current date value.
+   * Returns empty mask if no value, or existing masked value if incomplete.
+   */
+  protected override _buildMaskedValue(): string {
+    return isValidDate(this.value)
+      ? this._parser.formatDate(this.value)
+      : this._maskedValue || this._parser.emptyMask;
+  }
+
+  /**
+   * Builds the formatted display value shown when the input is not focused.
+   */
+  protected override _buildDisplayValue(): string {
+    return isValidDate(this.value)
+      ? formatDisplayDate(this.value, this.locale, this.displayFormat)
+      : '';
+  }
+
+  /**
+   * Commits a value produced by spinning a date part.
+   */
+  protected override _commitSpunValue(value: unknown): void {
+    this.value = value as Date;
+  }
+
+  /**
+   * Sets the value to the current date/time.
+   */
+  protected override _setCurrentDateTime(): void {
+    this.value = new Date();
+    this._emitInputEvent();
+  }
+
+  /**
+   * Emits an `igcInput` event whose `detail` is the parsed value as an ISO
+   * string (preserving the legacy contract for this component).
+   */
+  protected override _emitInputEvent(): void {
+    this._setTouchedState();
+    this.emitEvent('igcInput', { detail: this.value?.toISOString() });
+  }
+
+  /**
+   * Calculates the new date value after spinning a date part.
+   */
+  protected override _calculateSpunValue(
+    datePart: DatePart,
+    delta: number | undefined,
+    isDecrement: boolean
+  ): Date {
+    // Default to 1 if delta is 0 or undefined
+    const effectiveDelta =
+      delta || this._datePartDeltas[datePart as keyof DatePartDeltas] || 1;
+
+    const spinAmount = isDecrement
+      ? -Math.abs(effectiveDelta)
+      : Math.abs(effectiveDelta);
+
+    return this._spinDatePart(datePart, spinAmount);
+  }
+
+  /**
+   * Spins a specific date part by the given delta.
+   */
+  protected _spinDatePart(datePart: DatePart, delta: number): Date {
+    if (!isValidDate(this.value)) {
+      return new Date();
+    }
+
+    const newDate = new Date(this.value.getTime());
+    const partType = datePart as unknown as DateParts;
+
+    // Get the part instance from the parser, or create one for explicit spin operations
+    let part = this._parser.getPartByType(partType);
+    if (!part) {
+      // For explicit spin operations (e.g., stepDown(DatePart.Minutes)),
+      // create a temporary part even if not in the format
+      part = createDatePart(partType, { start: 0, end: 0, format: '' });
+    }
+
+    // For AM/PM, we need to extract the current AM/PM value from the mask
+    let amPmValue: string | undefined;
+    if (datePart === DatePart.AmPm) {
+      const formatPart = this._parser.getPartByType(DateParts.AmPm);
+      if (formatPart) {
+        amPmValue = this._maskedValue.substring(
+          formatPart.start,
+          formatPart.end
+        );
+      }
+    }
+
+    part.spin(delta, {
+      date: newDate,
+      spinLoop: this.spinLoop,
+      amPmValue,
+      originalDate: this.value,
+    });
+
+    return newDate;
+  }
+
+  /**
+   * Updates the internal value based on the current masked input.
+   * Only sets a value if the mask is complete and parses to a valid date.
+   */
+  protected override _syncValueFromMask(): void {
+    if (!this._isMaskComplete()) {
+      this.value = null;
+      return;
+    }
+
+    const parsedDate = this._parser.parseDate(this._maskedValue);
+    this.value = isValidDate(parsedDate) ? parsedDate : null;
+  }
+
+  //#endregion
+
+  //#region Public API
+
+  /** Increments a date/time portion. */
+  public override stepUp(datePart?: DatePart, delta?: number): void {
+    super.stepUp(datePart, delta);
+  }
+
+  /** Decrements a date/time portion. */
+  public override stepDown(datePart?: DatePart, delta?: number): void {
+    super.stepDown(datePart, delta);
+  }
+
+  /** Clears the input element of user input. */
+  public override clear(): void {
+    this._maskedValue = '';
+    this.value = null;
+  }
+
+  /* blazorSuppress */
+  /**
+   * Checks whether the current format includes date parts (day, month, year).
+   * @internal
+   */
+  public override hasDateParts(): boolean {
+    return this._parser.hasDateParts();
+  }
+
+  /* blazorSuppress */
+  /**
+   * Checks whether the current format includes time parts (hours, minutes, seconds).
+   * @internal
+   */
+  public override hasTimeParts(): boolean {
+    return this._parser.hasTimeParts();
+  }
+
+  //#endregion
 }
 
 declare global {

@@ -4,5 +4,5 @@
 $theme: $bootstrap;
 
 :host {
-    @include css-vars-from-theme(diff($base, $theme), 'ig-chip');
+    @include css-vars-from-theme(diff($base, $theme));
 }

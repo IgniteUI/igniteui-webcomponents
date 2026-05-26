@@ -5,7 +5,7 @@
 $theme: $bootstrap;
 
 :host {
-    @include css-vars-from-theme(diff(light.$base, $theme), 'ig-checkbox');
+    @include css-vars-from-theme(diff(light.$base, $theme));
 }
 
 :host(:not([disabled]):state(ig-invalid)),

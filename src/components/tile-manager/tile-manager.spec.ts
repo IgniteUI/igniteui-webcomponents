@@ -190,6 +190,18 @@ describe('Tile Manager component', () => {
         `
       );
     });
+
+    it('issue 2051 - title content is hidden when disableFullscreen and disableMaximize are set to true', async () => {
+      const tile = tileManager.tiles[0];
+
+      tile.disableFullscreen = true;
+      tile.disableMaximize = true;
+      await elementUpdated(tile);
+
+      const header =
+        tile.renderRoot.querySelector<HTMLElement>('[part="header"]');
+      expect(header?.hidden).to.be.false;
+    });
   });
 
   describe('Column spans', async () => {

@@ -367,6 +367,7 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
     this._input.select();
   }
 
+  /* blazorSuppress */
   /** Sets the text selection range of the control */
   public setSelectionRange(
     start: number,
@@ -376,6 +377,7 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
     this._input.setSelectionRange(start, end, direction);
   }
 
+  /* blazorSuppress */
   /** Replaces the selected text in the control. */
   public setRangeText(
     replacement: string,

@@ -183,7 +183,7 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
 
     addKeybindings(this, {
       skip: () => this.disabled,
-      bindingDefaults: { preventDefault: true, triggers: ['keydownRepeat'] },
+      bindingDefaults: { preventDefault: true, repeat: true },
     })
       .set(arrowLeft, () => this._navigate(isLTR(this) ? -1 : 1))
       .set(arrowRight, () => this._navigate(isLTR(this) ? 1 : -1))
@@ -358,6 +358,7 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
           aria-labelledby=${labelledBy ? labelledBy : this._labelId}
           aria-describedby=${describedBy}
           @click=${this._handleClick}
+          @keydown=${this._handleEnterKeydown}
         />
         <span part=${partMap({ control: true, checked })}>
           <span
