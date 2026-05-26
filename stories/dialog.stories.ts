@@ -42,7 +42,7 @@ const metadata: Meta<IgcDialogComponent> = {
     closeOnOutsideClick: {
       type: 'boolean',
       description:
-        'When set, clicking on the backdrop area outside the dialog surface\nwill close it (emitting `igcClosing` / `igcClosed`).\n\nHas no effect when the dialog is not yet open.',
+        'When set, clicking on the backdrop area outside the dialog surface\nwill close it (emitting close events).\n\nHas no effect when the dialog is not yet open.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
@@ -56,7 +56,7 @@ const metadata: Meta<IgcDialogComponent> = {
     open: {
       type: 'boolean',
       description:
-        'Whether the dialog is open.\n\nSetting this property programmatically will open or close the dialog\nwithout animation and without emitting `igcClosing` / `igcClosed`.\nPrefer the `show()`, `hide()`, and `toggle()` methods for animated\ntransitions, and note that events are only emitted when the dialog is\nclosed through user interaction (the default action button, outside click,\nor the Escape key).',
+        'Whether the dialog is open.\n\nSetting this property programmatically will open or close the dialog\nwithout animation and without emitting close events.\nPrefer the `show()`, `hide()`, and `toggle()` methods for animated\ntransitions.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
@@ -88,7 +88,7 @@ interface IgcDialogArgs {
   keepOpenOnEscape: boolean;
   /**
    * When set, clicking on the backdrop area outside the dialog surface
-   * will close it (emitting `igcClosing` / `igcClosed`).
+   * will close it (emitting close events).
    *
    * Has no effect when the dialog is not yet open.
    */
@@ -104,11 +104,9 @@ interface IgcDialogArgs {
    * Whether the dialog is open.
    *
    * Setting this property programmatically will open or close the dialog
-   * without animation and without emitting `igcClosing` / `igcClosed`.
+   * without animation and without emitting close events.
    * Prefer the `show()`, `hide()`, and `toggle()` methods for animated
-   * transitions, and note that events are only emitted when the dialog is
-   * closed through user interaction (the default action button, outside click,
-   * or the Escape key).
+   * transitions.
    */
   open: boolean;
   /**

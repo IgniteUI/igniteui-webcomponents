@@ -112,7 +112,7 @@ export default class IgcDialogComponent extends EventEmitterMixin<
 
   /**
    * When set, clicking on the backdrop area outside the dialog surface
-   * will close it (emitting `igcClosing` / `igcClosed`).
+   * will close it (emitting close events).
    *
    * Has no effect when the dialog is not yet open.
    * @attr close-on-outside-click
@@ -136,11 +136,9 @@ export default class IgcDialogComponent extends EventEmitterMixin<
    * Whether the dialog is open.
    *
    * Setting this property programmatically will open or close the dialog
-   * without animation and without emitting `igcClosing` / `igcClosed`.
+   * without animation and without emitting close events.
    * Prefer the `show()`, `hide()`, and `toggle()` methods for animated
-   * transitions, and note that events are only emitted when the dialog is
-   * closed through user interaction (the default action button, outside click,
-   * or the Escape key).
+   * transitions.
    * @attr open
    * @default false
    */
