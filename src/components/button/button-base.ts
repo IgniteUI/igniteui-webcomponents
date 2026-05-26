@@ -51,7 +51,7 @@ export abstract class IgcButtonBaseComponent extends EventEmitterMixin<
   private _commandForElement: Element | null = null;
 
   @query('[part="base"]', true)
-  private readonly _nativeButton?: HTMLButtonElement;
+  private readonly _nativeButton?: HTMLButtonElement | HTMLAnchorElement;
 
   //#endregion
 
@@ -225,21 +225,9 @@ export abstract class IgcButtonBaseComponent extends EventEmitterMixin<
 
   //#region Public API
 
-  /* alternateName: focusComponent */
-  /** Moves keyboard focus to the button. Accepts an optional `FocusOptions` object (e.g. `{ preventScroll: true }`). */
-  public override focus(options?: FocusOptions): void {
-    this._nativeButton?.focus(options);
-  }
-
   /** Simulates a mouse click on the button, triggering its click handler and any associated form action. */
   public override click(): void {
     this._nativeButton?.click();
-  }
-
-  /* alternateName: blurComponent */
-  /** Removes keyboard focus from the button. */
-  public override blur(): void {
-    this._nativeButton?.blur();
   }
 
   //#endregion
