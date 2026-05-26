@@ -25,12 +25,10 @@ export interface IgcBannerComponentEventMap {
  *
  * The banner slides into view with an animated grow transition and renders
  * inline, pushing the surrounding page content rather than overlaying it.
- * It provides a default "OK" dismiss action that fires `igcClosing` /
- * `igcClosed`, and supports custom action content through the `actions` slot.
  *
  * The component integrates with the
  * [Invoker Commands API](https://developer.mozilla.org/en-US/docs/Web/API/Invoker_Commands_API):
- * an `igc-button` or a native `<button>` with `command="--show"` / `"--hide"` /
+ * an Ignite button or a native `<button>` with `command="--show"` / `"--hide"` /
  * `"--toggle"` and `commandfor` pointing to this element will call the
  * corresponding method declaratively without any JavaScript.
  *
@@ -54,25 +52,6 @@ export interface IgcBannerComponentEventMap {
  * @csspart illustration - The container for the prefix slot (icon/illustration).
  * @csspart content - The container for the default message slot.
  * @csspart actions - The container for the action buttons slot.
- *
- * @example
- * <!-- Basic banner with a custom action -->
- * <igc-banner id="banner">
- *   You are currently offline. Check your connection.
- *   <div slot="actions">
- *     <igc-button onclick="banner.hide()">Dismiss</igc-button>
- *     <igc-button onclick="banner.hide()">Retry</igc-button>
- *   </div>
- * </igc-banner>
- * <igc-button onclick="banner.show()">Show Banner</igc-button>
- *
- * @example
- * <!-- Declarative control via the Invoker Commands API -->
- * <igc-button command="--toggle" commandfor="status-banner">Toggle</igc-button>
- * <igc-banner id="status-banner">
- *   <igc-icon slot="prefix" name="warning"></igc-icon>
- *   Your session is about to expire.
- * </igc-banner>
  */
 export default class IgcBannerComponent extends EventEmitterMixin<
   IgcBannerComponentEventMap,

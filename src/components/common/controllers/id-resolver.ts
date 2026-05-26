@@ -9,20 +9,24 @@ function refObserverCallback(
 
   for (const mutation of mutations) {
     if (mutation.type === 'attributes') {
+      if (!isElement(mutation.target)) continue;
       const oldId = mutation.oldValue;
-      const newId = (mutation.target as Element).id;
+      const newId = mutation.target.id;
       if (oldId) affected.add(oldId);
       if (newId) affected.add(newId);
     } else {
-      for (const nodes of [mutation.addedNodes, mutation.removedNodes]) {
-        for (const node of nodes) {
-          if (!isElement(node)) continue;
-          if (node.id) affected.add(node.id);
-          if (node.childElementCount > 0) {
-            for (const child of node.querySelectorAll('[id]')) {
-              if (child.id) affected.add(child.id);
-            }
-          }
+      for (const node of mutation.addedNodes) {
+        if (!isElement(node)) continue;
+        if (node.id) affected.add(node.id);
+        for (const child of node.querySelectorAll('[id]')) {
+          if (child.id) affected.add(child.id);
+        }
+      }
+      for (const node of mutation.removedNodes) {
+        if (!isElement(node)) continue;
+        if (node.id) affected.add(node.id);
+        for (const child of node.querySelectorAll('[id]')) {
+          if (child.id) affected.add(child.id);
         }
       }
     }
@@ -54,9 +58,9 @@ class IdRefChangeEmitter extends EventTarget {
   }
 
   /**
-   * Start observing the document for ID reference changes. Multiple calls will be reference-counted to avoid redundant observers.
+   * Increment the reference count. Starts the underlying MutationObserver on the first call.
    */
-  public connect(): void {
+  public retain(): void {
     if (this._refCount++ === 0) {
       this._observer?.observe(document.body, {
         attributeFilter: ['id'],
@@ -68,9 +72,9 @@ class IdRefChangeEmitter extends EventTarget {
   }
 
   /**
-   * Stop observing the document for ID reference changes. Multiple calls will be reference-counted to avoid disconnecting if still in use.
+   * Decrement the reference count. Stops the underlying MutationObserver when the count reaches zero.
    */
-  public disconnect(): void {
+  public release(): void {
     if (this._refCount > 0 && --this._refCount === 0) {
       this._observer?.disconnect();
     }
@@ -104,7 +108,7 @@ class IdRefResolverController implements ReactiveController {
   public hostConnected(): void {
     this._connected = true;
     if (this._active) {
-      ID_REF_CHANGE_EMITTER.connect();
+      ID_REF_CHANGE_EMITTER.retain();
       ID_REF_CHANGE_EMITTER.addEventListener('id-refs-change', this);
     }
   }
@@ -113,7 +117,7 @@ class IdRefResolverController implements ReactiveController {
   public hostDisconnected(): void {
     if (this._active) {
       ID_REF_CHANGE_EMITTER.removeEventListener('id-refs-change', this);
-      ID_REF_CHANGE_EMITTER.disconnect();
+      ID_REF_CHANGE_EMITTER.release();
     }
     this._connected = false;
   }
@@ -123,7 +127,7 @@ class IdRefResolverController implements ReactiveController {
     if (this._active) return;
     this._active = true;
     if (this._connected) {
-      ID_REF_CHANGE_EMITTER.connect();
+      ID_REF_CHANGE_EMITTER.retain();
       ID_REF_CHANGE_EMITTER.addEventListener('id-refs-change', this);
     }
   }
@@ -134,7 +138,7 @@ class IdRefResolverController implements ReactiveController {
     this._active = false;
     if (this._connected) {
       ID_REF_CHANGE_EMITTER.removeEventListener('id-refs-change', this);
-      ID_REF_CHANGE_EMITTER.disconnect();
+      ID_REF_CHANGE_EMITTER.release();
     }
   }
 

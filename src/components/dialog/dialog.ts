@@ -34,7 +34,7 @@ let nextId = 1;
  *
  * The component integrates with the
  * [Invoker Commands API](https://developer.mozilla.org/en-US/docs/Web/API/Invoker_Commands_API):
- * an `igc-button` or a native `<button>` with `command="--show"` / `"--hide"` / `"--toggle"`
+ * an Ignite button or a native `<button>` with `command="--show"` / `"--hide"` / `"--toggle"`
  * and `commandfor` pointing to this element will call the corresponding method
  * declaratively without any JavaScript.
  *
@@ -60,33 +60,6 @@ let nextId = 1;
  * @csspart footer - The `<footer>` element wrapping the footer slot.
  * @csspart backdrop - The decorative backdrop overlay element.
  * @csspart animating - Applied to the backdrop while an animation is running.
- *
- * @example
- * <!-- Basic dialog with a custom title and footer action -->
- * <igc-button onclick="dialog.show()">Open</igc-button>
- * <igc-dialog id="dialog" title="Confirm action">
- *   <p slot="message">Are you sure you want to continue?</p>
- *   <div slot="footer">
- *     <igc-button variant="flat" onclick="dialog.hide()">Cancel</igc-button>
- *     <igc-button onclick="dialog.hide()">Confirm</igc-button>
- *   </div>
- * </igc-dialog>
- *
- * @example
- * <!-- Declarative control via the Invoker Commands API -->
- * <igc-button command="--show" commandfor="cmd-dialog">Open</igc-button>
- * <igc-dialog id="cmd-dialog" title="Invoked dialog">
- *   Opened without JavaScript.
- * </igc-dialog>
- *
- * @example
- * <!-- Dialog with an embedded form (method="dialog") -->
- * <igc-dialog title="Enter your name">
- *   <form method="dialog">
- *     <igc-input name="name" label="Name"></igc-input>
- *     <igc-button type="submit">Submit</igc-button>
- *   </form>
- * </igc-dialog>
  */
 export default class IgcDialogComponent extends EventEmitterMixin<
   IgcDialogComponentEventMap,

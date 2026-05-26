@@ -42,7 +42,7 @@ export interface IgcNavDrawerComponentEventMap {
  *
  * The component integrates with the
  * [Invoker Commands API](https://developer.mozilla.org/en-US/docs/Web/API/Invoker_Commands_API):
- * an `igc-button` or a native `<button>` with `command="--show"` / `"--hide"` / `"--toggle"`
+ * an Ignite button or a native `<button>` with `command="--show"` / `"--hide"` / `"--toggle"`
  * and `commandfor` pointing to this element will call the corresponding method
  * declaratively without any JavaScript.
  *
@@ -58,21 +58,6 @@ export interface IgcNavDrawerComponentEventMap {
  * @csspart base - The base wrapper of the drawer.
  * @csspart main - The main content container of the drawer.
  * @csspart mini - The mini variant container of the drawer.
- *
- * @example
- * <!-- Basic usage with programmatic control -->
- * <igc-button onclick="drawer.show()">Open</igc-button>
- * <igc-nav-drawer id="drawer">
- *   <igc-nav-drawer-item>Home</igc-nav-drawer-item>
- *   <igc-nav-drawer-item>Settings</igc-nav-drawer-item>
- * </igc-nav-drawer>
- *
- * @example
- * <!-- Declarative control via the Invoker Commands API -->
- * <igc-button command="--toggle" commandfor="main-nav">Toggle</igc-button>
- * <igc-nav-drawer id="main-nav">
- *   <igc-nav-drawer-item>Home</igc-nav-drawer-item>
- * </igc-nav-drawer>
  */
 export default class IgcNavDrawerComponent extends EventEmitterMixin<
   IgcNavDrawerComponentEventMap,

@@ -51,7 +51,7 @@ const metadata: Meta<IgcBannerComponent> = {
     docs: {
       description: {
         component:
-          'A non-modal notification banner that displays important, concise messages\nrequiring user acknowledgement.\n\nThe banner slides into view with an animated grow transition and renders\ninline, pushing the surrounding page content rather than overlaying it.\nIt provides a default "OK" dismiss action that fires `igcClosing` /\n`igcClosed`, and supports custom action content through the `actions` slot.\n\nThe component integrates with the\n[Invoker Commands API](https://developer.mozilla.org/en-US/docs/Web/API/Invoker_Commands_API):\nan `igc-button` or a native `<button>` with `command="--show"` / `"--hide"` /\n`"--toggle"` and `commandfor` pointing to this element will call the\ncorresponding method declaratively without any JavaScript.',
+          'A non-modal notification banner that displays important, concise messages\nrequiring user acknowledgement.\n\nThe banner slides into view with an animated grow transition and renders\ninline, pushing the surrounding page content rather than overlaying it.\n\nThe component integrates with the\n[Invoker Commands API](https://developer.mozilla.org/en-US/docs/Web/API/Invoker_Commands_API):\nan Ignite button or a native `<button>` with `command="--show"` / `"--hide"` /\n`"--toggle"` and `commandfor` pointing to this element will call the\ncorresponding method declaratively without any JavaScript.',
       },
     },
     actions: { handles: ['igcClosing', 'igcClosed'] },

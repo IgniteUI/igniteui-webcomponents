@@ -20,7 +20,7 @@ export interface IgcSnackbarComponentEventMap {
  *
  * The component integrates with the
  * [Invoker Commands API](https://developer.mozilla.org/en-US/docs/Web/API/Invoker_Commands_API):
- * an `igc-button` or a native `<button>` with `command="--show"` / `"--hide"` /
+ * an Ignite button or a native `<button>` with `command="--show"` / `"--hide"` /
  * `"--toggle"` and `commandfor` pointing to this element will call the
  * corresponding method declaratively without any JavaScript.
  *
@@ -35,16 +35,6 @@ export interface IgcSnackbarComponentEventMap {
  * @csspart message - The snackbar message.
  * @csspart action - The default snackbar action button.
  * @csspart action-container - The area holding the actions.
- *
- * @example
- * <!-- Basic usage with programmatic control -->
- * <igc-button onclick="snackbar.show()">Show</igc-button>
- * <igc-snackbar id="snackbar" keep-open>Your changes have been saved.</igc-snackbar>
- *
- * @example
- * <!-- Declarative control via the Invoker Commands API -->
- * <igc-button command="--show" commandfor="status-snackbar">Show</igc-button>
- * <igc-snackbar id="status-snackbar" keep-open>Your changes have been saved.</igc-snackbar>
  */
 export default class IgcSnackbarComponent extends EventEmitterMixin<
   IgcSnackbarComponentEventMap,

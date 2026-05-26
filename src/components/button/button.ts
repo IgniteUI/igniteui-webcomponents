@@ -26,35 +26,6 @@ import { all } from './themes/button/themes.js';
  * @csspart base - The native button element of the igc-button component.
  * @csspart prefix - The prefix container of the igc-button component.
  * @csspart suffix - The suffix container of the igc-button component.
- *
- * @example
- * <!-- Contained (default) button -->
- * <igc-button>Click me</igc-button>
- *
- * @example
- * <!-- Outlined button with prefix and suffix slots -->
- * <igc-button variant="outlined">
- *   <igc-icon slot="prefix" name="search"></igc-icon>
- *   Search
- *   <igc-icon slot="suffix" name="arrow-right"></igc-icon>
- * </igc-button>
- *
- * @example
- * <!-- Flat button rendered as a link -->
- * <igc-button variant="flat" href="https://example.com" target="_blank">
- *   Open link
- * </igc-button>
- *
- * @example
- * <!-- Submit button inside a form -->
- * <form>
- *   <igc-button type="submit">Submit form</igc-button>
- *   <igc-button type="reset" variant="outlined">Reset</igc-button>
- * </form>
- *
- * @example
- * <!-- Disabled button -->
- * <igc-button disabled>Unavailable</igc-button>
  */
 export default class IgcButtonComponent extends IgcButtonBaseComponent {
   public static readonly tagName = 'igc-button';
