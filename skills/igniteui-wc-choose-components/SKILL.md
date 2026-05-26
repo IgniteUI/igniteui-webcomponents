@@ -70,9 +70,6 @@ Ignite UI for Web Components is distributed across several packages depending on
 |---|---|---|---|
 | [`igniteui-webcomponents`](https://www.npmjs.com/package/igniteui-webcomponents) | MIT | `npm install igniteui-webcomponents` | General UI components (inputs, layouts, notifications, scheduling) |
 | [`igniteui-webcomponents-grids`](https://www.npmjs.com/package/igniteui-webcomponents-grids) | Commercial | `npm install igniteui-webcomponents-grids` (trial) | Advanced data grids (Data Grid, Tree Grid, Hierarchical Grid, Pivot Grid) with many built-in functionalities  |
-| [`igniteui-grid-lite`](https://www.npmjs.com/package/igniteui-grid-lite) | MIT | `npm install igniteui-grid-lite` | Lightweight data grid for simpler tabular data |
-| [`igniteui-dockmanager`](https://www.npmjs.com/package/igniteui-dockmanager) | Commercial | `npm install igniteui-dockmanager` (trial) | Windowing / docking layouts (IDE-style panels) |
-| [`igniteui-webcomponents-grids`](https://www.npmjs.com/package/igniteui-webcomponents-grids) | Commercial | `npm install igniteui-webcomponents-grids` (trial) | Advanced data grids (Data Grid, Tree Grid, Hierarchical Grid, Pivot Grid) with many built-in functionalities  |
 | [`@infragistics/igniteui-webcomponents-grids`](https://packages.infragistics.com/feeds/js-licensed/@infragistics/igniteui-webcomponents-grids) | Commercial | `npm install @infragistics/igniteui-webcomponents-grids` (licensed) | Advanced data grids (Data Grid, Tree Grid, Hierarchical Grid, Pivot Grid) with many built-in functionalities  |
 | [`igniteui-grid-lite`](https://www.npmjs.com/package/igniteui-grid-lite) | MIT | `npm install igniteui-grid-lite` | Lightweight data grid for simpler tabular data |
 | [`igniteui-dockmanager`](https://www.npmjs.com/package/igniteui-dockmanager) | Commercial | `npm install igniteui-dockmanager` (trial) | Windowing / docking layouts (IDE-style panels) |
@@ -113,7 +110,7 @@ All inputs are form-associated and integrate natively with `<form>`.
 | On/off toggle | Switch | `<igc-switch>` | [Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/inputs/switch) |
 | Single choice from a list | Radio / Radio Group | `<igc-radio>` / `<igc-radio-group>` | [Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/inputs/radio) |
 | Star / score rating | Rating | `<igc-rating>` | [Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/inputs/rating) |
-| Formatted / masked text input | Mask Input | `<igc-mask-input>` | [Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/inputs/input) |
+| Formatted / masked text input | Mask Input | `<igc-mask-input>` | [Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/inputs/mask-input) |
 | Date and time input | Date Time Input | `<igc-date-time-input>` | [Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/inputs/date-time-input) |
 | File upload | File Input | `<igc-file-input>` | [Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/inputs/file-input) |
 | Simple dropdown / select | Select | `<igc-select>` | [Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/inputs/select) |
@@ -136,7 +133,7 @@ All inputs are form-associated and integrate natively with `<form>`.
 | UI Need | Component | Tag | Docs |
 |---|---|---|---|
 | Full calendar view | Calendar | `<igc-calendar>` | [Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/scheduling/calendar) |
-| Date picker (popup calendar) | Date Picker | `<igc-datepicker>` | [Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/scheduling/date-picker) |
+| Date picker (popup calendar) | Date Picker | `<igc-date-picker>` | [Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/scheduling/date-picker) |
 | Date range selection | Date Range Picker | `<igc-date-range-picker>` | [Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/scheduling/date-range-picker) |
 
 ### Notifications & Feedback
@@ -191,7 +188,7 @@ All inputs are form-associated and integrate natively with `<form>`.
 | Full-featured tabular data grid | Data Grid | `<igc-grid>` | [Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/grids/grid/overview) |
 | Nested / master-detail grid | Hierarchical Grid | `<igc-hierarchical-grid>` | [Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/grids/hierarchical-grid/overview) |
 | Parent-child relational tree grid | Tree Grid | `<igc-tree-grid>` | [Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/grids/tree-grid/overview) |
-| Cross-tabulation / BI pivot table | Pivot Grid | `<igc-pivot-grid>` | [Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/web-components/components/grids/pivot-grid/overview) |
+| Cross-tabulation / BI pivot table | Pivot Grid | `<igc-pivot-grid>` | [Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/grids/pivot-grid/overview) |
 
 ### Charting & Visualization
 
