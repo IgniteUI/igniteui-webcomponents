@@ -1,6 +1,6 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
-
 import { defineComponents } from '../common/definitions/defineComponents.js';
+import { isPopoverOpen } from '../common/util.js';
 import {
   createFormAssociatedTestBed,
   isFocused,
@@ -307,23 +307,23 @@ describe('Button tests', () => {
       });
 
       it('toggles a native popover on repeated clicks', () => {
-        expect(popover.matches(':popover-open')).to.be.false;
+        expect(isPopoverOpen(popover)).to.be.false;
 
         button.click();
-        expect(popover.matches(':popover-open')).to.be.true;
+        expect(isPopoverOpen(popover)).to.be.true;
 
         button.click();
-        expect(popover.matches(':popover-open')).to.be.false;
+        expect(isPopoverOpen(popover)).to.be.false;
       });
 
       it('shows a closed native popover', async () => {
         button.command = 'show-popover';
         await elementUpdated(button);
 
-        expect(popover.matches(':popover-open')).to.be.false;
+        expect(isPopoverOpen(popover)).to.be.false;
 
         button.click();
-        expect(popover.matches(':popover-open')).to.be.true;
+        expect(isPopoverOpen(popover)).to.be.true;
       });
 
       it('hides a visible native popover', async () => {
@@ -331,10 +331,10 @@ describe('Button tests', () => {
         await elementUpdated(button);
 
         popover.showPopover();
-        expect(popover.matches(':popover-open')).to.be.true;
+        expect(isPopoverOpen(popover)).to.be.true;
 
         button.click();
-        expect(popover.matches(':popover-open')).to.be.false;
+        expect(isPopoverOpen(popover)).to.be.false;
       });
     });
 
