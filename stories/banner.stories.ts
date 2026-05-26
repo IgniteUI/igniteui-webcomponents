@@ -60,7 +60,7 @@ const metadata: Meta<IgcBannerComponent> = {
     open: {
       type: 'boolean',
       description:
-        'Whether the banner is open.\n\nSetting this property programmatically will immediately show or hide the\nbanner without animation and without emitting `igcClosing` / `igcClosed`.\nPrefer the `show()`, `hide()`, and `toggle()` methods for animated\ntransitions. Events are only emitted when the banner is closed through\nuser interaction with the default action button.',
+        'Whether the banner is open.\n\nSetting this property programmatically will immediately show or hide the\nbanner without animation and without emitting close events.\nPrefer the `show()`, `hide()`, and `toggle()` methods for animated\ntransitions.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
@@ -75,10 +75,9 @@ interface IgcBannerArgs {
    * Whether the banner is open.
    *
    * Setting this property programmatically will immediately show or hide the
-   * banner without animation and without emitting `igcClosing` / `igcClosed`.
+   * banner without animation and without emitting close events.
    * Prefer the `show()`, `hide()`, and `toggle()` methods for animated
-   * transitions. Events are only emitted when the banner is closed through
-   * user interaction with the default action button.
+   * transitions.
    */
   open: boolean;
 }

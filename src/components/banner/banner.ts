@@ -72,10 +72,9 @@ export default class IgcBannerComponent extends EventEmitterMixin<
    * Whether the banner is open.
    *
    * Setting this property programmatically will immediately show or hide the
-   * banner without animation and without emitting `igcClosing` / `igcClosed`.
+   * banner without animation and without emitting close events.
    * Prefer the `show()`, `hide()`, and `toggle()` methods for animated
-   * transitions. Events are only emitted when the banner is closed through
-   * user interaction with the default action button.
+   * transitions.
    * @attr open
    * @default false
    */
