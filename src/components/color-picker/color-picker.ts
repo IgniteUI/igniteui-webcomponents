@@ -9,12 +9,12 @@ import {
 } from '../common/controllers/key-bindings.js';
 import { addRootClickController } from '../common/controllers/root-click.js';
 import { registerComponent } from '../common/definitions/register.js';
-import { IgcBaseComboBoxLikeComponent } from '../common/mixins/combo-box.js';
+import { IgcBaseComboBoxComponent } from '../common/mixins/combo-box.js';
 import type { AbstractConstructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedMixin } from '../common/mixins/forms/associated.js';
 import { createFormValueState } from '../common/mixins/forms/form-value.js';
-import { addSafeEventListener, asNumber } from '../common/util.js';
+import { asNumber, stopPropagation } from '../common/util.js';
 import IgcFocusTrapComponent from '../focus-trap/focus-trap.js';
 import IgcInputComponent from '../input/input.js';
 import IgcPopoverComponent from '../popover/popover.js';
@@ -36,10 +36,6 @@ export interface IgcColorPickerEventMap {
   igcColorPicked: CustomEvent<string>;
 }
 
-function stopPropagation(event: Event, immediate = false) {
-  immediate ? event.stopImmediatePropagation() : event.stopPropagation();
-}
-
 /**
  * Color input component.
  *
@@ -54,8 +50,8 @@ function stopPropagation(event: Event, immediate = false) {
 export default class IgcColorPickerComponent extends FormAssociatedMixin(
   EventEmitterMixin<
     IgcColorPickerEventMap,
-    AbstractConstructor<IgcBaseComboBoxLikeComponent>
-  >(IgcBaseComboBoxLikeComponent)
+    AbstractConstructor<IgcBaseComboBoxComponent>
+  >(IgcBaseComboBoxComponent)
 ) {
   public static readonly tagName = 'igc-color-picker';
   public static styles = styles;
@@ -100,7 +96,7 @@ export default class IgcColorPickerComponent extends FormAssociatedMixin(
   protected readonly _alphaSlider!: HTMLInputElement;
 
   @query(IgcPickerCanvasComponent.tagName)
-  protected readonly _canvasPicker!: IgcPickerCanvasComponent;
+  protected readonly _canvasPicker?: IgcPickerCanvasComponent;
 
   /**
    * The label of the component.
@@ -118,7 +114,6 @@ export default class IgcColorPickerComponent extends FormAssociatedMixin(
     this._color = ColorModel.parse(value);
     this._formValue.setValueAndFormState(this._color.asString(this.format));
     this._updateColor();
-    this._syncCanvasPosition();
   }
 
   public get value(): string {
@@ -142,8 +137,6 @@ export default class IgcColorPickerComponent extends FormAssociatedMixin(
   constructor() {
     super();
 
-    addSafeEventListener(this, 'igcOpened' as any, this._syncCanvasPosition);
-
     addKeybindings(this, { skip: () => this.disabled }).set(
       escapeKey,
       this._onEscapeKey
@@ -156,6 +149,13 @@ export default class IgcColorPickerComponent extends FormAssociatedMixin(
     }
 
     super.update(props);
+  }
+
+  protected override updated(properties: PropertyValues<this>): void {
+    if (properties.has('open')) {
+      // Wait till the browser paints and then sync the marker position with the color.
+      requestAnimationFrame(() => this._syncCanvasPosition());
+    }
   }
 
   private _handleClosing(): void {
@@ -198,7 +198,7 @@ export default class IgcColorPickerComponent extends FormAssociatedMixin(
   }
 
   private _syncCanvasPosition(): void {
-    if (!(this.open || this._canvasPicker)) return;
+    if (!this._canvasPicker || !this.open) return;
 
     const rect = this._canvasPicker.getBoundingClientRect();
     const { width: markerWidth, height: markerHeight } =
@@ -435,7 +435,7 @@ export default class IgcColorPickerComponent extends FormAssociatedMixin(
           ?disabled=${this.disabled}
           .value=${this.value}
           label=${ifDefined(this.label)}
-          @pointerdown=${this.handleAnchorClick}
+          @click=${this._handleAnchorClick}
         >
           <span id="color-thumb" style=${style} slot="prefix"></span>
         </igc-input>

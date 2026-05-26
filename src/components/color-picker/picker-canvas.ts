@@ -34,8 +34,8 @@ export default class IgcPickerCanvasComponent extends EventEmitterMixin<
     registerComponent(IgcPickerCanvasComponent);
   }
 
-  @query('div', true)
-  private readonly _marker!: HTMLDivElement;
+  @query('div')
+  private readonly _marker?: HTMLDivElement;
 
   @property()
   public currentColor = '';
@@ -78,7 +78,8 @@ export default class IgcPickerCanvasComponent extends EventEmitterMixin<
 
     const shouldEmit = x !== this.x || y !== this.y;
 
-    Object.assign(this, { x, y });
+    this.x = x;
+    this.y = y;
 
     if (shouldEmit) {
       this.emitEvent('igcColorPicked', {
@@ -103,7 +104,8 @@ export default class IgcPickerCanvasComponent extends EventEmitterMixin<
     const y = clamp(event.clientY - rect.y - height, -height, maxY);
     const shouldEmit = x !== this.x || y !== this.y;
 
-    Object.assign(this, { x, y });
+    this.x = x;
+    this.y = y;
 
     if (shouldEmit) {
       this.emitEvent('igcColorPicked', {
@@ -124,7 +126,7 @@ export default class IgcPickerCanvasComponent extends EventEmitterMixin<
 
   private _handleLostPointerCapture(): void {
     this.removeEventListener('pointermove', this._handlePointerMove);
-    this._marker.focus();
+    this._marker?.focus();
   }
 
   private _handlePointerMove(event: PointerEvent): void {
@@ -132,8 +134,10 @@ export default class IgcPickerCanvasComponent extends EventEmitterMixin<
   }
 
   public getMarkerDimensions(): { width: number; height: number } {
-    const rect = this._marker.getBoundingClientRect();
-    return { width: rect.width / 2, height: rect.height / 2 };
+    const rect = this._marker?.getBoundingClientRect();
+    return rect
+      ? { width: rect.width / 2, height: rect.height / 2 }
+      : { width: 0, height: 0 };
   }
 
   protected override render() {

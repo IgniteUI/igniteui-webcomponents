@@ -67,20 +67,6 @@ const metadata: Meta<IgcColorPickerComponent> = {
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
-    keepOpenOnSelect: {
-      type: 'boolean',
-      description:
-        'Whether the component dropdown should be kept open on selection.',
-      control: 'boolean',
-      table: { defaultValue: { summary: 'false' } },
-    },
-    keepOpenOnOutsideClick: {
-      type: 'boolean',
-      description:
-        'Whether the component dropdown should be kept open on clicking outside of it.',
-      control: 'boolean',
-      table: { defaultValue: { summary: 'false' } },
-    },
     open: {
       type: 'boolean',
       description: 'Sets the open state of the component.',
@@ -93,8 +79,6 @@ const metadata: Meta<IgcColorPickerComponent> = {
     hideFormats: false,
     disabled: false,
     invalid: false,
-    keepOpenOnSelect: false,
-    keepOpenOnOutsideClick: false,
     open: false,
   },
 };
@@ -116,10 +100,6 @@ interface IgcColorPickerArgs {
   disabled: boolean;
   /** Sets the control into invalid state (visual state only). */
   invalid: boolean;
-  /** Whether the component dropdown should be kept open on selection. */
-  keepOpenOnSelect: boolean;
-  /** Whether the component dropdown should be kept open on clicking outside of it. */
-  keepOpenOnOutsideClick: boolean;
   /** Sets the open state of the component. */
   open: boolean;
 }
