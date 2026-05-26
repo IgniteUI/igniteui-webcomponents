@@ -3,6 +3,7 @@ import { property, query, state } from 'lit/decorators.js';
 import { cache } from 'lit/directives/cache.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { styleMap } from 'lit/directives/style-map.js';
+import IgcButtonComponent from '../button/button.js';
 import {
   addKeybindings,
   escapeKey,
@@ -63,7 +64,8 @@ export default class IgcColorPickerComponent extends FormAssociatedMixin(
       IgcPopoverComponent,
       IgcFocusTrapComponent,
       IgcRadioGroupComponent,
-      IgcPickerCanvasComponent
+      IgcPickerCanvasComponent,
+      IgcButtonComponent
     );
   }
 
@@ -271,6 +273,19 @@ export default class IgcColorPickerComponent extends FormAssociatedMixin(
     this._syncCanvasPosition();
   }
 
+  private _handleEyeDropperClick(): void {
+    const eyeDropper = new (window as any).EyeDropper();
+
+    eyeDropper
+      .open()
+      .then((result: { sRGBHex: string }) => {
+        this.value = result.sRGBHex;
+        this._syncCanvasPosition();
+        this._emitColorPickedEvent();
+      })
+      .catch(() => {});
+  }
+
   protected _renderFormatRadios() {
     return html`
       <igc-radio-group
@@ -407,15 +422,31 @@ export default class IgcColorPickerComponent extends FormAssociatedMixin(
     `;
   }
 
+  private _renderEyeDropperButton() {
+    if (!supportsEyeDropper()) {
+      return nothing;
+    }
+
+    return html`
+      <igc-button
+        part="eye-dropper"
+        title="Pick a color from the screen"
+        @click=${this._handleEyeDropperClick}
+      >
+        👁️💧
+      </igc-button>
+    `;
+  }
+
   protected _renderPicker() {
     return html`
       <igc-focus-trap ?disabled=${!this.open}>
         <div part="picker" .inert=${!this.open}>
           ${this._renderGradientArea()}
-
           <div>
             ${this._renderHueSlider()}${this._renderAlphaSlider()}
             ${this._renderFormats()}${this._renderColorInputs()}
+            ${this._renderEyeDropperButton()}
           </div>
         </div>
       </igc-focus-trap>
@@ -449,4 +480,8 @@ declare global {
   interface HTMLElementTagNameMap {
     'igc-color-picker': IgcColorPickerComponent;
   }
+}
+
+function supportsEyeDropper(): boolean {
+  return 'EyeDropper' in window;
 }
