@@ -1,5 +1,17 @@
 import { isServer, type LitElement, type ReactiveController } from 'lit';
-import { getElementByIdFromRoot, isElement } from '../util.js';
+import { isDocument, isElement } from '../util.js';
+
+const ID_REF_EMITTERS = new WeakMap<Node, IdRefChangeEmitter>();
+const ID_REF_EVENT = 'id-refs-change';
+
+function getEmitter(root: Node): IdRefChangeEmitter {
+  let emitter = ID_REF_EMITTERS.get(root);
+  if (!emitter) {
+    emitter = new IdRefChangeEmitter(root);
+    ID_REF_EMITTERS.set(root, emitter);
+  }
+  return emitter;
+}
 
 function refObserverCallback(
   mutations: MutationRecord[],
@@ -33,22 +45,22 @@ function refObserverCallback(
   }
 
   if (affected.size > 0) {
-    emitter.dispatchEvent(
-      new CustomEvent('id-refs-change', { detail: affected })
-    );
+    emitter.dispatchEvent(new CustomEvent(ID_REF_EVENT, { detail: affected }));
   }
 }
 
 /**
- * Emits events when ID references in the document change, allowing components to reactively update resolved references.
+ * Emits events when ID references in a root node change, allowing components to reactively update resolved references.
  * Uses a reference counting mechanism to avoid unnecessary observation when no components are using it.
  */
 class IdRefChangeEmitter extends EventTarget {
   private readonly _observer?: MutationObserver;
+  private readonly _root: Node;
   private _refCount = 0;
 
-  constructor() {
+  constructor(root: Node) {
     super();
+    this._root = root;
 
     if (!isServer) {
       this._observer = new MutationObserver((mutations) =>
@@ -62,7 +74,8 @@ class IdRefChangeEmitter extends EventTarget {
    */
   public retain(): void {
     if (this._refCount++ === 0) {
-      this._observer?.observe(document.body, {
+      const root = isDocument(this._root) ? this._root.body : this._root;
+      this._observer?.observe(root, {
         attributeFilter: ['id'],
         attributeOldValue: true,
         subtree: true,
@@ -81,8 +94,6 @@ class IdRefChangeEmitter extends EventTarget {
   }
 }
 
-const ID_REF_CHANGE_EMITTER = new IdRefChangeEmitter();
-
 /**
  * Reactive controller that allows a host component to resolve ID references
  * scoped to its root node, and react to changes in those references.
@@ -92,11 +103,27 @@ class IdRefResolverController implements ReactiveController {
   private readonly _callback: (ids: Set<string>) => unknown;
   private _active = false;
   private _connected = false;
+  private _emitter: IdRefChangeEmitter | null = null;
 
   constructor(host: LitElement, callback: (ids: Set<string>) => unknown) {
     this._host = host;
     this._host.addController(this);
     this._callback = callback;
+  }
+
+  private _observe(): void {
+    const root = this._host.getRootNode();
+    this._emitter = getEmitter(root);
+    this._emitter.retain();
+    this._emitter.addEventListener(ID_REF_EVENT, this);
+  }
+
+  private _unobserve(): void {
+    if (this._emitter) {
+      this._emitter.removeEventListener(ID_REF_EVENT, this);
+      this._emitter.release();
+      this._emitter = null;
+    }
   }
 
   /** @internal */
@@ -108,16 +135,14 @@ class IdRefResolverController implements ReactiveController {
   public hostConnected(): void {
     this._connected = true;
     if (this._active) {
-      ID_REF_CHANGE_EMITTER.retain();
-      ID_REF_CHANGE_EMITTER.addEventListener('id-refs-change', this);
+      this._observe();
     }
   }
 
   /** @internal */
   public hostDisconnected(): void {
     if (this._active) {
-      ID_REF_CHANGE_EMITTER.removeEventListener('id-refs-change', this);
-      ID_REF_CHANGE_EMITTER.release();
+      this._unobserve();
     }
     this._connected = false;
   }
@@ -127,8 +152,7 @@ class IdRefResolverController implements ReactiveController {
     if (this._active) return;
     this._active = true;
     if (this._connected) {
-      ID_REF_CHANGE_EMITTER.retain();
-      ID_REF_CHANGE_EMITTER.addEventListener('id-refs-change', this);
+      this._observe();
     }
   }
 
@@ -137,14 +161,8 @@ class IdRefResolverController implements ReactiveController {
     if (!this._active) return;
     this._active = false;
     if (this._connected) {
-      ID_REF_CHANGE_EMITTER.removeEventListener('id-refs-change', this);
-      ID_REF_CHANGE_EMITTER.release();
+      this._unobserve();
     }
-  }
-
-  /** Resolve an ID string to an element, scoped to the host's root node. */
-  public resolve(id: string): Element | null {
-    return getElementByIdFromRoot(this._host, id);
   }
 }
 

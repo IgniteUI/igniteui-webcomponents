@@ -7,6 +7,7 @@ import {
   unsafeStatic,
 } from '@open-wc/testing';
 import { LitElement } from 'lit';
+import { getElementByIdFromRoot } from '../util.js';
 import {
   addIdRefResolver,
   type IdRefResolverController,
@@ -63,7 +64,7 @@ describe('IdRefResolverController', () => {
     });
 
     it('returns null when no element with that ID exists', () => {
-      expect(instance.resolver.resolve('nonexistent')).to.be.null;
+      expect(getElementByIdFromRoot(instance, 'nonexistent')).to.be.null;
     });
 
     it('resolves an element present in the document by ID', () => {
@@ -71,7 +72,9 @@ describe('IdRefResolverController', () => {
       target.id = 'resolve-target';
       document.body.appendChild(target);
 
-      expect(instance.resolver.resolve('resolve-target')).to.equal(target);
+      expect(getElementByIdFromRoot(instance, 'resolve-target')).to.equal(
+        target
+      );
     });
 
     it('returns null after the element is removed', () => {
@@ -79,10 +82,10 @@ describe('IdRefResolverController', () => {
       target.id = 'removed-target';
       document.body.appendChild(target);
 
-      expect(instance.resolver.resolve('removed-target')).to.not.be.null;
+      expect(getElementByIdFromRoot(instance, 'removed-target')).to.not.be.null;
 
       target.remove();
-      expect(instance.resolver.resolve('removed-target')).to.be.null;
+      expect(getElementByIdFromRoot(instance, 'removed-target')).to.be.null;
     });
   });
 
@@ -398,6 +401,155 @@ describe('IdRefResolverController', () => {
 
       expect(instance.callCount).to.equal(0);
       expect(second.callCount).to.equal(0);
+    });
+  });
+
+  // ─── Group 7: Shadow DOM scoping ──────────────────────────────────────────
+
+  describe('Shadow DOM scoping', () => {
+    let shadowTag: string;
+    let shadowHost: HTMLElement;
+    let shadowInstance: HostInstance;
+
+    before(() => {
+      shadowTag = defineCE(
+        class extends LitElement {
+          public receivedIds: Set<string> | null = null;
+          public callCount = 0;
+          public capturedThis: unknown = null;
+
+          public readonly resolver = addIdRefResolver(
+            this,
+            function (this: LitElement, ids: Set<string>) {
+              (this as unknown as HostInstance).receivedIds = new Set(ids);
+              (this as unknown as HostInstance).callCount++;
+              (this as unknown as HostInstance).capturedThis = this;
+              this.requestUpdate();
+            }
+          );
+        }
+      );
+    });
+
+    beforeEach(() => {
+      shadowHost = document.createElement('div');
+      shadowHost.attachShadow({ mode: 'open' });
+      document.body.appendChild(shadowHost);
+
+      shadowInstance = document.createElement(shadowTag) as HostInstance;
+      shadowHost.shadowRoot!.appendChild(shadowInstance);
+    });
+
+    afterEach(() => {
+      shadowInstance.resolver.unobserve();
+      shadowHost.remove();
+    });
+
+    it('detects ID additions within its own shadow root', async () => {
+      shadowInstance.resolver.observe();
+      await elementUpdated(shadowInstance);
+
+      const el = document.createElement('div');
+      el.id = 'shadow-target';
+      shadowHost.shadowRoot!.appendChild(el);
+      await elementUpdated(shadowInstance);
+
+      expect(shadowInstance.callCount).to.be.greaterThan(0);
+      expect(shadowInstance.receivedIds!.has('shadow-target')).to.be.true;
+    });
+
+    it('detects ID removals within its own shadow root', async () => {
+      const el = document.createElement('div');
+      el.id = 'shadow-remove';
+      shadowHost.shadowRoot!.appendChild(el);
+
+      shadowInstance.resolver.observe();
+      await elementUpdated(shadowInstance);
+
+      shadowInstance.callCount = 0;
+      el.remove();
+      await elementUpdated(shadowInstance);
+
+      expect(shadowInstance.callCount).to.be.greaterThan(0);
+      expect(shadowInstance.receivedIds!.has('shadow-remove')).to.be.true;
+    });
+
+    it('detects ID attribute changes within its own shadow root', async () => {
+      const el = document.createElement('div');
+      el.id = 'shadow-old';
+      shadowHost.shadowRoot!.appendChild(el);
+
+      shadowInstance.resolver.observe();
+      await elementUpdated(shadowInstance);
+
+      shadowInstance.callCount = 0;
+      el.id = 'shadow-new';
+      await elementUpdated(shadowInstance);
+
+      expect(shadowInstance.callCount).to.be.greaterThan(0);
+      expect(shadowInstance.receivedIds!.has('shadow-old')).to.be.true;
+      expect(shadowInstance.receivedIds!.has('shadow-new')).to.be.true;
+    });
+
+    it('does NOT react to ID changes in the document when scoped to a shadow root', async () => {
+      shadowInstance.resolver.observe();
+      await elementUpdated(shadowInstance);
+
+      const el = document.createElement('div');
+      el.id = 'document-only';
+      document.body.appendChild(el);
+      await elementUpdated(shadowInstance);
+
+      expect(shadowInstance.callCount).to.equal(0);
+      el.remove();
+    });
+
+    it('does NOT react to ID changes in a different shadow root', async () => {
+      shadowInstance.resolver.observe();
+      await elementUpdated(shadowInstance);
+
+      const otherHost = document.createElement('div');
+      otherHost.attachShadow({ mode: 'open' });
+      document.body.appendChild(otherHost);
+
+      const el = document.createElement('div');
+      el.id = 'other-shadow';
+      otherHost.shadowRoot!.appendChild(el);
+      await elementUpdated(shadowInstance);
+
+      expect(shadowInstance.callCount).to.equal(0);
+      otherHost.remove();
+    });
+
+    it('resolves elements scoped to its own shadow root', () => {
+      const el = document.createElement('div');
+      el.id = 'resolve-shadow';
+      shadowHost.shadowRoot!.appendChild(el);
+
+      expect(getElementByIdFromRoot(shadowInstance, 'resolve-shadow')).to.equal(
+        el
+      );
+    });
+
+    it('does NOT resolve elements from the document root', () => {
+      const el = document.createElement('div');
+      el.id = 'doc-element';
+      document.body.appendChild(el);
+
+      expect(getElementByIdFromRoot(shadowInstance, 'doc-element')).to.be.null;
+      el.remove();
+    });
+
+    it('document-scoped controller does NOT react to shadow root changes', async () => {
+      instance.resolver.observe();
+
+      const el = document.createElement('div');
+      el.id = 'inside-shadow-only';
+      shadowHost.shadowRoot!.appendChild(el);
+      await elementUpdated(instance);
+
+      expect(instance.callCount).to.equal(0);
+      instance.resolver.unobserve();
     });
   });
 });
