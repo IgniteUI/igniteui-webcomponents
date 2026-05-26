@@ -22,7 +22,7 @@ import { all } from './themes/icon-button/themes.js';
  * controls.
  *
  * The icon is sourced from the icon registry via the `name` and `collection`
- * attributes. Like `igc-button`, it can render as an anchor element when
+ * attributes. Like the normal button, it can render as an anchor element when
  * `href` is set and is fully form-associated.
  *
  * @element igc-icon-button
@@ -32,35 +32,6 @@ import { all } from './themes/icon-button/themes.js';
  *
  * @csspart base - The wrapping element of the icon button.
  * @csspart icon - The icon element of the icon button.
- *
- * @example
- * <!-- Contained (default) icon button -->
- * <igc-icon-button name="settings"></igc-icon-button>
- *
- * @example
- * <!-- Outlined icon button using a custom icon collection -->
- * <igc-icon-button
- *   variant="outlined"
- *   name="edit"
- *   collection="my-icons"
- * ></igc-icon-button>
- *
- * @example
- * <!-- Mirrored icon for right-to-left layouts -->
- * <igc-icon-button name="arrow-left" mirrored></igc-icon-button>
- *
- * @example
- * <!-- Icon button rendered as a link -->
- * <igc-icon-button
- *   name="download"
- *   href="/files/report.pdf"
- *   download
- *   variant="flat"
- * ></igc-icon-button>
- *
- * @example
- * <!-- Disabled icon button -->
- * <igc-icon-button name="delete" disabled></igc-icon-button>
  */
 export default class IgcIconButtonComponent extends IgcButtonBaseComponent {
   public static readonly tagName = 'igc-icon-button';

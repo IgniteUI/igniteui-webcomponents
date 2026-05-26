@@ -9,7 +9,7 @@ import { shadowOptions } from '../common/decorators/shadow-options.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common//mixins/event-emitter.js';
 import { partMap } from '../common/part-map.js';
-import { bindIf } from '../common/util.js';
+import { bindIf, getElementByIdFromRoot } from '../common/util.js';
 
 export interface IgcButtonEventMap {
   // For analyzer meta only:
@@ -145,7 +145,7 @@ export abstract class IgcButtonBaseComponent extends EventEmitterMixin<
     this._commandfor = value;
     if (value) {
       this._resolver.observe();
-      this._commandForElement = this._resolver.resolve(value);
+      this._commandForElement = getElementByIdFromRoot(this, value);
     } else {
       this._commandForElement = null;
       this._resolver.unobserve();
@@ -156,6 +156,7 @@ export abstract class IgcButtonBaseComponent extends EventEmitterMixin<
     return this._commandfor;
   }
 
+  /* blazorSuppress */
   /**
    * The target element for the invoker command. Resolved from the `commandfor` ID.
    */
@@ -163,6 +164,7 @@ export abstract class IgcButtonBaseComponent extends EventEmitterMixin<
     return this._commandForElement;
   }
 
+  /* blazorSuppress */
   public set commandForElement(value: Element | null) {
     this._commandForElement = value;
     this.requestUpdate();
@@ -187,7 +189,7 @@ export abstract class IgcButtonBaseComponent extends EventEmitterMixin<
 
   protected override firstUpdated(): void {
     if (this._commandfor) {
-      this._commandForElement = this._resolver.resolve(this._commandfor);
+      this._commandForElement = getElementByIdFromRoot(this, this._commandfor);
       this.requestUpdate();
     }
   }
@@ -216,7 +218,7 @@ export abstract class IgcButtonBaseComponent extends EventEmitterMixin<
 
   private _resolveCommandForElement(ids: Set<string>): void {
     if (this._commandfor && ids.has(this._commandfor)) {
-      this._commandForElement = this._resolver.resolve(this._commandfor);
+      this._commandForElement = getElementByIdFromRoot(this, this._commandfor);
       this.requestUpdate();
     }
   }

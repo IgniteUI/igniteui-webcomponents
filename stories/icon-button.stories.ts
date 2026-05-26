@@ -23,7 +23,7 @@ const metadata: Meta<IgcIconButtonComponent> = {
     docs: {
       description: {
         component:
-          'A button that displays a single icon, designed for compact, icon-only\ninteractions such as toolbar actions, floating action buttons, or inline\ncontrols.\n\nThe icon is sourced from the icon registry via the `name` and `collection`\nattributes. Like `igc-button`, it can render as an anchor element when\n`href` is set and is fully form-associated.',
+          'A button that displays a single icon, designed for compact, icon-only\ninteractions such as toolbar actions, floating action buttons, or inline\ncontrols.\n\nThe icon is sourced from the icon registry via the `name` and `collection`\nattributes. Like the normal button, it can render as an anchor element when\n`href` is set and is fully form-associated.',
       },
     },
   },
