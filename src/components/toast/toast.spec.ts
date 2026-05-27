@@ -4,15 +4,17 @@ import {
   fixture,
   html,
   nextFrame,
+  waitUntil,
 } from '@open-wc/testing';
 import { type SinonFakeTimers, useFakeTimers } from 'sinon';
+import IgcButtonComponent from '../button/button.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import { isPopoverOpen } from '../common/util.js';
 import { finishAnimationsFor } from '../common/utils.spec.js';
 import IgcToastComponent from './toast.js';
 
 describe('Toast', () => {
-  before(() => defineComponents(IgcToastComponent));
+  before(() => defineComponents(IgcToastComponent, IgcButtonComponent));
 
   let toast: IgcToastComponent;
   let clock: SinonFakeTimers;
@@ -171,6 +173,89 @@ describe('Toast', () => {
         expect(isPopoverOpen(toast)).to.be.true;
         expect(toast.style.top).to.equal('');
         expect(toast.style.left).to.equal('');
+      });
+    });
+  });
+
+  describe('Invoker Commands API', () => {
+    afterEach(async () => {
+      if (toast.open) {
+        await toast.hide();
+      }
+    });
+
+    describe('with igc-button', () => {
+      let invoker: IgcButtonComponent;
+
+      beforeEach(async () => {
+        const container = await fixture<HTMLElement>(html`
+          <div>
+            <igc-button command="--show" commandfor="invoker-toast"
+              >Show</igc-button
+            >
+            <igc-toast id="invoker-toast" keep-open>Hello world</igc-toast>
+          </div>
+        `);
+
+        invoker = container.querySelector<IgcButtonComponent>('igc-button')!;
+        toast = container.querySelector<IgcToastComponent>('igc-toast')!;
+      });
+
+      it('`--show` opens the toast', async () => {
+        expect(toast.open).to.be.false;
+
+        invoker.click();
+        await waitUntil(() => toast.open);
+
+        expect(toast.open).to.be.true;
+      });
+
+      it('`--hide` closes an open toast', async () => {
+        await toast.show();
+        expect(toast.open).to.be.true;
+
+        invoker.command = '--hide';
+        await elementUpdated(invoker);
+
+        invoker.click();
+        await waitUntil(() => !toast.open);
+
+        expect(toast.open).to.be.false;
+      });
+
+      it('`--toggle` opens a closed toast', async () => {
+        expect(toast.open).to.be.false;
+
+        invoker.command = '--toggle';
+        await elementUpdated(invoker);
+
+        invoker.click();
+        await waitUntil(() => toast.open);
+
+        expect(toast.open).to.be.true;
+      });
+
+      it('`--toggle` closes an open toast', async () => {
+        await toast.show();
+        expect(toast.open).to.be.true;
+
+        invoker.command = '--toggle';
+        await elementUpdated(invoker);
+
+        invoker.click();
+        await waitUntil(() => !toast.open);
+
+        expect(toast.open).to.be.false;
+      });
+
+      it('a disabled igc-button does not invoke commands', async () => {
+        invoker.disabled = true;
+        await elementUpdated(invoker);
+
+        invoker.click();
+        await elementUpdated(toast);
+
+        expect(toast.open).to.be.false;
       });
     });
   });
