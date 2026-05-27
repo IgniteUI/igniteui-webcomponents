@@ -4,23 +4,45 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [7.2.0] - 2026-05-27
 ### Added
+- #### Date Range Picker
+  - Added support for editing the date range value directly via a single input field. [#1733](https://github.com/IgniteUI/igniteui-webcomponents/pull/1733)
 - #### Nav Drawer
-  - The drawer for non-relative positions are now implemented using the native Popover API, providing built-in modal semantics, focus trapping, and accessibility support.
-  - Added `keepOpenOnEscape` property — prevents the drawer from closing when the user presses the **Escape** key (non-relative positions only).
-  - Added `igcClosing` event — emitted just before the drawer is closed by user interaction. Cancelable.
-  - Added `igcClosed` event — emitted just after the drawer is closed by user interaction.
+  - The drawer for non-relative positions are now implemented using the native Popover API, providing built-in modal semantics, focus trapping, and accessibility support. [#2194](https://github.com/IgniteUI/igniteui-webcomponents/pull/2194)
+  - Added `keepOpenOnEscape` property — prevents the drawer from closing when the user presses the **Escape** key (non-relative positions only). [#2194](https://github.com/IgniteUI/igniteui-webcomponents/pull/2194)
+  - Added `igcClosing` event — emitted just before the drawer is closed by user interaction. Cancelable. [#2194](https://github.com/IgniteUI/igniteui-webcomponents/pull/2194)
+  - Added `igcClosed` event — emitted just after the drawer is closed by user interaction. [#2194](https://github.com/IgniteUI/igniteui-webcomponents/pull/2194)
 - #### Invoker Commands API
-  - `igc-button` and `igc-icon-button` now support `command` and `commandfor` properties, enabling declarative control of target components without JavaScript.
-  - `igc-banner`, `igc-dialog`, `igc-nav-drawer`, `igc-snackbar`, and `igc-toast` now respond to `--show`, `--hide`, and `--toggle` commands dispatched by an invoker button.
+  - `igc-button` and `igc-icon-button` now support `command` and `commandfor` properties, enabling declarative control of target components without JavaScript. [#2225](https://github.com/IgniteUI/igniteui-webcomponents/pull/2225)
+  - `igc-banner`, `igc-dialog`, `igc-nav-drawer`, `igc-snackbar`, and `igc-toast` now respond to `--show`, `--hide`, and `--toggle` commands dispatched by an invoker button. [#2225](https://github.com/IgniteUI/igniteui-webcomponents/pull/2225)
+- #### Snackbar
+  - Added `positioning` property (`viewport` | `container`). The component now renders as a popover in the browser top layer. Setting `positioning` to `container` anchors the component to its nearest visible ancestor instead of the viewport. [#2203](https://github.com/IgniteUI/igniteui-webcomponents/pull/2203)
+- #### Toast
+  - Added `positioning` property (`viewport` | `container`). The component now renders as a popover in the browser top layer. Setting `positioning` to `container` anchors the component to its nearest visible ancestor instead of the viewport. [#2203](https://github.com/IgniteUI/igniteui-webcomponents/pull/2203)
 
 ### Changed
+- #### AI-Assisted Development
+  - Updated and enhanced the library provided skills [#2232](https://github.com/IgniteUI/igniteui-webcomponents/pull/2232)
+- #### Form controls
+  - `IgcInput`, `IgcMaskInput`, `IgcDateTimeInput`, `IgcCheckbox`, `IgcRadio`, `IgcSwitch`, `IgcDatePicker`, and `IgcDateRangePicker` now submit their associated form on **Enter** key press, matching native browser behavior. [#2213](https://github.com/IgniteUI/igniteui-webcomponents/pull/2213)
+- #### Input
+  - Added theming support for `date`, `time`, `datetime-local`, `week`, and `month` input types, ensuring consistent styles and floating label behavior across all supported themes. [#2223](https://github.com/IgniteUI/igniteui-webcomponents/pull/2223)
 - #### Nav Drawer
   - The `overlay` CSS part has been removed. Users of the component can target the `base` part's `::backdrop` pseudo-element, the
-    `--ig-overlay-background-color` variable or use the theming package.
-- #### Form controls
-  - `IgcInput`, `IgcMaskInput`, `IgcDateTimeInput`, `IgcCheckbox`, `IgcRadio`, `IgcSwitch`, `IgcDatePicker`, and `IgcDateRangePicker` now submit their associated form on **Enter** key press, matching native browser behavior.
+    `--ig-overlay-background-color` variable or use the theming package. [#2194](https://github.com/IgniteUI/igniteui-webcomponents/pull/2194)
+
+### Deprecated
+- #### Localization
+  - The old resource string interfaces for `Calendar`, `Chat`, `Date Picker`, and `Date Range Picker` are deprecated. Components now use the new `igniteui-i18n` resource keys. Setting individual `resourceStrings` properties directly is no longer supported; provide a complete resource strings object instead. [#2169](https://github.com/IgniteUI/igniteui-webcomponents/pull/2169)
+
+### Fixed
+- #### Button Group
+  - Selected state border color mismatch in focused and hover states. [#2219](https://github.com/IgniteUI/igniteui-webcomponents/pull/2219)
+- #### Combo
+  - Display value not restored correctly when tabbing out in single-select mode with a partial search text. [#2224](https://github.com/IgniteUI/igniteui-webcomponents/pull/2224)
+- #### Stepper
+  - Step components connected to the DOM before their parent stepper now correctly receive context after being adopted by a stepper. [#2228](https://github.com/IgniteUI/igniteui-webcomponents/pull/2228)
 
 ## [7.1.3] - 2026-04-28
 ### Changed
@@ -1333,6 +1355,7 @@ Initial release of Ignite UI Web Components
 - Ripple component
 - Switch component
 
+[7.2.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/7.1.3...7.2.0
 [7.1.3]: https://github.com/IgniteUI/igniteui-webcomponents/compare/7.1.2...7.1.3
 [7.1.2]: https://github.com/IgniteUI/igniteui-webcomponents/compare/7.1.1...7.1.2
 [7.1.1]: https://github.com/IgniteUI/igniteui-webcomponents/compare/7.1.0...7.1.1
