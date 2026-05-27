@@ -26,6 +26,13 @@ import {
 } from './datetime-mask-parser.js';
 import { dateTimeInputValidators } from './validators.js';
 
+export interface IgcDateTimeInputEventMap extends Omit<
+  IgcDateTimeInputComponentEventMap,
+  'igcChange'
+> {
+  igcChange: CustomEvent<Date | null>;
+}
+
 /**
  * A date time input is an input field that lets you set and edit the date and time in a chosen input element
  * using customizable display and input formats.
@@ -51,13 +58,6 @@ import { dateTimeInputValidators } from './validators.js';
  * @csspart suffix - The suffix wrapper.
  * @csspart helper-text - The helper text wrapper.
  */
-export interface IgcDateTimeInputEventMap extends Omit<
-  IgcDateTimeInputComponentEventMap,
-  'igcChange'
-> {
-  igcChange: CustomEvent<Date | null>;
-}
-
 export default class IgcDateTimeInputComponent extends IgcDateTimeInputBaseComponent {
   public static readonly tagName = 'igc-date-time-input';
   public static styles = [styles, shared];

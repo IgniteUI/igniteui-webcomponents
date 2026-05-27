@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [7.2.1] - 2026-05-27
+### Fixed
+- Internal library metadata issue
+
 ## [7.2.0] - 2026-05-27
 ### Added
 - #### Date Range Picker
@@ -1355,6 +1359,7 @@ Initial release of Ignite UI Web Components
 - Ripple component
 - Switch component
 
+[7.2.1]: https://github.com/IgniteUI/igniteui-webcomponents/compare/7.2.0...7.2.1
 [7.2.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/7.1.3...7.2.0
 [7.1.3]: https://github.com/IgniteUI/igniteui-webcomponents/compare/7.1.2...7.1.3
 [7.1.2]: https://github.com/IgniteUI/igniteui-webcomponents/compare/7.1.1...7.1.2
