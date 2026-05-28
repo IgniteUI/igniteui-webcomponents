@@ -10,7 +10,7 @@ import {
 } from 'custom-element-vs-code-integration';
 import customElements from '../custom-elements.json' with { type: 'json' };
 import report from './report.mjs';
-import { buildComponents, buildThemes } from './sass.mjs';
+import { buildAll } from './sass.mjs';
 
 const exec = promisify(_exec);
 
@@ -52,9 +52,7 @@ async function runTask(tag, cmd) {
 
 (async () => {
   await runTask('Clean up', () => exec('npm run clean'));
-  await runTask('Styles', () =>
-    Promise.all([buildComponents(true), buildThemes(true)])
-  );
+  await runTask('Styles', () => buildAll(true));
 
   // https://github.com/microsoft/TypeScript/issues/14619
   await runTask('Components', () =>
