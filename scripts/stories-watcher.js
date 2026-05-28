@@ -1,40 +1,28 @@
 import { exec as _exec } from 'node:child_process';
 import { promisify } from 'node:util';
-import watch from 'node-watch';
+import { watch } from 'node:fs';
 import report from './report.mjs';
 
 const exec = promisify(_exec);
-
-const watchOptions = {
-  recursive: true,
-  filter: (path) => {
-    return /^((?!\.spec|.css\.).)*\.ts$/.test(path);
-  },
-};
-
-watch(['src'], watchOptions, (_, fileName) => {
-  addToQueue(fileName);
-});
+const now = () => `[${new Date().toLocaleTimeString()}]`;
 
 let updating = false;
 
-async function addToQueue(fileName) {
+watch('custom-elements.json', async () => {
   if (updating) {
     return;
   }
-  report.info(`Component change detected: ${fileName}`);
   updating = true;
-  report.info('Building documentation metadata and updating stories...');
-
-  const buildDocsPromise = exec('npm run build:meta');
+  report.info(`${now()} Manifest updated, rebuilding stories...`);
 
   try {
-    await buildDocsPromise;
-    updating = false;
-    report.info('Metadata build completed. Stories updated.');
+    await exec('npm run build:meta');
+    report.info(`${now()} Stories updated.`);
   } catch (e) {
-    report.error('ERROR:', e.message);
+    report.error(`${now()} ERROR: ${e.message}`);
+  } finally {
+    updating = false;
   }
-}
+});
 
-report.info('Metadata watcher started...');
+report.info(`${now()} Metadata watcher started...`);

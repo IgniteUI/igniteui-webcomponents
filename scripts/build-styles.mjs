@@ -1,3 +1,3 @@
-import { buildComponents, buildThemes } from './sass.mjs';
+import { buildAll } from './sass.mjs';
 
-await Promise.all([buildThemes(), buildComponents()]);
+await buildAll();
