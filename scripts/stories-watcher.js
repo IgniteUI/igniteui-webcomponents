@@ -8,7 +8,12 @@ const now = () => `[${new Date().toLocaleTimeString()}]`;
 
 let updating = false;
 
-watch('custom-elements.json', async () => {
+watch('.', (_, filename) => {
+  if (filename !== 'custom-elements.json') return;
+  trigger();
+});
+
+async function trigger() {
   if (updating) {
     return;
   }
@@ -23,6 +28,6 @@ watch('custom-elements.json', async () => {
   } finally {
     updating = false;
   }
-});
+}
 
 report.info(`${now()} Metadata watcher started...`);

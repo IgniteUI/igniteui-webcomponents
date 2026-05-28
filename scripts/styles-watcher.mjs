@@ -7,7 +7,7 @@ import { compileSass, fromTemplate } from './sass.mjs';
 
 let updating = false;
 const compiler = await sass.initAsyncCompiler();
-const filter = (path) => /.(?:scss)$/.test(path);
+const filter = (fileName) => /\.scss$/.test(fileName);
 const now = () => `[${new Date().toLocaleTimeString()}]`;
 
 watch('src', { recursive: true }, async (_, fileName) => {

@@ -98,9 +98,6 @@ export async function buildAll(isProduction = false) {
         )
       ),
     ]);
-  } catch (err) {
-    report.error(err.message ?? err.toString());
-    process.exit(1);
   } finally {
     await compiler.dispose();
   }
@@ -145,9 +142,6 @@ export async function buildThemes(isProduction = false) {
         }
       })
     );
-  } catch (err) {
-    report.error(err.message ?? err.toString());
-    process.exit(1);
   } finally {
     await compiler.dispose();
   }
@@ -178,9 +172,6 @@ export async function buildComponents(isProduction = false) {
         )
       )
     );
-  } catch (err) {
-    report.error(err.message ?? err.toString());
-    process.exit(1);
   } finally {
     await compiler.dispose();
   }
