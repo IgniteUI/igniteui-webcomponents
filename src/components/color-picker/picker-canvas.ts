@@ -56,7 +56,7 @@ export default class IgcPickerCanvasComponent extends EventEmitterMixin<
       this._handleLostPointerCapture
     );
 
-    addKeybindings(this)
+    addKeybindings(this, { bindingDefaults: { repeat: true } })
       .set(arrowDown, this._onArrowKey.bind(this, { dx: 0, dy: 1 }))
       .set(arrowUp, this._onArrowKey.bind(this, { dx: 0, dy: -1 }))
       .set(arrowLeft, this._onArrowKey.bind(this, { dx: -1, dy: 0 }))

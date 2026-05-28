@@ -316,25 +316,25 @@ describe('ColorModel', () => {
       it('should output rgb without alpha when alpha is 1', () => {
         const color = new ColorModel([255, 128, 64]);
 
-        expect(color.asString('rgb')).to.equal('rgb(255, 128, 64)');
+        expect(color.asString('rgb')).to.equal('rgb(255 128 64)');
       });
 
       it('should output rgba with alpha when alpha < 1', () => {
         const color = new ColorModel([255, 128, 64], 0.75);
 
-        expect(color.asString('rgb')).to.equal('rgba(255, 128, 64, 0.75)');
+        expect(color.asString('rgb')).to.equal('rgb(255 128 64 / 0.75)');
       });
 
       it('should force alpha output when requested', () => {
         const color = new ColorModel([255, 128, 64], 1);
 
-        expect(color.asString('rgb', true)).to.equal('rgba(255, 128, 64, 1)');
+        expect(color.asString('rgb', true)).to.equal('rgb(255 128 64 / 1)');
       });
 
       it('should round RGB values', () => {
         const color = new ColorModel([255.7, 128.3, 64.9]);
 
-        expect(color.asString('rgb')).to.equal('rgb(256, 128, 65)');
+        expect(color.asString('rgb')).to.equal('rgb(256 128 65)');
       });
     });
 
@@ -342,26 +342,26 @@ describe('ColorModel', () => {
       it('should output hsl without alpha when alpha is 1', () => {
         const color = new ColorModel([255, 0, 0]);
 
-        expect(color.asString('hsl')).to.equal('hsl(0, 100%, 50%)');
+        expect(color.asString('hsl')).to.equal('hsl(0 100% 50%)');
       });
 
       it('should output hsla with alpha when alpha < 1', () => {
         const color = new ColorModel([255, 0, 0], 0.5);
 
-        expect(color.asString('hsl')).to.equal('hsla(0, 100%, 50%, 0.5)');
+        expect(color.asString('hsl')).to.equal('hsl(0 100% 50% / 0.5)');
       });
 
       it('should force alpha output when requested', () => {
         const color = new ColorModel([255, 0, 0], 1);
 
-        expect(color.asString('hsl', true)).to.equal('hsla(0, 100%, 50%, 1)');
+        expect(color.asString('hsl', true)).to.equal('hsl(0 100% 50% / 1)');
       });
 
       it('should round HSL values', () => {
         const color = new ColorModel([128, 64, 32]);
 
         const hslString = color.asString('hsl');
-        expect(hslString).to.match(/^hsl\(\d+, \d+%, \d+%\)$/);
+        expect(hslString).to.match(/^hsl\(\d+ \d+% \d+%\)$/);
       });
     });
   });

@@ -17,11 +17,8 @@
         #f0f 83.33%,
         red 100%
     );
-    --alpha-slider-track: linear-gradient(
-            90deg,
-            rgb(0 0 0 / 0%),
-            var(--current-color)
-        ),
+    --alpha-slider-track:
+        linear-gradient(90deg, rgb(0 0 0 / 0%), var(--current-color)),
         repeating-linear-gradient(
             45deg,
             #aaa 25%,
@@ -126,6 +123,10 @@
         grid-template-rows: 2fr 1fr;
         row-gap: 0.5rem;
         box-shadow: var(--ig-elevation-3);
+    }
+
+    [part='copy']::part(base) {
+        background-color: var(--current-color);
     }
 }
 

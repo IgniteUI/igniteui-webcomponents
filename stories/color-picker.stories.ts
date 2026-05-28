@@ -108,12 +108,22 @@ type Story = StoryObj<IgcColorPickerArgs>;
 // endregion
 
 export const Default: Story = {
+  parameters: {
+    actions: {
+      handles: ['igcOpening', 'igcOpened', 'igcClosing', 'igcClosed'],
+    },
+  },
   args: {
     label: 'Pick a color',
   },
 };
 
 export const InitialValue: Story = {
+  parameters: {
+    actions: {
+      handles: ['igcOpening', 'igcOpened', 'igcClosing', 'igcClosed'],
+    },
+  },
   args: {
     label: 'Pick a color',
     value: 'rebeccapurple',

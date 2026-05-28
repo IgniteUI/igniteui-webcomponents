@@ -229,15 +229,11 @@ export class ColorModel {
       }
       case 'rgb': {
         const [r, g, b] = this._rgb.map((v) => Math.round(v));
-        return hasAlpha
-          ? `rgba(${r}, ${g}, ${b}, ${this._alpha})`
-          : `rgb(${r}, ${g}, ${b})`;
+        return `rgb(${r} ${g} ${b}${hasAlpha ? ` / ${this._alpha}` : ''})`;
       }
       case 'hsl': {
         const [h, s, l] = this._hsl.map((v) => Math.round(v));
-        return hasAlpha
-          ? `hsla(${h}, ${s}%, ${l}%, ${this._alpha})`
-          : `hsl(${h}, ${s}%, ${l}%)`;
+        return `hsl(${h} ${s}% ${l}%${hasAlpha ? ` / ${this._alpha}` : ''})`;
       }
     }
   }

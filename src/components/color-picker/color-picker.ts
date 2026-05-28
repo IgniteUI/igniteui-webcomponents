@@ -4,6 +4,7 @@ import { cache } from 'lit/directives/cache.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { styleMap } from 'lit/directives/style-map.js';
 import IgcButtonComponent from '../button/button.js';
+import IgcIconButtonComponent from '../button/icon-button.js';
 import {
   addKeybindings,
   escapeKey,
@@ -65,7 +66,8 @@ export default class IgcColorPickerComponent extends FormAssociatedMixin(
       IgcFocusTrapComponent,
       IgcRadioGroupComponent,
       IgcPickerCanvasComponent,
-      IgcButtonComponent
+      IgcButtonComponent,
+      IgcIconButtonComponent
     );
   }
 
@@ -80,6 +82,7 @@ export default class IgcColorPickerComponent extends FormAssociatedMixin(
     initialValue: '',
   });
 
+  private _supportsEyeDropper = 'EyeDropper' in globalThis;
   private _color = ColorModel.default();
 
   @state({ hasChanged: () => true })
@@ -154,7 +157,7 @@ export default class IgcColorPickerComponent extends FormAssociatedMixin(
   }
 
   protected override updated(properties: PropertyValues<this>): void {
-    if (properties.has('open')) {
+    if (properties.has('open') || properties.has('value')) {
       // Wait till the browser paints and then sync the marker position with the color.
       requestAnimationFrame(() => this._syncCanvasPosition());
     }
@@ -194,7 +197,7 @@ export default class IgcColorPickerComponent extends FormAssociatedMixin(
   }
 
   private _updateColor(): void {
-    this._ownCurrentColor = `hsl(${this._color.h}, 100%, 50%)`;
+    this._ownCurrentColor = `hsl(${this._color.h} 100% 50%)`;
     this.style.setProperty('--current-color', this._ownCurrentColor);
     this._formValue.setValueAndFormState(this._color.asString(this.format));
   }
@@ -274,7 +277,7 @@ export default class IgcColorPickerComponent extends FormAssociatedMixin(
   }
 
   private _handleEyeDropperClick(): void {
-    const eyeDropper = new (window as any).EyeDropper();
+    const eyeDropper = new (globalThis as any).EyeDropper();
 
     eyeDropper
       .open()
@@ -284,6 +287,10 @@ export default class IgcColorPickerComponent extends FormAssociatedMixin(
         this._emitColorPickedEvent();
       })
       .catch(() => {});
+  }
+
+  private _handleCopy(): void {
+    navigator.clipboard.writeText(this.value);
   }
 
   protected _renderFormatRadios() {
@@ -321,11 +328,11 @@ export default class IgcColorPickerComponent extends FormAssociatedMixin(
     return html`
       <input
         aria-label="Hue"
-        part="hue"
         type="range"
+        part="hue"
         min="0"
         max="360"
-        .value=${this._color.h.toString()}
+        value=${String(this._color.h)}
         @input=${this._handleHueValueChange}
         @change=${stopPropagation}
       />
@@ -340,7 +347,7 @@ export default class IgcColorPickerComponent extends FormAssociatedMixin(
         part="alpha"
         min="0"
         max="100"
-        .value=${(this._color.alpha * 100).toString()}
+        value=${String(this._color.alpha * 100)}
         @input=${this._handleAlphaValueChange}
         @change=${stopPropagation}
       />
@@ -423,30 +430,47 @@ export default class IgcColorPickerComponent extends FormAssociatedMixin(
   }
 
   private _renderEyeDropperButton() {
-    if (!supportsEyeDropper()) {
-      return nothing;
-    }
+    return this._supportsEyeDropper
+      ? html`
+          <igc-icon-button
+            part="eye-dropper"
+            title="Pick a color from the screen"
+            @click=${this._handleEyeDropperClick}
+          >
+            👁️
+          </igc-icon-button>
+        `
+      : nothing;
+  }
+
+  private _renderCopyButton() {
+    const style = styleMap({
+      '--current-color': this._color.asString('rgb', true),
+      '--border-color': 'transparent',
+    });
 
     return html`
-      <igc-button
-        part="eye-dropper"
-        title="Pick a color from the screen"
-        @click=${this._handleEyeDropperClick}
+      <igc-icon-button
+        aria-label="Copy color value to clipboard"
+        variant="outlined"
+        part="copy"
+        title="Copy color value to clipboard"
+        @click=${this._handleCopy}
+        style=${style}
       >
-        👁️💧
-      </igc-button>
+      </igc-icon-button>
     `;
   }
 
   protected _renderPicker() {
     return html`
       <igc-focus-trap ?disabled=${!this.open}>
-        <div part="picker" .inert=${!this.open}>
+        <div part="picker" ?inert=${!this.open}>
           ${this._renderGradientArea()}
           <div>
             ${this._renderHueSlider()}${this._renderAlphaSlider()}
             ${this._renderFormats()}${this._renderColorInputs()}
-            ${this._renderEyeDropperButton()}
+            ${this._renderEyeDropperButton()}${this._renderCopyButton()}
           </div>
         </div>
       </igc-focus-trap>
@@ -480,8 +504,4 @@ declare global {
   interface HTMLElementTagNameMap {
     'igc-color-picker': IgcColorPickerComponent;
   }
-}
-
-function supportsEyeDropper(): boolean {
-  return 'EyeDropper' in window;
 }
