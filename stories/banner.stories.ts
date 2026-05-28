@@ -51,7 +51,7 @@ const metadata: Meta<IgcBannerComponent> = {
     docs: {
       description: {
         component:
-          'The `igc-banner` component displays important and concise message(s) for a user to address, that is specific to a page or feature.',
+          'A non-modal notification banner that displays important, concise messages\nrequiring user acknowledgement.\n\nThe banner slides into view with an animated grow transition and renders\ninline, pushing the surrounding page content rather than overlaying it.\n\nThe component integrates with the\n[Invoker Commands API](https://developer.mozilla.org/en-US/docs/Web/API/Invoker_Commands_API):\nan Ignite button or a native `<button>` with `command="--show"` / `"--hide"` /\n`"--toggle"` and `commandfor` pointing to this element will call the\ncorresponding method declaratively without any JavaScript.',
       },
     },
     actions: { handles: ['igcClosing', 'igcClosed'] },
@@ -59,7 +59,8 @@ const metadata: Meta<IgcBannerComponent> = {
   argTypes: {
     open: {
       type: 'boolean',
-      description: 'Determines whether the banner is being shown/hidden.',
+      description:
+        'Whether the banner is open.\n\nSetting this property programmatically will immediately show or hide the\nbanner without animation and without emitting close events.\nPrefer the `show()`, `hide()`, and `toggle()` methods for animated\ntransitions.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
@@ -70,7 +71,14 @@ const metadata: Meta<IgcBannerComponent> = {
 export default metadata;
 
 interface IgcBannerArgs {
-  /** Determines whether the banner is being shown/hidden. */
+  /**
+   * Whether the banner is open.
+   *
+   * Setting this property programmatically will immediately show or hide the
+   * banner without animation and without emitting close events.
+   * Prefer the `show()`, `hide()`, and `toggle()` methods for animated
+   * transitions.
+   */
   open: boolean;
 }
 type Story = StoryObj<IgcBannerArgs>;
@@ -87,7 +95,9 @@ export const Basic: Story = {
       continue.
     </igc-banner>
     <div style="padding: 1rem;">
-      <igc-button onclick="banner.toggle()">Toggle Banner</igc-button>
+      <igc-button command="--toggle" commandfor="banner"
+        >Toggle Banner</igc-button
+      >
     </div>
   `,
 };
@@ -185,15 +195,15 @@ export const ProgrammaticControl: Story = {
       animated and return a <code>Promise&lt;boolean&gt;</code>.
     </p>
     <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
-      <igc-button onclick="ctrlBanner.show()">Show</igc-button>
-      <igc-button onclick="ctrlBanner.hide()">Hide</igc-button>
-      <igc-button onclick="ctrlBanner.toggle()">Toggle</igc-button>
+      <igc-button command="--show" commandfor="ctrlBanner">Show</igc-button>
+      <igc-button command="--hide" commandfor="ctrlBanner">Hide</igc-button>
+      <igc-button command="--toggle" commandfor="ctrlBanner">Toggle</igc-button>
     </div>
     <igc-banner id="ctrlBanner">
       <igc-icon slot="prefix" name="wifi-off" collection="default"></igc-icon>
       No internet connection. Please check your network settings.
       <div slot="actions">
-        <igc-button variant="flat" onclick="ctrlBanner.hide()"
+        <igc-button variant="flat" command="--hide" commandfor="ctrlBanner"
           >Dismiss</igc-button
         >
         <igc-button variant="outlined">Retry</igc-button>
@@ -251,7 +261,10 @@ export const CancelableClose: Story = {
         >
 Click "Dismiss" to see the events fire.</pre
         >
-        <igc-button style="margin-top: 0.5rem;" onclick="cancelBanner.show()"
+        <igc-button
+          style="margin-top: 0.5rem;"
+          command="--show"
+          commandfor="cancelBanner"
           >Reset banner</igc-button
         >
       </div>
