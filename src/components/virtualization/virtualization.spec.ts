@@ -2,7 +2,7 @@ import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import { spy } from 'sinon';
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import { suppressResizeObserverLoopError } from '../common/utils.spec.js';
-import type { VirtualScrollItemContext } from './types.js';
+import type { VirtualScrollItemContext, VirtualScrollState } from './types.js';
 import IgcVirtualScrollComponent, {
   type VirtualScrollItemTemplate,
 } from './virtualization.js';
@@ -186,6 +186,95 @@ describe('VirtualScroll', () => {
 
       const trackAfter = el.querySelector<HTMLElement>('[part="igc-vs-track"]');
       expect(trackAfter?.style.height).to.equal(`${20 * 50}px`);
+    });
+  });
+
+  describe('RTL', () => {
+    async function createRTLScroll(
+      count = 1000
+    ): Promise<IgcVirtualScrollComponent<string>> {
+      return fixture<IgcVirtualScrollComponent<string>>(
+        html`<igc-virtual-scroll
+          dir="rtl"
+          orientation="horizontal"
+          style="width: 300px; height: 100px"
+          .data=${createItems(count)}
+          .itemTemplate=${itemTemplate}
+        ></igc-virtual-scroll>`
+      );
+    }
+
+    it('scrollToIndex passes a negative left value to scrollTo in RTL', async () => {
+      const el = await createRTLScroll();
+      await elementUpdated(el);
+
+      const scrollToSpy = spy(el, 'scrollTo');
+      el.scrollToIndex(100);
+
+      expect(scrollToSpy.calledOnce).to.be.true;
+      expect(scrollToSpy.firstCall.args[0])
+        .to.have.property('left')
+        .lessThan(0);
+    });
+
+    it('normalizes negative scrollLeft to a positive engine offset in RTL', async () => {
+      const el = await createRTLScroll();
+      await elementUpdated(el);
+
+      const eventSpy = spy(el, 'emitEvent');
+
+      // In RTL, browsers report scrollLeft as a negative value. Simulate that
+      // by setting scrollLeft then firing a synthetic scroll event.
+      el.scrollLeft = -500;
+      el.dispatchEvent(new Event('scroll'));
+      await elementUpdated(el);
+
+      const stateCalls = eventSpy
+        .getCalls()
+        .filter((c) => c.args[0] === 'igcStateChange');
+
+      expect(stateCalls).to.not.be.empty;
+      // A normalized positive offset of 500px with estimatedItemSize=50 puts
+      // the start index at item 10 or nearby (depending on over-scan).
+      const lastStateCall = stateCalls.at(-1);
+      expect(lastStateCall).to.exist;
+      const state = (lastStateCall!.args[1] as { detail: VirtualScrollState })
+        .detail;
+      expect(state.startIndex).to.be.greaterThan(0);
+    });
+
+    it('applies a negative translateX on the content div when scrolled in RTL', async () => {
+      const el = await createRTLScroll();
+      await elementUpdated(el);
+
+      // Simulate an RTL scroll offset.
+      el.scrollLeft = -300;
+      el.dispatchEvent(new Event('scroll'));
+      await elementUpdated(el);
+
+      const content = el.querySelector<HTMLElement>('[part="igc-vs-content"]');
+      expect(content?.style.transform).to.match(/translateX\(-\d+(\.\d+)?px\)/);
+    });
+
+    it('emits igcStateChange with valid indices in RTL horizontal mode', async () => {
+      const el = await createRTLScroll();
+
+      const eventSpy = spy(el, 'emitEvent');
+      el.data = createItems(1000);
+      await elementUpdated(el);
+
+      const stateCalls = eventSpy
+        .getCalls()
+        .filter((c) => c.args[0] === 'igcStateChange');
+
+      expect(stateCalls).to.not.be.empty;
+      const lastStateCall = stateCalls.at(-1);
+      expect(lastStateCall).to.exist;
+      const { startIndex, endIndex } = (
+        lastStateCall!.args[1] as { detail: VirtualScrollState }
+      ).detail;
+      expect(startIndex).to.equal(0);
+      expect(endIndex).to.be.greaterThanOrEqual(startIndex);
     });
   });
 });

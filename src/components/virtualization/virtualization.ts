@@ -12,7 +12,7 @@ import { createResizeObserverController } from '../common/controllers/resize-obs
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { asNumber } from '../common/util.js';
+import { asNumber, isLTR } from '../common/util.js';
 import { VirtualScrollEngine, type VisibleRange } from './engine.js';
 import {
   type VirtualScrollDataRequest,
@@ -170,6 +170,12 @@ export default class IgcVirtualScrollComponent<
           flex-shrink: 0;
           height: 100%;
         }
+
+        igc-virtual-scroll[orientation='horizontal']:dir(rtl) [part="igc-vs-content"] {
+          left: auto;
+          right: 0;
+          flex-direction: row-reverse;
+        }
       `);
       IgcVirtualScrollComponent._styleSheet = sheet;
     }
@@ -276,10 +282,11 @@ export default class IgcVirtualScrollComponent<
       0,
       Math.min(contentPosition, this._engine.domSize - physicalRangeSize)
     );
+    const isRTL = !isVertical && !isLTR(this);
     const contentStyle = {
       transform: isVertical
         ? `translateY(${contentPosition}px)`
-        : `translateX(${contentPosition}px)`,
+        : `translateX(${isRTL ? -contentPosition : contentPosition}px)`,
     };
 
     const visibleItems =
@@ -328,7 +335,11 @@ export default class IgcVirtualScrollComponent<
 
     this._onScroll = (e: Event) => {
       const target = e.target as HTMLElement;
-      const scrollPos = this._isVertical ? target.scrollTop : target.scrollLeft;
+      const scrollPos = this._isVertical
+        ? target.scrollTop
+        : isLTR(this)
+          ? target.scrollLeft
+          : -target.scrollLeft;
       this._scrollPosition = scrollPos;
     };
 
@@ -408,7 +419,7 @@ export default class IgcVirtualScrollComponent<
     if (this._isVertical) {
       this.scrollTo({ top: offset, ...opts });
     } else {
-      this.scrollTo({ left: offset, ...opts });
+      this.scrollTo({ left: isLTR(this) ? offset : -offset, ...opts });
     }
   }
 
