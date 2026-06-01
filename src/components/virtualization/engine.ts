@@ -12,43 +12,142 @@ function getMaxBrowserSizeProbePx(doc: Document): number {
 }
 
 /**
- * Builds a prefix sums array from the given sizes array.
- * The prefix sums array has one more element than the sizes array,
- * where the first element is 0 and each subsequent element is the sum of all previous sizes.
- * This allows for efficient calculation of the total size up to any index in the sizes array.
+ * Binary Indexed Tree (Fenwick tree) over item sizes.
+ *
+ * Replaces the previous O(N) prefix-sum rebuild that occurred on every
+ * `measureItem` call. All hot-path operations are O(log N):
+ *   - Point update (item measured)        : O(log N)
+ *   - Prefix sum (scroll offset)          : O(log N)
+ *   - Index at offset (scroll → item)     : O(log N) via binary lifting
  */
-function buildPrefixSums(sizes: readonly number[]): number[] {
-  const sums = new Array<number>(sizes.length + 1);
-  sums[0] = 0;
-  for (let i = 0; i < sizes.length; i++) {
-    sums[i + 1] = sums[i] + sizes[i];
+class BIT {
+  public readonly length: number;
+
+  /** 1-indexed BIT; each cell holds a partial range sum. */
+  private readonly _tree: Float64Array;
+
+  /** Raw per-item sizes (0-indexed) — kept for O(1) reads and delta calc. */
+  private readonly _sizes: Float64Array;
+
+  /** Running total maintained alongside tree updates in O(1). */
+  private _total: number;
+
+  private constructor(
+    length: number,
+    sizes: Float64Array,
+    tree: Float64Array,
+    total: number
+  ) {
+    this.length = length;
+    this._sizes = sizes;
+    this._tree = tree;
+    this._total = total;
   }
-  return sums;
-}
 
-/**
- * Performs a binary search on the prefix sums array to find the largest index such that prefixSums[index] <= target.
- * This is used to efficiently determine how many items can fit within a given scroll position.
- * The function returns the index of the last item that fits within the target scroll position.
- * If the target is smaller than the first prefix sum, it returns -1, indicating that no items fit.
- */
-function binarySearchPrefixSums(
-  prefixSums: readonly number[],
-  target: number
-): number {
-  let low = 0;
-  let high = prefixSums.length - 1;
+  /**
+   * Creates a BIT of `length` items all initialized to `fillSize`. O(N).
+   */
+  public static filled(length: number, fillSize: number): BIT {
+    const sizes = new Float64Array(length).fill(fillSize);
+    const tree = new Float64Array(length + 1);
+    const total = length * fillSize;
 
-  while (low < high) {
-    const mid = (low + high + 1) >> 1;
-    if (prefixSums[mid] <= target) {
-      low = mid;
-    } else {
-      high = mid - 1;
+    // O(N) build (vs O(N log N) for N individual insertions)
+    for (let i = 1; i <= length; i++) {
+      tree[i] += fillSize;
+      const j = i + (i & -i);
+      if (j <= length) {
+        tree[j] += tree[i];
+      }
     }
+    return new BIT(length, sizes, tree, total);
   }
 
-  return Math.max(0, low - 1);
+  /**
+   * Creates a BIT from an existing sizes array. O(N).
+   */
+  public static fromSizes(sizes: Float64Array): BIT {
+    const length = sizes.length;
+    const tree = new Float64Array(length + 1);
+    let total = 0;
+
+    for (let i = 1; i <= length; i++) {
+      tree[i] += sizes[i - 1];
+      total += sizes[i - 1];
+      const j = i + (i & -i);
+      if (j <= length) {
+        tree[j] += tree[i];
+      }
+    }
+    return new BIT(length, sizes, tree, total);
+  }
+
+  /** Total size of all items. O(1). */
+  public get totalSize(): number {
+    return this._total;
+  }
+
+  /**
+   * Prefix sum of items [0, i) — the virtual scroll offset at the leading
+   * edge of item i. O(log N).
+   */
+  public prefixSum(i: number): number {
+    let sum = 0;
+    for (let j = i; j > 0; j -= j & -j) {
+      sum += this._tree[j];
+    }
+    return sum;
+  }
+
+  /**
+   * Update the size of the item at 0-based index.
+   * Returns true when the size actually changed. O(log N).
+   */
+  public update(index: number, newSize: number): boolean {
+    if (index < 0 || index >= this.length) return false;
+
+    const old = this._sizes[index];
+    if (old === newSize) return false;
+
+    const delta = newSize - old;
+    this._sizes[index] = newSize;
+    this._total += delta;
+    for (let i = index + 1; i <= this.length; i += i & -i) {
+      this._tree[i] += delta;
+    }
+    return true;
+  }
+
+  /**
+   * Returns a new BIT of `newLength` items.
+   * Existing measured sizes are preserved up to `min(this.length, newLength)`;
+   * new slots are filled with `fillSize`. Single O(N) build pass.
+   */
+  public cloneResized(newLength: number, fillSize: number): BIT {
+    const sizes = new Float64Array(newLength).fill(fillSize);
+    sizes.set(this._sizes.subarray(0, Math.min(this.length, newLength)));
+    return BIT.fromSizes(sizes);
+  }
+
+  /**
+   * Returns the 0-based index of the last item whose cumulative end offset
+   * is ≤ `offset` (binary lifting on the internal tree). O(log N).
+   */
+  public findIndexAtOffset(offset: number): number {
+    if (offset <= 0 || this.length === 0) return 0;
+
+    let idx = 0;
+    let newOffset = offset;
+
+    for (let bit = 1 << (31 - Math.clz32(this.length)); bit > 0; bit >>= 1) {
+      const next = idx + bit;
+      if (next <= this.length && this._tree[next] <= newOffset) {
+        idx = next;
+        newOffset -= this._tree[idx];
+      }
+    }
+    return Math.max(0, idx - 1);
+  }
 }
 
 /**
@@ -78,12 +177,8 @@ export class VirtualScrollEngine {
    */
   private _virtualRatio = 1;
 
-  /** Per-item measured or estimated sizes in px. */
-  private _itemSizes: number[] = [];
-
-  /** Cached prefix sums, rebuilt lazily when `_prefixSumsDirty` is set. */
-  private _prefixSums: number[] = [0];
-  private _prefixSumsDirty = false;
+  /** Binary Indexed Tree for O(log N) size queries and updates. */
+  private _tree: BIT | null = null;
 
   /**
    * Called whenever item sizes or the item count change.
@@ -91,21 +186,9 @@ export class VirtualScrollEngine {
    */
   public onSizeChange: (() => void) | null = null;
 
-  /**
-   * Prefix-sum array of item sizes, where prefixSums[i] is the total size of items[0] through items[i-1].
-   */
-  public get prefixSums(): number[] {
-    if (this._prefixSumsDirty) {
-      this._prefixSums = buildPrefixSums(this._itemSizes);
-      this._prefixSumsDirty = false;
-    }
-    return this._prefixSums;
-  }
-
   /** Total virtual size of all items in px. */
   public get totalSize(): number {
-    const pSum = this.prefixSums;
-    return pSum[pSum.length - 1] ?? 0;
+    return this._tree?.totalSize ?? 0;
   }
 
   /** Actual DOM space size (clamped to the maximum browser size) */
@@ -127,15 +210,12 @@ export class VirtualScrollEngine {
    * Existing measured sizes are preserved.
    */
   public resize(length: number, estimatedSize: number): void {
-    const current = this._itemSizes;
-    if (length === current.length) return;
+    if (this._tree?.length === length) return;
 
-    if (length > current.length) {
-      current.push(...new Array(length - current.length).fill(estimatedSize));
-    } else {
-      current.length = length;
-    }
-    this._invalidate();
+    this._tree = this._tree
+      ? this._tree.cloneResized(length, estimatedSize)
+      : BIT.filled(length, estimatedSize);
+    this._updateVirtualRatio();
     this.onSizeChange?.();
   }
 
@@ -143,11 +223,9 @@ export class VirtualScrollEngine {
    * Records the measured DOM size for a single item.
    */
   public measureItem(index: number, size: number): void {
-    if (index < 0 || index >= this._itemSizes.length) return;
-    if (this._itemSizes[index] === size) return;
+    if (!this._tree?.update(index, size)) return;
 
-    this._itemSizes[index] = size;
-    this._invalidate();
+    this._updateVirtualRatio();
     this.onSizeChange?.();
   }
 
@@ -156,21 +234,16 @@ export class VirtualScrollEngine {
    * at the leading edge of the viewport.
    */
   public getScrollOffsetForIndex(index: number): number {
-    const pSums = this.prefixSums;
-    if (index <= 0) return 0;
+    if (!this._tree || index <= 0) return 0;
 
-    const clamped = Math.min(index, pSums.length - 1);
-    const virtualOffset = pSums[clamped];
-    return virtualOffset / this._virtualRatio;
+    const clamped = Math.min(index, this._tree.length);
+    return this._tree.prefixSum(clamped) / this._virtualRatio;
   }
 
   /** Returns the item index at the given DOM scroll position. */
   public getIndexAtScroll(scrollPosition: number): number {
-    const virtualPosition = scrollPosition * this._virtualRatio;
-    const pSum = this.prefixSums;
-    if (virtualPosition <= 0 || pSum.length <= 1) return 0;
-
-    return binarySearchPrefixSums(pSum, virtualPosition);
+    if (!this._tree || scrollPosition <= 0) return 0;
+    return this._tree.findIndexAtOffset(scrollPosition * this._virtualRatio);
   }
 
   /**
@@ -207,13 +280,21 @@ export class VirtualScrollEngine {
     return this.getScrollOffsetForIndex(index);
   }
 
-  private _invalidate(): void {
-    this._prefixSumsDirty = true;
-    this._updateVirtualRatio();
+  /**
+   * Returns the sum of actual sizes for items in [startIndex, endIndex].
+   * Used to clamp the content translate offset under coordinate compression
+   * so rendered items never overflow past `domSize`.
+   */
+  public getPhysicalRangeSize(startIndex: number, endIndex: number): number {
+    if (!this._tree) return 0;
+
+    const start = Math.max(0, startIndex);
+    const end = Math.min(Math.max(endIndex + 1, start), this._tree.length);
+    return this._tree.prefixSum(end) - this._tree.prefixSum(start);
   }
 
   private _updateVirtualRatio(): void {
-    const totalSize = this.totalSize;
+    const totalSize = this._tree?.totalSize ?? 0;
     this._virtualRatio =
       this._maxBrowserSize === Number.POSITIVE_INFINITY ||
       totalSize <= this._maxBrowserSize

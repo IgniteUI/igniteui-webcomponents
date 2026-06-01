@@ -81,7 +81,7 @@ describe('VirtualScroll', () => {
         ></igc-virtual-scroll>`
       );
 
-      const content = el.querySelector('.igc-vs__content');
+      const content = el.querySelector('[part="igc-vs-content"]');
       expect(content).to.be.null;
     });
 
@@ -94,8 +94,8 @@ describe('VirtualScroll', () => {
         ></igc-virtual-scroll>`
       );
 
-      expect(el.querySelector('.igc-vs__track')).to.not.be.null;
-      expect(el.querySelector('.igc-vs__content')).to.not.be.null;
+      expect(el.querySelector('[part="igc-vs-track"]')).to.not.be.null;
+      expect(el.querySelector('[part="igc-vs-content"]')).to.not.be.null;
     });
   });
 
@@ -176,13 +176,15 @@ describe('VirtualScroll', () => {
         ></igc-virtual-scroll>`
       );
 
-      const trackBefore = el.querySelector<HTMLElement>('.igc-vs__track');
+      const trackBefore = el.querySelector<HTMLElement>(
+        '[part="igc-vs-track"]'
+      );
       expect(trackBefore?.style.height).to.equal(`${10 * 50}px`);
 
       el.data = createItems(20);
       await elementUpdated(el);
 
-      const trackAfter = el.querySelector<HTMLElement>('.igc-vs__track');
+      const trackAfter = el.querySelector<HTMLElement>('[part="igc-vs-track"]');
       expect(trackAfter?.style.height).to.equal(`${20 * 50}px`);
     });
   });

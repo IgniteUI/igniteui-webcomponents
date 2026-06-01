@@ -7,14 +7,13 @@ import {
 } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { createRef, ref } from 'lit/directives/ref.js';
-import { repeat } from 'lit/directives/repeat.js';
 import { styleMap } from 'lit/directives/style-map.js';
 import { createResizeObserverController } from '../common/controllers/resize-observer.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { asNumber } from '../common/util.js';
-import { VirtualScrollEngine } from './engine.js';
+import { VirtualScrollEngine, type VisibleRange } from './engine.js';
 import {
   type VirtualScrollDataRequest,
   VirtualScrollItemContext,
@@ -61,6 +60,8 @@ export default class IgcVirtualScrollComponent<
   private readonly _contentRef = createRef<HTMLDivElement>();
   private _itemResizeObserver: ResizeObserver | null = null;
   private _onScroll: ((e: Event) => void) | null = null;
+  private _currentRange: VisibleRange = { startIndex: 0, endIndex: -1 };
+  private _hasPendingDataRequest = false;
 
   @state()
   private _scrollPosition = 0;
@@ -80,7 +81,7 @@ export default class IgcVirtualScrollComponent<
 
   /**
    * Scroll orientation of the virtual scroll.
-   * @attr
+   * @attr orientation
    * @default 'vertical'
    */
   @property({ reflect: true })
@@ -119,11 +120,12 @@ export default class IgcVirtualScrollComponent<
   private static _getStyleSheet(): CSSStyleSheet {
     if (!IgcVirtualScrollComponent._styleSheet) {
       const sheet = new CSSStyleSheet();
-      sheet.replaceSync(/* css */ `
+      sheet.replaceSync(`
         igc-virtual-scroll {
           display: block;
           position: relative;
           overflow: auto;
+          height: 18.75rem;
         }
 
         igc-virtual-scroll[orientation='vertical'] {
@@ -136,13 +138,13 @@ export default class IgcVirtualScrollComponent<
           overflow-y: hidden;
         }
 
-        .igc-vs__track {
+        [part="igc-vs-track"] {
           position: relative;
           width: 100%;
           min-height: 100%;
         }
 
-        .igc-vs__content {
+        [part="igc-vs-content"] {
           position: absolute;
           top: 0;
           left: 0;
@@ -151,20 +153,20 @@ export default class IgcVirtualScrollComponent<
           contain: layout style paint;
         }
 
-        igc-virtual-scroll[orientation='horizontal'] .igc-vs__track {
+        igc-virtual-scroll[orientation='horizontal'] [part="igc-vs-track"] {
           height: 100%;
           width: auto;
           min-height: unset;
         }
 
-        igc-virtual-scroll[orientation='horizontal'] .igc-vs__content {
+        igc-virtual-scroll[orientation='horizontal'] [part="igc-vs-content"] {
           display: flex;
           flex-direction: row;
           height: 100%;
           width: auto;
         }
 
-        igc-virtual-scroll[orientation='horizontal'] .igc-vs__content > [data-vs-index] {
+        igc-virtual-scroll[orientation='horizontal'] [part="igc-vs-content"] > [data-vs-index] {
           flex-shrink: 0;
           height: 100%;
         }
@@ -186,6 +188,7 @@ export default class IgcVirtualScrollComponent<
     super();
     this._engine.onSizeChange = () => this.requestUpdate();
     this._handleItemResize = this._handleItemResize.bind(this);
+    this._handleViewportResize = this._handleViewportResize.bind(this);
 
     // Viewport resize observer
     createResizeObserverController(this, {
@@ -218,6 +221,7 @@ export default class IgcVirtualScrollComponent<
   protected override willUpdate(changed: PropertyValues<this>): void {
     if (changed.has('data') || changed.has('estimatedItemSize')) {
       this._engine.resize(this.data.length, this.estimatedItemSize);
+      this._hasPendingDataRequest = false;
     }
 
     if (changed.has('orientation')) {
@@ -230,7 +234,7 @@ export default class IgcVirtualScrollComponent<
     this._scheduleItemMeasurement();
     this._checkDataRequest();
 
-    const range = this._visibleRange;
+    const range = this._currentRange;
     if (range.endIndex >= range.startIndex) {
       this.emitEvent('igcStateChange', {
         detail: {
@@ -248,7 +252,14 @@ export default class IgcVirtualScrollComponent<
       return html`${nothing}`;
     }
 
-    const range = this._visibleRange;
+    this._currentRange = this._engine.getVisibleRange(
+      this._scrollPosition,
+      this._viewportSize,
+      this.overScan,
+      this.data.length
+    );
+
+    const range = this._currentRange;
     const count = this.data.length;
     const isVertical = this._isVertical;
 
@@ -256,7 +267,15 @@ export default class IgcVirtualScrollComponent<
       ? { height: `${this._engine.domSize}px` }
       : { width: `${this._engine.domSize}px` };
 
-    const contentPosition = this._engine.getContentPosition(range.startIndex);
+    let contentPosition = this._engine.getContentPosition(range.startIndex);
+    const physicalRangeSize = this._engine.getPhysicalRangeSize(
+      range.startIndex,
+      range.endIndex
+    );
+    contentPosition = Math.max(
+      0,
+      Math.min(contentPosition, this._engine.domSize - physicalRangeSize)
+    );
     const contentStyle = {
       transform: isVertical
         ? `translateY(${contentPosition}px)`
@@ -269,27 +288,19 @@ export default class IgcVirtualScrollComponent<
         : [];
 
     return html`
-      <div
-        class="igc-vs__track"
-        style=${styleMap(trackStyle)}
-        aria-hidden="true"
-      >
+      <div part="igc-vs-track" style=${styleMap(trackStyle)} aria-hidden="true">
         <div
           ${ref(this._contentRef)}
-          class="igc-vs__content"
+          part="igc-vs-content"
           style=${styleMap(contentStyle)}
         >
-          ${repeat(
-            visibleItems,
-            (item) => item,
-            (item, i) => {
-              const itemIndex = range.startIndex + i;
-              const ctx = new VirtualScrollItemContext(item, itemIndex, count);
-              return html`<div data-vs-index=${itemIndex}>
-                ${this.itemTemplate!(ctx)}
-              </div>`;
-            }
-          )}
+          ${visibleItems.map((item, i) => {
+            const itemIndex = range.startIndex + i;
+            const ctx = new VirtualScrollItemContext(item, itemIndex, count);
+            return html`<div data-vs-index=${itemIndex}>
+              ${this.itemTemplate!(ctx)}
+            </div>`;
+          })}
         </div>
       </div>
     `;
@@ -301,15 +312,6 @@ export default class IgcVirtualScrollComponent<
 
   private get _isVertical(): boolean {
     return this.orientation === 'vertical';
-  }
-
-  private get _visibleRange() {
-    return this._engine.getVisibleRange(
-      this._scrollPosition,
-      this._viewportSize,
-      this.overScan,
-      this.data.length
-    );
   }
 
   private _measureViewport(): void {
@@ -359,19 +361,23 @@ export default class IgcVirtualScrollComponent<
   private _scheduleItemMeasurement(): void {
     if (!this._contentRef.value) return;
 
-    this._itemResizeObserver?.disconnect();
-    this._itemResizeObserver = new ResizeObserver(this._handleItemResize);
+    if (!this._itemResizeObserver) {
+      this._itemResizeObserver = new ResizeObserver(this._handleItemResize);
+    }
 
+    this._itemResizeObserver.disconnect();
     for (const el of this._contentRef.value.children) {
       this._itemResizeObserver.observe(el);
     }
   }
 
   private _checkDataRequest(): void {
-    const range = this._visibleRange;
+    if (this._hasPendingDataRequest) return;
+    const range = this._currentRange;
     const total = this.data.length;
 
     if (total > 0 && range.endIndex >= total - REMOTE_SCROLLING_THRESHOLD) {
+      this._hasPendingDataRequest = true;
       this.emitEvent('igcDataRequest', {
         detail: {
           startIndex: total,
@@ -387,6 +393,7 @@ export default class IgcVirtualScrollComponent<
       this._onScroll = null;
     }
     this._itemResizeObserver?.disconnect();
+    this._itemResizeObserver = null;
   }
 
   //#endregion
@@ -394,13 +401,14 @@ export default class IgcVirtualScrollComponent<
   //#region Public API
 
   /** Programmatically scrolls to the specified item index. */
-  public scrollToIndex(index: number): void {
+  public scrollToIndex(index: number, options?: ScrollIntoViewOptions): void {
     const offset = this._engine.getScrollOffsetForIndex(index);
+    const opts = options ?? {};
 
     if (this._isVertical) {
-      this.scrollTop = offset;
+      this.scrollTo({ top: offset, ...opts });
     } else {
-      this.scrollLeft = offset;
+      this.scrollTo({ left: offset, ...opts });
     }
   }
 
