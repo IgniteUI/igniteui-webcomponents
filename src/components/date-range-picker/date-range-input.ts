@@ -3,6 +3,8 @@ import { addThemingController } from '../../theming/theming-controller.js';
 import { CalendarDay } from '../calendar/model.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { formatDisplayDate } from '../common/i18n/i18n-controller.js';
+import type { AbstractConstructor } from '../common/mixins/constructor.js';
+import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormValueDateRangeTransformers } from '../common/mixins/forms/form-transformers.js';
 import { createFormValueState } from '../common/mixins/forms/form-value.js';
 import { equal } from '../common/util.js';
@@ -11,10 +13,7 @@ import {
   type DatePartDeltas,
   DatePartType,
 } from '../date-time-input/date-part.js';
-import {
-  IgcDateTimeInputBaseComponent,
-  type IgcDateTimeInputComponentEventMap,
-} from '../date-time-input/date-time-input.base.js';
+import { IgcDateTimeInputBaseComponent } from '../date-time-input/date-time-input.base.js';
 import { DateParts } from '../date-time-input/datetime-mask-parser.js';
 import { styles } from '../input/themes/input.base.css.js';
 import { styles as shared } from '../input/themes/shared/input.common.css.js';
@@ -26,19 +25,27 @@ import {
   DateRangePosition,
 } from './date-range-mask-parser.js';
 
-export interface IgcDateRangeInputEventMap extends Omit<
-  IgcDateTimeInputComponentEventMap,
-  'igcChange'
-> {
+export interface IgcDateRangeInputComponentEventMap {
+  /* alternateName: inputOcurred */
+  igcInput: CustomEvent<string>;
+  /* blazorSuppress */
   igcChange: CustomEvent<DateRangeValue | null>;
+  // For analyzer meta only:
+  /* skipWCPrefix */
+  focus: FocusEvent;
+  /* skipWCPrefix */
+  blur: FocusEvent;
 }
 
-export default class IgcDateRangeInputComponent extends IgcDateTimeInputBaseComponent {
+export default class IgcDateRangeInputComponent extends EventEmitterMixin<
+  IgcDateRangeInputComponentEventMap,
+  AbstractConstructor<IgcDateTimeInputBaseComponent>
+>(IgcDateTimeInputBaseComponent) {
   public static readonly tagName = 'igc-date-range-input';
   public static styles = [styles, shared];
 
   /* blazorSuppress */
-  public static register() {
+  public static register(): void {
     registerComponent(IgcDateRangeInputComponent);
   }
 
@@ -53,11 +60,7 @@ export default class IgcDateRangeInputComponent extends IgcDateTimeInputBaseComp
   protected override readonly _parser = new DateRangeMaskParser();
 
   protected override get _datePartDeltas(): DatePartDeltas {
-    return {
-      date: 1,
-      month: 1,
-      year: 1,
-    };
+    return { date: 1, month: 1, year: 1 };
   }
 
   protected _oldValue: DateRangeValue | null = null;
