@@ -37,7 +37,7 @@
 3. **[DONE]** Grids rendering performance improvements — dynamic scroll throttle; 100–150% FPS gain at 100k rows
 4. **[DONE]** Agent Skills — four skill files shipped in the npm package: `igniteui-wc-choose-components`, `igniteui-wc-integrate-with-framework`, `igniteui-wc-customize-component-theme`, `igniteui-wc-optimize-bundle-size`
 5. **[DONE]** HTML Popover API — dropdown menus and dialogs use native top-layer positioning
-6. **[DONE]** Query Builder Componnt
+6. **[DONE]** Query Builder Component
 7. **[PREVIEW]** `igc-theme-provider` component - scoped theming via Lit context API, allowing multiple themes per page
 
 ## Milestone 20, version 6.3.0, Released Nov 18th, 2025
