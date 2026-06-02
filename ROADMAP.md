@@ -9,7 +9,7 @@
 
 ## Going down the road
 
-1. Anchor positiong
+1. Anchor positioning
 
 # Previous Milestone
 
