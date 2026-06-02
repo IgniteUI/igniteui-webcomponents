@@ -37,6 +37,7 @@ export interface IgcDateRangeInputComponentEventMap {
   blur: FocusEvent;
 }
 
+/* blazorSuppress */
 export default class IgcDateRangeInputComponent extends EventEmitterMixin<
   IgcDateRangeInputComponentEventMap,
   AbstractConstructor<IgcDateTimeInputBaseComponent>
