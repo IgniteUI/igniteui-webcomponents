@@ -118,15 +118,35 @@
     [part='picker'] {
         display: grid;
         padding: 0.25rem;
-        min-width: rem(370px);
+        min-width: rem(300px);
         min-height: 12rem;
-        grid-template-rows: 2fr 1fr;
+        grid-template-rows: 1.5fr 1fr;
         row-gap: 0.5rem;
         box-shadow: var(--ig-elevation-3);
     }
 
     [part='copy']::part(base) {
         background-color: var(--current-color);
+    }
+
+    [part='copy']::part(icon) {
+        --foreground: contrast-color(var(--current-color));
+    }
+
+    [part='swatches'] {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        max-width: rem(300px);
+        overflow: hidden;
+    }
+
+    [part='swatch'] {
+        width: 1.5rem;
+        height: 1.5rem;
+        border-radius: 0.25rem;
+        border: 1px solid #fff;
+        cursor: pointer;
     }
 }
 

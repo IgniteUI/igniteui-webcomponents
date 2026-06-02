@@ -16,7 +16,12 @@ import type { AbstractConstructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedMixin } from '../common/mixins/forms/associated.js';
 import { createFormValueState } from '../common/mixins/forms/form-value.js';
-import { asNumber, stopPropagation } from '../common/util.js';
+import {
+  asNumber,
+  getElementFromPath,
+  isEmpty,
+  stopPropagation,
+} from '../common/util.js';
 import IgcFocusTrapComponent from '../focus-trap/focus-trap.js';
 import IgcInputComponent from '../input/input.js';
 import IgcPopoverComponent from '../popover/popover.js';
@@ -124,6 +129,10 @@ export default class IgcColorPickerComponent extends FormAssociatedMixin(
   public get value(): string {
     return this._formValue.value;
   }
+
+  /** Pre-defined color swatches. */
+  @property({ attribute: false })
+  public swatches: string[] = [];
 
   /**
    * Sets the color format for the string value.
@@ -293,6 +302,16 @@ export default class IgcColorPickerComponent extends FormAssociatedMixin(
     navigator.clipboard.writeText(this.value);
   }
 
+  private _handleSwatchClick(event: Event): void {
+    const color = getElementFromPath('button[part="swatch"]', event)?.ariaLabel;
+
+    if (color) {
+      this.value = color;
+      this._syncCanvasPosition();
+      this._emitColorPickedEvent();
+    }
+  }
+
   protected _renderFormatRadios() {
     return html`
       <igc-radio-group
@@ -453,6 +472,8 @@ export default class IgcColorPickerComponent extends FormAssociatedMixin(
       <igc-icon-button
         aria-label="Copy color value to clipboard"
         variant="outlined"
+        collection="default"
+        name="copy_content"
         part="copy"
         title="Copy color value to clipboard"
         @click=${this._handleCopy}
@@ -462,7 +483,25 @@ export default class IgcColorPickerComponent extends FormAssociatedMixin(
     `;
   }
 
-  protected _renderPicker() {
+  private _renderSwatches() {
+    return !isEmpty(this.swatches)
+      ? html`
+          <div part="swatches" @click=${this._handleSwatchClick}>
+            ${this.swatches.map(
+              (color) => html`
+                <button
+                  part="swatch"
+                  aria-label="${color}"
+                  style="background-color: ${color}"
+                ></button>
+              `
+            )}
+          </div>
+        `
+      : nothing;
+  }
+
+  private _renderPicker() {
     return html`
       <igc-focus-trap ?disabled=${!this.open}>
         <div part="picker" ?inert=${!this.open}>
@@ -470,8 +509,11 @@ export default class IgcColorPickerComponent extends FormAssociatedMixin(
           <div>
             ${this._renderHueSlider()}${this._renderAlphaSlider()}
             ${this._renderFormats()}${this._renderColorInputs()}
+          </div>
+          <div>
             ${this._renderEyeDropperButton()}${this._renderCopyButton()}
           </div>
+          ${this._renderSwatches()}
         </div>
       </igc-focus-trap>
     `;

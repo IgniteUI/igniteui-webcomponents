@@ -130,6 +130,33 @@ export const InitialValue: Story = {
   },
 };
 
+export const CustomSwatches: Story = {
+  parameters: {
+    actions: {
+      handles: ['igcOpening', 'igcOpened', 'igcClosing', 'igcClosed'],
+    },
+  },
+
+  render: () => html`
+    <igc-color-picker
+      label="Pick a color"
+      value="#D81E5B"
+      .swatches=${[
+        '#B9E3C6',
+        '#59C9A5',
+        '#D81E5B',
+        '#23395B',
+        '#FFFD98',
+        '#F18F01',
+        '#048BA8',
+        '#2E4057',
+        '#99C24D',
+        '#2F2D2E',
+      ]}
+    ></igc-color-picker>
+  `,
+};
+
 export const Form: Story = {
   argTypes: disableStoryControls(metadata),
   render: () => html`
