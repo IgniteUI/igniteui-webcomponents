@@ -1,4 +1,4 @@
-﻿---
+---
 name: igniteui-wc-migrate-grid-lite-to-premium
 description: Step-by-step migration guide from igniteui-grid-lite (IgcGridLite) to the premium igniteui-webcomponents-grids (IgcGridComponent), covering every import, class name, HTML tag, property, event, template, sorting, filtering, and theming API change.
 user-invocable: true
