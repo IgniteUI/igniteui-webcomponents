@@ -28,7 +28,6 @@ import { dateTimeInputValidators } from './validators.js';
 export interface IgcDateTimeInputComponentEventMap {
   /* alternateName: inputOcurred */
   igcInput: CustomEvent<string>;
-  /* blazorSuppress */
   igcChange: CustomEvent<Date | null>;
   // For analyzer meta only:
   /* skipWCPrefix */

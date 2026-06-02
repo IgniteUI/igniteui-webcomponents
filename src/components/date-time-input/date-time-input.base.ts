@@ -404,11 +404,13 @@ export abstract class IgcDateTimeInputBaseComponent extends MaskBehaviorMixin(
     this._input?.blur();
   }
 
+  /* blazorSuppress */
   /** Increments a date/time portion. */
   public stepUp(datePart?: unknown, delta?: number): void {
     this._performStep(datePart, delta, false);
   }
 
+  /* blazorSuppress */
   /** Decrements a date/time portion. */
   public stepDown(datePart?: unknown, delta?: number): void {
     this._performStep(datePart, delta, true);
