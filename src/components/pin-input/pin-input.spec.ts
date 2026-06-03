@@ -1,9 +1,17 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import { spy } from 'sinon';
+import {
+  arrowLeft,
+  arrowRight,
+  backspaceKey,
+  deleteKey,
+} from '../common/controllers/key-bindings.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import {
   createFormAssociatedTestBed,
+  simulateFocusOut,
   simulateInput,
+  simulateKeyboard,
   simulatePaste,
 } from '../common/utils.spec.js';
 import {
@@ -29,7 +37,7 @@ describe('PinInput', () => {
     cell: HTMLInputElement,
     char: string
   ): Promise<void> {
-    simulateInput(cell, { value: char });
+    simulateInput(cell, { value: char, bubbles: true, composed: true });
     await elementUpdated(element);
   }
 
@@ -45,7 +53,7 @@ describe('PinInput', () => {
 
     it('initializes with default values', () => {
       expect(element.length).to.equal(4);
-      expect(element.inputMode).to.equal('numeric');
+      expect(element.mode).to.equal('numeric');
       expect(element.mask).to.be.false;
       expect(element.disabled).to.be.false;
       expect(element.required).to.be.false;
@@ -130,7 +138,7 @@ describe('PinInput', () => {
     });
 
     it('accepts alphanumeric characters when type is alphanumeric', async () => {
-      element.inputMode = 'alphanumeric';
+      element.mode = 'alphanumeric';
       element.value = 'a1B2';
       await elementUpdated(element);
       expect(element.value).to.equal('a1B2');
@@ -165,7 +173,7 @@ describe('PinInput', () => {
     });
 
     it('sets inputmode="text" for alphanumeric type', async () => {
-      element.inputMode = 'alphanumeric';
+      element.mode = 'alphanumeric';
       await elementUpdated(element);
       for (const cell of getCells(element)) {
         expect(cell.inputMode).to.equal('text');
@@ -233,9 +241,7 @@ describe('PinInput', () => {
       await typeIntoCell(cells[1], '2');
       await typeIntoCell(cells[2], '3');
 
-      cells[2].dispatchEvent(
-        new FocusEvent('focusout', { bubbles: true, composed: true })
-      );
+      simulateFocusOut(cells[2]);
       await elementUpdated(element);
 
       expect(handler.calledOnce).to.be.true;
@@ -254,13 +260,7 @@ describe('PinInput', () => {
 
       // Simulate focusout re-targeted to the host — what the browser produces
       // when focus moves between shadow-internal cells
-      cells[2].dispatchEvent(
-        new FocusEvent('focusout', {
-          bubbles: true,
-          composed: true,
-          relatedTarget: element,
-        })
-      );
+      simulateFocusOut(cells[2], { relatedTarget: element });
       await elementUpdated(element);
 
       expect(handler.called).to.be.false;
@@ -274,14 +274,9 @@ describe('PinInput', () => {
       await typeIntoCell(cells[1], '2');
       await typeIntoCell(cells[2], '3');
 
-      const focusout = () =>
-        cells[2].dispatchEvent(
-          new FocusEvent('focusout', { bubbles: true, composed: true })
-        );
-
-      focusout();
+      simulateFocusOut(element);
       await elementUpdated(element);
-      focusout();
+      simulateFocusOut(element);
       await elementUpdated(element);
 
       expect(handler.calledOnce).to.be.true;
@@ -293,17 +288,13 @@ describe('PinInput', () => {
       element = await fixture(html`<igc-pin-input length="4"></igc-pin-input>`);
     });
 
-    function pressKey(cell: HTMLInputElement, key: string): void {
-      cell.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true }));
-    }
-
     describe('Backspace', () => {
       it('shifts subsequent filled cells left when pressed on a filled cell', async () => {
         element.value = '1234';
         await elementUpdated(element);
         const cells = getCells(element);
 
-        pressKey(cells[1], 'Backspace');
+        simulateKeyboard(cells[1], backspaceKey);
         await elementUpdated(element);
 
         expect(cells[0].value).to.equal('1');
@@ -317,7 +308,7 @@ describe('PinInput', () => {
         await elementUpdated(element);
         const cells = getCells(element);
 
-        pressKey(cells[0], 'Backspace');
+        simulateKeyboard(cells[0], backspaceKey);
         await elementUpdated(element);
 
         expect(cells[0].value).to.equal('2');
@@ -333,7 +324,7 @@ describe('PinInput', () => {
         await typeIntoCell(cells[1], '2');
         await typeIntoCell(cells[2], '3');
 
-        pressKey(cells[3], 'Backspace');
+        simulateKeyboard(cells[3], backspaceKey);
         await elementUpdated(element);
 
         expect(cells[0].value).to.equal('1');
@@ -345,7 +336,7 @@ describe('PinInput', () => {
       it('is a no-op when pressed on the first empty cell', async () => {
         const cells = getCells(element);
 
-        pressKey(cells[0], 'Backspace');
+        simulateKeyboard(cells[0], backspaceKey);
         await elementUpdated(element);
 
         expect(cells[0].value).to.equal('');
@@ -358,7 +349,7 @@ describe('PinInput', () => {
         await elementUpdated(element);
         const cells = getCells(element);
 
-        pressKey(cells[1], 'Delete');
+        simulateKeyboard(cells[1], deleteKey);
         await elementUpdated(element);
 
         expect(cells[0].value).to.equal('1');
@@ -374,7 +365,7 @@ describe('PinInput', () => {
         await typeIntoCell(cells[2], '3');
         await typeIntoCell(cells[3], '4');
 
-        pressKey(cells[1], 'Delete');
+        simulateKeyboard(cells[1], deleteKey);
         await elementUpdated(element);
 
         expect(cells[0].value).to.equal('1');
@@ -386,7 +377,7 @@ describe('PinInput', () => {
       it('is a no-op when pressed on the last empty cell', async () => {
         const cells = getCells(element);
 
-        pressKey(cells[3], 'Delete');
+        simulateKeyboard(cells[3], deleteKey);
         await elementUpdated(element);
 
         expect(cells[3].value).to.equal('');
@@ -400,7 +391,7 @@ describe('PinInput', () => {
         const cells = getCells(element);
 
         cells[2].focus();
-        pressKey(cells[2], 'ArrowLeft');
+        simulateKeyboard(cells[2], arrowLeft);
         await elementUpdated(element);
 
         expect(element.shadowRoot!.activeElement).to.equal(cells[1]);
@@ -412,7 +403,7 @@ describe('PinInput', () => {
         const cells = getCells(element);
 
         cells[1].focus();
-        pressKey(cells[1], 'ArrowRight');
+        simulateKeyboard(cells[1], arrowRight);
         await elementUpdated(element);
 
         expect(element.shadowRoot!.activeElement).to.equal(cells[2]);
@@ -592,9 +583,7 @@ describe('PinInput', () => {
       element.clear();
       await elementUpdated(element);
 
-      cells[0].dispatchEvent(
-        new FocusEvent('focusout', { bubbles: true, composed: true })
-      );
+      simulateFocusOut(cells[0]);
       await elementUpdated(element);
 
       expect(handler.called).to.be.false;
@@ -646,9 +635,7 @@ describe('PinInput', () => {
       await elementUpdated(spec.element);
 
       const cells = getCells(spec.element);
-      cells[0].dispatchEvent(
-        new FocusEvent('focusout', { bubbles: true, composed: true })
-      );
+      simulateFocusOut(cells[0]);
       await elementUpdated(spec.element);
 
       expect(handler.called).to.be.false;

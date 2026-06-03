@@ -246,6 +246,15 @@ export function simulateBlur(node: Element): void {
   node.dispatchEvent(new FocusEvent('blur'));
 }
 
+export function simulateFocusOut(
+  node: Element,
+  options?: FocusEventInit
+): void {
+  node.dispatchEvent(
+    new FocusEvent('focusout', { bubbles: true, composed: true, ...options })
+  );
+}
+
 export function simulatePointerDown(
   node: Element,
   options?: PointerEventInit,

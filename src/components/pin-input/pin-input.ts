@@ -3,6 +3,7 @@ import { property, queryAll, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { addThemingController } from '../../theming/theming-controller.js';
 import {
+  addKeybindings,
   arrowLeft,
   arrowRight,
   backspaceKey,
@@ -19,6 +20,7 @@ import {
   addSafeEventListener,
   bindIf,
   clamp,
+  getElementFromPath,
   stopPropagation,
 } from '../common/util.js';
 import IgcValidationContainerComponent from '../validation-container/validation-container.js';
@@ -107,7 +109,7 @@ export default class IgcPinInputComponent extends FormAssociatedRequiredMixin(
   }
 
   private get _isNumeric(): boolean {
-    return this.inputMode === 'numeric';
+    return this.mode === 'numeric';
   }
 
   //#endregion
@@ -155,11 +157,11 @@ export default class IgcPinInputComponent extends FormAssociatedRequiredMixin(
    * The type of allowed input.
    * - `numeric` — only digits (0-9)
    * - `alphanumeric` — letters and digits
-   * @attr input-mode
+   * @attr mode
    * @default 'numeric'
    */
-  @property({ reflect: true, attribute: 'input-mode' })
-  public override inputMode: 'numeric' | 'alphanumeric' = 'numeric';
+  @property({ reflect: true })
+  public mode: 'numeric' | 'alphanumeric' = 'numeric';
 
   /**
    * When set, the entered characters are visually hidden (displayed as password dots).
@@ -182,22 +184,30 @@ export default class IgcPinInputComponent extends FormAssociatedRequiredMixin(
    * Defines visual groupings of cells separated by `separator`.
    * Each element in the array is the number of cells in that group.
    * When set, `length` is derived from the sum of the group sizes (clamped to 1–8).
-   * @example // Two groups of three cells with a separator between them
-   * element.groups = [3, 3];
+   *
+   * @example
+   * ```html
+   * <igc-pin-input .groups=${[3, 2, 3]} separator="-"></igc-pin-input>
+   * <!-- Renders 8 cells with a dash between the 3rd and 4th, and 5th and 6th cells -->
+   * ```
    */
   @property({ attribute: false })
   public set groups(value: number[]) {
     this._groups = value;
-    if (value.length > 0) {
-      const total = value.reduce((a, b) => a + b, 0);
-      const clamped = clamp(total, MIN_LENGTH, MAX_LENGTH);
-      this._cells = Array.from(
-        { length: clamped },
-        (_, i) => this._cells[i] ?? ''
-      );
-      this._length = clamped;
-      this._syncFormValue();
-    }
+    const clamped =
+      value.length > 0
+        ? clamp(
+            value.reduce((a, b) => a + b, 0),
+            MIN_LENGTH,
+            MAX_LENGTH
+          )
+        : this._length;
+    this._cells = Array.from(
+      { length: clamped },
+      (_, i) => this._cells[i] ?? ''
+    );
+    this._length = clamped;
+    this._syncFormValue();
   }
 
   public get groups(): number[] {
@@ -231,7 +241,20 @@ export default class IgcPinInputComponent extends FormAssociatedRequiredMixin(
     super();
 
     addThemingController(this, all);
+    addKeybindings(this, {
+      skip: () => this.disabled,
+      bindingDefaults: { preventDefault: true, repeat: true },
+    })
+      .set(backspaceKey, this._handleBackspace)
+      .set(deleteKey, this._handleDelete)
+      .set(arrowLeft, this._handleArrowLeft)
+      .set(arrowRight, this._handleArrowRight);
+
+    addSafeEventListener(this, 'focusin', this._handleCellFocus);
     addSafeEventListener(this, 'focusout', this._handleFocusOut);
+    addSafeEventListener(this, 'input', this._handleInput);
+    addSafeEventListener(this, 'paste', this._handlePaste);
+    addSafeEventListener(this, 'change', stopPropagation);
   }
 
   /** @internal */
@@ -250,10 +273,14 @@ export default class IgcPinInputComponent extends FormAssociatedRequiredMixin(
 
   //#region Event handlers
 
-  private _handleBackspace(index: number, event: KeyboardEvent): void {
-    event.preventDefault();
+  private _getCellIndex(event: Event): number {
+    const cell = getElementFromPath<HTMLInputElement>('[part="input"]', event);
+    return cell ? Array.prototype.indexOf.call(this._inputs, cell) : -1;
+  }
 
-    if (index === 0 && !this._cells[0]) return;
+  private _handleBackspace(event: KeyboardEvent): void {
+    const index = this._getCellIndex(event);
+    if (index === -1 || (index === 0 && !this._cells[0])) return;
 
     this._cells = this._shiftDeleteAt(this._cells[index] ? index : index - 1);
     this._syncFormValue();
@@ -261,8 +288,9 @@ export default class IgcPinInputComponent extends FormAssociatedRequiredMixin(
     this._focusCell(Math.max(0, index - 1));
   }
 
-  private _handleDelete(index: number, event: KeyboardEvent): void {
-    event.preventDefault();
+  private _handleDelete(event: KeyboardEvent): void {
+    const index = this._getCellIndex(event);
+    if (index === -1) return;
 
     let input: HTMLInputElement;
 
@@ -281,41 +309,25 @@ export default class IgcPinInputComponent extends FormAssociatedRequiredMixin(
     this.updateComplete.then(() => input.select());
   }
 
-  private _handleArrowLeft(index: number, event: KeyboardEvent): void {
+  private _handleArrowLeft(event: KeyboardEvent): void {
+    const index = this._getCellIndex(event);
     if (index > 0) {
-      event.preventDefault();
       this._focusCell(index - 1);
     }
   }
 
-  private _handleArrowRight(index: number, event: KeyboardEvent): void {
-    if (index < this._length - 1) {
-      event.preventDefault();
+  private _handleArrowRight(event: KeyboardEvent): void {
+    const index = this._getCellIndex(event);
+    if (index > -1 && index < this._length - 1) {
       this._focusCell(index + 1);
     }
   }
 
-  private _handleKeydown(index: number, event: KeyboardEvent): void {
-    const { key } = event;
+  private _handleInput(event: Event): void {
+    const index = this._getCellIndex(event);
+    if (index === -1) return;
 
-    switch (key) {
-      case backspaceKey:
-        this._handleBackspace(index, event);
-        break;
-      case deleteKey:
-        this._handleDelete(index, event);
-        break;
-      case arrowLeft:
-        this._handleArrowLeft(index, event);
-        break;
-      case arrowRight:
-        this._handleArrowRight(index, event);
-        break;
-    }
-  }
-
-  private _handleInput(index: number, event: Event): void {
-    const input = event.target as HTMLInputElement;
+    const input = this._inputs[index];
     const rawValue = input.value.slice(-1);
     const filtered = this._filterChar(rawValue);
 
@@ -338,10 +350,12 @@ export default class IgcPinInputComponent extends FormAssociatedRequiredMixin(
     }
   }
 
-  private _handlePaste(index: number, event: ClipboardEvent): void {
-    event.preventDefault();
+  private _handlePaste(event: ClipboardEvent): void {
+    const index = this._getCellIndex(event);
     const text = event.clipboardData?.getData('text');
-    if (!text) return;
+
+    if (index === -1 || !text) return;
+    event.preventDefault();
 
     const chars = Iterator.from(text.split(''))
       .map((c) => this._filterChar(c))
@@ -380,10 +394,10 @@ export default class IgcPinInputComponent extends FormAssociatedRequiredMixin(
     }
   }
 
-  private _handleCellFocus(index: number, event: FocusEvent): void {
-    if (this._cells[index]) {
-      const target = event.target as HTMLInputElement;
-      target.select();
+  private _handleCellFocus(event: FocusEvent): void {
+    const index = this._getCellIndex(event);
+    if (index !== -1 && this._cells[index]) {
+      this._inputs[index].select();
     }
   }
 
@@ -396,7 +410,7 @@ export default class IgcPinInputComponent extends FormAssociatedRequiredMixin(
   }
 
   private _emitCompleteIfFull(value: string): void {
-    if (value.length === this._length) {
+    if (this._cells.every(Boolean)) {
       this.emitEvent('igcComplete', { detail: value });
     }
   }
@@ -473,11 +487,6 @@ export default class IgcPinInputComponent extends FormAssociatedRequiredMixin(
         .value=${value}
         placeholder=${ifDefined(this.placeholder)}
         aria-label=${`${this._isNumeric ? 'Digit' : 'Character'} ${index + 1} of ${this._length}`}
-        @keydown=${(e: KeyboardEvent) => this._handleKeydown(index, e)}
-        @focus=${(e: FocusEvent) => this._handleCellFocus(index, e)}
-        @input=${(e: Event) => this._handleInput(index, e)}
-        @change=${stopPropagation}
-        @paste=${(e: ClipboardEvent) => this._handlePaste(index, e)}
       />
     `;
   }

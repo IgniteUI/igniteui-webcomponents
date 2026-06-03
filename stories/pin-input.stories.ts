@@ -37,7 +37,7 @@ const metadata: Meta<IgcPinInputComponent> = {
       control: 'number',
       table: { defaultValue: { summary: '4' } },
     },
-    inputMode: {
+    mode: {
       type: '"numeric" | "alphanumeric"',
       description:
         'The type of allowed input.\n- `numeric` — only digits (0-9)\n- `alphanumeric` — letters and digits',
@@ -92,7 +92,7 @@ const metadata: Meta<IgcPinInputComponent> = {
   },
   args: {
     length: 4,
-    inputMode: 'numeric',
+    mode: 'numeric',
     mask: false,
     separator: '',
     required: false,
@@ -115,7 +115,7 @@ interface IgcPinInputArgs {
    * - `numeric` — only digits (0-9)
    * - `alphanumeric` — letters and digits
    */
-  inputMode: 'numeric' | 'alphanumeric';
+  mode: 'numeric' | 'alphanumeric';
   /** When set, the entered characters are visually hidden (displayed as password dots). */
   mask: boolean;
   /**
@@ -141,7 +141,7 @@ type Story = StoryObj<IgcPinInputArgs>;
 export const Basic: Story = {
   render: ({
     length,
-    inputMode,
+    mode,
     mask,
     label,
     placeholder,
@@ -152,7 +152,7 @@ export const Basic: Story = {
   }) => html`
     <igc-pin-input
       .length=${length}
-      .inputMode=${inputMode}
+      .mode=${mode}
       ?mask=${mask}
       label=${ifDefined(label)}
       placeholder=${ifDefined(placeholder)}
@@ -172,7 +172,7 @@ export const Masked: Story = {
   },
   render: ({
     length,
-    inputMode,
+    mode,
     mask,
     label,
     placeholder,
@@ -182,7 +182,7 @@ export const Masked: Story = {
   }) => html`
     <igc-pin-input
       .length=${length}
-      .inputMode=${inputMode}
+      .mode=${mode}
       ?mask=${mask}
       label=${ifDefined(label)}
       placeholder=${ifDefined(placeholder)}
@@ -195,13 +195,13 @@ export const Masked: Story = {
 
 export const Alphanumeric: Story = {
   args: {
-    inputMode: 'alphanumeric',
+    mode: 'alphanumeric',
     label: 'Enter Code',
     length: 6,
   },
   render: ({
     length,
-    inputMode,
+    mode,
     mask,
     label,
     placeholder,
@@ -211,7 +211,7 @@ export const Alphanumeric: Story = {
   }) => html`
     <igc-pin-input
       .length=${length}
-      .inputMode=${inputMode}
+      .mode=${mode}
       ?mask=${mask}
       label=${ifDefined(label)}
       placeholder=${ifDefined(placeholder)}
@@ -223,21 +223,13 @@ export const Alphanumeric: Story = {
 };
 
 export const InForm: Story = {
-  render: ({
-    length,
-    inputMode,
-    mask,
-    label,
-    required,
-    disabled,
-    invalid,
-  }) => html`
+  render: ({ length, mode, mask, label, required, disabled, invalid }) => html`
     <form @submit=${formSubmitHandler}>
       <fieldset>
         <igc-pin-input
           name="otp"
           .length=${length}
-          .inputMode=${inputMode}
+          .mode=${mode}
           ?mask=${mask}
           label=${ifDefined(label)}
           ?required=${required}
@@ -256,11 +248,11 @@ export const WithGroups: Story = {
   args: {
     label: 'License key',
     separator: '-',
-    inputMode: 'alphanumeric',
+    mode: 'alphanumeric',
     length: 4,
   },
   render: ({
-    inputMode,
+    mode,
     mask,
     label,
     placeholder,
@@ -271,7 +263,7 @@ export const WithGroups: Story = {
     <p>Two groups of 4 (8 total), separated by a dash:</p>
     <igc-pin-input
       .groups=${[4, 4]}
-      .inputMode=${inputMode}
+      .mode=${mode}
       ?mask=${mask}
       label=${ifDefined(label)}
       placeholder=${ifDefined(placeholder)}
@@ -285,7 +277,7 @@ export const WithGroups: Story = {
     </p>
     <igc-pin-input
       .groups=${[3, 3, 3]}
-      .inputMode=${inputMode}
+      .mode=${mode}
       separator=" "
       label="One-time code"
       ?disabled=${disabled}
@@ -294,7 +286,7 @@ export const WithGroups: Story = {
     <p style="margin-top: 1.5rem">No separator set — groups are visual only:</p>
     <igc-pin-input
       .groups=${[2, 2, 2]}
-      .inputMode=${inputMode}
+      .mode=${mode}
       label="PIN"
       ?disabled=${disabled}
     ></igc-pin-input>
