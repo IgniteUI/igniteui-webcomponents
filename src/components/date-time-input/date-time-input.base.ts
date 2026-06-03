@@ -19,8 +19,6 @@ import {
   addI18nController,
   getDefaultDateTimeFormat,
 } from '../common/i18n/i18n-controller.js';
-import type { Constructor } from '../common/mixins/constructor.js';
-import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '../common/mixins/forms/associated-required.js';
 import {
   MaskBehaviorMixin,
@@ -31,7 +29,6 @@ import {
   renderInputShell,
 } from '../common/templates/input-shell.js';
 import { renderMaskedNativeInput } from '../common/templates/masked-input.js';
-import type { IgcInputComponentEventMap } from '../input/input-base.js';
 import type { DatePartDeltas } from './date-part.js';
 import { dateTimeInputValidators } from './validators.js';
 
@@ -48,22 +45,10 @@ const Slots = setSlots(
   'invalid'
 );
 
-export interface IgcDateTimeInputComponentEventMap extends Omit<
-  IgcInputComponentEventMap,
-  'igcChange'
-> {
-  igcChange: CustomEvent<unknown>;
-}
-
 @blazorDeepImport
 @shadowOptions({ delegatesFocus: true })
 export abstract class IgcDateTimeInputBaseComponent extends MaskBehaviorMixin(
-  FormAssociatedRequiredMixin(
-    EventEmitterMixin<
-      IgcDateTimeInputComponentEventMap,
-      Constructor<LitElement>
-    >(LitElement)
-  )
+  FormAssociatedRequiredMixin(LitElement)
 ) {
   // #region Internal state and properties
 
@@ -419,11 +404,13 @@ export abstract class IgcDateTimeInputBaseComponent extends MaskBehaviorMixin(
     this._input?.blur();
   }
 
+  /* blazorSuppress */
   /** Increments a date/time portion. */
   public stepUp(datePart?: unknown, delta?: number): void {
     this._performStep(datePart, delta, false);
   }
 
+  /* blazorSuppress */
   /** Decrements a date/time portion. */
   public stepDown(datePart?: unknown, delta?: number): void {
     this._performStep(datePart, delta, true);

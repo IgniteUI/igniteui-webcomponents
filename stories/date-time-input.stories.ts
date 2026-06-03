@@ -27,43 +27,9 @@ const metadata: Meta<IgcDateTimeInputComponent> = {
   },
   argTypes: {
     value: {
-      type: 'string | Date',
+      type: 'Date',
       description: 'The value of the input.',
-      options: ['string', 'Date'],
-      control: 'text',
-    },
-    min: {
-      type: 'Date',
-      description: 'The minimum value required for the input to remain valid.',
       control: 'date',
-    },
-    max: {
-      type: 'Date',
-      description: 'The maximum value required for the input to remain valid.',
-      control: 'date',
-    },
-    inputFormat: {
-      type: 'string',
-      description: 'The date format to apply on the input.',
-      control: 'text',
-    },
-    displayFormat: {
-      type: 'string',
-      description:
-        'Format to display the value in when not editing.\nDefaults to the locale format if not set.',
-      control: 'text',
-    },
-    spinLoop: {
-      type: 'boolean',
-      description: 'Sets whether to loop over the currently spun segment.',
-      control: 'boolean',
-      table: { defaultValue: { summary: 'true' } },
-    },
-    locale: {
-      type: 'string',
-      description:
-        'Gets/Sets the locale used for formatting the display value.',
-      control: 'text',
     },
     readOnly: {
       type: 'boolean',
@@ -73,9 +39,8 @@ const metadata: Meta<IgcDateTimeInputComponent> = {
     },
     mask: {
       type: 'string',
-      description: 'The masked pattern of the component.',
+      description: 'The mask pattern of the component.',
       control: 'text',
-      table: { defaultValue: { summary: 'CCCCCCCCCC' } },
     },
     prompt: {
       type: 'string',
@@ -124,16 +89,48 @@ const metadata: Meta<IgcDateTimeInputComponent> = {
       description: 'The label for the control.',
       control: 'text',
     },
+    inputFormat: {
+      type: 'string',
+      description: 'The date format to apply on the input.',
+      control: 'text',
+    },
+    min: {
+      type: 'Date',
+      description: 'The minimum value required for the input to remain valid.',
+      control: 'date',
+    },
+    max: {
+      type: 'Date',
+      description: 'The maximum value required for the input to remain valid.',
+      control: 'date',
+    },
+    displayFormat: {
+      type: 'string',
+      description:
+        'Format to display the value in when not editing.\nDefaults to the locale format if not set.',
+      control: 'text',
+    },
+    spinLoop: {
+      type: 'boolean',
+      description: 'Sets whether to loop over the currently spun segment.',
+      control: 'boolean',
+      table: { defaultValue: { summary: 'true' } },
+    },
+    locale: {
+      type: 'string',
+      description:
+        'Gets/Sets the locale used for formatting the display value.',
+      control: 'text',
+    },
   },
   args: {
-    spinLoop: true,
     readOnly: false,
-    mask: 'CCCCCCCCCC',
     prompt: '_',
     required: false,
     disabled: false,
     invalid: false,
     outlined: false,
+    spinLoop: true,
   },
 };
 
@@ -141,25 +138,10 @@ export default metadata;
 
 interface IgcDateTimeInputArgs {
   /** The value of the input. */
-  value: string | Date;
-  /** The minimum value required for the input to remain valid. */
-  min: Date;
-  /** The maximum value required for the input to remain valid. */
-  max: Date;
-  /** The date format to apply on the input. */
-  inputFormat: string;
-  /**
-   * Format to display the value in when not editing.
-   * Defaults to the locale format if not set.
-   */
-  displayFormat: string;
-  /** Sets whether to loop over the currently spun segment. */
-  spinLoop: boolean;
-  /** Gets/Sets the locale used for formatting the display value. */
-  locale: string;
+  value: Date;
   /** Makes the control a readonly field. */
   readOnly: boolean;
-  /** The masked pattern of the component. */
+  /** The mask pattern of the component. */
   mask: string;
   /** The prompt symbol to use for unfilled parts of the mask pattern. */
   prompt: string;
@@ -177,6 +159,21 @@ interface IgcDateTimeInputArgs {
   placeholder: string;
   /** The label for the control. */
   label: string;
+  /** The date format to apply on the input. */
+  inputFormat: string;
+  /** The minimum value required for the input to remain valid. */
+  min: Date;
+  /** The maximum value required for the input to remain valid. */
+  max: Date;
+  /**
+   * Format to display the value in when not editing.
+   * Defaults to the locale format if not set.
+   */
+  displayFormat: string;
+  /** Sets whether to loop over the currently spun segment. */
+  spinLoop: boolean;
+  /** Gets/Sets the locale used for formatting the display value. */
+  locale: string;
 }
 type Story = StoryObj<IgcDateTimeInputArgs>;
 

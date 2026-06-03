@@ -4,17 +4,18 @@ import {
   fixture,
   html,
   nextFrame,
+  waitUntil,
 } from '@open-wc/testing';
 import { type SinonFakeTimers, spy, useFakeTimers } from 'sinon';
-
 import IgcButtonComponent from '../button/button.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
+import { isPopoverOpen } from '../common/util.js';
 import { finishAnimationsFor } from '../common/utils.spec.js';
 import IgcSnackbarComponent from './snackbar.js';
 
 describe('Snackbar', () => {
   before(() => {
-    defineComponents(IgcSnackbarComponent);
+    defineComponents(IgcSnackbarComponent, IgcButtonComponent);
   });
 
   const defaultActionText = 'Action';
@@ -98,11 +99,13 @@ describe('Snackbar', () => {
     const checkOpenState = (state = false) => {
       if (state) {
         expect(snackbar).dom.to.have.attribute('open');
+        expect(isPopoverOpen(snackbar)).to.be.true;
         expect(snackbar).shadowDom.to.equal(`<div part="base"></div>`, {
           ignoreTags: ['span', 'slot'],
         });
       } else {
         expect(snackbar).dom.not.to.have.attribute('open');
+        expect(isPopoverOpen(snackbar)).to.be.false;
         expect(snackbar).shadowDom.to.equal(`<div part="base" inert></div>`, {
           ignoreTags: ['span', 'slot'],
         });
@@ -193,6 +196,55 @@ describe('Snackbar', () => {
       expect(snackbar.open).to.be.false;
       checkOpenState(false);
     });
+
+    describe('positioning', () => {
+      it('defaults to `viewport` with no inline anchor styles', async () => {
+        expect(snackbar.positioning).to.equal('viewport');
+
+        await snackbar.show();
+
+        expect(isPopoverOpen(snackbar)).to.be.true;
+        expect(snackbar.style.top).to.equal('');
+        expect(snackbar.style.left).to.equal('');
+      });
+
+      it('`container` positioning shows popover when there is a visible ancestor', async () => {
+        snackbar.positioning = 'container';
+        await snackbar.show();
+
+        expect(isPopoverOpen(snackbar)).to.be.true;
+      });
+
+      it('switching `container → viewport` while open maintains open state', async () => {
+        snackbar.positioning = 'container';
+        await snackbar.show();
+
+        snackbar.positioning = 'viewport';
+        await elementUpdated(snackbar);
+
+        expect(isPopoverOpen(snackbar)).to.be.true;
+      });
+
+      it('switching `viewport → container` while open maintains open state', async () => {
+        await snackbar.show();
+
+        snackbar.positioning = 'container';
+        await elementUpdated(snackbar);
+
+        expect(isPopoverOpen(snackbar)).to.be.true;
+      });
+
+      it('`position` changes in `viewport` mode do not set inline styles', async () => {
+        await snackbar.show();
+
+        snackbar.position = 'top';
+        await elementUpdated(snackbar);
+
+        expect(isPopoverOpen(snackbar)).to.be.true;
+        expect(snackbar.style.top).to.equal('');
+        expect(snackbar.style.left).to.equal('');
+      });
+    });
   });
 
   describe('Events', () => {
@@ -228,6 +280,92 @@ describe('Snackbar', () => {
 
       button.click();
       expect(eventSpy).calledOnceWithExactly('igcAction');
+    });
+  });
+
+  describe('Invoker Commands API', () => {
+    afterEach(async () => {
+      if (snackbar.open) {
+        await snackbar.hide();
+      }
+    });
+
+    describe('with igc-button', () => {
+      let invoker: IgcButtonComponent;
+
+      beforeEach(async () => {
+        const container = await fixture<HTMLElement>(html`
+          <div>
+            <igc-button command="--show" commandfor="invoker-snackbar"
+              >Show</igc-button
+            >
+            <igc-snackbar id="invoker-snackbar" keep-open
+              >${defaultContent}</igc-snackbar
+            >
+          </div>
+        `);
+
+        invoker = container.querySelector<IgcButtonComponent>('igc-button')!;
+        snackbar =
+          container.querySelector<IgcSnackbarComponent>('igc-snackbar')!;
+      });
+
+      it('`--show` opens the snackbar', async () => {
+        expect(snackbar.open).to.be.false;
+
+        invoker.click();
+        await waitUntil(() => snackbar.open);
+
+        expect(snackbar.open).to.be.true;
+      });
+
+      it('`--hide` closes an open snackbar', async () => {
+        await snackbar.show();
+        expect(snackbar.open).to.be.true;
+
+        invoker.command = '--hide';
+        await elementUpdated(invoker);
+
+        invoker.click();
+        await waitUntil(() => !snackbar.open);
+
+        expect(snackbar.open).to.be.false;
+      });
+
+      it('`--toggle` opens a closed snackbar', async () => {
+        expect(snackbar.open).to.be.false;
+
+        invoker.command = '--toggle';
+        await elementUpdated(invoker);
+
+        invoker.click();
+        await waitUntil(() => snackbar.open);
+
+        expect(snackbar.open).to.be.true;
+      });
+
+      it('`--toggle` closes an open snackbar', async () => {
+        await snackbar.show();
+        expect(snackbar.open).to.be.true;
+
+        invoker.command = '--toggle';
+        await elementUpdated(invoker);
+
+        invoker.click();
+        await waitUntil(() => !snackbar.open);
+
+        expect(snackbar.open).to.be.false;
+      });
+
+      it('a disabled igc-button does not invoke commands', async () => {
+        invoker.disabled = true;
+        await elementUpdated(invoker);
+
+        invoker.click();
+        await elementUpdated(snackbar);
+
+        expect(snackbar.open).to.be.false;
+      });
     });
   });
 });

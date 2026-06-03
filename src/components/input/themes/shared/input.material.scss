@@ -44,7 +44,14 @@ $fs: rem(16px) !default;
     }
 }
 
-input:placeholder-shown + [part='notch'] [part='label'],
+:is(
+    input:placeholder-shown,
+    input[type='date'],
+    input[type='time'],
+    input[type='datetime-local'],
+    input[type='week'],
+    input[type='month']
+) + [part='notch'] [part='label'],
 [part~='filled'] + [part='notch'] [part='label'] {
     @include type-style('caption');
     @extend %label;
@@ -159,7 +166,14 @@ input:placeholder-shown + [part='notch'] [part='label'],
 
 :host([readonly]:not([outlined]):focus-within) {
     :not([part~='filled']) {
-        input:has(:not(:placeholder-shown)) + [part='notch'] [part='label'] {
+        :is(
+            input[type='date'],
+            input[type='time'],
+            input[type='datetime-local'],
+            input[type='week'],
+            input[type='month']
+        ) + [part='notch'] [part='label'],
+        input:not(:placeholder-shown)+ [part='notch'] [part='label'] {
             translate: 0;
             font-size: initial;
         }
@@ -210,7 +224,14 @@ input:placeholder-shown + [part='notch'] [part='label'],
         padding-bottom: rem(6px);
     }
 
-    input:placeholder-shown + [part='notch'] [part='label'],
+    :is(
+        input:placeholder-shown,
+        input[type='date'],
+        input[type='time'],
+        input[type='datetime-local'],
+        input[type='week'],
+        input[type='month']
+    ) + [part='notch'] [part='label'],
     [part~='filled'] + [part='notch'] [part='label'] {
         translate: 0 -73%;
     }
@@ -229,14 +250,12 @@ input:placeholder-shown + [part='notch'] [part='label'],
     }
 }
 
-:host(
-    :not(
-            [outlined],
-            [type='search'],
-            [aria-haspopup='dialog'],
-            [role='combobox']
-        )[readonly]:hover
-) {
+:host(:not(
+    [outlined],
+    [type='search'],
+    [aria-haspopup='dialog'],
+    [role='combobox']
+)[readonly]:hover) {
     [part~='container'] {
         background: var-get($theme, 'box-background-focus');
         border-bottom-color: var-get($theme, 'idle-bottom-line-color');
@@ -450,6 +469,13 @@ input:placeholder-shown + [part='notch'] [part='label'],
         }
     }
 
+    :is(
+        input[type='date'],
+        input[type='time'],
+        input[type='datetime-local'],
+        input[type='week'],
+        input[type='month']
+    ) + [part='notch'],
     [part~='filled'] + [part='notch'] {
         @extend %floated-styles;
 
@@ -480,12 +506,10 @@ input:placeholder-shown + [part='notch'] [part='label'],
     }
 }
 
-:host(
-    :not(
-            [aria-haspopup='dialog'],
-            [role='combobox']
-        )[outlined][readonly]:focus-within
-) {
+:host(:not(
+    [aria-haspopup='dialog'],
+    [role='combobox']
+)[outlined][readonly]:focus-within) {
     [part='notch'],
     [part='start'],
     [part='end'],
@@ -502,13 +526,13 @@ input:placeholder-shown + [part='notch'] [part='label'],
     :not(:state(ig-invalid), [type='search'])[readonly][outlined]:focus-within
 ) {
     :not([part~='filled']) {
-        input:has(:not(:placeholder-shown)) + [part='notch'] [part='label'] {
+        input:not(:placeholder-shown) + [part='notch'] [part='label'] {
             translate: 0;
             font-size: initial;
             align-self: center;
         }
 
-        input:has(:not(:placeholder-shown)) + [part='notch'] {
+        input:not(:placeholder-shown) + [part='notch'] {
             border: {
                 width: $active-border-width;
                 color: var-get($theme, 'focused-border-color');
@@ -528,6 +552,22 @@ input:placeholder-shown + [part='notch'] [part='label'],
     input:placeholder-shown + [part='notch'],
     [part~='filled'] + [part='notch'] {
         @extend %floated-styles;
+    }
+}
+
+:host([outlined]:is(
+    [type='date'],
+    [type='time'],
+    [type='datetime-local'],
+    [type='week'],
+    [type='month']
+)) {
+    [part='label'] {
+        transition: none;
+    }
+
+    [part='notch'] {
+        border-block-start-color: transparent !important;
     }
 }
 
