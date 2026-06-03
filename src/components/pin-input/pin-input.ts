@@ -194,14 +194,12 @@ export default class IgcPinInputComponent extends FormAssociatedRequiredMixin(
   @property({ attribute: false })
   public set groups(value: number[]) {
     this._groups = value;
-    const clamped =
-      value.length > 0
-        ? clamp(
-            value.reduce((a, b) => a + b, 0),
-            MIN_LENGTH,
-            MAX_LENGTH
-          )
-        : this._length;
+    if (!value.length) return;
+    const clamped = clamp(
+      value.reduce((a, b) => a + b, 0),
+      MIN_LENGTH,
+      MAX_LENGTH
+    );
     this._cells = Array.from(
       { length: clamped },
       (_, i) => this._cells[i] ?? ''
@@ -230,7 +228,7 @@ export default class IgcPinInputComponent extends FormAssociatedRequiredMixin(
   }
 
   public get value(): string {
-    return this._cells.every(Boolean) ? this._cellsValue : '';
+    return this._cells.includes('') ? '' : this._cellsValue;
   }
 
   //#endregion
@@ -292,21 +290,20 @@ export default class IgcPinInputComponent extends FormAssociatedRequiredMixin(
     const index = this._getCellIndex(event);
     if (index === -1) return;
 
-    let input: HTMLInputElement;
-
     if (this._cells[index]) {
       this._cells = this._shiftDeleteAt(index);
-      input = this._inputs[index];
-    } else if (index < this._length - 1) {
-      this._cells = this._shiftDeleteAt(index + 1);
-      input = this._inputs[index + 1];
-    } else {
+      this._syncFormValue();
+      this._emitInputEvent(this._cellsValue);
+      this.updateComplete.then(() => this._inputs[index].select());
       return;
     }
 
-    this._syncFormValue();
-    this._emitInputEvent(this._cellsValue);
-    this.updateComplete.then(() => input.select());
+    if (index < this._length - 1) {
+      this._cells = this._shiftDeleteAt(index + 1);
+      this._syncFormValue();
+      this._emitInputEvent(this._cellsValue);
+      this.updateComplete.then(() => this._inputs[index + 1].select());
+    }
   }
 
   private _handleArrowLeft(event: KeyboardEvent): void {
@@ -335,7 +332,9 @@ export default class IgcPinInputComponent extends FormAssociatedRequiredMixin(
     input.value = filtered;
 
     const prev = this._cells[index];
-    this._cells = this._cells.map((c, i) => (i === index ? filtered : c));
+    const updated = [...this._cells];
+    updated[index] = filtered;
+    this._cells = updated;
     this._syncFormValue();
 
     if (filtered && filtered !== prev) {
@@ -462,7 +461,7 @@ export default class IgcPinInputComponent extends FormAssociatedRequiredMixin(
 
   //#endregion
 
-  private _renderLabel() {
+  private _renderLabel(): TemplateResult | typeof nothing {
     return this.label
       ? html`<label part="label" for=${`${this.id || this.tagName}-cell-0`}
           >${this.label}</label
