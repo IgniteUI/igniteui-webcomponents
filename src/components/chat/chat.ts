@@ -311,6 +311,7 @@ export default class IgcChatComponent extends EventEmitterMixin<
     return this._state.options;
   }
 
+  /* blazorSuppress */
   /**
    * The resource strings of the chat.
    */
@@ -321,6 +322,7 @@ export default class IgcChatComponent extends EventEmitterMixin<
     this._i18nController.resourceStrings = value;
   }
 
+  /* blazorSuppress */
   public get resourceStrings(): IgcChatResourceStrings & IChatResourceStrings {
     return this._i18nController.resourceStrings;
   }
