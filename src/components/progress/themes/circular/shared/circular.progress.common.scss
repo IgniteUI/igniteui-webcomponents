@@ -23,7 +23,7 @@ $theme: $material;
 }
 
 [part~='track'] {
-    stroke: var-get($theme, 'base-circle-color');
+    stroke: var-get($theme, 'track-color');
 }
 
 // Mixin for Gradient Colors

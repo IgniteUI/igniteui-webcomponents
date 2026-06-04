@@ -33,6 +33,10 @@ $theme: $base;
     }
 }
 
+input::-webkit-datetime-edit {
+    color: inherit;
+}
+
 [part~='input']::placeholder {
     color: var-get($theme, 'placeholder-color');
 }
@@ -45,13 +49,13 @@ $theme: $base;
 }
 
 :host(:focus-within),
-:host(:not([readonly],[disabled]):hover) {
+:host(:not([readonly], [disabled]):hover) {
     [part~='input']::placeholder {
         color: var-get($theme, 'hover-placeholder-color');
     }
 }
 
-:host(:not([readonly],[disabled]):hover) {
+:host(:not([readonly], [disabled]):hover) {
     [part~='filled'] {
         [part~='input'] {
             color: var-get($theme, 'filled-text-hover-color');
@@ -59,7 +63,7 @@ $theme: $base;
     }
 }
 
-:host(:not([readonly],[disabled]):focus-within) {
+:host(:not([readonly], [disabled]):focus-within) {
     [part~='filled'] {
         [part~='input'] {
             color: var-get($theme, 'focused-text-color');
@@ -99,8 +103,8 @@ $theme: $base;
     }
 }
 
-:host(:not([disabled],[readonly]):state(ig-invalid)),
-:host(:not(:disabled,[readonly]):state(ig-invalid)) {
+:host(:not([disabled], [readonly]):state(ig-invalid)),
+:host(:not(:disabled, [readonly]):state(ig-invalid)) {
     ::part(helper-text) {
         color: var-get($theme, 'error-secondary-color');
     }

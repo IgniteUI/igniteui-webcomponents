@@ -10,6 +10,7 @@ import {
   defineComponents,
   registerIconFromText,
 } from 'igniteui-webcomponents';
+import { disableStoryControls } from './story.js';
 
 defineComponents(
   IgcCarouselComponent,
@@ -228,6 +229,14 @@ const fancyImages = [
 ];
 
 export const Basic: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'A standard image carousel with default dot indicators and navigation arrows. Use the controls panel to interactively explore the available properties.',
+      },
+    },
+  },
   render: (args) => html`
     <igc-carousel
       ?disable-loop=${args.disableLoop}
@@ -253,9 +262,112 @@ export const Basic: Story = {
   `,
 };
 
-export const SlottedContent: Story = {
+export const Vertical: Story = {
+  argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'The carousel supports vertical orientation via the `vertical` attribute. Navigation arrows and slide transitions adapt to the vertical axis.',
+      },
+    },
+  },
+  render: () => html`
+    <igc-carousel
+      vertical
+      style="height: 400px; max-width: 640px; margin-inline: auto;"
+    >
+      ${defaultImages.map(
+        ({ src, alt }) => html`
+          <igc-carousel-slide>
+            <img src=${src} alt=${alt} />
+          </igc-carousel-slide>
+        `
+      )}
+    </igc-carousel>
+  `,
+};
+
+export const AnimationTypes: Story = {
+  argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'The `animationType` property controls the transition effect between slides. The three available modes are **slide** (default), **fade**, and **none** (instant switch).',
+      },
+    },
+  },
+  render: () => html`
+    <style>
+      .animation-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1.5rem;
+        padding: 1rem;
+      }
+      .animation-grid > div > p {
+        font-weight: 600;
+        margin: 0 0 0.5rem;
+        text-align: center;
+      }
+    </style>
+    <div class="animation-grid">
+      <div>
+        <p>slide (default)</p>
+        <igc-carousel animation-type="slide">
+          ${defaultImages.map(
+            ({ src, alt }) => html`
+              <igc-carousel-slide>
+                <img src=${src} alt=${alt} />
+              </igc-carousel-slide>
+            `
+          )}
+        </igc-carousel>
+      </div>
+      <div>
+        <p>fade</p>
+        <igc-carousel animation-type="fade">
+          ${defaultImages.map(
+            ({ src, alt }) => html`
+              <igc-carousel-slide>
+                <img src=${src} alt=${alt} />
+              </igc-carousel-slide>
+            `
+          )}
+        </igc-carousel>
+      </div>
+      <div>
+        <p>none</p>
+        <igc-carousel animation-type="none">
+          ${defaultImages.map(
+            ({ src, alt }) => html`
+              <igc-carousel-slide>
+                <img src=${src} alt=${alt} />
+              </igc-carousel-slide>
+            `
+          )}
+        </igc-carousel>
+      </div>
+    </div>
+  `,
+};
+
+export const AutoPlay: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Setting the `interval` property (in milliseconds) enables automatic slide advancement. By default the carousel pauses on user interaction; enable `disable-pause-on-interaction` to keep it playing continuously. Use the **Play** and **Pause** buttons below to control playback programmatically.',
+      },
+    },
+  },
+  args: {
+    interval: 2000,
+  },
   render: (args) => html`
     <igc-carousel
+      id="autoCarousel"
       ?disable-loop=${args.disableLoop}
       ?disable-pause-on-interaction=${args.disablePauseOnInteraction}
       ?hide-navigation=${args.hideNavigation}
@@ -268,6 +380,35 @@ export const SlottedContent: Story = {
       .indicatorsLabelFormat=${args.indicatorsLabelFormat}
       .slidesLabelFormat=${args.slidesLabelFormat}
     >
+      ${defaultImages.map(
+        ({ src, alt }) => html`
+          <igc-carousel-slide>
+            <img src=${src} alt=${alt} />
+          </igc-carousel-slide>
+        `
+      )}
+    </igc-carousel>
+    <div
+      style="display: flex; gap: 0.5rem; margin-block-start: 1rem; justify-content: center;"
+    >
+      <igc-button onclick="autoCarousel.play()">Play</igc-button>
+      <igc-button onclick="autoCarousel.pause()">Pause</igc-button>
+    </div>
+  `,
+};
+
+export const CustomNavigation: Story = {
+  argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Custom navigation icons and indicator styles can be provided via the `previous-button` and `next-button` named slots. Per-slide indicators can be replaced with `igc-carousel-indicator` elements; the `active` slot determines the appearance of the currently active indicator.',
+      },
+    },
+  },
+  render: () => html`
+    <igc-carousel>
       <igc-icon
         slot="previous-button"
         name="previous"
@@ -292,8 +433,69 @@ export const SlottedContent: Story = {
   `,
 };
 
-export const InputsTemplate: Story = {
-  render: (args) => html`
+export const ThumbnailIndicators: Story = {
+  argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Thumbnail images can be used as indicator controls by pairing each `igc-carousel-slide` with an `igc-carousel-indicator`. The `active` slot determines the appearance of the selected indicator.',
+      },
+    },
+  },
+  render: () => html`
+    <style>
+      igc-carousel {
+        height: 550px;
+      }
+      igc-carousel::part(indicators) {
+        border-radius: 2px;
+      }
+      .blurred {
+        filter: blur(2px);
+        opacity: 0.5;
+      }
+    </style>
+    <igc-carousel>
+      ${fancyImages.map(
+        ({ src, alt }) => html`
+          <igc-carousel-slide>
+            <img src=${src} alt=${alt} />
+          </igc-carousel-slide>
+
+          <igc-carousel-indicator>
+            <img
+              class="blurred"
+              src=${src.replace('.png', 'Thumb.png')}
+              alt=${`${alt} Thumb`}
+              width="50"
+              height="60"
+            />
+            <img
+              slot="active"
+              src=${src.replace('.png', 'Thumb.png')}
+              alt=${`${alt} Thumb Active`}
+              width="50"
+              height="60"
+            />
+          </igc-carousel-indicator>
+        `
+      )}
+    </igc-carousel>
+  `,
+};
+
+export const Multipage: Story = {
+  argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Carousel slides can host any content including interactive form elements. This example shows a two-step sign-up flow spanning two slides.',
+      },
+    },
+  },
+  render: () => html`
     <style>
       igc-carousel {
         border-radius: 10px;
@@ -321,20 +523,7 @@ export const InputsTemplate: Story = {
         text-align: center;
       }
     </style>
-    <igc-carousel
-      id="carousel"
-      ?disable-loop=${args.disableLoop}
-      ?disable-pause-on-interaction=${args.disablePauseOnInteraction}
-      ?hide-navigation=${args.hideNavigation}
-      ?hide-indicators=${args.hideIndicators}
-      .interval=${args.interval}
-      .animationType=${args.animationType}
-      .vertical=${args.vertical}
-      .indicatorsOrientation=${args.indicatorsOrientation}
-      .maximumIndicatorsCount=${args.maximumIndicatorsCount}
-      .indicatorsLabelFormat=${args.indicatorsLabelFormat}
-      .slidesLabelFormat=${args.slidesLabelFormat}
-    >
+    <igc-carousel id="multiCarousel">
       <igc-carousel-slide>
         <igc-input type="text" placeholder="Username">
           <span slot="prefix">🐱</span>
@@ -346,7 +535,7 @@ export const InputsTemplate: Story = {
         <igc-button>Comment</igc-button>
         <div>
           <span>Not a member? 🙀</span>
-          <igc-button onclick="carousel.next()">Sign up</igc-button>
+          <igc-button onclick="multiCarousel.next()">Sign up</igc-button>
         </div>
       </igc-carousel-slide>
       <igc-carousel-slide>
@@ -363,67 +552,9 @@ export const InputsTemplate: Story = {
         <igc-button>Sign up</igc-button>
         <div>
           <span>Already a member?</span>
-          <igc-button onclick="carousel.prev()">Comment</igc-button>
+          <igc-button onclick="multiCarousel.prev()">Comment</igc-button>
         </div>
       </igc-carousel-slide>
-    </igc-carousel>
-  `,
-};
-
-export const ThumbnailTemplate: Story = {
-  render: (args) => html`
-    <style>
-      igc-carousel {
-        height: 550px;
-      }
-      igc-carousel[vertical]::part(indicators) {
-        margin-inline-end: 16px;
-      }
-      igc-carousel::part(indicators) {
-        border-radius: 2px;
-      }
-      .blurred {
-        filter: blur(2px);
-        opacity: 0.5;
-      }
-    </style>
-    <igc-carousel
-      ?disable-loop=${args.disableLoop}
-      ?disable-pause-on-interaction=${args.disablePauseOnInteraction}
-      ?hide-navigation=${args.hideNavigation}
-      ?hide-indicators=${args.hideIndicators}
-      .interval=${args.interval}
-      .animationType=${args.animationType}
-      .vertical=${args.vertical}
-      .indicatorsOrientation=${args.indicatorsOrientation}
-      .maximumIndicatorsCount=${args.maximumIndicatorsCount}
-      .indicatorsLabelFormat=${args.indicatorsLabelFormat}
-      .slidesLabelFormat=${args.slidesLabelFormat}
-    >
-      ${fancyImages.map(
-        ({ src, alt }) => html`
-          <igc-carousel-slide>
-            <img src=${src} alt=${alt} />
-          </igc-carousel-slide>
-
-          <igc-carousel-indicator>
-            <img
-              class="blurred"
-              src=${src.replace('.png', 'Thumb.png')}
-              alt=${`${alt} Thumb`}
-              width="50"
-              height="60"
-            />
-            <img
-              slot="active"
-              src=${src.replace('.png', 'Thumb.png')}
-              alt=${`${alt} Thumb Active`}
-              width="50"
-              height="60"
-            />
-          </igc-carousel-indicator>
-        `
-      )}
     </igc-carousel>
   `,
 };

@@ -1,7 +1,5 @@
 import { html, nothing } from 'lit';
 import { property } from 'lit/decorators.js';
-import { createRef, ref } from 'lit/directives/ref.js';
-import { addAnimationController } from '../../animations/player.js';
 import { addThemingController } from '../../theming/theming-controller.js';
 import IgcButtonComponent from '../button/button.js';
 import { registerComponent } from '../common/definitions/register.js';
@@ -20,10 +18,16 @@ export interface IgcSnackbarComponentEventMap {
  * A snackbar component is used to provide feedback about an operation
  * by showing a brief message at the bottom of the screen.
  *
+ * The component integrates with the
+ * [Invoker Commands API](https://developer.mozilla.org/en-US/docs/Web/API/Invoker_Commands_API):
+ * an Ignite button or a native `<button>` with `command="--show"` / `"--hide"` /
+ * `"--toggle"` and `commandfor` pointing to this element will call the
+ * corresponding method declaratively without any JavaScript.
+ *
  * @element igc-snackbar
  *
  * @slot - Default slot to render the snackbar content.
- * @slot action - Renders the action part of the snackbar. Usually an interactive element (button)
+ * @slot action - Renders the action part of the snackbar. Usually an interactive element (button).
  *
  * @fires igcAction - Emitted when the snackbar action button is clicked.
  *
@@ -44,18 +48,12 @@ export default class IgcSnackbarComponent extends EventEmitterMixin<
     registerComponent(IgcSnackbarComponent, IgcButtonComponent);
   }
 
-  protected readonly _contentRef = createRef<HTMLElement>();
-  protected override readonly _player = addAnimationController(
-    this,
-    this._contentRef
-  );
-
   /**
-   * The snackbar action button.
+   * The text of the action button.
    * @attr action-text
    */
   @property({ attribute: 'action-text' })
-  public actionText!: string;
+  public actionText?: string;
 
   constructor() {
     super();
@@ -68,16 +66,18 @@ export default class IgcSnackbarComponent extends EventEmitterMixin<
 
   protected override render() {
     return html`
-      <div ${ref(this._contentRef)} part="base" .inert=${!this.open}>
+      <div part="base" .inert=${!this.open}>
         <span part="message">
           <slot></slot>
         </span>
 
         <slot name="action" part="action-container" @click=${this._handleClick}>
           ${this.actionText
-            ? html`<igc-button type="button" part="action" variant="flat">
-                ${this.actionText}
-              </igc-button>`
+            ? html`
+                <igc-button type="button" part="action" variant="flat">
+                  ${this.actionText}
+                </igc-button>
+              `
             : nothing}
         </slot>
       </div>

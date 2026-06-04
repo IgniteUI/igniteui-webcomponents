@@ -1,6 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/web-components-vite';
 import { html } from 'lit';
-
 import {
   IgcDateTimeInputComponent,
   defineComponents,
@@ -27,44 +26,10 @@ const metadata: Meta<IgcDateTimeInputComponent> = {
     actions: { handles: ['igcInput', 'igcChange'] },
   },
   argTypes: {
-    inputFormat: {
-      type: 'string',
-      description: 'The date format to apply on the input.',
-      control: 'text',
-    },
     value: {
-      type: 'string | Date',
+      type: 'Date',
       description: 'The value of the input.',
-      options: ['string', 'Date'],
-      control: 'text',
-    },
-    min: {
-      type: 'Date',
-      description: 'The minimum value required for the input to remain valid.',
       control: 'date',
-    },
-    max: {
-      type: 'Date',
-      description: 'The maximum value required for the input to remain valid.',
-      control: 'date',
-    },
-    displayFormat: {
-      type: 'string',
-      description:
-        'Format to display the value in when not editing.\nDefaults to the locale format if not set.',
-      control: 'text',
-    },
-    spinLoop: {
-      type: 'boolean',
-      description: 'Sets whether to loop over the currently spun segment.',
-      control: 'boolean',
-      table: { defaultValue: { summary: 'true' } },
-    },
-    locale: {
-      type: 'string',
-      description:
-        'Gets/Sets the locale used for formatting the display value.',
-      control: 'text',
     },
     readOnly: {
       type: 'boolean',
@@ -74,9 +39,8 @@ const metadata: Meta<IgcDateTimeInputComponent> = {
     },
     mask: {
       type: 'string',
-      description: 'The masked pattern of the component.',
+      description: 'The mask pattern of the component.',
       control: 'text',
-      table: { defaultValue: { summary: 'CCCCCCCCCC' } },
     },
     prompt: {
       type: 'string',
@@ -125,42 +89,59 @@ const metadata: Meta<IgcDateTimeInputComponent> = {
       description: 'The label for the control.',
       control: 'text',
     },
+    inputFormat: {
+      type: 'string',
+      description: 'The date format to apply on the input.',
+      control: 'text',
+    },
+    min: {
+      type: 'Date',
+      description: 'The minimum value required for the input to remain valid.',
+      control: 'date',
+    },
+    max: {
+      type: 'Date',
+      description: 'The maximum value required for the input to remain valid.',
+      control: 'date',
+    },
+    displayFormat: {
+      type: 'string',
+      description:
+        'Format to display the value in when not editing.\nDefaults to the locale format if not set.',
+      control: 'text',
+    },
+    spinLoop: {
+      type: 'boolean',
+      description: 'Sets whether to loop over the currently spun segment.',
+      control: 'boolean',
+      table: { defaultValue: { summary: 'true' } },
+    },
+    locale: {
+      type: 'string',
+      description:
+        'Gets/Sets the locale used for formatting the display value.',
+      control: 'text',
+    },
   },
   args: {
-    spinLoop: true,
     readOnly: false,
-    mask: 'CCCCCCCCCC',
     prompt: '_',
     required: false,
     disabled: false,
     invalid: false,
     outlined: false,
+    spinLoop: true,
   },
 };
 
 export default metadata;
 
 interface IgcDateTimeInputArgs {
-  /** The date format to apply on the input. */
-  inputFormat: string;
   /** The value of the input. */
-  value: string | Date;
-  /** The minimum value required for the input to remain valid. */
-  min: Date;
-  /** The maximum value required for the input to remain valid. */
-  max: Date;
-  /**
-   * Format to display the value in when not editing.
-   * Defaults to the locale format if not set.
-   */
-  displayFormat: string;
-  /** Sets whether to loop over the currently spun segment. */
-  spinLoop: boolean;
-  /** Gets/Sets the locale used for formatting the display value. */
-  locale: string;
+  value: Date;
   /** Makes the control a readonly field. */
   readOnly: boolean;
-  /** The masked pattern of the component. */
+  /** The mask pattern of the component. */
   mask: string;
   /** The prompt symbol to use for unfilled parts of the mask pattern. */
   prompt: string;
@@ -178,6 +159,21 @@ interface IgcDateTimeInputArgs {
   placeholder: string;
   /** The label for the control. */
   label: string;
+  /** The date format to apply on the input. */
+  inputFormat: string;
+  /** The minimum value required for the input to remain valid. */
+  min: Date;
+  /** The maximum value required for the input to remain valid. */
+  max: Date;
+  /**
+   * Format to display the value in when not editing.
+   * Defaults to the locale format if not set.
+   */
+  displayFormat: string;
+  /** Sets whether to loop over the currently spun segment. */
+  spinLoop: boolean;
+  /** Gets/Sets the locale used for formatting the display value. */
+  locale: string;
 }
 type Story = StoryObj<IgcDateTimeInputArgs>;
 
@@ -195,6 +191,14 @@ const clear = () => {
 };
 
 export const Default: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'A basic date-time input with prefix/suffix icon buttons for clearing the value and stepping the active date segment up or down. Use the controls panel to explore all available properties interactively.',
+      },
+    },
+  },
   args: {
     value: new Date(),
     label: 'Enter a date and/or time',
@@ -226,8 +230,144 @@ export const Default: Story = {
   `,
 };
 
+export const Formats: Story = {
+  argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          '`inputFormat` controls the date mask applied while the user is typing; `displayFormat` controls how the committed value is shown when the field is not focused. The two formats can differ — for example a compact display format with a verbose input format.',
+      },
+    },
+  },
+  render: () => html`
+    <div
+      style="display: flex; flex-direction: column; gap: 1.5rem; padding: 1rem; max-width: 400px;"
+    >
+      <igc-date-time-input
+        label="Date only (MM/dd/yyyy)"
+        input-format="MM/dd/yyyy"
+        display-format="MMMM d, yyyy"
+        .value=${new Date()}
+      >
+        <p slot="helper-text">
+          Display: MMMM d, yyyy &nbsp;|&nbsp; Input: MM/dd/yyyy
+        </p>
+      </igc-date-time-input>
+      <igc-date-time-input
+        label="Date &amp; time (24-hour)"
+        input-format="yyyy-MM-dd HH:mm"
+        display-format="yyyy-MM-dd HH:mm"
+        .value=${new Date()}
+      >
+        <p slot="helper-text">ISO-style 24-hour format</p>
+      </igc-date-time-input>
+      <igc-date-time-input
+        label="Time only (hh:mm tt)"
+        input-format="hh:mm tt"
+        display-format="h:mm a"
+        .value=${new Date()}
+      >
+        <p slot="helper-text">Display: h:mm a &nbsp;|&nbsp; Input: hh:mm tt</p>
+      </igc-date-time-input>
+    </div>
+  `,
+};
+
+export const MinMax: Story = {
+  argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'The `min` and `max` properties constrain the selectable date range. Entering a value outside the bounds marks the control as invalid and shows the `range-underflow` or `range-overflow` validation slot.',
+      },
+    },
+  },
+  render: () => {
+    const min = new Date();
+    min.setDate(min.getDate() - 7);
+    const max = new Date();
+    max.setDate(max.getDate() + 7);
+    return html`
+      <div
+        style="display: flex; flex-direction: column; gap: 1.5rem; padding: 1rem; max-width: 400px;"
+      >
+        <igc-date-time-input
+          label="Within valid range (±7 days from today)"
+          input-format="MM/dd/yyyy"
+          .value=${new Date()}
+          .min=${min}
+          .max=${max}
+        >
+          <p slot="helper-text">
+            Valid range: ${min.toLocaleDateString()} –
+            ${max.toLocaleDateString()}
+          </p>
+          <p slot="range-underflow">Date is before the minimum allowed date.</p>
+          <p slot="range-overflow">Date is after the maximum allowed date.</p>
+        </igc-date-time-input>
+        <igc-date-time-input
+          label="Out-of-range value (invalid)"
+          input-format="MM/dd/yyyy"
+          .value=${min}
+          .min=${new Date()}
+          .max=${max}
+        >
+          <p slot="helper-text">Intentionally set below the minimum.</p>
+          <p slot="range-underflow">Date is before the minimum allowed date.</p>
+        </igc-date-time-input>
+      </div>
+    `;
+  },
+};
+
+export const Locales: Story = {
+  argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'The `locale` property is passed to `Intl.DateTimeFormat` and affects the display format when `displayFormat` is not explicitly set. Each locale renders the same date value according to its regional convention.',
+      },
+    },
+  },
+  render: () => {
+    const value = new Date(2026, 0, 15, 14, 30);
+    const locales = [
+      { locale: 'en-US', label: 'English (US)' },
+      { locale: 'de-DE', label: 'German (DE)' },
+      { locale: 'ja-JP', label: 'Japanese (JP)' },
+      { locale: 'fr-FR', label: 'French (FR)' },
+    ];
+    return html`
+      <div
+        style="display: flex; flex-direction: column; gap: 1.25rem; padding: 1rem; max-width: 400px;"
+      >
+        ${locales.map(
+          ({ locale, label }) => html`
+            <igc-date-time-input
+              .label=${label}
+              .locale=${locale}
+              .value=${value}
+            ></igc-date-time-input>
+          `
+        )}
+      </div>
+    `;
+  },
+};
+
 export const Form: Story = {
   argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Demonstrates the date-time input inside an HTML `<form>`, covering default state, pre-filled value with custom formats, read-only, disabled fieldset, required validation, and `min`/`max` date constraints with custom messages.',
+      },
+    },
+  },
   render: () => {
     return html`
       <form action="" @submit=${formSubmitHandler}>

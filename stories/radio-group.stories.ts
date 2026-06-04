@@ -3,12 +3,17 @@ import { html } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
 
 import {
+  IgcRadioComponent,
   IgcRadioGroupComponent,
   defineComponents,
 } from 'igniteui-webcomponents';
-import { formControls, formSubmitHandler } from './story.js';
+import {
+  disableStoryControls,
+  formControls,
+  formSubmitHandler,
+} from './story.js';
 
-defineComponents(IgcRadioGroupComponent);
+defineComponents(IgcRadioGroupComponent, IgcRadioComponent);
 
 // region default
 const metadata: Meta<IgcRadioGroupComponent> = {
@@ -59,12 +64,6 @@ type Story = StoryObj<IgcRadioGroupArgs>;
 
 // endregion
 
-Object.assign(metadata.parameters!, {
-  actions: {
-    handles: ['igcChange'],
-  },
-});
-
 const radios = ['apple', 'orange', 'mango', 'banana'];
 const titleCase = (s: string) => s.replace(/^\w/, (c) => c.toUpperCase());
 
@@ -73,15 +72,20 @@ export const Default: Story = {
     name: 'default-state',
     value: 'mango',
   },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'A basic radio group with a pre-selected value set via the `value` attribute. Use the **Controls** panel to change the selected value or switch alignment.',
+      },
+    },
+  },
   render: (args) => html`
     <igc-radio-group
       alignment=${ifDefined(args.alignment)}
       name=${ifDefined(args.name)}
       value=${ifDefined(args.value)}
-      aria-labelledby="radio-group-label"
-      role="radiogroup"
     >
-      <label id="radio-group-label">Radio Group Label</label>
       <igc-radio value="apple">Apple</igc-radio>
       <igc-radio value="orange">Orange</igc-radio>
       <igc-radio value="mango">Mango</igc-radio>
@@ -90,49 +94,109 @@ export const Default: Story = {
   `,
 };
 
+export const Alignment: Story = {
+  argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Demonstrates the two `alignment` values — `vertical` (default) and `horizontal` — side by side.',
+      },
+    },
+  },
+  render: () => html`
+    <style>
+      .alignment-demo {
+        display: flex;
+        gap: 3rem;
+        flex-wrap: wrap;
+        align-items: flex-start;
+      }
+
+      .alignment-demo > div {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+
+      .alignment-demo label {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: var(--ig-gray-700);
+      }
+    </style>
+    <div class="alignment-demo">
+      <div>
+        <label>Vertical (default)</label>
+        <igc-radio-group name="align-v" value="orange">
+          <igc-radio value="apple">Apple</igc-radio>
+          <igc-radio value="orange">Orange</igc-radio>
+          <igc-radio value="mango">Mango</igc-radio>
+          <igc-radio value="banana">Banana</igc-radio>
+        </igc-radio-group>
+      </div>
+      <div>
+        <label>Horizontal</label>
+        <igc-radio-group alignment="horizontal" name="align-h" value="mango">
+          <igc-radio value="apple">Apple</igc-radio>
+          <igc-radio value="orange">Orange</igc-radio>
+          <igc-radio value="mango">Mango</igc-radio>
+          <igc-radio value="banana">Banana</igc-radio>
+        </igc-radio-group>
+      </div>
+    </div>
+  `,
+};
+
 export const Form: Story = {
-  render: (args) => {
+  argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Form integration demo covering default state, pre-selected value, disabled fieldset, and required validation with a custom `value-missing` slot message.',
+      },
+    },
+  },
+  render: () => {
     return html`
       <form action="" @submit=${formSubmitHandler}>
         <fieldset>
           <legend>Default</legend>
-          <igc-radio-group alignment=${ifDefined(args.alignment)}>
+          <igc-radio-group>
             ${radios.map(
               (e) =>
-                html`<igc-radio name="default-fruit" value=${e}
-                  >${titleCase(e)}</igc-radio
-                >`
+                html`<igc-radio name="default-fruit" value=${e}>
+                  ${titleCase(e)}
+                </igc-radio>`
             )}
           </igc-radio-group>
         </fieldset>
 
         <fieldset>
           <legend>Initial value</legend>
-          <igc-radio-group alignment=${ifDefined(args.alignment)}>
+          <igc-radio-group name="initial-fruit" value="mango">
             ${radios.map(
-              (e) =>
-                html`<igc-radio name="initial-fruit" checked value=${e}
-                  >${titleCase(e)}</igc-radio
-                >`
+              (e) => html`<igc-radio value=${e}>${titleCase(e)}</igc-radio>`
             )}
           </igc-radio-group>
         </fieldset>
 
         <fieldset disabled>
           <legend>Disabled</legend>
-          <igc-radio-group alignment=${ifDefined(args.alignment)}>
+          <igc-radio-group>
             ${radios.map(
               (e) =>
-                html`<igc-radio name="default-fruit" value=${e}
-                  >${titleCase(e)}</igc-radio
-                >`
+                html`<igc-radio name="disabled-fruit" value=${e}>
+                  ${titleCase(e)}
+                </igc-radio>`
             )}
           </igc-radio-group>
         </fieldset>
 
         <fieldset>
           <legend>Required</legend>
-          <igc-radio-group alignment=${ifDefined(args.alignment)}>
+          <igc-radio-group>
             ${radios.map(
               (e) => html`
                 <igc-radio name="required-fruit" required value=${e}>
@@ -140,8 +204,8 @@ export const Form: Story = {
                 </igc-radio>
               `
             )}
-            <igc-radio name="required-fruit" value="tomato"
-              >Tomato
+            <igc-radio name="required-fruit" value="tomato">
+              Tomato
               <div slot="value-missing">Please select a value!</div>
             </igc-radio>
           </igc-radio-group>

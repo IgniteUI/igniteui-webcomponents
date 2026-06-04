@@ -6,6 +6,7 @@ import {
   IgcCircularProgressComponent,
   defineComponents,
 } from 'igniteui-webcomponents';
+import { disableStoryControls } from './story.js';
 
 defineComponents(IgcCircularProgressComponent);
 
@@ -103,16 +104,25 @@ type Story = StoryObj<IgcCircularProgressArgs>;
 
 // endregion
 
-const Template = ({
-  variant,
-  hideLabel,
-  value,
-  max,
-  animationDuration,
-  indeterminate,
-  labelFormat,
-}: IgcCircularProgressArgs) => html`
-  <div style="display: flex; align-items: center; gap: 16px">
+export const Basic: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'A basic circular progress indicator. Use the controls panel to explore all available properties interactively.',
+      },
+    },
+  },
+  args: { value: 60 },
+  render: ({
+    variant,
+    hideLabel,
+    value,
+    max,
+    animationDuration,
+    indeterminate,
+    labelFormat,
+  }: IgcCircularProgressArgs) => html`
     <igc-circular-progress
       ?indeterminate=${indeterminate}
       ?hide-label=${hideLabel}
@@ -122,35 +132,270 @@ const Template = ({
       variant=${ifDefined(variant)}
       label-format=${ifDefined(labelFormat)}
     ></igc-circular-progress>
-    <igc-circular-progress
-      ?indeterminate=${indeterminate}
-      ?hide-label=${hideLabel}
-      value=${ifDefined(value)}
-      max=${ifDefined(max)}
-      animation-duration=${ifDefined(animationDuration)}
-      variant=${ifDefined(variant)}
-      label-format=${ifDefined(labelFormat)}
-    >
-      <igc-circular-gradient slot="gradient" offset="0%" color="#ff9a40">
-      </igc-circular-gradient>
-      <igc-circular-gradient slot="gradient" offset="50%" color="#1eccd4">
-      </igc-circular-gradient>
-      <igc-circular-gradient slot="gradient" offset="100%" color="#ff0079">
-      </igc-circular-gradient>
-      <span>SVG</span>
-    </igc-circular-progress>
-    <igc-circular-progress
-      style="--diameter: 72px; --stroke-thickness: 12px;"
-      ?indeterminate=${indeterminate}
-      ?hide-label=${hideLabel}
-      value=${ifDefined(value)}
-      max=${ifDefined(max)}
-      animation-duration=${ifDefined(animationDuration)}
-      variant=${ifDefined(variant)}
-      label-format=${ifDefined(labelFormat)}
-      ><div>Label</div>
-    </igc-circular-progress>
-  </div>
-`;
+  `,
+};
 
-export const Basic: Story = Template.bind({});
+export const Variants: Story = {
+  argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'The `variant` property applies a semantic color to the progress track. Available values are **primary** (default), **info**, **success**, **warning**, and **danger**.',
+      },
+    },
+  },
+  render: () => html`
+    <div
+      style="display: flex; flex-wrap: wrap; align-items: center; gap: 1.5rem; padding: 1rem;"
+    >
+      <div
+        style="display: flex; flex-direction: column; align-items: center; gap: 0.5rem;"
+      >
+        <igc-circular-progress
+          value="70"
+          variant="primary"
+        ></igc-circular-progress>
+        <span>Primary</span>
+      </div>
+      <div
+        style="display: flex; flex-direction: column; align-items: center; gap: 0.5rem;"
+      >
+        <igc-circular-progress
+          value="70"
+          variant="info"
+        ></igc-circular-progress>
+        <span>Info</span>
+      </div>
+      <div
+        style="display: flex; flex-direction: column; align-items: center; gap: 0.5rem;"
+      >
+        <igc-circular-progress
+          value="70"
+          variant="success"
+        ></igc-circular-progress>
+        <span>Success</span>
+      </div>
+      <div
+        style="display: flex; flex-direction: column; align-items: center; gap: 0.5rem;"
+      >
+        <igc-circular-progress
+          value="70"
+          variant="warning"
+        ></igc-circular-progress>
+        <span>Warning</span>
+      </div>
+      <div
+        style="display: flex; flex-direction: column; align-items: center; gap: 0.5rem;"
+      >
+        <igc-circular-progress
+          value="70"
+          variant="danger"
+        ></igc-circular-progress>
+        <span>Danger</span>
+      </div>
+    </div>
+  `,
+};
+
+export const Indeterminate: Story = {
+  argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Setting `indeterminate` switches the indicator into an infinite spin animation, used when the duration of an operation is unknown.',
+      },
+    },
+  },
+  render: () => html`
+    <div
+      style="display: flex; flex-wrap: wrap; align-items: center; gap: 1.5rem; padding: 1rem;"
+    >
+      <div
+        style="display: flex; flex-direction: column; align-items: center; gap: 0.5rem;"
+      >
+        <igc-circular-progress indeterminate></igc-circular-progress>
+        <span>Primary</span>
+      </div>
+      <div
+        style="display: flex; flex-direction: column; align-items: center; gap: 0.5rem;"
+      >
+        <igc-circular-progress
+          indeterminate
+          variant="success"
+        ></igc-circular-progress>
+        <span>Success</span>
+      </div>
+      <div
+        style="display: flex; flex-direction: column; align-items: center; gap: 0.5rem;"
+      >
+        <igc-circular-progress
+          indeterminate
+          variant="danger"
+        ></igc-circular-progress>
+        <span>Danger</span>
+      </div>
+    </div>
+  `,
+};
+
+export const GradientTrack: Story = {
+  argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Custom gradient stops can be slotted via `igc-circular-gradient` elements with the `gradient` slot. Each stop accepts an `offset` percentage and a `color`. The default label slot can also be replaced with arbitrary content.',
+      },
+    },
+  },
+  render: () => html`
+    <div
+      style="display: flex; flex-wrap: wrap; align-items: center; gap: 2rem; padding: 1rem;"
+    >
+      <igc-circular-progress value="75">
+        <igc-circular-gradient
+          slot="gradient"
+          offset="0%"
+          color="#ff9a40"
+        ></igc-circular-gradient>
+        <igc-circular-gradient
+          slot="gradient"
+          offset="50%"
+          color="#1eccd4"
+        ></igc-circular-gradient>
+        <igc-circular-gradient
+          slot="gradient"
+          offset="100%"
+          color="#ff0079"
+        ></igc-circular-gradient>
+      </igc-circular-progress>
+      <igc-circular-progress value="50" hide-label>
+        <igc-circular-gradient
+          slot="gradient"
+          offset="0%"
+          color="#6a11cb"
+        ></igc-circular-gradient>
+        <igc-circular-gradient
+          slot="gradient"
+          offset="100%"
+          color="#2575fc"
+        ></igc-circular-gradient>
+        <span>50%</span>
+      </igc-circular-progress>
+      <igc-circular-progress value="90" hide-label>
+        <igc-circular-gradient
+          slot="gradient"
+          offset="0%"
+          color="#f7971e"
+        ></igc-circular-gradient>
+        <igc-circular-gradient
+          slot="gradient"
+          offset="100%"
+          color="#ffd200"
+        ></igc-circular-gradient>
+        <span>Done</span>
+      </igc-circular-progress>
+    </div>
+  `,
+};
+
+export const CustomSize: Story = {
+  argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'The diameter and stroke thickness of the ring are controlled via the `--diameter` and `--stroke-thickness` CSS custom properties, making it easy to embed the indicator at any scale.',
+      },
+    },
+  },
+  render: () => html`
+    <div
+      style="display: flex; flex-wrap: wrap; align-items: center; gap: 2rem; padding: 1rem;"
+    >
+      <div
+        style="display: flex; flex-direction: column; align-items: center; gap: 0.5rem;"
+      >
+        <igc-circular-progress value="60"></igc-circular-progress>
+        <span>Default</span>
+      </div>
+      <div
+        style="display: flex; flex-direction: column; align-items: center; gap: 0.5rem;"
+      >
+        <igc-circular-progress
+          value="60"
+          style="--diameter: 96px; --stroke-thickness: 4px;"
+        ></igc-circular-progress>
+        <span>Medium</span>
+      </div>
+      <div
+        style="display: flex; flex-direction: column; align-items: center; gap: 0.5rem;"
+      >
+        <igc-circular-progress
+          value="60"
+          style="--diameter: 128px; --stroke-thickness: 14px;"
+        ></igc-circular-progress>
+        <span>Large</span>
+      </div>
+    </div>
+  `,
+};
+
+export const LabelFormat: Story = {
+  argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'The `labelFormat` property allows customising the text displayed inside the ring. Use `{0}` for the current value and `{1}` for the max value. Setting `hideLabel` removes the label entirely.',
+      },
+    },
+  },
+  render: () => html`
+    <style>
+      igc-circular-progress {
+        --diameter: 128px;
+      }
+
+      igc-circular-progress::part(label) {
+        font-size: 0.75rem;
+      }
+    </style>
+    <div
+      style="display: flex; flex-wrap: wrap; align-items: center; gap: 2rem; padding: 1rem;"
+    >
+      <div
+        style="display: flex; flex-direction: column; align-items: center; gap: 0.5rem;"
+      >
+        <igc-circular-progress value="42"></igc-circular-progress>
+        <span>Default</span>
+      </div>
+      <div
+        style="display: flex; flex-direction: column; align-items: center; gap: 0.5rem;"
+      >
+        <igc-circular-progress
+          value="42"
+          label-format="{0}/{1}"
+        ></igc-circular-progress>
+        <span>{value}/{max}</span>
+      </div>
+      <div
+        style="display: flex; flex-direction: column; align-items: center; gap: 0.5rem;"
+      >
+        <igc-circular-progress
+          value="42"
+          label-format="Step {0}"
+        ></igc-circular-progress>
+        <span>Step {value}</span>
+      </div>
+      <div
+        style="display: flex; flex-direction: column; align-items: center; gap: 0.5rem;"
+      >
+        <igc-circular-progress value="42" hide-label></igc-circular-progress>
+        <span>Hidden</span>
+      </div>
+    </div>
+  `,
+};

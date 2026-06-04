@@ -232,9 +232,9 @@ describe('Rating component', () => {
     it('correctly renders symbols passed through igc-rating-symbol', async () => {
       const projected = await fixture<IgcRatingComponent>(
         html`<igc-rating>
-          <igc-rating-symbol>🐝</igc-rating-symbol>
-          <igc-rating-symbol>🐝</igc-rating-symbol>
-          <igc-rating-symbol>🐝</igc-rating-symbol>
+          <igc-rating-symbol slot="symbol">🐝</igc-rating-symbol>
+          <igc-rating-symbol slot="symbol">🐝</igc-rating-symbol>
+          <igc-rating-symbol slot="symbol">🐝</igc-rating-symbol>
         </igc-rating>`
       );
 
@@ -248,9 +248,9 @@ describe('Rating component', () => {
     it('sets max value correctly when igc-rating-symbols are projected', async () => {
       const projected = await fixture<IgcRatingComponent>(
         html`<igc-rating>
-          <igc-rating-symbol>🐝</igc-rating-symbol>
-          <igc-rating-symbol>🐝</igc-rating-symbol>
-          <igc-rating-symbol>🐝</igc-rating-symbol>
+          <igc-rating-symbol slot="symbol">🐝</igc-rating-symbol>
+          <igc-rating-symbol slot="symbol">🐝</igc-rating-symbol>
+          <igc-rating-symbol slot="symbol">🐝</igc-rating-symbol>
         </igc-rating>`
       );
 

@@ -7,6 +7,10 @@
 :host {
     --linear-animation-duration: 2000ms;
     --linear-strips-orientation: -45deg;
+
+    display: flex;
+    flex-grow: 1;
+    width: 100%;
 }
 
 :host(:dir(rtl)),
