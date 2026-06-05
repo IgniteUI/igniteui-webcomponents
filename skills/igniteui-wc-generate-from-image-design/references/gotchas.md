@@ -38,7 +38,7 @@ Do not assume everything comes from `igniteui-webcomponents`. Advanced grids, ch
 Category charts can show markers by default. If the screenshot does not show markers, set `markerTypes` to the matching no-marker option documented for the component. Confirm the exact value shape from `get_doc`.
 
 ### `plotAreaBackground` and `areaFillOpacity` are inherited — not visible in `get_api_reference`
-Both properties exist but are defined on parent classes, so `get_api_reference({ component: "IgcCategoryChartComponent" })` will not list them. Use `search_api` to find them:
+Both properties exist but are defined on parent classes, so `get_api_reference({ platform: "webcomponents", component: "IgcCategoryChartComponent" })` will not list them. Use `search_api` to find them:
 ```ts
 chart.plotAreaBackground = 'transparent';  // inherited from IgcSeriesViewerComponent
 chart.areaFillOpacity = 0.3;               // inherited from IgcDomainChartComponent (not on IgcSparklineComponent)
