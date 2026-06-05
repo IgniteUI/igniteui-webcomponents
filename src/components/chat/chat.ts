@@ -312,6 +312,7 @@ export default class IgcChatComponent extends EventEmitterMixin<
     return this._state.options;
   }
 
+  /* blazorSuppress */
   /**
    * The resource strings of the chat.
    */
