@@ -3,6 +3,8 @@ import { addThemingController } from '../../theming/theming-controller.js';
 import { convertToDate, isValidDate } from '../calendar/helpers.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { formatDisplayDate } from '../common/i18n/i18n-controller.js';
+import type { AbstractConstructor } from '../common/mixins/constructor.js';
+import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormValueDateTimeTransformers } from '../common/mixins/forms/form-transformers.js';
 import { createFormValueState } from '../common/mixins/forms/form-value.js';
 import { equal } from '../common/util.js';
@@ -15,16 +17,24 @@ import {
   type DatePartDeltas,
   DEFAULT_DATE_PARTS_SPIN_DELTAS,
 } from './date-part.js';
-import {
-  IgcDateTimeInputBaseComponent,
-  type IgcDateTimeInputComponentEventMap,
-} from './date-time-input.base.js';
+import { IgcDateTimeInputBaseComponent } from './date-time-input.base.js';
 import {
   createDatePart,
   DateParts,
   DateTimeMaskParser,
 } from './datetime-mask-parser.js';
 import { dateTimeInputValidators } from './validators.js';
+
+export interface IgcDateTimeInputComponentEventMap {
+  /* alternateName: inputOcurred */
+  igcInput: CustomEvent<string>;
+  igcChange: CustomEvent<Date | null>;
+  // For analyzer meta only:
+  /* skipWCPrefix */
+  focus: FocusEvent;
+  /* skipWCPrefix */
+  blur: FocusEvent;
+}
 
 /**
  * A date time input is an input field that lets you set and edit the date and time in a chosen input element
@@ -51,14 +61,10 @@ import { dateTimeInputValidators } from './validators.js';
  * @csspart suffix - The suffix wrapper.
  * @csspart helper-text - The helper text wrapper.
  */
-export interface IgcDateTimeInputEventMap extends Omit<
+export default class IgcDateTimeInputComponent extends EventEmitterMixin<
   IgcDateTimeInputComponentEventMap,
-  'igcChange'
-> {
-  igcChange: CustomEvent<Date | null>;
-}
-
-export default class IgcDateTimeInputComponent extends IgcDateTimeInputBaseComponent {
+  AbstractConstructor<IgcDateTimeInputBaseComponent>
+>(IgcDateTimeInputBaseComponent) {
   public static readonly tagName = 'igc-date-time-input';
   public static styles = [styles, shared];
 

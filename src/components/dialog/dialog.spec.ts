@@ -279,6 +279,89 @@ describe('Dialog', () => {
     });
   });
 
+  describe('Invoker Commands API', () => {
+    afterEach(async () => {
+      if (dialog.open) {
+        await dialog.hide();
+      }
+    });
+
+    describe('with igc-button', () => {
+      let invoker: IgcButtonComponent;
+
+      beforeEach(async () => {
+        const container = await fixture<HTMLElement>(html`
+          <div>
+            <igc-button command="--show" commandfor="invoker-dialog"
+              >Open</igc-button
+            >
+            <igc-dialog id="invoker-dialog" title="Invoked dialog"></igc-dialog>
+          </div>
+        `);
+
+        invoker = container.querySelector<IgcButtonComponent>('igc-button')!;
+        dialog = container.querySelector<IgcDialogComponent>('igc-dialog')!;
+      });
+
+      it('`--show` opens the dialog', async () => {
+        expect(dialog.open).to.be.false;
+
+        invoker.click();
+        await waitUntil(() => dialog.open);
+
+        expect(dialog.open).to.be.true;
+      });
+
+      it('`--hide` closes an open dialog', async () => {
+        await dialog.show();
+        expect(dialog.open).to.be.true;
+
+        invoker.command = '--hide';
+        await elementUpdated(invoker);
+
+        invoker.click();
+        await waitUntil(() => !dialog.open);
+
+        expect(dialog.open).to.be.false;
+      });
+
+      it('`--toggle` opens a closed dialog', async () => {
+        expect(dialog.open).to.be.false;
+
+        invoker.command = '--toggle';
+        await elementUpdated(invoker);
+
+        invoker.click();
+        await waitUntil(() => dialog.open);
+
+        expect(dialog.open).to.be.true;
+      });
+
+      it('`--toggle` closes an open dialog', async () => {
+        await dialog.show();
+        expect(dialog.open).to.be.true;
+
+        invoker.command = '--toggle';
+        await elementUpdated(invoker);
+
+        invoker.click();
+        await waitUntil(() => !dialog.open);
+
+        expect(dialog.open).to.be.false;
+      });
+
+      it('a disabled igc-button does not invoke commands', async () => {
+        invoker.disabled = true;
+        await elementUpdated(invoker);
+
+        invoker.click();
+        await elementUpdated(dialog);
+
+        expect(dialog.open).to.be.false;
+      });
+    });
+  });
+
   describe('Form', () => {
     beforeEach(async () => {
       dialog = await fixture<IgcDialogComponent>(html`

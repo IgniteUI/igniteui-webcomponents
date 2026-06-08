@@ -145,6 +145,10 @@ export function isElement(node: unknown): node is Element {
   return node instanceof Node && node.nodeType === Node.ELEMENT_NODE;
 }
 
+export function isDocument(node: unknown): node is Document {
+  return node instanceof Node && node.nodeType === Node.DOCUMENT_NODE;
+}
+
 /**
  * Finds the first element in the event's composed path that matches the provided predicate, which can be either a string selector or a function.
  *
