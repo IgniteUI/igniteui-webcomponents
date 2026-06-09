@@ -1,3 +1,4 @@
+import type { PropertyValues } from 'lit';
 import { property } from 'lit/decorators.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
@@ -61,6 +62,8 @@ export default class IgcSliderComponent extends FormAssociatedMixin(
     transformers: FormValueNumberTransformers,
   });
 
+  private _thumbLabel: string | null = null;
+
   /* @tsTwoWayProperty(true, "igcChange", "detail", false) */
   /**
    * The current value of the component.
@@ -117,6 +120,11 @@ export default class IgcSliderComponent extends FormAssociatedMixin(
     this.emitEvent('igcChange', { detail: this.value });
   }
 
+  protected override updated(changedProperties: PropertyValues<this>) {
+    super.updated(changedProperties);
+    this.removeAttribute('aria-label');
+  }
+
   /**
    * Increments the value of the slider by `stepIncrement * step`, where `stepIncrement` defaults to 1.
    * @param stepIncrement Optional step increment. If no parameter is passed, it defaults to 1.
@@ -134,7 +142,8 @@ export default class IgcSliderComponent extends FormAssociatedMixin(
   }
 
   protected override renderThumbs() {
-    return this.renderThumb(this.value, this.ariaLabel!);
+    this._thumbLabel = this.ariaLabel ?? this._thumbLabel;
+    return this.renderThumb(this.value, this._thumbLabel!);
   }
 }
 

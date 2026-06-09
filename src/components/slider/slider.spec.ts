@@ -204,7 +204,7 @@ describe('Slider component', () => {
         thumbs: { current: thumb },
       } = getDOM(slider);
 
-      expect(slider.hasAttribute('aria-label')).to.be.true;
+      expect(slider.hasAttribute('aria-label')).to.be.false;
       expect(thumb.getAttribute('role')).to.eq('slider');
       expect(thumb.ariaValueMin).to.eq('0');
       expect(thumb.ariaValueMax).to.eq('100');
