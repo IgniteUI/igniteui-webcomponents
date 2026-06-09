@@ -52,6 +52,25 @@ const metadata: Meta<IgcQrCodeComponent> = {
       control: 'number',
       table: { defaultValue: { summary: '4' } },
     },
+    logoSrc: {
+      type: 'string',
+      description:
+        'The source URL of an optional logo image to be displayed at the center of the QR code. The logo can help with branding and recognition.\nIf provided, the component will attempt to render the logo within the QR code while maintaining scannability.',
+      control: 'text',
+    },
+    logoSize: {
+      type: 'number',
+      description:
+        'The size of the logo as a ratio of the QR code size. This determines how large the logo will appear within the QR code.\nThe value should be a number between 0 and 1, where 0 means no logo and 1 means the logo will take up the entire QR code (which is not recommended).\nThe default value is 0.4, meaning the logo will take up 40% of the QR code size.',
+      control: 'number',
+      table: { defaultValue: { summary: '0.4' } },
+    },
+    logoMargin: {
+      type: 'number',
+      description:
+        "The margin around the logo in pixels. This is the whitespace area surrounding the logo within the QR code,\nwhich helps ensure that the logo does not interfere with the QR code's scannability.",
+      control: 'number',
+    },
     dotStyle: {
       type: '"square" | "circle" | "rounded"',
       description:
@@ -73,6 +92,7 @@ const metadata: Meta<IgcQrCodeComponent> = {
     errorLevel: 'M',
     size: 128,
     margin: 4,
+    logoSize: 0.4,
     dotStyle: 'square',
     squareStyle: 'square',
   },
@@ -105,6 +125,22 @@ interface IgcQrCodeArgs {
    * which helps ensure that it can be properly scanned.
    */
   margin: number;
+  /**
+   * The source URL of an optional logo image to be displayed at the center of the QR code. The logo can help with branding and recognition.
+   * If provided, the component will attempt to render the logo within the QR code while maintaining scannability.
+   */
+  logoSrc: string;
+  /**
+   * The size of the logo as a ratio of the QR code size. This determines how large the logo will appear within the QR code.
+   * The value should be a number between 0 and 1, where 0 means no logo and 1 means the logo will take up the entire QR code (which is not recommended).
+   * The default value is 0.4, meaning the logo will take up 40% of the QR code size.
+   */
+  logoSize: number;
+  /**
+   * The margin around the logo in pixels. This is the whitespace area surrounding the logo within the QR code,
+   * which helps ensure that the logo does not interfere with the QR code's scannability.
+   */
+  logoMargin: number;
   /** The style of the data modules (dots) in the QR code. This can be 'square', 'circle', or 'rounded'. */
   dotStyle: 'square' | 'circle' | 'rounded';
   /** The style of the corner squares in the QR code. This can be 'square', 'circle', or 'rounded'. */
@@ -239,6 +275,87 @@ export const CombinedStyles: Story = {
           square-style="circle"
         ></igc-qr-code>
         <span>rounded / circle</span>
+      </div>
+    </div>
+  `,
+};
+
+export const WithLogo: Story = {
+  argTypes: disableStoryControls(metadata),
+  render: () => html`
+    <div
+      style="display: flex; gap: 2.5rem; flex-wrap: wrap; align-items: flex-start; padding: 1.5rem; background: #111; border-radius: 12px;"
+    >
+      <div
+        style="display: flex; flex-direction: column; align-items: center; gap: 0.75rem;"
+      >
+        <igc-qr-code
+          value="https://developer.mozilla.org/en-US/docs/Web/JavaScript"
+          size="220"
+          error-level="H"
+          dot-style="circle"
+          square-style="rounded"
+          logo-src="https://upload.wikimedia.org/wikipedia/commons/6/6a/JavaScript-logo.png"
+          logo-size="0.75"
+          logo-margin="6"
+          style="
+            --igc-qr-dark: #1a1a1a;
+            --igc-qr-background: #f7df1e;
+            --qr-corner-square-fill: #1a1a1a;
+            --qr-corner-dot-fill: #1a1a1a;
+          "
+        ></igc-qr-code>
+        <span style="color: #f7df1e; font-family: sans-serif; font-weight: 600;"
+          >JavaScript</span
+        >
+      </div>
+
+      <div
+        style="display: flex; flex-direction: column; align-items: center; gap: 0.75rem;"
+      >
+        <igc-qr-code
+          value="https://developer.mozilla.org/en-US/docs/Web/HTML"
+          size="220"
+          error-level="H"
+          dot-style="circle"
+          square-style="rounded"
+          logo-src="https://upload.wikimedia.org/wikipedia/commons/6/61/HTML5_logo_and_wordmark.svg"
+          logo-size="0.75"
+          logo-margin="6"
+          style="
+            --igc-qr-dark: #ffffff;
+            --igc-qr-background: #e44d26;
+            --qr-corner-square-fill: #ffffff;
+            --qr-corner-dot-fill: #ffffff;
+          "
+        ></igc-qr-code>
+        <span style="color: #e44d26; font-family: sans-serif; font-weight: 600;"
+          >HTML5</span
+        >
+      </div>
+
+      <div
+        style="display: flex; flex-direction: column; align-items: center; gap: 0.75rem;"
+      >
+        <igc-qr-code
+          value="https://developer.mozilla.org/en-US/docs/Web/CSS"
+          size="220"
+          error-level="H"
+          dot-style="circle"
+          square-style="rounded"
+          logo-src="https://upload.wikimedia.org/wikipedia/commons/d/d5/CSS3_logo_and_wordmark.svg"
+          logo-size="0.75"
+          logo-margin="6"
+          style="
+            --igc-qr-dark: #ffffff;
+            --igc-qr-background: #1572b6;
+            --qr-corner-square-fill: #ffffff;
+            --qr-corner-dot-fill: #ffffff;
+          "
+        ></igc-qr-code>
+        <span style="color: #1572b6; font-family: sans-serif; font-weight: 600;"
+          >CSS3</span
+        >
       </div>
     </div>
   `,

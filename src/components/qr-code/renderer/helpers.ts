@@ -61,7 +61,7 @@ function roundedRectPerCorner(
 
 /** Returns an SVG path string for a single data module at `(x, y)` with side `s`, in the given style.
  * For `'rounded'`, adjacent module flags control which corners are rounded. */
-export function dotPath(
+function dotPath(
   x: number,
   y: number,
   s: number,
@@ -164,7 +164,7 @@ export function cornerSquarePath(
 }
 
 /** Converts a module grid index to a pixel coordinate, accounting for margin. */
-export function moduleToPx(
+function moduleToPx(
   moduleIndex: number,
   moduleSize: number,
   marginPx: number
@@ -185,7 +185,7 @@ function finderCorners(size: number): [number, number][] {
  * three finder patterns (including their separators), used to skip those modules
  * during data rendering.
  */
-export function getFinderPatternModules(size: number): Set<number> {
+function getFinderPatternModules(size: number): Set<number> {
   const modules = new Set<number>();
 
   for (const [startRow, startCol] of finderCorners(size)) {

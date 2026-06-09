@@ -1,10 +1,18 @@
-import { css, html, LitElement, nothing, svg } from 'lit';
-import { property } from 'lit/decorators.js';
+import { css, html, LitElement, nothing, type PropertyValues } from 'lit';
+import { property, state } from 'lit/decorators.js';
+import { createAbortHandle } from '../common/abort-handler.js';
 import { registerComponent } from '../common/definitions/register.js';
-import { isEmpty } from '../common/util.js';
+import { bindIf, clamp, nanoid } from '../common/util.js';
 import { generateQRCodeMatrix } from './model/matrix.js';
-import { renderQrCorner } from './renderer/corner.js';
-import { getFinderPatterns, renderDataModules } from './renderer/svg.js';
+import {
+  DEFAULT_SIZE_RATIO,
+  DOT_BACKGROUND,
+  MAX_SAFE_AREA,
+  SAFE_AREAS,
+} from './renderer/constants.js';
+import { renderQrFinders } from './renderer/corner.js';
+import { renderQrDots } from './renderer/dots.js';
+import { renderQrMaskAndImage } from './renderer/image.js';
 import type {
   QrCornerSquareStyle,
   QrDotStyle,
@@ -37,6 +45,13 @@ export default class IgcQrCodeComponent extends LitElement {
   public static register(): void {
     registerComponent(IgcQrCodeComponent);
   }
+
+  private readonly _abortHandle = createAbortHandle();
+  private readonly _maskId = nanoid(8);
+  private readonly _maskUrl = `url(#${this._maskId})`;
+
+  @state()
+  private _logoAspectRatio = 1;
 
   /**
    * The value to be encoded in the QR code. This can be any string, such as a URL, text, or other data.
@@ -88,6 +103,35 @@ export default class IgcQrCodeComponent extends LitElement {
   public margin = 4;
 
   /**
+   * The source URL of an optional logo image to be displayed at the center of the QR code. The logo can help with branding and recognition.
+   * If provided, the component will attempt to render the logo within the QR code while maintaining scannability.
+   *
+   * @attr logo-src
+   */
+  @property({ attribute: 'logo-src' })
+  public logoSrc?: string;
+
+  /**
+   * The size of the logo as a ratio of the QR code size. This determines how large the logo will appear within the QR code.
+   * The value should be a number between 0 and 1, where 0 means no logo and 1 means the logo will take up the entire QR code (which is not recommended).
+   * The default value is 0.4, meaning the logo will take up 40% of the QR code size.
+   *
+   * @attr logo-size
+   * @default 0.4
+   */
+  @property({ type: Number, attribute: 'logo-size' })
+  public logoSize = 0.4;
+
+  /**
+   * The margin around the logo in pixels. This is the whitespace area surrounding the logo within the QR code,
+   * which helps ensure that the logo does not interfere with the QR code's scannability.
+   *
+   * @attr logo-margin
+   */
+  @property({ type: Number, attribute: 'logo-margin' })
+  public logoMargin?: number;
+
+  /**
    * The style of the data modules (dots) in the QR code. This can be 'square', 'circle', or 'rounded'.
    *
    * @attr dot-style
@@ -105,12 +149,100 @@ export default class IgcQrCodeComponent extends LitElement {
   @property({ attribute: 'square-style' })
   public squareStyle: QrCornerSquareStyle = 'square';
 
+  /** @internal */
+  protected override update(props: PropertyValues<this>): void {
+    if (props.has('logoSrc')) {
+      this._resolveAspectRatio();
+    }
+
+    super.update(props);
+  }
+
+  private _resolveAspectRatio(): void {
+    if (!this._hasValidLogoSrc()) {
+      this._abortHandle.abort();
+      this._logoAspectRatio = 1;
+      return;
+    }
+
+    this._abortHandle.abort();
+    const signal = this._abortHandle.signal;
+
+    const img = new Image();
+    img.src = this.logoSrc!;
+
+    if (img.complete && img.naturalWidth && img.naturalHeight) {
+      this._logoAspectRatio = img.naturalWidth / img.naturalHeight;
+      return;
+    }
+
+    this._logoAspectRatio = 1;
+
+    img.addEventListener(
+      'load',
+      () => {
+        if (img.naturalWidth && img.naturalHeight) {
+          this._logoAspectRatio = img.naturalWidth / img.naturalHeight;
+        }
+      },
+      { once: true, signal }
+    );
+  }
+
+  /**
+   * Determines whether a valid logo source is provided.
+   *
+   * The method checks if the `logoSrc` property is set and if it does not start with potentially unsafe schemes like 'javascript:' or 'vbscript:'.
+   * It also ensures that if the source is a data URI, it must be an image type.
+   * This validation helps prevent security risks associated with rendering untrusted content in the QR code.
+   */
+  private _hasValidLogoSrc(): boolean {
+    if (!this.logoSrc) return false;
+    const s = this.logoSrc.trim().toLowerCase();
+    if (s.startsWith('javascript:') || s.startsWith('vbscript:')) return false;
+    if (s.startsWith('data:') && !s.startsWith('data:image/')) return false;
+    return true;
+  }
+
+  private _pickErrorLevel(area: number): QrErrorCorrectionLevel {
+    if (area <= SAFE_AREAS.L) return 'L';
+    if (area <= SAFE_AREAS.M) return 'M';
+    if (area <= SAFE_AREAS.Q) return 'Q';
+    return 'H';
+  }
+
+  private _getErrorLevelAndArea(hasLogo: boolean) {
+    const userErrorLevel = this.errorLevel;
+    const size = this.logoSize;
+    const sizeRatio = hasLogo ? clamp(size ?? DEFAULT_SIZE_RATIO, 0, 1) : 0;
+    const targetArea = sizeRatio * MAX_SAFE_AREA;
+
+    let errorLevel: QrErrorCorrectionLevel;
+    let area: number;
+
+    if (userErrorLevel) {
+      errorLevel = userErrorLevel;
+      area = Math.min(targetArea, SAFE_AREAS[userErrorLevel]);
+    } else if (targetArea > 0) {
+      errorLevel = this._pickErrorLevel(targetArea);
+      area = targetArea;
+    } else {
+      errorLevel = 'M';
+      area = 0;
+    }
+
+    return { errorLevel, area };
+  }
+
   protected override render() {
-    if (!this.value) return null;
+    if (!this.value) return nothing;
+
+    const hasLogo = this._hasValidLogoSrc();
+    const { errorLevel, area } = this._getErrorLevelAndArea(hasLogo);
 
     const { matrix, size } = generateQRCodeMatrix(
       this.value,
-      this.errorLevel,
+      errorLevel,
       this.version
     );
 
@@ -119,27 +251,16 @@ export default class IgcQrCodeComponent extends LitElement {
     const marginPx = this.margin * moduleSize;
     const svgSize = moduleSize * (size + this.margin * 2);
 
-    const dataModules = renderDataModules(
-      matrix,
-      moduleSize,
-      marginPx,
-      this.dotStyle
-    );
-
-    const paths = isEmpty(dataModules)
-      ? nothing
-      : svg`<path d=${dataModules.join(' ')} fill="var(--igc-qr-dark, #000)"/>`;
-
-    const patterns = getFinderPatterns(size, moduleSize, marginPx).map(
-      ({ x, y }) =>
-        renderQrCorner({
-          x,
-          y,
-          size: moduleSize,
-          dotStyle: this.dotStyle,
-          squareStyle: this.squareStyle,
-        })
-    );
+    const { mask, image, shouldApplyMask } = renderQrMaskAndImage({
+      hasLogo,
+      src: this.logoSrc!,
+      aspectRatio: this._logoAspectRatio,
+      area,
+      size: this.size,
+      margin: this.logoMargin,
+      svgSize,
+      maskId: this._maskId,
+    });
 
     return html`
       <svg
@@ -151,12 +272,24 @@ export default class IgcQrCodeComponent extends LitElement {
       >
         <title>${this.ariaLabel ?? `QR code: ${this.value}`}</title>
 
-        <rect
-          width=${svgSize}
-          height=${svgSize}
-          fill="var(--igc-qr-background, #fff)"
-        />
-        <g>${paths}${patterns}</g>
+        <rect width=${svgSize} height=${svgSize} fill=${DOT_BACKGROUND} />
+        ${mask}
+        <g mask=${bindIf(shouldApplyMask, this._maskUrl)}>
+          ${renderQrDots({
+            matrix,
+            moduleSize,
+            marginPx,
+            dotStyle: this.dotStyle,
+          })}
+          ${renderQrFinders({
+            size,
+            moduleSize,
+            marginPx,
+            dotStyle: this.dotStyle,
+            squareStyle: this.squareStyle,
+          })}
+        </g>
+        ${image}
       </svg>
     `;
   }

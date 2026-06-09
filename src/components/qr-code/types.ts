@@ -18,28 +18,3 @@ export type QrErrorCorrectionLevel = 'L' | 'M' | 'Q' | 'H';
  * - `numeric` — digits only; `alphanumeric` — digits + uppercase letters + a few symbols; `byte` — arbitrary UTF-8.
  */
 export type QrEncodingMode = 'numeric' | 'alphanumeric' | 'byte';
-
-/** Generation options passed through to the encoder. */
-export type QrCodeOptions = {
-  errorCorrectionLevel?: QrErrorCorrectionLevel;
-  version?: number;
-};
-
-/** Visual style overrides for finder-pattern corners, used by higher-level APIs. */
-export type QrCornerOptions = {
-  dot?: {
-    style?: QrCornerDotStyle;
-  };
-  square?: {
-    style?: QrCornerSquareStyle;
-  };
-};
-
-/** Input properties for `renderQrCorner`. */
-export type QrCornerProperties = {
-  x: number;
-  y: number;
-  size: number;
-  dotStyle: QrCornerDotStyle;
-  squareStyle: QrCornerSquareStyle;
-};
