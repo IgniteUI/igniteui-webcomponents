@@ -411,11 +411,11 @@ export const Basic: Story = {
           'How do events work?',
         ],
         speechToText: {
-        enable: true,
-        lang: 'en-US',
-        serviceProvider: 'webspeech', // 'webspeech' | 'backend'
-        serviceUri: undefined, //e.g. 'https://localhost:5000/sttHub',
-      },
+          enable: true,
+          lang: 'en-US',
+          serviceProvider: 'webspeech', // 'webspeech' | 'backend'
+          serviceUri: undefined, //e.g. 'https://localhost:5000/sttHub',
+        },
         renderers: {
           messageContent: async ({ message }) => _markdownRenderer(message),
         },
