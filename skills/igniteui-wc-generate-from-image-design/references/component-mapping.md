@@ -9,18 +9,24 @@
 - [Package Requirements](#package-requirements)
 - [Import Patterns](#import-patterns)
 
+> **MCP lookup pattern (applies to all sections):**
+> - Find doc names → `list_components({ framework: "webcomponents", filter: "<keyword>" })`
+> - Usage examples and slots → `get_doc({ framework: "webcomponents", name: "<doc-name>" })`
+> - Find exact class names → `search_api({ platform: "webcomponents", query: "<keyword>" })`
+> - Full property/method/event API → `get_api_reference({ platform: "webcomponents", component: "<ClassName>" })`
+
 ## Dashboard & Layout Components
 
-| UI Pattern | Ignite UI Component | Key Properties |
-|---|---|---|
-| Top navigation bar | `IgcNavbarComponent` | `slot="start"`, default slot, `slot="end"` |
-| Side navigation | `IgcNavDrawerComponent` | `open`, `position`, default slot, `slot="mini"` |
-| Content cards/panels | `IgcCardComponent` | `<igc-card-header>`, `<igc-card-content>`, `<igc-card-actions>` |
-| Tabbed content | `IgcTabsComponent` | `<igc-tab>` children, `alignment`, `activation` |
-| Accordion sections | `IgcAccordionComponent` | `IgcExpansionPanelComponent` children |
-| Split layouts | `IgcSplitterComponent` | pane-based layout, nested split regions |
-| Tile dashboard | `IgcTileManagerComponent` | drag/resize tiles |
-| IDE-style dock layout | `IgcDockManagerComponent` | floating/docking panels (Commercial) |
+| UI Pattern | Ignite UI Component |
+|---|---|
+| Top navigation bar | `IgcNavbarComponent` |
+| Side navigation | `IgcNavDrawerComponent` |
+| Content cards/panels | `IgcCardComponent` |
+| Tabbed content | `IgcTabsComponent` |
+| Accordion sections | `IgcAccordionComponent` |
+| Split layouts | `IgcSplitterComponent` |
+| Tile dashboard | `IgcTileManagerComponent` |
+| IDE-style dock layout | `IgcDockManagerComponent` |
 
 Decision rule:
 
@@ -47,17 +53,19 @@ Component decision matrix (by visual pattern, domain-neutral):
 
 ## Chart Components
 
-| UI Pattern | Ignite UI Component | Key Properties |
-|---|---|---|
-| Area chart | `IgcCategoryChartComponent` | `chartType`, `markerTypes`, `brushes`, `outlines` |
-| Line chart | `IgcCategoryChartComponent` | `chartType`, `markerTypes`, `brushes` |
-| Column chart | `IgcCategoryChartComponent` | `chartType`, `markerTypes`|
-| Bar chart | `IgcDataChartComponent` | `IgxBarSeriesComponent`, `valueMemberPath`, `argumentMemberPath` |
-| Sparkline (mini chart) | `IgcSparklineComponent` | `displayType`, `valueMemberPath` |
-| Pie chart | `IgcPieChartComponent` | `valueMemberPath`, `labelMemberPath` |
-| Donut chart | `IgcDoughnutChartComponent` | `innerExtent`; bind data via child `IgcRingSeriesBaseComponent` with `valueMemberPath`, `labelMemberPath` |
-| Financial chart | `IgcFinancialChartComponent` | OHLC/candlestick data |
-| Complex multi-series | `IgcDataChartComponent` | multiple series plus axes |
+> Use the lookup pattern above with `filter: "chart"` to find all chart doc names.
+
+| UI Pattern | Ignite UI Component |
+|---|---|
+| Area chart | `IgcCategoryChartComponent` |
+| Line chart | `IgcCategoryChartComponent` |
+| Column chart | `IgcCategoryChartComponent` |
+| Bar chart | `IgcDataChartComponent` |
+| Sparkline (mini chart) | `IgcSparklineComponent` |
+| Pie chart | `IgcPieChartComponent` |
+| Donut chart | `IgcDoughnutChartComponent` |
+| Financial chart | `IgcFinancialChartComponent` |
+| Complex multi-series | `IgcDataChartComponent` |
 
 Decision rule:
 
@@ -67,17 +75,17 @@ Decision rule:
 
 ## Data Display Components
 
-| UI Pattern | Ignite UI Component | Key Properties |
-|---|---|---|
-| Item list | `IgcListComponent` + `IgcListItemComponent` | `slot="title"`, `slot="subtitle"`, `slot="start"`, `slot="end"` |
-| User avatar | `IgcAvatarComponent` | `initials`, `shape`, `src` |
-| Status badge | `IgcBadgeComponent` | `value`, styling |
-| Icons | `IgcIconComponent` | `name`, `collection`, styling |
-| Progress bar | `IgcLinearProgressComponent` | `value`, `max` |
-| Circular progress | `IgcCircularProgressComponent` | `value`, `max` |
-| Flat data grid | `IgcGridComponent` | Grid Lite or full Data Grid depending features |
-| Hierarchical/tree data grid | `IgcTreeGridComponent` / `IgcHierarchicalGridComponent` | hierarchical data support |
-| Filter/tag chips | `IgcChipComponent` | `removable`, `selectable` |
+| UI Pattern | Ignite UI Component |
+|---|---|
+| Item list | `IgcListComponent` + `IgcListItemComponent` |
+| User avatar | `IgcAvatarComponent` |
+| Status badge | `IgcBadgeComponent` |
+| Icons | `IgcIconComponent` |
+| Progress bar | `IgcLinearProgressComponent` |
+| Circular progress | `IgcCircularProgressComponent` |
+| Flat data grid | `IgcGridComponent` |
+| Hierarchical/tree data grid | `IgcTreeGridComponent` / `IgcHierarchicalGridComponent` |
+| Filter/tag chips | `IgcChipComponent` |
 
 Decision rule:
 
@@ -88,42 +96,33 @@ Decision rule:
 
 ## Form & Input Components
 
-| UI Pattern | Ignite UI Component | Key Properties |
-|---|---|---|
-| Text input | `IgcInputComponent` | `type`, `value`, prefix/suffix/helper slots |
-| Dropdown select | `IgcSelectComponent` | `<igc-select-item>` children, prefix/suffix slots |
-| Searchable multi-select | `IgcComboComponent` | data binding, display/value keys, selection mode |
-| Date picker | `IgcDatePickerComponent` | `value`, `min`, `max` |
-| Time or date-time entry | `IgcDateTimeInputComponent` | typed editing for date/time fields |
-| Toggle switch | `IgcSwitchComponent` | checked state, change events |
-| Checkbox | `IgcCheckboxComponent` | checked state, validation |
-| Radio button group | `IgcRadioGroupComponent` + `IgcRadioComponent` | grouped selection |
-| Slider | `IgcSliderComponent` | `min`, `max`, labels/ticks |
-| Multi-step wizard | `IgcStepperComponent` + `IgcStepComponent` | orientation, linear step flow |
-| Chip filter bar | `IgcChipComponent` or `IgcButtonGroupComponent` | choose based on chip versus segmented-control anatomy |
+| UI Pattern | Ignite UI Component |
+|---|---|
+| Text input | `IgcInputComponent` |
+| Dropdown select | `IgcSelectComponent` |
+| Searchable multi-select | `IgcComboComponent` |
+| Date picker | `IgcDatePickerComponent` |
+| Time or date-time entry | `IgcDateTimeInputComponent` |
+| Toggle switch | `IgcSwitchComponent` |
+| Checkbox | `IgcCheckboxComponent` |
+| Radio button group | `IgcRadioGroupComponent` + `IgcRadioComponent` |
+| Slider | `IgcSliderComponent` |
+| Multi-step wizard | `IgcStepperComponent` + `IgcStepComponent` |
+| Chip filter bar | `IgcChipComponent` or `IgcButtonGroupComponent` |
 
 ## Calendar & Scheduling Components
 
-| UI Pattern | Ignite UI Component | Key Properties |
-|---|---|---|
-| Calendar view | `IgcCalendarComponent` | `value`, selection mode |
-| Date range picker | `IgcDateRangePickerComponent` | `value`, range selection |
-| Month/year picker | `IgcCalendarComponent` | month/year modes when the calendar UI is primary |
+| UI Pattern | Ignite UI Component |
+|---|---|
+| Calendar view | `IgcCalendarComponent` |
+| Date range picker | `IgcDateRangePickerComponent` |
+| Month/year picker | `IgcCalendarComponent` |
 
 ## Package Requirements
 
-The main `igniteui-webcomponents` package contains general UI components (list, avatar, navbar, drawer, card, badge, progress, icon, inputs, scheduling, layout, etc.).
+See [`igniteui-wc-choose-components`](../../igniteui-wc-choose-components/SKILL.md) for the full package routing table (general UI, grids, charts, dock manager, trial vs. licensed).
 
-Additional packages may be required beyond the main package:
-
-| Capability | Additional packages |
-|---|---|
-| Lightweight tabular data | `igniteui-grid-lite` |
-| Advanced grids | `igniteui-webcomponents-grids` (trial) or `@infragistics/igniteui-webcomponents-grids` (licensed) |
-| Charts / sparklines | `igniteui-webcomponents-core` + `igniteui-webcomponents-charts` (trial) or licensed equivalents |
-| Dock manager | `igniteui-dockmanager` (trial) or `@infragistics/igniteui-dockmanager` (licensed) |
-
-Install only the packages required by the components you actually selected. Resolve the exact package layout from the current workspace before installing or importing.
+Install only the packages required by the components you actually selected.
 
 ## Import Patterns
 

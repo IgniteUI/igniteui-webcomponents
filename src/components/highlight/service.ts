@@ -10,13 +10,15 @@ import type IgcHighlightComponent from './highlight.js';
 
 type Match = { node: Node; indices: [start: number, end: number] };
 
+/* jsonAPIPlainObject */
+/* marshalByValue */
 /**
  * Options for controlling navigation behavior when moving the active highlight.
  */
-export type HighlightNavigation = {
+export interface HighlightNavigation {
   /** If true, prevents the component from scrolling the new active match into view. */
   preventScroll?: boolean;
-};
+}
 
 function* matchText(
   nodes: IterableIterator<Node>,

@@ -157,6 +157,7 @@ export abstract class IgcButtonBaseComponent extends EventEmitterMixin<
   }
 
   /* blazorCSSuppress */
+  /* alternateType: object */
   /**
    * The target element for the invoker command. Resolved from the `commandfor` ID.
    */
@@ -165,6 +166,7 @@ export abstract class IgcButtonBaseComponent extends EventEmitterMixin<
   }
 
   /* blazorCSSuppress */
+  /* alternateType: object */
   public set commandForElement(value: Element | null) {
     this._commandForElement = value;
     this.requestUpdate();
