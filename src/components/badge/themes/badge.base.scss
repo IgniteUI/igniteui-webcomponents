@@ -2,53 +2,56 @@
 @use 'styles/utilities' as *;
 
 :host {
-    --size: #{rem(22px)};
-    --_badge-size: var(--size);
-
     width: fit-content;
     height: fit-content;
     display: inline-flex;
-    font-weight: 500;
     vertical-align: top;
 }
 
-[part='base'] {
-    @include type-style('caption');
-
+[part~='base'] {
     display: inline-flex;
-    min-width: var(--size);
-    min-height: var(--size);
+    min-width: var(--_badge-size);
+    min-height: var(--_badge-size);
     justify-content: center;
     align-items: center;
     overflow: hidden;
     white-space: nowrap;
+    font-size: sizable(var(--ig-caption-font-size), var(--ig-body-2-font-size), var(--ig-body-2-font-size));
+    font-weight: sizable(var(--ig-caption-font-weight), var(--ig-body-2-font-weight), var(--ig-body-2-font-weight));
+    line-height: sizable(var(--ig-caption-line-height), var(--ig-body-2-line-height), var(--ig-body-2-line-height));
+    letter-spacing: sizable(var(--ig-caption-letter-spacing), var(--ig-body-2-letter-spacing), var(--ig-body-2-letter-spacing));
+    text-transform: sizable(var(--ig-caption-text-transform), var(--ig-body-2-text-transform), var(--ig-body-2-text-transform));
 }
 
-::slotted(*) {
-    --size: calc(var(--_badge-size) / 2) !important;
+:host(:not(:empty, [dot])) [part='base'] {
+    padding-inline: pad-inline(rem(4px), rem(6px), rem(8px));
 }
 
-:host(:not(:empty)) [part='base'] {
-    padding-inline: rem(4px);
-}
-
-:host([variant='info']) [part='base'] {
+:host([variant='info']) [part~='base'] {
     background: color(info, 500);
 }
 
-:host([variant='success']) [part='base'] {
+:host([variant='success']) [part~='base'] {
     background: color(success, 500);
 }
 
-:host([variant='warning']) [part='base'] {
+:host([variant='warning']) [part~='base'] {
     background: color(warn, 500);
+    color: contrast-color(warn, 500);
+
+    igc-icon,
+    ::slotted(igc-icon) {
+        color: contrast-color(warn, 500);
+    }
 }
 
-:host([variant='danger']) [part='base'] {
+:host([variant='danger']) [part~='base'] {
     background: color(error, 500);
+    color: contrast-color(error, 900);
 }
 
 :host([shape='rounded']),
-:host([shape='rounded']) [part='base'] {
-    border-radius: calc(var(--size) * 2);
+:host([shape='rounded']) [part~='base'],
+:host([dot]) [part~='base'] {
+    border-radius: calc(var(--_badge-size) * 2);
 }

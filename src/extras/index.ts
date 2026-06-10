@@ -1,1 +1,1 @@
-export { createMarkdownRenderer } from '../components/chat/extras/markdown-renderer.js';
+export * from './chat-markdown-renderer.js';

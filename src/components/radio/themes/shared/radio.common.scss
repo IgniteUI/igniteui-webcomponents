@@ -1,16 +1,63 @@
 @use 'styles/utilities' as *;
 @use '../light/themes' as *;
 
-$theme: $base;
+$theme: $material;
 
 [part~='label'] {
     color: var-get($theme, 'label-color');
+}
+
+[part~='base']:hover {
+    [part~='label'] {
+        color: var-get($theme, 'label-color-hover');
+    }
+}
+
+[part~='control'] {
+    background: var-get($theme, 'empty-fill-color');
+}
+
+:host(:hover) {
+    [part='control checked'] {
+        &::before {
+            background: var-get($theme, 'fill-color-hover');
+            border: rem(2px) solid var-get($theme, 'fill-hover-border-color');
+        }
+
+        &::after {
+            border-color: var-get($theme, 'fill-hover-border-color');
+        }
+    }
+}
+
+:host(:not([disabled]):state(ig-invalid):hover),
+:host(:not(:disabled):state(ig-invalid):hover) {
+    [part~='control']::after {
+        border-color: var-get($theme, 'error-color-hover');
+    }
 }
 
 :host([disabled]),
 :host(:disabled) {
     [part~='label'] {
         color: var-get($theme, 'disabled-label-color');
+    }
+
+    [part~='control'] {
+        &::after {
+            border-color: var-get($theme, 'disabled-color');
+        }
+    }
+
+    [part='control checked'] {
+        &::before {
+            background: var-get($theme, 'disabled-fill-color');
+            border-color: var-get($theme, 'disabled-fill-color');
+        }
+
+        &::after {
+            border-color: var-get($theme, 'disabled-fill-color');
+        }
     }
 }
 

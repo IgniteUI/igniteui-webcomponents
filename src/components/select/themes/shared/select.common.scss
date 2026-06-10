@@ -18,9 +18,9 @@ $dropdown-theme: dropdown-theme.$material;
 }
 
 [part='base'] {
-    background: var(--dd-background-color);
-    border-radius: var(--dd-border-radius);
-    box-shadow: var(--dd-elevation);
+    background: var-get($dropdown-theme, 'background-color');
+    border-radius: var-get($dropdown-theme, 'border-radius');
+    box-shadow: var-get($dropdown-theme, 'elevation');
 }
 
 [part~='toggle-icon'] {
@@ -34,12 +34,19 @@ $dropdown-theme: dropdown-theme.$material;
 
 :host(:focus-within) {
     [part~='toggle-icon'] {
-        background: var-get($theme, 'toggle-button-background-focus--border');
+        background: var-get($theme, 'toggle-button-background-focus');
         color: var-get($theme, 'toggle-button-foreground-focus');
 
         igc-icon {
             color: inherit;
         }
+    }
+}
+
+:host(:not(:focus-within, [disabled])),
+:host(:not(:focus-within, :disabled)) {
+    [part='toggle-icon filled'] {
+        color: var-get($theme, 'toggle-button-foreground-filled');
     }
 }
 
@@ -62,7 +69,7 @@ $dropdown-theme: dropdown-theme.$material;
 :host(:not([disabled]):state(ig-invalid)),
 :host(:not(:disabled):state(ig-invalid)) {
     ::part(helper-text) {
-        color: var-get($theme, 'error-secondary-color');
+        color: var-get($input-theme, 'error-secondary-color');
     }
 }
 

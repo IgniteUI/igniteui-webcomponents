@@ -3,7 +3,7 @@ import {
   convertToDateRange,
   getDateFormValue,
 } from '../../../calendar/helpers.js';
-import type { DateRangeValue } from '../../../date-range-picker/date-range-picker.js';
+import type { DateRangeValue } from '../../../types.js';
 import { asNumber } from '../../util.js';
 import type { FormValueType, IgcFormControl } from './types.js';
 
@@ -81,6 +81,7 @@ export const FormValueDateRangeTransformers: Partial<
   },
 };
 
+/* blazorSuppress */
 export const FormValueFileListTransformers: FormValueTransformers<FileList | null> =
   {
     setValue: (value) => value || null,

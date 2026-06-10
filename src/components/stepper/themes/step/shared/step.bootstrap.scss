@@ -11,22 +11,6 @@ $theme: $bootstrap;
     }
 }
 
-[part~='indicator'] {
-    box-shadow: inset 0 0 0 var(--indicator-box-shadow-size) var-get($theme, 'indicator-outline');
-}
-
-[part~='complete-start'] {
-    [part~='indicator'] {
-        box-shadow: inset 0 0 0 var(--indicator-box-shadow-size) var-get($theme, 'complete-indicator-outline');
-    }
-}
-
-:host([active]) {
-    [part~='indicator'] {
-        box-shadow: inset 0 0 0 var(--indicator-box-shadow-size) var-get($theme, 'current-indicator-outline');
-    }
-}
-
 [part~='disabled'] {
     &:focus,
     &:focus-visible,
@@ -36,9 +20,5 @@ $theme: $bootstrap;
         [part='header'] {
             box-shadow: none;
         }
-    }
-
-    [part~='indicator'] {
-        box-shadow: inset 0 0 0 var(--indicator-box-shadow-size) var-get($theme, 'disabled-indicator-outline');
     }
 }

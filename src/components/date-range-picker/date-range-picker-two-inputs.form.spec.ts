@@ -13,7 +13,7 @@ import {
   ValidityHelpers,
 } from '../common/validity-helpers.spec.js';
 import IgcDateTimeInputComponent from '../date-time-input/date-time-input.js';
-import IgcInputComponent from '../input/input.js';
+import IgcDateRangeInputComponent from './date-range-input.js';
 import IgcDateRangePickerComponent, {
   type DateRangeValue,
 } from './date-range-picker.js';
@@ -24,7 +24,9 @@ import {
 } from './date-range-picker.utils.spec.js';
 
 describe('Date Range Picker Two Inputs - Form integration', () => {
-  before(() => defineComponents(IgcDateRangePickerComponent));
+  before(() =>
+    defineComponents(IgcDateRangePickerComponent, IgcDateRangeInputComponent)
+  );
 
   let picker: IgcDateRangePickerComponent;
   let dateTimeInputs: IgcDateTimeInputComponent[];
@@ -135,6 +137,28 @@ describe('Date Range Picker Two Inputs - Form integration', () => {
       spec.assertSubmitHasKeyValue(startKey, newValue.start?.toISOString());
       spec.assertSubmitHasKeyValue(endKey, newValue.end?.toISOString());
       checkSelectedRange(spec.element, newValue);
+    });
+
+    it('should submit on pressing Enter when value is valid', () => {
+      spec.setProperties({ value });
+      expect(
+        spec.submitWithEnter(
+          spec.element.renderRoot.querySelector(
+            IgcDateTimeInputComponent.tagName
+          )
+        )
+      ).to.be.true;
+    });
+
+    it('should not submit on pressing Enter when value is invalid', () => {
+      spec.setProperties({ required: true, value: null });
+      expect(
+        spec.submitWithEnter(
+          spec.element.renderRoot.querySelector(
+            IgcDateTimeInputComponent.tagName
+          )
+        )
+      ).to.be.false;
     });
 
     it('should reflect disabled ancestor state (fieldset/form)', () => {
@@ -483,7 +507,7 @@ describe('Date Range Picker Two Inputs - Form integration', () => {
     await elementUpdated(spec.element);
 
     let singleInput = spec.element.renderRoot.querySelector(
-      IgcInputComponent.tagName
+      IgcDateRangeInputComponent.tagName
     )!;
     expect(singleInput.invalid).to.be.true;
 
@@ -523,7 +547,7 @@ describe('Date Range Picker Two Inputs - Form integration', () => {
     await elementUpdated(spec.element);
 
     singleInput = spec.element.renderRoot.querySelector(
-      IgcInputComponent.tagName
+      IgcDateRangeInputComponent.tagName
     )!;
     expect(singleInput.invalid).to.be.true;
   });

@@ -1,19 +1,19 @@
-import { github } from '@igniteui/material-icons-extended';
-import type { Meta, StoryObj } from '@storybook/web-components-vite';
-import { html } from 'lit';
-import { ifDefined } from 'lit/directives/if-defined.js';
-
 import {
   IgcIconComponent,
   IgcMaskInputComponent,
   defineComponents,
   registerIconFromText,
 } from 'igniteui-webcomponents';
+import type { Meta, StoryObj } from '@storybook/web-components-vite';
 import {
   disableStoryControls,
   formControls,
   formSubmitHandler,
 } from './story.js';
+
+import { github } from '@igniteui/material-icons-extended';
+import { html } from 'lit';
+import { ifDefined } from 'lit/directives/if-defined.js';
 
 defineComponents(IgcMaskInputComponent, IgcIconComponent);
 registerIconFromText(github.name, github.value);
@@ -35,27 +35,35 @@ const metadata: Meta<IgcMaskInputComponent> = {
     valueMode: {
       type: '"raw" | "withFormatting"',
       description:
-        'Dictates the behavior when retrieving the value of the control:\n\n- `raw` will return the clean user input.\n- `withFormatting` will return the value with all literals and prompts.',
+        'Dictates the behavior when retrieving the value of the control:\n\n- `raw`: Returns clean input (e.g. "5551234567")\n- `withFormatting`: Returns with mask formatting (e.g. "(555) 123-4567")\n\nEmpty values always return an empty string, regardless of the value mode.',
       options: ['raw', 'withFormatting'],
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'raw' } },
     },
     value: {
-      type: 'string | Date',
+      type: 'string',
       description:
         'The value of the input.\n\nRegardless of the currently set `value-mode`, an empty value will return an empty string.',
-      options: ['string', 'Date'],
       control: 'text',
     },
     mask: {
       type: 'string',
-      description: 'The mask pattern to apply on the input.',
+      description: 'The masked pattern of the component.',
       control: 'text',
+      table: { defaultValue: { summary: 'CCCCCCCCCC' } },
     },
     prompt: {
       type: 'string',
-      description: 'The prompt symbol to use for unfilled parts of the mask.',
+      description:
+        'The prompt symbol to use for unfilled parts of the mask pattern.',
       control: 'text',
+      table: { defaultValue: { summary: '_' } },
+    },
+    readOnly: {
+      type: 'boolean',
+      description: 'Makes the control a readonly field.',
+      control: 'boolean',
+      table: { defaultValue: { summary: 'false' } },
     },
     required: {
       type: 'boolean',
@@ -87,12 +95,6 @@ const metadata: Meta<IgcMaskInputComponent> = {
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
-    readOnly: {
-      type: 'boolean',
-      description: 'Makes the control a readonly field.',
-      control: 'boolean',
-      table: { defaultValue: { summary: 'false' } },
-    },
     placeholder: {
       type: 'string',
       description: 'The placeholder attribute of the control.',
@@ -106,11 +108,13 @@ const metadata: Meta<IgcMaskInputComponent> = {
   },
   args: {
     valueMode: 'raw',
+    mask: 'CCCCCCCCCC',
+    prompt: '_',
+    readOnly: false,
     required: false,
     disabled: false,
     invalid: false,
     outlined: false,
-    readOnly: false,
   },
 };
 
@@ -120,8 +124,10 @@ interface IgcMaskInputArgs {
   /**
    * Dictates the behavior when retrieving the value of the control:
    *
-   * - `raw` will return the clean user input.
-   * - `withFormatting` will return the value with all literals and prompts.
+   * - `raw`: Returns clean input (e.g. "5551234567")
+   * - `withFormatting`: Returns with mask formatting (e.g. "(555) 123-4567")
+   *
+   * Empty values always return an empty string, regardless of the value mode.
    */
   valueMode: 'raw' | 'withFormatting';
   /**
@@ -129,11 +135,13 @@ interface IgcMaskInputArgs {
    *
    * Regardless of the currently set `value-mode`, an empty value will return an empty string.
    */
-  value: string | Date;
-  /** The mask pattern to apply on the input. */
+  value: string;
+  /** The masked pattern of the component. */
   mask: string;
-  /** The prompt symbol to use for unfilled parts of the mask. */
+  /** The prompt symbol to use for unfilled parts of the mask pattern. */
   prompt: string;
+  /** Makes the control a readonly field. */
+  readOnly: boolean;
   /** When set, makes the component a required field for validation. */
   required: boolean;
   /** The name attribute of the control. */
@@ -144,8 +152,6 @@ interface IgcMaskInputArgs {
   invalid: boolean;
   /** Whether the control will have outlined appearance. */
   outlined: boolean;
-  /** Makes the control a readonly field. */
-  readOnly: boolean;
   /** The placeholder attribute of the control. */
   placeholder: string;
   /** The label for the control. */
@@ -156,6 +162,14 @@ type Story = StoryObj<IgcMaskInputArgs>;
 // endregion
 
 export const Basic: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'A basic mask input. Use the controls panel to explore all available properties interactively. The default mask `CCCCCCCCCC` accepts any 10 characters.',
+      },
+    },
+  },
   args: {
     label: 'Default mask input',
   },
@@ -178,6 +192,14 @@ export const Basic: Story = {
 };
 
 export const Slots: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Mask input supports **prefix**, **suffix**, and **helper-text** slots for decorating the field with icons and guidance text.',
+      },
+    },
+  },
   args: {
     label: 'Mask input with slots',
   },
@@ -203,8 +225,74 @@ export const Slots: Story = {
   `,
 };
 
+export const Patterns: Story = {
+  argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story: `Demonstrates common real-world mask patterns using the available mask characters:
+
+| Character | Matches |
+|---|---|
+| \`C\` | Any single character |
+| \`0\` | Numeric digit |
+| \`9\` | Numeric digit or space |
+| \`#\` | Numeric digit or sign (\`+\`, \`-\`) |
+| \`L\` | Alphabetic letter |
+| \`A\` | Alphanumeric |
+| \`a\` | Alphanumeric or space |
+| \`&\` | Any non-separator character |`,
+      },
+    },
+  },
+  render: () => html`
+    <div
+      style="display: flex; flex-direction: column; gap: 1.5rem; max-width: 24rem;"
+    >
+      <igc-mask-input
+        label="Phone number"
+        mask="(000) 000-0000"
+        placeholder="(555) 123-4567"
+      ></igc-mask-input>
+      <igc-mask-input
+        label="Date (MM/DD/YYYY)"
+        mask="00/00/0000"
+        placeholder="MM/DD/YYYY"
+      ></igc-mask-input>
+      <igc-mask-input
+        label="Credit card number"
+        mask="0000 0000 0000 0000"
+        placeholder="1234 5678 9012 3456"
+      ></igc-mask-input>
+      <igc-mask-input
+        label="IP address"
+        mask="099.099.099.099"
+        placeholder="192.168.000.001"
+      ></igc-mask-input>
+      <igc-mask-input
+        label="Social Security Number"
+        mask="000-00-0000"
+        placeholder="123-45-6789"
+      ></igc-mask-input>
+      <igc-mask-input
+        label="ZIP+4 code"
+        mask="00000-0000"
+        placeholder="12345-6789"
+      ></igc-mask-input>
+    </div>
+  `,
+};
+
 export const Form: Story = {
   argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Demonstrates mask input inside an HTML form with various validation constraints — required fields, `withFormatting` value mode, and custom validation messages via named slots.',
+      },
+    },
+  },
   render: () => {
     return html`<form action="" @submit=${formSubmitHandler}>
       <fieldset>

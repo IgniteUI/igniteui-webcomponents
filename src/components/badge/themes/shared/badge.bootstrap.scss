@@ -1,8 +1,5 @@
 @use 'styles/utilities' as *;
-@use '../light/themes' as *;
 
-$theme: $bootstrap;
-
-:host([outlined]) [part='base'] {
-    box-shadow: inset 0 0 0 rem(1px) var-get($theme, 'border-color');
+:host([variant='danger']) [part~='base'] {
+    color: contrast-color(error, 100);
 }

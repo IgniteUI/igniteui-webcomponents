@@ -1,86 +1,113 @@
 import type { ReactiveController, ReactiveControllerHost } from 'lit';
 import type { Ref } from 'lit/directives/ref.js';
-
 import { isElement } from '../components/common/util.js';
 import type { AnimationReferenceMetadata } from './types.js';
 
-const listenerOptions = { once: true };
+/**
+ * Defines the result of an optional View Transition start.
+ */
+type ViewTransitionResult = {
+  transition?: ViewTransition;
+};
 
-function getPrefersReducedMotion() {
+const LISTENER_OPTIONS = { once: true } as const;
+
+/**
+ * Checks the user's preference for reduced motion.
+ */
+function getPrefersReducedMotion(): boolean {
   return globalThis?.matchMedia('(prefers-reduced-motion: reduce)').matches;
 }
 
+/**
+ * A ReactiveController for managing Web Animation API (WAAPI) playback
+ * on a host element or a specified target element.
+ *
+ * It provides methods to play, stop, and coordinate animations, including
+ * support for 'height: auto' transitions and reduced motion preference.
+ */
 class AnimationController implements ReactiveController {
-  protected get target() {
-    if (isElement(this._target)) {
-      return this._target;
+  private readonly _host: ReactiveControllerHost & HTMLElement;
+  private readonly _ref?: Ref<HTMLElement> | HTMLElement;
+
+  /**
+   * The actual HTMLElement target for the animations.
+   * Prioritizes a passed-in Ref value, then a direct HTMLElement, falling back to the host.
+   */
+  protected get _target(): HTMLElement {
+    if (isElement(this._ref)) {
+      return this._ref;
     }
-    return this._target?.value ?? this.host;
+
+    return this._ref?.value ?? this._host;
   }
 
   constructor(
-    private readonly host: ReactiveControllerHost & HTMLElement,
-    private _target?: Ref<HTMLElement> | HTMLElement
+    host: ReactiveControllerHost & HTMLElement,
+    ref?: Ref<HTMLElement> | HTMLElement
   ) {
-    this.host.addController(this);
+    this._host = host;
+    this._ref = ref;
+    this._host.addController(this);
   }
 
-  private parseKeyframes(keyframes: Keyframe[]) {
-    return keyframes.map((keyframe) => {
-      if (!keyframe.height) return keyframe;
+  /** Pre-processes keyframes, specifically resolving 'auto' height to the element's scrollHeight. */
+  private _parseKeyframes(keyframes: Keyframe[]): Keyframe[] {
+    const target = this._target;
 
-      return {
-        ...keyframe,
-        height:
-          keyframe.height === 'auto'
-            ? `${this.target.scrollHeight}px`
-            : keyframe.height,
-      };
+    return keyframes.map((frame) => {
+      return frame.height === 'auto'
+        ? { ...frame, height: `${target.scrollHeight}px` }
+        : frame;
     });
   }
 
-  public async play(animation: AnimationReferenceMetadata) {
-    const { steps, options } = animation;
+  /** @internal */
+  public hostConnected(): void {}
 
-    if (options?.duration === Number.POSITIVE_INFINITY) {
+  /** Plays a sequence of keyframes, first cancelling all existing animations on the target. */
+  public async playExclusive(
+    animation: AnimationReferenceMetadata
+  ): Promise<boolean> {
+    await this.cancelAll();
+
+    const event = await this.play(animation);
+    return event.type === 'finish';
+  }
+
+  /**
+   * Plays a sequence of keyframes using WAAPI.
+   * Automatically sets duration to 0 if 'prefers-reduced-motion' is set.
+   */
+  public async play(
+    animation: AnimationReferenceMetadata
+  ): Promise<AnimationPlaybackEvent> {
+    const { steps, options } = animation;
+    const duration = getPrefersReducedMotion() ? 0 : (options?.duration ?? 0);
+
+    if (!Number.isFinite(duration)) {
       throw new Error('Promise-based animations must be finite.');
     }
 
     return new Promise<AnimationPlaybackEvent>((resolve) => {
-      const animation = this.target.animate(this.parseKeyframes(steps), {
+      const animation = this._target.animate(this._parseKeyframes(steps), {
         ...options,
-        duration: getPrefersReducedMotion() ? 0 : options!.duration,
+        duration,
       });
 
-      animation.addEventListener('cancel', resolve, listenerOptions);
-      animation.addEventListener('finish', resolve, listenerOptions);
+      animation.addEventListener('cancel', resolve, LISTENER_OPTIONS);
+      animation.addEventListener('finish', resolve, LISTENER_OPTIONS);
     });
   }
 
-  public stopAll() {
-    return Promise.all(
-      this.target.getAnimations().map((animation) => {
-        return new Promise((resolve) => {
-          const resolver = () => requestAnimationFrame(resolve);
-          animation.addEventListener('cancel', resolver, listenerOptions);
-          animation.addEventListener('finish', resolver, listenerOptions);
+  /** Cancels all active animations on the target element. */
+  public cancelAll(): Promise<void> {
+    for (const animation of this._target.getAnimations()) {
+      animation.cancel();
+    }
 
-          animation.cancel();
-        });
-      })
-    );
+    return Promise.resolve();
   }
-
-  public async playExclusive(animation: AnimationReferenceMetadata) {
-    const [_, event] = await Promise.all([
-      this.stopAll(),
-      this.play(animation),
-    ]);
-
-    return event.type === 'finish';
-  }
-
-  public hostConnected() {}
 }
 
 /**
@@ -91,14 +118,14 @@ class AnimationController implements ReactiveController {
 export function addAnimationController(
   host: ReactiveControllerHost & HTMLElement,
   target?: Ref<HTMLElement> | HTMLElement
-) {
+): AnimationController {
   return new AnimationController(host, target);
 }
 
-type ViewTransitionResult = {
-  transition?: ViewTransition;
-};
-
+/**
+ * Initiates a View Transition if supported by the browser and not suppressed by
+ * the 'prefers-reduced-motion' setting.
+ */
 export function startViewTransition(
   callback?: ViewTransitionUpdateCallback
 ): ViewTransitionResult {

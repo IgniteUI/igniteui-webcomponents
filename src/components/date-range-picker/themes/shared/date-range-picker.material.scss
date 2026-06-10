@@ -1,7 +1,14 @@
 @use 'styles/utilities' as *;
 @use '../light/themes' as *;
+@use 'components/input/themes/light/themes' as input-theme;
 
-$theme: $material;
+$theme: input-theme.$material;
+
+:host {
+    ::part(helper-text) {
+        padding-inline: pad-inline(rem(12px), rem(14px), rem(16px));
+    }
+}
 
 :host(:not(:focus-within)[outlined][readonly]:hover) {
     igc-input::part(start),

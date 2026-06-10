@@ -1,6 +1,7 @@
 import type { LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
 import { addInternalsController } from '../../controllers/internals.js';
+import { enterKey } from '../../controllers/key-bindings.js';
 import { addSafeEventListener, isFunction, isString } from '../../util.js';
 import type { Validator } from '../../validators.js';
 import type { Constructor } from '../constructor.js';
@@ -131,7 +132,6 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
     public get willValidate(): boolean {
       return this.__internals.willValidate;
     }
-
     //#endregion
 
     //#region Life-cycle hooks
@@ -147,6 +147,22 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
       this._pristine = true;
       this._touched = false;
       this._validate();
+    }
+
+    //#endregion
+
+    //#region Enter key submission handling
+
+    protected _handleEnterKeydown(event: KeyboardEvent): void {
+      if (event.key !== enterKey) return;
+      if (event.repeat) return;
+
+      const canSubmit =
+        this.form && (this.form.noValidate || this.checkValidity());
+
+      if (canSubmit) {
+        this.form?.requestSubmit();
+      }
     }
 
     //#endregion

@@ -44,7 +44,11 @@ const metadata: Meta<IgcDateRangePickerComponent> = {
     },
   },
   argTypes: {
-    value: { type: 'DateRangeValue', control: 'date' },
+    value: {
+      type: 'DateRangeValue',
+      description: 'The value of the picker',
+      control: 'date',
+    },
     mode: {
       type: '"dropdown" | "dialog"',
       description:
@@ -71,7 +75,6 @@ const metadata: Meta<IgcDateRangePickerComponent> = {
       type: 'string',
       description: 'The locale settings used to display the value.',
       control: 'text',
-      table: { defaultValue: { summary: 'en' } },
     },
     readOnly: {
       type: 'boolean',
@@ -134,7 +137,7 @@ const metadata: Meta<IgcDateRangePickerComponent> = {
     displayFormat: {
       type: 'string',
       description:
-        'Format to display the value in when not editing.\nDefaults to the input format if not set.',
+        'Format to display the value in when not editing.\nDefaults to the locale format if not set.',
       control: 'text',
     },
     inputFormat: {
@@ -264,7 +267,6 @@ const metadata: Meta<IgcDateRangePickerComponent> = {
     mode: 'dropdown',
     useTwoInputs: false,
     usePredefinedRanges: false,
-    locale: 'en',
     readOnly: false,
     nonEditable: false,
     outlined: false,
@@ -291,6 +293,7 @@ const metadata: Meta<IgcDateRangePickerComponent> = {
 export default metadata;
 
 interface IgcDateRangePickerArgs {
+  /** The value of the picker */
   value: DateRangeValue;
   /** Determines whether the calendar is opened in a dropdown or a modal dialog */
   mode: 'dropdown' | 'dialog';
@@ -322,7 +325,7 @@ interface IgcDateRangePickerArgs {
   prompt: string;
   /**
    * Format to display the value in when not editing.
-   * Defaults to the input format if not set.
+   * Defaults to the locale format if not set.
    */
   displayFormat: string;
   /**
@@ -438,6 +441,14 @@ const customRanges: CustomDateRange[] = [
 ];
 
 export const Default: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'A fully interactive date range picker in dropdown mode with a two-month calendar view. Supports single or dual inputs, predefined range chips, and extensive calendar configuration. Use the controls panel to explore all available properties.',
+      },
+    },
+  },
   args: {
     open: false,
     labelStart: 'Start',
@@ -448,7 +459,6 @@ export const Default: Story = {
   render: (args) => html`
     <igc-date-range-picker
       id="picker"
-      .value=${{ start: today.native, end: tomorrow.native }}
       .displayFormat=${args.displayFormat}
       .inputFormat=${args.inputFormat}
       .locale=${args.locale}
@@ -488,6 +498,14 @@ export const Default: Story = {
 };
 
 export const CustomRanges: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'The `customRanges` property accepts an array of `CustomDateRange` objects. Each entry is rendered as a selectable chip inside the picker panel; clicking a chip instantly populates both inputs with the predefined start and end dates.',
+      },
+    },
+  },
   args: {
     open: false,
     labelStart: 'Start',
@@ -537,7 +555,49 @@ export const CustomRanges: Story = {
   `,
 };
 
+export const DialogMode: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Setting `mode="dialog"` opens the calendar in a centered modal overlay instead of an inline dropdown. This mode is better suited to mobile viewports and constrained layouts where an overlay is preferable to an inline popover.',
+      },
+    },
+  },
+  args: {
+    label: 'Date range',
+    labelStart: 'Start',
+    labelEnd: 'End',
+    visibleMonths: 2,
+  },
+  render: (args) => html`
+    <igc-date-range-picker
+      mode="dialog"
+      .label=${args.label}
+      .labelStart=${args.labelStart}
+      .labelEnd=${args.labelEnd}
+      .visibleMonths=${args.visibleMonths}
+      .useTwoInputs=${args.useTwoInputs}
+      ?use-predefined-ranges=${args.usePredefinedRanges}
+      ?show-week-numbers=${args.showWeekNumbers}
+      ?hide-outside-days=${args.hideOutsideDays}
+      ?disabled=${args.disabled}
+      ?readonly=${args.readOnly}
+    >
+      <p slot="helper-text">Opens as a modal dialog.</p>
+    </igc-date-range-picker>
+  `,
+};
+
 export const Slots: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'All named slots demonstrated side-by-side for both the **two-input** and **single-input** layouts. Available slots include `prefix`, `suffix`, `calendar-icon`, `calendar-icon-open`, `clear-icon`, `separator`, `helper-text`, `title`, and `actions`.',
+      },
+    },
+  },
   args: {
     label: 'Select Date Range',
   },
@@ -560,7 +620,7 @@ export const Slots: Story = {
         .max=${new Date(args.max)}
         .visibleMonths=${args.visibleMonths}
         ?use-two-inputs=${true}
-        ?use-predefined-ranges="${args.usePredefinedRanges}"
+        ?use-predefined-ranges=${args.usePredefinedRanges}
         ?disabled=${args.disabled}
         ?invalid=${args.invalid}
         ?readonly=${args.readOnly}
@@ -650,6 +710,14 @@ export const Slots: Story = {
 
 export const FormTwoInputs: Story = {
   argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Demonstrates the **two-input** layout inside an HTML `<form>`, covering default state, initial value, read-only, disabled fieldset, required validation, `min`/`max` date constraints, and disabled date ranges with custom validation messages.',
+      },
+    },
+  },
   render: () => html`
     <form action="" @submit=${formSubmitHandler}>
       <fieldset>
@@ -743,6 +811,14 @@ export const FormTwoInputs: Story = {
 
 export const FormSingleInput: Story = {
   argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Demonstrates the **single-input** layout inside an HTML `<form>`, covering default state, initial value, read-only, disabled fieldset, required validation, `min`/`max` date constraints, and disabled date ranges with custom validation messages.',
+      },
+    },
+  },
   render: () => html`
     <form action="" @submit=${formSubmitHandler}>
       <fieldset>

@@ -30,6 +30,7 @@ import IgcDropdownGroupComponent from '../../dropdown/dropdown-group.js';
 import IgcDropdownHeaderComponent from '../../dropdown/dropdown-header.js';
 import IgcDropdownItemComponent from '../../dropdown/dropdown-item.js';
 import IgcExpansionPanelComponent from '../../expansion-panel/expansion-panel.js';
+import IgcHighlightComponent from '../../highlight/highlight.js';
 import IgcIconComponent from '../../icon/icon.js';
 import IgcInputComponent from '../../input/input.js';
 import IgcListComponent from '../../list/list.js';
@@ -56,11 +57,13 @@ import IgcRangeSliderComponent from '../../slider/range-slider.js';
 import IgcSliderComponent from '../../slider/slider.js';
 import IgcSliderLabelComponent from '../../slider/slider-label.js';
 import IgcSnackbarComponent from '../../snackbar/snackbar.js';
+import IgcSplitterComponent from '../../splitter/splitter.js';
 import IgcStepComponent from '../../stepper/step.js';
 import IgcStepperComponent from '../../stepper/stepper.js';
 import IgcTabComponent from '../../tabs/tab.js';
 import IgcTabsComponent from '../../tabs/tabs.js';
 import IgcTextareaComponent from '../../textarea/textarea.js';
+import IgcThemeProviderComponent from '../../theme-provider/theme-provider.js';
 import IgcTileComponent from '../../tile-manager/tile.js';
 import IgcTileManagerComponent from '../../tile-manager/tile-manager.js';
 import IgcToastComponent from '../../toast/toast.js';
@@ -71,6 +74,7 @@ import { defineComponents } from './defineComponents.js';
 import type { IgniteComponent } from './register.js';
 
 const allComponents: IgniteComponent[] = [
+  IgcThemeProviderComponent,
   IgcAvatarComponent,
   IgcAccordionComponent,
   IgcBadgeComponent,
@@ -102,6 +106,7 @@ const allComponents: IgniteComponent[] = [
   IgcDividerComponent,
   IgcSwitchComponent,
   IgcExpansionPanelComponent,
+  IgcHighlightComponent,
   IgcIconComponent,
   IgcInputComponent,
   IgcListHeaderComponent,
@@ -134,6 +139,7 @@ const allComponents: IgniteComponent[] = [
   IgcCircularGradientComponent,
   IgcSnackbarComponent,
   IgcDateTimeInputComponent,
+  IgcSplitterComponent,
   IgcStepperComponent,
   IgcStepComponent,
   IgcTextareaComponent,

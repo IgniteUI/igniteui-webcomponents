@@ -1,5 +1,5 @@
+import { ValidationResourceStringsEN } from 'igniteui-i18n-core';
 import { isDateInRanges } from '../calendar/helpers.js';
-import messages from '../common/localization/validation-en.js';
 import { formatString } from '../common/util.js';
 import {
   maxDateValidator,
@@ -15,7 +15,11 @@ export const datePickerValidators: Validator<IgcDatePickerComponent>[] = [
   maxDateValidator,
   {
     key: 'badInput',
-    message: ({ value }) => formatString(messages.disabledDate, value),
+    message: ({ value }) =>
+      formatString(
+        ValidationResourceStringsEN.disabled_date_validation_error!,
+        value
+      ),
     isValid: ({ value, disabledDates }) =>
       value && disabledDates ? !isDateInRanges(value, disabledDates) : true,
   },

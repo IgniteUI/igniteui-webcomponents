@@ -1,4 +1,5 @@
-import { IgcChatResourceStringEN } from '../common/i18n/chat.resources.js';
+import type { IChatResourceStrings } from 'igniteui-i18n-core';
+import type { IgcChatResourceStrings } from '../common/i18n/EN/chat.resources.js';
 import { isEmpty, nanoid } from '../common/util.js';
 import IgcToastComponent from '../toast/toast.js';
 import IgcTooltipComponent from '../tooltip/tooltip.js';
@@ -45,11 +46,6 @@ export class ChatState {
    * Cache of accepted file types, organized into extensions, mimeTypes, and wildcardTypes
    */
   private _acceptedTypesCache: ChatAcceptedFileTypes | null = null;
-
-  public _isTyping = false;
-  private _lastTyped = Date.now();
-
-  public resourceStrings = IgcChatResourceStringEN;
 
   //#endregion
 
@@ -164,6 +160,10 @@ export class ChatState {
     return !isEmpty(this._inputAttachments);
   }
 
+  public get resourceStrings(): IgcChatResourceStrings & IChatResourceStrings {
+    return this._host.resourceStrings;
+  }
+
   //#endregion
 
   constructor(
@@ -215,6 +215,11 @@ export class ChatState {
   /** @internal */
   public emitMessageReaction(reaction: IgcChatMessageReaction): boolean {
     return this._host.emitEvent('igcMessageReact', { detail: reaction });
+  }
+
+  /** @internal */
+  public emitUserTypingState(state: boolean): boolean {
+    return this._host.emitEvent('igcTypingChange', { detail: state });
   }
 
   /**
@@ -325,30 +330,6 @@ export class ChatState {
       this.inputAttachments = [...this.inputAttachments, ...newAttachments];
     }
   }
-
-  public handleKeyDown = (_: KeyboardEvent) => {
-    this._lastTyped = Date.now();
-    if (!this._isTyping) {
-      this.emitEvent('igcTypingChange', {
-        detail: { isTyping: true },
-      });
-      this._isTyping = true;
-
-      const stopTypingDelay = this.stopTypingDelay;
-      setTimeout(() => {
-        if (
-          this._isTyping &&
-          stopTypingDelay &&
-          this._lastTyped + stopTypingDelay < Date.now()
-        ) {
-          this.emitEvent('igcTypingChange', {
-            detail: { isTyping: false },
-          });
-          this._isTyping = false;
-        }
-      }, stopTypingDelay);
-    }
-  };
 
   //#endregion
 }

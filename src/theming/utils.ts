@@ -1,76 +1,41 @@
 import { isServer } from 'lit';
 
-function isStyleRule(rule: CSSRule): rule is CSSStyleRule {
-  return rule != null && 'style' in rule;
-}
-
+/**
+ * Converts a CSS custom property name to a camelCase JavaScript key.
+ * Removes leading '--' and converts kebab-case to camelCase.
+ * @param key - The CSS variable name (e.g., '--my-color')
+ * @returns The JavaScript key (e.g., 'myColor')
+ */
 function cssKeyToJsKey(key: string): string {
+  // Regex: matches '--' at start OR '-x' pattern to convert to camelCase
   return key.replace(/^--|-./g, (match) => {
     return match.startsWith('--') ? '' : match.charAt(1).toUpperCase();
   });
 }
 
-function getAllCssVariableNames(): Set<string> {
-  const cssVars = new Set<string>();
-  const styleSheets = Array.from(document.styleSheets);
+function getCssVariables(): Record<string, string> {
+  const rootStyles = getComputedStyle(document.documentElement);
+  const result: Record<string, string> = {};
 
-  for (const sheet of styleSheets) {
-    let rules: CSSRuleList | undefined;
-
-    // Potential CORS or access errors
-    try {
-      rules = sheet.cssRules;
-    } catch {
-      continue;
-    }
-
-    if (!rules) {
-      continue;
-    }
-
-    for (const rule of Array.from(rules)) {
-      if (isStyleRule(rule)) {
-        const length = rule.style.length;
-
-        for (let i = 0; i < length; i++) {
-          const style = rule.style[i];
-
-          if (style.startsWith('--')) {
-            cssVars.add(style);
-          }
-        }
-      }
+  for (const key of Array.from(rootStyles)) {
+    if (key.startsWith('--')) {
+      result[cssKeyToJsKey(key)] = rootStyles.getPropertyValue(key).trim();
     }
   }
 
-  return cssVars;
+  return result;
 }
 
-function getElementCssVariables(
-  allCssVars: Set<string>,
-  element: HTMLElement,
-  pseudo?: string
-): Record<string, string> {
-  const cssVars: Record<string, string> = {};
-  const styles = getComputedStyle(element, pseudo);
-
-  for (const key of allCssVars) {
-    const value = styles.getPropertyValue(key);
-
-    if (value) {
-      cssVars[cssKeyToJsKey(key)] = value.trim();
-    }
-  }
-
-  return cssVars;
-}
-
+/**
+ * Retrieves all CSS custom properties from the document root element.
+ * Property names are converted from kebab-case to camelCase.
+ *
+ * @returns An object mapping camelCase property names to their values.
+ * Returns an empty object in SSR environments.
+ * @example
+ * // CSS: --my-primary-color: #ff0000;
+ * // Returns: { myPrimaryColor: '#ff0000' }
+ */
 export function getAllCssVariables(): Record<string, string> {
-  /* c8 ignore next 2 */
-  return isServer
-    ? {}
-    : getElementCssVariables(
-        getAllCssVariableNames(),
-        document.documentElement
-      );
+  return isServer ? {} : getCssVariables();
 }

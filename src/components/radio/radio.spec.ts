@@ -171,8 +171,8 @@ describe('Radio Component', () => {
     it('should be able to use external elements as label', async () => {
       const labelId = 'my-label';
       const radio = await fixture<IgcRadioComponent>(
-        html`<igc-radio aria-labelledby="${labelId}"></igc-radio>
-          <span id="${labelId}">My Label</span>`
+        html`<igc-radio aria-labelledby=${labelId}></igc-radio>
+          <span id=${labelId}>My Label</span>`
       );
       const input = radio.renderRoot.querySelector('input') as HTMLInputElement;
 
@@ -283,6 +283,19 @@ describe('Radio Component', () => {
       expect(first(radios).checked).to.be.false;
 
       spec.assertSubmitHasValue(last(radios).value);
+    });
+
+    it('is correctly submitted on pressing Enter', () => {
+      expect(
+        spec.submitWithEnter(spec.element.renderRoot.querySelector('input'))
+      ).to.be.true;
+    });
+
+    it('should not submit on pressing Enter when value is invalid', () => {
+      spec.setProperties({ required: true, checked: false });
+      expect(
+        spec.submitWithEnter(spec.element.renderRoot.querySelector('input'))
+      ).to.be.false;
     });
 
     it('reflects disabled ancestor state', () => {

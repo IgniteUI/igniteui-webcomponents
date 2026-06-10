@@ -133,12 +133,12 @@ describe('Carousel', () => {
       )?.id;
       expect(carousel).shadowDom.to.equal(
         `<section>
-          <igc-button aria-label="Previous slide" aria-controls="${carouselId}">
+          <igc-button aria-label="previous slide" aria-controls="${carouselId}">
             <slot name="previous-button">
               <igc-icon aria-hidden="true" collection="default" name="carousel_prev"></igc-icon>
             </slot>
           </igc-button>
-          <igc-button aria-label="Next slide" aria-controls="${carouselId}">
+          <igc-button aria-label="next slide" aria-controls="${carouselId}">
             <slot name="next-button">
               <igc-icon aria-hidden="true" collection="default" name="carousel_next"></igc-icon>
             </slot>

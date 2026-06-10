@@ -30,7 +30,7 @@
         "noUnusedVariables": "error",
         "noUnusedFunctionParameters": "error",
         "noUnusedImports": "error",
-        "noUnusedPrivateClassMembers": "error",
+        "noUnusedPrivateClassMembers": "off",
         "useImportExtensions": {
           "level": "error",
           "options": { "forceJsExtensions": true }

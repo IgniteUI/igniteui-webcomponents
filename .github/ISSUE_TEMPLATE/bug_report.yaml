@@ -20,6 +20,7 @@ body:
         - Calendar
         - Card
         - Carousel
+        - Chat
         - Chip
         - Checkbox / Switch
         - Combo

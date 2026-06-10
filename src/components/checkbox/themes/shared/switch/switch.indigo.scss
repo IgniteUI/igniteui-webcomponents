@@ -19,17 +19,6 @@ $border-width: rem(1px);
     @include type-style('body-2');
 }
 
-:host(:hover) {
-    [part~='control'] {
-        border-color: var-get($theme, 'border-hover-color');
-    }
-
-    [part~='control'][part~='checked'] {
-        background: var-get($theme, 'track-on-hover-color');
-        border-color: var-get($theme, 'border-on-hover-color');
-    }
-}
-
 [part~='control'][part~='focused'] {
     box-shadow: 0 0 0 rem(3px) var-get($theme, 'focus-outline-color');
 }

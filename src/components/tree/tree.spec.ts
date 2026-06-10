@@ -290,7 +290,7 @@ describe('Tree', () => {
       els = indSlot2.assignedElements({ flatten: true });
       expect(els.length).to.equal(1);
       expect(els[0]).dom.to.equal(
-        `<igc-icon collection="default" name="tree_collapse">
+        `<igc-icon collection="default" aria-label="Collapse" name="tree_collapse">
         </igc-icon>`,
         DIFF_OPTIONS
       );

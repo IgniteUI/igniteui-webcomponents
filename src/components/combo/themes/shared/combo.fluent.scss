@@ -10,8 +10,6 @@ $dropdown-theme: dropdown-theme.$fluent;
     --combo-size: var(--component-size);
 
     ::part(helper-text) {
-        @include type-style('caption');
-
         margin-block-start: pad-block(rem(5px));
         grid-auto-rows: minmax(rem(18px), auto);
     }
@@ -70,57 +68,5 @@ $dropdown-theme: dropdown-theme.$fluent;
 
     igc-input::part(suffix) {
         background: transparent;
-    }
-}
-
-[part='empty'] {
-    color: var-get($theme, 'empty-list-placeholder-color');
-}
-
-:host(:focus-within) {
-    [part~='toggle-icon'] {
-        background: var-get($theme, 'toggle-button-background-focus');
-        color: var-get($theme, 'toggle-button-foreground-focus');
-
-        igc-icon {
-            color: inherit;
-        }
-    }
-
-    [part~='clear-icon'] {
-        background: var-get($theme, 'clear-button-background-focus');
-        color: var-get($theme, 'clear-button-foreground-focus');
-
-        igc-icon {
-            color: inherit;
-        }
-    }
-}
-
-:host(:disabled),
-:host([disabled]) {
-    ::slotted([slot='prefix']),
-    ::slotted([slot='suffix']),
-    igc-input::part(label),
-    igc-input::part(input)::placeholder {
-        color: var-get($theme, 'disabled-text-color');
-    }
-
-    [part~='clear-icon'] {
-        background: inherit;
-        color: var-get($theme, 'disabled-text-color');
-
-        igc-icon {
-            color: inherit;
-        }
-    }
-
-    [part~='toggle-icon'] {
-        background: var-get($theme, 'toggle-button-background-disabled');
-        color: var-get($theme, 'toggle-button-foreground-disabled');
-
-        igc-icon {
-            color: inherit;
-        }
     }
 }

@@ -12,10 +12,6 @@ $inline-inset: rem(24px);
     display: flex;
     flex-direction: column;
     container-type: inline-size;
-
-    ::part(text-input) {
-        --textarea-height: #{rem(48px)};
-    }
 }
 
 [part='chat-container'] {
@@ -25,6 +21,7 @@ $inline-inset: rem(24px);
     height: 100%;
 }
 
+[part='input-area-container'],
 [part='message-area-container'] {
     display: grid;
     grid-template-columns: subgrid;
@@ -32,11 +29,18 @@ $inline-inset: rem(24px);
     grid-column: 1 / -1;
     grid-template-rows: auto 1fr;
     align-items: start;
+}
+
+[part='message-area-container'] {
     grid-row: 2;
 
     &:has([part='empty-state']) {
         grid-template-rows: 1fr auto;
     }
+}
+
+[part='input-area-container'] {
+    grid-row: 3;
 }
 
 [part='message-list'],
@@ -125,12 +129,9 @@ slot[name='prefix'] {
     margin-inline-end: rem(32px);
 }
 
-igc-chat-input {
-    grid-row: 3;
-}
-
 igc-list {
-    --ig-size: 3;
+    --default-size: 3;
+    --list-size: var(--component-size);
 
     padding-block-end: rem(24px);
     min-height: fit-content;
@@ -139,6 +140,8 @@ igc-list {
 }
 
 igc-list-item {
+    --ig-icon-default-size: var(--list-size);
+
     cursor: pointer;
 }
 

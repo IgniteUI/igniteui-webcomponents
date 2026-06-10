@@ -149,6 +149,21 @@ describe('Textarea component', () => {
       expect(prefixPart.hidden).to.be.true;
       expect(suffixPart.hidden).to.be.true;
     });
+
+    it('correctly recreates internal input query after re-renders', async () => {
+      element = await fixture(html`<igc-textarea></igc-textarea>`);
+      textArea = element.renderRoot.querySelector('textarea')!;
+
+      // Switching to material creates a new internal template with another textarea...
+      configureTheme('material');
+      await elementUpdated(element);
+
+      // ..thus the previously referenced non-material textarea should not match the internal query
+      expect(textArea !== (element as any)._input).to.be.true;
+
+      configureTheme('bootstrap');
+      await elementUpdated(element);
+    });
   });
 
   describe('Events', () => {
@@ -225,15 +240,14 @@ describe('Textarea component', () => {
     });
 
     it('scroll()', async () => {
-      const text = new Text(
-        Array.from({ length: 100 }, (_, idx) => ` ${idx}`.repeat(250)).join(
-          '\n'
-        )
-      );
+      const text = Array.from({ length: 100 }, (_, idx) =>
+        ` ${idx}`.repeat(250)
+      ).join('\n');
+
       const [xDelta, yDelta] = [250, 250];
 
       element.wrap = 'off';
-      element.appendChild(text);
+      element.appendChild(document.createTextNode(text));
       await elementUpdated(element);
 
       element.scrollTo({ top: yDelta, left: xDelta });
@@ -370,11 +384,7 @@ describe('Textarea component', () => {
 
     describe('Validation', () => {
       const spec = createFormAssociatedTestBed<IgcTextareaComponent>(html`
-        <igc-textarea
-          name="textarea"
-          required
-          .defaultValue=${undefined}
-        ></igc-textarea>
+        <igc-textarea name="textarea" required></igc-textarea>
       `);
 
       beforeEach(async () => {

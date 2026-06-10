@@ -4,6 +4,17 @@
 
 :host {
     display: block;
+
+    ::part(helper-text) {
+        @include type-style('caption');
+        @include line-clamp(2, true, true);
+
+        overflow-wrap: anywhere;
+    }
+
+    slot[name='value-missing'] {
+        @include line-clamp(2, true, true);
+    }
 }
 
 [role='combobox'] {

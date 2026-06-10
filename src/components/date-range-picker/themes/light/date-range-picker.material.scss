@@ -1,8 +1,11 @@
 @use 'styles/utilities' as *;
 @use 'themes' as *;
 
-$theme: $material;
-
 :host {
-    @include css-vars-from-theme(diff($base, $theme), 'ig-daterangepicker');
+    @include css-vars-from-theme($material);
+    @include css-vars-from-theme($material-calendar);
+
+    igc-dialog {
+        @include css-vars-from-theme($material-dialog);
+    }
 }

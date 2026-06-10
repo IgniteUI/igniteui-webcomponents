@@ -3,7 +3,9 @@
 @use '../light/themes' as light;
 
 :host {
-    @include css-vars-from-theme(diff(light.$base, $material), 'ig-datepicker');
+    @include css-vars-from-theme($material);
 
-    --calendar-border-color: #{$material-calendar-border-color};
+    igc-dialog {
+        @include css-vars-from-theme($material-dialog);
+    }
 }

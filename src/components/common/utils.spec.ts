@@ -7,7 +7,7 @@ import {
 } from '@open-wc/testing';
 import type { TemplateResult } from 'lit';
 import { type CalendarDay, toCalendarDay } from '../calendar/model.js';
-import { parseKeys } from './controllers/key-bindings.js';
+import { MODIFIER_EVENT_KEYS, parseKeys } from './controllers/key-bindings.js';
 import type { IgcFormControl } from './mixins/forms/types.js';
 import { toKebabCase } from './util.js';
 
@@ -92,6 +92,30 @@ class FormAssociatedTestBed<T extends IgcFormControl> {
 
     this.form.requestSubmit();
     return data;
+  }
+
+  /**
+   * Simulates pressing the `Enter` key while the focus is on the given target element (or the component itself if no target is provided).
+   * If the component is inside a form, this will attempt to submit the form.
+   * Returns whether the form submission was triggered.
+   */
+  public submitWithEnter(target?: HTMLElement | null): boolean {
+    let called = false;
+    const element = target ?? this.element;
+    const handler = (event: SubmitEvent) => {
+      event.preventDefault();
+      called = true;
+    };
+
+    this.form.addEventListener('submit', handler, { once: true });
+    element.dispatchEvent(
+      new KeyboardEvent('keydown', {
+        key: 'Enter',
+        bubbles: true,
+        composed: true,
+      })
+    );
+    return called;
   }
 
   /**
@@ -239,6 +263,23 @@ export function simulatePointerDown(
   }
 }
 
+export function simulatePointerUp(
+  node: Element,
+  options?: PointerEventInit,
+  times = 1
+): void {
+  for (let i = 0; i < times; i++) {
+    node.dispatchEvent(
+      new PointerEvent('pointerup', {
+        bubbles: true,
+        composed: true,
+        pointerId: 1,
+        ...options,
+      })
+    );
+  }
+}
+
 export function simulateLostPointerCapture(
   node: Element,
   options?: PointerEventInit
@@ -331,7 +372,7 @@ export function simulateKeyboard(
   const eventOptions: Record<string, boolean> = {};
 
   for (const each of modifiers) {
-    eventOptions[`${each}Key`] = true;
+    eventOptions[MODIFIER_EVENT_KEYS[each]] = true;
   }
 
   for (const key of keys) {

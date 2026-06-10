@@ -1,14 +1,15 @@
 import { elementUpdated, expect } from '@open-wc/testing';
 import IgcCalendarComponent from '../calendar/calendar.js';
 import { getCalendarDOM, getDOMDate } from '../calendar/helpers.spec.js';
+
 import type { CalendarDay } from '../calendar/model.js';
+import { formatDisplayDate } from '../common/i18n/i18n-controller.js';
 import { equal } from '../common/util.js';
 import { checkDatesEqual, simulateClick } from '../common/utils.spec.js';
 import IgcDateTimeInputComponent from '../date-time-input/date-time-input.js';
-import { DateTimeUtil } from '../date-time-input/date-util.js';
-import IgcInputComponent from '../input/input.js';
+import type { DateRangeValue } from '../types.js';
+import IgcDateRangeInputComponent from './date-range-input.js';
 import type IgcDateRangePickerComponent from './date-range-picker.js';
-import type { DateRangeValue } from './date-range-picker.js';
 
 export const selectDates = async (
   startDate: CalendarDay | null,
@@ -50,30 +51,30 @@ export const checkSelectedRange = (
       checkDatesEqual(inputs[1].value!, expectedValue.end);
     }
   } else {
-    const input = picker.renderRoot.querySelector(IgcInputComponent.tagName)!;
+    const input = getInput(picker);
     const start = expectedValue?.start
-      ? DateTimeUtil.formatDate(
+      ? formatDisplayDate(
           expectedValue.start,
           picker.locale,
-          picker.displayFormat || picker.inputFormat
+          picker.displayFormat
         )
       : '';
     const end = expectedValue?.end
-      ? DateTimeUtil.formatDate(
+      ? formatDisplayDate(
           expectedValue.end,
           picker.locale,
-          picker.displayFormat || picker.inputFormat
+          picker.displayFormat
         )
       : '';
     expect(input.value).to.equal(`${start} - ${end}`);
   }
 
   if (expectedValue?.start) {
-    checkDatesEqual(calendar.values[0], expectedValue?.start!);
+    checkDatesEqual(calendar.values[0], expectedValue.start!);
   }
   if (expectedValue?.end) {
     const length = calendar.values.length;
-    checkDatesEqual(calendar.values[length - 1], expectedValue?.end!);
+    checkDatesEqual(calendar.values[length - 1], expectedValue.end!);
   }
   if (!(expectedValue?.start || expectedValue?.end)) {
     expect(calendar.values).to.deep.equal([]);
@@ -95,4 +96,14 @@ export const checkInputsInvalidState = async (
   );
   expect(inputs[0].invalid).to.equal(first);
   expect(inputs[1].invalid).to.equal(second);
+};
+
+export const getInput = (
+  picker: IgcDateRangePickerComponent
+): HTMLInputElement => {
+  const rangeInput = picker.renderRoot.querySelector(
+    IgcDateRangeInputComponent.tagName
+  )! as IgcDateRangeInputComponent;
+  const input = rangeInput.renderRoot.querySelector('input')!;
+  return input;
 };

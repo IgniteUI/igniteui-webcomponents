@@ -5,6 +5,9 @@
     padding-block: pad-block(rem(4px), rem(6px), rem(8px));
     gap: rem(8px);
 
+    ::slotted(igc-button),
+    ::slotted(igc-icon-button),
+    ::slotted(igc-icon),
     ::slotted(igc-avatar) {
         --ig-size: 2;
     }

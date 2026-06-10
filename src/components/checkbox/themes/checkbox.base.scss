@@ -56,7 +56,7 @@ $mark-length: 24;
     position: absolute;
     inset: 0;
     stroke-linecap: square;
-    stroke-width: var(--mark-stroke, 3);
+    stroke-width: var(--tick-width);
     stroke-dasharray: $mark-length;
     stroke-dashoffset: $mark-length;
     fill: none;

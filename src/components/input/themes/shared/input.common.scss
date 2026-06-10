@@ -3,6 +3,10 @@
 
 $theme: $base;
 
+[part~='input'] {
+    color: var-get($theme, 'idle-text-color');
+}
+
 [part='prefix'] {
     color: var-get($theme, 'input-prefix-color');
     background: var-get($theme, 'input-prefix-background');
@@ -14,6 +18,10 @@ $theme: $base;
 }
 
 [part~='filled'] {
+    [part~='input'] {
+        color: var-get($theme, 'filled-text-color');
+    }
+
     [part='prefix'] {
         color: var-get($theme, 'input-prefix-color--filled');
         background: var-get($theme, 'input-prefix-background--filled');
@@ -25,18 +33,49 @@ $theme: $base;
     }
 }
 
+input::-webkit-datetime-edit {
+    color: inherit;
+}
+
 [part~='input']::placeholder {
     color: var-get($theme, 'placeholder-color');
 }
 
+:host {
+    ::part(helper-text) {
+        color: var-get($theme, 'helper-text-color');
+        margin-block-start: rem(4px);
+    }
+}
+
 :host(:focus-within),
-:host(:not([readonly],[disabled]):hover) {
+:host(:not([readonly], [disabled]):hover) {
     [part~='input']::placeholder {
         color: var-get($theme, 'hover-placeholder-color');
     }
 }
 
+:host(:not([readonly], [disabled]):hover) {
+    [part~='filled'] {
+        [part~='input'] {
+            color: var-get($theme, 'filled-text-hover-color');
+        }
+    }
+}
+
+:host(:not([readonly], [disabled]):focus-within) {
+    [part~='filled'] {
+        [part~='input'] {
+            color: var-get($theme, 'focused-text-color');
+        }
+    }
+}
+
 :host(:focus-within) {
+    [part^='container'] {
+        caret-color: var-get($theme, 'focused-text-color');
+    }
+
     [part='prefix'] {
         color: var-get($theme, 'input-prefix-color--focused');
         background: var-get($theme, 'input-prefix-background--focused');
@@ -64,8 +103,8 @@ $theme: $base;
     }
 }
 
-:host(:not([disabled],[readonly]):state(ig-invalid)),
-:host(:not(:disabled,[readonly]):state(ig-invalid)) {
+:host(:not([disabled], [readonly]):state(ig-invalid)),
+:host(:not(:disabled, [readonly]):state(ig-invalid)) {
     ::part(helper-text) {
         color: var-get($theme, 'error-secondary-color');
     }
@@ -74,7 +113,12 @@ $theme: $base;
 :host(:disabled),
 :host([disabled]) {
     [part~='input']::placeholder {
-        color: var-get($theme, 'disabled-text-color');
+        color: var-get($theme, 'disabled-placeholder-color');
+    }
+
+    [part='prefix'],
+    [part='suffix'] {
+        background: inherit;
     }
 }
 

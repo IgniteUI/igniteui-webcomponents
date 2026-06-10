@@ -7,6 +7,10 @@
     display: block;
     font-family: var(--ig-font-family);
 
+    igc-input {
+        cursor: pointer;
+    }
+
     igc-icon,
     ::slotted(igc-icon),
     igc-input:not([part='search-input']) {
@@ -15,9 +19,21 @@
         --component-size: var(--combo-size) !important;
     }
 
-    > igc-input::part(input) {
-        text-overflow: ellipsis;
+    igc-input::part(input) {
+        @include ellipsis();
+
         cursor: pointer;
+    }
+
+    ::part(helper-text) {
+        @include type-style('caption');
+        @include line-clamp(2, true, true);
+
+        overflow-wrap: anywhere;
+    }
+
+    slot[name='value-missing'] {
+        @include line-clamp(2, true, true);
     }
 }
 
@@ -29,22 +45,6 @@
     }
 }
 
-[part='helper-text'] {
-    line-height: 1;
-
-    ::slotted([slot='helper-text']) {
-        @include type-style('caption');
-
-        line-height: inherit;
-    }
-}
-
-[part='clear-icon'],
-[part='toggle-icon'],
-[part~='case-icon'] {
-    display: flex;
-    cursor: pointer;
-}
 
 [part='list-wrapper'] {
     @include border-radius(rem(4px));
@@ -72,6 +72,10 @@
     padding-inline: pad-inline(rem(4px), rem(8px), rem(16px));
     padding-block: pad-block(rem(8px));
     z-index: 26;
+
+    igc-input::part(input) {
+        cursor: text;
+    }
 }
 
 [part='list'] {

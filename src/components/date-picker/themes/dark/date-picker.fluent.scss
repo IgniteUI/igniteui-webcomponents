@@ -3,7 +3,10 @@
 @use '../light/themes' as light;
 
 :host {
-    @include css-vars-from-theme(diff(light.$base, $fluent), 'ig-datepicker');
+    @include css-vars-from-theme($fluent);
+    @include css-vars-from-theme($fluent-input);
 
-    --calendar-border-color: #{$fluent-calendar-border-color};
+    igc-dialog {
+        @include css-vars-from-theme($fluent-dialog);
+    }
 }

@@ -8,6 +8,11 @@
     [name='end']::slotted(*) {
         margin: initial;
     }
+
+    ::slotted(igc-icon),
+    ::slotted(igc-avatar) {
+        --ig-size: 2;
+    }
 }
 
 [part='end'] {
@@ -23,12 +28,6 @@
 }
 
 ::slotted(igc-icon) {
-    --size: rem(16px);
-
     padding: pad(rem(6px));
     margin: 0;
-}
-
-::slotted(igc-avatar) {
-    --ig-size: 2;
 }

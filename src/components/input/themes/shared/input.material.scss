@@ -32,12 +32,8 @@ $fs: rem(16px) !default;
     }
 
     ::part(helper-text) {
-        @include type-style('caption');
-
-        color: var-get($theme, 'helper-text-color');
-        margin-block-start: rem(4px);
         grid-auto-rows: minmax(rem(18px), auto);
-        padding-inline: pad-inline(rem(14px), rem(16px), rem(18px));
+        padding-inline: pad-inline(rem(12px), rem(14px), rem(16px));
     }
 }
 
@@ -48,18 +44,28 @@ $fs: rem(16px) !default;
     }
 }
 
-input:placeholder-shown + [part='notch'] [part='label'],
+:is(
+    input:placeholder-shown,
+    input[type='date'],
+    input[type='time'],
+    input[type='datetime-local'],
+    input[type='week'],
+    input[type='month']
+) + [part='notch'] [part='label'],
 [part~='filled'] + [part='notch'] [part='label'] {
     @include type-style('caption');
     @extend %label;
 }
 
 [part~='input'] {
-    color: var-get($theme, 'filled-text-color');
     background: transparent;
     padding: 0 pad-inline(rem(4px));
     font-size: rem(16px);
     grid-area: 1 / 2 / span 1 / span 2;
+}
+
+[part~='input filled'] {
+    color: var-get($theme, 'filled-text-color');
 }
 
 [part='label'] {
@@ -86,7 +92,7 @@ input:placeholder-shown + [part='notch'] [part='label'],
 }
 
 [part='start'] {
-    border-start-start-radius: var-get($theme, 'border-border-radius');
+    border-start-start-radius: var-get($theme, 'box-border-radius');
     justify-content: flex-start;
     grid-area: 1 / 1;
 
@@ -117,7 +123,7 @@ input:placeholder-shown + [part='notch'] [part='label'],
 }
 
 [part='end'] {
-    border-start-end-radius: var-get($theme, 'border-border-radius');
+    border-start-end-radius: var-get($theme, 'box-border-radius');
     justify-content: flex-end;
     grid-area: 1 / 4;
 
@@ -131,7 +137,7 @@ input:placeholder-shown + [part='notch'] [part='label'],
 [part='start'],
 [part='end'] {
     display: flex;
-    min-width: sizable(rem(10px), rem(12px), rem(14px));
+    min-width: sizable(rem(8px), rem(10px), rem(12px));
     height: var(--size);
     overflow: hidden;
 }
@@ -158,10 +164,16 @@ input:placeholder-shown + [part='notch'] [part='label'],
     }
 }
 
-
 :host([readonly]:not([outlined]):focus-within) {
     :not([part~='filled']) {
-        input:has(:not(:placeholder-shown)) + [part='notch'] [part='label'] {
+        :is(
+            input[type='date'],
+            input[type='time'],
+            input[type='datetime-local'],
+            input[type='week'],
+            input[type='month']
+        ) + [part='notch'] [part='label'],
+        input:not(:placeholder-shown)+ [part='notch'] [part='label'] {
             translate: 0;
             font-size: initial;
         }
@@ -212,19 +224,38 @@ input:placeholder-shown + [part='notch'] [part='label'],
         padding-bottom: rem(6px);
     }
 
-    input:placeholder-shown + [part='notch'] [part='label'],
+    :is(
+        input:placeholder-shown,
+        input[type='date'],
+        input[type='time'],
+        input[type='datetime-local'],
+        input[type='week'],
+        input[type='month']
+    ) + [part='notch'] [part='label'],
     [part~='filled'] + [part='notch'] [part='label'] {
         translate: 0 -73%;
     }
 }
 
-:host(:not([outlined],[type='search'],[aria-haspopup='dialog'],[role='combobox'])[readonly]) {
+:host(
+    :not(
+        [outlined],
+        [type='search'],
+        [aria-haspopup='dialog'],
+        [role='combobox']
+    )[readonly]
+) {
     [part~='container'] {
         background: var-get($theme, 'box-background-focus');
     }
 }
 
-:host(:not([outlined],[type='search'],[aria-haspopup='dialog'],[role='combobox'])[readonly]:hover) {
+:host(:not(
+    [outlined],
+    [type='search'],
+    [aria-haspopup='dialog'],
+    [role='combobox']
+)[readonly]:hover) {
     [part~='container'] {
         background: var-get($theme, 'box-background-focus');
         border-bottom-color: var-get($theme, 'idle-bottom-line-color');
@@ -247,7 +278,13 @@ input:placeholder-shown + [part='notch'] [part='label'],
 }
 
 :host(:not([outlined]):focus-within),
-:host(:not([outlined],[aria-haspopup='dialog'],[role='combobox'])[readonly]:focus-within) {
+:host(
+    :not(
+            [outlined],
+            [aria-haspopup='dialog'],
+            [role='combobox']
+        )[readonly]:focus-within
+) {
     [part~='container'] {
         background: var-get($theme, 'box-background-focus');
         border-bottom-color: var-get($theme, 'focused-bottom-line-color');
@@ -260,7 +297,13 @@ input:placeholder-shown + [part='notch'] [part='label'],
     }
 }
 
-:host(:not([outlined],[aria-haspopup='dialog'],[role='combobox'])[readonly]:focus-within) {
+:host(
+    :not(
+            [outlined],
+            [aria-haspopup='dialog'],
+            [role='combobox']
+        )[readonly]:focus-within
+) {
     [part='label'] {
         @include type-style('caption');
 
@@ -268,10 +311,12 @@ input:placeholder-shown + [part='notch'] [part='label'],
     }
 }
 
-:host(:not([outlined],[disabled],[readonly]):state(ig-invalid)),
-:host(:not([outlined],[disabled],[readonly]):state(ig-invalid):focus-within),
-:host(:not([disabled],[outlined])[role='combobox']:state(ig-invalid)),
-:host(:not([disabled],[outlined])[role='combobox']:state(ig-invalid):focus-within) {
+:host(:not([outlined], [disabled], [readonly]):state(ig-invalid)),
+:host(:not([outlined], [disabled], [readonly]):state(ig-invalid):focus-within),
+:host(:not([disabled], [outlined])[role='combobox']:state(ig-invalid)),
+:host(
+    :not([disabled], [outlined])[role='combobox']:state(ig-invalid):focus-within
+) {
     [part~='container'] {
         border-color: var-get($theme, 'error-secondary-color');
 
@@ -285,7 +330,7 @@ input:placeholder-shown + [part='notch'] [part='label'],
 :host(:not([outlined]):disabled) {
     [part~='container'] {
         background: var-get($theme, 'box-disabled-background');
-        border-color: var-get($theme, 'disabled-border-color');
+        border-block-end-color: var-get($theme, 'disabled-bottom-line-color');
         border-bottom-style: dashed;
     }
 }
@@ -305,6 +350,11 @@ input:placeholder-shown + [part='notch'] [part='label'],
                 display: none;
             }
         }
+    }
+
+    [part='prefix'],
+    [part='suffix'] {
+        max-height: 100%;
     }
 }
 
@@ -327,6 +377,10 @@ input:placeholder-shown + [part='notch'] [part='label'],
     [part~='labelled'] [part~='input'] {
         padding-top: pad-block(rem(20px));
         padding-bottom: pad-block(rem(6px));
+    }
+
+    [part='notch'] {
+        border: none;
     }
 }
 
@@ -415,6 +469,13 @@ input:placeholder-shown + [part='notch'] [part='label'],
         }
     }
 
+    :is(
+        input[type='date'],
+        input[type='time'],
+        input[type='datetime-local'],
+        input[type='week'],
+        input[type='month']
+    ) + [part='notch'],
     [part~='filled'] + [part='notch'] {
         @extend %floated-styles;
 
@@ -430,7 +491,9 @@ input:placeholder-shown + [part='notch'] [part='label'],
     }
 }
 
-:host(:not([aria-haspopup='dialog'],[role='combobox'])[outlined][readonly]:hover) {
+:host(
+    :not([aria-haspopup='dialog'], [role='combobox'])[outlined][readonly]:hover
+) {
     [part='notch'],
     [part='start'],
     [part='end'],
@@ -443,7 +506,10 @@ input:placeholder-shown + [part='notch'] [part='label'],
     }
 }
 
-:host(:not([aria-haspopup='dialog'],[role='combobox'])[outlined][readonly]:focus-within) {
+:host(:not(
+    [aria-haspopup='dialog'],
+    [role='combobox']
+)[outlined][readonly]:focus-within) {
     [part='notch'],
     [part='start'],
     [part='end'],
@@ -456,15 +522,17 @@ input:placeholder-shown + [part='notch'] [part='label'],
     }
 }
 
-:host(:not(:state(ig-invalid),[type='search'])[readonly][outlined]:focus-within) {
+:host(
+    :not(:state(ig-invalid), [type='search'])[readonly][outlined]:focus-within
+) {
     :not([part~='filled']) {
-        input:has(:not(:placeholder-shown)) + [part='notch'] [part='label'] {
+        input:not(:placeholder-shown) + [part='notch'] [part='label'] {
             translate: 0;
             font-size: initial;
             align-self: center;
         }
 
-        input:has(:not(:placeholder-shown)) + [part='notch'] {
+        input:not(:placeholder-shown) + [part='notch'] {
             border: {
                 width: $active-border-width;
                 color: var-get($theme, 'focused-border-color');
@@ -484,6 +552,22 @@ input:placeholder-shown + [part='notch'] [part='label'],
     input:placeholder-shown + [part='notch'],
     [part~='filled'] + [part='notch'] {
         @extend %floated-styles;
+    }
+}
+
+:host([outlined]:is(
+    [type='date'],
+    [type='time'],
+    [type='datetime-local'],
+    [type='week'],
+    [type='month']
+)) {
+    [part='label'] {
+        transition: none;
+    }
+
+    [part='notch'] {
+        border-block-start-color: transparent !important;
     }
 }
 
@@ -538,7 +622,13 @@ input:placeholder-shown + [part='notch'] [part='label'],
     }
 }
 
-:host(:not([type='search'],[aria-haspopup='dialog'],[role='combobox'])[outlined]:focus-within) {
+:host(
+    :not(
+            [type='search'],
+            [aria-haspopup='dialog'],
+            [role='combobox']
+        )[outlined]:focus-within
+) {
     [part='notch'] {
         border: {
             width: $active-border-width;
@@ -566,10 +656,14 @@ input:placeholder-shown + [part='notch'] [part='label'],
     }
 }
 
-:host(:not([type='search'],[readonly])[outlined]:state(ig-invalid)),
-:host(:not([type='search'],[readonly])[outlined]:state(ig-invalid):focus-within),
+:host(:not([type='search'], [readonly])[outlined]:state(ig-invalid)),
+:host(
+    :not([type='search'], [readonly])[outlined]:state(ig-invalid):focus-within
+),
 :host(:not([disabled])[role='combobox'][outlined]:state(ig-invalid)),
-:host(:not([disabled])[role='combobox'][outlined]:state(ig-invalid):focus-within) {
+:host(
+    :not([disabled])[role='combobox'][outlined]:state(ig-invalid):focus-within
+) {
     [part='start'],
     [part='notch'],
     [part='filler'],
@@ -583,8 +677,10 @@ input:placeholder-shown + [part='notch'] [part='label'],
     }
 }
 
-:host(:not([disabled])[role='combobox'][outlined]:state(ig-invalid):focus-within) {
-     :not([part~='filled']) {
+:host(
+    :not([disabled])[role='combobox'][outlined]:state(ig-invalid):focus-within
+) {
+    :not([part~='filled']) {
         input:not(:placeholder-shown) + [part='notch'] {
             border-width: $active-border-width;
         }
@@ -598,7 +694,24 @@ input:placeholder-shown + [part='notch'] [part='label'],
     }
 }
 
-:host(:not([disabled],[readonly]):state(ig-invalid)),
+:host(:not([disabled], [readonly])[role='combobox'][outlined]:focus-within),
+:host(
+    :not([disabled], [readonly])[role='combobox'][outlined]:state(
+            ig-invalid
+        ):focus-within
+) {
+    :not([part~='filled']) {
+        input:not(:placeholder-shown) + [part='notch'] {
+            border-top: $idle-border-width solid transparent;
+        }
+
+        [part='notch'] {
+            border-block-start-color: transparent;
+        }
+    }
+}
+
+:host(:not([disabled], [readonly]):state(ig-invalid)),
 :host(:not([disabled])[role='combobox']:state(ig-invalid)) {
     [part='label'] {
         color: var-get($theme, 'error-secondary-color');
@@ -614,15 +727,13 @@ input:placeholder-shown + [part='notch'] [part='label'],
         border-color: var-get($theme, 'disabled-border-color');
     }
 
+    [part~='container'] {
+        background: var-get($theme, 'border-disabled-background');
+    }
+
     input:placeholder-shown + [part='notch'],
     [part~='filled'] + [part='notch'] {
         @extend %floated-styles;
-    }
-}
-
-:host([type='search'][outlined]) {
-    [part='notch'] {
-        border: none;
     }
 }
 

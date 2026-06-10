@@ -1,13 +1,14 @@
 @use 'styles/utilities' as *;
 
 :host {
-    ::slotted(igc-avatar) {
-        --ig-size: 3;
-    }
-
     [part='header'] {
         gap: rem(2px);
     }
+}
+
+::slotted([slot='thumbnail']),
+::slotted(igc-avatar[slot='thumbnail']) {
+    --ig-size: 3;
 }
 
 ::slotted([slot='subtitle']) {

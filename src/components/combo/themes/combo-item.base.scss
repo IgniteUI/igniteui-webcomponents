@@ -8,6 +8,14 @@
     --default-size: var(--combo-size) !important;
 
     gap: rem(8px);
+
+    ::slotted(*) {
+        @include ellipsis();
+
+        display: block;
+        width: 100%;
+        align-items: center;
+    }
 }
 
 igc-checkbox {

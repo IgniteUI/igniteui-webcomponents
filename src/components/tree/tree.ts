@@ -1,10 +1,14 @@
+import {
+  type ITreeResourceStrings,
+  TreeResourceStringsEN,
+} from 'igniteui-i18n-core';
 import { html, LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
-
 import { addThemingController } from '../../theming/theming-controller.js';
 import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditionalDependencies.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
+import { addI18nController } from '../common/i18n/i18n-controller.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { addSafeEventListener } from '../common/util.js';
@@ -44,6 +48,13 @@ export default class IgcTreeComponent extends EventEmitterMixin<
     registerComponent(IgcTreeComponent, IgcTreeItemComponent);
   }
 
+  private readonly _i18nController = addI18nController<ITreeResourceStrings>(
+    this,
+    {
+      defaultEN: TreeResourceStringsEN,
+    }
+  );
+
   /** @private @hidden @internal */
   public selectionService!: IgcTreeSelectionService;
 
@@ -70,6 +81,32 @@ export default class IgcTreeComponent extends EventEmitterMixin<
    */
   @property({ reflect: true })
   public selection: TreeSelection = 'none';
+
+  /**
+   * Gets/Sets the locale used for getting language, affecting resource strings.
+   * @attr locale
+   */
+  @property()
+  public set locale(value: string) {
+    this._i18nController.locale = value;
+  }
+
+  public get locale() {
+    return this._i18nController.locale;
+  }
+
+  /**
+   * The resource strings for localization.
+   * Currently only aria-labels of the default expand/collapse icons are localized for the tree item.
+   */
+  @property({ attribute: false })
+  public set resourceStrings(value: ITreeResourceStrings) {
+    this._i18nController.resourceStrings = value;
+  }
+
+  public get resourceStrings(): ITreeResourceStrings {
+    return this._i18nController.resourceStrings;
+  }
 
   @watch('dir')
   protected onDirChange(): void {
