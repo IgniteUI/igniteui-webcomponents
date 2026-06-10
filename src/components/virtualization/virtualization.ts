@@ -174,7 +174,6 @@ export default class IgcVirtualScrollComponent<
         igc-virtual-scroll[orientation='horizontal']:dir(rtl) [part="igc-vs-content"] {
           left: auto;
           right: 0;
-          flex-direction: row-reverse;
         }
       `);
       IgcVirtualScrollComponent._styleSheet = sheet;

@@ -276,5 +276,28 @@ describe('VirtualScroll', () => {
       expect(startIndex).to.equal(0);
       expect(endIndex).to.be.greaterThanOrEqual(startIndex);
     });
+
+    it('renders the first data item as the right-most item in RTL', async () => {
+      const el = await createRTLScroll();
+      await elementUpdated(el);
+
+      const content = el.querySelector<HTMLElement>('[part="igc-vs-content"]')!;
+      const items = Array.from(
+        content.querySelectorAll<HTMLElement>('[data-vs-index]')
+      );
+
+      expect(items.length).to.be.greaterThan(1);
+
+      const firstIndex = Number(items[0].dataset.vsIndex);
+      const secondIndex = Number(items[1].dataset.vsIndex);
+
+      // DOM order is ascending by data index ...
+      expect(firstIndex).to.be.lessThan(secondIndex);
+
+      // ... but visually the first (lowest) index sits to the right of the next.
+      const firstRect = items[0].getBoundingClientRect();
+      const secondRect = items[1].getBoundingClientRect();
+      expect(firstRect.left).to.be.greaterThan(secondRect.left);
+    });
   });
 });
