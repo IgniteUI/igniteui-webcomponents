@@ -215,7 +215,7 @@ export default class IgcChatInputComponent extends LitElement {
         this._state.options?.speechToText?.serviceUri
       ) {
         this._sttClient = new BackendSttClient(
-          this._state.options?.speechToText?.serviceUri!,
+          this._state.options?.speechToText?.serviceUri ?? undefined,
           this.onPulseSignal,
           this.onStartCountdown,
           this.onTranscript,
