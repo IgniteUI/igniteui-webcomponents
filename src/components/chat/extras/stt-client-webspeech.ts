@@ -94,6 +94,6 @@ declare global {
   }
 
   interface SpeechRecognitionEvent extends Event {
-    results: SpeechRecognitionResultList;
+    readonly results: SpeechRecognitionResultList;
   }
 }
