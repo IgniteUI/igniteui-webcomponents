@@ -11,6 +11,7 @@ import type IgcHighlightComponent from './highlight.js';
 type Match = { node: Node; indices: [start: number, end: number] };
 
 /* jsonAPIPlainObject */
+/* marshalByValue */
 /**
  * Options for controlling navigation behavior when moving the active highlight.
  */
