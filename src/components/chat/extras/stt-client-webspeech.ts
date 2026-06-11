@@ -41,10 +41,7 @@ export class WebSpeechSttClient extends BaseSttClient {
     }
 
     this.clearSilenceTimer();
-    if (this.silenceGraceTimeout) {
-      clearTimeout(this.silenceGraceTimeout);
-      this.silenceGraceTimeout = null;
-    }
+    this.clearSilenceGraceTimer();
     if (this.isCountdownRunning) {
       this.onStartCountdown(null);
       this.isCountdownRunning = false;

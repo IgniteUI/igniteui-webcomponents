@@ -54,6 +54,14 @@ export abstract class BaseSttClient implements ISttClient {
     }
   }
 
+  /** Clears the silence grace timeout */
+  protected clearSilenceGraceTimer() {
+    if (this.silenceGraceTimeout) {
+      clearTimeout(this.silenceGraceTimeout);
+      this.silenceGraceTimeout = null;
+    }
+  }
+
   /** Resets silence timer and auto-stop trigger */
   protected resetSilenceTimer() {
     this.clearSilenceTimer();

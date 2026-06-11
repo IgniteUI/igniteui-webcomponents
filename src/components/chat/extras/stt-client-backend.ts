@@ -10,7 +10,7 @@ export class BackendSttClient extends BaseSttClient {
   private mediaRecorder?: MediaRecorder;
   private isStopInProgress = false;
   private isStopCompleted = false;
-  private stopHubTimeout: any;
+  private stopHubTimeout: ReturnType<typeof setTimeout> | null = null;
 
   constructor(
     hubUrl: string,
@@ -87,13 +87,17 @@ export class BackendSttClient extends BaseSttClient {
   }
 
   stop() {
+    if (this.isStopInProgress) {
+      return;
+    }
+
     this.isStopInProgress = true;
     this.onStopInProgress();
-    this.mediaRecorder?.stop();
     this.clearSilenceTimer();
-    if (this.stopHubTimeout) {
-      clearTimeout(this.stopHubTimeout);
-    }
+    this.clearSilenceGraceTimer();
+    this.clearStopHubTimeout();
+    this.mediaRecorder?.stop();
+
     this.stopHubTimeout = setTimeout(() => {
       this.stopHubConnection();
       this.stopHubTimeout = null;
@@ -159,18 +163,25 @@ export class BackendSttClient extends BaseSttClient {
   private stopHubConnection() {
     if (this.isStopInProgress && !this.isStopCompleted) {
       this.isRecording = false;
-      this.mediaRecorder?.stream.getTracks().forEach((t) => t.stop());
+      this.mediaRecorder?.stream.getTracks().forEach((t) => {
+        t.stop();
+      });
       this.mediaRecorder = undefined;
       this.hubConnection?.off(HUB_RECEIVE_TRANSCRIPT);
       this.hubConnection?.stop();
       this.isStopCompleted = true;
       this.isStopInProgress = false;
-      if (this.stopHubTimeout) {
-        clearTimeout(this.stopHubTimeout);
-      }
+      this.clearStopHubTimeout();
 
       this.onFinishedTranscribing(this.isAutoFinished ? 'auto' : 'manual');
       this.isAutoFinished = false;
+    }
+  }
+
+  private clearStopHubTimeout() {
+    if (this.stopHubTimeout) {
+      clearTimeout(this.stopHubTimeout);
+      this.stopHubTimeout = null;
     }
   }
 }
