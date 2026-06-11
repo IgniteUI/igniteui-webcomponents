@@ -106,6 +106,23 @@ igc-nav-drawer {
 }
 ```
 
+### Omit column `width` — both grid types are fluid by default
+Adding explicit pixel widths prevents columns from filling the container and leaves trailing empty space.
+
+- **Grid Lite** (`igc-grid-lite-column`): default is `minmax(136px, 1fr)`
+- **Advanced Grid** (`igc-column`): columns distribute evenly across the available width
+
+```html
+<!-- Grid Lite: correct, no width set -->
+<igc-grid-lite-column field="name" header="Name"></igc-grid-lite-column>
+
+<!-- Advanced Grid: correct, no width set -->
+<igc-column field="id" header="ID"></igc-column>
+<igc-column field="name" header="Name"></igc-column>
+```
+
+Only set `width` when the design requires a specific fixed size. Exception: resizable Grid Lite columns should use `px` to avoid layout shifts during resize.
+
 ## Theming Pitfalls
 
 ### Never hardcode colors after palette generation
