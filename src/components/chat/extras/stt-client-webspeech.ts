@@ -11,7 +11,7 @@ export class WebSpeechSttClient extends BaseSttClient {
     this.onTranscript('');
 
     const SpeechRecognition =
-      window.SpeechRecognition || (window as any).webkitSpeechRecognition;
+      window.SpeechRecognition ?? window.webkitSpeechRecognition;
     if (!SpeechRecognition) {
       throw new Error('Web Speech API not supported in this browser.');
     }
@@ -20,12 +20,12 @@ export class WebSpeechSttClient extends BaseSttClient {
     this.recognition.interimResults = true;
     this.recognition.lang = language;
 
-    this.recognition.onresult = (event: any) => {
+    this.recognition.onresult = (event: SpeechRecognitionEvent) => {
       this.handleTranscriptEvent(event);
     };
 
     this.recognition.onerror = () => {
-      //console.error("Speech recognition error", e);
+      this.stop();
     };
 
     this.recognition?.start();
@@ -64,8 +64,8 @@ export class WebSpeechSttClient extends BaseSttClient {
 //Fix. Add own interface declaration for SpeechRecognition
 declare global {
   interface Window {
-    SpeechRecognition: typeof SpeechRecognition;
-    webkitSpeechRecognition: typeof SpeechRecognition;
+    SpeechRecognition?: typeof SpeechRecognition;
+    webkitSpeechRecognition?: typeof SpeechRecognition;
   }
 
   // The browser’s Web Speech API type (simplified)

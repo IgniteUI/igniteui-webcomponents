@@ -142,16 +142,15 @@ export default class IgcChatInputComponent extends LitElement {
 
   private _sttClient?: ISttClient;
 
-  @property({ type: Boolean })
-  isRecording = false;
+  @state()
+  private isRecording = false;
 
-  @property({ type: Boolean })
-  isStopInProgress = false;
-
+  @state()
+  private isStopInProgress = false;
   onPulseSignal = () => {
-    const el = this.renderRoot.querySelector<HTMLLabelElement>(
-      'label[part="speech-to-text"]'
-    )?.firstElementChild;
+    const el = this.renderRoot.querySelector<HTMLElement>(
+      'igc-icon-button[part="speech-to-text"]'
+    );
     if (!el) return;
 
     el.classList.add('pulsate');
@@ -192,7 +191,7 @@ export default class IgcChatInputComponent extends LitElement {
     this._state.inputValue = text;
   };
 
-  onFinishedTranscribing = (finished: string) => {
+  onFinishedTranscribing = (finished: 'auto' | 'manual') => {
     this.isStopInProgress = false;
     this.isRecording = false;
     if (finished === 'auto') {
@@ -200,7 +199,7 @@ export default class IgcChatInputComponent extends LitElement {
     }
   };
 
-  async _toggleMic() {
+  private async _toggleMic(): Promise<void> {
     if (!this.isRecording) {
       if (this._state.options?.speechToText?.serviceProvider === 'webspeech') {
         this._sttClient = new WebSpeechSttClient(
@@ -230,9 +229,15 @@ export default class IgcChatInputComponent extends LitElement {
         return;
       }
 
-      await this._sttClient.start(this._state.options?.speechToText?.lang);
-      this.isRecording = true;
-      this.isStopInProgress = false;
+      try {
+        await this._sttClient.start(this._state.options?.speechToText?.lang);
+        this.isRecording = true;
+        this.isStopInProgress = false;
+      } catch {
+        this._sttClient = undefined;
+        this.isRecording = false;
+        this.isStopInProgress = false;
+      }
     } else {
       this._sttClient?.stop();
     }
@@ -443,7 +448,8 @@ export default class IgcChatInputComponent extends LitElement {
         aria-label="Chat text input"
         placeholder=${ifDefined(
           this.isRecording
-            ? this._state.options?.speakPlaceholder
+            ? this._state.options?.speakPlaceholder ??
+                this._state.options?.inputPlaceholder
             : this._state.options?.inputPlaceholder
         )}
         resize="auto"
@@ -505,7 +511,7 @@ export default class IgcChatInputComponent extends LitElement {
             </label>
             ${this.isRecording && !this.isStopInProgress
               ? html`
-                  <svg class="countdown-ring" viewBox="0 0 36 36">
+                  <svg class="countdown-ring" viewBox="0 0 36 36" aria-hidden="true">
                     <circle class="ring-bg" cx="18" cy="18" r="14"></circle>
                     <circle
                       class="ring-progress"

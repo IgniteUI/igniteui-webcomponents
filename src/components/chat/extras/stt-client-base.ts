@@ -28,8 +28,8 @@ export abstract class BaseSttClient implements ISttClient {
   protected static readonly SILENCE_TIMEOUT_MS = 4000;
   protected static readonly SILENCE_GRACE_PERIOD = 1000;
 
-  protected silenceTimeout: any = null;
-  protected silenceGraceTimeout: any = null;
+  protected silenceTimeout: ReturnType<typeof setTimeout> | null = null;
+  protected silenceGraceTimeout: ReturnType<typeof setTimeout> | null = null;
   protected isCountdownRunning = false;
   protected isAutoFinished = false;
 

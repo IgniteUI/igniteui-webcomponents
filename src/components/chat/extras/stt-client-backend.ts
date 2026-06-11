@@ -159,6 +159,8 @@ export class BackendSttClient extends BaseSttClient {
   private stopHubConnection() {
     if (this.isStopInProgress && !this.isStopCompleted) {
       this.isRecording = false;
+      this.mediaRecorder?.stream.getTracks().forEach((t) => t.stop());
+      this.mediaRecorder = undefined;
       this.hubConnection?.off(HUB_RECEIVE_TRANSCRIPT);
       this.hubConnection?.stop();
       this.isStopCompleted = true;
