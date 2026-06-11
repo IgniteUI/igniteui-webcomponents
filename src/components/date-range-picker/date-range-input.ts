@@ -3,6 +3,8 @@ import { addThemingController } from '../../theming/theming-controller.js';
 import { CalendarDay } from '../calendar/model.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { formatDisplayDate } from '../common/i18n/i18n-controller.js';
+import type { AbstractConstructor } from '../common/mixins/constructor.js';
+import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormValueDateRangeTransformers } from '../common/mixins/forms/form-transformers.js';
 import { createFormValueState } from '../common/mixins/forms/form-value.js';
 import { equal } from '../common/util.js';
@@ -11,10 +13,7 @@ import {
   type DatePartDeltas,
   DatePartType,
 } from '../date-time-input/date-part.js';
-import {
-  IgcDateTimeInputBaseComponent,
-  type IgcDateTimeInputComponentEventMap,
-} from '../date-time-input/date-time-input.base.js';
+import { IgcDateTimeInputBaseComponent } from '../date-time-input/date-time-input.base.js';
 import { DateParts } from '../date-time-input/datetime-mask-parser.js';
 import { styles } from '../input/themes/input.base.css.js';
 import { styles as shared } from '../input/themes/shared/input.common.css.js';
@@ -26,17 +25,28 @@ import {
   DateRangePosition,
 } from './date-range-mask-parser.js';
 
-export interface IgcDateRangeInputEventMap extends IgcDateTimeInputComponentEventMap<DateRangeValue | null> {}
+export interface IgcDateRangeInputComponentEventMap {
+  /* alternateName: inputOcurred */
+  igcInput: CustomEvent<string>;
+  /* blazorSuppress */
+  igcChange: CustomEvent<DateRangeValue | null>;
+  // For analyzer meta only:
+  /* skipWCPrefix */
+  focus: FocusEvent;
+  /* skipWCPrefix */
+  blur: FocusEvent;
+}
 
-export default class IgcDateRangeInputComponent extends IgcDateTimeInputBaseComponent<
-  DateRangeValue | null,
-  DateRangePart
-> {
+/* blazorSuppress */
+export default class IgcDateRangeInputComponent extends EventEmitterMixin<
+  IgcDateRangeInputComponentEventMap,
+  AbstractConstructor<IgcDateTimeInputBaseComponent>
+>(IgcDateTimeInputBaseComponent) {
   public static readonly tagName = 'igc-date-range-input';
   public static styles = [styles, shared];
 
   /* blazorSuppress */
-  public static register() {
+  public static register(): void {
     registerComponent(IgcDateRangeInputComponent);
   }
 
@@ -51,12 +61,10 @@ export default class IgcDateRangeInputComponent extends IgcDateTimeInputBaseComp
   protected override readonly _parser = new DateRangeMaskParser();
 
   protected override get _datePartDeltas(): DatePartDeltas {
-    return {
-      date: 1,
-      month: 1,
-      year: 1,
-    };
+    return { date: 1, month: 1, year: 1 };
   }
+
+  protected _oldValue: DateRangeValue | null = null;
 
   // #endregion
 
@@ -188,11 +196,6 @@ export default class IgcDateRangeInputComponent extends IgcDateTimeInputBaseComp
 
   // #region Internal API Overrides
 
-  protected override _emitInputEvent(): void {
-    this._setTouchedState();
-    this.emitEvent('igcInput', { detail: this._maskedValue });
-  }
-
   protected override _updateMaskDisplay(): void {
     if (this._focused) {
       // Only reset mask from value when value is non-null (i.e. after spinning or programmatic set).
@@ -205,26 +208,11 @@ export default class IgcDateRangeInputComponent extends IgcDateTimeInputBaseComp
       return;
     }
 
-    if (!this.value?.start && !this.value?.end) {
-      this._maskedValue = '';
-      return;
-    }
-
-    const { start, end } = this.value;
-    const startStr = start
-      ? formatDisplayDate(start, this.locale, this.displayFormat)
-      : '';
-    const endStr = end
-      ? formatDisplayDate(end, this.locale, this.displayFormat)
-      : '';
-    this._maskedValue =
-      startStr && endStr
-        ? `${startStr}${this._parser.separator}${endStr}`
-        : startStr || endStr;
+    this._maskedValue = this._buildDisplayValue();
   }
 
   protected override _performStep(
-    datePart: DateRangePart | undefined,
+    datePart: unknown,
     delta: number | undefined,
     isDecrement: boolean
   ): void {
@@ -242,14 +230,36 @@ export default class IgcDateRangeInputComponent extends IgcDateTimeInputBaseComp
     super._performStep(datePart, delta, isDecrement);
   }
 
+  protected override _commitSpunValue(value: unknown): void {
+    this.value = value as DateRangeValue;
+  }
+
+  protected override _buildDisplayValue(): string {
+    if (!this.value?.start && !this.value?.end) {
+      return '';
+    }
+
+    const { start, end } = this.value;
+    const startStr = start
+      ? formatDisplayDate(start, this.locale, this.displayFormat)
+      : '';
+    const endStr = end
+      ? formatDisplayDate(end, this.locale, this.displayFormat)
+      : '';
+    return startStr && endStr
+      ? `${startStr}${this._parser.separator}${endStr}`
+      : startStr || endStr;
+  }
+
   protected override _calculateSpunValue(
-    datePart: DateRangePart,
+    datePart: unknown,
     delta: number | undefined,
     isDecrement: boolean
   ): DateRangeValue {
+    const range = datePart as DateRangePart;
     const part = this._parser.getPartByTypeAndPosition(
-      datePart.part as DatePartType,
-      datePart.position
+      range.part as DatePartType,
+      range.position
     );
 
     const today = CalendarDay.today.native;
@@ -260,7 +270,7 @@ export default class IgcDateRangeInputComponent extends IgcDateTimeInputBaseComp
     }
 
     const effectiveDelta =
-      delta ?? this._datePartDeltas[datePart.part as keyof DatePartDeltas] ?? 1;
+      delta ?? this._datePartDeltas[range.part as keyof DatePartDeltas] ?? 1;
     const spinAmount = effectiveDelta * (isDecrement ? -1 : 1);
 
     // For AM/PM spinning, extract the current AM/PM value from the mask
@@ -346,7 +356,7 @@ export default class IgcDateRangeInputComponent extends IgcDateTimeInputBaseComp
     }
   }
 
-  protected override _updateValueFromMask(): void {
+  protected override _syncValueFromMask(): void {
     if (!this._isMaskComplete()) {
       this.value = null;
       return;
@@ -357,6 +367,22 @@ export default class IgcDateRangeInputComponent extends IgcDateTimeInputBaseComp
   }
 
   // #region Public API Overrides
+
+  /** Increments a date/time portion. */
+  public override stepUp(datePart?: DateRangePart, delta?: number): void {
+    super.stepUp(datePart, delta);
+  }
+
+  /** Decrements a date/time portion. */
+  public override stepDown(datePart?: DateRangePart, delta?: number): void {
+    super.stepDown(datePart, delta);
+  }
+
+  /** Clears the input element of user input. */
+  public override clear(): void {
+    this._maskedValue = '';
+    this.value = null;
+  }
 
   public override hasDateParts(): boolean {
     return this._parser.rangeParts.some(

@@ -19,67 +19,90 @@ const icons = all.map((icon) => icon.name);
 const metadata: Meta<IgcIconButtonComponent> = {
   title: 'IconButton',
   component: 'igc-icon-button',
-  parameters: { docs: { description: { component: '' } } },
+  parameters: {
+    docs: {
+      description: {
+        component:
+          'A button that displays a single icon, designed for compact, icon-only\ninteractions such as toolbar actions, floating action buttons, or inline\ncontrols.\n\nThe icon is sourced from the icon registry via the `name` and `collection`\nattributes. Like the normal button, it can render as an anchor element when\n`href` is set and is fully form-associated.',
+      },
+    },
+  },
   argTypes: {
     name: {
       type: 'string',
-      description: 'The name of the icon.',
+      description: 'The name of the icon to display.',
       control: 'text',
     },
     collection: {
       type: 'string',
-      description: 'The name of the icon collection.',
+      description: 'The collection the icon belongs to.',
       control: 'text',
     },
     mirrored: {
       type: 'boolean',
-      description: 'Whether to flip the icon button. Useful for RTL layouts.',
+      description:
+        'Determines whether the icon should be mirrored in right-to-left contexts.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
     variant: {
       type: '"contained" | "flat" | "outlined"',
-      description: 'The visual variant of the icon button.',
+      description:
+        'The variant of the button which determines its visual appearance.\n- `contained` – filled background; highest visual emphasis (default).\n- `outlined` – transparent background with a visible border.\n- `flat` – no background or border; lowest visual emphasis.',
       options: ['contained', 'flat', 'outlined'],
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'contained' } },
     },
     type: {
       type: '"button" | "reset" | "submit"',
-      description: 'The type of the button. Defaults to `button`.',
+      description:
+        "The type of the button, which determines its behavior and semantics.\n- `'button'` – no default action; useful for custom JavaScript handlers.\n- `'submit'` – submits the associated form when clicked.\n- `'reset'` – resets the associated form fields to their initial values.\n\nIgnored when the button is rendered as a link (i.e. `href` is set).",
       options: ['button', 'reset', 'submit'],
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'button' } },
     },
     href: {
       type: 'string',
-      description: 'The URL the button points to.',
+      description:
+        'The URL the button points to. When set, the component renders as an\n`<a>` element instead of a `<button>`, enabling navigation on click.\nUse together with `target`, `download`, and `rel` for full anchor semantics.',
       control: 'text',
     },
     download: {
       type: 'string',
       description:
-        'Prompts to save the linked URL instead of navigating to it.',
+        'Prompts the browser to download the linked resource rather than navigating\nto it. The optional value is used as the suggested file name.\nOnly effective when `href` is set.',
       control: 'text',
     },
     target: {
       type: '"_blank" | "_parent" | "_self" | "_top"',
       description:
-        'Where to display the linked URL, as the name for a browsing context.',
+        "Where to open the linked document. Only effective when `href` is set.\n- `'_self'` – current browsing context (default browser behavior).\n- `'_blank'` – new tab or window.\n- `'_parent'` – parent browsing context; falls back to `_self` if none.\n- `'_top'` – top-level browsing context; falls back to `_self` if none.",
       options: ['_blank', '_parent', '_self', '_top'],
       control: { type: 'select' },
     },
     rel: {
       type: 'string',
       description:
-        'The relationship of the linked URL.\nSee https://developer.mozilla.org/en-US/docs/Web/HTML/Link_types',
+        'The relationship between the current document and the linked URL.\nAccepts a space-separated list of link types (e.g. `\'noopener noreferrer\'`).\nOnly effective when `href` is set. When `target="_blank"` is used,\nsetting `rel="noopener noreferrer"` is strongly recommended for security.',
       control: 'text',
     },
     disabled: {
       type: 'boolean',
-      description: 'The disabled state of the component',
+      description: 'When set, the button will be disabled and non-interactive.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
+    },
+    command: {
+      type: 'string',
+      description:
+        "The command to invoke on the target element specified by `commandfor`.\nPart of the [Invoker Commands](https://developer.mozilla.org/en-US/docs/Web/API/Invoker_Commands_API) API.\nCustom commands must start with two dashes (e.g. `'--my-command'`).",
+      control: 'text',
+    },
+    commandfor: {
+      type: 'string',
+      description:
+        'The ID of the target element for the invoker command.\nPart of the [Invoker Commands API](https://developer.mozilla.org/en-US/docs/Web/API/Invoker_Commands_API).',
+      control: 'text',
     },
   },
   args: {
@@ -93,29 +116,68 @@ const metadata: Meta<IgcIconButtonComponent> = {
 export default metadata;
 
 interface IgcIconButtonArgs {
-  /** The name of the icon. */
+  /** The name of the icon to display. */
   name: string;
-  /** The name of the icon collection. */
+  /** The collection the icon belongs to. */
   collection: string;
-  /** Whether to flip the icon button. Useful for RTL layouts. */
+  /** Determines whether the icon should be mirrored in right-to-left contexts. */
   mirrored: boolean;
-  /** The visual variant of the icon button. */
+  /**
+   * The variant of the button which determines its visual appearance.
+   * - `contained` – filled background; highest visual emphasis (default).
+   * - `outlined` – transparent background with a visible border.
+   * - `flat` – no background or border; lowest visual emphasis.
+   */
   variant: 'contained' | 'flat' | 'outlined';
-  /** The type of the button. Defaults to `button`. */
+  /**
+   * The type of the button, which determines its behavior and semantics.
+   * - `'button'` – no default action; useful for custom JavaScript handlers.
+   * - `'submit'` – submits the associated form when clicked.
+   * - `'reset'` – resets the associated form fields to their initial values.
+   *
+   * Ignored when the button is rendered as a link (i.e. `href` is set).
+   */
   type: 'button' | 'reset' | 'submit';
-  /** The URL the button points to. */
+  /**
+   * The URL the button points to. When set, the component renders as an
+   * `<a>` element instead of a `<button>`, enabling navigation on click.
+   * Use together with `target`, `download`, and `rel` for full anchor semantics.
+   */
   href: string;
-  /** Prompts to save the linked URL instead of navigating to it. */
+  /**
+   * Prompts the browser to download the linked resource rather than navigating
+   * to it. The optional value is used as the suggested file name.
+   * Only effective when `href` is set.
+   */
   download: string;
-  /** Where to display the linked URL, as the name for a browsing context. */
+  /**
+   * Where to open the linked document. Only effective when `href` is set.
+   * - `'_self'` – current browsing context (default browser behavior).
+   * - `'_blank'` – new tab or window.
+   * - `'_parent'` – parent browsing context; falls back to `_self` if none.
+   * - `'_top'` – top-level browsing context; falls back to `_self` if none.
+   */
   target: '_blank' | '_parent' | '_self' | '_top';
   /**
-   * The relationship of the linked URL.
-   * See https://developer.mozilla.org/en-US/docs/Web/HTML/Link_types
+   * The relationship between the current document and the linked URL.
+   * Accepts a space-separated list of link types (e.g. `'noopener noreferrer'`).
+   * Only effective when `href` is set. When `target="_blank"` is used,
+   * setting `rel="noopener noreferrer"` is strongly recommended for security.
    */
   rel: string;
-  /** The disabled state of the component */
+  /** When set, the button will be disabled and non-interactive. */
   disabled: boolean;
+  /**
+   * The command to invoke on the target element specified by `commandfor`.
+   * Part of the [Invoker Commands](https://developer.mozilla.org/en-US/docs/Web/API/Invoker_Commands_API) API.
+   * Custom commands must start with two dashes (e.g. `'--my-command'`).
+   */
+  command: string;
+  /**
+   * The ID of the target element for the invoker command.
+   * Part of the [Invoker Commands API](https://developer.mozilla.org/en-US/docs/Web/API/Invoker_Commands_API).
+   */
+  commandfor: string;
 }
 type Story = StoryObj<IgcIconButtonArgs>;
 

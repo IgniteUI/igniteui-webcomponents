@@ -3,4 +3,6 @@
 
 :host {
     @include css-vars-from-theme($base);
+
+    color-scheme: light;
 }

@@ -1,41 +1,34 @@
+import { watch } from 'node:fs';
+import { join } from 'node:path';
 import { writeFile } from 'node:fs/promises';
-import watch from 'node-watch';
 import * as sass from 'sass-embedded';
 import report from './report.mjs';
 import { compileSass, fromTemplate } from './sass.mjs';
 
-const watchOptions = {
-  recursive: true,
-  filter: (path) => {
-    return /.(?:scss)$/.test(path);
-  },
-};
-
 let updating = false;
 const compiler = await sass.initAsyncCompiler();
+const filter = (fileName) => /\.scss$/.test(fileName);
+const now = () => `[${new Date().toLocaleTimeString()}]`;
 
-const watcher = watch(['src'], watchOptions, async (_, fileName) => {
-  if (updating) {
-    return;
-  }
+watch('src', { recursive: true }, async (_, fileName) => {
+  if (!fileName || !filter(fileName) || updating) return;
 
-  report.warn(`Change detected: ${fileName}`);
+  const filePath = join('src', fileName);
+  report.warn(`${now()} 🎨 change detected: ${filePath}`);
   updating = true;
 
   try {
     await writeFile(
-      fileName.replace(/\.scss$/, '.css.ts'),
-      fromTemplate(await compileSass(fileName, compiler)),
+      filePath.replace(/\.scss$/, '.css.ts'),
+      fromTemplate(await compileSass(filePath, compiler)),
       'utf8'
     );
+    report.success(`${now()} 🎨 Styles rebuilt`);
   } catch (err) {
-    report.error(err.message ?? err.toString());
+    report.error(`${now()} ERROR: ${err.message ?? err.toString()}`);
+  } finally {
+    updating = false;
   }
+}).on('close', () => compiler.dispose());
 
-  report.success('Styles rebuilt 🎨');
-  updating = false;
-});
-
-watcher.on('close', () => compiler.dispose());
-
-report.info('Styles watcher started...');
+report.info(`${now()} Styles watcher started...`);

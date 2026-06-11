@@ -145,6 +145,10 @@ export function isElement(node: unknown): node is Element {
   return node instanceof Node && node.nodeType === Node.ELEMENT_NODE;
 }
 
+export function isDocument(node: unknown): node is Document {
+  return node instanceof Node && node.nodeType === Node.DOCUMENT_NODE;
+}
+
 /**
  * Finds the first element in the event's composed path that matches the provided predicate, which can be either a string selector or a function.
  *
@@ -668,4 +672,35 @@ export function trimmedHtml(
   }
 
   return html(trimmedCache.get(strings)!, ...values);
+}
+
+/**
+ * Returns whether the given element is currently an open popover or not.
+ * This is useful to determine if the popover is open without relying on the `open` property, which may not be in sync with the actual popover state if the opening/closing animations are still running.
+ * Note: This function only works for elements that use the `:popover-open` pseudo-class to indicate
+ */
+export function isPopoverOpen(element?: Element): boolean {
+  return element?.matches(':popover-open') ?? false;
+}
+
+/**
+ * Returns the nearest visible ancestor of a given node, traversing through shadow DOM boundaries if necessary. If no visible ancestor is found, returns null.
+ */
+export function getVisibleAncestor(startNode: Node): HTMLElement | null {
+  let node: Node | null = startNode.parentNode;
+
+  while (node) {
+    if (node instanceof ShadowRoot) {
+      node = node.host;
+      continue;
+    }
+
+    if (node instanceof HTMLElement && node.checkVisibility()) {
+      return node;
+    }
+
+    node = node.parentNode;
+  }
+
+  return null;
 }

@@ -1,200 +1,190 @@
 // @ts-check
+/** @import { Package, Type, Reference } from 'custom-elements-manifest/schema' */
 import { exec } from 'node:child_process';
-import { copyFile, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
-import { tmpdir } from 'node:os';
+import { readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { promisify } from 'node:util';
 import { format } from 'prettier';
+import report from './report.mjs';
 
 const execAsync = promisify(exec);
 
+/** Pre-compiled regexes */
+const NULL_UNDEFINED_RE = /undefined|null/;
+const ARRAY_TYPE_RE = /\[\]/;
+const GENERIC_TYPE_RE = /<.*>/;
+const PRETTIFY_NAME_RE = /igc|component/gi;
+const STORY_REGION_RE = /\/\/ region default.*?\/\/ endregion/gs;
+
+/** @typedef {{ manifestPath: string, storiesPath: string }} Config */
+
 /**
- * @typedef {object} Config
- * @property {string} manifestPath
- * @property {string} storiesPath
+ * @typedef {{
+ *   kind: 'field',
+ *   name: string,
+ *   description?: string,
+ *   privacy?: 'public' | 'private' | 'protected',
+ *   attribute?: string,
+ *   default?: string,
+ *   type?: Type,
+ *   expandedType?: Type,
+ *   inheritedFrom?: Reference,
+ *   static?: boolean,
+ *   readonly?: boolean,
+ *   deprecated?: boolean | string,
+ * }} ComponentField
  */
 
 /**
- * @typedef {object} CEMSchema
- * @property {ModuleDeclaration[]} modules
+ * @typedef {{
+ *   kind: 'class' | 'mixin',
+ *   name: string,
+ *   description?: string,
+ *   tagName?: string,
+ *   events?: Array<{ name: string }>,
+ *   members?: ComponentField[],
+ * }} ComponentDeclaration
  */
 
 /**
- * @typedef {object} ModuleDeclaration
- * @property {CustomElementDeclaration[]} declarations
+ * @typedef {{
+ *   type: string,
+ *   description?: string,
+ *   options?: string[],
+ *   control?: string | { type: string },
+ *   table?: { defaultValue: { summary: string } },
+ * }} ArgTypeEntry
  */
 
 /**
- * @typedef {object} CustomElementProperty
- * @property {'field' | 'method'} kind
- * @property {'private' | 'protected' | 'public'} privacy
- * @property {string} name
- * @property {string} description
- * @property {string=} attribute
- * @property {string=} default
- * @property {{ text: string }=} type
- * @property {{ text: string }=} expandedType
- * @property {{ name: string }=} inheritedFrom
- * @property {boolean=} static
- * @property {boolean=} readonly
- * @property {boolean=} deprecated
+ * @typedef {{
+ *   title: string,
+ *   component: string | undefined,
+ *   parameters: {
+ *     docs: { description: { component: string } },
+ *     actions?: { handles: string[] },
+ *   },
+ *   argTypes?: Record<string, ArgTypeEntry>,
+ *   args?: Record<string, string | number | boolean>,
+ * }} StoriesDefinition
  */
 
 /**
- * @typedef {object} CustomElementDeclaration
- * @property {'class' | 'mixin'} kind
- * @property {string} name
- * @property {string} description
- * @property {string=} tagName
- * @property {CustomElementProperty[]} members;
- * @property {{ name: string }[]=} events;
+ * @template T
+ * @param {T | undefined} val
+ * @returns {val is T}
  */
-
-/**
- *
- * @param {object} object
- */
-function isDefined(object) {
-  return object !== undefined;
+function isDefined(val) {
+  return val !== undefined;
 }
 
 /**
- *
- * @param {string} type
- */
-function isUnion(type) {
-  return type.includes('|');
-}
-
-/**
- *
  * @param {string} name
+ * @returns {string}
  */
 function prettifyName(name) {
-  return name.replace(/igc|component/gi, '');
+  return name.replace(PRETTIFY_NAME_RE, '');
 }
 
 class StoriesBuilder {
   /** @type {Config} */
   #config;
 
-  /** @type {Map<string, CustomElementDeclaration>} */
+  /** @type {Map<string, ComponentDeclaration>} */
   #cache = new Map();
 
-  /** @type string */
-  #tempDir;
-
   /**
-   *
    * @param {string} parentName
-   * @param {string} name
-   * @returns {CustomElementProperty=}
+   * @param {string} memberName
+   * @returns {ComponentField | undefined}
    */
-  #getMemberFrom(parentName, name) {
+  #getMemberFrom(parentName, memberName) {
     return this.#cache
       .get(parentName)
-      ?.members.find((member) => member.name === name);
+      ?.members?.find((m) => m.name === memberName);
   }
 
   /**
+   * Parses the CEM type string for a field into a normalized type string and
+   * optional union options in a single pass.
    *
-   * @param {CustomElementProperty} property
+   * @param {ComponentField} property
+   * @returns {{ type: string, options: string[] | undefined }}
    */
-  #resolveType(property) {
-    let type = 'string';
+  #parseType(property) {
+    let rawType = 'string';
 
     if (property.expandedType) {
-      type = property.expandedType.text;
+      rawType = property.expandedType.text;
     } else if (property.type) {
-      type = property.type.text;
+      rawType = property.type.text;
     } else if (property.inheritedFrom) {
-      const parentProperty = this.#getMemberFrom(
+      const parent = this.#getMemberFrom(
         property.inheritedFrom.name,
         property.name
       );
-      type = parentProperty ? this.#resolveType(parentProperty) : 'string';
+      if (parent) {
+        return this.#parseType(parent);
+      }
     }
 
-    const result = [];
+    /** @type {string[]} */
+    const parts = [];
 
-    const isArray = (type) => type.includes('[]');
-    const isGeneric = (type) => type.match(/<.*>/);
-
-    type.split('|').map((t) => {
-      const part = t.trim().replace(/'/g, '"');
+    for (const raw of rawType.split('|')) {
+      const part = raw.trim();
       if (
         part &&
-        !part.match(/undefined|null/) &&
-        !isArray(part) &&
-        !isGeneric(part)
+        !NULL_UNDEFINED_RE.test(part) &&
+        !ARRAY_TYPE_RE.test(part) &&
+        !GENERIC_TYPE_RE.test(part)
       ) {
-        result.push(part);
+        parts.push(part);
       }
-    });
+    }
 
-    return result.join(' | ');
+    if (!parts.length) {
+      return { type: '', options: undefined };
+    }
+
+    const type = parts.map((p) => p.replace(/'/g, '"')).join(' | ');
+    const options =
+      parts.length > 1 ? parts.map((p) => p.replace(/"|'/g, '')) : undefined;
+
+    return { type, options };
   }
 
   /**
-   *
    * @param {string} type
-   */
-  #resolveOptions(type) {
-    return isUnion(type)
-      ? type.split('|').map((t) => {
-          const part = t.trim();
-          if (part && !part.match(/undefined|null/)) {
-            return part.replace(/"|'/g, '');
-          }
-        })
-      : undefined;
-  }
-
-  /**
-   *
-   * @param {string} type
-   * @param {(string | undefined)[]=} options
+   * @param {string[] | undefined} options
+   * @returns {string | { type: string }}
    */
   #resolveControl(type, options) {
-    if (type.startsWith('string')) {
-      return 'text';
-    }
-
-    if (type.startsWith('number')) {
-      return 'number';
-    }
-
-    if (type.startsWith('Date')) {
-      return 'date';
-    }
-
-    if (options) {
+    if (type.startsWith('string')) return 'text';
+    if (type.startsWith('number')) return 'number';
+    if (type.startsWith('Date')) return 'date';
+    if (options)
       return { type: options.length > 3 ? 'select' : 'inline-radio' };
-    }
-
     return type;
   }
 
   /**
-   *
    * @param {string} type
-   * @param {string} value
+   * @param {string | undefined} value
+   * @returns {string | number | boolean | undefined}
    */
   #resolveDefaultValue(type, value) {
-    const valueDefined = isDefined(value);
-
     switch (type) {
       case 'boolean':
-        return valueDefined ? value === 'true' : false;
+        return isDefined(value) ? value === 'true' : false;
       case 'number':
-        return valueDefined ? Number.parseFloat(value) : undefined;
+        return isDefined(value) ? Number.parseFloat(value) : undefined;
       default:
-        return valueDefined ? value.replace(/"|'/g, '') : undefined;
+        return isDefined(value) ? value.replace(/"|'/g, '') : undefined;
     }
   }
 
   /**
-   *
    * @param {Config} config
    */
   constructor(config) {
@@ -202,93 +192,86 @@ class StoriesBuilder {
   }
 
   /**
-   * @returns {Promise<CEMSchema>}
+   * @returns {Promise<Package>}
    */
   async #parseManifest() {
     const file = new URL(this.#config.manifestPath, import.meta.url);
     try {
       return JSON.parse(await readFile(file, 'utf8'));
-    } catch {
+    } catch (error) {
+      if (
+        !(
+          error instanceof Error &&
+          /** @type {NodeJS.ErrnoException} */ (error).code === 'ENOENT'
+        )
+      ) {
+        throw error;
+      }
       await execAsync('npm run cem');
       return JSON.parse(await readFile(file, 'utf8'));
     }
   }
 
   /**
-   *
-   * @param {ModuleDeclaration[]} modules
+   * @param {Package['modules']} modules
    */
   #makeCache(modules) {
-    for (const { declarations } of modules) {
-      if (!declarations.length) {
-        continue;
-      }
-
-      for (const candidate of declarations) {
-        if (candidate.kind.match(/mixin|class/)) {
-          this.#cache.set(candidate.name, candidate);
+    for (const module of modules) {
+      for (const candidate of module.declarations ?? []) {
+        if (/mixin|class/.test(candidate.kind)) {
+          this.#cache.set(
+            candidate.name,
+            /** @type {ComponentDeclaration} */ (candidate)
+          );
         }
       }
     }
   }
 
-  async #createTmpDir() {
-    this.#tempDir = await mkdtemp(join(tmpdir(), 'igc-'));
-  }
-
-  async #clearTmpDir() {
-    rm(this.#tempDir, { recursive: true, force: true });
-  }
-
   async #createDefinitions() {
-    await this.#createTmpDir();
-    await Promise.all(
+    const results = await Promise.allSettled(
       Array.from(this.#cache.values())
         .filter((element) => element.tagName)
         .map((element) =>
           this.#writeStory(element.name, this.#makeDefinition(element))
         )
     );
+
+    for (const result of results) {
+      if (result.status === 'rejected') {
+        const reason = result.reason;
+        report.error(`Failed to write story: ${reason?.message ?? reason}`);
+      }
+    }
   }
 
   /**
-   *
-   * @param {CustomElementProperty[]} properties
+   * @param {ComponentField[]} properties
+   * @returns {{ args: Record<string, string | number | boolean>, argTypes: Record<string, ArgTypeEntry> }}
    */
   #makeArgs(properties) {
+    /** @type {Record<string, ArgTypeEntry>} */
     const argTypes = {};
+    /** @type {Record<string, string | number | boolean>} */
     const args = {};
 
     for (const property of properties) {
-      const parsed = {};
-      const type = this.#resolveType(property);
+      const { type, options } = this.#parseType(property);
+      if (!type) continue;
 
-      if (type) {
-        parsed.type = type;
-      } else {
-        continue;
-      }
-
-      const options = this.#resolveOptions(type);
       const control = this.#resolveControl(type, options);
-      // @ts-ignore
       const defaultValue = this.#resolveDefaultValue(type, property.default);
 
-      if (property.description) {
-        parsed.description = property.description;
-      }
-
-      if (options) {
-        parsed.options = options;
-      }
-      if (control) {
-        parsed.control = control;
-      }
+      /** @type {ArgTypeEntry} */
+      const entry = { type };
+      if (property.description) entry.description = property.description;
+      if (options) entry.options = options;
+      if (control) entry.control = control;
       if (isDefined(defaultValue)) {
-        parsed.table = { defaultValue: { summary: defaultValue?.toString() } };
+        entry.table = { defaultValue: { summary: defaultValue.toString() } };
       }
 
-      argTypes[property.name] = parsed;
+      argTypes[property.name] = entry;
 
       if (isDefined(defaultValue)) {
         args[property.name] = defaultValue;
@@ -299,56 +282,52 @@ class StoriesBuilder {
   }
 
   /**
-   *
-   * @param {CustomElementDeclaration} customElement
-   * @returns
+   * @param {ComponentDeclaration} customElement
+   * @returns {StoriesDefinition}
    */
   #makeDefinition(customElement) {
     const { description, name, events } = customElement;
-    const { args, argTypes } = this.#makeArgs(getMembers(customElement));
+    const { args, argTypes } = this.#makeArgs(this.#getMembers(customElement));
+    const actions = events?.map(({ name }) => name).filter(Boolean);
 
-    const actions = events
-      ? events.map(({ name }) => name).filter(Boolean)
-      : undefined;
-
+    /** @type {StoriesDefinition} */
     const result = {
       title: prettifyName(name),
       component: customElement.tagName,
       parameters: {
-        docs: { description: { component: description } },
+        docs: { description: { component: description ?? '' } },
       },
     };
 
-    if (actions?.length) {
-      result.parameters.actions = { handles: actions };
-    }
-    if (Object.keys(argTypes).length) {
-      result.argTypes = argTypes;
-    }
-    if (Object.keys(args).length) {
-      result.args = args;
-    }
+    if (actions?.length) result.parameters.actions = { handles: actions };
+    if (Object.keys(argTypes).length) result.argTypes = argTypes;
+    if (Object.keys(args).length) result.args = args;
 
     return result;
   }
 
   /**
-   *
    * @param {string} component
+   * @returns {URL}
    */
   #getFilePath(component) {
     const name = `${component.replace(/igc-|component/gi, '')}.stories.ts`;
     return new URL(join(this.#config.storiesPath, name), import.meta.url);
   }
 
+  /**
+   * @param {string} name
+   * @param {StoriesDefinition} definition
+   * @returns {Promise<void>}
+   */
   async #writeStory(name, definition) {
-    const file = this.#getFilePath(definition.component);
-    const tmpFile = join(this.#tempDir, `${name}.ts`);
+    const file = this.#getFilePath(definition.component ?? '');
     let data = '';
 
     try {
       data = await readFile(file, 'utf8');
     } catch {
+      report.warn(`No story file found for ${name}, skipping.`);
       return;
     }
 
@@ -359,29 +338,39 @@ class StoriesBuilder {
       })
     ).trim();
 
-    await writeFile(
-      tmpFile,
-      data.replace(/\/\/ region default.*\/\/ endregion/gs, storyMeta),
-      {
-        encoding: 'utf8',
-        flush: true,
-      }
-    );
+    const newContent = data.replace(STORY_REGION_RE, storyMeta);
 
-    await copyFile(tmpFile, file);
+    if (newContent !== data) {
+      await writeFile(file, newContent, { encoding: 'utf8', flush: true });
+    }
   }
 
   async build() {
     const { modules } = await this.#parseManifest();
     this.#makeCache(modules);
     await this.#createDefinitions();
-    await this.#clearTmpDir();
+  }
+
+  /**
+   * @param {ComponentDeclaration} element
+   * @returns {ComponentField[]}
+   */
+  #getMembers(element) {
+    return /** @type {ComponentField[]} */ (element.members ?? []).filter(
+      (member) =>
+        member.privacy === 'public' &&
+        member.kind === 'field' &&
+        member.attribute &&
+        !member.static &&
+        !member.readonly &&
+        !member.deprecated
+    );
   }
 }
 
 /**
- *
  * @param {string} description
+ * @returns {string}
  */
 function makeComment(description) {
   if (!description) return '';
@@ -391,18 +380,28 @@ function makeComment(description) {
     : `/** ${description} */\n`;
 }
 
+/**
+ * @param {Array<[string, ArgTypeEntry]>} types
+ * @returns {string}
+ */
 function buildInterface(types) {
   return types
     .map(
       ([name, { description, type }]) =>
-        `${makeComment(description)}${name}: ${type};`
+        `${makeComment(description ?? '')}${name}: ${type};`
     )
     .join('\n');
 }
 
+/**
+ * @param {StoriesDefinition} definition
+ * @returns {string}
+ */
 function templateArgsInterface(definition) {
   const argsInterface = `Igc${definition.title.replace(/\s/g, '')}Args`;
-  const types = Array.from(Object.entries(definition.argTypes ?? {}));
+  const types = /** @type {Array<[string, ArgTypeEntry]>} */ (
+    Object.entries(definition.argTypes ?? {})
+  );
 
   return types.length
     ? `interface ${argsInterface} {
@@ -412,6 +411,11 @@ function templateArgsInterface(definition) {
     : 'type Story = StoryObj';
 }
 
+/**
+ * @param {string} name
+ * @param {StoriesDefinition} definition
+ * @returns {string}
+ */
 function template(name, definition) {
   return String.raw`
 // region default
@@ -425,23 +429,14 @@ ${templateArgsInterface(definition)}
 // endregion`;
 }
 
-/**
- *
- * @param {CustomElementDeclaration} element
- */
-function getMembers(element) {
-  return element.members.filter(
-    (member) =>
-      member.privacy === 'public' &&
-      member.kind === 'field' &&
-      member.attribute &&
-      !member.static &&
-      !member.readonly &&
-      !member.deprecated
-  );
-}
-
 new StoriesBuilder({
   manifestPath: '../custom-elements.json',
   storiesPath: '../stories/',
-}).build();
+})
+  .build()
+  .catch((error) => {
+    report.error(
+      `Stories build failed: ${error instanceof Error ? error.message : error}`
+    );
+    process.exit(1);
+  });

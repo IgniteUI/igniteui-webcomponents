@@ -97,92 +97,24 @@ For more details, see the [igniteui-wc-integrate-with-framework](../igniteui-wc-
 
 ## Analyzing Your Bundle
 
-### Using Webpack Bundle Analyzer
+Use a bundle analyzer to identify what's being included before and after optimization.
 
-**Installation:**
-
-```bash
-npm install --save-dev webpack-bundle-analyzer
-```
-
-**Configuration (`webpack.config.js`):**
-
-```javascript
-const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
-
-module.exports = {
-  plugins: [
-    new BundleAnalyzerPlugin({
-      analyzerMode: 'static',
-      openAnalyzer: false,
-      reportFilename: 'bundle-report.html'
-    })
-  ]
-};
-```
-
-**Run analysis:**
-
-```bash
-npm run build
-# Open bundle-report.html to see what's included
-```
-
-### Using Vite Bundle Analyzer
-
-**Installation:**
-
+**Vite projects** — [rollup-plugin-visualizer](https://www.npmjs.com/package/rollup-plugin-visualizer):
 ```bash
 npm install --save-dev rollup-plugin-visualizer
 ```
+Add `visualizer()` to the Vite `plugins` array and run `npm run build`. The plugin opens a treemap in the browser.
 
-**Configuration (`vite.config.ts`):**
-
-```typescript
-import { defineConfig } from 'vite';
-import { visualizer } from 'rollup-plugin-visualizer';
-
-export default defineConfig({
-  plugins: [
-    visualizer({
-      open: true,
-      gzipSize: true,
-      brotliSize: true,
-    })
-  ]
-});
-```
-
-**Run analysis:**
-
+**Webpack projects** — [webpack-bundle-analyzer](https://www.npmjs.com/package/webpack-bundle-analyzer):
 ```bash
-npm run build
-# Opens stats.html automatically
+npm install --save-dev webpack-bundle-analyzer
 ```
+Add `BundleAnalyzerPlugin` to `webpack.config.js` plugins and run `npm run build`.
 
-### Using source-map-explorer
-
-**Installation:**
-
+**Framework-agnostic** — [source-map-explorer](https://www.npmjs.com/package/source-map-explorer):
 ```bash
 npm install --save-dev source-map-explorer
-```
-
-**Package.json:**
-
-```json
-{
-  "scripts": {
-    "analyze": "source-map-explorer 'dist/**/*.js'"
-  }
-}
-```
-
-**Run:**
-
-```bash
-npm run build
-npm run analyze
+# Then: source-map-explorer 'dist/**/*.js'
 ```
 
 ## Audit Your Component Usage
@@ -381,35 +313,14 @@ export class MyComponent {
 
 ## Route-Based Code Splitting
 
-Load components only for specific routes.
+Load Ignite UI components only for the routes that need them by placing `defineComponents(...)` calls inside the lazy-loaded route module for each framework.
 
-### React Router
+### React (using React.lazy)
 
-```tsx
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { lazy, Suspense } from 'react';
-
-// Lazy load route components
-const HomePage = lazy(() => import('./pages/Home'));
-const DashboardPage = lazy(() => import('./pages/Dashboard'));
-
-function App() {
-  return (
-    <BrowserRouter>
-      <Suspense fallback={<div>Loading...</div>}>
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/dashboard" element={<DashboardPage />} />
-        </Routes>
-      </Suspense>
-    </BrowserRouter>
-  );
-}
-```
-
-**In route component (`pages/Dashboard.tsx`):**
+Put component imports and `defineComponents` at the top of each page module. React's `lazy()` + `Suspense` handles the async split:
 
 ```tsx
+// pages/Dashboard.tsx
 import { IgrCard, IgrButton } from 'igniteui-react';
 
 function Dashboard() {
@@ -424,30 +335,11 @@ function Dashboard() {
 }
 ```
 
-### Vue Router
+Refer to your router's lazy-loading docs (React Router, TanStack Router, etc.) for how to split `pages/Dashboard` into its own chunk.
 
-```typescript
-// router/index.ts
-import { createRouter, createWebHistory } from 'vue-router';
+### Vue 3
 
-const routes = [
-  {
-    path: '/',
-    component: () => import('../views/Home.vue') // Lazy load
-  },
-  {
-    path: '/dashboard',
-    component: () => import('../views/Dashboard.vue') // Lazy load
-  }
-];
-
-export default createRouter({
-  history: createWebHistory(),
-  routes
-});
-```
-
-**In route component (`views/Dashboard.vue`):**
+Use `onMounted` to register components only when the route mounts:
 
 ```vue
 <script setup lang="ts">
@@ -461,109 +353,23 @@ onMounted(async () => {
 </script>
 ```
 
+Refer to Vue Router docs for the `() => import('./views/Dashboard.vue')` lazy-route syntax.
+
 ### Angular
 
-```typescript
-// app-routing.module.ts
-import { NgModule } from '@angular/core';
-import { RouterModule, Routes } from '@angular/router';
-
-const routes: Routes = [
-  {
-    path: 'dashboard',
-    loadChildren: () => import('./dashboard/dashboard.module').then(m => m.DashboardModule)
-  }
-];
-
-@NgModule({
-  imports: [RouterModule.forRoot(routes)],
-  exports: [RouterModule]
-})
-export class AppRoutingModule {}
-```
+Place `defineComponents(...)` inside the route's module or component so it's included only in that lazy chunk. Refer to Angular Router docs for `loadChildren` / `loadComponent` lazy loading.
 
 ## Build Configuration Optimizations
 
-### Vite Configuration
+Ensure your build tool is running in production mode with minification enabled. For Vite, this is the default for `vite build`. For Webpack, set `mode: 'production'`.
 
-```typescript
-// vite.config.ts
-import { defineConfig } from 'vite';
-
-export default defineConfig({
-  build: {
-    // Enable minification
-    minify: 'terser',
-    terserOptions: {
-      compress: {
-        drop_console: true, // Remove console.logs
-        drop_debugger: true
-      }
-    },
-
-    // Optimize chunk splitting
-    rollupOptions: {
-      output: {
-        manualChunks: {
-          // Separate vendor chunks
-          'vendor': ['igniteui-webcomponents'],
-        }
-      }
-    },
-
-    // Set chunk size warning limit
-    chunkSizeWarningLimit: 600,
-  },
-
-  // Optimize deps
-  optimizeDeps: {
-    include: ['igniteui-webcomponents']
-  }
-});
-```
-
-### Webpack Configuration
-
-```javascript
-// webpack.config.js
-module.exports = {
-  optimization: {
-    splitChunks: {
-      chunks: 'all',
-      cacheGroups: {
-        vendor: {
-          test: /[\\/]node_modules[\\/]/,
-          name: 'vendors',
-          priority: 10,
-        },
-        igniteui: {
-          test: /[\\/]node_modules[\\/]igniteui-webcomponents[\\/]/,
-          name: 'igniteui',
-          priority: 20,
-        }
-      }
-    },
-    minimize: true,
-  },
-
-  // Tree shaking
-  mode: 'production',
-};
-```
+To reduce chunk-size warnings from Ignite UI components, increase the `chunkSizeWarningLimit` in Vite or configure `splitChunks` in Webpack to place `igniteui-*` packages in a named vendor chunk. Consult your build tool's documentation for the exact configuration options.
 
 ## Size Comparison
 
-Here's what you can expect in terms of bundle size:
+Actual sizes depend heavily on which components you import (grid and chart components are significantly larger than UI components). Use your bundle analyzer to measure the real impact in your project rather than relying on generic estimates.
 
-| Import Strategy | Approximate Size (gzipped) | Components Included |
-|----------------|---------------------------|---------------------|
-| `defineAllComponents()` | ~500KB+ | All 60+ components |
-| 10 components via `defineComponents()` | ~150-200KB | 10 components + deps |
-| 5 components via `defineComponents()` | ~100-150KB | 5 components + deps |
-| 3 components via `defineComponents()` | ~80-120KB | 3 components + deps |
-| 1 component via `defineComponents()` | ~50-80KB | 1 component + deps |
-
-**Note:** Sizes vary based on which components you import (some have more dependencies than others).
+The key rule: importing a subset of components with `defineComponents()` instead of `defineAllComponents()` will reduce the bundle by the weight of every component you don't include, plus all of their exclusive dependencies.
 
 ## Best Practices Checklist
 
@@ -634,64 +440,7 @@ import type { IgcButtonComponent } from 'igniteui-webcomponents';
 
 ## Monitoring Bundle Size
 
-### Set up bundle size monitoring in CI/CD
-
-**Using bundlesize (for any build tool):**
-
-```bash
-npm install --save-dev bundlesize
-```
-
-**Package.json:**
-
-```json
-{
-  "scripts": {
-    "test:size": "bundlesize"
-  },
-  "bundlesize": [
-    {
-      "path": "./dist/**/*.js",
-      "maxSize": "300 kB"
-    }
-  ]
-}
-```
-
-**Run in CI:**
-
-```bash
-npm run build
-npm run test:size
-```
-
-### GitHub Actions Example
-
-```yaml
-name: Bundle Size Check
-
-on: [pull_request]
-
-jobs:
-  size:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-      - run: npm ci
-      - run: npm run build
-      - run: npm run test:size
-```
-
-## Expected Results
-
-After optimization, you should see:
-
-- **Initial load time reduced** by 40-60%
-- **Bundle size reduced** by 50-80%
-- **Better Core Web Vitals** scores
-- **Faster time to interactive**
-- **Lower bandwidth usage** for users
+For ongoing bundle size monitoring in CI, tools like [bundlesize](https://www.npmjs.com/package/bundlesize), [size-limit](https://www.npmjs.com/package/size-limit), or the [Bundlewatch GitHub Action](https://github.com/apps/bundlewatch) can fail a pull request when the bundle exceeds a defined threshold. Configure a size limit appropriate for your project's component set after you've completed the import optimization.
 
 ## Next Steps
 

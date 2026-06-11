@@ -17,7 +17,8 @@ const metadata: Meta<IgcToastComponent> = {
   parameters: {
     docs: {
       description: {
-        component: 'A toast component is used to show a notification',
+        component:
+          'A toast component is used to show a brief, non-interactive notification.\n\nThe component integrates with the\n[Invoker Commands API](https://developer.mozilla.org/en-US/docs/Web/API/Invoker_Commands_API):\nan Ignite button or a native `<button>` with `command="--show"` / `"--hide"` /\n`"--toggle"` and `commandfor` pointing to this element will call the\ncorresponding method declaratively without any JavaScript.',
       },
     },
   },
@@ -31,7 +32,7 @@ const metadata: Meta<IgcToastComponent> = {
     displayTime: {
       type: 'number',
       description:
-        'Determines the duration in ms in which the component will be visible.',
+        'Determines the duration in milliseconds in which the component will be visible.',
       control: 'number',
       table: { defaultValue: { summary: '4000' } },
     },
@@ -44,13 +45,28 @@ const metadata: Meta<IgcToastComponent> = {
     },
     position: {
       type: '"bottom" | "middle" | "top"',
-      description: 'Sets the position of the component in the viewport.',
+      description:
+        'Sets the position of the component in the viewport.\n\n`bottom` - positions the component at the bottom. This is the default.\n`middle` - positions the component at the center.\n`top` - positions the component at the top.',
       options: ['bottom', 'middle', 'top'],
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'bottom' } },
     },
+    positioning: {
+      type: '"viewport" | "container"',
+      description:
+        'Sets the positioning strategy of the component.\n\n`viewport` - positions the component relative to the viewport, ignoring any ancestor elements. This is the default behavior.\n`container` - positions the component relative to the nearest visible ancestor. In this mode, the component will be constrained within the bounding box of the ancestor and will be positioned according to the `position` attribute.',
+      options: ['viewport', 'container'],
+      control: { type: 'inline-radio' },
+      table: { defaultValue: { summary: 'viewport' } },
+    },
   },
-  args: { open: false, displayTime: 4000, keepOpen: false, position: 'bottom' },
+  args: {
+    open: false,
+    displayTime: 4000,
+    keepOpen: false,
+    position: 'bottom',
+    positioning: 'viewport',
+  },
 };
 
 export default metadata;
@@ -58,18 +74,34 @@ export default metadata;
 interface IgcToastArgs {
   /** Whether the component is in shown state. */
   open: boolean;
-  /** Determines the duration in ms in which the component will be visible. */
+  /** Determines the duration in milliseconds in which the component will be visible. */
   displayTime: number;
   /** Determines whether the component should close after the `displayTime` is over. */
   keepOpen: boolean;
-  /** Sets the position of the component in the viewport. */
+  /**
+   * Sets the position of the component in the viewport.
+   *
+   * `bottom` - positions the component at the bottom. This is the default.
+   * `middle` - positions the component at the center.
+   * `top` - positions the component at the top.
+   */
   position: 'bottom' | 'middle' | 'top';
+  /**
+   * Sets the positioning strategy of the component.
+   *
+   * `viewport` - positions the component relative to the viewport, ignoring any ancestor elements. This is the default behavior.
+   * `container` - positions the component relative to the nearest visible ancestor. In this mode, the component will be constrained within the bounding box of the ancestor and will be positioned according to the `position` attribute.
+   */
+  positioning: 'viewport' | 'container';
 }
 type Story = StoryObj<IgcToastArgs>;
 
 // endregion
 
 export const Basic: Story = {
+  args: {
+    position: 'middle',
+  },
   parameters: {
     docs: {
       description: {
@@ -89,21 +121,13 @@ export const Basic: Story = {
       Notification displayed
     </igc-toast>
 
-    <igc-button
-      @click=${() =>
-        (document.getElementById('toast-basic') as IgcToastComponent).show()}
-      >Show Toast</igc-button
-    >
-    <igc-button
-      @click=${() =>
-        (document.getElementById('toast-basic') as IgcToastComponent).hide()}
-      >Hide Toast</igc-button
-    >
-    <igc-button
-      @click=${() =>
-        (document.getElementById('toast-basic') as IgcToastComponent).toggle()}
-      >Toggle Toast</igc-button
-    >
+    <div style="display: flex; gap: .5rem; flex-wrap: wrap;">
+      <igc-button command="--show" commandfor="toast-basic">Show</igc-button>
+      <igc-button command="--hide" commandfor="toast-basic">Hide</igc-button>
+      <igc-button command="--toggle" commandfor="toast-basic"
+        >Toggle</igc-button
+      >
+    </div>
   `,
 };
 
@@ -127,23 +151,13 @@ export const Positions: Story = {
     <igc-toast id="toast-top" position="top" keep-open> Top toast </igc-toast>
 
     <div style="display: flex; gap: .5rem; flex-wrap: wrap;">
-      <igc-button
-        @click=${() =>
-          (
-            document.getElementById('toast-bottom') as IgcToastComponent
-          ).toggle()}
+      <igc-button command="--toggle" commandfor="toast-bottom"
         >Toggle Bottom</igc-button
       >
-      <igc-button
-        @click=${() =>
-          (
-            document.getElementById('toast-middle') as IgcToastComponent
-          ).toggle()}
+      <igc-button command="--toggle" commandfor="toast-middle"
         >Toggle Middle</igc-button
       >
-      <igc-button
-        @click=${() =>
-          (document.getElementById('toast-top') as IgcToastComponent).toggle()}
+      <igc-button command="--toggle" commandfor="toast-top"
         >Toggle Top</igc-button
       >
     </div>
@@ -166,16 +180,103 @@ export const KeepOpen: Story = {
     </igc-toast>
 
     <div style="display: flex; gap: .5rem;">
-      <igc-button
-        @click=${() =>
-          (document.getElementById('toast-keep') as IgcToastComponent).show()}
-        >Show</igc-button
+      <igc-button command="--show" commandfor="toast-keep">Show</igc-button>
+      <igc-button command="--hide" commandfor="toast-keep">Dismiss</igc-button>
+    </div>
+  `,
+};
+
+export const ContainerPositioning: Story = {
+  argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'When `positioning` is set to `"container"`, the toast is anchored to its nearest visible ancestor instead of the viewport. Toggle each position independently to see how the toast is constrained within the boundary.',
+      },
+    },
+  },
+  render: () => html`
+    <style>
+      .toast-container-demo {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        min-height: 420px;
+        padding: 1.25rem;
+        border: 2px dashed #888;
+        border-radius: 8px;
+      }
+
+      .toast-container-demo__label {
+        margin: 0;
+        font-size: 0.7rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        opacity: 0.5;
+      }
+
+      .toast-container-demo__actions {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+      }
+
+      .toast-container-demo__content {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0.35;
+        font-size: 0.875rem;
+        font-style: italic;
+      }
+    </style>
+
+    <div class="toast-container-demo">
+      <p class="toast-container-demo__label">Container boundary</p>
+
+      <div class="toast-container-demo__actions">
+        <igc-button command="--toggle" commandfor="ct-toast-top"
+          >Toggle Top</igc-button
+        >
+        <igc-button command="--toggle" commandfor="ct-toast-middle"
+          >Toggle Middle</igc-button
+        >
+        <igc-button command="--toggle" commandfor="ct-toast-bottom"
+          >Toggle Bottom</igc-button
+        >
+      </div>
+
+      <p class="toast-container-demo__content">
+        Toasts are anchored within this container
+      </p>
+
+      <igc-toast
+        id="ct-toast-top"
+        positioning="container"
+        position="top"
+        keep-open
       >
-      <igc-button
-        @click=${() =>
-          (document.getElementById('toast-keep') as IgcToastComponent).hide()}
-        >Dismiss</igc-button
+        Top — container-positioned
+      </igc-toast>
+      <igc-toast
+        id="ct-toast-middle"
+        positioning="container"
+        position="middle"
+        keep-open
       >
+        Middle — container-positioned
+      </igc-toast>
+      <igc-toast
+        id="ct-toast-bottom"
+        positioning="container"
+        position="bottom"
+        keep-open
+      >
+        Bottom — container-positioned
+      </igc-toast>
     </div>
   `,
 };

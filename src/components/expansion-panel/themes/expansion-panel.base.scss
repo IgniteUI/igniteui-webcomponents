@@ -37,12 +37,15 @@
     @include line-clamp(var(--lines-clamped), true, true);
 
     margin: 0;
+    line-height: normal;
 }
 
 [part='subtitle'] {
     &::slotted(*) {
         @include type-style('subtitle-2');
         @include ellipsis();
+
+        line-height: normal;
     }
 }
 

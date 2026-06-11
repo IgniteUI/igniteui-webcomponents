@@ -1,4 +1,3 @@
-import { consume } from '@lit/context';
 import { html, LitElement, nothing, type PropertyValues } from 'lit';
 import { property } from 'lit/decorators.js';
 import { cache } from 'lit/directives/cache.js';
@@ -6,6 +5,7 @@ import { createRef, ref } from 'lit/directives/ref.js';
 import { EaseInOut } from '../../animations/easings.js';
 import { addAnimationController } from '../../animations/player.js';
 import { addThemingController } from '../../theming/theming-controller.js';
+import { createAsyncContext } from '../common/controllers/async-consumer.js';
 import { addSlotController, setSlots } from '../common/controllers/slot.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { partMap } from '../common/part-map.js';
@@ -113,8 +113,7 @@ export default class IgcStepComponent extends LitElement {
     slots: setSlots('indicator', 'title', 'subtitle'),
   });
 
-  @consume({ context: STEPPER_CONTEXT, subscribe: true })
-  private readonly _stepperContext?: StepperContext;
+  private _stepperContext?: StepperContext;
 
   private get _stepper(): IgcStepperComponent | undefined {
     return this._stepperContext?.stepper;
@@ -245,7 +244,11 @@ export default class IgcStepComponent extends LitElement {
 
   constructor() {
     super();
+
     addThemingController(this, all);
+    createAsyncContext(this, STEPPER_CONTEXT, (context) => {
+      this._stepperContext = context;
+    });
   }
 
   protected override willUpdate(changed: PropertyValues<this>): void {

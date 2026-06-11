@@ -1,6 +1,6 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
-
 import { defineComponents } from '../common/definitions/defineComponents.js';
+import { isPopoverOpen } from '../common/util.js';
 import {
   createFormAssociatedTestBed,
   isFocused,
@@ -214,6 +214,171 @@ describe('Button tests', () => {
       button.blur();
       expect(isFocused(button)).to.be.false;
       expect(isFocused(nativeButton)).to.be.false;
+    });
+  });
+
+  describe('Invoker Commands API', () => {
+    describe('Attribute and property wiring', () => {
+      it('reflects the command attribute on the native button', async () => {
+        button = await fixture<IgcButtonComponent>(
+          html`<igc-button command="toggle-popover">Click</igc-button>`
+        );
+        const nativeButton = button.renderRoot.querySelector('button')!;
+
+        expect(nativeButton).attribute('command').to.equal('toggle-popover');
+      });
+
+      it('updates the command attribute when the property changes', async () => {
+        button = await fixture<IgcButtonComponent>(
+          html`<igc-button>Click</igc-button>`
+        );
+        const nativeButton = button.renderRoot.querySelector('button')!;
+
+        button.command = 'show-popover';
+        await elementUpdated(button);
+
+        expect(nativeButton).attribute('command').to.equal('show-popover');
+      });
+
+      it('resolves commandForElement from a string ID to the referenced element', async () => {
+        const container = await fixture<HTMLElement>(html`
+          <div>
+            <igc-button commandfor="wiring-target">Click</igc-button>
+            <div id="wiring-target" popover></div>
+          </div>
+        `);
+
+        button = container.querySelector<IgcButtonComponent>('igc-button')!;
+        const target = container.querySelector<HTMLElement>('#wiring-target')!;
+
+        expect(button.commandForElement).to.equal(target);
+      });
+
+      it('accepts an Element reference for commandForElement', async () => {
+        const container = await fixture<HTMLElement>(html`
+          <div>
+            <igc-button>Click</igc-button>
+            <div popover></div>
+          </div>
+        `);
+
+        button = container.querySelector<IgcButtonComponent>('igc-button')!;
+        const target = container.querySelector<HTMLElement>('[popover]')!;
+
+        button.commandForElement = target;
+        await elementUpdated(button);
+
+        expect(button.commandForElement).to.equal(target);
+      });
+
+      it('resolves commandfor when target is appended to the DOM after initial render', async () => {
+        button = await fixture<IgcButtonComponent>(
+          html`<igc-button commandfor="dynamic-target">Click</igc-button>`
+        );
+
+        expect(button.commandForElement).to.be.null;
+
+        const target = document.createElement('div');
+        target.id = 'dynamic-target';
+        document.body.appendChild(target);
+        await elementUpdated(button);
+
+        expect(button.commandForElement).to.equal(target);
+
+        target.remove();
+      });
+    });
+
+    describe('Popover control', () => {
+      let popover: HTMLElement;
+
+      beforeEach(async () => {
+        const container = await fixture<HTMLElement>(html`
+          <div>
+            <igc-button command="toggle-popover" commandfor="test-popover">
+              Toggle
+            </igc-button>
+            <div id="test-popover" popover>Popover content</div>
+          </div>
+        `);
+
+        button = container.querySelector<IgcButtonComponent>('igc-button')!;
+        popover = container.querySelector<HTMLElement>('[popover]')!;
+      });
+
+      it('toggles a native popover on repeated clicks', () => {
+        expect(isPopoverOpen(popover)).to.be.false;
+
+        button.click();
+        expect(isPopoverOpen(popover)).to.be.true;
+
+        button.click();
+        expect(isPopoverOpen(popover)).to.be.false;
+      });
+
+      it('shows a closed native popover', async () => {
+        button.command = 'show-popover';
+        await elementUpdated(button);
+
+        expect(isPopoverOpen(popover)).to.be.false;
+
+        button.click();
+        expect(isPopoverOpen(popover)).to.be.true;
+      });
+
+      it('hides a visible native popover', async () => {
+        button.command = 'hide-popover';
+        await elementUpdated(button);
+
+        popover.showPopover();
+        expect(isPopoverOpen(popover)).to.be.true;
+
+        button.click();
+        expect(isPopoverOpen(popover)).to.be.false;
+      });
+    });
+
+    describe('Dialog control', () => {
+      let dialog: HTMLDialogElement;
+
+      beforeEach(async () => {
+        const container = await fixture<HTMLElement>(html`
+          <div>
+            <igc-button command="show-modal" commandfor="test-dialog">
+              Open
+            </igc-button>
+            <dialog id="test-dialog">Dialog content</dialog>
+          </div>
+        `);
+
+        button = container.querySelector<IgcButtonComponent>('igc-button')!;
+        dialog = container.querySelector<HTMLDialogElement>('dialog')!;
+      });
+
+      afterEach(() => {
+        // Ensure dialog is closed between tests to avoid InvalidStateError
+        if (dialog.open) {
+          dialog.close();
+        }
+      });
+
+      it('opens a native dialog as modal', () => {
+        expect(dialog.open).to.be.false;
+
+        button.click();
+        expect(dialog.open).to.be.true;
+      });
+
+      it('closes an open native dialog', async () => {
+        dialog.showModal();
+        expect(dialog.open).to.be.true;
+
+        button.command = 'close';
+        await elementUpdated(button);
+
+        button.click();
+        expect(dialog.open).to.be.false;
+      });
     });
   });
 

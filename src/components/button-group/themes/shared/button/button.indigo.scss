@@ -37,12 +37,6 @@ $group-item-border-thickness: rem(1px);
 
 :host([selected]) [part='toggle focused'] {
     box-shadow: 0 0 0 rem(3px) var-get($theme, 'selected-shadow-color');
-    border-color: var-get($theme, 'item-selected-border-color');
-}
-
-:host([selected]:hover) [part='toggle focused'],
-:host([selected]) [part='toggle focused']:active {
-    border-color: var-get($theme, 'item-selected-hover-border-color');
 }
 
 :host([selected]:disabled),

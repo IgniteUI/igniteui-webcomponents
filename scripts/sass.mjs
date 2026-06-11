@@ -11,17 +11,19 @@ const toDist = path.join.bind(
   path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../dist')
 );
 
-const stripComments = () => {
-  return {
-    postcssPlugin: 'postcss-strip-comments',
-    OnceExit(root) {
-      root.walkComments((node) => node.remove());
-    },
-  };
-};
+const stripComments = () => ({
+  postcssPlugin: 'postcss-strip-comments',
+  OnceExit(root) {
+    root.walkComments((node) => node.remove());
+  },
+});
 stripComments.postcss = true;
 
 const _postProcessor = postcss([autoprefixer, stripComments]);
+
+const THEME_GLOB = 'src/styles/themes/{light,dark}/*.scss';
+const COMPONENT_GLOB =
+  'src/components/**/*.{base,common,shared,material,bootstrap,indigo,fluent}.scss';
 
 export function fromTemplate(content) {
   return `
@@ -40,12 +42,79 @@ export async function compileSass(src, compiler) {
   return out.charCodeAt(0) === 0xfeff ? out.slice(1) : out;
 }
 
+/**
+ * Builds both themes and component styles using a single shared compiler.
+ * All I/O (compiler init + both globs) is parallelized.
+ *
+ * @param {boolean} isProduction
+ */
+export async function buildAll(isProduction = false) {
+  const start = performance.now();
+
+  const [compiler, themePaths, componentPaths] = await Promise.all([
+    sass.initAsyncCompiler(),
+    Array.fromAsync(glob(THEME_GLOB)),
+    Array.fromAsync(glob(COMPONENT_GLOB)),
+  ]);
+
+  // Cache mkdir promises per directory to avoid redundant syscalls.
+  /** @type {Map<string, Promise<void>>} */
+  const mkdirCache = new Map();
+  const ensureDir = (dir) => {
+    if (!mkdirCache.has(dir)) {
+      mkdirCache.set(dir, mkdir(dir, { recursive: true }));
+    }
+    return /** @type {Promise<void>} */ (mkdirCache.get(dir));
+  };
+
+  try {
+    await Promise.all([
+      ...themePaths.map(async (sassFile) => {
+        if (isProduction) {
+          const outputFile = toDist(
+            sassFile.replace(/\.scss$/, '.css').replace('src/styles/', '')
+          );
+          await ensureDir(path.dirname(outputFile));
+          await writeFile(
+            outputFile,
+            await compileSass(sassFile, compiler),
+            'utf-8'
+          );
+        } else {
+          await writeFile(
+            sassFile.replace(/\.scss$/, '.css.ts'),
+            fromTemplate(await compileSass(sassFile, compiler)),
+            'utf-8'
+          );
+        }
+      }),
+      ...componentPaths.map((filePath) =>
+        compileSass(filePath, compiler).then((css) =>
+          writeFile(
+            filePath.replace(/\.scss$/, '.css.ts'),
+            fromTemplate(css),
+            'utf-8'
+          )
+        )
+      ),
+    ]);
+  } finally {
+    await compiler.dispose();
+  }
+
+  if (!isProduction) {
+    report.success(
+      `Styles generated in ${((performance.now() - start) / 1000).toFixed(2)}s`
+    );
+  }
+}
+
 export async function buildThemes(isProduction = false) {
   const start = performance.now();
 
   const [compiler, paths] = await Promise.all([
     sass.initAsyncCompiler(),
-    Array.fromAsync(glob('src/styles/themes/{light,dark}/*.scss')),
+    Array.fromAsync(glob(THEME_GLOB)),
   ]);
 
   try {
@@ -73,13 +142,9 @@ export async function buildThemes(isProduction = false) {
         }
       })
     );
-  } catch (err) {
+  } finally {
     await compiler.dispose();
-    report.error(err.message ?? err.toString());
-    process.exit(1);
   }
-
-  await compiler.dispose();
 
   if (!isProduction) {
     report.success(
@@ -92,30 +157,24 @@ export async function buildComponents(isProduction = false) {
   const start = performance.now();
   const [compiler, paths] = await Promise.all([
     sass.initAsyncCompiler(),
-    Array.fromAsync(
-      glob(
-        'src/components/**/*.{base,common,shared,material,bootstrap,indigo,fluent}.scss'
-      )
-    ),
+    Array.fromAsync(glob(COMPONENT_GLOB)),
   ]);
 
   try {
     await Promise.all(
-      paths.map(async (filePath) =>
-        writeFile(
-          filePath.replace(/\.scss$/, '.css.ts'),
-          fromTemplate(await compileSass(filePath, compiler)),
-          'utf-8'
+      paths.map((filePath) =>
+        compileSass(filePath, compiler).then((css) =>
+          writeFile(
+            filePath.replace(/\.scss$/, '.css.ts'),
+            fromTemplate(css),
+            'utf-8'
+          )
         )
       )
     );
-  } catch (err) {
+  } finally {
     await compiler.dispose();
-    report.error(err.message ?? err.toString());
-    process.exit(1);
   }
-
-  await compiler.dispose();
 
   if (!isProduction) {
     report.success(

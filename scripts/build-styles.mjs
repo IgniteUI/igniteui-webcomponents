@@ -1,3 +1,7 @@
-import { buildComponents, buildThemes } from './sass.mjs';
+import { buildAll } from './sass.mjs';
+import report from './report.mjs';
 
-await Promise.all([buildThemes(), buildComponents()]);
+await buildAll().catch((err) => {
+  report.error(err.message ?? err.toString());
+  process.exit(1);
+});

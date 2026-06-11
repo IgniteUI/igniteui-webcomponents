@@ -643,6 +643,12 @@ export default class IgcComboComponent<
     return canClose;
   }
 
+  private _setSingleSelectionDisplayValue(value: string): void {
+    if (this.singleSelect && this._inputRef.value) {
+      this._inputRef.value.value = value;
+    }
+  }
+
   //#endregion
 
   // #region Selection helpers
@@ -817,10 +823,10 @@ export default class IgcComboComponent<
     this._displayValue = this._getValues(this._selected, this.displayKey).join(
       ', '
     );
-
     this._formValue.setValueAndFormState(values);
 
     if (!initial) {
+      this._setSingleSelectionDisplayValue(this._displayValue);
       this._validate();
       this._listRef.value?.requestUpdate();
     }
@@ -891,6 +897,7 @@ export default class IgcComboComponent<
   protected override _handleBlur(): void {
     if (isEmpty(this._selected)) {
       this._searchTerm = '';
+      this._setSingleSelectionDisplayValue('');
     }
     super._handleBlur();
   }

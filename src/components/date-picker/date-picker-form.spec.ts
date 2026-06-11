@@ -82,6 +82,28 @@ describe('igc-datepicker form integration', () => {
       spec.assertSubmitHasValue(today.native.toISOString());
     });
 
+    it('should submit on pressing Enter when value is valid', () => {
+      spec.setProperties({ value: today.native });
+      expect(
+        spec.submitWithEnter(
+          spec.element.renderRoot.querySelector(
+            IgcDateTimeInputComponent.tagName
+          )
+        )
+      ).to.be.true;
+    });
+
+    it('should not submit on pressing Enter when value is invalid', () => {
+      spec.setProperties({ required: true, value: null });
+      expect(
+        spec.submitWithEnter(
+          spec.element.renderRoot.querySelector(
+            IgcDateTimeInputComponent.tagName
+          )
+        )
+      ).to.be.false;
+    });
+
     it('should reflect disabled ancestor state (fieldset/form)', () => {
       spec.setAncestorDisabledState(true);
       expect(spec.element.disabled).to.be.true;

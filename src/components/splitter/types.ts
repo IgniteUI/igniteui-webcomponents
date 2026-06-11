@@ -25,6 +25,7 @@ interface SplitterResizeState {
   dragPointerId: number;
 }
 
+/* jsonAPIPlainObject */
 interface IgcSplitterResizeEventArgs {
   /** The current size of the start panel in pixels */
   startPanelSize: number;
