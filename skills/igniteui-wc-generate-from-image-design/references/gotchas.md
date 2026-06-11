@@ -28,14 +28,21 @@ Do not assume everything comes from `igniteui-webcomponents`. Advanced grids, ch
 
 ## Chart Properties
 
+> **Always use the MCP lookup pattern before coding any chart.** Chart APIs are extensive and change between versions.
+> - Find doc names → `list_components({ framework: "webcomponents", filter: "chart" })`
+> - Usage examples and slots → `get_doc({ framework: "webcomponents", name: "<doc-name>" })`
+> - Find exact class names → `search_api({ platform: "webcomponents", query: "<keyword>" })`
+> - Full property/method/event API → `get_api_reference({ platform: "webcomponents", component: "<ClassName>" })`
+
 ### Markers shown by default
 Category charts can show markers by default. If the screenshot does not show markers, set `markerTypes` to the matching no-marker option documented for the component. Confirm the exact value shape from `get_doc`.
 
-### `plotAreaBackground` does NOT exist on `igc-category-chart`
-Use CSS to style the chart container background instead.
-
-### `areaFillOpacity` exists on `IgcCategoryChartComponent`
-It does NOT exist on `IgcSparklineComponent`.
+### `plotAreaBackground` and `areaFillOpacity` are inherited — not visible in `get_api_reference`
+Both properties exist but are defined on parent classes, so `get_api_reference({ platform: "webcomponents", component: "IgcCategoryChartComponent" })` will not list them. Use `search_api` to find them:
+```ts
+chart.plotAreaBackground = 'transparent';  // inherited from IgcSeriesViewerComponent
+chart.areaFillOpacity = 0.3;               // inherited from IgcDomainChartComponent (not on IgcSparklineComponent)
+```
 
 ### `includedProperties` must be a real array
 Assign it as an array through JavaScript or TypeScript, not as a serialized string:
@@ -74,9 +81,6 @@ igc-category-chart {
 
 ## Component Properties
 
-### Avatar shape is controlled by `shape`
-Use the supported `shape` API (`circle`, `rounded`, `square`, etc. as documented for the component).
-
 ### List item title and subtitle are slots
 Use the Web Components slot anatomy:
 ```html
@@ -94,11 +98,11 @@ Use the Web Components slot anatomy:
 ```
 
 ### Nav drawer width
-The drawer sizing hooks in the current implementation are `--menu-full-width` and `--menu-mini-width`:
+Width is controlled by two CSS custom properties exposed on the host — they are **not** design tokens and won't appear in `get_component_design_tokens`. Override them directly:
 ```css
 igc-nav-drawer {
-  --menu-full-width: <extracted-sidebar-width>;
-  --menu-mini-width: <extracted-mini-drawer-width>;
+  --menu-full-width: 280px;  /* default: 240px */
+  --menu-mini-width: 56px;   /* no default — collapses to content width if unset */
 }
 ```
 
