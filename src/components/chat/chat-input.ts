@@ -16,7 +16,6 @@ import { bindIf, hasFiles, isEmpty, trimmedHtml } from '../common/util.js';
 import IgcIconComponent from '../icon/icon.js';
 import IgcTextareaComponent from '../textarea/textarea.js';
 import type { ChatState } from './chat-state.js';
-import { BackendSttClient } from './extras/stt-client-backend.js';
 import type { ISttClient } from './extras/stt-client-base.js';
 import { WebSpeechSttClient } from './extras/stt-client-webspeech.js';
 import { styles } from './themes/input.base.css.js';
@@ -213,6 +212,8 @@ export default class IgcChatInputComponent extends LitElement {
         this._state.options?.speechToText?.serviceProvider === 'backend' &&
         this._state.options?.speechToText?.serviceUri
       ) {
+        const { BackendSttClient } =
+          await import('./extras/stt-client-backend.js');
         this._sttClient = new BackendSttClient(
           this._state.options?.speechToText?.serviceUri ?? undefined,
           this.onPulseSignal,
