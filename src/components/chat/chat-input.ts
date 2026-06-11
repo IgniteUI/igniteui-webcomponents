@@ -148,7 +148,7 @@ export default class IgcChatInputComponent extends LitElement {
   private isStopInProgress = false;
   onPulseSignal = () => {
     const el = this.renderRoot.querySelector<HTMLElement>(
-      'label[part="speech-to-text"] igc-icon-button'
+      'igc-icon-button[part="speech-to-text"]'
     );
     if (!el) return;
 
@@ -500,16 +500,15 @@ export default class IgcChatInputComponent extends LitElement {
     return html`${cache(
       sttEnabled
         ? html` <div class="stop-btn-wrapper">
-            <label part="speech-to-text">
-              <igc-icon-button
-                aria-label="Speech to text"
-                variant="flat"
-                @click=${this._toggleMic}
-                ?disabled=${this.isStopInProgress}
-              >
-                ${this.isRecording ? '🛑' : '🎤'}
-              </igc-icon-button>
-            </label>
+            <igc-icon-button
+              part="speech-to-text"
+              aria-label="Speech to text"
+              variant="flat"
+              @click=${this._toggleMic}
+              ?disabled=${this.isStopInProgress}
+            >
+              ${this.isRecording ? '🛑' : '🎤'}
+            </igc-icon-button>
             ${this.isRecording && !this.isStopInProgress
               ? html`
                   <svg

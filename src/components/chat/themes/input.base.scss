@@ -85,7 +85,7 @@ igc-icon-button {
     display: inline-block;
 }
 
-label[part="speech-to-text"] igc-icon-button[disabled] {
+igc-icon-button[part="speech-to-text"][disabled] {
     opacity: 0.5;
     cursor: not-allowed;
 }
