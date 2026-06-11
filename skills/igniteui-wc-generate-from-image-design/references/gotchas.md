@@ -109,8 +109,8 @@ igc-nav-drawer {
 ### Omit column `width` — both grid types are fluid by default
 Adding explicit pixel widths prevents columns from filling the container and leaves trailing empty space.
 
-- **Grid Lite** (`igc-grid-lite-column`): default is `minmax(136px, 1fr)`
-- **Advanced Grid** (`igc-column`): columns distribute evenly across the available width
+- **Grid Lite** (`igc-grid-lite-column`): fluid by default when `width` is not set (uses `minmax(..., 1fr)` sizing)
+- **Advanced Grid** (`igc-column`): fluid by default when `width` is not set
 
 ```html
 <!-- Grid Lite: correct, no width set -->
