@@ -1,6 +1,6 @@
 import { ContextConsumer, consume } from '@lit/context';
 import { html, LitElement, nothing, type PropertyValues } from 'lit';
-import { property, query, state } from 'lit/decorators.js';
+import { query, state } from 'lit/decorators.js';
 import { cache } from 'lit/directives/cache.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { until } from 'lit/directives/until.js';
@@ -149,7 +149,7 @@ export default class IgcChatInputComponent extends LitElement {
   private isStopInProgress = false;
   onPulseSignal = () => {
     const el = this.renderRoot.querySelector<HTMLElement>(
-      'igc-icon-button[part="speech-to-text"]'
+      'label[part="speech-to-text"] igc-icon-button'
     );
     if (!el) return;
 
@@ -448,8 +448,8 @@ export default class IgcChatInputComponent extends LitElement {
         aria-label="Chat text input"
         placeholder=${ifDefined(
           this.isRecording
-            ? this._state.options?.speakPlaceholder ??
-                this._state.options?.inputPlaceholder
+            ? (this._state.options?.speakPlaceholder ??
+                this._state.options?.inputPlaceholder)
             : this._state.options?.inputPlaceholder
         )}
         resize="auto"
@@ -511,7 +511,11 @@ export default class IgcChatInputComponent extends LitElement {
             </label>
             ${this.isRecording && !this.isStopInProgress
               ? html`
-                  <svg class="countdown-ring" viewBox="0 0 36 36" aria-hidden="true">
+                  <svg
+                    class="countdown-ring"
+                    viewBox="0 0 36 36"
+                    aria-hidden="true"
+                  >
                     <circle class="ring-bg" cx="18" cy="18" r="14"></circle>
                     <circle
                       class="ring-progress"
