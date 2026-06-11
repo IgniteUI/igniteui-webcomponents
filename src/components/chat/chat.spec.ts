@@ -225,6 +225,88 @@ describe('Chat', () => {
       );
     });
 
+    it('should apply `speakPlaceholder` while recording', async () => {
+      chat.options = {
+        inputPlaceholder: 'Type message here...',
+        speakPlaceholder: 'Listening...',
+        speechToText: { enable: true, serviceProvider: 'webspeech' },
+      };
+      await elementUpdated(chat);
+
+      const { input } = getChatDOM(chat);
+      expect(input.textarea.placeholder).to.equal(
+        chat.options.inputPlaceholder
+      );
+
+      Reflect.set(input.self, 'isRecording', true);
+      input.self.requestUpdate();
+      await elementUpdated(input.self);
+
+      expect(input.textarea.placeholder).to.equal(
+        chat.options.speakPlaceholder
+      );
+    });
+
+    it('should fallback to `inputPlaceholder` while recording if `speakPlaceholder` is not set', async () => {
+      chat.options = {
+        inputPlaceholder: 'Type message here...',
+        speechToText: { enable: true, serviceProvider: 'webspeech' },
+      };
+      await elementUpdated(chat);
+
+      const { input } = getChatDOM(chat);
+      Reflect.set(input.self, 'isRecording', true);
+      input.self.requestUpdate();
+      await elementUpdated(input.self);
+
+      expect(input.textarea.placeholder).to.equal(
+        chat.options.inputPlaceholder
+      );
+    });
+
+    it('should render the speech-to-text button only when enabled', async () => {
+      chat.options = {
+        speechToText: { enable: true, serviceProvider: 'webspeech' },
+      };
+      await elementUpdated(chat);
+
+      let speechToTextButton = getChatDOM(
+        chat
+      ).input.self.renderRoot.querySelector(
+        'igc-icon-button[part="speech-to-text"]'
+      );
+      expect(speechToTextButton).not.to.be.null;
+
+      chat.options = {
+        speechToText: { enable: false, serviceProvider: 'webspeech' },
+      };
+      await elementUpdated(chat);
+
+      speechToTextButton = getChatDOM(chat).input.self.renderRoot.querySelector(
+        'igc-icon-button[part="speech-to-text"]'
+      );
+      expect(speechToTextButton).to.be.null;
+    });
+
+    it('should pass an accessibility audit with speech-to-text enabled and disabled', async () => {
+      chat.options = {
+        inputPlaceholder: 'Type message here...',
+        speakPlaceholder: 'Listening...',
+        speechToText: { enable: true, serviceProvider: 'webspeech' },
+      };
+      await elementUpdated(chat);
+      await expect(chat).to.be.accessible();
+      await expect(chat).shadowDom.to.be.accessible();
+
+      chat.options = {
+        inputPlaceholder: 'Type message here...',
+        speechToText: { enable: false, serviceProvider: 'webspeech' },
+      };
+      await elementUpdated(chat);
+      await expect(chat).to.be.accessible();
+      await expect(chat).shadowDom.to.be.accessible();
+    });
+
     it('should enable/disable the send button properly', async () => {
       const { textarea, sendButton, fileInput } = getChatDOM(chat).input;
 
