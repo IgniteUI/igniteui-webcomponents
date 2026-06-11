@@ -91,6 +91,7 @@ import type {
   IgcColumnTemplateContext,
   IgcSortingEventArgs,
   IgcFilteringEventArgs,
+  IgcRowSelectionEventArgs,
   IgcSortingExpression,
 } from 'igniteui-webcomponents-grids';
 
