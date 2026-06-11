@@ -17,7 +17,8 @@ const metadata: Meta<IgcToastComponent> = {
   parameters: {
     docs: {
       description: {
-        component: 'A toast component is used to show a notification',
+        component:
+          'A toast component is used to show a brief, non-interactive notification.\n\nThe component integrates with the\n[Invoker Commands API](https://developer.mozilla.org/en-US/docs/Web/API/Invoker_Commands_API):\nan Ignite button or a native `<button>` with `command="--show"` / `"--hide"` /\n`"--toggle"` and `commandfor` pointing to this element will call the\ncorresponding method declaratively without any JavaScript.',
       },
     },
   },
@@ -121,21 +122,9 @@ export const Basic: Story = {
     </igc-toast>
 
     <div style="display: flex; gap: .5rem; flex-wrap: wrap;">
-      <igc-button
-        @click=${() =>
-          (document.getElementById('toast-basic') as IgcToastComponent).show()}
-        >Show</igc-button
-      >
-      <igc-button
-        @click=${() =>
-          (document.getElementById('toast-basic') as IgcToastComponent).hide()}
-        >Hide</igc-button
-      >
-      <igc-button
-        @click=${() =>
-          (
-            document.getElementById('toast-basic') as IgcToastComponent
-          ).toggle()}
+      <igc-button command="--show" commandfor="toast-basic">Show</igc-button>
+      <igc-button command="--hide" commandfor="toast-basic">Hide</igc-button>
+      <igc-button command="--toggle" commandfor="toast-basic"
         >Toggle</igc-button
       >
     </div>
@@ -162,23 +151,13 @@ export const Positions: Story = {
     <igc-toast id="toast-top" position="top" keep-open> Top toast </igc-toast>
 
     <div style="display: flex; gap: .5rem; flex-wrap: wrap;">
-      <igc-button
-        @click=${() =>
-          (
-            document.getElementById('toast-bottom') as IgcToastComponent
-          ).toggle()}
+      <igc-button command="--toggle" commandfor="toast-bottom"
         >Toggle Bottom</igc-button
       >
-      <igc-button
-        @click=${() =>
-          (
-            document.getElementById('toast-middle') as IgcToastComponent
-          ).toggle()}
+      <igc-button command="--toggle" commandfor="toast-middle"
         >Toggle Middle</igc-button
       >
-      <igc-button
-        @click=${() =>
-          (document.getElementById('toast-top') as IgcToastComponent).toggle()}
+      <igc-button command="--toggle" commandfor="toast-top"
         >Toggle Top</igc-button
       >
     </div>
@@ -201,16 +180,8 @@ export const KeepOpen: Story = {
     </igc-toast>
 
     <div style="display: flex; gap: .5rem;">
-      <igc-button
-        @click=${() =>
-          (document.getElementById('toast-keep') as IgcToastComponent).show()}
-        >Show</igc-button
-      >
-      <igc-button
-        @click=${() =>
-          (document.getElementById('toast-keep') as IgcToastComponent).hide()}
-        >Dismiss</igc-button
-      >
+      <igc-button command="--show" commandfor="toast-keep">Show</igc-button>
+      <igc-button command="--hide" commandfor="toast-keep">Dismiss</igc-button>
     </div>
   `,
 };
@@ -267,25 +238,13 @@ export const ContainerPositioning: Story = {
       <p class="toast-container-demo__label">Container boundary</p>
 
       <div class="toast-container-demo__actions">
-        <igc-button
-          @click=${() =>
-            (
-              document.getElementById('ct-toast-top') as IgcToastComponent
-            ).toggle()}
+        <igc-button command="--toggle" commandfor="ct-toast-top"
           >Toggle Top</igc-button
         >
-        <igc-button
-          @click=${() =>
-            (
-              document.getElementById('ct-toast-middle') as IgcToastComponent
-            ).toggle()}
+        <igc-button command="--toggle" commandfor="ct-toast-middle"
           >Toggle Middle</igc-button
         >
-        <igc-button
-          @click=${() =>
-            (
-              document.getElementById('ct-toast-bottom') as IgcToastComponent
-            ).toggle()}
+        <igc-button command="--toggle" commandfor="ct-toast-bottom"
           >Toggle Bottom</igc-button
         >
       </div>

@@ -3,6 +3,7 @@ import { property } from 'lit/decorators.js';
 import { addAnimationController } from '../../../animations/player.js';
 import { fadeIn, fadeOut } from '../../../animations/presets/fade/index.js';
 import type { AbsolutePosition } from '../../types.js';
+import { addCommandController } from '../controllers/command.js';
 import { addInternalsController } from '../controllers/internals.js';
 import { getVisibleAncestor, isPopoverOpen } from '../util.js';
 
@@ -65,6 +66,11 @@ export abstract class IgcBaseAlertLikeComponent extends LitElement {
 
   constructor() {
     super();
+
+    addCommandController(this)
+      .set('--show', this.show)
+      .set('--hide', this.hide)
+      .set('--toggle', this.toggle);
 
     addInternalsController(this, {
       initialARIA: {

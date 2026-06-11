@@ -11,6 +11,7 @@
     "aria-valuenow",
     "aria-valuetext",
     "combobox",
+    "commandfor",
     "listbox",
     "listitem",
     "progressbar",
@@ -32,9 +33,9 @@
     "igniteui",
     "slotchange",
     "stylelint",
-    "webcomponents"
+    "webcomponents",
+    "noopener",
+    "noreferrer"
   ],
-  "ignoreRegExpList": [
-    "θ"
-  ],
+  "ignoreRegExpList": ["θ"]
 }
