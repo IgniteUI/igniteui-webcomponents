@@ -39,6 +39,17 @@ export class WebSpeechSttClient extends BaseSttClient {
     if (!this.isRecording) {
       return;
     }
+
+    this.clearSilenceTimer();
+    if (this.silenceGraceTimeout) {
+      clearTimeout(this.silenceGraceTimeout);
+      this.silenceGraceTimeout = null;
+    }
+    if (this.isCountdownRunning) {
+      this.onStartCountdown(null);
+      this.isCountdownRunning = false;
+    }
+
     this.recognition?.stop();
     this.isRecording = false;
     this.onFinishedTranscribing(this.isAutoFinished ? 'auto' : 'manual');
