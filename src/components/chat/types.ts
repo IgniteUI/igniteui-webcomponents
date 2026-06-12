@@ -1,6 +1,8 @@
 import type IgcChatComponent from './chat.js';
 
 /* jsonAPIPlainObject */
+/* marshalByValue */
+/* skipEventDetails */
 /**
  * Represents a single chat message in the conversation.
  */
@@ -38,6 +40,8 @@ export interface IgcChatMessage {
 }
 
 /* jsonAPIPlainObject */
+/* skipEventDetails */
+/* marshalByValue */
 /**
  * Represents an attachment associated with a chat message.
  */
@@ -161,6 +165,7 @@ export interface IgcChatOptions {
 }
 
 /* jsonAPIPlainObject */
+/* marshalByValue */
 /**
  * Represents a draft message that is being composed by the user, including the text and any attachments.
  */
@@ -176,6 +181,8 @@ export interface IgcChatDraftMessage {
 }
 
 /* jsonAPIPlainObject */
+/* skipEventDetails */
+/* marshalByValue */
 /**
  * Represents a user's reaction to a specific chat message.
  */
@@ -290,6 +297,7 @@ export interface ChatRenderContext {
  * It extends the base context with input-specific properties.
  */
 export interface ChatInputRenderContext extends ChatRenderContext {
+  /* blazorSuppress */
   /**
    * The list of attachments currently in the input area.
    */

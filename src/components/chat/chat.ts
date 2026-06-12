@@ -60,22 +60,26 @@ export interface IgcChatComponentEventMap {
    */
   igcAttachmentClick: CustomEvent<IgcChatMessageAttachment>;
 
+  /* blazorSuppress */
   /**
    * Dispatched when attachment(s) are added either through drag & drop or through
    * the default file input.
    */
   igcAttachmentAdded: CustomEvent<IgcChatMessageAttachment[]>;
 
+  /* blazorSuppress */
   /**
    * Dispatched when an attachment is removed by the user.
    */
   igcAttachmentRemoved: CustomEvent<IgcChatMessageAttachment>;
 
+  /* blazorSuppress */
   /**
    * Dispatched during an attachment drag operation.
    */
   igcAttachmentDrag: CustomEvent<void>;
 
+  /* blazorSuppress */
   /**
    * Dispatched when an attachment is dropped (e.g., in a drag-and-drop operation).
    */
@@ -263,8 +267,6 @@ export default class IgcChatComponent extends EventEmitterMixin<
     this._userInputContext.setValue(this._state, true);
   }
 
-  /* blazorCollectionName: MessagesCollection */
-  /* blazorTreatAsCollection */
   /**
    * The list of chat messages currently displayed.
    * Use this property to set or update the message history.
