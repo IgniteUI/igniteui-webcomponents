@@ -292,7 +292,7 @@ export default class IgcChatInputComponent extends LitElement {
 
   private _handleInput({ detail }: CustomEvent<string>): void {
     this._state.inputValue = detail;
-    this._state.emitEvent('igcInputChange', { detail: { value: detail } });
+    this._state.emitEvent('igcInputChange', { detail });
   }
 
   private _handleFileUpload(event: Event): void {
