@@ -62,7 +62,6 @@
   "devDependencies": {
     "@biomejs/biome": "~2.4.16",
     "@custom-elements-manifest/analyzer": "^0.11.0",
-    "@microsoft/signalr": "^10.0.0",
     "@igniteui/material-icons-extended": "^3.1.0",
     "@open-wc/testing": "^4.0.0",
     "@storybook/addon-a11y": "^10.4.2",
@@ -110,11 +109,6 @@
     "marked": "^18.0.5",
     "marked-shiki": "^1.2.1",
     "shiki": "^4.2.0"
-  },
-  "peerDependenciesMeta": {
-    "@microsoft/signalr": {
-      "optional": true
-    }
   },
   "browserslist": [
     "defaults"

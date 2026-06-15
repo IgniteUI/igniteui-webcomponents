@@ -182,7 +182,8 @@ module.exports = {
       severity: 'warn',
       from: {
         // src/extras uses peer-deps by design (e.g. shiki, marked for chat-markdown-renderer)
-        pathNot: '^src/extras/',
+        // src/components/chat/extras uses @microsoft/signalr as an optional peer dep for backend STT
+        pathNot: ['^src/extras/', '^src/components/chat/extras/'],
       },
       to: {
         dependencyTypes: ['npm-peer'],
