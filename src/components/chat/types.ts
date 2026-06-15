@@ -199,6 +199,7 @@ export interface IgcChatMessageReaction {
 
 /* blazorSuppress */
 /**
+ * @ignore
  * A collection of optional rendering functions that allow for custom UI rendering.
  * Each property is a function that takes a context object and returns a template result.
  */
@@ -269,6 +270,7 @@ export interface ChatRenderers {
   suggestionPrefix?: ChatTemplateRenderer<ChatRenderContext>;
 }
 
+/* blazorSuppress */
 /**
  * A generic type for a function that serves as a custom renderer.
  * It takes a context object of type T and returns a template result.
