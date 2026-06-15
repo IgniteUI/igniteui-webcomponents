@@ -46,6 +46,7 @@ export type LinearProgressLabelAlign =
   | 'bottom-end';
 export type MaskInputValueMode = 'raw' | 'withFormatting';
 export type NavDrawerPosition = 'start' | 'end' | 'top' | 'bottom' | 'relative';
+export type NotificationPositioningStrategy = 'viewport' | 'container';
 export type SliderTickLabelRotation = 0 | 90 | -90;
 export type SliderTickOrientation = 'end' | 'mirror' | 'start';
 export type SplitterOrientation = 'horizontal' | 'vertical';
