@@ -12,7 +12,9 @@ interface IgcBaseComboBoxEventMap {
 }
 
 /* blazorIndirectRender */
+/* omitModule */
 export abstract class IgcBaseComboBoxComponent extends LitElement {
+  /* blazorSuppress */
   declare public emitEvent: <
     K extends keyof IgcBaseComboBoxEventMap,
     D extends UnpackCustomEvent<IgcBaseComboBoxEventMap[K]>,
@@ -98,6 +100,7 @@ export abstract class IgcBaseComboBoxComponent extends LitElement {
 }
 
 /* blazorIndirectRender */
+/* omitModule */
 export abstract class IgcComboBoxBaseLikeComponent extends IgcBaseComboBoxComponent {
   /**
    * Whether the component dropdown should be kept open on selection.

@@ -180,6 +180,7 @@ export default class IgcTreeComponent extends EventEmitterMixin<
     this.navService.handleKeydown(event);
   }
 
+  /* blazorSuppress */
   /** @private */
   public expandToItem(item: IgcTreeItemComponent): void {
     if (item?.parent) {
