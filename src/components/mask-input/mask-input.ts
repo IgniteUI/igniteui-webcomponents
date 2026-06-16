@@ -29,6 +29,8 @@ const Slots = setSlots(
   'invalid'
 );
 
+/* blazorSupportsVisualChildren */
+/* blazorIndirectRender */
 /**
  * A masked input is an input field where a developer can control user input and format the visible value,
  * based on configurable rules

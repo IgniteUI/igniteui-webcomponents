@@ -45,6 +45,8 @@ const Slots = setSlots(
   'invalid'
 );
 
+/* blazorIndirectRender */
+/* blazorSupportsVisualChildren */
 @blazorDeepImport
 @shadowOptions({ delegatesFocus: true })
 export abstract class IgcDateTimeInputBaseComponent extends MaskBehaviorMixin(

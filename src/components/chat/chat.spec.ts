@@ -1077,7 +1077,7 @@ describe('Chat', () => {
       textArea.dispatchEvent(new CustomEvent('igcInput', { detail: 'Hello!' }));
       await elementUpdated(chat);
       expect(eventSpy).calledWith('igcInputChange', {
-        detail: { value: 'Hello!' },
+        detail: 'Hello!',
       });
     });
 
