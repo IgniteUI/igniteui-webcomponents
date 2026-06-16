@@ -3,14 +3,14 @@ import { html } from 'lit';
 import { range } from 'lit/directives/range.js';
 
 import {
+  IgcIconComponent,
   IgcTabComponent,
   IgcTabsComponent,
   defineComponents,
-  registerIcon,
   registerIconFromText,
 } from 'igniteui-webcomponents';
 
-defineComponents(IgcTabsComponent);
+defineComponents(IgcTabsComponent, IgcIconComponent);
 
 // region default
 const metadata: Meta<IgcTabsComponent> = {
@@ -65,20 +65,20 @@ type Story = StoryObj<IgcTabsArgs>;
 const icons = [
   {
     name: 'home',
-    url: 'https://unpkg.com/material-design-icons@3.0.1/action/svg/production/ic_home_24px.svg',
+    svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>`,
   },
   {
     name: 'search',
-    url: 'https://unpkg.com/material-design-icons@3.0.1/action/svg/production/ic_search_24px.svg',
+    svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>`,
   },
   {
     name: 'favorite',
-    url: 'https://unpkg.com/material-design-icons@3.0.1/action/svg/production/ic_favorite_24px.svg',
+    svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`,
   },
 ];
 
 for (const icon of icons) {
-  registerIcon(icon.name, icon.url);
+  registerIconFromText(icon.name, icon.svg);
 }
 
 function remove({ target }: PointerEvent) {
@@ -142,6 +142,14 @@ const manyTabs = Array.from(range(1, 31)).map((idx) => {
 });
 
 export const Basic: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'A basic tabs component with three tabs. Use the **Controls** panel to switch between `alignment` values and `auto`/`manual` keyboard activation modes.',
+      },
+    },
+  },
   render: (args) => html`
     <igc-tabs .alignment=${args.alignment} .activation=${args.activation}>
       ${Array.from(range(1, 4)).map(
@@ -159,6 +167,14 @@ export const Basic: Story = {
 };
 
 export const Variants: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Demonstrates the different tab header compositions: icon-only, icon + text in the `label` slot, and icons in `prefix`/`suffix` slots alongside a text label. The last set has enough tabs to trigger the scroll buttons.',
+      },
+    },
+  },
   render: (args) => html`
     <h2>Tab headers with icon only</h2>
     <igc-tabs .alignment=${args.alignment} .activation=${args.activation}>
@@ -232,6 +248,14 @@ export const Variants: Story = {
 };
 
 export const Strip: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Tabs used as a strip of navigation items with no panel content. Useful for navigation bars where the panel area is managed separately.',
+      },
+    },
+  },
   render: (args) => html`
     <igc-tabs .alignment=${args.alignment} .activation=${args.activation}>
       ${Array.from(range(1, 11)).map(
@@ -242,6 +266,14 @@ export const Strip: Story = {
 };
 
 export const Removable: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Tabs with a close button in the `suffix` slot. Clicking the icon removes the `igc-tab` element from the DOM entirely.',
+      },
+    },
+  },
   render: (args) => html`
     <igc-tabs .alignment=${args.alignment} .activation=${args.activation}>
       ${removableTabs}
@@ -285,6 +317,14 @@ export const Removable: Story = {
 export const NestedTabs: Story = {
   args: {
     alignment: 'justify',
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Demonstrates nested `igc-tabs` components. An outer set of tabs categorises topics (Build tools, Front-end frameworks) and each tab panel contains an inner `igc-tabs` with icon-only headers.',
+      },
+    },
   },
   render: (args) => html`
     <style>

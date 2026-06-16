@@ -1,7 +1,8 @@
 import type IgcChatComponent from './chat.js';
 
-/* marshalByValue */
 /* jsonAPIPlainObject */
+/* marshalByValue */
+/* skipEventDetails */
 /**
  * Represents a single chat message in the conversation.
  */
@@ -38,8 +39,9 @@ export interface IgcChatMessage {
   reactions?: string[];
 }
 
-/* marshalByValue */
 /* jsonAPIPlainObject */
+/* skipEventDetails */
+/* marshalByValue */
 /**
  * Represents an attachment associated with a chat message.
  */
@@ -208,6 +210,8 @@ export interface IgcChatMessagesChange {
 }
 
 /* jsonAPIPlainObject */
+/* skipEventDetails */
+/* marshalByValue */
 /**
  * Represents a user's reaction to a specific chat message.
  */
@@ -224,6 +228,7 @@ export interface IgcChatMessageReaction {
 
 /* blazorSuppress */
 /**
+ * @ignore
  * A collection of optional rendering functions that allow for custom UI rendering.
  * Each property is a function that takes a context object and returns a template result.
  */
@@ -294,6 +299,7 @@ export interface ChatRenderers {
   suggestionPrefix?: ChatTemplateRenderer<ChatRenderContext>;
 }
 
+/* blazorSuppress */
 /**
  * A generic type for a function that serves as a custom renderer.
  * It takes a context object of type T and returns a template result.
@@ -322,6 +328,7 @@ export interface ChatRenderContext {
  * It extends the base context with input-specific properties.
  */
 export interface ChatInputRenderContext extends ChatRenderContext {
+  /* blazorSuppress */
   /**
    * The list of attachments currently in the input area.
    */

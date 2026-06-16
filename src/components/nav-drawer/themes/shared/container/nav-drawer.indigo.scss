@@ -6,7 +6,7 @@ $theme: $indigo;
 :host {
     --menu-mini-width: #{rem(48px)};
 
-    [part='overlay'] {
+    [part='base']::backdrop {
         background: var-get($overlay-indigo, 'background-color');
     }
 

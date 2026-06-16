@@ -10,6 +10,7 @@ import {
   registerIcon,
 } from 'igniteui-webcomponents';
 import { range } from 'lit/directives/range.js';
+import { ifDefined } from 'lit/directives/if-defined.js';
 
 defineComponents(IgcIconComponent, IgcNavDrawerComponent, IgcButtonComponent);
 
@@ -21,35 +22,75 @@ const metadata: Meta<IgcNavDrawerComponent> = {
     docs: {
       description: {
         component:
-          'Represents a side navigation container that provides\nquick access between views.',
+          'A side navigation container that provides\nquick access between views within an application.\n\nFor non-relative positions (`start`, `end`, `top`, `bottom`) the drawer is\nrendered as a native `<dialog>` element, providing modal semantics, automatic\nfocus trapping, and a backdrop. For the `relative` position it is rendered\ninline as a `<nav>` landmark.\n\nWhen content is provided in the `mini` slot, a compact icon-only variant is\nalways displayed alongside the main drawer (hidden only while the full drawer\nis open).\n\nThe component integrates with the\n[Invoker Commands API](https://developer.mozilla.org/en-US/docs/Web/API/Invoker_Commands_API):\nan Ignite button or a native `<button>` with `command="--show"` / `"--hide"` / `"--toggle"`\nand `commandfor` pointing to this element will call the corresponding method\ndeclaratively without any JavaScript.',
       },
     },
+    actions: { handles: ['igcClosing', 'igcClosed'] },
   },
   argTypes: {
     position: {
       type: '"start" | "end" | "top" | "bottom" | "relative"',
-      description: 'The position of the drawer.',
+      description:
+        'Sets the position of the drawer.\n\n- `start` — anchored to the inline-start edge (default).\n- `end` — anchored to the inline-end edge.\n- `top` — anchored to the block-start edge.\n- `bottom` — anchored to the block-end edge.\n- `relative` — rendered inline within the page flow; no modal backdrop.',
       options: ['start', 'end', 'top', 'bottom', 'relative'],
       control: { type: 'select' },
       table: { defaultValue: { summary: 'start' } },
     },
     open: {
       type: 'boolean',
-      description: 'Determines whether the drawer is opened.',
+      description: 'Whether the drawer is open.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
+    keepOpenOnEscape: {
+      type: 'boolean',
+      description:
+        'Determines whether the drawer should remain open when the Escape key is pressed.\n\nThis attribute is only applicable when the drawer is in a non-relative position,\nas the Escape key does not trigger the closing of relative drawers.',
+      control: 'boolean',
+      table: { defaultValue: { summary: 'false' } },
+    },
+    label: {
+      type: 'string',
+      description:
+        'Sets an accessible label for the drawer.\n\nIn non-relative positions this label is applied to the modal `<dialog>` element.\nIn `relative` position it labels the `<nav>` landmark.\n\nWhen multiple navigation landmarks exist on the page each should receive a\ndistinct label so screen-reader users can differentiate between them.',
+      control: 'text',
+    },
   },
-  args: { position: 'start', open: false },
+  args: { position: 'start', open: false, keepOpenOnEscape: false },
 };
 
 export default metadata;
 
 interface IgcNavDrawerArgs {
-  /** The position of the drawer. */
+  /**
+   * Sets the position of the drawer.
+   *
+   * - `start` — anchored to the inline-start edge (default).
+   * - `end` — anchored to the inline-end edge.
+   * - `top` — anchored to the block-start edge.
+   * - `bottom` — anchored to the block-end edge.
+   * - `relative` — rendered inline within the page flow; no modal backdrop.
+   */
   position: 'start' | 'end' | 'top' | 'bottom' | 'relative';
-  /** Determines whether the drawer is opened. */
+  /** Whether the drawer is open. */
   open: boolean;
+  /**
+   * Determines whether the drawer should remain open when the Escape key is pressed.
+   *
+   * This attribute is only applicable when the drawer is in a non-relative position,
+   * as the Escape key does not trigger the closing of relative drawers.
+   */
+  keepOpenOnEscape: boolean;
+  /**
+   * Sets an accessible label for the drawer.
+   *
+   * In non-relative positions this label is applied to the modal `<dialog>` element.
+   * In `relative` position it labels the `<nav>` landmark.
+   *
+   * When multiple navigation landmarks exist on the page each should receive a
+   * distinct label so screen-reader users can differentiate between them.
+   */
+  label: string;
 }
 type Story = StoryObj<IgcNavDrawerArgs>;
 
@@ -64,57 +105,23 @@ registerIcon(
   'search',
   'https://unpkg.com/material-design-icons@3.0.1/action/svg/production/ic_search_24px.svg'
 );
+
 const handleClick = (ev: PointerEvent) => {
-  let drawerItem: IgcNavDrawerItemComponent | undefined;
+  const drawerItem = (ev.target as HTMLElement).closest(
+    'igc-nav-drawer-item'
+  ) as IgcNavDrawerItemComponent | null;
 
-  const eventTarget = ev.target as HTMLElement;
-
-  if (eventTarget.tagName.toLowerCase() === 'igc-nav-drawer-item') {
-    drawerItem = eventTarget as IgcNavDrawerItemComponent;
-  }
-
-  if (
-    eventTarget.parentElement?.tagName.toLowerCase() === 'igc-nav-drawer-item'
-  ) {
-    drawerItem = eventTarget.parentElement as IgcNavDrawerItemComponent;
-  }
-
-  if (drawerItem !== undefined) {
+  if (drawerItem) {
     drawerItem.active = true;
-
-    const navDrawer = document.querySelector(
+    const navDrawer = drawerItem.closest(
       'igc-nav-drawer'
     ) as IgcNavDrawerComponent;
-
-    const items = Array.from<IgcNavDrawerItemComponent>(
-      navDrawer.querySelectorAll('igc-nav-drawer-item')
-    ).filter((item) => item !== drawerItem);
-
-    items.forEach((item) => {
-      item.active = false;
-    });
+    navDrawer
+      ?.querySelectorAll<IgcNavDrawerItemComponent>('igc-nav-drawer-item')
+      .forEach((item) => {
+        if (item !== drawerItem) item.active = false;
+      });
   }
-};
-
-const handleOpen = () => {
-  const drawer = document.querySelector(
-    'igc-nav-drawer'
-  ) as IgcNavDrawerComponent;
-  drawer?.show();
-};
-
-const handleClose = () => {
-  const drawer = document.querySelector(
-    'igc-nav-drawer'
-  ) as IgcNavDrawerComponent;
-  drawer?.hide();
-};
-
-const handleToggle = () => {
-  const drawer = document.querySelector(
-    'igc-nav-drawer'
-  ) as IgcNavDrawerComponent;
-  drawer?.toggle();
 };
 
 const commonStyles = html`
@@ -158,7 +165,7 @@ const createDrawerContent = (headerText: string, itemCount = 15) => html`
     (i) => html`
       <igc-nav-drawer-item>
         <igc-icon slot="icon" name="home"></igc-icon>
-        <span slot="content">Navbar item ${i + 1}</span>
+        <span tabindex="0" slot="content">Drawer item ${i + 1}</span>
       </igc-nav-drawer-item>
     `
   )}
@@ -186,16 +193,15 @@ const createMiniContent = () => html`
   </div>
 `;
 
-// Create a function for control buttons
-const createControlButtons = (position: string) => html`
-  ${position === 'relative'
-    ? html`
-        <igc-button @click=${handleToggle}>Toggle</igc-button>
-        <igc-button variant="outlined" @click=${handleClose}>Close</igc-button>
-      `
-    : ''}
-
-  <igc-button variant="outlined" @click=${handleOpen}>Open</igc-button>
+// Create a function for control buttons — always show Open / Toggle / Close
+const createControlButtons = () => html`
+  <igc-button command="--show" commandfor="nav-drawer">Open</igc-button>
+  <igc-button variant="outlined" command="--toggle" commandfor="nav-drawer"
+    >Toggle</igc-button
+  >
+  <igc-button variant="outlined" command="--hide" commandfor="nav-drawer"
+    >Close</igc-button
+  >
 `;
 
 // Main template function
@@ -205,11 +211,22 @@ const createTemplate = (options: {
   includeMini?: boolean;
   contentText?: string;
 }) => {
-  return ({ open = false, position }: IgcNavDrawerArgs) => html`
+  return ({
+    open = false,
+    position,
+    keepOpenOnEscape = false,
+  }: IgcNavDrawerArgs) => html`
     ${commonStyles}
 
     <div class="ig-scrollbar main">
-      <igc-nav-drawer .open=${open} .position=${position} @click=${handleClick}>
+      <igc-nav-drawer
+        id="nav-drawer"
+        label=${ifDefined(options.headerText ?? undefined)}
+        .open=${open}
+        .position=${position}
+        ?keep-open-on-escape=${keepOpenOnEscape}
+        @click=${handleClick}
+      >
         ${createDrawerContent(
           options.headerText || 'Sample Drawer',
           options.itemCount
@@ -219,7 +236,7 @@ const createTemplate = (options: {
 
       <section class="content ${position === 'relative' ? 'relative' : ''}">
         <p>${options.contentText}</p>
-        ${createControlButtons(position)}
+        ${createControlButtons()}
       </section>
     </div>
   `;
@@ -227,23 +244,60 @@ const createTemplate = (options: {
 
 // Now create your stories using the template factory
 export const Basic: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'A navigation drawer overlaying the page content. Use the **position** arg to place it at the start, end, top, or bottom of the viewport. Click a nav item to mark it active.',
+      },
+    },
+  },
   render: createTemplate({
     headerText: 'Drawer header',
     itemCount: 15,
     includeMini: false,
-    contentText: 'Basic drawer example',
+    contentText: 'Use the buttons below to control the drawer.',
   }),
 };
 
 export const MiniVariant: Story = {
-  render: createTemplate({
-    headerText: 'Drawer header',
-    itemCount: 5,
-    includeMini: true,
-    contentText: 'Mini drawer example ',
-  }),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Populates the **mini** slot to show a compact icon-only rail when the drawer is closed, giving users quick access to navigation without taking up full width.',
+      },
+    },
+  },
   args: {
     position: 'start',
     open: false,
   },
+  render: createTemplate({
+    headerText: 'Drawer header',
+    itemCount: 5,
+    includeMini: true,
+    contentText: 'Open the drawer to see the full labels alongside the icons.',
+  }),
+};
+
+export const Relative: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'When `position` is set to **relative**, the drawer sits inline with the page content instead of overlaying it, shifting the adjacent content as it opens and closes.',
+      },
+    },
+  },
+  args: {
+    position: 'relative',
+    open: true,
+  },
+  render: createTemplate({
+    headerText: 'Relative drawer',
+    itemCount: 8,
+    includeMini: false,
+    contentText: 'The drawer pushes the content rather than overlaying it.',
+  }),
 };

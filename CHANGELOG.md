@@ -4,6 +4,107 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [7.2.2] - 2026-06-15
+### Changed
+- #### AI-Assisted Development
+  - Decreased token consumption of skills and improved migration skill from grid lite to premium offering [#2243](https://github.com/IgniteUI/igniteui-webcomponents/pull/2243) [#2239](https://github.com/IgniteUI/igniteui-webcomponents/pull/2239)
+- #### Snackbar, Toast
+  - Abstracted container positioning property into a new type `NotificationPositioning` [#2251](https://github.com/IgniteUI/igniteui-webcomponents/pull/2251)
+
+### Fixed
+- #### Expansion Panel
+  - Line height for title and sub-title slots [#2237](https://github.com/IgniteUI/igniteui-webcomponents/pull/2237)
+
+## [7.2.1] - 2026-05-27
+### Fixed
+- Internal library metadata issue
+
+## [7.2.0] - 2026-05-27
+### Added
+- #### Date Range Picker
+  - Added support for editing the date range value directly via a single input field. [#1733](https://github.com/IgniteUI/igniteui-webcomponents/pull/1733)
+- #### Nav Drawer
+  - The drawer for non-relative positions are now implemented using the native Popover API, providing built-in modal semantics, focus trapping, and accessibility support. [#2194](https://github.com/IgniteUI/igniteui-webcomponents/pull/2194)
+  - Added `keepOpenOnEscape` property — prevents the drawer from closing when the user presses the **Escape** key (non-relative positions only). [#2194](https://github.com/IgniteUI/igniteui-webcomponents/pull/2194)
+  - Added `igcClosing` event — emitted just before the drawer is closed by user interaction. Cancelable. [#2194](https://github.com/IgniteUI/igniteui-webcomponents/pull/2194)
+  - Added `igcClosed` event — emitted just after the drawer is closed by user interaction. [#2194](https://github.com/IgniteUI/igniteui-webcomponents/pull/2194)
+- #### Invoker Commands API
+  - `igc-button` and `igc-icon-button` now support `command` and `commandfor` properties, enabling declarative control of target components without JavaScript. [#2225](https://github.com/IgniteUI/igniteui-webcomponents/pull/2225)
+  - `igc-banner`, `igc-dialog`, `igc-nav-drawer`, `igc-snackbar`, and `igc-toast` now respond to `--show`, `--hide`, and `--toggle` commands dispatched by an invoker button. [#2225](https://github.com/IgniteUI/igniteui-webcomponents/pull/2225)
+- #### Snackbar
+  - Added `positioning` property (`viewport` | `container`). The component now renders as a popover in the browser top layer. Setting `positioning` to `container` anchors the component to its nearest visible ancestor instead of the viewport. [#2203](https://github.com/IgniteUI/igniteui-webcomponents/pull/2203)
+- #### Toast
+  - Added `positioning` property (`viewport` | `container`). The component now renders as a popover in the browser top layer. Setting `positioning` to `container` anchors the component to its nearest visible ancestor instead of the viewport. [#2203](https://github.com/IgniteUI/igniteui-webcomponents/pull/2203)
+
+### Changed
+- #### AI-Assisted Development
+  - Updated and enhanced the library provided skills [#2232](https://github.com/IgniteUI/igniteui-webcomponents/pull/2232)
+- #### Form controls
+  - `IgcInput`, `IgcMaskInput`, `IgcDateTimeInput`, `IgcCheckbox`, `IgcRadio`, `IgcSwitch`, `IgcDatePicker`, and `IgcDateRangePicker` now submit their associated form on **Enter** key press, matching native browser behavior. [#2213](https://github.com/IgniteUI/igniteui-webcomponents/pull/2213)
+- #### Input
+  - Added theming support for `date`, `time`, `datetime-local`, `week`, and `month` input types, ensuring consistent styles and floating label behavior across all supported themes. [#2223](https://github.com/IgniteUI/igniteui-webcomponents/pull/2223)
+- #### Nav Drawer
+  - The `overlay` CSS part has been removed. Users of the component can target the `base` part's `::backdrop` pseudo-element, the
+    `--ig-overlay-background-color` variable or use the theming package. [#2194](https://github.com/IgniteUI/igniteui-webcomponents/pull/2194)
+
+### Deprecated
+- #### Localization
+  - The old resource string interfaces for `Calendar`, `Chat`, `Date Picker`, and `Date Range Picker` are deprecated. Components now use the new `igniteui-i18n` resource keys. Setting individual `resourceStrings` properties directly is no longer supported; provide a complete resource strings object instead. [#2169](https://github.com/IgniteUI/igniteui-webcomponents/pull/2169)
+
+### Fixed
+- #### Button Group
+  - Selected state border color mismatch in focused and hover states. [#2219](https://github.com/IgniteUI/igniteui-webcomponents/pull/2219)
+- #### Combo
+  - Display value not restored correctly when tabbing out in single-select mode with a partial search text. [#2224](https://github.com/IgniteUI/igniteui-webcomponents/pull/2224)
+- #### Stepper
+  - Step components connected to the DOM before their parent stepper now correctly receive context after being adopted by a stepper. [#2228](https://github.com/IgniteUI/igniteui-webcomponents/pull/2228)
+
+## [7.1.3] - 2026-04-28
+### Changed
+- #### AI-Assisted Development
+  - Updated and enhanced the library provided skills [#2207](https://github.com/IgniteUI/igniteui-webcomponents/pull/2207)
+
+### Fixed
+- #### Stepper
+  - In horizontal orientation, the content area height can now driven by the active step's content instead of always being sized to the tallest step. A new `--body-grid-rows` CSS custom property controls the internal row sizing of each step body — its default value of `1fr` expands the body to fit its content, while setting it to `0fr` collapses the body to zero height, enabling fully variable step heights. [#2209](https://github.com/IgniteUI/igniteui-webcomponents/issues/2209)
+
+## [7.1.2] - 2026-04-22
+### Changed
+- #### AI-Assisted Development
+  - Updated and enhanced the library provided skills [#2189](https://github.com/IgniteUI/igniteui-webcomponents/pull/2189) [#2195](https://github.com/IgniteUI/igniteui-webcomponents/pull/2195) [#2198](https://github.com/IgniteUI/igniteui-webcomponents/pull/2198)
+- #### Button group
+  - Themes colors alignment [#2182](https://github.com/IgniteUI/igniteui-webcomponents/pull/2182)
+- #### Circular progressbar
+  - Unified track color CSS variable between progress bars [#2185](https://github.com/IgniteUI/igniteui-webcomponents/pull/2185)
+- #### Chip
+  - Wrap content inside a new part container and update styles [#2190](https://github.com/IgniteUI/igniteui-webcomponents/pull/2190)
+
+### Fixed
+- #### Dropdown
+  - Selected item styles [#2168](https://github.com/IgniteUI/igniteui-webcomponents/pull/2168)
+- #### Linear progressbar
+  - Unified display size across platforms [#2184](https://github.com/IgniteUI/igniteui-webcomponents/pull/2184)
+- #### Tree
+  - Background style discrepancies [#2173](https://github.com/IgniteUI/igniteui-webcomponents/pull/2173)
+
+## [7.1.1] - 2026-03-25
+### Changed
+- #### Checkbox
+  - Updated disabled and indeterminate styles [#2158](https://github.com/IgniteUI/igniteui-webcomponents/pull/2158)
+
+## [7.1.0] - 2026-03-19
+### Added
+- Splitter component
+- Highlight container component
+
+### Fixed
+- #### Combo
+  - Use focus color for clear button background #[2140](https://github.com/IgniteUI/igniteui-webcomponents/pull/2140)
+- #### Stepper
+  - Box shadow values for step indicators #[2133](https://github.com/IgniteUI/igniteui-webcomponents/pull/2133)
+- #### Tabs
+  - Scrolling behavior for tabs content #[2149](https://github.com/IgniteUI/igniteui-webcomponents/pull/2149)
+
 ## [7.0.1] - 2026-03-06
 ### Fixed
 - #### Icon service
@@ -1269,6 +1370,13 @@ Initial release of Ignite UI Web Components
 - Ripple component
 - Switch component
 
+[7.2.2]: https://github.com/IgniteUI/igniteui-webcomponents/compare/7.2.1...7.2.2
+[7.2.1]: https://github.com/IgniteUI/igniteui-webcomponents/compare/7.2.0...7.2.1
+[7.2.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/7.1.3...7.2.0
+[7.1.3]: https://github.com/IgniteUI/igniteui-webcomponents/compare/7.1.2...7.1.3
+[7.1.2]: https://github.com/IgniteUI/igniteui-webcomponents/compare/7.1.1...7.1.2
+[7.1.1]: https://github.com/IgniteUI/igniteui-webcomponents/compare/7.1.0...7.1.1
+[7.1.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/7.0.1...7.1.0
 [7.0.1]: https://github.com/IgniteUI/igniteui-webcomponents/compare/7.0.0...7.0.1
 [7.0.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/6.5.1...7.0.0
 [6.5.1]: https://github.com/IgniteUI/igniteui-webcomponents/compare/6.5.0...6.5.1

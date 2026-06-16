@@ -37,8 +37,13 @@ $theme: $material;
     }
 }
 
-:host([selected]:hover),
 :host([selected][active]) {
+    background: var-get($theme, 'selected-focus-item-background');
+    color: var-get($theme, 'selected-focus-item-text-color');
+}
+
+:host([selected]:hover),
+:host([selected][active]:hover) {
     background: var-get($theme, 'selected-hover-item-background');
     color: var-get($theme, 'selected-hover-item-text-color');
 

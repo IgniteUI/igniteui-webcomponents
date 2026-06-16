@@ -1,3 +1,9 @@
+import {
+  CalendarResourceStringsEN,
+  DatePickerResourceStringsEN,
+  type ICalendarResourceStrings,
+  type IDatePickerResourceStrings,
+} from 'igniteui-i18n-core';
 import { html, nothing, type TemplateResult } from 'lit';
 import { property, query } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
@@ -22,15 +28,12 @@ import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditio
 import { shadowOptions } from '../common/decorators/shadow-options.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
-import {
-  IgcCalendarResourceStringEN,
-  type IgcCalendarResourceStrings,
-} from '../common/i18n/EN/calendar.resources.js';
+import type { IgcCalendarResourceStrings } from '../common/i18n/EN/calendar.resources.js';
 import {
   addI18nController,
   getDateTimeFormat,
 } from '../common/i18n/i18n-controller.js';
-import { IgcBaseComboBoxLikeComponent } from '../common/mixins/combo-box.js';
+import { IgcComboBoxBaseLikeComponent } from '../common/mixins/combo-box.js';
 import type { AbstractConstructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '../common/mixins/forms/associated-required.js';
@@ -40,7 +43,7 @@ import {
   addSafeEventListener,
   bindIf,
   equal,
-  findElementFromEventPath,
+  getElementFromPath,
 } from '../common/util.js';
 import type { DatePart } from '../date-time-input/date-part.js';
 import IgcDateTimeInputComponent from '../date-time-input/date-time-input.js';
@@ -87,6 +90,8 @@ const Slots = setSlots(
   'calendar-icon-open',
   'actions'
 );
+type DatePickerResourceStringsType = IDatePickerResourceStrings &
+  ICalendarResourceStrings;
 
 /* blazorIndirectRender */
 /* blazorSupportsVisualChildren */
@@ -173,8 +178,8 @@ const Slots = setSlots(
 export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
   EventEmitterMixin<
     IgcDatePickerComponentEventMap,
-    AbstractConstructor<IgcBaseComboBoxLikeComponent>
-  >(IgcBaseComboBoxLikeComponent)
+    AbstractConstructor<IgcComboBoxBaseLikeComponent>
+  >(IgcComboBoxBaseLikeComponent)
 ) {
   public static readonly tagName = 'igc-date-picker';
   public static styles = [styles, shared];
@@ -207,10 +212,16 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
    * For now we use the core validation strings internally only, to avoid mixing with old resources by users.
    * To Do: Update resourceStrings type when the IgcCalendarResourceStrings is changed to ICalendarResourceStrings
    */
-  protected readonly _i18nController =
-    addI18nController<IgcCalendarResourceStrings>(this, {
-      defaultEN: IgcCalendarResourceStringEN,
-    });
+  protected readonly _i18nController = addI18nController<
+    IgcCalendarResourceStrings | DatePickerResourceStringsType
+  >(this, {
+    defaultEN: Object.assign(
+      {},
+      DatePickerResourceStringsEN,
+      CalendarResourceStringsEN
+    ),
+    resourceMapName: 'date-picker',
+  });
 
   private _oldValue: Date | null = null;
   private _activeDate: Date | null = null;
@@ -466,11 +477,14 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
    * The resource strings for localization.
    */
   @property({ attribute: false })
-  public set resourceStrings(value: IgcCalendarResourceStrings) {
+  public set resourceStrings(
+    value: IgcCalendarResourceStrings | DatePickerResourceStringsType
+  ) {
     this._i18nController.resourceStrings = value;
   }
 
-  public get resourceStrings(): IgcCalendarResourceStrings {
+  public get resourceStrings(): IgcCalendarResourceStrings &
+    DatePickerResourceStringsType {
     return this._i18nController.resourceStrings;
   }
 
@@ -502,7 +516,7 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
     addKeybindings(this, {
       skip: () => this.disabled || this.readOnly,
     })
-      .set([altKey, arrowDown], this.handleAnchorClick)
+      .set([altKey, arrowDown], this._handleAnchorClick)
       .set([altKey, arrowUp], this._onEscapeKey)
       .set(escapeKey, this._onEscapeKey);
   }
@@ -557,16 +571,16 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
   }
 
   protected _handleInputClick(event: Event): void {
-    if (findElementFromEventPath('input', event)) {
+    if (getElementFromPath('input', event)) {
       // Open only if the click originates from the underlying input
-      this.handleAnchorClick();
+      this._handleAnchorClick();
     }
   }
 
-  protected override async handleAnchorClick(): Promise<void> {
+  protected override async _handleAnchorClick(): Promise<void> {
     this._calendar.activeDate = this.value ?? this._calendar.activeDate;
 
-    super.handleAnchorClick();
+    super._handleAnchorClick();
     await this.updateComplete;
     this._calendar[focusActiveDate]({ preventScroll: true });
   }
@@ -702,7 +716,16 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
 
   private _renderCalendarIcon() {
     const defaultIcon = html`
-      <igc-icon name="today" collection="default" aria-hidden="true"></igc-icon>
+      <igc-icon
+        name="today"
+        collection="default"
+        aria-hidden="true"
+        title=${ifDefined(
+          this.value
+            ? this.resourceStrings.date_picker_change_date
+            : this.resourceStrings.date_picker_choose_date
+        )}
+      ></igc-icon>
     `;
 
     const state = this.open ? 'calendar-icon-open' : 'calendar-icon';
@@ -712,7 +735,7 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
         slot="prefix"
         part=${state}
         @pointerdown=${this._handlerCalendarIconSlotPointerDown}
-        @click=${bindIf(!this.readOnly, this.handleAnchorClick)}
+        @click=${bindIf(!this.readOnly, this._handleAnchorClick)}
       >
         <slot name=${state}>${defaultIcon}</slot>
       </span>
@@ -728,7 +751,7 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
 
     return html`
       <slot name="title" slot="title">
-        ${this.resourceStrings.selectDate}
+        ${this.resourceStrings.calendar_select_date}
       </slot>
       <slot
         name="header-date"
@@ -798,7 +821,11 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
         `
       : html`
           <igc-dialog
-            aria-label=${ifDefined(this.resourceStrings.selectDate)}
+            aria-label=${ifDefined(
+              this.value
+                ? this.resourceStrings.date_picker_change_date
+                : this.resourceStrings.date_picker_choose_date
+            )}
             role="dialog"
             ?open=${this.open}
             ?close-on-outside-click=${!this.keepOpenOnOutsideClick}
@@ -820,7 +847,7 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
           <label
             part="label"
             for=${id}
-            @click=${bindIf(!isDisabled, this.handleAnchorClick)}
+            @click=${bindIf(!isDisabled, this._handleAnchorClick)}
           >
             ${this.label}
           </label>
@@ -862,6 +889,7 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
         .invalid=${this.invalid}
         @igcChange=${this._handleInputChangeEvent}
         @igcInput=${this._handleInputEvent}
+        @keydown=${this._handleEnterKeydown}
         @click=${bindIf(hasClickHandler, this._handleInputClick)}
         exportparts="input, label, prefix, suffix"
       >
