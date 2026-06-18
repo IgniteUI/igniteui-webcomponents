@@ -438,10 +438,6 @@ export default class IgcComboComponent<
   /**
    * An object that configures the filtering of the combo.
    * @attr filtering-options
-   * @type {FilteringOptions<T>}
-   * @param filterKey - The key in the data source used when filtering the list of options.
-   * @param caseSensitive - Determines whether the filtering operation should be case sensitive.
-   * @param matchDiacritics -If true, the filter distinguishes between accented letters and their base letters.
    */
   @property({ type: Object, attribute: 'filtering-options' })
   public set filteringOptions(value: Partial<FilteringOptions<T>>) {

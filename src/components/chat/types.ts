@@ -1,5 +1,8 @@
 import type IgcChatComponent from './chat.js';
 
+/* jsonAPIPlainObject */
+/* marshalByValue */
+/* skipEventDetails */
 /**
  * Represents a single chat message in the conversation.
  */
@@ -36,6 +39,9 @@ export interface IgcChatMessage {
   reactions?: string[];
 }
 
+/* jsonAPIPlainObject */
+/* skipEventDetails */
+/* marshalByValue */
 /**
  * Represents an attachment associated with a chat message.
  */
@@ -56,11 +62,13 @@ export interface IgcChatMessageAttachment {
    */
   url?: string;
 
+  /* blazorSuppress */
   /**
    * The actual File object, if the attachment was provided locally (e.g. via upload).
    */
   file?: File;
 
+  /* blazorAlternateName: attachmentType */
   /**
    * The MIME type or a custom type identifier for the attachment (e.g. "image/png", "pdf", "audio").
    */
@@ -72,10 +80,11 @@ export interface IgcChatMessageAttachment {
   thumbnail?: string;
 }
 
+/* jsonAPIPlainObject */
 /**
  * Configuration options for customizing the behavior and appearance of the chat component.
  */
-export type IgcChatOptions = {
+export interface IgcChatOptions {
   /**
    * The ID of the current user. Used to differentiate between incoming and outgoing messages.
    */
@@ -153,8 +162,27 @@ export type IgcChatOptions = {
    * An object containing a collection of custom renderers for different parts of the chat UI.
    */
   renderers?: ChatRenderers;
-};
+}
 
+/* jsonAPIPlainObject */
+/* marshalByValue */
+/**
+ * Represents a draft message that is being composed by the user, including the text and any attachments.
+ */
+export interface IgcChatDraftMessage {
+  /**
+   * The textual content of the draft message.
+   */
+  text: string;
+  /**
+   * An array of attachments associated with the draft message.
+   */
+  attachments?: IgcChatMessageAttachment[];
+}
+
+/* jsonAPIPlainObject */
+/* skipEventDetails */
+/* marshalByValue */
 /**
  * Represents a user's reaction to a specific chat message.
  */
@@ -169,7 +197,9 @@ export interface IgcChatMessageReaction {
   reaction: string;
 }
 
+/* blazorSuppress */
 /**
+ * @ignore
  * A collection of optional rendering functions that allow for custom UI rendering.
  * Each property is a function that takes a context object and returns a template result.
  */
@@ -240,6 +270,7 @@ export interface ChatRenderers {
   suggestionPrefix?: ChatTemplateRenderer<ChatRenderContext>;
 }
 
+/* blazorSuppress */
 /**
  * A generic type for a function that serves as a custom renderer.
  * It takes a context object of type T and returns a template result.
@@ -251,6 +282,7 @@ export type ChatTemplateRenderer<T> = (ctx: T) => unknown;
  */
 export type ChatSuggestionsPosition = 'below-input' | 'below-messages';
 
+/* jsonAPIPlainObject */
 /**
  * The base context object passed to custom renderer functions, containing the chat component instance.
  */
@@ -261,11 +293,13 @@ export interface ChatRenderContext {
   instance: IgcChatComponent;
 }
 
+/* jsonAPIPlainObject */
 /**
  * The context object for renderers that deal with the chat input area.
  * It extends the base context with input-specific properties.
  */
 export interface ChatInputRenderContext extends ChatRenderContext {
+  /* blazorSuppress */
   /**
    * The list of attachments currently in the input area.
    */
@@ -276,6 +310,7 @@ export interface ChatInputRenderContext extends ChatRenderContext {
   value: string;
 }
 
+/* jsonAPIPlainObject */
 /**
  * The context object for renderers that deal with a specific chat message.
  * It extends the base context with the message data.
@@ -287,6 +322,7 @@ export interface ChatMessageRenderContext extends ChatRenderContext {
   message: IgcChatMessage;
 }
 
+/* jsonAPIPlainObject */
 /**
  * The context object for renderers that deal with a specific attachment within a message.
  * It extends the message context with the attachment data.
