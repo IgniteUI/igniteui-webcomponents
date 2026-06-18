@@ -87,8 +87,6 @@ export {
 // theming configuration
 export { configureTheme } from './theming/config.js';
 export type { Theme, ThemeVariant } from './theming/types.js';
-export { addThemingController as θaddThemingController } from './theming/theming-controller.js';
-export { addAdoptedStylesController as θaddAdoptedStylesController } from './components/common/controllers/adopt-styles.js';
 
 // localization objects
 export {
@@ -199,3 +197,13 @@ export type {
 } from './components/combo/types.js';
 export type { IconMeta } from './components/icon/registry/types.js';
 export type * from './components/chat/types.js';
+
+// Internal exports for other packages
+/** @ignore */
+export { addThemingController as θaddThemingController } from './theming/theming-controller.js';
+
+/** @ignore */
+export { addAdoptedStylesController as θaddAdoptedStylesController } from './components/common/controllers/adopt-styles.js';
+
+/** @ignore */
+export { createAbortHandle as θcreateAbortHandle } from './components/common/abort-handler.js';
