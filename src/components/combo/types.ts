@@ -24,9 +24,13 @@ export type ComboRenderFunction<T extends object> = RenderItemFunction<
 export type ComboValue<T> = T | Values<T>;
 
 /* jsonAPIPlainObject */
+/** Filtering options for the combo component. */
 export interface FilteringOptions<T extends object> {
+  /** The key in the data source used when filtering the list of options. */
   filterKey: Keys<T> | undefined;
+  /** Determines whether the filtering operation should be case sensitive. */
   caseSensitive?: boolean;
+  /** If true, the filter distinguishes between accented letters and their base letters */
   matchDiacritics?: boolean;
 }
 
