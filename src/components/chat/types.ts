@@ -102,6 +102,7 @@ export interface IgcChatOptions {
    * Indicates whether the other user is currently typing a message.
    */
   isTyping?: boolean;
+  /* blazorSuppress */
   /**
    * The accepted files that could be attached.
    * Defines the file types as a list of comma-separated values (e.g. "image/*,.pdf") that the file input should accept.
