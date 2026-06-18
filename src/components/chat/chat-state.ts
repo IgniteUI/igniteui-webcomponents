@@ -45,10 +45,6 @@ export class MessagesArray extends Array<IgcChatMessage> {
   // Listeners
   private readonly _listeners: Set<(args: MessagesChangeAction) => void> =
     new Set();
-  // multicast `collectionChanged` field for parity with ObservableCollection$1
-  public collectionChanged:
-    | ((sender: any, e: MessagesChangeAction) => void)
-    | null = null;
 
   static override get [Symbol.species]() {
     // Ensure derived ops like slice/map return plain arrays (avoids accidentally
@@ -65,9 +61,6 @@ export class MessagesArray extends Array<IgcChatMessage> {
   private _fire(args: MessagesChangeAction): void {
     for (const l of this._listeners) {
       l(args);
-    }
-    if (this.collectionChanged != null) {
-      this.collectionChanged(this, args);
     }
   }
 
@@ -117,24 +110,7 @@ export class MessagesArray extends Array<IgcChatMessage> {
     return result;
   }
 
-  // ObservableCollection-style API
-  add(item: IgcChatMessage): void {
-    this.push(item);
-  }
-  insert(index: number, item: IgcChatMessage): void {
-    this.splice(index, 0, item);
-  }
-  remove(item: IgcChatMessage): boolean {
-    const idx = this.indexOf(item);
-    if (idx < 0) {
-      return false;
-    }
-    this.splice(idx, 1);
-    return true;
-  }
-  removeAt(index: number): void {
-    this.splice(index, 1);
-  }
+  // ObservableCollection-style API (the subset RefSync's adapter uses)
   clear(): void {
     if (this.length === 0) {
       return;
@@ -150,9 +126,6 @@ export class MessagesArray extends Array<IgcChatMessage> {
       return value;
     }
     return this[index];
-  }
-  get count(): number {
-    return this.length;
   }
 
   /** Replace contents in place (preserving identity + listeners). */
