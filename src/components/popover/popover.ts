@@ -23,6 +23,7 @@ import { registerComponent } from '../common/definitions/register.js';
 import {
   first,
   getElementByIdFromRoot,
+  getRoot,
   isString,
   roundByDPR,
   setStyles,
@@ -45,6 +46,26 @@ export type PopoverPlacement =
   | 'left'
   | 'left-start'
   | 'left-end';
+
+/**
+ * Walks up the DOM tree of the given element, crossing shadow boundaries, and
+ * returns whether any ancestor is positioned as `sticky`.
+ */
+function hasStickyAncestor(element: Element): boolean {
+  let node: Element | null = element;
+
+  while (node) {
+    if (getComputedStyle(node).position === 'sticky') {
+      return true;
+    }
+
+    const root = getRoot(node);
+    node =
+      node.parentElement ?? (root instanceof ShadowRoot ? root.host : null);
+  }
+
+  return false;
+}
 
 /* blazorSuppress */
 /**
@@ -77,6 +98,16 @@ export default class IgcPopoverComponent extends LitElement {
 
   private _dispose?: ReturnType<typeof autoUpdate>;
   private _target?: Element;
+
+  /**
+   * The positioning strategy resolved when the popover is opened. The `fixed`
+   * strategy is used when the anchor has a `position: sticky` ancestor, otherwise
+   * the default `absolute` strategy is used. Cached here to avoid repeated DOM
+   * traversals and style reflows on every scroll/resize reposition.
+   *
+   * Also, time to migrate to CSS Anchor positioning!!!
+   */
+  private _strategy: 'absolute' | 'fixed' = 'absolute';
 
   private readonly _slots = addSlotController(this, {
     slots: setSlots('anchor'),
@@ -163,6 +194,8 @@ export default class IgcPopoverComponent extends LitElement {
   //#region Life-cycle hooks
 
   protected override update(properties: PropertyValues<this>): void {
+    let targetChanged = false;
+
     if (properties.has('anchor')) {
       const target = isString(this.anchor)
         ? getElementByIdFromRoot(this, this.anchor)
@@ -170,14 +203,16 @@ export default class IgcPopoverComponent extends LitElement {
 
       if (target) {
         this._target = target;
+        targetChanged = true;
       }
     }
 
     if (this.hasUpdated && properties.has('open')) {
       this._setOpenState(this.open);
+    } else if (this.hasUpdated && this.open) {
+      targetChanged ? this._resetAutoUpdate() : this._updatePosition();
     }
 
-    this._updateState();
     super.update(properties);
   }
 
@@ -213,7 +248,10 @@ export default class IgcPopoverComponent extends LitElement {
     }
 
     this._target = possibleTarget;
-    this._updateState();
+
+    if (this.open) {
+      this._resetAutoUpdate();
+    }
   }
 
   //#region Internal open state API
@@ -234,6 +272,8 @@ export default class IgcPopoverComponent extends LitElement {
       return;
     }
 
+    this._strategy = hasStickyAncestor(this._target) ? 'fixed' : 'absolute';
+
     this._dispose = autoUpdate(
       this._target,
       this._container,
@@ -241,21 +281,15 @@ export default class IgcPopoverComponent extends LitElement {
     );
   }
 
-  private _clearDispose(): Promise<void> {
-    return new Promise((resolve) => {
-      this._dispose?.();
-      this._dispose = undefined;
-      resolve();
-    });
+  private _clearDispose(): void {
+    this._dispose?.();
+    this._dispose = undefined;
   }
 
-  private async _updateState(): Promise<void> {
-    if (this.open) {
-      await this._clearDispose();
-      this._setDispose();
-    }
+  private _resetAutoUpdate(): void {
+    this._clearDispose();
+    this._setDispose();
   }
-
   //#endregion
 
   //#region Internal position API
@@ -308,17 +342,20 @@ export default class IgcPopoverComponent extends LitElement {
       return;
     }
 
+    const strategy = this._strategy;
+
     const { x, y, middlewareData, placement } = await computePosition(
       this._target,
       this._container,
       {
         placement: this.placement ?? 'bottom-start',
         middleware: this._createMiddleware(),
-        strategy: 'absolute',
+        strategy,
       }
     );
 
     setStyles(this._container, {
+      position: strategy,
       left: '0',
       top: '0',
       transform: `translate(${roundByDPR(x)}px,${roundByDPR(y)}px)`,
