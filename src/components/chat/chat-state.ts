@@ -1,5 +1,6 @@
 import type { IChatResourceStrings } from 'igniteui-i18n-core';
 import type { IgcChatResourceStrings } from '../common/i18n/EN/chat.resources.js';
+import type { UnpackCustomEvent } from '../common/mixins/event-emitter.js';
 import { isEmpty, nanoid } from '../common/util.js';
 import IgcToastComponent from '../toast/toast.js';
 import IgcTooltipComponent from '../tooltip/tooltip.js';
@@ -182,8 +183,11 @@ export class ChatState {
 
   //#region Event handlers
 
-  public emitEvent(name: keyof IgcChatComponentEventMap, args?: any): boolean {
-    return this._host.emitEvent(name, args);
+  public emitEvent<
+    K extends keyof IgcChatComponentEventMap,
+    D extends UnpackCustomEvent<IgcChatComponentEventMap[K]>,
+  >(event: K, eventInitDict?: CustomEventInit<D>): boolean {
+    return this._host.emitEvent(event, eventInitDict);
   }
 
   /** @internal */
