@@ -1,4 +1,4 @@
-import type { LitElement } from 'lit';
+import { isServer, type LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
 import { addInternalsController } from '../../controllers/internals.js';
 import { enterKey } from '../../controllers/key-bindings.js';
@@ -39,7 +39,20 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
     private readonly __internals = addInternalsController(this);
     protected readonly _formValue!: FormValue<unknown>;
 
+    /**
+     * Marks that validation is running as part of a form submission. Counts as
+     * user interaction (so invalid styles apply) and is cleared once the
+     * submit-driven update settles. Orthogonal to `_isInternalValidation`: a
+     * programmatic re-check can run while a submission is still in flight.
+     */
     private _isFormSubmit = false;
+
+    /**
+     * Suppresses invalid styling for a programmatic validation cycle
+     * (`checkValidity`/`_validate`). Scoped to the synchronous validity check:
+     * set immediately before it and cleared immediately after, so it never
+     * leaks into a later submission or user-interaction cycle.
+     */
     private _isInternalValidation = false;
     private _touched = false;
     private _isExternalInvalid = false;
@@ -82,7 +95,7 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
      * @attr
      * @default false
      */
-    @property({ type: Boolean, reflect: true })
+    @property({ type: Boolean })
     public set disabled(value: boolean) {
       this._disabled = value;
       this.toggleAttribute('disabled', Boolean(this._disabled));
@@ -137,7 +150,7 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
     //#region Life-cycle hooks
 
     constructor(...args: any[]) {
-      super(args);
+      super(...args);
       addSafeEventListener(this, 'invalid', this._handleInvalid);
     }
 
@@ -193,7 +206,20 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
       this.__internals.setState(INVALID_STATE, this._shouldApplyStyles);
     }
 
-    private __runValidators() {
+    /**
+     * Closes a programmatic validation cycle. If the control was invalid, the
+     * synchronous `invalid` event already cleared the flag; if it was valid no
+     * event fired, so clear it here to stop it leaking into a later submission
+     * or user-interaction cycle.
+     */
+    private _resolveInternalValidation(): void {
+      this._isInternalValidation = false;
+    }
+
+    private __runValidators(): {
+      validity: ValidityStateFlags;
+      message: string;
+    } {
       const validity: ValidityStateFlags = {};
       let message = '';
       let validationFailed = false;
@@ -220,6 +246,7 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
      * Executes the component validators and updates the internal validity state.
      */
     protected _validate(userMessage?: string): void {
+      if (isServer) return;
       let { validity, message } = this.__runValidators();
       const hasCustomError = this.validity.customError;
 
@@ -248,6 +275,7 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
       this.__internals.setValidity(validity, message);
       this._isInternalValidation = true;
       this._invalid = !this.__internals.checkValidity();
+      this._resolveInternalValidation();
     }
 
     protected _handleBlur(): void {
@@ -318,6 +346,7 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
       this._isInternalValidation = true;
       const state = this.__internals.checkValidity();
       this._invalid = !state;
+      this._resolveInternalValidation();
       return state;
     }
 

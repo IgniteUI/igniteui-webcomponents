@@ -1,4 +1,8 @@
-import type { ReactiveController, ReactiveControllerHost } from 'lit';
+import {
+  isServer,
+  type ReactiveController,
+  type ReactiveControllerHost,
+} from 'lit';
 import { isElement } from '../util.js';
 
 /** @ignore */
@@ -82,11 +86,12 @@ function applyNodeFilter<T extends Node = Node>(
 
 class MutationController<T extends Node = Node> implements ReactiveController {
   private readonly _host: ReactiveControllerHost & Element;
-  private readonly _observer: MutationObserver;
   private readonly _target: Element;
   private readonly _config: MutationObserverInit;
   private readonly _callback: MutationControllerCallback<T>;
   private readonly _filter?: MutationControllerFilter<T>;
+
+  private _observer?: MutationObserver;
 
   constructor(
     host: ReactiveControllerHost & Element,
@@ -98,11 +103,13 @@ class MutationController<T extends Node = Node> implements ReactiveController {
     this._target = options.target ?? this._host;
     this._filter = options.filter;
 
-    this._observer = new MutationObserver((records) => {
-      this.disconnect();
-      this._callback.call(this._host, this._process(records));
-      this.observe();
-    });
+    if (!isServer) {
+      this._observer = new MutationObserver((records) => {
+        this.disconnect();
+        this._callback.call(this._host, this._process(records));
+        this.observe();
+      });
+    }
 
     host.addController(this);
   }
@@ -161,12 +168,12 @@ class MutationController<T extends Node = Node> implements ReactiveController {
    * on the configured {@link MutationControllerConfig.target|target} and observer {@link MutationControllerConfig.config|options}.
    */
   public observe(): void {
-    this._observer.observe(this._target, this._config);
+    this._observer?.observe(this._target, this._config);
   }
 
   /** Stop watching for mutations. */
   public disconnect(): void {
-    this._observer.disconnect();
+    this._observer?.disconnect();
   }
 }
 
