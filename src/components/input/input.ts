@@ -311,6 +311,7 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
         minlength=${ifDefined(this.minLength)}
         maxlength=${bindIf(!this.validateOnly, this.maxLength)}
         step=${ifDefined(this.step)}
+        .ariaLabelledByElements=${this._resolvedLabelElements}
         aria-describedby=${bindIf(hasHelperText, 'helper-text')}
         @keydown=${this._handleEnterKeydown}
         @change=${this._handleChange}

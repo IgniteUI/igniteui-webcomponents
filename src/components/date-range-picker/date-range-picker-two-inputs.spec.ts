@@ -18,6 +18,7 @@ import { defineComponents } from '../common/definitions/defineComponents.js';
 import {
   checkDatesEqual,
   isFocused,
+  runExternalLabelAssociationTests,
   simulateClick,
   simulateInput,
   simulateKeyboard,
@@ -36,6 +37,17 @@ describe('Date range picker - two inputs', () => {
   before(() =>
     defineComponents(IgcDateRangePickerComponent, IgcDateRangeInputComponent)
   );
+
+  runExternalLabelAssociationTests({
+    tagName: IgcDateRangePickerComponent.tagName,
+    hostAttributes: 'use-two-inputs',
+    getNativeInput: (host) =>
+      (host as IgcDateRangePickerComponent).renderRoot
+        .querySelector<IgcDateTimeInputComponent>(
+          IgcDateTimeInputComponent.tagName
+        )!
+        .renderRoot.querySelector('input')!,
+  });
 
   let picker: IgcDateRangePickerComponent;
   let dateTimeInputs: Array<IgcDateTimeInputComponent>;
