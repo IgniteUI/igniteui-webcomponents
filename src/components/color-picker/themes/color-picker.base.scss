@@ -45,6 +45,21 @@
         width: 100%;
     }
 
+    [part='main-row'],
+    [part='alpha-row'],
+    [part='inputs-row'] {
+        display: flex;
+        flex-wrap: nowrap;
+        align-items: center;
+        justify-content: center;
+    }
+
+    [part='buttons'] {
+        --ig-size: 1;
+        display: flex;
+        margin-left: 1rem;
+    }
+
     [part='hue']::-webkit-slider-runnable-track {
         border-radius: rem(4px);
         height: 0.5rem;
@@ -109,18 +124,12 @@
         margin-top: calc(-0.5 * 0.5rem);
     }
 
-    #color-thumb {
-        background-color: var(--current-color);
-        min-width: 2rem;
-        max-width: 4rem;
-    }
-
     [part='picker'] {
         display: grid;
         padding: 0.25rem;
-        min-width: rem(300px);
+        width: rem(280px);
         min-height: 12rem;
-        grid-template-rows: 1.5fr 1fr;
+        grid-template-rows: 6fr 1fr;
         row-gap: 0.5rem;
         box-shadow: var(--ig-elevation-3);
     }
@@ -148,9 +157,4 @@
         border: 1px solid #fff;
         cursor: pointer;
     }
-}
-
-[part='inputs'] {
-    display: flex;
-    gap: 1rem;
 }

@@ -50,6 +50,12 @@ const metadata: Meta<IgcColorPickerComponent> = {
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
+    showAlpha: {
+      type: 'boolean',
+      description: 'Whether to show the alpha slider and input.',
+      control: 'boolean',
+      table: { defaultValue: { summary: 'false' } },
+    },
     name: {
       type: 'string',
       description: 'The name attribute of the control.',
@@ -77,6 +83,7 @@ const metadata: Meta<IgcColorPickerComponent> = {
   args: {
     format: 'hex',
     hideFormats: false,
+    showAlpha: false,
     disabled: false,
     invalid: false,
     open: false,
@@ -94,6 +101,8 @@ interface IgcColorPickerArgs {
   format: 'hex' | 'rgb' | 'hsl';
   /** Whether to hide the format picker buttons. */
   hideFormats: boolean;
+  /** Whether to show the alpha slider and input. */
+  showAlpha: boolean;
   /** The name attribute of the control. */
   name: string;
   /** The disabled state of the component. */
