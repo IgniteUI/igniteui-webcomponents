@@ -25,6 +25,8 @@ export interface IgcInputComponentEventMap {
   blur: FocusEvent;
 }
 
+/* blazorIndirectRender */
+/* blazorSupportsVisualChildren */
 @blazorDeepImport
 @shadowOptions({ delegatesFocus: true })
 export abstract class IgcInputBaseComponent extends FormAssociatedRequiredMixin(

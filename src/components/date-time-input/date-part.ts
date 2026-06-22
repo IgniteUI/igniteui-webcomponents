@@ -61,7 +61,7 @@ export interface DatePartOptions {
   /** The format string for this part (e.g., 'MM', 'yyyy') */
   format: string;
 }
-
+/* blazorSuppress */
 /** Options for spin operations */
 export interface SpinOptions {
   /** The current date value */
@@ -108,6 +108,7 @@ export interface IDatePart {
   getValue(date: Date): string;
 }
 
+/* blazorSuppress */
 /** Context for date validation (needed for day-of-month validation) */
 export interface DateValidationContext {
   year?: number;

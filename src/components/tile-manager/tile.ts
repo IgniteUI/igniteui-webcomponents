@@ -300,7 +300,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
     this._maximized = value;
 
     if (this._tileManagerCtx) {
-      this._tileManagerCtx.instance.requestUpdate();
+      this._tileManagerCtx.setMaximizedState();
     }
   }
 

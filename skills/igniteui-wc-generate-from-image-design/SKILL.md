@@ -84,7 +84,10 @@ For component-to-Ignite-UI mapping, see [references/component-mapping.md](refere
 
 ## Step 4: Look Up Component API
 
-For every chosen component category, call `get_doc` with the doc name from `list_components` results (e.g., `name: "card"`, `framework: "webcomponents"`). Use the doc `name` field from the MCP results, not the result title shown in the list. This is mandatory before coding and gives exact usage patterns, slots, events, registration, and API structure.
+For every chosen component category, use both tools before coding:
+
+- **Usage patterns, HTML examples, slots, registration** → `get_doc({ framework: "webcomponents", name: "<doc-name>" })` — use the `name` field from `list_components`, not the display title
+- **Full property/method/event API** → `get_api_reference({ platform: "webcomponents", component: "<ClassName>" })` — use `search_api` first to find the exact class name if needed
 
 Call `search_docs` for feature-based questions (e.g., "how to configure [component] for [specific behavior or styling need]").
 
