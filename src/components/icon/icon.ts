@@ -1,4 +1,4 @@
-import { html, LitElement, type PropertyValues } from 'lit';
+import { html, LitElement, nothing, type PropertyValues } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { unsafeSVG } from 'lit/directives/unsafe-svg.js';
 
@@ -143,6 +143,17 @@ export default class IgcIconComponent extends LitElement {
     super.update(props);
   }
 
+  protected override firstUpdated(): void {
+    // During SSR and the client's first (hydrating) render `hasUpdated` is
+    // `false`, so the SVG is withheld and both renders match. Once hydration
+    // has settled, reconcile so the icon content is projected. Deferring via
+    // `queueMicrotask` keeps it off the current update cycle (avoids Lit's
+    // change-in-update warning).
+    if (this._svg) {
+      queueMicrotask(() => this.requestUpdate());
+    }
+  }
+
   /**
    * Callback invoked when an icon is registered or updated in the registry.
    * Re-fetches the icon if it matches this component's name and collection.
@@ -181,7 +192,10 @@ export default class IgcIconComponent extends LitElement {
   }
 
   protected override render() {
-    return html`${unsafeSVG(this._svg)}`;
+    // Withhold the SVG until after hydration so the server render and the
+    // client's first hydrating render are structurally identical. See
+    // `firstUpdated` for the post-hydration reconcile.
+    return this.hasUpdated ? html`${unsafeSVG(this._svg)}` : nothing;
   }
 
   /* c8 ignore next 8 */

@@ -65,6 +65,19 @@ class ElementInternalsController {
     return this._internals.willValidate;
   }
 
+  /**
+   * Returns a read-only array of the `<label>` elements associated with the host element, or `null` if there are no associated labels.
+   * The association is determined by the `for` attribute of `<label>` elements or by nesting the host element inside a `<label>`.
+   *
+   * @remarks
+   * The host element must be form associated, that is, it should have
+   * `static formAssociated = true` in order to return associated labels.
+   */
+  public get labels(): ReadonlyArray<Element> | null {
+    const labels = this._internals.labels as NodeListOf<Element> | null;
+    return labels && labels.length > 0 ? Array.from(labels) : null;
+  }
+
   constructor(
     host: ReactiveControllerHost & LitElement,
     config?: ElementInternalsConfig
