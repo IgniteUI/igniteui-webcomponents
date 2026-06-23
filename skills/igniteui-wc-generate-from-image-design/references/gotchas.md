@@ -121,7 +121,7 @@ Adding explicit pixel widths prevents columns from filling the container and lea
 <igc-column field="name" header="Name"></igc-column>
 ```
 
-Only set `width` when the design requires a specific fixed size. Exception: resizable Grid Lite columns should use `px` to avoid layout shifts during resize.
+If column widths are needed, set `width` only on the columns that require a fixed size and leave at least one column without `width` so it fills the remaining space. Exception: resizable Grid Lite columns should use `px` to avoid layout shifts during resize.
 
 ## Theming Pitfalls
 
