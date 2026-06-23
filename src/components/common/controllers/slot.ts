@@ -1,7 +1,8 @@
-import type {
-  LitElement,
-  ReactiveController,
-  ReactiveControllerHost,
+import {
+  isServer,
+  type LitElement,
+  type ReactiveController,
+  type ReactiveControllerHost,
 } from 'lit';
 import { isEmpty } from '../util.js';
 
@@ -67,6 +68,7 @@ class SlotController<T> implements ReactiveController {
   }
 
   private _getSlot(slotName?: T): HTMLSlotElement | null {
+    if (isServer) return null;
     if (slotName === DefaultSlot) {
       return this._host.renderRoot.querySelector<HTMLSlotElement>(
         'slot:not([name])'
@@ -74,7 +76,7 @@ class SlotController<T> implements ReactiveController {
     }
 
     return this._host.renderRoot.querySelector<HTMLSlotElement>(
-      `slot[name=${slotName}]`
+      `slot[name="${slotName}"]`
     );
   }
 
