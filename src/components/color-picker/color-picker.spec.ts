@@ -2,11 +2,31 @@ import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import { createFormAssociatedTestBed } from '../common/utils.spec.js';
+import type IgcInputComponent from '../input/input.js';
 import IgcColorPickerComponent from './color-picker.js';
 
 async function createDefaultColorPicker() {
   return await fixture<IgcColorPickerComponent>(
     html`<igc-color-picker label="Choose a color"></igc-color-picker>`
+  );
+}
+
+function getAnchor(picker: IgcColorPickerComponent): HTMLElement {
+  return picker.renderRoot.querySelector('[part="anchor"]')!;
+}
+
+function getColorInput(picker: IgcColorPickerComponent): IgcInputComponent {
+  return picker.renderRoot.querySelector<IgcInputComponent>('#color-input')!;
+}
+
+function commitColorInput(input: IgcInputComponent, value: string): void {
+  input.value = value;
+  input.dispatchEvent(
+    new CustomEvent('igcChange', {
+      detail: value,
+      bubbles: true,
+      composed: true,
+    })
   );
 }
 
@@ -52,6 +72,71 @@ describe('Color picker', () => {
     });
   });
 
+  describe('Empty value', () => {
+    beforeEach(async () => {
+      picker = await createDefaultColorPicker();
+    });
+
+    it('has an empty value by default', () => {
+      expect(picker.value).to.equal('');
+    });
+
+    it('renders a checkered anchor when empty', async () => {
+      expect(getAnchor(picker).hasAttribute('data-empty')).to.be.true;
+
+      picker.value = '#ff0000';
+      await elementUpdated(picker);
+      expect(getAnchor(picker).hasAttribute('data-empty')).to.be.false;
+    });
+
+    it('reverts to an empty value for null/undefined/empty', async () => {
+      for (const value of ['', null, undefined]) {
+        picker.value = '#ff0000';
+        await elementUpdated(picker);
+
+        picker.value = value as unknown as string;
+        await elementUpdated(picker);
+
+        expect(picker.value).to.equal('');
+        expect(getAnchor(picker).hasAttribute('data-empty')).to.be.true;
+      }
+    });
+  });
+
+  describe('Color value input', () => {
+    beforeEach(async () => {
+      picker = await createDefaultColorPicker();
+      picker.value = '#ff0000';
+      picker.open = true;
+      await elementUpdated(picker);
+    });
+
+    it('commits a valid color', async () => {
+      commitColorInput(getColorInput(picker), '#00ff00');
+      await elementUpdated(picker);
+
+      expect(picker.value).to.equal('#00ff00');
+    });
+
+    it('reverts the input on an invalid color', async () => {
+      const input = getColorInput(picker);
+      commitColorInput(input, 'not-a-color');
+      await elementUpdated(picker);
+
+      expect(picker.value).to.equal('#ff0000');
+      expect(input.value).to.equal('#ff0000');
+    });
+
+    it('reverts the input on an empty color', async () => {
+      const input = getColorInput(picker);
+      commitColorInput(input, '');
+      await elementUpdated(picker);
+
+      expect(picker.value).to.equal('#ff0000');
+      expect(input.value).to.equal('#ff0000');
+    });
+  });
+
   describe('Form associated', () => {
     const spec = createFormAssociatedTestBed<IgcColorPickerComponent>(
       html`<igc-color-picker name="color-picker"></igc-color-picker>`
@@ -78,7 +163,7 @@ describe('Color picker', () => {
       spec.setProperties({ value: '#bada55' });
 
       spec.reset();
-      expect(spec.element.value).to.equal('#000000');
+      expect(spec.element.value).to.equal('');
     });
 
     it('reflects disabled ancestor state', () => {

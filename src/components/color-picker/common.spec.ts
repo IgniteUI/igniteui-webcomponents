@@ -1,6 +1,6 @@
 import { expect } from '@open-wc/testing';
 
-import { type ParsedColor, parseColor } from './common.js';
+import { isValidColor, type ParsedColor, parseColor } from './common.js';
 
 function makeTestContext() {
   try {
@@ -170,5 +170,44 @@ describe('parseColor', () => {
       expect(Array.isArray(result.value)).to.be.true;
       expect(result.value.length).to.equal(3);
     });
+  });
+});
+
+describe('isValidColor', () => {
+  let ctx: OffscreenCanvasRenderingContext2D | null;
+
+  before(() => {
+    ctx = makeTestContext();
+  });
+
+  it('should return true for valid hex colors', () => {
+    expect(isValidColor('#ff0000', ctx)).to.be.true;
+    expect(isValidColor('#f80', ctx)).to.be.true;
+    expect(isValidColor('#ff000080', ctx)).to.be.true;
+  });
+
+  it('should return true for valid rgb/rgba colors', () => {
+    expect(isValidColor('rgb(0, 128, 255)', ctx)).to.be.true;
+    expect(isValidColor('rgba(0, 128, 255, 0.5)', ctx)).to.be.true;
+  });
+
+  it('should return true for valid named colors', () => {
+    expect(isValidColor('red', ctx)).to.be.true;
+    expect(isValidColor('rebeccapurple', ctx)).to.be.true;
+  });
+
+  it('should return false for invalid colors', () => {
+    expect(isValidColor('not-a-color', ctx)).to.be.false;
+    expect(isValidColor('#zzz', ctx)).to.be.false;
+    expect(isValidColor('rgb(300)', ctx)).to.be.false;
+  });
+
+  it('should return false for empty or whitespace strings', () => {
+    expect(isValidColor('', ctx)).to.be.false;
+    expect(isValidColor('   ', ctx)).to.be.false;
+  });
+
+  it('should return false when context is null', () => {
+    expect(isValidColor('#ff0000', null)).to.be.false;
   });
 });

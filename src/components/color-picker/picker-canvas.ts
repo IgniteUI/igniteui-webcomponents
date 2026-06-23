@@ -18,10 +18,7 @@ export interface IgcPickerCanvasEventMap {
   igcColorPicked: CustomEvent<PickerCanvasEventDetail>;
 }
 
-type PickerCanvasEventDetail = {
-  x: number;
-  y: number;
-};
+export type PickerCanvasEventDetail = { x: number; y: number };
 
 export default class IgcPickerCanvasComponent extends EventEmitterMixin<
   IgcPickerCanvasEventMap,

@@ -127,7 +127,7 @@
     [part='picker'] {
         display: grid;
         padding: 0.25rem;
-        width: rem(280px);
+        width: rem(300px);
         min-height: 12rem;
         grid-template-rows: 6fr 1fr;
         row-gap: 0.5rem;
@@ -136,6 +136,30 @@
 
     [part='copy']::part(base) {
         background-color: var(--current-color);
+    }
+
+    [part~='empty']::part(base) {
+        background-image:
+            repeating-linear-gradient(
+                45deg,
+                #aaa 25%,
+                transparent 25%,
+                transparent 75%,
+                #aaa 75%,
+                #aaa
+            ),
+            repeating-linear-gradient(
+                45deg,
+                #aaa 25%,
+                #fff 25%,
+                #fff 75%,
+                #aaa 75%,
+                #aaa
+            );
+        background-position:
+            0 0,
+            4px 4px;
+        background-size: 8px 8px;
     }
 
     [part='copy']::part(icon) {

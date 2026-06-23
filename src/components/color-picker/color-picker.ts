@@ -16,6 +16,7 @@ import type { AbstractConstructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedMixin } from '../common/mixins/forms/associated.js';
 import { createFormValueState } from '../common/mixins/forms/form-value.js';
+import { partMap } from '../common/part-map.js';
 import {
   asNumber,
   getElementFromPath,
@@ -26,12 +27,13 @@ import IgcDividerComponent from '../divider/divider.js';
 import IgcFocusTrapComponent from '../focus-trap/focus-trap.js';
 import IgcInputComponent from '../input/input.js';
 import IgcPopoverComponent from '../popover/popover.js';
-import type { IgcRadioChangeEventArgs } from '../radio/radio.js';
 import IgcSelectComponent from '../select/select.js';
+import type IgcSelectItemComponent from '../select/select-item.js';
 import IgcVisuallyHiddenComponent from '../visually-hidden/visually-hidden.js';
-import { ColorModel } from './model.js';
+import { isValidColor } from './common.js';
+import { ColorModel, getContext } from './model.js';
 import IgcPickerCanvasComponent, {
-  type IgcPickerCanvasEventMap,
+  type PickerCanvasEventDetail,
 } from './picker-canvas.js';
 import { styles } from './themes/color-picker.base.css.js';
 
@@ -65,6 +67,7 @@ export default class IgcColorPickerComponent extends FormAssociatedMixin(
   public static readonly tagName = 'igc-color-picker';
   public static styles = styles;
 
+  /* blazorSuppress */
   public static register(): void {
     registerComponent(
       IgcColorPickerComponent,
@@ -97,7 +100,7 @@ export default class IgcColorPickerComponent extends FormAssociatedMixin(
   private readonly _hueRef = createRef<HTMLInputElement>();
 
   private _supportsEyeDropper = 'EyeDropper' in globalThis;
-  private _color = ColorModel.default();
+  private _color = ColorModel.empty();
 
   @state()
   private _ownCurrentColor = '';
@@ -174,7 +177,7 @@ export default class IgcColorPickerComponent extends FormAssociatedMixin(
 
   protected override updated(properties: PropertyValues<this>): void {
     if (properties.has('open') || properties.has('value')) {
-      // Wait till the browser paints and then sync the marker position with the color.
+      // Wait until the browser paints and then sync the marker position with the color.
       requestAnimationFrame(() => this._syncCanvasPosition());
     }
   }
@@ -220,33 +223,8 @@ export default class IgcColorPickerComponent extends FormAssociatedMixin(
     this._emitColorPickedEvent();
   }
 
-  private _updateColor(): void {
-    this._ownCurrentColor = `hsl(${this._color.h} 100% 50%)`;
-    this.style.setProperty('--current-color', this._ownCurrentColor);
-    this._formValue.setValueAndFormState(this._color.asString(this.format));
-    this.requestUpdate('_ownCurrentColor');
-  }
-
-  private _syncCanvasPosition(): void {
-    if (!this._canvasRef.value || !this.open) return;
-
-    const rect = this._canvasRef.value.getBoundingClientRect();
-    const { width: markerWidth, height: markerHeight } =
-      this._canvasRef.value.getMarkerDimensions();
-
-    const x = (this._color.s / 100) * rect.width - markerWidth;
-    const y = ((100 - this._color.v) / 100) * rect.height - markerHeight;
-
-    this._canvasRef.value.x = x;
-    this._canvasRef.value.y = y;
-  }
-
-  protected _emitColorPickedEvent(): void {
-    this.emitEvent('igcColorPicked', { detail: this.value });
-  }
-
   protected _handleFormatChange(
-    event: CustomEvent<IgcRadioChangeEventArgs>
+    event: CustomEvent<IgcSelectItemComponent>
   ): void {
     stopPropagation(event);
 
@@ -255,7 +233,7 @@ export default class IgcColorPickerComponent extends FormAssociatedMixin(
   }
 
   protected _handleCanvasColorPicked(
-    event: IgcPickerCanvasEventMap['igcColorPicked']
+    event: CustomEvent<PickerCanvasEventDetail>
   ): void {
     stopPropagation(event);
 
@@ -267,13 +245,18 @@ export default class IgcColorPickerComponent extends FormAssociatedMixin(
   private _handleColorInputChange(event: CustomEvent<string>): void {
     stopPropagation(event);
 
-    const color = ColorModel.parse(event.detail);
+    const input = event.target as IgcInputComponent;
 
-    if (color) {
-      this._color = color;
-      this._updateColor();
-      this._syncCanvasPosition();
+    // Commit only valid colors. An empty or invalid value reverts the input
+    // back to the currently represented color.
+    if (!isValidColor(event.detail, getContext())) {
+      input.value = this._color.asString(this.format);
+      return;
     }
+
+    this._color = ColorModel.parse(event.detail);
+    this._updateColor();
+    this._syncCanvasPosition();
   }
 
   private _handleEyeDropperClick(): void {
@@ -303,6 +286,31 @@ export default class IgcColorPickerComponent extends FormAssociatedMixin(
     }
   }
 
+  private _updateColor(): void {
+    this._ownCurrentColor = `hsl(${this._color.h} 100% 50%)`;
+    this.style.setProperty('--current-color', this._ownCurrentColor);
+    this._formValue.setValueAndFormState(this._color.asString(this.format));
+    this.requestUpdate('_ownCurrentColor');
+  }
+
+  private _syncCanvasPosition(): void {
+    if (!this._canvasRef.value || !this.open) return;
+
+    const rect = this._canvasRef.value.getBoundingClientRect();
+    const { width: markerWidth, height: markerHeight } =
+      this._canvasRef.value.getMarkerDimensions();
+
+    const x = (this._color.s / 100) * rect.width - markerWidth;
+    const y = ((100 - this._color.v) / 100) * rect.height - markerHeight;
+
+    this._canvasRef.value.x = x;
+    this._canvasRef.value.y = y;
+  }
+
+  protected _emitColorPickedEvent(): void {
+    this.emitEvent('igcColorPicked', { detail: this.value });
+  }
+
   protected _renderSelect() {
     return html`
       <igc-visually-hidden>
@@ -312,6 +320,7 @@ export default class IgcColorPickerComponent extends FormAssociatedMixin(
       <igc-select
         id="format-select"
         part="format-select"
+        placeholder="Color format"
         name="format"
         .value=${this.format}
         @igcChange=${this._handleFormatChange}
@@ -330,6 +339,7 @@ export default class IgcColorPickerComponent extends FormAssociatedMixin(
   protected _renderGradientArea() {
     return html`
       <igc-picker-canvas
+        ${ref(this._canvasRef)}
         @igcColorPicked=${this._handleCanvasColorPicked}
         currentColor=${this._ownCurrentColor}
       >
@@ -367,12 +377,15 @@ export default class IgcColorPickerComponent extends FormAssociatedMixin(
             @input=${this._handleAlphaSliderValueChange}
             @change=${stopPropagation}
           />
+
           <igc-visually-hidden>
             <label for="alpha">Alpha value</label>
           </igc-visually-hidden>
+
           <igc-input
             id="alpha"
             name="alpha"
+            placeholder="Alpha value"
             outlined
             type="number"
             min="0"
@@ -389,12 +402,12 @@ export default class IgcColorPickerComponent extends FormAssociatedMixin(
     return html`
       <igc-icon-button
         part="eye-dropper"
-        title="Pick a color from the screen"
         variant="outlined"
         ?disabled=${!this._supportsEyeDropper}
         @click=${this._handleEyeDropperClick}
       >
         🫳
+        <igc-visually-hidden>Pick a color from the screen</igc-visually-hidden>
       </igc-icon-button>
     `;
   }
@@ -407,15 +420,14 @@ export default class IgcColorPickerComponent extends FormAssociatedMixin(
 
     return html`
       <igc-icon-button
-        aria-label="Copy color value to clipboard"
         variant="outlined"
         collection="default"
         name="copy_content"
         part="copy"
-        title="Copy color value to clipboard"
         @click=${this._handleCopy}
         style=${style}
       >
+        <igc-visually-hidden>Copy color value to clipboard</igc-visually-hidden>
       </igc-icon-button>
     `;
   }
@@ -449,6 +461,7 @@ export default class IgcColorPickerComponent extends FormAssociatedMixin(
       <igc-input
         id="color-input"
         name="color-input"
+        placeholder="Color value"
         outlined
         .value=${this._color.asString(this.format)}
         @igcChange=${this._handleColorInputChange}
@@ -493,11 +506,17 @@ export default class IgcColorPickerComponent extends FormAssociatedMixin(
           <igc-button
             ${ref(this._anchorRef)}
             aria-haspopup="dialog"
+            part=${partMap({
+              anchor: true,
+              empty: this._color.isEmpty,
+            })}
             slot="anchor"
             style=${style}
             ?disabled=${this.disabled}
             @click=${this._handleAnchorClick}
-          ></igc-button>
+          >
+            <igc-visually-hidden>Open color picker</igc-visually-hidden>
+          </igc-button>
           ${this._renderPicker()}
         </igc-popover>
       </div>

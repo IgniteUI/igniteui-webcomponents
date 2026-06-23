@@ -61,3 +61,34 @@ export function parseColor(
 
   return result;
 }
+
+/**
+ * Determines whether a given string is a valid CSS color.
+ *
+ * Uses the canvas 2D context to attempt parsing the string against two
+ * different baseline colors. A valid color resolves to the same computed value
+ * regardless of the baseline, while an invalid color leaves each baseline
+ * untouched and therefore produces two different results.
+ *
+ * @param colorString - The color string to validate
+ * @param ctx - Canvas context used for parsing
+ * @returns `true` if the string is a valid, non-empty CSS color
+ */
+export function isValidColor(
+  colorString: string,
+  ctx: OffscreenCanvasRenderingContext2D | null
+): boolean {
+  if (!colorString?.trim() || !ctx) {
+    return false;
+  }
+
+  ctx.fillStyle = '#000';
+  ctx.fillStyle = colorString;
+  const onBlack = ctx.fillStyle;
+
+  ctx.fillStyle = '#fff';
+  ctx.fillStyle = colorString;
+  const onWhite = ctx.fillStyle;
+
+  return onBlack === onWhite;
+}

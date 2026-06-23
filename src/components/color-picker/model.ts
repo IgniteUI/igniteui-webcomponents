@@ -51,6 +51,7 @@ export class ColorModel {
   private _hsl: HSL;
   private _hsv: HSV;
   private _alpha: number;
+  private _empty = false;
 
   /**
    * Creates a default black color with full opacity.
@@ -61,6 +62,19 @@ export class ColorModel {
   }
 
   /**
+   * Creates an empty color, representing a missing/undefined color value.
+   * An empty color serializes to an empty string and is considered "empty"
+   * until any of its channels are modified.
+   *
+   * @returns A new empty ColorModel instance
+   */
+  public static empty(): ColorModel {
+    const color = new ColorModel([0, 0, 0], 1);
+    color._empty = true;
+    return color;
+  }
+
+  /**
    * Parses a color string and creates a ColorModel instance.
    * Supports hex, rgb, rgba, hsl, hsla, and named color formats.
    *
@@ -68,6 +82,10 @@ export class ColorModel {
    * @returns A new ColorModel instance
    */
   public static parse(color: string): ColorModel {
+    if (!color?.trim()) {
+      return ColorModel.empty();
+    }
+
     const parsed = parseColor(color, getContext());
     return new ColorModel(parsed.value, parsed.alpha);
   }
@@ -124,12 +142,18 @@ export class ColorModel {
     this._alpha = clamp(alpha, 0, 1);
   }
 
+  /** Whether the color represents a missing/undefined value. */
+  public get isEmpty(): boolean {
+    return this._empty;
+  }
+
   /** Red component (0-255) */
   public get r(): number {
     return this._rgb[0];
   }
 
   public set r(value: number) {
+    this._empty = false;
     this._rgb[0] = clamp(value, 0, 255);
     this._hsl = converter.rgb.hsl(this._rgb);
     this._hsv = converter.rgb.hsv(this._rgb);
@@ -141,6 +165,7 @@ export class ColorModel {
   }
 
   public set g(value: number) {
+    this._empty = false;
     this._rgb[1] = clamp(value, 0, 255);
     this._hsl = converter.rgb.hsl(this._rgb);
     this._hsv = converter.rgb.hsv(this._rgb);
@@ -152,6 +177,7 @@ export class ColorModel {
   }
 
   public set b(value: number) {
+    this._empty = false;
     this._rgb[2] = clamp(value, 0, 255);
     this._hsl = converter.rgb.hsl(this._rgb);
     this._hsv = converter.rgb.hsv(this._rgb);
@@ -163,6 +189,7 @@ export class ColorModel {
   }
 
   public set h(value: number) {
+    this._empty = false;
     this._hsl[0] = clamp(value, 0, 360);
     this._rgb = converter.hsl.rgb(this._hsl);
     this._hsv = converter.hsl.hsv(this._hsl);
@@ -174,6 +201,7 @@ export class ColorModel {
   }
 
   public set s(value: number) {
+    this._empty = false;
     this._hsl[1] = clamp(value, 0, 100);
     this._rgb = converter.hsl.rgb(this._hsl);
     this._hsv = converter.hsl.hsv(this._hsl);
@@ -185,6 +213,7 @@ export class ColorModel {
   }
 
   public set l(value: number) {
+    this._empty = false;
     this._hsl[2] = clamp(value, 0, 100);
     this._rgb = converter.hsl.rgb(this._hsl);
     this._hsv = converter.hsl.hsv(this._hsl);
@@ -196,6 +225,7 @@ export class ColorModel {
   }
 
   public set v(value: number) {
+    this._empty = false;
     this._hsv[2] = clamp(value, 0, 100);
     this._rgb = converter.hsv.rgb(this._hsv);
     this._hsl = converter.hsv.hsl(this._hsv);
@@ -207,6 +237,7 @@ export class ColorModel {
   }
 
   public set alpha(value: number) {
+    this._empty = false;
     this._alpha = clamp(value, 0, 1);
   }
 
@@ -218,6 +249,10 @@ export class ColorModel {
    * @returns CSS color string
    */
   public asString(format: ColorFormat, forceAlpha = false): string {
+    if (this._empty) {
+      return '';
+    }
+
     const hasAlpha = this._alpha < 1 || forceAlpha;
     switch (format) {
       case 'hex': {
@@ -244,7 +279,9 @@ export class ColorModel {
    * @returns A new ColorModel instance with the same values
    */
   public clone(): ColorModel {
-    return new ColorModel([...this._rgb] as RGB, this._alpha);
+    const color = new ColorModel([...this._rgb] as RGB, this._alpha);
+    color._empty = this._empty;
+    return color;
   }
 
   /**
@@ -255,6 +292,7 @@ export class ColorModel {
    */
   public equals(other: ColorModel): boolean {
     return (
+      this._empty === other._empty &&
       this._rgb[0] === other._rgb[0] &&
       this._rgb[1] === other._rgb[1] &&
       this._rgb[2] === other._rgb[2] &&

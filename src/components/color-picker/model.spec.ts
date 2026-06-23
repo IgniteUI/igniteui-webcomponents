@@ -12,6 +12,36 @@ describe('ColorModel', () => {
       expect(color.b).to.equal(0);
       expect(color.alpha).to.equal(1);
       expect(color.asString('hex')).to.equal('#000000');
+      expect(color.isEmpty).to.be.false;
+    });
+
+    it('should create an empty color', () => {
+      const color = ColorModel.empty();
+
+      expect(color.isEmpty).to.be.true;
+      expect(color.asString('hex')).to.equal('');
+      expect(color.asString('rgb')).to.equal('');
+      expect(color.asString('hsl')).to.equal('');
+    });
+
+    it('should clear the empty state when a channel is modified', () => {
+      const color = ColorModel.empty();
+      color.r = 128;
+
+      expect(color.isEmpty).to.be.false;
+      expect(color.asString('hex')).to.equal('#800000');
+    });
+
+    it('should preserve the empty state when cloned', () => {
+      const color = ColorModel.empty();
+      const clone = color.clone();
+
+      expect(clone.isEmpty).to.be.true;
+      expect(clone.equals(color)).to.be.true;
+    });
+
+    it('should treat empty and non-empty colors as not equal', () => {
+      expect(ColorModel.empty().equals(ColorModel.default())).to.be.false;
     });
 
     it('should create a color from RGB values', () => {
@@ -82,13 +112,17 @@ describe('ColorModel', () => {
       expect(color.b).to.equal(0);
     });
 
-    it('should handle empty string', () => {
+    it('should return an empty color for an empty string', () => {
       const color = ColorModel.parse('');
 
-      expect(color.r).to.equal(0);
-      expect(color.g).to.equal(0);
-      expect(color.b).to.equal(0);
-      expect(color.alpha).to.equal(1);
+      expect(color.isEmpty).to.be.true;
+      expect(color.asString('hex')).to.equal('');
+    });
+
+    it('should return an empty color for a whitespace string', () => {
+      const color = ColorModel.parse('   ');
+
+      expect(color.isEmpty).to.be.true;
     });
   });
 
