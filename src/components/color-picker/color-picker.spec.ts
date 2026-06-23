@@ -12,7 +12,11 @@ async function createDefaultColorPicker() {
 }
 
 function getAnchor(picker: IgcColorPickerComponent): HTMLElement {
-  return picker.renderRoot.querySelector('[part="anchor"]')!;
+  return picker.renderRoot.querySelector('[part~="anchor"]')!;
+}
+
+function isAnchorEmpty(picker: IgcColorPickerComponent): boolean {
+  return getAnchor(picker).part.contains('empty');
 }
 
 function getColorInput(picker: IgcColorPickerComponent): IgcInputComponent {
@@ -82,11 +86,11 @@ describe('Color picker', () => {
     });
 
     it('renders a checkered anchor when empty', async () => {
-      expect(getAnchor(picker).hasAttribute('data-empty')).to.be.true;
+      expect(isAnchorEmpty(picker)).to.be.true;
 
       picker.value = '#ff0000';
       await elementUpdated(picker);
-      expect(getAnchor(picker).hasAttribute('data-empty')).to.be.false;
+      expect(isAnchorEmpty(picker)).to.be.false;
     });
 
     it('reverts to an empty value for null/undefined/empty', async () => {
@@ -98,7 +102,7 @@ describe('Color picker', () => {
         await elementUpdated(picker);
 
         expect(picker.value).to.equal('');
-        expect(getAnchor(picker).hasAttribute('data-empty')).to.be.true;
+        expect(isAnchorEmpty(picker)).to.be.true;
       }
     });
   });
