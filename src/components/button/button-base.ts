@@ -190,15 +190,15 @@ export abstract class IgcButtonBaseComponent extends EventEmitterMixin<
   //#region Lifecycle
 
   protected override firstUpdated(): void {
-    if (this._commandfor) {
-      queueMicrotask(() => {
+    this.updateComplete.then(() => {
+      if (this._commandfor) {
         this._commandForElement = getElementByIdFromRoot(
           this,
-          this._commandfor!
+          this._commandfor
         );
         this.requestUpdate();
-      });
-    }
+      }
+    });
   }
 
   //#endregion
