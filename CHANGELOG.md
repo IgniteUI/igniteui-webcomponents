@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+### Added
+- #### Form associated custom elements
+  - External `<label>` associations are now resolved to the underlying native input of form-associated controls. Associating a label with `IgcInput`, `IgcMaskInput`, `IgcTextarea`, `IgcDateTimeInput`, `IgcSelect`, `IgcCombo`, `IgcDatePicker`, or `IgcDateRangePicker` — either through the `for`/`id` IDREF mechanism or by nesting the component inside the `<label>` — now correctly exposes the label to assistive technologies and focuses the inner input on label activation.
+
 ## [7.2.3] - 2026-06-18
 ### Fixed
 - #### Popover based components

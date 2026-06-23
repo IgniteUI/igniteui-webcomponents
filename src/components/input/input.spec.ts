@@ -12,6 +12,7 @@ import { defineComponents } from '../common/definitions/defineComponents.js';
 import {
   createFormAssociatedTestBed,
   isFocused,
+  runExternalLabelAssociationTests,
   simulateInput,
 } from '../common/utils.spec.js';
 import {
@@ -749,5 +750,11 @@ describe('Input component', () => {
 
       runValidationContainerTests(IgcInputComponent, testParameters);
     });
+  });
+
+  runExternalLabelAssociationTests({
+    tagName: IgcInputComponent.tagName,
+    getNativeInput: (host) =>
+      (host as IgcInputComponent).renderRoot.querySelector('input')!,
   });
 });

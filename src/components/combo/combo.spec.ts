@@ -17,6 +17,7 @@ import { first } from '../common/util.js';
 import {
   createFormAssociatedTestBed,
   isFocused,
+  runExternalLabelAssociationTests,
   simulateBlur,
   simulateClick,
   simulateKeyboard,
@@ -1794,5 +1795,13 @@ describe('Combo', () => {
 
       runValidationContainerTests(IgcComboComponent, testParameters);
     });
+  });
+
+  runExternalLabelAssociationTests({
+    tagName: IgcComboComponent.tagName,
+    getNativeInput: (host) =>
+      (host as IgcComboComponent).renderRoot
+        .querySelector<IgcInputComponent>('#target')!
+        .renderRoot.querySelector('input')!,
   });
 });

@@ -484,6 +484,7 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
         ?required=${this.required}
         ?readonly=${this.readOnly}
         aria-describedby=${describedBy}
+        .ariaLabelledByElements=${this._internals.labels}
       ></textarea>
     `;
   }
