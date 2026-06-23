@@ -2,13 +2,18 @@ import type { Meta, StoryObj } from '@storybook/web-components-vite';
 import { html } from 'lit';
 
 import {
+  IgcButtonComponent,
   IgcCopyToClipboardComponent,
   IgcTextareaComponent,
   defineComponents,
 } from 'igniteui-webcomponents';
 import { disableStoryControls } from './story.js';
 
-defineComponents(IgcCopyToClipboardComponent, IgcTextareaComponent);
+defineComponents(
+  IgcButtonComponent,
+  IgcCopyToClipboardComponent,
+  IgcTextareaComponent
+);
 // region default
 const metadata: Meta<IgcCopyToClipboardComponent> = {
   title: 'CopyToClipboard',
@@ -22,8 +27,15 @@ const metadata: Meta<IgcCopyToClipboardComponent> = {
     },
   },
   argTypes: {
+    disableInteraction: {
+      type: 'boolean',
+      description:
+        'Disables the copy button and prevents it from appearing on hover or focus.',
+      control: 'boolean',
+      table: { defaultValue: { summary: 'false' } },
+    },
     format: {
-      type: 'string',
+      type: '"plain" | "preserve"',
       description:
         'Controls how the text content is formatted when copied to the clipboard.\n- `plain`: Normalizes all whitespace into a flat body of text (default).\n- `preserve`: Retains the visual structure such as paragraphs and code indentation.',
       options: ['plain', 'preserve'],
@@ -31,12 +43,14 @@ const metadata: Meta<IgcCopyToClipboardComponent> = {
       table: { defaultValue: { summary: 'plain' } },
     },
   },
-  args: { format: 'plain' },
+  args: { disableInteraction: false, format: 'plain' },
 };
 
 export default metadata;
 
 interface IgcCopyToClipboardArgs {
+  /** Disables the copy button and prevents it from appearing on hover or focus. */
+  disableInteraction: boolean;
   /**
    * Controls how the text content is formatted when copied to the clipboard.
    * - `plain`: Normalizes all whitespace into a flat body of text (default).
@@ -66,7 +80,10 @@ export const Default: Story = {
     </style>
 
     <div class="demo-layout">
-      <igc-copy-to-clipboard .format=${args.format}>
+      <igc-copy-to-clipboard
+        ?disable-interaction=${args.disableInteraction}
+        .format=${args.format}
+      >
         <div class="content-box" tabindex="0">
           <p>This is some text that can be copied to the clipboard.</p>
           <p>
@@ -245,7 +262,10 @@ export const WithCustomIcon: Story = {
     </style>
 
     <div class="demo-layout">
-      <igc-copy-to-clipboard .format=${args.format}>
+      <igc-copy-to-clipboard
+        .format=${args.format}
+        ?disable-interaction=${args.disableInteraction}
+      >
         <svg
           slot="copy-icon"
           xmlns="http://www.w3.org/2000/svg"
@@ -269,6 +289,58 @@ export const WithCustomIcon: Story = {
           <p>Paste into the field below to see the copied content.</p>
         </div>
       </igc-copy-to-clipboard>
+
+      <igc-textarea
+        label="Paste here to verify"
+        placeholder="Ctrl+V / ⌘V"
+        rows="3"
+        resize="auto"
+      ></igc-textarea>
+    </div>
+  `,
+};
+
+export const ExternalCommandCopyStory: Story = {
+  argTypes: disableStoryControls(metadata),
+  render: (args) => html`
+    <style>
+      .demo-layout {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+        max-width: 640px;
+      }
+
+      .content-box {
+        border: 1px solid var(--ig-gray-300);
+        border-radius: 8px;
+        padding: 1rem;
+      }
+    </style>
+
+    <div class="demo-layout">
+      <igc-copy-to-clipboard
+        id="copy-to-clipboard"
+        disable-interaction
+        .format=${args.format}
+      >
+        <div class="content-box" tabindex="0">
+          <p>
+            This story demonstrates using an external button to trigger the copy
+            action. The component's copy button is disabled and hidden, but the
+            content can still be copied by clicking the external button below
+            using the <em>Invoker Commands API</em>.
+          </p>
+          <p>Click the button below to copy the content above.</p>
+        </div>
+      </igc-copy-to-clipboard>
+
+      <igc-button
+        variant="outlined"
+        commandfor="copy-to-clipboard"
+        command="--copy"
+        >Copy paragraphs above</igc-button
+      >
 
       <igc-textarea
         label="Paste here to verify"

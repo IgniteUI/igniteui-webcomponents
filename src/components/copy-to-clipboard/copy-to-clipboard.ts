@@ -1,12 +1,20 @@
-import { css, html, LitElement } from 'lit';
+import {
+  css,
+  html,
+  LitElement,
+  type PropertyValues,
+  type TemplateResult,
+} from 'lit';
 import { property, state } from 'lit/decorators.js';
 import IgcIconButtonComponent from '../button/icon-button.js';
+import { addCommandController } from '../common/controllers/command.js';
 import { addSlotController, setSlots } from '../common/controllers/slot.js';
 import { shadowOptions } from '../common/decorators/shadow-options.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { partMap } from '../common/part-map.js';
 import { addSafeEventListener, bindIf } from '../common/util.js';
 import type { CopyFormat } from '../types.js';
+import IgcVisuallyHiddenComponent from '../visually-hidden/visually-hidden.js';
 
 // Regex patterns for normalizing whitespace in copied content
 /** Matches multiple consecutive spaces or tabs */
@@ -31,6 +39,11 @@ const MULTIPLE_NEWLINES = /\n+/g;
  * - **`preserve`** — uses the browser's `innerText` algorithm to retain the
  *   visual structure of the content: paragraph breaks, indentation in `<pre>`
  *   blocks, etc. Ideal for code snippets or structured content.
+ *
+ * It also supports disabling user interaction via the `disable-interaction` attribute,
+ * which prevents the copy button from appearing and disables its functionality.
+ *
+ * It is integrated with the Invoker Commands API, allowing the copy action to be triggered programmatically through commands.
  *
  * @slot - The content to be displayed and copied. Accepts any HTML.
  * @slot copy-icon - Overrides the default copy icon inside the copy button.
@@ -71,6 +84,25 @@ const MULTIPLE_NEWLINES = /\n+/g;
  *   <pre tabindex="0"><code>const x = 42;</code></pre>
  * </igc-copy-to-clipboard>
  * ```
+ *
+ * @example
+ * ```html
+ * <!-- Disable the copy button entirely -->
+ * <igc-copy-to-clipboard disable-interaction>
+ *   <p>No default copy button is shown on hover or focus.</p>
+ * </igc-copy-to-clipboard>
+ * ```
+ *
+ * @example
+ * ```html
+ * <!-- Trigger the copy action programmatically via command -->
+ * <igc-copy-to-clipboard id="copy-component">
+ *   <p>Some text to copy.</p>
+ * </igc-copy-to-clipboard>
+ * <button command="--copy" commandfor="copy-component">
+ *   Copy via command
+ * </button>
+ * ```
  */
 @shadowOptions({ delegatesFocus: true })
 export default class IgcCopyToClipboardComponent extends LitElement {
@@ -100,7 +132,11 @@ export default class IgcCopyToClipboardComponent extends LitElement {
 
   /* blazorSuppress */
   public static register(): void {
-    registerComponent(IgcCopyToClipboardComponent, IgcIconButtonComponent);
+    registerComponent(
+      IgcCopyToClipboardComponent,
+      IgcIconButtonComponent,
+      IgcVisuallyHiddenComponent
+    );
   }
 
   //#region Internal state and properties
@@ -115,6 +151,15 @@ export default class IgcCopyToClipboardComponent extends LitElement {
   //#endregion
 
   //#region Public properties and attributes
+
+  /**
+   * Disables the copy button and prevents it from appearing on hover or focus.
+   *
+   * @attr disable-interaction
+   * @default false
+   */
+  @property({ type: Boolean, reflect: true, attribute: 'disable-interaction' })
+  public disableInteraction = false;
 
   /**
    * Controls how the text content is formatted when copied to the clipboard.
@@ -132,10 +177,20 @@ export default class IgcCopyToClipboardComponent extends LitElement {
   constructor() {
     super();
 
+    addCommandController(this).set('--copy', this._handleClick);
+
     addSafeEventListener(this, 'pointerenter', this._setUserInteraction);
     addSafeEventListener(this, 'pointerleave', this._unsetUserInteraction);
     addSafeEventListener(this, 'focusin', this._setUserInteraction);
     addSafeEventListener(this, 'focusout', this._unsetUserInteraction);
+  }
+
+  protected override update(properties: PropertyValues<this>): void {
+    if (properties.has('disableInteraction') && this.disableInteraction) {
+      this._hasUserInteraction = false;
+    }
+
+    super.update(properties);
   }
 
   //#region Event handlers
@@ -149,10 +204,12 @@ export default class IgcCopyToClipboardComponent extends LitElement {
   }
 
   private _setUserInteraction(): void {
+    if (this.disableInteraction) return;
     this._hasUserInteraction = true;
   }
 
   private _unsetUserInteraction(): void {
+    if (this.disableInteraction) return;
     this._hasUserInteraction = false;
   }
 
@@ -183,27 +240,31 @@ export default class IgcCopyToClipboardComponent extends LitElement {
 
   //#endregion
 
-  protected _renderButton() {
+  protected _renderButton(): TemplateResult {
+    const hasInteraction = this._hasUserInteraction;
+    const iconName = bindIf(
+      !this._slots.hasAssignedNodes('copy-icon'),
+      'copy_content'
+    );
+    const parts = partMap({
+      'copy-button': true,
+      visible: hasInteraction,
+    });
+
     return html`
       <igc-icon-button
-        part=${partMap({
-          'copy-button': true,
-          visible: this._hasUserInteraction,
-        })}
-        tabindex=${this._hasUserInteraction ? 0 : -1}
+        part=${parts}
+        tabindex=${hasInteraction ? 0 : -1}
         @click=${this._handleClick}
-        aria-label="Copy content to clipboard"
-        name=${bindIf(
-          !this._slots.hasAssignedNodes('copy-icon'),
-          'copy_content'
-        )}
+        name=${iconName}
       >
+        <igc-visually-hidden>Copy content to clipboard</igc-visually-hidden>
         <slot name="copy-icon"></slot>
       </igc-icon-button>
     `;
   }
 
-  protected override render() {
+  protected override render(): TemplateResult {
     return html`<slot></slot>${this._renderButton()}`;
   }
 }

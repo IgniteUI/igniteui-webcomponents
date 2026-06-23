@@ -23,8 +23,8 @@ describe('Copy Content', () => {
   let copyButton: HTMLElement;
   let writeTextStub: ReturnType<typeof stub>;
 
-  async function getButton() {
-    return element.shadowRoot!.querySelector(
+  function getButton() {
+    return element.renderRoot.querySelector(
       '[part~="copy-button"]'
     ) as HTMLElement;
   }
@@ -72,20 +72,18 @@ describe('Copy Content', () => {
       html`<igc-copy-to-clipboard>Text</igc-copy-to-clipboard>`
     );
 
-    copyButton = await getButton();
+    copyButton = getButton();
     expect(copyButton).to.exist;
     expect(copyButton.tagName.toLowerCase()).to.equal('igc-icon-button');
   });
 
-  it('should have copy button with proper aria-label', async () => {
+  it('should have copy button with screen reader label', async () => {
     element = await fixture<IgcCopyToClipboardComponent>(
       html`<igc-copy-to-clipboard>Text</igc-copy-to-clipboard>`
     );
 
-    copyButton = await getButton();
-    expect(copyButton.getAttribute('aria-label')).to.equal(
-      'Copy content to clipboard'
-    );
+    copyButton = getButton();
+    expect(copyButton.textContent.trim()).to.equal('Copy content to clipboard');
   });
 
   describe('User Interaction', () => {
@@ -93,7 +91,7 @@ describe('Copy Content', () => {
       element = await fixture<IgcCopyToClipboardComponent>(
         html`<igc-copy-to-clipboard>Sample text</igc-copy-to-clipboard>`
       );
-      copyButton = await getButton();
+      copyButton = getButton();
     });
 
     it('should show copy button on pointer enter', async () => {
@@ -139,6 +137,22 @@ describe('Copy Content', () => {
 
       expect(copyButton.part.contains('visible')).to.be.false;
     });
+
+    it('should not show copy button when disableInteraction is true', async () => {
+      element.disableInteraction = true;
+      await elementUpdated(element);
+
+      simulatePointerEnter(element);
+      await elementUpdated(element);
+
+      expect(copyButton.part.contains('visible')).to.be.false;
+      expect(copyButton.getAttribute('tabindex')).to.equal('-1');
+
+      element.dispatchEvent(new FocusEvent('focusin'));
+      await elementUpdated(element);
+
+      expect(copyButton.part.contains('visible')).to.be.false;
+    });
   });
 
   describe('Copy Functionality', () => {
@@ -148,7 +162,7 @@ describe('Copy Content', () => {
         html`<igc-copy-to-clipboard>${text}</igc-copy-to-clipboard>`
       );
 
-      copyButton = await getButton();
+      copyButton = getButton();
       simulateClick(copyButton);
       await nextFrame();
 
@@ -163,7 +177,7 @@ describe('Copy Content', () => {
         </igc-copy-to-clipboard>`
       );
 
-      copyButton = await getButton();
+      copyButton = getButton();
       simulateClick(copyButton);
       await nextFrame();
 
@@ -192,7 +206,7 @@ Line 2</pre
         </igc-copy-to-clipboard>`
       );
 
-      copyButton = await getButton();
+      copyButton = getButton();
       simulateClick(copyButton);
       await nextFrame();
 
@@ -211,7 +225,7 @@ Line 2</pre
         </igc-copy-to-clipboard>`
       );
 
-      copyButton = await getButton();
+      copyButton = getButton();
       simulateClick(copyButton);
       await nextFrame();
 
@@ -226,7 +240,7 @@ Line 2</pre
         html`<igc-copy-to-clipboard></igc-copy-to-clipboard>`
       );
 
-      copyButton = await getButton();
+      copyButton = getButton();
       simulateClick(copyButton);
       await nextFrame();
 
@@ -239,7 +253,7 @@ Line 2</pre
         html`<igc-copy-to-clipboard> </igc-copy-to-clipboard>`
       );
 
-      copyButton = await getButton();
+      copyButton = getButton();
       simulateClick(copyButton);
       await nextFrame();
 
@@ -257,7 +271,7 @@ Line 2</pre
         html`<igc-copy-to-clipboard>Text</igc-copy-to-clipboard>`
       );
 
-      copyButton = await getButton();
+      copyButton = getButton();
       simulateClick(copyButton);
 
       // Wait for the async handler to settle
@@ -281,7 +295,7 @@ Line 2</pre
         </igc-copy-to-clipboard>`
       );
 
-      copyButton = await getButton();
+      copyButton = getButton();
       const slot = copyButton.querySelector('slot[name="copy-icon"]');
       expect(slot).to.exist;
 
@@ -297,7 +311,7 @@ Line 2</pre
         html`<igc-copy-to-clipboard>Text with spaces</igc-copy-to-clipboard>`
       );
 
-      copyButton = await getButton();
+      copyButton = getButton();
       simulateClick(copyButton);
       await nextFrame();
 
@@ -309,7 +323,7 @@ Line 2</pre
         html`<igc-copy-to-clipboard>Text with tabs</igc-copy-to-clipboard>`
       );
 
-      copyButton = await getButton();
+      copyButton = getButton();
       simulateClick(copyButton);
       await nextFrame();
 
@@ -328,7 +342,7 @@ Line 3</pre
         </igc-copy-to-clipboard>`
       );
 
-      copyButton = await getButton();
+      copyButton = getButton();
       simulateClick(copyButton);
       await nextFrame();
 
@@ -341,7 +355,7 @@ Line 3</pre
         html`<igc-copy-to-clipboard> Trimmed content </igc-copy-to-clipboard>`
       );
 
-      copyButton = await getButton();
+      copyButton = getButton();
       simulateClick(copyButton);
       await nextFrame();
 
@@ -365,7 +379,7 @@ Third line</pre
         </igc-copy-to-clipboard>`
       );
 
-      copyButton = await getButton();
+      copyButton = getButton();
       simulateClick(copyButton);
       await nextFrame();
 
@@ -404,7 +418,7 @@ Third line</pre
         </igc-copy-to-clipboard>`
       );
 
-      copyButton = await getButton();
+      copyButton = getButton();
       simulateClick(copyButton);
       await nextFrame();
 
@@ -420,7 +434,7 @@ Third line</pre
         </igc-copy-to-clipboard>`
       );
 
-      copyButton = await getButton();
+      copyButton = getButton();
       simulateClick(copyButton);
       await nextFrame();
 
@@ -441,7 +455,7 @@ Third line</pre
         </igc-copy-to-clipboard>`
       );
 
-      copyButton = await getButton();
+      copyButton = getButton();
       simulateClick(copyButton);
       await nextFrame();
 
