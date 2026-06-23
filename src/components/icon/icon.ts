@@ -149,7 +149,9 @@ export default class IgcIconComponent extends LitElement {
     // has settled, reconcile so the icon content is projected. Deferring via
     // `queueMicrotask` keeps it off the current update cycle (avoids Lit's
     // change-in-update warning).
-    queueMicrotask(() => this.requestUpdate());
+    if (this._svg) {
+      queueMicrotask(() => this.requestUpdate());
+    }
   }
 
   /**
