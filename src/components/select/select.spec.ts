@@ -15,6 +15,7 @@ import { defineComponents } from '../common/definitions/defineComponents.js';
 import {
   createFormAssociatedTestBed,
   isFocused,
+  runExternalLabelAssociationTests,
   simulateClick,
   simulateKeyboard,
   simulateScroll,
@@ -1379,5 +1380,13 @@ describe('Select', () => {
 
       runValidationContainerTests(IgcSelectComponent, testParameters);
     });
+  });
+
+  runExternalLabelAssociationTests({
+    tagName: IgcSelectComponent.tagName,
+    getNativeInput: (host) =>
+      (host as IgcSelectComponent).renderRoot
+        .querySelector<IgcInputComponent>(IgcInputComponent.tagName)!
+        .renderRoot.querySelector('input')!,
   });
 });
