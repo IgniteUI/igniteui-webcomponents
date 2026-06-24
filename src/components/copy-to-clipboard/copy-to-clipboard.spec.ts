@@ -83,7 +83,9 @@ describe('Copy Content', () => {
     );
 
     copyButton = getButton();
-    expect(copyButton.textContent.trim()).to.equal('Copy content to clipboard');
+    expect(copyButton.textContent.trim()).to.equal(
+      'Copy content to clipboard. Click to copy.'
+    );
   });
 
   describe('User Interaction', () => {

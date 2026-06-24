@@ -6,6 +6,7 @@ import {
   type TemplateResult,
 } from 'lit';
 import { property, state } from 'lit/decorators.js';
+import { choose } from 'lit/directives/choose.js';
 import IgcIconButtonComponent from '../button/icon-button.js';
 import { addCommandController } from '../common/controllers/command.js';
 import { addSlotController, setSlots } from '../common/controllers/slot.js';
@@ -47,8 +48,12 @@ const MULTIPLE_NEWLINES = /\n+/g;
  *
  * @slot - The content to be displayed and copied. Accepts any HTML.
  * @slot copy-icon - Overrides the default copy icon inside the copy button.
+ * @slot success-icon - Overrides the default success icon shown after a successful copy.
+ * @slot error-icon - Overrides the default error icon shown if the copy action fails.
  *
  * @csspart copy-button - The copy icon-button positioned over the slotted content.
+ * @csspart success-button - The icon displayed when the copy action succeeds.
+ * @csspart error-button - The icon displayed when the copy action fails.
  *
  * @example
  * ```html
@@ -113,7 +118,9 @@ export default class IgcCopyToClipboardComponent extends LitElement {
       position: relative;
     }
 
-    [part~='copy-button'] {
+    [part~='copy-button'],
+    [part~='success-button'],
+    [part~='error-button'] {
       position: absolute;
       opacity: 0;
       pointer-events: none;
@@ -130,6 +137,12 @@ export default class IgcCopyToClipboardComponent extends LitElement {
     }
   `;
 
+  private static readonly _statusIcons = {
+    copy: 'copy_content',
+    success: 'attach_document',
+    error: 'thumb_down_active',
+  } as const;
+
   /* blazorSuppress */
   public static register(): void {
     registerComponent(
@@ -142,8 +155,11 @@ export default class IgcCopyToClipboardComponent extends LitElement {
   //#region Internal state and properties
 
   private readonly _slots = addSlotController(this, {
-    slots: setSlots('copy-icon'),
+    slots: setSlots('copy-icon', 'success-icon', 'error-icon'),
   });
+
+  @state()
+  private _copyStatus: 'copy' | 'success' | 'error' = 'copy';
 
   @state()
   private _hasUserInteraction = false;
@@ -198,8 +214,14 @@ export default class IgcCopyToClipboardComponent extends LitElement {
   private async _handleClick(): Promise<void> {
     try {
       await navigator.clipboard.writeText(this._getContentToCopy());
+      this._copyStatus = 'success';
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      this._copyStatus = 'copy';
     } catch {
       // Clipboard API unavailable or permission denied — fail gracefully.
+      this._copyStatus = 'error';
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      this._copyStatus = 'copy';
     }
   }
 
@@ -240,14 +262,18 @@ export default class IgcCopyToClipboardComponent extends LitElement {
 
   //#endregion
 
-  protected _renderButton(): TemplateResult {
+  protected _renderButton(
+    status: 'copy' | 'success' | 'error',
+    message: string
+  ): TemplateResult {
     const hasInteraction = this._hasUserInteraction;
+
     const iconName = bindIf(
-      !this._slots.hasAssignedNodes('copy-icon'),
-      'copy_content'
+      !this._slots.hasAssignedNodes(`${status}-icon`),
+      IgcCopyToClipboardComponent._statusIcons[status]
     );
     const parts = partMap({
-      'copy-button': true,
+      [`${status}-button`]: true,
       visible: hasInteraction,
     });
 
@@ -255,17 +281,45 @@ export default class IgcCopyToClipboardComponent extends LitElement {
       <igc-icon-button
         part=${parts}
         tabindex=${hasInteraction ? 0 : -1}
-        @click=${this._handleClick}
+        @click=${bindIf(status === 'copy', this._handleClick)}
         name=${iconName}
       >
-        <igc-visually-hidden>Copy content to clipboard</igc-visually-hidden>
-        <slot name="copy-icon"></slot>
+        <igc-visually-hidden>${message}</igc-visually-hidden>
+        <slot name="${status}-icon"></slot>
       </igc-icon-button>
     `;
   }
 
   protected override render(): TemplateResult {
-    return html`<slot></slot>${this._renderButton()}`;
+    return html`
+      <slot></slot>
+      ${choose(this._copyStatus, [
+        [
+          'copy',
+          () =>
+            this._renderButton(
+              'copy',
+              'Copy content to clipboard. Click to copy.'
+            ),
+        ],
+        [
+          'success',
+          () =>
+            this._renderButton(
+              'success',
+              'Content copied to clipboard successfully.'
+            ),
+        ],
+        [
+          'error',
+          () =>
+            this._renderButton(
+              'error',
+              'Failed to copy content to clipboard. Please try again.'
+            ),
+        ],
+      ])}
+    `;
   }
 }
 

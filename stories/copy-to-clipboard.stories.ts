@@ -284,6 +284,20 @@ export const WithCustomIcon: Story = {
           <path d="M21 14H11" />
           <path d="m15 10-4 4 4 4" />
         </svg>
+        <svg
+          slot="success-icon"
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M20 6L9 17l-5-5" />
+        </svg>
         <div class="content-box" tabindex="0">
           <p>This story uses a custom SVG icon for the copy button.</p>
           <p>Paste into the field below to see the copied content.</p>
