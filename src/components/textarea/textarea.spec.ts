@@ -12,6 +12,7 @@ import { defineComponents } from '../common/definitions/defineComponents.js';
 import {
   createFormAssociatedTestBed,
   isFocused,
+  runExternalLabelAssociationTests,
   simulateInput,
 } from '../common/utils.spec.js';
 import {
@@ -446,5 +447,11 @@ describe('Textarea component', () => {
 
       runValidationContainerTests(IgcTextareaComponent, testParameters);
     });
+  });
+
+  runExternalLabelAssociationTests({
+    tagName: IgcTextareaComponent.tagName,
+    getNativeInput: (host) =>
+      (host as IgcTextareaComponent).renderRoot.querySelector('textarea')!,
   });
 });

@@ -1,4 +1,4 @@
-import { html, type TemplateResult } from 'lit';
+import { html, type PropertyValues, type TemplateResult } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { addThemingController } from '../../theming/theming-controller.js';
@@ -20,6 +20,7 @@ import { addRootClickController } from '../common/controllers/root-click.js';
 import { addRootScrollHandler } from '../common/controllers/root-scroll.js';
 import { addSlotController, setSlots } from '../common/controllers/slot.js';
 import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditionalDependencies.js';
+import { shadowOptions } from '../common/decorators/shadow-options.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import {
@@ -116,6 +117,7 @@ const Slots = setSlots(
 @blazorAdditionalDependencies(
   'IgcIconComponent, IgcInputComponent, IgcSelectGroupComponent, IgcSelectHeaderComponent, IgcSelectItemComponent'
 )
+@shadowOptions({ delegatesFocus: true })
 export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   EventEmitterMixin<
     IgcSelectComponentEventMap,
@@ -332,6 +334,11 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
     this._validate();
   }
 
+  protected override updated(changedProperties: PropertyValues): void {
+    super.updated(changedProperties);
+    this._forwardLabelElements();
+  }
+
   //#endregion
 
   //#region Keyboard event handlers
@@ -544,6 +551,16 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
 
   private _getItem(value: string): IgcSelectItemComponent | undefined {
     return this.items.find((item) => item.value === value);
+  }
+
+  /**
+   * Forwards the host's associated label elements to the inner input so that an external
+   * `<label for>` (or a wrapping `<label>`) labels the AT-exposed native input.
+   */
+  private _forwardLabelElements(): void {
+    if (this._input) {
+      this._input._labelElements = this._internals.labels;
+    }
   }
 
   //#endregion

@@ -36,7 +36,7 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
 
     //#region Internal state and properties
 
-    private readonly __internals = addInternalsController(this);
+    protected readonly _internals = addInternalsController(this);
     protected readonly _formValue!: FormValue<unknown>;
 
     /**
@@ -122,7 +122,7 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
 
     /** Returns the HTMLFormElement associated with this element. */
     public get form(): HTMLFormElement | null {
-      return this.__internals.form;
+      return this._internals.form;
     }
 
     /**
@@ -130,12 +130,12 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
      * the element can be in, with respect to constraint validation.
      */
     public get validity(): ValidityState {
-      return this.__internals.validity;
+      return this._internals.validity;
     }
 
     /** A string containing the validation message of this element. */
     public get validationMessage(): string {
-      return this.__internals.validationMessage;
+      return this._internals.validationMessage;
     }
 
     /**
@@ -143,7 +143,7 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
      * that is a candidate for constraint validation.
      */
     public get willValidate(): boolean {
-      return this.__internals.willValidate;
+      return this._internals.willValidate;
     }
     //#endregion
 
@@ -203,7 +203,7 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
     }
 
     private _setInvalidStyles(): void {
-      this.__internals.setState(INVALID_STATE, this._shouldApplyStyles);
+      this._internals.setState(INVALID_STATE, this._shouldApplyStyles);
     }
 
     /**
@@ -272,9 +272,9 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
         message = userMessage;
       }
 
-      this.__internals.setValidity(validity, message);
+      this._internals.setValidity(validity, message);
       this._isInternalValidation = true;
-      this._invalid = !this.__internals.checkValidity();
+      this._invalid = !this._internals.checkValidity();
       this._resolveInternalValidation();
     }
 
@@ -301,7 +301,7 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
 
     protected _setFormValue(value: FormValueType, state?: FormValueType): void {
       this._pristine = false;
-      this.__internals.setFormValue(value, state);
+      this._internals.setFormValue(value, state);
       this._validate();
       this._setInvalidStyles();
     }
@@ -336,7 +336,7 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
 
     /** Checks for validity of the control and shows the browser message if it invalid. */
     public reportValidity(): boolean {
-      const state = this.__internals.reportValidity();
+      const state = this._internals.reportValidity();
       this._invalid = !state;
       return state;
     }
@@ -344,7 +344,7 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
     /** Checks for validity of the control and emits the invalid event if it invalid. */
     public checkValidity(): boolean {
       this._isInternalValidation = true;
-      const state = this.__internals.checkValidity();
+      const state = this._internals.checkValidity();
       this._invalid = !state;
       this._resolveInternalValidation();
       return state;

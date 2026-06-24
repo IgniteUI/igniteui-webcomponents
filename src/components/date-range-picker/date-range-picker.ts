@@ -5,7 +5,7 @@ import {
   type ICalendarResourceStrings,
   type IDateRangePickerResourceStrings,
 } from 'igniteui-i18n-core';
-import { html, nothing, type TemplateResult } from 'lit';
+import { html, nothing, type PropertyValues, type TemplateResult } from 'lit';
 import {
   property,
   query,
@@ -644,6 +644,15 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
   protected override firstUpdated() {
     this._setCalendarRangeValues();
     this._delegateInputsValidity();
+  }
+
+  protected override updated(changedProperties: PropertyValues): void {
+    super.updated(changedProperties);
+    // Forward the host's associated labels only to the start input.
+    const target = this._input ?? this._inputs?.[0];
+    if (target) {
+      target._labelElements = this._internals.labels;
+    }
   }
 
   protected override formResetCallback() {

@@ -12,7 +12,7 @@ declare class BaseFormAssociatedElement {
 
   //#region Properties
 
-  private readonly __internals: ElementInternalsController;
+  protected readonly _internals: ElementInternalsController;
   protected readonly _formValue: unknown;
 
   protected _pristine: boolean;
