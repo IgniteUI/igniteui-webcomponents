@@ -78,14 +78,14 @@ export function clearTransitionName(...targets: HTMLElement[]): void {
  * Returns the active view transition if one is currently in progress, or null otherwise.
  */
 export function getActiveViewTransition(): ViewTransition | null {
-  return document.activeViewTransition ?? null;
+  return globalThis.document?.activeViewTransition ?? null;
 }
 
 /**
  * Returns the active scoped view transition for the specified target element if one is currently in progress, or null otherwise.
  */
 export function getActiveScopedViewTransition(
-  target: ScopedViewTransitionElement
+  target: Node
 ): ViewTransition | null {
   if (!hasScopedViewTransition(target)) {
     return null;

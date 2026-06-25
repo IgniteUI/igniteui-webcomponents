@@ -9,7 +9,10 @@ const LISTENER_OPTIONS = { once: true } as const;
  * Checks the user's preference for reduced motion.
  */
 export function getPrefersReducedMotion(): boolean {
-  return globalThis?.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  return (
+    globalThis?.matchMedia?.('(prefers-reduced-motion: reduce)').matches ??
+    false
+  );
 }
 
 /**

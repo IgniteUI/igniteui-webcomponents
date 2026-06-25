@@ -146,14 +146,23 @@ describe('View Transitions helpers and directive', () => {
 
     it('should fetch scoped active view transitions if supported', () => {
       const mockElement = document.createElement('div') as any;
-      expect(getActiveScopedViewTransition(mockElement)).to.be.null;
+      const fakeTransition = {
+        finished: Promise.resolve(),
+        ready: Promise.resolve(),
+        updateCallbackDone: Promise.resolve(),
+        skipTransition: sinon.spy(),
+      } as unknown as ViewTransition;
 
-      try {
-        startScopedViewTransition(mockElement, sinon.spy());
-        expect(getActiveScopedViewTransition(mockElement)).to.be.instanceOf(
-          ViewTransition
-        );
-      } catch {}
+      mockElement.startViewTransition = sinon.stub().returns(fakeTransition);
+      Object.defineProperty(mockElement, 'activeViewTransition', {
+        value: fakeTransition,
+        writable: true,
+        configurable: true,
+      });
+      startScopedViewTransition(mockElement, sinon.spy());
+      expect(getActiveScopedViewTransition(mockElement)).to.equal(
+        fakeTransition
+      );
     });
   });
 

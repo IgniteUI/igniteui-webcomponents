@@ -366,7 +366,9 @@ export default class IgcTileComponent extends EventEmitterMixin<
   public override connectedCallback(): void {
     super.connectedCallback();
     this.id = this.id || `tile-${nextId++}`;
-    setTransitionName(this, `tile-transition-${this.id}`);
+    if (!this.style.viewTransitionName) {
+      setTransitionName(this, `tile-transition-${this.id}`);
+    }
   }
 
   private _setDragState(state = true) {
