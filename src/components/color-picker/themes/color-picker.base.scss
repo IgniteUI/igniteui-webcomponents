@@ -139,6 +139,7 @@
         background-color: var(--current-color);
     }
 
+    [part~='empty'],
     [part~='empty']::part(base) {
         background-image:
             repeating-linear-gradient(

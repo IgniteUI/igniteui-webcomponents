@@ -56,6 +56,13 @@ const metadata: Meta<IgcColorPickerComponent> = {
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
+    mode: {
+      type: '"default" | "input"',
+      description: 'The mode of the color picker.',
+      options: ['default', 'input'],
+      control: { type: 'inline-radio' },
+      table: { defaultValue: { summary: 'default' } },
+    },
     name: {
       type: 'string',
       description: 'The name attribute of the control.',
@@ -84,6 +91,7 @@ const metadata: Meta<IgcColorPickerComponent> = {
     format: 'hex',
     hideFormats: false,
     showAlpha: false,
+    mode: 'default',
     disabled: false,
     invalid: false,
     open: false,
@@ -103,6 +111,8 @@ interface IgcColorPickerArgs {
   hideFormats: boolean;
   /** Whether to show the alpha slider and input. */
   showAlpha: boolean;
+  /** The mode of the color picker. */
+  mode: 'default' | 'input';
   /** The name attribute of the control. */
   name: string;
   /** The disabled state of the component. */
