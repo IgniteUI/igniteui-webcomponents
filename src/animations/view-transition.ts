@@ -29,7 +29,22 @@ function hasScopedViewTransition(
 export function startViewTransition(
   callback: ViewTransitionUpdateCallback
 ): ViewTransition {
-  const transition = document.startViewTransition(callback);
+  const init = globalThis.document?.startViewTransition;
+
+  /* c8 ignore next 11 */
+  if (!init) {
+    callback();
+    const resolved = Promise.resolve();
+
+    return {
+      finished: resolved,
+      ready: resolved,
+      updateCallbackDone: resolved,
+      skipTransition: () => {},
+    } as ViewTransition;
+  }
+
+  const transition = init.call(globalThis.document, callback);
 
   if (getPrefersReducedMotion()) {
     transition.skipTransition();
