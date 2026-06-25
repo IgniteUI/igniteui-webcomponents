@@ -1,7 +1,10 @@
 import { html, LitElement, nothing } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
 import { createRef, ref } from 'lit/directives/ref.js';
-import { startViewTransition } from '../../animations/player.js';
+import {
+  setTransitionName,
+  startViewTransition,
+} from '../../animations/view-transition.js';
 import { addThemingController } from '../../theming/theming-controller.js';
 import IgcIconButtonComponent from '../button/icon-button.js';
 import {
@@ -363,9 +366,9 @@ export default class IgcTileComponent extends EventEmitterMixin<
   public override connectedCallback(): void {
     super.connectedCallback();
     this.id = this.id || `tile-${nextId++}`;
-
-    this.style.viewTransitionName =
-      this.style.viewTransitionName || `tile-transition-${this.id}`;
+    if (!this.style.viewTransitionName) {
+      setTransitionName(this, `tile-transition-${this.id}`);
+    }
   }
 
   private _setDragState(state = true) {
@@ -529,7 +532,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
       await startViewTransition(() => {
         this.colSpan = colSpan;
         this.rowSpan = rowSpan;
-      }).transition?.updateCallbackDone;
+      }).updateCallbackDone;
 
       this._setResizeState(false);
       this.emitEvent('igcTileResizeEnd', { detail: this });
@@ -554,7 +557,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
 
     await startViewTransition(() => {
       this.maximized = !this.maximized;
-    }).transition?.finished;
+    }).finished;
 
     this.style.zIndex = '';
   }
