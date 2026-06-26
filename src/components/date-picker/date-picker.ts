@@ -4,7 +4,7 @@ import {
   type ICalendarResourceStrings,
   type IDatePickerResourceStrings,
 } from 'igniteui-i18n-core';
-import { html, nothing, type TemplateResult } from 'lit';
+import { html, nothing, type PropertyValues, type TemplateResult } from 'lit';
 import { property, query } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { addThemingController } from '../../theming/theming-controller.js';
@@ -519,6 +519,13 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
       .set([altKey, arrowDown], this._handleAnchorClick)
       .set([altKey, arrowUp], this._onEscapeKey)
       .set(escapeKey, this._onEscapeKey);
+  }
+
+  protected override updated(changedProperties: PropertyValues): void {
+    super.updated(changedProperties);
+    if (this._input) {
+      this._input._labelElements = this._internals.labels;
+    }
   }
 
   //#endregion

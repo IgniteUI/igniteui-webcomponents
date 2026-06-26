@@ -4,6 +4,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+### Added
+- #### Form associated custom elements
+  - External `<label>` associations are now resolved to the underlying native input of form-associated controls. Associating a label with `IgcInput`, `IgcMaskInput`, `IgcTextarea`, `IgcDateTimeInput`, `IgcSelect`, `IgcCombo`, `IgcDatePicker`, or `IgcDateRangePicker` — either through the `for`/`id` IDREF mechanism or by nesting the component inside the `<label>` — now correctly exposes the label to assistive technologies and focuses the inner input on label activation.
+
+## [7.2.3] - 2026-06-18
+### Fixed
+- #### Popover based components
+  - Popover reposition jitter in `position: sticky` ancestors [#2256](https://github.com/IgniteUI/igniteui-webcomponents/pull/2256)
+- #### Tile Manager
+  - Text selection in Safari during drag operations [#2257](https://github.com/IgniteUI/igniteui-webcomponents/pull/2257)
+  - Tile manager height collapse when a spanning tile is maximized [#2257](https://github.com/IgniteUI/igniteui-webcomponents/pull/2257)
+
 ## [7.2.2] - 2026-06-15
 ### Changed
 - #### AI-Assisted Development
@@ -1370,6 +1383,7 @@ Initial release of Ignite UI Web Components
 - Ripple component
 - Switch component
 
+[7.2.3]: https://github.com/IgniteUI/igniteui-webcomponents/compare/7.2.2...7.2.3
 [7.2.2]: https://github.com/IgniteUI/igniteui-webcomponents/compare/7.2.1...7.2.2
 [7.2.1]: https://github.com/IgniteUI/igniteui-webcomponents/compare/7.2.0...7.2.1
 [7.2.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/7.1.3...7.2.0

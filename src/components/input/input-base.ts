@@ -1,5 +1,5 @@
 import { LitElement, nothing, type TemplateResult } from 'lit';
-import { property, query } from 'lit/decorators.js';
+import { property, query, state } from 'lit/decorators.js';
 import { cache } from 'lit/directives/cache.js';
 import type { ThemingController } from '../../theming/theming-controller.js';
 import type { SlotController } from '../common/controllers/slot.js';
@@ -41,6 +41,26 @@ export abstract class IgcInputBaseComponent extends FormAssociatedRequiredMixin(
 
   @query('input')
   protected readonly _input?: HTMLInputElement;
+
+  /**
+   * Externally supplied label elements forwarded by a composite host (e.g. `igc-select`)
+   * so that the host's associated labels reach the inner native input. When set, these take
+   * precedence over the component's own `ElementInternals` labels.
+   *
+   * @hidden @internal
+   */
+  @state()
+  public _labelElements: ReadonlyArray<Element> | null = null;
+
+  /**
+   * Resolves the label elements applied to the native input as `aria-labelledby` targets,
+   * preferring forwarded labels over the component's own `ElementInternals` labels.
+   *
+   * @hidden @internal
+   */
+  protected get _resolvedLabelElements(): ReadonlyArray<Element> | null {
+    return this._labelElements ?? this._internals.labels;
+  }
 
   /* blazorSuppress */
   /** The value attribute of the control. */
