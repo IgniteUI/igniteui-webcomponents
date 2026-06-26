@@ -46,6 +46,12 @@ import { styles as shared } from './themes/shared/tabs/tabs.common.css.js';
 import { styles } from './themes/tabs.base.css.js';
 import { all } from './themes/tabs-themes.js';
 
+type TabSelectionOptions = {
+  tab?: IgcTabComponent;
+  shouldEmit?: boolean;
+  shouldScroll?: boolean;
+};
+
 export interface IgcTabsComponentEventMap {
   igcChange: CustomEvent<IgcTabComponent>;
 }
@@ -194,7 +200,11 @@ export default class IgcTabsComponent extends EventEmitterMixin<
 
     this._domHelpers.setStyleProperties();
     this._domHelpers.setScrollButtonState();
-    this._setSelectedTab(selectedTab, false);
+    this._setSelectedTab({
+      tab: selectedTab,
+      shouldEmit: false,
+      shouldScroll: false,
+    });
 
     this._resizeController.observe(this._headerRef.value!);
   }
@@ -239,7 +249,11 @@ export default class IgcTabsComponent extends EventEmitterMixin<
     const selected = changes.attributes.find(
       ({ node: tab }) => this._tabs.includes(tab) && tab.selected
     )?.node;
-    this._setSelectedTab(selected, false);
+    this._setSelectedTab({
+      tab: selected,
+      shouldEmit: false,
+      shouldScroll: false,
+    });
   }
 
   private _handleTabsAdded({
@@ -251,7 +265,11 @@ export default class IgcTabsComponent extends EventEmitterMixin<
           change.target.closest(this.tagName) === this && change.node.selected
       )?.node;
 
-      this._setSelectedTab(lastAdded, false);
+      this._setSelectedTab({
+        tab: lastAdded,
+        shouldEmit: false,
+        shouldScroll: false,
+      });
     }
   }
 
@@ -273,7 +291,11 @@ export default class IgcTabsComponent extends EventEmitterMixin<
       }
 
       if (nextSelectedTab) {
-        this._setSelectedTab(nextSelectedTab, false);
+        this._setSelectedTab({
+          tab: nextSelectedTab,
+          shouldEmit: false,
+          shouldScroll: false,
+        });
       }
     }
   }
@@ -288,7 +310,9 @@ export default class IgcTabsComponent extends EventEmitterMixin<
     return tab ? this._enabledTabs.indexOf(tab) : -1;
   }
 
-  private _setSelectedTab(tab?: IgcTabComponent, shouldEmit = true): void {
+  private _setSelectedTab(options: TabSelectionOptions): void {
+    const { tab, shouldEmit = true, shouldScroll = true } = options;
+
     if (!tab || tab === this._activeTab) {
       return;
     }
@@ -300,7 +324,9 @@ export default class IgcTabsComponent extends EventEmitterMixin<
     tab.selected = true;
     this._activeTab = tab;
 
-    scrollIntoView(getTabHeader(tab));
+    if (shouldScroll) {
+      scrollIntoView(getTabHeader(tab));
+    }
     this._domHelpers.setIndicator(this._activeTab);
 
     if (shouldEmit) {
@@ -316,7 +342,7 @@ export default class IgcTabsComponent extends EventEmitterMixin<
     header.focus({ preventScroll: true });
 
     if (this.activation === 'auto') {
-      this._setSelectedTab(tab);
+      this._setSelectedTab({ tab });
     }
   }
 
@@ -355,7 +381,7 @@ export default class IgcTabsComponent extends EventEmitterMixin<
     const index = this._getClosestActiveTabIndex();
 
     if (index > -1) {
-      this._setSelectedTab(tabs[index], false);
+      this._setSelectedTab({ tab: tabs[index], shouldEmit: false });
       this._keyboardActivateTab(tabs[index]);
     }
   }
@@ -373,7 +399,7 @@ export default class IgcTabsComponent extends EventEmitterMixin<
 
     this._domHelpers.setScrollSnap();
     getTabHeader(tab).focus();
-    this._setSelectedTab(tab);
+    this._setSelectedTab({ tab });
   }
 
   @eventOptions({ passive: true })
@@ -394,7 +420,7 @@ export default class IgcTabsComponent extends EventEmitterMixin<
     const tab = isString(ref) ? this._tabs.find((t) => t.id === ref) : ref;
 
     if (tab) {
-      this._setSelectedTab(tab, false);
+      this._setSelectedTab({ tab, shouldEmit: false });
     }
   }
 
