@@ -357,6 +357,29 @@ export const WithLogo: Story = {
           >CSS3</span
         >
       </div>
+      <div
+        style="display: flex; flex-direction: column; align-items: center; gap: 0.75rem;"
+      >
+        <igc-qr-code
+          value="https://www.infragistics.com/products/ignite-ui-web-components"
+          size="220"
+          error-level="H"
+          dot-style="circle"
+          square-style="rounded"
+          logo-src="https://static.infragistics.com/marketing/Website/products/ignite-ui/shared/ignite-ui-logo-light-background-horizontal.svg"
+          logo-size="0.75"
+          logo-margin="6"
+          style="
+            --igc-qr-dark: #0f172a;
+            --igc-qr-background: #ffffff;
+            --qr-corner-square-fill: #0f172a;
+            --qr-corner-dot-fill: #0f172a;
+          "
+        ></igc-qr-code>
+        <span style="color: #fff; font-family: sans-serif; font-weight: 600;"
+          >Ignite UI</span
+        >
+      </div>
     </div>
   `,
 };
