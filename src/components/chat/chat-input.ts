@@ -16,6 +16,8 @@ import { bindIf, hasFiles, isEmpty, trimmedHtml } from '../common/util.js';
 import IgcIconComponent from '../icon/icon.js';
 import IgcTextareaComponent from '../textarea/textarea.js';
 import type { ChatState } from './chat-state.js';
+import type { ISttClient } from './extras/stt-client-base.js';
+import { WebSpeechSttClient } from './extras/stt-client-webspeech.js';
 import { styles } from './themes/input.base.css.js';
 import { all } from './themes/input.js';
 import { styles as shared } from './themes/shared/input/input.common.css.js';
@@ -38,6 +40,7 @@ type DefaultInputRenderers = {
   inputActionsStart: ChatTemplateRenderer<ChatRenderContext>;
   inputAttachments: ChatTemplateRenderer<ChatInputRenderContext>;
   fileUploadButton: ChatTemplateRenderer<ChatRenderContext>;
+  speechToTextButton: ChatTemplateRenderer<ChatRenderContext>;
   sendButton: ChatTemplateRenderer<ChatRenderContext>;
 };
 
@@ -88,6 +91,7 @@ export default class IgcChatInputComponent extends LitElement {
 
   private readonly _defaults: Readonly<DefaultInputRenderers> = Object.freeze({
     fileUploadButton: () => this._renderFileUploadButton(),
+    speechToTextButton: () => this._renderSpeechToTextButton(),
     input: () => this._renderTextArea(),
     inputActions: () => this._renderActionsArea(),
     inputActionsEnd: () => nothing,
@@ -133,6 +137,111 @@ export default class IgcChatInputComponent extends LitElement {
 
   private get _acceptedTypes(): ChatAcceptedFileTypes | null {
     return this._state.acceptedFileTypes;
+  }
+
+  private _sttClient?: ISttClient;
+
+  @state()
+  private isRecording = false;
+
+  @state()
+  private isStopInProgress = false;
+  onPulseSignal = () => {
+    const el = this.renderRoot.querySelector<HTMLElement>(
+      'igc-icon-button[part="speech-to-text"]'
+    );
+    if (!el) return;
+
+    el.classList.add('pulsate');
+    el.addEventListener('animationend', () => el.classList.remove('pulsate'), {
+      once: true,
+    });
+  };
+
+  onStartCountdown = (ms: number | null) => {
+    if (ms) {
+      const circle = this.renderRoot.querySelector<SVGCircleElement>(
+        'svg.countdown-ring .ring-progress'
+      );
+      if (!circle) return;
+
+      circle.style.transition = 'none';
+      circle.style.strokeDashoffset = '100';
+      void circle.getBoundingClientRect(); // reflow
+
+      circle.style.transition = `stroke-dashoffset ${ms}ms linear`;
+      circle.style.strokeDashoffset = '0';
+    } else {
+      const circle = this.renderRoot.querySelector<SVGCircleElement>(
+        'svg.countdown-ring .ring-progress'
+      );
+      if (circle) {
+        circle.style.transition = 'none';
+        circle.style.strokeDashoffset = '100';
+      }
+    }
+  };
+
+  onStopInProgress = () => {
+    this.isStopInProgress = true;
+  };
+
+  onTranscript = (text: string) => {
+    this._state.inputValue = text;
+  };
+
+  onFinishedTranscribing = (finished: 'auto' | 'manual') => {
+    this.isStopInProgress = false;
+    this.isRecording = false;
+    if (finished === 'auto') {
+      this._sendMessage();
+    }
+  };
+
+  private async _toggleMic(): Promise<void> {
+    if (!this.isRecording) {
+      if (this._state.options?.speechToText?.serviceProvider === 'webspeech') {
+        this._sttClient = new WebSpeechSttClient(
+          this.onPulseSignal,
+          this.onStartCountdown,
+          this.onTranscript,
+          this.onStopInProgress,
+          this.onFinishedTranscribing
+        );
+      } else if (
+        this._state.options?.speechToText?.serviceProvider === 'backend' &&
+        this._state.options?.speechToText?.serviceUri
+      ) {
+        const { BackendSttClient } =
+          await import('./extras/stt-client-backend.js');
+        this._sttClient = new BackendSttClient(
+          this._state.options?.speechToText?.serviceUri ?? undefined,
+          this.onPulseSignal,
+          this.onStartCountdown,
+          this.onTranscript,
+          this.onStopInProgress,
+          this.onFinishedTranscribing
+        );
+      } else {
+        // console.error('No STT service configured');
+      }
+
+      if (!this._sttClient) {
+        return;
+      }
+
+      try {
+        await this._sttClient.start(this._state.options?.speechToText?.lang);
+        this.isRecording = true;
+        this.isStopInProgress = false;
+      } catch {
+        this._sttClient = undefined;
+        this.isRecording = false;
+        this.isStopInProgress = false;
+      }
+    } else {
+      this._sttClient?.stop();
+    }
   }
 
   constructor() {
@@ -338,7 +447,12 @@ export default class IgcChatInputComponent extends LitElement {
       <igc-textarea
         part="text-input"
         aria-label="Chat text input"
-        placeholder=${ifDefined(this._state.options?.inputPlaceholder)}
+        placeholder=${ifDefined(
+          this.isRecording
+            ? (this._state.options?.speakPlaceholder ??
+                this._state.options?.inputPlaceholder)
+            : this._state.options?.inputPlaceholder
+        )}
         resize="auto"
         rows="1"
         .value=${this._userInputState?.inputValue}
@@ -380,6 +494,43 @@ export default class IgcChatInputComponent extends LitElement {
     )}`;
   }
 
+  private _renderSpeechToTextButton() {
+    const sttEnabled = this._state.options?.speechToText?.enable;
+
+    return html`${cache(
+      sttEnabled
+        ? html` <div class="stop-btn-wrapper">
+            <igc-icon-button
+              part="speech-to-text"
+              aria-label="Speech to text"
+              variant="flat"
+              @click=${this._toggleMic}
+              ?disabled=${this.isStopInProgress}
+            >
+              ${this.isRecording ? '🛑' : '🎤'}
+            </igc-icon-button>
+            ${this.isRecording && !this.isStopInProgress
+              ? html`
+                  <svg
+                    class="countdown-ring"
+                    viewBox="0 0 36 36"
+                    aria-hidden="true"
+                  >
+                    <circle class="ring-bg" cx="18" cy="18" r="14"></circle>
+                    <circle
+                      class="ring-progress"
+                      cx="18"
+                      cy="18"
+                      r="14"
+                    ></circle>
+                  </svg>
+                `
+              : nothing}
+          </div>`
+        : nothing
+    )}`;
+  }
+
   private _renderSendButton() {
     const enabled =
       this._state.hasInputValue || this._state.hasInputAttachments;
@@ -402,6 +553,9 @@ export default class IgcChatInputComponent extends LitElement {
     return trimmedHtml`
       <div part="file-upload-container">
         ${this._getRenderer('fileUploadButton')(ctx)}
+      </div>
+      <div part="speech-to-text-container">
+        ${this._getRenderer('speechToTextButton')(ctx)}
       </div>
       <div part="input-actions-start">
         ${this._getRenderer('inputActionsStart')(ctx)}
