@@ -386,15 +386,13 @@ export const Reference: Story = {
 setIconRef('aliased', 'example', {
   name: 'biking',
   collection: 'default',
-});</pre
-          >
+});</pre>
         </div>
 
         <div>
           <p><strong>Using the reference in markup:</strong></p>
           <pre>
-&lt;igc-icon name="aliased" collection="example"&gt;&lt;/igc-icon&gt;</pre
-          >
+&lt;igc-icon name="aliased" collection="example"&gt;&lt;/igc-icon&gt;</pre>
         </div>
 
         <div class="ref-preview">

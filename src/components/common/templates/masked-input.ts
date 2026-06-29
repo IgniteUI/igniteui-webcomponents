@@ -65,7 +65,7 @@ export function renderMaskedNativeInput(
       inputmode=${ifDefined(opts.inputMode)}
       tabindex=${bindIf(opts.tabindex != null, opts.tabindex)}
       aria-describedby=${bindIf(!!opts.ariaDescribedBy, opts.ariaDescribedBy)}
-      .ariaLabelledByElements=${opts.ariaLabelledByElements}
+      .ariaLabelledByElements=${opts.ariaLabelledByElements ?? null}
       @input=${opts.onInput}
       @focus=${opts.onFocus}
       @blur=${opts.onBlur}

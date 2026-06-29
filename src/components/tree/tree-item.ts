@@ -521,52 +521,62 @@ export default class IgcTreeItemComponent extends LitElement {
           <slot name="indentation"></slot>
         </div>
         <div part=${partMap(indicatorParts)} aria-hidden="true">
-          ${this.loading
-            ? html`
-                <slot name="loading">
-                  <igc-circular-progress indeterminate></igc-circular-progress>
-                </slot>
-              `
-            : html`
-                <slot
-                  name="indicator"
-                  @click=${this.tree?.toggleNodeOnClick
-                    ? nothing
-                    : this.expandIndicatorClick}
-                >
-                  ${this.hasChildren
-                    ? html`
-                        <igc-icon
-                          aria-label=${ifDefined(
-                            this.expanded
-                              ? this.tree?.resourceStrings.collapse
-                              : this.tree?.resourceStrings.expand
-                          )}
-                          name=${this.expanded
-                            ? 'tree_collapse'
-                            : 'tree_expand'}
-                          collection="default"
-                        >
-                        </igc-icon>
-                      `
-                    : ''}
-                </slot>
-              `}
+          ${
+            this.loading
+              ? html`
+                  <slot name="loading">
+                    <igc-circular-progress
+                      indeterminate
+                    ></igc-circular-progress>
+                  </slot>
+                `
+              : html`
+                  <slot
+                    name="indicator"
+                    @click=${
+                      this.tree?.toggleNodeOnClick
+                        ? nothing
+                        : this.expandIndicatorClick
+                    }
+                  >
+                    ${
+                      this.hasChildren
+                        ? html`
+                            <igc-icon
+                              aria-label=${ifDefined(
+                              this.expanded
+                                ? this.tree?.resourceStrings.collapse
+                                : this.tree?.resourceStrings.expand
+                            )}
+                              name=${
+                              this.expanded ? 'tree_collapse' : 'tree_expand'
+                            }
+                              collection="default"
+                            >
+                            </igc-icon>
+                          `
+                        : ''
+                    }
+                  </slot>
+                `
+          }
         </div>
-        ${this.tree?.selection !== 'none'
-          ? html`
-              <div part="select" aria-hidden="true">
-                <igc-checkbox
-                  @click=${this.selectorClick}
-                  .checked=${this.selected}
-                  .indeterminate=${this.indeterminate}
-                  .disabled=${this.disabled}
-                  tabindex="-1"
-                >
-                </igc-checkbox>
-              </div>
-            `
-          : ''}
+        ${
+          this.tree?.selection !== 'none'
+            ? html`
+                <div part="select" aria-hidden="true">
+                  <igc-checkbox
+                    @click=${this.selectorClick}
+                    .checked=${this.selected}
+                    .indeterminate=${this.indeterminate}
+                    .disabled=${this.disabled}
+                    tabindex="-1"
+                  >
+                  </igc-checkbox>
+                </div>
+              `
+            : ''
+        }
         <div part="label">
           <slot
             name="label"

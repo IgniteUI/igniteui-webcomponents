@@ -431,15 +431,17 @@ export default class IgcChatComponent extends EventEmitterMixin<
             `;
           }
         )}
-        ${this._state.options?.isTyping
-          ? html`
-              <div part="typing-indicator">
-                <slot name="typing-indicator"
-                  >${this._renderLoadingTemplate()}</slot
-                >
-              </div>
-            `
-          : nothing}
+        ${
+          this._state.options?.isTyping
+            ? html`
+                <div part="typing-indicator">
+                  <slot name="typing-indicator"
+                    >${this._renderLoadingTemplate()}</slot
+                  >
+                </div>
+              `
+            : nothing
+        }
       </div>
     `;
   }
@@ -520,9 +522,11 @@ export default class IgcChatComponent extends EventEmitterMixin<
               ? this._renderMessages()
               : this._renderEmptyState()
           )}
-          ${this._state.suggestionsPosition === 'below-messages'
-            ? suggestions
-            : nothing}
+          ${
+            this._state.suggestionsPosition === 'below-messages'
+              ? suggestions
+              : nothing
+          }
         </div>
 
         <div part="input-area-container">
@@ -544,9 +548,11 @@ export default class IgcChatComponent extends EventEmitterMixin<
                 send-button"
           >
           </igc-chat-input>
-          ${this._state.suggestionsPosition === 'below-input'
-            ? suggestions
-            : nothing}
+          ${
+            this._state.suggestionsPosition === 'below-input'
+              ? suggestions
+              : nothing
+          }
         </div>
       </div>
     `;
