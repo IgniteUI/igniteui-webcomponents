@@ -7,7 +7,7 @@ import { addInternalsController } from '../common/controllers/internals.js';
 import { blazorDeepImport } from '../common/decorators/blazorDeepImport.js';
 import { shadowOptions } from '../common/decorators/shadow-options.js';
 import type { Constructor } from '../common/mixins/constructor.js';
-import { EventEmitterMixin } from '../common//mixins/event-emitter.js';
+import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { partMap } from '../common/part-map.js';
 import { bindIf, getElementByIdFromRoot } from '../common/util.js';
 

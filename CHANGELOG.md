@@ -4,10 +4,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [7.2.4] - 2026-06-29
 ### Added
-- #### Form associated custom elements
-  - External `<label>` associations are now resolved to the underlying native input of form-associated controls. Associating a label with `IgcInput`, `IgcMaskInput`, `IgcTextarea`, `IgcDateTimeInput`, `IgcSelect`, `IgcCombo`, `IgcDatePicker`, or `IgcDateRangePicker` — either through the `for`/`id` IDREF mechanism or by nesting the component inside the `<label>` — now correctly exposes the label to assistive technologies and focuses the inner input on label activation.
+- #### Form associated custom elements with external labels
+  - External `<label>` associations are now resolved to the underlying native input of form-associated controls. Associating a label with `IgcInput`, `IgcMaskInput`, `IgcTextarea`, `IgcDateTimeInput`, `IgcSelect`, `IgcCombo`, `IgcDatePicker`, or `IgcDateRangePicker` — either through the `for`/`id` IDREF mechanism or by nesting the component inside the `<label>` — now correctly exposes the label to assistive technologies and focuses the inner input on label activation. [#2263](https://github.com/IgniteUI/igniteui-webcomponents/pull/2263)
+
+### Changed
+- #### AI-Assisted Development
+  - Improved grid related skills [#2250](https://github.com/IgniteUI/igniteui-webcomponents/pull/2250)
+
+### Fixed
+- #### Tabs
+  - Prevent selected tab header to scroll into view on initial render [#2268](https://github.com/IgniteUI/igniteui-webcomponents/pull/2268)
 
 ## [7.2.3] - 2026-06-18
 ### Fixed
@@ -1383,6 +1391,7 @@ Initial release of Ignite UI Web Components
 - Ripple component
 - Switch component
 
+[7.2.4]: https://github.com/IgniteUI/igniteui-webcomponents/compare/7.2.3...7.2.4
 [7.2.3]: https://github.com/IgniteUI/igniteui-webcomponents/compare/7.2.2...7.2.3
 [7.2.2]: https://github.com/IgniteUI/igniteui-webcomponents/compare/7.2.1...7.2.2
 [7.2.1]: https://github.com/IgniteUI/igniteui-webcomponents/compare/7.2.0...7.2.1
