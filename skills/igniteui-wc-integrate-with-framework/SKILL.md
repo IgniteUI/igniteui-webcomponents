@@ -90,13 +90,14 @@ Before loading a reference, identify the target framework from the project conte
 
 ---
 
-### 4. Vanilla JavaScript / HTML (fallback)
+### 4. Vanilla JavaScript / HTML / LitElement (fallback)
 
 **Evidence to look for:**
 - No major framework found in `package.json`
 - Plain `.html` files reference a `<script type="module">`
 - Entry point is a plain `.js` or `.ts` file with no framework imports
-- User explicitly asks for vanilla JS or HTML integration
+- `package.json` contains `"lit"` — LitElement components use the same setup path
+- User explicitly asks for vanilla JS, HTML, or LitElement integration
 
 → **Load:** [vanilla-js.md](./references/vanilla-js.md)
 
@@ -119,7 +120,7 @@ Then load the matching reference from the options above.
 | React | [react.md](./references/react.md) |
 | Angular | [angular.md](./references/angular.md) |
 | Vue 3 | [vue.md](./references/vue.md) |
-| Vanilla JS / HTML | [vanilla-js.md](./references/vanilla-js.md) |
+| Vanilla JS / HTML / LitElement | [vanilla-js.md](./references/vanilla-js.md) |
 
 Each reference covers:
 

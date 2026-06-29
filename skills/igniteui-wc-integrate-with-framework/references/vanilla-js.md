@@ -113,6 +113,19 @@ document.body.innerHTML = '<igc-button>Click</igc-button>';
 
 Ensure you import a theme CSS file in your entry point. Without it, components render unstyled.
 
+**LitElement + `igniteui-webcomponents-grids` specifically:** A bare `import '...css'` is blocked by the component's shadow root — internal `igx-*` elements (toolbar checkboxes, dropdowns, column-actions panels) receive no styles and render with incorrect dimensions. Import the theme as an inline string and render it as a `<style>` tag inside `render()`:
+
+```typescript
+import gridTheme from 'igniteui-webcomponents-grids/grids/themes/light/material.css?inline';
+
+render() {
+  return html`
+    <style>${gridTheme}</style>
+    <igc-grid ...>
+  `;
+}
+```
+
 ## Next Steps
 
 - [Optimize bundle size](../../igniteui-wc-optimize-bundle-size/SKILL.md) — import only the components you use

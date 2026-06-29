@@ -134,6 +134,25 @@ For core UI component theming, prefer `create_component_theme` and apply the ret
 ### Grid theming is package-specific
 `igniteui-grid-lite` and the premium grid packages do not map to Angular's `igx-grid__*` internal class structure. Use `get_component_design_tokens("grid")`, the exact grid package docs, and exposed tokens or parts for the package present in the workspace.
 
+### `igniteui-webcomponents-grids` theme must be injected into the shadow root
+
+A bare CSS import (`import '...material.css'`) lands in the document head and is blocked by a LitElement shadow root — it never reaches the grid's internal `igx-*` components (toolbar checkboxes, column-actions panels, dropdown overlays). Without it those elements render with broken dimensions; checkboxes can expand to 1,100 px wide and collapse the entire grid UI.
+
+Import the theme as an inline string and render it as a `<style>` tag at the top of `render()`:
+
+```typescript
+import gridTheme from 'igniteui-webcomponents-grids/grids/themes/light/material.css?inline';
+
+render() {
+  return html`
+    <style>${gridTheme}</style>
+    <igc-grid ...>
+  `;
+}
+```
+
+Apply the same `?inline` + `<style>` approach for dark or other theme variants.
+
 ### Read luminance warnings from palette generation
 If palette generation returns a luminance warning for a generated surface, do not ignore it. If the design needs multiple surface depths, use `create_custom_palette` or define semantic CSS variables such as `--surface-1` and `--surface-2` in the main stylesheet instead of relying on a single generated surface color.
 
