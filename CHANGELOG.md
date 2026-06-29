@@ -15,7 +15,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 - #### Tabs
-  - Prevent selected tab header to scroll into view on initial render [#2268](https://github.com/IgniteUI/igniteui-webcomponents/pull/2268)
+  - Prevent selected tab header from scrolling into view on initial render [#2268](https://github.com/IgniteUI/igniteui-webcomponents/pull/2268)
 
 ## [7.2.3] - 2026-06-18
 ### Fixed
