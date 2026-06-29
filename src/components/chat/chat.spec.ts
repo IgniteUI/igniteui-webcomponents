@@ -64,9 +64,11 @@ describe('Chat', () => {
         ${attachments.map(
           (attachment) => html`
             <a
-              href=${attachment.file
-                ? URL.createObjectURL(attachment.file)
-                : (attachment.url ?? '')}
+              href=${
+                attachment.file
+                  ? URL.createObjectURL(attachment.file)
+                  : (attachment.url ?? '')
+              }
               target="_blank"
             >
               ${attachment.name}

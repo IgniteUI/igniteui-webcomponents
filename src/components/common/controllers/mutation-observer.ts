@@ -32,8 +32,7 @@ type MutationControllerCallback<T extends Node = Node> = (
  * an array of selector strings or a predicate function.
  */
 type MutationControllerFilter<T extends Node = Node> =
-  | string[]
-  | ((node: T) => boolean);
+  string[] | ((node: T) => boolean);
 
 type MutationDOMChange<T extends Node = Node> = {
   /** The parent of the added/removed element. */

@@ -7,10 +7,7 @@ import type { IgcDateRangePickerResourceStrings } from './EN/date-range-picker.r
 
 /** Names of components currently handling a mix of old and new resource strings. */
 export type I18nResourceMapNames =
-  | 'calendar'
-  | 'date-picker'
-  | 'date-range-picker'
-  | 'chat';
+  'calendar' | 'date-picker' | 'date-range-picker' | 'chat';
 
 export const calendarResourcesMap = new Map<
   keyof IgcCalendarResourceStrings,

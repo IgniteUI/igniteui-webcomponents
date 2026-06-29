@@ -11,11 +11,7 @@ export type PopoverScrollStrategy = 'scroll' | 'block' | 'close';
 export type RangeTextSelectMode = 'preserve' | 'select' | 'start' | 'end';
 export type SelectionRangeDirection = 'none' | 'backward' | 'forward';
 export type StyleVariant =
-  | 'primary'
-  | 'info'
-  | 'success'
-  | 'warning'
-  | 'danger';
+  'primary' | 'info' | 'success' | 'warning' | 'danger';
 export type ToggleLabelPosition = 'after' | 'before';
 export type TreeSelection = 'none' | 'multiple' | 'cascade';
 //#endregion
@@ -31,20 +27,9 @@ export type DividerType = 'solid' | 'dashed';
 export type ExpansionPanelIndicatorPosition = 'start' | 'end' | 'none';
 export type IconButtonVariant = 'contained' | 'flat' | 'outlined';
 export type InputType =
-  | 'text'
-  | 'email'
-  | 'number'
-  | 'password'
-  | 'search'
-  | 'tel'
-  | 'url';
+  'text' | 'email' | 'number' | 'password' | 'search' | 'tel' | 'url';
 export type LinearProgressLabelAlign =
-  | 'top-start'
-  | 'top'
-  | 'top-end'
-  | 'bottom-start'
-  | 'bottom'
-  | 'bottom-end';
+  'top-start' | 'top' | 'top-end' | 'bottom-start' | 'bottom' | 'bottom-end';
 export type MaskInputValueMode = 'raw' | 'withFormatting';
 export type NavDrawerPosition = 'start' | 'end' | 'top' | 'bottom' | 'relative';
 export type SliderTickLabelRotation = 0 | 90 | -90;
