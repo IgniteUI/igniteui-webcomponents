@@ -544,13 +544,13 @@ export default class IgcTreeItemComponent extends LitElement {
                         ? html`
                             <igc-icon
                               aria-label=${ifDefined(
-                              this.expanded
-                                ? this.tree?.resourceStrings.collapse
-                                : this.tree?.resourceStrings.expand
-                            )}
+                                this.expanded
+                                  ? this.tree?.resourceStrings.collapse
+                                  : this.tree?.resourceStrings.expand
+                              )}
                               name=${
-                              this.expanded ? 'tree_collapse' : 'tree_expand'
-                            }
+                                this.expanded ? 'tree_collapse' : 'tree_expand'
+                              }
                               collection="default"
                             >
                             </igc-icon>
