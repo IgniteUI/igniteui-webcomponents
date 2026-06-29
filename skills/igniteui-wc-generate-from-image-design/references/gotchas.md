@@ -146,7 +146,7 @@ import gridTheme from 'igniteui-webcomponents-grids/grids/themes/light/material.
 render() {
   return html`
     <style>${gridTheme}</style>
-    <igc-grid ...>
+    <igc-grid ...></igc-grid>
   `;
 }
 ```
