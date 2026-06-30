@@ -108,12 +108,12 @@ import {
   IgcNoopFilteringStrategy,
 } from 'igniteui-webcomponents-grids';
 
-// Theme — import as an inline string so it can be injected into the LitElement shadow root
+// Theme — import as an inline string so it can be injected into the shadow root
 // Available: light|dark x bootstrap|material|fluent|indigo
 import gridTheme from 'igniteui-webcomponents-grids/grids/themes/light/material.css?inline';
 ```
 
-> **LitElement shadow DOM — required step:** A bare CSS import is blocked by the component's shadow root and will not style internal `igx-*` elements (checkboxes, dropdowns, toolbar panels). Always render the theme as a `<style>` tag at the top of `render()`:
+> **Grid inside a Shadow root — required step:** A bare CSS import lands in the document head and never reaches inside a Shadow root — the grid's internal structure and elements get no styles. Inject the theme as a `<style>` tag inside the shadow root. For a LitElement component, at the top of `render()`:
 > ```typescript
 > render() {
 >   return html`
