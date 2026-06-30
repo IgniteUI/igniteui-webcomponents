@@ -138,7 +138,7 @@ For core UI component theming, prefer `create_component_theme` and apply the ret
 
 A bare CSS import (`import '...material.css'`) lands in the document head and selector rules outside a Shadow root never reach inside it. When the grid is rendered inside a Shadow root, the theme must be injected there too — it targets the grid's internal structure and elements. Without it, internal grid elements render with broken dimensions; checkboxes can expand to 1,100 px wide and collapse the entire grid UI.
 
-Import the theme as an inline string and render it as a `<style>` tag at the top of `render()`:
+Import the theme as an inline string (requires bundler support for `?inline`, e.g. Vite) and render it as a `<style>` tag at the top of `render()`:
 
 ```typescript
 import gridTheme from 'igniteui-webcomponents-grids/grids/themes/light/material.css?inline';
@@ -146,7 +146,7 @@ import gridTheme from 'igniteui-webcomponents-grids/grids/themes/light/material.
 render() {
   return html`
     <style>${gridTheme}</style>
-    <igc-grid ...>
+    <igc-grid ...></igc-grid>
   `;
 }
 ```
