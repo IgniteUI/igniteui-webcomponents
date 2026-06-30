@@ -90,7 +90,7 @@ Before loading a reference, identify the target framework from the project conte
 
 ---
 
-### 4. Vanilla JavaScript / HTML / LitElement (fallback)
+### 4. Vanilla JavaScript / HTML (fallback)
 
 **Evidence to look for:**
 - No major framework found in `package.json`

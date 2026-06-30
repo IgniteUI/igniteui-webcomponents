@@ -136,7 +136,7 @@ For core UI component theming, prefer `create_component_theme` and apply the ret
 
 ### `igniteui-webcomponents-grids` theme must be injected into the shadow root
 
-A bare CSS import (`import '...material.css'`) lands in the document head and is blocked by a LitElement shadow root — it never reaches the grid's internal `igx-*` components (toolbar checkboxes, column-actions panels, dropdown overlays). Without it those elements render with broken dimensions; checkboxes can expand to 1,100 px wide and collapse the entire grid UI.
+A bare CSS import (`import '...material.css'`) lands in the document head and selector rules outside a Shadow root never reach inside it. When the grid is rendered inside a Shadow root, the theme must be injected there too — it targets the grid's internal structure and elements. Without it, internal grid elements render with broken dimensions; checkboxes can expand to 1,100 px wide and collapse the entire grid UI.
 
 Import the theme as an inline string and render it as a `<style>` tag at the top of `render()`:
 
