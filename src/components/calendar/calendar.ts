@@ -641,15 +641,21 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
     return html`
       <div part="navigation">
         <div part="picker-dates">
-          ${this._isDayView
-            ? this._renderMonthButtonNavigation(activeDate, viewIndex)
-            : nothing}
-          ${this._isDayView || this._isMonthView
-            ? this._renderYearButtonNavigation(activeDate, viewIndex)
-            : nothing}
-          ${this._isYearView
-            ? this._renderYearRangeNavigation(activeDate)
-            : nothing}
+          ${
+            this._isDayView
+              ? this._renderMonthButtonNavigation(activeDate, viewIndex)
+              : nothing
+          }
+          ${
+            this._isDayView || this._isMonthView
+              ? this._renderYearButtonNavigation(activeDate, viewIndex)
+              : nothing
+          }
+          ${
+            this._isYearView
+              ? this._renderYearRangeNavigation(activeDate)
+              : nothing
+          }
         </div>
         ${showButtons ? this._renderNavigationButtons() : nothing}
       </div>

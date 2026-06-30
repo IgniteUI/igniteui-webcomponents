@@ -544,9 +544,11 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
 
       yield html`
         <div role="row" part="days-row" aria-hidden=${hidden}>
-          ${this.showWeekNumbers
-            ? this._renderWeekNumber(week[0], isLast)
-            : nothing}
+          ${
+            this.showWeekNumbers
+              ? this._renderWeekNumber(week[0], isLast)
+              : nothing
+          }
           ${week.map((day) =>
             this._renderDayWithProps(day, dayPropertiesMap.get(day.timestamp)!)
           )}

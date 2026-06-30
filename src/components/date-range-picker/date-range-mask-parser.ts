@@ -165,18 +165,16 @@ export class DateRangeMaskParser extends MaskParser {
       })
     );
 
-    const endParts = this._endParser.dateParts.map(
-      (part): IDateRangePart => ({
-        ...part,
-        // Adjust positions for end date (offset by separator)
-        start: part.start + this._separatorEnd,
-        end: part.end + this._separatorEnd,
-        position: DateRangePosition.End,
-        getValue: part.getValue.bind(part),
-        validate: part.validate.bind(part),
-        spin: part.spin.bind(part),
-      })
-    );
+    const endParts = this._endParser.dateParts.map((part): IDateRangePart => ({
+      ...part,
+      // Adjust positions for end date (offset by separator)
+      start: part.start + this._separatorEnd,
+      end: part.end + this._separatorEnd,
+      position: DateRangePosition.End,
+      getValue: part.getValue.bind(part),
+      validate: part.validate.bind(part),
+      spin: part.spin.bind(part),
+    }));
 
     this._rangeParts = [...startParts, ...endParts];
   }
