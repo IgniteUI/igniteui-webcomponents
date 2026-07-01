@@ -26,7 +26,7 @@
     "build:meta": "node scripts/build-stories.mjs",
     "watch-meta": "node scripts/stories-watcher.js ",
     "watch-scss": "node scripts/styles-watcher.mjs",
-    "check-imports": "dependency-cruise -c .dependency-cruiser.cjs src",
+    "check-imports": "depcruise --config .dependency-cruiser.cjs --output-type err ./src/index.ts",
     "check-types": "tsc -p scripts/tsconfig-ci.json",
     "check": "npm run check-imports && npm run check-types",
     "clean": "npm run clean:dist && npm run clean:styles && npm run clean:docs",

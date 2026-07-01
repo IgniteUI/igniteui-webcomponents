@@ -486,7 +486,7 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
 
   //#region Internal API
 
-  /** @private @hidden @internal */
+  /** @hidden @internal */
   public async [focusActiveDate](options?: FocusOptions): Promise<void> {
     await this.updateComplete;
 
