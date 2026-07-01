@@ -108,7 +108,9 @@ class TabsHelpers {
   private _getEndOffset(container: HTMLElement): number {
     const factor = isLTR(this._host) ? 1 : -1;
     const delta =
-      container.scrollWidth - container.clientWidth - container.scrollLeft;
+      container.scrollWidth -
+      container.clientWidth -
+      Math.abs(container.scrollLeft);
     return (delta < SCROLL_AMOUNT ? delta : SCROLL_AMOUNT) * factor;
   }
 
