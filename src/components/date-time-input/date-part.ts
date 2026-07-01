@@ -74,7 +74,10 @@ export interface SpinOptions {
   originalDate?: Date;
 }
 
-/** Read-only interface for date part information */
+/**
+ * Read-only interface for date part information
+ * @ignore
+ */
 export interface IDatePart {
   /** The type of date part */
   readonly type: DatePartType;

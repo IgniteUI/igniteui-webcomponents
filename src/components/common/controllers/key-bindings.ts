@@ -124,6 +124,7 @@ interface KeyBindingOptions {
   stopPropagation?: boolean;
 }
 
+/** @ignore */
 interface KeyBinding {
   keys: string[];
   handler: KeyBindingHandler;
@@ -184,7 +185,7 @@ function createCombinationKey(keys: string[], modifiers: string[]): string {
  *
  * The controller listens for keyboard events on the host element (or an optionally specified element) and invokes the appropriate handlers
  * when the registered key combinations are detected.
- *
+ * @ignore
  */
 class KeyBindingController implements ReactiveController {
   //#region Private properties and state
