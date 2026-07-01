@@ -12,6 +12,7 @@ import { addRootClickController } from '../common/controllers/root-click.js';
 import { addSlotController, setSlots } from '../common/controllers/slot.js';
 import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditionalDependencies.js';
 import { blazorIndirectRender } from '../common/decorators/blazorIndirectRender.js';
+import { shadowOptions } from '../common/decorators/shadow-options.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { addI18nController } from '../common/i18n/i18n-controller.js';
 import { IgcBaseComboBoxComponent } from '../common/mixins/combo-box.js';
@@ -125,6 +126,7 @@ const SLOTS = setSlots(
  */
 @blazorAdditionalDependencies('IgcIconComponent, IgcInputComponent')
 @blazorIndirectRender
+@shadowOptions({ delegatesFocus: true })
 export default class IgcComboComponent<
   T extends object = any,
 > extends FormAssociatedRequiredMixin(
@@ -438,10 +440,6 @@ export default class IgcComboComponent<
   /**
    * An object that configures the filtering of the combo.
    * @attr filtering-options
-   * @type {FilteringOptions<T>}
-   * @param filterKey - The key in the data source used when filtering the list of options.
-   * @param caseSensitive - Determines whether the filtering operation should be case sensitive.
-   * @param matchDiacritics -If true, the filter distinguishes between accented letters and their base letters.
    */
   @property({ type: Object, attribute: 'filtering-options' })
   public set filteringOptions(value: Partial<FilteringOptions<T>>) {
@@ -589,6 +587,13 @@ export default class IgcComboComponent<
       this._syncSelectionFromValue();
       this._formValue.setValueAndFormState(this.value);
       this._pristine = pristine;
+    }
+  }
+
+  protected override updated(props: PropertyValues<this>): void {
+    super.updated(props);
+    if (this._inputRef.value) {
+      this._inputRef.value._labelElements = this._internals.labels;
     }
   }
 

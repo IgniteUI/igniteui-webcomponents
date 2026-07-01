@@ -55,10 +55,10 @@ export default class IgcTreeComponent extends EventEmitterMixin<
     }
   );
 
-  /** @private @hidden @internal */
+  /** @hidden @internal */
   public selectionService!: IgcTreeSelectionService;
 
-  /** @private @hidden @internal */
+  /** @hidden @internal */
   public navService!: IgcTreeNavigationService;
 
   /**
@@ -180,7 +180,8 @@ export default class IgcTreeComponent extends EventEmitterMixin<
     this.navService.handleKeydown(event);
   }
 
-  /** @private */
+  /* blazorSuppress */
+  /** @hidden @internal */
   public expandToItem(item: IgcTreeItemComponent): void {
     if (item?.parent) {
       item.path.forEach((i) => {

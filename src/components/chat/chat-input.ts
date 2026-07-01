@@ -292,7 +292,7 @@ export default class IgcChatInputComponent extends LitElement {
 
   private _handleInput({ detail }: CustomEvent<string>): void {
     this._state.inputValue = detail;
-    this._state.emitEvent('igcInputChange', { detail: { value: detail } });
+    this._state.emitEvent('igcInputChange', { detail });
   }
 
   private _handleFileUpload(event: Event): void {
@@ -430,13 +430,15 @@ export default class IgcChatInputComponent extends LitElement {
         @dragleave=${this._handleDragLeave}
         @drop=${this._handleDrop}
       >
-        ${this._state.hasInputAttachments
-          ? html`
-              <div part="attachments" role="list" aria-label="Attachments">
-                ${until(this._getRenderer('inputAttachments')(inputCtx))}
-              </div>
-            `
-          : nothing}
+        ${
+          this._state.hasInputAttachments
+            ? html`
+                <div part="attachments" role="list" aria-label="Attachments">
+                  ${until(this._getRenderer('inputAttachments')(inputCtx))}
+                </div>
+              `
+            : nothing
+        }
 
         <div part="input-wrapper">
           ${until(this._getRenderer('input')(inputCtx))}

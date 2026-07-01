@@ -783,8 +783,9 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
         ${ref(this._prevButtonRef)}
         type="button"
         part="navigation previous"
-        aria-label=${this.resourceStrings.carousel_previous_slide ??
-        'previous slide'}
+        aria-label=${
+          this.resourceStrings.carousel_previous_slide ?? 'previous slide'
+        }
         aria-controls=${this._carouselId}
         ?disabled=${this.disableLoop && this.current === 0}
         @click=${this._handleNavigationInteractionPrevious}

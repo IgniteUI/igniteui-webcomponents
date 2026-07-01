@@ -106,12 +106,7 @@ interface IgcLinearProgressArgs {
   striped: boolean;
   /** The position for the default label of the control. */
   labelAlign:
-    | 'top-start'
-    | 'top'
-    | 'top-end'
-    | 'bottom-start'
-    | 'bottom'
-    | 'bottom-end';
+    'top-start' | 'top' | 'top-end' | 'bottom-start' | 'bottom' | 'bottom-end';
   /** Maximum value of the control. */
   max: number;
   /** The value of the control. */

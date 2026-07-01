@@ -136,8 +136,7 @@ export default class IgcStepComponent extends LitElement {
   }
 
   private get _animation():
-    | StepperVerticalAnimation
-    | HorizontalTransitionAnimation {
+    StepperVerticalAnimation | HorizontalTransitionAnimation {
     const animation = this._isHorizontal
       ? this._stepper?.horizontalAnimation
       : this._stepper?.verticalAnimation;

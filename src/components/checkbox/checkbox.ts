@@ -113,9 +113,11 @@ export default class IgcCheckboxComponent extends IgcCheckboxBaseComponent {
         />
         <span part=${partMap({ control: true, checked })}>
           <span part=${partMap({ indicator: true, checked })}>
-            ${this._themes.theme === 'indigo'
-              ? this._renderIndigo()
-              : this._renderStandard()}
+            ${
+              this._themes.theme === 'indigo'
+                ? this._renderIndigo()
+                : this._renderStandard()
+            }
           </span>
         </span>
         <span

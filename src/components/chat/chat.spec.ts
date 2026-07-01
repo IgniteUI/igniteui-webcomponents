@@ -64,9 +64,11 @@ describe('Chat', () => {
         ${attachments.map(
           (attachment) => html`
             <a
-              href=${attachment.file
-                ? URL.createObjectURL(attachment.file)
-                : (attachment.url ?? '')}
+              href=${
+                attachment.file
+                  ? URL.createObjectURL(attachment.file)
+                  : (attachment.url ?? '')
+              }
               target="_blank"
             >
               ${attachment.name}
@@ -995,7 +997,7 @@ describe('Chat', () => {
       textArea.dispatchEvent(new CustomEvent('igcInput', { detail: 'Hello!' }));
       await elementUpdated(chat);
       expect(eventSpy).calledWith('igcInputChange', {
-        detail: { value: 'Hello!' },
+        detail: 'Hello!',
       });
     });
 

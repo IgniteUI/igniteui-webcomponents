@@ -36,6 +36,8 @@ export interface IgcDateTimeInputComponentEventMap {
   blur: FocusEvent;
 }
 
+/* blazorIndirectRender */
+/* blazorSupportsVisualChildren */
 /**
  * A date time input is an input field that lets you set and edit the date and time in a chosen input element
  * using customizable display and input formats.

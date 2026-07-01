@@ -261,6 +261,72 @@ describe('Tile Manager component', () => {
     });
   });
 
+  describe('Maximize', () => {
+    beforeEach(async () => {
+      tileManager = await fixture<IgcTileManagerComponent>(createTileManager());
+    });
+
+    it('issue 2029 - preserves grid container height when maximizing the only tile with the maximum row-span', async () => {
+      const grid = getTileManagerBase();
+      const tile = tileManager.tiles[0];
+
+      // Make the first tile the sole contributor to the tallest row track.
+      tile.rowSpan = 30;
+      await elementUpdated(tileManager);
+
+      const initialHeight = grid.offsetHeight;
+      expect(grid.style.minHeight).to.equal('');
+
+      tile.maximized = true;
+      await elementUpdated(tileManager);
+
+      // The grid height is locked so the maximized tile's content is not clipped.
+      expect(grid.style.minHeight).to.equal(`${initialHeight}px`);
+      expect(grid.offsetHeight).to.equal(initialHeight);
+    });
+
+    it('issue 2029 - releases the locked grid height once no tile is maximized', async () => {
+      const grid = getTileManagerBase();
+      const tile = tileManager.tiles[0];
+
+      tile.rowSpan = 30;
+      await elementUpdated(tileManager);
+
+      tile.maximized = true;
+      await elementUpdated(tileManager);
+      expect(grid.style.minHeight).to.not.equal('');
+
+      tile.maximized = false;
+      await elementUpdated(tileManager);
+      expect(grid.style.minHeight).to.equal('');
+    });
+
+    it('issue 2029 - keeps the grid height locked while any tile remains maximized', async () => {
+      const grid = getTileManagerBase();
+      const [firstTile, secondTile] = tileManager.tiles;
+
+      firstTile.maximized = true;
+      await elementUpdated(tileManager);
+
+      const lockedHeight = grid.style.minHeight;
+      expect(lockedHeight).to.not.equal('');
+
+      secondTile.maximized = true;
+      await elementUpdated(tileManager);
+
+      // The lock is retained (and not re-measured) while another tile is still maximized.
+      expect(grid.style.minHeight).to.equal(lockedHeight);
+
+      firstTile.maximized = false;
+      await elementUpdated(tileManager);
+      expect(grid.style.minHeight).to.equal(lockedHeight);
+
+      secondTile.maximized = false;
+      await elementUpdated(tileManager);
+      expect(grid.style.minHeight).to.equal('');
+    });
+  });
+
   describe('Manual slot assignment', () => {
     beforeEach(async () => {
       tileManager = await fixture<IgcTileManagerComponent>(html`

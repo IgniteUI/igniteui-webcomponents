@@ -437,17 +437,19 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
       >
         <div ${ref(this._containerRef)} part=${partMap(parts)}>
           <slot>${this.message}</slot>
-          ${this.sticky
-            ? html`
-                <slot name="close-button" @click=${this._setAutoHide}>
-                  <igc-icon
-                    name="input_clear"
-                    collection="default"
-                    aria-hidden="true"
-                  ></igc-icon>
-                </slot>
-              `
-            : nothing}
+          ${
+            this.sticky
+              ? html`
+                  <slot name="close-button" @click=${this._setAutoHide}>
+                    <igc-icon
+                      name="input_clear"
+                      collection="default"
+                      aria-hidden="true"
+                    ></igc-icon>
+                  </slot>
+                `
+              : nothing
+          }
           ${this.withArrow ? html`<div id="arrow"></div>` : nothing}
         </div>
       </igc-popover>

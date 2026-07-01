@@ -338,13 +338,15 @@ export default class IgcDialogComponent extends EventEmitterMixin<
     return html`
       <footer part="footer">
         <slot name="footer">
-          ${this.hideDefaultAction
-            ? nothing
-            : html`
-                <igc-button variant="flat" @click=${this._closeWithEvent}>
-                  OK
-                </igc-button>
-              `}
+          ${
+            this.hideDefaultAction
+              ? nothing
+              : html`
+                  <igc-button variant="flat" @click=${this._closeWithEvent}>
+                    OK
+                  </igc-button>
+                `
+          }
         </slot>
       </footer>
     `;

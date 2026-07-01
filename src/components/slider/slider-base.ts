@@ -531,13 +531,15 @@ export class IgcSliderBaseComponent extends LitElement {
 
       yield html`<div part="tick-group">
         <div part="tick" data-primary=${primary}>
-          ${shown
-            ? nothing
-            : html`
-                <div part="tick-label">
-                  <span part="tick-label-inner">${labelInner}</span>
-                </div>
-              `}
+          ${
+            shown
+              ? nothing
+              : html`
+                  <div part="tick-label">
+                    <span part="tick-label-inner">${labelInner}</span>
+                  </div>
+                `
+          }
         </div>
       </div>`;
     }
@@ -579,15 +581,17 @@ export class IgcSliderBaseComponent extends LitElement {
         @focus=${this.handleThumbFocus}
         @blur=${this.handleThumbBlur}
       ></div>
-      ${this.hideTooltip
-        ? nothing
-        : html`
-            <div part="thumb-label" style=${styleMap(tooltipStyles)}>
-              <div part="thumb-label-inner">
-                ${this.hasLabels ? this.labels[value] : this.formatValue(value)}
+      ${
+        this.hideTooltip
+          ? nothing
+          : html`
+              <div part="thumb-label" style=${styleMap(tooltipStyles)}>
+                <div part="thumb-label-inner">
+                  ${this.hasLabels ? this.labels[value] : this.formatValue(value)}
+                </div>
               </div>
-            </div>
-          `}
+            `
+      }
     `;
   }
 
