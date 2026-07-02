@@ -96,7 +96,7 @@ Before loading a reference, identify the target framework from the project conte
 - No major framework found in `package.json`
 - Plain `.html` files reference a `<script type="module">`
 - Entry point is a plain `.js` or `.ts` file with no framework imports
-- `package.json` contains `"lit"` — LitElement components use the same setup path
+- `package.json` contains `"lit"` — LitElement projects use the same integration path as vanilla JS
 - User explicitly asks for vanilla JS, HTML, or LitElement integration
 
 → **Load:** [vanilla-js.md](./references/vanilla-js.md)
@@ -107,7 +107,7 @@ Before loading a reference, identify the target framework from the project conte
 
 Ask the user directly:
 
-> "What framework or platform are you using? (React, Angular, Vue 3, or Vanilla JS / HTML)"
+> "What framework or platform are you using? (React, Angular, Vue 3, Vanilla JS / HTML, or LitElement)"
 
 Then load the matching reference from the options above.
 
