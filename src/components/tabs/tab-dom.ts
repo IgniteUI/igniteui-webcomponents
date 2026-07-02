@@ -3,8 +3,9 @@ import { getScaleFactor, isLTR, setStyles } from '../common/util.js';
 import type IgcTabComponent from './tab.js';
 import type IgcTabsComponent from './tabs.js';
 
+const SCROLL_AMOUNT = 180;
+
 class TabsHelpers {
-  private static readonly SCROLL_AMOUNT = 180;
   private readonly _host: IgcTabsComponent;
   private readonly _container: Ref<HTMLElement>;
   private readonly _indicator: Ref<HTMLElement>;
@@ -98,6 +99,21 @@ class TabsHelpers {
     }
   }
 
+  private _getStartOffset(container: HTMLElement): number {
+    const factor = isLTR(this._host) ? -1 : 1;
+    const delta = Math.abs(container.scrollLeft);
+    return (delta < SCROLL_AMOUNT ? delta : SCROLL_AMOUNT) * factor;
+  }
+
+  private _getEndOffset(container: HTMLElement): number {
+    const factor = isLTR(this._host) ? 1 : -1;
+    const delta =
+      container.scrollWidth -
+      container.clientWidth -
+      Math.abs(container.scrollLeft);
+    return (delta < SCROLL_AMOUNT ? delta : SCROLL_AMOUNT) * factor;
+  }
+
   /**
    * Scrolls the tabs header strip in the given direction with `scroll-snap-align` set.
    */
@@ -106,14 +122,13 @@ class TabsHelpers {
       return;
     }
 
-    const factor = isLTR(this._host) ? 1 : -1;
     const amount =
       direction === 'start'
-        ? -TabsHelpers.SCROLL_AMOUNT
-        : TabsHelpers.SCROLL_AMOUNT;
+        ? this._getStartOffset(this.container)
+        : this._getEndOffset(this.container);
 
     this.setScrollSnap(direction);
-    this.container.scrollBy({ left: factor * amount, behavior: 'smooth' });
+    this.container.scrollBy({ left: amount, behavior: 'smooth' });
   }
 
   /**
@@ -157,7 +172,7 @@ class TabsHelpers {
       const scaledWidth =
         header.getBoundingClientRect().width * getScaleFactor(header).x;
 
-      const offset = this._isLeftToRight
+      const offset = isLTR(this._host)
         ? header.offsetLeft - containerLeft
         : header.offsetLeft + scaledWidth - containerWidth;
 
