@@ -108,7 +108,7 @@ import {
   IgcNoopFilteringStrategy,
 } from 'igniteui-webcomponents-grids';
 
-// Theme — import as an inline string so it can be injected into the shadow root
+// Theme — import as an inline string so it can be injected into the shadow root (requires bundler support for ?inline, e.g. Vite)
 // Available: light|dark x bootstrap|material|fluent|indigo
 import gridTheme from 'igniteui-webcomponents-grids/grids/themes/light/material.css?inline';
 ```
