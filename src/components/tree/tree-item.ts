@@ -592,6 +592,7 @@ export default class IgcTreeItemComponent extends LitElement {
             ? html`
                 <div part="select" aria-hidden="true">
                   <igc-checkbox
+                    tabindex="-1"
                     @click=${this._selectorClick}
                     .checked=${this.selected}
                     .indeterminate=${this.indeterminate}

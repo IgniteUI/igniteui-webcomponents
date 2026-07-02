@@ -86,7 +86,7 @@ export class IgcTreeNavigationService {
       return;
     }
 
-    if (this._activeItem && value) {
+    if (this._activeItem) {
       this._activeItem.active = false;
     }
 
