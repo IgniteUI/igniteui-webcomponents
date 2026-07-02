@@ -1,313 +1,275 @@
-import { isLTR } from '../common/util.js';
+import {
+  addKeybindings,
+  arrowDown,
+  arrowLeft,
+  arrowRight,
+  arrowUp,
+  ctrlKey,
+  endKey,
+  enterKey,
+  homeKey,
+  shiftKey,
+  spaceBar,
+} from '../common/controllers/key-bindings.js';
+import { isLTR, scrollIntoView } from '../common/util.js';
 import type IgcTreeComponent from './tree.js';
 import type { IgcTreeSelectionService } from './tree.selection.js';
 import type IgcTreeItemComponent from './tree-item.js';
 
-export const NAVIGATION_KEYS = new Set([
-  'down',
-  'up',
-  'left',
-  'right',
-  'arrowdown',
-  'arrowup',
-  'arrowleft',
-  'arrowright',
-  'home',
-  'end',
-  'space',
-  'spacebar',
-  ' ',
-]);
-
-/* blazorSuppress */
+/**
+ * Handles roving-tabindex keyboard navigation and active/focused item tracking for the tree.
+ *
+ * Unlike the previous implementation, "visible" (keyboard-navigable) items are **not** cached.
+ * They are derived on demand, only when a navigation key is actually pressed, directly from each
+ * item's live `expanded`/`disabled`/`parent` state. This avoids doing any work on every single
+ * item mount/expand/disable — the dominant cost in trees with many items — since navigation only
+ * needs to know the visible set at the moment of a keypress, not continuously.
+ *
+ * @hidden @internal
+ */
 export class IgcTreeNavigationService {
-  private tree!: IgcTreeComponent;
-  private selectionService!: IgcTreeSelectionService;
-
   private _focusedItem: IgcTreeItemComponent | null = null;
-
-  private _lastFocusedItem: IgcTreeItemComponent | null = null;
   private _activeItem: IgcTreeItemComponent | null = null;
 
-  private _visibleChildren: IgcTreeItemComponent[] = [];
-  private _invisibleChildren: Set<IgcTreeItemComponent> = new Set();
-  private _disabledChildren: Set<IgcTreeItemComponent> = new Set();
-
   constructor(
-    tree: IgcTreeComponent,
-    selectionService: IgcTreeSelectionService
+    private readonly tree: IgcTreeComponent,
+    private readonly selection: IgcTreeSelectionService
   ) {
-    this.tree = tree;
-    this.selectionService = selectionService;
-  }
-
-  public updateVisChild(): void {
-    this._visibleChildren = this.tree?.items
-      ? this.tree.items.filter(
-          (i: IgcTreeItemComponent) =>
-            !(this._invisibleChildren.has(i) || this._disabledChildren.has(i))
-        )
-      : [];
+    addKeybindings(tree, {
+      bindingDefaults: { preventDefault: true, repeat: true },
+    })
+      .set(homeKey, () => this.setFocusedAndActiveItem(this._navigable[0]))
+      .set(endKey, () => this.setFocusedAndActiveItem(this._lastVisible()))
+      .set(arrowLeft, this._arrowLeft)
+      .set(arrowRight, this._arrowRight)
+      .set(arrowUp, () => this._arrowVertical(-1, true))
+      .set(arrowDown, () => this._arrowVertical(1, true))
+      .set([ctrlKey, arrowUp], () => this._arrowVertical(-1, false))
+      .set([ctrlKey, arrowDown], () => this._arrowVertical(1, false))
+      .set('*', this._asterisk)
+      .set(spaceBar, () => this._space(false))
+      .set([shiftKey, spaceBar], () => this._space(true))
+      .set(enterKey, this._enter, { preventDefault: false });
   }
 
   public get focusedItem(): IgcTreeItemComponent | null {
     return this._focusedItem;
   }
 
-  public focusItem(value: IgcTreeItemComponent | null, shouldFocus = true) {
-    if (this._focusedItem === value) {
-      return;
-    }
-    this._lastFocusedItem = this._focusedItem;
-    if (this._lastFocusedItem) {
-      this._lastFocusedItem.removeAttribute('tabindex');
-    }
-    this._focusedItem = value;
-    if (this._focusedItem !== null && shouldFocus) {
-      this._focusedItem.tabIndex = 0;
-      this._focusedItem.focus({
-        preventScroll: true,
-      });
-      this._focusedItem.wrapper?.scrollIntoView({
-        behavior: 'smooth',
-        block: 'nearest',
-        inline: 'nearest',
-      });
-    }
-  }
-
   public get activeItem(): IgcTreeItemComponent | null {
     return this._activeItem;
   }
 
-  public setActiveItem(value: IgcTreeItemComponent | null, shouldEmit = true) {
+  public focusItem(
+    value: IgcTreeItemComponent | null,
+    shouldFocus = true
+  ): void {
+    if (this._focusedItem === value) {
+      return;
+    }
+
+    this._focusedItem?.removeAttribute('tabindex');
+    this._focusedItem = value;
+
+    if (this._focusedItem && shouldFocus) {
+      this._focusedItem.tabIndex = 0;
+      this._focusedItem.focus({ preventScroll: true });
+      this._scrollIntoView(this._focusedItem);
+    }
+  }
+
+  public setActiveItem(
+    value: IgcTreeItemComponent | null,
+    shouldEmit = true
+  ): void {
     if (this._activeItem === value) {
       return;
     }
+
     if (this._activeItem && value) {
       this._activeItem.active = false;
     }
+
     this._activeItem = value;
+
     if (this._activeItem) {
       this._activeItem.active = true;
-    }
-    if (shouldEmit && this._activeItem) {
-      this.tree.emitEvent('igcActiveItem', { detail: this._activeItem });
-    }
-  }
-
-  public get visibleChildren(): IgcTreeItemComponent[] {
-    return this._visibleChildren;
-  }
-
-  public update_disabled_cache(item: IgcTreeItemComponent): void {
-    if (item.disabled) {
-      this._disabledChildren.add(item);
-    } else {
-      this._disabledChildren.delete(item);
-    }
-    this.updateVisChild();
-  }
-
-  public delete_item(item: IgcTreeItemComponent) {
-    if (this.activeItem === item) {
-      this.setActiveItem(null);
-    }
-    if (this.focusedItem === item) {
-      this.focusItem(null, false);
-      const firstNotDisableItem = this.tree.items.find(
-        (i: IgcTreeItemComponent) => !i.disabled
-      );
-      if (firstNotDisableItem) {
-        firstNotDisableItem.tabIndex = 0;
-        this.focusItem(firstNotDisableItem, false);
+      if (shouldEmit) {
+        this.tree.emitEvent('igcActiveItem', { detail: this._activeItem });
       }
     }
   }
 
-  public update_visible_cache(
-    item: IgcTreeItemComponent,
-    expanded: boolean,
-    shouldUpdateNestedChildren = true,
-    shouldUpdate = true
-  ): void {
-    if (expanded && !this._invisibleChildren.has(item)) {
-      item.getChildren()?.forEach((child: IgcTreeItemComponent) => {
-        this._invisibleChildren.delete(child);
-        if (shouldUpdateNestedChildren) {
-          this.update_visible_cache(child, child.expanded, true, false);
-        }
-      });
-    } else {
-      for (const child of item.getChildren({ flatten: true })) {
-        this._invisibleChildren.add(child);
-      }
-    }
-
-    if (shouldUpdate) {
-      this.updateVisChild();
-    }
-  }
-
-  /**
-   * Sets the item as focused (and active)
-   *
-   * @param item target item
-   * @param isActive if true, sets the item as active
-   */
+  /** Sets the item as focused (and optionally active). */
   public setFocusedAndActiveItem(
-    item: IgcTreeItemComponent,
+    item: IgcTreeItemComponent | undefined,
     isActive = true,
     shouldFocus = true
   ): void {
+    if (!item) {
+      return;
+    }
     if (isActive) {
       this.setActiveItem(item);
     }
     this.focusItem(item, shouldFocus);
   }
 
-  /** Handler for keydown events. Used in tree.component.ts */
-  public handleKeydown(event: KeyboardEvent) {
-    const key = event.key.toLowerCase();
-    if (!this.focusedItem) {
-      return;
+  /** Called by a tree item on `disconnectedCallback`. */
+  public handleItemDisconnect(item: IgcTreeItemComponent): void {
+    if (this._activeItem === item) {
+      this.setActiveItem(null);
     }
-    if (!(NAVIGATION_KEYS.has(key) || key === '*')) {
-      if (key === 'enter') {
-        this.setActiveItem(this.focusedItem);
-      }
-      return;
-    }
-    event.preventDefault();
-    this.handleNavigation(event);
-  }
-
-  private handleNavigation(event: KeyboardEvent) {
-    switch (event.key.toLowerCase()) {
-      case 'home':
-        this.setFocusedAndActiveItem(this.visibleChildren[0]);
-        break;
-      case 'end':
-        this.setFocusedAndActiveItem(
-          this.visibleChildren[this.visibleChildren.length - 1]
-        );
-        break;
-      case 'arrowleft':
-      case 'left':
-        if (!isLTR(this.tree)) {
-          this.handleArrowRight();
-        } else {
-          this.handleArrowLeft();
-        }
-        break;
-      case 'arrowright':
-      case 'right':
-        if (!isLTR(this.tree)) {
-          this.handleArrowLeft();
-        } else {
-          this.handleArrowRight();
-        }
-        break;
-      case 'arrowup':
-      case 'up':
-        this.handleUpDownArrow(true, event);
-        break;
-      case 'arrowdown':
-      case 'down':
-        this.handleUpDownArrow(false, event);
-        break;
-      case '*':
-        this.handleAsterisk();
-        break;
-      case ' ':
-      case 'spacebar':
-      case 'space':
-        this.handleSpace(event.shiftKey);
-        break;
-      default:
-        return;
-    }
-  }
-
-  private handleArrowLeft(): void {
-    if (this.focusedItem?.expanded && this.focusedItem.getChildren()?.length) {
-      this.setActiveItem(this.focusedItem);
-      this.focusedItem.collapseWithEvent();
-    } else {
-      const parentItem = this.focusedItem?.parent;
-      if (parentItem && !parentItem.disabled) {
-        this.setFocusedAndActiveItem(parentItem);
+    if (this._focusedItem === item) {
+      this.focusItem(null, false);
+      const next = this.tree.items.find((i) => !i.disabled);
+      if (next) {
+        next.tabIndex = 0;
+        this.focusItem(next, false);
       }
     }
   }
 
-  private handleArrowRight(): void {
-    if (this.focusedItem!.getChildren()?.length > 0) {
-      if (!this.focusedItem?.expanded) {
-        this.setActiveItem(this.focusedItem);
-        this.focusedItem!.expandWithEvent();
-      } else {
-        const firstChild = this.focusedItem
-          .getChildren()
-          .find((item: IgcTreeItemComponent) => !item.disabled);
-        if (firstChild) {
-          this.setFocusedAndActiveItem(firstChild);
-        }
+  //#region Visible/navigable item resolution (computed on demand, not cached)
+
+  private _isNavigable(item: IgcTreeItemComponent): boolean {
+    if (item.disabled) {
+      return false;
+    }
+    for (let ancestor = item.parent; ancestor; ancestor = ancestor.parent) {
+      if (!ancestor.expanded) {
+        return false;
       }
     }
+    return true;
   }
 
-  private handleUpDownArrow(isUp: boolean, event: KeyboardEvent): void {
-    const next = this.getVisibleItem(this.focusedItem!, isUp ? -1 : 1);
-    if (next === this.focusedItem) {
-      return;
-    }
-
-    if (event.ctrlKey) {
-      this.setFocusedAndActiveItem(next, false);
-    } else {
-      this.setFocusedAndActiveItem(next);
-    }
+  private get _navigable(): IgcTreeItemComponent[] {
+    return this.tree.items.filter((item) => this._isNavigable(item));
   }
 
-  private handleAsterisk(): void {
-    const items = this.focusedItem?.parent
-      ? this.focusedItem!.parent?.getChildren()
-      : this.tree.items?.filter(
-          (item: IgcTreeItemComponent) => item.level === 0
-        );
-    items?.forEach((item: IgcTreeItemComponent) => {
-      if (!item.disabled && !item.expanded && item.hasChildren) {
-        item.expandWithEvent();
-      }
-    });
+  private _lastVisible(): IgcTreeItemComponent {
+    const items = this._navigable;
+    return items[items.length - 1];
   }
 
-  private handleSpace(shiftKey = false): void {
-    if (this.tree.selection === 'none') {
-      this.setActiveItem(this.focusedItem);
-      return;
-    }
-
-    this.setActiveItem(this.focusedItem);
-    if (shiftKey) {
-      this.selectionService.selectMultipleItems(this.focusedItem!);
-      return;
-    }
-
-    if (this.focusedItem!.selected) {
-      this.selectionService.deselectItem(this.focusedItem!);
-    } else {
-      this.selectionService.selectItem(this.focusedItem!);
-    }
-  }
-
-  /** Gets the next visible item in the given direction - 1 -> next, -1 -> previous */
-  private getVisibleItem(
+  /** Next/previous navigable item relative to `item`, or `item` itself if there isn't one. */
+  private _adjacent(
     item: IgcTreeItemComponent,
-    dir: 1 | -1 = 1
+    dir: 1 | -1
   ): IgcTreeItemComponent {
-    const itemIndex = this.visibleChildren.indexOf(item);
-    return this.visibleChildren[itemIndex + dir] || item;
+    const items = this._navigable;
+    const index = items.indexOf(item);
+    return items[index + dir] ?? item;
   }
+
+  private _scrollIntoView(item: IgcTreeItemComponent): void {
+    scrollIntoView(item.wrapper);
+  }
+
+  //#endregion
+
+  //#region Keyboard handlers
+
+  private readonly _arrowLeft = (): void => {
+    isLTR(this.tree)
+      ? this._collapseOrGoToParent()
+      : this._expandOrGoToFirstChild();
+  };
+
+  private readonly _arrowRight = (): void => {
+    isLTR(this.tree)
+      ? this._expandOrGoToFirstChild()
+      : this._collapseOrGoToParent();
+  };
+
+  private _collapseOrGoToParent(): void {
+    const item = this._focusedItem;
+    if (!item) {
+      return;
+    }
+    if (item.expanded && item.getChildren().length) {
+      this.setActiveItem(item);
+      item.collapseWithEvent();
+      return;
+    }
+    if (item.parent && !item.parent.disabled) {
+      this.setFocusedAndActiveItem(item.parent);
+    }
+  }
+
+  private _expandOrGoToFirstChild(): void {
+    const item = this._focusedItem;
+    if (!item || item.getChildren().length === 0) {
+      return;
+    }
+    if (!item.expanded) {
+      this.setActiveItem(item);
+      item.expandWithEvent();
+      return;
+    }
+    const firstChild = item.getChildren().find((child) => !child.disabled);
+    if (firstChild) {
+      this.setFocusedAndActiveItem(firstChild);
+    }
+  }
+
+  private _arrowVertical(dir: 1 | -1, shouldActivate: boolean): void {
+    const item = this._focusedItem;
+    if (!item) {
+      return;
+    }
+    const next = this._adjacent(item, dir);
+    if (next === item) {
+      return;
+    }
+    this.setFocusedAndActiveItem(next, shouldActivate);
+  }
+
+  private readonly _asterisk = (): void => {
+    const item = this._focusedItem;
+    if (!item) {
+      return;
+    }
+    const siblings = item.parent
+      ? item.parent.getChildren()
+      : this.tree.items.filter((i) => i.level === 0);
+
+    for (const sibling of siblings) {
+      if (!sibling.disabled && !sibling.expanded && sibling.hasChildren) {
+        sibling.expandWithEvent();
+      }
+    }
+  };
+
+  private _space(shiftKey: boolean): void {
+    const item = this._focusedItem;
+    if (!item) {
+      return;
+    }
+
+    if (this.tree.selection === 'none') {
+      this.setActiveItem(item);
+      return;
+    }
+
+    this.setActiveItem(item);
+
+    if (shiftKey) {
+      this.selection.selectMultipleItems(item);
+      return;
+    }
+
+    item.selected
+      ? this.selection.deselectItem(item)
+      : this.selection.selectItem(item);
+  }
+
+  private readonly _enter = (): void => {
+    if (this._focusedItem) {
+      this.setActiveItem(this._focusedItem);
+    }
+  };
+
+  //#endregion
 }
