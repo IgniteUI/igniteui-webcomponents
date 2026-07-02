@@ -76,7 +76,7 @@ export interface SpinOptions {
 
 /**
  * Read-only interface for date part information
- * @ignore
+ * @hidden
  */
 export interface IDatePart {
   /** The type of date part */

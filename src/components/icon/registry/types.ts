@@ -30,7 +30,7 @@ export enum ActionType {
   UpdateIconReference = 2,
 }
 
-/** @ignore */
+/** @hidden */
 export interface BroadcastIconsChangeMessage {
   actionType: ActionType;
   collections?: Map<string, Map<string, SvgIcon>>;

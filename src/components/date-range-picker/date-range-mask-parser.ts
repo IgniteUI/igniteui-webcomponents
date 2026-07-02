@@ -15,7 +15,7 @@ import type { DateRangeValue } from '../types.js';
 //#region Types and Enums
 
 /**
- * @ignore
+ * @hidden
  */
 export interface DateRangePart {
   part: DatePart;
@@ -23,8 +23,8 @@ export interface DateRangePart {
 }
 
 /**
- * @ignore
  * Position of a date part within the date range
+ * @hidden
  */
 export enum DateRangePosition {
   Start = 'start',
@@ -33,8 +33,8 @@ export enum DateRangePosition {
 }
 
 /**
- * @ignore
  * Extended date part with range position information
+ * @hidden
  */
 export interface IDateRangePart extends IDatePart {
   position: DateRangePosition;
