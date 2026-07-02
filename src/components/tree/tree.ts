@@ -1,21 +1,21 @@
+import { ContextProvider } from '@lit/context';
 import {
   type ITreeResourceStrings,
   TreeResourceStringsEN,
 } from 'igniteui-i18n-core';
-import { html, LitElement } from 'lit';
+import { html, LitElement, type PropertyValues } from 'lit';
 import { property } from 'lit/decorators.js';
 import { addThemingController } from '../../theming/theming-controller.js';
 import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditionalDependencies.js';
-import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { addI18nController } from '../common/i18n/i18n-controller.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { addSafeEventListener } from '../common/util.js';
 import type { TreeSelection } from '../types.js';
 import { styles } from './themes/container.base.css.js';
 import { all } from './themes/container.js';
 import type { IgcTreeComponentEventMap } from './tree.common.js';
+import { treeContext } from './tree.context.js';
 import { IgcTreeNavigationService } from './tree.navigation.js';
 import { IgcTreeSelectionService } from './tree.selection.js';
 import IgcTreeItemComponent from './tree-item.js';
@@ -54,6 +54,11 @@ export default class IgcTreeComponent extends EventEmitterMixin<
       defaultEN: TreeResourceStringsEN,
     }
   );
+
+  private readonly _contextProvider = new ContextProvider(this, {
+    context: treeContext,
+    initialValue: this,
+  });
 
   /** @hidden @internal */
   public selectionService!: IgcTreeSelectionService;
@@ -108,23 +113,66 @@ export default class IgcTreeComponent extends EventEmitterMixin<
     return this._i18nController.resourceStrings;
   }
 
-  @watch('dir')
-  protected onDirChange(): void {
-    this.items?.forEach((item: IgcTreeItemComponent) => {
-      item.requestUpdate();
-    });
+  /* blazorSuppress */
+  /**
+   * Returns all of the tree's items.
+   */
+  public get items(): IgcTreeItemComponent[] {
+    const result: IgcTreeItemComponent[] = [];
+    for (const el of this.children) {
+      if (el.tagName.toLowerCase() === IgcTreeItemComponent.tagName) {
+        const item = el as IgcTreeItemComponent;
+        result.push(item, ...item.getChildren({ flatten: true }));
+      }
+    }
+    return result;
   }
 
-  @watch('selection', { waitUntilFirstUpdate: true })
-  protected selectionModeChange(): void {
+  constructor() {
+    super();
+
+    addThemingController(this, all);
+
+    this.selectionService = new IgcTreeSelectionService(this);
+    this.navService = new IgcTreeNavigationService(this, this.selectionService);
+  }
+
+  public override connectedCallback(): void {
+    super.connectedCallback();
+    this.setAttribute('role', 'tree');
+    const items = this.items;
+    // set init to true for all items which are rendered along with the tree
+    for (const item of items) {
+      item.init = true;
+    }
+    const firstNotDisabledItem = items.find((i) => !i.disabled);
+    if (firstNotDisabledItem) {
+      firstNotDisabledItem.tabIndex = 0;
+      this.navService.focusItem(firstNotDisabledItem);
+    }
+  }
+
+  protected override willUpdate(changed: PropertyValues<this>): void {
+    super.willUpdate(changed);
+
+    if (this.hasUpdated && changed.has('selection')) {
+      this._selectionModeChange();
+    }
+
+    if (changed.has('singleBranchExpand')) {
+      this._singleBranchExpandChange();
+    }
+
+    if (changed.has('selection') || changed.has('resourceStrings')) {
+      this._contextProvider.updateObservers();
+    }
+  }
+
+  private _selectionModeChange(): void {
     this.selectionService.clearItemsSelection();
-    this.items?.forEach((item: IgcTreeItemComponent) => {
-      item.requestUpdate();
-    });
   }
 
-  @watch('singleBranchExpand')
-  protected singleBranchExpandChange(): void {
+  private _singleBranchExpandChange(): void {
     if (this.singleBranchExpand) {
       // if activeItem -> do not collapse its branch
       if (this.navService.activeItem) {
@@ -141,43 +189,6 @@ export default class IgcTreeComponent extends EventEmitterMixin<
         }
       }
     }
-  }
-
-  constructor() {
-    super();
-
-    addThemingController(this, all);
-
-    this.selectionService = new IgcTreeSelectionService(this);
-    this.navService = new IgcTreeNavigationService(this, this.selectionService);
-
-    addSafeEventListener(this, 'keydown', this.handleKeydown);
-  }
-
-  public override connectedCallback(): void {
-    super.connectedCallback();
-    this.setAttribute('role', 'tree');
-    // set init to true for all items which are rendered along with the tree
-    this.items.forEach((i: IgcTreeItemComponent) => {
-      i.init = true;
-    });
-    const firstNotDisabledItem = this.items.find(
-      (i: IgcTreeItemComponent) => !i.disabled
-    );
-    if (firstNotDisabledItem) {
-      firstNotDisabledItem.tabIndex = 0;
-      this.navService.focusItem(firstNotDisabledItem);
-    }
-  }
-
-  /* blazorSuppress */
-  /** Returns all of the tree's items. */
-  public get items(): Array<IgcTreeItemComponent> {
-    return Array.from(this.querySelectorAll('igc-tree-item'));
-  }
-
-  private handleKeydown(event: KeyboardEvent) {
-    this.navService.handleKeydown(event);
   }
 
   /* blazorSuppress */
