@@ -1,8 +1,0 @@
-@use 'styles/utilities' as *;
-@use '../../light/themes' as *;
-
-$theme: $fluent;
-
-:host {
-    --menu-mini-width: #{rem(40px)};
-}
