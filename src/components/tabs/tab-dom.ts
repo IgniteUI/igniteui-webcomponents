@@ -55,7 +55,7 @@ class TabsHelpers {
     return this._scrollButtonsDisabled;
   }
 
-  public get isLeftToRightChanged(): boolean {
+  public get checkAndUpdateDirection(): boolean {
     const isLeftToRight = isLTR(this._host);
 
     if (this._isLeftToRight !== isLeftToRight) {

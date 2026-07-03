@@ -1,4 +1,4 @@
-import { html, LitElement, nothing } from 'lit';
+import { html, LitElement, nothing, type PropertyValues } from 'lit';
 import {
   eventOptions,
   property,
@@ -23,7 +23,6 @@ import {
   type MutationControllerParams,
 } from '../common/controllers/mutation-observer.js';
 import { createResizeObserverController } from '../common/controllers/resize-observer.js';
-import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
@@ -92,7 +91,7 @@ export default class IgcTabsComponent extends EventEmitterMixin<
   //#region Private state & properties
 
   private readonly _resizeController = createResizeObserverController(this, {
-    callback: this._resizeCallback,
+    callback: this._refreshLayout,
     options: { box: 'border-box' },
     target: null,
   });
@@ -124,18 +123,22 @@ export default class IgcTabsComponent extends EventEmitterMixin<
   //#region Public properties
 
   /**
-   * Sets the alignment for the tab headers
-   * @attr
+   * Determines the alignment of the tabs header strip.
+   *
+   * @attr alignment
+   * @default 'start'
    */
   @property({ reflect: true })
   public alignment: TabsAlignment = 'start';
 
   /**
-   * Determines the tab activation. When set to auto,
-   * the tab is instantly selected while navigating with the Left/Right Arrows, Home or End keys
-   * and the corresponding panel is displayed.
-   * When set to manual, the tab is only focused. The selection happens after pressing Space or Enter.
-   * @attr
+   * Determines the activation behavior of the tabs.
+   *
+   * When set to 'auto', the tab will be selected when it receives focus.
+   * When set to 'manual', the tab will only be selected when it is clicked or activated with the keyboard.
+   *
+   * @attr activation
+   * @default 'auto'
    */
   @property()
   public activation: TabsActivation = 'auto';
@@ -156,11 +159,6 @@ export default class IgcTabsComponent extends EventEmitterMixin<
   }
 
   //#endregion
-
-  @watch('alignment', { waitUntilFirstUpdate: true })
-  protected _alignmentChanged(): void {
-    this._domHelpers.setIndicator(this._activeTab);
-  }
 
   //#region Life-cycle hooks
 
@@ -192,7 +190,7 @@ export default class IgcTabsComponent extends EventEmitterMixin<
     });
   }
 
-  protected override async firstUpdated() {
+  protected override async firstUpdated(): Promise<void> {
     await this.updateComplete;
 
     const selectedTab =
@@ -215,17 +213,19 @@ export default class IgcTabsComponent extends EventEmitterMixin<
     this.role = 'tablist';
   }
 
-  protected override updated(): void {
-    if (this._domHelpers.isLeftToRightChanged) {
+  protected override update(props: PropertyValues<this>): void {
+    if (props.has('alignment') || this._domHelpers.checkAndUpdateDirection) {
       this._domHelpers.setIndicator(this._activeTab);
     }
+
+    super.update(props);
   }
 
   //#endregion
 
   //#region Observers callbacks
 
-  private _resizeCallback(): void {
+  private _refreshLayout(): void {
     this._domHelpers.setStyleProperties();
     this._domHelpers.setScrollButtonState();
     this._domHelpers.setIndicator(this._activeTab);
@@ -238,9 +238,7 @@ export default class IgcTabsComponent extends EventEmitterMixin<
     this._handleTabsRemoved(parameters);
     this._handleTabsAdded(parameters);
 
-    this._domHelpers.setStyleProperties();
-    this._domHelpers.setScrollButtonState();
-    this._domHelpers.setIndicator(this._activeTab);
+    this._refreshLayout();
   }
 
   private _selectedAttributeChanged({
