@@ -214,7 +214,9 @@ export default class IgcTabsComponent extends EventEmitterMixin<
   }
 
   protected override update(props: PropertyValues<this>): void {
-    if (props.has('alignment') || this._domHelpers.checkAndUpdateDirection) {
+    const directionChanged = this._domHelpers.checkAndUpdateDirection();
+
+    if (props.has('alignment') || directionChanged) {
       this._domHelpers.setIndicator(this._activeTab);
     }
 
