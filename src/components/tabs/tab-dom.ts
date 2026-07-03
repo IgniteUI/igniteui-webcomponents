@@ -55,17 +55,6 @@ class TabsHelpers {
     return this._scrollButtonsDisabled;
   }
 
-  public get isLeftToRightChanged(): boolean {
-    const isLeftToRight = isLTR(this._host);
-
-    if (this._isLeftToRight !== isLeftToRight) {
-      this._isLeftToRight = isLeftToRight;
-      return true;
-    }
-
-    return false;
-  }
-
   constructor(
     host: IgcTabsComponent,
     container: Ref<HTMLElement>,
@@ -88,6 +77,17 @@ class TabsHelpers {
         : '',
     };
     this._host.requestUpdate();
+  }
+
+  public checkAndUpdateDirection(): boolean {
+    const isLeftToRight = isLTR(this._host);
+
+    if (this._isLeftToRight !== isLeftToRight) {
+      this._isLeftToRight = isLeftToRight;
+      return true;
+    }
+
+    return false;
   }
 
   /**

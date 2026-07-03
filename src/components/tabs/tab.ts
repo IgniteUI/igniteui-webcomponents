@@ -1,4 +1,4 @@
-import { html, LitElement } from 'lit';
+import { html, LitElement, type TemplateResult } from 'lit';
 import { property } from 'lit/decorators.js';
 
 import { addThemingController } from '../../theming/theming-controller.js';
@@ -36,21 +36,25 @@ export default class IgcTabComponent extends LitElement {
 
   /**
    * The tab item label.
-   * @attr
+   * @attr label
    */
   @property()
   public label = '';
 
   /**
    * Determines whether the tab is selected.
-   * @attr
+   *
+   * @attr selected
+   * @default false
    */
   @property({ type: Boolean, reflect: true })
   public selected = false;
 
   /**
    * Determines whether the tab is disabled.
-   * @attr
+   *
+   * @attr disabled
+   * @default false
    */
   @property({ type: Boolean, reflect: true })
   public disabled = false;
@@ -66,7 +70,7 @@ export default class IgcTabComponent extends LitElement {
     this.id = this.id || `igc-tab-${nextId++}`;
   }
 
-  protected override render() {
+  protected override render(): TemplateResult {
     const headerId = `${this.id}-header`;
     const contentId = `${this.id}-content`;
 
