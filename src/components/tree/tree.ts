@@ -1,4 +1,3 @@
-import { ContextProvider } from '@lit/context';
 import {
   type ITreeResourceStrings,
   TreeResourceStringsEN,
@@ -15,7 +14,6 @@ import type { TreeSelection } from '../types.js';
 import { styles } from './themes/container.base.css.js';
 import { all } from './themes/container.js';
 import type { IgcTreeComponentEventMap } from './tree.common.js';
-import { treeContext } from './tree.context.js';
 import { IgcTreeNavigationService } from './tree.navigation.js';
 import { IgcTreeSelectionService } from './tree.selection.js';
 import IgcTreeItemComponent from './tree-item.js';
@@ -54,11 +52,6 @@ export default class IgcTreeComponent extends EventEmitterMixin<
       defaultEN: TreeResourceStringsEN,
     }
   );
-
-  private readonly _contextProvider = new ContextProvider(this, {
-    context: treeContext,
-    initialValue: this,
-  });
 
   /** @hidden @internal */
   public selectionService!: IgcTreeSelectionService;
@@ -164,7 +157,9 @@ export default class IgcTreeComponent extends EventEmitterMixin<
     }
 
     if (changed.has('selection') || changed.has('resourceStrings')) {
-      this._contextProvider.updateObservers();
+      for (const item of this.items) {
+        item.requestUpdate();
+      }
     }
   }
 

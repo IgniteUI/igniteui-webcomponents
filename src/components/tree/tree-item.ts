@@ -1,4 +1,3 @@
-import { consume } from '@lit/context';
 import { html, LitElement, nothing, type PropertyValues } from 'lit';
 import {
   property,
@@ -25,12 +24,12 @@ import IgcCircularProgressComponent from '../progress/circular-progress.js';
 import { styles } from './themes/item.base.css.js';
 import { all } from './themes/item.js';
 import { styles as shared } from './themes/shared/item.common.css.js';
-import { treeContext } from './tree.context.js';
 import type IgcTreeComponent from './tree.js';
 import type { IgcTreeNavigationService } from './tree.navigation.js';
 import type { IgcTreeSelectionService } from './tree.selection.js';
 
 const TREE_ITEM_TAG = 'igc-tree-item';
+const TREE_TAG = 'igc-tree';
 
 /**
  * The tree-item component represents a child item of the tree component or another tree item.
@@ -73,12 +72,15 @@ export default class IgcTreeItemComponent extends LitElement {
 
   private _animationPlayer = addAnimationController(this, this._groupRef);
 
+  private _tree?: IgcTreeComponent;
+
   /* blazorSuppress */
   /**
    * A reference to the tree the item is a part of.
    */
-  @consume({ context: treeContext, subscribe: true })
-  public tree?: IgcTreeComponent;
+  public get tree(): IgcTreeComponent | undefined {
+    return this._tree;
+  }
 
   /** The parent item of the current tree item (if any) */
   public parent: IgcTreeItemComponent | null = null;
@@ -88,6 +90,41 @@ export default class IgcTreeItemComponent extends LitElement {
 
   @queryAssignedElements({ slot: 'label', flatten: true })
   private _contentList!: Array<HTMLElement>;
+
+  private get _selectionService(): IgcTreeSelectionService | undefined {
+    return this.tree?.selectionService;
+  }
+
+  private get _navService(): IgcTreeNavigationService | undefined {
+    return this.tree?.navService;
+  }
+
+  private get _parts() {
+    return {
+      wrapper: true,
+      selected: this.selected,
+      focused: this._isFocused,
+      active: this.active,
+    };
+  }
+
+  /**
+   * Direct `igc-tree-item` light-DOM children. Tree items are expected to be nested directly
+   * (wrapping a nested item in another element, e.g. a `<div>`, is not supported) — this keeps
+   * child resolution a cheap, native `.children` scan instead of a subtree-wide DOM query.
+   */
+  private get _directChildren(): IgcTreeItemComponent[] {
+    return Array.from(this.children).filter(
+      (el): el is IgcTreeItemComponent =>
+        el.tagName.toLowerCase() === TREE_ITEM_TAG
+    );
+  }
+
+  private get _allChildren(): IgcTreeItemComponent[] {
+    const result: IgcTreeItemComponent[] = [];
+    this._collectAllChildren(result);
+    return result;
+  }
 
   /** @hidden @internal */
   @query('#wrapper')
@@ -158,9 +195,42 @@ export default class IgcTreeItemComponent extends LitElement {
   @property({ attribute: true })
   public value: any = undefined;
 
-  private async _toggleAnimation(dir: 'open' | 'close') {
-    const animation = dir === 'open' ? growVerIn : growVerOut;
-    return this._animationPlayer.playExclusive(animation());
+  constructor() {
+    super();
+
+    addThemingController(this, all);
+
+    addSafeEventListener(this, 'click', this._itemClick);
+    addSafeEventListener(this, 'focus', this._onFocus);
+    addSafeEventListener(this, 'blur', this._onBlur);
+  }
+
+  public override connectedCallback(): void {
+    super.connectedCallback();
+    this._tree =
+      (this.closest(TREE_TAG) as IgcTreeComponent | null) ?? undefined;
+    this.parent =
+      this.parentElement?.tagName.toLowerCase() === TREE_ITEM_TAG
+        ? (this.parentElement as IgcTreeItemComponent)
+        : null;
+    this.level = this.parent ? this.parent.level + 1 : 0;
+    this.setAttribute('role', 'treeitem');
+    this._activeChange();
+    // if the item is not added/moved runtime
+    if (this.init) {
+      this._selectedChange();
+    } else {
+      // re-trigger the item selection state in order to update the collections within the selectionService
+      // and to handle correctly the itemParents recursively to the top-most ancestor
+      this._selectionService?.retriggerItemState(this);
+    }
+    this.init = false;
+  }
+
+  public override disconnectedCallback(): void {
+    super.disconnectedCallback();
+    this._selectionService?.ensureStateOnItemDelete(this);
+    this._navService?.handleItemDisconnect(this);
   }
 
   protected override willUpdate(changed: PropertyValues<this>): void {
@@ -193,126 +263,6 @@ export default class IgcTreeItemComponent extends LitElement {
         this._selectedChange();
       }
     }
-  }
-
-  private _bothChange(): void {
-    if (this.hasChildren) {
-      this.setAttribute('aria-expanded', this.expanded.toString());
-    } else {
-      this.removeAttribute('aria-expanded');
-    }
-  }
-
-  private _expandedChange(oldValue: boolean): void {
-    if (!oldValue) {
-      return;
-    }
-    // await for load on demand children
-    Promise.resolve().then(() => {
-      if (this._navService?.focusedItem !== this && !this._isFocused) {
-        scrollIntoView(this._navService?.focusedItem?.wrapper, {
-          behavior: 'smooth',
-        });
-      }
-    });
-  }
-
-  private _activeChange(): void {
-    if (
-      (this.active && this._navService?.activeItem === this) ||
-      !this.active
-    ) {
-      return;
-    }
-    if (this._navService) {
-      this._navService.setActiveItem(this, false);
-    }
-    // Expand and scroll to the newly active item
-    this.tree?.expandToItem(this);
-    // Await for expanding
-    Promise.resolve().then(() => {
-      scrollIntoView(this.wrapper, { behavior: 'smooth' });
-    });
-  }
-
-  private _selectedChange(): void {
-    if (this.selected && !this._selectionService?.isItemSelected(this)) {
-      this._selectionService?.selectItemsWithNoEvent([this]);
-    }
-    if (!this.selected && this._selectionService?.isItemSelected(this)) {
-      this._selectionService?.deselectItemsWithNoEvent([this]);
-    }
-  }
-
-  constructor() {
-    super();
-
-    addThemingController(this, all);
-
-    addSafeEventListener(this, 'click', this._itemClick);
-    addSafeEventListener(this, 'focus', this._onFocus);
-    addSafeEventListener(this, 'blur', this._onBlur);
-  }
-
-  public override connectedCallback(): void {
-    super.connectedCallback();
-    this.parent =
-      this.parentElement?.tagName.toLowerCase() === TREE_ITEM_TAG
-        ? (this.parentElement as IgcTreeItemComponent)
-        : null;
-    this.level = this.parent ? this.parent.level + 1 : 0;
-    this.setAttribute('role', 'treeitem');
-    this._activeChange();
-    // if the item is not added/moved runtime
-    if (this.init) {
-      this._selectedChange();
-    } else {
-      // re-trigger the item selection state in order to update the collections within the selectionService
-      // and to handle correctly the itemParents recursively to the top-most ancestor
-      this._selectionService?.retriggerItemState(this);
-    }
-    this.init = false;
-  }
-
-  public override disconnectedCallback(): void {
-    super.disconnectedCallback();
-    this._selectionService?.ensureStateOnItemDelete(this);
-    this._navService?.handleItemDisconnect(this);
-  }
-
-  private get _selectionService(): IgcTreeSelectionService | undefined {
-    return this.tree?.selectionService;
-  }
-
-  private get _navService(): IgcTreeNavigationService | undefined {
-    return this.tree?.navService;
-  }
-
-  private get _parts() {
-    return {
-      wrapper: true,
-      selected: this.selected,
-      focused: this._isFocused,
-      active: this.active,
-    };
-  }
-
-  /**
-   * Direct `igc-tree-item` light-DOM children. Tree items are expected to be nested directly
-   * (wrapping a nested item in another element, e.g. a `<div>`, is not supported) — this keeps
-   * child resolution a cheap, native `.children` scan instead of a subtree-wide DOM query.
-   */
-  private get _directChildren(): IgcTreeItemComponent[] {
-    return Array.from(this.children).filter(
-      (el): el is IgcTreeItemComponent =>
-        el.tagName.toLowerCase() === TREE_ITEM_TAG
-    );
-  }
-
-  private get _allChildren(): IgcTreeItemComponent[] {
-    const result: IgcTreeItemComponent[] = [];
-    this._collectAllChildren(result);
-    return result;
   }
 
   /**
@@ -438,6 +388,60 @@ export default class IgcTreeItemComponent extends LitElement {
       });
     } else {
       this.setAttribute('role', 'treeitem');
+    }
+  }
+
+  private async _toggleAnimation(dir: 'open' | 'close') {
+    const animation = dir === 'open' ? growVerIn : growVerOut;
+    return this._animationPlayer.playExclusive(animation());
+  }
+
+  private _bothChange(): void {
+    if (this.hasChildren) {
+      this.setAttribute('aria-expanded', this.expanded.toString());
+    } else {
+      this.removeAttribute('aria-expanded');
+    }
+  }
+
+  private _expandedChange(oldValue: boolean): void {
+    if (!oldValue) {
+      return;
+    }
+    // await for load on demand children
+    Promise.resolve().then(() => {
+      if (this._navService?.focusedItem !== this && !this._isFocused) {
+        scrollIntoView(this._navService?.focusedItem?.wrapper, {
+          behavior: 'smooth',
+        });
+      }
+    });
+  }
+
+  private _activeChange(): void {
+    if (
+      (this.active && this._navService?.activeItem === this) ||
+      !this.active
+    ) {
+      return;
+    }
+    if (this._navService) {
+      this._navService.setActiveItem(this, false);
+    }
+    // Expand and scroll to the newly active item
+    this.tree?.expandToItem(this);
+    // Await for expanding
+    Promise.resolve().then(() => {
+      scrollIntoView(this.wrapper, { behavior: 'smooth' });
+    });
+  }
+
+  private _selectedChange(): void {
+    if (this.selected && !this._selectionService?.isItemSelected(this)) {
+      this._selectionService?.selectItemsWithNoEvent([this]);
+    }
+    if (!this.selected && this._selectionService?.isItemSelected(this)) {
+      this._selectionService?.deselectItemsWithNoEvent([this]);
     }
   }
 
