@@ -8,8 +8,7 @@ import type {
 import { ActionType } from './registry/types.js';
 
 type IconBroadcastEvent =
-  | MessageEvent<BroadcastIconsChangeMessage>
-  | PageTransitionEvent;
+  MessageEvent<BroadcastIconsChangeMessage> | PageTransitionEvent;
 
 /**
  * Manages cross-context synchronization of icon state using the BroadcastChannel API.

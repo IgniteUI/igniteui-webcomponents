@@ -200,11 +200,11 @@ export type { IconMeta } from './components/icon/registry/types.js';
 export type * from './components/chat/types.js';
 
 // Internal exports for other packages
-/** @ignore */
+/** @hidden @internal */
 export { addThemingController as θaddThemingController } from './theming/theming-controller.js';
 
-/** @ignore */
+/** @hidden @internal */
 export { addAdoptedStylesController as θaddAdoptedStylesController } from './components/common/controllers/adopt-styles.js';
 
-/** @ignore */
+/** @hidden @internal */
 export { createAbortHandle as θcreateAbortHandle } from './components/common/abort-handler.js';

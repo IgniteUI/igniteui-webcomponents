@@ -635,20 +635,24 @@ export default class IgcTileComponent extends EventEmitterMixin<
           <slot name="title"></slot>
         </header>
         <section id="tile-actions" part="actions">
-          ${hasMaximizeSlot
-            ? html`
-                <slot name="maximize-action">
-                  ${this._renderDefaultAction('maximize')}
-                </slot>
-              `
-            : nothing}
-          ${hasFullscreenSlot
-            ? html`
-                <slot name="fullscreen-action">
-                  ${this._renderDefaultAction('fullscreen')}
-                </slot>
-              `
-            : nothing}
+          ${
+            hasMaximizeSlot
+              ? html`
+                  <slot name="maximize-action">
+                    ${this._renderDefaultAction('maximize')}
+                  </slot>
+                `
+              : nothing
+          }
+          ${
+            hasFullscreenSlot
+              ? html`
+                  <slot name="fullscreen-action">
+                    ${this._renderDefaultAction('fullscreen')}
+                  </slot>
+                `
+              : nothing
+          }
 
           <slot name="actions"></slot>
         </section>

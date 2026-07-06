@@ -259,8 +259,7 @@ export const CancelableClose: Story = {
           id="event-log"
           style="margin: 0; padding: 0.75rem; background: var(--ig-gray-100, #f5f5f5); border-radius: 4px; min-height: 3rem; font-size: 0.8rem; white-space: pre-wrap;"
         >
-Click "Dismiss" to see the events fire.</pre
-        >
+Click "Dismiss" to see the events fire.</pre>
         <igc-button
           style="margin-top: 0.5rem;"
           command="--show"

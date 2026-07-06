@@ -20,11 +20,7 @@ import type IgcIconComponent from '../icon/icon.js';
 import IgcExpansionPanelComponent from './expansion-panel.js';
 
 type ExpansionSlots =
-  | ''
-  | 'title'
-  | 'subtitle'
-  | 'indicator'
-  | 'indicator-expanded';
+  '' | 'title' | 'subtitle' | 'indicator' | 'indicator-expanded';
 
 type ExpansionParts = 'header' | 'title' | 'subtitle' | 'content' | 'indicator';
 

@@ -430,13 +430,15 @@ export default class IgcChatInputComponent extends LitElement {
         @dragleave=${this._handleDragLeave}
         @drop=${this._handleDrop}
       >
-        ${this._state.hasInputAttachments
-          ? html`
-              <div part="attachments" role="list" aria-label="Attachments">
-                ${until(this._getRenderer('inputAttachments')(inputCtx))}
-              </div>
-            `
-          : nothing}
+        ${
+          this._state.hasInputAttachments
+            ? html`
+                <div part="attachments" role="list" aria-label="Attachments">
+                  ${until(this._getRenderer('inputAttachments')(inputCtx))}
+                </div>
+              `
+            : nothing
+        }
 
         <div part="input-wrapper">
           ${until(this._getRenderer('input')(inputCtx))}
