@@ -53,9 +53,8 @@ export class SvgIconParser {
    * @remarks
    * Leaving dangling ARIA ID references after removing their target elements
    * would produce invalid markup. Collect the IDs of both stripped elements
-   * and rebuilds each reference attribute, keeping only IDs
-   * that still resolve to an existing node. When all referenced IDs are
-   * stripped the attribute is removed entirely.
+   * and rebuild each reference attribute by filtering out those IDs. When all
+   * referenced IDs are stripped, the attribute is removed entirely.
    */
   private _stripMetaElements(
     svg: SVGElement,
