@@ -4,13 +4,12 @@
 $theme: $indigo;
 
 :host {
-    --menu-mini-width: #{rem(48px)};
-
     [part='base']::backdrop {
         background: var-get($overlay-indigo, 'background-color');
     }
 
-    [part='mini'], [part="main"] {
+    [part='mini'],
+    [part='main'] {
         padding: pad(rem(8px));
     }
 }
