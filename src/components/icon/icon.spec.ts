@@ -82,6 +82,96 @@ describe('Icon registry', () => {
     expect(getIconRegistry().get(name, collection)?.svg).to.not.be.undefined;
   });
 
+  describe('stripMeta option', () => {
+    it('does not strip meta by default (registerIconFromText)', () => {
+      registerIconFromText(name, bugSvg, collection);
+      const icon = getIconRegistry().get(name, collection)!;
+
+      expect(icon.svg).to.include('<title');
+      expect(icon.svg).to.include('<desc');
+      expect(icon.title).to.equal('Bug Icon');
+    });
+
+    it('strips <title> and <desc> when stripMeta is true (registerIconFromText)', () => {
+      registerIconFromText(name, bugSvg, { collection, stripMeta: true });
+      const icon = getIconRegistry().get(name, collection)!;
+
+      expect(icon.svg).not.to.include('<title');
+      expect(icon.svg).not.to.include('<desc');
+    });
+
+    it('still captures title text into SvgIcon.title when stripMeta is true', () => {
+      registerIconFromText(name, bugSvg, { collection, stripMeta: true });
+      const icon = getIconRegistry().get(name, collection)!;
+
+      // Title text is preserved so the host <igc-icon> can still expose it as aria-label.
+      expect(icon.title).to.equal('Bug Icon');
+    });
+
+    it('cleans up aria-labelledby references to stripped element IDs', () => {
+      // bugSvg has aria-labelledby="brbug-desc brbug-title" on the root <svg>.
+      // After stripping, both IDs are gone so the attribute should be removed.
+      registerIconFromText(name, bugSvg, { collection, stripMeta: true });
+      const icon = getIconRegistry().get(name, collection)!;
+
+      expect(icon.svg).not.to.include('aria-labelledby');
+    });
+
+    it('retains aria-labelledby IDs that do not belong to stripped elements', () => {
+      // Construct an SVG where aria-labelledby references one external ID in
+      // addition to the title/desc IDs that will be stripped.
+      const svgWithExtraRef = [
+        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"',
+        ' aria-labelledby="extra-label brbug-title brbug-desc">',
+        '<title id="brbug-title">Bug Icon</title>',
+        '<desc id="brbug-desc">A picture showing an insect.</desc>',
+        '<path d="M0 0h24v24H0z"/>',
+        '</svg>',
+      ].join('');
+
+      registerIconFromText(name, svgWithExtraRef, {
+        collection,
+        stripMeta: true,
+      });
+      const icon = getIconRegistry().get(name, collection)!;
+
+      // Only the IDs that belonged to stripped elements are removed;
+      // 'extra-label' must survive.
+      expect(icon.svg).to.include('aria-labelledby="extra-label"');
+    });
+
+    it('strips meta when using the options-object form of registerIconFromText with a collection', () => {
+      const altCollection = `${collection}-alt`;
+      registerIconFromText(name, bugSvg, {
+        collection: altCollection,
+        stripMeta: true,
+      });
+      const icon = getIconRegistry().get(name, altCollection)!;
+
+      expect(icon).to.not.be.undefined;
+      expect(icon.svg).not.to.include('<title');
+      expect(icon.svg).not.to.include('<desc');
+      expect(icon.title).to.equal('Bug Icon');
+    });
+
+    it('strips meta when fetching via registerIcon with options object', async () => {
+      await registerIcon(name, '', { collection, stripMeta: true });
+      const icon = getIconRegistry().get(name, collection)!;
+
+      expect(icon.svg).not.to.include('<title');
+      expect(icon.svg).not.to.include('<desc');
+      expect(icon.title).to.equal('Bug Icon');
+    });
+
+    it('old string-collection API still works without stripping', () => {
+      registerIconFromText(name, bugSvg, collection);
+      const icon = getIconRegistry().get(name, collection)!;
+
+      expect(icon.svg).to.include('<title');
+      expect(icon.title).to.equal('Bug Icon');
+    });
+  });
+
   describe('Referential Icons', () => {
     before(() => {
       defineComponents(IgcIconComponent);
