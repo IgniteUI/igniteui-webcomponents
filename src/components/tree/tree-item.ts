@@ -1,4 +1,4 @@
-import { html, LitElement, nothing } from 'lit';
+import { html, LitElement, nothing, type PropertyValues } from 'lit';
 import {
   property,
   query,
@@ -11,13 +11,13 @@ import { addAnimationController } from '../../animations/player.js';
 import { growVerIn, growVerOut } from '../../animations/presets/grow/index.js';
 import { addThemingController } from '../../theming/theming-controller.js';
 import IgcCheckboxComponent from '../checkbox/checkbox.js';
-import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { partMap } from '../common/part-map.js';
 import {
   addSafeEventListener,
   getElementFromPath,
   isLTR,
+  scrollIntoView,
 } from '../common/util.js';
 import IgcIconComponent from '../icon/icon.js';
 import IgcCircularProgressComponent from '../progress/circular-progress.js';
@@ -27,6 +27,9 @@ import { styles as shared } from './themes/shared/item.common.css.js';
 import type IgcTreeComponent from './tree.js';
 import type { IgcTreeNavigationService } from './tree.navigation.js';
 import type { IgcTreeSelectionService } from './tree.selection.js';
+
+const TREE_ITEM_TAG = 'igc-tree-item';
+const TREE_TAG = 'igc-tree';
 
 /**
  * The tree-item component represents a child item of the tree component or another tree item.
@@ -49,7 +52,7 @@ import type { IgcTreeSelectionService } from './tree.selection.js';
  * @csspart select - The checkbox of the tree item when selection is enabled.
  */
 export default class IgcTreeItemComponent extends LitElement {
-  public static readonly tagName = 'igc-tree-item';
+  public static readonly tagName = TREE_ITEM_TAG;
   public static override styles = [styles, shared];
 
   /* blazorSuppress */
@@ -62,16 +65,23 @@ export default class IgcTreeItemComponent extends LitElement {
     );
   }
 
-  private tabbableEl?: HTMLElement[];
-  private focusedProgrammatically = false;
+  private _tabbableEl?: HTMLElement[];
+  private _focusedProgrammatically = false;
 
-  private groupRef: Ref<HTMLElement> = createRef();
+  private _groupRef: Ref<HTMLElement> = createRef();
 
-  private animationPlayer = addAnimationController(this, this.groupRef);
+  private _animationPlayer = addAnimationController(this, this._groupRef);
+
+  private _tree?: IgcTreeComponent;
 
   /* blazorSuppress */
-  /** A reference to the tree the item is a part of. */
-  public tree?: IgcTreeComponent;
+  /**
+   * A reference to the tree the item is a part of.
+   */
+  public get tree(): IgcTreeComponent | undefined {
+    return this._tree;
+  }
+
   /** The parent item of the current tree item (if any) */
   public parent: IgcTreeItemComponent | null = null;
 
@@ -79,14 +89,49 @@ export default class IgcTreeItemComponent extends LitElement {
   public init = false;
 
   @queryAssignedElements({ slot: 'label', flatten: true })
-  private contentList!: Array<HTMLElement>;
+  private _contentList!: Array<HTMLElement>;
+
+  private get _selectionService(): IgcTreeSelectionService | undefined {
+    return this.tree?.selectionService;
+  }
+
+  private get _navService(): IgcTreeNavigationService | undefined {
+    return this.tree?.navService;
+  }
+
+  private get _parts() {
+    return {
+      wrapper: true,
+      selected: this.selected,
+      focused: this._isFocused,
+      active: this.active,
+    };
+  }
+
+  /**
+   * Direct `igc-tree-item` light-DOM children. Tree items are expected to be nested directly
+   * (wrapping a nested item in another element, e.g. a `<div>`, is not supported) — this keeps
+   * child resolution a cheap, native `.children` scan instead of a subtree-wide DOM query.
+   */
+  private get _directChildren(): IgcTreeItemComponent[] {
+    return Array.from(this.children).filter(
+      (el): el is IgcTreeItemComponent =>
+        el.tagName.toLowerCase() === TREE_ITEM_TAG
+    );
+  }
+
+  private get _allChildren(): IgcTreeItemComponent[] {
+    const result: IgcTreeItemComponent[] = [];
+    this._collectAllChildren(result);
+    return result;
+  }
 
   /** @hidden @internal */
   @query('#wrapper')
   public wrapper!: HTMLElement;
 
   @state()
-  private isFocused = false;
+  private _isFocused = false;
 
   /** @hidden @internal */
   @state()
@@ -150,136 +195,88 @@ export default class IgcTreeItemComponent extends LitElement {
   @property({ attribute: true })
   public value: any = undefined;
 
-  private async toggleAnimation(dir: 'open' | 'close') {
-    const animation = dir === 'open' ? growVerIn : growVerOut;
-    return this.animationPlayer.playExclusive(animation());
-  }
-
-  @watch('expanded', { waitUntilFirstUpdate: true })
-  @watch('hasChildren', { waitUntilFirstUpdate: true })
-  protected bothChange(): void {
-    if (this.hasChildren) {
-      this.setAttribute('aria-expanded', this.expanded.toString());
-    } else {
-      this.removeAttribute('aria-expanded');
-    }
-  }
-
-  @watch('expanded')
-  protected expandedChange(oldValue: boolean): void {
-    // always update the visible cache
-    this.navService?.update_visible_cache(this, this.expanded);
-    if (!oldValue) {
-      return;
-    }
-    // await for load on demand children
-    Promise.resolve().then(() => {
-      if (this.navService?.focusedItem !== this && !this.isFocused) {
-        this.navService?.focusedItem?.wrapper?.scrollIntoView({
-          behavior: 'smooth',
-          block: 'nearest',
-          inline: 'nearest',
-        });
-      }
-    });
-  }
-
-  @watch('active', { waitUntilFirstUpdate: true })
-  protected activeChange(): void {
-    if ((this.active && this.navService?.activeItem === this) || !this.active) {
-      return;
-    }
-    if (this.navService) {
-      this.navService.setActiveItem(this, false);
-    }
-    // Expand and scroll to the newly active item
-    this.tree?.expandToItem(this);
-    // Await for expanding
-    Promise.resolve().then(() => {
-      this.wrapper?.scrollIntoView({
-        behavior: 'smooth',
-        block: 'nearest',
-        inline: 'nearest',
-      });
-    });
-  }
-
-  @watch('disabled')
-  protected disabledChange(): void {
-    this.navService?.update_disabled_cache(this);
-  }
-
-  @watch('selected', { waitUntilFirstUpdate: true })
-  protected selectedChange(): void {
-    if (this.selected && !this.selectionService?.isItemSelected(this)) {
-      this.selectionService?.selectItemsWithNoEvent([this]);
-    }
-    if (!this.selected && this.selectionService?.isItemSelected(this)) {
-      this.selectionService?.deselectItemsWithNoEvent([this]);
-    }
-  }
-
   constructor() {
     super();
 
     addThemingController(this, all);
 
-    addSafeEventListener(this, 'click', this.itemClick);
-    addSafeEventListener(this, 'focus', this.onFocus);
-    addSafeEventListener(this, 'blur', this.onBlur);
+    addSafeEventListener(this, 'click', this._itemClick);
+    addSafeEventListener(this, 'focus', this._onFocus);
+    addSafeEventListener(this, 'blur', this._onBlur);
   }
 
   public override connectedCallback(): void {
     super.connectedCallback();
-    this.tree = this.closest('igc-tree') as IgcTreeComponent;
-    this.parent = this.parentElement?.closest(
-      'igc-tree-item'
-    ) as IgcTreeItemComponent | null;
+    this._tree =
+      (this.closest(TREE_TAG) as IgcTreeComponent | null) ?? undefined;
+    this.parent =
+      this.parentElement?.tagName.toLowerCase() === TREE_ITEM_TAG
+        ? (this.parentElement as IgcTreeItemComponent)
+        : null;
     this.level = this.parent ? this.parent.level + 1 : 0;
     this.setAttribute('role', 'treeitem');
-    this.activeChange();
+    this._activeChange();
     // if the item is not added/moved runtime
     if (this.init) {
-      this.selectedChange();
+      this._selectedChange();
     } else {
-      // retriger the item selection state in order to update the collections within the selectionService
+      // re-trigger the item selection state in order to update the collections within the selectionService
       // and to handle correctly the itemParents recursively to the top-most ancestor
-      this.selectionService?.retriggerItemState(this);
+      this._selectionService?.retriggerItemState(this);
     }
     this.init = false;
   }
 
   public override disconnectedCallback(): void {
     super.disconnectedCallback();
-    this.selectionService?.ensureStateOnItemDelete(this);
-    this.navService?.delete_item(this);
+    this._selectionService?.ensureStateOnItemDelete(this);
+    this._navService?.handleItemDisconnect(this);
   }
 
-  private get selectionService(): IgcTreeSelectionService | undefined {
-    return this.tree?.selectionService;
+  protected override willUpdate(changed: PropertyValues<this>): void {
+    super.willUpdate(changed);
+
+    if (
+      this.hasUpdated &&
+      (changed.has('expanded') || changed.has('hasChildren'))
+    ) {
+      this._bothChange();
+    }
+
+    if (changed.has('expanded')) {
+      const oldValue = changed.get('expanded') as boolean;
+      if (oldValue !== this.expanded) {
+        this._expandedChange(oldValue);
+      }
+    }
+
+    if (this.hasUpdated && changed.has('active')) {
+      const oldValue = changed.get('active') as boolean;
+      if (oldValue !== this.active) {
+        this._activeChange();
+      }
+    }
+
+    if (this.hasUpdated && changed.has('selected')) {
+      const oldValue = changed.get('selected') as boolean;
+      if (oldValue !== this.selected) {
+        this._selectedChange();
+      }
+    }
   }
 
-  private get navService(): IgcTreeNavigationService | undefined {
-    return this.tree?.navService;
-  }
-
-  private get parts() {
-    return {
-      wrapper: true,
-      selected: this.selected,
-      focused: this.isFocused,
-      active: this.active,
-    };
-  }
-
-  private get directChildren(): Array<IgcTreeItemComponent> {
-    return this.allChildren.filter(
-      (x) => (x.parent ?? x.parentElement?.closest('igc-tree-item')) === this
-    ) as IgcTreeItemComponent[];
-  }
-
-  private get allChildren(): Array<IgcTreeItemComponent> {
-    return Array.from(this.querySelectorAll('igc-tree-item'));
+  /**
+   * Appends every descendant (pre-order) into `out` in a single pass.
+   *
+   * Building this iteratively (rather than the more obvious `flatMap` + spread recursion)
+   * avoids repeatedly copying already-collected arrays at every level of the tree, which would
+   * otherwise turn a deeply nested tree's flatten cost from linear into quadratic.
+   */
+  private _collectAllChildren(out: IgcTreeItemComponent[]): void {
+    for (const child of this._directChildren) {
+      out.push(child);
+      child._collectAllChildren(out);
+    }
   }
 
   /** The full path to the tree item, starting from the top-most ancestor. */
@@ -287,122 +284,106 @@ export default class IgcTreeItemComponent extends LitElement {
     return this.parent?.path ? [...this.parent.path, this] : [this];
   }
 
-  private itemClick(event: MouseEvent): void {
+  private _itemClick(event: MouseEvent): void {
     if (this.disabled || this !== getElementFromPath(this.tagName, event)) {
       return;
     }
     this.tabIndex = 0;
     if (this.tree?.toggleNodeOnClick && event.button === 0) {
-      if (this.expanded) {
-        this.collapseWithEvent();
-      } else {
-        this.expandWithEvent();
-      }
+      this.expanded ? this.collapseWithEvent() : this.expandWithEvent();
     }
-    this.navService?.setFocusedAndActiveItem(this, true, true);
+    this._navService?.setFocusedAndActiveItem(this, true, true);
   }
 
-  private expandIndicatorClick(): void {
-    if (this.disabled) {
-      return;
-    }
-    if (this.expanded) {
-      this.collapseWithEvent();
-    } else {
-      this.expandWithEvent();
-    }
+  private _expandIndicatorClick(): void {
+    if (this.disabled) return;
+    this.expanded ? this.collapseWithEvent() : this.expandWithEvent();
   }
 
-  private selectorClick(event: MouseEvent): void {
+  private _selectorClick(event: MouseEvent): void {
     event.preventDefault();
     if (this.tree?.toggleNodeOnClick) {
       event.stopPropagation();
     }
     if (event.shiftKey) {
-      this.selectionService?.selectMultipleItems(this);
+      this._selectionService?.selectMultipleItems(this);
       return;
     }
-    if (this.selected) {
-      this.selectionService?.deselectItem(this);
-    } else {
-      this.selectionService?.selectItem(this);
-    }
+    this.selected
+      ? this._selectionService?.deselectItem(this)
+      : this._selectionService?.selectItem(this);
   }
 
-  private onFocus(): void {
+  private _onFocus(): void {
     if (this.disabled) {
       return;
     }
-    if (this.navService?.focusedItem !== this) {
-      this.navService?.focusItem(this, false);
-      this.wrapper?.scrollIntoView({
-        behavior: 'smooth',
-        block: 'nearest',
-        inline: 'nearest',
-      });
+    if (this._navService?.focusedItem !== this) {
+      this._navService?.focusItem(this, false);
+      scrollIntoView(this.wrapper, { behavior: 'smooth' });
     }
-    if (this.tabbableEl?.length) {
+    if (this._tabbableEl?.length) {
       // set tabIndex = 0 to all tabbable elements
       // focus the first one
-      this.tabbableEl.forEach((element: HTMLElement) => {
+      this._tabbableEl.forEach((element: HTMLElement) => {
         element.tabIndex = 0;
       });
-      this.focusedProgrammatically = true;
-      this.tabbableEl[0].focus();
+      this._focusedProgrammatically = true;
+      this._tabbableEl[0].focus();
       return;
     }
-    this.isFocused = true;
+    this._isFocused = true;
   }
 
-  private onBlur(): void {
-    this.isFocused = false;
+  private _onBlur(): void {
+    this._isFocused = false;
   }
 
-  private onFocusIn(ev: Event): void {
+  private _onFocusIn(ev: Event): void {
     ev?.stopPropagation();
     if (!this.disabled) {
       // clicking directly over tabbable element when the item is not focused
-      if (!this.focusedProgrammatically) {
-        this.tabbableEl?.forEach((element: HTMLElement) => {
+      if (!this._focusedProgrammatically) {
+        this._tabbableEl?.forEach((element: HTMLElement) => {
           element.tabIndex = 0;
         });
       }
       this.removeAttribute('tabIndex');
-      this.isFocused = true;
-      this.focusedProgrammatically = false;
+      this._isFocused = true;
+      this._focusedProgrammatically = false;
     }
   }
 
-  private onFocusOut(ev: Event): void {
+  private _onFocusOut(ev: Event): void {
     ev?.stopPropagation();
-    this.isFocused = false;
-    this.tabbableEl?.forEach((element: HTMLElement) => {
+    this._isFocused = false;
+    this._tabbableEl?.forEach((element: HTMLElement) => {
       element.tabIndex = -1;
     });
 
-    if (this.navService?.focusedItem === this) {
+    if (this._navService?.focusedItem === this) {
       // called twice when clicking on already focused item with link (itemClick handler)
       this.setAttribute('tabindex', '0');
     }
   }
 
-  private labelChange(): void {
-    const firstElement = this.contentList[0];
+  private _labelChange(): void {
+    const firstElement = this._contentList[0];
     const tabbableSelector =
       'a[href], button, input, textarea, select, details, [tabindex]:not([tabindex="-1"])';
 
-    this.tabbableEl = [
+    this._tabbableEl = [
       ...firstElement.querySelectorAll<HTMLElement>(tabbableSelector),
     ];
     if (firstElement.matches(tabbableSelector)) {
-      this.tabbableEl.splice(0, 0, firstElement);
+      this._tabbableEl.splice(0, 0, firstElement);
     }
 
-    if (this.tabbableEl?.length) {
+    if (this._tabbableEl?.length) {
       this.setAttribute('role', 'none');
-      this.tabbableEl[0].setAttribute('role', 'treeitem');
+      this._tabbableEl[0].setAttribute('role', 'treeitem');
 
-      this.tabbableEl.forEach((element: HTMLElement) => {
+      this._tabbableEl.forEach((element: HTMLElement) => {
         element.tabIndex = -1;
       });
     } else {
@@ -410,10 +391,62 @@ export default class IgcTreeItemComponent extends LitElement {
     }
   }
 
-  private handleChange(): void {
-    this.hasChildren = !!this.directChildren.length;
-    // there is no need to update nested children beacuse they're state is already up to date
-    this.navService?.update_visible_cache(this, this.expanded, false);
+  private async _toggleAnimation(dir: 'open' | 'close') {
+    const animation = dir === 'open' ? growVerIn : growVerOut;
+    return this._animationPlayer.playExclusive(animation());
+  }
+
+  private _bothChange(): void {
+    if (this.hasChildren) {
+      this.setAttribute('aria-expanded', this.expanded.toString());
+    } else {
+      this.removeAttribute('aria-expanded');
+    }
+  }
+
+  private _expandedChange(oldValue: boolean): void {
+    if (!oldValue) {
+      return;
+    }
+    // await for load on demand children
+    Promise.resolve().then(() => {
+      if (this._navService?.focusedItem !== this && !this._isFocused) {
+        scrollIntoView(this._navService?.focusedItem?.wrapper, {
+          behavior: 'smooth',
+        });
+      }
+    });
+  }
+
+  private _activeChange(): void {
+    if (
+      (this.active && this._navService?.activeItem === this) ||
+      !this.active
+    ) {
+      return;
+    }
+    if (this._navService) {
+      this._navService.setActiveItem(this, false);
+    }
+    // Expand and scroll to the newly active item
+    this.tree?.expandToItem(this);
+    // Await for expanding
+    Promise.resolve().then(() => {
+      scrollIntoView(this.wrapper, { behavior: 'smooth' });
+    });
+  }
+
+  private _selectedChange(): void {
+    if (this.selected && !this._selectionService?.isItemSelected(this)) {
+      this._selectionService?.selectItemsWithNoEvent([this]);
+    }
+    if (!this.selected && this._selectionService?.isItemSelected(this)) {
+      this._selectionService?.deselectItemsWithNoEvent([this]);
+    }
+  }
+
+  private _handleChange(): void {
+    this.hasChildren = !!this._directChildren.length;
   }
 
   /* blazorSuppress */
@@ -425,10 +458,7 @@ export default class IgcTreeItemComponent extends LitElement {
   public getChildren(
     options: { flatten: boolean } = { flatten: false }
   ): IgcTreeItemComponent[] {
-    if (options.flatten) {
-      return this.allChildren;
-    }
-    return this.directChildren;
+    return options.flatten ? this._allChildren : this._directChildren;
   }
 
   /**
@@ -452,15 +482,15 @@ export default class IgcTreeItemComponent extends LitElement {
 
     if (this.tree?.singleBranchExpand) {
       const pathSet = new Set(this.path.splice(0, this.path.length - 1));
-      this.tree.items.forEach((item: IgcTreeItemComponent) => {
+      for (const item of this.tree.items) {
         if (!pathSet.has(item)) {
           item.collapseWithEvent();
         }
-      });
+      }
     }
 
     this.expanded = true;
-    if (await this.toggleAnimation('open')) {
+    if (await this._toggleAnimation('open')) {
       this.tree?.emitEvent('igcItemExpanded', { detail: this });
     }
   }
@@ -485,7 +515,7 @@ export default class IgcTreeItemComponent extends LitElement {
     }
 
     this.expanded = false;
-    if (await this.toggleAnimation('close')) {
+    if (await this._toggleAnimation('close')) {
       this.tree?.emitEvent('igcItemCollapsed', { detail: this });
     }
   }
@@ -512,7 +542,7 @@ export default class IgcTreeItemComponent extends LitElement {
     };
 
     return html`
-      <div id="wrapper" part=${partMap(this.parts)}>
+      <div id="wrapper" part=${partMap(this._parts)}>
         <div
           style="width: calc(${this.level} * var(--igc-tree-indentation-size))"
           part="indentation"
@@ -536,7 +566,7 @@ export default class IgcTreeItemComponent extends LitElement {
                     @click=${
                       this.tree?.toggleNodeOnClick
                         ? nothing
-                        : this.expandIndicatorClick
+                        : this._expandIndicatorClick
                     }
                   >
                     ${
@@ -566,11 +596,11 @@ export default class IgcTreeItemComponent extends LitElement {
             ? html`
                 <div part="select" aria-hidden="true">
                   <igc-checkbox
-                    @click=${this.selectorClick}
+                    tabindex="-1"
+                    @click=${this._selectorClick}
                     .checked=${this.selected}
                     .indeterminate=${this.indeterminate}
                     .disabled=${this.disabled}
-                    tabindex="-1"
                   >
                   </igc-checkbox>
                 </div>
@@ -580,16 +610,16 @@ export default class IgcTreeItemComponent extends LitElement {
         <div part="label">
           <slot
             name="label"
-            @slotchange=${this.labelChange}
-            @focusin=${this.onFocusIn}
-            @focusout=${this.onFocusOut}
+            @slotchange=${this._labelChange}
+            @focusin=${this._onFocusIn}
+            @focusout=${this._onFocusOut}
           >
             <span part="text">${this.label}</span>
           </slot>
         </div>
       </div>
-      <div ${ref(this.groupRef)} role="group" aria-hidden=${!this.expanded}>
-        <slot @slotchange=${this.handleChange}></slot>
+      <div ${ref(this._groupRef)} role="group" .inert=${!this.expanded}>
+        <slot @slotchange=${this._handleChange}></slot>
       </div>
     `;
   }
