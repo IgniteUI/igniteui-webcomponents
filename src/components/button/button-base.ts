@@ -29,6 +29,7 @@ export interface IgcButtonEventMap {
  * Concrete subclasses must implement `_renderContent()` to supply the
  * visual content projected inside the native `<button>` or `<a>` element.
  */
+/* omitModule */
 @blazorDeepImport
 @shadowOptions({ delegatesFocus: true })
 export abstract class IgcButtonBaseComponent extends EventEmitterMixin<
@@ -156,7 +157,7 @@ export abstract class IgcButtonBaseComponent extends EventEmitterMixin<
     return this._commandfor;
   }
 
-  /* blazorCSSuppress */
+  /* blazorSuppress */
   /* alternateType: object */
   /**
    * The target element for the invoker command. Resolved from the `commandfor` ID.
@@ -165,7 +166,7 @@ export abstract class IgcButtonBaseComponent extends EventEmitterMixin<
     return this._commandForElement;
   }
 
-  /* blazorCSSuppress */
+  /* blazorSuppress */
   /* alternateType: object */
   public set commandForElement(value: Element | null) {
     this._commandForElement = value;
