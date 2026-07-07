@@ -30,6 +30,7 @@ export interface IgcVirtualScrollComponentEventMap {
 }
 
 const REMOTE_SCROLLING_THRESHOLD = 5;
+const MAX_LAYOUT_SETTLE_PASSES = 20;
 
 /**
  * A virtual scroll component that efficiently renders large lists by only
@@ -62,6 +63,7 @@ export default class IgcVirtualScrollComponent<
   private _onScroll: ((e: Event) => void) | null = null;
   private _currentRange: VisibleRange = { startIndex: 0, endIndex: -1 };
   private _hasPendingDataRequest = false;
+  private _layoutCompletePromise: Promise<void> | null = null;
 
   @state()
   private _scrollPosition = 0;
@@ -406,9 +408,55 @@ export default class IgcVirtualScrollComponent<
     this._itemResizeObserver = null;
   }
 
+  private _nextFrame(): Promise<void> {
+    return new Promise((resolve) => requestAnimationFrame(() => resolve()));
+  }
+
+  /**
+   * Waits for the current update to finish and then gives any
+   * ResizeObserver-driven item measurements a chance to run. If those
+   * measurements schedule a follow-up render (e.g. because an estimated
+   * item size was replaced with its real, measured size), the wait is
+   * repeated until no further renders are pending, up to a safety cap.
+   */
+  private async _resolveLayoutComplete(): Promise<void> {
+    await this.updateComplete;
+
+    for (let i = 0; i < MAX_LAYOUT_SETTLE_PASSES; i++) {
+      await this._nextFrame();
+
+      if (!this.isUpdatePending) {
+        break;
+      }
+
+      await this.updateComplete;
+    }
+
+    this._layoutCompletePromise = null;
+  }
+
   //#endregion
 
   //#region Public API
+
+  /* blazorSuppress */
+  /**
+   * A promise that resolves once the virtual scroll has fully settled:
+   * the current render pass has completed *and* any item-size
+   * measurements it triggers (and the renders those in turn schedule)
+   * have also completed.
+   *
+   * Unlike `updateComplete`, which only reflects a single Lit render
+   * pass, `layoutComplete` is useful after changing `data`, scrolling,
+   * or resizing the viewport, when the final, stable DOM state may only
+   * be reached after one or more follow-up renders.
+   */
+  public get layoutComplete(): Promise<void> {
+    if (!this._layoutCompletePromise) {
+      this._layoutCompletePromise = this._resolveLayoutComplete();
+    }
+    return this._layoutCompletePromise;
+  }
 
   /** Programmatically scrolls to the specified item index. */
   public scrollToIndex(index: number, options?: ScrollIntoViewOptions): void {

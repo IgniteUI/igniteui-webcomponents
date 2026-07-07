@@ -440,12 +440,14 @@ export const RemoteData: Story = {
           >${ctx.value.department}</igc-chip
         >
       </igc-list-item>
-      ${ctx.isLast
-        ? html`<igc-linear-progress
-            indeterminate
-            variant="warning"
-          ></igc-linear-progress>`
-        : nothing}
+      ${
+        ctx.isLast
+          ? html`<igc-linear-progress
+              indeterminate
+              variant="warning"
+            ></igc-linear-progress>`
+          : nothing
+      }
     `;
 
     return html`
