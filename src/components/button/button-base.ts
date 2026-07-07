@@ -19,6 +19,7 @@ export interface IgcButtonEventMap {
   blur: FocusEvent;
 }
 
+/* omitModule */
 /**
  * Abstract base class shared by `igc-button` and `igc-icon-button`.
  *
@@ -29,17 +30,6 @@ export interface IgcButtonEventMap {
  * Concrete subclasses must implement `_renderContent()` to supply the
  * visual content projected inside the native `<button>` or `<a>` element.
  */
-/* omitModule */
-/**
-* Abstract base class shared by `igc-button` and `igc-icon-button`.
-*
-* Provides common form-association behavior, link-button rendering
-* (renders as `<a>` when `href` is set), keyboard focus-ring management,
-* and the Invoker Commands API (`command` / `commandfor`).
-*
-* Concrete subclasses must implement `_renderContent()` to supply the
-* visual content projected inside the native `<button>` or `<a>` element.
-*/
 @blazorDeepImport
 @shadowOptions({ delegatesFocus: true })
 export abstract class IgcButtonBaseComponent extends EventEmitterMixin<
