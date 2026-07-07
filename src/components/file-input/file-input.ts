@@ -259,8 +259,10 @@ export default class IgcFileInputComponent extends EventEmitterMixin<
         </div>
         <div part="file-names">
           <span>
-            ${this._fileNames ??
-            html`<slot name="file-missing-text">${emptyText}</slot>`}
+            ${
+              this._fileNames ??
+              html`<slot name="file-missing-text">${emptyText}</slot>`
+            }
           </span>
         </div>
       </div>

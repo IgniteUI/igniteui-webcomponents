@@ -14,19 +14,28 @@ import type { DateRangeValue } from '../types.js';
 
 //#region Types and Enums
 
+/**
+ * @ignore
+ */
 export interface DateRangePart {
   part: DatePart;
   position: DateRangePosition;
 }
 
-/** Position of a date part within the date range */
+/**
+ * @ignore
+ * Position of a date part within the date range
+ */
 export enum DateRangePosition {
   Start = 'start',
   End = 'end',
   Separator = 'separator',
 }
 
-/** Extended date part with range position information */
+/**
+ * @ignore
+ * Extended date part with range position information
+ */
 export interface IDateRangePart extends IDatePart {
   position: DateRangePosition;
 }
@@ -156,18 +165,16 @@ export class DateRangeMaskParser extends MaskParser {
       })
     );
 
-    const endParts = this._endParser.dateParts.map(
-      (part): IDateRangePart => ({
-        ...part,
-        // Adjust positions for end date (offset by separator)
-        start: part.start + this._separatorEnd,
-        end: part.end + this._separatorEnd,
-        position: DateRangePosition.End,
-        getValue: part.getValue.bind(part),
-        validate: part.validate.bind(part),
-        spin: part.spin.bind(part),
-      })
-    );
+    const endParts = this._endParser.dateParts.map((part): IDateRangePart => ({
+      ...part,
+      // Adjust positions for end date (offset by separator)
+      start: part.start + this._separatorEnd,
+      end: part.end + this._separatorEnd,
+      position: DateRangePosition.End,
+      getValue: part.getValue.bind(part),
+      validate: part.validate.bind(part),
+      spin: part.spin.bind(part),
+    }));
 
     this._rangeParts = [...startParts, ...endParts];
   }

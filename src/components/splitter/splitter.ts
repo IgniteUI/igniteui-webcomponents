@@ -928,9 +928,11 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   private _renderAccessibleLabel() {
     return html`
       <igc-visually-hidden id="splitter-label">
-        ${this._isCollapsed('start')
-          ? 'Start pane collapsed'
-          : 'Start pane expanded'}
+        ${
+          this._isCollapsed('start')
+            ? 'Start pane collapsed'
+            : 'Start pane expanded'
+        }
         and
         ${this._isCollapsed('end') ? 'End pane collapsed' : 'End pane expanded'}
       </igc-visually-hidden>

@@ -500,3 +500,77 @@ export function suppressResizeObserverLoopError(): void {
     return errorHandler ? errorHandler(message, ...args) : false;
   };
 }
+
+export interface ExternalLabelAssociationConfig {
+  /** The host custom element tag name (e.g. `igc-select`). */
+  tagName: string;
+  /**
+   * Locates the AT-exposed native form control (`<input>`/`<textarea>`) that should
+   * receive the forwarded `aria-labelledby` association within the given host element.
+   */
+  getNativeInput: (host: HTMLElement) => HTMLInputElement | HTMLTextAreaElement;
+  /** Optional additional attributes to set on the rendered host element. */
+  hostAttributes?: string;
+}
+
+/**
+ * Shared test suite asserting that a form associated component is correctly linked to an
+ * external `<label>` element, both through an `IDREF` (`<label for>`) and by nesting the
+ * component inside the `<label>`.
+ *
+ * The association is verified through:
+ * - the forwarded `aria-labelledby` element reference on the inner native input, and
+ * - focus state, since accessibility tooling does not currently resolve `ElementInternals`
+ *   based labelling across shadow roots.
+ */
+export function runExternalLabelAssociationTests(
+  config: ExternalLabelAssociationConfig
+): void {
+  const { tagName, getNativeInput, hostAttributes = '' } = config;
+
+  describe('External label association', () => {
+    async function createLabelledFixture(nested: boolean) {
+      const container = await fixture<HTMLElement>(html`<div></div>`);
+
+      container.innerHTML = nested
+        ? `<label>External label <${tagName} ${hostAttributes}></${tagName}></label>`
+        : `<label for="labelled-host">External label</label><${tagName} id="labelled-host" ${hostAttributes}></${tagName}>`;
+
+      const label = container.querySelector('label')!;
+      const host = container.querySelector<HTMLElement>(tagName)!;
+
+      await elementUpdated(host);
+      await nextFrame();
+
+      return { label, host };
+    }
+
+    it('links an external label through an IDREF (`for` attribute)', async () => {
+      const { label, host } = await createLabelledFixture(false);
+      const native = getNativeInput(host);
+
+      expect(native.ariaLabelledByElements).to.have.lengthOf(1);
+      expect(native.ariaLabelledByElements?.[0]).to.equal(label);
+
+      simulateClick(label);
+      await elementUpdated(host);
+
+      expect(document.activeElement).to.equal(host);
+      expect(isFocused(native)).to.be.true;
+    });
+
+    it('links an external label by nesting the component inside it', async () => {
+      const { label, host } = await createLabelledFixture(true);
+      const native = getNativeInput(host);
+
+      expect(native.ariaLabelledByElements).to.have.lengthOf(1);
+      expect(native.ariaLabelledByElements?.[0]).to.equal(label);
+
+      simulateClick(label);
+      await elementUpdated(host);
+
+      expect(document.activeElement).to.equal(host);
+      expect(isFocused(native)).to.be.true;
+    });
+  });
+}

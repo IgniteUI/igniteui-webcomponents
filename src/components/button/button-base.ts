@@ -7,7 +7,7 @@ import { addInternalsController } from '../common/controllers/internals.js';
 import { blazorDeepImport } from '../common/decorators/blazorDeepImport.js';
 import { shadowOptions } from '../common/decorators/shadow-options.js';
 import type { Constructor } from '../common/mixins/constructor.js';
-import { EventEmitterMixin } from '../common//mixins/event-emitter.js';
+import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { partMap } from '../common/part-map.js';
 import { bindIf, getElementByIdFromRoot } from '../common/util.js';
 
@@ -190,10 +190,15 @@ export abstract class IgcButtonBaseComponent extends EventEmitterMixin<
   //#region Lifecycle
 
   protected override firstUpdated(): void {
-    if (this._commandfor) {
-      this._commandForElement = getElementByIdFromRoot(this, this._commandfor);
-      this.requestUpdate();
-    }
+    this.updateComplete.then(() => {
+      if (this._commandfor) {
+        this._commandForElement = getElementByIdFromRoot(
+          this,
+          this._commandfor
+        );
+        this.requestUpdate();
+      }
+    });
   }
 
   //#endregion

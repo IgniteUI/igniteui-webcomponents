@@ -339,8 +339,7 @@ export const InForm: Story = {
         id="form-output"
         style="margin: 0; padding: 0.75rem; background: var(--ig-gray-100, #f5f5f5); border-radius: 4px; font-size: 0.8rem; min-height: 3rem;"
       >
-Submit the form to see the data here.</pre
-      >
+Submit the form to see the data here.</pre>
     </div>
   `,
 };
