@@ -226,6 +226,16 @@ export default class IgcVirtualScrollComponent<
   }
 
   protected override willUpdate(changed: PropertyValues<this>): void {
+    // TODO: Either fix this in the theming controller or come up with some other solution.
+
+    // Re-verified (cheap, idempotent no-op when already present) on every
+    // update rather than only in `connectedCallback`. Hosts that render this
+    // component into light DOM inside an *ancestor's* shadow root (e.g. combo)
+    // may have that shadow root's `adoptedStyleSheets` wholesale replaced by
+    // the ancestor's own styling/theming logic, silently dropping this sheet
+    // without ever disconnecting/reconnecting this element.
+    this._adoptStyles();
+
     if (changed.has('data') || changed.has('estimatedItemSize')) {
       this._engine.resize(this.data.length, this.estimatedItemSize);
       this._hasPendingDataRequest = false;

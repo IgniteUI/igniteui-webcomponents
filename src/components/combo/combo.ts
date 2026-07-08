@@ -563,7 +563,18 @@ export default class IgcComboComponent<
   constructor() {
     super();
 
-    addThemingController(this, all);
+    // TODO: Either fix this in the theming controller or come up with another solution.
+    // Check virtualization `willUpdate` for more details.
+
+    // The virtualized list is rendered into this component's own shadow root
+    // (light DOM child), sharing it with the theming controller below. Theme
+    // changes re-adopt this shadow root's stylesheets wholesale, which would
+    // otherwise silently drop the list's own structural stylesheet since
+    // nothing else forces it to refresh. Requesting an update lets the list
+    // re-verify (and re-adopt, if needed) its stylesheet on its next render.
+    addThemingController(this, all, {
+      themeChange: () => this._listRef.value?.requestUpdate(),
+    });
     addSafeEventListener(this, 'blur', this._handleBlur);
     addSafeEventListener(this, 'focusin', this._handleFocusIn);
   }
@@ -1196,6 +1207,7 @@ export default class IgcComboComponent<
           role="listbox"
           tabindex="0"
           aria-labelledby="target"
+          over-scan="15"
           aria-activedescendant=${ifDefined(this._activeDescendant)}
           .data=${this._state.dataState}
           .itemTemplate=${this._itemRenderer}
