@@ -195,7 +195,10 @@ export type {
   GroupingDirection,
   IgcComboChangeEventArgs,
 } from './components/combo/types.js';
-export type { IconMeta } from './components/icon/registry/types.js';
+export type {
+  IconMeta,
+  RegisterIconOptions,
+} from './components/icon/registry/types.js';
 export type * from './components/chat/types.js';
 
 // Internal exports for other packages
