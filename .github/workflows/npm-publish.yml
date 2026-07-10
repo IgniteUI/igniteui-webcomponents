@@ -1,7 +1,7 @@
 name: Npm.js deploy
 
 permissions:
-  id-token: write
+  id-token: write # needed for github/npmjs oidc
   contents: read
 
 on:
@@ -19,8 +19,9 @@ jobs:
           cache: 'npm'
           registry-url: 'https://registry.npmjs.org'
 
-      - name: Update NPM
-        run: npm install -g npm@10.9.8 && npm install -g npm@latest
+      # Pin 11 for https://github.com/npm/cli/issues/9722; explicit install needed in order to have npmjs.org trusted publishing
+      - name: Pin npm
+        run: npm install -g npm@11
 
       - run: echo "VERSION=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_ENV
       - run: echo ${VERSION}
