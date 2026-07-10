@@ -1,7 +1,7 @@
 name: Npm.js deploy
 
 permissions:
-  id-token: write # needed for github/npmjs oidc
+  id-token: write # required for npm Trusted Publishing (OIDC)
   contents: read
 
 on:
