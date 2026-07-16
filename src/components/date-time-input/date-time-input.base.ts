@@ -1,6 +1,6 @@
 import { getDateFormatter } from 'igniteui-i18n-core';
 import { LitElement, type PropertyValues, type TemplateResult } from 'lit';
-import { eventOptions, property, query } from 'lit/decorators.js';
+import { eventOptions, property, query, state } from 'lit/decorators.js';
 import { cache } from 'lit/directives/cache.js';
 import type { ThemingController } from '../../theming/theming-controller.js';
 import { convertToDate } from '../calendar/helpers.js';
@@ -47,6 +47,7 @@ const Slots = setSlots(
 
 /* blazorIndirectRender */
 /* blazorSupportsVisualChildren */
+/* omitModule */
 @blazorDeepImport
 @shadowOptions({ delegatesFocus: true })
 export abstract class IgcDateTimeInputBaseComponent extends MaskBehaviorMixin(
@@ -62,6 +63,26 @@ export abstract class IgcDateTimeInputBaseComponent extends MaskBehaviorMixin(
 
   @query('input')
   protected override readonly _input?: HTMLInputElement;
+
+  /**
+   * Externally supplied label elements forwarded by a composite host (e.g. `igc-date-picker`)
+   * so that the host's associated labels reach the inner native input. When set, these take
+   * precedence over the component's own `ElementInternals` labels.
+   *
+   * @hidden @internal
+   */
+  @state()
+  public _labelElements: ReadonlyArray<Element> | null = null;
+
+  /**
+   * Resolves the label elements applied to the native input as `aria-labelledby` targets,
+   * preferring forwarded labels over the component's own `ElementInternals` labels.
+   *
+   * @hidden @internal
+   */
+  protected get _resolvedLabelElements(): ReadonlyArray<Element> | null {
+    return this._labelElements ?? this._internals.labels;
+  }
 
   protected override get __validators() {
     return dateTimeInputValidators;
@@ -439,6 +460,7 @@ export abstract class IgcDateTimeInputBaseComponent extends MaskBehaviorMixin(
       disabled: this.disabled,
       tabindex: hasNegativeTabIndex ? -1 : undefined,
       ariaDescribedBy: hasHelperText ? 'helper-text' : undefined,
+      ariaLabelledByElements: this._resolvedLabelElements,
       onInput: this._handleInput,
       onFocus: this._handleFocus,
       onBlur: this._handleBlur,

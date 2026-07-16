@@ -23,6 +23,8 @@ export interface MaskedInputOptions {
   tabindex?: number;
   /** When provided, sets the `aria-describedby` attribute. */
   ariaDescribedBy?: string;
+  /** When provided, sets the `aria-labelledby` attribute using the provided elements. */
+  ariaLabelledByElements?: ReadonlyArray<Element> | null;
 
   // Required mask handlers
   onInput: (event: InputEvent) => void;
@@ -61,8 +63,9 @@ export function renderMaskedNativeInput(
       ?disabled=${opts.disabled}
       ?autofocus=${opts.autofocus}
       inputmode=${ifDefined(opts.inputMode)}
-      tabindex=${bindIf(opts.tabindex !== undefined, opts.tabindex)}
+      tabindex=${bindIf(opts.tabindex != null, opts.tabindex)}
       aria-describedby=${bindIf(!!opts.ariaDescribedBy, opts.ariaDescribedBy)}
+      .ariaLabelledByElements=${opts.ariaLabelledByElements ?? null}
       @input=${opts.onInput}
       @focus=${opts.onFocus}
       @blur=${opts.onBlur}

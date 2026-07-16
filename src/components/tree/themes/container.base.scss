@@ -10,4 +10,5 @@ $theme: $bootstrap;
     display: block;
     overflow: auto;
     font-family: var(--ig-font-family);
+    contain: layout style;
 }

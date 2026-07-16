@@ -110,9 +110,11 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
       : 'document_thumbnail';
 
     return html`
-      ${!isCurrentUser
-        ? html`<igc-icon name=${iconName} part="attachment-icon"></igc-icon>`
-        : nothing}
+      ${
+        !isCurrentUser
+          ? html`<igc-icon name=${iconName} part="attachment-icon"></igc-icon>`
+          : nothing
+      }
       <span part="file-name">${attachment.name}</span>
     `;
   }

@@ -282,6 +282,7 @@ export default class IgcMaskInputComponent extends MaskBehaviorMixin(
       inputMode: this.inputMode,
       tabindex: hasNegativeTabIndex ? -1 : undefined,
       ariaDescribedBy: hasHelperText ? 'helper-text' : undefined,
+      ariaLabelledByElements: this._resolvedLabelElements,
       onInput: this._handleInput,
       onFocus: this._handleFocus,
       onBlur: this._handleBlur,

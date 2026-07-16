@@ -216,11 +216,10 @@ export interface IgcChatMessageReaction {
   reaction: string;
 }
 
-/* blazorSuppress */
 /**
- * @ignore
  * A collection of optional rendering functions that allow for custom UI rendering.
  * Each property is a function that takes a context object and returns a template result.
+ * @hidden
  */
 export interface ChatRenderers {
   /**

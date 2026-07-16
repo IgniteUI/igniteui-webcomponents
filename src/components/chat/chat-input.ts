@@ -509,23 +509,25 @@ export default class IgcChatInputComponent extends LitElement {
             >
               ${this.isRecording ? '🛑' : '🎤'}
             </igc-icon-button>
-            ${this.isRecording && !this.isStopInProgress
-              ? html`
-                  <svg
-                    class="countdown-ring"
-                    viewBox="0 0 36 36"
-                    aria-hidden="true"
-                  >
-                    <circle class="ring-bg" cx="18" cy="18" r="14"></circle>
-                    <circle
-                      class="ring-progress"
-                      cx="18"
-                      cy="18"
-                      r="14"
-                    ></circle>
-                  </svg>
-                `
-              : nothing}
+            ${
+              this.isRecording && !this.isStopInProgress
+                ? html`
+                    <svg
+                      class="countdown-ring"
+                      viewBox="0 0 36 36"
+                      aria-hidden="true"
+                    >
+                      <circle class="ring-bg" cx="18" cy="18" r="14"></circle>
+                      <circle
+                        class="ring-progress"
+                        cx="18"
+                        cy="18"
+                        r="14"
+                      ></circle>
+                    </svg>
+                  `
+                : nothing
+            }
           </div>`
         : nothing
     )}`;
@@ -584,13 +586,15 @@ export default class IgcChatInputComponent extends LitElement {
         @dragleave=${this._handleDragLeave}
         @drop=${this._handleDrop}
       >
-        ${this._state.hasInputAttachments
-          ? html`
-              <div part="attachments" role="list" aria-label="Attachments">
-                ${until(this._getRenderer('inputAttachments')(inputCtx))}
-              </div>
-            `
-          : nothing}
+        ${
+          this._state.hasInputAttachments
+            ? html`
+                <div part="attachments" role="list" aria-label="Attachments">
+                  ${until(this._getRenderer('inputAttachments')(inputCtx))}
+                </div>
+              `
+            : nothing
+        }
 
         <div part="input-wrapper">
           ${until(this._getRenderer('input')(inputCtx))}
