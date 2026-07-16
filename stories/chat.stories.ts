@@ -405,11 +405,18 @@ export const Basic: Story = {
         {
           headerText: 'IgniteUI Web Components Support',
           inputPlaceholder: 'Ask about installation, components, theming…',
+          speakPlaceholder: 'Speak...',
           suggestions: [
             'How do I install the library?',
             'What themes are available?',
             'How do events work?',
           ],
+          speechToText: {
+            enable: true,
+            lang: 'en-US',
+            serviceProvider: 'webspeech', // 'webspeech' | 'backend'
+            serviceUri: undefined, //e.g. 'https://localhost:5000/sttHub',
+          },
           renderers: {
             messageContent: async ({ message }) => _markdownRenderer(message),
           },
@@ -476,8 +483,8 @@ const templatesOptions: IgcChatOptions = {
     messageActions: _messageActionsTemplate,
     attachmentHeader: () => nothing,
     inputActionsStart: () => html`
-      <igc-icon-button variant="flat" aria-label="Voice input"
-        >🎤</igc-icon-button
+      <igc-icon-button variant="flat" aria-label="Send Location"
+        >📍</igc-icon-button
       >
     `,
     inputActionsEnd: (ctx: ChatRenderContext) => html`
@@ -497,7 +504,7 @@ export const Chat_Templates: Story = {
     docs: {
       description: {
         story:
-          'The same library support chat with full renderer customization applied: custom message author header (avatar + name), a thumbs-up action on agent messages, a custom "Send" button replacing the default, a voice input button, and a custom suggestion prefix. Header and action slots are also projected via light DOM.',
+          'The same library support chat with full renderer customization applied: custom message author header (avatar + name), a thumbs-up action on agent messages, a custom "Send" button replacing the default, a send location button, and a custom suggestion prefix. Header and action slots are also projected via light DOM.',
       },
     },
   },

@@ -1,6 +1,6 @@
 import { elementUpdated, expect, fixture } from '@open-wc/testing';
 import { html, nothing } from 'lit';
-import { spy, stub, useFakeTimers } from 'sinon';
+import { fake, spy, stub, useFakeTimers } from 'sinon';
 import { configureTheme } from '../../theming/config.js';
 import type IgcIconButtonComponent from '../button/icon-button.js';
 import IgcChipComponent from '../chip/chip.js';
@@ -227,6 +227,88 @@ describe('Chat', () => {
       );
     });
 
+    it('should apply `speakPlaceholder` while recording', async () => {
+      chat.options = {
+        inputPlaceholder: 'Type message here...',
+        speakPlaceholder: 'Listening...',
+        speechToText: { enable: true, serviceProvider: 'webspeech' },
+      };
+      await elementUpdated(chat);
+
+      const { input } = getChatDOM(chat);
+      expect(input.textarea.placeholder).to.equal(
+        chat.options.inputPlaceholder
+      );
+
+      Reflect.set(input.self, 'isRecording', true);
+      input.self.requestUpdate();
+      await elementUpdated(input.self);
+
+      expect(input.textarea.placeholder).to.equal(
+        chat.options.speakPlaceholder
+      );
+    });
+
+    it('should fallback to `inputPlaceholder` while recording if `speakPlaceholder` is not set', async () => {
+      chat.options = {
+        inputPlaceholder: 'Type message here...',
+        speechToText: { enable: true, serviceProvider: 'webspeech' },
+      };
+      await elementUpdated(chat);
+
+      const { input } = getChatDOM(chat);
+      Reflect.set(input.self, 'isRecording', true);
+      input.self.requestUpdate();
+      await elementUpdated(input.self);
+
+      expect(input.textarea.placeholder).to.equal(
+        chat.options.inputPlaceholder
+      );
+    });
+
+    it('should render the speech-to-text button only when enabled', async () => {
+      chat.options = {
+        speechToText: { enable: true, serviceProvider: 'webspeech' },
+      };
+      await elementUpdated(chat);
+
+      let speechToTextButton = getChatDOM(
+        chat
+      ).input.self.renderRoot.querySelector(
+        'igc-icon-button[part="speech-to-text"]'
+      );
+      expect(speechToTextButton).not.to.be.null;
+
+      chat.options = {
+        speechToText: { enable: false, serviceProvider: 'webspeech' },
+      };
+      await elementUpdated(chat);
+
+      speechToTextButton = getChatDOM(chat).input.self.renderRoot.querySelector(
+        'igc-icon-button[part="speech-to-text"]'
+      );
+      expect(speechToTextButton).to.be.null;
+    });
+
+    it('should pass an accessibility audit with speech-to-text enabled and disabled', async () => {
+      chat.options = {
+        inputPlaceholder: 'Type message here...',
+        speakPlaceholder: 'Listening...',
+        speechToText: { enable: true, serviceProvider: 'webspeech' },
+      };
+      await elementUpdated(chat);
+      await expect(chat).to.be.accessible();
+      await expect(chat).shadowDom.to.be.accessible();
+
+      chat.options = {
+        inputPlaceholder: 'Type message here...',
+        speechToText: { enable: false, serviceProvider: 'webspeech' },
+      };
+      await elementUpdated(chat);
+      await expect(chat).to.be.accessible();
+      await expect(chat).shadowDom.to.be.accessible();
+    });
+
     it('should enable/disable the send button properly', async () => {
       const { textarea, sendButton, fileInput } = getChatDOM(chat).input;
 
@@ -346,6 +428,128 @@ describe('Chat', () => {
       await elementUpdated(chat);
 
       expect(getChatDOM(chat).typingIndicator).to.be.null;
+    });
+  });
+
+  describe('Speech-to-text callbacks', () => {
+    beforeEach(async () => {
+      chat.options = {
+        speechToText: { enable: true, serviceProvider: 'webspeech' },
+      };
+      await elementUpdated(chat);
+    });
+
+    it('onPulseSignal() adds the pulsate class to the mic button', async () => {
+      const { input } = getChatDOM(chat);
+      const micButton = input.self.renderRoot.querySelector<HTMLElement>(
+        'igc-icon-button[part="speech-to-text"]'
+      )!;
+
+      input.self.onPulseSignal();
+
+      expect(micButton.classList.contains('pulsate')).to.be.true;
+    });
+
+    it('onStopInProgress() sets isStopInProgress to true', async () => {
+      const { input } = getChatDOM(chat);
+
+      input.self.onStopInProgress();
+      await elementUpdated(input.self);
+
+      const micButton = input.self.renderRoot.querySelector<HTMLElement>(
+        'igc-icon-button[part="speech-to-text"]'
+      )!;
+      expect(micButton.hasAttribute('disabled')).to.be.true;
+    });
+
+    it('onTranscript() updates the input value', async () => {
+      const { input } = getChatDOM(chat);
+
+      input.self.onTranscript('hello world');
+      await elementUpdated(chat);
+
+      expect(input.textarea.value).to.equal('hello world');
+    });
+
+    it('onFinishedTranscribing("manual") clears the recording state', async () => {
+      const { input } = getChatDOM(chat);
+      Reflect.set(input.self, 'isRecording', true);
+      Reflect.set(input.self, 'isStopInProgress', true);
+      input.self.requestUpdate();
+      await elementUpdated(input.self);
+
+      input.self.onFinishedTranscribing('manual');
+      await elementUpdated(input.self);
+
+      const micButton = input.self.renderRoot.querySelector<HTMLElement>(
+        'igc-icon-button[part="speech-to-text"]'
+      )!;
+      expect(micButton.hasAttribute('disabled')).to.be.false;
+    });
+
+    it('onFinishedTranscribing("auto") clears recording state and sends the message', async () => {
+      const { input } = getChatDOM(chat);
+      Reflect.set(input.self, 'isRecording', true);
+      input.self.requestUpdate();
+      await elementUpdated(input.self);
+
+      // Set a pending input value so _sendMessage actually dispatches a message.
+      input.self.onTranscript('voice message');
+
+      const sendSpy = spy(input.self as any, '_sendMessage');
+      input.self.onFinishedTranscribing('auto');
+
+      expect(sendSpy.calledOnce).to.be.true;
+      sendSpy.restore();
+    });
+
+    it('onStartCountdown(ms) starts the SVG ring animation', async () => {
+      const { input } = getChatDOM(chat);
+      Reflect.set(input.self, 'isRecording', true);
+      input.self.requestUpdate();
+      await elementUpdated(input.self);
+
+      const circle = input.self.renderRoot.querySelector<SVGCircleElement>(
+        'svg.countdown-ring .ring-progress'
+      )!;
+      expect(circle).not.to.be.null;
+
+      input.self.onStartCountdown(3000);
+
+      expect(circle.style.strokeDashoffset).to.equal('0');
+    });
+
+    it('onStartCountdown(null) resets the SVG ring', async () => {
+      const { input } = getChatDOM(chat);
+      Reflect.set(input.self, 'isRecording', true);
+      input.self.requestUpdate();
+      await elementUpdated(input.self);
+
+      const circle = input.self.renderRoot.querySelector<SVGCircleElement>(
+        'svg.countdown-ring .ring-progress'
+      )!;
+
+      // First start the animation, then reset it.
+      input.self.onStartCountdown(3000);
+      input.self.onStartCountdown(null);
+
+      expect(circle.style.strokeDashoffset).to.equal('100');
+    });
+
+    it('clicking the mic button while recording stops the current client', async () => {
+      const { input } = getChatDOM(chat);
+      const stopFake = fake();
+      Reflect.set(input.self, '_sttClient', { stop: stopFake });
+      Reflect.set(input.self, 'isRecording', true);
+      input.self.requestUpdate();
+      await elementUpdated(input.self);
+
+      const micButton = input.self.renderRoot.querySelector<HTMLElement>(
+        'igc-icon-button[part="speech-to-text"]'
+      )!;
+      simulateClick(micButton);
+
+      expect(stopFake.calledOnce).to.be.true;
     });
   });
 
