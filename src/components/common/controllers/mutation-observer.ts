@@ -5,7 +5,7 @@ import {
 } from 'lit';
 import { isElement } from '../util.js';
 
-/** @ignore */
+/** @hidden */
 export interface MutationControllerConfig<T extends Node = Node> {
   /** The callback function to run when a mutation occurs. */
   callback: MutationControllerCallback<T>;
