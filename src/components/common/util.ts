@@ -638,6 +638,10 @@ function fillPool(bytes: number): void {
   poolOffset += bytes;
 }
 
+/**
+ * Generates a unique string ID of the specified size using a URL-friendly alphabet.
+ * The default size is 21 characters, which provides a very low probability of collisions.
+ */
 export function nanoid(size = 21): string {
   const bytes = size | 0;
   fillPool(bytes);
