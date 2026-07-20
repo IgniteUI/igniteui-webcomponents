@@ -10,6 +10,7 @@ import { css, LitElement } from 'lit';
 import { partMap } from '../part-map.js';
 import {
   simulateClick,
+  simulateFocusOut,
   simulateKeyboard,
   simulatePointerDown,
   simulatePointerUp,
@@ -79,9 +80,7 @@ describe('Focus ring controller', () => {
 
     expect(hasKeyboardFocusStyles(instance.button)).to.be.true;
 
-    instance.button.dispatchEvent(
-      new FocusEvent('focusout', { bubbles: true, composed: true })
-    );
+    simulateFocusOut(instance.button);
     await elementUpdated(instance);
 
     expect(hasKeyboardFocusStyles(instance.button)).to.be.false;

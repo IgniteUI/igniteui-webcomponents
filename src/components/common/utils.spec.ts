@@ -246,6 +246,15 @@ export function simulateBlur(node: Element): void {
   node.dispatchEvent(new FocusEvent('blur'));
 }
 
+export function simulateFocusOut(
+  node: Element,
+  options?: FocusEventInit
+): void {
+  node.dispatchEvent(
+    new FocusEvent('focusout', { bubbles: true, composed: true, ...options })
+  );
+}
+
 export function simulatePointerDown(
   node: Element,
   options?: PointerEventInit,
@@ -425,6 +434,19 @@ export function simulateWheel(node: Element, options?: WheelEventInit): void {
 export function simulateDoubleClick(node: Element): void {
   node.dispatchEvent(
     new PointerEvent('dblclick', { bubbles: true, composed: true })
+  );
+}
+
+export function simulatePaste(node: Element, pastedText: string): void {
+  const clipboardData = new DataTransfer();
+  clipboardData.setData('text/plain', pastedText);
+
+  node.dispatchEvent(
+    new ClipboardEvent('paste', {
+      bubbles: true,
+      composed: true,
+      clipboardData,
+    })
   );
 }
 
