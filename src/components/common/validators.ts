@@ -11,7 +11,7 @@ import {
 type ValidatorHandler<T> = (host: T) => boolean;
 type ValidatorMessageFormat<T> = (host: T) => string;
 
-/** @ignore */
+/** @hidden */
 export interface Validator<T = any> {
   key: keyof ValidityStateFlags;
   message: string | ValidatorMessageFormat<T>;
