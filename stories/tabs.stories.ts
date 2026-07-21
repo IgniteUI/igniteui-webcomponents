@@ -28,7 +28,7 @@ const metadata: Meta<IgcTabsComponent> = {
   argTypes: {
     alignment: {
       type: '"start" | "end" | "center" | "justify"',
-      description: 'Sets the alignment for the tab headers',
+      description: 'Determines the alignment of the tabs header strip.',
       options: ['start', 'end', 'center', 'justify'],
       control: { type: 'select' },
       table: { defaultValue: { summary: 'start' } },
@@ -36,7 +36,7 @@ const metadata: Meta<IgcTabsComponent> = {
     activation: {
       type: '"auto" | "manual"',
       description:
-        'Determines the tab activation. When set to auto,\nthe tab is instantly selected while navigating with the Left/Right Arrows, Home or End keys\nand the corresponding panel is displayed.\nWhen set to manual, the tab is only focused. The selection happens after pressing Space or Enter.',
+        "Determines the activation behavior of the tabs.\n\nWhen set to 'auto', the tab will be selected when it receives focus.\nWhen set to 'manual', the tab will only be selected when it is clicked or activated with the keyboard.",
       options: ['auto', 'manual'],
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'auto' } },
@@ -48,13 +48,13 @@ const metadata: Meta<IgcTabsComponent> = {
 export default metadata;
 
 interface IgcTabsArgs {
-  /** Sets the alignment for the tab headers */
+  /** Determines the alignment of the tabs header strip. */
   alignment: 'start' | 'end' | 'center' | 'justify';
   /**
-   * Determines the tab activation. When set to auto,
-   * the tab is instantly selected while navigating with the Left/Right Arrows, Home or End keys
-   * and the corresponding panel is displayed.
-   * When set to manual, the tab is only focused. The selection happens after pressing Space or Enter.
+   * Determines the activation behavior of the tabs.
+   *
+   * When set to 'auto', the tab will be selected when it receives focus.
+   * When set to 'manual', the tab will only be selected when it is clicked or activated with the keyboard.
    */
   activation: 'auto' | 'manual';
 }

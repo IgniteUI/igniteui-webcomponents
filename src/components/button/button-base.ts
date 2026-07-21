@@ -7,7 +7,7 @@ import { addInternalsController } from '../common/controllers/internals.js';
 import { blazorDeepImport } from '../common/decorators/blazorDeepImport.js';
 import { shadowOptions } from '../common/decorators/shadow-options.js';
 import type { Constructor } from '../common/mixins/constructor.js';
-import { EventEmitterMixin } from '../common//mixins/event-emitter.js';
+import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { partMap } from '../common/part-map.js';
 import { bindIf, getElementByIdFromRoot } from '../common/util.js';
 
@@ -19,6 +19,7 @@ export interface IgcButtonEventMap {
   blur: FocusEvent;
 }
 
+/* omitModule */
 /**
  * Abstract base class shared by `igc-button` and `igc-icon-button`.
  *
@@ -156,7 +157,7 @@ export abstract class IgcButtonBaseComponent extends EventEmitterMixin<
     return this._commandfor;
   }
 
-  /* blazorCSSuppress */
+  /* blazorSuppress */
   /* alternateType: object */
   /**
    * The target element for the invoker command. Resolved from the `commandfor` ID.
@@ -165,7 +166,7 @@ export abstract class IgcButtonBaseComponent extends EventEmitterMixin<
     return this._commandForElement;
   }
 
-  /* blazorCSSuppress */
+  /* blazorSuppress */
   /* alternateType: object */
   public set commandForElement(value: Element | null) {
     this._commandForElement = value;

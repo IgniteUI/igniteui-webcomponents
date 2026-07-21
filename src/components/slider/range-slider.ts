@@ -248,15 +248,17 @@ export default class IgcRangeSliderComponent extends EventEmitterMixin<
         @focus=${this.handleFocus}
         @blur=${this.handleThumbBlur}
       ></div>
-      ${this.hideTooltip
-        ? nothing
-        : html`
-            <div part="thumb-label" style=${styleMap(tooltipStyles)}>
-              <div part="thumb-label-inner">
-                ${this.hasLabels ? this.labels[value] : this.formatValue(value)}
+      ${
+        this.hideTooltip
+          ? nothing
+          : html`
+              <div part="thumb-label" style=${styleMap(tooltipStyles)}>
+                <div part="thumb-label-inner">
+                  ${this.hasLabels ? this.labels[value] : this.formatValue(value)}
+                </div>
               </div>
-            </div>
-          `}
+            `
+      }
     `;
   }
 

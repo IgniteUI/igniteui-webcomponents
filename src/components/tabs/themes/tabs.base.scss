@@ -169,4 +169,10 @@ igc-icon-button::part(base) {
             width 0.2s $tabs-animation-function;
         z-index: map.get($tabs-z-index, 'selected-indicator');
     }
+
+    @media (prefers-reduced-motion: reduce) {
+        span {
+            transition: none;
+        }
+    }
 }
