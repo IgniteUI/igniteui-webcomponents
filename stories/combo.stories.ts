@@ -642,17 +642,17 @@ export const Virtualization: Story = {
           <igc-button
             variant="outlined"
             @click=${(e: Event) =>
-            scrollComboToIndex(
-              comboFromEvent(e),
-              Math.floor(largeCities.length / 2)
-            )}
+              scrollComboToIndex(
+                comboFromEvent(e),
+                Math.floor(largeCities.length / 2)
+              )}
           >
             Scroll to middle
           </igc-button>
           <igc-button
             variant="outlined"
             @click=${(e: Event) =>
-            scrollComboToIndex(comboFromEvent(e), largeCities.length - 1)}
+              scrollComboToIndex(comboFromEvent(e), largeCities.length - 1)}
           >
             Scroll to last
           </igc-button>

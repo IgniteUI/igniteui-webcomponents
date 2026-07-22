@@ -176,7 +176,7 @@ function generatePeople(count: number): Person[] {
   });
 }
 
-const people = generatePeople(100_000);
+const people = generatePeople(10_000);
 
 export const Vertical: Story = {
   argTypes: disableStoryControls(metadata),

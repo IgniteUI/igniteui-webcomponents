@@ -130,23 +130,24 @@ class BIT {
   }
 
   /**
-   * Returns the 0-based index of the last item whose cumulative end offset
-   * is ≤ `offset` (binary lifting on the internal tree). O(log N).
+   * Returns the 0-based index of the item that contains the given scroll `offset`,
+   * i.e. the largest i such that `prefixSum(i) <= offset < prefixSum(i + 1)`.
+   * O(log N) via binary lifting on the internal tree.
    */
   public findIndexAtOffset(offset: number): number {
     if (offset <= 0 || this.length === 0) return 0;
 
     let idx = 0;
-    let newOffset = offset;
+    let remaining = offset;
 
     for (let bit = 1 << (31 - Math.clz32(this.length)); bit > 0; bit >>= 1) {
       const next = idx + bit;
-      if (next <= this.length && this._tree[next] <= newOffset) {
+      if (next <= this.length && this._tree[next] <= remaining) {
         idx = next;
-        newOffset -= this._tree[idx];
+        remaining -= this._tree[idx];
       }
     }
-    return Math.max(0, idx - 1);
+    return Math.min(this.length - 1, idx);
   }
 }
 

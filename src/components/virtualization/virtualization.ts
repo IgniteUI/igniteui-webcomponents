@@ -31,6 +31,9 @@ export interface IgcVirtualScrollComponentEventMap {
 
 const REMOTE_SCROLLING_THRESHOLD = 5;
 const MAX_LAYOUT_SETTLE_PASSES = 20;
+const MAX_SCROLL_CORRECTION_PASSES = 5;
+const MAX_SCROLL_SETTLE_PASSES = 180;
+const SCROLL_CORRECTION_EPSILON = 1;
 
 /**
  * A virtual scroll component that efficiently renders large lists by only
@@ -64,6 +67,7 @@ export default class IgcVirtualScrollComponent<
   private _currentRange: VisibleRange = { startIndex: 0, endIndex: -1 };
   private _hasPendingDataRequest = false;
   private _layoutCompletePromise: Promise<void> | null = null;
+  private _scrollRequestId = 0;
 
   @state()
   private _scrollPosition = 0;
@@ -306,7 +310,7 @@ export default class IgcVirtualScrollComponent<
         : [];
 
     return html`
-      <div part="igc-vs-track" style=${styleMap(trackStyle)} aria-hidden="true">
+      <div part="igc-vs-track" style=${styleMap(trackStyle)}>
         <div
           ${ref(this._contentRef)}
           part="igc-vs-content"
@@ -330,6 +334,77 @@ export default class IgcVirtualScrollComponent<
 
   private get _isVertical(): boolean {
     return this.orientation === 'vertical';
+  }
+
+  /**
+   * Computes the scroll offset that aligns the given item index within the
+   * viewport according to `options`, using the engine's *current* size
+   * data. As more items get measured, calling this again for the same
+   * index/options can yield a different, more accurate result.
+   */
+  private _getAlignedScrollOffset(
+    index: number,
+    options?: ScrollIntoViewOptions
+  ): number {
+    const itemStart = this._engine.getScrollOffsetForIndex(index);
+    const itemEnd = this._engine.getScrollOffsetForIndex(index + 1);
+    const itemSize = Math.max(0, itemEnd - itemStart);
+
+    const align = this._isVertical
+      ? (options?.block ?? 'start')
+      : (options?.inline ?? options?.block ?? 'start');
+
+    let offset = itemStart;
+    if (align === 'center') {
+      offset = itemStart - (this._viewportSize - itemSize) / 2;
+    } else if (align === 'end') {
+      offset = itemStart - (this._viewportSize - itemSize);
+    }
+
+    return Math.max(0, offset);
+  }
+
+  /** Applies a scroll offset to the correct axis, accounting for RTL. */
+  private _applyScroll(offset: number, behavior: ScrollBehavior): void {
+    if (this._isVertical) {
+      this.scrollTo({ top: offset, behavior });
+    } else {
+      this.scrollTo({ left: isLTR(this) ? offset : -offset, behavior });
+    }
+  }
+
+  /** The current real scroll position on the active axis, normalized for RTL. */
+  private _currentAxisScroll(): number {
+    return this._isVertical
+      ? this.scrollTop
+      : isLTR(this)
+        ? this.scrollLeft
+        : -this.scrollLeft;
+  }
+
+  /**
+   * Waits until the real scroll position on the active axis stops moving
+   * between two consecutive frames.
+   *
+   * `behavior: 'smooth'` scrolls animate asynchronously over multiple
+   * frames, so the DOM (and the items rendered around it) only reflect the
+   * final position once that animation finishes. Measuring items - and
+   * correcting the target offset from those measurements - before that
+   * happens would use data from wherever the animation currently happens
+   * to be, not from the requested destination.
+   */
+  private async _waitForScrollSettled(): Promise<void> {
+    let previous = this._currentAxisScroll();
+
+    for (let i = 0; i < MAX_SCROLL_SETTLE_PASSES; i++) {
+      await this._nextFrame();
+
+      const current = this._currentAxisScroll();
+      if (Math.abs(current - previous) < SCROLL_CORRECTION_EPSILON) {
+        return;
+      }
+      previous = current;
+    }
   }
 
   private _measureViewport(): void {
@@ -468,15 +543,51 @@ export default class IgcVirtualScrollComponent<
     return this._layoutCompletePromise;
   }
 
-  /** Programmatically scrolls to the specified item index. */
-  public scrollToIndex(index: number, options?: ScrollIntoViewOptions): void {
-    const offset = this._engine.getScrollOffsetForIndex(index);
-    const opts = options ?? {};
+  /**
+   * Programmatically scrolls to the specified item index.
+   *
+   * Items outside the currently rendered window only have an *estimated*
+   * size, so the very first jump may land slightly off target. Once the
+   * scroll lands, the items around it are measured and, if that changes
+   * their computed offset, the scroll position is corrected. This repeats
+   * (each pass measuring items closer to the true target) until the offset
+   * stabilizes, so the requested index ends up precisely aligned even for
+   * far-away, never-before-rendered items.
+   *
+   * Returns a promise that resolves once the scroll position has settled
+   * on the final, corrected offset. Callers that only care about the
+   * initial (approximate) scroll can ignore the returned promise.
+   */
+  public async scrollToIndex(
+    index: number,
+    options?: ScrollIntoViewOptions
+  ): Promise<void> {
+    const maxIndex = Math.max(0, this.data.length - 1);
+    const clampedIndex = Math.max(0, Math.min(index, maxIndex));
+    const behavior = options?.behavior ?? 'auto';
 
-    if (this._isVertical) {
-      this.scrollTo({ top: offset, ...opts });
-    } else {
-      this.scrollTo({ left: isLTR(this) ? offset : -offset, ...opts });
+    // A newer call supersedes any correction loop still running for a
+    // previous one (e.g. rapid, repeated calls to scrollToIndex).
+    const requestId = ++this._scrollRequestId;
+
+    let offset = this._getAlignedScrollOffset(clampedIndex, options);
+    this._applyScroll(offset, behavior);
+
+    for (let i = 0; i < MAX_SCROLL_CORRECTION_PASSES; i++) {
+      await this._waitForScrollSettled();
+      await this.layoutComplete;
+
+      if (requestId !== this._scrollRequestId) {
+        return;
+      }
+
+      const corrected = this._getAlignedScrollOffset(clampedIndex, options);
+      if (Math.abs(corrected - offset) < SCROLL_CORRECTION_EPSILON) {
+        break;
+      }
+
+      offset = corrected;
+      this._applyScroll(offset, 'auto');
     }
   }
 

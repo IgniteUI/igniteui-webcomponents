@@ -165,6 +165,70 @@ describe('VirtualScroll', () => {
 
       expect(el.scrollLeft).to.be.greaterThan(0);
     });
+
+    it('keeps the requested index aligned once real item sizes differ from the estimate', async () => {
+      const count = 500;
+      const realItemSize = 30; // smaller than the default estimatedItemSize (50)
+      const sizedTemplate: VirtualScrollItemTemplate<string> = (ctx) =>
+        html`<span style="display: block; height: ${realItemSize}px;"
+          >${ctx.value}</span
+        >`;
+
+      const el = await fixture<IgcVirtualScrollComponent<string>>(
+        html`<igc-virtual-scroll
+          style="height: 300px"
+          .data=${createItems(count)}
+          .itemTemplate=${sizedTemplate}
+        ></igc-virtual-scroll>`
+      );
+
+      await elementUpdated(el);
+
+      const targetIndex = 250;
+      await el.scrollToIndex(targetIndex);
+
+      const content = el.querySelector<HTMLElement>('[part="igc-vs-content"]')!;
+      const renderedIndices = Array.from(
+        content.querySelectorAll<HTMLElement>('[data-vs-index]')
+      ).map((item) => Number(item.dataset.vsIndex));
+
+      expect(Math.min(...renderedIndices)).to.equal(
+        Math.max(0, targetIndex - el.overScan)
+      );
+    });
+
+    it('keeps a far-away, smooth-scrolled index aligned in a large list', async () => {
+      const count = 5000;
+      const realItemSize = 32; // smaller than the default estimatedItemSize (50)
+      const sizedTemplate: VirtualScrollItemTemplate<string> = (ctx) =>
+        html`<span style="display: block; height: ${realItemSize}px;"
+          >${ctx.value}</span
+        >`;
+
+      const el = await fixture<IgcVirtualScrollComponent<string>>(
+        html`<igc-virtual-scroll
+          style="height: 300px"
+          .data=${createItems(count)}
+          .itemTemplate=${sizedTemplate}
+        ></igc-virtual-scroll>`
+      );
+
+      await elementUpdated(el);
+
+      const targetIndex = 2500;
+      await el.scrollToIndex(targetIndex, { behavior: 'smooth' });
+
+      const content2 = el.querySelector<HTMLElement>(
+        '[part="igc-vs-content"]'
+      )!;
+      const renderedIndices2 = Array.from(
+        content2.querySelectorAll<HTMLElement>('[data-vs-index]')
+      ).map((item) => Number(item.dataset.vsIndex));
+
+      expect(Math.min(...renderedIndices2)).to.equal(
+        Math.max(0, targetIndex - el.overScan)
+      );
+    });
   });
 
   describe('Engine integration', () => {
