@@ -495,7 +495,7 @@ export function suppressResizeObserverLoopError(): void {
     return;
   }
 
-  (window as any)[flag] = true;
+  (window as unknown as Window & Record<string, boolean>)[flag] = true;
   // Suppress ResizeObserver loop errors that can occur during tests.
   // These are benign and do not affect test correctness.
   const errorHandler = window.onerror;

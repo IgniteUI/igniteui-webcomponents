@@ -127,30 +127,30 @@ export default class IgcVirtualScrollComponent<
     if (!IgcVirtualScrollComponent._styleSheet) {
       const sheet = new CSSStyleSheet();
       sheet.replaceSync(`
-        igc-virtual-scroll {
+        :where(igc-virtual-scroll) {
           display: block;
           position: relative;
           overflow: auto;
           height: 18.75rem;
         }
 
-        igc-virtual-scroll[orientation='vertical'] {
+        :where(igc-virtual-scroll[orientation='vertical']) {
           overflow-y: auto;
           overflow-x: hidden;
         }
 
-        igc-virtual-scroll[orientation='horizontal'] {
+        :where(igc-virtual-scroll[orientation='horizontal']) {
           overflow-x: auto;
           overflow-y: hidden;
         }
 
-        igc-virtual-scroll [part="igc-vs-track"] {
+        :where(igc-virtual-scroll) [part="igc-vs-track"] {
           position: relative;
           width: 100%;
           min-height: 100%;
         }
 
-        igc-virtual-scroll [part="igc-vs-content"] {
+        :where(igc-virtual-scroll) [part="igc-vs-content"] {
           position: absolute;
           top: 0;
           left: 0;
@@ -159,25 +159,25 @@ export default class IgcVirtualScrollComponent<
           contain: layout style paint;
         }
 
-        igc-virtual-scroll[orientation='horizontal'] [part="igc-vs-track"] {
+        :where(igc-virtual-scroll[orientation='horizontal']) [part="igc-vs-track"] {
           height: 100%;
           width: auto;
           min-height: unset;
         }
 
-        igc-virtual-scroll[orientation='horizontal'] [part="igc-vs-content"] {
+        :where(igc-virtual-scroll[orientation='horizontal']) [part="igc-vs-content"] {
           display: flex;
           flex-direction: row;
           height: 100%;
           width: auto;
         }
 
-        igc-virtual-scroll[orientation='horizontal'] [part="igc-vs-content"] > [data-vs-index] {
+        :where(igc-virtual-scroll[orientation='horizontal']) [part="igc-vs-content"] > [data-vs-index] {
           flex-shrink: 0;
           height: 100%;
         }
 
-        igc-virtual-scroll[orientation='horizontal']:dir(rtl) [part="igc-vs-content"] {
+        :where(igc-virtual-scroll[orientation='horizontal']):dir(rtl) [part="igc-vs-content"] {
           left: auto;
           right: 0;
         }
