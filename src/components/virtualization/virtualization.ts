@@ -33,7 +33,8 @@ const REMOTE_SCROLLING_THRESHOLD = 5;
 const MAX_LAYOUT_SETTLE_PASSES = 20;
 const MAX_SCROLL_CORRECTION_PASSES = 5;
 const MAX_SCROLL_SETTLE_PASSES = 180;
-const SCROLL_CORRECTION_EPSILON = 1;
+const SCROLL_SETTLE_EPSILON_PX = 1;
+const SCROLL_OFFSET_EPSILON_PX = 1;
 
 /**
  * A virtual scroll component that efficiently renders large lists by only
@@ -199,11 +200,11 @@ export default class IgcVirtualScrollComponent<
     super();
     this._engine.onSizeChange = () => this.requestUpdate();
     this._handleItemResize = this._handleItemResize.bind(this);
-    this._handleViewportResize = this._handleViewportResize.bind(this);
+    this._measureViewport = this._measureViewport.bind(this);
 
     // Viewport resize observer
     createResizeObserverController(this, {
-      callback: this._handleViewportResize,
+      callback: this._measureViewport,
     });
   }
 
@@ -277,12 +278,10 @@ export default class IgcVirtualScrollComponent<
       return html`${nothing}`;
     }
 
-    const overScan = Math.max(0, Math.floor(asNumber(this.overScan, 2)));
-
     this._currentRange = this._engine.getVisibleRange(
       this._scrollPosition,
       this._viewportSize,
-      overScan,
+      this._normalizedOverScan,
       this.data.length
     );
 
@@ -340,6 +339,11 @@ export default class IgcVirtualScrollComponent<
 
   private get _isVertical(): boolean {
     return this.orientation === 'vertical';
+  }
+
+  /** The configured `overScan`, normalized to a non-negative integer. */
+  private get _normalizedOverScan(): number {
+    return Math.max(0, Math.floor(asNumber(this.overScan, 2)));
   }
 
   /**
@@ -406,7 +410,7 @@ export default class IgcVirtualScrollComponent<
       await this._nextFrame();
 
       const current = this._currentAxisScroll();
-      if (Math.abs(current - previous) < SCROLL_CORRECTION_EPSILON) {
+      if (Math.abs(current - previous) < SCROLL_SETTLE_EPSILON_PX) {
         return;
       }
       previous = current;
@@ -425,24 +429,11 @@ export default class IgcVirtualScrollComponent<
       this.removeEventListener('scroll', this._onScroll);
     }
 
-    this._onScroll = (e: Event) => {
-      const target = e.target as HTMLElement;
-      const scrollPos = this._isVertical
-        ? target.scrollTop
-        : isLTR(this)
-          ? target.scrollLeft
-          : -target.scrollLeft;
-      this._scrollPosition = scrollPos;
+    this._onScroll = () => {
+      this._scrollPosition = this._currentAxisScroll();
     };
 
     this.addEventListener('scroll', this._onScroll, { passive: true });
-  }
-
-  private _handleViewportResize(): void {
-    const newSize = this._isVertical ? this.clientHeight : this.clientWidth;
-    if (newSize !== this._viewportSize) {
-      this._viewportSize = newSize;
-    }
   }
 
   private _handleItemResize(entries: ResizeObserverEntry[]): void {
@@ -478,14 +469,13 @@ export default class IgcVirtualScrollComponent<
     if (this._hasPendingDataRequest) return;
     const range = this._currentRange;
     const total = this.data.length;
-    const overScan = Math.max(0, Math.floor(asNumber(this.overScan, 2)));
 
     if (total > 0 && range.endIndex >= total - REMOTE_SCROLLING_THRESHOLD) {
       this._hasPendingDataRequest = true;
       this.emitEvent('igcDataRequest', {
         detail: {
           startIndex: total,
-          count: Math.max(overScan * 4, 20),
+          count: Math.max(this._normalizedOverScan * 4, 20),
         },
       });
     }
@@ -589,7 +579,7 @@ export default class IgcVirtualScrollComponent<
       }
 
       const corrected = this._getAlignedScrollOffset(clampedIndex, options);
-      if (Math.abs(corrected - offset) < SCROLL_CORRECTION_EPSILON) {
+      if (Math.abs(corrected - offset) < SCROLL_OFFSET_EPSILON_PX) {
         break;
       }
 

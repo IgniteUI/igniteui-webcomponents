@@ -46,7 +46,7 @@ export interface VirtualScrollState {
 export interface VirtualScrollDataRequest {
   /**
    * The first index that does not yet have data.
-   * Append at least `(endIndex - startIndex + 1)` more items starting here.
+   * Append at least `count` more items starting here.
    */
   startIndex: number;
   /** Number of items being requested. */

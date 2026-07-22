@@ -1,7 +1,20 @@
 /**
+ * Caches the result of `getMaxBrowserSizeProbePx` per `Document`. The
+ * maximum scrollable coordinate a browser supports doesn't change between
+ * calls, so repeated probes across multiple virtual-scroll instances in the
+ * same document are wasted DOM work.
+ */
+const _maxBrowserSizeCache = new WeakMap<Document, number>();
+
+/**
  * Probes the browser for the maximum scrollable coordinate it supports.
  */
 function getMaxBrowserSizeProbePx(doc: Document): number {
+  const cached = _maxBrowserSizeCache.get(doc);
+  if (cached !== undefined) {
+    return cached;
+  }
+
   const container = doc.body ?? doc.documentElement;
   if (!container) {
     return Number.POSITIVE_INFINITY;
@@ -13,6 +26,8 @@ function getMaxBrowserSizeProbePx(doc: Document): number {
   container.appendChild(div);
   const size = Math.abs(div.getBoundingClientRect().top);
   container.removeChild(div);
+
+  _maxBrowserSizeCache.set(doc, size);
   return size;
 }
 
@@ -37,6 +52,13 @@ class BIT {
   /** Running total maintained alongside tree updates in O(1). */
   private _total: number;
 
+  /**
+   * Highest power-of-two ≤ `length`, precomputed once for the binary
+   * lifting in `findIndexAtOffset` instead of recomputing it via
+   * `Math.clz32` on every call (this runs on every scroll event).
+   */
+  private readonly _topBit: number;
+
   private constructor(
     length: number,
     sizes: Float64Array,
@@ -47,25 +69,14 @@ class BIT {
     this._sizes = sizes;
     this._tree = tree;
     this._total = total;
+    this._topBit = length > 0 ? 1 << (31 - Math.clz32(length)) : 0;
   }
 
   /**
    * Creates a BIT of `length` items all initialized to `fillSize`. O(N).
    */
   public static filled(length: number, fillSize: number): BIT {
-    const sizes = new Float64Array(length).fill(fillSize);
-    const tree = new Float64Array(length + 1);
-    const total = length * fillSize;
-
-    // O(N) build (vs O(N log N) for N individual insertions)
-    for (let i = 1; i <= length; i++) {
-      tree[i] += fillSize;
-      const j = i + (i & -i);
-      if (j <= length) {
-        tree[j] += tree[i];
-      }
-    }
-    return new BIT(length, sizes, tree, total);
+    return BIT.fromSizes(new Float64Array(length).fill(fillSize));
   }
 
   /**
@@ -145,7 +156,7 @@ class BIT {
     let idx = 0;
     let remaining = offset;
 
-    for (let bit = 1 << (31 - Math.clz32(this.length)); bit > 0; bit >>= 1) {
+    for (let bit = this._topBit; bit > 0; bit >>= 1) {
       const next = idx + bit;
       if (next <= this.length && this._tree[next] <= remaining) {
         idx = next;
