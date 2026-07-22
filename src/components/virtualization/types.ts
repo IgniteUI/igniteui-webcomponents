@@ -4,11 +4,11 @@
  */
 export class VirtualScrollItemContext<T> {
   /** The current item in the virtual scroll */
-  public value: T;
+  public readonly value: T;
   /** The index of the current item */
-  public index: number;
+  public readonly index: number;
   /** The total number of items */
-  public count: number;
+  public readonly count: number;
 
   constructor(value: T, index: number, count: number) {
     this.value = value;

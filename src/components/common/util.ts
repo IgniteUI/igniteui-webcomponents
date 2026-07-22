@@ -57,7 +57,7 @@ export function formatString(template: string, ...params: unknown[]): string {
  * asNumber('5'); // 5
  * asNumber('3.14'); // 3.14
  * asNumber('five'); // 0
- * asNUmber('five', 5); // 5
+ * asNumber('five', 5); // 5
  * asNumber(undefined, 10); // 10
  * asNumber(null, 10); // 10
  * asNumber(NaN, 10); // 10
