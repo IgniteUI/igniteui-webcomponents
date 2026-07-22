@@ -58,11 +58,16 @@ export function formatString(template: string, ...params: unknown[]): string {
  * asNumber('3.14'); // 3.14
  * asNumber('five'); // 0
  * asNUmber('five', 5); // 5
+ * asNumber(undefined, 10); // 10
+ * asNumber(null, 10); // 10
+ * asNumber(NaN, 10); // 10
+ * asNumber(Infinity, 10); // 10
+ * asNumber(-Infinity, 10); // 10
  * ```
  */
-export function asNumber(value: unknown, fallback = 0) {
+export function asNumber(value: unknown, fallback = 0): number {
   const parsed = Number.parseFloat(value as string);
-  return Number.isNaN(parsed) ? fallback : parsed;
+  return Number.isNaN(parsed) || !Number.isFinite(parsed) ? fallback : parsed;
 }
 
 /**

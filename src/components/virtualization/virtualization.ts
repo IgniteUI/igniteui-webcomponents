@@ -218,7 +218,7 @@ export default class IgcVirtualScrollComponent<
   public override connectedCallback(): void {
     super.connectedCallback();
     this._adoptStyles();
-    this._engine.initMaxBrowserSize(document);
+    this._engine.initMaxBrowserSize(this.ownerDocument);
     this._measureViewport();
     this._setupScrollListener();
   }
@@ -241,7 +241,11 @@ export default class IgcVirtualScrollComponent<
     this._adoptStyles();
 
     if (changed.has('data') || changed.has('estimatedItemSize')) {
-      this._engine.resize(this.data.length, this.estimatedItemSize);
+      const estimatedSize = asNumber(this.estimatedItemSize);
+      this._engine.resize(
+        this.data.length,
+        estimatedSize > 0 ? estimatedSize : 50
+      );
       this._hasPendingDataRequest = false;
     }
 
@@ -273,10 +277,12 @@ export default class IgcVirtualScrollComponent<
       return html`${nothing}`;
     }
 
+    const overScan = Math.max(0, Math.floor(asNumber(this.overScan, 2)));
+
     this._currentRange = this._engine.getVisibleRange(
       this._scrollPosition,
       this._viewportSize,
-      this.overScan,
+      overScan,
       this.data.length
     );
 
@@ -472,13 +478,14 @@ export default class IgcVirtualScrollComponent<
     if (this._hasPendingDataRequest) return;
     const range = this._currentRange;
     const total = this.data.length;
+    const overScan = Math.max(0, Math.floor(asNumber(this.overScan, 2)));
 
     if (total > 0 && range.endIndex >= total - REMOTE_SCROLLING_THRESHOLD) {
       this._hasPendingDataRequest = true;
       this.emitEvent('igcDataRequest', {
         detail: {
           startIndex: total,
-          count: Math.max(this.overScan * 4, 20),
+          count: Math.max(overScan * 4, 20),
         },
       });
     }

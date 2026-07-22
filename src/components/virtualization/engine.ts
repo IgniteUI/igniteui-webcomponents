@@ -2,12 +2,17 @@
  * Probes the browser for the maximum scrollable coordinate it supports.
  */
 function getMaxBrowserSizeProbePx(doc: Document): number {
+  const container = doc.body ?? doc.documentElement;
+  if (!container) {
+    return Number.POSITIVE_INFINITY;
+  }
+
   const div = doc.createElement('div');
   div.style.position = 'absolute';
   div.style.top = `${Number.MAX_SAFE_INTEGER}px`;
-  doc.body.appendChild(div);
+  container.appendChild(div);
   const size = Math.abs(div.getBoundingClientRect().top);
-  doc.body.removeChild(div);
+  container.removeChild(div);
   return size;
 }
 
