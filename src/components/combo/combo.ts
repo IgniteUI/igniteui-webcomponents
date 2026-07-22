@@ -2,7 +2,7 @@ import {
   ComboResourceStringsEN,
   type IComboResourceStrings,
 } from 'igniteui-i18n-core';
-import { html, nothing, type PropertyValues, type TemplateResult } from 'lit';
+import { html, type PropertyValues, type TemplateResult } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { createRef, ref } from 'lit/directives/ref.js';
@@ -36,9 +36,10 @@ import IgcIconComponent from '../icon/icon.js';
 import IgcInputComponent from '../input/input.js';
 import IgcPopoverComponent from '../popover/popover.js';
 import IgcValidationContainerComponent from '../validation-container/validation-container.js';
+import type { VirtualScrollItemContext } from '../virtualization/types.js';
+import IgcVirtualScrollComponent from '../virtualization/virtualization.js';
 import IgcComboHeaderComponent from './combo-header.js';
 import IgcComboItemComponent from './combo-item.js';
-import IgcComboListComponent from './combo-list.js';
 import { DataState } from './controllers/data.js';
 import { ComboNavigationController } from './controllers/navigation.js';
 import { styles } from './themes/combo.base.css.js';
@@ -143,7 +144,7 @@ export default class IgcComboComponent<
     registerComponent(
       IgcComboComponent,
       IgcIconComponent,
-      IgcComboListComponent,
+      IgcVirtualScrollComponent,
       IgcComboItemComponent,
       IgcComboHeaderComponent,
       IgcInputComponent,
@@ -208,7 +209,7 @@ export default class IgcComboComponent<
   private readonly _searchRef = createRef<IgcInputComponent>();
 
   /** The combo virtualized dropdown list. */
-  private readonly _listRef = createRef<IgcComboListComponent>();
+  private readonly _listRef = createRef<IgcVirtualScrollComponent>();
 
   private readonly _state = new DataState<T>(this);
   private readonly _navigation = new ComboNavigationController(
@@ -244,6 +245,7 @@ export default class IgcComboComponent<
   @state()
   private set _activeIndex(index: number) {
     this._navigation.active = index;
+    this._listRef.value?.requestUpdate();
   }
 
   private get _activeIndex(): number {
@@ -561,7 +563,18 @@ export default class IgcComboComponent<
   constructor() {
     super();
 
-    addThemingController(this, all);
+    // TODO: Either fix this in the theming controller or come up with another solution.
+    // Check virtualization `willUpdate` for more details.
+
+    // The virtualized list is rendered into this component's own shadow root
+    // (light DOM child), sharing it with the theming controller below. Theme
+    // changes re-adopt this shadow root's stylesheets wholesale, which would
+    // otherwise silently drop the list's own structural stylesheet since
+    // nothing else forces it to refresh. Requesting an update lets the list
+    // re-verify (and re-adopt, if needed) its stylesheet on its next render.
+    addThemingController(this, all, {
+      themeChange: () => this._listRef.value?.requestUpdate(),
+    });
     addSafeEventListener(this, 'blur', this._handleBlur);
     addSafeEventListener(this, 'focusin', this._handleFocusIn);
   }
@@ -1020,12 +1033,9 @@ export default class IgcComboComponent<
   //#endregion
 
   protected _itemRenderer: ComboRenderFunction<T> = (
-    item: ComboRecord<T>,
-    index: number
+    context: VirtualScrollItemContext<ComboRecord<T>>
   ) => {
-    if (!item) {
-      return nothing as unknown as TemplateResult;
-    }
+    const { value: item, index } = context;
 
     if (this.groupKey && item.header) {
       return html`
@@ -1189,7 +1199,7 @@ export default class IgcComboComponent<
         <div part="header">
           <slot name="header"></slot>
         </div>
-        <igc-combo-list
+        <igc-virtual-scroll
           ${ref(this._listRef)}
           aria-multiselectable=${!this.singleSelect}
           id="dropdown"
@@ -1197,13 +1207,14 @@ export default class IgcComboComponent<
           role="listbox"
           tabindex="0"
           aria-labelledby="target"
+          over-scan="15"
           aria-activedescendant=${ifDefined(this._activeDescendant)}
-          .items=${this._state.dataState}
-          .renderItem=${this._itemRenderer}
+          .data=${this._state.dataState}
+          .itemTemplate=${this._itemRenderer}
           ?hidden=${isEmpty(this._state.dataState)}
           @click=${this._itemClickHandler}
         >
-        </igc-combo-list>
+        </igc-virtual-scroll>
         ${this._renderEmptyTemplate()}
         <div part="footer">
           <slot name="footer"></slot>

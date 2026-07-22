@@ -14,7 +14,7 @@ import {
   tabKey,
 } from '../../common/controllers/key-bindings.js';
 import type IgcInputComponent from '../../input/input.js';
-import type IgcComboListComponent from '../combo-list.js';
+import type IgcVirtualScrollComponent from '../../virtualization/virtualization.js';
 import type { ComboHost } from '../types.js';
 import type { DataState } from './data.js';
 
@@ -24,7 +24,7 @@ type ComboNavigationConfig = {
   /** The search input of the combo component. */
   search: Ref<IgcInputComponent>;
   /** The combo virtualized dropdown list. */
-  list: Ref<IgcComboListComponent>;
+  list: Ref<IgcVirtualScrollComponent>;
   interactions: {
     show: () => Promise<boolean>;
     hide: () => Promise<boolean>;
@@ -49,7 +49,7 @@ export class ComboNavigationController<T extends object> {
     return this._config.search.value;
   }
 
-  private get _list(): IgcComboListComponent | undefined {
+  private get _list(): IgcVirtualScrollComponent | undefined {
     return this._config.list.value;
   }
 
@@ -214,7 +214,7 @@ export class ComboNavigationController<T extends object> {
   //#region Internal helper methods
 
   private _scrollToActive(behavior?: ScrollBehavior): void {
-    this._list?.element(this.active)?.scrollIntoView({
+    this._list?.scrollToIndex(this.active, {
       block: 'center',
       behavior: behavior ?? 'auto',
     });

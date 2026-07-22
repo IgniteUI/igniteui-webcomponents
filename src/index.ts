@@ -72,6 +72,16 @@ export { default as IgcStepComponent } from './components/stepper/step.js';
 export { default as IgcHighlightComponent } from './components/highlight/highlight.js';
 export { default as IgcTooltipComponent } from './components/tooltip/tooltip.js';
 export { default as IgcThemeProviderComponent } from './components/theme-provider/theme-provider.js';
+export { default as IgcVirtualScrollComponent } from './components/virtualization/virtualization.js';
+export type {
+  IgcVirtualScrollComponentEventMap,
+  VirtualScrollItemTemplate,
+} from './components/virtualization/virtualization.js';
+export type {
+  VirtualScrollItemContext,
+  VirtualScrollState,
+  VirtualScrollDataRequest,
+} from './components/virtualization/types.js';
 
 // definitions
 export { defineComponents } from './components/common/definitions/defineComponents.js';

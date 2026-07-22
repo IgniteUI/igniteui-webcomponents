@@ -3,7 +3,10 @@ import { html } from 'lit';
 
 import {
   type ComboItemTemplate,
+  IgcButtonComponent,
   IgcComboComponent,
+  IgcInputComponent,
+  type IgcVirtualScrollComponent,
   defineComponents,
   registerIconFromText,
 } from 'igniteui-webcomponents';
@@ -13,7 +16,7 @@ import {
   formSubmitHandler,
 } from './story.js';
 
-defineComponents(IgcComboComponent);
+defineComponents(IgcComboComponent, IgcButtonComponent, IgcInputComponent);
 
 interface City {
   id: string;
@@ -493,6 +496,177 @@ export const CustomTemplate: Story = {
     >
       <igc-icon slot="prefix" name="location"></igc-icon>
     </igc-combo>
+  `,
+};
+
+const countries = [
+  'Bulgaria',
+  'United States',
+  'Japan',
+  'Germany',
+  'France',
+  'Italy',
+  'Spain',
+  'Canada',
+  'Brazil',
+  'Australia',
+];
+
+const largeCities: City[] = Array.from({ length: 5000 }, (_, index) => {
+  const country = countries[index % countries.length];
+  return {
+    id: `C${index.toString().padStart(5, '0')}`,
+    name: `City ${index + 1}`,
+    country,
+    zip: (10000 + index).toString(),
+  };
+});
+
+// Resolves the internal `igc-virtual-scroll` element that powers the combo's
+// dropdown. Its public API (`scrollToIndex`, `layoutComplete`) is what the
+// buttons below drive.
+async function getComboVirtualScroll(
+  combo: IgcComboComponent
+): Promise<IgcVirtualScrollComponent | null> {
+  await combo.show();
+  const list =
+    combo.shadowRoot?.querySelector<IgcVirtualScrollComponent>(
+      'igc-virtual-scroll'
+    );
+  await list?.layoutComplete;
+  return list ?? null;
+}
+
+function comboFromEvent(event: Event): IgcComboComponent | null {
+  const container = (event.currentTarget as HTMLElement).closest('.vs-demo');
+  return container?.querySelector<IgcComboComponent>('igc-combo') ?? null;
+}
+
+async function scrollComboToIndex(
+  combo: IgcComboComponent | null,
+  index: number
+): Promise<void> {
+  if (!combo) {
+    return;
+  }
+  const list = await getComboVirtualScroll(combo);
+  list?.scrollToIndex(index, { behavior: 'smooth' });
+}
+
+async function findAndScroll(event: Event): Promise<void> {
+  const container = (event.currentTarget as HTMLElement).closest('.vs-demo');
+  const combo = container?.querySelector<IgcComboComponent>('igc-combo');
+  const input = container?.querySelector<IgcInputComponent>('.vs-find-input');
+  if (!combo || !input) {
+    return;
+  }
+
+  const term = input.value.trim().toLowerCase();
+  const index = term
+    ? largeCities.findIndex((city) => city.name.toLowerCase().includes(term))
+    : -1;
+
+  if (index === -1) {
+    input.setCustomValidity('No matching city');
+    input.reportValidity();
+    return;
+  }
+
+  input.setCustomValidity('');
+  await scrollComboToIndex(combo, index);
+}
+
+export const Virtualization: Story = {
+  argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'The combo renders its options in a virtualized list, so only the items currently in view are added to the DOM. This lets it bind to very large data sources — 5000 items here — while staying responsive. Open the dropdown and scroll through the list, or type in the search input to filter across the full data set.\n\nThe buttons drive the virtualizer\'s public scrolling API. `scrollToIndex(index, options)` programmatically scrolls a given item into view (using smooth behavior here), and `layoutComplete` is awaited to ensure the list has settled before scrolling. There is no dedicated "find" method — locating an item is done by resolving its index in the data source and then calling `scrollToIndex`.',
+      },
+    },
+  },
+  render: () => html`
+    <style>
+      .vs-demo {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        align-items: flex-start;
+        gap: 2rem;
+      }
+      .vs-demo igc-combo {
+        max-width: 360px;
+        flex: 1 1 280px;
+      }
+      .vs-controls {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+      }
+      .vs-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+      }
+      .vs-find {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+      }
+    </style>
+    <div class="vs-demo">
+      <igc-combo
+        label="Cities (${largeCities.length} items)"
+        placeholder="Select cities"
+        placeholder-search="Search 5000 cities…"
+        .data=${largeCities}
+        value-key="id"
+        display-key="name"
+      >
+        <igc-icon slot="prefix" name="location"></igc-icon>
+        <p slot="helper-text">
+          Bound to ${largeCities.length} items rendered through a virtualized
+          list. Filtering searches the entire data source.
+        </p>
+      </igc-combo>
+
+      <div class="vs-controls">
+        <div class="vs-actions">
+          <igc-button
+            variant="outlined"
+            @click=${(e: Event) => scrollComboToIndex(comboFromEvent(e), 0)}
+          >
+            Scroll to first
+          </igc-button>
+          <igc-button
+            variant="outlined"
+            @click=${(e: Event) =>
+              scrollComboToIndex(
+                comboFromEvent(e),
+                Math.floor(largeCities.length / 2)
+              )}
+          >
+            Scroll to middle
+          </igc-button>
+          <igc-button
+            variant="outlined"
+            @click=${(e: Event) =>
+              scrollComboToIndex(comboFromEvent(e), largeCities.length - 1)}
+          >
+            Scroll to last
+          </igc-button>
+        </div>
+
+        <div class="vs-find">
+          <igc-input
+            class="vs-find-input"
+            placeholder="Find city e.g.: City 4200"
+          ></igc-input>
+          <igc-button @click=${findAndScroll}>Find &amp; scroll</igc-button>
+        </div>
+      </div>
+    </div>
   `,
 };
 
