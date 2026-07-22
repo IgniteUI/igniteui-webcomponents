@@ -490,11 +490,17 @@ export function checkDatesEqual(a: CalendarDay | Date, b: CalendarDay | Date) {
 }
 
 export function suppressResizeObserverLoopError(): void {
+  const flag = '__igcSuppressResizeObserverLoopError__';
+  if (flag in window) {
+    return;
+  }
+
+  (window as any)[flag] = true;
   // Suppress ResizeObserver loop errors that can occur during tests.
   // These are benign and do not affect test correctness.
   const errorHandler = window.onerror;
   window.onerror = (message, ...args) => {
-    if (typeof message === 'string' && message.match(/ResizeObserver loop/)) {
+    if (typeof message === 'string' && /ResizeObserver loop/.test(message)) {
       return true;
     }
     return errorHandler ? errorHandler(message, ...args) : false;

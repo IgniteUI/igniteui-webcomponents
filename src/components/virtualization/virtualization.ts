@@ -144,13 +144,13 @@ export default class IgcVirtualScrollComponent<
           overflow-y: hidden;
         }
 
-        [part="igc-vs-track"] {
+        igc-virtual-scroll [part="igc-vs-track"] {
           position: relative;
           width: 100%;
           min-height: 100%;
         }
 
-        [part="igc-vs-content"] {
+        igc-virtual-scroll [part="igc-vs-content"] {
           position: absolute;
           top: 0;
           left: 0;
