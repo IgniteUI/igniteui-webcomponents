@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - #### Icon
   - `registerIcon` and `registerIconFromText` now accept a `RegisterIconOptions` object as their third argument in addition to the existing plain collection string. Setting `stripMeta: true` removes `<title>` and `<desc>` elements from the stored SVG, preventing the browser from displaying a native tooltip on hover. The title text is still captured and exposed as the `aria-label` of the host `<igc-icon>` element. Any `aria-labelledby` / `aria-describedby` references on the root `<svg>` that pointed to the stripped elements' IDs are cleaned up automatically. [#1822](https://github.com/IgniteUI/igniteui-webcomponents/issues/1822)
 
+### Changed
+- #### Carousel
+  - The component now delegates focus, starting with its indicator container, navigation buttons, or the first focusable element in the active slide, whichever is available. Related to [#2291](https://github.com/IgniteUI/igniteui-webcomponents/issues/2291).
+
 ## [7.2.4] - 2026-06-29
 ### Added
 - #### Form associated custom elements with external labels

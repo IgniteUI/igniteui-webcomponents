@@ -33,6 +33,7 @@ import {
   type SlotChangeCallbackParameters,
   setSlots,
 } from '../common/controllers/slot.js';
+import { shadowOptions } from '../common/decorators/shadow-options.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { addI18nController } from '../common/i18n/i18n-controller.js';
@@ -92,6 +93,7 @@ const Slots = setSlots('indicator', 'previous-button', 'next-button');
  * @csspart label - The label container of the carousel indicators.
  * @csspart start - The wrapping container of all carousel indicators when indicators-orientation is set to start.
  */
+@shadowOptions({ delegatesFocus: true })
 export default class IgcCarouselComponent extends EventEmitterMixin<
   IgcCarouselComponentEventMap,
   Constructor<LitElement>
@@ -894,8 +896,8 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
 
     return html`
       <section>
-        ${cache(this.hideNavigation ? nothing : this._renderNavigation())}
         ${hasNoIndicators ? nothing : this._renderIndicatorContainer()}
+        ${cache(this.hideNavigation ? nothing : this._renderNavigation())}
         ${hasLabel ? this._renderLabel() : nothing}
         <div
           ${ref(this._carouselSlidesContainerRef)}
