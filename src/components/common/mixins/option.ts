@@ -2,6 +2,7 @@ import { html, LitElement } from 'lit';
 import { property, queryAssignedNodes } from 'lit/decorators.js';
 import { addInternalsController } from '../controllers/internals.js';
 
+/* omitModule */
 export abstract class IgcBaseOptionLikeComponent extends LitElement {
   protected readonly _internals = addInternalsController(this, {
     initialARIA: { role: 'option' },
