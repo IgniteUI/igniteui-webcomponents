@@ -65,7 +65,9 @@ $fs: rem(16px) !default;
 }
 
 [part~='input filled'] {
-    color: var-get($theme, 'filled-text-color');
+    --input-text-color: #{var-get($theme, 'filled-text-color')};
+
+    color: var(--input-text-color);
 }
 
 [part='label'] {
