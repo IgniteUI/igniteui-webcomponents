@@ -43,7 +43,7 @@
     z-index: 1;
 
     // Chromium and WebKit paint an opaque background and a fixed text color on
-    // autofilled fields through UA styles marked as !important, which can not be
+    // autofilled fields through UA styles marked as !important, which cannot be
     // overridden by author styles. Without this the autofill background covers the
     // floating label in the material theme.
     // Clipping the background to the text makes it invisible, while the text itself
