@@ -53,7 +53,7 @@
     // could actually run, so inputs first rendered while already autofilled
     // (a login form in a dialog, for instance) still got the UA styling.
     &:is(:-webkit-autofill, :autofill) {
-	    -webkit-background-clip: text;
+        -webkit-background-clip: text;
         background-clip: text;
         -webkit-text-fill-color: var(--input-text-color, currentcolor);
     }
