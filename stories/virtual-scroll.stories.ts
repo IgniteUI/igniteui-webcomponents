@@ -4,12 +4,17 @@ import { html, nothing } from 'lit';
 import {
   IgcAvatarComponent,
   IgcBadgeComponent,
+  IgcButtonComponent,
   IgcCardComponent,
+  IgcCheckboxComponent,
   IgcChipComponent,
+  IgcInputComponent,
   IgcLinearProgressComponent,
   IgcListComponent,
   IgcListHeaderComponent,
   IgcListItemComponent,
+  IgcRadioComponent,
+  IgcRadioGroupComponent,
   IgcVirtualScrollComponent,
   type VirtualScrollItemContext,
   type VirtualScrollItemTemplate,
@@ -26,7 +31,12 @@ defineComponents(
   IgcChipComponent,
   IgcBadgeComponent,
   IgcCardComponent,
-  IgcLinearProgressComponent
+  IgcLinearProgressComponent,
+  IgcButtonComponent,
+  IgcInputComponent,
+  IgcCheckboxComponent,
+  IgcRadioGroupComponent,
+  IgcRadioComponent
 );
 
 // region default
@@ -461,6 +471,162 @@ export const RemoteData: Story = {
           .data=${items}
           .itemTemplate=${itemTemplate as VirtualScrollItemTemplate<unknown>}
           @igcDataRequest=${loadMore}
+          style="height: 480px;"
+        ></igc-virtual-scroll>
+      </igc-list>
+    `;
+  },
+};
+
+export const ScrollToIndex: Story = {
+  argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Demonstrates the `scrollToIndex()` API for jumping programmatically to any item, with control over alignment (`block`) and scroll `behavior`. Items far outside the rendered window only have an *estimated* size, so the engine measures the items around the landing spot and corrects the offset over a few passes until it settles precisely - try jumping to a far-away index and watch the target item flash once it lands exactly.',
+      },
+    },
+    actions: { handles: [] },
+  },
+  render: (args) => {
+    const getVs = () =>
+      document.querySelector<IgcVirtualScrollComponent<Person>>(
+        '#scroll-to-index-vs'
+      );
+
+    const readAlign = (): ScrollLogicalPosition =>
+      (document.querySelector<IgcRadioGroupComponent>('#sti-align')
+        ?.value as ScrollLogicalPosition) ?? 'start';
+
+    const readIndexField = (): number => {
+      const raw =
+        document.querySelector<IgcInputComponent>('#sti-index')?.value ?? '0';
+      const value = Number(raw);
+      return Number.isFinite(value) ? value : 0;
+    };
+
+    const writeIndexField = (index: number): void => {
+      const field = document.querySelector<IgcInputComponent>('#sti-index');
+      if (field) field.value = String(index);
+    };
+
+    const flashItem = (index: number): void => {
+      const el = getVs()?.querySelector<HTMLElement>(
+        `[data-vs-index="${index}"]`
+      );
+      if (!el) return;
+
+      // Restart the animation even if the same item was just flashed.
+      el.classList.remove('igc-vs-flash');
+      void el.offsetWidth;
+      el.classList.add('igc-vs-flash');
+    };
+
+    const goToIndex = async (index: number): Promise<void> => {
+      const clamped = Math.max(0, Math.min(index, people.length - 1));
+      writeIndexField(clamped);
+
+      await getVs()?.scrollToIndex(clamped, { block: readAlign() });
+      flashItem(clamped);
+    };
+
+    const itemTemplate = (ctx: VirtualScrollItemContext<Person>) => html`
+      <igc-list-item>
+        <igc-avatar
+          slot="start"
+          initials=${initials(ctx.value.name)}
+          shape="circle"
+        ></igc-avatar>
+        <span slot="title">#${ctx.value.id} ${ctx.value.name}</span>
+        <span slot="subtitle">${ctx.value.email}</span>
+        <igc-chip slot="end" variant=${deptVariant(ctx.value.department)}
+          >${ctx.value.department}</igc-chip
+        >
+      </igc-list-item>
+    `;
+
+    return html`
+      <style>
+        [data-vs-index].igc-vs-flash {
+          outline: 3px solid var(--ig-warning-500, #f9a825);
+          outline-offset: -3px;
+          animation: igc-vs-flash-fade 1.2s ease-out forwards;
+        }
+        @keyframes igc-vs-flash-fade {
+          from {
+            outline-color: var(--ig-warning-500, #f9a825);
+          }
+          to {
+            outline-color: transparent;
+          }
+        }
+        .sti-toolbar {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 1rem;
+          align-items: center;
+          margin-block-end: 1rem;
+        }
+        .sti-actions {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 0.5rem;
+        }
+      </style>
+      <div class="sti-toolbar">
+        <igc-input
+          id="sti-index"
+          type="number"
+          label="Index"
+          min="0"
+          max=${people.length - 1}
+          value="0"
+          style="width: 8rem;"
+        ></igc-input>
+        <igc-radio-group
+          name="alignment"
+          id="sti-align"
+          alignment="horizontal"
+          value="start"
+        >
+          <igc-radio value="start">Start</igc-radio>
+          <igc-radio value="center">Center</igc-radio>
+          <igc-radio value="end">End</igc-radio>
+        </igc-radio-group>
+        <div class="sti-actions">
+          <igc-button @click=${() => goToIndex(readIndexField())}
+            >Go</igc-button
+          >
+          <igc-button variant="outlined" @click=${() => goToIndex(0)}
+            >First</igc-button
+          >
+          <igc-button
+            variant="outlined"
+            @click=${() => goToIndex(Math.floor(people.length / 2))}
+            >Middle</igc-button
+          >
+          <igc-button
+            variant="outlined"
+            @click=${() => goToIndex(people.length - 1)}
+            >Last</igc-button
+          >
+          <igc-button
+            variant="outlined"
+            @click=${() => goToIndex(Math.floor(Math.random() * people.length))}
+            >Random</igc-button
+          >
+        </div>
+      </div>
+      <igc-list>
+        <igc-list-header><h2>Employees (${people.length})</h2></igc-list-header>
+        <igc-virtual-scroll
+          id="scroll-to-index-vs"
+          orientation=${args.orientation}
+          over-scan=${args.overScan}
+          estimated-item-size=${args.estimatedItemSize}
+          .data=${people}
+          .itemTemplate=${itemTemplate as VirtualScrollItemTemplate<unknown>}
           style="height: 480px;"
         ></igc-virtual-scroll>
       </igc-list>
