@@ -163,10 +163,10 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   @query('[part~="base"]')
   private readonly _base!: HTMLElement;
 
-  @query('[part~="start-pane"]')
+  @query('[part~="start-pane"]', true)
   private readonly _startPane!: HTMLElement;
 
-  @query('[part~="end-pane"]')
+  @query('[part~="end-pane"]', true)
   private readonly _endPane!: HTMLElement;
 
   private get _separator(): HTMLElement | undefined {
