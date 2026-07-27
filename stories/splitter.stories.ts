@@ -23,7 +23,12 @@ const metadata: Meta<IgcSplitterComponent> = {
       },
     },
     actions: {
-      handles: ['igcResizeStart', 'igcResizing', 'igcResizeEnd'],
+      handles: [
+        'igcResizeStart',
+        'igcResizing',
+        'igcResizeEnd',
+        'igcExpansionChanged',
+      ],
     },
   },
   argTypes: {
@@ -33,6 +38,18 @@ const metadata: Meta<IgcSplitterComponent> = {
       description:
         'The axis along which the panels are split. `horizontal` places start/end side‑by‑side; `vertical` stacks them.',
       table: { defaultValue: { summary: 'horizontal' } },
+    },
+    startCollapsed: {
+      type: 'boolean',
+      description: 'Gets/sets the collapsed state of the start panel.',
+      control: 'boolean',
+      table: { defaultValue: { summary: 'false' } },
+    },
+    endCollapsed: {
+      type: 'boolean',
+      description: 'Gets/sets the collapsed state of the end panel.',
+      control: 'boolean',
+      table: { defaultValue: { summary: 'false' } },
     },
     disableCollapse: {
       type: 'boolean',
@@ -91,6 +108,8 @@ const metadata: Meta<IgcSplitterComponent> = {
   },
   args: {
     orientation: 'horizontal',
+    startCollapsed: false,
+    endCollapsed: false,
     disableCollapse: false,
     hideCollapseButtons: false,
     hideDragHandle: false,
@@ -102,6 +121,8 @@ export default metadata;
 
 interface IgcSplitterArgs {
   orientation: 'horizontal' | 'vertical';
+  startCollapsed: boolean;
+  endCollapsed: boolean;
   disableCollapse: boolean;
   hideCollapseButtons: boolean;
   hideDragHandle: boolean;
@@ -125,6 +146,8 @@ const LOREM_LONG =
 export const Default: Story = {
   render: ({
     orientation,
+    startCollapsed,
+    endCollapsed,
     disableCollapse,
     hideCollapseButtons,
     hideDragHandle,
@@ -146,6 +169,8 @@ export const Default: Story = {
     <igc-splitter
       style="height: 400px;"
       .orientation=${orientation}
+      .startCollapsed=${startCollapsed}
+      .endCollapsed=${endCollapsed}
       .disableCollapse=${disableCollapse}
       .hideCollapseButtons=${hideCollapseButtons}
       .hideDragHandle=${hideDragHandle}
@@ -331,6 +356,62 @@ export const ProgrammaticCollapse: Story = {
           Toggle end panel
         </igc-button>
       </div>
+    `;
+  },
+};
+
+const PERSISTED_LAYOUT_KEY = 'igc-splitter-demo-layout';
+
+export const PersistedLayout: Story = {
+  argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Demonstrates reading/writing the `startCollapsed`/`endCollapsed` properties and listening for ' +
+          '`igcExpansionChanged` to persist the collapsed state (e.g. in `localStorage`) and restore it on load.',
+      },
+    },
+  },
+  render: () => {
+    const saved = localStorage.getItem(PERSISTED_LAYOUT_KEY);
+    const startCollapsed = saved ? JSON.parse(saved).startCollapsed : false;
+    const endCollapsed = saved ? JSON.parse(saved).endCollapsed : false;
+
+    function persist(splitter: IgcSplitterComponent) {
+      localStorage.setItem(
+        PERSISTED_LAYOUT_KEY,
+        JSON.stringify({
+          startCollapsed: splitter.startCollapsed,
+          endCollapsed: splitter.endCollapsed,
+        })
+      );
+    }
+
+    return html`
+      <style>
+        .demo-pane {
+          padding: 1rem;
+          box-sizing: border-box;
+        }
+      </style>
+
+      <igc-splitter
+        style="height: 400px;"
+        .startCollapsed=${startCollapsed}
+        .endCollapsed=${endCollapsed}
+        @igcExpansionChanged=${(e: CustomEvent) =>
+          persist(e.target as IgcSplitterComponent)}
+      >
+        <div slot="start" class="demo-pane">
+          <strong>Start panel</strong>
+          <p>${LOREM}</p>
+        </div>
+        <div slot="end" class="demo-pane">
+          <strong>End panel</strong>
+          <p>${LOREM_LONG}</p>
+        </div>
+      </igc-splitter>
     `;
   },
 };

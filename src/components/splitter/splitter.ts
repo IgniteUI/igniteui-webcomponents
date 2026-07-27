@@ -35,6 +35,7 @@ import { styles } from './themes/splitter.base.css.js';
 import { all } from './themes/themes.js';
 import type {
   IgcSplitterComponentEventMap,
+  IgcSplitterExpansionChangedEventArgs,
   IgcSplitterResizeEventArgs,
   IgcSplitterResizeEventDetail,
   PanePosition,
@@ -117,6 +118,8 @@ const DEFAULT_RESIZE_STATE: SplitterResizeState = {
  * @fires igcResizeStart - Emitted once when a resize operation begins (pointer drag or keyboard).
  * @fires igcResizing - Emitted continuously while a pane is being resized.
  * @fires igcResizeEnd - Emitted once when a resize operation completes.
+ * @fires igcExpansionChanged - Emitted when a pane's collapsed state changes due to user interaction
+ * (collapse/expand button click or Ctrl+Arrow keyboard shortcut).
  *
  * @slot start - Content projected into the start (left/top) panel.
  * @slot end - Content projected into the end (right/bottom) panel.
@@ -157,13 +160,13 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   @state()
   private _resizeState: SplitterResizeState = { ...DEFAULT_RESIZE_STATE };
 
-  @query('[part~="base"]', true)
+  @query('[part~="base"]')
   private readonly _base!: HTMLElement;
 
-  @query('[part~="start-pane"]', true)
+  @query('[part~="start-pane"]')
   private readonly _startPane!: HTMLElement;
 
-  @query('[part~="end-pane"]', true)
+  @query('[part~="end-pane"]')
   private readonly _endPane!: HTMLElement;
 
   private get _separator(): HTMLElement | undefined {
@@ -333,6 +336,36 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
     return this._endPaneState.size;
   }
 
+  /**
+   * Gets/sets the collapsed state of the start pane.
+   *
+   * @attr start-collapsed
+   * @default false
+   */
+  @property({ type: Boolean, reflect: true, attribute: 'start-collapsed' })
+  public set startCollapsed(value: boolean) {
+    this._setCollapsed('start', value);
+  }
+
+  public get startCollapsed(): boolean {
+    return this._isCollapsed('start');
+  }
+
+  /**
+   * Gets/sets the collapsed state of the end pane.
+   *
+   * @attr end-collapsed
+   * @default false
+   */
+  @property({ type: Boolean, reflect: true, attribute: 'end-collapsed' })
+  public set endCollapsed(value: boolean) {
+    this._setCollapsed('end', value);
+  }
+
+  public get endCollapsed(): boolean {
+    return this._isCollapsed('end');
+  }
+
   //#endregion
 
   //#region Lifecycle
@@ -459,13 +492,21 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
 
   /** Toggles the collapsed state of the specified pane. */
   public toggle(position: PanePosition): void {
-    if (this._collapsedPane === null) {
+    // If the requested pane is already collapsed, expand it (set to null)
+    // Otherwise, collapse the requested pane (this also handles switching from one collapsed pane to another)
+    this._applyCollapse(this._collapsedPane === position ? null : position);
+  }
+
+  //#endregion
+
+  //#region Internal API
+
+  private _applyCollapse(target: PanePosition | null): void {
+    if (this._collapsedPane === null && target !== null) {
       this._savePaneSizes();
     }
 
-    // If the requested pane is already collapsed, expand it (set to null)
-    // Otherwise, collapse the requested pane (this also handles switching from one collapsed pane to another)
-    this._collapsedPane = this._collapsedPane === position ? null : position;
+    this._collapsedPane = target;
 
     this._internals.setState('start-collapsed', this._isCollapsed('start'));
     this._internals.setState('end-collapsed', this._isCollapsed('end'));
@@ -473,11 +514,19 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
     this._restoreSizesOnExpandCollapse();
   }
 
-  //#endregion
-
-  //#region Internal API
+  private _setCollapsed(pane: PanePosition, value: boolean): void {
+    if (this._isCollapsed(pane) === value) {
+      return;
+    }
+    this._applyCollapse(value ? pane : null);
+  }
 
   private _savePaneSizes(): void {
+    // Guard against saving degenerate sizes when the splitter hasn't been laid out yet
+    // (e.g. a collapsed state is set programmatically before the first render/layout).
+    if (this._getTotalSize() === 0) {
+      return;
+    }
     this._startPaneState.savedSize = `${this._paneRectAsPercent(0)}%`;
     this._endPaneState.savedSize = `${this._paneRectAsPercent(1)}%`;
   }
@@ -645,7 +694,18 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
 
   private _handleExpanderAction(pane: PanePosition): void {
     const other: PanePosition = pane === 'start' ? 'end' : 'start';
-    this.toggle(this._collapsedPane === other ? other : pane);
+    const target = this._collapsedPane === other ? other : pane;
+    this._toggleWithEvent(target);
+  }
+
+  private _toggleWithEvent(position: PanePosition): void {
+    this.toggle(position);
+
+    const detail: IgcSplitterExpansionChangedEventArgs = {
+      pane: position,
+      expanded: !this._isCollapsed(position),
+    };
+    this.emitEvent('igcExpansionChanged', { detail });
   }
 
   private _handleArrowsExpandCollapse(
@@ -994,6 +1054,7 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
 
 export type {
   IgcSplitterComponentEventMap,
+  IgcSplitterExpansionChangedEventArgs,
   IgcSplitterResizeEventArgs,
   IgcSplitterResizeEventDetail,
 };

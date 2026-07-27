@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - #### Icon
   - `registerIcon` and `registerIconFromText` now accept a `RegisterIconOptions` object as their third argument in addition to the existing plain collection string. Setting `stripMeta: true` removes `<title>` and `<desc>` elements from the stored SVG, preventing the browser from displaying a native tooltip on hover. The title text is still captured and exposed as the `aria-label` of the host `<igc-icon>` element. Any `aria-labelledby` / `aria-describedby` references on the root `<svg>` that pointed to the stripped elements' IDs are cleaned up automatically. [#1822](https://github.com/IgniteUI/igniteui-webcomponents/issues/1822)
+- #### Splitter
+  - `startCollapsed` and `endCollapsed` properties for reading and programmatically setting the collapsed state of each pane.
+  - `igcExpansionChanged` event, emitted when a pane's collapsed state changes as a result of user interaction (collapse/expand buttons or the Ctrl+Arrow keyboard shortcuts).
 
 ## [7.2.4] - 2026-06-29
 ### Added

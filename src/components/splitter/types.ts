@@ -41,14 +41,24 @@ interface IgcSplitterResizeEventArgs {
  */
 interface IgcSplitterResizeEventDetail extends IgcSplitterResizeEventArgs {}
 
+/* jsonAPIPlainObject */
+interface IgcSplitterExpansionChangedEventArgs {
+  /** The pane whose collapsed state changed */
+  pane: PanePosition;
+  /** Whether the pane is now expanded (true) or collapsed (false) */
+  expanded: boolean;
+}
+
 interface IgcSplitterComponentEventMap {
   igcResizeStart: CustomEvent<IgcSplitterResizeEventArgs>;
   igcResizing: CustomEvent<IgcSplitterResizeEventArgs>;
   igcResizeEnd: CustomEvent<IgcSplitterResizeEventArgs>;
+  igcExpansionChanged: CustomEvent<IgcSplitterExpansionChangedEventArgs>;
 }
 
 export type {
   IgcSplitterComponentEventMap,
+  IgcSplitterExpansionChangedEventArgs,
   IgcSplitterResizeEventArgs,
   IgcSplitterResizeEventDetail,
   PanePosition,

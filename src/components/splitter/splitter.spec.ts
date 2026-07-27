@@ -597,6 +597,79 @@ describe('Splitter', () => {
       await testMixedSizes('horizontal');
       await testMixedSizes('vertical');
     });
+
+    it('should get/set startCollapsed and endCollapsed', async () => {
+      expect(splitter.startCollapsed).to.be.false;
+      expect(splitter.endCollapsed).to.be.false;
+
+      splitter.startCollapsed = true;
+      await elementUpdated(splitter);
+
+      expect(splitter.startCollapsed).to.be.true;
+      expect(splitter.endCollapsed).to.be.false;
+      expect(splitter.matches(':state(start-collapsed)')).to.be.true;
+
+      splitter.startCollapsed = false;
+      await elementUpdated(splitter);
+
+      expect(splitter.startCollapsed).to.be.false;
+      expect(splitter.matches(':state(start-collapsed)')).to.be.false;
+
+      splitter.endCollapsed = true;
+      await elementUpdated(splitter);
+
+      expect(splitter.endCollapsed).to.be.true;
+      expect(splitter.startCollapsed).to.be.false;
+      expect(splitter.matches(':state(end-collapsed)')).to.be.true;
+    });
+
+    it('should enforce mutual exclusivity when setting startCollapsed/endCollapsed directly', async () => {
+      splitter.endCollapsed = true;
+      await elementUpdated(splitter);
+
+      expect(splitter.endCollapsed).to.be.true;
+
+      splitter.startCollapsed = true;
+      await elementUpdated(splitter);
+
+      expect(splitter.startCollapsed).to.be.true;
+      expect(splitter.endCollapsed).to.be.false;
+    });
+
+    it('should be a no-op when setting startCollapsed/endCollapsed to their current value', async () => {
+      const eventSpy = spy(splitter, 'emitEvent');
+
+      splitter.startCollapsed = false;
+      await elementUpdated(splitter);
+
+      expect(splitter.startCollapsed).to.be.false;
+      expect(eventSpy.called).to.be.false;
+
+      splitter.startCollapsed = true;
+      await elementUpdated(splitter);
+      eventSpy.resetHistory();
+
+      splitter.startCollapsed = true;
+      await elementUpdated(splitter);
+
+      expect(splitter.startCollapsed).to.be.true;
+      expect(eventSpy.called).to.be.false;
+    });
+
+    it('should reflect startCollapsed/endCollapsed as attributes', async () => {
+      splitter.startCollapsed = true;
+      await elementUpdated(splitter);
+
+      expect(splitter.hasAttribute('start-collapsed')).to.be.true;
+      expect(splitter.hasAttribute('end-collapsed')).to.be.false;
+
+      splitter.startCollapsed = false;
+      splitter.endCollapsed = true;
+      await elementUpdated(splitter);
+
+      expect(splitter.hasAttribute('start-collapsed')).to.be.false;
+      expect(splitter.hasAttribute('end-collapsed')).to.be.true;
+    });
   });
 
   describe('Methods, Events & Interactions', () => {
@@ -629,6 +702,22 @@ describe('Splitter', () => {
       splitter.toggle('start');
       await elementUpdated(splitter);
       expect(splitter.matches(':state(start-collapsed)')).to.be.true;
+    });
+
+    it('should update startCollapsed/endCollapsed when toggle is invoked, without emitting igcExpansionChanged', async () => {
+      const eventSpy = spy(splitter, 'emitEvent');
+
+      splitter.toggle('start');
+      await elementUpdated(splitter);
+      expect(splitter.startCollapsed).to.be.true;
+      expect(splitter.endCollapsed).to.be.false;
+
+      splitter.toggle('end');
+      await elementUpdated(splitter);
+      expect(splitter.startCollapsed).to.be.false;
+      expect(splitter.endCollapsed).to.be.true;
+
+      expect(eventSpy.calledWith('igcExpansionChanged')).to.be.false;
     });
 
     it('should restore pane sizes as percentages after collapse then expand', async () => {
@@ -664,6 +753,31 @@ describe('Splitter', () => {
       await elementUpdated(splitter);
 
       expect(splitter.endSize).to.equal(expectedEndPercent);
+    });
+
+    it('should not leave panes at a degenerate 0% size when expanding after a pane was collapsed via a property set before the first render', async () => {
+      const preCollapsed = await fixture<IgcSplitterComponent>(html`
+        <igc-splitter
+          style="width: 500px; height: 500px;"
+          .endCollapsed=${true}
+        >
+          <div slot="start">Pane 1</div>
+          <div slot="end">Pane 2</div>
+        </igc-splitter>
+      `);
+      await elementUpdated(preCollapsed);
+
+      expect(preCollapsed.endCollapsed).to.be.true;
+
+      preCollapsed.endCollapsed = false;
+      await elementUpdated(preCollapsed);
+
+      expect(preCollapsed.startSize).to.equal('auto');
+      expect(preCollapsed.endSize).to.equal('auto');
+
+      const sizes = getPanesSizes(preCollapsed, 'width');
+      expect(sizes.startSize).to.be.greaterThan(0);
+      expect(sizes.endSize).to.be.greaterThan(0);
     });
 
     it('should toggle the next pane when the bar expander-end parts are clicked', async () => {
@@ -719,6 +833,57 @@ describe('Splitter', () => {
       expect(parts.endCollapseBtn.hidden).to.be.false;
       expect(parts.startExpander).to.be.null;
       expect(parts.endExpander).to.be.null;
+    });
+
+    it('should emit igcExpansionChanged when a collapse/expand button is clicked', async () => {
+      const eventSpy = spy(splitter, 'emitEvent');
+      let parts = getButtonParts(splitter);
+
+      simulatePointerDown(parts.startCollapseBtn, { bubbles: true });
+      await elementUpdated(splitter);
+      await nextFrame();
+
+      expect(eventSpy).calledOnceWith('igcExpansionChanged', {
+        detail: { pane: 'start', expanded: false },
+      });
+      expect(splitter.startCollapsed).to.be.true;
+
+      eventSpy.resetHistory();
+      parts = getButtonParts(splitter);
+
+      simulatePointerDown(parts.startExpander, { bubbles: true });
+      await elementUpdated(splitter);
+      await nextFrame();
+
+      expect(eventSpy).calledOnceWith('igcExpansionChanged', {
+        detail: { pane: 'start', expanded: true },
+      });
+      expect(splitter.startCollapsed).to.be.false;
+
+      eventSpy.resetHistory();
+      parts = getButtonParts(splitter);
+
+      simulatePointerDown(parts.endCollapseBtn, { bubbles: true });
+      await elementUpdated(splitter);
+      await nextFrame();
+
+      expect(eventSpy).calledOnceWith('igcExpansionChanged', {
+        detail: { pane: 'end', expanded: false },
+      });
+      expect(splitter.endCollapsed).to.be.true;
+    });
+
+    it('should not emit igcExpansionChanged when startCollapsed/endCollapsed are set directly', async () => {
+      const eventSpy = spy(splitter, 'emitEvent');
+
+      splitter.startCollapsed = true;
+      await elementUpdated(splitter);
+      splitter.startCollapsed = false;
+      await elementUpdated(splitter);
+      splitter.endCollapsed = true;
+      await elementUpdated(splitter);
+
+      expect(eventSpy.calledWith('igcExpansionChanged')).to.be.false;
     });
 
     it('should set tabindex correctly on the bar based on interactivity', async () => {
@@ -1190,6 +1355,28 @@ describe('Splitter', () => {
       expect(splitter.matches(':state(start-collapsed)')).to.be.false;
       expect(splitter.matches(':state(end-collapsed)')).to.be.false;
       expect(bar.getAttribute('tabindex')).to.equal('0');
+    });
+
+    it('should emit igcExpansionChanged when collapsing/expanding via Ctrl + arrow keys', async () => {
+      const eventSpy = spy(splitter, 'emitEvent');
+      const bar = getSplitterPart(splitter, BAR_PART);
+      bar.focus();
+      await elementUpdated(splitter);
+
+      simulateKeyboard(bar, [ctrlKey, arrowLeft]);
+      await elementUpdated(splitter);
+
+      expect(eventSpy).calledOnceWith('igcExpansionChanged', {
+        detail: { pane: 'start', expanded: false },
+      });
+
+      eventSpy.resetHistory();
+      simulateKeyboard(bar, [ctrlKey, arrowRight]);
+      await elementUpdated(splitter);
+
+      expect(eventSpy).calledOnceWith('igcExpansionChanged', {
+        detail: { pane: 'start', expanded: true },
+      });
     });
 
     it('should expand/collapse panes with Ctrl + up/down arrow keys in vertical orientation', async () => {
