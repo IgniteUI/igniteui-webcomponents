@@ -32,8 +32,7 @@ export interface IgcVirtualScrollComponentEventMap {
 const REMOTE_SCROLLING_THRESHOLD = 5;
 const MAX_LAYOUT_SETTLE_PASSES = 20;
 const MAX_SCROLL_CORRECTION_PASSES = 5;
-const MAX_SCROLL_SETTLE_PASSES = 180;
-const SCROLL_SETTLE_EPSILON_PX = 1;
+const SCROLL_END_TIMEOUT_MS = 2000;
 const SCROLL_OFFSET_EPSILON_PX = 1;
 
 /**
@@ -398,28 +397,36 @@ export default class IgcVirtualScrollComponent<
   }
 
   /**
-   * Waits until the real scroll position on the active axis stops moving
-   * between two consecutive frames.
+   * Applies a scroll offset to the active axis and waits for the browser to
+   * report, via the native `scrollend` event, that the resulting scroll -
+   * instant or smooth - has fully settled.
    *
-   * `behavior: 'smooth'` scrolls animate asynchronously over multiple
-   * frames, so the DOM (and the items rendered around it) only reflect the
-   * final position once that animation finishes. Measuring items - and
-   * correcting the target offset from those measurements - before that
-   * happens would use data from wherever the animation currently happens
-   * to be, not from the requested destination.
+   * `scrollend` never fires when the requested offset doesn't actually move
+   * the scroll position, so that case is short-circuited instead of waiting
+   * forever. A timeout fallback guards against the rare case where the
+   * event never arrives at all (e.g. the element is disconnected mid-scroll).
    */
-  private async _waitForScrollSettled(): Promise<void> {
-    let previous = this._currentAxisScroll();
-
-    for (let i = 0; i < MAX_SCROLL_SETTLE_PASSES; i++) {
-      await this._nextFrame();
-
-      const current = this._currentAxisScroll();
-      if (Math.abs(current - previous) < SCROLL_SETTLE_EPSILON_PX) {
-        return;
-      }
-      previous = current;
+  private _scrollAndWaitForEnd(
+    offset: number,
+    behavior: ScrollBehavior
+  ): Promise<void> {
+    if (
+      Math.abs(this._currentAxisScroll() - offset) < SCROLL_OFFSET_EPSILON_PX
+    ) {
+      return Promise.resolve();
     }
+
+    const settled = new Promise<void>((resolve) => {
+      this.addEventListener('scrollend', () => resolve(), { once: true });
+    });
+
+    this._applyScroll(offset, behavior);
+
+    return Promise.race([settled, this._timeout(SCROLL_END_TIMEOUT_MS)]);
+  }
+
+  private _timeout(ms: number): Promise<void> {
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
   private _measureViewport(): void {
@@ -573,10 +580,9 @@ export default class IgcVirtualScrollComponent<
     const requestId = ++this._scrollRequestId;
 
     let offset = this._getAlignedScrollOffset(clampedIndex, options);
-    this._applyScroll(offset, behavior);
+    await this._scrollAndWaitForEnd(offset, behavior);
 
     for (let i = 0; i < MAX_SCROLL_CORRECTION_PASSES; i++) {
-      await this._waitForScrollSettled();
       await this.layoutComplete;
 
       if (requestId !== this._scrollRequestId) {
@@ -589,7 +595,11 @@ export default class IgcVirtualScrollComponent<
       }
 
       offset = corrected;
-      this._applyScroll(offset, 'auto');
+      await this._scrollAndWaitForEnd(offset, 'auto');
+
+      if (requestId !== this._scrollRequestId) {
+        return;
+      }
     }
   }
 
