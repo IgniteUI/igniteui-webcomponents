@@ -24,6 +24,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - #### Library
   - Updated some of the optional peer dependencies (`dompurify`, `marked`, `shiki`) to their latest stable versions.
   - Removed the `@lit-labs/virtualizer` dependency. Virtualization is now implemented internally by the new `igc-virtual-scroll` component. [#2222](https://github.com/IgniteUI/igniteui-webcomponents/pull/2222)
+- #### Carousel
+  - The component now delegates focus, starting with its indicator container, navigation buttons, or the first focusable element in the active slide, whichever is available. Related to [#2291](https://github.com/IgniteUI/igniteui-webcomponents/issues/2291).
 
 ## [7.2.4] - 2026-06-29
 ### Added
