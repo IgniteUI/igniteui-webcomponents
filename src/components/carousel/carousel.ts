@@ -821,12 +821,12 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
     `;
   }
 
-  protected *_renderIndicators() {
-    for (const [i, slide] of this._slides.entries()) {
+  private _renderIndicators() {
+    return this._slides.map((slide, i) => {
       const forward = slide.active ? 'visible' : 'hidden';
       const backward = slide.active ? 'hidden' : 'visible';
 
-      yield html`
+      return html`
         <igc-carousel-indicator
           exportparts="indicator, active, inactive"
           .active=${slide.active}
@@ -843,7 +843,7 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
           ></div>
         </igc-carousel-indicator>
       `;
-    }
+    });
   }
 
   private _renderIndicatorContainer() {
