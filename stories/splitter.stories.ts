@@ -368,20 +368,25 @@ export const PersistedLayout: Story = {
     docs: {
       description: {
         story:
-          'Demonstrates reading/writing the `startCollapsed`/`endCollapsed` properties and listening for ' +
-          '`igcExpansionChanged` to persist the collapsed state (e.g. in `localStorage`) and restore it on load.',
+          'Demonstrates reading/writing the `startSize` and `startCollapsed`/`endCollapsed` properties and listening for ' +
+          '`igcResizeEnd`/`igcExpansionChanged` to persist the pane size and collapsed state (e.g. in `localStorage`) ' +
+          'and restore them on load.',
       },
     },
   },
   render: () => {
     const saved = localStorage.getItem(PERSISTED_LAYOUT_KEY);
-    const startCollapsed = saved ? JSON.parse(saved).startCollapsed : false;
-    const endCollapsed = saved ? JSON.parse(saved).endCollapsed : false;
+    const layout = saved ? JSON.parse(saved) : null;
+
+    const startSize = layout?.startSize ?? '50%';
+    const startCollapsed = layout?.startCollapsed ?? false;
+    const endCollapsed = layout?.endCollapsed ?? false;
 
     function persist(splitter: IgcSplitterComponent) {
       localStorage.setItem(
         PERSISTED_LAYOUT_KEY,
         JSON.stringify({
+          startSize: splitter.startSize,
           startCollapsed: splitter.startCollapsed,
           endCollapsed: splitter.endCollapsed,
         })
@@ -398,10 +403,13 @@ export const PersistedLayout: Story = {
 
       <igc-splitter
         style="height: 400px;"
+        .startSize=${startSize}
         .startCollapsed=${startCollapsed}
         .endCollapsed=${endCollapsed}
+        @igcResizeEnd=${(e: CustomEvent) =>
+        persist(e.target as IgcSplitterComponent)}
         @igcExpansionChanged=${(e: CustomEvent) =>
-          persist(e.target as IgcSplitterComponent)}
+        persist(e.target as IgcSplitterComponent)}
       >
         <div slot="start" class="demo-pane">
           <strong>Start panel</strong>
