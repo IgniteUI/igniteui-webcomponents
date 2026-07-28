@@ -49,6 +49,13 @@ class BIT {
   /** Raw per-item sizes (0-indexed) — kept for O(1) reads and delta calc. */
   private readonly _sizes: Float64Array;
 
+  /**
+   * Tracks which indices hold a real, DOM-measured size (`1`) as opposed to
+   * a placeholder/estimated size that was never actually measured (`0`).
+   * Only unmeasured indices are affected by `applyEstimate()`.
+   */
+  private readonly _measured: Uint8Array;
+
   /** Running total maintained alongside tree updates in O(1). */
   private _total: number;
 
@@ -63,26 +70,32 @@ class BIT {
     length: number,
     sizes: Float64Array,
     tree: Float64Array,
-    total: number
+    total: number,
+    measured: Uint8Array
   ) {
     this.length = length;
     this._sizes = sizes;
     this._tree = tree;
     this._total = total;
+    this._measured = measured;
     this._topBit = length > 0 ? 1 << (31 - Math.clz32(length)) : 0;
   }
 
   /**
-   * Creates a BIT of `length` items all initialized to `fillSize`. O(N).
+   * Creates a BIT of `length` items all initialized to `fillSize`, none of
+   * which are considered measured yet. O(N).
    */
   public static filled(length: number, fillSize: number): BIT {
-    return BIT.fromSizes(new Float64Array(length).fill(fillSize));
+    return BIT._build(
+      new Float64Array(length).fill(fillSize),
+      new Uint8Array(length)
+    );
   }
 
   /**
-   * Creates a BIT from an existing sizes array. O(N).
+   * Builds a BIT from a sizes array and its matching measured-flags array. O(N).
    */
-  public static fromSizes(sizes: Float64Array): BIT {
+  private static _build(sizes: Float64Array, measured: Uint8Array): BIT {
     const length = sizes.length;
     const tree = new Float64Array(length + 1);
     let total = 0;
@@ -95,7 +108,7 @@ class BIT {
         tree[j] += tree[i];
       }
     }
-    return new BIT(length, sizes, tree, total);
+    return new BIT(length, sizes, tree, total, measured);
   }
 
   /** Total size of all items. O(1). */
@@ -116,13 +129,15 @@ class BIT {
   }
 
   /**
-   * Update the size of the item at 0-based index.
+   * Update the size of the item at 0-based index. Marks the item as
+   * explicitly measured, exempting it from future `applyEstimate()` calls.
    * Returns true when the size actually changed. O(log N).
    */
   public update(index: number, newSize: number): boolean {
     if (index < 0 || index >= this.length) return false;
 
     const old = this._sizes[index];
+    this._measured[index] = 1;
     if (old === newSize) return false;
 
     const delta = newSize - old;
@@ -136,13 +151,49 @@ class BIT {
 
   /**
    * Returns a new BIT of `newLength` items.
-   * Existing measured sizes are preserved up to `min(this.length, newLength)`;
-   * new slots are filled with `fillSize`. Single O(N) build pass.
+   * Existing measured sizes (and their measured/estimated status) are
+   * preserved up to `min(this.length, newLength)`; new slots are filled
+   * with `fillSize` and marked unmeasured. Single O(N) build pass.
    */
   public cloneResized(newLength: number, fillSize: number): BIT {
     const sizes = new Float64Array(newLength).fill(fillSize);
-    sizes.set(this._sizes.subarray(0, Math.min(this.length, newLength)));
-    return BIT.fromSizes(sizes);
+    const measured = new Uint8Array(newLength);
+    const retained = Math.min(this.length, newLength);
+    sizes.set(this._sizes.subarray(0, retained));
+    measured.set(this._measured.subarray(0, retained));
+    return BIT._build(sizes, measured);
+  }
+
+  /**
+   * Applies `estimatedSize` to every item that hasn't been explicitly
+   * measured yet, leaving already-measured items untouched. A single
+   * estimate change can affect most of the items at once (e.g. a whole
+   * never-scrolled-to list), so this rebuilds the tree in one O(N) pass
+   * rather than issuing one O(log N) `update()` per affected item.
+   * Returns true when at least one item's size actually changed.
+   */
+  public applyEstimate(estimatedSize: number): boolean {
+    let changed = false;
+    for (let i = 0; i < this.length; i++) {
+      if (!this._measured[i] && this._sizes[i] !== estimatedSize) {
+        this._sizes[i] = estimatedSize;
+        changed = true;
+      }
+    }
+    if (!changed) return false;
+
+    this._tree.fill(0);
+    let total = 0;
+    for (let i = 1; i <= this.length; i++) {
+      this._tree[i] += this._sizes[i - 1];
+      total += this._sizes[i - 1];
+      const j = i + (i & -i);
+      if (j <= this.length) {
+        this._tree[j] += this._tree[i];
+      }
+    }
+    this._total = total;
+    return true;
   }
 
   /**
@@ -241,6 +292,19 @@ export class VirtualScrollEngine {
    */
   public measureItem(index: number, size: number): void {
     if (!this._tree?.update(index, size)) return;
+
+    this._updateVirtualRatio();
+    this.onSizeChange?.();
+  }
+
+  /**
+   * Applies a new estimated size to every item that hasn't been explicitly
+   * measured in the DOM yet. Already-measured items keep their real size.
+   * Use this when `estimatedItemSize` changes but the item count doesn't
+   * (so `resize()` would otherwise be a no-op).
+   */
+  public updateEstimatedSize(estimatedSize: number): void {
+    if (!this._tree?.applyEstimate(estimatedSize)) return;
 
     this._updateVirtualRatio();
     this.onSizeChange?.();

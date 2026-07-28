@@ -251,6 +251,61 @@ describe('VirtualScroll', () => {
       const trackAfter = el.querySelector<HTMLElement>('[part="igc-vs-track"]');
       expect(trackAfter?.style.height).to.equal(`${20 * 50}px`);
     });
+
+    it('applies a new estimatedItemSize when the item count is unchanged', async () => {
+      const el = await fixture<IgcVirtualScrollComponent<string>>(
+        html`<igc-virtual-scroll
+          .data=${createItems(10)}
+          .itemTemplate=${itemTemplate}
+        ></igc-virtual-scroll>`
+      );
+
+      const trackBefore = el.querySelector<HTMLElement>(
+        '[part="igc-vs-track"]'
+      );
+      expect(trackBefore?.style.height).to.equal(`${10 * 50}px`);
+
+      el.estimatedItemSize = 80;
+      await elementUpdated(el);
+
+      const trackAfter = el.querySelector<HTMLElement>('[part="igc-vs-track"]');
+      expect(trackAfter?.style.height).to.equal(`${10 * 80}px`);
+    });
+
+    it('does not override the size of items already measured in the DOM', async () => {
+      const realItemSize = 30;
+      const sizedTemplate: VirtualScrollItemTemplate<string> = (ctx) =>
+        html`<span style="display: block; height: ${realItemSize}px;"
+          >${ctx.value}</span
+        >`;
+
+      const el = await fixture<IgcVirtualScrollComponent<string>>(
+        html`<igc-virtual-scroll
+          style="height: 100px"
+          .data=${createItems(20)}
+          .itemTemplate=${sizedTemplate}
+        ></igc-virtual-scroll>`
+      );
+
+      // Let the ResizeObserver measure the initially rendered items. A
+      // measurement pass can itself schedule a follow-up render, so wait
+      // for `layoutComplete` to settle twice to be sure nothing is left
+      // pending.
+      await el.layoutComplete;
+      await el.layoutComplete;
+
+      const content = el.querySelector<HTMLElement>('[part="igc-vs-content"]')!;
+      const measuredCount = content.querySelectorAll('[data-vs-index]').length;
+
+      el.estimatedItemSize = 200;
+      await elementUpdated(el);
+
+      const track = el.querySelector<HTMLElement>('[part="igc-vs-track"]');
+      const expectedHeight =
+        measuredCount * realItemSize + (20 - measuredCount) * 200;
+
+      expect(track?.style.height).to.equal(`${expectedHeight}px`);
+    });
   });
 
   describe('RTL', () => {

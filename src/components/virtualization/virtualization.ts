@@ -243,11 +243,16 @@ export default class IgcVirtualScrollComponent<
 
     if (changed.has('data') || changed.has('estimatedItemSize')) {
       const estimatedSize = asNumber(this.estimatedItemSize);
-      this._engine.resize(
-        this.data.length,
-        estimatedSize > 0 ? estimatedSize : 50
-      );
-      this._hasPendingDataRequest = false;
+      const normalizedEstimate = estimatedSize > 0 ? estimatedSize : 50;
+
+      if (changed.has('data')) {
+        this._engine.resize(this.data.length, normalizedEstimate);
+        this._hasPendingDataRequest = false;
+      }
+
+      if (changed.has('estimatedItemSize')) {
+        this._engine.updateEstimatedSize(normalizedEstimate);
+      }
     }
 
     if (changed.has('orientation')) {
