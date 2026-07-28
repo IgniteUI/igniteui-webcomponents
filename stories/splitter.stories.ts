@@ -407,9 +407,9 @@ export const PersistedLayout: Story = {
         .startCollapsed=${startCollapsed}
         .endCollapsed=${endCollapsed}
         @igcResizeEnd=${(e: CustomEvent) =>
-        persist(e.target as IgcSplitterComponent)}
+          persist(e.target as IgcSplitterComponent)}
         @igcExpansionChanged=${(e: CustomEvent) =>
-        persist(e.target as IgcSplitterComponent)}
+          persist(e.target as IgcSplitterComponent)}
       >
         <div slot="start" class="demo-pane">
           <strong>Start panel</strong>
