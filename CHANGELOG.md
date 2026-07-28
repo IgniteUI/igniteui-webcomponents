@@ -12,6 +12,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - `startCollapsed` and `endCollapsed` properties for reading and programmatically setting the collapsed state of each pane.
   - `igcExpansionChanged` event, emitted when a pane's collapsed state changes as a result of user interaction (collapse/expand buttons or the Ctrl+Arrow keyboard shortcuts).
 
+### Changed
+- #### Library
+  - Updated some of the optional peer dependencies (`dompurify`, `marked`, `shiki`) to their latest stable versions.
+
 ## [7.2.4] - 2026-06-29
 ### Added
 - #### Form associated custom elements with external labels
