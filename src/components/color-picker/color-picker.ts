@@ -8,6 +8,9 @@ import IgcButtonComponent from '../button/button.js';
 import IgcIconButtonComponent from '../button/icon-button.js';
 import {
   addKeybindings,
+  altKey,
+  arrowDown,
+  arrowUp,
   escapeKey,
 } from '../common/controllers/key-bindings.js';
 import { addRootClickController } from '../common/controllers/root-click.js';
@@ -186,10 +189,10 @@ export default class IgcColorPickerComponent extends FormAssociatedMixin(
   constructor() {
     super();
 
-    addKeybindings(this, { skip: () => this.disabled }).set(
-      escapeKey,
-      this._onEscapeKey
-    );
+    addKeybindings(this, { skip: () => this.disabled })
+      .set(escapeKey, this._handleKeyboardClosing)
+      .set([altKey, arrowDown], this._handleAnchorClick)
+      .set([altKey, arrowUp], this._handleKeyboardClosing);
   }
 
   protected override update(props: PropertyValues<this>): void {
@@ -222,7 +225,7 @@ export default class IgcColorPickerComponent extends FormAssociatedMixin(
     this._hide(true);
   }
 
-  private async _onEscapeKey(): Promise<void> {
+  private async _handleKeyboardClosing(): Promise<void> {
     if (await this._hide(true)) {
       this._anchorRef.value?.focus();
     }
@@ -241,7 +244,7 @@ export default class IgcColorPickerComponent extends FormAssociatedMixin(
   private _handleHueValueChange(event: Event): void {
     stopPropagation(event);
 
-    this._color.h = this._hueRef.value?.valueAsNumber ?? 0;
+    this._color.h = asNumber(this._hueRef.value?.value);
     this._updateColor();
     this._emitColorPickedEvent();
   }
@@ -249,7 +252,7 @@ export default class IgcColorPickerComponent extends FormAssociatedMixin(
   private _handleAlphaSliderValueChange(event: Event): void {
     stopPropagation(event);
 
-    this._color.alpha = (this._alphaRef.value?.valueAsNumber ?? 0) / 100;
+    this._color.alpha = asNumber(this._alphaRef.value?.value) / 100;
     this._updateColor();
     this._emitColorPickedEvent();
   }
