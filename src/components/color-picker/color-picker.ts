@@ -290,6 +290,8 @@ export default class IgcColorPickerComponent extends FormAssociatedMixin(
   }
 
   private _handleEyeDropperClick(): void {
+    if (!this._supportsEyeDropper) return;
+
     const eyeDropper = new (globalThis as any).EyeDropper();
 
     eyeDropper
@@ -303,7 +305,7 @@ export default class IgcColorPickerComponent extends FormAssociatedMixin(
   }
 
   private _handleCopy(): void {
-    navigator.clipboard.writeText(this.value);
+    navigator.clipboard.writeText(this.value).catch(() => {});
   }
 
   private _handleSwatchClick(event: Event): void {
@@ -630,9 +632,11 @@ export default class IgcColorPickerComponent extends FormAssociatedMixin(
 
     return html`
       <div>
-        ${isDefaultMode
-          ? html`<label part="label" for="trigger">${this.label}</label>`
-          : nothing}
+        ${
+          isDefaultMode && this.label
+            ? html`<label part="label" for="trigger">${this.label}</label>`
+            : nothing
+        }
         <igc-popover ?open=${this.open} shift flip>
           ${this._renderAnchor(color, parts)}${this._renderPicker()}
         </igc-popover>

@@ -1,7 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/web-components';
 import { html } from 'lit';
 
-import { IgcColorPickerComponent, defineComponents } from '../src/index.js';
+import {
+  IgcColorPickerComponent,
+  defineComponents,
+} from 'igniteui-webcomponents';
 import {
   disableStoryControls,
   formControls,

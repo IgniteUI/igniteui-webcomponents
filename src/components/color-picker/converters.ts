@@ -8,7 +8,9 @@ export type HSV = [number, number, number];
 export const converter = Object.freeze({
   rgb: {
     hex: (rgb: RGB): string => {
-      const [r, g, b] = rgb.map((v) => Math.round(v) & 0xff);
+      const [r, g, b] = rgb.map((v) =>
+        Math.min(255, Math.max(0, Math.round(v)))
+      );
       const value = (r << 16) + (g << 8) + b;
       return value.toString(16).padStart(6, '0');
     },
@@ -94,7 +96,7 @@ export const converter = Object.freeze({
 
       let t3: number;
       let val: number;
-      const t2 = l < 0.5 ? l * (1 + s) : 1 + s - 1 * s;
+      const t2 = l < 0.5 ? l * (1 + s) : l + s - l * s;
       const t1 = 2 * l - t2;
       const rgb: RGB = [0, 0, 0];
 
