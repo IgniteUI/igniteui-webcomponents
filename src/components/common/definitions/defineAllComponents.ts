@@ -31,6 +31,7 @@ import IgcDropdownGroupComponent from '../../dropdown/dropdown-group.js';
 import IgcDropdownHeaderComponent from '../../dropdown/dropdown-header.js';
 import IgcDropdownItemComponent from '../../dropdown/dropdown-item.js';
 import IgcExpansionPanelComponent from '../../expansion-panel/expansion-panel.js';
+import IgcFileInputComponent from '../../file-input/file-input.js';
 import IgcHighlightComponent from '../../highlight/highlight.js';
 import IgcIconComponent from '../../icon/icon.js';
 import IgcInputComponent from '../../input/input.js';
@@ -97,6 +98,7 @@ const allComponents: IgniteComponent[] = [
   IgcCheckboxComponent,
   IgcChipComponent,
   IgcColorPickerComponent,
+  IgcFileInputComponent,
   IgcComboComponent,
   IgcDatePickerComponent,
   IgcDateRangePickerComponent,
