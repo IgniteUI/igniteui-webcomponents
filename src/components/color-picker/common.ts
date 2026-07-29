@@ -4,6 +4,7 @@ import type { RGB } from './converters.js';
 export const RGBA_RE =
   /^((rgba)|rgb)[\D]+([\d.]+)[\D]+([\d.]+)[\D]+([\d.]+)[\D]*?([\d.]+|$)/i;
 export const HEX_RE = /.{2}/g;
+const HEX_WITHOUT_HASH_RE = /^[0-9a-f]{3,4}$|^[0-9a-f]{6}$|^[0-9a-f]{8}$/i;
 
 export interface ParsedColor {
   value: RGB;
@@ -31,8 +32,17 @@ export function parseColor(
     return result;
   }
 
+  const trimmed = colorString.trim();
+  const normalized = HEX_WITHOUT_HASH_RE.test(trimmed)
+    ? `#${trimmed}`
+    : trimmed;
+
+  if (!isValidColor(normalized, ctx)) {
+    return result;
+  }
+
   // Trigger parsing through canvas context
-  ctx.fillStyle = colorString;
+  ctx.fillStyle = normalized;
   const color = ctx.fillStyle;
 
   const rgbaMatch = RGBA_RE.exec(color);

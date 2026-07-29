@@ -130,7 +130,6 @@ export default class IgcColorPickerComponent extends FormAssociatedMixin(
   @property()
   public set value(value: string) {
     this._color = ColorModel.parse(value);
-    this._formValue.setValueAndFormState(this._color.asString(this.format));
     this._updateColor();
   }
 
@@ -234,9 +233,9 @@ export default class IgcColorPickerComponent extends FormAssociatedMixin(
   ): void {
     stopPropagation(event);
 
-    this._color.s = event.detail.x;
-    this._color.v = 100 - event.detail.y;
+    this._color.setSaturationAndValue(event.detail.x, 100 - event.detail.y);
     this._updateColor();
+    this._emitColorPickedEvent();
   }
 
   private _handleHueValueChange(event: Event): void {
@@ -326,7 +325,7 @@ export default class IgcColorPickerComponent extends FormAssociatedMixin(
     this._ownCurrentColor = `hsl(${this._color.h} 100% 50%)`;
     this.style.setProperty('--current-color', this._ownCurrentColor);
     this._formValue.setValueAndFormState(this._color.asString(this.format));
-    this.requestUpdate('_ownCurrentColor');
+    this.requestUpdate();
   }
 
   private _syncCanvasPosition(): void {
@@ -336,8 +335,9 @@ export default class IgcColorPickerComponent extends FormAssociatedMixin(
     const { width: markerWidth, height: markerHeight } =
       this._canvasRef.value.getMarkerDimensions();
 
-    const x = (this._color.s / 100) * rect.width - markerWidth;
-    const y = ((100 - this._color.v) / 100) * rect.height - markerHeight;
+    const [, s, v] = this._color.toHSV();
+    const x = (s / 100) * rect.width - markerWidth;
+    const y = ((100 - v) / 100) * rect.height - markerHeight;
 
     this._canvasRef.value.x = x;
     this._canvasRef.value.y = y;
@@ -600,10 +600,9 @@ export default class IgcColorPickerComponent extends FormAssociatedMixin(
 
   private _renderAnchor(
     color: string,
-    parts: ReturnType<typeof partMap>
+    parts: ReturnType<typeof partMap>,
+    isDefaultMode: boolean
   ): TemplateResult {
-    const isDefaultMode = this.mode === 'default';
-
     return isDefaultMode
       ? this._renderButtonAnchor(color, parts)
       : this._renderInputAnchor(color, parts);
@@ -638,7 +637,7 @@ export default class IgcColorPickerComponent extends FormAssociatedMixin(
             : nothing
         }
         <igc-popover ?open=${this.open} shift flip>
-          ${this._renderAnchor(color, parts)}${this._renderPicker()}
+          ${this._renderAnchor(color, parts, isDefaultMode)}${this._renderPicker()}
         </igc-popover>
       </div>
     `;

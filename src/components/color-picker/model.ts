@@ -1,18 +1,8 @@
 import { clamp } from '../common/util.js';
-import { parseColor } from './common.js';
+import { isValidColor, parseColor } from './common.js';
 import { converter, type HSL, type HSV, type RGB } from './converters.js';
 
 export type ColorFormat = 'hex' | 'rgb' | 'hsl';
-
-/**
- * Configuration options for color formatting.
- */
-export interface ColorConfig {
-  /** The output format for the color string */
-  format?: ColorFormat;
-  /** Whether to include alpha channel in the output */
-  withAlpha?: boolean;
-}
 
 function makeCanvasContext() {
   let context: OffscreenCanvasRenderingContext2D | null;
@@ -78,15 +68,20 @@ export class ColorModel {
    * Parses a color string and creates a ColorModel instance.
    * Supports hex, rgb, rgba, hsl, hsla, and named color formats.
    *
+   * Empty, whitespace-only, or otherwise invalid strings produce an empty
+   * ColorModel instead of a stale/incorrect color.
+   *
    * @param color - The color string to parse
    * @returns A new ColorModel instance
    */
   public static parse(color: string): ColorModel {
-    if (!color?.trim()) {
+    const ctx = getContext();
+
+    if (!isValidColor(color, ctx)) {
       return ColorModel.empty();
     }
 
-    const parsed = parseColor(color, getContext());
+    const parsed = parseColor(color, ctx);
     return new ColorModel(parsed.value, parsed.alpha);
   }
 
@@ -239,6 +234,24 @@ export class ColorModel {
   public set alpha(value: number) {
     this._empty = false;
     this._alpha = clamp(value, 0, 1);
+  }
+
+  /**
+   * Sets the HSV saturation and value in a single atomic update, preserving
+   * the current hue and alpha. Intended for the 2D saturation/value picker
+   * area, where both components change together and setting them through the
+   * individual `s` (HSL) and `v` (HSV) setters would be both incorrect
+   * (mixing color spaces) and order-dependent.
+   *
+   * @param saturation - HSV saturation (0-100)
+   * @param value - HSV value (0-100)
+   */
+  public setSaturationAndValue(saturation: number, value: number): void {
+    this._empty = false;
+    this._hsv[1] = clamp(saturation, 0, 100);
+    this._hsv[2] = clamp(value, 0, 100);
+    this._rgb = converter.hsv.rgb(this._hsv);
+    this._hsl = converter.hsv.hsl(this._hsv);
   }
 
   /**

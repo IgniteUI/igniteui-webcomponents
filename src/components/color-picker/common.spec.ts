@@ -61,8 +61,7 @@ describe('parseColor', () => {
       const result = parseColor('ff8040', ctx);
 
       expect(result.value).to.deep.equal([255, 128, 64]);
-      // Note: Canvas may add alpha channel for some hex formats
-      expect(result.alpha).to.be.oneOf([0.5, 1]);
+      expect(result.alpha).to.equal(1);
     });
   });
 
@@ -144,22 +143,21 @@ describe('parseColor', () => {
 
   describe('edge cases', () => {
     it('should handle invalid color strings gracefully', () => {
-      // Invalid colors don't reset fillStyle, so result depends on previous state
-      // Just verify it doesn't throw and returns a valid structure
+      // Invalid colors are rejected before parsing, always returning the
+      // deterministic default result.
       const result = parseColor('not-a-color', ctx);
 
-      expect(result).to.have.property('value');
-      expect(result).to.have.property('alpha');
-      expect(Array.isArray(result.value)).to.be.true;
+      expect(result.value).to.deep.equal([0, 0, 0]);
+      expect(result.alpha).to.equal(1);
     });
 
     it('should handle malformed hex colors gracefully', () => {
-      // Malformed hex colors behave like invalid colors
+      // Malformed hex colors are rejected before parsing, always returning
+      // the deterministic default result.
       const result = parseColor('#zzz', ctx);
 
-      expect(result).to.have.property('value');
-      expect(result).to.have.property('alpha');
-      expect(Array.isArray(result.value)).to.be.true;
+      expect(result.value).to.deep.equal([0, 0, 0]);
+      expect(result.alpha).to.equal(1);
     });
 
     it('should return correct type', () => {
