@@ -81,7 +81,7 @@ const Slots = setSlots(
  *
  * @fires igcOpening - Emitted just before the picker dropdown is open.
  * @fires igcOpened - Emitted after the picker dropdown is open.
- * @fires igcClosing - Emitter just before the picker dropdown is closed.
+ * @fires igcClosing - Emitted just before the picker dropdown is closed.
  * @fires igcClosed - Emitted after closing the picker dropdown.
  * @fires igcInput - Emitted when the value of the component is changed.
  * @fires igcChange - Emitted when the value of the component is committed.
@@ -388,7 +388,7 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
   }
 
   private _handleCopy(): void {
-    navigator.clipboard.writeText(this.value).catch(() => {});
+    navigator.clipboard?.writeText(this.value).catch(() => {});
   }
 
   private _handleSwatchClick(event: Event): void {
@@ -625,6 +625,7 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
             ${this.swatches.map(
               (color) => html`
                 <button
+                  type="button"
                   part="swatch"
                   aria-label="${color}"
                   style="background-color: ${color}"
@@ -649,6 +650,7 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
         ${ref(this._anchorRef)}
         id="trigger"
         aria-haspopup="dialog"
+        aria-describedby="color-picker-helper-text"
         part=${parts}
         slot="anchor"
         style=${bindIf(color, styleMap({ '--background': color }))}
@@ -668,6 +670,7 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
       <igc-input
         ${ref(this._anchorRef)}
         aria-haspopup="dialog"
+        aria-describedby="color-picker-helper-text"
         slot="anchor"
         label=${ifDefined(this.label)}
         ?required=${this.required}

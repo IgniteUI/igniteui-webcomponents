@@ -34,7 +34,7 @@ export default class IgcPickerCanvasComponent extends EventEmitterMixin<
     registerComponent(IgcPickerCanvasComponent);
   }
 
-  @query('div')
+  @query('[part="marker"]', true)
   private readonly _marker?: HTMLDivElement;
 
   @property()
