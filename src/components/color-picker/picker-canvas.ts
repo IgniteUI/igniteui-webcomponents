@@ -15,6 +15,9 @@ import { addSafeEventListener, asPercent, clamp } from '../common/util.js';
 import { styles } from './themes/picker-canvas.base.css.js';
 
 export interface IgcPickerCanvasEventMap {
+  /**
+   * Emitted when the color is picked in the canvas. Does not bubble.
+   */
   igcColorPicked: CustomEvent<PickerCanvasEventDetail>;
 }
 
@@ -84,6 +87,7 @@ export default class IgcPickerCanvasComponent extends EventEmitterMixin<
           x: Math.round(asPercent(x + width, rect.width)),
           y: Math.round(asPercent(y + height, rect.height)),
         },
+        bubbles: false,
       });
     }
   }
@@ -110,6 +114,7 @@ export default class IgcPickerCanvasComponent extends EventEmitterMixin<
           x: Math.round(asPercent(x + width, rect.width)),
           y: Math.round(asPercent(y + height, rect.height)),
         },
+        bubbles: false,
       });
     }
   }

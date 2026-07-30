@@ -1,9 +1,28 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
-
+import { spy, stub } from 'sinon';
+import {
+  altKey,
+  arrowDown,
+  arrowUp,
+  escapeKey,
+} from '../common/controllers/key-bindings.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
-import { createFormAssociatedTestBed } from '../common/utils.spec.js';
+import {
+  createFormAssociatedTestBed,
+  isFocused,
+  simulateClick,
+  simulateKeyboard,
+} from '../common/utils.spec.js';
+import {
+  runValidationContainerTests,
+  type ValidationContainerTestsParams,
+  ValidityHelpers,
+} from '../common/validity-helpers.spec.js';
 import type IgcInputComponent from '../input/input.js';
+import type IgcSelectComponent from '../select/select.js';
 import IgcColorPickerComponent from './color-picker.js';
+import { ColorModel } from './model.js';
+import type IgcPickerCanvasComponent from './picker-canvas.js';
 
 async function createDefaultColorPicker() {
   return await fixture<IgcColorPickerComponent>(
@@ -32,6 +51,26 @@ function commitColorInput(input: IgcInputComponent, value: string): void {
       composed: true,
     })
   );
+}
+
+function getHueSlider(picker: IgcColorPickerComponent): HTMLInputElement {
+  return picker.renderRoot.querySelector('[part="hue"]')!;
+}
+
+function getAlphaSlider(picker: IgcColorPickerComponent): HTMLInputElement {
+  return picker.renderRoot.querySelector('[part="alpha"]')!;
+}
+
+function getAlphaInput(picker: IgcColorPickerComponent): IgcInputComponent {
+  return picker.renderRoot.querySelector('#alpha')!;
+}
+
+function getCanvas(picker: IgcColorPickerComponent): IgcPickerCanvasComponent {
+  return picker.renderRoot.querySelector('igc-picker-canvas')!;
+}
+
+function getFormatSelect(picker: IgcColorPickerComponent): IgcSelectComponent {
+  return picker.renderRoot.querySelector('#format-select')!;
 }
 
 describe('Color picker', () => {
@@ -131,13 +170,393 @@ describe('Color picker', () => {
       expect(input.value).to.equal('#ff0000');
     });
 
-    it('reverts the input on an empty color', async () => {
+    it('clears the value on an empty input', async () => {
       const input = getColorInput(picker);
       commitColorInput(input, '');
       await elementUpdated(picker);
 
-      expect(picker.value).to.equal('#ff0000');
-      expect(input.value).to.equal('#ff0000');
+      expect(picker.value).to.equal('');
+      expect(isAnchorEmpty(picker)).to.be.true;
+    });
+  });
+
+  describe('igcChange', () => {
+    beforeEach(async () => {
+      picker = await createDefaultColorPicker();
+      picker.value = '#ff0000';
+      await elementUpdated(picker);
+    });
+
+    it('emits when the value changed while focus was inside the component', async () => {
+      const eventSpy = spy(picker, 'emitEvent');
+
+      picker.dispatchEvent(new FocusEvent('focusin', { relatedTarget: null }));
+      picker.value = '#00ff00';
+      await elementUpdated(picker);
+
+      picker.dispatchEvent(new FocusEvent('focusout', { relatedTarget: null }));
+
+      expect(eventSpy).calledWith('igcChange', { detail: '#00ff00' });
+    });
+
+    it('does not emit when the value did not change', async () => {
+      const eventSpy = spy(picker, 'emitEvent');
+
+      picker.dispatchEvent(new FocusEvent('focusin', { relatedTarget: null }));
+      picker.dispatchEvent(new FocusEvent('focusout', { relatedTarget: null }));
+
+      expect(eventSpy).not.calledWith('igcChange');
+    });
+
+    it('does not emit when focus moves within the component', async () => {
+      const eventSpy = spy(picker, 'emitEvent');
+      const anchor = getAnchor(picker);
+
+      picker.dispatchEvent(new FocusEvent('focusin', { relatedTarget: null }));
+      picker.value = '#00ff00';
+      await elementUpdated(picker);
+
+      picker.dispatchEvent(
+        new FocusEvent('focusout', { relatedTarget: anchor })
+      );
+
+      expect(eventSpy).not.calledWith('igcChange');
+    });
+  });
+
+  describe('Color channels', () => {
+    beforeEach(async () => {
+      picker = await createDefaultColorPicker();
+      picker.value = '#ff0000';
+      picker.open = true;
+      await elementUpdated(picker);
+    });
+
+    it('updates the hue via the hue slider', async () => {
+      const inputSpy = spy(picker, 'emitEvent');
+      const hue = getHueSlider(picker);
+
+      hue.value = '120';
+      hue.dispatchEvent(new Event('input', { bubbles: true }));
+      await elementUpdated(picker);
+
+      expect(picker.value).to.equal('#00ff00');
+      expect(inputSpy).calledWith('igcInput', { detail: '#00ff00' });
+    });
+
+    it('updates the alpha via the alpha slider', async () => {
+      picker.showAlpha = true;
+      picker.format = 'rgb';
+      await elementUpdated(picker);
+
+      const alpha = getAlphaSlider(picker);
+      alpha.value = '50';
+      alpha.dispatchEvent(new Event('input', { bubbles: true }));
+      await elementUpdated(picker);
+
+      expect(picker.value).to.equal('rgb(255 0 0 / 0.5)');
+    });
+
+    it('updates the alpha via the alpha number input', async () => {
+      picker.showAlpha = true;
+      picker.format = 'rgb';
+      await elementUpdated(picker);
+
+      const alphaInput = getAlphaInput(picker);
+      alphaInput.dispatchEvent(
+        new CustomEvent('igcChange', {
+          detail: '0.25',
+          bubbles: true,
+          composed: true,
+        })
+      );
+      await elementUpdated(picker);
+
+      expect(picker.value).to.equal('rgb(255 0 0 / 0.25)');
+    });
+
+    it('picks a color from the canvas using HSV saturation/value', async () => {
+      const canvas = getCanvas(picker);
+
+      canvas.dispatchEvent(
+        new CustomEvent('igcColorPicked', {
+          detail: { x: 50, y: 25 },
+        })
+      );
+      await elementUpdated(picker);
+
+      const expected = ColorModel.parse('#ff0000');
+      expected.setSaturationAndValue(50, 75);
+
+      expect(picker.value).to.equal(expected.asString('hex'));
+      // Hue is preserved by the HSV saturation/value update.
+      expect(expected.h).to.equal(ColorModel.parse('#ff0000').h);
+    });
+
+    it('updates the format via the format select', async () => {
+      const select = getFormatSelect(picker);
+
+      select.dispatchEvent(
+        new CustomEvent('igcChange', {
+          detail: { value: 'rgb' } as unknown as IgcSelectComponent,
+          bubbles: true,
+          composed: true,
+        })
+      );
+      await elementUpdated(picker);
+
+      expect(picker.format).to.equal('rgb');
+      expect(getColorInput(picker).value).to.equal('rgb(255 0 0)');
+    });
+  });
+
+  describe('Swatches', () => {
+    beforeEach(async () => {
+      picker = await createDefaultColorPicker();
+      picker.open = true;
+      await elementUpdated(picker);
+    });
+
+    it('does not render swatches by default', () => {
+      expect(picker.renderRoot.querySelector('[part="swatches"]')).to.be.null;
+    });
+
+    it('renders and selects a swatch', async () => {
+      picker.swatches = ['#ff0000', '#00ff00'];
+      await elementUpdated(picker);
+
+      const buttons = picker.renderRoot.querySelectorAll<HTMLButtonElement>(
+        'button[part="swatch"]'
+      );
+      expect(buttons.length).to.equal(2);
+      expect(buttons[0].ariaLabel).to.equal('#ff0000');
+
+      const inputSpy = spy(picker, 'emitEvent');
+      buttons[1].click();
+      await elementUpdated(picker);
+
+      expect(picker.value).to.equal('#00ff00');
+      expect(inputSpy).calledWith('igcInput', { detail: '#00ff00' });
+    });
+  });
+
+  describe('Copy and EyeDropper', () => {
+    beforeEach(async () => {
+      picker = await createDefaultColorPicker();
+      picker.value = '#ff0000';
+      picker.open = true;
+      await elementUpdated(picker);
+    });
+
+    it('copies the value to the clipboard', async () => {
+      const writeText = stub(navigator.clipboard, 'writeText').resolves();
+
+      picker.renderRoot.querySelector<HTMLElement>('[part="copy"]')!.click();
+
+      expect(writeText).calledWith('#ff0000');
+      writeText.restore();
+    });
+
+    describe('unsupported', () => {
+      let originalEyeDropper: unknown;
+
+      beforeEach(() => {
+        originalEyeDropper = (globalThis as any).EyeDropper;
+        delete (globalThis as any).EyeDropper;
+      });
+
+      afterEach(() => {
+        (globalThis as any).EyeDropper = originalEyeDropper;
+      });
+
+      it('disables the eye dropper button', async () => {
+        picker = await createDefaultColorPicker();
+
+        const button = picker.renderRoot.querySelector('[part="eye-dropper"]')!;
+        expect(button.hasAttribute('disabled')).to.be.true;
+      });
+    });
+
+    describe('supported', () => {
+      let originalEyeDropper: unknown;
+
+      beforeEach(() => {
+        originalEyeDropper = (globalThis as any).EyeDropper;
+        (globalThis as any).EyeDropper = class {
+          public open() {
+            return Promise.resolve({ sRGBHex: '#112233' });
+          }
+        };
+      });
+
+      afterEach(() => {
+        (globalThis as any).EyeDropper = originalEyeDropper;
+      });
+
+      it('picks a color via the EyeDropper API', async () => {
+        picker = await createDefaultColorPicker();
+
+        const button = picker.renderRoot.querySelector<HTMLElement>(
+          '[part="eye-dropper"]'
+        )!;
+        expect(button.hasAttribute('disabled')).to.be.false;
+
+        button.click();
+        // Let the mocked EyeDropper's promise resolve.
+        await new Promise((resolve) => setTimeout(resolve));
+        await elementUpdated(picker);
+
+        expect(picker.value).to.equal('#112233');
+      });
+    });
+  });
+
+  describe('Open and close', () => {
+    beforeEach(async () => {
+      picker = await createDefaultColorPicker();
+    });
+
+    it('opens and closes via the anchor click', async () => {
+      const eventSpy = spy(picker, 'emitEvent');
+      const anchor = getAnchor(picker);
+
+      simulateClick(anchor);
+      await elementUpdated(picker);
+
+      expect(picker.open).to.be.true;
+      expect(eventSpy).calledWith('igcOpening');
+      expect(eventSpy).calledWith('igcOpened');
+
+      eventSpy.resetHistory();
+      simulateClick(anchor);
+      await elementUpdated(picker);
+
+      expect(picker.open).to.be.false;
+      expect(eventSpy).calledWith('igcClosing');
+      expect(eventSpy).calledWith('igcClosed');
+    });
+
+    it('closes and refocuses the anchor on Escape', async () => {
+      const anchor = getAnchor(picker);
+      picker.open = true;
+      await elementUpdated(picker);
+
+      simulateKeyboard(picker, escapeKey);
+      await elementUpdated(picker);
+
+      expect(picker.open).to.be.false;
+      expect(isFocused(anchor)).to.be.true;
+    });
+
+    it('opens with Alt+ArrowDown and closes with Alt+ArrowUp', async () => {
+      simulateKeyboard(picker, [altKey, arrowDown]);
+      await elementUpdated(picker);
+      expect(picker.open).to.be.true;
+
+      simulateKeyboard(picker, [altKey, arrowUp]);
+      await elementUpdated(picker);
+      expect(picker.open).to.be.false;
+    });
+
+    it('skips keybindings when disabled', async () => {
+      picker.disabled = true;
+      await elementUpdated(picker);
+
+      simulateKeyboard(picker, [altKey, arrowDown]);
+      await elementUpdated(picker);
+
+      expect(picker.open).to.be.false;
+    });
+  });
+
+  describe('Input mode', () => {
+    function getInputAnchor(): IgcInputComponent {
+      return picker.renderRoot.querySelector<IgcInputComponent>(
+        'igc-input[slot="anchor"]'
+      )!;
+    }
+
+    beforeEach(async () => {
+      picker = await fixture<IgcColorPickerComponent>(
+        html`<igc-color-picker
+          label="Choose a color"
+          mode="input"
+        ></igc-color-picker>`
+      );
+    });
+
+    it('renders an input anchor instead of a button', () => {
+      expect(picker.renderRoot.querySelector('igc-button')).to.be.null;
+      expect(getInputAnchor()).to.exist;
+    });
+
+    it('opens the popover when the prefix swatch is clicked', async () => {
+      simulateClick(getAnchor(picker));
+      await elementUpdated(picker);
+
+      expect(picker.open).to.be.true;
+    });
+
+    it('commits a color via the anchor input', async () => {
+      commitColorInput(getInputAnchor(), '#00ff00');
+      await elementUpdated(picker);
+
+      expect(picker.value).to.equal('#00ff00');
+    });
+
+    it('forwards required/invalid state to the anchor input', async () => {
+      picker.required = true;
+      await elementUpdated(picker);
+      expect(getInputAnchor().required).to.be.true;
+
+      picker.dispatchEvent(new FocusEvent('focusin', { relatedTarget: null }));
+      picker.dispatchEvent(new FocusEvent('focusout', { relatedTarget: null }));
+      picker.reportValidity();
+      await elementUpdated(picker);
+
+      expect(getInputAnchor().invalid).to.equal(picker.invalid);
+    });
+  });
+
+  describe('Rendering', () => {
+    it('renders the label only in default mode with a label set', async () => {
+      picker = await createDefaultColorPicker();
+      expect(
+        picker.renderRoot.querySelector('[part="label"]')?.textContent
+      ).to.equal('Choose a color');
+
+      picker.label = undefined;
+      await elementUpdated(picker);
+      expect(picker.renderRoot.querySelector('[part="label"]')).to.be.null;
+    });
+
+    it('does not render a label element in input mode', async () => {
+      picker = await fixture<IgcColorPickerComponent>(
+        html`<igc-color-picker
+          label="Choose a color"
+          mode="input"
+        ></igc-color-picker>`
+      );
+      expect(picker.renderRoot.querySelector('[part="label"]')).to.be.null;
+    });
+
+    it('reflects disabled onto the button anchor', async () => {
+      picker = await createDefaultColorPicker();
+      picker.disabled = true;
+      await elementUpdated(picker);
+
+      expect(getAnchor(picker).hasAttribute('disabled')).to.be.true;
+    });
+
+    it('hides the format select when hideFormats is set', async () => {
+      picker = await createDefaultColorPicker();
+      picker.open = true;
+      await elementUpdated(picker);
+      expect(picker.renderRoot.querySelector('#format-select')).to.exist;
+
+      picker.hideFormats = true;
+      await elementUpdated(picker);
+      expect(picker.renderRoot.querySelector('#format-select')).to.be.null;
     });
   });
 
@@ -178,12 +597,131 @@ describe('Color picker', () => {
       expect(spec.element.disabled).to.be.false;
     });
 
+    it('fulfils required constraint', () => {
+      spec.setProperties({ required: true });
+      spec.assertSubmitFails();
+
+      spec.setProperties({ value: '#bada55' });
+      spec.assertSubmitPasses();
+    });
+
     it('fulfils custom constraint', () => {
       spec.element.setCustomValidity('invalid');
       spec.assertSubmitFails();
 
       spec.element.setCustomValidity('');
       spec.assertSubmitPasses();
+    });
+  });
+
+  describe('Touched state', () => {
+    const spec = createFormAssociatedTestBed<IgcColorPickerComponent>(
+      html`<igc-color-picker name="color-picker"></igc-color-picker>`
+    );
+
+    beforeEach(async () => {
+      await spec.setup(IgcColorPickerComponent.tagName);
+    });
+
+    it('marks the control as touched on blur', () => {
+      // biome-ignore lint/complexity/useLiteralKeys: internal state check
+      expect((spec.element as any)['_touched']).to.be.false;
+
+      spec.element.dispatchEvent(
+        new FocusEvent('focusin', { relatedTarget: null })
+      );
+      spec.element.dispatchEvent(
+        new FocusEvent('focusout', { relatedTarget: null })
+      );
+
+      // biome-ignore lint/complexity/useLiteralKeys: internal state check
+      expect((spec.element as any)['_touched']).to.be.true;
+    });
+
+    it('clears invalid styles after a form reset', async () => {
+      spec.setProperties({ required: true });
+      await elementUpdated(spec.element);
+
+      spec.element.dispatchEvent(
+        new FocusEvent('focusin', { relatedTarget: null })
+      );
+      spec.element.dispatchEvent(
+        new FocusEvent('focusout', { relatedTarget: null })
+      );
+      await elementUpdated(spec.element);
+
+      spec.assertSubmitFails();
+      await elementUpdated(spec.element);
+      ValidityHelpers.hasInvalidStyles(spec.element).to.be.true;
+
+      spec.reset();
+      await elementUpdated(spec.element);
+      ValidityHelpers.hasInvalidStyles(spec.element).to.be.false;
+    });
+  });
+
+  describe('defaultValue', () => {
+    const defaultValue = '#bada55';
+    const spec = createFormAssociatedTestBed<IgcColorPickerComponent>(html`
+      <igc-color-picker
+        name="color-picker"
+        .defaultValue=${defaultValue}
+      ></igc-color-picker>
+    `);
+
+    beforeEach(async () => {
+      await spec.setup(IgcColorPickerComponent.tagName);
+    });
+
+    it('correct initial state', () => {
+      spec.assertIsPristine();
+      expect(spec.element.value).to.equal(defaultValue);
+    });
+
+    it('is correctly submitted', () => {
+      spec.assertSubmitHasValue(defaultValue);
+    });
+
+    it('is correctly reset on form reset', () => {
+      spec.setProperties({ value: '#ff0000' });
+
+      spec.reset();
+      expect(spec.element.value).to.equal(defaultValue);
+    });
+  });
+
+  describe('Validation', () => {
+    const spec = createFormAssociatedTestBed<IgcColorPickerComponent>(html`
+      <igc-color-picker name="color-picker"></igc-color-picker>
+    `);
+
+    beforeEach(async () => {
+      await spec.setup(IgcColorPickerComponent.tagName);
+    });
+
+    it('fails required validation', () => {
+      spec.setProperties({ required: true });
+      spec.assertIsPristine();
+      spec.assertSubmitFails();
+    });
+
+    it('passes required validation when updating defaultValue', () => {
+      spec.setProperties({ required: true, defaultValue: '#bada55' });
+      spec.assertIsPristine();
+      spec.assertSubmitPasses();
+    });
+  });
+
+  describe('Validation message slots', () => {
+    it('renders validation message slots', () => {
+      const testParameters: ValidationContainerTestsParams<IgcColorPickerComponent>[] =
+        [
+          { slots: ['valueMissing'], props: { required: true } },
+          { slots: ['customError'] },
+          { slots: ['invalid'], props: { required: true } },
+        ];
+
+      runValidationContainerTests(IgcColorPickerComponent, testParameters);
     });
   });
 });

@@ -25,7 +25,8 @@ const metadata: Meta<IgcColorPickerComponent> = {
         'igcOpened',
         'igcClosing',
         'igcClosed',
-        'igcColorPicked',
+        'igcInput',
+        'igcChange',
       ],
     },
   },
@@ -66,6 +67,13 @@ const metadata: Meta<IgcColorPickerComponent> = {
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'default' } },
     },
+    required: {
+      type: 'boolean',
+      description:
+        'When set, makes the component a required field for validation.',
+      control: 'boolean',
+      table: { defaultValue: { summary: 'false' } },
+    },
     name: {
       type: 'string',
       description: 'The name attribute of the control.',
@@ -95,6 +103,7 @@ const metadata: Meta<IgcColorPickerComponent> = {
     hideFormats: false,
     showAlpha: false,
     mode: 'default',
+    required: false,
     disabled: false,
     invalid: false,
     open: false,
@@ -116,6 +125,8 @@ interface IgcColorPickerArgs {
   showAlpha: boolean;
   /** The mode of the color picker. */
   mode: 'default' | 'input';
+  /** When set, makes the component a required field for validation. */
+  required: boolean;
   /** The name attribute of the control. */
   name: string;
   /** The disabled state of the component. */
@@ -130,35 +141,97 @@ type Story = StoryObj<IgcColorPickerArgs>;
 // endregion
 
 export const Default: Story = {
-  parameters: {
-    actions: {
-      handles: ['igcOpening', 'igcOpened', 'igcClosing', 'igcClosed'],
-    },
-  },
   args: {
     label: 'Pick a color',
   },
 };
 
 export const InitialValue: Story = {
-  parameters: {
-    actions: {
-      handles: ['igcOpening', 'igcOpened', 'igcClosing', 'igcClosed'],
-    },
-  },
   args: {
     label: 'Pick a color',
     value: 'rebeccapurple',
   },
 };
 
-export const CustomSwatches: Story = {
-  parameters: {
-    actions: {
-      handles: ['igcOpening', 'igcOpened', 'igcClosing', 'igcClosed'],
-    },
-  },
+const rowStyle =
+  'display: flex; gap: 1.5rem; flex-wrap: wrap; align-items: flex-start;';
 
+export const Formats: Story = {
+  argTypes: disableStoryControls(metadata),
+  render: () => html`
+    <div style=${rowStyle}>
+      <div>
+        <p style="margin: 0 0 .5rem">Hex</p>
+        <igc-color-picker
+          label="Hex"
+          format="hex"
+          value="#3f51b5"
+        ></igc-color-picker>
+      </div>
+      <div>
+        <p style="margin: 0 0 .5rem">RGB</p>
+        <igc-color-picker
+          label="RGB"
+          format="rgb"
+          value="#3f51b5"
+        ></igc-color-picker>
+      </div>
+      <div>
+        <p style="margin: 0 0 .5rem">HSL</p>
+        <igc-color-picker
+          label="HSL"
+          format="hsl"
+          value="#3f51b5"
+        ></igc-color-picker>
+      </div>
+    </div>
+  `,
+};
+
+export const AlphaChannel: Story = {
+  argTypes: disableStoryControls(metadata),
+  render: () => html`
+    <p>
+      Set <code>show-alpha</code> to reveal the alpha slider and input, and pass
+      a color with an alpha component through <code>value</code>.
+    </p>
+    <igc-color-picker
+      label="Overlay color"
+      show-alpha
+      value="rgba(63, 81, 181, 0.6)"
+    ></igc-color-picker>
+  `,
+};
+
+export const InputMode: Story = {
+  argTypes: disableStoryControls(metadata),
+  render: () => html`
+    <p>
+      <code>mode="input"</code> renders the color value as an editable text
+      field with a color swatch prefix, instead of a plain trigger button.
+    </p>
+    <div style=${rowStyle}>
+      <div>
+        <p style="margin: 0 0 .5rem">Default</p>
+        <igc-color-picker
+          label="Pick a color"
+          mode="default"
+          value="#e91e63"
+        ></igc-color-picker>
+      </div>
+      <div>
+        <p style="margin: 0 0 .5rem">Input</p>
+        <igc-color-picker
+          label="Pick a color"
+          mode="input"
+          value="#e91e63"
+        ></igc-color-picker>
+      </div>
+    </div>
+  `,
+};
+
+export const CustomSwatches: Story = {
   render: () => html`
     <igc-color-picker
       label="Pick a color"
@@ -179,6 +252,64 @@ export const CustomSwatches: Story = {
   `,
 };
 
+export const States: Story = {
+  argTypes: disableStoryControls(metadata),
+  render: () => html`
+    <div style=${rowStyle}>
+      <div>
+        <p style="margin: 0 0 .5rem">Empty</p>
+        <igc-color-picker label="No color selected"></igc-color-picker>
+      </div>
+      <div>
+        <p style="margin: 0 0 .5rem">Disabled</p>
+        <igc-color-picker
+          label="Disabled"
+          value="#009688"
+          disabled
+        ></igc-color-picker>
+      </div>
+      <div>
+        <p style="margin: 0 0 .5rem">Invalid</p>
+        <igc-color-picker label="Invalid" invalid></igc-color-picker>
+      </div>
+    </div>
+  `,
+};
+
+export const Events: Story = {
+  argTypes: disableStoryControls(metadata),
+  render: () => {
+    const onInput = (event: CustomEvent<string>) => {
+      const log = document.querySelector<HTMLElement>('#color-events-log');
+      if (log) log.textContent = `igcInput — "${event.detail}"`;
+    };
+
+    const onChange = (event: CustomEvent<string>) => {
+      const log = document.querySelector<HTMLElement>('#color-events-log');
+      if (log) log.textContent = `igcChange — "${event.detail}"`;
+    };
+
+    return html`
+      <p>
+        <code>igcInput</code> fires on every interaction with the picker area
+        (dragging the canvas or sliders, typing). <code>igcChange</code> fires
+        once, when the committed value changes and focus leaves the component.
+      </p>
+      <igc-color-picker
+        label="Pick a color"
+        @igcInput=${onInput}
+        @igcChange=${onChange}
+      ></igc-color-picker>
+      <p
+        id="color-events-log"
+        style="margin-top: 1rem; font-family: monospace;"
+      >
+        No events yet
+      </p>
+    `;
+  },
+};
+
 export const Form: Story = {
   argTypes: disableStoryControls(metadata),
   render: () => html`
@@ -193,6 +324,13 @@ export const Form: Story = {
           name="color-initial-value"
           label="Initial value"
           value="firebrick"
+        ></igc-color-picker>
+
+        <igc-color-picker
+          name="color-required"
+          label="Required"
+          mode="input"
+          required
         ></igc-color-picker>
       </fieldset>
 

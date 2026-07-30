@@ -184,3 +184,7 @@
         cursor: pointer;
     }
 }
+
+:host([required]) [part='label']::after {
+    content: '*';
+}
