@@ -203,9 +203,10 @@ export default class IgcIconComponent extends LitElement {
   protected async registerIcon(
     name: string,
     url: string,
-    collection = 'default'
+    collection = 'default',
+    stripMeta = false
   ) {
-    await registerIcon_impl(name, url, collection);
+    await registerIcon_impl(name, url, { collection, stripMeta });
   }
 
   /* c8 ignore next 8 */
@@ -213,9 +214,10 @@ export default class IgcIconComponent extends LitElement {
   protected registerIconFromText(
     name: string,
     iconText: string,
-    collection = 'default'
+    collection = 'default',
+    stripMeta = false
   ) {
-    registerIconFromText_impl(name, iconText, collection);
+    registerIconFromText_impl(name, iconText, { collection, stripMeta });
   }
 
   /* c8 ignore next 4 */

@@ -7,6 +7,7 @@ import { addCommandController } from '../controllers/command.js';
 import { addInternalsController } from '../controllers/internals.js';
 import { getVisibleAncestor, isPopoverOpen } from '../util.js';
 
+/* omitModule */
 export abstract class IgcBaseAlertLikeComponent extends LitElement {
   protected readonly _player = addAnimationController(this);
 

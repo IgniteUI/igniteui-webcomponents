@@ -27,6 +27,7 @@ export interface IgcInputComponentEventMap {
 
 /* blazorIndirectRender */
 /* blazorSupportsVisualChildren */
+/* omitModule */
 @blazorDeepImport
 @shadowOptions({ delegatesFocus: true })
 export abstract class IgcInputBaseComponent extends FormAssociatedRequiredMixin(
