@@ -18,7 +18,12 @@ const metadata: Meta<IgcColorPickerComponent> = {
   title: 'ColorPicker',
   component: 'igc-color-picker',
   parameters: {
-    docs: { description: { component: 'Color input component.' } },
+    docs: {
+      description: {
+        component:
+          'Color input component.\n\nLets the user pick a color visually - via an HSV saturation/value canvas, a\nhue slider and an optional alpha slider - or by typing a color string\n(hex, rgb(a), hsl(a) or a named CSS color) directly. Supports pre-defined\nswatches, the native EyeDropper API where available, and two anchor\npresentations: a trigger button (`mode="default"`) or an editable text\nfield (`mode="input"`).',
+      },
+    },
     actions: {
       handles: [
         'igcOpening',
@@ -33,12 +38,14 @@ const metadata: Meta<IgcColorPickerComponent> = {
   argTypes: {
     label: {
       type: 'string',
-      description: 'The label of the component.',
+      description:
+        'The label of the component.\n\nIn `mode="input"` this is forwarded to the anchor input\'s own label\ninstead of being rendered as a separate element.',
       control: 'text',
     },
     value: {
       type: 'string',
-      description: 'The value of the component.',
+      description:
+        'The value of the component, as a CSS color string (hex, rgb(a), hsl(a)\nor a named color).\n\nSetting an empty, whitespace-only or otherwise invalid string clears\nthe value.',
       control: 'text',
     },
     format: {
@@ -62,7 +69,8 @@ const metadata: Meta<IgcColorPickerComponent> = {
     },
     mode: {
       type: '"default" | "input"',
-      description: 'The mode of the color picker.',
+      description:
+        'The mode of the color picker.\n\nIn `"default"` mode the anchor is a trigger button. In `"input"` mode\nthe anchor is an editable text field with a color swatch prefix that\nalso opens the picker.',
       options: ['default', 'input'],
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'default' } },
@@ -113,9 +121,20 @@ const metadata: Meta<IgcColorPickerComponent> = {
 export default metadata;
 
 interface IgcColorPickerArgs {
-  /** The label of the component. */
+  /**
+   * The label of the component.
+   *
+   * In `mode="input"` this is forwarded to the anchor input's own label
+   * instead of being rendered as a separate element.
+   */
   label: string;
-  /** The value of the component. */
+  /**
+   * The value of the component, as a CSS color string (hex, rgb(a), hsl(a)
+   * or a named color).
+   *
+   * Setting an empty, whitespace-only or otherwise invalid string clears
+   * the value.
+   */
   value: string;
   /** Sets the color format for the string value. */
   format: 'hex' | 'rgb' | 'hsl';
@@ -123,7 +142,13 @@ interface IgcColorPickerArgs {
   hideFormats: boolean;
   /** Whether to show the alpha slider and input. */
   showAlpha: boolean;
-  /** The mode of the color picker. */
+  /**
+   * The mode of the color picker.
+   *
+   * In `"default"` mode the anchor is a trigger button. In `"input"` mode
+   * the anchor is an editable text field with a color swatch prefix that
+   * also opens the picker.
+   */
   mode: 'default' | 'input';
   /** When set, makes the component a required field for validation. */
   required: boolean;

@@ -10,6 +10,7 @@ import { defineComponents } from '../common/definitions/defineComponents.js';
 import {
   createFormAssociatedTestBed,
   isFocused,
+  runExternalLabelAssociationTests,
   simulateClick,
   simulateKeyboard,
 } from '../common/utils.spec.js';
@@ -723,5 +724,14 @@ describe('Color picker', () => {
 
       runValidationContainerTests(IgcColorPickerComponent, testParameters);
     });
+  });
+
+  runExternalLabelAssociationTests({
+    tagName: IgcColorPickerComponent.tagName,
+    hostAttributes: 'mode="input"',
+    getNativeInput: (host) =>
+      (host as IgcColorPickerComponent).renderRoot
+        .querySelector('igc-input')!
+        .renderRoot.querySelector('input')!,
   });
 });

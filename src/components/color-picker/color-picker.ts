@@ -15,6 +15,7 @@ import {
 } from '../common/controllers/key-bindings.js';
 import { addRootClickController } from '../common/controllers/root-click.js';
 import { addSlotController, setSlots } from '../common/controllers/slot.js';
+import { shadowOptions } from '../common/decorators/shadow-options.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { IgcBaseComboBoxComponent } from '../common/mixins/combo-box.js';
 import type { AbstractConstructor } from '../common/mixins/constructor.js';
@@ -102,6 +103,7 @@ const Slots = setSlots(
  * @csspart swatches - The container of the pre-defined color swatches.
  * @csspart swatch - An individual color swatch button.
  */
+@shadowOptions({ delegatesFocus: true })
 export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin(
   EventEmitterMixin<
     IgcColorPickerEventMap,
@@ -270,6 +272,7 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
       // Wait until the browser paints and then sync the marker position with the color.
       requestAnimationFrame(() => this._syncCanvasPosition());
     }
+    this._forwardLabelElements();
   }
 
   protected override _restoreDefaultValue(): void {
@@ -339,7 +342,7 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
   private _handleAlphaInputChange(event: CustomEvent<string>): void {
     stopPropagation(event);
 
-    this._color.alpha = asNumber(event.detail) ?? 0;
+    this._color.alpha = asNumber(event.detail);
     this._updateColor();
     this._emitInputEvent();
   }
@@ -430,6 +433,13 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
 
   private _emitInputEvent(): void {
     this.emitEvent('igcInput', { detail: this.value });
+  }
+
+  private _forwardLabelElements(): void {
+    if (this.mode === 'input' && this._anchorRef.value) {
+      const input = this._anchorRef.value as IgcInputComponent;
+      input._labelElements = this._internals.labels;
+    }
   }
 
   //#endregion
@@ -674,6 +684,7 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
         slot="anchor"
         label=${ifDefined(this.label)}
         ?required=${this.required}
+        ?disabled=${this.disabled}
         .value=${this.value}
         .invalid=${this.invalid}
         @igcChange=${this._handleColorInputChange}
