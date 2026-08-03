@@ -43,7 +43,7 @@ const metadata: Meta<IgcMaskInputComponent> = {
     value: {
       type: 'string',
       description:
-        'The value of the input.\n\nRegardless of the currently set `value-mode`, an empty value will return an empty string.',
+        'The value of the input.\n\nRegardless of the currently set `value-mode`, an empty value returns an empty string.',
       control: 'text',
     },
     mask: {
@@ -133,7 +133,7 @@ interface IgcMaskInputArgs {
   /**
    * The value of the input.
    *
-   * Regardless of the currently set `value-mode`, an empty value will return an empty string.
+   * Regardless of the currently set `value-mode`, an empty value returns an empty string.
    */
   value: string;
   /** The masked pattern of the component. */

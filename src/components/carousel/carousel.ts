@@ -273,7 +273,7 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
   public interval: number | undefined;
 
   /**
-   * Controls the maximum indicator controls (dots) that can be shown. Default value is `10`.
+   * The maximum number of indicator controls (dots) that can be shown. Default value is `10`.
    * @attr maximum-indicators-count
    */
   @property({ type: Number, attribute: 'maximum-indicators-count' })
@@ -701,7 +701,7 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
   }
 
   /**
-   * Pauses the carousel rotation of slides.
+   * Pauses the rotation of the carousel slides.
    */
   public pause(): void {
     if (this.isPlaying) {

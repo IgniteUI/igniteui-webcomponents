@@ -43,7 +43,7 @@ const metadata: Meta<IgcRadioGroupComponent> = {
     value: {
       type: 'string',
       description:
-        'Gets/Sets the checked igc-radio element that matches `value`',
+        'The value of the group, reflecting the value of the currently checked radio button.\nSetting it checks the radio button in the group with a matching value.',
       control: 'text',
     },
   },
@@ -57,7 +57,10 @@ interface IgcRadioGroupArgs {
   alignment: 'horizontal' | 'vertical';
   /** Gets/Sets the name for all child igc-radio components. */
   name: string;
-  /** Gets/Sets the checked igc-radio element that matches `value` */
+  /**
+   * The value of the group, reflecting the value of the currently checked radio button.
+   * Setting it checks the radio button in the group with a matching value.
+   */
   value: string;
 }
 type Story = StoryObj<IgcRadioGroupArgs>;

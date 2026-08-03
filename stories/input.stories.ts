@@ -52,12 +52,12 @@ const metadata: Meta<IgcInputComponent> = {
     inputMode: {
       type: 'string',
       description:
-        'The input mode attribute of the control.\nSee [relevant MDN article](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/inputmode)',
+        'A hint to the browser for which virtual keyboard layout to display.\nSee [relevant MDN article](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/inputmode)',
       control: 'text',
     },
     pattern: {
       type: 'string',
-      description: 'The pattern attribute of the control.',
+      description: 'The regular expression the value is validated against.',
       control: 'text',
     },
     minLength: {
@@ -82,18 +82,18 @@ const metadata: Meta<IgcInputComponent> = {
     },
     step: {
       type: 'number',
-      description: 'The step attribute of the control.',
+      description: 'The granularity the value must adhere to.',
       control: 'number',
     },
     autofocus: {
       type: 'boolean',
-      description: 'The autofocus attribute of the control.',
+      description: 'Whether the control should receive focus automatically.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
     autocomplete: {
       type: 'string',
-      description: 'The autocomplete attribute of the control.',
+      description: 'A hint for the browser on how to autofill the control.',
       control: 'text',
     },
     validateOnly: {
@@ -166,11 +166,11 @@ interface IgcInputArgs {
   /** Makes the control a readonly field. */
   readOnly: boolean;
   /**
-   * The input mode attribute of the control.
+   * A hint to the browser for which virtual keyboard layout to display.
    * See [relevant MDN article](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/inputmode)
    */
   inputMode: string;
-  /** The pattern attribute of the control. */
+  /** The regular expression the value is validated against. */
   pattern: string;
   /** The minimum string length required by the control. */
   minLength: number;
@@ -182,9 +182,9 @@ interface IgcInputArgs {
   max: number;
   /** The step attribute of the control. */
   step: number;
-  /** The autofocus attribute of the control. */
+  /** Whether the control should receive focus automatically. */
   autofocus: boolean;
-  /** The autocomplete attribute of the control. */
+  /** A hint for the browser on how to autofill the control. */
   autocomplete: string;
   /**
    * Enables validation rules to be evaluated without restricting user input. This applies to the `maxLength` property for

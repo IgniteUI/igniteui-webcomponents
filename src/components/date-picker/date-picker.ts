@@ -117,10 +117,10 @@ type DatePickerResourceStringsType = IDatePickerResourceStrings &
  * @slot calendar-icon-open - Renders the icon/content for the picker in open state.
  * @slot actions - Renders content in the action part of the picker in open state.
  *
- * @fires igcOpening - Emitted just before the calendar dropdown is shown.
- * @fires igcOpened - Emitted after the calendar dropdown is shown.
- * @fires igcClosing - Emitted just before the calendar dropdown is hidden.
- * @fires igcClosed - Emitted after the calendar dropdown is hidden.
+ * @fires igcOpening - Emitted just before the calendar popover is shown.
+ * @fires igcOpened - Emitted after the calendar popover is shown.
+ * @fires igcClosing - Emitted just before the calendar popover is hidden.
+ * @fires igcClosed - Emitted after the calendar popover is hidden.
  * @fires igcChange - Emitted when the user modifies and commits the elements's value.
  * @fires igcInput - Emitted when when the user types in the element.
  *

@@ -26,7 +26,7 @@ const metadata: Meta<IgcTextareaComponent> = {
     docs: {
       description: {
         component:
-          'This element represents a multi-line plain-text editing control,\nuseful when you want to allow users to enter a sizeable amount of free-form text,\nfor example a comment on a review or feedback form.',
+          'Represents a multi-line plain-text editing control,\nuseful when you want to allow users to enter a sizeable amount of free-form text,\nfor example a comment on a review or feedback form.',
       },
     },
     actions: { handles: ['igcInput', 'igcChange'] },
@@ -35,7 +35,7 @@ const metadata: Meta<IgcTextareaComponent> = {
     autocomplete: {
       type: 'string',
       description:
-        'Specifies what if any permission the browser has to provide for automated assistance in filling out form field values,\nas well as guidance to the browser as to the type of information expected in the field.\nRefer to [this page](https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/autocomplete) for additional information.',
+        'Specifies what permission, if any, the browser has to provide automated assistance in filling out form field values,\nas well as guidance to the browser as to the type of information expected in the field.\nRefer to [this page](https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/autocomplete) for additional information.',
       control: 'text',
     },
     autocapitalize: {
@@ -169,7 +169,7 @@ export default metadata;
 
 interface IgcTextareaArgs {
   /**
-   * Specifies what if any permission the browser has to provide for automated assistance in filling out form field values,
+   * Specifies what permission, if any, the browser has to provide automated assistance in filling out form field values,
    * as well as guidance to the browser as to the type of information expected in the field.
    * Refer to [this page](https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/autocomplete) for additional information.
    */

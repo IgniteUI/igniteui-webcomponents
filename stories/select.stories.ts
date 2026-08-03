@@ -51,13 +51,13 @@ const metadata: Meta<IgcSelectComponent> = {
     },
     outlined: {
       type: 'boolean',
-      description: 'The outlined attribute of the control.',
+      description: 'Whether the control has an outlined appearance.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
     autofocus: {
       type: 'boolean',
-      description: 'The autofocus attribute of the control.',
+      description: 'Whether the control should receive focus automatically.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
@@ -171,9 +171,9 @@ export default metadata;
 interface IgcSelectArgs {
   /** The value attribute of the control. */
   value: string;
-  /** The outlined attribute of the control. */
+  /** Whether the control has an outlined appearance. */
   outlined: boolean;
-  /** The autofocus attribute of the control. */
+  /** Whether the control should receive focus automatically. */
   autofocus: boolean;
   /** The distance of the select dropdown from its input. */
   distance: number;

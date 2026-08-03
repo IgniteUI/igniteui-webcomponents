@@ -29,7 +29,7 @@ export interface FilteringOptions<T extends object> {
   filterKey: Keys<T> | undefined;
   /** Determines whether the filtering operation should be case sensitive. */
   caseSensitive?: boolean;
-  /** If true, the filter distinguishes between accented letters and their base letters */
+  /** When true, the filter distinguishes between accented letters and their base letters. */
   matchDiacritics?: boolean;
 }
 

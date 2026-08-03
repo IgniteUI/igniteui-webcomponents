@@ -240,7 +240,7 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
     return super.reportValidity();
   }
 
-  /** Checks for validity of the control and emits the invalid event if it invalid. */
+  /** Checks for validity of the control and emits the invalid event if it's invalid. */
   public override checkValidity(): boolean {
     for (const radio of this._siblings) {
       radio._checkValidity();
@@ -249,7 +249,7 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
     return this._checkValidity();
   }
 
-  /** Checks for validity of the control and shows the browser message if it invalid. */
+  /** Checks for validity of the control and shows the browser message if it's invalid. */
   public override reportValidity(): boolean {
     for (const radio of this._siblings) {
       radio._reportValidity();

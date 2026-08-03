@@ -60,7 +60,7 @@ const Slots = setSlots(
 );
 
 /**
- * This element represents a multi-line plain-text editing control,
+ * Represents a multi-line plain-text editing control,
  * useful when you want to allow users to enter a sizeable amount of free-form text,
  * for example a comment on a review or feedback form.
  *
@@ -127,7 +127,7 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
   //#region Public properties and attributes
 
   /**
-   * Specifies what if any permission the browser has to provide for automated assistance in filling out form field values,
+   * Specifies what permission, if any, the browser has to provide automated assistance in filling out form field values,
    * as well as guidance to the browser as to the type of information expected in the field.
    * Refer to [this page](https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/autocomplete) for additional information.
    *

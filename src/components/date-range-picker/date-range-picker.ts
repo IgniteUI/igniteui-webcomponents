@@ -130,10 +130,10 @@ let nextId = 1;
  * @slot actions - Renders content in the action part of the picker in open state.
  * @slot separator - Renders the separator element between the two inputs.
  *
- * @fires igcOpening - Emitted just before the calendar dropdown is shown.
- * @fires igcOpened - Emitted after the calendar dropdown is shown.
- * @fires igcClosing - Emitted just before the calendar dropdown is hidden.
- * @fires igcClosed - Emitted after the calendar dropdown is hidden.
+ * @fires igcOpening - Emitted just before the calendar popover is shown.
+ * @fires igcOpened - Emitted after the calendar popover is shown.
+ * @fires igcClosing - Emitted just before the calendar popover is hidden.
+ * @fires igcClosed - Emitted after the calendar popover is hidden.
  * @fires igcChange - Emitted when the user modifies and commits the elements's value.
  * @fires igcInput - Emitted when when the user types in the element.
  *

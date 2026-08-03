@@ -334,14 +334,14 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
 
     //#region Public API
 
-    /** Checks for validity of the control and shows the browser message if it invalid. */
+    /** Checks for validity of the control and shows the browser message if it's invalid. */
     public reportValidity(): boolean {
       const state = this._internals.reportValidity();
       this._invalid = !state;
       return state;
     }
 
-    /** Checks for validity of the control and emits the invalid event if it invalid. */
+    /** Checks for validity of the control and emits the invalid event if it's invalid. */
     public checkValidity(): boolean {
       this._isInternalValidation = true;
       const state = this._internals.checkValidity();

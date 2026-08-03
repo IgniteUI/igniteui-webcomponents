@@ -96,7 +96,7 @@ const metadata: Meta<IgcCarouselComponent> = {
     maximumIndicatorsCount: {
       type: 'number',
       description:
-        'Controls the maximum indicator controls (dots) that can be shown. Default value is `10`.',
+        'The maximum number of indicator controls (dots) that can be shown. Default value is `10`.',
       control: 'number',
       table: { defaultValue: { summary: '10' } },
     },
@@ -155,7 +155,7 @@ interface IgcCarouselArgs {
   slidesLabelFormat: string;
   /** The duration in milliseconds between changing the active slide. */
   interval: number;
-  /** Controls the maximum indicator controls (dots) that can be shown. Default value is `10`. */
+  /** The maximum number of indicator controls (dots) that can be shown. Default value is `10`. */
   maximumIndicatorsCount: number;
   /** The animation type. */
   animationType: 'slide' | 'fade' | 'none';

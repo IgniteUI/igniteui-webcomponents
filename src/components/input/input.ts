@@ -125,7 +125,7 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
   public readOnly = false;
 
   /**
-   * The input mode attribute of the control.
+   * A hint to the browser for which virtual keyboard layout to display.
    * See [relevant MDN article](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/inputmode)
    * @attr inputmode
    */
@@ -133,7 +133,7 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
   public override inputMode!: string;
 
   /**
-   * The pattern attribute of the control.
+   * The regular expression the value is validated against.
    * @attr
    */
   @property()
@@ -217,14 +217,14 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
   }
 
   /**
-   * The autofocus attribute of the control.
+   * Whether the control should receive focus automatically.
    * @attr
    */
   @property({ type: Boolean })
   public override autofocus!: boolean;
 
   /**
-   * The autocomplete attribute of the control.
+   * A hint for the browser on how to autofill the control.
    * @attr
    */
   @property()

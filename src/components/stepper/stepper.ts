@@ -491,7 +491,7 @@ export default class IgcStepperComponent extends EventEmitterMixin<
   }
 
   /**
-   * Resets the stepper to its initial state i.e. activates the first step.
+   * Resets the stepper to its initial state, i.e. activates the first step.
    *
    * @remarks
    * The steps' content will not be automatically reset.

@@ -222,7 +222,7 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
 
   /* @tsTwoWayProperty(true, "igcChange", "detail", false) */
   /**
-   * The current value of the component
+   * The value of the component
    * @attr value
    * @default 0
    */

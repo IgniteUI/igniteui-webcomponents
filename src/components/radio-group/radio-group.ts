@@ -79,7 +79,8 @@ export default class IgcRadioGroupComponent extends LitElement {
 
   /* @tsTwoWayProperty(true, "igcChange", "detail.value", false) */
   /**
-   * Gets/Sets the checked igc-radio element that matches `value`
+   * The value of the group, reflecting the value of the currently checked radio button.
+   * Setting it checks the radio button in the group with a matching value.
    * @attr
    */
   @property()

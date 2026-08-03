@@ -206,14 +206,14 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   }
 
   /**
-   * The outlined attribute of the control.
+   * Whether the control has an outlined appearance.
    * @attr
    */
   @property({ reflect: true, type: Boolean })
   public outlined = false;
 
   /**
-   * The autofocus attribute of the control.
+   * Whether the control should receive focus automatically.
    * @attr
    */
   @property({ type: Boolean })

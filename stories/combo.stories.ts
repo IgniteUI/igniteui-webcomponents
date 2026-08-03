@@ -46,7 +46,7 @@ const metadata: Meta<IgcComboComponent> = {
   argTypes: {
     outlined: {
       type: 'boolean',
-      description: 'The outlined attribute of the control.',
+      description: 'Whether the control has an outlined appearance.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
@@ -59,7 +59,7 @@ const metadata: Meta<IgcComboComponent> = {
     },
     autofocus: {
       type: 'boolean',
-      description: 'The autofocus attribute of the control.',
+      description: 'Whether the control should receive focus automatically.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
@@ -184,11 +184,11 @@ const metadata: Meta<IgcComboComponent> = {
 export default metadata;
 
 interface IgcComboArgs {
-  /** The outlined attribute of the control. */
+  /** Whether the control has an outlined appearance. */
   outlined: boolean;
   /** Enables single selection mode and moves item filtering to the main input. */
   singleSelect: boolean;
-  /** The autofocus attribute of the control. */
+  /** Whether the control should receive focus automatically. */
   autofocus: boolean;
   /** Focuses the list of options when the menu opens. */
   autofocusList: boolean;
