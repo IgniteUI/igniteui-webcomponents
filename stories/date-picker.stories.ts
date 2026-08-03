@@ -18,13 +18,13 @@ defineComponents(IgcDatePickerComponent, IgcButtonComponent);
 
 // region default
 const metadata: Meta<IgcDatePickerComponent> = {
-  title: 'Datepicker',
-  component: 'igc-datepicker',
+  title: 'DatePicker',
+  component: 'igc-date-picker',
   parameters: {
     docs: {
       description: {
         component:
-          'igc-datepicker is a feature rich component used for entering a date through manual text input or\nchoosing date values from a calendar dialog that pops up.',
+          'The date picker is a feature rich component used for entering a date through manual text input or\nchoosing date values from a calendar dialog that pops up.',
       },
     },
     actions: {
@@ -43,7 +43,7 @@ const metadata: Meta<IgcDatePickerComponent> = {
       type: 'boolean',
       description: 'Sets the state of the datepicker dropdown.',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
     label: {
       type: 'string',
@@ -62,13 +62,13 @@ const metadata: Meta<IgcDatePickerComponent> = {
       type: 'boolean',
       description: 'Whether to allow typing in the input.',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
     readOnly: {
       type: 'boolean',
       description: 'Makes the control a readonly field.',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
     value: {
       type: 'Date',
@@ -94,17 +94,17 @@ const metadata: Meta<IgcDatePickerComponent> = {
       control: 'date',
     },
     headerOrientation: {
-      type: '"vertical" | "horizontal"',
+      type: '"horizontal" | "vertical"',
       description: 'The orientation of the calendar header.',
-      options: ['vertical', 'horizontal'],
+      options: ['horizontal', 'vertical'],
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'horizontal' } },
     },
     orientation: {
-      type: '"vertical" | "horizontal"',
+      type: '"horizontal" | "vertical"',
       description:
         "The orientation of the multiple months displayed in the calendar's days view.",
-      options: ['vertical', 'horizontal'],
+      options: ['horizontal', 'vertical'],
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'horizontal' } },
     },
@@ -112,20 +112,20 @@ const metadata: Meta<IgcDatePickerComponent> = {
       type: 'boolean',
       description: 'Determines whether the calendar hides its header.',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
     hideOutsideDays: {
       type: 'boolean',
       description:
         'Controls the visibility of the dates that do not belong to the current month.',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
     outlined: {
       type: 'boolean',
       description: 'Whether the control will have outlined appearance.',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
     placeholder: {
       type: 'string',
@@ -136,18 +136,18 @@ const metadata: Meta<IgcDatePickerComponent> = {
       type: 'number',
       description: 'The number of months displayed in the calendar.',
       control: 'number',
-      table: { defaultValue: { summary: 1 } },
+      table: { defaultValue: { summary: '1' } },
     },
     showWeekNumbers: {
       type: 'boolean',
       description: 'Whether to show the number of the week in the calendar.',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
     displayFormat: {
       type: 'string',
       description:
-        'Format to display the value in when not editing.\nDefaults to the input format if not set.',
+        'Format to display the value in when not editing.\nDefaults to the locale format if not set.',
       control: 'text',
     },
     inputFormat: {
@@ -156,17 +156,17 @@ const metadata: Meta<IgcDatePickerComponent> = {
         'The date format to apply on the input.\nDefaults to the current locale Intl.DateTimeFormat',
       control: 'text',
     },
-    locale: {
-      type: 'string',
-      description: 'The locale settings used to display the value.',
-      control: 'text',
-      table: { defaultValue: { summary: 'en' } },
-    },
     prompt: {
       type: 'string',
       description: 'The prompt symbol to use for unfilled parts of the mask.',
       control: 'text',
       table: { defaultValue: { summary: '_' } },
+    },
+    locale: {
+      type: 'string',
+      description:
+        'Gets/Sets the locale used for formatting the display value.',
+      control: 'text',
     },
     weekStart: {
       type: '"sunday" | "monday" | "tuesday" | "wednesday" | "thursday" | "friday" | "saturday"',
@@ -185,40 +185,41 @@ const metadata: Meta<IgcDatePickerComponent> = {
     },
     required: {
       type: 'boolean',
-      description: 'Makes the control a required field in a form context.',
+      description:
+        'When set, makes the component a required field for validation.',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
     name: {
       type: 'string',
-      description: 'The name attribute of the control.',
+      description: 'The name of the control, submitted with the form data.',
       control: 'text',
     },
     disabled: {
       type: 'boolean',
-      description: 'The disabled state of the component',
+      description: 'The disabled state of the component.',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
     invalid: {
       type: 'boolean',
-      description: 'Control the validity of the control.',
+      description: 'Sets the control into invalid state (visual state only).',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
     keepOpenOnSelect: {
       type: 'boolean',
       description:
         'Whether the component dropdown should be kept open on selection.',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
     keepOpenOnOutsideClick: {
       type: 'boolean',
       description:
         'Whether the component dropdown should be kept open on clicking outside of it.',
       control: 'boolean',
-      table: { defaultValue: { summary: false } },
+      table: { defaultValue: { summary: 'false' } },
     },
   },
   args: {
@@ -233,7 +234,6 @@ const metadata: Meta<IgcDatePickerComponent> = {
     outlined: false,
     visibleMonths: 1,
     showWeekNumbers: false,
-    locale: 'en',
     prompt: '_',
     weekStart: 'sunday',
     required: false,
@@ -246,7 +246,7 @@ const metadata: Meta<IgcDatePickerComponent> = {
 
 export default metadata;
 
-interface IgcDatepickerArgs {
+interface IgcDatePickerArgs {
   /** Sets the state of the datepicker dropdown. */
   open: boolean;
   /** The label of the datepicker. */
@@ -269,9 +269,9 @@ interface IgcDatepickerArgs {
   /** The maximum value required for the date picker to remain valid. */
   max: Date;
   /** The orientation of the calendar header. */
-  headerOrientation: 'vertical' | 'horizontal';
+  headerOrientation: 'horizontal' | 'vertical';
   /** The orientation of the multiple months displayed in the calendar's days view. */
-  orientation: 'vertical' | 'horizontal';
+  orientation: 'horizontal' | 'vertical';
   /** Determines whether the calendar hides its header. */
   hideHeader: boolean;
   /** Controls the visibility of the dates that do not belong to the current month. */
@@ -286,7 +286,7 @@ interface IgcDatepickerArgs {
   showWeekNumbers: boolean;
   /**
    * Format to display the value in when not editing.
-   * Defaults to the input format if not set.
+   * Defaults to the locale format if not set.
    */
   displayFormat: string;
   /**
@@ -294,10 +294,10 @@ interface IgcDatepickerArgs {
    * Defaults to the current locale Intl.DateTimeFormat
    */
   inputFormat: string;
-  /** The locale settings used to display the value. */
-  locale: string;
   /** The prompt symbol to use for unfilled parts of the mask. */
   prompt: string;
+  /** Gets/Sets the locale used for formatting the display value. */
+  locale: string;
   /** Sets the start day of the week for the calendar. */
   weekStart:
     | 'sunday'
@@ -307,20 +307,20 @@ interface IgcDatepickerArgs {
     | 'thursday'
     | 'friday'
     | 'saturday';
-  /** Makes the control a required field in a form context. */
+  /** When set, makes the component a required field for validation. */
   required: boolean;
-  /** The name attribute of the control. */
+  /** The name of the control, submitted with the form data. */
   name: string;
-  /** The disabled state of the component */
+  /** The disabled state of the component. */
   disabled: boolean;
-  /** Control the validity of the control. */
+  /** Sets the control into invalid state (visual state only). */
   invalid: boolean;
   /** Whether the component dropdown should be kept open on selection. */
   keepOpenOnSelect: boolean;
   /** Whether the component dropdown should be kept open on clicking outside of it. */
   keepOpenOnOutsideClick: boolean;
 }
-type Story = StoryObj<IgcDatepickerArgs>;
+type Story = StoryObj<IgcDatePickerArgs>;
 
 // endregion
 
