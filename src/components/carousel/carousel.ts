@@ -73,11 +73,11 @@ let nextId = 1;
 const Slots = setSlots('indicator', 'previous-button', 'next-button');
 
 /**
- * The `igc-carousel` presents a set of `igc-carousel-slide`s by sequentially displaying a subset of one or more slides.
+ * The carousel presents a set of slides by sequentially displaying a subset of one or more.
  *
  * @element igc-carousel
  *
- * @slot Default slot for the carousel. Any projected `igc-carousel-slide` components should be projected here.
+ * @slot Default slot for the carousel. Any carousel slides should be projected here.
  * @slot previous-button - Renders content inside the previous button.
  * @slot next-button - Renders content inside the next button.
  *

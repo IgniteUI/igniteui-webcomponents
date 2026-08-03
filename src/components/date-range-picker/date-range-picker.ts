@@ -99,7 +99,7 @@ let nextId = 1;
 /* blazorIndirectRender */
 /* blazorSupportsVisualChildren */
 /**
- * The igc-date-range-picker allows the user to select a range of dates.
+ * The Date Range Picker includes a text input and a calendar pop-up, allowing users to easily select start and end dates.
  *
  * @element igc-date-range-picker
  *

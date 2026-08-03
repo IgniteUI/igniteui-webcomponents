@@ -106,13 +106,13 @@ const Slots = setSlots(
  * @fires igcClosing - Emitter just before the list of options is closed.
  * @fires igcClosed - Emitted after the list of options is closed.
  *
- * @csspart list - The list wrapping container for the items of the igc-select.
- * @csspart input - The encapsulated igc-input of the igc-select.
- * @csspart label - The encapsulated text label of the igc-select.
- * @csspart prefix - The prefix wrapper of the input of the igc-select.
- * @csspart suffix - The suffix wrapper of the input of the igc-select.
- * @csspart toggle-icon - The toggle icon wrapper of the igc-select.
- * @csspart helper-text - The helper text wrapper of the igc-select.
+ * @csspart list - The list wrapping container for the items of the select.
+ * @csspart input - The encapsulated input of the select.
+ * @csspart label - The encapsulated text label of the select.
+ * @csspart prefix - The prefix wrapper of the input of the select.
+ * @csspart suffix - The suffix wrapper of the input of the select.
+ * @csspart toggle-icon - The toggle icon wrapper of the select.
+ * @csspart helper-text - The helper text wrapper of the select.
  */
 @blazorAdditionalDependencies(
   'IgcIconComponent, IgcInputComponent, IgcSelectGroupComponent, IgcSelectHeaderComponent, IgcSelectItemComponent'
@@ -253,14 +253,14 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   @property({ attribute: 'scroll-strategy' })
   public scrollStrategy: PopoverScrollStrategy = 'scroll';
 
-  /** Returns the items of the igc-select component. */
+  /** Returns the items of the select component. */
   public get items(): IgcSelectItemComponent[] {
     return Array.from(
       getItems<IgcSelectItemComponent>(this, IgcSelectItemComponent.tagName)
     );
   }
 
-  /** Returns the groups of the igc-select component. */
+  /** Returns the groups of the select component. */
   public get groups(): IgcSelectGroupComponent[] {
     return Array.from(
       getItems<IgcSelectGroupComponent>(this, IgcSelectGroupComponent.tagName)

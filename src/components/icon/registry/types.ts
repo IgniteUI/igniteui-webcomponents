@@ -82,7 +82,7 @@ export interface RegisterIconOptions {
    *   `<svg>` element that pointed to the stripped elements' IDs are cleaned up
    *   so the resulting markup contains no dangling ARIA references.
    * - The **title text** is still captured and stored as `SvgIcon.title`, which
-   *   the `<igc-icon>` component continues to expose as its host `aria-label`.
+   *   the icon component continues to expose as its host `aria-label`.
    *   Accessibility is therefore preserved at the component level while the
    *   browser tooltip is suppressed at the SVG level.
    *

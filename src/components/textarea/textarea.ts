@@ -80,11 +80,11 @@ const Slots = setSlots(
  * @fires igcChange - Emitted when the a change to the control value is committed by the user.
  *
  * @csspart container - The main wrapper that holds all main input elements of the textarea.
- * @csspart input - The native input element of the igc-textarea.
- * @csspart label - The native label element of the igc-textarea.
- * @csspart prefix - The prefix wrapper of the igc-textarea.
- * @csspart suffix - The suffix wrapper of the igc-textarea.
- * @csspart helper-text - The helper text wrapper of the igc-textarea.
+ * @csspart input - The native input element of the textarea.
+ * @csspart label - The native label element of the textarea.
+ * @csspart prefix - The prefix wrapper of the textarea.
+ * @csspart suffix - The suffix wrapper of the textarea.
+ * @csspart helper-text - The helper text wrapper of the textarea.
  */
 @shadowOptions({ delegatesFocus: true })
 export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(

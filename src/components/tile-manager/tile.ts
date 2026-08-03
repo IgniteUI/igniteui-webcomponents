@@ -65,7 +65,7 @@ const Slots = setSlots(
 );
 
 /**
- * The tile component is used within the `igc-tile-manager` as a container
+ * The tile component is used within the tile manager as a container
  * for displaying various types of information.
  *
  * @element igc-tile

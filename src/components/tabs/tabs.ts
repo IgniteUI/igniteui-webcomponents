@@ -59,7 +59,7 @@ export interface IgcTabsComponentEventMap {
 /**
  * Tabs organize and allow navigation between groups of content that are related and at the same level of hierarchy.
  *
- * The `<igc-tabs>` component allows the user to navigate between multiple `<igc-tab>` elements.
+ * The tabs component allows the user to navigate between multiple tab children.
  * It supports keyboard navigation and provides API methods to control the selected tab.
  *
  * @element igc-tabs
@@ -144,7 +144,7 @@ export default class IgcTabsComponent extends EventEmitterMixin<
   public activation: TabsActivation = 'auto';
 
   /* blazorSuppress */
-  /** Returns the direct `igc-tab` elements that are children of this element. */
+  /** Returns the direct tab children of this element. */
   public get tabs(): IgcTabComponent[] {
     return this._tabs;
   }

@@ -81,7 +81,7 @@ const Slots = setSlots('symbol', 'value-label');
  *
  * @element igc-rating
  *
- * @slot symbol - Slot for projecting custom `igc-rating-symbol` elements. When used, the number of symbols determines the `max` value.
+ * @slot symbol - Slot for projecting custom rating symbol elements. When used, the number of symbols determines the `max` value.
  * @slot value-label - Slot for custom content displayed alongside the rating value.
  *
  * @fires igcChange - Emitted when the value of the control changes.

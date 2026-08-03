@@ -54,7 +54,7 @@ const DEFAULT_RESIZE_STATE: SplitterResizeState = {
 };
 
 /**
- * The `igc-splitter` component provides a resizable split-pane layout that divides the view
+ * A splitter component that provides a resizable split-pane layout, dividing the view
  * into two panels — *start* and *end* — separated by a draggable bar.
  *
  * Panels can be resized by dragging the bar, using keyboard shortcuts, or collapsed/expanded

@@ -39,7 +39,7 @@ export default class IgcSelectGroupComponent extends LitElement {
 
   private controlledItems!: Array<IgcSelectItemComponent>;
 
-  /** All child `igc-select-item`s. */
+  /** All child select items. */
   @queryAssignedElements({
     flatten: true,
     selector: IgcSelectItemComponent.tagName,

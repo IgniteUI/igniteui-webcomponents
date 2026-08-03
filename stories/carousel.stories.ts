@@ -28,7 +28,7 @@ const metadata: Meta<IgcCarouselComponent> = {
     docs: {
       description: {
         component:
-          'The `igc-carousel` presents a set of `igc-carousel-slide`s by sequentially displaying a subset of one or more slides.',
+          'The carousel presents a set of slides by sequentially displaying a subset of one or more.',
       },
     },
     actions: { handles: ['igcSlideChanged', 'igcPlaying', 'igcPaused'] },

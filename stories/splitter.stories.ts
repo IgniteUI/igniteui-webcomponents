@@ -17,7 +17,7 @@ const metadata: Meta<IgcSplitterComponent> = {
     docs: {
       description: {
         component:
-          'The `igc-splitter` divides the view into two resizable and collapsible panels separated by a draggable bar. ' +
+          'The splitter divides the view into two resizable and collapsible panels separated by a draggable bar. ' +
           'Use the `start` and `end` slots to project content into each panel. ' +
           'Panels can be resized by dragging, using keyboard shortcuts, or collapsed programmatically via `toggle()`.',
       },
