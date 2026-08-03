@@ -10,6 +10,7 @@ import { html } from 'lit';
 
 defineComponents(IgcSplitterComponent, IgcButtonComponent);
 
+// region default
 const metadata: Meta<IgcSplitterComponent> = {
   title: 'Splitter',
   component: 'igc-splitter',
@@ -17,104 +18,168 @@ const metadata: Meta<IgcSplitterComponent> = {
     docs: {
       description: {
         component:
-          'The splitter divides the view into two resizable and collapsible panels separated by a draggable bar. ' +
-          'Use the `start` and `end` slots to project content into each panel. ' +
-          'Panels can be resized by dragging, using keyboard shortcuts, or collapsed programmatically via `toggle()`.',
+          'A splitter component that provides a resizable split-pane layout, dividing the view\ninto two panels — *start* and *end* — separated by a draggable bar.\n\nPanels can be resized by dragging the bar, using keyboard shortcuts, or collapsed/expanded\nusing the built-in collapse buttons or the programmatic `toggle()` API.\nNested splitters are supported for more complex layouts.',
       },
     },
-    actions: {
-      handles: ['igcResizeStart', 'igcResizing', 'igcResizeEnd'],
-    },
+    actions: { handles: ['igcResizeStart', 'igcResizing', 'igcResizeEnd'] },
   },
   argTypes: {
     orientation: {
+      type: '"horizontal" | "vertical"',
+      description:
+        'The orientation of the splitter, which determines the direction of resizing and collapsing.',
       options: ['horizontal', 'vertical'],
       control: { type: 'inline-radio' },
-      description:
-        'The axis along which the panels are split. `horizontal` places start/end side‑by‑side; `vertical` stacks them.',
       table: { defaultValue: { summary: 'horizontal' } },
     },
     disableCollapse: {
       type: 'boolean',
       description:
-        'When `true`, the collapse/expand buttons are hidden and panes cannot be collapsed.',
-      control: 'boolean',
-      table: { defaultValue: { summary: 'false' } },
-    },
-    hideCollapseButtons: {
-      type: 'boolean',
-      description:
-        'When `true`, hides the collapse/expand buttons without disabling the collapse behavior.',
-      control: 'boolean',
-      table: { defaultValue: { summary: 'false' } },
-    },
-    hideDragHandle: {
-      type: 'boolean',
-      description:
-        'When `true`, hides the drag handle icon on the splitter bar.',
+        'When true, prevents the user from collapsing either pane.\nThis also hides the expand/collapse buttons on the splitter bar.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
     disableResize: {
       type: 'boolean',
       description:
-        'When `true`, prevents resizing by dragging or keyboard shortcuts.',
+        'When true, prevents the user from resizing the panes by dragging the splitter bar or using keyboard shortcuts.\nThis also hides the drag handle on the splitter bar.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
-    startSize: {
-      control: { type: 'text' },
+    hideCollapseButtons: {
+      type: 'boolean',
       description:
-        'Initial size of the start panel. Accepts CSS length values (`200px`, `50%`) or `auto`.',
+        'When true, hides the expand/collapse buttons on the splitter bar.\n\nNote that the buttons will also be hidden if `disable-collapse` is true or\nif a pane is currently collapsed.',
+      control: 'boolean',
+      table: { defaultValue: { summary: 'false' } },
     },
-    endSize: {
-      control: { type: 'text' },
+    hideDragHandle: {
+      type: 'boolean',
       description:
-        'Initial size of the end panel. Accepts CSS length values (`200px`, `50%`) or `auto`.',
+        'When true, hides the drag handle on the splitter bar.\n\nNote that the drag handle will also be hidden if `disable-resize` is true.',
+      control: 'boolean',
+      table: { defaultValue: { summary: 'false' } },
     },
     startMinSize: {
-      control: { type: 'text' },
-      description: 'Minimum size of the start panel (`100px`, `20%`).',
-    },
-    startMaxSize: {
-      control: { type: 'text' },
-      description: 'Maximum size of the start panel (`500px`, `80%`).',
+      type: 'string',
+      description:
+        'The minimum size of the start pane.\n\nAccepts a CSS length, e.g. `100px` or `20%`. Setting `auto`, a negative\nvalue, or a percentage above 100 removes the constraint.',
+      control: 'text',
     },
     endMinSize: {
-      control: { type: 'text' },
-      description: 'Minimum size of the end panel (`100px`, `20%`).',
+      type: 'string',
+      description:
+        'The minimum size of the end pane.\n\nAccepts a CSS length, e.g. `100px` or `20%`. Setting `auto`, a negative\nvalue, or a percentage above 100 removes the constraint.',
+      control: 'text',
+    },
+    startMaxSize: {
+      type: 'string',
+      description:
+        'The maximum size of the start pane.\n\nAccepts a CSS length, e.g. `500px` or `80%`. Setting `auto`, a negative\nvalue, or a percentage above 100 removes the constraint.',
+      control: 'text',
     },
     endMaxSize: {
-      control: { type: 'text' },
-      description: 'Maximum size of the end panel (`500px`, `80%`).',
+      type: 'string',
+      description:
+        'The maximum size of the end pane.\n\nAccepts a CSS length, e.g. `500px` or `80%`. Setting `auto`, a negative\nvalue, or a percentage above 100 removes the constraint.',
+      control: 'text',
+    },
+    startSize: {
+      type: 'string',
+      description:
+        'The size of the start pane.\n\nAccepts a CSS length, e.g. `200px` or `50%`. Setting `auto`, a negative\nvalue, or a percentage above 100 falls back to automatic sizing.',
+      control: 'text',
+    },
+    endSize: {
+      type: 'string',
+      description:
+        'The size of the end pane.\n\nAccepts a CSS length, e.g. `200px` or `50%`. Setting `auto`, a negative\nvalue, or a percentage above 100 falls back to automatic sizing.',
+      control: 'text',
     },
   },
   args: {
     orientation: 'horizontal',
     disableCollapse: false,
+    disableResize: false,
     hideCollapseButtons: false,
     hideDragHandle: false,
-    disableResize: false,
   },
 };
 
 export default metadata;
 
 interface IgcSplitterArgs {
+  /** The orientation of the splitter, which determines the direction of resizing and collapsing. */
   orientation: 'horizontal' | 'vertical';
+  /**
+   * When true, prevents the user from collapsing either pane.
+   * This also hides the expand/collapse buttons on the splitter bar.
+   */
   disableCollapse: boolean;
-  hideCollapseButtons: boolean;
-  hideDragHandle: boolean;
+  /**
+   * When true, prevents the user from resizing the panes by dragging the splitter bar or using keyboard shortcuts.
+   * This also hides the drag handle on the splitter bar.
+   */
   disableResize: boolean;
-  startSize?: string;
-  endSize?: string;
-  startMinSize?: string;
-  startMaxSize?: string;
-  endMinSize?: string;
-  endMaxSize?: string;
+  /**
+   * When true, hides the expand/collapse buttons on the splitter bar.
+   *
+   * Note that the buttons will also be hidden if `disable-collapse` is true or
+   * if a pane is currently collapsed.
+   */
+  hideCollapseButtons: boolean;
+  /**
+   * When true, hides the drag handle on the splitter bar.
+   *
+   * Note that the drag handle will also be hidden if `disable-resize` is true.
+   */
+  hideDragHandle: boolean;
+  /**
+   * The minimum size of the start pane.
+   *
+   * Accepts a CSS length, e.g. `100px` or `20%`. Setting `auto`, a negative
+   * value, or a percentage above 100 removes the constraint.
+   */
+  startMinSize: string;
+  /**
+   * The minimum size of the end pane.
+   *
+   * Accepts a CSS length, e.g. `100px` or `20%`. Setting `auto`, a negative
+   * value, or a percentage above 100 removes the constraint.
+   */
+  endMinSize: string;
+  /**
+   * The maximum size of the start pane.
+   *
+   * Accepts a CSS length, e.g. `500px` or `80%`. Setting `auto`, a negative
+   * value, or a percentage above 100 removes the constraint.
+   */
+  startMaxSize: string;
+  /**
+   * The maximum size of the end pane.
+   *
+   * Accepts a CSS length, e.g. `500px` or `80%`. Setting `auto`, a negative
+   * value, or a percentage above 100 removes the constraint.
+   */
+  endMaxSize: string;
+  /**
+   * The size of the start pane.
+   *
+   * Accepts a CSS length, e.g. `200px` or `50%`. Setting `auto`, a negative
+   * value, or a percentage above 100 falls back to automatic sizing.
+   */
+  startSize: string;
+  /**
+   * The size of the end pane.
+   *
+   * Accepts a CSS length, e.g. `200px` or `50%`. Setting `auto`, a negative
+   * value, or a percentage above 100 falls back to automatic sizing.
+   */
+  endSize: string;
 }
-
 type Story = StoryObj<IgcSplitterArgs>;
+
+// endregion
 
 const LOREM =
   'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque scelerisque elementum ante, et tincidunt eros ultrices sit amet. Mauris non consectetur nunc. In hac habitasse platea dictumst.';

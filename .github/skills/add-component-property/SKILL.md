@@ -259,8 +259,12 @@ interface IgcComponentArgs {
 ```
 
 If the generated description reads badly, fix the JSDoc in the component and regenerate —
-never patch the story. (`stories/splitter.stories.ts` is the one exception: it has no
-`// region default` markers and is maintained by hand.)
+never patch the story. Every story is generated; there are no hand-maintained exceptions.
+
+If your new property doesn't appear after regenerating, the story is being skipped silently.
+Check that the filename matches the tag name (`igc-date-picker` → `date-picker.stories.ts`) and
+that the `// region default` / `// endregion` pair is present — a missing region makes the
+generator a no-op with no warning.
 
 **Update the story template** — this part lives outside the generated region and is edited
 by hand:

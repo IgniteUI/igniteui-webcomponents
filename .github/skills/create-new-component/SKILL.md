@@ -482,8 +482,16 @@ npm run cem        # regenerates custom-elements.json from the JSDoc
 npm run build:meta # rewrites the `// region default` block of each story
 ```
 
-Only `stories/splitter.stories.ts` is hand-maintained (it has no `// region default`
-markers) — update its descriptions manually.
+Every story is generated — there are no hand-maintained exceptions. Two failure modes will
+silently skip a story, so check for both when your descriptions don't show up:
+
+1. **Filename mismatch.** `build-stories.mjs` derives the filename from the tag name, so
+   `igc-date-picker` must live in `date-picker.stories.ts`. A mismatch logs
+   *"No story file found for …, skipping."* — easy to miss in the build output.
+2. **Missing region markers.** If the file has no `// region default` / `// endregion` pair the
+   generator finds nothing to replace and writes nothing, **with no warning at all**. Wrap the
+   region from `const metadata` through `type Story = StoryObj<…>` inclusive — it also owns
+   `export default metadata;` and the args interface.
 
 ## Validation Checklist
 

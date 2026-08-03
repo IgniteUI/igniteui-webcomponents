@@ -327,8 +327,12 @@ describe('Component', () => {
 - [ ] **Story renders correctly** in Storybook
 - [ ] **Generated region regenerated, not hand-edited** — the `// region default … // endregion`
       block comes from `npm run cem && npm run build:meta`. If a description differs from the
-      component's JSDoc, the story was edited by hand and will be clobbered.
-      (`stories/splitter.stories.ts` has no region markers and is maintained manually.)
+      component's JSDoc, the story was edited by hand and will be clobbered. Every story is
+      generated; there are no hand-maintained exceptions.
+- [ ] **Story is actually reachable by the generator** — two failure modes skip it: a filename
+      that doesn't match the tag name (`igc-date-picker` → `date-picker.stories.ts`, which
+      *warns*), and a missing `// region default` / `// endregion` pair (which is a **silent**
+      no-op). A story whose descriptions don't match the source JSDoc is the symptom of both.
 
 ### 11. Documentation
 
