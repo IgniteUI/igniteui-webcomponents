@@ -15,7 +15,12 @@ const metadata: Meta<IgcRadioComponent> = {
   title: 'Radio',
   component: 'igc-radio',
   parameters: {
-    docs: { description: { component: '' } },
+    docs: {
+      description: {
+        component:
+          'The radio component allows the user to select a single option from an available set of options that are listed side by side.',
+      },
+    },
     actions: { handles: ['igcChange'] },
   },
   argTypes: {

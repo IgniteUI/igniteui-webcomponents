@@ -27,7 +27,12 @@ const metadata: Meta<IgcInputComponent> = {
   title: 'Input',
   component: 'igc-input',
   parameters: {
-    docs: { description: { component: '' } },
+    docs: {
+      description: {
+        component:
+          'A highly customizable single-line text field for entering and editing data,\nwith support for prefix/suffix content, helper text, form integration, and built-in validation.',
+      },
+    },
     actions: { handles: ['igcInput', 'igcChange'] },
   },
   argTypes: {

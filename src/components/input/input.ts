@@ -37,6 +37,9 @@ const Slots = setSlots(
 );
 
 /**
+ * A highly customizable single-line text field for entering and editing data,
+ * with support for prefix/suffix content, helper text, form integration, and built-in validation.
+ *
  * @element igc-input
  *
  * @slot prefix - Renders content before the input.

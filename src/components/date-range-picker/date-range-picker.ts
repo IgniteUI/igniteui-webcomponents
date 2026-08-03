@@ -78,6 +78,7 @@ export interface DateRangeValue {
 }
 
 /* jsonAPIPlainObject */
+/** A predefined date range with label for {@link IgcDateRangePickerComponent.customRanges} */
 export interface CustomDateRange {
   label: string;
   dateRange: DateRangeValue;

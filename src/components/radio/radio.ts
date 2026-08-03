@@ -45,6 +45,8 @@ export interface IgcRadioComponentEventMap {
 let nextId = 1;
 
 /**
+ * The radio component allows the user to select a single option from an available set of options that are listed side by side.
+ *
  * @element igc-radio
  *
  * @slot - The radio label.

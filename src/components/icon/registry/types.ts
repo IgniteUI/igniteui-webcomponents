@@ -40,9 +40,13 @@ export interface BroadcastIconsChangeMessage {
 
 // Exported public types
 
+/** Identifies a registered icon by its name and the collection it belongs to. */
 export interface IconMeta {
+  /** The name identifier of the icon in the collection. */
   name: string;
+  /** The name of the collection the icon is registered in. */
   collection: string;
+  /** @internal Internal use only. */
   external?: boolean;
 }
 
