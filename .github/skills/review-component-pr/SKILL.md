@@ -325,6 +325,10 @@ describe('Component', () => {
 - [ ] **At least one story** demonstrates basic usage
 - [ ] **Multiple stories** for different variants (ideal)
 - [ ] **Story renders correctly** in Storybook
+- [ ] **Generated region regenerated, not hand-edited** — the `// region default … // endregion`
+      block comes from `npm run cem && npm run build:meta`. If a description differs from the
+      component's JSDoc, the story was edited by hand and will be clobbered.
+      (`stories/splitter.stories.ts` has no region markers and is maintained manually.)
 
 ### 11. Documentation
 
@@ -336,6 +340,10 @@ describe('Component', () => {
 - [ ] **`@event` tags** for emitted events
 - [ ] **Property descriptions** clear and complete
 - [ ] **Examples** in JSDoc if complex usage
+- [ ] **No `igc-` tag names in description prose** — see below
+- [ ] **Descriptions don't restate the tag** — no "The label *attribute* of the control",
+      no `Gets/Sets`; booleans start with "Whether" and describe the `true` state accurately
+- [ ] **Description is the leading summary paragraph**, not appended to `@element`
 
 **Complete Example**:
 
@@ -355,6 +363,42 @@ describe('Component', () => {
  *
  * @event igcClick - Emitted on click
  */
+```
+
+**No tag names in prose**: every description reaches `custom-elements.json`, the generated
+Storybook docs and the Angular / React / Blazor wrapper API docs verbatim, where `igc-*` is
+wrong or meaningless. Use the plain-English component name.
+
+```typescript
+// ❌ Reject
+/**
+ * The `igc-carousel` presents a set of `igc-carousel-slide`s.
+ *
+ * @slot - Renders `igc-toggle-button` component.
+ * @csspart base - The native button element of the igc-button component.
+ */
+
+// ✅ Accept
+/**
+ * The carousel presents a set of slides.
+ *
+ * @slot - Renders the toggle buttons of the group.
+ * @csspart base - The native button element of the button component.
+ */
+```
+
+Tag names are allowed **only** in the `@element` tag, inside fenced `@example` code blocks,
+in literal event/attribute names that contain `igc-` (e.g. the `"igc-change-theme"` window
+event), and in `@internal`/`@hidden` members or non-exported internal controllers, mixins and
+templates.
+
+Quick grep to catch leaks — this should return nothing outside `@element`, `@example` blocks
+and internal members:
+
+```bash
+grep -rn "igc-" --include="*.ts" src/ \
+  | grep -E "^\S+:[0-9]+:\s*\*" \
+  | grep -vE "@element|@example|\.spec\.ts"
 ```
 
 ### 12. Form Integration (if applicable)
@@ -431,6 +475,19 @@ describe('Component', () => {
 
 **Problem**: Using `#privateField` syntax
 **Fix**: Use `_privateField` or TypeScript `private` keyword
+
+### Issue: `igc-` Tag Names in Descriptions
+
+**Problem**: Prose like ``The `igc-carousel` presents a set of `igc-carousel-slide`s`` or
+`The prefix wrapper of the igc-textarea.` ships verbatim into `custom-elements.json`, the
+Storybook docs and the Angular / React / Blazor wrapper API docs
+**Fix**: Use the plain-English component name. See [Documentation](#11-documentation)
+
+### Issue: Hand-Edited Story Metadata
+
+**Problem**: A description inside `// region default` was fixed in the story instead of the
+component JSDoc — it reverts on the next `npm run build:meta`
+**Fix**: Fix the JSDoc, then run `npm run cem && npm run build:meta`
 
 ## Review Process
 
