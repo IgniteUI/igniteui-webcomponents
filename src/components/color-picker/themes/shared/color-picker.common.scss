@@ -1,0 +1,201 @@
+@use 'styles/utilities' as *;
+@use '../light/themes' as *;
+
+$theme: $material;
+
+:host {
+    --current-color: #000;
+    --hue-slider-track: linear-gradient(
+        to right,
+        red 0,
+        #ff0 16.66%,
+        #0f0 33.33%,
+        #0ff 50%,
+        #00f 66.66%,
+        #f0f 83.33%,
+        red 100%
+    );
+    --alpha-slider-track:
+        linear-gradient(90deg, rgb(0 0 0 / 0%), var(--current-color)),
+        repeating-linear-gradient(
+            45deg,
+            #aaa 25%,
+            transparent 25%,
+            transparent 75%,
+            #aaa 75%,
+            #aaa
+        ),
+        repeating-linear-gradient(
+            45deg,
+            #aaa 25%,
+            #fff 25%,
+            #fff 75%,
+            #aaa 75%,
+            #aaa
+        );
+    --alpha-track-position: 0 0, 0 0, 4px 4px;
+    --alpha-track-size: contain, 8px 8px, 8px 8px;
+
+    input[type='range'] {
+        background: transparent;
+        cursor: pointer;
+    }
+
+    [part='hue'] {
+        &::-webkit-slider-runnable-track {
+            border-radius: rem(4px);
+            background: var(--hue-slider-track);
+        }
+
+        &::-moz-range-track {
+            border-radius: rem(4px);
+            background: var(--hue-slider-track);
+        }
+    }
+
+    [part='alpha'] {
+        &::-webkit-slider-runnable-track {
+            border-radius: rem(4px);
+            background: none;
+            background-image: var(--alpha-slider-track);
+            background-position: var(--alpha-track-position);
+            background-size: var(--alpha-track-size);
+        }
+
+        &::-moz-range-track {
+            border-radius: rem(4px);
+            background: none;
+            background-image: var(--alpha-slider-track);
+            background-position: var(--alpha-track-position);
+            background-size: var(--alpha-track-size);
+        }
+    }
+
+    [part='hue'],
+    [part='alpha'] {
+        &::-webkit-slider-thumb {
+            border-radius: 50%;
+            background-color: var(--current-color);
+        }
+
+        &::-moz-range-thumb {
+            border-radius: 50%;
+            background-color: var(--current-color);
+        }
+    }
+
+    [part='picker'] {
+        box-shadow: var(--ig-elevation-3);
+    }
+
+    [part='copy'] {
+        &::part(base) {
+            background-color: var(--current-color);
+        }
+
+        &::part(icon) {
+            --foreground: contrast-color(var(--current-color));
+        }
+    }
+
+    [part='swatch'] {
+        border: rem(1px) solid #fff;
+        border-radius: 0.25rem;
+        cursor: pointer;
+    }
+
+    [part='label'] {
+        @include type-style('subtitle-1');
+    }
+
+    // Trigger
+    [part~='anchor'] {
+        border: rem(1px) solid var(--ig-gray-600);
+        border-radius: rem(4px);
+        background: transparent;
+        cursor: pointer;
+
+        &::before {
+            background: var(--background);
+            border: rem(1px) solid var(--ig-gray-300);
+            border-radius: rem(2px);
+        }
+    }
+
+    [part~='input-mode'] {
+        background: var(--background);
+    }
+
+    [part~='empty'] {
+        &::before {
+            background-image:
+                repeating-linear-gradient(
+                    45deg,
+                    #aaa 25%,
+                    transparent 25%,
+                    transparent 75%,
+                    #aaa 75%,
+                    #aaa
+                ),
+                repeating-linear-gradient(
+                    45deg,
+                    #aaa 25%,
+                    #fff 25%,
+                    #fff 75%,
+                    #aaa 75%,
+                    #aaa
+                );
+            background-position:
+                0 0,
+                4px 4px;
+            background-size: 8px 8px;
+        }
+    }
+}
+
+:host(:not([disabled])) {
+    [part~='anchor']:not([part~='input-mode']) {
+        &:hover {
+            background: color($color: gray, $variant: 500, $opacity: .2);
+        }
+
+        &:focus,
+        &:focus-visible {
+            outline: none;
+            background: color($color: gray, $variant: 500, $opacity: .16);
+
+            &:hover {
+                background: color($color: gray, $variant: 500, $opacity: .24);
+            }
+        }
+
+        &:active {
+            background: color($color: gray, $variant: 500, $opacity: .16);
+
+            &:focus {
+                background: color($color: gray, $variant: 500, $opacity: .32);
+            }
+        }
+    }
+
+    [part='label'] {
+        color: var(--ig-gray-900);
+        cursor: pointer;
+    }
+}
+
+:host([disabled]) {
+    [part~='anchor'] {
+        border-color: var(--ig-gray-300);
+        cursor: not-allowed;
+
+        &::before {
+            opacity: .3;
+        }
+    }
+
+    [part='label'] {
+        color: var(--ig-gray-500);
+        cursor: not-allowed;
+    }
+}

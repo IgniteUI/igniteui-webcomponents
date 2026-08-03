@@ -4,6 +4,7 @@ import { cache } from 'lit/directives/cache.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { createRef, ref } from 'lit/directives/ref.js';
 import { styleMap } from 'lit/directives/style-map.js';
+import { addThemingController } from '../../theming/theming-controller.js';
 import IgcButtonComponent from '../button/button.js';
 import IgcIconButtonComponent from '../button/icon-button.js';
 import {
@@ -45,6 +46,8 @@ import IgcPickerCanvasComponent, {
   type PickerCanvasEventDetail,
 } from './picker-canvas.js';
 import { styles } from './themes/color-picker.base.css.js';
+import { styles as shared } from './themes/shared/color-picker.common.css.js';
+import { all } from './themes/themes.js';
 import { colorPickerValidators } from './validators.js';
 
 export interface IgcColorPickerEventMap {
@@ -111,7 +114,7 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
   >(IgcBaseComboBoxComponent)
 ) {
   public static readonly tagName = 'igc-color-picker';
-  public static styles = styles;
+  public static styles = [styles, shared];
 
   /* blazorSuppress */
   public static register(): void {
@@ -138,6 +141,8 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
 
   protected readonly _slots = addSlotController(this, { slots: Slots });
 
+  private readonly _themes = addThemingController(this, all);
+
   protected override readonly _rootClickController = addRootClickController(
     this,
     {
@@ -153,7 +158,7 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
   private readonly _canvasRef = createRef<IgcPickerCanvasComponent>();
   private readonly _hueRef = createRef<HTMLInputElement>();
   private readonly _anchorRef = createRef<
-    IgcButtonComponent | IgcInputComponent
+    HTMLButtonElement | IgcInputComponent
   >();
 
   private _supportsEyeDropper = 'EyeDropper' in globalThis;
@@ -656,7 +661,7 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
     parts: ReturnType<typeof partMap>
   ): TemplateResult {
     return html`
-      <igc-button
+      <button
         ${ref(this._anchorRef)}
         id="trigger"
         aria-haspopup="dialog"
@@ -666,9 +671,27 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
         style=${bindIf(color, styleMap({ '--background': color }))}
         ?disabled=${this.disabled}
         @click=${this._handleAnchorClick}
+        type="button"
       >
         <igc-visually-hidden>Open color picker</igc-visually-hidden>
-      </igc-button>
+      </button>
+      <!--      TODO: DECIDE WHETHER WE ARE GOING TO USE SVG OR GRADIENT FOR THE TRANSPARENT GRID -->
+      <!--      <svg-->
+      <!--        slot="anchor"-->
+      <!--        width="800px"-->
+      <!--        height="800px"-->
+      <!--        viewBox="0 0 15 15"-->
+      <!--        fill="none"-->
+      <!--        xmlns="http://www.w3.org/2000/svg"-->
+      <!--      >-->
+      <!--        <path-->
+      <!--          opacity=".25"-->
+      <!--          fill-rule="evenodd"-->
+      <!--          clip-rule="evenodd"-->
+      <!--          d="M0 0H3V3H0V0ZM6 3H3V6H0V9H3V12H0V15H3V12H6V15H9V12H12V15H15V12H12V9H15V6H12V3H15V0H12V3H9V0H6V3ZM6 6V3H9V6H6ZM6 9H3V6H6V9ZM9 9V6H12V9H9ZM9 9H6V12H9V9Z"-->
+      <!--          fill="#000000"-->
+      <!--        />-->
+      <!--      </svg>-->
     `;
   }
 
@@ -682,6 +705,7 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
         aria-haspopup="dialog"
         aria-describedby="color-picker-helper-text"
         slot="anchor"
+        outlined
         label=${ifDefined(this.label)}
         ?required=${this.required}
         ?disabled=${this.disabled}
@@ -692,7 +716,7 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
         <div
           slot="prefix"
           part=${parts}
-          style=${styleMap({ padding: '1rem', background: color })}
+          style=${styleMap({ background: color })}
           @click=${this._handleAnchorClick}
         ></div>
       </igc-input>
@@ -735,11 +759,15 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
 
   protected override render(): TemplateResult {
     const color = this._color.asString('rgb', true);
-    const parts = partMap({ anchor: true, empty: this._color.isEmpty });
+    const parts = partMap({
+      anchor: true,
+      empty: this._color.isEmpty,
+      'input-mode': this.mode === 'input',
+    });
     const isDefaultMode = this.mode === 'default';
 
     return html`
-      <div>
+      <div part="color-picker">
         ${
           isDefaultMode && this.label
             ? html`<label part="label" for="trigger">${this.label}</label>`
