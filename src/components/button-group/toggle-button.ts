@@ -36,7 +36,7 @@ export default class IgcToggleButtonComponent extends LitElement {
   private readonly _nativeButton!: HTMLButtonElement;
 
   /**
-   * The value attribute of the control.
+   * The value of the control.
    * @attr
    */
   @property()

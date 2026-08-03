@@ -109,7 +109,7 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
 
   /* alternateName: displayType */
   /**
-   * The type attribute of the control.
+   * The type of the control.
    * @attr
    */
   @property({ reflect: true })
@@ -175,7 +175,7 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
   }
 
   /**
-   * The min attribute of the control.
+   * The minimum value the control accepts.
    * @attr
    */
   @property({ type: Number })
@@ -189,7 +189,7 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
   }
 
   /**
-   * The max attribute of the control.
+   * The maximum value the control accepts.
    * @attr
    */
   @property({ type: Number })
@@ -203,7 +203,7 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
   }
 
   /**
-   * The step attribute of the control.
+   * The granularity the value must adhere to.
    * @attr
    */
   @property({ type: Number })

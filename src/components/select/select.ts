@@ -191,7 +191,7 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
 
   /* @tsTwoWayProperty(true, "igcChange", "detail.value", false) */
   /**
-   * The value attribute of the control.
+   * The value of the control.
    * @attr
    */
   @property()
@@ -227,14 +227,14 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   public distance = 0;
 
   /**
-   * The label attribute of the control.
+   * The label of the control.
    * @attr
    */
   @property()
   public label!: string;
 
   /**
-   * The placeholder attribute of the control.
+   * The placeholder text of the control.
    * @attr
    */
   @property()

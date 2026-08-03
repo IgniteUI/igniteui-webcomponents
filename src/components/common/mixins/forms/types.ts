@@ -36,7 +36,7 @@ declare class BaseFormAssociatedElement {
   public invalid: boolean;
 
   /**
-   * The name attribute of the control.
+   * The name of the control, submitted with the form data.
    * @attr
    */
   public name: string;

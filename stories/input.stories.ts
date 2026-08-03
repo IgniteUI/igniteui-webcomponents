@@ -38,7 +38,7 @@ const metadata: Meta<IgcInputComponent> = {
     },
     type: {
       type: '"text" | "email" | "number" | "password" | "search" | "tel" | "url"',
-      description: 'The type attribute of the control.',
+      description: 'The type of the control.',
       options: ['text', 'email', 'number', 'password', 'search', 'tel', 'url'],
       control: { type: 'select' },
       table: { defaultValue: { summary: 'text' } },
@@ -72,12 +72,12 @@ const metadata: Meta<IgcInputComponent> = {
     },
     min: {
       type: 'number',
-      description: 'The min attribute of the control.',
+      description: 'The minimum value the control accepts.',
       control: 'number',
     },
     max: {
       type: 'number',
-      description: 'The max attribute of the control.',
+      description: 'The maximum value the control accepts.',
       control: 'number',
     },
     step: {
@@ -112,7 +112,7 @@ const metadata: Meta<IgcInputComponent> = {
     },
     name: {
       type: 'string',
-      description: 'The name attribute of the control.',
+      description: 'The name of the control, submitted with the form data.',
       control: 'text',
     },
     disabled: {
@@ -135,7 +135,7 @@ const metadata: Meta<IgcInputComponent> = {
     },
     placeholder: {
       type: 'string',
-      description: 'The placeholder attribute of the control.',
+      description: 'The placeholder text of the control.',
       control: 'text',
     },
     label: {
@@ -161,7 +161,7 @@ export default metadata;
 interface IgcInputArgs {
   /** The value of the control. */
   value: string;
-  /** The type attribute of the control. */
+  /** The type of the control. */
   type: 'text' | 'email' | 'number' | 'password' | 'search' | 'tel' | 'url';
   /** Makes the control a readonly field. */
   readOnly: boolean;
@@ -176,11 +176,11 @@ interface IgcInputArgs {
   minLength: number;
   /** The maximum string length of the control. */
   maxLength: number;
-  /** The min attribute of the control. */
+  /** The minimum value the control accepts. */
   min: number;
-  /** The max attribute of the control. */
+  /** The maximum value the control accepts. */
   max: number;
-  /** The step attribute of the control. */
+  /** The granularity the value must adhere to. */
   step: number;
   /** Whether the control should receive focus automatically. */
   autofocus: boolean;
@@ -193,7 +193,7 @@ interface IgcInputArgs {
   validateOnly: boolean;
   /** When set, makes the component a required field for validation. */
   required: boolean;
-  /** The name attribute of the control. */
+  /** The name of the control, submitted with the form data. */
   name: string;
   /** The disabled state of the component. */
   disabled: boolean;
@@ -201,7 +201,7 @@ interface IgcInputArgs {
   invalid: boolean;
   /** Whether the control will have outlined appearance. */
   outlined: boolean;
-  /** The placeholder attribute of the control. */
+  /** The placeholder text of the control. */
   placeholder: string;
   /** The label for the control. */
   label: string;

@@ -136,7 +136,7 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
   }
 
   /**
-   * The value attribute of the control.
+   * The value of the control.
    * @attr
    */
   @property()

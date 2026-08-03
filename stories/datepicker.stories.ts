@@ -129,7 +129,7 @@ const metadata: Meta<IgcDatePickerComponent> = {
     },
     placeholder: {
       type: 'string',
-      description: 'The placeholder attribute of the control.',
+      description: 'The placeholder text of the control.',
       control: 'text',
     },
     visibleMonths: {
@@ -278,7 +278,7 @@ interface IgcDatepickerArgs {
   hideOutsideDays: boolean;
   /** Whether the control will have outlined appearance. */
   outlined: boolean;
-  /** The placeholder attribute of the control. */
+  /** The placeholder text of the control. */
   placeholder: string;
   /** The number of months displayed in the calendar. */
   visibleMonths: number;

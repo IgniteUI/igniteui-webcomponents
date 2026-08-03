@@ -101,30 +101,30 @@ const metadata: Meta<IgcDateRangePickerComponent> = {
     },
     labelStart: {
       type: 'string',
-      description: 'The label attribute of the start input.',
+      description: 'The label of the start input.',
       control: 'text',
       table: { defaultValue: { summary: '' } },
     },
     labelEnd: {
       type: 'string',
-      description: 'The label attribute of the end input.',
+      description: 'The label of the end input.',
       control: 'text',
       table: { defaultValue: { summary: '' } },
     },
     placeholder: {
       type: 'string',
-      description: 'The placeholder attribute of the control (single input).',
+      description: 'The placeholder text of the control (single input).',
       control: 'text',
     },
     placeholderStart: {
       type: 'string',
-      description: 'The placeholder attribute of the start input.',
+      description: 'The placeholder text of the start input.',
       control: 'text',
       table: { defaultValue: { summary: '' } },
     },
     placeholderEnd: {
       type: 'string',
-      description: 'The placeholder attribute of the end input.',
+      description: 'The placeholder text of the end input.',
       control: 'text',
       table: { defaultValue: { summary: '' } },
     },
@@ -227,7 +227,7 @@ const metadata: Meta<IgcDateRangePickerComponent> = {
     },
     name: {
       type: 'string',
-      description: 'The name attribute of the control.',
+      description: 'The name of the control, submitted with the form data.',
       control: 'text',
     },
     disabled: {
@@ -311,15 +311,15 @@ interface IgcDateRangePickerArgs {
   outlined: boolean;
   /** The label of the control (single input). */
   label: string;
-  /** The label attribute of the start input. */
+  /** The label of the start input. */
   labelStart: string;
-  /** The label attribute of the end input. */
+  /** The label of the end input. */
   labelEnd: string;
-  /** The placeholder attribute of the control (single input). */
+  /** The placeholder text of the control (single input). */
   placeholder: string;
-  /** The placeholder attribute of the start input. */
+  /** The placeholder text of the start input. */
   placeholderStart: string;
-  /** The placeholder attribute of the end input. */
+  /** The placeholder text of the end input. */
   placeholderEnd: string;
   /** The prompt symbol to use for unfilled parts of the mask. */
   prompt: string;
@@ -365,7 +365,7 @@ interface IgcDateRangePickerArgs {
     | 'saturday';
   /** When set, makes the component a required field for validation. */
   required: boolean;
-  /** The name attribute of the control. */
+  /** The name of the control, submitted with the form data. */
   name: string;
   /** The disabled state of the component. */
   disabled: boolean;

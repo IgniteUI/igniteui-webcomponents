@@ -28,7 +28,7 @@ const metadata: Meta<IgcRadioComponent> = {
     },
     value: {
       type: 'string',
-      description: 'The value attribute of the control.',
+      description: 'The value of the control.',
       control: 'text',
     },
     checked: {
@@ -46,7 +46,7 @@ const metadata: Meta<IgcRadioComponent> = {
     },
     name: {
       type: 'string',
-      description: 'The name attribute of the control.',
+      description: 'The name of the control, submitted with the form data.',
       control: 'text',
     },
     disabled: {
@@ -76,13 +76,13 @@ export default metadata;
 interface IgcRadioArgs {
   /** When set, makes the component a required field for validation. */
   required: boolean;
-  /** The value attribute of the control. */
+  /** The value of the control. */
   value: string;
   /** The checked state of the control. */
   checked: boolean;
   /** The label position of the radio control. */
   labelPosition: 'after' | 'before';
-  /** The name attribute of the control. */
+  /** The name of the control, submitted with the form data. */
   name: string;
   /** The disabled state of the component. */
   disabled: boolean;

@@ -84,7 +84,7 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
     //#region Public properties and attributes
 
     /**
-     * The name attribute of the control.
+     * The name of the control, submitted with the form data.
      * @attr
      */
     @property({ reflect: true })

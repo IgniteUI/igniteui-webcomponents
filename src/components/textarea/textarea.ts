@@ -190,7 +190,7 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
   public outlined = false;
 
   /**
-   * The placeholder attribute of the control.
+   * The placeholder text of the control.
    *
    * @attr
    */

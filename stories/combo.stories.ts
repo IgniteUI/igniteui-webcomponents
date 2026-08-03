@@ -77,17 +77,17 @@ const metadata: Meta<IgcComboComponent> = {
     },
     label: {
       type: 'string',
-      description: 'The label attribute of the control.',
+      description: 'The label of the control.',
       control: 'text',
     },
     placeholder: {
       type: 'string',
-      description: 'The placeholder attribute of the control.',
+      description: 'The placeholder text of the control.',
       control: 'text',
     },
     placeholderSearch: {
       type: 'string',
-      description: 'The placeholder attribute of the search input.',
+      description: 'The placeholder text of the search input.',
       control: 'text',
     },
     valueKey: {
@@ -143,7 +143,7 @@ const metadata: Meta<IgcComboComponent> = {
     },
     name: {
       type: 'string',
-      description: 'The name attribute of the control.',
+      description: 'The name of the control, submitted with the form data.',
       control: 'text',
     },
     disabled: {
@@ -194,11 +194,11 @@ interface IgcComboArgs {
   autofocusList: boolean;
   /** Gets/Sets the locale used for getting language, affecting resource strings. */
   locale: string;
-  /** The label attribute of the control. */
+  /** The label of the control. */
   label: string;
-  /** The placeholder attribute of the control. */
+  /** The placeholder text of the control. */
   placeholder: string;
-  /** The placeholder attribute of the search input. */
+  /** The placeholder text of the search input. */
   placeholderSearch: string;
   /** The key in the data source used when selecting items. */
   valueKey: string;
@@ -216,7 +216,7 @@ interface IgcComboArgs {
   disableClear: boolean;
   /** When set, makes the component a required field for validation. */
   required: boolean;
-  /** The name attribute of the control. */
+  /** The name of the control, submitted with the form data. */
   name: string;
   /** The disabled state of the component. */
   disabled: boolean;

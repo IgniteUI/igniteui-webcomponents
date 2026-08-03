@@ -422,21 +422,21 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
   public label!: string;
 
   /**
-   * The label attribute of the start input.
+   * The label of the start input.
    * @attr label-start
    */
   @property({ attribute: 'label-start' })
   public labelStart = '';
 
   /**
-   * The label attribute of the end input.
+   * The label of the end input.
    * @attr label-end
    */
   @property({ attribute: 'label-end' })
   public labelEnd = '';
 
   /**
-   * The placeholder attribute of the control (single input).
+   * The placeholder text of the control (single input).
    * @attr
    */
   @property()
@@ -450,14 +450,14 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
   }
 
   /**
-   * The placeholder attribute of the start input.
+   * The placeholder text of the start input.
    * @attr placeholder-start
    */
   @property({ attribute: 'placeholder-start' })
   public placeholderStart = '';
 
   /**
-   * The placeholder attribute of the end input.
+   * The placeholder text of the end input.
    * @attr placeholder-end
    */
   @property({ attribute: 'placeholder-end' })

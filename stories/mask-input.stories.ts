@@ -74,7 +74,7 @@ const metadata: Meta<IgcMaskInputComponent> = {
     },
     name: {
       type: 'string',
-      description: 'The name attribute of the control.',
+      description: 'The name of the control, submitted with the form data.',
       control: 'text',
     },
     disabled: {
@@ -97,7 +97,7 @@ const metadata: Meta<IgcMaskInputComponent> = {
     },
     placeholder: {
       type: 'string',
-      description: 'The placeholder attribute of the control.',
+      description: 'The placeholder text of the control.',
       control: 'text',
     },
     label: {
@@ -144,7 +144,7 @@ interface IgcMaskInputArgs {
   readOnly: boolean;
   /** When set, makes the component a required field for validation. */
   required: boolean;
-  /** The name attribute of the control. */
+  /** The name of the control, submitted with the form data. */
   name: string;
   /** The disabled state of the component. */
   disabled: boolean;
@@ -152,7 +152,7 @@ interface IgcMaskInputArgs {
   invalid: boolean;
   /** Whether the control will have outlined appearance. */
   outlined: boolean;
-  /** The placeholder attribute of the control. */
+  /** The placeholder text of the control. */
   placeholder: string;
   /** The label for the control. */
   label: string;
