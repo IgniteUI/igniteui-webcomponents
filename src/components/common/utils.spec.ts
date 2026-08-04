@@ -489,6 +489,24 @@ export function checkDatesEqual(a: CalendarDay | Date, b: CalendarDay | Date) {
   expect(toCalendarDay(a).equalTo(toCalendarDay(b))).to.be.true;
 }
 
+export function suppressResizeObserverLoopError(): void {
+  const flag = '__igcSuppressResizeObserverLoopError__';
+  if (flag in window) {
+    return;
+  }
+
+  (window as unknown as Window & Record<string, boolean>)[flag] = true;
+  // Suppress ResizeObserver loop errors that can occur during tests.
+  // These are benign and do not affect test correctness.
+  const errorHandler = window.onerror;
+  window.onerror = (message, ...args) => {
+    if (typeof message === 'string' && /ResizeObserver loop/.test(message)) {
+      return true;
+    }
+    return errorHandler ? errorHandler(message, ...args) : false;
+  };
+}
+
 export interface ExternalLabelAssociationConfig {
   /** The host custom element tag name (e.g. `igc-select`). */
   tagName: string;

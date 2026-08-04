@@ -45,7 +45,6 @@
     }
 }
 
-
 [part='list-wrapper'] {
     @include border-radius(rem(4px));
 
@@ -79,7 +78,7 @@
 }
 
 [part='list'] {
-    min-height: calc(var(--size) * var(--item-count)) !important;
+    height: calc(var(--size) * var(--item-count));
     outline-style: none;
 }
 
