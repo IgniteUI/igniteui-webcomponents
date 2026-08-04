@@ -42,7 +42,7 @@ type DefaultChatRenderers = {
 };
 
 /**
- * Defines the custom events dispatched by the `<igc-chat>` component.
+ * Defines the custom events dispatched by the chat component.
  */
 export interface IgcChatComponentEventMap {
   /**

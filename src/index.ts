@@ -74,6 +74,16 @@ export { default as IgcTooltipComponent } from './components/tooltip/tooltip.js'
 export { default as IgcThemeProviderComponent } from './components/theme-provider/theme-provider.js';
 export { default as IgcBreadcrumbsComponent } from './components/breadcrumb/breadcrumbs.js';
 export { default as IgcBreadcrumbComponent } from './components/breadcrumb/breadcrumb.js';
+export { default as IgcVirtualScrollComponent } from './components/virtualization/virtualization.js';
+export type {
+  IgcVirtualScrollComponentEventMap,
+  VirtualScrollItemTemplate,
+} from './components/virtualization/virtualization.js';
+export type {
+  VirtualScrollItemContext,
+  VirtualScrollState,
+  VirtualScrollDataRequest,
+} from './components/virtualization/types.js';
 
 // definitions
 export { defineComponents } from './components/common/definitions/defineComponents.js';
@@ -197,7 +207,10 @@ export type {
   GroupingDirection,
   IgcComboChangeEventArgs,
 } from './components/combo/types.js';
-export type { IconMeta } from './components/icon/registry/types.js';
+export type {
+  IconMeta,
+  RegisterIconOptions,
+} from './components/icon/registry/types.js';
 export type * from './components/chat/types.js';
 
 // Internal exports for other packages

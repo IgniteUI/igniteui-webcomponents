@@ -56,7 +56,7 @@ type KeyBindingTrigger = 'keydown' | 'keyup';
 
 /**
  * Configuration object for the controller.
- * @ignore
+ * @hidden
  */
 interface KeyBindingControllerOptions {
   /**
@@ -124,6 +124,7 @@ interface KeyBindingOptions {
   stopPropagation?: boolean;
 }
 
+/** @hidden */
 interface KeyBinding {
   keys: string[];
   handler: KeyBindingHandler;
@@ -184,7 +185,7 @@ function createCombinationKey(keys: string[], modifiers: string[]): string {
  *
  * The controller listens for keyboard events on the host element (or an optionally specified element) and invokes the appropriate handlers
  * when the registered key combinations are detected.
- *
+ * @hidden
  */
 class KeyBindingController implements ReactiveController {
   //#region Private properties and state

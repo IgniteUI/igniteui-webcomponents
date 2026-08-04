@@ -31,7 +31,7 @@ const metadata: Meta<IgcDropdownComponent> = {
   title: 'Dropdown',
   component: 'igc-dropdown',
   parameters: {
-    docs: { description: { component: 'Represents a DropDown component.' } },
+    docs: { description: { component: 'Represents a Dropdown component.' } },
     actions: {
       handles: [
         'igcChange',

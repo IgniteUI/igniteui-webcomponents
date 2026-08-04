@@ -28,7 +28,7 @@ import { all } from './themes/themes.js';
  * - Registered dynamically using `registerIcon` or `registerIconFromText`
  * - Referenced by aliases that resolve differently based on the active theme
  *
- * Icons automatically adapt to the current theme when used within an `igc-theme-provider`.
+ * Icons automatically adapt to the current theme when used within a theme provider.
  * The component subscribes to the icon registry and updates automatically when icons
  * are registered or references are updated.
  *
@@ -203,9 +203,10 @@ export default class IgcIconComponent extends LitElement {
   protected async registerIcon(
     name: string,
     url: string,
-    collection = 'default'
+    collection = 'default',
+    stripMeta = false
   ) {
-    await registerIcon_impl(name, url, collection);
+    await registerIcon_impl(name, url, { collection, stripMeta });
   }
 
   /* c8 ignore next 8 */
@@ -213,9 +214,10 @@ export default class IgcIconComponent extends LitElement {
   protected registerIconFromText(
     name: string,
     iconText: string,
-    collection = 'default'
+    collection = 'default',
+    stripMeta = false
   ) {
-    registerIconFromText_impl(name, iconText, collection);
+    registerIconFromText_impl(name, iconText, { collection, stripMeta });
   }
 
   /* c8 ignore next 4 */

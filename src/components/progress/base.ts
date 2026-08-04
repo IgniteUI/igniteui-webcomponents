@@ -8,6 +8,7 @@ import { partMap } from '../common/part-map.js';
 import { asPercent, clamp, formatString } from '../common/util.js';
 import type { StyleVariant } from '../types.js';
 
+/* omitModule */
 export abstract class IgcProgressBaseComponent extends LitElement {
   private readonly _internals = addInternalsController(this, {
     initialARIA: {

@@ -12,7 +12,7 @@ import { styles as shared } from './themes/shared/radio-group.common.css.js';
 import { all } from './themes/themes.js';
 
 /**
- * The igc-radio-group component unifies one or more igc-radio buttons.
+ * Unifies one or more radio components into a single group.
  *
  * @element igc-radio-group
  *
@@ -64,7 +64,7 @@ export default class IgcRadioGroupComponent extends LitElement {
   }
 
   /**
-   * Gets/Sets the name for all child igc-radio components.
+   * The name applied to all radio buttons in the group.
    * @attr
    */
   @property({ reflect: true })
@@ -79,7 +79,8 @@ export default class IgcRadioGroupComponent extends LitElement {
 
   /* @tsTwoWayProperty(true, "igcChange", "detail.value", false) */
   /**
-   * Gets/Sets the checked igc-radio element that matches `value`
+   * The value of the group, reflecting the value of the currently checked radio button.
+   * Setting it checks the radio button in the group with a matching value.
    * @attr
    */
   @property()

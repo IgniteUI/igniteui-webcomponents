@@ -35,7 +35,7 @@ const metadata: Meta<IgcSliderComponent> = {
     },
     name: {
       type: 'string',
-      description: 'The name attribute of the control.',
+      description: 'The name of the control, submitted with the form data.',
       control: 'text',
     },
     disabled: {
@@ -168,7 +168,7 @@ export default metadata;
 interface IgcSliderArgs {
   /** The current value of the component. */
   value: number;
-  /** The name attribute of the control. */
+  /** The name of the control, submitted with the form data. */
   name: string;
   /** The disabled state of the component. */
   disabled: boolean;

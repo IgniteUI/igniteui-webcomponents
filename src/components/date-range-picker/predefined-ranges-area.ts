@@ -22,7 +22,7 @@ import { styles as shared } from './themes/shared/predefined-ranges-area.common.
 
 /* blazorSuppress */
 /**
- * The predefined ranges area component is used within the `igc-date-range picker` element and it
+ * The predefined ranges area component is used within the date range picker and it
  * displays a set of chips with predefined date ranges. The component allows users to quickly select
  * a predefined date range value. Users can also provide custom ranges to be displayed as chips.
  *

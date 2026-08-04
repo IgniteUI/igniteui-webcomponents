@@ -8,9 +8,32 @@ import type {
   IconCallback,
   IconMeta,
   IconReferencePair,
+  RegisterIconOptions,
   SvgIcon,
 } from './registry/types.js';
 import { ActionType } from './registry/types.js';
+
+/**
+ * Resolves the stripMeta argument of `registerIcon` / `registerIconFromText`.
+ *
+ * Accepts either the plain-string collection name **or** the
+ * {@link RegisterIconOptions} object, and always returns a fully-resolved
+ * options record so call-sites do not need to branch.
+ *
+ * @internal
+ */
+function resolveIconOptions(
+  collectionOrOptions?: string | RegisterIconOptions
+): Required<RegisterIconOptions> {
+  if (typeof collectionOrOptions === 'string') {
+    return { collection: collectionOrOptions, stripMeta: false };
+  }
+
+  return {
+    collection: collectionOrOptions?.collection ?? 'default',
+    stripMeta: collectionOrOptions?.stripMeta ?? false,
+  };
+}
 
 /**
  * Global singleton registry for managing SVG icons and their references.
@@ -62,6 +85,8 @@ class IconsRegistry {
    * @param name - The unique name for the icon within its collection
    * @param iconText - The SVG markup as a string
    * @param collection - The collection to register the icon in (default: 'default')
+   * @param stripMeta - When `true`, strips `<title>` and `<desc>` elements from
+   *   the SVG before storing it (see {@link RegisterIconOptions.stripMeta}).
    *
    * @remarks
    * This method:
@@ -75,9 +100,10 @@ class IconsRegistry {
   public register(
     name: string,
     iconText: string,
-    collection = 'default'
+    collection = 'default',
+    stripMeta = false
   ): void {
-    const svgIcon = this._svgIconParser.parse(iconText);
+    const svgIcon = this._svgIconParser.parse(iconText, stripMeta);
     this._collections.getOrCreate(collection).set(name, svgIcon);
 
     const icons = createIconDefaultMap<string, SvgIcon>();
@@ -292,36 +318,61 @@ export function getIconRegistry() {
  *
  * @param name - The unique name for the icon
  * @param url - The URL to fetch the SVG icon from
- * @param collection - The collection to register the icon in (default: 'default')
+ * @param collection - The collection to register the icon in (default: `'default'`)
+ *
+ * @returns A promise that resolves when the icon is registered
+ *
+ * @throws If the HTTP request fails or returns a non-OK status
+ */
+export async function registerIcon(
+  name: string,
+  url: string,
+  collection?: string
+): Promise<void>;
+
+/**
+ * Registers an icon by fetching it from a URL.
+ *
+ * @param name - The unique name for the icon
+ * @param url - The URL to fetch the SVG icon from
+ * @param options - Registration options: target collection and/or `stripMeta`
  *
  * @returns A promise that resolves when the icon is registered
  *
  * @throws If the HTTP request fails or returns a non-OK status
  *
  * @remarks
- * This function fetches SVG content from the provided URL and registers it
- * in the icon registry. The icon becomes immediately available to all icon
- * components in the application.
+ * This overload accepts a {@link RegisterIconOptions} object so you can control
+ * the target collection **and** opt into SVG meta stripping in one call:
  *
- * @example
  * ```typescript
- * // Register an icon from a URL
- * await registerIcon('custom-icon', '/assets/icons/custom.svg');
+ * // Strip <title>/<desc> to prevent browser-native tooltips on hover
+ * await registerIcon('home', '/icons/home.svg', { stripMeta: true });
  *
- * // Use in HTML
- * // <igc-icon name="custom-icon"></igc-icon>
+ * // Or with a custom collection:
+ * await registerIcon('home', '/icons/home.svg', {
+ *   collection: 'my-lib',
+ *   stripMeta: true,
+ * });
  * ```
  */
 export async function registerIcon(
   name: string,
   url: string,
-  collection = 'default'
-) {
+  options?: RegisterIconOptions
+): Promise<void>;
+
+export async function registerIcon(
+  name: string,
+  url: string,
+  collectionOrOptions?: string | RegisterIconOptions
+): Promise<void> {
+  const { collection, stripMeta } = resolveIconOptions(collectionOrOptions);
   const response = await fetch(url);
 
   if (response.ok) {
     const value = await response.text();
-    getIconRegistry().register(name, value, collection);
+    getIconRegistry().register(name, value, collection, stripMeta);
   } else {
     throw new Error(`Icon request failed. Status: ${response.status}.`);
   }
@@ -332,32 +383,52 @@ export async function registerIcon(
  *
  * @param name - The unique name for the icon
  * @param iconText - The SVG markup as a string
- * @param collection - The collection to register the icon in (default: 'default')
+ * @param collection - The collection to register the icon in (default: `'default'`)
+ *
+ * @throws If the SVG text is malformed or doesn't contain an SVG element
+ */
+export function registerIconFromText(
+  name: string,
+  iconText: string,
+  collection?: string
+): void;
+
+/**
+ * Registers an icon from SVG text content.
+ *
+ * @param name - The unique name for the icon
+ * @param iconText - The SVG markup as a string
+ * @param options - Registration options: target collection and/or `stripMeta`
  *
  * @throws If the SVG text is malformed or doesn't contain an SVG element
  *
  * @remarks
- * This is the preferred method for registering icons when you have the SVG
- * content directly (e.g., from a bundled asset or inline string). The icon
- * becomes immediately available to all icon components.
+ * This overload accepts a {@link RegisterIconOptions} object so you can control
+ * the target collection **and** opt into SVG meta stripping in one call:
  *
- * The SVG text is parsed to extract viewBox, title, and other metadata.
- *
- * @example
  * ```typescript
- * const iconSvg = '<svg viewBox="0 0 24 24"><path d="..."/></svg>';
- * registerIconFromText('my-icon', iconSvg, 'custom');
+ * const iconSvg = '<svg viewBox="0 0 24 24"><title>Home</title><path d="..."/></svg>';
  *
- * // Use in HTML
- * // <igc-icon name="my-icon" collection="custom"></igc-icon>
+ * // Strip <title>/<desc> to prevent browser-native tooltips on hover
+ * registerIconFromText('home', iconSvg, { stripMeta: true });
+ *
+ * // Or with a custom collection:
+ * registerIconFromText('home', iconSvg, { collection: 'my-lib', stripMeta: true });
  * ```
  */
 export function registerIconFromText(
   name: string,
   iconText: string,
-  collection = 'default'
-) {
-  getIconRegistry().register(name, iconText, collection);
+  options?: RegisterIconOptions
+): void;
+
+export function registerIconFromText(
+  name: string,
+  iconText: string,
+  collectionOrOptions?: string | RegisterIconOptions
+): void {
+  const { collection, stripMeta } = resolveIconOptions(collectionOrOptions);
+  getIconRegistry().register(name, iconText, collection, stripMeta);
 }
 
 /**
