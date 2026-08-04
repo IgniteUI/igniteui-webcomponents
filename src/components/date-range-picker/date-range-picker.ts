@@ -78,6 +78,7 @@ export interface DateRangeValue {
 }
 
 /* jsonAPIPlainObject */
+/** A predefined date range with label for {@link IgcDateRangePickerComponent.customRanges} */
 export interface CustomDateRange {
   label: string;
   dateRange: DateRangeValue;
@@ -99,7 +100,7 @@ let nextId = 1;
 /* blazorIndirectRender */
 /* blazorSupportsVisualChildren */
 /**
- * The igc-date-range-picker allows the user to select a range of dates.
+ * The Date Range Picker includes a text input and a calendar pop-up, allowing users to easily select start and end dates.
  *
  * @element igc-date-range-picker
  *
@@ -130,10 +131,10 @@ let nextId = 1;
  * @slot actions - Renders content in the action part of the picker in open state.
  * @slot separator - Renders the separator element between the two inputs.
  *
- * @fires igcOpening - Emitted just before the calendar dropdown is shown.
- * @fires igcOpened - Emitted after the calendar dropdown is shown.
- * @fires igcClosing - Emitted just before the calendar dropdown is hidden.
- * @fires igcClosed - Emitted after the calendar dropdown is hidden.
+ * @fires igcOpening - Emitted just before the calendar popover is shown.
+ * @fires igcOpened - Emitted after the calendar popover is shown.
+ * @fires igcClosing - Emitted just before the calendar popover is hidden.
+ * @fires igcClosed - Emitted after the calendar popover is hidden.
  * @fires igcChange - Emitted when the user modifies and commits the elements's value.
  * @fires igcInput - Emitted when when the user types in the element.
  *
@@ -422,21 +423,21 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
   public label!: string;
 
   /**
-   * The label attribute of the start input.
+   * The label of the start input.
    * @attr label-start
    */
   @property({ attribute: 'label-start' })
   public labelStart = '';
 
   /**
-   * The label attribute of the end input.
+   * The label of the end input.
    * @attr label-end
    */
   @property({ attribute: 'label-end' })
   public labelEnd = '';
 
   /**
-   * The placeholder attribute of the control (single input).
+   * The placeholder text of the control (single input).
    * @attr
    */
   @property()
@@ -450,14 +451,14 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
   }
 
   /**
-   * The placeholder attribute of the start input.
+   * The placeholder text of the start input.
    * @attr placeholder-start
    */
   @property({ attribute: 'placeholder-start' })
   public placeholderStart = '';
 
   /**
-   * The placeholder attribute of the end input.
+   * The placeholder text of the end input.
    * @attr placeholder-end
    */
   @property({ attribute: 'placeholder-end' })

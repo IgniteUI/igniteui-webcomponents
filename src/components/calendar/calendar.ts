@@ -187,7 +187,7 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
   //#region Public attributes and properties
 
   /**
-   * Whether to show the dates that do not belong to the current active month.
+   * Whether to hide the dates that do not belong to the current active month.
    * @attr hide-outside-days
    * @default false
    */

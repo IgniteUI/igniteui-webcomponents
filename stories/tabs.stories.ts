@@ -20,7 +20,7 @@ const metadata: Meta<IgcTabsComponent> = {
     docs: {
       description: {
         component:
-          'Tabs organize and allow navigation between groups of content that are related and at the same level of hierarchy.\n\nThe `<igc-tabs>` component allows the user to navigate between multiple `<igc-tab>` elements.\nIt supports keyboard navigation and provides API methods to control the selected tab.',
+          'Tabs organize and allow navigation between groups of content that are related and at the same level of hierarchy.\n\nThe tabs component allows the user to navigate between multiple tab children.\nIt supports keyboard navigation and provides API methods to control the selected tab.',
       },
     },
     actions: { handles: ['igcChange'] },

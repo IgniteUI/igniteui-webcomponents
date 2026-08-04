@@ -43,12 +43,22 @@ export const DEFAULT_DATE_PARTS_SPIN_DELTAS = Object.freeze<DatePartDeltas>({
   seconds: 1,
 });
 
+/**
+ * The amounts by which each date or time part is incremented or decremented on
+ * a step action in date-time input; every part defaults to `1`.
+ */
 export interface DatePartDeltas {
+  /** The number of days the date part is spun by. */
   date?: number;
+  /** The number of months the month part is spun by. */
   month?: number;
+  /** The number of years the year part is spun by. */
   year?: number;
+  /** The number of hours the hours part is spun by. */
   hours?: number;
+  /** The number of minutes the minutes part is spun by. */
   minutes?: number;
+  /** The number of seconds the seconds part is spun by. */
   seconds?: number;
 }
 

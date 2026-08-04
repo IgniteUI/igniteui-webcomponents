@@ -291,7 +291,7 @@ export default class IgcComboComponent<
   }
 
   /**
-   * The outlined attribute of the control.
+   * Whether the control has an outlined appearance.
    * @attr outlined
    * @default false
    */
@@ -322,7 +322,7 @@ export default class IgcComboComponent<
   }
 
   /**
-   * The autofocus attribute of the control.
+   * Whether the control should receive focus automatically.
    * @attr autofocus
    */
   @property({ type: Boolean })
@@ -351,21 +351,21 @@ export default class IgcComboComponent<
   }
 
   /**
-   * The label attribute of the control.
+   * The label of the control.
    * @attr label
    */
   @property()
   public label?: string;
 
   /**
-   * The placeholder attribute of the control.
+   * The placeholder text of the control.
    * @attr placeholder
    */
   @property()
   public placeholder?: string;
 
   /**
-   * The placeholder attribute of the search input.
+   * The placeholder text of the search input.
    * @attr placeholder-search
    */
   @property({ attribute: 'placeholder-search' })
@@ -503,8 +503,8 @@ export default class IgcComboComponent<
 
   /**
    * Sets the value (selected items). The passed value must be a valid JSON array.
-   * If the data source is an array of complex objects, the `valueKey` attribute must be set.
-   * Note that when `displayKey` is not explicitly set, it will fall back to the value of `valueKey`.
+   * If the data source is an array of complex objects, the `valueKey` must be set.
+   * Note that when `displayKey` is not explicitly set, it falls back to the value of `valueKey`.
    *
    * @attr value
    *

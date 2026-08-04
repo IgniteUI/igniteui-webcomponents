@@ -10,7 +10,7 @@ import { all } from './themes/tab-themes.js';
 let nextId = 1;
 
 /**
- * A tab element slotted into an `igc-tabs` container.
+ * A tab nested in a tabs component.
  *
  * @element igc-tab
  *
