@@ -192,7 +192,7 @@ export type { IgcRangeSliderValueEventArgs } from './components/slider/range-sli
 export type {
   IgcSplitterResizeEventArgs,
   IgcSplitterResizeEventDetail,
-  IgcSplitterExpansionChangedEventArgs,
+  IgcSplitterLayoutChangedEventArgs,
 } from './components/splitter/splitter.js';
 export type {
   IgcActiveStepChangingEventArgs,

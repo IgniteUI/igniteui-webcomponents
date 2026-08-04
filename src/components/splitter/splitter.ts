@@ -35,7 +35,7 @@ import { styles } from './themes/splitter.base.css.js';
 import { all } from './themes/themes.js';
 import type {
   IgcSplitterComponentEventMap,
-  IgcSplitterExpansionChangedEventArgs,
+  IgcSplitterLayoutChangedEventArgs,
   IgcSplitterResizeEventArgs,
   IgcSplitterResizeEventDetail,
   PanePosition,
@@ -118,8 +118,8 @@ const DEFAULT_RESIZE_STATE: SplitterResizeState = {
  * @fires igcResizeStart - Emitted once when a resize operation begins (pointer drag or keyboard).
  * @fires igcResizing - Emitted continuously while a pane is being resized.
  * @fires igcResizeEnd - Emitted once when a resize operation completes.
- * @fires igcExpansionChanged - Emitted when a pane's collapsed state changes due to user interaction
- * (collapse/expand button click or Ctrl+Arrow keyboard shortcut).
+ * @fires igcLayoutChanged - Emitted after a user-driven resize or expansion change, with a full
+ * snapshot of the current layout (pane sizes and collapsed states).
  *
  * @slot start - Content projected into the start (left/top) panel.
  * @slot end - Content projected into the end (right/bottom) panel.
@@ -194,7 +194,6 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
 
   /**
    * The orientation of the splitter, which determines the direction of resizing and collapsing.
-   *
    * @attr orientation
    * @default 'horizontal'
    */
@@ -204,7 +203,6 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   /**
    * When true, prevents the user from collapsing either pane.
    * This also hides the expand/collapse buttons on the splitter bar.
-   *
    * @attr disable-collapse
    * @default false
    */
@@ -214,7 +212,6 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   /**
    * When true, prevents the user from resizing the panes by dragging the splitter bar or using keyboard shortcuts.
    * This also hides the drag handle on the splitter bar.
-   *
    * @attr disable-resize
    * @default false
    */
@@ -226,7 +223,6 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
    *
    * Note that the buttons will also be hidden if `disable-collapse` is true or
    * if a pane is currently collapsed.
-   *
    * @attr hide-collapse-buttons
    * @default false
    */
@@ -241,7 +237,6 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
    * When true, hides the drag handle on the splitter bar.
    *
    * Note that the drag handle will also be hidden if `disable-resize` is true.
-   *
    * @attr hide-drag-handle
    * @default false
    */
@@ -257,7 +252,6 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
    *
    * Accepts a CSS length, e.g. `100px` or `20%`. Setting `auto`, a negative
    * value, or a percentage above 100 removes the constraint.
-   *
    * @attr start-min-size
    */
   @property({ attribute: 'start-min-size' })
@@ -274,7 +268,6 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
    *
    * Accepts a CSS length, e.g. `100px` or `20%`. Setting `auto`, a negative
    * value, or a percentage above 100 removes the constraint.
-   *
    * @attr end-min-size
    */
   @property({ attribute: 'end-min-size' })
@@ -291,7 +284,6 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
    *
    * Accepts a CSS length, e.g. `500px` or `80%`. Setting `auto`, a negative
    * value, or a percentage above 100 removes the constraint.
-   *
    * @attr start-max-size
    */
   @property({ attribute: 'start-max-size' })
@@ -308,7 +300,6 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
    *
    * Accepts a CSS length, e.g. `500px` or `80%`. Setting `auto`, a negative
    * value, or a percentage above 100 removes the constraint.
-   *
    * @attr end-max-size
    */
   @property({ attribute: 'end-max-size' })
@@ -325,7 +316,6 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
    *
    * Accepts a CSS length, e.g. `200px` or `50%`. Setting `auto`, a negative
    * value, or a percentage above 100 falls back to automatic sizing.
-   *
    * @attr start-size
    */
   @property({ attribute: 'start-size' })
@@ -342,7 +332,6 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
    *
    * Accepts a CSS length, e.g. `200px` or `50%`. Setting `auto`, a negative
    * value, or a percentage above 100 falls back to automatic sizing.
-   *
    * @attr end-size
    */
   @property({ attribute: 'end-size' })
@@ -356,7 +345,6 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
 
   /**
    * Gets/sets the collapsed state of the start pane.
-   *
    * @attr start-collapsed
    * @default false
    */
@@ -371,7 +359,6 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
 
   /**
    * Gets/sets the collapsed state of the end pane.
-   *
    * @attr end-collapsed
    * @default false
    */
@@ -540,9 +527,11 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   }
 
   private _savePaneSizes(): void {
-    // Guard against saving degenerate sizes when the splitter hasn't been laid out yet
-    // (e.g. a collapsed state is set programmatically before the first render/layout).
+    // Layout not measurable yet (e.g. collapsed state set before first render) -
+    // preserve the explicit size instead of losing it to the 'auto' reset below.
     if (this._getTotalSize() === 0) {
+      this._startPaneState.savedSize = this._startPaneState.size;
+      this._endPaneState.savedSize = this._endPaneState.size;
       return;
     }
     this._startPaneState.savedSize = `${this._paneRectAsPercent(0)}%`;
@@ -718,12 +707,26 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
 
   private _toggleWithEvent(position: PanePosition): void {
     this.toggle(position);
+    this._emitLayoutChanged();
+  }
 
-    const detail: IgcSplitterExpansionChangedEventArgs = {
-      pane: position,
-      expanded: !this._isCollapsed(position),
+  // While any pane is collapsed, both sizes are forced to 'auto' for rendering,
+  // so report the pre-collapse sizes instead - what a consumer needs to restore layout.
+  private _reportedSize(pane: PanePosition): string {
+    const state = this._getPaneState(pane);
+    return (
+      (this._collapsedPane !== null ? state.savedSize : state.size) ?? 'auto'
+    );
+  }
+
+  private _emitLayoutChanged(): void {
+    const detail: IgcSplitterLayoutChangedEventArgs = {
+      startSize: this._reportedSize('start'),
+      endSize: this._reportedSize('end'),
+      startCollapsed: this.startCollapsed,
+      endCollapsed: this.endCollapsed,
     };
-    this.emitEvent('igcExpansionChanged', { detail });
+    this.emitEvent('igcLayoutChanged', { detail });
   }
 
   private _handleArrowsExpandCollapse(
@@ -844,6 +847,7 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
         delta,
       },
     });
+    this._emitLayoutChanged();
   }
 
   private _rectSize(): [number, number] {
@@ -1072,7 +1076,7 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
 
 export type {
   IgcSplitterComponentEventMap,
-  IgcSplitterExpansionChangedEventArgs,
+  IgcSplitterLayoutChangedEventArgs,
   IgcSplitterResizeEventArgs,
   IgcSplitterResizeEventDetail,
 };

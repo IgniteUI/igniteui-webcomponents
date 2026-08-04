@@ -704,7 +704,7 @@ describe('Splitter', () => {
       expect(splitter.matches(':state(start-collapsed)')).to.be.true;
     });
 
-    it('should update startCollapsed/endCollapsed when toggle is invoked, without emitting igcExpansionChanged', async () => {
+    it('should update startCollapsed/endCollapsed when toggle is invoked, without emitting igcLayoutChanged', async () => {
       const eventSpy = spy(splitter, 'emitEvent');
 
       splitter.toggle('start');
@@ -717,7 +717,7 @@ describe('Splitter', () => {
       expect(splitter.startCollapsed).to.be.false;
       expect(splitter.endCollapsed).to.be.true;
 
-      expect(eventSpy.calledWith('igcExpansionChanged')).to.be.false;
+      expect(eventSpy.calledWith('igcLayoutChanged')).to.be.false;
     });
 
     it('should restore pane sizes as percentages after collapse then expand', async () => {
@@ -835,16 +835,27 @@ describe('Splitter', () => {
       expect(parts.endExpander).to.be.null;
     });
 
-    it('should emit igcExpansionChanged when a collapse/expand button is clicked', async () => {
+    it('should emit igcLayoutChanged when a collapse/expand button is clicked', async () => {
       const eventSpy = spy(splitter, 'emitEvent');
+      const totalSize = getTotalSize(splitter, 'width');
       let parts = getButtonParts(splitter);
+
+      let { startSize: preCollapseStart, endSize: preCollapseEnd } =
+        getPanesSizes(splitter, 'width');
+      let expectedStartPercent = `${roundPrecise((preCollapseStart / totalSize) * 100, 0)}%`;
+      let expectedEndPercent = `${roundPrecise((preCollapseEnd / totalSize) * 100, 0)}%`;
 
       simulatePointerDown(parts.startCollapseBtn, { bubbles: true });
       await elementUpdated(splitter);
       await nextFrame();
 
-      expect(eventSpy).calledOnceWith('igcExpansionChanged', {
-        detail: { pane: 'start', expanded: false },
+      expect(eventSpy).calledWith('igcLayoutChanged', {
+        detail: {
+          startSize: expectedStartPercent,
+          endSize: expectedEndPercent,
+          startCollapsed: true,
+          endCollapsed: false,
+        },
       });
       expect(splitter.startCollapsed).to.be.true;
 
@@ -855,25 +866,42 @@ describe('Splitter', () => {
       await elementUpdated(splitter);
       await nextFrame();
 
-      expect(eventSpy).calledOnceWith('igcExpansionChanged', {
-        detail: { pane: 'start', expanded: true },
+      expect(eventSpy).calledWith('igcLayoutChanged', {
+        detail: {
+          startSize: splitter.startSize,
+          endSize: splitter.endSize,
+          startCollapsed: false,
+          endCollapsed: false,
+        },
       });
       expect(splitter.startCollapsed).to.be.false;
 
       eventSpy.resetHistory();
       parts = getButtonParts(splitter);
 
+      ({ startSize: preCollapseStart, endSize: preCollapseEnd } = getPanesSizes(
+        splitter,
+        'width'
+      ));
+      expectedStartPercent = `${roundPrecise((preCollapseStart / totalSize) * 100, 0)}%`;
+      expectedEndPercent = `${roundPrecise((preCollapseEnd / totalSize) * 100, 0)}%`;
+
       simulatePointerDown(parts.endCollapseBtn, { bubbles: true });
       await elementUpdated(splitter);
       await nextFrame();
 
-      expect(eventSpy).calledOnceWith('igcExpansionChanged', {
-        detail: { pane: 'end', expanded: false },
+      expect(eventSpy).calledWith('igcLayoutChanged', {
+        detail: {
+          startSize: expectedStartPercent,
+          endSize: expectedEndPercent,
+          startCollapsed: false,
+          endCollapsed: true,
+        },
       });
       expect(splitter.endCollapsed).to.be.true;
     });
 
-    it('should not emit igcExpansionChanged when startCollapsed/endCollapsed are set directly', async () => {
+    it('should not emit igcLayoutChanged when startCollapsed/endCollapsed are set directly', async () => {
       const eventSpy = spy(splitter, 'emitEvent');
 
       splitter.startCollapsed = true;
@@ -883,7 +911,7 @@ describe('Splitter', () => {
       splitter.endCollapsed = true;
       await elementUpdated(splitter);
 
-      expect(eventSpy.calledWith('igcExpansionChanged')).to.be.false;
+      expect(eventSpy.calledWith('igcLayoutChanged')).to.be.false;
     });
 
     it('should set tabindex correctly on the bar based on interactivity', async () => {
@@ -1357,25 +1385,41 @@ describe('Splitter', () => {
       expect(bar.getAttribute('tabindex')).to.equal('0');
     });
 
-    it('should emit igcExpansionChanged when collapsing/expanding via Ctrl + arrow keys', async () => {
+    it('should emit igcLayoutChanged when collapsing/expanding via Ctrl + arrow keys', async () => {
       const eventSpy = spy(splitter, 'emitEvent');
       const bar = getSplitterPart(splitter, BAR_PART);
       bar.focus();
       await elementUpdated(splitter);
 
+      const totalSize = getTotalSize(splitter, 'width');
+      const { startSize: preCollapseStart, endSize: preCollapseEnd } =
+        getPanesSizes(splitter, 'width');
+      const expectedStartPercent = `${roundPrecise((preCollapseStart / totalSize) * 100, 0)}%`;
+      const expectedEndPercent = `${roundPrecise((preCollapseEnd / totalSize) * 100, 0)}%`;
+
       simulateKeyboard(bar, [ctrlKey, arrowLeft]);
       await elementUpdated(splitter);
 
-      expect(eventSpy).calledOnceWith('igcExpansionChanged', {
-        detail: { pane: 'start', expanded: false },
+      expect(eventSpy).calledWith('igcLayoutChanged', {
+        detail: {
+          startSize: expectedStartPercent,
+          endSize: expectedEndPercent,
+          startCollapsed: true,
+          endCollapsed: false,
+        },
       });
 
       eventSpy.resetHistory();
       simulateKeyboard(bar, [ctrlKey, arrowRight]);
       await elementUpdated(splitter);
 
-      expect(eventSpy).calledOnceWith('igcExpansionChanged', {
-        detail: { pane: 'start', expanded: true },
+      expect(eventSpy).calledWith('igcLayoutChanged', {
+        detail: {
+          startSize: splitter.startSize,
+          endSize: splitter.endSize,
+          startCollapsed: false,
+          endCollapsed: false,
+        },
       });
     });
 

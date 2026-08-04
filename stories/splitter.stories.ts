@@ -3,6 +3,7 @@ import {
   IgcSplitterComponent,
   defineComponents,
 } from 'igniteui-webcomponents';
+import type { IgcSplitterLayoutChangedEventArgs } from 'igniteui-webcomponents';
 import type { Meta, StoryObj } from '@storybook/web-components-vite';
 
 import { disableStoryControls } from './story.js';
@@ -26,7 +27,7 @@ const metadata: Meta<IgcSplitterComponent> = {
         'igcResizeStart',
         'igcResizing',
         'igcResizeEnd',
-        'igcExpansionChanged',
+        'igcLayoutChanged',
       ],
     },
   },
@@ -266,6 +267,9 @@ export const Vertical: Story = {
           'A splitter with `orientation="vertical"` stacks the start panel on top and the end panel below.',
       },
     },
+    actions: {
+      handles: [],
+    },
   },
   render: () => html`
     <style>
@@ -297,6 +301,9 @@ export const WithConstraints: Story = {
           'Demonstrates `startMinSize`, `startMaxSize`, `endMinSize`, and `endMaxSize`. ' +
           'Use the buttons below to apply pixel‑ or percentage‑based constraints at runtime.',
       },
+    },
+    actions: {
+      handles: [],
     },
   },
   render: () => {
@@ -385,6 +392,9 @@ export const ProgrammaticCollapse: Story = {
           'Demonstrates the `toggle(position)` API for programmatically collapsing and expanding panels.',
       },
     },
+    actions: {
+      handles: [],
+    },
   },
   render: () => {
     function toggle(position: 'start' | 'end') {
@@ -438,9 +448,12 @@ export const PersistedLayout: Story = {
       description: {
         story:
           'Demonstrates reading/writing the `startSize` and `startCollapsed`/`endCollapsed` properties and listening for ' +
-          '`igcResizeEnd`/`igcExpansionChanged` to persist the pane size and collapsed state (e.g. in `localStorage`) ' +
+          'the single `igcLayoutChanged` event to persist the pane size and collapsed state (e.g. in `localStorage`) ' +
           'and restore them on load.',
       },
+    },
+    actions: {
+      handles: [],
     },
   },
   render: () => {
@@ -451,15 +464,8 @@ export const PersistedLayout: Story = {
     const startCollapsed = layout?.startCollapsed ?? false;
     const endCollapsed = layout?.endCollapsed ?? false;
 
-    function persist(splitter: IgcSplitterComponent) {
-      localStorage.setItem(
-        PERSISTED_LAYOUT_KEY,
-        JSON.stringify({
-          startSize: splitter.startSize,
-          startCollapsed: splitter.startCollapsed,
-          endCollapsed: splitter.endCollapsed,
-        })
-      );
+    function persist(event: CustomEvent<IgcSplitterLayoutChangedEventArgs>) {
+      localStorage.setItem(PERSISTED_LAYOUT_KEY, JSON.stringify(event.detail));
     }
 
     return html`
@@ -475,10 +481,7 @@ export const PersistedLayout: Story = {
         .startSize=${startSize}
         .startCollapsed=${startCollapsed}
         .endCollapsed=${endCollapsed}
-        @igcResizeEnd=${(e: CustomEvent) =>
-          persist(e.target as IgcSplitterComponent)}
-        @igcExpansionChanged=${(e: CustomEvent) =>
-          persist(e.target as IgcSplitterComponent)}
+        @igcLayoutChanged=${persist}
       >
         <div slot="start" class="demo-pane">
           <strong>Start panel</strong>
@@ -502,6 +505,9 @@ export const NestedSplitters: Story = {
           'Nested splitters can be used to create complex multi-pane layouts. ' +
           'Each inner splitter fills its parent panel and can have its own orientation.',
       },
+    },
+    actions: {
+      handles: [],
     },
   },
   render: () => html`

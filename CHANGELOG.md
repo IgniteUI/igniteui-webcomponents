@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - `registerIcon` and `registerIconFromText` now accept a `RegisterIconOptions` object as their third argument in addition to the existing plain collection string. Setting `stripMeta: true` removes `<title>` and `<desc>` elements from the stored SVG, preventing the browser from displaying a native tooltip on hover. The title text is still captured and exposed as the `aria-label` of the host `<igc-icon>` element. Any `aria-labelledby` / `aria-describedby` references on the root `<svg>` that pointed to the stripped elements' IDs are cleaned up automatically. [#1822](https://github.com/IgniteUI/igniteui-webcomponents/issues/1822)
 - #### Splitter
   - `startCollapsed` and `endCollapsed` properties for reading and programmatically setting the collapsed state of each pane.
-  - `igcExpansionChanged` event, emitted when a pane's collapsed state changes as a result of user interaction (collapse/expand buttons or the Ctrl+Arrow keyboard shortcuts).
+  - `igcLayoutChanged` event, emitted after a user-driven resize or expansion change, with a snapshot of the current layout (`startSize`, `endSize`, `startCollapsed`, `endCollapsed`).
 - #### Virtual Scroll
   - Added the new `igc-virtual-scroll` component. It efficiently renders large or unbounded lists by only rendering the items currently within the viewport, plus a configurable `overScan`. [#2222](https://github.com/IgniteUI/igniteui-webcomponents/pull/2222)
     - Supports both `vertical` and `horizontal` orientation, including RTL layouts.
