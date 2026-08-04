@@ -93,8 +93,9 @@ export default class IgcQrCodeComponent extends LitElement {
   public size = 128;
 
   /**
-   * The margin around the QR code in pixels. This is the whitespace area surrounding the QR code,
-   * which helps ensure that it can be properly scanned.
+   * The margin (quiet zone) around the QR code, expressed as a number of QR code modules rather
+   * than pixels. This is the blank border area surrounding the code, which helps ensure that it
+   * can be properly scanned.
    *
    * @attr margin
    * @default 4

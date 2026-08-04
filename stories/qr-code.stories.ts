@@ -48,7 +48,7 @@ const metadata: Meta<IgcQrCodeComponent> = {
     margin: {
       type: 'number',
       description:
-        'The margin around the QR code in pixels. This is the whitespace area surrounding the QR code,\nwhich helps ensure that it can be properly scanned.',
+        'The margin (quiet zone) around the QR code, expressed as a number of QR code modules rather\nthan pixels. This is the blank border area surrounding the code, which helps ensure that it\ncan be properly scanned.',
       control: 'number',
       table: { defaultValue: { summary: '4' } },
     },
@@ -121,8 +121,9 @@ interface IgcQrCodeArgs {
   /** The size of the QR code in pixels. This determines the width and height of the generated QR code. The default value is 128 pixels. */
   size: number;
   /**
-   * The margin around the QR code in pixels. This is the whitespace area surrounding the QR code,
-   * which helps ensure that it can be properly scanned.
+   * The margin (quiet zone) around the QR code, expressed as a number of QR code modules rather
+   * than pixels. This is the blank border area surrounding the code, which helps ensure that it
+   * can be properly scanned.
    */
   margin: number;
   /**

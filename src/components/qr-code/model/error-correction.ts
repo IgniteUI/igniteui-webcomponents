@@ -51,9 +51,6 @@ function getPolynomial(degree: number): number[] {
   return poly;
 }
 
-/**
- * Calculates the error correction codewords for the given data and degree.
- */
 /** Computes Reed-Solomon error correction codewords for a data block of the given EC degree. */
 export function calculateECC(data: number[], degree: number): number[] {
   const poly = getPolynomial(degree);

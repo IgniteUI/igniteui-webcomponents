@@ -118,6 +118,11 @@ describe('QR model - encodeQR', () => {
       // A 200-character lowercase string cannot fit in version 1 at any EC level
       expect(() => encodeQR('a'.repeat(200), 'M', 1)).to.throw();
     });
+
+    it('throws when data does not fit in any auto-selected version', () => {
+      // Byte mode at 'H' tops out at 1273 data bytes for version 40.
+      expect(() => encodeQR('a'.repeat(2000), 'H')).to.throw();
+    });
   });
 });
 
