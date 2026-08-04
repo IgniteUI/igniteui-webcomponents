@@ -7,7 +7,7 @@ import { all } from './themes/header-item.js';
 import { styles as shared } from './themes/shared/header-item/header-item.common.css.js';
 
 /**
- * A wrapper for navigation drawer's header.
+ * Represents a navigation drawer header item.
  * @element igc-nav-drawer-header-item
  *
  * @slot - Renders the header content

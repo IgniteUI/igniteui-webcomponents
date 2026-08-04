@@ -29,7 +29,7 @@ function getRippleElement(): HTMLSpanElement {
 
 /**
  * A ripple can be applied to an element to represent
- * interactive surface.
+ * an interactive surface.
  *
  * @element igc-ripple
  */

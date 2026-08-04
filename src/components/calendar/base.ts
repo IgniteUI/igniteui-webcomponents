@@ -86,7 +86,7 @@ export class IgcCalendarBaseComponent extends LitElement {
   /* blazorSuppress */
   /**
    * The current values of the calendar.
-   * Used when selection is set to multiple of range.
+   * Used when selection is set to multiple or range.
    *
    * @attr values
    */

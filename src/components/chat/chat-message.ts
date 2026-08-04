@@ -37,7 +37,7 @@ type DefaultMessageRenderers = {
 
 /* blazorSuppress */
 /**
- * A chat message component for displaying individual messages in `<igc-chat>`.
+ * A chat message component for displaying individual messages in the chat component.
  *
  * @element igc-chat-message
  *

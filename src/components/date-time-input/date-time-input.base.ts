@@ -122,7 +122,7 @@ export abstract class IgcDateTimeInputBaseComponent extends MaskBehaviorMixin(
   public outlined = false;
 
   /**
-   * The placeholder attribute of the control.
+   * The placeholder text of the control.
    * @attr
    */
   @property()

@@ -167,7 +167,7 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
   public offset = 6;
 
   /**
-   * Where to place the floating element relative to the parent anchor element.
+   * Where to place the tooltip relative to its anchor element.
    *
    * @attr placement
    * @default bottom
@@ -189,7 +189,7 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
 
   /**
    * Which event triggers will show the tooltip.
-   * Expects a comma separate string of different event triggers.
+   * Expects a comma separated string of different event triggers.
    *
    * @attr show-triggers
    * @default pointerenter
@@ -205,7 +205,7 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
 
   /**
    * Which event triggers will hide the tooltip.
-   * Expects a comma separate string of different event triggers.
+   * Expects a comma separated string of different event triggers.
    *
    * @attr hide-triggers
    * @default pointerleave, click
@@ -250,7 +250,7 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
   }
 
   /**
-   * Specifies a plain text as tooltip content.
+   * Specifies plain text as the tooltip content.
    *
    * @attr message
    */
