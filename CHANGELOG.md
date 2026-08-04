@@ -17,7 +17,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
     - Added the `igcStateChange` event, emitted after each render pass with a snapshot of the current virtual window (`startIndex`, `endIndex`, `viewportSize`, `totalSize`).
     - Added the `layoutComplete` property — a promise that resolves once the current render pass, and any follow-up renders triggered by item measurement, have fully settled.
     - Transparently degrades past the maximum scroll coordinate supported by the browser, so lists far larger than the DOM would normally allow keep scrolling and rendering correctly.
-
+- #### Chip
+  - Added the `outlined` property to the component. When set to `true`, the Chip will have an outlined style. [#2307](https://github.com/IgniteUI/igniteui-webcomponents/pull/2307)
 ### Changed
 - #### Combo
   - The dropdown list is now virtualized using the new `igc-virtual-scroll` component instead of the third-party `@lit-labs/virtualizer` package. [#2222](https://github.com/IgniteUI/igniteui-webcomponents/pull/2222)
@@ -26,6 +27,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - Removed the `@lit-labs/virtualizer` dependency. Virtualization is now implemented internally by the new `igc-virtual-scroll` component. [#2222](https://github.com/IgniteUI/igniteui-webcomponents/pull/2222)
 - #### Carousel
   - The component now delegates focus, starting with its indicator container, navigation buttons, or the first focusable element in the active slide, whichever is available. Related to [#2291](https://github.com/IgniteUI/igniteui-webcomponents/issues/2291).
+- #### Chip
+  - The `focus-outline-color` and `focus-selected-outline-color` CSS variables were replaced with `focus-shadow-color` and `focus-selected-shadow-color`.
 
 ## [7.2.4] - 2026-06-29
 ### Added

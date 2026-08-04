@@ -29,8 +29,7 @@ $theme: $indigo;
     }
 }
 
-:host([selected]) button[disabled],
-:host([selected][outlined]) button[disabled] {
+:host([selected]) button[disabled] {
     opacity: .4;
 }
 

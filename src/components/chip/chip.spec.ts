@@ -11,6 +11,13 @@ describe('Chip', () => {
     defineComponents(IgcChipComponent);
   });
 
+  it('passes the a11y audit', async () => {
+    const chip = await fixture<IgcChipComponent>(html`<igc-chip></igc-chip>`);
+
+    await expect(chip).shadowDom.to.be.accessible();
+    await expect(chip).to.be.accessible();
+  });
+
   it('should initialize with default values', async () => {
     const chip = await fixture<IgcChipComponent>(html`<igc-chip></igc-chip>`);
 
