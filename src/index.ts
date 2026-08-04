@@ -211,6 +211,11 @@ export type {
   RegisterIconOptions,
 } from './components/icon/registry/types.js';
 export type * from './components/chat/types.js';
+export type {
+  QrErrorCorrectionLevel,
+  QrDotStyle,
+  QrCornerSquareStyle,
+} from './components/qr-code/types.js';
 
 // Internal exports for other packages
 /** @hidden @internal */
