@@ -1,8 +1,3 @@
-const DOT_COLOR = 'var(--igc-qr-dark, #000)';
-const DOT_BACKGROUND = 'var(--igc-qr-background, #fff)';
-const CORNER_SQUARE_COLOR = 'var(--qr-corner-square-fill, #000)';
-const CORNER_DOT_COLOR = 'var(--qr-corner-dot-fill, #000)';
-
 /**
  * Safe area ratios for different error correction levels in QR codes.
  * These values represent the maximum proportion of the QR code area that can be obscured (e.g., by a logo) while still maintaining scannability.
@@ -26,12 +21,4 @@ const MAX_SAFE_AREA = SAFE_AREAS.H;
  */
 const DEFAULT_SIZE_RATIO = 0.4;
 
-export {
-  CORNER_DOT_COLOR,
-  CORNER_SQUARE_COLOR,
-  DEFAULT_SIZE_RATIO,
-  DOT_BACKGROUND,
-  DOT_COLOR,
-  MAX_SAFE_AREA,
-  SAFE_AREAS,
-};
+export { DEFAULT_SIZE_RATIO, MAX_SAFE_AREA, SAFE_AREAS };

@@ -1,5 +1,5 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
-
+import { configureTheme } from '../../theming/config.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import { asNumber } from '../common/util.js';
 import IgcQrCodeComponent from './qr-code.js';
@@ -152,6 +152,98 @@ describe('IgcQrCodeComponent', () => {
       // Each corner renders a <g> with two <path> children; there are 3 corners
       const cornerGroups = el.renderRoot.querySelectorAll('svg > g > g');
       expect(cornerGroups.length).to.equal(3);
+    });
+  });
+
+  describe('Theming', () => {
+    function getPart(el: IgcQrCodeComponent, part: string): SVGElement | null {
+      return el.renderRoot.querySelector(`[part~="${part}"]`);
+    }
+
+    function fillOf(el: SVGElement | null): string {
+      return getComputedStyle(el as unknown as Element).fill;
+    }
+
+    it('exposes background, dots, corner-square and corner-dot parts', async () => {
+      const el = await fixture<IgcQrCodeComponent>(
+        html`<igc-qr-code value="https://example.com"></igc-qr-code>`
+      );
+
+      expect(getPart(el, 'background')).to.exist;
+      expect(getPart(el, 'dots')).to.exist;
+      expect(
+        el.renderRoot.querySelectorAll('[part~="corner-square"]').length
+      ).to.equal(3);
+      expect(
+        el.renderRoot.querySelectorAll('[part~="corner-dot"]').length
+      ).to.equal(3);
+    });
+
+    it('defaults to the schema colors (white background, black modules/corners)', async () => {
+      const el = await fixture<IgcQrCodeComponent>(
+        html`<igc-qr-code value="https://example.com"></igc-qr-code>`
+      );
+
+      expect(fillOf(getPart(el, 'background'))).to.equal('rgb(255, 255, 255)');
+      expect(fillOf(getPart(el, 'dots'))).to.equal('rgb(0, 0, 0)');
+      expect(fillOf(getPart(el, 'corner-square'))).to.equal('rgb(0, 0, 0)');
+      expect(fillOf(getPart(el, 'corner-dot'))).to.equal('rgb(0, 0, 0)');
+    });
+
+    it('overrides colors via the documented CSS custom properties', async () => {
+      const el = await fixture<IgcQrCodeComponent>(
+        html`<igc-qr-code
+          value="https://example.com"
+          style="--ig-qr-code-background: rgb(232, 244, 255); --ig-qr-code-dark-color: rgb(0, 102, 204);"
+        ></igc-qr-code>`
+      );
+
+      expect(fillOf(getPart(el, 'background'))).to.equal('rgb(232, 244, 255)');
+      expect(fillOf(getPart(el, 'dots'))).to.equal('rgb(0, 102, 204)');
+    });
+
+    it('cascades --ig-qr-code-dark-color to corner-square and corner-dot when unset', async () => {
+      const el = await fixture<IgcQrCodeComponent>(
+        html`<igc-qr-code
+          value="https://example.com"
+          style="--ig-qr-code-dark-color: rgb(204, 51, 0);"
+        ></igc-qr-code>`
+      );
+
+      expect(fillOf(getPart(el, 'corner-square'))).to.equal('rgb(204, 51, 0)');
+      expect(fillOf(getPart(el, 'corner-dot'))).to.equal('rgb(204, 51, 0)');
+    });
+
+    it('lets an explicit corner-dot override win over the dark-color cascade', async () => {
+      const el = await fixture<IgcQrCodeComponent>(
+        html`<igc-qr-code
+          value="https://example.com"
+          style="--ig-qr-code-dark-color: rgb(204, 51, 0); --ig-qr-code-corner-dot-color: rgb(0, 0, 255);"
+        ></igc-qr-code>`
+      );
+
+      expect(fillOf(getPart(el, 'corner-square'))).to.equal('rgb(204, 51, 0)');
+      expect(fillOf(getPart(el, 'corner-dot'))).to.equal('rgb(0, 0, 255)');
+    });
+
+    it('does not invert colors when the global theme switches to dark variant', async () => {
+      configureTheme('material', 'dark');
+
+      try {
+        const el = await fixture<IgcQrCodeComponent>(
+          html`<igc-qr-code value="https://example.com"></igc-qr-code>`
+        );
+        await elementUpdated(el);
+
+        expect(fillOf(getPart(el, 'background'))).to.equal(
+          'rgb(255, 255, 255)'
+        );
+        expect(fillOf(getPart(el, 'dots'))).to.equal('rgb(0, 0, 0)');
+        expect(fillOf(getPart(el, 'corner-square'))).to.equal('rgb(0, 0, 0)');
+        expect(fillOf(getPart(el, 'corner-dot'))).to.equal('rgb(0, 0, 0)');
+      } finally {
+        configureTheme('material', 'light');
+      }
     });
   });
 

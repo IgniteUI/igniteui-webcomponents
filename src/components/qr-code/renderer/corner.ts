@@ -1,6 +1,5 @@
 import { svg, type TemplateResult } from 'lit';
 import type { QrCornerDotStyle, QrCornerSquareStyle } from '../types.js';
-import { CORNER_DOT_COLOR, CORNER_SQUARE_COLOR } from './constants.js';
 import {
   cornerDotPath,
   cornerSquarePath,
@@ -37,8 +36,8 @@ export function renderQrCorner({
 
   return svg`
       <g>
-        <path d=${squarePath} fill=${CORNER_SQUARE_COLOR} fill-rule="evenodd"></path>
-        <path d=${dotPath} fill=${CORNER_DOT_COLOR}></path>
+        <path part="corner-square" d=${squarePath} fill-rule="evenodd"></path>
+        <path part="corner-dot" d=${dotPath}></path>
       </g>
     `;
 }

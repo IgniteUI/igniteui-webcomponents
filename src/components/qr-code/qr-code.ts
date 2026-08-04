@@ -1,18 +1,21 @@
-import { css, html, LitElement, nothing, type PropertyValues } from 'lit';
+import { html, LitElement, nothing, type PropertyValues } from 'lit';
 import { property, state } from 'lit/decorators.js';
+import { addThemingController } from '../../theming/theming-controller.js';
 import { createAbortHandle } from '../common/abort-handler.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { bindIf, clamp, nanoid } from '../common/util.js';
 import { generateQRCodeMatrix } from './model/matrix.js';
 import {
   DEFAULT_SIZE_RATIO,
-  DOT_BACKGROUND,
   MAX_SAFE_AREA,
   SAFE_AREAS,
 } from './renderer/constants.js';
 import { renderQrFinders } from './renderer/corner.js';
 import { renderQrDots } from './renderer/dots.js';
 import { renderQrMaskAndImage } from './renderer/image.js';
+import { styles } from './themes/qr-code.base.css.js';
+import { styles as shared } from './themes/shared/qr-code.common.css.js';
+import { all } from './themes/themes.js';
 import type {
   QrCornerSquareStyle,
   QrDotStyle,
@@ -26,20 +29,15 @@ import type {
  *
  * @element igc-qr-code
  *
- * @cssproperty --igc-qr-dark - The color used for the dark modules of the QR code. Default is #000.
- * @cssproperty --igc-qr-background - The color used for the background of the QR code. Default is #fff.
- * @cssproperty --qr-corner-square-fill - The fill color for the corner squares of the QR code. Default is black.
- * @cssproperty --qr-corner-dot-fill - The fill color for the corner dots of the QR code. Default is black.
+ * @csspart background - The background rect of the QR code.
+ * @csspart dots - The data modules (dots) of the QR code.
+ * @csspart corner-square - The outer corner (finder-pattern) squares of the QR code.
+ * @csspart corner-dot - The inner corner (finder-pattern) dots of the QR code.
  */
 export default class IgcQrCodeComponent extends LitElement {
   public static readonly tagName = 'igc-qr-code';
 
-  public static override styles = css`
-    :host {
-      display: inline-block;
-      contain: content;
-    }
-  `;
+  public static override styles = [styles, shared];
 
   /* blazorSuppress */
   public static register(): void {
@@ -52,6 +50,11 @@ export default class IgcQrCodeComponent extends LitElement {
 
   @state()
   private _logoAspectRatio = 1;
+
+  constructor() {
+    super();
+    addThemingController(this, all);
+  }
 
   /**
    * The value to be encoded in the QR code. This can be any string, such as a URL, text, or other data.
@@ -273,7 +276,7 @@ export default class IgcQrCodeComponent extends LitElement {
       >
         <title>${this.ariaLabel ?? `QR code: ${this.value}`}</title>
 
-        <rect width=${svgSize} height=${svgSize} fill=${DOT_BACKGROUND} />
+        <rect part="background" width=${svgSize} height=${svgSize} />
         ${mask}
         <g mask=${bindIf(shouldApplyMask, this._maskUrl)}>
           ${renderQrDots({
