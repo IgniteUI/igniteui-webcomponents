@@ -42,18 +42,8 @@
     font-family: var(--ig-font-family);
     z-index: 1;
 
-    // Chromium and WebKit paint an opaque background and a fixed text color on
-    // autofilled fields through UA styles marked as !important, which cannot be
-    // overridden by author styles. Without this the autofill background covers the
-    // floating label in the material theme.
-    // Clipping the background to the text makes it invisible, while the text itself
-    // is painted through `-webkit-text-fill-color`, which takes precedence over the
-    // UA `color`. Both are static declarations on purpose - the previous
-    // transition-delay hack only held back the background as long as a transition
-    // could actually run, so inputs first rendered while already autofilled
-    // (a login form in a dialog, for instance) still got the UA styling.
+    // Fix for https://github.com/IgniteUI/igniteui-webcomponents/pull/2298#pullrequestreview-4772572600
     &:is(:-webkit-autofill, :autofill) {
-        -webkit-background-clip: text;
         background-clip: text;
         -webkit-text-fill-color: var(--input-text-color, currentcolor);
     }
