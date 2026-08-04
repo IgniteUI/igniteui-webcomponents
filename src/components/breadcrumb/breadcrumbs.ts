@@ -1,24 +1,26 @@
 import { ContextProvider } from '@lit/context';
 import { html, LitElement, type PropertyValues } from 'lit';
 import { property } from 'lit/decorators.js';
+import { addThemingController } from '../../theming/theming-controller.js';
 import { breadcrumbsContext } from '../common/context.js';
 import { addInternalsController } from '../common/controllers/internals.js';
 import { registerComponent } from '../common/definitions/register.js';
 import IgcBreadcrumbComponent from './breadcrumb.js';
 import { styles } from './themes/breadcrumbs.base.css.js';
+import { all } from './themes/themes.js';
 
 /**
  * A breadcrumb navigation component that renders an ordered list of breadcrumb items.
  *
  * @remarks
- * Wrap `igc-breadcrumb` elements inside this component to build a navigable breadcrumb
+ * Wrap breadcrumb items inside this component to build a navigable breadcrumb
  * trail. The component sets the ARIA `list` role on the host element. Wrap it in a
  * `<nav aria-label="...">` element to provide an accessible navigation landmark —
  * the label belongs on the `<nav>`, not the list, per the ARIA breadcrumb pattern.
  *
  * @element igc-breadcrumbs
  *
- * @slot - Default slot for `igc-breadcrumb` items.
+ * @slot - Default slot for the breadcrumb items.
  *
  * @cssproperty --ig-breadcrumbs-gap - The gap between breadcrumb items. Defaults to `0.5rem`.
  *
@@ -68,9 +70,9 @@ export default class IgcBreadcrumbsComponent extends LitElement {
 
   /**
    * The icon name used as the default separator between breadcrumb items.
-   * Can be overridden per-item using the `separator` slot on `igc-breadcrumb`.
+   * Can be overridden per-item using the `separator` slot on an individual breadcrumb item.
    *
-   * @attr
+   * @attr separator
    * @default 'tree_expand'
    */
   @property({ reflect: true })
@@ -83,6 +85,7 @@ export default class IgcBreadcrumbsComponent extends LitElement {
   constructor() {
     super();
 
+    addThemingController(this, all);
     addInternalsController(this, {
       initialARIA: {
         role: 'list',

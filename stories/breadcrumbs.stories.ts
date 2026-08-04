@@ -20,11 +20,28 @@ const metadata: Meta<IgcBreadcrumbsComponent> = {
       },
     },
   },
+  argTypes: {
+    separator: {
+      type: 'string',
+      description:
+        'The icon name used as the default separator between breadcrumb items.\nCan be overridden per-item using the `separator` slot on an individual breadcrumb item.',
+      control: 'text',
+      table: { defaultValue: { summary: 'tree_expand' } },
+    },
+  },
+  args: { separator: 'tree_expand' },
 };
 
 export default metadata;
 
-type Story = StoryObj;
+interface IgcBreadcrumbsArgs {
+  /**
+   * The icon name used as the default separator between breadcrumb items.
+   * Can be overridden per-item using the `separator` slot on an individual breadcrumb item.
+   */
+  separator: string;
+}
+type Story = StoryObj<IgcBreadcrumbsArgs>;
 
 // endregion
 

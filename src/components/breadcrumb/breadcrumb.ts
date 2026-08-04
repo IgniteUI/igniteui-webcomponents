@@ -1,14 +1,16 @@
 import { html, LitElement, type PropertyValues } from 'lit';
 import { property } from 'lit/decorators.js';
+import { addThemingController } from '../../theming/theming-controller.js';
 import { breadcrumbsContext } from '../common/context.js';
 import { createAsyncContext } from '../common/controllers/async-consumer.js';
 import { addInternalsController } from '../common/controllers/internals.js';
 import { registerComponent } from '../common/definitions/register.js';
 import IgcIconComponent from '../icon/icon.js';
 import { styles } from './themes/breadcrumb.base.css.js';
+import { all } from './themes/themes.js';
 
 /**
- * A single breadcrumb item within an `igc-breadcrumbs` list.
+ * A single item within a breadcrumb navigation trail.
  *
  * @element igc-breadcrumb
  *
@@ -66,13 +68,18 @@ export default class IgcBreadcrumbComponent extends LitElement {
 
   //#endregion
 
+  constructor() {
+    super();
+    addThemingController(this, all);
+  }
+
   //#region Public properties
 
   /**
    * Marks this breadcrumb as representing the current page.
    * Sets `aria-current="page"` on the element when active.
    *
-   * @attr
+   * @attr current
    * @default false
    */
   @property({ type: Boolean, reflect: true })
@@ -82,10 +89,11 @@ export default class IgcBreadcrumbComponent extends LitElement {
 
   //#region Lit lifecycle
 
-  protected override updated(changedProperties: PropertyValues<this>): void {
+  protected override update(changedProperties: PropertyValues<this>): void {
     if (changedProperties.has('current')) {
       this._internals.setARIA({ ariaCurrent: this.current ? 'page' : null });
     }
+    super.update(changedProperties);
   }
 
   protected override render() {
