@@ -11,7 +11,7 @@ $theme: $indigo;
     padding: 0 pad-inline(3px, 5px, 7px);
 
     &:focus {
-        box-shadow: 0 0 0 rem(3px) var-get($theme, 'focus-outline-color');
+        box-shadow: 0 0 0 rem(3px) var-get($theme, 'focus-shadow-color');
     }
 
     igc-icon,
@@ -23,22 +23,19 @@ $theme: $indigo;
 :host([selected]) button:not([disabled]) {
     color: var-get($theme, 'selected-text-color');
     background: var-get($theme, 'selected-background');
-    border-color: transparent;
 
     &:focus {
-        box-shadow: 0 0 0 rem(3px) var-get($theme, 'focus-selected-outline-color');
+        box-shadow: 0 0 0 rem(3px) var-get($theme, 'focus-selected-shadow-color');
     }
 }
 
-:host([selected]) button[disabled] {
-    background: color($color: 'primary', $variant: 400, $opacity: .5);
-    border-color: transparent;
+:host([selected]) button[disabled],
+:host([selected][outlined]) button[disabled] {
+    opacity: .4;
 }
 
 :host([variant='primary']) button,
 :host([selected][variant='primary']) button:not([disabled]) {
-    border-color: transparent;
-
     &:focus {
         color: contrast-color(primary, 900);
         background: color(primary, 500);
@@ -51,7 +48,8 @@ $theme: $indigo;
     }
 }
 
-:host([variant='primary']) button[disabled] {
+:host([variant='primary']) button[disabled],
+:host([selected][variant='primary']) button[disabled] {
     background: color(primary, 400, .5);
 }
 
@@ -67,8 +65,6 @@ $theme: $indigo;
         } @else if $variant == 'danger' {
             background: color(error, 600);
         }
-
-        border-color: transparent;
 
         &:focus {
             @if $variant == 'warning' or $variant == 'info' {
@@ -97,9 +93,20 @@ $theme: $indigo;
         }
     }
 
-    :host([variant='#{$variant}']) button[disabled] {
+    :host([variant='#{$variant}']) button[disabled],
+    :host([selected][variant='#{$variant}']) button[disabled] {
+        @if $variant != 'primary' {
+            opacity: .4;
+        }
+
         @if $variant != 'warning' {
             color: contrast-color($variant-color, 900);
+        }
+
+        @if $variant == 'success' {
+            background: color(success, 800);
+        } @else if $variant == 'danger' {
+            background: color(error, 600);
         }
 
         @if $variant == 'warning' or $variant == 'info' {
@@ -113,11 +120,6 @@ $theme: $indigo;
 @include chip-variants('warning', warn);
 @include chip-variants('danger', error);
 
-:host([variant='info']),
-:host([variant='success']),
-:host([variant='warning']),
-:host([variant='danger']) {
-    button[disabled] {
-        opacity: .4;
-    }
+:host([outlined][variant='primary']) button[disabled] {
+    opacity: .4;
 }
