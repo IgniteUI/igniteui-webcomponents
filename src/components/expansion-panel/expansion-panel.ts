@@ -159,12 +159,18 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
     await this._setOpenState({ state: false, withEvent: true });
   }
 
-  /** Toggles the panel open/close state. */
+  /**
+   * Toggles the panel open/close state.
+   * @returns `true` when the open state was successfully changed.
+   */
   public async toggle(): Promise<boolean> {
     return this.open ? this.hide() : this.show();
   }
 
-  /** Hides the panel content. */
+  /**
+   * Hides the panel content.
+   * @returns `true` when the panel was successfully closed, or `false` if already closed.
+   */
   public async hide(): Promise<boolean> {
     if (!this.open) return false;
 
@@ -172,7 +178,10 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
     return true;
   }
 
-  /** Shows the panel content. */
+  /**
+   * Shows the panel content.
+   * @returns `true` when the panel was successfully opened, or `false` if already closed.
+   */
   public async show(): Promise<boolean> {
     if (this.open) return false;
 

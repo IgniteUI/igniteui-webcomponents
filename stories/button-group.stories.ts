@@ -60,7 +60,7 @@ const metadata: Meta<IgcButtonGroupComponent> = {
     docs: {
       description: {
         component:
-          'The `igc-button-group` groups a series of `igc-toggle-button`s together, exposing features such as layout and selection.',
+          'Groups a series of toggle buttons together, exposing features such as layout and selection.',
       },
     },
     actions: { handles: ['igcSelect', 'igcDeselect'] },

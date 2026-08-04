@@ -15,9 +15,9 @@ import { styles as shared } from '../dropdown/themes/shared/item/dropdown-item.c
  * @slot prefix - Renders content before the main content area.
  * @slot suffix - Renders content after the main content area.
  *
- * @csspart prefix - The prefix wrapper of the igc-select-item.
- * @csspart content - The main content wrapper of the igc-select-item.
- * @csspart suffix - The suffix wrapper of the igc-select-item.
+ * @csspart prefix - The prefix wrapper of the select item.
+ * @csspart content - The main content wrapper of the select item.
+ * @csspart suffix - The suffix wrapper of the select item.
  */
 export default class IgcSelectItemComponent extends IgcBaseOptionLikeComponent {
   public static readonly tagName = 'igc-select-item';

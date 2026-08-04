@@ -11,10 +11,24 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - #### Splitter
   - `startCollapsed` and `endCollapsed` properties for reading and programmatically setting the collapsed state of each pane.
   - `igcExpansionChanged` event, emitted when a pane's collapsed state changes as a result of user interaction (collapse/expand buttons or the Ctrl+Arrow keyboard shortcuts).
+- #### Virtual Scroll
+  - Added the new `igc-virtual-scroll` component. It efficiently renders large or unbounded lists by only rendering the items currently within the viewport, plus a configurable `overScan`. [#2222](https://github.com/IgniteUI/igniteui-webcomponents/pull/2222)
+    - Supports both `vertical` and `horizontal` orientation, including RTL layouts.
+    - Item sizes may be fixed, estimated via `estimatedItemSize`, or fully variable — each rendered item is measured automatically and its estimate is corrected on the fly, without requiring any manual intervention.
+    - Added `scrollToIndex()` for programmatically scrolling to a given item, with configurable alignment (`block`/`inline`) and scroll `behavior` (`auto`/`smooth`). The target offset is automatically corrected as previously unmeasured items around it get measured, so the requested item ends up precisely aligned even when it wasn't previously rendered.
+    - Added the `igcDataRequest` event, emitted when the scroll position approaches the end of the currently loaded data, to support infinite-scroll / remote data loading scenarios.
+    - Added the `igcStateChange` event, emitted after each render pass with a snapshot of the current virtual window (`startIndex`, `endIndex`, `viewportSize`, `totalSize`).
+    - Added the `layoutComplete` property — a promise that resolves once the current render pass, and any follow-up renders triggered by item measurement, have fully settled.
+    - Transparently degrades past the maximum scroll coordinate supported by the browser, so lists far larger than the DOM would normally allow keep scrolling and rendering correctly.
 
 ### Changed
+- #### Combo
+  - The dropdown list is now virtualized using the new `igc-virtual-scroll` component instead of the third-party `@lit-labs/virtualizer` package. [#2222](https://github.com/IgniteUI/igniteui-webcomponents/pull/2222)
 - #### Library
   - Updated some of the optional peer dependencies (`dompurify`, `marked`, `shiki`) to their latest stable versions.
+  - Removed the `@lit-labs/virtualizer` dependency. Virtualization is now implemented internally by the new `igc-virtual-scroll` component. [#2222](https://github.com/IgniteUI/igniteui-webcomponents/pull/2222)
+- #### Carousel
+  - The component now delegates focus, starting with its indicator container, navigation buttons, or the first focusable element in the active slide, whichever is available. Related to [#2291](https://github.com/IgniteUI/igniteui-webcomponents/issues/2291).
 
 ## [7.2.4] - 2026-06-29
 ### Added

@@ -22,8 +22,7 @@ const metadata: Meta<IgcRadioGroupComponent> = {
   parameters: {
     docs: {
       description: {
-        component:
-          'The igc-radio-group component unifies one or more igc-radio buttons.',
+        component: 'Unifies one or more radio components into a single group.',
       },
     },
   },
@@ -37,13 +36,13 @@ const metadata: Meta<IgcRadioGroupComponent> = {
     },
     name: {
       type: 'string',
-      description: 'Gets/Sets the name for all child igc-radio components.',
+      description: 'The name applied to all radio buttons in the group.',
       control: 'text',
     },
     value: {
       type: 'string',
       description:
-        'Gets/Sets the checked igc-radio element that matches `value`',
+        'The value of the group, reflecting the value of the currently checked radio button.\nSetting it checks the radio button in the group with a matching value.',
       control: 'text',
     },
   },
@@ -55,9 +54,12 @@ export default metadata;
 interface IgcRadioGroupArgs {
   /** Alignment of the radio controls inside this group. */
   alignment: 'horizontal' | 'vertical';
-  /** Gets/Sets the name for all child igc-radio components. */
+  /** The name applied to all radio buttons in the group. */
   name: string;
-  /** Gets/Sets the checked igc-radio element that matches `value` */
+  /**
+   * The value of the group, reflecting the value of the currently checked radio button.
+   * Setting it checks the radio button in the group with a matching value.
+   */
   value: string;
 }
 type Story = StoryObj<IgcRadioGroupArgs>;
