@@ -61,7 +61,7 @@ const metadata: Meta<IgcQrCodeComponent> = {
     logoSize: {
       type: 'number',
       description:
-        'The size of the logo as a ratio of the QR code size. This determines how large the logo will appear within the QR code.\nThe value should be a number between 0 and 1, where 0 means no logo and 1 means the logo will take up the entire QR code (which is not recommended).\nThe default value is 0.4, meaning the logo will take up 40% of the QR code size.',
+        "The size of the logo, as a ratio of the maximum area that can safely be obscured by a logo\nwhile the QR code remains scannable (up to 9% of the code's area, at the highest error\ncorrection level). The value should be a number between 0 and 1, where 0 means no logo and 1\nmeans the logo will cover the full safe area (not the entire QR code).\nThe default value is 0.4, meaning the logo covers 40% of that safe area (~3.6% of the QR code).\n\nWhen `error-level` is not explicitly set, the smallest error correction level that can\naccommodate the requested logo size is chosen automatically.",
       control: 'number',
       table: { defaultValue: { summary: '0.4' } },
     },
@@ -74,7 +74,7 @@ const metadata: Meta<IgcQrCodeComponent> = {
     dotStyle: {
       type: '"square" | "circle" | "rounded"',
       description:
-        "The style of the data modules (dots) in the QR code. This can be 'square', 'circle', or 'rounded'.",
+        "The style of the data modules (dots) in the QR code, and of the inner dot of each finder-pattern\ncorner. This can be 'square', 'circle', or 'rounded'.",
       options: ['square', 'circle', 'rounded'],
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'square' } },
@@ -132,9 +132,14 @@ interface IgcQrCodeArgs {
    */
   logoSrc: string;
   /**
-   * The size of the logo as a ratio of the QR code size. This determines how large the logo will appear within the QR code.
-   * The value should be a number between 0 and 1, where 0 means no logo and 1 means the logo will take up the entire QR code (which is not recommended).
-   * The default value is 0.4, meaning the logo will take up 40% of the QR code size.
+   * The size of the logo, as a ratio of the maximum area that can safely be obscured by a logo
+   * while the QR code remains scannable (up to 9% of the code's area, at the highest error
+   * correction level). The value should be a number between 0 and 1, where 0 means no logo and 1
+   * means the logo will cover the full safe area (not the entire QR code).
+   * The default value is 0.4, meaning the logo covers 40% of that safe area (~3.6% of the QR code).
+   *
+   * When `error-level` is not explicitly set, the smallest error correction level that can
+   * accommodate the requested logo size is chosen automatically.
    */
   logoSize: number;
   /**
@@ -142,7 +147,10 @@ interface IgcQrCodeArgs {
    * which helps ensure that the logo does not interfere with the QR code's scannability.
    */
   logoMargin: number;
-  /** The style of the data modules (dots) in the QR code. This can be 'square', 'circle', or 'rounded'. */
+  /**
+   * The style of the data modules (dots) in the QR code, and of the inner dot of each finder-pattern
+   * corner. This can be 'square', 'circle', or 'rounded'.
+   */
   dotStyle: 'square' | 'circle' | 'rounded';
   /** The style of the corner squares in the QR code. This can be 'square', 'circle', or 'rounded'. */
   squareStyle: 'square' | 'circle' | 'rounded';

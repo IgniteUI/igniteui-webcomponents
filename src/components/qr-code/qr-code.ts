@@ -4,6 +4,7 @@ import { addThemingController } from '../../theming/theming-controller.js';
 import { createAbortHandle } from '../common/abort-handler.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { bindIf, clamp, nanoid } from '../common/util.js';
+import type { QRCodeMatrixResult } from './model/matrix.js';
 import { generateQRCodeMatrix } from './model/matrix.js';
 import {
   DEFAULT_SIZE_RATIO,
@@ -29,6 +30,11 @@ import type {
  *
  * @element igc-qr-code
  *
+ * @cssproperty --ig-qr-code-background - The background color of the QR code. Default is `white`.
+ * @cssproperty --ig-qr-code-dark-color - The color of the data modules (dots), and the corner square/dot colors unless overridden below. Default is `black`.
+ * @cssproperty --ig-qr-code-corner-square-color - The color of the outer finder-pattern corner squares. Defaults to `--ig-qr-code-dark-color`.
+ * @cssproperty --ig-qr-code-corner-dot-color - The color of the inner finder-pattern corner dots. Defaults to `--ig-qr-code-dark-color`.
+ *
  * @csspart background - The background rect of the QR code.
  * @csspart dots - The data modules (dots) of the QR code.
  * @csspart corner-square - The outer corner (finder-pattern) squares of the QR code.
@@ -47,9 +53,18 @@ export default class IgcQrCodeComponent extends LitElement {
   private readonly _abortHandle = createAbortHandle();
   private readonly _maskId = nanoid(8);
   private readonly _maskUrl = `url(#${this._maskId})`;
+  private _matrixCache?: {
+    value: string;
+    errorLevel: QrErrorCorrectionLevel;
+    version?: number;
+    result: QRCodeMatrixResult;
+  };
 
   @state()
   private _logoAspectRatio = 1;
+
+  @state()
+  private _logoLoadFailed = false;
 
   constructor() {
     super();
@@ -116,9 +131,14 @@ export default class IgcQrCodeComponent extends LitElement {
   public logoSrc?: string;
 
   /**
-   * The size of the logo as a ratio of the QR code size. This determines how large the logo will appear within the QR code.
-   * The value should be a number between 0 and 1, where 0 means no logo and 1 means the logo will take up the entire QR code (which is not recommended).
-   * The default value is 0.4, meaning the logo will take up 40% of the QR code size.
+   * The size of the logo, as a ratio of the maximum area that can safely be obscured by a logo
+   * while the QR code remains scannable (up to 9% of the code's area, at the highest error
+   * correction level). The value should be a number between 0 and 1, where 0 means no logo and 1
+   * means the logo will cover the full safe area (not the entire QR code).
+   * The default value is 0.4, meaning the logo covers 40% of that safe area (~3.6% of the QR code).
+   *
+   * When `error-level` is not explicitly set, the smallest error correction level that can
+   * accommodate the requested logo size is chosen automatically.
    *
    * @attr logo-size
    * @default 0.4
@@ -136,7 +156,8 @@ export default class IgcQrCodeComponent extends LitElement {
   public logoMargin?: number;
 
   /**
-   * The style of the data modules (dots) in the QR code. This can be 'square', 'circle', or 'rounded'.
+   * The style of the data modules (dots) in the QR code, and of the inner dot of each finder-pattern
+   * corner. This can be 'square', 'circle', or 'rounded'.
    *
    * @attr dot-style
    * @default 'square'
@@ -163,31 +184,43 @@ export default class IgcQrCodeComponent extends LitElement {
   }
 
   private _resolveAspectRatio(): void {
+    this._abortHandle.abort();
+    this._logoLoadFailed = false;
+    this._logoAspectRatio = 1;
+
     if (!this._hasValidLogoSrc()) {
-      this._abortHandle.abort();
-      this._logoAspectRatio = 1;
       return;
     }
 
-    this._abortHandle.abort();
     const signal = this._abortHandle.signal;
-
     const img = new Image();
     img.src = this.logoSrc!;
 
-    if (img.complete && img.naturalWidth && img.naturalHeight) {
-      this._logoAspectRatio = img.naturalWidth / img.naturalHeight;
+    if (img.complete) {
+      if (img.naturalWidth && img.naturalHeight) {
+        this._logoAspectRatio = img.naturalWidth / img.naturalHeight;
+      } else {
+        this._logoLoadFailed = true;
+      }
       return;
     }
-
-    this._logoAspectRatio = 1;
 
     img.addEventListener(
       'load',
       () => {
         if (img.naturalWidth && img.naturalHeight) {
           this._logoAspectRatio = img.naturalWidth / img.naturalHeight;
+        } else {
+          this._logoLoadFailed = true;
         }
+      },
+      { once: true, signal }
+    );
+
+    img.addEventListener(
+      'error',
+      () => {
+        this._logoLoadFailed = true;
       },
       { once: true, signal }
     );
@@ -238,17 +271,32 @@ export default class IgcQrCodeComponent extends LitElement {
     return { errorLevel, area };
   }
 
+  private _getMatrix(
+    value: string,
+    errorLevel: QrErrorCorrectionLevel
+  ): QRCodeMatrixResult {
+    const cached = this._matrixCache;
+    if (
+      cached &&
+      cached.value === value &&
+      cached.errorLevel === errorLevel &&
+      cached.version === this.version
+    ) {
+      return cached.result;
+    }
+
+    const result = generateQRCodeMatrix(value, errorLevel, this.version);
+    this._matrixCache = { value, errorLevel, version: this.version, result };
+    return result;
+  }
+
   protected override render() {
     if (!this.value) return nothing;
 
-    const hasLogo = this._hasValidLogoSrc();
+    const hasLogo = this._hasValidLogoSrc() && !this._logoLoadFailed;
     const { errorLevel, area } = this._getErrorLevelAndArea(hasLogo);
 
-    const { matrix, size } = generateQRCodeMatrix(
-      this.value,
-      errorLevel,
-      this.version
-    );
+    const { matrix, size } = this._getMatrix(this.value, errorLevel);
 
     const totalModules = size + this.margin * 2;
     const moduleSize = size / totalModules;

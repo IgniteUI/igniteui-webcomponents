@@ -394,6 +394,37 @@ describe('IgcQrCodeComponent', () => {
       });
     });
 
+    describe('Load errors', () => {
+      // Well-formed data URI, but not a decodable image.
+      const BROKEN_LOGO = 'data:image/png;base64,not-a-real-png';
+
+      it('falls back to no logo when the image fails to load', async () => {
+        const el = await fixture<IgcQrCodeComponent>(
+          html`<igc-qr-code value="test" logo-src=${BROKEN_LOGO}></igc-qr-code>`
+        );
+
+        // Wait for the Image's load/error event to settle.
+        await new Promise((resolve) => setTimeout(resolve, 50));
+        await elementUpdated(el);
+
+        expect(el.renderRoot.querySelector('image')).to.be.null;
+        expect(el.renderRoot.querySelector('mask')).to.be.null;
+      });
+
+      it('recovers once logoSrc is changed to a valid image', async () => {
+        const el = await fixture<IgcQrCodeComponent>(
+          html`<igc-qr-code value="test" logo-src=${BROKEN_LOGO}></igc-qr-code>`
+        );
+        await new Promise((resolve) => setTimeout(resolve, 50));
+        await elementUpdated(el);
+
+        el.logoSrc = VALID_LOGO;
+        await elementUpdated(el);
+
+        expect(el.renderRoot.querySelector('image')).to.exist;
+      });
+    });
+
     describe('SVG structure', () => {
       it('renders no <image> or <mask> when logoSrc is not set', async () => {
         const el = await fixture<IgcQrCodeComponent>(
