@@ -1,6 +1,5 @@
 import { svg, type TemplateResult } from 'lit';
 import type { QrDotStyle } from '../types.js';
-import { DOT_COLOR } from './constants.js';
 import { renderDataModules } from './helpers.js';
 
 type RenderQrDotsProperties = {
@@ -21,5 +20,5 @@ export function renderQrDots({
   dotStyle,
 }: RenderQrDotsProperties): TemplateResult {
   const modules = renderDataModules(matrix, moduleSize, marginPx, dotStyle);
-  return svg`<path d=${modules.join(' ')} fill=${DOT_COLOR} />`;
+  return svg`<path part="dots" d=${modules.join(' ')} />`;
 }

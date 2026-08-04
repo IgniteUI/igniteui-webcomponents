@@ -299,10 +299,10 @@ export const WithLogo: Story = {
           logo-size="0.75"
           logo-margin="6"
           style="
-            --igc-qr-dark: #1a1a1a;
-            --igc-qr-background: #f7df1e;
-            --qr-corner-square-fill: #1a1a1a;
-            --qr-corner-dot-fill: #1a1a1a;
+            --ig-qr-code-dark-color: #1a1a1a;
+            --ig-qr-code-background: #f7df1e;
+            --ig-qr-code-corner-square-color: #1a1a1a;
+            --ig-qr-code-corner-dot-color: #1a1a1a;
           "
         ></igc-qr-code>
         <span style="color: #f7df1e; font-family: sans-serif; font-weight: 600;"
@@ -323,10 +323,10 @@ export const WithLogo: Story = {
           logo-size="0.75"
           logo-margin="6"
           style="
-            --igc-qr-dark: #ffffff;
-            --igc-qr-background: #e44d26;
-            --qr-corner-square-fill: #ffffff;
-            --qr-corner-dot-fill: #ffffff;
+            --ig-qr-code-dark-color: #ffffff;
+            --ig-qr-code-background: #e44d26;
+            --ig-qr-code-corner-square-color: #ffffff;
+            --ig-qr-code-corner-dot-color: #ffffff;
           "
         ></igc-qr-code>
         <span style="color: #e44d26; font-family: sans-serif; font-weight: 600;"
@@ -347,10 +347,10 @@ export const WithLogo: Story = {
           logo-size="0.75"
           logo-margin="6"
           style="
-            --igc-qr-dark: #ffffff;
-            --igc-qr-background: #1572b6;
-            --qr-corner-square-fill: #ffffff;
-            --qr-corner-dot-fill: #ffffff;
+            --ig-qr-code-dark-color: #ffffff;
+            --ig-qr-code-background: #1572b6;
+            --ig-qr-code-corner-square-color: #ffffff;
+            --ig-qr-code-corner-dot-color: #ffffff;
           "
         ></igc-qr-code>
         <span style="color: #1572b6; font-family: sans-serif; font-weight: 600;"
@@ -370,10 +370,10 @@ export const WithLogo: Story = {
           logo-size="0.75"
           logo-margin="6"
           style="
-            --igc-qr-dark: #0f172a;
-            --igc-qr-background: #ffffff;
-            --qr-corner-square-fill: #0f172a;
-            --qr-corner-dot-fill: #0f172a;
+            --ig-qr-code-dark-color: #0f172a;
+            --ig-qr-code-background: #ffffff;
+            --ig-qr-code-corner-square-color: #0f172a;
+            --ig-qr-code-corner-dot-color: #0f172a;
           "
         ></igc-qr-code>
         <span style="color: #fff; font-family: sans-serif; font-weight: 600;"
@@ -395,7 +395,7 @@ export const CustomColors: Story = {
       >
         <igc-qr-code
           value="https://example.com"
-          style="--igc-qr-dark: #0066cc; --igc-qr-background: #e8f4ff; --qr-corner-square-fill: #0066cc; --qr-corner-dot-fill: #0066cc;"
+          style="--ig-qr-code-dark-color: #0066cc; --ig-qr-code-background: #e8f4ff; --ig-qr-code-corner-square-color: #0066cc; --ig-qr-code-corner-dot-color: #0066cc;"
         ></igc-qr-code>
         <span>Blue</span>
       </div>
@@ -404,7 +404,7 @@ export const CustomColors: Story = {
       >
         <igc-qr-code
           value="https://example.com"
-          style="--igc-qr-dark: #cc3300; --igc-qr-background: #fff5f0; --qr-corner-square-fill: #cc3300; --qr-corner-dot-fill: #cc3300;"
+          style="--ig-qr-code-dark-color: #cc3300; --ig-qr-code-background: #fff5f0; --ig-qr-code-corner-square-color: #cc3300; --ig-qr-code-corner-dot-color: #cc3300;"
         ></igc-qr-code>
         <span>Red</span>
       </div>
@@ -413,7 +413,7 @@ export const CustomColors: Story = {
       >
         <igc-qr-code
           value="https://example.com"
-          style="--igc-qr-dark: #ffffff; --igc-qr-background: #1a1a2e; --qr-corner-square-fill: #ffffff; --qr-corner-dot-fill: #ffffff;"
+          style="--ig-qr-code-dark-color: #ffffff; --ig-qr-code-background: #1a1a2e; --ig-qr-code-corner-square-color: #ffffff; --ig-qr-code-corner-dot-color: #ffffff;"
         ></igc-qr-code>
         <span>Inverted</span>
       </div>
@@ -422,7 +422,7 @@ export const CustomColors: Story = {
       >
         <igc-qr-code
           value="https://example.com"
-          style="--igc-qr-dark: #007a33; --igc-qr-background: #f0fff4; --qr-corner-square-fill: #007a33; --qr-corner-dot-fill: #007a33;"
+          style="--ig-qr-code-dark-color: #007a33; --ig-qr-code-background: #f0fff4; --ig-qr-code-corner-square-color: #007a33; --ig-qr-code-corner-dot-color: #007a33;"
         ></igc-qr-code>
         <span>Green</span>
       </div>
@@ -441,7 +441,7 @@ export const FinderPatternColors: Story = {
       >
         <igc-qr-code
           value="https://example.com"
-          style="--qr-corner-square-fill: #cc3300; --qr-corner-dot-fill: #cc3300;"
+          style="--ig-qr-code-corner-square-color: #cc3300; --ig-qr-code-corner-dot-color: #cc3300;"
         ></igc-qr-code>
         <span>Red corners</span>
       </div>
@@ -450,7 +450,7 @@ export const FinderPatternColors: Story = {
       >
         <igc-qr-code
           value="https://example.com"
-          style="--qr-corner-square-fill: #0066cc; --qr-corner-dot-fill: #0066cc;"
+          style="--ig-qr-code-corner-square-color: #0066cc; --ig-qr-code-corner-dot-color: #0066cc;"
         ></igc-qr-code>
         <span>Blue corners</span>
       </div>
@@ -459,7 +459,7 @@ export const FinderPatternColors: Story = {
       >
         <igc-qr-code
           value="https://example.com"
-          style="--qr-corner-square-fill: #7b2d8b; --qr-corner-dot-fill: #e040fb;"
+          style="--ig-qr-code-corner-square-color: #7b2d8b; --ig-qr-code-corner-dot-color: #e040fb;"
         ></igc-qr-code>
         <span>Purple square / pink dot</span>
       </div>
@@ -468,7 +468,7 @@ export const FinderPatternColors: Story = {
       >
         <igc-qr-code
           value="https://example.com"
-          style="--qr-corner-square-fill: #e65c00; --qr-corner-dot-fill: #004e92;"
+          style="--ig-qr-code-corner-square-color: #e65c00; --ig-qr-code-corner-dot-color: #004e92;"
         ></igc-qr-code>
         <span>Orange square / navy dot</span>
       </div>
@@ -477,7 +477,7 @@ export const FinderPatternColors: Story = {
       >
         <igc-qr-code
           value="https://example.com"
-          style="--igc-qr-dark: #555; --qr-corner-square-fill: #ffb300; --qr-corner-dot-fill: #ffb300;"
+          style="--ig-qr-code-dark-color: #555; --ig-qr-code-corner-square-color: #ffb300; --ig-qr-code-corner-dot-color: #ffb300;"
         ></igc-qr-code>
         <span>Grey data / golden corners</span>
       </div>
@@ -486,7 +486,7 @@ export const FinderPatternColors: Story = {
       >
         <igc-qr-code
           value="https://example.com"
-          style="--igc-qr-background: #1a1a2e; --igc-qr-dark: #a0c4ff; --qr-corner-square-fill: #ff6b6b; --qr-corner-dot-fill: #ffd93d;"
+          style="--ig-qr-code-background: #1a1a2e; --ig-qr-code-dark-color: #a0c4ff; --ig-qr-code-corner-square-color: #ff6b6b; --ig-qr-code-corner-dot-color: #ffd93d;"
         ></igc-qr-code>
         <span>Dark bg / accent corners</span>
       </div>
