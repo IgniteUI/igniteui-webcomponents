@@ -9,7 +9,8 @@ import { styles as shared } from './themes/shared/divider.common.css.js';
 import { all } from './themes/themes.js';
 
 /**
- * The igc-divider allows the content author to easily create a horizontal/vertical rule as a break between content to better organize information on a page.
+ * The divider allows the content author to easily create a horizontal/vertical
+ * rule as a break between content, to better organize information on a page.
  *
  * @element igc-divider
  *

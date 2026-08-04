@@ -56,13 +56,13 @@ export interface IgcDropdownComponentEventMap {
 }
 
 /**
- * Represents a DropDown component.
+ * Represents a Dropdown component.
  *
  * @element igc-dropdown
  *
  * @fires igcChange - Emitted when the selected item changes.
- * @fires igcOpening - Emitted just before the dropdown is open.
- * @fires igcOpened - Emitted after the dropdown is open.
+ * @fires igcOpening - Emitted just before the dropdown is opened.
+ * @fires igcOpened - Emitted after the dropdown is opened.
  * @fires igcClosing - Emitter just before the dropdown is closed.
  * @fires igcClosed - Emitted after closing the dropdown.
  *
