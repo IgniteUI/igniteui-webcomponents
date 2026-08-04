@@ -10,7 +10,7 @@ import { all } from './themes/group.js';
 import { styles as shared } from './themes/shared/group/dropdown-group.common.css.js';
 
 /**
- * A container for a group of `igc-dropdown-item` components.
+ * A container for a group of dropdown items.
  *
  * @element igc-dropdown-group
  *
@@ -29,7 +29,7 @@ export default class IgcDropdownGroupComponent extends LitElement {
   }
 
   /* blazorSuppress */
-  /** All child `igc-dropdown-item`s. */
+  /** All child dropdown items. */
   @queryAssignedElements({
     flatten: true,
     selector: IgcDropdownItemComponent.tagName,

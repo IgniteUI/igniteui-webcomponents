@@ -96,7 +96,7 @@ type DatePickerResourceStringsType = IDatePickerResourceStrings &
 /* blazorIndirectRender */
 /* blazorSupportsVisualChildren */
 /**
- * igc-date-picker is a feature rich component used for entering a date through manual text input or
+ * The date picker is a feature rich component used for entering a date through manual text input or
  * choosing date values from a calendar dialog that pops up.
  *
  * @element igc-date-picker
@@ -117,10 +117,10 @@ type DatePickerResourceStringsType = IDatePickerResourceStrings &
  * @slot calendar-icon-open - Renders the icon/content for the picker in open state.
  * @slot actions - Renders content in the action part of the picker in open state.
  *
- * @fires igcOpening - Emitted just before the calendar dropdown is shown.
- * @fires igcOpened - Emitted after the calendar dropdown is shown.
- * @fires igcClosing - Emitted just before the calendar dropdown is hidden.
- * @fires igcClosed - Emitted after the calendar dropdown is hidden.
+ * @fires igcOpening - Emitted just before the calendar popover is shown.
+ * @fires igcOpened - Emitted after the calendar popover is shown.
+ * @fires igcClosing - Emitted just before the calendar popover is hidden.
+ * @fires igcClosed - Emitted after the calendar popover is hidden.
  * @fires igcChange - Emitted when the user modifies and commits the elements's value.
  * @fires igcInput - Emitted when when the user types in the element.
  *
@@ -406,7 +406,7 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
   public outlined = false;
 
   /**
-   * The placeholder attribute of the control.
+   * The placeholder text of the control.
    * @attr
    */
   @property()

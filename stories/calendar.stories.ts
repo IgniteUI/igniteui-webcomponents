@@ -29,7 +29,7 @@ const metadata: Meta<IgcCalendarComponent> = {
     hideOutsideDays: {
       type: 'boolean',
       description:
-        'Whether to show the dates that do not belong to the current active month.',
+        'Whether to hide the dates that do not belong to the current active month.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
@@ -131,7 +131,7 @@ const metadata: Meta<IgcCalendarComponent> = {
 export default metadata;
 
 interface IgcCalendarArgs {
-  /** Whether to show the dates that do not belong to the current active month. */
+  /** Whether to hide the dates that do not belong to the current active month. */
   hideOutsideDays: boolean;
   /**
    * Whether to render the calendar header part.

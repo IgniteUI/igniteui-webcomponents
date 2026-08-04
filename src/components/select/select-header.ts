@@ -7,7 +7,7 @@ import { all } from '../dropdown/themes/header.js';
 import { styles as shared } from '../dropdown/themes/shared/header/dropdown-header.common.css.js';
 
 /**
- * Represents a header item in an igc-select component.
+ * Represents a header item in a select component.
  *
  * @element igc-select-header
  *

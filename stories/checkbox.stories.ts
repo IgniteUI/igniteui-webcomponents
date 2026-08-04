@@ -39,7 +39,7 @@ const metadata: Meta<IgcCheckboxComponent> = {
     },
     name: {
       type: 'string',
-      description: 'The name attribute of the control.',
+      description: 'The name of the control, submitted with the form data.',
       control: 'text',
     },
     disabled: {
@@ -56,7 +56,7 @@ const metadata: Meta<IgcCheckboxComponent> = {
     },
     value: {
       type: 'string',
-      description: 'The value attribute of the control.',
+      description: 'The value of the control.',
       control: 'text',
     },
     checked: {
@@ -90,13 +90,13 @@ interface IgcCheckboxArgs {
   indeterminate: boolean;
   /** When set, makes the component a required field for validation. */
   required: boolean;
-  /** The name attribute of the control. */
+  /** The name of the control, submitted with the form data. */
   name: string;
   /** The disabled state of the component. */
   disabled: boolean;
   /** Sets the control into invalid state (visual state only). */
   invalid: boolean;
-  /** The value attribute of the control. */
+  /** The value of the control. */
   value: string;
   /** The checked state of the control. */
   checked: boolean;

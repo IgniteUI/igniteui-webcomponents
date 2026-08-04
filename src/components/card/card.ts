@@ -18,7 +18,7 @@ import { styles as shared } from './themes/shared/container/card.common.css.js';
  *
  * @element igc-card
  *
- * @slot - Renders the card content. Typically contains igc-card-header, igc-card-media, igc-card-content, and igc-card-actions.
+ * @slot - Renders the card content. Typically contains the card header, media, content and actions.
  *
  * @example
  * ```html

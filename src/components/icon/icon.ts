@@ -28,7 +28,7 @@ import { all } from './themes/themes.js';
  * - Registered dynamically using `registerIcon` or `registerIconFromText`
  * - Referenced by aliases that resolve differently based on the active theme
  *
- * Icons automatically adapt to the current theme when used within an `igc-theme-provider`.
+ * Icons automatically adapt to the current theme when used within a theme provider.
  * The component subscribes to the icon registry and updates automatically when icons
  * are registered or references are updated.
  *

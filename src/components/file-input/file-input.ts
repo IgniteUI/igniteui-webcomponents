@@ -172,8 +172,7 @@ export default class IgcFileInputComponent extends EventEmitterMixin<
   }
 
   /**
-   * The multiple attribute of the control.
-   * Used to indicate that a file input allows the user to select more than one file.
+   * Whether the control allows the user to select more than one file.
    *
    * @attr
    * @default false
@@ -182,15 +181,14 @@ export default class IgcFileInputComponent extends EventEmitterMixin<
   public multiple = false;
 
   /**
-   * The accept attribute of the control.
-   * Defines the file types as a list of comma-separated values that the file input should accept.
+   * The file types the control accepts, as a comma-separated list.
    * @attr
    */
   @property()
   public accept = '';
 
   /**
-   * The autofocus attribute of the control.
+   * Whether the control should receive focus automatically.
    * @attr
    */
   @property({ type: Boolean })

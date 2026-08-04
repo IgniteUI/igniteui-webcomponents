@@ -34,7 +34,7 @@ export interface IgcChipComponentEventMap {
  * @slot select - Content to render when the chip in selected state.
  * @slot remove - Content to override the default remove chip icon.
  *
- * @fires igcRemove - Emits an event when the chip component is removed. Returns the removed chip component.
+ * @fires igcRemove - Emits an event when the chip component is removed.
  * @fires igcSelect - Emits event when the chip component is selected/deselected and any related animations and transitions also end.
  *
  * @csspart base - The base wrapper of the chip.

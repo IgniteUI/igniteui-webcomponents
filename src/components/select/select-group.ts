@@ -15,7 +15,8 @@ import { styles as shared } from '../dropdown/themes/shared/group/dropdown-group
 import IgcSelectItemComponent from './select-item.js';
 
 /**
- * @element igc-select-group - A container for a group of `igc-select-item` components.
+ * A container for a group of select items.
+ * @element igc-select-group
  *
  * @slot label - Contains the group's label.
  * @slot - Intended to contain the items belonging to this group.
@@ -39,7 +40,7 @@ export default class IgcSelectGroupComponent extends LitElement {
 
   private controlledItems!: Array<IgcSelectItemComponent>;
 
-  /** All child `igc-select-item`s. */
+  /** All child select items. */
   @queryAssignedElements({
     flatten: true,
     selector: IgcSelectItemComponent.tagName,

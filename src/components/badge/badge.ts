@@ -19,7 +19,7 @@ import { all } from './themes/themes.js';
  * @slot - Default slot for the badge content.
  *
  * @csspart base - The base wrapper of the badge.
- * @csspart icon - The icon container, present when an igc-icon element is slotted.
+ * @csspart icon - The icon container, present when an icon element is slotted.
  *
  * @example
  * ```html
