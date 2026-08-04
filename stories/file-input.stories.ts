@@ -46,20 +46,20 @@ const metadata: Meta<IgcFileInputComponent> = {
     multiple: {
       type: 'boolean',
       description:
-        'The multiple attribute of the control.\nUsed to indicate that a file input allows the user to select more than one file.',
+        'Whether the control allows the user to select more than one file.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
     accept: {
       type: 'string',
       description:
-        'The accept attribute of the control.\nDefines the file types as a list of comma-separated values that the file input should accept.',
+        'The file types the control accepts, as a comma-separated list.',
       control: 'text',
       table: { defaultValue: { summary: '' } },
     },
     autofocus: {
       type: 'boolean',
-      description: 'The autofocus attribute of the control.',
+      description: 'Whether the control should receive focus automatically.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
@@ -72,7 +72,7 @@ const metadata: Meta<IgcFileInputComponent> = {
     },
     name: {
       type: 'string',
-      description: 'The name attribute of the control.',
+      description: 'The name of the control, submitted with the form data.',
       control: 'text',
     },
     disabled: {
@@ -95,7 +95,7 @@ const metadata: Meta<IgcFileInputComponent> = {
     },
     placeholder: {
       type: 'string',
-      description: 'The placeholder attribute of the control.',
+      description: 'The placeholder text of the control.',
       control: 'text',
     },
     label: {
@@ -125,21 +125,15 @@ interface IgcFileInputArgs {
   value: string;
   /** Gets/Sets the locale used for getting language, affecting resource strings. */
   locale: string;
-  /**
-   * The multiple attribute of the control.
-   * Used to indicate that a file input allows the user to select more than one file.
-   */
+  /** Whether the control allows the user to select more than one file. */
   multiple: boolean;
-  /**
-   * The accept attribute of the control.
-   * Defines the file types as a list of comma-separated values that the file input should accept.
-   */
+  /** The file types the control accepts, as a comma-separated list. */
   accept: string;
-  /** The autofocus attribute of the control. */
+  /** Whether the control should receive focus automatically. */
   autofocus: boolean;
   /** When set, makes the component a required field for validation. */
   required: boolean;
-  /** The name attribute of the control. */
+  /** The name of the control, submitted with the form data. */
   name: string;
   /** The disabled state of the component. */
   disabled: boolean;
@@ -147,7 +141,7 @@ interface IgcFileInputArgs {
   invalid: boolean;
   /** Whether the control will have outlined appearance. */
   outlined: boolean;
-  /** The placeholder attribute of the control. */
+  /** The placeholder text of the control. */
   placeholder: string;
   /** The label for the control. */
   label: string;

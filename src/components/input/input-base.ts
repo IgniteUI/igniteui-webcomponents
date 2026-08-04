@@ -64,7 +64,7 @@ export abstract class IgcInputBaseComponent extends FormAssociatedRequiredMixin(
   }
 
   /* blazorSuppress */
-  /** The value attribute of the control. */
+  /** The value of the control. */
   public abstract value: string;
 
   /**
@@ -77,7 +77,7 @@ export abstract class IgcInputBaseComponent extends FormAssociatedRequiredMixin(
   public outlined = false;
 
   /**
-   * The placeholder attribute of the control.
+   * The placeholder text of the control.
    * @attr
    */
   @property()

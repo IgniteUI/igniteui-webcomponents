@@ -245,7 +245,7 @@ export interface ChatRenderers {
    */
   message?: ChatTemplateRenderer<ChatMessageRenderContext>;
   /**
-   * Custom renderer for message-specific actions (e.g., reply or delete buttons).
+   * Custom renderer for message-specific actions (e.g. reply or delete buttons).
    */
   messageActions?: ChatTemplateRenderer<ChatMessageRenderContext>;
   /**

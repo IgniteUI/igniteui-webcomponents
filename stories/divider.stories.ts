@@ -13,7 +13,7 @@ const metadata: Meta<IgcDividerComponent> = {
     docs: {
       description: {
         component:
-          'The igc-divider allows the content author to easily create a horizontal/vertical rule as a break between content to better organize information on a page.',
+          'The divider allows the content author to easily create a horizontal/vertical\nrule as a break between content, to better organize information on a page.',
       },
     },
   },

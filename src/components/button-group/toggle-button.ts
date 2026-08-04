@@ -11,8 +11,8 @@ import { all } from './themes/button.js';
 import { styles as shared } from './themes/shared/button/button.common.css.js';
 
 /**
- * The `igc-toggle-button` wraps a native button element and exposes additional `value` and `selected` properties.
- * It is used in the context of an `igc-button-group` to facilitate the creation of group/toolbar like UX behaviors.
+ * The toggle button wraps a native button element and exposes additional `value` and `selected` properties.
+ * It is used in the context of a button group to facilitate the creation of group/toolbar like UX behaviors.
  *
  * @element igc-toggle-button
  *
@@ -36,7 +36,7 @@ export default class IgcToggleButtonComponent extends LitElement {
   private readonly _nativeButton!: HTMLButtonElement;
 
   /**
-   * The value attribute of the control.
+   * The value of the control.
    * @attr
    */
   @property()

@@ -60,7 +60,7 @@ const Slots = setSlots(
 );
 
 /**
- * This element represents a multi-line plain-text editing control,
+ * Represents a multi-line plain-text editing control,
  * useful when you want to allow users to enter a sizeable amount of free-form text,
  * for example a comment on a review or feedback form.
  *
@@ -80,11 +80,11 @@ const Slots = setSlots(
  * @fires igcChange - Emitted when the a change to the control value is committed by the user.
  *
  * @csspart container - The main wrapper that holds all main input elements of the textarea.
- * @csspart input - The native input element of the igc-textarea.
- * @csspart label - The native label element of the igc-textarea.
- * @csspart prefix - The prefix wrapper of the igc-textarea.
- * @csspart suffix - The suffix wrapper of the igc-textarea.
- * @csspart helper-text - The helper text wrapper of the igc-textarea.
+ * @csspart input - The native input element of the textarea.
+ * @csspart label - The native label element of the textarea.
+ * @csspart prefix - The prefix wrapper of the textarea.
+ * @csspart suffix - The suffix wrapper of the textarea.
+ * @csspart helper-text - The helper text wrapper of the textarea.
  */
 @shadowOptions({ delegatesFocus: true })
 export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
@@ -127,7 +127,7 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
   //#region Public properties and attributes
 
   /**
-   * Specifies what if any permission the browser has to provide for automated assistance in filling out form field values,
+   * Specifies what permission, if any, the browser has to provide automated assistance in filling out form field values,
    * as well as guidance to the browser as to the type of information expected in the field.
    * Refer to [this page](https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/autocomplete) for additional information.
    *
@@ -190,7 +190,7 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
   public outlined = false;
 
   /**
-   * The placeholder attribute of the control.
+   * The placeholder text of the control.
    *
    * @attr
    */
