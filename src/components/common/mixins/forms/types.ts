@@ -12,7 +12,7 @@ declare class BaseFormAssociatedElement {
 
   //#region Properties
 
-  private readonly __internals: ElementInternalsController;
+  protected readonly _internals: ElementInternalsController;
   protected readonly _formValue: unknown;
 
   protected _pristine: boolean;
@@ -36,7 +36,7 @@ declare class BaseFormAssociatedElement {
   public invalid: boolean;
 
   /**
-   * The name attribute of the control.
+   * The name of the control, submitted with the form data.
    * @attr
    */
   public name: string;
@@ -87,7 +87,7 @@ declare class BaseFormAssociatedElement {
 
   /**
    * Sets the default value of the component.
-   * Called in `attributeChangedCallback`(i.e. when the `value` attribute of the control is set).
+   * Called in `attributeChangedCallback` (i.e. when the `value` attribute of the control is set).
    */
   protected _setDefaultValue(current: string | null): void;
 
@@ -142,10 +142,10 @@ declare class BaseFormAssociatedElement {
     mode: FormRestoreMode
   ): void;
 
-  /** Checks for validity of the control and emits the invalid event if it invalid. */
+  /** Checks for validity of the control and emits the invalid event if it's invalid. */
   public checkValidity(): boolean;
 
-  /** Checks for validity of the control and shows the browser message if it invalid. */
+  /** Checks for validity of the control and shows the browser message if it's invalid. */
   public reportValidity(): boolean;
 
   /**

@@ -24,11 +24,11 @@ export interface IgcButtonGroupComponentEventMap {
 
 /* blazorAdditionalDependency: IgcToggleButtonComponent */
 /**
- * The `igc-button-group` groups a series of `igc-toggle-button`s together, exposing features such as layout and selection.
+ * Groups a series of toggle buttons together, exposing features such as layout and selection.
  *
  * @element igc-button-group
  *
- * @slot - Renders `igc-toggle-button` component.
+ * @slot - Renders the toggle buttons of the group.
  *
  * @fires igcSelect - Emitted when a button is selected through user interaction.
  * @fires igcDeselect - Emitted when a button is deselected through user interaction.

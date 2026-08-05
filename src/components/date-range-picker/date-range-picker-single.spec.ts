@@ -20,6 +20,7 @@ import {
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import {
   isFocused,
+  runExternalLabelAssociationTests,
   simulateClick,
   simulateInput,
   simulateKeyboard,
@@ -36,6 +37,16 @@ import {
 
 describe('Date range picker - single input', () => {
   before(() => defineComponents(IgcDateRangePickerComponent));
+
+  runExternalLabelAssociationTests({
+    tagName: IgcDateRangePickerComponent.tagName,
+    getNativeInput: (host) =>
+      (host as IgcDateRangePickerComponent).renderRoot
+        .querySelector<IgcDateRangeInputComponent>(
+          IgcDateRangeInputComponent.tagName
+        )!
+        .renderRoot.querySelector('input')!,
+  });
 
   let picker: IgcDateRangePickerComponent;
   let rangeInput: IgcDateRangeInputComponent;

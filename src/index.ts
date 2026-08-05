@@ -73,6 +73,17 @@ export { default as IgcHighlightComponent } from './components/highlight/highlig
 export { default as IgcTooltipComponent } from './components/tooltip/tooltip.js';
 export { default as IgcThemeProviderComponent } from './components/theme-provider/theme-provider.js';
 export { default as IgcSkeletonComponent } from './components/skeleton/skeleton.js';
+export { default as IgcQrCodeComponent } from './components/qr-code/qr-code.js';
+export { default as IgcVirtualScrollComponent } from './components/virtualization/virtualization.js';
+export type {
+  IgcVirtualScrollComponentEventMap,
+  VirtualScrollItemTemplate,
+} from './components/virtualization/virtualization.js';
+export type {
+  VirtualScrollItemContext,
+  VirtualScrollState,
+  VirtualScrollDataRequest,
+} from './components/virtualization/types.js';
 
 // definitions
 export { defineComponents } from './components/common/definitions/defineComponents.js';
@@ -88,8 +99,6 @@ export {
 // theming configuration
 export { configureTheme } from './theming/config.js';
 export type { Theme, ThemeVariant } from './theming/types.js';
-export { addThemingController as θaddThemingController } from './theming/theming-controller.js';
-export { addAdoptedStylesController as θaddAdoptedStylesController } from './components/common/controllers/adopt-styles.js';
 
 // localization objects
 export {
@@ -198,5 +207,23 @@ export type {
   GroupingDirection,
   IgcComboChangeEventArgs,
 } from './components/combo/types.js';
-export type { IconMeta } from './components/icon/registry/types.js';
+export type {
+  IconMeta,
+  RegisterIconOptions,
+} from './components/icon/registry/types.js';
 export type * from './components/chat/types.js';
+export type {
+  QrErrorCorrectionLevel,
+  QrDotStyle,
+  QrCornerSquareStyle,
+} from './components/qr-code/types.js';
+
+// Internal exports for other packages
+/** @hidden @internal */
+export { addThemingController as θaddThemingController } from './theming/theming-controller.js';
+
+/** @hidden @internal */
+export { addAdoptedStylesController as θaddAdoptedStylesController } from './components/common/controllers/adopt-styles.js';
+
+/** @hidden @internal */
+export { createAbortHandle as θcreateAbortHandle } from './components/common/abort-handler.js';

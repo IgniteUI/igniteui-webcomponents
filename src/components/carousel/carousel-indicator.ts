@@ -10,7 +10,7 @@ import type IgcCarouselComponent from './carousel.js';
 import { styles } from './themes/carousel-indicator.base.css.js';
 
 /**
- * Used when a custom indicator needs to be passed to the `igc-carousel` component.
+ * Used when a custom indicator needs to be passed to the carousel component.
  *
  * @element igc-carousel-indicator
  *

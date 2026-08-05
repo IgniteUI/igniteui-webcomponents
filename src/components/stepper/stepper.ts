@@ -59,7 +59,7 @@ const STEPPER_SYNC_PROPERTIES: (keyof IgcStepperComponent)[] = [
  * A stepper component that provides a wizard-like workflow by dividing content into logical steps.
  *
  * @remarks
- * The stepper component allows the user to navigate between multiple `igc-step` elements.
+ * The stepper component allows the user to navigate between multiple step children.
  * It supports horizontal and vertical orientation, linear and non-linear navigation,
  * keyboard navigation, and provides API methods to control the active step.
  *
@@ -68,7 +68,7 @@ const STEPPER_SYNC_PROPERTIES: (keyof IgcStepperComponent)[] = [
  *
  * @element igc-stepper
  *
- * @slot - Renders `igc-step` components inside the default slot.
+ * @slot - Renders the steps of the stepper inside the default slot.
  *
  * @fires igcActiveStepChanging - Emitted when the active step is about to change. Cancelable.
  * @fires igcActiveStepChanged - Emitted after the active step has changed.
@@ -491,7 +491,7 @@ export default class IgcStepperComponent extends EventEmitterMixin<
   }
 
   /**
-   * Resets the stepper to its initial state i.e. activates the first step.
+   * Resets the stepper to its initial state, i.e. activates the first step.
    *
    * @remarks
    * The steps' content will not be automatically reset.

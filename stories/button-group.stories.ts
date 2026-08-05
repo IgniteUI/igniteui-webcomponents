@@ -60,7 +60,7 @@ const metadata: Meta<IgcButtonGroupComponent> = {
     docs: {
       description: {
         component:
-          'The `igc-button-group` groups a series of `igc-toggle-button`s together, exposing features such as layout and selection.',
+          'Groups a series of toggle buttons together, exposing features such as layout and selection.',
       },
     },
     actions: { handles: ['igcSelect', 'igcDeselect'] },
@@ -358,8 +358,7 @@ export const ProgrammaticSelection: Story = {
           id="sel-log"
           style="margin: 0; padding: 0.75rem; background: var(--ig-gray-100, #f5f5f5); border-radius: 4px; font-size: 0.8rem;"
         >
-Interact with the buttons to see events.</pre
-        >
+Interact with the buttons to see events.</pre>
       </div>
     `;
   },

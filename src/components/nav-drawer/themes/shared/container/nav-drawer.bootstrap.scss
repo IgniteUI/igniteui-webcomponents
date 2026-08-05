@@ -1,9 +1,5 @@
 @use 'styles/utilities' as *;
 
-:host {
-    --menu-mini-width: #{rem(88px)};
-}
-
 [part='mini'],
 [part='main'] {
     padding: pad(rem(16px));

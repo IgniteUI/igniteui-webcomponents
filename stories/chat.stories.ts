@@ -401,18 +401,20 @@ export const Basic: Story = {
     <igc-chat
       style="--igc-chat-height: calc(100vh - 32px);"
       .messages=${[...supportMessages]}
-      .options=${{
-        headerText: 'IgniteUI Web Components Support',
-        inputPlaceholder: 'Ask about installation, components, theming…',
-        suggestions: [
-          'How do I install the library?',
-          'What themes are available?',
-          'How do events work?',
-        ],
-        renderers: {
-          messageContent: async ({ message }) => _markdownRenderer(message),
-        },
-      } satisfies IgcChatOptions}
+      .options=${
+        {
+          headerText: 'IgniteUI Web Components Support',
+          inputPlaceholder: 'Ask about installation, components, theming…',
+          suggestions: [
+            'How do I install the library?',
+            'What themes are available?',
+            'How do events work?',
+          ],
+          renderers: {
+            messageContent: async ({ message }) => _markdownRenderer(message),
+          },
+        } satisfies IgcChatOptions
+      }
       @igcMessageCreated=${handleMessageSend}
     ></igc-chat>
   `,

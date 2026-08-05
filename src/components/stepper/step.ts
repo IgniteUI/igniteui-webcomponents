@@ -25,7 +25,7 @@ import { styles } from './themes/step/step.base.css.js';
 import { all } from './themes/step/themes.js';
 
 /**
- * A step component used within an `igc-stepper` to represent an individual step in a wizard-like workflow.
+ * A step component used within a stepper to represent an individual step in a wizard-like workflow.
  *
  * @remarks
  * Each step has a header (with an indicator, title, and subtitle) and a content area.
@@ -136,8 +136,7 @@ export default class IgcStepComponent extends LitElement {
   }
 
   private get _animation():
-    | StepperVerticalAnimation
-    | HorizontalTransitionAnimation {
+    StepperVerticalAnimation | HorizontalTransitionAnimation {
     const animation = this._isHorizontal
       ? this._stepper?.horizontalAnimation
       : this._stepper?.verticalAnimation;

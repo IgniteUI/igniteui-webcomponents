@@ -1,6 +1,5 @@
-import type { RenderItemFunction } from '@lit-labs/virtualizer/virtualize.js';
 import type { ReactiveControllerHost, TemplateResult } from 'lit';
-
+import type { VirtualScrollItemTemplate } from '../virtualization/virtualization.js';
 import type IgcComboComponent from './combo.js';
 
 export type Keys<T> = keyof T;
@@ -18,15 +17,19 @@ export type ComboHost<T extends object> = ReactiveControllerHost &
 
 export type GroupingDirection = 'asc' | 'desc' | 'none';
 export type ComboChangeType = 'selection' | 'deselection' | 'addition';
-export type ComboRenderFunction<T extends object> = RenderItemFunction<
+export type ComboRenderFunction<T extends object> = VirtualScrollItemTemplate<
   ComboRecord<T>
 >;
 export type ComboValue<T> = T | Values<T>;
 
 /* jsonAPIPlainObject */
+/** Filtering options for the combo component. */
 export interface FilteringOptions<T extends object> {
+  /** The key in the data source used when filtering the list of options. */
   filterKey: Keys<T> | undefined;
+  /** Determines whether the filtering operation should be case sensitive. */
   caseSensitive?: boolean;
+  /** When true, the filter distinguishes between accented letters and their base letters. */
   matchDiacritics?: boolean;
 }
 

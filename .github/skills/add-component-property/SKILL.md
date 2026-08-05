@@ -103,7 +103,43 @@ public propertyName = 0;
 public propertyName: ComplexType = defaultValue;
 ```
 
-### 2. Update Component Render Method
+### 2. Write the Description
+
+The JSDoc description is copied **verbatim** into `custom-elements.json`, the generated
+Storybook `argTypes`/args interface, and the API docs of every framework wrapper
+(Angular / React / Blazor). Write it as product documentation:
+
+- **No `igc-` tag names in prose.** Use the plain-English component name — "the select
+  component", "toggle buttons", "the tile manager" — not `igc-select` or
+  `` `igc-toggle-button` ``. Tag names belong only in `@element` and fenced `@example`
+  blocks.
+- **Don't restate that it is an attribute.** `@attr` already says so.
+  `The label of the control.` — not `The label attribute of the control.`
+- **Don't use `Gets/Sets`.** State what the value is; if the setter has side effects, add a
+  second sentence for the behavior.
+- **Booleans start with "Whether …"** and must describe the `true` state accurately. Verify
+  against the implementation — a `hide*`/`disable*` name inverts the sentence
+  (`hideIndicators` → *"Whether the carousel should skip rendering of the indicator
+  controls."*).
+- **Present tense**, not "will" (`an empty value returns an empty string`).
+
+```typescript
+// ❌ Wrong
+/**
+ * The outlined attribute of the control.
+ * @attr
+ */
+
+// ✅ Right
+/**
+ * Whether the control has an outlined appearance.
+ * @attr
+ */
+```
+
+Full reference: [create-new-component → Documentation Conventions](../create-new-component/SKILL.md#documentation-conventions)
+
+### 3. Update Component Render Method
 
 If the property affects rendering, update the `render()` method:
 
@@ -117,7 +153,7 @@ protected override render() {
 }
 ```
 
-### 3. Add Property Change Handler (if needed)
+### 4. Add Property Change Handler (if needed)
 
 If the property requires side effects or needs to sync computed/dependent properties, use Lit's lifecycle hooks.
 
@@ -153,7 +189,7 @@ protected override willUpdate(changedProperties: PropertyValues<this>): void {
 - Always call `super.update(changedProperties)` when overriding `update()`
 - Check `changedProperties.has()` to avoid unnecessary work
 
-### 4. Update Tests
+### 5. Update Tests
 
 Add tests for the new property in `[component-name].spec.ts`:
 
@@ -187,13 +223,23 @@ it('reflects to attribute', async () => {
 });
 ```
 
-### 5. Update Storybook Story
+### 6. Regenerate the Storybook Story Metadata
 
-Add the property to `stories/[component-name].stories.ts`:
+The `metadata` object, the `Igc[Component]Args` interface and their descriptions live inside
+a **generated** `// region default … // endregion` block in
+`stories/[component-name].stories.ts`. Do not hand-edit that block — regenerate it from the
+JSDoc you just wrote:
 
-**Update argTypes**:
+```bash
+npm run cem        # regenerates custom-elements.json from the source JSDoc
+npm run build:meta # rewrites the `// region default` block of each story
+```
+
+This produces the `argTypes` entry, the `args` default and the args-interface comment for
+the new property, all carrying the description verbatim:
 
 ```typescript
+// region default
 argTypes: {
   propertyName: {
     type: 'string', // or 'boolean', 'number'
@@ -203,28 +249,25 @@ argTypes: {
   },
   // ... other properties
 }
-```
-
-**Update args**:
-
-```typescript
-args: {
-  propertyName: defaultValue,
-  // ... other properties
-}
-```
-
-**Update interface**:
-
-```typescript
+// ...
 interface IgcComponentArgs {
   /** [Property description] */
   propertyName: PropertyType;
   // ... other properties
 }
+// endregion
 ```
 
-**Update story template**:
+If the generated description reads badly, fix the JSDoc in the component and regenerate —
+never patch the story. Every story is generated; there are no hand-maintained exceptions.
+
+If your new property doesn't appear after regenerating, the story is being skipped silently.
+Check that the filename matches the tag name (`igc-date-picker` → `date-picker.stories.ts`) and
+that the `// region default` / `// endregion` pair is present — a missing region makes the
+generator a no-op with no warning.
+
+**Update the story template** — this part lives outside the generated region and is edited
+by hand:
 
 ```typescript
 export const Basic: Story = {
@@ -234,7 +277,7 @@ export const Basic: Story = {
 };
 ```
 
-### 6. Verify and Test
+### 7. Verify and Test
 
 Run tests and verify in Storybook:
 
@@ -253,15 +296,16 @@ npm run storybook
 
 - [ ] Property added with `@property` decorator
 - [ ] JSDoc comment includes `@attr` for primitives
+- [ ] Description follows the [description rules](#2-write-the-description): no `igc-` tag
+      names, no "… attribute of the control", no `Gets/Sets`, booleans start with "Whether"
+      and describe the `true` state correctly
 - [ ] Type annotation correct
 - [ ] Default value appropriate
 - [ ] `reflect: true` only for primitives
 - [ ] Tests cover default value
 - [ ] Tests cover property changes
 - [ ] Tests cover attribute reflection (if applicable)
-- [ ] Storybook argTypes updated
-- [ ] Storybook args updated
-- [ ] Storybook interface updated
+- [ ] `npm run cem && npm run build:meta` run; generated story region committed
 - [ ] Story template uses new property
 - [ ] All tests pass
 - [ ] Property works in Storybook
@@ -286,7 +330,22 @@ npm run storybook
 ### 4. Forgetting to Update Storybook
 
 **Problem**: New property not controllable in Storybook
-**Solution**: Add to argTypes, args, interface, and template
+**Solution**: Run `npm run cem && npm run build:meta` to regenerate the `// region default`
+block, then wire the property into the story template by hand
+
+### 5. Hand-Editing the Generated Story Region
+
+**Problem**: The `argTypes` description is fixed directly in the story; the next
+`npm run build:meta` reverts it, or the story and the API docs disagree
+**Solution**: The JSDoc in the component is the single source of truth — fix it there and
+regenerate
+
+### 6. Tag Names in the Description
+
+**Problem**: A description like `Gets/Sets the name for all child igc-radio components.` ships
+into `custom-elements.json`, the Storybook docs and every framework wrapper's API docs
+**Solution**: `The name applied to all radio buttons in the group.` — see
+[Write the Description](#2-write-the-description)
 
 ## Reference Examples
 

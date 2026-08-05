@@ -14,7 +14,7 @@ import { styles } from './themes/carousel-slide.base.css.js';
 let nextId = 1;
 
 /**
- * A single content container within a set of containers used in the context of an `igc-carousel`.
+ * A single content container within a set of containers used in the context of a carousel.
  *
  * @element igc-carousel-slide
  *

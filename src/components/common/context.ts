@@ -9,6 +9,8 @@ export type TileManagerContext = {
   instance: IgcTileManagerComponent;
   /** The internal CSS grid container of the igc-tile-manager. */
   grid: Ref<HTMLElement>;
+  /** Synchronizes the tile manager with the maximized state of its tiles. */
+  setMaximizedState: () => void;
 };
 
 const carouselContext = createContext<IgcCarouselComponent>(

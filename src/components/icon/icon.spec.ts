@@ -50,6 +50,26 @@ function mockResponse() {
   return Promise.resolve(response);
 }
 
+/**
+ * Resolves once `channel` has received `count` messages.
+ * Set up the returned Promise *before* triggering the action so no
+ * message is missed, then await it after.
+ */
+function waitForMessages(
+  channel: BroadcastChannel,
+  count: number
+): Promise<void> {
+  return new Promise<void>((resolve) => {
+    let n = 0;
+    channel.addEventListener('message', function listener() {
+      if (++n >= count) {
+        channel.removeEventListener('message', listener);
+        resolve();
+      }
+    });
+  });
+}
+
 describe('Icon registry', () => {
   const name = 'test';
   const collection = 'test-collection';
@@ -80,6 +100,96 @@ describe('Icon registry', () => {
   it('register icons from text', async () => {
     registerIconFromText(name, bugSvg, collection);
     expect(getIconRegistry().get(name, collection)?.svg).to.not.be.undefined;
+  });
+
+  describe('stripMeta option', () => {
+    it('does not strip meta by default (registerIconFromText)', () => {
+      registerIconFromText(name, bugSvg, collection);
+      const icon = getIconRegistry().get(name, collection)!;
+
+      expect(icon.svg).to.include('<title');
+      expect(icon.svg).to.include('<desc');
+      expect(icon.title).to.equal('Bug Icon');
+    });
+
+    it('strips <title> and <desc> when stripMeta is true (registerIconFromText)', () => {
+      registerIconFromText(name, bugSvg, { collection, stripMeta: true });
+      const icon = getIconRegistry().get(name, collection)!;
+
+      expect(icon.svg).not.to.include('<title');
+      expect(icon.svg).not.to.include('<desc');
+    });
+
+    it('still captures title text into SvgIcon.title when stripMeta is true', () => {
+      registerIconFromText(name, bugSvg, { collection, stripMeta: true });
+      const icon = getIconRegistry().get(name, collection)!;
+
+      // Title text is preserved so the host <igc-icon> can still expose it as aria-label.
+      expect(icon.title).to.equal('Bug Icon');
+    });
+
+    it('cleans up aria-labelledby references to stripped element IDs', () => {
+      // bugSvg has aria-labelledby="brbug-desc brbug-title" on the root <svg>.
+      // After stripping, both IDs are gone so the attribute should be removed.
+      registerIconFromText(name, bugSvg, { collection, stripMeta: true });
+      const icon = getIconRegistry().get(name, collection)!;
+
+      expect(icon.svg).not.to.include('aria-labelledby');
+    });
+
+    it('retains aria-labelledby IDs that do not belong to stripped elements', () => {
+      // Construct an SVG where aria-labelledby references one external ID in
+      // addition to the title/desc IDs that will be stripped.
+      const svgWithExtraRef = [
+        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"',
+        ' aria-labelledby="extra-label brbug-title brbug-desc">',
+        '<title id="brbug-title">Bug Icon</title>',
+        '<desc id="brbug-desc">A picture showing an insect.</desc>',
+        '<path d="M0 0h24v24H0z"/>',
+        '</svg>',
+      ].join('');
+
+      registerIconFromText(name, svgWithExtraRef, {
+        collection,
+        stripMeta: true,
+      });
+      const icon = getIconRegistry().get(name, collection)!;
+
+      // Only the IDs that belonged to stripped elements are removed;
+      // 'extra-label' must survive.
+      expect(icon.svg).to.include('aria-labelledby="extra-label"');
+    });
+
+    it('strips meta when using the options-object form of registerIconFromText with a collection', () => {
+      const altCollection = `${collection}-alt`;
+      registerIconFromText(name, bugSvg, {
+        collection: altCollection,
+        stripMeta: true,
+      });
+      const icon = getIconRegistry().get(name, altCollection)!;
+
+      expect(icon).to.not.be.undefined;
+      expect(icon.svg).not.to.include('<title');
+      expect(icon.svg).not.to.include('<desc');
+      expect(icon.title).to.equal('Bug Icon');
+    });
+
+    it('strips meta when fetching via registerIcon with options object', async () => {
+      await registerIcon(name, '', { collection, stripMeta: true });
+      const icon = getIconRegistry().get(name, collection)!;
+
+      expect(icon.svg).not.to.include('<title');
+      expect(icon.svg).not.to.include('<desc');
+      expect(icon.title).to.equal('Bug Icon');
+    });
+
+    it('old string-collection API still works without stripping', () => {
+      registerIconFromText(name, bugSvg, collection);
+      const icon = getIconRegistry().get(name, collection)!;
+
+      expect(icon.svg).to.include('<title');
+      expect(icon.title).to.equal('Bug Icon');
+    });
   });
 
   describe('Referential Icons', () => {
@@ -162,8 +272,9 @@ describe('Icon broadcast service', () => {
     it('correct event state when registering an icon', async () => {
       const iconName = 'bug';
 
+      const ready = waitForMessages(channel, 1);
       registerIconFromText(iconName, bugSvg, collectionName);
-      await aTimeout(0);
+      await ready;
 
       const { actionType, collections } = first(events).data;
       expect(actionType).to.equal(ActionType.RegisterIcon);
@@ -180,10 +291,11 @@ describe('Icon broadcast service', () => {
         ['search', searchSvg],
       ] as const;
 
+      const ready = waitForMessages(channel, icons.length);
       for (const each of icons) {
         registerIconFromText(each[0], each[1], collectionName);
       }
-      await aTimeout(0);
+      await ready;
 
       expect(events).lengthOf(icons.length);
       for (const [idx, event] of events.entries()) {
@@ -201,13 +313,13 @@ describe('Icon broadcast service', () => {
       const refName = 'bug-reference';
       const refCollectionName = 'ref-test';
 
+      const ready = waitForMessages(channel, 2);
       registerIconFromText('reference-test', bugSvg, collectionName);
-
       setIconRef(refName, refCollectionName, {
         name: 'reference-test',
         collection: collectionName,
       });
-      await aTimeout(0);
+      await ready;
 
       const { actionType, collections, references } = last(events).data;
 
@@ -222,12 +334,13 @@ describe('Icon broadcast service', () => {
       const refName = 'bug-reference';
       const refCollectionName = 'ref-test';
 
+      const ready = waitForMessages(channel, 2);
       registerIconFromText('reference-test', bugSvg, collectionName);
       const meta = new IconMetaClass();
       meta.name = 'reference-test';
       meta.collection = collectionName;
       setIconRef(refName, refCollectionName, meta);
-      await aTimeout(0);
+      await ready;
 
       const { actionType, collections, references } = last(events).data;
 
@@ -264,8 +377,9 @@ describe('Icon broadcast service', () => {
       // 1 global one, initialized when you get the icon registry first time.
 
       // a peer is requesting a state sync
+      const ready = waitForMessages(channel, 3);
       channel.postMessage({ actionType: ActionType.SyncState });
-      await aTimeout(20);
+      await ready;
 
       // all icon broadcasts must respond with their state
       // 2 from broadcast service + 1 from global.
@@ -282,11 +396,13 @@ describe('Icon broadcast service', () => {
   describe('Peer registry', () => {
     it('registered icon is correctly sent when a peer requests a sync states', async () => {
       const iconName = 'bug';
-      registerIconFromText(iconName, bugSvg, collectionName);
 
-      // a peer is requesting a state sync
+      // registerIconFromText fires RegisterIcon; the SyncState postMessage
+      // triggers a SyncState response from the registry — 2 messages total.
+      const ready = waitForMessages(channel, 2);
+      registerIconFromText(iconName, bugSvg, collectionName);
       channel.postMessage({ actionType: ActionType.SyncState });
-      await aTimeout(0);
+      await ready;
 
       expect(events).lengthOf(2); // [ActionType.RegisterIcon, ActionType.SyncState]
 
@@ -309,9 +425,11 @@ describe('Icon broadcast service', () => {
         overwrite: true,
       });
 
-      // a peer is requesting a state sync
+      // setIconRef with external:false fires no broadcast; the SyncState
+      // postMessage triggers exactly one SyncState response.
+      const ready = waitForMessages(channel, 1);
       channel.postMessage({ actionType: ActionType.SyncState });
-      await aTimeout(0);
+      await ready;
 
       expect(events).lengthOf(1); // [ActionType.SyncState]
 
@@ -517,8 +635,9 @@ describe('DefaultMap serialization for cross-browser compatibility', () => {
   });
 
   it('broadcasted collections data is sent as plain Maps', async () => {
+    const ready = waitForMessages(channel, 1);
     registerIconFromText('test-icon', bugSvg, collectionName);
-    await aTimeout(0);
+    await ready;
 
     const { collections } = first(events).data;
 
@@ -532,6 +651,7 @@ describe('DefaultMap serialization for cross-browser compatibility', () => {
   });
 
   it('broadcasted references data is sent as plain Maps', async () => {
+    const ready = waitForMessages(channel, 2);
     registerIconFromText('ref-test', bugSvg, collectionName);
     const refName = 'bug-ref';
     const refCollection = 'ref-collection';
@@ -540,7 +660,7 @@ describe('DefaultMap serialization for cross-browser compatibility', () => {
       name: 'ref-test',
       collection: collectionName,
     });
-    await aTimeout(0);
+    await ready;
 
     const { references } = last(events).data;
 
@@ -554,8 +674,9 @@ describe('DefaultMap serialization for cross-browser compatibility', () => {
   });
 
   it('nested plain Maps can be structured cloned and transmitted safely', async () => {
+    const ready = waitForMessages(channel, 1);
     registerIconFromText('nested-icon', bugSvg, collectionName);
-    await aTimeout(0);
+    await ready;
 
     const { collections } = first(events).data;
 

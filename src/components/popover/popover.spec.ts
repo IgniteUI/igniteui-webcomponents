@@ -171,7 +171,9 @@ describe('Popover', () => {
     describe('With initial open state', () => {
       beforeEach(async () => {
         const root = await fixture<HTMLElement>(createNonSlottedPopover(true));
-        popover = root.querySelector('igc-popover') as IgcPopoverComponent;
+        popover = root.querySelector(
+          IgcPopoverComponent.tagName
+        ) as IgcPopoverComponent;
         anchor = root.querySelector('#btn') as HTMLButtonElement;
       });
 
@@ -199,7 +201,9 @@ describe('Popover', () => {
     describe('With initial closed state', () => {
       beforeEach(async () => {
         const root = await fixture<HTMLElement>(createNonSlottedPopover());
-        popover = root.querySelector('igc-popover') as IgcPopoverComponent;
+        popover = root.querySelector(
+          IgcPopoverComponent.tagName
+        ) as IgcPopoverComponent;
         anchor = root.querySelector('#btn') as HTMLButtonElement;
       });
 
@@ -277,6 +281,61 @@ describe('Popover', () => {
         const delta = floater.getBoundingClientRect();
         expect(delta.top).to.be.lessThan(initial.top);
       });
+    });
+  });
+
+  describe('Positioning strategy', () => {
+    function createStickyPopover(level: 'parent' | 'grandparent') {
+      const popover = html`
+        <igc-popover open anchor="btn">
+          <p style="border: 1px solid #ccc">Message</p>
+        </igc-popover>
+      `;
+
+      const inner = html`
+        <button id="btn" type="button">Show message</button>
+        ${popover}
+      `;
+
+      return level === 'parent'
+        ? html`<div style="position: sticky; top: 0">${inner}</div>`
+        : html`
+            <div style="position: sticky; top: 0">
+              <div>${inner}</div>
+            </div>
+          `;
+    }
+
+    it('uses the `fixed` strategy with a directly sticky ancestor', async () => {
+      const root = await fixture<HTMLElement>(createStickyPopover('parent'));
+      const popover = root.querySelector(
+        IgcPopoverComponent.tagName
+      ) as IgcPopoverComponent;
+      await waitForPaint(popover);
+
+      expect(getFloater(popover).style.position).to.equal('fixed');
+    });
+
+    it('uses the `fixed` strategy with a non-direct sticky ancestor', async () => {
+      const root = await fixture<HTMLElement>(
+        createStickyPopover('grandparent')
+      );
+      const popover = root.querySelector(
+        IgcPopoverComponent.tagName
+      ) as IgcPopoverComponent;
+      await waitForPaint(popover);
+
+      expect(getFloater(popover).style.position).to.equal('fixed');
+    });
+
+    it('uses the `absolute` strategy without a sticky ancestor', async () => {
+      const root = await fixture<HTMLElement>(createNonSlottedPopover(true));
+      const popover = root.querySelector(
+        IgcPopoverComponent.tagName
+      ) as IgcPopoverComponent;
+      await waitForPaint(popover);
+
+      expect(getFloater(popover).style.position).to.equal('absolute');
     });
   });
 });

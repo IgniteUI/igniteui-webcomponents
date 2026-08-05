@@ -132,7 +132,7 @@ export default class IgcNavDrawerComponent extends EventEmitterMixin<
   /**
    * Determines whether the drawer should remain open when the Escape key is pressed.
    *
-   * This attribute is only applicable when the drawer is in a non-relative position,
+   * This is only applicable when the drawer is in a non-relative position,
    * as the Escape key does not trigger the closing of relative drawers.
    *
    * @attr keep-open-on-escape

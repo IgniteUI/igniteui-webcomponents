@@ -43,7 +43,7 @@ type DefaultInputRenderers = {
 
 /* blazorSuppress */
 /**
- * A web component that provides the input area for the `igc-chat` interface.
+ * A web component that provides the input area for the chat interface.
  *
  * It supports:
  * - Text input with automatic resizing
@@ -60,11 +60,11 @@ type DefaultInputRenderers = {
  * @fires igcInputBlur - Fired when the input area loses focus
  * @fires igcAttachmentDrag - Fired when dragging a file over the input
  * @fires igcAttachmentDrop - Fired when a file is dropped into the input
- * @fires igcChange - Fired when file input changes (delegated from `<igc-file-input>`)
+ * @fires igcChange - Fired when the file input changes (delegated from the underlying file input).
  *
  * @csspart input-container - Container for the input section
  * @csspart input-wrapper - Wrapper around the text input
- * @csspart text-input - The `<igc-textarea>` component
+ * @csspart text-input - The underlying textarea component.
  * @csspart actions-container - Container for file upload/send buttons
  * @csspart send-button - The send icon button
  * @csspart attachments - Container for rendering attachments
@@ -292,7 +292,7 @@ export default class IgcChatInputComponent extends LitElement {
 
   private _handleInput({ detail }: CustomEvent<string>): void {
     this._state.inputValue = detail;
-    this._state.emitEvent('igcInputChange', { detail: { value: detail } });
+    this._state.emitEvent('igcInputChange', { detail });
   }
 
   private _handleFileUpload(event: Event): void {
@@ -430,13 +430,15 @@ export default class IgcChatInputComponent extends LitElement {
         @dragleave=${this._handleDragLeave}
         @drop=${this._handleDrop}
       >
-        ${this._state.hasInputAttachments
-          ? html`
-              <div part="attachments" role="list" aria-label="Attachments">
-                ${until(this._getRenderer('inputAttachments')(inputCtx))}
-              </div>
-            `
-          : nothing}
+        ${
+          this._state.hasInputAttachments
+            ? html`
+                <div part="attachments" role="list" aria-label="Attachments">
+                  ${until(this._getRenderer('inputAttachments')(inputCtx))}
+                </div>
+              `
+            : nothing
+        }
 
         <div part="input-wrapper">
           ${until(this._getRenderer('input')(inputCtx))}

@@ -12,7 +12,7 @@ const defaultState: GestureState = Object.freeze({ x: 0, y: 0, time: 0 });
 
 /**
  * Configuration object for a {@link GesturesController} instance.
- * @ignore
+ * @hidden
  */
 export interface GesturesOptions {
   /**
@@ -44,11 +44,7 @@ type GestureState = {
 
 type GestureDirection = 'left' | 'up' | 'right' | 'down';
 type SwipeEvents =
-  | 'swipe'
-  | 'swipe-left'
-  | 'swipe-up'
-  | 'swipe-right'
-  | 'swipe-down';
+  'swipe' | 'swipe-left' | 'swipe-up' | 'swipe-right' | 'swipe-down';
 
 export type GestureData = {
   direction: GestureDirection;
