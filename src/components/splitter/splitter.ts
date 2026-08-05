@@ -151,8 +151,14 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
 
   private readonly _separatorRef = createRef<HTMLElement>();
 
-  private _startPaneState: SplitterPaneState = { size: 'auto', styles: {} };
-  private _endPaneState: SplitterPaneState = { size: 'auto', styles: {} };
+  private readonly _startPaneState: SplitterPaneState = {
+    size: 'auto',
+    styles: {},
+  };
+  private readonly _endPaneState: SplitterPaneState = {
+    size: 'auto',
+    styles: {},
+  };
 
   @state()
   private _collapsedPane: PanePosition | null = null;
@@ -201,8 +207,8 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   public orientation: SplitterOrientation = 'horizontal';
 
   /**
-   * When true, prevents the user from collapsing either pane.
-   * This also hides the expand/collapse buttons on the splitter bar.
+   * Whether collapsing either pane is disabled. When `true`, this also hides
+   * the expand/collapse buttons on the splitter bar.
    * @attr disable-collapse
    * @default false
    */
@@ -210,8 +216,9 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   public disableCollapse = false;
 
   /**
-   * When true, prevents the user from resizing the panes by dragging the splitter bar or using keyboard shortcuts.
-   * This also hides the drag handle on the splitter bar.
+   * Whether resizing the panes by dragging the splitter bar or using keyboard
+   * shortcuts is disabled. When `true`, this also hides the drag handle on the
+   * splitter bar.
    * @attr disable-resize
    * @default false
    */
@@ -219,7 +226,7 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   public disableResize = false;
 
   /**
-   * When true, hides the expand/collapse buttons on the splitter bar.
+   * Whether the expand/collapse buttons on the splitter bar are hidden.
    *
    * Note that the buttons will also be hidden if `disable-collapse` is true or
    * if a pane is currently collapsed.
@@ -234,7 +241,7 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   public hideCollapseButtons = false;
 
   /**
-   * When true, hides the drag handle on the splitter bar.
+   * Whether the drag handle on the splitter bar is hidden.
    *
    * Note that the drag handle will also be hidden if `disable-resize` is true.
    * @attr hide-drag-handle
@@ -344,7 +351,8 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   }
 
   /**
-   * Gets/sets the collapsed state of the start pane.
+   * Whether the start pane is currently collapsed. Set this property to
+   * collapse or expand the pane programmatically.
    * @attr start-collapsed
    * @default false
    */
@@ -358,7 +366,8 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   }
 
   /**
-   * Gets/sets the collapsed state of the end pane.
+   * Whether the end pane is currently collapsed. Set this property to
+   * collapse or expand the pane programmatically.
    * @attr end-collapsed
    * @default false
    */
@@ -475,12 +484,7 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
       return;
     }
 
-    const delta = this._getDragDelta(e);
-
-    if (delta !== 0) {
-      this._resizeEnd(delta);
-    }
-
+    this._resizeEnd(this._getDragDelta(e));
     this._endDrag();
   }
 
@@ -534,8 +538,9 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
       this._endPaneState.savedSize = this._endPaneState.size;
       return;
     }
-    this._startPaneState.savedSize = `${this._paneRectAsPercent(0)}%`;
-    this._endPaneState.savedSize = `${this._paneRectAsPercent(1)}%`;
+    // Higher precision than the ARIA percent so restored layouts don't drift.
+    this._startPaneState.savedSize = `${this._paneRectAsPercent(0, 2)}%`;
+    this._endPaneState.savedSize = `${this._paneRectAsPercent(1, 2)}%`;
   }
 
   /* Reset sizes on collapse; restore saved sizes on expand */
@@ -551,12 +556,15 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   }
 
   /** Measures the actual rendered size of a pane and returns it as a percentage of total size. */
-  private _paneRectAsPercent(paneIndex: 0 | 1): number {
+  private _paneRectAsPercent(paneIndex: 0 | 1, precision = 0): number {
     const totalSize = this._getTotalSize();
     if (totalSize === 0) {
       return 0;
     }
-    return roundPrecise(asPercent(this._rectSize()[paneIndex], totalSize), 0);
+    return roundPrecise(
+      asPercent(this._rectSize()[paneIndex], totalSize),
+      precision
+    );
   }
 
   /** Converts a CSS size string (px or %) to a percentage of total size. */
@@ -690,6 +698,20 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
       this._setMinMaxInPx('start', type) ?? (type === 'min' ? 0 : totalSize);
     const targetEndSizePx = totalSize - targetStartSizePx;
 
+    const [initialStart, initialEnd] = this._rectSize();
+    const delta = targetStartSizePx - initialStart;
+
+    this.emitEvent('igcResizeStart', {
+      detail: { startPanelSize: initialStart, endPanelSize: initialEnd },
+    });
+    this.emitEvent('igcResizing', {
+      detail: {
+        startPanelSize: targetStartSizePx,
+        endPanelSize: targetEndSizePx,
+        delta,
+      },
+    });
+
     if (isPercentage) {
       this.startSize = `${roundPrecise(asPercent(targetStartSizePx, totalSize), 2)}%`;
       this.endSize = `${roundPrecise(asPercent(targetEndSizePx, totalSize), 2)}%`;
@@ -697,6 +719,15 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
       this.startSize = `${targetStartSizePx}px`;
       this.endSize = `${targetEndSizePx}px`;
     }
+
+    this.emitEvent('igcResizeEnd', {
+      detail: {
+        startPanelSize: targetStartSizePx,
+        endPanelSize: targetEndSizePx,
+        delta,
+      },
+    });
+    this._emitLayoutChanged();
   }
 
   private _handleExpanderAction(pane: PanePosition): void {

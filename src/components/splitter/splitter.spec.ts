@@ -727,7 +727,7 @@ describe('Splitter', () => {
       const totalSize = getTotalSize(splitter, 'width');
 
       const { startSize: initialStart } = getPanesSizes(splitter, 'width');
-      const expectedStartPercent = `${roundPrecise((initialStart / totalSize) * 100, 0)}%`;
+      const expectedStartPercent = `${roundPrecise((initialStart / totalSize) * 100, 2)}%`;
 
       splitter.toggle('start');
       await elementUpdated(splitter);
@@ -741,7 +741,7 @@ describe('Splitter', () => {
       expect(splitter.startSize).to.equal(expectedStartPercent);
 
       const { endSize: currentEnd } = getPanesSizes(splitter, 'width');
-      const expectedEndPercent = `${roundPrecise((currentEnd / totalSize) * 100, 0)}%`;
+      const expectedEndPercent = `${roundPrecise((currentEnd / totalSize) * 100, 2)}%`;
 
       splitter.toggle('end');
       await elementUpdated(splitter);
@@ -842,8 +842,8 @@ describe('Splitter', () => {
 
       let { startSize: preCollapseStart, endSize: preCollapseEnd } =
         getPanesSizes(splitter, 'width');
-      let expectedStartPercent = `${roundPrecise((preCollapseStart / totalSize) * 100, 0)}%`;
-      let expectedEndPercent = `${roundPrecise((preCollapseEnd / totalSize) * 100, 0)}%`;
+      let expectedStartPercent = `${roundPrecise((preCollapseStart / totalSize) * 100, 2)}%`;
+      let expectedEndPercent = `${roundPrecise((preCollapseEnd / totalSize) * 100, 2)}%`;
 
       simulatePointerDown(parts.startCollapseBtn, { bubbles: true });
       await elementUpdated(splitter);
@@ -883,8 +883,8 @@ describe('Splitter', () => {
         splitter,
         'width'
       ));
-      expectedStartPercent = `${roundPrecise((preCollapseStart / totalSize) * 100, 0)}%`;
-      expectedEndPercent = `${roundPrecise((preCollapseEnd / totalSize) * 100, 0)}%`;
+      expectedStartPercent = `${roundPrecise((preCollapseStart / totalSize) * 100, 2)}%`;
+      expectedEndPercent = `${roundPrecise((preCollapseEnd / totalSize) * 100, 2)}%`;
 
       simulatePointerDown(parts.endCollapseBtn, { bubbles: true });
       await elementUpdated(splitter);
@@ -1032,6 +1032,32 @@ describe('Splitter', () => {
       };
       endArgs = resizingArgs;
       checkResizeEvents(eventSpy, startArgs, resizingArgs, endArgs);
+    });
+
+    it('should still emit igcResizeEnd and igcLayoutChanged when a drag ends with zero net delta', async () => {
+      const eventSpy = spy(splitter, 'emitEvent');
+      const previousSizes = getPanesSizes(splitter, 'width');
+
+      await resize(splitter, 0, 0);
+
+      expect(eventSpy).calledWith('igcResizeEnd', {
+        detail: {
+          startPanelSize: previousSizes.startSize,
+          endPanelSize: previousSizes.endSize,
+          delta: 0,
+        },
+      });
+      expect(eventSpy).calledWith('igcLayoutChanged', {
+        detail: {
+          startSize: splitter.startSize,
+          endSize: splitter.endSize,
+          startCollapsed: false,
+          endCollapsed: false,
+        },
+      });
+
+      const currentSizes = getPanesSizes(splitter, 'width');
+      expect(currentSizes).to.deep.equal(previousSizes);
     });
 
     it('should respect minSize and maxSize constraints when resizing with arrows', async () => {
@@ -1280,6 +1306,57 @@ describe('Splitter', () => {
       expect(splitter.endSize).to.equal('0%');
     });
 
+    it('should emit resize and layout changed events with Home/End keys', async () => {
+      const eventSpy = spy(splitter, 'emitEvent');
+      const bar = getSplitterPart(splitter, BAR_PART);
+      bar.focus();
+      await elementUpdated(splitter);
+
+      const previousSizes = getPanesSizes(splitter, 'width');
+      const totalAvailable = getTotalSize(splitter, 'width');
+
+      simulateKeyboard(bar, homeKey);
+      await elementUpdated(splitter);
+
+      let delta = 0 - previousSizes.startSize;
+      expect(eventSpy).calledWith('igcLayoutChanged', {
+        detail: {
+          startSize: splitter.startSize,
+          endSize: splitter.endSize,
+          startCollapsed: false,
+          endCollapsed: false,
+        },
+      });
+      checkResizeEvents(
+        eventSpy,
+        {
+          startPanelSize: previousSizes.startSize,
+          endPanelSize: previousSizes.endSize,
+        },
+        { startPanelSize: 0, endPanelSize: totalAvailable, delta },
+        { startPanelSize: 0, endPanelSize: totalAvailable, delta }
+      );
+
+      simulateKeyboard(bar, endKey);
+      await elementUpdated(splitter);
+
+      delta = totalAvailable;
+      expect(eventSpy).calledWith('igcLayoutChanged', {
+        detail: {
+          startSize: splitter.startSize,
+          endSize: splitter.endSize,
+          startCollapsed: false,
+          endCollapsed: false,
+        },
+      });
+      checkResizeEvents(
+        eventSpy,
+        { startPanelSize: 0, endPanelSize: totalAvailable },
+        { startPanelSize: totalAvailable, endPanelSize: 0, delta },
+        { startPanelSize: totalAvailable, endPanelSize: 0, delta }
+      );
+    });
+
     it('should not resize with left/right keys when in vertical orientation', async () => {
       splitter.orientation = 'vertical';
       await elementUpdated(splitter);
@@ -1394,8 +1471,8 @@ describe('Splitter', () => {
       const totalSize = getTotalSize(splitter, 'width');
       const { startSize: preCollapseStart, endSize: preCollapseEnd } =
         getPanesSizes(splitter, 'width');
-      const expectedStartPercent = `${roundPrecise((preCollapseStart / totalSize) * 100, 0)}%`;
-      const expectedEndPercent = `${roundPrecise((preCollapseEnd / totalSize) * 100, 0)}%`;
+      const expectedStartPercent = `${roundPrecise((preCollapseStart / totalSize) * 100, 2)}%`;
+      const expectedEndPercent = `${roundPrecise((preCollapseEnd / totalSize) * 100, 2)}%`;
 
       simulateKeyboard(bar, [ctrlKey, arrowLeft]);
       await elementUpdated(splitter);

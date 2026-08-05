@@ -43,28 +43,28 @@ const metadata: Meta<IgcSplitterComponent> = {
     disableCollapse: {
       type: 'boolean',
       description:
-        'When true, prevents the user from collapsing either pane.\nThis also hides the expand/collapse buttons on the splitter bar.',
+        'Whether collapsing either pane is disabled. When `true`, this also hides\nthe expand/collapse buttons on the splitter bar.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
     disableResize: {
       type: 'boolean',
       description:
-        'When true, prevents the user from resizing the panes by dragging the splitter bar or using keyboard shortcuts.\nThis also hides the drag handle on the splitter bar.',
+        'Whether resizing the panes by dragging the splitter bar or using keyboard\nshortcuts is disabled. When `true`, this also hides the drag handle on the\nsplitter bar.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
     hideCollapseButtons: {
       type: 'boolean',
       description:
-        'When true, hides the expand/collapse buttons on the splitter bar.\n\nNote that the buttons will also be hidden if `disable-collapse` is true or\nif a pane is currently collapsed.',
+        'Whether the expand/collapse buttons on the splitter bar are hidden.\n\nNote that the buttons will also be hidden if `disable-collapse` is true or\nif a pane is currently collapsed.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
     hideDragHandle: {
       type: 'boolean',
       description:
-        'When true, hides the drag handle on the splitter bar.\n\nNote that the drag handle will also be hidden if `disable-resize` is true.',
+        'Whether the drag handle on the splitter bar is hidden.\n\nNote that the drag handle will also be hidden if `disable-resize` is true.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
@@ -106,13 +106,15 @@ const metadata: Meta<IgcSplitterComponent> = {
     },
     startCollapsed: {
       type: 'boolean',
-      description: 'Gets/sets the collapsed state of the start pane.',
+      description:
+        'Whether the start pane is currently collapsed. Set this property to\ncollapse or expand the pane programmatically.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
     endCollapsed: {
       type: 'boolean',
-      description: 'Gets/sets the collapsed state of the end pane.',
+      description:
+        'Whether the end pane is currently collapsed. Set this property to\ncollapse or expand the pane programmatically.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
@@ -134,24 +136,25 @@ interface IgcSplitterArgs {
   /** The orientation of the splitter, which determines the direction of resizing and collapsing. */
   orientation: 'horizontal' | 'vertical';
   /**
-   * When true, prevents the user from collapsing either pane.
-   * This also hides the expand/collapse buttons on the splitter bar.
+   * Whether collapsing either pane is disabled. When `true`, this also hides
+   * the expand/collapse buttons on the splitter bar.
    */
   disableCollapse: boolean;
   /**
-   * When true, prevents the user from resizing the panes by dragging the splitter bar or using keyboard shortcuts.
-   * This also hides the drag handle on the splitter bar.
+   * Whether resizing the panes by dragging the splitter bar or using keyboard
+   * shortcuts is disabled. When `true`, this also hides the drag handle on the
+   * splitter bar.
    */
   disableResize: boolean;
   /**
-   * When true, hides the expand/collapse buttons on the splitter bar.
+   * Whether the expand/collapse buttons on the splitter bar are hidden.
    *
    * Note that the buttons will also be hidden if `disable-collapse` is true or
    * if a pane is currently collapsed.
    */
   hideCollapseButtons: boolean;
   /**
-   * When true, hides the drag handle on the splitter bar.
+   * Whether the drag handle on the splitter bar is hidden.
    *
    * Note that the drag handle will also be hidden if `disable-resize` is true.
    */
@@ -198,9 +201,15 @@ interface IgcSplitterArgs {
    * value, or a percentage above 100 falls back to automatic sizing.
    */
   endSize: string;
-  /** Gets/sets the collapsed state of the start pane. */
+  /**
+   * Whether the start pane is currently collapsed. Set this property to
+   * collapse or expand the pane programmatically.
+   */
   startCollapsed: boolean;
-  /** Gets/sets the collapsed state of the end pane. */
+  /**
+   * Whether the end pane is currently collapsed. Set this property to
+   * collapse or expand the pane programmatically.
+   */
   endCollapsed: boolean;
 }
 type Story = StoryObj<IgcSplitterArgs>;
