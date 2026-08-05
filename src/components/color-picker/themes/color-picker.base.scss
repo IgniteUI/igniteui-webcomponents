@@ -4,9 +4,9 @@
 :host {
     content-visibility: auto;
     contain: strict;
-
+	
     [part='color-picker'] {
-        display: flex;
+        display: inline-flex;
         gap: rem(4px);
         align-items: center;
     }
@@ -19,101 +19,131 @@
     [part='main-row'],
     [part='alpha-row'],
     [part='inputs-row'] {
-        display: flex;
-        flex-wrap: nowrap;
-        align-items: center;
-        justify-content: center;
+        display: grid;
+	    grid-template-columns: repeat(4, 1fr);
+	    grid-column: 1 / -1;
+	    gap: sizable(rem(14px), rem(12px), rem(16px));
     }
+	
+	[part='alpha-input'] {
+		min-width: fit-content;
+		&::part(input) {
+			-moz-appearance: textfield;
+			
+			&::-webkit-outer-spin-button,
+			&::-webkit-inner-spin-button {
+				-webkit-appearance: none;
+				margin: 0;
+			}
+		}
+	}
+	
+	[part='inputs-row'] {
+		> * {
+			grid-column: span 2;
+		}
+	}
 
     [part='buttons'] {
         --ig-size: 1;
 
         display: flex;
-        margin-left: 1rem;
+	    gap: sizable(rem(14px), rem(12px), rem(16px));
+	    justify-content: space-between;
     }
 
     [part='hue'],
     [part='alpha'] {
-        &::-webkit-slider-runnable-track {
-            height: 0.5rem;
+	    grid-column: 1 / span 3;
+	    gap: rem(8px);
+	    
+	    // Each vendor pseudo-element needs its own rule - grouping them makes
+	    // the engine that doesn't know one of the two discard the whole rule.
+	    &::-webkit-slider-runnable-track {
+            height: rem(8px);
         }
 
         &::-moz-range-track {
-            height: 0.5rem;
+            height: rem(8px);
         }
 
         &::-webkit-slider-thumb {
             appearance: none;
-            width: 1rem;
-            height: 1rem;
-            margin-top: calc(-0.5 * 0.5rem);
+            width: rem(16px);
+            height: rem(16px);
+            margin-top: calc(-0.5 * rem(16px));
         }
 
         &::-moz-range-thumb {
-            width: 1rem;
-            height: 1rem;
-            margin-top: calc(-0.5 * 0.5rem);
+            width: rem(16px);
+            height: rem(16px);
+            margin-top: calc(-0.5 * rem(16px));
         }
     }
 
     [part='picker'] {
         display: grid;
-        padding: 0.25rem;
-        width: rem(300px);
-        min-height: 12rem;
-        grid-template-rows: 6fr 1fr;
-        row-gap: 0.5rem;
+        padding: rem(16px);
+        width: sizable(rem(290px), rem(314px), rem(360px));
+        min-height: rem(192px);
+        row-gap: rem(8px);
+    }
+	
+	[part='picker-canvas'] {
+		border-width: rem(1px);
+		border-style: solid;
     }
 
     [part='swatches'] {
         display: flex;
         flex-wrap: wrap;
-        gap: 0.5rem;
+        gap: rem(8px);
         max-width: rem(300px);
         overflow: hidden;
     }
 
     [part='swatch'] {
-        width: 1.5rem;
-        height: 1.5rem;
+        width: rem(24px);
+        height: rem(24px);
     }
 
-    // Trigger
+    // Box Trigger
     [part~='anchor'] {
         display: flex;
         align-items: center;
         justify-content: center;
         position: relative;
-        width: sizable(rem(24px), rem(30px), rem(36px));
         aspect-ratio: 1;
-        padding: rem(2px);
+        padding: rem(4px);
         margin: 0;
 
         &::before {
             content: '';
-            position: absolute;
             user-select: none;
             pointer-events: none;
-            width: sizable(rem(16px), rem(22px), rem(28px));
+            width: 100%;
+            height: 100%;
             aspect-ratio: 1;
+	        box-sizing: content-box;
         }
     }
 
     [part~='input-mode'] {
-        padding: 0;
-        width: sizable(rem(16px), rem(22px), rem(28px));
-        height: sizable(rem(16px), rem(22px), rem(28px));
-        margin-inline: sizable(rem(12px), rem(14px), rem(16px));
-
         &::before {
             display: none;
         }
     }
+	
+	[part='label'] {
+		user-select: none;
+	}
 }
 
 :host([disabled]) {
-    [part~='empty'] {
-        display: none;
+    [part~='anchor'] {
+	    &::before {
+		    opacity: .3;
+	    }
     }
 }
 

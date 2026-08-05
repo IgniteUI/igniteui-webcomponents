@@ -3,20 +3,86 @@
 
 $theme: $material;
 
+// Vendor pseudo-elements must never share a selector list: a list containing a
+// pseudo-element the engine doesn't recognize is invalid as a whole, so pairing
+// `::-moz-range-track,::-webkit-slider-runnable-track` makes Chrome drop
+// the -webkit- half too. Declare each in its own rule and share the body here.
+@mixin hue-track {
+	border-radius: rem(50px);
+	height: rem(16px);
+	background: var(--_hue-slider-track);
+	
+	// Dont use border otherwise the thumb will be misaligned.
+	box-shadow: inset 0 0 0 rem(1px) var-get($theme, 'slider-track-border-color');
+}
+
+@mixin alpha-track {
+	border-radius: rem(50px);
+	height: rem(16px);
+	
+	// Dont use border otherwise the thumb will be misaligned.
+	box-shadow: inset 0 0 0 rem(1px) var-get($theme, 'slider-track-border-color');
+	background-image: var(--alpha-slider-track);
+	background-position: var(--alpha-track-position);
+	background-size: var(--alpha-track-size);
+}
+
+@mixin slider-thumb {
+	border-radius: 50%;
+	min-width: rem(16px);
+	min-height: rem(16px);
+	background-color: var(--_current-color);
+	border: rem(2px) solid var-get($theme, 'slider-thumb-border-color');
+	box-shadow: var(--ig-elevation-1);
+	
+	// This has to be explicitly set to avoid the thumb being clipped by the
+	// track.
+	box-sizing: border-box;
+	
+	// Chromium doesn't center the thumb on the track - offset it by
+	// half the difference between the track and the thumb box.
+	margin: 0;
+}
+
+// The swatch preview, bottom layer up: the transparency grid, the value with its
+// alpha across the whole surface, and the same value forced opaque over the
+// leading half. A translucent color therefore reads as solid-vs-actual side by
+// side; at full alpha both halves are identical and the split is invisible.
+@mixin swatch-preview {
+	background-image:
+		linear-gradient(
+			to right,
+			var(--_color-preview, transparent) 0 50%,
+			transparent 50%
+		),
+		linear-gradient(var(--_alpha-preview, transparent), var(--_alpha-preview, transparent)),
+		var(--transparency-grid);
+	background-position: 0 0;
+	background-size: 100% 100%, 100% 100%, 50% 50%;
+}
+
 :host {
-    --current-color: #000;
-    --hue-slider-track: linear-gradient(
-        to right,
-        red 0,
-        #ff0 16.66%,
-        #0f0 33.33%,
-        #0ff 50%,
-        #00f 66.66%,
-        #f0f 83.33%,
-        red 100%
-    );
+	--component-size: var(--ig-size, #{var-get($theme, 'default-size')});
+	--_outline-size: #{rem(1px)};
+	
+    --_current-color: #000;
+	--_anchor-border-size: #{rem(1px)};
+	--_input-mode-trigger-size: #{sizable(rem(18px), rem(20px), rem(24px))};
+	
+	--_hue-slider-track: linear-gradient(
+		90deg,
+		#fe1016 0%,
+		#fe7f23 15.38%,
+		#fcee37 28.37%,
+		#1cfe3f 42.31%,
+		#1afffe 55.77%,
+		#2a0af8 69.4%,
+		#fb13e9 84.9%,
+		#f90000 100%
+	);
+	
     --alpha-slider-track:
-        linear-gradient(90deg, rgb(0 0 0 / 0%), var(--current-color)),
+        linear-gradient(90deg, rgb(0 0 0 / 0%), var(--_current-color)),
         repeating-linear-gradient(
             45deg,
             #aaa 25%,
@@ -28,13 +94,24 @@ $theme: $material;
         repeating-linear-gradient(
             45deg,
             #aaa 25%,
-            #fff 25%,
-            #fff 75%,
+            transparent 25%,
+            transparent 75%,
             #aaa 75%,
             #aaa
         );
-    --alpha-track-position: 0 0, 0 0, 4px 4px;
-    --alpha-track-size: contain, 8px 8px, 8px 8px;
+	
+    --alpha-track-position: 0 0, 0 0, #{rem(4px)} #{rem(4px)};
+    --alpha-track-size: contain, #{rem(8px)} #{rem(8px)}, #{rem(8px)} #{rem(8px)};
+
+    // A single conic tile draws 2x2 squares; sized at 50% it repeats
+    // into a 4x4 grid that scales with the swatch it sits behind.
+    --transparency-grid: conic-gradient(
+        #aaa 0deg 90deg,
+        #fff 90deg 180deg,
+        #aaa 180deg 270deg,
+        #fff 270deg 360deg
+    );
+	
 
     input[type='range'] {
         background: transparent;
@@ -43,64 +120,49 @@ $theme: $material;
 
     [part='hue'] {
         &::-webkit-slider-runnable-track {
-            border-radius: rem(4px);
-            background: var(--hue-slider-track);
+            @include hue-track();
         }
 
         &::-moz-range-track {
-            border-radius: rem(4px);
-            background: var(--hue-slider-track);
+            @include hue-track();
         }
     }
 
     [part='alpha'] {
         &::-webkit-slider-runnable-track {
-            border-radius: rem(4px);
-            background: none;
-            background-image: var(--alpha-slider-track);
-            background-position: var(--alpha-track-position);
-            background-size: var(--alpha-track-size);
+            @include alpha-track();
         }
 
         &::-moz-range-track {
-            border-radius: rem(4px);
-            background: none;
-            background-image: var(--alpha-slider-track);
-            background-position: var(--alpha-track-position);
-            background-size: var(--alpha-track-size);
+            @include alpha-track();
         }
     }
 
     [part='hue'],
     [part='alpha'] {
         &::-webkit-slider-thumb {
-            border-radius: 50%;
-            background-color: var(--current-color);
+            @include slider-thumb();
         }
 
         &::-moz-range-thumb {
-            border-radius: 50%;
-            background-color: var(--current-color);
+            @include slider-thumb();
         }
     }
 
     [part='picker'] {
-        box-shadow: var(--ig-elevation-3);
+	    background: var-get($theme, 'picker-background');
+	    border-radius: var-get($theme, 'picker-border-radius');
+        box-shadow: var(--ig-elevation-24);
     }
-
-    [part='copy'] {
-        &::part(base) {
-            background-color: var(--current-color);
-        }
-
-        &::part(icon) {
-            --foreground: contrast-color(var(--current-color));
-        }
-    }
+	
+	[part='picker-canvas'] {
+		border-color: var-get($theme, 'picker-canvas-border-color');
+		border-radius: calc(var-get($theme, 'picker-border-radius') - rem(1px));
+	}
 
     [part='swatch'] {
-        border: rem(1px) solid #fff;
-        border-radius: 0.25rem;
+        border: rem(1px) solid var-get($theme, 'swatch-border-color');
+        border-radius: var-get($theme, 'swatch-border-radius');
         cursor: pointer;
     }
 
@@ -110,45 +172,67 @@ $theme: $material;
 
     // Trigger
     [part~='anchor'] {
-        border: rem(1px) solid var(--ig-gray-600);
-        border-radius: rem(4px);
-        background: transparent;
+        border: var(--_anchor-border-size) solid  var-get($theme, 'anchor-border-color');
+        border-radius: var-get($theme, 'anchor-border-radius');
+        background: var-get($theme, 'anchor-background');
+	    width: var-get($theme, 'trigger-size');
+	    height: var-get($theme, 'trigger-size');
         cursor: pointer;
 
         &::before {
-            background: var(--background);
-            border: rem(1px) solid var(--ig-gray-300);
-            border-radius: rem(2px);
+            @include swatch-preview();
+
+            border: var(--_anchor-border-size) solid var-get($theme, 'swatch-preview-border-color');
+            border-radius: calc(var-get($theme, 'anchor-border-radius') - var(--_anchor-border-size));
         }
+	    
+	    &:focus-visible {
+		    &::after {
+			    content: '';
+			    position: absolute;
+			    box-shadow: inset 0 0 0 var(--_outline-size) var-get($theme, 'anchor-outline-color');
+			    box-sizing: border-box;
+			    z-index: 1;
+		    }
+	    }
     }
 
-    [part~='input-mode'] {
-        background: var(--background);
+	// In input mode there is no separate trigger box - the swatch is the element
+	// itself, so the preview moves off `::before` and onto its own background.
+	[part~='anchor'][part~='input-mode'] {
+	    @include swatch-preview();
+
+	    width: var(--_input-mode-trigger-size);
+	    height: var(--_input-mode-trigger-size);
+	    padding: 0;
+	    margin: 0;
     }
 
+    // With no value the swatch drops the transparency grid for the conventional
+    // "no color" mark - a red diagonal running top-left to bottom-right. The
+    // gradient axis is perpendicular to the line it paints, hence `to top right`.
+    // Declared after both anchor presentations: the input-mode swatch matches at
+    // the same specificity, so source order is what decides the background.
     [part~='empty'] {
+        --_empty-swatch: #{color(error, 500)};
+        --_empty-swatch-image: linear-gradient(
+            to top right,
+            transparent calc(50% - 1px),
+            var(--_empty-swatch) calc(50% - 1px),
+            var(--_empty-swatch) calc(50% + 1px),
+            transparent calc(50% + 1px)
+        );
+
         &::before {
-            background-image:
-                repeating-linear-gradient(
-                    45deg,
-                    #aaa 25%,
-                    transparent 25%,
-                    transparent 75%,
-                    #aaa 75%,
-                    #aaa
-                ),
-                repeating-linear-gradient(
-                    45deg,
-                    #aaa 25%,
-                    #fff 25%,
-                    #fff 75%,
-                    #aaa 75%,
-                    #aaa
-                );
-            background-position:
-                0 0,
-                4px 4px;
-            background-size: 8px 8px;
+            background-color: var(--ig-surface-500);
+            background-image: var(--_empty-swatch-image);
+            background-size: 100% 100%;
+        }
+
+        &[part~='input-mode'] {
+            background-color: var(--ig-surface-500);
+            background-image: var(--_empty-swatch-image);
+            background-size: 100% 100%;
         }
     }
 }
@@ -156,37 +240,46 @@ $theme: $material;
 :host(:not([disabled])) {
     [part~='anchor']:not([part~='input-mode']) {
         &:hover {
-            background: color($color: gray, $variant: 500, $opacity: .2);
+            background: var-get($theme, 'anchor-background-hover');
         }
-
-        &:focus,
+	    
         &:focus-visible {
             outline: none;
-            background: color($color: gray, $variant: 500, $opacity: .16);
-
-            &:hover {
-                background: color($color: gray, $variant: 500, $opacity: .24);
-            }
+            background: var-get($theme, 'anchor-background-focus');
+	        
+	        &:hover {
+		        background: var-get($theme, 'anchor-background-focus-hover');
+	        }
         }
 
         &:active {
-            background: color($color: gray, $variant: 500, $opacity: .16);
+            background: var-get($theme, 'anchor-background-active');
 
             &:focus {
-                background: color($color: gray, $variant: 500, $opacity: .32);
+                background: var-get($theme, 'anchor-background-focus-active');
             }
         }
     }
 
-    [part='label'] {
-        color: var(--ig-gray-900);
+    [part~='label'] {
+        color: var-get($theme, 'label-color');
         cursor: pointer;
     }
 }
 
+:host([invalid]:not([disabled])) {
+	[part~='anchor'] {
+		border-color: var-get($theme, 'invalid-color');
+	}
+	
+	[part~='label'] {
+		color: var-get($theme, 'invalid-color');
+	}
+}
+
 :host([disabled]) {
     [part~='anchor'] {
-        border-color: var(--ig-gray-300);
+        border-color: var-get($theme, 'anchor-disabled-border-color');
         cursor: not-allowed;
 
         &::before {
@@ -194,8 +287,8 @@ $theme: $material;
         }
     }
 
-    [part='label'] {
-        color: var(--ig-gray-500);
+    [part~='label'] {
+        color: var-get($theme, 'disabled-label-color');
         cursor: not-allowed;
     }
 }

@@ -505,6 +505,27 @@ describe('Color picker', () => {
       expect(picker.value).to.equal('#00ff00');
     });
 
+    it('returns to the empty state when the anchor input is cleared', async () => {
+      const input = getInputAnchor();
+
+      picker.value = '#ff0000';
+      await elementUpdated(picker);
+      expect(isAnchorEmpty(picker)).to.be.false;
+
+      commitColorInput(input, '');
+      await elementUpdated(picker);
+
+      expect(picker.value).to.equal('');
+      expect(input.value).to.equal('');
+      expect(isAnchorEmpty(picker)).to.be.true;
+
+      // The input-mode swatch paints its preview on its own background rather
+      // than on `::before`, so the empty mark has to win over the transparency
+      // grid of the preview - both selectors match at the same specificity.
+      const { backgroundImage } = getComputedStyle(getAnchor(picker));
+      expect(backgroundImage).to.not.contain('conic-gradient');
+    });
+
     it('forwards required/invalid state to the anchor input', async () => {
       picker.required = true;
       await elementUpdated(picker);

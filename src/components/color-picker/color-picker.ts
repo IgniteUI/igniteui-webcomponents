@@ -413,9 +413,27 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
 
   //#region Internal methods
 
+  /**
+   * The current color with its alpha channel forced to opaque.
+   *
+   * The swatch preview paints this over one half of its surface and the
+   * value-with-alpha over the other, so a translucent color is shown next to
+   * what it actually is. At full alpha the two halves are identical and the
+   * split is invisible, so no separate branch is needed for opaque colors.
+   */
+  private get _opaqueColor(): string {
+    if (this._color.isEmpty) {
+      return '';
+    }
+
+    const opaque = this._color.clone();
+    opaque.alpha = 1;
+    return opaque.asString('rgb');
+  }
+
   private _updateColor(): void {
     this._ownCurrentColor = `hsl(${this._color.h} 100% 50%)`;
-    this.style.setProperty('--current-color', this._ownCurrentColor);
+    this.style.setProperty('--_current-color', this._ownCurrentColor);
     this._formValue.setValueAndFormState(this._color.asString(this.format));
     this._validate();
     this.requestUpdate();
@@ -454,6 +472,7 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
   private _renderCanvasGradient(): TemplateResult {
     return html`
       <igc-picker-canvas
+        part="picker-canvas"
         ${ref(this._canvasRef)}
         @igcColorPicked=${this._handleCanvasColorPicked}
         currentColor=${this._ownCurrentColor}
@@ -483,19 +502,13 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
   }
 
   private _renderCopyButton(): TemplateResult {
-    const style = styleMap({
-      '--current-color': this._color.asString('rgb', true),
-      '--border-color': 'transparent',
-    });
-
     return html`
       <igc-icon-button
-        variant="outlined"
+        variant="flat"
         collection="default"
         name="copy_content"
         part="copy"
         @click=${this._handleCopy}
-        style=${style}
       >
         <igc-visually-hidden>Copy color value to clipboard</igc-visually-hidden>
       </igc-icon-button>
@@ -506,27 +519,11 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
     return html`
       <igc-icon-button
         part="eye-dropper"
-        variant="outlined"
+        variant="flat"
+        name="eye_dropper"
         ?disabled=${!this._supportsEyeDropper}
         @click=${this._handleEyeDropperClick}
       >
-        <svg
-          aria-hidden="true"
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            d="M15 11.25L16.5 12.75L17.25 12V8.75798L19.5264 8.14802C20.019 8.01652 20.4847 7.75778 20.8712 7.37132C22.0428 6.19975 22.0428 4.30025 20.8712 3.12868C19.6996 1.95711 17.8001 1.95711 16.6286 3.12868C16.2421 3.51509 15.9832 3.98069 15.8517 4.47324L15.2416 6.74998H12L11.25 7.49998L12.75 8.99999M15 11.25L6.53033 19.7197C6.19077 20.0592 5.73022 20.25 5.25 20.25C4.76978 20.25 4.30924 20.4408 3.96967 20.7803L3 21.75L2.25 21L3.21967 20.0303C3.55923 19.6908 3.75 19.2302 3.75 18.75C3.75 18.2698 3.94077 17.8092 4.28033 17.4697L12.75 8.99999M15 11.25L12.75 8.99999"
-            stroke="#0F172A"
-            stroke-width="1.5"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          />
-        </svg>
-
         <igc-visually-hidden>Pick a color from the screen</igc-visually-hidden>
       </igc-icon-button>
     `;
@@ -568,6 +565,7 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
             id="alpha"
             name="alpha"
             placeholder="Alpha value"
+            part="alpha-input"
             outlined
             type="number"
             min="0"
@@ -658,6 +656,7 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
 
   private _renderButtonAnchor(
     color: string,
+    opaqueColor: string,
     parts: ReturnType<typeof partMap>
   ): TemplateResult {
     return html`
@@ -668,35 +667,25 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
         aria-describedby="color-picker-helper-text"
         part=${parts}
         slot="anchor"
-        style=${bindIf(color, styleMap({ '--background': color }))}
+        style=${bindIf(
+          color,
+          styleMap({
+            '--_alpha-preview': color,
+            '--_color-preview': opaqueColor,
+          })
+        )}
         ?disabled=${this.disabled}
         @click=${this._handleAnchorClick}
         type="button"
       >
         <igc-visually-hidden>Open color picker</igc-visually-hidden>
       </button>
-      <!--      TODO: DECIDE WHETHER WE ARE GOING TO USE SVG OR GRADIENT FOR THE TRANSPARENT GRID -->
-      <!--      <svg-->
-      <!--        slot="anchor"-->
-      <!--        width="800px"-->
-      <!--        height="800px"-->
-      <!--        viewBox="0 0 15 15"-->
-      <!--        fill="none"-->
-      <!--        xmlns="http://www.w3.org/2000/svg"-->
-      <!--      >-->
-      <!--        <path-->
-      <!--          opacity=".25"-->
-      <!--          fill-rule="evenodd"-->
-      <!--          clip-rule="evenodd"-->
-      <!--          d="M0 0H3V3H0V0ZM6 3H3V6H0V9H3V12H0V15H3V12H6V15H9V12H12V15H15V12H12V9H15V6H12V3H15V0H12V3H9V0H6V3ZM6 6V3H9V6H6ZM6 9H3V6H6V9ZM9 9V6H12V9H9ZM9 9H6V12H9V9Z"-->
-      <!--          fill="#000000"-->
-      <!--        />-->
-      <!--      </svg>-->
     `;
   }
 
   private _renderInputAnchor(
     color: string,
+    opaqueColor: string,
     parts: ReturnType<typeof partMap>
   ): TemplateResult {
     return html`
@@ -713,24 +702,32 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
         .invalid=${this.invalid}
         @igcChange=${this._handleColorInputChange}
       >
-        <div
-          slot="prefix"
-          part=${parts}
-          style=${styleMap({ background: color })}
-          @click=${this._handleAnchorClick}
-        ></div>
+        <div slot="prefix">
+          <div
+            part=${parts}
+            style=${bindIf(
+              color,
+              styleMap({
+                '--_alpha-preview': opaqueColor,
+                '--_color-preview': color,
+              })
+            )}
+            @click=${this._handleAnchorClick}
+          ></div>
+        </div>
       </igc-input>
     `;
   }
 
   private _renderAnchor(
     color: string,
+    opaqueColor: string,
     parts: ReturnType<typeof partMap>,
     isDefaultMode: boolean
   ): TemplateResult {
     return isDefaultMode
-      ? this._renderButtonAnchor(color, parts)
-      : this._renderInputAnchor(color, parts);
+      ? this._renderButtonAnchor(color, opaqueColor, parts)
+      : this._renderInputAnchor(color, opaqueColor, parts);
   }
 
   private _renderHelperText(): TemplateResult {
@@ -759,6 +756,7 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
 
   protected override render(): TemplateResult {
     const color = this._color.asString('rgb', true);
+    const opaqueColor = this._opaqueColor;
     const parts = partMap({
       anchor: true,
       empty: this._color.isEmpty,
@@ -768,14 +766,14 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
 
     return html`
       <div part="color-picker">
+        <igc-popover ?open=${this.open} shift flip>
+          ${this._renderAnchor(color, opaqueColor, parts, isDefaultMode)}${this._renderHelperText()}${this._renderPicker()}
+        </igc-popover>
         ${
           isDefaultMode && this.label
             ? html`<label part="label" for="trigger">${this.label}</label>`
             : nothing
         }
-        <igc-popover ?open=${this.open} shift flip>
-          ${this._renderAnchor(color, parts, isDefaultMode)}${this._renderHelperText()}${this._renderPicker()}
-        </igc-popover>
       </div>
     `;
   }

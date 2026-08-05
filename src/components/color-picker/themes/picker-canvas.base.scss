@@ -2,11 +2,17 @@
 @use 'styles/utilities' as *;
 
 :host {
+	grid-column: 1 / -1;
     content-visibility: auto;
     contain: strict;
-    display: flex;
+
+    // Inside the picker the canvas is a grid item and gets blockified anyway,
+    // but `contain`/`content-visibility` and its own sizing are ignored on an
+    // inline box - so the display type has to be stated, not inherited from
+    // the parent's layout.
+    display: block;
     position: relative;
-    height: 100%;
+    min-height: rem(230px);
     background-image:
         linear-gradient(rgb(0 0 0 / 0%), #000),
         linear-gradient(90deg, #fff, currentColor);
@@ -15,9 +21,10 @@
 
 [part='marker'] {
     position: absolute;
-    width: 0.75rem;
-    height: 0.75rem;
-    border: 1px solid #fff;
-    border-radius: 50%;
+    width: rem(20px);
+    height: rem(20px);
+    border: rem(2px) solid #fff;
+    border-radius: rem(20px);
     cursor: crosshair;
+	box-shadow: elevation(1);
 }
