@@ -93,19 +93,23 @@ export default class IgcAvatarComponent extends LitElement {
   protected override render() {
     return html`
       <div part="base">
-        ${this.initials
-          ? html`<span part="initials">${this.initials}</span>`
-          : html`<slot></slot>`}
-        ${this.src && !this._hasError
-          ? html`
-              <img
-                part="image"
-                alt=${ifDefined(this.alt)}
-                src=${ifDefined(this.src)}
-                @error=${this._handleError}
-              />
-            `
-          : nothing}
+        ${
+          this.initials
+            ? html`<span part="initials">${this.initials}</span>`
+            : html`<slot></slot>`
+        }
+        ${
+          this.src && !this._hasError
+            ? html`
+                <img
+                  part="image"
+                  alt=${ifDefined(this.alt)}
+                  src=${ifDefined(this.src)}
+                  @error=${this._handleError}
+                />
+              `
+            : nothing
+        }
       </div>
     `;
   }

@@ -59,8 +59,7 @@ const metadata: Meta<IgcTooltipComponent> = {
     },
     placement: {
       type: '"top" | "top-start" | "top-end" | "bottom" | "bottom-start" | "bottom-end" | "right" | "right-start" | "right-end" | "left" | "left-start" | "left-end"',
-      description:
-        'Where to place the floating element relative to the parent anchor element.',
+      description: 'Where to place the tooltip relative to its anchor element.',
       options: [
         'top',
         'top-start',
@@ -88,14 +87,14 @@ const metadata: Meta<IgcTooltipComponent> = {
     showTriggers: {
       type: 'string',
       description:
-        'Which event triggers will show the tooltip.\nExpects a comma separate string of different event triggers.',
+        'Which event triggers will show the tooltip.\nExpects a comma separated string of different event triggers.',
       control: 'text',
       table: { defaultValue: { summary: 'pointerenter' } },
     },
     hideTriggers: {
       type: 'string',
       description:
-        'Which event triggers will hide the tooltip.\nExpects a comma separate string of different event triggers.',
+        'Which event triggers will hide the tooltip.\nExpects a comma separated string of different event triggers.',
       control: 'text',
       table: { defaultValue: { summary: 'pointerleave, click' } },
     },
@@ -115,7 +114,7 @@ const metadata: Meta<IgcTooltipComponent> = {
     },
     message: {
       type: 'string',
-      description: 'Specifies a plain text as tooltip content.',
+      description: 'Specifies plain text as the tooltip content.',
       control: 'text',
       table: { defaultValue: { summary: '' } },
     },
@@ -150,7 +149,7 @@ interface IgcTooltipArgs {
   withArrow: boolean;
   /** The offset of the tooltip from the anchor in pixels. */
   offset: number;
-  /** Where to place the floating element relative to the parent anchor element. */
+  /** Where to place the tooltip relative to its anchor element. */
   placement:
     | 'top'
     | 'top-start'
@@ -168,19 +167,19 @@ interface IgcTooltipArgs {
   anchor: Element | string;
   /**
    * Which event triggers will show the tooltip.
-   * Expects a comma separate string of different event triggers.
+   * Expects a comma separated string of different event triggers.
    */
   showTriggers: string;
   /**
    * Which event triggers will hide the tooltip.
-   * Expects a comma separate string of different event triggers.
+   * Expects a comma separated string of different event triggers.
    */
   hideTriggers: string;
   /** Specifies the number of milliseconds that should pass before showing the tooltip. */
   showDelay: number;
   /** Specifies the number of milliseconds that should pass before hiding the tooltip. */
   hideDelay: number;
-  /** Specifies a plain text as tooltip content. */
+  /** Specifies plain text as the tooltip content. */
   message: string;
   /** Specifies if the tooltip remains visible until the user closes it via the close button or Esc key. */
   sticky: boolean;

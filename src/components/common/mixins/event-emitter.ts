@@ -41,7 +41,7 @@ export function EventEmitterMixin<E, T extends Constructor<LitElement>>(
 ) {
   class EventEmitterElement extends superClass {
     /**
-     * @private
+     * @hidden
      */
     public override addEventListener<
       K extends keyof M,
@@ -60,7 +60,7 @@ export function EventEmitterMixin<E, T extends Constructor<LitElement>>(
     }
 
     /**
-     * @private
+     * @hidden
      */
     public override removeEventListener<
       K extends keyof M,
@@ -79,7 +79,7 @@ export function EventEmitterMixin<E, T extends Constructor<LitElement>>(
     }
 
     /**
-     * @private
+     * @hidden @internal
      */
     public emitEvent<K extends keyof E, D extends UnpackCustomEvent<E[K]>>(
       type: K,

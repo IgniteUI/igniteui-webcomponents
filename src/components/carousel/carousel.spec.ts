@@ -134,16 +134,6 @@ describe('Carousel', () => {
       )?.id;
       expect(carousel).shadowDom.to.equal(
         `<section>
-          <igc-button aria-label="previous slide" aria-controls="${carouselId}">
-            <slot name="previous-button">
-              <igc-icon aria-hidden="true" collection="default" name="carousel_prev"></igc-icon>
-            </slot>
-          </igc-button>
-          <igc-button aria-label="next slide" aria-controls="${carouselId}">
-            <slot name="next-button">
-              <igc-icon aria-hidden="true" collection="default" name="carousel_next"></igc-icon>
-            </slot>
-          </igc-button>
           <igc-carousel-indicator-container>
             <div role="tablist">
               <slot name="indicator">
@@ -177,6 +167,16 @@ describe('Carousel', () => {
               </slot>
             </div>
           </igc-carousel-indicator-container>
+          <igc-button aria-label="previous slide" aria-controls="${carouselId}">
+            <slot name="previous-button">
+              <igc-icon aria-hidden="true" collection="default" name="carousel_prev"></igc-icon>
+            </slot>
+          </igc-button>
+          <igc-button aria-label="next slide" aria-controls="${carouselId}">
+            <slot name="next-button">
+              <igc-icon aria-hidden="true" collection="default" name="carousel_next"></igc-icon>
+            </slot>
+          </igc-button>
           <div id="${carouselId}" aria-live="polite">
             <slot></slot>
           </div>
@@ -493,6 +493,25 @@ describe('Carousel', () => {
   });
 
   describe('Interactions', () => {
+    describe('Focus', () => {
+      it('should delegate focus to the active indicator in the indicator container when present', async () => {
+        carousel.focus();
+        expect(carousel.shadowRoot?.activeElement).to.equal(
+          carousel.renderRoot.querySelector(
+            'igc-carousel-indicator[tabindex="0"]'
+          )
+        );
+      });
+
+      it('should delegate focus to the previous button when the indicator container is not present', async () => {
+        carousel.hideIndicators = true;
+        await elementUpdated(carousel);
+
+        carousel.focus();
+        expect(carousel.shadowRoot?.activeElement).to.equal(prevButton);
+      });
+    });
+
     describe('Click', () => {
       it('should change slide when clicking next button', async () => {
         const eventSpy = spy(carousel, 'emitEvent');

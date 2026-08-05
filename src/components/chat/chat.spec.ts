@@ -14,6 +14,7 @@ import {
   simulateFocus,
   simulateInput,
   simulateKeyboard,
+  suppressResizeObserverLoopError,
 } from '../common/utils.spec.js';
 import { simulateFileUpload } from '../file-input/file-input.spec.js';
 import IgcInputComponent from '../input/input.js';
@@ -33,16 +34,7 @@ import type {
 describe('Chat', () => {
   before(() => {
     defineComponents(IgcChatComponent, IgcInputComponent);
-
-    // Suppress ResizeObserver loop errors that can occur during tests from
-    // the underlying igc-textarea component. These errors do not affect the tests and are not actionable.
-    const errorHandler = window.onerror;
-    window.onerror = (message, ...args) => {
-      if (typeof message === 'string' && message.match(/ResizeObserver loop/)) {
-        return true;
-      }
-      return errorHandler ? errorHandler(message, ...args) : false;
-    };
+    suppressResizeObserverLoopError();
   });
 
   const textInputTemplate = (text: string) => html`
@@ -64,9 +56,11 @@ describe('Chat', () => {
         ${attachments.map(
           (attachment) => html`
             <a
-              href=${attachment.file
-                ? URL.createObjectURL(attachment.file)
-                : (attachment.url ?? '')}
+              href=${
+                attachment.file
+                  ? URL.createObjectURL(attachment.file)
+                  : (attachment.url ?? '')
+              }
               target="_blank"
             >
               ${attachment.name}
@@ -995,7 +989,7 @@ describe('Chat', () => {
       textArea.dispatchEvent(new CustomEvent('igcInput', { detail: 'Hello!' }));
       await elementUpdated(chat);
       expect(eventSpy).calledWith('igcInputChange', {
-        detail: { value: 'Hello!' },
+        detail: 'Hello!',
       });
     });
 

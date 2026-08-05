@@ -59,7 +59,7 @@ export default class IgcAccordionComponent extends LitElement {
   public singleExpand = false;
 
   /* blazorSuppress */
-  /** Returns all of the accordions's direct igc-expansion-panel children. */
+  /** Returns all of the direct expansion panel children of the accordion. */
   public get panels(): IgcExpansionPanelComponent[] {
     return Array.from(this._panels);
   }

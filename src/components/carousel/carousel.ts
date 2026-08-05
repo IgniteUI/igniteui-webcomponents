@@ -33,6 +33,7 @@ import {
   type SlotChangeCallbackParameters,
   setSlots,
 } from '../common/controllers/slot.js';
+import { shadowOptions } from '../common/decorators/shadow-options.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { addI18nController } from '../common/i18n/i18n-controller.js';
@@ -72,11 +73,11 @@ let nextId = 1;
 const Slots = setSlots('indicator', 'previous-button', 'next-button');
 
 /**
- * The `igc-carousel` presents a set of `igc-carousel-slide`s by sequentially displaying a subset of one or more slides.
+ * The carousel presents a set of slides by sequentially displaying a subset of one or more.
  *
  * @element igc-carousel
  *
- * @slot Default slot for the carousel. Any projected `igc-carousel-slide` components should be projected here.
+ * @slot Default slot for the carousel. Any carousel slides should be projected here.
  * @slot previous-button - Renders content inside the previous button.
  * @slot next-button - Renders content inside the next button.
  *
@@ -92,6 +93,7 @@ const Slots = setSlots('indicator', 'previous-button', 'next-button');
  * @csspart label - The label container of the carousel indicators.
  * @csspart start - The wrapping container of all carousel indicators when indicators-orientation is set to start.
  */
+@shadowOptions({ delegatesFocus: true })
 export default class IgcCarouselComponent extends EventEmitterMixin<
   IgcCarouselComponentEventMap,
   Constructor<LitElement>
@@ -271,7 +273,7 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
   public interval: number | undefined;
 
   /**
-   * Controls the maximum indicator controls (dots) that can be shown. Default value is `10`.
+   * The maximum number of indicator controls (dots) that can be shown. Default value is `10`.
    * @attr maximum-indicators-count
    */
   @property({ type: Number, attribute: 'maximum-indicators-count' })
@@ -699,7 +701,7 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
   }
 
   /**
-   * Pauses the carousel rotation of slides.
+   * Pauses the rotation of the carousel slides.
    */
   public pause(): void {
     if (this.isPlaying) {
@@ -783,8 +785,9 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
         ${ref(this._prevButtonRef)}
         type="button"
         part="navigation previous"
-        aria-label=${this.resourceStrings.carousel_previous_slide ??
-        'previous slide'}
+        aria-label=${
+          this.resourceStrings.carousel_previous_slide ?? 'previous slide'
+        }
         aria-controls=${this._carouselId}
         ?disabled=${this.disableLoop && this.current === 0}
         @click=${this._handleNavigationInteractionPrevious}
@@ -818,12 +821,12 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
     `;
   }
 
-  protected *_renderIndicators() {
-    for (const [i, slide] of this._slides.entries()) {
+  private _renderIndicators() {
+    return this._slides.map((slide, i) => {
       const forward = slide.active ? 'visible' : 'hidden';
       const backward = slide.active ? 'hidden' : 'visible';
 
-      yield html`
+      return html`
         <igc-carousel-indicator
           exportparts="indicator, active, inactive"
           .active=${slide.active}
@@ -840,7 +843,7 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
           ></div>
         </igc-carousel-indicator>
       `;
-    }
+    });
   }
 
   private _renderIndicatorContainer() {
@@ -893,8 +896,8 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
 
     return html`
       <section>
-        ${cache(this.hideNavigation ? nothing : this._renderNavigation())}
         ${hasNoIndicators ? nothing : this._renderIndicatorContainer()}
+        ${cache(this.hideNavigation ? nothing : this._renderNavigation())}
         ${hasLabel ? this._renderLabel() : nothing}
         <div
           ${ref(this._carouselSlidesContainerRef)}

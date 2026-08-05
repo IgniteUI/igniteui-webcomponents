@@ -54,7 +54,7 @@ const DEFAULT_RESIZE_STATE: SplitterResizeState = {
 };
 
 /**
- * The `igc-splitter` component provides a resizable split-pane layout that divides the view
+ * A splitter component that provides a resizable split-pane layout, dividing the view
  * into two panels — *start* and *end* — separated by a draggable bar.
  *
  * Panels can be resized by dragging the bar, using keyboard shortcuts, or collapsed/expanded
@@ -252,6 +252,9 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   /**
    * The minimum size of the start pane.
    *
+   * Accepts a CSS length, e.g. `100px` or `20%`. Setting `auto`, a negative
+   * value, or a percentage above 100 removes the constraint.
+   *
    * @attr start-min-size
    */
   @property({ attribute: 'start-min-size' })
@@ -265,6 +268,9 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
 
   /**
    * The minimum size of the end pane.
+   *
+   * Accepts a CSS length, e.g. `100px` or `20%`. Setting `auto`, a negative
+   * value, or a percentage above 100 removes the constraint.
    *
    * @attr end-min-size
    */
@@ -280,6 +286,9 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   /**
    * The maximum size of the start pane.
    *
+   * Accepts a CSS length, e.g. `500px` or `80%`. Setting `auto`, a negative
+   * value, or a percentage above 100 removes the constraint.
+   *
    * @attr start-max-size
    */
   @property({ attribute: 'start-max-size' })
@@ -293,6 +302,9 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
 
   /**
    * The maximum size of the end pane.
+   *
+   * Accepts a CSS length, e.g. `500px` or `80%`. Setting `auto`, a negative
+   * value, or a percentage above 100 removes the constraint.
    *
    * @attr end-max-size
    */
@@ -308,6 +320,9 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   /**
    * The size of the start pane.
    *
+   * Accepts a CSS length, e.g. `200px` or `50%`. Setting `auto`, a negative
+   * value, or a percentage above 100 falls back to automatic sizing.
+   *
    * @attr start-size
    */
   @property({ attribute: 'start-size' })
@@ -321,6 +336,9 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
 
   /**
    * The size of the end pane.
+   *
+   * Accepts a CSS length, e.g. `200px` or `50%`. Setting `auto`, a negative
+   * value, or a percentage above 100 falls back to automatic sizing.
    *
    * @attr end-size
    */
@@ -928,9 +946,11 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   private _renderAccessibleLabel() {
     return html`
       <igc-visually-hidden id="splitter-label">
-        ${this._isCollapsed('start')
-          ? 'Start pane collapsed'
-          : 'Start pane expanded'}
+        ${
+          this._isCollapsed('start')
+            ? 'Start pane collapsed'
+            : 'Start pane expanded'
+        }
         and
         ${this._isCollapsed('end') ? 'End pane collapsed' : 'End pane expanded'}
       </igc-visually-hidden>

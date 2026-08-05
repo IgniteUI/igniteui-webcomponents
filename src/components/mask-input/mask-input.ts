@@ -29,6 +29,8 @@ const Slots = setSlots(
   'invalid'
 );
 
+/* blazorSupportsVisualChildren */
+/* blazorIndirectRender */
 /**
  * A masked input is an input field where a developer can control user input and format the visible value,
  * based on configurable rules
@@ -112,7 +114,7 @@ export default class IgcMaskInputComponent extends MaskBehaviorMixin(
   /**
    * The value of the input.
    *
-   * Regardless of the currently set `value-mode`, an empty value will return an empty string.
+   * Regardless of the currently set `value-mode`, an empty value returns an empty string.
    *
    * @attr
    */
@@ -280,6 +282,7 @@ export default class IgcMaskInputComponent extends MaskBehaviorMixin(
       inputMode: this.inputMode,
       tabindex: hasNegativeTabIndex ? -1 : undefined,
       ariaDescribedBy: hasHelperText ? 'helper-text' : undefined,
+      ariaLabelledByElements: this._resolvedLabelElements,
       onInput: this._handleInput,
       onFocus: this._handleFocus,
       onBlur: this._handleBlur,

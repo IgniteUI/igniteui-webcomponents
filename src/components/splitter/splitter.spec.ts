@@ -2969,8 +2969,9 @@ function createSplitterInContainer(
 ) {
   return html`
     <div
-      style="width: ${config.containerWidth ??
-      '800px'}; height: ${config.containerHeight ?? '800px'};"
+      style="width: ${
+        config.containerWidth ?? '800px'
+      }; height: ${config.containerHeight ?? '800px'};"
     >
       <igc-splitter
         style="width: 100%; height: 100%;"

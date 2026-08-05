@@ -83,18 +83,20 @@ export default class IgcIconButtonComponent extends IgcButtonBaseComponent {
 
   protected _renderContent() {
     return html`
-      ${this.name || this.mirrored
-        ? html`
-            <igc-icon
-              part="icon"
-              name=${ifDefined(this.name)}
-              collection=${ifDefined(this.collection)}
-              ?mirrored=${this.mirrored}
-              aria-hidden="true"
-            ></igc-icon>
-            <slot></slot>
-          `
-        : html`<slot></slot>`}
+      ${
+        this.name || this.mirrored
+          ? html`
+              <igc-icon
+                part="icon"
+                name=${ifDefined(this.name)}
+                collection=${ifDefined(this.collection)}
+                ?mirrored=${this.mirrored}
+                aria-hidden="true"
+              ></igc-icon>
+              <slot></slot>
+            `
+          : html`<slot></slot>`
+      }
     `;
   }
 

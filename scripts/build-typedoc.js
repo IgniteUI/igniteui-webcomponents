@@ -2,7 +2,7 @@ import { watch as fsWatch } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createServer } from 'vite';
-import { Application } from 'typedoc';
+import { Application, OptionDefaults } from 'typedoc';
 import report from './report.mjs';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -108,6 +108,15 @@ async function main() {
     router: 'kind',
     excludePrivate: true,
     excludeProtected: true,
+    blockTags: [
+      ...OptionDefaults.blockTags,
+      '@element',
+      '@slot',
+      '@fires',
+      '@csspart',
+      '@cssproperty',
+      '@attr',
+    ],
     suppressCommentWarningsInDeclarationFiles: true,
     name: 'Ignite UI for Web Components',
     readme: 'none',
@@ -139,7 +148,7 @@ async function main() {
       await app.generateDocs(project, TYPEDOC.OUTPUT);
       await serve();
       break;
-    case 'default':
+    default:
       throw new Error('Unrecognized action argument');
   }
 }

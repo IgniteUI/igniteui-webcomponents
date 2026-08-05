@@ -4,6 +4,7 @@ import { spy } from 'sinon';
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import {
   createFormAssociatedTestBed,
+  runExternalLabelAssociationTests,
   simulateInput,
   simulateKeyboard,
 } from '../common/utils.spec.js';
@@ -880,6 +881,12 @@ describe('Masked input', () => {
 
       runValidationContainerTests(IgcMaskInputComponent, testParameters);
     });
+  });
+
+  runExternalLabelAssociationTests({
+    tagName: IgcMaskInputComponent.tagName,
+    getNativeInput: (host) =>
+      (host as IgcMaskInputComponent).renderRoot.querySelector('input')!,
   });
 });
 

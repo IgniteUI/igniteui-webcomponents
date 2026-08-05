@@ -11,6 +11,7 @@ import {
   DIFF_OPTIONS,
   disabledItemsTree,
   expandCollapseTree,
+  itemWrappedInDivTree,
   navigationTree,
   PARTS,
   SLOTS,
@@ -18,7 +19,6 @@ import {
   simpleHierarchyTree,
   simpleTree,
   TreeTestFunctions,
-  wrappedItemsTree,
 } from './tree-utils.spec.js';
 
 describe('Tree', () => {
@@ -58,7 +58,7 @@ describe('Tree', () => {
         expect(label?.textContent).to.equal(item.label);
 
         // the last slot is unnamed and is where child tree items are rendered
-        const slots = item.shadowRoot!.querySelectorAll('slot');
+        const slots = item.renderRoot.querySelectorAll('slot');
         const childrenSlot = Array.from(slots).filter(
           (s) => s.name === ''
         )[0] as HTMLSlotElement;
@@ -154,13 +154,15 @@ describe('Tree', () => {
       expect(topLevelItems[0].expanded).to.be.false; // collapsed by default
       expect(topLevelItems[1].expanded).to.be.true;
 
-      const content1 =
-        topLevelItems[0].shadowRoot!.querySelector('div[role="group"]');
-      expect(content1?.ariaHidden).to.equal('true');
+      const content1 = topLevelItems[0].renderRoot.querySelector(
+        'div[role="group"]'
+      ) as HTMLElement;
+      expect(content1.inert).to.be.true;
 
-      const content2 =
-        topLevelItems[1].shadowRoot!.querySelector('div[role="group"]');
-      expect(content2?.ariaHidden).to.equal('false');
+      const content2 = topLevelItems[1].renderRoot.querySelector(
+        'div[role="group"]'
+      ) as HTMLElement;
+      expect(content2.inert).to.be.false;
     });
 
     it('Should not render expand indicator if an item has no children', async () => {
@@ -178,7 +180,7 @@ describe('Tree', () => {
       expect(tree.selection).to.equal('none'); // by default
 
       tree.items.forEach((item) => {
-        const selectionPart = item.shadowRoot!.querySelector(PARTS.select);
+        const selectionPart = item.renderRoot.querySelector(PARTS.select);
         expect(selectionPart).to.be.null;
       });
 
@@ -186,7 +188,7 @@ describe('Tree', () => {
       await elementUpdated(tree);
 
       tree.items.forEach((item) => {
-        const selectionPart = item.shadowRoot!.querySelector(PARTS.select);
+        const selectionPart = item.renderRoot.querySelector(PARTS.select);
         expect(selectionPart).dom.to.equal(
           `<div part="select" aria-hidden="true">
               <igc-checkbox label-position="after"></igc-checkbox>
@@ -230,7 +232,7 @@ describe('Tree', () => {
       await elementUpdated(tree);
 
       expect(tree.items[0].selected).to.be.false;
-      let selectionPart = tree.items[0].shadowRoot!.querySelector(PARTS.select);
+      let selectionPart = tree.items[0].renderRoot.querySelector(PARTS.select);
       expect(selectionPart).lightDom.to.equal(
         `<igc-checkbox label-position="after"></igc-checkbox>`,
         DIFF_OPTIONS
@@ -243,7 +245,7 @@ describe('Tree', () => {
       tree.items[0].selected = true;
       await elementUpdated(tree);
 
-      selectionPart = tree.items[0].shadowRoot!.querySelector(PARTS.select);
+      selectionPart = tree.items[0].renderRoot.querySelector(PARTS.select);
       cb = selectionPart?.children[0] as IgcCheckboxComponent;
       expect(cb.checked).to.be.true;
       expect(cb.indeterminate).to.be.false;
@@ -314,7 +316,7 @@ describe('Tree', () => {
       // verify the default indentation div is displayed for other child item
       const indentationPart12 = topLevelItems[0]
         .getChildren()[1]
-        .shadowRoot!.querySelector(PARTS.indentation);
+        .renderRoot.querySelector(PARTS.indentation);
       expect(indentationPart12).dom.to.equal(
         `<div part="indentation" aria-hidden="true">
           <slot name="indentation"></slot>
@@ -374,7 +376,7 @@ describe('Tree', () => {
       await elementUpdated(tree);
 
       tree.items.forEach((item) => {
-        const selectionPart = item.shadowRoot!.querySelector(PARTS.select);
+        const selectionPart = item.renderRoot.querySelector(PARTS.select);
         expect(selectionPart).to.be.null;
       });
 
@@ -492,14 +494,22 @@ describe('Tree', () => {
       expect(tree.items.length).to.equal(1);
     });
 
-    it('Should correctly assign the parent item when child items are wrapped within other elements', async () => {
-      tree = await TreeTestFunctions.createTreeElement(wrappedItemsTree);
-      expect(tree.items[0].parent).to.be.null;
-      expect(tree.items[0].children[0].tagName.toLocaleLowerCase() === 'div');
-      // Should also correctly retrieve the direct children in this case
-      const child1 = tree.items[0].getChildren()[0];
-      expect(child1.label).to.equal('Tree Item 1.1');
-      expect(child1.parent).to.equal(tree.items[0]);
+    it('Should not recognize a tree item as a child if it is wrapped within another element (e.g. a `<div>`)', async () => {
+      tree = await TreeTestFunctions.createTreeElement(itemWrappedInDivTree);
+
+      // "Tree Item 1.1" (and its own child) are nested inside a <div> inside "Tree Item 1" -
+      // they are not direct light-DOM children of it, so they are not picked up as its items.
+      const item1 = tree.items[0];
+      expect(item1.label).to.equal('Tree Item 1');
+      expect(item1.getChildren()).to.have.lengthOf(0);
+
+      // The tree's own flattened `items` collection only walks direct `igc-tree-item`
+      // children, so the wrapped items are excluded entirely from the whole tree too.
+      expect(tree.items).to.have.lengthOf(2);
+      expect(tree.items.map((i) => i.label)).to.eql([
+        'Tree Item 1',
+        'Tree Item 2',
+      ]);
     });
   });
 
@@ -771,7 +781,7 @@ describe('Tree', () => {
 
       TreeTestFunctions.verifyItemSelection(topLevelItems[0], false);
 
-      const selectionPart = topLevelItems[0].shadowRoot!.querySelector(
+      const selectionPart = topLevelItems[0].renderRoot.querySelector(
         PARTS.select
       );
       const cb = selectionPart?.children[0] as IgcCheckboxComponent;
@@ -1014,7 +1024,7 @@ describe('Tree', () => {
       disabledItems[0].selected = true;
       await elementUpdated(tree);
 
-      const selectionPart = disabledItems[0].shadowRoot!.querySelector(
+      const selectionPart = disabledItems[0].renderRoot.querySelector(
         PARTS.select
       );
       const cb = selectionPart?.children[0] as IgcCheckboxComponent;

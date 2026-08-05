@@ -3,8 +3,12 @@
 
 $theme: $base;
 
+// The text color is mirrored in a custom property so that autofilled inputs can
+// pick it up through `-webkit-text-fill-color`. See input.base.scss
 [part~='input'] {
-    color: var-get($theme, 'idle-text-color');
+    --input-text-color: #{var-get($theme, 'idle-text-color')};
+
+    color: var(--input-text-color);
 }
 
 [part='prefix'] {
@@ -19,7 +23,9 @@ $theme: $base;
 
 [part~='filled'] {
     [part~='input'] {
-        color: var-get($theme, 'filled-text-color');
+        --input-text-color: #{var-get($theme, 'filled-text-color')};
+
+        color: var(--input-text-color);
     }
 
     [part='prefix'] {
@@ -58,7 +64,9 @@ input::-webkit-datetime-edit {
 :host(:not([readonly], [disabled]):hover) {
     [part~='filled'] {
         [part~='input'] {
-            color: var-get($theme, 'filled-text-hover-color');
+            --input-text-color: #{var-get($theme, 'filled-text-hover-color')};
+
+            color: var(--input-text-color);
         }
     }
 }
@@ -66,7 +74,9 @@ input::-webkit-datetime-edit {
 :host(:not([readonly], [disabled]):focus-within) {
     [part~='filled'] {
         [part~='input'] {
-            color: var-get($theme, 'focused-text-color');
+            --input-text-color: #{var-get($theme, 'focused-text-color')};
+
+            color: var(--input-text-color);
         }
     }
 }

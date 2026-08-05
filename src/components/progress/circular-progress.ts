@@ -19,21 +19,21 @@ let nextId = 1;
  * @element igc-circular-progress
  *
  * @slot - The text area container.
- * @slot gradient - Customize the progress bar in order to use a color gradient instead of a solid color. Accepts `igc-circular-gradient` elements.
+ * @slot gradient - Customize the progress bar in order to use a color gradient instead of a solid color. Accepts circular gradient elements.
  *
- * @csspart svg - The igc-circular-progress SVG element.
- * @csspart gradient_start - The igc-circular-progress linear-gradient start color.
- * @csspart gradient_end - The igc-circular-progress linear-gradient end color.
- * @csspart track - The igc-circular-progress ring track area.
- * @csspart fill - The igc-circular-progress indicator area.
- * @csspart label - The igc-circular-progress label.
- * @csspart value - The igc-circular-progress label value.
- * @csspart indeterminate - The igc-circular-progress indeterminate state.
- * @csspart primary - The igc-circular-progress primary state.
- * @csspart danger - The igc-circular-progress error state.
- * @csspart warning - The igc-circular-progress warning state.
- * @csspart info - The igc-circular-progress info state.
- * @csspart success - The igc-circular-progress success state.
+ * @csspart svg - The circular progress SVG element.
+ * @csspart gradient_start - The circular progress linear-gradient start color.
+ * @csspart gradient_end - The circular progress linear-gradient end color.
+ * @csspart track - The circular progress ring track area.
+ * @csspart fill - The circular progress indicator area.
+ * @csspart label - The circular progress label.
+ * @csspart value - The circular progress label value.
+ * @csspart indeterminate - The circular progress indeterminate state.
+ * @csspart primary - The circular progress primary state.
+ * @csspart danger - The circular progress error state.
+ * @csspart warning - The circular progress warning state.
+ * @csspart info - The circular progress info state.
+ * @csspart success - The circular progress success state.
  */
 export default class IgcCircularProgressComponent extends IgcProgressBaseComponent {
   public static readonly tagName = 'igc-circular-progress';

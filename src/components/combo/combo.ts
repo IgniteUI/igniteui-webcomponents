@@ -2,7 +2,7 @@ import {
   ComboResourceStringsEN,
   type IComboResourceStrings,
 } from 'igniteui-i18n-core';
-import { html, nothing, type PropertyValues, type TemplateResult } from 'lit';
+import { html, type PropertyValues, type TemplateResult } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { createRef, ref } from 'lit/directives/ref.js';
@@ -12,6 +12,7 @@ import { addRootClickController } from '../common/controllers/root-click.js';
 import { addSlotController, setSlots } from '../common/controllers/slot.js';
 import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditionalDependencies.js';
 import { blazorIndirectRender } from '../common/decorators/blazorIndirectRender.js';
+import { shadowOptions } from '../common/decorators/shadow-options.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { addI18nController } from '../common/i18n/i18n-controller.js';
 import { IgcBaseComboBoxComponent } from '../common/mixins/combo-box.js';
@@ -35,9 +36,10 @@ import IgcIconComponent from '../icon/icon.js';
 import IgcInputComponent from '../input/input.js';
 import IgcPopoverComponent from '../popover/popover.js';
 import IgcValidationContainerComponent from '../validation-container/validation-container.js';
+import type { VirtualScrollItemContext } from '../virtualization/types.js';
+import IgcVirtualScrollComponent from '../virtualization/virtualization.js';
 import IgcComboHeaderComponent from './combo-header.js';
 import IgcComboItemComponent from './combo-item.js';
-import IgcComboListComponent from './combo-list.js';
 import { DataState } from './controllers/data.js';
 import { ComboNavigationController } from './controllers/navigation.js';
 import { styles } from './themes/combo.base.css.js';
@@ -125,6 +127,7 @@ const SLOTS = setSlots(
  */
 @blazorAdditionalDependencies('IgcIconComponent, IgcInputComponent')
 @blazorIndirectRender
+@shadowOptions({ delegatesFocus: true })
 export default class IgcComboComponent<
   T extends object = any,
 > extends FormAssociatedRequiredMixin(
@@ -141,7 +144,7 @@ export default class IgcComboComponent<
     registerComponent(
       IgcComboComponent,
       IgcIconComponent,
-      IgcComboListComponent,
+      IgcVirtualScrollComponent,
       IgcComboItemComponent,
       IgcComboHeaderComponent,
       IgcInputComponent,
@@ -206,7 +209,7 @@ export default class IgcComboComponent<
   private readonly _searchRef = createRef<IgcInputComponent>();
 
   /** The combo virtualized dropdown list. */
-  private readonly _listRef = createRef<IgcComboListComponent>();
+  private readonly _listRef = createRef<IgcVirtualScrollComponent>();
 
   private readonly _state = new DataState<T>(this);
   private readonly _navigation = new ComboNavigationController(
@@ -242,6 +245,7 @@ export default class IgcComboComponent<
   @state()
   private set _activeIndex(index: number) {
     this._navigation.active = index;
+    this._listRef.value?.requestUpdate();
   }
 
   private get _activeIndex(): number {
@@ -287,7 +291,7 @@ export default class IgcComboComponent<
   }
 
   /**
-   * The outlined attribute of the control.
+   * Whether the control has an outlined appearance.
    * @attr outlined
    * @default false
    */
@@ -318,7 +322,7 @@ export default class IgcComboComponent<
   }
 
   /**
-   * The autofocus attribute of the control.
+   * Whether the control should receive focus automatically.
    * @attr autofocus
    */
   @property({ type: Boolean })
@@ -347,21 +351,21 @@ export default class IgcComboComponent<
   }
 
   /**
-   * The label attribute of the control.
+   * The label of the control.
    * @attr label
    */
   @property()
   public label?: string;
 
   /**
-   * The placeholder attribute of the control.
+   * The placeholder text of the control.
    * @attr placeholder
    */
   @property()
   public placeholder?: string;
 
   /**
-   * The placeholder attribute of the search input.
+   * The placeholder text of the search input.
    * @attr placeholder-search
    */
   @property({ attribute: 'placeholder-search' })
@@ -438,10 +442,6 @@ export default class IgcComboComponent<
   /**
    * An object that configures the filtering of the combo.
    * @attr filtering-options
-   * @type {FilteringOptions<T>}
-   * @param filterKey - The key in the data source used when filtering the list of options.
-   * @param caseSensitive - Determines whether the filtering operation should be case sensitive.
-   * @param matchDiacritics -If true, the filter distinguishes between accented letters and their base letters.
    */
   @property({ type: Object, attribute: 'filtering-options' })
   public set filteringOptions(value: Partial<FilteringOptions<T>>) {
@@ -503,8 +503,8 @@ export default class IgcComboComponent<
 
   /**
    * Sets the value (selected items). The passed value must be a valid JSON array.
-   * If the data source is an array of complex objects, the `valueKey` attribute must be set.
-   * Note that when `displayKey` is not explicitly set, it will fall back to the value of `valueKey`.
+   * If the data source is an array of complex objects, the `valueKey` must be set.
+   * Note that when `displayKey` is not explicitly set, it falls back to the value of `valueKey`.
    *
    * @attr value
    *
@@ -563,7 +563,18 @@ export default class IgcComboComponent<
   constructor() {
     super();
 
-    addThemingController(this, all);
+    // TODO: Either fix this in the theming controller or come up with another solution.
+    // Check virtualization `willUpdate` for more details.
+
+    // The virtualized list is rendered into this component's own shadow root
+    // (light DOM child), sharing it with the theming controller below. Theme
+    // changes re-adopt this shadow root's stylesheets wholesale, which would
+    // otherwise silently drop the list's own structural stylesheet since
+    // nothing else forces it to refresh. Requesting an update lets the list
+    // re-verify (and re-adopt, if needed) its stylesheet on its next render.
+    addThemingController(this, all, {
+      themeChange: () => this._listRef.value?.requestUpdate(),
+    });
     addSafeEventListener(this, 'blur', this._handleBlur);
     addSafeEventListener(this, 'focusin', this._handleFocusIn);
   }
@@ -589,6 +600,13 @@ export default class IgcComboComponent<
       this._syncSelectionFromValue();
       this._formValue.setValueAndFormState(this.value);
       this._pristine = pristine;
+    }
+  }
+
+  protected override updated(props: PropertyValues<this>): void {
+    super.updated(props);
+    if (this._inputRef.value) {
+      this._inputRef.value._labelElements = this._internals.labels;
     }
   }
 
@@ -1015,12 +1033,9 @@ export default class IgcComboComponent<
   //#endregion
 
   protected _itemRenderer: ComboRenderFunction<T> = (
-    item: ComboRecord<T>,
-    index: number
+    context: VirtualScrollItemContext<ComboRecord<T>>
   ) => {
-    if (!item) {
-      return nothing as unknown as TemplateResult;
-    }
+    const { value: item, index } = context;
 
     if (this.groupKey && item.header) {
       return html`
@@ -1184,7 +1199,7 @@ export default class IgcComboComponent<
         <div part="header">
           <slot name="header"></slot>
         </div>
-        <igc-combo-list
+        <igc-virtual-scroll
           ${ref(this._listRef)}
           aria-multiselectable=${!this.singleSelect}
           id="dropdown"
@@ -1192,13 +1207,14 @@ export default class IgcComboComponent<
           role="listbox"
           tabindex="0"
           aria-labelledby="target"
+          over-scan="15"
           aria-activedescendant=${ifDefined(this._activeDescendant)}
-          .items=${this._state.dataState}
-          .renderItem=${this._itemRenderer}
+          .data=${this._state.dataState}
+          .itemTemplate=${this._itemRenderer}
           ?hidden=${isEmpty(this._state.dataState)}
           @click=${this._itemClickHandler}
         >
-        </igc-combo-list>
+        </igc-virtual-scroll>
         ${this._renderEmptyTemplate()}
         <div part="footer">
           <slot name="footer"></slot>

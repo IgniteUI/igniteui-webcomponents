@@ -18,6 +18,7 @@ import { defineComponents } from '../common/definitions/defineComponents.js';
 import { equal } from '../common/util.js';
 import {
   isFocused,
+  runExternalLabelAssociationTests,
   simulateClick,
   simulateKeyboard,
 } from '../common/utils.spec.js';
@@ -26,6 +27,16 @@ import IgcDatePickerComponent from './date-picker.js';
 
 describe('Date picker', () => {
   before(() => defineComponents(IgcDatePickerComponent));
+
+  runExternalLabelAssociationTests({
+    tagName: IgcDatePickerComponent.tagName,
+    getNativeInput: (host) =>
+      (host as IgcDatePickerComponent).renderRoot
+        .querySelector<IgcDateTimeInputComponent>(
+          IgcDateTimeInputComponent.tagName
+        )!
+        .renderRoot.querySelector('input')!,
+  });
 
   const pickerShowIcon = 'today';
   const pickerClearIcon = 'input_clear';

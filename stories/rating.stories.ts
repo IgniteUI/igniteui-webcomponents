@@ -61,7 +61,7 @@ const metadata: Meta<IgcRatingComponent> = {
     },
     value: {
       type: 'number',
-      description: 'The current value of the component',
+      description: 'The value of the component',
       control: 'number',
       table: { defaultValue: { summary: '0' } },
     },
@@ -92,7 +92,7 @@ const metadata: Meta<IgcRatingComponent> = {
     },
     name: {
       type: 'string',
-      description: 'The name attribute of the control.',
+      description: 'The name of the control, submitted with the form data.',
       control: 'text',
     },
     disabled: {
@@ -146,7 +146,7 @@ interface IgcRatingArgs {
    * Important for screen-readers and useful for localization.
    */
   valueFormat: string;
-  /** The current value of the component */
+  /** The value of the component */
   value: number;
   /** Sets hover preview behavior for the component */
   hoverPreview: boolean;
@@ -156,7 +156,7 @@ interface IgcRatingArgs {
   single: boolean;
   /** Whether to reset the rating when the user selects the same value. */
   allowReset: boolean;
-  /** The name attribute of the control. */
+  /** The name of the control, submitted with the form data. */
   name: string;
   /** The disabled state of the component. */
   disabled: boolean;

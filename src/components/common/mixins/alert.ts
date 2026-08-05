@@ -2,11 +2,12 @@ import { LitElement, type PropertyValues } from 'lit';
 import { property } from 'lit/decorators.js';
 import { addAnimationController } from '../../../animations/player.js';
 import { fadeIn, fadeOut } from '../../../animations/presets/fade/index.js';
-import type { AbsolutePosition } from '../../types.js';
+import type { AbsolutePosition, NotificationPositioning } from '../../types.js';
 import { addCommandController } from '../controllers/command.js';
 import { addInternalsController } from '../controllers/internals.js';
 import { getVisibleAncestor, isPopoverOpen } from '../util.js';
 
+/* omitModule */
 export abstract class IgcBaseAlertLikeComponent extends LitElement {
   protected readonly _player = addAnimationController(this);
 
@@ -62,7 +63,7 @@ export abstract class IgcBaseAlertLikeComponent extends LitElement {
    * @default 'viewport'
    */
   @property({ reflect: true })
-  public positioning: 'viewport' | 'container' = 'viewport';
+  public positioning: NotificationPositioning = 'viewport';
 
   constructor() {
     super();

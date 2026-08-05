@@ -4,6 +4,68 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+### Added
+- #### Icon
+  - `registerIcon` and `registerIconFromText` now accept a `RegisterIconOptions` object as their third argument in addition to the existing plain collection string. Setting `stripMeta: true` removes `<title>` and `<desc>` elements from the stored SVG, preventing the browser from displaying a native tooltip on hover. The title text is still captured and exposed as the `aria-label` of the host `<igc-icon>` element. Any `aria-labelledby` / `aria-describedby` references on the root `<svg>` that pointed to the stripped elements' IDs are cleaned up automatically. [#1822](https://github.com/IgniteUI/igniteui-webcomponents/issues/1822)
+- #### QR Code
+  - Added the new `igc-qr-code` component. Renders a scannable QR code as an SVG based on the provided `value`, automatically encoding it in numeric, alphanumeric, or byte mode. [#2308](https://github.com/IgniteUI/igniteui-webcomponents/pull/2308)
+    - Supports an explicit `version` (1-40) and `error-level` (`L`/`M`/`Q`/`H`), or automatically picks the smallest version and level that fit the data.
+    - `size` and `margin` control the rendered pixel dimensions and the quiet zone (in modules) around the code.
+    - Optional branding logo via `logo-src`, with `logo-size` and `logo-margin` controlling how much of the code's safe, scannable area it covers; the error correction level is raised automatically to accommodate it unless explicitly set.
+    - `dot-style` and `square-style` customize the shape of the data modules and finder-pattern corners (`square`, `circle`, `rounded`).
+    - Themable via the `--ig-qr-code-background`, `--ig-qr-code-dark-color`, `--ig-qr-code-corner-square-color`, and `--ig-qr-code-corner-dot-color` CSS custom properties, and exposes `background`, `dots`, `corner-square`, and `corner-dot` CSS parts.
+- #### Virtual Scroll
+  - Added the new `igc-virtual-scroll` component. It efficiently renders large or unbounded lists by only rendering the items currently within the viewport, plus a configurable `overScan`. [#2222](https://github.com/IgniteUI/igniteui-webcomponents/pull/2222)
+    - Supports both `vertical` and `horizontal` orientation, including RTL layouts.
+    - Item sizes may be fixed, estimated via `estimatedItemSize`, or fully variable - each rendered item is measured automatically and its estimate is corrected on the fly, without requiring any manual intervention.
+    - Added `scrollToIndex()` for programmatically scrolling to a given item, with configurable alignment (`block`/`inline`) and scroll `behavior` (`auto`/`smooth`). The target offset is automatically corrected as previously unmeasured items around it get measured, so the requested item ends up precisely aligned even when it wasn't previously rendered.
+    - Added the `igcDataRequest` event, emitted when the scroll position approaches the end of the currently loaded data, to support infinite-scroll / remote data loading scenarios.
+    - Added the `igcStateChange` event, emitted after each render pass with a snapshot of the current virtual window (`startIndex`, `endIndex`, `viewportSize`, `totalSize`).
+    - Added the `layoutComplete` property - a promise that resolves once the current render pass, and any follow-up renders triggered by item measurement, have fully settled.
+    - Transparently degrades past the maximum scroll coordinate supported by the browser, so lists far larger than the DOM would normally allow keep scrolling and rendering correctly.
+
+### Changed
+- #### Combo
+  - The dropdown list is now virtualized using the new `igc-virtual-scroll` component instead of the third-party `@lit-labs/virtualizer` package. [#2222](https://github.com/IgniteUI/igniteui-webcomponents/pull/2222)
+- #### Library
+  - Updated some of the optional peer dependencies (`dompurify`, `marked`, `shiki`) to their latest stable versions.
+  - Removed the `@lit-labs/virtualizer` dependency. Virtualization is now implemented internally by the new `igc-virtual-scroll` component. [#2222](https://github.com/IgniteUI/igniteui-webcomponents/pull/2222)
+- #### Carousel
+  - The component now delegates focus, starting with its indicator container, navigation buttons, or the first focusable element in the active slide, whichever is available. Related to [#2291](https://github.com/IgniteUI/igniteui-webcomponents/issues/2291).
+
+## [7.2.4] - 2026-06-29
+### Added
+- #### Form associated custom elements with external labels
+  - External `<label>` associations are now resolved to the underlying native input of form-associated controls. Associating a label with `IgcInput`, `IgcMaskInput`, `IgcTextarea`, `IgcDateTimeInput`, `IgcSelect`, `IgcCombo`, `IgcDatePicker`, or `IgcDateRangePicker` — either through the `for`/`id` IDREF mechanism or by nesting the component inside the `<label>` — now correctly exposes the label to assistive technologies and focuses the inner input on label activation. [#2263](https://github.com/IgniteUI/igniteui-webcomponents/pull/2263)
+
+### Changed
+- #### AI-Assisted Development
+  - Improved grid related skills [#2250](https://github.com/IgniteUI/igniteui-webcomponents/pull/2250)
+
+### Fixed
+- #### Tabs
+  - Prevent selected tab header from scrolling into view on initial render [#2268](https://github.com/IgniteUI/igniteui-webcomponents/pull/2268)
+
+## [7.2.3] - 2026-06-18
+### Fixed
+- #### Popover based components
+  - Popover reposition jitter in `position: sticky` ancestors [#2256](https://github.com/IgniteUI/igniteui-webcomponents/pull/2256)
+- #### Tile Manager
+  - Text selection in Safari during drag operations [#2257](https://github.com/IgniteUI/igniteui-webcomponents/pull/2257)
+  - Tile manager height collapse when a spanning tile is maximized [#2257](https://github.com/IgniteUI/igniteui-webcomponents/pull/2257)
+
+## [7.2.2] - 2026-06-15
+### Changed
+- #### AI-Assisted Development
+  - Decreased token consumption of skills and improved migration skill from grid lite to premium offering [#2243](https://github.com/IgniteUI/igniteui-webcomponents/pull/2243) [#2239](https://github.com/IgniteUI/igniteui-webcomponents/pull/2239)
+- #### Snackbar, Toast
+  - Abstracted container positioning property into a new type `NotificationPositioning` [#2251](https://github.com/IgniteUI/igniteui-webcomponents/pull/2251)
+
+### Fixed
+- #### Expansion Panel
+  - Line height for title and sub-title slots [#2237](https://github.com/IgniteUI/igniteui-webcomponents/pull/2237)
+
 ## [7.2.1] - 2026-05-27
 ### Fixed
 - Internal library metadata issue
@@ -1359,6 +1421,9 @@ Initial release of Ignite UI Web Components
 - Ripple component
 - Switch component
 
+[7.2.4]: https://github.com/IgniteUI/igniteui-webcomponents/compare/7.2.3...7.2.4
+[7.2.3]: https://github.com/IgniteUI/igniteui-webcomponents/compare/7.2.2...7.2.3
+[7.2.2]: https://github.com/IgniteUI/igniteui-webcomponents/compare/7.2.1...7.2.2
 [7.2.1]: https://github.com/IgniteUI/igniteui-webcomponents/compare/7.2.0...7.2.1
 [7.2.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/7.1.3...7.2.0
 [7.1.3]: https://github.com/IgniteUI/igniteui-webcomponents/compare/7.1.2...7.1.3

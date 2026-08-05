@@ -347,7 +347,10 @@ class DragController implements ReactiveController {
     Object.assign(this._element.style, {
       touchAction: cssValue,
       userSelect: cssValue,
+      webkitUserSelect: cssValue,
     });
+
+    this._toggleTextSelection(enabled);
 
     enabled
       ? this._element.setPointerCapture(this._id)
@@ -360,6 +363,27 @@ class DragController implements ReactiveController {
       enabled
         ? this._host.addEventListener(type, this)
         : this._host.removeEventListener(type, this);
+    }
+  }
+
+  /**
+   * Toggles text selection for the duration of a drag operation.
+   *
+   * @remarks
+   * Disabling `user-select` only on the dragged element is not enough, since browsers
+   * (notably Safari) will still create a text selection in whatever elements sit under
+   * the pointer while dragging. Applying it to the owner document's body prevents that
+   * across the page for the active drag and is reverted once the operation completes.
+   */
+  private _toggleTextSelection(disabled: boolean): void {
+    const value = disabled ? 'none' : '';
+    const { style } = this._host.ownerDocument.body;
+
+    style.userSelect = value;
+    style.webkitUserSelect = value;
+
+    if (disabled) {
+      this._host.ownerDocument.getSelection()?.removeAllRanges();
     }
   }
 

@@ -5,7 +5,7 @@ import {
   type ICalendarResourceStrings,
   type IDateRangePickerResourceStrings,
 } from 'igniteui-i18n-core';
-import { html, nothing, type TemplateResult } from 'lit';
+import { html, nothing, type PropertyValues, type TemplateResult } from 'lit';
 import {
   property,
   query,
@@ -78,6 +78,7 @@ export interface DateRangeValue {
 }
 
 /* jsonAPIPlainObject */
+/** A predefined date range with label for {@link IgcDateRangePickerComponent.customRanges} */
 export interface CustomDateRange {
   label: string;
   dateRange: DateRangeValue;
@@ -99,7 +100,7 @@ let nextId = 1;
 /* blazorIndirectRender */
 /* blazorSupportsVisualChildren */
 /**
- * The igc-date-range-picker allows the user to select a range of dates.
+ * The Date Range Picker includes a text input and a calendar pop-up, allowing users to easily select start and end dates.
  *
  * @element igc-date-range-picker
  *
@@ -130,10 +131,10 @@ let nextId = 1;
  * @slot actions - Renders content in the action part of the picker in open state.
  * @slot separator - Renders the separator element between the two inputs.
  *
- * @fires igcOpening - Emitted just before the calendar dropdown is shown.
- * @fires igcOpened - Emitted after the calendar dropdown is shown.
- * @fires igcClosing - Emitted just before the calendar dropdown is hidden.
- * @fires igcClosed - Emitted after the calendar dropdown is hidden.
+ * @fires igcOpening - Emitted just before the calendar popover is shown.
+ * @fires igcOpened - Emitted after the calendar popover is shown.
+ * @fires igcClosing - Emitted just before the calendar popover is hidden.
+ * @fires igcClosed - Emitted after the calendar popover is hidden.
  * @fires igcChange - Emitted when the user modifies and commits the elements's value.
  * @fires igcInput - Emitted when when the user types in the element.
  *
@@ -379,8 +380,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
   @property({ attribute: false })
   public set resourceStrings(
     value:
-      | IgcDateRangePickerResourceStrings
-      | DateRangePickerResourceStringsType
+      IgcDateRangePickerResourceStrings | DateRangePickerResourceStringsType
   ) {
     this._i18nController.resourceStrings = value;
   }
@@ -423,21 +423,21 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
   public label!: string;
 
   /**
-   * The label attribute of the start input.
+   * The label of the start input.
    * @attr label-start
    */
   @property({ attribute: 'label-start' })
   public labelStart = '';
 
   /**
-   * The label attribute of the end input.
+   * The label of the end input.
    * @attr label-end
    */
   @property({ attribute: 'label-end' })
   public labelEnd = '';
 
   /**
-   * The placeholder attribute of the control (single input).
+   * The placeholder text of the control (single input).
    * @attr
    */
   @property()
@@ -451,14 +451,14 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
   }
 
   /**
-   * The placeholder attribute of the start input.
+   * The placeholder text of the start input.
    * @attr placeholder-start
    */
   @property({ attribute: 'placeholder-start' })
   public placeholderStart = '';
 
   /**
-   * The placeholder attribute of the end input.
+   * The placeholder text of the end input.
    * @attr placeholder-end
    */
   @property({ attribute: 'placeholder-end' })
@@ -644,6 +644,15 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
   protected override firstUpdated() {
     this._setCalendarRangeValues();
     this._delegateInputsValidity();
+  }
+
+  protected override updated(changedProperties: PropertyValues): void {
+    super.updated(changedProperties);
+    // Forward the host's associated labels only to the start input.
+    const target = this._input ?? this._inputs?.[0];
+    if (target) {
+      target._labelElements = this._internals.labels;
+    }
   }
 
   protected override formResetCallback() {
@@ -1134,8 +1143,9 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
               slot="footer"
               @click=${this._dialogCancel}
               variant=${isIndigo ? 'outlined' : 'flat'}
-              >${this.resourceStrings
-                .date_range_picker_cancel_button}</igc-button
+              >${
+                this.resourceStrings.date_range_picker_cancel_button
+              }</igc-button
             >
             <igc-button
               slot="footer"
@@ -1190,9 +1200,9 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
         @igcChange=${this._handleInputChange}
         @igcInput=${this._handleInput}
         @keydown=${this._handleEnterKeydown}
-        @click=${this._isDropDown || this.readOnly
-          ? nothing
-          : this._handleInputClick}
+        @click=${
+          this._isDropDown || this.readOnly ? nothing : this._handleInputClick
+        }
         exportparts="input, label, prefix, suffix"
       >
         ${this._renderCalendarIcon(picker)}
@@ -1244,9 +1254,9 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
         @igcInput=${this._handleDateRangeInput}
         @igcChange=${this._handleDateRangeInputChange}
         @keydown=${this._handleEnterKeydown}
-        @click=${this._isDropDown || this.readOnly
-          ? nothing
-          : this._handleInputClick}
+        @click=${
+          this._isDropDown || this.readOnly ? nothing : this._handleInputClick
+        }
         exportparts="input, label, prefix, suffix"
       >
         ${this._renderCalendarIcon()}

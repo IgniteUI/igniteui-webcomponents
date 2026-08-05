@@ -15,6 +15,7 @@ import { defineComponents } from '../common/definitions/defineComponents.js';
 import {
   createFormAssociatedTestBed,
   isFocused,
+  runExternalLabelAssociationTests,
   simulateInput,
   simulateKeyboard,
   simulateWheel,
@@ -1209,6 +1210,12 @@ describe('Date Time Input component', () => {
 
       runValidationContainerTests(IgcDateTimeInputComponent, testParameters);
     });
+  });
+
+  runExternalLabelAssociationTests({
+    tagName: IgcDateTimeInputComponent.tagName,
+    getNativeInput: (host) =>
+      (host as IgcDateTimeInputComponent).renderRoot.querySelector('input')!,
   });
 });
 
