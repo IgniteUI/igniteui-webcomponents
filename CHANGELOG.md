@@ -8,17 +8,24 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - #### Icon
   - `registerIcon` and `registerIconFromText` now accept a `RegisterIconOptions` object as their third argument in addition to the existing plain collection string. Setting `stripMeta: true` removes `<title>` and `<desc>` elements from the stored SVG, preventing the browser from displaying a native tooltip on hover. The title text is still captured and exposed as the `aria-label` of the host `<igc-icon>` element. Any `aria-labelledby` / `aria-describedby` references on the root `<svg>` that pointed to the stripped elements' IDs are cleaned up automatically. [#1822](https://github.com/IgniteUI/igniteui-webcomponents/issues/1822)
+- #### QR Code
+  - Added the new `igc-qr-code` component. Renders a scannable QR code as an SVG based on the provided `value`, automatically encoding it in numeric, alphanumeric, or byte mode. [#2308](https://github.com/IgniteUI/igniteui-webcomponents/pull/2308)
+    - Supports an explicit `version` (1-40) and `error-level` (`L`/`M`/`Q`/`H`), or automatically picks the smallest version and level that fit the data.
+    - `size` and `margin` control the rendered pixel dimensions and the quiet zone (in modules) around the code.
+    - Optional branding logo via `logo-src`, with `logo-size` and `logo-margin` controlling how much of the code's safe, scannable area it covers; the error correction level is raised automatically to accommodate it unless explicitly set.
+    - `dot-style` and `square-style` customize the shape of the data modules and finder-pattern corners (`square`, `circle`, `rounded`).
+    - Themable via the `--ig-qr-code-background`, `--ig-qr-code-dark-color`, `--ig-qr-code-corner-square-color`, and `--ig-qr-code-corner-dot-color` CSS custom properties, and exposes `background`, `dots`, `corner-square`, and `corner-dot` CSS parts.
 - #### Splitter
   - `startCollapsed` and `endCollapsed` properties for reading and programmatically setting the collapsed state of each pane.
   - `igcLayoutChanged` event, emitted after a user-driven resize or expansion change, with a snapshot of the current layout (`startSize`, `endSize`, `startCollapsed`, `endCollapsed`).
 - #### Virtual Scroll
   - Added the new `igc-virtual-scroll` component. It efficiently renders large or unbounded lists by only rendering the items currently within the viewport, plus a configurable `overScan`. [#2222](https://github.com/IgniteUI/igniteui-webcomponents/pull/2222)
     - Supports both `vertical` and `horizontal` orientation, including RTL layouts.
-    - Item sizes may be fixed, estimated via `estimatedItemSize`, or fully variable — each rendered item is measured automatically and its estimate is corrected on the fly, without requiring any manual intervention.
+    - Item sizes may be fixed, estimated via `estimatedItemSize`, or fully variable - each rendered item is measured automatically and its estimate is corrected on the fly, without requiring any manual intervention.
     - Added `scrollToIndex()` for programmatically scrolling to a given item, with configurable alignment (`block`/`inline`) and scroll `behavior` (`auto`/`smooth`). The target offset is automatically corrected as previously unmeasured items around it get measured, so the requested item ends up precisely aligned even when it wasn't previously rendered.
     - Added the `igcDataRequest` event, emitted when the scroll position approaches the end of the currently loaded data, to support infinite-scroll / remote data loading scenarios.
     - Added the `igcStateChange` event, emitted after each render pass with a snapshot of the current virtual window (`startIndex`, `endIndex`, `viewportSize`, `totalSize`).
-    - Added the `layoutComplete` property — a promise that resolves once the current render pass, and any follow-up renders triggered by item measurement, have fully settled.
+    - Added the `layoutComplete` property - a promise that resolves once the current render pass, and any follow-up renders triggered by item measurement, have fully settled.
     - Transparently degrades past the maximum scroll coordinate supported by the browser, so lists far larger than the DOM would normally allow keep scrolling and rendering correctly.
 
 ### Changed
