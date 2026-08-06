@@ -1,0 +1,7 @@
+@use 'styles/common/component';
+@use 'styles/utilities' as *;
+
+:host {
+    display: inline-block;
+    contain: content;
+}
