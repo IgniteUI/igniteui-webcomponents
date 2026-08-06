@@ -251,6 +251,58 @@ describe('Combo', () => {
       await expect(combo).to.be.accessible();
     });
 
+    it('picks up items appended to the data array in place', async () => {
+      const data = [...cities];
+      combo = await fixture<IgcComboComponent<City>>(
+        html`<igc-combo
+          .data=${data}
+          value-key="id"
+          display-key="name"
+        ></igc-combo>`
+      );
+      input = combo.renderRoot.querySelector(
+        'igc-input#target'
+      ) as IgcInputComponent;
+
+      // Warm both the value index and the data pipeline
+      combo.select('BG01');
+      await openComboPopover(combo);
+      expect(items(combo)).lengthOf(cities.length);
+
+      data.push({
+        id: 'BG04',
+        name: 'Burgas',
+        country: 'Bulgaria',
+        zip: '8000',
+      });
+      combo.select('BG04');
+      await comboStable(combo);
+
+      expect(combo.value).to.eql(['BG01', 'BG04']);
+      expect(items(combo)).lengthOf(cities.length + 1);
+    });
+
+    it('picks up items removed from the data array in place', async () => {
+      const data = [...cities];
+      combo = await fixture<IgcComboComponent<City>>(
+        html`<igc-combo
+          .data=${data}
+          value-key="id"
+          display-key="name"
+        ></igc-combo>`
+      );
+
+      combo.select('BG01');
+      await openComboPopover(combo);
+      expect(items(combo)).lengthOf(cities.length);
+
+      data.splice(0, 1);
+      combo.deselect('BG02');
+      await comboStable(combo);
+
+      expect(items(combo)).lengthOf(cities.length - 1);
+    });
+
     it('is successfully created with default properties.', () => {
       expect(document.querySelector('igc-combo')).to.exist;
       expect(combo.data).to.equal(cities);

@@ -229,6 +229,7 @@ export default class IgcComboComponent<
 
   private _data: T[] = [];
   private _index?: Map<Item<T>, number[]>;
+  private _indexSize = 0;
   private _valueKey?: Keys<T>;
   private _displayKey?: Keys<T>;
   private _placeholderSearch?: string;
@@ -623,8 +624,12 @@ export default class IgcComboComponent<
    */
   private _withPristine(callback: () => void): void {
     const pristine = this._pristine;
-    callback();
-    this._pristine = pristine;
+
+    try {
+      callback();
+    } finally {
+      this._pristine = pristine;
+    }
   }
 
   protected override updated(props: PropertyValues<this>): void {
@@ -706,11 +711,18 @@ export default class IgcComboComponent<
    * Positions (rather than records) are stored so that resolution can hand back
    * matches in data-source order, and duplicate value keys keep resolving to
    * every record that carries them.
+   *
+   * The size comparison picks up in-place growth or shrink (push/splice) of the
+   * same array. Replacing elements without changing the length is not detectable
+   * here and still requires reassigning `data`.
    */
   private get _dataIndex(): Map<Item<T>, number[]> {
-    this._index ??= Map.groupBy(this.data.keys(), (position) =>
-      this._resolveItemValue(this.data[position])
-    );
+    if (!this._index || this._indexSize !== this.data.length) {
+      this._index = Map.groupBy(this.data.keys(), (position) =>
+        this._resolveItemValue(this.data[position])
+      );
+      this._indexSize = this.data.length;
+    }
 
     return this._index;
   }
@@ -718,20 +730,27 @@ export default class IgcComboComponent<
   /**
    * Resolves user-provided items (value keys or object references)
    * to actual objects from the data source, in data-source order.
+   *
+   * @remarks
+   * Repeating the same value in `items` resolves it once - a record cannot be
+   * selected twice, and duplicates would otherwise reach the change event
+   * payload.
    */
   private _resolveItems(items: Item<T>[]): T[] {
     const index = this._dataIndex;
-    const positions: number[] = [];
+    const positions = new Set<number>();
 
     for (const item of items) {
       const matches = index.get(item);
 
       if (matches) {
-        positions.push(...matches);
+        for (const position of matches) {
+          positions.add(position);
+        }
       }
     }
 
-    return positions
+    return Array.from(positions)
       .sort((a, b) => a - b)
       .map((position) => this.data[position]);
   }

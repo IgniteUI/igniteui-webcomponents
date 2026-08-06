@@ -36,7 +36,7 @@ export default class FilterDataOperation<T extends object> {
 
     if (this._signature !== signature) {
       this._signature = signature;
-      this._cache = new WeakMap();
+      this._cache = new WeakMap<ComboRecord<T>, string>();
     }
   }
 

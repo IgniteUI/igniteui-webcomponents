@@ -18,7 +18,7 @@ export class DataState<T extends object> implements ReactiveController {
   private readonly _grouping = new GroupDataOperation<T>();
   private _compareCollator: Intl.Collator;
 
-  /** The data source, indexed into records. Rebuilt only when `data` changes. */
+  /** The data source, indexed into records. See {@link _isSourceOutdated}. */
   private _indexed: ComboRecord<T>[] = [];
   private _source?: T[];
 
@@ -35,10 +35,10 @@ export class DataState<T extends object> implements ReactiveController {
    * The current state of the data in the combo component.
    *
    * @remarks
-   * Treat the returned collection as immutable - it is shared with the
-   * virtualized list and may be the cached indexed source itself.
+   * The collection is shared with the virtualized list and may be the cached
+   * indexed source itself, so it is handed out as read-only.
    */
-  public get dataState(): ComboRecord<T>[] {
+  public get dataState(): readonly ComboRecord<T>[] {
     return this._dataState;
   }
 
@@ -107,7 +107,21 @@ export class DataState<T extends object> implements ReactiveController {
    * @internal
    */
   public hostUpdate(): void {
+    // Mutating the data array in place notifies neither Lit nor `invalidate()`,
+    // so a changed length is detected here to mark the pipeline dirty on its
+    // own. Replacing elements without changing the length stays undetectable
+    // and still requires reassigning `data`.
+    if (this._isSourceOutdated()) {
+      this._dirty = true;
+    }
+
     this._runPipelineIfDirty();
+  }
+
+  /** Whether the indexed source no longer matches the host's data array. */
+  private _isSourceOutdated(): boolean {
+    const data = this._host.data;
+    return this._source !== data || this._indexed.length !== data.length;
   }
 
   /**
@@ -130,14 +144,14 @@ export class DataState<T extends object> implements ReactiveController {
       return;
     }
 
-    const data = this._host.data;
-
-    // Records are immutable, so the indexed source only needs rebuilding when
-    // the data source itself is replaced. Filter-only runs (every keystroke in
-    // the search input) reuse it instead of re-allocating a record per item.
-    if (this._source !== data) {
-      this._source = data;
-      this._indexed = this._index(data);
+    // A record's `value` and `header` are fixed for a given data item, so the
+    // indexed source only needs rebuilding when it no longer matches the host's
+    // data. Filter-only runs (every keystroke in the search input) reuse it
+    // instead of re-allocating a record per item. The derived `position` is the
+    // one field that does change per run - see `_apply`.
+    if (this._isSourceOutdated()) {
+      this._source = this._host.data;
+      this._indexed = this._index(this._source);
     }
 
     this._dataState = this._apply(this._indexed);
@@ -163,6 +177,12 @@ export class DataState<T extends object> implements ReactiveController {
    * Applies the data pipeline: filtering and grouping over the indexed source,
    * then renumbers the visible options so that the `aria-posinset`/`aria-setsize`
    * pair reported by the list skips group headers.
+   *
+   * @remarks
+   * `position` is derived view state and is deliberately renumbered in place.
+   * The records belong solely to this controller, and every run recomputes the
+   * field before anything reads it, so copying them per run would only add an
+   * allocation to each keystroke.
    */
   private _apply(records: ComboRecord<T>[]): ComboRecord<T>[] {
     const result = this._grouping.apply(
