@@ -15,6 +15,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
     - Optional branding logo via `logo-src`, with `logo-size` and `logo-margin` controlling how much of the code's safe, scannable area it covers; the error correction level is raised automatically to accommodate it unless explicitly set.
     - `dot-style` and `square-style` customize the shape of the data modules and finder-pattern corners (`square`, `circle`, `rounded`).
     - Themable via the `--ig-qr-code-background`, `--ig-qr-code-dark-color`, `--ig-qr-code-corner-square-color`, and `--ig-qr-code-corner-dot-color` CSS custom properties, and exposes `background`, `dots`, `corner-square`, and `corner-dot` CSS parts.
+- #### Splitter
+  - `startCollapsed` and `endCollapsed` properties for reading and programmatically setting the collapsed state of each pane.
+  - `igcLayoutChanged` event, emitted after a user-driven resize or expansion change, with a snapshot of the current layout (`startSize`, `endSize`, `startCollapsed`, `endCollapsed`).
 - #### Virtual Scroll
   - Added the new `igc-virtual-scroll` component. It efficiently renders large or unbounded lists by only rendering the items currently within the viewport, plus a configurable `overScan`. [#2222](https://github.com/IgniteUI/igniteui-webcomponents/pull/2222)
     - Supports both `vertical` and `horizontal` orientation, including RTL layouts.
