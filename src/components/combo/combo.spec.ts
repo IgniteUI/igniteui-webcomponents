@@ -618,6 +618,25 @@ describe('Combo', () => {
       expect(combo.value).lengthOf(2);
     });
 
+    it('should keep the previous selection when cancelling the selection event in single selection mode', async () => {
+      combo.singleSelect = true;
+      combo.select('BG02');
+      await elementUpdated(combo);
+
+      combo.addEventListener('igcChange', (event: CustomEvent) => {
+        event.preventDefault();
+      });
+      combo.open = true;
+
+      await comboStable(combo);
+
+      first(items(combo)).click();
+      await elementUpdated(combo);
+
+      expect(combo.value).to.eql(['BG02']);
+      expect(input.value).to.equal('Plovdiv');
+    });
+
     it('should not stringify values in event', async () => {
       interface CustomValue {
         id: number;
@@ -1396,6 +1415,18 @@ describe('Combo', () => {
       expect(items(combo).length).to.equal(cities.length);
     });
 
+    it('should not filter via the main input when disableFiltering is set', async () => {
+      combo.singleSelect = true;
+      combo.disableFiltering = true;
+      await elementUpdated(combo);
+
+      await openComboPopover(combo);
+      expect(items(combo).length).to.equal(cities.length);
+
+      await filterCombo('sof');
+      expect(items(combo).length).to.equal(cities.length);
+    });
+
     it('issue 1987 - do not close the dropdown on user pointer selection', async () => {
       await openComboPopover(combo);
 
@@ -1488,6 +1519,72 @@ describe('Combo', () => {
 
       expect(combo.value).to.be.empty;
       expect(input.value).to.equal('');
+    });
+  });
+
+  describe('ARIA', () => {
+    beforeEach(async () => {
+      combo = await fixture<IgcComboComponent<City>>(
+        html`<igc-combo
+          .data=${cities}
+          value-key="id"
+          display-key="name"
+          group-key="country"
+        ></igc-combo>`
+      );
+
+      options = combo.renderRoot.querySelector(
+        '[part="list"]'
+      ) as IgcVirtualScrollComponent;
+      input = combo.renderRoot.querySelector(
+        'igc-input#target'
+      ) as IgcInputComponent;
+    });
+
+    it('should report posinset/setsize excluding group headers', async () => {
+      await openComboPopover(combo);
+
+      const rendered = items(combo);
+      expect(rendered).lengthOf(cities.length);
+      expect(headerItems(combo)).lengthOf(2);
+
+      for (const [index, item] of rendered.entries()) {
+        expect(item.getAttribute('aria-posinset')).to.equal(`${index + 1}`);
+        expect(item.getAttribute('aria-setsize')).to.equal(`${cities.length}`);
+      }
+    });
+
+    it('should renumber posinset/setsize when the options are filtered', async () => {
+      await openComboPopover(combo);
+      await filterCombo('a');
+
+      const rendered = items(combo);
+      expect(rendered.length).to.be.lessThan(cities.length);
+
+      for (const [index, item] of rendered.entries()) {
+        expect(item.getAttribute('aria-posinset')).to.equal(`${index + 1}`);
+        expect(item.getAttribute('aria-setsize')).to.equal(
+          `${rendered.length}`
+        );
+      }
+    });
+
+    it('should point aria-activedescendant at the active option and drop it on close', async () => {
+      await openComboPopover(combo);
+
+      expect(options.getAttribute('aria-activedescendant')).to.be.null;
+
+      simulateKeyboard(options, arrowDown);
+      await comboStable(combo);
+
+      const active = items(combo).find((item) => item.active)!;
+      expect(active).to.not.be.undefined;
+      expect(options.getAttribute('aria-activedescendant')).to.equal(active.id);
+
+      await combo.hide();
+      await elementUpdated(combo);
+
+      expect(options.getAttribute('aria-activedescendant')).to.be.null;
     });
   });
 

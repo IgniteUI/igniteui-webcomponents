@@ -18,7 +18,12 @@ export class DataState<T extends object> implements ReactiveController {
   private readonly _grouping = new GroupDataOperation<T>();
   private _compareCollator: Intl.Collator;
 
+  /** The data source, indexed into records. Rebuilt only when `data` changes. */
+  private _indexed: ComboRecord<T>[] = [];
+  private _source?: T[];
+
   private _dataState: ComboRecord<T>[] = [];
+  private _itemCount = 0;
   private _searchTerm = '';
   private _dirty = true;
 
@@ -26,9 +31,28 @@ export class DataState<T extends object> implements ReactiveController {
 
   //#region Public state accessors
 
-  /** The current state of the data in the combo component. */
-  public get dataState(): Readonly<ComboRecord<T>[]> {
+  /**
+   * The current state of the data in the combo component.
+   *
+   * @remarks
+   * Treat the returned collection as immutable - it is shared with the
+   * virtualized list and may be the cached indexed source itself.
+   */
+  public get dataState(): ComboRecord<T>[] {
     return this._dataState;
+  }
+
+  /** The number of selectable options in {@link dataState}, excluding group headers. */
+  public get itemCount(): number {
+    return this._itemCount;
+  }
+
+  /**
+   * The index in {@link dataState} of the first selectable option,
+   * or `-1` when there are none.
+   */
+  public get firstItemIndex(): number {
+    return this._dataState.findIndex((record) => !record.header);
   }
 
   /**
@@ -102,10 +126,22 @@ export class DataState<T extends object> implements ReactiveController {
    * Called during the update lifecycle to batch changes.
    */
   private _runPipelineIfDirty(): void {
-    if (this._dirty) {
-      this._dataState = this._apply(Array.from(this._host.data));
-      this._dirty = false;
+    if (!this._dirty) {
+      return;
     }
+
+    const data = this._host.data;
+
+    // Records are immutable, so the indexed source only needs rebuilding when
+    // the data source itself is replaced. Filter-only runs (every keystroke in
+    // the search input) reuse it instead of re-allocating a record per item.
+    if (this._source !== data) {
+      this._source = data;
+      this._indexed = this._index(data);
+    }
+
+    this._dataState = this._apply(this._indexed);
+    this._dirty = false;
   }
 
   //#endregion
@@ -119,19 +155,32 @@ export class DataState<T extends object> implements ReactiveController {
     return data.map((item, index) => ({
       value: item,
       header: false,
-      dataIndex: index,
+      position: index + 1,
     }));
   }
 
   /**
-   * Applies the data pipeline: indexing, filtering, and grouping.
+   * Applies the data pipeline: filtering and grouping over the indexed source,
+   * then renumbers the visible options so that the `aria-posinset`/`aria-setsize`
+   * pair reported by the list skips group headers.
    */
-  private _apply(data: T[]): ComboRecord<T>[] {
-    let records = this._index(data);
-    records = this._filtering.apply(records, this);
-    records = this._grouping.apply(records, this);
+  private _apply(records: ComboRecord<T>[]): ComboRecord<T>[] {
+    const result = this._grouping.apply(
+      this._filtering.apply(records, this),
+      this
+    );
 
-    return records;
+    let position = 0;
+
+    for (const record of result) {
+      if (!record.header) {
+        record.position = ++position;
+      }
+    }
+
+    this._itemCount = position;
+
+    return result;
   }
 
   //#endregion

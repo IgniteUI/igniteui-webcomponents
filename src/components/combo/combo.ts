@@ -27,7 +27,6 @@ import {
   bindIf,
   first,
   getElementFromPath,
-  isDefined,
   isEmpty,
   stopPropagation,
 } from '../common/util.js';
@@ -56,7 +55,6 @@ import type {
   IgcComboComponentEventMap,
   Item,
   Keys,
-  Values,
 } from './types.js';
 import { comboValidators } from './validators.js';
 
@@ -230,14 +228,17 @@ export default class IgcComboComponent<
   );
 
   private _data: T[] = [];
+  private _index?: Map<Item<T>, number[]>;
   private _valueKey?: Keys<T>;
   private _displayKey?: Keys<T>;
   private _placeholderSearch?: string;
   private _disableFiltering = false;
   private _singleSelect = false;
   private _selected: Set<T> = new Set();
+  // `filterKey` is left unset here - both key fields are still undefined at
+  // field-initialization time. The `displayKey` setter fills it in.
   private _filteringOptions: FilteringOptions<T> = {
-    filterKey: this.displayKey,
+    filterKey: undefined,
     caseSensitive: false,
     matchDiacritics: false,
   };
@@ -262,10 +263,21 @@ export default class IgcComboComponent<
   }
 
   @state()
-  private _activeDescendant?: string;
-
-  @state()
   private _displayValue = '';
+
+  /** The DOM id of the option rendered at `index` in the current data state. */
+  private _itemId(index: number): string {
+    const position = index + 1;
+    return this.id ? `${this.id}-item-${position}` : `item-${position}`;
+  }
+
+  /**
+   * Derived from {@link _activeIndex} rather than tracked separately, so that it
+   * cannot go stale and does not have to be assigned while rendering an item.
+   */
+  private get _activeDescendant(): string | undefined {
+    return this._activeIndex > -1 ? this._itemId(this._activeIndex) : undefined;
+  }
 
   private get _mainAriaLabel(): string {
     return isEmpty(this._selected)
@@ -281,9 +293,8 @@ export default class IgcComboComponent<
   /* treatAsRef */
   @property({ attribute: false })
   public set data(value: T[]) {
-    if (this._data !== value) {
-      this._data = asArray(value);
-    }
+    this._data = asArray(value);
+    this._index = undefined;
   }
 
   public get data(): T[] {
@@ -309,11 +320,11 @@ export default class IgcComboComponent<
     this._syncSelectionFromValue();
 
     if (this.hasUpdated) {
-      const pristine = this._pristine;
-      this._activeIndex = -1;
-      this._searchTerm = '';
-      this._formValue.setValueAndFormState(this.value);
-      this._pristine = pristine;
+      this._withPristine(() => {
+        this._activeIndex = -1;
+        this._searchTerm = '';
+        this._formValue.setValueAndFormState(this.value);
+      });
     }
   }
 
@@ -401,6 +412,7 @@ export default class IgcComboComponent<
   public set valueKey(value: Keys<T> | undefined) {
     this._valueKey = value;
     this._displayKey = this._displayKey ?? this._valueKey;
+    this._index = undefined;
   }
 
   public get valueKey() {
@@ -596,11 +608,23 @@ export default class IgcComboComponent<
     // When data changes, re-sync selection and form
     // This handles the delayed data scenario where value was set before data
     if (props.has('data') && !isEmpty(this.data) && !isEmpty(this.value)) {
-      const pristine = this._pristine;
-      this._syncSelectionFromValue();
-      this._formValue.setValueAndFormState(this.value);
-      this._pristine = pristine;
+      this._withPristine(() => {
+        this._syncSelectionFromValue();
+        this._formValue.setValueAndFormState(this.value);
+      });
     }
+  }
+
+  /**
+   * Runs `callback`, restoring the pristine flag afterwards.
+   *
+   * Re-syncing the form value in reaction to a configuration change (as opposed
+   * to user interaction) must not count as the control having been dirtied.
+   */
+  private _withPristine(callback: () => void): void {
+    const pristine = this._pristine;
+    callback();
+    this._pristine = pristine;
   }
 
   protected override updated(props: PropertyValues<this>): void {
@@ -622,7 +646,10 @@ export default class IgcComboComponent<
   protected override _setDefaultValue(current: string | null): void {
     try {
       this.defaultValue = JSON.parse(current || '[]');
-    } catch {}
+    } catch {
+      // A malformed `value` attribute keeps the previous default rather than
+      // discarding it - see the "invalid JSON" form integration test.
+    }
   }
 
   // #endregion
@@ -672,17 +699,41 @@ export default class IgcComboComponent<
   // #region Selection helpers
 
   /**
+   * Maps every value representation in the data source to the positions of the
+   * records carrying it. Built on demand and dropped whenever `data` or
+   * `valueKey` changes.
+   *
+   * Positions (rather than records) are stored so that resolution can hand back
+   * matches in data-source order, and duplicate value keys keep resolving to
+   * every record that carries them.
+   */
+  private get _dataIndex(): Map<Item<T>, number[]> {
+    this._index ??= Map.groupBy(this.data.keys(), (position) =>
+      this._resolveItemValue(this.data[position])
+    );
+
+    return this._index;
+  }
+
+  /**
    * Resolves user-provided items (value keys or object references)
-   * to actual objects from the data source in a single pass.
+   * to actual objects from the data source, in data-source order.
    */
   private _resolveItems(items: Item<T>[]): T[] {
-    if (this.valueKey) {
-      const keys = new Set(items as Values<T>[]);
-      return this.data.filter((item) => keys.has(item[this.valueKey!]));
+    const index = this._dataIndex;
+    const positions: number[] = [];
+
+    for (const item of items) {
+      const matches = index.get(item);
+
+      if (matches) {
+        positions.push(...matches);
+      }
     }
 
-    const dataSet = new Set(this.data);
-    return (items as T[]).filter((item) => dataSet.has(item));
+    return positions
+      .sort((a, b) => a - b)
+      .map((position) => this.data[position]);
   }
 
   /**
@@ -694,108 +745,134 @@ export default class IgcComboComponent<
   }
 
   /**
-   * Maps data items to their value representations using the given key.
-   * When key is undefined, returns the items themselves.
+   * Maps data records to their value representations - the `valueKey` property
+   * of each, or the record itself when no `valueKey` is set.
    */
-  private _getValues(items: Iterable<T>, key?: Keys<T>): ComboValue<T>[] {
-    return Iterator.from(items)
-      .map((item) => (key ? item[key] : undefined) ?? item)
-      .toArray();
+  private _toValues(items: Iterable<T>): ComboValue<T>[] {
+    const { valueKey } = this;
+    const values: ComboValue<T>[] = [];
+
+    for (const item of items) {
+      values.push((valueKey ? item[valueKey] : undefined) ?? item);
+    }
+
+    return values;
+  }
+
+  /**
+   * Recomputes {@link _displayValue} from the current selection and returns its
+   * value representation, walking the selection once for both projections.
+   */
+  private _projectSelection(): ComboValue<T>[] {
+    const { valueKey, displayKey } = this;
+    const values: ComboValue<T>[] = [];
+    const display: string[] = [];
+
+    for (const item of this._selected) {
+      values.push((valueKey ? item[valueKey] : undefined) ?? item);
+      display.push(String((displayKey ? item[displayKey] : undefined) ?? item));
+    }
+
+    this._displayValue = display.join(', ');
+    return values;
   }
 
   private _emitSelectionChange(detail: IgcComboChangeEventArgs): boolean {
     return this.emitEvent('igcChange', { cancelable: true, detail });
   }
 
-  private _selectItems(items?: Item<T> | Item<T>[], emit = false): void {
-    let collection = asArray(items);
+  /**
+   * Builds the value the component would have if `resolved` were applied to the
+   * current selection. Used as the `newValue` payload of the change event.
+   */
+  private _previewValue(resolved: T[], selecting: boolean): ComboValue<T>[] {
+    if (selecting) {
+      return this._toValues(
+        this.singleSelect ? resolved : [...resolved, ...this._selected]
+      );
+    }
 
-    if (this.singleSelect) {
+    const removed = new Set(resolved);
+
+    return this._toValues(
+      Iterator.from(this._selected).filter((item) => !removed.has(item))
+    );
+  }
+
+  /**
+   * Adds the given `items` to, or removes them from, the current selection.
+   *
+   * An empty collection is a "select all" / "deselect all" request. Single
+   * selection has no "select all" - it only resets the current selection.
+   *
+   * When `emit` is set, the cancellable `igcChange` event is fired *before* any
+   * mutation takes place, so cancelling it leaves the selection untouched.
+   *
+   * @returns Whether the change was committed.
+   */
+  private _updateSelection(
+    items: Item<T> | Item<T>[] | undefined,
+    type: 'selection' | 'deselection',
+    emit: boolean
+  ): boolean {
+    const singleSelect = this.singleSelect;
+    const selecting = type === 'selection';
+    const collection = singleSelect
+      ? asArray(items).slice(0, 1)
+      : asArray(items);
+
+    if (isEmpty(collection)) {
+      if (selecting) {
+        this._selected = singleSelect ? new Set() : new Set(this.data);
+
+        if (singleSelect) {
+          this._searchTerm = '';
+        }
+      } else {
+        if (
+          emit &&
+          !this._emitSelectionChange({
+            newValue: [],
+            items: this.selection,
+            type,
+          })
+        ) {
+          return false;
+        }
+
+        this._selected.clear();
+      }
+
+      this.requestUpdate();
+      return true;
+    }
+
+    const resolved = this._resolveItems(collection);
+
+    if (
+      emit &&
+      !this._emitSelectionChange({
+        newValue: this._previewValue(resolved, selecting),
+        items: resolved,
+        type,
+      })
+    ) {
+      return false;
+    }
+
+    // Past this point the change is committed - only now is it safe to drop
+    // the previous single selection and its search term.
+    if (selecting && singleSelect) {
       this._selected.clear();
       this._searchTerm = '';
     }
 
-    if (isEmpty(collection)) {
-      if (!this.singleSelect) {
-        this._selected = new Set(this.data);
-        this.requestUpdate();
-      }
-      return;
-    }
-
-    if (this.singleSelect) {
-      collection = collection.slice(0, 1);
-    }
-
-    const resolved = this._resolveItems(collection);
-
-    if (
-      emit &&
-      !this._emitSelectionChange({
-        newValue: this._getValues(
-          [...resolved, ...this._selected],
-          this.valueKey
-        ),
-        items: resolved,
-        type: 'selection',
-      })
-    ) {
-      return;
-    }
-
     for (const item of resolved) {
-      this._selected.add(item);
+      selecting ? this._selected.add(item) : this._selected.delete(item);
     }
 
     this.requestUpdate();
-  }
-
-  private _deselectItems(items?: Item<T> | Item<T>[], emit = false): void {
-    let collection = asArray(items);
-
-    if (isEmpty(collection)) {
-      if (
-        emit &&
-        !this._emitSelectionChange({
-          newValue: [],
-          items: Array.from(this._selected),
-          type: 'deselection',
-        })
-      ) {
-        return;
-      }
-
-      this._selected.clear();
-      this.requestUpdate();
-      return;
-    }
-
-    if (this.singleSelect) {
-      collection = collection.slice(0, 1);
-    }
-
-    const resolved = this._resolveItems(collection);
-    const resolvedSet = new Set(resolved);
-    const remaining = Array.from(this._selected).filter(
-      (item) => !resolvedSet.has(item)
-    );
-
-    if (
-      emit &&
-      !this._emitSelectionChange({
-        newValue: this._getValues(remaining, this.valueKey),
-        items: resolved,
-        type: 'deselection',
-      })
-    ) {
-      return;
-    }
-
-    for (const item of resolved) {
-      this._selected.delete(item);
-    }
-
-    this.requestUpdate();
+    return true;
   }
 
   /**
@@ -814,58 +891,66 @@ export default class IgcComboComponent<
         this._formValue.setValueAndFormState(values);
       }
 
-      const items = Iterator.from(values)
-        .map((val) => this._findItemByValue(val, this.valueKey))
-        .filter(isDefined);
+      const index = this._dataIndex;
 
-      for (const item of items) {
-        this._selected.add(item);
+      for (const value of values) {
+        // First match only - mirrors resolving a value against the data source
+        const position = index.get(value)?.[0];
+
+        if (position !== undefined) {
+          this._selected.add(this.data[position]);
+        }
       }
     }
 
-    this._displayValue = this._getValues(this._selected, this.displayKey).join(
-      ', '
-    );
+    this._projectSelection();
+  }
+
+  protected _syncValueFromSelection(): void {
+    this._formValue.setValueAndFormState(this._projectSelection());
+    this._setSingleSelectionDisplayValue(this._displayValue);
+    this._validate();
+    this._listRef.value?.requestUpdate();
   }
 
   /**
-   * Finds an item in the data array by its value (or value key).
-   * Returns undefined if the item is not found.
+   * The data record rendered at `index`, or undefined when that position holds
+   * a group header instead of a selectable option.
+   *
+   * Guarding on this matters: an unresolvable record would reach
+   * {@link _updateSelection} as an empty collection, which reads as
+   * "select everything".
    */
-  private _findItemByValue(value: ComboValue<T>, key?: Keys<T>): T | undefined {
-    return this.data.find((item) => (key ? item[key] : item) === value);
-  }
-
-  protected _syncValueFromSelection(initial = false): void {
-    const values = this._getValues(this._selected, this.valueKey);
-    this._displayValue = this._getValues(this._selected, this.displayKey).join(
-      ', '
-    );
-    this._formValue.setValueAndFormState(values);
-
-    if (!initial) {
-      this._setSingleSelectionDisplayValue(this._displayValue);
-      this._validate();
-      this._listRef.value?.requestUpdate();
-    }
+  private _recordAt(index: number): T | undefined {
+    const record = this._state.dataState[index];
+    return record && !record.header ? record.value : undefined;
   }
 
   private _toggleSelection(index: number): void {
-    const record = this.data[this._state.dataState[index].dataIndex];
+    const record = this._recordAt(index);
 
-    this._selected.has(record)
-      ? this._deselectItems(this._resolveItemValue(record), true)
-      : this._selectItems(this._resolveItemValue(record), true);
+    if (!record) {
+      return;
+    }
+
+    this._updateSelection(
+      this._resolveItemValue(record),
+      this._selected.has(record) ? 'deselection' : 'selection',
+      true
+    );
 
     this._activeIndex = index;
     this._syncValueFromSelection();
   }
 
   private _selectByIndex(index: number): void {
-    this._selectItems(
-      this._resolveItemValue(this.data[this._state.dataState[index].dataIndex]),
-      true
-    );
+    const record = this._recordAt(index);
+
+    if (!record) {
+      return;
+    }
+
+    this._updateSelection(this._resolveItemValue(record), 'selection', true);
     this._activeIndex = index;
     this._syncValueFromSelection();
   }
@@ -875,7 +960,7 @@ export default class IgcComboComponent<
       this._searchTerm = '';
       this._clearSingleSelection();
     } else {
-      this._deselectItems([], true);
+      this._updateSelection([], 'deselection', true);
     }
     this._syncValueFromSelection();
   }
@@ -883,8 +968,17 @@ export default class IgcComboComponent<
   private _clearSingleSelection(): void {
     const [selection] = this._selected;
 
-    if (selection) {
-      this._deselectItems(this._resolveItemValue(selection), true);
+    // The form state is reset directly rather than through
+    // `_syncValueFromSelection` so that the text the user is currently typing
+    // into the main input is left alone.
+    if (
+      selection &&
+      this._updateSelection(
+        this._resolveItemValue(selection),
+        'deselection',
+        true
+      )
+    ) {
       this._formValue.setValueAndFormState([]);
     }
   }
@@ -897,13 +991,18 @@ export default class IgcComboComponent<
     detail,
   }: CustomEvent<string>): Promise<void> {
     this._setTouchedState();
-    this._show(true);
-    this._searchTerm = detail;
+    void this._show(true);
+
+    // In single selection mode the main input doubles as the filtering input,
+    // so it is the only place `disableFiltering` can be honored.
+    if (!this.disableFiltering) {
+      this._searchTerm = detail;
+    }
 
     // wait for the dataState to update after filtering
     await this.updateComplete;
 
-    this._activeIndex = this._state.dataState.findIndex((i) => !i.header);
+    this._activeIndex = this._state.firstItemIndex;
     // clear the selection upon typing
     this._clearSingleSelection();
   }
@@ -998,7 +1097,7 @@ export default class IgcComboComponent<
    * ```
    */
   public select(items?: Item<T> | Item<T>[]): void {
-    this._selectItems(items);
+    this._updateSelection(items, 'selection', false);
     this._syncValueFromSelection();
   }
 
@@ -1026,7 +1125,7 @@ export default class IgcComboComponent<
    * ```
    */
   public deselect(items?: Item<T> | Item<T>[]): void {
-    this._deselectItems(items);
+    this._updateSelection(items, 'deselection', false);
     this._syncValueFromSelection();
   }
 
@@ -1045,21 +1144,15 @@ export default class IgcComboComponent<
       `;
     }
 
-    const position = index + 1;
-    const id = this.id ? `${this.id}-item-${position}` : `item-${position}`;
     const active = this._activeIndex === index;
-    const selected = this._selected.has(this.data[item.dataIndex]);
-
-    if (active) {
-      this._activeDescendant = id;
-    }
+    const selected = this._selected.has(item.value);
 
     return html`
       <igc-combo-item
-        id=${id}
+        id=${this._itemId(index)}
         part=${partMap({ item: true, selected, active })}
-        aria-setsize=${this._state.dataState.length}
-        aria-posinset=${position}
+        aria-setsize=${this._state.itemCount}
+        aria-posinset=${item.position}
         exportparts="checkbox, checkbox-indicator, checked"
         .index=${index}
         ?active=${active}
