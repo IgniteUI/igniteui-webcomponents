@@ -69,6 +69,24 @@ describe('Picker canvas', () => {
 
       expect(canvas.style.color).to.equal('red');
     });
+
+    it('fills the marker with `markerColor`', async () => {
+      canvas.markerColor = 'rgb(12, 34, 56)';
+      await elementUpdated(canvas);
+
+      expect(canvas.style.getPropertyValue('--_marker-color')).to.equal(
+        'rgb(12, 34, 56)'
+      );
+      expect(getComputedStyle(getMarker(canvas)).backgroundColor).to.equal(
+        'rgb(12, 34, 56)'
+      );
+    });
+
+    it('leaves the marker unfilled with no `markerColor`', () => {
+      expect(getComputedStyle(getMarker(canvas)).backgroundColor).to.equal(
+        'rgba(0, 0, 0, 0)'
+      );
+    });
   });
 
   describe('Keyboard interaction', () => {

@@ -472,10 +472,12 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
   private _renderCanvasGradient(): TemplateResult {
     return html`
       <igc-picker-canvas
+        exportparts="marker"
         part="picker-canvas"
         ${ref(this._canvasRef)}
         @igcColorPicked=${this._handleCanvasColorPicked}
         currentColor=${this._ownCurrentColor}
+        markerColor=${this._opaqueColor}
       >
       </igc-picker-canvas>
     `;

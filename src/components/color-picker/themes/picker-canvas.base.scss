@@ -3,14 +3,14 @@
 
 :host {
 	grid-column: 1 / -1;
-    content-visibility: auto;
-    contain: strict;
 
-    // Inside the picker the canvas is a grid item and gets blockified anyway,
-    // but `contain`/`content-visibility` and its own sizing are ignored on an
-    // inline box - so the display type has to be stated, not inherited from
-    // the parent's layout.
-    display: block;
+    // The marker is centered on the picked point, so at the edges of the canvas
+    // half of it - plus its elevation - sits outside the host box. Paint
+    // containment clips exactly that overflow to the (rounded) padding edge, so
+    // neither `contain: strict` nor `content-visibility: auto` can be used here:
+    // both imply it. Layout and style containment carry no clip.
+	display: block;
+	contain: layout style;
     position: relative;
     min-height: rem(230px);
     background-image:
@@ -21,10 +21,25 @@
 
 [part='marker'] {
     position: absolute;
-    width: rem(20px);
-    height: rem(20px);
-    border: rem(2px) solid #fff;
-    border-radius: rem(20px);
     cursor: crosshair;
-	box-shadow: elevation(1);
+	width: var(--marker-size);
+	height: var(--marker-size);
+	border: rem(2px) solid var(--marker-color);
+	border-radius: calc(var(--marker-size) / 2);
+	box-shadow: var(--marker-elevation);
+	background-color: var(--_marker-color, transparent);
+	
+	
+	// Keep the fill inside the white ring instead of running underneath it, so a
+	// translucent color can never tint the border.
+	background-clip: padding-box;
+
+	transition: scale .1s ease-in-out;
+	
+	&:focus {
+		scale: 1.3;
+		transform-origin: center;
+		
+		outline: none;
+	}
 }

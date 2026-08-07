@@ -22,9 +22,9 @@ $theme: $material;
 	
 	// Dont use border otherwise the thumb will be misaligned.
 	box-shadow: inset 0 0 0 rem(1px) var-get($theme, 'slider-track-border-color');
-	background-image: var(--alpha-slider-track);
-	background-position: var(--alpha-track-position);
-	background-size: var(--alpha-track-size);
+	background-image: var(--_alpha-slider-track);
+	background-position: var(--_alpha-track-position);
+	background-size: var(--_alpha-track-size);
 }
 
 @mixin slider-thumb {
@@ -56,18 +56,35 @@ $theme: $material;
 			transparent 50%
 		),
 		linear-gradient(var(--_alpha-preview, transparent), var(--_alpha-preview, transparent)),
-		var(--transparency-grid);
+		var(--_transparency-grid);
 	background-position: 0 0;
 	background-size: 100% 100%, 100% 100%, 50% 50%;
 }
 
 :host {
 	--component-size: var(--ig-size, #{var-get($theme, 'default-size')});
+	
+	// The focus-visible border/halo is drawn outside or inside the anchor trigger/anchor depending on the theme
+	// and has different size in the different themes
 	--_outline-size: #{rem(1px)};
 	
-    --_current-color: #000;
+	--_picker-popoover-size: #{sizable(rem(290px), rem(314px), rem(360px))};
+	
+	--_input-row-spacing: #{sizable(rem(16px), rem(16px), rem(16px))};
+	--_alpha-row-spacing: #{sizable(rem(8px), rem(12px), rem(24px))};
+	--_swatches-spacing: #{rem(16px)};
+	
+	--_swatches-col-gap: #{rem(8px)};
+	--_swatches-row-gap: #{rem(8px)};
+	
+	--_input-row-gap: #{sizable(rem(8px), rem(12px), rem(16px))};
+	
+	--_current-color: #000;
 	--_anchor-border-size: #{rem(1px)};
 	--_input-mode-trigger-size: #{sizable(rem(18px), rem(20px), rem(24px))};
+	--_picker-rows-grid-template-columns: #{sizable(rem(90px), rem(100px), rem(115px))} auto  #{sizable(rem(70px), rem(70px), rem(70px))};
+	--_picker-rows-inline-spacing: #{rem(16px)};
+	--_picker-rows-gap: #{sizable(rem(14px), rem(12px), rem(16px))};
 	
 	--_hue-slider-track: linear-gradient(
 		90deg,
@@ -81,7 +98,7 @@ $theme: $material;
 		#f90000 100%
 	);
 	
-    --alpha-slider-track:
+    --_alpha-slider-track:
         linear-gradient(90deg, rgb(0 0 0 / 0%), var(--_current-color)),
         repeating-linear-gradient(
             45deg,
@@ -100,12 +117,12 @@ $theme: $material;
             #aaa
         );
 	
-    --alpha-track-position: 0 0, 0 0, #{rem(4px)} #{rem(4px)};
-    --alpha-track-size: contain, #{rem(8px)} #{rem(8px)}, #{rem(8px)} #{rem(8px)};
+    --_alpha-track-position: 0 0, 0 0, #{rem(4px)} #{rem(4px)};
+    --_alpha-track-size: contain, #{rem(8px)} #{rem(8px)}, #{rem(8px)} #{rem(8px)};
 
     // A single conic tile draws 2x2 squares; sized at 50% it repeats
     // into a 4x4 grid that scales with the swatch it sits behind.
-    --transparency-grid: conic-gradient(
+    --_transparency-grid: conic-gradient(
         #aaa 0deg 90deg,
         #fff 90deg 180deg,
         #aaa 180deg 270deg,
@@ -148,19 +165,50 @@ $theme: $material;
             @include slider-thumb();
         }
     }
+	
+	
+	[part='main-row'],
+	[part='alpha-row'],
+	[part='inputs-row'] {
+		grid-template-columns: var(--_picker-rows-grid-template-columns);
+		padding-inline: var(--_picker-rows-inline-spacing);
+		column-gap: var(--_picker-rows-gap);
+	}
 
     [part='picker'] {
 	    background: var-get($theme, 'picker-background');
 	    border-radius: var-get($theme, 'picker-border-radius');
-        box-shadow: var(--ig-elevation-24);
+        box-shadow: var-get($theme, 'picker-elevation');
+	    border: rem(1px) solid var-get($theme, 'picker-border-color');
+	    
+	    igc-divider {
+		    --ig-divider-color: #{var-get($theme, 'swatch-separator-color')};
+		    
+		    grid-column: 1 / -1;
+	    }
+	    
+	    &:has([part~='swatches']) {
+		    --_input-row-spacing: #{sizable(rem(16px), rem(16px), rem(24px))};
+	    }
     }
+	
+	[part='swatches'] {
+		grid-template-columns: repeat(auto-fit, var-get($theme, 'swatch-size'));
+	}
 	
 	[part='picker-canvas'] {
 		border-color: var-get($theme, 'picker-canvas-border-color');
-		border-radius: calc(var-get($theme, 'picker-border-radius') - rem(1px));
+		
+		border-radius: calc(var-get($theme, 'picker-border-radius'));
+		
+		> igc-picker-canvas {
+			border-radius: calc(var-get($theme, 'picker-border-radius') - rem(1px));
+		}
 	}
-
+	
     [part='swatch'] {
+	    width: var-get($theme, 'swatch-size');
+	    height: var-get($theme, 'swatch-size');
         border: rem(1px) solid var-get($theme, 'swatch-border-color');
         border-radius: var-get($theme, 'swatch-border-radius');
         cursor: pointer;

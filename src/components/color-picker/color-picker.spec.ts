@@ -294,6 +294,32 @@ describe('Color picker', () => {
       expect(expected.h).to.equal(ColorModel.parse('#ff0000').h);
     });
 
+    it('fills the canvas marker with the selected color', async () => {
+      expect(getCanvas(picker).markerColor).to.equal('rgb(255 0 0)');
+
+      const hue = getHueSlider(picker);
+      hue.value = '120';
+      hue.dispatchEvent(new Event('input', { bubbles: true }));
+      await elementUpdated(picker);
+
+      expect(getCanvas(picker).markerColor).to.equal('rgb(0 255 0)');
+    });
+
+    it('keeps the canvas marker opaque regardless of alpha', async () => {
+      picker.showAlpha = true;
+      picker.format = 'rgb';
+      await elementUpdated(picker);
+
+      const alpha = getAlphaSlider(picker);
+      alpha.value = '50';
+      alpha.dispatchEvent(new Event('input', { bubbles: true }));
+      await elementUpdated(picker);
+
+      // The marker sits on the saturation/value plane, which has no alpha - a
+      // translucent fill would just read as the gradient underneath it.
+      expect(getCanvas(picker).markerColor).to.equal('rgb(255 0 0)');
+    });
+
     it('updates the format via the format select', async () => {
       const select = getFormatSelect(picker);
 

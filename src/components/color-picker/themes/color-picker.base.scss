@@ -15,18 +15,40 @@
         appearance: none;
         width: 100%;
     }
-
+	
     [part='main-row'],
     [part='alpha-row'],
     [part='inputs-row'] {
         display: grid;
-	    grid-template-columns: repeat(4, 1fr);
-	    grid-column: 1 / -1;
-	    gap: sizable(rem(14px), rem(12px), rem(16px));
+	    grid-template-columns: var(--_picker-rows-grid-template-columns);
+	    padding-inline: rem(16px);
+	    column-gap: sizable(rem(14px), rem(12px), rem(16px));
+	    
+	    &:empty {
+		    display: none;
+	    }
     }
+	
+	[part='main-row'] {
+		input {
+	
+			grid-column: 1 / span 2;
+		}
+		
+		margin-block-end: sizable(rem(8px), rem(12px), rem(16px));
+	}
+	
+	[part='alpha-row'] {
+		input {
+			grid-column: 1 / span 2;
+		}
+		
+		margin-block: var(--_alpha-row-spacing);
+	}
 	
 	[part='alpha-input'] {
 		min-width: fit-content;
+		
 		&::part(input) {
 			-moz-appearance: textfield;
 			
@@ -39,8 +61,11 @@
 	}
 	
 	[part='inputs-row'] {
-		> * {
-			grid-column: span 2;
+		margin-block-end: var(--_input-row-spacing);
+		gap: var(--_input-row-gap);
+		
+		igc-input {
+			grid-column: 2 / -1;
 		}
 	}
 
@@ -48,7 +73,6 @@
         --ig-size: 1;
 
         display: flex;
-	    gap: sizable(rem(14px), rem(12px), rem(16px));
 	    justify-content: space-between;
     }
 
@@ -82,30 +106,37 @@
     }
 
     [part='picker'] {
-        display: grid;
-        padding: rem(16px);
-        width: sizable(rem(290px), rem(314px), rem(360px));
+	    display: grid;
+	    width: var(--_picker-popoover-size);
         min-height: rem(192px);
-        row-gap: rem(8px);
+	    
+	    &:has([part~='alpha-row']:not(:empty)) {
+		    [part='main-row'] {
+			    margin-block-end: 0;
+		    }
+	    }
     }
 	
 	[part='picker-canvas'] {
 		border-width: rem(1px);
 		border-style: solid;
+		margin-inline: rem(16px);
+		margin-block-start: rem(16px);
+		margin-block-end: sizable(rem(16px), rem(20px), rem(24px));
     }
 
     [part='swatches'] {
-        display: flex;
-        flex-wrap: wrap;
-        gap: rem(8px);
-        max-width: rem(300px);
-        overflow: hidden;
+        display: grid;
+	    padding: var(--_swatches-spacing);
+	    column-gap: var(--_swatches-col-gap);
+	    row-gap: var(--_swatches-row-gap);
+	    justify-content: space-between;
+	    
+	    overflow: hidden;
+	    grid-column: 1 / -1;
+	    width: 100%;
     }
-
-    [part='swatch'] {
-        width: rem(24px);
-        height: rem(24px);
-    }
+	
 
     // Box Trigger
     [part~='anchor'] {
