@@ -43,6 +43,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
     - Spinning a date part while the editor is focused now also defers to the commit on blur. A programmatic `stepUp()` / `stepDown()` on an unfocused component still updates `value` immediately, as do `clear()`, `setRangeText()`, and direct assignments.
     - For `igc-date-picker` and `igc-date-range-picker` the calendar keeps following the typed date while editing, as before.
 
+### Fixed
+- #### Form associated components
+  - Validation messages no longer disappear right after the first failed form submission. The submit-driven invalid state used to hold only for the update the submission itself scheduled, so any re-render that followed - a `slotchange` from the validation slots the submission had just projected, for instance - silently dropped the projected messages while the invalid styling stayed on.
+  - Invalid styling now follows the validity state, so a control that turns valid again (a cleared `required`, a widened `min`/`max`, a disabled control) drops the styles it picked up from an earlier interaction or submission.
+
 ## [7.2.4] - 2026-06-29
 ### Added
 - #### Form associated custom elements with external labels
