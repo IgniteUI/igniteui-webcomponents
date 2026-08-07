@@ -72,7 +72,8 @@ const metadata: Meta<IgcDatePickerComponent> = {
     },
     value: {
       type: 'Date',
-      description: 'The value of the picker',
+      description:
+        'The value of the picker.\n\nOnly ever holds a committed value. While the user is typing in the input, the\nintermediate state stays in the editor and is committed - together with an\n`igcChange` event - when the edit is committed on blur. Use the `igcInput` event\nto observe the value as it is being typed.',
       control: 'date',
     },
     activeDate: {
@@ -257,7 +258,14 @@ interface IgcDatePickerArgs {
   nonEditable: boolean;
   /** Makes the control a readonly field. */
   readOnly: boolean;
-  /** The value of the picker */
+  /**
+   * The value of the picker.
+   *
+   * Only ever holds a committed value. While the user is typing in the input, the
+   * intermediate state stays in the editor and is committed - together with an
+   * `igcChange` event - when the edit is committed on blur. Use the `igcInput` event
+   * to observe the value as it is being typed.
+   */
   value: Date;
   /**
    * Gets/Sets the date which is shown in the calendar picker and is highlighted.

@@ -27,9 +27,10 @@ const metadata: Meta<IgcDateTimeInputComponent> = {
   },
   argTypes: {
     value: {
-      type: 'Date',
-      description: 'The value of the input.',
-      control: 'date',
+      type: 'T',
+      description:
+        'The value of the input.\n\nOnly ever holds a committed value. While the user is typing, the intermediate\nstate lives in the masked text and is committed - together with an `igcChange`\nevent - when the edit is committed on blur. Use the `igcInput` event to observe\nthe value as it is being typed.',
+      control: 'T',
     },
     readOnly: {
       type: 'boolean',
@@ -137,8 +138,15 @@ const metadata: Meta<IgcDateTimeInputComponent> = {
 export default metadata;
 
 interface IgcDateTimeInputArgs {
-  /** The value of the input. */
-  value: Date;
+  /**
+   * The value of the input.
+   *
+   * Only ever holds a committed value. While the user is typing, the intermediate
+   * state lives in the masked text and is committed - together with an `igcChange`
+   * event - when the edit is committed on blur. Use the `igcInput` event to observe
+   * the value as it is being typed.
+   */
+  value: T;
   /** Makes the control a readonly field. */
   readOnly: boolean;
   /** The mask pattern of the component. */
