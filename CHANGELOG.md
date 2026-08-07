@@ -47,6 +47,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - #### Form associated components
   - Validation messages no longer disappear right after the first failed form submission. The submit-driven invalid state used to hold only for the update the submission itself scheduled, so any re-render that followed - a `slotchange` from the validation slots the submission had just projected, for instance - silently dropped the projected messages while the invalid styling stayed on.
   - Invalid styling now follows the validity state, so a control that turns valid again (a cleared `required`, a widened `min`/`max`, a disabled control) drops the styles it picked up from an earlier interaction or submission.
+- #### Tabs
+  - See-through scroll buttons in the Indigo theme. The buttons are sticky and the tab headers scroll underneath them, but the theme leaves both the buttons and the tabs strip transparent, so the scrolled headers showed through. The buttons now paint an opaque surface backdrop below their themed background. [#1955](https://github.com/IgniteUI/igniteui-webcomponents/issues/1955)
 
 ## [7.2.4] - 2026-06-29
 ### Added
