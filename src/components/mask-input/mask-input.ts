@@ -197,10 +197,14 @@ export default class IgcMaskInputComponent extends MaskBehaviorMixin(
     if (!this._formValue.value) {
       // In case of empty value, select the whole mask
       this._maskedValue = this._parser.emptyMask;
+      this._historyResync();
 
       await this.updateComplete;
       this.select();
+      return;
     }
+
+    this._historyResync();
   }
 
   protected override _handleBlur(): void {
@@ -226,22 +230,19 @@ export default class IgcMaskInputComponent extends MaskBehaviorMixin(
     this._formValue.setValueAndFormState(value);
   }
 
-  protected override async _updateInput(
-    text: string,
-    { start, end }: MaskSelection
-  ): Promise<void> {
-    const result = this._parser.replace(this._maskedValue, text, start, end);
+  /**
+   * Commits straight to the form value instead of going through the `value` setter: the
+   * setter re-applies the parser, and `apply(parse(x))` left-packs the text - a mask with
+   * an interior hole such as `1_2-___` would collapse to `12_-___`.
+   */
+  protected override _commitMaskedValue(value: string): void {
+    this._maskedValue = value;
+    this._formValue.setValueAndFormState(this._parser.parse(value));
+  }
 
-    this._maskedValue = result.value;
-    this._formValue.setValueAndFormState(this._parser.parse(this._maskedValue));
-    this.requestUpdate();
-
-    if (start !== this.mask.length) {
-      this.emitEvent('igcInput', { detail: this.value });
-    }
-
-    await this.updateComplete;
-    this._input?.setSelectionRange(result.end, result.end);
+  protected override _emitInputEvent(): void {
+    this._setTouchedState();
+    this.emitEvent('igcInput', { detail: this.value });
   }
 
   protected override _syncValueFromMask(): void {
@@ -284,6 +285,7 @@ export default class IgcMaskInputComponent extends MaskBehaviorMixin(
       ariaDescribedBy: hasHelperText ? 'helper-text' : undefined,
       ariaLabelledByElements: this._resolvedLabelElements,
       onInput: this._handleInput,
+      onBeforeInput: this._handleBeforeInput,
       onFocus: this._handleFocus,
       onBlur: this._handleBlur,
       onClick: this._handleClick,

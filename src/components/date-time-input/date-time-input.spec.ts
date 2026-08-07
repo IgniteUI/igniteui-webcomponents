@@ -344,6 +344,139 @@ describe('Date Time Input component', () => {
       });
     });
 
+    describe('Undo / redo', () => {
+      /** Replaces the whole mask with the given digits. */
+      async function type(digits: string): Promise<void> {
+        element.setSelectionRange(0, input.value.length);
+        simulateInput(input, { value: digits, inputType: 'insertText' });
+        await elementUpdated(element);
+      }
+
+      async function press(...keys: string[]): Promise<void> {
+        simulateKeyboard(input, keys);
+        await elementUpdated(element);
+      }
+
+      const undo = () => press(ctrlKey, 'z');
+      const redo = () => press(ctrlKey, 'y');
+
+      beforeEach(async () => {
+        element.inputFormat = 'MM/dd/yyyy';
+        element.displayFormat = 'MM/dd/yyyy';
+        element.value = null;
+        await elementUpdated(element);
+
+        element.focus();
+        await elementUpdated(element);
+      });
+
+      it('restores the mask without committing the value', async () => {
+        await type('10102020');
+        expect(input.value).to.equal('10/10/2020');
+        expect(element.value).to.be.null;
+
+        await undo();
+
+        expect(input.value).to.equal('__/__/____');
+        // Still an uncommitted draft - `value` only moves on blur.
+        expect(element.value).to.be.null;
+      });
+
+      it('commits the restored draft on blur', async () => {
+        await type('10102020');
+        await type('01012021');
+        expect(input.value).to.equal('01/01/2021');
+
+        await undo();
+        expect(input.value).to.equal('10/10/2020');
+
+        element.blur();
+        await elementUpdated(element);
+
+        expect(element.value?.getTime()).to.equal(
+          new Date(2020, 9, 10).getTime()
+        );
+      });
+
+      it('redoes a restored draft', async () => {
+        await type('10102020');
+
+        await undo();
+        expect(input.value).to.equal('__/__/____');
+
+        await redo();
+        expect(input.value).to.equal('10/10/2020');
+      });
+
+      it('emits no igcChange when undone back to the focused value', async () => {
+        const initial = new Date(2020, 2, 3);
+        element.value = initial;
+        element.blur();
+        await elementUpdated(element);
+
+        element.focus();
+        await elementUpdated(element);
+
+        await type('10102020');
+
+        const eventSpy = spy(element, 'emitEvent');
+
+        await undo();
+        expect(input.value).to.equal('03/03/2020');
+
+        element.blur();
+        await elementUpdated(element);
+
+        expect(eventSpy).not.calledWith('igcChange');
+        expect(element.value?.getTime()).to.equal(initial.getTime());
+      });
+
+      it('keeps consecutive spins as separate steps', async () => {
+        element.value = new Date(2020, 2, 3);
+        await elementUpdated(element);
+
+        element.setSelectionRange(0, 0);
+        await press(arrowUp);
+        await press(arrowUp);
+        expect(input.value).to.equal('05/03/2020');
+
+        await undo();
+        expect(input.value).to.equal('04/03/2020');
+
+        await undo();
+        expect(input.value).to.equal('03/03/2020');
+      });
+
+      it('emits igcInput when a step is restored', async () => {
+        await type('10102020');
+
+        const eventSpy = spy(element, 'emitEvent');
+        await undo();
+
+        expect(eventSpy).calledWith('igcInput');
+      });
+
+      it('does nothing while readonly', async () => {
+        await type('10102020');
+
+        element.readOnly = true;
+        await elementUpdated(element);
+
+        await undo();
+        expect(input.value).to.equal('10/10/2020');
+      });
+
+      it('drops the history when the input format changes', async () => {
+        await type('10102020');
+
+        element.inputFormat = 'dd/MM/yyyy';
+        await elementUpdated(element);
+
+        await undo();
+        expect(input.value).to.equal('10/10/2020');
+      });
+    });
+
     it('should correctly switch between different pre-defined date formats', async () => {
       const targetDate = new Date(2020, 2, 3, 0, 0, 0, 0);
 

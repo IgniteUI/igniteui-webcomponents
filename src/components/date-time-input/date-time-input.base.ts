@@ -410,8 +410,12 @@ export abstract class IgcDateTimeInputBaseComponent<
       return;
     }
 
+    const next = this._formatValue(value);
+
+    this._recordHistory('atomic', next, this._inputSelection.start);
+
     this._isEditing = true;
-    this._maskedValue = this._formatValue(value);
+    this._maskedValue = next;
     this.requestUpdate();
   }
 
@@ -604,6 +608,7 @@ export abstract class IgcDateTimeInputBaseComponent<
       ariaDescribedBy: hasHelperText ? 'helper-text' : undefined,
       ariaLabelledByElements: this._resolvedLabelElements,
       onInput: this._handleInput,
+      onBeforeInput: this._handleBeforeInput,
       onFocus: this._handleFocus,
       onBlur: this._handleBlur,
       onClick: this._handleClick,
