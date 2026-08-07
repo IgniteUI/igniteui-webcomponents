@@ -12,7 +12,9 @@ describe('Chip', () => {
   });
 
   it('passes the a11y audit', async () => {
-    const chip = await fixture<IgcChipComponent>(html`<igc-chip></igc-chip>`);
+    const chip = await fixture<IgcChipComponent>(
+      html`<igc-chip>Chip</igc-chip>`
+    );
 
     await expect(chip).shadowDom.to.be.accessible();
     await expect(chip).to.be.accessible();
