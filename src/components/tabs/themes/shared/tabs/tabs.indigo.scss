@@ -44,8 +44,24 @@ $theme: $indigo;
     }
 }
 
+// The scroll buttons are sticky and the tab items scroll underneath them.
+// Both the button and the tabs strip are transparent in Indigo, so an opaque
+// surface backdrop is painted below the themed background, otherwise the tabs
+// show through the buttons.
+igc-icon-button::part(base) {
+    overflow: hidden;
+    background-color: color($color: 'surface');
+    background-image: linear-gradient(
+        var-get($theme, 'button-background'),
+        var-get($theme, 'button-background')
+    );
+}
+
 igc-icon-button:hover::part(base) {
-    background-color: var-get($theme, 'button-hover-background');
+    background-image: linear-gradient(
+        var-get($theme, 'button-hover-background'),
+        var-get($theme, 'button-hover-background')
+    );
 
     &::after {
         content: '';
@@ -53,10 +69,6 @@ igc-icon-button:hover::part(base) {
         inset: 0;
         z-index: 1;
     }
-}
-
-igc-icon-button::part(base) {
-    overflow: hidden;
 }
 
 igc-icon-button[disabled]::part(base), 
