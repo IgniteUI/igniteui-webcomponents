@@ -81,7 +81,7 @@ export default class IgcPickerCanvasComponent extends EventEmitterMixin<
     // style on the marker itself, so that a consumer styling `::part(marker)`
     // can still win - an inline style could not be overridden.
     if (properties.has('markerColor')) {
-      this.style.setProperty('--_marker-color', this.markerColor);
+      this.style.setProperty('--_marker-fill', this.markerColor);
     }
   }
 

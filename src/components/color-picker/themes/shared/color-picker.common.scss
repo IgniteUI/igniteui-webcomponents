@@ -8,40 +8,44 @@ $theme: $material;
 // `::-moz-range-track,::-webkit-slider-runnable-track` makes Chrome drop
 // the -webkit- half too. Declare each in its own rule and share the body here.
 @mixin hue-track {
-	border-radius: rem(50px);
-	height: rem(16px);
-	background: var(--_hue-slider-track);
-	
-	// Dont use border otherwise the thumb will be misaligned.
-	box-shadow: inset 0 0 0 rem(1px) var-get($theme, 'slider-track-border-color');
+    height: rem(16px);
+    border-radius: var-get($theme, 'slider-track-border-radius');
+    background: var(--_hue-slider-track);
+
+    // Dont use border otherwise the thumb will be misaligned.
+    box-shadow: inset 0 0 0 rem(1px) var-get($theme, 'slider-track-border-color');
 }
 
 @mixin alpha-track {
-	border-radius: rem(50px);
-	height: rem(16px);
-	
-	// Dont use border otherwise the thumb will be misaligned.
-	box-shadow: inset 0 0 0 rem(1px) var-get($theme, 'slider-track-border-color');
-	background-image: var(--_alpha-slider-track);
-	background-position: var(--_alpha-track-position);
-	background-size: var(--_alpha-track-size);
+    height: rem(16px);
+    border-radius: var-get($theme, 'slider-track-border-radius');
+
+    // Dont use border otherwise the thumb will be misaligned.
+    box-shadow: inset 0 0 0 rem(1px) var-get($theme, 'slider-track-border-color');
+    background-image: var(--_alpha-slider-track);
+    background-position: var(--_alpha-track-position);
+    background-size: var(--_alpha-track-size);
 }
 
 @mixin slider-thumb {
-	border-radius: 50%;
-	min-width: rem(16px);
-	min-height: rem(16px);
-	background-color: var(--_current-color);
-	border: rem(2px) solid var-get($theme, 'slider-thumb-border-color');
-	box-shadow: var(--ig-elevation-1);
-	
-	// This has to be explicitly set to avoid the thumb being clipped by the
-	// track.
-	box-sizing: border-box;
-	
-	// Chromium doesn't center the thumb on the track - offset it by
-	// half the difference between the track and the thumb box.
-	margin: 0;
+    // Resetting `appearance` on the input alone is not enough in Chromium - the
+    // thumb keeps its native rendering and ignores everything below until the
+    // pseudo-element itself opts out.
+    appearance: none;
+    border-radius: 50%;
+    width: rem(16px);
+    height: rem(16px);
+    background-color: var(--_current-color);
+    border: rem(2px) solid var-get($theme, 'slider-thumb-border-color');
+    box-shadow: var(--ig-elevation-1);
+
+    // This has to be explicitly set to avoid the thumb being clipped by the
+    // track.
+    box-sizing: border-box;
+
+    // Chromium doesn't center the thumb on the track - offset it by
+    // half the difference between the track and the thumb box.
+    margin: 0;
 }
 
 // The swatch preview, bottom layer up: the transparency grid, the value with its
@@ -49,86 +53,84 @@ $theme: $material;
 // leading half. A translucent color therefore reads as solid-vs-actual side by
 // side; at full alpha both halves are identical and the split is invisible.
 @mixin swatch-preview {
-	background-image:
-		linear-gradient(
-			to right,
-			var(--_color-preview, transparent) 0 50%,
-			transparent 50%
-		),
-		linear-gradient(var(--_alpha-preview, transparent), var(--_alpha-preview, transparent)),
-		var(--_transparency-grid);
-	background-position: 0 0;
-	background-size: 100% 100%, 100% 100%, 50% 50%;
+    background-image:
+        linear-gradient(
+            to right,
+            var(--_color-preview, transparent) 0 50%,
+            transparent 50%
+        ),
+        linear-gradient(var(--_alpha-preview, transparent), var(--_alpha-preview, transparent)),
+        var(--_transparency-grid);
+    background-position: 0 0;
+    background-size: 100% 100%, 100% 100%, 50% 50%;
+}
+
+// With no value the swatch drops the transparency grid for the conventional
+// "no color" mark - a red diagonal running top-left to bottom-right.
+@mixin empty-swatch {
+    background-color: var(--_transparency-grid-background);
+    background-image: var(--_empty-swatch-image);
+    background-size: 100% 100%;
 }
 
 :host {
-	--component-size: var(--ig-size, #{var-get($theme, 'default-size')});
-	
-	// The focus-visible border/halo is drawn outside or inside the anchor trigger/anchor depending on the theme
-	// and has different size in the different themes
-	--_outline-size: #{rem(1px)};
-	
-	--_picker-popoover-size: #{sizable(rem(290px), rem(314px), rem(360px))};
-	
-	--_input-row-spacing: #{sizable(rem(16px), rem(16px), rem(16px))};
-	--_alpha-row-spacing: #{sizable(rem(8px), rem(12px), rem(24px))};
-	--_swatches-spacing: #{rem(16px)};
-	
-	--_swatches-col-gap: #{rem(8px)};
-	--_swatches-row-gap: #{rem(8px)};
-	
-	--_input-row-gap: #{sizable(rem(8px), rem(12px), rem(16px))};
-	
-	--_current-color: #000;
-	--_anchor-border-size: #{rem(1px)};
-	--_input-mode-trigger-size: #{sizable(rem(18px), rem(20px), rem(24px))};
-	--_picker-rows-grid-template-columns: #{sizable(rem(90px), rem(100px), rem(115px))} auto  #{sizable(rem(70px), rem(70px), rem(70px))};
-	--_picker-rows-inline-spacing: #{rem(16px)};
-	--_picker-rows-gap: #{sizable(rem(14px), rem(12px), rem(16px))};
-	
-	--_hue-slider-track: linear-gradient(
-		90deg,
-		#fe1016 0%,
-		#fe7f23 15.38%,
-		#fcee37 28.37%,
-		#1cfe3f 42.31%,
-		#1afffe 55.77%,
-		#2a0af8 69.4%,
-		#fb13e9 84.9%,
-		#f90000 100%
-	);
-	
-    --_alpha-slider-track:
-        linear-gradient(90deg, rgb(0 0 0 / 0%), var(--_current-color)),
-        repeating-linear-gradient(
-            45deg,
-            #aaa 25%,
-            transparent 25%,
-            transparent 75%,
-            #aaa 75%,
-            #aaa
-        ),
-        repeating-linear-gradient(
-            45deg,
-            #aaa 25%,
-            transparent 25%,
-            transparent 75%,
-            #aaa 75%,
-            #aaa
-        );
-	
-    --_alpha-track-position: 0 0, 0 0, #{rem(4px)} #{rem(4px)};
-    --_alpha-track-size: contain, #{rem(8px)} #{rem(8px)}, #{rem(8px)} #{rem(8px)};
+    --component-size: var(--ig-size, #{var-get($theme, 'default-size')});
+
+    // The focus-visible border/halo is drawn outside or inside the anchor trigger/anchor depending on the theme
+    // and has different size in the different themes
+    --_outline-size: #{rem(1px)};
+    --_picker-popover-size: #{sizable(rem(290px), rem(314px), rem(360px))};
+
+    // Row and swatch spacing
+    --_input-row-spacing: #{rem(16px)};
+    --_input-row-gap: #{sizable(rem(8px), rem(12px), rem(16px))};
+    --_alpha-row-spacing: #{sizable(rem(8px), rem(12px), rem(24px))};
+    --_swatches-spacing: #{rem(16px)};
+    --_swatches-col-gap: #{rem(8px)};
+    --_swatches-row-gap: #{rem(8px)};
+    --_picker-rows-grid-template-columns: #{sizable(rem(90px), rem(100px), rem(115px))} auto #{rem(70px)};
+    --_picker-rows-inline-spacing: #{rem(16px)};
+    --_picker-rows-gap: #{sizable(rem(14px), rem(12px), rem(16px))};
+
+    // Trigger
+    --_current-color: #000;
+    --_anchor-border-size: #{rem(1px)};
+    --_input-mode-trigger-size: #{sizable(rem(18px), rem(20px), rem(24px))};
+
+    // Literal fallbacks on purpose: the theme tokens resolve through the global
+    // palette, and a single missing palette variable would make the whole
+    // gradient - and every `background-image` built on it - invalid at
+    // computed-value time, wiping out the color preview along with the grid.
+    --_transparency-grid-color: var(--transparency-grid-color, #aaa);
+    --_transparency-grid-background: var(--transparency-grid-background, #fff);
 
     // A single conic tile draws 2x2 squares; sized at 50% it repeats
     // into a 4x4 grid that scales with the swatch it sits behind.
     --_transparency-grid: conic-gradient(
-        #aaa 0deg 90deg,
-        #fff 90deg 180deg,
-        #aaa 180deg 270deg,
-        #fff 270deg 360deg
+        var(--_transparency-grid-color) 0deg 90deg,
+        var(--_transparency-grid-background) 90deg 180deg,
+        var(--_transparency-grid-color) 180deg 270deg,
+        var(--_transparency-grid-background) 270deg 360deg
     );
-	
+    --_hue-slider-track: linear-gradient(
+        90deg,
+        #fe1016 0%,
+        #fe7f23 15.38%,
+        #fcee37 28.37%,
+        #1cfe3f 42.31%,
+        #1afffe 55.77%,
+        #2a0af8 69.4%,
+        #fb13e9 84.9%,
+        #f90000 100%
+    );
+
+    // The alpha ramp over the same transparency grid, tiled at a fixed 8px so
+    // the checker stays a constant size regardless of track length.
+    --_alpha-slider-track:
+        linear-gradient(90deg, rgb(0 0 0 / 0%), var(--_current-color)),
+        var(--_transparency-grid);
+    --_alpha-track-position: 0 0;
+    --_alpha-track-size: contain, #{rem(8px)} #{rem(8px)};
 
     input[type='range'] {
         background: transparent;
@@ -165,50 +167,48 @@ $theme: $material;
             @include slider-thumb();
         }
     }
-	
-	
-	[part='main-row'],
-	[part='alpha-row'],
-	[part='inputs-row'] {
-		grid-template-columns: var(--_picker-rows-grid-template-columns);
-		padding-inline: var(--_picker-rows-inline-spacing);
-		column-gap: var(--_picker-rows-gap);
-	}
+
+    [part='main-row'],
+    [part='alpha-row'],
+    [part='inputs-row'] {
+        grid-template-columns: var(--_picker-rows-grid-template-columns);
+        padding-inline: var(--_picker-rows-inline-spacing);
+        column-gap: var(--_picker-rows-gap);
+    }
 
     [part='picker'] {
-	    background: var-get($theme, 'picker-background');
-	    border-radius: var-get($theme, 'picker-border-radius');
+        background: var-get($theme, 'picker-background');
+        border-radius: var-get($theme, 'picker-border-radius');
         box-shadow: var-get($theme, 'picker-elevation');
-	    border: rem(1px) solid var-get($theme, 'picker-border-color');
-	    
-	    igc-divider {
-		    --ig-divider-color: #{var-get($theme, 'swatch-separator-color')};
-		    
-		    grid-column: 1 / -1;
-	    }
-	    
-	    &:has([part~='swatches']) {
-		    --_input-row-spacing: #{sizable(rem(16px), rem(16px), rem(24px))};
-	    }
+        border: rem(1px) solid var-get($theme, 'picker-border-color');
+
+        igc-divider {
+            --ig-divider-color: #{var-get($theme, 'swatch-separator-color')};
+
+            grid-column: 1 / -1;
+        }
+
+        &:has([part~='swatches']) {
+            --_input-row-spacing: #{sizable(rem(16px), rem(16px), rem(24px))};
+        }
     }
-	
-	[part='swatches'] {
-		grid-template-columns: repeat(auto-fit, var-get($theme, 'swatch-size'));
-	}
-	
-	[part='picker-canvas'] {
-		border-color: var-get($theme, 'picker-canvas-border-color');
-		
-		border-radius: calc(var-get($theme, 'picker-border-radius'));
-		
-		> igc-picker-canvas {
-			border-radius: calc(var-get($theme, 'picker-border-radius') - rem(1px));
-		}
-	}
-	
+
+    [part='swatches'] {
+        grid-template-columns: repeat(auto-fit, var-get($theme, 'swatch-size'));
+    }
+
+    [part='picker-canvas'] {
+        border-color: var-get($theme, 'picker-canvas-border-color');
+        border-radius: var-get($theme, 'picker-border-radius');
+
+        > igc-picker-canvas {
+            border-radius: calc(var-get($theme, 'picker-border-radius') - rem(1px));
+        }
+    }
+
     [part='swatch'] {
-	    width: var-get($theme, 'swatch-size');
-	    height: var-get($theme, 'swatch-size');
+        width: var-get($theme, 'swatch-size');
+        height: var-get($theme, 'swatch-size');
         border: rem(1px) solid var-get($theme, 'swatch-border-color');
         border-radius: var-get($theme, 'swatch-border-radius');
         cursor: pointer;
@@ -220,47 +220,46 @@ $theme: $material;
 
     // Trigger
     [part~='anchor'] {
-        border: var(--_anchor-border-size) solid  var-get($theme, 'anchor-border-color');
+        border: var(--_anchor-border-size) solid var-get($theme, 'anchor-border-color');
         border-radius: var-get($theme, 'anchor-border-radius');
         background: var-get($theme, 'anchor-background');
-	    width: var-get($theme, 'trigger-size');
-	    height: var-get($theme, 'trigger-size');
+        width: var-get($theme, 'trigger-size');
+        height: var-get($theme, 'trigger-size');
         cursor: pointer;
 
         &::before {
             @include swatch-preview();
 
             border: var(--_anchor-border-size) solid var-get($theme, 'swatch-preview-border-color');
-            border-radius: calc(var-get($theme, 'anchor-border-radius') - var(--_anchor-border-size));
+            border-radius: var-get($theme, 'swatch-preview-border-radius');
         }
-	    
-	    &:focus-visible {
-		    &::after {
-			    content: '';
-			    position: absolute;
-			    box-shadow: inset 0 0 0 var(--_outline-size) var-get($theme, 'anchor-outline-color');
-			    box-sizing: border-box;
-			    z-index: 1;
-		    }
-	    }
+
+        &:focus-visible {
+            &::after {
+                content: '';
+                position: absolute;
+                box-shadow: inset 0 0 0 var(--_outline-size) var-get($theme, 'anchor-outline-color');
+                box-sizing: border-box;
+                z-index: 1;
+            }
+        }
     }
 
-	// In input mode there is no separate trigger box - the swatch is the element
-	// itself, so the preview moves off `::before` and onto its own background.
-	[part~='anchor'][part~='input-mode'] {
-	    @include swatch-preview();
+    // In input mode there is no separate trigger box - the swatch is the element
+    // itself, so the preview moves off `::before` and onto its own background.
+    [part~='anchor'][part~='input-mode'] {
+        @include swatch-preview();
 
-	    width: var(--_input-mode-trigger-size);
-	    height: var(--_input-mode-trigger-size);
-	    padding: 0;
-	    margin: 0;
+        width: var(--_input-mode-trigger-size);
+        height: var(--_input-mode-trigger-size);
+        padding: 0;
+        margin: 0;
     }
 
-    // With no value the swatch drops the transparency grid for the conventional
-    // "no color" mark - a red diagonal running top-left to bottom-right. The
-    // gradient axis is perpendicular to the line it paints, hence `to top right`.
-    // Declared after both anchor presentations: the input-mode swatch matches at
-    // the same specificity, so source order is what decides the background.
+    // The gradient axis is perpendicular to the line it paints, hence
+    // `to top right`. Declared after both anchor presentations: the input-mode
+    // swatch matches at the same specificity, so source order is what decides
+    // the background.
     [part~='empty'] {
         --_empty-swatch: #{color(error, 500)};
         --_empty-swatch-image: linear-gradient(
@@ -272,15 +271,11 @@ $theme: $material;
         );
 
         &::before {
-            background-color: var(--ig-surface-500);
-            background-image: var(--_empty-swatch-image);
-            background-size: 100% 100%;
+            @include empty-swatch();
         }
 
         &[part~='input-mode'] {
-            background-color: var(--ig-surface-500);
-            background-image: var(--_empty-swatch-image);
-            background-size: 100% 100%;
+            @include empty-swatch();
         }
     }
 }
@@ -290,14 +285,14 @@ $theme: $material;
         &:hover {
             background: var-get($theme, 'anchor-background-hover');
         }
-	    
+
         &:focus-visible {
             outline: none;
             background: var-get($theme, 'anchor-background-focus');
-	        
-	        &:hover {
-		        background: var-get($theme, 'anchor-background-focus-hover');
-	        }
+
+            &:hover {
+                background: var-get($theme, 'anchor-background-focus-hover');
+            }
         }
 
         &:active {
@@ -316,13 +311,13 @@ $theme: $material;
 }
 
 :host([invalid]:not([disabled])) {
-	[part~='anchor'] {
-		border-color: var-get($theme, 'invalid-color');
-	}
-	
-	[part~='label'] {
-		color: var-get($theme, 'invalid-color');
-	}
+    [part~='anchor'] {
+        border-color: var-get($theme, 'invalid-color');
+    }
+
+    [part~='label'] {
+        color: var-get($theme, 'invalid-color');
+    }
 }
 
 :host([disabled]) {

@@ -4,23 +4,23 @@
 $theme: $bootstrap;
 
 :host {
-	--_outline-size: #{rem(4px)};
-	
-	[part~='anchor'] {
-		margin: var(--_outline-size);
-		
-		&:focus-visible {
-			&::after {
-				box-shadow: 0 0 0 var(--_outline-size) var-get($theme, 'anchor-outline-color');
-				width: 100%;
-				height: 100%;
-				inset: 0;
-				border-radius: inherit;
-			}
-		}
-	}
-	
-	[part='label'] {
-		@include type-style('body-1');
-	}
+    --_outline-size: #{rem(4px)};
+
+    [part~='anchor'] {
+        margin: var(--_outline-size);
+
+        &:focus-visible {
+            &::after {
+                box-shadow: 0 0 0 var(--_outline-size) var-get($theme, 'anchor-outline-color');
+                width: 100%;
+                height: 100%;
+                inset: 0;
+                border-radius: inherit;
+            }
+        }
+    }
+
+    [part='label'] {
+        @include type-style('body-1');
+    }
 }

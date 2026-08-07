@@ -2,9 +2,8 @@
 @use 'styles/utilities' as *;
 
 :host {
-    content-visibility: auto;
-    contain: strict;
-	
+    display: inline-block;
+
     [part='color-picker'] {
         display: inline-flex;
         gap: rem(4px);
@@ -15,128 +14,101 @@
         appearance: none;
         width: 100%;
     }
-	
+
+    // The row track sizing and inline spacing are declared in the common styles,
+    // where the `--_picker-rows-*` custom properties the themes override live.
     [part='main-row'],
     [part='alpha-row'],
     [part='inputs-row'] {
         display: grid;
-	    grid-template-columns: var(--_picker-rows-grid-template-columns);
-	    padding-inline: rem(16px);
-	    column-gap: sizable(rem(14px), rem(12px), rem(16px));
-	    
-	    &:empty {
-		    display: none;
-	    }
+
+        &:empty {
+            display: none;
+        }
     }
-	
-	[part='main-row'] {
-		input {
-	
-			grid-column: 1 / span 2;
-		}
-		
-		margin-block-end: sizable(rem(8px), rem(12px), rem(16px));
-	}
-	
-	[part='alpha-row'] {
-		input {
-			grid-column: 1 / span 2;
-		}
-		
-		margin-block: var(--_alpha-row-spacing);
-	}
-	
-	[part='alpha-input'] {
-		min-width: fit-content;
-		
-		&::part(input) {
-			-moz-appearance: textfield;
-			
-			&::-webkit-outer-spin-button,
-			&::-webkit-inner-spin-button {
-				-webkit-appearance: none;
-				margin: 0;
-			}
-		}
-	}
-	
-	[part='inputs-row'] {
-		margin-block-end: var(--_input-row-spacing);
-		gap: var(--_input-row-gap);
-		
-		igc-input {
-			grid-column: 2 / -1;
-		}
-	}
+
+    [part='main-row'] {
+        margin-block-end: sizable(rem(8px), rem(12px), rem(16px));
+
+        input {
+            grid-column: 1 / span 2;
+        }
+    }
+
+    [part='alpha-row'] {
+        margin-block: var(--_alpha-row-spacing);
+
+        input {
+            grid-column: 1 / span 2;
+        }
+    }
+
+    [part='alpha-input'] {
+        min-width: fit-content;
+
+        &::part(input) {
+            appearance: textfield;
+
+            &::-webkit-outer-spin-button,
+            &::-webkit-inner-spin-button {
+                appearance: none;
+                margin: 0;
+            }
+        }
+    }
+
+    [part='inputs-row'] {
+        margin-block-end: var(--_input-row-spacing);
+        gap: var(--_input-row-gap);
+
+        igc-input {
+            grid-column: 2 / -1;
+        }
+    }
 
     [part='buttons'] {
         --ig-size: 1;
 
         display: flex;
-	    justify-content: space-between;
+        justify-content: space-between;
     }
 
+    // The track and thumb presentation is declared in the common styles - each
+    // vendor pseudo-element needs its own rule there, since a selector list
+    // containing one the engine doesn't know is discarded whole.
     [part='hue'],
     [part='alpha'] {
-	    grid-column: 1 / span 3;
-	    gap: rem(8px);
-	    
-	    // Each vendor pseudo-element needs its own rule - grouping them makes
-	    // the engine that doesn't know one of the two discard the whole rule.
-	    &::-webkit-slider-runnable-track {
-            height: rem(8px);
-        }
-
-        &::-moz-range-track {
-            height: rem(8px);
-        }
-
-        &::-webkit-slider-thumb {
-            appearance: none;
-            width: rem(16px);
-            height: rem(16px);
-            margin-top: calc(-0.5 * rem(16px));
-        }
-
-        &::-moz-range-thumb {
-            width: rem(16px);
-            height: rem(16px);
-            margin-top: calc(-0.5 * rem(16px));
-        }
+        grid-column: 1 / span 3;
     }
 
     [part='picker'] {
-	    display: grid;
-	    width: var(--_picker-popoover-size);
+        display: grid;
+        width: var(--_picker-popover-size);
         min-height: rem(192px);
-	    
-	    &:has([part~='alpha-row']:not(:empty)) {
-		    [part='main-row'] {
-			    margin-block-end: 0;
-		    }
-	    }
+
+        &:has([part~='alpha-row']:not(:empty)) {
+            [part='main-row'] {
+                margin-block-end: 0;
+            }
+        }
     }
-	
-	[part='picker-canvas'] {
-		border-width: rem(1px);
-		border-style: solid;
-		margin-inline: rem(16px);
-		margin-block-start: rem(16px);
-		margin-block-end: sizable(rem(16px), rem(20px), rem(24px));
+
+    [part='picker-canvas'] {
+        border-width: rem(1px);
+        border-style: solid;
+        margin-inline: rem(16px);
+        margin-block: rem(16px) sizable(rem(16px), rem(20px), rem(24px));
     }
 
     [part='swatches'] {
         display: grid;
-	    padding: var(--_swatches-spacing);
-	    column-gap: var(--_swatches-col-gap);
-	    row-gap: var(--_swatches-row-gap);
-	    justify-content: space-between;
-	    
-	    overflow: hidden;
-	    grid-column: 1 / -1;
-	    width: 100%;
+        grid-column: 1 / -1;
+        width: 100%;
+        padding: var(--_swatches-spacing);
+        gap: var(--_swatches-row-gap) var(--_swatches-col-gap);
+        justify-content: space-between;
+        overflow: hidden;
     }
-	
 
     // Box Trigger
     [part~='anchor'] {
@@ -155,7 +127,7 @@
             width: 100%;
             height: 100%;
             aspect-ratio: 1;
-	        box-sizing: content-box;
+            box-sizing: content-box;
         }
     }
 
@@ -164,17 +136,9 @@
             display: none;
         }
     }
-	
-	[part='label'] {
-		user-select: none;
-	}
-}
 
-:host([disabled]) {
-    [part~='anchor'] {
-	    &::before {
-		    opacity: .3;
-	    }
+    [part='label'] {
+        user-select: none;
     }
 }
 

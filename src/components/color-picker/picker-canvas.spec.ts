@@ -74,7 +74,7 @@ describe('Picker canvas', () => {
       canvas.markerColor = 'rgb(12, 34, 56)';
       await elementUpdated(canvas);
 
-      expect(canvas.style.getPropertyValue('--_marker-color')).to.equal(
+      expect(canvas.style.getPropertyValue('--_marker-fill')).to.equal(
         'rgb(12, 34, 56)'
       );
       expect(getComputedStyle(getMarker(canvas)).backgroundColor).to.equal(
