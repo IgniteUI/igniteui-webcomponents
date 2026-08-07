@@ -36,6 +36,17 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - Removed the `@lit-labs/virtualizer` dependency. Virtualization is now implemented internally by the new `igc-virtual-scroll` component. [#2222](https://github.com/IgniteUI/igniteui-webcomponents/pull/2222)
 - #### Carousel
   - The component now delegates focus, starting with its indicator container, navigation buttons, or the first focusable element in the active slide, whichever is available. Related to [#2291](https://github.com/IgniteUI/igniteui-webcomponents/issues/2291).
+- #### Date time input, Date picker, Date range picker
+  - **Behavioral change:** the `value` property of these components is no longer mutated while the user is typing. It now only ever holds a committed value and changes in lockstep with the `igcChange` event, which is still emitted when the editor loses focus. Previously `value` was updated on every keystroke - becoming `null` for an incomplete mask and the parsed date once the mask filled - without any event announcing it. [#1346](https://github.com/IgniteUI/igniteui-webcomponents/issues/1346)
+    - This makes the components usable in templates where `value` is externally bound, such as an edit template in `igc-grid`. Previously any re-render during typing re-applied the stale bound value and reset the editor, making it impossible to enter a new date.
+    - The value as it is being typed - including the result of spinning a date part or of `Ctrl + ;` - is available on the `detail` of the `igcInput` event, whose payload is unchanged.
+    - Spinning a date part while the editor is focused now also defers to the commit on blur. A programmatic `stepUp()` / `stepDown()` on an unfocused component still updates `value` immediately, as do `clear()`, `setRangeText()`, and direct assignments.
+    - For `igc-date-picker` and `igc-date-range-picker` the calendar keeps following the typed date while editing, as before.
+
+### Fixed
+- #### Form associated components
+  - Validation messages no longer disappear right after the first failed form submission. The submit-driven invalid state used to hold only for the update the submission itself scheduled, so any re-render that followed - a `slotchange` from the validation slots the submission had just projected, for instance - silently dropped the projected messages while the invalid styling stayed on.
+  - Invalid styling now follows the validity state, so a control that turns valid again (a cleared `required`, a widened `min`/`max`, a disabled control) drops the styles it picked up from an earlier interaction or submission.
 
 ## [7.2.4] - 2026-06-29
 ### Added

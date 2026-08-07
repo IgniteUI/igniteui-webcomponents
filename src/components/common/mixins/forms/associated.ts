@@ -40,14 +40,6 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
     protected readonly _formValue!: FormValue<unknown>;
 
     /**
-     * Marks that validation is running as part of a form submission. Counts as
-     * user interaction (so invalid styles apply) and is cleared once the
-     * submit-driven update settles. Orthogonal to `_isInternalValidation`: a
-     * programmatic re-check can run while a submission is still in flight.
-     */
-    private _isFormSubmit = false;
-
-    /**
      * Suppresses invalid styling for a programmatic validation cycle
      * (`checkValidity`/`_validate`). Scoped to the synchronous validity check:
      * set immediately before it and cleared immediately after, so it never
@@ -57,17 +49,18 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
     private _touched = false;
     private _isExternalInvalid = false;
 
-    private get _hasUserInteraction(): boolean {
-      return this._touched || this._isFormSubmit;
-    }
-
     private get _shouldApplyStyles(): boolean {
       if (this._isExternalInvalid) {
         return true;
       }
 
+      // A disabled control is barred from constraint validation, so it never
+      // carries invalid styling regardless of what its validators say.
       return (
-        this._invalid && this._hasUserInteraction && !this._isInternalValidation
+        !this._disabled &&
+        this._invalid &&
+        this._touched &&
+        !this._isInternalValidation
       );
     }
 
@@ -99,6 +92,9 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
     public set disabled(value: boolean) {
       this._disabled = value;
       this.toggleAttribute('disabled', Boolean(this._disabled));
+      if (this.hasUpdated) {
+        this._setInvalidStyles();
+      }
     }
 
     public get disabled(): boolean {
@@ -182,24 +178,24 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
 
     //#region Form value and validation states
 
-    private async _handleInvalid(event: Event): Promise<void> {
+    private _handleInvalid(event: Event): void {
       event.preventDefault();
       this._invalid = true;
 
       if (this._isInternalValidation) {
         this._isInternalValidation = false;
       } else {
-        this._isFormSubmit = true;
+        // A failed submission counts as user interaction, and a lasting one: the
+        // control was asked for a value it could not provide. Keeping it touched
+        // is what makes `invalid` - and with it the validation messages the host
+        // projects - survive any later re-render, rather than holding only for
+        // the update the submission itself scheduled.
+        this._setTouchedState();
         emitFormInvalidEvent(this);
       }
 
       this._setInvalidStyles();
       this.requestUpdate();
-
-      if (this._isFormSubmit) {
-        await this.updateComplete;
-        this._isFormSubmit = false;
-      }
     }
 
     private _setInvalidStyles(): void {
@@ -276,6 +272,7 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
       this._isInternalValidation = true;
       this._invalid = !this._internals.checkValidity();
       this._resolveInternalValidation();
+      this._setInvalidStyles();
     }
 
     protected _handleBlur(): void {
@@ -312,6 +309,7 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
 
     protected formDisabledCallback(state: boolean): void {
       this._disabled = state;
+      this._setInvalidStyles();
       this.requestUpdate();
     }
 

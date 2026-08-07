@@ -775,14 +775,17 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
       event.preventDefault();
       return;
     }
+
     const input = event.target as IgcDateTimeInputComponent;
-    const newValue = input.value ? CalendarDay.from(input.value).native : null;
+    const draft = input._uncommittedValue;
+    const newValue = draft ? CalendarDay.from(draft).native : null;
+    const range = this._getUpdatedDateRange(input, newValue);
 
-    this.value = this._getUpdatedDateRange(input, newValue);
+    this._setCalendarRangeValues(range);
     this._calendar.activeDate =
-      newValue ?? this._firstDefinedInRange ?? this._calendar.activeDate;
+      newValue ?? range.start ?? range.end ?? this._calendar.activeDate;
 
-    this.emitEvent('igcInput', { detail: this.value });
+    this.emitEvent('igcInput', { detail: range });
   }
 
   protected _handleInputChange(event: CustomEvent<Date | null>) {
@@ -790,7 +793,6 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
 
     const input = event.target as IgcDateTimeInputComponent;
     const newValue = input.value ? CalendarDay.from(input.value).native : null;
-
     const updatedRange = this._getUpdatedDateRange(input, newValue);
     const { start, end } = this._swapDates(updatedRange) ?? {
       start: null,
@@ -808,13 +810,14 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
       event.preventDefault();
       return;
     }
+
     const input = event.target as IgcDateRangeInputComponent;
-    const newValue = input.value;
+    const draft = input._uncommittedValue;
 
-    this.value = newValue;
-    this._calendar.activeDate = newValue?.start;
+    this._setCalendarRangeValues(draft);
+    this._calendar.activeDate = draft?.start;
 
-    this.emitEvent('igcInput', { detail: this.value });
+    this.emitEvent('igcInput', { detail: draft });
   }
 
   protected _handleDateRangeInputChange(
@@ -913,15 +916,21 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
     this._calendar[activeDaysViewIndex] = 0;
   }
 
+  /**
+   * Composes the range from what the two editors currently hold.
+   *
+   * The sibling input is read through its draft rather than through the committed
+   * `value`, since an edit in progress there has not reached the picker yet.
+   */
   private _getUpdatedDateRange(
     input: IgcDateTimeInputComponent,
     newValue: Date | null
   ): DateRangeValue {
-    const { start = null, end = null } = this.value ?? {};
+    const [startInput, endInput] = this._inputs;
 
-    return input === this._inputs[0]
-      ? { start: newValue, end }
-      : { start, end: newValue };
+    return input === startInput
+      ? { start: newValue, end: endInput?._uncommittedValue ?? null }
+      : { start: startInput?._uncommittedValue ?? null, end: newValue };
   }
 
   // Delegates the validity methods of internal input elements
@@ -944,23 +953,27 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
       createDateConstraints(this.min, this.max, this.disabledDates) ?? [];
   }
 
-  private _setCalendarRangeValues() {
+  /**
+   * Reflects a range in the calendar. Defaults to the committed value, but the input
+   * handlers pass the uncommitted draft so that the calendar keeps following along
+   * while the user types.
+   */
+  private _setCalendarRangeValues(range: DateRangeValue | null = this.value) {
     if (!this._calendar) {
       return;
     }
 
-    if (isCompleteDateRange(this.value)) {
+    if (isCompleteDateRange(range)) {
       this._calendar.values =
-        CalendarDay.compare(this.value.start, this.value.end) === 0
-          ? [this.value.start]
-          : [this.value.start, this.value.end];
-      this._calendar.activeDate = this._firstDefinedInRange;
+        CalendarDay.compare(range.start, range.end) === 0
+          ? [range.start]
+          : [range.start, range.end];
+      this._calendar.activeDate = range.start;
       return;
     }
 
-    this._calendar.values = this._firstDefinedInRange
-      ? [this._firstDefinedInRange]
-      : null;
+    const first = range?.start ?? range?.end ?? null;
+    this._calendar.values = first ? [first] : null;
   }
 
   private _swapDates(range: DateRangeValue): DateRangeValue {

@@ -32,7 +32,12 @@ export const selectDates = async (
 export const checkSelectedRange = (
   picker: IgcDateRangePickerComponent,
   expectedValue: DateRangeValue | null,
-  useTwoInputs = true
+  useTwoInputs = true,
+  /**
+   * Set while an edit is still in progress. The inputs only commit their `value` on
+   * blur (see issue #1346), so mid-typing the draft has to be read instead.
+   */
+  uncommitted = false
 ) => {
   const calendar = picker.renderRoot.querySelector(
     IgcCalendarComponent.tagName
@@ -44,11 +49,14 @@ export const checkSelectedRange = (
     const inputs = picker.renderRoot.querySelectorAll(
       IgcDateTimeInputComponent.tagName
     );
+    const readValue = (input: IgcDateTimeInputComponent) =>
+      uncommitted ? input._uncommittedValue : input.value;
+
     if (expectedValue?.start) {
-      checkDatesEqual(inputs[0].value!, expectedValue.start);
+      checkDatesEqual(readValue(inputs[0])!, expectedValue.start);
     }
     if (expectedValue?.end) {
-      checkDatesEqual(inputs[1].value!, expectedValue.end);
+      checkDatesEqual(readValue(inputs[1])!, expectedValue.end);
     }
   } else {
     const input = getInput(picker);

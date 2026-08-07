@@ -76,4 +76,31 @@ describe('Validation container', () => {
 
     await ValidityHelpers.checkValidationSlots(input, 'valueMissing');
   });
+
+  it('validation messages survive a re-render after a failed form submission', async () => {
+    const form = await fixture<HTMLFormElement>(html`
+      <form>
+        <igc-input name="input" required>
+          <div slot=${valueMissingSlot}>Value missing</div>
+        </igc-input>
+      </form>
+    `);
+
+    input = form.querySelector(IgcInputComponent.tagName)!;
+
+    form.requestSubmit();
+    await elementUpdated(input);
+
+    ValidityHelpers.hasInvalidStyles(input).to.be.true;
+    ValidityHelpers.hasSlottedContent(input, valueMissingSlot).to.be.true;
+
+    // Any subsequent host update - a slotchange, an unrelated property - used to
+    // drop the messages, since the submission only kept the control invalid for
+    // the update it scheduled itself.
+    input.requestUpdate();
+    await elementUpdated(input);
+
+    ValidityHelpers.hasInvalidStyles(input).to.be.true;
+    ValidityHelpers.hasSlottedContent(input, valueMissingSlot).to.be.true;
+  });
 });
