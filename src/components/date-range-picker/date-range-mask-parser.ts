@@ -157,6 +157,26 @@ export class DateRangeMaskParser extends DateFormatMaskParser<IDateRangePart> {
     return super.mask;
   }
 
+  /**
+   * Sets the prompt character and updates both parsers.
+   *
+   * @remarks
+   * Each half of the range is parsed and formatted by its own sub-parser, so all three
+   * have to agree on the prompt. Read back through `super` rather than propagating the
+   * argument, since the base setter normalizes it to a single character and rejects one
+   * that collides with a mask flag.
+   */
+  public override set prompt(value: string) {
+    super.prompt = value;
+
+    this._startParser.prompt = this.prompt;
+    this._endParser.prompt = this.prompt;
+  }
+
+  public override get prompt(): string {
+    return super.prompt;
+  }
+
   //#region Date Range Parsing
 
   /**

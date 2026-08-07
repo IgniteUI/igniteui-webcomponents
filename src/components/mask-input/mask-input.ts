@@ -238,6 +238,12 @@ export default class IgcMaskInputComponent extends MaskBehaviorMixin(
   protected override _commitMaskedValue(value: string): void {
     this._maskedValue = value;
     this._formValue.setValueAndFormState(this._parser.parse(value));
+
+    // Reachable unfocused only through `setRangeText`, where an emptied mask must read
+    // as an empty document - as it does after a blur - rather than a row of prompts.
+    if (!this._focused) {
+      this._updateMaskedValue();
+    }
   }
 
   protected override _emitInputEvent(): void {

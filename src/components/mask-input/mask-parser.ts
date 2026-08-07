@@ -12,7 +12,9 @@ export interface MaskOptions {
 
   /**
    * The character used to prompt for input in unfilled mask positions.
-   * Must be a single character.
+   *
+   * Only the first character is used, and a mask flag is rejected in favor of the
+   * default - the same rules the `prompt` accessor applies.
    * @default '_'
    */
   promptCharacter?: string;
@@ -74,6 +76,17 @@ const UNICODE_DIGIT_TO_ASCII = new Map<number, string>(
     ])
   )
 );
+
+/**
+ * Narrows a prompt down to the single character the parser will actually use.
+ *
+ * Falls back to `current` when the prompt is empty or collides with a mask flag - a flag
+ * standing in for an unfilled position could not be told apart from one the user typed.
+ */
+function normalizePrompt(value: string | undefined, current: string): string {
+  const char = value ? value.substring(0, 1) : current;
+  return MASK_FLAGS.has(char) ? current : char;
+}
 
 function replaceUnicodeNumbers(text: string): string {
   const matcher = /\p{Nd}/gu;
@@ -178,21 +191,20 @@ export class MaskParser {
    * @remarks The prompt character cannot be a mask flag character.
    */
   public set prompt(value: string) {
-    const char = value ? value.substring(0, 1) : this._options.promptCharacter;
-
-    // Silently ignore if prompt character conflicts with mask flags
-    if (MASK_FLAGS.has(char)) {
-      return;
-    }
-
-    this._options.promptCharacter = char;
+    this._options.promptCharacter = normalizePrompt(
+      value,
+      this._options.promptCharacter
+    );
     this._invalidate();
   }
 
   constructor(options?: MaskOptions) {
     this._options = {
       format: options?.format || DEFAULT_FORMAT,
-      promptCharacter: options?.promptCharacter || DEFAULT_PROMPT,
+      promptCharacter: normalizePrompt(
+        options?.promptCharacter,
+        DEFAULT_PROMPT
+      ),
     };
     this._parseMaskLiterals();
   }

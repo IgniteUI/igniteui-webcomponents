@@ -249,6 +249,50 @@ describe('DateRangeMaskParser', () => {
     });
   });
 
+  describe('Prompt Updates', () => {
+    it('formats both dates with a changed prompt', () => {
+      const parser = new DateRangeMaskParser({ format: 'MM/dd/yyyy' });
+      parser.prompt = '*';
+
+      expect(parser.emptyMask).to.equal('**/**/**** - **/**/****');
+      expect(parser.formatDateRange(null)).to.equal(parser.emptyMask);
+      expect(
+        parser.formatDateRange({ start: new Date(2026, 11, 25), end: null })
+      ).to.equal('12/25/2026 - **/**/****');
+    });
+
+    it('parses both dates against a changed prompt', () => {
+      const parser = new DateRangeMaskParser({ format: 'MM/dd/yyyy' });
+      parser.prompt = '*';
+
+      // An untouched range is empty, not a pair of default dates.
+      expect(parser.parseDateRange(parser.formatDateRange(null))).to.be.null;
+
+      const range = parser.parseDateRange('12/25/2026 - **/**/****');
+      expect(range!.start!.getDate()).to.equal(25);
+      expect(range!.end!.getFullYear()).to.equal(2000);
+    });
+
+    it('ignores a prompt that collides with a mask flag', () => {
+      const parser = new DateRangeMaskParser({ format: 'MM/dd/yyyy' });
+      parser.prompt = '0';
+
+      // The base setter rejects it, so the sub-parsers must not drift off on their own.
+      expect(parser.prompt).to.equal('_');
+      expect(parser.formatDateRange(null)).to.equal(parser.emptyMask);
+    });
+
+    it('applies the same prompt rules from the constructor', () => {
+      const parser = new DateRangeMaskParser({
+        format: 'MM/dd/yyyy',
+        promptCharacter: '0',
+      });
+
+      expect(parser.prompt).to.equal('_');
+      expect(parser.formatDateRange(null)).to.equal(parser.emptyMask);
+    });
+  });
+
   describe('Mask Updates', () => {
     it('updates mask and rebuilds parts', () => {
       const parser = new DateRangeMaskParser({ format: 'MM/dd/yyyy' });

@@ -272,6 +272,41 @@ describe('Masked input', () => {
       checkSelectionRange(5, 5);
     });
 
+    it('setRangeText() clearing a focused input keeps the mask visible', async () => {
+      element.mask = '(CC) (CC)';
+      element.value = '1111';
+
+      await elementUpdated(element);
+      syncParser();
+
+      element.focus();
+      await elementUpdated(element);
+
+      element.setRangeText('', 0, 9);
+      await elementUpdated(element);
+
+      // A focused editor shows the prompts it is being typed into, exactly as it does
+      // after deleting the same text by hand.
+      expect(element.value).to.equal('');
+      expect(input.value).to.equal(parser.emptyMask);
+    });
+
+    it('setRangeText() clearing an unfocused input empties it', async () => {
+      element.mask = '(CC) (CC)';
+      element.value = '1111';
+
+      await elementUpdated(element);
+      syncParser();
+
+      element.setRangeText('', 0, 9);
+      await elementUpdated(element);
+
+      // Unfocused there is nothing to edit, so an empty value renders as an empty
+      // document and lets the placeholder through.
+      expect(element.value).to.equal('');
+      expect(input.value).to.be.empty;
+    });
+
     it('igcChange event', async () => {
       syncParser();
 

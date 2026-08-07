@@ -160,7 +160,7 @@ export declare class MaskBehaviorElementInterface {
  *
  * The host class must implement `_syncValueFromMask` to bridge the masked
  * text back into its public `value`. It is called by the default
- * `_commitMaskedValue` implementation and by `setRangeText`.
+ * `_commitMaskedValue` implementation.
  */
 export function MaskBehaviorMixin<T extends AbstractConstructor<LitElement>>(
   superClass: T
@@ -610,8 +610,7 @@ export function MaskBehaviorMixin<T extends AbstractConstructor<LitElement>>(
       const next = this._parser.apply(this._parser.parse(result.value));
 
       this._recordHistory('atomic', next, _start, current);
-      this._maskedValue = next;
-      this._syncValueFromMask();
+      this._commitMaskedValue(next);
 
       this.updateComplete.then(() => {
         switch (selectMode) {
