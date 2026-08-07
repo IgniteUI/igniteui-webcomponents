@@ -73,6 +73,7 @@ export { default as IgcStepComponent } from './components/stepper/step.js';
 export { default as IgcHighlightComponent } from './components/highlight/highlight.js';
 export { default as IgcTooltipComponent } from './components/tooltip/tooltip.js';
 export { default as IgcThemeProviderComponent } from './components/theme-provider/theme-provider.js';
+export { default as IgcQrCodeComponent } from './components/qr-code/qr-code.js';
 export { default as IgcVirtualScrollComponent } from './components/virtualization/virtualization.js';
 export type {
   IgcVirtualScrollComponentEventMap,
@@ -193,6 +194,7 @@ export type { IgcRangeSliderValueEventArgs } from './components/slider/range-sli
 export type {
   IgcSplitterResizeEventArgs,
   IgcSplitterResizeEventDetail,
+  IgcSplitterLayoutChangedEventArgs,
 } from './components/splitter/splitter.js';
 export type {
   IgcActiveStepChangingEventArgs,
@@ -211,6 +213,11 @@ export type {
   RegisterIconOptions,
 } from './components/icon/registry/types.js';
 export type * from './components/chat/types.js';
+export type {
+  QrErrorCorrectionLevel,
+  QrDotStyle,
+  QrCornerSquareStyle,
+} from './components/qr-code/types.js';
 
 // Internal exports for other packages
 /** @hidden @internal */

@@ -38,14 +38,14 @@ export default class IgcNavDrawerItemComponent extends LitElement {
   private _hasContent = true;
 
   /**
-   * Determines whether the drawer is disabled.
+   * Determines whether the drawer item is disabled.
    * @attr
    */
   @property({ type: Boolean, reflect: true })
   public disabled = false;
 
   /**
-   * Determines whether the drawer is active.
+   * Determines whether the drawer item is active.
    * @attr
    */
   @property({ type: Boolean, reflect: true })

@@ -9,7 +9,11 @@ export type Item<T extends object> = T | Values<T>;
 export type ComboRecord<T extends object> = {
   value: T;
   header: boolean;
-  dataIndex: number;
+  /**
+   * 1-based position among the currently visible options, excluding group
+   * headers. `-1` for header records. Reassigned on every pipeline run.
+   */
+  position: number;
 };
 
 export type ComboHost<T extends object> = ReactiveControllerHost &
@@ -29,7 +33,7 @@ export interface FilteringOptions<T extends object> {
   filterKey: Keys<T> | undefined;
   /** Determines whether the filtering operation should be case sensitive. */
   caseSensitive?: boolean;
-  /** If true, the filter distinguishes between accented letters and their base letters */
+  /** When true, the filter distinguishes between accented letters and their base letters. */
   matchDiacritics?: boolean;
 }
 

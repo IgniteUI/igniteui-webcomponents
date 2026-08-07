@@ -65,7 +65,7 @@ const Slots = setSlots(
 );
 
 /**
- * The tile component is used within the `igc-tile-manager` as a container
+ * The tile component is used within the tile manager as a container
  * for displaying various types of information.
  *
  * @element igc-tile
@@ -313,7 +313,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
 
   /**
    * Indicates whether to disable tile resize behavior regardless
-   * ot its tile manager parent settings.
+   * of its tile manager parent settings.
    *
    * @attr disable-resize
    * @default false

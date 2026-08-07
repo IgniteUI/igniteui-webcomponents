@@ -45,7 +45,7 @@ const metadata: Meta<IgcNavDrawerComponent> = {
     keepOpenOnEscape: {
       type: 'boolean',
       description:
-        'Determines whether the drawer should remain open when the Escape key is pressed.\n\nThis attribute is only applicable when the drawer is in a non-relative position,\nas the Escape key does not trigger the closing of relative drawers.',
+        'Determines whether the drawer should remain open when the Escape key is pressed.\n\nThis is only applicable when the drawer is in a non-relative position,\nas the Escape key does not trigger the closing of relative drawers.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
@@ -77,7 +77,7 @@ interface IgcNavDrawerArgs {
   /**
    * Determines whether the drawer should remain open when the Escape key is pressed.
    *
-   * This attribute is only applicable when the drawer is in a non-relative position,
+   * This is only applicable when the drawer is in a non-relative position,
    * as the Escape key does not trigger the closing of relative drawers.
    */
   keepOpenOnEscape: boolean;
