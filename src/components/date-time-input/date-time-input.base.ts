@@ -29,6 +29,8 @@ import {
   renderInputShell,
 } from '../common/templates/input-shell.js';
 import { renderMaskedNativeInput } from '../common/templates/masked-input.js';
+import { equal } from '../common/util.js';
+import type { RangeTextSelectMode } from '../types.js';
 import type { DatePartDeltas } from './date-part.js';
 import { dateTimeInputValidators } from './validators.js';
 
@@ -50,9 +52,9 @@ const Slots = setSlots(
 /* omitModule */
 @blazorDeepImport
 @shadowOptions({ delegatesFocus: true })
-export abstract class IgcDateTimeInputBaseComponent extends MaskBehaviorMixin(
-  FormAssociatedRequiredMixin(LitElement)
-) {
+export abstract class IgcDateTimeInputBaseComponent<
+  T,
+> extends MaskBehaviorMixin(FormAssociatedRequiredMixin(LitElement)) {
   // #region Internal state and properties
 
   protected abstract readonly _themes: ThemingController;
@@ -101,6 +103,30 @@ export abstract class IgcDateTimeInputBaseComponent extends MaskBehaviorMixin(
   protected _defaultDisplayFormat = '';
   protected _displayFormat?: string;
   protected _inputFormat?: string;
+
+  /**
+   * Whether the user has an uncommitted edit in progress.
+   *
+   * While set, the masked text - not the public `value` - is the source of truth:
+   * typing updates the mask only, and the parsed result reaches `value` (together
+   * with `igcChange`) when the edit is committed on blur. Keeping `value` in sync
+   * with the last emitted `igcChange` is what stops a host that two-way binds the
+   * property from clobbering a half-typed mask on an unrelated re-render.
+   */
+  protected _isEditing = false;
+
+  /** The value the input was focused with, used to detect a committed change. */
+  protected _oldValue: T | null = null;
+
+  /**
+   * The value currently in the editor - the parsed draft while an edit is in
+   * progress, otherwise the committed public value.
+   *
+   * @hidden @internal
+   */
+  public get _uncommittedValue(): T | null {
+    return this._isEditing ? this._parseMask(true) : this.value;
+  }
 
   protected get _targetDatePart(): unknown {
     return this._focused
@@ -278,6 +304,12 @@ export abstract class IgcDateTimeInputBaseComponent extends MaskBehaviorMixin(
     }
   }
 
+  protected override _handleBlur(): void {
+    this._focused = false;
+    this._commitEdit();
+    super._handleBlur();
+  }
+
   /**
    * Handles wheel events for spinning date parts.
    */
@@ -338,8 +370,7 @@ export abstract class IgcDateTimeInputBaseComponent extends MaskBehaviorMixin(
     if (!part) return;
 
     const { start, end } = this._inputSelection;
-    const newValue = this._calculateSpunValue(part, delta, isDecrement);
-    this._commitSpunValue(newValue);
+    this._setDraftValue(this._calculateSpunValue(part, delta, isDecrement));
     this.updateComplete.then(() => this._input?.setSelectionRange(start, end));
   }
 
@@ -348,9 +379,103 @@ export abstract class IgcDateTimeInputBaseComponent extends MaskBehaviorMixin(
    * When focused, shows the editable mask. When unfocused, defers to the leaf's display formatter.
    */
   protected _updateMaskDisplay(): void {
-    this._maskedValue = this._focused
-      ? this._buildMaskedValue()
-      : this._buildDisplayValue();
+    if (!this._focused) {
+      this._maskedValue = this._buildDisplayValue();
+    } else if (!this._isEditing) {
+      // An edit in progress owns the masked text. Rebuilding it from `value` here
+      // would discard whatever the user has typed so far.
+      this._maskedValue = this._buildMaskedValue();
+    }
+  }
+
+  /** Builds the editable mask shown while the input is focused. */
+  protected _buildMaskedValue(): string {
+    const masked = this._formatValue(this.value);
+
+    // A value-less mask formats to the empty mask; prefer whatever is already in
+    // the editor so that a partially typed mask survives a re-render.
+    return masked === this._parser.emptyMask
+      ? this._maskedValue || masked
+      : masked;
+  }
+
+  /**
+   * Applies a value produced by an interactive edit (spinning, `Ctrl + ;`).
+   * While focused this only moves the draft; outside of an editing session - e.g. a
+   * programmatic `stepUp()` - there is no blur coming to commit it.
+   */
+  protected _setDraftValue(value: T): void {
+    if (!this._focused) {
+      this.value = value;
+      return;
+    }
+
+    this._isEditing = true;
+    this._maskedValue = this._formatValue(value);
+    this.requestUpdate();
+  }
+
+  /** Applies the masked text to the public value without emitting anything. */
+  protected _applyDraft(): void {
+    this._isEditing = false;
+    this.value = this._parseMask(true);
+    this._updateMaskDisplay();
+  }
+
+  /**
+   * Commits the current draft to the public value, emitting `igcChange` when the
+   * committed value differs from the one the input was focused with.
+   */
+  protected _commitEdit(): void {
+    // Only an actual edit is re-parsed. Without this guard a mask holding a
+    // display-formatted value - a read-only or untouched input - would be read back
+    // under the input format and mangled.
+    if (this._isEditing) {
+      this._isEditing = false;
+
+      // A partially filled mask is parsed leniently, missing parts falling back to
+      // their defaults; only a mask that resolves to nothing clears the value.
+      const parsed = this._parseMask(false);
+
+      if (parsed === null) {
+        this.clear();
+      } else {
+        this.value = parsed;
+      }
+    }
+
+    // The assignments above are no-ops when the value did not change, so the mask
+    // still has to be flipped back to the display format explicitly.
+    this._updateMaskDisplay();
+
+    // The value can also have moved without an edit - `clear()` or a programmatic
+    // assignment while focused - and that is a committed change just the same.
+    if (!this.readOnly && !equal(this._oldValue, this.value)) {
+      this._oldValue = this.value;
+      this.emitEvent('igcChange', { detail: this.value });
+    }
+  }
+
+  /**
+   * Marks the masked text as an uncommitted edit. The parsed result deliberately
+   * does not reach the public `value` here - that happens on commit - so that the
+   * property stays in sync with the last emitted `igcChange`. See {@link _isEditing}.
+   */
+  protected override _syncValueFromMask(): void {
+    if (this._focused) {
+      this._isEditing = true;
+      return;
+    }
+
+    // A mask mutation outside of an editing session - e.g. text dropped onto an
+    // unfocused input - has no blur coming to commit it.
+    this._applyDraft();
+  }
+
+  protected override _restoreDefaultValue(): void {
+    this._isEditing = false;
+    super._restoreDefaultValue();
+    this._updateMaskDisplay();
   }
 
   /**
@@ -439,8 +564,25 @@ export abstract class IgcDateTimeInputBaseComponent extends MaskBehaviorMixin(
     this._performStep(datePart, delta, true);
   }
 
+  /* blazorSuppress */
+  /** Replaces the selected text in the control and re-applies the mask. */
+  public override setRangeText(
+    replacement: string,
+    start?: number,
+    end?: number,
+    selectMode?: RangeTextSelectMode
+  ): void {
+    super.setRangeText(replacement, start, end, selectMode);
+    this._applyDraft();
+  }
+
   /** Clears the input element of user input. */
-  public abstract clear(): void;
+  public clear(): void {
+    this._isEditing = false;
+    this._maskedValue = '';
+    this.value = null;
+    this._updateMaskDisplay();
+  }
 
   //#endregion
 
@@ -492,9 +634,25 @@ export abstract class IgcDateTimeInputBaseComponent extends MaskBehaviorMixin(
 
   protected abstract get _datePartDeltas(): DatePartDeltas;
 
-  protected abstract _buildMaskedValue(): string;
+  /** Provided by `EventEmitterMixin` in the concrete components. */
+  public abstract emitEvent(name: string, init?: CustomEventInit): boolean;
+
+  /** The committed value of the input. */
+  public abstract get value(): T | null;
+  public abstract set value(value: T | null);
+
+  /**
+   * Parses the current masked text into the leaf's value type.
+   *
+   * A `strict` parse mirrors the committed value semantics - an incomplete mask has
+   * no value yet and resolves to `null` rather than to a defaults-filled one.
+   */
+  protected abstract _parseMask(strict: boolean): T | null;
+
+  /** Formats a value into the editable mask. */
+  protected abstract _formatValue(value: T | null): string;
+
   protected abstract _buildDisplayValue(): string;
-  protected abstract override _syncValueFromMask(): void;
   protected abstract _calculatePartNavigationPosition(
     value: string,
     direction: number
@@ -503,8 +661,7 @@ export abstract class IgcDateTimeInputBaseComponent extends MaskBehaviorMixin(
     part: unknown,
     delta: number | undefined,
     isDecrement: boolean
-  ): unknown;
-  protected abstract _commitSpunValue(value: unknown): void;
+  ): T;
   protected abstract _setCurrentDateTime(): void;
   protected abstract _handleFocus(): Promise<void>;
   protected abstract _getDatePartAtCursor(): unknown;

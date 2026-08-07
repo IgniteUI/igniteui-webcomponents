@@ -251,6 +251,58 @@ describe('Combo', () => {
       await expect(combo).to.be.accessible();
     });
 
+    it('picks up items appended to the data array in place', async () => {
+      const data = [...cities];
+      combo = await fixture<IgcComboComponent<City>>(
+        html`<igc-combo
+          .data=${data}
+          value-key="id"
+          display-key="name"
+        ></igc-combo>`
+      );
+      input = combo.renderRoot.querySelector(
+        'igc-input#target'
+      ) as IgcInputComponent;
+
+      // Warm both the value index and the data pipeline
+      combo.select('BG01');
+      await openComboPopover(combo);
+      expect(items(combo)).lengthOf(cities.length);
+
+      data.push({
+        id: 'BG04',
+        name: 'Burgas',
+        country: 'Bulgaria',
+        zip: '8000',
+      });
+      combo.select('BG04');
+      await comboStable(combo);
+
+      expect(combo.value).to.eql(['BG01', 'BG04']);
+      expect(items(combo)).lengthOf(cities.length + 1);
+    });
+
+    it('picks up items removed from the data array in place', async () => {
+      const data = [...cities];
+      combo = await fixture<IgcComboComponent<City>>(
+        html`<igc-combo
+          .data=${data}
+          value-key="id"
+          display-key="name"
+        ></igc-combo>`
+      );
+
+      combo.select('BG01');
+      await openComboPopover(combo);
+      expect(items(combo)).lengthOf(cities.length);
+
+      data.splice(0, 1);
+      combo.deselect('BG02');
+      await comboStable(combo);
+
+      expect(items(combo)).lengthOf(cities.length - 1);
+    });
+
     it('is successfully created with default properties.', () => {
       expect(document.querySelector('igc-combo')).to.exist;
       expect(combo.data).to.equal(cities);
@@ -561,6 +613,40 @@ describe('Combo', () => {
       expect(eventSpy).calledWithExactly('igcChange', args);
     });
 
+    it('should not repeat a value in newValue when data records share a value key', async () => {
+      const twins = [
+        { id: 'a', name: 'first-a', country: 'X', zip: '1' },
+        { id: 'b', name: 'bee', country: 'X', zip: '2' },
+        { id: 'a', name: 'second-a', country: 'X', zip: '3' },
+      ];
+      combo = await fixture<IgcComboComponent<City>>(
+        html`<igc-combo
+          .data=${twins}
+          value-key="id"
+          display-key="name"
+        ></igc-combo>`
+      );
+
+      // The value setter resolves the first match only, so just one of the
+      // two 'a' records starts out selected.
+      combo.value = ['a'];
+      await elementUpdated(combo);
+
+      let newValue: unknown;
+      combo.addEventListener('igcChange', (event: CustomEvent) => {
+        newValue = event.detail.newValue;
+      });
+
+      await openComboPopover(combo);
+
+      // Selecting the twin resolves both 'a' records, one of which is already
+      // in the selection.
+      items(combo)[2].click();
+      await elementUpdated(combo);
+
+      expect(newValue).to.eql(combo.value);
+    });
+
     it('should fire igcChange deselection type event on mouse click', async () => {
       const eventSpy = spy(combo, 'emitEvent');
       const args = {
@@ -616,6 +702,25 @@ describe('Combo', () => {
 
       expect(eventSpy).calledWith('igcChange');
       expect(combo.value).lengthOf(2);
+    });
+
+    it('should keep the previous selection when cancelling the selection event in single selection mode', async () => {
+      combo.singleSelect = true;
+      combo.select('BG02');
+      await elementUpdated(combo);
+
+      combo.addEventListener('igcChange', (event: CustomEvent) => {
+        event.preventDefault();
+      });
+      combo.open = true;
+
+      await comboStable(combo);
+
+      first(items(combo)).click();
+      await elementUpdated(combo);
+
+      expect(combo.value).to.eql(['BG02']);
+      expect(input.value).to.equal('Plovdiv');
     });
 
     it('should not stringify values in event', async () => {
@@ -1396,6 +1501,18 @@ describe('Combo', () => {
       expect(items(combo).length).to.equal(cities.length);
     });
 
+    it('should not filter via the main input when disableFiltering is set', async () => {
+      combo.singleSelect = true;
+      combo.disableFiltering = true;
+      await elementUpdated(combo);
+
+      await openComboPopover(combo);
+      expect(items(combo).length).to.equal(cities.length);
+
+      await filterCombo('sof');
+      expect(items(combo).length).to.equal(cities.length);
+    });
+
     it('issue 1987 - do not close the dropdown on user pointer selection', async () => {
       await openComboPopover(combo);
 
@@ -1488,6 +1605,72 @@ describe('Combo', () => {
 
       expect(combo.value).to.be.empty;
       expect(input.value).to.equal('');
+    });
+  });
+
+  describe('ARIA', () => {
+    beforeEach(async () => {
+      combo = await fixture<IgcComboComponent<City>>(
+        html`<igc-combo
+          .data=${cities}
+          value-key="id"
+          display-key="name"
+          group-key="country"
+        ></igc-combo>`
+      );
+
+      options = combo.renderRoot.querySelector(
+        '[part="list"]'
+      ) as IgcVirtualScrollComponent;
+      input = combo.renderRoot.querySelector(
+        'igc-input#target'
+      ) as IgcInputComponent;
+    });
+
+    it('should report posinset/setsize excluding group headers', async () => {
+      await openComboPopover(combo);
+
+      const rendered = items(combo);
+      expect(rendered).lengthOf(cities.length);
+      expect(headerItems(combo)).lengthOf(2);
+
+      for (const [index, item] of rendered.entries()) {
+        expect(item.getAttribute('aria-posinset')).to.equal(`${index + 1}`);
+        expect(item.getAttribute('aria-setsize')).to.equal(`${cities.length}`);
+      }
+    });
+
+    it('should renumber posinset/setsize when the options are filtered', async () => {
+      await openComboPopover(combo);
+      await filterCombo('a');
+
+      const rendered = items(combo);
+      expect(rendered.length).to.be.lessThan(cities.length);
+
+      for (const [index, item] of rendered.entries()) {
+        expect(item.getAttribute('aria-posinset')).to.equal(`${index + 1}`);
+        expect(item.getAttribute('aria-setsize')).to.equal(
+          `${rendered.length}`
+        );
+      }
+    });
+
+    it('should point aria-activedescendant at the active option and drop it on close', async () => {
+      await openComboPopover(combo);
+
+      expect(options.getAttribute('aria-activedescendant')).to.be.null;
+
+      simulateKeyboard(options, arrowDown);
+      await comboStable(combo);
+
+      const active = items(combo).find((item) => item.active)!;
+      expect(active).to.not.be.undefined;
+      expect(options.getAttribute('aria-activedescendant')).to.equal(active.id);
+
+      await combo.hide();
+      await elementUpdated(combo);
+
+      expect(options.getAttribute('aria-activedescendant')).to.be.null;
     });
   });
 

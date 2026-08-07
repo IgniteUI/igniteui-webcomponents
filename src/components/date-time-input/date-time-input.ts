@@ -65,7 +65,7 @@ export interface IgcDateTimeInputComponentEventMap {
  */
 export default class IgcDateTimeInputComponent extends EventEmitterMixin<
   IgcDateTimeInputComponentEventMap,
-  AbstractConstructor<IgcDateTimeInputBaseComponent>
+  AbstractConstructor<IgcDateTimeInputBaseComponent<Date>>
 >(IgcDateTimeInputBaseComponent) {
   public static readonly tagName = 'igc-date-time-input';
   public static styles = [styles, shared];
@@ -95,8 +95,6 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
     return { ...DEFAULT_DATE_PARTS_SPIN_DELTAS, ...this.spinDelta };
   }
 
-  protected _oldValue: Date | null = null;
-
   //#endregion
 
   //#region Public attributes and properties
@@ -104,15 +102,28 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
   /* @tsTwoWayProperty(true, "igcChange", "detail", false) */
   /**
    * The value of the input.
+   *
+   * Only ever holds a committed value. While the user is typing, the intermediate
+   * state lives in the masked text and is committed - together with an `igcChange`
+   * event - when the edit is committed on blur. Use the `igcInput` event to observe
+   * the value as it is being typed.
+   *
    * @attr
    */
   @property({ converter: convertToDate })
-  public set value(value: Date | string | null | undefined) {
-    this._formValue.setValueAndFormState(value as Date | null);
+  public override set value(value: Date | string | null | undefined) {
+    const next = convertToDate(value);
+
+    if (equal(this._formValue.value, next)) {
+      return;
+    }
+
+    this._isEditing = false;
+    this._formValue.setValueAndFormState(next);
     this._updateMaskDisplay();
   }
 
-  public get value(): Date | null {
+  public override get value(): Date | null {
     return this._formValue.value;
   }
 
@@ -136,30 +147,6 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
     } else if (this.displayFormat !== this.inputFormat) {
       this._updateMaskDisplay();
     }
-  }
-
-  protected override _handleBlur(): void {
-    this._focused = false;
-
-    // Handle incomplete mask input
-    if (!(this._isMaskComplete() || this._isEmptyMask)) {
-      const parsedDate = this._parser.parseDate(this._maskedValue);
-
-      if (parsedDate) {
-        this.value = parsedDate;
-      } else {
-        this.clear();
-      }
-    } else {
-      this._updateMaskDisplay();
-    }
-
-    // Emit change event if value changed
-    if (!this.readOnly && !equal(this._oldValue, this.value)) {
-      this.emitEvent('igcChange', { detail: this.value });
-    }
-
-    super._handleBlur();
   }
 
   //#endregion
@@ -217,14 +204,17 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
       this._parser.getFirstDatePart()?.type) as DatePart | undefined;
   }
 
-  /**
-   * Builds the masked value string from the current date value.
-   * Returns empty mask if no value, or existing masked value if incomplete.
-   */
-  protected override _buildMaskedValue(): string {
-    return isValidDate(this.value)
-      ? this._parser.formatDate(this.value)
-      : this._maskedValue || this._parser.emptyMask;
+  protected override _parseMask(strict: boolean): Date | null {
+    if (strict && !this._isMaskComplete()) {
+      return null;
+    }
+
+    const parsed = this._parser.parseDate(this._maskedValue);
+    return isValidDate(parsed) ? parsed : null;
+  }
+
+  protected override _formatValue(value: Date | null): string {
+    return this._parser.formatDate(value);
   }
 
   /**
@@ -237,17 +227,10 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
   }
 
   /**
-   * Commits a value produced by spinning a date part.
-   */
-  protected override _commitSpunValue(value: unknown): void {
-    this.value = value as Date;
-  }
-
-  /**
    * Sets the value to the current date/time.
    */
   protected override _setCurrentDateTime(): void {
-    this.value = new Date();
+    this._setDraftValue(new Date());
     this._emitInputEvent();
   }
 
@@ -257,7 +240,9 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
    */
   protected override _emitInputEvent(): void {
     this._setTouchedState();
-    this.emitEvent('igcInput', { detail: this.value?.toISOString() });
+    this.emitEvent('igcInput', {
+      detail: this._uncommittedValue?.toISOString(),
+    });
   }
 
   /**
@@ -283,11 +268,13 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
    * Spins a specific date part by the given delta.
    */
   protected _spinDatePart(datePart: DatePart, delta: number): Date {
-    if (!isValidDate(this.value)) {
+    const current = this._uncommittedValue;
+
+    if (!isValidDate(current)) {
       return new Date();
     }
 
-    const newDate = new Date(this.value.getTime());
+    const newDate = new Date(current.getTime());
     const partType = datePart as unknown as DateParts;
 
     // Get the part instance from the parser, or create one for explicit spin operations
@@ -314,24 +301,10 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
       date: newDate,
       spinLoop: this.spinLoop,
       amPmValue,
-      originalDate: this.value,
+      originalDate: current,
     });
 
     return newDate;
-  }
-
-  /**
-   * Updates the internal value based on the current masked input.
-   * Only sets a value if the mask is complete and parses to a valid date.
-   */
-  protected override _syncValueFromMask(): void {
-    if (!this._isMaskComplete()) {
-      this.value = null;
-      return;
-    }
-
-    const parsedDate = this._parser.parseDate(this._maskedValue);
-    this.value = isValidDate(parsedDate) ? parsedDate : null;
   }
 
   //#endregion
@@ -346,12 +319,6 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
   /** Decrements a date/time portion. */
   public override stepDown(datePart?: DatePart, delta?: number): void {
     super.stepDown(datePart, delta);
-  }
-
-  /** Clears the input element of user input. */
-  public override clear(): void {
-    this._maskedValue = '';
-    this.value = null;
   }
 
   /* blazorSuppress */

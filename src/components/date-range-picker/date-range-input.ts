@@ -40,7 +40,7 @@ export interface IgcDateRangeInputComponentEventMap {
 /* blazorSuppress */
 export default class IgcDateRangeInputComponent extends EventEmitterMixin<
   IgcDateRangeInputComponentEventMap,
-  AbstractConstructor<IgcDateTimeInputBaseComponent>
+  AbstractConstructor<IgcDateTimeInputBaseComponent<DateRangeValue>>
 >(IgcDateTimeInputBaseComponent) {
   public static readonly tagName = 'igc-date-range-input';
   public static styles = [styles, shared];
@@ -64,8 +64,6 @@ export default class IgcDateRangeInputComponent extends EventEmitterMixin<
     return { date: 1, month: 1, year: 1 };
   }
 
-  protected _oldValue: DateRangeValue | null = null;
-
   // #endregion
 
   // #region Public attributes and properties
@@ -73,15 +71,25 @@ export default class IgcDateRangeInputComponent extends EventEmitterMixin<
   /* @tsTwoWayProperty(true, "igcChange", "detail", false, true) */
   /**
    * The value of the date range input.
+   *
+   * Only ever holds a committed value. While the user is typing, the intermediate
+   * state lives in the masked text and is committed - together with an `igcChange`
+   * event - when the edit is committed on blur.
+   *
    * @attr
    */
   @property({ attribute: false })
-  public set value(value: DateRangeValue | null) {
+  public override set value(value: DateRangeValue | null) {
+    if (equal(this._formValue.value, value)) {
+      return;
+    }
+
+    this._isEditing = false;
     this._formValue.setValueAndFormState(value);
     this._updateMaskDisplay();
   }
 
-  public get value(): DateRangeValue | null {
+  public override get value(): DateRangeValue | null {
     return this._formValue.value;
   }
 
@@ -117,38 +125,13 @@ export default class IgcDateRangeInputComponent extends EventEmitterMixin<
     }
   }
 
-  protected override _handleBlur(): void {
-    const isSameValue = equal(this._oldValue, this.value);
-
-    this._focused = false;
-
-    if (!(this._isMaskComplete() || this._isEmptyMask)) {
-      const parsed = this._parser.parseDateRange(this._maskedValue);
-
-      if (parsed && (parsed.start || parsed.end)) {
-        this.value = parsed;
-      } else {
-        this.value = null;
-        this._maskedValue = '';
-      }
-    } else {
-      this._updateMaskDisplay();
-    }
-
-    if (!(this.readOnly || isSameValue)) {
-      this.emitEvent('igcChange', { detail: this.value });
-    }
-
-    super._handleBlur();
-  }
-
   // #endregion
 
   // #region Keybindings overrides
 
   protected override _setCurrentDateTime(): void {
     const today = CalendarDay.today.native;
-    this.value = { start: today, end: today };
+    this._setDraftValue({ start: today, end: today });
     this._emitInputEvent();
   }
 
@@ -196,30 +179,17 @@ export default class IgcDateRangeInputComponent extends EventEmitterMixin<
 
   // #region Internal API Overrides
 
-  protected override _updateMaskDisplay(): void {
-    if (this._focused) {
-      // Only reset mask from value when value is non-null (i.e. after spinning or programmatic set).
-      // When value is null the user is mid-typing — leave _maskedValue unchanged.
-      if (this.value?.start || this.value?.end) {
-        this._maskedValue = this._buildMaskedValue();
-      } else if (!this._maskedValue) {
-        this._maskedValue = this._parser.emptyMask;
-      }
-      return;
-    }
-
-    this._maskedValue = this._buildDisplayValue();
-  }
-
   protected override _performStep(
     datePart: unknown,
     delta: number | undefined,
     isDecrement: boolean
   ): void {
     // If no value exists, set to today's date first
-    if (!this.value?.start && !this.value?.end) {
+    const current = this._uncommittedValue;
+
+    if (!current?.start && !current?.end) {
       const today = CalendarDay.today.native;
-      this.value = { start: today, end: today };
+      this._setDraftValue({ start: today, end: today });
       const { start, end } = this._inputSelection;
       this.updateComplete.then(() =>
         this._input?.setSelectionRange(start, end)
@@ -228,10 +198,6 @@ export default class IgcDateRangeInputComponent extends EventEmitterMixin<
     }
 
     super._performStep(datePart, delta, isDecrement);
-  }
-
-  protected override _commitSpunValue(value: unknown): void {
-    this.value = value as DateRangeValue;
   }
 
   protected override _buildDisplayValue(): string {
@@ -264,9 +230,10 @@ export default class IgcDateRangeInputComponent extends EventEmitterMixin<
 
     const today = CalendarDay.today.native;
     const defaultValue = { start: today, end: today };
+    const current = this._uncommittedValue;
 
     if (!part) {
-      return this.value || defaultValue;
+      return current || defaultValue;
     }
 
     const effectiveDelta =
@@ -282,7 +249,7 @@ export default class IgcDateRangeInputComponent extends EventEmitterMixin<
     return this._parser.spinDateRangePart(
       part,
       spinAmount,
-      this.value,
+      current,
       this.spinLoop,
       amPmValue
     );
@@ -339,8 +306,17 @@ export default class IgcDateRangeInputComponent extends EventEmitterMixin<
     return undefined;
   }
 
-  protected override _buildMaskedValue(): string {
-    return this._parser.formatDateRange(this.value);
+  protected override _parseMask(strict: boolean): DateRangeValue | null {
+    if (strict && !this._isMaskComplete()) {
+      return null;
+    }
+
+    const parsed = this._parser.parseDateRange(this._maskedValue);
+    return parsed?.start || parsed?.end ? parsed : null;
+  }
+
+  protected override _formatValue(value: DateRangeValue | null): string {
+    return this._parser.formatDateRange(value);
   }
 
   protected override _applyMask(string: string): void {
@@ -356,16 +332,6 @@ export default class IgcDateRangeInputComponent extends EventEmitterMixin<
     }
   }
 
-  protected override _syncValueFromMask(): void {
-    if (!this._isMaskComplete()) {
-      this.value = null;
-      return;
-    }
-
-    const parsed = this._parser.parseDateRange(this._maskedValue);
-    this.value = parsed?.start || parsed?.end ? parsed : null;
-  }
-
   // #region Public API Overrides
 
   /** Increments a date/time portion. */
@@ -376,12 +342,6 @@ export default class IgcDateRangeInputComponent extends EventEmitterMixin<
   /** Decrements a date/time portion. */
   public override stepDown(datePart?: DateRangePart, delta?: number): void {
     super.stepDown(datePart, delta);
-  }
-
-  /** Clears the input element of user input. */
-  public override clear(): void {
-    this._maskedValue = '';
-    this.value = null;
   }
 
   public override hasDateParts(): boolean {

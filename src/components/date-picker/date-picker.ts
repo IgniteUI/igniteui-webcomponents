@@ -299,7 +299,13 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
 
   /* @tsTwoWayProperty(true, "igcChange", "detail", false) */
   /**
-   * The value of the picker
+   * The value of the picker.
+   *
+   * Only ever holds a committed value. While the user is typing in the input, the
+   * intermediate state stays in the editor and is committed - together with an
+   * `igcChange` event - when the edit is committed on blur. Use the `igcInput` event
+   * to observe the value as it is being typed.
+   *
    * @attr
    */
   @property({ converter: convertToDate })
@@ -630,9 +636,10 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
       return;
     }
 
-    this.value = (event.target as IgcDateTimeInputComponent).value!;
-    this._calendar.activeDate = this.value ?? this._calendar.activeDate;
-    this.emitEvent('igcInput', { detail: this.value });
+    const draft = (event.target as IgcDateTimeInputComponent)._uncommittedValue;
+
+    this._calendar.activeDate = draft ?? this._calendar.activeDate;
+    this.emitEvent('igcInput', { detail: draft });
   }
 
   protected _handleClosing(): void {
