@@ -5,6 +5,7 @@ import { defineComponents } from '../common/definitions/defineComponents.js';
 import { first } from '../common/util.js';
 import {
   simulateClick,
+  simulateFocusOut,
   simulateKeyboard,
   simulatePointerDown,
   simulatePointerUp,
@@ -100,7 +101,7 @@ describe('Carousel Indicator Container', () => {
       </div>`
     );
 
-    first(buttons).dispatchEvent(new FocusEvent('focusout', { bubbles: true }));
+    simulateFocusOut(first(buttons));
     await elementUpdated(container);
 
     expect(container).shadowDom.to.equal(
@@ -127,9 +128,7 @@ describe('Carousel Indicator Container', () => {
       </igc-carousel-indicator>`
     );
 
-    first(buttons).dispatchEvent(
-      new FocusEvent('focusout', { bubbles: true, relatedTarget: indicator })
-    );
+    simulateFocusOut(first(buttons), { relatedTarget: indicator });
     await elementUpdated(container);
 
     expect(container).shadowDom.to.equal(

@@ -1,0 +1,5 @@
+@use 'styles/utilities' as *;
+
+:host {
+    --_cell-border-radius: #{rem(2px)};
+}

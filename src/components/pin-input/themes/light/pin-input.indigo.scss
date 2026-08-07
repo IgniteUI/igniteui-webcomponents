@@ -1,0 +1,6 @@
+@use 'styles/utilities' as *;
+
+:host {
+    --_cell-border-radius: #{rem(4px)};
+    --_cell-focus-border-color: var(--ig-secondary-500);
+}

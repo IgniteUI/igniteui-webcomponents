@@ -21,6 +21,7 @@ import { defineComponents } from '../common/definitions/defineComponents.js';
 import {
   finishAnimationsFor,
   simulateClick,
+  simulateFocusOut,
   simulateKeyboard,
   simulateLostPointerCapture,
   simulatePointerDown,
@@ -782,7 +783,7 @@ describe('Carousel', () => {
         await elementUpdated(carousel);
 
         // loose focus
-        carousel.dispatchEvent(new FocusEvent('focusout'));
+        simulateFocusOut(carousel);
         await elementUpdated(carousel);
 
         expect(carousel.isPlaying).to.be.false;
@@ -839,7 +840,7 @@ describe('Carousel', () => {
         expect(carousel.current).to.equal(0);
 
         // loose focus
-        carousel.dispatchEvent(new FocusEvent('focusout'));
+        simulateFocusOut(carousel);
         await elementUpdated(carousel);
 
         await clock.tickAsync(200);

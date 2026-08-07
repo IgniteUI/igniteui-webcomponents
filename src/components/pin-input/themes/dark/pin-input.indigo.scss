@@ -1,0 +1,7 @@
+@use 'styles/utilities' as *;
+
+:host {
+    --_cell-border-color: var(--ig-gray-500);
+    --_cell-color: var(--ig-gray-100);
+    --_cell-background: var(--ig-surface-500);
+}
