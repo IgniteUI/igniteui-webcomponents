@@ -1,4 +1,10 @@
-import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
+import {
+  elementUpdated,
+  expect,
+  fixture,
+  html,
+  nextFrame,
+} from '@open-wc/testing';
 import { CalendarDay, toCalendarDay } from '../calendar/model.js';
 import { type DateRangeDescriptor, DateRangeType } from '../calendar/types.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
@@ -384,6 +390,28 @@ describe('igc-datepicker form integration', () => {
         ];
 
       runValidationContainerTests(IgcDatePickerComponent, testParameters);
+    });
+
+    it('renders the projected messages on the first failed submission', async () => {
+      const form = await fixture<HTMLFormElement>(html`
+        <form>
+          <igc-date-picker name="datePicker" required>
+            <p slot="value-missing">This field is required!</p>
+          </igc-date-picker>
+        </form>
+      `);
+      const picker = form.querySelector(IgcDatePickerComponent.tagName)!;
+
+      form.requestSubmit();
+      await elementUpdated(picker);
+
+      // Projecting the validation slots makes the picker's own slots pick up
+      // content, and the resulting slotchange schedules another update. The
+      // messages have to survive it.
+      await nextFrame();
+
+      ValidityHelpers.hasInvalidStyles(picker).to.be.true;
+      ValidityHelpers.hasSlottedContent(picker, 'value-missing').to.be.true;
     });
   });
 });

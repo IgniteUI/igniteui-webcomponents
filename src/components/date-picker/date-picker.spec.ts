@@ -20,6 +20,7 @@ import {
   isFocused,
   runExternalLabelAssociationTests,
   simulateClick,
+  simulateInput,
   simulateKeyboard,
 } from '../common/utils.spec.js';
 import IgcDateTimeInputComponent from '../date-time-input/date-time-input.js';
@@ -734,6 +735,57 @@ describe('Date picker', () => {
     });
   });
 
+  describe('Uncommitted edits - issue #1346', () => {
+    let input: HTMLInputElement;
+
+    beforeEach(async () => {
+      input = dateTimeInput.renderRoot.querySelector('input')!;
+      picker.inputFormat = 'MM/dd/yyyy';
+      picker.displayFormat = 'MM/dd/yyyy';
+      await elementUpdated(picker);
+    });
+
+    it('does not mutate value while typing in the input', async () => {
+      const initial = new Date(2020, 2, 3);
+      picker.value = initial;
+      dateTimeInput.focus();
+      await elementUpdated(picker);
+
+      dateTimeInput.setSelectionRange(0, input.value.length);
+      simulateInput(input, { value: '10102020', inputType: 'insertText' });
+      await elementUpdated(picker);
+
+      expect(input.value).to.equal('10/10/2020');
+      checkDatesEqual(picker.value!, initial);
+
+      dateTimeInput.blur();
+      await elementUpdated(picker);
+
+      checkDatesEqual(picker.value!, new Date(2020, 9, 10));
+    });
+
+    it('survives a host re-applying the bound value mid-edit', async () => {
+      // The grid edit-template scenario from the issue: change detection re-commits
+      // the bound value on every keystroke. It is equal to the committed one, so the
+      // in-progress edit must survive it.
+      const initial = new Date(2020, 2, 3);
+      picker.value = initial;
+      dateTimeInput.focus();
+      await elementUpdated(picker);
+
+      dateTimeInput.setSelectionRange(0, input.value.length);
+      simulateInput(input, { value: '1010', inputType: 'insertText' });
+      await elementUpdated(picker);
+
+      expect(input.value).to.equal('10/10/____');
+
+      picker.value = new Date(initial.getTime());
+      await elementUpdated(picker);
+
+      expect(input.value).to.equal('10/10/____');
+    });
+  });
+
   describe('Interactions', () => {
     it('should close the picker when in open state on pressing Escape', async () => {
       const eventSpy = spy(picker, 'emitEvent');
@@ -823,8 +875,19 @@ describe('Date picker', () => {
       await elementUpdated(picker);
 
       expect(eventSpy).calledOnceWith('igcInput');
+      // Spinning is an uncommitted edit - `value` follows on blur - so the typed
+      // date is only carried by the event detail. See issue #1346.
+      checkDatesEqual(
+        (eventSpy.firstCall.args[1] as CustomEventInit).detail as Date,
+        expectedValue
+      );
+      expect(picker.value).to.be.null;
       eventSpy.resetHistory();
+
+      dateTimeInput.blur();
+      await elementUpdated(picker);
       checkDatesEqual(picker.value as Date, expectedValue);
+      eventSpy.resetHistory();
 
       picker.value = null;
       picker.nonEditable = true;

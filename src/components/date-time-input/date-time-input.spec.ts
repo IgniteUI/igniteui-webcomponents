@@ -234,6 +234,116 @@ describe('Date Time Input component', () => {
       expect(input.value).to.deep.equal('1/1/2000');
     });
 
+    describe('Uncommitted edits - issue #1346', () => {
+      beforeEach(async () => {
+        element.inputFormat = 'MM/dd/yyyy';
+        element.displayFormat = 'MM/dd/yyyy';
+        await elementUpdated(element);
+      });
+
+      it('does not mutate value while typing, neither partially nor fully', async () => {
+        const initial = new Date(2020, 2, 3);
+        element.value = initial;
+        element.focus();
+        await elementUpdated(element);
+
+        element.setSelectionRange(0, input.value.length);
+        simulateInput(input, { value: '10', inputType: 'insertText' });
+        await elementUpdated(element);
+
+        // Partial mask
+        expect(input.value).to.equal('10/__/____');
+        expect(element.value?.getTime()).to.equal(initial.getTime());
+
+        element.setSelectionRange(0, input.value.length);
+        simulateInput(input, { value: '10102020', inputType: 'insertText' });
+        await elementUpdated(element);
+
+        // Complete mask - still uncommitted
+        expect(input.value).to.equal('10/10/2020');
+        expect(element.value?.getTime()).to.equal(initial.getTime());
+
+        element.blur();
+        await elementUpdated(element);
+
+        expect(element.value?.getTime()).to.equal(
+          new Date(2020, 9, 10).getTime()
+        );
+      });
+
+      it('exposes the typed date through igcInput while value stays put', async () => {
+        const eventSpy = spy(element, 'emitEvent');
+        element.focus();
+        await elementUpdated(element);
+
+        simulateInput(input, { value: '10102020', inputType: 'insertText' });
+        await elementUpdated(element);
+
+        expect(element.value).to.be.null;
+        expect(eventSpy).calledWith('igcInput', {
+          detail: new Date(2020, 9, 10).toISOString(),
+        });
+      });
+
+      it('re-applying an equal value while typing does not reset the mask', async () => {
+        const initial = new Date(2020, 2, 3);
+        element.value = initial;
+        element.focus();
+        await elementUpdated(element);
+
+        element.setSelectionRange(0, input.value.length);
+        simulateInput(input, { value: '1010', inputType: 'insertText' });
+        await elementUpdated(element);
+
+        expect(input.value).to.equal('10/10/____');
+
+        // What a framework re-render does: re-commit the bound value. It is equal to
+        // the committed one, so the in-progress edit must survive it.
+        element.value = new Date(initial.getTime());
+        await elementUpdated(element);
+
+        expect(input.value).to.equal('10/10/____');
+      });
+
+      it('emits a single igcChange on blur carrying the committed value', async () => {
+        const eventSpy = spy(element, 'emitEvent');
+        element.focus();
+        await elementUpdated(element);
+
+        simulateInput(input, { value: '10102020', inputType: 'insertText' });
+        await elementUpdated(element);
+
+        expect(eventSpy).not.calledWith('igcChange');
+
+        element.blur();
+        await elementUpdated(element);
+
+        const changes = eventSpy
+          .getCalls()
+          .filter((call) => call.args[0] === 'igcChange');
+
+        expect(changes).lengthOf(1);
+        expect(
+          (changes[0].args[1] as CustomEventInit).detail.getTime()
+        ).to.equal(new Date(2020, 9, 10).getTime());
+      });
+
+      it('a genuinely different value assigned while typing still wins', async () => {
+        element.focus();
+        await elementUpdated(element);
+
+        simulateInput(input, { value: '1010', inputType: 'insertText' });
+        await elementUpdated(element);
+
+        expect(input.value).to.equal('10/10/____');
+
+        element.value = new Date(1999, 0, 2);
+        await elementUpdated(element);
+
+        expect(input.value).to.equal('01/02/1999');
+      });
+    });
+
     it('should correctly switch between different pre-defined date formats', async () => {
       const targetDate = new Date(2020, 2, 3, 0, 0, 0, 0);
 
@@ -523,13 +633,21 @@ describe('Date Time Input component', () => {
       simulateWheel(input, { deltaY: -125 });
       await elementUpdated(element);
 
-      expect(element.value.getFullYear()).to.equal(value.getFullYear() + 1);
+      // Spinning is an uncommitted edit while the input is focused.
+      expect(element.value?.getTime()).to.equal(value.getTime());
+      expect(parser.parseDate(input.value)?.getFullYear()).to.equal(
+        value.getFullYear() + 1
+      );
 
       element.setSelectionRange(0, 0);
 
       simulateWheel(input, { deltaY: 125 });
       await elementUpdated(element);
 
+      element.blur();
+      await elementUpdated(element);
+
+      expect(element.value.getFullYear()).to.equal(value.getFullYear() + 1);
       expect(element.value.getMonth()).to.equal(value.getMonth() - 1);
     });
 
@@ -569,6 +687,15 @@ describe('Date Time Input component', () => {
       simulateKeyboard(input, arrowUp);
       await elementUpdated(element);
 
+      // Spinning is an uncommitted edit while the input is focused.
+      expect(element.value?.getTime()).to.equal(value.getTime());
+      expect(parser.parseDate(input.value)?.getFullYear()).to.equal(
+        value.getFullYear() + 1
+      );
+
+      element.blur();
+      await elementUpdated(element);
+
       expect(element.value.getFullYear()).to.equal(value.getFullYear() + 1);
     });
 
@@ -580,6 +707,15 @@ describe('Date Time Input component', () => {
       await elementUpdated(element);
 
       simulateKeyboard(input, arrowDown);
+      await elementUpdated(element);
+
+      // Spinning is an uncommitted edit while the input is focused.
+      expect(element.value?.getTime()).to.equal(value.getTime());
+      expect(parser.parseDate(input.value)?.getFullYear()).to.equal(
+        value.getFullYear() - 1
+      );
+
+      element.blur();
       await elementUpdated(element);
 
       expect(element.value.getFullYear()).to.equal(value.getFullYear() - 1);
@@ -653,7 +789,9 @@ describe('Date Time Input component', () => {
       element.stepDown();
       await elementUpdated(element);
 
-      expect(element.value.getFullYear()).to.eq(2022);
+      // Spinning is an uncommitted edit while the input is focused, so the draft
+      // in the mask - not the public value - is what moves.
+      expect(input.value).to.equal('2022/06/01');
       expect(input.selectionStart).to.eq(start);
       expect(input.selectionEnd).to.eq(end);
 
@@ -663,9 +801,17 @@ describe('Date Time Input component', () => {
       end = input.selectionEnd;
 
       element.stepUp();
-      expect(element.value.getMonth()).to.eq(6);
+      await elementUpdated(element);
+
+      expect(input.value).to.equal('2022/07/01');
       expect(input.selectionStart).to.eq(start);
       expect(input.selectionEnd).to.eq(end);
+
+      element.blur();
+      await elementUpdated(element);
+
+      expect(element.value.getFullYear()).to.eq(2022);
+      expect(element.value.getMonth()).to.eq(6);
     });
 
     it('ArrowLeft/Right should navigate to the beginning/end of date section', async () => {
@@ -736,7 +882,7 @@ describe('Date Time Input component', () => {
       expect(input.value).to.be.empty;
     });
 
-    it('set value when input is complete', async () => {
+    it('commits the value on blur when input is complete', async () => {
       element.inputFormat = 'dd.MM.yyyy';
       parser.mask = 'dd.MM.yyyy';
 
@@ -755,7 +901,13 @@ describe('Date Time Input component', () => {
 
       expect(isValidDate(parse2)).to.be.true;
 
-      //10.10.2000
+      // A complete mask is still an uncommitted edit - issue #1346
+      expect(element.value).to.be.null;
+
+      element.blur();
+      await elementUpdated(element);
+
+      //10.10.2020
       expect(element.value?.setHours(0, 0, 0, 0)).to.equal(
         parse2?.setHours(0, 0, 0, 0)
       );
@@ -793,7 +945,16 @@ describe('Date Time Input component', () => {
       simulateKeyboard(input, [ctrlKey, ';']);
       await elementUpdated(element);
 
-      expect(element.value).to.not.be.undefined;
+      // Uncommitted while the input is focused - issue #1346
+      expect(element.value).to.be.null;
+      expect(parser.parseDate(input.value)?.setHours(0, 0, 0, 0)).to.equal(
+        today
+      );
+
+      element.blur();
+      await elementUpdated(element);
+
+      expect(element.value).to.not.be.null;
       expect(element.value!.setHours(0, 0, 0, 0)).to.equal(today);
     });
 
