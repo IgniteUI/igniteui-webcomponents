@@ -613,6 +613,40 @@ describe('Combo', () => {
       expect(eventSpy).calledWithExactly('igcChange', args);
     });
 
+    it('should not repeat a value in newValue when data records share a value key', async () => {
+      const twins = [
+        { id: 'a', name: 'first-a', country: 'X', zip: '1' },
+        { id: 'b', name: 'bee', country: 'X', zip: '2' },
+        { id: 'a', name: 'second-a', country: 'X', zip: '3' },
+      ];
+      combo = await fixture<IgcComboComponent<City>>(
+        html`<igc-combo
+          .data=${twins}
+          value-key="id"
+          display-key="name"
+        ></igc-combo>`
+      );
+
+      // The value setter resolves the first match only, so just one of the
+      // two 'a' records starts out selected.
+      combo.value = ['a'];
+      await elementUpdated(combo);
+
+      let newValue: unknown;
+      combo.addEventListener('igcChange', (event: CustomEvent) => {
+        newValue = event.detail.newValue;
+      });
+
+      await openComboPopover(combo);
+
+      // Selecting the twin resolves both 'a' records, one of which is already
+      // in the selection.
+      items(combo)[2].click();
+      await elementUpdated(combo);
+
+      expect(newValue).to.eql(combo.value);
+    });
+
     it('should fire igcChange deselection type event on mouse click', async () => {
       const eventSpy = spy(combo, 'emitEvent');
       const args = {

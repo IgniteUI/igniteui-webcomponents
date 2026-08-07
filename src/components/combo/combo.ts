@@ -807,7 +807,7 @@ export default class IgcComboComponent<
   private _previewValue(resolved: T[], selecting: boolean): ComboValue<T>[] {
     if (selecting) {
       return this._toValues(
-        this.singleSelect ? resolved : [...resolved, ...this._selected]
+        this.singleSelect ? resolved : new Set([...resolved, ...this._selected])
       );
     }
 
