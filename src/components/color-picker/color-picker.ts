@@ -141,8 +141,6 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
 
   protected readonly _slots = addSlotController(this, { slots: Slots });
 
-  private readonly _themes = addThemingController(this, all);
-
   protected override readonly _rootClickController = addRootClickController(
     this,
     {
@@ -255,6 +253,7 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
   constructor() {
     super();
 
+    addThemingController(this, all);
     addSafeEventListener(this, 'focusin', this._handleFocusIn);
     addSafeEventListener(this, 'focusout', this._handleFocusOut);
 
@@ -434,6 +433,7 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
   private _updateColor(): void {
     this._ownCurrentColor = `hsl(${this._color.h} 100% 50%)`;
     this.style.setProperty('--_current-color', this._ownCurrentColor);
+    this.style.setProperty('--_selected-color', this._opaqueColor);
     this._formValue.setValueAndFormState(this._color.asString(this.format));
     this._validate();
     this.requestUpdate();
