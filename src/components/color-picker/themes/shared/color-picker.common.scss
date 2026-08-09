@@ -331,7 +331,7 @@ $theme: $material;
     }
 
     [part~='label'] {
-        color: var-get($theme, 'invalid-color');
+        color: var-get($theme, 'label-color-invalid');
     }
 }
 
