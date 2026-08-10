@@ -11,7 +11,7 @@
 
 > **MCP lookup pattern (applies to all sections):**
 > - Find doc names → `list_components({ framework: "webcomponents", filter: "<keyword>" })`
-> - Working code (props, handlers, structure) → `get_example({ framework: "webcomponents", name: "<doc-name>", language: "ts" })`
+> - Working code (props, handlers, structure) → `get_example({ framework: "webcomponents", component: "<doc-name>", language: "ts" })` — use `topic` for sub-feature docs (e.g., `component: "grid", topic: "editing"`)
 > - Usage explanation and slots → `get_doc({ framework: "webcomponents", name: "<doc-name>" })`
 > - Find exact class names → `search_api({ platform: "webcomponents", query: "<keyword>" })`
 > - Full property/method/event API → `get_api_reference({ platform: "webcomponents", component: "<ClassName>" })`

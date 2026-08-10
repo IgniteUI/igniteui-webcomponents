@@ -30,7 +30,7 @@ Do not assume everything comes from `igniteui-webcomponents`. Advanced grids, ch
 
 > **Always use the MCP lookup pattern before coding any chart.** Chart APIs are extensive and change between versions.
 > - Find doc names → `list_components({ framework: "webcomponents", filter: "chart" })`
-> - Working code (props, handlers, structure) → `get_example({ framework: "webcomponents", name: "<doc-name>", language: "ts" })`
+> - Working code (props, handlers, structure) → `get_example({ framework: "webcomponents", component: "<doc-name>", language: "ts" })` — use `topic` for sub-feature docs (e.g., `component: "grid", topic: "editing"`)
 > - Usage explanation and slots → `get_doc({ framework: "webcomponents", name: "<doc-name>" })`
 > - Find exact class names → `search_api({ platform: "webcomponents", query: "<keyword>" })`
 > - Full property/method/event API → `get_api_reference({ platform: "webcomponents", component: "<ClassName>" })`

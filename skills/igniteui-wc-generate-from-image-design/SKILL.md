@@ -86,7 +86,7 @@ For component-to-Ignite-UI mapping, see [references/component-mapping.md](refere
 
 For every chosen component category, use both tools before coding:
 
-- **Working code (props, event handlers, structure)** → `get_example({ framework: "webcomponents", name: "<doc-name>", language: "ts" })` — prefer this for concise runnable code; pass `language` to cut response size
+- **Working code (props, event handlers, structure)** → `get_example({ framework: "webcomponents", component: "<doc-name>", language: "ts" })` — prefer this for concise runnable code; pass `language` to cut response size
 - **Usage explanation, slots, registration context** → `get_doc({ framework: "webcomponents", name: "<doc-name>" })` — use the `name` field from `list_components`, not the display title; prefer when explanation context matters (event lifecycle, option tradeoffs, feature interactions)
 - **Full property/method/event API** → `get_api_reference({ platform: "webcomponents", component: "<ClassName>" })` — use `search_api` first to find the exact class name if needed
 

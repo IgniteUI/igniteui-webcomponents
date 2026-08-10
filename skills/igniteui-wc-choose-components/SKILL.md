@@ -83,7 +83,7 @@ If the request only says "grid", choose by features:
 >
 > ```
 > list_components({ framework: "webcomponents", filter: "<keyword>" })
-> get_example({ framework: "webcomponents", name: "<doc-name-from-list>", language: "ts" })
+> get_example({ framework: "webcomponents", component: "<doc-name-from-list>", language: "ts" })
 > get_doc({ framework: "webcomponents", name: "<doc-name-from-list>" })
 > ```
 >
@@ -253,7 +253,7 @@ These tools serve different data sources — call the right one to avoid guessin
 
 - **Working code (props, event handlers, structure)** → `get_example` returns concise, runnable examples. Pass `language` to cut response size:
   ```
-  get_example({ framework: "webcomponents", name: "<doc-name>", language: "ts" })
+  get_example({ framework: "webcomponents", component: "<doc-name>", language: "ts" })
   ```
 
 - **Usage explanation, slots, feature context** → `get_doc` serves the component's **topic-page** (prose guide, code samples, slot names, CSS examples). Use when explanation context matters (event lifecycle, option tradeoffs, feature interactions):
