@@ -14,7 +14,7 @@ Before writing any implementation code, you must complete these steps in order:
 2. Read [references/component-mapping.md](references/component-mapping.md) and [references/gotchas.md](references/gotchas.md).
 3. This skill is Web Components-first. Check package layout or licensing only when package choice, component registration, or theming depend on it.
 4. To apply a theme, use the theming workflow from this skill and the dedicated `igniteui-wc-customize-component-theme` skill; use the `igniteui-theming` MCP tools instead of styling from memory.
-5. Call `get_doc` for every chosen component family before using it.
+5. Call `get_example` (for working code) or `get_doc` (for explanation context) for every chosen component family before using it.
 6. Only then start coding.
 
 ## Workflow
@@ -22,7 +22,7 @@ Before writing any implementation code, you must complete these steps in order:
 1. **Analyze the design image** - Read the image, identify every UI section, component, layout structure.
 2. **Confirm package layout if needed** - Web Components packages are split by component family; check package layout or licensing only when package choice, component registration, or theming depend on it.
 3. **Discover components** - Call `list_components` with targeted filters to find matching components for each UI pattern.
-4. **Look up component docs** - Call `get_doc` for every chosen component family before coding.
+4. **Look up component docs** - Call `get_example` for working code or `get_doc` for explanation context for every chosen component family before coding.
 5. **Generate theme** - (a) To generate a theme, first extract colors and create a color palette using `create_palette` or `create_custom_palette` depending on the scenario. Then extract elevations and call `create_elevations`. Then extract typography and call `create_typography`. Then call `create_theme` when Sass is configured, or import the closest pre-built theme CSS. (b) After a theme exists, prefer using design tokens or scoped semantic CSS variables over raw literals. (c) For every Ignite UI component family that exposes design tokens, call `get_component_design_tokens`, map extracted image tokens to token roles, then call `create_component_theme` with the tokens differing from the global theme for the specific component.
 6. **Implement** - Build the screenshot-first layout, data, and view components.
 7. **Refine** - Use the `set_size`, `set_spacing`, `set_roundness` tools to refine the view's visual fidelity against the image, then iterate on implementation and theming until the view matches the design closely.
@@ -86,7 +86,8 @@ For component-to-Ignite-UI mapping, see [references/component-mapping.md](refere
 
 For every chosen component category, use both tools before coding:
 
-- **Usage patterns, HTML examples, slots, registration** → `get_doc({ framework: "webcomponents", name: "<doc-name>" })` — use the `name` field from `list_components`, not the display title
+- **Working code (props, event handlers, structure)** → `get_example({ framework: "webcomponents", name: "<doc-name>", language: "ts" })` — prefer this for concise runnable code; pass `language` to cut response size
+- **Usage explanation, slots, registration context** → `get_doc({ framework: "webcomponents", name: "<doc-name>" })` — use the `name` field from `list_components`, not the display title; prefer when explanation context matters (event lifecycle, option tradeoffs, feature interactions)
 - **Full property/method/event API** → `get_api_reference({ platform: "webcomponents", component: "<ClassName>" })` — use `search_api` first to find the exact class name if needed
 
 Call `search_docs` for feature-based questions (e.g., "how to configure [component] for [specific behavior or styling need]").
