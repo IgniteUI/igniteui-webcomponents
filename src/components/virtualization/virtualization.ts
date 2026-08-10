@@ -693,7 +693,7 @@ export default class IgcVirtualScrollComponent<
       return;
     }
 
-    this._lastEmittedState = detail;
+    this._lastEmittedState = { ...detail };
     this.emitEvent('igcStateChange', { detail });
   }
 
