@@ -1,9 +1,14 @@
-import { html, LitElement, nothing, type PropertyValues } from 'lit';
+import {
+  html,
+  LitElement,
+  nothing,
+  type PropertyValues,
+  type TemplateResult,
+} from 'lit';
 import {
   eventOptions,
   property,
   queryAssignedElements,
-  state,
 } from 'lit/decorators.js';
 import { cache } from 'lit/directives/cache.js';
 import { createRef, ref } from 'lit/directives/ref.js';
@@ -46,10 +51,13 @@ import { styles } from './themes/tabs.base.css.js';
 import { all } from './themes/tabs-themes.js';
 
 type TabSelectionOptions = {
+  /** The tab to select. Omitting it clears the current selection. */
   tab?: IgcTabComponent;
   shouldEmit?: boolean;
   shouldScroll?: boolean;
 };
+
+type TabMutations = MutationControllerParams<IgcTabComponent>['changes'];
 
 export interface IgcTabsComponentEventMap {
   igcChange: CustomEvent<IgcTabComponent>;
@@ -108,14 +116,13 @@ export default class IgcTabsComponent extends EventEmitterMixin<
     this._indicatorRef
   );
 
-  @queryAssignedElements({ selector: IgcTabComponent.tagName })
+  @queryAssignedElements({ selector: IgcTabComponent.tagName, flatten: true })
   private _tabs!: IgcTabComponent[];
 
   protected get _enabledTabs(): IgcTabComponent[] {
     return this._tabs.filter((tab) => !tab.disabled);
   }
 
-  @state()
   private _activeTab?: IgcTabComponent;
 
   //#endregion
@@ -158,6 +165,12 @@ export default class IgcTabsComponent extends EventEmitterMixin<
     return '';
   }
 
+  /* blazorSuppress */
+  /** Returns the currently selected tab, if any. */
+  public get selectedTab(): IgcTabComponent | null {
+    return this._activeTab ?? null;
+  }
+
   //#endregion
 
   //#region Life-cycle hooks
@@ -182,7 +195,7 @@ export default class IgcTabsComponent extends EventEmitterMixin<
     createMutationController(this, {
       callback: this._mutationCallback,
       config: {
-        attributeFilter: ['selected'],
+        attributeFilter: ['selected', 'disabled'],
         childList: true,
         subtree: true,
       },
@@ -194,15 +207,11 @@ export default class IgcTabsComponent extends EventEmitterMixin<
     await this.updateComplete;
 
     const selectedTab =
-      this._tabs.findLast((tab) => tab.selected) ?? first(this._enabledTabs);
+      this._tabs.findLast((tab) => tab.selected && !tab.disabled) ??
+      first(this._enabledTabs);
 
-    this._domHelpers.setStyleProperties();
-    this._domHelpers.setScrollButtonState();
-    this._setSelectedTab({
-      tab: selectedTab,
-      shouldEmit: false,
-      shouldScroll: false,
-    });
+    this._updateLayout();
+    this._syncSelection(selectedTab);
 
     this._resizeController.observe(this._headerRef.value!);
   }
@@ -211,6 +220,7 @@ export default class IgcTabsComponent extends EventEmitterMixin<
   public override connectedCallback(): void {
     super.connectedCallback();
     this.role = 'tablist';
+    this.ariaOrientation = 'horizontal';
   }
 
   protected override update(props: PropertyValues<this>): void {
@@ -227,76 +237,83 @@ export default class IgcTabsComponent extends EventEmitterMixin<
 
   //#region Observers callbacks
 
-  private _refreshLayout(): void {
+  private _updateLayout(): void {
     this._domHelpers.setStyleProperties();
     this._domHelpers.setScrollButtonState();
+  }
+
+  private _refreshLayout(): void {
+    this._updateLayout();
     this._domHelpers.setIndicator(this._activeTab);
   }
 
-  private _mutationCallback(
-    parameters: MutationControllerParams<IgcTabComponent>
-  ): void {
-    this._selectedAttributeChanged(parameters);
-    this._handleTabsRemoved(parameters);
-    this._handleTabsAdded(parameters);
-
-    this._refreshLayout();
-  }
-
-  private _selectedAttributeChanged({
+  private _mutationCallback({
     changes,
   }: MutationControllerParams<IgcTabComponent>): void {
-    const selected = changes.attributes.find(
-      ({ node: tab }) => this._tabs.includes(tab) && tab.selected
-    )?.node;
-    this._setSelectedTab({
-      tab: selected,
-      shouldEmit: false,
-      shouldScroll: false,
-    });
-  }
+    const structural = !isEmpty(changes.added) || !isEmpty(changes.removed);
 
-  private _handleTabsAdded({
-    changes,
-  }: MutationControllerParams<IgcTabComponent>): void {
-    if (!isEmpty(changes.added)) {
-      const lastAdded = changes.added.findLast(
-        (change) =>
-          change.target.closest(this.tagName) === this && change.node.selected
-      )?.node;
+    this._handleAttributeChanges(changes);
+    this._handleTabsRemoved(changes);
+    this._handleTabsAdded(changes);
 
-      this._setSelectedTab({
-        tab: lastAdded,
-        shouldEmit: false,
-        shouldScroll: false,
-      });
+    // Positions shift on any add/removal, including ones that leave the selection intact.
+    this._updateTabsState();
+
+    // Only a changed tab set moves the indicator on its own - selection changes
+    // reposition it through `_setSelectedTab`.
+    if (structural) {
+      this._refreshLayout();
+    } else {
+      this._updateLayout();
     }
   }
 
-  private _handleTabsRemoved({
-    changes,
-  }: MutationControllerParams<IgcTabComponent>): void {
-    if (!isEmpty(changes.removed)) {
-      let nextSelectedTab: IgcTabComponent | null = null;
+  private _handleAttributeChanges(changes: TabMutations): void {
+    const own = changes.attributes.filter(({ node }) =>
+      this._tabs.includes(node)
+    );
 
-      const removed = changes.removed.filter(
-        (change) => change.target.closest(this.tagName) === this
+    if (isEmpty(own)) {
+      return;
+    }
+
+    const selected = own.findLast(
+      ({ node, attributeName }) => attributeName === 'selected' && node.selected
+    )?.node;
+
+    if (selected) {
+      // A tab turning selected takes over.
+      this._syncSelection(selected);
+    } else if (own.some(({ node }) => node === this._activeTab)) {
+      // The active tab was either deselected from the outside, which leaves the
+      // component without a selection, or disabled and has to hand over.
+      this._syncSelection(
+        this._activeTab?.disabled ? first(this._enabledTabs) : undefined
       );
+    }
+  }
 
-      for (const each of removed) {
-        if (each.node.selected && each.node === this._activeTab) {
-          nextSelectedTab = first(this._enabledTabs);
-          break;
-        }
-      }
+  private _handleTabsAdded(changes: TabMutations): void {
+    const added = changes.added.filter(({ node }) => this._tabs.includes(node));
 
-      if (nextSelectedTab) {
-        this._setSelectedTab({
-          tab: nextSelectedTab,
-          shouldEmit: false,
-          shouldScroll: false,
-        });
-      }
+    if (isEmpty(added)) {
+      return;
+    }
+
+    // An added selected tab takes over, otherwise keep the current selection or
+    // recover from an empty one.
+    const selected = added.findLast(
+      ({ node }) => node.selected && this._isSelectable(node)
+    )?.node;
+
+    this._syncSelection(
+      selected ?? this._activeTab ?? first(this._enabledTabs)
+    );
+  }
+
+  private _handleTabsRemoved(changes: TabMutations): void {
+    if (changes.removed.some(({ node }) => node === this._activeTab)) {
+      this._syncSelection(first(this._enabledTabs));
     }
   }
 
@@ -310,38 +327,70 @@ export default class IgcTabsComponent extends EventEmitterMixin<
     return tab ? this._enabledTabs.indexOf(tab) : -1;
   }
 
-  private _setSelectedTab(options: TabSelectionOptions): void {
-    const { tab, shouldEmit = true, shouldScroll = true } = options;
+  /** A tab can be selected if it is a direct child of this component and is not disabled. */
+  private _isSelectable(tab?: IgcTabComponent): tab is IgcTabComponent {
+    return tab != null && !tab.disabled && this._tabs.includes(tab);
+  }
 
-    if (!tab || tab === this._activeTab) {
-      return;
-    }
+  /** Pushes the ARIA set information and the roving tab stop down to the tab children. */
+  private _updateTabsState(): void {
+    const tabs = this._tabs;
+    const tabStop = this._activeTab ?? first(this._enabledTabs);
 
-    if (this._activeTab) {
-      this._activeTab.selected = false;
-    }
-
-    tab.selected = true;
-    this._activeTab = tab;
-
-    if (shouldScroll) {
-      scrollIntoView(getTabHeader(tab));
-    }
-    this._domHelpers.setIndicator(this._activeTab);
-
-    if (shouldEmit) {
-      this.emitEvent('igcChange', { detail: this._activeTab });
+    for (const [index, tab] of tabs.entries()) {
+      tab._setTabState(index + 1, tabs.length, tab === tabStop);
     }
   }
 
-  private _keyboardActivateTab(tab: IgcTabComponent) {
+  /** Applies a selection driven by the DOM rather than by user interaction. */
+  private _syncSelection(tab?: IgcTabComponent): void {
+    this._setSelectedTab({ tab, shouldEmit: false, shouldScroll: false });
+  }
+
+  private _setSelectedTab(options: TabSelectionOptions): void {
+    const { tab, shouldEmit = true, shouldScroll = true } = options;
+
+    // An explicit `undefined` clears the selection, while a tab that cannot be
+    // selected leaves the current one in place.
+    const next =
+      tab === undefined || this._isSelectable(tab) ? tab : this._activeTab;
+    const changed = next !== this._activeTab;
+
+    // Runs on every pass so that tabs holding a stale `selected` state are reconciled.
+    for (const each of this._tabs) {
+      each.selected = each === next;
+    }
+
+    this._activeTab = next;
+    this._updateTabsState();
+
+    if (!changed) {
+      return;
+    }
+
+    if (next && shouldScroll) {
+      scrollIntoView(getTabHeader(next));
+    }
+
+    this._domHelpers.setIndicator(next);
+
+    if (next && shouldEmit) {
+      this.emitEvent('igcChange', { detail: next });
+    }
+  }
+
+  private _keyboardActivateTab(tab?: IgcTabComponent, activate = false): void {
+    if (!tab) {
+      return;
+    }
+
     const header = getTabHeader(tab);
 
     this._domHelpers.setScrollSnap();
     scrollIntoView(header);
-    header.focus({ preventScroll: true });
+    header?.focus({ preventScroll: true });
 
-    if (this.activation === 'auto') {
+    if (activate || this.activation === 'auto') {
       this._setSelectedTab({ tab });
     }
   }
@@ -353,8 +402,8 @@ export default class IgcTabsComponent extends EventEmitterMixin<
     );
   }
 
-  private _isEventFromTabHeader(event: Event) {
-    return getElementFromPath('[part~="tab-header"]', event);
+  private _isEventFromTabHeader(event: Event): boolean {
+    return Boolean(getElementFromPath('[part~="tab-header"]', event));
   }
 
   //#endregion
@@ -377,12 +426,10 @@ export default class IgcTabsComponent extends EventEmitterMixin<
   }
 
   protected _handleActivationKeys(): void {
-    const tabs = this._enabledTabs;
     const index = this._getClosestActiveTabIndex();
 
     if (index > -1) {
-      this._setSelectedTab({ tab: tabs[index], shouldEmit: false });
-      this._keyboardActivateTab(tabs[index]);
+      this._keyboardActivateTab(this._enabledTabs[index], true);
     }
   }
 
@@ -393,12 +440,12 @@ export default class IgcTabsComponent extends EventEmitterMixin<
 
     const tab = getElementFromPath(IgcTabComponent.tagName, event);
 
-    if (!(tab && this._tabs.includes(tab)) || tab?.disabled) {
+    if (!this._isSelectable(tab)) {
       return;
     }
 
     this._domHelpers.setScrollSnap();
-    getTabHeader(tab).focus();
+    getTabHeader(tab)?.focus({ preventScroll: true });
     this._setSelectedTab({ tab });
   }
 
@@ -411,15 +458,21 @@ export default class IgcTabsComponent extends EventEmitterMixin<
 
   //#region Public API methods
 
-  /** Selects the specified tab and displays the corresponding panel.  */
-  public select(id: string): void;
+  /**
+   * Selects the tab matching the passed IDREF or label and displays the corresponding panel.
+   *
+   * Disabled tabs and values not matching any tab are ignored.
+   */
+  public select(idOrLabel: string): void;
   /* blazorSuppress (ref is reserved) */
   public select(ref: IgcTabComponent): void;
   /* blazorSuppress (ref is reserved) */
   public select(ref: IgcTabComponent | string): void {
-    const tab = isString(ref) ? this._tabs.find((t) => t.id === ref) : ref;
+    const tab = isString(ref)
+      ? this._tabs.find((each) => each.id === ref || each.label === ref)
+      : ref;
 
-    if (tab) {
+    if (this._isSelectable(tab)) {
       this._setSelectedTab({ tab, shouldEmit: false });
     }
   }
@@ -428,7 +481,7 @@ export default class IgcTabsComponent extends EventEmitterMixin<
 
   //#region Render
 
-  protected _renderScrollButton(direction: 'start' | 'end') {
+  protected _renderScrollButton(direction: 'start' | 'end'): TemplateResult {
     const isStart = direction === 'start';
     const { start, end } = this._domHelpers.scrollButtonsDisabled;
 
@@ -451,7 +504,7 @@ export default class IgcTabsComponent extends EventEmitterMixin<
     )}`;
   }
 
-  protected override render() {
+  protected override render(): TemplateResult {
     return html`
       <div
         ${ref(this._headerRef)}
