@@ -1,4 +1,4 @@
-import { html, LitElement, nothing, type PropertyValues } from 'lit';
+import { html, LitElement, type PropertyValues } from 'lit';
 import {
   property,
   query,
@@ -16,7 +16,6 @@ import { partMap } from '../common/part-map.js';
 import {
   addSafeEventListener,
   getElementFromPath,
-  isLTR,
   scrollIntoView,
 } from '../common/util.js';
 import IgcIconComponent from '../icon/icon.js';
@@ -24,12 +23,17 @@ import IgcCircularProgressComponent from '../progress/circular-progress.js';
 import { styles } from './themes/item.base.css.js';
 import { all } from './themes/item.js';
 import { styles as shared } from './themes/shared/item.common.css.js';
+import {
+  clearTreeItemAria,
+  getTreeItemChildren,
+  hasTreeItemChildren,
+  setAriaState,
+  TREE_ITEM_TAG,
+  TREE_TAG,
+} from './tree.common.js';
 import type IgcTreeComponent from './tree.js';
 import type { IgcTreeNavigationService } from './tree.navigation.js';
 import type { IgcTreeSelectionService } from './tree.selection.js';
-
-const TREE_ITEM_TAG = 'igc-tree-item';
-const TREE_TAG = 'igc-tree';
 
 /**
  * The tree-item component represents a child item of the tree component or another tree item.
@@ -67,6 +71,7 @@ export default class IgcTreeItemComponent extends LitElement {
 
   private _tabbableEl?: HTMLElement[];
   private _focusedProgrammatically = false;
+  private _ariaDelegate?: HTMLElement;
 
   private _groupRef: Ref<HTMLElement> = createRef();
 
@@ -108,21 +113,14 @@ export default class IgcTreeItemComponent extends LitElement {
     };
   }
 
-  /**
-   * Direct `igc-tree-item` light-DOM children. Tree items are expected to be nested directly
-   * (wrapping a nested item in another element, e.g. a `<div>`, is not supported) — this keeps
-   * child resolution a cheap, native `.children` scan instead of a subtree-wide DOM query.
-   */
+  /** Direct `igc-tree-item` light-DOM children. */
   private get _directChildren(): IgcTreeItemComponent[] {
-    return Array.from(this.children).filter(
-      (el): el is IgcTreeItemComponent =>
-        el.tagName.toLowerCase() === TREE_ITEM_TAG
-    );
+    return getTreeItemChildren(this);
   }
 
   private get _allChildren(): IgcTreeItemComponent[] {
     const result: IgcTreeItemComponent[] = [];
-    this._collectAllChildren(result);
+    this._collectDescendants(result);
     return result;
   }
 
@@ -214,7 +212,7 @@ export default class IgcTreeItemComponent extends LitElement {
         ? (this.parentElement as IgcTreeItemComponent)
         : null;
     this.level = this.parent ? this.parent.level + 1 : 0;
-    this.setAttribute('role', 'treeitem');
+    this._syncAria();
     this._activeChange();
     // if the item is not added/moved runtime
     if (this.init) {
@@ -235,13 +233,6 @@ export default class IgcTreeItemComponent extends LitElement {
 
   protected override willUpdate(changed: PropertyValues<this>): void {
     super.willUpdate(changed);
-
-    if (
-      this.hasUpdated &&
-      (changed.has('expanded') || changed.has('hasChildren'))
-    ) {
-      this._bothChange();
-    }
 
     if (changed.has('expanded')) {
       const oldValue = changed.get('expanded') as boolean;
@@ -265,23 +256,35 @@ export default class IgcTreeItemComponent extends LitElement {
     }
   }
 
+  protected override updated(changed: PropertyValues<this>): void {
+    super.updated(changed);
+
+    // ARIA state lives outside the shadow template, so it is refreshed once per
+    // update rather than tracked per property.
+    this._syncAria();
+  }
+
   /**
-   * Appends every descendant (pre-order) into `out` in a single pass.
-   *
-   * Building this iteratively (rather than the more obvious `flatMap` + spread recursion)
-   * avoids repeatedly copying already-collected arrays at every level of the tree, which would
-   * otherwise turn a deeply nested tree's flatten cost from linear into quadratic.
+   * @hidden @internal
+   * Appends every descendant (pre-order) into `out`. Accumulating into a single
+   * array keeps a deep tree's flatten cost linear rather than quadratic.
    */
-  private _collectAllChildren(out: IgcTreeItemComponent[]): void {
-    for (const child of this._directChildren) {
+  public _collectDescendants(out: IgcTreeItemComponent[]): void {
+    for (const child of getTreeItemChildren(this)) {
       out.push(child);
-      child._collectAllChildren(out);
+      child._collectDescendants(out);
     }
   }
 
-  /** The full path to the tree item, starting from the top-most ancestor. */
+  /**
+   * The full path to the tree item, starting from the top-most ancestor.
+   *
+   * `parent` is read into a local first: reading `parent.path` twice per level
+   * would make a single access cost 2^depth instead of `depth`.
+   */
   public get path(): IgcTreeItemComponent[] {
-    return this.parent?.path ? [...this.parent.path, this] : [this];
+    const parent = this.parent;
+    return parent ? [...parent.path, this] : [this];
   }
 
   private _itemClick(event: MouseEvent): void {
@@ -296,7 +299,9 @@ export default class IgcTreeItemComponent extends LitElement {
   }
 
   private _expandIndicatorClick(): void {
-    if (this.disabled) return;
+    if (this.disabled || this.tree?.toggleNodeOnClick) {
+      return;
+    }
     this.expanded ? this.collapseWithEvent() : this.expandWithEvent();
   }
 
@@ -323,11 +328,7 @@ export default class IgcTreeItemComponent extends LitElement {
       scrollIntoView(this.wrapper, { behavior: 'smooth' });
     }
     if (this._tabbableEl?.length) {
-      // set tabIndex = 0 to all tabbable elements
-      // focus the first one
-      this._tabbableEl.forEach((element: HTMLElement) => {
-        element.tabIndex = 0;
-      });
+      this._setTabbable(0);
       this._focusedProgrammatically = true;
       this._tabbableEl[0].focus();
       return;
@@ -344,9 +345,7 @@ export default class IgcTreeItemComponent extends LitElement {
     if (!this.disabled) {
       // clicking directly over tabbable element when the item is not focused
       if (!this._focusedProgrammatically) {
-        this._tabbableEl?.forEach((element: HTMLElement) => {
-          element.tabIndex = 0;
-        });
+        this._setTabbable(0);
       }
       this.removeAttribute('tabIndex');
       this._isFocused = true;
@@ -357,9 +356,7 @@ export default class IgcTreeItemComponent extends LitElement {
   private _onFocusOut(ev: Event): void {
     ev?.stopPropagation();
     this._isFocused = false;
-    this._tabbableEl?.forEach((element: HTMLElement) => {
-      element.tabIndex = -1;
-    });
+    this._setTabbable(-1);
 
     if (this._navService?.focusedItem === this) {
       // called twice when clicking on already focused item with link (itemClick handler)
@@ -379,29 +376,59 @@ export default class IgcTreeItemComponent extends LitElement {
       this._tabbableEl.splice(0, 0, firstElement);
     }
 
-    if (this._tabbableEl?.length) {
-      this.setAttribute('role', 'none');
-      this._tabbableEl[0].setAttribute('role', 'treeitem');
+    this._setTabbable(-1);
+    this._syncAria();
+  }
 
-      this._tabbableEl.forEach((element: HTMLElement) => {
-        element.tabIndex = -1;
-      });
-    } else {
-      this.setAttribute('role', 'treeitem');
+  /** Applies `value` as the tabIndex of every focusable element in the label. */
+  private _setTabbable(value: number): void {
+    for (const element of this._tabbableEl ?? []) {
+      element.tabIndex = value;
     }
+  }
+
+  /**
+   * The element carrying the item's `treeitem` semantics: the host, or the
+   * first focusable element in the label slot when there is one, so that what
+   * the user reaches by keyboard is what gets announced. All ARIA state has to
+   * move with the role - left on a `role="none"` host it would be ignored.
+   */
+  private get _ariaTarget(): HTMLElement {
+    return this._tabbableEl?.length ? this._tabbableEl[0] : this;
+  }
+
+  private _syncAria(): void {
+    const target = this._ariaTarget;
+    const delegated = target !== this;
+
+    if (this._ariaDelegate && this._ariaDelegate !== target) {
+      clearTreeItemAria(this._ariaDelegate);
+      this._ariaDelegate.removeAttribute('role');
+    }
+    this._ariaDelegate = delegated ? target : undefined;
+
+    this.setAttribute('role', delegated ? 'none' : 'treeitem');
+    if (delegated) {
+      target.setAttribute('role', 'treeitem');
+      clearTreeItemAria(this);
+    }
+
+    setAriaState(
+      target,
+      'aria-expanded',
+      this.hasChildren ? String(this.expanded) : null
+    );
+    setAriaState(
+      target,
+      'aria-selected',
+      this.tree && this.tree.selection !== 'none' ? String(this.selected) : null
+    );
+    setAriaState(target, 'aria-disabled', this.disabled ? 'true' : null);
   }
 
   private async _toggleAnimation(dir: 'open' | 'close') {
     const animation = dir === 'open' ? growVerIn : growVerOut;
     return this._animationPlayer.playExclusive(animation());
-  }
-
-  private _bothChange(): void {
-    if (this.hasChildren) {
-      this.setAttribute('aria-expanded', this.expanded.toString());
-    } else {
-      this.removeAttribute('aria-expanded');
-    }
   }
 
   private _expandedChange(oldValue: boolean): void {
@@ -446,7 +473,7 @@ export default class IgcTreeItemComponent extends LitElement {
   }
 
   private _handleChange(): void {
-    this.hasChildren = !!this._directChildren.length;
+    this.hasChildren = hasTreeItemChildren(this);
   }
 
   /* blazorSuppress */
@@ -481,9 +508,9 @@ export default class IgcTreeItemComponent extends LitElement {
     }
 
     if (this.tree?.singleBranchExpand) {
-      const pathSet = new Set(this.path.splice(0, this.path.length - 1));
+      const ancestors = new Set(this.path.slice(0, -1));
       for (const item of this.tree.items) {
-        if (!pathSet.has(item)) {
+        if (!ancestors.has(item)) {
           item.collapseWithEvent();
         }
       }
@@ -536,11 +563,6 @@ export default class IgcTreeItemComponent extends LitElement {
   }
 
   protected override render() {
-    const indicatorParts = {
-      indicator: true,
-      rtl: !(this.tree ? isLTR(this.tree) : true),
-    };
-
     return html`
       <div id="wrapper" part=${partMap(this._parts)}>
         <div
@@ -550,7 +572,7 @@ export default class IgcTreeItemComponent extends LitElement {
         >
           <slot name="indentation"></slot>
         </div>
-        <div part=${partMap(indicatorParts)} aria-hidden="true">
+        <div part="indicator" aria-hidden="true">
           ${
             this.loading
               ? html`
@@ -561,14 +583,7 @@ export default class IgcTreeItemComponent extends LitElement {
                   </slot>
                 `
               : html`
-                  <slot
-                    name="indicator"
-                    @click=${
-                      this.tree?.toggleNodeOnClick
-                        ? nothing
-                        : this._expandIndicatorClick
-                    }
-                  >
+                  <slot name="indicator" @click=${this._expandIndicatorClick}>
                     ${
                       this.hasChildren
                         ? html`
