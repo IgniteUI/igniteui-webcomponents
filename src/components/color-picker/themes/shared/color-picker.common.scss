@@ -66,6 +66,7 @@ $theme: $material;
         var(--_transparency-grid);
     background-position: 0 0;
     background-size: 100% 100%, 100% 100%, 50% 50%;
+    background-clip: content-box;
 }
 
 // With no value the swatch drops the transparency grid for the conventional
@@ -252,7 +253,7 @@ $theme: $material;
             @include swatch-preview();
 
             border: var(--_anchor-border-size) solid var-get($theme, 'swatch-preview-border-color');
-            border-radius: var-get($theme, 'swatch-preview-border-radius');
+            border-radius: calc(var-get($theme, 'anchor-border-radius') - var(--_anchor-border-size));
         }
 
         &:focus-visible {
