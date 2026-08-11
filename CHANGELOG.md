@@ -52,6 +52,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - #### Form associated components
   - Validation messages no longer disappear right after the first failed form submission. The submit-driven invalid state used to hold only for the update the submission itself scheduled, so any re-render that followed - a `slotchange` from the validation slots the submission had just projected, for instance - silently dropped the projected messages while the invalid styling stayed on.
   - Invalid styling now follows the validity state, so a control that turns valid again (a cleared `required`, a widened `min`/`max`, a disabled control) drops the styles it picked up from an earlier interaction or submission.
+- #### Tree
+  - Substantially reduced the cost of several operations on large or deeply nested trees:
+    - Reading `path` on a tree item, and anything built on it such as activating a nested item, cost `2^depth` rather than `depth` because the ancestor chain was re-walked twice per level. A single read at depth 20 took ~23ms; it is now under a microsecond at any depth.
+    - Keyboard navigation is roughly 5x faster (~1.24ms to ~0.24ms per keypress on a 1554-item tree). The navigable set is derived by a lazy walk that prunes collapsed branches, instead of materializing every item and filtering it by climbing each one's ancestors.
+    - Removing a subtree while items are selected is roughly 2x faster (~134ms to ~71ms for 259 items in `cascade` mode). Each removed item used to re-run the full cascade reconciliation, although the topmost removed item already covers its whole subtree.
+    - `tree.items`, `select()` over a whole `cascade` tree, and expanding or collapsing every item are each ~25-45% faster.
 - #### Tabs
   - See-through scroll buttons in the Indigo theme. The buttons are sticky and the tab headers scroll underneath them, but the theme leaves both the buttons and the tabs strip transparent, so the scrolled headers showed through. The buttons now paint an opaque surface backdrop below their themed background. [#1955](https://github.com/IgniteUI/igniteui-webcomponents/issues/1955)
 
