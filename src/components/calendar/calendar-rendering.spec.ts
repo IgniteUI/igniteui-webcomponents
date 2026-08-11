@@ -1,8 +1,8 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import type { TemplateResult } from 'lit';
 
-import { defineComponents } from '../common/definitions/defineComponents.js';
-import { first, last } from '../common/util.js';
+import { defineComponents } from '../../internals/definitions/defineComponents.js';
+import { firstOf, lastOf } from '../../internals/utils/arrays.js';
 import IgcCalendarComponent from './calendar.js';
 import { getCalendarDOM, getDayViewDOM, getDOMDate } from './helpers.spec.js';
 import { CalendarDay } from './model.js';
@@ -104,7 +104,9 @@ describe('Calendar Rendering', () => {
         getCalendarDOM(calendar).header.title.querySelector('slot')!;
 
       expect(titleSlot.assignedElements()).lengthOf(1);
-      expect(first(titleSlot.assignedElements()).textContent).to.equal('Title');
+      expect(firstOf(titleSlot.assignedElements()).textContent).to.equal(
+        'Title'
+      );
     });
 
     it('should render header-date slot', async () => {
@@ -116,7 +118,7 @@ describe('Calendar Rendering', () => {
         getCalendarDOM(calendar).header.date.querySelector('slot')!;
 
       expect(dateSlot.assignedElements()).lengthOf(1);
-      expect(first(dateSlot.assignedElements()).textContent).to.equal(
+      expect(firstOf(dateSlot.assignedElements()).textContent).to.equal(
         'Header date'
       );
     });
@@ -239,7 +241,7 @@ describe('Calendar Rendering', () => {
       calendar.weekStart = 'wednesday';
       await elementUpdated(calendar);
 
-      expect(first(daysViewDOM.weekLabels)).attribute(
+      expect(firstOf(daysViewDOM.weekLabels)).attribute(
         'aria-label',
         'Wednesday'
       );
@@ -252,17 +254,17 @@ describe('Calendar Rendering', () => {
       calendar.weekStart = 'sunday';
       await elementUpdated(calendar);
 
-      expect(first(daysViewDOM.weekLabels).innerText).to.equal('Sun');
+      expect(firstOf(daysViewDOM.weekLabels).innerText).to.equal('Sun');
 
       calendar.formatOptions = { weekday: 'long' };
       await elementUpdated(calendar);
 
-      expect(first(daysViewDOM.weekLabels).innerText).to.equal('Sunday');
+      expect(firstOf(daysViewDOM.weekLabels).innerText).to.equal('Sunday');
 
       calendar.formatOptions = { weekday: 'narrow' };
       await elementUpdated(calendar);
 
-      expect(first(daysViewDOM.weekLabels).innerText).to.equal('S');
+      expect(firstOf(daysViewDOM.weekLabels).innerText).to.equal('S');
     });
 
     it('should change on `monthFormat`', async () => {
@@ -467,7 +469,7 @@ describe('Calendar Rendering', () => {
 
       const calendarDOM = getCalendarDOM(calendar);
       const daysViewDOM = getDayViewDOM(calendarDOM.views.days);
-      const lastWeekNumber = last(daysViewDOM.weekNumbers);
+      const lastWeekNumber = lastOf(daysViewDOM.weekNumbers);
 
       expect(lastWeekNumber.innerText).to.equal('1');
     });

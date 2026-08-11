@@ -3,7 +3,7 @@ import {
   minLengthValidator,
   requiredValidator,
   type Validator,
-} from '../common/validators.js';
+} from '../../internals/validators.js';
 import type IgcTextareaComponent from './textarea.js';
 
 export const textAreaValidators: Validator<IgcTextareaComponent>[] = [

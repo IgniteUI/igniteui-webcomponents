@@ -1,16 +1,11 @@
-import {
-  elementUpdated,
-  expect,
-  fixture,
-  html,
-  nextFrame,
-} from '@open-wc/testing';
+import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import { range } from 'lit/directives/range.js';
 import { match, restore, spy, stub } from 'sinon';
+import { defineComponents } from '../../internals/definitions/defineComponents.js';
+import { viewTransitionComplete } from '../../internals/testing/helpers.spec.js';
+import { simulateClick } from '../../internals/testing/simulate.spec.js';
+import { firstOf } from '../../internals/utils/arrays.js';
 import IgcIconButtonComponent from '../button/icon-button.js';
-import { defineComponents } from '../common/definitions/defineComponents.js';
-import { first } from '../common/util.js';
-import { simulateClick } from '../common/utils.spec.js';
 import IgcTileComponent from './tile.js';
 import IgcTileManagerComponent from './tile-manager.js';
 
@@ -20,11 +15,6 @@ describe('Tile Manager component', () => {
   });
 
   let tileManager: IgcTileManagerComponent;
-
-  async function viewTransitionComplete() {
-    await nextFrame();
-    await nextFrame();
-  }
 
   function getTileManagerBase() {
     return tileManager.renderRoot.querySelector<HTMLElement>('[part="base"]')!;
@@ -578,7 +568,7 @@ describe('Tile Manager component', () => {
 
     beforeEach(async () => {
       tileManager = await fixture<IgcTileManagerComponent>(createTileManager());
-      tile = first(tileManager.tiles);
+      tile = firstOf(tileManager.tiles);
 
       // Mock `requestFullscreen`
       tile.requestFullscreen = stub().callsFake(() => {
@@ -1048,7 +1038,7 @@ describe('Tile Manager component', () => {
     });
 
     it('should set proper CSS order based on position', async () => {
-      const firstTile = first(getTiles());
+      const firstTile = firstOf(getTiles());
       firstTile.position = 6;
 
       await elementUpdated(tileManager);

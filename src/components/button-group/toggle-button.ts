@@ -1,11 +1,10 @@
 import { html, LitElement } from 'lit';
 import { property, query } from 'lit/decorators.js';
-
+import { addKeyboardFocusRing } from '../../internals/controllers/focus-ring.js';
+import { shadowOptions } from '../../internals/decorators/shadow-options.js';
+import { registerComponent } from '../../internals/definitions/register.js';
+import { partMap } from '../../internals/part-map.js';
 import { addThemingController } from '../../theming/theming-controller.js';
-import { addKeyboardFocusRing } from '../common/controllers/focus-ring.js';
-import { shadowOptions } from '../common/decorators/shadow-options.js';
-import { registerComponent } from '../common/definitions/register.js';
-import { partMap } from '../common/part-map.js';
 import { styles } from './themes/button.base.css.js';
 import { all } from './themes/button.js';
 import { styles as shared } from './themes/shared/button/button.common.css.js';

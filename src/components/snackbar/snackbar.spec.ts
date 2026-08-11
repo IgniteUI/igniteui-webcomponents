@@ -4,13 +4,13 @@ import {
   fixture,
   html,
   nextFrame,
-  waitUntil,
 } from '@open-wc/testing';
 import { type SinonFakeTimers, spy, useFakeTimers } from 'sinon';
+import { defineComponents } from '../../internals/definitions/defineComponents.js';
+import { finishAnimationsFor } from '../../internals/testing/helpers.spec.js';
+import { runInvokerCommandsTests } from '../../internals/testing/invoker-commands.spec.js';
+import { isPopoverOpen } from '../../internals/utils/dom.js';
 import IgcButtonComponent from '../button/button.js';
-import { defineComponents } from '../common/definitions/defineComponents.js';
-import { isPopoverOpen } from '../common/util.js';
-import { finishAnimationsFor } from '../common/utils.spec.js';
 import IgcSnackbarComponent from './snackbar.js';
 
 describe('Snackbar', () => {
@@ -283,89 +283,13 @@ describe('Snackbar', () => {
     });
   });
 
-  describe('Invoker Commands API', () => {
-    afterEach(async () => {
-      if (snackbar.open) {
-        await snackbar.hide();
-      }
-    });
-
-    describe('with igc-button', () => {
-      let invoker: IgcButtonComponent;
-
-      beforeEach(async () => {
-        const container = await fixture<HTMLElement>(html`
-          <div>
-            <igc-button command="--show" commandfor="invoker-snackbar"
-              >Show</igc-button
-            >
-            <igc-snackbar id="invoker-snackbar" keep-open
-              >${defaultContent}</igc-snackbar
-            >
-          </div>
-        `);
-
-        invoker = container.querySelector<IgcButtonComponent>('igc-button')!;
-        snackbar =
-          container.querySelector<IgcSnackbarComponent>('igc-snackbar')!;
-      });
-
-      it('`--show` opens the snackbar', async () => {
-        expect(snackbar.open).to.be.false;
-
-        invoker.click();
-        await waitUntil(() => snackbar.open);
-
-        expect(snackbar.open).to.be.true;
-      });
-
-      it('`--hide` closes an open snackbar', async () => {
-        await snackbar.show();
-        expect(snackbar.open).to.be.true;
-
-        invoker.command = '--hide';
-        await elementUpdated(invoker);
-
-        invoker.click();
-        await waitUntil(() => !snackbar.open);
-
-        expect(snackbar.open).to.be.false;
-      });
-
-      it('`--toggle` opens a closed snackbar', async () => {
-        expect(snackbar.open).to.be.false;
-
-        invoker.command = '--toggle';
-        await elementUpdated(invoker);
-
-        invoker.click();
-        await waitUntil(() => snackbar.open);
-
-        expect(snackbar.open).to.be.true;
-      });
-
-      it('`--toggle` closes an open snackbar', async () => {
-        await snackbar.show();
-        expect(snackbar.open).to.be.true;
-
-        invoker.command = '--toggle';
-        await elementUpdated(invoker);
-
-        invoker.click();
-        await waitUntil(() => !snackbar.open);
-
-        expect(snackbar.open).to.be.false;
-      });
-
-      it('a disabled igc-button does not invoke commands', async () => {
-        invoker.disabled = true;
-        await elementUpdated(invoker);
-
-        invoker.click();
-        await elementUpdated(snackbar);
-
-        expect(snackbar.open).to.be.false;
-      });
-    });
+  runInvokerCommandsTests({
+    tagName: IgcSnackbarComponent.tagName,
+    commandFor: 'invoker-snackbar',
+    template: html`
+      <igc-snackbar id="invoker-snackbar" keep-open
+        >${defaultContent}</igc-snackbar
+      >
+    `,
   });
 });

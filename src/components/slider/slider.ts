@@ -1,11 +1,11 @@
 import { property } from 'lit/decorators.js';
-import { registerComponent } from '../common/definitions/register.js';
-import type { Constructor } from '../common/mixins/constructor.js';
-import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { FormAssociatedMixin } from '../common/mixins/forms/associated.js';
-import { FormValueNumberTransformers } from '../common/mixins/forms/form-transformers.js';
-import { createFormValueState } from '../common/mixins/forms/form-value.js';
-import { asNumber, asPercent, clamp } from '../common/util.js';
+import { registerComponent } from '../../internals/definitions/register.js';
+import type { Constructor } from '../../internals/mixins/constructor.js';
+import { EventEmitterMixin } from '../../internals/mixins/event-emitter.js';
+import { FormAssociatedMixin } from '../../internals/mixins/forms/associated.js';
+import { FormValueNumberTransformers } from '../../internals/mixins/forms/form-transformers.js';
+import { createFormValueState } from '../../internals/mixins/forms/form-value.js';
+import { asNumber, asPercent, clamp } from '../../internals/utils/math.js';
 import { IgcSliderBaseComponent } from './slider-base.js';
 import IgcSliderLabelComponent from './slider-label.js';
 

@@ -1,13 +1,14 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import type { TemplateResult } from 'lit';
 import { spy } from 'sinon';
-import { defineComponents } from '../common/definitions/defineComponents.js';
-import { first } from '../common/util.js';
-import { createFormAssociatedTestBed } from '../common/utils.spec.js';
+import { defineComponents } from '../../internals/definitions/defineComponents.js';
+import { createFormAssociatedTestBed } from '../../internals/testing/form-testbed.spec.js';
+import { simulateFileUpload } from '../../internals/testing/simulate.spec.js';
 import {
   runValidationContainerTests,
   type ValidationContainerTestsParams,
-} from '../common/validity-helpers.spec.js';
+} from '../../internals/testing/validity-helpers.spec.js';
+import { firstOf } from '../../internals/utils/arrays.js';
 import IgcFileInputComponent from './file-input.js';
 
 describe('File Input component', () => {
@@ -87,17 +88,17 @@ describe('File Input component', () => {
       );
 
       element.focus();
-      simulateFileUpload(input, [first(files)]);
+      simulateFileUpload(input, [firstOf(files)]);
       await elementUpdated(element);
 
       expect(getDOM('[part="file-names"]').innerText).to.equal(
-        first(files).name
+        firstOf(files).name
       );
     });
 
     it('resets the file selection when empty string is passed for value', async () => {
       await createFixture(html`<igc-file-input></igc-file-input>`);
-      const file = first(files);
+      const file = firstOf(files);
 
       simulateFileUpload(input, [file]);
       await elementUpdated(element);
@@ -135,10 +136,10 @@ describe('File Input component', () => {
         'slot[name="file-missing-text"]'
       ) as HTMLSlotElement;
 
-      expect(first(selectorSlot.assignedNodes()).textContent).to.equal(
+      expect(firstOf(selectorSlot.assignedNodes()).textContent).to.equal(
         'Upload'
       );
-      expect(first(missingSlot.assignedNodes()).textContent).to.equal(
+      expect(firstOf(missingSlot.assignedNodes()).textContent).to.equal(
         'Choose a file'
       );
     });
@@ -153,7 +154,7 @@ describe('File Input component', () => {
       await createFixture(html`<igc-file-input></igc-file-input>`);
       const eventSpy = spy(element, 'emitEvent');
 
-      simulateFileUpload(input, [first(files)]);
+      simulateFileUpload(input, [firstOf(files)]);
       await elementUpdated(element);
 
       expect(eventSpy).calledWith('igcChange', {
@@ -223,7 +224,7 @@ describe('Form Integration', () => {
   it('is associated on submit', async () => {
     simulateFileUpload(input, files);
     await elementUpdated(spec.element);
-    spec.assertSubmitHasValue(first(files));
+    spec.assertSubmitHasValue(firstOf(files));
   });
 
   it('is correctly resets on form reset', async () => {
@@ -263,14 +264,3 @@ describe('Validation message slots', () => {
     runValidationContainerTests(IgcFileInputComponent, testParameters);
   });
 });
-
-export function simulateFileUpload(input: HTMLInputElement, files: File[]) {
-  const dataTransfer = new DataTransfer();
-
-  for (const file of files) {
-    dataTransfer.items.add(file);
-  }
-
-  input.files = dataTransfer.files;
-  input.dispatchEvent(new Event('change', { bubbles: true }));
-}

@@ -14,35 +14,29 @@ import { cache } from 'lit/directives/cache.js';
 import { createRef, ref } from 'lit/directives/ref.js';
 
 import { styleMap } from 'lit/directives/style-map.js';
-import { addThemingController } from '../../theming/theming-controller.js';
-import IgcIconButtonComponent from '../button/icon-button.js';
 import {
   addKeybindings,
   arrowLeft,
   arrowRight,
   endKey,
   homeKey,
-} from '../common/controllers/key-bindings.js';
+} from '../../internals/controllers/key-bindings.js';
 import {
   createMutationController,
   type MutationControllerParams,
-} from '../common/controllers/mutation-observer.js';
-import { createResizeObserverController } from '../common/controllers/resize-observer.js';
-import { registerComponent } from '../common/definitions/register.js';
-import type { Constructor } from '../common/mixins/constructor.js';
-import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { partMap } from '../common/part-map.js';
-import {
-  first,
-  getElementFromPath,
-  getRoot,
-  isEmpty,
-  isLTR,
-  isString,
-  last,
-  scrollIntoView,
-  wrap,
-} from '../common/util.js';
+} from '../../internals/controllers/mutation-observer.js';
+import { createResizeObserverController } from '../../internals/controllers/resize-observer.js';
+import { registerComponent } from '../../internals/definitions/register.js';
+import type { Constructor } from '../../internals/mixins/constructor.js';
+import { EventEmitterMixin } from '../../internals/mixins/event-emitter.js';
+import { partMap } from '../../internals/part-map.js';
+import { firstOf, isEmpty, lastOf } from '../../internals/utils/arrays.js';
+import { getRoot, isLTR, scrollIntoView } from '../../internals/utils/dom.js';
+import { getElementFromPath } from '../../internals/utils/events.js';
+import { wrap } from '../../internals/utils/math.js';
+import { isString } from '../../internals/utils/types.js';
+import { addThemingController } from '../../theming/theming-controller.js';
+import IgcIconButtonComponent from '../button/icon-button.js';
 import type { TabsActivation, TabsAlignment } from '../types.js';
 import IgcTabComponent from './tab.js';
 import { createTabHelpers, getTabHeader } from './tab-dom.js';
@@ -208,7 +202,7 @@ export default class IgcTabsComponent extends EventEmitterMixin<
 
     const selectedTab =
       this._tabs.findLast((tab) => tab.selected && !tab.disabled) ??
-      first(this._enabledTabs);
+      firstOf(this._enabledTabs);
 
     this._updateLayout();
     this._syncSelection(selectedTab);
@@ -288,7 +282,7 @@ export default class IgcTabsComponent extends EventEmitterMixin<
       // The active tab was either deselected from the outside, which leaves the
       // component without a selection, or disabled and has to hand over.
       this._syncSelection(
-        this._activeTab?.disabled ? first(this._enabledTabs) : undefined
+        this._activeTab?.disabled ? firstOf(this._enabledTabs) : undefined
       );
     }
   }
@@ -307,13 +301,13 @@ export default class IgcTabsComponent extends EventEmitterMixin<
     )?.node;
 
     this._syncSelection(
-      selected ?? this._activeTab ?? first(this._enabledTabs)
+      selected ?? this._activeTab ?? firstOf(this._enabledTabs)
     );
   }
 
   private _handleTabsRemoved(changes: TabMutations): void {
     if (changes.removed.some(({ node }) => node === this._activeTab)) {
-      this._syncSelection(first(this._enabledTabs));
+      this._syncSelection(firstOf(this._enabledTabs));
     }
   }
 
@@ -335,7 +329,7 @@ export default class IgcTabsComponent extends EventEmitterMixin<
   /** Pushes the ARIA set information and the roving tab stop down to the tab children. */
   private _updateTabsState(): void {
     const tabs = this._tabs;
-    const tabStop = this._activeTab ?? first(this._enabledTabs);
+    const tabStop = this._activeTab ?? firstOf(this._enabledTabs);
 
     for (const [index, tab] of tabs.entries()) {
       tab._setTabState(index + 1, tabs.length, tab === tabStop);
@@ -418,11 +412,11 @@ export default class IgcTabsComponent extends EventEmitterMixin<
   }
 
   protected _handleHomeKey(): void {
-    this._keyboardActivateTab(first(this._enabledTabs));
+    this._keyboardActivateTab(firstOf(this._enabledTabs));
   }
 
   protected _handleEndKey(): void {
-    this._keyboardActivateTab(last(this._enabledTabs));
+    this._keyboardActivateTab(lastOf(this._enabledTabs));
   }
 
   protected _handleActivationKeys(): void {

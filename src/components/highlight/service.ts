@@ -1,11 +1,7 @@
 import { isServer, type ReactiveController } from 'lit';
-import {
-  escapeRegex,
-  iterNodes,
-  nanoid,
-  scrollIntoView,
-  wrap,
-} from '../common/util.js';
+import { iterNodes, scrollIntoView } from '../../internals/utils/dom.js';
+import { wrap } from '../../internals/utils/math.js';
+import { escapeRegex, nanoid } from '../../internals/utils/strings.js';
 import type IgcHighlightComponent from './highlight.js';
 
 type Match = { node: Node; indices: [start: number, end: number] };

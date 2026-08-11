@@ -1,7 +1,7 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
+import { defineComponents } from '../../internals/definitions/defineComponents.js';
+import { simulatePointerDown } from '../../internals/testing/simulate.spec.js';
 import IgcButtonComponent from '../button/button.js';
-import { defineComponents } from '../common/definitions/defineComponents.js';
-import { simulatePointerDown } from '../common/utils.spec.js';
 import IgcRippleComponent from './ripple.js';
 
 describe('Ripple', () => {

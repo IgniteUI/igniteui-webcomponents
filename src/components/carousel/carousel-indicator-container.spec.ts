@@ -1,14 +1,14 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 
-import { tabKey } from '../common/controllers/key-bindings.js';
-import { defineComponents } from '../common/definitions/defineComponents.js';
-import { first } from '../common/util.js';
+import { tabKey } from '../../internals/controllers/key-bindings.js';
+import { defineComponents } from '../../internals/definitions/defineComponents.js';
 import {
   simulateClick,
   simulateKeyboard,
   simulatePointerDown,
   simulatePointerUp,
-} from '../common/utils.spec.js';
+} from '../../internals/testing/simulate.spec.js';
+import { firstOf } from '../../internals/utils/arrays.js';
 import IgcCarouselIndicatorComponent from './carousel-indicator.js';
 import IgcCarouselIndicatorContainerComponent from './carousel-indicator-container.js';
 
@@ -58,7 +58,7 @@ describe('Carousel Indicator Container', () => {
       </div>`
     );
 
-    simulateKeyboard(first(buttons), tabKey);
+    simulateKeyboard(firstOf(buttons), tabKey);
     await elementUpdated(container);
 
     expect(container).shadowDom.to.equal(
@@ -69,7 +69,7 @@ describe('Carousel Indicator Container', () => {
   });
 
   it('should remove `focused` part on click', async () => {
-    simulateKeyboard(first(buttons), tabKey);
+    simulateKeyboard(firstOf(buttons), tabKey);
     await elementUpdated(container);
 
     expect(container).shadowDom.to.equal(
@@ -78,9 +78,9 @@ describe('Carousel Indicator Container', () => {
       </div>`
     );
 
-    simulatePointerDown(first(buttons));
-    simulatePointerUp(first(buttons));
-    simulateClick(first(buttons));
+    simulatePointerDown(firstOf(buttons));
+    simulatePointerUp(firstOf(buttons));
+    simulateClick(firstOf(buttons));
     await elementUpdated(container);
 
     expect(container).shadowDom.to.equal(
@@ -91,7 +91,7 @@ describe('Carousel Indicator Container', () => {
   });
 
   it('it should remove `focused` part on focusout', async () => {
-    simulateKeyboard(first(buttons), tabKey);
+    simulateKeyboard(firstOf(buttons), tabKey);
     await elementUpdated(container);
 
     expect(container).shadowDom.to.equal(
@@ -100,7 +100,9 @@ describe('Carousel Indicator Container', () => {
       </div>`
     );
 
-    first(buttons).dispatchEvent(new FocusEvent('focusout', { bubbles: true }));
+    firstOf(buttons).dispatchEvent(
+      new FocusEvent('focusout', { bubbles: true })
+    );
     await elementUpdated(container);
 
     expect(container).shadowDom.to.equal(
@@ -111,7 +113,7 @@ describe('Carousel Indicator Container', () => {
   });
 
   it('it should not remove `focused` part on focusout if the target receiving focus is an `igc-carousel-indicator`', async () => {
-    simulateKeyboard(first(buttons), tabKey);
+    simulateKeyboard(firstOf(buttons), tabKey);
     await elementUpdated(container);
 
     expect(container).shadowDom.to.equal(
@@ -127,7 +129,7 @@ describe('Carousel Indicator Container', () => {
       </igc-carousel-indicator>`
     );
 
-    first(buttons).dispatchEvent(
+    firstOf(buttons).dispatchEvent(
       new FocusEvent('focusout', { bubbles: true, relatedTarget: indicator })
     );
     await elementUpdated(container);

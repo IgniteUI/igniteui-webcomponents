@@ -1,7 +1,5 @@
 import { html } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
-
-import { addThemingController } from '../../theming/theming-controller.js';
 import {
   addKeybindings,
   arrowDown,
@@ -15,12 +13,12 @@ import {
   type KeyBindingController,
   type KeyBindingObserverCleanup,
   tabKey,
-} from '../common/controllers/key-bindings.js';
-import { addRootClickController } from '../common/controllers/root-click.js';
-import { addRootScrollHandler } from '../common/controllers/root-scroll.js';
-import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditionalDependencies.js';
-import { watch } from '../common/decorators/watch.js';
-import { registerComponent } from '../common/definitions/register.js';
+} from '../../internals/controllers/key-bindings.js';
+import { addRootClickController } from '../../internals/controllers/root-click.js';
+import { addRootScrollHandler } from '../../internals/controllers/root-scroll.js';
+import { blazorAdditionalDependencies } from '../../internals/decorators/blazorAdditionalDependencies.js';
+import { watch } from '../../internals/decorators/watch.js';
+import { registerComponent } from '../../internals/definitions/register.js';
 import {
   getActiveItems,
   getItems,
@@ -28,14 +26,13 @@ import {
   getPreviousActiveItem,
   IgcComboBoxBaseLikeComponent,
   setInitialSelectionState,
-} from '../common/mixins/combo-box.js';
-import type { AbstractConstructor } from '../common/mixins/constructor.js';
-import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import {
-  getElementByIdFromRoot,
-  getElementFromPath,
-  isString,
-} from '../common/util.js';
+} from '../../internals/mixins/combo-box.js';
+import type { AbstractConstructor } from '../../internals/mixins/constructor.js';
+import { EventEmitterMixin } from '../../internals/mixins/event-emitter.js';
+import { getElementByIdFromRoot } from '../../internals/utils/dom.js';
+import { getElementFromPath } from '../../internals/utils/events.js';
+import { isString } from '../../internals/utils/types.js';
+import { addThemingController } from '../../theming/theming-controller.js';
 import IgcPopoverComponent, {
   type PopoverPlacement,
 } from '../popover/popover.js';

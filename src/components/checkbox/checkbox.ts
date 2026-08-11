@@ -2,16 +2,17 @@ import { html, nothing, type TemplateResult } from 'lit';
 import { property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
+import { registerComponent } from '../../internals/definitions/register.js';
+import { partMap } from '../../internals/part-map.js';
+import { createIdGenerator } from '../../internals/utils/strings.js';
 import { addThemingController } from '../../theming/theming-controller.js';
-import { registerComponent } from '../common/definitions/register.js';
-import { partMap } from '../common/part-map.js';
 import IgcValidationContainerComponent from '../validation-container/validation-container.js';
 import { IgcCheckboxBaseComponent } from './checkbox-base.js';
 import { styles } from './themes/checkbox.base.css.js';
 import { all } from './themes/checkbox-themes.js';
 import { styles as shared } from './themes/shared/checkbox/checkbox.common.css.js';
 
-let nextId = 1;
+const nextId = createIdGenerator('checkbox');
 
 /**
  * A check box allowing single values to be selected/deselected.
@@ -42,7 +43,7 @@ export default class IgcCheckboxComponent extends IgcCheckboxBaseComponent {
 
   private readonly _themes = addThemingController(this, all);
 
-  private readonly _inputId = `checkbox-${nextId++}`;
+  private readonly _inputId = nextId();
   private readonly _labelId = `checkbox-label-${this._inputId}`;
 
   /**

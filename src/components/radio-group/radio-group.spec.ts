@@ -6,10 +6,11 @@ import {
   arrowLeft,
   arrowRight,
   arrowUp,
-} from '../common/controllers/key-bindings.js';
-import { defineComponents } from '../common/definitions/defineComponents.js';
-import { first, last } from '../common/util.js';
-import { isFocused, simulateKeyboard } from '../common/utils.spec.js';
+} from '../../internals/controllers/key-bindings.js';
+import { defineComponents } from '../../internals/definitions/defineComponents.js';
+import { isFocused } from '../../internals/testing/helpers.spec.js';
+import { simulateKeyboard } from '../../internals/testing/simulate.spec.js';
+import { firstOf, lastOf } from '../../internals/utils/arrays.js';
 import IgcRadioComponent from '../radio/radio.js';
 import IgcRadioGroupComponent from './radio-group.js';
 
@@ -221,10 +222,10 @@ describe('Radio Group Component', () => {
           radios = Array.from(form.querySelectorAll(IgcRadioComponent.tagName));
           setFormListener();
 
-          expect(last(radios).checked).to.be.true;
+          expect(lastOf(radios).checked).to.be.true;
 
           form.requestSubmit();
-          expect(formData.get('fruit')).to.equal(last(radios).value);
+          expect(formData.get('fruit')).to.equal(lastOf(radios).value);
         });
 
         it('initial checked state through radio attribute', async () => {
@@ -241,11 +242,11 @@ describe('Radio Group Component', () => {
           radios = Array.from(form.querySelectorAll(IgcRadioComponent.tagName));
           setFormListener();
 
-          expect(first(radios).checked).to.be.true;
-          expect(group.value).to.equal(first(radios).value);
+          expect(firstOf(radios).checked).to.be.true;
+          expect(group.value).to.equal(firstOf(radios).value);
 
           form.requestSubmit();
-          expect(formData.get('fruit')).to.equal(first(radios).value);
+          expect(formData.get('fruit')).to.equal(firstOf(radios).value);
         });
 
         it('initial multiple checked state through radio attribute', async () => {
@@ -263,11 +264,11 @@ describe('Radio Group Component', () => {
           setFormListener();
 
           // The last checked member of the group takes over as the default checked
-          expect(last(radios).checked).to.be.true;
-          expect(group.value).to.equal(last(radios).value);
+          expect(lastOf(radios).checked).to.be.true;
+          expect(group.value).to.equal(lastOf(radios).value);
 
           form.requestSubmit();
-          expect(formData.get('fruit')).to.equal(last(radios).value);
+          expect(formData.get('fruit')).to.equal(lastOf(radios).value);
         });
 
         it('form reset when bound through group value attribute', async () => {
@@ -284,21 +285,21 @@ describe('Radio Group Component', () => {
           radios = Array.from(form.querySelectorAll(IgcRadioComponent.tagName));
           setFormListener();
 
-          expect(first(radios).checked).to.be.true;
+          expect(firstOf(radios).checked).to.be.true;
 
           form.requestSubmit();
-          expect(formData.get('fruit')).to.equal(first(radios).value);
+          expect(formData.get('fruit')).to.equal(firstOf(radios).value);
 
-          last(radios).click();
-          await elementUpdated(last(radios));
+          lastOf(radios).click();
+          await elementUpdated(lastOf(radios));
 
-          expect(group.value).to.equal(last(radios).value);
+          expect(group.value).to.equal(lastOf(radios).value);
           form.requestSubmit();
-          expect(formData.get('fruit')).to.equal(last(radios).value);
+          expect(formData.get('fruit')).to.equal(lastOf(radios).value);
 
           form.reset();
-          expect(first(radios).checked).to.be.true;
-          expect(group.value).to.equal(first(radios).value);
+          expect(firstOf(radios).checked).to.be.true;
+          expect(group.value).to.equal(firstOf(radios).value);
         });
 
         it('form reset with defaultValue set', async () => {
@@ -315,21 +316,21 @@ describe('Radio Group Component', () => {
           radios = Array.from(form.querySelectorAll(IgcRadioComponent.tagName));
           setFormListener();
 
-          expect(first(radios).checked).to.be.true;
+          expect(firstOf(radios).checked).to.be.true;
 
           form.requestSubmit();
-          expect(formData.get('fruit')).to.equal(first(radios).value);
+          expect(formData.get('fruit')).to.equal(firstOf(radios).value);
 
-          last(radios).click();
-          await elementUpdated(last(radios));
+          lastOf(radios).click();
+          await elementUpdated(lastOf(radios));
 
-          expect(group.value).to.equal(last(radios).value);
+          expect(group.value).to.equal(lastOf(radios).value);
           form.requestSubmit();
-          expect(formData.get('fruit')).to.equal(last(radios).value);
+          expect(formData.get('fruit')).to.equal(lastOf(radios).value);
 
           form.reset();
-          expect(first(radios).checked).to.be.true;
-          expect(group.value).to.equal(first(radios).value);
+          expect(firstOf(radios).checked).to.be.true;
+          expect(group.value).to.equal(firstOf(radios).value);
         });
 
         it('form reset with multiple checked radios', async () => {
@@ -346,15 +347,15 @@ describe('Radio Group Component', () => {
           radios = Array.from(form.querySelectorAll(IgcRadioComponent.tagName));
           setFormListener();
 
-          expect(first(radios).checked).to.be.false;
-          expect(last(radios).checked).to.be.true;
+          expect(firstOf(radios).checked).to.be.false;
+          expect(lastOf(radios).checked).to.be.true;
 
-          first(radios).click();
-          expect(first(radios).checked).to.be.true;
+          firstOf(radios).click();
+          expect(firstOf(radios).checked).to.be.true;
 
           form.reset();
-          expect(first(radios).checked).to.be.false;
-          expect(last(radios).checked).to.be.true;
+          expect(firstOf(radios).checked).to.be.false;
+          expect(lastOf(radios).checked).to.be.true;
         });
       });
 

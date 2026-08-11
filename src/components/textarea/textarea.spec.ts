@@ -7,18 +7,18 @@ import {
 } from '@open-wc/testing';
 import type { TemplateResult } from 'lit';
 import { spy } from 'sinon';
-import { configureTheme } from '../../theming/config.js';
-import { defineComponents } from '../common/definitions/defineComponents.js';
+import { defineComponents } from '../../internals/definitions/defineComponents.js';
 import {
   createFormAssociatedTestBed,
-  isFocused,
   runExternalLabelAssociationTests,
-  simulateInput,
-} from '../common/utils.spec.js';
+} from '../../internals/testing/form-testbed.spec.js';
+import { isFocused } from '../../internals/testing/helpers.spec.js';
+import { simulateInput } from '../../internals/testing/simulate.spec.js';
 import {
   runValidationContainerTests,
   type ValidationContainerTestsParams,
-} from '../common/validity-helpers.spec.js';
+} from '../../internals/testing/validity-helpers.spec.js';
+import { configureTheme } from '../../theming/config.js';
 import IgcTextareaComponent from './textarea.js';
 
 describe('Textarea component', () => {

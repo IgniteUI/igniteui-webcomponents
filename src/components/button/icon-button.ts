@@ -1,10 +1,9 @@
 import { html } from 'lit';
 import { property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
-
+import { blazorInclude } from '../../internals/decorators/blazorInclude.js';
+import { registerComponent } from '../../internals/definitions/register.js';
 import { addThemingController } from '../../theming/theming-controller.js';
-import { blazorInclude } from '../common/decorators/blazorInclude.js';
-import { registerComponent } from '../common/definitions/register.js';
 import IgcIconComponent from '../icon/icon.js';
 import {
   registerIcon as registerIcon_impl,

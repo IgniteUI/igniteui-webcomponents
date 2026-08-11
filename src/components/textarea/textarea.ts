@@ -10,22 +10,24 @@ import { cache } from 'lit/directives/cache.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 import { styleMap } from 'lit/directives/style-map.js';
-import { addThemingController } from '../../theming/theming-controller.js';
-import { createResizeObserverController } from '../common/controllers/resize-observer.js';
+import { createResizeObserverController } from '../../internals/controllers/resize-observer.js';
 import {
   addSlotController,
   type InferSlotNames,
   type SlotChangeCallbackParameters,
   setSlots,
-} from '../common/controllers/slot.js';
-import { shadowOptions } from '../common/decorators/shadow-options.js';
-import { registerComponent } from '../common/definitions/register.js';
-import type { Constructor } from '../common/mixins/constructor.js';
-import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { FormAssociatedRequiredMixin } from '../common/mixins/forms/associated-required.js';
-import { createFormValueState } from '../common/mixins/forms/form-value.js';
-import { partMap } from '../common/part-map.js';
-import { addSafeEventListener, asNumber } from '../common/util.js';
+} from '../../internals/controllers/slot.js';
+import { shadowOptions } from '../../internals/decorators/shadow-options.js';
+import { registerComponent } from '../../internals/definitions/register.js';
+import type { Constructor } from '../../internals/mixins/constructor.js';
+import { EventEmitterMixin } from '../../internals/mixins/event-emitter.js';
+import { FormAssociatedRequiredMixin } from '../../internals/mixins/forms/associated-required.js';
+import { createFormValueState } from '../../internals/mixins/forms/form-value.js';
+import { partMap } from '../../internals/part-map.js';
+import { addSafeEventListener } from '../../internals/utils/events.js';
+import { asNumber } from '../../internals/utils/math.js';
+import { createIdGenerator } from '../../internals/utils/strings.js';
+import { addThemingController } from '../../theming/theming-controller.js';
 import type {
   RangeTextSelectMode,
   SelectionRangeDirection,
@@ -47,7 +49,7 @@ export interface IgcTextareaComponentEventMap {
   blur: FocusEvent;
 }
 
-let nextId = 1;
+const nextId = createIdGenerator('textarea');
 const Slots = setSlots(
   'prefix',
   'suffix',
@@ -102,7 +104,7 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
 
   //#region Private properties and state
 
-  private readonly _inputId = `textarea-${nextId++}`;
+  private readonly _inputId = nextId();
 
   private readonly _themes = addThemingController(this, all);
 

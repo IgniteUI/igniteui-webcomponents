@@ -1,7 +1,7 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
+import { defineComponents } from '../../internals/definitions/defineComponents.js';
+import { asNumber } from '../../internals/utils/math.js';
 import { configureTheme } from '../../theming/config.js';
-import { defineComponents } from '../common/definitions/defineComponents.js';
-import { asNumber } from '../common/util.js';
 import IgcQrCodeComponent from './qr-code.js';
 
 describe('IgcQrCodeComponent', () => {

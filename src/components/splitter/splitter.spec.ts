@@ -14,16 +14,16 @@ import {
   ctrlKey,
   endKey,
   homeKey,
-} from '../common/controllers/key-bindings.js';
-import { defineComponents } from '../common/definitions/defineComponents.js';
-import { roundPrecise } from '../common/util.js';
+} from '../../internals/controllers/key-bindings.js';
+import { defineComponents } from '../../internals/definitions/defineComponents.js';
+import { finishAnimationsFor } from '../../internals/testing/helpers.spec.js';
 import {
-  finishAnimationsFor,
   simulateKeyboard,
   simulatePointerDown,
   simulatePointerMove,
   simulatePointerUp,
-} from '../common/utils.spec.js';
+} from '../../internals/testing/simulate.spec.js';
+import { roundPrecise } from '../../internals/utils/math.js';
 import IgcTreeComponent from '../tree/tree.js';
 import IgcTreeItemComponent from '../tree/tree-item.js';
 import type { SplitterOrientation } from '../types.js';

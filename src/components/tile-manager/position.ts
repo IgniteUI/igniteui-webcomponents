@@ -1,4 +1,4 @@
-import { last, partition } from '../common/util.js';
+import { lastOf, partition } from '../../internals/utils/arrays.js';
 import type IgcTileComponent from './tile.js';
 import type IgcTileManagerComponent from './tile-manager.js';
 
@@ -120,7 +120,7 @@ class TileDragStack {
   private _stack: TileDragStackEntry[] = [];
 
   public peek(): IgcTileComponent {
-    return last(this._stack).tile;
+    return lastOf(this._stack).tile;
   }
 
   public pop(): TileDragStackEntry | undefined {

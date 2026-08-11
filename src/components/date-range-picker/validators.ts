@@ -1,12 +1,13 @@
 import { ValidationResourceStringsEN } from 'igniteui-i18n-core';
+import { isEmpty } from '../../internals/utils/arrays.js';
+import { formatString } from '../../internals/utils/strings.js';
+import type { Validator } from '../../internals/validators.js';
 import {
   calendarRange,
   isDateExceedingMax,
   isDateInRanges,
   isDateLessThanMin,
 } from '../calendar/helpers.js';
-import { formatString, isEmpty } from '../common/util.js';
-import type { Validator } from '../common/validators.js';
 import type { DateRangeValue } from '../types.js';
 import type IgcDateRangePickerComponent from './date-range-picker.js';
 

@@ -15,6 +15,39 @@ import {
 import { cache } from 'lit/directives/cache.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
+import {
+  addKeybindings,
+  altKey,
+  arrowDown,
+  arrowUp,
+  escapeKey,
+} from '../../internals/controllers/key-bindings.js';
+import { addRootClickController } from '../../internals/controllers/root-click.js';
+import { blazorAdditionalDependencies } from '../../internals/decorators/blazorAdditionalDependencies.js';
+import { shadowOptions } from '../../internals/decorators/shadow-options.js';
+import { watch } from '../../internals/decorators/watch.js';
+import { registerComponent } from '../../internals/definitions/register.js';
+import type { IgcDateRangePickerResourceStrings } from '../../internals/i18n/EN/date-range-picker.resources.js';
+import {
+  addI18nController,
+  getDateTimeFormat,
+  getDefaultDateTimeFormat,
+} from '../../internals/i18n/i18n-controller.js';
+import { IgcComboBoxBaseLikeComponent } from '../../internals/mixins/combo-box.js';
+import type { AbstractConstructor } from '../../internals/mixins/constructor.js';
+import { EventEmitterMixin } from '../../internals/mixins/event-emitter.js';
+import { FormAssociatedRequiredMixin } from '../../internals/mixins/forms/associated-required.js';
+import { FormValueDateRangeTransformers } from '../../internals/mixins/forms/form-transformers.js';
+import { createFormValueState } from '../../internals/mixins/forms/form-value.js';
+import { isEmpty } from '../../internals/utils/arrays.js';
+import {
+  addSafeEventListener,
+  focusLeftHost,
+  getElementFromPath,
+} from '../../internals/utils/events.js';
+import { asNumber, clamp } from '../../internals/utils/math.js';
+import { equal } from '../../internals/utils/objects.js';
+import { createIdGenerator } from '../../internals/utils/strings.js';
 import { addThemingController } from '../../theming/theming-controller.js';
 import IgcCalendarComponent, { focusActiveDate } from '../calendar/calendar.js';
 import {
@@ -24,38 +57,6 @@ import {
 } from '../calendar/helpers.js';
 import { CalendarDay } from '../calendar/model.js';
 import type { DateRangeDescriptor, WeekDays } from '../calendar/types.js';
-import {
-  addKeybindings,
-  altKey,
-  arrowDown,
-  arrowUp,
-  escapeKey,
-} from '../common/controllers/key-bindings.js';
-import { addRootClickController } from '../common/controllers/root-click.js';
-import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditionalDependencies.js';
-import { shadowOptions } from '../common/decorators/shadow-options.js';
-import { watch } from '../common/decorators/watch.js';
-import { registerComponent } from '../common/definitions/register.js';
-import type { IgcDateRangePickerResourceStrings } from '../common/i18n/EN/date-range-picker.resources.js';
-import {
-  addI18nController,
-  getDateTimeFormat,
-  getDefaultDateTimeFormat,
-} from '../common/i18n/i18n-controller.js';
-import { IgcComboBoxBaseLikeComponent } from '../common/mixins/combo-box.js';
-import type { AbstractConstructor } from '../common/mixins/constructor.js';
-import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { FormAssociatedRequiredMixin } from '../common/mixins/forms/associated-required.js';
-import { FormValueDateRangeTransformers } from '../common/mixins/forms/form-transformers.js';
-import { createFormValueState } from '../common/mixins/forms/form-value.js';
-import {
-  addSafeEventListener,
-  asNumber,
-  clamp,
-  equal,
-  getElementFromPath,
-  isEmpty,
-} from '../common/util.js';
 import IgcDateTimeInputComponent from '../date-time-input/date-time-input.js';
 import IgcDialogComponent from '../dialog/dialog.js';
 import IgcFocusTrapComponent from '../focus-trap/focus-trap.js';
@@ -95,7 +96,7 @@ export interface IgcDateRangePickerComponentEventMap {
 export type DateRangePickerResourceStringsType =
   IDateRangePickerResourceStrings & ICalendarResourceStrings;
 
-let nextId = 1;
+const nextId = createIdGenerator('date-range-picker');
 
 /* blazorIndirectRender */
 /* blazorSupportsVisualChildren */
@@ -224,7 +225,7 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
 
   // #region Internal state & properties
 
-  protected readonly _inputId = `date-range-picker-${nextId++}`;
+  protected readonly _inputId = nextId();
 
   private readonly _themes = addThemingController(this, all);
 
@@ -838,8 +839,8 @@ export default class IgcDateRangePickerComponent extends FormAssociatedRequiredM
     this.emitEvent('igcChange', { detail: this.value });
   }
 
-  protected _handleFocusOut({ relatedTarget }: FocusEvent) {
-    if (!this.contains(relatedTarget as Node)) {
+  protected _handleFocusOut(event: FocusEvent) {
+    if (focusLeftHost(this, event)) {
       this._handleBlur();
     }
   }

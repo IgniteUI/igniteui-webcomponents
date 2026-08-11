@@ -1,9 +1,9 @@
 import { html, LitElement, nothing, type PropertyValues } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
+import { addInternalsController } from '../../internals/controllers/internals.js';
+import { registerComponent } from '../../internals/definitions/register.js';
 import { addThemingController } from '../../theming/theming-controller.js';
-import { addInternalsController } from '../common/controllers/internals.js';
-import { registerComponent } from '../common/definitions/register.js';
 import type { AvatarShape } from '../types.js';
 import { styles } from './themes/avatar.base.css.js';
 import { styles as shared } from './themes/shared/avatar.common.css.js';

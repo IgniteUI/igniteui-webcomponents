@@ -5,14 +5,18 @@ import { EaseOut } from '../../animations/easings.js';
 import { addAnimationController } from '../../animations/player.js';
 import { fadeOut } from '../../animations/presets/fade/index.js';
 import { scaleInCenter } from '../../animations/presets/scale/index.js';
+import { addInternalsController } from '../../internals/controllers/internals.js';
+import {
+  addSlotController,
+  setSlots,
+} from '../../internals/controllers/slot.js';
+import { registerComponent } from '../../internals/definitions/register.js';
+import type { Constructor } from '../../internals/mixins/constructor.js';
+import { EventEmitterMixin } from '../../internals/mixins/event-emitter.js';
+import { partMap } from '../../internals/part-map.js';
+import { isLTR } from '../../internals/utils/dom.js';
+import { asNumber } from '../../internals/utils/math.js';
 import { addThemingController } from '../../theming/theming-controller.js';
-import { addInternalsController } from '../common/controllers/internals.js';
-import { addSlotController, setSlots } from '../common/controllers/slot.js';
-import { registerComponent } from '../common/definitions/register.js';
-import type { Constructor } from '../common/mixins/constructor.js';
-import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { partMap } from '../common/part-map.js';
-import { asNumber, isLTR } from '../common/util.js';
 import IgcIconComponent from '../icon/icon.js';
 import IgcPopoverComponent, {
   type PopoverPlacement,

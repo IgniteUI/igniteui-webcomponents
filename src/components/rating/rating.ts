@@ -3,7 +3,6 @@ import { property, query, state } from 'lit/decorators.js';
 import { range } from 'lit/directives/range.js';
 import { repeat } from 'lit/directives/repeat.js';
 import { styleMap } from 'lit/directives/style-map.js';
-import { addThemingController } from '../../theming/theming-controller.js';
 import {
   addKeybindings,
   arrowDown,
@@ -12,28 +11,29 @@ import {
   arrowUp,
   endKey,
   homeKey,
-} from '../common/controllers/key-bindings.js';
+} from '../../internals/controllers/key-bindings.js';
 import {
   addSlotController,
   type InferSlotNames,
   type SlotChangeCallbackParameters,
   setSlots,
-} from '../common/controllers/slot.js';
-import { registerComponent } from '../common/definitions/register.js';
-import type { Constructor } from '../common/mixins/constructor.js';
-import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { FormAssociatedMixin } from '../common/mixins/forms/associated.js';
-import { FormValueNumberTransformers } from '../common/mixins/forms/form-transformers.js';
-import { createFormValueState } from '../common/mixins/forms/form-value.js';
+} from '../../internals/controllers/slot.js';
+import { registerComponent } from '../../internals/definitions/register.js';
+import type { Constructor } from '../../internals/mixins/constructor.js';
+import { EventEmitterMixin } from '../../internals/mixins/event-emitter.js';
+import { FormAssociatedMixin } from '../../internals/mixins/forms/associated.js';
+import { FormValueNumberTransformers } from '../../internals/mixins/forms/form-transformers.js';
+import { createFormValueState } from '../../internals/mixins/forms/form-value.js';
+import { isLTR } from '../../internals/utils/dom.js';
+import { bindIf } from '../../internals/utils/lit.js';
 import {
   asNumber,
-  bindIf,
   clamp,
-  formatString,
-  isLTR,
   numberOfDecimals,
   roundPrecise,
-} from '../common/util.js';
+} from '../../internals/utils/math.js';
+import { formatString } from '../../internals/utils/strings.js';
+import { addThemingController } from '../../theming/theming-controller.js';
 import IgcIconComponent from '../icon/icon.js';
 import IgcRatingSymbolComponent from './rating-symbol.js';
 import { styles } from './themes/rating.base.css.js';

@@ -1,16 +1,14 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import { spy } from 'sinon';
-import { defineComponents } from '../common/definitions/defineComponents.js';
-import { first, last } from '../common/util.js';
-import {
-  createFormAssociatedTestBed,
-  isFocused,
-  simulateClick,
-} from '../common/utils.spec.js';
+import { defineComponents } from '../../internals/definitions/defineComponents.js';
+import { createFormAssociatedTestBed } from '../../internals/testing/form-testbed.spec.js';
+import { isFocused } from '../../internals/testing/helpers.spec.js';
+import { simulateClick } from '../../internals/testing/simulate.spec.js';
 import {
   runValidationContainerTests,
   type ValidationContainerTestsParams,
-} from '../common/validity-helpers.spec.js';
+} from '../../internals/testing/validity-helpers.spec.js';
+import { firstOf, lastOf } from '../../internals/utils/arrays.js';
 import IgcRadioComponent from './radio.js';
 
 describe('Radio Component', () => {
@@ -207,12 +205,12 @@ describe('Radio Component', () => {
       expect(radios.every((radio) => radio.invalid)).to.be.false;
 
       // checkValidity - all radios from the group should have invalid styles applied
-      expect(first(radios).reportValidity()).to.be.false;
+      expect(firstOf(radios).reportValidity()).to.be.false;
       expect(radios.every((radio) => radio.invalid)).to.be.true;
 
       // Set a checked radio - valid state, invalid styles should not be applied
-      first(radios).checked = true;
-      expect(first(radios).reportValidity()).to.be.true;
+      firstOf(radios).checked = true;
+      expect(firstOf(radios).reportValidity()).to.be.true;
       expect(radios.every((radio) => radio.invalid)).to.be.false;
     });
   });
@@ -246,12 +244,12 @@ describe('Radio Component', () => {
         radio.value = '';
       });
 
-      first(radios).checked = true;
+      firstOf(radios).checked = true;
       spec.assertSubmitHasValue('on');
     });
 
     it('is associated on submit with default value "on" (setting `checked` first)', () => {
-      first(radios).checked = true;
+      firstOf(radios).checked = true;
       radios.forEach((radio) => {
         radio.value = '';
       });
@@ -260,8 +258,8 @@ describe('Radio Component', () => {
     });
 
     it('is associated on submit with passed value', () => {
-      first(radios).checked = true;
-      spec.assertSubmitHasValue(first(radios).value);
+      firstOf(radios).checked = true;
+      spec.assertSubmitHasValue(firstOf(radios).value);
     });
 
     it('is correctly reset on form reset', () => {
@@ -272,17 +270,17 @@ describe('Radio Component', () => {
     });
 
     it('should reset to the new default value after setAttribute() call', () => {
-      first(radios).toggleAttribute('checked', true);
-      last(radios).toggleAttribute('checked', true);
-      first(radios).checked = true;
+      firstOf(radios).toggleAttribute('checked', true);
+      lastOf(radios).toggleAttribute('checked', true);
+      firstOf(radios).checked = true;
 
-      expect(last(radios).checked).to.be.false;
+      expect(lastOf(radios).checked).to.be.false;
 
       spec.reset();
-      expect(last(radios).checked).to.be.true;
-      expect(first(radios).checked).to.be.false;
+      expect(lastOf(radios).checked).to.be.true;
+      expect(firstOf(radios).checked).to.be.false;
 
-      spec.assertSubmitHasValue(last(radios).value);
+      spec.assertSubmitHasValue(lastOf(radios).value);
     });
 
     it('is correctly submitted on pressing Enter', () => {
@@ -358,7 +356,7 @@ describe('Radio Component', () => {
       });
 
       it('is correctly reset', () => {
-        last(radios).checked = true;
+        lastOf(radios).checked = true;
         spec.reset();
 
         expect(spec.element.checked).to.be.true;

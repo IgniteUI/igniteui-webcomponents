@@ -4,11 +4,14 @@ import { cache } from 'lit/directives/cache.js';
 import { createRef, ref } from 'lit/directives/ref.js';
 import { EaseInOut } from '../../animations/easings.js';
 import { addAnimationController } from '../../animations/player.js';
+import { createAsyncContext } from '../../internals/controllers/async-consumer.js';
+import {
+  addSlotController,
+  setSlots,
+} from '../../internals/controllers/slot.js';
+import { registerComponent } from '../../internals/definitions/register.js';
+import { partMap } from '../../internals/part-map.js';
 import { addThemingController } from '../../theming/theming-controller.js';
-import { createAsyncContext } from '../common/controllers/async-consumer.js';
-import { addSlotController, setSlots } from '../common/controllers/slot.js';
-import { registerComponent } from '../common/definitions/register.js';
-import { partMap } from '../common/part-map.js';
 import type {
   HorizontalTransitionAnimation,
   StepperOrientation,
