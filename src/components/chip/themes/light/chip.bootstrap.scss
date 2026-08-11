@@ -6,3 +6,22 @@ $theme: $bootstrap;
 :host {
     @include css-vars-from-theme(diff($base, $theme));
 }
+
+@mixin chip-outlined-variants-light($variant, $variant-color) {
+    :host([outlined][variant='#{$variant}']) button,
+    :host([selected][outlined][variant='#{$variant}']) button:not([disabled]) {
+        color: contrast-color($variant-color, 100);
+
+        @if $variant == 'warning' or $variant == 'info' {
+            border-color: color($variant-color, 900);
+        } @else {
+            border-color: color($variant-color, 600);
+        }
+    }
+}
+
+@include chip-outlined-variants-light('primary', primary);
+@include chip-outlined-variants-light('info', info);
+@include chip-outlined-variants-light('success', success);
+@include chip-outlined-variants-light('warning', warn);
+@include chip-outlined-variants-light('danger', error);

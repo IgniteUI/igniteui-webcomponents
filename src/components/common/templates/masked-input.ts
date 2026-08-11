@@ -28,6 +28,8 @@ export interface MaskedInputOptions {
 
   // Required mask handlers
   onInput: (event: InputEvent) => void;
+  /** Wired to `beforeinput` so the component owns `historyUndo` / `historyRedo`. */
+  onBeforeInput: (event: InputEvent) => void;
   onFocus: (event: FocusEvent) => void;
   onBlur: (event: FocusEvent) => void;
   onClick: () => void;
@@ -67,6 +69,7 @@ export function renderMaskedNativeInput(
       aria-describedby=${bindIf(!!opts.ariaDescribedBy, opts.ariaDescribedBy)}
       .ariaLabelledByElements=${opts.ariaLabelledByElements ?? null}
       @input=${opts.onInput}
+      @beforeinput=${opts.onBeforeInput}
       @focus=${opts.onFocus}
       @blur=${opts.onBlur}
       @click=${opts.onClick}

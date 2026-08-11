@@ -9,13 +9,13 @@ $theme: $bootstrap;
 
 :host button {
     &:focus {
-        outline: rem(4px) solid var-get($theme, 'focus-outline-color');
+        outline: rem(4px) solid var-get($theme, 'focus-shadow-color');
     }
 }
 
 :host([selected]) button:not([disabled]) {
     &:focus {
-        outline: rem(4px) solid var-get($theme, 'focus-selected-outline-color');
+        outline: rem(4px) solid var-get($theme, 'focus-selected-shadow-color');
     }
 }
 
@@ -23,7 +23,6 @@ $theme: $bootstrap;
     :host([variant='#{$variant}']) button,
     :host([selected][variant='#{$variant}']) button:not([disabled]) {
         color: contrast-color($variant-color, 700);
-        border-color: transparent;
 
         &:focus {
             background: color($variant-color, 500);
@@ -43,3 +42,24 @@ $theme: $bootstrap;
 @include chip-variants('success', success);
 @include chip-variants('warning', warn);
 @include chip-variants('danger', error);
+
+@mixin chip-outlined-variants($variant, $variant-color) {
+    :host([outlined][variant='#{$variant}']) button,
+    :host([selected][outlined][variant='#{$variant}']) button:not([disabled]) {
+        background: transparent;
+
+        &:hover {
+            background: color($variant-color, 600, .30);
+        }
+
+        &:focus {
+            background: transparent;
+        }
+    }
+}
+
+@include chip-outlined-variants('primary', primary);
+@include chip-outlined-variants('info', info);
+@include chip-outlined-variants('success', success);
+@include chip-outlined-variants('warning', warn);
+@include chip-outlined-variants('danger', error);
