@@ -1,7 +1,7 @@
 import { LitElement, nothing } from 'lit';
-import { registerComponent } from '../../internals/definitions/register.js';
-import { getScaleFactor, setStyles } from '../../internals/utils/dom.js';
-import { addSafeEventListener } from '../../internals/utils/events.js';
+import { registerComponent } from '#internals/definitions/register.js';
+import { getScaleFactor, setStyles } from '#internals/utils/dom.js';
+import { addSafeEventListener } from '#internals/utils/events.js';
 import { styles } from './ripple.material.css.js';
 
 const rippleFrames: Keyframe[] = [

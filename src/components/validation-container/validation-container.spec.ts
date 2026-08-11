@@ -1,7 +1,7 @@
 import { elementUpdated, fixture, html } from '@open-wc/testing';
 import type { TemplateResult } from 'lit';
-import { defineComponents } from '../../internals/definitions/defineComponents.js';
-import { ValidityHelpers } from '../../internals/testing/validity-helpers.spec.js';
+import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { ValidityHelpers } from '#internals/testing/validity-helpers.spec.js';
 import IgcInputComponent from '../input/input.js';
 
 describe('Validation container', () => {

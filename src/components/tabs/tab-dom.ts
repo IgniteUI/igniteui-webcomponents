@@ -1,6 +1,6 @@
 import type { Ref } from 'lit/directives/ref.js';
-import { getScaleFactor, isLTR, setStyles } from '../../internals/utils/dom.js';
-import { asNumber } from '../../internals/utils/math.js';
+import { getScaleFactor, isLTR, setStyles } from '#internals/utils/dom.js';
+import { asNumber } from '#internals/utils/math.js';
 import type IgcTabComponent from './tab.js';
 import type IgcTabsComponent from './tabs.js';
 

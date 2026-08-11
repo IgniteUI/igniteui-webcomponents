@@ -8,14 +8,11 @@ import {
   endKey,
   homeKey,
   shiftKey,
-} from '../../internals/controllers/key-bindings.js';
-import {
-  addSlotController,
-  setSlots,
-} from '../../internals/controllers/slot.js';
-import { registerComponent } from '../../internals/definitions/register.js';
-import { firstOf, lastOf } from '../../internals/utils/arrays.js';
-import { addSafeEventListener } from '../../internals/utils/events.js';
+} from '#internals/controllers/key-bindings.js';
+import { addSlotController, setSlots } from '#internals/controllers/slot.js';
+import { registerComponent } from '#internals/definitions/register.js';
+import { firstOf, lastOf } from '#internals/utils/arrays.js';
+import { addSafeEventListener } from '#internals/utils/events.js';
 import IgcExpansionPanelComponent from '../expansion-panel/expansion-panel.js';
 import { styles } from './themes/accordion.base.css.js';
 

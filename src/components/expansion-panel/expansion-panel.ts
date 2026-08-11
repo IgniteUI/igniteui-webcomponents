@@ -1,23 +1,20 @@
 import { html, LitElement, nothing } from 'lit';
 import { property } from 'lit/decorators.js';
 import { createRef, ref } from 'lit/directives/ref.js';
-import { addAnimationController } from '../../animations/player.js';
-import { growVerIn, growVerOut } from '../../animations/presets/grow/index.js';
+import { addAnimationController } from '#animations/player.js';
+import { growVerIn, growVerOut } from '#animations/presets/grow/index.js';
 import {
   addKeybindings,
   altKey,
   arrowDown,
   arrowUp,
-} from '../../internals/controllers/key-bindings.js';
-import {
-  addSlotController,
-  setSlots,
-} from '../../internals/controllers/slot.js';
-import { registerComponent } from '../../internals/definitions/register.js';
-import type { Constructor } from '../../internals/mixins/constructor.js';
-import { EventEmitterMixin } from '../../internals/mixins/event-emitter.js';
-import { createIdGenerator } from '../../internals/utils/strings.js';
-import { addThemingController } from '../../theming/theming-controller.js';
+} from '#internals/controllers/key-bindings.js';
+import { addSlotController, setSlots } from '#internals/controllers/slot.js';
+import { registerComponent } from '#internals/definitions/register.js';
+import type { Constructor } from '#internals/mixins/constructor.js';
+import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
+import { createIdGenerator } from '#internals/utils/strings.js';
+import { addThemingController } from '#theming/theming-controller.js';
 import IgcIconComponent from '../icon/icon.js';
 import type { ExpansionPanelIndicatorPosition } from '../types.js';
 import { styles } from './themes/expansion-panel.base.css.js';

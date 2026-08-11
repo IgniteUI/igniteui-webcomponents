@@ -3,21 +3,15 @@ import { property } from 'lit/decorators.js';
 import { cache } from 'lit/directives/cache.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { createRef, ref } from 'lit/directives/ref.js';
-import { addCommandController } from '../../internals/controllers/command.js';
-import {
-  addSlotController,
-  setSlots,
-} from '../../internals/controllers/slot.js';
-import { registerComponent } from '../../internals/definitions/register.js';
-import type { Constructor } from '../../internals/mixins/constructor.js';
-import { EventEmitterMixin } from '../../internals/mixins/event-emitter.js';
-import { partMap } from '../../internals/part-map.js';
-import {
-  isPointInsideElement,
-  isPopoverOpen,
-} from '../../internals/utils/dom.js';
-import { bindIf } from '../../internals/utils/lit.js';
-import { addThemingController } from '../../theming/theming-controller.js';
+import { addCommandController } from '#internals/controllers/command.js';
+import { addSlotController, setSlots } from '#internals/controllers/slot.js';
+import { registerComponent } from '#internals/definitions/register.js';
+import type { Constructor } from '#internals/mixins/constructor.js';
+import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
+import { partMap } from '#internals/part-map.js';
+import { isPointInsideElement, isPopoverOpen } from '#internals/utils/dom.js';
+import { bindIf } from '#internals/utils/lit.js';
+import { addThemingController } from '#theming/theming-controller.js';
 import type { NavDrawerPosition } from '../types.js';
 import IgcNavDrawerHeaderItemComponent from './nav-drawer-header-item.js';
 import IgcNavDrawerItemComponent from './nav-drawer-item.js';

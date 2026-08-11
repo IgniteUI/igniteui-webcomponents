@@ -1,18 +1,18 @@
 import { LitElement, nothing, type TemplateResult } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
 import { cache } from 'lit/directives/cache.js';
-import type { SlotController } from '../../internals/controllers/slot.js';
-import { blazorDeepImport } from '../../internals/decorators/blazorDeepImport.js';
-import { shadowOptions } from '../../internals/decorators/shadow-options.js';
-import type { Constructor } from '../../internals/mixins/constructor.js';
-import { EventEmitterMixin } from '../../internals/mixins/event-emitter.js';
-import { FormAssociatedRequiredMixin } from '../../internals/mixins/forms/associated-required.js';
+import type { SlotController } from '#internals/controllers/slot.js';
+import { blazorDeepImport } from '#internals/decorators/blazorDeepImport.js';
+import { shadowOptions } from '#internals/decorators/shadow-options.js';
+import type { Constructor } from '#internals/mixins/constructor.js';
+import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
+import { FormAssociatedRequiredMixin } from '#internals/mixins/forms/associated-required.js';
 import {
   nextInputId,
   renderInputShell,
   resolveInputPartNames,
-} from '../../internals/templates/input-shell.js';
-import type { ThemingController } from '../../theming/theming-controller.js';
+} from '#internals/templates/input-shell.js';
+import type { ThemingController } from '#theming/theming-controller.js';
 
 export interface IgcInputComponentEventMap {
   /* alternateName: inputOcurred */

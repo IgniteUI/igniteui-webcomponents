@@ -1,6 +1,6 @@
 import type { ReactiveController, ReactiveControllerHost } from 'lit';
-import { createAbortHandle } from '../../internals/abort-handler.js';
-import { getElementFromPath } from '../../internals/utils/events.js';
+import { createAbortHandle } from '#internals/abort-handler.js';
+import { getElementFromPath } from '#internals/utils/events.js';
 import { createDefaultGhostElement, getDefaultLayer } from './default-ghost.js';
 import type { ResizeControllerConfiguration, ResizeState } from './types.js';
 

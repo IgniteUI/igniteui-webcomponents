@@ -12,14 +12,14 @@ import {
   pageUpKey,
   shiftKey,
   spaceBar,
-} from '../../internals/controllers/key-bindings.js';
-import { defineComponents } from '../../internals/definitions/defineComponents.js';
+} from '#internals/controllers/key-bindings.js';
+import { defineComponents } from '#internals/definitions/defineComponents.js';
 import {
   simulateClick,
   simulateKeyboard,
-} from '../../internals/testing/simulate.spec.js';
-import { firstOf } from '../../internals/utils/arrays.js';
-import { asNumber } from '../../internals/utils/math.js';
+} from '#internals/testing/simulate.spec.js';
+import { firstOf } from '#internals/utils/arrays.js';
+import { asNumber } from '#internals/utils/math.js';
 import IgcCalendarComponent from './calendar.js';
 import type IgcDaysViewComponent from './days-view/days-view.js';
 import { getYearRange, MONTHS_PER_ROW, YEARS_PER_ROW } from './helpers.js';

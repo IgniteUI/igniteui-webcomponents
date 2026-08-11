@@ -1,16 +1,16 @@
 import { getDateFormatter, getDisplayNamesFormatter } from 'igniteui-i18n-core';
 import { html, nothing, type PropertyValues, type TemplateResult } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
-import { addKeybindings } from '../../../internals/controllers/key-bindings.js';
-import { blazorIndirectRender } from '../../../internals/decorators/blazorIndirectRender.js';
-import { blazorSuppressComponent } from '../../../internals/decorators/blazorSuppressComponent.js';
-import { registerComponent } from '../../../internals/definitions/register.js';
-import type { Constructor } from '../../../internals/mixins/constructor.js';
-import { EventEmitterMixin } from '../../../internals/mixins/event-emitter.js';
-import { partMap } from '../../../internals/part-map.js';
-import { chunk, firstOf, lastOf } from '../../../internals/utils/arrays.js';
-import { addSafeEventListener } from '../../../internals/utils/events.js';
-import { addThemingController } from '../../../theming/theming-controller.js';
+import { addKeybindings } from '#internals/controllers/key-bindings.js';
+import { blazorIndirectRender } from '#internals/decorators/blazorIndirectRender.js';
+import { blazorSuppressComponent } from '#internals/decorators/blazorSuppressComponent.js';
+import { registerComponent } from '#internals/definitions/register.js';
+import type { Constructor } from '#internals/mixins/constructor.js';
+import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
+import { partMap } from '#internals/part-map.js';
+import { chunk, firstOf, lastOf } from '#internals/utils/arrays.js';
+import { addSafeEventListener } from '#internals/utils/events.js';
+import { addThemingController } from '#theming/theming-controller.js';
 import { IgcCalendarBaseComponent } from '../base.js';
 import {
   areSameMonth,

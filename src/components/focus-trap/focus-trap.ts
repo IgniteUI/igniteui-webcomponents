@@ -1,9 +1,9 @@
 import { css, html, LitElement, nothing } from 'lit';
 import { property, state } from 'lit/decorators.js';
 
-import { registerComponent } from '../../internals/definitions/register.js';
-import { addSafeEventListener } from '../../internals/utils/events.js';
-import { isDefined } from '../../internals/utils/types.js';
+import { registerComponent } from '#internals/definitions/register.js';
+import { addSafeEventListener } from '#internals/utils/events.js';
+import { isDefined } from '#internals/utils/types.js';
 
 /* blazorSuppress */
 /**

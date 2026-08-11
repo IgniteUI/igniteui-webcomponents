@@ -6,11 +6,11 @@ import {
   arrowLeft,
   arrowRight,
   arrowUp,
-} from '../../internals/controllers/key-bindings.js';
-import { defineComponents } from '../../internals/definitions/defineComponents.js';
-import { isFocused } from '../../internals/testing/helpers.spec.js';
-import { simulateKeyboard } from '../../internals/testing/simulate.spec.js';
-import { firstOf, lastOf } from '../../internals/utils/arrays.js';
+} from '#internals/controllers/key-bindings.js';
+import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { isFocused } from '#internals/testing/helpers.spec.js';
+import { simulateKeyboard } from '#internals/testing/simulate.spec.js';
+import { firstOf, lastOf } from '#internals/utils/arrays.js';
 import IgcRadioComponent from '../radio/radio.js';
 import IgcRadioGroupComponent from './radio-group.js';
 

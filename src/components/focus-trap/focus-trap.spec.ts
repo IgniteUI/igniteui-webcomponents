@@ -1,5 +1,5 @@
 import { expect, fixture, html } from '@open-wc/testing';
-import { defineComponents } from '../../internals/definitions/defineComponents.js';
+import { defineComponents } from '#internals/definitions/defineComponents.js';
 import IgcButtonComponent from '../button/button.js';
 import IgcCalendarComponent from '../calendar/calendar.js';
 import type IgcDaysViewComponent from '../calendar/days-view/days-view.js';

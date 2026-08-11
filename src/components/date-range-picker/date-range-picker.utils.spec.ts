@@ -1,8 +1,8 @@
 import { elementUpdated, expect } from '@open-wc/testing';
-import { formatDisplayDate } from '../../internals/i18n/i18n-controller.js';
-import { checkDatesEqual } from '../../internals/testing/helpers.spec.js';
-import { simulateClick } from '../../internals/testing/simulate.spec.js';
-import { equal } from '../../internals/utils/objects.js';
+import { formatDisplayDate } from '#internals/i18n/i18n-controller.js';
+import { checkDatesEqual } from '#internals/testing/helpers.spec.js';
+import { simulateClick } from '#internals/testing/simulate.spec.js';
+import { equal } from '#internals/utils/objects.js';
 import IgcCalendarComponent from '../calendar/calendar.js';
 import { getCalendarDOM, getDOMDate } from '../calendar/helpers.spec.js';
 import type { CalendarDay } from '../calendar/model.js';

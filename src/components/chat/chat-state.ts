@@ -1,8 +1,8 @@
 import type { IChatResourceStrings } from 'igniteui-i18n-core';
-import type { IgcChatResourceStrings } from '../../internals/i18n/EN/chat.resources.js';
-import type { UnpackCustomEvent } from '../../internals/mixins/event-emitter.js';
-import { isEmpty } from '../../internals/utils/arrays.js';
-import { nanoid } from '../../internals/utils/strings.js';
+import type { IgcChatResourceStrings } from '#internals/i18n/EN/chat.resources.js';
+import type { UnpackCustomEvent } from '#internals/mixins/event-emitter.js';
+import { isEmpty } from '#internals/utils/arrays.js';
+import { nanoid } from '#internals/utils/strings.js';
 import IgcToastComponent from '../toast/toast.js';
 import IgcTooltipComponent from '../tooltip/tooltip.js';
 import type IgcChatComponent from './chat.js';

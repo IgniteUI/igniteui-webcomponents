@@ -1,8 +1,8 @@
 import { html, LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
-import { addInternalsController } from '../../internals/controllers/internals.js';
-import { registerComponent } from '../../internals/definitions/register.js';
-import { addThemingController } from '../../theming/theming-controller.js';
+import { addInternalsController } from '#internals/controllers/internals.js';
+import { registerComponent } from '#internals/definitions/register.js';
+import { addThemingController } from '#theming/theming-controller.js';
 import type { DividerType } from '../types.js';
 import { styles } from './themes/divider.base.css.js';
 import { styles as shared } from './themes/shared/divider.common.css.js';

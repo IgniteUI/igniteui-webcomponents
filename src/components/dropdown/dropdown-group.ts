@@ -1,8 +1,8 @@
 import { html, LitElement } from 'lit';
 import { queryAssignedElements } from 'lit/decorators.js';
-import { addInternalsController } from '../../internals/controllers/internals.js';
-import { registerComponent } from '../../internals/definitions/register.js';
-import { addThemingController } from '../../theming/theming-controller.js';
+import { addInternalsController } from '#internals/controllers/internals.js';
+import { registerComponent } from '#internals/definitions/register.js';
+import { addThemingController } from '#theming/theming-controller.js';
 import IgcDropdownItemComponent from './dropdown-item.js';
 import { styles } from './themes/dropdown-group.base.css.js';
 import { all } from './themes/group.js';

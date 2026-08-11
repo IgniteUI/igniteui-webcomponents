@@ -14,16 +14,16 @@ import {
   pageDownKey,
   pageUpKey,
   shiftKey,
-} from '../../internals/controllers/key-bindings.js';
-import { registerComponent } from '../../internals/definitions/register.js';
-import type { Constructor } from '../../internals/mixins/constructor.js';
-import { EventEmitterMixin } from '../../internals/mixins/event-emitter.js';
-import { partMap } from '../../internals/part-map.js';
-import { firstOf, lastOf } from '../../internals/utils/arrays.js';
-import { getElementFromPath } from '../../internals/utils/events.js';
-import { clamp } from '../../internals/utils/math.js';
-import { formatString } from '../../internals/utils/strings.js';
-import { addThemingController } from '../../theming/theming-controller.js';
+} from '#internals/controllers/key-bindings.js';
+import { registerComponent } from '#internals/definitions/register.js';
+import type { Constructor } from '#internals/mixins/constructor.js';
+import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
+import { partMap } from '#internals/part-map.js';
+import { firstOf, lastOf } from '#internals/utils/arrays.js';
+import { getElementFromPath } from '#internals/utils/events.js';
+import { clamp } from '#internals/utils/math.js';
+import { formatString } from '#internals/utils/strings.js';
+import { addThemingController } from '#theming/theming-controller.js';
 import IgcIconComponent from '../icon/icon.js';
 import type { ContentOrientation } from '../types.js';
 import { IgcCalendarBaseComponent } from './base.js';

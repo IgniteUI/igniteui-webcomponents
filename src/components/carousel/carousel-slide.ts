@@ -1,15 +1,12 @@
 import { html, LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
-import { EaseInOut } from '../../animations/easings.js';
-import { addAnimationController } from '../../animations/player.js';
-import { carouselContext } from '../../internals/context.js';
-import { createAsyncContext } from '../../internals/controllers/async-consumer.js';
-import { addInternalsController } from '../../internals/controllers/internals.js';
-import { registerComponent } from '../../internals/definitions/register.js';
-import {
-  createIdGenerator,
-  formatString,
-} from '../../internals/utils/strings.js';
+import { EaseInOut } from '#animations/easings.js';
+import { addAnimationController } from '#animations/player.js';
+import { carouselContext } from '#internals/context.js';
+import { createAsyncContext } from '#internals/controllers/async-consumer.js';
+import { addInternalsController } from '#internals/controllers/internals.js';
+import { registerComponent } from '#internals/definitions/register.js';
+import { createIdGenerator, formatString } from '#internals/utils/strings.js';
 import { animations } from './animations.js';
 import type IgcCarouselComponent from './carousel.js';
 import { styles } from './themes/carousel-slide.base.css.js';

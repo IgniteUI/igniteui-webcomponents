@@ -6,14 +6,14 @@ import {
   arrowDown,
   arrowUp,
   escapeKey,
-} from '../../internals/controllers/key-bindings.js';
-import { defineComponents } from '../../internals/definitions/defineComponents.js';
-import type { IgcDateRangePickerResourceStrings } from '../../internals/i18n/EN/date-range-picker.resources.js';
-import { checkDatesEqual } from '../../internals/testing/helpers.spec.js';
+} from '#internals/controllers/key-bindings.js';
+import { defineComponents } from '#internals/definitions/defineComponents.js';
+import type { IgcDateRangePickerResourceStrings } from '#internals/i18n/EN/date-range-picker.resources.js';
+import { checkDatesEqual } from '#internals/testing/helpers.spec.js';
 import {
   simulateClick,
   simulateKeyboard,
-} from '../../internals/testing/simulate.spec.js';
+} from '#internals/testing/simulate.spec.js';
 import type IgcButtonComponent from '../button/button.js';
 import IgcCalendarComponent from '../calendar/calendar.js';
 import { CalendarDay } from '../calendar/model.js';

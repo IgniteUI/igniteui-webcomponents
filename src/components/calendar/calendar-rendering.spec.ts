@@ -1,8 +1,8 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import type { TemplateResult } from 'lit';
 
-import { defineComponents } from '../../internals/definitions/defineComponents.js';
-import { firstOf, lastOf } from '../../internals/utils/arrays.js';
+import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { firstOf, lastOf } from '#internals/utils/arrays.js';
 import IgcCalendarComponent from './calendar.js';
 import { getCalendarDOM, getDayViewDOM, getDOMDate } from './helpers.spec.js';
 import { CalendarDay } from './model.js';

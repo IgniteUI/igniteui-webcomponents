@@ -1,4 +1,4 @@
-import { lastOf } from '../../internals/utils/arrays.js';
+import { lastOf } from '#internals/utils/arrays.js';
 import type { IgcChatMessageAttachment } from './types.js';
 
 export type ChatAcceptedFileTypes = {

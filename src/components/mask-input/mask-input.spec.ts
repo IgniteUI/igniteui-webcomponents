@@ -5,21 +5,21 @@ import {
   ctrlKey,
   metaKey,
   shiftKey,
-} from '../../internals/controllers/key-bindings.js';
-import { defineComponents } from '../../internals/definitions/defineComponents.js';
+} from '#internals/controllers/key-bindings.js';
+import { defineComponents } from '#internals/definitions/defineComponents.js';
 import {
   createFormAssociatedTestBed,
   runExternalLabelAssociationTests,
-} from '../../internals/testing/form-testbed.spec.js';
+} from '#internals/testing/form-testbed.spec.js';
 import {
   simulateInput,
   simulateKeyboard,
-} from '../../internals/testing/simulate.spec.js';
+} from '#internals/testing/simulate.spec.js';
 import {
   runValidationContainerTests,
   type ValidationContainerTestsParams,
   ValidityHelpers,
-} from '../../internals/testing/validity-helpers.spec.js';
+} from '#internals/testing/validity-helpers.spec.js';
 import IgcMaskInputComponent from './mask-input.js';
 import { MaskParser } from './mask-parser.js';
 

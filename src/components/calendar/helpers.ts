@@ -1,7 +1,7 @@
-import { firstOf, lastOf } from '../../internals/utils/arrays.js';
-import { getElementFromPath } from '../../internals/utils/events.js';
-import { asNumber, modulo } from '../../internals/utils/math.js';
-import { isString } from '../../internals/utils/types.js';
+import { firstOf, lastOf } from '#internals/utils/arrays.js';
+import { getElementFromPath } from '#internals/utils/events.js';
+import { asNumber, modulo } from '#internals/utils/math.js';
+import { isString } from '#internals/utils/types.js';
 import type { DateRangeValue } from '../types.js';
 import {
   CalendarDay,

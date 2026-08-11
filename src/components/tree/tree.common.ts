@@ -1,4 +1,4 @@
-import type { RequiredProps } from '../../internals/utils/types.js';
+import type { RequiredProps } from '#internals/utils/types.js';
 import type IgcTreeItemComponent from './tree-item.js';
 
 export const TREE_TAG = 'igc-tree';

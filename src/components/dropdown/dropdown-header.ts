@@ -1,6 +1,6 @@
 import { html, LitElement } from 'lit';
-import { registerComponent } from '../../internals/definitions/register.js';
-import { addThemingController } from '../../theming/theming-controller.js';
+import { registerComponent } from '#internals/definitions/register.js';
+import { addThemingController } from '#theming/theming-controller.js';
 import { styles } from './themes/dropdown-header.base.css.js';
 import { all } from './themes/header.js';
 import { styles as shared } from './themes/shared/header/dropdown-header.common.css.js';

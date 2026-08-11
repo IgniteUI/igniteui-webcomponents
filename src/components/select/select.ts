@@ -14,17 +14,14 @@ import {
   homeKey,
   spaceBar,
   tabKey,
-} from '../../internals/controllers/key-bindings.js';
-import { addRootClickController } from '../../internals/controllers/root-click.js';
-import { addRootScrollHandler } from '../../internals/controllers/root-scroll.js';
-import {
-  addSlotController,
-  setSlots,
-} from '../../internals/controllers/slot.js';
-import { blazorAdditionalDependencies } from '../../internals/decorators/blazorAdditionalDependencies.js';
-import { shadowOptions } from '../../internals/decorators/shadow-options.js';
-import { watch } from '../../internals/decorators/watch.js';
-import { registerComponent } from '../../internals/definitions/register.js';
+} from '#internals/controllers/key-bindings.js';
+import { addRootClickController } from '#internals/controllers/root-click.js';
+import { addRootScrollHandler } from '#internals/controllers/root-scroll.js';
+import { addSlotController, setSlots } from '#internals/controllers/slot.js';
+import { blazorAdditionalDependencies } from '#internals/decorators/blazorAdditionalDependencies.js';
+import { shadowOptions } from '#internals/decorators/shadow-options.js';
+import { watch } from '#internals/decorators/watch.js';
+import { registerComponent } from '#internals/definitions/register.js';
 import {
   getActiveItems,
   getItems,
@@ -32,20 +29,20 @@ import {
   getPreviousActiveItem,
   IgcComboBoxBaseLikeComponent,
   setInitialSelectionState,
-} from '../../internals/mixins/combo-box.js';
-import type { AbstractConstructor } from '../../internals/mixins/constructor.js';
-import { EventEmitterMixin } from '../../internals/mixins/event-emitter.js';
-import { FormAssociatedRequiredMixin } from '../../internals/mixins/forms/associated-required.js';
-import { FormValueSelectTransformers } from '../../internals/mixins/forms/form-transformers.js';
-import { createFormValueState } from '../../internals/mixins/forms/form-value.js';
-import { partMap } from '../../internals/part-map.js';
+} from '#internals/mixins/combo-box.js';
+import type { AbstractConstructor } from '#internals/mixins/constructor.js';
+import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
+import { FormAssociatedRequiredMixin } from '#internals/mixins/forms/associated-required.js';
+import { FormValueSelectTransformers } from '#internals/mixins/forms/form-transformers.js';
+import { createFormValueState } from '#internals/mixins/forms/form-value.js';
+import { partMap } from '#internals/part-map.js';
 import {
   addSafeEventListener,
   focusLeftHost,
   getElementFromPath,
-} from '../../internals/utils/events.js';
-import { isString } from '../../internals/utils/types.js';
-import { addThemingController } from '../../theming/theming-controller.js';
+} from '#internals/utils/events.js';
+import { isString } from '#internals/utils/types.js';
+import { addThemingController } from '#theming/theming-controller.js';
 import IgcIconComponent from '../icon/icon.js';
 import IgcInputComponent from '../input/input.js';
 import IgcPopoverComponent, {

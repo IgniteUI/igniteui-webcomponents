@@ -9,30 +9,27 @@ import {
   arrowRight,
   arrowUp,
   ctrlKey,
-} from '../../internals/controllers/key-bindings.js';
-import {
-  addSlotController,
-  setSlots,
-} from '../../internals/controllers/slot.js';
-import { blazorDeepImport } from '../../internals/decorators/blazorDeepImport.js';
-import { shadowOptions } from '../../internals/decorators/shadow-options.js';
+} from '#internals/controllers/key-bindings.js';
+import { addSlotController, setSlots } from '#internals/controllers/slot.js';
+import { blazorDeepImport } from '#internals/decorators/blazorDeepImport.js';
+import { shadowOptions } from '#internals/decorators/shadow-options.js';
 import {
   addI18nController,
   getDefaultDateTimeFormat,
-} from '../../internals/i18n/i18n-controller.js';
-import { FormAssociatedRequiredMixin } from '../../internals/mixins/forms/associated-required.js';
+} from '#internals/i18n/i18n-controller.js';
+import { FormAssociatedRequiredMixin } from '#internals/mixins/forms/associated-required.js';
 import {
   MaskBehaviorMixin,
   type MaskSelection,
-} from '../../internals/mixins/mask-behavior.js';
+} from '#internals/mixins/mask-behavior.js';
 import {
   nextInputId,
   renderInputShell,
   resolveInputPartNames,
-} from '../../internals/templates/input-shell.js';
-import { renderMaskedNativeInput } from '../../internals/templates/masked-input.js';
-import { equal } from '../../internals/utils/objects.js';
-import type { ThemingController } from '../../theming/theming-controller.js';
+} from '#internals/templates/input-shell.js';
+import { renderMaskedNativeInput } from '#internals/templates/masked-input.js';
+import { equal } from '#internals/utils/objects.js';
+import type { ThemingController } from '#theming/theming-controller.js';
 import { convertToDate } from '../calendar/helpers.js';
 import type { RangeTextSelectMode } from '../types.js';
 import type { DatePartDeltas } from './date-part.js';

@@ -7,9 +7,9 @@ import {
   type TemplateResult,
 } from 'lit';
 import { property } from 'lit/decorators.js';
-import { registerComponent } from '../../internals/definitions/register.js';
-import { type ThemeContext, themeContext } from '../../theming/context.js';
-import type { Theme, ThemeVariant } from '../../theming/types.js';
+import { registerComponent } from '#internals/definitions/register.js';
+import { type ThemeContext, themeContext } from '#theming/context.js';
+import type { Theme, ThemeVariant } from '#theming/types.js';
 
 /**
  * A theme provider component that uses Lit context to provide theme information

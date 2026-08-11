@@ -5,8 +5,8 @@ import {
   html,
   nextFrame,
 } from '@open-wc/testing';
-import { defineComponents } from '../../internals/definitions/defineComponents.js';
-import { firstOf } from '../../internals/utils/arrays.js';
+import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { firstOf } from '#internals/utils/arrays.js';
 import IgcCircularGradientComponent from './circular-gradient.js';
 import IgcCircularProgressComponent from './circular-progress.js';
 

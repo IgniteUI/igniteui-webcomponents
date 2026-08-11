@@ -1,13 +1,10 @@
 import { html, svg } from 'lit';
 import { styleMap } from 'lit/directives/style-map.js';
-import {
-  addSlotController,
-  setSlots,
-} from '../../internals/controllers/slot.js';
-import { registerComponent } from '../../internals/definitions/register.js';
-import { partMap } from '../../internals/part-map.js';
-import { createIdGenerator } from '../../internals/utils/strings.js';
-import { addThemingController } from '../../theming/theming-controller.js';
+import { addSlotController, setSlots } from '#internals/controllers/slot.js';
+import { registerComponent } from '#internals/definitions/register.js';
+import { partMap } from '#internals/part-map.js';
+import { createIdGenerator } from '#internals/utils/strings.js';
+import { addThemingController } from '#theming/theming-controller.js';
 import { IgcProgressBaseComponent } from './base.js';
 import IgcCircularGradientComponent from './circular-gradient.js';
 import { styles } from './themes/circular/circular.progress.base.css.js';

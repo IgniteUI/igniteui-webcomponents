@@ -1,6 +1,6 @@
-import { registerComponent } from '../../internals/definitions/register.js';
-import { IgcBaseOptionLikeComponent } from '../../internals/mixins/option.js';
-import { addThemingController } from '../../theming/theming-controller.js';
+import { registerComponent } from '#internals/definitions/register.js';
+import { IgcBaseOptionLikeComponent } from '#internals/mixins/option.js';
+import { addThemingController } from '#theming/theming-controller.js';
 import { styles } from './themes/dropdown-item.base.css.js';
 import { all } from './themes/item.js';
 import { styles as shared } from './themes/shared/item/dropdown-item.common.css.js';

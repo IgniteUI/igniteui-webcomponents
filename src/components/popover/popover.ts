@@ -18,16 +18,16 @@ import {
   addSlotController,
   type SlotChangeCallbackParameters,
   setSlots,
-} from '../../internals/controllers/slot.js';
-import { registerComponent } from '../../internals/definitions/register.js';
-import { firstOf } from '../../internals/utils/arrays.js';
+} from '#internals/controllers/slot.js';
+import { registerComponent } from '#internals/definitions/register.js';
+import { firstOf } from '#internals/utils/arrays.js';
 import {
   getElementByIdFromRoot,
   getRoot,
   roundByDPR,
   setStyles,
-} from '../../internals/utils/dom.js';
-import { isString } from '../../internals/utils/types.js';
+} from '#internals/utils/dom.js';
+import { isString } from '#internals/utils/types.js';
 import { styles } from './themes/light/popover.base.css.js';
 
 /**

@@ -11,29 +11,29 @@ import {
   arrowUp,
   endKey,
   homeKey,
-} from '../../internals/controllers/key-bindings.js';
+} from '#internals/controllers/key-bindings.js';
 import {
   addSlotController,
   type InferSlotNames,
   type SlotChangeCallbackParameters,
   setSlots,
-} from '../../internals/controllers/slot.js';
-import { registerComponent } from '../../internals/definitions/register.js';
-import type { Constructor } from '../../internals/mixins/constructor.js';
-import { EventEmitterMixin } from '../../internals/mixins/event-emitter.js';
-import { FormAssociatedMixin } from '../../internals/mixins/forms/associated.js';
-import { FormValueNumberTransformers } from '../../internals/mixins/forms/form-transformers.js';
-import { createFormValueState } from '../../internals/mixins/forms/form-value.js';
-import { isLTR } from '../../internals/utils/dom.js';
-import { bindIf } from '../../internals/utils/lit.js';
+} from '#internals/controllers/slot.js';
+import { registerComponent } from '#internals/definitions/register.js';
+import type { Constructor } from '#internals/mixins/constructor.js';
+import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
+import { FormAssociatedMixin } from '#internals/mixins/forms/associated.js';
+import { FormValueNumberTransformers } from '#internals/mixins/forms/form-transformers.js';
+import { createFormValueState } from '#internals/mixins/forms/form-value.js';
+import { isLTR } from '#internals/utils/dom.js';
+import { bindIf } from '#internals/utils/lit.js';
 import {
   asNumber,
   clamp,
   numberOfDecimals,
   roundPrecise,
-} from '../../internals/utils/math.js';
-import { formatString } from '../../internals/utils/strings.js';
-import { addThemingController } from '../../theming/theming-controller.js';
+} from '#internals/utils/math.js';
+import { formatString } from '#internals/utils/strings.js';
+import { addThemingController } from '#theming/theming-controller.js';
 import IgcIconComponent from '../icon/icon.js';
 import IgcRatingSymbolComponent from './rating-symbol.js';
 import { styles } from './themes/rating.base.css.js';

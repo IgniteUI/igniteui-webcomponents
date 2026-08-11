@@ -8,23 +8,23 @@ import {
   arrowRight,
   arrowUp,
   ctrlKey,
-} from '../../internals/controllers/key-bindings.js';
-import { defineComponents } from '../../internals/definitions/defineComponents.js';
+} from '#internals/controllers/key-bindings.js';
+import { defineComponents } from '#internals/definitions/defineComponents.js';
 import {
   createFormAssociatedTestBed,
   runExternalLabelAssociationTests,
-} from '../../internals/testing/form-testbed.spec.js';
-import { isFocused } from '../../internals/testing/helpers.spec.js';
+} from '#internals/testing/form-testbed.spec.js';
+import { isFocused } from '#internals/testing/helpers.spec.js';
 import {
   simulateInput,
   simulateKeyboard,
   simulateWheel,
-} from '../../internals/testing/simulate.spec.js';
+} from '#internals/testing/simulate.spec.js';
 import {
   runValidationContainerTests,
   type ValidationContainerTestsParams,
   ValidityHelpers,
-} from '../../internals/testing/validity-helpers.spec.js';
+} from '#internals/testing/validity-helpers.spec.js';
 import { isValidDate } from '../calendar/helpers.js';
 import { CalendarDay, toCalendarDay } from '../calendar/model.js';
 import { DatePart } from './date-part.js';

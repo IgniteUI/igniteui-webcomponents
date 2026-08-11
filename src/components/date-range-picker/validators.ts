@@ -1,7 +1,7 @@
 import { ValidationResourceStringsEN } from 'igniteui-i18n-core';
-import { isEmpty } from '../../internals/utils/arrays.js';
-import { formatString } from '../../internals/utils/strings.js';
-import type { Validator } from '../../internals/validators.js';
+import { isEmpty } from '#internals/utils/arrays.js';
+import { formatString } from '#internals/utils/strings.js';
+import type { Validator } from '#internals/validators.js';
 import {
   calendarRange,
   isDateExceedingMax,

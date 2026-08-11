@@ -7,18 +7,18 @@ import {
 } from '@open-wc/testing';
 import type { TemplateResult } from 'lit';
 import { spy } from 'sinon';
-import { defineComponents } from '../../internals/definitions/defineComponents.js';
+import { defineComponents } from '#internals/definitions/defineComponents.js';
 import {
   createFormAssociatedTestBed,
   runExternalLabelAssociationTests,
-} from '../../internals/testing/form-testbed.spec.js';
-import { isFocused } from '../../internals/testing/helpers.spec.js';
-import { simulateInput } from '../../internals/testing/simulate.spec.js';
+} from '#internals/testing/form-testbed.spec.js';
+import { isFocused } from '#internals/testing/helpers.spec.js';
+import { simulateInput } from '#internals/testing/simulate.spec.js';
 import {
   runValidationContainerTests,
   type ValidationContainerTestsParams,
-} from '../../internals/testing/validity-helpers.spec.js';
-import { configureTheme } from '../../theming/config.js';
+} from '#internals/testing/validity-helpers.spec.js';
+import { configureTheme } from '#theming/config.js';
 import IgcInputComponent from './input.js';
 
 describe('Input component', () => {

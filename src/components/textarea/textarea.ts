@@ -10,24 +10,24 @@ import { cache } from 'lit/directives/cache.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 import { styleMap } from 'lit/directives/style-map.js';
-import { createResizeObserverController } from '../../internals/controllers/resize-observer.js';
+import { createResizeObserverController } from '#internals/controllers/resize-observer.js';
 import {
   addSlotController,
   type InferSlotNames,
   type SlotChangeCallbackParameters,
   setSlots,
-} from '../../internals/controllers/slot.js';
-import { shadowOptions } from '../../internals/decorators/shadow-options.js';
-import { registerComponent } from '../../internals/definitions/register.js';
-import type { Constructor } from '../../internals/mixins/constructor.js';
-import { EventEmitterMixin } from '../../internals/mixins/event-emitter.js';
-import { FormAssociatedRequiredMixin } from '../../internals/mixins/forms/associated-required.js';
-import { createFormValueState } from '../../internals/mixins/forms/form-value.js';
-import { partMap } from '../../internals/part-map.js';
-import { addSafeEventListener } from '../../internals/utils/events.js';
-import { asNumber } from '../../internals/utils/math.js';
-import { createIdGenerator } from '../../internals/utils/strings.js';
-import { addThemingController } from '../../theming/theming-controller.js';
+} from '#internals/controllers/slot.js';
+import { shadowOptions } from '#internals/decorators/shadow-options.js';
+import { registerComponent } from '#internals/definitions/register.js';
+import type { Constructor } from '#internals/mixins/constructor.js';
+import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
+import { FormAssociatedRequiredMixin } from '#internals/mixins/forms/associated-required.js';
+import { createFormValueState } from '#internals/mixins/forms/form-value.js';
+import { partMap } from '#internals/part-map.js';
+import { addSafeEventListener } from '#internals/utils/events.js';
+import { asNumber } from '#internals/utils/math.js';
+import { createIdGenerator } from '#internals/utils/strings.js';
+import { addThemingController } from '#theming/theming-controller.js';
 import type {
   RangeTextSelectMode,
   SelectionRangeDirection,

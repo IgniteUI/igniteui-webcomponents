@@ -1,7 +1,7 @@
 import { ContextProvider } from '@lit/context';
 import { html, LitElement, type PropertyValues } from 'lit';
 import { property } from 'lit/decorators.js';
-import { addInternalsController } from '../../internals/controllers/internals.js';
+import { addInternalsController } from '#internals/controllers/internals.js';
 import {
   addKeybindings,
   arrowDown,
@@ -10,22 +10,19 @@ import {
   arrowUp,
   endKey,
   homeKey,
-} from '../../internals/controllers/key-bindings.js';
-import {
-  addSlotController,
-  setSlots,
-} from '../../internals/controllers/slot.js';
-import { registerComponent } from '../../internals/definitions/register.js';
-import type { Constructor } from '../../internals/mixins/constructor.js';
-import { EventEmitterMixin } from '../../internals/mixins/event-emitter.js';
-import { firstOf, lastOf } from '../../internals/utils/arrays.js';
-import { getRoot, isLTR } from '../../internals/utils/dom.js';
+} from '#internals/controllers/key-bindings.js';
+import { addSlotController, setSlots } from '#internals/controllers/slot.js';
+import { registerComponent } from '#internals/definitions/register.js';
+import type { Constructor } from '#internals/mixins/constructor.js';
+import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
+import { firstOf, lastOf } from '#internals/utils/arrays.js';
+import { getRoot, isLTR } from '#internals/utils/dom.js';
 import {
   addSafeEventListener,
   getElementFromPath,
-} from '../../internals/utils/events.js';
-import { wrap } from '../../internals/utils/math.js';
-import { addThemingController } from '../../theming/theming-controller.js';
+} from '#internals/utils/events.js';
+import { wrap } from '#internals/utils/math.js';
+import { addThemingController } from '#theming/theming-controller.js';
 import type {
   HorizontalTransitionAnimation,
   StepperOrientation,

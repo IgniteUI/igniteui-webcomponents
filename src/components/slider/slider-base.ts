@@ -17,15 +17,15 @@ import {
   homeKey,
   pageDownKey,
   pageUpKey,
-} from '../../internals/controllers/key-bindings.js';
-import { blazorDeepImport } from '../../internals/decorators/blazorDeepImport.js';
-import { watch } from '../../internals/decorators/watch.js';
-import { isLTR } from '../../internals/utils/dom.js';
-import { addSafeEventListener } from '../../internals/utils/events.js';
-import { asNumber, asPercent, clamp } from '../../internals/utils/math.js';
-import { formatString } from '../../internals/utils/strings.js';
-import { isDefined } from '../../internals/utils/types.js';
-import { addThemingController } from '../../theming/theming-controller.js';
+} from '#internals/controllers/key-bindings.js';
+import { blazorDeepImport } from '#internals/decorators/blazorDeepImport.js';
+import { watch } from '#internals/decorators/watch.js';
+import { isLTR } from '#internals/utils/dom.js';
+import { addSafeEventListener } from '#internals/utils/events.js';
+import { asNumber, asPercent, clamp } from '#internals/utils/math.js';
+import { formatString } from '#internals/utils/strings.js';
+import { isDefined } from '#internals/utils/types.js';
+import { addThemingController } from '#theming/theming-controller.js';
 import type {
   SliderTickLabelRotation,
   SliderTickOrientation,

@@ -1,8 +1,5 @@
 import { ValidationResourceStringsEN } from 'igniteui-i18n-core';
-import {
-  requiredValidator,
-  type Validator,
-} from '../../internals/validators.js';
+import { requiredValidator, type Validator } from '#internals/validators.js';
 import type IgcMaskInputComponent from './mask-input.js';
 
 export const maskValidators: Validator<IgcMaskInputComponent>[] = [

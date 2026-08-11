@@ -16,16 +16,16 @@ import {
   homeKey,
   pageDownKey,
   pageUpKey,
-} from '../../internals/controllers/key-bindings.js';
-import { defineComponents } from '../../internals/definitions/defineComponents.js';
-import { createFormAssociatedTestBed } from '../../internals/testing/form-testbed.spec.js';
+} from '#internals/controllers/key-bindings.js';
+import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { createFormAssociatedTestBed } from '#internals/testing/form-testbed.spec.js';
 import {
   simulateKeyboard,
   simulateLostPointerCapture,
   simulatePointerDown,
   simulatePointerMove,
-} from '../../internals/testing/simulate.spec.js';
-import { asPercent } from '../../internals/utils/math.js';
+} from '#internals/testing/simulate.spec.js';
+import { asPercent } from '#internals/utils/math.js';
 import IgcRangeSliderComponent from './range-slider.js';
 import IgcSliderComponent from './slider.js';
 import type { IgcSliderBaseComponent } from './slider-base.js';

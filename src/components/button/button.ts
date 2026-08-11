@@ -1,7 +1,7 @@
 import { html } from 'lit';
 import { property } from 'lit/decorators.js';
-import { registerComponent } from '../../internals/definitions/register.js';
-import { addThemingController } from '../../theming/theming-controller.js';
+import { registerComponent } from '#internals/definitions/register.js';
+import { addThemingController } from '#theming/theming-controller.js';
 import type { ButtonVariant } from '../types.js';
 import { IgcButtonBaseComponent } from './button-base.js';
 import { styles } from './themes/button/button.base.css.js';

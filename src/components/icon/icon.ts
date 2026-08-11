@@ -1,10 +1,10 @@
 import { html, LitElement, nothing, type PropertyValues } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { unsafeSVG } from 'lit/directives/unsafe-svg.js';
-import { addInternalsController } from '../../internals/controllers/internals.js';
-import { blazorInclude } from '../../internals/decorators/blazorInclude.js';
-import { registerComponent } from '../../internals/definitions/register.js';
-import { addThemingController } from '../../theming/theming-controller.js';
+import { addInternalsController } from '#internals/controllers/internals.js';
+import { blazorInclude } from '#internals/decorators/blazorInclude.js';
+import { registerComponent } from '#internals/definitions/register.js';
+import { addThemingController } from '#theming/theming-controller.js';
 import {
   getIconRegistry,
   registerIcon as registerIcon_impl,
