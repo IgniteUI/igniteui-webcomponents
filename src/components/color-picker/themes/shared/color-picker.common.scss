@@ -107,16 +107,14 @@ $theme: $material;
         var(--_empty-swatch) calc(50% + 1px),
         transparent calc(50% + 1px)
     );
-    --_transparency-grid-odd: #aaa;
-    --_transparency-grid-even: #fff;
     
     // Draws a 2x2 checkerboard tile (alternating light/dark squares)
     // used as a background to reveal transparent colors.
     --_transparency-grid: conic-gradient(
-        var(--_transparency-grid-odd) 0deg 90deg,
-        var(--_transparency-grid-even) 90deg 180deg,
-        var(--_transparency-grid-odd) 180deg 270deg,
-        var(--_transparency-grid-even) 270deg 360deg
+        #{var-get($theme, 'transparency-grid-odd')} 0deg 90deg,
+        #{var-get($theme, 'transparency-grid-even')} 90deg 180deg,
+        #{var-get($theme, 'transparency-grid-odd')} 180deg 270deg,
+        #{var-get($theme, 'transparency-grid-even')} 270deg 360deg
     );
     --_hue-slider-track: linear-gradient(
         90deg,
