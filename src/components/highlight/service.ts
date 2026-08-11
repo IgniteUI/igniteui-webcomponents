@@ -1,10 +1,27 @@
 import { isServer, type ReactiveController } from 'lit';
-import { iterNodes, scrollIntoView } from '#internals/utils/dom.js';
+import { getRoot, iterNodes, scrollIntoView } from '#internals/utils/dom.js';
 import { wrap } from '#internals/utils/math.js';
 import { escapeRegex, nanoid } from '#internals/utils/strings.js';
 import type IgcHighlightComponent from './highlight.js';
 
 type Match = { node: Node; indices: [start: number, end: number] };
+
+/**
+ * Resolves the tree scope that must own the `::highlight()` rules.
+ *
+ * Highlight pseudo-element rules are tree-scoped - they only style text nodes living in the
+ * same tree scope as the stylesheet. Since the component highlights slotted content, the
+ * relevant scope is the host's root node (the document or an outer shadow root), *not* the
+ * component's own render root. Firefox enforces this, Chromium currently does not.
+ *
+ * Returns `null` while the host is detached or inside a non-styleable fragment.
+ */
+function getStyleRoot(
+  host: IgcHighlightComponent
+): (DocumentOrShadowRoot & Node) | null {
+  const root = getRoot(host);
+  return 'adoptedStyleSheets' in root ? root : null;
+}
 
 /* jsonAPIPlainObject */
 /* marshalByValue */
@@ -38,6 +55,8 @@ class HighlightService implements ReactiveController {
   private readonly _activeId: string;
   private readonly _styles: string;
   private readonly _styleSheet?: CSSStyleSheet;
+
+  private _attachedRoot: (DocumentOrShadowRoot & Node) | null = null;
 
   private _highlight!: Highlight;
   private _activeHighlight!: Highlight;
@@ -92,6 +111,7 @@ class HighlightService implements ReactiveController {
   /** @internal */
   public hostConnected(): void {
     this._createHighlightEntries();
+    this.attachStylesheet();
     this.find(this._host.searchText);
   }
 
@@ -106,13 +126,15 @@ class HighlightService implements ReactiveController {
   //#region Private methods
 
   private _removeStyleSheet(): void {
-    const root = this._host.renderRoot as ShadowRoot;
+    const root = this._attachedRoot;
 
-    if (this._styleSheet) {
+    if (root && this._styleSheet) {
       root.adoptedStyleSheets = root.adoptedStyleSheets.filter(
         (sheet) => sheet !== this._styleSheet
       );
     }
+
+    this._attachedRoot = null;
   }
 
   private _createHighlightEntries(): void {
@@ -170,16 +192,28 @@ class HighlightService implements ReactiveController {
   //#region Public methods
 
   /**
-   * Attaches the service's stylesheet to the render root.
+   * Attaches the service's stylesheet to the tree scope of the host's slotted content.
    * Necessary for the component to apply highlight styles to its content.
+   *
+   * Idempotent, and re-targets the stylesheet if the host has moved to another tree scope.
    */
   public attachStylesheet(): void {
-    const adoptedSheets = (this._host.renderRoot as ShadowRoot)
-      .adoptedStyleSheets;
-
-    if (this._styleSheet && !adoptedSheets.includes(this._styleSheet)) {
-      adoptedSheets.push(this._styleSheet);
+    if (!this._styleSheet) {
+      return;
     }
+
+    const root = getStyleRoot(this._host);
+
+    if (this._attachedRoot !== root) {
+      this._removeStyleSheet();
+    }
+
+    if (!root || root.adoptedStyleSheets.includes(this._styleSheet)) {
+      return;
+    }
+
+    root.adoptedStyleSheets.push(this._styleSheet);
+    this._attachedRoot = root;
   }
 
   /**

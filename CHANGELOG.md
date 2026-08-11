@@ -63,6 +63,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - #### Form associated components
   - Validation messages no longer disappear right after the first failed form submission. The submit-driven invalid state used to hold only for the update the submission itself scheduled, so any re-render that followed - a `slotchange` from the validation slots the submission had just projected, for instance - silently dropped the projected messages while the invalid styling stayed on.
   - Invalid styling now follows the validity state, so a control that turns valid again (a cleared `required`, a widened `min`/`max`, a disabled control) drops the styles it picked up from an earlier interaction or submission.
+- #### Highlight
+  - Matches stopped being painted in recent Firefox versions. `::highlight()` rules are tree-scoped - they only style text nodes belonging to the same tree scope as the stylesheet - but the component adopted them into its own shadow root, while the text it highlights is slotted content living in the host's tree scope. Earlier Firefox versions matched such rules across scopes, as Chromium still does, so the component rendered correctly there; once Firefox began enforcing the scoping, nothing was painted. The stylesheet is now adopted by the host's root node, and re-targeted if the component moves to another tree scope.
+  - As part of the same fix, a component nested inside another shadow root now resolves its `--background` / `--foreground` custom properties correctly in Chromium as well, instead of falling back to the theme defaults.
 - #### Tree
   - Substantially reduced the cost of several operations on large or deeply nested trees:
     - Reading `path` on a tree item, and anything built on it such as activating a nested item, cost `2^depth` rather than `depth` because the ancestor chain was re-walked twice per level. A single read at depth 20 took ~23ms; it is now under a microsecond at any depth.
