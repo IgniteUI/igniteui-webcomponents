@@ -1,13 +1,14 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import type { TemplateResult } from 'lit';
 import { spy } from 'sinon';
-import { defineComponents } from '../common/definitions/defineComponents.js';
-import { first } from '../common/util.js';
-import { createFormAssociatedTestBed } from '../common/utils.spec.js';
+import { defineComponents } from '../../internals/definitions/defineComponents.js';
+import { createFormAssociatedTestBed } from '../../internals/testing/form-testbed.spec.js';
+import { simulateFileUpload } from '../../internals/testing/simulate.spec.js';
 import {
   runValidationContainerTests,
   type ValidationContainerTestsParams,
-} from '../common/validity-helpers.spec.js';
+} from '../../internals/testing/validity-helpers.spec.js';
+import { first } from '../../internals/utils/arrays.js';
 import IgcFileInputComponent from './file-input.js';
 
 describe('File Input component', () => {
@@ -263,14 +264,3 @@ describe('Validation message slots', () => {
     runValidationContainerTests(IgcFileInputComponent, testParameters);
   });
 });
-
-export function simulateFileUpload(input: HTMLInputElement, files: File[]) {
-  const dataTransfer = new DataTransfer();
-
-  for (const file of files) {
-    dataTransfer.items.add(file);
-  }
-
-  input.files = dataTransfer.files;
-  input.dispatchEvent(new Event('change', { bubbles: true }));
-}

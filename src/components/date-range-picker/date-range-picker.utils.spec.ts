@@ -1,11 +1,11 @@
 import { elementUpdated, expect } from '@open-wc/testing';
+import { formatDisplayDate } from '../../internals/i18n/i18n-controller.js';
+import { checkDatesEqual } from '../../internals/testing/helpers.spec.js';
+import { simulateClick } from '../../internals/testing/simulate.spec.js';
+import { equal } from '../../internals/utils/objects.js';
 import IgcCalendarComponent from '../calendar/calendar.js';
 import { getCalendarDOM, getDOMDate } from '../calendar/helpers.spec.js';
-
 import type { CalendarDay } from '../calendar/model.js';
-import { formatDisplayDate } from '../common/i18n/i18n-controller.js';
-import { equal } from '../common/util.js';
-import { checkDatesEqual, simulateClick } from '../common/utils.spec.js';
 import IgcDateTimeInputComponent from '../date-time-input/date-time-input.js';
 import type { DateRangeValue } from '../types.js';
 import IgcDateRangeInputComponent from './date-range-input.js';

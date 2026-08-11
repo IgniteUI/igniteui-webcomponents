@@ -1,9 +1,8 @@
 import { expect, fixture, html } from '@open-wc/testing';
-
+import { defineComponents } from '../../internals/definitions/defineComponents.js';
 import IgcButtonComponent from '../button/button.js';
 import IgcCalendarComponent from '../calendar/calendar.js';
 import type IgcDaysViewComponent from '../calendar/days-view/days-view.js';
-import { defineComponents } from '../common/definitions/defineComponents.js';
 import IgcInputComponent from '../input/input.js';
 import IgcFocusTrapComponent from './focus-trap.js';
 

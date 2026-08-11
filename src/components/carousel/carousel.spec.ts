@@ -8,7 +8,6 @@ import {
 } from '@open-wc/testing';
 
 import { type SinonFakeTimers, spy, stub, useFakeTimers } from 'sinon';
-import IgcButtonComponent from '../button/button.js';
 import {
   arrowLeft,
   arrowRight,
@@ -16,16 +15,17 @@ import {
   enterKey,
   homeKey,
   spaceBar,
-} from '../common/controllers/key-bindings.js';
-import { defineComponents } from '../common/definitions/defineComponents.js';
+} from '../../internals/controllers/key-bindings.js';
+import { defineComponents } from '../../internals/definitions/defineComponents.js';
+import { finishAnimationsFor } from '../../internals/testing/helpers.spec.js';
 import {
-  finishAnimationsFor,
   simulateClick,
   simulateKeyboard,
   simulateLostPointerCapture,
   simulatePointerDown,
   simulatePointerMove,
-} from '../common/utils.spec.js';
+} from '../../internals/testing/simulate.spec.js';
+import IgcButtonComponent from '../button/button.js';
 import IgcCarouselComponent from './carousel.js';
 import IgcCarouselIndicatorComponent from './carousel-indicator.js';
 import IgcCarouselSlideComponent from './carousel-slide.js';

@@ -1,12 +1,11 @@
 import { html, LitElement, nothing } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { createRef, type Ref, ref } from 'lit/directives/ref.js';
-
+import { registerComponent } from '../../internals/definitions/register.js';
+import type { Constructor } from '../../internals/mixins/constructor.js';
+import { EventEmitterMixin } from '../../internals/mixins/event-emitter.js';
+import { partMap } from '../../internals/part-map.js';
 import { addThemingController } from '../../theming/theming-controller.js';
-import { registerComponent } from '../common/definitions/register.js';
-import type { Constructor } from '../common/mixins/constructor.js';
-import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { partMap } from '../common/part-map.js';
 import IgcIconComponent from '../icon/icon.js';
 import { addResizeController } from './resize-controller.js';
 import { styles } from './themes/resize-container.base.css.js';

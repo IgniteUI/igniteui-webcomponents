@@ -1,5 +1,5 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
-import { defineComponents } from '../common/definitions/defineComponents.js';
+import { defineComponents } from '../../internals/definitions/defineComponents.js';
 import IgcChipComponent from './chip.js';
 
 describe('Chip', () => {

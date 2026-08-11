@@ -1,10 +1,13 @@
 import { html, LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
+import { addInternalsController } from '../../internals/controllers/internals.js';
+import { createMutationController } from '../../internals/controllers/mutation-observer.js';
+import {
+  addSlotController,
+  setSlots,
+} from '../../internals/controllers/slot.js';
+import { registerComponent } from '../../internals/definitions/register.js';
 import { addThemingController } from '../../theming/theming-controller.js';
-import { addInternalsController } from '../common/controllers/internals.js';
-import { createMutationController } from '../common/controllers/mutation-observer.js';
-import { addSlotController, setSlots } from '../common/controllers/slot.js';
-import { registerComponent } from '../common/definitions/register.js';
 import IgcRadioComponent from '../radio/radio.js';
 import type { ContentOrientation } from '../types.js';
 import { styles } from './themes/radio-group.base.css.js';

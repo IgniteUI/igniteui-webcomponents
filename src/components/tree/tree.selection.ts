@@ -1,4 +1,4 @@
-import { isEmpty } from '../common/util.js';
+import { isEmpty } from '../../internals/utils/arrays.js';
 import type { TreeSelectionEventInit } from './tree.common.js';
 import type IgcTreeComponent from './tree.js';
 import type IgcTreeItemComponent from './tree-item.js';

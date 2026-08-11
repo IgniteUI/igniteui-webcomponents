@@ -1,4 +1,4 @@
-import { last } from '../common/util.js';
+import { last } from '../../internals/utils/arrays.js';
 import type { IgcChatMessageAttachment } from './types.js';
 
 export type ChatAcceptedFileTypes = {

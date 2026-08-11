@@ -8,49 +8,49 @@ import { property, queryAll, state } from 'lit/decorators.js';
 import { cache } from 'lit/directives/cache.js';
 import { createRef, ref } from 'lit/directives/ref.js';
 import { styleMap } from 'lit/directives/style-map.js';
-import { addThemingController } from '../../theming/theming-controller.js';
-import IgcButtonComponent from '../button/button.js';
-import { carouselContext } from '../common/context.js';
+import { carouselContext } from '../../internals/context.js';
 import {
   addGesturesController,
   type SwipeEvent,
-} from '../common/controllers/gestures.js';
-import { addInternalsController } from '../common/controllers/internals.js';
+} from '../../internals/controllers/gestures.js';
+import { addInternalsController } from '../../internals/controllers/internals.js';
 import {
   addKeybindings,
   arrowLeft,
   arrowRight,
   endKey,
   homeKey,
-} from '../common/controllers/key-bindings.js';
+} from '../../internals/controllers/key-bindings.js';
 import {
   createMutationController,
   type MutationControllerParams,
-} from '../common/controllers/mutation-observer.js';
+} from '../../internals/controllers/mutation-observer.js';
 import {
   addSlotController,
   type InferSlotNames,
   type SlotChangeCallbackParameters,
   setSlots,
-} from '../common/controllers/slot.js';
-import { shadowOptions } from '../common/decorators/shadow-options.js';
-import { watch } from '../common/decorators/watch.js';
-import { registerComponent } from '../common/definitions/register.js';
-import { addI18nController } from '../common/i18n/i18n-controller.js';
-import type { Constructor } from '../common/mixins/constructor.js';
-import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { partMap } from '../common/part-map.js';
+} from '../../internals/controllers/slot.js';
+import { shadowOptions } from '../../internals/decorators/shadow-options.js';
+import { watch } from '../../internals/decorators/watch.js';
+import { registerComponent } from '../../internals/definitions/register.js';
+import { addI18nController } from '../../internals/i18n/i18n-controller.js';
+import type { Constructor } from '../../internals/mixins/constructor.js';
+import { EventEmitterMixin } from '../../internals/mixins/event-emitter.js';
+import { partMap } from '../../internals/part-map.js';
+import { first, isEmpty, last } from '../../internals/utils/arrays.js';
+import { isLTR } from '../../internals/utils/dom.js';
 import {
   addSafeEventListener,
-  asNumber,
-  first,
-  formatString,
   getElementFromPath,
-  isEmpty,
-  isLTR,
-  last,
-  wrap,
-} from '../common/util.js';
+} from '../../internals/utils/events.js';
+import { asNumber, wrap } from '../../internals/utils/math.js';
+import {
+  createIdGenerator,
+  formatString,
+} from '../../internals/utils/strings.js';
+import { addThemingController } from '../../theming/theming-controller.js';
+import IgcButtonComponent from '../button/button.js';
 import IgcIconComponent from '../icon/icon.js';
 import type {
   CarouselIndicatorsOrientation,
@@ -69,7 +69,7 @@ export interface IgcCarouselComponentEventMap {
   igcPaused: CustomEvent<void>;
 }
 
-let nextId = 1;
+const nextId = createIdGenerator('igc-carousel');
 const Slots = setSlots('indicator', 'previous-button', 'next-button');
 
 /**
@@ -115,7 +115,7 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
 
   //#region Internal state
 
-  private readonly _carouselId = `igc-carousel-${nextId++}`;
+  private readonly _carouselId = nextId();
   private _paused = false;
   private _lastInterval!: ReturnType<typeof setInterval> | null;
   private _hasKeyboardInteractionOnIndicators = false;

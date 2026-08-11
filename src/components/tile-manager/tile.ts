@@ -5,24 +5,30 @@ import {
   setTransitionName,
   startViewTransition,
 } from '../../animations/view-transition.js';
-import { addThemingController } from '../../theming/theming-controller.js';
-import IgcIconButtonComponent from '../button/icon-button.js';
 import {
   type TileManagerContext,
   tileManagerContext,
-} from '../common/context.js';
-import { createAsyncContext } from '../common/controllers/async-consumer.js';
+} from '../../internals/context.js';
+import { createAsyncContext } from '../../internals/controllers/async-consumer.js';
 import {
   addDragController,
   type DragCallbackParameters,
-} from '../common/controllers/drag.js';
-import { addFullscreenController } from '../common/controllers/fullscreen.js';
-import { addSlotController, setSlots } from '../common/controllers/slot.js';
-import { registerComponent } from '../common/definitions/register.js';
-import type { Constructor } from '../common/mixins/constructor.js';
-import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { partMap } from '../common/part-map.js';
-import { asNumber, getElementFromPath, isLTR } from '../common/util.js';
+} from '../../internals/controllers/drag.js';
+import { addFullscreenController } from '../../internals/controllers/fullscreen.js';
+import {
+  addSlotController,
+  setSlots,
+} from '../../internals/controllers/slot.js';
+import { registerComponent } from '../../internals/definitions/register.js';
+import type { Constructor } from '../../internals/mixins/constructor.js';
+import { EventEmitterMixin } from '../../internals/mixins/event-emitter.js';
+import { partMap } from '../../internals/part-map.js';
+import { isLTR } from '../../internals/utils/dom.js';
+import { getElementFromPath } from '../../internals/utils/events.js';
+import { asNumber } from '../../internals/utils/math.js';
+import { createIdGenerator } from '../../internals/utils/strings.js';
+import { addThemingController } from '../../theming/theming-controller.js';
+import IgcIconButtonComponent from '../button/icon-button.js';
 import IgcDividerComponent from '../divider/divider.js';
 import IgcResizeContainerComponent from '../resize-container/resize-container.js';
 import type { ResizeCallbackParams } from '../resize-container/types.js';
@@ -53,7 +59,7 @@ export interface IgcTileComponentEventMap {
   igcTileResizeCancel: CustomEvent<IgcTileComponent>;
 }
 
-let nextId = 1;
+const nextId = createIdGenerator('tile');
 const Slots = setSlots(
   'title',
   'maximize-action',
@@ -365,7 +371,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
   /** @internal */
   public override connectedCallback(): void {
     super.connectedCallback();
-    this.id = this.id || `tile-${nextId++}`;
+    this.id = this.id || nextId();
     if (!this.style.viewTransitionName) {
       setTransitionName(this, `tile-transition-${this.id}`);
     }

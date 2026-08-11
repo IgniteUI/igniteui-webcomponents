@@ -9,7 +9,7 @@ import {
   stepValidator,
   urlValidator,
   type Validator,
-} from '../common/validators.js';
+} from '../../internals/validators.js';
 import type IgcInputComponent from './input.js';
 
 export const stringValidators: Validator<IgcInputComponent>[] = [

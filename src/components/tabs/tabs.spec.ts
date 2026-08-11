@@ -7,7 +7,6 @@ import {
 } from '@open-wc/testing';
 import { range } from 'lit/directives/range.js';
 import { spy } from 'sinon';
-import type IgcIconButtonComponent from '../button/icon-button.js';
 import {
   arrowLeft,
   arrowRight,
@@ -15,10 +14,14 @@ import {
   enterKey,
   homeKey,
   spaceBar,
-} from '../common/controllers/key-bindings.js';
-import { defineComponents } from '../common/definitions/defineComponents.js';
-import { first, last } from '../common/util.js';
-import { simulateClick, simulateKeyboard } from '../common/utils.spec.js';
+} from '../../internals/controllers/key-bindings.js';
+import { defineComponents } from '../../internals/definitions/defineComponents.js';
+import {
+  simulateClick,
+  simulateKeyboard,
+} from '../../internals/testing/simulate.spec.js';
+import { first, last } from '../../internals/utils/arrays.js';
+import type IgcIconButtonComponent from '../button/icon-button.js';
 import IgcTabComponent from './tab.js';
 import IgcTabsComponent from './tabs.js';
 

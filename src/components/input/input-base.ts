@@ -1,17 +1,18 @@
 import { LitElement, nothing, type TemplateResult } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
 import { cache } from 'lit/directives/cache.js';
-import type { ThemingController } from '../../theming/theming-controller.js';
-import type { SlotController } from '../common/controllers/slot.js';
-import { blazorDeepImport } from '../common/decorators/blazorDeepImport.js';
-import { shadowOptions } from '../common/decorators/shadow-options.js';
-import type { Constructor } from '../common/mixins/constructor.js';
-import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { FormAssociatedRequiredMixin } from '../common/mixins/forms/associated-required.js';
+import type { SlotController } from '../../internals/controllers/slot.js';
+import { blazorDeepImport } from '../../internals/decorators/blazorDeepImport.js';
+import { shadowOptions } from '../../internals/decorators/shadow-options.js';
+import type { Constructor } from '../../internals/mixins/constructor.js';
+import { EventEmitterMixin } from '../../internals/mixins/event-emitter.js';
+import { FormAssociatedRequiredMixin } from '../../internals/mixins/forms/associated-required.js';
 import {
   nextInputId,
   renderInputShell,
-} from '../common/templates/input-shell.js';
+  resolveInputPartNames,
+} from '../../internals/templates/input-shell.js';
+import type { ThemingController } from '../../theming/theming-controller.js';
 
 export interface IgcInputComponentEventMap {
   /* alternateName: inputOcurred */
@@ -95,16 +96,7 @@ export abstract class IgcInputBaseComponent extends FormAssociatedRequiredMixin(
    * Used to apply conditional styling via CSS parts.
    */
   protected _resolvePartNames(base: string) {
-    return {
-      [base]: true,
-      prefixed: this._slots.hasAssignedElements('prefix', {
-        selector: '[slot="prefix"]:not([hidden])',
-      }),
-      suffixed: this._slots.hasAssignedElements('suffix', {
-        selector: '[slot="suffix"]:not([hidden])',
-      }),
-      filled: !!this.value,
-    };
+    return resolveInputPartNames(this._slots, base, !!this.value);
   }
 
   /** Selects all the text inside the input. */

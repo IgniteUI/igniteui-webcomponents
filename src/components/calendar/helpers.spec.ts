@@ -1,4 +1,4 @@
-import { first, last } from '../common/util.js';
+import { first, last } from '../../internals/utils/arrays.js';
 import type IgcCalendarComponent from './calendar.js';
 import IgcDaysViewComponent from './days-view/days-view.js';
 import type { CalendarDay } from './model.js';

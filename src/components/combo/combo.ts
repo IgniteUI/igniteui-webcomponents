@@ -6,31 +6,31 @@ import { html, type PropertyValues, type TemplateResult } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { createRef, ref } from 'lit/directives/ref.js';
-
-import { addThemingController } from '../../theming/theming-controller.js';
-import { addRootClickController } from '../common/controllers/root-click.js';
-import { addSlotController, setSlots } from '../common/controllers/slot.js';
-import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditionalDependencies.js';
-import { blazorIndirectRender } from '../common/decorators/blazorIndirectRender.js';
-import { shadowOptions } from '../common/decorators/shadow-options.js';
-import { registerComponent } from '../common/definitions/register.js';
-import { addI18nController } from '../common/i18n/i18n-controller.js';
-import { IgcBaseComboBoxComponent } from '../common/mixins/combo-box.js';
-import type { AbstractConstructor } from '../common/mixins/constructor.js';
-import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { FormAssociatedRequiredMixin } from '../common/mixins/forms/associated-required.js';
-import { createFormValueState } from '../common/mixins/forms/form-value.js';
-import { partMap } from '../common/part-map.js';
+import { addRootClickController } from '../../internals/controllers/root-click.js';
+import {
+  addSlotController,
+  setSlots,
+} from '../../internals/controllers/slot.js';
+import { blazorAdditionalDependencies } from '../../internals/decorators/blazorAdditionalDependencies.js';
+import { blazorIndirectRender } from '../../internals/decorators/blazorIndirectRender.js';
+import { shadowOptions } from '../../internals/decorators/shadow-options.js';
+import { registerComponent } from '../../internals/definitions/register.js';
+import { addI18nController } from '../../internals/i18n/i18n-controller.js';
+import { IgcBaseComboBoxComponent } from '../../internals/mixins/combo-box.js';
+import type { AbstractConstructor } from '../../internals/mixins/constructor.js';
+import { EventEmitterMixin } from '../../internals/mixins/event-emitter.js';
+import { FormAssociatedRequiredMixin } from '../../internals/mixins/forms/associated-required.js';
+import { createFormValueState } from '../../internals/mixins/forms/form-value.js';
+import { partMap } from '../../internals/part-map.js';
+import { asArray, first, isEmpty } from '../../internals/utils/arrays.js';
 import {
   addSafeEventListener,
-  asArray,
-  bindIf,
-  first,
   getElementFromPath,
-  isEmpty,
   stopPropagation,
-} from '../common/util.js';
-import type { Validator } from '../common/validators.js';
+} from '../../internals/utils/events.js';
+import { bindIf } from '../../internals/utils/lit.js';
+import type { Validator } from '../../internals/validators.js';
+import { addThemingController } from '../../theming/theming-controller.js';
 import IgcIconComponent from '../icon/icon.js';
 import IgcInputComponent from '../input/input.js';
 import IgcPopoverComponent from '../popover/popover.js';

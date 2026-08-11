@@ -5,28 +5,22 @@ import {
   html,
   nextFrame,
 } from '@open-wc/testing';
-import { CalendarDay, toCalendarDay } from '../calendar/model.js';
-import { type DateRangeDescriptor, DateRangeType } from '../calendar/types.js';
-import { defineComponents } from '../common/definitions/defineComponents.js';
-import { equal } from '../common/util.js';
-import {
-  createFormAssociatedTestBed,
-  simulatePointerDown,
-} from '../common/utils.spec.js';
+import { defineComponents } from '../../internals/definitions/defineComponents.js';
+import { createFormAssociatedTestBed } from '../../internals/testing/form-testbed.spec.js';
+import { checkDatesEqual } from '../../internals/testing/helpers.spec.js';
+import { simulatePointerDown } from '../../internals/testing/simulate.spec.js';
 import {
   runValidationContainerTests,
   type ValidationContainerTestsParams,
   ValidityHelpers,
-} from '../common/validity-helpers.spec.js';
+} from '../../internals/testing/validity-helpers.spec.js';
+import { CalendarDay } from '../calendar/model.js';
+import { type DateRangeDescriptor, DateRangeType } from '../calendar/types.js';
 import IgcDateTimeInputComponent from '../date-time-input/date-time-input.js';
 import IgcDatePickerComponent from './date-picker.js';
 
 describe('igc-datepicker form integration', () => {
   before(() => defineComponents(IgcDatePickerComponent));
-
-  function checkDatesEqual(a: CalendarDay | Date, b: CalendarDay | Date) {
-    expect(equal(toCalendarDay(a), toCalendarDay(b))).to.be.true;
-  }
 
   describe('Initial validation', () => {
     it('should not enter in invalid state when clicking the calendar toggle part', async () => {

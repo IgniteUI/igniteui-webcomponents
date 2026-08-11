@@ -3,7 +3,6 @@ import { html, nothing, type TemplateResult } from 'lit';
 import { property, query, queryAll, state } from 'lit/decorators.js';
 import { choose } from 'lit/directives/choose.js';
 import { createRef, ref } from 'lit/directives/ref.js';
-import { addThemingController } from '../../theming/theming-controller.js';
 import {
   addKeybindings,
   arrowDown,
@@ -15,18 +14,16 @@ import {
   pageDownKey,
   pageUpKey,
   shiftKey,
-} from '../common/controllers/key-bindings.js';
-import { registerComponent } from '../common/definitions/register.js';
-import type { Constructor } from '../common/mixins/constructor.js';
-import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { partMap } from '../common/part-map.js';
-import {
-  clamp,
-  first,
-  formatString,
-  getElementFromPath,
-  last,
-} from '../common/util.js';
+} from '../../internals/controllers/key-bindings.js';
+import { registerComponent } from '../../internals/definitions/register.js';
+import type { Constructor } from '../../internals/mixins/constructor.js';
+import { EventEmitterMixin } from '../../internals/mixins/event-emitter.js';
+import { partMap } from '../../internals/part-map.js';
+import { first, last } from '../../internals/utils/arrays.js';
+import { getElementFromPath } from '../../internals/utils/events.js';
+import { clamp } from '../../internals/utils/math.js';
+import { formatString } from '../../internals/utils/strings.js';
+import { addThemingController } from '../../theming/theming-controller.js';
 import IgcIconComponent from '../icon/icon.js';
 import type { ContentOrientation } from '../types.js';
 import { IgcCalendarBaseComponent } from './base.js';

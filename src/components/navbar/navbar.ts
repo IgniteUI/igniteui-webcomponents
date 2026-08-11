@@ -1,7 +1,6 @@
 import { html, LitElement } from 'lit';
-
+import { registerComponent } from '../../internals/definitions/register.js';
 import { addThemingController } from '../../theming/theming-controller.js';
-import { registerComponent } from '../common/definitions/register.js';
 import { styles } from './themes/navbar.base.css.js';
 import { styles as shared } from './themes/shared/navbar.common.css.js';
 import { all } from './themes/themes.js';

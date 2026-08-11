@@ -1,6 +1,6 @@
 import type { ReactiveController, ReactiveControllerHost } from 'lit';
 import type { Ref } from 'lit/directives/ref.js';
-import { isElement } from '../components/common/util.js';
+import { isElement } from '../internals/utils/dom.js';
 import type { AnimationReferenceMetadata } from './types.js';
 
 const LISTENER_OPTIONS = { once: true } as const;

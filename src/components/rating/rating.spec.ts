@@ -15,14 +15,14 @@ import {
   arrowUp,
   endKey,
   homeKey,
-} from '../common/controllers/key-bindings.js';
-import { defineComponents } from '../common/definitions/defineComponents.js';
+} from '../../internals/controllers/key-bindings.js';
+import { defineComponents } from '../../internals/definitions/defineComponents.js';
+import { createFormAssociatedTestBed } from '../../internals/testing/form-testbed.spec.js';
 import {
-  createFormAssociatedTestBed,
   simulateClick,
   simulateKeyboard,
   simulatePointerMove,
-} from '../common/utils.spec.js';
+} from '../../internals/testing/simulate.spec.js';
 import IgcRatingComponent from './rating.js';
 import IgcRatingSymbolComponent from './rating-symbol.js';
 

@@ -2,8 +2,6 @@ import { getDateFormatter } from 'igniteui-i18n-core';
 import { LitElement, type PropertyValues, type TemplateResult } from 'lit';
 import { eventOptions, property, query, state } from 'lit/decorators.js';
 import { cache } from 'lit/directives/cache.js';
-import type { ThemingController } from '../../theming/theming-controller.js';
-import { convertToDate } from '../calendar/helpers.js';
 import {
   addKeybindings,
   arrowDown,
@@ -11,25 +9,31 @@ import {
   arrowRight,
   arrowUp,
   ctrlKey,
-} from '../common/controllers/key-bindings.js';
-import { addSlotController, setSlots } from '../common/controllers/slot.js';
-import { blazorDeepImport } from '../common/decorators/blazorDeepImport.js';
-import { shadowOptions } from '../common/decorators/shadow-options.js';
+} from '../../internals/controllers/key-bindings.js';
+import {
+  addSlotController,
+  setSlots,
+} from '../../internals/controllers/slot.js';
+import { blazorDeepImport } from '../../internals/decorators/blazorDeepImport.js';
+import { shadowOptions } from '../../internals/decorators/shadow-options.js';
 import {
   addI18nController,
   getDefaultDateTimeFormat,
-} from '../common/i18n/i18n-controller.js';
-import { FormAssociatedRequiredMixin } from '../common/mixins/forms/associated-required.js';
+} from '../../internals/i18n/i18n-controller.js';
+import { FormAssociatedRequiredMixin } from '../../internals/mixins/forms/associated-required.js';
 import {
   MaskBehaviorMixin,
   type MaskSelection,
-} from '../common/mixins/mask-behavior.js';
+} from '../../internals/mixins/mask-behavior.js';
 import {
   nextInputId,
   renderInputShell,
-} from '../common/templates/input-shell.js';
-import { renderMaskedNativeInput } from '../common/templates/masked-input.js';
-import { equal } from '../common/util.js';
+  resolveInputPartNames,
+} from '../../internals/templates/input-shell.js';
+import { renderMaskedNativeInput } from '../../internals/templates/masked-input.js';
+import { equal } from '../../internals/utils/objects.js';
+import type { ThemingController } from '../../theming/theming-controller.js';
+import { convertToDate } from '../calendar/helpers.js';
 import type { RangeTextSelectMode } from '../types.js';
 import type { DatePartDeltas } from './date-part.js';
 import { dateTimeInputValidators } from './validators.js';
@@ -523,16 +527,7 @@ export abstract class IgcDateTimeInputBaseComponent<
    * Resolves the part names for the container based on the current state.
    */
   protected _resolvePartNames(base: string): Record<string, boolean> {
-    return {
-      [base]: true,
-      prefixed: this._slots.hasAssignedElements('prefix', {
-        selector: '[slot="prefix"]:not([hidden])',
-      }),
-      suffixed: this._slots.hasAssignedElements('suffix', {
-        selector: '[slot="suffix"]:not([hidden])',
-      }),
-      filled: !this._isEmptyMask,
-    };
+    return resolveInputPartNames(this._slots, base, !this._isEmptyMask);
   }
 
   // #endregion

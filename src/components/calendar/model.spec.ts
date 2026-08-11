@@ -1,6 +1,6 @@
 import { expect } from '@open-wc/testing';
 
-import { first, last } from '../common/util.js';
+import { first, last } from '../../internals/utils/arrays.js';
 import { calendarRange, isDateInRanges } from './helpers.js';
 import { CalendarDay } from './model.js';
 import { DateRangeType } from './types.js';

@@ -1,16 +1,16 @@
 import { html, LitElement } from 'lit';
 import { property, queryAssignedElements } from 'lit/decorators.js';
-
-import { addThemingController } from '../../theming/theming-controller.js';
 import {
   createMutationController,
   type MutationControllerParams,
-} from '../common/controllers/mutation-observer.js';
-import { watch } from '../common/decorators/watch.js';
-import { registerComponent } from '../common/definitions/register.js';
-import type { Constructor } from '../common/mixins/constructor.js';
-import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { getElementFromPath, last } from '../common/util.js';
+} from '../../internals/controllers/mutation-observer.js';
+import { watch } from '../../internals/decorators/watch.js';
+import { registerComponent } from '../../internals/definitions/register.js';
+import type { Constructor } from '../../internals/mixins/constructor.js';
+import { EventEmitterMixin } from '../../internals/mixins/event-emitter.js';
+import { last } from '../../internals/utils/arrays.js';
+import { getElementFromPath } from '../../internals/utils/events.js';
+import { addThemingController } from '../../theming/theming-controller.js';
 import type { ButtonGroupSelection, ContentOrientation } from '../types.js';
 import { styles } from './themes/group.base.css.js';
 import { all } from './themes/group.js';

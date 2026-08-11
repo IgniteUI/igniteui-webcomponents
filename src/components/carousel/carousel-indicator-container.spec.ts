@@ -1,14 +1,14 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 
-import { tabKey } from '../common/controllers/key-bindings.js';
-import { defineComponents } from '../common/definitions/defineComponents.js';
-import { first } from '../common/util.js';
+import { tabKey } from '../../internals/controllers/key-bindings.js';
+import { defineComponents } from '../../internals/definitions/defineComponents.js';
 import {
   simulateClick,
   simulateKeyboard,
   simulatePointerDown,
   simulatePointerUp,
-} from '../common/utils.spec.js';
+} from '../../internals/testing/simulate.spec.js';
+import { first } from '../../internals/utils/arrays.js';
 import IgcCarouselIndicatorComponent from './carousel-indicator.js';
 import IgcCarouselIndicatorContainerComponent from './carousel-indicator-container.js';
 

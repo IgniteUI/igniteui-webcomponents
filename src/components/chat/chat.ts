@@ -7,16 +7,19 @@ import { html, LitElement, nothing, type PropertyValues } from 'lit';
 import { property, query } from 'lit/decorators.js';
 import { cache } from 'lit/directives/cache.js';
 import { repeat } from 'lit/directives/repeat.js';
+import { chatContext, chatUserInputContext } from '../../internals/context.js';
+import {
+  addSlotController,
+  setSlots,
+} from '../../internals/controllers/slot.js';
+import { registerComponent } from '../../internals/definitions/register.js';
+import type { IgcChatResourceStrings } from '../../internals/i18n/EN/chat.resources.js';
+import { addI18nController } from '../../internals/i18n/i18n-controller.js';
+import type { Constructor } from '../../internals/mixins/constructor.js';
+import { EventEmitterMixin } from '../../internals/mixins/event-emitter.js';
+import { isEmpty } from '../../internals/utils/arrays.js';
 import { addThemingController } from '../../theming/theming-controller.js';
 import IgcButtonComponent from '../button/button.js';
-import { chatContext, chatUserInputContext } from '../common/context.js';
-import { addSlotController, setSlots } from '../common/controllers/slot.js';
-import { registerComponent } from '../common/definitions/register.js';
-import type { IgcChatResourceStrings } from '../common/i18n/EN/chat.resources.js';
-import { addI18nController } from '../common/i18n/i18n-controller.js';
-import type { Constructor } from '../common/mixins/constructor.js';
-import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { isEmpty } from '../common/util.js';
 import IgcIconComponent from '../icon/icon.js';
 import IgcListComponent from '../list/list.js';
 import IgcToastComponent from '../toast/toast.js';

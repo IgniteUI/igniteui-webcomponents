@@ -1,8 +1,11 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import { spy } from 'sinon';
-import { defineComponents } from '../common/definitions/defineComponents.js';
-import { first } from '../common/util.js';
-import { simulateClick, simulateKeyboard } from '../common/utils.spec.js';
+import { defineComponents } from '../../internals/definitions/defineComponents.js';
+import {
+  simulateClick,
+  simulateKeyboard,
+} from '../../internals/testing/simulate.spec.js';
+import { first } from '../../internals/utils/arrays.js';
 import IgcIconComponent from '../icon/icon.js';
 import IgcStepComponent from './step.js';
 import IgcStepperComponent from './stepper.js';

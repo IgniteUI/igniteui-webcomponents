@@ -1,6 +1,6 @@
 import { isServer } from 'lit';
-import { escapeKey } from '../common/controllers/key-bindings.js';
-import { isEmpty, last } from '../common/util.js';
+import { escapeKey } from '../../internals/controllers/key-bindings.js';
+import { isEmpty, last } from '../../internals/utils/arrays.js';
 import type IgcTooltipComponent from './tooltip.js';
 
 type TooltipHideCallback = () => unknown;

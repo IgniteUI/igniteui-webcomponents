@@ -1,22 +1,25 @@
 import { elementUpdated, expect, fixture } from '@open-wc/testing';
 import { html, nothing } from 'lit';
 import { spy, stub, useFakeTimers } from 'sinon';
-import { configureTheme } from '../../theming/config.js';
-import type IgcIconButtonComponent from '../button/icon-button.js';
-import IgcChipComponent from '../chip/chip.js';
-import { enterKey, tabKey } from '../common/controllers/key-bindings.js';
-import { defineComponents } from '../common/definitions/defineComponents.js';
-import { first, last } from '../common/util.js';
+import { enterKey, tabKey } from '../../internals/controllers/key-bindings.js';
+import { defineComponents } from '../../internals/definitions/defineComponents.js';
 import {
   isFocused,
+  suppressResizeObserverLoopError,
+} from '../../internals/testing/helpers.spec.js';
+import {
   simulateBlur,
   simulateClick,
+  simulateFileUpload,
   simulateFocus,
   simulateInput,
   simulateKeyboard,
-  suppressResizeObserverLoopError,
-} from '../common/utils.spec.js';
-import { simulateFileUpload } from '../file-input/file-input.spec.js';
+} from '../../internals/testing/simulate.spec.js';
+import { first, last } from '../../internals/utils/arrays.js';
+import { configureTheme } from '../../theming/config.js';
+import type IgcIconButtonComponent from '../button/icon-button.js';
+import IgcChipComponent from '../chip/chip.js';
+
 import IgcInputComponent from '../input/input.js';
 import IgcListItemComponent from '../list/list-item.js';
 import IgcTextareaComponent from '../textarea/textarea.js';

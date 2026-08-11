@@ -2,8 +2,8 @@ import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import { spy } from 'sinon';
 
 import { defineComponents, IgcCalendarComponent } from '../../index.js';
-import { first, last } from '../common/util.js';
-import { simulateClick } from '../common/utils.spec.js';
+import { simulateClick } from '../../internals/testing/simulate.spec.js';
+import { first, last } from '../../internals/utils/arrays.js';
 import type IgcDaysViewComponent from './days-view/days-view.js';
 import {
   calendarRange,

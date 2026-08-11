@@ -1,10 +1,10 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 
 import { spy } from 'sinon';
+import { defineComponents } from '../../internals/definitions/defineComponents.js';
+import { simulateClick } from '../../internals/testing/simulate.spec.js';
 import { CalendarDay } from '../calendar/model.js';
 import IgcChipComponent from '../chip/chip.js';
-import { defineComponents } from '../common/definitions/defineComponents.js';
-import { simulateClick } from '../common/utils.spec.js';
 import type { CustomDateRange } from './date-range-picker.js';
 import IgcPredefinedRangesAreaComponent from './predefined-ranges-area.js';
 

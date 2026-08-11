@@ -1,4 +1,4 @@
-import { isLTR } from '../common/util.js';
+import { isLTR } from '../../internals/utils/dom.js';
 import type IgcTileComponent from './tile.js';
 
 export function createTileDragGhost(tile: IgcTileComponent): IgcTileComponent {

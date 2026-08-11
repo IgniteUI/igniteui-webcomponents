@@ -3,17 +3,21 @@ import { property } from 'lit/decorators.js';
 import { createRef, ref } from 'lit/directives/ref.js';
 import { addAnimationController } from '../../animations/player.js';
 import { growVerIn, growVerOut } from '../../animations/presets/grow/index.js';
-import { addThemingController } from '../../theming/theming-controller.js';
 import {
   addKeybindings,
   altKey,
   arrowDown,
   arrowUp,
-} from '../common/controllers/key-bindings.js';
-import { addSlotController, setSlots } from '../common/controllers/slot.js';
-import { registerComponent } from '../common/definitions/register.js';
-import type { Constructor } from '../common/mixins/constructor.js';
-import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
+} from '../../internals/controllers/key-bindings.js';
+import {
+  addSlotController,
+  setSlots,
+} from '../../internals/controllers/slot.js';
+import { registerComponent } from '../../internals/definitions/register.js';
+import type { Constructor } from '../../internals/mixins/constructor.js';
+import { EventEmitterMixin } from '../../internals/mixins/event-emitter.js';
+import { createIdGenerator } from '../../internals/utils/strings.js';
+import { addThemingController } from '../../theming/theming-controller.js';
 import IgcIconComponent from '../icon/icon.js';
 import type { ExpansionPanelIndicatorPosition } from '../types.js';
 import { styles } from './themes/expansion-panel.base.css.js';
@@ -27,7 +31,7 @@ export interface IgcExpansionPanelComponentEventMap {
   igcClosed: CustomEvent<IgcExpansionPanelComponent>;
 }
 
-let nextId = 1;
+const nextId = createIdGenerator('igc-expansion-panel');
 
 /**
  * The Expansion Panel Component provides a way to display information in a toggleable way -
@@ -65,7 +69,7 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
     registerComponent(IgcExpansionPanelComponent, IgcIconComponent);
   }
 
-  private _panelId = `${IgcExpansionPanelComponent.tagName}-${nextId++}`;
+  private _panelId = nextId();
   private readonly _headerRef = createRef<HTMLElement>();
   private readonly _panelRef = createRef<HTMLElement>();
 

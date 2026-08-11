@@ -4,11 +4,11 @@ import {
 } from 'igniteui-i18n-core';
 import { LitElement, type PropertyValues } from 'lit';
 import { property, state } from 'lit/decorators.js';
-import { blazorDeepImport } from '../common/decorators/blazorDeepImport.js';
-import { blazorIndirectRender } from '../common/decorators/blazorIndirectRender.js';
-import type { IgcCalendarResourceStrings } from '../common/i18n/EN/calendar.resources.js';
-import { addI18nController } from '../common/i18n/i18n-controller.js';
-import { first } from '../common/util.js';
+import { blazorDeepImport } from '../../internals/decorators/blazorDeepImport.js';
+import { blazorIndirectRender } from '../../internals/decorators/blazorIndirectRender.js';
+import type { IgcCalendarResourceStrings } from '../../internals/i18n/EN/calendar.resources.js';
+import { addI18nController } from '../../internals/i18n/i18n-controller.js';
+import { first } from '../../internals/utils/arrays.js';
 import { convertToDate, convertToDates, getWeekDayNumber } from './helpers.js';
 import { CalendarDay } from './model.js';
 import type {

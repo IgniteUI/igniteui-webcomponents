@@ -1,6 +1,6 @@
 import { LitElement, nothing } from 'lit';
 import { property } from 'lit/decorators.js';
-import { registerComponent } from '../common/definitions/register.js';
+import { registerComponent } from '../../internals/definitions/register.js';
 
 /**
  * Used for defining gradient stops in the circular progress component.

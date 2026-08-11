@@ -1,4 +1,4 @@
-import { clamp } from '../common/util.js';
+import { clamp } from '../../internals/utils/math.js';
 import type { ScrollAlignment, VisibleRange } from './types.js';
 
 /**

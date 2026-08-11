@@ -1,7 +1,5 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import { spy } from 'sinon';
-
-import IgcButtonComponent from '../button/button.js';
 import {
   arrowDown,
   arrowUp,
@@ -10,13 +8,14 @@ import {
   escapeKey,
   homeKey,
   tabKey,
-} from '../common/controllers/key-bindings.js';
-import { defineComponents } from '../common/definitions/defineComponents.js';
+} from '../../internals/controllers/key-bindings.js';
+import { defineComponents } from '../../internals/definitions/defineComponents.js';
 import {
   simulateClick,
   simulateKeyboard,
   simulateScroll,
-} from '../common/utils.spec.js';
+} from '../../internals/testing/simulate.spec.js';
+import IgcButtonComponent from '../button/button.js';
 import IgcDropdownComponent from './dropdown.js';
 import IgcDropdownHeaderComponent from './dropdown-header.js';
 import type IgcDropdownItemComponent from './dropdown-item.js';
