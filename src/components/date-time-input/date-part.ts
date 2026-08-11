@@ -33,6 +33,20 @@ export const DatePartType = {
 
 export type DatePartType = (typeof DatePartType)[keyof typeof DatePartType];
 
+/** The part types that make up a calendar date. */
+export const DATE_PART_TYPES = new Set<DatePartType>([
+  DatePartType.Date,
+  DatePartType.Month,
+  DatePartType.Year,
+]);
+
+/** The part types that make up a time of day. */
+export const TIME_PART_TYPES = new Set<DatePartType>([
+  DatePartType.Hours,
+  DatePartType.Minutes,
+  DatePartType.Seconds,
+]);
+
 // Spin delta defaults
 export const DEFAULT_DATE_PARTS_SPIN_DELTAS = Object.freeze<DatePartDeltas>({
   date: 1,

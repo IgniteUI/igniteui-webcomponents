@@ -14,7 +14,6 @@ import {
   DatePartType,
 } from '../date-time-input/date-part.js';
 import { IgcDateTimeInputBaseComponent } from '../date-time-input/date-time-input.base.js';
-import { DateParts } from '../date-time-input/datetime-mask-parser.js';
 import { styles } from '../input/themes/input.base.css.js';
 import { styles as shared } from '../input/themes/shared/input.common.css.js';
 import { all } from '../input/themes/themes.js';
@@ -118,11 +117,17 @@ export default class IgcDateRangeInputComponent extends EventEmitterMixin<
 
     if (!this.value || (!this.value.start && !this.value.end)) {
       this._maskedValue = this._parser.emptyMask;
+      this._historyResync();
       await this.updateComplete;
       this.select();
-    } else if (this.displayFormat !== this.inputFormat) {
+      return;
+    }
+
+    if (this.displayFormat !== this.inputFormat) {
       this._updateMaskDisplay();
     }
+
+    this._historyResync();
   }
 
   // #endregion
@@ -140,14 +145,9 @@ export default class IgcDateRangeInputComponent extends EventEmitterMixin<
     direction: number
   ): number {
     const cursorPos = this._maskSelection.start;
-    const rangeParts = this._parser.rangeParts;
+    const rangeParts = this._parser.parts;
 
-    const currentPart = rangeParts.find(
-      (p) =>
-        p.type !== DateParts.Literal &&
-        cursorPos >= p.start &&
-        cursorPos <= p.end
-    );
+    const currentPart = this._parser.getPartForCursor(cursorPos);
 
     const isStartOrEndPart =
       currentPart &&
@@ -159,9 +159,9 @@ export default class IgcDateRangeInputComponent extends EventEmitterMixin<
       if (isStartOrEndPart && cursorPos !== currentPart.start) {
         return currentPart.start;
       }
-      const prevPart = [...rangeParts]
-        .reverse()
-        .find((p) => p.type !== DateParts.Literal && p.end < cursorPos);
+      const prevPart = rangeParts.findLast(
+        (p) => p.type !== DatePartType.Literal && p.end < cursorPos
+      );
       return prevPart?.start ?? 0;
     }
 
@@ -170,7 +170,7 @@ export default class IgcDateRangeInputComponent extends EventEmitterMixin<
       return currentPart.end;
     }
     const nextPart = rangeParts.find(
-      (p) => p.type !== DateParts.Literal && p.start > cursorPos
+      (p) => p.type !== DatePartType.Literal && p.start > cursorPos
     );
     return nextPart?.end ?? inputValue.length;
   }
@@ -257,35 +257,14 @@ export default class IgcDateRangeInputComponent extends EventEmitterMixin<
 
   /**
    * Gets the date range part at the current cursor position.
-   * If the cursor is at a literal, finds the nearest non-literal part.
-   * Returns undefined if no valid part is found.
+   * Returns undefined if the cursor sits outside any part - in the separator, say.
    */
   protected override _getDatePartAtCursor(): DateRangePart | undefined {
-    const cursorPos = this._inputSelection.start;
-    let part = this._parser.getDateRangePartForCursor(cursorPos);
+    const part = this._parser.getPartForCursor(this._inputSelection.start);
 
-    // If cursor is at a literal, find the nearest non-literal part
-    if (part?.type === DatePartType.Literal) {
-      const nextPart = this._parser.rangeParts.find(
-        (p) => p.start >= cursorPos && p.type !== DatePartType.Literal
-      );
-      if (nextPart) {
-        part = nextPart;
-      } else {
-        part = this._parser.rangeParts.findLast(
-          (p) => p.end <= cursorPos && p.type !== DatePartType.Literal
-        );
-      }
-    }
-
-    if (part && part.type !== DatePartType.Literal) {
-      return {
-        part: part.type as DatePart,
-        position: part.position,
-      };
-    }
-
-    return undefined;
+    return part
+      ? { part: part.type as DatePart, position: part.position }
+      : undefined;
   }
 
   /**
@@ -345,21 +324,11 @@ export default class IgcDateRangeInputComponent extends EventEmitterMixin<
   }
 
   public override hasDateParts(): boolean {
-    return this._parser.rangeParts.some(
-      (p) =>
-        p.type === DatePartType.Date ||
-        p.type === DatePartType.Month ||
-        p.type === DatePartType.Year
-    );
+    return this._parser.hasDateParts();
   }
 
   public override hasTimeParts(): boolean {
-    return this._parser.rangeParts.some(
-      (p) =>
-        p.type === DatePartType.Hours ||
-        p.type === DatePartType.Minutes ||
-        p.type === DatePartType.Seconds
-    );
+    return this._parser.hasTimeParts();
   }
 
   // #endregion

@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 ### Added
+- #### Mask input, Date time input, Date range picker
+  - The masked editors now support the standard undo/redo shortcuts - `Ctrl + Z` / `Cmd + Z` to undo and `Ctrl + Y`, `Ctrl + Shift + Z` / `Cmd + Shift + Z` to redo. Previously these did nothing, because rendering the masked text reassigns the native input's value and that clears the browser's own undo stack.
+    - A run of consecutive typed characters, or of consecutive deletions, collapses into a single undo step. Moving the caret, pasting, dropping, cutting, spinning a date part, or composing with an IME each start a step of their own.
+    - Restoring a step emits `igcInput`, so composite hosts and two-way bindings follow the undo. For the date editors the restored text remains an uncommitted draft, and `igcChange` is emitted on blur only if the committed value actually changed.
+    - The history is kept across focus changes and is discarded when the value is set programmatically, when the control is reset by its form, or when the `mask`/`prompt`/`input-format` pattern changes.
 - #### Icon
   - `registerIcon` and `registerIconFromText` now accept a `RegisterIconOptions` object as their third argument in addition to the existing plain collection string. Setting `stripMeta: true` removes `<title>` and `<desc>` elements from the stored SVG, preventing the browser from displaying a native tooltip on hover. The title text is still captured and exposed as the `aria-label` of the host `<igc-icon>` element. Any `aria-labelledby` / `aria-describedby` references on the root `<svg>` that pointed to the stripped elements' IDs are cleaned up automatically. [#1822](https://github.com/IgniteUI/igniteui-webcomponents/issues/1822)
 - #### QR Code

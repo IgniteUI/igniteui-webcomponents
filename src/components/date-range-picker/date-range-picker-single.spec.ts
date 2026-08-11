@@ -1145,6 +1145,29 @@ describe('Date range picker - single input', () => {
         expect(eventSpy).not.called;
       });
     });
+
+    describe('Undo / redo', () => {
+      it('restores a typed draft in the range input', async () => {
+        rangeInput.focus();
+        await elementUpdated(picker);
+
+        const initial = input.value;
+
+        rangeInput.setSelectionRange(0, input.value.length);
+        simulateInput(input, {
+          value: '10/10/2020 - 11/11/2020',
+          inputType: 'insertText',
+        });
+        await elementUpdated(picker);
+
+        expect(input.value).to.equal('10/10/2020 - 11/11/2020');
+
+        simulateKeyboard(input, [ctrlKey, 'z']);
+        await elementUpdated(picker);
+
+        expect(input.value).to.equal(initial);
+      });
+    });
   });
   describe('Slots', () => {
     it('should render slotted elements', async () => {
