@@ -4,6 +4,10 @@ function isUnsafeProperty(key: PropertyKey) {
   return key === '__proto__' || key === 'constructor' || key === 'prototype';
 }
 
+/**
+ * Performs a deep structural equality check between two values, handling
+ * arrays, Maps, Sets, RegExps, POJOs and circular references.
+ */
 export function equal<T>(a: unknown, b: T, visited = new WeakSet()): boolean {
   // Early return
   if (Object.is(a, b)) {
@@ -165,6 +169,10 @@ export function merge<
 /**
  * Just like {@link merge} but it does not mutate the `target` object instead
  * mutating a structured clone of it.
+ *
+ * @remarks
+ * Since it relies on `structuredClone`, the `target` must not contain
+ * non-cloneable values such as functions, DOM nodes or class instances.
  */
 export function toMerged<
   T extends Record<PropertyKey, any>,

@@ -14,7 +14,7 @@ import {
   setSlots,
 } from '../../internals/controllers/slot.js';
 import { registerComponent } from '../../internals/definitions/register.js';
-import { first, last } from '../../internals/utils/arrays.js';
+import { firstOf, lastOf } from '../../internals/utils/arrays.js';
 import { addSafeEventListener } from '../../internals/utils/events.js';
 import IgcExpansionPanelComponent from '../expansion-panel/expansion-panel.js';
 import { styles } from './themes/accordion.base.css.js';
@@ -118,11 +118,11 @@ export default class IgcAccordionComponent extends LitElement {
   }
 
   private _navigateToFirst(): void {
-    this._getPanelHeader(first(this._interactivePanels))?.focus();
+    this._getPanelHeader(firstOf(this._interactivePanels))?.focus();
   }
 
   private _navigateToLast(): void {
-    this._getPanelHeader(last(this._interactivePanels))?.focus();
+    this._getPanelHeader(lastOf(this._interactivePanels))?.focus();
   }
 
   private _navigateToPrevious(event: KeyboardEvent): void {

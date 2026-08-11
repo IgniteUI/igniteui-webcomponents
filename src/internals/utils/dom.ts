@@ -1,4 +1,3 @@
-import type IgcFileInputComponent from '../../components/file-input/file-input.js';
 import { numberInRangeInclusive } from './math.js';
 import { merge } from './objects.js';
 import { isDefined } from './types.js';
@@ -18,12 +17,19 @@ export type IterNodesOptions<T = Node> = {
 function createNodeFilter<T extends Node>(predicate: (node: T) => boolean) {
   return {
     acceptNode: (node: T): number =>
-      !predicate || predicate(node)
-        ? NodeFilter.FILTER_ACCEPT
-        : NodeFilter.FILTER_SKIP,
+      predicate(node) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_SKIP,
   };
 }
 
+/**
+ * Iterates over the DOM subtree of `root` in document order, yielding the nodes
+ * matching the passed {@link IterNodesOptions | options}.
+ *
+ * @example
+ * ```typescript
+ * for (const button of iterNodes<HTMLButtonElement>(root, { show: 'SHOW_ELEMENT', filter: isButton })) { ... }
+ * ```
+ */
 export function* iterNodes<T extends Node>(
   root: Node,
   options?: IterNodesOptions<T>
@@ -47,6 +53,7 @@ export function* iterNodes<T extends Node>(
   }
 }
 
+/** Returns the root node (document or shadow root) of the given element. */
 export function getRoot(
   element: Element,
   options?: GetRootNodeOptions
@@ -54,6 +61,7 @@ export function getRoot(
   return element.getRootNode(options) as Document | ShadowRoot;
 }
 
+/** Returns the element with the given id in the root node of `root`, if any. */
 export function getElementByIdFromRoot(root: HTMLElement, id: string) {
   return getRoot(root).getElementById(id);
 }
@@ -96,11 +104,13 @@ export function getScaleFactor(element: HTMLElement): { x: number; y: number } {
   return { x: offsetWidth / width || 1, y: offsetHeight / height || 1 };
 }
 
+/** Rounds a CSS pixel value to the closest device-pixel boundary to avoid blurry rendering. */
 export function roundByDPR(value: number): number {
   const dpr = globalThis.devicePixelRatio || 1;
   return Math.round(value * dpr) / dpr;
 }
 
+/** Null-safe `Element.scrollIntoView` defaulting to the nearest block/inline position. */
 export function scrollIntoView(
   element?: HTMLElement | null,
   config?: ScrollIntoViewOptions
@@ -121,6 +131,7 @@ export function scrollIntoView(
   );
 }
 
+/** Applies the given CSS declarations to the inline style of the element. */
 export function setStyles(
   element: HTMLElement,
   styles: Partial<CSSStyleDeclaration>
@@ -128,9 +139,8 @@ export function setStyles(
   merge(element.style, styles);
 }
 
-export function hasFiles(
-  input: HTMLInputElement | IgcFileInputComponent
-): boolean {
+/** Returns whether the given input has at least one selected file. */
+export function hasFiles(input: { files: FileList | null }): boolean {
   return input.files != null && input.files.length > 0;
 }
 

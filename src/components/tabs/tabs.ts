@@ -30,7 +30,7 @@ import { registerComponent } from '../../internals/definitions/register.js';
 import type { Constructor } from '../../internals/mixins/constructor.js';
 import { EventEmitterMixin } from '../../internals/mixins/event-emitter.js';
 import { partMap } from '../../internals/part-map.js';
-import { first, isEmpty, last } from '../../internals/utils/arrays.js';
+import { firstOf, isEmpty, lastOf } from '../../internals/utils/arrays.js';
 import { getRoot, isLTR, scrollIntoView } from '../../internals/utils/dom.js';
 import { getElementFromPath } from '../../internals/utils/events.js';
 import { wrap } from '../../internals/utils/math.js';
@@ -202,7 +202,7 @@ export default class IgcTabsComponent extends EventEmitterMixin<
 
     const selectedTab =
       this._tabs.findLast((tab) => tab.selected && !tab.disabled) ??
-      first(this._enabledTabs);
+      firstOf(this._enabledTabs);
 
     this._updateLayout();
     this._syncSelection(selectedTab);
@@ -282,7 +282,7 @@ export default class IgcTabsComponent extends EventEmitterMixin<
       // The active tab was either deselected from the outside, which leaves the
       // component without a selection, or disabled and has to hand over.
       this._syncSelection(
-        this._activeTab?.disabled ? first(this._enabledTabs) : undefined
+        this._activeTab?.disabled ? firstOf(this._enabledTabs) : undefined
       );
     }
   }
@@ -301,13 +301,13 @@ export default class IgcTabsComponent extends EventEmitterMixin<
     )?.node;
 
     this._syncSelection(
-      selected ?? this._activeTab ?? first(this._enabledTabs)
+      selected ?? this._activeTab ?? firstOf(this._enabledTabs)
     );
   }
 
   private _handleTabsRemoved(changes: TabMutations): void {
     if (changes.removed.some(({ node }) => node === this._activeTab)) {
-      this._syncSelection(first(this._enabledTabs));
+      this._syncSelection(firstOf(this._enabledTabs));
     }
   }
 
@@ -329,7 +329,7 @@ export default class IgcTabsComponent extends EventEmitterMixin<
   /** Pushes the ARIA set information and the roving tab stop down to the tab children. */
   private _updateTabsState(): void {
     const tabs = this._tabs;
-    const tabStop = this._activeTab ?? first(this._enabledTabs);
+    const tabStop = this._activeTab ?? firstOf(this._enabledTabs);
 
     for (const [index, tab] of tabs.entries()) {
       tab._setTabState(index + 1, tabs.length, tab === tabStop);
@@ -412,11 +412,11 @@ export default class IgcTabsComponent extends EventEmitterMixin<
   }
 
   protected _handleHomeKey(): void {
-    this._keyboardActivateTab(first(this._enabledTabs));
+    this._keyboardActivateTab(firstOf(this._enabledTabs));
   }
 
   protected _handleEndKey(): void {
-    this._keyboardActivateTab(last(this._enabledTabs));
+    this._keyboardActivateTab(lastOf(this._enabledTabs));
   }
 
   protected _handleActivationKeys(): void {

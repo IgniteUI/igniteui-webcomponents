@@ -38,7 +38,7 @@ import { addI18nController } from '../../internals/i18n/i18n-controller.js';
 import type { Constructor } from '../../internals/mixins/constructor.js';
 import { EventEmitterMixin } from '../../internals/mixins/event-emitter.js';
 import { partMap } from '../../internals/part-map.js';
-import { first, isEmpty, last } from '../../internals/utils/arrays.js';
+import { firstOf, isEmpty, lastOf } from '../../internals/utils/arrays.js';
 import { isLTR } from '../../internals/utils/dom.js';
 import {
   addSafeEventListener,
@@ -431,7 +431,7 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
 
     if (!isEmpty(this._slides)) {
       this._activateSlide(
-        this._slides.findLast((slide) => slide.active) ?? first(this._slides)
+        this._slides.findLast((slide) => slide.active) ?? firstOf(this._slides)
       );
     }
   }
@@ -446,7 +446,7 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
     }
 
     const idx = this._slides.indexOf(
-      added.length ? last(added).node : last(attributes).node
+      added.length ? lastOf(added).node : lastOf(attributes).node
     );
 
     for (const [i, slide] of this._slides.entries()) {
@@ -534,14 +534,14 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
   private async _handleHomeKey(): Promise<void> {
     this._hasKeyboardInteractionOnIndicators = true;
     this._handleInteraction(() =>
-      this.select(isLTR(this) ? first(this._slides) : last(this._slides))
+      this.select(isLTR(this) ? firstOf(this._slides) : lastOf(this._slides))
     );
   }
 
   private async _handleEndKey(): Promise<void> {
     this._hasKeyboardInteractionOnIndicators = true;
     this._handleInteraction(() =>
-      this.select(isLTR(this) ? last(this._slides) : first(this._slides))
+      this.select(isLTR(this) ? lastOf(this._slides) : firstOf(this._slides))
     );
   }
 

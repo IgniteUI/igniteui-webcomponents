@@ -22,7 +22,7 @@ import { EventEmitterMixin } from '../../internals/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '../../internals/mixins/forms/associated-required.js';
 import { createFormValueState } from '../../internals/mixins/forms/form-value.js';
 import { partMap } from '../../internals/part-map.js';
-import { asArray, first, isEmpty } from '../../internals/utils/arrays.js';
+import { asArray, firstOf, isEmpty } from '../../internals/utils/arrays.js';
 import {
   addSafeEventListener,
   getElementFromPath,
@@ -186,7 +186,7 @@ export default class IgcComboComponent<
         }
 
         if (this.singleSelect) {
-          return String(first(value));
+          return String(firstOf(value));
         }
 
         const formData = new FormData();
@@ -903,7 +903,7 @@ export default class IgcComboComponent<
 
     if (!isEmpty(this._formValue.value)) {
       const values = this.singleSelect
-        ? asArray(first(this._formValue.value))
+        ? asArray(firstOf(this._formValue.value))
         : this._formValue.value;
 
       if (this.singleSelect && values.length !== this._formValue.value.length) {

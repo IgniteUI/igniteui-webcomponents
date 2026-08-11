@@ -40,6 +40,7 @@ export function getElementFromPath(
   ) as Element | undefined;
 }
 
+/** Reusable event listener that just stops the propagation of the event. */
 export function stopPropagation(event: Event): void {
   event.stopPropagation();
 }
@@ -53,6 +54,10 @@ export function focusLeftHost(host: Element, event: FocusEvent): boolean {
   return !host.contains(event.relatedTarget as Node | null);
 }
 
+/**
+ * Adds an event listener that holds only a weak reference to the passed
+ * `listener`, thus not preventing it from being garbage collected.
+ */
 export function addWeakEventListener(
   element: Element,
   event: string,
@@ -63,9 +68,15 @@ export function addWeakEventListener(
   const wrapped = (evt: Event) => {
     const handler = weakRef.deref();
 
+    if (!handler) {
+      // The listener has been garbage collected - detach the wrapper as well
+      element.removeEventListener(event, wrapped, options);
+      return;
+    }
+
     return isEventListenerObject(handler)
       ? handler.handleEvent(evt)
-      : handler?.(evt);
+      : handler(evt);
   };
 
   element.addEventListener(event, wrapped, options);

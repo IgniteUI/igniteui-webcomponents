@@ -18,7 +18,7 @@ import {
 import { registerComponent } from '../../internals/definitions/register.js';
 import type { Constructor } from '../../internals/mixins/constructor.js';
 import { EventEmitterMixin } from '../../internals/mixins/event-emitter.js';
-import { first, last } from '../../internals/utils/arrays.js';
+import { firstOf, lastOf } from '../../internals/utils/arrays.js';
 import { getRoot, isLTR } from '../../internals/utils/dom.js';
 import {
   addSafeEventListener,
@@ -292,11 +292,11 @@ export default class IgcStepperComponent extends EventEmitterMixin<
   }
 
   private _handleHomeKey(): void {
-    this._getStepHeader(first(this._state.accessibleSteps))?.focus();
+    this._getStepHeader(firstOf(this._state.accessibleSteps))?.focus();
   }
 
   private _handleEndKey(): void {
-    this._getStepHeader(last(this._state.accessibleSteps))?.focus();
+    this._getStepHeader(lastOf(this._state.accessibleSteps))?.focus();
   }
 
   private _handleArrowDown(): void {

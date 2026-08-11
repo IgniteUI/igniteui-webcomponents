@@ -1,4 +1,4 @@
-import { first, last } from '../../internals/utils/arrays.js';
+import { firstOf, lastOf } from '../../internals/utils/arrays.js';
 import { getElementFromPath } from '../../internals/utils/events.js';
 import { asNumber, modulo } from '../../internals/utils/math.js';
 import { isString } from '../../internals/utils/types.js';
@@ -56,7 +56,7 @@ export function parseISODate(string: string): Date | null {
 
   // Time format (HH:MM:SS)
   if (TIME_PATTERN.test(string)) {
-    const today = first(new Date().toISOString().split('T'));
+    const today = firstOf(new Date().toISOString().split('T'));
     return getValidDate(new Date(`${today}T${string}`));
   }
 
@@ -263,7 +263,7 @@ export function isDateInRanges(
     }
 
     const days = range.dateRange.map((day) => toCalendarDay(day));
-    const firstDay = first(days);
+    const firstDay = firstOf(days);
 
     switch (range.type) {
       case DateRangeType.After:
@@ -273,7 +273,7 @@ export function isDateInRanges(
         return value.lessThan(firstDay);
 
       case DateRangeType.Between: {
-        const lastDay = last(days);
+        const lastDay = lastOf(days);
         const min = Math.min(firstDay.timestamp, lastDay.timestamp);
         const max = Math.max(firstDay.timestamp, lastDay.timestamp);
         return value.timestamp >= min && value.timestamp <= max;

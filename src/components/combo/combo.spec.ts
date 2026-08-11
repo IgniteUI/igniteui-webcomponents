@@ -38,7 +38,7 @@ import {
   type ValidationContainerTestsParams,
   ValidityHelpers,
 } from '../../internals/testing/validity-helpers.spec.js';
-import { first } from '../../internals/utils/arrays.js';
+import { firstOf } from '../../internals/utils/arrays.js';
 import type IgcInputComponent from '../input/input.js';
 import type IgcVirtualScrollComponent from '../virtualization/virtualization.js';
 import IgcComboComponent from './combo.js';
@@ -478,7 +478,7 @@ describe('Combo', () => {
     });
 
     it('should select/deselect an item by value key', async () => {
-      const item = first(cities);
+      const item = firstOf(cities);
       combo.open = true;
       combo.select([item[combo.valueKey!]]);
 
@@ -502,7 +502,7 @@ describe('Combo', () => {
       combo.open = true;
       await elementUpdated(combo);
 
-      const item = first(cities);
+      const item = firstOf(cities);
       combo.select([item]);
 
       await comboStable(combo);
@@ -587,7 +587,7 @@ describe('Combo', () => {
     });
 
     it('should not fire igcChange event on selection/deselection via methods calls', async () => {
-      const item = first(cities);
+      const item = firstOf(cities);
       combo.select([item[combo.valueKey!]]);
 
       combo.addEventListener('igcChange', (event: CustomEvent) =>
@@ -604,7 +604,7 @@ describe('Combo', () => {
         cancelable: true,
         detail: {
           newValue: ['BG01'],
-          items: [first(cities)],
+          items: [firstOf(cities)],
           type: 'selection',
         },
       };
@@ -612,7 +612,7 @@ describe('Combo', () => {
 
       await comboStable(combo);
 
-      first(items(combo)).click();
+      firstOf(items(combo)).click();
       expect(combo.value).to.eql(['BG01']);
       expect(eventSpy).calledWithExactly('igcChange', args);
     });
@@ -657,7 +657,7 @@ describe('Combo', () => {
         cancelable: true,
         detail: {
           newValue: ['BG02', 'BG03'],
-          items: [first(cities)],
+          items: [firstOf(cities)],
           type: 'deselection',
         },
       };
@@ -668,7 +668,7 @@ describe('Combo', () => {
 
       expect(combo.value).to.eql(['BG01', 'BG02', 'BG03']);
 
-      first(items(combo)).click();
+      firstOf(items(combo)).click();
       await elementUpdated(combo);
       expect(combo.value).to.eql(['BG02', 'BG03']);
 
@@ -684,7 +684,7 @@ describe('Combo', () => {
 
       await comboStable(combo);
 
-      first(items(combo)).click();
+      firstOf(items(combo)).click();
       await elementUpdated(combo);
 
       expect(eventSpy).calledWith('igcChange');
@@ -701,7 +701,7 @@ describe('Combo', () => {
 
       await comboStable(combo);
 
-      first(items(combo)).click();
+      firstOf(items(combo)).click();
       await elementUpdated(combo);
 
       expect(eventSpy).calledWith('igcChange');
@@ -720,7 +720,7 @@ describe('Combo', () => {
 
       await comboStable(combo);
 
-      first(items(combo)).click();
+      firstOf(items(combo)).click();
       await elementUpdated(combo);
 
       expect(combo.value).to.eql(['BG02']);
@@ -753,7 +753,7 @@ describe('Combo', () => {
 
       await openComboPopover(combo);
 
-      first(items(combo)).click();
+      firstOf(items(combo)).click();
       await elementUpdated(combo);
 
       expect(combo.value).to.eql([0]);
@@ -1096,7 +1096,7 @@ describe('Combo', () => {
       await filterCombo('sof');
 
       expect(items(combo)).lengthOf(1);
-      expect(first(items(combo)).innerText).to.equal('Sofia');
+      expect(firstOf(items(combo)).innerText).to.equal('Sofia');
     });
 
     it('should select the first matched item upon pressing enter after search', async () => {
@@ -1107,12 +1107,12 @@ describe('Combo', () => {
 
       await filterCombo('sof');
 
-      expect(first(items(combo)).active).to.be.true;
+      expect(firstOf(items(combo)).active).to.be.true;
 
       simulateKeyboard(input, enterKey);
       await elementUpdated(combo);
 
-      expect(first(combo.value)).to.equal('BG01');
+      expect(firstOf(combo.value)).to.equal('BG01');
     });
 
     it('should select only one item at a time in single selection mode', async () => {
@@ -1127,8 +1127,8 @@ describe('Combo', () => {
       await elementUpdated(combo);
       await layoutComplete(combo);
 
-      expect(first(items(combo)).active).to.be.true;
-      expect(first(items(combo)).selected).to.be.false;
+      expect(firstOf(items(combo)).active).to.be.true;
+      expect(firstOf(items(combo)).selected).to.be.false;
 
       simulateKeyboard(options, spaceBar);
 
@@ -1247,12 +1247,12 @@ describe('Combo', () => {
       await elementUpdated(combo);
 
       const match = cities.find((i) => i.id === selection)!;
-      expect(first(combo.value)).to.equal(selection);
+      expect(firstOf(combo.value)).to.equal(selection);
 
       const selected = items(combo).filter((i) => i.selected);
 
       expect(selected).lengthOf(1);
-      expect(first(selected).innerText).to.equal(match.name);
+      expect(firstOf(selected).innerText).to.equal(match.name);
     });
 
     it('should deselect a single item using valueKey as argument with the Selection API', async () => {
@@ -1265,7 +1265,7 @@ describe('Combo', () => {
 
       await elementUpdated(combo);
 
-      expect(first(combo.value)).to.equal(selection);
+      expect(firstOf(combo.value)).to.equal(selection);
 
       combo.deselect(selection);
       await elementUpdated(combo);
@@ -1282,17 +1282,17 @@ describe('Combo', () => {
 
       await openComboPopover(combo);
 
-      const item = first(cities);
+      const item = firstOf(cities);
       combo.select(item);
 
       await elementUpdated(combo);
 
-      expect(first(combo.value)).to.equal(item);
+      expect(firstOf(combo.value)).to.equal(item);
 
       const selected = items(combo).filter((i) => i.selected);
 
       expect(selected).lengthOf(1);
-      expect(first(selected).innerText).to.equal(item.name);
+      expect(firstOf(selected).innerText).to.equal(item.name);
     });
 
     it('should deselect the item passed as argument with the Selection API', async () => {
@@ -1301,12 +1301,12 @@ describe('Combo', () => {
 
       await openComboPopover(combo);
 
-      const item = first(cities);
+      const item = firstOf(cities);
       combo.select(item);
 
       await elementUpdated(combo);
 
-      expect(first(combo.value)).to.equal(item);
+      expect(firstOf(combo.value)).to.equal(item);
 
       combo.deselect(item);
       await elementUpdated(combo);
@@ -1326,7 +1326,7 @@ describe('Combo', () => {
 
       // Verify we can only see one item in the list
       expect(items(combo)).lengthOf(1);
-      expect(first(items(combo)).innerText).to.equal('Sofia');
+      expect(firstOf(items(combo)).innerText).to.equal('Sofia');
 
       // Select an item not visible in the list using the API
       const selection = 'US01';
@@ -1334,7 +1334,7 @@ describe('Combo', () => {
       await elementUpdated(combo);
 
       // The combo value should've updated
-      expect(first(combo.value)).to.equal(selection);
+      expect(firstOf(combo.value)).to.equal(selection);
 
       // Let's verify the list of items has been updated
       searchInput.dispatchEvent(new CustomEvent('igcInput', { detail: '' }));
@@ -1349,7 +1349,7 @@ describe('Combo', () => {
       expect(selected).lengthOf(1);
 
       // It should match the one selected via the API
-      expect(first(selected).innerText).to.equal('New York');
+      expect(firstOf(selected).innerText).to.equal('New York');
     });
 
     it('should deselect item(s) even if the list of items has been filtered', async () => {
@@ -1366,8 +1366,8 @@ describe('Combo', () => {
       expect(selected).lengthOf(1);
 
       // It should match the one selected via the API
-      expect(first(selected).innerText).to.equal('New York');
-      expect(first(combo.value)).to.equal(selection);
+      expect(firstOf(selected).innerText).to.equal('New York');
+      expect(firstOf(combo.value)).to.equal(selection);
 
       // Filter the list of items
       searchInput.dispatchEvent(new CustomEvent('igcInput', { detail: 'sof' }));
@@ -1377,7 +1377,7 @@ describe('Combo', () => {
 
       // Verify we can only see one item in the list
       expect(items(combo)).lengthOf(1);
-      expect(first(items(combo)).innerText).to.equal('Sofia');
+      expect(firstOf(items(combo)).innerText).to.equal('Sofia');
 
       // Deselect the previously selected item while the list is filtered
       combo.deselect(selection);
@@ -1745,7 +1745,7 @@ describe('Combo', () => {
 
     it('is correctly reset on form reset (single)', () => {
       // Initial value is a multiple array. The combo defaults to the first item
-      const initial = [first(spec.element.value)];
+      const initial = [firstOf(spec.element.value)];
 
       spec.setProperties({ singleSelect: true });
       spec.setProperties({ value: ['US01'] });
@@ -1842,18 +1842,18 @@ describe('Combo', () => {
 
       it('correct initial state', () => {
         spec.assertIsPristine();
-        expect(spec.element.value).to.eql([first(value)]);
+        expect(spec.element.value).to.eql([firstOf(value)]);
       });
 
       it('is correctly submitted', () => {
-        spec.assertSubmitHasValue(first(value));
+        spec.assertSubmitHasValue(firstOf(value));
       });
 
       it('is correctly reset', () => {
         spec.setProperties({ value: [] });
         spec.reset();
 
-        expect(spec.element.value).to.eql([first(value)]);
+        expect(spec.element.value).to.eql([firstOf(value)]);
       });
     });
 
@@ -1908,7 +1908,7 @@ describe('Combo', () => {
       it('correct initial state (single)', () => {
         initDataDefaultValue(true);
         spec.assertIsPristine();
-        expect(spec.element.value).to.eql([first(value)]);
+        expect(spec.element.value).to.eql([firstOf(value)]);
       });
 
       it('correct initial state (multiple)', () => {
@@ -1919,7 +1919,7 @@ describe('Combo', () => {
 
       it('is correctly submitted (single)', () => {
         initDataDefaultValue(true);
-        spec.assertSubmitHasValue(first(value));
+        spec.assertSubmitHasValue(firstOf(value));
       });
 
       it('is correctly submitted (multiple)', () => {

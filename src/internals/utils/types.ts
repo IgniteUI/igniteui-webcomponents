@@ -1,3 +1,4 @@
+/** Returns whether the value is not `undefined`. Note that `null` is considered defined. */
 export function isDefined<T = unknown>(value: T) {
   return value !== undefined;
 }
@@ -14,6 +15,7 @@ export function isObject(value: unknown): value is object {
   return value != null && typeof value === 'object';
 }
 
+/** Returns whether the value is a plain object (POJO) — created via `{}`, `new Object()` or `Object.create(null)`. */
 export function isPlainObject(
   value: unknown
 ): value is Record<PropertyKey, unknown> {
@@ -34,7 +36,7 @@ export function isPlainObject(
 }
 
 export function isRegExp(value: unknown): value is RegExp {
-  return value != null && value.constructor === RegExp;
+  return value instanceof RegExp;
 }
 
 export function isEventListenerObject(x: unknown): x is EventListenerObject {

@@ -5,7 +5,7 @@ import {
   simulateClick,
   simulateKeyboard,
 } from '../../internals/testing/simulate.spec.js';
-import { first } from '../../internals/utils/arrays.js';
+import { firstOf } from '../../internals/utils/arrays.js';
 import IgcIconComponent from '../icon/icon.js';
 import IgcStepComponent from './step.js';
 import IgcStepperComponent from './stepper.js';
@@ -42,11 +42,11 @@ describe('Stepper', () => {
         expect(step.slots.indicator).to.exist;
         expect(step.slots.subTitle).to.exist;
         expect(step.slots.title).to.exist;
-        expect(first(step.slots.title.assignedElements()).textContent).to.equal(
-          `Step ${i + 1}`
-        );
         expect(
-          first(step.slots.default.assignedElements()).textContent
+          firstOf(step.slots.title.assignedElements()).textContent
+        ).to.equal(`Step ${i + 1}`);
+        expect(
+          firstOf(step.slots.default.assignedElements()).textContent
         ).to.equal(`STEP ${i + 1} CONTENT`);
       }
     });

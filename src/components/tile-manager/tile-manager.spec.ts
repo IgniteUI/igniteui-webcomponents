@@ -4,7 +4,7 @@ import { match, restore, spy, stub } from 'sinon';
 import { defineComponents } from '../../internals/definitions/defineComponents.js';
 import { viewTransitionComplete } from '../../internals/testing/helpers.spec.js';
 import { simulateClick } from '../../internals/testing/simulate.spec.js';
-import { first } from '../../internals/utils/arrays.js';
+import { firstOf } from '../../internals/utils/arrays.js';
 import IgcIconButtonComponent from '../button/icon-button.js';
 import IgcTileComponent from './tile.js';
 import IgcTileManagerComponent from './tile-manager.js';
@@ -568,7 +568,7 @@ describe('Tile Manager component', () => {
 
     beforeEach(async () => {
       tileManager = await fixture<IgcTileManagerComponent>(createTileManager());
-      tile = first(tileManager.tiles);
+      tile = firstOf(tileManager.tiles);
 
       // Mock `requestFullscreen`
       tile.requestFullscreen = stub().callsFake(() => {
@@ -1038,7 +1038,7 @@ describe('Tile Manager component', () => {
     });
 
     it('should set proper CSS order based on position', async () => {
-      const firstTile = first(getTiles());
+      const firstTile = firstOf(getTiles());
       firstTile.position = 6;
 
       await elementUpdated(tileManager);

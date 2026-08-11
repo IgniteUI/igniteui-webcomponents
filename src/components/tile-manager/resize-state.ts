@@ -1,4 +1,4 @@
-import { first } from '../../internals/utils/arrays.js';
+import { firstOf } from '../../internals/utils/arrays.js';
 import { asNumber } from '../../internals/utils/math.js';
 import type { ResizeState } from '../resize-container/types.js';
 import { ResizeUtil } from './resize-util.js';
@@ -18,8 +18,8 @@ function parseTileGridRect(tile: IgcTileComponent): TileGridPosition {
   const { gridColumn, gridRow } = computed;
 
   const [column, row] = [
-    first(Array.from(gridColumn.matchAll(CssValues))).groups!,
-    first(Array.from(gridRow.matchAll(CssValues))).groups!,
+    firstOf(Array.from(gridColumn.matchAll(CssValues))).groups!,
+    firstOf(Array.from(gridRow.matchAll(CssValues))).groups!,
   ];
 
   return {

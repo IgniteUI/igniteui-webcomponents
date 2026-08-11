@@ -16,15 +16,20 @@ export function formatString(template: string, ...params: unknown[]): string {
   );
 }
 
+/**
+ * Splits a string into its words, treating whitespace, `-`, `_` and
+ * camelCase boundaries as separators.
+ */
 export function splitToWords(text: string) {
   const input = text.replaceAll(/[^a-zA-Z0-9\s-_]/g, '');
   if (/[\s-_]+/.test(input)) return input.split(/[\s-_]+/);
   return input.split(/(?=[A-Z])+/);
 }
 
+/** Converts a string to kebab-case. */
 export function toKebabCase(text: string): string {
   const input = text.trim();
-  return splitToWords(input).join('-').toLocaleLowerCase();
+  return splitToWords(input).join('-').toLowerCase();
 }
 
 /**

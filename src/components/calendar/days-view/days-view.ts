@@ -8,7 +8,7 @@ import { registerComponent } from '../../../internals/definitions/register.js';
 import type { Constructor } from '../../../internals/mixins/constructor.js';
 import { EventEmitterMixin } from '../../../internals/mixins/event-emitter.js';
 import { partMap } from '../../../internals/part-map.js';
-import { chunk, first, last } from '../../../internals/utils/arrays.js';
+import { chunk, firstOf, lastOf } from '../../../internals/utils/arrays.js';
 import { addSafeEventListener } from '../../../internals/utils/events.js';
 import { addThemingController } from '../../../theming/theming-controller.js';
 import { IgcCalendarBaseComponent } from '../base.js';
@@ -84,12 +84,12 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
 
   /** Returns the first date in the current range selection. */
   private get _rangeStart(): CalendarDay | undefined {
-    return this._hasValues ? first(this._values) : undefined;
+    return this._hasValues ? firstOf(this._values) : undefined;
   }
 
   /** Returns the last date in the current range selection. */
   private get _rangeEnd(): CalendarDay | undefined {
-    return this._hasValues ? last(this._values) : undefined;
+    return this._hasValues ? lastOf(this._values) : undefined;
   }
 
   private get _weekLabel(): string {
@@ -251,7 +251,7 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
       : [rangeStart, day];
 
     const range = Array.from(calendarRange({ start, end }));
-    range.push(last(range).add('day', 1));
+    range.push(lastOf(range).add('day', 1));
 
     // Filter out disabled dates
     this._values = range.filter((v) => !isDateInRanges(v, this._disabledDates));
@@ -299,7 +299,7 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
   }
 
   private _changeRangePreview(day: CalendarDay): void {
-    if (this._values.length === 1 && !first(this._values).equalTo(day)) {
+    if (this._values.length === 1 && !firstOf(this._values).equalTo(day)) {
       this._setRangePreviewDate(day);
     }
   }
@@ -380,7 +380,7 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
     // Range selection in progress
     if (this._rangePreviewDate?.equalTo(day)) {
       return fmt.formatRange(
-        first(this._values).native,
+        firstOf(this._values).native,
         this._rangePreviewDate.native
       );
     }
@@ -388,8 +388,8 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
     // Range selection finished
     if (this._isFirstInRange(day) || this._isLastInRange(day)) {
       return fmt.formatRange(
-        first(this._values).native,
-        last(this._values).native
+        firstOf(this._values).native,
+        lastOf(this._values).native
       );
     }
 

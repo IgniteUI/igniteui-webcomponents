@@ -8,7 +8,7 @@ import { blazorDeepImport } from '../../internals/decorators/blazorDeepImport.js
 import { blazorIndirectRender } from '../../internals/decorators/blazorIndirectRender.js';
 import type { IgcCalendarResourceStrings } from '../../internals/i18n/EN/calendar.resources.js';
 import { addI18nController } from '../../internals/i18n/i18n-controller.js';
-import { first } from '../../internals/utils/arrays.js';
+import { firstOf } from '../../internals/utils/arrays.js';
 import { convertToDate, convertToDates, getWeekDayNumber } from './helpers.js';
 import { CalendarDay } from './model.js';
 import type {
@@ -211,7 +211,7 @@ export class IgcCalendarBaseComponent extends LitElement {
     if (this._isSingle) {
       this.activeDate = this.value ?? this.activeDate;
     } else {
-      this.activeDate = first(this.values) ?? this.activeDate;
+      this.activeDate = firstOf(this.values) ?? this.activeDate;
     }
   }
 }

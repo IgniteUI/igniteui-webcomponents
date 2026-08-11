@@ -8,7 +8,7 @@ import { watch } from '../../internals/decorators/watch.js';
 import { registerComponent } from '../../internals/definitions/register.js';
 import type { Constructor } from '../../internals/mixins/constructor.js';
 import { EventEmitterMixin } from '../../internals/mixins/event-emitter.js';
-import { last } from '../../internals/utils/arrays.js';
+import { lastOf } from '../../internals/utils/arrays.js';
 import { getElementFromPath } from '../../internals/utils/events.js';
 import { addThemingController } from '../../theming/theming-controller.js';
 import type { ButtonGroupSelection, ContentOrientation } from '../types.js';
@@ -62,7 +62,7 @@ export default class IgcButtonGroupComponent extends EventEmitterMixin<
 
     const buttons = this.toggleButtons;
     const idx = buttons.indexOf(
-      added.length ? last(added).node : last(attributes).node
+      added.length ? lastOf(added).node : lastOf(attributes).node
     );
 
     for (const [i, button] of buttons.entries()) {

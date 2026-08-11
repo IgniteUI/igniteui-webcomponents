@@ -20,7 +20,7 @@ import {
   simulateClick,
   simulateKeyboard,
 } from '../../internals/testing/simulate.spec.js';
-import { first, last } from '../../internals/utils/arrays.js';
+import { firstOf, lastOf } from '../../internals/utils/arrays.js';
 import type IgcIconButtonComponent from '../button/icon-button.js';
 import IgcTabComponent from './tab.js';
 import IgcTabsComponent from './tabs.js';
@@ -31,7 +31,7 @@ describe('Tabs component', () => {
     // biome-ignore lint/complexity/useLiteralKeys: test-scenarios
     const activeTab = tabs['_activeTab'];
 
-    expect(first(selected) === tab).to.be.true;
+    expect(firstOf(selected) === tab).to.be.true;
     expect(activeTab === tab).to.be.true;
     expect(getComputedStyle(getTabDOM(tab).body).display).to.equal('block');
   }
@@ -240,10 +240,10 @@ describe('Tabs component', () => {
       const { indicator } = getTabsDOM(element);
       let selected = getTabsDOM(element).selected;
 
-      let offsetLeft = getTabDOM(first(selected)).header.offsetLeft;
+      let offsetLeft = getTabDOM(firstOf(selected)).header.offsetLeft;
       expect(indicator.style.transform).to.equal(`translateX(${offsetLeft}px)`);
       expect(indicator.style.width).to.equal(
-        `${getTabDOM(first(selected)).header.offsetWidth}px`
+        `${getTabDOM(firstOf(selected)).header.offsetWidth}px`
       );
 
       element.alignment = 'justify';
@@ -255,10 +255,10 @@ describe('Tabs component', () => {
       selected = getTabsDOM(element).selected;
       verifySelection(element, element.tabs[2]);
 
-      offsetLeft = getTabDOM(first(selected)).header.offsetLeft;
+      offsetLeft = getTabDOM(firstOf(selected)).header.offsetLeft;
       expect(indicator.style.transform).to.eq(`translateX(${offsetLeft}px)`);
       expect(indicator.style.width).to.eq(
-        `${getTabDOM(first(selected)).header.offsetWidth}px`
+        `${getTabDOM(firstOf(selected)).header.offsetWidth}px`
       );
     });
 
@@ -271,7 +271,7 @@ describe('Tabs component', () => {
       await elementUpdated(element);
 
       let activeTabHeader = getTabDOM(
-        first(getTabsDOM(element).selected)
+        firstOf(getTabsDOM(element).selected)
       ).header;
       let activeTabOffsetLeft = activeTabHeader.offsetLeft;
       let activeTabWidth = activeTabHeader.getBoundingClientRect().width;
@@ -289,7 +289,7 @@ describe('Tabs component', () => {
       element.select('third');
       await elementUpdated(element);
 
-      activeTabHeader = getTabDOM(first(getTabsDOM(element).selected)).header;
+      activeTabHeader = getTabDOM(firstOf(getTabsDOM(element).selected)).header;
       activeTabOffsetLeft = activeTabHeader.offsetLeft;
       activeTabWidth = activeTabHeader.getBoundingClientRect().width;
 
@@ -307,7 +307,7 @@ describe('Tabs component', () => {
       await elementUpdated(element);
 
       expect(eventSpy).calledWithExactly('igcChange', {
-        detail: first(getTabsDOM(element).selected),
+        detail: firstOf(getTabsDOM(element).selected),
       });
     });
 
@@ -318,7 +318,7 @@ describe('Tabs component', () => {
       await elementUpdated(element);
 
       expect(eventSpy).calledWithExactly('igcChange', {
-        detail: first(getTabsDOM(element).selected),
+        detail: firstOf(getTabsDOM(element).selected),
       });
     });
 
@@ -363,8 +363,8 @@ describe('Tabs component', () => {
 
     it('aligns tab headers properly when `alignment` is set to start', async () => {
       const { container } = getTabsDOM(element);
-      const firstTabHeader = getTabDOM(first(element.tabs)).header;
-      const lastTabHeader = getTabDOM(last(element.tabs)).header;
+      const firstTabHeader = getTabDOM(firstOf(element.tabs)).header;
+      const lastTabHeader = getTabDOM(lastOf(element.tabs)).header;
 
       const widths = element.tabs.map(
         (tab) => getTabDOM(tab).header.offsetWidth
@@ -387,8 +387,8 @@ describe('Tabs component', () => {
 
     it('aligns tab headers properly when `alignment` is set to center', async () => {
       const { container } = getTabsDOM(element);
-      const firstTabHeader = getTabDOM(first(element.tabs)).header;
-      const lastTabHeader = getTabDOM(last(element.tabs)).header;
+      const firstTabHeader = getTabDOM(firstOf(element.tabs)).header;
+      const lastTabHeader = getTabDOM(lastOf(element.tabs)).header;
 
       element.alignment = 'center';
       await elementUpdated(element);
@@ -426,7 +426,7 @@ describe('Tabs component', () => {
       await elementUpdated(element);
 
       verifySelection(element, element.tabs[2]);
-      first(getTabsDOM(element).selected).remove();
+      firstOf(getTabsDOM(element).selected).remove();
       await elementUpdated(element);
 
       verifySelection(element, element.tabs[1]);
@@ -1030,20 +1030,20 @@ describe('Tabs component', () => {
 
       const nestedTabs = tabs.querySelector(IgcTabsComponent.tagName)!;
 
-      verifySelection(tabs, first(tabs.tabs));
-      verifySelection(nestedTabs, last(nestedTabs.tabs));
+      verifySelection(tabs, firstOf(tabs.tabs));
+      verifySelection(nestedTabs, lastOf(nestedTabs.tabs));
 
-      simulateClick(getTabDOM(first(nestedTabs.tabs)).header);
+      simulateClick(getTabDOM(firstOf(nestedTabs.tabs)).header);
       await elementUpdated(tabs);
 
-      verifySelection(tabs, first(tabs.tabs));
-      verifySelection(nestedTabs, first(nestedTabs.tabs));
+      verifySelection(tabs, firstOf(tabs.tabs));
+      verifySelection(nestedTabs, firstOf(nestedTabs.tabs));
 
-      simulateClick(getTabDOM(last(tabs.tabs)).header);
+      simulateClick(getTabDOM(lastOf(tabs.tabs)).header);
       await elementUpdated(tabs);
 
-      verifySelection(tabs, last(tabs.tabs));
-      verifySelection(nestedTabs, first(nestedTabs.tabs));
+      verifySelection(tabs, lastOf(tabs.tabs));
+      verifySelection(nestedTabs, firstOf(nestedTabs.tabs));
     });
   });
 });

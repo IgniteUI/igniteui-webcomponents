@@ -15,7 +15,7 @@ import {
   simulatePointerDown,
   simulatePointerMove,
 } from '../testing/simulate.spec.js';
-import { last } from '../utils/arrays.js';
+import { lastOf } from '../utils/arrays.js';
 import { getCenterPoint } from '../utils/dom.js';
 import { addDragController, type DragCallbackParameters } from './drag.js';
 import { escapeKey } from './key-bindings.js';
@@ -213,7 +213,7 @@ describe('Drag controller', () => {
     const dragStart = spy();
 
     function getCallbackArgs(fn: SinonSpy) {
-      return last(last(fn.args)) as DragCallbackParameters;
+      return lastOf(lastOf(fn.args)) as DragCallbackParameters;
     }
 
     beforeEach(async () => {
@@ -657,7 +657,7 @@ describe('Drag controller', () => {
     const dragStart = spy();
 
     function getCallbackArgs(fn: SinonSpy) {
-      return last(last(fn.args)) as DragCallbackParameters;
+      return lastOf(lastOf(fn.args)) as DragCallbackParameters;
     }
 
     beforeEach(async () => {

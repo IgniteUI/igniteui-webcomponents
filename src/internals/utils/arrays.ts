@@ -1,8 +1,22 @@
-export function first<T>(arr: T[]) {
+/**
+ * Returns the first element of the given array.
+ *
+ * @remarks
+ * Assumes a non-empty array — for an empty one it returns `undefined`
+ * typed as `T`.
+ */
+export function firstOf<T>(arr: T[]) {
   return arr.at(0) as T;
 }
 
-export function last<T>(arr: T[]) {
+/**
+ * Returns the last element of the given array.
+ *
+ * @remarks
+ * Assumes a non-empty array — for an empty one it returns `undefined`
+ * typed as `T`.
+ */
+export function lastOf<T>(arr: T[]) {
   return arr.at(-1) as T;
 }
 
@@ -21,13 +35,8 @@ export function* chunk<T>(arr: T[], size: number): Generator<T[]> {
     throw new Error('size must be an integer >= 1');
   }
 
-  const iterator = Iterator.from(arr);
-  const length = arr.length;
-  let i = 0;
-
-  while (i < length) {
-    yield iterator.take(size).toArray();
-    i += size;
+  for (let i = 0; i < arr.length; i += size) {
+    yield arr.slice(i, i + size);
   }
 }
 

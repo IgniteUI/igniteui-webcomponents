@@ -8,7 +8,7 @@ import {
 import { stub } from 'sinon';
 
 import { defineComponents } from '../../internals/definitions/defineComponents.js';
-import { first, last } from '../../internals/utils/arrays.js';
+import { firstOf, lastOf } from '../../internals/utils/arrays.js';
 import IgcThemeProviderComponent from '../theme-provider/theme-provider.js';
 import IgcIconComponent from './icon.js';
 import {
@@ -276,7 +276,7 @@ describe('Icon broadcast service', () => {
       registerIconFromText(iconName, bugSvg, collectionName);
       await ready;
 
-      const { actionType, collections } = first(events).data;
+      const { actionType, collections } = firstOf(events).data;
       expect(actionType).to.equal(ActionType.RegisterIcon);
       expect(collections?.has(collectionName)).to.be.true;
       expect(
@@ -321,7 +321,7 @@ describe('Icon broadcast service', () => {
       });
       await ready;
 
-      const { actionType, collections, references } = last(events).data;
+      const { actionType, collections, references } = lastOf(events).data;
 
       expect(actionType).to.equal(ActionType.UpdateIconReference);
       expect(collections).to.be.undefined;
@@ -342,7 +342,7 @@ describe('Icon broadcast service', () => {
       setIconRef(refName, refCollectionName, meta);
       await ready;
 
-      const { actionType, collections, references } = last(events).data;
+      const { actionType, collections, references } = lastOf(events).data;
 
       expect(actionType).to.equal(ActionType.UpdateIconReference);
       expect(collections).to.be.undefined;
@@ -406,7 +406,7 @@ describe('Icon broadcast service', () => {
 
       expect(events).lengthOf(2); // [ActionType.RegisterIcon, ActionType.SyncState]
 
-      const { actionType, collections } = last(events).data;
+      const { actionType, collections } = lastOf(events).data;
       expect(actionType).to.equal(ActionType.SyncState);
       expect(collections).not.to.be.undefined;
 
@@ -433,7 +433,7 @@ describe('Icon broadcast service', () => {
 
       expect(events).lengthOf(1); // [ActionType.SyncState]
 
-      const { actionType, references } = last(events).data;
+      const { actionType, references } = lastOf(events).data;
       expect(actionType).to.equal(ActionType.SyncState);
       expect(references?.get(refCollectionName)?.get(refName)).to.be.undefined;
     });
@@ -639,7 +639,7 @@ describe('DefaultMap serialization for cross-browser compatibility', () => {
     registerIconFromText('test-icon', bugSvg, collectionName);
     await ready;
 
-    const { collections } = first(events).data;
+    const { collections } = firstOf(events).data;
 
     expect(collections?.[Symbol.toStringTag]).to.equal('Map');
     // Verify the inner collection is also a Map
@@ -662,7 +662,7 @@ describe('DefaultMap serialization for cross-browser compatibility', () => {
     });
     await ready;
 
-    const { references } = last(events).data;
+    const { references } = lastOf(events).data;
 
     expect(references?.[Symbol.toStringTag]).to.equal('Map');
     // Verify the inner reference collection is also a Map
@@ -678,7 +678,7 @@ describe('DefaultMap serialization for cross-browser compatibility', () => {
     registerIconFromText('nested-icon', bugSvg, collectionName);
     await ready;
 
-    const { collections } = first(events).data;
+    const { collections } = firstOf(events).data;
 
     // Verify that nested plain Maps can be structured-cloned (as BroadcastChannel would do)
     const clonedCollections = structuredClone(collections);

@@ -8,7 +8,7 @@ import {
   runValidationContainerTests,
   type ValidationContainerTestsParams,
 } from '../../internals/testing/validity-helpers.spec.js';
-import { first } from '../../internals/utils/arrays.js';
+import { firstOf } from '../../internals/utils/arrays.js';
 import IgcFileInputComponent from './file-input.js';
 
 describe('File Input component', () => {
@@ -88,17 +88,17 @@ describe('File Input component', () => {
       );
 
       element.focus();
-      simulateFileUpload(input, [first(files)]);
+      simulateFileUpload(input, [firstOf(files)]);
       await elementUpdated(element);
 
       expect(getDOM('[part="file-names"]').innerText).to.equal(
-        first(files).name
+        firstOf(files).name
       );
     });
 
     it('resets the file selection when empty string is passed for value', async () => {
       await createFixture(html`<igc-file-input></igc-file-input>`);
-      const file = first(files);
+      const file = firstOf(files);
 
       simulateFileUpload(input, [file]);
       await elementUpdated(element);
@@ -136,10 +136,10 @@ describe('File Input component', () => {
         'slot[name="file-missing-text"]'
       ) as HTMLSlotElement;
 
-      expect(first(selectorSlot.assignedNodes()).textContent).to.equal(
+      expect(firstOf(selectorSlot.assignedNodes()).textContent).to.equal(
         'Upload'
       );
-      expect(first(missingSlot.assignedNodes()).textContent).to.equal(
+      expect(firstOf(missingSlot.assignedNodes()).textContent).to.equal(
         'Choose a file'
       );
     });
@@ -154,7 +154,7 @@ describe('File Input component', () => {
       await createFixture(html`<igc-file-input></igc-file-input>`);
       const eventSpy = spy(element, 'emitEvent');
 
-      simulateFileUpload(input, [first(files)]);
+      simulateFileUpload(input, [firstOf(files)]);
       await elementUpdated(element);
 
       expect(eventSpy).calledWith('igcChange', {
@@ -224,7 +224,7 @@ describe('Form Integration', () => {
   it('is associated on submit', async () => {
     simulateFileUpload(input, files);
     await elementUpdated(spec.element);
-    spec.assertSubmitHasValue(first(files));
+    spec.assertSubmitHasValue(firstOf(files));
   });
 
   it('is correctly resets on form reset', async () => {

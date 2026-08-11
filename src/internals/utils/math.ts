@@ -1,18 +1,40 @@
-export const asPercent = (part: number, whole: number) => (part / whole) * 100;
-
-export const clamp = (number: number, min: number, max: number) =>
-  Math.max(min, Math.min(number, max));
-
-export function numberOfDecimals(number: number): number {
-  const [_, decimals] = number.toString().split('.');
-  return decimals ? decimals.length : 0;
+/** Returns `part` as a percentage of `whole`. */
+export function asPercent(part: number, whole: number): number {
+  return (part / whole) * 100;
 }
 
+/** Clamps the given number between the min and max bounds (inclusive). */
+export function clamp(number: number, min: number, max: number): number {
+  return Math.max(min, Math.min(number, max));
+}
+
+/** Returns the number of decimal places of the given number. */
+export function numberOfDecimals(number: number): number {
+  if (!Number.isFinite(number) || Number.isInteger(number)) {
+    return 0;
+  }
+
+  // Exponential notation, e.g. `1.5e-7` -> 1 mantissa decimal + 7 exponent places
+  const [mantissa, exponent] = number.toString().split('e-');
+  const decimals = mantissa.split('.')[1]?.length ?? 0;
+
+  return exponent ? decimals + Number(exponent) : decimals;
+}
+
+/**
+ * Rounds a number to the given order of magnitude (number of decimal places).
+ *
+ * @example
+ * ```typescript
+ * roundPrecise(3.14159, 2); // 3.14
+ * ```
+ */
 export function roundPrecise(number: number, magnitude = 1): number {
   const factor = 10 ** magnitude;
   return Math.round(number * factor) / factor;
 }
 
+/** Returns whether the given value lies between the min and max bounds (inclusive). */
 export function numberInRangeInclusive(
   value: number,
   min: number,
@@ -39,7 +61,7 @@ export function numberInRangeInclusive(
  */
 export function asNumber(value: unknown, fallback = 0): number {
   const parsed = Number.parseFloat(value as string);
-  return Number.isNaN(parsed) || !Number.isFinite(parsed) ? fallback : parsed;
+  return Number.isFinite(parsed) ? parsed : fallback;
 }
 
 /**
@@ -66,6 +88,7 @@ export function wrap(min: number, max: number, value: number) {
   return value;
 }
 
+/** Euclidean modulo — like `%` but the result always has the sign of the divisor. */
 export function modulo(n: number, d: number) {
   return ((n % d) + d) % d;
 }

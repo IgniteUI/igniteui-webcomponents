@@ -1,4 +1,4 @@
-import { last } from '../../internals/utils/arrays.js';
+import { lastOf } from '../../internals/utils/arrays.js';
 import type { IgcChatMessageAttachment } from './types.js';
 
 export type ChatAcceptedFileTypes = {
@@ -55,7 +55,7 @@ export function isAcceptedFileType(
 
   const { extensions, mimeTypes, wildcardTypes } = accepted;
   const fileType = file.type.toLowerCase();
-  const fileExtension = `.${last(file.name.split('.'))?.toLowerCase()}`;
+  const fileExtension = `.${lastOf(file.name.split('.'))?.toLowerCase()}`;
   const [fileBaseType] = fileType.split('/');
 
   return (
@@ -93,7 +93,7 @@ export function createAttachmentURL(
 
 export function getFileExtension(name: string): string {
   const parts = name.split('.');
-  return parts.length > 1 ? last(parts) : '';
+  return parts.length > 1 ? lastOf(parts) : '';
 }
 
 export function isImageAttachment(

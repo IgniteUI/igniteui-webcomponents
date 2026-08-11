@@ -18,7 +18,7 @@ import {
   simulateClick,
   simulateKeyboard,
 } from '../../internals/testing/simulate.spec.js';
-import { first } from '../../internals/utils/arrays.js';
+import { firstOf } from '../../internals/utils/arrays.js';
 import { asNumber } from '../../internals/utils/math.js';
 import IgcCalendarComponent from './calendar.js';
 import type IgcDaysViewComponent from './days-view/days-view.js';
@@ -190,7 +190,7 @@ describe('Calendar keyboard interaction', () => {
     });
 
     it('selects a date by pressing `Enter`', async () => {
-      const day = first(getDayViewDOM(daysView).dates.all);
+      const day = firstOf(getDayViewDOM(daysView).dates.all);
       const value = CalendarDay.from(new Date(asNumber(day.dataset.value)));
 
       day.focus();
@@ -201,7 +201,7 @@ describe('Calendar keyboard interaction', () => {
     });
 
     it('selects a date by pressing `Space`', async () => {
-      const day = first(getDayViewDOM(daysView).dates.all);
+      const day = firstOf(getDayViewDOM(daysView).dates.all);
       const value = CalendarDay.from(new Date(asNumber(day.dataset.value)));
 
       day.focus();
@@ -392,7 +392,7 @@ describe('Calendar keyboard interaction', () => {
     });
 
     it('selects a month by pressing `Enter`', async () => {
-      const month = first(getMonthViewDOM(monthsView).months.all);
+      const month = firstOf(getMonthViewDOM(monthsView).months.all);
       const value = CalendarDay.from(calendar.activeDate).set({
         month: asNumber(month.dataset.value),
       });
@@ -406,7 +406,7 @@ describe('Calendar keyboard interaction', () => {
     });
 
     it('selects a month by pressing `Space`', async () => {
-      const month = first(getMonthViewDOM(monthsView).months.all);
+      const month = firstOf(getMonthViewDOM(monthsView).months.all);
       const value = CalendarDay.from(calendar.activeDate).set({
         month: asNumber(month.dataset.value),
       });
@@ -516,7 +516,7 @@ describe('Calendar keyboard interaction', () => {
     });
 
     it('selects an year by pressing `Enter`', async () => {
-      const year = first(getYearViewDOM(yearsView).years.all);
+      const year = firstOf(getYearViewDOM(yearsView).years.all);
       const value = CalendarDay.from(calendar.activeDate).set({
         year: asNumber(year.dataset.value),
       });
@@ -530,7 +530,7 @@ describe('Calendar keyboard interaction', () => {
     });
 
     it('selects an year by pressing `Space`', async () => {
-      const year = first(getYearViewDOM(yearsView).years.all);
+      const year = firstOf(getYearViewDOM(yearsView).years.all);
       const value = CalendarDay.from(calendar.activeDate).set({
         year: asNumber(year.dataset.value),
       });

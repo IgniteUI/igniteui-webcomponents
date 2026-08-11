@@ -21,7 +21,7 @@ import { FormAssociatedCheckboxRequiredMixin } from '../../internals/mixins/form
 import { FormValueBooleanTransformers } from '../../internals/mixins/forms/form-transformers.js';
 import { createFormValueState } from '../../internals/mixins/forms/form-value.js';
 import { partMap } from '../../internals/part-map.js';
-import { isEmpty, last } from '../../internals/utils/arrays.js';
+import { isEmpty, lastOf } from '../../internals/utils/arrays.js';
 import { isLTR } from '../../internals/utils/dom.js';
 import { wrap } from '../../internals/utils/math.js';
 import { createIdGenerator } from '../../internals/utils/strings.js';
@@ -203,7 +203,7 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
   protected override async firstUpdated(): Promise<void> {
     await this.updateComplete;
 
-    if (this.checked && this === last(this._checkedRadios)) {
+    if (this.checked && this === lastOf(this._checkedRadios)) {
       for (const radio of this._siblings) {
         radio.checked = false;
         radio.defaultChecked = false;

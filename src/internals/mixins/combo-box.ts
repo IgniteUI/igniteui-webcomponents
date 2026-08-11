@@ -1,7 +1,7 @@
 import { LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
 import type { RootClickController } from '../controllers/root-click.js';
-import { last } from '../utils/arrays.js';
+import { lastOf } from '../utils/arrays.js';
 import { iterNodes } from '../utils/dom.js';
 import type { UnpackCustomEvent } from './event-emitter.js';
 
@@ -175,7 +175,7 @@ export function getPreviousActiveItem<
 export function setInitialSelectionState<
   T extends HTMLElement & { selected: boolean },
 >(items: T[]): T | null {
-  const lastSelected = last(items.filter((item) => item.selected));
+  const lastSelected = lastOf(items.filter((item) => item.selected));
 
   for (const item of items) {
     item.selected = item === lastSelected;

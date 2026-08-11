@@ -7,7 +7,7 @@ import {
   unsafeStatic,
 } from '@open-wc/testing';
 import { LitElement } from 'lit';
-import { first, last } from '../utils/arrays.js';
+import { firstOf, lastOf } from '../utils/arrays.js';
 import {
   addSlotController,
   type SlotChangeCallbackParameters,
@@ -96,7 +96,7 @@ describe('Slots controller', () => {
       const text = document.createTextNode('Slotted content');
       instance.append(text);
 
-      expect(first(slots.getAssignedNodes('[default]')).textContent).to.equal(
+      expect(firstOf(slots.getAssignedNodes('[default]')).textContent).to.equal(
         'Slotted content'
       );
     });
@@ -170,7 +170,7 @@ describe('Slots controller', () => {
     });
 
     it('should have an initial callback state invoked on first update', () => {
-      const state = first(instance.slotsCallbackResults);
+      const state = firstOf(instance.slotsCallbackResults);
       expect(state.isInitial).to.be.true;
       expect(state.isDefault).to.be.false;
       expect(state.slot).to.equal('<initial>');
@@ -187,7 +187,7 @@ describe('Slots controller', () => {
       instance.append(document.createElement('span'));
       await elementUpdated(instance);
 
-      const state = last(instance.slotsCallbackResults);
+      const state = lastOf(instance.slotsCallbackResults);
       expect(state.isDefault).to.be.true;
       expect(state.isInitial).to.be.false;
       expect(state.slot).to.be.empty;
@@ -200,7 +200,7 @@ describe('Slots controller', () => {
 
       await elementUpdated(instance);
 
-      const state = last(instance.slotsCallbackResults);
+      const state = lastOf(instance.slotsCallbackResults);
       expect(state.isDefault).to.be.false;
       expect(state.isInitial).to.be.false;
       expect(state.slot).to.equal('start');
