@@ -1,6 +1,11 @@
 import { elementUpdated, expect, fixture } from '@open-wc/testing';
 import { html } from 'lit';
 import { spy } from 'sinon';
+import {
+  ctrlKey,
+  metaKey,
+  shiftKey,
+} from '../common/controllers/key-bindings.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import {
   createFormAssociatedTestBed,
@@ -265,6 +270,41 @@ describe('Masked input', () => {
       expect(input.value).to.equal(parser.apply(element.value));
       expect(element.value).to.equal('xyy');
       checkSelectionRange(5, 5);
+    });
+
+    it('setRangeText() clearing a focused input keeps the mask visible', async () => {
+      element.mask = '(CC) (CC)';
+      element.value = '1111';
+
+      await elementUpdated(element);
+      syncParser();
+
+      element.focus();
+      await elementUpdated(element);
+
+      element.setRangeText('', 0, 9);
+      await elementUpdated(element);
+
+      // A focused editor shows the prompts it is being typed into, exactly as it does
+      // after deleting the same text by hand.
+      expect(element.value).to.equal('');
+      expect(input.value).to.equal(parser.emptyMask);
+    });
+
+    it('setRangeText() clearing an unfocused input empties it', async () => {
+      element.mask = '(CC) (CC)';
+      element.value = '1111';
+
+      await elementUpdated(element);
+      syncParser();
+
+      element.setRangeText('', 0, 9);
+      await elementUpdated(element);
+
+      // Unfocused there is nothing to edit, so an empty value renders as an empty
+      // document and lets the placeholder through.
+      expect(element.value).to.equal('');
+      expect(input.value).to.be.empty;
     });
 
     it('igcChange event', async () => {
@@ -642,6 +682,273 @@ describe('Masked input', () => {
     });
   });
 
+  describe('Undo / redo', () => {
+    /** Types characters at the current caret, the way a browser would. */
+    async function type(text: string): Promise<void> {
+      for (const char of text) {
+        const caret = input.selectionStart ?? 0;
+
+        simulateKeyboard(input, char);
+        input.value = `${input.value.substring(0, caret)}${char}${input.value.substring(caret)}`;
+        input.setSelectionRange(caret + 1, caret + 1);
+        simulateInput(input, {
+          inputType: 'insertText',
+          skipValueProperty: true,
+        });
+        await elementUpdated(element);
+      }
+    }
+
+    async function backspace(times = 1): Promise<void> {
+      for (let i = 0; i < times; i++) {
+        // The browser has already removed the character by the time `input` fires, so the
+        // caret sits one position back.
+        const caret = Math.max((input.selectionStart ?? 0) - 1, 0);
+
+        simulateKeyboard(input, 'Backspace');
+        input.setSelectionRange(caret, caret);
+        simulateInput(input, {
+          inputType: 'deleteContentBackward',
+          skipValueProperty: true,
+        });
+        await elementUpdated(element);
+      }
+    }
+
+    async function press(...keys: string[]): Promise<void> {
+      simulateKeyboard(input, keys);
+      await elementUpdated(element);
+    }
+
+    const undo = () => press(ctrlKey, 'z');
+    const redo = () => press(ctrlKey, 'y');
+
+    beforeEach(async () => {
+      element = await fixture<IgcMaskInputComponent>(
+        html`<igc-mask-input></igc-mask-input>`
+      );
+      input = element.renderRoot.querySelector('input')!;
+
+      element.focus();
+      await elementUpdated(element);
+      element.setSelectionRange(0, 0);
+    });
+
+    it('collapses a run of typed characters into a single step', async () => {
+      await type('123');
+      expect(element.value).to.equal('123');
+
+      await undo();
+
+      expect(element.value).to.equal('');
+      expect(input.value).to.equal('__________');
+    });
+
+    it('redoes the restored run', async () => {
+      await type('12');
+
+      await undo();
+      expect(element.value).to.equal('');
+
+      await redo();
+      expect(element.value).to.equal('12');
+      expect(input.value).to.equal('12________');
+    });
+
+    it('supports the alternate shortcuts', async () => {
+      await type('1');
+
+      await press(metaKey, 'z');
+      expect(element.value).to.equal('');
+
+      await press(ctrlKey, shiftKey, 'z');
+      expect(element.value).to.equal('1');
+
+      await press(metaKey, 'z');
+      await press(metaKey, shiftKey, 'z');
+      expect(element.value).to.equal('1');
+    });
+
+    it('preserves interior holes in the mask', async () => {
+      // Refocus so the empty mask is rebuilt against the new pattern.
+      element.blur();
+      element.mask = 'CCC-CCC';
+      await elementUpdated(element);
+      element.focus();
+      await elementUpdated(element);
+
+      element.setSelectionRange(0, 0);
+      await type('1');
+
+      element.setSelectionRange(2, 2);
+      await type('2');
+      expect(input.value).to.equal('1_2-___');
+
+      element.setSelectionRange(6, 6);
+      await type('3');
+      expect(input.value).to.equal('1_2-__3');
+
+      await undo();
+
+      // A restore that round-tripped through the value setter would left-pack this
+      // to '12_-___'.
+      expect(input.value).to.equal('1_2-___');
+    });
+
+    it('starts a new step when the caret moves', async () => {
+      await type('12');
+
+      element.setSelectionRange(5, 5);
+      await type('3');
+      expect(element.value).to.equal('123');
+
+      await undo();
+      expect(element.value).to.equal('12');
+
+      await undo();
+      expect(element.value).to.equal('');
+    });
+
+    it('collapses a run of backspaces into a single step', async () => {
+      element.value = '1234';
+      await elementUpdated(element);
+      element.setSelectionRange(4, 4);
+
+      await backspace(2);
+      expect(element.value).to.equal('12');
+
+      await undo();
+      expect(element.value).to.equal('1234');
+    });
+
+    it('keeps typing and deleting as separate steps', async () => {
+      await type('12');
+      await backspace();
+      expect(element.value).to.equal('1');
+
+      await undo();
+      expect(element.value).to.equal('12');
+
+      await undo();
+      expect(element.value).to.equal('');
+    });
+
+    it('records a paste as its own step', async () => {
+      await type('1');
+
+      input.value = '1999______';
+      input.setSelectionRange(1, 4);
+      simulateInput(input, {
+        inputType: 'insertFromPaste',
+        skipValueProperty: true,
+      });
+      await elementUpdated(element);
+
+      expect(element.value).to.equal('1999');
+
+      await undo();
+      expect(element.value).to.equal('1');
+    });
+
+    it('does not record an edit the mask rejects', async () => {
+      element.mask = '000';
+      await elementUpdated(element);
+      element.focus();
+      await elementUpdated(element);
+      element.setSelectionRange(0, 0);
+
+      // A letter is not valid for a numeric position - nothing changes.
+      await type('1a');
+      expect(element.value).to.equal('1');
+
+      // A single undo must reach the empty mask, not sit on a step that does nothing.
+      await undo();
+      expect(element.value).to.equal('');
+    });
+
+    it('emits igcInput when a step is restored', async () => {
+      await type('1');
+
+      const eventSpy = spy(element, 'emitEvent');
+      await undo();
+
+      expect(eventSpy).calledWith('igcInput', { detail: '' });
+    });
+
+    it('places the caret where the undone edit began', async () => {
+      element.setSelectionRange(3, 3);
+      await type('9');
+
+      await undo();
+
+      expect(input.selectionStart).to.equal(3);
+      expect(input.selectionEnd).to.equal(3);
+
+      // Typing after the undo must land at the restored caret.
+      await type('7');
+      expect(input.value).to.equal('___7______');
+    });
+
+    it('is a no-op with nothing to undo', async () => {
+      await undo();
+
+      expect(element.value).to.equal('');
+      expect(input.value).to.equal('__________');
+    });
+
+    it('does nothing while readonly', async () => {
+      await type('1');
+
+      element.readOnly = true;
+      await elementUpdated(element);
+
+      await undo();
+      expect(element.value).to.equal('1');
+    });
+
+    it('drops the history on a programmatic value assignment', async () => {
+      await type('1');
+
+      element.value = 'abc';
+      await elementUpdated(element);
+
+      await undo();
+      expect(element.value).to.equal('abc');
+    });
+
+    it('drops the history when the mask changes', async () => {
+      await type('1');
+
+      element.mask = 'CCCCC';
+      await elementUpdated(element);
+
+      await undo();
+      expect(element.value).to.equal('1');
+    });
+
+    it('drops the history when the prompt changes', async () => {
+      await type('1');
+
+      element.prompt = '*';
+      await elementUpdated(element);
+
+      await undo();
+      expect(element.value).to.equal('1');
+    });
+
+    it('survives a blur and refocus', async () => {
+      await type('12');
+
+      element.blur();
+      await elementUpdated(element);
+      element.focus();
+      await elementUpdated(element);
+
+      await undo();
+      expect(element.value).to.equal('');
+    });
+  });
+
   describe('Form integration', () => {
     const spec = createFormAssociatedTestBed<IgcMaskInputComponent>(
       html`<igc-mask-input name="mask"></igc-mask-input>`
@@ -841,6 +1148,32 @@ describe('Masked input', () => {
       it('is correctly reset', () => {
         spec.setProperties({ value: '123' });
         spec.reset();
+
+        expect(spec.element.value).to.equal('abc');
+      });
+
+      it('drops the undo history on reset', async () => {
+        const nativeInput = spec.element.renderRoot.querySelector('input')!;
+
+        spec.setProperties({ value: '123' });
+        spec.element.focus();
+        await elementUpdated(spec.element);
+
+        spec.element.setSelectionRange(3, 3);
+        nativeInput.value = '123z______';
+        nativeInput.setSelectionRange(4, 4);
+        simulateInput(nativeInput, {
+          inputType: 'insertText',
+          skipValueProperty: true,
+        });
+        await elementUpdated(spec.element);
+        expect(spec.element.value).to.equal('123z');
+
+        spec.reset();
+        await elementUpdated(spec.element);
+
+        simulateKeyboard(nativeInput, [ctrlKey, 'z']);
+        await elementUpdated(spec.element);
 
         expect(spec.element.value).to.equal('abc');
       });

@@ -572,6 +572,28 @@ describe('Mask parser', () => {
       expect(customParser.prompt).to.equal('_');
     });
 
+    it('constructor rejects a prompt conflicting with a mask flag', () => {
+      // Same rule the `prompt` accessor applies - a flag standing in for an unfilled
+      // position could not be told apart from one the user typed.
+      const customParser = new MaskParser({
+        format: '0000',
+        promptCharacter: '0',
+      });
+
+      expect(customParser.prompt).to.equal('_');
+      expect(customParser.apply()).to.equal('____');
+    });
+
+    it('constructor keeps only the first character of the prompt', () => {
+      const customParser = new MaskParser({
+        format: '000',
+        promptCharacter: '$$',
+      });
+
+      expect(customParser.prompt).to.equal('$');
+      expect(customParser.apply()).to.equal('$$$');
+    });
+
     it('C flag accepts any character including special chars', () => {
       parser.mask = 'CCCC';
       expect(parser.apply('!@#$')).to.equal('!@#$');

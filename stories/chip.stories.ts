@@ -33,6 +33,12 @@ const metadata: Meta<IgcChipComponent> = {
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
+    outlined: {
+      type: 'boolean',
+      description: 'Defines if the chip is outlined or not.',
+      control: 'boolean',
+      table: { defaultValue: { summary: 'false' } },
+    },
     selectable: {
       type: 'boolean',
       description: 'Defines if the chip is selectable or not.',
@@ -62,6 +68,7 @@ const metadata: Meta<IgcChipComponent> = {
   args: {
     disabled: false,
     removable: false,
+    outlined: false,
     selectable: false,
     selected: false,
   },
@@ -74,6 +81,8 @@ interface IgcChipArgs {
   disabled: boolean;
   /** Defines if the chip is removable or not. */
   removable: boolean;
+  /** Defines if the chip is outlined or not. */
+  outlined: boolean;
   /** Defines if the chip is selectable or not. */
   selectable: boolean;
   /** Defines if the chip is selected or not. */
@@ -99,6 +108,7 @@ export const Basic: Story = {
   render: ({
     disabled,
     removable,
+    outlined,
     selectable,
     selected,
     variant,
@@ -108,6 +118,7 @@ export const Basic: Story = {
       .removable=${removable}
       .selectable=${selectable}
       .selected=${selected}
+      .outlined=${outlined}
       variant=${ifDefined(variant)}
     >
       <span slot="prefix">😱</span>
@@ -128,6 +139,7 @@ export const Variants: Story = {
     },
   },
   render: () => html`
+    <h4 style="margin: 0 0 0 1rem">Default</h4>
     <div style="display: flex; flex-wrap: wrap; gap: 0.75rem; padding: 1rem;">
       <igc-chip>Default</igc-chip>
       <igc-chip variant="primary">Primary</igc-chip>
@@ -135,6 +147,15 @@ export const Variants: Story = {
       <igc-chip variant="success">Success</igc-chip>
       <igc-chip variant="warning">Warning</igc-chip>
       <igc-chip variant="danger">Danger</igc-chip>
+    </div>
+    <h4 style="margin: 1rem 0 0 1rem">Outlined</h4>
+    <div style="display: flex; flex-wrap: wrap; gap: 0.75rem; padding: 1rem;">
+      <igc-chip outlined>Default</igc-chip>
+      <igc-chip variant="primary" outlined>Primary</igc-chip>
+      <igc-chip variant="info" outlined>Info</igc-chip>
+      <igc-chip variant="success" outlined>Success</igc-chip>
+      <igc-chip variant="warning" outlined>Warning</igc-chip>
+      <igc-chip variant="danger" outlined>Danger</igc-chip>
     </div>
   `,
 };
@@ -257,13 +278,14 @@ export const States: Story = {
     docs: {
       description: {
         story:
-          'Visual overview of chip states: default, selected, disabled, disabled+selected, removable, and selectable.',
+          'Visual overview of chip states: default, outlined, selected, disabled, disabled+selected, removable, and selectable.',
       },
     },
   },
   render: () => html`
     <div style="display: flex; flex-wrap: wrap; gap: 0.75rem; padding: 1rem;">
       <igc-chip>Default</igc-chip>
+      <igc-chip outlined>Outlined</igc-chip>
       <igc-chip selectable selected>Selected</igc-chip>
       <igc-chip disabled>Disabled</igc-chip>
       <igc-chip selectable selected disabled>Disabled &amp; Selected</igc-chip>

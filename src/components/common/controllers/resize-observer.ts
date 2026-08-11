@@ -24,6 +24,13 @@ export interface ResizeObserverControllerConfig {
    * Pass in `null` to skip setting an initial target.
    */
   target?: Element | null;
+  /**
+   * Whether observing a target should request an update on the host.
+   *
+   * Defaults to `true`. Set to `false` when the host already drives its own
+   * update cycle and an extra render per observed element is wasted work.
+   */
+  requestUpdate?: boolean;
 }
 
 class ResizeObserverController implements ReactiveController {
@@ -55,11 +62,19 @@ class ResizeObserverController implements ReactiveController {
     host.addController(this);
   }
 
+  /** The elements currently being observed. */
+  public get targets(): ReadonlySet<Element> {
+    return this._targets;
+  }
+
   /** Starts observing the `targe` element. */
   public observe(target: Element): void {
     this._targets.add(target);
     this._observer.observe(target, this._config.options);
-    this._host.requestUpdate();
+
+    if (this._config.requestUpdate ?? true) {
+      this._host.requestUpdate();
+    }
   }
 
   /** Stops observing the `target` element. */

@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 ### Added
+- #### Mask input, Date time input, Date range picker
+  - The masked editors now support the standard undo/redo shortcuts - `Ctrl + Z` / `Cmd + Z` to undo and `Ctrl + Y`, `Ctrl + Shift + Z` / `Cmd + Shift + Z` to redo. Previously these did nothing, because rendering the masked text reassigns the native input's value and that clears the browser's own undo stack.
+    - A run of consecutive typed characters, or of consecutive deletions, collapses into a single undo step. Moving the caret, pasting, dropping, cutting, spinning a date part, or composing with an IME each start a step of their own.
+    - Restoring a step emits `igcInput`, so composite hosts and two-way bindings follow the undo. For the date editors the restored text remains an uncommitted draft, and `igcChange` is emitted on blur only if the committed value actually changed.
+    - The history is kept across focus changes and is discarded when the value is set programmatically, when the control is reset by its form, or when the `mask`/`prompt`/`input-format` pattern changes.
 - #### Icon
   - `registerIcon` and `registerIconFromText` now accept a `RegisterIconOptions` object as their third argument in addition to the existing plain collection string. Setting `stripMeta: true` removes `<title>` and `<desc>` elements from the stored SVG, preventing the browser from displaying a native tooltip on hover. The title text is still captured and exposed as the `aria-label` of the host `<igc-icon>` element. Any `aria-labelledby` / `aria-describedby` references on the root `<svg>` that pointed to the stripped elements' IDs are cleaned up automatically. [#1822](https://github.com/IgniteUI/igniteui-webcomponents/issues/1822)
 - #### QR Code
@@ -27,6 +32,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
     - Added the `igcStateChange` event, emitted after each render pass with a snapshot of the current virtual window (`startIndex`, `endIndex`, `viewportSize`, `totalSize`).
     - Added the `layoutComplete` property - a promise that resolves once the current render pass, and any follow-up renders triggered by item measurement, have fully settled.
     - Transparently degrades past the maximum scroll coordinate supported by the browser, so lists far larger than the DOM would normally allow keep scrolling and rendering correctly.
+- #### Chip
+  - Added the `outlined` property to the component. When set to `true`, the Chip will have an outlined style. [#2307](https://github.com/IgniteUI/igniteui-webcomponents/pull/2307)
+- #### Tabs
+  - `selectedTab` property, returning the selected `igc-tab` element or `null`.
+  - `select()` now matches a tab's `label` as well as its IDREF, so the value reported by `selected` can be passed back into it.
 
 ### Changed
 - #### Combo
@@ -36,17 +46,40 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - Removed the `@lit-labs/virtualizer` dependency. Virtualization is now implemented internally by the new `igc-virtual-scroll` component. [#2222](https://github.com/IgniteUI/igniteui-webcomponents/pull/2222)
 - #### Carousel
   - The component now delegates focus, starting with its indicator container, navigation buttons, or the first focusable element in the active slide, whichever is available. Related to [#2291](https://github.com/IgniteUI/igniteui-webcomponents/issues/2291).
+- #### Chip
+  - The `focus-outline-color` and `focus-selected-outline-color` CSS variables were replaced with `focus-shadow-color` and `focus-selected-shadow-color`.
 - #### Date time input, Date picker, Date range picker
   - **Behavioral change:** the `value` property of these components is no longer mutated while the user is typing. It now only ever holds a committed value and changes in lockstep with the `igcChange` event, which is still emitted when the editor loses focus. Previously `value` was updated on every keystroke - becoming `null` for an incomplete mask and the parsed date once the mask filled - without any event announcing it. [#1346](https://github.com/IgniteUI/igniteui-webcomponents/issues/1346)
     - This makes the components usable in templates where `value` is externally bound, such as an edit template in `igc-grid`. Previously any re-render during typing re-applied the stale bound value and reset the editor, making it impossible to enter a new date.
     - The value as it is being typed - including the result of spinning a date part or of `Ctrl + ;` - is available on the `detail` of the `igcInput` event, whose payload is unchanged.
     - Spinning a date part while the editor is focused now also defers to the commit on blur. A programmatic `stepUp()` / `stepDown()` on an unfocused component still updates `value` immediately, as do `clear()`, `setRangeText()`, and direct assignments.
     - For `igc-date-picker` and `igc-date-range-picker` the calendar keeps following the typed date while editing, as before.
+- #### Tabs
+  - **Behavioral change:** the scroll buttons now scroll to the nearest tab that is not fully in view, instead of stepping by a fixed 180px. A tab sitting underneath a scroll button counts as out of view, so one click brings exactly one tab into view without overshooting it.
+  - Improved accessibility: tab headers expose `aria-posinset` / `aria-setsize`, the strip declares its `aria-orientation`, and the selected panel is focusable so keyboard users can reach panel content that holds no focusable elements of its own. The strip also keeps a tab stop when nothing is selected.
+  - `igc-tab` elements projected through an intermediate slot are now picked up, so `igc-tabs` can be wrapped by another component.
 
 ### Fixed
 - #### Form associated components
   - Validation messages no longer disappear right after the first failed form submission. The submit-driven invalid state used to hold only for the update the submission itself scheduled, so any re-render that followed - a `slotchange` from the validation slots the submission had just projected, for instance - silently dropped the projected messages while the invalid styling stayed on.
   - Invalid styling now follows the validity state, so a control that turns valid again (a cleared `required`, a widened `min`/`max`, a disabled control) drops the styles it picked up from an earlier interaction or submission.
+- #### Tree
+  - Substantially reduced the cost of several operations on large or deeply nested trees:
+    - Reading `path` on a tree item, and anything built on it such as activating a nested item, cost `2^depth` rather than `depth` because the ancestor chain was re-walked twice per level. A single read at depth 20 took ~23ms; it is now under a microsecond at any depth.
+    - Keyboard navigation is roughly 5x faster (~1.24ms to ~0.24ms per keypress on a 1554-item tree). The navigable set is derived by a lazy walk that prunes collapsed branches, instead of materializing every item and filtering it by climbing each one's ancestors.
+    - Removing a subtree while items are selected is roughly 2x faster (~134ms to ~71ms for 259 items in `cascade` mode). Each removed item used to re-run the full cascade reconciliation, although the topmost removed item already covers its whole subtree.
+    - `tree.items`, `select()` over a whole `cascade` tree, and expanding or collapsing every item are each ~25-45% faster.
+- #### Tabs
+  - See-through scroll buttons in the Indigo theme. The buttons are sticky and the tab headers scroll underneath them, but the theme leaves both the buttons and the tabs strip transparent, so the scrolled headers showed through. The buttons now paint an opaque surface backdrop below their themed background. [#1955](https://github.com/IgniteUI/igniteui-webcomponents/issues/1955)
+  - `igcChange` was never emitted when `activation` is `manual` and a tab was activated with Enter or Space, so the selection changed silently.
+  - The selection is now kept in sync with the DOM in cases that previously left the component inconsistent:
+    - Setting `selected` to `false` on the active tab hid its panel but kept the tab internally active, so it could never be selected again.
+    - Removing the last remaining tab left a dangling reference that `selected` kept reporting.
+    - `select()`, the `selected` attribute and the initial selection could all activate a disabled tab, which clicking has always refused, and a tab marked both `selected` and `disabled` showed its panel alongside the selected one.
+    - Disabling the active tab left its panel visible under a greyed out header. Selection now moves to the first enabled tab, or is cleared when every tab is disabled.
+  - The start scroll button stayed enabled at the start of the strip under browser zoom or a non-integer device pixel ratio, where the scroll offset is fractional.
+  - Clicking a partially visible tab header scrolled the strip twice.
+  - Reduced rendering work: scrolling the strip no longer schedules an update per scroll event, and changing the selection no longer triggers a redundant layout pass.
 
 ## [7.2.4] - 2026-06-29
 ### Added

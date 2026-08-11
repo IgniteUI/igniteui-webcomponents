@@ -1,5 +1,5 @@
-import { html, LitElement, type TemplateResult } from 'lit';
-import { property } from 'lit/decorators.js';
+import { html, LitElement, nothing, type TemplateResult } from 'lit';
+import { property, state } from 'lit/decorators.js';
 
 import { addThemingController } from '../../theming/theming-controller.js';
 import { registerComponent } from '../common/definitions/register.js';
@@ -34,6 +34,25 @@ export default class IgcTabComponent extends LitElement {
     registerComponent(IgcTabComponent);
   }
 
+  //#region Internal state & properties
+
+  private readonly _instanceId = nextId++;
+  private readonly _headerId = `igc-tab-header-${this._instanceId}`;
+  private readonly _contentId = `igc-tab-content-${this._instanceId}`;
+
+  @state()
+  private _posInSet = 0;
+
+  @state()
+  private _setSize = 0;
+
+  @state()
+  private _isTabStop = false;
+
+  //#endregion
+
+  //#region Public properties
+
   /**
    * The tab item label.
    * @attr label
@@ -59,6 +78,10 @@ export default class IgcTabComponent extends LitElement {
   @property({ type: Boolean, reflect: true })
   public disabled = false;
 
+  //#endregion
+
+  //#region Life-cycle hooks
+
   constructor() {
     super();
     addThemingController(this, all);
@@ -67,22 +90,46 @@ export default class IgcTabComponent extends LitElement {
   /** @internal */
   public override connectedCallback(): void {
     super.connectedCallback();
-    this.id = this.id || `igc-tab-${nextId++}`;
+    this.id = this.id || `igc-tab-${this._instanceId}`;
   }
 
-  protected override render(): TemplateResult {
-    const headerId = `${this.id}-header`;
-    const contentId = `${this.id}-content`;
+  //#endregion
 
+  //#region Internal API
+
+  /**
+   * @hidden @internal
+   * Applied by the parent `igc-tabs` whenever the tab set or the selection changes.
+   *
+   * `isTabStop` drives the roving tabindex, keeping the tab strip reachable even
+   * when no tab is selected.
+   */
+  public _setTabState(
+    posInSet: number,
+    setSize: number,
+    isTabStop: boolean
+  ): void {
+    this._posInSet = posInSet;
+    this._setSize = setSize;
+    this._isTabStop = isTabStop;
+  }
+
+  //#endregion
+
+  //#region Render
+
+  protected override render(): TemplateResult {
     return html`
       <div
         part="tab-header"
         role="tab"
-        id=${headerId}
+        id=${this._headerId}
         aria-disabled=${this.disabled}
         aria-selected=${this.selected}
-        aria-controls=${contentId}
-        tabindex=${this.selected ? 0 : -1}
+        aria-controls=${this._contentId}
+        aria-posinset=${this._posInSet || nothing}
+        aria-setsize=${this._setSize || nothing}
+        tabindex=${this.selected || this._isTabStop ? 0 : -1}
       >
         <div part="base">
           <slot name="prefix" part="prefix"></slot>
@@ -95,14 +142,17 @@ export default class IgcTabComponent extends LitElement {
       <div
         part="tab-body"
         role="tabpanel"
-        id=${contentId}
-        aria-labelledby=${headerId}
+        id=${this._contentId}
+        aria-labelledby=${this._headerId}
+        tabindex=${this.selected ? 0 : -1}
         .inert=${!this.selected}
       >
         <slot></slot>
       </div>
     `;
   }
+
+  //#endregion
 }
 
 declare global {

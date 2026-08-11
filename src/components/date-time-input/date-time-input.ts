@@ -13,16 +13,14 @@ import { styles as shared } from '../input/themes/shared/input.common.css.js';
 import { all } from '../input/themes/themes.js';
 import IgcValidationContainerComponent from '../validation-container/validation-container.js';
 import {
+  createDatePart,
   DatePart,
   type DatePartDeltas,
+  DatePartType,
   DEFAULT_DATE_PARTS_SPIN_DELTAS,
 } from './date-part.js';
 import { IgcDateTimeInputBaseComponent } from './date-time-input.base.js';
-import {
-  createDatePart,
-  DateParts,
-  DateTimeMaskParser,
-} from './datetime-mask-parser.js';
+import { DateTimeMaskParser } from './datetime-mask-parser.js';
 import { dateTimeInputValidators } from './validators.js';
 
 export interface IgcDateTimeInputComponentEventMap {
@@ -142,11 +140,17 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
 
     if (!this.value) {
       this._maskedValue = this._parser.emptyMask;
+      this._historyResync();
       await this.updateComplete;
       this.select();
-    } else if (this.displayFormat !== this.inputFormat) {
+      return;
+    }
+
+    if (this.displayFormat !== this.inputFormat) {
       this._updateMaskDisplay();
     }
+
+    this._historyResync();
   }
 
   //#endregion
@@ -163,19 +167,19 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
     direction: number
   ): number {
     const cursorPos = this._maskSelection.start;
-    const dateParts = this._parser.dateParts;
+    const dateParts = this._parser.parts;
 
     if (direction === 0) {
       // Navigate backwards: find last literal before cursor
       const part = dateParts.findLast(
-        (part) => part.type === DateParts.Literal && part.end < cursorPos
+        (part) => part.type === DatePartType.Literal && part.end < cursorPos
       );
       return part?.end ?? 0;
     }
 
     // Navigate forwards: find first literal after cursor
     const part = dateParts.find(
-      (part) => part.type === DateParts.Literal && part.start > cursorPos
+      (part) => part.type === DatePartType.Literal && part.start > cursorPos
     );
     return part?.start ?? inputValue.length;
   }
@@ -190,8 +194,8 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
    * Returns undefined if cursor is not within a valid date part.
    */
   protected override _getDatePartAtCursor(): DatePart | undefined {
-    return this._parser.getDatePartForCursor(this._inputSelection.start)
-      ?.type as DatePart | undefined;
+    return this._parser.getPartForCursor(this._inputSelection.start)?.type as
+      DatePart | undefined;
   }
 
   /**
@@ -199,9 +203,9 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
    * Prioritizes: Date > Hours > First available part
    */
   protected override _getDefaultDatePart(): DatePart | undefined {
-    return (this._parser.getPartByType(DateParts.Date)?.type ??
-      this._parser.getPartByType(DateParts.Hours)?.type ??
-      this._parser.getFirstDatePart()?.type) as DatePart | undefined;
+    return (this._parser.getPartByType(DatePartType.Date)?.type ??
+      this._parser.getPartByType(DatePartType.Hours)?.type ??
+      this._parser.getFirstPart()?.type) as DatePart | undefined;
   }
 
   protected override _parseMask(strict: boolean): Date | null {
@@ -275,7 +279,7 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
     }
 
     const newDate = new Date(current.getTime());
-    const partType = datePart as unknown as DateParts;
+    const partType = datePart as unknown as DatePartType;
 
     // Get the part instance from the parser, or create one for explicit spin operations
     let part = this._parser.getPartByType(partType);
@@ -288,7 +292,7 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
     // For AM/PM, we need to extract the current AM/PM value from the mask
     let amPmValue: string | undefined;
     if (datePart === DatePart.AmPm) {
-      const formatPart = this._parser.getPartByType(DateParts.AmPm);
+      const formatPart = this._parser.getPartByType(DatePartType.AmPm);
       if (formatPart) {
         amPmValue = this._maskedValue.substring(
           formatPart.start,

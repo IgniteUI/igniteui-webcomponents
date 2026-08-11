@@ -64,7 +64,7 @@
     min-width: rem(24px);
 }
 
-[part='indicator rtl'] {
+:host(:dir(rtl)) [part~='indicator'] {
     transform: scaleX(-1);
 }
 

@@ -10,3 +10,16 @@ $theme: $fluent;
 :host button {
     @include type-style('subtitle-2');
 }
+
+@mixin chip-outlined-variants($variant) {
+    :host([outlined][variant='#{$variant}']) button,
+    :host([selected][outlined][variant='#{$variant}']) button:not([disabled]) {
+        background: transparent;
+    }
+}
+
+@include chip-outlined-variants('primary');
+@include chip-outlined-variants('info');
+@include chip-outlined-variants('success');
+@include chip-outlined-variants('warning');
+@include chip-outlined-variants('danger');
