@@ -103,7 +103,7 @@
         grid-column: 1 / -1;
         width: 100%;
         padding: var(--_swatches-spacing);
-        gap: var(--_swatches-row-gap) var(--_swatches-col-gap);
+        row-gap: var(--_swatches-row-gap);
         justify-content: space-between;
         overflow: hidden;
     }

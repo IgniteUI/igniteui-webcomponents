@@ -89,7 +89,6 @@ $theme: $material;
     --_input-row-gap: #{sizable(rem(8px), rem(12px), rem(16px))};
     --_alpha-row-spacing: #{sizable(rem(8px), rem(12px), rem(24px))};
     --_swatches-spacing: #{rem(16px)};
-    --_swatches-col-gap: #{rem(8px)};
     --_swatches-row-gap: #{rem(8px)};
     --_picker-rows-grid-template-columns: #{sizable(rem(90px), rem(100px), rem(115px))} auto #{sizable(rem(62px), rem(72px), rem(88px))};
     --_picker-rows-inline-spacing: #{rem(16px)};
@@ -216,7 +215,7 @@ $theme: $material;
     }
 
     [part='swatches'] {
-        grid-template-columns: repeat(auto-fit, var-get($theme, 'swatch-size'));
+        grid-template-columns: repeat(8, var-get($theme, 'swatch-size'));
     }
 
     [part='picker-canvas'] {
