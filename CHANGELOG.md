@@ -32,6 +32,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
     - Added the `igcStateChange` event, emitted after each render pass with a snapshot of the current virtual window (`startIndex`, `endIndex`, `viewportSize`, `totalSize`).
     - Added the `layoutComplete` property - a promise that resolves once the current render pass, and any follow-up renders triggered by item measurement, have fully settled.
     - Transparently degrades past the maximum scroll coordinate supported by the browser, so lists far larger than the DOM would normally allow keep scrolling and rendering correctly.
+- #### Chip
+  - Added the `outlined` property to the component. When set to `true`, the Chip will have an outlined style. [#2307](https://github.com/IgniteUI/igniteui-webcomponents/pull/2307)
 - #### Tabs
   - `selectedTab` property, returning the selected `igc-tab` element or `null`.
   - `select()` now matches a tab's `label` as well as its IDREF, so the value reported by `selected` can be passed back into it.
@@ -44,6 +46,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - Removed the `@lit-labs/virtualizer` dependency. Virtualization is now implemented internally by the new `igc-virtual-scroll` component. [#2222](https://github.com/IgniteUI/igniteui-webcomponents/pull/2222)
 - #### Carousel
   - The component now delegates focus, starting with its indicator container, navigation buttons, or the first focusable element in the active slide, whichever is available. Related to [#2291](https://github.com/IgniteUI/igniteui-webcomponents/issues/2291).
+- #### Chip
+  - The `focus-outline-color` and `focus-selected-outline-color` CSS variables were replaced with `focus-shadow-color` and `focus-selected-shadow-color`.
 - #### Date time input, Date picker, Date range picker
   - **Behavioral change:** the `value` property of these components is no longer mutated while the user is typing. It now only ever holds a committed value and changes in lockstep with the `igcChange` event, which is still emitted when the editor loses focus. Previously `value` was updated on every keystroke - becoming `null` for an incomplete mask and the parsed date once the mask filled - without any event announcing it. [#1346](https://github.com/IgniteUI/igniteui-webcomponents/issues/1346)
     - This makes the components usable in templates where `value` is externally bound, such as an edit template in `igc-grid`. Previously any re-render during typing re-applied the stale bound value and reset the editor, making it impossible to enter a new date.

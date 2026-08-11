@@ -36,6 +36,11 @@ $theme: $indigo;
     }
 }
 
+:host([variant='warning']) button[disabled],
+:host([selected][variant='warning']) button[disabled] {
+    color: color(gray, 50);
+}
+
 :host([variant='danger']) button,
 :host([selected][variant='danger']) button:not([disabled]) {
     &:focus {
@@ -43,7 +48,42 @@ $theme: $indigo;
     }
 }
 
-:host([selected]) button[disabled],
-:host([variant='primary']) button[disabled] {
+:host([variant='primary']) button[disabled],
+:host([selected][variant='primary']) button[disabled] {
     color: contrast-color(primary, 900, .2);
 }
+
+@mixin chip-outlined-variants-dark($variant, $variant-color, $border-shade) {
+    :host([outlined][variant='#{$variant}']) button,
+    :host([selected][outlined][variant='#{$variant}']) button:not([disabled]) {
+        border-color: color($variant-color, $border-shade);
+        color: contrast-color(gray, 100);
+
+        &:hover {
+            @if $variant == 'success' {
+                background: color($variant-color, 700, .30);
+            } @else if $variant == 'danger' {
+                background: color($variant-color, 500, .30);
+            } @else {
+                background: color($variant-color, 400, .30);
+            }
+        }
+
+        &:focus {
+            background: transparent;
+        }
+    }
+
+    :host([outlined][variant='#{$variant}']) button[disabled],
+    :host([selected][outlined][variant='#{$variant}']) button[disabled] {
+        background: transparent;
+        border-color: color($variant-color, $border-shade);
+        color: contrast-color(gray, 100);
+    }
+}
+
+@include chip-outlined-variants-dark('primary', primary, 400);
+@include chip-outlined-variants-dark('info', info, 300);
+@include chip-outlined-variants-dark('success', success, 500);
+@include chip-outlined-variants-dark('warning', warn, 300);
+@include chip-outlined-variants-dark('danger', error, 400);

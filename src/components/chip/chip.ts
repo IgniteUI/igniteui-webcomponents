@@ -78,6 +78,14 @@ export default class IgcChipComponent extends EventEmitterMixin<
   public removable = false;
 
   /**
+   * Defines if the chip is outlined or not.
+   *
+   * @attr
+   */
+  @property({ type: Boolean, reflect: true })
+  public outlined = false;
+
+  /**
    * Defines if the chip is selectable or not.
    * @attr
    */

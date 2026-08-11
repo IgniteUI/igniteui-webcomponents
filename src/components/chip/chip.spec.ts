@@ -11,6 +11,15 @@ describe('Chip', () => {
     defineComponents(IgcChipComponent);
   });
 
+  it('passes the a11y audit', async () => {
+    const chip = await fixture<IgcChipComponent>(
+      html`<igc-chip>Chip</igc-chip>`
+    );
+
+    await expect(chip).shadowDom.to.be.accessible();
+    await expect(chip).to.be.accessible();
+  });
+
   it('should initialize with default values', async () => {
     const chip = await fixture<IgcChipComponent>(html`<igc-chip></igc-chip>`);
 
@@ -58,6 +67,20 @@ describe('Chip', () => {
     expect(chip.disabled).to.be.false;
     await elementUpdated(chip);
 
+    expect(chip).dom.to.equal('<igc-chip></igc-chip>', DIFF_OPTIONS);
+  });
+
+  it('should toggle the outlined property successfully', async () => {
+    const chip = await fixture<IgcChipComponent>(html`<igc-chip></igc-chip>`);
+
+    chip.outlined = true;
+    expect(chip.outlined).to.be.true;
+    await elementUpdated(chip);
+    expect(chip).dom.to.equal('<igc-chip outlined></igc-chip>', DIFF_OPTIONS);
+
+    chip.outlined = false;
+    expect(chip.outlined).to.be.false;
+    await elementUpdated(chip);
     expect(chip).dom.to.equal('<igc-chip></igc-chip>', DIFF_OPTIONS);
   });
 
