@@ -1,15 +1,16 @@
 import {
+  createDatePart,
   type DatePart,
   DatePartType,
   type IDatePart,
   type SpinOptions,
 } from '../date-time-input/date-part.js';
 import {
-  type DateTimeMaskOptions,
+  DateFormatMaskParser,
   DateTimeMaskParser,
   DEFAULT_DATETIME_FORMAT,
 } from '../date-time-input/datetime-mask-parser.js';
-import { MaskParser } from '../mask-input/mask-parser.js';
+import type { MaskOptions } from '../mask-input/mask-parser.js';
 import type { DateRangeValue } from '../types.js';
 
 //#region Types and Enums
@@ -41,7 +42,7 @@ export interface IDateRangePart extends IDatePart {
 }
 
 /** Options for the DateRangeMaskParser */
-export interface DateRangeMaskOptions extends DateTimeMaskOptions {
+export interface DateRangeMaskOptions extends MaskOptions {
   /** Separator (defaults to ' - ') */
   separator?: string;
 }
@@ -54,6 +55,28 @@ export interface DateRangeMaskOptions extends DateTimeMaskOptions {
 const DEFAULT_SEPARATOR = ' - ';
 
 //#endregion
+
+/**
+ * Re-creates one date's parts at their position within the range. Going back through the
+ * factory keeps them real part instances - spreading would copy the data and lose the
+ * prototype along with it.
+ */
+function offsetParts(
+  parts: ReadonlyArray<IDatePart>,
+  offset: number,
+  position: DateRangePosition
+): IDateRangePart[] {
+  return parts.map((part) =>
+    Object.assign(
+      createDatePart(part.type, {
+        start: part.start + offset,
+        end: part.end + offset,
+        format: part.format,
+      }),
+      { position }
+    )
+  );
+}
 
 /**
  * A specialized mask parser for date range input fields.
@@ -69,12 +92,9 @@ const DEFAULT_SEPARATOR = ' - ';
  * parser.formatDateRange({ start: date1, end: date2 }); // Returns formatted string
  * ```
  */
-export class DateRangeMaskParser extends MaskParser {
+export class DateRangeMaskParser extends DateFormatMaskParser<IDateRangePart> {
   private _startParser: DateTimeMaskParser;
   private _endParser: DateTimeMaskParser;
-
-  /** Cached date range parts with position information */
-  private _rangeParts: IDateRangePart[] = [];
 
   /** The separator between start and end dates */
   private _separator: string;
@@ -84,13 +104,6 @@ export class DateRangeMaskParser extends MaskParser {
 
   /** End position of the separator in the mask */
   private _separatorEnd: number;
-
-  /**
-   * Gets the parsed date range parts with position information.
-   */
-  public get rangeParts(): ReadonlyArray<IDateRangePart> {
-    return this._rangeParts;
-  }
 
   /**
    * Gets the separator string used between start and end dates.
@@ -104,83 +117,31 @@ export class DateRangeMaskParser extends MaskParser {
     const separator = options?.separator || DEFAULT_SEPARATOR;
     const promptCharacter = options?.promptCharacter;
 
-    // Build the combined range format for the parent MaskParser
-    const rangeFormat = `${format}${separator}${format}`;
+    super({ format: `${format}${separator}${format}`, promptCharacter });
 
-    super(
-      options?.promptCharacter
-        ? { format: rangeFormat, promptCharacter: options.promptCharacter }
-        : { format: rangeFormat }
-    );
-
-    // Create two parsers for start and end dates
     this._startParser = new DateTimeMaskParser({ format, promptCharacter });
     this._endParser = new DateTimeMaskParser({ format, promptCharacter });
     this._separator = separator;
-
     this._separatorStart = this._startParser.mask.length;
     this._separatorEnd = this._separatorStart + separator.length;
-
-    this._buildRangeParts();
   }
 
-  //#region Mask Format Conversion
-
-  /**
-   * Overrides base class to convert date format to mask format
-   * before parsing literals. This ensures date format characters
-   * (M, d, y, etc.) are properly converted to mask characters (0, L).
-   */
-  protected override _parseMaskLiterals(): void {
-    // Convert the range format to mask format
-    // e.g., "M/d/yyyy - M/d/yyyy" → "0/0/0000 - 0/0/0000"
-    const dateFormat = this._options.format;
-    const maskFormat =
-      DateTimeMaskParser.convertDateFormatToMaskFormat(dateFormat);
-
-    // Temporarily set the converted format for base class parsing
-    const originalFormat = this._options.format;
-    this._options.format = maskFormat;
-
-    super._parseMaskLiterals();
-
-    // Restore the original date format
-    this._options.format = originalFormat;
-  }
-
-  //#endregion
-
-  /**
-   * Builds the range parts array by combining parts from start and end parsers
-   * and adding position information.
-   */
-  private _buildRangeParts(): void {
-    const startParts = this._startParser.dateParts.map(
-      (part): IDateRangePart => ({
-        ...part,
-        position: DateRangePosition.Start,
-        getValue: part.getValue.bind(part),
-        validate: part.validate.bind(part),
-        spin: part.spin.bind(part),
-      })
-    );
-
-    const endParts = this._endParser.dateParts.map((part): IDateRangePart => ({
-      ...part,
-      // Adjust positions for end date (offset by separator)
-      start: part.start + this._separatorEnd,
-      end: part.end + this._separatorEnd,
-      position: DateRangePosition.End,
-      getValue: part.getValue.bind(part),
-      validate: part.validate.bind(part),
-      spin: part.spin.bind(part),
-    }));
-
-    this._rangeParts = [...startParts, ...endParts];
+  protected override _buildParts(): IDateRangePart[] {
+    return [
+      ...offsetParts(this._startParser.parts, 0, DateRangePosition.Start),
+      ...offsetParts(
+        this._endParser.parts,
+        this._separatorEnd,
+        DateRangePosition.End
+      ),
+    ];
   }
 
   /**
    * Sets a new date format and updates both parsers.
+   *
+   * @remarks
+   * Takes the format of a *single* date; the getter returns the combined range format.
    */
   public override set mask(value: string) {
     this._startParser.mask = value;
@@ -189,14 +150,31 @@ export class DateRangeMaskParser extends MaskParser {
     this._separatorStart = this._startParser.mask.length;
     this._separatorEnd = this._separatorStart + this._separator.length;
 
-    const rangeFormat = `${value}${this._separator}${value}`;
-    super.mask = rangeFormat;
-
-    this._buildRangeParts();
+    super.mask = `${value}${this._separator}${value}`;
   }
 
   public override get mask(): string {
     return super.mask;
+  }
+
+  /**
+   * Sets the prompt character and updates both parsers.
+   *
+   * @remarks
+   * Each half of the range is parsed and formatted by its own sub-parser, so all three
+   * have to agree on the prompt. Read back through `super` rather than propagating the
+   * argument, since the base setter normalizes it to a single character and rejects one
+   * that collides with a mask flag.
+   */
+  public override set prompt(value: string) {
+    super.prompt = value;
+
+    this._startParser.prompt = this.prompt;
+    this._endParser.prompt = this.prompt;
+  }
+
+  public override get prompt(): string {
+    return super.prompt;
   }
 
   //#region Date Range Parsing
@@ -210,11 +188,10 @@ export class DateRangeMaskParser extends MaskParser {
       return null;
     }
 
-    const startString = masked.substring(0, this._separatorStart);
-    const endString = masked.substring(this._separatorEnd);
-
-    const start = this._startParser.parseDate(startString);
-    const end = this._endParser.parseDate(endString);
+    const start = this._startParser.parseDate(
+      masked.substring(0, this._separatorStart)
+    );
+    const end = this._endParser.parseDate(masked.substring(this._separatorEnd));
 
     return { start, end };
   }
@@ -227,44 +204,15 @@ export class DateRangeMaskParser extends MaskParser {
    * Formats a DateRangeValue into a masked string using the two internal parsers.
    */
   public formatDateRange(range: DateRangeValue | null): string {
-    const startString = range?.start
-      ? this._startParser.formatDate(range.start)
-      : this._startParser.emptyMask;
+    const start = this._startParser.formatDate(range?.start ?? null);
+    const end = this._endParser.formatDate(range?.end ?? null);
 
-    const endString = range?.end
-      ? this._endParser.formatDate(range.end)
-      : this._endParser.emptyMask;
-
-    return startString + this._separator + endString;
+    return start + this._separator + end;
   }
 
   //#endregion
 
   //#region Part Queries
-
-  /**
-   * Gets the date range part at a cursor position.
-   * Uses exclusive end for precise character targeting.
-   */
-  public getDateRangePartAtPosition(
-    position: number
-  ): IDateRangePart | undefined {
-    return this._rangeParts.find(
-      (part) => position >= part.start && position < part.end
-    );
-  }
-
-  /**
-   * Gets the date range part for cursor (inclusive end).
-   * Handles the edge case where cursor is at the end of the last part.
-   */
-  public getDateRangePartForCursor(
-    position: number
-  ): IDateRangePart | undefined {
-    return this._rangeParts.find(
-      (part) => position >= part.start && position <= part.end
-    );
-  }
 
   /**
    * Gets a specific part type for a position.
@@ -273,9 +221,7 @@ export class DateRangeMaskParser extends MaskParser {
     type: DatePartType,
     position: DateRangePosition
   ): IDateRangePart | undefined {
-    return this._rangeParts.find(
-      (p) => p.type === type && p.position === position
-    );
+    return this.parts.find((p) => p.type === type && p.position === position);
   }
 
   /**
@@ -284,7 +230,7 @@ export class DateRangeMaskParser extends MaskParser {
   public getFirstDatePartForPosition(
     position: DateRangePosition
   ): IDateRangePart | undefined {
-    return this._rangeParts.find(
+    return this.parts.find(
       (p) => p.position === position && p.type !== DatePartType.Literal
     );
   }
@@ -305,29 +251,22 @@ export class DateRangeMaskParser extends MaskParser {
     amPmValue?: string
   ): DateRangeValue {
     const value = currentValue || { start: null, end: null };
+    const isStart = part.position === DateRangePosition.Start;
 
-    const targetDate =
-      part.position === DateRangePosition.Start ? value.start : value.end;
+    // Spin a copy of the targeted date, defaulting to today when the range has no value.
+    const originalDate = (isStart ? value.start : value.end) ?? new Date();
+    const date = new Date(originalDate.getTime());
 
-    // If no date exists, create one with today's date
-    const dateToSpin = targetDate || new Date();
-
-    // Create a new date instance to spin
-    const newDate = new Date(dateToSpin.getTime());
-
-    // Spin using the part's built-in spin method
     const spinOptions: SpinOptions = {
-      date: newDate,
+      date,
       spinLoop,
-      originalDate: dateToSpin,
+      originalDate,
       amPmValue,
     };
 
     part.spin(delta, spinOptions);
 
-    return part.position === DateRangePosition.Start
-      ? { ...value, start: newDate }
-      : { ...value, end: newDate };
+    return isStart ? { ...value, start: date } : { ...value, end: date };
   }
 
   //#endregion
