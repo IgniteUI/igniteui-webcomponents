@@ -1,28 +1,27 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import { spy } from 'sinon';
+import {
+  altKey,
+  arrowDown,
+  arrowUp,
+  escapeKey,
+} from '#internals/controllers/key-bindings.js';
+import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { runExternalLabelAssociationTests } from '#internals/testing/form-testbed.spec.js';
+import { checkDatesEqual, isFocused } from '#internals/testing/helpers.spec.js';
+import {
+  simulateClick,
+  simulateInput,
+  simulateKeyboard,
+} from '#internals/testing/simulate.spec.js';
 import IgcCalendarComponent from '../calendar/calendar.js';
 import {
   getCalendarDOM,
   getDayViewDOM,
   getDOMDate,
 } from '../calendar/helpers.spec.js';
-import { CalendarDay, toCalendarDay } from '../calendar/model.js';
+import { CalendarDay } from '../calendar/model.js';
 import { DateRangeType } from '../calendar/types.js';
-import {
-  altKey,
-  arrowDown,
-  arrowUp,
-  escapeKey,
-} from '../common/controllers/key-bindings.js';
-import { defineComponents } from '../common/definitions/defineComponents.js';
-import { equal } from '../common/util.js';
-import {
-  isFocused,
-  runExternalLabelAssociationTests,
-  simulateClick,
-  simulateInput,
-  simulateKeyboard,
-} from '../common/utils.spec.js';
 import IgcDateTimeInputComponent from '../date-time-input/date-time-input.js';
 import IgcDatePickerComponent from './date-picker.js';
 
@@ -55,10 +54,6 @@ describe('Date picker', () => {
       getCalendarDOM(calendar).views.days
     ).dates;
     simulateClick(current.children[0]);
-  }
-
-  function checkDatesEqual(a: CalendarDay | Date, b: CalendarDay | Date) {
-    expect(equal(toCalendarDay(a), toCalendarDay(b))).to.be.true;
   }
 
   let picker: IgcDatePickerComponent;

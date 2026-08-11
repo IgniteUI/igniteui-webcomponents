@@ -1,8 +1,6 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import { setCurrentI18n } from 'igniteui-i18n-core';
 import { spy } from 'sinon';
-import { isValidDate } from '../calendar/helpers.js';
-import { CalendarDay, toCalendarDay } from '../calendar/model.js';
 import {
   altKey,
   arrowDown,
@@ -10,21 +8,25 @@ import {
   arrowRight,
   arrowUp,
   ctrlKey,
-} from '../common/controllers/key-bindings.js';
-import { defineComponents } from '../common/definitions/defineComponents.js';
+} from '#internals/controllers/key-bindings.js';
+import { defineComponents } from '#internals/definitions/defineComponents.js';
 import {
   createFormAssociatedTestBed,
-  isFocused,
   runExternalLabelAssociationTests,
+} from '#internals/testing/form-testbed.spec.js';
+import { isFocused } from '#internals/testing/helpers.spec.js';
+import {
   simulateInput,
   simulateKeyboard,
   simulateWheel,
-} from '../common/utils.spec.js';
+} from '#internals/testing/simulate.spec.js';
 import {
   runValidationContainerTests,
   type ValidationContainerTestsParams,
   ValidityHelpers,
-} from '../common/validity-helpers.spec.js';
+} from '#internals/testing/validity-helpers.spec.js';
+import { isValidDate } from '../calendar/helpers.js';
+import { CalendarDay, toCalendarDay } from '../calendar/model.js';
 import { DatePart } from './date-part.js';
 import IgcDateTimeInputComponent from './date-time-input.js';
 import { DateTimeMaskParser } from './datetime-mask-parser.js';

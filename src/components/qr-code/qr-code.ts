@@ -1,9 +1,11 @@
 import { html, LitElement, nothing, type PropertyValues } from 'lit';
 import { property, state } from 'lit/decorators.js';
-import { addThemingController } from '../../theming/theming-controller.js';
-import { createAbortHandle } from '../common/abort-handler.js';
-import { registerComponent } from '../common/definitions/register.js';
-import { bindIf, clamp, nanoid } from '../common/util.js';
+import { createAbortHandle } from '#internals/abort-handler.js';
+import { registerComponent } from '#internals/definitions/register.js';
+import { bindIf } from '#internals/utils/lit.js';
+import { clamp } from '#internals/utils/math.js';
+import { nanoid } from '#internals/utils/strings.js';
+import { addThemingController } from '#theming/theming-controller.js';
 import type { QRCodeMatrixResult } from './model/matrix.js';
 import { generateQRCodeMatrix } from './model/matrix.js';
 import {

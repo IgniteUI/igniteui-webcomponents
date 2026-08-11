@@ -1,7 +1,7 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import { spy, stub } from 'sinon';
-import { defineComponents } from '../common/definitions/defineComponents.js';
-import { suppressResizeObserverLoopError } from '../common/utils.spec.js';
+import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { suppressResizeObserverLoopError } from '#internals/testing/helpers.spec.js';
 import type { VirtualScrollItemContext, VirtualScrollState } from './types.js';
 import IgcVirtualScrollComponent, {
   type VirtualScrollItemTemplate,

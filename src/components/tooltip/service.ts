@@ -1,6 +1,6 @@
 import { isServer } from 'lit';
-import { escapeKey } from '../common/controllers/key-bindings.js';
-import { isEmpty, last } from '../common/util.js';
+import { escapeKey } from '#internals/controllers/key-bindings.js';
+import { isEmpty, lastOf } from '#internals/utils/arrays.js';
 import type IgcTooltipComponent from './tooltip.js';
 
 type TooltipHideCallback = () => unknown;
@@ -48,7 +48,7 @@ class TooltipEscapeCallbacks {
       return;
     }
 
-    const [tooltip, callback] = last(Array.from(this._collection.entries()));
+    const [tooltip, callback] = lastOf(Array.from(this._collection.entries()));
     await callback?.call(tooltip);
   }
 }

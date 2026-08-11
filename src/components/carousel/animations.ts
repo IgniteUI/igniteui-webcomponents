@@ -1,5 +1,5 @@
-import { fadeIn, fadeOut } from '../../animations/presets/fade/index.js';
-import { animation } from '../../animations/types.js';
+import { fadeIn, fadeOut } from '#animations/presets/fade/index.js';
+import { animation } from '#animations/types.js';
 
 const noopAnimation = () => animation([], {});
 

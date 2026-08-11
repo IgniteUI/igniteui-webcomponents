@@ -7,7 +7,39 @@ import {
 import { html, nothing, type PropertyValues, type TemplateResult } from 'lit';
 import { property, query } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import { addThemingController } from '../../theming/theming-controller.js';
+import {
+  addKeybindings,
+  altKey,
+  arrowDown,
+  arrowUp,
+  escapeKey,
+} from '#internals/controllers/key-bindings.js';
+import { addRootClickController } from '#internals/controllers/root-click.js';
+import { addSlotController, setSlots } from '#internals/controllers/slot.js';
+import { blazorAdditionalDependencies } from '#internals/decorators/blazorAdditionalDependencies.js';
+import { shadowOptions } from '#internals/decorators/shadow-options.js';
+import { watch } from '#internals/decorators/watch.js';
+import { registerComponent } from '#internals/definitions/register.js';
+import type { IgcCalendarResourceStrings } from '#internals/i18n/EN/calendar.resources.js';
+import {
+  addI18nController,
+  getDateTimeFormat,
+} from '#internals/i18n/i18n-controller.js';
+import { IgcComboBoxBaseLikeComponent } from '#internals/mixins/combo-box.js';
+import type { AbstractConstructor } from '#internals/mixins/constructor.js';
+import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
+import { FormAssociatedRequiredMixin } from '#internals/mixins/forms/associated-required.js';
+import { FormValueDateTimeTransformers } from '#internals/mixins/forms/form-transformers.js';
+import { createFormValueState } from '#internals/mixins/forms/form-value.js';
+import {
+  addSafeEventListener,
+  focusLeftHost,
+  getElementFromPath,
+} from '#internals/utils/events.js';
+import { bindIf } from '#internals/utils/lit.js';
+import { equal } from '#internals/utils/objects.js';
+import { createIdGenerator } from '#internals/utils/strings.js';
+import { addThemingController } from '#theming/theming-controller.js';
 import IgcCalendarComponent, { focusActiveDate } from '../calendar/calendar.js';
 import { convertToDate, createDateConstraints } from '../calendar/helpers.js';
 import type {
@@ -15,36 +47,6 @@ import type {
   DateRangeDescriptor,
   WeekDays,
 } from '../calendar/types.js';
-import {
-  addKeybindings,
-  altKey,
-  arrowDown,
-  arrowUp,
-  escapeKey,
-} from '../common/controllers/key-bindings.js';
-import { addRootClickController } from '../common/controllers/root-click.js';
-import { addSlotController, setSlots } from '../common/controllers/slot.js';
-import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditionalDependencies.js';
-import { shadowOptions } from '../common/decorators/shadow-options.js';
-import { watch } from '../common/decorators/watch.js';
-import { registerComponent } from '../common/definitions/register.js';
-import type { IgcCalendarResourceStrings } from '../common/i18n/EN/calendar.resources.js';
-import {
-  addI18nController,
-  getDateTimeFormat,
-} from '../common/i18n/i18n-controller.js';
-import { IgcComboBoxBaseLikeComponent } from '../common/mixins/combo-box.js';
-import type { AbstractConstructor } from '../common/mixins/constructor.js';
-import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { FormAssociatedRequiredMixin } from '../common/mixins/forms/associated-required.js';
-import { FormValueDateTimeTransformers } from '../common/mixins/forms/form-transformers.js';
-import { createFormValueState } from '../common/mixins/forms/form-value.js';
-import {
-  addSafeEventListener,
-  bindIf,
-  equal,
-  getElementFromPath,
-} from '../common/util.js';
 import type { DatePart } from '../date-time-input/date-part.js';
 import IgcDateTimeInputComponent from '../date-time-input/date-time-input.js';
 import IgcDialogComponent from '../dialog/dialog.js';
@@ -72,7 +74,7 @@ export interface IgcDatePickerComponentEventMap {
   igcInput: CustomEvent<Date | null>;
 }
 
-let nextId = 1;
+const nextId = createIdGenerator('date-picker');
 const Slots = setSlots(
   'prefix',
   'suffix',
@@ -204,7 +206,7 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
     return datePickerValidators;
   }
 
-  private readonly _inputId = `date-picker-${nextId++}`;
+  private readonly _inputId = nextId();
   private readonly _themes = addThemingController(this, all);
   private readonly _slots = addSlotController(this, { slots: Slots });
 
@@ -563,8 +565,8 @@ export default class IgcDatePickerComponent extends FormAssociatedRequiredMixin(
     }
   }
 
-  protected _handleFocusOut({ relatedTarget }: FocusEvent): void {
-    if (!this.contains(relatedTarget as Node)) {
+  protected _handleFocusOut(event: FocusEvent): void {
+    if (focusLeftHost(this, event)) {
       this._handleBlur();
 
       const readOnly = !this._isDropDown || this.readOnly || this.nonEditable;

@@ -1,9 +1,8 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import { spy } from 'sinon';
-
+import { simulateClick } from '#internals/testing/simulate.spec.js';
+import { firstOf, lastOf } from '#internals/utils/arrays.js';
 import { defineComponents, IgcCalendarComponent } from '../../index.js';
-import { first, last } from '../common/util.js';
-import { simulateClick } from '../common/utils.spec.js';
 import type IgcDaysViewComponent from './days-view/days-view.js';
 import {
   calendarRange,
@@ -70,8 +69,8 @@ describe('Calendar interactions', () => {
     );
 
     expect(calendar.values).lengthOf(2);
-    expect(date_1.equalTo(first(calendar.values))).to.be.true;
-    expect(date_2.equalTo(last(calendar.values))).to.be.true;
+    expect(date_1.equalTo(firstOf(calendar.values))).to.be.true;
+    expect(date_2.equalTo(lastOf(calendar.values))).to.be.true;
   });
 
   it('setting `values` - string property binding', async () => {
@@ -85,8 +84,8 @@ describe('Calendar interactions', () => {
     calendar.values = `${date_1_str}, ${date_2_str}`;
 
     expect(calendar.values).lengthOf(2);
-    expect(date_1.equalTo(first(calendar.values))).to.be.true;
-    expect(date_2.equalTo(last(calendar.values))).to.be.true;
+    expect(date_1.equalTo(firstOf(calendar.values))).to.be.true;
+    expect(date_2.equalTo(lastOf(calendar.values))).to.be.true;
 
     // Valid date combinations
     const validDates = [
@@ -98,8 +97,8 @@ describe('Calendar interactions', () => {
     for (const each of validDates) {
       calendar.values = each;
       expect(calendar.values).lengthOf(2);
-      expect(date_1.equalTo(first(calendar.values))).to.be.true;
-      expect(date_2.equalTo(last(calendar.values))).to.be.true;
+      expect(date_1.equalTo(firstOf(calendar.values))).to.be.true;
+      expect(date_2.equalTo(lastOf(calendar.values))).to.be.true;
     }
 
     // Mixed date combinations
@@ -253,15 +252,15 @@ describe('Calendar interactions', () => {
 
     expect(calendar.values).lengthOf(7);
     expect(eventSpy.callCount).equal(7);
-    expect(first(dates).equalTo(first(calendar.values))).to.be.true;
-    expect(last(dates).equalTo(last(calendar.values))).to.be.true;
+    expect(firstOf(dates).equalTo(firstOf(calendar.values))).to.be.true;
+    expect(lastOf(dates).equalTo(lastOf(calendar.values))).to.be.true;
 
     // Deselect one
-    simulateClick(last(elements));
+    simulateClick(lastOf(elements));
     await elementUpdated(calendar);
 
     expect(calendar.values).lengthOf(6);
-    expect(last(dates).equalTo(last(calendar.values))).to.be.false;
+    expect(lastOf(dates).equalTo(lastOf(calendar.values))).to.be.false;
   });
 
   it('start and cancel a range selection', async () => {
@@ -276,7 +275,7 @@ describe('Calendar interactions', () => {
     await elementUpdated(calendar);
 
     expect(calendar.values).lengthOf(1);
-    expect(start.equalTo(first(calendar.values))).to.be.true;
+    expect(start.equalTo(firstOf(calendar.values))).to.be.true;
 
     // Cancel it
     simulateClick(element);
@@ -294,8 +293,8 @@ describe('Calendar interactions', () => {
     await elementUpdated(calendar);
 
     // Start and complete the selection
-    simulateClick(first(elements));
-    simulateClick(last(elements));
+    simulateClick(firstOf(elements));
+    simulateClick(lastOf(elements));
     await elementUpdated(calendar);
 
     expect(calendar.values).lengthOf(7);
@@ -329,12 +328,12 @@ describe('Calendar interactions', () => {
     calendar.selection = 'range';
     await elementUpdated(calendar);
 
-    simulateClick(first(elements));
-    last(elements).focus();
+    simulateClick(firstOf(elements));
+    lastOf(elements).focus();
     await elementUpdated(calendar);
 
     expect(eventSpy).calledWithExactly('igcRangePreviewDateChange', {
-      detail: last(dates).native,
+      detail: lastOf(dates).native,
     });
   });
 

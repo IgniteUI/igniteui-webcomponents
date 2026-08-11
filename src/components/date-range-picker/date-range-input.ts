@@ -1,13 +1,13 @@
 import { property } from 'lit/decorators.js';
-import { addThemingController } from '../../theming/theming-controller.js';
+import { registerComponent } from '#internals/definitions/register.js';
+import { formatDisplayDate } from '#internals/i18n/i18n-controller.js';
+import type { AbstractConstructor } from '#internals/mixins/constructor.js';
+import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
+import { FormValueDateRangeTransformers } from '#internals/mixins/forms/form-transformers.js';
+import { createFormValueState } from '#internals/mixins/forms/form-value.js';
+import { equal } from '#internals/utils/objects.js';
+import { addThemingController } from '#theming/theming-controller.js';
 import { CalendarDay } from '../calendar/model.js';
-import { registerComponent } from '../common/definitions/register.js';
-import { formatDisplayDate } from '../common/i18n/i18n-controller.js';
-import type { AbstractConstructor } from '../common/mixins/constructor.js';
-import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { FormValueDateRangeTransformers } from '../common/mixins/forms/form-transformers.js';
-import { createFormValueState } from '../common/mixins/forms/form-value.js';
-import { equal } from '../common/util.js';
 import {
   type DatePart,
   type DatePartDeltas,

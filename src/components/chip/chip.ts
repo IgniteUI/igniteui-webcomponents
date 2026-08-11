@@ -5,13 +5,13 @@ import {
 import { html, LitElement, nothing } from 'lit';
 import { property } from 'lit/decorators.js';
 import { createRef, ref } from 'lit/directives/ref.js';
-import { addThemingController } from '../../theming/theming-controller.js';
-import { addKeybindings } from '../common/controllers/key-bindings.js';
-import { addSlotController, setSlots } from '../common/controllers/slot.js';
-import { registerComponent } from '../common/definitions/register.js';
-import { addI18nController } from '../common/i18n/i18n-controller.js';
-import type { Constructor } from '../common/mixins/constructor.js';
-import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
+import { addKeybindings } from '#internals/controllers/key-bindings.js';
+import { addSlotController, setSlots } from '#internals/controllers/slot.js';
+import { registerComponent } from '#internals/definitions/register.js';
+import { addI18nController } from '#internals/i18n/i18n-controller.js';
+import type { Constructor } from '#internals/mixins/constructor.js';
+import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
+import { addThemingController } from '#theming/theming-controller.js';
 import IgcIconComponent from '../icon/icon.js';
 import type { StyleVariant } from '../types.js';
 import { styles } from './themes/chip.base.css.js';
@@ -73,6 +73,14 @@ export default class IgcChipComponent extends EventEmitterMixin<
    */
   @property({ type: Boolean, reflect: true })
   public removable = false;
+
+  /**
+   * Defines if the chip is outlined or not.
+   *
+   * @attr
+   */
+  @property({ type: Boolean, reflect: true })
+  public outlined = false;
 
   /**
    * Defines if the chip is selectable or not.

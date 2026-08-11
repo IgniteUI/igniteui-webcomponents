@@ -254,32 +254,58 @@ export { default as IgcFooBarComponent } from './components/foobar/foobar.js';
 
 ## Imports
 
-- Organize imports in the following order, with blank lines between groups:
-  1. Lit imports (`lit`, `lit/decorators.js`, `lit/directives/*`)
-  2. Third-party library imports
-  3. Internal utilities and controllers (`../common/*`)
-  4. Component imports
-  5. Type imports last (if not inline)
+- The cross-cutting directories are imported through a `#` **subpath alias**, never relatively:
+
+  | Directory        | Alias           |
+  | ---------------- | --------------- |
+  | `src/internals`  | `#internals/*`  |
+  | `src/theming`    | `#theming/*`    |
+  | `src/animations` | `#animations/*` |
+
+  Everything else stays relative — including one component importing another (`../icon/icon.js`),
+  which is both shorter and no less stable than an alias would be.
+
+  The aliases are Node subpath imports, declared in the `imports` field of `package.json`
+  (pointing at the sources) and of `scripts/_package.json` (the published manifest, where
+  `dist` is the package root). **Adding an alias means editing both files** —
+  `npm run check` fails otherwise. They are plain ESM: nothing rewrites them, the specifier
+  you write is the specifier that ships.
+
+  A file inside an aliased directory keeps relative paths for its own siblings, but uses the
+  alias to reach a different one. `npm run check` enforces all of this via dependency-cruiser.
 
   > [!TIP] DO
   >
   > ```ts
-  > import { html, LitElement } from 'lit';
-  > import { property, query } from 'lit/decorators.js';
+  > import { addSlotController } from '#internals/controllers/slot.js';
+  > ```
+
+  > [!WARNING] DON'T
   >
-  > import { addThemingController } from '../../theming/theming-controller.js';
-  > import { addSlotController } from '../common/controllers/slot.js';
-  > import { registerComponent } from '../common/definitions/register.js';
+  > ```ts
+  > import { addSlotController } from '../../internals/controllers/slot.js';
+  > ```
+
+- Ordering is handled by Biome (`biome check --fix`) and needs no manual grouping. It produces
+  one contiguous block sorted by source: external packages, then `#` aliases, then `../`, then
+  `./`, with type imports sorted by path alongside the rest rather than pushed to the end.
+
+  > [!TIP] DO
   >
-  > import IgcIconComponent from '../icon/icon.js';
-  >
+  > ```ts
+  > import { html, LitElement, type PropertyValues } from 'lit';
+  > import { property } from 'lit/decorators.js';
+  > import { addSlotController, setSlots } from '#internals/controllers/slot.js';
+  > import { registerComponent } from '#internals/definitions/register.js';
+  > import { addThemingController } from '#theming/theming-controller.js';
+  > import type { BadgeShape, StyleVariant } from '../types.js';
   > import { styles } from './themes/badge.base.css.js';
-  > import type { StyleVariant } from '../types.js';
+  > import { all } from './themes/themes.js';
   > ```
 
 ## Controllers
 
-- Controllers are reusable pieces of logic that hook into a component's lifecycle. Use controllers from `src/components/common/controllers/` for common functionality:
+- Controllers are reusable pieces of logic that hook into a component's lifecycle. Use controllers from `src/internals/controllers/` for common functionality:
   - `addThemingController` - Required for theme support
   - `addSlotController` - For managing slotted content
   - `addInternalsController` - For ElementInternals and ARIA management
@@ -335,7 +361,7 @@ export { default as IgcFooBarComponent } from './components/foobar/foobar.js';
 - Use the `partMap` directive for conditional parts:
 
   ```ts
-  import { partMap } from '../common/part-map.js';
+  import { partMap } from '#internals/part-map.js';
 
   protected override render() {
     return html`
@@ -349,7 +375,7 @@ export { default as IgcFooBarComponent } from './components/foobar/foobar.js';
 - For delegating focus to internal elements, use the `@shadowOptions` decorator:
 
   ```ts
-  import { shadowOptions } from '../common/decorators/shadow-options.js';
+  import { shadowOptions } from '#internals/decorators/shadow-options.js';
 
   @shadowOptions({ delegatesFocus: true })
   export default class IgcInputComponent extends LitElement {
@@ -387,7 +413,7 @@ Accessibility is a first-class requirement for all components.
 - Use `addKeybindings` for keyboard interaction:
 
   ```ts
-  import { addKeybindings, arrowDown, arrowUp, enterKey } from '../common/controllers/key-bindings.js';
+  import { addKeybindings, arrowDown, arrowUp, enterKey } from '#internals/controllers/key-bindings.js';
 
   constructor() {
     super();
@@ -426,7 +452,7 @@ All components must include comprehensive tests in `[component-name].spec.ts`.
 - Use `defineComponents()` in the `before()` hook to register components:
 
   ```ts
-  import { defineComponents } from '../common/definitions/defineComponents.js';
+  import { defineComponents } from '#internals/definitions/defineComponents.js';
 
   describe('Component', () => {
     before(() => {
@@ -595,8 +621,8 @@ Components that participate in forms must use the `FormAssociatedRequiredMixin` 
   4. Handle form reset and restore
 
   ```ts
-  import { FormAssociatedRequiredMixin } from '../common/mixins/form-associated-required.js';
-  import { createFormValueState } from '../common/mixins/form-value.js';
+  import { FormAssociatedRequiredMixin } from '#internals/mixins/forms/associated-required.js';
+  import { createFormValueState } from '#internals/mixins/forms/form-value.js';
 
   export default class IgcInputComponent extends FormAssociatedRequiredMixin(
     LitElement
@@ -669,7 +695,7 @@ Components that participate in forms must use the `FormAssociatedRequiredMixin` 
   Only event listeners added dynamically (in `connectedCallback()`, other lifecycle methods, or event handlers) need explicit cleanup:
 
   ```ts
-  import { addSafeEventListener } from '../common/util.js';
+  import { addSafeEventListener } from '#internals/utils/events.js';
 
   constructor() {
     super();

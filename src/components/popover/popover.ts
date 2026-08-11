@@ -18,16 +18,16 @@ import {
   addSlotController,
   type SlotChangeCallbackParameters,
   setSlots,
-} from '../common/controllers/slot.js';
-import { registerComponent } from '../common/definitions/register.js';
+} from '#internals/controllers/slot.js';
+import { registerComponent } from '#internals/definitions/register.js';
+import { firstOf } from '#internals/utils/arrays.js';
 import {
-  first,
   getElementByIdFromRoot,
   getRoot,
-  isString,
   roundByDPR,
   setStyles,
-} from '../common/util.js';
+} from '#internals/utils/dom.js';
+import { isString } from '#internals/utils/types.js';
 import { styles } from './themes/light/popover.base.css.js';
 
 /**
@@ -239,7 +239,7 @@ export default class IgcPopoverComponent extends LitElement {
       return;
     }
 
-    const possibleTarget = first(
+    const possibleTarget = firstOf(
       this._slots.getAssignedElements('anchor', { flatten: true })
     );
 
@@ -374,7 +374,7 @@ export default class IgcPopoverComponent extends LitElement {
     const offset = this.arrowOffset;
 
     // The current placement of the popover along the x/y axis
-    const currentPlacement = first(placement.split('-'));
+    const currentPlacement = firstOf(placement.split('-'));
 
     // The opposite side where the arrow element should render based on the `currentPlacement`
     const staticSide =

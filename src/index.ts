@@ -85,8 +85,8 @@ export type {
 } from './components/virtualization/types.js';
 
 // definitions
-export { defineComponents } from './components/common/definitions/defineComponents.js';
-export { defineAllComponents } from './components/common/definitions/defineAllComponents.js';
+export { defineComponents } from '#internals/definitions/defineComponents.js';
+export { defineAllComponents } from '#internals/definitions/defineAllComponents.js';
 
 // icon registration
 export {
@@ -96,22 +96,22 @@ export {
 } from './components/icon/icon.registry.js';
 
 // theming configuration
-export { configureTheme } from './theming/config.js';
-export type { Theme, ThemeVariant } from './theming/types.js';
+export { configureTheme } from '#theming/config.js';
+export type { Theme, ThemeVariant } from '#theming/types.js';
 
 // localization objects
 export {
   IgcCalendarResourceStringEN,
   type IgcCalendarResourceStrings,
-} from './components/common/i18n/EN/calendar.resources.js';
+} from '#internals/i18n/EN/calendar.resources.js';
 export {
   IgcDateRangePickerResourceStringsEN,
   type IgcDateRangePickerResourceStrings,
-} from './components/common/i18n/EN/date-range-picker.resources.js';
+} from '#internals/i18n/EN/date-range-picker.resources.js';
 export {
   IgcChatResourceStringEN,
   type IgcChatResourceStrings,
-} from './components/common/i18n/EN/chat.resources.js';
+} from '#internals/i18n/EN/chat.resources.js';
 export {
   type ICalendarResourceStrings,
   type ICarouselResourceStrings,
@@ -220,10 +220,10 @@ export type {
 
 // Internal exports for other packages
 /** @hidden @internal */
-export { addThemingController as θaddThemingController } from './theming/theming-controller.js';
+export { addThemingController as θaddThemingController } from '#theming/theming-controller.js';
 
 /** @hidden @internal */
-export { addAdoptedStylesController as θaddAdoptedStylesController } from './components/common/controllers/adopt-styles.js';
+export { addAdoptedStylesController as θaddAdoptedStylesController } from '#internals/controllers/adopt-styles.js';
 
 /** @hidden @internal */
-export { createAbortHandle as θcreateAbortHandle } from './components/common/abort-handler.js';
+export { createAbortHandle as θcreateAbortHandle } from '#internals/abort-handler.js';

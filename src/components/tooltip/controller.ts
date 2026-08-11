@@ -1,10 +1,8 @@
 import type { ReactiveController } from 'lit';
-import { createAbortHandle } from '../common/abort-handler.js';
-import {
-  addWeakEventListener,
-  getElementByIdFromRoot,
-  isString,
-} from '../common/util.js';
+import { createAbortHandle } from '#internals/abort-handler.js';
+import { getElementByIdFromRoot } from '#internals/utils/dom.js';
+import { addWeakEventListener } from '#internals/utils/events.js';
+import { isString } from '#internals/utils/types.js';
 import service from './service.js';
 import type IgcTooltipComponent from './tooltip.js';
 

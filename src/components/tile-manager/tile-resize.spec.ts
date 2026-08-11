@@ -8,15 +8,16 @@ import {
 import { range } from 'lit/directives/range.js';
 import type Sinon from 'sinon';
 import { spy } from 'sinon';
-import { escapeKey } from '../common/controllers/key-bindings.js';
-import { defineComponents } from '../common/definitions/defineComponents.js';
-import { first, last } from '../common/util.js';
+import { escapeKey } from '#internals/controllers/key-bindings.js';
+import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { viewTransitionComplete } from '#internals/testing/helpers.spec.js';
 import {
   simulateKeyboard,
   simulateLostPointerCapture,
   simulatePointerDown,
   simulatePointerMove,
-} from '../common/utils.spec.js';
+} from '#internals/testing/simulate.spec.js';
+import { firstOf, lastOf } from '#internals/utils/arrays.js';
 import IgcResizeContainerComponent, {
   type IgcResizeContainerComponentEventMap,
 } from '../resize-container/resize-container.js';
@@ -36,11 +37,6 @@ describe('Tile resize', () => {
   let rowSize: number;
 
   /** Wait tile dragging view transition(s) to complete. */
-  async function viewTransitionComplete() {
-    await nextFrame();
-    await nextFrame();
-  }
-
   function getTiles() {
     return Array.from(tileManager.querySelectorAll(IgcTileComponent.tagName));
   }
@@ -81,14 +77,14 @@ describe('Tile resize', () => {
       tileManager = (
         await fixture<IgcTileManagerComponent>(createTileManager())
       ).querySelector('igc-tile-manager')!;
-      firstTile = first(getTiles());
+      firstTile = firstOf(getTiles());
       tileManagerStyles = getComputedStyle(
         tileManager.shadowRoot!.querySelector('[part~="base"]')!
       );
 
       const gap = Number.parseFloat(tileManagerStyles.gap);
 
-      columnSize = Number.parseFloat(first(getColumns())) + gap;
+      columnSize = Number.parseFloat(firstOf(getColumns())) + gap;
       rowSize = Number.parseFloat(tileManager.minRowHeight!) + gap;
     });
 
@@ -121,7 +117,7 @@ describe('Tile resize', () => {
     });
 
     it('should create new rows when resizing last row', async () => {
-      const lastTile = last(getTiles());
+      const lastTile = lastOf(getTiles());
       const DOM = getResizeContainerDOM(lastTile);
 
       expect(getRows().length).to.eql(1);

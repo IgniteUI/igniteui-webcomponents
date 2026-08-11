@@ -12,7 +12,7 @@ import {
   shiftKey,
   spaceBar,
   tabKey,
-} from '../../common/controllers/key-bindings.js';
+} from '#internals/controllers/key-bindings.js';
 import type IgcInputComponent from '../../input/input.js';
 import type IgcVirtualScrollComponent from '../../virtualization/virtualization.js';
 import type { ComboHost } from '../types.js';

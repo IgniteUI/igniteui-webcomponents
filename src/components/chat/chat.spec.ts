@@ -1,22 +1,25 @@
 import { elementUpdated, expect, fixture } from '@open-wc/testing';
 import { html, nothing } from 'lit';
 import { spy, stub, useFakeTimers } from 'sinon';
-import { configureTheme } from '../../theming/config.js';
-import type IgcIconButtonComponent from '../button/icon-button.js';
-import IgcChipComponent from '../chip/chip.js';
-import { enterKey, tabKey } from '../common/controllers/key-bindings.js';
-import { defineComponents } from '../common/definitions/defineComponents.js';
-import { first, last } from '../common/util.js';
+import { enterKey, tabKey } from '#internals/controllers/key-bindings.js';
+import { defineComponents } from '#internals/definitions/defineComponents.js';
 import {
   isFocused,
+  suppressResizeObserverLoopError,
+} from '#internals/testing/helpers.spec.js';
+import {
   simulateBlur,
   simulateClick,
+  simulateFileUpload,
   simulateFocus,
   simulateInput,
   simulateKeyboard,
-  suppressResizeObserverLoopError,
-} from '../common/utils.spec.js';
-import { simulateFileUpload } from '../file-input/file-input.spec.js';
+} from '#internals/testing/simulate.spec.js';
+import { firstOf, lastOf } from '#internals/utils/arrays.js';
+import { configureTheme } from '#theming/config.js';
+import type IgcIconButtonComponent from '../button/icon-button.js';
+import IgcChipComponent from '../chip/chip.js';
+
 import IgcInputComponent from '../input/input.js';
 import IgcListItemComponent from '../list/list-item.js';
 import IgcTextareaComponent from '../textarea/textarea.js';
@@ -160,8 +163,8 @@ describe('Chat', () => {
       expect(renderedMessages).lengthOf(messages.length);
 
       const [firstMessage, lastMessage] = [
-        first(renderedMessages),
-        last(renderedMessages),
+        firstOf(renderedMessages),
+        lastOf(renderedMessages),
       ];
 
       // Response messages have the default reactions.
@@ -173,15 +176,15 @@ describe('Chat', () => {
 
     it('should render messages from the current user correctly', async () => {
       chat.messages = [
-        first(messages),
-        last(messages),
+        firstOf(messages),
+        lastOf(messages),
         { id: '2', text: 'Hello!', sender: 'me' },
       ];
       chat.options = { currentUserId: 'me' };
       await elementUpdated(chat);
 
       const renderedMessages = getChatDOM(chat).messages;
-      const currentUserMessage = last(renderedMessages);
+      const currentUserMessage = lastOf(renderedMessages);
 
       for (const each of renderedMessages) {
         expect(
@@ -575,7 +578,7 @@ describe('Chat', () => {
         ?.querySelector('slot')
         ?.assignedElements();
 
-      expect(first(assignedElements!).textContent).to.equal('loading...');
+      expect(firstOf(assignedElements!).textContent).to.equal('loading...');
     });
 
     it('should render text area templates', async () => {
@@ -1058,7 +1061,7 @@ describe('Chat', () => {
     function verifyCustomStyles(state: boolean) {
       const { messages } = getChatDOM(chat);
       const { backgroundColor } = getComputedStyle(
-        getChatMessageDOM(first(messages)).content.querySelector(
+        getChatMessageDOM(firstOf(messages)).content.querySelector(
           '.custom-background'
         )!
       );

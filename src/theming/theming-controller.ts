@@ -39,7 +39,7 @@ type ThemeProviderSource = 'uninitialized' | 'context' | 'global';
  * @example
  * Basic usage — typically created via {@link addThemingController}:
  * ```typescript
- * import { addThemingController } from '../../theming/theming-controller.js';
+ * import { addThemingController } from '#theming/theming-controller.js';
  * import { all } from './themes/themes.js';
  *
  * export default class IgcMyComponent extends LitElement {
@@ -219,7 +219,7 @@ class ThemingController implements ReactiveController {
  * @example
  * Minimal setup in a component constructor:
  * ```typescript
- * import { addThemingController } from '../../theming/theming-controller.js';
+ * import { addThemingController } from '#theming/theming-controller.js';
  * import { all } from './themes/themes.js';
  *
  * export default class IgcMyComponent extends LitElement {

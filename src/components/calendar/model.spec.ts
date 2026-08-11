@@ -1,6 +1,6 @@
 import { expect } from '@open-wc/testing';
 
-import { first, last } from '../common/util.js';
+import { firstOf, lastOf } from '#internals/utils/arrays.js';
 import { calendarRange, isDateInRanges } from './helpers.js';
 import { CalendarDay } from './model.js';
 import { DateRangeType } from './types.js';
@@ -150,8 +150,8 @@ describe('Calendar day model', () => {
 
       expect(weekFuture.length).to.equal(end);
 
-      expect(first(weekFuture).date).to.equal(start.date);
-      expect(last(weekFuture).date).to.equal(endFuture.date - 1);
+      expect(firstOf(weekFuture).date).to.equal(start.date);
+      expect(lastOf(weekFuture).date).to.equal(endFuture.date - 1);
     });
 
     it('generating date ranges (negative number)', () => {
@@ -159,8 +159,8 @@ describe('Calendar day model', () => {
 
       expect(weekPast.length).to.equal(end);
 
-      expect(first(weekPast).date).to.equal(start.date);
-      expect(last(weekPast).date).to.equal(endPast.date + 1);
+      expect(firstOf(weekPast).date).to.equal(start.date);
+      expect(lastOf(weekPast).date).to.equal(endPast.date + 1);
     });
 
     it('generating date ranges (end > start)', () => {
@@ -168,8 +168,8 @@ describe('Calendar day model', () => {
 
       expect(weekFuture.length).to.equal(end);
 
-      expect(first(weekFuture).date).to.equal(start.date);
-      expect(last(weekFuture).date).to.equal(endFuture.date - 1);
+      expect(firstOf(weekFuture).date).to.equal(start.date);
+      expect(lastOf(weekFuture).date).to.equal(endFuture.date - 1);
     });
 
     it('generating date ranges (end < start)', () => {
@@ -177,8 +177,8 @@ describe('Calendar day model', () => {
 
       expect(weekPast.length).to.equal(end);
 
-      expect(first(weekPast).date).to.equal(start.date);
-      expect(last(weekPast).date).to.equal(endPast.date + 1);
+      expect(firstOf(weekPast).date).to.equal(start.date);
+      expect(lastOf(weekPast).date).to.equal(endPast.date + 1);
     });
   });
 

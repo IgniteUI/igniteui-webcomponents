@@ -1,15 +1,16 @@
 import { html } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
-import { addThemingController } from '../../theming/theming-controller.js';
-import { registerComponent } from '../common/definitions/register.js';
-import { partMap } from '../common/part-map.js';
+import { registerComponent } from '#internals/definitions/register.js';
+import { partMap } from '#internals/part-map.js';
+import { createIdGenerator } from '#internals/utils/strings.js';
+import { addThemingController } from '#theming/theming-controller.js';
 import { IgcCheckboxBaseComponent } from './checkbox-base.js';
 import { styles as shared } from './themes/shared/switch/switch.common.css.js';
 import { styles } from './themes/switch.base.css.js';
 import { all } from './themes/switch-themes.js';
 
-let nextId = 1;
+const nextId = createIdGenerator('switch');
 
 /**
  * Similar to a checkbox, a switch controls the state of a single setting on or off.
@@ -34,7 +35,7 @@ export default class IgcSwitchComponent extends IgcCheckboxBaseComponent {
     registerComponent(IgcSwitchComponent);
   }
 
-  private readonly _inputId = `switch-${nextId++}`;
+  private readonly _inputId = nextId();
   private readonly _labelId = `switch-label-${this._inputId}`;
 
   constructor() {
