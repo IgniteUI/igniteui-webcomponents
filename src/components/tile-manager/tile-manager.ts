@@ -6,16 +6,16 @@ import { type StyleInfo, styleMap } from 'lit/directives/style-map.js';
 import {
   type TileManagerContext,
   tileManagerContext,
-} from '../../internals/context.js';
+} from '#internals/context.js';
 import {
   createMutationController,
   type MutationControllerParams,
-} from '../../internals/controllers/mutation-observer.js';
-import { shadowOptions } from '../../internals/decorators/shadow-options.js';
-import { registerComponent } from '../../internals/definitions/register.js';
-import { partMap } from '../../internals/part-map.js';
-import { asNumber } from '../../internals/utils/math.js';
-import { addThemingController } from '../../theming/theming-controller.js';
+} from '#internals/controllers/mutation-observer.js';
+import { shadowOptions } from '#internals/decorators/shadow-options.js';
+import { registerComponent } from '#internals/definitions/register.js';
+import { partMap } from '#internals/part-map.js';
+import { asNumber } from '#internals/utils/math.js';
+import { addThemingController } from '#theming/theming-controller.js';
 import type { TileManagerDragMode, TileManagerResizeMode } from '../types.js';
 import { createTilesState } from './position.js';
 import { createSerializer } from './serializer.js';

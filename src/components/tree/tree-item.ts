@@ -7,16 +7,16 @@ import {
 } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { createRef, type Ref, ref } from 'lit/directives/ref.js';
-import { addAnimationController } from '../../animations/player.js';
-import { growVerIn, growVerOut } from '../../animations/presets/grow/index.js';
-import { registerComponent } from '../../internals/definitions/register.js';
-import { partMap } from '../../internals/part-map.js';
-import { scrollIntoView } from '../../internals/utils/dom.js';
+import { addAnimationController } from '#animations/player.js';
+import { growVerIn, growVerOut } from '#animations/presets/grow/index.js';
+import { registerComponent } from '#internals/definitions/register.js';
+import { partMap } from '#internals/part-map.js';
+import { scrollIntoView } from '#internals/utils/dom.js';
 import {
   addSafeEventListener,
   getElementFromPath,
-} from '../../internals/utils/events.js';
-import { addThemingController } from '../../theming/theming-controller.js';
+} from '#internals/utils/events.js';
+import { addThemingController } from '#theming/theming-controller.js';
 import IgcCheckboxComponent from '../checkbox/checkbox.js';
 import IgcIconComponent from '../icon/icon.js';
 import IgcCircularProgressComponent from '../progress/circular-progress.js';

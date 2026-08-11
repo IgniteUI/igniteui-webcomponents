@@ -1,7 +1,7 @@
 import { property } from 'lit/decorators.js';
-import { registerComponent } from '../../internals/definitions/register.js';
-import { IgcBaseOptionLikeComponent } from '../../internals/mixins/option.js';
-import { addThemingController } from '../../theming/theming-controller.js';
+import { registerComponent } from '#internals/definitions/register.js';
+import { IgcBaseOptionLikeComponent } from '#internals/mixins/option.js';
+import { addThemingController } from '#theming/theming-controller.js';
 import { styles } from '../dropdown/themes/dropdown-item.base.css.js';
 import { all } from '../dropdown/themes/item.js';
 import { styles as shared } from '../dropdown/themes/shared/item/dropdown-item.common.css.js';

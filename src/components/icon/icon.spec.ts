@@ -7,8 +7,8 @@ import {
 } from '@open-wc/testing';
 import { stub } from 'sinon';
 
-import { defineComponents } from '../../internals/definitions/defineComponents.js';
-import { firstOf, lastOf } from '../../internals/utils/arrays.js';
+import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { firstOf, lastOf } from '#internals/utils/arrays.js';
 import IgcThemeProviderComponent from '../theme-provider/theme-provider.js';
 import IgcIconComponent from './icon.js';
 import {

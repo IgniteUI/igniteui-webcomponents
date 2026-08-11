@@ -17,28 +17,28 @@ import {
   homeKey,
   spaceBar,
   tabKey,
-} from '../../internals/controllers/key-bindings.js';
-import { defineComponents } from '../../internals/definitions/defineComponents.js';
+} from '#internals/controllers/key-bindings.js';
+import { defineComponents } from '#internals/definitions/defineComponents.js';
 import {
   createFormAssociatedTestBed,
   runExternalLabelAssociationTests,
-} from '../../internals/testing/form-testbed.spec.js';
+} from '#internals/testing/form-testbed.spec.js';
 import {
   isFocused,
   suppressResizeObserverLoopError,
-} from '../../internals/testing/helpers.spec.js';
+} from '#internals/testing/helpers.spec.js';
 import {
   simulateBlur,
   simulateClick,
   simulateKeyboard,
   simulatePointerDown,
-} from '../../internals/testing/simulate.spec.js';
+} from '#internals/testing/simulate.spec.js';
 import {
   runValidationContainerTests,
   type ValidationContainerTestsParams,
   ValidityHelpers,
-} from '../../internals/testing/validity-helpers.spec.js';
-import { firstOf } from '../../internals/utils/arrays.js';
+} from '#internals/testing/validity-helpers.spec.js';
+import { firstOf } from '#internals/utils/arrays.js';
 import type IgcInputComponent from '../input/input.js';
 import type IgcVirtualScrollComponent from '../virtualization/virtualization.js';
 import IgcComboComponent from './combo.js';

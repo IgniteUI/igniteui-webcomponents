@@ -1,4 +1,4 @@
-import type { Theme } from '../../theming/types.js';
+import type { Theme } from '#theming/types.js';
 import { ICON_REFERENCES } from './icon-references.js';
 import { IconsStateBroadcast } from './icon-state.broadcast.js';
 import { internalIcons } from './internal-icons-lib.js';

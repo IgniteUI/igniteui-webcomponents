@@ -20,22 +20,22 @@ import {
   arrowRight,
   endKey,
   homeKey,
-} from '../../internals/controllers/key-bindings.js';
+} from '#internals/controllers/key-bindings.js';
 import {
   createMutationController,
   type MutationControllerParams,
-} from '../../internals/controllers/mutation-observer.js';
-import { createResizeObserverController } from '../../internals/controllers/resize-observer.js';
-import { registerComponent } from '../../internals/definitions/register.js';
-import type { Constructor } from '../../internals/mixins/constructor.js';
-import { EventEmitterMixin } from '../../internals/mixins/event-emitter.js';
-import { partMap } from '../../internals/part-map.js';
-import { firstOf, isEmpty, lastOf } from '../../internals/utils/arrays.js';
-import { getRoot, isLTR, scrollIntoView } from '../../internals/utils/dom.js';
-import { getElementFromPath } from '../../internals/utils/events.js';
-import { wrap } from '../../internals/utils/math.js';
-import { isString } from '../../internals/utils/types.js';
-import { addThemingController } from '../../theming/theming-controller.js';
+} from '#internals/controllers/mutation-observer.js';
+import { createResizeObserverController } from '#internals/controllers/resize-observer.js';
+import { registerComponent } from '#internals/definitions/register.js';
+import type { Constructor } from '#internals/mixins/constructor.js';
+import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
+import { partMap } from '#internals/part-map.js';
+import { firstOf, isEmpty, lastOf } from '#internals/utils/arrays.js';
+import { getRoot, isLTR, scrollIntoView } from '#internals/utils/dom.js';
+import { getElementFromPath } from '#internals/utils/events.js';
+import { wrap } from '#internals/utils/math.js';
+import { isString } from '#internals/utils/types.js';
+import { addThemingController } from '#theming/theming-controller.js';
 import IgcIconButtonComponent from '../button/icon-button.js';
 import type { TabsActivation, TabsAlignment } from '../types.js';
 import IgcTabComponent from './tab.js';

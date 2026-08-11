@@ -15,16 +15,16 @@ import {
   enterKey,
   homeKey,
   spaceBar,
-} from '../../internals/controllers/key-bindings.js';
-import { defineComponents } from '../../internals/definitions/defineComponents.js';
-import { finishAnimationsFor } from '../../internals/testing/helpers.spec.js';
+} from '#internals/controllers/key-bindings.js';
+import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { finishAnimationsFor } from '#internals/testing/helpers.spec.js';
 import {
   simulateClick,
   simulateKeyboard,
   simulateLostPointerCapture,
   simulatePointerDown,
   simulatePointerMove,
-} from '../../internals/testing/simulate.spec.js';
+} from '#internals/testing/simulate.spec.js';
 import IgcButtonComponent from '../button/button.js';
 import IgcCarouselComponent from './carousel.js';
 import IgcCarouselIndicatorComponent from './carousel-indicator.js';

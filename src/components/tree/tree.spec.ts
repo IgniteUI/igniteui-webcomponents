@@ -1,7 +1,7 @@
 import { aTimeout, elementUpdated, expect, waitUntil } from '@open-wc/testing';
 import { spy } from 'sinon';
-import { defineComponents } from '../../internals/definitions/defineComponents.js';
-import { scrolledIntoView } from '../../internals/testing/helpers.spec.js';
+import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { scrolledIntoView } from '#internals/testing/helpers.spec.js';
 import type IgcCheckboxComponent from '../checkbox/checkbox.js';
 import IgcTreeComponent from './tree.js';
 import type IgcTreeItemComponent from './tree-item.js';

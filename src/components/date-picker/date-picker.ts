@@ -13,36 +13,33 @@ import {
   arrowDown,
   arrowUp,
   escapeKey,
-} from '../../internals/controllers/key-bindings.js';
-import { addRootClickController } from '../../internals/controllers/root-click.js';
-import {
-  addSlotController,
-  setSlots,
-} from '../../internals/controllers/slot.js';
-import { blazorAdditionalDependencies } from '../../internals/decorators/blazorAdditionalDependencies.js';
-import { shadowOptions } from '../../internals/decorators/shadow-options.js';
-import { watch } from '../../internals/decorators/watch.js';
-import { registerComponent } from '../../internals/definitions/register.js';
-import type { IgcCalendarResourceStrings } from '../../internals/i18n/EN/calendar.resources.js';
+} from '#internals/controllers/key-bindings.js';
+import { addRootClickController } from '#internals/controllers/root-click.js';
+import { addSlotController, setSlots } from '#internals/controllers/slot.js';
+import { blazorAdditionalDependencies } from '#internals/decorators/blazorAdditionalDependencies.js';
+import { shadowOptions } from '#internals/decorators/shadow-options.js';
+import { watch } from '#internals/decorators/watch.js';
+import { registerComponent } from '#internals/definitions/register.js';
+import type { IgcCalendarResourceStrings } from '#internals/i18n/EN/calendar.resources.js';
 import {
   addI18nController,
   getDateTimeFormat,
-} from '../../internals/i18n/i18n-controller.js';
-import { IgcComboBoxBaseLikeComponent } from '../../internals/mixins/combo-box.js';
-import type { AbstractConstructor } from '../../internals/mixins/constructor.js';
-import { EventEmitterMixin } from '../../internals/mixins/event-emitter.js';
-import { FormAssociatedRequiredMixin } from '../../internals/mixins/forms/associated-required.js';
-import { FormValueDateTimeTransformers } from '../../internals/mixins/forms/form-transformers.js';
-import { createFormValueState } from '../../internals/mixins/forms/form-value.js';
+} from '#internals/i18n/i18n-controller.js';
+import { IgcComboBoxBaseLikeComponent } from '#internals/mixins/combo-box.js';
+import type { AbstractConstructor } from '#internals/mixins/constructor.js';
+import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
+import { FormAssociatedRequiredMixin } from '#internals/mixins/forms/associated-required.js';
+import { FormValueDateTimeTransformers } from '#internals/mixins/forms/form-transformers.js';
+import { createFormValueState } from '#internals/mixins/forms/form-value.js';
 import {
   addSafeEventListener,
   focusLeftHost,
   getElementFromPath,
-} from '../../internals/utils/events.js';
-import { bindIf } from '../../internals/utils/lit.js';
-import { equal } from '../../internals/utils/objects.js';
-import { createIdGenerator } from '../../internals/utils/strings.js';
-import { addThemingController } from '../../theming/theming-controller.js';
+} from '#internals/utils/events.js';
+import { bindIf } from '#internals/utils/lit.js';
+import { equal } from '#internals/utils/objects.js';
+import { createIdGenerator } from '#internals/utils/strings.js';
+import { addThemingController } from '#theming/theming-controller.js';
 import IgcCalendarComponent, { focusActiveDate } from '../calendar/calendar.js';
 import { convertToDate, createDateConstraints } from '../calendar/helpers.js';
 import type {

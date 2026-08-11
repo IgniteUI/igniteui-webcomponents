@@ -1,5 +1,5 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
-import { defineComponents } from '../../internals/definitions/defineComponents.js';
+import { defineComponents } from '#internals/definitions/defineComponents.js';
 import IgcTabComponent from './tab.js';
 import IgcTabsComponent from './tabs.js';
 

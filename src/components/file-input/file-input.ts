@@ -4,20 +4,17 @@ import {
 } from 'igniteui-i18n-core';
 import { html } from 'lit';
 import { property, state } from 'lit/decorators.js';
-import {
-  addSlotController,
-  setSlots,
-} from '../../internals/controllers/slot.js';
-import { registerComponent } from '../../internals/definitions/register.js';
-import { addI18nController } from '../../internals/i18n/i18n-controller.js';
-import type { AbstractConstructor } from '../../internals/mixins/constructor.js';
-import { EventEmitterMixin } from '../../internals/mixins/event-emitter.js';
-import { FormValueFileListTransformers } from '../../internals/mixins/forms/form-transformers.js';
-import { createFormValueState } from '../../internals/mixins/forms/form-value.js';
-import { partMap } from '../../internals/part-map.js';
-import { hasFiles } from '../../internals/utils/dom.js';
-import { bindIf } from '../../internals/utils/lit.js';
-import { addThemingController } from '../../theming/theming-controller.js';
+import { addSlotController, setSlots } from '#internals/controllers/slot.js';
+import { registerComponent } from '#internals/definitions/register.js';
+import { addI18nController } from '#internals/i18n/i18n-controller.js';
+import type { AbstractConstructor } from '#internals/mixins/constructor.js';
+import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
+import { FormValueFileListTransformers } from '#internals/mixins/forms/form-transformers.js';
+import { createFormValueState } from '#internals/mixins/forms/form-value.js';
+import { partMap } from '#internals/part-map.js';
+import { hasFiles } from '#internals/utils/dom.js';
+import { bindIf } from '#internals/utils/lit.js';
+import { addThemingController } from '#theming/theming-controller.js';
 import IgcButtonComponent from '../button/button.js';
 import {
   IgcInputBaseComponent,

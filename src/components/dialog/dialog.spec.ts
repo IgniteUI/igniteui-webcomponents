@@ -6,9 +6,9 @@ import {
   waitUntil,
 } from '@open-wc/testing';
 import { spy } from 'sinon';
-import { defineComponents } from '../../internals/definitions/defineComponents.js';
-import { runInvokerCommandsTests } from '../../internals/testing/invoker-commands.spec.js';
-import { simulateClick } from '../../internals/testing/simulate.spec.js';
+import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { runInvokerCommandsTests } from '#internals/testing/invoker-commands.spec.js';
+import { simulateClick } from '#internals/testing/simulate.spec.js';
 import IgcButtonComponent from '../button/button.js';
 import IgcDialogComponent from './dialog.js';
 

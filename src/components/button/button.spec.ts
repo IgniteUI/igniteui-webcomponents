@@ -1,8 +1,8 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
-import { defineComponents } from '../../internals/definitions/defineComponents.js';
-import { createFormAssociatedTestBed } from '../../internals/testing/form-testbed.spec.js';
-import { isFocused } from '../../internals/testing/helpers.spec.js';
-import { isPopoverOpen } from '../../internals/utils/dom.js';
+import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { createFormAssociatedTestBed } from '#internals/testing/form-testbed.spec.js';
+import { isFocused } from '#internals/testing/helpers.spec.js';
+import { isPopoverOpen } from '#internals/utils/dom.js';
 import IgcInputComponent from '../input/input.js';
 import IgcButtonComponent from './button.js';
 

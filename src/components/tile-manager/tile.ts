@@ -4,30 +4,27 @@ import { createRef, ref } from 'lit/directives/ref.js';
 import {
   setTransitionName,
   startViewTransition,
-} from '../../animations/view-transition.js';
+} from '#animations/view-transition.js';
 import {
   type TileManagerContext,
   tileManagerContext,
-} from '../../internals/context.js';
-import { createAsyncContext } from '../../internals/controllers/async-consumer.js';
+} from '#internals/context.js';
+import { createAsyncContext } from '#internals/controllers/async-consumer.js';
 import {
   addDragController,
   type DragCallbackParameters,
-} from '../../internals/controllers/drag.js';
-import { addFullscreenController } from '../../internals/controllers/fullscreen.js';
-import {
-  addSlotController,
-  setSlots,
-} from '../../internals/controllers/slot.js';
-import { registerComponent } from '../../internals/definitions/register.js';
-import type { Constructor } from '../../internals/mixins/constructor.js';
-import { EventEmitterMixin } from '../../internals/mixins/event-emitter.js';
-import { partMap } from '../../internals/part-map.js';
-import { isLTR } from '../../internals/utils/dom.js';
-import { getElementFromPath } from '../../internals/utils/events.js';
-import { asNumber } from '../../internals/utils/math.js';
-import { createIdGenerator } from '../../internals/utils/strings.js';
-import { addThemingController } from '../../theming/theming-controller.js';
+} from '#internals/controllers/drag.js';
+import { addFullscreenController } from '#internals/controllers/fullscreen.js';
+import { addSlotController, setSlots } from '#internals/controllers/slot.js';
+import { registerComponent } from '#internals/definitions/register.js';
+import type { Constructor } from '#internals/mixins/constructor.js';
+import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
+import { partMap } from '#internals/part-map.js';
+import { isLTR } from '#internals/utils/dom.js';
+import { getElementFromPath } from '#internals/utils/events.js';
+import { asNumber } from '#internals/utils/math.js';
+import { createIdGenerator } from '#internals/utils/strings.js';
+import { addThemingController } from '#theming/theming-controller.js';
 import IgcIconButtonComponent from '../button/icon-button.js';
 import IgcDividerComponent from '../divider/divider.js';
 import IgcResizeContainerComponent from '../resize-container/resize-container.js';

@@ -1,12 +1,12 @@
 import { elementUpdated, expect, fixture } from '@open-wc/testing';
 import { html, nothing } from 'lit';
 import { spy, stub, useFakeTimers } from 'sinon';
-import { enterKey, tabKey } from '../../internals/controllers/key-bindings.js';
-import { defineComponents } from '../../internals/definitions/defineComponents.js';
+import { enterKey, tabKey } from '#internals/controllers/key-bindings.js';
+import { defineComponents } from '#internals/definitions/defineComponents.js';
 import {
   isFocused,
   suppressResizeObserverLoopError,
-} from '../../internals/testing/helpers.spec.js';
+} from '#internals/testing/helpers.spec.js';
 import {
   simulateBlur,
   simulateClick,
@@ -14,9 +14,9 @@ import {
   simulateFocus,
   simulateInput,
   simulateKeyboard,
-} from '../../internals/testing/simulate.spec.js';
-import { firstOf, lastOf } from '../../internals/utils/arrays.js';
-import { configureTheme } from '../../theming/config.js';
+} from '#internals/testing/simulate.spec.js';
+import { firstOf, lastOf } from '#internals/utils/arrays.js';
+import { configureTheme } from '#theming/config.js';
 import type IgcIconButtonComponent from '../button/icon-button.js';
 import IgcChipComponent from '../chip/chip.js';
 

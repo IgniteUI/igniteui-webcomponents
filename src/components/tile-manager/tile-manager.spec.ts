@@ -1,10 +1,10 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import { range } from 'lit/directives/range.js';
 import { match, restore, spy, stub } from 'sinon';
-import { defineComponents } from '../../internals/definitions/defineComponents.js';
-import { viewTransitionComplete } from '../../internals/testing/helpers.spec.js';
-import { simulateClick } from '../../internals/testing/simulate.spec.js';
-import { firstOf } from '../../internals/utils/arrays.js';
+import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { viewTransitionComplete } from '#internals/testing/helpers.spec.js';
+import { simulateClick } from '#internals/testing/simulate.spec.js';
+import { firstOf } from '#internals/utils/arrays.js';
 import IgcIconButtonComponent from '../button/icon-button.js';
 import IgcTileComponent from './tile.js';
 import IgcTileManagerComponent from './tile-manager.js';

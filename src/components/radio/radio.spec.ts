@@ -1,14 +1,14 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import { spy } from 'sinon';
-import { defineComponents } from '../../internals/definitions/defineComponents.js';
-import { createFormAssociatedTestBed } from '../../internals/testing/form-testbed.spec.js';
-import { isFocused } from '../../internals/testing/helpers.spec.js';
-import { simulateClick } from '../../internals/testing/simulate.spec.js';
+import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { createFormAssociatedTestBed } from '#internals/testing/form-testbed.spec.js';
+import { isFocused } from '#internals/testing/helpers.spec.js';
+import { simulateClick } from '#internals/testing/simulate.spec.js';
 import {
   runValidationContainerTests,
   type ValidationContainerTestsParams,
-} from '../../internals/testing/validity-helpers.spec.js';
-import { firstOf, lastOf } from '../../internals/utils/arrays.js';
+} from '#internals/testing/validity-helpers.spec.js';
+import { firstOf, lastOf } from '#internals/utils/arrays.js';
 import IgcRadioComponent from './radio.js';
 
 describe('Radio Component', () => {

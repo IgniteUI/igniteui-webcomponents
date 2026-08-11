@@ -14,15 +14,15 @@ import {
   arrowUp,
   ctrlKey,
   escapeKey,
-} from '../../internals/controllers/key-bindings.js';
-import { defineComponents } from '../../internals/definitions/defineComponents.js';
-import { runExternalLabelAssociationTests } from '../../internals/testing/form-testbed.spec.js';
-import { isFocused } from '../../internals/testing/helpers.spec.js';
+} from '#internals/controllers/key-bindings.js';
+import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { runExternalLabelAssociationTests } from '#internals/testing/form-testbed.spec.js';
+import { isFocused } from '#internals/testing/helpers.spec.js';
 import {
   simulateClick,
   simulateInput,
   simulateKeyboard,
-} from '../../internals/testing/simulate.spec.js';
+} from '#internals/testing/simulate.spec.js';
 import IgcCalendarComponent from '../calendar/calendar.js';
 import { CalendarDay } from '../calendar/model.js';
 import type IgcDialogComponent from '../dialog/dialog.js';

@@ -7,10 +7,10 @@ import {
 } from '@open-wc/testing';
 import type { TemplateResult } from 'lit';
 import { spy } from 'sinon';
-import { defineComponents } from '../../internals/definitions/defineComponents.js';
-import { runInvokerCommandsTests } from '../../internals/testing/invoker-commands.spec.js';
-import { simulateClick } from '../../internals/testing/simulate.spec.js';
-import { isPopoverOpen } from '../../internals/utils/dom.js';
+import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { runInvokerCommandsTests } from '#internals/testing/invoker-commands.spec.js';
+import { simulateClick } from '#internals/testing/simulate.spec.js';
+import { isPopoverOpen } from '#internals/utils/dom.js';
 import IgcButtonComponent from '../button/button.js';
 import IgcIconComponent from '../icon/icon.js';
 import IgcNavDrawerComponent from './nav-drawer.js';

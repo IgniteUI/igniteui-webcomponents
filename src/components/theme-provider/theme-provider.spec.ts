@@ -8,8 +8,8 @@ import {
   unsafeStatic,
 } from '@open-wc/testing';
 import { LitElement } from 'lit';
-import { defineComponents } from '../../internals/definitions/defineComponents.js';
-import { type ThemeContext, themeContext } from '../../theming/context.js';
+import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { type ThemeContext, themeContext } from '#theming/context.js';
 import IgcThemeProviderComponent from './theme-provider.js';
 
 type ThemeContextConsumerElement = LitElement & {

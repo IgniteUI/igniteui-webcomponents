@@ -6,10 +6,10 @@ import {
   nextFrame,
 } from '@open-wc/testing';
 import { type SinonFakeTimers, useFakeTimers } from 'sinon';
-import { defineComponents } from '../../internals/definitions/defineComponents.js';
-import { finishAnimationsFor } from '../../internals/testing/helpers.spec.js';
-import { runInvokerCommandsTests } from '../../internals/testing/invoker-commands.spec.js';
-import { isPopoverOpen } from '../../internals/utils/dom.js';
+import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { finishAnimationsFor } from '#internals/testing/helpers.spec.js';
+import { runInvokerCommandsTests } from '#internals/testing/invoker-commands.spec.js';
+import { isPopoverOpen } from '#internals/utils/dom.js';
 import IgcButtonComponent from '../button/button.js';
 import IgcToastComponent from './toast.js';
 

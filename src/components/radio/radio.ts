@@ -2,31 +2,28 @@ import { html, LitElement, nothing, type TemplateResult } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
-import { addKeyboardFocusRing } from '../../internals/controllers/focus-ring.js';
+import { addKeyboardFocusRing } from '#internals/controllers/focus-ring.js';
 import {
   addKeybindings,
   arrowDown,
   arrowLeft,
   arrowRight,
   arrowUp,
-} from '../../internals/controllers/key-bindings.js';
-import {
-  addSlotController,
-  setSlots,
-} from '../../internals/controllers/slot.js';
-import { registerComponent } from '../../internals/definitions/register.js';
-import type { Constructor } from '../../internals/mixins/constructor.js';
-import { EventEmitterMixin } from '../../internals/mixins/event-emitter.js';
-import { FormAssociatedCheckboxRequiredMixin } from '../../internals/mixins/forms/associated-required.js';
-import { FormValueBooleanTransformers } from '../../internals/mixins/forms/form-transformers.js';
-import { createFormValueState } from '../../internals/mixins/forms/form-value.js';
-import { partMap } from '../../internals/part-map.js';
-import { isEmpty, lastOf } from '../../internals/utils/arrays.js';
-import { isLTR } from '../../internals/utils/dom.js';
-import { wrap } from '../../internals/utils/math.js';
-import { createIdGenerator } from '../../internals/utils/strings.js';
-import { isDefined } from '../../internals/utils/types.js';
-import { addThemingController } from '../../theming/theming-controller.js';
+} from '#internals/controllers/key-bindings.js';
+import { addSlotController, setSlots } from '#internals/controllers/slot.js';
+import { registerComponent } from '#internals/definitions/register.js';
+import type { Constructor } from '#internals/mixins/constructor.js';
+import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
+import { FormAssociatedCheckboxRequiredMixin } from '#internals/mixins/forms/associated-required.js';
+import { FormValueBooleanTransformers } from '#internals/mixins/forms/form-transformers.js';
+import { createFormValueState } from '#internals/mixins/forms/form-value.js';
+import { partMap } from '#internals/part-map.js';
+import { isEmpty, lastOf } from '#internals/utils/arrays.js';
+import { isLTR } from '#internals/utils/dom.js';
+import { wrap } from '#internals/utils/math.js';
+import { createIdGenerator } from '#internals/utils/strings.js';
+import { isDefined } from '#internals/utils/types.js';
+import { addThemingController } from '#theming/theming-controller.js';
 import type { ToggleLabelPosition } from '../types.js';
 import IgcValidationContainerComponent from '../validation-container/validation-container.js';
 import { styles } from './themes/radio.base.css.js';

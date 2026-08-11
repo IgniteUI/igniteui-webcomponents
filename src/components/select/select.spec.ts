@@ -10,23 +10,23 @@ import {
   homeKey,
   spaceBar,
   tabKey,
-} from '../../internals/controllers/key-bindings.js';
-import { defineComponents } from '../../internals/definitions/defineComponents.js';
+} from '#internals/controllers/key-bindings.js';
+import { defineComponents } from '#internals/definitions/defineComponents.js';
 import {
   createFormAssociatedTestBed,
   runExternalLabelAssociationTests,
-} from '../../internals/testing/form-testbed.spec.js';
-import { isFocused } from '../../internals/testing/helpers.spec.js';
+} from '#internals/testing/form-testbed.spec.js';
+import { isFocused } from '#internals/testing/helpers.spec.js';
 import {
   simulateClick,
   simulateKeyboard,
   simulateScroll,
-} from '../../internals/testing/simulate.spec.js';
+} from '#internals/testing/simulate.spec.js';
 import {
   runValidationContainerTests,
   type ValidationContainerTestsParams,
   ValidityHelpers,
-} from '../../internals/testing/validity-helpers.spec.js';
+} from '#internals/testing/validity-helpers.spec.js';
 import IgcInputComponent from '../input/input.js';
 import IgcSelectComponent from './select.js';
 import IgcSelectHeaderComponent from './select-header.js';

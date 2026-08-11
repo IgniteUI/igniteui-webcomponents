@@ -4,7 +4,7 @@ import {
   type DirectiveParameters,
   directive,
 } from 'lit/async-directive.js';
-import { isFunction } from '../internals/utils/types.js';
+import { isFunction } from '#internals/utils/types.js';
 import { getPrefersReducedMotion } from './player.js';
 
 type ScopedViewTransitionElement = HTMLElement & {

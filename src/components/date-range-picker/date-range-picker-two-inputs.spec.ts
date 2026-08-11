@@ -11,18 +11,15 @@ import {
   arrowDown,
   arrowUp,
   escapeKey,
-} from '../../internals/controllers/key-bindings.js';
-import { defineComponents } from '../../internals/definitions/defineComponents.js';
-import { runExternalLabelAssociationTests } from '../../internals/testing/form-testbed.spec.js';
-import {
-  checkDatesEqual,
-  isFocused,
-} from '../../internals/testing/helpers.spec.js';
+} from '#internals/controllers/key-bindings.js';
+import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { runExternalLabelAssociationTests } from '#internals/testing/form-testbed.spec.js';
+import { checkDatesEqual, isFocused } from '#internals/testing/helpers.spec.js';
 import {
   simulateClick,
   simulateInput,
   simulateKeyboard,
-} from '../../internals/testing/simulate.spec.js';
+} from '#internals/testing/simulate.spec.js';
 import IgcCalendarComponent from '../calendar/calendar.js';
 import { CalendarDay } from '../calendar/model.js';
 import IgcDateTimeInputComponent from '../date-time-input/date-time-input.js';

@@ -1,5 +1,5 @@
-import { firstOf } from '../../internals/utils/arrays.js';
-import { asNumber } from '../../internals/utils/math.js';
+import { firstOf } from '#internals/utils/arrays.js';
+import { asNumber } from '#internals/utils/math.js';
 import type { ResizeState } from '../resize-container/types.js';
 import { ResizeUtil } from './resize-util.js';
 import type IgcTileComponent from './tile.js';

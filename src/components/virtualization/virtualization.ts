@@ -9,12 +9,12 @@ import {
 import { property, state } from 'lit/decorators.js';
 import { createRef, ref } from 'lit/directives/ref.js';
 import { styleMap } from 'lit/directives/style-map.js';
-import { createResizeObserverController } from '../../internals/controllers/resize-observer.js';
-import { registerComponent } from '../../internals/definitions/register.js';
-import type { Constructor } from '../../internals/mixins/constructor.js';
-import { EventEmitterMixin } from '../../internals/mixins/event-emitter.js';
-import { isLTR } from '../../internals/utils/dom.js';
-import { asNumber, clamp } from '../../internals/utils/math.js';
+import { createResizeObserverController } from '#internals/controllers/resize-observer.js';
+import { registerComponent } from '#internals/definitions/register.js';
+import type { Constructor } from '#internals/mixins/constructor.js';
+import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
+import { isLTR } from '#internals/utils/dom.js';
+import { asNumber, clamp } from '#internals/utils/math.js';
 import { VirtualScrollEngine } from './engine.js';
 import {
   type ScrollAlignment,

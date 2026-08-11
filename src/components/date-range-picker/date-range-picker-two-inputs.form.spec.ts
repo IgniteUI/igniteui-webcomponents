@@ -1,15 +1,15 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
-import { defineComponents } from '../../internals/definitions/defineComponents.js';
-import { createFormAssociatedTestBed } from '../../internals/testing/form-testbed.spec.js';
+import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { createFormAssociatedTestBed } from '#internals/testing/form-testbed.spec.js';
 import {
   simulateClick,
   simulateInput,
-} from '../../internals/testing/simulate.spec.js';
+} from '#internals/testing/simulate.spec.js';
 import {
   runValidationContainerTests,
   type ValidationContainerTestsParams,
   ValidityHelpers,
-} from '../../internals/testing/validity-helpers.spec.js';
+} from '#internals/testing/validity-helpers.spec.js';
 import { CalendarDay } from '../calendar/model.js';
 import { type DateRangeDescriptor, DateRangeType } from '../calendar/types.js';
 import IgcDateTimeInputComponent from '../date-time-input/date-time-input.js';

@@ -8,13 +8,13 @@ import {
   escapeKey,
   homeKey,
   tabKey,
-} from '../../internals/controllers/key-bindings.js';
-import { defineComponents } from '../../internals/definitions/defineComponents.js';
+} from '#internals/controllers/key-bindings.js';
+import { defineComponents } from '#internals/definitions/defineComponents.js';
 import {
   simulateClick,
   simulateKeyboard,
   simulateScroll,
-} from '../../internals/testing/simulate.spec.js';
+} from '#internals/testing/simulate.spec.js';
 import IgcButtonComponent from '../button/button.js';
 import IgcDropdownComponent from './dropdown.js';
 import IgcDropdownHeaderComponent from './dropdown-header.js';

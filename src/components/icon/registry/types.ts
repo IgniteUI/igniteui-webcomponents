@@ -1,4 +1,4 @@
-import type { Theme } from '../../../theming/types.js';
+import type { Theme } from '#theming/types.js';
 import type { DefaultMap } from './default-map.js';
 
 // Exported internal types

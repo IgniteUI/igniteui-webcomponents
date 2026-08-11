@@ -14,13 +14,13 @@ import {
   enterKey,
   homeKey,
   spaceBar,
-} from '../../internals/controllers/key-bindings.js';
-import { defineComponents } from '../../internals/definitions/defineComponents.js';
+} from '#internals/controllers/key-bindings.js';
+import { defineComponents } from '#internals/definitions/defineComponents.js';
 import {
   simulateClick,
   simulateKeyboard,
-} from '../../internals/testing/simulate.spec.js';
-import { firstOf, lastOf } from '../../internals/utils/arrays.js';
+} from '#internals/testing/simulate.spec.js';
+import { firstOf, lastOf } from '#internals/utils/arrays.js';
 import type IgcIconButtonComponent from '../button/icon-button.js';
 import IgcTabComponent from './tab.js';
 import IgcTabsComponent from './tabs.js';

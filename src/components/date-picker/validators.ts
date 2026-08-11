@@ -1,11 +1,11 @@
 import { ValidationResourceStringsEN } from 'igniteui-i18n-core';
-import { formatString } from '../../internals/utils/strings.js';
+import { formatString } from '#internals/utils/strings.js';
 import {
   maxDateValidator,
   minDateValidator,
   requiredValidator,
   type Validator,
-} from '../../internals/validators.js';
+} from '#internals/validators.js';
 import { isDateInRanges } from '../calendar/helpers.js';
 import type IgcDatePickerComponent from './date-picker.js';
 

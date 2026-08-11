@@ -2,10 +2,10 @@ import { consume } from '@lit/context';
 import { html, LitElement, type PropertyValues } from 'lit';
 import { property } from 'lit/decorators.js';
 import { styleMap } from 'lit/directives/style-map.js';
-import { carouselContext } from '../../internals/context.js';
-import { addInternalsController } from '../../internals/controllers/internals.js';
-import { registerComponent } from '../../internals/definitions/register.js';
-import { formatString } from '../../internals/utils/strings.js';
+import { carouselContext } from '#internals/context.js';
+import { addInternalsController } from '#internals/controllers/internals.js';
+import { registerComponent } from '#internals/definitions/register.js';
+import { formatString } from '#internals/utils/strings.js';
 import type IgcCarouselComponent from './carousel.js';
 import { styles } from './themes/carousel-indicator.base.css.js';
 

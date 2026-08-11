@@ -1,10 +1,10 @@
 import { html, nothing } from 'lit';
 import { property } from 'lit/decorators.js';
-import { registerComponent } from '../../internals/definitions/register.js';
-import { IgcBaseAlertLikeComponent } from '../../internals/mixins/alert.js';
-import type { AbstractConstructor } from '../../internals/mixins/constructor.js';
-import { EventEmitterMixin } from '../../internals/mixins/event-emitter.js';
-import { addThemingController } from '../../theming/theming-controller.js';
+import { registerComponent } from '#internals/definitions/register.js';
+import { IgcBaseAlertLikeComponent } from '#internals/mixins/alert.js';
+import type { AbstractConstructor } from '#internals/mixins/constructor.js';
+import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
+import { addThemingController } from '#theming/theming-controller.js';
 import IgcButtonComponent from '../button/button.js';
 import { styles as shared } from './themes/shared/snackbar.common.css.js';
 import { styles } from './themes/snackbar.base.css.js';

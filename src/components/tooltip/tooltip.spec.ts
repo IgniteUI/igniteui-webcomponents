@@ -6,15 +6,15 @@ import {
   nextFrame,
 } from '@open-wc/testing';
 import { type SinonFakeTimers, spy, useFakeTimers } from 'sinon';
-import { defineComponents } from '../../internals/definitions/defineComponents.js';
-import { finishAnimationsFor } from '../../internals/testing/helpers.spec.js';
+import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { finishAnimationsFor } from '#internals/testing/helpers.spec.js';
 import {
   simulateBlur,
   simulateClick,
   simulateFocus,
   simulatePointerEnter,
   simulatePointerLeave,
-} from '../../internals/testing/simulate.spec.js';
+} from '#internals/testing/simulate.spec.js';
 import IgcTooltipComponent from './tooltip.js';
 
 describe('Tooltip', () => {

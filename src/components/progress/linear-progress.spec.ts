@@ -5,8 +5,8 @@ import {
   html,
   nextFrame,
 } from '@open-wc/testing';
-import { defineComponents } from '../../internals/definitions/defineComponents.js';
-import { firstOf } from '../../internals/utils/arrays.js';
+import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { firstOf } from '#internals/utils/arrays.js';
 import IgcLinearProgressComponent from './linear-progress.js';
 
 describe('Linear progress component', () => {

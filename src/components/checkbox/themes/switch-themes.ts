@@ -1,6 +1,6 @@
 import { css } from 'lit';
 
-import type { Themes } from '../../../theming/types.js';
+import type { Themes } from '#theming/types.js';
 // Dark Overrides
 import { styles as bootstrapDark } from './dark/switch/switch.bootstrap.css.js';
 import { styles as fluentDark } from './dark/switch/switch.fluent.css.js';

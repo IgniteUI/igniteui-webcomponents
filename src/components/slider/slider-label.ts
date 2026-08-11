@@ -1,6 +1,6 @@
 import { css, LitElement } from 'lit';
 
-import { registerComponent } from '../../internals/definitions/register.js';
+import { registerComponent } from '#internals/definitions/register.js';
 
 /**
  * Allows formatting the values of the slider as string values.

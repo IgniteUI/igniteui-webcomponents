@@ -3,7 +3,7 @@ import {
   minDateValidator,
   requiredValidator,
   type Validator,
-} from '../../internals/validators.js';
+} from '#internals/validators.js';
 import { isDateExceedingMax, isDateLessThanMin } from '../calendar/helpers.js';
 import type IgcDateTimeInputComponent from './date-time-input.js';
 

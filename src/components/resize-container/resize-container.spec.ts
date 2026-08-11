@@ -2,8 +2,8 @@ import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import type Sinon from 'sinon';
 import { spy } from 'sinon';
 
-import { escapeKey } from '../../internals/controllers/key-bindings.js';
-import { defineComponents } from '../../internals/definitions/defineComponents.js';
+import { escapeKey } from '#internals/controllers/key-bindings.js';
+import { defineComponents } from '#internals/definitions/defineComponents.js';
 import {
   simulateKeyboard,
   simulateLostPointerCapture,
@@ -11,7 +11,7 @@ import {
   simulatePointerEnter,
   simulatePointerLeave,
   simulatePointerMove,
-} from '../../internals/testing/simulate.spec.js';
+} from '#internals/testing/simulate.spec.js';
 import IgcResizeContainerComponent, {
   type IgcResizeContainerComponentEventMap,
 } from './resize-container.js';

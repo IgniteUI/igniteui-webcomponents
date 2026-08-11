@@ -1,6 +1,6 @@
 import { css } from 'lit';
 
-import type { Themes } from '../../../theming/types.js';
+import type { Themes } from '#theming/types.js';
 import { styles as indigo } from './shared/chat-message/chat-message.indigo.css.js';
 
 const light = {

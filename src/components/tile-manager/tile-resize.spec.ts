@@ -8,16 +8,16 @@ import {
 import { range } from 'lit/directives/range.js';
 import type Sinon from 'sinon';
 import { spy } from 'sinon';
-import { escapeKey } from '../../internals/controllers/key-bindings.js';
-import { defineComponents } from '../../internals/definitions/defineComponents.js';
-import { viewTransitionComplete } from '../../internals/testing/helpers.spec.js';
+import { escapeKey } from '#internals/controllers/key-bindings.js';
+import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { viewTransitionComplete } from '#internals/testing/helpers.spec.js';
 import {
   simulateKeyboard,
   simulateLostPointerCapture,
   simulatePointerDown,
   simulatePointerMove,
-} from '../../internals/testing/simulate.spec.js';
-import { firstOf, lastOf } from '../../internals/utils/arrays.js';
+} from '#internals/testing/simulate.spec.js';
+import { firstOf, lastOf } from '#internals/utils/arrays.js';
 import IgcResizeContainerComponent, {
   type IgcResizeContainerComponentEventMap,
 } from '../resize-container/resize-container.js';
