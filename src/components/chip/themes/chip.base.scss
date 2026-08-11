@@ -13,7 +13,7 @@
     display: inline-flex;
     place-items: center;
     font-family: var(--ig-font-family);
-    border: rem(1px) solid;
+    border: none;
     box-shadow: none;
     cursor: pointer;
     padding: 0 pad-inline(rem(2px), rem(6px), rem(12px));
@@ -23,85 +23,63 @@
     }
 }
 
-:host([variant='primary']) button,
-:host([selected][variant='primary']) button:not([disabled]) {
-    background: color(primary, 500);
-    color: contrast-color(primary, 500);
+@mixin chip-variants($variant, $variant-color) {
+    :host([variant='#{$variant}']) button,
+    :host([selected][variant='#{$variant}']) button:not([disabled]) {
+        background: color($variant-color, 500);
+        color: contrast-color($variant-color, 500);
 
-    &:focus {
-        background: color(primary, 800);
-        color: contrast-color(primary, 800);
+        &:focus {
+            background: color($variant-color, 800);
+            color: contrast-color($variant-color, 800);
+        }
+
+        &:hover {
+            background: color($variant-color, 600);
+            color: contrast-color($variant-color, 600);
+        }
     }
 
-    &:hover {
-        background: color(primary, 600);
-        color: contrast-color(primary, 600);
-    }
-}
-
-:host([variant='info']) button,
-:host([selected][variant='info']) button:not([disabled]) {
-    background: color(info, 500);
-    color: contrast-color(info, 500);
-
-    &:focus {
-        background: color(info, 800);
-        color: contrast-color(info, 800);
-    }
-
-    &:hover {
-        background: color(info, 600);
-        color: contrast-color(info, 600);
+    :host([variant='#{$variant}']) button[disabled],
+    :host([selected][variant='#{$variant}']) button[disabled] {
+        background: color(gray, 200);
+        color: color(gray, 500);
     }
 }
 
-:host([variant='success']) button,
-:host([selected][variant='success']) button:not([disabled]) {
-    background: color(success, 500);
-    color: contrast-color(success, 500);
+@include chip-variants('primary', primary);
+@include chip-variants('info', info);
+@include chip-variants('success', success);
+@include chip-variants('warning', warn);
+@include chip-variants('danger', error);
 
-    &:focus {
-        background: color(success, 800);
-        color: contrast-color(success, 800);
+@mixin outlined-variant($variant, $variant-color) {
+    :host([outlined][variant='#{$variant}']) button,
+    :host([selected][outlined][variant='#{$variant}']) button:not([disabled]) {
+        background: transparent;
+
+        &:focus {
+            background: color($variant-color, 800, .30);
+        }
+
+        &:hover {
+            background: color($variant-color, 600, .16);
+        }
     }
 
-    &:hover {
-        background: color(success, 600);
-        color: contrast-color(success, 600);
-    }
-}
-
-:host([variant='warning']) button,
-:host([selected][variant='warning']) button:not([disabled]) {
-    background: color(warn, 500);
-    color: contrast-color(warn, 500);
-
-    &:focus {
-        background: color(warn, 800);
-        color: contrast-color(warn, 800);
-    }
-
-    &:hover {
-        background: color(warn, 600);
-        color: contrast-color(warn, 600);
+    :host([outlined][variant='#{$variant}']) button[disabled],
+    :host([selected][outlined][variant='#{$variant}']) button[disabled] {
+        background: color(gray, 200, .30);
+        color: color(gray, 500);
+        border-color: color(gray, 500, .30);
     }
 }
 
-:host([variant='danger']) button,
-:host([selected][variant='danger']) button:not([disabled]) {
-    background: color(error, 500);
-    color: contrast-color(error, 500);
-
-    &:focus {
-        background: color(error, 800);
-        color: contrast-color(error, 800);
-    }
-
-    &:hover {
-        background: color(error, 600);
-        color: contrast-color(error, 600);
-    }
-}
+@include outlined-variant('primary', primary);
+@include outlined-variant('info', info);
+@include outlined-variant('success', success);
+@include outlined-variant('warning', warn);
+@include outlined-variant('danger', error);
 
 [part='prefix'],
 [part='suffix'] {
