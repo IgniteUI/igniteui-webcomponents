@@ -46,7 +46,7 @@ describe('DateRangeMaskParser', () => {
 
     it('builds range parts with position information', () => {
       const parser = new DateRangeMaskParser({ format: 'MM/dd/yyyy' });
-      const parts = parser.rangeParts;
+      const parts = parser.parts;
 
       const startParts = parts.filter(
         (p) => p.position === DateRangePosition.Start
@@ -146,23 +146,19 @@ describe('DateRangeMaskParser', () => {
   });
 
   describe('Part Queries', () => {
-    it('gets date range part at position', () => {
-      const parser = new DateRangeMaskParser({ format: 'MM/dd/yyyy' });
-
-      const startMonthPart = parser.getDateRangePartAtPosition(0);
-      expect(startMonthPart?.type).to.equal(DatePartType.Month);
-      expect(startMonthPart?.position).to.equal(DateRangePosition.Start);
-
-      const endMonthPart = parser.getDateRangePartAtPosition(13);
-      expect(endMonthPart?.type).to.equal(DatePartType.Month);
-      expect(endMonthPart?.position).to.equal(DateRangePosition.End);
-    });
-
     it('gets part for cursor position', () => {
       const parser = new DateRangeMaskParser({ format: 'MM/dd/yyyy' });
 
-      const part = parser.getDateRangePartForCursor(2);
-      expect(part?.type).to.equal(DatePartType.Month);
+      const startMonth = parser.getPartForCursor(0);
+      expect(startMonth?.type).to.equal(DatePartType.Month);
+      expect(startMonth?.position).to.equal(DateRangePosition.Start);
+
+      const endMonth = parser.getPartForCursor(13);
+      expect(endMonth?.type).to.equal(DatePartType.Month);
+      expect(endMonth?.position).to.equal(DateRangePosition.End);
+
+      // Inside the separator there is nothing to target.
+      expect(parser.getPartForCursor(12)).to.be.undefined;
     });
 
     it('gets part by type and position', () => {
@@ -253,15 +249,59 @@ describe('DateRangeMaskParser', () => {
     });
   });
 
+  describe('Prompt Updates', () => {
+    it('formats both dates with a changed prompt', () => {
+      const parser = new DateRangeMaskParser({ format: 'MM/dd/yyyy' });
+      parser.prompt = '*';
+
+      expect(parser.emptyMask).to.equal('**/**/**** - **/**/****');
+      expect(parser.formatDateRange(null)).to.equal(parser.emptyMask);
+      expect(
+        parser.formatDateRange({ start: new Date(2026, 11, 25), end: null })
+      ).to.equal('12/25/2026 - **/**/****');
+    });
+
+    it('parses both dates against a changed prompt', () => {
+      const parser = new DateRangeMaskParser({ format: 'MM/dd/yyyy' });
+      parser.prompt = '*';
+
+      // An untouched range is empty, not a pair of default dates.
+      expect(parser.parseDateRange(parser.formatDateRange(null))).to.be.null;
+
+      const range = parser.parseDateRange('12/25/2026 - **/**/****');
+      expect(range!.start!.getDate()).to.equal(25);
+      expect(range!.end!.getFullYear()).to.equal(2000);
+    });
+
+    it('ignores a prompt that collides with a mask flag', () => {
+      const parser = new DateRangeMaskParser({ format: 'MM/dd/yyyy' });
+      parser.prompt = '0';
+
+      // The base setter rejects it, so the sub-parsers must not drift off on their own.
+      expect(parser.prompt).to.equal('_');
+      expect(parser.formatDateRange(null)).to.equal(parser.emptyMask);
+    });
+
+    it('applies the same prompt rules from the constructor', () => {
+      const parser = new DateRangeMaskParser({
+        format: 'MM/dd/yyyy',
+        promptCharacter: '0',
+      });
+
+      expect(parser.prompt).to.equal('_');
+      expect(parser.formatDateRange(null)).to.equal(parser.emptyMask);
+    });
+  });
+
   describe('Mask Updates', () => {
     it('updates mask and rebuilds parts', () => {
       const parser = new DateRangeMaskParser({ format: 'MM/dd/yyyy' });
-      const initialParts = parser.rangeParts.length;
+      const initialParts = parser.parts.length;
 
       parser.mask = 'M/d/yy';
 
       expect(parser.mask).to.equal('M/d/yy - M/d/yy');
-      expect(parser.rangeParts.length).to.equal(initialParts);
+      expect(parser.parts.length).to.equal(initialParts);
       expect(parser.emptyMask).to.equal('_/_/__ - _/_/__');
     });
   });
