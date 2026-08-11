@@ -32,6 +32,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
     - Added the `igcStateChange` event, emitted after each render pass with a snapshot of the current virtual window (`startIndex`, `endIndex`, `viewportSize`, `totalSize`).
     - Added the `layoutComplete` property - a promise that resolves once the current render pass, and any follow-up renders triggered by item measurement, have fully settled.
     - Transparently degrades past the maximum scroll coordinate supported by the browser, so lists far larger than the DOM would normally allow keep scrolling and rendering correctly.
+- #### Tabs
+  - `selectedTab` property, returning the selected `igc-tab` element or `null`.
+  - `select()` now matches a tab's `label` as well as its IDREF, so the value reported by `selected` can be passed back into it.
 
 ### Changed
 - #### Combo
@@ -47,6 +50,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
     - The value as it is being typed - including the result of spinning a date part or of `Ctrl + ;` - is available on the `detail` of the `igcInput` event, whose payload is unchanged.
     - Spinning a date part while the editor is focused now also defers to the commit on blur. A programmatic `stepUp()` / `stepDown()` on an unfocused component still updates `value` immediately, as do `clear()`, `setRangeText()`, and direct assignments.
     - For `igc-date-picker` and `igc-date-range-picker` the calendar keeps following the typed date while editing, as before.
+- #### Tabs
+  - **Behavioral change:** the scroll buttons now scroll to the nearest tab that is not fully in view, instead of stepping by a fixed 180px. A tab sitting underneath a scroll button counts as out of view, so one click brings exactly one tab into view without overshooting it.
+  - Improved accessibility: tab headers expose `aria-posinset` / `aria-setsize`, the strip declares its `aria-orientation`, and the selected panel is focusable so keyboard users can reach panel content that holds no focusable elements of its own. The strip also keeps a tab stop when nothing is selected.
+  - `igc-tab` elements projected through an intermediate slot are now picked up, so `igc-tabs` can be wrapped by another component.
 
 ### Fixed
 - #### Form associated components
@@ -60,6 +67,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
     - `tree.items`, `select()` over a whole `cascade` tree, and expanding or collapsing every item are each ~25-45% faster.
 - #### Tabs
   - See-through scroll buttons in the Indigo theme. The buttons are sticky and the tab headers scroll underneath them, but the theme leaves both the buttons and the tabs strip transparent, so the scrolled headers showed through. The buttons now paint an opaque surface backdrop below their themed background. [#1955](https://github.com/IgniteUI/igniteui-webcomponents/issues/1955)
+  - `igcChange` was never emitted when `activation` is `manual` and a tab was activated with Enter or Space, so the selection changed silently.
+  - The selection is now kept in sync with the DOM in cases that previously left the component inconsistent:
+    - Setting `selected` to `false` on the active tab hid its panel but kept the tab internally active, so it could never be selected again.
+    - Removing the last remaining tab left a dangling reference that `selected` kept reporting.
+    - `select()`, the `selected` attribute and the initial selection could all activate a disabled tab, which clicking has always refused, and a tab marked both `selected` and `disabled` showed its panel alongside the selected one.
+    - Disabling the active tab left its panel visible under a greyed out header. Selection now moves to the first enabled tab, or is cleared when every tab is disabled.
+  - The start scroll button stayed enabled at the start of the strip under browser zoom or a non-integer device pixel ratio, where the scroll offset is fractional.
+  - Clicking a partially visible tab header scrolled the strip twice.
+  - Reduced rendering work: scrolling the strip no longer schedules an update per scroll event, and changing the selection no longer triggers a redundant layout pass.
 
 ## [7.2.4] - 2026-06-29
 ### Added
