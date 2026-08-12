@@ -337,4 +337,48 @@ describe('equal', () => {
     const set2 = new Set([]);
     expect(equal(set1, set2)).to.be.false;
   });
+
+  it('should not let failed Set candidate pairs poison later comparisons', () => {
+    const a = new Set([{ x: 1 }, { x: 2 }]);
+    const b = new Set([{ x: 2 }, { x: 1 }]);
+    expect(equal(a, b)).to.be.true;
+
+    // `{ k: 'b' }` has no counterpart, so these Sets differ. Getting there walks candidate pairs
+    // that fail, and those failures must not be remembered as matches.
+    const left = new Set([{ k: 'z' }, { k: 'b' }, { k: 'x' }]);
+    const right = new Set([{ k: 'x' }, { k: 'y' }, { k: 'z' }]);
+    expect(equal(left, right)).to.be.false;
+  });
+
+  it('should not let failed Map candidate pairs poison later comparisons', () => {
+    const a = new Map<string, unknown>([
+      ['a', { v: 1 }],
+      ['b', { v: 2 }],
+    ]);
+    const b = new Map<string, unknown>([
+      ['b', { v: 2 }],
+      ['a', { v: 1 }],
+    ]);
+    expect(equal(a, b)).to.be.true;
+
+    const mismatched = new Map<string, unknown>([
+      ['a', { v: 1 }],
+      ['b', { v: 3 }],
+    ]);
+    expect(equal(a, mismatched)).to.be.false;
+  });
+
+  it('should still terminate on circular references', () => {
+    const a: Record<string, unknown> = { name: 'a' };
+    const b: Record<string, unknown> = { name: 'a' };
+    a.self = a;
+    b.self = b;
+    expect(equal(a, b)).to.be.true;
+
+    const c: Record<string, unknown> = { name: 'c' };
+    const d: Record<string, unknown> = { name: 'different' };
+    c.self = c;
+    d.self = d;
+    expect(equal(c, d)).to.be.false;
+  });
 });
