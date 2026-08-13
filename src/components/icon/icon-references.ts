@@ -271,6 +271,12 @@ addIcon('copy_content', {
     collection: 'internal',
   },
 });
+addIcon('eye_dropper', {
+  default: {
+    name: 'colorize',
+    collection: 'internal',
+  },
+});
 addIcon('collapse', {
   default: {
     name: 'keyboard_arrow_up',

@@ -1,0 +1,21 @@
+@use 'styles/utilities' as *;
+@use '../light/themes' as *;
+
+$theme: $fluent;
+
+:host {
+    [part~='anchor'] {
+        &:focus-visible {
+            &::after {
+                width: calc(100% - #{rem(2px)});
+                height: calc(100% - #{rem(2px)});
+                inset: rem(1px);
+                border-radius: 0;
+            }
+        }
+    }
+
+    [part='label'] {
+        @include type-style('body-2');
+    }
+}

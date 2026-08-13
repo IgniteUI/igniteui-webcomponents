@@ -40,6 +40,15 @@ export default class IgcPickerCanvasComponent extends EventEmitterMixin<
   @property()
   public currentColor = '';
 
+  /**
+   * The color the marker is filled with.
+   *
+   * Distinct from `currentColor`: that one is the pure hue the saturation/value
+   * plane is built from, while this is the color actually picked out of it.
+   */
+  @property()
+  public markerColor = '';
+
   @property({ attribute: false })
   public x = 0;
 
@@ -66,6 +75,13 @@ export default class IgcPickerCanvasComponent extends EventEmitterMixin<
   protected override updated(properties: PropertyValues<this>): void {
     if (properties.has('currentColor')) {
       this.style.color = this.currentColor;
+    }
+
+    // Handed to the marker through a custom property rather than an inline
+    // style on the marker itself, so that a consumer styling `::part(marker)`
+    // can still win - an inline style could not be overridden.
+    if (properties.has('markerColor')) {
+      this.style.setProperty('--_marker-fill', this.markerColor);
     }
   }
 

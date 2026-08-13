@@ -2,185 +2,141 @@
 @use 'styles/utilities' as *;
 
 :host {
-    content-visibility: auto;
-    contain: strict;
+    display: inline-block;
 
-    --current-color: #000;
-    --hue-slider-track: linear-gradient(
-        to right,
-        red 0,
-        #ff0 16.66%,
-        #0f0 33.33%,
-        #0ff 50%,
-        #00f 66.66%,
-        #f0f 83.33%,
-        red 100%
-    );
-    --alpha-slider-track:
-        linear-gradient(90deg, rgb(0 0 0 / 0%), var(--current-color)),
-        repeating-linear-gradient(
-            45deg,
-            #aaa 25%,
-            transparent 25%,
-            transparent 75%,
-            #aaa 75%,
-            #aaa
-        ),
-        repeating-linear-gradient(
-            45deg,
-            #aaa 25%,
-            #fff 25%,
-            #fff 75%,
-            #aaa 75%,
-            #aaa
-        );
-    --alpha-track-position: 0 0, 0 0, 4px 4px;
-    --alpha-track-size: contain, 8px 8px, 8px 8px;
+    [part='color-picker'] {
+        display: inline-flex;
+        gap: rem(4px);
+        align-items: center;
+    }
 
     input[type='range'] {
         appearance: none;
-        background: transparent;
-        cursor: pointer;
         width: 100%;
     }
 
+    // The row track sizing and inline spacing are declared in the common styles,
+    // where the `--_picker-rows-*` custom properties the themes override live.
     [part='main-row'],
     [part='alpha-row'],
     [part='inputs-row'] {
-        display: flex;
-        flex-wrap: nowrap;
-        align-items: center;
-        justify-content: center;
+        display: grid;
+
+        &:empty {
+            display: none;
+        }
+    }
+
+    [part='main-row'] {
+        margin-block-end: sizable(rem(8px), rem(12px), rem(16px));
+
+        input {
+            grid-column: 1 / span 2;
+        }
+    }
+
+    [part='alpha-row'] {
+        margin-block: var(--_alpha-row-spacing);
+
+        input {
+            grid-column: 1 / span 2;
+        }
+    }
+
+    [part='alpha-input'] {
+        min-width: fit-content;
+
+        &::part(input) {
+            appearance: textfield;
+
+            &::-webkit-outer-spin-button,
+            &::-webkit-inner-spin-button {
+                appearance: none;
+                margin: 0;
+            }
+        }
+    }
+
+    [part='inputs-row'] {
+        margin-block-end: var(--_input-row-spacing);
+        gap: var(--_input-row-gap);
+
+        igc-input {
+            grid-column: 2 / -1;
+        }
     }
 
     [part='buttons'] {
-        --ig-size: 1;
-
         display: flex;
-        margin-left: 1rem;
+        justify-content: space-between;
     }
 
-    [part='hue']::-webkit-slider-runnable-track {
-        border-radius: rem(4px);
-        height: 0.5rem;
-        background: var(--hue-slider-track);
-    }
-
-    [part='hue']::-moz-range-track {
-        border-radius: rem(4px);
-        height: 0.5rem;
-        background: var(--hue-slider-track);
-    }
-
-    [part='hue']::-webkit-slider-thumb {
-        appearance: none;
-        width: 1rem;
-        height: 1rem;
-        border-radius: 50%;
-        background-color: var(--current-color);
-        margin-top: calc(-0.5 * 0.5rem);
-    }
-
-    [part='hue']::-moz-range-thumb {
-        width: 1rem;
-        height: 1rem;
-        border-radius: 50%;
-        background-color: var(--current-color);
-        margin-top: calc(-0.5 * 0.5rem);
-    }
-
-    [part='alpha']::-webkit-slider-runnable-track {
-        border-radius: rem(4px);
-        height: 0.5rem;
-        background: none;
-        background-image: var(--alpha-slider-track);
-        background-position: var(--alpha-track-position);
-        background-size: var(--alpha-track-size);
-    }
-
-    [part='alpha']::-moz-range-track {
-        border-radius: rem(4px);
-        height: 0.5rem;
-        background: none;
-        background-image: var(--alpha-slider-track);
-        background-position: var(--alpha-track-position);
-        background-size: var(--alpha-track-size);
-    }
-
-    [part='alpha']::-webkit-slider-thumb {
-        appearance: none;
-        width: 1rem;
-        height: 1rem;
-        border-radius: 50%;
-        background-color: var(--current-color);
-        margin-top: calc(-0.5 * 0.5rem);
-    }
-
-    [part='alpha']::-moz-range-thumb {
-        width: 1rem;
-        height: 1rem;
-        border-radius: 50%;
-        background-color: var(--current-color);
-        margin-top: calc(-0.5 * 0.5rem);
+    // The track and thumb presentation is declared in the common styles - each
+    // vendor pseudo-element needs its own rule there, since a selector list
+    // containing one the engine doesn't know is discarded whole.
+    [part='hue'],
+    [part='alpha'] {
+        grid-column: 1 / span 3;
     }
 
     [part='picker'] {
         display: grid;
-        padding: 0.25rem;
-        width: rem(300px);
-        min-height: 12rem;
-        grid-template-rows: 6fr 1fr;
-        row-gap: 0.5rem;
-        box-shadow: var(--ig-elevation-3);
+        width: var(--_picker-popover-size);
+        min-height: rem(192px);
+
+        &:has([part~='alpha-row']:not(:empty)) {
+            [part='main-row'] {
+                margin-block-end: 0;
+            }
+        }
     }
 
-    [part='copy']::part(base) {
-        background-color: var(--current-color);
-    }
-
-    [part~='empty'],
-    [part~='empty']::part(base) {
-        background-image:
-            repeating-linear-gradient(
-                45deg,
-                #aaa 25%,
-                transparent 25%,
-                transparent 75%,
-                #aaa 75%,
-                #aaa
-            ),
-            repeating-linear-gradient(
-                45deg,
-                #aaa 25%,
-                #fff 25%,
-                #fff 75%,
-                #aaa 75%,
-                #aaa
-            );
-        background-position:
-            0 0,
-            4px 4px;
-        background-size: 8px 8px;
-    }
-
-    [part='copy']::part(icon) {
-        --foreground: contrast-color(var(--current-color));
+    [part='picker-canvas'] {
+        border-width: rem(1px);
+        border-style: solid;
+        margin-inline: rem(16px);
+        margin-block: rem(16px) sizable(rem(16px), rem(20px), rem(24px));
     }
 
     [part='swatches'] {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.5rem;
-        max-width: rem(300px);
+        display: grid;
+        grid-column: 1 / -1;
+        width: 100%;
+        padding: var(--_swatches-spacing);
+        row-gap: var(--_swatches-row-gap);
+        justify-content: space-between;
         overflow: hidden;
     }
 
-    [part='swatch'] {
-        width: 1.5rem;
-        height: 1.5rem;
-        border-radius: 0.25rem;
-        border: 1px solid #fff;
-        cursor: pointer;
+    // Box Trigger
+    [part~='anchor'] {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        aspect-ratio: 1;
+        padding: rem(4px);
+        margin: 0;
+
+        &::before {
+            content: '';
+            user-select: none;
+            pointer-events: none;
+            width: 100%;
+            height: 100%;
+            aspect-ratio: 1;
+            box-sizing: content-box;
+        }
+    }
+
+    [part~='input-mode'] {
+        &::before {
+            display: none;
+        }
+    }
+
+    [part='label'] {
+        user-select: none;
     }
 }
 
