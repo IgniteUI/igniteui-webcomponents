@@ -38,8 +38,8 @@ class ElementInternalsController implements ReactiveController {
   private readonly _internals: ElementInternals;
   private readonly _reflectRole: boolean;
 
-  /** Whether the current `role` content attribute was written by this controller. */
-  private _roleReflected = false;
+  /** The last `role` content attribute value written by this controller. */
+  private _reflectedRole: string | null = null;
 
   /**
    * Gets the closest ancestor `<form>` element or `null`.
@@ -136,10 +136,13 @@ class ElementInternalsController implements ReactiveController {
     }
 
     const role = this._internals.role;
+    const current = host.getAttribute('role');
 
-    if (role && (this._roleReflected || !host.hasAttribute('role'))) {
+    // Write only when the attribute is absent or still holds the value this
+    // controller wrote — an attribute changed by the author is theirs to keep.
+    if (role && (current === null || current === this._reflectedRole)) {
       host.setAttribute('role', role);
-      this._roleReflected = true;
+      this._reflectedRole = role;
     }
   }
 
