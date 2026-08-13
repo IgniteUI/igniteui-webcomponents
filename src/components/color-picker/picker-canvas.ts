@@ -24,6 +24,27 @@ export interface IgcPickerCanvasEventMap {
 
 export type PickerCanvasEventDetail = { x: number; y: number };
 
+/** The measurements a marker position is resolved against. */
+type CanvasGeometry = {
+  rect: DOMRect;
+  marker: { width: number; height: number };
+};
+
+/* blazorSuppress */
+/**
+ * The saturation/value plane of {@link IgcColorPickerComponent} and the marker
+ * that moves across it.
+ *
+ * An internal building block of `igc-color-picker` - it is registered so the
+ * picker can render it, but it is not part of the public component surface and
+ * is not exported from the package entry point.
+ *
+ * @element igc-picker-canvas
+ *
+ * @fires igcColorPicked - Emitted when a color is picked on the canvas. Does not bubble.
+ *
+ * @csspart marker - The draggable marker indicating the picked saturation/value.
+ */
 export default class IgcPickerCanvasComponent extends EventEmitterMixin<
   IgcPickerCanvasEventMap,
   AbstractConstructor<LitElement>
@@ -37,6 +58,9 @@ export default class IgcPickerCanvasComponent extends EventEmitterMixin<
 
   @query('[part="marker"]', true)
   private readonly _marker?: HTMLDivElement;
+
+  /** Geometry captured for the duration of a pointer drag. */
+  private _dragGeometry?: CanvasGeometry;
 
   @property()
   public currentColor = '';
@@ -55,6 +79,29 @@ export default class IgcPickerCanvasComponent extends EventEmitterMixin<
 
   @property({ attribute: false })
   public y = 0;
+
+  /**
+   * The HSV saturation the marker currently sits at (0-100).
+   *
+   * The canvas positions the marker in pixels and has no notion of the color
+   * space behind it, so the owning picker feeds the saturation/value pair back
+   * in purely to give the marker an announceable value.
+   */
+  @property({ type: Number, attribute: false })
+  public saturation = 0;
+
+  /**
+   * The HSV value the marker currently sits at (0-100).
+   *
+   * Named for the B of HSB rather than the V of HSV - on a custom element a
+   * bare `value` reads as a form value, which this is not.
+   */
+  @property({ type: Number, attribute: false })
+  public brightness = 0;
+
+  /** The accessible name of the marker. */
+  @property()
+  public markerLabel = 'Saturation and value';
 
   constructor() {
     super();
@@ -86,65 +133,76 @@ export default class IgcPickerCanvasComponent extends EventEmitterMixin<
     }
   }
 
-  private _onArrowKey({ dx, dy }: { dx: number; dy: number }): void {
-    const rect = this.getBoundingClientRect();
-    const { width, height } = this.getMarkerDimensions();
+  /**
+   * The canvas box and half-marker offsets every interaction measures against.
+   *
+   * Both reads force a layout, so a drag takes this once on pointerdown rather
+   * than on each of the frames it spans.
+   */
+  private _measure(): CanvasGeometry {
+    return {
+      rect: this.getBoundingClientRect(),
+      marker: this.getMarkerDimensions(),
+    };
+  }
 
-    const x = clamp(this.x + dx, -width, rect.width - width);
-    const y = clamp(this.y + dy, -height, rect.height - height);
+  /**
+   * Clamps the marker inside the canvas and reports the position it settled on
+   * as saturation/value percentages.
+   */
+  private _commitPosition(
+    x: number,
+    y: number,
+    { rect, marker }: CanvasGeometry
+  ): void {
+    const nextX = clamp(x, -marker.width, rect.width - marker.width);
+    const nextY = clamp(y, -marker.height, rect.height - marker.height);
 
-    const shouldEmit = x !== this.x || y !== this.y;
-
-    this.x = x;
-    this.y = y;
-
-    if (shouldEmit) {
-      this.emitEvent('igcColorPicked', {
-        detail: {
-          x: Math.round(asPercent(x + width, rect.width)),
-          y: Math.round(asPercent(y + height, rect.height)),
-        },
-        bubbles: false,
-      });
+    if (nextX === this.x && nextY === this.y) {
+      return;
     }
+
+    this.x = nextX;
+    this.y = nextY;
+
+    this.emitEvent('igcColorPicked', {
+      detail: {
+        x: Math.round(asPercent(nextX + marker.width, rect.width)),
+        y: Math.round(asPercent(nextY + marker.height, rect.height)),
+      },
+      bubbles: false,
+    });
+  }
+
+  private _onArrowKey({ dx, dy }: { dx: number; dy: number }): void {
+    this._commitPosition(this.x + dx, this.y + dy, this._measure());
   }
 
   private _move(event: PointerEvent): void {
     event.preventDefault();
     event.stopPropagation();
 
-    const rect = this.getBoundingClientRect();
-    const { width, height } = this.getMarkerDimensions();
-    const maxX = rect.width - width;
-    const maxY = rect.height - height;
+    const geometry = this._dragGeometry ?? this._measure();
+    const { rect, marker } = geometry;
 
-    const x = clamp(event.clientX - rect.x - width, -width, maxX);
-    const y = clamp(event.clientY - rect.y - height, -height, maxY);
-    const shouldEmit = x !== this.x || y !== this.y;
-
-    this.x = x;
-    this.y = y;
-
-    if (shouldEmit) {
-      this.emitEvent('igcColorPicked', {
-        detail: {
-          x: Math.round(asPercent(x + width, rect.width)),
-          y: Math.round(asPercent(y + height, rect.height)),
-        },
-        bubbles: false,
-      });
-    }
+    this._commitPosition(
+      event.clientX - rect.x - marker.width,
+      event.clientY - rect.y - marker.height,
+      geometry
+    );
   }
 
   private _handlePointerDown(event: PointerEvent): void {
     if (event.button !== 0) return;
     this.setPointerCapture(event.pointerId);
     this.addEventListener('pointermove', this._handlePointerMove);
+    this._dragGeometry = this._measure();
     this._move(event);
   }
 
   private _handleLostPointerCapture(): void {
     this.removeEventListener('pointermove', this._handlePointerMove);
+    this._dragGeometry = undefined;
     this._marker?.focus();
   }
 
@@ -165,7 +223,25 @@ export default class IgcPickerCanvasComponent extends EventEmitterMixin<
       left: `${this.x}px`,
     });
 
-    return html`<div part="marker" style=${styles} tabindex="0"></div>`;
+    const saturation = Math.round(this.saturation);
+    const brightness = Math.round(this.brightness);
+
+    // ARIA has no two-dimensional slider, so the marker is exposed as a single
+    // slider tracking saturation, with `aria-valuetext` carrying both axes -
+    // otherwise vertical movement would be announced as "no change".
+    return html`
+      <div
+        part="marker"
+        style=${styles}
+        tabindex="0"
+        role="slider"
+        aria-label=${this.markerLabel}
+        aria-valuemin="0"
+        aria-valuemax="100"
+        aria-valuenow=${saturation}
+        aria-valuetext="Saturation ${saturation}%, brightness ${brightness}%"
+      ></div>
+    `;
   }
 }
 

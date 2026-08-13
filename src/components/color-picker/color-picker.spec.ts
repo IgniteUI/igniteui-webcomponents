@@ -76,6 +76,22 @@ function getFormatSelect(picker: IgcColorPickerComponent): IgcSelectComponent {
   return picker.renderRoot.querySelector('#format-select')!;
 }
 
+/**
+ * The two halves of the anchor swatch preview - the opaque color on the left
+ * and the color with its real alpha across the whole surface.
+ */
+function getAnchorPreview(picker: IgcColorPickerComponent): {
+  opaque: string;
+  alpha: string;
+} {
+  const { style } = getAnchor(picker);
+
+  return {
+    opaque: style.getPropertyValue('--_color-preview'),
+    alpha: style.getPropertyValue('--_alpha-preview'),
+  };
+}
+
 describe('Color picker', () => {
   before(() => defineComponents(IgcColorPickerComponent));
 
@@ -101,6 +117,53 @@ describe('Color picker', () => {
 
       await expect(picker).shadowDom.to.be.accessible();
       await expect(picker).lightDom.to.be.accessible();
+    });
+  });
+
+  describe('ARIA', () => {
+    beforeEach(async () => {
+      picker = await createDefaultColorPicker();
+    });
+
+    it('exposes the popover as a named dialog', async () => {
+      picker.open = true;
+      await elementUpdated(picker);
+
+      const dialog = picker.renderRoot.querySelector('[part="picker"]')!;
+
+      expect(dialog.getAttribute('role')).to.equal('dialog');
+      expect(dialog.getAttribute('aria-label')).to.equal('Color picker');
+      expect(dialog.id).to.equal('picker');
+    });
+
+    it('points the anchor at the dialog it controls', () => {
+      const anchor = getAnchor(picker);
+
+      expect(anchor.getAttribute('aria-haspopup')).to.equal('dialog');
+      expect(anchor.getAttribute('aria-controls')).to.equal('picker');
+    });
+
+    it('reflects the open state through `aria-expanded`', async () => {
+      expect(getAnchor(picker).getAttribute('aria-expanded')).to.equal('false');
+
+      picker.open = true;
+      await elementUpdated(picker);
+      expect(getAnchor(picker).getAttribute('aria-expanded')).to.equal('true');
+
+      picker.open = false;
+      await elementUpdated(picker);
+      expect(getAnchor(picker).getAttribute('aria-expanded')).to.equal('false');
+    });
+
+    it('feeds the canvas marker the current saturation and value', async () => {
+      picker.open = true;
+      picker.value = 'hsl(120 100% 25%)';
+      await elementUpdated(picker);
+
+      const canvas = getCanvas(picker);
+
+      expect(canvas.saturation).to.be.closeTo(100, 0.5);
+      expect(canvas.brightness).to.be.closeTo(50, 0.5);
     });
   });
 
@@ -224,6 +287,35 @@ describe('Color picker', () => {
       );
 
       expect(eventSpy).not.calledWith('igcChange');
+    });
+
+    it('does not emit when only the format changed', async () => {
+      const eventSpy = spy(picker, 'emitEvent');
+
+      picker.dispatchEvent(new FocusEvent('focusin', { relatedTarget: null }));
+
+      // The rendered value moves from `#ff0000` to `rgb(255 0 0)`, but the
+      // color behind it is untouched.
+      picker.format = 'rgb';
+      await elementUpdated(picker);
+      expect(picker.value).to.equal('rgb(255 0 0)');
+
+      picker.dispatchEvent(new FocusEvent('focusout', { relatedTarget: null }));
+
+      expect(eventSpy).not.calledWith('igcChange');
+    });
+
+    it('still emits when the color changed alongside the format', async () => {
+      const eventSpy = spy(picker, 'emitEvent');
+
+      picker.dispatchEvent(new FocusEvent('focusin', { relatedTarget: null }));
+      picker.format = 'rgb';
+      picker.value = '#00ff00';
+      await elementUpdated(picker);
+
+      picker.dispatchEvent(new FocusEvent('focusout', { relatedTarget: null }));
+
+      expect(eventSpy).calledWith('igcChange', { detail: 'rgb(0 255 0)' });
     });
   });
 
@@ -359,6 +451,7 @@ describe('Color picker', () => {
       );
       expect(buttons.length).to.equal(2);
       expect(buttons[0].ariaLabel).to.equal('#ff0000');
+      expect(buttons[0].dataset.color).to.equal('#ff0000');
 
       const inputSpy = spy(picker, 'emitEvent');
       buttons[1].click();
@@ -366,6 +459,23 @@ describe('Color picker', () => {
 
       expect(picker.value).to.equal('#00ff00');
       expect(inputSpy).calledWith('igcInput', { detail: '#00ff00' });
+    });
+
+    it('selects a swatch independently of its accessible name', async () => {
+      picker.swatches = ['#ff0000', '#00ff00'];
+      await elementUpdated(picker);
+
+      const buttons = picker.renderRoot.querySelectorAll<HTMLButtonElement>(
+        'button[part="swatch"]'
+      );
+
+      // The color is read from `data-color`, so a localized or otherwise
+      // overridden label must not affect which color the swatch commits.
+      buttons[1].ariaLabel = 'Vert';
+      buttons[1].click();
+      await elementUpdated(picker);
+
+      expect(picker.value).to.equal('#00ff00');
     });
   });
 
@@ -519,11 +629,52 @@ describe('Color picker', () => {
       expect(getInputAnchor()).to.exist;
     });
 
+    it('orients the swatch preview the same way as the button anchor', async () => {
+      picker.showAlpha = true;
+      picker.value = 'rgb(255 0 0 / 0.5)';
+      await elementUpdated(picker);
+
+      const inputMode = getAnchorPreview(picker);
+
+      const defaultModePicker = await fixture<IgcColorPickerComponent>(
+        html`<igc-color-picker value="rgb(255 0 0 / 0.5)"></igc-color-picker>`
+      );
+      const defaultMode = getAnchorPreview(defaultModePicker);
+
+      // `--_color-preview` paints the opaque half and `--_alpha-preview` the
+      // translucent whole - transposing them inverts the swatch.
+      expect(inputMode.opaque).to.equal('rgb(255 0 0)');
+      expect(inputMode.alpha).to.equal('rgb(255 0 0 / 0.5)');
+      expect(inputMode).to.deep.equal(defaultMode);
+    });
+
     it('opens the popover when the prefix swatch is clicked', async () => {
       simulateClick(getAnchor(picker));
       await elementUpdated(picker);
 
       expect(picker.open).to.be.true;
+    });
+
+    it('renders the prefix swatch as a keyboard operable button', () => {
+      const anchor = getAnchor(picker);
+
+      // A native button carries the focusability and Enter/Space activation
+      // that the previous `div` had to have bolted on.
+      expect(anchor.tagName.toLowerCase()).to.equal('button');
+      expect(anchor.getAttribute('type')).to.equal('button');
+      expect(anchor.getAttribute('aria-label')).to.equal('Open color picker');
+      expect(anchor.getAttribute('aria-haspopup')).to.equal('dialog');
+      expect(anchor.getAttribute('aria-controls')).to.equal('picker');
+
+      anchor.focus();
+      expect(isFocused(anchor)).to.be.true;
+    });
+
+    it('reflects disabled onto the prefix swatch', async () => {
+      picker.disabled = true;
+      await elementUpdated(picker);
+
+      expect((getAnchor(picker) as HTMLButtonElement).disabled).to.be.true;
     });
 
     it('commits a color via the anchor input', async () => {
@@ -596,6 +747,19 @@ describe('Color picker', () => {
       await elementUpdated(picker);
 
       expect(getAnchor(picker).hasAttribute('disabled')).to.be.true;
+    });
+
+    it('does not render the alpha row unless showAlpha is set', async () => {
+      picker = await createDefaultColorPicker();
+      picker.open = true;
+      await elementUpdated(picker);
+
+      expect(picker.renderRoot.querySelector('[part="alpha-row"]')).to.be.null;
+
+      picker.showAlpha = true;
+      await elementUpdated(picker);
+
+      expect(picker.renderRoot.querySelector('[part="alpha-row"]')).to.exist;
     });
 
     it('hides the format select when hideFormats is set', async () => {

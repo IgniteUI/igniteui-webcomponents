@@ -45,6 +45,41 @@ describe('Picker canvas', () => {
       expect(marker.getAttribute('tabindex')).to.equal('0');
     });
 
+    it('exposes the marker as a labelled slider', () => {
+      const marker = getMarker(canvas);
+
+      expect(marker.getAttribute('role')).to.equal('slider');
+      expect(marker.getAttribute('aria-label')).to.equal(
+        'Saturation and value'
+      );
+      expect(marker.getAttribute('aria-valuemin')).to.equal('0');
+      expect(marker.getAttribute('aria-valuemax')).to.equal('100');
+    });
+
+    it('announces both axes through `aria-valuetext`', async () => {
+      canvas.saturation = 62.4;
+      canvas.brightness = 37.8;
+      await elementUpdated(canvas);
+
+      const marker = getMarker(canvas);
+
+      // Vertical movement does not change `aria-valuenow`, so the value axis
+      // would otherwise be announced as "no change".
+      expect(marker.getAttribute('aria-valuenow')).to.equal('62');
+      expect(marker.getAttribute('aria-valuetext')).to.equal(
+        'Saturation 62%, brightness 38%'
+      );
+    });
+
+    it('allows overriding the marker label', async () => {
+      canvas.markerLabel = 'Saturation et valeur';
+      await elementUpdated(canvas);
+
+      expect(getMarker(canvas).getAttribute('aria-label')).to.equal(
+        'Saturation et valeur'
+      );
+    });
+
     it('`getMarkerDimensions()` returns half the marker size', () => {
       const rect = getMarker(canvas).getBoundingClientRect();
       const dimensions = canvas.getMarkerDimensions();
@@ -193,6 +228,52 @@ describe('Picker canvas', () => {
       simulatePointerDown(canvas, { clientX: 10, clientY: 10 });
 
       expect(parentSpy).not.called;
+    });
+
+    it('measures the canvas once per drag rather than once per move', () => {
+      const rect = canvas.getBoundingClientRect();
+      const rectSpy = spy(canvas, 'getBoundingClientRect');
+
+      simulatePointerDown(canvas, {
+        clientX: rect.x + 20,
+        clientY: rect.y + 20,
+      });
+
+      const afterPointerDown = rectSpy.callCount;
+
+      for (let offset = 1; offset <= 5; offset++) {
+        simulatePointerMove(
+          canvas,
+          { clientX: rect.x + 20, clientY: rect.y + 20 },
+          { x: offset, y: offset }
+        );
+      }
+
+      // Each read forces a layout, so a drag spanning many frames must not
+      // re-measure on every one of them.
+      expect(rectSpy.callCount).to.equal(afterPointerDown);
+
+      rectSpy.restore();
+    });
+
+    it('re-measures for a drag that follows a resize', async () => {
+      simulatePointerDown(canvas, { clientX: 10, clientY: 10 });
+      simulateLostPointerCapture(canvas);
+
+      canvas.style.width = '400px';
+      await elementUpdated(canvas);
+
+      const rect = canvas.getBoundingClientRect();
+      const { width, height } = canvas.getMarkerDimensions();
+
+      simulatePointerDown(canvas, {
+        clientX: rect.x + 380,
+        clientY: rect.y + 10,
+      });
+
+      // Clamped against the new width, not the stale one captured earlier.
+      expect(canvas.x).to.equal(380 - width);
+      expect(canvas.y).to.equal(10 - height);
     });
   });
 });

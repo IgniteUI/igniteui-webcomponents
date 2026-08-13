@@ -1,8 +1,9 @@
 import { clamp } from '#internals/utils/math.js';
-import { isValidColor, parseColor } from './common.js';
+import type { ColorFormat } from '../types.js';
+import { isValidColor, normalizeColor, parseColor } from './common.js';
 import { converter, type HSL, type HSV, type RGB } from './converters.js';
 
-export type ColorFormat = 'hex' | 'rgb' | 'hsl';
+export type { ColorFormat };
 
 function makeCanvasContext() {
   let context: OffscreenCanvasRenderingContext2D | null;
@@ -76,12 +77,15 @@ export class ColorModel {
    */
   public static parse(color: string): ColorModel {
     const ctx = getContext();
+    // Normalized up front - validating the raw string would reject a hash-less
+    // hex before `parseColor` ever got the chance to restore its `#`.
+    const normalized = normalizeColor(color);
 
-    if (!isValidColor(color, ctx)) {
+    if (!isValidColor(normalized, ctx)) {
       return ColorModel.empty();
     }
 
-    const parsed = parseColor(color, ctx);
+    const parsed = parseColor(normalized, ctx);
     return new ColorModel(parsed.value, parsed.alpha);
   }
 

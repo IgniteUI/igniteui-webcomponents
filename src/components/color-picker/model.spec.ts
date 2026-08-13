@@ -520,6 +520,33 @@ describe('ColorModel', () => {
       expect(color.v).to.equal(75);
       expect(color.alpha).to.equal(0.3);
     });
+
+    // Regression: `parse` validated the raw string, so a hash-less hex was
+    // rejected before `parseColor` could restore its `#`.
+    it('should parse a hex string without a leading hash', () => {
+      for (const [input, expected] of [
+        ['ff0000', '#ff0000'],
+        ['#ff0000', '#ff0000'],
+        ['  00ff00  ', '#00ff00'],
+        ['f00', '#ff0000'],
+      ]) {
+        expect(ColorModel.parse(input).asString('hex')).to.equal(expected);
+      }
+    });
+
+    it('should still reject strings that are not colors', () => {
+      // `ff00` is deliberately absent - four hex digits are a valid `#RGBA`.
+      for (const input of ['', '   ', 'not-a-color', '#xyzxyz', 'ff000']) {
+        expect(ColorModel.parse(input).isEmpty, input).to.be.true;
+      }
+    });
+
+    it('should treat a four digit hex as #RGBA', () => {
+      const color = ColorModel.parse('ff00');
+
+      expect(color.isEmpty).to.be.false;
+      expect(color.alpha).to.equal(0);
+    });
   });
 
   describe('utility methods', () => {

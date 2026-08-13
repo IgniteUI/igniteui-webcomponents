@@ -12,6 +12,18 @@ export interface ParsedColor {
 }
 
 /**
+ * Trims a color string and restores the `#` of a hash-less hex, which the
+ * canvas would otherwise reject.
+ *
+ * Anything that has to both validate and parse a color must normalize first -
+ * validating the raw string rejects `ff0000` before parsing ever sees it.
+ */
+export function normalizeColor(colorString: string): string {
+  const trimmed = colorString?.trim() ?? '';
+  return HEX_WITHOUT_HASH_RE.test(trimmed) ? `#${trimmed}` : trimmed;
+}
+
+/**
  * Parses a color string into RGB values and alpha channel.
  * Supports hex, rgb, rgba, hsl, hsla, and named color formats.
  *
@@ -32,10 +44,7 @@ export function parseColor(
     return result;
   }
 
-  const trimmed = colorString.trim();
-  const normalized = HEX_WITHOUT_HASH_RE.test(trimmed)
-    ? `#${trimmed}`
-    : trimmed;
+  const normalized = normalizeColor(colorString);
 
   if (!isValidColor(normalized, ctx)) {
     return result;

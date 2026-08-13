@@ -68,7 +68,7 @@ export const converter = Object.freeze({
         if (r === v) {
           h = bDiff - gDiff;
         } else if (g === v) {
-          h = ONE_THIRD * rDiff - bDiff;
+          h = ONE_THIRD + rDiff - bDiff;
         } else if (b === v) {
           h = TWO_THIRDS + gDiff - rDiff;
         }
@@ -133,7 +133,10 @@ export const converter = Object.freeze({
       const lMin = Math.max(l, 0.01);
 
       l *= 2;
-      s *= lMin <= 1 ? l : 2 - l;
+      // Tests the doubled `l`, not `lMin` - the latter is captured before the
+      // doubling and never exceeds 1, which would leave the `2 - l` branch dead
+      // and push `v` past 100 for any lightness above 50%.
+      s *= l <= 1 ? l : 2 - l;
       sMin *= lMin <= 1 ? lMin : 2 - lMin;
       const v = (l + s) / 2;
       const sv = l === 0 ? (2 * sMin) / (lMin + sMin) : (2 * s) / (l + s);
