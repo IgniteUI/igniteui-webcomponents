@@ -1,4 +1,10 @@
-import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
+import {
+  elementUpdated,
+  expect,
+  fixture,
+  html,
+  nextFrame,
+} from '@open-wc/testing';
 import { spy, stub } from 'sinon';
 import {
   altKey,
@@ -164,6 +170,37 @@ describe('Color picker', () => {
 
       expect(canvas.saturation).to.be.closeTo(100, 0.5);
       expect(canvas.brightness).to.be.closeTo(50, 0.5);
+    });
+
+    it('paints the canvas from the hue the slider points at when there is no value', async () => {
+      picker.open = true;
+      await elementUpdated(picker);
+
+      // Both are unset until the color changes if they are only written from
+      // the color handlers, leaving the plane on the stylesheet fallback.
+      expect(picker.style.getPropertyValue('--_current-color')).to.equal(
+        'hsl(0 100% 50%)'
+      );
+      expect(getCanvas(picker).currentColor).to.equal('hsl(0 100% 50%)');
+      expect(getHueSlider(picker).value).to.equal('0');
+    });
+
+    it('starts the canvas marker at the white corner when there is no value', async () => {
+      picker.open = true;
+      await elementUpdated(picker);
+      // The marker is positioned from a `requestAnimationFrame` after paint.
+      await nextFrame();
+
+      const canvas = getCanvas(picker);
+      const { width, height } = canvas.getMarkerDimensions();
+
+      expect(canvas.saturation).to.equal(0);
+      expect(canvas.brightness).to.equal(100);
+
+      // Top left of the saturation/value plane - the marker straddles the
+      // corner, so it sits at minus half its own size on both axes.
+      expect(canvas.x).to.equal(-width);
+      expect(canvas.y).to.equal(-height);
     });
   });
 

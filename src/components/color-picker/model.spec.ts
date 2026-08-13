@@ -24,12 +24,18 @@ describe('ColorModel', () => {
       expect(color.asString('hsl')).to.equal('');
     });
 
+    it('should place an empty color at the origin of the saturation/value plane', () => {
+      // Drives the initial marker position of the picker canvas: saturation 0
+      // and value 100 is the white corner a picker with no value starts in.
+      expect(ColorModel.empty().toHSV()).to.eql([0, 0, 100]);
+    });
+
     it('should clear the empty state when a channel is modified', () => {
       const color = ColorModel.empty();
       color.r = 128;
 
       expect(color.isEmpty).to.be.false;
-      expect(color.asString('hex')).to.equal('#800000');
+      expect(color.asString('hex')).to.equal('#80ffff');
     });
 
     it('should preserve the empty state when cloned', () => {

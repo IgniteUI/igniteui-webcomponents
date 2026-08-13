@@ -57,10 +57,15 @@ export class ColorModel {
    * An empty color serializes to an empty string and is considered "empty"
    * until any of its channels are modified.
    *
+   * Backed by white rather than black: an empty color still has to be drawn,
+   * and white is HSV `[0, 0, 100]` - the origin of the saturation/value plane,
+   * where a picker with nothing selected should start. Black would put the
+   * marker in the opposite corner, on a color the user never chose.
+   *
    * @returns A new empty ColorModel instance
    */
   public static empty(): ColorModel {
-    const color = new ColorModel([0, 0, 0], 1);
+    const color = new ColorModel([255, 255, 255], 1);
     color._empty = true;
     return color;
   }

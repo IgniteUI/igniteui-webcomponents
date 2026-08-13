@@ -50,7 +50,8 @@ const metadata: Meta<IgcColorPickerComponent> = {
     },
     format: {
       type: '"hex" | "rgb" | "hsl"',
-      description: 'Sets the color format for the string value.',
+      description:
+        'Sets the color format for the string value.\n\nSwitching the format re-renders `value` in the new notation without\nchanging the color, so no `igcInput` or `igcChange` is emitted.',
       options: ['hex', 'rgb', 'hsl'],
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'hex' } },
@@ -136,7 +137,12 @@ interface IgcColorPickerArgs {
    * the value.
    */
   value: string;
-  /** Sets the color format for the string value. */
+  /**
+   * Sets the color format for the string value.
+   *
+   * Switching the format re-renders `value` in the new notation without
+   * changing the color, so no `igcInput` or `igcChange` is emitted.
+   */
   format: 'hex' | 'rgb' | 'hsl';
   /** Whether to hide the format picker buttons. */
   hideFormats: boolean;

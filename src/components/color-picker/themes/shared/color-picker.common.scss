@@ -96,7 +96,10 @@ $theme: $material;
     --_picker-rows-gap: #{sizable(rem(14px), rem(12px), rem(16px))};
 
     // Trigger
-    --_current-color: #000;
+    // Always a fully saturated hue - the component overwrites this on every
+    // update. Black would never be a valid value for it: it is the hue the
+    // saturation/value plane is built from, not a color that can be picked.
+    --_current-color: hsl(0deg 100% 50%);
     --_anchor-border-size: #{rem(1px)};
     --_input-mode-trigger-size: #{sizable(rem(18px), rem(20px), rem(24px))};
     --_empty-swatch: #{color(error, 500)};

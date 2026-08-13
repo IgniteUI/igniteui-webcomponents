@@ -1,5 +1,5 @@
 import { html, nothing, type PropertyValues, type TemplateResult } from 'lit';
-import { property, state } from 'lit/decorators.js';
+import { property } from 'lit/decorators.js';
 import { cache } from 'lit/directives/cache.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { createRef, ref } from 'lit/directives/ref.js';
@@ -181,7 +181,7 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
   private _color = ColorModel.empty();
   private _oldValue = '';
 
-  @state()
+  /** Mirrors `--_current-color`, so the style write can be skipped when it has not moved. */
   private _ownCurrentColor = '';
 
   /** Mirrors `--_selected-color`, so the style write can be skipped when it has not moved. */
@@ -302,6 +302,8 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
     if (this.hasUpdated && props.has('format')) {
       this._formValue.setValueAndFormState(this._color.asString(this.format));
     }
+
+    this._applyColorProperties();
 
     super.update(props);
   }
@@ -471,6 +473,16 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
     return this._color.asString('rgb', true);
   }
 
+  /**
+   * The pure hue the saturation/value plane and the hue thumb are painted from.
+   *
+   * Defined even with no value: an empty color is white at hue 0, so the plane
+   * is drawn from red - which is where the hue slider is already pointing.
+   */
+  private get _currentColor(): string {
+    return `hsl(${this._color.h} 100% 50%)`;
+  }
+
   private get _opaqueColor(): string {
     if (this._color.isEmpty) {
       return '';
@@ -481,8 +493,16 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
     return opaque.asString('rgb');
   }
 
-  private _updateColor(): void {
-    const currentColor = `hsl(${this._color.h} 100% 50%)`;
+  /**
+   * Mirrors the current and selected colors onto the host as custom properties.
+   *
+   * Driven from `update()` rather than from the handlers that mutate the color,
+   * so that it also runs for the first render - a picker with no value never
+   * goes through one of those handlers, and the plane would be left on the
+   * stylesheet fallback instead of the hue it actually sits at.
+   */
+  private _applyColorProperties(): void {
+    const currentColor = this._currentColor;
     const selectedColor = this._opaqueColor;
 
     // The model mutates in place, so Lit cannot dirty-check it - but the two
@@ -497,7 +517,9 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
       this._ownSelectedColor = selectedColor;
       this.style.setProperty('--_selected-color', selectedColor);
     }
+  }
 
+  private _updateColor(): void {
     this._formValue.setValueAndFormState(this._color.asString(this.format));
     this._validate();
     this.requestUpdate();
@@ -542,7 +564,7 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
         part="picker-canvas"
         ${ref(this._canvasRef)}
         @igcColorPicked=${this._handleCanvasColorPicked}
-        currentColor=${this._ownCurrentColor}
+        currentColor=${this._currentColor}
         markerColor=${this._opaqueColor}
         .saturation=${saturation}
         .brightness=${brightness}
