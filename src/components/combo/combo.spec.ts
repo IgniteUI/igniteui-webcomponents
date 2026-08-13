@@ -21,9 +21,11 @@ import {
 import { defineComponents } from '#internals/definitions/defineComponents.js';
 import {
   createFormAssociatedTestBed,
+  runAriaProjectionTests,
   runExternalLabelAssociationTests,
 } from '#internals/testing/form-testbed.spec.js';
 import {
+  axeReflectedRelationsOptions,
   isFocused,
   suppressResizeObserverLoopError,
 } from '#internals/testing/helpers.spec.js';
@@ -251,8 +253,10 @@ describe('Combo', () => {
       await elementUpdated(combo);
       await layoutComplete(combo);
 
-      await expect(combo).shadowDom.to.be.accessible();
-      await expect(combo).to.be.accessible();
+      await expect(combo).shadowDom.to.be.accessible(
+        axeReflectedRelationsOptions
+      );
+      await expect(combo).to.be.accessible(axeReflectedRelationsOptions);
     });
 
     it('picks up items appended to the data array in place', async () => {
@@ -1977,5 +1981,23 @@ describe('Combo', () => {
       (host as IgcComboComponent).renderRoot
         .querySelector<IgcInputComponent>('#target')!
         .renderRoot.querySelector('input')!,
+  });
+
+  runAriaProjectionTests({
+    tagName: IgcComboComponent.tagName,
+    getNativeInput: (host) =>
+      (host as IgcComboComponent).renderRoot
+        .querySelector<IgcInputComponent>('#target')!
+        .renderRoot.querySelector('input')!,
+    expected: { role: 'combobox', hasPopup: 'listbox' },
+    getControls: (host) => [
+      (host as IgcComboComponent).renderRoot.querySelector('#dropdown')!,
+    ],
+    getDescription: (host) => [
+      (host as IgcComboComponent).renderRoot.querySelector(
+        '#combo-helper-text'
+      )!,
+    ],
+    openProperty: 'open',
   });
 });

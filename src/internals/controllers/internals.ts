@@ -8,16 +8,38 @@ import type { FormValueType } from '../mixins/forms/types.js';
 /** Configuration for the ElementInternalsController. */
 type ElementInternalsConfig<T extends keyof ARIAMixin = keyof ARIAMixin> = {
   /** Initial ARIA attributes to set on the element internals. */
-  initialARIA: Partial<Record<T, ARIAMixin[T]>>;
+  initialARIA?: Partial<Record<T, ARIAMixin[T]>>;
+  /**
+   * Whether to also mirror the internals `role` to a `role` content attribute
+   * on the host element.
+   *
+   * Workaround for axe, which reads content attributes only and does not see
+   * `ElementInternals` ARIA. An author-supplied `role` attribute always wins —
+   * the controller only writes the attribute when it is absent or was written
+   * by the controller itself.
+   */
+  reflectRole?: boolean;
 };
+
+/**
+ * Internal registry resolving a host element to its internals controller.
+ *
+ * `attachInternals()` throws when called twice on the same element, so a host
+ * maps to at most one controller.
+ */
+const registry = new WeakMap<Element, ElementInternalsController>();
 
 /**
  * A Lit ReactiveController to manage `ElementInternals` for a host element.
  * Provides methods to interact with custom element states and ARIA attributes..
  */
-class ElementInternalsController {
+class ElementInternalsController implements ReactiveController {
   private readonly _host: ReactiveControllerHost & LitElement;
   private readonly _internals: ElementInternals;
+  private readonly _reflectRole: boolean;
+
+  /** The last `role` content attribute value written by this controller. */
+  private _reflectedRole: string | null = null;
 
   /**
    * Gets the closest ancestor `<form>` element or `null`.
@@ -84,12 +106,44 @@ class ElementInternalsController {
   ) {
     this._host = host;
     this._internals = this._host.attachInternals();
+    this._reflectRole = config?.reflectRole ?? false;
 
     if (config?.initialARIA) {
       this.setARIA(config.initialARIA);
     }
 
-    host.addController(this as ReactiveController);
+    registry.set(host, this);
+    host.addController(this);
+  }
+
+  /** @internal */
+  public hostConnected(): void {
+    this._reflectRoleAttribute();
+  }
+
+  /**
+   * Mirrors the internals `role` onto a content attribute on the host, when
+   * {@link ElementInternalsConfig.reflectRole} is enabled.
+   *
+   * Deferred until the host is connected — custom elements must not gain
+   * attributes during construction.
+   */
+  private _reflectRoleAttribute(): void {
+    const host = this._host;
+
+    if (!(this._reflectRole && host.isConnected)) {
+      return;
+    }
+
+    const role = this._internals.role;
+    const current = host.getAttribute('role');
+
+    // Write only when the attribute is absent or still holds the value this
+    // controller wrote — an attribute changed by the author is theirs to keep.
+    if (role && (current === null || current === this._reflectedRole)) {
+      host.setAttribute('role', role);
+      this._reflectedRole = role;
+    }
   }
 
   /** Sets ARIA attributes on the element's internals. */
@@ -97,6 +151,20 @@ class ElementInternalsController {
     state: Partial<Record<T, ARIAMixin[T]>>
   ): void {
     Object.assign(this._internals, state);
+
+    if ('role' in state) {
+      this._reflectRoleAttribute();
+    }
+  }
+
+  /**
+   * Returns an ARIA attribute set on the element's internals. Internals-based
+   * ARIA leaves no trace in the DOM, so this is the only way to read it back.
+   */
+  public getARIA<T extends keyof ARIAMixin = keyof ARIAMixin>(
+    name: T
+  ): ARIAMixin[T] {
+    return this._internals[name];
   }
 
   /**
@@ -165,6 +233,19 @@ export function addInternalsController(
   config?: ElementInternalsConfig
 ): ElementInternalsController {
   return new ElementInternalsController(host, config);
+}
+
+/**
+ * Resolves the {@link ElementInternalsController} of the given element, if it has one.
+ *
+ * Internal cross-component/spec lookup. Not part of the public API — lives under
+ * `#internals` and must not be re-exported from the package entry point. Prefer this
+ * over exposing `public` `@hidden @internal` members on component classes.
+ */
+export function internalsOf(
+  element: Element
+): ElementInternalsController | undefined {
+  return registry.get(element);
 }
 
 export type { ElementInternalsController };

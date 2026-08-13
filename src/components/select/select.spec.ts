@@ -1,5 +1,12 @@
-import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
+import {
+  elementUpdated,
+  expect,
+  fixture,
+  html,
+  nextFrame,
+} from '@open-wc/testing';
 import { spy, useFakeTimers } from 'sinon';
+import { internalsOf } from '#internals/controllers/internals.js';
 import {
   altKey,
   arrowDown,
@@ -14,9 +21,13 @@ import {
 import { defineComponents } from '#internals/definitions/defineComponents.js';
 import {
   createFormAssociatedTestBed,
+  runAriaProjectionTests,
   runExternalLabelAssociationTests,
 } from '#internals/testing/form-testbed.spec.js';
-import { isFocused } from '#internals/testing/helpers.spec.js';
+import {
+  axeReflectedRelationsOptions,
+  isFocused,
+} from '#internals/testing/helpers.spec.js';
 import {
   simulateClick,
   simulateKeyboard,
@@ -218,23 +229,27 @@ describe('Select', () => {
       });
 
       it('is accessible', async () => {
+        // See "projects the combobox semantics onto the native input", which
+        // asserts the real `aria-controls` relation by identity readback.
+        const axeOptions = axeReflectedRelationsOptions;
+
         // Closed state
-        await expect(select).dom.to.be.accessible();
-        await expect(select).shadowDom.to.be.accessible();
+        await expect(select).dom.to.be.accessible(axeOptions);
+        await expect(select).shadowDom.to.be.accessible(axeOptions);
 
         select.open = true;
         await elementUpdated(select);
 
         // Open state
-        await expect(select).dom.to.be.accessible();
-        await expect(select).shadowDom.to.be.accessible();
+        await expect(select).dom.to.be.accessible(axeOptions);
+        await expect(select).shadowDom.to.be.accessible(axeOptions);
 
         select.open = false;
         await elementUpdated(select);
 
         // Closed state again
-        await expect(select).dom.to.be.accessible();
-        await expect(select).shadowDom.to.be.accessible();
+        await expect(select).dom.to.be.accessible(axeOptions);
+        await expect(select).shadowDom.to.be.accessible(axeOptions);
       });
 
       it('relevant props are passed to the underlying input', async () => {
@@ -363,6 +378,438 @@ describe('Select', () => {
 
       expect(select.selectedItem?.value).to.equal('3');
       expect(select.value).to.equal('3');
+    });
+  });
+
+  describe('Navigation from an initial selection', () => {
+    // Every way a selection can be established before the user ever touches the
+    // component. Each of them must leave keyboard navigation anchored on the
+    // selected item - navigating away from "nothing" used to walk off the start
+    // of the list and wipe the selection instead.
+    const initializers = [
+      {
+        name: 'value attribute',
+        setup: () =>
+          fixture<IgcSelectComponent>(
+            html`<igc-select value="implementation">
+              ${renderItems()}
+            </igc-select>`
+          ),
+      },
+      {
+        name: 'value property',
+        setup: async () => {
+          const element = await fixture<IgcSelectComponent>(
+            html`<igc-select>${renderItems()}</igc-select>`
+          );
+          element.value = 'implementation';
+          await elementUpdated(element);
+          return element;
+        },
+      },
+      {
+        name: 'selected attribute on an item',
+        setup: () =>
+          fixture<IgcSelectComponent>(
+            html`<igc-select>
+              ${renderItems({ selected: 'implementation' })}
+            </igc-select>`
+          ),
+      },
+      {
+        name: 'select() call',
+        setup: async () => {
+          const element = await fixture<IgcSelectComponent>(
+            html`<igc-select>${renderItems()}</igc-select>`
+          );
+          element.select('implementation');
+          await elementUpdated(element);
+          return element;
+        },
+      },
+    ];
+
+    function renderItems(options?: { selected?: string }) {
+      return Items.map(
+        (item) =>
+          html`<igc-select-item
+            ?disabled=${item.disabled}
+            ?selected=${options?.selected === item.value}
+            value=${item.value}
+            >${item.text}</igc-select-item
+          >`
+      );
+    }
+
+    for (const { name, setup } of initializers) {
+      describe(`established through the ${name}`, () => {
+        beforeEach(async () => {
+          select = await setup();
+        });
+
+        it('marks the selection as the active item', () => {
+          expect(select.value).to.equal('implementation');
+          expect(select.selectedItem?.value).to.equal('implementation');
+          expect(getActiveItem()?.value).to.equal('implementation');
+        });
+
+        it('ArrowUp moves to the previous item (closed state)', async () => {
+          simulateKeyboard(select, arrowUp);
+          await elementUpdated(select);
+
+          expect(select.value).to.equal('spec');
+          expect(select.selectedItem?.value).to.equal('spec');
+        });
+
+        it('ArrowDown skips over disabled items (closed state)', async () => {
+          simulateKeyboard(select, arrowDown);
+          await elementUpdated(select);
+
+          expect(select.value).to.equal('samples');
+          expect(select.selectedItem?.value).to.equal('samples');
+        });
+
+        it('ArrowUp navigates from the selection (open state)', async () => {
+          await openSelect();
+
+          simulateKeyboard(select, arrowUp);
+          await elementUpdated(select);
+
+          expect(getActiveItem()?.value).to.equal('spec');
+          expect(select.value).to.equal('implementation');
+        });
+
+        it('Home and End move to the list bounds', async () => {
+          simulateKeyboard(select, homeKey);
+          await elementUpdated(select);
+
+          expect(select.value).to.equal('spec');
+
+          simulateKeyboard(select, endKey);
+          await elementUpdated(select);
+
+          expect(select.value).to.equal('documentation');
+        });
+
+        it('type-ahead selects without throwing', async () => {
+          simulateKeyboard(select, 'doc'.split(''));
+          await elementUpdated(select);
+
+          expect(select.value).to.equal('documentation');
+        });
+
+        it('type-ahead on the current selection is a no-op', async () => {
+          simulateKeyboard(select, 'impl'.split(''));
+          await elementUpdated(select);
+
+          expect(select.value).to.equal('implementation');
+        });
+      });
+    }
+
+    it('ArrowUp with no selection at all starts from the last item', async () => {
+      select = await fixture<IgcSelectComponent>(
+        html`<igc-select>${renderItems()}</igc-select>`
+      );
+
+      simulateKeyboard(select, arrowUp);
+      await elementUpdated(select);
+
+      // `builds` is disabled, so the last reachable item is `documentation`.
+      expect(select.value).to.equal('documentation');
+    });
+
+    it('navigation is a no-op when every item is disabled', async () => {
+      select = await fixture<IgcSelectComponent>(
+        html`<igc-select value="a">
+          <igc-select-item value="a" disabled>A</igc-select-item>
+          <igc-select-item value="b" disabled>B</igc-select-item>
+        </igc-select>`
+      );
+
+      simulateKeyboard(select, arrowUp);
+      simulateKeyboard(select, arrowDown);
+      await elementUpdated(select);
+
+      expect(select.value).to.equal('a');
+      expect(select.selectedItem?.value).to.equal('a');
+    });
+  });
+
+  describe('Selection integrity', () => {
+    beforeEach(async () => {
+      select = await fixture<IgcSelectComponent>(createBasicSelect());
+      select.value = 'implementation';
+      await elementUpdated(select);
+    });
+
+    it('closes the list when the current selection is clicked again', async () => {
+      await openSelect();
+
+      simulateClick(select.items[1]);
+      await elementUpdated(select);
+
+      expect(select.open).to.be.false;
+      expect(select.value).to.equal('implementation');
+    });
+
+    it('closes the list when the current selection is committed with Enter', async () => {
+      await openSelect();
+
+      simulateKeyboard(select, enterKey);
+      await elementUpdated(select);
+
+      expect(select.open).to.be.false;
+      expect(select.value).to.equal('implementation');
+    });
+
+    it('does not emit igcChange when re-selecting the current item', async () => {
+      const eventSpy = spy(select, 'emitEvent');
+      await openSelect();
+
+      simulateClick(select.items[1]);
+      await elementUpdated(select);
+
+      expect(eventSpy).not.calledWith('igcChange');
+    });
+
+    it('keeps the list open on re-selection with keep-open-on-select', async () => {
+      select.keepOpenOnSelect = true;
+      await openSelect();
+
+      simulateClick(select.items[1]);
+      await elementUpdated(select);
+
+      expect(select.open).to.be.true;
+    });
+
+    it('clearSelection() drops the active item as well', async () => {
+      select.clearSelection();
+      await elementUpdated(select);
+
+      expect(select.value).to.be.undefined;
+      expect(select.selectedItem).to.be.null;
+      expect(getActiveItem()).to.be.undefined;
+
+      // Navigation restarts from the top rather than from the cleared item.
+      simulateKeyboard(select, arrowDown);
+      await elementUpdated(select);
+
+      expect(select.value).to.equal('spec');
+    });
+
+    it('assigning an unmatched value drops the active item', async () => {
+      select.value = 'no-such-item';
+      await elementUpdated(select);
+
+      expect(select.selectedItem).to.be.null;
+      expect(getActiveItem()).to.be.undefined;
+      // The value itself is kept - a matching item may still arrive.
+      expect(select.value).to.equal('no-such-item');
+    });
+
+    it('navigateTo() does not move focus while the list is closed', async () => {
+      select.focus();
+      select.navigateTo('samples');
+      await elementUpdated(select);
+
+      expect(getActiveItem()?.value).to.equal('samples');
+      expect(isFocused(select)).to.be.true;
+    });
+
+    it('reopening realigns navigation with the selection', async () => {
+      await openSelect();
+
+      simulateKeyboard(select, arrowUp);
+      await elementUpdated(select);
+
+      expect(getActiveItem()?.value).to.equal('spec');
+
+      // Closing without committing leaves the selection where it was.
+      simulateKeyboard(select, escapeKey);
+      await elementUpdated(select);
+
+      expect(select.value).to.equal('implementation');
+
+      simulateClick(getInput());
+      await elementUpdated(select);
+      await nextFrame();
+
+      expect(getActiveItem()?.value).to.equal('implementation');
+    });
+  });
+
+  describe('Asynchronously rendered items', () => {
+    it('resolves the value once a matching item is added', async () => {
+      select = await fixture<IgcSelectComponent>(
+        html`<igc-select value="late"></igc-select>`
+      );
+
+      // The value survives having nothing to match against.
+      expect(select.value).to.equal('late');
+      expect(select.selectedItem).to.be.null;
+
+      const item = document.createElement('igc-select-item');
+      item.value = 'late';
+      item.textContent = 'Late arrival';
+      select.append(item);
+      await elementUpdated(select);
+
+      expect(select.selectedItem?.value).to.equal('late');
+      expect(select.selectedItem === item).to.be.true;
+      expect(getActiveItem() === item).to.be.true;
+      expect(select.value).to.equal('late');
+    });
+
+    it('resolves items added inside a group', async () => {
+      select = await fixture<IgcSelectComponent>(
+        html`<igc-select value="late">
+          <igc-select-group>
+            <span slot="label">Group</span>
+          </igc-select-group>
+        </igc-select>`
+      );
+
+      const item = document.createElement('igc-select-item');
+      item.value = 'late';
+      item.textContent = 'Late arrival';
+      select.groups[0].append(item);
+      await elementUpdated(select);
+
+      expect(select.selectedItem?.value).to.equal('late');
+      expect(select.selectedItem === item).to.be.true;
+    });
+
+    it('navigation works once the items arrive', async () => {
+      select = await fixture<IgcSelectComponent>(
+        html`<igc-select value="b"></igc-select>`
+      );
+
+      for (const value of ['a', 'b', 'c']) {
+        const item = document.createElement('igc-select-item');
+        item.value = value;
+        item.textContent = value;
+        select.append(item);
+      }
+      await elementUpdated(select);
+
+      simulateKeyboard(select, arrowUp);
+      await elementUpdated(select);
+
+      expect(select.value).to.equal('a');
+    });
+
+    it('drops the selection when the selected item is removed', async () => {
+      select = await fixture<IgcSelectComponent>(createBasicSelect());
+      select.value = 'implementation';
+      await elementUpdated(select);
+
+      select.items[1].remove();
+      await elementUpdated(select);
+
+      expect(select.selectedItem).to.be.null;
+      expect(getActiveItem()).to.be.undefined;
+      expect(select.value).to.equal('implementation');
+    });
+  });
+
+  describe('Type-ahead', () => {
+    beforeEach(async () => {
+      select = await fixture<IgcSelectComponent>(createBasicSelect());
+    });
+
+    it('ignores printable keys pressed with Ctrl', async () => {
+      const event = new KeyboardEvent('keydown', {
+        key: 'd',
+        ctrlKey: true,
+        bubbles: true,
+        composed: true,
+        cancelable: true,
+      });
+
+      select.dispatchEvent(event);
+      await elementUpdated(select);
+
+      expect(event.defaultPrevented).to.be.false;
+      expect(select.value).to.be.undefined;
+    });
+
+    it('ignores printable keys pressed with Meta', async () => {
+      const event = new KeyboardEvent('keydown', {
+        key: 'd',
+        metaKey: true,
+        bubbles: true,
+        composed: true,
+        cancelable: true,
+      });
+
+      select.dispatchEvent(event);
+      await elementUpdated(select);
+
+      expect(event.defaultPrevented).to.be.false;
+      expect(select.value).to.be.undefined;
+    });
+  });
+
+  describe('Display value', () => {
+    it('is built from the item content only', async () => {
+      select = await fixture<IgcSelectComponent>(
+        html`<igc-select value="a">
+          <igc-select-item value="a">
+            <span slot="prefix">PREFIX</span>
+            Alpha
+            <span slot="suffix">SUFFIX</span>
+          </igc-select-item>
+        </igc-select>`
+      );
+
+      expect(getInput().value).to.equal('Alpha');
+    });
+
+    it('is empty when there is no selection', async () => {
+      select = await fixture<IgcSelectComponent>(createBasicSelect());
+
+      expect(getInput().value).to.be.empty;
+    });
+  });
+
+  describe('Accessibility semantics', () => {
+    it('projects the combobox semantics onto the native input', async () => {
+      select = await fixture<IgcSelectComponent>(createBasicSelect());
+
+      const nativeInput = getInput().renderRoot.querySelector('input')!;
+      const list = select.renderRoot.querySelector('#dropdown');
+
+      expect(nativeInput.role).to.equal('combobox');
+      expect(nativeInput.getAttribute('aria-haspopup')).to.equal('listbox');
+      expect(nativeInput.getAttribute('aria-expanded')).to.equal('false');
+
+      // An IDREF cannot cross the shadow boundary between the input and the
+      // list, so the relation is published through element reflection.
+      expect(nativeInput.ariaControlsElements).to.eql([list]);
+
+      select.open = true;
+      await elementUpdated(select);
+
+      expect(nativeInput.getAttribute('aria-expanded')).to.equal('true');
+    });
+
+    it('keeps headers out of the accessibility tree', async () => {
+      select = await fixture<IgcSelectComponent>(createSelectWithGroups());
+
+      const header = select.querySelector(IgcSelectHeaderComponent.tagName)!;
+      expect(header.role).to.equal('presentation');
+    });
+
+    it('names groups after their label slot', async () => {
+      select = await fixture<IgcSelectComponent>(createSelectWithGroups());
+
+      const [first, second] = select.groups;
+
+      expect(internalsOf(first)?.getARIA('ariaLabel')).to.equal(
+        'Pre development'
+      );
+      expect(internalsOf(second)?.getARIA('ariaLabel')).to.equal('Development');
     });
   });
 
@@ -1390,5 +1837,23 @@ describe('Select', () => {
       (host as IgcSelectComponent).renderRoot
         .querySelector<IgcInputComponent>(IgcInputComponent.tagName)!
         .renderRoot.querySelector('input')!,
+  });
+
+  runAriaProjectionTests({
+    tagName: IgcSelectComponent.tagName,
+    getNativeInput: (host) =>
+      (host as IgcSelectComponent).renderRoot
+        .querySelector<IgcInputComponent>(IgcInputComponent.tagName)!
+        .renderRoot.querySelector('input')!,
+    expected: { role: 'combobox', hasPopup: 'listbox' },
+    getControls: (host) => [
+      (host as IgcSelectComponent).renderRoot.querySelector('#dropdown')!,
+    ],
+    getDescription: (host) => [
+      (host as IgcSelectComponent).renderRoot.querySelector(
+        '#select-helper-text'
+      )!,
+    ],
+    openProperty: 'open',
   });
 });

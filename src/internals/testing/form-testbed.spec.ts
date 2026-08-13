@@ -219,6 +219,12 @@ export interface ExternalLabelAssociationConfig {
   getNativeInput: (host: HTMLElement) => HTMLInputElement | HTMLTextAreaElement;
   /** Optional additional attributes to set on the rendered host element. */
   hostAttributes?: string;
+  /**
+   * Whether clicking the label is asserted to move focus onto the native
+   * control. Defaults to `true`; opt out for controls the browser does not
+   * label-focus like text editors (e.g. `<input type="file">`).
+   */
+  assertFocus?: boolean;
 }
 
 /**
@@ -234,7 +240,12 @@ export interface ExternalLabelAssociationConfig {
 export function runExternalLabelAssociationTests(
   config: ExternalLabelAssociationConfig
 ): void {
-  const { tagName, getNativeInput, hostAttributes = '' } = config;
+  const {
+    tagName,
+    getNativeInput,
+    hostAttributes = '',
+    assertFocus = true,
+  } = config;
 
   describe('External label association', () => {
     async function createLabelledFixture(nested: boolean) {
@@ -253,32 +264,140 @@ export function runExternalLabelAssociationTests(
       return { label, host };
     }
 
-    it('links an external label through an IDREF (`for` attribute)', async () => {
-      const { label, host } = await createLabelledFixture(false);
+    async function assertLabelAssociation(nested: boolean) {
+      const { label, host } = await createLabelledFixture(nested);
       const native = getNativeInput(host);
 
-      expect(native.ariaLabelledByElements).to.have.lengthOf(1);
-      expect(native.ariaLabelledByElements?.[0]).to.equal(label);
+      expect(native.ariaLabelledByElements).to.eql([label]);
 
       simulateClick(label);
       await elementUpdated(host);
 
       expect(document.activeElement).to.equal(host);
-      expect(isFocused(native)).to.be.true;
-    });
 
-    it('links an external label by nesting the component inside it', async () => {
-      const { label, host } = await createLabelledFixture(true);
+      if (assertFocus) {
+        expect(isFocused(native)).to.be.true;
+      }
+    }
+
+    it('links an external label through an IDREF (`for` attribute)', () =>
+      assertLabelAssociation(false));
+
+    it('links an external label by nesting the component inside it', () =>
+      assertLabelAssociation(true));
+  });
+}
+
+export interface AriaProjectionTestConfig {
+  /** The host custom element tag name (e.g. `igc-select`). */
+  tagName: string;
+  /** Optional additional attributes to set on the rendered host element. */
+  hostAttributes?: string;
+  /**
+   * Locates the AT-exposed native editor (`<input>`/`<textarea>`) that
+   * receives the projected ARIA state within the given host element.
+   */
+  getNativeInput: (host: HTMLElement) => HTMLInputElement | HTMLTextAreaElement;
+  /** The scalar ARIA state expected on the native editor. */
+  expected: {
+    role?: string;
+    hasPopup?: string;
+  };
+  /** Locates the expected `aria-controls` targets within the host. */
+  getControls?: (host: HTMLElement) => Element[];
+  /** Locates the expected `aria-describedby` targets within the host. */
+  getDescription?: (host: HTMLElement) => Element[];
+  /** A boolean property toggling the popup, asserted against `aria-expanded`. */
+  openProperty?: string;
+}
+
+/**
+ * Shared test suite asserting that a composite host projects its ARIA
+ * semantics onto the native editor of its inner input component — the element
+ * assistive technology lands on and reports when the host delegates focus.
+ *
+ * Relations are asserted by element-identity readback
+ * (e.g. `input.ariaControlsElements[0] === list`), never by content attribute:
+ * they are published through ARIA element reflection, since an IDREF cannot
+ * cross the shadow boundary between the editor and the host, and reflection
+ * blanks the content attribute by spec.
+ */
+export function runAriaProjectionTests(config: AriaProjectionTestConfig): void {
+  const {
+    tagName,
+    hostAttributes = '',
+    getNativeInput,
+    expected,
+    getControls,
+    getDescription,
+    openProperty,
+  } = config;
+
+  describe('ARIA projection', () => {
+    async function createProjectionFixture() {
+      const container = await fixture<HTMLElement>(html`<div></div>`);
+      container.innerHTML = `<${tagName} ${hostAttributes}></${tagName}>`;
+
+      const host = container.querySelector<HTMLElement>(tagName)!;
+
+      await elementUpdated(host);
+      await nextFrame();
+
+      return host;
+    }
+
+    it('projects the host semantics onto the native editor', async () => {
+      const host = await createProjectionFixture();
       const native = getNativeInput(host);
 
-      expect(native.ariaLabelledByElements).to.have.lengthOf(1);
-      expect(native.ariaLabelledByElements?.[0]).to.equal(label);
+      // The input component wrapping the native editor. It carries the
+      // projected `role`/`hasPopup` as `data-role`/`data-haspopup` styling
+      // hooks for the input themes.
+      const anchor = (native.getRootNode() as ShadowRoot).host;
 
-      simulateClick(label);
-      await elementUpdated(host);
+      if (expected.role) {
+        expect(native.role).to.equal(expected.role);
+        expect(anchor.getAttribute('data-role')).to.equal(expected.role);
+      }
 
-      expect(document.activeElement).to.equal(host);
-      expect(isFocused(native)).to.be.true;
+      if (expected.hasPopup) {
+        expect(native.getAttribute('aria-haspopup')).to.equal(
+          expected.hasPopup
+        );
+        expect(anchor.getAttribute('data-haspopup')).to.equal(
+          expected.hasPopup
+        );
+      }
+
+      if (getControls) {
+        expect(native.ariaControlsElements).to.eql(getControls(host));
+      }
+
+      if (getDescription) {
+        const description = getDescription(host);
+        for (const element of description) {
+          expect(native.ariaDescribedByElements).to.contain(element);
+        }
+      }
     });
+
+    if (openProperty) {
+      it('reflects the open state of the host onto the native editor', async () => {
+        const host = await createProjectionFixture();
+        const native = getNativeInput(host);
+
+        expect(native.getAttribute('aria-expanded')).to.equal('false');
+
+        (host as unknown as Record<string, boolean>)[openProperty] = true;
+        await elementUpdated(host);
+
+        expect(native.getAttribute('aria-expanded')).to.equal('true');
+
+        (host as unknown as Record<string, boolean>)[openProperty] = false;
+        await elementUpdated(host);
+
+        expect(native.getAttribute('aria-expanded')).to.equal('false');
+      });
+    }
   });
 }

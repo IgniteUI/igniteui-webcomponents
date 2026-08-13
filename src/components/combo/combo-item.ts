@@ -24,6 +24,7 @@ export default class IgcComboItemComponent extends LitElement {
       role: 'option',
       ariaSelected: 'false',
     },
+    reflectRole: true,
   });
 
   @property({ attribute: false })
@@ -56,12 +57,6 @@ export default class IgcComboItemComponent extends LitElement {
   constructor() {
     super();
     addThemingController(this, all);
-  }
-
-  /** @internal */
-  public override connectedCallback(): void {
-    super.connectedCallback();
-    this.role = 'option';
   }
 
   protected override willUpdate(props: PropertyValues<this>): void {

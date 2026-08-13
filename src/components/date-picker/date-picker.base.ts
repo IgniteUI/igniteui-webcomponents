@@ -1,6 +1,7 @@
 import { html, nothing, type PropertyValues, type TemplateResult } from 'lit';
 import { property, query } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
+import { addAriaProjector } from '#internals/controllers/aria-projection.js';
 import {
   addKeybindings,
   altKey,
@@ -124,6 +125,9 @@ export abstract class IgcDatePickerBaseComponent<
   @query(IgcCalendarComponent.tagName)
   protected readonly _calendar!: IgcCalendarComponent;
 
+  @query('#helper-text')
+  protected readonly _helperText!: IgcValidationContainerComponent | null;
+
   protected get _isDropDown(): boolean {
     return this.mode === 'dropdown';
   }
@@ -177,10 +181,12 @@ export abstract class IgcDatePickerBaseComponent<
   /** The localized label of the calendar picker. */
   protected abstract get _selectDateLabel(): string | undefined;
 
-  /** The editor which the associated labels of the host are forwarded to. */
-  protected abstract get _labelTarget(): {
-    _labelElements: ReadonlyArray<Element> | null;
-  } | null;
+  /**
+   * The editor the host's ARIA state is projected onto — its associated
+   * labels and the `aria-haspopup="dialog"` semantics of the picker, both of
+   * which must land on the native input assistive technology reports.
+   */
+  protected abstract get _projectionTarget(): Element | null;
 
   /** Moves focus to the editor of the picker. */
   protected abstract _focusInput(): void;
@@ -475,6 +481,18 @@ export abstract class IgcDatePickerBaseComponent<
   constructor() {
     super();
 
+    // Projects the host's labels and popup semantics onto the native input
+    // inside the editor (see ProjectedARIA for why the host cannot publish
+    // these itself).
+    addAriaProjector(this, {
+      target: () => this._projectionTarget,
+      state: () => ({
+        hasPopup: 'dialog',
+        labelledBy: this._internals.labels,
+        describedBy: this._helperText ? [this._helperText] : null,
+      }),
+    });
+
     addSafeEventListener(this, 'focusout', this._handleFocusOut);
 
     addKeybindings(this, {
@@ -494,16 +512,6 @@ export abstract class IgcDatePickerBaseComponent<
       if (this.open) {
         this._oldValue = this._value;
       }
-    }
-  }
-
-  protected override updated(changedProperties: PropertyValues<this>): void {
-    super.updated(changedProperties);
-
-    const target = this._labelTarget;
-
-    if (target) {
-      target._labelElements = this._internals.labels;
     }
   }
 

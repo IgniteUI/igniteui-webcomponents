@@ -275,7 +275,6 @@ export default class IgcMaskInputComponent extends MaskBehaviorMixin(
 
   protected override _renderInput() {
     const hasNegativeTabIndex = this.getAttribute('tabindex') === '-1';
-    const hasHelperText = this._slots.hasAssignedElements('helper-text');
 
     return renderMaskedNativeInput({
       id: this._inputId,
@@ -288,8 +287,7 @@ export default class IgcMaskInputComponent extends MaskBehaviorMixin(
       autofocus: this.autofocus,
       inputMode: this.inputMode,
       tabindex: hasNegativeTabIndex ? -1 : undefined,
-      ariaDescribedBy: hasHelperText ? 'helper-text' : undefined,
-      ariaLabelledByElements: this._resolvedLabelElements,
+      aria: this._ariaTarget.resolveBindings(),
       onInput: this._handleInput,
       onBeforeInput: this._handleBeforeInput,
       onFocus: this._handleFocus,

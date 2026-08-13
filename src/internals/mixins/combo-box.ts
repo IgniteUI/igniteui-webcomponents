@@ -144,10 +144,28 @@ export function getActiveItems<T extends HTMLElement & { disabled: boolean }>(
   });
 }
 
+/**
+ * Both navigation helpers accept a missing or detached `from`, in which case
+ * the search runs from the edge of the collection. They return `undefined` only
+ * when there is nothing to navigate to at all.
+ */
+function indexOfItem<T extends HTMLElement>(
+  items: T[],
+  from: T | null | undefined,
+  fallback: number
+): number {
+  const index = from ? items.indexOf(from) : -1;
+  return index < 0 ? fallback : index;
+}
+
+/**
+ * Returns the first non-disabled item after `from`, or `from` itself when it is
+ * already the last one.
+ */
 export function getNextActiveItem<
   T extends HTMLElement & { disabled: boolean },
->(items: T[], from: T): T {
-  const current = items.indexOf(from);
+>(items: T[], from?: T | null): T | undefined {
+  const current = indexOfItem(items, from, -1);
 
   for (let i = current + 1; i < items.length; i++) {
     if (!items[i].disabled) {
@@ -158,10 +176,14 @@ export function getNextActiveItem<
   return items[current];
 }
 
+/**
+ * Returns the first non-disabled item before `from`, or `from` itself when it
+ * is already the first one.
+ */
 export function getPreviousActiveItem<
   T extends HTMLElement & { disabled: boolean },
->(items: T[], from: T): T {
-  const current = items.indexOf(from);
+>(items: T[], from?: T | null): T | undefined {
+  const current = indexOfItem(items, from, items.length);
 
   for (let i = current - 1; i >= 0; i--) {
     if (!items[i].disabled) {

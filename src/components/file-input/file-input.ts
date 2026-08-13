@@ -4,6 +4,7 @@ import {
 } from 'igniteui-i18n-core';
 import { html } from 'lit';
 import { property, state } from 'lit/decorators.js';
+import { ariaBindings } from '#internals/controllers/aria-projection.js';
 import { addSlotController, setSlots } from '#internals/controllers/slot.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { addI18nController } from '#internals/i18n/i18n-controller.js';
@@ -270,10 +271,10 @@ export default class IgcFileInputComponent extends EventEmitterMixin<
 
   protected override _renderInput() {
     const hasNegativeTabIndex = this.getAttribute('tabindex') === '-1';
-    const hasHelperText = this._slots.hasAssignedElements('helper-text');
 
     return html`
       <input
+        ${ariaBindings(this._ariaTarget.resolveBindings())}
         id=${this._inputId}
         part=${partMap(this._resolvePartNames('input'))}
         type="file"
@@ -283,7 +284,6 @@ export default class IgcFileInputComponent extends EventEmitterMixin<
         ?multiple=${this.multiple}
         tabindex=${bindIf(hasNegativeTabIndex, -1)}
         accept=${bindIf(this.accept, this.accept)}
-        aria-describedby=${bindIf(hasHelperText, 'helper-text')}
         @click=${this._handleClick}
         @change=${this._handleChange}
         @cancel=${this._handleCancel}

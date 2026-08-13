@@ -14,7 +14,10 @@ import {
 } from '#internals/controllers/key-bindings.js';
 import { CalendarDay } from '#internals/date/model.js';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
-import { runExternalLabelAssociationTests } from '#internals/testing/form-testbed.spec.js';
+import {
+  runAriaProjectionTests,
+  runExternalLabelAssociationTests,
+} from '#internals/testing/form-testbed.spec.js';
 import { checkDatesEqual, isFocused } from '#internals/testing/helpers.spec.js';
 import {
   simulateClick,
@@ -46,6 +49,39 @@ describe('Date range picker - two inputs', () => {
           IgcDateTimeInputComponent.tagName
         )!
         .renderRoot.querySelector('input')!,
+  });
+
+  // The start editor.
+  runAriaProjectionTests({
+    tagName: IgcDateRangePickerComponent.tagName,
+    hostAttributes: 'use-two-inputs',
+    getNativeInput: (host) =>
+      (host as IgcDateRangePickerComponent).renderRoot
+        .querySelector<IgcDateTimeInputComponent>(
+          IgcDateTimeInputComponent.tagName
+        )!
+        .renderRoot.querySelector('input')!,
+    expected: { hasPopup: 'dialog' },
+    getDescription: (host) => [
+      (host as IgcDateRangePickerComponent).renderRoot.querySelector(
+        '#helper-text'
+      )!,
+    ],
+  });
+
+  // The end editor receives the popup semantics as well, labels excluded.
+  runAriaProjectionTests({
+    tagName: IgcDateRangePickerComponent.tagName,
+    hostAttributes: 'use-two-inputs',
+    getNativeInput: (host) =>
+      Array.from(
+        (
+          host as IgcDateRangePickerComponent
+        ).renderRoot.querySelectorAll<IgcDateTimeInputComponent>(
+          IgcDateTimeInputComponent.tagName
+        )
+      )[1]!.renderRoot.querySelector('input')!,
+    expected: { hasPopup: 'dialog' },
   });
 
   let picker: IgcDateRangePickerComponent;
