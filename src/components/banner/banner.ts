@@ -1,16 +1,16 @@
 import { html, LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
 import { createRef, ref } from 'lit/directives/ref.js';
-import { addAnimationController } from '../../animations/player.js';
-import { growVerIn, growVerOut } from '../../animations/presets/grow/index.js';
-import { addThemingController } from '../../theming/theming-controller.js';
+import { addAnimationController } from '#animations/player.js';
+import { growVerIn, growVerOut } from '#animations/presets/grow/index.js';
+import { addCommandController } from '#internals/controllers/command.js';
+import { addInternalsController } from '#internals/controllers/internals.js';
+import { addSlotController, setSlots } from '#internals/controllers/slot.js';
+import { registerComponent } from '#internals/definitions/register.js';
+import type { Constructor } from '#internals/mixins/constructor.js';
+import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
+import { addThemingController } from '#theming/theming-controller.js';
 import IgcButtonComponent from '../button/button.js';
-import { addCommandController } from '../common/controllers/command.js';
-import { addInternalsController } from '../common/controllers/internals.js';
-import { addSlotController, setSlots } from '../common/controllers/slot.js';
-import { registerComponent } from '../common/definitions/register.js';
-import type { Constructor } from '../common/mixins/constructor.js';
-import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { styles } from './themes/banner.base.css.js';
 import { all } from './themes/themes.js';
 

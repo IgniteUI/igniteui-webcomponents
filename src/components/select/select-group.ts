@@ -1,14 +1,13 @@
 import { html, LitElement } from 'lit';
 import { property, queryAssignedElements } from 'lit/decorators.js';
-
-import { addThemingController } from '../../theming/theming-controller.js';
-import { addInternalsController } from '../common/controllers/internals.js';
+import { addInternalsController } from '#internals/controllers/internals.js';
 import {
   createMutationController,
   type MutationControllerParams,
-} from '../common/controllers/mutation-observer.js';
-import { watch } from '../common/decorators/watch.js';
-import { registerComponent } from '../common/definitions/register.js';
+} from '#internals/controllers/mutation-observer.js';
+import { watch } from '#internals/decorators/watch.js';
+import { registerComponent } from '#internals/definitions/register.js';
+import { addThemingController } from '#theming/theming-controller.js';
 import { styles } from '../dropdown/themes/dropdown-group.base.css.js';
 import { all } from '../dropdown/themes/group.js';
 import { styles as shared } from '../dropdown/themes/shared/group/dropdown-group.common.css.js';

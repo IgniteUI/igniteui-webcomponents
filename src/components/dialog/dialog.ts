@@ -1,17 +1,19 @@
 import { html, LitElement, nothing, type PropertyValues } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { createRef, ref } from 'lit/directives/ref.js';
-import { addAnimationController } from '../../animations/player.js';
-import { fadeIn, fadeOut } from '../../animations/presets/fade/index.js';
-import { addThemingController } from '../../theming/theming-controller.js';
+import { addAnimationController } from '#animations/player.js';
+import { fadeIn, fadeOut } from '#animations/presets/fade/index.js';
+import { addCommandController } from '#internals/controllers/command.js';
+import { addSlotController, setSlots } from '#internals/controllers/slot.js';
+import { registerComponent } from '#internals/definitions/register.js';
+import type { Constructor } from '#internals/mixins/constructor.js';
+import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
+import { partMap } from '#internals/part-map.js';
+import { isPointInsideElement } from '#internals/utils/dom.js';
+import { bindIf } from '#internals/utils/lit.js';
+import { createIdGenerator } from '#internals/utils/strings.js';
+import { addThemingController } from '#theming/theming-controller.js';
 import IgcButtonComponent from '../button/button.js';
-import { addCommandController } from '../common/controllers/command.js';
-import { addSlotController, setSlots } from '../common/controllers/slot.js';
-import { registerComponent } from '../common/definitions/register.js';
-import type { Constructor } from '../common/mixins/constructor.js';
-import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { partMap } from '../common/part-map.js';
-import { bindIf, numberInRangeInclusive } from '../common/util.js';
 import { styles } from './themes/dialog.base.css.js';
 import { styles as shared } from './themes/shared/dialog.common.css.js';
 import { all } from './themes/themes.js';
@@ -21,7 +23,7 @@ export interface IgcDialogComponentEventMap {
   igcClosed: CustomEvent<void>;
 }
 
-let nextId = 1;
+const nextId = createIdGenerator('title');
 
 /* blazorAdditionalDependency: IgcButtonComponent */
 /**
@@ -75,7 +77,7 @@ export default class IgcDialogComponent extends EventEmitterMixin<
 
   //#region Private state and properties
 
-  private readonly _titleId = `title-${nextId++}`;
+  private readonly _titleId = nextId();
 
   private readonly _slots = addSlotController(this, {
     slots: setSlots('title', 'message', 'footer'),
@@ -220,14 +222,12 @@ export default class IgcDialogComponent extends EventEmitterMixin<
   }
 
   private _handleClick({ clientX, clientY, target }: PointerEvent): void {
-    if (this.closeOnOutsideClick && this._dialog === target) {
-      const rect = this._dialog.getBoundingClientRect();
-      const inX = numberInRangeInclusive(clientX, rect.left, rect.right);
-      const inY = numberInRangeInclusive(clientY, rect.top, rect.bottom);
-
-      if (!(inX && inY)) {
-        this._closeWithEvent();
-      }
+    if (
+      this.closeOnOutsideClick &&
+      this._dialog === target &&
+      !isPointInsideElement(this._dialog, clientX, clientY)
+    ) {
+      this._closeWithEvent();
     }
   }
 

@@ -1,4 +1,4 @@
-import { asNumber, clamp } from '../common/util.js';
+import { asNumber, clamp } from '#internals/utils/math.js';
 import { type MaskOptions, MaskParser } from '../mask-input/mask-parser.js';
 import {
   createDatePart,

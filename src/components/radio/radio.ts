@@ -2,24 +2,28 @@ import { html, LitElement, nothing, type TemplateResult } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
-import { addThemingController } from '../../theming/theming-controller.js';
-import { addKeyboardFocusRing } from '../common/controllers/focus-ring.js';
+import { addKeyboardFocusRing } from '#internals/controllers/focus-ring.js';
 import {
   addKeybindings,
   arrowDown,
   arrowLeft,
   arrowRight,
   arrowUp,
-} from '../common/controllers/key-bindings.js';
-import { addSlotController, setSlots } from '../common/controllers/slot.js';
-import { registerComponent } from '../common/definitions/register.js';
-import type { Constructor } from '../common/mixins/constructor.js';
-import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { FormAssociatedCheckboxRequiredMixin } from '../common/mixins/forms/associated-required.js';
-import { FormValueBooleanTransformers } from '../common/mixins/forms/form-transformers.js';
-import { createFormValueState } from '../common/mixins/forms/form-value.js';
-import { partMap } from '../common/part-map.js';
-import { isDefined, isEmpty, isLTR, last, wrap } from '../common/util.js';
+} from '#internals/controllers/key-bindings.js';
+import { addSlotController, setSlots } from '#internals/controllers/slot.js';
+import { registerComponent } from '#internals/definitions/register.js';
+import type { Constructor } from '#internals/mixins/constructor.js';
+import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
+import { FormAssociatedCheckboxRequiredMixin } from '#internals/mixins/forms/associated-required.js';
+import { FormValueBooleanTransformers } from '#internals/mixins/forms/form-transformers.js';
+import { createFormValueState } from '#internals/mixins/forms/form-value.js';
+import { partMap } from '#internals/part-map.js';
+import { isEmpty, lastOf } from '#internals/utils/arrays.js';
+import { isLTR } from '#internals/utils/dom.js';
+import { wrap } from '#internals/utils/math.js';
+import { createIdGenerator } from '#internals/utils/strings.js';
+import { isDefined } from '#internals/utils/types.js';
+import { addThemingController } from '#theming/theming-controller.js';
 import type { ToggleLabelPosition } from '../types.js';
 import IgcValidationContainerComponent from '../validation-container/validation-container.js';
 import { styles } from './themes/radio.base.css.js';
@@ -42,7 +46,7 @@ export interface IgcRadioComponentEventMap {
   blur: FocusEvent;
 }
 
-let nextId = 1;
+const nextId = createIdGenerator('radio');
 
 /**
  * The radio component allows the user to select a single option from an available set of options that are listed side by side.
@@ -78,7 +82,7 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
     return radioValidators;
   }
 
-  private readonly _inputId = `radio-${nextId++}`;
+  private readonly _inputId = nextId();
   private readonly _labelId = `radio-label-${this._inputId}`;
   private readonly _focusRingManager = addKeyboardFocusRing(this);
   private readonly _slots = addSlotController(this, {
@@ -196,7 +200,7 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
   protected override async firstUpdated(): Promise<void> {
     await this.updateComplete;
 
-    if (this.checked && this === last(this._checkedRadios)) {
+    if (this.checked && this === lastOf(this._checkedRadios)) {
       for (const radio of this._siblings) {
         radio.checked = false;
         radio.defaultChecked = false;

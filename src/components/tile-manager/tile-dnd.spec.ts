@@ -1,23 +1,18 @@
-import {
-  elementUpdated,
-  expect,
-  fixture,
-  html,
-  nextFrame,
-} from '@open-wc/testing';
+import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import { range } from 'lit/directives/range.js';
 import { restore, spy, stub } from 'sinon';
-import IgcIconButtonComponent from '../button/icon-button.js';
-import { escapeKey } from '../common/controllers/key-bindings.js';
-import { defineComponents } from '../common/definitions/defineComponents.js';
-import { getCenterPoint } from '../common/util.js';
+import { escapeKey } from '#internals/controllers/key-bindings.js';
+import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { viewTransitionComplete } from '#internals/testing/helpers.spec.js';
 import {
   simulateClick,
   simulateKeyboard,
   simulateLostPointerCapture,
   simulatePointerDown,
   simulatePointerMove,
-} from '../common/utils.spec.js';
+} from '#internals/testing/simulate.spec.js';
+import { getCenterPoint } from '#internals/utils/dom.js';
+import IgcIconButtonComponent from '../button/icon-button.js';
 import type { TileManagerDragMode } from '../types.js';
 import IgcTileComponent from './tile.js';
 import IgcTileManagerComponent from './tile-manager.js';
@@ -30,11 +25,6 @@ describe('Tile drag and drop', () => {
   let tileManager: IgcTileManagerComponent;
 
   /** Wait tile dragging view transition(s) to complete. */
-  async function viewTransitionComplete() {
-    await nextFrame();
-    await nextFrame();
-  }
-
   function getTile(index: number): IgcTileComponent {
     return tileManager.tiles[index];
   }

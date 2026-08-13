@@ -3,18 +3,15 @@ import { property } from 'lit/decorators.js';
 import { cache } from 'lit/directives/cache.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { createRef, ref } from 'lit/directives/ref.js';
-import { addThemingController } from '../../theming/theming-controller.js';
-import { addCommandController } from '../common/controllers/command.js';
-import { addSlotController, setSlots } from '../common/controllers/slot.js';
-import { registerComponent } from '../common/definitions/register.js';
-import type { Constructor } from '../common/mixins/constructor.js';
-import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { partMap } from '../common/part-map.js';
-import {
-  bindIf,
-  isPopoverOpen,
-  numberInRangeInclusive,
-} from '../common/util.js';
+import { addCommandController } from '#internals/controllers/command.js';
+import { addSlotController, setSlots } from '#internals/controllers/slot.js';
+import { registerComponent } from '#internals/definitions/register.js';
+import type { Constructor } from '#internals/mixins/constructor.js';
+import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
+import { partMap } from '#internals/part-map.js';
+import { isPointInsideElement, isPopoverOpen } from '#internals/utils/dom.js';
+import { bindIf } from '#internals/utils/lit.js';
+import { addThemingController } from '#theming/theming-controller.js';
 import type { NavDrawerPosition } from '../types.js';
 import IgcNavDrawerHeaderItemComponent from './nav-drawer-header-item.js';
 import IgcNavDrawerItemComponent from './nav-drawer-item.js';
@@ -235,14 +232,11 @@ export default class IgcNavDrawerComponent extends EventEmitterMixin<
   }
 
   private _handleClick({ clientX, clientY, target }: PointerEvent): void {
-    if (this._dialog === target) {
-      const rect = this._dialog.getBoundingClientRect();
-      const inX = numberInRangeInclusive(clientX, rect.left, rect.right);
-      const inY = numberInRangeInclusive(clientY, rect.top, rect.bottom);
-
-      if (!(inX && inY)) {
-        this._closeWithEvent();
-      }
+    if (
+      this._dialog === target &&
+      !isPointInsideElement(this._dialog, clientX, clientY)
+    ) {
+      this._closeWithEvent();
     }
   }
 

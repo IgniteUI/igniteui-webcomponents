@@ -16,6 +16,11 @@
       "default": "./extras/index.js"
     }
   },
+  "imports": {
+    "#internals/*": "./internals/*",
+    "#theming/*": "./theming/*",
+    "#animations/*": "./animations/*"
+  },
   "type": "module",
   "sideEffects": false,
   "repository": {

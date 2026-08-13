@@ -10,8 +10,8 @@ import {
   homeKey,
   shiftKey,
   spaceBar,
-} from '../common/controllers/key-bindings.js';
-import { isLTR, scrollIntoView } from '../common/util.js';
+} from '#internals/controllers/key-bindings.js';
+import { isLTR, scrollIntoView } from '#internals/utils/dom.js';
 import type IgcTreeComponent from './tree.js';
 import type { IgcTreeSelectionService } from './tree.selection.js';
 import type IgcTreeItemComponent from './tree-item.js';

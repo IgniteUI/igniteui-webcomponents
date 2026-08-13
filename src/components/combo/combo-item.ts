@@ -1,10 +1,10 @@
 import { html, LitElement, nothing, type PropertyValues } from 'lit';
 import { property } from 'lit/decorators.js';
 import { cache } from 'lit/directives/cache.js';
-import { addThemingController } from '../../theming/theming-controller.js';
+import { addInternalsController } from '#internals/controllers/internals.js';
+import { registerComponent } from '#internals/definitions/register.js';
+import { addThemingController } from '#theming/theming-controller.js';
 import IgcCheckboxComponent from '../checkbox/checkbox.js';
-import { addInternalsController } from '../common/controllers/internals.js';
-import { registerComponent } from '../common/definitions/register.js';
 import { all } from '../dropdown/themes/item.js';
 import { styles as shared } from '../dropdown/themes/shared/item/dropdown-item.common.css.js';
 import { styles } from './themes/combo-item.base.css.js';

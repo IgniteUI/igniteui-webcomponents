@@ -1,11 +1,12 @@
 import { html, LitElement, nothing } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
 import type { StyleInfo } from 'lit/directives/style-map.js';
-import { addInternalsController } from '../common/controllers/internals.js';
-import type { SlotController } from '../common/controllers/slot.js';
-import { watch } from '../common/decorators/watch.js';
-import { partMap } from '../common/part-map.js';
-import { asPercent, clamp, formatString } from '../common/util.js';
+import { addInternalsController } from '#internals/controllers/internals.js';
+import type { SlotController } from '#internals/controllers/slot.js';
+import { watch } from '#internals/decorators/watch.js';
+import { partMap } from '#internals/part-map.js';
+import { asPercent, clamp } from '#internals/utils/math.js';
+import { formatString } from '#internals/utils/strings.js';
 import type { StyleVariant } from '../types.js';
 
 /* omitModule */

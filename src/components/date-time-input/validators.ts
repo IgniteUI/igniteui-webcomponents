@@ -1,10 +1,13 @@
-import { isDateExceedingMax, isDateLessThanMin } from '../calendar/helpers.js';
+import {
+  isDateExceedingMax,
+  isDateLessThanMin,
+} from '#internals/date/compare.js';
 import {
   maxDateValidator,
   minDateValidator,
   requiredValidator,
   type Validator,
-} from '../common/validators.js';
+} from '#internals/validators.js';
 import type IgcDateTimeInputComponent from './date-time-input.js';
 
 export const dateTimeInputValidators: Validator<IgcDateTimeInputComponent>[] = [

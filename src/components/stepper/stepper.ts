@@ -1,8 +1,7 @@
 import { ContextProvider } from '@lit/context';
 import { html, LitElement, type PropertyValues } from 'lit';
 import { property } from 'lit/decorators.js';
-import { addThemingController } from '../../theming/theming-controller.js';
-import { addInternalsController } from '../common/controllers/internals.js';
+import { addInternalsController } from '#internals/controllers/internals.js';
 import {
   addKeybindings,
   arrowDown,
@@ -11,20 +10,19 @@ import {
   arrowUp,
   endKey,
   homeKey,
-} from '../common/controllers/key-bindings.js';
-import { addSlotController, setSlots } from '../common/controllers/slot.js';
-import { registerComponent } from '../common/definitions/register.js';
-import type { Constructor } from '../common/mixins/constructor.js';
-import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
+} from '#internals/controllers/key-bindings.js';
+import { addSlotController, setSlots } from '#internals/controllers/slot.js';
+import { registerComponent } from '#internals/definitions/register.js';
+import type { Constructor } from '#internals/mixins/constructor.js';
+import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
+import { firstOf, lastOf } from '#internals/utils/arrays.js';
+import { getRoot, isLTR } from '#internals/utils/dom.js';
 import {
   addSafeEventListener,
-  first,
   getElementFromPath,
-  getRoot,
-  isLTR,
-  last,
-  wrap,
-} from '../common/util.js';
+} from '#internals/utils/events.js';
+import { wrap } from '#internals/utils/math.js';
+import { addThemingController } from '#theming/theming-controller.js';
 import type {
   HorizontalTransitionAnimation,
   StepperOrientation,
@@ -291,11 +289,11 @@ export default class IgcStepperComponent extends EventEmitterMixin<
   }
 
   private _handleHomeKey(): void {
-    this._getStepHeader(first(this._state.accessibleSteps))?.focus();
+    this._getStepHeader(firstOf(this._state.accessibleSteps))?.focus();
   }
 
   private _handleEndKey(): void {
-    this._getStepHeader(last(this._state.accessibleSteps))?.focus();
+    this._getStepHeader(lastOf(this._state.accessibleSteps))?.focus();
   }
 
   private _handleArrowDown(): void {

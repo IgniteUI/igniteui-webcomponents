@@ -1,9 +1,9 @@
 import { html, LitElement } from 'lit';
 import { property, state } from 'lit/decorators.js';
-import { addThemingController } from '../../theming/theming-controller.js';
-import { addSlotController, setSlots } from '../common/controllers/slot.js';
-import { registerComponent } from '../common/definitions/register.js';
-import { partMap } from '../common/part-map.js';
+import { addSlotController, setSlots } from '#internals/controllers/slot.js';
+import { registerComponent } from '#internals/definitions/register.js';
+import { partMap } from '#internals/part-map.js';
+import { addThemingController } from '#theming/theming-controller.js';
 import { styles } from './themes/item.base.css.js';
 import { all } from './themes/item.js';
 import { styles as shared } from './themes/shared/item/item.common.css.js';

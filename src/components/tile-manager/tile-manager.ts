@@ -3,19 +3,19 @@ import { html, LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
 import { createRef, ref } from 'lit/directives/ref.js';
 import { type StyleInfo, styleMap } from 'lit/directives/style-map.js';
-import { addThemingController } from '../../theming/theming-controller.js';
 import {
   type TileManagerContext,
   tileManagerContext,
-} from '../common/context.js';
+} from '#internals/context.js';
 import {
   createMutationController,
   type MutationControllerParams,
-} from '../common/controllers/mutation-observer.js';
-import { shadowOptions } from '../common/decorators/shadow-options.js';
-import { registerComponent } from '../common/definitions/register.js';
-import { partMap } from '../common/part-map.js';
-import { asNumber } from '../common/util.js';
+} from '#internals/controllers/mutation-observer.js';
+import { shadowOptions } from '#internals/decorators/shadow-options.js';
+import { registerComponent } from '#internals/definitions/register.js';
+import { partMap } from '#internals/part-map.js';
+import { asNumber } from '#internals/utils/math.js';
+import { addThemingController } from '#theming/theming-controller.js';
 import type { TileManagerDragMode, TileManagerResizeMode } from '../types.js';
 import { createTilesState } from './position.js';
 import { createSerializer } from './serializer.js';

@@ -7,8 +7,6 @@ import {
 } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { type StyleInfo, styleMap } from 'lit/directives/style-map.js';
-
-import { addThemingController } from '../../theming/theming-controller.js';
 import {
   addKeybindings,
   arrowDown,
@@ -19,18 +17,15 @@ import {
   homeKey,
   pageDownKey,
   pageUpKey,
-} from '../common/controllers/key-bindings.js';
-import { blazorDeepImport } from '../common/decorators/blazorDeepImport.js';
-import { watch } from '../common/decorators/watch.js';
-import {
-  addSafeEventListener,
-  asNumber,
-  asPercent,
-  clamp,
-  formatString,
-  isDefined,
-  isLTR,
-} from '../common/util.js';
+} from '#internals/controllers/key-bindings.js';
+import { blazorDeepImport } from '#internals/decorators/blazorDeepImport.js';
+import { watch } from '#internals/decorators/watch.js';
+import { isLTR } from '#internals/utils/dom.js';
+import { addSafeEventListener } from '#internals/utils/events.js';
+import { asNumber, asPercent, clamp } from '#internals/utils/math.js';
+import { formatString } from '#internals/utils/strings.js';
+import { isDefined } from '#internals/utils/types.js';
+import { addThemingController } from '#theming/theming-controller.js';
 import type {
   SliderTickLabelRotation,
   SliderTickOrientation,

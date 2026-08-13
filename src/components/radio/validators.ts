@@ -1,5 +1,5 @@
 import { ValidationResourceStringsEN } from 'igniteui-i18n-core';
-import type { Validator } from '../common/validators.js';
+import type { Validator } from '#internals/validators.js';
 import type IgcRadioComponent from './radio.js';
 import { getGroup } from './utils.js';
 

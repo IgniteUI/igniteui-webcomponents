@@ -6,23 +6,22 @@ import {
   waitUntil,
 } from '@open-wc/testing';
 import { spy } from 'sinon';
-import IgcCalendarComponent from '../calendar/calendar.js';
-import { CalendarDay } from '../calendar/model.js';
 import {
   altKey,
   arrowDown,
   arrowUp,
   escapeKey,
-} from '../common/controllers/key-bindings.js';
-import { defineComponents } from '../common/definitions/defineComponents.js';
+} from '#internals/controllers/key-bindings.js';
+import { CalendarDay } from '#internals/date/model.js';
+import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { runExternalLabelAssociationTests } from '#internals/testing/form-testbed.spec.js';
+import { checkDatesEqual, isFocused } from '#internals/testing/helpers.spec.js';
 import {
-  checkDatesEqual,
-  isFocused,
-  runExternalLabelAssociationTests,
   simulateClick,
   simulateInput,
   simulateKeyboard,
-} from '../common/utils.spec.js';
+} from '#internals/testing/simulate.spec.js';
+import IgcCalendarComponent from '../calendar/calendar.js';
 import IgcDateTimeInputComponent from '../date-time-input/date-time-input.js';
 import type IgcDialogComponent from '../dialog/dialog.js';
 import IgcDateRangeInputComponent from './date-range-input.js';

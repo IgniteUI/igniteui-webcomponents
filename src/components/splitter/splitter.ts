@@ -2,8 +2,7 @@ import { html, LitElement, type PropertyValues } from 'lit';
 import { eventOptions, property, query, state } from 'lit/decorators.js';
 import { createRef, ref } from 'lit/directives/ref.js';
 import { type StyleInfo, styleMap } from 'lit/directives/style-map.js';
-import { addThemingController } from '../../theming/theming-controller.js';
-import { addInternalsController } from '../common/controllers/internals.js';
+import { addInternalsController } from '#internals/controllers/internals.js';
 import {
   addKeybindings,
   arrowDown,
@@ -13,21 +12,22 @@ import {
   ctrlKey,
   endKey,
   homeKey,
-} from '../common/controllers/key-bindings.js';
-import { createResizeObserverController } from '../common/controllers/resize-observer.js';
-import { addSlotController, setSlots } from '../common/controllers/slot.js';
-import { registerComponent } from '../common/definitions/register.js';
-import type { Constructor } from '../common/mixins/constructor.js';
-import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { partMap } from '../common/part-map.js';
+} from '#internals/controllers/key-bindings.js';
+import { createResizeObserverController } from '#internals/controllers/resize-observer.js';
+import { addSlotController, setSlots } from '#internals/controllers/slot.js';
+import { registerComponent } from '#internals/definitions/register.js';
+import type { Constructor } from '#internals/mixins/constructor.js';
+import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
+import { partMap } from '#internals/part-map.js';
+import { isLTR } from '#internals/utils/dom.js';
+import { bindIf } from '#internals/utils/lit.js';
 import {
   asNumber,
   asPercent,
-  bindIf,
   clamp,
-  isLTR,
   roundPrecise,
-} from '../common/util.js';
+} from '#internals/utils/math.js';
+import { addThemingController } from '#theming/theming-controller.js';
 import type { SplitterOrientation } from '../types.js';
 import IgcVisuallyHiddenComponent from '../visually-hidden/visually-hidden.js';
 import { styles as shared } from './themes/shared/splitter.common.css.js';

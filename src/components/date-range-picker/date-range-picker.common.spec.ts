@@ -1,24 +1,24 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import type Sinon from 'sinon';
 import { spy } from 'sinon';
-import type IgcButtonComponent from '../button/button.js';
-import IgcCalendarComponent from '../calendar/calendar.js';
-import { CalendarDay } from '../calendar/model.js';
-import { DateRangeType } from '../calendar/types.js';
-import IgcChipComponent from '../chip/chip.js';
 import {
   altKey,
   arrowDown,
   arrowUp,
   escapeKey,
-} from '../common/controllers/key-bindings.js';
-import { defineComponents } from '../common/definitions/defineComponents.js';
-import type { IgcDateRangePickerResourceStrings } from '../common/i18n/EN/date-range-picker.resources.js';
+} from '#internals/controllers/key-bindings.js';
+import { CalendarDay } from '#internals/date/model.js';
+import { defineComponents } from '#internals/definitions/defineComponents.js';
+import type { IgcDateRangePickerResourceStrings } from '#internals/i18n/EN/date-range-picker.resources.js';
+import { checkDatesEqual } from '#internals/testing/helpers.spec.js';
 import {
-  checkDatesEqual,
   simulateClick,
   simulateKeyboard,
-} from '../common/utils.spec.js';
+} from '#internals/testing/simulate.spec.js';
+import type IgcButtonComponent from '../button/button.js';
+import IgcCalendarComponent from '../calendar/calendar.js';
+import { DateRangeType } from '../calendar/types.js';
+import IgcChipComponent from '../chip/chip.js';
 import IgcDialogComponent from '../dialog/dialog.js';
 import IgcPopoverComponent from '../popover/popover.js';
 import IgcDateRangeInputComponent from './date-range-input.js';

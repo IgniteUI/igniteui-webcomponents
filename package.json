@@ -9,6 +9,14 @@
     "./types": "./src/types.js",
     "./extras": "./src/extras/index.js"
   },
+  "imports": {
+    "#internals/*.js": "./src/internals/*.ts",
+    "#internals/*": "./src/internals/*",
+    "#theming/*.js": "./src/theming/*.ts",
+    "#theming/*": "./src/theming/*",
+    "#animations/*.js": "./src/animations/*.ts",
+    "#animations/*": "./src/animations/*"
+  },
   "type": "module",
   "repository": {
     "type": "git",
@@ -28,7 +36,8 @@
     "watch-scss": "node scripts/styles-watcher.mjs",
     "check-imports": "depcruise --config .dependency-cruiser.cjs --output-type err ./src/index.ts",
     "check-types": "tsc -p scripts/tsconfig-ci.json",
-    "check": "npm run check-imports && npm run check-types",
+    "check-aliases": "node scripts/check-import-aliases.mjs",
+    "check": "npm run check-aliases && npm run check-imports && npm run check-types",
     "clean": "npm run clean:dist && npm run clean:styles && npm run clean:docs",
     "clean:dist": "rimraf ./dist",
     "clean:styles": "rimraf --glob \"src/**/*.css.ts\"",

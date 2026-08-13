@@ -13,9 +13,12 @@ import {
   arrowUp,
   enterKey,
   spaceBar,
-} from '../common/controllers/key-bindings.js';
-import { defineComponents } from '../common/definitions/defineComponents.js';
-import { simulateClick, simulateKeyboard } from '../common/utils.spec.js';
+} from '#internals/controllers/key-bindings.js';
+import { defineComponents } from '#internals/definitions/defineComponents.js';
+import {
+  simulateClick,
+  simulateKeyboard,
+} from '#internals/testing/simulate.spec.js';
 import type IgcIconComponent from '../icon/icon.js';
 import IgcExpansionPanelComponent from './expansion-panel.js';
 

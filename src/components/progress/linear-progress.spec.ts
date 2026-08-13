@@ -5,8 +5,8 @@ import {
   html,
   nextFrame,
 } from '@open-wc/testing';
-import { defineComponents } from '../common/definitions/defineComponents.js';
-import { first } from '../common/util.js';
+import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { firstOf } from '#internals/utils/arrays.js';
 import IgcLinearProgressComponent from './linear-progress.js';
 
 describe('Linear progress component', () => {
@@ -212,21 +212,23 @@ describe('Linear progress component', () => {
       const slot = getDOM(progress).slot;
 
       expect(slot).to.exist;
-      expect(first(slot.assignedNodes()).textContent).to.equal('Custom Label');
+      expect(firstOf(slot.assignedNodes()).textContent).to.equal(
+        'Custom Label'
+      );
     });
 
     it('`hideLabel` does not affect slotted label', async () => {
       await updateProgress('hideLabel', true);
-      expect(first(getDOM(progress).slot.assignedNodes()).textContent).to.equal(
-        'Custom Label'
-      );
+      expect(
+        firstOf(getDOM(progress).slot.assignedNodes()).textContent
+      ).to.equal('Custom Label');
     });
 
     it('indeterminate does not affect slotted label', async () => {
       await updateProgress('indeterminate', true);
-      expect(first(getDOM(progress).slot.assignedNodes()).textContent).to.equal(
-        'Custom Label'
-      );
+      expect(
+        firstOf(getDOM(progress).slot.assignedNodes()).textContent
+      ).to.equal('Custom Label');
     });
   });
 

@@ -1,18 +1,16 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import { spy } from 'sinon';
-
-import { defineComponents, IgcCalendarComponent } from '../../index.js';
-import { first, last } from '../common/util.js';
-import { simulateClick } from '../common/utils.spec.js';
-import type IgcDaysViewComponent from './days-view/days-view.js';
+import { CalendarDay, calendarRange } from '#internals/date/model.js';
 import {
-  calendarRange,
-  generateMonth,
-  getWeekDayNumber,
-  isDateInRanges,
-} from './helpers.js';
-import { getCalendarDOM, getDayViewDOM, getDOMDate } from './helpers.spec.js';
-import { CalendarDay } from './model.js';
+  getCalendarDOM,
+  getDayViewDOM,
+  getDOMDate,
+} from '#internals/testing/calendar.spec.js';
+import { simulateClick } from '#internals/testing/simulate.spec.js';
+import { firstOf, lastOf } from '#internals/utils/arrays.js';
+import { defineComponents, IgcCalendarComponent } from '../../index.js';
+import type IgcDaysViewComponent from './days-view/days-view.js';
+import { generateMonth, getWeekDayNumber, isDateInRanges } from './helpers.js';
 import { type DateRangeDescriptor, DateRangeType } from './types.js';
 
 describe('Calendar interactions', () => {
@@ -70,8 +68,8 @@ describe('Calendar interactions', () => {
     );
 
     expect(calendar.values).lengthOf(2);
-    expect(date_1.equalTo(first(calendar.values))).to.be.true;
-    expect(date_2.equalTo(last(calendar.values))).to.be.true;
+    expect(date_1.equalTo(firstOf(calendar.values))).to.be.true;
+    expect(date_2.equalTo(lastOf(calendar.values))).to.be.true;
   });
 
   it('setting `values` - string property binding', async () => {
@@ -85,8 +83,8 @@ describe('Calendar interactions', () => {
     calendar.values = `${date_1_str}, ${date_2_str}`;
 
     expect(calendar.values).lengthOf(2);
-    expect(date_1.equalTo(first(calendar.values))).to.be.true;
-    expect(date_2.equalTo(last(calendar.values))).to.be.true;
+    expect(date_1.equalTo(firstOf(calendar.values))).to.be.true;
+    expect(date_2.equalTo(lastOf(calendar.values))).to.be.true;
 
     // Valid date combinations
     const validDates = [
@@ -98,8 +96,8 @@ describe('Calendar interactions', () => {
     for (const each of validDates) {
       calendar.values = each;
       expect(calendar.values).lengthOf(2);
-      expect(date_1.equalTo(first(calendar.values))).to.be.true;
-      expect(date_2.equalTo(last(calendar.values))).to.be.true;
+      expect(date_1.equalTo(firstOf(calendar.values))).to.be.true;
+      expect(date_2.equalTo(lastOf(calendar.values))).to.be.true;
     }
 
     // Mixed date combinations
@@ -253,15 +251,15 @@ describe('Calendar interactions', () => {
 
     expect(calendar.values).lengthOf(7);
     expect(eventSpy.callCount).equal(7);
-    expect(first(dates).equalTo(first(calendar.values))).to.be.true;
-    expect(last(dates).equalTo(last(calendar.values))).to.be.true;
+    expect(firstOf(dates).equalTo(firstOf(calendar.values))).to.be.true;
+    expect(lastOf(dates).equalTo(lastOf(calendar.values))).to.be.true;
 
     // Deselect one
-    simulateClick(last(elements));
+    simulateClick(lastOf(elements));
     await elementUpdated(calendar);
 
     expect(calendar.values).lengthOf(6);
-    expect(last(dates).equalTo(last(calendar.values))).to.be.false;
+    expect(lastOf(dates).equalTo(lastOf(calendar.values))).to.be.false;
   });
 
   it('start and cancel a range selection', async () => {
@@ -276,7 +274,7 @@ describe('Calendar interactions', () => {
     await elementUpdated(calendar);
 
     expect(calendar.values).lengthOf(1);
-    expect(start.equalTo(first(calendar.values))).to.be.true;
+    expect(start.equalTo(firstOf(calendar.values))).to.be.true;
 
     // Cancel it
     simulateClick(element);
@@ -294,8 +292,8 @@ describe('Calendar interactions', () => {
     await elementUpdated(calendar);
 
     // Start and complete the selection
-    simulateClick(first(elements));
-    simulateClick(last(elements));
+    simulateClick(firstOf(elements));
+    simulateClick(lastOf(elements));
     await elementUpdated(calendar);
 
     expect(calendar.values).lengthOf(7);
@@ -320,6 +318,61 @@ describe('Calendar interactions', () => {
     expect(argDate.equalTo(calendar.activeDate)).to.be.true;
   });
 
+  it('switches to the month of the navigation button that was activated', async () => {
+    const active = CalendarDay.from(calendar.activeDate);
+
+    calendar.visibleMonths = 3;
+    await elementUpdated(calendar);
+
+    const buttons = Array.from(
+      calendar.shadowRoot!.querySelectorAll<HTMLButtonElement>(
+        '[part="months-navigation"]'
+      )
+    );
+
+    expect(buttons).lengthOf(3);
+
+    // The month navigation of the last rendered month
+    simulateClick(lastOf(buttons));
+    await elementUpdated(calendar);
+
+    const expected = active.add('month', 2);
+
+    expect(calendar.activeView).to.equal('months');
+    expect(expected.equalTo(calendar.activeDate)).to.be.true;
+    expect(
+      getCalendarDOM(calendar).views.months.shadowRoot!.querySelector(
+        '[tabindex="0"]'
+      )
+    ).to.have.attribute('data-value', `${expected.month}`);
+  });
+
+  it('moves the focus along when a date outside of the rendered month is selected', async () => {
+    // October 2nd, rendered as a trailing day of the September view
+    const target = new CalendarDay({ year: 2021, month: 9, date: 2 });
+
+    simulateClick(getDOMDate(target, daysView));
+    await elementUpdated(calendar);
+    await elementUpdated(daysView);
+
+    const active = getDayViewDOM(daysView).dates.active;
+
+    expect(target.equalTo(calendar.activeDate)).to.be.true;
+    expect(active.dataset.value).to.equal(`${target.timestamp}`);
+    expect(daysView.shadowRoot!.activeElement).to.equal(active);
+  });
+
+  it('keeps the focus in place when a date of the rendered month is selected', async () => {
+    const target = CalendarDay.from(calendar.activeDate).set({ date: 3 });
+
+    simulateClick(getDOMDate(target, daysView));
+    await elementUpdated(calendar);
+    await elementUpdated(daysView);
+
+    expect(target.equalTo(calendar.activeDate)).to.be.true;
+    expect(daysView.shadowRoot!.activeElement).to.be.null;
+  });
+
   it('should emit `igcRangePreviewDateChange` event', async () => {
     const eventSpy = spy(daysView, 'emitEvent');
     const start = CalendarDay.from(calendar.value!).set({ date: 26 });
@@ -329,12 +382,12 @@ describe('Calendar interactions', () => {
     calendar.selection = 'range';
     await elementUpdated(calendar);
 
-    simulateClick(first(elements));
-    last(elements).focus();
+    simulateClick(firstOf(elements));
+    lastOf(elements).focus();
     await elementUpdated(calendar);
 
     expect(eventSpy).calledWithExactly('igcRangePreviewDateChange', {
-      detail: last(dates).native,
+      detail: lastOf(dates).native,
     });
   });
 
