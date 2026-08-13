@@ -1,4 +1,5 @@
 import { html, LitElement } from 'lit';
+import { addInternalsController } from '#internals/controllers/internals.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import { styles } from '../dropdown/themes/dropdown-header.base.css.js';
@@ -23,7 +24,19 @@ export default class IgcSelectHeaderComponent extends LitElement {
 
   constructor() {
     super();
+
+    // A `listbox` may only own `option` and `group` nodes, so this purely
+    // visual separator is taken out of the accessibility tree.
+    addInternalsController(this, { initialARIA: { role: 'presentation' } });
     addThemingController(this, all);
+  }
+
+  /** @internal */
+  public override connectedCallback(): void {
+    // R.K. Workaround for Axe accessibility unit tests.
+    // I guess it does not support ElementInternals ARIAMixin state yet
+    super.connectedCallback();
+    this.role = 'presentation';
   }
 
   protected override render() {

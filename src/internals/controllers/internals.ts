@@ -100,6 +100,16 @@ class ElementInternalsController {
   }
 
   /**
+   * Returns an ARIA attribute set on the element's internals. Internals-based
+   * ARIA leaves no trace in the DOM, so this is the only way to read it back.
+   */
+  public getARIA<T extends keyof ARIAMixin = keyof ARIAMixin>(
+    name: T
+  ): ARIAMixin[T] {
+    return this._internals[name];
+  }
+
+  /**
    * Adds or removes a custom state from the element's internals.
    * Custom states can be styled via `:state()` selector in CSS.
    */

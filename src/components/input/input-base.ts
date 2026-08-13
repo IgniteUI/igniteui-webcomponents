@@ -14,6 +14,18 @@ import {
 } from '#internals/templates/input-shell.js';
 import type { ThemingController } from '#theming/theming-controller.js';
 
+/**
+ * ARIA semantics a composite host can project onto the native input.
+ *
+ * @hidden @internal
+ */
+export type InputAriaProperties = {
+  role?: string;
+  hasPopup?: string;
+  expanded?: string;
+  controls?: ReadonlyArray<Element> | null;
+};
+
 export interface IgcInputComponentEventMap {
   /* alternateName: inputOcurred */
   igcInput: CustomEvent<string>;
@@ -63,6 +75,17 @@ export abstract class IgcInputBaseComponent extends FormAssociatedRequiredMixin(
   protected get _resolvedLabelElements(): ReadonlyArray<Element> | null {
     return this._labelElements ?? this._internals.labels;
   }
+
+  /**
+   * ARIA semantics forwarded by a composite host (e.g. `igc-select`) onto the
+   * inner native input, which is the element assistive technology lands on and
+   * reports once the host delegates focus to it. `controls` takes elements
+   * rather than an id, as the target sits outside the input's shadow root.
+   *
+   * @hidden @internal
+   */
+  @state()
+  public _ariaProperties: InputAriaProperties = {};
 
   /* blazorSuppress */
   /** The value of the control. */
