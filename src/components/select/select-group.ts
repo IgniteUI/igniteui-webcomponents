@@ -5,6 +5,7 @@ import {
   createMutationController,
   type MutationControllerParams,
 } from '#internals/controllers/mutation-observer.js';
+import { addSlotController, setSlots } from '#internals/controllers/slot.js';
 import { watch } from '#internals/decorators/watch.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { addThemingController } from '#theming/theming-controller.js';
@@ -12,6 +13,8 @@ import { styles } from '../dropdown/themes/dropdown-group.base.css.js';
 import { all } from '../dropdown/themes/group.js';
 import { styles as shared } from '../dropdown/themes/shared/group/dropdown-group.common.css.js';
 import IgcSelectItemComponent from './select-item.js';
+
+const Slots = setSlots('label');
 
 /**
  * A container for a group of select items.
@@ -35,6 +38,12 @@ export default class IgcSelectGroupComponent extends LitElement {
     initialARIA: {
       role: 'group',
     },
+  });
+
+  private readonly _slots = addSlotController(this, {
+    slots: Slots,
+    initial: true,
+    onChange: this._labelChange,
   });
 
   private controlledItems!: Array<IgcSelectItemComponent>;
@@ -102,6 +111,21 @@ export default class IgcSelectGroupComponent extends LitElement {
     for (const item of this.controlledItems) {
       item.disabled = this.disabled;
     }
+  }
+
+  /**
+   * The label is rendered into this shadow root, out of reach of an
+   * `aria-labelledby` on the host, so its text names the `group` directly.
+   */
+  private _labelChange(): void {
+    const label = this._slots
+      .getAssignedNodes('label', true)
+      .map((node) => node.textContent ?? '')
+      .join('')
+      .trim()
+      .replace(/\s+/gu, ' ');
+
+    this._internals.setARIA({ ariaLabel: label || null });
   }
 
   protected override render() {
