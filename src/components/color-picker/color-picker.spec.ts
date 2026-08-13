@@ -27,6 +27,7 @@ import {
   type ValidationContainerTestsParams,
   ValidityHelpers,
 } from '#internals/testing/validity-helpers.spec.js';
+import { configureTheme } from '#theming/config.js';
 import type IgcInputComponent from '../input/input.js';
 import type IgcSelectComponent from '../select/select.js';
 import IgcColorPickerComponent from './color-picker.js';
@@ -185,6 +186,18 @@ describe('Color picker', () => {
       expect(getHueSlider(picker).value).to.equal('0');
     });
 
+    it('starts the alpha ramp and the canvas marker at white when there is no value', async () => {
+      picker.open = true;
+      await elementUpdated(picker);
+
+      // An empty color is white, so both start there rather than falling back
+      // to the pure hue the plane is drawn from.
+      expect(picker.style.getPropertyValue('--_selected-color')).to.equal(
+        'rgb(255 255 255)'
+      );
+      expect(getCanvas(picker).markerColor).to.equal('rgb(255 255 255)');
+    });
+
     it('starts the canvas marker at the white corner when there is no value', async () => {
       picker.open = true;
       await elementUpdated(picker);
@@ -280,6 +293,19 @@ describe('Color picker', () => {
 
       expect(picker.value).to.equal('');
       expect(isAnchorEmpty(picker)).to.be.true;
+    });
+
+    it('hints the notation of the active format while empty', async () => {
+      const input = getColorInput(picker);
+      expect(input.placeholder).to.equal('#rrggbb');
+
+      picker.format = 'rgb';
+      await elementUpdated(picker);
+      expect(input.placeholder).to.equal('rgb(r g b)');
+
+      picker.format = 'hsl';
+      await elementUpdated(picker);
+      expect(input.placeholder).to.equal('hsl(h s% l%)');
     });
   });
 
@@ -397,7 +423,7 @@ describe('Color picker', () => {
       const alphaInput = getAlphaInput(picker);
       alphaInput.dispatchEvent(
         new CustomEvent('igcChange', {
-          detail: '0.25',
+          detail: '25',
           bubbles: true,
           composed: true,
         })
@@ -405,6 +431,46 @@ describe('Color picker', () => {
       await elementUpdated(picker);
 
       expect(picker.value).to.equal('rgb(255 0 0 / 0.25)');
+    });
+
+    it('renders the alpha as a percentage', async () => {
+      picker.showAlpha = true;
+      picker.value = 'rgb(255 0 0 / 0.4)';
+      await elementUpdated(picker);
+
+      expect(getAlphaInput(picker).value).to.equal('40');
+      expect(getAlphaSlider(picker).value).to.equal('40');
+    });
+
+    it('moves the hue slider when the color changes from elsewhere', async () => {
+      const hue = getHueSlider(picker);
+
+      // Interacting with the slider marks its value dirty, after which the
+      // browser stops taking the value from the content attribute.
+      hue.value = '120';
+      hue.dispatchEvent(new Event('input', { bubbles: true }));
+      await elementUpdated(picker);
+
+      picker.value = '#0000ff';
+      await elementUpdated(picker);
+
+      expect(hue.value).to.equal(String(ColorModel.parse('#0000ff').h));
+    });
+
+    it('moves the alpha slider when the color changes from elsewhere', async () => {
+      picker.showAlpha = true;
+      await elementUpdated(picker);
+
+      const alpha = getAlphaSlider(picker);
+
+      alpha.value = '50';
+      alpha.dispatchEvent(new Event('input', { bubbles: true }));
+      await elementUpdated(picker);
+
+      picker.value = 'rgb(255 0 0 / 0.25)';
+      await elementUpdated(picker);
+
+      expect(alpha.value).to.equal('25');
     });
 
     it('picks a color from the canvas using HSV saturation/value', async () => {
@@ -690,6 +756,44 @@ describe('Color picker', () => {
       await elementUpdated(picker);
 
       expect(picker.open).to.be.true;
+    });
+
+    it('hints the notation of the active format while empty', async () => {
+      const input = getInputAnchor();
+      expect(input.placeholder).to.equal('#rrggbb');
+
+      picker.format = 'hsl';
+      await elementUpdated(picker);
+      expect(input.placeholder).to.equal('hsl(h s% l%)');
+    });
+
+    it('keeps the anchor label floated while the picker is open and empty', async () => {
+      configureTheme('material');
+
+      try {
+        picker = await fixture<IgcColorPickerComponent>(
+          html`<igc-color-picker
+            label="Choose a color"
+            mode="input"
+          ></igc-color-picker>`
+        );
+
+        picker.open = true;
+        await elementUpdated(picker);
+
+        // Opening moves focus into the dialog, which is a sibling of the anchor
+        // rather than a descendant, so the input is no longer `:focus-within`.
+        // The placeholder is what keeps the Material outline notch cut - without
+        // it the label drops back over the border until a color is picked.
+        const notch =
+          getInputAnchor().renderRoot.querySelector('[part="notch"]')!;
+
+        expect(getComputedStyle(notch).borderTopColor).to.equal(
+          'rgba(0, 0, 0, 0)'
+        );
+      } finally {
+        configureTheme('bootstrap');
+      }
     });
 
     it('renders the prefix swatch as a keyboard operable button', () => {

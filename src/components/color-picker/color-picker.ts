@@ -67,6 +67,13 @@ const Slots = setSlots(
   'helper-text'
 );
 
+/** The shape of a color string in each format, shown while the input is empty. */
+const formatPlaceholders: Record<ColorFormat, string> = {
+  hex: '#rrggbb',
+  rgb: 'rgb(r g b)',
+  hsl: 'hsl(h s% l%)',
+};
+
 /**
  * The slice of the EyeDropper API this component uses.
  *
@@ -380,7 +387,7 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
   private _handleAlphaInputChange(event: CustomEvent<string>): void {
     stopPropagation(event);
 
-    this._color.alpha = asNumber(event.detail);
+    this._color.alpha = asNumber(event.detail) / 100;
     this._updateColor();
     this._emitInputEvent();
   }
@@ -470,15 +477,19 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
    * {@link _alphaColor} over the other, so a translucent color is shown next to
    * what it actually is. At full alpha the two halves are identical and the
    * split is invisible, so opaque colors need no separate branch.
+   *
+   * Defined even with no value: an empty color is white, which is where the
+   * alpha ramp and the canvas marker belong before anything is picked. The
+   * anchor keeps its "no color" mark regardless - {@link _previewStyle} is
+   * driven by {@link _alphaColor}, which stays empty.
    */
   private get _opaqueColor(): string {
-    if (this._color.isEmpty) {
-      return '';
-    }
+    return new ColorModel(this._color.toRGB()).asString('rgb');
+  }
 
-    const opaque = this._color.clone();
-    opaque.alpha = 1;
-    return opaque.asString('rgb');
+  /** The alpha channel as the whole percentage both alpha controls work in. */
+  private get _alphaPercent(): string {
+    return String(Math.round(this._color.alpha * 100));
   }
 
   /**
@@ -580,7 +591,7 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
         part="hue"
         min="0"
         max="360"
-        value=${String(this._color.h)}
+        .value=${String(Math.round(this._color.h))}
         @input=${this._handleHueValueChange}
         @change=${stopPropagation}
       />
@@ -641,7 +652,7 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
         part="alpha"
         min="0"
         max="100"
-        value=${String(this._color.alpha * 100)}
+        .value=${this._alphaPercent}
         @input=${this._handleAlphaSliderValueChange}
         @change=${stopPropagation}
       />
@@ -658,11 +669,13 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
         outlined
         type="number"
         min="0"
-        max="1"
-        step="0.01"
-        .value=${String(this._color.alpha)}
+        max="100"
+        step="1"
+        .value=${this._alphaPercent}
         @igcChange=${this._handleAlphaInputChange}
-      ></igc-input>
+      >
+        <span slot="suffix">%</span>
+      </igc-input>
     `;
   }
 
@@ -702,7 +715,7 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
       <igc-input
         id="color-input"
         name="color-input"
-        placeholder="Color value"
+        placeholder=${formatPlaceholders[this.format]}
         outlined
         .value=${this._color.asString(this.format)}
         @igcChange=${this._handleColorInputChange}
@@ -788,6 +801,15 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
     `;
   }
 
+  /**
+   * The anchor as an editable text field, with the swatch as its prefix.
+   *
+   * The placeholder is not decoration: an empty Material input only floats its
+   * label and cuts the outline notch while it is `:placeholder-shown`, `filled`
+   * or focused. Opening the picker moves focus into the dialog - which is a
+   * sibling of the anchor, not a descendant - so without one the label would
+   * drop back over the outline for as long as the picker is open and empty.
+   */
   private _renderInputAnchor(): TemplateResult {
     return html`
       <igc-input
@@ -795,6 +817,7 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
         aria-describedby="color-picker-helper-text"
         slot="anchor"
         outlined
+        placeholder=${formatPlaceholders[this.format]}
         label=${ifDefined(this.label)}
         ?required=${this.required}
         ?disabled=${this.disabled}
