@@ -5,6 +5,10 @@ import { converter, type HSL, type HSV, type RGB } from './converters.js';
 
 export type { ColorFormat };
 
+/** The color space a channel write is expressed in. */
+type ColorSpace = 'rgb' | 'hsl' | 'hsv';
+type Channel = 0 | 1 | 2;
+
 function makeCanvasContext() {
   let context: OffscreenCanvasRenderingContext2D | null;
 
@@ -44,10 +48,7 @@ export class ColorModel {
   private _alpha: number;
   private _empty = false;
 
-  /**
-   * Creates a default black color with full opacity.
-   * @returns A new ColorModel instance representing black
-   */
+  /** Creates a black color with full opacity. */
   public static default(): ColorModel {
     return new ColorModel([0, 0, 0], 1);
   }
@@ -61,8 +62,6 @@ export class ColorModel {
    * and white is HSV `[0, 0, 100]` - the origin of the saturation/value plane,
    * where a picker with nothing selected should start. Black would put the
    * marker in the opposite corner, on a color the user never chose.
-   *
-   * @returns A new empty ColorModel instance
    */
   public static empty(): ColorModel {
     const color = new ColorModel([255, 255, 255], 1);
@@ -76,9 +75,6 @@ export class ColorModel {
    *
    * Empty, whitespace-only, or otherwise invalid strings produce an empty
    * ColorModel instead of a stale/incorrect color.
-   *
-   * @param color - The color string to parse
-   * @returns A new ColorModel instance
    */
   public static parse(color: string): ColorModel {
     const ctx = getContext();
@@ -94,52 +90,32 @@ export class ColorModel {
     return new ColorModel(parsed.value, parsed.alpha);
   }
 
-  /**
-   * Creates a ColorModel from HSL values.
-   *
-   * @param h - Hue (0-360)
-   * @param s - Saturation (0-100)
-   * @param l - Lightness (0-100)
-   * @param alpha - Alpha channel (0-1)
-   * @returns A new ColorModel instance
-   */
+  /** Creates a ColorModel from hue (0-360), saturation and lightness (0-100). */
   public static fromHSL(
     h: number,
     s: number,
     l: number,
     alpha = 1
   ): ColorModel {
-    const rgb = converter.hsl.rgb([h, s, l]);
-    return new ColorModel(rgb, alpha);
+    return new ColorModel(converter.hsl.rgb([h, s, l]), alpha);
   }
 
-  /**
-   * Creates a ColorModel from HSV values.
-   *
-   * @param h - Hue (0-360)
-   * @param s - Saturation (0-100)
-   * @param v - Value (0-100)
-   * @param alpha - Alpha channel (0-1)
-   * @returns A new ColorModel instance
-   */
+  /** Creates a ColorModel from hue (0-360), saturation and value (0-100). */
   public static fromHSV(
     h: number,
     s: number,
     v: number,
     alpha = 1
   ): ColorModel {
-    const rgb = converter.hsv.rgb([h, s, v]);
-    return new ColorModel(rgb, alpha);
+    return new ColorModel(converter.hsv.rgb([h, s, v]), alpha);
   }
 
   /**
-   * Creates a new ColorModel instance.
-   *
    * @param value - RGB values as [r, g, b] tuple (0-255 each)
-   * @param alpha - Alpha channel value (0-1), defaults to 1
+   * @param alpha - Alpha channel value (0-1)
    */
   constructor(value: RGB, alpha = 1) {
-    // Create a copy to prevent external mutations
+    // Copied to prevent external mutations.
     this._rgb = [value[0], value[1], value[2]];
     this._hsl = converter.rgb.hsl(this._rgb);
     this._hsv = converter.rgb.hsv(this._rgb);
@@ -151,16 +127,51 @@ export class ColorModel {
     return this._empty;
   }
 
+  /** Rebuilds the two color spaces that were not the one just written to. */
+  private _syncFrom(space: ColorSpace): void {
+    switch (space) {
+      case 'rgb':
+        this._hsl = converter.rgb.hsl(this._rgb);
+        this._hsv = converter.rgb.hsv(this._rgb);
+        break;
+      case 'hsl':
+        this._rgb = converter.hsl.rgb(this._hsl);
+        this._hsv = converter.hsl.hsv(this._hsl);
+        break;
+      case 'hsv':
+        this._rgb = converter.hsv.rgb(this._hsv);
+        this._hsl = converter.hsv.hsl(this._hsv);
+        break;
+    }
+  }
+
+  /**
+   * Writes a single channel and brings the rest of the model back in sync.
+   * Every channel setter goes through here, so no space is ever left stale.
+   */
+  private _setChannel(
+    space: ColorSpace,
+    index: Channel,
+    value: number,
+    max: number
+  ): void {
+    this._empty = false;
+
+    // Safe to hold onto: `_syncFrom` only replaces the *other* two tuples.
+    const channels =
+      space === 'rgb' ? this._rgb : space === 'hsl' ? this._hsl : this._hsv;
+
+    channels[index] = clamp(value, 0, max);
+    this._syncFrom(space);
+  }
+
   /** Red component (0-255) */
   public get r(): number {
     return this._rgb[0];
   }
 
   public set r(value: number) {
-    this._empty = false;
-    this._rgb[0] = clamp(value, 0, 255);
-    this._hsl = converter.rgb.hsl(this._rgb);
-    this._hsv = converter.rgb.hsv(this._rgb);
+    this._setChannel('rgb', 0, value, 255);
   }
 
   /** Green component (0-255) */
@@ -169,10 +180,7 @@ export class ColorModel {
   }
 
   public set g(value: number) {
-    this._empty = false;
-    this._rgb[1] = clamp(value, 0, 255);
-    this._hsl = converter.rgb.hsl(this._rgb);
-    this._hsv = converter.rgb.hsv(this._rgb);
+    this._setChannel('rgb', 1, value, 255);
   }
 
   /** Blue component (0-255) */
@@ -181,10 +189,7 @@ export class ColorModel {
   }
 
   public set b(value: number) {
-    this._empty = false;
-    this._rgb[2] = clamp(value, 0, 255);
-    this._hsl = converter.rgb.hsl(this._rgb);
-    this._hsv = converter.rgb.hsv(this._rgb);
+    this._setChannel('rgb', 2, value, 255);
   }
 
   /** Hue component (0-360) */
@@ -193,10 +198,7 @@ export class ColorModel {
   }
 
   public set h(value: number) {
-    this._empty = false;
-    this._hsl[0] = clamp(value, 0, 360);
-    this._rgb = converter.hsl.rgb(this._hsl);
-    this._hsv = converter.hsl.hsv(this._hsl);
+    this._setChannel('hsl', 0, value, 360);
   }
 
   /** Saturation component from HSL (0-100) */
@@ -205,10 +207,7 @@ export class ColorModel {
   }
 
   public set s(value: number) {
-    this._empty = false;
-    this._hsl[1] = clamp(value, 0, 100);
-    this._rgb = converter.hsl.rgb(this._hsl);
-    this._hsv = converter.hsl.hsv(this._hsl);
+    this._setChannel('hsl', 1, value, 100);
   }
 
   /** Lightness component (0-100) */
@@ -217,10 +216,7 @@ export class ColorModel {
   }
 
   public set l(value: number) {
-    this._empty = false;
-    this._hsl[2] = clamp(value, 0, 100);
-    this._rgb = converter.hsl.rgb(this._hsl);
-    this._hsv = converter.hsl.hsv(this._hsl);
+    this._setChannel('hsl', 2, value, 100);
   }
 
   /** Value component from HSV (0-100) */
@@ -229,10 +225,7 @@ export class ColorModel {
   }
 
   public set v(value: number) {
-    this._empty = false;
-    this._hsv[2] = clamp(value, 0, 100);
-    this._rgb = converter.hsv.rgb(this._hsv);
-    this._hsl = converter.hsv.hsl(this._hsv);
+    this._setChannel('hsv', 2, value, 100);
   }
 
   /** Alpha/opacity channel (0-1) */
@@ -259,93 +252,73 @@ export class ColorModel {
     this._empty = false;
     this._hsv[1] = clamp(saturation, 0, 100);
     this._hsv[2] = clamp(value, 0, 100);
-    this._rgb = converter.hsv.rgb(this._hsv);
-    this._hsl = converter.hsv.hsl(this._hsv);
+    this._syncFrom('hsv');
   }
 
   /**
-   * Converts the color to a CSS color string.
+   * Converts the color to a CSS color string. An empty color renders as an
+   * empty string.
    *
    * @param format - The output format ('hex', 'rgb', or 'hsl')
-   * @param forceAlpha - Whether to always include alpha channel
-   * @returns CSS color string
+   * @param forceAlpha - Whether to always include the alpha channel
    */
   public asString(format: ColorFormat, forceAlpha = false): string {
     if (this._empty) {
       return '';
     }
 
-    const hasAlpha = this._alpha < 1 || forceAlpha;
+    const alpha = this._alpha < 1 || forceAlpha ? this._alpha : null;
+
     switch (format) {
       case 'hex': {
-        return hasAlpha
-          ? `#${converter.rgb.hex(this._rgb)}${Math.round(this._alpha * 255)
-              .toString(16)
-              .padStart(2, '0')}`
-          : `#${converter.rgb.hex(this._rgb)}`;
+        const hex = converter.rgb.hex(this._rgb);
+        const suffix =
+          alpha === null
+            ? ''
+            : Math.round(alpha * 255)
+                .toString(16)
+                .padStart(2, '0');
+        return `#${hex}${suffix}`;
       }
       case 'rgb': {
-        const [r, g, b] = this._rgb.map((v) => Math.round(v));
-        return `rgb(${r} ${g} ${b}${hasAlpha ? ` / ${this._alpha}` : ''})`;
+        const [r, g, b] = this._rgb.map(Math.round);
+        return `rgb(${r} ${g} ${b}${alpha === null ? '' : ` / ${alpha}`})`;
       }
       case 'hsl': {
-        const [h, s, l] = this._hsl.map((v) => Math.round(v));
-        return `hsl(${h} ${s}% ${l}%${hasAlpha ? ` / ${this._alpha}` : ''})`;
+        const [h, s, l] = this._hsl.map(Math.round);
+        return `hsl(${h} ${s}% ${l}%${alpha === null ? '' : ` / ${alpha}`})`;
       }
     }
   }
 
-  /**
-   * Creates a copy of this color model.
-   *
-   * @returns A new ColorModel instance with the same values
-   */
+  /** Creates a copy of this color model. */
   public clone(): ColorModel {
-    const color = new ColorModel([...this._rgb] as RGB, this._alpha);
+    const color = new ColorModel(this._rgb, this._alpha);
     color._empty = this._empty;
     return color;
   }
 
-  /**
-   * Checks if this color equals another color.
-   *
-   * @param other - The color to compare with
-   * @returns True if colors are equal
-   */
+  /** Whether this color has the same channels and emptiness as `other`. */
   public equals(other: ColorModel): boolean {
     return (
       this._empty === other._empty &&
-      this._rgb[0] === other._rgb[0] &&
-      this._rgb[1] === other._rgb[1] &&
-      this._rgb[2] === other._rgb[2] &&
-      this._alpha === other._alpha
+      this._alpha === other._alpha &&
+      this._rgb.every((channel, i) => channel === other._rgb[i])
     );
   }
 
-  /**
-   * Returns the RGB values as a tuple.
-   *
-   * @returns RGB values [r, g, b]
-   */
+  /** Returns the RGB values as a tuple. */
   public toRGB(): RGB {
-    return [this._rgb[0], this._rgb[1], this._rgb[2]];
+    return [...this._rgb];
   }
 
-  /**
-   * Returns the HSL values as a tuple.
-   *
-   * @returns HSL values [h, s, l]
-   */
+  /** Returns the HSL values as a tuple. */
   public toHSL(): HSL {
-    return [this._hsl[0], this._hsl[1], this._hsl[2]];
+    return [...this._hsl];
   }
 
-  /**
-   * Returns the HSV values as a tuple.
-   *
-   * @returns HSV values [h, s, v]
-   */
+  /** Returns the HSV values as a tuple. */
   public toHSV(): HSV {
-    return [this._hsv[0], this._hsv[1], this._hsv[2]];
+    return [...this._hsv];
   }
 }

@@ -181,11 +181,8 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
   private _color = ColorModel.empty();
   private _oldValue = '';
 
-  /** Mirrors `--_current-color`, so the style write can be skipped when it has not moved. */
-  private _ownCurrentColor = '';
-
-  /** Mirrors `--_selected-color`, so the style write can be skipped when it has not moved. */
-  private _ownSelectedColor = '';
+  /** The last value written for each host custom property mirrored from the color. */
+  private readonly _appliedProperties = new Map<string, string>();
 
   //#endregion
 
@@ -339,7 +336,7 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
 
   private _handleFocusIn({ relatedTarget }: FocusEvent): void {
     if (!this.contains(relatedTarget as Node)) {
-      this._oldValue = this._canonicalValue;
+      this._oldValue = this._alphaColor;
     }
   }
 
@@ -350,8 +347,8 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
 
     this._handleBlur();
 
-    if (this._canonicalValue !== this._oldValue) {
-      this._oldValue = this._canonicalValue;
+    if (this._alphaColor !== this._oldValue) {
+      this._oldValue = this._alphaColor;
       this.emitEvent('igcChange', { detail: this.value });
     }
   }
@@ -455,22 +452,33 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
   //#region Internal methods
 
   /**
-   * The current color with its alpha channel forced to opaque.
-   *
-   * The swatch preview paints this over one half of its surface and the
-   * value-with-alpha over the other, so a translucent color is shown next to
-   * what it actually is. At full alpha the two halves are identical and the
-   * split is invisible, so no separate branch is needed for opaque colors.
-   */
-  /**
-   * The current color in a form that does not depend on `format`.
+   * The current color, alpha included, in a notation that does not depend on
+   * `format`.
    *
    * `value` is rendered in whichever format is active, so comparing it across a
    * format switch would report a change the user never made. This moves only
    * when the color itself does.
    */
-  private get _canonicalValue(): string {
+  private get _alphaColor(): string {
     return this._color.asString('rgb', true);
+  }
+
+  /**
+   * The current color with its alpha channel forced to opaque.
+   *
+   * The swatch preview paints this over one half of its surface and
+   * {@link _alphaColor} over the other, so a translucent color is shown next to
+   * what it actually is. At full alpha the two halves are identical and the
+   * split is invisible, so opaque colors need no separate branch.
+   */
+  private get _opaqueColor(): string {
+    if (this._color.isEmpty) {
+      return '';
+    }
+
+    const opaque = this._color.clone();
+    opaque.alpha = 1;
+    return opaque.asString('rgb');
   }
 
   /**
@@ -483,18 +491,8 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
     return `hsl(${this._color.h} 100% 50%)`;
   }
 
-  private get _opaqueColor(): string {
-    if (this._color.isEmpty) {
-      return '';
-    }
-
-    const opaque = this._color.clone();
-    opaque.alpha = 1;
-    return opaque.asString('rgb');
-  }
-
   /**
-   * Mirrors the current and selected colors onto the host as custom properties.
+   * Mirrors the colors the stylesheet needs onto the host.
    *
    * Driven from `update()` rather than from the handlers that mutate the color,
    * so that it also runs for the first render - a picker with no value never
@@ -502,20 +500,16 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
    * stylesheet fallback instead of the hue it actually sits at.
    */
   private _applyColorProperties(): void {
-    const currentColor = this._currentColor;
-    const selectedColor = this._opaqueColor;
-
-    // The model mutates in place, so Lit cannot dirty-check it - but the two
-    // custom properties are only rewritten when they actually move, since a
-    // style write invalidates regardless of whether the value changed.
-    if (currentColor !== this._ownCurrentColor) {
-      this._ownCurrentColor = currentColor;
-      this.style.setProperty('--_current-color', currentColor);
-    }
-
-    if (selectedColor !== this._ownSelectedColor) {
-      this._ownSelectedColor = selectedColor;
-      this.style.setProperty('--_selected-color', selectedColor);
+    // The model mutates in place, so Lit cannot dirty-check it - and a style
+    // write invalidates whether or not the value changed, hence the cache.
+    for (const [name, value] of [
+      ['--_current-color', this._currentColor],
+      ['--_selected-color', this._opaqueColor],
+    ]) {
+      if (this._appliedProperties.get(name) !== value) {
+        this._appliedProperties.set(name, value);
+        this.style.setProperty(name, value);
+      }
     }
   }
 
@@ -593,39 +587,43 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
     `;
   }
 
-  private _renderCopyButton(): TemplateResult {
+  /** An icon-only action button, named for screen readers by its hidden label. */
+  private _renderIconButton(
+    part: string,
+    icon: string,
+    label: string,
+    handler: () => void,
+    disabled = false
+  ): TemplateResult {
     return html`
       <igc-icon-button
+        part=${part}
         variant="flat"
-        collection="default"
-        name="copy_content"
-        part="copy"
-        @click=${this._handleCopy}
+        name=${icon}
+        ?disabled=${disabled}
+        @click=${handler}
       >
-        <igc-visually-hidden>Copy color value to clipboard</igc-visually-hidden>
+        <igc-visually-hidden>${label}</igc-visually-hidden>
       </igc-icon-button>
     `;
   }
 
-  private _renderEyeDropperButton(): TemplateResult {
+  private _renderPickerButtons(): TemplateResult {
     return html`
-      <igc-icon-button
-        part="eye-dropper"
-        variant="flat"
-        name="eye_dropper"
-        ?disabled=${!this._supportsEyeDropper}
-        @click=${this._handleEyeDropperClick}
-      >
-        <igc-visually-hidden>Pick a color from the screen</igc-visually-hidden>
-      </igc-icon-button>
-    `;
-  }
-
-  private _renderHueRowAndButtons(): TemplateResult {
-    return html`
-      ${this._renderHueSlider()}
       <div part="buttons">
-        ${this._renderCopyButton()} ${this._renderEyeDropperButton()}
+        ${this._renderIconButton(
+          'copy',
+          'copy_content',
+          'Copy color value to clipboard',
+          this._handleCopy
+        )}
+        ${this._renderIconButton(
+          'eye-dropper',
+          'eye_dropper',
+          'Pick a color from the screen',
+          this._handleEyeDropperClick,
+          !this._supportsEyeDropper
+        )}
       </div>
     `;
   }
@@ -694,13 +692,9 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
     `;
   }
 
-  private _renderFormats(): TemplateResult {
-    return html`${cache(this.hideFormats ? nothing : this._renderSelect())}`;
-  }
-
   private _renderInputsRow(): TemplateResult {
     return html`
-      ${this._renderFormats()}
+      ${cache(this.hideFormats ? nothing : this._renderSelect())}
       <igc-visually-hidden>
         <label for="color-input"> Color value input </label>
       </igc-visually-hidden>
@@ -745,6 +739,15 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
 
   //#region Anchor rendering
 
+  /** The `part` list of the anchor, in either presentation. */
+  private get _anchorParts(): ReturnType<typeof partMap> {
+    return partMap({
+      anchor: true,
+      empty: this._color.isEmpty,
+      'input-mode': this.mode === 'input',
+    });
+  }
+
   /**
    * The swatch preview style shared by both anchors.
    *
@@ -752,49 +755,40 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
    * `--_alpha-preview` the color with its real alpha across the whole surface,
    * so the two must not be transposed - see the `swatch-preview` mixin.
    */
-  private _previewStyle(
-    color: string,
-    opaqueColor: string
-  ): ReturnType<typeof styleMap> {
+  private _previewStyle(): ReturnType<typeof styleMap> {
+    const color = this._alphaColor;
+
     return bindIf(
       color,
       styleMap({
         '--_alpha-preview': color,
-        '--_color-preview': opaqueColor,
+        '--_color-preview': this._opaqueColor,
       })
     );
   }
 
-  private _renderButtonAnchor(
-    color: string,
-    opaqueColor: string,
-    parts: ReturnType<typeof partMap>
-  ): TemplateResult {
+  private _renderButtonAnchor(): TemplateResult {
     return html`
       <button
         ${ref(this._anchorRef)}
         id="trigger"
+        type="button"
         aria-haspopup="dialog"
         aria-controls="picker"
         aria-expanded=${this.open}
         aria-describedby="color-picker-helper-text"
-        part=${parts}
+        part=${this._anchorParts}
         slot="anchor"
-        style=${this._previewStyle(color, opaqueColor)}
+        style=${this._previewStyle()}
         ?disabled=${this.disabled}
         @click=${this._handleAnchorClick}
-        type="button"
       >
         <igc-visually-hidden>Open color picker</igc-visually-hidden>
       </button>
     `;
   }
 
-  private _renderInputAnchor(
-    color: string,
-    opaqueColor: string,
-    parts: ReturnType<typeof partMap>
-  ): TemplateResult {
+  private _renderInputAnchor(): TemplateResult {
     return html`
       <igc-input
         ${ref(this._anchorRef)}
@@ -811,12 +805,12 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
         <div slot="prefix">
           <button
             type="button"
-            part=${parts}
+            part=${this._anchorParts}
             aria-label="Open color picker"
             aria-haspopup="dialog"
             aria-controls="picker"
             aria-expanded=${this.open}
-            style=${this._previewStyle(color, opaqueColor)}
+            style=${this._previewStyle()}
             ?disabled=${this.disabled}
             @click=${this._handleAnchorClick}
           ></button>
@@ -825,15 +819,10 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
     `;
   }
 
-  private _renderAnchor(
-    color: string,
-    opaqueColor: string,
-    parts: ReturnType<typeof partMap>,
-    isDefaultMode: boolean
-  ): TemplateResult {
-    return isDefaultMode
-      ? this._renderButtonAnchor(color, opaqueColor, parts)
-      : this._renderInputAnchor(color, opaqueColor, parts);
+  private _renderAnchor(): TemplateResult {
+    return this.mode === 'default'
+      ? this._renderButtonAnchor()
+      : this._renderInputAnchor();
   }
 
   private _renderHelperText(): TemplateResult {
@@ -847,10 +836,6 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
   //#endregion
 
   private _renderPicker(): TemplateResult {
-    const alphaRow = this.showAlpha
-      ? html`<div part="alpha-row">${this._renderAlphaRow()}</div>`
-      : nothing;
-
     return html`
       <igc-focus-trap ?disabled=${!this.open} .inert=${!this.open}>
         <div
@@ -861,8 +846,14 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
           aria-modal="false"
         >
           ${this._renderCanvasGradient()}
-          <div part="main-row">${this._renderHueRowAndButtons()}</div>
-          ${alphaRow}
+          <div part="main-row">
+            ${this._renderHueSlider()}${this._renderPickerButtons()}
+          </div>
+          ${
+            this.showAlpha
+              ? html`<div part="alpha-row">${this._renderAlphaRow()}</div>`
+              : nothing
+          }
           <div part="inputs-row">${this._renderInputsRow()}</div>
           ${this._renderSwatches()}
         </div>
@@ -871,22 +862,13 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
   }
 
   protected override render(): TemplateResult {
-    const color = this._color.asString('rgb', true);
-    const opaqueColor = this._opaqueColor;
-    const parts = partMap({
-      anchor: true,
-      empty: this._color.isEmpty,
-      'input-mode': this.mode === 'input',
-    });
-    const isDefaultMode = this.mode === 'default';
-
     return html`
       <div part="color-picker">
         <igc-popover ?open=${this.open} shift flip>
-          ${this._renderAnchor(color, opaqueColor, parts, isDefaultMode)}${this._renderHelperText()}${this._renderPicker()}
+          ${this._renderAnchor()}${this._renderHelperText()}${this._renderPicker()}
         </igc-popover>
         ${
-          isDefaultMode && this.label
+          this.mode === 'default' && this.label
             ? html`<label part="label" for="trigger">${this.label}</label>`
             : nothing
         }

@@ -3,28 +3,12 @@
 
 $theme: $material;
 
-// Vendor pseudo-elements must never share a selector list: a list containing a
-// pseudo-element the engine doesn't recognize is invalid as a whole, so pairing
-// `::-moz-range-track,::-webkit-slider-runnable-track` makes Chrome drop
-// the -webkit- half too. Declare each in its own rule and share the body here.
-@mixin hue-track {
-    height: rem(16px);
-    border-radius: var-get($theme, 'slider-track-border-radius');
-    background: var(--_hue-slider-track);
-
-    // Dont use border otherwise the thumb will be misaligned.
-    box-shadow: inset 0 0 0 rem(1px) var-get($theme, 'slider-track-border-color');
-}
-
-@mixin alpha-track {
+@mixin slider-track {
     height: rem(16px);
     border-radius: var-get($theme, 'slider-track-border-radius');
 
     // Dont use border otherwise the thumb will be misaligned.
     box-shadow: inset 0 0 0 rem(1px) var-get($theme, 'slider-track-border-color');
-    background-image: var(--_alpha-slider-track);
-    background-position: var(--_alpha-track-position);
-    background-size: var(--_alpha-track-size);
 }
 
 // `$fill` differs per slider: the hue thumb shows the pure hue it selects, the
@@ -44,10 +28,31 @@ $theme: $material;
     // This has to be explicitly set to avoid the thumb being clipped by the
     // track.
     box-sizing: border-box;
-
-    // Chromium doesn't center the thumb on the track - offset it by
-    // half the difference between the track and the thumb box.
     margin: 0;
+}
+
+// Vendor pseudo-elements must never share a selector list: a list containing a
+// pseudo-element the engine doesn't recognize is invalid as a whole, so pairing
+// `::-moz-range-track,::-webkit-slider-runnable-track` makes Chrome drop the
+// -webkit- half too. Each gets its own rule, emitted from here.
+@mixin slider($thumb-fill) {
+    &::-webkit-slider-runnable-track {
+        @include slider-track();
+        @content;
+    }
+
+    &::-moz-range-track {
+        @include slider-track();
+        @content;
+    }
+
+    &::-webkit-slider-thumb {
+        @include slider-thumb($thumb-fill);
+    }
+
+    &::-moz-range-thumb {
+        @include slider-thumb($thumb-fill);
+    }
 }
 
 // Renders three layers (bottom to top):
@@ -158,38 +163,16 @@ $theme: $material;
     }
 
     [part='hue'] {
-        &::-webkit-slider-runnable-track {
-            @include hue-track();
-        }
-
-        &::-moz-range-track {
-            @include hue-track();
-        }
-
-        &::-webkit-slider-thumb {
-            @include slider-thumb(var(--_current-color));
-        }
-
-        &::-moz-range-thumb {
-            @include slider-thumb(var(--_current-color));
+        @include slider(var(--_current-color)) {
+            background: var(--_hue-slider-track);
         }
     }
 
     [part='alpha'] {
-        &::-webkit-slider-runnable-track {
-            @include alpha-track();
-        }
-
-        &::-moz-range-track {
-            @include alpha-track();
-        }
-
-        &::-webkit-slider-thumb {
-            @include slider-thumb(var(--_alpha-color));
-        }
-
-        &::-moz-range-thumb {
-            @include slider-thumb(var(--_alpha-color));
+        @include slider(var(--_alpha-color)) {
+            background-image: var(--_alpha-slider-track);
+            background-position: var(--_alpha-track-position);
+            background-size: var(--_alpha-track-size);
         }
     }
 
