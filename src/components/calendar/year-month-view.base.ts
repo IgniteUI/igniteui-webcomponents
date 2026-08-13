@@ -16,12 +16,8 @@ import type { IgcCalendarViewComponentEventMap } from './types.js';
 
 /** A single cell of a year/month view. */
 export interface YearMonthViewCell {
-  /**
-   * The value the cell represents - a month index or a year.
-   * Committed as the new value of the view when the cell is activated.
-   */
+  /** The value the cell represents - a month index or a year. */
   value: number;
-  /** The text rendered in the cell. */
   label: string;
   /** Announced instead of {@link YearMonthViewCell.label}, when it is not descriptive on its own. */
   ariaLabel?: string;
@@ -34,8 +30,7 @@ export interface YearMonthViewCell {
  *
  * @remarks
  * Both are grids of single values derived from the current one, so everything except
- * which cells to render is shared. A derived view provides its cells through
- * {@link _getCells} and the value a cell activation resolves to through {@link _valueFromCell}.
+ * which cells to render is shared.
  */
 export abstract class IgcYearMonthViewBaseComponent extends EventEmitterMixin<
   IgcCalendarViewComponentEventMap,
@@ -54,14 +49,13 @@ export abstract class IgcYearMonthViewBaseComponent extends EventEmitterMixin<
   /** The `part` name of the cells of the view. The row and inner parts are derived from it. */
   protected abstract readonly _cellPart: 'month' | 'year';
 
-  /** How many cells are rendered per row. */
   protected abstract readonly _cellsPerRow: number;
 
   //#endregion
 
   //#region Public attributes and properties
 
-  /** Тhe current value of the calendar. */
+  /** The current value of the calendar. */
   @property({ attribute: false })
   public set value(value: Date) {
     this._value = CalendarDay.from(value);
@@ -106,10 +100,10 @@ export abstract class IgcYearMonthViewBaseComponent extends EventEmitterMixin<
 
   //#region Internal API
 
-  /** Returns the cells rendered for the current value, given the current date. */
+  /** The cells rendered for the current value, given the current date. */
   protected abstract _getCells(today: CalendarDay): YearMonthViewCell[];
 
-  /** Returns the value of the view after the cell holding `value` is activated. */
+  /** The value of the view after the cell holding `value` is activated. */
   protected abstract _valueFromCell(value: number): CalendarDay;
 
   //#endregion

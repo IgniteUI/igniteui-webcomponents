@@ -25,12 +25,8 @@ export function toCalendarDay(date: DayParameter): CalendarDay {
 }
 
 /**
- * Returns a generator yielding day values between `start` and `end` (non-inclusive by default)
- * by a given `unit` as a step.
- * To include the end date set the `inclusive` option to true.
- *
- * @remarks
- * By default, `unit` is set to 'day'.
+ * Yields the days between `start` and `end`, stepping by `unit` and stopping short of
+ * `end` unless `inclusive` is set.
  */
 export function* calendarRange(
   options: CalendarRangeParams
@@ -117,9 +113,7 @@ export class CalendarDay {
     return CalendarDay.from(this._date);
   }
 
-  /**
-   * Returns a new instance with values replaced.
-   */
+  /** Returns a new instance with the given values replaced. */
   public set(args: Partial<CalendarDayParams>): CalendarDay {
     const year = args.year ?? this.year;
     const month = args.month ?? this.month;

@@ -38,6 +38,7 @@ import {
   YEARS_PER_ROW,
 } from './helpers.js';
 import IgcMonthsViewComponent from './months-view/months-view.js';
+import { selectDate } from './selection.js';
 import { styles } from './themes/calendar.base.css.js';
 import { all } from './themes/calendar.js';
 import type {
@@ -143,36 +144,43 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
     return this.activeView === 'years';
   }
 
-  private get _previousButtonLabel(): string {
+  /** The accessible name of a navigation button, based on what it pages through. */
+  private _getNavigationLabel(direction: 'previous' | 'next'): string {
+    const isPrevious = direction === 'previous';
+    const strings = this.resourceStrings;
+
     switch (this.activeView) {
       case 'days':
-        return this.resourceStrings.calendar_previous_month!;
+        return (
+          isPrevious
+            ? strings.calendar_previous_month
+            : strings.calendar_next_month
+        )!;
       case 'months':
-        return this.resourceStrings.calendar_previous_year!;
+        return (
+          isPrevious
+            ? strings.calendar_previous_year
+            : strings.calendar_next_year
+        )!;
       case 'years':
         return formatString(
-          this.resourceStrings.calendar_previous_years!,
+          (isPrevious
+            ? strings.calendar_previous_years
+            : strings.calendar_next_years)!,
           YEARS_PER_PAGE
         );
-      default:
-        return '';
     }
   }
 
-  private get _nextButtonLabel(): string {
-    switch (this.activeView) {
-      case 'days':
-        return this.resourceStrings.calendar_next_month!;
-      case 'months':
-        return this.resourceStrings.calendar_next_year!;
-      case 'years':
-        return formatString(
-          this.resourceStrings.calendar_next_years!,
-          YEARS_PER_PAGE
-        );
-      default:
-        return '';
-    }
+  /** The unit and the amount a single navigation step covers in the current view. */
+  private _getPageStep(delta: -1 | 1): {
+    unit: 'month' | 'year';
+    increment: number;
+  } {
+    return {
+      unit: this._isDayView ? 'month' : 'year',
+      increment: (this._isYearView ? YEARS_PER_PAGE : 1) * delta,
+    };
   }
 
   @state()
@@ -310,8 +318,7 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
   }
 
   private _handlePageKeys(delta: -1 | 1): void {
-    const unit = this._isDayView ? 'month' : 'year';
-    const increment = (this._isYearView ? YEARS_PER_PAGE : 1) * delta;
+    const { unit, increment } = this._getPageStep(delta);
 
     this._activeDate = this._getNextEnabledDate(
       this._activeDate.add(unit, increment),
@@ -331,65 +338,45 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
   }
 
   private _handleHomeKey(): void {
-    switch (this.activeView) {
-      case 'days': {
-        const firstView = CalendarDay.from(this._daysViews.item(0).activeDate);
-        this._activeDate = this._getNextEnabledDate(
-          firstView.set({ date: 1 }),
-          1
-        );
-        this._activeDaysViewIndex = 0;
-        break;
-      }
-      case 'months':
-        this._activeDate = this._getNextEnabledDate(
-          this._activeDate.set({ month: 0 }),
-          1
-        );
-        break;
-      case 'years':
-        this._activeDate = this._getNextEnabledDate(
-          this._activeDate.set({
-            year: getYearRange(this._activeDate, YEARS_PER_PAGE).start,
-          }),
-          1
-        );
-        break;
-    }
-
-    this[focusActiveDate]();
+    this._activateEdgeOfView('start');
   }
 
   private _handleEndKey(): void {
+    this._activateEdgeOfView('end');
+  }
+
+  /**
+   * Moves the active date to the first or the last date of the current view, skipping
+   * over the disabled dates towards the middle of it.
+   */
+  private _activateEdgeOfView(edge: 'start' | 'end'): void {
+    const isStart = edge === 'start';
+    const delta = isStart ? 1 : -1;
+    let target: CalendarDay;
+
     switch (this.activeView) {
       case 'days': {
-        const index = this._daysViews.length - 1;
-        const lastView = CalendarDay.from(
-          this._daysViews.item(index).activeDate
-        );
-        this._activeDate = this._getNextEnabledDate(
-          lastView.set({ month: lastView.month + 1, date: 0 }),
-          -1
-        );
+        const months = this._getActiveDates();
+        const index = isStart ? 0 : months.length - 1;
+        const month = months[index];
+
+        target = isStart
+          ? month.set({ date: 1 })
+          : month.set({ month: month.month + 1, date: 0 });
         this._activeDaysViewIndex = index;
         break;
       }
       case 'months':
-        this._activeDate = this._getNextEnabledDate(
-          this._activeDate.set({ month: 11 }),
-          -1
-        );
+        target = this._activeDate.set({ month: isStart ? 0 : 11 });
         break;
-      case 'years':
-        this._activeDate = this._getNextEnabledDate(
-          this._activeDate.set({
-            year: getYearRange(this._activeDate, YEARS_PER_PAGE).end,
-          }),
-          -1
-        );
+      case 'years': {
+        const { start, end } = getYearRange(this._activeDate, YEARS_PER_PAGE);
+        target = this._activeDate.set({ year: isStart ? start : end });
         break;
+      }
     }
 
+    this._activeDate = this._getNextEnabledDate(target, delta);
     this[focusActiveDate]();
   }
 
@@ -416,13 +403,18 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
   private _handleValueChange(event: CustomEvent<Date>): void {
     event.stopPropagation();
 
-    const view = event.target as IgcDaysViewComponent;
+    const selection = selectDate(
+      { value: this._value, values: this._values },
+      CalendarDay.from(event.detail),
+      { selection: this.selection, disabledDates: this._disabledDates }
+    );
 
-    if (this._isSingle) {
-      this.value = view.value;
-    } else {
-      this.values = view.values;
+    if (!selection) {
+      return;
     }
+
+    this._value = selection.value;
+    this._values = selection.values;
 
     this.emitEvent('igcChange', {
       detail: this._isSingle ? (this.value as Date) : this.values,
@@ -431,12 +423,21 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
 
   private _handleActiveDateChange(event: CustomEvent<Date>): void {
     const view = event.target as IgcDaysViewComponent;
-    const views = Array.from(this._daysViews);
+    const index = Array.from(this._daysViews).indexOf(view);
 
-    this._activeDaysViewIndex = views.indexOf(view);
+    if (index < 0) {
+      return;
+    }
+
+    // Resolved before the state below is updated, since the dates of the views are
+    // derived from it
+    const renderedMonth = this._getActiveDates()[index];
+
+    this._activeDaysViewIndex = index;
     this.activeDate = event.detail;
 
-    if (!areSameMonth(this.activeDate, view.activeDate)) {
+    // The cell holding the tab stop is about to be replaced, so the focus has to follow
+    if (!areSameMonth(this._activeDate, renderedMonth)) {
       this[focusActiveDate]();
     }
   }
@@ -451,15 +452,14 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
 
   //#region Internal navigation methods
 
+  /** Makes the month rendered by the view at `viewIndex` the active one. */
   private _setActiveDaysView(viewIndex: number): void {
-    const view = this._daysViews.item(viewIndex);
-    this.activeDate = view.activeDate;
+    this.activeDate = this._getActiveDates()[viewIndex].native;
     this._activeDaysViewIndex = viewIndex;
   }
 
   private _navigate(delta: 1 | -1): void {
-    const unit = this._isDayView ? 'month' : 'year';
-    const increment = (this._isYearView ? YEARS_PER_PAGE : 1) * delta;
+    const { unit, increment } = this._getPageStep(delta);
     this._activeDate = this._activeDate.add(unit, increment);
   }
 
@@ -539,9 +539,8 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
    *
    * @remarks
    * The search is bounded, since the disabled dates can describe an open-ended range
-   * (a `min`/`max` constraint, or `Weekdays` and `Weekends` combined) which no date in
-   * the given direction satisfies. When no enabled date is found the current active date
-   * is returned, keeping the calendar where it is.
+   * which no date in the given direction satisfies. The current active date is returned
+   * when nothing is reachable.
    */
   private _getNextEnabledDate(start: CalendarDay, delta: number): CalendarDay {
     const disabled = this._disabledDates;
@@ -570,7 +569,7 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
       <div part="navigation-buttons">
         <button
           part=${partMap(parts)}
-          aria-label=${this._previousButtonLabel}
+          aria-label=${this._getNavigationLabel('previous')}
           @click=${this._navigatePrevious}
         >
           <igc-icon
@@ -582,7 +581,7 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
 
         <button
           part=${partMap(parts)}
-          aria-label=${this._nextButtonLabel}
+          aria-label=${this._getNavigationLabel('next')}
           @click=${this._navigateNext}
         >
           <igc-icon
@@ -641,8 +640,8 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
    *
    * @remarks
    * A single region for the whole calendar - one per rendered month would announce the
-   * same navigation several times over. The years view is left out, since its visible
-   * years range is a live region of its own.
+   * same navigation several times over. The years view has its visible years range as a
+   * live region of its own.
    */
   protected _renderActivePeriod() {
     if (this._isYearView) {
@@ -709,9 +708,9 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
       ? this.resourceStrings.calendar_select_date
       : this.resourceStrings.calendar_range_placeholder;
 
-    // The header is a label and the value it describes, not a section of the document,
-    // so it does not render headings - a component cannot know which level would fit
-    // the page it is placed in. The typography of both parts is set by the themes.
+    // A label and the value it describes, not a section of the document, so no headings -
+    // a component cannot know which level would fit the page it is placed in. The
+    // typography of both parts is set by the themes.
     return html`
       <div part="header">
         <div part="header-title">

@@ -8,9 +8,7 @@ const ISO_DATE_PATTERN = /^\d{4}/;
 /** Matches a time only string - `HH:MM` optionally followed by seconds and milliseconds. */
 const TIME_PATTERN = /^\d{2}:\d{2}/;
 
-/**
- * Type guard to check if a value is a valid Date object.
- */
+/** Whether `value` is a `Date` holding a valid time. */
 export function isValidDate(value: unknown): value is Date {
   return value instanceof Date && !Number.isNaN(value.getTime());
 }
@@ -19,16 +17,15 @@ function getValidDate(date: Date): Date | null {
   return isValidDate(date) ? date : null;
 }
 
-export function parseISODate(value: string): Date | null {
+/** Parses an ISO 8601 date, or a time only string against the current date. */
+function parseISODate(value: string): Date | null {
   const string = value.trim();
 
-  // ISO date format (YYYY-MM-DD)
   if (ISO_DATE_PATTERN.test(string)) {
     const timeComponent = !string.includes('T') ? 'T00:00:00' : '';
     return getValidDate(new Date(`${string}${timeComponent}`));
   }
 
-  // Time format (HH:MM:SS) - resolved against the current local date
   if (TIME_PATTERN.test(string)) {
     const today = CalendarDay.today;
     const month = `${today.month + 1}`.padStart(2, '0');
@@ -40,14 +37,7 @@ export function parseISODate(value: string): Date | null {
   return null;
 }
 
-/**
- * Converts the given value to a Date object.
- *
- * If the value is already a valid Date object, it is returned directly.
- * If the value is a string, it is parsed into a Date object.
- * If the value is null or undefined, null is returned.
- * If the parsing fails, null is returned.
- */
+/** Converts `value` to a `Date`, or to `null` when it is empty or cannot be parsed. */
 export function convertToDate(value?: Date | string | null): Date | null {
   if (!value) {
     return null;
@@ -57,13 +47,8 @@ export function convertToDate(value?: Date | string | null): Date | null {
 }
 
 /**
- * Converts a comma-separated string of ISO 8601 dates or an array of Date objects | ISO 8601 strings into
- * an array of Date objects.
- *
- * If the `value` is null or undefined, null is returned.
- * If the `value` is an array of `Date` objects, a filtered array of valid `Date` objects is returned.
- * If the `value` is a string, it is split by commas and each part is parsed into a `Date` object.
- * If the parsing fails for any date, it is skipped.
+ * Converts a comma-separated string of ISO 8601 dates, or an array of dates and ISO 8601
+ * strings, into an array of `Date` objects, dropping the ones which cannot be parsed.
  */
 export function convertToDates(
   value?: (Date | string)[] | string | null
@@ -87,12 +72,9 @@ export function convertToDates(
 }
 
 /**
- * Converts the given value to a DateRangeValue object.
- *
- * If the value is already a valid DateRangeValue object, it is returned directly.
- * If the value is a string, it is parsed to object and returned if it fields are valid dates.
- * If the value is null or undefined, null is returned.
- * If the parsing fails, null is returned.
+ * Converts `value` to a `DateRangeValue`, parsing a string as JSON and truncating the
+ * time of both endpoints. Malformed input converts to `null` rather than throwing, since
+ * this runs as an attribute converter.
  */
 export function convertToDateRange(
   value?: DateRangeValue | string | null
@@ -126,12 +108,7 @@ export function convertToDateRange(
   };
 }
 
-/**
- * Converts a Date object to an ISO 8601 string.
- *
- * If the `value` is a `Date` object, it is converted to an ISO 8601 string.
- * If the `value` is null or undefined, null is returned.
- */
+/** Converts a `Date` to an ISO 8601 string. */
 export function getDateFormValue(value: Date | null): string | null {
   return value ? value.toISOString() : null;
 }

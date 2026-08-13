@@ -14,6 +14,7 @@ import { IgcComboBoxBaseLikeComponent } from '#internals/mixins/combo-box.js';
 import type { AbstractConstructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '#internals/mixins/forms/associated-required.js';
+import { asArray } from '#internals/utils/arrays.js';
 import {
   addSafeEventListener,
   focusLeftHost,
@@ -187,9 +188,11 @@ export abstract class IgcDatePickerBaseComponent<
   /** Restores focus to the editor after a value has been selected in the calendar. */
   protected abstract _focusAndSelectInput(): void;
 
-  protected abstract _handleCalendarChangeEvent(
-    event: CustomEvent<Date>
-  ): Promise<void> | void;
+  /**
+   * Resolves the value of the picker from the dates selected in the calendar, which come
+   * in ascending order.
+   */
+  protected abstract _valueFromCalendarSelection(dates: Date[]): T | null;
 
   //#endregion
 
@@ -250,6 +253,11 @@ export abstract class IgcDatePickerBaseComponent<
 
   /** Invoked when the picker is toggled, before the update is awaited. */
   protected _syncCalendarOnToggle(): void {}
+
+  /** Whether a selection made in the calendar commits the value of the picker right away. */
+  protected _commitsCalendarSelection(): boolean {
+    return true;
+  }
 
   //#endregion
 
@@ -518,6 +526,20 @@ export abstract class IgcDatePickerBaseComponent<
     }
   }
 
+  /**
+   * Pushes the value of the picker back onto the calendar, which a read-only picker has
+   * to do directly - the binding is left with nothing to re-commit.
+   */
+  protected async _restoreCalendarSelection(): Promise<void> {
+    await this._calendar.updateComplete;
+
+    if (this._calendarSelection === 'single') {
+      this._calendar.value = this._calendarValue;
+    } else {
+      this._calendar.values = this._calendarValues ?? emptyValues;
+    }
+  }
+
   /** Emits `igcChange` if the value has moved away from the last committed one. */
   protected _emitChangeIfDirty(): void {
     if (!equal(this._value, this._oldValue)) {
@@ -563,10 +585,8 @@ export abstract class IgcDatePickerBaseComponent<
   }
 
   protected _handleCalendarIconSlotPointerDown(event: PointerEvent): void {
-    // This is where the delegateFocus of the underlying input is a chore.
-    // If we have a required validator we don't want the input to enter an invalid
-    // state right off the bat when opening the picker which will happen since focus is transferred to the calendar element.
-    // So we call preventDefault on the event in order to not focus the input and trigger its validation logic on blur.
+    // Keeps the `delegatesFocus` of the host from focusing the editor, which would enter
+    // an invalid state on blur as focus moves on to the calendar.
     event.preventDefault();
   }
 
@@ -579,6 +599,26 @@ export abstract class IgcDatePickerBaseComponent<
 
   protected _handleClosing(): void {
     this._hide(true);
+  }
+
+  protected async _handleCalendarChangeEvent(
+    event: CustomEvent<Date | Date[]>
+  ): Promise<void> {
+    event.stopPropagation();
+    this._setTouchedState();
+
+    if (this.readOnly) {
+      await this._restoreCalendarSelection();
+      return;
+    }
+
+    this._value = this._valueFromCalendarSelection(asArray(event.detail));
+
+    if (this._commitsCalendarSelection()) {
+      this.emitEvent('igcChange', { detail: this._value });
+    }
+
+    this._shouldCloseCalendarDropdown();
   }
 
   protected _handleDialogClosing(event: Event): void {

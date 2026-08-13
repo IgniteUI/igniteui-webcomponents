@@ -31,9 +31,7 @@ const WEEK_DAYS_MAP = {
   saturday: 6,
 } as const;
 
-/**
- * Returns the value of the selected/activated element (day/month/year) in the calendar view.
- */
+/** The value of the activated day/month/year element of a calendar view, or -1. */
 export function getViewElement(event: Event): number {
   const element = getElementFromPath<HTMLElement>('[data-value]', event);
   return element ? asNumber(element.dataset.value, -1) : -1;

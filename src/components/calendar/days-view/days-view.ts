@@ -2,11 +2,7 @@ import { getDateFormatter, getDisplayNamesFormatter } from 'igniteui-i18n-core';
 import { html, nothing, type PropertyValues, type TemplateResult } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
 import { addKeybindings } from '#internals/controllers/key-bindings.js';
-import {
-  CalendarDay,
-  calendarRange,
-  DAYS_IN_WEEK,
-} from '#internals/date/model.js';
+import { CalendarDay, DAYS_IN_WEEK } from '#internals/date/model.js';
 import { blazorIndirectRender } from '#internals/decorators/blazorIndirectRender.js';
 import { blazorSuppressComponent } from '#internals/decorators/blazorSuppressComponent.js';
 import { registerComponent } from '#internals/definitions/register.js';
@@ -25,6 +21,7 @@ import {
   isNextMonth,
   isPreviousMonth,
 } from '../helpers.js';
+import { selectDate } from '../selection.js';
 import { all } from '../themes/days.js';
 import { styles } from '../themes/days-view.base.css.js';
 import type { IgcCalendarViewComponentEventMap } from '../types.js';
@@ -40,10 +37,7 @@ interface DayBounds {
   max: number;
 }
 
-/**
- * State derived once per render pass and shared by every day cell, so that the
- * per-cell work stays down to a handful of numeric comparisons.
- */
+/** State derived once per render pass and shared by every day cell. */
 interface DayRenderContext {
   today: CalendarDay;
   /** Formats the accessible label of a cell. */
@@ -124,12 +118,10 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
   @query('[tabindex="0"]')
   private _activeDay?: HTMLElement;
 
-  /** Returns the first date in the current range selection. */
   private get _rangeStart(): CalendarDay | undefined {
     return this._hasValues ? firstOf(this._values) : undefined;
   }
 
-  /** Returns the last date in the current range selection. */
   private get _rangeEnd(): CalendarDay | undefined {
     return this._hasValues ? lastOf(this._values) : undefined;
   }
@@ -148,8 +140,8 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
    * The active state of the component.
    *
    * @remarks
-   * Only the active view holds the tab stop of its active date. The calendar sets this
-   * so that a multi-month view exposes a single tab stop instead of one per month.
+   * Only the active view holds the tab stop of its active date, so that a multi-month
+   * calendar exposes a single tab stop instead of one per rendered month.
    *
    * @default true
    */
@@ -207,8 +199,6 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
 
   /** @internal */
   protected override update(props: PropertyValues): void {
-    // `_activeDate` covers both the public `activeDate` setter and the internal writes
-    // done on interaction, which the public property key does not see.
     if (props.has('_activeDate') || props.has('weekStart')) {
       this._dates = Array.from(
         generateMonth(this._activeDate, this._firstDayOfWeek)
@@ -247,73 +237,31 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
 
   //#region Internal selection methods
 
+  /**
+   * Applies the activation of `value` to the selection of this view.
+   *
+   * @remarks
+   * A view inside a calendar has its selection pushed back down by it on the next render.
+   * This is what keeps a stand-alone one selecting on its own.
+   */
   private _selectDate(value: CalendarDay): boolean {
-    if (isDateInRanges(value, this._disabledDates)) {
+    const selection = selectDate(
+      { value: this._value, values: this._values },
+      value,
+      { selection: this.selection, disabledDates: this._disabledDates }
+    );
+
+    if (!selection) {
       return false;
     }
 
-    switch (this.selection) {
-      case 'single':
-        if (this._value?.equalTo(value)) {
-          return false;
-        }
-        this._value = value;
-        break;
-      case 'multiple':
-        this._selectMultiple(value);
-        break;
-      case 'range':
-        this._selectRange(value);
-        break;
-    }
+    this._value = selection.value;
+    this._values = selection.values;
 
     return true;
   }
 
-  private _selectMultiple(day: CalendarDay): void {
-    const idx = this._values.findIndex((v) => v.equalTo(day));
-
-    if (idx < 0) {
-      this._values.push(day);
-    } else {
-      this._values.splice(idx, 1);
-    }
-
-    this._values = this._values.toSorted((a, b) => a.timestamp - b.timestamp);
-  }
-
-  private _selectRange(day: CalendarDay): void {
-    // Start a new range selection
-    if (this._values.length !== 1) {
-      this._values = [day];
-      return;
-    }
-
-    const rangeStart = this._rangeStart!;
-
-    // Clicking the same date clears the selection
-    if (rangeStart.equalTo(day)) {
-      this._values = [];
-      return;
-    }
-
-    // Build the complete range, ensuring correct order
-    const [start, end] = rangeStart.greaterThan(day)
-      ? [day, rangeStart]
-      : [rangeStart, day];
-
-    const range = Array.from(calendarRange({ start, end }));
-    range.push(lastOf(range).add('day', 1));
-
-    // Filter out disabled dates
-    this._values = range.filter((v) => !isDateInRanges(v, this._disabledDates));
-  }
-
-  /**
-   * @remarks
-   * Disabled dates are never selected. The caller already knows whether the day is
-   * disabled, so this does not check it again.
-   */
+  /** Whether `day` is selected. Disabled dates are excluded by the caller. */
   private _isSelected(day: CalendarDay, context: DayRenderContext): boolean {
     switch (this.selection) {
       case 'single':
@@ -339,7 +287,7 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
   }
 
   private _changeRangePreview(day: CalendarDay): void {
-    if (this._values.length === 1 && !firstOf(this._values).equalTo(day)) {
+    if (this._values.length === 1 && !this._rangeStart!.equalTo(day)) {
       this._setRangePreviewDate(day);
     }
   }
@@ -354,13 +302,7 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
 
   //#region Internal methods
 
-  /**
-   * Resolves the selection state shared by all cells of the current render pass.
-   *
-   * @remarks
-   * Everything here used to be recomputed for each of the 42 rendered cells, which for
-   * `multiple` selection meant converting the whole selection to native dates per cell.
-   */
+  /** Resolves the selection state shared by all cells of the current render pass. */
   private _createRenderContext(): DayRenderContext {
     const context: DayRenderContext = {
       today: CalendarDay.today,
@@ -414,7 +356,7 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
     // Range selection in progress
     if (this._rangePreviewDate?.equalTo(day)) {
       return formatter.formatRange(
-        firstOf(this._values).native,
+        this._rangeStart!.native,
         this._rangePreviewDate.native
       );
     }
@@ -422,12 +364,11 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
     // Range selection finished
     if (day.timestamp === first || day.timestamp === last) {
       return formatter.formatRange(
-        firstOf(this._values).native,
-        lastOf(this._values).native
+        this._rangeStart!.native,
+        this._rangeEnd!.native
       );
     }
 
-    // Default
     return formatter.format(day.native);
   }
 

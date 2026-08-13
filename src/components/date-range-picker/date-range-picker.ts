@@ -26,12 +26,11 @@ import type { AbstractConstructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { FormValueDateRangeTransformers } from '#internals/mixins/forms/form-transformers.js';
 import { createFormValueState } from '#internals/mixins/forms/form-value.js';
-import { isEmpty } from '#internals/utils/arrays.js';
+import { firstOf, isEmpty, lastOf } from '#internals/utils/arrays.js';
 import { bindIf } from '#internals/utils/lit.js';
 import { asNumber, clamp } from '#internals/utils/math.js';
 import { createIdGenerator } from '#internals/utils/strings.js';
 import { addThemingController } from '#theming/theming-controller.js';
-import type IgcCalendarComponent from '../calendar/calendar.js';
 import type { CalendarSelection } from '../calendar/types.js';
 import {
   IgcDatePickerBaseComponent,
@@ -56,6 +55,9 @@ export interface CustomDateRange {
   label: string;
   dateRange: DateRangeValue;
 }
+
+/** Either editor the picker renders the range in - the masked single one or a start/end pair. */
+type PickerEditor = IgcDateRangeInputComponent | IgcDateTimeInputComponent;
 
 export type IgcDateRangePickerComponentEventMap =
   IgcPickerBaseEventMap<DateRangeValue>;
@@ -255,10 +257,20 @@ export default class IgcDateRangePickerComponent extends EventEmitterMixin<
   private _calendarRange: Date[] | null = null;
 
   @queryAll(IgcDateTimeInputComponent.tagName)
-  private readonly _inputs!: IgcDateTimeInputComponent[];
+  private readonly _inputs!: NodeListOf<IgcDateTimeInputComponent>;
 
   @query(IgcDateRangeInputComponent.tagName)
   private readonly _input!: IgcDateRangeInputComponent;
+
+  /** The editors currently rendered by the picker. */
+  private get _editors(): PickerEditor[] {
+    return this.useTwoInputs ? Array.from(this._inputs) : [this._input];
+  }
+
+  /** The editor of single editor operations - the start one when the range is split. */
+  private get _startEditor(): PickerEditor {
+    return firstOf(this._editors);
+  }
 
   private get _firstDefinedInRange(): Date | null {
     return this.value?.start ?? this.value?.end ?? null;
@@ -310,7 +322,7 @@ export default class IgcDateRangePickerComponent extends EventEmitterMixin<
   }
 
   protected override _focusInput(): void {
-    this.useTwoInputs ? this._inputs[0].focus() : this._input.focus();
+    this._startEditor.focus();
   }
 
   protected override _focusAndSelectInput(): void {
@@ -332,16 +344,27 @@ export default class IgcDateRangePickerComponent extends EventEmitterMixin<
   }
 
   protected override _clearEditors(): void {
-    if (this.useTwoInputs) {
-      this._inputs[0]?.clear();
-      this._inputs[1]?.clear();
-    } else {
-      this._input?.clear();
+    for (const editor of this._editors) {
+      editor?.clear();
     }
   }
 
   protected override _onDialogClosing(): void {
     this._emitChangeIfDirty();
+  }
+
+  /** In dialog mode the range is committed by the actions of the dialog instead. */
+  protected override _commitsCalendarSelection(): boolean {
+    return this._isDropDown;
+  }
+
+  protected override _valueFromCalendarSelection(
+    dates: Date[]
+  ): DateRangeValue {
+    // A range cleared in the calendar comes through as no dates at all
+    return isEmpty(dates)
+      ? { start: null, end: null }
+      : { start: firstOf(dates), end: lastOf(dates) };
   }
 
   // #endregion
@@ -501,17 +524,13 @@ export default class IgcDateRangePickerComponent extends EventEmitterMixin<
   /* blazorSuppress */
   /** @internal */
   public hasDateParts(): boolean {
-    return this.useTwoInputs
-      ? this._inputs[0].hasDateParts()
-      : this._input.hasDateParts();
+    return this._startEditor.hasDateParts();
   }
 
   /* blazorSuppress */
   /** @internal */
   public hasTimeParts(): boolean {
-    return this.useTwoInputs
-      ? this._inputs[0].hasTimeParts()
-      : this._input.hasTimeParts();
+    return this._startEditor.hasTimeParts();
   }
 
   /** Selects a date range value in the picker */
@@ -585,33 +604,6 @@ export default class IgcDateRangePickerComponent extends EventEmitterMixin<
     this._commitRange((event.target as IgcDateRangeInputComponent).value);
   }
 
-  protected override async _handleCalendarChangeEvent(
-    event: CustomEvent<Date>
-  ) {
-    event.stopPropagation();
-    this._setTouchedState();
-
-    if (this.readOnly) {
-      // The calendar has moved away from the range we hold on its own, so the binding
-      // has nothing to re-commit. Push the current range back onto it directly.
-      await this._calendar.updateComplete;
-      this._calendar.values = this._calendarRange;
-      return;
-    }
-
-    const rangeValues = (event.target as IgcCalendarComponent).values;
-    this.value = {
-      start: rangeValues[0],
-      end: rangeValues[rangeValues.length - 1],
-    };
-
-    if (this._isDropDown) {
-      this.emitEvent('igcChange', { detail: this.value });
-    }
-
-    this._shouldCloseCalendarDropdown();
-  }
-
   // #endregion
 
   // #region Private methods
@@ -638,8 +630,8 @@ export default class IgcDateRangePickerComponent extends EventEmitterMixin<
   }
 
   /**
-   * Sets the active date of the calendar based on current selection, if any,
-   * or its current active date and its active day view index to always be the first one.
+   * Points the calendar at the current range, if any, and back to its first rendered
+   * month.
    */
   private _setCalendarActiveDateAndViewIndex() {
     const activeDaysViewIndex = '_activeDaysViewIndex';
@@ -666,19 +658,17 @@ export default class IgcDateRangePickerComponent extends EventEmitterMixin<
       : { start: startInput?._uncommittedValue ?? null, end: newValue };
   }
 
-  // Delegates the validity methods of internal input elements
-  // to the component's own validation logic specific to date-range values.
-  // Checks for dirty state to avoid unnecessary validation on form reset,
-  // caused by the inputs value being set.
+  /**
+   * Delegates the validity methods of the editors to the range validation of the picker.
+   * The pristine check keeps a form reset, which assigns to the editors, from validating.
+   */
   private _delegateInputsValidity() {
-    const inputs = this.useTwoInputs ? this._inputs : [this._input];
-
-    inputs.forEach((input) => {
+    for (const input of this._editors) {
       input.checkValidity = () =>
         !this._pristine ? this.checkValidity() : true;
       input.reportValidity = () =>
         !this._pristine ? this.reportValidity() : true;
-    });
+    }
   }
 
   /**

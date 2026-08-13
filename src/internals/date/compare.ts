@@ -1,6 +1,4 @@
-/**
- * Compares two dates with optional time/date exclusions.
- */
+/** Compares two dates, optionally ignoring their time or their date portion. */
 function compareDates(
   value: Date,
   boundary: Date,
@@ -27,9 +25,6 @@ function compareDates(
   return comparator(v.getTime(), b.getTime());
 }
 
-/**
- * Checks if a date is greater than a maximum date value.
- */
 export function isDateExceedingMax(
   value: Date,
   maxValue: Date,
@@ -45,9 +40,6 @@ export function isDateExceedingMax(
   );
 }
 
-/**
- * Checks if a date is less than a minimum date value.
- */
 export function isDateLessThanMin(
   value: Date,
   minValue: Date,

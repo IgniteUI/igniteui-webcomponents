@@ -318,6 +318,61 @@ describe('Calendar interactions', () => {
     expect(argDate.equalTo(calendar.activeDate)).to.be.true;
   });
 
+  it('switches to the month of the navigation button that was activated', async () => {
+    const active = CalendarDay.from(calendar.activeDate);
+
+    calendar.visibleMonths = 3;
+    await elementUpdated(calendar);
+
+    const buttons = Array.from(
+      calendar.shadowRoot!.querySelectorAll<HTMLButtonElement>(
+        '[part="months-navigation"]'
+      )
+    );
+
+    expect(buttons).lengthOf(3);
+
+    // The month navigation of the last rendered month
+    simulateClick(lastOf(buttons));
+    await elementUpdated(calendar);
+
+    const expected = active.add('month', 2);
+
+    expect(calendar.activeView).to.equal('months');
+    expect(expected.equalTo(calendar.activeDate)).to.be.true;
+    expect(
+      getCalendarDOM(calendar).views.months.shadowRoot!.querySelector(
+        '[tabindex="0"]'
+      )
+    ).to.have.attribute('data-value', `${expected.month}`);
+  });
+
+  it('moves the focus along when a date outside of the rendered month is selected', async () => {
+    // October 2nd, rendered as a trailing day of the September view
+    const target = new CalendarDay({ year: 2021, month: 9, date: 2 });
+
+    simulateClick(getDOMDate(target, daysView));
+    await elementUpdated(calendar);
+    await elementUpdated(daysView);
+
+    const active = getDayViewDOM(daysView).dates.active;
+
+    expect(target.equalTo(calendar.activeDate)).to.be.true;
+    expect(active.dataset.value).to.equal(`${target.timestamp}`);
+    expect(daysView.shadowRoot!.activeElement).to.equal(active);
+  });
+
+  it('keeps the focus in place when a date of the rendered month is selected', async () => {
+    const target = CalendarDay.from(calendar.activeDate).set({ date: 3 });
+
+    simulateClick(getDOMDate(target, daysView));
+    await elementUpdated(calendar);
+    await elementUpdated(daysView);
+
+    expect(target.equalTo(calendar.activeDate)).to.be.true;
+    expect(daysView.shadowRoot!.activeElement).to.be.null;
+  });
+
   it('should emit `igcRangePreviewDateChange` event', async () => {
     const eventSpy = spy(daysView, 'emitEvent');
     const start = CalendarDay.from(calendar.value!).set({ date: 26 });

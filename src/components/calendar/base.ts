@@ -38,8 +38,8 @@ export class IgcCalendarBaseComponent extends LitElement {
    * The index of the first day of the week (Sunday = 0) as derived from {@link weekStart}.
    *
    * @remarks
-   * Derived on access instead of in `update()` so that consumers of it are not
-   * sensitive to the order in which the base class and its descendants update.
+   * Derived on access instead of in `update()`, so that its consumers are not sensitive
+   * to the order in which the base class and its descendants update.
    */
   protected get _firstDayOfWeek(): number {
     return getWeekDayNumber(this.weekStart);
@@ -180,8 +180,8 @@ export class IgcCalendarBaseComponent extends LitElement {
    * Gets/Sets the special dates for the component.
    *
    * @remarks
-   * Returns `undefined` when no dates are set, so the setter also accepts it in order
-   * for a round trip through the property to be valid.
+   * Returns `undefined` when no dates are set, which the setter accepts as well so that
+   * a round trip through the property is valid.
    */
   @property({ attribute: false })
   public set specialDates(value: DateRangeDescriptor[] | undefined) {
@@ -196,8 +196,8 @@ export class IgcCalendarBaseComponent extends LitElement {
    * Gets/Sets the disabled dates for the component.
    *
    * @remarks
-   * Returns `undefined` when no dates are set, so the setter also accepts it in order
-   * for a round trip through the property to be valid.
+   * Returns `undefined` when no dates are set, which the setter accepts as well so that
+   * a round trip through the property is valid.
    */
   @property({ attribute: false })
   public set disabledDates(value: DateRangeDescriptor[] | undefined) {
