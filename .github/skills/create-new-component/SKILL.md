@@ -610,6 +610,21 @@ See: `src/components/card/card.ts`
 - **No Native Private Fields**: Use `_prefix` or TypeScript `private`, not `#`
 - **Accessibility First**: Every component must pass a11y audits
 
+### ARIA in Shadow DOM
+
+- Set ARIA through `addInternalsController` (`initialARIA`, `setARIA()`); add
+  `reflectRole: true` when the role must be visible to attribute-only tooling
+  like axe — never assign `this.role` by hand.
+- A composite component that wraps an input-shaped component and delegates
+  focus must project its semantics onto the native editor with the
+  `addAriaProjector`/`addAriaTarget` pair from
+  `#internals/controllers/aria-projection.js` — ARIA set on the host or the
+  wrapper is invisible to assistive technology, and IDREFs cannot cross shadow
+  boundaries.
+- See the [Accessibility section of the Coding Guidelines](../../CODING_GUIDELINES.md#accessibility)
+  for the full contract, including the `ariaBindings()` directive, the
+  `data-role`/`data-haspopup` theme styling hooks, and the shared test suites.
+
 ### Build System
 
 - SCSS transpiles to Lit `css` template literals

@@ -6,6 +6,7 @@ import { addInternalsController } from '../controllers/internals.js';
 export abstract class IgcBaseOptionLikeComponent extends LitElement {
   protected readonly _internals = addInternalsController(this, {
     initialARIA: { role: 'option' },
+    reflectRole: true,
   });
 
   protected _active = false;
@@ -75,14 +76,6 @@ export abstract class IgcBaseOptionLikeComponent extends LitElement {
 
   public get value(): string {
     return this._value ? this._value : this._contentSlotText;
-  }
-
-  /** @internal */
-  public override connectedCallback(): void {
-    // R.K. Workaround for Axe accessibility unit tests.
-    // I guess it does not support ElementInternals ARIAMixin state yet
-    super.connectedCallback();
-    this.role = 'option';
   }
 
   protected override render() {

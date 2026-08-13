@@ -1,6 +1,10 @@
 import { html, type TemplateResult } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
+import {
+  ariaBindings,
+  type ResolvedARIABindings,
+} from '../controllers/aria-projection.js';
 import { partMap } from '../part-map.js';
 import { bindIf } from '../utils/lit.js';
 
@@ -21,10 +25,11 @@ export interface MaskedInputOptions {
   inputMode?: string;
   /** When provided, sets the `tabindex` attribute. */
   tabindex?: number;
-  /** When provided, sets the `aria-describedby` attribute. */
-  ariaDescribedBy?: string;
-  /** When provided, sets the `aria-labelledby` attribute using the provided elements. */
-  ariaLabelledByElements?: ReadonlyArray<Element> | null;
+  /**
+   * Resolved ARIA bindings for the native input — the projected host state
+   * merged with the editor's own (see `AriaTargetController.resolveBindings`).
+   */
+  aria: ResolvedARIABindings;
 
   // Required mask handlers
   onInput: (event: InputEvent) => void;
@@ -66,8 +71,7 @@ export function renderMaskedNativeInput(
       ?autofocus=${opts.autofocus}
       inputmode=${ifDefined(opts.inputMode)}
       tabindex=${bindIf(opts.tabindex != null, opts.tabindex)}
-      aria-describedby=${bindIf(!!opts.ariaDescribedBy, opts.ariaDescribedBy)}
-      .ariaLabelledByElements=${opts.ariaLabelledByElements ?? null}
+      ${ariaBindings(opts.aria)}
       @input=${opts.onInput}
       @beforeinput=${opts.onBeforeInput}
       @focus=${opts.onFocus}

@@ -32,6 +32,7 @@ export default class IgcCarouselIndicatorComponent extends LitElement {
 
   private readonly _internals = addInternalsController(this, {
     initialARIA: { role: 'tab' },
+    reflectRole: true,
   });
 
   @consume({ context: carouselContext, subscribe: true })
@@ -52,7 +53,6 @@ export default class IgcCarouselIndicatorComponent extends LitElement {
   /** @internal */
   public override connectedCallback(): void {
     super.connectedCallback();
-    this.role = 'tab';
     this.slot = this.slot || 'indicator';
   }
 

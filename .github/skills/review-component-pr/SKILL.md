@@ -234,6 +234,12 @@ protected override render() {
 - [ ] **Color contrast** meets WCAG standards
 - [ ] **Focus indicators** visible
 - [ ] **`addInternalsController`** used for ARIA management if needed
+- [ ] **`reflectRole: true`** used when the role must be visible to attribute-only tooling (axe) — no hand-written `this.role = '…'` assignments
+- [ ] **ARIA lands on the focused element**: a composite host wrapping an input-shaped component (select/combo/date-picker pattern) projects its semantics with `addAriaProjector`/`addAriaTarget` from `#internals/controllers/aria-projection.js` instead of setting `role`/`aria-*` on itself or the wrapper
+- [ ] **Cross-root relations use element references** (ARIA element reflection), never IDREFs — an IDREF cannot cross a shadow boundary
+- [ ] **Theme selectors for composite anchors** key off the mirrored `data-role`/`data-haspopup` attributes, not `role`/`aria-*` host attributes
+- [ ] **No `@hidden`/`@internal` public members** added for cross-component access — use the `internalsOf()` registry lookup (or the projection controllers) instead
+- [ ] **Shared ARIA suites reused** where applicable: `runExternalLabelAssociationTests` / `runAriaProjectionTests` from `src/internals/testing/form-testbed.spec.ts`; reflected relations asserted by identity readback, with `axeReflectedRelationsOptions` suppressing the known `aria-required-attr` false positive
 
 **Check**:
 

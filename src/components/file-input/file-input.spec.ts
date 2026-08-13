@@ -2,7 +2,10 @@ import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import type { TemplateResult } from 'lit';
 import { spy } from 'sinon';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
-import { createFormAssociatedTestBed } from '#internals/testing/form-testbed.spec.js';
+import {
+  createFormAssociatedTestBed,
+  runExternalLabelAssociationTests,
+} from '#internals/testing/form-testbed.spec.js';
 import { simulateFileUpload } from '#internals/testing/simulate.spec.js';
 import {
   runValidationContainerTests,
@@ -19,6 +22,15 @@ describe('File Input component', () => {
 
   before(() => {
     defineComponents(IgcFileInputComponent);
+  });
+
+  runExternalLabelAssociationTests({
+    tagName: IgcFileInputComponent.tagName,
+    getNativeInput: (host) =>
+      (host as IgcFileInputComponent).renderRoot.querySelector('input')!,
+    // Chromium does not move focus into an `<input type="file">` on label
+    // activation the way it does for text editors.
+    assertFocus: false,
   });
 
   let element: IgcFileInputComponent;

@@ -1,6 +1,7 @@
 import { getDateFormatter, getDisplayNamesFormatter } from 'igniteui-i18n-core';
 import { html, nothing, type PropertyValues, type TemplateResult } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
+import { addInternalsController } from '#internals/controllers/internals.js';
 import { addKeybindings } from '#internals/controllers/key-bindings.js';
 import { CalendarDay, DAYS_IN_WEEK } from '#internals/date/model.js';
 import { blazorIndirectRender } from '#internals/decorators/blazorIndirectRender.js';
@@ -186,15 +187,13 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
   constructor() {
     super();
 
+    addInternalsController(this, {
+      initialARIA: { role: 'grid' },
+      reflectRole: true,
+    });
     addThemingController(this, all);
     addKeybindings(this).setActivateHandler(this._handleInteraction);
     addSafeEventListener(this, 'click', this._handleInteraction);
-  }
-
-  /** @internal */
-  public override connectedCallback(): void {
-    super.connectedCallback();
-    this.role = 'grid';
   }
 
   /** @internal */

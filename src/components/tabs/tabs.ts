@@ -14,6 +14,7 @@ import { cache } from 'lit/directives/cache.js';
 import { createRef, ref } from 'lit/directives/ref.js';
 
 import { styleMap } from 'lit/directives/style-map.js';
+import { addInternalsController } from '#internals/controllers/internals.js';
 import {
   addKeybindings,
   arrowLeft,
@@ -172,6 +173,11 @@ export default class IgcTabsComponent extends EventEmitterMixin<
   constructor() {
     super();
 
+    addInternalsController(this, {
+      initialARIA: { role: 'tablist', ariaOrientation: 'horizontal' },
+      reflectRole: true,
+    });
+
     addThemingController(this, all);
 
     addKeybindings(this, {
@@ -208,13 +214,6 @@ export default class IgcTabsComponent extends EventEmitterMixin<
     this._syncSelection(selectedTab);
 
     this._resizeController.observe(this._headerRef.value!);
-  }
-
-  /** @internal */
-  public override connectedCallback(): void {
-    super.connectedCallback();
-    this.role = 'tablist';
-    this.ariaOrientation = 'horizontal';
   }
 
   protected override update(props: PropertyValues<this>): void {

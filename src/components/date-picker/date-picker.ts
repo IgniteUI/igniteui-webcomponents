@@ -241,7 +241,7 @@ export default class IgcDatePickerComponent extends EventEmitterMixin<
     return this._input?.inputFormat;
   }
 
-  protected override get _labelTarget() {
+  protected override get _projectionTarget() {
     return this._input ?? null;
   }
 
@@ -422,7 +422,6 @@ export default class IgcDatePickerComponent extends EventEmitterMixin<
     return html`
       <igc-date-time-input
         id=${id}
-        aria-haspopup="dialog"
         label=${bindIf(this._isMaterial, this.label)}
         input-format=${ifDefined(this._inputFormat)}
         display-format=${ifDefined(format)}

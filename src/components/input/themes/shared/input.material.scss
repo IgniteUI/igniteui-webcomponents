@@ -243,8 +243,8 @@ $fs: rem(16px) !default;
     :not(
         [outlined],
         [type='search'],
-        [aria-haspopup='dialog'],
-        [role='combobox']
+        [data-haspopup='dialog'],
+        [data-role='combobox']
     )[readonly]
 ) {
     [part~='container'] {
@@ -255,8 +255,8 @@ $fs: rem(16px) !default;
 :host(:not(
     [outlined],
     [type='search'],
-    [aria-haspopup='dialog'],
-    [role='combobox']
+    [data-haspopup='dialog'],
+    [data-role='combobox']
 )[readonly]:hover) {
     [part~='container'] {
         background: var-get($theme, 'box-background-focus');
@@ -283,8 +283,8 @@ $fs: rem(16px) !default;
 :host(
     :not(
             [outlined],
-            [aria-haspopup='dialog'],
-            [role='combobox']
+            [data-haspopup='dialog'],
+            [data-role='combobox']
         )[readonly]:focus-within
 ) {
     [part~='container'] {
@@ -302,8 +302,8 @@ $fs: rem(16px) !default;
 :host(
     :not(
             [outlined],
-            [aria-haspopup='dialog'],
-            [role='combobox']
+            [data-haspopup='dialog'],
+            [data-role='combobox']
         )[readonly]:focus-within
 ) {
     [part='label'] {
@@ -315,9 +315,9 @@ $fs: rem(16px) !default;
 
 :host(:not([outlined], [disabled], [readonly]):state(ig-invalid)),
 :host(:not([outlined], [disabled], [readonly]):state(ig-invalid):focus-within),
-:host(:not([disabled], [outlined])[role='combobox']:state(ig-invalid)),
+:host(:not([disabled], [outlined])[data-role='combobox']:state(ig-invalid)),
 :host(
-    :not([disabled], [outlined])[role='combobox']:state(ig-invalid):focus-within
+    :not([disabled], [outlined])[data-role='combobox']:state(ig-invalid):focus-within
 ) {
     [part~='container'] {
         border-color: var-get($theme, 'error-secondary-color');
@@ -494,7 +494,7 @@ $fs: rem(16px) !default;
 }
 
 :host(
-    :not([aria-haspopup='dialog'], [role='combobox'])[outlined][readonly]:hover
+    :not([data-haspopup='dialog'], [data-role='combobox'])[outlined][readonly]:hover
 ) {
     [part='notch'],
     [part='start'],
@@ -509,8 +509,8 @@ $fs: rem(16px) !default;
 }
 
 :host(:not(
-    [aria-haspopup='dialog'],
-    [role='combobox']
+    [data-haspopup='dialog'],
+    [data-role='combobox']
 )[outlined][readonly]:focus-within) {
     [part='notch'],
     [part='start'],
@@ -627,8 +627,8 @@ $fs: rem(16px) !default;
 :host(
     :not(
             [type='search'],
-            [aria-haspopup='dialog'],
-            [role='combobox']
+            [data-haspopup='dialog'],
+            [data-role='combobox']
         )[outlined]:focus-within
 ) {
     [part='notch'] {
@@ -662,9 +662,9 @@ $fs: rem(16px) !default;
 :host(
     :not([type='search'], [readonly])[outlined]:state(ig-invalid):focus-within
 ),
-:host(:not([disabled])[role='combobox'][outlined]:state(ig-invalid)),
+:host(:not([disabled])[data-role='combobox'][outlined]:state(ig-invalid)),
 :host(
-    :not([disabled])[role='combobox'][outlined]:state(ig-invalid):focus-within
+    :not([disabled])[data-role='combobox'][outlined]:state(ig-invalid):focus-within
 ) {
     [part='start'],
     [part='notch'],
@@ -680,7 +680,7 @@ $fs: rem(16px) !default;
 }
 
 :host(
-    :not([disabled])[role='combobox'][outlined]:state(ig-invalid):focus-within
+    :not([disabled])[data-role='combobox'][outlined]:state(ig-invalid):focus-within
 ) {
     :not([part~='filled']) {
         input:not(:placeholder-shown) + [part='notch'] {
@@ -690,15 +690,15 @@ $fs: rem(16px) !default;
 }
 
 :host(:not([type='search'])[outlined]:state(ig-invalid):focus-within),
-:host([role='combobox'][outlined]:state(ig-invalid):focus-within) {
+:host([data-role='combobox'][outlined]:state(ig-invalid):focus-within) {
     [part='notch'] {
         border-top: $idle-border-width solid transparent;
     }
 }
 
-:host(:not([disabled], [readonly])[role='combobox'][outlined]:focus-within),
+:host(:not([disabled], [readonly])[data-role='combobox'][outlined]:focus-within),
 :host(
-    :not([disabled], [readonly])[role='combobox'][outlined]:state(
+    :not([disabled], [readonly])[data-role='combobox'][outlined]:state(
             ig-invalid
         ):focus-within
 ) {
@@ -714,7 +714,7 @@ $fs: rem(16px) !default;
 }
 
 :host(:not([disabled], [readonly]):state(ig-invalid)),
-:host(:not([disabled])[role='combobox']:state(ig-invalid)) {
+:host(:not([disabled])[data-role='combobox']:state(ig-invalid)) {
     [part='label'] {
         color: var-get($theme, 'error-secondary-color');
     }

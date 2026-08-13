@@ -1,6 +1,7 @@
 import { html, LitElement, type TemplateResult } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
+import { addInternalsController } from '#internals/controllers/internals.js';
 import { addKeybindings } from '#internals/controllers/key-bindings.js';
 import { CalendarDay } from '#internals/date/model.js';
 import type { Constructor } from '#internals/mixins/constructor.js';
@@ -72,15 +73,13 @@ export abstract class IgcYearMonthViewBaseComponent extends EventEmitterMixin<
   constructor() {
     super();
 
+    addInternalsController(this, {
+      initialARIA: { role: 'grid' },
+      reflectRole: true,
+    });
     addThemingController(this, all);
     addKeybindings(this).setActivateHandler(this._handleInteraction);
     addSafeEventListener(this, 'click', this._handleInteraction);
-  }
-
-  /** @internal */
-  public override connectedCallback(): void {
-    super.connectedCallback();
-    this.role = 'grid';
   }
 
   //#endregion

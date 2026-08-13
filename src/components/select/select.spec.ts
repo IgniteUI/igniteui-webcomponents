@@ -6,6 +6,7 @@ import {
   nextFrame,
 } from '@open-wc/testing';
 import { spy, useFakeTimers } from 'sinon';
+import { internalsOf } from '#internals/controllers/internals.js';
 import {
   altKey,
   arrowDown,
@@ -20,9 +21,13 @@ import {
 import { defineComponents } from '#internals/definitions/defineComponents.js';
 import {
   createFormAssociatedTestBed,
+  runAriaProjectionTests,
   runExternalLabelAssociationTests,
 } from '#internals/testing/form-testbed.spec.js';
-import { isFocused } from '#internals/testing/helpers.spec.js';
+import {
+  axeReflectedRelationsOptions,
+  isFocused,
+} from '#internals/testing/helpers.spec.js';
 import {
   simulateClick,
   simulateKeyboard,
@@ -224,10 +229,9 @@ describe('Select', () => {
       });
 
       it('is accessible', async () => {
-        // `aria-controls` is published through element reflection, which blanks
-        // the content attribute axe reads - see "projects the combobox
-        // semantics onto the native input", which asserts the real relation.
-        const axeOptions = { ignoredRules: ['aria-required-attr'] };
+        // See "projects the combobox semantics onto the native input", which
+        // asserts the real `aria-controls` relation by identity readback.
+        const axeOptions = axeReflectedRelationsOptions;
 
         // Closed state
         await expect(select).dom.to.be.accessible(axeOptions);
@@ -802,12 +806,10 @@ describe('Select', () => {
 
       const [first, second] = select.groups;
 
-      expect((first as any)._internals.getARIA('ariaLabel')).to.equal(
+      expect(internalsOf(first)?.getARIA('ariaLabel')).to.equal(
         'Pre development'
       );
-      expect((second as any)._internals.getARIA('ariaLabel')).to.equal(
-        'Development'
-      );
+      expect(internalsOf(second)?.getARIA('ariaLabel')).to.equal('Development');
     });
   });
 
@@ -1835,5 +1837,23 @@ describe('Select', () => {
       (host as IgcSelectComponent).renderRoot
         .querySelector<IgcInputComponent>(IgcInputComponent.tagName)!
         .renderRoot.querySelector('input')!,
+  });
+
+  runAriaProjectionTests({
+    tagName: IgcSelectComponent.tagName,
+    getNativeInput: (host) =>
+      (host as IgcSelectComponent).renderRoot
+        .querySelector<IgcInputComponent>(IgcInputComponent.tagName)!
+        .renderRoot.querySelector('input')!,
+    expected: { role: 'combobox', hasPopup: 'listbox' },
+    getControls: (host) => [
+      (host as IgcSelectComponent).renderRoot.querySelector('#dropdown')!,
+    ],
+    getDescription: (host) => [
+      (host as IgcSelectComponent).renderRoot.querySelector(
+        '#select-helper-text'
+      )!,
+    ],
+    openProperty: 'open',
   });
 });

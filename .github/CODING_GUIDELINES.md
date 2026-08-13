@@ -403,6 +403,25 @@ Accessibility is a first-class requirement for all components.
   this._internals.setARIA({ ariaExpanded: `${this.open}` });
   ```
 
+- When tooling that only reads content attributes (axe, for one) must see the
+  role, enable `reflectRole` instead of writing `this.role = '…'` by hand:
+
+  ```ts
+  private readonly _internals = addInternalsController(this, {
+    initialARIA: { role: 'option' },
+    reflectRole: true, // mirrors the internals role as a `role` content attribute
+  });
+  ```
+
+  The controller reflects the current internals role on connect and whenever
+  `setARIA()` changes it, and yields to an author-supplied `role` attribute.
+
+- Internal code that needs another component's internals controller (composite
+  hosts, specs) reaches it through the `internalsOf()` registry lookup in
+  `#internals/controllers/internals.js`. Never add `public` members tagged
+  `@hidden`/`@internal` for cross-component access — the registry keeps the
+  compiled public API clean.
+
 - **Keyboard navigation** is required for interactive components:
   - Tab navigation should work naturally
   - Arrow keys for list navigation
@@ -427,6 +446,87 @@ Accessibility is a first-class requirement for all components.
 - Ensure **focus management** - visible focus indicators and logical focus order.
 - Provide **text alternatives** for non-text content.
 - Meet **WCAG 2.1 Level AA** standards minimum.
+
+### ARIA across shadow boundaries
+
+Shadow DOM breaks two things ARIA depends on: the identity of the focused
+element, and IDREF resolution. Both matter for composite components (select,
+combo, the date pickers) that wrap an input-shaped component:
+
+- A host using `delegatesFocus` must **not** publish `role`/`aria-*` on itself
+  or on the wrapper element — assistive technology reports from the native
+  editor that actually receives focus, one shadow root deeper.
+- IDREF-valued relations (`aria-controls`, `aria-describedby`,
+  `aria-labelledby`, `aria-activedescendant`) resolve within a single tree
+  scope, so a reference from the native editor to an element in the host's
+  shadow root is silently dead. Such relations must travel as **element
+  references** through ARIA element reflection (`ariaControlsElements`, …),
+  which does resolve into ancestor tree scopes. For a given relation, the
+  content attribute and the reflection property are two views of one
+  association — assigning the property detaches the attribute — so a relation
+  is either all IDREF or all element references.
+
+`#internals/controllers/aria-projection.js` packages the solution as a
+controller pair:
+
+- **Editor side** — every input-shaped component (input, textarea, mask input,
+  date-time input) registers as a projection target and applies the resolved
+  bindings onto its native editor with the `ariaBindings()` element-expression
+  directive:
+
+  ```ts
+  protected readonly _ariaTarget = addAriaTarget(this, {
+    labels: () => this._internals.labels,
+    description: () => this._helperText, // own helper-text element, or null
+  });
+
+  protected _renderInput() {
+    return html`
+      <input ${ariaBindings(this._ariaTarget.resolveBindings())} ... />
+    `;
+  }
+  ```
+
+- **Host side** — the composite component declares what it projects; after
+  every host update the state is pushed onto the target (with an equality
+  guard and a retry for targets that upgrade late):
+
+  ```ts
+  // in the select component
+  private readonly _ariaProjector = addAriaProjector(this, {
+    target: () => this._input,
+    state: () => ({
+      role: 'combobox',
+      hasPopup: 'listbox',
+      expanded: `${this.open}`,
+      controls: this._list ? [this._list] : null,
+      describedBy: this._container ? [this._container] : null,
+      labelledBy: this._internals.labels,
+    }),
+  });
+  ```
+
+- The target mirrors the projected `role`/`hasPopup` as
+  `data-role`/`data-haspopup` attributes on the input component itself. These
+  are **styling hooks** for the themes — `:host()` selectors cannot observe
+  ARIA living on the native editor inside the shadow root — so key theme
+  selectors for composite anchors off the `data-*` attributes, never off
+  `role`/`aria-*` host attributes.
+
+Testing cross-root ARIA:
+
+- Reuse the shared suites in `src/internals/testing/form-testbed.spec.ts`:
+  `runExternalLabelAssociationTests` (external `<label>` association through
+  `for`/nesting) and `runAriaProjectionTests` (host semantics landing on the
+  native editor).
+- Assert reflected relations by identity readback
+  (`input.ariaControlsElements[0] === list`), never by content attribute —
+  reflection blanks the attribute by spec.
+- For the same reason axe reports `aria-controls` as missing on
+  `role="combobox"` editors (`aria-required-attr`). Suppress that single rule
+  with the shared `axeReflectedRelationsOptions` from
+  `#internals/testing/helpers.spec.js`, next to a test asserting the real
+  relation.
 
 ## Testing
 

@@ -13,7 +13,10 @@ import {
   getDayViewDOM,
   getDOMDate,
 } from '#internals/testing/calendar.spec.js';
-import { runExternalLabelAssociationTests } from '#internals/testing/form-testbed.spec.js';
+import {
+  runAriaProjectionTests,
+  runExternalLabelAssociationTests,
+} from '#internals/testing/form-testbed.spec.js';
 import { checkDatesEqual, isFocused } from '#internals/testing/helpers.spec.js';
 import {
   simulateClick,
@@ -36,6 +39,22 @@ describe('Date picker', () => {
           IgcDateTimeInputComponent.tagName
         )!
         .renderRoot.querySelector('input')!,
+  });
+
+  runAriaProjectionTests({
+    tagName: IgcDatePickerComponent.tagName,
+    getNativeInput: (host) =>
+      (host as IgcDatePickerComponent).renderRoot
+        .querySelector<IgcDateTimeInputComponent>(
+          IgcDateTimeInputComponent.tagName
+        )!
+        .renderRoot.querySelector('input')!,
+    expected: { hasPopup: 'dialog' },
+    getDescription: (host) => [
+      (host as IgcDatePickerComponent).renderRoot.querySelector(
+        '#helper-text'
+      )!,
+    ],
   });
 
   const pickerShowIcon = 'today';

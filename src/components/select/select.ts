@@ -1,6 +1,7 @@
-import { html, type PropertyValues, type TemplateResult } from 'lit';
+import { html, type TemplateResult } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
+import { addAriaProjector } from '#internals/controllers/aria-projection.js';
 import {
   addKeybindings,
   altKey,
@@ -191,6 +192,9 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   @query('#dropdown')
   protected _list!: HTMLDivElement | null;
 
+  @query('#select-helper-text')
+  protected _helperText!: IgcValidationContainerComponent | null;
+
   protected get _activeItems(): IgcSelectItemComponent[] {
     return Array.from(
       getActiveItems<IgcSelectItemComponent>(
@@ -307,6 +311,21 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
 
     addThemingController(this, all);
 
+    // Projects the host's labels and combobox semantics onto the native
+    // input inside `igc-input` (see ProjectedARIA for why the host cannot
+    // publish these itself).
+    addAriaProjector(this, {
+      target: () => this._input,
+      state: () => ({
+        role: 'combobox',
+        hasPopup: 'listbox',
+        expanded: `${this.open}`,
+        controls: this._list ? [this._list] : null,
+        describedBy: this._helperText ? [this._helperText] : null,
+        labelledBy: this._internals.labels,
+      }),
+    });
+
     addKeybindings(this, {
       skip: () => this.disabled,
       bindingDefaults: { preventDefault: true, repeat: true },
@@ -394,11 +413,6 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
     }
 
     this._validate();
-  }
-
-  protected override updated(changedProperties: PropertyValues): void {
-    super.updated(changedProperties);
-    this._forwardToInput();
   }
 
   //#endregion
@@ -663,36 +677,6 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
       .replace(/\s+/gu, ' ');
   }
 
-  /**
-   * Projects the host's labels and the combobox semantics onto the native input
-   * inside `igc-input`. Neither can be bound on the `igc-input` element itself:
-   * it delegates focus, so the native input is what assistive technology lands
-   * on and reports, and neither an external `<label for>` nor the `#dropdown`
-   * IDREF can reach across into its shadow root.
-   */
-  private _forwardToInput(): void {
-    const input = this._input;
-
-    if (!input) {
-      return;
-    }
-
-    input._labelElements = this._internals.labels;
-
-    // Only the expanded state ever changes; reassigning unconditionally would
-    // schedule a redundant input render on every update of the select.
-    const expanded = `${this.open}`;
-
-    if (input._ariaProperties.expanded !== expanded) {
-      input._ariaProperties = {
-        role: 'combobox',
-        hasPopup: 'listbox',
-        expanded,
-        controls: this._list ? [this._list] : null,
-      };
-    }
-  }
-
   //#endregion
 
   //#region Public API
@@ -800,7 +784,6 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
         id="input"
         slot="anchor"
         readonly
-        aria-describedby="select-helper-text"
         exportparts="container: input, input: native-input, label, prefix, suffix"
         value=${ifDefined(this._displayValue)}
         placeholder=${ifDefined(this.placeholder)}
