@@ -7,11 +7,12 @@ import {
   arrowLeft,
   arrowRight,
   arrowUp,
-} from '../common/controllers/key-bindings.js';
-import { registerComponent } from '../common/definitions/register.js';
-import type { AbstractConstructor } from '../common/mixins/constructor.js';
-import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { addSafeEventListener, asPercent, clamp } from '../common/util.js';
+} from '#internals/controllers/key-bindings.js';
+import { registerComponent } from '#internals/definitions/register.js';
+import type { AbstractConstructor } from '#internals/mixins/constructor.js';
+import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
+import { addSafeEventListener } from '#internals/utils/events.js';
+import { asPercent, clamp } from '#internals/utils/math.js';
 import { styles } from './themes/picker-canvas.base.css.js';
 
 export interface IgcPickerCanvasEventMap {

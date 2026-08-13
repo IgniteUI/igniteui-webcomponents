@@ -4,34 +4,34 @@ import { cache } from 'lit/directives/cache.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { createRef, ref } from 'lit/directives/ref.js';
 import { styleMap } from 'lit/directives/style-map.js';
-import { addThemingController } from '../../theming/theming-controller.js';
-import IgcButtonComponent from '../button/button.js';
-import IgcIconButtonComponent from '../button/icon-button.js';
 import {
   addKeybindings,
   altKey,
   arrowDown,
   arrowUp,
   escapeKey,
-} from '../common/controllers/key-bindings.js';
-import { addRootClickController } from '../common/controllers/root-click.js';
-import { addSlotController, setSlots } from '../common/controllers/slot.js';
-import { shadowOptions } from '../common/decorators/shadow-options.js';
-import { registerComponent } from '../common/definitions/register.js';
-import { IgcBaseComboBoxComponent } from '../common/mixins/combo-box.js';
-import type { AbstractConstructor } from '../common/mixins/constructor.js';
-import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { FormAssociatedRequiredMixin } from '../common/mixins/forms/associated-required.js';
-import { createFormValueState } from '../common/mixins/forms/form-value.js';
-import { partMap } from '../common/part-map.js';
+} from '#internals/controllers/key-bindings.js';
+import { addRootClickController } from '#internals/controllers/root-click.js';
+import { addSlotController, setSlots } from '#internals/controllers/slot.js';
+import { shadowOptions } from '#internals/decorators/shadow-options.js';
+import { registerComponent } from '#internals/definitions/register.js';
+import { IgcBaseComboBoxComponent } from '#internals/mixins/combo-box.js';
+import type { AbstractConstructor } from '#internals/mixins/constructor.js';
+import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
+import { FormAssociatedRequiredMixin } from '#internals/mixins/forms/associated-required.js';
+import { createFormValueState } from '#internals/mixins/forms/form-value.js';
+import { partMap } from '#internals/part-map.js';
+import { isEmpty } from '#internals/utils/arrays.js';
 import {
   addSafeEventListener,
-  asNumber,
-  bindIf,
   getElementFromPath,
-  isEmpty,
   stopPropagation,
-} from '../common/util.js';
+} from '#internals/utils/events.js';
+import { bindIf } from '#internals/utils/lit.js';
+import { asNumber } from '#internals/utils/math.js';
+import { addThemingController } from '#theming/theming-controller.js';
+import IgcButtonComponent from '../button/button.js';
+import IgcIconButtonComponent from '../button/icon-button.js';
 import IgcDividerComponent from '../divider/divider.js';
 import IgcFocusTrapComponent from '../focus-trap/focus-trap.js';
 import IgcInputComponent from '../input/input.js';

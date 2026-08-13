@@ -1,4 +1,4 @@
-import { clamp } from '../common/util.js';
+import { clamp } from '#internals/utils/math.js';
 import { isValidColor, parseColor } from './common.js';
 import { converter, type HSL, type HSV, type RGB } from './converters.js';
 

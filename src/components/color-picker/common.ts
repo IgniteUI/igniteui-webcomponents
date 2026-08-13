@@ -1,4 +1,4 @@
-import { asNumber } from '../common/util.js';
+import { asNumber } from '#internals/utils/math.js';
 import type { RGB } from './converters.js';
 
 export const RGBA_RE =

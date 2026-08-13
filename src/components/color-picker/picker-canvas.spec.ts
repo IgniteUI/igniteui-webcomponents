@@ -6,15 +6,15 @@ import {
   arrowLeft,
   arrowRight,
   arrowUp,
-} from '../common/controllers/key-bindings.js';
-import { defineComponents } from '../common/definitions/defineComponents.js';
-import { asPercent } from '../common/util.js';
+} from '#internals/controllers/key-bindings.js';
+import { defineComponents } from '#internals/definitions/defineComponents.js';
 import {
   simulateKeyboard,
   simulateLostPointerCapture,
   simulatePointerDown,
   simulatePointerMove,
-} from '../common/utils.spec.js';
+} from '#internals/testing/simulate.spec.js';
+import { asPercent } from '#internals/utils/math.js';
 import IgcPickerCanvasComponent from './picker-canvas.js';
 
 async function createCanvas() {
