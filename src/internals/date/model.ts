@@ -24,6 +24,41 @@ export function toCalendarDay(date: DayParameter): CalendarDay {
   return date instanceof Date ? CalendarDay.from(date) : date;
 }
 
+/**
+ * Yields the days between `start` and `end`, stepping by `unit` and stopping short of
+ * `end` unless `inclusive` is set.
+ */
+export function* calendarRange(
+  options: CalendarRangeParams
+): Generator<CalendarDay, void, unknown> {
+  const { start, end, unit = 'day', inclusive = false } = options;
+
+  let currentDate = toCalendarDay(start);
+  const endDate =
+    typeof end === 'number'
+      ? toCalendarDay(start).add(unit, end)
+      : toCalendarDay(end);
+
+  const isReversed = endDate.lessThan(currentDate);
+  const step = isReversed ? -1 : 1;
+
+  const shouldContinue = () => {
+    if (inclusive) {
+      return isReversed
+        ? currentDate.greaterThanOrEqual(endDate)
+        : currentDate.lessThanOrEqual(endDate);
+    }
+    return isReversed
+      ? currentDate.greaterThan(endDate)
+      : currentDate.lessThan(endDate);
+  };
+
+  while (shouldContinue()) {
+    yield currentDate;
+    currentDate = currentDate.add(unit, step);
+  }
+}
+
 function checkRollover(
   original: CalendarDay,
   modified: CalendarDay
@@ -78,9 +113,7 @@ export class CalendarDay {
     return CalendarDay.from(this._date);
   }
 
-  /**
-   * Returns a new instance with values replaced.
-   */
+  /** Returns a new instance with the given values replaced. */
   public set(args: Partial<CalendarDayParams>): CalendarDay {
     const year = args.year ?? this.year;
     const month = args.month ?? this.month;

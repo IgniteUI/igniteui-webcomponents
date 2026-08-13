@@ -1,9 +1,9 @@
+import type { DateRangeValue } from '../../../components/types.js';
 import {
   convertToDate,
   convertToDateRange,
   getDateFormValue,
-} from '../../../components/calendar/helpers.js';
-import type { DateRangeValue } from '../../../components/types.js';
+} from '../../date/converters.js';
 import { asNumber } from '../../utils/math.js';
 import type { FormValueType, IgcFormControl } from './types.js';
 

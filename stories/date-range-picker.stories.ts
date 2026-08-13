@@ -8,7 +8,7 @@ import {
   IgcDateRangePickerComponent,
   defineComponents,
 } from 'igniteui-webcomponents';
-import { CalendarDay } from '../src/components/calendar/model.js';
+import { CalendarDay } from '../src/internals/date/model.js';
 import type {
   CustomDateRange,
   DateRangeValue,

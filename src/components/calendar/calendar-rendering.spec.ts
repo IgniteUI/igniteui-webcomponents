@@ -1,11 +1,14 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import type { TemplateResult } from 'lit';
-
+import { CalendarDay } from '#internals/date/model.js';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
+import {
+  getCalendarDOM,
+  getDayViewDOM,
+  getDOMDate,
+} from '#internals/testing/calendar.spec.js';
 import { firstOf, lastOf } from '#internals/utils/arrays.js';
 import IgcCalendarComponent from './calendar.js';
-import { getCalendarDOM, getDayViewDOM, getDOMDate } from './helpers.spec.js';
-import { CalendarDay } from './model.js';
 import { type DateRangeDescriptor, DateRangeType } from './types.js';
 
 describe('Calendar Rendering', () => {
@@ -61,21 +64,21 @@ describe('Calendar Rendering', () => {
       expect(calendar).shadowDom.to.equal(
         `
       <div part="header">
-        <h5 part="header-title">
+        <div part="header-title">
           <slot name="title">Select Date</slot>
-        </h5>
-	      <h2 part="header-date">
+        </div>
+        <div part="header-date">
           <slot>
             ${headerDate}
           </slot>
-        </h2>
+        </div>
       </div>
+      <span class="aria-off-screen"></span>
       <div part="content">
         <div part="days-view-container">
           <div part="navigation">
             <div part="picker-dates">
               <button part="months-navigation"></button>
-              <span class="aria-off-screen"></span>
               <button part="years-navigation"></button>
             </div>
             <div part="navigation-buttons">
@@ -185,6 +188,54 @@ describe('Calendar Rendering', () => {
       expect(dom.content.children).lengthOf(3);
     });
 
+    it('should expose a single live region for the active period', async () => {
+      const liveRegions = () =>
+        Array.from(
+          calendar.shadowRoot!.querySelectorAll<HTMLElement>('[aria-live]')
+        );
+
+      calendar.activeDate = new CalendarDay({
+        year: 2025,
+        month: 2,
+        date: 15,
+      }).native;
+      calendar.visibleMonths = 3;
+      await elementUpdated(calendar);
+
+      expect(liveRegions()).lengthOf(1);
+      expect(firstOf(liveRegions()).innerText).to.equal('March 2025');
+
+      calendar.activeView = 'months';
+      await elementUpdated(calendar);
+
+      expect(liveRegions()).lengthOf(1);
+      expect(firstOf(liveRegions()).innerText).to.equal('2025');
+
+      // The years view announces through its visible years range instead
+      calendar.activeView = 'years';
+      await elementUpdated(calendar);
+
+      const regions = liveRegions();
+
+      expect(regions).lengthOf(1);
+      expect(firstOf(regions).part.contains('years-range')).to.be.true;
+    });
+
+    it('should expose a single tab stop with more than one visible month', async () => {
+      calendar.visibleMonths = 3;
+      await elementUpdated(calendar);
+
+      const views = Array.from(
+        calendar.shadowRoot!.querySelectorAll('igc-days-view')
+      );
+      const tabStops = views.flatMap((view) =>
+        Array.from(view.shadowRoot!.querySelectorAll('[tabindex="0"]'))
+      );
+
+      expect(views).lengthOf(3);
+      expect(tabStops).lengthOf(1);
+    });
+
     it('should render the correct active view', async () => {
       const { views } = getCalendarDOM(calendar);
 
@@ -244,6 +295,55 @@ describe('Calendar Rendering', () => {
       expect(firstOf(daysViewDOM.weekLabels)).attribute(
         'aria-label',
         'Wednesday'
+      );
+    });
+
+    it('should align the days grid with the initial `week-start`', async () => {
+      // March 2025 starts on a Saturday -> a Monday based week starts on Feb 24th
+      const march = new CalendarDay({ year: 2025, month: 2, date: 15 });
+
+      calendar = await createCalendarElement(
+        html`<igc-calendar
+          week-start="monday"
+          .activeDate=${march.native}
+        ></igc-calendar>`
+      );
+
+      const daysViewDOM = getDayViewDOM(getCalendarDOM(calendar).views.days);
+
+      expect(firstOf(daysViewDOM.weekLabels)).attribute('aria-label', 'Monday');
+      expect(firstOf(daysViewDOM.dates.all).dataset.value).to.equal(
+        `${new CalendarDay({ year: 2025, month: 1, date: 24 }).timestamp}`
+      );
+    });
+
+    it('should align the days grid when `weekStart` changes at runtime', async () => {
+      calendar.activeDate = new CalendarDay({
+        year: 2025,
+        month: 2,
+        date: 15,
+      }).native;
+      await elementUpdated(calendar);
+
+      const daysViewDOM = getDayViewDOM(getCalendarDOM(calendar).views.days);
+      const firstDateValue = () =>
+        firstOf(daysViewDOM.dates.all).dataset.value!;
+
+      // Default `sunday` -> Feb 23rd
+      expect(firstDateValue()).to.equal(
+        `${new CalendarDay({ year: 2025, month: 1, date: 23 }).timestamp}`
+      );
+
+      // March 1st 2025 is a Saturday and starts the first week of the grid
+      calendar.weekStart = 'saturday';
+      await elementUpdated(calendar);
+
+      expect(firstOf(daysViewDOM.weekLabels)).attribute(
+        'aria-label',
+        'Saturday'
+      );
+      expect(firstDateValue()).to.equal(
+        `${new CalendarDay({ year: 2025, month: 2, date: 1 }).timestamp}`
       );
     });
 

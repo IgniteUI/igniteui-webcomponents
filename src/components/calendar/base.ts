@@ -4,13 +4,14 @@ import {
 } from 'igniteui-i18n-core';
 import { LitElement, type PropertyValues } from 'lit';
 import { property, state } from 'lit/decorators.js';
+import { convertToDate, convertToDates } from '#internals/date/converters.js';
+import { CalendarDay } from '#internals/date/model.js';
 import { blazorDeepImport } from '#internals/decorators/blazorDeepImport.js';
 import { blazorIndirectRender } from '#internals/decorators/blazorIndirectRender.js';
 import type { IgcCalendarResourceStrings } from '#internals/i18n/EN/calendar.resources.js';
 import { addI18nController } from '#internals/i18n/i18n-controller.js';
 import { firstOf } from '#internals/utils/arrays.js';
-import { convertToDate, convertToDates, getWeekDayNumber } from './helpers.js';
-import { CalendarDay } from './model.js';
+import { getWeekDayNumber } from './helpers.js';
 import type {
   CalendarSelection,
   DateRangeDescriptor,
@@ -30,7 +31,18 @@ export class IgcCalendarBaseComponent extends LitElement {
   private _initialActiveDateSet = false;
 
   protected get _hasValues(): boolean {
-    return this._values && this._values.length > 0;
+    return this._values.length > 0;
+  }
+
+  /**
+   * The index of the first day of the week (Sunday = 0) as derived from {@link weekStart}.
+   *
+   * @remarks
+   * Derived on access instead of in `update()`, so that its consumers are not sensitive
+   * to the order in which the base class and its descendants update.
+   */
+  protected get _firstDayOfWeek(): number {
+    return getWeekDayNumber(this.weekStart);
   }
 
   protected get _isSingle(): boolean {
@@ -47,9 +59,6 @@ export class IgcCalendarBaseComponent extends LitElement {
 
   @state()
   protected _rangePreviewDate?: CalendarDay;
-
-  @state()
-  protected _firstDayOfWeek = 0;
 
   @state()
   protected _activeDate = CalendarDay.today;
@@ -167,9 +176,15 @@ export class IgcCalendarBaseComponent extends LitElement {
     return this._i18nController.resourceStrings;
   }
 
-  /** Gets/Sets the special dates for the component. */
+  /**
+   * Gets/Sets the special dates for the component.
+   *
+   * @remarks
+   * Returns `undefined` when no dates are set, which the setter accepts as well so that
+   * a round trip through the property is valid.
+   */
   @property({ attribute: false })
-  public set specialDates(value: DateRangeDescriptor[]) {
+  public set specialDates(value: DateRangeDescriptor[] | undefined) {
     this._specialDates = value ?? [];
   }
 
@@ -177,9 +192,15 @@ export class IgcCalendarBaseComponent extends LitElement {
     return this._specialDates.length ? this._specialDates : undefined;
   }
 
-  /** Gets/Sets the disabled dates for the component. */
+  /**
+   * Gets/Sets the disabled dates for the component.
+   *
+   * @remarks
+   * Returns `undefined` when no dates are set, which the setter accepts as well so that
+   * a round trip through the property is valid.
+   */
   @property({ attribute: false })
-  public set disabledDates(value: DateRangeDescriptor[]) {
+  public set disabledDates(value: DateRangeDescriptor[] | undefined) {
     this._disabledDates = value ?? [];
   }
 
@@ -188,11 +209,7 @@ export class IgcCalendarBaseComponent extends LitElement {
   }
 
   /** @internal */
-  protected override update(props: PropertyValues<this>): void {
-    if (props.has('weekStart')) {
-      this._firstDayOfWeek = getWeekDayNumber(this.weekStart);
-    }
-
+  protected override update(props: PropertyValues): void {
     if (props.has('selection') && this.hasUpdated) {
       this._rangePreviewDate = undefined;
       this._value = null;

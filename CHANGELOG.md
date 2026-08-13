@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 ### Added
+- #### Calendar
+  - The `label-inner`, `months-row` and `years-row` parts are now exported by `igc-calendar`, and by the pickers as `calendar-label-inner`, `months-row` and `years-row`. They were rendered by the views but not re-exported, so they could not be styled through the calendar.
 - #### Mask input, Date time input, Date range picker
   - The masked editors now support the standard undo/redo shortcuts - `Ctrl + Z` / `Cmd + Z` to undo and `Ctrl + Y`, `Ctrl + Shift + Z` / `Cmd + Shift + Z` to redo. Previously these did nothing, because rendering the masked text reassigns the native input's value and that clears the browser's own undo stack.
     - A run of consecutive typed characters, or of consecutive deletions, collapses into a single undo step. Moving the caret, pasting, dropping, cutting, spinning a date part, or composing with an IME each start a step of their own.
@@ -60,6 +62,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - `igc-tab` elements projected through an intermediate slot are now picked up, so `igc-tabs` can be wrapped by another component.
 
 ### Fixed
+- #### Calendar
+  - A calendar showing several months announced every navigation once per visible month, because the off screen live region holding the current period was rendered together with each month's navigation. There is now a single live region for the whole calendar.
+  - A calendar showing more than one month exposed one tab stop per visible month, so tabbing through it stepped into every month's grid instead of leaving the calendar. Only the active days view now holds the tab stop of its active date.
+  - Time only date strings are resolved against the current local date rather than the UTC one, which shifted the parsed date by a day near midnight in some time zones.
+  - Stale `week-start` resolution until a subsequent update fixed the view. Now `week-start` is correctly resolved and rendered on initial render.
+  - Clamp keyboard navigation logic to a no-op when navigating over a large amount of disabled dates which could hang the browser.
 - #### Form associated components
   - Validation messages no longer disappear right after the first failed form submission. The submit-driven invalid state used to hold only for the update the submission itself scheduled, so any re-render that followed - a `slotchange` from the validation slots the submission had just projected, for instance - silently dropped the projected messages while the invalid styling stayed on.
   - Invalid styling now follows the validity state, so a control that turns valid again (a cleared `required`, a widened `min`/`max`, a disabled control) drops the styles it picked up from an earlier interaction or submission.

@@ -1,5 +1,5 @@
 import { ValidationResourceStringsEN } from 'igniteui-i18n-core';
-import { CalendarDay } from '../components/calendar/model.js';
+import { CalendarDay } from './date/model.js';
 import { asNumber, numberOfDecimals, roundPrecise } from './utils/math.js';
 import { formatString } from './utils/strings.js';
 import { isDefined } from './utils/types.js';

@@ -6,7 +6,13 @@ import {
   arrowUp,
   escapeKey,
 } from '#internals/controllers/key-bindings.js';
+import { CalendarDay } from '#internals/date/model.js';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
+import {
+  getCalendarDOM,
+  getDayViewDOM,
+  getDOMDate,
+} from '#internals/testing/calendar.spec.js';
 import { runExternalLabelAssociationTests } from '#internals/testing/form-testbed.spec.js';
 import { checkDatesEqual, isFocused } from '#internals/testing/helpers.spec.js';
 import {
@@ -15,12 +21,6 @@ import {
   simulateKeyboard,
 } from '#internals/testing/simulate.spec.js';
 import IgcCalendarComponent from '../calendar/calendar.js';
-import {
-  getCalendarDOM,
-  getDayViewDOM,
-  getDOMDate,
-} from '../calendar/helpers.spec.js';
-import { CalendarDay } from '../calendar/model.js';
 import { DateRangeType } from '../calendar/types.js';
 import IgcDateTimeInputComponent from '../date-time-input/date-time-input.js';
 import IgcDatePickerComponent from './date-picker.js';

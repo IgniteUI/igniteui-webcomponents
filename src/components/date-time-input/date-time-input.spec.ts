@@ -9,6 +9,8 @@ import {
   arrowUp,
   ctrlKey,
 } from '#internals/controllers/key-bindings.js';
+import { isValidDate } from '#internals/date/converters.js';
+import { CalendarDay, toCalendarDay } from '#internals/date/model.js';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
 import {
   createFormAssociatedTestBed,
@@ -25,8 +27,6 @@ import {
   type ValidationContainerTestsParams,
   ValidityHelpers,
 } from '#internals/testing/validity-helpers.spec.js';
-import { isValidDate } from '../calendar/helpers.js';
-import { CalendarDay, toCalendarDay } from '../calendar/model.js';
 import { DatePart } from './date-part.js';
 import IgcDateTimeInputComponent from './date-time-input.js';
 import { DateTimeMaskParser } from './datetime-mask-parser.js';

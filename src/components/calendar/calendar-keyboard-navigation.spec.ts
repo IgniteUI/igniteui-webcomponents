@@ -13,7 +13,13 @@ import {
   shiftKey,
   spaceBar,
 } from '#internals/controllers/key-bindings.js';
+import { CalendarDay } from '#internals/date/model.js';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
+import {
+  getCalendarDOM,
+  getDayViewDOM,
+  getDOMDate,
+} from '#internals/testing/calendar.spec.js';
 import {
   simulateClick,
   simulateKeyboard,
@@ -23,8 +29,6 @@ import { asNumber } from '#internals/utils/math.js';
 import IgcCalendarComponent from './calendar.js';
 import type IgcDaysViewComponent from './days-view/days-view.js';
 import { getYearRange, MONTHS_PER_ROW, YEARS_PER_ROW } from './helpers.js';
-import { getCalendarDOM, getDayViewDOM, getDOMDate } from './helpers.spec.js';
-import { CalendarDay } from './model.js';
 import type IgcMonthsViewComponent from './months-view/months-view.js';
 import { DateRangeType } from './types.js';
 import type IgcYearsViewComponent from './years-view/years-view.js';
@@ -293,6 +297,54 @@ describe('Calendar keyboard interaction', () => {
       simulateKeyboard(getActiveDOM(), endKey);
       await elementUpdated(calendar);
       expect(date.set({ date: 24 }).equalTo(calendar.activeDate)).to.be.true;
+    });
+
+    it('stays put when every date in the direction of travel is disabled', async () => {
+      const date = new CalendarDay({ year: 2024, month: 1, date: 14 });
+      const getActiveDOM = () =>
+        getDOMDate(CalendarDay.from(calendar.activeDate), daysView);
+
+      calendar.activeDate = date.native;
+      // Equivalent to what a picker with `min`/`max` set to the active date passes down
+      calendar.disabledDates = [
+        { type: DateRangeType.After, dateRange: [date.native] },
+        { type: DateRangeType.Before, dateRange: [date.native] },
+      ];
+      await elementUpdated(calendar);
+
+      for (const key of [
+        arrowRight,
+        arrowLeft,
+        arrowDown,
+        arrowUp,
+        pageDownKey,
+        pageUpKey,
+        homeKey,
+        endKey,
+      ]) {
+        simulateKeyboard(getActiveDOM(), key);
+        await elementUpdated(calendar);
+        expect(date.equalTo(calendar.activeDate)).to.be.true;
+      }
+    });
+
+    it('stays put when both weekdays and weekends are disabled', async () => {
+      const date = new CalendarDay({ year: 2024, month: 1, date: 14 });
+
+      calendar.activeDate = date.native;
+      calendar.disabledDates = [
+        { type: DateRangeType.Weekdays },
+        { type: DateRangeType.Weekends },
+      ];
+      await elementUpdated(calendar);
+
+      simulateKeyboard(
+        getDOMDate(CalendarDay.from(calendar.activeDate), daysView),
+        arrowRight
+      );
+      await elementUpdated(calendar);
+
+      expect(date.equalTo(calendar.activeDate)).to.be.true;
     });
   });
 

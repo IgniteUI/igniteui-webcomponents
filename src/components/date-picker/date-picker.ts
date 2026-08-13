@@ -8,6 +8,7 @@ import { html, nothing, type TemplateResult } from 'lit';
 import { property, query } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { addSlotController, setSlots } from '#internals/controllers/slot.js';
+import { convertToDate } from '#internals/date/converters.js';
 import { blazorAdditionalDependencies } from '#internals/decorators/blazorAdditionalDependencies.js';
 import { shadowOptions } from '#internals/decorators/shadow-options.js';
 import { registerComponent } from '#internals/definitions/register.js';
@@ -20,11 +21,10 @@ import type { AbstractConstructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { FormValueDateTimeTransformers } from '#internals/mixins/forms/form-transformers.js';
 import { createFormValueState } from '#internals/mixins/forms/form-value.js';
+import { firstOf } from '#internals/utils/arrays.js';
 import { bindIf } from '#internals/utils/lit.js';
 import { createIdGenerator } from '#internals/utils/strings.js';
 import { addThemingController } from '#theming/theming-controller.js';
-import type IgcCalendarComponent from '../calendar/calendar.js';
-import { convertToDate } from '../calendar/helpers.js';
 import type { CalendarSelection } from '../calendar/types.js';
 import type { DatePart } from '../date-time-input/date-part.js';
 import IgcDateTimeInputComponent from '../date-time-input/date-time-input.js';
@@ -262,6 +262,10 @@ export default class IgcDatePickerComponent extends EventEmitterMixin<
     this._input?.clear();
   }
 
+  protected override _valueFromCalendarSelection(dates: Date[]): Date | null {
+    return firstOf(dates) ?? null;
+  }
+
   /**
    * A committed edit in the input already emits `igcChange` on its own, so only a
    * value which the picker itself has changed is left to notify about here.
@@ -332,26 +336,6 @@ export default class IgcDatePickerComponent extends EventEmitterMixin<
     this._setTouchedState();
     this.value = (event.target as IgcDateTimeInputComponent).value!;
     this.emitEvent('igcChange', { detail: this.value });
-  }
-
-  protected override async _handleCalendarChangeEvent(
-    event: CustomEvent<Date>
-  ): Promise<void> {
-    event.stopPropagation();
-
-    this._setTouchedState();
-
-    if (this.readOnly) {
-      // Wait till the calendar finishes updating and then restore the current value from the date-picker.
-      await this._calendar.updateComplete;
-      this._calendar.value = this.value;
-      return;
-    }
-
-    this.value = (event.target as IgcCalendarComponent).value!;
-    this.emitEvent('igcChange', { detail: this.value });
-
-    this._shouldCloseCalendarDropdown();
   }
 
   protected _handleInputEvent(event: CustomEvent<Date>): void {
