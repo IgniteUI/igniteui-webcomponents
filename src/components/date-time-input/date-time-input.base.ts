@@ -1,7 +1,8 @@
 import { getDateFormatter } from 'igniteui-i18n-core';
 import { LitElement, type PropertyValues, type TemplateResult } from 'lit';
-import { eventOptions, property, query, state } from 'lit/decorators.js';
+import { eventOptions, property, query } from 'lit/decorators.js';
 import { cache } from 'lit/directives/cache.js';
+import { addAriaTarget } from '#internals/controllers/aria-projection.js';
 import {
   addKeybindings,
   arrowDown,
@@ -68,24 +69,17 @@ export abstract class IgcDateTimeInputBaseComponent<
   protected override readonly _input?: HTMLInputElement;
 
   /**
-   * Externally supplied label elements forwarded by a composite host (e.g. `igc-date-picker`)
-   * so that the host's associated labels reach the inner native input. When set, these take
-   * precedence over the component's own `ElementInternals` labels.
-   *
-   * @hidden @internal
+   * Receives ARIA semantics projected by a composite host
+   * (e.g. `igc-date-picker`) onto the inner native input.
+   * See {@link addAriaTarget}.
    */
-  @state()
-  public _labelElements: ReadonlyArray<Element> | null = null;
-
-  /**
-   * Resolves the label elements applied to the native input as `aria-labelledby` targets,
-   * preferring forwarded labels over the component's own `ElementInternals` labels.
-   *
-   * @hidden @internal
-   */
-  protected get _resolvedLabelElements(): ReadonlyArray<Element> | null {
-    return this._labelElements ?? this._internals.labels;
-  }
+  protected readonly _ariaTarget = addAriaTarget(this, {
+    labels: () => this._internals.labels,
+    description: () =>
+      this._slots.hasAssignedElements('helper-text')
+        ? this.renderRoot.querySelector('#helper-text')
+        : null,
+  });
 
   protected override get __validators() {
     return dateTimeInputValidators;
@@ -586,7 +580,6 @@ export abstract class IgcDateTimeInputBaseComponent<
 
   protected _renderInput(): TemplateResult {
     const hasNegativeTabIndex = this.getAttribute('tabindex') === '-1';
-    const hasHelperText = this._slots.hasAssignedElements('helper-text');
 
     return renderMaskedNativeInput({
       id: this._inputId,
@@ -597,8 +590,7 @@ export abstract class IgcDateTimeInputBaseComponent<
       readOnly: this.readOnly,
       disabled: this.disabled,
       tabindex: hasNegativeTabIndex ? -1 : undefined,
-      ariaDescribedBy: hasHelperText ? 'helper-text' : undefined,
-      ariaLabelledByElements: this._resolvedLabelElements,
+      aria: this._ariaTarget.resolveBindings(),
       onInput: this._handleInput,
       onBeforeInput: this._handleBeforeInput,
       onFocus: this._handleFocus,

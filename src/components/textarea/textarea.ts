@@ -10,6 +10,10 @@ import { cache } from 'lit/directives/cache.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 import { styleMap } from 'lit/directives/style-map.js';
+import {
+  addAriaTarget,
+  ariaBindings,
+} from '#internals/controllers/aria-projection.js';
 import { createResizeObserverController } from '#internals/controllers/resize-observer.js';
 import {
   addSlotController,
@@ -111,6 +115,18 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
   private readonly _slots = addSlotController(this, {
     slots: Slots,
     onChange: this._handleSlotChange,
+  });
+
+  /**
+   * Receives ARIA semantics projected by a composite host onto the inner
+   * native textarea. See {@link addAriaTarget}.
+   */
+  private readonly _ariaTarget = addAriaTarget(this, {
+    labels: () => this._internals.labels,
+    description: () =>
+      this._slots.hasAssignedElements('helper-text')
+        ? this.renderRoot.querySelector('#helper-text')
+        : null,
   });
 
   @query('textarea')
@@ -458,13 +474,10 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
   }
 
   protected _renderInput() {
-    const describedBy = this._slots.hasAssignedElements('helper-text')
-      ? 'helper-text'
-      : nothing;
-
     return html`
       <slot style="display: none"></slot>
       <textarea
+        ${ariaBindings(this._ariaTarget.resolveBindings())}
         id=${this.id || this._inputId}
         part="input"
         style=${styleMap({
@@ -485,8 +498,6 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
         ?disabled=${this.disabled}
         ?required=${this.required}
         ?readonly=${this.readOnly}
-        aria-describedby=${describedBy}
-        .ariaLabelledByElements=${this._internals.labels}
       ></textarea>
     `;
   }

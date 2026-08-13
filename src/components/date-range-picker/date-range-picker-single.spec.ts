@@ -17,7 +17,10 @@ import {
 } from '#internals/controllers/key-bindings.js';
 import { CalendarDay } from '#internals/date/model.js';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
-import { runExternalLabelAssociationTests } from '#internals/testing/form-testbed.spec.js';
+import {
+  runAriaProjectionTests,
+  runExternalLabelAssociationTests,
+} from '#internals/testing/form-testbed.spec.js';
 import { isFocused } from '#internals/testing/helpers.spec.js';
 import {
   simulateClick,
@@ -46,6 +49,22 @@ describe('Date range picker - single input', () => {
           IgcDateRangeInputComponent.tagName
         )!
         .renderRoot.querySelector('input')!,
+  });
+
+  runAriaProjectionTests({
+    tagName: IgcDateRangePickerComponent.tagName,
+    getNativeInput: (host) =>
+      (host as IgcDateRangePickerComponent).renderRoot
+        .querySelector<IgcDateRangeInputComponent>(
+          IgcDateRangeInputComponent.tagName
+        )!
+        .renderRoot.querySelector('input')!,
+    expected: { hasPopup: 'dialog' },
+    getDescription: (host) => [
+      (host as IgcDateRangePickerComponent).renderRoot.querySelector(
+        '#helper-text'
+      )!,
+    ],
   });
 
   let picker: IgcDateRangePickerComponent;

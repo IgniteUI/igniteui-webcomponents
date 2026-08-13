@@ -89,3 +89,16 @@ export function suppressResizeObserverLoopError(): void {
     return errorHandler ? errorHandler(message, ...args) : false;
   };
 }
+
+/**
+ * Axe options for components that publish required ARIA relations
+ * (e.g. `aria-controls` on a `combobox`) through ARIA element reflection.
+ *
+ * Reflection blanks the content attribute axe reads, so axe reports the
+ * relation as missing and trips `aria-required-attr`. Specs using this must
+ * assert the real relation by identity readback instead
+ * (e.g. `input.ariaControlsElements[0] === list`).
+ */
+export const axeReflectedRelationsOptions = {
+  ignoredRules: ['aria-required-attr'],
+};

@@ -10,6 +10,7 @@ import { property, query, queryAll, state } from 'lit/decorators.js';
 import { cache } from 'lit/directives/cache.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
+import { addAriaProjector } from '#internals/controllers/aria-projection.js';
 import { addSlotController, setSlots } from '#internals/controllers/slot.js';
 import { convertToDateRange } from '#internals/date/converters.js';
 import { CalendarDay } from '#internals/date/model.js';
@@ -316,8 +317,8 @@ export default class IgcDateRangePickerComponent extends EventEmitterMixin<
     return this._defaultMask;
   }
 
-  protected override get _labelTarget() {
-    // Forward the host's associated labels only to the start input.
+  protected override get _projectionTarget() {
+    // The host's associated labels are projected only onto the start input.
     return this._input ?? this._inputs?.[0] ?? null;
   }
 
@@ -487,6 +488,17 @@ export default class IgcDateRangePickerComponent extends EventEmitterMixin<
   // #endregion
 
   // #region Life-cycle hooks
+
+  constructor() {
+    super();
+
+    // The base class projector covers the start editor. In two-input mode the
+    // end editor needs the picker popup semantics as well, labels excluded.
+    addAriaProjector(this, {
+      target: () => this._inputs[1] ?? null,
+      state: () => ({ hasPopup: 'dialog' }),
+    });
+  }
 
   protected override willUpdate(changedProperties: PropertyValues<this>): void {
     super.willUpdate(changedProperties);
@@ -804,7 +816,6 @@ export default class IgcDateRangePickerComponent extends EventEmitterMixin<
     return html`
       <igc-date-time-input
         id=${id}
-        aria-haspopup="dialog"
         input-format=${ifDefined(this._inputFormat)}
         display-format=${ifDefined(format)}
         ?disabled=${this.disabled}
@@ -854,7 +865,6 @@ export default class IgcDateRangePickerComponent extends EventEmitterMixin<
         id=${id}
         .value=${live(this.value)}
         .placeholder=${this.placeholder}
-        aria-haspopup="dialog"
         label=${this.label}
         ?readonly=${this._isEditorReadOnly}
         ?required=${this.required}

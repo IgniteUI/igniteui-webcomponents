@@ -1,6 +1,7 @@
 import { LitElement, nothing, type TemplateResult } from 'lit';
-import { property, query, state } from 'lit/decorators.js';
+import { property, query } from 'lit/decorators.js';
 import { cache } from 'lit/directives/cache.js';
+import { addAriaTarget } from '#internals/controllers/aria-projection.js';
 import type { SlotController } from '#internals/controllers/slot.js';
 import { blazorDeepImport } from '#internals/decorators/blazorDeepImport.js';
 import { shadowOptions } from '#internals/decorators/shadow-options.js';
@@ -13,18 +14,6 @@ import {
   resolveInputPartNames,
 } from '#internals/templates/input-shell.js';
 import type { ThemingController } from '#theming/theming-controller.js';
-
-/**
- * ARIA semantics a composite host can project onto the native input.
- *
- * @hidden @internal
- */
-export type InputAriaProperties = {
-  role?: string;
-  hasPopup?: string;
-  expanded?: string;
-  controls?: ReadonlyArray<Element> | null;
-};
 
 export interface IgcInputComponentEventMap {
   /* alternateName: inputOcurred */
@@ -57,35 +46,16 @@ export abstract class IgcInputBaseComponent extends FormAssociatedRequiredMixin(
   protected readonly _input?: HTMLInputElement;
 
   /**
-   * Externally supplied label elements forwarded by a composite host (e.g. `igc-select`)
-   * so that the host's associated labels reach the inner native input. When set, these take
-   * precedence over the component's own `ElementInternals` labels.
-   *
-   * @hidden @internal
+   * Receives ARIA semantics projected by a composite host (e.g. `igc-select`)
+   * onto the inner native input. See {@link addAriaTarget}.
    */
-  @state()
-  public _labelElements: ReadonlyArray<Element> | null = null;
-
-  /**
-   * Resolves the label elements applied to the native input as `aria-labelledby` targets,
-   * preferring forwarded labels over the component's own `ElementInternals` labels.
-   *
-   * @hidden @internal
-   */
-  protected get _resolvedLabelElements(): ReadonlyArray<Element> | null {
-    return this._labelElements ?? this._internals.labels;
-  }
-
-  /**
-   * ARIA semantics forwarded by a composite host (e.g. `igc-select`) onto the
-   * inner native input, which is the element assistive technology lands on and
-   * reports once the host delegates focus to it. `controls` takes elements
-   * rather than an id, as the target sits outside the input's shadow root.
-   *
-   * @hidden @internal
-   */
-  @state()
-  public _ariaProperties: InputAriaProperties = {};
+  protected readonly _ariaTarget = addAriaTarget(this, {
+    labels: () => this._internals.labels,
+    description: () =>
+      this._slots.hasAssignedElements('helper-text')
+        ? this.renderRoot.querySelector('#helper-text')
+        : null,
+  });
 
   /* blazorSuppress */
   /** The value of the control. */

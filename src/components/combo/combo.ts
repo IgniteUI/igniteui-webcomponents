@@ -3,9 +3,10 @@ import {
   type IComboResourceStrings,
 } from 'igniteui-i18n-core';
 import { html, type PropertyValues, type TemplateResult } from 'lit';
-import { property, state } from 'lit/decorators.js';
+import { property, query, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { createRef, ref } from 'lit/directives/ref.js';
+import { addAriaProjector } from '#internals/controllers/aria-projection.js';
 import { addRootClickController } from '#internals/controllers/root-click.js';
 import { addSlotController, setSlots } from '#internals/controllers/slot.js';
 import { blazorAdditionalDependencies } from '#internals/decorators/blazorAdditionalDependencies.js';
@@ -199,6 +200,9 @@ export default class IgcComboComponent<
 
   /** The primary input of the combo component. */
   private readonly _inputRef = createRef<IgcInputComponent>();
+
+  @query('#combo-helper-text')
+  private readonly _helperText!: IgcValidationContainerComponent | null;
 
   /** The search input of the combo component. */
   private readonly _searchRef = createRef<IgcInputComponent>();
@@ -585,6 +589,24 @@ export default class IgcComboComponent<
     addThemingController(this, all, {
       themeChange: () => this._listRef.value?.requestUpdate(),
     });
+
+    // Projects the host's labels and combobox semantics onto the native
+    // input inside `igc-input` (see ProjectedARIA for why the host cannot
+    // publish these itself). `aria-activedescendant` stays on the listbox,
+    // which holds DOM focus while the list is navigated.
+    addAriaProjector(this, {
+      target: () => this._inputRef.value,
+      state: () => ({
+        role: 'combobox',
+        hasPopup: 'listbox',
+        expanded: `${this.open}`,
+        disabled: `${this.disabled}`,
+        label: this._mainAriaLabel,
+        controls: this._listRef.value ? [this._listRef.value] : null,
+        describedBy: this._helperText ? [this._helperText] : null,
+        labelledBy: this._internals.labels,
+      }),
+    });
     addSafeEventListener(this, 'blur', this._handleBlur);
     addSafeEventListener(this, 'focusin', this._handleFocusIn);
   }
@@ -626,13 +648,6 @@ export default class IgcComboComponent<
       callback();
     } finally {
       this._pristine = pristine;
-    }
-  }
-
-  protected override updated(props: PropertyValues<this>): void {
-    super.updated(props);
-    if (this._inputRef.value) {
-      this._inputRef.value._labelElements = this._internals.labels;
     }
   }
 
@@ -1205,6 +1220,7 @@ export default class IgcComboComponent<
       <span
         slot="suffix"
         part="clear-icon"
+        role="button"
         @click=${this._handleClearIconClick}
         ?hidden=${this.disableClear || isEmpty(this._selected)}
         aria-label=${ifDefined(
@@ -1231,13 +1247,6 @@ export default class IgcComboComponent<
         ${ref(this._inputRef)}
         id="target"
         slot="anchor"
-        role="combobox"
-        aria-controls="dropdown"
-        aria-owns="dropdown"
-        aria-expanded=${this.open}
-        aria-describedby="combo-helper-text"
-        aria-disabled=${this.disabled}
-        aria-label=${this._mainAriaLabel}
         exportparts="container: input, input: native-input, label, prefix, suffix"
         @click=${this._handleAnchorClick}
         placeholder=${ifDefined(this.placeholder)}
