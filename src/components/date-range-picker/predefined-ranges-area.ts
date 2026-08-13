@@ -4,12 +4,12 @@ import {
 } from 'igniteui-i18n-core';
 import { html, LitElement } from 'lit';
 import { property, state } from 'lit/decorators.js';
+import { CalendarDay } from '#internals/date/model.js';
 import { watch } from '#internals/decorators/watch.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import type { IgcDateRangePickerResourceStrings } from '#internals/i18n/EN/date-range-picker.resources.js';
 import { addI18nController } from '#internals/i18n/i18n-controller.js';
 import { addThemingController } from '#theming/theming-controller.js';
-import { CalendarDay } from '../calendar/model.js';
 import IgcChipComponent from '../chip/chip.js';
 import type {
   CustomDateRange,

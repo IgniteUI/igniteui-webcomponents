@@ -1,17 +1,16 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import { spy } from 'sinon';
+import { CalendarDay, calendarRange } from '#internals/date/model.js';
+import {
+  getCalendarDOM,
+  getDayViewDOM,
+  getDOMDate,
+} from '#internals/testing/calendar.spec.js';
 import { simulateClick } from '#internals/testing/simulate.spec.js';
 import { firstOf, lastOf } from '#internals/utils/arrays.js';
 import { defineComponents, IgcCalendarComponent } from '../../index.js';
 import type IgcDaysViewComponent from './days-view/days-view.js';
-import {
-  calendarRange,
-  generateMonth,
-  getWeekDayNumber,
-  isDateInRanges,
-} from './helpers.js';
-import { getCalendarDOM, getDayViewDOM, getDOMDate } from './helpers.spec.js';
-import { CalendarDay } from './model.js';
+import { generateMonth, getWeekDayNumber, isDateInRanges } from './helpers.js';
 import { type DateRangeDescriptor, DateRangeType } from './types.js';
 
 describe('Calendar interactions', () => {

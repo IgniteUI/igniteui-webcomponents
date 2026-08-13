@@ -1,8 +1,5 @@
 import { expect, nextFrame } from '@open-wc/testing';
-import {
-  type CalendarDay,
-  toCalendarDay,
-} from '../../components/calendar/model.js';
+import { type CalendarDay, toCalendarDay } from '../date/model.js';
 import { toKebabCase } from '../utils/strings.js';
 
 /**

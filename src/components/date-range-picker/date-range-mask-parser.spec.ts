@@ -1,6 +1,6 @@
 import { expect } from '@open-wc/testing';
 
-import { CalendarDay } from '../calendar/model.js';
+import { CalendarDay } from '#internals/date/model.js';
 import { DatePartType } from '../date-time-input/date-part.js';
 import {
   DateRangeMaskParser,

@@ -7,6 +7,7 @@ import {
   arrowUp,
   escapeKey,
 } from '#internals/controllers/key-bindings.js';
+import { CalendarDay } from '#internals/date/model.js';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
 import type { IgcDateRangePickerResourceStrings } from '#internals/i18n/EN/date-range-picker.resources.js';
 import { checkDatesEqual } from '#internals/testing/helpers.spec.js';
@@ -16,7 +17,6 @@ import {
 } from '#internals/testing/simulate.spec.js';
 import type IgcButtonComponent from '../button/button.js';
 import IgcCalendarComponent from '../calendar/calendar.js';
-import { CalendarDay } from '../calendar/model.js';
 import { DateRangeType } from '../calendar/types.js';
 import IgcChipComponent from '../chip/chip.js';
 import IgcDialogComponent from '../dialog/dialog.js';

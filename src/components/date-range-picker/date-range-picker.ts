@@ -11,6 +11,8 @@ import { cache } from 'lit/directives/cache.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 import { addSlotController, setSlots } from '#internals/controllers/slot.js';
+import { convertToDateRange } from '#internals/date/converters.js';
+import { CalendarDay } from '#internals/date/model.js';
 import { blazorAdditionalDependencies } from '#internals/decorators/blazorAdditionalDependencies.js';
 import { shadowOptions } from '#internals/decorators/shadow-options.js';
 import { registerComponent } from '#internals/definitions/register.js';
@@ -30,8 +32,6 @@ import { asNumber, clamp } from '#internals/utils/math.js';
 import { createIdGenerator } from '#internals/utils/strings.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import type IgcCalendarComponent from '../calendar/calendar.js';
-import { convertToDateRange } from '../calendar/helpers.js';
-import { CalendarDay } from '../calendar/model.js';
 import type { CalendarSelection } from '../calendar/types.js';
 import {
   IgcDatePickerBaseComponent,

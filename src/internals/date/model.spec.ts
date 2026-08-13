@@ -1,13 +1,9 @@
 import { expect } from '@open-wc/testing';
 
-import { firstOf, lastOf } from '#internals/utils/arrays.js';
-import { calendarRange, isDateInRanges } from './helpers.js';
-import { CalendarDay } from './model.js';
-import { DateRangeType } from './types.js';
+import { firstOf, lastOf } from '../utils/arrays.js';
+import { CalendarDay, calendarRange } from './model.js';
 
 describe('Calendar day model', () => {
-  const start = new CalendarDay({ year: 1987, month: 6, date: 17 });
-
   describe('Basic API', () => {
     const firstOfJan = new CalendarDay({ year: 2024, month: 0, date: 1 });
 
@@ -179,68 +175,6 @@ describe('Calendar day model', () => {
 
       expect(firstOf(weekPast).date).to.equal(start.date);
       expect(lastOf(weekPast).date).to.equal(endPast.date + 1);
-    });
-  });
-
-  describe('DateRange descriptors', () => {
-    const dayBefore = start.add('day', -1).native;
-    const dayAfter = start.add('day', 1).native;
-    const [begin, end] = [
-      start.add('week', -1).native,
-      start.add('week', 1).native,
-    ];
-
-    it('After', () => {
-      expect(
-        isDateInRanges(start, [
-          { type: DateRangeType.After, dateRange: [dayBefore] },
-        ])
-      ).to.be.true;
-    });
-
-    it('Before', () => {
-      expect(
-        isDateInRanges(start, [
-          { type: DateRangeType.Before, dateRange: [dayAfter] },
-        ])
-      ).to.be.true;
-    });
-
-    it('Between', () => {
-      expect(
-        isDateInRanges(start, [
-          {
-            type: DateRangeType.Between,
-            dateRange: [begin, end],
-          },
-        ])
-      ).to.be.true;
-    });
-
-    it('Specific', () => {
-      expect(
-        isDateInRanges(start, [
-          {
-            type: DateRangeType.Specific,
-            dateRange: [],
-          },
-        ])
-      ).to.be.false;
-    });
-
-    it('Weekday', () => {
-      expect(isDateInRanges(start, [{ type: DateRangeType.Weekdays }])).to.be
-        .true;
-    });
-
-    it('Weekends', () => {
-      expect(
-        isDateInRanges(start, [
-          {
-            type: DateRangeType.Weekends,
-          },
-        ])
-      ).to.be.false;
     });
   });
 });

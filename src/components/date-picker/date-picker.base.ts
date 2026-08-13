@@ -9,6 +9,7 @@ import {
   escapeKey,
 } from '#internals/controllers/key-bindings.js';
 import { addRootClickController } from '#internals/controllers/root-click.js';
+import { convertToDate } from '#internals/date/converters.js';
 import { IgcComboBoxBaseLikeComponent } from '#internals/mixins/combo-box.js';
 import type { AbstractConstructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
@@ -22,7 +23,7 @@ import { bindIf } from '#internals/utils/lit.js';
 import { equal } from '#internals/utils/objects.js';
 import type { ThemingController } from '#theming/theming-controller.js';
 import IgcCalendarComponent, { focusActiveDate } from '../calendar/calendar.js';
-import { convertToDate, createDateConstraints } from '../calendar/helpers.js';
+import { createDateConstraints } from '../calendar/helpers.js';
 import type {
   CalendarHeaderOrientation,
   CalendarSelection,
@@ -57,7 +58,8 @@ export interface IgcPickerBaseEventMap<T> {
 export const calendarExportParts =
   `header, header-title, header-date, content: calendar-content, navigation, months-navigation,
   years-navigation, years-range, navigation-buttons, navigation-button, days-view-container,
-  days-view, months-view, years-view, days-row, label: calendar-label, week-number, week-number-inner, date,
+  days-view, months-view, years-view, days-row, months-row, years-row, label: calendar-label,
+  label-inner: calendar-label-inner, week-number, week-number-inner, date,
   date-inner, first, last, inactive, hidden, weekend, range, special, disabled, single, preview,
   month, month-inner, year, year-inner, selected, current` as const;
 

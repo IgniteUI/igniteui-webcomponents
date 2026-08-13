@@ -1,15 +1,13 @@
-import { firstOf, lastOf } from '#internals/utils/arrays.js';
-import { getElementFromPath } from '#internals/utils/events.js';
-import { asNumber, modulo } from '#internals/utils/math.js';
-import { isString } from '#internals/utils/types.js';
-import type { DateRangeValue } from '../types.js';
 import {
   CalendarDay,
-  type CalendarRangeParams,
+  calendarRange,
   DAYS_IN_WEEK,
   type DayParameter,
   toCalendarDay,
-} from './model.js';
+} from '#internals/date/model.js';
+import { firstOf, lastOf } from '#internals/utils/arrays.js';
+import { getElementFromPath } from '#internals/utils/events.js';
+import { asNumber, modulo } from '#internals/utils/math.js';
 import {
   type DateRangeDescriptor,
   DateRangeType,
@@ -23,8 +21,6 @@ export const YEARS_PER_ROW = 3;
 export const YEARS_PER_PAGE = 15;
 
 const CALENDAR_CELLS = 42; // 6 weeks × 7 days
-const ISO_DATE_PATTERN = /^\d{4}/;
-const TIME_PATTERN = /^\d{2}/;
 const WEEK_DAYS_MAP = {
   sunday: 0,
   monday: 1,
@@ -34,117 +30,6 @@ const WEEK_DAYS_MAP = {
   friday: 5,
   saturday: 6,
 } as const;
-
-/* Converter functions */
-
-/**
- * Type guard to check if a value is a valid Date object.
- */
-export function isValidDate(value: unknown): value is Date {
-  if (value instanceof Date) {
-    return !Number.isNaN(value.getTime());
-  }
-  return false;
-}
-
-export function parseISODate(string: string): Date | null {
-  // ISO date format (YYYY-MM-DD)
-  if (ISO_DATE_PATTERN.test(string)) {
-    const timeComponent = !string.includes('T') ? 'T00:00:00' : '';
-    return getValidDate(new Date(`${string}${timeComponent}`));
-  }
-
-  // Time format (HH:MM:SS)
-  if (TIME_PATTERN.test(string)) {
-    const today = firstOf(new Date().toISOString().split('T'));
-    return getValidDate(new Date(`${today}T${string}`));
-  }
-
-  return null;
-}
-
-/**
- * Converts the given value to a Date object.
- *
- * If the value is already a valid Date object, it is returned directly.
- * If the value is a string, it is parsed into a Date object.
- * If the value is null or undefined, null is returned.
- * If the parsing fails, null is returned.
- */
-export function convertToDate(value?: Date | string | null): Date | null {
-  if (!value) {
-    return null;
-  }
-
-  return isString(value) ? parseISODate(value) : getValidDate(value);
-}
-
-/**
- * Converts the given value to a DateRangeValue object.
- *
- * If the value is already a valid DateRangeValue object, it is returned directly.
- * If the value is a string, it is parsed to object and returned if it fields are valid dates.
- * If the value is null or undefined, null is returned.
- * If the parsing fails, null is returned.
- */
-export function convertToDateRange(
-  value?: DateRangeValue | string | null
-): DateRangeValue | null {
-  if (!value) {
-    return null;
-  }
-
-  if (isString(value)) {
-    const obj = JSON.parse(value);
-    const start = convertToDate(obj.start);
-    const end = convertToDate(obj.end);
-    return {
-      start: start ? CalendarDay.from(start).native : null,
-      end: end ? CalendarDay.from(end).native : null,
-    };
-  }
-  return value;
-}
-
-/**
- * Converts a Date object to an ISO 8601 string.
- *
- * If the `value` is a `Date` object, it is converted to an ISO 8601 string.
- * If the `value` is null or undefined, null is returned.
- */
-export function getDateFormValue(value: Date | null): string | null {
-  return value ? value.toISOString() : null;
-}
-
-/**
- * Converts a comma-separated string of ISO 8601 dates or an array of Date objects | ISO 8601 strings into
- * an array of Date objects.
- *
- * If the `value` is null or undefined, null is returned.
- * If the `value` is an array of `Date` objects, a filtered array of valid `Date` objects is returned.
- * If the `value` is a string, it is split by commas and each part is parsed into a `Date` object.
- * If the parsing fails for any date, it is skipped.
- */
-export function convertToDates(
-  value?: (Date | string)[] | string | null
-): Date[] | null {
-  if (!value) {
-    return null;
-  }
-
-  const values: Date[] = [];
-  const sources = isString(value) ? value.split(',') : value;
-
-  for (const source of sources) {
-    const trimmed = isString(source) ? source.trim() : source;
-    const date = convertToDate(trimmed);
-    if (date) {
-      values.push(date);
-    }
-  }
-
-  return values;
-}
 
 /**
  * Returns the value of the selected/activated element (day/month/year) in the calendar view.
@@ -185,45 +70,7 @@ export function isPreviousMonth(
   return a.year === b.year ? a.month < b.month : a.year < b.year;
 }
 
-/**
- * Returns a generator yielding day values between `start` and `end` (non-inclusive by default)
- * by a given `unit` as a step.
- * To include the end date set the `inclusive` option to true.
- *
- * @remarks
- * By default, `unit` is set to 'day'.
- */
-export function* calendarRange(
-  options: CalendarRangeParams
-): Generator<CalendarDay, void, unknown> {
-  const { start, end, unit = 'day', inclusive = false } = options;
-
-  let currentDate = toCalendarDay(start);
-  const endDate =
-    typeof end === 'number'
-      ? toCalendarDay(start).add(unit, end)
-      : toCalendarDay(end);
-
-  const isReversed = endDate.lessThan(currentDate);
-  const step = isReversed ? -1 : 1;
-
-  const shouldContinue = () => {
-    if (inclusive) {
-      return isReversed
-        ? currentDate.greaterThanOrEqual(endDate)
-        : currentDate.lessThanOrEqual(endDate);
-    }
-    return isReversed
-      ? currentDate.greaterThan(endDate)
-      : currentDate.lessThan(endDate);
-  };
-
-  while (shouldContinue()) {
-    yield currentDate;
-    currentDate = currentDate.add(unit, step);
-  }
-}
-
+/** Yields the days rendered by a single days view - six weeks starting on `firstWeekDay`. */
 export function* generateMonth(
   value: DayParameter,
   firstWeekDay: number
@@ -312,73 +159,4 @@ export function createDateConstraints(
   constraints.push(...(disabledDates ?? []));
 
   return constraints.length > 0 ? constraints : undefined;
-}
-
-function getValidDate(date: Date): Date | null {
-  return Number.isNaN(date.valueOf()) ? null : date;
-}
-
-/**
- * Checks if a date is greater than a maximum date value.
- */
-export function isDateExceedingMax(
-  value: Date,
-  maxValue: Date,
-  includeTime = true,
-  includeDate = true
-): boolean {
-  return compareDates(
-    value,
-    maxValue,
-    (a, b) => a > b,
-    includeTime,
-    includeDate
-  );
-}
-
-/**
- * Checks if a date is less than a minimum date value.
- */
-export function isDateLessThanMin(
-  value: Date,
-  minValue: Date,
-  includeTime = true,
-  includeDate = true
-): boolean {
-  return compareDates(
-    value,
-    minValue,
-    (a, b) => a < b,
-    includeTime,
-    includeDate
-  );
-}
-
-/**
- * Compares two dates with optional time/date exclusions.
- */
-function compareDates(
-  value: Date,
-  boundary: Date,
-  comparator: (a: number, b: number) => boolean,
-  includeTime: boolean,
-  includeDate: boolean
-): boolean {
-  if (includeTime && includeDate) {
-    return comparator(value.getTime(), boundary.getTime());
-  }
-
-  const v = new Date(value.getTime());
-  const b = new Date(boundary.getTime());
-
-  if (!includeTime) {
-    v.setHours(0, 0, 0, 0);
-    b.setHours(0, 0, 0, 0);
-  }
-  if (!includeDate) {
-    v.setFullYear(0, 0, 0);
-    b.setFullYear(0, 0, 0);
-  }
-
-  return comparator(v.getTime(), b.getTime());
 }
