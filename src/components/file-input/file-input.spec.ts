@@ -247,6 +247,16 @@ describe('Form Integration', () => {
     expect(spec.element.value).to.be.empty;
   });
 
+  it('ignores the value attribute as a default on form reset', () => {
+    // Regression: the value attribute string used to be stored as the
+    // FileList default and iterated into per-character FormData entries
+    // after a form reset.
+    spec.element.setAttribute('value', 'abc');
+    spec.reset();
+
+    expect(spec.formData.getAll(spec.element.name)).to.eql([]);
+  });
+
   it('reflects disabled ancestor state', () => {
     spec.setAncestorDisabledState(true);
     expect(spec.element.disabled).to.be.true;

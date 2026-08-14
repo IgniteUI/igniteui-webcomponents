@@ -16,9 +16,10 @@ import {
 } from '../validators.js';
 import { FormAssociatedRequiredMixin } from './forms/associated-required.js';
 import { createFormValueState } from './forms/form-value.js';
-import type {
-  FormAssociatedElementInterface,
-  FormRequiredInterface,
+import {
+  type FormAssociatedElementInterface,
+  type FormRequiredInterface,
+  InternalInvalidEvent,
 } from './forms/types.js';
 
 type FormAssociatedTestProps = {
@@ -26,6 +27,7 @@ type FormAssociatedTestProps = {
   required?: boolean;
   minLength?: number;
   maxLength?: number;
+  alwaysFailingValidator?: boolean;
 };
 
 type FormAssociatedTestInstance = LitElement &
@@ -48,8 +50,24 @@ describe('Form associated mixin tests', () => {
           maxLength: { type: Number },
         };
 
+        public alwaysFailingValidator = false;
+
         protected override get __validators(): Validator<this>[] {
-          return [requiredValidator, minLengthValidator, maxLengthValidator];
+          const validators: Validator<this>[] = [
+            requiredValidator,
+            minLengthValidator,
+            maxLengthValidator,
+          ];
+
+          if (this.alwaysFailingValidator) {
+            validators.push({
+              key: 'badInput',
+              message: 'Always failing',
+              isValid: () => false,
+            });
+          }
+
+          return validators;
         }
 
         protected override _formValue = createFormValueState(this, {
@@ -105,6 +123,41 @@ describe('Form associated mixin tests', () => {
     );
   }
 
+  let form: HTMLFormElement;
+  let submitEvents = 0;
+  let internalInvalidEvents = 0;
+
+  async function createFormFixture(props?: FormAssociatedTestProps) {
+    form = await fixture(
+      html`<form>
+        <${tagName}
+          name="test"
+          ?required=${props?.required}
+          value=${ifDefined(props?.value)}>
+        </${tagName}>
+      </form>`
+    );
+    instance = form.querySelector<FormAssociatedTestInstance>(tag)!;
+
+    submitEvents = 0;
+    internalInvalidEvents = 0;
+
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      submitEvents++;
+    });
+    instance.addEventListener(InternalInvalidEvent, () => {
+      internalInvalidEvents++;
+    });
+  }
+
+  /** Requests a form submission and returns whether it went through. */
+  function requestSubmit(): boolean {
+    const count = submitEvents;
+    form.requestSubmit();
+    return submitEvents > count;
+  }
+
   it('initial valid state when no constraints', async () => {
     await createFixture({ value: '123' });
     expect(instance.checkValidity()).to.be.true;
@@ -147,6 +200,86 @@ describe('Form associated mixin tests', () => {
     expect(instance.checkValidity()).to.be.true;
     expect(hasValidityFlags(instance, 'valid')).to.be.true;
     expect(instance.validationMessage).to.not.equal(message);
+  });
+
+  it('setCustomValidity("") does not swallow the next failed submission', async () => {
+    // Regression: clearing a custom message used to latch the internal
+    // validation flag, so the `invalid` event of the next form submission was
+    // misclassified as internal - no touched state, no internal invalid event,
+    // no invalid styles.
+    await createFormFixture({ required: true });
+
+    instance.setCustomValidity('Custom');
+    instance.setCustomValidity('');
+
+    const submitted = requestSubmit();
+
+    expect(submitted).to.be.false;
+    expect(internalInvalidEvents).to.equal(1);
+    expect(instance.matches(':state(ig-invalid)')).to.be.true;
+  });
+
+  it('form reset clears a developer-set invalid state', async () => {
+    await createFormFixture();
+
+    instance.invalid = true;
+    expect(instance.matches(':state(ig-invalid)')).to.be.true;
+
+    form.reset();
+
+    expect(instance.invalid).to.be.false;
+    expect(instance.matches(':state(ig-invalid)')).to.be.false;
+  });
+
+  it('moving the element in the DOM preserves touched state and invalid styles', async () => {
+    await createFormFixture({ required: true });
+
+    // Simulate a failed submission - the control becomes touched and shows
+    // invalid styles.
+    requestSubmit();
+    expect(instance.matches(':state(ig-invalid)')).to.be.true;
+
+    // Re-parent the control within the form (framework list reorder and the like).
+    const container = document.createElement('div');
+    form.appendChild(container);
+    container.appendChild(instance);
+    await instance.updateComplete;
+
+    expect(instance.matches(':state(ig-invalid)')).to.be.true;
+  });
+
+  it('pressing Enter in an invalid control surfaces validation feedback', async () => {
+    await createFormFixture({ required: true });
+
+    // biome-ignore lint/complexity/useLiteralKeys: Simulating the Enter key protected handler
+    instance['_handleEnterKeydown'](
+      new KeyboardEvent('keydown', { key: 'Enter' })
+    );
+
+    expect(submitEvents).to.equal(0);
+    expect(internalInvalidEvents).to.equal(1);
+    expect(instance.matches(':state(ig-invalid)')).to.be.true;
+
+    instance.value = '123';
+
+    // biome-ignore lint/complexity/useLiteralKeys: Simulating the Enter key protected handler
+    instance['_handleEnterKeydown'](
+      new KeyboardEvent('keydown', { key: 'Enter' })
+    );
+
+    expect(submitEvents).to.equal(1);
+  });
+
+  it('valueMissing reports the required validator message over later failing validators', async () => {
+    // Regression: the message of the last failing validator used to be kept
+    // even when the validity flags were collapsed to `valueMissing`.
+    await createFixture();
+    instance.alwaysFailingValidator = true;
+    instance.required = true;
+
+    expect(instance.checkValidity()).to.be.false;
+    expect(hasValidityFlags(instance, 'valueMissing')).to.be.true;
+    expect(instance.validationMessage).to.equal('This field is required');
   });
 
   it('setCustomValidity() + other constraints', async () => {

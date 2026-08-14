@@ -222,14 +222,6 @@ export default class IgcMaskInputComponent extends MaskBehaviorMixin(
 
   //#region Internal methods
 
-  protected override _restoreDefaultValue(): void {
-    const value = this.defaultValue as string;
-
-    this._maskedValue = this._parser.apply(value);
-    this._updateMaskedValue();
-    this._formValue.setValueAndFormState(value);
-  }
-
   /**
    * Commits straight to the form value instead of going through the `value` setter: the
    * setter re-applies the parser, and `apply(parse(x))` left-packs the text - a mask with

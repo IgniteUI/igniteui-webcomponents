@@ -283,6 +283,21 @@ describe('Radio Component', () => {
       spec.assertSubmitHasValue(lastOf(radios).value);
     });
 
+    it('should not restore a checked state whose attribute was removed before reset', () => {
+      // Regression: removing the `checked` attribute used to leave
+      // `defaultChecked` as true, re-checking the radio on form reset.
+      const radio = firstOf(radios);
+
+      radio.toggleAttribute('checked', true);
+      expect(radio.checked).to.be.true;
+
+      radio.removeAttribute('checked');
+      expect(radio.checked).to.be.false;
+
+      spec.reset();
+      expect(radio.checked).to.be.false;
+    });
+
     it('is correctly submitted on pressing Enter', () => {
       expect(
         spec.submitWithEnter(spec.element.renderRoot.querySelector('input'))
@@ -360,6 +375,20 @@ describe('Radio Component', () => {
         spec.reset();
 
         expect(spec.element.checked).to.be.true;
+      });
+
+      it('preserves sibling pristine state on form reset', () => {
+        lastOf(radios).checked = true;
+        spec.reset();
+
+        expect(radios.filter((radio) => radio.checked)).to.eql([
+          firstOf(radios),
+        ]);
+
+        // All radios are pristine again after the reset, so reassigning a
+        // default must sync the live checked state.
+        lastOf(radios).defaultChecked = true;
+        expect(lastOf(radios).checked).to.be.true;
       });
     });
   });

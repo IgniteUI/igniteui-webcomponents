@@ -245,6 +245,19 @@ describe('Checkbox', () => {
       expect(spec.element.checked).to.be.true;
     });
 
+    it('syncs the native input checked state after form reset', async () => {
+      // Regression: the old restore path recorded the wrong reactive property
+      // (`value` instead of `checked`) for the reset update cycle.
+      spec.setProperties({ checked: true });
+      await elementUpdated(spec.element);
+
+      spec.reset();
+      await elementUpdated(spec.element);
+
+      const input = spec.element.renderRoot.querySelector('input')!;
+      expect(input.checked).to.be.false;
+    });
+
     it('is correctly submitted on pressing Enter', () => {
       expect(
         spec.submitWithEnter(spec.element.renderRoot.querySelector('input'))

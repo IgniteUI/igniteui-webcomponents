@@ -7,7 +7,7 @@ export type FormValueType = string | File | FormData | null;
 export type IgcFormControl = LitElement &
   (FormAssociatedElementInterface | FormAssociatedCheckboxElementInterface);
 
-declare class BaseFormAssociatedElement {
+export declare class BaseFormAssociatedElement {
   public static readonly formAssociated: boolean;
 
   //#region Properties

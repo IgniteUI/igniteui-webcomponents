@@ -356,6 +356,22 @@ export default class IgcDatePickerComponent extends EventEmitterMixin<
 
   //#endregion
 
+  //#region Form associated overrides
+
+  protected override formResetCallback(): void {
+    super.formResetCallback();
+
+    // The inner editor is not associated with the outer form (shadow
+    // boundary), so the browser never resets it. Since it runs its own
+    // constraint validation against the forwarded `required`/`min`/`max`,
+    // a touched editor would otherwise keep its invalid styles after the
+    // form reset.
+    // biome-ignore lint/complexity/useLiteralKeys: Reset the internal validation state of the editor
+    this._input?.['formResetCallback']();
+  }
+
+  //#endregion
+
   //#region Public methods
 
   /** Increments the passed in date part */

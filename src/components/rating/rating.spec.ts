@@ -528,6 +528,17 @@ describe('Rating component', () => {
       spec.assertSubmitHasValue(spec.element.value.toString());
     });
 
+    it('should clamp an out-of-range default value on form reset', () => {
+      // Regression: reset used to restore the raw default, bypassing the
+      // value setter clamping and reporting aria-valuenow beyond max.
+      spec.setAttributes({ value: 10 });
+      spec.setProperties({ value: 1 });
+      spec.reset();
+
+      expect(spec.element.value).to.equal(5);
+      spec.assertSubmitHasValue('5');
+    });
+
     it('reflects disabled ancestor state', () => {
       spec.setAncestorDisabledState(true);
       expect(spec.element.disabled).to.be.true;
