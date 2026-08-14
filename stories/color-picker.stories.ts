@@ -220,6 +220,7 @@ export const Default: Story = {
           'A fully interactive color picker. Use the controls panel to explore `mode`, `format`, `showAlpha`, `hideFormats` and the validation properties.',
       },
     },
+    actions: { handles: [] },
   },
   args: {
     label: 'Pick a color',
@@ -255,6 +256,7 @@ export const Formats: Story = {
           '`format` decides the notation `value` is written in. Switching it re-renders the same color rather than changing it, so neither `igcInput` nor `igcChange` is emitted. Clear the field inside the picker to see each format hint its own notation as a placeholder.',
       },
     },
+    actions: { handles: [] },
   },
   render: () => html`
     ${samples}
@@ -287,6 +289,7 @@ export const AlphaChannel: Story = {
           '`show-alpha` reveals the alpha slider and its input, both expressed in whole percent. The anchor swatch splits in two - the picked color over the left half and the same color at its real opacity across the whole surface - so a translucent color is always shown next to what it actually is.',
       },
     },
+    actions: { handles: [] },
   },
   render: () => html`
     ${samples}
@@ -322,6 +325,7 @@ export const InputMode: Story = {
           '`mode="input"` swaps the trigger button for an editable text field with the swatch as its prefix. The field accepts any CSS color - hex, `rgb()`, `hsl()` or a named color - and reverts to the current value if what was typed cannot be parsed. Clearing it clears the picker.',
       },
     },
+    actions: { handles: [] },
   },
   render: () => html`
     ${samples}
@@ -353,6 +357,7 @@ export const CustomSwatches: Story = {
           'Assigning `swatches` renders a row of preset colors under the picker controls. Clicking one commits it as the value. Any CSS color string is accepted.',
       },
     },
+    actions: { handles: [] },
   },
   render: () => html`
     ${samples}
@@ -388,6 +393,7 @@ export const Sizes: Story = {
           'The anchor, the popover and the controls inside it all follow `--ig-size`.',
       },
     },
+    actions: { handles: [] },
   },
   render: () => html`
     ${samples}
@@ -426,6 +432,7 @@ export const States: Story = {
           'With no value the anchor carries a diagonal "no color" mark and the picker opens at the white corner of the saturation plane, with the hue slider at red.',
       },
     },
+    actions: { handles: [] },
   },
   render: () => html`
     ${samples}
@@ -491,6 +498,7 @@ export const Form: Story = {
           'The picker submits its `value` in the active `format` under `name`. Reset restores the value the control was rendered with.',
       },
     },
+    actions: { handles: [] },
   },
   render: () => html`
     ${samples}

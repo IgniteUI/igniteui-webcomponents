@@ -9,7 +9,9 @@ import { spy, stub } from 'sinon';
 import {
   altKey,
   arrowDown,
+  arrowRight,
   arrowUp,
+  endKey,
   escapeKey,
 } from '#internals/controllers/key-bindings.js';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
@@ -21,6 +23,7 @@ import {
 import { isFocused } from '#internals/testing/helpers.spec.js';
 import {
   simulateClick,
+  simulateInput,
   simulateKeyboard,
 } from '#internals/testing/simulate.spec.js';
 import {
@@ -86,6 +89,51 @@ function getAlphaInput(picker: IgcColorPickerComponent): IgcInputComponent {
   return picker.renderRoot.querySelector('#alpha')!;
 }
 
+function getAlphaEditor(picker: IgcColorPickerComponent): HTMLInputElement {
+  return getAlphaInput(picker).renderRoot.querySelector('input')!;
+}
+
+/** Replaces the alpha field's current selection with `text`, as the browser would. */
+function typeIntoAlpha(picker: IgcColorPickerComponent, text: string): void {
+  const editor = getAlphaEditor(picker);
+  const start = editor.selectionStart ?? editor.value.length;
+  const end = editor.selectionEnd ?? start;
+
+  // The caret has to be in place before the event, so the value is spliced here
+  // rather than handed to the helper.
+  editor.value = `${editor.value.slice(0, start)}${text}${editor.value.slice(end)}`;
+  editor.setSelectionRange(start + text.length, start + text.length);
+
+  simulateInput(editor, {
+    skipValueProperty: true,
+    inputType: 'insertText',
+    data: text,
+    bubbles: true,
+    composed: true,
+  });
+}
+
+/** Selects the whole alpha field and deletes it, as the browser would. */
+function clearAlpha(picker: IgcColorPickerComponent): void {
+  simulateInput(getAlphaEditor(picker), { bubbles: true, composed: true });
+}
+
+/**
+ * Dispatches a cancelable `key` press on `node` and hands the event back, which
+ * `simulateKeyboard` does neither of.
+ */
+function press(node: Element, key: string): KeyboardEvent {
+  const event = new KeyboardEvent('keydown', {
+    key,
+    bubbles: true,
+    composed: true,
+    cancelable: true,
+  });
+  node.dispatchEvent(event);
+
+  return event;
+}
+
 function getCanvas(picker: IgcColorPickerComponent): IgcPickerCanvasComponent {
   return picker.renderRoot.querySelector('igc-picker-canvas')!;
 }
@@ -131,6 +179,15 @@ describe('Color picker', () => {
 
     it('is accessible (open state)', async () => {
       picker.open = true;
+      await elementUpdated(picker);
+
+      await expect(picker).shadowDom.to.be.accessible();
+      await expect(picker).lightDom.to.be.accessible();
+    });
+
+    it('is accessible (alpha row)', async () => {
+      picker.open = true;
+      picker.showAlpha = true;
       await elementUpdated(picker);
 
       await expect(picker).shadowDom.to.be.accessible();
@@ -225,6 +282,29 @@ describe('Color picker', () => {
       // corner, so it sits at minus half its own size on both axes.
       expect(canvas.x).to.equal(-width);
       expect(canvas.y).to.equal(-height);
+    });
+
+    it('keeps the alpha field a labelled text field', async () => {
+      picker.open = true;
+      picker.showAlpha = true;
+      picker.value = 'rgb(255 0 0 / 0.5)';
+      await elementUpdated(picker);
+      await nextFrame();
+
+      // Deliberately not a `spinbutton`, despite the bounded value and the
+      // arrow-key stepping: overriding the native textbox role breaks how
+      // screen readers announce typing, which is the field's primary use. The
+      // alpha slider beside it carries the natively announced range semantics.
+      const editor = getAlphaEditor(picker);
+      const label = picker.renderRoot.querySelector('label[for="alpha"]')!;
+
+      expect(editor.role).to.be.null;
+      expect(editor.getAttribute('aria-valuenow')).to.be.null;
+
+      // `<label for="alpha">` labels the `igc-input`; the native editor picks
+      // it up by element reflection, since an IDREF cannot cross into its
+      // shadow root.
+      expect(editor.ariaLabelledByElements).to.eql([label]);
     });
   });
 
@@ -426,31 +506,151 @@ describe('Color picker', () => {
       expect(picker.value).to.equal('rgb(255 0 0 / 0.5)');
     });
 
-    it('updates the alpha via the alpha number input', async () => {
-      picker.showAlpha = true;
-      picker.format = 'rgb';
-      await elementUpdated(picker);
+    describe('Alpha input', () => {
+      beforeEach(async () => {
+        picker.showAlpha = true;
+        picker.format = 'rgb';
+        picker.value = 'rgb(255 0 0 / 0.5)';
+        await elementUpdated(picker);
+      });
 
-      const alphaInput = getAlphaInput(picker);
-      alphaInput.dispatchEvent(
-        new CustomEvent('igcChange', {
-          detail: '25',
-          bubbles: true,
-          composed: true,
-        })
-      );
-      await elementUpdated(picker);
+      it('updates the alpha via the alpha input', async () => {
+        clearAlpha(picker);
+        typeIntoAlpha(picker, '25');
+        await elementUpdated(picker);
 
-      expect(picker.value).to.equal('rgb(255 0 0 / 0.25)');
+        expect(getAlphaEditor(picker).value).to.equal('25%');
+        expect(picker.value).to.equal('rgb(255 0 0 / 0.25)');
+      });
+
+      it('renders the alpha as a percentage', async () => {
+        picker.value = 'rgb(255 0 0 / 0.4)';
+        await elementUpdated(picker);
+
+        expect(getAlphaInput(picker).value).to.equal('40%');
+        expect(getAlphaSlider(picker).value).to.equal('40');
+      });
+
+      it('keeps the caret in front of the % suffix', async () => {
+        // Clicking past the text is what puts the caret behind the suffix.
+        const editor = getAlphaEditor(picker);
+        editor.setSelectionRange(3, 3);
+        simulateClick(editor);
+
+        expect([editor.selectionStart, editor.selectionEnd]).to.eql([2, 2]);
+
+        typeIntoAlpha(picker, '7');
+        await elementUpdated(picker);
+
+        // Appending a digit to 50 exceeds the range and clamps - what matters
+        // is that the keystroke landed in the number, not after the suffix.
+        expect(editor.value).to.equal('100%');
+      });
+
+      it('strips non-digits regardless of how the text arrived', async () => {
+        // A paste carries no `data`, so a `beforeinput` keystroke filter misses it.
+        clearAlpha(picker);
+        typeIntoAlpha(picker, '3a5%x');
+        await elementUpdated(picker);
+
+        expect(getAlphaEditor(picker).value).to.equal('35%');
+        expect(picker.value).to.equal('rgb(255 0 0 / 0.35)');
+      });
+
+      it('clamps the alpha input to 100', async () => {
+        clearAlpha(picker);
+        typeIntoAlpha(picker, '150');
+        await elementUpdated(picker);
+
+        expect(getAlphaEditor(picker).value).to.equal('100%');
+      });
+
+      it('reverts an emptied alpha input on commit', async () => {
+        // Emptying the field is a valid intermediate state - it has to leave
+        // somewhere to type into - so nothing is committed yet.
+        clearAlpha(picker);
+        await elementUpdated(picker);
+
+        expect(getAlphaEditor(picker).value).to.equal('');
+        expect(picker.value).to.equal('rgb(255 0 0 / 0.5)');
+
+        getAlphaInput(picker).dispatchEvent(
+          new CustomEvent('igcChange', {
+            detail: '',
+            bubbles: true,
+            composed: true,
+          })
+        );
+        await elementUpdated(picker);
+
+        expect(getAlphaInput(picker).value).to.equal('50%');
+        expect(picker.value).to.equal('rgb(255 0 0 / 0.5)');
+      });
+
+      it('steps the alpha with the arrow keys', async () => {
+        simulateKeyboard(getAlphaInput(picker), arrowUp);
+        await elementUpdated(picker);
+
+        expect(picker.value).to.equal('rgb(255 0 0 / 0.51)');
+
+        simulateKeyboard(getAlphaInput(picker), arrowDown, 2);
+        await elementUpdated(picker);
+
+        expect(picker.value).to.equal('rgb(255 0 0 / 0.49)');
+      });
+
+      it('leaves the caret in place while stepping', async () => {
+        const editor = getAlphaEditor(picker);
+        editor.setSelectionRange(2, 2);
+
+        simulateKeyboard(getAlphaInput(picker), arrowUp);
+
+        // Synchronously, before any re-render: a value written a frame later
+        // would drop the caret behind the `%` and be seen to skip.
+        expect(editor.value).to.equal('51%');
+        expect([editor.selectionStart, editor.selectionEnd]).to.eql([2, 2]);
+
+        await elementUpdated(picker);
+
+        expect([editor.selectionStart, editor.selectionEnd]).to.eql([2, 2]);
+      });
+
+      it('stops the caret at the % instead of moving past it', () => {
+        const editor = getAlphaEditor(picker);
+
+        // A synthetic key never moves a real caret, so what is asserted here is
+        // that the key is cancelled before the browser would have moved it -
+        // correcting afterwards is what makes the caret visibly skip.
+        editor.setSelectionRange(2, 2);
+        expect(press(editor, arrowRight).defaultPrevented).to.be.true;
+
+        // End is taken over wherever it starts, and lands on the limit.
+        editor.setSelectionRange(0, 0);
+        expect(press(editor, endKey).defaultPrevented).to.be.true;
+        expect(editor.selectionStart).to.equal(2);
+
+        // Below the limit the key is left to the browser.
+        editor.setSelectionRange(0, 0);
+        expect(press(editor, arrowRight).defaultPrevented).to.be.false;
+      });
+
+      it('holds at the bounds without re-emitting', async () => {
+        const eventSpy = spy(picker, 'emitEvent');
+        picker.value = 'rgb(255 0 0 / 1)';
+        await elementUpdated(picker);
+
+        simulateKeyboard(getAlphaInput(picker), arrowUp, 3);
+        await elementUpdated(picker);
+
+        expect(picker.value).to.equal('rgb(255 0 0)');
+        expect(eventSpy).not.calledWith('igcInput');
+      });
     });
 
-    it('renders the alpha as a percentage', async () => {
-      picker.showAlpha = true;
-      picker.value = 'rgb(255 0 0 / 0.4)';
-      await elementUpdated(picker);
-
-      expect(getAlphaInput(picker).value).to.equal('40');
-      expect(getAlphaSlider(picker).value).to.equal('40');
+    it('leaves arrow keys alone elsewhere while showAlpha is off', async () => {
+      // The alpha bindings are scoped to the alpha input, which does not exist
+      // here - they must not fall back to observing the whole component.
+      expect(press(getHueSlider(picker), arrowUp).defaultPrevented).to.be.false;
     });
 
     it('moves the hue slider when the color changes from elsewhere', async () => {

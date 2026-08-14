@@ -2,6 +2,7 @@ import { html, nothing, type PropertyValues, type TemplateResult } from 'lit';
 import { property, query } from 'lit/decorators.js';
 import { cache } from 'lit/directives/cache.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
+import { live } from 'lit/directives/live.js';
 import { createRef, ref } from 'lit/directives/ref.js';
 import { styleMap } from 'lit/directives/style-map.js';
 import { addAriaProjector } from '#internals/controllers/aria-projection.js';
@@ -9,7 +10,9 @@ import {
   addKeybindings,
   altKey,
   arrowDown,
+  arrowRight,
   arrowUp,
+  endKey,
   escapeKey,
 } from '#internals/controllers/key-bindings.js';
 import { addRootClickController } from '#internals/controllers/root-click.js';
@@ -29,7 +32,7 @@ import {
   stopPropagation,
 } from '#internals/utils/events.js';
 import { bindIf } from '#internals/utils/lit.js';
-import { asNumber } from '#internals/utils/math.js';
+import { asNumber, clamp } from '#internals/utils/math.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import IgcButtonComponent from '../button/button.js';
 import IgcIconButtonComponent from '../button/icon-button.js';
@@ -74,6 +77,14 @@ const formatPlaceholders: Record<ColorFormat, string> = {
   rgb: 'rgb(r g b)',
   hsl: 'hsl(h s% l%)',
 };
+
+/** The alpha field's text is `<digits>%` - everything else is stripped on edit. */
+const nonDigits = /\D/g;
+
+/** The last offset the caret may take in `<digits>%` - in front of the `%`. */
+function caretLimit(text: string): number {
+  return Math.max(text.length - 1, 0);
+}
 
 /**
  * The slice of the EyeDropper API this component uses.
@@ -179,6 +190,7 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
   });
 
   private readonly _alphaRef = createRef<HTMLInputElement>();
+  private readonly _alphaInputRef = createRef<IgcInputComponent>();
   private readonly _canvasRef = createRef<IgcPickerCanvasComponent>();
   private readonly _hueRef = createRef<HTMLInputElement>();
   private readonly _anchorRef = createRef<
@@ -298,10 +310,20 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
       .set([altKey, arrowDown], this._handleAnchorClick)
       .set([altKey, arrowUp], this._handleKeyboardClosing);
 
-    // Projects the host's labels and popup semantics onto the native input
-    // inside the anchor `igc-input` (see ProjectedARIA for why the host cannot
-    // publish these itself). Only in input mode - the default mode anchor is a
-    // plain button that carries its own ARIA.
+    addKeybindings(this, {
+      skip: () => this.disabled || !this._alphaInputRef.value,
+      ref: this._alphaInputRef,
+      bindingDefaults: { repeat: true },
+    })
+      .set(arrowUp, () => this._handleAlphaInputSpin(1))
+      .set(arrowDown, () => this._handleAlphaInputSpin(-1))
+      .set(arrowRight, this._handleAlphaInputCaretForward, {
+        preventDefault: false,
+      })
+      .set(endKey, this._handleAlphaInputCaretForward, {
+        preventDefault: false,
+      });
+
     addAriaProjector(this, {
       target: () => (this._isInputMode ? this._anchorRef.value : null),
       state: () => ({
@@ -393,17 +415,123 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
   private _handleAlphaSliderValueChange(event: Event): void {
     stopPropagation(event);
 
-    this._color.alpha = asNumber(this._alphaRef.value?.value) / 100;
-    this._updateColor();
-    this._emitInputEvent();
+    this._setAlpha(asNumber(this._alphaRef.value?.value));
+  }
+
+  /**
+   * Rewrites the alpha field as `<digits>%` after every edit.
+   *
+   * The `%` is part of the value rather than a suffix element, so the browser
+   * treats it as ordinary editable text. Normalizing the *result* of an edit -
+   * rather than filtering keystrokes in `beforeinput` - is what makes it behave
+   * as a literal for every way text can reach the field: typing, paste, drop,
+   * composition, undo and autofill all arrive here, while `beforeinput` carries
+   * `data` for only the first of those.
+   */
+  private _handleAlphaInputEdit(event: Event): void {
+    const input = this._alphaInputRef.value;
+    // `igc-input` exposes no way to read the caret, so the edit is measured on
+    // the native editor and written back through the component's own API.
+    const native = getElementFromPath<HTMLInputElement>('input', event);
+
+    if (!input || !native) return;
+
+    const caret = native.selectionStart ?? native.value.length;
+    const typed = native.value.slice(0, caret).replace(nonDigits, '').length;
+    const digits = native.value.replace(nonDigits, '');
+    const percent = clamp(asNumber(digits), 0, 100);
+
+    // An empty field is a valid intermediate state - select-all and delete has
+    // to leave somewhere to type into. `_handleAlphaInputChange` settles it.
+    const text = digits ? `${percent}%` : '';
+
+    // The caret keeps its place by digit count, so an edit in the middle of the
+    // number does not jump to the end.
+    this._writeAlphaText(input, text, Math.min(typed, caretLimit(text)));
+
+    if (digits) {
+      this._setAlpha(percent);
+    }
+  }
+
+  /**
+   * Keeps the caret and any selection within the digits.
+   *
+   * The trailing `%` is a literal. Without this the caret lands after it on
+   * focus, on a click past the text, and after a shifted selection extends over
+   * it - hence `keyup` as well as `focusin` and `click`. Anything typed there
+   * would fall outside the number, which the parse would quietly discard.
+   */
+  private _handleAlphaInputCaret(event: Event): void {
+    const native = getElementFromPath<HTMLInputElement>('input', event);
+    if (!native) return;
+
+    const limit = caretLimit(native.value);
+
+    native.setSelectionRange(
+      Math.min(native.selectionStart ?? 0, limit),
+      Math.min(native.selectionEnd ?? 0, limit)
+    );
+  }
+
+  /**
+   * Steps the alpha by one percent.
+   *
+   * Stepping from the color rather than from the field's text is what makes a
+   * held arrow key work: the keydowns repeat faster than a re-render, so
+   * reading the field would step off a stale number every time.
+   *
+   * The new text is written here rather than left to the re-render, so that the
+   * caret never moves. Assigning a value drops the caret behind the `%`, and
+   * letting the render do it would put that jump one frame after the keypress -
+   * seen as a skip forward and back.
+   */
+  private _handleAlphaInputSpin(increment: -1 | 1): void {
+    const input = this._alphaInputRef.value;
+    const percent = clamp(this._alphaPercent + increment, 0, 100);
+
+    // A step past either bound clamps back onto the current value. Bailing here
+    // rather than in `_setAlpha` is what keeps a held key at the bound from
+    // rewriting the field and re-running validation at the repeat rate.
+    if (!input || percent === this._alphaPercent) return;
+
+    this._writeAlphaText(input, `${percent}%`);
+    this._setAlpha(percent);
+  }
+
+  /**
+   * Holds the caret at the `%` rather than letting it step past and be pulled
+   * back on `keyup` - the same frame-late skip described on
+   * {@link _handleAlphaInputSpin}.
+   *
+   * Only the unmodified keys are bound, so a shifted selection still extends
+   * over the `%` and is collapsed by {@link _handleAlphaInputCaret} - rarer,
+   * and cheaper than reasoning about the selection's direction here.
+   */
+  private _handleAlphaInputCaretForward(event: KeyboardEvent): void {
+    const native = getElementFromPath<HTMLInputElement>('input', event);
+    if (!native) return;
+
+    const limit = caretLimit(native.value);
+
+    if (event.key === endKey || (native.selectionEnd ?? 0) >= limit) {
+      event.preventDefault();
+      native.setSelectionRange(limit, limit);
+    }
   }
 
   private _handleAlphaInputChange(event: CustomEvent<string>): void {
     stopPropagation(event);
 
-    this._color.alpha = asNumber(event.detail) / 100;
-    this._updateColor();
-    this._emitInputEvent();
+    const input = event.target as IgcInputComponent;
+
+    // Every edit is normalized as it happens, so the only unresolved value that
+    // reaches a commit is an empty field. Alpha has no empty state, and reading
+    // it as 0 would turn the color invisible from what looks like a cleared
+    // input, so it reverts to the alpha currently on the color.
+    if (!input.value) {
+      input.value = `${this._alphaPercent}%`;
+    }
   }
 
   private _handleFormatChange(
@@ -502,8 +630,8 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
   }
 
   /** The alpha channel as the whole percentage both alpha controls work in. */
-  private get _alphaPercent(): string {
-    return String(Math.round(this._color.alpha * 100));
+  private get _alphaPercent(): number {
+    return Math.round(this._color.alpha * 100);
   }
 
   /**
@@ -538,9 +666,47 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
     }
   }
 
+  /**
+   * Replaces the alpha field's whole text and parks the caret, by default in
+   * front of the `%`.
+   *
+   * `setRangeText` is the component's only synchronous write - assigning
+   * `value` reaches the native editor a render later - and it syncs the
+   * component's own `value` back from the editor.
+   */
+  private _writeAlphaText(
+    input: IgcInputComponent,
+    text: string,
+    caret = caretLimit(text)
+  ): void {
+    input.setRangeText(text, 0, input.value.length);
+    input.setSelectionRange(caret, caret);
+  }
+
+  /**
+   * Commits `percent` as the color's alpha channel, clamped to 0-100.
+   *
+   * Bailing on an unchanged alpha keeps a drag that does not move the value
+   * from re-rendering and re-emitting `igcInput`.
+   */
+  private _setAlpha(percent: number): void {
+    const alpha = clamp(percent, 0, 100) / 100;
+
+    if (this._color.alpha === alpha) {
+      return;
+    }
+
+    this._color.alpha = alpha;
+    this._updateColor();
+    this._emitInputEvent();
+  }
+
+  /**
+   * Publishes the color as the form value and schedules a render - the model
+   * mutates in place, so there is no assignment for Lit to dirty-check.
+   */
   private _updateColor(): void {
     this._formValue.setValueAndFormState(this._color.asString(this.format));
-    this._validate();
     this.requestUpdate();
   }
 
@@ -659,7 +825,7 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
         part="alpha"
         min="0"
         max="100"
-        .value=${this._alphaPercent}
+        .value=${String(this._alphaPercent)}
         @input=${this._handleAlphaSliderValueChange}
         @change=${stopPropagation}
       />
@@ -669,20 +835,21 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
       </igc-visually-hidden>
 
       <igc-input
+        ${ref(this._alphaInputRef)}
         id="alpha"
         name="alpha"
         placeholder="Alpha value"
+        inputmode="numeric"
         part="alpha-input"
         outlined
-        type="number"
-        min="0"
-        max="100"
-        step="1"
-        .value=${this._alphaPercent}
+        type="text"
+        .value=${live(`${this._alphaPercent}%`)}
+        @input=${this._handleAlphaInputEdit}
+        @focusin=${this._handleAlphaInputCaret}
+        @click=${this._handleAlphaInputCaret}
+        @keyup=${this._handleAlphaInputCaret}
         @igcChange=${this._handleAlphaInputChange}
-      >
-        <span slot="suffix">%</span>
-      </igc-input>
+      ></igc-input>
     `;
   }
 
