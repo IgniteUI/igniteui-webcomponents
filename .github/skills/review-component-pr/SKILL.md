@@ -5,539 +5,159 @@ description: Comprehensive code review checklist for component pull requests ens
 
 # Review Component PR
 
-This skill provides a systematic checklist for reviewing pull requests that add or modify web components in the project.
-
-## Example Usage
-
-- "Review the new tooltip component PR"
-- "Check if the badge component changes follow our conventions"
-- "Perform a code review on PR #123"
-
-## Related Skills
-
-- [create-new-component](../create-new-component/) - Reference for new component structure
-- [add-component-property](../add-component-property/) - Property implementation patterns
+A review checklist for pull requests that add or modify components. The rules behind it live in
+the [Coding Guidelines](../../CODING_GUIDELINES.md); this skill is the pass over a diff.
 
 ## When to Use
 
-- Reviewing a PR that adds a new component
-- Reviewing changes to an existing component
-- Pre-merge quality gate check
-- Onboarding new contributors
-
-## Review Checklist
-
-### 1. Project Structure & Files
-
-- [ ] **Component directory** exists at `src/components/[component-name]/`
-- [ ] **Component file** named correctly: `[component-name].ts`
-- [ ] **Test file** exists: `[component-name].spec.ts`
-- [ ] **Storybook story** exists: `stories/[component-name].stories.ts`
-- [ ] **Theme files** present in `themes/` directory
-  - `[component-name].base.scss`
-  - `themes.ts` aggregator
-  - All four theme files (bootstrap, material, fluent, indigo)
-- [ ] **Export** added to `src/index.ts` in alphabetical order
-
-### 2. TypeScript Quality
-
-- [ ] **No `any` types** - Use `unknown` or proper types
-- [ ] **Strict type checking** passes
-- [ ] **Import paths** use `.js` extension (not `.ts`)
-- [ ] **No native private fields** - Use `_prefix` or TypeScript `private`, not `#`
-- [ ] **Internal API prefixed** with underscore: `_method()`, `_property`
-- [ ] **readonly modifier** used for immutable properties
-- [ ] **Explicit return types** on methods (unless obvious/cluttering)
-- [ ] **Property decorators** used correctly (`@property`, `@query`, etc.)
-- [ ] **Type annotations** present on all public APIs
-- [ ] **Interfaces/types** defined for complex structures
-
-**Good**:
-
-```typescript
-@property({ reflect: true })
-public variant: StyleVariant = 'primary';
-
-private _internalState: string = '';
-```
-
-**Bad**:
-
-```typescript
-@property()
-public variant: any; // ❌ No any types
-
-#privateField = ''; // ❌ No native private fields
-```
-
-### 3. Component Class Structure
-
-- [ ] **Extends `LitElement`** or appropriate mixin
-- [ ] **`tagName` static property** defined: `'igc-[component-name]'` with `readonly` modifier
-- [ ] **`styles` static property** includes base and shared styles
-- [ ] **`register()` static method** present
-- [ ] **Region comments** organize code: Internal state, Public properties, Lit lifecycle, Event handlers, Internal API, Public API
-- [ ] **Internal API prefixed** with underscore: `_internalMethod()`, `_privateState`
-- [ ] **readonly modifier** used for immutable properties
-- [ ] **Explicit return types** specified for methods (unless obvious)
-- [ ] **Theming controller** added in constructor: `addThemingController(this, all)`
-- [ ] **Constructor** calls `super()` first if overridden
-- [ ] **Default export** used: `export default class`
-- [ ] **Global declaration** included for TypeScript
-
-**Template**:
-
-```typescript
-export default class IgcComponentComponent extends LitElement {
-  public static readonly tagName = 'igc-component';
-  public static override styles = [styles, shared];
-
-  public static register(): void {
-    registerComponent(IgcComponentComponent);
-  }
-
-  //#region Internal state
-
-  private _internalState = '';
-
-  //#endregion
-
-  //#region Public properties
-
-  @property({ reflect: true })
-  public variant = 'primary';
-
-  //#endregion
-
-  constructor() {
-    super();
-    addThemingController(this, all);
-  }
-
-  //#region Lit lifecycle
-
-  protected override render() {
-    return html`<div part="base"><slot></slot></div>`;
-  }
-
-  //#endregion
-
-  //#region Internal API
-
-  private _handleChange(): void {
-    // Internal helper
-  }
-
-  //#endregion
-}
-
-declare global {
-  interface HTMLElementTagNameMap {
-    'igc-component': IgcComponentComponent;
-  }
-}
-```
-
-### 4. Properties & Attributes
-
-- [ ] **Only primitives exposed as attributes** (string, number, boolean)
-- [ ] **Complex types** use `attribute: false`
-- [ ] **Boolean properties** use `{ type: Boolean, reflect: true }`
-- [ ] **Number properties** use `{ type: Number }`
-- [ ] **reflect: true** only for primitives that should be attributes
-- [ ] **Default values** are appropriate
-- [ ] **JSDoc comments** include `@attr` for reflected properties
-- [ ] **JSDoc comments** include `@default` for default values
-
-**Good**:
-
-```typescript
-/**
- * The variant style of the component
- * @attr variant
- * @default 'primary'
- */
-@property({ reflect: true })
-public variant: StyleVariant = 'primary';
-
-/**
- * Complex configuration object
- */
-@property({ attribute: false })
-public config: Config = {};
-```
-
-**Bad**:
-
-```typescript
-@property({ reflect: true }) // ❌ Trying to reflect complex type
-public config: Config = {};
-```
-
-### 5. Lifecycle & Reactivity
-
-- [ ] **Lifecycle hooks** used correctly
-  - `update()` for side effects (DOM available)
-  - `willUpdate()` only for pre-render computation
-  - `super.update()` called when overriding `update()`
-- [ ] **`changedProperties.has()`** checked to avoid unnecessary work
-- [ ] **No `@watch` decorator** used (prefer lifecycle hooks)
-- [ ] **`requestUpdate()`** not called unnecessarily
-
-**Good**:
-
-```typescript
-protected override update(changedProperties: PropertyValues<this>): void {
-  if (changedProperties.has('disabled')) {
-    // Update ARIA or other side effects
-    this._internals.setARIA({ ariaDisabled: `${this.disabled}` });
-  }
-  super.update(changedProperties);
-}
-```
-
-### 6. Shadow DOM & Styling
-
-- [ ] **Shadow DOM** used (not open mode issues)
-- [ ] **CSS parts** exposed with `part` attribute for external styling
-- [ ] **CSS parts documented** in JSDoc with `@csspart`
-- [ ] **CSS custom properties** documented with `@cssproperty`
-- [ ] **SCSS files transpiled** to `.css.js` files
-- [ ] **No direct `.css.js` edits** (only edit SCSS)
-- [ ] **All themes implemented** (bootstrap, material, fluent, indigo)
-- [ ] **Light and dark modes** considered
-- [ ] **`:host` styles** include appropriate `display` value
-
-**Good**:
-
-```typescript
-/**
- * @csspart base - The main container
- * @csspart content - The content wrapper
- * @cssproperty --padding - Internal padding
- */
-protected override render() {
-  return html`<div part="base"><slot></slot></div>`;
-}
-```
-
-### 7. Accessibility (Critical)
-
-- [ ] **Accessibility tests pass** - `await expect(el).to.be.accessible()`
-- [ ] **Semantic HTML** used where appropriate
-- [ ] **ARIA attributes** set correctly
-- [ ] **`role` attribute** appropriate for component type
-- [ ] **Keyboard navigation** implemented
-- [ ] **Focus management** works correctly
-- [ ] **`delegatesFocus`** used if component should delegate focus
-- [ ] **Screen reader** announcements appropriate
-- [ ] **Color contrast** meets WCAG standards
-- [ ] **Focus indicators** visible
-- [ ] **`addInternalsController`** used for ARIA management if needed
-- [ ] **`reflectRole: true`** used when the role must be visible to attribute-only tooling (axe) — no hand-written `this.role = '…'` assignments
-- [ ] **ARIA lands on the focused element**: a composite host wrapping an input-shaped component (select/combo/date-picker pattern) projects its semantics with `addAriaProjector`/`addAriaTarget` from `#internals/controllers/aria-projection.js` instead of setting `role`/`aria-*` on itself or the wrapper
-- [ ] **Cross-root relations use element references** (ARIA element reflection), never IDREFs — an IDREF cannot cross a shadow boundary
-- [ ] **Theme selectors for composite anchors** key off the mirrored `data-role`/`data-haspopup` attributes, not `role`/`aria-*` host attributes
-- [ ] **No `@hidden`/`@internal` public members** added for cross-component access — use the `internalsOf()` registry lookup (or the projection controllers) instead
-- [ ] **Shared ARIA suites reused** where applicable: `runExternalLabelAssociationTests` / `runAriaProjectionTests` from `src/internals/testing/form-testbed.spec.ts`; reflected relations asserted by identity readback, with `axeReflectedRelationsOptions` suppressing the known `aria-required-attr` false positive
-
-**Check**:
-
-```typescript
-// Should have accessibility test
-it('passes the a11y audit', async () => {
-  const el = await fixture<IgcComponentComponent>(
-    html`<igc-component></igc-component>`
-  );
-
-  await expect(el).shadowDom.to.be.accessible();
-  await expect(el).to.be.accessible();
-});
-```
-
-### 8. Events
-
-- [ ] **Events use EventEmitterMixin** if custom events needed
-- [ ] **Event map interface** defined
-- [ ] **Events documented** with `@event` in JSDoc
-- [ ] **Event names** follow convention (lowercase, no `on` prefix)
-- [ ] **Events composed** if they should cross Shadow DOM boundary
-- [ ] **Events bubbling** configured appropriately
-- [ ] **Event detail types** are properly typed
-
-**Good**:
-
-```typescript
-export interface IgcComponentEventMap {
-  igcChange: CustomEvent<string>;
-}
-
-/**
- * @event igcChange - Emitted when value changes
- */
-export default class IgcComponentComponent extends EventEmitterMixin<
-  IgcComponentEventMap,
-  Constructor<LitElement>
->(LitElement) {
-  // ...
-  this.emitEvent('igcChange', { detail: newValue });
-}
-```
-
-### 9. Tests
-
-- [ ] **Accessibility test** included (required)
-- [ ] **Default values tested**
-- [ ] **Property changes tested**
-- [ ] **Attribute reflection tested** (for reflected properties)
-- [ ] **Events tested**
-- [ ] **Slot content tested**
-- [ ] **Edge cases covered**
-- [ ] **`defineComponents()` called** in `before()` hook
-- [ ] **`elementUpdated()` used** after programmatic changes
-- [ ] **Tests use `@open-wc/testing`** framework
-- [ ] **All tests pass** locally
-
-**Minimum Required**:
-
-```typescript
-describe('Component', () => {
-  before(() => {
-    defineComponents(IgcComponentComponent);
-  });
-
-  it('passes the a11y audit', async () => {
-    // Required accessibility test
-  });
-
-  it('should initialize with default values', async () => {
-    // Test defaults
-  });
-
-  it('can change properties', async () => {
-    // Test reactivity
-  });
-});
-```
-
-### 10. Storybook Stories
-
-- [ ] **Story file exists** at `stories/[component-name].stories.ts`
-- [ ] **Metadata defined** with title, component, description
-- [ ] **argTypes** match component properties
-- [ ] **args** provide default values
-- [ ] **Controls** appropriate for property types
-- [ ] **TypeScript interface** for args
-- [ ] **At least one story** demonstrates basic usage
-- [ ] **Multiple stories** for different variants (ideal)
-- [ ] **Story renders correctly** in Storybook
-- [ ] **Generated region regenerated, not hand-edited** — the `// region default … // endregion`
-      block comes from `npm run cem && npm run build:meta`. If a description differs from the
-      component's JSDoc, the story was edited by hand and will be clobbered. Every story is
-      generated; there are no hand-maintained exceptions.
-- [ ] **Story is actually reachable by the generator** — two failure modes skip it: a filename
-      that doesn't match the tag name (`igc-date-picker` → `date-picker.stories.ts`, which
-      *warns*), and a missing `// region default` / `// endregion` pair (which is a **silent**
-      no-op). A story whose descriptions don't match the source JSDoc is the symptom of both.
-
-### 11. Documentation
-
-- [ ] **JSDoc comments** on component class
-- [ ] **`@element` tag** with component tag name
-- [ ] **`@slot` tags** for all slots (default and named)
-- [ ] **`@csspart` tags** for all exposed parts
-- [ ] **`@cssproperty` tags** for CSS custom properties
-- [ ] **`@event` tags** for emitted events
-- [ ] **Property descriptions** clear and complete
-- [ ] **Examples** in JSDoc if complex usage
-- [ ] **No `igc-` tag names in description prose** — see below
-- [ ] **Descriptions don't restate the tag** — no "The label *attribute* of the control",
-      no `Gets/Sets`; booleans start with "Whether" and describe the `true` state accurately
-- [ ] **Description is the leading summary paragraph**, not appended to `@element`
-
-**Complete Example**:
-
-```typescript
-/**
- * A button component for user interactions.
- *
- * @element igc-button
- *
- * @slot - Default slot for button text
- * @slot prefix - Content before the button text
- *
- * @csspart base - The button element
- * @csspart content - The content wrapper
- *
- * @cssproperty --padding - Button padding
- *
- * @event igcClick - Emitted on click
- */
-```
-
-**No tag names in prose**: every description reaches `custom-elements.json`, the generated
-Storybook docs and the Angular / React / Blazor wrapper API docs verbatim, where `igc-*` is
-wrong or meaningless. Use the plain-English component name.
-
-```typescript
-// ❌ Reject
-/**
- * The `igc-carousel` presents a set of `igc-carousel-slide`s.
- *
- * @slot - Renders `igc-toggle-button` component.
- * @csspart base - The native button element of the igc-button component.
- */
-
-// ✅ Accept
-/**
- * The carousel presents a set of slides.
- *
- * @slot - Renders the toggle buttons of the group.
- * @csspart base - The native button element of the button component.
- */
-```
-
-Tag names are allowed **only** in the `@element` tag, inside fenced `@example` code blocks,
-in literal event/attribute names that contain `igc-` (e.g. the `"igc-change-theme"` window
-event), and in `@internal`/`@hidden` members or non-exported internal controllers, mixins and
-templates.
-
-Quick grep to catch leaks — this should return nothing outside `@element`, `@example` blocks
-and internal members:
+- Reviewing a PR that adds or changes a component
+- Pre-merge quality gate, or a self-review before opening a PR
+
+## Review Order
+
+1. **Structure** — are all the required files there?
+2. **Public API** — properties, events, docs; this is the part that cannot be changed later
+3. **Accessibility** — mandatory, never skipped
+4. **Behavior** — lifecycle, state, forms
+5. **Styles and themes**
+6. **Tests and generated artifacts**
+7. **Build and hygiene**
+
+## 1. Structure
+
+- [ ] Component at `src/components/[name]/[name].ts` with a single default export
+- [ ] Spec at `src/components/[name]/[name].spec.ts`
+- [ ] Story at `stories/[name].stories.ts` — filename matches the tag name
+- [ ] Theme scaffold complete: `[name].base.scss`, `shared/`, `light/`, `dark/`, `themes.ts`
+- [ ] Exported from `src/index.ts` in alphabetical order
+- [ ] Cross-cutting imports use `#internals/*`, `#theming/*`, `#animations/*`; component-to-component
+      imports stay relative; every specifier ends in `.js`
+- [ ] Nothing new under `src/internals` is exported from the public entry point
+
+## 2. Public API and Documentation
+
+- [ ] `tagName`, `styles` and `register()` static members present; `register()` also registers
+      every dependency rendered in the template
+- [ ] `HTMLElementTagNameMap` declaration added
+- [ ] Only primitives are attributes; complex types use `attribute: false` and are never reflected
+- [ ] Booleans default to `false`
+- [ ] Attribute names are kebab-case, spelled out for multi-word properties
+- [ ] Events go through `EventEmitterMixin` with a typed event map; names are `igc`-prefixed
+      camelCase, cancelable ones use the `-ing` suffix and their return value is checked
+- [ ] Events are emitted from user interaction, not from property assignment or method calls
+- [ ] JSDoc carries `@element`, `@slot`, `@csspart`, `@cssproperty`, `@attr`, `@default`,
+      `@event` as applicable, with tags after the description
+- [ ] Deprecations follow `@deprecated since [SemVer]. Use the \`[new API]\` [type] instead.`
+- [ ] **No `igc-` tag names in description prose** — they ship verbatim into
+      `custom-elements.json` and every framework wrapper's docs. Allowed only in `@element`,
+      fenced `@example` blocks, literal `igc-`-containing event/attribute names, and
+      `@internal`/`@hidden` members.
+- [ ] Descriptions don't restate the tag ("The label _attribute_ of…"), don't use `Gets/Sets`,
+      and booleans start with "Whether" describing the `true` state accurately
 
 ```bash
+# Quick leak check — should return nothing outside @element/@example
 grep -rn "igc-" --include="*.ts" src/ \
   | grep -E "^\S+:[0-9]+:\s*\*" \
   | grep -vE "@element|@example|\.spec\.ts"
 ```
 
-### 12. Form Integration (if applicable)
+## 3. Accessibility
 
-- [ ] **FormAssociatedRequiredMixin** used for form controls
-- [ ] **Form value state** managed correctly
-- [ ] **Validation** implemented if needed
-- [ ] **`value` property** reactive and synced
-- [ ] **Form reset** handled
-- [ ] **Required/disabled states** work correctly
-- [ ] **Labels associated** correctly
+- [ ] The spec contains the mandatory a11y audit (`shadowDom` **and** light DOM)
+- [ ] Semantic elements used instead of `div`s with click handlers
+- [ ] ARIA set through `addInternalsController` (`initialARIA`, `setARIA()`) — never
+      `this.role = '…'`; `reflectRole: true` when attribute-only tooling must see the role
+- [ ] Keyboard interaction implemented through `addKeybindings` (Tab, arrows, Enter/Space,
+      Escape, Home/End as applicable) with visible focus indicators
+- [ ] Composite hosts wrapping an input-shaped component project their semantics with
+      `addAriaProjector` / `addAriaTarget` instead of setting `role`/`aria-*` on the host or
+      the wrapper
+- [ ] Cross-root relations use ARIA element reflection, never IDREFs
+- [ ] Theme selectors for composite anchors key off the mirrored `data-role`/`data-haspopup`
+      attributes, not `role`/`aria-*`
+- [ ] No `public` members tagged `@hidden`/`@internal` added for cross-component access — use
+      `internalsOf()`
+- [ ] Cross-root ARIA is covered by `runExternalLabelAssociationTests` /
+      `runAriaProjectionTests`; reflected relations are asserted by identity readback, with
+      `axeReflectedRelationsOptions` suppressing the known `aria-required-attr` false positive
 
-### 13. Build & Compilation
+## 4. Behavior
 
-- [ ] **TypeScript compiles** without errors: `npm run check-types`
-- [ ] **No linting errors**: Check biome/eslint output
-- [ ] **SCSS transpiled** to `.css.js` files
-- [ ] **All tests pass**: `npm run test`
-- [ ] **No console errors/warnings** in Storybook
-- [ ] **Bundle size** reasonable (check for large dependencies)
+- [ ] Region fences and member order follow the standard component structure
+- [ ] Internal API is `_`-prefixed; no native private fields (`#`); `readonly` on controllers
+      and other non-reassigned fields
+- [ ] No `any`; explicit return types except where obviously noise
+- [ ] Derived state computed in `willUpdate()`, side effects in `update()` with
+      `super.update()` called; guarded by `changedProperties.has()`
+- [ ] No new `@watch` usages
+- [ ] Existing controllers reused rather than reimplemented (slots, observers, root click,
+      keybindings, gestures, i18n)
+- [ ] Dynamically added listeners on `window`/`document` are removed in `disconnectedCallback`;
+      listeners in templates and on the host are not manually cleaned up
+- [ ] User-facing strings come from the i18n controller, not inlined in templates
+- [ ] Form controls: extend the right form-associated mixin, own their `_formValue` through
+      `createFormValueState`, expose validators via `__validators` (reusing
+      `#internals/validators.js`), update through `setValueAndFormState`, call `_validate()`
+      from constraint-affecting setters, and wire `_handleBlur` / `_handleEnterKeydown` on the
+      native editor
+- [ ] Form controls don't reimplement touched/pristine/invalid bookkeeping; overrides of
+      `formResetCallback` call `super`
 
-### 14. Code Quality
+## 5. Styles and Themes
 
-- [ ] **No commented-out code** (unless with explanation)
-- [ ] **No debug statements** (`console.log`, `debugger`)
-- [ ] **Consistent formatting** (should be auto-formatted)
-- [ ] **Meaningful variable names**
-- [ ] **No magic numbers** (use named constants)
-- [ ] **Error handling** appropriate
-- [ ] **Code is DRY** (Don't Repeat Yourself)
+- [ ] Only `.scss` edited — no generated `.css.ts` in the diff
+- [ ] Load-path specifiers (`@use 'styles/utilities' as *`), no relative global imports
+- [ ] Values read through `var-get()` and the theming functions; nothing hardcoded
+- [ ] Part selectors use `[part~='…']`
+- [ ] All four themes covered in light and dark; dark files emit only the `diff()`
+- [ ] `themes.ts` aggregates every theme file that was added
+- [ ] `:host` has an appropriate `display`; selector specificity kept low
 
-### 15. Project Conventions
+## 6. Tests and Generated Artifacts
 
-- [ ] **Follows composition over inheritance**
-- [ ] **No heavy third-party dependencies** unless necessary
-- [ ] **Uses project utilities** from `common/` where applicable
-- [ ] **Consistent with existing component patterns**
-- [ ] **Theming uses igniteui-theming package**
-- [ ] **Modern ECMAScript features** used appropriately
+- [ ] `defineComponents()` in the `before()` hook; `elementUpdated()` after programmatic changes
+- [ ] Coverage for defaults, property/attribute reflection, events, interaction and edge cases
+- [ ] Interaction driven by the shared simulators from `#internals/testing/simulate.spec.js`,
+      not raw `click()` / hand-built events
+- [ ] Form controls tested through `createFormAssociatedTestBed` and the validity helpers
+- [ ] The story's `// region default … // endregion` block was regenerated
+      (`npm run cem && npm run build:meta`), not hand-edited, and is committed
+- [ ] Hand-written stories cover the states a user cares about
+- [ ] CHANGELOG updated
 
-## Common Issues to Watch For
+## 7. Build and Hygiene
 
-### Issue: Missing Theming Controller
+- [ ] `npm run check` (aliases, dependency rules, types) passes
+- [ ] `npm run lint` passes — biome, lit-analyzer, prettier, stylelint
+- [ ] `npm run test` passes
+- [ ] No leftover `console.log`/`debugger`, no commented-out code, no unexplained magic numbers
+- [ ] No new heavy third-party dependency
 
-**Problem**: Component doesn't respond to theme changes
-**Fix**: Add `addThemingController(this, all)` in constructor
+## Frequent Findings
 
-### Issue: Wrong Import Extensions
+| Finding                                        | Why it matters                                                        |
+| ---------------------------------------------- | --------------------------------------------------------------------- |
+| Missing `addThemingController`                 | The component never reacts to theme changes                           |
+| Relative import into `internals`/`theming`     | `npm run check` fails; alias is the contract                          |
+| Alias added to `package.json` only             | Breaks only for consumers of the published package                    |
+| `igc-` tag name in a description               | Ships verbatim into every framework wrapper's API docs                |
+| Hand-edited story metadata                     | Reverts on the next `npm run build:meta`                              |
+| `.css.ts` file in the diff                     | Generated and gitignored — the `.scss` is the source                  |
+| `[part='base']` with `partMap`                 | Selector silently stops matching once a second part name is emitted   |
+| ARIA on a `delegatesFocus` host                | Assistive technology reads the native editor, not the host            |
+| New `@hidden` public member                    | Leaks into the compiled public API — use `internalsOf()`              |
+| Boolean property defaulting to `true`          | Cannot be turned off from markup                                      |
+| `@watch` in new code                           | Lifecycle hooks are the supported path                                |
 
-**Problem**: Using `.ts` instead of `.js` in imports
-**Fix**: All TypeScript imports must use `.js` extension
+## Verdict
 
-### Issue: Exposing Complex Types as Attributes
+**Request changes** when: the a11y audit is missing or failing, ARIA is set on the wrong
+element, `any` types or native private fields appear, generated artifacts are hand-edited or
+missing, themes are incomplete, or the public API is undocumented.
 
-**Problem**: Trying to reflect objects/arrays to HTML attributes
-**Fix**: Use `attribute: false` for non-primitive types
+**Approve** when the checklist passes, `npm run check`, `npm run lint` and `npm run test` are
+green, and the public API reads the way it will be documented for users.
 
-### Issue: Missing Accessibility Tests
-
-**Problem**: No a11y test in spec file
-**Fix**: Always include accessibility audit test
-
-### Issue: Forgot to Export Component
-
-**Problem**: Component not available when importing from package
-**Fix**: Add export to `src/index.ts` in alphabetical order
-
-### Issue: Using @watch Decorator
-
-**Problem**: Using deprecated pattern for property changes
-**Fix**: Use `update()` or `willUpdate()` lifecycle hooks
-
-### Issue: Native Private Fields
-
-**Problem**: Using `#privateField` syntax
-**Fix**: Use `_privateField` or TypeScript `private` keyword
-
-### Issue: `igc-` Tag Names in Descriptions
-
-**Problem**: Prose like ``The `igc-carousel` presents a set of `igc-carousel-slide`s`` or
-`The prefix wrapper of the igc-textarea.` ships verbatim into `custom-elements.json`, the
-Storybook docs and the Angular / React / Blazor wrapper API docs
-**Fix**: Use the plain-English component name. See [Documentation](#11-documentation)
-
-### Issue: Hand-Edited Story Metadata
-
-**Problem**: A description inside `// region default` was fixed in the story instead of the
-component JSDoc — it reverts on the next `npm run build:meta`
-**Fix**: Fix the JSDoc, then run `npm run cem && npm run build:meta`
-
-## Review Process
-
-1. **Start with structure** - Verify all required files exist
-2. **Check TypeScript** - Ensure strict typing and no `any`
-3. **Review accessibility** - This is critical, don't skip
-4. **Test locally** - Run build and tests
-5. **Check Storybook** - Verify visual behavior
-6. **Review code quality** - Look for patterns and conventions
-7. **Provide constructive feedback** - Be specific and helpful
-
-## Quick Pass/Fail Criteria
-
-**Immediate Reject if**:
-
-- No accessibility tests
-- Using `any` types extensively
-- Native private fields (`#`)
-- No tests at all
-- TypeScript compilation errors
-
-**Request Changes if**:
-
-- Missing documentation
-- Incomplete test coverage
-- Accessibility issues
-- Not following project conventions
-- Missing theme files
-
-**Approve if**:
-
-- All checkboxes checked
-- Tests pass
-- Accessibility verified
-- Code quality good
-- Follows project patterns
-
-## Resources
-
-- [Coding Guidelines](../../CODING_GUIDELINES.md) - Comprehensive coding standards and best practices
-- [Lit Best Practices](https://lit.dev/docs/components/best-practices/)
-- [WCAG Guidelines](https://www.w3.org/WAI/WCAG21/quickref/)
-- [Web Components Best Practices](https://web.dev/custom-elements-best-practices/)
+Be specific in feedback: name the file, the line and the guideline it maps to.
+</content>

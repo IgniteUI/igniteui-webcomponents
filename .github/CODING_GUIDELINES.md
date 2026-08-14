@@ -6,17 +6,13 @@
 2. Prefer longer, more descriptive names, over shorter names.
 3. Use web-compatible, full URLs as import specifiers, including file extensions:
 
-   > [!TIP] DO
-   >
-   > ```ts
-   > import * as foo from './foo.js';
-   > ```
+   ```ts
+   // ✅ DO
+   import * as foo from './foo.js';
 
-   > [!WARNING] DON'T
-   >
-   > ```ts
-   > import * as foo from './foo';
-   > ```
+   // ❌ DON'T
+   import * as foo from './foo';
+   ```
 
 4. We use TypeScript and have strict compiler options turned on. Do not change them.
 5. Prefer the `unknown` type over `any`.
@@ -27,6 +23,38 @@
 10. Internal API (properties, methods, getters, setters) should be prefixed with an underscore (`_`).
 11. Use the `readonly` modifier for properties that should not be reassigned.
 12. Specify return types for functions and methods explicitly rather than relying on inference, unless the type is obvious or causes unnecessary clutter in the source code.
+13. Don't use native private fields (`#field`). Use TypeScript `private` with an `_` prefix.
+
+## Project Structure
+
+```
+src/
+├── animations/  # Animation players and presets            → #animations/*
+├── components/  # One directory per component
+├── extras/      # Opt-in add-ons, published as `igniteui-webcomponents/extras`
+├── internals/   # Shared building blocks, never public API  → #internals/*
+├── styles/      # Global SCSS: utilities, mixins, themes
+├── theming/     # Theming controller and types             → #theming/*
+└── index.ts     # Public entry point of the package
+```
+
+`src/internals` holds everything shared between components and nothing that ships
+as public API:
+
+| Directory      | Contents                                                                                      |
+| -------------- | --------------------------------------------------------------------------------------------- |
+| `controllers/` | Reactive controllers — slots, ElementInternals, keybindings, observers, gestures, ARIA, etc.  |
+| `date/`        | The `CalendarDay` model, date comparison and conversion helpers                               |
+| `decorators/`  | `shadowOptions`, the Blazor markers, the legacy `watch`                                       |
+| `definitions/` | `registerComponent`, `defineComponents`, `defineAllComponents`                                |
+| `i18n/`        | Localization controller and the EN resource strings                                           |
+| `mixins/`      | `EventEmitterMixin`, the form-associated mixins, mask behavior, combo box, alert              |
+| `templates/`   | Shared render fragments (`input-shell`, `masked-input`)                                       |
+| `testing/`     | Test-only helpers and shared suites — `*.spec.ts`, never imported by production code          |
+| `utils/`       | Domain-split helpers: `arrays`, `dom`, `events`, `lit`, `math`, `objects`, `strings`, `types` |
+
+Nothing under `src/internals` is exported from `src/index.ts`. If a helper has to
+become part of the public API, it moves out of `internals` first.
 
 ## Components
 
@@ -43,14 +71,13 @@
 
 ```ts
 export default class IgcFooBarComponent extends LitElement {
-
   /** Static members */
 
-   /**
-    * Each component should define a valid custom element tag name.
-    */
+  /**
+   * Each component should define a valid custom element tag name.
+   */
   public static readonly tagName = 'igc-foo-bar';
-  public static override styles = [styles];
+  public static override styles = [styles, shared];
 
   /**
    * Since Ignite UI web components are not self-registering by themselves,
@@ -58,8 +85,9 @@ export default class IgcFooBarComponent extends LitElement {
    * The `registerComponent` call will add the component to the custom elements
    * registry (if not already present) and all its dependent components.
    */
+  /* blazorSuppress */
   public static register(): void {
-    registerComponent(IgcFooBarComponent, ...);
+    registerComponent(IgcFooBarComponent, IgcFooChildComponent);
   }
 
   //#region Internal state and properties
@@ -94,6 +122,7 @@ export default class IgcFooBarComponent extends LitElement {
   /**
    * Determines whether the component is disabled.
    * @attr
+   * @default false
    */
   @property({ type: Boolean, reflect: true })
   public disabled = false;
@@ -107,6 +136,7 @@ export default class IgcFooBarComponent extends LitElement {
 
   constructor() {
     super();
+    addThemingController(this, all);
     this.addEventListener('input', this._handleInput);
   }
 
@@ -132,7 +162,9 @@ export default class IgcFooBarComponent extends LitElement {
     super.update(changedProperties);
   }
 
-  protected override firstUpdated(changedProperties: PropertyValues<this>): void {
+  protected override firstUpdated(
+    changedProperties: PropertyValues<this>
+  ): void {
     // ...
   }
 
@@ -182,7 +214,6 @@ export default class IgcFooBarComponent extends LitElement {
   protected override render() {
     return html`${this._renderInput()}${this._renderContainer()}`;
   }
-
 }
 
 /**
@@ -216,31 +247,27 @@ declare global {
   - Use `willUpdate()` for computing derived state before rendering.
   - The `@watch` decorator should be avoided in new code.
 
-  > [!TIP] DO
-  >
-  > ```ts
-  > protected override willUpdate(changedProperties: PropertyValues<this>): void {
-  >   if (changedProperties.has('value')) {
-  >     this._invalid = this.value.length < this.minLength;
-  >   }
-  > }
-  >
-  > protected override update(changedProperties: PropertyValues<this>): void {
-  >   if (changedProperties.has('disabled')) {
-  >     this._updateAriaAttributes();
-  >   }
-  >   super.update(changedProperties);
-  > }
-  > ```
+  ```ts
+  // ✅ DO
+  protected override willUpdate(changedProperties: PropertyValues<this>): void {
+    if (changedProperties.has('value')) {
+      this._invalid = this.value.length < this.minLength;
+    }
+  }
 
-  > [!WARNING] DON'T
-  >
-  > ```ts
-  > @watch('value')
-  > protected valueChange(): void {
-  >   this._invalid = this.value.length < this.minLength;
-  > }
-  > ```
+  protected override update(changedProperties: PropertyValues<this>): void {
+    if (changedProperties.has('disabled')) {
+      this._updateAriaAttributes();
+    }
+    super.update(changedProperties);
+  }
+
+  // ❌ DON'T
+  @watch('value')
+  protected valueChange(): void {
+    this._invalid = this.value.length < this.minLength;
+  }
+  ```
 
 - After adding new component(s) to the library, make sure to export them from the entry point of the package:
 
@@ -267,56 +294,69 @@ export { default as IgcFooBarComponent } from './components/foobar/foobar.js';
 
   The aliases are Node subpath imports, declared in the `imports` field of `package.json`
   (pointing at the sources) and of `scripts/_package.json` (the published manifest, where
-  `dist` is the package root). **Adding an alias means editing both files** —
-  `npm run check` fails otherwise. They are plain ESM: nothing rewrites them, the specifier
-  you write is the specifier that ships.
+  `dist` is the package root). They are plain ESM: nothing rewrites them, the specifier you
+  write is the specifier that ships.
 
   A file inside an aliased directory keeps relative paths for its own siblings, but uses the
   alias to reach a different one. `npm run check` enforces all of this via dependency-cruiser.
 
-  > [!TIP] DO
-  >
-  > ```ts
-  > import { addSlotController } from '#internals/controllers/slot.js';
-  > ```
+  > [!WARNING]
+  > Adding an alias means editing **both** manifests. Declaring it only in `package.json`
+  > type-checks and tests green locally and breaks exclusively for consumers of the published
+  > package; `npm run check` guards against that.
 
-  > [!WARNING] DON'T
-  >
-  > ```ts
-  > import { addSlotController } from '../../internals/controllers/slot.js';
-  > ```
+  ```ts
+  // ✅ DO
+  import { addSlotController } from '#internals/controllers/slot.js';
+
+  // ❌ DON'T
+  import { addSlotController } from '../../internals/controllers/slot.js';
+  ```
 
 - Ordering is handled by Biome (`biome check --fix`) and needs no manual grouping. It produces
   one contiguous block sorted by source: external packages, then `#` aliases, then `../`, then
   `./`, with type imports sorted by path alongside the rest rather than pushed to the end.
 
-  > [!TIP] DO
-  >
-  > ```ts
-  > import { html, LitElement, type PropertyValues } from 'lit';
-  > import { property } from 'lit/decorators.js';
-  > import { addSlotController, setSlots } from '#internals/controllers/slot.js';
-  > import { registerComponent } from '#internals/definitions/register.js';
-  > import { addThemingController } from '#theming/theming-controller.js';
-  > import type { BadgeShape, StyleVariant } from '../types.js';
-  > import { styles } from './themes/badge.base.css.js';
-  > import { all } from './themes/themes.js';
-  > ```
+  ```ts
+  // ✅ DO
+  import { html, LitElement, type PropertyValues } from 'lit';
+  import { property } from 'lit/decorators.js';
+  import { addSlotController, setSlots } from '#internals/controllers/slot.js';
+  import { registerComponent } from '#internals/definitions/register.js';
+  import { addThemingController } from '#theming/theming-controller.js';
+  import type { BadgeShape, StyleVariant } from '../types.js';
+  import { styles } from './themes/badge.base.css.js';
+  import { all } from './themes/themes.js';
+  ```
 
 ## Controllers
 
-- Controllers are reusable pieces of logic that hook into a component's lifecycle. Use controllers from `src/internals/controllers/` for common functionality:
-  - `addThemingController` - Required for theme support
-  - `addSlotController` - For managing slotted content
-  - `addInternalsController` - For ElementInternals and ARIA management
-  - `addKeybindings` - For keyboard navigation
-  - And others as needed
+Controllers are reusable pieces of logic that hook into a component's lifecycle. Reach for an
+existing one before writing lifecycle code by hand:
 
-- Controllers should be stored as `readonly` class fields and initialized inline:
+| Controller                                                    | Module                                          | Use for                                                        |
+| ------------------------------------------------------------- | ----------------------------------------------- | -------------------------------------------------------------- |
+| `addThemingController`                                        | `#theming/theming-controller.js`                | Theme resolution. **Required for every component.**            |
+| `addSlotController` / `setSlots`                              | `#internals/controllers/slot.js`                | Observing and querying slotted content                         |
+| `addInternalsController` / `internalsOf`                      | `#internals/controllers/internals.js`           | ElementInternals: ARIA, custom states, form value and validity |
+| `addKeybindings`                                              | `#internals/controllers/key-bindings.js`        | Keyboard interaction and navigation                            |
+| `addAriaTarget` / `addAriaProjector` / `ariaBindings`         | `#internals/controllers/aria-projection.js`     | Projecting composite ARIA across shadow roots                  |
+| `addCommandController`                                        | `#internals/controllers/command.js`             | The native Invoker Commands API (`command` / `commandfor`)     |
+| `addIdRefResolver`                                            | `#internals/controllers/id-resolver.js`         | Resolving IDREF attributes into elements                       |
+| `addRootClickController` / `addRootScrollHandler`             | `#internals/controllers/root-*.js`              | Dismissing overlays on outside click / scroll                  |
+| `createMutationController` / `createResizeObserverController` | `#internals/controllers/*-observer.js`          | Observing DOM mutations and size changes                       |
+| `addDragController` / `addGesturesController`                 | `#internals/controllers/drag.js`, `gestures.js` | Pointer dragging and gestures                                  |
+| `addKeyboardFocusRing`                                        | `#internals/controllers/focus-ring.js`          | Showing focus styling only for keyboard focus                  |
+| `addFullscreenController`                                     | `#internals/controllers/fullscreen.js`          | Fullscreen state                                               |
+| `addAdoptedStylesController`                                  | `#internals/controllers/adopt-styles.js`        | Adopting document styles into a shadow root                    |
+| `addI18nController`                                           | `#internals/i18n/i18n-controller.js`            | Localized resource strings                                     |
+
+- Controllers should be stored as `readonly` class fields and initialized inline, with the
+  exception of `addThemingController` and `addKeybindings`, which are set up in the constructor:
 
   ```ts
   private readonly _slots = addSlotController(this, {
-    slots: setSlots(),
+    slots: setSlots('prefix', 'suffix'),
     onChange: this._handleSlotChange,
   });
   ```
@@ -326,7 +366,8 @@ export { default as IgcFooBarComponent } from './components/foobar/foobar.js';
 - Use slots to allow content composition. Document all slots with `@slot` JSDoc tags.
 - The default slot typically holds the main content.
 - Named slots serve specific purposes (e.g., `prefix`, `suffix`, `header`).
-- Use `addSlotController` to react to slot content changes:
+- Use `addSlotController` to react to slot content changes. The default slot is queried
+  through the `DefaultSlot` key (`'[default]'`):
 
   ```ts
   private readonly _slots = addSlotController(this, {
@@ -336,6 +377,9 @@ export { default as IgcFooBarComponent } from './components/foobar/foobar.js';
 
   private _handleSlotChange(): void {
     this._hasPrefix = this._slots.hasAssignedElements('prefix');
+    this._hasIcon = this._slots.hasAssignedElements('[default]', {
+      selector: 'igc-icon',
+    });
   }
   ```
 
@@ -372,6 +416,10 @@ export { default as IgcFooBarComponent } from './components/foobar/foobar.js';
   }
   ```
 
+- Match parts in SCSS with `[part~='base']`, not `[part='base']` — a `partMap` result is a
+  space-separated list and an exact-match selector silently stops applying once a second
+  part name is added.
+
 - For delegating focus to internal elements, use the `@shadowOptions` decorator:
 
   ```ts
@@ -382,6 +430,70 @@ export { default as IgcFooBarComponent } from './components/foobar/foobar.js';
     // Focus is automatically delegated to the first focusable element
   }
   ```
+
+## Styles and Theming
+
+Styles are authored in SCSS and transpiled into Lit `css` tagged templates. A component's
+`themes` directory follows a fixed layout:
+
+```
+themes/
+├── [component].base.scss       # Structure and layout, theme-agnostic
+├── shared/
+│   ├── [component].common.scss # Cross-theme styling, sizing, CSS variables
+│   └── [component].{bootstrap,material,fluent,indigo}.scss
+├── light/
+│   ├── _themes.scss            # digest-schema() of the light schemas
+│   ├── [component].shared.scss # Base palette variables for all themes
+│   └── [component].{bootstrap,material,fluent,indigo}.scss
+├── dark/
+│   ├── _themes.scss            # digest-schema() of the dark schemas
+│   └── [component].{bootstrap,material,fluent,indigo}.scss
+└── themes.ts                   # Aggregates everything into the `all` export
+```
+
+> [!IMPORTANT]
+> `npm run build:styles` generates a `.css.ts` file next to each `.scss` one, imported from
+> the component as `.css.js`. The generated files are gitignored — never edit or commit them.
+> During development `npm run storybook` and `npm run test:watch` rebuild them automatically.
+
+- Only files matching `*.{base,common,shared,material,bootstrap,indigo,fluent}.scss` under
+  `src/components/**` are picked up by the build. A differently named partial is silently
+  skipped — prefix shared partials with `_` and `@use` them instead.
+- SCSS resolves against the `src` and `node_modules` load paths, so global helpers are
+  imported by package-style specifiers, not relative paths:
+
+  ```scss
+  // ✅ DO
+  @use 'styles/utilities' as *;
+  @use 'igniteui-theming/sass/themes/schemas/components/light/badge' as *;
+
+  // ❌ DON'T
+  @use '../../../styles/utilities' as *;
+  ```
+
+- Theme values come from the `igniteui-theming` schemas, digested in `_themes.scss` and read
+  through `var-get()`. Light theme files emit the full variable set, dark files emit only the
+  `diff()` against light:
+
+  ```scss
+  // light/badge.bootstrap.scss
+  @use 'styles/utilities' as *;
+  @use 'themes' as *;
+
+  $theme: $bootstrap;
+
+  :host {
+    @include css-vars-from-theme(diff($base, $theme));
+  }
+  ```
+
+- Never hardcode colors or sizes. Use `var-get($theme, 'text-color')`, `contrast-color()`,
+  `sizable()` and the `--ig-size` scale.
+- Keep selector specificity low and expose CSS parts so consumers can style the component
+  from the outside.
+- `themes.ts` is the only hand-written TypeScript file in the directory; it composes the
+  shared, light and dark styles into the `Themes` object passed to `addThemingController`.
 
 ## Accessibility
 
@@ -432,11 +544,19 @@ Accessibility is a first-class requirement for all components.
 - Use `addKeybindings` for keyboard interaction:
 
   ```ts
-  import { addKeybindings, arrowDown, arrowUp, enterKey } from '#internals/controllers/key-bindings.js';
+  import {
+    addKeybindings,
+    arrowDown,
+    arrowUp,
+    enterKey,
+  } from '#internals/controllers/key-bindings.js';
 
   constructor() {
     super();
-    addKeybindings(this)
+    addKeybindings(this, {
+      skip: () => this.disabled,
+      bindingDefaults: { preventDefault: true },
+    })
       .set(arrowDown, this._navigateNext)
       .set(arrowUp, this._navigatePrevious)
       .set(enterKey, this._handleActivate);
@@ -577,33 +697,42 @@ All components must include comprehensive tests in `[component-name].spec.ts`.
   expect(element).shadowDom.to.equal('<div part="base">...</div>');
   ```
 
+- Reuse the shared test infrastructure under `#internals/testing/` instead of
+  reimplementing it per component:
+
+  | Module                     | Provides                                                                       |
+  | -------------------------- | ------------------------------------------------------------------------------ |
+  | `simulate.spec.js`         | `simulateClick`, `simulateKeyboard`, `simulatePointerDown`, `simulateInput`, … |
+  | `form-testbed.spec.js`     | `createFormAssociatedTestBed` plus the shared label/ARIA-projection suites     |
+  | `validity-helpers.spec.js` | Assertions for validity state, custom errors and the invalid custom state      |
+  | `helpers.spec.js`          | Animation, focus, scroll and style helpers, `axeReflectedRelationsOptions`     |
+
+  Prefer these simulated events over `element.click()` or hand-built `KeyboardEvent`s — they
+  produce the full, ordered event sequence a real user interaction does.
+
 ## Properties and Attributes
 
 - Property names should always be `camelCased` while the backing attribute, if present, should be `kebab-cased`. A special case are properties/attributes that mimic the standard HTML attributes, such as `readOnly/readonly`, `minLength/minlength`, etc.
 
   It is encouraged to explicitly specify the kebab cased attribute name in the `@property` decorator for such properties.
 
-  > [!TIP] DO
-  >
-  > ```ts
-  > /**
-  >  * Controls the orientation of the header.
-  >  * @attr
-  >  */
-  > @property({ attribute: 'header-orientation' })
-  > public headerOrientation: 'vertical' | 'horizontal' = 'horizontal';
-  > ```
+  ```ts
+  // ✅ DO
+  /**
+   * Controls the orientation of the header.
+   * @attr header-orientation
+   */
+  @property({ attribute: 'header-orientation' })
+  public headerOrientation: 'vertical' | 'horizontal' = 'horizontal';
 
-  > [!WARNING] DON'T
-  >
-  > ```ts
-  > /**
-  >  * Controls the orientation of the header.
-  >  * @attr
-  >  */
-  > @property({ attribute: 'headerOrientation' })
-  > public headerOrientation: 'vertical' | 'horizontal' = 'horizontal';
-  > ```
+  // ❌ DON'T
+  /**
+   * Controls the orientation of the header.
+   * @attr
+   */
+  @property({ attribute: 'headerOrientation' })
+  public headerOrientation: 'vertical' | 'horizontal' = 'horizontal';
+  ```
 
 - For a boolean property to be configurable from an attribute, it must default to false. If it defaults to true, you cannot set it to false from markup, since the presence of the attribute, with or without a value, equates to true. This is the standard behavior for attributes in the web platform.
 
@@ -611,27 +740,24 @@ All components must include comprehensive tests in `[component-name].spec.ts`.
   - Change the property name so it defaults to false.
   - Use a string-valued or number-valued attribute instead.
 
-  > [!TIP] DO
-  >
-  > ```ts
-  > /**
-  >  * Enables/disables user interaction with the component.
-  >  * @attr
-  >  */
-  > @property({ type: Boolean, reflect: true })
-  > public disabled = false;
-  > ```
+  ```ts
+  // ✅ DO
+  /**
+   * Enables/disables user interaction with the component.
+   * @attr
+   * @default false
+   */
+  @property({ type: Boolean, reflect: true })
+  public disabled = false;
 
-  > [!WARNING] DON'T
-  >
-  > ```ts
-  > /**
-  >  * Enables/disables user interaction with the component.
-  >  * @attr
-  >  */
-  > @property({ type: Boolean, reflect: true })
-  > public enabled = true;
-  > ```
+  // ❌ DON'T
+  /**
+   * Enables/disables user interaction with the component.
+   * @attr
+   */
+  @property({ type: Boolean, reflect: true })
+  public enabled = true;
+  ```
 
 - Reflecting properties to attributes should be done sparingly. As a general guideline, primitive properties related to accessibility and/or styling should be reflected.
 
@@ -639,29 +765,20 @@ All components must include comprehensive tests in `[component-name].spec.ts`.
 
 - For complex types (objects, arrays, functions), use `attribute: false` to prevent Lit from attempting to serialize them to attributes:
 
-  > [!TIP] DO
-  >
-  > ```ts
-  > /**
-  >  * Configuration object for the component.
-  >  */
-  > @property({ attribute: false })
-  > public config: ComponentConfig = {};
-  >
-  > /**
-  >  * Collection of items to display.
-  >  */
-  > @property({ attribute: false })
-  > public items: Array<Item> = [];
-  > ```
+  ```ts
+  // ✅ DO
+  /** Configuration object for the component. */
+  @property({ attribute: false })
+  public config: ComponentConfig = {};
 
-  > [!WARNING] DON'T
-  >
-  > ```ts
-  > // This will cause issues - objects can't be attributes
-  > @property()
-  > public config: ComponentConfig = {};
-  > ```
+  /** Collection of items to display. */
+  @property({ attribute: false })
+  public items: Array<Item> = [];
+
+  // ❌ DON'T — objects can't be attributes
+  @property()
+  public config: ComponentConfig = {};
+  ```
 
 ## Custom Events
 
@@ -712,54 +829,110 @@ All components must include comprehensive tests in `[component-name].spec.ts`.
 
 ## Form Integration
 
-Components that participate in forms must use the `FormAssociatedRequiredMixin` and implement form-related behavior.
+Components that participate in forms extend one of the form-associated mixins from
+`#internals/mixins/forms/`:
 
-- **Form-associated components** (inputs, selects, etc.) should:
-  1. Extend from `FormAssociatedRequiredMixin`
-  2. Manage a form value via `createFormValueState`
-  3. Implement validation if needed
-  4. Handle form reset and restore
+| Mixin                                 | Use for                                       |
+| ------------------------------------- | --------------------------------------------- |
+| `FormAssociatedMixin`                 | Value-based controls; adds `defaultValue`     |
+| `FormAssociatedRequiredMixin`         | The same, plus a `required` attribute         |
+| `FormAssociatedCheckboxMixin`         | Checked-based controls; adds `defaultChecked` |
+| `FormAssociatedCheckboxRequiredMixin` | The same, plus a `required` attribute         |
 
-  ```ts
-  import { FormAssociatedRequiredMixin } from '#internals/mixins/forms/associated-required.js';
-  import { createFormValueState } from '#internals/mixins/forms/form-value.js';
+The mixins supply `name`, `disabled`, `invalid`, `form`, `validity`,
+`validationMessage`, `willValidate`, `checkValidity()`, `reportValidity()` and
+`setCustomValidity()`. A component only has to provide its value state and its validators:
 
-  export default class IgcInputComponent extends FormAssociatedRequiredMixin(
-    LitElement
-  ) {
-    protected override readonly _formValue = createFormValueState(this, {
-      initialValue: '',
-    });
+```ts
+import { FormAssociatedRequiredMixin } from '#internals/mixins/forms/associated-required.js';
+import { createFormValueState } from '#internals/mixins/forms/form-value.js';
+import {
+  maxLengthValidator,
+  requiredValidator,
+} from '#internals/validators.js';
 
-    protected override get __validators() {
-      return [
-        // Add validators here
-      ];
-    }
+const validators = [requiredValidator, maxLengthValidator];
+
+export default class IgcInputComponent extends FormAssociatedRequiredMixin(
+  LitElement
+) {
+  protected override readonly _formValue = createFormValueState(this, {
+    initialValue: '',
+  });
+
+  protected override get __validators() {
+    return validators;
   }
-  ```
+}
+```
 
-- The `FormValue` instance provides:
-  - `setValueAndFormState(value)` - Updates both the component's value and the form's data
-  - `value` getter/setter - Accesses the value with appropriate transformers
-  - `defaultValue` getter/setter - Manages the default value for form reset
+- Prefer the shared validators in `#internals/validators.js` (`requiredValidator`,
+  `minLengthValidator`, `patternValidator`, `minValidator`, `stepValidator`,
+  `minDateValidator`, …) over hand-rolled checks. `valueMissing` short-circuits the rest,
+  so a required control reports the required message first.
+- Non-string values are mapped to their form representation through transformers passed to
+  `createFormValueState` — see `FormValueDateTimeTransformers` in `form-transformers.ts`.
 
-  ```ts
-  private _handleInput(event: InputEvent): void {
-    const value = (event.target as HTMLInputElement).value;
-    // Updates both value and form state
-    this._formValue.setValueAndFormState(value);
-  }
+**Updating the value.** `setValueAndFormState()` is the single entry point that writes the
+value, pushes it to the form and re-runs validation. Setting `_formValue.value` alone only
+updates the component:
 
-  // Direct value access (applies transformers)
-  public get value(): string {
-    return this._formValue.value;
-  }
+```ts
+private _handleInput(event: InputEvent): void {
+  const value = (event.target as HTMLInputElement).value;
+  this._formValue.setValueAndFormState(value);
+}
 
-  public set value(val: string) {
-    this._formValue.value = val;
-  }
-  ```
+public get value(): string {
+  return this._formValue.value;
+}
+
+public set value(val: string) {
+  this._formValue.value = val;
+  this._validate();
+}
+```
+
+**Validation lifecycle.** The mixins model the native one; respect the seams instead of
+duplicating them:
+
+- `_validate()` runs the validators and updates the internals validity. Call it after any
+  constraint-affecting property changes (`minLength`, `pattern`, `min`, …).
+- Invalid **styling** is applied through the `ig-invalid` custom state, and only once the
+  control has been touched — a blur or a failed submission. A disabled control is barred
+  from constraint validation and never carries invalid styling.
+- `invalid` is a visual state, is not reflected to an attribute, and its getter returns the
+  _effective_ state — a touched, failing control keeps reading `true` after assigning `false`.
+- Wire the native editor's `@blur` to `_handleBlur` (touches the control and validates) and
+  its `@keydown` to `_handleEnterKeydown`, which submits through `form.requestSubmit()` so
+  the browser runs its own validation feedback.
+- `formResetCallback` restores the default through the public `value`/`checked` setter, so
+  component-level clamping applies, and clears the pristine, touched and developer-set
+  invalid states. Override it only to reset state the mixin cannot know about, and call
+  `super.formResetCallback()`.
+
+**Testing.** Use `createFormAssociatedTestBed` from
+`#internals/testing/form-testbed.spec.js` together with the assertions in
+`validity-helpers.spec.js` — it wires the control into a real `<form>` and gives you
+submit, reset and restore helpers.
+
+## Localization
+
+Components with user-facing strings use `addI18nController`. Resource strings live in
+`src/internals/i18n/EN/` and are keyed by a resource map name shared with the
+`igniteui-i18n-core` package:
+
+```ts
+protected readonly _i18n = addI18nController<IgcChipResourceStrings>(this, {
+  defaultEN: ChipResourceStringsEN,
+  resourceMapName: 'chip',
+});
+```
+
+- Never inline user-facing text in a template — read it from the controller so it follows the
+  active locale and any consumer overrides.
+- Format dates and times through `getDateTimeFormat` / `formatDisplayDate` from the same
+  module rather than constructing `Intl` formatters ad hoc.
 
 ## Performance
 
@@ -770,7 +943,8 @@ Components that participate in forms must use the `FormAssociatedRequiredMixin` 
 
 - **Optimize expensive operations:**
   - Use `cache()` directive for expensive template computation
-  - Use `ifDefined()` for optional attributes
+  - Use `ifDefined()` for optional attributes, or `bindIf()` from `#internals/utils/lit.js`
+    when the bound value differs from the condition being tested
   - Use `live()` directive for two-way binding scenarios
 
   ```ts
@@ -824,64 +998,58 @@ Components that participate in forms must use the `FormAssociatedRequiredMixin` 
 
 When overriding lifecycle methods, always call the super method:
 
-> [!WARNING]
->
-> ```ts
-> protected override update(changedProperties: PropertyValues<this>): void {
->   // Do work...
->   super.update(changedProperties); // Don't forget!
-> }
-> ```
+```ts
+protected override update(changedProperties: PropertyValues<this>): void {
+  // Do work...
+  super.update(changedProperties); // Don't forget!
+}
+```
 
 ### 2. Mutating objects/arrays directly
 
 Lit cannot detect mutations to objects or arrays. Always create new instances:
 
-> [!WARNING]
->
-> ```ts
-> // BAD - Lit won't detect the change
-> this.items.push(newItem);
->
-> // GOOD - Lit detects the new array reference
-> this.items = [...this.items, newItem];
-> ```
+```ts
+// ❌ DON'T - Lit won't detect the change
+this.items.push(newItem);
+
+// ✅ DO - Lit detects the new array reference
+this.items = [...this.items, newItem];
+```
 
 ### 3. Accessing Shadow DOM too early
 
 Shadow DOM elements are not available in `constructor()` or early lifecycle methods. Use `firstUpdated()` or later:
 
-> [!WARNING]
->
-> ```ts
-> // BAD - _inputElement is undefined
-> constructor() {
->   super();
->   this._inputElement.focus(); // Error!
-> }
->
-> // GOOD
-> protected override firstUpdated(): void {
->   this._inputElement.focus(); // Works
-> }
-> ```
+```ts
+// ❌ DON'T - _inputElement is undefined
+constructor() {
+  super();
+  this._inputElement.focus(); // Error!
+}
+
+// ✅ DO
+protected override firstUpdated(): void {
+  this._inputElement.focus(); // Works
+}
+```
 
 ### 4. Not handling async operations properly
 
 When dealing with async operations in lifecycle methods, be careful about component state:
 
-> [!TIP]
->
-> ```ts
-> protected override async update(changedProperties: PropertyValues<this>): Promise<void> {
->   if (changedProperties.has('data')) {
->     this._loading = true;
->     await this._loadData();
->     this._loading = false;
->   }
->   super.update(changedProperties);
-> }
-> ```
+```ts
+protected override async update(
+  changedProperties: PropertyValues<this>
+): Promise<void> {
+  if (changedProperties.has('data')) {
+    this._loading = true;
+    await this._loadData();
+    this._loading = false;
+  }
+  super.update(changedProperties);
+}
+```
 
 ### 5. Over-reflecting properties
 
@@ -891,57 +1059,59 @@ Not every property needs to be reflected to an attribute. Only reflect when:
 - It affects styling (CSS attribute selectors)
 - It's needed for accessibility
 
-### 6. Forgetting theming controller
+### 6. Forgetting the theming controller
 
 All components must include the theming controller in the constructor:
 
-> [!WARNING]
->
-> ```ts
-> constructor() {
->   super();
->   addThemingController(this, all); // Required for theme switching!
-> }
-> ```
+```ts
+constructor() {
+  super();
+  addThemingController(this, all); // Required for theme switching!
+}
+```
 
 ### 7. Misunderstanding event listener cleanup
 
 Lit automatically manages event listeners added in templates or on component instances. You only need to clean up listeners added dynamically:
 
-> [!TIP]
->
-> ```ts
-> // NO CLEANUP NEEDED - Lit handles these automatically
-> protected override render() {
->   return html`<button @click=${this._handleClick}>Click</button>`;
-> }
->
-> // NO CLEANUP NEEDED - Lit manages component instance listeners
-> constructor() {
->   super();
->   this.addEventListener('focus', this._handleFocus);
-> }
->
-> // CLEANUP REQUIRED - Dynamic external listeners
-> private _handler = this._handleResize.bind(this);
->
-> public override connectedCallback(): void {
->   super.connectedCallback();
->   window.addEventListener('resize', this._handler);
-> }
->
-> public override disconnectedCallback(): void {
->   window.removeEventListener('resize', this._handler);
->   super.disconnectedCallback();
-> }
->
-> // addSafeEventListener prevents SSR errors
-> constructor() {
->   super();
->   // Safe in SSR - won't error if addEventListener is unavailable
->   addSafeEventListener(this, 'pointerdown', this._handlePointer);
-> }
-> ```
+```ts
+// NO CLEANUP NEEDED - Lit handles these automatically
+protected override render() {
+  return html`<button @click=${this._handleClick}>Click</button>`;
+}
+
+// NO CLEANUP NEEDED - Lit manages component instance listeners
+constructor() {
+  super();
+  this.addEventListener('focus', this._handleFocus);
+}
+
+// CLEANUP REQUIRED - Dynamic external listeners
+private _handler = this._handleResize.bind(this);
+
+public override connectedCallback(): void {
+  super.connectedCallback();
+  window.addEventListener('resize', this._handler);
+}
+
+public override disconnectedCallback(): void {
+  window.removeEventListener('resize', this._handler);
+  super.disconnectedCallback();
+}
+
+// addSafeEventListener prevents SSR errors
+constructor() {
+  super();
+  // Safe in SSR - won't error if addEventListener is unavailable
+  addSafeEventListener(this, 'pointerdown', this._handlePointer);
+}
+```
+
+### 8. Editing generated files
+
+`.css.ts` files and the `// region default` block of a story are build output. Edit the
+`.scss` source or the component's JSDoc instead — anything else is overwritten on the next
+`npm run build:styles` / `npm run build:meta`.
 
 ## API Documentation
 
@@ -955,90 +1125,110 @@ Lit automatically manages event listeners added in templates or on component ins
 - For documenting things like CSS shadow parts, CSS custom properties and available slots, please
   check the official guidelines of the [CEM analyzer](https://custom-elements-manifest.open-wc.org/analyzer/getting-started/#documenting-your-components).
 
-- When documenting your code, put any JSDoc tags after the description of what the things does
+- Every description is consumed **verbatim** by `custom-elements.json`, the generated
+  Storybook metadata and the Angular / React / Blazor wrapper docs. Write them as product
+  documentation:
+  - **No `igc-` tag names in prose.** Say "the carousel", not `igc-carousel`. Tag names
+    belong only in the `@element` tag, fenced `@example` blocks, literal event/attribute
+    names that contain `igc-`, and `@internal`/`@hidden` members.
+  - **Don't restate the tag.** `@attr` already says it is an attribute — write
+    "The label of the control.", not "The label attribute of the control."
+  - **No `Gets/Sets`.** State what the value is; add a second sentence for side effects.
+  - **Booleans start with "Whether …"** and describe the `true` state accurately — verify
+    against the implementation, since `hide*`/`disable*` names invert the sentence.
+  - Use present tense.
 
-  > [!TIP] DO
-  >
-  > ```ts
-  > /**
-  >  * Enables/disables user interaction with the component.
-  >  * @attr
-  >  */
-  > @property({ type: Boolean, reflect: true })
-  > public disabled = false;
-  >
-  > /**
-  >  * An avatar component is used as a representation of a user identity
-  >  * typically in a user profile.
-  >  *
-  >  * @element igc-avatar
-  >  *
-  >  * @slot - Renders an icon inside the default slot.
-  >  *
-  >  * @csspart base - The base wrapper of the avatar.
-  >  * @csspart initials - The initials wrapper of the avatar.
-  >  * @csspart image - The image wrapper of the avatar.
-  >  * @csspart icon - The icon wrapper of the avatar.
-  >  */
-  > export default class IgcAvatarComponent extends LitElement {}
-  > ```
+- When documenting your code, put any JSDoc tags after the description of what the thing does
 
-  > [!WARNING] DON'T
-  >
-  > ```ts
-  > /**
-  >  * @attr
-  >  * Enables/disables user interaction with the component.
-  >  */
-  > @property({ type: Boolean, reflect: true })
-  > public enabled = true;
-  > ```
+  ```ts
+  // ✅ DO
+  /**
+   * Enables/disables user interaction with the component.
+   * @attr
+   * @default false
+   */
+  @property({ type: Boolean, reflect: true })
+  public disabled = false;
+
+  /**
+   * An avatar component is used as a representation of a user identity
+   * typically in a user profile.
+   *
+   * @element igc-avatar
+   *
+   * @slot - Renders an icon inside the default slot.
+   *
+   * @csspart base - The base wrapper of the avatar.
+   * @csspart initials - The initials wrapper of the avatar.
+   * @csspart image - The image wrapper of the avatar.
+   * @csspart icon - The icon wrapper of the avatar.
+   */
+  export default class IgcAvatarComponent extends LitElement {}
+
+  // ❌ DON'T
+  /**
+   * @attr
+   * Enables/disables user interaction with the component.
+   */
+  @property({ type: Boolean, reflect: true })
+  public enabled = true;
+  ```
 
 - When some API is deprecated, make sure to add a `@deprecated` tag with explanation when it was deprecated and what to use instead (if any). The deprecated message follows the following format:
 
   ``@deprecated since [SemVer]. Use the `[new API]` [type] instead.``
 
-  > [!TIP] DO
-  >
-  > ```ts
-  > /**
-  >  * Updates the state of the component.
-  >  *
-  >  * @deprecated since 1.2.3. Use the `setState()` method instead.
-  >  */
-  > public updateState(state: T) {};
-  > ```
+  ```ts
+  // ✅ DO
+  /**
+   * Updates the state of the component.
+   *
+   * @deprecated since 1.2.3. Use the `setState()` method instead.
+   */
+  public updateState(state: T) {}
 
-  > [!WARNING] DON'T
-  >
-  > ```ts
-  > /**
-  >  * @deprecated - Refer to the changelog for a migration guide.
-  >  *
-  >  * Updates the state of the component.
-  >  */
-  > public updateState(state: T) {};
-  > ```
+  // ❌ DON'T
+  /**
+   * @deprecated - Refer to the changelog for a migration guide.
+   *
+   * Updates the state of the component.
+   */
+  public updateState(state: T) {}
+  ```
 
-## Changelog
+- After changing any description, regenerate the derived artifacts and commit them:
 
-- When adding a new component or fixing a bug make sure to update the [CHANGELOG](https://github.com/IgniteUI/igniteui-webcomponents/blob/master/CHANGELOG.md) file with the relevant changes.
+  ```bash
+  npm run cem        # regenerates custom-elements.json from the JSDoc
+  npm run build:meta # rewrites the `// region default` block of each story
+  ```
 
 ## Storybook
 
 All components should have a corresponding Storybook story in `stories/[component-name].stories.ts`.
 
 - Stories provide interactive examples and documentation for components.
-- Use Storybook controls to make all public properties configurable.
-- Include multiple stories showcasing different component states and configurations.
+- The `metadata` object, the args interface and their descriptions live inside a **generated**
+  `// region default … // endregion` block. Never hand-edit it — fix the component's JSDoc and
+  run `npm run cem && npm run build:meta`.
+
+  > [!CAUTION]
+  > Two failure modes skip a story during generation: a filename that does not match the tag
+  > name (`igc-date-picker` → `date-picker.stories.ts`), which warns, and a missing
+  > `// region default` / `// endregion` pair, which is a **silent** no-op. Descriptions that
+  > disagree with the source JSDoc are the symptom of both.
+
+- Everything outside the generated region — the story templates themselves — is hand-written.
+  Include multiple stories showcasing different component states and configurations.
 
 ```ts
 import type { Meta, StoryObj } from '@storybook/web-components-vite';
 import { html } from 'lit';
-import { IgcBadgeComponent, defineComponents } from 'igniteui-webcomponents';
+import { defineComponents, IgcBadgeComponent } from 'igniteui-webcomponents';
 
 defineComponents(IgcBadgeComponent);
 
+// region default
 const metadata: Meta<IgcBadgeComponent> = {
   title: 'Badge',
   component: 'igc-badge',
@@ -1053,10 +1243,32 @@ const metadata: Meta<IgcBadgeComponent> = {
 
 export default metadata;
 
-export const Basic: StoryObj = {
+type Story = StoryObj<IgcBadgeComponent>;
+// endregion
+
+export const Basic: Story = {
   render: (args) => html`<igc-badge .variant=${args.variant}>Badge</igc-badge>`,
 };
 ```
+
+## Verifying Your Work
+
+| Command                | What it does                                                            |
+| ---------------------- | ----------------------------------------------------------------------- |
+| `npm run build:styles` | Transpiles SCSS into the generated `.css.ts` files                      |
+| `npm run check`        | Import aliases, dependency-cruiser rules and TypeScript (`check-types`) |
+| `npm run lint`         | Biome, lit-analyzer, Prettier and Stylelint                             |
+| `npm run format`       | Applies Biome and Prettier fixes                                        |
+| `npm run test`         | Builds styles and runs the Web Test Runner suite with coverage          |
+| `npm run cem`          | Regenerates `custom-elements.json` from the sources                     |
+| `npm run build:meta`   | Regenerates the story metadata regions                                  |
+| `npm run storybook`    | Dev server with style, manifest and story watchers                      |
+
+Run `npm run check`, `npm run lint` and `npm run test` before opening a PR.
+
+## Changelog
+
+- When adding a new component or fixing a bug make sure to update the [CHANGELOG](https://github.com/IgniteUI/igniteui-webcomponents/blob/master/CHANGELOG.md) file with the relevant changes.
 
 ## Resources
 
@@ -1069,7 +1281,7 @@ export const Basic: StoryObj = {
 ## Getting Help
 
 - Review existing components in `src/components/` for patterns and examples
-- Read the [LLM Skills](../.github/skills/README.md) for guided workflows
+- Read the [LLM Skills](./skills/README.md) for guided workflows
 - Ask questions in pull request reviews
 
 ## Checklist for New Components
@@ -1079,14 +1291,15 @@ Before submitting a PR for a new component, ensure:
 - [ ] Component follows the standard structure with region fences
 - [ ] All internal APIs prefixed with underscore (`_`)
 - [ ] Theming controller added in constructor
+- [ ] Cross-cutting imports use the `#internals` / `#theming` / `#animations` aliases
 - [ ] Accessibility tested and passing
-- [ ] All properties properly documented with JSDoc
+- [ ] All properties properly documented with JSDoc, no `igc-` tag names in prose
 - [ ] Events use EventEmitterMixin with type map
 - [ ] CSS parts exposed and documented
 - [ ] Slots documented with `@slot` tags
 - [ ] Comprehensive tests including a11y audit
-- [ ] Storybook story created with controls
+- [ ] Storybook story created, generated region regenerated and committed
 - [ ] Component exported from `src/index.ts`
 - [ ] CHANGELOG updated
-- [ ] No TypeScript errors or warnings
-- [ ] Code formatted (auto-formatted on save)
+- [ ] `npm run check`, `npm run lint` and `npm run test` pass
+</content>

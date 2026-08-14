@@ -5,301 +5,188 @@ description: Update component styling following the SCSS to Lit CSS workflow wit
 
 # Update Component Styles
 
-This skill guides you through updating component styles following the project's SCSS workflow and theming system.
-
-## Example Usage
-
-- "Update the badge component border radius"
-- "Add hover styles to the button component"
-- "Change the card component padding"
-
-## Related Skills
-
-- [create-new-component](../create-new-component/) - Styling for new components
+Updates component styles through the project's SCSS → Lit CSS workflow and the
+`igniteui-theming` schema system.
 
 ## When to Use
 
-- User asks to modify component appearance
-- Need to add or change CSS styles
-- Updating theme-specific styles
-- Adding new CSS custom properties
+- "Update the badge component border radius"
+- "Add hover styles to the button component"
+- "Fix the chip colors in the Indigo dark theme"
 
-## Prerequisites
+## Related Skills
 
-- [ ] Target component exists
-- [ ] Style change requirements are clear
-- [ ] Understand which theme files to modify
+- [create-new-component](../create-new-component/) - Scaffolding the theme files of a new component
 
-## Required Context
+## How the styles are organized
 
-Gather or confirm:
+```
+themes/
+├── [component].base.scss       # Structure and layout, theme-agnostic
+├── shared/
+│   ├── [component].common.scss # Cross-theme styling; reads the CSS variables
+│   └── [component].{bootstrap,material,fluent,indigo}.scss
+├── light/
+│   ├── _themes.scss            # digest-schema() of the light schemas
+│   ├── [component].shared.scss # Full variable set from $base
+│   └── [component].{bootstrap,material,fluent,indigo}.scss  # diff($base, $theme)
+├── dark/
+│   ├── _themes.scss            # digest-schema() of the dark schemas
+│   └── [component].{bootstrap,material,fluent,indigo}.scss  # diff(light.$base, $theme)
+└── themes.ts                   # Aggregates everything into the `all` export
+```
 
-- **Component name**: Which component to style
-- **Style changes**: What CSS needs to change
-- **Scope**: Base styles, theme-specific, or both
-- **CSS parts**: Whether to add/modify exposed parts
+Where a change belongs:
+
+| Change                                  | File                                        |
+| --------------------------------------- | ------------------------------------------- |
+| Layout, sizing, structure               | `[component].base.scss`                     |
+| Styling driven by theme variables       | `shared/[component].common.scss`            |
+| One theme differs structurally          | `shared/[component].[theme].scss`           |
+| A color/elevation value for one theme   | `light/` or `dark/[component].[theme].scss` |
+| A new variable for every theme          | `light/[component].shared.scss`             |
 
 ## Steps
 
-### 1. Identify Style Files to Modify
+### 1. Edit the SCSS
 
-Component styles are organized as:
-
-- `[component]/themes/[component].base.scss` - Base structural styles
-- `[component]/themes/shared/[component].common.css.js` - Common cross-theme styles (if exists)
-- `[component]/themes/shared/[component].bootstrap.scss` - Bootstrap theme
-- `[component]/themes/shared/[component].material.scss` - Material theme
-- `[component]/themes/shared/[component].fluent.scss` - Fluent theme
-- `[component]/themes/shared/[component].indigo.scss` - Indigo theme
-- `[component]/themes/light/[component].[theme].scss` - Light theme overrides
-- `[component]/themes/dark/[component].[theme].scss` - Dark theme overrides
-
-**Decision tree**:
-
-- Structural changes (layout, display) → Edit base.scss
-- Theme-agnostic styles → Edit shared/\*.scss
-- Theme-specific styles → Edit specific theme file
-- Light/dark variants → Edit light/_ or dark/_ files
-
-### 2. Edit SCSS Files
-
-**Base styles** (`themes/[component].base.scss`):
+SCSS resolves against the `src` and `node_modules` load paths, so global helpers use
+package-style specifiers. Indentation is 4 spaces.
 
 ```scss
+// ✅ DO
+@use 'styles/utilities' as *;
+
+// ❌ DON'T
 @use '../../../styles/utilities' as *;
-
-:host {
-  display: block;
-}
-
-[part='base'] {
-  padding: 1rem;
-  border-radius: 4px;
-  // Structural styles here
-}
 ```
 
-**Theme-specific styles** (`themes/shared/[component].bootstrap.scss`):
+Theme values come from the digested schemas and are read with `var-get()`:
 
 ```scss
-@use '../../../../theming/functions' as *;
+// shared/[component].common.scss
+@use 'styles/utilities' as *;
+@use '../light/themes' as *;
+
+$theme: $material;
 
 :host {
-  // Use theming functions from igniteui-theming
-  --component-color: #{color('primary', 500)};
+    --component-size: var(--ig-size, #{var-get($theme, 'default-size')});
 }
 
-[part='base'] {
-  background: var(--component-color);
+[part~='base'] {
+    background: var-get($theme, 'background');
+    color: var-get($theme, 'text-color');
+    box-shadow: var-get($theme, 'elevation');
 }
 ```
 
-**Light/Dark overrides** (`themes/light/[component].bootstrap.scss`):
+Per-theme overrides only emit the difference against the light base:
 
 ```scss
+// dark/[component].bootstrap.scss
+@use 'styles/utilities' as *;
+@use 'themes' as *;
+@use '../light/themes' as light;
+
+$theme: $bootstrap;
+
 :host {
-  --component-color: white;
+    @include css-vars-from-theme(diff(light.$base, $theme));
 }
 ```
 
-### 3. Use CSS Parts for External Styling
+Rules:
 
-If adding new styleable parts, update component render and JSDoc:
+- **Never hardcode colors or sizes.** Use `var-get()`, `color()`, `contrast-color()`,
+  `sizable()` and the `--ig-size` scale.
+- **Match parts with `[part~='name']`**, not `[part='name']` — `partMap` produces a
+  space-separated list and an exact-match selector silently stops applying.
+- Keep selector specificity low so consumers can override through parts and custom properties.
+- A value that consumers should be able to set belongs in a documented CSS custom property;
+  purely internal ones are prefixed with `--_`.
 
-**Update render method**:
+### 2. Add a new schema value (if needed)
 
-```typescript
+`var-get($theme, 'foo')` only resolves for keys present in the `igniteui-theming` schema. If
+the value doesn't exist yet, either add it upstream in `igniteui-theming` or declare a local
+CSS variable in `shared/[component].common.scss`.
+
+### 3. Expose and document new parts or custom properties
+
+```ts
+/**
+ * @csspart base - The main container
+ * @csspart content - The content wrapper
+ * @cssproperty --component-padding - The internal padding
+ */
 protected override render() {
   return html`
-    <div part="base new-part">
-      <span part="content">Content</span>
+    <div part=${partMap({ base: true, filled: this._hasValue })}>
+      <span part="content"><slot></slot></span>
     </div>
   `;
 }
 ```
 
-**Update JSDoc**:
+Descriptions ship verbatim into the public API docs — no `igc-` tag names in the prose. After
+editing them, regenerate:
 
-```typescript
-/**
- * ...
- * @csspart base - The main container
- * @csspart new-part - Description of new part
- * @csspart content - The content wrapper
- */
-export default class IgcComponentComponent extends LitElement {
+```bash
+npm run cem && npm run build:meta
 ```
 
-### 4. Add CSS Custom Properties (if needed)
-
-For values that should be customizable:
-
-**In SCSS**:
-
-```scss
-:host {
-  --component-padding: 1rem;
-  --component-radius: 4px;
-}
-
-[part='base'] {
-  padding: var(--component-padding);
-  border-radius: var(--component-radius);
-}
-```
-
-**Document in JSDoc**:
-
-```typescript
-/**
- * ...
- * @cssproperty --component-padding - The internal padding
- * @cssproperty --component-radius - The border radius
- */
-export default class IgcComponentComponent extends LitElement {
-```
-
-### 5. Transpile SCSS to TypeScript
-
-After editing SCSS files, transpile them:
+### 4. Transpile
 
 ```bash
 npm run build:styles
 ```
 
-This converts `.scss` to `.css.js` files with Lit's `css` template literal.
+> [!IMPORTANT]
+> This generates a `.css.ts` next to each `.scss` (imported as `.css.js`). The generated files
+> are **gitignored** — never edit or commit them. Only files matching
+> `*.{base,common,shared,material,bootstrap,indigo,fluent}.scss` under `src/components/**` are
+> compiled; a differently named partial is skipped without a warning, so prefix helpers with
+> `_` and `@use` them.
 
-**Verify**: Check that `.css.js` files are updated with your changes.
+`npm run storybook` and `npm run test:watch` run the style watcher for you.
 
-### 6. Test Style Changes
-
-**Manual testing in Storybook**:
+### 5. Verify
 
 ```bash
-npm run storybook
+npm run lint:styles  # stylelint
+npm run storybook    # visual check
 ```
 
-Check:
-
-- [ ] Styles render correctly in all theme variants
-- [ ] Light and dark modes both work
-- [ ] CSS parts are styleable from outside
-- [ ] CSS custom properties work
-
-**Automated testing** (if style affects behavior):
-
-```typescript
-it('should apply correct CSS class', async () => {
-  const el = await fixture<IgcComponentComponent>(
-    html`<igc-component variant="outlined"></igc-component>`
-  );
-
-  const part = el.shadowRoot?.querySelector('[part="base"]');
-  // Test computed styles or classes if critical
-});
-```
-
-### 7. Update Documentation (if needed)
-
-If adding new CSS parts or custom properties:
-
-1. JSDoc comments are automatically extracted
-2. Verify in Storybook's "Docs" tab
-3. Check that parts/properties appear in documentation
+Check every theme in both light and dark mode, and confirm the parts and custom properties are
+still styleable from outside the component.
 
 ## Validation Checklist
 
-- [ ] SCSS files edited correctly
-- [ ] Styles transpiled (`npm run build:styles`)
-- [ ] No TypeScript compilation errors
-- [ ] Styles render correctly in Storybook
-- [ ] All theme variants checked (bootstrap, material, fluent, indigo)
-- [ ] Light and dark modes both work
-- [ ] New CSS parts documented in JSDoc
-- [ ] New CSS custom properties documented
-- [ ] No visual regressions on other components
+- [ ] Only `.scss` files edited — no `.css.ts` changes staged
+- [ ] Load-path specifiers used (`@use 'styles/utilities' as *`)
+- [ ] Values read through `var-get()` / theming functions, nothing hardcoded
+- [ ] Part selectors use `[part~='…']`
+- [ ] Dark themes emit only the `diff()` against the light base
+- [ ] New parts and custom properties documented with `@csspart` / `@cssproperty`
+- [ ] `npm run build:styles` run, `npm run lint:styles` clean
+- [ ] All four themes checked in light and dark mode
+- [ ] CHANGELOG updated if the change is user-visible
 
 ## Common Pitfalls
 
-### 1. Forgetting to Transpile
-
-**Problem**: Style changes don't appear
-**Solution**: Always run `npm run build:styles` after editing SCSS
-
-### 2. Editing .css.js Files Directly
-
-**Problem**: Changes get overwritten on next build
-**Solution**: Only edit `.scss` files, never `.css.js` files
-
-### 3. Wrong Theme File
-
-**Problem**: Styles appear in some themes but not others
-**Solution**: Edit the correct theme file or shared file for all themes
-
-### 4. Not Using Theming Functions
-
-**Problem**: Hardcoded colors don't match theme
-**Solution**: Use `color()`, `theme()` functions from igniteui-theming
-
-### 5. Overly Specific Selectors
-
-**Problem**: Users can't override styles
-**Solution**: Keep selector specificity low, expose CSS parts
-
-### 6. Missing :host Styles
-
-**Problem**: Component doesn't display correctly
-**Solution**: Always set `:host { display: block; }` or appropriate display value
+| Symptom                                   | Cause / Fix                                                          |
+| ----------------------------------------- | -------------------------------------------------------------------- |
+| Style changes don't show up               | `npm run build:styles` not run, or the filename misses the build glob |
+| Changes vanish on the next build          | A `.css.ts` file was edited directly — edit the `.scss`               |
+| Style applies in one theme only           | Put in a theme file instead of `shared/[component].common.scss`       |
+| A part selector stopped matching          | `[part='base']` against a multi-name `partMap` — use `[part~='base']` |
+| `var-get()` emits nothing                 | The key is missing from the schema                                    |
+| Dark theme looks like light               | Missing `diff(light.$base, $theme)` or a missing `themes.ts` entry    |
+| Consumers can't override a style          | Selector specificity too high, or the element isn't exposed as a part |
 
 ## Reference Examples
 
-### Simple Component Styles: Badge
-
-See: `src/components/badge/themes/`
-
-**Structure**:
-
-- Base styles for structure
-- Theme files for colors/variants
-- Uses CSS custom properties
-- Exposes `base` and `icon` parts
-
-### Complex Component Styles: Textarea
-
-See: `src/components/textarea/themes/`
-
-**Structure**:
-
-- More complex base styles
-- Multiple CSS parts
-- Theme-specific variants
-- Light/dark overrides
-
-## Theming System
-
-### Available Functions
-
-From igniteui-theming package:
-
-- `color($palette, $variant)` - Get theme color
-- `contrast-color($color)` - Get contrasting text color
-- `theme($property)` - Get theme value
-
-### Theme Structure
-
-```scss
-@use '../../../../theming/functions' as *;
-
-:host {
-  --bg: #{color('surface', 500)};
-  --text: #{contrast-color(color('surface', 500))};
-}
-```
-
-## Resources
-
-- [Lit Styles](https://lit.dev/docs/components/styles/)
-- [Shadow Parts](https://developer.mozilla.org/en-US/docs/Web/CSS/::part)
-- [CSS Custom Properties](https://developer.mozilla.org/en-US/docs/Web/CSS/--*)
-- [igniteui-theming Package](https://www.npmjs.com/package/igniteui-theming)
-- [Coding Guidelines](../../CODING_GUIDELINES.md) - Comprehensive coding standards
+- `src/components/badge/themes/` — compact, complete scaffold of the pattern above
+- `src/components/input/themes/` — multiple parts, notched material layout, state selectors
+</content>
