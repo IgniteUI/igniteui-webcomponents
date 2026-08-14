@@ -1079,16 +1079,20 @@ describe('Chat', () => {
       );
     }
 
+    const lateStyles = `
+      .custom-background {
+        color: rgb(0, 0, 255);
+      }
+    `;
+
     /** Mimics a custom renderer injecting global styles at a later point. */
-    function appendLateStyles() {
+    function appendLateStyles(cssText = lateStyles) {
       const styles = document.createElement('style');
       styles.setAttribute('id', 'adopt-styles-test-late');
-      styles.innerHTML = `
-        .custom-background {
-          color: rgb(0, 0, 255);
-        }
-      `;
+      styles.innerHTML = cssText;
       document.head.append(styles);
+
+      return styles;
     }
 
     beforeEach(async () => {
@@ -1110,6 +1114,7 @@ describe('Chat', () => {
     afterEach(() => {
       document.head.querySelector('#adopt-styles-test')?.remove();
       document.head.querySelector('#adopt-styles-test-late')?.remove();
+      document.head.querySelector('#adopt-styles-test-meta')?.remove();
     });
 
     it('correctly applies `adoptRootStyles` when set', async () => {
@@ -1191,6 +1196,43 @@ describe('Chat', () => {
       expect(getCustomStyles().color).to.not.equal('rgb(0, 0, 255)');
 
       appendLateStyles();
+      await nextFrame();
+
+      expect(getCustomStyles().color).to.equal('rgb(0, 0, 255)');
+    });
+
+    it('adopts a stylesheet which is appended empty and populated afterwards', async () => {
+      await createAdoptedStylesChat({ adoptRootStyles: true });
+      await elementUpdated(chat);
+
+      const styles = appendLateStyles('');
+      await nextFrame();
+
+      expect(getCustomStyles().color).to.not.equal('rgb(0, 0, 255)');
+
+      styles.textContent = lateStyles;
+      await nextFrame();
+
+      expect(getCustomStyles().color).to.equal('rgb(0, 0, 255)');
+    });
+
+    it('adopts a stylesheet populated through the CSSOM on the next synchronization', async () => {
+      await createAdoptedStylesChat({ adoptRootStyles: true });
+      await elementUpdated(chat);
+
+      const styles = appendLateStyles('');
+      await nextFrame();
+
+      // Inserting a rule through the CSSOM mutates no DOM and keeps the same
+      // stylesheet object, so it is only observable through a later change.
+      styles.sheet!.insertRule('.custom-background { color: rgb(0, 0, 255); }');
+      await nextFrame();
+
+      document.head.append(
+        Object.assign(document.createElement('meta'), {
+          id: 'adopt-styles-test-meta',
+        })
+      );
       await nextFrame();
 
       expect(getCustomStyles().color).to.equal('rgb(0, 0, 255)');

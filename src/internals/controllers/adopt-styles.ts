@@ -41,8 +41,8 @@ function getCloneableRules(sheet: CSSStyleSheet): CSSRule[] {
  * The document is observed for as long as at least one controller is adopting styles,
  * so that stylesheets appearing after the initial adoption - such as the ones injected
  * at runtime by framework renderers - are picked up and pushed to the shadow roots
- * which have already adopted. A stylesheet mutated in place, without entering or
- * leaving the document, is not observable and needs an explicit {@link invalidate}.
+ * which have already adopted. A stylesheet which has already been cloned is not read
+ * again - one rewritten in place needs an explicit {@link invalidate}.
  */
 class DocumentStyleSheets {
   //#region Instances
@@ -73,7 +73,6 @@ class DocumentStyleSheets {
   private readonly _consumers = new Set<AdoptedStylesController>();
 
   private _clones = new WeakMap<CSSStyleSheet, CSSStyleSheet>();
-  private _sources: readonly CSSStyleSheet[] = [];
   private _sheets: CSSStyleSheet[] = [];
   private _isStale = true;
 
@@ -97,7 +96,7 @@ class DocumentStyleSheets {
   /** The clones of the document stylesheets. */
   public get sheets(): CSSStyleSheet[] {
     if (this._isStale) {
-      this._collect(Array.from(this._document.styleSheets));
+      this._collect();
     }
 
     return this._sheets;
@@ -163,23 +162,27 @@ class DocumentStyleSheets {
 
   /** Re-clones the document stylesheets and notifies the consumers if they have changed. */
   private _synchronize(): void {
-    const sources = Array.from(this._document.styleSheets);
-
-    if (!this._isStale && isSameCollection(sources, this._sources)) {
-      return;
-    }
-
-    this._collect(sources);
-
-    for (const consumer of this._consumers) {
-      consumer.updateAdoptedStyles();
+    if (this._collect()) {
+      for (const consumer of this._consumers) {
+        consumer.updateAdoptedStyles();
+      }
     }
   }
 
-  private _collect(sources: readonly CSSStyleSheet[]): void {
+  /**
+   * Mirrors the stylesheets currently in the document.
+   *
+   * Change is decided on the clones rather than on the document collection, so that a
+   * stylesheet which yielded nothing before - an empty one, for instance - is re-read on
+   * every pass, while a change to the document which produces the same clones, such as
+   * an unreadable stylesheet being added, leaves the consumers alone.
+   *
+   * @returns Whether the mirrored collection has changed.
+   */
+  private _collect(): boolean {
     const sheets: CSSStyleSheet[] = [];
 
-    for (const source of sources) {
+    for (const source of this._document.styleSheets) {
       const clone = this._clone(source);
 
       if (clone) {
@@ -187,9 +190,14 @@ class DocumentStyleSheets {
       }
     }
 
-    this._sources = sources;
-    this._sheets = sheets;
     this._isStale = false;
+
+    if (isSameCollection(sheets, this._sheets)) {
+      return false;
+    }
+
+    this._sheets = sheets;
+    return true;
   }
 
   /**
@@ -197,8 +205,8 @@ class DocumentStyleSheets {
    * original order. Rules which cannot be inserted, such as ones with invalid syntax,
    * are skipped.
    *
-   * Empty results are not cached, so that stylesheets populated at a later point are
-   * eventually picked up.
+   * Nothing is cached for a stylesheet which yields no rules, so one that is appended
+   * empty and populated afterwards is picked up by a later pass.
    *
    * @returns The cloned stylesheet or null when there is nothing to clone.
    */
