@@ -1,9 +1,10 @@
 import { html, nothing, type PropertyValues, type TemplateResult } from 'lit';
-import { property } from 'lit/decorators.js';
+import { property, query } from 'lit/decorators.js';
 import { cache } from 'lit/directives/cache.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { createRef, ref } from 'lit/directives/ref.js';
 import { styleMap } from 'lit/directives/style-map.js';
+import { addAriaProjector } from '#internals/controllers/aria-projection.js';
 import {
   addKeybindings,
   altKey,
@@ -191,6 +192,13 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
   /** The last value written for each host custom property mirrored from the color. */
   private readonly _appliedProperties = new Map<string, string>();
 
+  @query('#helper-text')
+  private readonly _helperText!: IgcValidationContainerComponent | null;
+
+  private get _isInputMode(): boolean {
+    return this.mode === 'input';
+  }
+
   //#endregion
 
   //#region Public attributes and properties
@@ -289,6 +297,20 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
       .set(escapeKey, this._handleKeyboardClosing)
       .set([altKey, arrowDown], this._handleAnchorClick)
       .set([altKey, arrowUp], this._handleKeyboardClosing);
+
+    // Projects the host's labels and popup semantics onto the native input
+    // inside the anchor `igc-input` (see ProjectedARIA for why the host cannot
+    // publish these itself). Only in input mode - the default mode anchor is a
+    // plain button that carries its own ARIA.
+    addAriaProjector(this, {
+      target: () => (this._isInputMode ? this._anchorRef.value : null),
+      state: () => ({
+        hasPopup: 'dialog',
+        expanded: `${this.open}`,
+        labelledBy: this._internals.labels,
+        describedBy: this._helperText ? [this._helperText] : null,
+      }),
+    });
   }
 
   protected override update(props: PropertyValues<this>): void {
@@ -317,14 +339,6 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
       // Wait until the browser paints and then sync the marker position with the color.
       requestAnimationFrame(() => this._syncCanvasPosition());
     }
-    this._forwardLabelElements();
-  }
-
-  protected override _restoreDefaultValue(): void {
-    super._restoreDefaultValue();
-    this._color = ColorModel.parse(this._formValue.value);
-    this._updateColor();
-    this._syncCanvasPosition();
   }
 
   //#endregion
@@ -549,13 +563,6 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
     this.emitEvent('igcInput', { detail: this.value });
   }
 
-  private _forwardLabelElements(): void {
-    if (this.mode === 'input' && this._anchorRef.value) {
-      const input = this._anchorRef.value as IgcInputComponent;
-      input._labelElements = this._internals.labels;
-    }
-  }
-
   //#endregion
 
   //#region Canvas area rendering
@@ -757,7 +764,7 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
     return partMap({
       anchor: true,
       empty: this._color.isEmpty,
-      'input-mode': this.mode === 'input',
+      'input-mode': this._isInputMode,
     });
   }
 
@@ -789,7 +796,7 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
         aria-haspopup="dialog"
         aria-controls="picker"
         aria-expanded=${this.open}
-        aria-describedby="color-picker-helper-text"
+        aria-describedby="helper-text"
         part=${this._anchorParts}
         slot="anchor"
         style=${this._previewStyle()}
@@ -814,7 +821,6 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
     return html`
       <igc-input
         ${ref(this._anchorRef)}
-        aria-describedby="color-picker-helper-text"
         slot="anchor"
         outlined
         placeholder=${formatPlaceholders[this.format]}
@@ -843,14 +849,14 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
   }
 
   private _renderAnchor(): TemplateResult {
-    return this.mode === 'default'
+    return !this._isInputMode
       ? this._renderButtonAnchor()
       : this._renderInputAnchor();
   }
 
   private _renderHelperText(): TemplateResult {
     return IgcValidationContainerComponent.create(this, {
-      id: 'color-picker-helper-text',
+      id: 'helper-text',
       slot: 'anchor',
       hasHelperText: true,
     });
@@ -891,7 +897,7 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
           ${this._renderAnchor()}${this._renderHelperText()}${this._renderPicker()}
         </igc-popover>
         ${
-          this.mode === 'default' && this.label
+          !this._isInputMode && this.label
             ? html`<label part="label" for="trigger">${this.label}</label>`
             : nothing
         }

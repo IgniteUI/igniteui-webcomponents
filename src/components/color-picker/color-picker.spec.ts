@@ -15,6 +15,7 @@ import {
 import { defineComponents } from '#internals/definitions/defineComponents.js';
 import {
   createFormAssociatedTestBed,
+  runAriaProjectionTests,
   runExternalLabelAssociationTests,
 } from '#internals/testing/form-testbed.spec.js';
 import { isFocused } from '#internals/testing/helpers.spec.js';
@@ -42,6 +43,16 @@ async function createDefaultColorPicker() {
 
 function getAnchor(picker: IgcColorPickerComponent): HTMLElement {
   return picker.renderRoot.querySelector('[part~="anchor"]')!;
+}
+
+/**
+ * The native input inside the input mode anchor - the element assistive
+ * technology lands on and reports, and the target of the ARIA projection.
+ */
+function getAnchorNativeInput(host: HTMLElement): HTMLInputElement {
+  return (host as IgcColorPickerComponent).renderRoot
+    .querySelector<IgcInputComponent>('igc-input[slot="anchor"]')!
+    .renderRoot.querySelector('input')!;
 }
 
 function isAnchorEmpty(picker: IgcColorPickerComponent): boolean {
@@ -1083,9 +1094,19 @@ describe('Color picker', () => {
   runExternalLabelAssociationTests({
     tagName: IgcColorPickerComponent.tagName,
     hostAttributes: 'mode="input"',
-    getNativeInput: (host) =>
-      (host as IgcColorPickerComponent).renderRoot
-        .querySelector('igc-input')!
-        .renderRoot.querySelector('input')!,
+    getNativeInput: getAnchorNativeInput,
+  });
+
+  runAriaProjectionTests({
+    tagName: IgcColorPickerComponent.tagName,
+    hostAttributes: 'mode="input"',
+    getNativeInput: getAnchorNativeInput,
+    expected: { hasPopup: 'dialog' },
+    getDescription: (host) => [
+      (host as IgcColorPickerComponent).renderRoot.querySelector(
+        '#helper-text'
+      )!,
+    ],
+    openProperty: 'open',
   });
 });
