@@ -68,6 +68,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - Time only date strings are resolved against the current local date rather than the UTC one, which shifted the parsed date by a day near midnight in some time zones.
   - Stale `week-start` resolution until a subsequent update fixed the view. Now `week-start` is correctly resolved and rendered on initial render.
   - Clamp keyboard navigation logic to a no-op when navigating over a large amount of disabled dates which could hang the browser.
+- #### Chat
+  - With `adoptRootStyles` enabled, stylesheets that entered the document after the initial adoption were ignored, so custom renderers whose styles are injected while the view is being created - Angular component styles, for instance - rendered unstyled content. The document stylesheets are now tracked while the option is on, and any addition or removal is reflected in the shadow roots that adopted them, including stylesheet links that finish loading later. [#2328](https://github.com/IgniteUI/igniteui-webcomponents/issues/2328)
+  - Adopting the document styles no longer discards the theme styles of the message and input parts, which were dropped from their shadow roots because the adoption rebuilt the stylesheet list from the component's static styles alone.
 - #### Form associated components
   - Validation messages no longer disappear right after the first failed form submission. The submit-driven invalid state used to hold only for the update the submission itself scheduled, so any re-render that followed - a `slotchange` from the validation slots the submission had just projected, for instance - silently dropped the projected messages while the invalid styling stayed on.
   - Invalid styling now follows the validity state, so a control that turns valid again (a cleared `required`, a widened `min`/`max`, a disabled control) drops the styles it picked up from an earlier interaction or submission.
