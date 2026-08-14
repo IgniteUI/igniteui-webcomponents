@@ -1302,4 +1302,3 @@ Before submitting a PR for a new component, ensure:
 - [ ] Component exported from `src/index.ts`
 - [ ] CHANGELOG updated
 - [ ] `npm run check`, `npm run lint` and `npm run test` pass
-</content>

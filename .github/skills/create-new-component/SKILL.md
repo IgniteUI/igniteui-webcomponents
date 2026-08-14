@@ -427,4 +427,3 @@ event/attribute names that contain `igc-` (e.g. the `"igc-change-theme"` window 
 | Form-associated     | `src/components/input/input.ts`    | Form mixin, validators, `input-shell` template, ARIA target |
 | Composite / overlay | `src/components/select/select.ts`  | ARIA projection, keybindings, popover                      |
 | Container           | `src/components/card/card.ts`      | Registering sub-components, composition                    |
-</content>

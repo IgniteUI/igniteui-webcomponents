@@ -160,4 +160,3 @@ missing, themes are incomplete, or the public API is undocumented.
 green, and the public API reads the way it will be documented for users.
 
 Be specific in feedback: name the file, the line and the guideline it maps to.
-</content>

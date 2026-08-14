@@ -189,4 +189,3 @@ still styleable from outside the component.
 
 - `src/components/badge/themes/` — compact, complete scaffold of the pattern above
 - `src/components/input/themes/` — multiple parts, notched material layout, state selectors
-</content>

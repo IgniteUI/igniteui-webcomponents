@@ -228,4 +228,3 @@ npm run test
 - `src/components/badge/badge.ts` — reflected string, boolean and union-typed properties
 - `src/components/input/input.ts` — validation-affecting setters calling `_validate()`
 - `src/components/combo/combo.ts` — complex, non-attribute properties
-</content>
