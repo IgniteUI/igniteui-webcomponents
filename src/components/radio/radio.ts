@@ -22,7 +22,7 @@ import { isEmpty, lastOf } from '#internals/utils/arrays.js';
 import { isLTR } from '#internals/utils/dom.js';
 import { wrap } from '#internals/utils/math.js';
 import { createIdGenerator } from '#internals/utils/strings.js';
-import { isDefined } from '#internals/utils/types.js';
+import { isString } from '#internals/utils/types.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import type { ToggleLabelPosition } from '../types.js';
 import IgcValidationContainerComponent from '../validation-container/validation-container.js';
@@ -215,10 +215,25 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
   }
 
   protected override _setDefaultValue(current: string | null): void {
-    this._formValue.defaultValue = isDefined(current);
+    // The base mixin passes 'true' when the `checked` attribute is present and
+    // null when it is removed - `isString` mirrors that contract (`isDefined`
+    // would treat null as present and re-check the radio on form reset).
+    this._formValue.defaultValue = isString(current);
     for (const radio of this._siblings) {
       radio.defaultChecked = false;
     }
+  }
+
+  /**
+   * Restores the default state directly instead of through the `checked`
+   * setter: setting `checked` to true unchecks all siblings, which would
+   * corrupt the pristine state of radios the browser has already reset
+   * during the same `form.reset()` pass.
+   */
+  protected override _restoreDefaultValue(): void {
+    const checked = this.checked;
+    this._formValue.setValueAndFormState(this.defaultChecked);
+    this.requestUpdate('checked', checked);
   }
 
   /** Simulates a click on the radio control. */
@@ -271,6 +286,7 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
   public override setCustomValidity(message: string): void {
     for (const radio of this._radios) {
       radio._validate(message);
+      radio.requestUpdate();
     }
   }
 

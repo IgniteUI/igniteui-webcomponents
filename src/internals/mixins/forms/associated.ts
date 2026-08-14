@@ -104,6 +104,11 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
 
     /**
      * Sets the control into invalid state (visual state only).
+     *
+     * @remarks
+     * The property is not reflected back to the attribute. Reading it returns
+     * the effective visual state, so a touched control failing validation
+     * reads `true` even after assigning `false`.
      * @attr
      * @default false
      */
@@ -114,7 +119,7 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
     }
 
     public get invalid(): boolean {
-      return this._isExternalInvalid || this._shouldApplyStyles;
+      return this._shouldApplyStyles;
     }
 
     /** Returns the HTMLFormElement associated with this element. */
@@ -154,8 +159,12 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
     /** @internal */
     public override connectedCallback(): void {
       super.connectedCallback();
-      this._pristine = true;
-      this._touched = false;
+
+      if (!this.hasUpdated) {
+        this._pristine = true;
+        this._touched = false;
+      }
+
       this._validate();
     }
 
@@ -164,15 +173,11 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
     //#region Enter key submission handling
 
     protected _handleEnterKeydown(event: KeyboardEvent): void {
-      if (event.key !== enterKey) return;
-      if (event.repeat) return;
-
-      const canSubmit =
-        this.form && (this.form.noValidate || this.checkValidity());
-
-      if (canSubmit) {
-        this.form?.requestSubmit();
+      if (event.key !== enterKey || event.repeat) {
+        return;
       }
+
+      this.form?.requestSubmit();
     }
 
     //#endregion
@@ -217,9 +222,8 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
       validity: ValidityStateFlags;
       message: string;
     } {
-      const validity: ValidityStateFlags = {};
+      let validity: ValidityStateFlags = {};
       let message = '';
-      let validationFailed = false;
 
       for (const validator of this.__validators) {
         const isValid = validator.isValid(this);
@@ -227,14 +231,16 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
         validity[validator.key] = !isValid;
 
         if (!isValid) {
-          validationFailed = true;
           message = isFunction(validator.message)
             ? validator.message(this)
             : validator.message;
+
+          if (validator.key === 'valueMissing') {
+            validity = { valueMissing: true };
+            break;
+          }
         }
       }
-
-      this._invalid = validationFailed;
 
       return { validity, message };
     }
@@ -244,16 +250,9 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
      */
     protected _validate(userMessage?: string): void {
       if (isServer) return;
-      let { validity, message } = this.__runValidators();
+      const { validity, message: validatorMessage } = this.__runValidators();
       const hasCustomError = this.validity.customError;
-
-      // valueMissing has precedence over the other validators aside from customError
-      if (validity.valueMissing) {
-        validity = {
-          valueMissing: true,
-          customError: hasCustomError,
-        };
-      }
+      let message = validatorMessage;
 
       if (hasCustomError && userMessage === undefined) {
         // Internal validation cycle after the user has called setCustomValidity()
@@ -282,9 +281,7 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
     }
 
     protected _setTouchedState(): void {
-      if (!this._touched) {
-        this._touched = true;
-      }
+      this._touched = true;
     }
 
     protected _setDefaultValue(current: string | null): void {
@@ -301,8 +298,9 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
       this._pristine = false;
       this._internals.setFormValue(value, state);
       this._validate();
-      this._setInvalidStyles();
     }
+
+    //#endregion
 
     //#region Form associated callback hooks
 
@@ -319,6 +317,7 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
       this._pristine = true;
       this._touched = false;
       this._invalid = false;
+      this._isExternalInvalid = false;
       this._setInvalidStyles();
       emitFormResetEvent(this);
     }
@@ -355,8 +354,6 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
      */
     public setCustomValidity(message: string): void {
       this._validate(message);
-      this._isInternalValidation = message === '';
-      this._setInvalidStyles();
       this.requestUpdate();
     }
 
@@ -387,6 +384,20 @@ export function FormAssociatedMixin<T extends Constructor<LitElement>>(
 
     public get defaultValue(): unknown {
       return this._formValue.defaultValue;
+    }
+
+    /**
+     * Restores the default value through the public `value` setter so any
+     * clamping/normalization the component applies (slider bounds, rating max)
+     * also applies on form reset, and the correct reactive property is
+     * recorded for the update cycle.
+     */
+    protected override _restoreDefaultValue(): void {
+      if ('value' in this) {
+        this.value = this.defaultValue;
+      } else {
+        super._restoreDefaultValue();
+      }
     }
 
     public override attributeChangedCallback(
@@ -426,6 +437,18 @@ export function FormAssociatedCheckboxMixin<T extends Constructor<LitElement>>(
 
     public get defaultChecked(): boolean {
       return this._formValue.defaultValue as boolean;
+    }
+
+    /**
+     * Restores the default checked state through the public `checked` setter
+     * so the correct reactive property is recorded for the update cycle.
+     */
+    protected override _restoreDefaultValue(): void {
+      if ('checked' in this) {
+        this.checked = this.defaultChecked;
+      } else {
+        super._restoreDefaultValue();
+      }
     }
 
     public override attributeChangedCallback(

@@ -1062,6 +1062,28 @@ describe('Masked input', () => {
       spec.assertSubmitHasValue(spec.element.value);
     });
 
+    it('refreshes the rendered masked value after form reset', async () => {
+      // Regression: the old restore path never requested an update, leaving
+      // the rendered masked value stale after a reset while valid.
+      const bed = createFormAssociatedTestBed<IgcMaskInputComponent>(
+        html`<igc-mask-input
+          name="masked"
+          mask="(CC) (CC)"
+          value="1234"
+        ></igc-mask-input>`
+      );
+      await bed.setup(IgcMaskInputComponent.tagName);
+      const input = bed.element.renderRoot.querySelector('input')!;
+
+      bed.setProperties({ value: '9999' });
+      await elementUpdated(bed.element);
+      expect(input.value).to.equal('(99) (99)');
+
+      bed.reset();
+      await elementUpdated(bed.element);
+      expect(input.value).to.equal('(12) (34)');
+    });
+
     it('reflects disabled ancestor state', () => {
       spec.setAncestorDisabledState(true);
       expect(spec.element.disabled).to.be.true;

@@ -205,11 +205,25 @@ export default class IgcFileInputComponent extends EventEmitterMixin<
 
   //#region Internal methods
 
+  /**
+   * A file input cannot have a default file list, so the `value` attribute
+   * never contributes a default - otherwise its string would be stored as the
+   * FileList default and submitted character-by-character after a form reset.
+   */
+  protected override _setDefaultValue(): void {
+    this._formValue.defaultValue = null;
+  }
+
+  /**
+   * Restores directly instead of through the `value` setter: the setter is
+   * deliberately inert (read-only semantics) and never updates the form state.
+   */
   protected override _restoreDefaultValue(): void {
     if (this._input) {
       this._input.value = '';
     }
-    super._restoreDefaultValue();
+    this._formValue.setValueAndFormState(this._formValue.defaultValue);
+    this.requestUpdate();
   }
 
   //#endregion

@@ -6,19 +6,16 @@ import {
   FormAssociatedMixin,
 } from './associated.js';
 import type {
+  BaseFormAssociatedElement,
   FormAssociatedCheckboxElementInterface,
   FormAssociatedElementInterface,
   FormRequiredInterface,
 } from './types.js';
 
-/**
- * Mixes the passed class into a form associated custom element with an
- * additional `required` attribute.
- */
-export function FormAssociatedRequiredMixin<T extends Constructor<LitElement>>(
-  base: T
-) {
-  class FormAssociatedRequiredElement extends FormAssociatedMixin(base) {
+function BaseFormAssociatedRequired<
+  T extends Constructor<BaseFormAssociatedElement & LitElement>,
+>(base: T) {
+  class BaseFormAssociatedRequiredElement extends base {
     protected _required = false;
 
     /**
@@ -36,6 +33,20 @@ export function FormAssociatedRequiredMixin<T extends Constructor<LitElement>>(
       return this._required;
     }
   }
+
+  return BaseFormAssociatedRequiredElement;
+}
+
+/**
+ * Mixes the passed class into a form associated custom element with an
+ * additional `required` attribute.
+ */
+export function FormAssociatedRequiredMixin<T extends Constructor<LitElement>>(
+  base: T
+) {
+  class FormAssociatedRequiredElement extends BaseFormAssociatedRequired(
+    FormAssociatedMixin(base)
+  ) {}
 
   return FormAssociatedRequiredElement as unknown as Constructor<
     FormRequiredInterface & FormAssociatedElementInterface
@@ -50,28 +61,11 @@ export function FormAssociatedRequiredMixin<T extends Constructor<LitElement>>(
 export function FormAssociatedCheckboxRequiredMixin<
   T extends Constructor<LitElement>,
 >(base: T) {
-  class FormAssociatedRequiredElement extends FormAssociatedCheckboxMixin(
-    base
-  ) {
-    protected _required = false;
+  class FormAssociatedCheckboxRequiredElement extends BaseFormAssociatedRequired(
+    FormAssociatedCheckboxMixin(base)
+  ) {}
 
-    /**
-     * When set, makes the component a required field for validation.
-     * @attr
-     * @default false
-     */
-    @property({ type: Boolean, reflect: true })
-    public set required(value: boolean) {
-      this._required = Boolean(value);
-      this._validate();
-    }
-
-    public get required(): boolean {
-      return this._required;
-    }
-  }
-
-  return FormAssociatedRequiredElement as unknown as Constructor<
+  return FormAssociatedCheckboxRequiredElement as unknown as Constructor<
     FormRequiredInterface & FormAssociatedCheckboxElementInterface
   > &
     T;

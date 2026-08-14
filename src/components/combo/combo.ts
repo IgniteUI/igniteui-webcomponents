@@ -655,11 +655,6 @@ export default class IgcComboComponent<
 
   // #region Form Associated overrides
 
-  protected override _restoreDefaultValue(): void {
-    super._restoreDefaultValue();
-    this._syncSelectionFromValue();
-  }
-
   protected override _setDefaultValue(current: string | null): void {
     try {
       this.defaultValue = JSON.parse(current || '[]');
