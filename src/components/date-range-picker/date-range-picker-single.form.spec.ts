@@ -58,6 +58,22 @@ describe('Date Range Picker Single Input - Form integration', () => {
       spec.assertSubmitHasKeyValue('rangePicker', null);
     });
 
+    it('should report the required message for a partial out-of-bounds range', async () => {
+      // Regression: a partial range below `min` fails both the required and
+      // the min validators - the reported message must match the
+      // `valueMissing` flag instead of coming from the min validator.
+      spec.setProperties({
+        required: true,
+        min: today.native,
+        value: { start: today.add('day', -5).native, end: null },
+      });
+      await elementUpdated(spec.element);
+
+      expect(spec.element.validity.valueMissing).to.be.true;
+      expect(spec.element.validity.rangeUnderflow).to.be.false;
+      expect(spec.element.validationMessage).to.equal('This field is required');
+    });
+
     it('is correctly reset on form reset', async () => {
       const initial = spec.element.value;
 

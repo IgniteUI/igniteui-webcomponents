@@ -82,6 +82,34 @@ describe('igc-datepicker form integration', () => {
       spec.assertSubmitHasValue(today.native.toISOString());
     });
 
+    it('should clear the invalid styles of the inner editor on form reset', async () => {
+      // Regression: the inner editor is not associated with the outer form
+      // and runs its own constraint validation against the forwarded
+      // `required`, so a focus + blur before a reset left it touched and
+      // permanently styled as invalid.
+      spec.setProperties({ required: true });
+
+      const inner = spec.element.renderRoot.querySelector(
+        IgcDateTimeInputComponent.tagName
+      )!;
+      const native = inner.renderRoot.querySelector('input')!;
+
+      native.focus();
+      native.blur();
+      await elementUpdated(spec.element);
+      await elementUpdated(inner);
+
+      expect(spec.element.matches(':state(ig-invalid)')).to.be.true;
+      expect(inner.matches(':state(ig-invalid)')).to.be.true;
+
+      spec.reset();
+      await elementUpdated(spec.element);
+      await elementUpdated(inner);
+
+      expect(spec.element.matches(':state(ig-invalid)')).to.be.false;
+      expect(inner.matches(':state(ig-invalid)')).to.be.false;
+    });
+
     it('should submit on pressing Enter when value is valid', () => {
       spec.setProperties({ value: today.native });
       expect(

@@ -551,13 +551,6 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
 
   //#region Internal API
 
-  protected override _restoreDefaultValue(): void {
-    super._restoreDefaultValue();
-    this._formValue.setValueAndFormState(this._formValue.defaultValue);
-    const item = this._getItem(this._formValue.value!);
-    item ? this._setSelectedItem(item) : this._clearSelectedItem();
-  }
-
   private _activateItem(item: IgcSelectItemComponent | null): void {
     if (this._activeItem && this._activeItem !== item) {
       this._activeItem.active = false;

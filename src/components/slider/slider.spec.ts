@@ -1137,6 +1137,17 @@ describe('Slider component', () => {
       spec.assertSubmitHasValue(spec.element.value.toString());
     });
 
+    it('should clamp an out-of-range default value on form reset', () => {
+      // Regression: reset used to restore the raw default, bypassing the
+      // value setter clamping and rendering an out-of-bounds track.
+      spec.setAttributes({ value: 200 });
+      spec.setProperties({ value: 50 });
+      spec.reset();
+
+      expect(spec.element.value).to.equal(100);
+      spec.assertSubmitHasValue('100');
+    });
+
     it('reflects disabled ancestor state', () => {
       spec.setAncestorDisabledState(true);
       expect(spec.element.disabled).to.be.true;
