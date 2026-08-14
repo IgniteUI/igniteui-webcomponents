@@ -41,7 +41,8 @@ function getCloneableRules(sheet: CSSStyleSheet): CSSRule[] {
  * The document is observed for as long as at least one controller is adopting styles,
  * so that stylesheets appearing after the initial adoption - such as the ones injected
  * at runtime by framework renderers - are picked up and pushed to the shadow roots
- * which have already adopted.
+ * which have already adopted. A stylesheet mutated in place, without entering or
+ * leaving the document, is not observable and needs an explicit {@link invalidate}.
  */
 class DocumentStyleSheets {
   //#region Instances
@@ -76,6 +77,19 @@ class DocumentStyleSheets {
   private _sheets: CSSStyleSheet[] = [];
   private _isStale = true;
 
+  /**
+   * The node under which stylesheets are expected to appear.
+   *
+   * Style injection targets the head by convention, so observing it keeps the browser
+   * from recording a mutation for every DOM change in the page. The fallbacks cover
+   * documents without a head, such as ones created through `DOMImplementation`.
+   */
+  private get _observedRoot(): Node {
+    return (
+      this._document.head ?? this._document.documentElement ?? this._document
+    );
+  }
+
   //#endregion
 
   //#region Public properties
@@ -103,7 +117,7 @@ class DocumentStyleSheets {
     this._consumers.add(consumer);
 
     if (this._consumers.size === 1) {
-      this._observer.observe(this._document, observerConfig);
+      this._observer.observe(this._observedRoot, observerConfig);
       this._document.addEventListener('load', this, { capture: true });
     }
   }
@@ -130,10 +144,15 @@ class DocumentStyleSheets {
    * Stylesheet links have no CSSOM representation at the time they are appended to
    * the document, so they are picked up when they finish loading.
    *
+   * The listener is capturing and document wide - it sees the load event of every
+   * resource - hence the check for an element which has just produced a stylesheet.
+   *
    * @internal
    */
   public handleEvent(event: Event): void {
-    if ((event.target as Node | null)?.nodeName === 'LINK') {
+    const target = event.target as Partial<HTMLLinkElement> | null;
+
+    if (target?.sheet) {
       this._synchronize();
     }
   }
