@@ -33,7 +33,7 @@ const metadata: Meta<IgcSplitterComponent> = {
   },
   argTypes: {
     orientation: {
-      type: '"horizontal" | "vertical"',
+      type: { name: 'enum', value: ['horizontal', 'vertical'] },
       description:
         'The orientation of the splitter, which determines the direction of resizing and collapsing.\n\nChanging the orientation after the initial render clears the pane sizes and\ntheir min/max constraints, along with the corresponding attributes - a size\nauthored for one axis rarely makes sense on the other.',
       options: ['horizontal', 'vertical'],

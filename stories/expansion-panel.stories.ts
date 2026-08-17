@@ -41,7 +41,7 @@ const metadata: Meta<IgcExpansionPanelComponent> = {
       table: { defaultValue: { summary: 'false' } },
     },
     indicatorPosition: {
-      type: '"start" | "end" | "none"',
+      type: { name: 'enum', value: ['start', 'end', 'none'] },
       description: 'The indicator position of the expansion panel.',
       options: ['start', 'end', 'none'],
       control: { type: 'inline-radio' },

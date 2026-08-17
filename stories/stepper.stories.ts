@@ -27,14 +27,14 @@ const metadata: Meta<IgcStepperComponent> = {
   },
   argTypes: {
     orientation: {
-      type: '"horizontal" | "vertical"',
+      type: { name: 'enum', value: ['horizontal', 'vertical'] },
       description: 'The orientation of the stepper.',
       options: ['horizontal', 'vertical'],
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'horizontal' } },
     },
     stepType: {
-      type: '"full" | "indicator" | "title"',
+      type: { name: 'enum', value: ['full', 'indicator', 'title'] },
       description: 'The visual type of the steps.',
       options: ['full', 'indicator', 'title'],
       control: { type: 'inline-radio' },
@@ -53,14 +53,14 @@ const metadata: Meta<IgcStepperComponent> = {
       table: { defaultValue: { summary: 'false' } },
     },
     verticalAnimation: {
-      type: '"grow" | "fade" | "none"',
+      type: { name: 'enum', value: ['grow', 'fade', 'none'] },
       description: 'The animation type when in vertical mode.',
       options: ['grow', 'fade', 'none'],
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'grow' } },
     },
     horizontalAnimation: {
-      type: '"slide" | "fade" | "none"',
+      type: { name: 'enum', value: ['slide', 'fade', 'none'] },
       description: 'The animation type when in horizontal mode.',
       options: ['slide', 'fade', 'none'],
       control: { type: 'inline-radio' },
@@ -74,7 +74,7 @@ const metadata: Meta<IgcStepperComponent> = {
       table: { defaultValue: { summary: '320' } },
     },
     titlePosition: {
-      type: '"auto" | "bottom" | "top" | "end" | "start"',
+      type: { name: 'enum', value: ['auto', 'bottom', 'top', 'end', 'start'] },
       description: 'The position of the steps title.',
       options: ['auto', 'bottom', 'top', 'end', 'start'],
       control: { type: 'select' },

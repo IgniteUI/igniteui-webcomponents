@@ -26,12 +26,6 @@ const metadata: Meta<IgcDateTimeInputComponent> = {
     actions: { handles: ['igcInput', 'igcChange'] },
   },
   argTypes: {
-    value: {
-      type: 'T',
-      description:
-        'The value of the input.\n\nOnly ever holds a committed value. While the user is typing, the intermediate\nstate lives in the masked text and is committed - together with an `igcChange`\nevent - when the edit is committed on blur. Use the `igcInput` event to observe\nthe value as it is being typed.',
-      control: 'T',
-    },
     readOnly: {
       type: 'boolean',
       description: 'Makes the control a readonly field.',
@@ -96,12 +90,12 @@ const metadata: Meta<IgcDateTimeInputComponent> = {
       control: 'text',
     },
     min: {
-      type: 'Date',
+      type: 'date',
       description: 'The minimum value required for the input to remain valid.',
       control: 'date',
     },
     max: {
-      type: 'Date',
+      type: 'date',
       description: 'The maximum value required for the input to remain valid.',
       control: 'date',
     },
@@ -138,15 +132,6 @@ const metadata: Meta<IgcDateTimeInputComponent> = {
 export default metadata;
 
 interface IgcDateTimeInputArgs {
-  /**
-   * The value of the input.
-   *
-   * Only ever holds a committed value. While the user is typing, the intermediate
-   * state lives in the masked text and is committed - together with an `igcChange`
-   * event - when the edit is committed on blur. Use the `igcInput` event to observe
-   * the value as it is being typed.
-   */
-  value: T;
   /** Makes the control a readonly field. */
   readOnly: boolean;
   /** The mask pattern of the component. */
@@ -187,6 +172,12 @@ type Story = StoryObj<IgcDateTimeInputArgs>;
 
 // endregion
 
+/**
+ * `value` comes from a generic base component, and the analyzer records its type as
+ * the bare type parameter `T`, so it is left out of the generated args.
+ */
+type DateTimeInputStory = StoryObj<IgcDateTimeInputArgs & { value: Date }>;
+
 const stepUp = () => {
   document.querySelector(IgcDateTimeInputComponent.tagName)!.stepUp();
 };
@@ -198,7 +189,7 @@ const clear = () => {
   document.querySelector(IgcDateTimeInputComponent.tagName)!.clear();
 };
 
-export const Default: Story = {
+export const Default: DateTimeInputStory = {
   parameters: {
     docs: {
       description: {

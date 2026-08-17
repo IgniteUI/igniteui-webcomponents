@@ -52,7 +52,10 @@ const metadata: Meta<IgcChipComponent> = {
       table: { defaultValue: { summary: 'false' } },
     },
     variant: {
-      type: '"primary" | "info" | "success" | "warning" | "danger"',
+      type: {
+        name: 'enum',
+        value: ['primary', 'info', 'success', 'warning', 'danger'],
+      },
       description:
         'A property that sets the color variant of the chip component.',
       options: ['primary', 'info', 'success', 'warning', 'danger'],

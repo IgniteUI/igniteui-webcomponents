@@ -108,7 +108,7 @@ const metadata: Meta<IgcRangeSliderComponent> = {
       table: { defaultValue: { summary: '0' } },
     },
     tickOrientation: {
-      type: '"end" | "mirror" | "start"',
+      type: { name: 'enum', value: ['end', 'mirror', 'start'] },
       description: 'Changes the orientation of the ticks.',
       options: ['end', 'mirror', 'start'],
       control: { type: 'inline-radio' },
@@ -140,10 +140,10 @@ const metadata: Meta<IgcRangeSliderComponent> = {
       control: 'text',
     },
     tickLabelRotation: {
-      type: '"0" | "90"',
+      type: { name: 'enum', value: [0, 90] },
       description:
         'The degrees for the rotation of the tick labels. Defaults to 0.',
-      options: ['0', '90'],
+      options: [0, 90],
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: '0' } },
     },
@@ -158,7 +158,7 @@ const metadata: Meta<IgcRangeSliderComponent> = {
     hidePrimaryLabels: false,
     hideSecondaryLabels: false,
     locale: 'en',
-    tickLabelRotation: '0',
+    tickLabelRotation: 0,
   },
 };
 
@@ -231,7 +231,7 @@ interface IgcRangeSliderArgs {
   /** String format used for the thumb and tick label values in the slider. */
   valueFormat: string;
   /** The degrees for the rotation of the tick labels. Defaults to 0. */
-  tickLabelRotation: '0' | '90';
+  tickLabelRotation: 0 | 90;
 }
 type Story = StoryObj<IgcRangeSliderArgs>;
 

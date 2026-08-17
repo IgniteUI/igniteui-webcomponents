@@ -45,9 +45,8 @@ const metadata: Meta<IgcDateRangePickerComponent> = {
   },
   argTypes: {
     value: {
-      type: 'DateRangeValue',
+      type: { name: 'other', value: 'DateRangeValue' },
       description: 'The value of the picker',
-      control: 'date',
     },
     visibleMonths: {
       type: 'number',
@@ -123,7 +122,7 @@ const metadata: Meta<IgcDateRangePickerComponent> = {
       table: { defaultValue: { summary: 'false' } },
     },
     mode: {
-      type: '"dropdown" | "dialog"',
+      type: { name: 'enum', value: ['dropdown', 'dialog'] },
       description:
         'Determines whether the calendar is opened in a dropdown or a modal dialog.',
       options: ['dropdown', 'dialog'],
@@ -178,30 +177,30 @@ const metadata: Meta<IgcDateRangePickerComponent> = {
       control: 'text',
     },
     min: {
-      type: 'Date',
+      type: 'date',
       description: 'The minimum value required for the picker to remain valid.',
       control: 'date',
     },
     max: {
-      type: 'Date',
+      type: 'date',
       description: 'The maximum value required for the picker to remain valid.',
       control: 'date',
     },
     activeDate: {
-      type: 'Date',
+      type: 'date',
       description:
         'Gets/Sets the date which is shown in the calendar picker and is highlighted.\nBy default it is the current date.',
       control: 'date',
     },
     headerOrientation: {
-      type: '"horizontal" | "vertical"',
+      type: { name: 'enum', value: ['horizontal', 'vertical'] },
       description: 'The orientation of the calendar header.',
       options: ['horizontal', 'vertical'],
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'horizontal' } },
     },
     orientation: {
-      type: '"horizontal" | "vertical"',
+      type: { name: 'enum', value: ['horizontal', 'vertical'] },
       description:
         "The orientation of the multiple months displayed in the calendar's days view.",
       options: ['horizontal', 'vertical'],
@@ -228,7 +227,18 @@ const metadata: Meta<IgcDateRangePickerComponent> = {
       table: { defaultValue: { summary: 'false' } },
     },
     weekStart: {
-      type: '"sunday" | "monday" | "tuesday" | "wednesday" | "thursday" | "friday" | "saturday"',
+      type: {
+        name: 'enum',
+        value: [
+          'sunday',
+          'monday',
+          'tuesday',
+          'wednesday',
+          'thursday',
+          'friday',
+          'saturday',
+        ],
+      },
       description: 'Sets the start day of the week for the calendar.',
       options: [
         'sunday',

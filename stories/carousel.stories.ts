@@ -69,7 +69,7 @@ const metadata: Meta<IgcCarouselComponent> = {
       table: { defaultValue: { summary: 'false' } },
     },
     indicatorsOrientation: {
-      type: '"end" | "start"',
+      type: { name: 'enum', value: ['end', 'start'] },
       description: 'Sets the orientation of the indicator controls (dots).',
       options: ['end', 'start'],
       control: { type: 'inline-radio' },
@@ -101,7 +101,7 @@ const metadata: Meta<IgcCarouselComponent> = {
       table: { defaultValue: { summary: '10' } },
     },
     animationType: {
-      type: '"slide" | "fade" | "none"',
+      type: { name: 'enum', value: ['slide', 'fade', 'none'] },
       description: 'The animation type.',
       options: ['slide', 'fade', 'none'],
       control: { type: 'inline-radio' },
