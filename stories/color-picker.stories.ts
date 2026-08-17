@@ -49,7 +49,7 @@ const metadata: Meta<IgcColorPickerComponent> = {
       control: 'text',
     },
     format: {
-      type: '"hex" | "rgb" | "hsl"',
+      type: { name: 'enum', value: ['hex', 'rgb', 'hsl'] },
       description:
         'Sets the color format for the string value.\n\nSwitching the format re-renders `value` in the new notation without\nchanging the color, so no `igcInput` or `igcChange` is emitted.',
       options: ['hex', 'rgb', 'hsl'],
@@ -69,7 +69,7 @@ const metadata: Meta<IgcColorPickerComponent> = {
       table: { defaultValue: { summary: 'false' } },
     },
     mode: {
-      type: '"default" | "input"',
+      type: { name: 'enum', value: ['default', 'input'] },
       description:
         'The mode of the color picker.\n\nIn `"default"` mode the anchor is a trigger button. In `"input"` mode\nthe anchor is an editable text field with a color swatch prefix that\nalso opens the picker.',
       options: ['default', 'input'],
