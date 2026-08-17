@@ -54,6 +54,7 @@ class SlotController<T> implements ReactiveController {
   private readonly _host: ReactiveControllerHost & LitElement;
   private readonly _options: SlotControllerOptions<T>;
   private readonly _slots?: Set<T>;
+  private readonly _slotCache = new Map<T | undefined, HTMLSlotElement>();
   private _initialized = false;
 
   constructor(
@@ -67,17 +68,33 @@ class SlotController<T> implements ReactiveController {
     this._slots = options?.slots ? new Set(options.slots) : undefined;
   }
 
+  /**
+   * The query results are cached, since the accessors below are routinely called
+   * from a host's `render`. Only a still connected slot is served from the cache -
+   * one removed by a conditional template falls back to a fresh query.
+   */
   private _getSlot(slotName?: T): HTMLSlotElement | null {
     if (isServer) return null;
-    if (slotName === DefaultSlot) {
-      return this._host.renderRoot.querySelector<HTMLSlotElement>(
-        'slot:not([name])'
-      );
+
+    const cached = this._slotCache.get(slotName);
+
+    if (cached?.isConnected) {
+      return cached;
     }
 
-    return this._host.renderRoot.querySelector<HTMLSlotElement>(
-      `slot[name="${slotName}"]`
-    );
+    const selector =
+      slotName === DefaultSlot
+        ? 'slot:not([name])'
+        : `slot[name="${slotName}"]`;
+    const slot = this._host.renderRoot.querySelector<HTMLSlotElement>(selector);
+
+    if (slot) {
+      this._slotCache.set(slotName, slot);
+    } else {
+      this._slotCache.delete(slotName);
+    }
+
+    return slot;
   }
 
   /**
@@ -135,11 +152,9 @@ class SlotController<T> implements ReactiveController {
     const slot = event.target as HTMLSlotElement;
     const name = slot.name as T;
     const isDefault = name === '';
+    const observed = isDefault ? (DefaultSlot as T) : name;
 
-    if (
-      !this._slots ||
-      this._slots.has(isDefault ? (DefaultSlot as T) : (slot.name as T))
-    ) {
+    if (!this._slots || this._slots.has(observed)) {
       this._options.onChange?.call(this._host, {
         slot: name,
         isDefault,

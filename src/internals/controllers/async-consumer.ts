@@ -31,18 +31,21 @@ export class AsyncContextConsumer<
     return this._consumer?.value;
   }
 
+  // If there is already an instance of a consumer (because of an attach/detach cycle),
+  // skip creating a new instance for this host - checked both before and after the
+  // await, since a reconnect can land in between.
   public async hostConnected(): Promise<void> {
+    if (this._consumer) {
+      return;
+    }
+
     await this._host.updateComplete;
 
-    // If there is already an instance of a consumer (because of an attach/detach cycle),
-    // skip creating a new instance for this host.
-    if (!this._consumer) {
-      this._consumer = new ContextConsumer(this._host, {
-        context: this._options.context,
-        callback: this._options.callback,
-        subscribe: this._options.subscribe,
-      });
-    }
+    this._consumer ??= new ContextConsumer(this._host, {
+      context: this._options.context,
+      callback: this._options.callback,
+      subscribe: this._options.subscribe,
+    });
   }
 }
 
@@ -58,5 +61,5 @@ export function createAsyncContext<
     context,
     callback,
     subscribe: true,
-  }) as AsyncContextConsumer<T, Host>;
+  });
 }

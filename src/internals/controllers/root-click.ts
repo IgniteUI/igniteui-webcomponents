@@ -1,7 +1,6 @@
 import type { ReactiveController, ReactiveControllerHost } from 'lit';
 import { createAbortHandle } from '../abort-handler.js';
 import { isEmpty } from '../utils/arrays.js';
-import { getElementFromPath } from '../utils/events.js';
 
 /** Configuration options for the RootClickController */
 type RootClickControllerConfig = {
@@ -49,37 +48,43 @@ const HOST_CONFIGURATIONS = new WeakMap<
 
 const ACTIVE_HOSTS = new Set<RootClickControllerHost>();
 
-/** Returns the set of elements that should be considered as "inside" the host. */
-function getHostTargets(
+/**
+ * Whether the event occurred "inside" the host, that is on the host itself or
+ * on the additional `target` of its configuration.
+ *
+ * Takes an already resolved composed path, so a single one is shared by all the
+ * active hosts instead of being rebuilt for each of them.
+ */
+function isInsideHost(
+  path: EventTarget[],
   host: RootClickControllerHost,
-  config?: RootClickControllerConfig
-): Set<Element> {
-  return new Set(config?.target ? [host, config.target] : [host]);
+  target?: HTMLElement
+): boolean {
+  return path.some((node) => node === host || node === target);
 }
 
 function handlePointerDown(event: PointerEvent): void {
   POINTER_DOWN_HOSTS.clear();
+  const path = event.composedPath();
 
   for (const host of ACTIVE_HOSTS) {
-    const config = HOST_CONFIGURATIONS.get(host);
-    const targets = getHostTargets(host, config);
-
-    if (getElementFromPath((node) => targets.has(node), event)) {
+    if (isInsideHost(path, host, HOST_CONFIGURATIONS.get(host)?.target)) {
       POINTER_DOWN_HOSTS.add(host);
     }
   }
 }
 
 function handleRootClick(event: PointerEvent): void {
+  const path = event.composedPath();
+
   for (const host of [...ACTIVE_HOSTS]) {
     if (host.keepOpenOnOutsideClick || POINTER_DOWN_HOSTS.has(host)) {
       continue;
     }
 
     const config = HOST_CONFIGURATIONS.get(host);
-    const targets = getHostTargets(host, config);
 
-    if (!getElementFromPath((node) => targets.has(node), event)) {
+    if (!isInsideHost(path, host, config?.target)) {
       config?.onHide ? config.onHide.call(host) : host.hide();
     }
   }
@@ -121,10 +126,6 @@ class RootClickController implements ReactiveController {
   private _addActiveHost(): void {
     ACTIVE_HOSTS.add(this._host);
 
-    if (this._config) {
-      HOST_CONFIGURATIONS.set(this._host, this._config);
-    }
-
     if (!ROOT_CLICK_LISTENER_ACTIVE) {
       const options: AddEventListenerOptions = {
         capture: true,
@@ -146,7 +147,6 @@ class RootClickController implements ReactiveController {
    */
   private _removeActiveHost(): void {
     ACTIVE_HOSTS.delete(this._host);
-    HOST_CONFIGURATIONS.delete(this._host);
     POINTER_DOWN_HOSTS.delete(this._host);
 
     if (isEmpty(ACTIVE_HOSTS) && ROOT_CLICK_LISTENER_ACTIVE) {
