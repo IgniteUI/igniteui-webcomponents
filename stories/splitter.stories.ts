@@ -33,9 +33,9 @@ const metadata: Meta<IgcSplitterComponent> = {
   },
   argTypes: {
     orientation: {
-      type: '"horizontal" | "vertical"',
+      type: { name: 'enum', value: ['horizontal', 'vertical'] },
       description:
-        'The orientation of the splitter, which determines the direction of resizing and collapsing.',
+        'The orientation of the splitter, which determines the direction of resizing and collapsing.\n\nChanging the orientation after the initial render clears the pane sizes and\ntheir min/max constraints, along with the corresponding attributes - a size\nauthored for one axis rarely makes sense on the other.',
       options: ['horizontal', 'vertical'],
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'horizontal' } },
@@ -71,37 +71,37 @@ const metadata: Meta<IgcSplitterComponent> = {
     startMinSize: {
       type: 'string',
       description:
-        'The minimum size of the start pane.\n\nAccepts a CSS length, e.g. `100px` or `20%`. Setting `auto`, a negative\nvalue, or a percentage above 100 removes the constraint.',
+        'The minimum size of the start pane.\n\nAccepts a CSS length with an explicit unit, e.g. `100px` or `20%`, or a\nunitless `0`. Setting `auto`, any other unitless or unparsable value, a\nnegative value, or a percentage above 100 removes the constraint.',
       control: 'text',
     },
     endMinSize: {
       type: 'string',
       description:
-        'The minimum size of the end pane.\n\nAccepts a CSS length, e.g. `100px` or `20%`. Setting `auto`, a negative\nvalue, or a percentage above 100 removes the constraint.',
+        'The minimum size of the end pane.\n\nAccepts a CSS length with an explicit unit, e.g. `100px` or `20%`, or a\nunitless `0`. Setting `auto`, any other unitless or unparsable value, a\nnegative value, or a percentage above 100 removes the constraint.',
       control: 'text',
     },
     startMaxSize: {
       type: 'string',
       description:
-        'The maximum size of the start pane.\n\nAccepts a CSS length, e.g. `500px` or `80%`. Setting `auto`, a negative\nvalue, or a percentage above 100 removes the constraint.',
+        'The maximum size of the start pane.\n\nAccepts a CSS length with an explicit unit, e.g. `500px` or `80%`, or a\nunitless `0`. Setting `auto`, any other unitless or unparsable value, a\nnegative value, or a percentage above 100 removes the constraint.',
       control: 'text',
     },
     endMaxSize: {
       type: 'string',
       description:
-        'The maximum size of the end pane.\n\nAccepts a CSS length, e.g. `500px` or `80%`. Setting `auto`, a negative\nvalue, or a percentage above 100 removes the constraint.',
+        'The maximum size of the end pane.\n\nAccepts a CSS length with an explicit unit, e.g. `500px` or `80%`, or a\nunitless `0`. Setting `auto`, any other unitless or unparsable value, a\nnegative value, or a percentage above 100 removes the constraint.',
       control: 'text',
     },
     startSize: {
       type: 'string',
       description:
-        'The size of the start pane.\n\nAccepts a CSS length, e.g. `200px` or `50%`. Setting `auto`, a negative\nvalue, or a percentage above 100 falls back to automatic sizing.',
+        'The size of the start pane.\n\nAccepts a CSS length with an explicit unit, e.g. `200px` or `50%`, or a\nunitless `0`. Setting `auto`, any other unitless or unparsable value, a\nnegative value, or a percentage above 100 falls back to automatic sizing.',
       control: 'text',
     },
     endSize: {
       type: 'string',
       description:
-        'The size of the end pane.\n\nAccepts a CSS length, e.g. `200px` or `50%`. Setting `auto`, a negative\nvalue, or a percentage above 100 falls back to automatic sizing.',
+        'The size of the end pane.\n\nAccepts a CSS length with an explicit unit, e.g. `200px` or `50%`, or a\nunitless `0`. Setting `auto`, any other unitless or unparsable value, a\nnegative value, or a percentage above 100 falls back to automatic sizing.',
       control: 'text',
     },
     startCollapsed: {
@@ -133,7 +133,13 @@ const metadata: Meta<IgcSplitterComponent> = {
 export default metadata;
 
 interface IgcSplitterArgs {
-  /** The orientation of the splitter, which determines the direction of resizing and collapsing. */
+  /**
+   * The orientation of the splitter, which determines the direction of resizing and collapsing.
+   *
+   * Changing the orientation after the initial render clears the pane sizes and
+   * their min/max constraints, along with the corresponding attributes - a size
+   * authored for one axis rarely makes sense on the other.
+   */
   orientation: 'horizontal' | 'vertical';
   /**
    * Whether collapsing either pane is disabled. When `true`, this also hides
@@ -162,43 +168,49 @@ interface IgcSplitterArgs {
   /**
    * The minimum size of the start pane.
    *
-   * Accepts a CSS length, e.g. `100px` or `20%`. Setting `auto`, a negative
-   * value, or a percentage above 100 removes the constraint.
+   * Accepts a CSS length with an explicit unit, e.g. `100px` or `20%`, or a
+   * unitless `0`. Setting `auto`, any other unitless or unparsable value, a
+   * negative value, or a percentage above 100 removes the constraint.
    */
   startMinSize: string;
   /**
    * The minimum size of the end pane.
    *
-   * Accepts a CSS length, e.g. `100px` or `20%`. Setting `auto`, a negative
-   * value, or a percentage above 100 removes the constraint.
+   * Accepts a CSS length with an explicit unit, e.g. `100px` or `20%`, or a
+   * unitless `0`. Setting `auto`, any other unitless or unparsable value, a
+   * negative value, or a percentage above 100 removes the constraint.
    */
   endMinSize: string;
   /**
    * The maximum size of the start pane.
    *
-   * Accepts a CSS length, e.g. `500px` or `80%`. Setting `auto`, a negative
-   * value, or a percentage above 100 removes the constraint.
+   * Accepts a CSS length with an explicit unit, e.g. `500px` or `80%`, or a
+   * unitless `0`. Setting `auto`, any other unitless or unparsable value, a
+   * negative value, or a percentage above 100 removes the constraint.
    */
   startMaxSize: string;
   /**
    * The maximum size of the end pane.
    *
-   * Accepts a CSS length, e.g. `500px` or `80%`. Setting `auto`, a negative
-   * value, or a percentage above 100 removes the constraint.
+   * Accepts a CSS length with an explicit unit, e.g. `500px` or `80%`, or a
+   * unitless `0`. Setting `auto`, any other unitless or unparsable value, a
+   * negative value, or a percentage above 100 removes the constraint.
    */
   endMaxSize: string;
   /**
    * The size of the start pane.
    *
-   * Accepts a CSS length, e.g. `200px` or `50%`. Setting `auto`, a negative
-   * value, or a percentage above 100 falls back to automatic sizing.
+   * Accepts a CSS length with an explicit unit, e.g. `200px` or `50%`, or a
+   * unitless `0`. Setting `auto`, any other unitless or unparsable value, a
+   * negative value, or a percentage above 100 falls back to automatic sizing.
    */
   startSize: string;
   /**
    * The size of the end pane.
    *
-   * Accepts a CSS length, e.g. `200px` or `50%`. Setting `auto`, a negative
-   * value, or a percentage above 100 falls back to automatic sizing.
+   * Accepts a CSS length with an explicit unit, e.g. `200px` or `50%`, or a
+   * unitless `0`. Setting `auto`, any other unitless or unparsable value, a
+   * negative value, or a percentage above 100 falls back to automatic sizing.
    */
   endSize: string;
   /**

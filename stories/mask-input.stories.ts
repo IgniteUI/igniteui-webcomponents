@@ -33,7 +33,7 @@ const metadata: Meta<IgcMaskInputComponent> = {
   },
   argTypes: {
     valueMode: {
-      type: '"raw" | "withFormatting"',
+      type: { name: 'enum', value: ['raw', 'withFormatting'] },
       description:
         'Dictates the behavior when retrieving the value of the control:\n\n- `raw`: Returns clean input (e.g. "5551234567")\n- `withFormatting`: Returns with mask formatting (e.g. "(555) 123-4567")\n\nEmpty values always return an empty string, regardless of the value mode.',
       options: ['raw', 'withFormatting'],

@@ -58,7 +58,23 @@ const metadata: Meta<IgcTooltipComponent> = {
       table: { defaultValue: { summary: '6' } },
     },
     placement: {
-      type: '"top" | "top-start" | "top-end" | "bottom" | "bottom-start" | "bottom-end" | "right" | "right-start" | "right-end" | "left" | "left-start" | "left-end"',
+      type: {
+        name: 'enum',
+        value: [
+          'top',
+          'top-start',
+          'top-end',
+          'bottom',
+          'bottom-start',
+          'bottom-end',
+          'right',
+          'right-start',
+          'right-end',
+          'left',
+          'left-start',
+          'left-end',
+        ],
+      },
       description: 'Where to place the tooltip relative to its anchor element.',
       options: [
         'top',
@@ -78,11 +94,9 @@ const metadata: Meta<IgcTooltipComponent> = {
       table: { defaultValue: { summary: 'bottom' } },
     },
     anchor: {
-      type: 'Element | string',
+      type: { name: 'other', value: 'Element | string' },
       description:
         'An element instance or an IDREF to use as the anchor for the tooltip.',
-      options: ['Element', 'string'],
-      control: { type: 'inline-radio' },
     },
     showTriggers: {
       type: 'string',

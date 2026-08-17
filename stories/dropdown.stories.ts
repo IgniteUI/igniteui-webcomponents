@@ -44,7 +44,23 @@ const metadata: Meta<IgcDropdownComponent> = {
   },
   argTypes: {
     placement: {
-      type: '"top" | "top-start" | "top-end" | "bottom" | "bottom-start" | "bottom-end" | "right" | "right-start" | "right-end" | "left" | "left-start" | "left-end"',
+      type: {
+        name: 'enum',
+        value: [
+          'top',
+          'top-start',
+          'top-end',
+          'bottom',
+          'bottom-start',
+          'bottom-end',
+          'right',
+          'right-start',
+          'right-end',
+          'left',
+          'left-start',
+          'left-end',
+        ],
+      },
       description:
         'The preferred placement of the component around the target element.',
       options: [
@@ -65,7 +81,7 @@ const metadata: Meta<IgcDropdownComponent> = {
       table: { defaultValue: { summary: 'bottom-start' } },
     },
     scrollStrategy: {
-      type: '"scroll" | "block" | "close"',
+      type: { name: 'enum', value: ['scroll', 'block', 'close'] },
       description:
         'Determines the behavior of the component during scrolling of the parent container.',
       options: ['scroll', 'block', 'close'],

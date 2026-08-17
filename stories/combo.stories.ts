@@ -108,7 +108,7 @@ const metadata: Meta<IgcComboComponent> = {
       control: 'text',
     },
     groupSorting: {
-      type: '"asc" | "desc" | "none"',
+      type: { name: 'enum', value: ['asc', 'desc', 'none'] },
       description:
         'Sorts the items in each group by ascending or descending order.',
       options: ['asc', 'desc', 'none'],
