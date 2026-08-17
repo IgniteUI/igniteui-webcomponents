@@ -1,20 +1,21 @@
 @use 'styles/utilities' as *;
 @use '../light/themes' as *;
+@use 'components/input/themes/light/themes' as input-theme;
 
 $theme: $indigo;
+$input-theme: input-theme.$indigo;
 
 :host {
     --_outline-size: #{rem(3px)};
     --_input-mode-trigger-size: #{sizable(rem(14px), rem(16px), rem(16px))};
     --_alpha-row-spacing: #{sizable(rem(8px), rem(12px), rem(16px))};
-    --_picker-rows-grid-template-columns: #{sizable(rem(96px), rem(104px), rem(112px))} auto #{sizable(rem(52px), rem(52px), rem(56px))};
+    --_picker-rows-grid-template-columns: #{minmax(auto, sizable(rem(190px), rem(210px), rem(244px))) 0 sizable(rem(56px), rem(60px), rem(68px))};
     --_swatches-row-gap: #{rem(12px)};
     --_input-row-gap: #{sizable(rem(8px), rem(12px), rem(16px))};
     --_label-spacing: #{rem(8px)};
+    --_picker-buttons-gap: #{sizable(rem(8px), rem(4px), rem(4px))};
     
     [part~='anchor'] {
-        margin: var(--_outline-size);
-
         &:focus-visible {
             &::after {
                 box-shadow: 0 0 0 var(--_outline-size) var-get($theme, 'anchor-outline-color');
@@ -25,6 +26,16 @@ $theme: $indigo;
             }
         }
     }
+    
+    [part='inputs-row'] {
+        grid-template-columns: min(sizable(rem(92px), rem(96px), rem(112px))) 1fr;
+    }
+    
+    [part='picker'] {
+        &:has([part~='swatches']) {
+            --_input-row-spacing: #{sizable(rem(20px), rem(24px), rem(28px))};
+        }
+    }
 
     [part='swatches'] {
         padding-block-start: 0;
@@ -32,5 +43,17 @@ $theme: $indigo;
 
     [part='label'] {
         @include type-style('body-1');
+    }
+
+    ::part(helper-text) {
+        grid-auto-rows: minmax(rem(15px), auto);
+    }
+}
+
+// Indigo keeps the helper text neutral while invalid - only the validation
+// icon and message carry the error color.
+:host(:not([disabled], :disabled):state(ig-invalid)) {
+    ::part(helper-text) {
+        color: var-get($input-theme, 'helper-text-color');
     }
 }

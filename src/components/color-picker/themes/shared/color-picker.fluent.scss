@@ -4,7 +4,9 @@
 $theme: $fluent;
 
 :host {
-    --_input-row-gap: #{sizable(rem(8px), rem(12px), rem(16px))};
+    --_picker-column-gap: #{sizable(rem(12px), rem(12px), rem(16px))};
+    --_swatches-spacing: #{sizable(rem(16px), rem(16px), rem(24px)) rem(16px) rem(16px) rem(16px)};
+    --_picker-buttons-gap: #{sizable(rem(8px), rem(4px), rem(4px))};
     --_label-spacing: #{rem(8px)};
     
     [part~='anchor'] {
@@ -20,5 +22,14 @@ $theme: $fluent;
 
     [part='label'] {
         @include type-style('body-2');
+    }
+
+    ::part(helper-text) {
+        grid-auto-rows: minmax(rem(18px), auto);
+        margin-block-start: pad-block(rem(5px));
+    }
+    
+    [part='inputs-row'] {
+        grid-template-columns: max(sizable(rem(96px), rem(104px), rem(112px))) 1fr;
     }
 }

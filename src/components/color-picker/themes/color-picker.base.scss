@@ -5,8 +5,20 @@
     display: inline-block;
 
     [part='color-picker'] {
-        display: inline-flex;
+        display: inline-grid;
+        grid-template-columns: auto auto 1fr;
         align-items: center;
+    }
+
+    ::part(helper-text) {
+        @include type-style('caption');
+        @include line-clamp(2, true, true);
+
+        overflow-wrap: anywhere;
+    }
+
+    slot[name='value-missing'] {
+        @include line-clamp(2, true, true);
     }
 
     input[type='range'] {
@@ -48,7 +60,6 @@
 
     [part='inputs-row'] {
         margin-block-end: var(--_input-row-spacing);
-        gap: var(--_input-row-gap);
 
         igc-input {
             grid-column: 2 / -1;
@@ -57,7 +68,6 @@
 
     [part='buttons'] {
         display: flex;
-        justify-content: space-between;
     }
 
     // The track and thumb presentation is declared in the common styles - each

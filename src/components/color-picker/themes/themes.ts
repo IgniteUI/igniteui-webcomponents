@@ -44,7 +44,7 @@ const dark = {
     ${bootstrap} ${bootstrapDark}
   `,
   material: css`
-    ${materialDark}
+    ${material} ${materialDark}
   `,
   fluent: css`
     ${fluent} ${fluentDark}

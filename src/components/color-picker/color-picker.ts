@@ -284,7 +284,7 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
    * @attr mode
    * @default 'default'
    */
-  @property()
+  @property({ reflect: true })
   public mode: ColorPickerMode = 'default';
 
   /**
@@ -1024,7 +1024,6 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
   private _renderHelperText(): TemplateResult {
     return IgcValidationContainerComponent.create(this, {
       id: 'helper-text',
-      slot: 'anchor',
       hasHelperText: true,
     });
   }
@@ -1061,13 +1060,14 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
     return html`
       <div part="color-picker">
         <igc-popover ?open=${this.open} shift flip>
-          ${this._renderAnchor()}${this._renderHelperText()}${this._renderPicker()}
+          ${this._renderAnchor()}${this._renderPicker()}
         </igc-popover>
         ${
           !this._isInputMode && this.label
             ? html`<label part="label" for="trigger">${this.label}</label>`
             : nothing
         }
+        ${this._renderHelperText()}
       </div>
     `;
   }

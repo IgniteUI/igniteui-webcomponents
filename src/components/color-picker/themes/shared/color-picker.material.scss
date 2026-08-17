@@ -6,4 +6,21 @@ $theme: $material;
 :host {
     --_label-spacing: #{rem(12px)};
     --_input-row-gap: #{sizable(rem(14px), rem(12px), rem(16px))};
+    --_swatches-spacing: #{sizable(rem(16px), rem(16px), rem(24px)) rem(16px) rem(16px) rem(16px)};
+
+    ::part(helper-text) {
+        grid-auto-rows: minmax(rem(18px), auto);
+    }
+    
+    [part='inputs-row'] {
+        grid-template-columns: max(sizable(rem(96px), rem(104px), rem(112px))) 1fr;
+    }
+}
+
+// The indent aligns the helper text with the input text, so it only applies
+// where the anchor is an input - the trigger button has no such inset.
+:host([mode='input']) {
+    ::part(helper-text) {
+        padding-inline: pad-inline(rem(12px), rem(14px), rem(16px));
+    }
 }

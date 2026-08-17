@@ -436,17 +436,29 @@ export const States: Story = {
   },
   render: () => html`
     ${samples}
-    <div class="samples">
-      <igc-color-picker label="No color selected"></igc-color-picker>
-      <igc-color-picker label="Disabled" value="#009688" disabled>
-      </igc-color-picker>
-      <igc-color-picker label="Invalid" invalid>
-        <p slot="invalid">Pick a color to continue</p>
-      </igc-color-picker>
-      <igc-color-picker label="No color selected" mode="input">
-      </igc-color-picker>
-      <igc-color-picker label="Disabled" mode="input" value="#009688" disabled>
-      </igc-color-picker>
+    <div style="display: flex; gap: 32px;">
+      <div style="display: grid; gap: 16px;">
+        <igc-color-picker label="No color selected" mode="input">
+        </igc-color-picker>
+        <igc-color-picker label="invalid" mode="input" value="#009688" invalid>
+          <p slot="helper-text">Pick a color to continue</p>
+        </igc-color-picker>
+        <igc-color-picker
+          label="Disabled"
+          mode="input"
+          value="#009688"
+          disabled
+        >
+        </igc-color-picker>
+      </div>
+      <div style="display: grid; gap: 16px; align-items: center">
+        <igc-color-picker label="No color selected"></igc-color-picker>
+        <igc-color-picker label="Invalid" invalid>
+          <p slot="helper-text">Pick a color to continue</p>
+        </igc-color-picker>
+        <igc-color-picker label="Disabled" value="#009688" disabled>
+        </igc-color-picker>
+      </div>
     </div>
   `,
 };
@@ -503,7 +515,7 @@ export const Form: Story = {
   render: () => html`
     ${samples}
     <form action="" @submit=${formSubmitHandler}>
-      <fieldset>
+      <fieldset style="display: grid; gap: 16px;">
         <igc-color-picker
           name="color-default"
           label="Default"
