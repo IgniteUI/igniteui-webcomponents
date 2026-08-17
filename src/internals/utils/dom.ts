@@ -1,4 +1,4 @@
-import { numberInRangeInclusive } from './math.js';
+import { asNumber, numberInRangeInclusive } from './math.js';
 import { merge } from './objects.js';
 import { isDefined } from './types.js';
 
@@ -7,6 +7,54 @@ import { isDefined } from './types.js';
  */
 export function isLTR(element: HTMLElement) {
   return element.matches(':dir(ltr)');
+}
+
+const LENGTH_PROPERTY = '--igc-resolved-length';
+let lengthPropertyRegistered = false;
+
+function registerLengthProperty(): void {
+  if (lengthPropertyRegistered) {
+    return;
+  }
+
+  lengthPropertyRegistered = true;
+
+  try {
+    CSS.registerProperty({
+      name: LENGTH_PROPERTY,
+      syntax: '<length>',
+      inherits: false,
+      initialValue: '0px',
+    });
+  } catch {
+    /* Already registered by another bundle instance. */
+  }
+}
+
+/**
+ * Resolves a CSS length to pixels in the context of `element`.
+ *
+ * A registered custom property computes to an absolute length, which lets the
+ * browser do the conversion for font, viewport and container relative units
+ * instead of them being read as raw numbers. Percentages are not lengths -
+ * resolve those against whatever basis applies to the property at hand.
+ *
+ * Returns 0 for percentages and for values that are not valid lengths.
+ *
+ * @example
+ * ```typescript
+ * resolveCssLength(element, '5rem'); // 80
+ * resolveCssLength(element, '2em'); // 2 x the element font size
+ * ```
+ */
+export function resolveCssLength(element: HTMLElement, value: string): number {
+  registerLengthProperty();
+
+  element.style.setProperty(LENGTH_PROPERTY, value);
+  const resolved = getComputedStyle(element).getPropertyValue(LENGTH_PROPERTY);
+  element.style.removeProperty(LENGTH_PROPERTY);
+
+  return asNumber(resolved);
 }
 
 export type IterNodesOptions<T = Node> = {

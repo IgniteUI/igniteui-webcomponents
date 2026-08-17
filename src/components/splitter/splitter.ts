@@ -19,7 +19,7 @@ import { registerComponent } from '#internals/definitions/register.js';
 import type { Constructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { partMap } from '#internals/part-map.js';
-import { isLTR } from '#internals/utils/dom.js';
+import { isLTR, resolveCssLength } from '#internals/utils/dom.js';
 import { bindIf } from '#internals/utils/lit.js';
 import {
   asNumber,
@@ -46,10 +46,15 @@ import type {
 
 const KEYBOARD_RESIZE_STEP = 10;
 
+const PANES = ['start', 'end'] as const satisfies readonly PanePosition[];
+
+/** Unitless values are rejected - they produce an invalid `flex` shorthand. */
+const CSS_LENGTH =
+  /^[+-]?(\d+\.?\d*|\.\d+)(%|px|em|rem|ch|ex|cap|ic|lh|rlh|vw|vh|vi|vb|vmin|vmax|cm|mm|q|in|pt|pc)$/i;
+
 const DEFAULT_RESIZE_STATE: SplitterResizeState = {
   startPane: null,
   endPane: null,
-  isDragging: false,
   dragStartPosition: { x: 0, y: 0 },
   dragPointerId: -1,
 };
@@ -132,6 +137,12 @@ const DEFAULT_RESIZE_STATE: SplitterResizeState = {
  * @csspart end-collapse-btn - The button to collapse the end panel.
  * @csspart start-expand-btn - The button to expand the start panel when collapsed.
  * @csspart end-expand-btn - The button to expand the end panel when collapsed.
+ *
+ * @remarks
+ * The bar holds two expander elements, one on either side of the drag handle,
+ * and each carries whichever part name applies to the current collapsed state.
+ * A part name is therefore not tied to a fixed side: with the end pane
+ * collapsed, `end-expand-btn` lands on the *first* of the two.
  */
 export default class IgcSplitterComponent extends EventEmitterMixin<
   IgcSplitterComponentEventMap,
@@ -163,8 +174,13 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   @state()
   private _collapsedPane: PanePosition | null = null;
 
-  @state()
+  /** Nothing in `render()` reads this, so it stays out of the reactive state. */
   private _resizeState: SplitterResizeState = { ...DEFAULT_RESIZE_STATE };
+
+  private _measurement: { container: number; bar: number } | null = null;
+
+  /** Container extent at the last resize notification we acted on. */
+  private _observedSize = -1;
 
   @query('[part~="base"]')
   private readonly _base!: HTMLElement;
@@ -177,6 +193,10 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
 
   private get _separator(): HTMLElement | undefined {
     return this._separatorRef.value;
+  }
+
+  private get _isDragging(): boolean {
+    return this._resizeState.dragPointerId !== -1;
   }
 
   private get _resizeDisallowed(): boolean {
@@ -200,6 +220,10 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
 
   /**
    * The orientation of the splitter, which determines the direction of resizing and collapsing.
+   *
+   * Changing the orientation after the initial render clears the pane sizes and
+   * their min/max constraints, along with the corresponding attributes - a size
+   * authored for one axis rarely makes sense on the other.
    * @attr orientation
    * @default 'horizontal'
    */
@@ -257,8 +281,9 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   /**
    * The minimum size of the start pane.
    *
-   * Accepts a CSS length, e.g. `100px` or `20%`. Setting `auto`, a negative
-   * value, or a percentage above 100 removes the constraint.
+   * Accepts a CSS length with an explicit unit, e.g. `100px` or `20%`. Setting
+   * `auto`, a unitless or otherwise unparsable value, a negative value, or a
+   * percentage above 100 removes the constraint.
    * @attr start-min-size
    */
   @property({ attribute: 'start-min-size' })
@@ -273,8 +298,9 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   /**
    * The minimum size of the end pane.
    *
-   * Accepts a CSS length, e.g. `100px` or `20%`. Setting `auto`, a negative
-   * value, or a percentage above 100 removes the constraint.
+   * Accepts a CSS length with an explicit unit, e.g. `100px` or `20%`. Setting
+   * `auto`, a unitless or otherwise unparsable value, a negative value, or a
+   * percentage above 100 removes the constraint.
    * @attr end-min-size
    */
   @property({ attribute: 'end-min-size' })
@@ -289,8 +315,9 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   /**
    * The maximum size of the start pane.
    *
-   * Accepts a CSS length, e.g. `500px` or `80%`. Setting `auto`, a negative
-   * value, or a percentage above 100 removes the constraint.
+   * Accepts a CSS length with an explicit unit, e.g. `500px` or `80%`. Setting
+   * `auto`, a unitless or otherwise unparsable value, a negative value, or a
+   * percentage above 100 removes the constraint.
    * @attr start-max-size
    */
   @property({ attribute: 'start-max-size' })
@@ -305,8 +332,9 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   /**
    * The maximum size of the end pane.
    *
-   * Accepts a CSS length, e.g. `500px` or `80%`. Setting `auto`, a negative
-   * value, or a percentage above 100 removes the constraint.
+   * Accepts a CSS length with an explicit unit, e.g. `500px` or `80%`. Setting
+   * `auto`, a unitless or otherwise unparsable value, a negative value, or a
+   * percentage above 100 removes the constraint.
    * @attr end-max-size
    */
   @property({ attribute: 'end-max-size' })
@@ -321,13 +349,14 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   /**
    * The size of the start pane.
    *
-   * Accepts a CSS length, e.g. `200px` or `50%`. Setting `auto`, a negative
-   * value, or a percentage above 100 falls back to automatic sizing.
+   * Accepts a CSS length with an explicit unit, e.g. `200px` or `50%`. Setting
+   * `auto`, a unitless or otherwise unparsable value, a negative value, or a
+   * percentage above 100 falls back to automatic sizing.
    * @attr start-size
    */
   @property({ attribute: 'start-size' })
   public set startSize(value: string | undefined) {
-    this._startPaneState.size = this._normalizeValue(value, 'auto');
+    this._setPaneSize('start', value);
   }
 
   public get startSize(): string | undefined {
@@ -337,13 +366,14 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   /**
    * The size of the end pane.
    *
-   * Accepts a CSS length, e.g. `200px` or `50%`. Setting `auto`, a negative
-   * value, or a percentage above 100 falls back to automatic sizing.
+   * Accepts a CSS length with an explicit unit, e.g. `200px` or `50%`. Setting
+   * `auto`, a unitless or otherwise unparsable value, a negative value, or a
+   * percentage above 100 falls back to automatic sizing.
    * @attr end-size
    */
   @property({ attribute: 'end-size' })
   public set endSize(value: string | undefined) {
-    this._endPaneState.size = this._normalizeValue(value, 'auto');
+    this._setPaneSize('end', value);
   }
 
   public get endSize(): string | undefined {
@@ -392,7 +422,7 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
     addSlotController(this, { slots: setSlots('start', 'end') });
 
     createResizeObserverController(this, {
-      callback: () => this.requestUpdate(),
+      callback: () => this._handleContainerResize(),
     });
 
     addKeybindings(this, {
@@ -419,13 +449,10 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   }
 
   protected override update(changed: PropertyValues<this>): void {
+    this._measurement = null;
+
     if (changed.get('orientation') != null) {
-      for (const pane of ['start', 'end'] as PanePosition[]) {
-        const state = this._getPaneState(pane);
-        state.size = 'auto';
-        state.minSize = undefined;
-        state.maxSize = undefined;
-      }
+      this._resetPaneSizes();
     }
 
     if (this.hasUpdated) {
@@ -436,7 +463,14 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   }
 
   protected override updated(): void {
+    // Layout has just been committed; the `update()` measurements are stale.
+    this._measurement = null;
     this._updateBarAria();
+  }
+
+  public override disconnectedCallback(): void {
+    this._endDrag();
+    super.disconnectedCallback();
   }
 
   //#endregion
@@ -444,7 +478,7 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   //#region Resize Event Handlers
 
   private _handleBarPointerDown(e: PointerEvent): void {
-    if (e.button !== 0) {
+    if (e.button !== 0 || this._isDragging) {
       return;
     }
 
@@ -452,7 +486,6 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
 
     this._resizeState = {
       ...this._resizeState,
-      isDragging: true,
       dragPointerId: e.pointerId,
       dragStartPosition: { x: e.clientX, y: e.clientY },
     };
@@ -488,10 +521,24 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
     this._endDrag();
   }
 
-  private _endDrag(): void {
-    if (this._resizeState.dragPointerId !== -1) {
-      this._separator?.releasePointerCapture(this._resizeState.dragPointerId);
+  /** A cancelled gesture reverts, but still reports an end for the start it emitted. */
+  private _handleCancelDrag(e: PointerEvent): void {
+    if (e.pointerId !== this._resizeState.dragPointerId) {
+      return;
     }
+
+    this._resizeEnd(0);
+    this._endDrag();
+  }
+
+  private _endDrag(): void {
+    const { dragPointerId } = this._resizeState;
+
+    // `releasePointerCapture` throws for a pointer that is no longer active.
+    if (this._separator?.hasPointerCapture(dragPointerId)) {
+      this._separator.releasePointerCapture(dragPointerId);
+    }
+
     this._resizeState = { ...DEFAULT_RESIZE_STATE };
   }
 
@@ -499,10 +546,13 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
 
   //#region Public Methods
 
-  /** Toggles the collapsed state of the specified pane. */
+  /**
+   * Toggles the collapsed state of the specified pane.
+   *
+   * Does not emit `igcLayoutChanged` - that event reports user-driven changes,
+   * and a programmatic call is already known to the caller.
+   */
   public toggle(position: PanePosition): void {
-    // If the requested pane is already collapsed, expand it (set to null)
-    // Otherwise, collapse the requested pane (this also handles switching from one collapsed pane to another)
     this._applyCollapse(this._collapsedPane === position ? null : position);
   }
 
@@ -515,12 +565,49 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
       this._savePaneSizes();
     }
 
+    const wasStartCollapsed = this._isCollapsed('start');
+    const wasEndCollapsed = this._isCollapsed('end');
+
     this._collapsedPane = target;
+
+    // `toggle()`, the expanders and Ctrl + arrow bypass the decorated accessors,
+    // and one assignment can change both flags. Request both so Lit reflects
+    // them from their getters instead of leaving one stale.
+    this.requestUpdate('startCollapsed', wasStartCollapsed);
+    this.requestUpdate('endCollapsed', wasEndCollapsed);
 
     this._internals.setState('start-collapsed', this._isCollapsed('start'));
     this._internals.setState('end-collapsed', this._isCollapsed('end'));
 
     this._restoreSizesOnExpandCollapse();
+  }
+
+  private _setPaneSize(pane: PanePosition, value: string | undefined): void {
+    this._getPaneState(pane).size = this._normalizeValue(value, 'auto');
+
+    // A size authored while collapsed outranks the pre-collapse snapshot. The
+    // whole snapshot goes - keeping the other pane's share would over-subscribe
+    // the container and leave both panes shrinking to fit.
+    if (this._collapsedPane !== null) {
+      for (const target of PANES) {
+        this._getPaneState(target).savedSize = undefined;
+      }
+    }
+  }
+
+  /** Drops the authored sizes and their attributes, which would otherwise diverge. */
+  private _resetPaneSizes(): void {
+    for (const pane of PANES) {
+      const state = this._getPaneState(pane);
+      state.size = 'auto';
+      state.minSize = undefined;
+      state.maxSize = undefined;
+      state.savedSize = undefined;
+
+      for (const suffix of ['size', 'min-size', 'max-size']) {
+        this.removeAttribute(`${pane}-${suffix}`);
+      }
+    }
   }
 
   private _setCollapsed(pane: PanePosition, value: boolean): void {
@@ -531,16 +618,17 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   }
 
   private _savePaneSizes(): void {
-    // Layout not measurable yet (e.g. collapsed state set before first render) -
-    // preserve the explicit size instead of losing it to the 'auto' reset below.
+    // Not measurable yet (collapsed before the first render) - keep the
+    // explicit size rather than lose it to the 'auto' reset.
     if (this._getTotalSize() === 0) {
       this._startPaneState.savedSize = this._startPaneState.size;
       this._endPaneState.savedSize = this._endPaneState.size;
       return;
     }
     // Higher precision than the ARIA percent so restored layouts don't drift.
-    this._startPaneState.savedSize = `${this._paneRectAsPercent(0, 2)}%`;
-    this._endPaneState.savedSize = `${this._paneRectAsPercent(1, 2)}%`;
+    const [start, end] = this._rectSize();
+    this._startPaneState.savedSize = `${this._asPercentOfContainer(start, 2)}%`;
+    this._endPaneState.savedSize = `${this._asPercentOfContainer(end, 2)}%`;
   }
 
   /* Reset sizes on collapse; restore saved sizes on expand */
@@ -555,31 +643,24 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
     }
   }
 
-  /** Measures the actual rendered size of a pane and returns it as a percentage of total size. */
-  private _paneRectAsPercent(paneIndex: 0 | 1, precision = 0): number {
-    const totalSize = this._getTotalSize();
-    if (totalSize === 0) {
-      return 0;
-    }
-    return roundPrecise(
-      asPercent(this._rectSize()[paneIndex], totalSize),
-      precision
-    );
+  /**
+   * The container is what the browser resolves a percentage `flex-basis`
+   * against, so a value measured this way survives a round trip through CSS.
+   */
+  private _asPercentOfContainer(size: number, precision = 0): number {
+    const containerSize = this._getContainerSize();
+    return containerSize === 0
+      ? 0
+      : roundPrecise(asPercent(size, containerSize), precision);
   }
 
-  /** Converts a CSS size string (px or %) to a percentage of total size. */
-  private _sizeToPercent(sizeValue: string): number {
-    const totalSize = this._getTotalSize();
-    if (totalSize === 0) {
-      return 0;
+  /** Resolves a CSS length to pixels, percentages against the container. */
+  private _toPixels(value: string): number {
+    if (value.endsWith('%')) {
+      return (asNumber(value) / 100) * this._getContainerSize();
     }
 
-    if (sizeValue.includes('%')) {
-      return asNumber(sizeValue);
-    }
-
-    const pxValue = asNumber(sizeValue);
-    return roundPrecise(asPercent(pxValue, totalSize), 0);
+    return this._base ? resolveCssLength(this._base, value) : 0;
   }
 
   private _getStartPaneSizePercent(): number {
@@ -591,25 +672,37 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
       return 100;
     }
 
-    return this._paneRectAsPercent(0);
+    return this._asPercentOfContainer(this._rectSize()[0]);
   }
 
   private _getMinMaxAsPercent(type: 'min' | 'max'): number {
     const value = type === 'min' ? this.startMinSize : this.startMaxSize;
-    const defaultValue = type === 'min' ? 0 : 100;
 
-    return value ? this._sizeToPercent(value) : defaultValue;
+    if (!value) {
+      return type === 'min' ? 0 : 100;
+    }
+
+    return this._asPercentOfContainer(this._toPixels(value));
   }
 
   private _isCollapsed(which: PanePosition): boolean {
     return this._collapsedPane === which;
   }
 
+  private _otherPane(pane: PanePosition): PanePosition {
+    return pane === 'start' ? 'end' : 'start';
+  }
+
   private _updateBarAria(): void {
-    if (this._separator) {
-      this._separator.ariaValueNow = this._getStartPaneSizePercent().toString();
-      this._separator.ariaValueMin = this._getMinMaxAsPercent('min').toString();
-      this._separator.ariaValueMax = this._getMinMaxAsPercent('max').toString();
+    const separator = this._separator;
+
+    if (separator) {
+      const value = this._getStartPaneSizePercent();
+
+      separator.ariaValueNow = value.toString();
+      separator.ariaValueText = `${value}%`;
+      separator.ariaValueMin = this._getMinMaxAsPercent('min').toString();
+      separator.ariaValueMax = this._getMinMaxAsPercent('max').toString();
     }
   }
 
@@ -631,7 +724,7 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
     fallback?: 'auto'
   ): string | undefined {
     const trimmed = value?.trim();
-    if (!trimmed || trimmed === 'auto') {
+    if (!trimmed || trimmed === 'auto' || !CSS_LENGTH.test(trimmed)) {
       return fallback;
     }
 
@@ -642,8 +735,8 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
     return trimmed;
   }
 
-  private _getFlex(which: PanePosition): string {
-    const isAuto = this._isAutoSize(which);
+  private _getFlex(which: PanePosition, forceAuto = false): string {
+    const isAuto = forceAuto || this._isAutoSize(which);
     const size = isAuto ? '0px' : this._getPaneState(which).size;
     return `${isAuto ? 1 : 0} 1 ${size}`;
   }
@@ -661,9 +754,19 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
       direction
     );
 
+    this._runResize(delta);
+  }
+
+  /**
+   * A complete resize for a non-pointer gesture. Sharing `_calcNewSizes` with
+   * the drag path is what keeps both panes' constraints honoured and the
+   * emitted sizes equal to the ones that actually render.
+   */
+  private _runResize(delta: number): void {
     this._resizeStart();
     this._resizing(delta);
     this._resizeEnd(delta);
+    this._endDrag();
   }
 
   @eventOptions({ passive: false })
@@ -682,58 +785,22 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
     return delta * rtlMultiplier * (direction ?? 1);
   }
 
+  /** Snaps the start pane to its minimum or maximum size. */
   private _handleMinMaxResize(type: 'min' | 'max'): void {
     if (this._resizeDisallowed) {
       return;
     }
 
-    const totalSize = this._getTotalSize();
-    const boundaryValue =
-      type === 'min' ? this.startMinSize : this.startMaxSize;
-    const isPercentage = boundaryValue
-      ? boundaryValue.includes('%')
-      : type === 'max';
-
     const targetStartSizePx =
-      this._setMinMaxInPx('start', type) ?? (type === 'min' ? 0 : totalSize);
-    const targetEndSizePx = totalSize - targetStartSizePx;
+      this._getConstraintInPx('start', type) ??
+      (type === 'min' ? 0 : this._getTotalSize());
 
-    const [initialStart, initialEnd] = this._rectSize();
-    const delta = targetStartSizePx - initialStart;
-
-    this.emitEvent('igcResizeStart', {
-      detail: { startPanelSize: initialStart, endPanelSize: initialEnd },
-    });
-    this.emitEvent('igcResizing', {
-      detail: {
-        startPanelSize: targetStartSizePx,
-        endPanelSize: targetEndSizePx,
-        delta,
-      },
-    });
-
-    if (isPercentage) {
-      this.startSize = `${roundPrecise(asPercent(targetStartSizePx, totalSize), 2)}%`;
-      this.endSize = `${roundPrecise(asPercent(targetEndSizePx, totalSize), 2)}%`;
-    } else {
-      this.startSize = `${targetStartSizePx}px`;
-      this.endSize = `${targetEndSizePx}px`;
-    }
-
-    this.emitEvent('igcResizeEnd', {
-      detail: {
-        startPanelSize: targetStartSizePx,
-        endPanelSize: targetEndSizePx,
-        delta,
-      },
-    });
-    this._emitLayoutChanged();
+    this._runResize(targetStartSizePx - this._rectSize()[0]);
   }
 
   private _handleExpanderAction(pane: PanePosition): void {
-    const other: PanePosition = pane === 'start' ? 'end' : 'start';
-    const target = this._collapsedPane === other ? other : pane;
-    this._toggleWithEvent(target);
+    const other = this._otherPane(pane);
+    this._toggleWithEvent(this._collapsedPane === other ? other : pane);
   }
 
   private _toggleWithEvent(position: PanePosition): void {
@@ -741,8 +808,8 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
     this._emitLayoutChanged();
   }
 
-  // While any pane is collapsed, both sizes are forced to 'auto' for rendering,
-  // so report the pre-collapse sizes instead - what a consumer needs to restore layout.
+  // Both sizes render as 'auto' while collapsed, so report the pre-collapse
+  // ones instead - those are what a consumer needs to restore the layout.
   private _reportedSize(pane: PanePosition): string {
     const state = this._getPaneState(pane);
     return (
@@ -767,29 +834,15 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
     if (this.disableCollapse || this.orientation !== validOrientation) {
       return;
     }
-    const effectiveTarget: PanePosition =
-      validOrientation === 'horizontal' && !isLTR(this)
-        ? target === 'start'
-          ? 'end'
-          : 'start'
-        : target;
-    this._handleExpanderAction(effectiveTarget);
+    const isFlipped = validOrientation === 'horizontal' && !isLTR(this);
+    this._handleExpanderAction(isFlipped ? this._otherPane(target) : target);
   }
 
   private _resizeStart(): void {
     const [startSize, endSize] = this._rectSize();
-    const totalSize = this._getTotalSize();
 
-    this._resizeState.startPane = this._createPaneState(
-      'start',
-      startSize,
-      totalSize
-    );
-    this._resizeState.endPane = this._createPaneState(
-      'end',
-      endSize,
-      totalSize
-    );
+    this._resizeState.startPane = this._createPaneState('start', startSize);
+    this._resizeState.endPane = this._createPaneState('end', endSize);
 
     this.emitEvent('igcResizeStart', {
       detail: { startPanelSize: startSize, endPanelSize: endSize },
@@ -798,36 +851,31 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
 
   private _createPaneState(
     pane: PanePosition,
-    size: number,
-    totalSize?: number
+    size: number
   ): PaneResizeSnapshot {
     return {
       initialSize: size,
       isPercentageBased: this._isPercentageSize(pane) || this._isAutoSize(pane),
-      minSizePx: this._setMinMaxInPx(pane, 'min', totalSize),
-      maxSizePx: this._setMinMaxInPx(pane, 'max', totalSize),
+      minSizePx: this._getConstraintInPx(pane, 'min'),
+      maxSizePx: this._getConstraintInPx(pane, 'max'),
     };
   }
 
-  private _setMinMaxInPx(
+  private _getConstraintInPx(
     pane: PanePosition,
-    type: 'min' | 'max',
-    totalSize?: number
+    type: 'min' | 'max'
   ): number | undefined {
-    const paneState = this._getPaneState(pane);
-    const value = type === 'max' ? paneState.maxSize : paneState.minSize;
-    const valueAsNumber = asNumber(value);
+    const { minSize, maxSize } = this._getPaneState(pane);
+    const value = type === 'max' ? maxSize : minSize;
 
-    if (!value) {
-      return undefined;
-    }
-
-    return value.includes('%')
-      ? (valueAsNumber / 100) * (totalSize ?? this._getTotalSize())
-      : valueAsNumber;
+    return value ? this._toPixels(value) : undefined;
   }
 
   private _resizing(delta: number): void {
+    if (!this._resizeState.startPane || !this._resizeState.endPane) {
+      return;
+    }
+
     const [startPaneSize, endPaneSize] = this._calcNewSizes(delta);
 
     this.startSize = `${startPaneSize}px`;
@@ -845,31 +893,29 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   private _computeSize(
     pane: PaneResizeSnapshot,
     paneSize: number,
-    totalSize: number
+    containerSize: number
   ): string {
     return pane.isPercentageBased
-      ? `${asPercent(paneSize, totalSize)}%`
+      ? `${asPercent(paneSize, containerSize)}%`
       : `${roundPrecise(paneSize, 0)}px`;
   }
 
   private _resizeEnd(delta: number): void {
-    if (!this._resizeState.startPane || !this._resizeState.endPane) {
+    const { startPane, endPane } = this._resizeState;
+
+    if (!startPane || !endPane) {
       return;
     }
 
-    const [startPaneSize, endPaneSize] = this._calcNewSizes(delta);
-    const totalSize = this._getTotalSize();
+    // A cancelled gesture reverts to the sizes captured at `_resizeStart`.
+    const [startPaneSize, endPaneSize] =
+      delta === 0
+        ? [startPane.initialSize, endPane.initialSize]
+        : this._calcNewSizes(delta);
+    const containerSize = this._getContainerSize();
 
-    this.startSize = this._computeSize(
-      this._resizeState.startPane,
-      startPaneSize,
-      totalSize
-    );
-    this.endSize = this._computeSize(
-      this._resizeState.endPane,
-      endPaneSize,
-      totalSize
-    );
+    this.startSize = this._computeSize(startPane, startPaneSize, containerSize);
+    this.endSize = this._computeSize(endPane, endPaneSize, containerSize);
 
     this.emitEvent('igcResizeEnd', {
       detail: {
@@ -915,39 +961,59 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
     return [start.initialSize + finalDelta, end.initialSize - finalDelta];
   }
 
-  private _getTotalSize(): number {
-    if (!this._base) {
-      return 0;
-    }
-
+  /**
+   * Reads the container and bar extents once per update pass - both
+   * `_updatePanes` and `_updateBarAria` need them, and the style writes in
+   * between would force a reflow for every repeated read.
+   */
+  private _measure(): { container: number; bar: number } {
     const axis = this._isHorizontal ? 'width' : 'height';
-    const barSize = this._separator
-      ? roundPrecise(this._separator.getBoundingClientRect()[axis])
-      : 0;
 
-    const rect = this._base.getBoundingClientRect();
-    const size = rect[axis];
-    return size - barSize;
+    this._measurement ??= {
+      container: this._base ? this._base.getBoundingClientRect()[axis] : 0,
+      bar: this._separator
+        ? roundPrecise(this._separator.getBoundingClientRect()[axis])
+        : 0,
+    };
+
+    return this._measurement;
+  }
+
+  /** The content box of the flex container - the basis for every percentage. */
+  private _getContainerSize(): number {
+    return this._measure().container;
+  }
+
+  /** The space left for the panes once the bar has taken its own. */
+  private _getTotalSize(): number {
+    const { container, bar } = this._measure();
+    return container === 0 ? 0 : container - bar;
+  }
+
+  private _handleContainerResize(): void {
+    this._measurement = null;
+    const size = this._getContainerSize();
+
+    if (size !== this._observedSize) {
+      this._observedSize = size;
+      this.requestUpdate();
+    }
   }
 
   private _updatePanes(): void {
-    const totalSize = this._getTotalSize();
     const isCollapsed = this._collapsedPane !== null;
 
-    for (const pane of ['start', 'end'] as PanePosition[]) {
-      const state = this._getPaneState(pane);
-      if (isCollapsed) {
-        state.size = 'auto';
-        state.minSize = undefined;
-        state.maxSize = undefined;
-      }
+    // A collapsed pane renders as `auto` with its constraints lifted, while the
+    // authored values stay untouched so they survive the round trip.
+    for (const pane of PANES) {
+      const { minSize, maxSize } = this._getPaneState(pane);
+
       this._setPaneMinMaxSizes(
         pane,
-        isCollapsed ? '0' : state.minSize,
-        isCollapsed ? '100%' : state.maxSize,
-        totalSize
+        isCollapsed ? '0' : minSize,
+        isCollapsed ? '100%' : maxSize
       );
-      this._updatePaneStyles(pane, { flex: this._getFlex(pane) });
+      this._updatePaneStyles(pane, { flex: this._getFlex(pane, isCollapsed) });
     }
   }
 
@@ -958,11 +1024,9 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   private _setPaneMinMaxSizes(
     pane: PanePosition,
     minSize?: string,
-    maxSize?: string,
-    totalSize?: number
+    maxSize?: string
   ): void {
-    const min =
-      this._ensureMinConstraintIsWithinBounds(pane, minSize, totalSize) ?? 0;
+    const min = this._ensureMinConstraintIsWithinBounds(pane, minSize) ?? 0;
     const max = maxSize ?? '100%';
 
     this._updatePaneStyles(
@@ -975,29 +1039,25 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
 
   private _ensureMinConstraintIsWithinBounds(
     pane: PanePosition,
-    minSize?: string,
-    totalSize?: number
+    minSize?: string
   ): string | undefined {
-    const total = totalSize ?? this._getTotalSize();
+    const total = this._getTotalSize();
 
-    if (minSize && total > 0) {
-      const minPx = this._setMinMaxInPx(pane, 'min', total) ?? 0;
-      const other: PanePosition = pane === 'start' ? 'end' : 'start';
-      const otherMinPx = this._getPaneState(other).minSize
-        ? (this._setMinMaxInPx(other, 'min', total) ?? 0)
-        : 0;
-
-      // Ignore constraint if it exceeds total or combined exceeds total to prevent content overflow
-      // Once container grows to accommodate the constraint, it will be applied
-      if (minPx > total || minPx + otherMinPx > total) {
-        return undefined;
-      }
+    if (!minSize || total <= 0) {
+      return minSize;
     }
-    return minSize;
+
+    const minPx = this._getConstraintInPx(pane, 'min') ?? 0;
+    const otherMinPx =
+      this._getConstraintInPx(this._otherPane(pane), 'min') ?? 0;
+
+    // Dropping a constraint the panes cannot both satisfy keeps content from
+    // overflowing. It is reapplied once the container grows to accommodate it.
+    return minPx + otherMinPx > total ? undefined : minSize;
   }
 
   private _handleExpanderClick(pane: PanePosition, event: PointerEvent): void {
-    // Prevent resize action being initiated
+    // Keep the bar from starting a resize
     event.stopPropagation();
     this._handleExpanderAction(pane);
   }
@@ -1007,7 +1067,7 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   //#region Rendering
 
   private _resolvePartNames(expander: PanePosition): Record<string, boolean> {
-    const other: PanePosition = expander === 'start' ? 'end' : 'start';
+    const other = this._otherPane(expander);
     const otherIsCollapsed = this._isCollapsed(other);
 
     return {
@@ -1040,7 +1100,10 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
 
   private _renderAccessibleLabel() {
     return html`
-      <igc-visually-hidden id="splitter-label">
+      <igc-visually-hidden id="splitter-label"
+        >Resize panes</igc-visually-hidden
+      >
+      <igc-visually-hidden id="splitter-state">
         ${
           this._isCollapsed('start')
             ? 'Start pane collapsed'
@@ -1053,7 +1116,6 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   }
 
   private _renderSeparator() {
-    const isDragging = this._resizeState.isDragging;
     const canResize = !this._resizeDisallowed;
 
     return html`
@@ -1064,15 +1126,16 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
         tabindex=${this.disableCollapse && this.disableResize ? -1 : 0}
         aria-controls="start-pane end-pane"
         aria-labelledby="splitter-label"
+        aria-describedby="splitter-state"
         aria-orientation=${this.orientation}
         style=${styleMap({ '--cursor': this._separatorCursor })}
         @touchstart=${bindIf(canResize, this._preventDefaultForEvent)}
         @contextmenu=${bindIf(canResize, this._preventDefaultForEvent)}
         @pointerdown=${bindIf(canResize, this._handleBarPointerDown)}
-        @pointermove=${bindIf(isDragging, this._handleBarPointerMove)}
-        @pointerup=${bindIf(isDragging, this._handleEndDrag)}
-        @lostpointercapture=${bindIf(isDragging, this._handleEndDrag)}
-        @pointercancel=${bindIf(isDragging, this._endDrag)}
+        @pointermove=${this._handleBarPointerMove}
+        @pointerup=${this._handleEndDrag}
+        @lostpointercapture=${this._handleEndDrag}
+        @pointercancel=${this._handleCancelDrag}
       >
         ${this._renderBarControls()}
       </div>
