@@ -258,7 +258,7 @@ class AdoptedStylesController implements ReactiveController {
 
   private readonly _host: ReactiveControllerHost & LitElement;
 
-  private _adoptedSheets: readonly CSSStyleSheet[] = [];
+  private _adoptedSheets: ReadonlySet<CSSStyleSheet> = new Set();
   private _shouldAdopt = false;
   private _hasAdoptedStyles = false;
 
@@ -355,7 +355,7 @@ class AdoptedStylesController implements ReactiveController {
 
     adoptStyles(shadowRoot, [...this._getHostSheets(shadowRoot), ...sheets]);
 
-    this._adoptedSheets = sheets;
+    this._adoptedSheets = new Set(sheets);
     this._hasAdoptedStyles = true;
 
     documentStyles.subscribe(this);
@@ -372,7 +372,7 @@ class AdoptedStylesController implements ReactiveController {
       adoptStyles(shadowRoot, this._getHostSheets(shadowRoot));
     }
 
-    this._adoptedSheets = [];
+    this._adoptedSheets = new Set();
     this._hasAdoptedStyles = false;
     this._documentStyles.unsubscribe(this);
   }
@@ -380,7 +380,7 @@ class AdoptedStylesController implements ReactiveController {
   /** Returns the stylesheets of the shadow root which are not managed by this controller. */
   private _getHostSheets(shadowRoot: ShadowRoot): CSSStyleSheet[] {
     return shadowRoot.adoptedStyleSheets.filter(
-      (sheet) => !this._adoptedSheets.includes(sheet)
+      (sheet) => !this._adoptedSheets.has(sheet)
     );
   }
 

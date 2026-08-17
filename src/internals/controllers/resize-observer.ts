@@ -71,7 +71,10 @@ class ResizeObserverController implements ReactiveController {
   public observe(target: Element): void {
     this._targets.add(target);
     this._observer.observe(target, this._config.options);
+    this._requestUpdate();
+  }
 
+  private _requestUpdate(): void {
     if (this._config.requestUpdate ?? true) {
       this._host.requestUpdate();
     }
@@ -86,7 +89,11 @@ class ResizeObserverController implements ReactiveController {
   /** @internal */
   public hostConnected(): void {
     for (const target of this._targets) {
-      this.observe(target);
+      this._observer.observe(target, this._config.options);
+    }
+
+    if (this._targets.size > 0) {
+      this._requestUpdate();
     }
   }
 

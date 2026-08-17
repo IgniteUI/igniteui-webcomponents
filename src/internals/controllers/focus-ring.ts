@@ -53,8 +53,12 @@ class KeyboardFocusRingController implements ReactiveController {
 
   /** @internal */
   public handleEvent(event: Event): void {
-    this._isKeyboardFocused = event.type === 'keyup';
-    this._host.requestUpdate();
+    const focused = event.type === 'keyup';
+
+    if (focused !== this._isKeyboardFocused) {
+      this._isKeyboardFocused = focused;
+      this._host.requestUpdate();
+    }
   }
 }
 
