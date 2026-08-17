@@ -1,10 +1,5 @@
 {
   "extends": "../tsconfig.json",
-  "exclude": [
-    "../vite.config.ts",
-    "../**/*.spec.ts",
-    "../stories"
-  ],
   "compilerOptions": {
     "outDir": "../dist",
     "rootDir": "../src",
@@ -12,7 +7,6 @@
     "declarationMap": false,
     "removeComments": true
   },
-  "include": [
-    "../**/*.ts"
-  ]
+  "include": ["../src/**/*.ts"],
+  "exclude": ["../src/**/*.spec.ts"]
 }

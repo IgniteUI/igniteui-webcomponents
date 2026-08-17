@@ -33,15 +33,8 @@ const themes = import.meta.glob<ThemeImport>(
   }
 );
 
-const getTheme = ({ theme, variant }) => {
-  const matcher = `../src/styles/themes/${variant}/${theme}.css.ts`;
-
-  for (const [path, styles] of Object.entries(themes)) {
-    if (path === matcher) {
-      return styles;
-    }
-  }
-};
+const getTheme = ({ theme, variant }: { theme: string; variant: string }) =>
+  themes[`../src/styles/themes/${variant}/${theme}.css.ts`];
 
 const getSize = (size: 'small' | 'medium' | 'large' | 'default') => {
   if (size === 'default') {

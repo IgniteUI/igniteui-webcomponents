@@ -54,7 +54,7 @@ const metadata: Meta<IgcVirtualScrollComponent> = {
   },
   argTypes: {
     orientation: {
-      type: '"vertical" | "horizontal"',
+      type: { name: 'enum', value: ['vertical', 'horizontal'] },
       description: 'Scroll orientation of the virtual scroll.',
       options: ['vertical', 'horizontal'],
       control: { type: 'inline-radio' },

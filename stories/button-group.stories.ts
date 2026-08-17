@@ -73,14 +73,14 @@ const metadata: Meta<IgcButtonGroupComponent> = {
       table: { defaultValue: { summary: 'false' } },
     },
     alignment: {
-      type: '"horizontal" | "vertical"',
+      type: { name: 'enum', value: ['horizontal', 'vertical'] },
       description: 'Sets the orientation of the buttons in the group.',
       options: ['horizontal', 'vertical'],
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'horizontal' } },
     },
     selection: {
-      type: '"single" | "single-required" | "multiple"',
+      type: { name: 'enum', value: ['single', 'single-required', 'multiple'] },
       description: 'Controls the mode of selection for the button group.',
       options: ['single', 'single-required', 'multiple'],
       control: { type: 'inline-radio' },

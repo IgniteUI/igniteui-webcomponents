@@ -44,14 +44,17 @@ const metadata: Meta<IgcThemeProviderComponent> = {
   },
   argTypes: {
     theme: {
-      type: '"material" | "bootstrap" | "indigo" | "fluent"',
+      type: {
+        name: 'enum',
+        value: ['material', 'bootstrap', 'indigo', 'fluent'],
+      },
       description: 'The theme to provide to descendant components.',
       options: ['material', 'bootstrap', 'indigo', 'fluent'],
       control: { type: 'select' },
       table: { defaultValue: { summary: 'bootstrap' } },
     },
     variant: {
-      type: '"light" | "dark"',
+      type: { name: 'enum', value: ['light', 'dark'] },
       description: 'The theme variant to provide to descendant components.',
       options: ['light', 'dark'],
       control: { type: 'inline-radio' },

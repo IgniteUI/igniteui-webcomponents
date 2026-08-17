@@ -41,14 +41,14 @@ const metadata: Meta<IgcCalendarComponent> = {
       table: { defaultValue: { summary: 'false' } },
     },
     headerOrientation: {
-      type: '"horizontal" | "vertical"',
+      type: { name: 'enum', value: ['horizontal', 'vertical'] },
       description: 'The orientation of the calendar header.',
       options: ['horizontal', 'vertical'],
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'horizontal' } },
     },
     orientation: {
-      type: '"horizontal" | "vertical"',
+      type: { name: 'enum', value: ['horizontal', 'vertical'] },
       description:
         'The orientation of the calendar months when more than one month\nis being shown.',
       options: ['horizontal', 'vertical'],
@@ -62,26 +62,26 @@ const metadata: Meta<IgcCalendarComponent> = {
       table: { defaultValue: { summary: '1' } },
     },
     activeView: {
-      type: '"days" | "months" | "years"',
+      type: { name: 'enum', value: ['days', 'months', 'years'] },
       description: 'The current active view of the component.',
       options: ['days', 'months', 'years'],
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'days' } },
     },
     value: {
-      type: 'Date',
+      type: 'date',
       description:
         'The current value of the calendar.\nUsed when selection is set to single',
       control: 'date',
     },
     activeDate: {
-      type: 'Date',
+      type: 'date',
       description:
         'Get/Set the date which is shown in view and is highlighted. By default it is the current date.',
       control: 'date',
     },
     selection: {
-      type: '"single" | "multiple" | "range"',
+      type: { name: 'enum', value: ['single', 'multiple', 'range'] },
       description: 'Sets the type of selection in the component.',
       options: ['single', 'multiple', 'range'],
       control: { type: 'inline-radio' },
@@ -94,7 +94,18 @@ const metadata: Meta<IgcCalendarComponent> = {
       table: { defaultValue: { summary: 'false' } },
     },
     weekStart: {
-      type: '"sunday" | "monday" | "tuesday" | "wednesday" | "thursday" | "friday" | "saturday"',
+      type: {
+        name: 'enum',
+        value: [
+          'sunday',
+          'monday',
+          'tuesday',
+          'wednesday',
+          'thursday',
+          'friday',
+          'saturday',
+        ],
+      },
       description: 'Gets/Sets the first day of the week.',
       options: [
         'sunday',
@@ -207,11 +218,21 @@ Object.assign(metadata.args!, {
   monthFormat: 'long',
 });
 
+/** The knobs added above are not attributes, so they are not in the generated args. */
+type CalendarStory = StoryObj<
+  IgcCalendarArgs & {
+    weekDayFormat: 'long' | 'short' | 'narrow';
+    monthFormat: 'numeric' | '2-digit' | 'long' | 'short' | 'narrow';
+    title: string;
+    values: string;
+  }
+>;
+
 const today = new Date();
 const currentYear = today.getFullYear();
 const currentMonth = today.getMonth();
 
-export const Basic: Story = {
+export const Basic: CalendarStory = {
   render: (args) => html`
     <igc-calendar
       ?hide-header=${args.hideHeader}

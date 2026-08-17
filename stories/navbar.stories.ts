@@ -73,7 +73,7 @@ export const Basic: Story = {
       },
     },
   },
-  render: ({ content }: IgcNavbarArgs) => html`
+  render: ({ content }) => html`
     <igc-navbar>
       <igc-icon-button slot="start" variant="flat">
         <igc-icon name="home"></igc-icon>
@@ -107,7 +107,7 @@ export const WithSearch: Story = {
     },
   },
   args: { content: 'My App' },
-  render: ({ content }: IgcNavbarArgs) => html`
+  render: ({ content }) => html`
     <igc-navbar>
       <igc-icon-button slot="start" variant="flat">
         <igc-icon name="home"></igc-icon>
@@ -138,7 +138,7 @@ export const TitleOnly: Story = {
       },
     },
   },
-  render: ({ content }: IgcNavbarArgs) => html`
+  render: ({ content }) => html`
     <igc-navbar>
       <h2>${ifDefined(content)}</h2>
     </igc-navbar>

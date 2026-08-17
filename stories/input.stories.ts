@@ -42,7 +42,10 @@ const metadata: Meta<IgcInputComponent> = {
       control: 'text',
     },
     type: {
-      type: '"text" | "email" | "number" | "password" | "search" | "tel" | "url"',
+      type: {
+        name: 'enum',
+        value: ['text', 'email', 'number', 'password', 'search', 'tel', 'url'],
+      },
       description: 'The type of the control.',
       options: ['text', 'email', 'number', 'password', 'search', 'tel', 'url'],
       control: { type: 'select' },
