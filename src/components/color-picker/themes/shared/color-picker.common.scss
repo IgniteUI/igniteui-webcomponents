@@ -92,7 +92,7 @@ $theme: $material;
     
     // Row and swatch spacing
     --_input-row-spacing: #{rem(16px)};
-    --_input-row-gap: #{sizable(rem(8px), rem(12px), rem(16px))};
+    --_input-row-gap: #{rem(12px)};
     --_alpha-row-spacing: #{sizable(rem(8px), rem(12px), rem(24px))};
     --_swatches-spacing: #{rem(16px)};
     --_swatches-row-gap: #{rem(8px)};
@@ -224,6 +224,8 @@ $theme: $material;
 
     [part='label'] {
         @include type-style('subtitle-1');
+        
+        margin-inline-start: var(--_label-spacing);
     }
 
     // Trigger
@@ -297,7 +299,7 @@ $theme: $material;
         &:active {
             background: var-get($theme, 'anchor-background-active');
 
-            &:focus {
+            &:focus-visible {
                 background: var-get($theme, 'anchor-background-focus-active');
             }
         }

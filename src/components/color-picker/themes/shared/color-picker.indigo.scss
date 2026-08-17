@@ -9,7 +9,9 @@ $theme: $indigo;
     --_alpha-row-spacing: #{sizable(rem(8px), rem(12px), rem(16px))};
     --_picker-rows-grid-template-columns: #{sizable(rem(96px), rem(104px), rem(112px))} auto #{sizable(rem(52px), rem(52px), rem(56px))};
     --_swatches-row-gap: #{rem(12px)};
-
+    --_input-row-gap: #{sizable(rem(8px), rem(12px), rem(16px))};
+    --_label-spacing: #{rem(8px)};
+    
     [part~='anchor'] {
         margin: var(--_outline-size);
 

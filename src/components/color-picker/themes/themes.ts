@@ -16,6 +16,7 @@ import { styles as shared } from './light/color-picker.shared.css.js';
 import { styles as bootstrap } from './shared/color-picker.bootstrap.css.js';
 import { styles as fluent } from './shared/color-picker.fluent.css.js';
 import { styles as indigo } from './shared/color-picker.indigo.css.js';
+import { styles as material } from './shared/color-picker.material.css.js';
 
 const light = {
   shared: css`
@@ -25,7 +26,7 @@ const light = {
     ${bootstrap} ${bootstrapLight}
   `,
   material: css`
-    ${materialLight}
+    ${material} ${materialLight}
   `,
   fluent: css`
     ${fluent} ${fluentLight}
