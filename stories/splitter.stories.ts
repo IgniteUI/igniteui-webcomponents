@@ -71,37 +71,37 @@ const metadata: Meta<IgcSplitterComponent> = {
     startMinSize: {
       type: 'string',
       description:
-        'The minimum size of the start pane.\n\nAccepts a CSS length with an explicit unit, e.g. `100px` or `20%`. Setting\n`auto`, a unitless or otherwise unparsable value, a negative value, or a\npercentage above 100 removes the constraint.',
+        'The minimum size of the start pane.\n\nAccepts a CSS length with an explicit unit, e.g. `100px` or `20%`, or a\nunitless `0`. Setting `auto`, any other unitless or unparsable value, a\nnegative value, or a percentage above 100 removes the constraint.',
       control: 'text',
     },
     endMinSize: {
       type: 'string',
       description:
-        'The minimum size of the end pane.\n\nAccepts a CSS length with an explicit unit, e.g. `100px` or `20%`. Setting\n`auto`, a unitless or otherwise unparsable value, a negative value, or a\npercentage above 100 removes the constraint.',
+        'The minimum size of the end pane.\n\nAccepts a CSS length with an explicit unit, e.g. `100px` or `20%`, or a\nunitless `0`. Setting `auto`, any other unitless or unparsable value, a\nnegative value, or a percentage above 100 removes the constraint.',
       control: 'text',
     },
     startMaxSize: {
       type: 'string',
       description:
-        'The maximum size of the start pane.\n\nAccepts a CSS length with an explicit unit, e.g. `500px` or `80%`. Setting\n`auto`, a unitless or otherwise unparsable value, a negative value, or a\npercentage above 100 removes the constraint.',
+        'The maximum size of the start pane.\n\nAccepts a CSS length with an explicit unit, e.g. `500px` or `80%`, or a\nunitless `0`. Setting `auto`, any other unitless or unparsable value, a\nnegative value, or a percentage above 100 removes the constraint.',
       control: 'text',
     },
     endMaxSize: {
       type: 'string',
       description:
-        'The maximum size of the end pane.\n\nAccepts a CSS length with an explicit unit, e.g. `500px` or `80%`. Setting\n`auto`, a unitless or otherwise unparsable value, a negative value, or a\npercentage above 100 removes the constraint.',
+        'The maximum size of the end pane.\n\nAccepts a CSS length with an explicit unit, e.g. `500px` or `80%`, or a\nunitless `0`. Setting `auto`, any other unitless or unparsable value, a\nnegative value, or a percentage above 100 removes the constraint.',
       control: 'text',
     },
     startSize: {
       type: 'string',
       description:
-        'The size of the start pane.\n\nAccepts a CSS length with an explicit unit, e.g. `200px` or `50%`. Setting\n`auto`, a unitless or otherwise unparsable value, a negative value, or a\npercentage above 100 falls back to automatic sizing.',
+        'The size of the start pane.\n\nAccepts a CSS length with an explicit unit, e.g. `200px` or `50%`, or a\nunitless `0`. Setting `auto`, any other unitless or unparsable value, a\nnegative value, or a percentage above 100 falls back to automatic sizing.',
       control: 'text',
     },
     endSize: {
       type: 'string',
       description:
-        'The size of the end pane.\n\nAccepts a CSS length with an explicit unit, e.g. `200px` or `50%`. Setting\n`auto`, a unitless or otherwise unparsable value, a negative value, or a\npercentage above 100 falls back to automatic sizing.',
+        'The size of the end pane.\n\nAccepts a CSS length with an explicit unit, e.g. `200px` or `50%`, or a\nunitless `0`. Setting `auto`, any other unitless or unparsable value, a\nnegative value, or a percentage above 100 falls back to automatic sizing.',
       control: 'text',
     },
     startCollapsed: {
@@ -168,49 +168,49 @@ interface IgcSplitterArgs {
   /**
    * The minimum size of the start pane.
    *
-   * Accepts a CSS length with an explicit unit, e.g. `100px` or `20%`. Setting
-   * `auto`, a unitless or otherwise unparsable value, a negative value, or a
-   * percentage above 100 removes the constraint.
+   * Accepts a CSS length with an explicit unit, e.g. `100px` or `20%`, or a
+   * unitless `0`. Setting `auto`, any other unitless or unparsable value, a
+   * negative value, or a percentage above 100 removes the constraint.
    */
   startMinSize: string;
   /**
    * The minimum size of the end pane.
    *
-   * Accepts a CSS length with an explicit unit, e.g. `100px` or `20%`. Setting
-   * `auto`, a unitless or otherwise unparsable value, a negative value, or a
-   * percentage above 100 removes the constraint.
+   * Accepts a CSS length with an explicit unit, e.g. `100px` or `20%`, or a
+   * unitless `0`. Setting `auto`, any other unitless or unparsable value, a
+   * negative value, or a percentage above 100 removes the constraint.
    */
   endMinSize: string;
   /**
    * The maximum size of the start pane.
    *
-   * Accepts a CSS length with an explicit unit, e.g. `500px` or `80%`. Setting
-   * `auto`, a unitless or otherwise unparsable value, a negative value, or a
-   * percentage above 100 removes the constraint.
+   * Accepts a CSS length with an explicit unit, e.g. `500px` or `80%`, or a
+   * unitless `0`. Setting `auto`, any other unitless or unparsable value, a
+   * negative value, or a percentage above 100 removes the constraint.
    */
   startMaxSize: string;
   /**
    * The maximum size of the end pane.
    *
-   * Accepts a CSS length with an explicit unit, e.g. `500px` or `80%`. Setting
-   * `auto`, a unitless or otherwise unparsable value, a negative value, or a
-   * percentage above 100 removes the constraint.
+   * Accepts a CSS length with an explicit unit, e.g. `500px` or `80%`, or a
+   * unitless `0`. Setting `auto`, any other unitless or unparsable value, a
+   * negative value, or a percentage above 100 removes the constraint.
    */
   endMaxSize: string;
   /**
    * The size of the start pane.
    *
-   * Accepts a CSS length with an explicit unit, e.g. `200px` or `50%`. Setting
-   * `auto`, a unitless or otherwise unparsable value, a negative value, or a
-   * percentage above 100 falls back to automatic sizing.
+   * Accepts a CSS length with an explicit unit, e.g. `200px` or `50%`, or a
+   * unitless `0`. Setting `auto`, any other unitless or unparsable value, a
+   * negative value, or a percentage above 100 falls back to automatic sizing.
    */
   startSize: string;
   /**
    * The size of the end pane.
    *
-   * Accepts a CSS length with an explicit unit, e.g. `200px` or `50%`. Setting
-   * `auto`, a unitless or otherwise unparsable value, a negative value, or a
-   * percentage above 100 falls back to automatic sizing.
+   * Accepts a CSS length with an explicit unit, e.g. `200px` or `50%`, or a
+   * unitless `0`. Setting `auto`, any other unitless or unparsable value, a
+   * negative value, or a percentage above 100 falls back to automatic sizing.
    */
   endSize: string;
   /**

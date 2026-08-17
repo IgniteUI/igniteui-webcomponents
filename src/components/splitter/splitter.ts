@@ -48,9 +48,12 @@ const KEYBOARD_RESIZE_STEP = 10;
 
 const PANES = ['start', 'end'] as const satisfies readonly PanePosition[];
 
-/** Unitless values are rejected - they produce an invalid `flex` shorthand. */
+/** A number carrying a percentage sign or one of the CSS length units. */
 const CSS_LENGTH =
   /^[+-]?(\d+\.?\d*|\.\d+)(%|px|em|rem|ch|ex|cap|ic|lh|rlh|vw|vh|vi|vb|vmin|vmax|cm|mm|q|in|pt|pc)$/i;
+
+/** A bare number, with no unit at all. */
+const UNITLESS_NUMBER = /^[+-]?(\d+\.?\d*|\.\d+)$/;
 
 const DEFAULT_RESIZE_STATE: SplitterResizeState = {
   startPane: null,
@@ -174,7 +177,6 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   @state()
   private _collapsedPane: PanePosition | null = null;
 
-  /** Nothing in `render()` reads this, so it stays out of the reactive state. */
   private _resizeState: SplitterResizeState = { ...DEFAULT_RESIZE_STATE };
 
   private _measurement: { container: number; bar: number } | null = null;
@@ -281,9 +283,9 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   /**
    * The minimum size of the start pane.
    *
-   * Accepts a CSS length with an explicit unit, e.g. `100px` or `20%`. Setting
-   * `auto`, a unitless or otherwise unparsable value, a negative value, or a
-   * percentage above 100 removes the constraint.
+   * Accepts a CSS length with an explicit unit, e.g. `100px` or `20%`, or a
+   * unitless `0`. Setting `auto`, any other unitless or unparsable value, a
+   * negative value, or a percentage above 100 removes the constraint.
    * @attr start-min-size
    */
   @property({ attribute: 'start-min-size' })
@@ -298,9 +300,9 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   /**
    * The minimum size of the end pane.
    *
-   * Accepts a CSS length with an explicit unit, e.g. `100px` or `20%`. Setting
-   * `auto`, a unitless or otherwise unparsable value, a negative value, or a
-   * percentage above 100 removes the constraint.
+   * Accepts a CSS length with an explicit unit, e.g. `100px` or `20%`, or a
+   * unitless `0`. Setting `auto`, any other unitless or unparsable value, a
+   * negative value, or a percentage above 100 removes the constraint.
    * @attr end-min-size
    */
   @property({ attribute: 'end-min-size' })
@@ -315,9 +317,9 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   /**
    * The maximum size of the start pane.
    *
-   * Accepts a CSS length with an explicit unit, e.g. `500px` or `80%`. Setting
-   * `auto`, a unitless or otherwise unparsable value, a negative value, or a
-   * percentage above 100 removes the constraint.
+   * Accepts a CSS length with an explicit unit, e.g. `500px` or `80%`, or a
+   * unitless `0`. Setting `auto`, any other unitless or unparsable value, a
+   * negative value, or a percentage above 100 removes the constraint.
    * @attr start-max-size
    */
   @property({ attribute: 'start-max-size' })
@@ -332,9 +334,9 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   /**
    * The maximum size of the end pane.
    *
-   * Accepts a CSS length with an explicit unit, e.g. `500px` or `80%`. Setting
-   * `auto`, a unitless or otherwise unparsable value, a negative value, or a
-   * percentage above 100 removes the constraint.
+   * Accepts a CSS length with an explicit unit, e.g. `500px` or `80%`, or a
+   * unitless `0`. Setting `auto`, any other unitless or unparsable value, a
+   * negative value, or a percentage above 100 removes the constraint.
    * @attr end-max-size
    */
   @property({ attribute: 'end-max-size' })
@@ -349,9 +351,9 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   /**
    * The size of the start pane.
    *
-   * Accepts a CSS length with an explicit unit, e.g. `200px` or `50%`. Setting
-   * `auto`, a unitless or otherwise unparsable value, a negative value, or a
-   * percentage above 100 falls back to automatic sizing.
+   * Accepts a CSS length with an explicit unit, e.g. `200px` or `50%`, or a
+   * unitless `0`. Setting `auto`, any other unitless or unparsable value, a
+   * negative value, or a percentage above 100 falls back to automatic sizing.
    * @attr start-size
    */
   @property({ attribute: 'start-size' })
@@ -366,9 +368,9 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   /**
    * The size of the end pane.
    *
-   * Accepts a CSS length with an explicit unit, e.g. `200px` or `50%`. Setting
-   * `auto`, a unitless or otherwise unparsable value, a negative value, or a
-   * percentage above 100 falls back to automatic sizing.
+   * Accepts a CSS length with an explicit unit, e.g. `200px` or `50%`, or a
+   * unitless `0`. Setting `auto`, any other unitless or unparsable value, a
+   * negative value, or a percentage above 100 falls back to automatic sizing.
    * @attr end-size
    */
   @property({ attribute: 'end-size' })
@@ -724,7 +726,7 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
     fallback?: 'auto'
   ): string | undefined {
     const trimmed = value?.trim();
-    if (!trimmed || trimmed === 'auto' || !CSS_LENGTH.test(trimmed)) {
+    if (!trimmed || trimmed === 'auto') {
       return fallback;
     }
 
@@ -732,7 +734,11 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
     if (numericValue < 0) return fallback;
     if (trimmed.includes('%') && numericValue > 100) return fallback;
 
-    return trimmed;
+    // Zero is the one length that needs no unit; any other bare number is
+    // invalid CSS and would silently drop the whole `flex` shorthand.
+    const isUnitlessZero = numericValue === 0 && UNITLESS_NUMBER.test(trimmed);
+
+    return isUnitlessZero || CSS_LENGTH.test(trimmed) ? trimmed : fallback;
   }
 
   private _getFlex(which: PanePosition, forceAuto = false): string {

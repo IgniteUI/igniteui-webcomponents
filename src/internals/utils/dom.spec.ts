@@ -52,5 +52,24 @@ describe('DOM utilities', () => {
       resolveCssLength(element, '3rem');
       expect(element.getAttribute('style')).to.equal('font-size: 20px;');
     });
+
+    it('should restore a custom property the caller had already set inline', () => {
+      element.style.setProperty('--igc-resolved-length', '7px');
+
+      expect(resolveCssLength(element, '3rem')).to.equal(48);
+      expect(element.style.getPropertyValue('--igc-resolved-length')).to.equal(
+        '7px'
+      );
+    });
+
+    it('should preserve the priority of a restored custom property', () => {
+      element.style.setProperty('--igc-resolved-length', '7px', 'important');
+
+      resolveCssLength(element, '3rem');
+
+      expect(
+        element.style.getPropertyPriority('--igc-resolved-length')
+      ).to.equal('important');
+    });
   });
 });

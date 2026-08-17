@@ -1,3 +1,4 @@
+import { isServer } from 'lit';
 import { asNumber, numberInRangeInclusive } from './math.js';
 import { merge } from './objects.js';
 import { isDefined } from './types.js';
@@ -10,25 +11,33 @@ export function isLTR(element: HTMLElement) {
 }
 
 const LENGTH_PROPERTY = '--igc-resolved-length';
-let lengthPropertyRegistered = false;
 
-function registerLengthProperty(): void {
-  if (lengthPropertyRegistered) {
-    return;
+const SUPPORTS_REGISTERED_PROPERTIES =
+  !isServer && typeof CSS !== 'undefined' && 'registerProperty' in CSS;
+
+let lengthPropertyUsable: boolean | undefined;
+
+function canResolveLengths(): boolean {
+  if (lengthPropertyUsable === undefined) {
+    lengthPropertyUsable = SUPPORTS_REGISTERED_PROPERTIES;
+
+    if (lengthPropertyUsable) {
+      try {
+        CSS.registerProperty({
+          name: LENGTH_PROPERTY,
+          syntax: '<length>',
+          inherits: false,
+          initialValue: '0px',
+        });
+      } catch {
+        // The descriptor is a constant, so the only realistic rejection is a
+        // duplicate registration from another bundle instance - which leaves
+        // the property just as usable.
+      }
+    }
   }
 
-  lengthPropertyRegistered = true;
-
-  try {
-    CSS.registerProperty({
-      name: LENGTH_PROPERTY,
-      syntax: '<length>',
-      inherits: false,
-      initialValue: '0px',
-    });
-  } catch {
-    /* Already registered by another bundle instance. */
-  }
+  return lengthPropertyUsable;
 }
 
 /**
@@ -39,7 +48,10 @@ function registerLengthProperty(): void {
  * instead of them being read as raw numbers. Percentages are not lengths -
  * resolve those against whatever basis applies to the property at hand.
  *
- * Returns 0 for percentages and for values that are not valid lengths.
+ * Returns 0 for percentages, for values that are not valid lengths, and where
+ * the resolution is unavailable - during server-side rendering, or without
+ * support for registered custom properties. Guessing from the raw token would
+ * read `5rem` as 5 pixels, so callers get an obvious zero instead.
  *
  * @example
  * ```typescript
@@ -48,11 +60,23 @@ function registerLengthProperty(): void {
  * ```
  */
 export function resolveCssLength(element: HTMLElement, value: string): number {
-  registerLengthProperty();
+  if (!canResolveLengths()) {
+    return 0;
+  }
 
-  element.style.setProperty(LENGTH_PROPERTY, value);
+  const { style } = element;
+  const previous = style.getPropertyValue(LENGTH_PROPERTY);
+  const priority = style.getPropertyPriority(LENGTH_PROPERTY);
+
+  style.setProperty(LENGTH_PROPERTY, value);
   const resolved = getComputedStyle(element).getPropertyValue(LENGTH_PROPERTY);
-  element.style.removeProperty(LENGTH_PROPERTY);
+
+  // Restore rather than remove - the caller may be using the property itself.
+  if (previous) {
+    style.setProperty(LENGTH_PROPERTY, previous, priority);
+  } else {
+    style.removeProperty(LENGTH_PROPERTY);
+  }
 
   return asNumber(resolved);
 }

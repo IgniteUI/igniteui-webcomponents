@@ -3059,7 +3059,7 @@ describe('Splitter', () => {
 
   describe('Size and constraint values', () => {
     it('should reject values without an explicit unit', async () => {
-      for (const invalid of ['200', 'abc', 'calc(100% - 10px)', '']) {
+      for (const invalid of ['200', '1.5', 'abc', 'calc(100% - 10px)', '']) {
         splitter.startSize = invalid;
         splitter.startMinSize = invalid;
         await elementUpdated(splitter);
@@ -3067,6 +3067,29 @@ describe('Splitter', () => {
         expect(splitter.startSize, invalid).to.equal('auto');
         expect(splitter.startMinSize, invalid).to.be.undefined;
       }
+    });
+
+    it('should accept a unitless zero, the one length that needs no unit', async () => {
+      for (const zero of ['0', '0.0', '+0']) {
+        splitter.startSize = zero;
+        splitter.startMinSize = zero;
+        await elementUpdated(splitter);
+
+        expect(splitter.startSize, zero).to.equal(zero);
+        expect(splitter.startMinSize, zero).to.equal(zero);
+      }
+    });
+
+    it('should render a zero-sized pane for a unitless zero size', async () => {
+      splitter.startSize = '0';
+      await elementUpdated(splitter);
+
+      const startPane = getSplitterPart(splitter, START_PART);
+      expect(getComputedStyle(startPane).flex).to.equal('0 1 0px');
+
+      const sizes = getPanesSizes(splitter, 'width');
+      expect(sizes.startSize).to.equal(0);
+      expect(sizes.endSize).to.equal(getTotalSize(splitter, 'width'));
     });
 
     it('should resolve font-relative constraints against their computed pixel size', async () => {
