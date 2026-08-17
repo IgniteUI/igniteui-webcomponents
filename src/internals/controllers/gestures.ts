@@ -168,9 +168,7 @@ class GesturesController extends EventTarget implements ReactiveController {
   }
 
   private _setTouchActionState(disabled: boolean) {
-    Object.assign(this._element.style, {
-      touchAction: disabled ? 'none' : undefined,
-    });
+    this._element.style.touchAction = disabled ? 'none' : '';
   }
 
   private _resetState() {
@@ -186,8 +184,13 @@ class GesturesController extends EventTarget implements ReactiveController {
   }
 
   private _handlePointerDown(event: PointerEvent) {
+    const state = this._getGestureState(event);
+
     this._setTouchActionState(true);
-    this._pointerState.start = this._getGestureState(event);
+    // Seeded so that a press without any movement resolves to a zero delta
+    // instead of being measured against the zeroed default state.
+    this._pointerState.start = state;
+    this._pointerState.current = state;
     this._setPointerCaptureState(event, true);
   }
 

@@ -13,6 +13,17 @@ function getEmitter(root: Node): IdRefChangeEmitter {
   return emitter;
 }
 
+/** Adds the ids of `nodes` and of any of their descendants to `affected`. */
+function collectIds(nodes: NodeList, affected: Set<string>): void {
+  for (const node of nodes) {
+    if (!isElement(node)) continue;
+    if (node.id) affected.add(node.id);
+    for (const child of node.querySelectorAll('[id]')) {
+      if (child.id) affected.add(child.id);
+    }
+  }
+}
+
 function refObserverCallback(
   mutations: MutationRecord[],
   emitter: IdRefChangeEmitter
@@ -27,20 +38,8 @@ function refObserverCallback(
       if (oldId) affected.add(oldId);
       if (newId) affected.add(newId);
     } else {
-      for (const node of mutation.addedNodes) {
-        if (!isElement(node)) continue;
-        if (node.id) affected.add(node.id);
-        for (const child of node.querySelectorAll('[id]')) {
-          if (child.id) affected.add(child.id);
-        }
-      }
-      for (const node of mutation.removedNodes) {
-        if (!isElement(node)) continue;
-        if (node.id) affected.add(node.id);
-        for (const child of node.querySelectorAll('[id]')) {
-          if (child.id) affected.add(child.id);
-        }
-      }
+      collectIds(mutation.addedNodes, affected);
+      collectIds(mutation.removedNodes, affected);
     }
   }
 

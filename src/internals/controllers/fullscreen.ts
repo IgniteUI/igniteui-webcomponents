@@ -54,10 +54,15 @@ class FullscreenController implements ReactiveController {
 
     this._fullscreen = fullscreen;
 
-    if (this._fullscreen) {
-      this._host.requestFullscreen();
+    if (fullscreen) {
+      // Rejects when the request is not user activated or the element is not
+      // allowed to go fullscreen - roll the state back so the host re-renders.
+      this._host.requestFullscreen().catch(() => {
+        this._fullscreen = false;
+        this._host.requestUpdate();
+      });
     } else if (document.fullscreenElement) {
-      document.exitFullscreen();
+      document.exitFullscreen().catch(() => {});
     }
   }
 
