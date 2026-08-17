@@ -30,12 +30,13 @@ Do not assume everything comes from `igniteui-webcomponents`. Advanced grids, ch
 
 > **Always use the MCP lookup pattern before coding any chart.** Chart APIs are extensive and change between versions.
 > - Find doc names → `list_components({ framework: "webcomponents", filter: "chart" })`
-> - Usage examples and slots → `get_doc({ framework: "webcomponents", name: "<doc-name>" })`
+> - Working code (props, handlers, structure) → `get_example({ framework: "webcomponents", component: "<doc-name>", language: "ts" })` — use `topic` for sub-feature docs (e.g., `component: "grid", topic: "editing"`)
+> - Usage explanation and slots → `get_doc({ framework: "webcomponents", name: "<doc-name>" })`
 > - Find exact class names → `search_api({ platform: "webcomponents", query: "<keyword>" })`
 > - Full property/method/event API → `get_api_reference({ platform: "webcomponents", component: "<ClassName>" })`
 
 ### Markers shown by default
-Category charts can show markers by default. If the screenshot does not show markers, set `markerTypes` to the matching no-marker option documented for the component. Confirm the exact value shape from `get_doc`.
+Category charts can show markers by default. If the screenshot does not show markers, set `markerTypes` to the matching no-marker option documented for the component. Confirm the exact value shape from `get_example` or `get_doc`.
 
 ### `plotAreaBackground` and `areaFillOpacity` are inherited — not visible in `get_api_reference`
 Both properties exist but are defined on parent classes, so `get_api_reference({ platform: "webcomponents", component: "IgcCategoryChartComponent" })` will not list them. Use `search_api` to find them:

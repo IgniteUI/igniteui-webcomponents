@@ -11,7 +11,8 @@
 
 > **MCP lookup pattern (applies to all sections):**
 > - Find doc names → `list_components({ framework: "webcomponents", filter: "<keyword>" })`
-> - Usage examples and slots → `get_doc({ framework: "webcomponents", name: "<doc-name>" })`
+> - Working code (props, handlers, structure) → `get_example({ framework: "webcomponents", component: "<doc-name>", language: "ts" })` — use `topic` for sub-feature docs (e.g., `component: "grid", topic: "editing"`)
+> - Usage explanation and slots → `get_doc({ framework: "webcomponents", name: "<doc-name>" })`
 > - Find exact class names → `search_api({ platform: "webcomponents", query: "<keyword>" })`
 > - Full property/method/event API → `get_api_reference({ platform: "webcomponents", component: "<ClassName>" })`
 
@@ -126,6 +127,6 @@ Install only the packages required by the components you actually selected.
 
 ## Import Patterns
 
-Treat this file as a component selection reference, not as authoritative import guidance for a specific repo. Confirm exact imports and registration from `detect_platform`, the current workspace, framework setup, and `get_doc` results.
+Treat this file as a component selection reference, not as authoritative import guidance for a specific repo. Confirm exact imports and registration from `detect_platform`, the current workspace, framework setup, and `get_example`/`get_doc` results.
 
 For direct Web Components usage, import the component classes from the selected package and register only the needed elements with `defineComponents(...)`. If the host app uses React, Angular, Vue, or another wrapper pattern around Web Components, follow [`igniteui-wc-integrate-with-framework`](../../igniteui-wc-integrate-with-framework/SKILL.md) for the final setup details.
