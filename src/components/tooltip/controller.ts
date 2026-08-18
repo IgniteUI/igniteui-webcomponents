@@ -225,11 +225,16 @@ class TooltipController implements ReactiveController {
 
   /** @internal */
   public handleEvent(event: Event): void {
-    if (event.target === this._host) {
+    // The element the listener sits on, not `event.target` - a bubbling
+    // trigger such as `click` or `focusin` reports the descendant of the
+    // anchor it originated from.
+    const target = event.currentTarget;
+
+    if (target === this._host) {
       this._handleTooltipEvent(event);
-    } else if (event.target === this._anchor?.deref()) {
+    } else if (target === this._anchor?.deref()) {
       this._handleAnchorEvent(event);
-    } else if (event.target === this._initialAnchor?.deref()) {
+    } else if (target === this._initialAnchor?.deref()) {
       // Interacting with the initial anchor drops the transient one.
       this._options.onReset();
       this._handleAnchorEvent(event);

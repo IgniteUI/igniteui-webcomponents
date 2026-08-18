@@ -736,6 +736,28 @@ describe('Tooltip', () => {
       expect(tooltip.open).to.be.false;
     });
 
+    it('triggers bubbling from inside the anchor still reach the tooltip', async () => {
+      const container = await fixture(createTooltipWithCompositeTarget());
+      const instance = container.querySelector(IgcTooltipComponent.tagName)!;
+      const child = container.querySelector<HTMLElement>('#composite-child')!;
+
+      // The listener sits on the anchor, while a bubbling trigger fired from
+      // one of its descendants reports that descendant as its target.
+      simulateClick(child);
+      await clock.tickAsync(DEFAULT_SHOW_DELAY);
+      await showComplete(instance);
+
+      expect(instance.open).to.be.true;
+
+      child.dispatchEvent(
+        new FocusEvent('focusout', { bubbles: true, composed: true })
+      );
+      await clock.tickAsync(DEFAULT_HIDE_DELAY);
+      await hideComplete(instance);
+
+      expect(instance.open).to.be.false;
+    });
+
     it('custom triggers via property', async () => {
       tooltip.showTriggers = 'focus, pointerenter';
       tooltip.hideTriggers = 'blur, click';
@@ -1184,6 +1206,19 @@ function createTooltipWithTarget(isOpen = false) {
       <button id="target">I have a tooltip</button>
       <button>I don't have a tooltip</button>
       <igc-tooltip anchor="target" ?open=${isOpen}>It works!</igc-tooltip>
+    </div>
+  `;
+}
+
+function createTooltipWithCompositeTarget() {
+  return html`
+    <div>
+      <div id="composite-target">
+        <span id="composite-child">I am inside the anchor</span>
+      </div>
+      <igc-tooltip anchor="composite-target" show-triggers="click">
+        It works!
+      </igc-tooltip>
     </div>
   `;
 }
