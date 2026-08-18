@@ -79,8 +79,7 @@ function handleRootClick(event: PointerEvent): void {
 
   // Snapshot the set: hiding a host deactivates it and mutates ACTIVE_HOSTS
   // while we are still walking it.
-  // oxlint-disable-next-line unicorn/no-useless-spread
-  for (const host of [...ACTIVE_HOSTS]) {
+  for (const host of Array.from(ACTIVE_HOSTS)) {
     if (host.keepOpenOnOutsideClick || POINTER_DOWN_HOSTS.has(host)) {
       continue;
     }
