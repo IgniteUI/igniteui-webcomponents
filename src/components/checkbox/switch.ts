@@ -7,8 +7,8 @@ import { createIdGenerator } from '#internals/utils/strings.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import { IgcCheckboxBaseComponent } from './checkbox-base.js';
 import { styles as shared } from './themes/shared/switch/switch.common.css.js';
-import { styles } from './themes/switch.base.css.js';
 import { all } from './themes/switch-themes.js';
+import { styles } from './themes/switch.base.css.js';
 
 const nextId = createIdGenerator('switch');
 

@@ -10,6 +10,7 @@ import { stub } from 'sinon';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
 import { firstOf, lastOf } from '#internals/utils/arrays.js';
 import IgcThemeProviderComponent from '../theme-provider/theme-provider.js';
+import { IconsStateBroadcast } from './icon-state.broadcast.js';
 import IgcIconComponent from './icon.js';
 import {
   getIconRegistry,
@@ -17,7 +18,6 @@ import {
   registerIconFromText,
   setIconRef,
 } from './icon.registry.js';
-import { IconsStateBroadcast } from './icon-state.broadcast.js';
 import { createIconDefaultMap } from './registry/default-map.js';
 import {
   ActionType,
@@ -386,9 +386,7 @@ describe('Icon broadcast service', () => {
       expect(events.length).to.equal(3);
 
       // dispose of mock services.
-      // biome-ignore lint/complexity/useLiteralKeys: private access escape
       broadcast1['_dispose']();
-      // biome-ignore lint/complexity/useLiteralKeys: private access escape
       broadcast2['_dispose']();
     });
   });
@@ -446,12 +444,10 @@ describe('Icon BFCache (pageshow/pagehide) handling', () => {
   const collectionName = 'bfcache-test';
 
   function getChannel(service: IconsStateBroadcast) {
-    // biome-ignore lint/complexity/useLiteralKeys: private access escape
     return service['_channel'];
   }
 
   function disposeChannel(service: IconsStateBroadcast) {
-    // biome-ignore lint/complexity/useLiteralKeys: private access escape
     service['_dispose']();
   }
 

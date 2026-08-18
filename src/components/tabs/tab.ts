@@ -3,8 +3,8 @@ import { property, state } from 'lit/decorators.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import { styles as shared } from './themes/shared/tab/tab.common.css.js';
-import { styles } from './themes/tab.base.css.js';
 import { all } from './themes/tab-themes.js';
+import { styles } from './themes/tab.base.css.js';
 
 let nextId = 1;
 

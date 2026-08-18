@@ -14,7 +14,8 @@ const baseOptions: KeyframeAnimationOptions = {
 };
 
 export type Animation =
-  StepperVerticalAnimation | HorizontalTransitionAnimation;
+  | StepperVerticalAnimation
+  | HorizontalTransitionAnimation;
 
 export type AnimationOptions = {
   keyframe: KeyframeAnimationOptions;

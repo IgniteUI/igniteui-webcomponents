@@ -12,9 +12,9 @@ import {
   spaceBar,
 } from '#internals/controllers/key-bindings.js';
 import { isLTR, scrollIntoView } from '#internals/utils/dom.js';
+import type IgcTreeItemComponent from './tree-item.js';
 import type IgcTreeComponent from './tree.js';
 import type { IgcTreeSelectionService } from './tree.selection.js';
-import type IgcTreeItemComponent from './tree-item.js';
 
 /**
  * Handles roving-tabindex keyboard navigation and active/focused item tracking

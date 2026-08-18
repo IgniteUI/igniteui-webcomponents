@@ -170,7 +170,6 @@ export default class IgcAccordionComponent extends LitElement {
   private _getPanelHeader(
     panel: IgcExpansionPanelComponent
   ): HTMLElement | undefined {
-    // biome-ignore lint/complexity/useLiteralKeys: Direct property access instead of DOM query
     return panel['_headerRef'].value;
   }
 

@@ -77,6 +77,9 @@ function handlePointerDown(event: PointerEvent): void {
 function handleRootClick(event: PointerEvent): void {
   const path = event.composedPath();
 
+  // Snapshot the set: hiding a host deactivates it and mutates ACTIVE_HOSTS
+  // while we are still walking it.
+  // oxlint-disable-next-line unicorn/no-useless-spread
   for (const host of [...ACTIVE_HOSTS]) {
     if (host.keepOpenOnOutsideClick || POINTER_DOWN_HOSTS.has(host)) {
       continue;

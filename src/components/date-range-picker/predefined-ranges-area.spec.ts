@@ -39,7 +39,6 @@ describe('Predefined Area', () => {
   ];
 
   function getPredefinedRanges() {
-    // biome-ignore lint/complexity/useLiteralKeys: Because reasons
     return component['_predefinedRanges'];
   }
 

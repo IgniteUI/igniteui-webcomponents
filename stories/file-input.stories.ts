@@ -1,3 +1,5 @@
+import { github } from '@igniteui/material-icons-extended';
+import type { Meta, StoryObj } from '@storybook/web-components-vite';
 import {
   IgcFileInputComponent,
   IgcIconComponent,
@@ -5,15 +7,13 @@ import {
   registerIcon,
   registerIconFromText,
 } from 'igniteui-webcomponents';
+import { html } from 'lit';
+import { ifDefined } from 'lit/directives/if-defined.js';
 import {
   disableStoryControls,
   formControls,
   formSubmitHandler,
 } from './story.js';
-import type { Meta, StoryObj } from '@storybook/web-components-vite';
-import { github } from '@igniteui/material-icons-extended';
-import { html } from 'lit';
-import { ifDefined } from 'lit/directives/if-defined.js';
 
 defineComponents(IgcFileInputComponent, IgcIconComponent);
 registerIconFromText(github.name, github.value);

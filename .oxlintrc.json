@@ -1,0 +1,49 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["typescript", "unicorn", "oxc", "import"],
+  "ignorePatterns": ["dist", "coverage", "src/**/*.css.ts"],
+  "categories": {
+    "correctness": "error"
+  },
+  "rules": {
+    "no-unused-expressions": "off",
+    "no-unused-vars": [
+      "error",
+      {
+        "args": "all",
+        "argsIgnorePattern": "^_",
+        "varsIgnorePattern": "^_",
+        "destructuredArrayIgnorePattern": "^_",
+        "caughtErrors": "all"
+      }
+    ],
+    "import/extensions": ["error", "always", { "ignorePackages": true }],
+    "typescript/no-namespace": "error",
+    "typescript/prefer-as-const": "error",
+    "typescript/prefer-enum-initializers": "error",
+    "typescript/no-inferrable-types": "error",
+    "typescript/consistent-type-imports": "error",
+    "no-lonely-if": "error",
+    "no-else-return": "error",
+    "no-param-reassign": "error",
+    "default-param-last": "error",
+    "one-var": ["error", "never"],
+    "unicorn/prefer-number-properties": "error",
+    "no-console": "error",
+    "no-debugger": "error",
+    "unicorn/no-array-for-each": "off",
+    "unicorn/no-new-array": "off",
+    "unicorn/no-static-only-class": "off",
+    "typescript/no-explicit-any": "off",
+    "typescript/no-non-null-assertion": "off",
+    "no-unused-private-class-members": "off"
+  },
+  "overrides": [
+    {
+      "files": ["scripts/**"],
+      "rules": {
+        "no-console": "off"
+      }
+    }
+  ]
+}

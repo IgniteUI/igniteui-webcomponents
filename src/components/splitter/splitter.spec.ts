@@ -25,8 +25,8 @@ import {
   simulatePointerUp,
 } from '#internals/testing/simulate.spec.js';
 import { asPercent, roundPrecise } from '#internals/utils/math.js';
-import IgcTreeComponent from '../tree/tree.js';
 import IgcTreeItemComponent from '../tree/tree-item.js';
+import IgcTreeComponent from '../tree/tree.js';
 import type { SplitterOrientation } from '../types.js';
 import IgcSplitterComponent, {
   type IgcSplitterResizeEventArgs,

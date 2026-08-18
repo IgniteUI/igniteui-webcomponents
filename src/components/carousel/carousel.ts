@@ -53,8 +53,8 @@ import type {
   CarouselIndicatorsOrientation,
   HorizontalTransitionAnimation,
 } from '../types.js';
-import IgcCarouselIndicatorComponent from './carousel-indicator.js';
 import IgcCarouselIndicatorContainerComponent from './carousel-indicator-container.js';
+import IgcCarouselIndicatorComponent from './carousel-indicator.js';
 import IgcCarouselSlideComponent from './carousel-slide.js';
 import { styles } from './themes/carousel.base.css.js';
 import { all } from './themes/container.js';

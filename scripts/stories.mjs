@@ -2,7 +2,7 @@
 /** @import { Package, Type, Reference } from 'custom-elements-manifest/schema' */
 import { readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import { format } from 'prettier';
+import { format } from 'oxfmt';
 import report from './report.mjs';
 
 const NULL_UNDEFINED_RE = /undefined|null/;
@@ -18,6 +18,31 @@ const PRETTIFY_NAME_RE = /igc|component/gi;
 const STORY_REGION_RE = /\/\/ region default.*?\/\/ endregion/gs;
 
 const STORIES_PATH = '../stories/';
+const OXFMTRC_PATH = '../.oxfmtrc.json';
+
+/** @type {import('oxfmt').FormatConfig | undefined} */
+let formatOptions;
+
+/**
+ * The generated region is written into a story file that `oxfmt` also formats
+ * repo-wide, so it has to be produced with the repository's own options.
+ *
+ * @returns {Promise<import('oxfmt').FormatConfig>}
+ */
+async function getFormatOptions() {
+  if (formatOptions) {
+    return formatOptions;
+  }
+
+  const url = new URL(OXFMTRC_PATH, import.meta.url);
+  const options = JSON.parse(await readFile(url, 'utf8'));
+
+  delete options.$schema;
+  delete options.ignorePatterns;
+
+  formatOptions = options;
+  return options;
+}
 
 /**
  * @typedef {{
@@ -354,12 +379,13 @@ class StoriesBuilder {
       return false;
     }
 
-    const storyMeta = (
-      await format(template(name, model), {
-        singleQuote: true,
-        parser: 'typescript',
-      })
-    ).trim();
+    // `file` is a URL; oxfmt only needs an extension to pick the parser.
+    const { code } = await format(
+      'story.ts',
+      template(name, model),
+      await getFormatOptions()
+    );
+    const storyMeta = code.trim();
 
     const newContent = data.replace(STORY_REGION_RE, storyMeta);
 

@@ -26,9 +26,9 @@ import {
   simulatePointerMove,
 } from '#internals/testing/simulate.spec.js';
 import IgcButtonComponent from '../button/button.js';
-import IgcCarouselComponent from './carousel.js';
 import IgcCarouselIndicatorComponent from './carousel-indicator.js';
 import IgcCarouselSlideComponent from './carousel-slide.js';
+import IgcCarouselComponent from './carousel.js';
 
 describe('Carousel', () => {
   before(() => {

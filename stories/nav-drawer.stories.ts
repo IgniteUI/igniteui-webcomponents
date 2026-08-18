@@ -9,8 +9,8 @@ import {
   defineComponents,
   registerIcon,
 } from 'igniteui-webcomponents';
-import { range } from 'lit/directives/range.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
+import { range } from 'lit/directives/range.js';
 
 defineComponents(IgcIconComponent, IgcNavDrawerComponent, IgcButtonComponent);
 
