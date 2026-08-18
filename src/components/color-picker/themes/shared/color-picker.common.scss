@@ -256,7 +256,7 @@ $input-theme: input-theme.$material;
             @include swatch-preview();
 
             border: var(--_anchor-border-size) solid var-get($theme, 'swatch-preview-border-color');
-            border-radius: clamp(rem(2px), calc(var-get($theme, 'anchor-border-radius') - var(--_anchor-border-size)), calc(var-get($theme, 'anchor-border-radius') - var(--_anchor-border-size)));
+            border-radius: calc(var-get($theme, 'anchor-border-radius') - var(--_anchor-border-size));
         }
 
         &:focus-visible {
