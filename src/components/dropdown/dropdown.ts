@@ -545,6 +545,12 @@ export default class IgcDropdownComponent extends EventEmitterMixin<
   public override async show(target?: HTMLElement | string): Promise<boolean> {
     if (target) {
       this._setExplicitTarget(target);
+
+      // A target that resolves to nothing, with no anchor to fall back on,
+      // would open a list the popover cannot place - and so cannot show.
+      if (!this._target) {
+        return false;
+      }
     }
 
     return super.show();

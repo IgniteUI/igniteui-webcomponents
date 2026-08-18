@@ -267,14 +267,22 @@ describe('Dropdown', () => {
       expect(getActiveItem()).to.equal(dropDown.items[1]);
     });
 
-    it('`show()` with an id matching no element keeps the current target', async () => {
+    it('`show()` with an unresolved target and no anchor does not open', async () => {
       const btn = getButton();
 
-      await openDropdown('no-such-element');
-
-      expect(dropDown.open).to.be.true;
+      expect(await dropDown.show('no-such-element')).to.be.false;
+      expect(dropDown.open).to.be.false;
       expect(btn.getAttribute('aria-haspopup')).to.be.null;
       expect(btn.getAttribute('aria-expanded')).to.be.null;
+    });
+
+    it('`show()` with an unresolved target keeps the current one', async () => {
+      await openDropdown('btn');
+      await closeDropdown();
+
+      expect(await dropDown.show('no-such-element')).to.be.true;
+      expect(dropDown.open).to.be.true;
+      checkTargetARIA('true');
     });
 
     it('passing another target while open moves the ARIA and the key handling', async () => {

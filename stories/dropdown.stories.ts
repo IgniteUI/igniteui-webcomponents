@@ -259,6 +259,11 @@ const scenarioStyles = html`
       font-size: 2rem;
     }
 
+    .file:focus-visible {
+      outline: 2px solid var(--ig-primary-500, #09f);
+      outline-offset: 1px;
+    }
+
     .file {
       display: flex;
       flex-direction: column;
@@ -634,7 +639,7 @@ export const ContextMenu: Story = {
     docs: {
       description: {
         story:
-          'A file browser context menu. `contextmenu` is cancelled and the dropdown is anchored to the tile that was right-clicked, so one menu serves the whole grid and the list opens against the item it acts on. Escape and an outside click dismiss it, as with any other invocation.',
+          'A file browser context menu. `contextmenu` is cancelled and the dropdown is anchored to the tile that was right-clicked, so one menu serves the whole grid and the list opens against the item it acts on. The tiles are focusable and the clicked one is focused before the menu opens: keyboard handling follows the target, so that is what makes the arrow keys, Enter and Escape work on the open list.',
       },
     },
   },
@@ -646,7 +651,12 @@ export const ContextMenu: Story = {
     function openMenu(name: string, event: MouseEvent) {
       event.preventDefault();
       activeFile = name;
-      menu.value?.show(event.currentTarget as HTMLElement);
+
+      // The dropdown observes key events on its target, so the tile has to hold
+      // focus for Escape and the arrow keys to reach the open list
+      const tile = event.currentTarget as HTMLElement;
+      tile.focus();
+      menu.value?.show(tile);
     }
 
     function onChange({ detail }: CustomEvent<IgcDropdownItemComponent>) {
@@ -658,13 +668,14 @@ export const ContextMenu: Story = {
     return html`
       ${scenarioStyles}
       <div class="scenario">
-        <p>Right-click a file.</p>
+        <p>Right-click a file, then navigate the menu with the keyboard.</p>
 
         <div class="files">
           ${files.map(
             ({ name, icon }) => html`
               <div
                 class="file"
+                tabindex="0"
                 @contextmenu=${(event: MouseEvent) => openMenu(name, event)}
               >
                 <igc-icon collection="internal" name=${icon}></igc-icon>

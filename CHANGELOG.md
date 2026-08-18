@@ -79,7 +79,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - Keyboard navigation stopped working on a dropdown opened at an explicit target once it had been closed and reopened without passing that target again, because closing dropped the target along with its key event listeners. The target is now kept until another one replaces it.
   - A dropdown opened at an explicit target and then reopened through its own `target` slot stayed positioned at the previous, detached element. The current anchor is now always resolved and handed to the popover.
   - Passing another target to `show()` while the dropdown is already open left `aria-expanded` behind on the previous element and leaked its key event listeners.
-  - `show()` with an id matching no element threw a `TypeError`. It is now a no-op for the target and leaves the current one in place.
+  - `show()` with an id matching no element threw a `TypeError`. An unresolved target now leaves the current one in place, and when there is no anchor at all `show()` returns `false` without opening - the popover cannot place an anchorless list, so the component would have reported itself open while showing nothing.
   - `clearSelection()` cleared the selection but left keyboard navigation on the cleared item, so the next `ArrowDown` returned to it instead of starting from the top of the list.
   - `selectedItem` kept returning an item that had been removed from the DOM. Items entering and leaving the light DOM are now tracked, so the selection is dropped when its item goes away and navigation falls back to the current selection.
   - `aria-haspopup` and `aria-expanded` were left on the target element after the dropdown had been removed from the DOM, or after another target replaced it.
