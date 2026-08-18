@@ -1,8 +1,8 @@
 import { watch as fsWatch } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { createServer } from 'vite';
 import { Application, OptionDefaults } from 'typedoc';
+import { createServer } from 'vite';
 import report from './report.mjs';
 
 const __filename = fileURLToPath(import.meta.url);

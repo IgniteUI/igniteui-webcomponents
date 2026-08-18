@@ -1,13 +1,13 @@
+import type { Meta, StoryObj } from '@storybook/web-components-vite';
 import {
   IgcButtonComponent,
   IgcSplitterComponent,
   defineComponents,
 } from 'igniteui-webcomponents';
 import type { IgcSplitterLayoutChangedEventArgs } from 'igniteui-webcomponents';
-import type { Meta, StoryObj } from '@storybook/web-components-vite';
 
-import { disableStoryControls } from './story.js';
 import { html } from 'lit';
+import { disableStoryControls } from './story.js';
 
 defineComponents(IgcSplitterComponent, IgcButtonComponent);
 

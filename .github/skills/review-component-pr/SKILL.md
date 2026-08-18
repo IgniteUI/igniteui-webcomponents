@@ -129,7 +129,7 @@ grep -rn "igc-" --include="*.ts" src/ \
 ## 7. Build and Hygiene
 
 - [ ] `npm run check` (aliases, dependency rules, types) passes
-- [ ] `npm run lint` passes — biome, lit-analyzer, prettier, stylelint
+- [ ] `npm run lint` passes — oxlint, lit-analyzer, oxfmt, stylelint
 - [ ] `npm run test` passes
 - [ ] No leftover `console.log`/`debugger`, no commented-out code, no unexplained magic numbers
 - [ ] No new heavy third-party dependency

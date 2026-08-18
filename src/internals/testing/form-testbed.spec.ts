@@ -204,7 +204,6 @@ class FormAssociatedTestBed<T extends IgcFormControl> {
    * Whether the form element is in 'pristine' state.
    */
   public assertIsPristine(msg?: string): void {
-    // biome-ignore lint/complexity/useLiteralKeys: Pristine state test
     expect(this.element['_pristine'], msg).to.be.true;
   }
 }

@@ -4,13 +4,13 @@ import {
   github,
 } from '@igniteui/material-icons-extended';
 import type { Meta, StoryObj } from '@storybook/web-components-vite';
-import { html } from 'lit';
 import {
   IgcIconComponent,
   IgcSelectComponent,
   defineComponents,
   registerIconFromText,
 } from 'igniteui-webcomponents';
+import { html } from 'lit';
 import {
   disableStoryControls,
   formControls,

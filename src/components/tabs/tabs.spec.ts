@@ -28,7 +28,6 @@ import IgcTabsComponent from './tabs.js';
 describe('Tabs component', () => {
   function verifySelection(tabs: IgcTabsComponent, tab: IgcTabComponent) {
     const { selected } = getTabsDOM(tabs);
-    // biome-ignore lint/complexity/useLiteralKeys: test-scenarios
     const activeTab = tabs['_activeTab'];
 
     expect(firstOf(selected) === tab).to.be.true;

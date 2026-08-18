@@ -23,8 +23,8 @@ import {
   isPreviousMonth,
 } from '../helpers.js';
 import { selectDate } from '../selection.js';
-import { all } from '../themes/days.js';
 import { styles } from '../themes/days-view.base.css.js';
+import { all } from '../themes/days.js';
 import type { IgcCalendarViewComponentEventMap } from '../types.js';
 
 export interface IgcDaysViewEventMap extends IgcCalendarViewComponentEventMap {

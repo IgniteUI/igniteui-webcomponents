@@ -23,8 +23,8 @@ import {
   simulateKeyboard,
   simulatePointerMove,
 } from '#internals/testing/simulate.spec.js';
-import IgcRatingComponent from './rating.js';
 import IgcRatingSymbolComponent from './rating-symbol.js';
+import IgcRatingComponent from './rating.js';
 
 describe('Rating component', () => {
   before(() => {

@@ -2,9 +2,6 @@ import { elementUpdated, expect, waitUntil } from '@open-wc/testing';
 import { spy } from 'sinon';
 
 import { defineComponents } from '../../index.js';
-import type { TreeSelectionEventInit } from './tree.common.js';
-import IgcTreeComponent from './tree.js';
-import type { IgcTreeNavigationService } from './tree.navigation.js';
 import IgcTreeItemComponent from './tree-item.js';
 import {
   disabledItemsTree,
@@ -12,6 +9,9 @@ import {
   SLOTS,
   TreeTestFunctions,
 } from './tree-utils.spec.js';
+import type { TreeSelectionEventInit } from './tree.common.js';
+import IgcTreeComponent from './tree.js';
+import type { IgcTreeNavigationService } from './tree.navigation.js';
 
 describe('Tree Navigation', () => {
   before(() => {

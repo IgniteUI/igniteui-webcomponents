@@ -10,8 +10,8 @@ import {
   IgcThemeProviderComponent,
   defineComponents,
 } from 'igniteui-webcomponents';
-import { disableStoryControls } from './story.js';
 import { styles as bootstrapDarkStyles } from '../src/styles/themes/dark/bootstrap.css.js';
+import { disableStoryControls } from './story.js';
 
 // The theme file uses :root selectors for CSS custom properties. Replace them
 // with :scope so they are set on the igc-theme-provider element instead of the
