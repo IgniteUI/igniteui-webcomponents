@@ -5,7 +5,7 @@ $theme: $material;
 $transparent-border: rem(4px) solid transparent;
 $color-border: rem(4px) solid var-get($theme, 'background');
 
-[part='base'] {
+[part~='base'] {
     background: var-get($theme, 'background');
     color: var-get($theme, 'text-color');
     border-radius: var-get($theme, 'border-radius');
