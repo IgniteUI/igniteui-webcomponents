@@ -335,7 +335,7 @@ npm run build:meta # the `// region default` block of the story
 
 ```bash
 npm run check  # aliases, dependency rules, types
-npm run lint   # biome, lit-analyzer, prettier, stylelint
+npm run lint   # oxlint, lit-analyzer, oxfmt, stylelint
 npm run test
 ```
 

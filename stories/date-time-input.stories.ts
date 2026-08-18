@@ -1,9 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/web-components-vite';
-import { html } from 'lit';
 import {
   IgcDateTimeInputComponent,
   defineComponents,
 } from 'igniteui-webcomponents';
+import { html } from 'lit';
 import {
   disableStoryControls,
   formControls,

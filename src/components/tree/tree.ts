@@ -13,6 +13,7 @@ import { addThemingController } from '#theming/theming-controller.js';
 import type { TreeSelection } from '../types.js';
 import { styles } from './themes/container.base.css.js';
 import { all } from './themes/container.js';
+import IgcTreeItemComponent from './tree-item.js';
 import {
   getTreeItemChildren,
   type IgcTreeComponentEventMap,
@@ -20,7 +21,6 @@ import {
 } from './tree.common.js';
 import { IgcTreeNavigationService } from './tree.navigation.js';
 import { IgcTreeSelectionService } from './tree.selection.js';
-import IgcTreeItemComponent from './tree-item.js';
 
 /**
  * Tree properties that items read while rendering. The tree is not a reactive

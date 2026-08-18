@@ -52,7 +52,6 @@ describe('Type guards', () => {
   describe('isRegExp', () => {
     it('should return true for regexes, including subclasses', () => {
       expect(isRegExp(/a/)).to.be.true;
-      // biome-ignore lint/complexity/useRegexLiterals: testing the constructor path
       expect(isRegExp(new RegExp('a'))).to.be.true;
       expect(isRegExp(new (class extends RegExp {})('a'))).to.be.true;
     });

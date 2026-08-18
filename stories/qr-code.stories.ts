@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/web-components-vite';
-import { html } from 'lit';
 import { defineComponents, IgcQrCodeComponent } from 'igniteui-webcomponents';
+import { html } from 'lit';
 import { disableStoryControls } from './story.js';
 
 defineComponents(IgcQrCodeComponent);

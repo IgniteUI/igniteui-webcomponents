@@ -43,9 +43,9 @@ import {
 import { firstOf } from '#internals/utils/arrays.js';
 import type IgcInputComponent from '../input/input.js';
 import type IgcVirtualScrollComponent from '../virtualization/virtualization.js';
-import IgcComboComponent from './combo.js';
 import type IgcComboHeaderComponent from './combo-header.js';
 import type IgcComboItemComponent from './combo-item.js';
+import IgcComboComponent from './combo.js';
 
 describe('Combo', () => {
   type City = {

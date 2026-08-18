@@ -22,8 +22,8 @@ import IgcResizeContainerComponent, {
   type IgcResizeContainerComponentEventMap,
 } from '../resize-container/resize-container.js';
 import type { ResizeCallbackParams } from '../resize-container/types.js';
-import IgcTileComponent from './tile.js';
 import IgcTileManagerComponent from './tile-manager.js';
+import IgcTileComponent from './tile.js';
 
 describe('Tile resize', () => {
   before(() => {

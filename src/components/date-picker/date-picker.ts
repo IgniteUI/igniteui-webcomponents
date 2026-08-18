@@ -366,7 +366,6 @@ export default class IgcDatePickerComponent extends EventEmitterMixin<
     // constraint validation against the forwarded `required`/`min`/`max`,
     // a touched editor would otherwise keep its invalid styles after the
     // form reset.
-    // biome-ignore lint/complexity/useLiteralKeys: Reset the internal validation state of the editor
     this._input?.['formResetCallback']();
   }
 

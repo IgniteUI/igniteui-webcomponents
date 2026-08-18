@@ -195,7 +195,8 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
    */
   protected override _getDatePartAtCursor(): DatePart | undefined {
     return this._parser.getPartForCursor(this._inputSelection.start)?.type as
-      DatePart | undefined;
+      | DatePart
+      | undefined;
   }
 
   /**

@@ -6,8 +6,8 @@ import { viewTransitionComplete } from '#internals/testing/helpers.spec.js';
 import { simulateClick } from '#internals/testing/simulate.spec.js';
 import { firstOf } from '#internals/utils/arrays.js';
 import IgcIconButtonComponent from '../button/icon-button.js';
-import IgcTileComponent from './tile.js';
 import IgcTileManagerComponent from './tile-manager.js';
+import IgcTileComponent from './tile.js';
 
 describe('Tile Manager component', () => {
   before(() => {

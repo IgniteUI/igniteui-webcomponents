@@ -1,9 +1,6 @@
 /// <reference types="vite/client" />
 
-import { type CSSResult, html } from 'lit';
-import { configureTheme } from '../src/theming/config';
 import type { Decorator, Preview } from '@storybook/web-components-vite';
-import { withActions } from 'storybook/actions/decorator';
 import { registerI18n } from 'igniteui-i18n-core';
 import {
   ResourceStringsBG,
@@ -12,6 +9,9 @@ import {
   ResourceStringsFR,
   ResourceStringsJA,
 } from 'igniteui-i18n-resources';
+import { type CSSResult, html } from 'lit';
+import { withActions } from 'storybook/actions/decorator';
+import { configureTheme } from '../src/theming/config.js';
 
 const LocalizationResources = new Map(
   Object.entries({
@@ -57,11 +57,9 @@ const themeProvider: Decorator = (story, context) => {
         background: ${variant === 'light' ? '#fff' : '#000'};
         color: ${variant === 'light' ? '#000' : '#fff'};
       }
-
       #igc-story[dir='rtl'] {
         --ig-dir: -1;
       }
-
       ${context.loaded.theme}
       ${getSize(size)}
     </style>

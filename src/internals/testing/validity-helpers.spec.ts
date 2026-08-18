@@ -19,7 +19,6 @@ export type ValidationContainerTestsParams<T> = {
 export const ValidityHelpers = {
   /** Transitions the form associated component in **touched** state. */
   setTouchedState: (host: IgcFormControl): void => {
-    // biome-ignore lint/complexity/useLiteralKeys: Emulate user interaction for the test case
     host['_setTouchedState']();
   },
   /**

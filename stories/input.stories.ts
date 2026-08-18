@@ -1,10 +1,10 @@
+import type { Meta, StoryObj } from '@storybook/web-components-vite';
 import {
   IgcIconComponent,
   IgcInputComponent,
   defineComponents,
   registerIconFromText,
 } from 'igniteui-webcomponents';
-import type { Meta, StoryObj } from '@storybook/web-components-vite';
 import {
   disableStoryControls,
   formControls,

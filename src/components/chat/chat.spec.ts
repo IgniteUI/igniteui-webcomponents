@@ -23,9 +23,9 @@ import IgcChipComponent from '../chip/chip.js';
 import IgcInputComponent from '../input/input.js';
 import IgcListItemComponent from '../list/list-item.js';
 import IgcTextareaComponent from '../textarea/textarea.js';
-import IgcChatComponent from './chat.js';
 import IgcChatInputComponent from './chat-input.js';
 import IgcChatMessageComponent from './chat-message.js';
+import IgcChatComponent from './chat.js';
 import IgcMessageAttachmentsComponent from './message-attachments.js';
 import type {
   ChatMessageRenderContext,
