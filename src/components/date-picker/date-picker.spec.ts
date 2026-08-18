@@ -264,6 +264,8 @@ describe('Date picker', () => {
     it('should be successfully initialized with a string property binding - issue 1467', async () => {
       const value = new CalendarDay({ year: 2000, month: 0, date: 25 });
       picker = await fixture<IgcDatePickerComponent>(html`
+        <!-- lit-analyzer reads the getter type, not the wider setter one -->
+        <!-- @ts-ignore -->
         <igc-date-picker .value=${value.native.toISOString()}></igc-date-picker>
       `);
 
@@ -272,6 +274,8 @@ describe('Date picker', () => {
 
     it('should not set an invalid date object as a value', async () => {
       picker = await fixture<IgcDatePickerComponent>(html`
+        <!-- lit-analyzer types the attribute from the property, ignoring the converter -->
+        <!-- @ts-ignore -->
         <igc-date-picker value="invalid date"></igc-date-picker>
       `);
 

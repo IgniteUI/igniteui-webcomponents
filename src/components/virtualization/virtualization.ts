@@ -76,7 +76,7 @@ const EMPTY_RANGE: VisibleRange = Object.freeze({
  * into position within the track.
  */
 export default class IgcVirtualScrollComponent<
-  T = unknown,
+  T = any,
 > extends EventEmitterMixin<
   IgcVirtualScrollComponentEventMap,
   Constructor<LitElement>
