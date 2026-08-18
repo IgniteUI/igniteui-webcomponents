@@ -5,24 +5,19 @@ const ARIA_ID_REF_ATTRS = ['aria-labelledby', 'aria-describedby'] as const;
 
 /* blazorSuppress */
 export class SvgIconParser {
-  private _parser: DOMParser;
-
-  constructor() {
-    this._parser = new DOMParser();
-  }
+  private _parser?: DOMParser;
 
   /**
    * Parses an SVG string into a {@link SvgIcon} descriptor.
    *
-   * @param svgString - Raw SVG markup to parse.
-   * @param stripMeta - When `true`, removes `<title>` and `<desc>` child
-   *   elements from the SVG and cleans up any `aria-labelledby` /
-   *   `aria-describedby` references on the root element that pointed to the
-   *   stripped nodes' IDs. The extracted title text is still returned in
-   *   {@link SvgIcon.title} so the host `<igc-icon>` can use it as its
-   *   `aria-label`. Defaults to `false`.
+   * @param stripMeta - Removes every `<title>` and `<desc>` element from the
+   *   stored markup. The title text is still returned in {@link SvgIcon.title},
+   *   so the host `<igc-icon>` can keep exposing it as its `aria-label`.
    */
   public parse(svgString: string, stripMeta = false): SvgIcon {
+    // Created on first use so the registry can be constructed without a DOM.
+    this._parser ??= new DOMParser();
+
     const root = this._parser.parseFromString(svgString, 'image/svg+xml');
     const svg = root.querySelector('svg');
     const error = root.querySelector('parsererror');
@@ -31,42 +26,31 @@ export class SvgIconParser {
       throw new Error('SVG element not found or malformed SVG string.');
     }
 
-    svg.setAttribute('fit', '');
-    svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
-
-    const titleEl = svg.querySelector('title');
-    const descEl = svg.querySelector('desc');
-    const title = titleEl?.textContent ?? '';
+    // Only a direct child titles the icon as a whole - packs also put <title>
+    // elements on individual shapes.
+    const title = svg.querySelector(':scope > title')?.textContent ?? undefined;
 
     if (stripMeta) {
-      this._stripMetaElements(svg, titleEl, descEl);
+      this._stripMetaElements(svg);
     }
 
     return { svg: svg.outerHTML, title };
   }
 
   /**
-   * Removes `<title>` and `<desc>` from the SVG element and repairs any ARIA
-   * ID-reference attributes (`aria-labelledby`, `aria-describedby`) that
-   * pointed to the stripped nodes.
-   *
-   * @remarks
-   * Leaving dangling ARIA ID references after removing their target elements
-   * would produce invalid markup. Collect the IDs of both stripped elements
-   * and rebuild each reference attribute by filtering out those IDs. When all
-   * referenced IDs are stripped, the attribute is removed entirely.
+   * Removes all `<title>` and `<desc>` elements, and with them any
+   * `aria-labelledby` / `aria-describedby` id they were the target of -
+   * a reference left dangling would be invalid markup.
    */
-  private _stripMetaElements(
-    svg: SVGElement,
-    title: Element | null,
-    desc: Element | null
-  ): void {
-    const strippedIds = new Set(
-      [title?.id, desc?.id].filter((id): id is string => Boolean(id))
-    );
+  private _stripMetaElements(svg: SVGElement): void {
+    const strippedIds = new Set<string>();
 
-    title?.remove();
-    desc?.remove();
+    for (const element of svg.querySelectorAll('title, desc')) {
+      if (element.id) {
+        strippedIds.add(element.id);
+      }
+      element.remove();
+    }
 
     if (strippedIds.size === 0) {
       return;
@@ -78,10 +62,10 @@ export class SvgIconParser {
       if (!value) continue;
 
       const cleaned = value
+        .trim()
         .split(/\s+/)
         .filter((id) => !strippedIds.has(id))
-        .join(' ')
-        .trim();
+        .join(' ');
 
       if (cleaned) {
         svg.setAttribute(attr, cleaned);
