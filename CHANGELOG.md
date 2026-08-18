@@ -43,6 +43,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 - #### Combo
   - The dropdown list is now virtualized using the new `igc-virtual-scroll` component instead of the third-party `@lit-labs/virtualizer` package. [#2222](https://github.com/IgniteUI/igniteui-webcomponents/pull/2222)
+- #### Dropdown
+  - **Behavioral change:** `igcChange` is no longer emitted when the item that is already selected is picked again. Committing the same selection still closes the list, as before.
+  - Improved accessibility: the target element now declares `aria-haspopup="listbox"` instead of `aria-haspopup="true"`, and while the list is open it carries `aria-activedescendant` pointing at the item keyboard navigation is on, so the highlight is announced. Items are given an id for it only if they have none of their own, and everything the component writes onto the target is taken back off it once it stops using it.
 - #### Library
   - Updated some of the optional peer dependencies (`dompurify`, `marked`, `shiki`) to their latest stable versions.
   - Removed the `@lit-labs/virtualizer` dependency. Virtualization is now implemented internally by the new `igc-virtual-scroll` component. [#2222](https://github.com/IgniteUI/igniteui-webcomponents/pull/2222)
@@ -71,6 +74,17 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - #### Chat
   - With `adoptRootStyles` enabled, stylesheets that entered the document after the initial adoption were ignored, so custom renderers whose styles are injected while the view is being created - Angular component styles, for instance - rendered unstyled content. The document stylesheets are now tracked while the option is on, and any addition or removal is reflected in the shadow roots that adopted them, including stylesheet links that finish loading later. [#2328](https://github.com/IgniteUI/igniteui-webcomponents/issues/2328)
   - Adopting the document styles no longer discards the theme styles of the message and input parts, which were dropped from their shadow roots because the adoption rebuilt the stylesheet list from the component's static styles alone.
+- #### Dropdown
+  - Pressing `Enter` on an open dropdown before any arrow key threw a `TypeError` instead of doing nothing. The item keyboard navigation moves from was typed as always present while it is in fact unset until the list is navigated or something is selected.
+  - Keyboard navigation stopped working on a dropdown opened at an explicit target once it had been closed and reopened without passing that target again, because closing dropped the target along with its key event listeners. The target is now kept until another one replaces it.
+  - A dropdown opened at an explicit target and then reopened through its own `target` slot stayed positioned at the previous, detached element. The current anchor is now always resolved and handed to the popover.
+  - Passing another target to `show()` while the dropdown is already open left `aria-expanded` behind on the previous element and leaked its key event listeners.
+  - `show()` with an id matching no element threw a `TypeError`. An unresolved target now leaves the current one in place, and when there is no anchor at all `show()` returns `false` without opening - the popover cannot place an anchorless list, so the component would have reported itself open while showing nothing.
+  - `clearSelection()` cleared the selection but left keyboard navigation on the cleared item, so the next `ArrowDown` returned to it instead of starting from the top of the list.
+  - `selectedItem` kept returning an item that had been removed from the DOM. Items entering and leaving the light DOM are now tracked, so the selection is dropped when its item goes away and navigation falls back to the current selection.
+  - `aria-haspopup` and `aria-expanded` were left on the target element after the dropdown had been removed from the DOM, or after another target replaced it.
+  - `igc-dropdown-header` had no role, leaving it in the accessibility tree as a bare child of the `listbox`, which may only own `option` and `group` nodes. It is now taken out of the tree, as `igc-select-header` already was.
+  - The label of an `igc-dropdown-group` named nothing - it is rendered into the group's shadow root, out of reach of the host ARIA - so groups were announced without their label.
 - #### Form associated components
   - Validation messages no longer disappear right after the first failed form submission. The submit-driven invalid state used to hold only for the update the submission itself scheduled, so any re-render that followed - a `slotchange` from the validation slots the submission had just projected, for instance - silently dropped the projected messages while the invalid styling stayed on.
   - Invalid styling now follows the validity state, so a control that turns valid again (a cleared `required`, a widened `min`/`max`, a disabled control) drops the styles it picked up from an earlier interaction or submission.
