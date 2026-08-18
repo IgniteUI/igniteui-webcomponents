@@ -1,30 +1,48 @@
-import { github, whiteHouse1 } from '@igniteui/material-icons-extended';
 import type { Meta, StoryObj } from '@storybook/web-components-vite';
 import { html } from 'lit';
 import { range } from 'lit/directives/range.js';
+import { createRef, ref } from 'lit/directives/ref.js';
 
 import {
+  IgcAvatarComponent,
   IgcButtonComponent,
   IgcDropdownComponent,
+  type IgcDropdownItemComponent,
+  IgcIconButtonComponent,
   IgcIconComponent,
   IgcInputComponent,
   defineComponents,
-  registerIconFromText,
+  registerIcon,
 } from 'igniteui-webcomponents';
 import { disableStoryControls } from './story.js';
 
-const icons = [github, whiteHouse1];
-
-icons.forEach((icon) => {
-  registerIconFromText(icon.name, icon.value);
-});
-
 defineComponents(
-  IgcDropdownComponent,
-  IgcInputComponent,
+  IgcAvatarComponent,
   IgcButtonComponent,
-  IgcIconComponent
+  IgcDropdownComponent,
+  IgcIconButtonComponent,
+  IgcIconComponent,
+  IgcInputComponent
 );
+
+const materialIcons = 'https://unpkg.com/material-design-icons@3.0.1';
+
+for (const [name, path] of [
+  ['archive', 'content/svg/production/ic_archive_24px.svg'],
+  ['delete', 'action/svg/production/ic_delete_24px.svg'],
+  ['download', 'file/svg/production/ic_file_download_24px.svg'],
+  ['edit', 'image/svg/production/ic_edit_24px.svg'],
+  ['language', 'action/svg/production/ic_language_24px.svg'],
+  ['open_external', 'action/svg/production/ic_open_in_new_24px.svg'],
+  ['person', 'social/svg/production/ic_person_24px.svg'],
+  ['settings', 'action/svg/production/ic_settings_24px.svg'],
+  ['share', 'social/svg/production/ic_share_24px.svg'],
+  ['sign_out', 'action/svg/production/ic_exit_to_app_24px.svg'],
+  ['sort', 'content/svg/production/ic_sort_24px.svg'],
+  ['view', 'action/svg/production/ic_visibility_24px.svg'],
+]) {
+  registerIcon(name, `${materialIcons}/${path}`);
+}
 
 // region default
 const metadata: Meta<IgcDropdownComponent> = {
@@ -180,34 +198,121 @@ type Story = StoryObj<IgcDropdownArgs>;
 
 // endregion
 
-const Items = [
-  'Specification',
-  'Implementation',
-  'Testing',
-  'Samples',
-  'Documentation',
-  'Builds',
-].map(
-  (each) =>
-    html`<igc-dropdown-item value=${each}
-      ><igc-icon slot="prefix" name="github"></igc-icon>${each}<igc-icon
-        slot="suffix"
-        name="github"
-      ></igc-icon
-    ></igc-dropdown-item>`
-);
+/** Shared styling for the application-like story scenarios. */
+const scenarioStyles = html`
+  <style>
+    .scenario {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      max-width: 46rem;
+    }
 
-const overflowItems = Array.from(range(1, 51)).map(
-  (each) =>
-    html`<igc-dropdown-item value=${each}>Item ${each}</igc-dropdown-item>`
-);
+    .scenario table {
+      border-collapse: collapse;
+      width: 100%;
+    }
+
+    .scenario th,
+    .scenario td {
+      border-bottom: 1px solid var(--ig-gray-200, #e0e0e0);
+      padding: 0.25rem 0.75rem;
+      text-align: start;
+      white-space: nowrap;
+    }
+
+    .scenario th:last-child,
+    .scenario td:last-child {
+      text-align: end;
+      width: 3rem;
+    }
+
+    .numeric {
+      text-align: end !important;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .app-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
+      background: var(--ig-gray-100, #f5f5f5);
+    }
+
+    .user-target::part(base) {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      min-height: fit-content;
+    }
+
+    .files {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(7rem, 1fr));
+      gap: 0.5rem;
+    }
+
+    .file igc-icon {
+      font-size: 2rem;
+    }
+
+    .file:focus-visible {
+      outline: 2px solid var(--ig-primary-500, #09f);
+      outline-offset: 1px;
+    }
+
+    .file {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.25rem;
+      padding: 0.75rem 0.5rem;
+      border: 1px solid var(--ig-gray-200, #e0e0e0);
+      border-radius: 4px;
+      cursor: context-menu;
+      user-select: none;
+    }
+
+    .settings-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 0.75rem 1rem;
+      border: 1px solid var(--ig-gray-200, #e0e0e0);
+      border-radius: 4px;
+    }
+
+    .panel {
+      height: 16rem;
+      overflow: auto;
+      padding: 1rem;
+      border: 1px solid var(--ig-gray-200, #e0e0e0);
+      border-radius: 4px;
+    }
+
+    .log {
+      margin: 0;
+      min-height: 1.25rem;
+      font-family: monospace;
+      color: var(--ig-primary-500, #09f);
+    }
+
+    .danger::part(content) {
+      color: var(--ig-error-500, #d32f2f);
+    }
+  </style>
+`;
 
 export const Default: Story = {
   parameters: {
     docs: {
       description: {
         story:
-          'A basic dropdown anchored to a button target via the `target` slot. All placement, scroll strategy, and open/close behavior can be configured from the controls panel.',
+          'The component and its parts, wired to the controls panel. A button in the `target` slot anchors the list; everything else - placement, distance, scroll strategy and the open/close behavior - is configurable here.',
       },
     },
   },
@@ -222,7 +327,6 @@ export const Default: Story = {
     scrollStrategy,
   }) => html`
     <igc-dropdown
-      id="dropdown"
       ?open=${open}
       ?flip=${flip}
       ?keep-open-on-outside-click=${keepOpenOnOutsideClick}
@@ -232,293 +336,519 @@ export const Default: Story = {
       .distance=${distance}
       .scrollStrategy=${scrollStrategy}
     >
-      <igc-button slot="target">Tasks</igc-button>
-      <igc-dropdown-header>Available tasks:</igc-dropdown-header>
-      ${Items}
-    </igc-dropdown>
-  `,
-};
+      <igc-button slot="target">Move to</igc-button>
 
-export const Overflow: Story = {
-  args: {
-    sameWidth: true,
-  },
-  parameters: {
-    docs: {
-      description: {
-        story:
-          'A dropdown with a large number of items whose list height is constrained via `::part(list)`. Demonstrates vertical scrolling inside the list and the `scrollStrategy` behavior when scrolling the page.',
-      },
-    },
-  },
-  render: ({
-    distance,
-    open,
-    flip,
-    keepOpenOnOutsideClick,
-    keepOpenOnSelect,
-    placement,
-    sameWidth,
-    scrollStrategy,
-  }) => html`
-    <style>
-      .dropdown-container {
-        display: flex;
-        margin: 20rem auto;
-        justify-content: center;
-      }
-
-      #overflowing::part(list) {
-        max-height: 50vh;
-      }
-    </style>
-    <div class="dropdown-container">
-      <igc-dropdown
-        id="overflowing"
-        ?same-width=${sameWidth}
-        ?open=${open}
-        ?flip=${flip}
-        ?keep-open-on-outside-click=${keepOpenOnOutsideClick}
-        ?keep-open-on-select=${keepOpenOnSelect}
-        .placement=${placement}
-        .distance=${distance}
-        .scrollStrategy=${scrollStrategy}
-      >
-        <igc-button slot="target">With vertical overflow</igc-button>
-        <igc-dropdown-header>Items:</igc-dropdown-header>
-        ${overflowItems}
-      </igc-dropdown>
-    </div>
-  `,
-};
-
-const gdpEurope = [
-  {
-    country: 'Luxembourg',
-    value: '135,605',
-    flag: 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/da/Flag_of_Luxembourg.svg/23px-Flag_of_Luxembourg.svg.png',
-  },
-  {
-    country: 'Ireland',
-    value: '112,248',
-    flag: 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/45/Flag_of_Ireland.svg/23px-Flag_of_Ireland.svg.png',
-  },
-  {
-    country: 'Switzerland',
-    value: '102,865',
-    flag: 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/08/Flag_of_Switzerland_%28Pantone%29.svg/15px-Flag_of_Switzerland_%28Pantone%29.svg.png',
-  },
-].map(
-  ({ country, flag, value }) =>
-    html`<igc-dropdown-item value=${country}>
-      <img slot="prefix" src=${flag} alt="Flag of ${country}" />
-      ${country} ${value}
-    </igc-dropdown-item>`
-);
-
-const gdpAmericas = [
-  {
-    country: 'United States',
-    value: '80,412',
-    flag: 'https://upload.wikimedia.org/wikipedia/en/thumb/a/a4/Flag_of_the_United_States.svg/23px-Flag_of_the_United_States.svg.png',
-  },
-  {
-    country: 'Canada',
-    value: '53,247',
-    flag: 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d9/Flag_of_Canada_%28Pantone%29.svg/23px-Flag_of_Canada_%28Pantone%29.svg.png',
-  },
-  {
-    country: 'Puerto Rico',
-    value: '37,093',
-    flag: 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/28/Flag_of_Puerto_Rico.svg/23px-Flag_of_Puerto_Rico.svg.png',
-  },
-].map(
-  ({ country, flag, value }) =>
-    html`<igc-dropdown-item value=${country}>
-      <img slot="prefix" src=${flag} alt="Flag of ${country}" />
-      ${country} ${value}
-    </igc-dropdown-item>`
-);
-
-export const GroupsAndHeaders: Story = {
-  args: {
-    sameWidth: true,
-  },
-  parameters: {
-    docs: {
-      description: {
-        story:
-          'Items organized into `igc-dropdown-group` elements with group labels and `igc-dropdown-header` separators. Each item uses the `prefix` slot for a flag image.',
-      },
-    },
-  },
-  render: ({
-    open,
-    keepOpenOnOutsideClick,
-    keepOpenOnSelect,
-    distance,
-    flip,
-    placement,
-    sameWidth,
-  }) => html`
-    <style>
-      igc-dropdown-header {
-        text-align: start;
-      }
-      img {
-        width: 23px;
-        height: 12px;
-      }
-      .group-title {
-        font-size: 0.75rem;
-      }
-    </style>
-    <igc-dropdown
-      id="groups-and-headers"
-      ?open=${open}
-      ?flip=${flip}
-      ?keep-open-on-outside-click=${keepOpenOnOutsideClick}
-      ?keep-open-on-select=${keepOpenOnSelect}
-      ?same-width=${sameWidth}
-      .placement=${placement}
-      .distance=${distance}
-    >
-      <igc-button slot="target"
-        >GDP (in USD) per capita by country (IMF)</igc-button
-      >
+      <igc-dropdown-header>Recent</igc-dropdown-header>
+      <igc-dropdown-item value="inbox">Inbox</igc-dropdown-item>
+      <igc-dropdown-item value="starred">Starred</igc-dropdown-item>
 
       <igc-dropdown-group>
-        <p class="group-title" slot="label">
-          UN Region: <strong>Europe</strong>
-        </p>
-        <igc-dropdown-header>Estimate for 2023</igc-dropdown-header>
-        ${gdpEurope}
-      </igc-dropdown-group>
-
-      <igc-dropdown-group>
-        <p slot="label" class="group-title">
-          UN Region: <strong>Americas</strong>
-        </p>
-        <igc-dropdown-header>Estimate for 2023</igc-dropdown-header>
-        ${gdpAmericas}
+        <span slot="label">Projects</span>
+        <igc-dropdown-item value="website">Website redesign</igc-dropdown-item>
+        <igc-dropdown-item value="mobile">Mobile app</igc-dropdown-item>
+        <igc-dropdown-item value="archive" disabled
+          >Archive (read-only)</igc-dropdown-item
+        >
       </igc-dropdown-group>
     </igc-dropdown>
   `,
 };
 
-function setVersion(event: Event) {
-  const input = document.querySelector<IgcInputComponent>('#versions')!;
-  const value = (event.target as IgcDropdownComponent).selectedItem?.value;
-  input.value = value?.replace(/\p{Extended_Pictographic}/gu, '') ?? '';
+type Order = {
+  id: string;
+  customer: string;
+  total: number;
+  status: string;
+};
+
+const orders: Order[] = [
+  { id: 'ORD-1041', customer: 'Farrell Ltd', total: 1290.5, status: 'Paid' },
+  { id: 'ORD-1042', customer: 'Nordwind GmbH', total: 340, status: 'Pending' },
+  { id: 'ORD-1043', customer: 'Kite & Co', total: 8710.25, status: 'Paid' },
+  { id: 'ORD-1044', customer: 'Vitalis AD', total: 96.9, status: 'Refunded' },
+];
+
+const currency = new Intl.NumberFormat('en-US', {
+  style: 'currency',
+  currency: 'USD',
+});
+
+/**
+ * The row actions of a table are the textbook case for a single dropdown moved
+ * between targets: one instance serves every row, instead of one per row.
+ */
+function createTableController() {
+  const rowMenu = createRef<IgcDropdownComponent>();
+  const sortMenu = createRef<IgcDropdownComponent>();
+  const body = createRef<HTMLTableSectionElement>();
+  const log = createRef<HTMLElement>();
+
+  let activeOrder: Order | undefined;
+
+  function report(message: string) {
+    if (log.value) {
+      log.value.textContent = message;
+    }
+  }
+
+  function openRowMenu(order: Order, event: Event) {
+    const menu = rowMenu.value;
+    const trigger = event.currentTarget as HTMLElement;
+
+    if (!menu) return;
+
+    // Clicking the trigger of the row the menu is already open for closes it
+    if (menu.open && activeOrder === order) {
+      menu.hide();
+      return;
+    }
+
+    activeOrder = order;
+    menu.show(trigger);
+  }
+
+  function runRowAction({ detail }: CustomEvent<IgcDropdownItemComponent>) {
+    report(`${detail.textContent?.trim()} -> ${activeOrder?.id}`);
+  }
+
+  function toggleSortMenu(event: Event) {
+    sortMenu.value?.toggle(event.currentTarget as HTMLElement);
+  }
+
+  function sortRows({ detail }: CustomEvent<IgcDropdownItemComponent>) {
+    const direction = detail.value;
+    const rows = Array.from(body.value?.rows ?? []);
+
+    if (direction === 'clear') {
+      rows.sort((a, b) => Number(a.dataset.index) - Number(b.dataset.index));
+      // Nothing is sorted, so the menu should not show a selection either
+      sortMenu.value?.clearSelection();
+      report('Sort cleared');
+    } else {
+      rows.sort((a, b) => {
+        const [left, right] = [
+          Number(a.dataset.total),
+          Number(b.dataset.total),
+        ];
+        return direction === 'asc' ? left - right : right - left;
+      });
+      report(
+        `Sorted by total, ${direction === 'asc' ? 'ascending' : 'descending'}`
+      );
+    }
+
+    body.value?.append(...rows);
+  }
+
+  return {
+    rowMenu,
+    sortMenu,
+    body,
+    log,
+    openRowMenu,
+    runRowAction,
+    toggleSortMenu,
+    sortRows,
+  };
 }
 
-export const OpenFromInteraction: Story = {
+export const TableActions: Story = {
   argTypes: disableStoryControls(metadata),
   parameters: {
     docs: {
       description: {
         story:
-          'Demonstrates calling `toggle()` and `show()` programmatically via `id` references, letting an external button and an input focus event control the same dropdown.',
+          'An orders table with a sort menu on a column header and an actions menu on every row. Both are single dropdown instances: the row menu is moved to whichever trigger was clicked with `show(target)`, which is what keeps a table of a thousand rows down to one popup. The sort menu holds the applied sort as its own selection and `clearSelection()` resets it.',
       },
     },
   },
-  render: () => html`
-    <style>
-      .version-container {
-        padding: 1rem;
-        display: flex;
-        flex-wrap: wrap;
-        align-items: flex-end;
-        justify-content: space-between;
-      }
-    </style>
-    <p>Open the dropdown from the button on the side to choose a version</p>
-    <div class="version-container">
-      <igc-input id="versions" label="Target version" readonly outlined>
-      </igc-input>
+  render: () => {
+    const table = createTableController();
 
-      <igc-button
-        onclick="dropdownVersions.toggle('versions'); versions.focus()"
-        >Select version</igc-button
+    return html`
+      ${scenarioStyles}
+      <div class="scenario">
+        <table>
+          <thead>
+            <tr>
+              <th>Order</th>
+              <th>Customer</th>
+              <th class="numeric">
+                Total
+                <igc-icon-button
+                  variant="flat"
+                  name="sort"
+                  aria-label="Sort by total"
+                  @click=${table.toggleSortMenu}
+                ></igc-icon-button>
+              </th>
+              <th>Status</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody ${ref(table.body)}>
+            ${orders.map(
+              (order, index) => html`
+                <tr data-index=${index} data-total=${order.total}>
+                  <td>${order.id}</td>
+                  <td>${order.customer}</td>
+                  <td class="numeric">${currency.format(order.total)}</td>
+                  <td>${order.status}</td>
+                  <td>
+                    <igc-icon-button
+                      variant="flat"
+                      collection="internal"
+                      name="more_horiz"
+                      aria-label="Actions for ${order.id}"
+                      @click=${(event: Event) =>
+                        table.openRowMenu(order, event)}
+                    ></igc-icon-button>
+                  </td>
+                </tr>
+              `
+            )}
+          </tbody>
+        </table>
+
+        <p class="log" ${ref(table.log)}></p>
+      </div>
+
+      <igc-dropdown
+        ${ref(table.sortMenu)}
+        placement="bottom-end"
+        distance="4"
+        @igcChange=${table.sortRows}
       >
-    </div>
+        <igc-dropdown-item value="asc">Sort ascending</igc-dropdown-item>
+        <igc-dropdown-item value="desc">Sort descending</igc-dropdown-item>
+        <igc-dropdown-item value="clear">Clear sort</igc-dropdown-item>
+      </igc-dropdown>
 
-    <igc-dropdown
-      flip
-      same-width
-      id="dropdownVersions"
-      @igcChange=${setVersion}
-    >
-      <igc-dropdown-item disabled
-        >5.0 &lt;pending release&gt;
-      </igc-dropdown-item>
-      <igc-dropdown-item>4.11 ⭐</igc-dropdown-item>
-      <igc-dropdown-item>4.10</igc-dropdown-item>
-      <igc-dropdown-item>4.9</igc-dropdown-item>
-      <igc-dropdown-item>4.8</igc-dropdown-item>
-      <igc-dropdown-item>4.7</igc-dropdown-item>
-    </igc-dropdown>
-  `,
+      <igc-dropdown
+        ${ref(table.rowMenu)}
+        placement="bottom-end"
+        distance="4"
+        @igcChange=${table.runRowAction}
+      >
+        <igc-dropdown-item value="view">
+          <igc-icon slot="prefix" name="view"></igc-icon>
+          View details
+        </igc-dropdown-item>
+        <igc-dropdown-item value="edit">
+          <igc-icon slot="prefix" name="edit"></igc-icon>
+          Edit
+        </igc-dropdown-item>
+        <igc-dropdown-item value="duplicate">
+          <igc-icon slot="prefix" collection="internal" name="copy"></igc-icon>
+          Duplicate
+        </igc-dropdown-item>
+        <igc-dropdown-item value="archive">
+          <igc-icon slot="prefix" name="archive"></igc-icon>
+          Archive
+        </igc-dropdown-item>
+        <igc-dropdown-item value="delete" class="danger">
+          <igc-icon slot="prefix" name="delete"></igc-icon>
+          Delete
+        </igc-dropdown-item>
+      </igc-dropdown>
+    `;
+  },
 };
 
-export const WithNonSlottedTarget: Story = {
+export const AccountMenu: Story = {
+  argTypes: disableStoryControls(metadata),
   parameters: {
     docs: {
       description: {
         story:
-          'Shows how to drive a single dropdown from multiple external targets — buttons and an input — by passing the target element reference to `show()`. The dropdown has no `target` slot and is positioned relative to whichever element triggered it.',
+          'The account menu of an application bar: the trigger lives in the `target` slot, so the dropdown follows it wherever the bar puts it, and `bottom-end` keeps the list inside the viewport at the right edge. A header labels the signed-in account, and a group separates the destructive action.',
       },
     },
   },
-  render: ({
-    distance,
-    open,
-    flip,
-    keepOpenOnOutsideClick,
-    keepOpenOnSelect,
-    placement,
-    sameWidth,
-  }) => html`
+  render: () => {
+    const log = createRef<HTMLElement>();
+
+    function onChange({ detail }: CustomEvent<IgcDropdownItemComponent>) {
+      if (log.value) {
+        log.value.textContent = `Navigating to ${detail.value}`;
+      }
+    }
+
+    return html`
+      ${scenarioStyles}
+      <div class="scenario">
+        <div class="app-bar">
+          <strong>Contoso Admin</strong>
+
+          <igc-dropdown
+            placement="bottom-end"
+            distance="6"
+            @igcChange=${onChange}
+          >
+            <igc-button class="user-target" slot="target" variant="flat">
+              <igc-avatar
+                style="--ig-size: 1"
+                initials="AR"
+                shape="circle"
+              ></igc-avatar>
+              Alex Rivera
+              <igc-icon
+                collection="internal"
+                name="keyboard_arrow_down"
+              ></igc-icon>
+            </igc-button>
+
+            <igc-dropdown-header>alex.rivera@contoso.com</igc-dropdown-header>
+            <igc-dropdown-item value="profile">
+              <igc-icon slot="prefix" name="person"></igc-icon>
+              Your profile
+            </igc-dropdown-item>
+            <igc-dropdown-item value="preferences">
+              <igc-icon slot="prefix" name="settings"></igc-icon>
+              Preferences
+            </igc-dropdown-item>
+
+            <igc-dropdown-group>
+              <span slot="label">Session</span>
+              <igc-dropdown-item value="sign-out">
+                <igc-icon slot="prefix" name="sign_out"></igc-icon>
+                Sign out
+              </igc-dropdown-item>
+            </igc-dropdown-group>
+          </igc-dropdown>
+        </div>
+
+        <p class="log" ${ref(log)}></p>
+      </div>
+    `;
+  },
+};
+
+const files = [
+  { name: 'Q3-report.pdf', icon: 'file_pdf' },
+  { name: 'budget.xlsx', icon: 'file_xls' },
+  { name: 'contacts.csv', icon: 'file_csv' },
+  { name: 'logo.svg', icon: 'file_svg' },
+  { name: 'notes.txt', icon: 'file_txt' },
+  { name: 'archive.zip', icon: 'file_zip' },
+];
+
+export const ContextMenu: Story = {
+  argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'A file browser context menu. `contextmenu` is cancelled and the dropdown is anchored to the tile that was right-clicked, so one menu serves the whole grid and the list opens against the item it acts on. The tiles are focusable and the clicked one is focused before the menu opens: keyboard handling follows the target, so that is what makes the arrow keys, Enter and Escape work on the open list.',
+      },
+    },
+  },
+  render: () => {
+    const menu = createRef<IgcDropdownComponent>();
+    const log = createRef<HTMLElement>();
+    let activeFile = '';
+
+    function openMenu(name: string, event: MouseEvent) {
+      event.preventDefault();
+      activeFile = name;
+
+      // The dropdown observes key events on its target, so the tile has to hold
+      // focus for Escape and the arrow keys to reach the open list
+      const tile = event.currentTarget as HTMLElement;
+      tile.focus();
+      menu.value?.show(tile);
+    }
+
+    function onChange({ detail }: CustomEvent<IgcDropdownItemComponent>) {
+      if (log.value) {
+        log.value.textContent = `${detail.textContent?.trim()} -> ${activeFile}`;
+      }
+    }
+
+    return html`
+      ${scenarioStyles}
+      <div class="scenario">
+        <p>Right-click a file, then navigate the menu with the keyboard.</p>
+
+        <div class="files">
+          ${files.map(
+            ({ name, icon }) => html`
+              <div
+                class="file"
+                tabindex="0"
+                @contextmenu=${(event: MouseEvent) => openMenu(name, event)}
+              >
+                <igc-icon collection="internal" name=${icon}></igc-icon>
+                <small>${name}</small>
+              </div>
+            `
+          )}
+        </div>
+
+        <p class="log" ${ref(log)}></p>
+      </div>
+
+      <igc-dropdown ${ref(menu)} distance="2" @igcChange=${onChange}>
+        <igc-dropdown-item value="open">
+          <igc-icon slot="prefix" name="open_external"></igc-icon>
+          Open
+        </igc-dropdown-item>
+        <igc-dropdown-item value="rename">
+          <igc-icon slot="prefix" name="edit"></igc-icon>
+          Rename
+        </igc-dropdown-item>
+        <igc-dropdown-item value="download">
+          <igc-icon slot="prefix" name="download"></igc-icon>
+          Download
+        </igc-dropdown-item>
+        <igc-dropdown-item value="share">
+          <igc-icon slot="prefix" name="share"></igc-icon>
+          Share
+        </igc-dropdown-item>
+        <igc-dropdown-item value="delete" class="danger">
+          <igc-icon slot="prefix" name="delete"></igc-icon>
+          Delete
+        </igc-dropdown-item>
+      </igc-dropdown>
+    `;
+  },
+};
+
+const languages = [
+  { region: 'Americas', locale: 'en-US', flag: '🇺🇸', label: 'English (US)' },
+  { region: 'Americas', locale: 'pt-BR', flag: '🇧🇷', label: 'Português (BR)' },
+  { region: 'Europe', locale: 'en-GB', flag: '🇬🇧', label: 'English (UK)' },
+  { region: 'Europe', locale: 'de-DE', flag: '🇩🇪', label: 'Deutsch' },
+  { region: 'Europe', locale: 'bg-BG', flag: '🇧🇬', label: 'Български' },
+  { region: 'Asia', locale: 'ja-JP', flag: '🇯🇵', label: '日本語' },
+];
+
+const regions = [...new Set(languages.map(({ region }) => region))];
+
+export const LanguagePicker: Story = {
+  argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'A settings row backed by application state. The current locale is rendered as a `selected` item, which the component picks up as its initial selection on its own, and `igcChange` writes the choice back into the trigger. `same-width` keeps the list aligned with the field it belongs to, and the locales are grouped by region.',
+      },
+    },
+  },
+  render: () => {
+    const label = createRef<HTMLElement>();
+    let locale = 'en-GB';
+
+    function onChange({ detail }: CustomEvent<IgcDropdownItemComponent>) {
+      locale = detail.value;
+      const choice = languages.find((each) => each.locale === locale);
+
+      if (label.value && choice) {
+        label.value.textContent = `${choice.flag} ${choice.label}`;
+      }
+    }
+
+    const current = languages.find((each) => each.locale === locale)!;
+
+    return html`
+      ${scenarioStyles}
+      <div class="scenario">
+        <div class="settings-row">
+          <div>
+            <div><strong>Interface language</strong></div>
+            <small>Applies to menus, dates and number formats.</small>
+          </div>
+
+          <igc-dropdown same-width flip @igcChange=${onChange}>
+            <igc-button slot="target" variant="outlined">
+              <igc-icon slot="prefix" name="language"></igc-icon>
+              <span ${ref(label)}>${current.flag} ${current.label}</span>
+            </igc-button>
+
+            ${regions.map(
+              (region) => html`
+                <igc-dropdown-group>
+                  <span slot="label">${region}</span>
+                  ${languages
+                    .filter((each) => each.region === region)
+                    .map(
+                      ({ locale: value, flag, label: name }) => html`
+                        <igc-dropdown-item
+                          value=${value}
+                          ?selected=${value === locale}
+                        >
+                          <span slot="prefix">${flag}</span>
+                          ${name}
+                        </igc-dropdown-item>
+                      `
+                    )}
+                </igc-dropdown-group>
+              `
+            )}
+          </igc-dropdown>
+        </div>
+      </div>
+    `;
+  },
+};
+
+const timeZones = Array.from(range(-11, 13)).flatMap((offset) =>
+  ['00', '30'].map(
+    (minutes) => html`
+      <igc-dropdown-item value="${offset}:${minutes}">
+        UTC${offset < 0 ? offset : `+${offset}`}:${minutes}
+      </igc-dropdown-item>
+    `
+  )
+);
+
+export const InScrollingPanel: Story = {
+  args: {
+    sameWidth: false,
+    scrollStrategy: 'block',
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'A long list opened from inside a scrolling panel - a settings pane, a dialog body, a side drawer. The list height is capped with `::part(list)` so it scrolls on its own, and `scroll-strategy` decides what scrolling the panel underneath does to it: `scroll` lets it follow, `block` freezes the panel, `close` dismisses the list.',
+      },
+    },
+  },
+  render: ({ scrollStrategy, sameWidth, flip, distance, placement }) => html`
+    ${scenarioStyles}
     <style>
-      .container {
-        display: flex;
-        justify-content: space-between;
+      #time-zones::part(list) {
+        max-height: 14rem;
       }
     </style>
-    <div class="container">
-      <igc-button id="1st" onclick="detachedDropdown.show('1st')"
-        >First</igc-button
-      >
-      <igc-button id="2nd" onclick="detachedDropdown.show('2nd')"
-        >Second</igc-button
-      >
-      <igc-button id="3rd" onclick="detachedDropdown.show('3rd')"
-        >Third</igc-button
-      >
-      <igc-button id="4th" onclick="detachedDropdown.show('4th')"
-        >Fourth</igc-button
-      >
-    </div>
-    <igc-input
-      id="input"
-      style="max-width: 15rem"
-      label="Focus me"
-      onfocus="detachedDropdown.show('input')"
-    ></igc-input>
 
-    <igc-dropdown
-      id="detachedDropdown"
-      .distance=${distance}
-      ?open=${open}
-      ?flip=${flip}
-      ?keep-open-on-outside-click=${keepOpenOnOutsideClick}
-      ?keep-open-on-select=${keepOpenOnSelect}
-      .placement=${placement}
-      ?same-width=${sameWidth}
-    >
-      <igc-dropdown-item>1</igc-dropdown-item>
-      <igc-dropdown-item>2</igc-dropdown-item>
-      <igc-dropdown-item>3</igc-dropdown-item>
-    </igc-dropdown>
+    <div class="scenario">
+      <div class="panel">
+        <h4>Regional settings</h4>
+        <p>
+          Scroll this panel with the list open to compare the scroll strategies.
+        </p>
+
+        <igc-dropdown
+          id="time-zones"
+          ?same-width=${sameWidth}
+          ?flip=${flip}
+          .placement=${placement}
+          .distance=${distance}
+          .scrollStrategy=${scrollStrategy}
+        >
+          <igc-button slot="target">Time zone</igc-button>
+          <igc-dropdown-header>UTC offset</igc-dropdown-header>
+          ${timeZones}
+        </igc-dropdown>
+
+        <p>
+          ${Array.from(range(1, 12)).map(
+            () => html`Regional formatting affects dates, times and numbers. `
+          )}
+        </p>
+      </div>
+    </div>
   `,
 };

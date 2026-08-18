@@ -24,514 +24,128 @@
  * To get acquainted with which component uses what icon, please make sure to read the
  * [docs](https://infragistics.com/products/ignite-ui-angular/Angular/components/icon-service#internal-usage).
  */
-import type {
-  IconMeta,
-  IconReference,
-  IconThemeKey,
-} from './registry/types.js';
+import type { IconMeta, IconThemeKey } from './registry/types.js';
 
-type Icon = { [key in IconThemeKey]?: IconMeta };
+/** The collection every built-in alias target lives in. */
+const INTERNAL = 'internal';
 
-export const ICON_REFERENCES: IconReference[] = [];
-const makeIconRefs = (icons: Icon) => {
-  return new Map(
-    Object.entries(icons).map((icon) => {
-      return icon as [theme: IconThemeKey, IconMeta];
-    })
-  );
+/**
+ * Maps an alias in the `default` collection to the name of its target icon in
+ * the `internal` collection, per theme. The `default` entry is the fallback for
+ * themes without an explicit target.
+ */
+const ICON_ALIASES: Record<string, Partial<Record<IconThemeKey, string>>> = {
+  expand: { default: 'keyboard_arrow_down', indigo: 'indigo_chevron_down' },
+  attach_file: { default: 'attach_file', indigo: 'indigo_attach_file' },
+  attach_document: { default: 'document_filled' },
+  attach_image: { default: 'document_image' },
+  auto_suggest: { default: 'auto_suggest' },
+  send_message: { default: 'send' },
+  image_thumbnail: { default: 'image' },
+  table_thumbnail: { default: 'table' },
+  layout_thumbnail: { default: 'layout' },
+  code_thumbnail: { default: 'code_circle' },
+  document_thumbnail: { default: 'document_empty' },
+  file_generic: { default: 'file_generic' },
+  file_css: { default: 'file_css' },
+  file_csv: { default: 'file_csv' },
+  file_doc: { default: 'file_doc' },
+  file_htm: { default: 'file_htm' },
+  file_html: { default: 'file_html' },
+  file_js: { default: 'file_js' },
+  file_json: { default: 'file_json' },
+  file_pdf: { default: 'file_pdf' },
+  file_rtf: { default: 'file_rtf' },
+  file_svg: { default: 'file_svg' },
+  file_txt: { default: 'file_txt' },
+  file_xls: { default: 'file_xls' },
+  file_xml: { default: 'file_xml' },
+  file_zip: { default: 'file_zip' },
+  file_link: { default: 'file_link' },
+  more_horiz: { default: 'more_horiz' },
+  open_in_new: { default: 'open_in_new' },
+  thumb_up_active: { default: 'thumb_up_filled' },
+  thumb_up_inactive: { default: 'thumb_up_empty' },
+  thumb_down_active: { default: 'thumb_down_filled' },
+  thumb_down_inactive: { default: 'thumb_down_empty' },
+  regenerate: { default: 'reload' },
+  copy_content: { default: 'copy' },
+  collapse: { default: 'keyboard_arrow_up', indigo: 'indigo_chevron_up' },
+  eye_dropper: { default: 'colorize' },
+  arrow_prev: {
+    default: 'navigate_before',
+    fluent: 'arrow_upward',
+    indigo: 'indigo_chevron_left',
+  },
+  arrow_next: {
+    default: 'navigate_next',
+    fluent: 'arrow_downward',
+    indigo: 'indigo_chevron_right',
+  },
+  selected: { default: 'chip_select' },
+  remove: { default: 'chip_cancel', indigo: 'indigo_cancel' },
+  input_clear: { default: 'clear', indigo: 'indigo_clear' },
+  input_expand: {
+    default: 'keyboard_arrow_down',
+    indigo: 'indigo_chevron_down',
+  },
+  input_collapse: { default: 'keyboard_arrow_up', indigo: 'indigo_chevron_up' },
+  chevron_right: {
+    default: 'keyboard_arrow_right',
+    indigo: 'indigo_chevron_right',
+  },
+  chevron_left: { default: 'navigate_before', indigo: 'indigo_chevron_left' },
+  case_sensitive: { default: 'case_sensitive' },
+  today: { default: 'calendar_today', indigo: 'indigo_calendar_today' },
+  clock: { default: 'access_time', indigo: 'indigo_access_time' },
+  star_filled: { default: 'star' },
+  star_outlined: { default: 'star_border' },
+  prev: { default: 'navigate_before', indigo: 'indigo_chevron_left' },
+  next: { default: 'navigate_next', indigo: 'indigo_chevron_right' },
+  tree_expand: {
+    default: 'keyboard_arrow_right',
+    indigo: 'indigo_chevron_right',
+  },
+  tree_collapse: {
+    default: 'keyboard_arrow_down',
+    indigo: 'indigo_chevron_down',
+  },
+  carousel_prev: {
+    default: 'keyboard_arrow_left',
+    indigo: 'indigo_chevron_left',
+  },
+  carousel_next: {
+    default: 'keyboard_arrow_right',
+    indigo: 'indigo_chevron_right',
+  },
+  error: { default: 'error', indigo: 'indigo_error' },
+  fullscreen: { default: 'fullscreen', indigo: 'indigo_fullscreen' },
+  fullscreen_exit: {
+    default: 'fullscreen_exit',
+    indigo: 'indigo_fullscreen_exit',
+  },
+  expand_content: {
+    default: 'expand_content',
+    indigo: 'indigo_expand_content',
+  },
+  collapse_content: {
+    default: 'collapse_content',
+    indigo: 'indigo_collapse_content',
+  },
+  resize: { default: 'resize' },
 };
 
-const addIcon = (name: string, target: Icon) => {
-  const icon = {
-    alias: {
-      name,
-      collection: 'default',
-    },
-    target: makeIconRefs(target),
-  };
-
-  ICON_REFERENCES.push(icon as IconReference);
-};
-
-addIcon('expand', {
-  default: {
-    name: 'keyboard_arrow_down',
-    collection: 'internal',
-  },
-  indigo: {
-    name: 'indigo_chevron_down',
-    collection: 'internal',
-  },
-});
-addIcon('attach_file', {
-  default: {
-    name: 'attach_file',
-    collection: 'internal',
-  },
-  indigo: {
-    name: 'indigo_attach_file',
-    collection: 'internal',
-  },
-});
-addIcon('attach_document', {
-  default: {
-    name: 'document_filled',
-    collection: 'internal',
-  },
-});
-addIcon('attach_image', {
-  default: {
-    name: 'document_image',
-    collection: 'internal',
-  },
-});
-addIcon('auto_suggest', {
-  default: {
-    name: 'auto_suggest',
-    collection: 'internal',
-  },
-});
-addIcon('send_message', {
-  default: {
-    name: 'send',
-    collection: 'internal',
-  },
-});
-addIcon('image_thumbnail', {
-  default: {
-    name: 'image',
-    collection: 'internal',
-  },
-});
-addIcon('table_thumbnail', {
-  default: {
-    name: 'table',
-    collection: 'internal',
-  },
-});
-addIcon('layout_thumbnail', {
-  default: {
-    name: 'layout',
-    collection: 'internal',
-  },
-});
-addIcon('code_thumbnail', {
-  default: {
-    name: 'code_circle',
-    collection: 'internal',
-  },
-});
-addIcon('document_thumbnail', {
-  default: {
-    name: 'document_empty',
-    collection: 'internal',
-  },
-});
-addIcon('file_generic', {
-  default: {
-    name: 'file_generic',
-    collection: 'internal',
-  },
-});
-addIcon('file_css', {
-  default: {
-    name: 'file_css',
-    collection: 'internal',
-  },
-});
-addIcon('file_csv', {
-  default: {
-    name: 'file_csv',
-    collection: 'internal',
-  },
-});
-addIcon('file_doc', {
-  default: {
-    name: 'file_doc',
-    collection: 'internal',
-  },
-});
-addIcon('file_htm', {
-  default: {
-    name: 'file_htm',
-    collection: 'internal',
-  },
-});
-addIcon('file_html', {
-  default: {
-    name: 'file_html',
-    collection: 'internal',
-  },
-});
-addIcon('file_js', {
-  default: {
-    name: 'file_js',
-    collection: 'internal',
-  },
-});
-addIcon('file_json', {
-  default: {
-    name: 'file_json',
-    collection: 'internal',
-  },
-});
-addIcon('file_pdf', {
-  default: {
-    name: 'file_pdf',
-    collection: 'internal',
-  },
-});
-addIcon('file_rtf', {
-  default: {
-    name: 'file_rtf',
-    collection: 'internal',
-  },
-});
-addIcon('file_svg', {
-  default: {
-    name: 'file_svg',
-    collection: 'internal',
-  },
-});
-addIcon('file_txt', {
-  default: {
-    name: 'file_txt',
-    collection: 'internal',
-  },
-});
-addIcon('file_xls', {
-  default: {
-    name: 'file_xls',
-    collection: 'internal',
-  },
-});
-addIcon('file_xml', {
-  default: {
-    name: 'file_xml',
-    collection: 'internal',
-  },
-});
-addIcon('file_zip', {
-  default: {
-    name: 'file_zip',
-    collection: 'internal',
-  },
-});
-addIcon('file_link', {
-  default: {
-    name: 'file_link',
-    collection: 'internal',
-  },
-});
-addIcon('more_horiz', {
-  default: {
-    name: 'more_horiz',
-    collection: 'internal',
-  },
-});
-addIcon('open_in_new', {
-  default: {
-    name: 'open_in_new',
-    collection: 'internal',
-  },
-});
-addIcon('thumb_up_active', {
-  default: {
-    name: 'thumb_up_filled',
-    collection: 'internal',
-  },
-});
-addIcon('thumb_up_inactive', {
-  default: {
-    name: 'thumb_up_empty',
-    collection: 'internal',
-  },
-});
-addIcon('thumb_down_active', {
-  default: {
-    name: 'thumb_down_filled',
-    collection: 'internal',
-  },
-});
-addIcon('thumb_down_inactive', {
-  default: {
-    name: 'thumb_down_empty',
-    collection: 'internal',
-  },
-});
-addIcon('regenerate', {
-  default: {
-    name: 'reload',
-    collection: 'internal',
-  },
-});
-addIcon('copy_content', {
-  default: {
-    name: 'copy',
-    collection: 'internal',
-  },
-});
-addIcon('eye_dropper', {
-  default: {
-    name: 'colorize',
-    collection: 'internal',
-  },
-});
-addIcon('collapse', {
-  default: {
-    name: 'keyboard_arrow_up',
-    collection: 'internal',
-  },
-  indigo: {
-    name: 'indigo_chevron_up',
-    collection: 'internal',
-  },
-});
-addIcon('arrow_prev', {
-  default: {
-    name: 'navigate_before',
-    collection: 'internal',
-  },
-  fluent: {
-    name: 'arrow_upward',
-    collection: 'internal',
-  },
-  indigo: {
-    name: 'indigo_chevron_left',
-    collection: 'internal',
-  },
-});
-addIcon('arrow_next', {
-  default: {
-    name: 'navigate_next',
-    collection: 'internal',
-  },
-  fluent: {
-    name: 'arrow_downward',
-    collection: 'internal',
-  },
-  indigo: {
-    name: 'indigo_chevron_right',
-    collection: 'internal',
-  },
-});
-addIcon('selected', {
-  default: {
-    name: 'chip_select',
-    collection: 'internal',
-  },
-});
-addIcon('remove', {
-  default: {
-    name: 'chip_cancel',
-    collection: 'internal',
-  },
-  indigo: {
-    name: 'indigo_cancel',
-    collection: 'internal',
-  },
-});
-addIcon('input_clear', {
-  default: {
-    name: 'clear',
-    collection: 'internal',
-  },
-  indigo: {
-    name: 'indigo_clear',
-    collection: 'internal',
-  },
-});
-addIcon('input_expand', {
-  default: {
-    name: 'keyboard_arrow_down',
-    collection: 'internal',
-  },
-  indigo: {
-    name: 'indigo_chevron_down',
-    collection: 'internal',
-  },
-});
-addIcon('input_collapse', {
-  default: {
-    name: 'keyboard_arrow_up',
-    collection: 'internal',
-  },
-  indigo: {
-    name: 'indigo_chevron_up',
-    collection: 'internal',
-  },
-});
-addIcon('chevron_right', {
-  default: {
-    name: 'keyboard_arrow_right',
-    collection: 'internal',
-  },
-  indigo: {
-    name: 'indigo_chevron_right',
-    collection: 'internal',
-  },
-});
-addIcon('chevron_left', {
-  default: {
-    name: 'navigate_before',
-    collection: 'internal',
-  },
-  indigo: {
-    name: 'indigo_chevron_left',
-    collection: 'internal',
-  },
-});
-addIcon('case_sensitive', {
-  default: {
-    name: 'case_sensitive',
-    collection: 'internal',
-  },
-});
-addIcon('today', {
-  default: {
-    name: 'calendar_today',
-    collection: 'internal',
-  },
-  indigo: {
-    name: 'indigo_calendar_today',
-    collection: 'internal',
-  },
-});
-addIcon('clock', {
-  default: {
-    name: 'access_time',
-    collection: 'internal',
-  },
-  indigo: {
-    name: 'indigo_access_time',
-    collection: 'internal',
-  },
-});
-addIcon('star_filled', {
-  default: {
-    name: 'star',
-    collection: 'internal',
-  },
-});
-addIcon('star_outlined', {
-  default: {
-    name: 'star_border',
-    collection: 'internal',
-  },
-});
-addIcon('prev', {
-  default: {
-    name: 'navigate_before',
-    collection: 'internal',
-  },
-  indigo: {
-    name: 'indigo_chevron_left',
-    collection: 'internal',
-  },
-});
-addIcon('next', {
-  default: {
-    name: 'navigate_next',
-    collection: 'internal',
-  },
-  indigo: {
-    name: 'indigo_chevron_right',
-    collection: 'internal',
-  },
-});
-addIcon('tree_expand', {
-  default: {
-    name: 'keyboard_arrow_right',
-    collection: 'internal',
-  },
-  indigo: {
-    name: 'indigo_chevron_right',
-    collection: 'internal',
-  },
-});
-addIcon('tree_collapse', {
-  default: {
-    name: 'keyboard_arrow_down',
-    collection: 'internal',
-  },
-  indigo: {
-    name: 'indigo_chevron_down',
-    collection: 'internal',
-  },
-});
-addIcon('carousel_prev', {
-  default: {
-    name: 'keyboard_arrow_left',
-    collection: 'internal',
-  },
-  indigo: {
-    name: 'indigo_chevron_left',
-    collection: 'internal',
-  },
-});
-addIcon('carousel_next', {
-  default: {
-    name: 'keyboard_arrow_right',
-    collection: 'internal',
-  },
-  indigo: {
-    name: 'indigo_chevron_right',
-    collection: 'internal',
-  },
-});
-addIcon('error', {
-  default: {
-    name: 'error',
-    collection: 'internal',
-  },
-  indigo: {
-    name: 'indigo_error',
-    collection: 'internal',
-  },
-});
-addIcon('fullscreen', {
-  default: {
-    name: 'fullscreen',
-    collection: 'internal',
-  },
-  indigo: {
-    name: 'indigo_fullscreen',
-    collection: 'internal',
-  },
-});
-addIcon('fullscreen_exit', {
-  default: {
-    name: 'fullscreen_exit',
-    collection: 'internal',
-  },
-  indigo: {
-    name: 'indigo_fullscreen_exit',
-    collection: 'internal',
-  },
-});
-addIcon('expand_content', {
-  default: {
-    name: 'expand_content',
-    collection: 'internal',
-  },
-  indigo: {
-    name: 'indigo_expand_content',
-    collection: 'internal',
-  },
-});
-addIcon('collapse_content', {
-  default: {
-    name: 'collapse_content',
-    collection: 'internal',
-  },
-  indigo: {
-    name: 'indigo_collapse_content',
-    collection: 'internal',
-  },
-});
-addIcon('resize', {
-  default: {
-    name: 'resize',
-    collection: 'internal',
-  },
-});
+/** Resolved alias name -> theme -> target icon. */
+export const ICON_REFERENCES: ReadonlyMap<
+  string,
+  ReadonlyMap<IconThemeKey, IconMeta>
+> = new Map(
+  Object.entries(ICON_ALIASES).map(([alias, targets]) => [
+    alias,
+    new Map(
+      (Object.entries(targets) as [IconThemeKey, string][]).map(
+        ([theme, name]) => [theme, { name, collection: INTERNAL }]
+      )
+    ),
+  ])
+);

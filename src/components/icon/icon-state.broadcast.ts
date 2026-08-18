@@ -1,4 +1,5 @@
-import { createIconDefaultMap } from './registry/default-map.js';
+import { isServer } from 'lit';
+
 import type {
   BroadcastIconsChangeMessage,
   IconMeta,
@@ -12,15 +13,18 @@ type IconBroadcastEvent =
   | PageTransitionEvent;
 
 /**
- * Manages cross-context synchronization of icon state using the BroadcastChannel API.
+ * Publishes icon registry state to other browsing contexts of the same origin
+ * using the BroadcastChannel API.
  *
  * @remarks
- * This class enables icon registry state to be shared between different browsing contexts
- * (e.g., iframes, tabs) within the same origin. It specifically handles synchronization
- * with Angular elements that may be running in separate contexts.
+ * The traffic is one-way by design: this side broadcasts its own registrations
+ * and reference updates, and answers a peer's `SyncState` request with the
+ * user-set part of the registry. It never applies inbound state and never
+ * requests a sync itself - the Ignite UI for Angular icon service is the peer
+ * that consumes these messages.
  *
- * The broadcast channel is automatically created on page show and disposed on page hide
- * to properly handle bfcache (back/forward cache) scenarios.
+ * The channel is created on page show and disposed on page hide, so a page
+ * restored from the bfcache gets a working one. Under SSR the instance is inert.
  */
 export class IconsStateBroadcast {
   private static readonly _origin = 'igniteui-webcomponents';
@@ -30,12 +34,6 @@ export class IconsStateBroadcast {
 
   private _channel: BroadcastChannel | null = null;
 
-  /**
-   * Creates an instance of IconsStateBroadcast.
-   *
-   * @param iconsCollection - The collection of registered SVG icons.
-   * @param iconReferences - The collection of icon references/aliases.
-   */
   constructor(
     iconsCollection: IconsCollection<SvgIcon>,
     iconReferences: IconsCollection<IconMeta>
@@ -43,15 +41,17 @@ export class IconsStateBroadcast {
     this._iconsCollection = iconsCollection;
     this._iconReferences = iconReferences;
 
+    if (isServer) {
+      return;
+    }
+
     globalThis.addEventListener('pageshow', this);
     globalThis.addEventListener('pagehide', this);
 
     this._create();
   }
 
-  /**
-   * Sends a message to other browsing contexts via the broadcast channel.
-   */
+  /** Posts a message to the other browsing contexts of this origin. */
   public send(data: BroadcastIconsChangeMessage): void {
     this._channel?.postMessage(data);
   }
@@ -84,12 +84,8 @@ export class IconsStateBroadcast {
 
     this.send({
       actionType: ActionType.SyncState,
-      collections: this._getUserSetCollection(
-        this._iconsCollection
-      ).toPlainMap(),
-      references: this._getUserRefsCollection(
-        this._iconReferences
-      ).toPlainMap(),
+      collections: this._userIcons(),
+      references: this._userReferences(),
       origin: IconsStateBroadcast._origin,
     });
   }
@@ -107,36 +103,33 @@ export class IconsStateBroadcast {
     this._channel = null;
   }
 
-  private _getUserRefsCollection(
-    collections: IconsCollection<IconMeta>
-  ): IconsCollection<IconMeta> {
-    const userSetIcons = createIconDefaultMap<string, IconMeta>();
+  /** The user-set references, skipping collections that have none. */
+  private _userReferences(): IconsCollection<IconMeta> {
+    const result: IconsCollection<IconMeta> = new Map();
 
-    for (const [collectionKey, collection] of collections.entries()) {
-      for (const [iconKey, icon] of collection.entries()) {
-        if (icon.external) {
-          userSetIcons.getOrCreate(collectionKey).set(iconKey, icon);
-        }
+    for (const [name, references] of this._iconReferences) {
+      const external = new Map(
+        [...references].filter(([, ref]) => ref.external)
+      );
+
+      if (external.size > 0) {
+        result.set(name, external);
       }
     }
 
-    return userSetIcons;
+    return result;
   }
 
-  private _getUserSetCollection(
-    collections: IconsCollection<SvgIcon>
-  ): IconsCollection<SvgIcon> {
-    const userSetIcons = createIconDefaultMap<string, SvgIcon>();
+  /** Every registered collection except the built-in `internal` one. */
+  private _userIcons(): IconsCollection<SvgIcon> {
+    const result: IconsCollection<SvgIcon> = new Map();
 
-    for (const [collectionKey, collection] of collections.entries()) {
-      if (collectionKey === 'internal') {
-        continue;
-      }
-      for (const [iconKey, icon] of collection.entries()) {
-        userSetIcons.getOrCreate(collectionKey).set(iconKey, icon);
+    for (const [name, icons] of this._iconsCollection) {
+      if (name !== 'internal') {
+        result.set(name, new Map(icons));
       }
     }
 
-    return userSetIcons;
+    return result;
   }
 }
