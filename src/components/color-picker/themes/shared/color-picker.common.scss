@@ -93,13 +93,8 @@ $input-theme: input-theme.$material;
 
 :host {
     --component-size: var(--ig-size, #{var-get($theme, 'default-size')});
-
-    // The focus-visible border/halo is drawn outside or inside the anchor trigger/anchor depending on the theme
-    // and has different size in the different themes
     --_outline-size: #{rem(1px)};
     --_picker-popover-size: #{sizable(rem(290px), rem(314px), rem(360px))};
-    
-    // Row and swatch spacing
     --_input-row-spacing: #{rem(16px)};
     --_input-row-gap: #{rem(12px)};
     --_alpha-row-spacing: #{sizable(rem(8px), rem(12px), rem(16px))};
@@ -121,13 +116,16 @@ $input-theme: input-theme.$material;
     --_swatch-grid-size: 50% 50%;
     --_anchor-border-size: #{rem(1px)};
     --_input-mode-trigger-size: #{sizable(rem(18px), rem(20px), rem(24px))};
-    --_empty-swatch: #{color(error, 500)};
+    --_empty-swatch: #{var-get($theme, 'invalid-color')};
+    
+    // The stops sit half the line width on either side of the diagonal,
+    // so the crossing line renders exactly 1px thick.
     --_empty-swatch-image: linear-gradient(
         to top right,
-        transparent calc(50% - 1px),
-        var(--_empty-swatch) calc(50% - 1px),
-        var(--_empty-swatch) calc(50% + 1px),
-        transparent calc(50% + 1px)
+        transparent calc(50% - 0.5px),
+        var(--_empty-swatch) calc(50% - 0.5px),
+        var(--_empty-swatch) calc(50% + 0.5px),
+        transparent calc(50% + 0.5px)
     );
     
     // Draws a 2x2 checkerboard tile (alternating light/dark squares)
@@ -150,18 +148,8 @@ $input-theme: input-theme.$material;
         #f90000 100%
     );
 
-    // `--_current-color` is the pure hue that drives the canvas gradient, so it
-    // only moves when the hue does. The alpha slider has to show the color
-    // actually picked on the canvas - the component sets `--_selected-color` on
-    // every change, and this falls back to the hue while there is no value.
     --_alpha-color: var(--_selected-color, var(--_current-color));
-
-    // The alpha ramp over the same transparency grid, tiled to the track height
-    // so the checker stays two rows tall - one tile carries a 2x2 checkerboard -
-    // and a constant size regardless of track length. Both stops are the picked
-    // color and only the alpha channel varies - ramping from a bare
-    // `transparent` would start at transparent *black* and leave the result at
-    // the mercy of the engine's gradient interpolation.
+    
     --_alpha-slider-track:
         linear-gradient(
             to right,
@@ -255,8 +243,7 @@ $input-theme: input-theme.$material;
     ::part(helper-text) {
         margin-block-start: pad-block(rem(4px));
     }
-
-    // Trigger
+    
     [part~='anchor'] {
         border: var(--_anchor-border-size) solid var-get($theme, 'anchor-border-color');
         border-radius: var-get($theme, 'anchor-border-radius');
@@ -269,7 +256,7 @@ $input-theme: input-theme.$material;
             @include swatch-preview();
 
             border: var(--_anchor-border-size) solid var-get($theme, 'swatch-preview-border-color');
-            border-radius: calc(var-get($theme, 'anchor-border-radius') - var(--_anchor-border-size));
+            border-radius: clamp(rem(2px), calc(var-get($theme, 'anchor-border-radius') - var(--_anchor-border-size)), calc(var-get($theme, 'anchor-border-radius') - var(--_anchor-border-size)));
         }
 
         &:focus-visible {
@@ -282,9 +269,7 @@ $input-theme: input-theme.$material;
             }
         }
     }
-
-    // In input mode there is no separate trigger box - the swatch is the element
-    // itself, so the preview moves off `::before` and onto its own background.
+    
     [part~='anchor'][part~='input-mode'] {
         @include swatch-preview();
 
@@ -294,10 +279,7 @@ $input-theme: input-theme.$material;
         margin: 0;
     }
 
-    // The gradient axis is perpendicular to the line it paints, hence
-    // `to top right`. Declared after both anchor presentations: the input-mode
-    // swatch matches at the same specificity, so source order is what decides
-    // the background.
+
     [part~='empty'] {
         &::before {
             @include empty-swatch();
@@ -317,10 +299,10 @@ $input-theme: input-theme.$material;
 
         &:focus-visible {
             outline: none;
-            background: var-get($theme, 'anchor-background-focus');
+            background: var-get($theme, 'anchor-background-focus-visible');
 
             &:hover {
-                background: var-get($theme, 'anchor-background-focus-hover');
+                background: var-get($theme, 'anchor-background-focus-visible-hover');
             }
         }
 
@@ -328,11 +310,10 @@ $input-theme: input-theme.$material;
             background: var-get($theme, 'anchor-background-active');
 
             &:focus-visible {
-                background: var-get($theme, 'anchor-background-focus-active');
+                background: var-get($theme, 'anchor-background-active-focus-visible');
             }
         }
     }
-
     [part~='label'] {
         color: var-get($theme, 'label-color');
         cursor: pointer;

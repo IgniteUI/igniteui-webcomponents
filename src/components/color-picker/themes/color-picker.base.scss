@@ -59,7 +59,7 @@
     }
 
     [part='inputs-row'] {
-        margin-block-end: var(--_input-row-spacing);
+        padding-block-end: var(--_input-row-spacing);
 
         igc-input {
             grid-column: 2 / -1;

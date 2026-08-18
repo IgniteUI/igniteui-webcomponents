@@ -9,13 +9,17 @@ $theme: $fluent;
     --_picker-buttons-gap: #{sizable(rem(8px), rem(4px), rem(4px))};
     --_label-spacing: #{rem(8px)};
     
+    igc-input::part(prefix),
+    igc-input::part(suffix) {
+        background: transparent !important;
+    }
+    
     [part~='anchor'] {
         &:focus-visible {
             &::after {
                 width: calc(100% - #{rem(2px)});
                 height: calc(100% - #{rem(2px)});
                 inset: rem(1px);
-                border-radius: 0;
             }
         }
     }
