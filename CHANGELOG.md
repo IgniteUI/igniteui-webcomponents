@@ -41,6 +41,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - `select()` now matches a tab's `label` as well as its IDREF, so the value reported by `selected` can be passed back into it.
 
 ### Changed
+- #### Button group
+  - **Behavioral change:** a disabled group no longer writes `disabled` onto its buttons. The state is inherited, so a button disabled in its own right stays disabled once the group is enabled again, and buttons added to a disabled group are disabled as well.
+  - Improved accessibility: the `single` and `single-required` modes expose a `radiogroup` of `radio` buttons instead of toggle buttons with `aria-pressed`. The `focused` CSS part of `igc-toggle-button` is now documented.
 - #### Combo
   - The dropdown list is now virtualized using the new `igc-virtual-scroll` component instead of the third-party `@lit-labs/virtualizer` package. [#2222](https://github.com/IgniteUI/igniteui-webcomponents/pull/2222)
 - #### Dropdown
@@ -71,6 +74,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - Improved accessibility: the default `sticky` mode close action is a real, labelled `<button>` rather than a bare icon, so it can be reached and activated from the keyboard. It is exposed through the new `close-button` CSS part.
 
 ### Fixed
+- #### Button group
+  - Single selection compared button values, so buttons without a `value` - or sharing one - could never hand the selection over: clicking a second button only cleared the first. Selection is now tracked per element. [#2229](https://github.com/IgniteUI/igniteui-webcomponents/issues/2229)
+  - `selectedItems` added to the current selection instead of replacing it, and left out buttons whose `value` is an empty string.
+  - A disabled group could still be interacted with through buttons added to it after it was disabled.
+  - `focus()`, `blur()` and `click()` on `igc-toggle-button` threw when called before its first render.
+  - Toggle buttons that are not direct children of the group took part in its selection state, which could leave two buttons selected in a single selection mode, or drop the selection altogether.
 - #### Calendar
   - A calendar showing several months announced every navigation once per visible month, because the off screen live region holding the current period was rendered together with each month's navigation. There is now a single live region for the whole calendar.
   - A calendar showing more than one month exposed one tab stop per visible month, so tabbing through it stepped into every month's grid instead of leaving the calendar. Only the active days view now holds the tab stop of its active date.
