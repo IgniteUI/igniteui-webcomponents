@@ -1,15 +1,19 @@
-import { html, LitElement } from 'lit';
-import { property, queryAssignedElements } from 'lit/decorators.js';
+import { ContextProvider } from '@lit/context';
 import {
-  createMutationController,
-  type MutationControllerParams,
-} from '#internals/controllers/mutation-observer.js';
-import { watch } from '#internals/decorators/watch.js';
+  html,
+  LitElement,
+  type PropertyValues,
+  type TemplateResult,
+} from 'lit';
+import { property } from 'lit/decorators.js';
+import { buttonGroupContext } from '#internals/context.js';
+import { addSlotController, setSlots } from '#internals/controllers/slot.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import type { Constructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
-import { lastOf } from '#internals/utils/arrays.js';
+import { asArray, isEmpty, lastOf } from '#internals/utils/arrays.js';
 import { getElementFromPath } from '#internals/utils/events.js';
+import { isDefined } from '#internals/utils/types.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import type { ButtonGroupSelection, ContentOrientation } from '../types.js';
 import { styles } from './themes/group.base.css.js';
@@ -43,59 +47,77 @@ export default class IgcButtonGroupComponent extends EventEmitterMixin<
   public static styles = [styles, shared];
 
   /* blazorSuppress */
-  public static register() {
+  public static register(): void {
     registerComponent(IgcButtonGroupComponent, IgcToggleButtonComponent);
   }
 
-  private get isMultiple() {
+  //#region Internal state & properties
+
+  /** The values set through the `selectedItems` API, applied once the buttons are rendered. */
+  private _selectedItems = new Set<string>();
+
+  private readonly _context = new ContextProvider(this, {
+    context: buttonGroupContext,
+    initialValue: {
+      instance: this,
+      syncSelection: (button) => this._syncSelection(button),
+    },
+  });
+
+  private readonly _slots = addSlotController(this, {
+    slots: setSlots(),
+    onChange: this._enforceSingleSelection,
+  });
+
+  /**
+   * The toggle buttons of the group, in DOM order. There are none to report
+   * before the first render, when the slot they are assigned to does not exist yet.
+   */
+  private get _buttons(): IgcToggleButtonComponent[] {
+    if (!this.hasUpdated) {
+      return [];
+    }
+
+    return this._slots.getAssignedElements('[default]', {
+      selector: IgcToggleButtonComponent.tagName,
+    });
+  }
+
+  private get _isMultiple(): boolean {
     return this.selection === 'multiple';
   }
 
-  private _selectedItems: Set<string> = new Set();
-
-  private _observerCallback({
-    changes: { added, attributes },
-  }: MutationControllerParams<IgcToggleButtonComponent>) {
-    if (this.isMultiple || this._selectedButtons.length <= 1) {
-      return;
-    }
-
-    const buttons = this.toggleButtons;
-    const idx = buttons.indexOf(
-      added.length ? lastOf(added).node : lastOf(attributes).node
-    );
-
-    for (const [i, button] of buttons.entries()) {
-      if (button.selected && i !== idx) {
-        button.selected = false;
-      }
-    }
+  private get _selectedButtons(): IgcToggleButtonComponent[] {
+    return this._buttons.filter((button) => button.selected);
   }
 
-  private get _selectedButtons(): Array<IgcToggleButtonComponent> {
-    return this.toggleButtons.filter((b) => b.selected);
-  }
+  //#endregion
 
-  @queryAssignedElements({ selector: IgcToggleButtonComponent.tagName })
-  private toggleButtons!: Array<IgcToggleButtonComponent>;
+  //#region Public properties
 
   /**
    * Disables all buttons inside the group.
-   * @attr
+   *
+   * @attr disabled
+   * @default false
    */
   @property({ type: Boolean, reflect: true })
   public disabled = false;
 
   /**
-   * Sets the orientation of the buttons in the group.
-   * @attr
+   * The orientation of the buttons in the group.
+   *
+   * @attr alignment
+   * @default 'horizontal'
    */
   @property({ reflect: true })
   public alignment: ContentOrientation = 'horizontal';
 
   /**
    * Controls the mode of selection for the button group.
-   * @attr
+   *
+   * @attr selection
+   * @default 'single'
    */
   @property({ reflect: false })
   public selection: ButtonGroupSelection = 'single';
@@ -106,135 +128,164 @@ export default class IgcButtonGroupComponent extends EventEmitterMixin<
    */
   @property({ attribute: 'selected-items', type: Array, reflect: false })
   public get selectedItems(): string[] {
-    return this._selectedButtons.map((b) => b.value).filter((v) => v);
+    // Buttons are not required to have a value, in which case they report none.
+    return this._selectedButtons
+      .map((button) => button.value)
+      .filter(isDefined);
   }
 
   public set selectedItems(values: string[]) {
-    this._selectedItems = new Set(Array.isArray(values) ? values : []);
-    this.setSelection(this._selectedItems);
+    this._selectedItems = new Set(asArray(values));
+    this._selectFromValues(this._selectedItems);
   }
 
-  @watch('disabled', { waitUntilFirstUpdate: true })
-  protected updateDisabledState() {
-    this.toggleButtons.forEach((b) => {
-      b.disabled = this.disabled;
-    });
-  }
+  //#endregion
 
-  @watch('selection', { waitUntilFirstUpdate: true })
-  protected updateSelectionState() {
-    if (this._selectedButtons.length) {
-      this.toggleButtons.forEach((b) => {
-        b.selected = false;
-      });
-    }
-  }
+  //#region Life-cycle hooks
 
   constructor() {
     super();
-
     addThemingController(this, all);
-
-    createMutationController(this, {
-      callback: this._observerCallback,
-      filter: [IgcToggleButtonComponent.tagName],
-      config: {
-        attributeFilter: ['selected'],
-        childList: true,
-        subtree: true,
-      },
-    });
   }
 
-  protected override firstUpdated() {
-    if (this.disabled) {
-      this.updateDisabledState();
+  protected override willUpdate(changedProperties: PropertyValues<this>): void {
+    if (!this.hasUpdated) {
+      return;
     }
 
-    const buttons = this._selectedButtons;
+    const selectionChanged = changedProperties.has('selection');
 
-    if (buttons.length) {
-      if (!this.isMultiple) {
-        const index = buttons.indexOf(buttons.at(-1)!);
+    if (selectionChanged || changedProperties.has('disabled')) {
+      this._context.updateObservers();
+    }
 
-        for (let i = 0; i < index; i++) {
-          buttons[i].selected = false;
-        }
-      }
+    if (selectionChanged) {
+      // The selection modes are not interchangeable - the group starts over.
+      this._selectedItems.clear();
+      this._applySelection([]);
+    }
+  }
+
+  protected override firstUpdated(): void {
+    if (isEmpty(this._selectedButtons)) {
+      // Nothing is selected through the children, fall back to the values passed in.
+      this._selectFromValues(this._selectedItems);
     } else {
-      this.setSelection(this._selectedItems);
+      // A selection through the children takes priority over the passed in values.
+      this._enforceSingleSelection();
     }
   }
 
-  private handleClick(event: MouseEvent) {
+  //#endregion
+
+  //#region Private API
+
+  /** Applies `next` as the selection, clearing the state of every other button. */
+  private _applySelection(next: IgcToggleButtonComponent[]): void {
+    const selection = new Set(next);
+
+    for (const button of this._buttons) {
+      button.selected = selection.has(button);
+    }
+  }
+
+  /** Selects the buttons matching `values`, honoring the selection mode. */
+  private _selectFromValues(values: Set<string>): void {
+    const matches = this._buttons.filter((button) => values.has(button.value));
+    this._applySelection(this._isMultiple ? matches : matches.slice(0, 1));
+  }
+
+  /**
+   * Reduces a selection made outside of the group - through the children or by
+   * adding buttons that bring their own state - to a single button. The last one wins.
+   */
+  private _enforceSingleSelection(): void {
+    const selected = this._selectedButtons;
+
+    if (!this._isMultiple && selected.length > 1) {
+      this._applySelection([lastOf(selected)]);
+    }
+  }
+
+  /** Reconciles the group with a button of its own that has turned selected. */
+  private _syncSelection(button: IgcToggleButtonComponent): void {
+    if (!this._isMultiple && this._buttons.includes(button)) {
+      this._applySelection([button]);
+    }
+  }
+
+  //#endregion
+
+  //#region Event handlers
+
+  private _handleClick(event: PointerEvent): void {
+    if (this.disabled) {
+      return;
+    }
+
     const button = getElementFromPath(IgcToggleButtonComponent.tagName, event);
 
-    if (button) {
-      this.isMultiple
-        ? this.handleMultipleSelection(button)
-        : this.handleSingleSelection(button);
+    if (!button || !this._buttons.includes(button)) {
+      return;
     }
+
+    this._isMultiple
+      ? this._handleMultipleSelection(button)
+      : this._handleSingleSelection(button);
   }
 
-  private handleSingleSelection(button: IgcToggleButtonComponent) {
-    const singleRequired = this.selection === 'single-required';
-    const selectedButton = this._selectedButtons.at(0);
-    const isSame = selectedButton && selectedButton.value === button.value;
+  private _handleSingleSelection(button: IgcToggleButtonComponent): void {
+    const selected = this._selectedButtons.at(0);
 
-    if (selectedButton) {
-      if (singleRequired && isSame) return;
-      this.emitDeselectEvent(selectedButton);
+    if (selected === button) {
+      // A required selection cannot be toggled off.
+      if (this.selection !== 'single-required') {
+        this._emitDeselectEvent(button);
+      }
+      return;
     }
-    if (isSame) return;
-    this.emitSelectEvent(button);
+
+    if (selected) {
+      this._emitDeselectEvent(selected);
+    }
+
+    this._emitSelectEvent(button);
   }
 
-  private handleMultipleSelection(button: IgcToggleButtonComponent) {
+  private _handleMultipleSelection(button: IgcToggleButtonComponent): void {
     button.selected
-      ? this.emitDeselectEvent(button)
-      : this.emitSelectEvent(button);
+      ? this._emitDeselectEvent(button)
+      : this._emitSelectEvent(button);
   }
 
-  private emitSelectEvent(button: IgcToggleButtonComponent) {
+  private _emitSelectEvent(button: IgcToggleButtonComponent): void {
     button.selected = true;
     this.emitEvent('igcSelect', { detail: button.value });
   }
 
-  private emitDeselectEvent(button: IgcToggleButtonComponent) {
+  private _emitDeselectEvent(button: IgcToggleButtonComponent): void {
     button.selected = false;
     this.emitEvent('igcDeselect', { detail: button.value });
   }
 
-  private setSelection(values: Set<string>) {
-    if (!values.size) {
-      this.toggleButtons.forEach((b) => {
-        b.selected = false;
-      });
-      return;
-    }
+  //#endregion
 
-    for (const button of this.toggleButtons) {
-      if (values.has(button.value)) {
-        button.selected = true;
-        if (!this.isMultiple) {
-          break;
-        }
-      }
-    }
-  }
+  //#region Render
 
-  protected override render() {
+  protected override render(): TemplateResult {
     return html`
       <div
         part="group"
-        role="group"
+        role=${this._isMultiple ? 'group' : 'radiogroup'}
         aria-disabled=${this.disabled}
-        @click=${this.handleClick}
+        @click=${this._handleClick}
       >
         <slot></slot>
       </div>
     `;
   }
+
+  //#endregion
 }
 
 declare global {

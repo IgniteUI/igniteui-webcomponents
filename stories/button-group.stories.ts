@@ -1,15 +1,24 @@
 import type { Meta, StoryObj } from '@storybook/web-components-vite';
 import { html } from 'lit';
+import { createRef, ref } from 'lit/directives/ref.js';
 
 import {
+  IgcButtonComponent,
   IgcButtonGroupComponent,
+  type IgcCheckboxChangeEventArgs,
   IgcIconComponent,
+  IgcSwitchComponent,
   defineComponents,
   registerIconFromText,
 } from 'igniteui-webcomponents';
 import { disableStoryControls } from './story.js';
 
-defineComponents(IgcButtonGroupComponent, IgcIconComponent);
+defineComponents(
+  IgcButtonComponent,
+  IgcButtonGroupComponent,
+  IgcIconComponent,
+  IgcSwitchComponent
+);
 
 registerIconFromText(
   'bold',
@@ -74,7 +83,7 @@ const metadata: Meta<IgcButtonGroupComponent> = {
     },
     alignment: {
       type: { name: 'enum', value: ['horizontal', 'vertical'] },
-      description: 'Sets the orientation of the buttons in the group.',
+      description: 'The orientation of the buttons in the group.',
       options: ['horizontal', 'vertical'],
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'horizontal' } },
@@ -95,7 +104,7 @@ export default metadata;
 interface IgcButtonGroupArgs {
   /** Disables all buttons inside the group. */
   disabled: boolean;
-  /** Sets the orientation of the buttons in the group. */
+  /** The orientation of the buttons in the group. */
   alignment: 'horizontal' | 'vertical';
   /** Controls the mode of selection for the button group. */
   selection: 'single' | 'single-required' | 'multiple';
@@ -103,6 +112,61 @@ interface IgcButtonGroupArgs {
 type Story = StoryObj<IgcButtonGroupArgs>;
 
 // endregion
+
+const scenarioStyles = html`
+  <style>
+    .scenario {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      max-width: 46rem;
+    }
+
+    .scenario p {
+      margin: 0;
+    }
+
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-start;
+      gap: 2rem;
+    }
+
+    .case {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .case > strong {
+      font-size: 0.875rem;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .settings-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 0.5rem 0.75rem;
+      border: 1px solid var(--ig-gray-200, #e0e0e0);
+      border-radius: 4px;
+    }
+
+    .log {
+      margin: 0;
+      min-height: 1.25rem;
+      font-family: monospace;
+      color: var(--ig-primary-500, #09f);
+    }
+  </style>
+`;
 
 export const Basic: Story = {
   render: ({ selection, disabled, alignment }) => html`
@@ -121,17 +185,19 @@ export const Basic: Story = {
 
 export const SelectionModes: Story = {
   argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'The three selection modes differ in what a click on an already selected button does: `single` deselects it, `single-required` keeps it selected, and `multiple` toggles each button on its own. The mode also drives the announced semantics - the single modes expose a `radiogroup` of `radio` buttons, while `multiple` exposes a `group` of toggle buttons with `aria-pressed`. Mind that `single-required` does not select a button for you: it only refuses to give up a selection it already has.',
+      },
+    },
+  },
   render: () => html`
-    <p>
-      Three selection modes are available: <code>single</code> allows at most
-      one selected item (deselectable), <code>single-required</code> always
-      keeps one selected, and <code>multiple</code> allows any combination.
-    </p>
-    <div style="display: flex; flex-direction: column; gap: 1.5rem;">
-      <div>
-        <p style="margin: 0 0 0.5rem; font-weight: 600;">
-          single — one or none selected
-        </p>
+    ${scenarioStyles}
+    <div class="scenario">
+      <div class="case">
+        <strong>single - one or none selected</strong>
         <igc-button-group selection="single">
           <igc-toggle-button value="day">Day</igc-toggle-button>
           <igc-toggle-button value="week" selected>Week</igc-toggle-button>
@@ -139,10 +205,9 @@ export const SelectionModes: Story = {
           <igc-toggle-button value="year">Year</igc-toggle-button>
         </igc-button-group>
       </div>
-      <div>
-        <p style="margin: 0 0 0.5rem; font-weight: 600;">
-          single-required — exactly one always selected
-        </p>
+
+      <div class="case">
+        <strong>single-required - the selection cannot be given up</strong>
         <igc-button-group selection="single-required">
           <igc-toggle-button value="xs">XS</igc-toggle-button>
           <igc-toggle-button value="sm">SM</igc-toggle-button>
@@ -151,19 +216,18 @@ export const SelectionModes: Story = {
           <igc-toggle-button value="xl">XL</igc-toggle-button>
         </igc-button-group>
       </div>
-      <div>
-        <p style="margin: 0 0 0.5rem; font-weight: 600;">
-          multiple — any number selected
-        </p>
+
+      <div class="case">
+        <strong>multiple - every button toggles on its own</strong>
         <igc-button-group selection="multiple">
           <igc-toggle-button value="bold" aria-label="Bold">
-            <igc-icon name="bold" collection="default"></igc-icon>
+            <igc-icon name="bold"></igc-icon>
           </igc-toggle-button>
           <igc-toggle-button value="italic" aria-label="Italic" selected>
-            <igc-icon name="italic" collection="default"></igc-icon>
+            <igc-icon name="italic"></igc-icon>
           </igc-toggle-button>
           <igc-toggle-button value="underline" aria-label="Underline" selected>
-            <igc-icon name="underline" collection="default"></igc-icon>
+            <igc-icon name="underline"></igc-icon>
           </igc-toggle-button>
         </igc-button-group>
       </div>
@@ -173,40 +237,46 @@ export const SelectionModes: Story = {
 
 export const Alignment: Story = {
   argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'The `alignment` attribute lays the buttons out in a row (default) or in a column. The group keeps the rounded corners on the leading and trailing button of whichever axis it runs along.',
+      },
+    },
+  },
   render: () => html`
-    <p>
-      The <code>alignment</code> attribute controls whether the buttons are
-      arranged horizontally (default) or vertically.
-    </p>
-    <div style="display: flex; gap: 3rem; align-items: flex-start;">
-      <div>
-        <p style="margin: 0 0 0.5rem; font-weight: 600;">Horizontal</p>
+    ${scenarioStyles}
+    <div class="row">
+      <div class="case">
+        <strong>horizontal</strong>
         <igc-button-group alignment="horizontal" selection="single-required">
           <igc-toggle-button value="list" aria-label="List view">
-            <igc-icon name="view-list" collection="default"></igc-icon>
+            <igc-icon name="view-list"></igc-icon>
           </igc-toggle-button>
           <igc-toggle-button value="module" aria-label="Module view" selected>
-            <igc-icon name="view-module" collection="default"></igc-icon>
+            <igc-icon name="view-module"></igc-icon>
           </igc-toggle-button>
           <igc-toggle-button value="quilt" aria-label="Quilt view">
-            <igc-icon name="view-quilt" collection="default"></igc-icon>
+            <igc-icon name="view-quilt"></igc-icon>
           </igc-toggle-button>
         </igc-button-group>
       </div>
-      <div>
-        <p style="margin: 0 0 0.5rem; font-weight: 600;">Vertical</p>
+
+      <div class="case">
+        <strong>vertical</strong>
         <igc-button-group alignment="vertical" selection="single-required">
           <igc-toggle-button value="left" aria-label="Align left">
-            <igc-icon name="align-left" collection="default"></igc-icon>
+            <igc-icon name="align-left"></igc-icon>
           </igc-toggle-button>
           <igc-toggle-button value="center" aria-label="Align center" selected>
-            <igc-icon name="align-center" collection="default"></igc-icon>
+            <igc-icon name="align-center"></igc-icon>
           </igc-toggle-button>
           <igc-toggle-button value="right" aria-label="Align right">
-            <igc-icon name="align-right" collection="default"></igc-icon>
+            <igc-icon name="align-right"></igc-icon>
           </igc-toggle-button>
           <igc-toggle-button value="justify" aria-label="Justify">
-            <igc-icon name="align-justify" collection="default"></igc-icon>
+            <igc-icon name="align-justify"></igc-icon>
           </igc-toggle-button>
         </igc-button-group>
       </div>
@@ -216,149 +286,218 @@ export const Alignment: Story = {
 
 export const WithIcons: Story = {
   argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Icon-only buttons keep a toolbar compact, but an icon carries no accessible name. Put an `aria-label` on the toggle button - it is forwarded to the native button that assistive technology actually reports.',
+      },
+    },
+  },
   render: () => html`
-    <p>
-      Icon-only toggle buttons work well for compact toolbars. Provide an
-      <code>aria-label</code> on each button for accessibility.
-    </p>
-    <div
-      style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: center;"
-    >
+    ${scenarioStyles}
+    <div class="row">
       <igc-button-group selection="multiple">
         <igc-toggle-button value="bold" aria-label="Bold">
-          <igc-icon name="bold" collection="default"></igc-icon>
+          <igc-icon name="bold"></igc-icon>
         </igc-toggle-button>
         <igc-toggle-button value="italic" aria-label="Italic">
-          <igc-icon name="italic" collection="default"></igc-icon>
+          <igc-icon name="italic"></igc-icon>
         </igc-toggle-button>
         <igc-toggle-button value="underline" aria-label="Underline">
-          <igc-icon name="underline" collection="default"></igc-icon>
+          <igc-icon name="underline"></igc-icon>
         </igc-toggle-button>
       </igc-button-group>
 
       <igc-button-group selection="single-required">
         <igc-toggle-button value="left" aria-label="Align left" selected>
-          <igc-icon name="align-left" collection="default"></igc-icon>
+          <igc-icon name="align-left"></igc-icon>
         </igc-toggle-button>
         <igc-toggle-button value="center" aria-label="Align center">
-          <igc-icon name="align-center" collection="default"></igc-icon>
+          <igc-icon name="align-center"></igc-icon>
         </igc-toggle-button>
         <igc-toggle-button value="right" aria-label="Align right">
-          <igc-icon name="align-right" collection="default"></igc-icon>
+          <igc-icon name="align-right"></igc-icon>
         </igc-toggle-button>
         <igc-toggle-button value="justify" aria-label="Justify">
-          <igc-icon name="align-justify" collection="default"></igc-icon>
+          <igc-icon name="align-justify"></igc-icon>
         </igc-toggle-button>
       </igc-button-group>
     </div>
   `,
+};
+
+export const OptionalValues: Story = {
+  argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'A `value` is optional. The group tracks its buttons by identity, so a group of buttons without values selects and deselects like any other - the value only decides what `selectedItems` reports and what the `selectedItems` setter can match. Buttons that carry no value are simply left out of the reported collection.',
+      },
+    },
+  },
+  render: () => {
+    const log = createRef<HTMLElement>();
+
+    function report(event: Event) {
+      const group = event.currentTarget as IgcButtonGroupComponent;
+
+      if (log.value) {
+        log.value.textContent = `selectedItems: ${JSON.stringify(group.selectedItems)}`;
+      }
+    }
+
+    return html`
+      ${scenarioStyles}
+      <div class="scenario">
+        <div class="case">
+          <strong>No values at all - the selection still moves</strong>
+          <igc-button-group selection="single">
+            <igc-toggle-button>Day</igc-toggle-button>
+            <igc-toggle-button>Week</igc-toggle-button>
+            <igc-toggle-button>Month</igc-toggle-button>
+          </igc-button-group>
+        </div>
+
+        <div class="case">
+          <strong>Only the buttons with a value are reported</strong>
+          <igc-button-group
+            selection="multiple"
+            @igcSelect=${report}
+            @igcDeselect=${report}
+          >
+            <igc-toggle-button value="bold" aria-label="Bold">
+              <igc-icon name="bold"></igc-icon>
+            </igc-toggle-button>
+            <igc-toggle-button value="italic" aria-label="Italic">
+              <igc-icon name="italic"></igc-icon>
+            </igc-toggle-button>
+            <igc-toggle-button aria-label="Underline">
+              <igc-icon name="underline"></igc-icon>
+            </igc-toggle-button>
+          </igc-button-group>
+          <p class="log" ${ref(log)}>selectedItems: []</p>
+        </div>
+      </div>
+    `;
+  },
 };
 
 export const Disabled: Story = {
   argTypes: disableStoryControls(metadata),
-  render: () => html`
-    <p>
-      Setting <code>disabled</code> on the group disables all buttons.
-      Individual buttons can also be disabled independently.
-    </p>
-    <div style="display: flex; flex-direction: column; gap: 1.5rem;">
-      <div>
-        <p style="margin: 0 0 0.5rem; font-weight: 600;">
-          Entire group disabled
-        </p>
-        <igc-button-group selection="single" disabled>
-          <igc-toggle-button value="day" selected>Day</igc-toggle-button>
-          <igc-toggle-button value="week">Week</igc-toggle-button>
-          <igc-toggle-button value="month">Month</igc-toggle-button>
-        </igc-button-group>
-      </div>
-      <div>
-        <p style="margin: 0 0 0.5rem; font-weight: 600;">
-          Individual buttons disabled
-        </p>
-        <igc-button-group selection="single">
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'A disabled group turns its buttons off without touching their own `disabled` property. Switch the group back on and MD - which is disabled in its own right - stays disabled, while the rest become interactive again. Buttons added to a group that is already disabled inherit that state as well.',
+      },
+    },
+  },
+  render: () => {
+    const group = createRef<IgcButtonGroupComponent>();
+
+    function toggleGroup({ detail }: CustomEvent<IgcCheckboxChangeEventArgs>) {
+      if (group.value) {
+        group.value.disabled = detail.checked;
+      }
+    }
+
+    return html`
+      ${scenarioStyles}
+      <div class="scenario">
+        <div class="settings-row">
+          <div>
+            <div><strong>Disable the whole group</strong></div>
+            <small>MD is disabled on its own and stays that way.</small>
+          </div>
+
+          <igc-switch @igcChange=${toggleGroup}></igc-switch>
+        </div>
+
+        <igc-button-group ${ref(group)} selection="single">
           <igc-toggle-button value="xs">XS</igc-toggle-button>
           <igc-toggle-button value="sm" selected>SM</igc-toggle-button>
           <igc-toggle-button value="md" disabled>MD</igc-toggle-button>
-          <igc-toggle-button value="lg" disabled>LG</igc-toggle-button>
+          <igc-toggle-button value="lg">LG</igc-toggle-button>
           <igc-toggle-button value="xl">XL</igc-toggle-button>
         </igc-button-group>
       </div>
-    </div>
-  `,
+    `;
+  },
 };
 
 export const ProgrammaticSelection: Story = {
   argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'The `selectedItems` property reads and writes the whole selection: assigning to it replaces what was selected before rather than adding to it, and an empty array clears the group. Programmatic changes are silent - `igcSelect` and `igcDeselect` only report what a user did.',
+      },
+    },
+  },
   render: () => {
-    const setItems = (values: string[]) => {
-      const group = document.querySelector<any>('#prog-group');
-      if (group) group.selectedItems = values;
-    };
+    const group = createRef<IgcButtonGroupComponent>();
+    const log = createRef<HTMLElement>();
 
-    const onSelect = (e: CustomEvent<string>) => {
-      const log = document.querySelector<HTMLElement>('#sel-log');
-      if (log) log.textContent = `igcSelect — value: "${e.detail}"`;
-    };
+    function report(message: string) {
+      if (log.value) {
+        log.value.textContent = message;
+      }
+    }
 
-    const onDeselect = (e: CustomEvent<string>) => {
-      const log = document.querySelector<HTMLElement>('#sel-log');
-      if (log) log.textContent = `igcDeselect — value: "${e.detail}"`;
-    };
+    function select(values: string[]) {
+      const element = group.value;
+
+      if (element) {
+        element.selectedItems = values;
+        report(`selectedItems: ${JSON.stringify(element.selectedItems)}`);
+      }
+    }
+
+    function reportEvent(name: string, event: CustomEvent<string | undefined>) {
+      report(`${name}: "${event.detail}"`);
+    }
 
     return html`
-      <p>
-        Use the <code>selectedItems</code> property to get or set the selection
-        programmatically. The <code>igcSelect</code> and
-        <code>igcDeselect</code> events fire on user interaction only.
-      </p>
-      <igc-button-group
-        id="prog-group"
-        selection="multiple"
-        @igcSelect=${onSelect}
-        @igcDeselect=${onDeselect}
-      >
-        <igc-toggle-button value="bold" aria-label="Bold">
-          <igc-icon name="bold" collection="default"></igc-icon>
-        </igc-toggle-button>
-        <igc-toggle-button value="italic" aria-label="Italic">
-          <igc-icon name="italic" collection="default"></igc-icon>
-        </igc-toggle-button>
-        <igc-toggle-button value="underline" aria-label="Underline">
-          <igc-icon name="underline" collection="default"></igc-icon>
-        </igc-toggle-button>
-      </igc-button-group>
+      ${scenarioStyles}
+      <div class="scenario">
+        <igc-button-group
+          ${ref(group)}
+          selection="multiple"
+          @igcSelect=${(e: CustomEvent<string | undefined>) =>
+            reportEvent('igcSelect', e)}
+          @igcDeselect=${(e: CustomEvent<string | undefined>) =>
+            reportEvent('igcDeselect', e)}
+        >
+          <igc-toggle-button value="bold" aria-label="Bold">
+            <igc-icon name="bold"></igc-icon>
+          </igc-toggle-button>
+          <igc-toggle-button value="italic" aria-label="Italic">
+            <igc-icon name="italic"></igc-icon>
+          </igc-toggle-button>
+          <igc-toggle-button value="underline" aria-label="Underline">
+            <igc-icon name="underline"></igc-icon>
+          </igc-toggle-button>
+        </igc-button-group>
 
-      <div
-        style="display: flex; gap: 0.5rem; margin-top: 1rem; flex-wrap: wrap;"
-      >
-        <igc-button variant="flat" @click=${() => setItems(['bold'])}
-          >Select Bold</igc-button
-        >
-        <igc-button
-          variant="flat"
-          @click=${() => setItems(['italic', 'underline'])}
-        >
-          Select Italic + Underline
-        </igc-button>
-        <igc-button
-          variant="flat"
-          @click=${() => setItems(['bold', 'italic', 'underline'])}
-        >
-          Select All
-        </igc-button>
-        <igc-button variant="flat" @click=${() => setItems([])}
-          >Clear</igc-button
-        >
-      </div>
+        <div class="actions">
+          <igc-button variant="outlined" @click=${() => select(['bold'])}>
+            Bold
+          </igc-button>
+          <igc-button
+            variant="outlined"
+            @click=${() => select(['italic', 'underline'])}
+          >
+            Italic + Underline
+          </igc-button>
+          <igc-button variant="outlined" @click=${() => select([])}>
+            Clear
+          </igc-button>
+        </div>
 
-      <div style="margin-top: 1rem;">
-        <p style="margin: 0 0 0.25rem; font-weight: 600;">Event log:</p>
-        <pre
-          id="sel-log"
-          style="margin: 0; padding: 0.75rem; background: var(--ig-gray-100, #f5f5f5); border-radius: 4px; font-size: 0.8rem;"
-        >
-Interact with the buttons to see events.</pre>
+        <p class="log" ${ref(log)}>Interact with the buttons to see events.</p>
       </div>
     `;
   },
