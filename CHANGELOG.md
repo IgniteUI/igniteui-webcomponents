@@ -63,6 +63,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - **Behavioral change:** the scroll buttons now scroll to the nearest tab that is not fully in view, instead of stepping by a fixed 180px. A tab sitting underneath a scroll button counts as out of view, so one click brings exactly one tab into view without overshooting it.
   - Improved accessibility: tab headers expose `aria-posinset` / `aria-setsize`, the strip declares its `aria-orientation`, and the selected panel is focusable so keyboard users can reach panel content that holds no focusable elements of its own. The strip also keeps a tab stop when nothing is selected.
   - `igc-tab` elements projected through an intermediate slot are now picked up, so `igc-tabs` can be wrapped by another component.
+- #### Tooltip
+  - **Behavioral change:** a tooltip closing from a hide trigger now waits exactly `hide-delay`. It used to sit through an additional, undocumented 180ms stage first, so the real delay was `hide-delay + 180ms`.
+  - **Behavioral change:** the default close button in `sticky` mode hides the tooltip straight away instead of running through `hide-delay`, which previously made an explicit close take almost half a second.
+  - **Behavioral change:** `focusin` and `focusout` joined the default `show-triggers` / `hide-triggers`, so a tooltip now appears when its anchor takes keyboard focus and hides when focus leaves it.
+  - Improved accessibility: the anchor points at the tooltip through `aria-describedby`, so its content is announced as the description of the element it belongs to. The tooltip generates an `id` for itself only when it has none, keeps any references already on the anchor, and takes its own back off when it stops describing it.
+  - Improved accessibility: the default `sticky` mode close action is a real, labelled `<button>` rather than a bare icon, so it can be reached and activated from the keyboard. It is exposed through the new `close-button` CSS part.
 
 ### Fixed
 - #### Calendar
@@ -120,6 +126,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - The start scroll button stayed enabled at the start of the strip under browser zoom or a non-integer device pixel ratio, where the scroll offset is fractional.
   - Clicking a partially visible tab header scrolled the strip twice.
   - Reduced rendering work: scrolling the strip no longer schedules an update per scroll event, and changing the selection no longer triggers a redundant layout pass.
+- #### Tooltip
+  - `show()` and `hide()` did not cancel a queued transition in the opposite direction, so a tooltip could open right after it was told to hide - and close right after it was told to show.
+  - Moving the pointer back over the anchor while the hide animation was running closed the tooltip and kept it closed, even though the pointer never left.
+  - Interacting with the original anchor while a tooltip shown through `show(target)` was open de-synchronized the component: it reported `open === false` while still being rendered on screen, and could no longer be closed.
+  - Enabling `with-arrow` at runtime never handed the arrow element over to the popover, so the arrow was left unpositioned and unstyled until an unrelated re-render happened to fix it.
+  - Delayed show/hide transitions returned a promise that never settled.
+  - Closing with `Escape` emitted `igcClosed` even when there was nothing to close.
 
 ## [7.2.4] - 2026-06-29
 ### Added

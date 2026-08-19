@@ -17,6 +17,11 @@ type SlotQueryOptions = {
    * as well as elements assigned to any other slots that are descendants of this slot. If no
    * assigned elements are found, it returns the slot's fallback content.
    *
+   * @remarks
+   * Mind that fallback content when checking whether a consumer projected anything:
+   * for a slot rendered as `<slot>${this.label}</slot>`, a flattened query reports
+   * the rendered `label` as assigned content even though nothing was projected.
+   *
    * Defaults to `false`.
    */
   flatten?: boolean;
@@ -132,7 +137,8 @@ class SlotController<T> implements ReactiveController {
    *
    * If `flatten` is set to `true`, it returns a sequence of both the nodes assigned to the queried slot,
    * as well as nodes assigned to any other slots that are descendants of this slot. If no
-   * assigned nodes are found, it returns the slot's fallback content.
+   * assigned nodes are found, it returns the slot's fallback content - so a slot with
+   * fallback content always reports as having nodes. See {@link SlotQueryOptions.flatten}.
    */
   public hasAssignedNodes(slot: T, flatten = false): boolean {
     return !isEmpty(this.getAssignedNodes(slot, flatten));
