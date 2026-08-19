@@ -416,6 +416,126 @@ describe('Radio Component', () => {
     });
   });
 
+  describe('Group membership', () => {
+    let radios: IgcRadioComponent[];
+
+    function tabIndexOf(radio: IgcRadioComponent): number {
+      return radio.renderRoot.querySelector('input')!.tabIndex;
+    }
+
+    beforeEach(async () => {
+      radios = Array.from(
+        (
+          await fixture(html`
+            <div>
+              <igc-radio name="fruit" value="apple">Apple</igc-radio>
+              <igc-radio name="fruit" value="orange">Orange</igc-radio>
+              <igc-radio name="fruit" value="mango">Mango</igc-radio>
+            </div>
+          `)
+        ).querySelectorAll(IgcRadioComponent.tagName)
+      );
+    });
+
+    it('restores the tab stop when the checked radio is removed', async () => {
+      const [checked, ...remaining] = radios;
+
+      checked.click();
+      await elementUpdated(checked);
+      expect(remaining.every((radio) => tabIndexOf(radio) === -1)).to.be.true;
+
+      checked.remove();
+      await Promise.all(remaining.map((radio) => elementUpdated(radio)));
+      expect(remaining.every((radio) => tabIndexOf(radio) === 0)).to.be.true;
+    });
+
+    it('keeps the checked radio as the sole tab stop when another is removed', async () => {
+      const [checked, removed, other] = radios;
+
+      checked.click();
+      await elementUpdated(checked);
+
+      removed.remove();
+      await Promise.all([checked, other].map((radio) => elementUpdated(radio)));
+      expect(tabIndexOf(checked)).to.equal(0);
+      expect(tabIndexOf(other)).to.equal(-1);
+    });
+
+    it('restores the tab stop when the checked radio moves to another group by name', async () => {
+      const [moved, ...remaining] = radios;
+
+      moved.click();
+      await elementUpdated(moved);
+
+      moved.name = 'vegetable';
+      await Promise.all(radios.map((radio) => elementUpdated(radio)));
+
+      // The group that stays behind has no selection, so each radio is a tab stop.
+      expect(remaining.every((radio) => tabIndexOf(radio) === 0)).to.be.true;
+      // The radio that moved is the only member of its new group, and it is checked.
+      expect(tabIndexOf(moved)).to.equal(0);
+    });
+
+    it('drops a radio that has left the group from a synchronous read', async () => {
+      const [first, , moved] = radios;
+
+      moved.click();
+      await elementUpdated(moved);
+
+      // No await: the radio has its new name from this point, before it renders
+      // again. A selection in the group that it left must not change it.
+      moved.name = 'vegetable';
+      first.click();
+
+      expect(first.checked).to.be.true;
+      expect(moved.checked).to.be.true;
+    });
+
+    it('derives the tab stop from the default state on form reset', async () => {
+      const form = await fixture<HTMLFormElement>(html`
+        <form>
+          <igc-radio name="fruit" value="apple" checked>Apple</igc-radio>
+          <igc-radio name="fruit" value="orange">Orange</igc-radio>
+        </form>
+      `);
+      const [apple, orange] = Array.from(
+        form.querySelectorAll(IgcRadioComponent.tagName)
+      );
+
+      orange.click();
+      await elementUpdated(orange);
+      expect(tabIndexOf(orange)).to.equal(0);
+      expect(tabIndexOf(apple)).to.equal(-1);
+
+      // The reset restores the default state without the `checked` setter, so only
+      // the group itself can bring the tab stop back to the radio that it belongs to.
+      form.reset();
+      await Promise.all([apple, orange].map((radio) => elementUpdated(radio)));
+
+      expect(tabIndexOf(apple)).to.equal(0);
+      expect(tabIndexOf(orange)).to.equal(-1);
+    });
+
+    it('joins the new group of a radio on a synchronous read', async () => {
+      const [joining, checked] = Array.from(
+        (
+          await fixture(html`
+            <div>
+              <igc-radio name="vegetable" value="carrot">Carrot</igc-radio>
+              <igc-radio name="fruit" value="apple" checked>Apple</igc-radio>
+            </div>
+          `)
+        ).querySelectorAll(IgcRadioComponent.tagName)
+      );
+
+      joining.name = 'fruit';
+      joining.click();
+
+      expect(joining.checked).to.be.true;
+      expect(checked.checked).to.be.false;
+    });
+  });
+
   describe('Validation message slots', () => {
     it('', async () => {
       const testParameters: ValidationContainerTestsParams<IgcRadioComponent>[] =

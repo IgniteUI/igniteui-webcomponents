@@ -77,6 +77,10 @@ class SlotController<T> implements ReactiveController {
    * The query results are cached, since the accessors below are routinely called
    * from a host's `render`. Only a still connected slot is served from the cache -
    * one removed by a conditional template falls back to a fresh query.
+   *
+   * There is no slot to find before the host creates its render root, which happens
+   * when it connects. A query that comes earlier, such as one from an attribute that
+   * the parser applies on upgrade, reports no slot instead of an error.
    */
   private _getSlot(slotName?: T): HTMLSlotElement | null {
     if (isServer) return null;
@@ -91,7 +95,8 @@ class SlotController<T> implements ReactiveController {
       slotName === DefaultSlot
         ? 'slot:not([name])'
         : `slot[name="${slotName}"]`;
-    const slot = this._host.renderRoot.querySelector<HTMLSlotElement>(selector);
+    const slot =
+      this._host.renderRoot?.querySelector<HTMLSlotElement>(selector) ?? null;
 
     if (slot) {
       this._slotCache.set(slotName, slot);
