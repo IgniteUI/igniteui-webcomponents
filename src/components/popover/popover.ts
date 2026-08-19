@@ -23,7 +23,8 @@ import { registerComponent } from '#internals/definitions/register.js';
 import { firstOf } from '#internals/utils/arrays.js';
 import {
   getElementByIdFromRoot,
-  getRoot,
+  hasStickyAncestor,
+  isPopoverOpen,
   roundByDPR,
   setStyles,
 } from '#internals/utils/dom.js';
@@ -47,25 +48,16 @@ export type PopoverPlacement =
   | 'left-start'
   | 'left-end';
 
-/**
- * Walks up the DOM tree of the given element, crossing shadow boundaries, and
- * returns whether any ancestor is positioned as `sticky`.
- */
-function hasStickyAncestor(element: Element): boolean {
-  let node: Element | null = element;
+const OPPOSITE_SIDE = {
+  top: 'bottom',
+  right: 'left',
+  bottom: 'top',
+  left: 'right',
+} as const;
 
-  while (node) {
-    if (getComputedStyle(node).position === 'sticky') {
-      return true;
-    }
+type PopoverSide = keyof typeof OPPOSITE_SIDE;
 
-    const root = getRoot(node);
-    node =
-      node.parentElement ?? (root instanceof ShadowRoot ? root.host : null);
-  }
-
-  return false;
-}
+const SIDES = Object.keys(OPPOSITE_SIDE) as PopoverSide[];
 
 /* blazorSuppress */
 /**
@@ -80,15 +72,6 @@ export default class IgcPopoverComponent extends LitElement {
   public static readonly tagName = 'igc-popover';
   public static override styles = styles;
 
-  private static _oppositeArrowSide = new Map(
-    Object.entries({
-      top: 'bottom',
-      right: 'left',
-      bottom: 'top',
-      left: 'right',
-    })
-  );
-
   /* blazorSuppress */
   public static register(): void {
     registerComponent(IgcPopoverComponent);
@@ -98,6 +81,8 @@ export default class IgcPopoverComponent extends LitElement {
 
   private _dispose?: ReturnType<typeof autoUpdate>;
   private _target?: Element;
+  private _middleware?: Middleware[];
+  private _positionId = 0;
 
   /**
    * The positioning strategy resolved when the popover is opened. The `fixed`
@@ -194,34 +179,34 @@ export default class IgcPopoverComponent extends LitElement {
   //#region Life-cycle hooks
 
   protected override update(properties: PropertyValues<this>): void {
-    let targetChanged = false;
+    if (this.hasUpdated) {
+      this._middleware = undefined;
 
-    if (properties.has('anchor')) {
-      const target = isString(this.anchor)
-        ? getElementByIdFromRoot(this, this.anchor)
-        : this.anchor;
-
-      if (target) {
-        this._target = target;
-        targetChanged = true;
+      if (properties.has('sameWidth') && !this.sameWidth) {
+        setStyles(this._container, { width: '' });
       }
-    }
 
-    if (this.hasUpdated && properties.has('open')) {
-      this._setOpenState(this.open);
-    } else if (this.hasUpdated && this.open) {
-      targetChanged ? this._resetAutoUpdate() : this._updatePosition();
+      if (properties.has('open') || properties.has('anchor')) {
+        this._setOpenState(this.open);
+      } else if (this.open) {
+        this._updatePosition();
+      }
     }
 
     super.update(properties);
   }
 
+  protected override firstUpdated(): void {
+    this._setOpenState(this.open);
+  }
+
   /** @internal */
   public override connectedCallback(): void {
     super.connectedCallback();
-    this.updateComplete.then(() => {
+
+    if (this.hasUpdated) {
       this._setOpenState(this.open);
-    });
+    }
   }
 
   /** @internal */
@@ -235,50 +220,67 @@ export default class IgcPopoverComponent extends LitElement {
   private _handleSlotChange({
     isDefault,
   }: SlotChangeCallbackParameters<unknown>): void {
-    if (isDefault) {
+    if (isDefault || this.anchor) {
       return;
     }
 
-    const possibleTarget = firstOf(
-      this._slots.getAssignedElements('anchor', { flatten: true })
-    );
+    this._setOpenState(this.open);
+  }
 
-    if (this.anchor || !possibleTarget) {
-      return;
-    }
-
-    this._target = possibleTarget;
-
-    if (this.open) {
-      this._resetAutoUpdate();
+  private _handleToggle(): void {
+    if (!isPopoverOpen(this._container)) {
+      this._clearDispose();
     }
   }
 
   //#region Internal open state API
+
+  /**
+   * An unresolved IDREF keeps the current target, so that an anchor rendered
+   * after this popover is picked up the next time it opens.
+   */
+  private _resolveTarget(): Element | undefined {
+    if (isString(this.anchor)) {
+      return getElementByIdFromRoot(this, this.anchor) ?? this._target;
+    }
+
+    return (
+      this.anchor ??
+      firstOf(this._slots.getAssignedElements('anchor', { flatten: true }))
+    );
+  }
+
   private _setOpenState(state: boolean): void {
-    state ? this._setDispose() : this._clearDispose();
+    this._clearDispose();
+
+    if (state) {
+      this._target = this._resolveTarget();
+
+      if (this._target) {
+        this._strategy = hasStickyAncestor(this._target) ? 'fixed' : 'absolute';
+        this._dispose = autoUpdate(
+          this._target,
+          this._container,
+          this._updatePosition.bind(this)
+        );
+      }
+    }
+
     this._setPopoverState(state);
   }
 
-  private _setPopoverState(open: boolean): void {
-    if (!this._target) {
-      return;
-    }
-    open ? this._container?.showPopover() : this._container?.hidePopover();
-  }
+  private _setPopoverState(state: boolean): void {
+    const container = this._container;
 
-  private _setDispose(): void {
-    if (!this._target) {
+    if (!container) {
       return;
     }
 
-    this._strategy = hasStickyAncestor(this._target) ? 'fixed' : 'absolute';
+    const shouldOpen = state && this._target != null;
 
-    this._dispose = autoUpdate(
-      this._target,
-      this._container,
-      this._updatePosition.bind(this)
-    );
+    if (shouldOpen !== isPopoverOpen(container)) {
+      shouldOpen ? container.showPopover() : container.hidePopover();
+    }
   }
 
   private _clearDispose(): void {
@@ -286,73 +288,72 @@ export default class IgcPopoverComponent extends LitElement {
     this._dispose = undefined;
   }
 
-  private _resetAutoUpdate(): void {
-    this._clearDispose();
-    this._setDispose();
-  }
   //#endregion
 
   //#region Internal position API
 
+  private get _placement(): PopoverPlacement {
+    return this.placement ?? 'bottom-start';
+  }
+
   private _createMiddleware(): Middleware[] {
-    const middleware: Middleware[] = [];
-    const container = this._container;
+    const shiftMiddleware = this.shift
+      ? shift({ padding: this.shiftPadding, limiter: limitShift() })
+      : null;
+    const flipMiddleware = this.flip ? flip() : null;
 
-    if (this.offset) {
-      middleware.push(offset(this.offset));
-    }
+    // Aligned placements flip before shifting, base placements shift first.
+    // See https://floating-ui.com/docs/flip
+    const positioners = this._placement.includes('-')
+      ? [flipMiddleware, shiftMiddleware]
+      : [shiftMiddleware, flipMiddleware];
 
-    if (this.inline) {
-      middleware.push(inline());
-    }
+    const chain = [
+      this.offset !== 0 ? offset(this.offset) : null,
+      this.inline ? inline() : null,
+      ...positioners,
+      this.sameWidth
+        ? size({
+            apply: ({ rects }) =>
+              setStyles(this._container, {
+                width: `${rects.reference.width}px`,
+              }),
+          })
+        : null,
+      this.arrow ? arrow({ element: this.arrow }) : null,
+    ];
 
-    if (this.shift) {
-      middleware.push(
-        shift({
-          padding: this.shiftPadding,
-          limiter: limitShift(),
-        })
-      );
-    }
-
-    if (this.arrow) {
-      middleware.push(arrow({ element: this.arrow }));
-    }
-
-    if (this.flip) {
-      middleware.push(flip());
-    }
-
-    if (this.sameWidth) {
-      middleware.push(
-        size({
-          apply: ({ rects }) =>
-            setStyles(container, { width: `${rects.reference.width}px` }),
-        })
-      );
-    } else {
-      setStyles(container, { width: '' });
-    }
-
-    return middleware;
+    return chain.filter((entry): entry is Middleware => entry !== null);
   }
 
   private async _updatePosition(): Promise<void> {
-    if (!(this.open && this._target)) {
+    if (!this.open) {
       return;
     }
 
+    if (!this._target?.isConnected) {
+      this._target = undefined;
+      this._clearDispose();
+      this._setPopoverState(false);
+      return;
+    }
+
+    const positionId = ++this._positionId;
     const strategy = this._strategy;
 
     const { x, y, middlewareData, placement } = await computePosition(
       this._target,
       this._container,
       {
-        placement: this.placement ?? 'bottom-start',
-        middleware: this._createMiddleware(),
+        placement: this._placement,
+        middleware: (this._middleware ??= this._createMiddleware()),
         strategy,
       }
     );
+
+    if (positionId !== this._positionId || !this.open) {
+      return;
+    }
 
     setStyles(this._container, {
       position: strategy,
@@ -364,28 +365,36 @@ export default class IgcPopoverComponent extends LitElement {
     this._updateArrowPosition(placement, middlewareData);
   }
 
-  private _updateArrowPosition(placement: Placement, data: MiddlewareData) {
-    if (!(data.arrow && this.arrow)) {
+  private _updateArrowPosition(
+    placement: Placement,
+    data: MiddlewareData
+  ): void {
+    const element = this.arrow;
+
+    if (!(data.arrow && element)) {
       return;
     }
 
     const { x, y } = data.arrow;
-    const arrow = this.arrow;
     const offset = this.arrowOffset;
+    const [side] = placement.split('-') as [PopoverSide];
+    const staticSide = OPPOSITE_SIDE[side];
 
-    // The current placement of the popover along the x/y axis
-    const currentPlacement = firstOf(placement.split('-'));
+    if (!element.part.contains(side)) {
+      element.part.remove(...SIDES);
+      element.part.add(side);
+    }
 
-    // The opposite side where the arrow element should render based on the `currentPlacement`
-    const staticSide =
-      IgcPopoverComponent._oppositeArrowSide.get(currentPlacement)!;
+    // Measured after the part switch, since it is what gives the arrow its size.
+    const inset =
+      staticSide === 'top' || staticSide === 'bottom'
+        ? element.offsetHeight
+        : element.offsetWidth;
 
-    arrow.part = currentPlacement;
-
-    setStyles(arrow, {
+    setStyles(element, {
       left: x != null ? `${roundByDPR(x + offset)}px` : '',
       top: y != null ? `${roundByDPR(y + offset)}px` : '',
-      [staticSide]: '-4px',
+      [staticSide]: `${-inset}px`,
     });
   }
 
@@ -394,7 +403,12 @@ export default class IgcPopoverComponent extends LitElement {
   protected override render() {
     return html`
       <slot name="anchor"></slot>
-      <div id="container" part="container" popover="manual">
+      <div
+        id="container"
+        part="container"
+        popover="manual"
+        @toggle=${this._handleToggle}
+      >
         <slot></slot>
       </div>
     `;

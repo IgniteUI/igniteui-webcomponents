@@ -13,31 +13,31 @@ $color-border: rem(4px) solid var-get($theme, 'background');
 }
 
 #arrow {
-    &[part='top'],
-    &[part='bottom'] {
+    &[part~='top'],
+    &[part~='bottom'] {
         border-left: $transparent-border;
         border-right: $transparent-border;
     }
 
-    &[part='top'] {
+    &[part~='top'] {
         border-top: $color-border;
     }
 
-    &[part='bottom'] {
+    &[part~='bottom'] {
         border-bottom: $color-border;
     }
 
-    &[part='left'],
-    &[part='right'] {
+    &[part~='left'],
+    &[part~='right'] {
         border-top: $transparent-border;
         border-bottom: $transparent-border;
     }
 
-    &[part='left'] {
+    &[part~='left'] {
         border-left: $color-border;
     }
 
-    &[part='right'] {
+    &[part~='right'] {
         border-right: $color-border;
     }
 }
