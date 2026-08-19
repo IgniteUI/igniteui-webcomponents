@@ -508,6 +508,24 @@ describe('Popover', () => {
       expect(arrow.style.bottom).to.equal('-10px');
     });
 
+    it('clears the inset of the previous placement', async () => {
+      expect(arrow.style.top).to.equal('-10px');
+      expect(arrow.style.bottom).to.equal('');
+
+      popover.placement = 'top';
+      await waitForPaint(popover);
+
+      expect(arrow.style.bottom).to.equal('-10px');
+      expect(arrow.style.top).to.equal('');
+
+      popover.placement = 'right';
+      await waitForPaint(popover);
+
+      expect(arrow.style.left).to.equal('-10px');
+      expect(arrow.style.bottom).to.equal('');
+      expect(arrow.style.right).to.equal('');
+    });
+
     it('keeps parts set outside of the popover', async () => {
       arrow.part.add('custom');
 

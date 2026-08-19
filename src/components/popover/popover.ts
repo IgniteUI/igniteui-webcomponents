@@ -391,11 +391,18 @@ export default class IgcPopoverComponent extends LitElement {
         ? element.offsetHeight
         : element.offsetWidth;
 
-    setStyles(element, {
-      left: x != null ? `${roundByDPR(x + offset)}px` : '',
+    // Every side is reset, otherwise the inset of the previous placement is left
+    // behind and over-constrains the arrow.
+    const styles: Partial<CSSStyleDeclaration> = {
       top: y != null ? `${roundByDPR(y + offset)}px` : '',
-      [staticSide]: `${-inset}px`,
-    });
+      right: '',
+      bottom: '',
+      left: x != null ? `${roundByDPR(x + offset)}px` : '',
+    };
+
+    styles[staticSide] = `${-inset}px`;
+
+    setStyles(element, styles);
   }
 
   //#endregion
