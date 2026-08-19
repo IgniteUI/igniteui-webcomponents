@@ -179,13 +179,18 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
    */
   @property({ type: Boolean })
   public set checked(value: boolean) {
+    const previous = this.checked;
+
     this._formValue.setValueAndFormState(value);
     if (this.hasUpdated && this.checked) {
       this._updateCheckedState();
     }
 
-    // The tab stop is a state of the group, so each change of the selection derives it again.
-    this._group.sync();
+    // The tab stop is a state of the group, so a change of the selection derives it
+    // again. A write of the same state leaves the group as it is.
+    if (this.checked !== previous) {
+      this._group.sync();
+    }
   }
 
   public get checked(): boolean {
@@ -215,8 +220,14 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
   }
 
   protected override willUpdate(properties: PropertyValues<this>): void {
+    // The name is the identity of a group, so a new name moves this radio to another one.
     if (properties.has('name')) {
       this._group.updateMembership();
+    }
+
+    // The tab stop of the group depends on which of its radios are disabled.
+    if (properties.has('disabled')) {
+      this._group.sync();
     }
   }
 

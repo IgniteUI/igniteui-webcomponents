@@ -18,6 +18,10 @@ const registry = new WeakMap<RadioGroupRoot, Map<string, RadioGroup>>();
 const controllers = new WeakMap<IgcRadioComponent, RadioGroupController>();
 
 function byDocumentOrder(a: Node, b: Node): number {
+  if (a === b) {
+    return 0;
+  }
+
   return a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING
     ? -1
     : 1;
@@ -39,7 +43,12 @@ class RadioGroupController implements ReactiveController {
   /** Gives each radio of the group the state that the group derives. */
   private static _sync(group: Iterable<RadioGroupController>): void {
     const members = Array.from(group);
-    const hasCheckedRadio = members.some((member) => member._host.checked);
+
+    // A disabled radio is out of the tab order. A selection that it holds must not
+    // take the tab stop from the radios that the user can still reach.
+    const hasCheckedRadio = members.some(
+      (member) => member._host.checked && !member._host.disabled
+    );
 
     for (const member of members) {
       member._onSync(hasCheckedRadio);

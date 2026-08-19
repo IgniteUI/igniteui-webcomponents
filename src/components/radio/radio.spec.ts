@@ -491,6 +491,21 @@ describe('Radio Component', () => {
       expect(moved.checked).to.be.true;
     });
 
+    it('keeps the group reachable when the checked radio is disabled', async () => {
+      const [checked, ...remaining] = radios;
+
+      checked.click();
+      await elementUpdated(checked);
+      expect(remaining.every((radio) => tabIndexOf(radio) === -1)).to.be.true;
+
+      // A disabled radio is out of the tab order. Without a tab stop of their own,
+      // the radios that stay enabled make the group unreachable with the Tab key.
+      checked.disabled = true;
+      await Promise.all(radios.map((radio) => elementUpdated(radio)));
+
+      expect(remaining.every((radio) => tabIndexOf(radio) === 0)).to.be.true;
+    });
+
     it('derives the tab stop from the default state on form reset', async () => {
       const form = await fixture<HTMLFormElement>(html`
         <form>

@@ -45,7 +45,8 @@ export default class IgcRadioGroupComponent extends LitElement {
 
   private _defaultValue!: string;
   private _name!: string;
-  private _value = '';
+  /** The value that no radio holds yet. Empty as soon as a radio takes it. */
+  private _pendingValue = '';
 
   private get _radios(): IgcRadioComponent[] {
     return this._slots.getAssignedElements<IgcRadioComponent>('[default]', {
@@ -94,17 +95,17 @@ export default class IgcRadioGroupComponent extends LitElement {
    */
   @property()
   public set value(value: string) {
-    this._value = value;
+    this._pendingValue = value;
     this._setSelectedRadio();
   }
 
   public get value(): string {
     const radios = this._radios;
 
-    // The checked radio holds the value of the group. Without radios, the value that
-    // came in is still pending and the group reports it without a change.
+    // The checked radio holds the value of the group. Without radios to apply it to,
+    // the group reports the value that is still pending.
     return isEmpty(radios)
-      ? this._value
+      ? this._pendingValue
       : (radios.find((radio) => radio.checked)?.value ?? '');
   }
 
@@ -148,7 +149,7 @@ export default class IgcRadioGroupComponent extends LitElement {
     // The value of the group applies while no radio holds a selection of its own. This
     // is the first render, or the moment a radio with a value that had no match comes in.
     // The `checked` attribute then makes that selection the default state.
-    if (this._value && !radios.some((radio) => radio.checked)) {
+    if (this._pendingValue && !radios.some((radio) => radio.checked)) {
       this._setSelectedRadio();
 
       for (const radio of radios) {
@@ -190,8 +191,17 @@ export default class IgcRadioGroupComponent extends LitElement {
   }
 
   private _setSelectedRadio(): void {
+    let applied = false;
+
     for (const radio of this._radios) {
-      radio.checked = radio.value === this._value;
+      radio.checked = radio.value === this._pendingValue;
+      applied ||= radio.checked;
+    }
+
+    // A radio holds the value now, so the group reads it from that radio. A value that
+    // stays pending applies again each time the group loses its selection.
+    if (applied) {
+      this._pendingValue = '';
     }
   }
 
