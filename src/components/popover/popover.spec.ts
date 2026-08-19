@@ -7,7 +7,7 @@ import {
 } from '@open-wc/testing';
 
 import { defineComponents } from '#internals/definitions/defineComponents.js';
-import IgcPopoverComponent from './popover.js';
+import IgcPopoverComponent, { type PopoverPlacement } from './popover.js';
 
 async function waitForPaint(popover: IgcPopoverComponent) {
   await elementUpdated(popover);
@@ -17,6 +17,14 @@ async function waitForPaint(popover: IgcPopoverComponent) {
 
 function getFloater(popover: IgcPopoverComponent) {
   return popover.renderRoot.querySelector('#container') as HTMLElement;
+}
+
+function isFloaterOpen(popover: IgcPopoverComponent) {
+  return getFloater(popover).matches(':popover-open');
+}
+
+function queryPopover(root: ParentNode) {
+  return root.querySelector(IgcPopoverComponent.tagName) as IgcPopoverComponent;
 }
 
 function togglePopover() {
@@ -45,6 +53,17 @@ function createNonSlottedPopover(isOpen = false) {
       </button>
 
       <igc-popover ?open=${isOpen} anchor="btn">
+        <p style="border: 1px solid #ccc">Message</p>
+      </igc-popover>
+    </div>
+  `;
+}
+
+function createAnchorlessPopover() {
+  return html`
+    <div>
+      <button id="btn" type="button">Show message</button>
+      <igc-popover>
         <p style="border: 1px solid #ccc">Message</p>
       </igc-popover>
     </div>
@@ -281,6 +300,249 @@ describe('Popover', () => {
         const delta = floater.getBoundingClientRect();
         expect(delta.top).to.be.lessThan(initial.top);
       });
+    });
+  });
+
+  describe('Anchor resolution', () => {
+    let root: HTMLElement;
+    let popover: IgcPopoverComponent;
+    let anchor: HTMLButtonElement;
+
+    async function openAtButton() {
+      popover.anchor = 'btn';
+      popover.open = true;
+      await waitForPaint(popover);
+    }
+
+    beforeEach(async () => {
+      root = await fixture<HTMLElement>(createAnchorlessPopover());
+      popover = queryPopover(root);
+      anchor = root.querySelector('#btn') as HTMLButtonElement;
+    });
+
+    it('resolves an IDREF appearing after the first render', async () => {
+      popover.anchor = 'late-anchor';
+      await waitForPaint(popover);
+
+      const late = document.createElement('button');
+      late.id = 'late-anchor';
+      late.textContent = 'Late anchor';
+      root.append(late);
+
+      popover.open = true;
+      await waitForPaint(popover);
+
+      expect(isFloaterOpen(popover)).to.be.true;
+      expect(getFloater(popover).getBoundingClientRect().top).to.equal(
+        late.getBoundingClientRect().bottom
+      );
+    });
+
+    it('shows when `anchor` is set while already open', async () => {
+      popover.open = true;
+      await waitForPaint(popover);
+
+      expect(isFloaterOpen(popover)).to.be.false;
+
+      popover.anchor = 'btn';
+      await waitForPaint(popover);
+
+      expect(isFloaterOpen(popover)).to.be.true;
+      expect(getFloater(popover).getBoundingClientRect().top).to.equal(
+        anchor.getBoundingClientRect().bottom
+      );
+    });
+
+    it('shows when a slotted anchor is added while already open', async () => {
+      const slotted = await fixture<IgcPopoverComponent>(
+        html`<igc-popover><p>Message</p></igc-popover>`
+      );
+
+      slotted.open = true;
+      await waitForPaint(slotted);
+
+      expect(isFloaterOpen(slotted)).to.be.false;
+
+      const anchor = document.createElement('button');
+      anchor.slot = 'anchor';
+      anchor.textContent = 'Show message';
+      slotted.prepend(anchor);
+      await waitForPaint(slotted);
+
+      expect(isFloaterOpen(slotted)).to.be.true;
+    });
+
+    it('keeps the current anchor when an IDREF cannot be resolved', async () => {
+      await openAtButton();
+
+      const initial = getFloater(popover).getBoundingClientRect();
+
+      popover.anchor = 'no-such-element';
+      await waitForPaint(popover);
+
+      expect(isFloaterOpen(popover)).to.be.true;
+      expect(getFloater(popover).getBoundingClientRect().top).to.equal(
+        initial.top
+      );
+    });
+
+    it('hides when `anchor` is unset', async () => {
+      await openAtButton();
+
+      expect(isFloaterOpen(popover)).to.be.true;
+
+      popover.anchor = undefined;
+      await waitForPaint(popover);
+
+      expect(isFloaterOpen(popover)).to.be.false;
+    });
+
+    it('hides when the anchor element leaves the DOM', async () => {
+      await openAtButton();
+
+      anchor.remove();
+      await waitForPaint(popover);
+
+      expect(isFloaterOpen(popover)).to.be.false;
+    });
+  });
+
+  describe('Open state', () => {
+    let root: HTMLElement;
+    let popover: IgcPopoverComponent;
+
+    beforeEach(async () => {
+      root = await fixture<HTMLElement>(createNonSlottedPopover(true));
+      popover = queryPopover(root);
+      await waitForPaint(popover);
+    });
+
+    it('hides the floating element when closed', async () => {
+      expect(isFloaterOpen(popover)).to.be.true;
+
+      popover.open = false;
+      await waitForPaint(popover);
+
+      expect(isFloaterOpen(popover)).to.be.false;
+    });
+
+    it('restores the open state when re-attached', async () => {
+      popover.remove();
+      await nextFrame();
+
+      expect(isFloaterOpen(popover)).to.be.false;
+
+      root.append(popover);
+      await waitForPaint(popover);
+
+      expect(isFloaterOpen(popover)).to.be.true;
+    });
+  });
+
+  describe('Middleware', () => {
+    function createOverflowingPopover(placement: PopoverPlacement) {
+      return html`
+        <div style="height: 200vh">
+          <button
+            id="btn"
+            type="button"
+            style="position: absolute; top: calc(100vh - 24px)"
+          >
+            Show message
+          </button>
+          <igc-popover open flip shift anchor="btn" placement=${placement}>
+            <div style="height: 300px; width: 100px">Message</div>
+          </igc-popover>
+        </div>
+      `;
+    }
+
+    for (const placement of ['bottom', 'bottom-start'] as PopoverPlacement[]) {
+      it(`flips a \`${placement}\` placement that overflows the viewport`, async () => {
+        const root = await fixture<HTMLElement>(
+          createOverflowingPopover(placement)
+        );
+        const popover = queryPopover(root);
+        await waitForPaint(popover);
+
+        const anchor = root.querySelector('#btn')!;
+
+        expect(
+          getFloater(popover).getBoundingClientRect().bottom
+        ).to.be.at.most(anchor.getBoundingClientRect().top + 1);
+      });
+    }
+  });
+
+  describe('Arrow element', () => {
+    let popover: IgcPopoverComponent;
+    let arrow: HTMLElement;
+
+    beforeEach(async () => {
+      const root = await fixture<HTMLElement>(html`
+        <div style="padding: 200px">
+          <button id="btn" type="button">Show message</button>
+          <igc-popover open anchor="btn" placement="bottom">
+            <p style="border: 1px solid #ccc">Message</p>
+            <div id="arrow" style="width: 10px; height: 10px"></div>
+          </igc-popover>
+        </div>
+      `);
+
+      popover = queryPopover(root);
+      arrow = root.querySelector('#arrow') as HTMLElement;
+
+      popover.arrow = arrow;
+      await waitForPaint(popover);
+    });
+
+    it('is rendered on the opposite side of the placement', async () => {
+      expect(arrow.part.contains('bottom')).to.be.true;
+      expect(arrow.style.top).to.equal('-10px');
+
+      popover.placement = 'top';
+      await waitForPaint(popover);
+
+      expect(arrow.part.contains('top')).to.be.true;
+      expect(arrow.part.contains('bottom')).to.be.false;
+      expect(arrow.style.bottom).to.equal('-10px');
+    });
+
+    it('clears the inset of the previous placement', async () => {
+      expect(arrow.style.top).to.equal('-10px');
+      expect(arrow.style.bottom).to.equal('');
+
+      popover.placement = 'top';
+      await waitForPaint(popover);
+
+      expect(arrow.style.bottom).to.equal('-10px');
+      expect(arrow.style.top).to.equal('');
+
+      popover.placement = 'right';
+      await waitForPaint(popover);
+
+      expect(arrow.style.left).to.equal('-10px');
+      expect(arrow.style.bottom).to.equal('');
+      expect(arrow.style.right).to.equal('');
+    });
+
+    it('keeps parts set outside of the popover', async () => {
+      arrow.part.add('custom');
+
+      popover.placement = 'top';
+      await waitForPaint(popover);
+
+      expect(arrow.part.contains('custom')).to.be.true;
+      expect(arrow.part.contains('top')).to.be.true;
+    });
+
+    it('`arrow-offset` is reflected', async () => {
+      const initial = Number.parseFloat(arrow.style.left);
+
+      popover.arrowOffset = 20;
+      await waitForPaint(popover);
+
+      expect(Number.parseFloat(arrow.style.left) - initial).to.equal(20);
     });
   });
 
