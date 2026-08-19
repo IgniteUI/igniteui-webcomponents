@@ -54,7 +54,7 @@ export default class IgcToggleButtonComponent extends LitElement {
   /**
    * Whether the button is selected.
    *
-   * @attr disabled
+   * @attr selected
    * @default false
    */
   @property({ type: Boolean, reflect: true })
