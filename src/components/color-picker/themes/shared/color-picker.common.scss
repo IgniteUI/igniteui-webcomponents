@@ -147,9 +147,7 @@ $input-theme: input-theme.$material;
         #fb13e9 84.9%,
         #f90000 100%
     );
-
     --_alpha-color: var(--_selected-color, var(--_current-color));
-    
     --_alpha-slider-track:
         linear-gradient(
             to right,
@@ -314,6 +312,7 @@ $input-theme: input-theme.$material;
             }
         }
     }
+    
     [part~='label'] {
         color: var-get($theme, 'label-color');
         cursor: pointer;
