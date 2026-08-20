@@ -2,7 +2,7 @@ import {
   CarouselResourceStringsEN,
   type ICarouselResourceStrings,
 } from 'igniteui-i18n-core';
-import { html, LitElement, nothing } from 'lit';
+import { html, LitElement, nothing, type PropertyValues } from 'lit';
 import { property, queryAll, state } from 'lit/decorators.js';
 import { cache } from 'lit/directives/cache.js';
 import { createRef, ref } from 'lit/directives/ref.js';
@@ -32,7 +32,6 @@ import {
   setSlots,
 } from '#internals/controllers/slot.js';
 import { shadowOptions } from '#internals/decorators/shadow-options.js';
-import { watch } from '#internals/decorators/watch.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { addI18nController } from '#internals/i18n/i18n-controller.js';
 import type { Constructor } from '#internals/mixins/constructor.js';
@@ -344,19 +343,6 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
 
   //#endregion
 
-  //#region Watchers
-
-  @watch('interval')
-  protected _intervalChange(): void {
-    if (!this.isPlaying) {
-      this._playing = true;
-    }
-
-    this._restartInterval();
-  }
-
-  //#endregion
-
   //#region Life-cycle hooks and observer callback
 
   constructor() {
@@ -410,6 +396,16 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
         subtree: true,
       },
     });
+  }
+
+  protected override willUpdate(changedProperties: PropertyValues<this>): void {
+    if (changedProperties.has('interval')) {
+      if (!this.isPlaying) {
+        this._playing = true;
+      }
+
+      this._restartInterval();
+    }
   }
 
   protected override async firstUpdated(): Promise<void> {

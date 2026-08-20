@@ -1,4 +1,4 @@
-import { html, type TemplateResult } from 'lit';
+import { html, type PropertyValues, type TemplateResult } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { addAriaProjector } from '#internals/controllers/aria-projection.js';
@@ -25,7 +25,6 @@ import { addRootScrollHandler } from '#internals/controllers/root-scroll.js';
 import { addSlotController, setSlots } from '#internals/controllers/slot.js';
 import { blazorAdditionalDependencies } from '#internals/decorators/blazorAdditionalDependencies.js';
 import { shadowOptions } from '#internals/decorators/shadow-options.js';
-import { watch } from '#internals/decorators/watch.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import {
   getActiveItems,
@@ -293,17 +292,21 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
 
   //#endregion
 
-  //#region Life-cycle hooks and watchers
+  //#region Life-cycle hooks
 
-  @watch('scrollStrategy', { waitUntilFirstUpdate: true })
-  protected _scrollStrategyChange(): void {
-    this._rootScrollController.update({ resetListeners: true });
-  }
+  protected override willUpdate(changedProperties: PropertyValues<this>): void {
+    if (!this.hasUpdated) {
+      return;
+    }
 
-  @watch('open', { waitUntilFirstUpdate: true })
-  protected _openChange(): void {
-    this._rootClickController.update();
-    this._rootScrollController.update();
+    if (changedProperties.has('scrollStrategy')) {
+      this._rootScrollController.update({ resetListeners: true });
+    }
+
+    if (changedProperties.has('open')) {
+      this._rootClickController.update();
+      this._rootScrollController.update();
+    }
   }
 
   constructor() {

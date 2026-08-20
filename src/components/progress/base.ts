@@ -1,9 +1,8 @@
-import { html, LitElement, nothing } from 'lit';
+import { html, LitElement, nothing, type PropertyValues } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
 import type { StyleInfo } from 'lit/directives/style-map.js';
 import { addInternalsController } from '#internals/controllers/internals.js';
 import type { SlotController } from '#internals/controllers/slot.js';
-import { watch } from '#internals/decorators/watch.js';
 import { partMap } from '#internals/part-map.js';
 import { asPercent, clamp } from '#internals/utils/math.js';
 import { formatString } from '#internals/utils/strings.js';
@@ -102,31 +101,30 @@ export abstract class IgcProgressBaseComponent extends LitElement {
     });
   }
 
-  @watch('indeterminate')
-  protected _indeterminateChange(): void {
-    if (!this.indeterminate) {
+  protected override willUpdate(changedProperties: PropertyValues<this>): void {
+    if (changedProperties.has('indeterminate') && !this.indeterminate) {
       this._updateProgress();
     }
-  }
 
-  @watch('max')
-  protected _maxChange(): void {
-    this.max = Math.max(0, this.max);
-    if (this.value > this.max) {
-      this.value = this.max;
+    // The `max` clamp of `value` below lands in `changedProperties`, so the
+    // `value` branch picks it up within the same update pass.
+    if (changedProperties.has('max')) {
+      this.max = Math.max(0, this.max);
+      if (this.value > this.max) {
+        this.value = this.max;
+      }
+
+      if (!this.indeterminate) {
+        this._updateProgress();
+      }
     }
 
-    if (!this.indeterminate) {
-      this._updateProgress();
-    }
-  }
+    if (changedProperties.has('value')) {
+      this.value = clamp(this.value, 0, this.max);
 
-  @watch('value')
-  protected _valueChange(): void {
-    this.value = clamp(this.value, 0, this.max);
-
-    if (!this.indeterminate) {
-      this._updateProgress();
+      if (!this.indeterminate) {
+        this._updateProgress();
+      }
     }
   }
 

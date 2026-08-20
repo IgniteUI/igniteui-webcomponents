@@ -1,4 +1,10 @@
-import { html, LitElement, nothing, type TemplateResult } from 'lit';
+import {
+  html,
+  LitElement,
+  nothing,
+  type PropertyValues,
+  type TemplateResult,
+} from 'lit';
 import {
   property,
   query,
@@ -20,7 +26,6 @@ import {
 } from '#internals/controllers/key-bindings.js';
 import { blazorDeepImport } from '#internals/decorators/blazorDeepImport.js';
 import { coercedProperty } from '#internals/decorators/coerced-property.js';
-import { watch } from '#internals/decorators/watch.js';
 import { createTimer } from '#internals/timing.js';
 import { isLTR } from '#internals/utils/dom.js';
 import { addSafeEventListener } from '#internals/utils/events.js';
@@ -266,13 +271,17 @@ export class IgcSliderBaseComponent extends LitElement {
   @property({ type: Number, reflect: true, attribute: 'tick-label-rotation' })
   public tickLabelRotation: SliderTickLabelRotation = 0;
 
-  @watch('min', { waitUntilFirstUpdate: true })
-  @watch('max', { waitUntilFirstUpdate: true })
-  @watch('lowerBound', { waitUntilFirstUpdate: true })
-  @watch('upperBound', { waitUntilFirstUpdate: true })
-  @watch('step', { waitUntilFirstUpdate: true })
-  protected constraintsChange() {
-    this.normalizeValue();
+  protected override willUpdate(changedProperties: PropertyValues<this>): void {
+    const constraintsChanged =
+      changedProperties.has('min') ||
+      changedProperties.has('max') ||
+      changedProperties.has('lowerBound') ||
+      changedProperties.has('upperBound') ||
+      changedProperties.has('step');
+
+    if (this.hasUpdated && constraintsChanged) {
+      this.normalizeValue();
+    }
   }
 
   constructor() {
