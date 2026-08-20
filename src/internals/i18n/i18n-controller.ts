@@ -27,7 +27,7 @@ type ResourceChangeCallback = (
 ) => unknown;
 
 /** Configuration object for the I18nController. */
-type I18nControllerConfig<T extends object> = {
+export type I18nControllerConfig<T extends object> = {
   /** The full default English resource strings object for the component. Should always come from igniteui-i18n-core. */
   defaultEN: T;
   /** @deprecated since 7.2.0. Optional name if component uses mixed resource strings. To be removed with deprecated resources. */

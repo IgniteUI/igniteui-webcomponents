@@ -14,12 +14,13 @@ import { blazorIndirectRender } from '#internals/decorators/blazorIndirectRender
 import { coercedProperty } from '#internals/decorators/coerced-property.js';
 import { shadowOptions } from '#internals/decorators/shadow-options.js';
 import { registerComponent } from '#internals/definitions/register.js';
-import { addI18nController } from '#internals/i18n/i18n-controller.js';
+import type { I18nControllerConfig } from '#internals/i18n/i18n-controller.js';
 import { IgcBaseComboBoxComponent } from '#internals/mixins/combo-box.js';
 import type { AbstractConstructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '#internals/mixins/forms/associated-required.js';
 import { createFormValueState } from '#internals/mixins/forms/form-value.js';
+import { I18nMixin } from '#internals/mixins/i18n.js';
 import { partMap } from '#internals/part-map.js';
 import { asArray, firstOf, isEmpty } from '#internals/utils/arrays.js';
 import {
@@ -70,6 +71,10 @@ const SLOTS = setSlots(
   'custom-error',
   'invalid'
 );
+
+const i18n: I18nControllerConfig<IComboResourceStrings> = {
+  defaultEN: ComboResourceStringsEN,
+};
 
 /* blazorSupportsVisualChildren */
 /**
@@ -127,11 +132,14 @@ const SLOTS = setSlots(
 @shadowOptions({ delegatesFocus: true })
 export default class IgcComboComponent<
   T extends object = any,
-> extends FormAssociatedRequiredMixin(
-  EventEmitterMixin<
-    IgcComboComponentEventMap,
-    AbstractConstructor<IgcBaseComboBoxComponent>
-  >(IgcBaseComboBoxComponent)
+> extends I18nMixin(
+  i18n,
+  FormAssociatedRequiredMixin(
+    EventEmitterMixin<
+      IgcComboComponentEventMap,
+      AbstractConstructor<IgcBaseComboBoxComponent>
+    >(IgcBaseComboBoxComponent)
+  )
 ) {
   public static readonly tagName = 'igc-combo';
   public static styles = [styles, shared];
@@ -162,13 +170,6 @@ export default class IgcComboComponent<
     this,
     {
       onHide: this._handleClosing,
-    }
-  );
-
-  protected readonly _i18nController = addI18nController<IComboResourceStrings>(
-    this,
-    {
-      defaultEN: ComboResourceStringsEN,
     }
   );
 
@@ -280,8 +281,8 @@ export default class IgcComboComponent<
 
   private get _mainAriaLabel(): string {
     return isEmpty(this._selected)
-      ? this.resourceStrings.combo_aria_label_no_options!
-      : this.resourceStrings.combo_aria_label_options!;
+      ? this.resourceStrings.combo_aria_label_no_options
+      : this.resourceStrings.combo_aria_label_options;
   }
 
   // #endregion
@@ -349,13 +350,13 @@ export default class IgcComboComponent<
    * @attr locale
    */
   @property()
-  public set locale(value: string) {
-    this._i18nController.locale = value;
+  public override set locale(value: string) {
+    super.locale = value;
     this._state.updateLocale(value);
   }
 
-  public get locale(): string {
-    return this._i18nController.locale;
+  public override get locale(): string {
+    return super.locale;
   }
 
   /**
@@ -384,21 +385,8 @@ export default class IgcComboComponent<
   public get placeholderSearch(): string {
     return (
       this._placeholderSearch ??
-      this.resourceStrings.combo_filter_search_placeholder ??
-      'Search'
+      this.resourceStrings.combo_filter_search_placeholder
     );
-  }
-
-  /**
-   * The resource strings for localization.
-   */
-  @property({ attribute: false })
-  public set resourceStrings(value: IComboResourceStrings) {
-    this._i18nController.resourceStrings = value;
-  }
-
-  public get resourceStrings(): IComboResourceStrings {
-    return this._i18nController.resourceStrings;
   }
 
   /**

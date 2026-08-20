@@ -33,9 +33,10 @@ import {
 } from '#internals/controllers/slot.js';
 import { shadowOptions } from '#internals/decorators/shadow-options.js';
 import { registerComponent } from '#internals/definitions/register.js';
-import { addI18nController } from '#internals/i18n/i18n-controller.js';
+import type { I18nControllerConfig } from '#internals/i18n/i18n-controller.js';
 import type { Constructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
+import { I18nMixin } from '#internals/mixins/i18n.js';
 import { partMap } from '#internals/part-map.js';
 import { firstOf, isEmpty, lastOf } from '#internals/utils/arrays.js';
 import { isLTR } from '#internals/utils/dom.js';
@@ -68,6 +69,10 @@ export interface IgcCarouselComponentEventMap {
 const nextId = createIdGenerator('igc-carousel');
 const Slots = setSlots('indicator', 'previous-button', 'next-button');
 
+const i18n: I18nControllerConfig<ICarouselResourceStrings> = {
+  defaultEN: CarouselResourceStringsEN,
+};
+
 /**
  * The carousel presents a set of slides by sequentially displaying a subset of one or more.
  *
@@ -90,10 +95,12 @@ const Slots = setSlots('indicator', 'previous-button', 'next-button');
  * @csspart start - The wrapping container of all carousel indicators when indicators-orientation is set to start.
  */
 @shadowOptions({ delegatesFocus: true })
-export default class IgcCarouselComponent extends EventEmitterMixin<
-  IgcCarouselComponentEventMap,
-  Constructor<LitElement>
->(LitElement) {
+export default class IgcCarouselComponent extends I18nMixin(
+  i18n,
+  EventEmitterMixin<IgcCarouselComponentEventMap, Constructor<LitElement>>(
+    LitElement
+  )
+) {
   public static styles = [styles, shared];
   public static readonly tagName = 'igc-carousel';
 
@@ -132,11 +139,6 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
     onChange: this._handleSlotChange,
     initial: true,
   });
-
-  private readonly _i18nController =
-    addI18nController<ICarouselResourceStrings>(this, {
-      defaultEN: CarouselResourceStringsEN,
-    });
 
   private readonly _context = addContextProvider(this, {
     context: carouselContext,
@@ -278,32 +280,6 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
    */
   @property({ attribute: 'animation-type' })
   public animationType: HorizontalTransitionAnimation = 'slide';
-
-  /**
-   * Gets/Sets the locale used for getting language, affecting resource strings.
-   * @attr locale
-   */
-  @property()
-  public set locale(value: string) {
-    this._i18nController.locale = value;
-  }
-
-  public get locale() {
-    return this._i18nController.locale;
-  }
-
-  /**
-   * The resource strings for localization.
-   * Currently only aria-label attributes are localized for the carousel.
-   */
-  @property({ attribute: false })
-  public set resourceStrings(value: ICarouselResourceStrings) {
-    this._i18nController.resourceStrings = value;
-  }
-
-  public get resourceStrings(): ICarouselResourceStrings {
-    return this._i18nController.resourceStrings;
-  }
 
   /* blazorSuppress */
   /**
@@ -769,9 +745,7 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
         ${ref(this._prevButtonRef)}
         type="button"
         part="navigation previous"
-        aria-label=${
-          this.resourceStrings.carousel_previous_slide ?? 'previous slide'
-        }
+        aria-label=${this.resourceStrings.carousel_previous_slide}
         aria-controls=${this._carouselId}
         ?disabled=${this.disableLoop && this.current === 0}
         @click=${this._handleNavigationInteractionPrevious}
@@ -789,7 +763,7 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
         ${ref(this._nextButtonRef)}
         type="button"
         part="navigation next"
-        aria-label=${this.resourceStrings.carousel_next_slide ?? 'next slide'}
+        aria-label=${this.resourceStrings.carousel_next_slide}
         aria-controls=${this._carouselId}
         ?disabled=${this.disableLoop && this.current === this.total - 1}
         @click=${this._handleNavigationInteractionNext}

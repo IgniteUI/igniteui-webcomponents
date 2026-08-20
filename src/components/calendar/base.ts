@@ -9,7 +9,8 @@ import { CalendarDay } from '#internals/date/model.js';
 import { blazorDeepImport } from '#internals/decorators/blazorDeepImport.js';
 import { blazorIndirectRender } from '#internals/decorators/blazorIndirectRender.js';
 import type { IgcCalendarResourceStrings } from '#internals/i18n/EN/calendar.resources.js';
-import { addI18nController } from '#internals/i18n/i18n-controller.js';
+import type { I18nControllerConfig } from '#internals/i18n/i18n-controller.js';
+import { I18nMixin } from '#internals/mixins/i18n.js';
 import { firstOf } from '#internals/utils/arrays.js';
 import { getWeekDayNumber } from './helpers.js';
 import type {
@@ -18,16 +19,20 @@ import type {
   WeekDays,
 } from './types.js';
 
+const i18n: I18nControllerConfig<
+  IgcCalendarResourceStrings | ICalendarResourceStrings
+> = {
+  defaultEN: CalendarResourceStringsEN,
+  resourceMapName: 'calendar',
+};
+
 @blazorIndirectRender
 @blazorDeepImport
-export class IgcCalendarBaseComponent extends LitElement {
-  protected readonly _i18nController = addI18nController<
-    IgcCalendarResourceStrings | ICalendarResourceStrings
-  >(this, {
-    defaultEN: CalendarResourceStringsEN,
-    resourceMapName: 'calendar',
-  });
-
+export class IgcCalendarBaseComponent extends I18nMixin<
+  IgcCalendarResourceStrings | ICalendarResourceStrings,
+  typeof LitElement,
+  IgcCalendarResourceStrings & ICalendarResourceStrings
+>(i18n, LitElement) {
   private _initialActiveDateSet = false;
 
   protected get _hasValues(): boolean {
@@ -147,34 +152,6 @@ export class IgcCalendarBaseComponent extends LitElement {
    */
   @property({ attribute: 'week-start' })
   public weekStart: WeekDays = 'sunday';
-
-  /**
-   * Gets/Sets the locale used for formatting and displaying the dates in the component.
-   * @attr locale
-   */
-  @property()
-  public set locale(value: string) {
-    this._i18nController.locale = value;
-  }
-
-  public get locale() {
-    return this._i18nController.locale;
-  }
-
-  /**
-   * The resource strings for localization.
-   */
-  @property({ attribute: false })
-  public set resourceStrings(
-    value: IgcCalendarResourceStrings | ICalendarResourceStrings
-  ) {
-    this._i18nController.resourceStrings = value;
-  }
-
-  public get resourceStrings(): IgcCalendarResourceStrings &
-    ICalendarResourceStrings {
-    return this._i18nController.resourceStrings;
-  }
 
   /**
    * Gets/Sets the special dates for the component.
