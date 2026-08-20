@@ -1,4 +1,5 @@
 import { ValidationResourceStringsEN } from 'igniteui-i18n-core';
+import { isDateExceedingMax, isDateLessThanMin } from './date/compare.js';
 import { CalendarDay } from './date/model.js';
 import { asNumber, numberOfDecimals, roundPrecise } from './utils/math.js';
 import { formatString } from './utils/strings.js';
@@ -153,3 +154,71 @@ export const maxDateValidator: Validator<{
   isValid: ({ value, max }) =>
     value && max ? CalendarDay.compare(value, max) <= 0 : true,
 };
+
+/** A host whose bound comparisons follow the parts present in its format. */
+interface DatePartsHost {
+  hasDateParts(): boolean;
+  hasTimeParts(): boolean;
+}
+
+/**
+ * Creates a `rangeUnderflow` validator for hosts whose `min` comparison must
+ * respect the parts of the host's format — day granularity when the format has
+ * no time parts, time-of-day granularity when it has no date parts.
+ *
+ * `resolveValues` returns the dates checked against the bound; empty slots
+ * are skipped, so a partial range validates only its present ends.
+ */
+export function createMinDateTimeValidator<
+  T extends DatePartsHost & { min?: Date | null },
+>(resolveValues: (host: T) => (Date | null | undefined)[]): Validator<T> {
+  return {
+    key: 'rangeUnderflow',
+    message: ({ min }) =>
+      formatString(ValidationResourceStringsEN.min_validation_error!, min),
+    isValid: (host) => {
+      const { min } = host;
+      return min
+        ? resolveValues(host).every(
+            (date) =>
+              !date ||
+              !isDateLessThanMin(
+                date,
+                min,
+                host.hasTimeParts(),
+                host.hasDateParts()
+              )
+          )
+        : true;
+    },
+  };
+}
+
+/**
+ * Creates a `rangeOverflow` validator for hosts whose `max` comparison must
+ * respect the parts of the host's format. See {@link createMinDateTimeValidator}.
+ */
+export function createMaxDateTimeValidator<
+  T extends DatePartsHost & { max?: Date | null },
+>(resolveValues: (host: T) => (Date | null | undefined)[]): Validator<T> {
+  return {
+    key: 'rangeOverflow',
+    message: ({ max }) =>
+      formatString(ValidationResourceStringsEN.max_validation_error!, max),
+    isValid: (host) => {
+      const { max } = host;
+      return max
+        ? resolveValues(host).every(
+            (date) =>
+              !date ||
+              !isDateExceedingMax(
+                date,
+                max,
+                host.hasTimeParts(),
+                host.hasDateParts()
+              )
+          )
+        : true;
+    },
+  };
+}
