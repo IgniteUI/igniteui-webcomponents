@@ -10,6 +10,7 @@ import {
   arrowUp,
 } from '#internals/controllers/key-bindings.js';
 import { addSlotController, setSlots } from '#internals/controllers/slot.js';
+import { addToggleController } from '#internals/controllers/toggle.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import type { Constructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
@@ -75,6 +76,14 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
     slots: setSlots('title', 'subtitle', 'indicator', 'indicator-expanded'),
   });
 
+  private readonly _toggleController = addToggleController(this, {
+    detail: () => this,
+    transition: (open) => {
+      this.open = open;
+      return this._player.playExclusive(open ? growVerIn() : growVerOut());
+    },
+  });
+
   /**
    * Indicates whether the contents of the control should be visible.
    * @attr
@@ -121,43 +130,16 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
     this._toggle();
   }
 
-  private async _setOpenState({
-    state,
-    withEvent,
-  }: {
-    state: boolean;
-    withEvent?: boolean;
-  }): Promise<void> {
-    if (this.open === state) return;
-
-    const args = { detail: this };
-    const event = state ? 'igcOpening' : 'igcClosing';
-    const eventDone = state ? 'igcOpened' : 'igcClosed';
-    const animation = state ? growVerIn : growVerOut;
-
-    if (withEvent && !this.emitEvent(event, { cancelable: true, ...args })) {
-      return;
-    }
-
-    this.open = state;
-
-    if (await this._player.playExclusive(animation())) {
-      if (withEvent) {
-        this.emitEvent(eventDone, args);
-      }
-    }
-  }
-
   private async _toggle(): Promise<void> {
-    this.open ? await this._hide() : await this._show();
+    await this._toggleController.toggle(true);
   }
 
   private async _show(): Promise<void> {
-    await this._setOpenState({ state: true, withEvent: true });
+    await this._toggleController.show(true);
   }
 
   private async _hide(): Promise<void> {
-    await this._setOpenState({ state: false, withEvent: true });
+    await this._toggleController.hide(true);
   }
 
   /**
@@ -175,7 +157,7 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
   public async hide(): Promise<boolean> {
     if (!this.open) return false;
 
-    await this._setOpenState({ state: false });
+    await this._toggleController.hide();
     return true;
   }
 
@@ -186,7 +168,7 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
   public async show(): Promise<boolean> {
     if (this.open) return false;
 
-    await this._setOpenState({ state: true });
+    await this._toggleController.show();
     return true;
   }
 

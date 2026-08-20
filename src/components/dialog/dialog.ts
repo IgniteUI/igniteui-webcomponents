@@ -5,6 +5,7 @@ import { addAnimationController } from '#animations/player.js';
 import { fadeIn, fadeOut } from '#animations/presets/fade/index.js';
 import { addCommandController } from '#internals/controllers/command.js';
 import { addSlotController, setSlots } from '#internals/controllers/slot.js';
+import { addToggleController } from '#internals/controllers/toggle.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import type { Constructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
@@ -85,6 +86,22 @@ export default class IgcDialogComponent extends EventEmitterMixin<
 
   private readonly _dialogRef = createRef<HTMLDialogElement>();
   private readonly _player = addAnimationController(this, this._dialogRef);
+
+  private readonly _toggleController = addToggleController(this, {
+    transition: async (open) => {
+      if (open) {
+        this.open = true;
+        await this._player.playExclusive(fadeIn());
+      } else {
+        this._animating = true;
+        await this._player.playExclusive(fadeOut());
+        this.open = false;
+        this._animating = false;
+      }
+
+      return true;
+    },
+  });
 
   /**
    * Backdrop animation helper.
@@ -235,30 +252,8 @@ export default class IgcDialogComponent extends EventEmitterMixin<
 
   //#region Internal API
 
-  private async _hide(emitEvent = false): Promise<boolean> {
-    if (!this.open || (emitEvent && !this._emitClosing())) {
-      return false;
-    }
-
-    this._animating = true;
-    await this._player.playExclusive(fadeOut());
-    this.open = false;
-    this._animating = false;
-
-    if (emitEvent) {
-      await this.updateComplete;
-      this.emitEvent('igcClosed');
-    }
-
-    return true;
-  }
-
-  private _emitClosing(): boolean {
-    return this.emitEvent('igcClosing', { cancelable: true });
-  }
-
   private _closeWithEvent(): void {
-    this._hide(true);
+    this._toggleController.hide(true);
   }
 
   //#endregion
@@ -272,13 +267,7 @@ export default class IgcDialogComponent extends EventEmitterMixin<
    * it was already open.
    */
   public async show(): Promise<boolean> {
-    if (this.open) {
-      return false;
-    }
-
-    this.open = true;
-    await this._player.playExclusive(fadeIn());
-    return true;
+    return this._toggleController.show();
   }
 
   /**
@@ -288,7 +277,7 @@ export default class IgcDialogComponent extends EventEmitterMixin<
    * it was already closed.
    */
   public async hide(): Promise<boolean> {
-    return this._hide();
+    return this._toggleController.hide();
   }
 
   /**
@@ -298,7 +287,7 @@ export default class IgcDialogComponent extends EventEmitterMixin<
    * Returns `true` when the transition completed successfully.
    */
   public async toggle(): Promise<boolean> {
-    return this.open ? this.hide() : this.show();
+    return this._toggleController.toggle();
   }
 
   //#endregion

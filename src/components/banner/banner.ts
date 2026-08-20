@@ -6,6 +6,7 @@ import { growVerIn, growVerOut } from '#animations/presets/grow/index.js';
 import { addCommandController } from '#internals/controllers/command.js';
 import { addInternalsController } from '#internals/controllers/internals.js';
 import { addSlotController, setSlots } from '#internals/controllers/slot.js';
+import { addToggleController } from '#internals/controllers/toggle.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import type { Constructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
@@ -68,6 +69,19 @@ export default class IgcBannerComponent extends EventEmitterMixin<
   private readonly _bannerRef = createRef<HTMLElement>();
   private readonly _player = addAnimationController(this, this._bannerRef);
 
+  private readonly _toggleController = addToggleController(this, {
+    transition: async (open) => {
+      if (open) {
+        this.open = true;
+        return this._player.playExclusive(growVerIn());
+      }
+
+      await this._player.playExclusive(growVerOut());
+      this.open = false;
+      return true;
+    },
+  });
+
   /**
    * Whether the banner is open.
    *
@@ -98,11 +112,8 @@ export default class IgcBannerComponent extends EventEmitterMixin<
       .set('--toggle', this.toggle);
   }
 
-  private async _handleClick(): Promise<void> {
-    if (this.emitEvent('igcClosing', { cancelable: true })) {
-      await this.hide();
-      this.emitEvent('igcClosed');
-    }
+  private _handleClick(): void {
+    this._toggleController.hide(true);
   }
 
   /**
@@ -112,12 +123,7 @@ export default class IgcBannerComponent extends EventEmitterMixin<
    * it was already open.
    */
   public async show(): Promise<boolean> {
-    if (this.open) {
-      return false;
-    }
-
-    this.open = true;
-    return this._player.playExclusive(growVerIn());
+    return this._toggleController.show();
   }
 
   /**
@@ -127,13 +133,7 @@ export default class IgcBannerComponent extends EventEmitterMixin<
    * it was already closed.
    */
   public async hide(): Promise<boolean> {
-    if (!this.open) {
-      return false;
-    }
-
-    await this._player.playExclusive(growVerOut());
-    this.open = false;
-    return true;
+    return this._toggleController.hide();
   }
 
   /**
@@ -143,7 +143,7 @@ export default class IgcBannerComponent extends EventEmitterMixin<
    * Returns `true` when the transition completed successfully.
    */
   public async toggle(): Promise<boolean> {
-    return this.open ? this.hide() : this.show();
+    return this._toggleController.toggle();
   }
 
   protected override render() {
