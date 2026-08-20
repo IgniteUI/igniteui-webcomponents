@@ -11,6 +11,7 @@ import {
 } from '#internals/controllers/key-bindings.js';
 import { addRootClickController } from '#internals/controllers/root-click.js';
 import { convertToDate } from '#internals/date/converters.js';
+import { coercedProperty } from '#internals/decorators/coerced-property.js';
 import { IgcComboBoxBaseLikeComponent } from '#internals/mixins/combo-box.js';
 import type { AbstractConstructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
@@ -111,7 +112,6 @@ export abstract class IgcDatePickerBaseComponent<
   protected _activeDate: Date | null = null;
   protected _min: Date | null = null;
   protected _max: Date | null = null;
-  protected _disabledDates: DateRangeDescriptor[] = [];
   protected _dateConstraints: DateRangeDescriptor[] = [];
   protected _displayFormat?: string;
   protected _inputFormat?: string;
@@ -389,15 +389,13 @@ export abstract class IgcDatePickerBaseComponent<
 
   /** Gets/sets disabled dates. */
   @property({ attribute: false })
-  public set disabledDates(dates: DateRangeDescriptor[]) {
-    this._disabledDates = dates;
-    this._setDateConstraints();
-    this._validate();
-  }
-
-  public get disabledDates(): DateRangeDescriptor[] {
-    return this._disabledDates;
-  }
+  @coercedProperty<DateRangeDescriptor[], IgcDatePickerBaseComponent<T>>({
+    onChange: ({ host }) => {
+      host._setDateConstraints();
+      host._validate();
+    },
+  })
+  public disabledDates: DateRangeDescriptor[] = [];
 
   /** Gets/sets special dates. */
   @property({ attribute: false })
@@ -521,7 +519,7 @@ export abstract class IgcDatePickerBaseComponent<
 
   protected _setDateConstraints(): void {
     this._dateConstraints =
-      createDateConstraints(this._min, this._max, this._disabledDates) ?? [];
+      createDateConstraints(this._min, this._max, this.disabledDates) ?? [];
   }
 
   protected async _shouldCloseCalendarDropdown(): Promise<void> {
