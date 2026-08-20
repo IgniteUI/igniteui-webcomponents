@@ -853,7 +853,7 @@ export default class IgcDateRangePickerComponent extends EventEmitterMixin<
         </div>
         ${this._renderInput(idEnd, DateRangePosition.End)}
       </div>
-      ${this._renderPicker(idStart)} ${this._renderHelperText()}
+      ${this._renderPicker(idStart)} ${this._renderValidationContainer()}
     `;
   }
 
@@ -885,7 +885,7 @@ export default class IgcDateRangePickerComponent extends EventEmitterMixin<
       >
         ${this._renderEditorSlots()}
       </igc-date-range-input>
-      ${this._renderHelperText()} ${this._renderPicker(id)}
+      ${this._renderValidationContainer()} ${this._renderPicker(id)}
     `;
   }
 

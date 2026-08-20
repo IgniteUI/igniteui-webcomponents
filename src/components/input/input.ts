@@ -248,15 +248,11 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
   }
 
   private _handleInput(): void {
-    this._setTouchedState();
-    this.value = this._input?.value ?? '';
-    this.emitEvent('igcInput', { detail: this.value });
+    this._commitValue(this._input?.value ?? '', 'igcInput');
   }
 
   private _handleChange(): void {
-    this._setTouchedState();
-    this.value = this._input?.value ?? '';
-    this.emitEvent('igcChange', { detail: this.value });
+    this._commitValue(this._input?.value ?? '', 'igcChange');
   }
 
   protected _renderInput() {

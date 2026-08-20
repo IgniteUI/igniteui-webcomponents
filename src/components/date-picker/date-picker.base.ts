@@ -808,9 +808,5 @@ export abstract class IgcDatePickerBaseComponent<
         `;
   }
 
-  protected _renderHelperText(): TemplateResult {
-    return IgcValidationContainerComponent.create(this);
-  }
-
   //#endregion
 }

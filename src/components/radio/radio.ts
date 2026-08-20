@@ -1,10 +1,4 @@
-import {
-  html,
-  LitElement,
-  nothing,
-  type PropertyValues,
-  type TemplateResult,
-} from 'lit';
+import { html, LitElement, nothing, type PropertyValues } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
@@ -357,10 +351,6 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
     });
   }
 
-  protected _renderValidatorContainer(): TemplateResult {
-    return IgcValidationContainerComponent.create(this);
-  }
-
   protected override render() {
     const labelledBy = this.getAttribute('aria-labelledby');
     const describedBy = this._slots.hasAssignedElements('helper-text')
@@ -405,7 +395,7 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
           <slot></slot>
         </span>
       </label>
-      ${this._renderValidatorContainer()}
+      ${this._renderValidationContainer()}
     `;
   }
 }

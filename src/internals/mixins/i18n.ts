@@ -5,7 +5,7 @@ import {
   type I18nController,
   type I18nControllerConfig,
 } from '../i18n/i18n-controller.js';
-import type { AbstractConstructor, Constructor } from './constructor.js';
+import type { AbstractConstructor } from './constructor.js';
 
 export declare class I18nInterface<
   T extends object,
@@ -38,16 +38,8 @@ export function I18nMixin<
   T extends object,
   B extends AbstractConstructor<LitElement>,
   TGet extends T = Required<T>,
->(
-  config: I18nControllerConfig<T>,
-  superClass: B
-): AbstractConstructor<I18nInterface<T, TGet>> & B;
-export function I18nMixin<
-  T extends object,
-  B extends Constructor<LitElement>,
-  TGet extends T = Required<T>,
 >(config: I18nControllerConfig<T>, superClass: B) {
-  class I18nElement extends superClass {
+  abstract class I18nElement extends superClass {
     protected readonly _i18nController = addI18nController<T>(this, config);
 
     /**
@@ -75,5 +67,6 @@ export function I18nMixin<
       return this._i18nController.resourceStrings as TGet;
     }
   }
-  return I18nElement as unknown as Constructor<I18nInterface<T, TGet>> & B;
+  return I18nElement as unknown as AbstractConstructor<I18nInterface<T, TGet>> &
+    B;
 }

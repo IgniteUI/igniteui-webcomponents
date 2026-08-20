@@ -1316,7 +1316,7 @@ export default class IgcComboComponent<
   }
 
   private _renderHelperText(): TemplateResult {
-    return IgcValidationContainerComponent.create(this, {
+    return this._renderValidationContainer({
       id: 'combo-helper-text',
       hasHelperText: true,
     });

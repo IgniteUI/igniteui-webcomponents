@@ -1,4 +1,4 @@
-import { html, nothing, type TemplateResult } from 'lit';
+import { html, nothing } from 'lit';
 import { property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
@@ -56,10 +56,6 @@ export default class IgcCheckboxComponent extends IgcCheckboxBaseComponent {
   protected override _handleClick(event: PointerEvent): void {
     this.indeterminate = false;
     super._handleClick(event);
-  }
-
-  protected _renderValidatorContainer(): TemplateResult {
-    return IgcValidationContainerComponent.create(this);
   }
 
   protected _renderStandard() {
@@ -128,7 +124,7 @@ export default class IgcCheckboxComponent extends IgcCheckboxBaseComponent {
           ><slot></slot>
         </span>
       </label>
-      ${this._renderValidatorContainer()}
+      ${this._renderValidationContainer()}
     `;
   }
 }

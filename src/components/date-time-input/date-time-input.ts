@@ -244,8 +244,7 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
    * string (preserving the legacy contract for this component).
    */
   protected override _emitInputEvent(): void {
-    this._setTouchedState();
-    this.emitEvent('igcInput', {
+    this._emitTouchedEvent('igcInput', {
       detail: this._uncommittedValue?.toISOString(),
     });
   }
