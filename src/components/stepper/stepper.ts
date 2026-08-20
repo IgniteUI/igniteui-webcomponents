@@ -2,26 +2,16 @@ import { ContextProvider } from '@lit/context';
 import { html, LitElement, type PropertyValues } from 'lit';
 import { property } from 'lit/decorators.js';
 import { addInternalsController } from '#internals/controllers/internals.js';
-import {
-  addKeybindings,
-  arrowDown,
-  arrowLeft,
-  arrowRight,
-  arrowUp,
-  endKey,
-  homeKey,
-} from '#internals/controllers/key-bindings.js';
+import { addRovingFocusController } from '#internals/controllers/roving-focus.js';
 import { addSlotController, setSlots } from '#internals/controllers/slot.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import type { Constructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
-import { firstOf, lastOf } from '#internals/utils/arrays.js';
-import { getRoot, isLTR } from '#internals/utils/dom.js';
+import { getRoot } from '#internals/utils/dom.js';
 import {
   addSafeEventListener,
   getElementFromPath,
 } from '#internals/utils/events.js';
-import { wrap } from '#internals/utils/math.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import type {
   HorizontalTransitionAnimation,
@@ -242,16 +232,14 @@ export default class IgcStepperComponent extends EventEmitterMixin<
       dark: { bootstrap, fluent, indigo },
     });
 
-    addKeybindings(this, {
-      skip: this._skipKeyboard,
-    })
-      .set(arrowUp, this._handleArrowUp)
-      .set(arrowDown, this._handleArrowDown)
-      .set(arrowLeft, this._handleArrowLeft)
-      .set(arrowRight, this._handleArrowRight)
-      .set(homeKey, this._handleHomeKey)
-      .set(endKey, this._handleEndKey)
-      .setActivateHandler(this._handleInteraction);
+    addRovingFocusController(this, {
+      keybindings: { skip: this._skipKeyboard },
+      items: () => this._state.accessibleSteps,
+      current: () => this._getActiveStepComponent(),
+      vertical: () => !this._isHorizontal,
+      focusItem: (step) => this._getStepHeader(step)?.focus(),
+      activateItem: (step) => this._activateStep(step),
+    });
   }
 
   //#region Lifecycle hooks
@@ -286,58 +274,6 @@ export default class IgcStepperComponent extends EventEmitterMixin<
 
   private _skipKeyboard(_: Element, event: KeyboardEvent): boolean {
     return !getElementFromPath('[data-step-header]', event);
-  }
-
-  private _handleHomeKey(): void {
-    this._getStepHeader(firstOf(this._state.accessibleSteps))?.focus();
-  }
-
-  private _handleEndKey(): void {
-    this._getStepHeader(lastOf(this._state.accessibleSteps))?.focus();
-  }
-
-  private _handleArrowDown(): void {
-    if (!this._isHorizontal) {
-      const step = this._getActiveStepComponent();
-
-      if (step) {
-        this._getStepHeader(this._getNextStep(step))?.focus();
-      }
-    }
-  }
-
-  private _handleArrowUp(): void {
-    if (!this._isHorizontal) {
-      const step = this._getActiveStepComponent();
-
-      if (step) {
-        this._getStepHeader(this._getPreviousStep(step))?.focus();
-      }
-    }
-  }
-
-  private _handleArrowLeft(): void {
-    const step = this._getActiveStepComponent();
-
-    if (step) {
-      const next = isLTR(this)
-        ? this._getPreviousStep(step)
-        : this._getNextStep(step);
-
-      this._getStepHeader(next)?.focus();
-    }
-  }
-
-  private _handleArrowRight(): void {
-    const step = this._getActiveStepComponent();
-
-    if (step) {
-      const next = isLTR(this)
-        ? this._getNextStep(step)
-        : this._getPreviousStep(step);
-
-      this._getStepHeader(next)?.focus();
-    }
   }
 
   //#endregion
@@ -440,20 +376,6 @@ export default class IgcStepperComponent extends EventEmitterMixin<
       }
       this._state.changeActiveStep(step);
     }
-  }
-
-  private _getNextStep(step: IgcStepComponent): IgcStepComponent {
-    const steps = this._state.accessibleSteps;
-    const next = wrap(0, steps.length - 1, steps.indexOf(step) + 1);
-
-    return steps[next];
-  }
-
-  private _getPreviousStep(step: IgcStepComponent): IgcStepComponent {
-    const steps = this._state.accessibleSteps;
-    const previous = wrap(0, steps.length - 1, steps.indexOf(step) - 1);
-
-    return steps[previous];
   }
 
   private _getActiveStepComponent(): IgcStepComponent | null {

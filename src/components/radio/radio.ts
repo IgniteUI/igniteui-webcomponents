@@ -9,13 +9,7 @@ import { property, query, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 import { addKeyboardFocusRing } from '#internals/controllers/focus-ring.js';
-import {
-  addKeybindings,
-  arrowDown,
-  arrowLeft,
-  arrowRight,
-  arrowUp,
-} from '#internals/controllers/key-bindings.js';
+import { addRovingFocusController } from '#internals/controllers/roving-focus.js';
 import { addSlotController, setSlots } from '#internals/controllers/slot.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import type { Constructor } from '#internals/mixins/constructor.js';
@@ -25,8 +19,6 @@ import { FormValueBooleanTransformers } from '#internals/mixins/forms/form-trans
 import { createFormValueState } from '#internals/mixins/forms/form-value.js';
 import { partMap } from '#internals/part-map.js';
 import { lastOf } from '#internals/utils/arrays.js';
-import { isLTR } from '#internals/utils/dom.js';
-import { wrap } from '#internals/utils/math.js';
 import { createIdGenerator } from '#internals/utils/strings.js';
 import { isString } from '#internals/utils/types.js';
 import { addThemingController } from '#theming/theming-controller.js';
@@ -132,7 +124,7 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
   }
 
   /** All radios of the group that are not disabled. */
-  private get _active(): IgcRadioComponent[] {
+  private get _activeRadios(): IgcRadioComponent[] {
     return this._radios.filter((radio) => !radio.disabled);
   }
 
@@ -209,14 +201,17 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
 
     addThemingController(this, all);
 
-    addKeybindings(this, {
-      skip: () => this.disabled,
-      bindingDefaults: { preventDefault: true, repeat: true },
-    })
-      .set(arrowLeft, () => this._navigate(isLTR(this) ? -1 : 1))
-      .set(arrowRight, () => this._navigate(isLTR(this) ? 1 : -1))
-      .set(arrowUp, () => this._navigate(-1))
-      .set(arrowDown, () => this._navigate(1));
+    addRovingFocusController(this, {
+      keybindings: {
+        skip: () => this.disabled,
+        bindingDefaults: { preventDefault: true, repeat: true },
+      },
+      vertical: true,
+      homeEnd: false,
+      items: () => this._activeRadios,
+      current: () => this,
+      focusItem: (radio) => this._navigate(radio),
+    });
   }
 
   protected override willUpdate(properties: PropertyValues<this>): void {
@@ -353,11 +348,7 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
     });
   }
 
-  protected _navigate(idx: number): void {
-    const active = this._active;
-    const next = wrap(0, active.length - 1, active.indexOf(this) + idx);
-    const radio = active[next];
-
+  protected _navigate(radio: IgcRadioComponent): void {
     this._setTouchedState();
     radio.focus();
     radio.checked = true;
