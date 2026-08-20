@@ -125,6 +125,28 @@ export function* iterNodes<T extends Node>(
   }
 }
 
+/**
+ * Iterates over `node` and its ancestors, crossing shadow DOM boundaries.
+ *
+ * Shadow roots are traversed through their host, so only elements are yielded.
+ *
+ * @example
+ * ```typescript
+ * for (const ancestor of iterAncestors(element)) { ... }
+ * ```
+ */
+export function* iterAncestors(node?: Node | null): Generator<Element> {
+  let current: Node | null | undefined = node;
+
+  while (current) {
+    if (isElement(current)) {
+      yield current;
+    }
+
+    current = current instanceof ShadowRoot ? current.host : current.parentNode;
+  }
+}
+
 /** Returns the root node (document or shadow root) of the given element. */
 export function getRoot(
   element: Element,
@@ -226,22 +248,27 @@ export function isPopoverOpen(element?: Element): boolean {
 }
 
 /**
+ * Returns whether the given element, or any of its ancestors across shadow DOM
+ * boundaries, is positioned as `sticky`.
+ */
+export function hasStickyAncestor(element: Element): boolean {
+  for (const ancestor of iterAncestors(element)) {
+    if (getComputedStyle(ancestor).position === 'sticky') {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+/**
  * Returns the nearest visible ancestor of a given node, traversing through shadow DOM boundaries if necessary. If no visible ancestor is found, returns null.
  */
 export function getVisibleAncestor(startNode: Node): HTMLElement | null {
-  let node: Node | null = startNode.parentNode;
-
-  while (node) {
-    if (node instanceof ShadowRoot) {
-      node = node.host;
-      continue;
+  for (const ancestor of iterAncestors(startNode.parentNode)) {
+    if (ancestor instanceof HTMLElement && ancestor.checkVisibility()) {
+      return ancestor;
     }
-
-    if (node instanceof HTMLElement && node.checkVisibility()) {
-      return node;
-    }
-
-    node = node.parentNode;
   }
 
   return null;
