@@ -18,6 +18,7 @@ import {
   type SlotChangeCallbackParameters,
   setSlots,
 } from '#internals/controllers/slot.js';
+import { coercedProperty } from '#internals/decorators/coerced-property.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import type { Constructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
@@ -130,9 +131,6 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
     transformers: FormValueNumberTransformers,
   });
 
-  private _max = 5;
-  private _step = 1;
-  private _single = false;
   private _symbols: IgcRatingSymbolComponent[] = [];
 
   @query('[part="symbols"]', true)
@@ -173,19 +171,16 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
    * @default 5
    */
   @property({ type: Number })
-  public set max(value: number) {
-    this._max = this._hasProjectedSymbols
-      ? this._symbols.length
-      : Math.max(0, value);
-
-    if (this._max < this.value) {
-      this.value = this._max;
-    }
-  }
-
-  public get max(): number {
-    return this._max;
-  }
+  @coercedProperty<number, IgcRatingComponent>({
+    transform: ({ value, host }) =>
+      host._hasProjectedSymbols ? host._symbols.length : Math.max(0, value),
+    onChange: ({ value, host }) => {
+      if (value < host.value) {
+        host.value = value;
+      }
+    },
+  })
+  public max = 5;
 
   /**
    * The minimum value change allowed.
@@ -195,13 +190,10 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
    * @default 1
    */
   @property({ type: Number })
-  public set step(value: number) {
-    this._step = this.single ? 1 : clamp(value, 0.001, 1);
-  }
-
-  public get step(): number {
-    return this._step;
-  }
+  @coercedProperty<number, IgcRatingComponent>({
+    transform: ({ value, host }) => (host.single ? 1 : clamp(value, 0.001, 1)),
+  })
+  public step = 1;
 
   /**
    * The label of the control.
@@ -258,18 +250,16 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
    * @default false
    */
   @property({ type: Boolean, reflect: true })
-  public set single(value: boolean) {
-    this._single = Boolean(value);
-
-    if (this._single) {
-      this.step = 1;
-      this.value = Math.ceil(this.value);
-    }
-  }
-
-  public get single(): boolean {
-    return this._single;
-  }
+  @coercedProperty<boolean, IgcRatingComponent>({
+    transform: ({ value }) => Boolean(value),
+    onChange: ({ value, host }) => {
+      if (value) {
+        host.step = 1;
+        host.value = Math.ceil(host.value);
+      }
+    },
+  })
+  public single = false;
 
   /**
    * Whether to reset the rating when the user selects the same value.
