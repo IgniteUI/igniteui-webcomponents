@@ -20,7 +20,7 @@ export interface CoercedPropertyContext<T, H> {
 /**
  * Configuration for {@link coercedProperty}.
  */
-interface CoercedPropertyConfig<T, H> {
+export interface CoercedPropertyConfig<T, H> {
   /**
    * Coerces every incoming value — the field initializer included — before it
    * is stored.
