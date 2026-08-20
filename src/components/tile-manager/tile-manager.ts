@@ -1,4 +1,3 @@
-import { ContextProvider } from '@lit/context';
 import { html, LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
 import { createRef, ref } from 'lit/directives/ref.js';
@@ -7,6 +6,7 @@ import {
   type TileManagerContext,
   tileManagerContext,
 } from '#internals/context.js';
+import { addContextProvider } from '#internals/controllers/context-provider.js';
 import {
   createMutationController,
   type MutationControllerParams,
@@ -69,22 +69,17 @@ export default class IgcTileManagerComponent extends LitElement {
 
   // #region Context helpers
 
-  private _context = new ContextProvider(this, {
+  private readonly _managerContext: TileManagerContext = {
+    instance: this,
+    grid: this._grid,
+    setMaximizedState: () => this._setMaximizedState(),
+  };
+
+  private readonly _context = addContextProvider(this, {
     context: tileManagerContext,
-    initialValue: this._createContext(),
+    watch: ['dragMode', 'resizeMode'],
+    value: () => this._managerContext,
   });
-
-  private _createContext(): TileManagerContext {
-    return {
-      instance: this,
-      grid: this._grid,
-      setMaximizedState: () => this._setMaximizedState(),
-    };
-  }
-
-  private _setManagerContext(): void {
-    this._context.setValue(this._createContext(), true);
-  }
 
   // #endregion
 
@@ -99,7 +94,6 @@ export default class IgcTileManagerComponent extends LitElement {
   @property({ attribute: 'resize-mode' })
   public set resizeMode(value: TileManagerResizeMode) {
     this._resizeMode = value;
-    this._setManagerContext();
   }
 
   public get resizeMode(): TileManagerResizeMode {
@@ -115,7 +109,6 @@ export default class IgcTileManagerComponent extends LitElement {
   @property({ attribute: 'drag-mode' })
   public set dragMode(value: TileManagerDragMode) {
     this._dragMode = value;
-    this._setManagerContext();
   }
 
   public get dragMode(): TileManagerDragMode {
@@ -223,7 +216,7 @@ export default class IgcTileManagerComponent extends LitElement {
   protected override firstUpdated() {
     this._tilesState.assignPositions();
     this._tilesState.assignTiles();
-    this._setManagerContext();
+    this._context.publish();
   }
 
   private _observerCallback({
