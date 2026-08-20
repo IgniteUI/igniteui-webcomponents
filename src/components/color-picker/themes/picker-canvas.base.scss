@@ -1,0 +1,43 @@
+@use 'styles/common/component';
+@use 'styles/utilities' as *;
+
+:host {
+    // The marker is centered on the picked point, so at the edges of the canvas
+    // half of it - plus its elevation - sits outside the host box. Paint
+    // containment clips exactly that overflow to the (rounded) padding edge, so
+    // neither `contain: strict` nor `content-visibility: auto` can be used here:
+    // both imply it. Layout and style containment carry no clip.
+    display: block;
+    contain: layout style;
+    grid-column: 1 / -1;
+    position: relative;
+    min-height: rem(230px);
+    background-image:
+        linear-gradient(rgb(0 0 0 / 0%), #000),
+        linear-gradient(90deg, #fff, currentColor);
+    cursor: crosshair;
+}
+
+// The marker tokens are emitted on the color picker host and reach here by
+// inheritance. The fallbacks mirror the schema defaults so a standalone canvas
+// still renders a visible marker.
+[part='marker'] {
+    position: absolute;
+    cursor: crosshair;
+    width: var(--marker-size);
+    height: var(--marker-size);
+    border: rem(2px) solid var(--marker-color);
+    border-radius: 50%;
+    box-shadow: var(--marker-elevation, var(--ig-elevation-1));
+    background-color: var(--_marker-fill, transparent);
+
+    // Keep the fill inside the white ring instead of running underneath it, so a
+    // translucent color can never tint the border.
+    background-clip: padding-box;
+    transition: scale .1s ease-in-out;
+
+    &:focus {
+        scale: 1.3;
+        outline: none;
+    }
+}

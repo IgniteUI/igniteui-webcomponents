@@ -1,0 +1,40 @@
+@use 'styles/utilities' as *;
+@use '../light/themes' as *;
+
+$theme: $bootstrap;
+
+:host {
+    --_outline-size: #{rem(4px)};
+    --_input-row-gap: #{sizable(rem(8px), rem(12px), rem(16px))};
+    --_picker-column-gap: #{sizable(rem(12px), rem(12px), rem(16px))};
+    --_picker-buttons-gap: #{sizable(rem(8px), rem(4px), rem(4px))};
+    --_picker-rows-grid-template-columns: #{minmax(auto, sizable(rem(174px), rem(190px), rem(212px))) 0 sizable(rem(73px), rem(80px), rem(100px))};
+    --_label-spacing: #{rem(8px)};
+    
+    [part~='anchor'] {
+        &:focus-visible {
+            &::after {
+                box-shadow: 0 0 0 var(--_outline-size) var-get($theme, 'anchor-outline-color');
+                width: 100%;
+                height: 100%;
+                inset: 0;
+                border-radius: inherit;
+            }
+        }
+    }
+
+    [part='label'] {
+        @include type-style('body-1');
+    }
+
+    ::part(helper-text) {
+        @include type-style('body-2');
+
+        grid-auto-rows: minmax(rem(20px), auto);
+        margin-block-start: pad-block(rem(4px));
+    }
+    
+    [part='inputs-row'] {
+        grid-template-columns: max(sizable(rem(96px), rem(104px), rem(120px))) 1fr;
+    }
+}

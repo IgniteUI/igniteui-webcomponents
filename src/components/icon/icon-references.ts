@@ -71,6 +71,7 @@ const ICON_ALIASES: Record<string, Partial<Record<IconThemeKey, string>>> = {
   regenerate: { default: 'reload' },
   copy_content: { default: 'copy' },
   collapse: { default: 'keyboard_arrow_up', indigo: 'indigo_chevron_up' },
+  eye_dropper: { default: 'colorize' },
   arrow_prev: {
     default: 'navigate_before',
     fluent: 'arrow_upward',
