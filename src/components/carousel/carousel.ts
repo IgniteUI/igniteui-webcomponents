@@ -1,4 +1,3 @@
-import { ContextProvider } from '@lit/context';
 import {
   CarouselResourceStringsEN,
   type ICarouselResourceStrings,
@@ -9,6 +8,7 @@ import { cache } from 'lit/directives/cache.js';
 import { createRef, ref } from 'lit/directives/ref.js';
 import { styleMap } from 'lit/directives/style-map.js';
 import { carouselContext } from '#internals/context.js';
+import { addContextProvider } from '#internals/controllers/context-provider.js';
 import {
   addGesturesController,
   type SwipeEvent,
@@ -139,14 +139,11 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
       defaultEN: CarouselResourceStringsEN,
     });
 
-  private readonly _context = new ContextProvider(this, {
+  private readonly _context = addContextProvider(this, {
     context: carouselContext,
-    initialValue: this,
+    watch: ['animationType', 'slidesLabelFormat', 'indicatorsLabelFormat'],
+    value: () => this,
   });
-
-  private _setCarouselContext(): void {
-    this._context.setValue(this, true);
-  }
 
   @queryAll(IgcCarouselIndicatorComponent.tagName)
   private readonly _defaultIndicators!: NodeListOf<IgcCarouselIndicatorComponent>;
@@ -349,13 +346,6 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
 
   //#region Watchers
 
-  @watch('animationType')
-  @watch('slidesLabelFormat')
-  @watch('indicatorsLabelFormat')
-  protected _contextChanged(): void {
-    this._setCarouselContext();
-  }
-
   @watch('interval')
   protected _intervalChange(): void {
     if (!this.isPlaying) {
@@ -424,7 +414,8 @@ export default class IgcCarouselComponent extends EventEmitterMixin<
 
   protected override async firstUpdated(): Promise<void> {
     await this.updateComplete;
-    this._setCarouselContext();
+    // Republish for consumers created after their own first render (Blazor timing).
+    this._context.publish();
 
     if (!isEmpty(this._slides)) {
       this._activateSlide(
