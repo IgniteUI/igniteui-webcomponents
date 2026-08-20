@@ -1,6 +1,6 @@
-import { ContextProvider } from '@lit/context';
 import { html, LitElement, type PropertyValues } from 'lit';
 import { property } from 'lit/decorators.js';
+import { addContextProvider } from '#internals/controllers/context-provider.js';
 import { addInternalsController } from '#internals/controllers/internals.js';
 import { addRovingFocusController } from '#internals/controllers/roving-focus.js';
 import { addSlotController, setSlots } from '#internals/controllers/slot.js';
@@ -33,6 +33,7 @@ import { styles as bootstrap } from './themes/stepper/stepper.bootstrap.css.js';
 import { styles as fluent } from './themes/stepper/stepper.fluent.css.js';
 import { styles as indigo } from './themes/stepper/stepper.indigo.css.js';
 
+/** Property changes that the stepper republishes its context for. */
 const STEPPER_SYNC_PROPERTIES: (keyof IgcStepperComponent)[] = [
   'orientation',
   'stepType',
@@ -108,14 +109,6 @@ export default class IgcStepperComponent extends EventEmitterMixin<
   //#region Internal state and properties
 
   private readonly _state = createStepperState();
-
-  private readonly _contextProvider = new ContextProvider(this, {
-    context: STEPPER_CONTEXT,
-    initialValue: {
-      stepper: this,
-      state: this._state,
-    },
-  });
 
   private readonly _internals = addInternalsController(this, {
     initialARIA: {
@@ -227,6 +220,14 @@ export default class IgcStepperComponent extends EventEmitterMixin<
 
     addSafeEventListener(this, 'click', this._handleInteraction);
 
+    const context = { stepper: this, state: this._state };
+
+    addContextProvider(this, {
+      context: STEPPER_CONTEXT,
+      watch: STEPPER_SYNC_PROPERTIES,
+      value: () => context,
+    });
+
     addThemingController(this, {
       light: { bootstrap, fluent, indigo },
       dark: { bootstrap, fluent, indigo },
@@ -245,8 +246,6 @@ export default class IgcStepperComponent extends EventEmitterMixin<
   //#region Lifecycle hooks
 
   protected override update(properties: PropertyValues<this>): void {
-    this._syncStepperAttributes(properties);
-
     if (properties.has('orientation')) {
       this._internals.setARIA({ ariaOrientation: this.orientation });
     }
@@ -302,12 +301,6 @@ export default class IgcStepperComponent extends EventEmitterMixin<
   //#endregion
 
   //#region Internal methods
-
-  private _syncStepperAttributes(properties: PropertyValues<this>): void {
-    if (STEPPER_SYNC_PROPERTIES.some((p) => properties.has(p))) {
-      this._contextProvider.updateObservers();
-    }
-  }
 
   private _animateSteps(
     nextStep: IgcStepComponent,
