@@ -7,6 +7,7 @@ import { fadeOut } from '#animations/presets/fade/index.js';
 import { scaleInCenter } from '#animations/presets/scale/index.js';
 import { addInternalsController } from '#internals/controllers/internals.js';
 import { addSlotController, setSlots } from '#internals/controllers/slot.js';
+import { coercedProperty } from '#internals/decorators/coerced-property.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import type { Constructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
@@ -114,9 +115,6 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
    * popover renders; a hide commits it only once its animation is done.
    */
   private _requestedState = false;
-
-  private _showDelay = 200;
-  private _hideDelay = 300;
 
   @query('igc-popover', true)
   private readonly _popover!: IgcPopoverComponent;
@@ -248,13 +246,10 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
    * @default 200
    */
   @property({ attribute: 'show-delay', type: Number })
-  public set showDelay(value: number) {
-    this._showDelay = Math.max(0, asNumber(value));
-  }
-
-  public get showDelay(): number {
-    return this._showDelay;
-  }
+  @coercedProperty<number>({
+    transform: ({ value }) => Math.max(0, asNumber(value)),
+  })
+  public showDelay = 200;
 
   /**
    * Specifies the number of milliseconds that should pass before hiding the tooltip.
@@ -263,13 +258,10 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
    * @default 300
    */
   @property({ attribute: 'hide-delay', type: Number })
-  public set hideDelay(value: number) {
-    this._hideDelay = Math.max(0, asNumber(value));
-  }
-
-  public get hideDelay(): number {
-    return this._hideDelay;
-  }
+  @coercedProperty<number>({
+    transform: ({ value }) => Math.max(0, asNumber(value)),
+  })
+  public hideDelay = 300;
 
   /**
    * Specifies plain text as the tooltip content.
