@@ -110,12 +110,6 @@ export default class IgcStepperComponent extends EventEmitterMixin<
 
   private readonly _state = createStepperState();
 
-  private readonly _internals = addInternalsController(this, {
-    initialARIA: {
-      role: 'tablist',
-    },
-  });
-
   private readonly _slots = addSlotController(this, {
     slots: setSlots(),
     onChange: this._handleSlotChange,
@@ -220,6 +214,11 @@ export default class IgcStepperComponent extends EventEmitterMixin<
 
     addSafeEventListener(this, 'click', this._handleInteraction);
 
+    addInternalsController(this, {
+      initialARIA: { role: 'tablist' },
+      aria: () => ({ ariaOrientation: this.orientation }),
+    });
+
     const context = { stepper: this, state: this._state };
 
     addContextProvider(this, {
@@ -246,10 +245,6 @@ export default class IgcStepperComponent extends EventEmitterMixin<
   //#region Lifecycle hooks
 
   protected override update(properties: PropertyValues<this>): void {
-    if (properties.has('orientation')) {
-      this._internals.setARIA({ ariaOrientation: this.orientation });
-    }
-
     if (properties.has('linear')) {
       this._state.setVisitedState(this.linear);
     }

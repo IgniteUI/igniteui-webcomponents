@@ -12,6 +12,67 @@ import {
 } from './internals.js';
 
 describe('ElementInternals controller', () => {
+  describe('reactive ARIA', () => {
+    let tag: string;
+    let tagName: ReturnType<typeof unsafeStatic>;
+
+    type Fixture = LitElement & {
+      selected: boolean;
+      internals: ElementInternalsController;
+    };
+
+    before(() => {
+      tag = defineCE(
+        class extends LitElement {
+          public static override properties = { selected: { type: Boolean } };
+          declare public selected: boolean;
+
+          public internals = addInternalsController(this, {
+            reflectRole: true,
+            aria: () => ({
+              role: this.selected ? 'option' : 'listitem',
+              ariaSelected: `${this.selected}`,
+            }),
+          });
+
+          constructor() {
+            super();
+            this.selected = false;
+          }
+        }
+      );
+      tagName = unsafeStatic(tag);
+    });
+
+    it('derives internals ARIA on the first update', async () => {
+      const instance = await fixture<Fixture>(html`<${tagName}></${tagName}>`);
+
+      expect(instance.internals.getARIA('ariaSelected')).to.equal('false');
+      expect(instance.internals.getARIA('role')).to.equal('listitem');
+    });
+
+    it('recomputes the derived ARIA when host state changes', async () => {
+      const instance = await fixture<Fixture>(html`<${tagName}></${tagName}>`);
+
+      instance.selected = true;
+      await instance.updateComplete;
+
+      expect(instance.internals.getARIA('ariaSelected')).to.equal('true');
+      expect(instance.internals.getARIA('role')).to.equal('option');
+    });
+
+    it('a derived role participates in role reflection', async () => {
+      const instance = await fixture<Fixture>(html`<${tagName}></${tagName}>`);
+
+      expect(instance.getAttribute('role')).to.equal('listitem');
+
+      instance.selected = true;
+      await instance.updateComplete;
+
+      expect(instance.getAttribute('role')).to.equal('option');
+    });
+  });
+
   describe('reflectRole', () => {
     let tag: string;
     let tagName: ReturnType<typeof unsafeStatic>;

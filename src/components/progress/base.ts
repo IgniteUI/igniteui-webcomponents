@@ -11,14 +11,6 @@ import type { StyleVariant } from '../types.js';
 
 /* omitModule */
 export abstract class IgcProgressBaseComponent extends LitElement {
-  private readonly _internals = addInternalsController(this, {
-    initialARIA: {
-      role: 'progressbar',
-      ariaValueMin: '0',
-      ariaValueNow: '0',
-    },
-  });
-
   protected abstract _slots: SlotController<any>;
 
   @query('[part="base"]', true)
@@ -93,6 +85,23 @@ export abstract class IgcProgressBaseComponent extends LitElement {
   @property({ attribute: 'label-format' })
   public labelFormat!: string;
 
+  constructor() {
+    super();
+
+    addInternalsController(this, {
+      initialARIA: {
+        role: 'progressbar',
+        ariaValueMin: '0',
+        ariaValueNow: '0',
+      },
+      aria: () => ({
+        ariaValueMax: this.max.toString(),
+        ariaValueNow: this.indeterminate ? null : this.value.toString(),
+        ariaValueText: this.indeterminate ? null : this._labelText,
+      }),
+    });
+  }
+
   @watch('indeterminate')
   protected _indeterminateChange(): void {
     if (!this.indeterminate) {
@@ -121,20 +130,8 @@ export abstract class IgcProgressBaseComponent extends LitElement {
     }
   }
 
-  protected override updated(): void {
-    this._updateARIA();
-  }
-
-  private _updateARIA(): void {
-    const text = this.labelFormat
-      ? this._renderLabelFormat()
-      : `${this.value}%`;
-
-    this._internals.setARIA({
-      ariaValueMax: this.max.toString(),
-      ariaValueNow: this.indeterminate ? null : this.value.toString(),
-      ariaValueText: this.indeterminate ? null : text,
-    });
+  private get _labelText(): string {
+    return this.labelFormat ? this._renderLabelFormat() : `${this.value}%`;
   }
 
   private _updateProgress(): void {

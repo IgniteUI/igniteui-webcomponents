@@ -73,14 +73,6 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
     );
   }
 
-  private readonly _internals = addInternalsController(this, {
-    initialARIA: {
-      role: 'tooltip',
-      ariaAtomic: 'true',
-      ariaLive: 'polite',
-    },
-  });
-
   private readonly _controller = addTooltipController(this, {
     onShow: () => this._showOnInteraction(),
     onHide: () => this._hideOnInteraction(),
@@ -299,6 +291,15 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
   constructor() {
     super();
     addThemingController(this, all);
+
+    addInternalsController(this, {
+      initialARIA: {
+        role: 'tooltip',
+        ariaAtomic: 'true',
+        ariaLive: 'polite',
+      },
+      aria: () => ({ role: this.sticky ? 'status' : 'tooltip' }),
+    });
   }
 
   protected override firstUpdated(): void {
@@ -320,10 +321,6 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
   protected override willUpdate(changedProperties: PropertyValues<this>): void {
     if (changedProperties.has('anchor')) {
       this._controller.resolveAnchor(this.anchor);
-    }
-
-    if (changedProperties.has('sticky')) {
-      this._internals.setARIA({ role: this.sticky ? 'status' : 'tooltip' });
     }
   }
 

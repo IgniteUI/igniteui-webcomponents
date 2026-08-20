@@ -38,6 +38,7 @@ export default class IgcSelectGroupComponent extends LitElement {
     initialARIA: {
       role: 'group',
     },
+    aria: () => ({ ariaDisabled: `${this.disabled}` }),
   });
 
   private readonly _slots = addSlotController(this, {
@@ -106,8 +107,6 @@ export default class IgcSelectGroupComponent extends LitElement {
 
   @watch('disabled', { waitUntilFirstUpdate: true })
   protected disabledChange() {
-    this._internals.setARIA({ ariaDisabled: this.disabled.toString() });
-
     for (const item of this.controlledItems) {
       item.disabled = this.disabled;
     }

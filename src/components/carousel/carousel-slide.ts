@@ -29,13 +29,6 @@ export default class IgcCarouselSlideComponent extends LitElement {
     registerComponent(IgcCarouselSlideComponent);
   }
 
-  private readonly _internals = addInternalsController(this, {
-    initialARIA: {
-      role: 'tabpanel',
-      ariaRoleDescription: 'slide',
-    },
-  });
-
   private readonly _player = addAnimationController(this);
 
   private _carousel?: IgcCarouselComponent;
@@ -76,6 +69,20 @@ export default class IgcCarouselSlideComponent extends LitElement {
   constructor() {
     super();
 
+    addInternalsController(this, {
+      initialARIA: {
+        role: 'tabpanel',
+        ariaRoleDescription: 'slide',
+      },
+      aria: () => ({
+        ariaLabel: formatString(
+          this._labelFormat,
+          this._index + 1,
+          this._total
+        ),
+      }),
+    });
+
     // Set carousel reference once provider is ready (addresses Blazor timing issue)
     createAsyncContext(this, carouselContext, (carousel) => {
       this._carousel = carousel;
@@ -99,12 +106,6 @@ export default class IgcCarouselSlideComponent extends LitElement {
         direction,
       })
     );
-  }
-
-  protected override willUpdate(): void {
-    this._internals.setARIA({
-      ariaLabel: formatString(this._labelFormat, this._index + 1, this._total),
-    });
   }
 
   /** @internal */

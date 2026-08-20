@@ -5,10 +5,20 @@ import type {
 } from 'lit';
 import type { FormValueType } from '../mixins/forms/types.js';
 
+/** A subset of the ARIA attributes exposed through `ElementInternals`. */
+type ARIAState = { [K in keyof ARIAMixin]?: ARIAMixin[K] };
+
 /** Configuration for the ElementInternalsController. */
 type ElementInternalsConfig<T extends keyof ARIAMixin = keyof ARIAMixin> = {
   /** Initial ARIA attributes to set on the element internals. */
   initialARIA?: Partial<Record<T, ARIAMixin[T]>>;
+  /**
+   * ARIA attributes derived from host state. Recomputed on every host update
+   * and applied to the element internals, replacing `setARIA` calls scattered
+   * through `willUpdate` overrides. Keep the projection cheap — it runs
+   * whether or not the properties it reads have changed.
+   */
+  aria?: () => ARIAState;
   /**
    * Whether to also mirror the internals `role` to a `role` content attribute
    * on the host element.
@@ -36,6 +46,7 @@ const registry = new WeakMap<Element, ElementInternalsController>();
 class ElementInternalsController implements ReactiveController {
   private readonly _host: ReactiveControllerHost & LitElement;
   private readonly _internals: ElementInternals;
+  private readonly _aria?: () => ARIAState;
   private readonly _reflectRole: boolean;
 
   /** The last `role` content attribute value written by this controller. */
@@ -106,6 +117,7 @@ class ElementInternalsController implements ReactiveController {
   ) {
     this._host = host;
     this._internals = this._host.attachInternals();
+    this._aria = config?.aria;
     this._reflectRole = config?.reflectRole ?? false;
 
     if (config?.initialARIA) {
@@ -119,6 +131,13 @@ class ElementInternalsController implements ReactiveController {
   /** @internal */
   public hostConnected(): void {
     this._reflectRoleAttribute();
+  }
+
+  /** @internal */
+  public hostUpdate(): void {
+    if (this._aria) {
+      this.setARIA(this._aria.call(this._host));
+    }
   }
 
   /**
