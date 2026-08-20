@@ -1,9 +1,11 @@
-import { html, LitElement } from 'lit';
+import { html, LitElement, type PropertyValues } from 'lit';
 import { property } from 'lit/decorators.js';
 import { addInternalsController } from '#internals/controllers/internals.js';
 import { createMutationController } from '#internals/controllers/mutation-observer.js';
 import { addSlotController, setSlots } from '#internals/controllers/slot.js';
 import { registerComponent } from '#internals/definitions/register.js';
+import { isEmpty } from '#internals/utils/arrays.js';
+import { isDefined } from '#internals/utils/types.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import IgcRadioComponent from '../radio/radio.js';
 import type { ContentOrientation } from '../types.js';
@@ -16,7 +18,8 @@ import { all } from './themes/themes.js';
  *
  * @element igc-radio-group
  *
- * @slot - Default slot
+ * @slot - The radio controls of the group. They must be direct children of the group -
+ * radios nested in a wrapper element are neither part of it, nor laid out by it.
  */
 export default class IgcRadioGroupComponent extends LitElement {
   public static readonly tagName = 'igc-radio-group';
@@ -30,20 +33,27 @@ export default class IgcRadioGroupComponent extends LitElement {
   private readonly _internals = addInternalsController(this, {
     initialARIA: {
       role: 'radiogroup',
+      ariaOrientation: 'vertical',
     },
+    reflectRole: true,
   });
 
   private readonly _slots = addSlotController(this, {
     slots: setSlots(),
-    onChange: this._handleSlotChange,
-    initial: true,
+    onChange: this._syncRadios,
   });
-
-  private _radios: IgcRadioComponent[] = [];
 
   private _defaultValue!: string;
   private _name!: string;
-  private _value!: string;
+  /** The value that no radio holds yet. Empty as soon as a radio takes it. */
+  private _pendingValue = '';
+
+  private get _radios(): IgcRadioComponent[] {
+    return this._slots.getAssignedElements<IgcRadioComponent>('[default]', {
+      selector: IgcRadioComponent.tagName,
+      flatten: true,
+    });
+  }
 
   /**
    * Alignment of the radio controls inside this group.
@@ -85,16 +95,18 @@ export default class IgcRadioGroupComponent extends LitElement {
    */
   @property()
   public set value(value: string) {
-    this._value = value;
+    this._pendingValue = value;
     this._setSelectedRadio();
   }
 
   public get value(): string {
-    if (this._radios.length) {
-      this._value = this._radios.find((radio) => radio.checked)?.value ?? '';
-    }
+    const radios = this._radios;
 
-    return this._value;
+    // The checked radio holds the value of the group. Without radios to apply it to,
+    // the group reports the value that is still pending.
+    return isEmpty(radios)
+      ? this._pendingValue
+      : (radios.find((radio) => radio.checked)?.value ?? '');
   }
 
   constructor() {
@@ -103,7 +115,7 @@ export default class IgcRadioGroupComponent extends LitElement {
     addThemingController(this, all);
 
     createMutationController(this, {
-      callback: this._observerCallback,
+      callback: this._syncStates,
       filter: [IgcRadioComponent.tagName],
       config: {
         attributeFilter: ['disabled', 'label-position'],
@@ -112,44 +124,58 @@ export default class IgcRadioGroupComponent extends LitElement {
     });
   }
 
+  protected override willUpdate(properties: PropertyValues<this>): void {
+    if (properties.has('alignment')) {
+      this._internals.setARIA({ ariaOrientation: this.alignment });
+    }
+  }
+
   protected override firstUpdated(): void {
-    const radios = Array.from(this._radios);
-    const allRadiosUnchecked = radios.every((radio) => !radio.checked);
+    this._syncRadios();
+  }
+
+  /**
+   * Brings the group in sync with its radios. Runs after the first render and after each
+   * change of the slotted content, to adopt the radios that come in at run time. Without
+   * the name of the group, such a radio makes a group of its own, outside of the keyboard
+   * navigation and the single selection of this one.
+   */
+  private _syncRadios(): void {
+    const radios = this._radios;
 
     this._setRadiosName();
     this._setRadiosDefaultChecked();
 
-    if (allRadiosUnchecked && this._value) {
+    // The value of the group applies while no radio holds a selection of its own. This
+    // is the first render, or the moment a radio with a value that had no match comes in.
+    // The `checked` attribute then makes that selection the default state.
+    if (this._pendingValue && !radios.some((radio) => radio.checked)) {
       this._setSelectedRadio();
-      this._setDefaultValue();
+
+      for (const radio of radios) {
+        radio.toggleAttribute('checked', radio.checked);
+      }
     }
+
+    this._syncStates();
+    this.style.setProperty('--layout-count', `${radios.length}`);
   }
 
-  private _observerCallback(): void {
-    const disabled = this._radios.every((radio) => radio.disabled);
-    const labeBefore = this._radios.some(
-      (radio) => radio.labelPosition === 'before'
+  private _syncStates(): void {
+    const radios = this._radios;
+
+    this._internals.setState(
+      'disabled',
+      !isEmpty(radios) && radios.every((radio) => radio.disabled)
     );
-
-    this._internals.setState('disabled', disabled);
-    this._internals.setState('label-before', labeBefore);
-  }
-
-  private _handleSlotChange(): void {
-    this._radios = this._slots.getAssignedElements('[default]', {
-      selector: IgcRadioComponent.tagName,
-      flatten: true,
-    });
-
-    const elements = this._slots.getAssignedElements('[default]', {
-      flatten: true,
-    });
-
-    this.style.setProperty('--layout-count', elements.length.toString());
+    this._internals.setState(
+      'label-before',
+      radios.some((radio) => radio.labelPosition === 'before')
+    );
   }
 
   private _setRadiosDefaultChecked(): void {
-    if (this._defaultValue) {
+    if (isDefined(this._defaultValue)) {
       for (const radio of this._radios) {
         radio.defaultChecked = radio.value === this._defaultValue;
       }
@@ -157,22 +183,25 @@ export default class IgcRadioGroupComponent extends LitElement {
   }
 
   private _setRadiosName(): void {
-    if (this._name) {
+    if (isDefined(this._name)) {
       for (const radio of this._radios) {
         radio.name = this._name;
       }
     }
   }
 
-  private _setDefaultValue(): void {
-    for (const radio of this._radios) {
-      radio.toggleAttribute('checked', radio.checked);
-    }
-  }
-
   private _setSelectedRadio(): void {
+    let applied = false;
+
     for (const radio of this._radios) {
-      radio.checked = radio.value === this._value;
+      radio.checked = radio.value === this._pendingValue;
+      applied ||= radio.checked;
+    }
+
+    // A radio holds the value now, so the group reads it from that radio. A value that
+    // stays pending applies again each time the group loses its selection.
+    if (applied) {
+      this._pendingValue = '';
     }
   }
 
