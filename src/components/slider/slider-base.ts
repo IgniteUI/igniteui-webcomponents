@@ -19,6 +19,7 @@ import {
   pageUpKey,
 } from '#internals/controllers/key-bindings.js';
 import { blazorDeepImport } from '#internals/decorators/blazorDeepImport.js';
+import { coercedProperty } from '#internals/decorators/coerced-property.js';
 import { watch } from '#internals/decorators/watch.js';
 import { createTimer } from '#internals/timing.js';
 import { isLTR } from '#internals/utils/dom.js';
@@ -52,7 +53,6 @@ export class IgcSliderBaseComponent extends LitElement {
   private _max = 100;
   private _lowerBound?: number;
   private _upperBound?: number;
-  private _step = 1;
   private startValue?: number;
   private pointerCaptured = false;
   protected activeThumb?: HTMLElement;
@@ -197,13 +197,11 @@ export class IgcSliderBaseComponent extends LitElement {
    * @attr
    */
   @property({ type: Number })
-  public set step(value: number) {
-    this._step = this.hasLabels ? 1 : asNumber(value, this._step);
-  }
-
-  public get step(): number {
-    return this._step;
-  }
+  @coercedProperty<number, IgcSliderBaseComponent>({
+    transform: ({ value, host, previous }) =>
+      host.hasLabels ? 1 : asNumber(value, previous ?? 1),
+  })
+  public step = 1;
 
   /**
    * The number of primary ticks. It defaults to 0 which means no primary ticks are displayed.
