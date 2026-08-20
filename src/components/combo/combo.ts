@@ -11,6 +11,7 @@ import { addRootClickController } from '#internals/controllers/root-click.js';
 import { addSlotController, setSlots } from '#internals/controllers/slot.js';
 import { blazorAdditionalDependencies } from '#internals/decorators/blazorAdditionalDependencies.js';
 import { blazorIndirectRender } from '#internals/decorators/blazorIndirectRender.js';
+import { coercedProperty } from '#internals/decorators/coerced-property.js';
 import { shadowOptions } from '#internals/decorators/shadow-options.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { addI18nController } from '#internals/i18n/i18n-controller.js';
@@ -228,14 +229,10 @@ export default class IgcComboComponent<
     }
   );
 
-  private _data: T[] = [];
   private _index?: Map<Item<T>, number[]>;
   private _indexSize = 0;
-  private _valueKey?: Keys<T>;
   private _displayKey?: Keys<T>;
   private _placeholderSearch?: string;
-  private _disableFiltering = false;
-  private _singleSelect = false;
   private _selected: Set<T> = new Set();
   // `filterKey` is left unset here - both key fields are still undefined at
   // field-initialization time. The `displayKey` setter fills it in.
@@ -294,14 +291,13 @@ export default class IgcComboComponent<
   /** The data source used to generate the list of options. */
   /* treatAsRef */
   @property({ attribute: false })
-  public set data(value: T[]) {
-    this._data = asArray(value);
-    this._index = undefined;
-  }
-
-  public get data(): T[] {
-    return this._data;
-  }
+  @coercedProperty<T[], IgcComboComponent<T>>({
+    transform: ({ value }) => asArray(value),
+    onChange: ({ host }) => {
+      host._index = undefined;
+    },
+  })
+  public data: T[] = [];
 
   /**
    * Whether the control has an outlined appearance.
@@ -317,22 +313,21 @@ export default class IgcComboComponent<
    * @default false
    */
   @property({ type: Boolean, reflect: true, attribute: 'single-select' })
-  public set singleSelect(value: boolean) {
-    this._singleSelect = Boolean(value);
-    this._syncSelectionFromValue();
+  @coercedProperty<boolean, IgcComboComponent<T>>({
+    transform: ({ value }) => Boolean(value),
+    onChange: ({ host }) => {
+      host._syncSelectionFromValue();
 
-    if (this.hasUpdated) {
-      this._withPristine(() => {
-        this._activeIndex = -1;
-        this._searchTerm = '';
-        this._formValue.setValueAndFormState(this.value);
-      });
-    }
-  }
-
-  public get singleSelect(): boolean {
-    return this._singleSelect;
-  }
+      if (host.hasUpdated) {
+        host._withPristine(() => {
+          host._activeIndex = -1;
+          host._searchTerm = '';
+          host._formValue.setValueAndFormState(host.value);
+        });
+      }
+    },
+  })
+  public singleSelect = false;
 
   /**
    * Whether the control should receive focus automatically.
@@ -411,15 +406,13 @@ export default class IgcComboComponent<
    * @attr value-key
    */
   @property({ attribute: 'value-key' })
-  public set valueKey(value: Keys<T> | undefined) {
-    this._valueKey = value;
-    this._displayKey = this._displayKey ?? this._valueKey;
-    this._index = undefined;
-  }
-
-  public get valueKey() {
-    return this._valueKey;
-  }
+  @coercedProperty<Keys<T> | undefined, IgcComboComponent<T>>({
+    onChange: ({ value, host }) => {
+      host._displayKey = host._displayKey ?? value;
+      host._index = undefined;
+    },
+  })
+  public valueKey?: Keys<T> = undefined;
 
   /**
    * The key in the data source used to display items in the list.
@@ -434,7 +427,7 @@ export default class IgcComboComponent<
   }
 
   public get displayKey() {
-    return this._displayKey ?? this._valueKey;
+    return this._displayKey ?? this.valueKey;
   }
 
   /**
@@ -480,14 +473,12 @@ export default class IgcComboComponent<
    * @default false
    */
   @property({ type: Boolean, attribute: 'disable-filtering' })
-  public set disableFiltering(value: boolean) {
-    this._disableFiltering = value;
-    this._searchTerm = '';
-  }
-
-  public get disableFiltering(): boolean {
-    return this._disableFiltering;
-  }
+  @coercedProperty<boolean, IgcComboComponent<T>>({
+    onChange: ({ host }) => {
+      host._searchTerm = '';
+    },
+  })
+  public disableFiltering = false;
 
   /**
    * Hides the clear button.
