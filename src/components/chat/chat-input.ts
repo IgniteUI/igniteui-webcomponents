@@ -6,11 +6,16 @@ import { ifDefined } from 'lit/directives/if-defined.js';
 import { until } from 'lit/directives/until.js';
 import { chatContext, chatUserInputContext } from '#internals/context.js';
 import { addAdoptedStylesController } from '#internals/controllers/adopt-styles.js';
-import { enterKey, tabKey } from '#internals/controllers/key-bindings.js';
+import {
+  enterKey,
+  isKey,
+  tabKey,
+} from '#internals/controllers/key-bindings.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { partMap } from '#internals/part-map.js';
+import { createTimer } from '#internals/timing.js';
 import { isEmpty } from '#internals/utils/arrays.js';
-import { hasFiles } from '#internals/utils/dom.js';
+import { hasFiles, isPointInsideElement } from '#internals/utils/dom.js';
 import { bindIf, trimmedHtml } from '#internals/utils/lit.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import IgcIconButtonComponent from '../button/icon-button.js';
@@ -100,7 +105,14 @@ export default class IgcChatInputComponent extends LitElement {
 
   private _userIsTyping = false;
   private _userLastTypeTime = Date.now();
-  private _typingTimeout?: ReturnType<typeof setTimeout>;
+
+  private readonly _typingTimer = createTimer(() => {
+    const delay = this._state.stopTypingDelay;
+
+    if (this._userIsTyping && this._userLastTypeTime + delay <= Date.now()) {
+      this._setTypingStateAndEmit(false);
+    }
+  });
 
   private readonly _adoptedStyles = addAdoptedStylesController(this);
 
@@ -205,37 +217,28 @@ export default class IgcChatInputComponent extends LitElement {
 
   private _handleKeydown(event: KeyboardEvent): void {
     this._userLastTypeTime = Date.now();
-    const isEnterKey = event.key.toLowerCase() === enterKey.toLowerCase();
-    const isTab = event.key.toLocaleLowerCase() === tabKey.toLowerCase();
 
-    if (isTab && !this._userIsTyping) {
+    if (isKey(event, tabKey) && !this._userIsTyping) {
       return;
     }
 
-    if (isEnterKey && !event.shiftKey) {
+    if (isKey(event, enterKey) && !event.shiftKey) {
       event.preventDefault();
       this._sendMessage();
 
       if (this._userIsTyping) {
-        clearTimeout(this._typingTimeout);
+        this._typingTimer.stop();
         this._setTypingStateAndEmit(false);
       }
 
       return;
     }
-
-    clearTimeout(this._typingTimeout);
-    const delay = this._state.stopTypingDelay;
 
     if (!this._userIsTyping) {
       this._setTypingStateAndEmit(true);
     }
 
-    this._typingTimeout = setTimeout(() => {
-      if (this._userIsTyping && this._userLastTypeTime + delay <= Date.now()) {
-        this._setTypingStateAndEmit(false);
-      }
-    }, delay);
+    this._typingTimer.start(this._state.stopTypingDelay);
   }
 
   private _handleFileInputClick(): void {
@@ -267,16 +270,9 @@ export default class IgcChatInputComponent extends LitElement {
     event.stopPropagation();
 
     // Check if we're actually leaving the container
-    const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
-    const x = event.clientX;
-    const y = event.clientY;
+    const container = event.currentTarget as HTMLElement;
 
-    if (
-      x <= rect.left ||
-      x >= rect.right ||
-      y <= rect.top ||
-      y >= rect.bottom
-    ) {
+    if (!isPointInsideElement(container, event.clientX, event.clientY)) {
       this._parts = { 'input-container': true, dragging: false };
     }
   }

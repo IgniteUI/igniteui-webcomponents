@@ -42,7 +42,7 @@ import { FormValueSelectTransformers } from '#internals/mixins/forms/form-transf
 import { createFormValueState } from '#internals/mixins/forms/form-value.js';
 import { partMap } from '#internals/part-map.js';
 import { isEmpty } from '#internals/utils/arrays.js';
-import { isElement } from '#internals/utils/dom.js';
+import { isElement, normalizedTextContent } from '#internals/utils/dom.js';
 import {
   addSafeEventListener,
   focusLeftHost,
@@ -658,16 +658,13 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
       return undefined;
     }
 
-    return Array.from(this._selectedItem.childNodes)
-      .filter((node) =>
+    return normalizedTextContent(
+      Array.from(this._selectedItem.childNodes).filter((node) =>
         isElement(node)
           ? !node.hasAttribute('slot')
           : node.nodeType === Node.TEXT_NODE
       )
-      .map((node) => node.textContent ?? '')
-      .join('')
-      .trim()
-      .replace(/\s+/gu, ' ');
+    );
   }
 
   //#endregion

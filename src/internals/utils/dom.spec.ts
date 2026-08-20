@@ -1,7 +1,81 @@
 import { expect, fixture, html } from '@open-wc/testing';
-import { resolveCssLength } from './dom.js';
+import {
+  normalizedTextContent,
+  pointToFraction,
+  resolveCssLength,
+} from './dom.js';
 
 describe('DOM utilities', () => {
+  describe('pointToFraction', () => {
+    let element: HTMLDivElement;
+
+    beforeEach(async () => {
+      element = await fixture<HTMLDivElement>(
+        html`<div style="width: 200px; height: 10px;"></div>`
+      );
+    });
+
+    it('should map a client coordinate to a fraction of the element width', () => {
+      const { left } = element.getBoundingClientRect();
+
+      expect(pointToFraction(element, left)).to.equal(0);
+      expect(pointToFraction(element, left + 50)).to.equal(0.25);
+      expect(pointToFraction(element, left + 200)).to.equal(1);
+    });
+
+    it('should measure from the right edge in RTL', () => {
+      const { left, right } = element.getBoundingClientRect();
+
+      expect(pointToFraction(element, right, false)).to.equal(0);
+      expect(pointToFraction(element, left + 150, false)).to.equal(0.25);
+      expect(pointToFraction(element, left, false)).to.equal(1);
+    });
+
+    it('should clamp coordinates outside the element to [0, 1]', () => {
+      const { left, right } = element.getBoundingClientRect();
+
+      expect(pointToFraction(element, left - 100)).to.equal(0);
+      expect(pointToFraction(element, right + 100)).to.equal(1);
+      expect(pointToFraction(element, right + 100, false)).to.equal(0);
+    });
+
+    it('should return 0 for an element without layout', () => {
+      element.style.display = 'none';
+      expect(pointToFraction(element, 100)).to.equal(0);
+    });
+  });
+
+  describe('normalizedTextContent', () => {
+    it('should concatenate text across elements and text nodes', async () => {
+      const element = await fixture<HTMLDivElement>(
+        html`<div>Hello <span> brave new </span> world</div>`
+      );
+
+      expect(normalizedTextContent(element.childNodes)).to.equal(
+        'Hello brave new world'
+      );
+    });
+
+    it('should trim and collapse consecutive whitespace', () => {
+      const nodes = [
+        document.createTextNode('  Hello '),
+        document.createTextNode('\n brave\t '),
+        document.createTextNode(' new world  '),
+      ];
+
+      expect(normalizedTextContent(nodes)).to.equal('Hello brave new world');
+    });
+
+    it('should return an empty string for no nodes', () => {
+      expect(normalizedTextContent([])).to.equal('');
+    });
+
+    it('should return an empty string for whitespace-only content', () => {
+      const nodes = [document.createTextNode(' \n \t ')];
+      expect(normalizedTextContent(nodes)).to.equal('');
+    });
+  });
+
   describe('resolveCssLength', () => {
     let element: HTMLDivElement;
 

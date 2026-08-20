@@ -6,6 +6,7 @@ import { styleMap } from 'lit/directives/style-map.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import type { Constructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
+import { getCenterPoint } from '#internals/utils/dom.js';
 import { asNumber, asPercent } from '#internals/utils/math.js';
 import { IgcSliderBaseComponent } from './slider-base.js';
 import IgcSliderLabelComponent from './slider-label.js';
@@ -134,22 +135,17 @@ export default class IgcRangeSliderComponent extends EventEmitterMixin<
   }
 
   protected override closestHandle(event: PointerEvent): HTMLElement {
-    const fromOffset =
-      this.thumbFrom.offsetLeft + this.thumbFrom.offsetWidth / 2;
-    const toOffset = this.thumbTo.offsetLeft + this.thumbTo.offsetWidth / 2;
-    const xPointer = event.clientX - this.getBoundingClientRect().left;
-    const match = this.closestTo(xPointer, [fromOffset, toOffset]);
+    const fromX = getCenterPoint(this.thumbFrom).x;
+    const toX = getCenterPoint(this.thumbTo).x;
+    const pointerX = event.clientX;
 
-    if (fromOffset === toOffset && toOffset < xPointer) {
-      return this.thumbTo;
+    if (fromX === toX) {
+      return toX < pointerX ? this.thumbTo : this.thumbFrom;
     }
-    if (fromOffset === toOffset && toOffset > xPointer) {
-      return this.thumbFrom;
-    }
-    if (match === fromOffset) {
-      return this.thumbFrom;
-    }
-    return this.thumbTo;
+
+    return this.closestTo(pointerX, [fromX, toX]) === fromX
+      ? this.thumbFrom
+      : this.thumbTo;
   }
 
   protected override updateValue(increment: number) {

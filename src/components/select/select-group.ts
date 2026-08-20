@@ -118,13 +118,7 @@ export default class IgcSelectGroupComponent extends LitElement {
    * `aria-labelledby` on the host, so its text names the `group` directly.
    */
   private _labelChange(): void {
-    const label = this._slots
-      .getAssignedNodes('label', true)
-      .map((node) => node.textContent ?? '')
-      .join('')
-      .trim()
-      .replace(/\s+/gu, ' ');
-
+    const label = this._slots.getAssignedText('label', true);
     this._internals.setARIA({ ariaLabel: label || null });
   }
 

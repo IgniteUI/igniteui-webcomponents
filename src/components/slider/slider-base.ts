@@ -20,6 +20,7 @@ import {
 } from '#internals/controllers/key-bindings.js';
 import { blazorDeepImport } from '#internals/decorators/blazorDeepImport.js';
 import { watch } from '#internals/decorators/watch.js';
+import { createTimer } from '#internals/timing.js';
 import { isLTR } from '#internals/utils/dom.js';
 import { addSafeEventListener } from '#internals/utils/events.js';
 import { asNumber, asPercent, clamp } from '#internals/utils/math.js';
@@ -54,8 +55,11 @@ export class IgcSliderBaseComponent extends LitElement {
   private _step = 1;
   private startValue?: number;
   private pointerCaptured = false;
-  private thumbHoverTimer: any;
   protected activeThumb?: HTMLElement;
+
+  private readonly _thumbLabelTimer = createTimer(() => {
+    this.thumbLabelsVisible = false;
+  }, 750);
 
   @state()
   protected thumbLabelsVisible = false;
@@ -421,11 +425,7 @@ export class IgcSliderBaseComponent extends LitElement {
       return;
     }
 
-    if (this.thumbHoverTimer) {
-      clearTimeout(this.thumbHoverTimer);
-      this.thumbHoverTimer = null;
-    }
-
+    this._thumbLabelTimer.stop();
     this.thumbLabelsVisible = true;
   }
 
@@ -434,9 +434,7 @@ export class IgcSliderBaseComponent extends LitElement {
       return;
     }
 
-    this.thumbHoverTimer = setTimeout(() => {
-      this.thumbLabelsVisible = false;
-    }, 750);
+    this._thumbLabelTimer.start();
   }
 
   private calculateTrackUpdate(mouseX: number): number {

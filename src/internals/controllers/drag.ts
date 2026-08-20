@@ -9,6 +9,7 @@ import { getDefaultLayer } from '../../components/resize-container/default-ghost
 import { createAbortHandle } from '../abort-handler.js';
 import { getRoot, isLTR, roundByDPR } from '../utils/dom.js';
 import { getElementFromPath } from '../utils/events.js';
+import { escapeKey, isKey } from './key-bindings.js';
 
 type DragCallback = (parameters: DragCallbackParameters) => unknown;
 type DragCancelCallback = (state: DragState) => unknown;
@@ -302,9 +303,7 @@ class DragController implements ReactiveController {
   }
 
   private _handleCancel(event: KeyboardEvent): void {
-    const key = event.key.toLowerCase();
-
-    if (this._hasPointerCapture && key === 'escape') {
+    if (this._hasPointerCapture && isKey(event, escapeKey)) {
       // Reset state
       this._options.cancel?.call(this._host, this._stateParameters);
     }

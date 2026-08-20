@@ -24,7 +24,7 @@ import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { FormAssociatedMixin } from '#internals/mixins/forms/associated.js';
 import { FormValueNumberTransformers } from '#internals/mixins/forms/form-transformers.js';
 import { createFormValueState } from '#internals/mixins/forms/form-value.js';
-import { isLTR } from '#internals/utils/dom.js';
+import { isLTR, pointToFraction } from '#internals/utils/dom.js';
 import { bindIf } from '#internals/utils/lit.js';
 import {
   asNumber,
@@ -381,12 +381,11 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
   }
 
   private _calcNewValue(x: number): number {
-    const { width, left, right } =
-      this._container?.getBoundingClientRect() ?? new DOMRect(1, 1, 1, 1);
-    const percent = isLTR(this) ? (x - left) / width : (right - x) / width;
-    const value = this._round(this.max * percent);
+    const fraction = this._container
+      ? pointToFraction(this._container, x, isLTR(this))
+      : 0;
 
-    return clamp(value, this.step, this.max);
+    return clamp(this._round(this.max * fraction), this.step, this.max);
   }
 
   private _round(value: number): number {

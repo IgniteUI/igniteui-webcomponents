@@ -1,3 +1,5 @@
+import { setStyles } from '#internals/utils/dom.js';
+
 /**
  * Default ghost element factory for the igc-resize implementation.
  */
@@ -10,13 +12,13 @@ export function createDefaultGhostElement({
   const element = document.createElement('div');
   const { scrollX, scrollY } = window;
 
-  Object.assign(element.style, {
+  setStyles(element, {
     position: 'absolute',
     top: `${y + scrollY}px`,
     left: `${x + scrollX}px`,
-    zIndex: 1000,
+    zIndex: '1000',
     background: 'pink',
-    opacity: 0.85,
+    opacity: '0.85',
     width: `${width}px`,
     height: `${height}px`,
   });
