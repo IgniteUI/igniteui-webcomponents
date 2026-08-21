@@ -511,6 +511,14 @@ export class IgcSliderBaseComponent extends LitElement {
     this.activeThumb = event.target as HTMLElement;
   }
 
+  /**
+   * The `aria-valuetext` of a thumb when neither projected labels nor value
+   * formatting apply. Returning `undefined` omits the attribute.
+   */
+  protected _thumbAriaValueText(_thumbId?: string): string | undefined {
+    return undefined;
+  }
+
   protected handleThumbBlur() {
     this.activeThumb?.part.remove('focused');
     this.activeThumb = undefined;
@@ -561,7 +569,7 @@ export class IgcSliderBaseComponent extends LitElement {
       ? this.labels[value]
       : this.valueFormat || this.valueFormatOptions
         ? this.formatValue(value)
-        : undefined;
+        : this._thumbAriaValueText(thumbId);
 
     return html`
       <div
