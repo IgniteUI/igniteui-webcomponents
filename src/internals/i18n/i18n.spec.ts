@@ -241,5 +241,23 @@ describe('Localization', () => {
         'Списъкът е празен'
       );
     });
+
+    it('should re-merge custom resource strings when the locale changes', async () => {
+      registerI18n(ResourceStringsBG, 'bg');
+
+      instance.resourceStrings = {
+        combo_filter_search_placeholder: 'Custom placeholder',
+      };
+      instance.locale = 'bg';
+      instance.requestUpdate();
+      await elementUpdated(instance);
+
+      const strings = instance.resourceStrings as IComboResourceStrings;
+
+      expect(strings.combo_empty_message).to.equal('Списъкът е празен');
+      expect(strings.combo_filter_search_placeholder).to.equal(
+        'Custom placeholder'
+      );
+    });
   });
 });

@@ -16,9 +16,12 @@ import {
 } from './toggle.js';
 
 describe('Toggle controller', () => {
-  interface ToggleTestElement extends LitElement {
+  type ToggleHostElement = LitElement & {
     open: boolean;
     toggleController: ToggleController;
+  };
+
+  interface ToggleTestElement extends ToggleHostElement {
     transitionCalls: boolean[];
     transitionResult: boolean;
   }
@@ -30,6 +33,7 @@ describe('Toggle controller', () => {
 
   let defaultTag: string;
   let customTag: string;
+  let supersedeTag: string;
   let instance: ToggleTestElement;
 
   before(() => {
@@ -57,11 +61,43 @@ describe('Toggle controller', () => {
         });
       }
     );
+
+    // Mirrors the banner/dialog shape - an exit transition awaits its animation
+    // and flips `open` only when nothing interrupted it.
+    supersedeTag = defineCE(
+      class extends ToggleTestBase {
+        public open = false;
+
+        private _exit = 0;
+
+        public readonly toggleController = addToggleController(this, {
+          transition: async (open) => {
+            const exit = ++this._exit;
+
+            if (open) {
+              this.open = true;
+              return true;
+            }
+
+            await this.updateComplete;
+
+            if (exit !== this._exit) {
+              return false;
+            }
+
+            this.open = false;
+            return true;
+          },
+        });
+      }
+    );
   });
 
-  async function createInstance(tag: string): Promise<ToggleTestElement> {
+  async function createInstance<
+    T extends ToggleHostElement = ToggleTestElement,
+  >(tag: string): Promise<T> {
     const tagName = unsafeStatic(tag);
-    return await fixture(html`<${tagName}></${tagName}>`);
+    return await fixture<T>(html`<${tagName}></${tagName}>`);
   }
 
   describe('Default transition', () => {
@@ -190,6 +226,54 @@ describe('Toggle controller', () => {
 
       await instance.toggleController.show(true);
       expect(opening.firstCall.firstArg.detail).to.equal(instance);
+    });
+  });
+
+  describe('Superseded operations', () => {
+    it('should not emit the trailing event of a superseded operation', async () => {
+      instance = await createInstance(defaultTag);
+
+      const opened = spy();
+      const closed = spy();
+      instance.addEventListener('igcOpened', opened);
+      instance.addEventListener('igcClosed', closed);
+
+      const opening = instance.toggleController.show(true);
+      const closing = instance.toggleController.hide(true);
+
+      expect(await opening).to.be.false;
+      expect(await closing).to.be.true;
+      expect(instance.open).to.be.false;
+      expect(opened.called).to.be.false;
+      expect(closed.calledOnce).to.be.true;
+    });
+
+    it('should reopen the host while its exit transition is in flight', async () => {
+      const host = await createInstance<ToggleHostElement>(supersedeTag);
+      await host.toggleController.show();
+
+      const closed = spy();
+      const opened = spy();
+      host.addEventListener('igcClosed', closed);
+      host.addEventListener('igcOpened', opened);
+
+      const closing = host.toggleController.hide(true);
+      const reopening = host.toggleController.show(true);
+
+      expect(await closing).to.be.false;
+      expect(await reopening).to.be.true;
+      expect(host.open).to.be.true;
+      expect(closed.called).to.be.false;
+      expect(opened.calledOnce).to.be.true;
+    });
+
+    it('should clear the pending state after a completed transition', async () => {
+      const host = await createInstance<ToggleHostElement>(supersedeTag);
+
+      expect(await host.toggleController.show()).to.be.true;
+      expect(await host.toggleController.hide()).to.be.true;
+      expect(host.open).to.be.false;
+      expect(await host.toggleController.show()).to.be.true;
     });
   });
 });

@@ -78,7 +78,7 @@ class I18nController<T extends object> implements ReactiveController {
   public set locale(value: string | undefined) {
     if (this._locale !== value) {
       this._locale = value;
-      this._defaultResourceStrings = this._getDefaultResourceStrings();
+      this._refreshResourceStrings();
       this._host.requestUpdate();
     }
   }
@@ -166,14 +166,7 @@ class I18nController<T extends object> implements ReactiveController {
   /** @internal */
   public handleEvent(event: CustomEvent<IResourceChangeEventArgs>): void {
     this._dateTimeFormats = undefined;
-    this._defaultResourceStrings = this._getDefaultResourceStrings();
-    if (this._customResourceStrings) {
-      this._resourceStrings = Object.assign(
-        {},
-        this._defaultResourceStrings,
-        this._customResourceStrings
-      );
-    }
+    this._refreshResourceStrings();
     this._resourceChangeCallback?.call(this._host, event);
     this._host.requestUpdate();
   }
@@ -181,6 +174,22 @@ class I18nController<T extends object> implements ReactiveController {
   //#endregion
 
   //#region Internal API
+
+  /**
+   * Re-resolves the locale defaults and re-applies the custom overrides on top,
+   * so the merged strings never keep values resolved for a previous locale.
+   */
+  private _refreshResourceStrings(): void {
+    this._defaultResourceStrings = this._getDefaultResourceStrings();
+
+    if (this._customResourceStrings) {
+      this._resourceStrings = Object.assign(
+        {},
+        this._defaultResourceStrings,
+        this._customResourceStrings
+      );
+    }
+  }
 
   /**
    * Gets the current, locale-specific resource strings for the component.

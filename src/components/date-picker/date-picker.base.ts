@@ -346,7 +346,8 @@ export abstract class IgcDatePickerBaseComponent<
   }
 
   /**
-   * Gets/Sets the locale used for formatting the display value.
+   * The locale used to format the display value and to resolve the
+   * component's resource strings. Falls back to the global locale when not set.
    * @attr locale
    */
   @property()

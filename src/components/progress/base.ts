@@ -103,6 +103,7 @@ export abstract class IgcProgressBaseComponent extends LitElement {
 
   protected override willUpdate(changedProperties: PropertyValues<this>): void {
     const progressChanged =
+      changedProperties.has('animationDuration') ||
       changedProperties.has('indeterminate') ||
       changedProperties.has('max') ||
       changedProperties.has('value');

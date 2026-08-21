@@ -65,6 +65,12 @@ class ToggleController {
   private readonly _host: ToggleHost;
   private readonly _options: ToggleControllerOptions;
 
+  /** The target of an in-flight operation - a transition may flip `host.open` only at its end. */
+  private _pending?: boolean;
+
+  /** Bumped per operation, so a superseded one can bail out instead of finishing. */
+  private _generation = 0;
+
   constructor(host: ToggleHost, options?: ToggleControllerOptions) {
     this._host = host;
     this._options = { ...options };
@@ -93,7 +99,7 @@ class ToggleController {
     const host = this._host;
     const { transition } = this._options;
 
-    if (host.open === open) {
+    if ((this._pending ?? host.open) === open) {
       return false;
     }
 
@@ -101,18 +107,38 @@ class ToggleController {
       return false;
     }
 
+    const generation = ++this._generation;
+    this._pending = open;
+
     // The default transition runs synchronously so the state flip - and the
     // `updateComplete` subscription below - happen within the caller's own
     // microtask, exactly as if the host had flipped the property itself.
     let completed = true;
-    if (transition) {
-      completed = (await transition.call(host, open)) !== false;
-    } else {
-      host.open = open;
+    try {
+      if (transition) {
+        completed = (await transition.call(host, open)) !== false;
+      } else {
+        host.open = open;
+      }
+    } finally {
+      // A newer operation owns the pending state from here on.
+      if (generation === this._generation) {
+        this._pending = undefined;
+      }
+    }
+
+    if (generation !== this._generation) {
+      return false;
     }
 
     if (emitEvents && completed) {
       await host.updateComplete;
+
+      // A newer operation may have taken over while the update settled.
+      if (generation !== this._generation) {
+        return false;
+      }
+
       this._emit(open ? 'igcOpened' : 'igcClosed', false);
     }
 
@@ -130,8 +156,9 @@ class ToggleController {
    * Opens the host. When `emitEvents` is true, wraps the transition in
    * `igcOpening`/`igcOpened` events.
    *
-   * Returns `false` when the host was already open, the opening event was
-   * canceled, or the transition reported itself superseded.
+   * Returns `false` when the host was already open (or heading there), the
+   * opening event was canceled, or the operation was superseded - either by the
+   * transition reporting itself interrupted or by a newer request.
    */
   public show(emitEvents = false): Promise<boolean> {
     return this._setOpenState(true, emitEvents);
@@ -141,8 +168,9 @@ class ToggleController {
    * Closes the host. When `emitEvents` is true, wraps the transition in
    * `igcClosing`/`igcClosed` events.
    *
-   * Returns `false` when the host was already closed, the closing event was
-   * canceled, or the transition reported itself superseded.
+   * Returns `false` when the host was already closed (or heading there), the
+   * closing event was canceled, or the operation was superseded - either by the
+   * transition reporting itself interrupted or by a newer request.
    */
   public hide(emitEvents = false): Promise<boolean> {
     return this._setOpenState(false, emitEvents);

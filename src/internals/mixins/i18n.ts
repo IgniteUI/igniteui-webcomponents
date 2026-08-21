@@ -47,7 +47,8 @@ export function I18nMixin<
     protected readonly _i18nController = addI18nController<T>(this, config);
 
     /**
-     * Gets/Sets the locale used for getting language, affecting resource strings.
+     * The locale used to resolve the component's resource strings.
+     * Falls back to the global locale when not set.
      * @attr locale
      */
     @property()

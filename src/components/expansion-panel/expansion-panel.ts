@@ -135,11 +135,19 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
     return this._toggleController.toggle(true);
   }
 
-  private _show(): Promise<boolean> {
+  /**
+   * Opens the panel, emitting its toggle events.
+   * @hidden @internal
+   */
+  public _show(): Promise<boolean> {
     return this._toggleController.show(true);
   }
 
-  private _hide(): Promise<boolean> {
+  /**
+   * Closes the panel, emitting its toggle events.
+   * @hidden @internal
+   */
+  public _hide(): Promise<boolean> {
     return this._toggleController.hide(true);
   }
 

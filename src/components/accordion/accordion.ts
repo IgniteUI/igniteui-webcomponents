@@ -184,11 +184,11 @@ export default class IgcAccordionComponent extends LitElement {
   }
 
   private _closePanel(panel: IgcExpansionPanelComponent): Promise<boolean> {
-    return panel['_toggleController'].hide(true);
+    return panel._hide();
   }
 
   private _openPanel(panel: IgcExpansionPanelComponent): Promise<boolean> {
-    return panel['_toggleController'].show(true);
+    return panel._show();
   }
 
   //#endregion

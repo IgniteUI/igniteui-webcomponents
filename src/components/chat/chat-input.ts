@@ -107,9 +107,18 @@ export default class IgcChatInputComponent extends LitElement {
   private _userLastTypeTime = Date.now();
 
   private readonly _typingTimer = createTimer(() => {
-    const delay = this._state.stopTypingDelay;
+    if (!this._userIsTyping) {
+      return;
+    }
 
-    if (this._userIsTyping && this._userLastTypeTime + delay <= Date.now()) {
+    // The live delay may have grown since the timer was armed - defer the stop
+    // instead of dropping it.
+    const remaining =
+      this._userLastTypeTime + this._state.stopTypingDelay - Date.now();
+
+    if (remaining > 0) {
+      this._typingTimer.start(remaining);
+    } else {
       this._setTypingStateAndEmit(false);
     }
   });

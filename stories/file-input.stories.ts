@@ -60,7 +60,7 @@ const metadata: Meta<IgcFileInputComponent> = {
     locale: {
       type: 'string',
       description:
-        'Gets/Sets the locale used for getting language, affecting resource strings.',
+        "The locale used to resolve the component's resource strings.\nFalls back to the global locale when not set.",
       control: 'text',
     },
     required: {
@@ -129,7 +129,10 @@ interface IgcFileInputArgs {
   accept: string;
   /** Whether the control should receive focus automatically. */
   autofocus: boolean;
-  /** Gets/Sets the locale used for getting language, affecting resource strings. */
+  /**
+   * The locale used to resolve the component's resource strings.
+   * Falls back to the global locale when not set.
+   */
   locale: string;
   /** When set, makes the component a required field for validation. */
   required: boolean;

@@ -76,9 +76,14 @@ export default class IgcBannerComponent extends EventEmitterMixin<
         return this._player.playExclusive(growVerIn());
       }
 
-      await this._player.playExclusive(growVerOut());
-      this.open = false;
-      return true;
+      const completed = await this._player.playExclusive(growVerOut());
+
+      // An interrupted exit animation means a newer `show()` took over.
+      if (completed) {
+        this.open = false;
+      }
+
+      return completed;
     },
   });
 
@@ -119,8 +124,8 @@ export default class IgcBannerComponent extends EventEmitterMixin<
   /**
    * Opens the banner with an animated grow-in transition.
    *
-   * Returns `true` when the banner was successfully opened, or `false` if
-   * it was already open.
+   * Returns `true` when the banner was successfully opened, or `false` if it
+   * was already open or the transition was superseded by a newer one.
    */
   public async show(): Promise<boolean> {
     return this._toggleController.show();
@@ -129,8 +134,8 @@ export default class IgcBannerComponent extends EventEmitterMixin<
   /**
    * Closes the banner with an animated grow-out transition.
    *
-   * Returns `true` when the banner was successfully closed, or `false` if
-   * it was already closed.
+   * Returns `true` when the banner was successfully closed, or `false` if it
+   * was already closed or the transition was superseded by a newer one.
    */
   public async hide(): Promise<boolean> {
     return this._toggleController.hide();

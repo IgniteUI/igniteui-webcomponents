@@ -91,15 +91,22 @@ export default class IgcDialogComponent extends EventEmitterMixin<
     transition: async (open) => {
       if (open) {
         this.open = true;
-        await this._player.playExclusive(fadeIn());
-      } else {
-        this._animating = true;
-        await this._player.playExclusive(fadeOut());
-        this.open = false;
+        // A superseded exit clears this too, but only once its animation
+        // reports the cancellation - too late for this render.
         this._animating = false;
+        return this._player.playExclusive(fadeIn());
       }
 
-      return true;
+      this._animating = true;
+      const completed = await this._player.playExclusive(fadeOut());
+      this._animating = false;
+
+      // An interrupted exit animation means a newer `show()` took over.
+      if (completed) {
+        this.open = false;
+      }
+
+      return completed;
     },
   });
 
@@ -263,8 +270,8 @@ export default class IgcDialogComponent extends EventEmitterMixin<
   /**
    * Opens the dialog with an animated fade-in transition.
    *
-   * Returns `true` when the dialog was successfully opened, or `false` if
-   * it was already open.
+   * Returns `true` when the dialog was successfully opened, or `false` if it
+   * was already open or the transition was superseded by a newer one.
    */
   public async show(): Promise<boolean> {
     return this._toggleController.show();
@@ -273,8 +280,8 @@ export default class IgcDialogComponent extends EventEmitterMixin<
   /**
    * Closes the dialog with an animated fade-out transition.
    *
-   * Returns `true` when the dialog was successfully closed, or `false` if
-   * it was already closed.
+   * Returns `true` when the dialog was successfully closed, or `false` if it
+   * was already closed or the transition was superseded by a newer one.
    */
   public async hide(): Promise<boolean> {
     return this._toggleController.hide();
