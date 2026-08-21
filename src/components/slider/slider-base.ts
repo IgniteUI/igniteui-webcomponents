@@ -279,7 +279,9 @@ export class IgcSliderBaseComponent extends LitElement {
       changedProperties.has('upperBound') ||
       changedProperties.has('step');
 
-    if (this.hasUpdated && constraintsChanged) {
+    // The initial update included - attributes are applied in markup order, so
+    // a value can arrive validated against a constraint that is not final yet.
+    if (constraintsChanged) {
       this.normalizeValue();
     }
   }

@@ -235,6 +235,26 @@ describe('Tabs component', () => {
       verifySelection(element, element.tabs[1]);
     });
 
+    it('prevents the default action of the activation keys', async () => {
+      // A tab header is focusable but has no native activation behavior, so
+      // Space would scroll the page on top of selecting the tab. The event is
+      // hand-rolled because the shared helper dispatches non-cancelable ones.
+      const activate = (key: string) => {
+        const event = new KeyboardEvent('keydown', {
+          key,
+          bubbles: true,
+          composed: true,
+          cancelable: true,
+        });
+
+        getTabDOM(element.tabs[2]).header.dispatchEvent(event);
+        return event.defaultPrevented;
+      };
+
+      expect(activate(spaceBar)).to.be.true;
+      expect(activate(enterKey)).to.be.true;
+    });
+
     it('selected indicator align with the selected tab', async () => {
       const { indicator } = getTabsDOM(element);
       let selected = getTabsDOM(element).selected;

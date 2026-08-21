@@ -259,5 +259,23 @@ describe('Localization', () => {
         'Custom placeholder'
       );
     });
+
+    it('should pick up a global change that happened while detached', async () => {
+      registerI18n(ResourceStringsBG, 'bg');
+
+      const parent = instance.parentElement!;
+      instance.remove();
+
+      // The controller is not listening at this point.
+      setCurrentI18n('bg');
+
+      parent.append(instance);
+      await elementUpdated(instance);
+
+      const text = instance.shadowRoot?.getElementById('start')?.innerText;
+      setCurrentI18n('en');
+
+      expect(text).to.equal('Списъкът е празен');
+    });
   });
 });

@@ -144,6 +144,32 @@ describe('ElementInternals controller', () => {
       expect(instance.getAttribute('role')).to.equal('presentation');
     });
 
+    it('removes its own attribute when the internals role is cleared', async () => {
+      const instance = await fixture<
+        LitElement & { internals: ElementInternalsController }
+      >(html`<${tagName}></${tagName}>`);
+
+      instance.internals.setARIA({ role: null });
+
+      expect(instance).to.not.have.attribute('role');
+
+      // The controller owns the attribute again once the role comes back.
+      instance.internals.setARIA({ role: 'option' });
+
+      expect(instance.getAttribute('role')).to.equal('option');
+    });
+
+    it('keeps an author override when the internals role is cleared', async () => {
+      const instance = await fixture<
+        LitElement & { internals: ElementInternalsController }
+      >(html`<${tagName}></${tagName}>`);
+
+      instance.setAttribute('role', 'presentation');
+      instance.internals.setARIA({ role: null });
+
+      expect(instance.getAttribute('role')).to.equal('presentation');
+    });
+
     it('restores its attribute after the author removes it, on the next reflection', async () => {
       const instance = await fixture<
         LitElement & { internals: ElementInternalsController }

@@ -208,7 +208,7 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
   }
 
   protected override willUpdate(properties: PropertyValues<this>): void {
-    // The name is the identity of a group, so a new name moves this radio to another one.
+    // The name is half of the identity of a group, so a new name moves this radio to another one.
     if (properties.has('name')) {
       this._group.updateMembership();
     }
@@ -321,6 +321,13 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
     super.formResetCallback();
     this._group.sync();
     this.updateComplete.then(() => this._validate());
+  }
+
+  protected override formAssociatedCallback(form: HTMLFormElement): void {
+    super.formAssociatedCallback(form);
+
+    // The form owner is the other half, so a new one moves this radio as well.
+    this._group.updateMembership();
   }
 
   protected _handleClick(event: PointerEvent) {

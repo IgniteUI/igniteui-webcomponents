@@ -158,10 +158,14 @@ class ElementInternalsController implements ReactiveController {
 
     // Write only when the attribute is absent or still holds the value this
     // controller wrote - an attribute changed by the author is theirs to keep.
-    if (role && (current === null || current === this._reflectedRole)) {
-      host.setAttribute('role', role);
-      this._reflectedRole = role;
+    if (current !== null && current !== this._reflectedRole) {
+      return;
     }
+
+    // A cleared role takes its attribute with it, or the host would keep
+    // semantics that its internals no longer report.
+    role ? host.setAttribute('role', role) : host.removeAttribute('role');
+    this._reflectedRole = role;
   }
 
   /** Sets ARIA attributes on the element's internals. */

@@ -179,7 +179,6 @@ export default class IgcTabsComponent extends EventEmitterMixin<
       current: () => this._getClosestActiveTab(),
       focusItem: (tab) => this._keyboardActivateTab(tab),
       activateItem: (tab) => this._keyboardActivateTab(tab, true),
-      activateOptions: { preventDefault: false },
       missingCurrent: 'wrap',
     });
 

@@ -161,24 +161,20 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
 
   /**
    * Hides the panel content.
-   * @returns `true` when the panel was successfully closed, or `false` if already closed.
+   * @returns `true` when the panel was successfully closed, or `false` if it was
+   * already closed or the transition was superseded by a newer one.
    */
   public async hide(): Promise<boolean> {
-    if (!this.open) return false;
-
-    await this._toggleController.hide();
-    return true;
+    return this._toggleController.hide();
   }
 
   /**
    * Shows the panel content.
-   * @returns `true` when the panel was successfully opened, or `false` if already closed.
+   * @returns `true` when the panel was successfully opened, or `false` if it was
+   * already open or the transition was superseded by a newer one.
    */
   public async show(): Promise<boolean> {
-    if (this.open) return false;
-
-    await this._toggleController.show();
-    return true;
+    return this._toggleController.show();
   }
 
   private _renderIndicator() {

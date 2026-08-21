@@ -156,6 +156,12 @@ class I18nController<T extends object> implements ReactiveController {
   /** @internal */
   public hostConnected(): void {
     getI18nManager().addEventListener('onResourceChange', this);
+
+    // A global change while detached went unheard, so the resolved state can
+    // be one of a locale that is no longer current.
+    this._dateTimeFormats = undefined;
+    this._refreshResourceStrings();
+    this._host.requestUpdate();
   }
 
   /** @internal */

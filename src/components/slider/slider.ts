@@ -82,7 +82,17 @@ export default class IgcSliderComponent extends FormAssociatedMixin(
   }
 
   protected override normalizeValue(): void {
-    this.value = this.validateValue(this.value);
+    const value = this.validateValue(this.value);
+
+    if (value === this.value) {
+      return;
+    }
+
+    // A clamp into the current scale is not an edit of the control, so the
+    // form state that it was in carries over.
+    const pristine = this._pristine;
+    this.value = value;
+    this._pristine = pristine;
   }
 
   protected override getTrackStyle() {
