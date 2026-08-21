@@ -38,6 +38,7 @@ import type { Constructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { I18nMixin } from '#internals/mixins/i18n.js';
 import { partMap } from '#internals/part-map.js';
+import { renderSlottedIcon } from '#internals/templates/slotted-icon.js';
 import { firstOf, isEmpty, lastOf } from '#internals/utils/arrays.js';
 import { isLTR } from '#internals/utils/dom.js';
 import {
@@ -750,13 +751,7 @@ export default class IgcCarouselComponent extends I18nMixin(
         ?disabled=${this.disableLoop && this.current === 0}
         @click=${this._handleNavigationInteractionPrevious}
       >
-        <slot name="previous-button">
-          <igc-icon
-            name="carousel_prev"
-            collection="default"
-            aria-hidden="true"
-          ></igc-icon>
-        </slot>
+        ${renderSlottedIcon({ slot: 'previous-button', icon: 'carousel_prev' })}
       </igc-button>
 
       <igc-button
@@ -768,13 +763,7 @@ export default class IgcCarouselComponent extends I18nMixin(
         ?disabled=${this.disableLoop && this.current === this.total - 1}
         @click=${this._handleNavigationInteractionNext}
       >
-        <slot name="next-button">
-          <igc-icon
-            name="carousel_next"
-            collection="default"
-            aria-hidden="true"
-          ></igc-icon>
-        </slot>
+        ${renderSlottedIcon({ slot: 'next-button', icon: 'carousel_next' })}
       </igc-button>
     `;
   }

@@ -12,6 +12,7 @@ import type { I18nControllerConfig } from '#internals/i18n/i18n-controller.js';
 import type { Constructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { I18nMixin } from '#internals/mixins/i18n.js';
+import { renderSlottedIcon } from '#internals/templates/slotted-icon.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import IgcIconComponent from '../icon/icon.js';
 import type { StyleVariant } from '../types.js';
@@ -141,15 +142,11 @@ export default class IgcChipComponent extends I18nMixin(
 
     const selectSlot =
       this.selectable && this.selected
-        ? html`
-            <slot name="select">
-              <igc-icon
-                name="selected"
-                collection="default"
-                aria-label=${this.resourceStrings.chip_select}
-              ></igc-icon>
-            </slot>
-          `
+        ? renderSlottedIcon({
+            slot: 'select',
+            icon: 'selected',
+            label: this.resourceStrings.chip_select,
+          })
         : nothing;
 
     return html`

@@ -40,6 +40,7 @@ import { FormAssociatedRequiredMixin } from '#internals/mixins/forms/associated-
 import { FormValueSelectTransformers } from '#internals/mixins/forms/form-transformers.js';
 import { createFormValueState } from '#internals/mixins/forms/form-value.js';
 import { partMap } from '#internals/part-map.js';
+import { renderSlottedIcon } from '#internals/templates/slotted-icon.js';
 import { isEmpty } from '#internals/utils/arrays.js';
 import { isElement, normalizedTextContent } from '#internals/utils/dom.js';
 import {
@@ -754,9 +755,12 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
 
     return html`
       <span slot="suffix" part=${partMap(parts)} aria-hidden="true">
-        <slot name="toggle-icon" ?hidden=${iconHidden}>
-          <igc-icon name=${iconName} collection="default"></igc-icon>
-        </slot>
+        ${renderSlottedIcon({
+          slot: 'toggle-icon',
+          icon: iconName,
+          hidden: iconHidden,
+          ariaHidden: false,
+        })}
         <slot name="toggle-icon-expanded" ?hidden=${!iconHidden}></slot>
       </span>
     `;

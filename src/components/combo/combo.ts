@@ -22,6 +22,7 @@ import { FormAssociatedRequiredMixin } from '#internals/mixins/forms/associated-
 import { createFormValueState } from '#internals/mixins/forms/form-value.js';
 import { I18nMixin } from '#internals/mixins/i18n.js';
 import { partMap } from '#internals/part-map.js';
+import { renderSlottedIcon } from '#internals/templates/slotted-icon.js';
 import { asArray, firstOf, isEmpty } from '#internals/utils/arrays.js';
 import {
   addSafeEventListener,
@@ -1178,13 +1179,10 @@ export default class IgcComboComponent<
           filled: !isEmpty(this.value),
         })}
       >
-        <slot name="toggle-icon">
-          <igc-icon
-            name=${this.open ? 'input_collapse' : 'input_expand'}
-            collection="default"
-            aria-hidden="true"
-          ></igc-icon>
-        </slot>
+        ${renderSlottedIcon({
+          slot: 'toggle-icon',
+          icon: this.open ? 'input_collapse' : 'input_expand',
+        })}
       </span>
     `;
   }
@@ -1201,13 +1199,7 @@ export default class IgcComboComponent<
           this.resourceStrings.combo_clearItems_placeholder
         )}
       >
-        <slot name="clear-icon">
-          <igc-icon
-            name="input_clear"
-            collection="default"
-            aria-hidden="true"
-          ></igc-icon>
-        </slot>
+        ${renderSlottedIcon({ slot: 'clear-icon', icon: 'input_clear' })}
       </span>
     `;
   }

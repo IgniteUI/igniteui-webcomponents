@@ -16,6 +16,7 @@ import { IgcComboBoxBaseLikeComponent } from '#internals/mixins/combo-box.js';
 import type { AbstractConstructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '#internals/mixins/forms/associated-required.js';
+import { renderSlottedIcon } from '#internals/templates/slotted-icon.js';
 import { asArray } from '#internals/utils/arrays.js';
 import {
   addSafeEventListener,
@@ -649,28 +650,13 @@ export abstract class IgcDatePickerBaseComponent<
             part=${part}
             @click=${bindIf(!this.readOnly, this.clear)}
           >
-            <slot name=${part}>
-              <igc-icon
-                name="input_clear"
-                collection="default"
-                aria-hidden="true"
-              ></igc-icon>
-            </slot>
+            ${renderSlottedIcon({ slot: part, icon: 'input_clear' })}
           </span>
         `
       : nothing;
   }
 
   protected _renderCalendarIcon(suffix = '') {
-    const defaultIcon = html`
-      <igc-icon
-        name="today"
-        collection="default"
-        aria-hidden="true"
-        title=${ifDefined(this._calendarIconTitle)}
-      ></igc-icon>
-    `;
-
     const part = `${this.open ? 'calendar-icon-open' : 'calendar-icon'}${suffix}`;
 
     return html`
@@ -680,7 +666,11 @@ export abstract class IgcDatePickerBaseComponent<
         @pointerdown=${this._handleCalendarIconSlotPointerDown}
         @click=${bindIf(!this.readOnly, this._handleAnchorClick)}
       >
-        <slot name=${part}>${defaultIcon}</slot>
+        ${renderSlottedIcon({
+          slot: part,
+          icon: 'today',
+          title: this._calendarIconTitle,
+        })}
       </span>
     `;
   }

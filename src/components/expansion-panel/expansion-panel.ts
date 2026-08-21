@@ -14,6 +14,7 @@ import { addToggleController } from '#internals/controllers/toggle.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import type { Constructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
+import { renderSlottedIcon } from '#internals/templates/slotted-icon.js';
 import { createIdGenerator } from '#internals/utils/strings.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import IgcIconComponent from '../icon/icon.js';
@@ -179,9 +180,12 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
 
     return html`
       <div part="indicator" aria-hidden="true">
-        <slot name="indicator" ?hidden=${indicatorHidden}>
-          <igc-icon name=${iconName} collection="default"></igc-icon>
-        </slot>
+        ${renderSlottedIcon({
+          slot: 'indicator',
+          icon: iconName,
+          hidden: indicatorHidden,
+          ariaHidden: false,
+        })}
         <slot name="indicator-expanded" ?hidden=${!indicatorHidden}></slot>
       </div>
     `;
