@@ -1,7 +1,6 @@
 import { html, LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
 import { addInternalsController } from '#internals/controllers/internals.js';
-import { coercedProperty } from '#internals/decorators/coerced-property.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import type { DividerType } from '../types.js';
@@ -34,9 +33,6 @@ export default class IgcDividerComponent extends LitElement {
    * @default false
    */
   @property({ type: Boolean, reflect: true })
-  @coercedProperty<boolean>({
-    transform: ({ value }) => Boolean(value),
-  })
   public vertical = false;
 
   /**

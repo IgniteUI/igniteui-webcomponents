@@ -23,10 +23,9 @@ import {
 const INVALID_STATE = 'ig-invalid';
 
 /**
- * Every form-associated component composes the event-emitter mixin somewhere
- * in its heritage; the mixin cannot see it in its type chain, so emits go
- * through the same structural contract the toggle controller places on its
- * host.
+ * Every form-associated component composes the event-emitter mixin somewhere in
+ * its heritage, but this mixin cannot see it in its type chain - emits go through
+ * a structural contract instead.
  */
 type EventEmitterLike = {
   emitEvent(name: string, init?: CustomEventInit): boolean;
@@ -431,11 +430,7 @@ export function FormAssociatedMixin<T extends Constructor<LitElement>>(
       }
     }
 
-    /**
-     * Touched flips before the assignment so the validation cycle the value
-     * setter runs applies invalid styling in the same pass, and the detail is
-     * read back through the getter so listeners see the coerced value.
-     */
+    /** Touched flips first, so the setter's validation cycle sees it. */
     protected _commitValue(value: unknown, eventName: string): boolean {
       this._setTouchedState();
 

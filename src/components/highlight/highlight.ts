@@ -31,7 +31,7 @@ import { all } from './themes/themes.js';
  * @cssproperty --background-active - The background color for the active highlighted text node.
  *
  * @example
- * Basic usage — wrap your text and set the `search-text` attribute:
+ * Basic usage - wrap your text and set the `search-text` attribute:
  * ```html
  * <igc-highlight search-text="world">
  *   <p>Hello, world! The world is a wonderful place.</p>
@@ -42,7 +42,7 @@ import { all } from './themes/themes.js';
  * Case-sensitive search:
  * ```html
  * <igc-highlight search-text="Hello" case-sensitive>
- *   <p>Hello hello HELLO — only the first one matches.</p>
+ *   <p>Hello hello HELLO - only the first one matches.</p>
  * </igc-highlight>
  * ```
  *

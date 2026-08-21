@@ -43,7 +43,7 @@ const nextId = createIdGenerator('title');
  *
  * @element igc-dialog
  *
- * @fires igcClosing - Emitted just before the dialog closes. Cancelable —
+ * @fires igcClosing - Emitted just before the dialog closes. Cancelable -
  *   call `event.preventDefault()` to abort the closing sequence.
  * @fires igcClosed - Emitted after the dialog has fully closed and its
  *   exit animation has completed.

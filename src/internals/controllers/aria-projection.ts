@@ -21,7 +21,7 @@ type ControllerHost = ReactiveControllerHost & LitElement;
  *
  * The host cannot publish these itself: it delegates focus, so the native
  * editor inside the input component's shadow root is what assistive technology
- * lands on and reports. All relations travel as element references — an IDREF
+ * lands on and reports. All relations travel as element references - an IDREF
  * cannot cross a shadow boundary, while ARIA element reflection resolves into
  * ancestor tree scopes.
  */
@@ -109,7 +109,7 @@ function projectionsEqual(a: ProjectedARIA, b: ProjectedARIA): boolean {
  * component. Holds the state a composite host currently projects and resolves
  * it against the component's own ARIA when the native editor is rendered.
  *
- * Not a reactive controller — it needs no lifecycle hooks, only a render
+ * Not a reactive controller - it needs no lifecycle hooks, only a render
  * scheduled on the host when the projected state changes.
  */
 class AriaTargetController {
@@ -161,8 +161,8 @@ class AriaTargetController {
    * Projected labels take precedence over the component's own. The editor's
    * description stays a same-root IDREF ({@link ResolvedARIABindings.describedByRef})
    * while nothing is projected; once a host projects a description, the whole
-   * relation switches to element references — attribute and reflection cannot
-   * coexist — with the editor's own description element joining the projected
+   * relation switches to element references - attribute and reflection cannot
+   * coexist - with the editor's own description element joining the projected
    * ones.
    */
   public resolveBindings(): ResolvedARIABindings {
@@ -200,7 +200,7 @@ const scalarBindings = [
 ] as const;
 
 /**
- * Applies {@link ResolvedARIABindings} onto the native editor element —
+ * Applies {@link ResolvedARIABindings} onto the native editor element -
  * relations on every render, scalar attributes only when they changed.
  */
 class AriaBindingsDirective extends Directive {
@@ -316,7 +316,7 @@ class AriaProjectorController implements ReactiveController {
 /**
  * Creates and adds an {@link AriaTargetController} to an input-shaped
  * component, making its native editor a valid target for
- * {@link addAriaProjector} — the editor is what assistive technology lands on
+ * {@link addAriaProjector} - the editor is what assistive technology lands on
  * and reports once the component's host delegates focus to it.
  */
 export function addAriaTarget(

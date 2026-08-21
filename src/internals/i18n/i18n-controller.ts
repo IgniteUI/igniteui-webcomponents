@@ -26,6 +26,13 @@ type ResourceChangeCallback = (
   event: CustomEvent<IResourceChangeEventArgs>
 ) => unknown;
 
+/** The date-time formats a locale resolves to, cached against that locale. */
+type LocaleDateTimeFormats = {
+  locale: string;
+  display: string;
+  input: string;
+};
+
 /** Configuration object for the I18nController. */
 export type I18nControllerConfig<T extends object> = {
   /** The full default English resource strings object for the component. Should always come from igniteui-i18n-core. */
@@ -51,8 +58,8 @@ class I18nController<T extends object> implements ReactiveController {
   private readonly _resourceChangeCallback?: ResourceChangeCallback;
 
   private _locale?: string;
-  /** Locale-derived date-time formats, resolved lazily and cached per locale. */
-  private _dateTimeFormats?: { locale: string; display: string; input: string };
+  /** Resolved lazily, and again whenever the locale or the locale data changes. */
+  private _dateTimeFormats?: LocaleDateTimeFormats;
   /** Cache of default resource strings coming from i18n Manager. */
   private _defaultResourceStrings: T;
   /** Collection containing only custom resource strings provided. Allows for partial override of resource strings. */
@@ -212,7 +219,7 @@ class I18nController<T extends object> implements ReactiveController {
    * locale. A global resource change invalidates the cache, since the shared
    * date formatter may have received new locale data.
    */
-  private _getDateTimeFormats() {
+  private _getDateTimeFormats(): LocaleDateTimeFormats {
     const locale = this.locale;
 
     if (this._dateTimeFormats?.locale !== locale) {

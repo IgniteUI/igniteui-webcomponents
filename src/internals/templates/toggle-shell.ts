@@ -34,7 +34,7 @@ export interface ToggleShellOptions {
   indeterminate?: boolean;
   /** When provided, sets the `tabindex` attribute. */
   tabindex?: number;
-  /** Resolved `aria-labelledby` target — an external id or `labelId`. */
+  /** Resolved `aria-labelledby` target - an external id or `labelId`. */
   ariaLabelledBy: string;
   /** When provided, sets the `aria-describedby` attribute. */
   ariaDescribedBy?: string;
@@ -50,30 +50,32 @@ export interface ToggleShellOptions {
  * Centralizes the input binding set so leaves only describe their part maps
  * and control indicator.
  */
-export function renderToggleShell(opts: ToggleShellOptions): TemplateResult {
+export function renderToggleShell(options: ToggleShellOptions): TemplateResult {
   return html`
-    <label part=${partMap(opts.baseParts)} for=${opts.inputId}>
+    <label part=${partMap(options.baseParts)} for=${options.inputId}>
       <input
-        id=${opts.inputId}
-        type=${opts.type}
-        name=${ifDefined(opts.name)}
-        value=${ifDefined(opts.value)}
-        ?required=${opts.required}
-        ?disabled=${opts.disabled}
-        .checked=${live(opts.checked)}
-        .indeterminate=${live(opts.indeterminate ?? false)}
-        tabindex=${bindIf(opts.tabindex != null, opts.tabindex)}
-        aria-labelledby=${opts.ariaLabelledBy}
-        aria-describedby=${ifDefined(opts.ariaDescribedBy)}
-        @keydown=${opts.onKeyDown}
-        @click=${opts.onClick}
-        @blur=${opts.onBlur ?? nothing}
+        id=${options.inputId}
+        type=${options.type}
+        name=${ifDefined(options.name)}
+        value=${ifDefined(options.value)}
+        ?required=${options.required}
+        ?disabled=${options.disabled}
+        .checked=${live(options.checked)}
+        .indeterminate=${live(options.indeterminate ?? false)}
+        tabindex=${bindIf(options.tabindex != null, options.tabindex)}
+        aria-labelledby=${options.ariaLabelledBy}
+        aria-describedby=${ifDefined(options.ariaDescribedBy)}
+        @keydown=${options.onKeyDown}
+        @click=${options.onClick}
+        @blur=${options.onBlur ?? nothing}
       />
-      <span part=${partMap(opts.controlParts)}>${opts.renderControl()}</span>
+      <span part=${partMap(options.controlParts)}
+        >${options.renderControl()}</span
+      >
       <span
-        id=${opts.labelId}
-        part=${partMap(opts.labelParts)}
-        ?hidden=${opts.hideLabel}
+        id=${options.labelId}
+        part=${partMap(options.labelParts)}
+        ?hidden=${options.hideLabel}
       >
         <slot></slot>
       </span>

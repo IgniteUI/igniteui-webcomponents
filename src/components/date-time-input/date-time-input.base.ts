@@ -34,6 +34,7 @@ import {
   type DatePartDeltas,
   DatePartType,
   DEFAULT_DATE_PARTS_SPIN_DELTAS,
+  type IDatePart,
 } from './date-part.js';
 import { dateTimeInputValidators } from './validators.js';
 
@@ -469,11 +470,7 @@ export abstract class IgcDateTimeInputBaseComponent<
    * format part, so spinning it toggles from what the user sees rather than
    * from the underlying date.
    */
-  protected _readAmPmFromMask(part?: {
-    type: DatePartType;
-    start: number;
-    end: number;
-  }): string | undefined {
+  protected _readAmPmFromMask(part?: IDatePart): string | undefined {
     return part?.type === DatePartType.AmPm
       ? this._maskedValue.substring(part.start, part.end)
       : undefined;

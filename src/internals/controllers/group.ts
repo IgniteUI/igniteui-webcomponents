@@ -63,9 +63,9 @@ function byDocumentOrder(a: Node, b: Node): number {
  * shared scope and key instead of a common parent element - the way native
  * radio buttons group by their `name` within a form root.
  *
- * Each member keeps its own entry through its life-cycle, so a group read
- * reflects the actual membership, and the members that stay behind update
- * their state when one leaves - a change a member cannot see on its own.
+ * Each member holds its own entry for its life-cycle, so that a group read
+ * reflects the actual membership and the members that stay behind derive their
+ * state again when one leaves - a change a member cannot see on its own.
  *
  * One registry holds one kind of group; create it at module level:
  *
@@ -137,6 +137,8 @@ export function createGroupRegistry<T extends GroupHost, S>(
     constructor(host: T, onSync: (state: S) => void) {
       this.host = host;
       this.onSync = onSync;
+
+      controllers.set(host, this);
       host.addController(this);
     }
 
@@ -201,9 +203,7 @@ export function createGroupRegistry<T extends GroupHost, S>(
 
   return {
     attach(host, onSync) {
-      const controller = new Member(host, onSync);
-      controllers.set(host, controller);
-      return controller;
+      return new Member(host, onSync);
     },
 
     membersOf(member) {

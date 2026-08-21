@@ -189,19 +189,18 @@ export default class IgcRangeSliderComponent extends EventEmitterMixin<
     thumb.focus();
   }
 
+  /** The focused thumb announces the whole range, not just its own end. */
   protected override handleThumbFocus(event: FocusEvent) {
     super.handleThumbFocus(event);
-    const id = this.activeThumb!.id;
 
-    for (const thumb of [this.thumbFrom, this.thumbTo]) {
-      if (thumb.id === id) continue;
-      const [activeValue, thumbVal] = [
-        asNumber(this.activeThumb!.ariaValueNow),
-        asNumber(thumb.ariaValueNow),
-      ];
+    const active = event.target as HTMLElement;
+    const other = active === this.thumbFrom ? this.thumbTo : this.thumbFrom;
+    const values = [
+      asNumber(active.ariaValueNow),
+      asNumber(other.ariaValueNow),
+    ];
 
-      this.activeThumb!.ariaValueText = `${this.formatValue(Math.min(activeValue, thumbVal))} - ${this.formatValue(Math.max(activeValue, thumbVal))}`;
-    }
+    active.ariaValueText = `${this.formatValue(Math.min(...values))} - ${this.formatValue(Math.max(...values))}`;
   }
 
   protected override _thumbAriaValueText(thumbId?: string) {

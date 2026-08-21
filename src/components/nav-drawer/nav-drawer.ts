@@ -46,7 +46,7 @@ export interface IgcNavDrawerComponentEventMap {
  *
  * @element igc-nav-drawer
  *
- * @fires igcClosing - Emitted just before the drawer is closed by a user interaction. Cancelable —
+ * @fires igcClosing - Emitted just before the drawer is closed by a user interaction. Cancelable -
  *   call `event.preventDefault()` to abort the closing sequence.
  * @fires igcClosed - Emitted just after the drawer is closed by a user interaction.
  *
@@ -114,11 +114,11 @@ export default class IgcNavDrawerComponent extends EventEmitterMixin<
   /**
    * Sets the position of the drawer.
    *
-   * - `start` — anchored to the inline-start edge (default).
-   * - `end` — anchored to the inline-end edge.
-   * - `top` — anchored to the block-start edge.
-   * - `bottom` — anchored to the block-end edge.
-   * - `relative` — rendered inline within the page flow; no modal backdrop.
+   * - `start` - anchored to the inline-start edge (default).
+   * - `end` - anchored to the inline-end edge.
+   * - `top` - anchored to the block-start edge.
+   * - `bottom` - anchored to the block-end edge.
+   * - `relative` - rendered inline within the page flow; no modal backdrop.
    *
    * @attr position
    * @default 'start'

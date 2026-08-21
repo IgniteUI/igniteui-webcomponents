@@ -72,7 +72,7 @@ export interface RegisterIconOptions {
    *
    * @remarks
    * SVG `<title>` elements cause the browser to display a native tooltip when
-   * the user hovers over the icon — an undesirable side-effect when using icon
+   * the user hovers over the icon - an undesirable side-effect when using icon
    * packs such as `@igniteui/material-icons-extended` that embed accessible
    * metadata inside every icon.
    *

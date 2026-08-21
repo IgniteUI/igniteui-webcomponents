@@ -11,17 +11,16 @@ import { isDateInRanges } from '../calendar/helpers.js';
 import type { DateRangeValue } from '../types.js';
 import type IgcDateRangePickerComponent from './date-range-picker.js';
 
+/** The ends of the current range, each validated against the bound on its own. */
+function rangeEnds({ value }: IgcDateRangePickerComponent) {
+  return [value?.start, value?.end];
+}
+
 export const minDateRangeValidator =
-  createMinDateTimeValidator<IgcDateRangePickerComponent>(({ value }) => [
-    value?.start,
-    value?.end,
-  ]);
+  createMinDateTimeValidator<IgcDateRangePickerComponent>(rangeEnds);
 
 export const maxDateRangeValidator =
-  createMaxDateTimeValidator<IgcDateRangePickerComponent>(({ value }) => [
-    value?.start,
-    value?.end,
-  ]);
+  createMaxDateTimeValidator<IgcDateRangePickerComponent>(rangeEnds);
 
 export const requiredDateRangeValidator: Validator<IgcDateRangePickerComponent> =
   {

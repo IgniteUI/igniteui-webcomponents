@@ -161,9 +161,33 @@ interface DatePartsHost {
   hasTimeParts(): boolean;
 }
 
+/** Compares a date against a bound at the granularity of the host's format. */
+type DateBoundComparer = (
+  date: Date,
+  bound: Date,
+  hasTimeParts: boolean,
+  hasDateParts: boolean
+) => boolean;
+
+/** Whether no value of the host exceeds `bound`. An absent bound holds. */
+function isWithinBound<T extends DatePartsHost>(
+  host: T,
+  bound: Date | null | undefined,
+  values: (Date | null | undefined)[],
+  exceeds: DateBoundComparer
+): boolean {
+  return bound
+    ? values.every(
+        (date) =>
+          !date ||
+          !exceeds(date, bound, host.hasTimeParts(), host.hasDateParts())
+      )
+    : true;
+}
+
 /**
  * Creates a `rangeUnderflow` validator for hosts whose `min` comparison must
- * respect the parts of the host's format — day granularity when the format has
+ * respect the parts of the host's format - day granularity when the format has
  * no time parts, time-of-day granularity when it has no date parts.
  *
  * `resolveValues` returns the dates checked against the bound; empty slots
@@ -176,21 +200,8 @@ export function createMinDateTimeValidator<
     key: 'rangeUnderflow',
     message: ({ min }) =>
       formatString(ValidationResourceStringsEN.min_validation_error!, min),
-    isValid: (host) => {
-      const { min } = host;
-      return min
-        ? resolveValues(host).every(
-            (date) =>
-              !date ||
-              !isDateLessThanMin(
-                date,
-                min,
-                host.hasTimeParts(),
-                host.hasDateParts()
-              )
-          )
-        : true;
-    },
+    isValid: (host) =>
+      isWithinBound(host, host.min, resolveValues(host), isDateLessThanMin),
   };
 }
 
@@ -205,20 +216,7 @@ export function createMaxDateTimeValidator<
     key: 'rangeOverflow',
     message: ({ max }) =>
       formatString(ValidationResourceStringsEN.max_validation_error!, max),
-    isValid: (host) => {
-      const { max } = host;
-      return max
-        ? resolveValues(host).every(
-            (date) =>
-              !date ||
-              !isDateExceedingMax(
-                date,
-                max,
-                host.hasTimeParts(),
-                host.hasDateParts()
-              )
-          )
-        : true;
-    },
+    isValid: (host) =>
+      isWithinBound(host, host.max, resolveValues(host), isDateExceedingMax),
   };
 }

@@ -87,7 +87,7 @@ export declare class BaseFormAssociatedElement {
   protected _setTouchedState(): void;
 
   /**
-   * Sets the **touched** state of the component and emits `eventName` — the pair every
+   * Sets the **touched** state of the component and emits `eventName` - the pair every
    * user-interaction handler must apply when it responds to input.
    *
    * The host must compose the event-emitter mixin somewhere in its heritage.

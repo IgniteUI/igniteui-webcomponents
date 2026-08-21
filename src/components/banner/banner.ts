@@ -36,7 +36,7 @@ export interface IgcBannerComponentEventMap {
  * @element igc-banner
  *
  * @fires igcClosing - Emitted just before the banner closes in response to the
- *   default action button being clicked. Cancelable — call
+ *   default action button being clicked. Cancelable - call
  *   `event.preventDefault()` to abort the closing sequence.
  * @fires igcClosed - Emitted after the banner has fully closed and its exit
  *   animation has completed.

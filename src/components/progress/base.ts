@@ -102,29 +102,18 @@ export abstract class IgcProgressBaseComponent extends LitElement {
   }
 
   protected override willUpdate(changedProperties: PropertyValues<this>): void {
-    if (changedProperties.has('indeterminate') && !this.indeterminate) {
+    const progressChanged =
+      changedProperties.has('indeterminate') ||
+      changedProperties.has('max') ||
+      changedProperties.has('value');
+
+    // Both writes are idempotent, so they are applied unconditionally. A clamp
+    // that does change a value lands it in `changedProperties` for this pass.
+    this.max = Math.max(0, this.max);
+    this.value = clamp(this.value, 0, this.max);
+
+    if (progressChanged && !this.indeterminate) {
       this._updateProgress();
-    }
-
-    // The `max` clamp of `value` below lands in `changedProperties`, so the
-    // `value` branch picks it up within the same update pass.
-    if (changedProperties.has('max')) {
-      this.max = Math.max(0, this.max);
-      if (this.value > this.max) {
-        this.value = this.max;
-      }
-
-      if (!this.indeterminate) {
-        this._updateProgress();
-      }
-    }
-
-    if (changedProperties.has('value')) {
-      this.value = clamp(this.value, 0, this.max);
-
-      if (!this.indeterminate) {
-        this._updateProgress();
-      }
     }
   }
 

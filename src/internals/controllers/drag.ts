@@ -7,7 +7,7 @@ import type { Ref } from 'lit/directives/ref.js';
 
 import { getDefaultLayer } from '../../components/resize-container/default-ghost.js';
 import { createAbortHandle } from '../abort-handler.js';
-import { getRoot, isLTR, roundByDPR } from '../utils/dom.js';
+import { getRoot, isLTR, roundByDPR, setStyles } from '../utils/dom.js';
 import { getElementFromPath } from '../utils/events.js';
 import { escapeKey, isKey } from './key-bindings.js';
 
@@ -344,7 +344,7 @@ class DragController implements ReactiveController {
     this._hasPointerCapture = enabled;
     const cssValue = enabled ? 'none' : '';
 
-    Object.assign(this._element.style, {
+    setStyles(this._element, {
       touchAction: cssValue,
       userSelect: cssValue,
       webkitUserSelect: cssValue,
@@ -484,13 +484,13 @@ class DragController implements ReactiveController {
 function createDefaultDragGhost({ x, y, width, height }: DOMRect): HTMLElement {
   const element = document.createElement('div');
 
-  Object.assign(element.style, {
+  setStyles(element, {
     position: 'absolute',
     left: `${x}px`,
     top: `${y}px`,
     width: `${width}px`,
     height: `${height}px`,
-    zIndex: 1000,
+    zIndex: '1000',
     background: 'gold',
   });
 

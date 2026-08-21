@@ -1,9 +1,7 @@
-/**
- * Argument bag passed to the {@link coercedProperty} callbacks.
- */
+/** Argument bag passed to the {@link coercedProperty} callbacks. */
 export interface CoercedPropertyContext<T, H> {
   /**
-   * For `transform` — the incoming raw value; for `onChange` — the value
+   * For `transform` - the incoming raw value; for `onChange` - the value
    * that was stored after coercion.
    */
   value: T;
@@ -11,20 +9,13 @@ export interface CoercedPropertyContext<T, H> {
   /** The component instance the property belongs to. */
   host: H;
 
-  /**
-   * The previously stored value, or `undefined` on the initial assignment.
-   */
+  /** The previously stored value, or `undefined` on the initial assignment. */
   previous: T | undefined;
 }
 
-/**
- * Configuration for {@link coercedProperty}.
- */
+/** Configuration for {@link coercedProperty}. */
 export interface CoercedPropertyConfig<T, H> {
-  /**
-   * Coerces every incoming value — the field initializer included — before it
-   * is stored.
-   */
+  /** Coerces every incoming value, the field initializer included. */
   transform?: (context: CoercedPropertyContext<T, H>) => T;
 
   /**
@@ -39,7 +30,7 @@ export interface CoercedPropertyConfig<T, H> {
  * Replaces the hand-written backing-field accessor pair around a reactive
  * property with a declarative coerce/side-effect configuration.
  *
- * Composes with `@property` — Lit must keep wrapping the accessor for change
+ * Composes with `@property` - Lit must keep wrapping the accessor for change
  * detection, and the manifest analyzer must keep seeing the `@property`
  * declaration:
  *
@@ -52,7 +43,7 @@ export interface CoercedPropertyConfig<T, H> {
  * public value = 0;
  * ```
  *
- * The declaration must keep its initializer — it provides the default the
+ * The declaration must keep its initializer - it provides the default the
  * old backing field carried, and its assignment marks construction so
  * `onChange` only fires for later sets. Properties whose getter computes a
  * derived value or whose storage lives outside the instance (form value

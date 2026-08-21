@@ -183,7 +183,7 @@ export abstract class IgcDatePickerBaseComponent<
   protected abstract get _selectDateLabel(): string | undefined;
 
   /**
-   * The editor the host's ARIA state is projected onto — its associated
+   * The editor the host's ARIA state is projected onto - its associated
    * labels and the `aria-haspopup="dialog"` semantics of the picker, both of
    * which must land on the native input assistive technology reports.
    */

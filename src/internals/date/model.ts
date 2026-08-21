@@ -31,10 +31,7 @@ export function toCalendarDayOrNull(
   return date ? toCalendarDay(date) : null;
 }
 
-/**
- * Truncates the time portion of `date` - a round trip through
- * {@link CalendarDay} - passing empty values through as `null`.
- */
+/** Truncates the time portion of `date`, passing empty values through as `null`. */
 export function truncateTime(date?: Date | null): Date | null {
   return date ? CalendarDay.from(date).native : null;
 }

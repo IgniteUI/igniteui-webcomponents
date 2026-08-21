@@ -12,9 +12,8 @@ type ContextProviderControllerOptions<
   /** Computes the context value published to subscribers. */
   value: () => ContextType<C>;
   /**
-   * Host properties whose value changes republish the context - the shared
-   * "provider plus republish-on-these-props" wiring. Anything else that must
-   * republish (internal state changes) calls {@link ContextProviderController.publish}.
+   * Host properties whose changes republish the context. Anything else that must
+   * republish calls {@link ContextProviderController.publish}.
    */
   watch?: readonly (keyof H)[];
 };
@@ -78,9 +77,7 @@ class ContextProviderController<
   }
 }
 
-/**
- * Creates and adds a {@link ContextProviderController} to the given host.
- */
+/** Creates and adds a {@link ContextProviderController} to the given host. */
 export function addContextProvider<
   C extends Context<unknown, unknown>,
   H extends ProviderHost,

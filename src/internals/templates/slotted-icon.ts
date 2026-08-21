@@ -31,7 +31,7 @@ export interface SlottedIconOptions {
 
 /**
  * Renders a named slot with a default icon from the internal collection as
- * fallback content — the "overridable built-in control" idiom of the library.
+ * fallback content - the "overridable built-in control" idiom of the library.
  * Callers own the wrapping element with its parts, visibility gating and
  * event handlers, and must register the icon component themselves.
  */

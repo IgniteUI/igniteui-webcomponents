@@ -461,7 +461,7 @@ describe('Icon broadcast service', () => {
       const iconName = 'bug';
 
       // registerIconFromText fires RegisterIcon; the SyncState postMessage
-      // triggers a SyncState response from the registry — 2 messages total.
+      // triggers a SyncState response from the registry - 2 messages total.
       const ready = waitForMessages(channel, 2);
       registerIconFromText(iconName, bugSvg, collectionName);
       channel.postMessage({ actionType: ActionType.SyncState });

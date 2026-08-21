@@ -29,7 +29,7 @@ const toSourcePath = (specifier, alias) =>
 /**
  * The analyzer has no notion of subpath imports. It resolves a declaration's
  * origin by handing the raw specifier to `new URL(specifier, base)`, and a
- * leading `#` parses as a URL *fragment* — so every aliased import silently
+ * leading `#` parses as a URL *fragment* - so every aliased import silently
  * collapses onto the importing module itself, and mixins, superclasses and
  * re-exports lose their real location.
  *
@@ -62,7 +62,7 @@ function resolveSubpathImportsPlugin() {
 
     /**
      * Re-exports keep the specifier verbatim rather than resolving it, so they
-     * are rewritten on the finished module — relative to the module itself, the
+     * are rewritten on the finished module - relative to the module itself, the
      * form the analyzer emits for a relative import.
      */
     moduleLinkPhase({ moduleDoc }) {
@@ -107,12 +107,10 @@ function resolveSubpathImportsPlugin() {
 
 /**
  * Fields wrapped by the coerced-property decorator must keep an explicit
- * `= undefined` initializer (it marks construction so `onChange` skips the
- * default assignment). The analyzer records that initializer as
- * `default: "undefined"` — pure noise that downstream consumers (the story
- * generator among them) would render as the literal string 'undefined' or
- * coerce to `NaN`. An absent default is what these members always shipped
- * as accessor pairs, so drop the entry.
+ * `= undefined` initializer, which the analyzer records as
+ * `default: "undefined"` - noise that downstream consumers (the story generator
+ * among them) render as the literal string or coerce to `NaN`. These members
+ * shipped without a default as accessor pairs, so drop the entry.
  */
 function stripUndefinedDefaultsPlugin() {
   return {

@@ -158,9 +158,7 @@ class RovingFocusController<T extends Element> {
   }
 }
 
-/**
- * Creates and adds a {@link RovingFocusController} to the given host.
- */
+/** Creates and adds a {@link RovingFocusController} to the given host. */
 export function addRovingFocusController<T extends Element>(
   host: RovingFocusHost,
   options: RovingFocusControllerOptions<T>

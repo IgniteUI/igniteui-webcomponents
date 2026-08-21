@@ -7,7 +7,10 @@ import { fadeOut } from '#animations/presets/fade/index.js';
 import { scaleInCenter } from '#animations/presets/scale/index.js';
 import { addInternalsController } from '#internals/controllers/internals.js';
 import { addSlotController, setSlots } from '#internals/controllers/slot.js';
-import { coercedProperty } from '#internals/decorators/coerced-property.js';
+import {
+  coercedProperty,
+  type CoercedPropertyConfig,
+} from '#internals/decorators/coerced-property.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import type { Constructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
@@ -64,6 +67,14 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
 >(LitElement) {
   public static readonly tagName = 'igc-tooltip';
   public static styles = [styles, shared];
+
+  /** Shared config for the delay properties - a negative delay is no delay. */
+  private static readonly _delay: CoercedPropertyConfig<
+    number,
+    IgcTooltipComponent
+  > = {
+    transform: ({ value }) => Math.max(0, asNumber(value)),
+  };
 
   /* blazorSuppress */
   public static register(): void {
@@ -246,9 +257,7 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
    * @default 200
    */
   @property({ attribute: 'show-delay', type: Number })
-  @coercedProperty<number>({
-    transform: ({ value }) => Math.max(0, asNumber(value)),
-  })
+  @coercedProperty(IgcTooltipComponent._delay)
   public showDelay = 200;
 
   /**
@@ -258,9 +267,7 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
    * @default 300
    */
   @property({ attribute: 'hide-delay', type: Number })
-  @coercedProperty<number>({
-    transform: ({ value }) => Math.max(0, asNumber(value)),
-  })
+  @coercedProperty(IgcTooltipComponent._delay)
   public hideDelay = 300;
 
   /**

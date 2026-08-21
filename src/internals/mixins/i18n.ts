@@ -19,22 +19,21 @@ export declare class I18nInterface<
 }
 
 /**
- * Mixes in the localization surface of a component — the `locale` and
+ * Mixes in the localization surface of a component - the `locale` and
  * `resourceStrings` reactive properties forwarding to an i18n controller
  * created with the passed configuration.
  *
  * The controller is exposed as the protected `_i18nController` for hosts
  * that need direct access.
  *
- * `TGet` is the type of the resolved strings the getter returns. It defaults
- * to `Required<T>` — the controller merges the full `defaultEN` set under any
- * custom overrides, so every key always resolves even though the core resource
- * interfaces declare them optional. Components transitioning between the
- * deprecated component-specific resource shapes and the core ones override it:
- * they accept either shape (`T` is the union) while the resolved strings
- * expose both key sets (`TGet` is the intersection).
+ * `TGet` is the type of the resolved strings. It defaults to `Required<T>`,
+ * because the controller merges the full `defaultEN` set under any overrides,
+ * so every key resolves even though the resource interfaces declare them
+ * optional. Components that still accept a deprecated component-specific
+ * resource shape override it: `T` is the union of the two shapes accepted,
+ * `TGet` their intersection.
  *
- * The base class must be the first argument — the manifest analyzer resolves
+ * The base class must be the first argument - the manifest analyzer resolves
  * the superclass of an `extends Mixin(...)` clause from the first argument,
  * and a leading config object would sever the inheritance chain in the
  * manifest (dropping every inherited public member from the docs).

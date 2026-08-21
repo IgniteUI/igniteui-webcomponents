@@ -1,8 +1,4 @@
-import type {
-  LitElement,
-  ReactiveController,
-  ReactiveControllerHost,
-} from 'lit';
+import type { LitElement } from 'lit';
 
 /**
  * The events emitted by a {@link ToggleController}.
@@ -25,11 +21,10 @@ export interface ToggleEventMap {
  * extend {@link ../mixins/event-emitter.js#EventEmitterMixin | EventEmitterMixin}
  * with (a subset of) the {@link ToggleEventMap}.
  */
-type ToggleHost = ReactiveControllerHost &
-  LitElement & {
-    open: boolean;
-    emitEvent(name: string, init?: CustomEventInit): boolean;
-  };
+type ToggleHost = LitElement & {
+  open: boolean;
+  emitEvent(name: string, init?: CustomEventInit): boolean;
+};
 
 /**
  * Runs the host's visual transition to the requested state - flipping `open`,
@@ -62,19 +57,18 @@ type ToggleControllerOptions = {
  *
  * The host keeps its public `open` property, `show()`/`hide()`/`toggle()`
  * methods and event documentation, and delegates to the controller.
+ *
+ * Unlike the other controllers of this directory it is not registered with the
+ * host - it drives the host on demand and has no life-cycle of its own.
  */
-class ToggleController implements ReactiveController {
+class ToggleController {
   private readonly _host: ToggleHost;
   private readonly _options: ToggleControllerOptions;
 
   constructor(host: ToggleHost, options?: ToggleControllerOptions) {
     this._host = host;
     this._options = { ...options };
-    host.addController(this);
   }
-
-  /** @internal */
-  public hostConnected(): void {}
 
   /**
    * Events go through the host's `emitEvent` - it is the choke point
@@ -84,18 +78,12 @@ class ToggleController implements ReactiveController {
     const host = this._host;
     const detail = this._options.detail?.call(host);
 
-    let init: CustomEventInit | undefined;
-    if (cancelable || detail !== undefined) {
-      init = {};
-      if (cancelable) {
-        init.cancelable = true;
-      }
-      if (detail !== undefined) {
-        init.detail = detail;
-      }
-    }
-
-    return host.emitEvent(name, init);
+    // Both keys are omitted rather than passed as falsy, so that `emitEvent`
+    // applies its own defaults and the init of a plain event stays empty.
+    return host.emitEvent(name, {
+      ...(cancelable && { cancelable }),
+      ...(detail !== undefined && { detail }),
+    });
   }
 
   private async _setOpenState(
@@ -166,9 +154,7 @@ class ToggleController implements ReactiveController {
   }
 }
 
-/**
- * Creates and adds a {@link ToggleController} to the given host.
- */
+/** Creates and adds a {@link ToggleController} to the given host. */
 export function addToggleController(
   host: ToggleHost,
   options?: ToggleControllerOptions

@@ -131,16 +131,16 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
     this._toggle();
   }
 
-  private async _toggle(): Promise<void> {
-    await this._toggleController.toggle(true);
+  private _toggle(): Promise<boolean> {
+    return this._toggleController.toggle(true);
   }
 
-  private async _show(): Promise<void> {
-    await this._toggleController.show(true);
+  private _show(): Promise<boolean> {
+    return this._toggleController.show(true);
   }
 
-  private async _hide(): Promise<void> {
-    await this._toggleController.hide(true);
+  private _hide(): Promise<boolean> {
+    return this._toggleController.hide(true);
   }
 
   /**

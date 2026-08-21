@@ -13,10 +13,9 @@ type ElementInternalsConfig<T extends keyof ARIAMixin = keyof ARIAMixin> = {
   /** Initial ARIA attributes to set on the element internals. */
   initialARIA?: Partial<Record<T, ARIAMixin[T]>>;
   /**
-   * ARIA attributes derived from host state. Recomputed on every host update
-   * and applied to the element internals, replacing `setARIA` calls scattered
-   * through `willUpdate` overrides. Keep the projection cheap — it runs
-   * whether or not the properties it reads have changed.
+   * ARIA attributes derived from host state, recomputed on every host update.
+   * Keep the projection cheap - it runs whether or not the properties it reads
+   * have changed.
    */
   aria?: () => ARIAState;
   /**
@@ -24,7 +23,7 @@ type ElementInternalsConfig<T extends keyof ARIAMixin = keyof ARIAMixin> = {
    * on the host element.
    *
    * Workaround for axe, which reads content attributes only and does not see
-   * `ElementInternals` ARIA. An author-supplied `role` attribute always wins —
+   * `ElementInternals` ARIA. An author-supplied `role` attribute always wins -
    * the controller only writes the attribute when it is absent or was written
    * by the controller itself.
    */
@@ -144,7 +143,7 @@ class ElementInternalsController implements ReactiveController {
    * Mirrors the internals `role` onto a content attribute on the host, when
    * {@link ElementInternalsConfig.reflectRole} is enabled.
    *
-   * Deferred until the host is connected — custom elements must not gain
+   * Deferred until the host is connected - custom elements must not gain
    * attributes during construction.
    */
   private _reflectRoleAttribute(): void {
@@ -158,7 +157,7 @@ class ElementInternalsController implements ReactiveController {
     const current = host.getAttribute('role');
 
     // Write only when the attribute is absent or still holds the value this
-    // controller wrote — an attribute changed by the author is theirs to keep.
+    // controller wrote - an attribute changed by the author is theirs to keep.
     if (role && (current === null || current === this._reflectedRole)) {
       host.setAttribute('role', role);
       this._reflectedRole = role;
@@ -257,7 +256,7 @@ export function addInternalsController(
 /**
  * Resolves the {@link ElementInternalsController} of the given element, if it has one.
  *
- * Internal cross-component/spec lookup. Not part of the public API — lives under
+ * Internal cross-component/spec lookup. Not part of the public API - lives under
  * `#internals` and must not be re-exported from the package entry point. Prefer this
  * over exposing `public` `@hidden @internal` members on component classes.
  */
