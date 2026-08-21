@@ -92,6 +92,7 @@ const metadata: Meta<IgcRangeSliderComponent> = {
       description:
         'Specifies the granularity that the value must adhere to.\n\nIf set to 0 no stepping is implied and any value in the range is allowed.\nIf `labels` are provided (projected) then the step is always assumed to be 1 since it is a discrete slider.',
       control: 'number',
+      table: { defaultValue: { summary: '1' } },
     },
     primaryTicks: {
       type: 'number',
@@ -152,6 +153,7 @@ const metadata: Meta<IgcRangeSliderComponent> = {
     disabled: false,
     discreteTrack: false,
     hideTooltip: false,
+    step: 1,
     primaryTicks: 0,
     secondaryTicks: 0,
     tickOrientation: 'end',

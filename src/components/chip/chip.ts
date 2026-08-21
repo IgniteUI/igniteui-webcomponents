@@ -49,10 +49,10 @@ const i18n: I18nControllerConfig<IChipResourceStrings> = {
  * @csspart suffix - The suffix container of the chip.
  */
 export default class IgcChipComponent extends I18nMixin(
-  i18n,
   EventEmitterMixin<IgcChipComponentEventMap, Constructor<LitElement>>(
     LitElement
-  )
+  ),
+  i18n
 ) {
   public static readonly tagName = 'igc-chip';
   public static styles = [styles, shared];

@@ -55,10 +55,10 @@ const i18n: I18nControllerConfig<ITreeResourceStrings> = {
  */
 @blazorAdditionalDependencies('IgcTreeItemComponent')
 export default class IgcTreeComponent extends I18nMixin(
-  i18n,
   EventEmitterMixin<IgcTreeComponentEventMap, Constructor<LitElement>>(
     LitElement
-  )
+  ),
+  i18n
 ) {
   public static readonly tagName = 'igc-tree';
   public static styles = styles;

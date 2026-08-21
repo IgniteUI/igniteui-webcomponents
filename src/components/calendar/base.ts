@@ -32,7 +32,7 @@ export class IgcCalendarBaseComponent extends I18nMixin<
   IgcCalendarResourceStrings | ICalendarResourceStrings,
   typeof LitElement,
   IgcCalendarResourceStrings & ICalendarResourceStrings
->(i18n, LitElement) {
+>(LitElement, i18n) {
   private _initialActiveDateSet = false;
 
   protected get _hasValues(): boolean {

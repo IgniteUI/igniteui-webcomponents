@@ -134,13 +134,13 @@ const i18n: I18nControllerConfig<IComboResourceStrings> = {
 export default class IgcComboComponent<
   T extends object = any,
 > extends I18nMixin(
-  i18n,
   FormAssociatedRequiredMixin(
     EventEmitterMixin<
       IgcComboComponentEventMap,
       AbstractConstructor<IgcBaseComboBoxComponent>
     >(IgcBaseComboBoxComponent)
-  )
+  ),
+  i18n
 ) {
   public static readonly tagName = 'igc-combo';
   public static styles = [styles, shared];

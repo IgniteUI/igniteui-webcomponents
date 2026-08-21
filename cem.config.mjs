@@ -105,6 +105,31 @@ function resolveSubpathImportsPlugin() {
   };
 }
 
+/**
+ * Fields wrapped by the coerced-property decorator must keep an explicit
+ * `= undefined` initializer (it marks construction so `onChange` skips the
+ * default assignment). The analyzer records that initializer as
+ * `default: "undefined"` — pure noise that downstream consumers (the story
+ * generator among them) would render as the literal string 'undefined' or
+ * coerce to `NaN`. An absent default is what these members always shipped
+ * as accessor pairs, so drop the entry.
+ */
+function stripUndefinedDefaultsPlugin() {
+  return {
+    name: 'IGC - STRIP UNDEFINED DEFAULTS',
+
+    moduleLinkPhase({ moduleDoc }) {
+      for (const declaration of moduleDoc.declarations ?? []) {
+        for (const member of declaration.members ?? []) {
+          if (member.default === 'undefined') {
+            delete member.default;
+          }
+        }
+      }
+    },
+  };
+}
+
 export default {
   globs: ['src/**/*.ts'],
   exclude: ['src/**/*.spec.ts', 'src/**/*.css.ts', 'src/**/themes/**'],
@@ -121,5 +146,6 @@ export default {
   plugins: [
     resolveSubpathImportsPlugin(),
     expandTypesPlugin({ hideLogs: true }),
+    stripUndefinedDefaultsPlugin(),
   ],
 };

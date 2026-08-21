@@ -97,10 +97,10 @@ const i18n: I18nControllerConfig<ICarouselResourceStrings> = {
  */
 @shadowOptions({ delegatesFocus: true })
 export default class IgcCarouselComponent extends I18nMixin(
-  i18n,
   EventEmitterMixin<IgcCarouselComponentEventMap, Constructor<LitElement>>(
     LitElement
-  )
+  ),
+  i18n
 ) {
   public static styles = [styles, shared];
   public static readonly tagName = 'igc-carousel';

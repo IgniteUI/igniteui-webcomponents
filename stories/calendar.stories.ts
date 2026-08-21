@@ -68,6 +68,12 @@ const metadata: Meta<IgcCalendarComponent> = {
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'days' } },
     },
+    locale: {
+      type: 'string',
+      description:
+        'Gets/Sets the locale used for getting language, affecting resource strings.',
+      control: 'text',
+    },
     value: {
       type: 'date',
       description:
@@ -119,12 +125,6 @@ const metadata: Meta<IgcCalendarComponent> = {
       control: { type: 'select' },
       table: { defaultValue: { summary: 'sunday' } },
     },
-    locale: {
-      type: 'string',
-      description:
-        'Gets/Sets the locale used for formatting and displaying the dates in the component.',
-      control: 'text',
-    },
   },
   args: {
     hideOutsideDays: false,
@@ -160,6 +160,8 @@ interface IgcCalendarArgs {
   visibleMonths: number;
   /** The current active view of the component. */
   activeView: 'days' | 'months' | 'years';
+  /** Gets/Sets the locale used for getting language, affecting resource strings. */
+  locale: string;
   /**
    * The current value of the calendar.
    * Used when selection is set to single
@@ -180,8 +182,6 @@ interface IgcCalendarArgs {
     | 'thursday'
     | 'friday'
     | 'saturday';
-  /** Gets/Sets the locale used for formatting and displaying the dates in the component. */
-  locale: string;
 }
 type Story = StoryObj<IgcCalendarArgs>;
 

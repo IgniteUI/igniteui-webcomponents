@@ -79,11 +79,11 @@ const i18n: I18nControllerConfig<IFileInputResourceStrings> = {
  * @csspart helper-text - The helper text wrapper.
  */
 export default class IgcFileInputComponent extends I18nMixin(
-  i18n,
   EventEmitterMixin<
     IgcFileInputComponentEventMap,
     AbstractConstructor<IgcInputBaseComponent>
-  >(IgcInputBaseComponent)
+  >(IgcInputBaseComponent),
+  i18n
 ) {
   public static readonly tagName = 'igc-file-input';
   public static styles = [baseStyle, shared, styles];

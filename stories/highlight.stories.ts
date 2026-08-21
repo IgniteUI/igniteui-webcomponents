@@ -66,9 +66,10 @@ const metadata: Meta<IgcHighlightComponent> = {
       description:
         'The string to search and highlight in the DOM content of the component.\nSetting this property triggers a new search automatically.\nAn empty string clears all highlights.',
       control: 'text',
+      table: { defaultValue: { summary: '' } },
     },
   },
-  args: { caseSensitive: false },
+  args: { caseSensitive: false, searchText: '' },
 };
 
 export default metadata;

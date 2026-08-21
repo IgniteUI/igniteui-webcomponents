@@ -33,12 +33,17 @@ export declare class I18nInterface<
  * deprecated component-specific resource shapes and the core ones override it:
  * they accept either shape (`T` is the union) while the resolved strings
  * expose both key sets (`TGet` is the intersection).
+ *
+ * The base class must be the first argument — the manifest analyzer resolves
+ * the superclass of an `extends Mixin(...)` clause from the first argument,
+ * and a leading config object would sever the inheritance chain in the
+ * manifest (dropping every inherited public member from the docs).
  */
 export function I18nMixin<
   T extends object,
   B extends AbstractConstructor<LitElement>,
   TGet extends T = Required<T>,
->(config: I18nControllerConfig<T>, superClass: B) {
+>(superClass: B, config: I18nControllerConfig<T>) {
   abstract class I18nElement extends superClass {
     protected readonly _i18nController = addI18nController<T>(this, config);
 
