@@ -141,8 +141,9 @@ $theme: $bootstrap;
     }
 
     :host(:not([selected])) [part~='tab-header']::before {
-        border-bottom: rem(1px) solid CanvasText;
         --_border-size: 0;
+
+        border-bottom: rem(1px) solid CanvasText;
     }
 
     :host(:not([selected])) [part~='tab-header']:hover::before {

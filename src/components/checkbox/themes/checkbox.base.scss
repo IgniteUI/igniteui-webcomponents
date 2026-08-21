@@ -118,15 +118,15 @@ label {
     :host(:disabled) [part~='base'] {
         [part~='control']::after,
         [part~='control'] {
-            border-color: GrayText;
             --disabled-tick-color: GrayText;
+
+            border-color: GrayText;
         }
 
         [part~='label'] {
             color: GrayText;
         }
     }
-
 
     :host(:focus) [part~='control']::after,
     :host(:hover) [part~='control']::after {

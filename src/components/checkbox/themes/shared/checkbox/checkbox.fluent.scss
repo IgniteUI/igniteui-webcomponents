@@ -246,9 +246,10 @@ $disabled-fill-color: var-get($theme, 'disabled-fill-color');
 
 @media (forced-colors: active) {
     :host [part~='control'] {
-        border: rem(1px) solid CanvasText;
         --fill-color: transparent;
         --fill-color-hover: transparent;
+
+        border: rem(1px) solid CanvasText;
     }
 
     :host(:focus) [part~='control'],
