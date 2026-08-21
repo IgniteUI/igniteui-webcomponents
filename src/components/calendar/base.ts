@@ -5,7 +5,7 @@ import {
 import { LitElement, type PropertyValues } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { convertToDate, convertToDates } from '#internals/date/converters.js';
-import { CalendarDay } from '#internals/date/model.js';
+import { CalendarDay, toCalendarDayOrNull } from '#internals/date/model.js';
 import { blazorDeepImport } from '#internals/decorators/blazorDeepImport.js';
 import { blazorIndirectRender } from '#internals/decorators/blazorIndirectRender.js';
 import type { IgcCalendarResourceStrings } from '#internals/i18n/EN/calendar.resources.js';
@@ -89,8 +89,7 @@ export class IgcCalendarBaseComponent extends I18nMixin<
    */
   @property({ converter: convertToDate })
   public set value(value: Date | string | null | undefined) {
-    const converted = convertToDate(value);
-    this._value = converted ? CalendarDay.from(converted) : null;
+    this._value = toCalendarDayOrNull(convertToDate(value));
   }
 
   public get value(): Date | null {
@@ -119,10 +118,8 @@ export class IgcCalendarBaseComponent extends I18nMixin<
   @property({ attribute: 'active-date', converter: convertToDate })
   public set activeDate(value: Date | string | null | undefined) {
     this._initialActiveDateSet = true;
-    const converted = convertToDate(value);
-    this._activeDate = converted
-      ? CalendarDay.from(converted)
-      : CalendarDay.today;
+    this._activeDate =
+      toCalendarDayOrNull(convertToDate(value)) ?? CalendarDay.today;
   }
 
   public get activeDate(): Date {

@@ -51,6 +51,8 @@ class I18nController<T extends object> implements ReactiveController {
   private readonly _resourceChangeCallback?: ResourceChangeCallback;
 
   private _locale?: string;
+  /** Locale-derived date-time formats, resolved lazily and cached per locale. */
+  private _dateTimeFormats?: { locale: string; display: string; input: string };
   /** Cache of default resource strings coming from i18n Manager. */
   private _defaultResourceStrings: T;
   /** Collection containing only custom resource strings provided. Allows for partial override of resource strings. */
@@ -112,6 +114,19 @@ class I18nController<T extends object> implements ReactiveController {
     return this._resourceStrings ?? this._defaultResourceStrings;
   }
 
+  /** The locale-default format for displaying a date-time value. */
+  public get localeDisplayFormat(): string {
+    return this._getDateTimeFormats().display;
+  }
+
+  /**
+   * The locale-default format for editing a date-time value - the display
+   * format with leading zeros forced, the shape a mask needs.
+   */
+  public get localeInputFormat(): string {
+    return this._getDateTimeFormats().input;
+  }
+
   //#endregion
 
   //#region Life-cycle hooks and event listener
@@ -143,6 +158,7 @@ class I18nController<T extends object> implements ReactiveController {
 
   /** @internal */
   public handleEvent(event: CustomEvent<IResourceChangeEventArgs>): void {
+    this._dateTimeFormats = undefined;
     this._defaultResourceStrings = this._getDefaultResourceStrings();
     if (this._customResourceStrings) {
       this._resourceStrings = Object.assign(
@@ -190,6 +206,27 @@ class I18nController<T extends object> implements ReactiveController {
     return this.getMixedResourceStrings(normalizedResourceStrings);
   }
 
+  /**
+   * Deriving a format string from `Intl` is not free and the date editors
+   * consult these on every render, so they are cached against the resolved
+   * locale. A global resource change invalidates the cache, since the shared
+   * date formatter may have received new locale data.
+   */
+  private _getDateTimeFormats() {
+    const locale = this.locale;
+
+    if (this._dateTimeFormats?.locale !== locale) {
+      const formatter = getDateFormatter();
+      this._dateTimeFormats = {
+        locale,
+        display: formatter.getLocaleDateTimeFormat(locale),
+        input: formatter.getLocaleDateTimeFormat(locale, true),
+      };
+    }
+
+    return this._dateTimeFormats;
+  }
+
   private getMixedResourceStrings(value: T): T {
     if (this._resourceMapName) {
       return Object.assign(
@@ -213,11 +250,6 @@ const DATE_TIME_STYLES = new Set<string>(['short', 'long', 'medium', 'full']);
 
 function extractStyle(format: string, suffix: string): DateTimeStyle {
   return format.toLowerCase().split(suffix)[0] as DateTimeStyle;
-}
-
-/** Returns the default date-time input format for a given locale */
-export function getDefaultDateTimeFormat(locale: string): string {
-  return getDateFormatter().getLocaleDateTimeFormat(locale, true);
 }
 
 /** Returns the date-time format string with the appropriate suffix if it's a predefined style */

@@ -266,7 +266,6 @@ export default class IgcDateRangeInputComponent extends EventEmitterMixin<
 
   protected override _applyMask(formatString: string): void {
     super._applyMask(formatString);
-    this._defaultMask = formatString;
     this._parser.prompt = this.prompt;
   }
 

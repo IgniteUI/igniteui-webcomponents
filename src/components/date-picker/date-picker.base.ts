@@ -534,6 +534,19 @@ export abstract class IgcDatePickerBaseComponent<
   }
 
   /**
+   * Points the calendar at the first defined of `dates`, keeping its current
+   * active date when none is. A no-op until the calendar is rendered.
+   */
+  protected _setCalendarActiveDate(
+    ...dates: (Date | null | undefined)[]
+  ): void {
+    if (this._calendar) {
+      this._calendar.activeDate =
+        dates.find(Boolean) ?? this._calendar.activeDate;
+    }
+  }
+
+  /**
    * Pushes the value of the picker back onto the calendar, which a read-only picker has
    * to do directly - the binding is left with nothing to re-commit.
    */

@@ -255,7 +255,7 @@ export default class IgcDatePickerComponent extends EventEmitterMixin<
   }
 
   protected override _syncCalendarOnToggle(): void {
-    this._calendar.activeDate = this.value ?? this._calendar.activeDate;
+    this._setCalendarActiveDate(this.value);
   }
 
   protected override _clearEditors(): void {

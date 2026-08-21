@@ -1,4 +1,3 @@
-import { getDateFormatter } from 'igniteui-i18n-core';
 import { LitElement, type PropertyValues, type TemplateResult } from 'lit';
 import { eventOptions, property, query } from 'lit/decorators.js';
 import { cache } from 'lit/directives/cache.js';
@@ -15,10 +14,7 @@ import { addSlotController, setSlots } from '#internals/controllers/slot.js';
 import { convertToDate } from '#internals/date/converters.js';
 import { blazorDeepImport } from '#internals/decorators/blazorDeepImport.js';
 import { shadowOptions } from '#internals/decorators/shadow-options.js';
-import {
-  addI18nController,
-  getDefaultDateTimeFormat,
-} from '#internals/i18n/i18n-controller.js';
+import { addI18nController } from '#internals/i18n/i18n-controller.js';
 import { FormAssociatedRequiredMixin } from '#internals/mixins/forms/associated-required.js';
 import type { FormValue } from '#internals/mixins/forms/form-value.js';
 import {
@@ -98,11 +94,13 @@ export abstract class IgcDateTimeInputBaseComponent<
   protected _min: Date | null = null;
   protected _max: Date | null = null;
 
-  protected _defaultMask!: string;
-
-  protected _defaultDisplayFormat = '';
   protected _displayFormat?: string;
   protected _inputFormat?: string;
+
+  /** The locale-default display format, resolved by the i18n controller. */
+  protected get _defaultDisplayFormat(): string {
+    return this._i18nController.localeDisplayFormat;
+  }
 
   /**
    * Whether the user has an uncommitted edit in progress.
@@ -273,10 +271,6 @@ export abstract class IgcDateTimeInputBaseComponent<
   }
 
   protected override update(props: PropertyValues<this>): void {
-    if (props.has('displayFormat')) {
-      this._updateDefaultDisplayFormat();
-    }
-
     if (props.has('locale')) {
       this._initializeDefaultMask();
     }
@@ -568,20 +562,10 @@ export abstract class IgcDateTimeInputBaseComponent<
     }
   }
 
-  /**
-   * Updates the default display format based on current locale.
-   */
-  private _updateDefaultDisplayFormat(): void {
-    this._defaultDisplayFormat = getDateFormatter().getLocaleDateTimeFormat(
-      this.locale
-    );
-  }
-
+  /** Applies the locale-default mask, unless an explicit input format is set. */
   protected _initializeDefaultMask(): void {
-    this._updateDefaultDisplayFormat();
-
     if (!this._inputFormat) {
-      this._applyMask(getDefaultDateTimeFormat(this.locale));
+      this._applyMask(this._i18nController.localeInputFormat);
     }
   }
 
