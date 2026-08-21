@@ -168,7 +168,9 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
   }
 
   protected override _parseMask(strict: boolean): Date | null {
-    if (strict && !this._isMaskComplete()) {
+    if (
+      strict ? !this._isMaskComplete() : this._parser.isBlank(this._maskedValue)
+    ) {
       return null;
     }
 

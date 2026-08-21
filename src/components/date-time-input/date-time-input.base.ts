@@ -689,7 +689,9 @@ export abstract class IgcDateTimeInputBaseComponent<
    * Parses the current masked text into the leaf's value type.
    *
    * A `strict` parse mirrors the committed value semantics - an incomplete mask has
-   * no value yet and resolves to `null` rather than to a defaults-filled one.
+   * no value yet and resolves to `null` rather than to a defaults-filled one. A lenient
+   * parse completes the missing parts from their defaults, an empty mask excepted - that
+   * one holds no value to complete and resolves to `null` as well.
    */
   protected abstract _parseMask(strict: boolean): T | null;
 
