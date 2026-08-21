@@ -27,31 +27,13 @@ export default class IgcDividerComponent extends LitElement {
     registerComponent(IgcDividerComponent);
   }
 
-  private readonly _internals = addInternalsController(this, {
-    initialARIA: {
-      role: 'separator',
-      ariaOrientation: 'vertical',
-    },
-  });
-
-  private _vertical = false;
-
   /**
    * Whether to render a vertical divider line.
    * @attr
    * @default false
    */
   @property({ type: Boolean, reflect: true })
-  public set vertical(value: boolean) {
-    this._vertical = Boolean(value);
-    this._internals.setARIA({
-      ariaOrientation: this._vertical ? 'vertical' : 'horizontal',
-    });
-  }
-
-  public get vertical(): boolean {
-    return this._vertical;
-  }
+  public vertical = false;
 
   /**
    * When set and inset is provided, it will shrink the divider line from both sides.
@@ -73,6 +55,13 @@ export default class IgcDividerComponent extends LitElement {
   constructor() {
     super();
     addThemingController(this, all);
+
+    addInternalsController(this, {
+      initialARIA: { role: 'separator' },
+      aria: () => ({
+        ariaOrientation: this.vertical ? 'vertical' : 'horizontal',
+      }),
+    });
   }
 
   protected override render() {

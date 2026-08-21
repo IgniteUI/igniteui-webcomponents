@@ -1,30 +1,28 @@
 import { LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
 import type { RootClickController } from '../controllers/root-click.js';
+import {
+  addToggleController,
+  type ToggleEventMap,
+} from '../controllers/toggle.js';
 import { lastOf } from '../utils/arrays.js';
 import { iterNodes } from '../utils/dom.js';
 import type { UnpackCustomEvent } from './event-emitter.js';
-
-interface IgcBaseComboBoxEventMap {
-  igcOpening: CustomEvent<void>;
-  igcOpened: CustomEvent<void>;
-  igcClosing: CustomEvent<void>;
-  igcClosed: CustomEvent<void>;
-}
 
 /* blazorIndirectRender */
 /* omitModule */
 export abstract class IgcBaseComboBoxComponent extends LitElement {
   /* blazorSuppress */
   declare public emitEvent: <
-    K extends keyof IgcBaseComboBoxEventMap,
-    D extends UnpackCustomEvent<IgcBaseComboBoxEventMap[K]>,
+    K extends keyof ToggleEventMap,
+    D extends UnpackCustomEvent<ToggleEventMap[K]>,
   >(
     event: K,
     eventInitDict?: CustomEventInit<D>
   ) => boolean;
 
   protected abstract _rootClickController: RootClickController;
+  private readonly _toggleController = addToggleController(this);
 
   /**
    * Sets the open state of the component.
@@ -34,54 +32,16 @@ export abstract class IgcBaseComboBoxComponent extends LitElement {
   @property({ type: Boolean, reflect: true })
   public open = false;
 
-  protected _emitClosing(): boolean {
-    return this.emitEvent('igcClosing', { cancelable: true });
-  }
-
-  protected _emitClosed(): boolean {
-    return this.emitEvent('igcClosed');
-  }
-
-  protected _emitOpening(): boolean {
-    return this.emitEvent('igcOpening', { cancelable: true });
-  }
-
-  protected _emitOpened(): boolean {
-    return this.emitEvent('igcOpened');
-  }
-
   protected _handleAnchorClick(): void {
     this.open ? this._hide(true) : this._show(true);
   }
 
-  protected async _hide(emitEvent = false): Promise<boolean> {
-    if (!this.open || (emitEvent && !this._emitClosing())) {
-      return false;
-    }
-
-    this.open = false;
-
-    if (emitEvent) {
-      await this.updateComplete;
-      this._emitClosed();
-    }
-
-    return true;
+  protected _hide(emitEvent = false): Promise<boolean> {
+    return this._toggleController.hide(emitEvent);
   }
 
-  protected async _show(emitEvent = false): Promise<boolean> {
-    if (this.open || (emitEvent && !this._emitOpening())) {
-      return false;
-    }
-
-    this.open = true;
-
-    if (emitEvent) {
-      await this.updateComplete;
-      this._emitOpened();
-    }
-
-    return true;
+  protected _show(emitEvent = false): Promise<boolean> {
+    return this._toggleController.show(emitEvent);
   }
 
   /** Shows the component. */

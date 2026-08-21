@@ -1,4 +1,4 @@
-import { html, LitElement, nothing, type PropertyValues } from 'lit';
+import { html, LitElement, nothing } from 'lit';
 import { property } from 'lit/decorators.js';
 import { cache } from 'lit/directives/cache.js';
 import { addInternalsController } from '#internals/controllers/internals.js';
@@ -18,14 +18,6 @@ export default class IgcComboItemComponent extends LitElement {
   public static register(): void {
     registerComponent(IgcComboItemComponent, IgcCheckboxComponent);
   }
-
-  private readonly _internals = addInternalsController(this, {
-    initialARIA: {
-      role: 'option',
-      ariaSelected: 'false',
-    },
-    reflectRole: true,
-  });
 
   @property({ attribute: false })
   public index!: number;
@@ -57,12 +49,12 @@ export default class IgcComboItemComponent extends LitElement {
   constructor() {
     super();
     addThemingController(this, all);
-  }
 
-  protected override willUpdate(props: PropertyValues<this>): void {
-    if (props.has('selected')) {
-      this._internals.setARIA({ ariaSelected: this.selected.toString() });
-    }
+    addInternalsController(this, {
+      initialARIA: { role: 'option' },
+      reflectRole: true,
+      aria: () => ({ ariaSelected: `${this.selected}` }),
+    });
   }
 
   private _renderCheckbox() {

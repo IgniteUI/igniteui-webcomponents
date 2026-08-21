@@ -1,5 +1,9 @@
 import { html, LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
+import {
+  coercedProperty,
+  type CoercedPropertyConfig,
+} from '#internals/decorators/coerced-property.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import {
@@ -27,7 +31,7 @@ import { all } from './themes/themes.js';
  * @cssproperty --background-active - The background color for the active highlighted text node.
  *
  * @example
- * Basic usage — wrap your text and set the `search-text` attribute:
+ * Basic usage - wrap your text and set the `search-text` attribute:
  * ```html
  * <igc-highlight search-text="world">
  *   <p>Hello, world! The world is a wonderful place.</p>
@@ -38,7 +42,7 @@ import { all } from './themes/themes.js';
  * Case-sensitive search:
  * ```html
  * <igc-highlight search-text="Hello" case-sensitive>
- *   <p>Hello hello HELLO — only the first one matches.</p>
+ *   <p>Hello hello HELLO - only the first one matches.</p>
  * </igc-highlight>
  * ```
  *
@@ -84,8 +88,13 @@ export default class IgcHighlightComponent extends LitElement {
 
   private readonly _service = createHighlightController(this);
 
-  private _caseSensitive = false;
-  private _searchText = '';
+  /** Shared config for the properties that trigger a new search when changed. */
+  private static readonly _search: CoercedPropertyConfig<
+    unknown,
+    IgcHighlightComponent
+  > = {
+    onChange: ({ host }) => host.search(),
+  };
 
   //#endregion
 
@@ -99,14 +108,8 @@ export default class IgcHighlightComponent extends LitElement {
    * @default false
    */
   @property({ type: Boolean, reflect: true, attribute: 'case-sensitive' })
-  public set caseSensitive(value: boolean) {
-    this._caseSensitive = value;
-    this.search();
-  }
-
-  public get caseSensitive(): boolean {
-    return this._caseSensitive;
-  }
+  @coercedProperty(IgcHighlightComponent._search)
+  public caseSensitive = false;
 
   /**
    * The string to search and highlight in the DOM content of the component.
@@ -116,14 +119,8 @@ export default class IgcHighlightComponent extends LitElement {
    * @attr search-text
    */
   @property({ attribute: 'search-text' })
-  public set searchText(value: string) {
-    this._searchText = value;
-    this.search();
-  }
-
-  public get searchText(): string {
-    return this._searchText;
-  }
+  @coercedProperty(IgcHighlightComponent._search)
+  public searchText = '';
 
   /** The total number of matches found for the current `searchText`. Returns `0` when there are no matches or `searchText` is empty. */
   public get size(): number {

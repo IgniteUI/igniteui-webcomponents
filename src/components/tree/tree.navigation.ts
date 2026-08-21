@@ -21,7 +21,7 @@ import type { IgcTreeSelectionService } from './tree.selection.js';
  * for the tree.
  *
  * The navigable set is never cached. It is derived on demand, only on an actual
- * keypress, by a lazy walk that prunes collapsed branches — so no work happens
+ * keypress, by a lazy walk that prunes collapsed branches - so no work happens
  * on item mount/expand/disable, and callers needing a single item stop as soon
  * as they have it.
  *

@@ -140,6 +140,18 @@ export abstract class DateFormatMaskParser<
     return this.parts.find((part) => part.type !== DatePartType.Literal);
   }
 
+  /**
+   * Whether the masked string holds nothing typed at all - every date/time position
+   * is still a prompt. Unlike a partially filled mask, there is no value in it to
+   * complete from the part defaults.
+   */
+  public isBlank(masked: string): boolean {
+    return this.parts.every(
+      (part) =>
+        part.type === DatePartType.Literal || !this._typedPart(masked, part)
+    );
+  }
+
   /** Whether the format contains a day, month or year part. */
   public hasDateParts(): boolean {
     return this.parts.some((part) => DATE_PART_TYPES.has(part.type));
@@ -148,6 +160,11 @@ export abstract class DateFormatMaskParser<
   /** Whether the format contains an hours, minutes or seconds part. */
   public hasTimeParts(): boolean {
     return this.parts.some((part) => TIME_PART_TYPES.has(part.type));
+  }
+
+  /** The characters typed into `part`, the prompts of the unfilled positions removed. */
+  protected _typedPart(masked: string, part: T): string {
+    return masked.substring(part.start, part.end).replaceAll(this.prompt, '');
   }
 }
 
@@ -256,7 +273,6 @@ export class DateTimeMaskParser extends DateFormatMaskParser {
     masked: string
   ): Partial<Record<DatePartType, number>> {
     const parts: Partial<Record<DatePartType, number>> = {};
-    const prompt = this.prompt;
 
     for (const datePart of this.parts) {
       if (datePart.type === DatePartType.Literal) continue;
@@ -265,12 +281,8 @@ export class DateTimeMaskParser extends DateFormatMaskParser {
         datePart.type === DatePartType.Date ||
         datePart.type === DatePartType.Month;
 
-      const raw = masked.substring(datePart.start, datePart.end);
-      const cleaned = raw.replaceAll(prompt, '');
-      const value = asNumber(cleaned);
-
       parts[datePart.type] = clamp(
-        value,
+        asNumber(this._typedPart(masked, datePart)),
         isMonthOrDate ? 1 : 0,
         Number.MAX_SAFE_INTEGER
       );
@@ -316,9 +328,7 @@ export class DateTimeMaskParser extends DateFormatMaskParser {
       return;
     }
 
-    const marker = masked
-      .substring(amPm.start, amPm.end)
-      .replaceAll(this.prompt, '');
+    const marker = this._typedPart(masked, amPm);
 
     parts[DatePartType.Hours] =
       (hours % 12) + (marker.toLowerCase() === 'pm' ? 12 : 0);

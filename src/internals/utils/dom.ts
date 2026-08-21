@@ -1,5 +1,5 @@
 import { isServer } from 'lit';
-import { asNumber, numberInRangeInclusive } from './math.js';
+import { asNumber, clamp, numberInRangeInclusive } from './math.js';
 import { merge } from './objects.js';
 import { isDefined } from './types.js';
 
@@ -176,6 +176,50 @@ export function getCenterPoint(element: Element): { x: number; y: number } {
     x: left + width * 0.5,
     y: top + height * 0.5,
   };
+}
+
+/**
+ * Maps a pointer's `clientX` coordinate to a fraction in the [0, 1] range of the
+ * element's bounding box width, measured from the element's logical start edge -
+ * the left edge when `ltr` is true, the right one otherwise.
+ *
+ * Returns 0 for an element without layout.
+ *
+ * @example
+ * ```typescript
+ * // Pointer 30px into a 120px wide element
+ * pointToFraction(element, event.clientX); // 0.25
+ * pointToFraction(element, event.clientX, false); // 0.75
+ * ```
+ */
+export function pointToFraction(
+  element: Element,
+  clientX: number,
+  ltr = true
+): number {
+  const { left, right, width } = element.getBoundingClientRect();
+
+  if (width === 0) {
+    return 0;
+  }
+
+  return clamp((ltr ? clientX - left : right - clientX) / width, 0, 1);
+}
+
+/**
+ * Concatenates the text content of the given nodes into a single string,
+ * trimmed and with consecutive whitespace collapsed.
+ *
+ * Useful for deriving an accessible label from projected content.
+ */
+export function normalizedTextContent(nodes: Iterable<Node>): string {
+  let text = '';
+
+  for (const node of nodes) {
+    text += node.textContent ?? '';
+  }
+
+  return text.trim().replace(/\s+/gu, ' ');
 }
 
 /** Returns whether the given client coordinates lie within the bounding box of the element. */

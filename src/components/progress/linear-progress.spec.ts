@@ -77,6 +77,21 @@ describe('Linear progress component', () => {
       expect(getDOM(progress).label).to.exist;
     });
 
+    it('applies `animationDuration` changes on their own', async () => {
+      const base =
+        progress.renderRoot.querySelector<HTMLElement>('[part~="base"]')!;
+
+      expect(base.style.getPropertyValue('--_transition-duration')).to.equal(
+        '0ms'
+      );
+
+      await updateProgress('animationDuration', 1200);
+
+      expect(base.style.getPropertyValue('--_transition-duration')).to.equal(
+        '1200ms'
+      );
+    });
+
     it('reflects the striped attribute', async () => {
       await updateProgress('striped', true);
       expect(getDOM(progress).striped).to.exist;

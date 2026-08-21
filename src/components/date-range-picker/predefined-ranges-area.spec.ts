@@ -90,6 +90,21 @@ describe('Predefined Area', () => {
         .to.be.true;
     });
 
+    it('renders the default predefined ranges without an explicit `resourceStrings`', async () => {
+      component = await fixture<IgcPredefinedRangesAreaComponent>(
+        html`<igc-predefined-ranges-area
+          use-predefined-ranges
+        ></igc-predefined-ranges-area>`
+      );
+
+      expect(getChips().map((chip) => chip.innerText)).eql([
+        'Last 7 Days',
+        'Current Month',
+        'Last 30 Days',
+        'Year to Date',
+      ]);
+    });
+
     it('is correctly initialized and rendered with predefined ranges and custom ranges', async () => {
       component = await fixture<IgcPredefinedRangesAreaComponent>(
         createComponentWithCustomRanges()

@@ -1,21 +1,7 @@
-import {
-  html,
-  LitElement,
-  nothing,
-  type PropertyValues,
-  type TemplateResult,
-} from 'lit';
+import { html, LitElement, type PropertyValues } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
-import { ifDefined } from 'lit/directives/if-defined.js';
-import { live } from 'lit/directives/live.js';
 import { addKeyboardFocusRing } from '#internals/controllers/focus-ring.js';
-import {
-  addKeybindings,
-  arrowDown,
-  arrowLeft,
-  arrowRight,
-  arrowUp,
-} from '#internals/controllers/key-bindings.js';
+import { addRovingFocusController } from '#internals/controllers/roving-focus.js';
 import { addSlotController, setSlots } from '#internals/controllers/slot.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import type { Constructor } from '#internals/mixins/constructor.js';
@@ -24,9 +10,8 @@ import { FormAssociatedCheckboxRequiredMixin } from '#internals/mixins/forms/ass
 import { FormValueBooleanTransformers } from '#internals/mixins/forms/form-transformers.js';
 import { createFormValueState } from '#internals/mixins/forms/form-value.js';
 import { partMap } from '#internals/part-map.js';
+import { renderToggleShell } from '#internals/templates/toggle-shell.js';
 import { lastOf } from '#internals/utils/arrays.js';
-import { isLTR } from '#internals/utils/dom.js';
-import { wrap } from '#internals/utils/math.js';
 import { createIdGenerator } from '#internals/utils/strings.js';
 import { isString } from '#internals/utils/types.js';
 import { addThemingController } from '#theming/theming-controller.js';
@@ -132,7 +117,7 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
   }
 
   /** All radios of the group that are not disabled. */
-  private get _active(): IgcRadioComponent[] {
+  private get _activeRadios(): IgcRadioComponent[] {
     return this._radios.filter((radio) => !radio.disabled);
   }
 
@@ -209,18 +194,21 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
 
     addThemingController(this, all);
 
-    addKeybindings(this, {
-      skip: () => this.disabled,
-      bindingDefaults: { preventDefault: true, repeat: true },
-    })
-      .set(arrowLeft, () => this._navigate(isLTR(this) ? -1 : 1))
-      .set(arrowRight, () => this._navigate(isLTR(this) ? 1 : -1))
-      .set(arrowUp, () => this._navigate(-1))
-      .set(arrowDown, () => this._navigate(1));
+    addRovingFocusController(this, {
+      keybindings: {
+        skip: () => this.disabled,
+        bindingDefaults: { preventDefault: true, repeat: true },
+      },
+      vertical: true,
+      homeEnd: false,
+      items: () => this._activeRadios,
+      current: () => this,
+      focusItem: (radio) => this._navigate(radio),
+    });
   }
 
   protected override willUpdate(properties: PropertyValues<this>): void {
-    // The name is the identity of a group, so a new name moves this radio to another one.
+    // The name is half of the identity of a group, so a new name moves this radio to another one.
     if (properties.has('name')) {
       this._group.updateMembership();
     }
@@ -335,6 +323,13 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
     this.updateComplete.then(() => this._validate());
   }
 
+  protected override formAssociatedCallback(form: HTMLFormElement): void {
+    super.formAssociatedCallback(form);
+
+    // The form owner is the other half, so a new one moves this radio as well.
+    this._group.updateMembership();
+  }
+
   protected _handleClick(event: PointerEvent) {
     event.stopPropagation();
     this._setTouchedState();
@@ -353,11 +348,7 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
     });
   }
 
-  protected _navigate(idx: number): void {
-    const active = this._active;
-    const next = wrap(0, active.length - 1, active.indexOf(this) + idx);
-    const radio = active[next];
-
+  protected _navigate(radio: IgcRadioComponent): void {
     this._setTouchedState();
     radio.focus();
     radio.checked = true;
@@ -366,55 +357,43 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
     });
   }
 
-  protected _renderValidatorContainer(): TemplateResult {
-    return IgcValidationContainerComponent.create(this);
-  }
-
   protected override render() {
     const labelledBy = this.getAttribute('aria-labelledby');
-    const describedBy = this._slots.hasAssignedElements('helper-text')
-      ? 'helper-text'
-      : nothing;
     const checked = this.checked;
 
     return html`
-      <label
-        part=${partMap({
+      ${renderToggleShell({
+        type: 'radio',
+        inputId: this._inputId,
+        labelId: this._labelId,
+        baseParts: {
           base: true,
           checked,
           focused: this._focusRingManager.focused,
-        })}
-        for=${this._inputId}
-      >
-        <input
-          id=${this._inputId}
-          type="radio"
-          name=${ifDefined(this.name)}
-          value=${ifDefined(this.value)}
-          ?required=${this.required}
-          ?disabled=${this.disabled}
-          .checked=${live(checked)}
-          tabindex=${this._tabIndex}
-          aria-labelledby=${labelledBy ? labelledBy : this._labelId}
-          aria-describedby=${describedBy}
-          @click=${this._handleClick}
-          @keydown=${this._handleEnterKeydown}
-        />
-        <span part=${partMap({ control: true, checked })}>
+        },
+        controlParts: { control: true, checked },
+        labelParts: { label: true, checked },
+        renderControl: () => html`
           <span
             part=${partMap({ ripple: true, checked })}
             ?hidden=${this.disabled}
           ></span>
-        </span>
-        <span
-          id=${this._labelId}
-          part=${partMap({ label: true, checked })}
-          ?hidden=${this._hideLabel}
-        >
-          <slot></slot>
-        </span>
-      </label>
-      ${this._renderValidatorContainer()}
+        `,
+        checked,
+        hideLabel: this._hideLabel,
+        name: this.name,
+        value: this.value,
+        required: this.required,
+        disabled: this.disabled,
+        tabindex: this._tabIndex,
+        ariaLabelledBy: labelledBy ? labelledBy : this._labelId,
+        ariaDescribedBy: this._slots.hasAssignedElements('helper-text')
+          ? 'helper-text'
+          : undefined,
+        onClick: this._handleClick,
+        onKeyDown: this._handleEnterKeydown,
+      })}
+      ${this._renderValidationContainer()}
     `;
   }
 }

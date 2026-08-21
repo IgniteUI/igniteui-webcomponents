@@ -2,7 +2,7 @@
  * Returns the first element of the given array.
  *
  * @remarks
- * Assumes a non-empty array — for an empty one it returns `undefined`
+ * Assumes a non-empty array - for an empty one it returns `undefined`
  * typed as `T`.
  */
 export function firstOf<T>(arr: T[]) {
@@ -13,7 +13,7 @@ export function firstOf<T>(arr: T[]) {
  * Returns the last element of the given array.
  *
  * @remarks
- * Assumes a non-empty array — for an empty one it returns `undefined`
+ * Assumes a non-empty array - for an empty one it returns `undefined`
  * typed as `T`.
  */
 export function lastOf<T>(arr: T[]) {

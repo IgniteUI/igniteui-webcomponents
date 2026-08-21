@@ -173,7 +173,7 @@ const metadata: Meta<IgcDateRangePickerComponent> = {
     locale: {
       type: 'string',
       description:
-        'Gets/Sets the locale used for formatting the display value.',
+        "The locale used to format the display value and to resolve the\ncomponent's resource strings. Falls back to the global locale when not set.",
       control: 'text',
     },
     min: {
@@ -352,7 +352,10 @@ interface IgcDateRangePickerArgs {
    * Defaults to the current locale Intl.DateTimeFormat
    */
   inputFormat: string;
-  /** Gets/Sets the locale used for formatting the display value. */
+  /**
+   * The locale used to format the display value and to resolve the
+   * component's resource strings. Falls back to the global locale when not set.
+   */
   locale: string;
   /** The minimum value required for the picker to remain valid. */
   min: Date;

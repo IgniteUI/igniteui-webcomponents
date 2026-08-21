@@ -6,7 +6,6 @@ import type { AbstractConstructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { FormValueDateRangeTransformers } from '#internals/mixins/forms/form-transformers.js';
 import { createFormValueState } from '#internals/mixins/forms/form-value.js';
-import { equal } from '#internals/utils/objects.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import {
   type DatePart,
@@ -59,10 +58,6 @@ export default class IgcDateRangeInputComponent extends EventEmitterMixin<
   protected override readonly _themes = addThemingController(this, all);
   protected override readonly _parser = new DateRangeMaskParser();
 
-  protected override get _datePartDeltas(): DatePartDeltas {
-    return { date: 1, month: 1, year: 1 };
-  }
-
   // #endregion
 
   // #region Public attributes and properties
@@ -79,13 +74,7 @@ export default class IgcDateRangeInputComponent extends EventEmitterMixin<
    */
   @property({ attribute: false })
   public override set value(value: DateRangeValue | null) {
-    if (equal(this._formValue.value, value)) {
-      return;
-    }
-
-    this._isEditing = false;
-    this._formValue.setValueAndFormState(value);
-    this._updateMaskDisplay();
+    this._applyValue(value);
   }
 
   public override get value(): DateRangeValue | null {
@@ -106,28 +95,8 @@ export default class IgcDateRangeInputComponent extends EventEmitterMixin<
 
   // #region Event Handlers Overrides
 
-  protected override async _handleFocus(): Promise<void> {
-    this._focused = true;
-
-    if (this.readOnly) {
-      return;
-    }
-
-    this._oldValue = this.value;
-
-    if (!this.value || (!this.value.start && !this.value.end)) {
-      this._maskedValue = this._parser.emptyMask;
-      this._historyResync();
-      await this.updateComplete;
-      this.select();
-      return;
-    }
-
-    if (this.displayFormat !== this.inputFormat) {
-      this._updateMaskDisplay();
-    }
-
-    this._historyResync();
+  protected override _isValueEmpty(): boolean {
+    return !this.value || (!this.value.start && !this.value.end);
   }
 
   // #endregion
@@ -241,10 +210,7 @@ export default class IgcDateRangeInputComponent extends EventEmitterMixin<
     const spinAmount = effectiveDelta * (isDecrement ? -1 : 1);
 
     // For AM/PM spinning, extract the current AM/PM value from the mask
-    const amPmValue =
-      part.type === DatePartType.AmPm
-        ? this._maskedValue.substring(part.start, part.end)
-        : undefined;
+    const amPmValue = this._readAmPmFromMask(part);
 
     return this._parser.spinDateRangePart(
       part,
@@ -298,17 +264,9 @@ export default class IgcDateRangeInputComponent extends EventEmitterMixin<
     return this._parser.formatDateRange(value);
   }
 
-  protected override _applyMask(string: string): void {
-    const previous = this._parser.mask;
-
-    this._parser.mask = string;
-    this._defaultMask = string;
+  protected override _applyMask(formatString: string): void {
+    super._applyMask(formatString);
     this._parser.prompt = this.prompt;
-
-    // Update placeholder if not set or if it matches the previous format
-    if (!this.placeholder || previous === this.placeholder) {
-      this.placeholder = this._parser.mask;
-    }
   }
 
   // #region Public API Overrides

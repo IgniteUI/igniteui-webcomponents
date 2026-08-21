@@ -5,6 +5,7 @@ import { addAnimationController } from '#animations/player.js';
 import { fadeIn, fadeOut } from '#animations/presets/fade/index.js';
 import { addCommandController } from '#internals/controllers/command.js';
 import { addSlotController, setSlots } from '#internals/controllers/slot.js';
+import { addToggleController } from '#internals/controllers/toggle.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import type { Constructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
@@ -42,7 +43,7 @@ const nextId = createIdGenerator('title');
  *
  * @element igc-dialog
  *
- * @fires igcClosing - Emitted just before the dialog closes. Cancelable —
+ * @fires igcClosing - Emitted just before the dialog closes. Cancelable -
  *   call `event.preventDefault()` to abort the closing sequence.
  * @fires igcClosed - Emitted after the dialog has fully closed and its
  *   exit animation has completed.
@@ -85,6 +86,29 @@ export default class IgcDialogComponent extends EventEmitterMixin<
 
   private readonly _dialogRef = createRef<HTMLDialogElement>();
   private readonly _player = addAnimationController(this, this._dialogRef);
+
+  private readonly _toggleController = addToggleController(this, {
+    transition: async (open) => {
+      if (open) {
+        this.open = true;
+        // A superseded exit clears this too, but only once its animation
+        // reports the cancellation - too late for this render.
+        this._animating = false;
+        return this._player.playExclusive(fadeIn());
+      }
+
+      this._animating = true;
+      const completed = await this._player.playExclusive(fadeOut());
+      this._animating = false;
+
+      // An interrupted exit animation means a newer `show()` took over.
+      if (completed) {
+        this.open = false;
+      }
+
+      return completed;
+    },
+  });
 
   /**
    * Backdrop animation helper.
@@ -235,30 +259,8 @@ export default class IgcDialogComponent extends EventEmitterMixin<
 
   //#region Internal API
 
-  private async _hide(emitEvent = false): Promise<boolean> {
-    if (!this.open || (emitEvent && !this._emitClosing())) {
-      return false;
-    }
-
-    this._animating = true;
-    await this._player.playExclusive(fadeOut());
-    this.open = false;
-    this._animating = false;
-
-    if (emitEvent) {
-      await this.updateComplete;
-      this.emitEvent('igcClosed');
-    }
-
-    return true;
-  }
-
-  private _emitClosing(): boolean {
-    return this.emitEvent('igcClosing', { cancelable: true });
-  }
-
   private _closeWithEvent(): void {
-    this._hide(true);
+    this._toggleController.hide(true);
   }
 
   //#endregion
@@ -268,27 +270,21 @@ export default class IgcDialogComponent extends EventEmitterMixin<
   /**
    * Opens the dialog with an animated fade-in transition.
    *
-   * Returns `true` when the dialog was successfully opened, or `false` if
-   * it was already open.
+   * Returns `true` when the dialog was successfully opened, or `false` if it
+   * was already open or the transition was superseded by a newer one.
    */
   public async show(): Promise<boolean> {
-    if (this.open) {
-      return false;
-    }
-
-    this.open = true;
-    await this._player.playExclusive(fadeIn());
-    return true;
+    return this._toggleController.show();
   }
 
   /**
    * Closes the dialog with an animated fade-out transition.
    *
-   * Returns `true` when the dialog was successfully closed, or `false` if
-   * it was already closed.
+   * Returns `true` when the dialog was successfully closed, or `false` if it
+   * was already closed or the transition was superseded by a newer one.
    */
   public async hide(): Promise<boolean> {
-    return this._hide();
+    return this._toggleController.hide();
   }
 
   /**
@@ -298,7 +294,7 @@ export default class IgcDialogComponent extends EventEmitterMixin<
    * Returns `true` when the transition completed successfully.
    */
   public async toggle(): Promise<boolean> {
-    return this.open ? this.hide() : this.show();
+    return this._toggleController.toggle();
   }
 
   //#endregion

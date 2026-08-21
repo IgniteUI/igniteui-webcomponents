@@ -134,7 +134,7 @@ class SizeTree {
   }
 
   /**
-   * Prefix sum of items [0, i) — the virtual scroll offset at the leading
+   * Prefix sum of items [0, i) - the virtual scroll offset at the leading
    * edge of item i. O(log N).
    */
   public prefixSum(i: number): number {

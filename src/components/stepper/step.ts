@@ -8,6 +8,7 @@ import { createAsyncContext } from '#internals/controllers/async-consumer.js';
 import { addSlotController, setSlots } from '#internals/controllers/slot.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { partMap } from '#internals/part-map.js';
+import { createIdGenerator } from '#internals/utils/strings.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import type {
   HorizontalTransitionAnimation,
@@ -23,6 +24,8 @@ import type IgcStepperComponent from './stepper.js';
 import { styles as shared } from './themes/step/shared/step.common.css.js';
 import { styles } from './themes/step/step.base.css.js';
 import { all } from './themes/step/themes.js';
+
+const nextId = createIdGenerator('igc-step');
 
 /**
  * A step component used within a stepper to represent an individual step in a wizard-like workflow.
@@ -99,6 +102,10 @@ export default class IgcStepComponent extends LitElement {
   }
 
   //#region Internal state and properties
+
+  private readonly _stepId = nextId();
+  private readonly _headerId = `${this._stepId}-header`;
+  private readonly _contentId = `${this._stepId}-content`;
 
   private readonly _bodyRef = createRef<HTMLElement>();
   private readonly _contentRef = createRef<HTMLElement>();
@@ -365,9 +372,9 @@ export default class IgcStepComponent extends LitElement {
           data-step-header
           role="tab"
           part="header"
-          id="igc-step-header-${index}"
+          id=${this._headerId}
           aria-selected=${this.active}
-          aria-controls="igc-step-content-${index}"
+          aria-controls=${this._contentId}
           aria-posinset=${index}
           aria-setsize=${size}
           tabindex=${this.active ? 0 : -1}
@@ -379,15 +386,13 @@ export default class IgcStepComponent extends LitElement {
   }
 
   private _renderContent() {
-    const index = this._index + 1;
-
     return html`
       <div
         ${ref(this._bodyRef)}
-        id="igc-step-content-${index}"
+        id=${this._contentId}
         part="body"
         role="tabpanel"
-        aria-labelledby="igc-step-header-${index}"
+        aria-labelledby=${this._headerId}
       >
         <div ${ref(this._contentRef)} part="content">
           <slot></slot>

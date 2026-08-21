@@ -31,13 +31,6 @@ export default class IgcAvatarComponent extends LitElement {
     registerComponent(IgcAvatarComponent);
   }
 
-  private readonly _internals = addInternalsController(this, {
-    initialARIA: {
-      role: 'image',
-      ariaLabel: 'avatar',
-    },
-  });
-
   @state()
   private _hasError = false;
 
@@ -72,15 +65,17 @@ export default class IgcAvatarComponent extends LitElement {
   constructor() {
     super();
     addThemingController(this, all);
+
+    addInternalsController(this, {
+      initialARIA: {
+        role: 'image',
+        ariaLabel: 'avatar',
+      },
+      aria: () => ({ ariaRoleDescription: this.alt ?? this.initials ?? null }),
+    });
   }
 
   protected override willUpdate(changedProperties: PropertyValues<this>): void {
-    if (changedProperties.has('initials') || changedProperties.has('alt')) {
-      this._internals.setARIA({
-        ariaRoleDescription: this.alt ?? this.initials,
-      });
-    }
-
     if (changedProperties.has('src')) {
       this._hasError = false;
     }

@@ -1,4 +1,4 @@
-import { html, LitElement } from 'lit';
+import { html, LitElement, type PropertyValues } from 'lit';
 import { property, queryAssignedElements } from 'lit/decorators.js';
 import { addInternalsController } from '#internals/controllers/internals.js';
 import {
@@ -6,7 +6,6 @@ import {
   type MutationControllerParams,
 } from '#internals/controllers/mutation-observer.js';
 import { addSlotController, setSlots } from '#internals/controllers/slot.js';
-import { watch } from '#internals/decorators/watch.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import { styles } from '../dropdown/themes/dropdown-group.base.css.js';
@@ -38,6 +37,7 @@ export default class IgcSelectGroupComponent extends LitElement {
     initialARIA: {
       role: 'group',
     },
+    aria: () => ({ ariaDisabled: `${this.disabled}` }),
   });
 
   private readonly _slots = addSlotController(this, {
@@ -97,6 +97,12 @@ export default class IgcSelectGroupComponent extends LitElement {
     });
   }
 
+  protected override willUpdate(changedProperties: PropertyValues<this>): void {
+    if (this.hasUpdated && changedProperties.has('disabled')) {
+      this.disabledChange();
+    }
+  }
+
   protected override async firstUpdated() {
     await this.updateComplete;
     this.controlledItems = this.activeItems;
@@ -104,10 +110,7 @@ export default class IgcSelectGroupComponent extends LitElement {
     this.disabledChange();
   }
 
-  @watch('disabled', { waitUntilFirstUpdate: true })
   protected disabledChange() {
-    this._internals.setARIA({ ariaDisabled: this.disabled.toString() });
-
     for (const item of this.controlledItems) {
       item.disabled = this.disabled;
     }
@@ -118,13 +121,7 @@ export default class IgcSelectGroupComponent extends LitElement {
    * `aria-labelledby` on the host, so its text names the `group` directly.
    */
   private _labelChange(): void {
-    const label = this._slots
-      .getAssignedNodes('label', true)
-      .map((node) => node.textContent ?? '')
-      .join('')
-      .trim()
-      .replace(/\s+/gu, ' ');
-
+    const label = this._slots.getAssignedText('label', true);
     this._internals.setARIA({ ariaLabel: label || null });
   }
 

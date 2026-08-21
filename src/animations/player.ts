@@ -61,11 +61,16 @@ class AnimationController implements ReactiveController {
   /** @internal */
   public hostConnected(): void {}
 
-  /** Plays a sequence of keyframes, first cancelling all existing animations on the target. */
+  /**
+   * Plays a sequence of keyframes, first cancelling all existing animations on the target.
+   *
+   * The cancellation must stay synchronous - awaiting before it would let an
+   * animation started earlier in the same tick escape and run to completion.
+   */
   public async playExclusive(
     animation: AnimationReferenceMetadata
   ): Promise<boolean> {
-    await this.cancelAll();
+    this.cancelAll();
 
     const event = await this.play(animation);
     return event.type === 'finish';
@@ -97,12 +102,10 @@ class AnimationController implements ReactiveController {
   }
 
   /** Cancels all active animations on the target element. */
-  public cancelAll(): Promise<void> {
+  public cancelAll(): void {
     for (const animation of this._target.getAnimations()) {
       animation.cancel();
     }
-
-    return Promise.resolve();
   }
 }
 

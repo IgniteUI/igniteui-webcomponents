@@ -1,10 +1,4 @@
-import {
-  html,
-  LitElement,
-  nothing,
-  type PropertyValues,
-  type TemplateResult,
-} from 'lit';
+import { html, LitElement, nothing, type PropertyValues } from 'lit';
 import { property, query } from 'lit/decorators.js';
 import { cache } from 'lit/directives/cache.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
@@ -365,15 +359,11 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
   }
 
   protected _handleInput(): void {
-    this._setTouchedState();
-    this.value = this._input.value;
-    this.emitEvent('igcInput', { detail: this.value });
+    this._commitValue(this._input.value, 'igcInput');
   }
 
   protected _handleChange(): void {
-    this._setTouchedState();
-    this.value = this._input.value;
-    this.emitEvent('igcChange', { detail: this.value });
+    this._commitValue(this._input.value, 'igcChange');
   }
 
   //#endregion
@@ -500,10 +490,6 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
         ?readonly=${this.readOnly}
       ></textarea>
     `;
-  }
-
-  protected _renderValidationContainer(): TemplateResult {
-    return IgcValidationContainerComponent.create(this);
   }
 
   protected override render() {

@@ -1,62 +1,26 @@
 import { ValidationResourceStringsEN } from 'igniteui-i18n-core';
-import {
-  isDateExceedingMax,
-  isDateLessThanMin,
-} from '#internals/date/compare.js';
 import { calendarRange } from '#internals/date/model.js';
 import { isEmpty } from '#internals/utils/arrays.js';
 import { formatString } from '#internals/utils/strings.js';
-import type { Validator } from '#internals/validators.js';
+import {
+  createMaxDateTimeValidator,
+  createMinDateTimeValidator,
+  type Validator,
+} from '#internals/validators.js';
 import { isDateInRanges } from '../calendar/helpers.js';
 import type { DateRangeValue } from '../types.js';
 import type IgcDateRangePickerComponent from './date-range-picker.js';
 
-/** Whether both ends of the current range pass `predicate`. */
-function isRangeWithinBounds(
-  host: IgcDateRangePickerComponent,
-  predicate: (date: Date) => boolean
-): boolean {
-  const { start, end } = host.value ?? {};
-  return !((start && !predicate(start)) || (end && !predicate(end)));
+/** The ends of the current range, each validated against the bound on its own. */
+function rangeEnds({ value }: IgcDateRangePickerComponent) {
+  return [value?.start, value?.end];
 }
 
-export const minDateRangeValidator: Validator<IgcDateRangePickerComponent> = {
-  key: 'rangeUnderflow',
-  message: (host) =>
-    formatString(ValidationResourceStringsEN.min_validation_error!, host.min),
-  isValid: (host) =>
-    host.min
-      ? isRangeWithinBounds(
-          host,
-          (date) =>
-            !isDateLessThanMin(
-              date,
-              host.min!,
-              host.hasTimeParts(),
-              host.hasDateParts()
-            )
-        )
-      : true,
-};
+export const minDateRangeValidator =
+  createMinDateTimeValidator<IgcDateRangePickerComponent>(rangeEnds);
 
-export const maxDateRangeValidator: Validator<IgcDateRangePickerComponent> = {
-  key: 'rangeOverflow',
-  message: (host) =>
-    formatString(ValidationResourceStringsEN.max_validation_error!, host.max),
-  isValid: (host) =>
-    host.max
-      ? isRangeWithinBounds(
-          host,
-          (date) =>
-            !isDateExceedingMax(
-              date,
-              host.max!,
-              host.hasTimeParts(),
-              host.hasDateParts()
-            )
-        )
-      : true,
-};
+export const maxDateRangeValidator =
+  createMaxDateTimeValidator<IgcDateRangePickerComponent>(rangeEnds);
 
 export const requiredDateRangeValidator: Validator<IgcDateRangePickerComponent> =
   {

@@ -11,15 +11,18 @@ import { addRootClickController } from '#internals/controllers/root-click.js';
 import { addSlotController, setSlots } from '#internals/controllers/slot.js';
 import { blazorAdditionalDependencies } from '#internals/decorators/blazorAdditionalDependencies.js';
 import { blazorIndirectRender } from '#internals/decorators/blazorIndirectRender.js';
+import { coercedProperty } from '#internals/decorators/coerced-property.js';
 import { shadowOptions } from '#internals/decorators/shadow-options.js';
 import { registerComponent } from '#internals/definitions/register.js';
-import { addI18nController } from '#internals/i18n/i18n-controller.js';
+import type { I18nControllerConfig } from '#internals/i18n/i18n-controller.js';
 import { IgcBaseComboBoxComponent } from '#internals/mixins/combo-box.js';
 import type { AbstractConstructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '#internals/mixins/forms/associated-required.js';
 import { createFormValueState } from '#internals/mixins/forms/form-value.js';
+import { I18nMixin } from '#internals/mixins/i18n.js';
 import { partMap } from '#internals/part-map.js';
+import { renderSlottedIcon } from '#internals/templates/slotted-icon.js';
 import { asArray, firstOf, isEmpty } from '#internals/utils/arrays.js';
 import {
   addSafeEventListener,
@@ -69,6 +72,10 @@ const SLOTS = setSlots(
   'custom-error',
   'invalid'
 );
+
+const i18n: I18nControllerConfig<IComboResourceStrings> = {
+  defaultEN: ComboResourceStringsEN,
+};
 
 /* blazorSupportsVisualChildren */
 /**
@@ -126,11 +133,14 @@ const SLOTS = setSlots(
 @shadowOptions({ delegatesFocus: true })
 export default class IgcComboComponent<
   T extends object = any,
-> extends FormAssociatedRequiredMixin(
-  EventEmitterMixin<
-    IgcComboComponentEventMap,
-    AbstractConstructor<IgcBaseComboBoxComponent>
-  >(IgcBaseComboBoxComponent)
+> extends I18nMixin(
+  FormAssociatedRequiredMixin(
+    EventEmitterMixin<
+      IgcComboComponentEventMap,
+      AbstractConstructor<IgcBaseComboBoxComponent>
+    >(IgcBaseComboBoxComponent)
+  ),
+  i18n
 ) {
   public static readonly tagName = 'igc-combo';
   public static styles = [styles, shared];
@@ -161,13 +171,6 @@ export default class IgcComboComponent<
     this,
     {
       onHide: this._handleClosing,
-    }
-  );
-
-  protected readonly _i18nController = addI18nController<IComboResourceStrings>(
-    this,
-    {
-      defaultEN: ComboResourceStringsEN,
     }
   );
 
@@ -228,14 +231,10 @@ export default class IgcComboComponent<
     }
   );
 
-  private _data: T[] = [];
   private _index?: Map<Item<T>, number[]>;
   private _indexSize = 0;
-  private _valueKey?: Keys<T>;
   private _displayKey?: Keys<T>;
   private _placeholderSearch?: string;
-  private _disableFiltering = false;
-  private _singleSelect = false;
   private _selected: Set<T> = new Set();
   // `filterKey` is left unset here - both key fields are still undefined at
   // field-initialization time. The `displayKey` setter fills it in.
@@ -283,8 +282,8 @@ export default class IgcComboComponent<
 
   private get _mainAriaLabel(): string {
     return isEmpty(this._selected)
-      ? this.resourceStrings.combo_aria_label_no_options!
-      : this.resourceStrings.combo_aria_label_options!;
+      ? this.resourceStrings.combo_aria_label_no_options
+      : this.resourceStrings.combo_aria_label_options;
   }
 
   // #endregion
@@ -294,14 +293,13 @@ export default class IgcComboComponent<
   /** The data source used to generate the list of options. */
   /* treatAsRef */
   @property({ attribute: false })
-  public set data(value: T[]) {
-    this._data = asArray(value);
-    this._index = undefined;
-  }
-
-  public get data(): T[] {
-    return this._data;
-  }
+  @coercedProperty<T[], IgcComboComponent<T>>({
+    transform: ({ value }) => asArray(value),
+    onChange: ({ host }) => {
+      host._index = undefined;
+    },
+  })
+  public data: T[] = [];
 
   /**
    * Whether the control has an outlined appearance.
@@ -317,22 +315,21 @@ export default class IgcComboComponent<
    * @default false
    */
   @property({ type: Boolean, reflect: true, attribute: 'single-select' })
-  public set singleSelect(value: boolean) {
-    this._singleSelect = Boolean(value);
-    this._syncSelectionFromValue();
+  @coercedProperty<boolean, IgcComboComponent<T>>({
+    transform: ({ value }) => Boolean(value),
+    onChange: ({ host }) => {
+      host._syncSelectionFromValue();
 
-    if (this.hasUpdated) {
-      this._withPristine(() => {
-        this._activeIndex = -1;
-        this._searchTerm = '';
-        this._formValue.setValueAndFormState(this.value);
-      });
-    }
-  }
-
-  public get singleSelect(): boolean {
-    return this._singleSelect;
-  }
+      if (host.hasUpdated) {
+        host._withPristine(() => {
+          host._activeIndex = -1;
+          host._searchTerm = '';
+          host._formValue.setValueAndFormState(host.value);
+        });
+      }
+    },
+  })
+  public singleSelect = false;
 
   /**
    * Whether the control should receive focus automatically.
@@ -350,17 +347,18 @@ export default class IgcComboComponent<
   public autofocusList = false;
 
   /**
-   * Gets/Sets the locale used for getting language, affecting resource strings.
+   * The locale used to resolve the component's resource strings.
+   * Falls back to the global locale when not set.
    * @attr locale
    */
   @property()
-  public set locale(value: string) {
-    this._i18nController.locale = value;
+  public override set locale(value: string) {
+    super.locale = value;
     this._state.updateLocale(value);
   }
 
-  public get locale(): string {
-    return this._i18nController.locale;
+  public override get locale(): string {
+    return super.locale;
   }
 
   /**
@@ -389,21 +387,8 @@ export default class IgcComboComponent<
   public get placeholderSearch(): string {
     return (
       this._placeholderSearch ??
-      this.resourceStrings.combo_filter_search_placeholder ??
-      'Search'
+      this.resourceStrings.combo_filter_search_placeholder
     );
-  }
-
-  /**
-   * The resource strings for localization.
-   */
-  @property({ attribute: false })
-  public set resourceStrings(value: IComboResourceStrings) {
-    this._i18nController.resourceStrings = value;
-  }
-
-  public get resourceStrings(): IComboResourceStrings {
-    return this._i18nController.resourceStrings;
   }
 
   /**
@@ -411,15 +396,13 @@ export default class IgcComboComponent<
    * @attr value-key
    */
   @property({ attribute: 'value-key' })
-  public set valueKey(value: Keys<T> | undefined) {
-    this._valueKey = value;
-    this._displayKey = this._displayKey ?? this._valueKey;
-    this._index = undefined;
-  }
-
-  public get valueKey() {
-    return this._valueKey;
-  }
+  @coercedProperty<Keys<T> | undefined, IgcComboComponent<T>>({
+    onChange: ({ value, host }) => {
+      host._displayKey = host._displayKey ?? value;
+      host._index = undefined;
+    },
+  })
+  public valueKey?: Keys<T> = undefined;
 
   /**
    * The key in the data source used to display items in the list.
@@ -434,7 +417,7 @@ export default class IgcComboComponent<
   }
 
   public get displayKey() {
-    return this._displayKey ?? this._valueKey;
+    return this._displayKey ?? this.valueKey;
   }
 
   /**
@@ -480,14 +463,12 @@ export default class IgcComboComponent<
    * @default false
    */
   @property({ type: Boolean, attribute: 'disable-filtering' })
-  public set disableFiltering(value: boolean) {
-    this._disableFiltering = value;
-    this._searchTerm = '';
-  }
-
-  public get disableFiltering(): boolean {
-    return this._disableFiltering;
-  }
+  @coercedProperty<boolean, IgcComboComponent<T>>({
+    onChange: ({ host }) => {
+      host._searchTerm = '';
+    },
+  })
+  public disableFiltering = false;
 
   /**
    * Hides the clear button.
@@ -1199,13 +1180,10 @@ export default class IgcComboComponent<
           filled: !isEmpty(this.value),
         })}
       >
-        <slot name="toggle-icon">
-          <igc-icon
-            name=${this.open ? 'input_collapse' : 'input_expand'}
-            collection="default"
-            aria-hidden="true"
-          ></igc-icon>
-        </slot>
+        ${renderSlottedIcon({
+          slot: 'toggle-icon',
+          icon: this.open ? 'input_collapse' : 'input_expand',
+        })}
       </span>
     `;
   }
@@ -1222,13 +1200,7 @@ export default class IgcComboComponent<
           this.resourceStrings.combo_clearItems_placeholder
         )}
       >
-        <slot name="clear-icon">
-          <igc-icon
-            name="input_clear"
-            collection="default"
-            aria-hidden="true"
-          ></igc-icon>
-        </slot>
+        ${renderSlottedIcon({ slot: 'clear-icon', icon: 'input_clear' })}
       </span>
     `;
   }
@@ -1337,7 +1309,7 @@ export default class IgcComboComponent<
   }
 
   private _renderHelperText(): TemplateResult {
-    return IgcValidationContainerComponent.create(this, {
+    return this._renderValidationContainer({
       id: 'combo-helper-text',
       hasHelperText: true,
     });

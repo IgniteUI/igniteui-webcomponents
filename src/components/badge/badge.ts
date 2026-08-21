@@ -1,4 +1,4 @@
-import { html, LitElement, type PropertyValues } from 'lit';
+import { html, LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
 import { addInternalsController } from '#internals/controllers/internals.js';
 import { addSlotController, setSlots } from '#internals/controllers/slot.js';
@@ -36,10 +36,6 @@ export default class IgcBadgeComponent extends LitElement {
   public static register(): void {
     registerComponent(IgcBadgeComponent);
   }
-
-  private readonly _internals = addInternalsController(this, {
-    initialARIA: { role: 'status' },
-  });
 
   private readonly _slots = addSlotController(this, {
     slots: setSlots(),
@@ -89,12 +85,11 @@ export default class IgcBadgeComponent extends LitElement {
     super();
 
     addThemingController(this, all);
-  }
 
-  protected override willUpdate(changedProperties: PropertyValues<this>): void {
-    if (changedProperties.has('variant')) {
-      this._internals.setARIA({ ariaRoleDescription: `badge ${this.variant}` });
-    }
+    addInternalsController(this, {
+      initialARIA: { role: 'status' },
+      aria: () => ({ ariaRoleDescription: `badge ${this.variant}` }),
+    });
   }
 
   protected _handleSlotChange(): void {
