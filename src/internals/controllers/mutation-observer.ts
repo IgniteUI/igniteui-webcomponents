@@ -32,7 +32,8 @@ type MutationControllerCallback<T extends Node = Node> = (
  * an array of selector strings or a predicate function.
  */
 type MutationControllerFilter<T extends Node = Node> =
-  string[] | ((node: T) => boolean);
+  | string[]
+  | ((node: T) => boolean);
 
 type MutationDOMChange<T extends Node = Node> = {
   /** The parent of the added/removed element. */
@@ -66,21 +67,28 @@ export type MutationControllerParams<T extends Node = Node> = {
   observer: MutationController<T>;
 };
 
-function applyNodeFilter<T extends Node = Node>(
-  nodes: T[],
-  predicate?: MutationControllerFilter<T>
-): T[] {
-  if (!predicate) {
-    return nodes;
+/**
+ * Resolves a filter configuration into a node predicate.
+ *
+ * A list of selectors is joined once into a single selector list, so matching a
+ * node is a single `matches` call instead of one per selector.
+ */
+function createNodeMatcher<T extends Node = Node>(
+  filter?: MutationControllerFilter<T>
+): (node: T) => boolean {
+  if (!filter) {
+    return () => true;
   }
 
-  return Array.isArray(predicate)
-    ? nodes.filter(
-        (node) =>
-          isElement(node) &&
-          predicate.some((selector) => node.matches(selector))
-      )
-    : nodes.filter(predicate);
+  if (!Array.isArray(filter)) {
+    return filter;
+  }
+
+  const selector = filter.join(',');
+
+  return selector
+    ? (node) => isElement(node) && node.matches(selector)
+    : () => false;
 }
 
 class MutationController<T extends Node = Node> implements ReactiveController {
@@ -88,7 +96,7 @@ class MutationController<T extends Node = Node> implements ReactiveController {
   private readonly _target: Element;
   private readonly _config: MutationObserverInit;
   private readonly _callback: MutationControllerCallback<T>;
-  private readonly _filter?: MutationControllerFilter<T>;
+  private readonly _matches: (node: T) => boolean;
 
   private _observer?: MutationObserver;
 
@@ -100,7 +108,7 @@ class MutationController<T extends Node = Node> implements ReactiveController {
     this._callback = options.callback;
     this._config = options.config;
     this._target = options.target ?? this._host;
-    this._filter = options.filter;
+    this._matches = createNodeMatcher(options.filter);
 
     if (!isServer) {
       this._observer = new MutationObserver((records) => {
@@ -123,8 +131,19 @@ class MutationController<T extends Node = Node> implements ReactiveController {
     this.disconnect();
   }
 
+  private _collect(
+    nodes: NodeList,
+    target: Element,
+    into: MutationDOMChange<T>[]
+  ): void {
+    for (const node of nodes) {
+      if (this._matches(node as T)) {
+        into.push({ target, node: node as T });
+      }
+    }
+  }
+
   private _process(records: MutationRecord[]): MutationControllerParams<T> {
-    const predicate = this._filter;
     const changes: MutationChange<T> = {
       attributes: [],
       added: [],
@@ -135,27 +154,12 @@ class MutationController<T extends Node = Node> implements ReactiveController {
       const { type, target, attributeName, addedNodes, removedNodes } = record;
 
       if (type === 'attributes') {
-        changes.attributes.push(
-          ...applyNodeFilter([target as T], predicate).map((node) => ({
-            node,
-            attributeName,
-          }))
-        );
+        if (this._matches(target as T)) {
+          changes.attributes.push({ node: target as T, attributeName });
+        }
       } else if (type === 'childList') {
-        changes.added.push(
-          ...applyNodeFilter([...addedNodes] as T[], predicate).map((node) => ({
-            target: target as Element,
-            node,
-          }))
-        );
-        changes.removed.push(
-          ...applyNodeFilter([...removedNodes] as T[], predicate).map(
-            (node) => ({
-              target: target as Element,
-              node,
-            })
-          )
-        );
+        this._collect(addedNodes, target as Element, changes.added);
+        this._collect(removedNodes, target as Element, changes.removed);
       }
     }
 

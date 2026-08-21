@@ -2,7 +2,7 @@ import type { ReactiveController, ReactiveControllerHost } from 'lit';
 import type { Ref } from 'lit/directives/ref.js';
 import { createAbortHandle } from '../abort-handler.js';
 import { asArray, partition } from '../utils/arrays.js';
-import { getElementFromPath } from '../utils/events.js';
+import { isElement } from '../utils/dom.js';
 import { toMerged } from '../utils/objects.js';
 import { isFunction } from '../utils/types.js';
 
@@ -133,19 +133,26 @@ interface KeyBinding {
 
 //#region Internal functions and constants
 
-const MODIFIERS = new Set(['alt', 'control', 'meta', 'shift']);
-const ALL_MODIFIER_VALUES = Array.from(MODIFIERS).sort();
-
 /**
- * Maps internal modifier names to their corresponding `KeyboardEvent` boolean property names.
- * Needed because `ctrlKey` in the DOM is the property for the `'control'` modifier (not `'controlKey'`).
+ * Every modifier, paired with the `KeyboardEvent` boolean property it is read
+ * from - `ctrlKey` is the property for the `'control'` modifier, not `'controlKey'`.
+ *
+ * Kept in alphabetical order: combination keys sort their modifiers, and every
+ * derived collection below inherits that order for free.
  */
-export const MODIFIER_EVENT_KEYS: Record<string, string> = {
-  alt: 'altKey',
-  control: 'ctrlKey',
-  meta: 'metaKey',
-  shift: 'shiftKey',
-};
+const MODIFIER_ENTRIES = [
+  ['alt', 'altKey'],
+  ['control', 'ctrlKey'],
+  ['meta', 'metaKey'],
+  ['shift', 'shiftKey'],
+] as const satisfies ReadonlyArray<readonly [string, keyof KeyboardEvent]>;
+
+const ALL_MODIFIER_VALUES = MODIFIER_ENTRIES.map(([name]) => name);
+const MODIFIERS = new Set<string>(ALL_MODIFIER_VALUES);
+
+/** {@link MODIFIER_ENTRIES} as a lookup of modifier name to event property. */
+export const MODIFIER_EVENT_KEYS: Record<string, string> =
+  Object.fromEntries(MODIFIER_ENTRIES);
 
 function normalizeKeys(keys: string | string[]): string[] {
   return asArray(keys).map((key) => key.toLowerCase());
@@ -159,19 +166,34 @@ function isKeyup(event: Event): boolean {
   return event.type === 'keyup';
 }
 
+/** Sorts `modifiers` alphabetically, by filtering the already sorted source. */
+function sortModifiers(modifiers: string[]): string[] {
+  return ALL_MODIFIER_VALUES.filter((mod) => modifiers.includes(mod));
+}
+
+/** Returns the modifiers active for `event`, already sorted. */
+function getActiveModifiers(event: KeyboardEvent): string[] {
+  const active: string[] = [];
+
+  for (const [name, property] of MODIFIER_ENTRIES) {
+    if (event[property]) {
+      active.push(name);
+    }
+  }
+
+  return active;
+}
+
 /**
  * Creates a normalized combination key string from the provided keys and modifiers.
  *
  * The combination key is a string that uniquely identifies a specific combination of keys and modifiers.
  * It is created by sorting the keys and modifiers alphabetically and joining them with a '+' separator.
+ *
+ * `modifiers` must already be sorted - see {@link sortModifiers} and {@link getActiveModifiers}.
  */
 function createCombinationKey(keys: string[], modifiers: string[]): string {
-  const sortedKeys = keys.toSorted();
-  const sortedModifiers = ALL_MODIFIER_VALUES.filter((mod) =>
-    modifiers.includes(mod)
-  ).sort();
-
-  return sortedModifiers.concat(sortedKeys).join('+');
+  return modifiers.concat(keys.length > 1 ? keys.toSorted() : keys).join('+');
 }
 
 //#endregion
@@ -275,24 +297,25 @@ class KeyBindingController implements ReactiveController {
    * The method checks if the event's key is among the allowed keys, if the event originated from within the controller's scope,
    * and if it matches any of the skip conditions defined in the controller's options.
    */
-  private _shouldSkip(event: KeyboardEvent): boolean {
+  private _shouldSkip(event: KeyboardEvent, key: string): boolean {
+    if (!this._allowedKeys.has(key)) {
+      return true;
+    }
+
+    const path = event.composedPath();
+    const element = this._element;
+
+    if (!path.some((node) => node === element)) {
+      return true;
+    }
+
+    const selector = this._skipSelector;
+
+    if (selector) {
+      return path.some((node) => isElement(node) && node.matches(selector));
+    }
+
     const skip = this._options.skip;
-
-    if (!this._allowedKeys.has(event.key.toLowerCase())) {
-      return true;
-    }
-
-    if (!getElementFromPath((e) => e === this._element, event)) {
-      return true;
-    }
-
-    if (Array.isArray(skip)) {
-      if (!this._skipSelector) {
-        return false;
-      }
-
-      return Boolean(getElementFromPath(this._skipSelector, event));
-    }
 
     return isFunction(skip)
       ? skip.call(this._host, event.target as Element, event)
@@ -341,24 +364,22 @@ class KeyBindingController implements ReactiveController {
    *
    */
   private _handleKeyEvent(event: KeyboardEvent): void {
-    if (this._shouldSkip(event)) {
+    const key = event.key.toLowerCase();
+    const isModifier = MODIFIERS.has(key);
+
+    if (this._shouldSkip(event, key)) {
       // Always clean up on keyup regardless of whether the event is otherwise skipped.
-      const key = event.key.toLowerCase();
-      if (!MODIFIERS.has(key) && isKeyup(event)) {
+      if (!isModifier && isKeyup(event)) {
         this._pressedKeys.delete(key);
       }
       return;
     }
 
-    const key = event.key.toLowerCase();
-
-    if (!MODIFIERS.has(key)) {
+    if (!isModifier) {
       this._pressedKeys.add(key);
     }
 
-    const activeModifiers = ALL_MODIFIER_VALUES.filter(
-      (mod) => event[MODIFIER_EVENT_KEYS[mod] as keyof KeyboardEvent]
-    );
+    const activeModifiers = getActiveModifiers(event);
 
     const combination = createCombinationKey(
       Array.from(this._pressedKeys),
@@ -381,7 +402,7 @@ class KeyBindingController implements ReactiveController {
       binding.handler.call(this._host, event);
     }
 
-    if (!MODIFIERS.has(key) && isKeyup(event)) {
+    if (!isModifier && isKeyup(event)) {
       this._pressedKeys.delete(key);
     }
   }
@@ -419,7 +440,7 @@ class KeyBindingController implements ReactiveController {
     bindingOptions?: KeyBindingOptions
   ): this {
     const { keys, modifiers } = parseKeys(key);
-    const combination = createCombinationKey(keys, modifiers);
+    const combination = createCombinationKey(keys, sortModifiers(modifiers));
     const options = toMerged(
       this._options.bindingDefaults!,
       bindingOptions ?? {}

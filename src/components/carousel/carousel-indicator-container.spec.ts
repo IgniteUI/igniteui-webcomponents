@@ -9,8 +9,8 @@ import {
   simulatePointerUp,
 } from '#internals/testing/simulate.spec.js';
 import { firstOf } from '#internals/utils/arrays.js';
-import IgcCarouselIndicatorComponent from './carousel-indicator.js';
 import IgcCarouselIndicatorContainerComponent from './carousel-indicator-container.js';
+import IgcCarouselIndicatorComponent from './carousel-indicator.js';
 
 describe('Carousel Indicator Container', () => {
   before(() => {

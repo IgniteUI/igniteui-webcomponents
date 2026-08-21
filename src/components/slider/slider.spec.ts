@@ -27,8 +27,8 @@ import {
 } from '#internals/testing/simulate.spec.js';
 import { asPercent } from '#internals/utils/math.js';
 import IgcRangeSliderComponent from './range-slider.js';
-import IgcSliderComponent from './slider.js';
 import type { IgcSliderBaseComponent } from './slider-base.js';
+import IgcSliderComponent from './slider.js';
 
 describe('Slider component', () => {
   describe('Regular', () => {

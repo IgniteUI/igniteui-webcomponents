@@ -72,7 +72,8 @@ export default class IgcPredefinedRangesAreaComponent extends LitElement {
   @property({ attribute: false })
   public set resourceStrings(
     value:
-      IgcDateRangePickerResourceStrings | DateRangePickerResourceStringsType
+      | IgcDateRangePickerResourceStrings
+      | DateRangePickerResourceStringsType
   ) {
     this._i18nController.resourceStrings = value;
   }
@@ -122,7 +123,10 @@ declare global {
 }
 
 type PredefinedRangeKey =
-  'last7Days' | 'currentMonth' | 'last30Days' | 'yearToDate';
+  | 'last7Days'
+  | 'currentMonth'
+  | 'last30Days'
+  | 'yearToDate';
 
 function getPredefinedRanges(
   resourceStrings: DateRangePickerResourceStringsType

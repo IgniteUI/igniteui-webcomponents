@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/web-components-vite';
-import { html } from 'lit';
 import { defineComponents, IgcQrCodeComponent } from 'igniteui-webcomponents';
+import { html } from 'lit';
 import { disableStoryControls } from './story.js';
 
 defineComponents(IgcQrCodeComponent);
@@ -31,7 +31,7 @@ const metadata: Meta<IgcQrCodeComponent> = {
       control: 'number',
     },
     errorLevel: {
-      type: '"L" | "M" | "Q" | "H"',
+      type: { name: 'enum', value: ['L', 'M', 'Q', 'H'] },
       description:
         "The error correction level for the QR code, which determines the QR code's ability to be read if it is partially obscured or damaged.\nValid values are 'L', 'M', 'Q', and 'H', where 'L' provides the lowest level of error correction and 'H' provides the highest level.",
       options: ['L', 'M', 'Q', 'H'],
@@ -72,7 +72,7 @@ const metadata: Meta<IgcQrCodeComponent> = {
       control: 'number',
     },
     dotStyle: {
-      type: '"square" | "circle" | "rounded"',
+      type: { name: 'enum', value: ['square', 'circle', 'rounded'] },
       description:
         "The style of the data modules (dots) in the QR code, and of the inner dot of each finder-pattern\ncorner. This can be 'square', 'circle', or 'rounded'.",
       options: ['square', 'circle', 'rounded'],
@@ -80,7 +80,7 @@ const metadata: Meta<IgcQrCodeComponent> = {
       table: { defaultValue: { summary: 'square' } },
     },
     squareStyle: {
-      type: '"square" | "circle" | "rounded"',
+      type: { name: 'enum', value: ['square', 'circle', 'rounded'] },
       description:
         "The style of the corner squares in the QR code. This can be 'square', 'circle', or 'rounded'.",
       options: ['square', 'circle', 'rounded'],

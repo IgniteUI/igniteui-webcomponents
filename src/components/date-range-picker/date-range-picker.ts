@@ -429,7 +429,8 @@ export default class IgcDateRangePickerComponent extends EventEmitterMixin<
   @property({ attribute: false })
   public set resourceStrings(
     value:
-      IgcDateRangePickerResourceStrings | DateRangePickerResourceStringsType
+      | IgcDateRangePickerResourceStrings
+      | DateRangePickerResourceStringsType
   ) {
     this._i18nController.resourceStrings = value;
   }
@@ -804,7 +805,8 @@ export default class IgcDateRangePickerComponent extends EventEmitterMixin<
   protected _renderInput(
     id: string,
     picker:
-      DateRangePosition.Start | DateRangePosition.End = DateRangePosition.Start
+      | DateRangePosition.Start
+      | DateRangePosition.End = DateRangePosition.Start
   ) {
     const isStart = picker === DateRangePosition.Start;
     const placeholder = isStart ? this.placeholderStart : this.placeholderEnd;

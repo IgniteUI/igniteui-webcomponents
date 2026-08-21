@@ -8,17 +8,16 @@ type TooltipHideCallback = () => unknown;
 class TooltipEscapeCallbacks {
   private _collection = new Map<IgcTooltipComponent, TooltipHideCallback>();
 
-  private _setListener(state = true): void {
+  /** Keeps the global `keydown` listener bound while any tooltip is shown. */
+  private _syncListener(): void {
     /* c8 ignore next 3 */
     if (isServer) {
       return;
     }
 
-    if (isEmpty(this._collection)) {
-      state
-        ? globalThis.addEventListener('keydown', this)
-        : globalThis.removeEventListener('keydown', this);
-    }
+    isEmpty(this._collection)
+      ? globalThis.removeEventListener('keydown', this)
+      : globalThis.addEventListener('keydown', this);
   }
 
   public add(
@@ -29,17 +28,14 @@ class TooltipEscapeCallbacks {
       return;
     }
 
-    this._setListener();
     this._collection.set(instance, hideCallback);
+    this._syncListener();
   }
 
   public remove(instance: IgcTooltipComponent): void {
-    if (!this._collection.has(instance)) {
-      return;
+    if (this._collection.delete(instance)) {
+      this._syncListener();
     }
-
-    this._collection.delete(instance);
-    this._setListener(false);
   }
 
   /** @internal */
@@ -48,8 +44,8 @@ class TooltipEscapeCallbacks {
       return;
     }
 
-    const [tooltip, callback] = lastOf(Array.from(this._collection.entries()));
-    await callback?.call(tooltip);
+    // The last registered tooltip is the last one shown.
+    await lastOf(Array.from(this._collection.values()))?.();
   }
 }
 

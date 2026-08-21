@@ -7,99 +7,144 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [Unreleased]
 ### Added
 - #### Calendar
-  - The `label-inner`, `months-row` and `years-row` parts are now exported by `igc-calendar`, and by the pickers as `calendar-label-inner`, `months-row` and `years-row`. They were rendered by the views but not re-exported, so they could not be styled through the calendar.
-- #### Mask input, Date time input, Date range picker
-  - The masked editors now support the standard undo/redo shortcuts - `Ctrl + Z` / `Cmd + Z` to undo and `Ctrl + Y`, `Ctrl + Shift + Z` / `Cmd + Shift + Z` to redo. Previously these did nothing, because rendering the masked text reassigns the native input's value and that clears the browser's own undo stack.
-    - A run of consecutive typed characters, or of consecutive deletions, collapses into a single undo step. Moving the caret, pasting, dropping, cutting, spinning a date part, or composing with an IME each start a step of their own.
-    - Restoring a step emits `igcInput`, so composite hosts and two-way bindings follow the undo. For the date editors the restored text remains an uncommitted draft, and `igcChange` is emitted on blur only if the committed value actually changed.
-    - The history is kept across focus changes and is discarded when the value is set programmatically, when the control is reset by its form, or when the `mask`/`prompt`/`input-format` pattern changes.
-- #### Icon
-  - `registerIcon` and `registerIconFromText` now accept a `RegisterIconOptions` object as their third argument in addition to the existing plain collection string. Setting `stripMeta: true` removes `<title>` and `<desc>` elements from the stored SVG, preventing the browser from displaying a native tooltip on hover. The title text is still captured and exposed as the `aria-label` of the host `<igc-icon>` element. Any `aria-labelledby` / `aria-describedby` references on the root `<svg>` that pointed to the stripped elements' IDs are cleaned up automatically. [#1822](https://github.com/IgniteUI/igniteui-webcomponents/issues/1822)
-- #### QR Code
-  - Added the new `igc-qr-code` component. Renders a scannable QR code as an SVG based on the provided `value`, automatically encoding it in numeric, alphanumeric, or byte mode. [#2308](https://github.com/IgniteUI/igniteui-webcomponents/pull/2308)
-    - Supports an explicit `version` (1-40) and `error-level` (`L`/`M`/`Q`/`H`), or automatically picks the smallest version and level that fit the data.
-    - `size` and `margin` control the rendered pixel dimensions and the quiet zone (in modules) around the code.
-    - Optional branding logo via `logo-src`, with `logo-size` and `logo-margin` controlling how much of the code's safe, scannable area it covers; the error correction level is raised automatically to accommodate it unless explicitly set.
-    - `dot-style` and `square-style` customize the shape of the data modules and finder-pattern corners (`square`, `circle`, `rounded`).
-    - Themable via the `--ig-qr-code-background`, `--ig-qr-code-dark-color`, `--ig-qr-code-corner-square-color`, and `--ig-qr-code-corner-dot-color` CSS custom properties, and exposes `background`, `dots`, `corner-square`, and `corner-dot` CSS parts.
-- #### Splitter
-  - `startCollapsed` and `endCollapsed` properties for reading and programmatically setting the collapsed state of each pane.
-  - `igcLayoutChanged` event, emitted after a user-driven resize or expansion change, with a snapshot of the current layout (`startSize`, `endSize`, `startCollapsed`, `endCollapsed`).
-- #### Virtual Scroll
-  - Added the new `igc-virtual-scroll` component. It efficiently renders large or unbounded lists by only rendering the items currently within the viewport, plus a configurable `overScan`. [#2222](https://github.com/IgniteUI/igniteui-webcomponents/pull/2222)
-    - Supports both `vertical` and `horizontal` orientation, including RTL layouts.
-    - Item sizes may be fixed, estimated via `estimatedItemSize`, or fully variable - each rendered item is measured automatically and its estimate is corrected on the fly, without requiring any manual intervention.
-    - Added `scrollToIndex()` for programmatically scrolling to a given item, with configurable alignment (`block`/`inline`) and scroll `behavior` (`auto`/`smooth`). The target offset is automatically corrected as previously unmeasured items around it get measured, so the requested item ends up precisely aligned even when it wasn't previously rendered.
-    - Added the `igcDataRequest` event, emitted when the scroll position approaches the end of the currently loaded data, to support infinite-scroll / remote data loading scenarios.
-    - Added the `igcStateChange` event, emitted after each render pass with a snapshot of the current virtual window (`startIndex`, `endIndex`, `viewportSize`, `totalSize`).
-    - Added the `layoutComplete` property - a promise that resolves once the current render pass, and any follow-up renders triggered by item measurement, have fully settled.
-    - Transparently degrades past the maximum scroll coordinate supported by the browser, so lists far larger than the DOM would normally allow keep scrolling and rendering correctly.
+  - `igc-calendar` now exports the `label-inner`, `months-row` and `years-row` parts. The pickers export them as `calendar-label-inner`, `months-row` and `years-row`. The views rendered these parts but did not export them, thus you could not style them through the calendar.
 - #### Chip
-  - Added the `outlined` property to the component. When set to `true`, the Chip will have an outlined style. [#2307](https://github.com/IgniteUI/igniteui-webcomponents/pull/2307)
+  - `outlined` property. When you set it to `true`, the chip shows an outlined style. [#2307](https://github.com/IgniteUI/igniteui-webcomponents/pull/2307)
+- #### Icon
+  - `registerIcon` and `registerIconFromText` now accept a `RegisterIconOptions` object as their third argument, in addition to the plain collection string. [#1822](https://github.com/IgniteUI/igniteui-webcomponents/issues/1822)
+    - `stripMeta: true` removes the `<title>` and `<desc>` elements from the stored SVG. This prevents the native browser tooltip on hover.
+    - The title text stays available as the `aria-label` of the host `igc-icon` element.
+    - The component removes the `aria-labelledby` and `aria-describedby` references on the root `<svg>` that point to the removed elements.
+- #### Mask input, Date time input, Date range picker
+  - The masked editors now support the standard undo and redo shortcuts: `Ctrl + Z` / `Cmd + Z` to undo, and `Ctrl + Y`, `Ctrl + Shift + Z` / `Cmd + Shift + Z` to redo. These shortcuts did nothing before, because each render of the masked text sets the value of the native input and clears the browser undo stack.
+    - A sequence of typed characters, or a sequence of deletions, becomes one undo step. A caret movement, a paste, a drop, a cut, a spin of a date part, and an IME composition each start a new step.
+    - A restored step emits `igcInput`, thus composite hosts and two-way bindings follow the undo. In the date editors the restored text stays an uncommitted draft, and the component emits `igcChange` on blur only if the committed value changed.
+    - The history stays through focus changes. The component discards the history when you set the value programmatically, when the form resets the control, or when the `mask`, `prompt` or `input-format` pattern changes.
+- #### QR Code
+  - New `igc-qr-code` component. It renders a scannable QR code as an SVG from the `value` property, and encodes the data in numeric, alphanumeric or byte mode. [#2308](https://github.com/IgniteUI/igniteui-webcomponents/pull/2308)
+    - Set an explicit `version` (1-40) and `error-level` (`L`/`M`/`Q`/`H`), or let the component select the smallest version and level that hold the data.
+    - `size` and `margin` control the rendered pixel dimensions and the quiet zone (in modules) around the code.
+    - `logo-src` adds an optional branding logo. `logo-size` and `logo-margin` control how much of the scannable area the logo covers. The component increases the error correction level for the logo, unless you set the level.
+    - `dot-style` and `square-style` set the shape of the data modules and of the finder-pattern corners (`square`, `circle`, `rounded`).
+    - The `--ig-qr-code-background`, `--ig-qr-code-dark-color`, `--ig-qr-code-corner-square-color` and `--ig-qr-code-corner-dot-color` CSS custom properties control the theme. The component exposes the `background`, `dots`, `corner-square` and `corner-dot` CSS parts.
+- #### Splitter
+  - `startCollapsed` and `endCollapsed` properties. Use them to read and to set the collapsed state of each pane.
+  - `igcLayoutChanged` event. The component emits it after a user resize or a change of the expansion state. The payload holds the current layout (`startSize`, `endSize`, `startCollapsed`, `endCollapsed`).
 - #### Tabs
-  - `selectedTab` property, returning the selected `igc-tab` element or `null`.
-  - `select()` now matches a tab's `label` as well as its IDREF, so the value reported by `selected` can be passed back into it.
+  - `selectedTab` property. It returns the selected `igc-tab` element, or `null`.
+  - `select()` now also matches the `label` of a tab, in addition to its IDREF. Thus you can pass the value that `selected` reports back into it.
+- #### Virtual Scroll
+  - New `igc-virtual-scroll` component. It renders large or unbounded lists efficiently, because it renders only the items in the viewport plus a configurable `overScan`. [#2222](https://github.com/IgniteUI/igniteui-webcomponents/pull/2222)
+    - Supports `vertical` and `horizontal` orientation, and RTL layouts.
+    - Item sizes can be fixed, estimated with `estimatedItemSize`, or fully variable. The component measures each rendered item and corrects its estimate automatically.
+    - `scrollToIndex()` scrolls to a given item, with a configurable alignment (`block`/`inline`) and scroll `behavior` (`auto`/`smooth`). The component corrects the target offset while it measures the items around it, thus the requested item stops in the correct position.
+    - `igcDataRequest` event. The component emits it when the scroll position comes near the end of the loaded data. Use it for infinite scroll and for remote data.
+    - `igcStateChange` event. The component emits it after each render pass, with a snapshot of the current virtual window (`startIndex`, `endIndex`, `viewportSize`, `totalSize`).
+    - `layoutComplete` property. This promise resolves when the current render pass, and all subsequent renders that item measurement causes, are complete.
+    - The component operates correctly above the maximum scroll coordinate of the browser. Lists that are much larger than the DOM permits continue to scroll and to render correctly.
 
 ### Changed
-- #### Combo
-  - The dropdown list is now virtualized using the new `igc-virtual-scroll` component instead of the third-party `@lit-labs/virtualizer` package. [#2222](https://github.com/IgniteUI/igniteui-webcomponents/pull/2222)
-- #### Library
-  - Updated some of the optional peer dependencies (`dompurify`, `marked`, `shiki`) to their latest stable versions.
-  - Removed the `@lit-labs/virtualizer` dependency. Virtualization is now implemented internally by the new `igc-virtual-scroll` component. [#2222](https://github.com/IgniteUI/igniteui-webcomponents/pull/2222)
+- #### Button group
+  - **Behavioral change:** a disabled group no longer sets `disabled` on its buttons. The buttons inherit the state. Thus a button that is disabled on its own stays disabled when you enable the group again, and the buttons that you add to a disabled group are also disabled.
+  - Improved accessibility: the `single` and `single-required` modes expose a `radiogroup` with `radio` buttons, instead of toggle buttons with `aria-pressed`. The `focused` CSS part of `igc-toggle-button` is now documented.
 - #### Carousel
-  - The component now delegates focus, starting with its indicator container, navigation buttons, or the first focusable element in the active slide, whichever is available. Related to [#2291](https://github.com/IgniteUI/igniteui-webcomponents/issues/2291).
+  - The component now delegates focus to its indicator container, its navigation buttons, or the first focusable element in the active slide, in this sequence. Related to [#2291](https://github.com/IgniteUI/igniteui-webcomponents/issues/2291).
 - #### Chip
-  - The `focus-outline-color` and `focus-selected-outline-color` CSS variables were replaced with `focus-shadow-color` and `focus-selected-shadow-color`.
+  - The `focus-outline-color` and `focus-selected-outline-color` CSS variables are replaced by `focus-shadow-color` and `focus-selected-shadow-color`.
+- #### Combo
+  - The dropdown list now uses the new `igc-virtual-scroll` component instead of the third-party `@lit-labs/virtualizer` package. [#2222](https://github.com/IgniteUI/igniteui-webcomponents/pull/2222)
 - #### Date time input, Date picker, Date range picker
-  - **Behavioral change:** the `value` property of these components is no longer mutated while the user is typing. It now only ever holds a committed value and changes in lockstep with the `igcChange` event, which is still emitted when the editor loses focus. Previously `value` was updated on every keystroke - becoming `null` for an incomplete mask and the parsed date once the mask filled - without any event announcing it. [#1346](https://github.com/IgniteUI/igniteui-webcomponents/issues/1346)
-    - This makes the components usable in templates where `value` is externally bound, such as an edit template in `igc-grid`. Previously any re-render during typing re-applied the stale bound value and reset the editor, making it impossible to enter a new date.
-    - The value as it is being typed - including the result of spinning a date part or of `Ctrl + ;` - is available on the `detail` of the `igcInput` event, whose payload is unchanged.
-    - Spinning a date part while the editor is focused now also defers to the commit on blur. A programmatic `stepUp()` / `stepDown()` on an unfocused component still updates `value` immediately, as do `clear()`, `setRangeText()`, and direct assignments.
-    - For `igc-date-picker` and `igc-date-range-picker` the calendar keeps following the typed date while editing, as before.
+  - **Behavioral change:** the components no longer change the `value` property while the user types. `value` now holds only a committed value and changes together with the `igcChange` event, which the components still emit on blur. Before, `value` changed on each keystroke - it became `null` for an incomplete mask, and the parsed date when the mask was full - and no event announced the change. [#1346](https://github.com/IgniteUI/igniteui-webcomponents/issues/1346)
+    - Thus you can use the components in templates that bind `value` externally, such as an edit template in `igc-grid`. Before, each re-render during typing applied the stale bound value again and reset the editor, thus you could not enter a new date.
+    - The value that the user types - and the result of a spin of a date part or of `Ctrl + ;` - is available in the `detail` of the `igcInput` event. The payload of the event does not change.
+    - A spin of a date part in a focused editor also defers to the commit on blur. A programmatic `stepUp()` or `stepDown()` on an unfocused component changes `value` immediately, as do `clear()`, `setRangeText()` and direct assignments.
+    - In `igc-date-picker` and `igc-date-range-picker` the calendar continues to follow the typed date during editing, as before.
+- #### Dropdown
+  - **Behavioral change:** the component no longer emits `igcChange` when you select the item that is already selected. The list still closes, as before.
+  - Improved accessibility: the target element declares `aria-haspopup="listbox"` instead of `aria-haspopup="true"`. While the list is open, the target holds `aria-activedescendant` that points at the item that keyboard navigation is on, thus screen readers announce the highlight. The component sets an id only on items that have none. It also removes all the attributes that it wrote on the target when it no longer uses that target.
+- #### Library
+  - Updated the optional peer dependencies `dompurify`, `marked` and `shiki` to their latest stable versions.
+  - Removed the `@lit-labs/virtualizer` dependency. The new `igc-virtual-scroll` component now supplies the virtualization. [#2222](https://github.com/IgniteUI/igniteui-webcomponents/pull/2222)
 - #### Tabs
-  - **Behavioral change:** the scroll buttons now scroll to the nearest tab that is not fully in view, instead of stepping by a fixed 180px. A tab sitting underneath a scroll button counts as out of view, so one click brings exactly one tab into view without overshooting it.
-  - Improved accessibility: tab headers expose `aria-posinset` / `aria-setsize`, the strip declares its `aria-orientation`, and the selected panel is focusable so keyboard users can reach panel content that holds no focusable elements of its own. The strip also keeps a tab stop when nothing is selected.
-  - `igc-tab` elements projected through an intermediate slot are now picked up, so `igc-tabs` can be wrapped by another component.
+  - **Behavioral change:** the scroll buttons now scroll to the nearest tab that is not fully visible, instead of a fixed step of 180px. A tab below a scroll button counts as not visible. Thus one click brings exactly one tab into view and does not overshoot it.
+  - Improved accessibility: the tab headers expose `aria-posinset` and `aria-setsize`, the strip declares its `aria-orientation`, and the selected panel is focusable. Thus keyboard users can reach panel content that holds no focusable elements of its own. The strip also keeps a tab stop when no tab is selected.
+  - The component now finds `igc-tab` elements that come through an intermediate slot. Thus another component can wrap `igc-tabs`.
+- #### Tooltip
+  - **Behavioral change:** a tooltip that closes from a hide trigger now waits exactly `hide-delay`. Before, it waited through an additional, undocumented stage of 180ms, thus the real delay was `hide-delay + 180ms`.
+  - **Behavioral change:** in `sticky` mode the default close button hides the tooltip immediately and does not wait for `hide-delay`. Before, an explicit close took almost half a second.
+  - **Behavioral change:** `focusin` and `focusout` are now part of the default `show-triggers` and `hide-triggers`. Thus a tooltip opens when its anchor gets keyboard focus, and closes when the focus leaves the anchor.
+  - Improved accessibility: the anchor points at the tooltip with `aria-describedby`, thus screen readers announce the content as the description of the anchor. The tooltip generates an `id` only when it has none, keeps the references that are already on the anchor, and removes its own reference when it no longer describes the anchor.
+  - Improved accessibility: in `sticky` mode the default close action is a labelled `<button>` and not a bare icon. Thus you can reach and operate it from the keyboard. The new `close-button` CSS part exposes it.
 
 ### Fixed
+- #### Button group
+  - Single selection compared the values of the buttons. Thus buttons without a `value`, or with the same `value`, could not take the selection: a click on a second button only cleared the first. The component now tracks the selection per element. [#2229](https://github.com/IgniteUI/igniteui-webcomponents/issues/2229)
+  - `selectedItems` added to the current selection instead of a replacement of it, and ignored buttons whose `value` is an empty string.
+  - You could still interact with a disabled group through buttons that you added after the group became disabled.
+  - `focus()`, `blur()` and `click()` on `igc-toggle-button` threw an error when you called them before the first render.
+  - Toggle buttons that are not direct children of the group changed its selection state. This could keep two buttons selected in a single selection mode, or remove the selection.
 - #### Calendar
-  - A calendar showing several months announced every navigation once per visible month, because the off screen live region holding the current period was rendered together with each month's navigation. There is now a single live region for the whole calendar.
-  - A calendar showing more than one month exposed one tab stop per visible month, so tabbing through it stepped into every month's grid instead of leaving the calendar. Only the active days view now holds the tab stop of its active date.
-  - Time only date strings are resolved against the current local date rather than the UTC one, which shifted the parsed date by a day near midnight in some time zones.
-  - Stale `week-start` resolution until a subsequent update fixed the view. Now `week-start` is correctly resolved and rendered on initial render.
-  - Clamp keyboard navigation logic to a no-op when navigating over a large amount of disabled dates which could hang the browser.
+  - A calendar with more than one visible month announced each navigation one time per month, because the off-screen live region with the current period was part of the navigation of each month. There is now one live region for the full calendar.
+  - A calendar with more than one visible month exposed one tab stop per month. Thus the tab key moved into the grid of each month instead of out of the calendar. Only the active days view now holds the tab stop of its active date.
+  - The component now resolves time-only date strings against the current local date and not the UTC date. Before, the parsed date moved by one day near midnight in some time zones.
+  - `week-start` stayed stale until a subsequent update corrected the view. The component now resolves and renders `week-start` correctly on the initial render.
+  - Keyboard navigation over a large number of disabled dates could hang the browser. The navigation is now a no-op in this condition.
+- #### Chat
+  - With `adoptRootStyles` enabled the component ignored the stylesheets that entered the document after the initial adoption. Thus custom renderers whose styles are injected during view creation - Angular component styles, for example - showed unstyled content. The component now tracks the document stylesheets while the option is on, and applies each addition or removal to the shadow roots that adopted them, including stylesheet links that load later. [#2328](https://github.com/IgniteUI/igniteui-webcomponents/issues/2328)
+  - Adoption of the document styles no longer removes the theme styles of the message and the input parts. Before, the adoption built the stylesheet list from the static styles of the component only.
+- #### Dropdown
+  - `Enter` on an open dropdown before any arrow key threw a `TypeError` instead of doing nothing. The type of the item that keyboard navigation moves from declared that the item is always present, but the item is unset until you navigate the list or select something.
+  - Keyboard navigation stopped on a dropdown that opened at an explicit target, after a close and a subsequent open without that target, because the close removed the target together with its key event listeners. The component now keeps the target until another target replaces it.
+  - A dropdown that opened at an explicit target and then opened again through its own `target` slot stayed at the previous, detached element. The component now always resolves the current anchor and gives it to the popover.
+  - A call of `show()` with another target while the dropdown is open left `aria-expanded` on the previous element and leaked its key event listeners.
+  - `show()` with an id that matches no element threw a `TypeError`. An unresolved target now keeps the current target. When there is no anchor at all, `show()` returns `false` and does not open, because the popover cannot position a list without an anchor and the component would report itself open with nothing on screen.
+  - `clearSelection()` cleared the selection but kept keyboard navigation on the cleared item. Thus the next `ArrowDown` returned to that item instead of the top of the list.
+  - `selectedItem` continued to return an item that was removed from the DOM. The component now tracks the items that enter and leave the light DOM. It drops the selection when its item goes away, and navigation returns to the current selection.
+  - `aria-haspopup` and `aria-expanded` stayed on the target element after the removal of the dropdown from the DOM, or after another target replaced it.
+  - `igc-dropdown-header` had no role. Thus it stayed in the accessibility tree as a bare child of the `listbox`, which can own only `option` and `group` nodes. The component now removes it from the tree, as it already did for `igc-select-header`.
+  - The label of an `igc-dropdown-group` named nothing, because the component renders it in the shadow root of the group, out of reach of the host ARIA. Thus screen readers announced the groups without their label.
 - #### Form associated components
-  - Validation messages no longer disappear right after the first failed form submission. The submit-driven invalid state used to hold only for the update the submission itself scheduled, so any re-render that followed - a `slotchange` from the validation slots the submission had just projected, for instance - silently dropped the projected messages while the invalid styling stayed on.
-  - Invalid styling now follows the validity state, so a control that turns valid again (a cleared `required`, a widened `min`/`max`, a disabled control) drops the styles it picked up from an earlier interaction or submission.
+  - Validation messages no longer disappear immediately after the first failed form submission. The invalid state from the submission held only for the update that the submission scheduled. Thus a subsequent re-render - a `slotchange` from the validation slots, for example - removed the messages, but the invalid styles stayed.
+  - The invalid styles now follow the validity state. A control that becomes valid again - a cleared `required`, a wider `min`/`max`, a disabled control - now drops the styles from an earlier interaction or submission.
 - #### Highlight
-  - Matches stopped being painted in recent Firefox versions. `::highlight()` rules are tree-scoped - they only style text nodes belonging to the same tree scope as the stylesheet - but the component adopted them into its own shadow root, while the text it highlights is slotted content living in the host's tree scope. Earlier Firefox versions matched such rules across scopes, as Chromium still does, so the component rendered correctly there; once Firefox began enforcing the scoping, nothing was painted. The stylesheet is now adopted by the host's root node, and re-targeted if the component moves to another tree scope.
-  - As part of the same fix, a component nested inside another shadow root now resolves its `--background` / `--foreground` custom properties correctly in Chromium as well, instead of falling back to the theme defaults.
+  - Recent Firefox versions did not paint the matches. `::highlight()` rules are tree-scoped: they style only the text nodes in the same tree scope as the stylesheet. The component adopted the rules into its own shadow root, but the text that it highlights is slotted content in the tree scope of the host. Earlier Firefox versions applied such rules across scopes, as Chromium still does. The root node of the host now adopts the stylesheet, and the component adopts it again if it moves to another tree scope.
+  - The same fix lets a component inside another shadow root resolve its `--background` and `--foreground` custom properties correctly in Chromium. Before, it used the theme defaults.
+- #### Icon
+  - An icon that renders through a reference stayed blank when you registered the target icon later, because the component reacted only to registrations that match its own `name` and `collection` and not to the resolved target. It now resolves again on each change of the registry.
+  - `igc-icon` declares `role="img"` only when it has an accessible name: the `<title>` of the icon, or an `aria-label` or `aria-labelledby` on the host. Before, a decorative icon appeared in the accessibility tree as an image without a name.
 - #### Select
-  - Pressing `ArrowUp` on a closed select that already had a selection cleared it, leaving the placeholder behind, instead of moving to the previous item. The item keyboard navigation moves from was only ever assigned when an item was picked through the component's own selection path, so a selection established through the `value` property or through a `selected` attribute on an item left it unset, and stepping backwards from "no item" walked off the start of the list. Navigation now always starts from the current selection, and having nowhere to move to leaves the selection untouched.
-  - Type ahead threw a `TypeError` on a select that already had a selection, on the first character typed.
-  - Type ahead no longer swallows keyboard shortcuts. A printable key pressed together with `Ctrl`, `Cmd` or `Alt` was treated as a search character and had its default prevented, so `Ctrl + C` and friends never reached the browser.
-  - Choosing the already selected item from the open list - by click, `Enter` or type ahead - left the list open. It now closes and returns focus like any other selection, while still emitting no `igcChange`, since the selection did not change.
-  - A `value` assigned before the matching item exists is no longer discarded. Items are frequently rendered asynchronously by the consuming framework, and a value that matched nothing at first render was reset to `undefined`; it is now retained and resolves on its own once the item is added, including into an existing `igc-select-group`. Removing the selected item likewise drops the selection but keeps the value.
-  - `clearSelection()`, and assigning a `value` that matches no item, left the component still pointing at the previously selected item internally, which the next keyboard navigation then moved from.
-  - The text shown in the input is built from the selected item's main content only. Anything the item routes to its `prefix` / `suffix` slots used to be concatenated into it, along with any comment markers left among the item's children by the templating engine.
-  - `navigateTo()` no longer tries to focus and scroll the list while it is closed and inert.
-- #### Tree
-  - Substantially reduced the cost of several operations on large or deeply nested trees:
-    - Reading `path` on a tree item, and anything built on it such as activating a nested item, cost `2^depth` rather than `depth` because the ancestor chain was re-walked twice per level. A single read at depth 20 took ~23ms; it is now under a microsecond at any depth.
-    - Keyboard navigation is roughly 5x faster (~1.24ms to ~0.24ms per keypress on a 1554-item tree). The navigable set is derived by a lazy walk that prunes collapsed branches, instead of materializing every item and filtering it by climbing each one's ancestors.
-    - Removing a subtree while items are selected is roughly 2x faster (~134ms to ~71ms for 259 items in `cascade` mode). Each removed item used to re-run the full cascade reconciliation, although the topmost removed item already covers its whole subtree.
-    - `tree.items`, `select()` over a whole `cascade` tree, and expanding or collapsing every item are each ~25-45% faster.
+  - `ArrowUp` on a closed select that had a selection cleared the selection and showed the placeholder, instead of a move to the previous item. The component set the item that keyboard navigation moves from only through its own selection path. Thus a selection through the `value` property, or through a `selected` attribute on an item, left that item unset, and a backward step from "no item" went off the start of the list. Navigation now always starts from the current selection. If there is no item to move to, the selection does not change.
+  - Type-ahead threw a `TypeError` on the first character that you type, on a select that had a selection.
+  - Type-ahead no longer swallows keyboard shortcuts. The component used a printable key with `Ctrl`, `Cmd` or `Alt` as a search character and prevented its default. Thus `Ctrl + C` and similar shortcuts did not reach the browser.
+  - Selection of the item that is already selected from the open list - by click, `Enter` or type-ahead - kept the list open. The list now closes and the focus returns, as for any other selection. The component still emits no `igcChange`, because the selection does not change.
+  - The component no longer discards a `value` that you set before the matching item exists. Frameworks frequently render items asynchronously, and a value that matched nothing at the first render became `undefined`. The component now keeps the value and resolves it when you add the item, also into an existing `igc-select-group`. Removal of the selected item also drops the selection, but keeps the value.
+  - `clearSelection()`, and a `value` that matches no item, kept an internal reference to the item that was selected before, from which the next keyboard navigation then moved.
+  - The text in the input now comes only from the main content of the selected item. Before, it also held the content of the `prefix` and `suffix` slots of the item, and the comment markers that the templating engine left among its children.
+  - `navigateTo()` no longer tries to focus and to scroll the list while the list is closed and inert.
 - #### Tabs
-  - See-through scroll buttons in the Indigo theme. The buttons are sticky and the tab headers scroll underneath them, but the theme leaves both the buttons and the tabs strip transparent, so the scrolled headers showed through. The buttons now paint an opaque surface backdrop below their themed background. [#1955](https://github.com/IgniteUI/igniteui-webcomponents/issues/1955)
-  - `igcChange` was never emitted when `activation` is `manual` and a tab was activated with Enter or Space, so the selection changed silently.
-  - The selection is now kept in sync with the DOM in cases that previously left the component inconsistent:
-    - Setting `selected` to `false` on the active tab hid its panel but kept the tab internally active, so it could never be selected again.
-    - Removing the last remaining tab left a dangling reference that `selected` kept reporting.
-    - `select()`, the `selected` attribute and the initial selection could all activate a disabled tab, which clicking has always refused, and a tab marked both `selected` and `disabled` showed its panel alongside the selected one.
-    - Disabling the active tab left its panel visible under a greyed out header. Selection now moves to the first enabled tab, or is cleared when every tab is disabled.
+  - See-through scroll buttons in the Indigo theme. The buttons are sticky and the tab headers scroll below them, but the theme keeps the buttons and the tabs strip transparent, thus the scrolled headers were visible through the buttons. The buttons now paint an opaque surface backdrop below their themed background. [#1955](https://github.com/IgniteUI/igniteui-webcomponents/issues/1955)
+  - The component did not emit `igcChange` when `activation` is `manual` and you activate a tab with `Enter` or `Space`. Thus the selection changed without an event.
+  - The selection now stays in agreement with the DOM in conditions that made the component inconsistent:
+    - `selected` set to `false` on the active tab hid its panel, but the tab stayed active internally. Thus you could not select it again.
+    - Removal of the last tab left a dangling reference that `selected` continued to report.
+    - `select()`, the `selected` attribute and the initial selection could each activate a disabled tab, which a click always refused. A tab with `selected` and `disabled` showed its panel together with the selected panel.
+    - A disabled active tab kept its panel visible below a greyed-out header. The selection now moves to the first enabled tab, or clears if all tabs are disabled.
   - The start scroll button stayed enabled at the start of the strip under browser zoom or a non-integer device pixel ratio, where the scroll offset is fractional.
-  - Clicking a partially visible tab header scrolled the strip twice.
-  - Reduced rendering work: scrolling the strip no longer schedules an update per scroll event, and changing the selection no longer triggers a redundant layout pass.
+  - A click on a partially visible tab header scrolled the strip two times.
+  - Less rendering work: a scroll of the strip no longer schedules an update per scroll event, and a change of the selection no longer causes an unnecessary layout pass.
+- #### Tooltip
+  - `show()` and `hide()` did not cancel a queued transition in the opposite direction. Thus a tooltip could open immediately after a call to hide it, and close immediately after a call to show it.
+  - A pointer that moved back over the anchor during the hide animation closed the tooltip and kept it closed, although the pointer never left the anchor.
+  - Interaction with the original anchor, while a tooltip from `show(target)` was open, desynchronized the component: it reported `open === false` while it stayed on screen, and you could no longer close it.
+  - `with-arrow` set at runtime did not give the arrow element to the popover. Thus the arrow had no position and no styles until an unrelated re-render corrected it.
+  - Delayed show and hide transitions returned a promise that never settled.
+  - A close with `Escape` emitted `igcClosed` even when there was nothing to close.
+- #### Tree
+  - Large or deeply nested trees are much faster:
+    - A read of `path` on a tree item, and each operation built on it such as the activation of a nested item, cost `2^depth` and not `depth`, because the component walked the ancestor chain two times per level. One read at depth 20 took ~23ms; it now takes less than a microsecond at any depth.
+    - Keyboard navigation is approximately 5 times faster (~1.24ms to ~0.24ms per keypress on a tree with 1554 items). A lazy walk that prunes the collapsed branches now supplies the navigable set. Before, the component materialized all items and filtered them through the ancestors of each item.
+    - Removal of a subtree while items are selected is approximately 2 times faster (~134ms to ~71ms for 259 items in `cascade` mode). Before, each removed item ran the full cascade reconciliation again, although the topmost removed item covers its full subtree.
+    - `tree.items`, `select()` over a full `cascade` tree, and the expansion or the collapse of all items are each 25-45% faster.
 
 ## [7.2.4] - 2026-06-29
 ### Added

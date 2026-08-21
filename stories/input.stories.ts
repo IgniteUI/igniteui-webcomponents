@@ -1,10 +1,10 @@
+import type { Meta, StoryObj } from '@storybook/web-components-vite';
 import {
   IgcIconComponent,
   IgcInputComponent,
   defineComponents,
   registerIconFromText,
 } from 'igniteui-webcomponents';
-import type { Meta, StoryObj } from '@storybook/web-components-vite';
 import {
   disableStoryControls,
   formControls,
@@ -42,7 +42,10 @@ const metadata: Meta<IgcInputComponent> = {
       control: 'text',
     },
     type: {
-      type: '"text" | "email" | "number" | "password" | "search" | "tel" | "url"',
+      type: {
+        name: 'enum',
+        value: ['text', 'email', 'number', 'password', 'search', 'tel', 'url'],
+      },
       description: 'The type of the control.',
       options: ['text', 'email', 'number', 'password', 'search', 'tel', 'url'],
       control: { type: 'select' },

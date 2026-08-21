@@ -1,4 +1,5 @@
 import { html, LitElement } from 'lit';
+import { addInternalsController } from '#internals/controllers/internals.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import { styles } from './themes/dropdown-header.base.css.js';
@@ -13,7 +14,7 @@ import { styles as shared } from './themes/shared/header/dropdown-header.common.
  * @slot - Renders the header.
  */
 export default class IgcDropdownHeaderComponent extends LitElement {
-  public static readonly tagName: string = 'igc-dropdown-header';
+  public static readonly tagName = 'igc-dropdown-header';
   public static override styles = [styles, shared];
 
   /* blazorSuppress */
@@ -23,6 +24,11 @@ export default class IgcDropdownHeaderComponent extends LitElement {
 
   constructor() {
     super();
+
+    addInternalsController(this, {
+      initialARIA: { role: 'presentation' },
+      reflectRole: true,
+    });
     addThemingController(this, all);
   }
 
@@ -30,6 +36,7 @@ export default class IgcDropdownHeaderComponent extends LitElement {
     return html`<slot></slot>`;
   }
 }
+
 declare global {
   interface HTMLElementTagNameMap {
     'igc-dropdown-header': IgcDropdownHeaderComponent;

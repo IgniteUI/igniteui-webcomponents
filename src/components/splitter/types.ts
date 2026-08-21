@@ -20,8 +20,8 @@ interface PaneResizeSnapshot {
 interface SplitterResizeState {
   startPane: PaneResizeSnapshot | null;
   endPane: PaneResizeSnapshot | null;
-  isDragging: boolean;
   dragStartPosition: { x: number; y: number };
+  /** The active pointer id, or `-1` when no drag is in progress. */
   dragPointerId: number;
 }
 

@@ -1,4 +1,4 @@
-import { elementUpdated, expect, fixture } from '@open-wc/testing';
+import { elementUpdated, expect, fixture, nextFrame } from '@open-wc/testing';
 import { html, nothing } from 'lit';
 import { spy, stub, useFakeTimers } from 'sinon';
 import { enterKey, tabKey } from '#internals/controllers/key-bindings.js';
@@ -23,9 +23,9 @@ import IgcChipComponent from '../chip/chip.js';
 import IgcInputComponent from '../input/input.js';
 import IgcListItemComponent from '../list/list-item.js';
 import IgcTextareaComponent from '../textarea/textarea.js';
-import IgcChatComponent from './chat.js';
 import IgcChatInputComponent from './chat-input.js';
 import IgcChatMessageComponent from './chat-message.js';
+import IgcChatComponent from './chat.js';
 import IgcMessageAttachmentsComponent from './message-attachments.js';
 import type {
   ChatMessageRenderContext,
@@ -1058,15 +1058,41 @@ describe('Chat', () => {
       `);
     }
 
-    function verifyCustomStyles(state: boolean) {
+    function getCustomStyles() {
       const { messages } = getChatDOM(chat);
-      const { backgroundColor } = getComputedStyle(
+
+      return getComputedStyle(
         getChatMessageDOM(firstOf(messages)).content.querySelector(
           '.custom-background'
         )!
       );
+    }
 
-      expect(backgroundColor === 'rgb(255, 0, 0)').to.equal(state);
+    function getMessageStyleSheets() {
+      const { messages } = getChatDOM(chat);
+      return firstOf(messages).shadowRoot!.adoptedStyleSheets;
+    }
+
+    function verifyCustomStyles(state: boolean) {
+      expect(getCustomStyles().backgroundColor === 'rgb(255, 0, 0)').to.equal(
+        state
+      );
+    }
+
+    const lateStyles = `
+      .custom-background {
+        color: rgb(0, 0, 255);
+      }
+    `;
+
+    /** Mimics a custom renderer injecting global styles at a later point. */
+    function appendLateStyles(cssText = lateStyles) {
+      const styles = document.createElement('style');
+      styles.setAttribute('id', 'adopt-styles-test-late');
+      styles.innerHTML = cssText;
+      document.head.append(styles);
+
+      return styles;
     }
 
     beforeEach(async () => {
@@ -1087,6 +1113,8 @@ describe('Chat', () => {
 
     afterEach(() => {
       document.head.querySelector('#adopt-styles-test')?.remove();
+      document.head.querySelector('#adopt-styles-test-late')?.remove();
+      document.head.querySelector('#adopt-styles-test-meta')?.remove();
     });
 
     it('correctly applies `adoptRootStyles` when set', async () => {
@@ -1157,6 +1185,101 @@ describe('Chat', () => {
       // Toggle to true again
       chat.options = { ...chat.options, adoptRootStyles: true };
       await elementUpdated(chat);
+      verifyCustomStyles(true);
+    });
+
+    it('adopts stylesheets added to the document after the initial adoption', async () => {
+      await createAdoptedStylesChat({ adoptRootStyles: true });
+      await elementUpdated(chat);
+
+      verifyCustomStyles(true);
+      expect(getCustomStyles().color).to.not.equal('rgb(0, 0, 255)');
+
+      appendLateStyles();
+      await nextFrame();
+
+      expect(getCustomStyles().color).to.equal('rgb(0, 0, 255)');
+    });
+
+    it('adopts a stylesheet which is appended empty and populated afterwards', async () => {
+      await createAdoptedStylesChat({ adoptRootStyles: true });
+      await elementUpdated(chat);
+
+      const styles = appendLateStyles('');
+      await nextFrame();
+
+      expect(getCustomStyles().color).to.not.equal('rgb(0, 0, 255)');
+
+      styles.textContent = lateStyles;
+      await nextFrame();
+
+      expect(getCustomStyles().color).to.equal('rgb(0, 0, 255)');
+    });
+
+    it('adopts a stylesheet populated through the CSSOM on the next synchronization', async () => {
+      await createAdoptedStylesChat({ adoptRootStyles: true });
+      await elementUpdated(chat);
+
+      const styles = appendLateStyles('');
+      await nextFrame();
+
+      // Inserting a rule through the CSSOM mutates no DOM and keeps the same
+      // stylesheet object, so it is only observable through a later change.
+      styles.sheet!.insertRule('.custom-background { color: rgb(0, 0, 255); }');
+      await nextFrame();
+
+      document.head.append(
+        Object.assign(document.createElement('meta'), {
+          id: 'adopt-styles-test-meta',
+        })
+      );
+      await nextFrame();
+
+      expect(getCustomStyles().color).to.equal('rgb(0, 0, 255)');
+    });
+
+    it('removes adopted styles when their stylesheet is removed from the document', async () => {
+      await createAdoptedStylesChat({ adoptRootStyles: true });
+      await elementUpdated(chat);
+      verifyCustomStyles(true);
+
+      document.head.querySelector('#adopt-styles-test')!.remove();
+      await nextFrame();
+
+      verifyCustomStyles(false);
+    });
+
+    it('does not drop the component styles when adopting document styles', async () => {
+      await createAdoptedStylesChat({ adoptRootStyles: false });
+      await elementUpdated(chat);
+
+      const componentStyles = Array.from(getMessageStyleSheets());
+
+      await createAdoptedStylesChat({ adoptRootStyles: true });
+      await elementUpdated(chat);
+
+      const adopted = getMessageStyleSheets();
+
+      for (const sheet of componentStyles) {
+        expect(adopted.includes(sheet), 'component stylesheet was dropped').to
+          .be.true;
+      }
+      verifyCustomStyles(true);
+    });
+
+    it('re-adopts document styles when the host is reconnected', async () => {
+      await createAdoptedStylesChat({ adoptRootStyles: true });
+      await elementUpdated(chat);
+      verifyCustomStyles(true);
+
+      const parent = chat.parentElement!;
+
+      chat.remove();
+      await nextFrame();
+
+      parent.append(chat);
+      await elementUpdated(chat);
+
       verifyCustomStyles(true);
     });
   });

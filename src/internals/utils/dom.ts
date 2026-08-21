@@ -1,4 +1,5 @@
-import { numberInRangeInclusive } from './math.js';
+import { isServer } from 'lit';
+import { asNumber, numberInRangeInclusive } from './math.js';
 import { merge } from './objects.js';
 import { isDefined } from './types.js';
 
@@ -7,6 +8,77 @@ import { isDefined } from './types.js';
  */
 export function isLTR(element: HTMLElement) {
   return element.matches(':dir(ltr)');
+}
+
+const LENGTH_PROPERTY = '--igc-resolved-length';
+
+const SUPPORTS_REGISTERED_PROPERTIES =
+  !isServer && typeof CSS !== 'undefined' && 'registerProperty' in CSS;
+
+let lengthPropertyUsable: boolean | undefined;
+
+function canResolveLengths(): boolean {
+  if (lengthPropertyUsable === undefined) {
+    lengthPropertyUsable = SUPPORTS_REGISTERED_PROPERTIES;
+
+    if (lengthPropertyUsable) {
+      try {
+        CSS.registerProperty({
+          name: LENGTH_PROPERTY,
+          syntax: '<length>',
+          inherits: false,
+          initialValue: '0px',
+        });
+      } catch {
+        // The descriptor is a constant, so the only realistic rejection is a
+        // duplicate registration from another bundle instance - which leaves
+        // the property just as usable.
+      }
+    }
+  }
+
+  return lengthPropertyUsable;
+}
+
+/**
+ * Resolves a CSS length to pixels in the context of `element`.
+ *
+ * A registered custom property computes to an absolute length, which lets the
+ * browser do the conversion for font, viewport and container relative units
+ * instead of them being read as raw numbers. Percentages are not lengths -
+ * resolve those against whatever basis applies to the property at hand.
+ *
+ * Returns 0 for percentages, for values that are not valid lengths, and where
+ * the resolution is unavailable - during server-side rendering, or without
+ * support for registered custom properties. Guessing from the raw token would
+ * read `5rem` as 5 pixels, so callers get an obvious zero instead.
+ *
+ * @example
+ * ```typescript
+ * resolveCssLength(element, '5rem'); // 80
+ * resolveCssLength(element, '2em'); // 2 x the element font size
+ * ```
+ */
+export function resolveCssLength(element: HTMLElement, value: string): number {
+  if (!canResolveLengths()) {
+    return 0;
+  }
+
+  const { style } = element;
+  const previous = style.getPropertyValue(LENGTH_PROPERTY);
+  const priority = style.getPropertyPriority(LENGTH_PROPERTY);
+
+  style.setProperty(LENGTH_PROPERTY, value);
+  const resolved = getComputedStyle(element).getPropertyValue(LENGTH_PROPERTY);
+
+  // Restore rather than remove - the caller may be using the property itself.
+  if (previous) {
+    style.setProperty(LENGTH_PROPERTY, previous, priority);
+  } else {
+    style.removeProperty(LENGTH_PROPERTY);
+  }
+
+  return asNumber(resolved);
 }
 
 export type IterNodesOptions<T = Node> = {
@@ -50,6 +122,28 @@ export function* iterNodes<T extends Node>(
 
   while (treeWalker.nextNode()) {
     yield treeWalker.currentNode as T;
+  }
+}
+
+/**
+ * Iterates over `node` and its ancestors, crossing shadow DOM boundaries.
+ *
+ * Shadow roots are traversed through their host, so only elements are yielded.
+ *
+ * @example
+ * ```typescript
+ * for (const ancestor of iterAncestors(element)) { ... }
+ * ```
+ */
+export function* iterAncestors(node?: Node | null): Generator<Element> {
+  let current: Node | null | undefined = node;
+
+  while (current) {
+    if (isElement(current)) {
+      yield current;
+    }
+
+    current = current instanceof ShadowRoot ? current.host : current.parentNode;
   }
 }
 
@@ -154,22 +248,27 @@ export function isPopoverOpen(element?: Element): boolean {
 }
 
 /**
+ * Returns whether the given element, or any of its ancestors across shadow DOM
+ * boundaries, is positioned as `sticky`.
+ */
+export function hasStickyAncestor(element: Element): boolean {
+  for (const ancestor of iterAncestors(element)) {
+    if (getComputedStyle(ancestor).position === 'sticky') {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+/**
  * Returns the nearest visible ancestor of a given node, traversing through shadow DOM boundaries if necessary. If no visible ancestor is found, returns null.
  */
 export function getVisibleAncestor(startNode: Node): HTMLElement | null {
-  let node: Node | null = startNode.parentNode;
-
-  while (node) {
-    if (node instanceof ShadowRoot) {
-      node = node.host;
-      continue;
+  for (const ancestor of iterAncestors(startNode.parentNode)) {
+    if (ancestor instanceof HTMLElement && ancestor.checkVisibility()) {
+      return ancestor;
     }
-
-    if (node instanceof HTMLElement && node.checkVisibility()) {
-      return node;
-    }
-
-    node = node.parentNode;
   }
 
   return null;

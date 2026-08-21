@@ -11,14 +11,40 @@ on:
   pull_request:
     branches: [ master ]
 
-jobs:
-  build:
+# Superseding a pull request drops the run it replaces. Pushes to master are left
+# alone, so every commit that lands is validated on its own.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
+jobs:
+  quality:
+    # Static analysis over the sources — nothing in it depends on the Node version
+    # it runs under, so it runs once rather than on every entry of the test matrix,
+    # and it needs no browser.
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v7
+    - uses: actions/setup-node@v7
+      with:
+        node-version: '24'
+        cache: 'npm'
+    - run: npm ci
+    - run: npm run lint
+    # Components and stories import the style modules compiled from SCSS, so type
+    # checking needs them on disk. `lint` does not, and runs before the wait.
+    - run: npm run build:styles
+    - run: npm run check
+
+  test:
     runs-on: ubuntu-latest
 
     strategy:
+      # Report every version rather than cancelling the rest on the first failure.
+      fail-fast: false
       matrix:
-        node-version: [22.x, 24.x]
+        node-version: [24.x]
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
     steps:
@@ -29,12 +55,32 @@ jobs:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
     - run: npm ci
-    - run: npx playwright install --with-deps --only-shell chromium
-    - run: npm run lint
+
+    - name: Resolve the Playwright version
+      id: playwright
+      run: echo "version=$(node -p "require('playwright/package.json').version")" >> "$GITHUB_OUTPUT"
+
+    - name: Restore the Playwright browsers
+      id: playwright-cache
+      uses: actions/cache@v4
+      with:
+        path: ~/.cache/ms-playwright
+        key: playwright-${{ runner.os }}-${{ steps.playwright.outputs.version }}
+
+    # The browser binaries live in the cache, but the system libraries they link
+    # against are installed into the image and cannot be, so `install-deps` runs
+    # either way.
+    - name: Install the Playwright browsers
+      if: steps.playwright-cache.outputs.cache-hit != 'true'
+      run: npx playwright install --with-deps --only-shell chromium
+    - name: Install the Playwright system dependencies
+      if: steps.playwright-cache.outputs.cache-hit == 'true'
+      run: npx playwright install-deps chromium
+
     - run: npm run test
-    - run: npm run check
+
     - name: Publish to coveralls.io
-      if: matrix.node-version == '22.x'
+      if: matrix.node-version == '24.x'
       uses: coverallsapp/github-action@v2
       with:
           github-token: ${{ github.token }}

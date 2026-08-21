@@ -251,7 +251,6 @@ describe('Form associated mixin tests', () => {
   it('pressing Enter in an invalid control surfaces validation feedback', async () => {
     await createFormFixture({ required: true });
 
-    // biome-ignore lint/complexity/useLiteralKeys: Simulating the Enter key protected handler
     instance['_handleEnterKeydown'](
       new KeyboardEvent('keydown', { key: 'Enter' })
     );
@@ -262,7 +261,6 @@ describe('Form associated mixin tests', () => {
 
     instance.value = '123';
 
-    // biome-ignore lint/complexity/useLiteralKeys: Simulating the Enter key protected handler
     instance['_handleEnterKeydown'](
       new KeyboardEvent('keydown', { key: 'Enter' })
     );

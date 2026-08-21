@@ -313,7 +313,7 @@ export { default as IgcFooBarComponent } from './components/foobar/foobar.js';
   import { addSlotController } from '../../internals/controllers/slot.js';
   ```
 
-- Ordering is handled by Biome (`biome check --fix`) and needs no manual grouping. It produces
+- Ordering is handled by oxfmt (`npm run format`) and needs no manual grouping. It produces
   one contiguous block sorted by source: external packages, then `#` aliases, then `../`, then
   `./`, with type imports sorted by path alongside the rest rather than pushed to the end.
 
@@ -1257,8 +1257,8 @@ export const Basic: Story = {
 | ---------------------- | ----------------------------------------------------------------------- |
 | `npm run build:styles` | Transpiles SCSS into the generated `.css.ts` files                      |
 | `npm run check`        | Import aliases, dependency-cruiser rules and TypeScript (`check-types`) |
-| `npm run lint`         | Biome, lit-analyzer, Prettier and Stylelint                             |
-| `npm run format`       | Applies Biome and Prettier fixes                                        |
+| `npm run lint`         | oxlint, lit-analyzer, oxfmt and Stylelint                               |
+| `npm run format`       | Applies oxlint and oxfmt fixes                                          |
 | `npm run test`         | Builds styles and runs the Web Test Runner suite with coverage          |
 | `npm run cem`          | Regenerates `custom-elements.json` from the sources                     |
 | `npm run build:meta`   | Regenerates the story metadata regions                                  |

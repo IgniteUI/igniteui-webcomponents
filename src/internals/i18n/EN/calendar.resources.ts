@@ -26,5 +26,5 @@ export interface IgcCalendarResourceStrings {
 /** @deprecated since 7.2.0. Please use the newly provided resources from the igniteui-i18n-resources package. */
 export const IgcCalendarResourceStringEN: IgcCalendarResourceStrings = {
   ...convertToIgcResource(CalendarResourceStringsEN, 'calendar'),
-  ...{ weekLabel: 'Wk' },
+  weekLabel: 'Wk',
 };

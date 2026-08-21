@@ -39,11 +39,11 @@ import { isString } from '#internals/utils/types.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import IgcIconButtonComponent from '../button/icon-button.js';
 import type { TabsActivation, TabsAlignment } from '../types.js';
-import IgcTabComponent from './tab.js';
 import { createTabHelpers, getTabHeader } from './tab-dom.js';
+import IgcTabComponent from './tab.js';
 import { styles as shared } from './themes/shared/tabs/tabs.common.css.js';
-import { styles } from './themes/tabs.base.css.js';
 import { all } from './themes/tabs-themes.js';
+import { styles } from './themes/tabs.base.css.js';
 
 type TabSelectionOptions = {
   /** The tab to select. Omitting it clears the current selection. */

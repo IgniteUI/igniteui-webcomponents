@@ -4,13 +4,13 @@ import {
   github,
 } from '@igniteui/material-icons-extended';
 import type { Meta, StoryObj } from '@storybook/web-components-vite';
-import { html } from 'lit';
 import {
   IgcIconComponent,
   IgcSelectComponent,
   defineComponents,
   registerIconFromText,
 } from 'igniteui-webcomponents';
+import { html } from 'lit';
 import {
   disableStoryControls,
   formControls,
@@ -78,7 +78,23 @@ const metadata: Meta<IgcSelectComponent> = {
       control: 'text',
     },
     placement: {
-      type: '"top" | "top-start" | "top-end" | "bottom" | "bottom-start" | "bottom-end" | "right" | "right-start" | "right-end" | "left" | "left-start" | "left-end"',
+      type: {
+        name: 'enum',
+        value: [
+          'top',
+          'top-start',
+          'top-end',
+          'bottom',
+          'bottom-start',
+          'bottom-end',
+          'right',
+          'right-start',
+          'right-end',
+          'left',
+          'left-start',
+          'left-end',
+        ],
+      },
       description:
         'The preferred placement of the select dropdown around its input.',
       options: [
@@ -99,7 +115,7 @@ const metadata: Meta<IgcSelectComponent> = {
       table: { defaultValue: { summary: 'bottom-start' } },
     },
     scrollStrategy: {
-      type: '"scroll" | "block" | "close"',
+      type: { name: 'enum', value: ['scroll', 'block', 'close'] },
       description:
         'Determines the behavior of the component during scrolling of the parent container.',
       options: ['scroll', 'block', 'close'],

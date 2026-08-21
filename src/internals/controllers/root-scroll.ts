@@ -14,86 +14,108 @@ type RootScrollControllerHost = ReactiveControllerHost & {
 
 type ScrollRecord = { scrollTop: number; scrollLeft: number };
 
+/**
+ * `scroll` is not cancelable, so the listener never calls `preventDefault` and
+ * is registered as passive to keep it off the scrolling critical path.
+ */
+const scrollListenerOptions: AddEventListenerOptions = {
+  capture: true,
+  passive: true,
+};
+
+function readScroll(element: Element): ScrollRecord {
+  return { scrollTop: element.scrollTop, scrollLeft: element.scrollLeft };
+}
+
+function writeScroll(element: Element, record: ScrollRecord): void {
+  element.scrollTop = record.scrollTop;
+  element.scrollLeft = record.scrollLeft;
+}
+
 class RootScrollController implements ReactiveController {
-  private _cache: WeakMap<Element, ScrollRecord>;
+  private readonly _host: RootScrollControllerHost;
+  private _config?: RootScrollControllerConfig;
+  private _cache = new WeakMap<Element, ScrollRecord>();
 
   constructor(
-    private readonly host: RootScrollControllerHost,
-    private config?: RootScrollControllerConfig
+    host: RootScrollControllerHost,
+    config?: RootScrollControllerConfig
   ) {
-    this._cache = new WeakMap();
-    this.host.addController(this);
+    this._host = host;
+    this._config = config;
+    this._host.addController(this);
   }
 
-  private configureListeners() {
-    this.host.open ? this.addEventListeners() : this.removeEventListeners();
+  private _configureListeners(): void {
+    this._host.open ? this._addEventListeners() : this._removeEventListeners();
   }
 
-  private hide() {
-    this.config?.hideCallback
-      ? this.config.hideCallback.call(this.host)
-      : this.host.hide();
+  private _hide(): void {
+    this._config?.hideCallback
+      ? this._config.hideCallback.call(this._host)
+      : this._host.hide();
   }
 
-  private addEventListeners() {
-    if (this.host.scrollStrategy !== 'scroll') {
-      document.addEventListener('scroll', this, { capture: true });
+  private _addEventListeners(): void {
+    if (this._host.scrollStrategy !== 'scroll') {
+      document.addEventListener('scroll', this, scrollListenerOptions);
     }
   }
 
-  private removeEventListeners() {
-    document.removeEventListener('scroll', this, { capture: true });
+  private _removeEventListeners(): void {
+    document.removeEventListener('scroll', this, scrollListenerOptions);
     this._cache = new WeakMap();
   }
 
-  public handleEvent(event: Event) {
-    this.host.scrollStrategy === 'close' ? this.hide() : this._block(event);
+  /** @internal */
+  public handleEvent(event: Event): void {
+    this._host.scrollStrategy === 'close' ? this._hide() : this._block(event);
   }
 
-  private _block(event: Event) {
-    event.preventDefault();
+  private _block(event: Event): void {
     const element = event.target as Element;
-    const cache = this._cache;
+    const child = element.firstElementChild;
 
-    if (!cache.has(element)) {
-      cache.set(element, {
-        scrollTop: element.firstElementChild?.scrollTop ?? element.scrollTop,
-        scrollLeft: element.firstElementChild?.scrollLeft ?? element.scrollLeft,
-      });
+    let record = this._cache.get(element);
+
+    if (!record) {
+      record = readScroll(child ?? element);
+      this._cache.set(element, record);
     }
 
-    const record = cache.get(element)!;
-    Object.assign(element, record);
+    writeScroll(element, record);
 
-    if (element.firstElementChild) {
-      Object.assign(element.firstElementChild, record);
+    if (child) {
+      writeScroll(child, record);
     }
   }
 
-  public update(config?: RootScrollControllerConfig) {
+  public update(config?: RootScrollControllerConfig): void {
     if (config) {
-      this.config = { ...this.config, ...config };
+      this._config = { ...this._config, ...config };
     }
 
     if (config?.resetListeners) {
-      this.removeEventListeners();
+      this._removeEventListeners();
     }
 
-    this.configureListeners();
+    this._configureListeners();
   }
 
-  public hostConnected() {
-    this.configureListeners();
+  /** @internal */
+  public hostConnected(): void {
+    this._configureListeners();
   }
 
-  public hostDisconnected() {
-    this.removeEventListeners();
+  /** @internal */
+  public hostDisconnected(): void {
+    this._removeEventListeners();
   }
 }
 
 export function addRootScrollHandler(
   host: RootScrollControllerHost,
   config?: RootScrollControllerConfig
-) {
+): RootScrollController {
   return new RootScrollController(host, config);
 }

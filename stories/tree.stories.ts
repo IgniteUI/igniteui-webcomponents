@@ -48,7 +48,7 @@ const metadata: Meta<IgcTreeComponent> = {
       table: { defaultValue: { summary: 'false' } },
     },
     selection: {
-      type: '"none" | "multiple" | "cascade"',
+      type: { name: 'enum', value: ['none', 'multiple', 'cascade'] },
       description: 'The selection state of the tree.',
       options: ['none', 'multiple', 'cascade'],
       control: { type: 'inline-radio' },

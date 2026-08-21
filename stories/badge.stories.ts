@@ -53,7 +53,10 @@ const metadata: Meta<IgcBadgeComponent> = {
   },
   argTypes: {
     variant: {
-      type: '"primary" | "info" | "success" | "warning" | "danger"',
+      type: {
+        name: 'enum',
+        value: ['primary', 'info', 'success', 'warning', 'danger'],
+      },
       description: 'The type (style variant) of the badge.',
       options: ['primary', 'info', 'success', 'warning', 'danger'],
       control: { type: 'select' },
@@ -66,7 +69,7 @@ const metadata: Meta<IgcBadgeComponent> = {
       table: { defaultValue: { summary: 'false' } },
     },
     shape: {
-      type: '"rounded" | "square"',
+      type: { name: 'enum', value: ['rounded', 'square'] },
       description: 'The shape of the badge.',
       options: ['rounded', 'square'],
       control: { type: 'inline-radio' },

@@ -1,4 +1,10 @@
-import { html, LitElement, nothing, type TemplateResult } from 'lit';
+import {
+  html,
+  LitElement,
+  nothing,
+  type PropertyValues,
+  type TemplateResult,
+} from 'lit';
 import { property, query, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
@@ -18,7 +24,7 @@ import { FormAssociatedCheckboxRequiredMixin } from '#internals/mixins/forms/ass
 import { FormValueBooleanTransformers } from '#internals/mixins/forms/form-transformers.js';
 import { createFormValueState } from '#internals/mixins/forms/form-value.js';
 import { partMap } from '#internals/part-map.js';
-import { isEmpty, lastOf } from '#internals/utils/arrays.js';
+import { lastOf } from '#internals/utils/arrays.js';
 import { isLTR } from '#internals/utils/dom.js';
 import { wrap } from '#internals/utils/math.js';
 import { createIdGenerator } from '#internals/utils/strings.js';
@@ -26,10 +32,10 @@ import { isString } from '#internals/utils/types.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import type { ToggleLabelPosition } from '../types.js';
 import IgcValidationContainerComponent from '../validation-container/validation-container.js';
+import { addRadioGroupController, getGroupMembers } from './controller.js';
 import { styles } from './themes/radio.base.css.js';
 import { styles as shared } from './themes/shared/radio.common.css.js';
 import { all } from './themes/themes.js';
-import { getGroup } from './utils.js';
 import { radioValidators } from './validators.js';
 
 export interface IgcRadioChangeEventArgs {
@@ -85,6 +91,15 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
   private readonly _inputId = nextId();
   private readonly _labelId = `radio-label-${this._inputId}`;
   private readonly _focusRingManager = addKeyboardFocusRing(this);
+
+  /**
+   * Keeps the roving tab index of the group. The checked radio is the only tab
+   * stop. If the group has no selection, each radio is a tab stop.
+   */
+  private readonly _group = addRadioGroupController(this, (hasCheckedRadio) => {
+    this._tabIndex = !hasCheckedRadio || this.checked ? 0 : -1;
+  });
+
   private readonly _slots = addSlotController(this, {
     slots: setSlots('helper-text', 'value-missing', 'custom-error', 'invalid'),
     onChange: this._handleSlotChange,
@@ -106,24 +121,24 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
   @state()
   private _tabIndex = 0;
 
-  /** Returns all radio elements from the group, that is having the same name property. */
-  private get _radios() {
-    return getGroup(this).radios;
+  /** All radios of the group, that is having the same name property, in DOM order. */
+  private get _radios(): IgcRadioComponent[] {
+    return getGroupMembers(this);
   }
 
-  /** All sibling radio elements of the one invoking the getter. */
-  private get _siblings() {
-    return getGroup(this).siblings;
+  /** All radios of the group except the one that invokes the getter. */
+  private get _siblings(): IgcRadioComponent[] {
+    return this._radios.filter((radio) => radio !== this);
   }
 
-  /** All non-disabled radio elements from the group. */
-  private get _active() {
-    return getGroup(this).active;
+  /** All radios of the group that are not disabled. */
+  private get _active(): IgcRadioComponent[] {
+    return this._radios.filter((radio) => !radio.disabled);
   }
 
-  /** All checked radio elements from the group. */
-  private get _checkedRadios() {
-    return getGroup(this).checked;
+  /** All radios of the group that are checked. */
+  private get _checkedRadios(): IgcRadioComponent[] {
+    return this._radios.filter((radio) => radio.checked);
   }
 
   @property({ type: Boolean, reflect: true })
@@ -164,10 +179,17 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
    */
   @property({ type: Boolean })
   public set checked(value: boolean) {
+    const previous = this.checked;
+
     this._formValue.setValueAndFormState(value);
-    this._tabIndex = this.checked ? 0 : -1;
     if (this.hasUpdated && this.checked) {
       this._updateCheckedState();
+    }
+
+    // The tab stop is a state of the group, so a change of the selection derives it
+    // again. A write of the same state leaves the group as it is.
+    if (this.checked !== previous) {
+      this._group.sync();
     }
   }
 
@@ -197,6 +219,18 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
       .set(arrowDown, () => this._navigate(1));
   }
 
+  protected override willUpdate(properties: PropertyValues<this>): void {
+    // The name is the identity of a group, so a new name moves this radio to another one.
+    if (properties.has('name')) {
+      this._group.updateMembership();
+    }
+
+    // The tab stop of the group depends on which of its radios are disabled.
+    if (properties.has('disabled')) {
+      this._group.sync();
+    }
+  }
+
   protected override async firstUpdated(): Promise<void> {
     await this.updateComplete;
 
@@ -215,9 +249,9 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
   }
 
   protected override _setDefaultValue(current: string | null): void {
-    // The base mixin passes 'true' when the `checked` attribute is present and
-    // null when it is removed - `isString` mirrors that contract (`isDefined`
-    // would treat null as present and re-check the radio on form reset).
+    // The base mixin passes 'true' if the `checked` attribute is present, and null
+    // if it is removed. `isDefined` would accept null as present and check the radio
+    // again on a form reset.
     this._formValue.defaultValue = isString(current);
     for (const radio of this._siblings) {
       radio.defaultChecked = false;
@@ -225,10 +259,9 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
   }
 
   /**
-   * Restores the default state directly instead of through the `checked`
-   * setter: setting `checked` to true unchecks all siblings, which would
-   * corrupt the pristine state of radios the browser has already reset
-   * during the same `form.reset()` pass.
+   * Restores the default state without the `checked` setter. That setter unchecks all
+   * siblings, which damages the state of the radios that the browser already reset in
+   * the same `form.reset()` pass.
    */
   protected override _restoreDefaultValue(): void {
     const checked = this.checked;
@@ -298,23 +331,8 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
 
   protected override formResetCallback(): void {
     super.formResetCallback();
-    this._resetTabIndexes();
+    this._group.sync();
     this.updateComplete.then(() => this._validate());
-  }
-
-  /** Called after a form reset callback to restore default keyboard navigation. */
-  private _resetTabIndexes(): void {
-    const radios = this._radios;
-
-    if (isEmpty(this._checkedRadios)) {
-      for (const radio of radios) {
-        radio._tabIndex = 0;
-      }
-    } else {
-      for (const radio of radios) {
-        radio._tabIndex = radio.checked ? 0 : -1;
-      }
-    }
   }
 
   protected _handleClick(event: PointerEvent) {

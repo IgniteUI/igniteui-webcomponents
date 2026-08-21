@@ -2,7 +2,7 @@ import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import { spy, stub } from 'sinon';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
 import { suppressResizeObserverLoopError } from '#internals/testing/helpers.spec.js';
-import type { VirtualScrollItemContext, VirtualScrollState } from './types.js';
+import type { VirtualScrollState } from './types.js';
 import IgcVirtualScrollComponent, {
   type VirtualScrollItemTemplate,
 } from './virtualization.js';
@@ -17,9 +17,8 @@ describe('VirtualScroll', () => {
     return Array.from({ length: count }, (_, i) => `Item ${i}`);
   }
 
-  const itemTemplate: VirtualScrollItemTemplate<string> = (
-    ctx: VirtualScrollItemContext<string>
-  ) => html`<span>${ctx.value}</span>`;
+  const itemTemplate: VirtualScrollItemTemplate<unknown> = (ctx) =>
+    html`<span>${ctx.value}</span>`;
 
   describe('Accessibility', () => {
     it('passes the a11y audit', async () => {
@@ -363,7 +362,7 @@ describe('VirtualScroll', () => {
     it('keeps the requested index aligned once real item sizes differ from the estimate', async () => {
       const count = 500;
       const realItemSize = 30; // smaller than the default estimatedItemSize (50)
-      const sizedTemplate: VirtualScrollItemTemplate<string> = (ctx) =>
+      const sizedTemplate: VirtualScrollItemTemplate<unknown> = (ctx) =>
         html`<span style="display: block; height: ${realItemSize}px;"
           >${ctx.value}</span
         >`;
@@ -396,7 +395,7 @@ describe('VirtualScroll', () => {
     it('keeps a far-away, smooth-scrolled index aligned in a large list', async () => {
       const count = 5000;
       const realItemSize = 32; // smaller than the default estimatedItemSize (50)
-      const sizedTemplate: VirtualScrollItemTemplate<string> = (ctx) =>
+      const sizedTemplate: VirtualScrollItemTemplate<unknown> = (ctx) =>
         html`<span style="display: block; height: ${realItemSize}px;"
           >${ctx.value}</span
         >`;
@@ -427,7 +426,7 @@ describe('VirtualScroll', () => {
     });
 
     it('scrollToIndex with nearest leaves an item that already fills the viewport alone', async () => {
-      const tallTemplate: VirtualScrollItemTemplate<string> = (ctx) =>
+      const tallTemplate: VirtualScrollItemTemplate<unknown> = (ctx) =>
         html`<span style="display: block; height: 400px;">${ctx.value}</span>`;
 
       const el = await fixture<IgcVirtualScrollComponent<string>>(
@@ -574,7 +573,7 @@ describe('VirtualScroll', () => {
 
     it('does not override the size of items already measured in the DOM', async () => {
       const realItemSize = 30;
-      const sizedTemplate: VirtualScrollItemTemplate<string> = (ctx) =>
+      const sizedTemplate: VirtualScrollItemTemplate<unknown> = (ctx) =>
         html`<span style="display: block; height: ${realItemSize}px;"
           >${ctx.value}</span
         >`;

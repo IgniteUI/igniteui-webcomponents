@@ -1,6 +1,6 @@
 import { lastOf, partition } from '#internals/utils/arrays.js';
-import type IgcTileComponent from './tile.js';
 import type IgcTileManagerComponent from './tile-manager.js';
+import type IgcTileComponent from './tile.js';
 
 class TilesState {
   private _nextEmptyPosition = 0;

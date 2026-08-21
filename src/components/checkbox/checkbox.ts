@@ -8,8 +8,8 @@ import { createIdGenerator } from '#internals/utils/strings.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import IgcValidationContainerComponent from '../validation-container/validation-container.js';
 import { IgcCheckboxBaseComponent } from './checkbox-base.js';
-import { styles } from './themes/checkbox.base.css.js';
 import { all } from './themes/checkbox-themes.js';
+import { styles } from './themes/checkbox.base.css.js';
 import { styles as shared } from './themes/shared/checkbox/checkbox.common.css.js';
 
 const nextId = createIdGenerator('checkbox');

@@ -184,7 +184,6 @@ function* getFocusableElements<T extends HTMLElement>(
     (node) => shouldSkipElements(node, _cache)
   );
 
-  // biome-ignore lint/suspicious/noAssignInExpressions: short-form
   while ((node = visitor.nextNode() as T)) {
     if (_cache.has(node)) {
       continue;

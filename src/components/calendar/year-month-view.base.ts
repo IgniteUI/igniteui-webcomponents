@@ -11,8 +11,8 @@ import { chunk } from '#internals/utils/arrays.js';
 import { addSafeEventListener } from '#internals/utils/events.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import { getViewElement } from './helpers.js';
-import { all } from './themes/year-month.js';
 import { styles } from './themes/year-month-view.base.css.js';
+import { all } from './themes/year-month.js';
 import type { IgcCalendarViewComponentEventMap } from './types.js';
 
 /** A single cell of a year/month view. */

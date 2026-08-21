@@ -1,0 +1,13 @@
+{
+  // Type-checks the Storybook sources, which the root config leaves out. They are
+  // consumed by Vite rather than by Node, so they are checked the way Vite resolves
+  // them — several dependencies ship extensionless relative re-exports in their own
+  // declarations, which `nodenext` resolves to nothing at all.
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "noEmit": true
+  },
+  "include": ["../stories/**/*.ts", "../.storybook/**/*.ts"]
+}

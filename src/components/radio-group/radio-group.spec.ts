@@ -1,6 +1,13 @@
-import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
+import {
+  elementUpdated,
+  expect,
+  fixture,
+  html,
+  nextFrame,
+} from '@open-wc/testing';
 import { spy } from 'sinon';
 
+import { internalsOf } from '#internals/controllers/internals.js';
 import {
   arrowDown,
   arrowLeft,
@@ -197,6 +204,243 @@ describe('Radio Group Component', () => {
       });
     });
 
+    describe('Dynamic children', () => {
+      function tabIndexOf(radio: IgcRadioComponent): number {
+        return radio.renderRoot.querySelector('input')!.tabIndex;
+      }
+
+      beforeEach(async () => {
+        group = await fixture(createGroupWithInitialState());
+        radios = Array.from(group.querySelectorAll(IgcRadioComponent.tagName));
+      });
+
+      it('adopts a radio added at runtime', async () => {
+        const added = await appendRadio({ value: 'kiwi' });
+
+        expect(added.name).to.equal(group.name);
+        expect(added.checked).to.be.false;
+        expect(tabIndexOf(added)).to.equal(-1);
+        expect(group.value).to.equal('orange');
+      });
+
+      it('a radio added at runtime is part of the single selection', async () => {
+        const added = await appendRadio({ value: 'kiwi' });
+
+        added.click();
+        await elementUpdated(added);
+
+        expect(radios.every((radio) => !radio.checked)).to.be.true;
+        expect(added.checked).to.be.true;
+        expect(group.value).to.equal('kiwi');
+      });
+
+      it('a radio added at runtime is part of the keyboard navigation', async () => {
+        const added = await appendRadio({ value: 'kiwi' });
+        const last = lastOf(radios);
+
+        last.click();
+        await elementUpdated(last);
+
+        simulateKeyboard(last, arrowDown);
+        await elementUpdated(added);
+
+        expect(isFocused(added)).to.be.true;
+        expect(group.value).to.equal('kiwi');
+      });
+
+      it('applies `defaultValue` to a radio added at runtime', async () => {
+        group.defaultValue = 'kiwi';
+        await elementUpdated(group);
+
+        const added = await appendRadio({ value: 'kiwi' });
+
+        expect(added.defaultChecked).to.be.true;
+        expect(radios.every((radio) => !radio.defaultChecked)).to.be.true;
+      });
+
+      it('applies a pending `value` to a radio added at runtime', async () => {
+        group.value = 'kiwi';
+        await elementUpdated(group);
+
+        // No match yet - reading the value must not discard the pending one
+        expect(group.value).to.be.empty;
+
+        const added = await appendRadio({ value: 'kiwi' });
+
+        expect(added.checked).to.be.true;
+        expect(group.value).to.equal('kiwi');
+      });
+
+      it('does not steal an active selection from the radios', async () => {
+        const first = firstOf(radios);
+
+        first.click();
+        await elementUpdated(first);
+
+        const added = await appendRadio({ value: 'orange' });
+
+        expect(added.checked).to.be.false;
+        expect(group.value).to.equal(first.value);
+      });
+
+      it('drops a radio removed at runtime', async () => {
+        const checked = radios.find((radio) => radio.checked)!;
+
+        checked.remove();
+        await waitForSlotChange();
+
+        expect(group.value).to.be.empty;
+      });
+
+      it('restores the tab stop when the checked radio is removed', async () => {
+        group = await fixture(createDefaultGroup());
+        radios = Array.from(group.querySelectorAll(IgcRadioComponent.tagName));
+
+        const [first, ...remaining] = radios;
+
+        first.click();
+        await elementUpdated(first);
+
+        expect(remaining.every((radio) => tabIndexOf(radio) === -1)).to.be.true;
+
+        first.remove();
+        await waitForSlotChange();
+        await Promise.all(remaining.map((radio) => elementUpdated(radio)));
+
+        expect(remaining.every((radio) => tabIndexOf(radio) === 0)).to.be.true;
+      });
+
+      it('keeps the checked radio as the sole tab stop when another is removed', async () => {
+        const checked = radios.find((radio) => radio.checked)!;
+        const unchecked = radios.filter((radio) => radio !== checked);
+
+        firstOf(unchecked).remove();
+        await waitForSlotChange();
+        await Promise.all(radios.map((radio) => elementUpdated(radio)));
+
+        expect(tabIndexOf(checked)).to.equal(0);
+        expect(tabIndexOf(lastOf(unchecked))).to.equal(-1);
+      });
+
+      it('restores the tab stop when the radio matching a pending `value` is removed', async () => {
+        // The group `value` stays 'orange' after the removal. Re-applying it unchecks
+        // the remaining radios, which must not leave them out of the tab order.
+        const checked = radios.find((radio) => radio.checked)!;
+        const remaining = radios.filter((radio) => radio !== checked);
+
+        checked.remove();
+        await waitForSlotChange();
+        await Promise.all(remaining.map((radio) => elementUpdated(radio)));
+
+        expect(group.value).to.be.empty;
+        expect(remaining.every((radio) => tabIndexOf(radio) === 0)).to.be.true;
+      });
+    });
+
+    describe('Custom states and layout', () => {
+      function hasState(state: string): boolean {
+        return group.matches(`:state(${state})`);
+      }
+
+      it('reports the `disabled` state of its radios', async () => {
+        group = await fixture(html`
+          <igc-radio-group name="fruit">
+            <igc-radio value="apple" disabled>Apple</igc-radio>
+            <igc-radio value="orange">Orange</igc-radio>
+          </igc-radio-group>
+        `);
+
+        expect(hasState('disabled')).to.be.false;
+
+        group.querySelector('igc-radio[value="orange"]')!.remove();
+        await waitForSlotChange();
+
+        expect(hasState('disabled')).to.be.true;
+      });
+
+      it('does not report a group without radios as disabled', async () => {
+        group = await fixture(createDefaultGroup());
+
+        for (const radio of group.querySelectorAll(IgcRadioComponent.tagName)) {
+          radio.remove();
+        }
+        await waitForSlotChange();
+
+        expect(hasState('disabled')).to.be.false;
+      });
+
+      it('reports the `label-before` state of its radios', async () => {
+        group = await fixture(createDefaultGroup());
+
+        expect(hasState('label-before')).to.be.false;
+
+        await appendRadio({ labelPosition: 'before' });
+
+        expect(hasState('label-before')).to.be.true;
+      });
+
+      it('counts only the radios for the layout of the group', async () => {
+        group = await fixture(html`
+          <igc-radio-group name="fruit" alignment="horizontal">
+            <label>Pick one</label>
+            <igc-radio value="apple">Apple</igc-radio>
+            <igc-radio value="orange">Orange</igc-radio>
+          </igc-radio-group>
+        `);
+
+        expect(group.style.getPropertyValue('--layout-count')).to.equal('2');
+      });
+    });
+
+    describe('ARIA', () => {
+      beforeEach(async () => {
+        group = await fixture(createGroupWithInitialState());
+      });
+
+      it('exposes its role as a content attribute', async () => {
+        expect(group.getAttribute('role')).to.equal('radiogroup');
+      });
+
+      it('mirrors `alignment` in aria-orientation', async () => {
+        expect(internalsOf(group)?.getARIA('ariaOrientation')).to.equal(
+          'vertical'
+        );
+
+        group.alignment = 'horizontal';
+        await elementUpdated(group);
+
+        expect(internalsOf(group)?.getARIA('ariaOrientation')).to.equal(
+          'horizontal'
+        );
+      });
+    });
+
+    describe('Clearing group state', () => {
+      beforeEach(async () => {
+        group = await fixture(createGroupWithInitialState());
+        radios = Array.from(group.querySelectorAll(IgcRadioComponent.tagName));
+      });
+
+      it('clearing `name` clears the names of its radios', async () => {
+        group.name = '';
+        await elementUpdated(group);
+
+        expect(radios.every((radio) => radio.name === '')).to.be.true;
+      });
+
+      it('clearing `defaultValue` clears the default state of its radios', async () => {
+        group.defaultValue = 'orange';
+        await elementUpdated(group);
+
+        expect(radios.some((radio) => radio.defaultChecked)).to.be.true;
+
+        group.defaultValue = '';
+        await elementUpdated(group);
+
+        expect(radios.every((radio) => !radio.defaultChecked)).to.be.true;
+      });
+    });
+
     describe('Form integration', () => {
       let form: HTMLFormElement;
       let formData: FormData;
@@ -385,6 +629,26 @@ describe('Radio Group Component', () => {
       });
     });
   });
+
+  /** Waits out the `slotchange` of a change in the light DOM of the group. */
+  async function waitForSlotChange(): Promise<void> {
+    await nextFrame();
+    await elementUpdated(group);
+  }
+
+  /** Adds a radio with the given `props` to the current group at runtime. */
+  async function appendRadio(
+    props: Partial<IgcRadioComponent>
+  ): Promise<IgcRadioComponent> {
+    const radio = document.createElement(IgcRadioComponent.tagName);
+    Object.assign(radio, props);
+
+    group.append(radio);
+    await waitForSlotChange();
+    await elementUpdated(radio);
+
+    return radio;
+  }
 
   function createDefaultGroup() {
     return html`
