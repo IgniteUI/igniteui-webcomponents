@@ -22,3 +22,9 @@ $theme: $material;
 igc-icon-button:hover::part(icon) {
     color: var(--hover-foreground);
 }
+
+@media (forced-colors: active) {
+    [part~='selected-indicator'] span {
+        border: rem(1px) solid CanvasText;
+    }
+}

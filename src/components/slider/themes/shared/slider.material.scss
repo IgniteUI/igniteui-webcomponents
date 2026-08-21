@@ -74,3 +74,9 @@ $thumb-radius: math.div($thumb-size, 2);
         color: var-get($theme, 'disabled-fill-track-color');
     }
 }
+
+@media (forced-colors: active) {
+    [part='thumb focused'] {
+        border: rem(1px) solid;
+    }
+}

@@ -46,3 +46,15 @@
 [part='trigger']:focus {
     outline: none;
 }
+
+@media (forced-colors: active) {
+    [part~='trigger-side'],
+    [part~='trigger'],
+    [part~='trigger-bottom'] {
+        border: rem(1px) solid Highlight;
+    }
+
+    [part~='resize-base'][part~='active']::after {
+        --resize-indicator: Highlight;
+    }
+}

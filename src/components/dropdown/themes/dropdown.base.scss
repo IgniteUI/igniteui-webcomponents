@@ -11,3 +11,9 @@
     min-width: rem(112px);
     z-index: 10005;
 }
+
+@media (forced-colors: active) {
+    :host [part='base'] {
+        border: rem(1px) solid CanvasText;
+    }
+}

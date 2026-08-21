@@ -192,3 +192,28 @@ slot {
     pointer-events: none;
     cursor: initial;
 }
+
+@media (forced-colors: active) {
+    [part='track'],
+    [part='thumb'],
+    [part='thumb-label-inner'] {
+        border: rem(1px) solid CanvasText;
+    }
+
+    [part~='thumbs'] [part~='thumb'][part~='focused'] {
+        border-color: Highlight;
+    }
+
+    [part~='thumbs'] [part='thumb-label-inner'] {
+        &::after {
+            border-top: none;
+        }
+    }
+
+    :host(:disabled) {
+        [part='track'],
+        [part~='thumbs'] [part='thumb'] {
+            border-color: GrayText;
+        }
+    }
+}

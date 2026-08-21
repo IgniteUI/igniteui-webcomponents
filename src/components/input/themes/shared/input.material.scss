@@ -760,3 +760,9 @@ $fs: rem(16px) !default;
         @extend %floated-styles;
     }
 }
+
+@media (forced-colors: active) {
+    :host(:not([outlined])) [part~='container'] [part='notch'] {
+        border-top: none;
+    }
+}

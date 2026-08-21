@@ -128,3 +128,20 @@ textarea {
         }
     }
 }
+
+@media (forced-colors: active) {
+    :host(:focus-within) [part~='container'] {
+        border-color: Highlight;
+    }
+
+    :host([disabled]),
+    :host(:disabled) {
+        [part~='container'] {
+            border-color: GrayText;
+        }
+
+        [part~='label'] {
+            color: GrayText;
+        }
+    }
+}

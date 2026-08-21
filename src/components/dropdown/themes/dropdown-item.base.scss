@@ -50,3 +50,13 @@
 
     margin-inline-start: pad-inline(rem(8px));
 }
+
+@media (forced-colors: active) {
+    :host(:hover) {
+        color: Highlight !important;
+
+        ::slotted(igc-icon) {
+            color: Highlight !important;
+        }
+    }
+}

@@ -160,3 +160,36 @@ $row-gap: rem(4px);
 [part~='hidden'] {
     visibility: hidden;
 }
+
+@media (forced-colors: active) {
+    :host {
+        [part~='current'] {
+            --date-current-border-color: LinkText;
+            --date-current-hover-border-color: LinkText;
+            --date-current-focus-border-color: LinkText;
+        }
+
+        [part~='inactive'] [part~='inactive'] {
+            border: none;
+        }
+
+        [part~='selected'] {
+            --date-selected-border-color: Highlight;
+            --date-selected-focus-border-color: Highlight;
+            --date-selected-hover-border-color: Highlight;
+            --date-selected-current-border-color: Highlight;
+            --date-selected-current-focus-border-color: Highlight;
+            --date-selected-current-hover-border-color: Highlight;
+        }
+
+        [part~='disabled'] {
+            --date-border-color: GrayText;
+            --date-disabled-foreground: GrayText;
+        }
+
+        [part~='date'][part~='last'][part~='range'][part~='preview'],
+        [part~='date'][part~='first'][part~='range'][part~='preview'] {
+            border-block: 0;
+        }
+    }
+}

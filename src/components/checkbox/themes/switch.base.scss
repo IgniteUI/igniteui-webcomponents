@@ -81,3 +81,29 @@ input[type='checkbox'] {
         margin-inline-start: var(--thumb-offset);
     }
 }
+
+@media (forced-colors: active) {
+    [part~='thumb']:hover {
+        border-width: rem(2px);
+    }
+
+    [part='control focused'] [part~='thumb'],
+    [part='control checked focused'] [part='thumb checked'] {
+        outline: rem(2px) solid Highlight;
+        transition: none;
+    }
+
+    :host([disabled]),
+    :host(:disabled) {
+        --border-disabled-color: GrayText;
+        --label-disabled-color: GrayText;
+
+        [part~='thumb'] {
+            border-color: GrayText;
+        }
+
+        [part~='base'] [part~='control'][part~='checked'] {
+            border-color: GrayText;
+        }
+    }
+}

@@ -55,3 +55,9 @@
 :host([dot]) [part~='base'] {
     border-radius: calc(var(--_badge-size) * 2);
 }
+
+@media (forced-colors: active) {
+    [part~='base'] {
+        border: rem(1px) solid CanvasText;
+    }
+}
