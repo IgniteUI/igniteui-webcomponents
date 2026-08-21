@@ -4,7 +4,7 @@ import { createAbortHandle } from '#internals/abort-handler.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { bindIf } from '#internals/utils/lit.js';
 import { clamp } from '#internals/utils/math.js';
-import { nanoid } from '#internals/utils/strings.js';
+import { createIdGenerator } from '#internals/utils/strings.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import type { QRCodeMatrixResult } from './model/matrix.js';
 import { generateQRCodeMatrix } from './model/matrix.js';
@@ -24,6 +24,8 @@ import type {
   QrDotStyle,
   QrErrorCorrectionLevel,
 } from './types.js';
+
+const nextMaskId = createIdGenerator('igc-qr-code-mask');
 
 /**
  *
@@ -53,7 +55,7 @@ export default class IgcQrCodeComponent extends LitElement {
   }
 
   private readonly _abortHandle = createAbortHandle();
-  private readonly _maskId = nanoid(8);
+  private readonly _maskId = nextMaskId();
   private readonly _maskUrl = `url(#${this._maskId})`;
   private _matrixCache?: {
     value: string;
