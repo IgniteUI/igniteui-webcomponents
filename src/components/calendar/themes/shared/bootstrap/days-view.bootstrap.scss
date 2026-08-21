@@ -635,3 +635,31 @@ $border-size: rem(1px);
     }
 }
 
+@media (forced-colors: active) {
+    :host {
+        [part~='date'] {
+            border-block: none;
+        }
+
+        [part~='special'] [part~='special']::after {
+            width: var-get($theme, 'inner-size');
+            height: var-get($theme, 'inner-size');
+        }
+
+        [part~='date'][part~='range'][part~='selected'] {
+            border-block: rem(1px) solid CanvasText;
+
+            &[part~='first'],
+            &[part~='last'] {
+                border-block: 0;
+            }
+        }
+
+        [part~='date'][part~='last'][part~='range'][part~='preview'],
+        [part~='date'][part~='first'][part~='range'][part~='preview'] {
+            &::after {
+                border-block-width: rem(3px);
+            }
+        }
+    }
+}

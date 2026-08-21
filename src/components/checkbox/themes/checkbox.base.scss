@@ -108,3 +108,28 @@ label {
         order: -1;
     }
 }
+
+@media (forced-colors: active) {
+    [part~='control'] {
+        --tick-color: CanvasText;
+    }
+
+    :host([disabled]) [part~='base'],
+    :host(:disabled) [part~='base'] {
+        [part~='control']::after,
+        [part~='control'] {
+            border-color: GrayText;
+            --disabled-tick-color: GrayText;
+        }
+
+        [part~='label'] {
+            color: GrayText;
+        }
+    }
+
+
+    :host(:focus) [part~='control']::after,
+    :host(:hover) [part~='control']::after {
+        border-color: Highlight !important;
+    }
+}

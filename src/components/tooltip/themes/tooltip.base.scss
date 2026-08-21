@@ -41,3 +41,9 @@ slot[name='close-button'] {
         --component-size: 1;
     }
 }
+
+@media (forced-colors: active) {
+    :host [part~='base'] {
+        border: rem(1px) solid CanvasText;
+    }
+}

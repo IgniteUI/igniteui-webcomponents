@@ -168,3 +168,9 @@
 [part~='hidden'] {
     display: none;
 }
+
+@media (forced-colors: active) {
+    :host [part~='fill'] {
+        border-top: rem(2px) solid CanvasText;
+    }
+}

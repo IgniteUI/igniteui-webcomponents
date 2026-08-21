@@ -128,3 +128,24 @@ $theme: $bootstrap;
         }
     }
 }
+
+@media (forced-colors: active) {
+    :host([selected]) [part~='tab-header']::before {
+        border: rem(1px) solid CanvasText;
+        border-bottom: 0;
+    }
+
+    :host([selected]) [part~='tab-header']:focus::before {
+        outline: rem(1px) solid Highlight;
+        outline-offset: rem(-1px);
+    }
+
+    :host(:not([selected])) [part~='tab-header']::before {
+        border-bottom: rem(1px) solid CanvasText;
+        --_border-size: 0;
+    }
+
+    :host(:not([selected])) [part~='tab-header']:hover::before {
+        border: rem(1px) solid CanvasText;
+    }
+}

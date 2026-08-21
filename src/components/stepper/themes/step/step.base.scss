@@ -288,3 +288,25 @@
         cursor: default;
     }
 }
+
+@media (forced-colors: active) {
+    [part~='indicator'] {
+        border: rem(1px) solid CanvasText;
+    }
+
+    [part~='header'] {
+        &:hover,
+        &:focus {
+            outline-offset: rem(-1px);
+            background: none !important;
+        }
+
+        &:hover {
+            outline: rem(1px) solid CanvasText;
+        }
+
+        &:focus {
+            outline: rem(1px) solid Highlight;
+        }
+    }
+}

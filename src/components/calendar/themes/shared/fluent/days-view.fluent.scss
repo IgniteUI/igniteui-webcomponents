@@ -725,3 +725,39 @@ $fake-bg-position: calc(50% - (var-get($theme, 'size') / 2));
         background: var-get($theme, 'date-selected-range-focus-background');
     }
 }
+
+@media (forced-colors: active) {
+    :host {
+        [part~='date'] {
+            border-block: none;
+        }
+
+        [part~='selected'] {
+            --date-selected-current-border-color: LinkText;
+            --date-selected-current-focus-border-color: LinkText;
+        }
+
+        [part~='week-number-inner']::after {
+            height: rem(6px);
+            bottom: 100%;
+        }
+
+        [part~='date'][part~='range'][part~='selected'] {
+            border-block: rem(1px) solid CanvasText;
+
+            &[part~='first'],
+            &[part~='last'] {
+                border-block: 0;
+
+                &::before {
+                    border-block-color: Highlight;
+                    border-inline-color: Highlight;
+                }
+            }
+        }
+
+        [part~='date'][part~='range'][part~='preview'] {
+            border-block: rem(1px) solid CanvasText;
+        }
+    }
+}

@@ -60,3 +60,16 @@
         gap: rem(8px);
     }
 }
+
+@media (forced-colors: active) {
+    :host igc-focus-trap {
+        igc-calendar {
+            border: rem(1px) solid CanvasText;
+        }
+
+        [part~='actions'] {
+            border: 1px solid canvastext;
+            border-block-start: 0;
+        }
+    }
+}

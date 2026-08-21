@@ -31,3 +31,9 @@ $theme: $indigo;
 
     color: var-get($theme, 'banner-message-color');
 }
+
+@media (forced-colors: active) {
+    [part~='spacer'] {
+        border: rem(1px) solid CanvasText;
+    }
+}
