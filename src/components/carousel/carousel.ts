@@ -80,6 +80,7 @@ const i18n: I18nControllerConfig<ICarouselResourceStrings> = {
  * @element igc-carousel
  *
  * @slot Default slot for the carousel. Any carousel slides should be projected here.
+ * @slot indicator - Renders the custom indicators of the carousel. An indicator element sets this slot itself.
  * @slot previous-button - Renders content inside the previous button.
  * @slot next-button - Renders content inside the next button.
  *
@@ -121,16 +122,22 @@ export default class IgcCarouselComponent extends I18nMixin(
 
   private readonly _carouselId = nextId();
   private _paused = false;
-  private _lastInterval!: ReturnType<typeof setInterval> | null;
+  private _lastInterval: ReturnType<typeof setInterval> | null = null;
   private _hasKeyboardInteractionOnIndicators = false;
   private _hasPointerInteraction = false;
   private _hasInnerFocus = false;
+
+  /**
+   * Whether an interaction - a pointer over the carousel, or focus inside it -
+   * caused the current paused state. An explicit `pause()` call does not set it.
+   */
+  private _pausedByInteraction = false;
 
   private _slides: IgcCarouselSlideComponent[] = [];
   private _projectedIndicators: IgcCarouselIndicatorComponent[] = [];
 
   @state()
-  private _activeSlide!: IgcCarouselSlideComponent;
+  private _activeSlide?: IgcCarouselSlideComponent;
 
   @state()
   private _playing = false;
@@ -159,6 +166,13 @@ export default class IgcCarouselComponent extends I18nMixin(
     return !isEmpty(this._projectedIndicators);
   }
 
+  /** The indicators that the carousel shows. */
+  private get _indicators(): IgcCarouselIndicatorComponent[] {
+    return this._hasProjectedIndicators
+      ? this._projectedIndicators
+      : Array.from(this._defaultIndicators);
+  }
+
   private get _showIndicatorsLabel(): boolean {
     return this.total > this.maximumIndicatorsCount;
   }
@@ -177,14 +191,18 @@ export default class IgcCarouselComponent extends I18nMixin(
 
   /**
    * Whether the carousel should skip rotating to the first slide after it reaches the last.
+   *
    * @attr disable-loop
+   * @default false
    */
   @property({ type: Boolean, reflect: true, attribute: 'disable-loop' })
   public disableLoop = false;
 
   /**
    * Whether the carousel should ignore use interactions and not pause on them.
+   *
    * @attr disable-pause-on-interaction
+   * @default false
    */
   @property({
     type: Boolean,
@@ -195,28 +213,36 @@ export default class IgcCarouselComponent extends I18nMixin(
 
   /**
    * Whether the carousel should skip rendering of the default navigation buttons.
+   *
    * @attr hide-navigation
+   * @default false
    */
   @property({ type: Boolean, reflect: true, attribute: 'hide-navigation' })
   public hideNavigation = false;
 
   /**
    * Whether the carousel should render the indicator controls (dots).
+   *
    * @attr hide-indicators
+   * @default false
    */
   @property({ type: Boolean, reflect: true, attribute: 'hide-indicators' })
   public hideIndicators = false;
 
   /**
    * Whether the carousel has vertical alignment.
+   *
    * @attr vertical
+   * @default false
    */
   @property({ type: Boolean, reflect: true })
   public vertical = false;
 
   /**
-   * Sets the orientation of the indicator controls (dots).
+   * The orientation of the indicator controls (dots).
+   *
    * @attr indicators-orientation
+   * @default end
    */
   @property({ attribute: 'indicators-orientation' })
   public indicatorsOrientation: CarouselIndicatorsOrientation = 'end';
@@ -270,50 +296,46 @@ export default class IgcCarouselComponent extends I18nMixin(
 
   /**
    * The maximum number of indicator controls (dots) that can be shown. Default value is `10`.
+   *
    * @attr maximum-indicators-count
+   * @default 10
    */
   @property({ type: Number, attribute: 'maximum-indicators-count' })
   public maximumIndicatorsCount = 10;
 
   /**
    * The animation type.
+   *
    * @attr animation-type
+   * @default 'slide'
    */
   @property({ attribute: 'animation-type' })
   public animationType: HorizontalTransitionAnimation = 'slide';
 
   /* blazorSuppress */
-  /**
-   * The slides of the carousel.
-   */
+  /** The slides of the carousel. */
   public get slides(): IgcCarouselSlideComponent[] {
     return Array.from(this._slides);
   }
 
-  /**
-   * The total number of slides.
-   */
+  /** Total number of slides. */
   public get total(): number {
     return this._slides.length;
   }
 
-  /**
-   * The index of the current active slide.
-   */
+  /** The index of the current active slide. */
   public get current(): number {
-    return Math.max(0, this._slides.indexOf(this._activeSlide));
+    return this._activeSlide
+      ? Math.max(0, this._slides.indexOf(this._activeSlide))
+      : 0;
   }
 
-  /**
-   * Whether the carousel is in playing state.
-   */
+  /** Whether the carousel is in playing state. */
   public get isPlaying(): boolean {
     return this._playing;
   }
 
-  /**
-   * Whether the carousel in in paused state.
-   */
+  /** Whether the carousel is in paused state. */
   public get isPaused(): boolean {
     return this._paused;
   }
@@ -377,12 +399,30 @@ export default class IgcCarouselComponent extends I18nMixin(
 
   protected override willUpdate(changedProperties: PropertyValues<this>): void {
     if (changedProperties.has('interval')) {
-      if (!this.isPlaying) {
-        this._playing = true;
-      }
+      const play = asNumber(this.interval) > 0;
+      const interacting =
+        play &&
+        !this.disablePauseOnInteraction &&
+        (this._hasPointerInteraction || this._hasInnerFocus);
 
+      this._setRotation(play && !interacting, interacting);
+      this._pausedByInteraction = interacting;
+    }
+  }
+
+  /** @internal */
+  public override connectedCallback(): void {
+    super.connectedCallback();
+
+    if (this.hasUpdated) {
       this._restartInterval();
     }
+  }
+
+  /** @internal */
+  public override disconnectedCallback(): void {
+    this._resetInterval();
+    super.disconnectedCallback();
   }
 
   protected override async firstUpdated(): Promise<void> {
@@ -390,10 +430,12 @@ export default class IgcCarouselComponent extends I18nMixin(
     // Republish for consumers created after their own first render (Blazor timing).
     this._context.publish();
 
-    if (!isEmpty(this._slides)) {
-      this._activateSlide(
-        this._slides.findLast((slide) => slide.active) ?? firstOf(this._slides)
-      );
+    this._activateInitialSlide();
+  }
+
+  protected override updated(): void {
+    if (this._hasProjectedIndicators) {
+      this._updateProjectedIndicators();
     }
   }
 
@@ -406,9 +448,11 @@ export default class IgcCarouselComponent extends I18nMixin(
       return;
     }
 
-    const idx = this._slides.indexOf(
-      added.length ? lastOf(added).node : lastOf(attributes).node
-    );
+    const node = isEmpty(added)
+      ? (lastOf(attributes)?.node ?? lastOf(activeSlides))
+      : lastOf(added).node;
+
+    const idx = this._slides.indexOf(node);
 
     for (const [i, slide] of this._slides.entries()) {
       if (slide.active && i !== idx) {
@@ -427,9 +471,20 @@ export default class IgcCarouselComponent extends I18nMixin(
     params: SlotChangeCallbackParameters<InferSlotNames<typeof Slots>>
   ): void {
     if (params.isDefault || params.isInitial) {
+      const previousSlide = this._activeSlide;
+      const previousIndex = this.current;
+
       this._slides = this._slots.getAssignedElements('[default]', {
         selector: IgcCarouselSlideComponent.tagName,
       });
+
+      if (previousSlide && !this._slides.includes(previousSlide)) {
+        this._reactivateSlide(previousSlide, previousIndex);
+      } else if (this.hasUpdated && !this._activeSlide) {
+        // Slides came into an empty carousel after the first render. Without
+        // this, no slide is active, and the carousel shows nothing.
+        this._activateInitialSlide();
+      }
     }
 
     if (params.slot === 'indicator') {
@@ -441,10 +496,7 @@ export default class IgcCarouselComponent extends I18nMixin(
 
   private _handlePointerInteraction(event: PointerEvent): void {
     this._hasPointerInteraction = event.type === 'pointerenter';
-
-    if (!this._hasInnerFocus) {
-      this._handlePauseOnInteraction();
-    }
+    this._handlePauseOnInteraction();
   }
 
   private _handleFocusInteraction(event: FocusEvent): void {
@@ -457,21 +509,16 @@ export default class IgcCarouselComponent extends I18nMixin(
     }
 
     this._hasInnerFocus = event.type === 'focusin';
-
-    if (!this._hasPointerInteraction) {
-      this._handlePauseOnInteraction();
-    }
+    this._handlePauseOnInteraction();
   }
 
-  private async _handleIndicatorClick(event: PointerEvent): Promise<void> {
+  private _handleIndicatorClick(event: PointerEvent): void {
     const indicator = getElementFromPath(
       IgcCarouselIndicatorComponent.tagName,
       event
     )!;
 
-    const index = this._hasProjectedIndicators
-      ? this._projectedIndicators.indexOf(indicator)
-      : Array.from(this._defaultIndicators).indexOf(indicator);
+    const index = this._indicators.indexOf(indicator);
 
     this._handleInteraction(() =>
       this.select(this._slides[index], index > this.current ? 'next' : 'prev')
@@ -482,24 +529,24 @@ export default class IgcCarouselComponent extends I18nMixin(
 
   //#region Keyboard event listeners
 
-  private async _handleArrowLeft(): Promise<void> {
+  private _handleArrowLeft(): void {
     this._hasKeyboardInteractionOnIndicators = true;
     this._handleInteraction(isLTR(this) ? this.prev : this.next);
   }
 
-  private async _handleArrowRight(): Promise<void> {
+  private _handleArrowRight(): void {
     this._hasKeyboardInteractionOnIndicators = true;
     this._handleInteraction(isLTR(this) ? this.next : this.prev);
   }
 
-  private async _handleHomeKey(): Promise<void> {
+  private _handleHomeKey(): void {
     this._hasKeyboardInteractionOnIndicators = true;
     this._handleInteraction(() =>
       this.select(isLTR(this) ? firstOf(this._slides) : lastOf(this._slides))
     );
   }
 
-  private async _handleEndKey(): Promise<void> {
+  private _handleEndKey(): void {
     this._hasKeyboardInteractionOnIndicators = true;
     this._handleInteraction(() =>
       this.select(isLTR(this) ? lastOf(this._slides) : firstOf(this._slides))
@@ -552,6 +599,8 @@ export default class IgcCarouselComponent extends I18nMixin(
       this.emitEvent('igcSlideChanged', { detail: this.current });
     }
 
+    this._hasKeyboardInteractionOnIndicators = false;
+
     if (this.interval) {
       this._restartInterval();
     }
@@ -560,10 +609,18 @@ export default class IgcCarouselComponent extends I18nMixin(
   private _handlePauseOnInteraction(): void {
     if (!this.interval || this.disablePauseOnInteraction) return;
 
-    if (this.isPlaying) {
-      this.pause();
+    const interacting = this._hasPointerInteraction || this._hasInnerFocus;
+
+    if (interacting) {
+      if (!this.isPlaying) return;
+
+      this._pause();
+      this._pausedByInteraction = true;
       this.emitEvent('igcPaused');
-    } else {
+      return;
+    }
+
+    if (this._pausedByInteraction) {
       this.play();
       this.emitEvent('igcPlaying');
     }
@@ -578,23 +635,67 @@ export default class IgcCarouselComponent extends I18nMixin(
     this._activeSlide.active = true;
 
     if (this._hasKeyboardInteractionOnIndicators) {
-      this._hasProjectedIndicators
-        ? this._projectedIndicators[this.current].focus()
-        : this._defaultIndicators[this.current].focus();
-
+      this._indicators[this.current]?.focus();
       this._hasKeyboardInteractionOnIndicators = false;
     }
   }
 
-  private _updateProjectedIndicators(): void {
-    for (const [idx, slide] of this._slides.entries()) {
-      const indicator = this._projectedIndicators[idx];
-      indicator.active = slide.active;
-      indicator.index = idx;
+  /** Activates the authored active slide, or the first slide. */
+  private _activateInitialSlide(): void {
+    if (!isEmpty(this._slides)) {
+      this._activateSlide(
+        this._slides.findLast((slide) => slide.active) ?? firstOf(this._slides)
+      );
     }
+  }
 
-    if (this._activeSlide) {
-      this.setAttribute('aria-controls', this._activeSlide.id);
+  /**
+   * Moves the active state from a slide that left the carousel to the slide
+   * that takes its position.
+   */
+  private _reactivateSlide(
+    removed: IgcCarouselSlideComponent,
+    index: number
+  ): void {
+    removed.active = false;
+    this._activeSlide = undefined;
+
+    if (!isEmpty(this._slides)) {
+      this._activateSlide(this._slides[Math.min(index, this.total - 1)]);
+    }
+  }
+
+  private _updateProjectedIndicators(): void {
+    const current = this.current;
+
+    for (const [idx, indicator] of this._projectedIndicators.entries()) {
+      const slide = this._slides.at(idx);
+
+      indicator.active = Boolean(slide) && idx === current;
+      indicator.index = idx;
+
+      if (slide) {
+        indicator.setAttribute('aria-controls', slide.id);
+      } else {
+        indicator.removeAttribute('aria-controls');
+      }
+    }
+  }
+
+  /**
+   * Sets the rotation state of the carousel, and starts or clears its timer.
+   */
+  private _setRotation(playing: boolean, paused = false): void {
+    this._playing = playing;
+    this._paused = paused;
+    this._pausedByInteraction = false;
+    this._restartInterval();
+  }
+
+  /** Stops the rotation, and keeps the interaction state as it is. */
+  private _pause(): void {
+    if (this.isPlaying) {
+      this._setRotation(false, true);
     }
   }
 
@@ -608,20 +709,23 @@ export default class IgcCarouselComponent extends I18nMixin(
   private _restartInterval(): void {
     this._resetInterval();
 
-    if (asNumber(this.interval) > 0) {
-      this._lastInterval = setInterval(() => {
-        if (
-          this.isPlaying &&
-          this.total &&
-          !(this.disableLoop && this._nextIndex === 0)
-        ) {
-          this.select(this.slides[this._nextIndex], 'next');
-          this.emitEvent('igcSlideChanged', { detail: this.current });
-        } else {
-          this.pause();
-        }
-      }, this.interval);
+    // A detached carousel starts no timer. The reconnect starts it again.
+    if (!this.isConnected || !this.isPlaying || asNumber(this.interval) <= 0) {
+      return;
     }
+
+    this._lastInterval = setInterval(() => {
+      if (
+        this.isPlaying &&
+        this.total &&
+        !(this.disableLoop && this._nextIndex === 0)
+      ) {
+        this.select(this._slides[this._nextIndex], 'next');
+        this.emitEvent('igcSlideChanged', { detail: this.current });
+      } else {
+        this._pause();
+      }
+    }, this.interval);
   }
 
   private async _animateSlides(
@@ -655,9 +759,7 @@ export default class IgcCarouselComponent extends I18nMixin(
    */
   public play(): void {
     if (!this.isPlaying) {
-      this._paused = false;
-      this._playing = true;
-      this._restartInterval();
+      this._setRotation(true);
     }
   }
 
@@ -665,11 +767,8 @@ export default class IgcCarouselComponent extends I18nMixin(
    * Pauses the rotation of the carousel slides.
    */
   public pause(): void {
-    if (this.isPlaying) {
-      this._playing = false;
-      this._paused = true;
-      this._resetInterval();
-    }
+    this._pause();
+    this._pausedByInteraction = false;
   }
 
   /**
@@ -677,7 +776,7 @@ export default class IgcCarouselComponent extends I18nMixin(
    */
   public async next(): Promise<boolean> {
     if (this.disableLoop && this._nextIndex === 0) {
-      this.pause();
+      this._pause();
       return false;
     }
 
@@ -689,7 +788,7 @@ export default class IgcCarouselComponent extends I18nMixin(
    */
   public async prev(): Promise<boolean> {
     if (this.disableLoop && this._previousIndex === this.total - 1) {
-      this.pause();
+      this._pause();
       return false;
     }
 
@@ -731,6 +830,11 @@ export default class IgcCarouselComponent extends I18nMixin(
     }
 
     const dir = animationDirection ?? (index > this.current ? 'next' : 'prev');
+
+    if (!this._activeSlide) {
+      this._activateSlide(slide);
+      return true;
+    }
 
     await this._animateSlides(slide, this._activeSlide, dir);
     return true;
@@ -779,10 +883,7 @@ export default class IgcCarouselComponent extends I18nMixin(
           .active=${slide.active}
           .index=${i}
         >
-          <div
-            part="dot"
-            style=${styleMap({ visibility: backward, zIndex: 1 })}
-          ></div>
+          <div part="dot" style=${styleMap({ visibility: backward })}></div>
           <div
             part="dot active"
             slot="active"
@@ -808,9 +909,7 @@ export default class IgcCarouselComponent extends I18nMixin(
         >
           <slot name="indicator" @click=${this._handleIndicatorClick}>
             ${cache(
-              this._hasProjectedIndicators
-                ? this._updateProjectedIndicators()
-                : this._renderIndicators()
+              this._hasProjectedIndicators ? nothing : this._renderIndicators()
             )}
           </slot>
         </div>

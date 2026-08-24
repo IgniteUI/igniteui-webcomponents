@@ -21,6 +21,7 @@ import { createFormAssociatedTestBed } from '#internals/testing/form-testbed.spe
 import {
   simulateClick,
   simulateKeyboard,
+  simulatePointerLeave,
   simulatePointerMove,
 } from '#internals/testing/simulate.spec.js';
 import IgcRatingSymbolComponent from './rating-symbol.js';
@@ -581,6 +582,212 @@ describe('Rating component', () => {
 
         expect(spec.element.value).to.equal(3);
       });
+    });
+  });
+
+  describe('Value precision', () => {
+    beforeEach(async () => {
+      el = await fixture<IgcRatingComponent>(
+        html`<igc-rating step="0.1"></igc-rating>`
+      );
+    });
+
+    it('keeps the value free of floating point noise on stepUp', async () => {
+      el.stepUp();
+      el.stepUp();
+      el.stepUp();
+      await elementUpdated(el);
+
+      expect(el.value).to.equal(0.3);
+      expect(getRatingWrapper(el).getAttribute('aria-valuenow')).to.equal(
+        '0.3'
+      );
+      expect(getRatingWrapper(el).getAttribute('aria-valuetext')).to.equal(
+        '0.3 of 5'
+      );
+    });
+
+    it('increments by `n` steps and not to the next step', async () => {
+      el.stepUp(3);
+      await elementUpdated(el);
+
+      expect(el.value).to.equal(0.3);
+    });
+
+    it('keeps the value free of floating point noise on keyboard input', async () => {
+      const eventSpy = spy(el, 'emitEvent');
+
+      simulateKeyboard(el, arrowUp);
+      simulateKeyboard(el, arrowUp);
+      simulateKeyboard(el, arrowUp);
+      await elementUpdated(el);
+
+      expect(el.value).to.equal(0.3);
+      expect(eventSpy.lastCall).calledWith('igcChange', { detail: 0.3 });
+    });
+
+    it('reports a fractional value as it is', async () => {
+      const rating = await fixture<IgcRatingComponent>(
+        html`<igc-rating value="2.5" step="1"></igc-rating>`
+      );
+
+      expect(getRatingWrapper(rating).getAttribute('aria-valuenow')).to.equal(
+        '2.5'
+      );
+      expect(getRatingWrapper(rating).getAttribute('aria-valuetext')).to.equal(
+        '2.5 of 5'
+      );
+    });
+
+    it('keeps a fractional value with an integer step', async () => {
+      const rating = await fixture<IgcRatingComponent>(
+        html`<igc-rating value="2.555" step="1"></igc-rating>`
+      );
+
+      expect(rating.value).to.equal(2.555);
+    });
+
+    it('keeps the value inside a fractional `max`', async () => {
+      const rating = await fixture<IgcRatingComponent>(
+        html`<igc-rating></igc-rating>`
+      );
+
+      rating.max = 2.555;
+      rating.value = 2.555;
+      await elementUpdated(rating);
+
+      expect(rating.value).to.equal(2.555);
+      expect(rating.value).to.be.at.most(rating.max);
+    });
+
+    it('keeps a high precision value as it is', async () => {
+      const rating = await fixture<IgcRatingComponent>(
+        html`<igc-rating></igc-rating>`
+      );
+
+      rating.value = 2.555123456789;
+      await elementUpdated(rating);
+
+      expect(rating.value).to.equal(2.555123456789);
+      expect(getRatingWrapper(rating).getAttribute('aria-valuenow')).to.equal(
+        '2.555123456789'
+      );
+    });
+
+    it('keeps the decimals of the value when it steps', async () => {
+      const rating = await fixture<IgcRatingComponent>(
+        html`<igc-rating value="2.555" step="0.1"></igc-rating>`
+      );
+
+      rating.stepUp();
+      await elementUpdated(rating);
+
+      expect(rating.value).to.equal(2.655);
+    });
+
+    it('falls back on a non-numeric `max` and `step`', async () => {
+      const rating = await fixture<IgcRatingComponent>(
+        html`<igc-rating></igc-rating>`
+      );
+
+      rating.setAttribute('max', 'abc');
+      rating.setAttribute('step', 'abc');
+      await elementUpdated(rating);
+
+      expect(rating.max).to.equal(0);
+      expect(rating.step).to.equal(1);
+      expect(getRatingWrapper(rating).getAttribute('aria-valuetext')).to.equal(
+        '0 of 0'
+      );
+    });
+  });
+
+  describe('Accessibility', () => {
+    it('names the slider through the `label` attribute', async () => {
+      const rating = await fixture<IgcRatingComponent>(
+        html`<igc-rating label="Rate" aria-label="Score"></igc-rating>`
+      );
+      const slider = getRatingWrapper(rating);
+
+      expect(slider.getAttribute('aria-labelledby')).to.equal('rating-label');
+      expect(slider.hasAttribute('aria-label')).to.be.false;
+      await expect(rating).to.be.accessible();
+      await expect(rating).shadowDom.to.be.accessible();
+    });
+
+    it('names the slider through the host `aria-label`', async () => {
+      const rating = await fixture<IgcRatingComponent>(
+        html`<igc-rating aria-label="Score"></igc-rating>`
+      );
+      const slider = getRatingWrapper(rating);
+
+      expect(slider.getAttribute('aria-label')).to.equal('Score');
+      expect(slider.hasAttribute('aria-labelledby')).to.be.false;
+      await expect(rating).to.be.accessible();
+      await expect(rating).shadowDom.to.be.accessible();
+    });
+
+    it('names the slider after a change of the host `aria-label`', async () => {
+      const rating = await fixture<IgcRatingComponent>(
+        html`<igc-rating aria-label="Score"></igc-rating>`
+      );
+
+      rating.setAttribute('aria-label', 'Rating');
+      await elementUpdated(rating);
+
+      expect(getRatingWrapper(rating).getAttribute('aria-label')).to.equal(
+        'Rating'
+      );
+    });
+
+    it('exposes the readonly state', async () => {
+      const rating = await fixture<IgcRatingComponent>(
+        html`<igc-rating label="Rate" readonly></igc-rating>`
+      );
+      const slider = getRatingWrapper(rating);
+
+      expect(slider.getAttribute('aria-readonly')).to.equal('true');
+      expect(slider.getAttribute('tabindex')).to.equal('0');
+      await expect(rating).to.be.accessible();
+      await expect(rating).shadowDom.to.be.accessible();
+    });
+
+    it('exposes the disabled state', async () => {
+      const rating = await fixture<IgcRatingComponent>(
+        html`<igc-rating label="Rate" disabled></igc-rating>`
+      );
+      const slider = getRatingWrapper(rating);
+
+      expect(slider.getAttribute('aria-disabled')).to.equal('true');
+      expect(slider.getAttribute('tabindex')).to.equal('-1');
+      await expect(rating).to.be.accessible();
+      await expect(rating).shadowDom.to.be.accessible();
+    });
+  });
+
+  describe('Hover', () => {
+    it('emits `igcHover` again when the pointer re-enters the same symbol', async () => {
+      const rating = await fixture<IgcRatingComponent>(
+        html`<igc-rating hover-preview></igc-rating>`
+      );
+      const symbols =
+        rating.renderRoot.querySelector<HTMLElement>('[part="symbols"]')!;
+      const symbol = getRatingSymbols(rating).item(2);
+      const { x, width } = getBoundingRect(symbol);
+      const clientX = x + width / 2;
+
+      simulatePointerMove(symbol, { clientX });
+      await elementUpdated(rating);
+
+      const eventSpy = spy(rating, 'emitEvent');
+
+      simulatePointerLeave(symbols);
+      await elementUpdated(rating);
+
+      simulatePointerMove(symbol, { clientX });
+      await elementUpdated(rating);
+
+      expect(eventSpy).calledOnceWithExactly('igcHover', { detail: 3 });
     });
   });
 });

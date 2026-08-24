@@ -64,6 +64,24 @@ describe('Carousel', () => {
     </igc-carousel>
   `;
 
+  /** Renders a carousel with the given number of projected indicators and slides. */
+  const createCarousel = ({ indicators = 0, slides = 0 }) => html`
+    <igc-carousel>
+      ${Array.from(
+        { length: indicators },
+        (_, i) =>
+          html`<igc-carousel-indicator
+            ><span>${i}</span></igc-carousel-indicator
+          >`
+      )}
+      ${Array.from(
+        { length: slides },
+        (_, i) =>
+          html`<igc-carousel-slide><span>${i}</span></igc-carousel-slide>`
+      )}
+    </igc-carousel>
+  `;
+
   let carousel: IgcCarouselComponent;
   let slides: IgcCarouselSlideComponent[];
   let carouselSlidesContainer: Element;
@@ -1157,6 +1175,333 @@ describe('Carousel', () => {
 
         expect(eventSpy.callCount).to.equal(1);
       });
+    });
+  });
+
+  describe('Autoplay lifecycle', () => {
+    let clock: SinonFakeTimers;
+
+    beforeEach(() => {
+      clock = useFakeTimers({
+        toFake: ['setInterval', 'clearInterval', 'setTimeout'],
+      });
+    });
+
+    afterEach(() => clock.restore());
+
+    async function startRotation(interval = 1000) {
+      carousel.interval = interval;
+      await elementUpdated(carousel);
+    }
+
+    it('should stop the rotation when removed from the DOM', async () => {
+      await startRotation();
+
+      const eventSpy = spy(carousel, 'emitEvent');
+      carousel.remove();
+      await clock.tickAsync(3500);
+
+      expect(eventSpy.callCount).to.equal(0);
+      expect(clock.countTimers()).to.equal(0);
+    });
+
+    it('should resume the rotation when re-attached while playing', async () => {
+      await startRotation();
+
+      const parent = carousel.parentElement!;
+      carousel.remove();
+      parent.append(carousel);
+      await elementUpdated(carousel);
+
+      expect(carousel.isPlaying).to.be.true;
+      expect(clock.countTimers()).to.equal(1);
+    });
+
+    it('should not resume a paused carousel on pointer interaction', async () => {
+      const eventSpy = spy(carousel, 'emitEvent');
+
+      await startRotation();
+
+      carousel.pause();
+      carousel.dispatchEvent(new PointerEvent('pointerenter'));
+      await elementUpdated(carousel);
+
+      expect(carousel.isPlaying).to.be.false;
+
+      carousel.dispatchEvent(new PointerEvent('pointerleave'));
+      await elementUpdated(carousel);
+
+      expect(carousel.isPlaying).to.be.false;
+      expect(carousel.isPaused).to.be.true;
+      expect(eventSpy).not.calledWith('igcPlaying');
+    });
+
+    it('should not resume a paused carousel on focus interaction', async () => {
+      await startRotation();
+
+      carousel.pause();
+      carousel.dispatchEvent(new FocusEvent('focusin'));
+      carousel.dispatchEvent(new FocusEvent('focusout'));
+      await elementUpdated(carousel);
+
+      expect(carousel.isPlaying).to.be.false;
+      expect(carousel.isPaused).to.be.true;
+    });
+
+    it('should reset the playing state when the interval is cleared', async () => {
+      await startRotation();
+
+      expect(carousel.isPlaying).to.be.true;
+
+      carousel.interval = undefined;
+      await elementUpdated(carousel);
+
+      expect(carousel.isPlaying).to.be.false;
+      expect(carousel.isPaused).to.be.false;
+      expect(clock.countTimers()).to.equal(0);
+    });
+
+    it('should restart the rotation of a paused carousel on a new interval', async () => {
+      await startRotation();
+
+      carousel.pause();
+      expect(carousel.isPaused).to.be.true;
+
+      await startRotation(500);
+
+      expect(carousel.isPlaying).to.be.true;
+      expect(carousel.isPaused).to.be.false;
+    });
+
+    it('should keep an explicit pause after the interaction ends', async () => {
+      await startRotation();
+
+      carousel.dispatchEvent(new PointerEvent('pointerenter'));
+      await elementUpdated(carousel);
+
+      carousel.pause();
+      carousel.dispatchEvent(new PointerEvent('pointerleave'));
+      await elementUpdated(carousel);
+
+      expect(carousel.isPlaying).to.be.false;
+      expect(carousel.isPaused).to.be.true;
+    });
+
+    it('should keep the rotation paused when the interval changes during an interaction', async () => {
+      await startRotation();
+
+      carousel.dispatchEvent(new PointerEvent('pointerenter'));
+      await elementUpdated(carousel);
+
+      await startRotation(500);
+
+      expect(carousel.isPlaying).to.be.false;
+      expect(clock.countTimers()).to.equal(0);
+
+      carousel.dispatchEvent(new PointerEvent('pointerleave'));
+      await elementUpdated(carousel);
+
+      expect(carousel.isPlaying).to.be.true;
+    });
+
+    it('should not start a timer while detached', async () => {
+      const parent = carousel.parentElement!;
+      carousel.remove();
+
+      carousel.interval = 1000;
+      await elementUpdated(carousel);
+
+      const eventSpy = spy(carousel, 'emitEvent');
+      await clock.tickAsync(3500);
+
+      expect(eventSpy).not.calledWith('igcSlideChanged');
+      expect(clock.countTimers()).to.equal(0);
+
+      parent.append(carousel);
+      await elementUpdated(carousel);
+
+      expect(clock.countTimers()).to.equal(1);
+    });
+
+    it('should not leave a timer behind at the `disableLoop` end stop', async () => {
+      carousel.disableLoop = true;
+      await startRotation();
+
+      await carousel.select(2);
+      await slideChangeComplete(slides[0], slides[2]);
+
+      simulateKeyboard(defaultIndicators[2], arrowRight);
+      await elementUpdated(carousel);
+      await nextFrame();
+
+      expect(carousel.current).to.equal(2);
+      expect(carousel.isPlaying).to.be.false;
+      expect(clock.countTimers()).to.equal(0);
+    });
+  });
+
+  describe('Slide and indicator integrity', () => {
+    async function removeSlide(slide: IgcCarouselSlideComponent) {
+      slide.remove();
+      await elementUpdated(carousel);
+      await nextFrame();
+    }
+
+    it('should move the active state when the active slide is removed', async () => {
+      await carousel.select(1);
+      await slideChangeComplete(slides[0], slides[1]);
+
+      await removeSlide(slides[1]);
+
+      expect(carousel.total).to.equal(2);
+      expect(carousel.current).to.equal(1);
+      expect(carousel.slides.map((slide) => slide.active)).to.eql([
+        false,
+        true,
+      ]);
+    });
+
+    it('should activate the last slide when the removed one was last', async () => {
+      await carousel.select(2);
+      await slideChangeComplete(slides[0], slides[2]);
+
+      await removeSlide(slides[2]);
+
+      expect(carousel.current).to.equal(1);
+      expect(carousel.slides[1].active).to.be.true;
+    });
+
+    it('should not throw when the last remaining slide is removed', async () => {
+      const single = await fixture<IgcCarouselComponent>(
+        createCarousel({ slides: 1 })
+      );
+      await nextFrame();
+
+      single.slides[0].remove();
+      await elementUpdated(single);
+      await nextFrame();
+
+      expect(single.total).to.equal(0);
+      expect(single.current).to.equal(0);
+    });
+
+    it('should render with fewer projected indicators than slides', async () => {
+      const errors: unknown[] = [];
+      const onError = (event: ErrorEvent) =>
+        errors.push(event.error ?? event.message);
+
+      window.addEventListener('error', onError);
+
+      const el = await fixture<IgcCarouselComponent>(
+        createCarousel({ indicators: 1, slides: 2 })
+      );
+      await nextFrame();
+      window.removeEventListener('error', onError);
+
+      const [indicator] = el.querySelectorAll(
+        IgcCarouselIndicatorComponent.tagName
+      );
+
+      expect(errors).to.be.empty;
+      expect(indicator.active).to.be.true;
+      expect(indicator.getAttribute('aria-controls')).to.equal(el.slides[0].id);
+    });
+
+    it('should render with more projected indicators than slides', async () => {
+      const el = await fixture<IgcCarouselComponent>(
+        createCarousel({ indicators: 2, slides: 1 })
+      );
+      await nextFrame();
+
+      const indicators = Array.from(
+        el.querySelectorAll(IgcCarouselIndicatorComponent.tagName)
+      );
+
+      expect(indicators[1].active).to.be.false;
+      expect(indicators[1].hasAttribute('aria-controls')).to.be.false;
+    });
+
+    it('should activate a slide added to an empty carousel', async () => {
+      const el = await fixture<IgcCarouselComponent>(createCarousel({}));
+      await nextFrame();
+
+      const slide = document.createElement(IgcCarouselSlideComponent.tagName);
+      el.append(slide);
+      await elementUpdated(el);
+      await nextFrame();
+
+      expect(el.total).to.equal(1);
+      expect(el.current).to.equal(0);
+      expect(slide.active).to.be.true;
+    });
+
+    it('should activate a slide added after the carousel was emptied', async () => {
+      const el = await fixture<IgcCarouselComponent>(
+        createCarousel({ slides: 1 })
+      );
+      await nextFrame();
+
+      el.slides[0].remove();
+      await elementUpdated(el);
+      await nextFrame();
+
+      const slide = document.createElement(IgcCarouselSlideComponent.tagName);
+      el.append(slide);
+      await elementUpdated(el);
+      await nextFrame();
+
+      expect(el.total).to.equal(1);
+      expect(slide.active).to.be.true;
+    });
+
+    it('should not activate a projected indicator without a slide', async () => {
+      const el = await fixture<IgcCarouselComponent>(
+        createCarousel({ indicators: 2, slides: 1 })
+      );
+      await nextFrame();
+
+      el.slides[0].remove();
+      await elementUpdated(el);
+      await nextFrame();
+
+      const indicators = Array.from(
+        el.querySelectorAll(IgcCarouselIndicatorComponent.tagName)
+      );
+
+      expect(el.total).to.equal(0);
+      expect(indicators.some((indicator) => indicator.active)).to.be.false;
+    });
+
+    it('should not steal focus on a programmatic change after a no-op key press', async () => {
+      carousel.disableLoop = true;
+      await carousel.select(2);
+      await slideChangeComplete(slides[0], slides[2]);
+
+      // At the last slide with `disableLoop` the key press changes nothing
+      simulateKeyboard(defaultIndicators[2], arrowRight);
+      await elementUpdated(carousel);
+      await nextFrame();
+
+      (carousel.shadowRoot!.activeElement as HTMLElement | null)?.blur();
+
+      await carousel.select(0);
+      await slideChangeComplete(slides[2], slides[0]);
+
+      expect(carousel.shadowRoot!.activeElement).to.be.null;
+    });
+
+    it('should not throw on `select` before the first render', async () => {
+      const el = document.createElement(IgcCarouselComponent.tagName);
+
+      for (const _ of [0, 1, 2]) {
+        el.appendChild(
+          document.createElement(IgcCarouselSlideComponent.tagName)
+        );
+      }
+
+      document.body.appendChild(el);
+      expect(await el.select(1)).to.be.false;
+      el.remove();
     });
   });
 });
