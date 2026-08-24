@@ -92,8 +92,8 @@ describe('VirtualScroll', () => {
 
       expect(Math.min(...renderedIndices())).to.be.greaterThan(0);
 
-      // The vertical axis was never scrolled, so switching to it must render
-      // from the top rather than reuse the horizontal offset.
+      // The vertical axis was never scrolled. A switch to it must render
+      // from the top, not reuse the horizontal offset.
       el.orientation = 'vertical';
       await elementUpdated(el);
 
@@ -156,7 +156,7 @@ describe('VirtualScroll', () => {
 
       const eventSpy = spy(el, 'emitEvent');
 
-      // Trigger a re-render by updating data to a count that puts end near threshold
+      // Trigger a re-render: set a data count that puts the end near the threshold.
       el.data = createItems(4);
       await elementUpdated(el);
 
@@ -203,8 +203,8 @@ describe('VirtualScroll', () => {
       const eventSpy = spy(el, 'emitEvent');
 
       // A consumer whose source is exhausted, but which still reassigns in
-      // response to the request it can't fulfil. Without the guard this loops
-      // for as long as the consumer keeps answering.
+      // response to the request it cannot fulfil. Without the guard, this
+      // loops for as long as the consumer answers.
       el.data = items.slice();
       await elementUpdated(el);
       el.data = items.slice();
@@ -249,8 +249,8 @@ describe('VirtualScroll', () => {
 
       const updateSpy = spy(el, 'requestUpdate');
 
-      // Items are 50px tall and the over-scan is off, so anything below the
-      // first item boundary renders exactly the same window.
+      // Items are 50px tall and the over-scan is off, so each offset below
+      // the first item boundary renders the same window.
       el.scrollTop = 10;
       el.dispatchEvent(new Event('scroll'));
 
@@ -334,8 +334,8 @@ describe('VirtualScroll', () => {
       await elementUpdated(el);
 
       // The aligned offset for the final item lies past the reachable scroll
-      // range; unclamped, every correction pass would wait for a `scrollend`
-      // that the browser never fires.
+      // range. Without a clamp, each correction pass would wait for a
+      // `scrollend` that the browser never fires.
       await el.scrollToIndex(999, { block: 'end' });
 
       expect(el.scrollTop).to.equal(el.scrollHeight - el.clientHeight);
@@ -440,9 +440,9 @@ describe('VirtualScroll', () => {
 
       await el.layoutComplete;
 
-      // Item 0 spans 0-400px; the viewport is 50-350px, so the item covers it
-      // end to end. It can never *fit* inside the viewport, but there is
-      // nothing to scroll to either.
+      // Item 0 spans 0-400px and the viewport is 50-350px, so the item
+      // covers it fully. The item cannot fit inside the viewport, but there
+      // is also nothing to scroll to.
       el.scrollTop = 50;
       el.dispatchEvent(new Event('scroll'));
       await el.layoutComplete;
@@ -465,9 +465,9 @@ describe('VirtualScroll', () => {
 
       await el.layoutComplete;
 
-      // A hidden tab or a disconnected element is never served frames. If
-      // `layoutComplete` waited on one unconditionally, this would hang and
-      // the test would time out.
+      // A hidden tab or a disconnected element gets no frames. If
+      // `layoutComplete` always waited on one, this would hang and the test
+      // would time out.
       const rafStub = stub(window, 'requestAnimationFrame').returns(0);
 
       try {
@@ -537,15 +537,15 @@ describe('VirtualScroll', () => {
 
       const resizeSpy = spy(el['_engine'], 'resize');
 
-      // Appending leaves the identity of every existing index intact, so all
-      // 20 measurements are retained.
+      // An append keeps the identity of each existing index, so all 20
+      // measurements are retained.
       el.data = [...el.data, ...createItems(5)];
       await elementUpdated(el);
 
       expect(resizeSpy.lastCall.args).to.eql([25, 50, 20]);
 
-      // Replacing the collection invalidates every index from the first
-      // difference on - here, from the very beginning.
+      // A replacement invalidates each index from the first difference on.
+      // Here, that is the beginning.
       el.data = el.data.map((item) => `${item}!`);
       await elementUpdated(el);
 
@@ -563,7 +563,7 @@ describe('VirtualScroll', () => {
 
       const resizeSpy = spy(el['_engine'], 'resize');
 
-      // An identical item count used to make `resize` a no-op, stranding the
+      // An identical item count used to make `resize` a no-op. That left the
       // previous data's measurements on the new items.
       el.data = createItems(20).map((item) => `${item}!`);
       await elementUpdated(el);
@@ -587,9 +587,8 @@ describe('VirtualScroll', () => {
       );
 
       // Let the ResizeObserver measure the initially rendered items. A
-      // measurement pass can itself schedule a follow-up render, so wait
-      // for `layoutComplete` to settle twice to be sure nothing is left
-      // pending.
+      // measurement pass can schedule a follow-up render, so wait for
+      // `layoutComplete` twice to make sure nothing is pending.
       await el.layoutComplete;
       await el.layoutComplete;
 
@@ -608,6 +607,53 @@ describe('VirtualScroll', () => {
         measuredCount * realItemSize + (20 - measuredCount) * 200;
 
       expect(track?.style.height).to.equal(`${expectedHeight}px`);
+    });
+
+    it('re-measures reused item elements when they host a different index', async () => {
+      const realItemSize = 30;
+      const sizedTemplate: VirtualScrollItemTemplate<unknown> = (ctx) =>
+        html`<span style="display: block; height: ${realItemSize}px;"
+          >${ctx.value}</span
+        >`;
+
+      const el = await fixture<IgcVirtualScrollComponent<string>>(
+        html`<igc-virtual-scroll
+          style="height: 90px"
+          .data=${createItems(50)}
+          .itemTemplate=${sizedTemplate}
+        ></igc-virtual-scroll>`
+      );
+
+      await el.layoutComplete;
+      await el.layoutComplete;
+
+      // Jump to the end. Lit reuses the wrapper elements for the new indices
+      // at an identical size, and the ResizeObserver does not report that.
+      // Those indices used to keep their estimated size, which left a gap
+      // between the last item and the end of the track. Measurements at the
+      // bottom shrink the track, so apply the jump again until the scroll
+      // height is stable.
+      for (let i = 0; i < 10; i++) {
+        const height = el.scrollHeight;
+        el.scrollTop = el.scrollHeight;
+        el.dispatchEvent(new Event('scroll'));
+
+        await el.layoutComplete;
+        await el.layoutComplete;
+
+        if (el.scrollHeight === height) {
+          break;
+        }
+      }
+
+      const track = el.querySelector('[part="virtualization-track"]')!;
+      const items = el.querySelectorAll<HTMLElement>('[data-vs-index]');
+      const last = items[items.length - 1];
+
+      expect(last.dataset.vsIndex).to.equal('49');
+      expect(last.getBoundingClientRect().bottom).to.equal(
+        track.getBoundingClientRect().bottom
+      );
     });
   });
 
@@ -645,8 +691,8 @@ describe('VirtualScroll', () => {
 
       const eventSpy = spy(el, 'emitEvent');
 
-      // In RTL, browsers report scrollLeft as a negative value. Simulate that
-      // by setting scrollLeft then firing a synthetic scroll event.
+      // In RTL, browsers report scrollLeft as a negative value. Simulate
+      // that: set scrollLeft, then fire a synthetic scroll event.
       el.scrollLeft = -500;
       el.dispatchEvent(new Event('scroll'));
       await elementUpdated(el);
@@ -657,7 +703,7 @@ describe('VirtualScroll', () => {
 
       expect(stateCalls).to.not.be.empty;
       // A normalized positive offset of 500px with estimatedItemSize=50 puts
-      // the start index at item 10 or nearby (depending on over-scan).
+      // the start index at or near item 10, dependent on the over-scan.
       const lastStateCall = stateCalls.at(-1);
       expect(lastStateCall).to.exist;
       const state = (lastStateCall!.args[1] as { detail: VirtualScrollState })
@@ -685,8 +731,8 @@ describe('VirtualScroll', () => {
 
       const eventSpy = spy(el, 'emitEvent');
 
-      // A different item count, so that the window genuinely changes - an
-      // equivalent one is deduplicated and emits nothing.
+      // A different item count, so that the window changes. An equal window
+      // is deduplicated and emits nothing.
       el.data = createItems(500);
       await elementUpdated(el);
 
@@ -720,10 +766,10 @@ describe('VirtualScroll', () => {
       const firstIndex = Number(items[0].dataset.vsIndex);
       const secondIndex = Number(items[1].dataset.vsIndex);
 
-      // DOM order is ascending by data index ...
+      // DOM order is ascending by data index...
       expect(firstIndex).to.be.lessThan(secondIndex);
 
-      // ... but visually the first (lowest) index sits to the right of the next.
+      // ...but visually the first (lowest) index sits to the right of the next.
       const firstRect = items[0].getBoundingClientRect();
       const secondRect = items[1].getBoundingClientRect();
       expect(firstRect.left).to.be.greaterThan(secondRect.left);

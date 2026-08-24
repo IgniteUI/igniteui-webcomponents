@@ -14,11 +14,11 @@ describe('VirtualScrollEngine', () => {
   }
 
   /**
-   * A stand-in document whose probe reports `maxSize` as the furthest
-   * reachable coordinate, without touching the real one. `scrollTop` models a
-   * document that is already scrolled when the probe runs - the probe's rect
-   * is viewport-relative, so it comes back short by exactly that much.
-   * `probes` counts how often the probe element was actually created.
+   * A stand-in document whose probe reports `maxSize` as the largest
+   * reachable coordinate, without a change to the real document. `scrollTop`
+   * models a document that is already scrolled when the probe runs: the
+   * probe's rect is viewport-relative, so it comes back short by that
+   * amount. `probes` counts how often the probe element was created.
    */
   function createProbeDocument(maxSize: number, scrollTop = 0) {
     const probe = {
@@ -39,9 +39,9 @@ describe('VirtualScrollEngine', () => {
   }
 
   /**
-   * Builds an engine whose probed maximum browser size is `maxSize`. Anything
-   * past that point makes the engine compress its virtual coordinate space
-   * into the DOM one.
+   * Builds an engine whose probed maximum browser size is `maxSize`. A total
+   * size past that point makes the engine compress its virtual coordinate
+   * space into the DOM one.
    */
   function createEngineWithMaxSize(
     maxSize: number,
@@ -124,8 +124,8 @@ describe('VirtualScrollEngine', () => {
 
     it('treats a measurement equal to the current size as measured', () => {
       const engine = createEngine(10);
-      // Same value as the estimate - no size change, but the item must still
-      // be flagged as measured so a later estimate cannot overwrite it.
+      // The same value as the estimate: no size change, but the item must
+      // still be flagged as measured, so a later estimate cannot overwrite it.
       engine.measureItem(0, ESTIMATE);
       engine.updateEstimatedSize(100);
 
@@ -157,7 +157,7 @@ describe('VirtualScrollEngine', () => {
       engine.measureItem(6, 30);
       engine.resize(10, ESTIMATE, 4);
 
-      // Item 1 is retained, item 6 is reset back to the estimate.
+      // Item 1 is retained. Item 6 is set back to the estimate.
       expect(engine.totalSize).to.equal(30 + 9 * ESTIMATE);
       expect(engine.getScrollOffsetForIndex(2)).to.equal(80);
     });
@@ -168,7 +168,7 @@ describe('VirtualScrollEngine', () => {
       engine.resize(10, ESTIMATE, 4);
       engine.updateEstimatedSize(100);
 
-      // Nothing is measured any more, so every item follows the new estimate.
+      // Nothing is measured now, so each item follows the new estimate.
       expect(engine.totalSize).to.equal(10 * 100);
     });
 
@@ -318,7 +318,7 @@ describe('VirtualScrollEngine', () => {
 
       expect(engine.isIndexInView(0, 0, 300)).to.be.true;
       expect(engine.isIndexInView(5, 0, 300)).to.be.true;
-      // Item 6 spans 300 - 350, so it is only partially visible.
+      // Item 6 spans 300-350, so it is only partially visible.
       expect(engine.isIndexInView(6, 0, 300)).to.be.false;
       expect(engine.isIndexInView(20, 0, 300)).to.be.false;
     });
@@ -327,12 +327,12 @@ describe('VirtualScrollEngine', () => {
       const engine = createEngine(10);
       engine.measureItem(0, 1000);
 
-      // The item can never fit inside the viewport, but while it spans the
-      // whole of it there is nothing to scroll to - as with native
+      // The item cannot fit inside the viewport. While it spans the whole
+      // viewport, there is nothing to scroll to, as with native
       // `scrollIntoView({ block: 'nearest' })`.
       expect(engine.isIndexInView(0, 0, 300)).to.be.true;
       expect(engine.isIndexInView(0, 350, 300)).to.be.true;
-      // Scrolled past its trailing edge, it no longer covers the viewport.
+      // Scrolled past its trailing edge, the item no longer covers the viewport.
       expect(engine.isIndexInView(0, 800, 300)).to.be.false;
     });
 
@@ -356,7 +356,7 @@ describe('VirtualScrollEngine', () => {
 
   describe('Coordinate compression', () => {
     const MAX_SIZE = 10_000;
-    const ITEMS = 1000; // 50_000px total => ratio of 5
+    const ITEMS = 1000; // 50_000px total, a ratio of 5
 
     it('clamps the DOM size to the maximum browser size', () => {
       const engine = createEngineWithMaxSize(MAX_SIZE, ITEMS);
@@ -375,7 +375,7 @@ describe('VirtualScrollEngine', () => {
     it('maps DOM scroll positions onto the virtual space', () => {
       const engine = createEngineWithMaxSize(MAX_SIZE, ITEMS);
 
-      // Half way down the DOM range is half way down the virtual range.
+      // Halfway down the DOM range is halfway down the virtual range.
       expect(engine.getVisibleRange(MAX_SIZE / 2, 300, 0).startIndex).to.equal(
         500
       );
@@ -386,9 +386,8 @@ describe('VirtualScrollEngine', () => {
       const engine = createEngineWithMaxSize(MAX_SIZE, ITEMS);
       const compressed = engine.getVisibleRange(MAX_SIZE / 2, 300, 0);
 
-      // A 300px viewport of 50px items shows 6 items regardless of how far
-      // the virtual space is compressed - the items themselves still render
-      // at their real size.
+      // A 300px viewport of 50px items shows 6 items at any compression of
+      // the virtual space, because the items render at their real size.
       expect(compressed.endIndex - compressed.startIndex).to.equal(6);
     });
 
@@ -418,8 +417,8 @@ describe('VirtualScrollEngine', () => {
       engine.initMaxBrowserSize(doc);
       engine.resize(ITEMS, ESTIMATE);
 
-      // Without adding the document scroll offset back, the probe would come
-      // back as 7500 and the content would be compressed into it.
+      // If the document scroll offset were not added back, the probe would
+      // report 7500 and the content would be compressed into it.
       expect(engine.domSize).to.equal(MAX_SIZE);
     });
   });

@@ -1,5 +1,5 @@
 /**
- * Context passed to the item template: the item data, its index and utility
+ * Context passed to the item template: the item data, its index, and utility
  * properties for rendering.
  */
 export class VirtualScrollItemContext<T> {
@@ -28,8 +28,8 @@ export class VirtualScrollItemContext<T> {
 }
 
 /**
- * How `scrollToIndex` positions the requested item within the viewport.
- * Mirrors the subset of `ScrollLogicalPosition` the engine can act on.
+ * How `scrollToIndex` positions the requested item in the viewport.
+ * The subset of `ScrollLogicalPosition` that the engine supports.
  */
 export type ScrollAlignment = 'start' | 'center' | 'end';
 
@@ -54,8 +54,9 @@ export interface VirtualScrollState {
 }
 
 /**
- * A request for more data, emitted when the rendered window comes near the end
- * of the loaded items. Consumers listen for it and append what it asks for.
+ * A request for more data, emitted when the rendered window comes near the
+ * end of the loaded items. Consumers listen for it and append the requested
+ * items.
  */
 export interface VirtualScrollDataRequest {
   /**
