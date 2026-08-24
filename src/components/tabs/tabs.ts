@@ -16,25 +16,18 @@ import { createRef, ref } from 'lit/directives/ref.js';
 import { styleMap } from 'lit/directives/style-map.js';
 import { addInternalsController } from '#internals/controllers/internals.js';
 import {
-  addKeybindings,
-  arrowLeft,
-  arrowRight,
-  endKey,
-  homeKey,
-} from '#internals/controllers/key-bindings.js';
-import {
   createMutationController,
   type MutationControllerParams,
 } from '#internals/controllers/mutation-observer.js';
 import { createResizeObserverController } from '#internals/controllers/resize-observer.js';
+import { addRovingFocusController } from '#internals/controllers/roving-focus.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import type { Constructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { partMap } from '#internals/part-map.js';
-import { firstOf, isEmpty, lastOf } from '#internals/utils/arrays.js';
-import { getRoot, isLTR, scrollIntoView } from '#internals/utils/dom.js';
+import { firstOf, isEmpty } from '#internals/utils/arrays.js';
+import { getRoot, scrollIntoView } from '#internals/utils/dom.js';
 import { getElementFromPath } from '#internals/utils/events.js';
-import { wrap } from '#internals/utils/math.js';
 import { isString } from '#internals/utils/types.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import IgcIconButtonComponent from '../button/icon-button.js';
@@ -180,17 +173,14 @@ export default class IgcTabsComponent extends EventEmitterMixin<
 
     addThemingController(this, all);
 
-    addKeybindings(this, {
-      ref: this._headerRef,
-      skip: this._skipKeyboard,
-    })
-      .set(arrowLeft, () => this._handleArrowKeys(isLTR(this) ? -1 : 1))
-      .set(arrowRight, () => this._handleArrowKeys(isLTR(this) ? 1 : -1))
-      .set(homeKey, this._handleHomeKey)
-      .set(endKey, this._handleEndKey)
-      .setActivateHandler(this._handleActivationKeys, {
-        preventDefault: false,
-      });
+    addRovingFocusController(this, {
+      keybindings: { ref: this._headerRef, skip: this._skipKeyboard },
+      items: () => this._enabledTabs,
+      current: () => this._getClosestActiveTab(),
+      focusItem: (tab) => this._keyboardActivateTab(tab),
+      activateItem: (tab) => this._keyboardActivateTab(tab, true),
+      missingCurrent: 'wrap',
+    });
 
     createMutationController(this, {
       callback: this._mutationCallback,
@@ -314,10 +304,10 @@ export default class IgcTabsComponent extends EventEmitterMixin<
 
   //#region Private API
 
-  private _getClosestActiveTabIndex(): number {
-    const active = getRoot(this).activeElement;
-    const tab = active ? active.closest(IgcTabComponent.tagName) : null;
-    return tab ? this._enabledTabs.indexOf(tab) : -1;
+  private _getClosestActiveTab(): IgcTabComponent | null {
+    return (
+      getRoot(this).activeElement?.closest(IgcTabComponent.tagName) ?? null
+    );
   }
 
   /** A tab can be selected if it is a direct child of this component and is not disabled. */
@@ -402,29 +392,6 @@ export default class IgcTabsComponent extends EventEmitterMixin<
   //#endregion
 
   //#region Event handlers
-
-  protected _handleArrowKeys(delta: -1 | 1): void {
-    const tabs = this._enabledTabs;
-    this._keyboardActivateTab(
-      tabs[wrap(0, tabs.length - 1, this._getClosestActiveTabIndex() + delta)]
-    );
-  }
-
-  protected _handleHomeKey(): void {
-    this._keyboardActivateTab(firstOf(this._enabledTabs));
-  }
-
-  protected _handleEndKey(): void {
-    this._keyboardActivateTab(lastOf(this._enabledTabs));
-  }
-
-  protected _handleActivationKeys(): void {
-    const index = this._getClosestActiveTabIndex();
-
-    if (index > -1) {
-      this._keyboardActivateTab(this._enabledTabs[index], true);
-    }
-  }
 
   protected _handleClick(event: PointerEvent): void {
     if (!this._isEventFromTabHeader(event)) {

@@ -30,11 +30,6 @@ export default class IgcCarouselIndicatorComponent extends LitElement {
     registerComponent(IgcCarouselIndicatorComponent);
   }
 
-  private readonly _internals = addInternalsController(this, {
-    initialARIA: { role: 'tab' },
-    reflectRole: true,
-  });
-
   @consume({ context: carouselContext, subscribe: true })
   private readonly _carousel?: IgcCarouselComponent;
 
@@ -50,6 +45,19 @@ export default class IgcCarouselIndicatorComponent extends LitElement {
   @property({ attribute: false })
   public index = 0;
 
+  constructor() {
+    super();
+
+    addInternalsController(this, {
+      initialARIA: { role: 'tab' },
+      reflectRole: true,
+      aria: () => ({
+        ariaSelected: `${this.active}`,
+        ariaLabel: formatString(this._labelFormat, this.index + 1),
+      }),
+    });
+  }
+
   /** @internal */
   public override connectedCallback(): void {
     super.connectedCallback();
@@ -59,12 +67,7 @@ export default class IgcCarouselIndicatorComponent extends LitElement {
   protected override willUpdate(changedProperties: PropertyValues<this>): void {
     if (changedProperties.has('active')) {
       this.tabIndex = this.active ? 0 : -1;
-      this._internals.setARIA({ ariaSelected: this.active.toString() });
     }
-
-    this._internals.setARIA({
-      ariaLabel: formatString(this._labelFormat, this.index + 1),
-    });
   }
 
   protected override render() {

@@ -15,7 +15,7 @@ export function isObject(value: unknown): value is object {
   return value != null && typeof value === 'object';
 }
 
-/** Returns whether the value is a plain object (POJO) — created via `{}`, `new Object()` or `Object.create(null)`. */
+/** Returns whether the value is a plain object (POJO) - created via `{}`, `new Object()` or `Object.create(null)`. */
 export function isPlainObject(
   value: unknown
 ): value is Record<PropertyKey, unknown> {

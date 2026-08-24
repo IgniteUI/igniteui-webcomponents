@@ -1,14 +1,8 @@
-import { ContextProvider } from '@lit/context';
-import {
-  css,
-  html,
-  LitElement,
-  type PropertyValues,
-  type TemplateResult,
-} from 'lit';
+import { css, html, LitElement, type TemplateResult } from 'lit';
 import { property } from 'lit/decorators.js';
+import { addContextProvider } from '#internals/controllers/context-provider.js';
 import { registerComponent } from '#internals/definitions/register.js';
-import { type ThemeContext, themeContext } from '#theming/context.js';
+import { themeContext } from '#theming/context.js';
 import type { Theme, ThemeVariant } from '#theming/types.js';
 
 /**
@@ -63,9 +57,15 @@ export default class IgcThemeProviderComponent extends LitElement {
     registerComponent(IgcThemeProviderComponent);
   }
 
-  private readonly _provider = new ContextProvider(this, {
-    context: themeContext,
-  });
+  constructor() {
+    super();
+
+    addContextProvider(this, {
+      context: themeContext,
+      watch: ['theme', 'variant'],
+      value: () => ({ theme: this.theme, variant: this.variant }),
+    });
+  }
 
   /**
    * The theme to provide to descendant components.
@@ -84,21 +84,6 @@ export default class IgcThemeProviderComponent extends LitElement {
    */
   @property({ reflect: true })
   public variant: ThemeVariant = 'light';
-
-  protected override update(changedProperties: PropertyValues<this>): void {
-    if (changedProperties.has('theme') || changedProperties.has('variant')) {
-      this._provider.setValue(this._getContextValue());
-    }
-
-    super.update(changedProperties);
-  }
-
-  private _getContextValue(): ThemeContext {
-    return {
-      theme: this.theme,
-      variant: this.variant,
-    };
-  }
 
   protected override render(): TemplateResult {
     return html`<slot></slot>`;

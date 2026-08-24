@@ -255,7 +255,7 @@ export default class IgcDatePickerComponent extends EventEmitterMixin<
   }
 
   protected override _syncCalendarOnToggle(): void {
-    this._calendar.activeDate = this.value ?? this._calendar.activeDate;
+    this._setCalendarActiveDate(this.value);
   }
 
   protected override _clearEditors(): void {
@@ -333,9 +333,10 @@ export default class IgcDatePickerComponent extends EventEmitterMixin<
   protected _handleInputChangeEvent(event: CustomEvent<Date>): void {
     event.stopPropagation();
 
-    this._setTouchedState();
-    this.value = (event.target as IgcDateTimeInputComponent).value!;
-    this.emitEvent('igcChange', { detail: this.value });
+    this._commitValue(
+      (event.target as IgcDateTimeInputComponent).value,
+      'igcChange'
+    );
   }
 
   protected _handleInputEvent(event: CustomEvent<Date>): void {
@@ -468,7 +469,7 @@ export default class IgcDatePickerComponent extends EventEmitterMixin<
     return html`
       ${this._isMaterial ? nothing : this._renderLabel(id)}
       ${this._renderInput(id)} ${this._renderPicker(id)}
-      ${this._renderHelperText()}
+      ${this._renderValidationContainer()}
     `;
   }
 

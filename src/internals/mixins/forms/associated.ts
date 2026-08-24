@@ -1,5 +1,8 @@
-import { isServer, type LitElement } from 'lit';
+import { isServer, type LitElement, type TemplateResult } from 'lit';
 import { property } from 'lit/decorators.js';
+import IgcValidationContainerComponent, {
+  type ValidationContainerConfig,
+} from '../../../components/validation-container/validation-container.js';
 import { addInternalsController } from '../../controllers/internals.js';
 import { enterKey } from '../../controllers/key-bindings.js';
 import { addSafeEventListener } from '../../utils/events.js';
@@ -12,11 +15,21 @@ import {
   type FormAssociatedElementInterface,
   type FormRestoreMode,
   type FormValueType,
+  type IgcFormControl,
   InternalInvalidEvent,
   InternalResetEvent,
 } from './types.js';
 
 const INVALID_STATE = 'ig-invalid';
+
+/**
+ * Every form-associated component composes the event-emitter mixin somewhere in
+ * its heritage, but this mixin cannot see it in its type chain - emits go through
+ * a structural contract instead.
+ */
+type EventEmitterLike = {
+  emitEvent(name: string, init?: CustomEventInit): boolean;
+};
 
 const eventOptions = {
   bubbles: false,
@@ -284,6 +297,14 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
       this._touched = true;
     }
 
+    protected _emitTouchedEvent(
+      eventName: string,
+      init?: CustomEventInit
+    ): boolean {
+      this._setTouchedState();
+      return (this as unknown as EventEmitterLike).emitEvent(eventName, init);
+    }
+
     protected _setDefaultValue(current: string | null): void {
       this._formValue.defaultValue = current;
     }
@@ -298,6 +319,15 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
       this._pristine = false;
       this._internals.setFormValue(value, state);
       this._validate();
+    }
+
+    protected _renderValidationContainer(
+      config?: ValidationContainerConfig
+    ): TemplateResult {
+      return IgcValidationContainerComponent.create(
+        this as unknown as IgcFormControl,
+        config
+      );
     }
 
     //#endregion
@@ -398,6 +428,20 @@ export function FormAssociatedMixin<T extends Constructor<LitElement>>(
       } else {
         super._restoreDefaultValue();
       }
+    }
+
+    /** Touched flips first, so the setter's validation cycle sees it. */
+    protected _commitValue(value: unknown, eventName: string): boolean {
+      this._setTouchedState();
+
+      if ('value' in this) {
+        this.value = value;
+        return (this as unknown as EventEmitterLike).emitEvent(eventName, {
+          detail: this.value,
+        });
+      }
+
+      return false;
     }
 
     public override attributeChangedCallback(

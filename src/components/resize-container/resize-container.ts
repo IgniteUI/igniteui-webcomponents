@@ -5,6 +5,8 @@ import { registerComponent } from '#internals/definitions/register.js';
 import type { Constructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { partMap } from '#internals/part-map.js';
+import { setStyles } from '#internals/utils/dom.js';
+import { bindIf } from '#internals/utils/lit.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import IgcIconComponent from '../icon/icon.js';
 import { addResizeController } from './resize-controller.js';
@@ -158,7 +160,7 @@ export default class IgcResizeContainerComponent extends EventEmitterMixin<
     this._controller.dispose();
 
     if (this.mode !== 'deferred') {
-      Object.assign(this._container.value!.style, {
+      setStyles(this._container.value!, {
         width: `${initial.width}px`,
         height: `${initial.height}px`,
       });
@@ -196,8 +198,8 @@ export default class IgcResizeContainerComponent extends EventEmitterMixin<
       <div
         ${ref(this._container)}
         part=${partMap(parts)}
-        @pointerenter=${this.active ? nothing : this._handlePointerEnter}
-        @pointerleave=${this.active ? nothing : this._handlePointerLeave}
+        @pointerenter=${bindIf(!this.active, this._handlePointerEnter)}
+        @pointerleave=${bindIf(!this.active, this._handlePointerLeave)}
       >
         <slot></slot>
         ${this._renderAdorners()}

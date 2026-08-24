@@ -6,7 +6,6 @@ import type { AbstractConstructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { FormValueDateTimeTransformers } from '#internals/mixins/forms/form-transformers.js';
 import { createFormValueState } from '#internals/mixins/forms/form-value.js';
-import { equal } from '#internals/utils/objects.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import { styles } from '../input/themes/input.base.css.js';
 import { styles as shared } from '../input/themes/shared/input.common.css.js';
@@ -17,7 +16,6 @@ import {
   DatePart,
   type DatePartDeltas,
   DatePartType,
-  DEFAULT_DATE_PARTS_SPIN_DELTAS,
 } from './date-part.js';
 import { IgcDateTimeInputBaseComponent } from './date-time-input.base.js';
 import { DateTimeMaskParser } from './datetime-mask-parser.js';
@@ -89,10 +87,6 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
     return dateTimeInputValidators;
   }
 
-  protected override get _datePartDeltas(): DatePartDeltas {
-    return { ...DEFAULT_DATE_PARTS_SPIN_DELTAS, ...this.spinDelta };
-  }
-
   //#endregion
 
   //#region Public attributes and properties
@@ -110,47 +104,11 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
    */
   @property({ converter: convertToDate })
   public override set value(value: Date | string | null | undefined) {
-    const next = convertToDate(value);
-
-    if (equal(this._formValue.value, next)) {
-      return;
-    }
-
-    this._isEditing = false;
-    this._formValue.setValueAndFormState(next);
-    this._updateMaskDisplay();
+    this._applyValue(convertToDate(value));
   }
 
   public override get value(): Date | null {
     return this._formValue.value;
-  }
-
-  //#endregion
-
-  //#region Event handlers
-
-  protected async _handleFocus(): Promise<void> {
-    this._focused = true;
-
-    if (this.readOnly) {
-      return;
-    }
-
-    this._oldValue = this.value;
-
-    if (!this.value) {
-      this._maskedValue = this._parser.emptyMask;
-      this._historyResync();
-      await this.updateComplete;
-      this.select();
-      return;
-    }
-
-    if (this.displayFormat !== this.inputFormat) {
-      this._updateMaskDisplay();
-    }
-
-    this._historyResync();
   }
 
   //#endregion
@@ -210,7 +168,9 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
   }
 
   protected override _parseMask(strict: boolean): Date | null {
-    if (strict && !this._isMaskComplete()) {
+    if (
+      strict ? !this._isMaskComplete() : this._parser.isBlank(this._maskedValue)
+    ) {
       return null;
     }
 
@@ -244,8 +204,7 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
    * string (preserving the legacy contract for this component).
    */
   protected override _emitInputEvent(): void {
-    this._setTouchedState();
-    this.emitEvent('igcInput', {
+    this._emitTouchedEvent('igcInput', {
       detail: this._uncommittedValue?.toISOString(),
     });
   }
@@ -291,16 +250,10 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
     }
 
     // For AM/PM, we need to extract the current AM/PM value from the mask
-    let amPmValue: string | undefined;
-    if (datePart === DatePart.AmPm) {
-      const formatPart = this._parser.getPartByType(DatePartType.AmPm);
-      if (formatPart) {
-        amPmValue = this._maskedValue.substring(
-          formatPart.start,
-          formatPart.end
-        );
-      }
-    }
+    const amPmValue =
+      datePart === DatePart.AmPm
+        ? this._readAmPmFromMask(this._parser.getPartByType(DatePartType.AmPm))
+        : undefined;
 
     part.spin(delta, {
       date: newDate,

@@ -7,6 +7,10 @@ import { fadeOut } from '#animations/presets/fade/index.js';
 import { scaleInCenter } from '#animations/presets/scale/index.js';
 import { addInternalsController } from '#internals/controllers/internals.js';
 import { addSlotController, setSlots } from '#internals/controllers/slot.js';
+import {
+  coercedProperty,
+  type CoercedPropertyConfig,
+} from '#internals/decorators/coerced-property.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import type { Constructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
@@ -64,6 +68,14 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
   public static readonly tagName = 'igc-tooltip';
   public static styles = [styles, shared];
 
+  /** Shared config for the delay properties - a negative delay is no delay. */
+  private static readonly _delay: CoercedPropertyConfig<
+    number,
+    IgcTooltipComponent
+  > = {
+    transform: ({ value }) => Math.max(0, asNumber(value)),
+  };
+
   /* blazorSuppress */
   public static register(): void {
     registerComponent(
@@ -72,14 +84,6 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
       IgcIconComponent
     );
   }
-
-  private readonly _internals = addInternalsController(this, {
-    initialARIA: {
-      role: 'tooltip',
-      ariaAtomic: 'true',
-      ariaLive: 'polite',
-    },
-  });
 
   private readonly _controller = addTooltipController(this, {
     onShow: () => this._showOnInteraction(),
@@ -122,9 +126,6 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
    * popover renders; a hide commits it only once its animation is done.
    */
   private _requestedState = false;
-
-  private _showDelay = 200;
-  private _hideDelay = 300;
 
   @query('igc-popover', true)
   private readonly _popover!: IgcPopoverComponent;
@@ -256,13 +257,8 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
    * @default 200
    */
   @property({ attribute: 'show-delay', type: Number })
-  public set showDelay(value: number) {
-    this._showDelay = Math.max(0, asNumber(value));
-  }
-
-  public get showDelay(): number {
-    return this._showDelay;
-  }
+  @coercedProperty(IgcTooltipComponent._delay)
+  public showDelay = 200;
 
   /**
    * Specifies the number of milliseconds that should pass before hiding the tooltip.
@@ -271,13 +267,8 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
    * @default 300
    */
   @property({ attribute: 'hide-delay', type: Number })
-  public set hideDelay(value: number) {
-    this._hideDelay = Math.max(0, asNumber(value));
-  }
-
-  public get hideDelay(): number {
-    return this._hideDelay;
-  }
+  @coercedProperty(IgcTooltipComponent._delay)
+  public hideDelay = 300;
 
   /**
    * Specifies plain text as the tooltip content.
@@ -299,6 +290,15 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
   constructor() {
     super();
     addThemingController(this, all);
+
+    addInternalsController(this, {
+      initialARIA: {
+        role: 'tooltip',
+        ariaAtomic: 'true',
+        ariaLive: 'polite',
+      },
+      aria: () => ({ role: this.sticky ? 'status' : 'tooltip' }),
+    });
   }
 
   protected override firstUpdated(): void {
@@ -320,10 +320,6 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
   protected override willUpdate(changedProperties: PropertyValues<this>): void {
     if (changedProperties.has('anchor')) {
       this._controller.resolveAnchor(this.anchor);
-    }
-
-    if (changedProperties.has('sticky')) {
-      this._internals.setARIA({ role: this.sticky ? 'status' : 'tooltip' });
     }
   }
 

@@ -11,10 +11,12 @@ import {
 } from '#internals/controllers/key-bindings.js';
 import { addRootClickController } from '#internals/controllers/root-click.js';
 import { convertToDate } from '#internals/date/converters.js';
+import { coercedProperty } from '#internals/decorators/coerced-property.js';
 import { IgcComboBoxBaseLikeComponent } from '#internals/mixins/combo-box.js';
 import type { AbstractConstructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '#internals/mixins/forms/associated-required.js';
+import { renderSlottedIcon } from '#internals/templates/slotted-icon.js';
 import { asArray } from '#internals/utils/arrays.js';
 import {
   addSafeEventListener,
@@ -111,7 +113,6 @@ export abstract class IgcDatePickerBaseComponent<
   protected _activeDate: Date | null = null;
   protected _min: Date | null = null;
   protected _max: Date | null = null;
-  protected _disabledDates: DateRangeDescriptor[] = [];
   protected _dateConstraints: DateRangeDescriptor[] = [];
   protected _displayFormat?: string;
   protected _inputFormat?: string;
@@ -182,7 +183,7 @@ export abstract class IgcDatePickerBaseComponent<
   protected abstract get _selectDateLabel(): string | undefined;
 
   /**
-   * The editor the host's ARIA state is projected onto — its associated
+   * The editor the host's ARIA state is projected onto - its associated
    * labels and the `aria-haspopup="dialog"` semantics of the picker, both of
    * which must land on the native input assistive technology reports.
    */
@@ -345,7 +346,8 @@ export abstract class IgcDatePickerBaseComponent<
   }
 
   /**
-   * Gets/Sets the locale used for formatting the display value.
+   * The locale used to format the display value and to resolve the
+   * component's resource strings. Falls back to the global locale when not set.
    * @attr locale
    */
   @property()
@@ -389,15 +391,13 @@ export abstract class IgcDatePickerBaseComponent<
 
   /** Gets/sets disabled dates. */
   @property({ attribute: false })
-  public set disabledDates(dates: DateRangeDescriptor[]) {
-    this._disabledDates = dates;
-    this._setDateConstraints();
-    this._validate();
-  }
-
-  public get disabledDates(): DateRangeDescriptor[] {
-    return this._disabledDates;
-  }
+  @coercedProperty<DateRangeDescriptor[], IgcDatePickerBaseComponent<T>>({
+    onChange: ({ host }) => {
+      host._setDateConstraints();
+      host._validate();
+    },
+  })
+  public disabledDates: DateRangeDescriptor[] = [];
 
   /** Gets/sets special dates. */
   @property({ attribute: false })
@@ -521,7 +521,7 @@ export abstract class IgcDatePickerBaseComponent<
 
   protected _setDateConstraints(): void {
     this._dateConstraints =
-      createDateConstraints(this._min, this._max, this._disabledDates) ?? [];
+      createDateConstraints(this._min, this._max, this.disabledDates) ?? [];
   }
 
   protected async _shouldCloseCalendarDropdown(): Promise<void> {
@@ -531,6 +531,19 @@ export abstract class IgcDatePickerBaseComponent<
 
     if (await this._hide(true)) {
       this._focusAndSelectInput();
+    }
+  }
+
+  /**
+   * Points the calendar at the first defined of `dates`, keeping its current
+   * active date when none is. A no-op until the calendar is rendered.
+   */
+  protected _setCalendarActiveDate(
+    ...dates: (Date | null | undefined)[]
+  ): void {
+    if (this._calendar) {
+      this._calendar.activeDate =
+        dates.find(Boolean) ?? this._calendar.activeDate;
     }
   }
 
@@ -651,28 +664,13 @@ export abstract class IgcDatePickerBaseComponent<
             part=${part}
             @click=${bindIf(!this.readOnly, this.clear)}
           >
-            <slot name=${part}>
-              <igc-icon
-                name="input_clear"
-                collection="default"
-                aria-hidden="true"
-              ></igc-icon>
-            </slot>
+            ${renderSlottedIcon({ slot: part, icon: 'input_clear' })}
           </span>
         `
       : nothing;
   }
 
   protected _renderCalendarIcon(suffix = '') {
-    const defaultIcon = html`
-      <igc-icon
-        name="today"
-        collection="default"
-        aria-hidden="true"
-        title=${ifDefined(this._calendarIconTitle)}
-      ></igc-icon>
-    `;
-
     const part = `${this.open ? 'calendar-icon-open' : 'calendar-icon'}${suffix}`;
 
     return html`
@@ -682,7 +680,11 @@ export abstract class IgcDatePickerBaseComponent<
         @pointerdown=${this._handleCalendarIconSlotPointerDown}
         @click=${bindIf(!this.readOnly, this._handleAnchorClick)}
       >
-        <slot name=${part}>${defaultIcon}</slot>
+        ${renderSlottedIcon({
+          slot: part,
+          icon: 'today',
+          title: this._calendarIconTitle,
+        })}
       </span>
     `;
   }
@@ -808,10 +810,6 @@ export abstract class IgcDatePickerBaseComponent<
             ${this._renderPickerContent(id)}${this._renderDialogFooter()}
           </igc-dialog>
         `;
-  }
-
-  protected _renderHelperText(): TemplateResult {
-    return IgcValidationContainerComponent.create(this);
   }
 
   //#endregion

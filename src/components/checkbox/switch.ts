@@ -1,8 +1,7 @@
 import { html } from 'lit';
-import { ifDefined } from 'lit/directives/if-defined.js';
-import { live } from 'lit/directives/live.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { partMap } from '#internals/part-map.js';
+import { renderToggleShell } from '#internals/templates/toggle-shell.js';
 import { createIdGenerator } from '#internals/utils/strings.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import { IgcCheckboxBaseComponent } from './checkbox-base.js';
@@ -47,39 +46,30 @@ export default class IgcSwitchComponent extends IgcCheckboxBaseComponent {
     const labelledBy = this.getAttribute('aria-labelledby');
     const checked = this.checked;
 
-    return html`
-      <label part=${partMap({ base: true, checked })} for=${this._inputId}>
-        <input
-          id=${this._inputId}
-          type="checkbox"
-          name=${ifDefined(this.name)}
-          value=${ifDefined(this.value)}
-          ?required=${this.required}
-          ?disabled=${this.disabled}
-          .checked=${live(checked)}
-          aria-labelledby=${labelledBy ? labelledBy : this._labelId}
-          @keydown=${this._handleEnterKeydown}
-          @click=${this._handleClick}
-          @blur=${this._handleBlur}
-        />
-        <span
-          part=${partMap({
-            control: true,
-            checked,
-            focused: this._focusRingManager.focused,
-          })}
-        >
-          <span part=${partMap({ thumb: true, checked })}></span>
-        </span>
-        <span
-          id=${this._labelId}
-          part=${partMap({ label: true, checked })}
-          ?hidden=${this._hideLabel}
-        >
-          <slot></slot>
-        </span>
-      </label>
-    `;
+    return renderToggleShell({
+      type: 'checkbox',
+      inputId: this._inputId,
+      labelId: this._labelId,
+      baseParts: { base: true, checked },
+      controlParts: {
+        control: true,
+        checked,
+        focused: this._focusRingManager.focused,
+      },
+      labelParts: { label: true, checked },
+      renderControl: () =>
+        html`<span part=${partMap({ thumb: true, checked })}></span>`,
+      checked,
+      hideLabel: this._hideLabel,
+      name: this.name,
+      value: this.value,
+      required: this.required,
+      disabled: this.disabled,
+      ariaLabelledBy: labelledBy ? labelledBy : this._labelId,
+      onClick: this._handleClick,
+      onKeyDown: this._handleEnterKeydown,
+      onBlur: this._handleBlur,
+    });
   }
 }
 

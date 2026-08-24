@@ -1,4 +1,3 @@
-import { getDateFormatter } from 'igniteui-i18n-core';
 import { LitElement, type PropertyValues, type TemplateResult } from 'lit';
 import { eventOptions, property, query } from 'lit/decorators.js';
 import { cache } from 'lit/directives/cache.js';
@@ -15,11 +14,9 @@ import { addSlotController, setSlots } from '#internals/controllers/slot.js';
 import { convertToDate } from '#internals/date/converters.js';
 import { blazorDeepImport } from '#internals/decorators/blazorDeepImport.js';
 import { shadowOptions } from '#internals/decorators/shadow-options.js';
-import {
-  addI18nController,
-  getDefaultDateTimeFormat,
-} from '#internals/i18n/i18n-controller.js';
+import { addI18nController } from '#internals/i18n/i18n-controller.js';
 import { FormAssociatedRequiredMixin } from '#internals/mixins/forms/associated-required.js';
+import type { FormValue } from '#internals/mixins/forms/form-value.js';
 import {
   MaskBehaviorMixin,
   type MaskSelection,
@@ -33,7 +30,12 @@ import { renderMaskedNativeInput } from '#internals/templates/masked-input.js';
 import { equal } from '#internals/utils/objects.js';
 import type { ThemingController } from '#theming/theming-controller.js';
 import type { RangeTextSelectMode } from '../types.js';
-import type { DatePartDeltas } from './date-part.js';
+import {
+  type DatePartDeltas,
+  DatePartType,
+  DEFAULT_DATE_PARTS_SPIN_DELTAS,
+  type IDatePart,
+} from './date-part.js';
 import { dateTimeInputValidators } from './validators.js';
 
 export type { MaskSelection };
@@ -93,11 +95,13 @@ export abstract class IgcDateTimeInputBaseComponent<
   protected _min: Date | null = null;
   protected _max: Date | null = null;
 
-  protected _defaultMask!: string;
-
-  protected _defaultDisplayFormat = '';
   protected _displayFormat?: string;
   protected _inputFormat?: string;
+
+  /** The locale-default display format, resolved by the i18n controller. */
+  protected get _defaultDisplayFormat(): string {
+    return this._i18nController.localeDisplayFormat;
+  }
 
   /**
    * Whether the user has an uncommitted edit in progress.
@@ -121,6 +125,11 @@ export abstract class IgcDateTimeInputBaseComponent<
    */
   public get _uncommittedValue(): T | null {
     return this._isEditing ? this._parseMask(true) : this.value;
+  }
+
+  /** The spin amount for each date part - the defaults overlaid with `spinDelta`. */
+  protected get _datePartDeltas(): DatePartDeltas {
+    return { ...DEFAULT_DATE_PARTS_SPIN_DELTAS, ...this.spinDelta };
   }
 
   protected get _targetDatePart(): unknown {
@@ -232,7 +241,8 @@ export abstract class IgcDateTimeInputBaseComponent<
   public spinLoop = true;
 
   /**
-   * Gets/Sets the locale used for formatting the display value.
+   * The locale used to format the display value and to resolve the
+   * component's resource strings. Falls back to the global locale when not set.
    * @attr locale
    */
   @property()
@@ -263,10 +273,6 @@ export abstract class IgcDateTimeInputBaseComponent<
   }
 
   protected override update(props: PropertyValues<this>): void {
-    if (props.has('displayFormat')) {
-      this._updateDefaultDisplayFormat();
-    }
-
     if (props.has('locale')) {
       this._initializeDefaultMask();
     }
@@ -297,6 +303,30 @@ export abstract class IgcDateTimeInputBaseComponent<
     if (!this._focused) {
       this._maskedValue = this._buildMaskedValue();
     }
+  }
+
+  protected async _handleFocus(): Promise<void> {
+    this._focused = true;
+
+    if (this.readOnly) {
+      return;
+    }
+
+    this._oldValue = this.value;
+
+    if (this._isValueEmpty()) {
+      this._maskedValue = this._parser.emptyMask;
+      this._historyResync();
+      await this.updateComplete;
+      this.select();
+      return;
+    }
+
+    if (this.displayFormat !== this.inputFormat) {
+      this._updateMaskDisplay();
+    }
+
+    this._historyResync();
   }
 
   protected override _handleBlur(): void {
@@ -414,6 +444,39 @@ export abstract class IgcDateTimeInputBaseComponent<
     this.requestUpdate();
   }
 
+  /**
+   * Whether the committed value is empty, i.e. gaining focus should start the
+   * edit from the empty mask rather than the formatted value.
+   */
+  protected _isValueEmpty(): boolean {
+    return !this.value;
+  }
+
+  /**
+   * Applies a programmatic value assignment: bails when the value is unchanged,
+   * cancels any edit in progress, and re-renders the mask from the new value.
+   */
+  protected _applyValue(value: T | null): void {
+    if (equal(this._formValue.value, value)) {
+      return;
+    }
+
+    this._isEditing = false;
+    this._formValue.setValueAndFormState(value);
+    this._updateMaskDisplay();
+  }
+
+  /**
+   * Reads the AM/PM designator as currently typed in the mask for the given
+   * format part, so spinning it toggles from what the user sees rather than
+   * from the underlying date.
+   */
+  protected _readAmPmFromMask(part?: IDatePart): string | undefined {
+    return part?.type === DatePartType.AmPm
+      ? this._maskedValue.substring(part.start, part.end)
+      : undefined;
+  }
+
   /** Applies the masked text to the public value without emitting anything. */
   protected _applyDraft(): void {
     this._isEditing = false;
@@ -497,20 +560,10 @@ export abstract class IgcDateTimeInputBaseComponent<
     }
   }
 
-  /**
-   * Updates the default display format based on current locale.
-   */
-  private _updateDefaultDisplayFormat(): void {
-    this._defaultDisplayFormat = getDateFormatter().getLocaleDateTimeFormat(
-      this.locale
-    );
-  }
-
+  /** Applies the locale-default mask, unless an explicit input format is set. */
   protected _initializeDefaultMask(): void {
-    this._updateDefaultDisplayFormat();
-
     if (!this._inputFormat) {
-      this._applyMask(getDefaultDateTimeFormat(this.locale));
+      this._applyMask(this._i18nController.localeInputFormat);
     }
   }
 
@@ -621,7 +674,7 @@ export abstract class IgcDateTimeInputBaseComponent<
 
   // #region Abstract methods and properties
 
-  protected abstract get _datePartDeltas(): DatePartDeltas;
+  protected abstract override readonly _formValue: FormValue<T | null>;
 
   /** Provided by `EventEmitterMixin` in the concrete components. */
   public abstract emitEvent(name: string, init?: CustomEventInit): boolean;
@@ -634,7 +687,9 @@ export abstract class IgcDateTimeInputBaseComponent<
    * Parses the current masked text into the leaf's value type.
    *
    * A `strict` parse mirrors the committed value semantics - an incomplete mask has
-   * no value yet and resolves to `null` rather than to a defaults-filled one.
+   * no value yet and resolves to `null` rather than to a defaults-filled one. A lenient
+   * parse completes the missing parts from their defaults, an empty mask excepted - that
+   * one holds no value to complete and resolves to `null` as well.
    */
   protected abstract _parseMask(strict: boolean): T | null;
 
@@ -652,7 +707,6 @@ export abstract class IgcDateTimeInputBaseComponent<
     isDecrement: boolean
   ): T;
   protected abstract _setCurrentDateTime(): void;
-  protected abstract _handleFocus(): Promise<void>;
   protected abstract _getDatePartAtCursor(): unknown;
   protected abstract _getDefaultDatePart(): unknown;
 

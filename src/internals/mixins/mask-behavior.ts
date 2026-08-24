@@ -152,11 +152,12 @@ export declare class MaskBehaviorElementInterface {
  * composition handling, range text replacement) to a LitElement-derived class.
  *
  * The host class is expected to provide:
- * - `_input`            – the native `<input>` element (typically via `@query('input')`).
- * - `_parser`           – a {@link MaskParser} (or subclass) instance.
- * - `_setTouchedState`  – from `FormAssociatedMixin`.
- * - `emitEvent`         – from `EventEmitterMixin`.
- * - `select`            – from the host base.
+ * - `_input`            - the native `<input>` element (typically via `@query('input')`).
+ * - `_parser`           - a {@link MaskParser} (or subclass) instance.
+ * - `_setTouchedState`  - from `FormAssociatedMixin`.
+ * - `_emitTouchedEvent` - from `FormAssociatedMixin`.
+ * - `emitEvent`         - from `EventEmitterMixin`.
+ * - `select`            - from the host base.
  *
  * The host class must implement `_syncValueFromMask` to bridge the masked
  * text back into its public `value`. It is called by the default
@@ -171,6 +172,10 @@ export function MaskBehaviorMixin<T extends AbstractConstructor<LitElement>>(
     protected abstract readonly _input?: HTMLInputElement;
     protected abstract readonly _parser: MaskParser;
     protected abstract _setTouchedState(): void;
+    protected abstract _emitTouchedEvent(
+      eventName: string,
+      init?: CustomEventInit
+    ): boolean;
     public abstract select(): void;
     public abstract emitEvent(name: string, init?: CustomEventInit): boolean;
 
@@ -450,8 +455,7 @@ export function MaskBehaviorMixin<T extends AbstractConstructor<LitElement>>(
      * Override to emit a different payload (e.g. the parsed value).
      */
     protected _emitInputEvent(): void {
-      this._setTouchedState();
-      this.emitEvent('igcInput', { detail: this._maskedValue });
+      this._emitTouchedEvent('igcInput', { detail: this._maskedValue });
     }
 
     protected _setMaskSelection(event: Event): void {

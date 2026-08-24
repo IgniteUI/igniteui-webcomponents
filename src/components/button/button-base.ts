@@ -178,7 +178,7 @@ export abstract class IgcButtonBaseComponent extends EventEmitterMixin<
   /* alternateType: object */
   /**
    * The `<form>` element the button is associated with.
-   * Resolved through the standard form-association mechanism — either the
+   * Resolved through the standard form-association mechanism - either the
    * closest ancestor `<form>` or the form referenced by the button's `form`
    * attribute. Returns `null` when no form is associated.
    * Relevant only when `type` is `'submit'` or `'reset'`.

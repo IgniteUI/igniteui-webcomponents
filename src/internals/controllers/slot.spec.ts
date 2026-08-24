@@ -100,6 +100,23 @@ describe('Slots controller', () => {
         'Slotted content'
       );
     });
+
+    it('should return the normalized text content of assigned nodes', () => {
+      const text = document.createTextNode('  Slotted\n content  ');
+      instance.append(text);
+
+      expect(slots.getAssignedText('[default]')).to.equal('Slotted content');
+    });
+
+    it('should return an empty string for slots without assigned nodes', () => {
+      expect(slots.getAssignedText('start')).to.equal('');
+    });
+
+    it('should include fallback content with `flatten` = true', () => {
+      expect(slots.getAssignedText('[default]', true)).to.equal(
+        'Default node content'
+      );
+    });
   });
 
   describe('Assigned elements API', () => {

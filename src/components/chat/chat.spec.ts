@@ -922,6 +922,38 @@ describe('Chat', () => {
       clock.restore();
     });
 
+    it('defers the typing stop when `stopTypingDelay` grows mid-timer', async () => {
+      const clock = useFakeTimers({ now: 0, toFake: ['Date', 'setTimeout'] });
+
+      const eventSpy = spy(chat, 'emitEvent');
+      const textArea = getChatDOM(chat).input.textarea;
+      const typingCalls = () =>
+        eventSpy
+          .getCalls()
+          .filter((call) => call.args[0] === 'igcTypingChange');
+
+      try {
+        chat.options = { stopTypingDelay: 2500 };
+        simulateKeyboard(textArea, 'a', 15);
+        await elementUpdated(chat);
+
+        expect(typingCalls()).lengthOf(1);
+
+        chat.options = { stopTypingDelay: 5000 };
+        await elementUpdated(chat);
+
+        // The original deadline passes - the stop is deferred, not dropped.
+        await clock.tickAsync(2600);
+        expect(typingCalls()).lengthOf(1);
+
+        await clock.tickAsync(2500);
+        expect(typingCalls()).lengthOf(2);
+        expect(typingCalls().at(-1)?.args[1]?.detail).to.be.false;
+      } finally {
+        clock.restore();
+      }
+    });
+
     it('emits igcTypingChange after sending a message', async () => {
       const eventSpy = spy(chat, 'emitEvent');
       const textArea = getChatDOM(chat).input.textarea;

@@ -1,4 +1,3 @@
-import { ContextProvider } from '@lit/context';
 import { html, LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
 import { createRef, ref } from 'lit/directives/ref.js';
@@ -7,10 +6,15 @@ import {
   type TileManagerContext,
   tileManagerContext,
 } from '#internals/context.js';
+import { addContextProvider } from '#internals/controllers/context-provider.js';
 import {
   createMutationController,
   type MutationControllerParams,
 } from '#internals/controllers/mutation-observer.js';
+import {
+  coercedProperty,
+  type CoercedPropertyConfig,
+} from '#internals/decorators/coerced-property.js';
 import { shadowOptions } from '#internals/decorators/shadow-options.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { partMap } from '#internals/part-map.js';
@@ -53,12 +57,18 @@ export default class IgcTileManagerComponent extends LitElement {
   // #region Internal state
 
   private _internalStyles: StyleInfo = {};
-  private _dragMode: TileManagerDragMode = 'none';
-  private _resizeMode: TileManagerResizeMode = 'none';
-  private _columnCount = 0;
-  private _gap?: string;
-  private _minColWidth?: string;
-  private _minRowHeight?: string;
+
+  /** Shared config for the properties that project into a grid CSS variable. */
+  private static _styleVariable(
+    name: string
+  ): CoercedPropertyConfig<string | undefined, IgcTileManagerComponent> {
+    return {
+      transform: ({ value }) => value ?? undefined,
+      onChange: ({ value, host }) => {
+        Object.assign(host._internalStyles, { [name]: value });
+      },
+    };
+  }
 
   private _serializer = createSerializer(this);
   private _tilesState = createTilesState(this);
@@ -69,22 +79,17 @@ export default class IgcTileManagerComponent extends LitElement {
 
   // #region Context helpers
 
-  private _context = new ContextProvider(this, {
+  private readonly _managerContext: TileManagerContext = {
+    instance: this,
+    grid: this._grid,
+    setMaximizedState: () => this._setMaximizedState(),
+  };
+
+  private readonly _context = addContextProvider(this, {
     context: tileManagerContext,
-    initialValue: this._createContext(),
+    watch: ['dragMode', 'resizeMode'],
+    value: () => this._managerContext,
   });
-
-  private _createContext(): TileManagerContext {
-    return {
-      instance: this,
-      grid: this._grid,
-      setMaximizedState: () => this._setMaximizedState(),
-    };
-  }
-
-  private _setManagerContext(): void {
-    this._context.setValue(this._createContext(), true);
-  }
 
   // #endregion
 
@@ -97,14 +102,7 @@ export default class IgcTileManagerComponent extends LitElement {
    * @default none
    */
   @property({ attribute: 'resize-mode' })
-  public set resizeMode(value: TileManagerResizeMode) {
-    this._resizeMode = value;
-    this._setManagerContext();
-  }
-
-  public get resizeMode(): TileManagerResizeMode {
-    return this._resizeMode;
-  }
+  public resizeMode: TileManagerResizeMode = 'none';
 
   /**
    * Whether drag and drop operations are enabled.
@@ -113,14 +111,7 @@ export default class IgcTileManagerComponent extends LitElement {
    * @default none
    */
   @property({ attribute: 'drag-mode' })
-  public set dragMode(value: TileManagerDragMode) {
-    this._dragMode = value;
-    this._setManagerContext();
-  }
-
-  public get dragMode(): TileManagerDragMode {
-    return this._dragMode;
-  }
+  public dragMode: TileManagerDragMode = 'none';
 
   /**
    * Sets the number of columns for the tile manager.
@@ -130,48 +121,31 @@ export default class IgcTileManagerComponent extends LitElement {
    * @default 0
    */
   @property({ type: Number, attribute: 'column-count' })
-  public set columnCount(value: number) {
-    this._columnCount = Math.max(0, asNumber(value));
-    Object.assign(this._internalStyles, {
-      '--column-count': this._columnCount || undefined,
-    });
-  }
-
-  public get columnCount(): number {
-    return this._columnCount;
-  }
+  @coercedProperty<number, IgcTileManagerComponent>({
+    transform: ({ value }) => Math.max(0, asNumber(value)),
+    onChange: ({ value, host }) => {
+      Object.assign(host._internalStyles, {
+        '--column-count': value || undefined,
+      });
+    },
+  })
+  public columnCount = 0;
 
   /**
    * Sets the minimum width for a column unit in the tile manager.
    * @attr min-column-width
    */
   @property({ attribute: 'min-column-width' })
-  public set minColumnWidth(value: string | undefined) {
-    this._minColWidth = value ?? undefined;
-    Object.assign(this._internalStyles, {
-      '--min-col-width': this._minColWidth,
-    });
-  }
-
-  public get minColumnWidth(): string | undefined {
-    return this._minColWidth;
-  }
+  @coercedProperty(IgcTileManagerComponent._styleVariable('--min-col-width'))
+  public minColumnWidth?: string = undefined;
 
   /**
    * Sets the minimum height for a row unit in the tile manager.
    * @attr min-row-height
    */
   @property({ attribute: 'min-row-height' })
-  public set minRowHeight(value: string | undefined) {
-    this._minRowHeight = value ?? undefined;
-    Object.assign(this._internalStyles, {
-      '--min-row-height': this._minRowHeight,
-    });
-  }
-
-  public get minRowHeight(): string | undefined {
-    return this._minRowHeight;
-  }
+  @coercedProperty(IgcTileManagerComponent._styleVariable('--min-row-height'))
+  public minRowHeight?: string = undefined;
 
   /**
    * Sets the gap size between tiles in the tile manager.
@@ -179,16 +153,8 @@ export default class IgcTileManagerComponent extends LitElement {
    * @attr gap
    */
   @property()
-  public set gap(value: string | undefined) {
-    this._gap = value ?? undefined;
-    Object.assign(this._internalStyles, {
-      '--grid-gap': this._gap,
-    });
-  }
-
-  public get gap(): string | undefined {
-    return this._gap;
-  }
+  @coercedProperty(IgcTileManagerComponent._styleVariable('--grid-gap'))
+  public gap?: string = undefined;
 
   /**
    * Gets the tiles sorted by their position in the layout.
@@ -223,7 +189,7 @@ export default class IgcTileManagerComponent extends LitElement {
   protected override firstUpdated() {
     this._tilesState.assignPositions();
     this._tilesState.assignTiles();
-    this._setManagerContext();
+    this._context.publish();
   }
 
   private _observerCallback({

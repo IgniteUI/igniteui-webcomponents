@@ -8,9 +8,11 @@ import { createRef, ref } from 'lit/directives/ref.js';
 import { addKeybindings } from '#internals/controllers/key-bindings.js';
 import { addSlotController, setSlots } from '#internals/controllers/slot.js';
 import { registerComponent } from '#internals/definitions/register.js';
-import { addI18nController } from '#internals/i18n/i18n-controller.js';
+import type { I18nControllerConfig } from '#internals/i18n/i18n-controller.js';
 import type { Constructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
+import { I18nMixin } from '#internals/mixins/i18n.js';
+import { renderSlottedIcon } from '#internals/templates/slotted-icon.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import IgcIconComponent from '../icon/icon.js';
 import type { StyleVariant } from '../types.js';
@@ -22,6 +24,10 @@ export interface IgcChipComponentEventMap {
   igcRemove: CustomEvent<boolean>;
   igcSelect: CustomEvent<boolean>;
 }
+
+const i18n: I18nControllerConfig<IChipResourceStrings> = {
+  defaultEN: ChipResourceStringsEN,
+};
 
 /**
  * Chips help people enter information, make selections, filter content, or trigger actions.
@@ -42,10 +48,12 @@ export interface IgcChipComponentEventMap {
  * @csspart prefix - The prefix container of the chip.
  * @csspart suffix - The suffix container of the chip.
  */
-export default class IgcChipComponent extends EventEmitterMixin<
-  IgcChipComponentEventMap,
-  Constructor<LitElement>
->(LitElement) {
+export default class IgcChipComponent extends I18nMixin(
+  EventEmitterMixin<IgcChipComponentEventMap, Constructor<LitElement>>(
+    LitElement
+  ),
+  i18n
+) {
   public static readonly tagName = 'igc-chip';
   public static styles = [styles, shared];
 
@@ -104,39 +112,6 @@ export default class IgcChipComponent extends EventEmitterMixin<
   @property({ reflect: true })
   public variant!: StyleVariant;
 
-  /**
-   * Gets/Sets the locale used for getting language, affecting resource strings.
-   * @attr locale
-   */
-  @property()
-  public set locale(value: string) {
-    this._i18nController.locale = value;
-  }
-
-  public get locale() {
-    return this._i18nController.locale;
-  }
-
-  /**
-   * The resource strings for localization.
-   * Currently only aria-labels for the default select/remove icons are localized.
-   */
-  @property({ attribute: false })
-  public set resourceStrings(value: IChipResourceStrings) {
-    this._i18nController.resourceStrings = value;
-  }
-
-  public get resourceStrings(): IChipResourceStrings {
-    return this._i18nController.resourceStrings;
-  }
-
-  private readonly _i18nController = addI18nController<IChipResourceStrings>(
-    this,
-    {
-      defaultEN: ChipResourceStringsEN,
-    }
-  );
-
   constructor() {
     super();
 
@@ -167,15 +142,11 @@ export default class IgcChipComponent extends EventEmitterMixin<
 
     const selectSlot =
       this.selectable && this.selected
-        ? html`
-            <slot name="select">
-              <igc-icon
-                name="selected"
-                collection="default"
-                aria-label=${this.resourceStrings.chip_select ?? 'select chip'}
-              ></igc-icon>
-            </slot>
-          `
+        ? renderSlottedIcon({
+            slot: 'select',
+            icon: 'selected',
+            label: this.resourceStrings.chip_select,
+          })
         : nothing;
 
     return html`
@@ -205,7 +176,7 @@ export default class IgcChipComponent extends EventEmitterMixin<
                 collection="default"
                 tabindex="0"
                 role="button"
-                aria-label=${this.resourceStrings.chip_remove ?? 'remove chip'}
+                aria-label=${this.resourceStrings.chip_remove}
               ></igc-icon>
             </slot>
           `

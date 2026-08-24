@@ -1,12 +1,13 @@
 import { html, LitElement, nothing, type TemplateResult } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { registerComponent } from '#internals/definitions/register.js';
+import { createIdGenerator } from '#internals/utils/strings.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import { styles as shared } from './themes/shared/tab/tab.common.css.js';
 import { all } from './themes/tab-themes.js';
 import { styles } from './themes/tab.base.css.js';
 
-let nextId = 1;
+const nextId = createIdGenerator('igc-tab');
 
 /**
  * A tab nested in a tabs component.
@@ -35,9 +36,9 @@ export default class IgcTabComponent extends LitElement {
 
   //#region Internal state & properties
 
-  private readonly _instanceId = nextId++;
-  private readonly _headerId = `igc-tab-header-${this._instanceId}`;
-  private readonly _contentId = `igc-tab-content-${this._instanceId}`;
+  private readonly _tabId = nextId();
+  private readonly _headerId = `${this._tabId}-header`;
+  private readonly _contentId = `${this._tabId}-content`;
 
   @state()
   private _posInSet = 0;
@@ -89,7 +90,7 @@ export default class IgcTabComponent extends LitElement {
   /** @internal */
   public override connectedCallback(): void {
     super.connectedCallback();
-    this.id = this.id || `igc-tab-${this._instanceId}`;
+    this.id = this.id || this._tabId;
   }
 
   //#endregion

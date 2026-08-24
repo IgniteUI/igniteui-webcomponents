@@ -8,13 +8,14 @@ import type {
 } from '../../components/types.js';
 import { addCommandController } from '../controllers/command.js';
 import { addInternalsController } from '../controllers/internals.js';
+import { createTimer } from '../timing.js';
 import { getVisibleAncestor, isPopoverOpen } from '../utils/dom.js';
 
 /* omitModule */
 export abstract class IgcBaseAlertLikeComponent extends LitElement {
   protected readonly _player = addAnimationController(this);
 
-  protected _autoHideTimeout?: ReturnType<typeof setTimeout>;
+  private readonly _autoHideTimer = createTimer(() => this.hide());
 
   /**
    * Whether the component is in shown state.
@@ -143,7 +144,7 @@ export abstract class IgcBaseAlertLikeComponent extends LitElement {
       return state;
     }
 
-    clearTimeout(this._autoHideTimeout);
+    this._autoHideTimer.stop();
     const state = await this._player.playExclusive(fadeOut());
     this.hidePopover();
     this.open = false;
@@ -151,9 +152,9 @@ export abstract class IgcBaseAlertLikeComponent extends LitElement {
   }
 
   private _setAutoHideTimer(): void {
-    clearTimeout(this._autoHideTimeout);
+    this._autoHideTimer.stop();
     if (this.open && this.displayTime > 0 && !this.keepOpen) {
-      this._autoHideTimeout = setTimeout(() => this.hide(), this.displayTime);
+      this._autoHideTimer.start(this.displayTime);
     }
   }
 

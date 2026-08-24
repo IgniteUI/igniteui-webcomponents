@@ -12,6 +12,12 @@ const GENERIC_TYPE_RE = /<.*>/;
 /** A generic mixin leaks its bare type parameter — `T | null` — into the manifest. */
 const TYPE_PARAM_RE = /^[A-Z]\d?$/;
 
+/**
+ * A `keyof` alias over the component's generic data — `Keys<T>` — is a string
+ * key at the attribute level, unlike other generics which have no control.
+ */
+const KEYOF_ALIAS_RE = /\bKeys<[^>]*>/g;
+
 const STRING_LITERAL_RE = /^(['"]).*\1$/;
 const NUMBER_RE = /^-?\d+(\.\d+)?$/;
 const PRETTIFY_NAME_RE = /igc|component/gi;
@@ -240,17 +246,22 @@ class StoriesBuilder {
       }
     }
 
-    const parts = rawType
-      .split('|')
-      .map((part) => part.trim())
-      .filter(
-        (part) =>
-          part &&
-          !NULL_UNDEFINED_RE.test(part) &&
-          !ARRAY_TYPE_RE.test(part) &&
-          !GENERIC_TYPE_RE.test(part) &&
-          !TYPE_PARAM_RE.test(part)
-      );
+    const parts = Array.from(
+      new Set(
+        rawType
+          .replace(KEYOF_ALIAS_RE, 'string')
+          .split('|')
+          .map((part) => part.trim())
+          .filter(
+            (part) =>
+              part &&
+              !NULL_UNDEFINED_RE.test(part) &&
+              !ARRAY_TYPE_RE.test(part) &&
+              !GENERIC_TYPE_RE.test(part) &&
+              !TYPE_PARAM_RE.test(part)
+          )
+      )
+    );
 
     if (!parts.length) {
       return { tsType: '' };

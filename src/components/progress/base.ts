@@ -1,9 +1,8 @@
-import { html, LitElement, nothing } from 'lit';
+import { html, LitElement, nothing, type PropertyValues } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
 import type { StyleInfo } from 'lit/directives/style-map.js';
 import { addInternalsController } from '#internals/controllers/internals.js';
 import type { SlotController } from '#internals/controllers/slot.js';
-import { watch } from '#internals/decorators/watch.js';
 import { partMap } from '#internals/part-map.js';
 import { asPercent, clamp } from '#internals/utils/math.js';
 import { formatString } from '#internals/utils/strings.js';
@@ -11,14 +10,6 @@ import type { StyleVariant } from '../types.js';
 
 /* omitModule */
 export abstract class IgcProgressBaseComponent extends LitElement {
-  private readonly _internals = addInternalsController(this, {
-    initialARIA: {
-      role: 'progressbar',
-      ariaValueMin: '0',
-      ariaValueNow: '0',
-    },
-  });
-
   protected abstract _slots: SlotController<any>;
 
   @query('[part="base"]', true)
@@ -93,48 +84,42 @@ export abstract class IgcProgressBaseComponent extends LitElement {
   @property({ attribute: 'label-format' })
   public labelFormat!: string;
 
-  @watch('indeterminate')
-  protected _indeterminateChange(): void {
-    if (!this.indeterminate) {
-      this._updateProgress();
-    }
+  constructor() {
+    super();
+
+    addInternalsController(this, {
+      initialARIA: {
+        role: 'progressbar',
+        ariaValueMin: '0',
+        ariaValueNow: '0',
+      },
+      aria: () => ({
+        ariaValueMax: this.max.toString(),
+        ariaValueNow: this.indeterminate ? null : this.value.toString(),
+        ariaValueText: this.indeterminate ? null : this._labelText,
+      }),
+    });
   }
 
-  @watch('max')
-  protected _maxChange(): void {
+  protected override willUpdate(changedProperties: PropertyValues<this>): void {
+    const progressChanged =
+      changedProperties.has('animationDuration') ||
+      changedProperties.has('indeterminate') ||
+      changedProperties.has('max') ||
+      changedProperties.has('value');
+
+    // Both writes are idempotent, so they are applied unconditionally. A clamp
+    // that does change a value lands it in `changedProperties` for this pass.
     this.max = Math.max(0, this.max);
-    if (this.value > this.max) {
-      this.value = this.max;
-    }
-
-    if (!this.indeterminate) {
-      this._updateProgress();
-    }
-  }
-
-  @watch('value')
-  protected _valueChange(): void {
     this.value = clamp(this.value, 0, this.max);
 
-    if (!this.indeterminate) {
+    if (progressChanged && !this.indeterminate) {
       this._updateProgress();
     }
   }
 
-  protected override updated(): void {
-    this._updateARIA();
-  }
-
-  private _updateARIA(): void {
-    const text = this.labelFormat
-      ? this._renderLabelFormat()
-      : `${this.value}%`;
-
-    this._internals.setARIA({
-      ariaValueMax: this.max.toString(),
-      ariaValueNow: this.indeterminate ? null : this.value.toString(),
-      ariaValueText: this.indeterminate ? null : text,
-    });
+  private get _labelText(): string {
+    return this.labelFormat ? this._renderLabelFormat() : `${this.value}%`;
   }
 
   private _updateProgress(): void {

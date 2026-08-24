@@ -1,4 +1,4 @@
-import { html, type TemplateResult } from 'lit';
+import { html, type PropertyValues, type TemplateResult } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { addAriaProjector } from '#internals/controllers/aria-projection.js';
@@ -25,7 +25,6 @@ import { addRootScrollHandler } from '#internals/controllers/root-scroll.js';
 import { addSlotController, setSlots } from '#internals/controllers/slot.js';
 import { blazorAdditionalDependencies } from '#internals/decorators/blazorAdditionalDependencies.js';
 import { shadowOptions } from '#internals/decorators/shadow-options.js';
-import { watch } from '#internals/decorators/watch.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import {
   getActiveItems,
@@ -41,8 +40,9 @@ import { FormAssociatedRequiredMixin } from '#internals/mixins/forms/associated-
 import { FormValueSelectTransformers } from '#internals/mixins/forms/form-transformers.js';
 import { createFormValueState } from '#internals/mixins/forms/form-value.js';
 import { partMap } from '#internals/part-map.js';
+import { renderSlottedIcon } from '#internals/templates/slotted-icon.js';
 import { isEmpty } from '#internals/utils/arrays.js';
-import { isElement } from '#internals/utils/dom.js';
+import { isElement, normalizedTextContent } from '#internals/utils/dom.js';
 import {
   addSafeEventListener,
   focusLeftHost,
@@ -56,7 +56,7 @@ import IgcPopoverComponent, {
   type PopoverPlacement,
 } from '../popover/popover.js';
 import type { PopoverScrollStrategy } from '../types.js';
-import IgcValidationContainerComponent from '../validation-container/validation-container.js';
+import type IgcValidationContainerComponent from '../validation-container/validation-container.js';
 import IgcSelectGroupComponent from './select-group.js';
 import IgcSelectHeaderComponent from './select-header.js';
 import IgcSelectItemComponent from './select-item.js';
@@ -293,17 +293,21 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
 
   //#endregion
 
-  //#region Life-cycle hooks and watchers
+  //#region Life-cycle hooks
 
-  @watch('scrollStrategy', { waitUntilFirstUpdate: true })
-  protected _scrollStrategyChange(): void {
-    this._rootScrollController.update({ resetListeners: true });
-  }
+  protected override willUpdate(changedProperties: PropertyValues<this>): void {
+    if (!this.hasUpdated) {
+      return;
+    }
 
-  @watch('open', { waitUntilFirstUpdate: true })
-  protected _openChange(): void {
-    this._rootClickController.update();
-    this._rootScrollController.update();
+    if (changedProperties.has('scrollStrategy')) {
+      this._rootScrollController.update({ resetListeners: true });
+    }
+
+    if (changedProperties.has('open')) {
+      this._rootClickController.update();
+      this._rootScrollController.update();
+    }
   }
 
   constructor() {
@@ -534,8 +538,7 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   }
 
   private _handleChange(item: IgcSelectItemComponent): boolean {
-    this._setTouchedState();
-    return this.emitEvent('igcChange', { detail: item });
+    return this._emitTouchedEvent('igcChange', { detail: item });
   }
 
   private _handleClosing(): void {
@@ -658,16 +661,13 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
       return undefined;
     }
 
-    return Array.from(this._selectedItem.childNodes)
-      .filter((node) =>
+    return normalizedTextContent(
+      Array.from(this._selectedItem.childNodes).filter((node) =>
         isElement(node)
           ? !node.hasAttribute('slot')
           : node.nodeType === Node.TEXT_NODE
       )
-      .map((node) => node.textContent ?? '')
-      .join('')
-      .trim()
-      .replace(/\s+/gu, ' ');
+    );
   }
 
   //#endregion
@@ -755,16 +755,19 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
 
     return html`
       <span slot="suffix" part=${partMap(parts)} aria-hidden="true">
-        <slot name="toggle-icon" ?hidden=${iconHidden}>
-          <igc-icon name=${iconName} collection="default"></igc-icon>
-        </slot>
+        ${renderSlottedIcon({
+          slot: 'toggle-icon',
+          icon: iconName,
+          hidden: iconHidden,
+          ariaHidden: false,
+        })}
         <slot name="toggle-icon-expanded" ?hidden=${!iconHidden}></slot>
       </span>
     `;
   }
 
   protected _renderHelperText(): TemplateResult {
-    return IgcValidationContainerComponent.create(this, {
+    return this._renderValidationContainer({
       id: 'select-helper-text',
       slot: 'anchor',
       hasHelperText: true,

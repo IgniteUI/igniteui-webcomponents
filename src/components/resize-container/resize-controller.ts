@@ -1,5 +1,7 @@
 import type { ReactiveController, ReactiveControllerHost } from 'lit';
 import { createAbortHandle } from '#internals/abort-handler.js';
+import { escapeKey, isKey } from '#internals/controllers/key-bindings.js';
+import { setStyles } from '#internals/utils/dom.js';
 import { getElementFromPath } from '#internals/utils/events.js';
 import { createDefaultGhostElement, getDefaultLayer } from './default-ghost.js';
 import type { ResizeControllerConfiguration, ResizeState } from './types.js';
@@ -180,9 +182,7 @@ class ResizeController implements ReactiveController {
   }
 
   private _handleCancel(event: KeyboardEvent): void {
-    const key = event.key.toLowerCase();
-
-    if (this._hasPointerCapture && key === 'escape') {
+    if (this._hasPointerCapture && isKey(event, escapeKey)) {
       this._options.cancel?.call(this._host, this._stateParameters);
     }
   }
@@ -243,7 +243,7 @@ class ResizeController implements ReactiveController {
 
   private _updatePosition(element: HTMLElement | null): void {
     if (element) {
-      Object.assign(element.style, {
+      setStyles(element, {
         width: `${this._state.current.width}px`,
         height: `${this._state.current.height}px`,
       });

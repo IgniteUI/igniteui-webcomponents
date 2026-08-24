@@ -1,4 +1,3 @@
-import { ContextProvider } from '@lit/context';
 import {
   html,
   LitElement,
@@ -6,7 +5,11 @@ import {
   type TemplateResult,
 } from 'lit';
 import { property } from 'lit/decorators.js';
-import { buttonGroupContext } from '#internals/context.js';
+import {
+  type ButtonGroupContext,
+  buttonGroupContext,
+} from '#internals/context.js';
+import { addContextProvider } from '#internals/controllers/context-provider.js';
 import { addSlotController, setSlots } from '#internals/controllers/slot.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import type { Constructor } from '#internals/mixins/constructor.js';
@@ -55,14 +58,6 @@ export default class IgcButtonGroupComponent extends EventEmitterMixin<
 
   /** The values set through the `selectedItems` API, applied once the buttons are rendered. */
   private _selectedItems = new Set<string>();
-
-  private readonly _context = new ContextProvider(this, {
-    context: buttonGroupContext,
-    initialValue: {
-      instance: this,
-      syncSelection: (button) => this._syncSelection(button),
-    },
-  });
 
   private readonly _slots = addSlotController(this, {
     slots: setSlots(),
@@ -146,20 +141,21 @@ export default class IgcButtonGroupComponent extends EventEmitterMixin<
   constructor() {
     super();
     addThemingController(this, all);
+
+    const context: ButtonGroupContext = {
+      instance: this,
+      syncSelection: (button) => this._syncSelection(button),
+    };
+
+    addContextProvider(this, {
+      context: buttonGroupContext,
+      watch: ['selection', 'disabled'],
+      value: () => context,
+    });
   }
 
   protected override willUpdate(changedProperties: PropertyValues<this>): void {
-    if (!this.hasUpdated) {
-      return;
-    }
-
-    const selectionChanged = changedProperties.has('selection');
-
-    if (selectionChanged || changedProperties.has('disabled')) {
-      this._context.updateObservers();
-    }
-
-    if (selectionChanged) {
+    if (this.hasUpdated && changedProperties.has('selection')) {
       // The selection modes are not interchangeable - the group starts over.
       this._selectedItems.clear();
       this._applySelection([]);

@@ -214,8 +214,7 @@ export default class IgcMaskInputComponent extends MaskBehaviorMixin(
   }
 
   protected _handleChange(): void {
-    this._setTouchedState();
-    this.emitEvent('igcChange', { detail: this.value });
+    this._emitTouchedEvent('igcChange', { detail: this.value });
   }
 
   //#endregion
@@ -239,8 +238,7 @@ export default class IgcMaskInputComponent extends MaskBehaviorMixin(
   }
 
   protected override _emitInputEvent(): void {
-    this._setTouchedState();
-    this.emitEvent('igcInput', { detail: this.value });
+    this._emitTouchedEvent('igcInput', { detail: this.value });
   }
 
   protected override _syncValueFromMask(): void {

@@ -15,6 +15,6 @@ export type QrErrorCorrectionLevel = 'L' | 'M' | 'Q' | 'H';
 
 /**
  * QR data encoding mode, selected automatically based on the input string.
- * - `numeric` — digits only; `alphanumeric` — digits + uppercase letters + a few symbols; `byte` — arbitrary UTF-8.
+ * - `numeric` - digits only; `alphanumeric` - digits + uppercase letters + a few symbols; `byte` - arbitrary UTF-8.
  */
 export type QrEncodingMode = 'numeric' | 'alphanumeric' | 'byte';

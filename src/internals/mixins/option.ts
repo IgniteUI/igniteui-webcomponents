@@ -7,6 +7,10 @@ export abstract class IgcBaseOptionLikeComponent extends LitElement {
   protected readonly _internals = addInternalsController(this, {
     initialARIA: { role: 'option' },
     reflectRole: true,
+    aria: () => ({
+      ariaDisabled: `${this.disabled}`,
+      ariaSelected: `${this.selected}`,
+    }),
   });
 
   protected _active = false;
@@ -41,7 +45,6 @@ export abstract class IgcBaseOptionLikeComponent extends LitElement {
   @property({ type: Boolean, reflect: true })
   public set disabled(value: boolean) {
     this._disabled = Boolean(value);
-    this._internals.setARIA({ ariaDisabled: `${this.disabled}` });
   }
 
   public get disabled(): boolean {
@@ -55,7 +58,6 @@ export abstract class IgcBaseOptionLikeComponent extends LitElement {
   @property({ type: Boolean, reflect: true })
   public set selected(value: boolean) {
     this._selected = Boolean(value);
-    this._internals.setARIA({ ariaSelected: `${this._selected}` });
     this.active = this.selected;
   }
 

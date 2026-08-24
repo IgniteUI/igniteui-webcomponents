@@ -88,7 +88,7 @@ export function wrap(min: number, max: number, value: number) {
   return value;
 }
 
-/** Euclidean modulo — like `%` but the result always has the sign of the divisor. */
+/** Euclidean modulo - like `%` but the result always has the sign of the divisor. */
 export function modulo(n: number, d: number) {
   return ((n % d) + d) % d;
 }

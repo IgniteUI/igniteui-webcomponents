@@ -16,6 +16,10 @@ import {
 } from '#internals/controllers/drag.js';
 import { addFullscreenController } from '#internals/controllers/fullscreen.js';
 import { addSlotController, setSlots } from '#internals/controllers/slot.js';
+import {
+  coercedProperty,
+  type CoercedPropertyConfig,
+} from '#internals/decorators/coerced-property.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import type { Constructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
@@ -137,11 +141,29 @@ export default class IgcTileComponent extends EventEmitterMixin<
   private readonly _resizeState = createTileResizeState();
   private readonly _dragStack = createTileDragStack();
 
-  private _colSpan = 1;
-  private _rowSpan = 1;
-  private _colStart: number | null = null;
-  private _rowStart: number | null = null;
-  private _position = -1;
+  /** Shared config for the span properties - a value below 1 is coerced to 1. */
+  private static _spanVariable(
+    name: string
+  ): CoercedPropertyConfig<number, IgcTileComponent> {
+    return {
+      transform: ({ value }) => Math.max(1, asNumber(value)),
+      onChange: ({ value, host }) => {
+        host.style.setProperty(name, value.toString());
+      },
+    };
+  }
+
+  /** Shared config for the start properties - a non-positive value removes the explicit placement. */
+  private static _startVariable(
+    name: string
+  ): CoercedPropertyConfig<number | null, IgcTileComponent> {
+    return {
+      transform: ({ value }) => Math.max(0, asNumber(value)) || null,
+      onChange: ({ value, host }) => {
+        host.style.setProperty(name, value ? value.toString() : null);
+      },
+    };
+  }
 
   // Tile manager context properties and helpers
 
@@ -193,9 +215,6 @@ export default class IgcTileComponent extends EventEmitterMixin<
   public _tileContent!: HTMLElement;
 
   @state()
-  private _maximized = false;
-
-  @state()
   private _isDragging = false;
 
   @state()
@@ -222,14 +241,8 @@ export default class IgcTileComponent extends EventEmitterMixin<
    * @default 1
    */
   @property({ type: Number, attribute: 'col-span' })
-  public set colSpan(value: number) {
-    this._colSpan = Math.max(1, asNumber(value));
-    this.style.setProperty('--ig-col-span', this._colSpan.toString());
-  }
-
-  public get colSpan(): number {
-    return this._colSpan;
-  }
+  @coercedProperty(IgcTileComponent._spanVariable('--ig-col-span'))
+  public colSpan = 1;
 
   /**
    * The number of rows the tile will span.
@@ -242,14 +255,8 @@ export default class IgcTileComponent extends EventEmitterMixin<
    * @default 1
    */
   @property({ type: Number, attribute: 'row-span' })
-  public set rowSpan(value: number) {
-    this._rowSpan = Math.max(1, asNumber(value));
-    this.style.setProperty('--ig-row-span', this._rowSpan.toString());
-  }
-
-  public get rowSpan(): number {
-    return this._rowSpan;
-  }
+  @coercedProperty(IgcTileComponent._spanVariable('--ig-row-span'))
+  public rowSpan = 1;
 
   /**
    * The starting column for the tile.
@@ -257,17 +264,8 @@ export default class IgcTileComponent extends EventEmitterMixin<
    * @attr col-start
    */
   @property({ type: Number, attribute: 'col-start' })
-  public set colStart(value: number | null) {
-    this._colStart = Math.max(0, asNumber(value)) || null;
-    this.style.setProperty(
-      '--ig-col-start',
-      this._colStart ? this._colStart.toString() : null
-    );
-  }
-
-  public get colStart(): number | null {
-    return this._colStart;
-  }
+  @coercedProperty(IgcTileComponent._startVariable('--ig-col-start'))
+  public colStart: number | null = null;
 
   /**
    * The starting row for the tile.
@@ -275,17 +273,8 @@ export default class IgcTileComponent extends EventEmitterMixin<
    * @attr row-start
    */
   @property({ type: Number, attribute: 'row-start' })
-  public set rowStart(value: number | null) {
-    this._rowStart = Math.max(0, asNumber(value)) || null;
-    this.style.setProperty(
-      '--ig-row-start',
-      this._rowStart ? this._rowStart.toString() : null
-    );
-  }
-
-  public get rowStart(): number | null {
-    return this._rowStart;
-  }
+  @coercedProperty(IgcTileComponent._startVariable('--ig-row-start'))
+  public rowStart: number | null = null;
 
   /**
    * Indicates whether the tile occupies the whole screen.
@@ -302,17 +291,10 @@ export default class IgcTileComponent extends EventEmitterMixin<
    * @attr maximized
    */
   @property({ type: Boolean, reflect: true })
-  public set maximized(value: boolean) {
-    this._maximized = value;
-
-    if (this._tileManagerCtx) {
-      this._tileManagerCtx.setMaximizedState();
-    }
-  }
-
-  public get maximized(): boolean {
-    return this._maximized;
-  }
+  @coercedProperty<boolean, IgcTileComponent>({
+    onChange: ({ host }) => host._tileManagerCtx?.setMaximizedState(),
+  })
+  public maximized = false;
 
   /**
    * Indicates whether to disable tile resize behavior regardless
@@ -351,14 +333,13 @@ export default class IgcTileComponent extends EventEmitterMixin<
    * @attr position
    */
   @property({ type: Number })
-  public set position(value: number) {
-    this._position = asNumber(value);
-    this.style.order = this._position.toString();
-  }
-
-  public get position(): number {
-    return this._position;
-  }
+  @coercedProperty<number, IgcTileComponent>({
+    transform: ({ value }) => asNumber(value),
+    onChange: ({ value, host }) => {
+      host.style.order = value.toString();
+    },
+  })
+  public position = -1;
 
   constructor() {
     super();
@@ -461,7 +442,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
   }
 
   private _skipDrag(event: PointerEvent): boolean {
-    if (this._maximized || this.fullscreen) {
+    if (this.maximized || this.fullscreen) {
       return true;
     }
 
@@ -603,7 +584,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
             this._handleFullscreen,
           ]
         : [
-            this._maximized ? 'collapse_content' : 'expand_content',
+            this.maximized ? 'collapse_content' : 'expand_content',
             this._handleMaximize,
           ];
 
