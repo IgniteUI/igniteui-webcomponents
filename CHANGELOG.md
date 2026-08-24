@@ -97,6 +97,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - A carousel with fewer projected `igc-carousel-indicator` elements than slides threw a `TypeError` during render. The indicators now map to the slides by position, for any count of each.
   - The removal of the active slide left the carousel with no active slide. The slide that takes its position now becomes active.
   - The component set `aria-controls` on the host, where it described nothing. Each projected indicator now carries it, and points at the slide that it selects.
+  - Slides that entered an empty carousel after its first render stayed inactive, thus the carousel showed nothing. The authored active slide, or the first slide, now becomes active.
+  - A change of `interval` on a carousel that left the DOM started a timer that no rotation used. Only a return to the DOM now starts the timer again.
   - A carousel that left the DOM before its first render completed threw an unhandled `TypeError` from the gestures controller. The controller now verifies that the element is still present.
   - The documentation of the component now includes the `indicator` slot.
 - #### Chat
@@ -128,6 +130,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - A non-numeric `max` or `step` attribute produced `NaN`: the component rendered no symbols and announced `NaN of 5`. Both now fall back to a valid number.
   - The slider had no accessible name without a `label`. The component now forwards the `aria-label` of the host, and sets `aria-labelledby` only when it renders a label.
   - The component now exposes its `readonly` and `disabled` state through `aria-readonly` and `aria-disabled`.
+  - A change of the `aria-label` of the host after the first render left the accessible name of the slider as it was.
   - `igcHover` did not fire when the pointer left the component, and then entered again over the same symbol.
 - #### Select
   - `ArrowUp` on a closed select that had a selection cleared the selection and showed the placeholder, instead of a move to the previous item. The component set the item that keyboard navigation moves from only through its own selection path. Thus a selection through the `value` property, or through a `selected` attribute on an item, left that item unset, and a backward step from "no item" went off the start of the list. Navigation now always starts from the current selection. If there is no item to move to, the selection does not change.

@@ -430,11 +430,7 @@ export default class IgcCarouselComponent extends I18nMixin(
     // Republish for consumers created after their own first render (Blazor timing).
     this._context.publish();
 
-    if (!isEmpty(this._slides)) {
-      this._activateSlide(
-        this._slides.findLast((slide) => slide.active) ?? firstOf(this._slides)
-      );
-    }
+    this._activateInitialSlide();
   }
 
   protected override updated(): void {
@@ -484,6 +480,10 @@ export default class IgcCarouselComponent extends I18nMixin(
 
       if (previousSlide && !this._slides.includes(previousSlide)) {
         this._reactivateSlide(previousSlide, previousIndex);
+      } else if (this.hasUpdated && !this._activeSlide) {
+        // Slides came into an empty carousel after the first render. Without
+        // this, no slide is active, and the carousel shows nothing.
+        this._activateInitialSlide();
       }
     }
 
@@ -637,6 +637,15 @@ export default class IgcCarouselComponent extends I18nMixin(
     if (this._hasKeyboardInteractionOnIndicators) {
       this._indicators[this.current]?.focus();
       this._hasKeyboardInteractionOnIndicators = false;
+    }
+  }
+
+  /** Activates the authored active slide, or the first slide. */
+  private _activateInitialSlide(): void {
+    if (!isEmpty(this._slides)) {
+      this._activateSlide(
+        this._slides.findLast((slide) => slide.active) ?? firstOf(this._slides)
+      );
     }
   }
 

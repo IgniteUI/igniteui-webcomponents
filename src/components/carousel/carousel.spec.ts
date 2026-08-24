@@ -1421,6 +1421,39 @@ describe('Carousel', () => {
       expect(indicators[1].hasAttribute('aria-controls')).to.be.false;
     });
 
+    it('should activate a slide added to an empty carousel', async () => {
+      const el = await fixture<IgcCarouselComponent>(createCarousel({}));
+      await nextFrame();
+
+      const slide = document.createElement(IgcCarouselSlideComponent.tagName);
+      el.append(slide);
+      await elementUpdated(el);
+      await nextFrame();
+
+      expect(el.total).to.equal(1);
+      expect(el.current).to.equal(0);
+      expect(slide.active).to.be.true;
+    });
+
+    it('should activate a slide added after the carousel was emptied', async () => {
+      const el = await fixture<IgcCarouselComponent>(
+        createCarousel({ slides: 1 })
+      );
+      await nextFrame();
+
+      el.slides[0].remove();
+      await elementUpdated(el);
+      await nextFrame();
+
+      const slide = document.createElement(IgcCarouselSlideComponent.tagName);
+      el.append(slide);
+      await elementUpdated(el);
+      await nextFrame();
+
+      expect(el.total).to.equal(1);
+      expect(slide.active).to.be.true;
+    });
+
     it('should not activate a projected indicator without a slide', async () => {
       const el = await fixture<IgcCarouselComponent>(
         createCarousel({ indicators: 2, slides: 1 })

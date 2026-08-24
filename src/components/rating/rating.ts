@@ -13,6 +13,7 @@ import {
   endKey,
   homeKey,
 } from '#internals/controllers/key-bindings.js';
+import { createMutationController } from '#internals/controllers/mutation-observer.js';
 import {
   addSlotController,
   type InferSlotNames,
@@ -226,7 +227,7 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
    */
   @property({ type: Number })
   public set value(number: number) {
-    const value = this._normalize(asNumber(number));
+    const value = asNumber(number);
     this._formValue.setValueAndFormState(
       this.hasUpdated ? clamp(value, 0, this.max) : Math.max(value, 0)
     );
@@ -289,6 +290,11 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
     super();
 
     addThemingController(this, all);
+
+    createMutationController(this, {
+      callback: () => this.requestUpdate(),
+      config: { attributeFilter: ['aria-label'] },
+    });
 
     addKeybindings(this, {
       skip: () => !this._isInteractive,
@@ -376,7 +382,7 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
   private _emitValueUpdate(next: number): void {
     this._setTouchedState();
 
-    const clamped = clamp(next, 0, this.max);
+    const clamped = clamp(this._normalize(next), 0, this.max);
     if (clamped !== this.value) {
       this.value = clamped;
       this.emitEvent('igcChange', { detail: this.value });
@@ -401,11 +407,15 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
 
   /**
    * Removes the floating point noise that the step arithmetic introduces. The
-   * significant digits stay, thus a fractional value keeps its precision, and
-   * the value, the event payload and `aria-valuenow` stay readable.
+   * decimals of the current value and of the step stay, thus a value that the
+   * consumer sets keeps its precision, and the value, the event payload and
+   * `aria-valuenow` stay readable.
    */
   private _normalize(value: number): number {
-    return Number.parseFloat(value.toPrecision(12));
+    return roundPrecise(
+      value,
+      numberOfDecimals(this.value) + numberOfDecimals(this.step)
+    );
   }
 
   private _updateProjectedSymbols(): void {
@@ -457,7 +467,7 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
    * step factor.
    */
   public stepUp(n = 1): void {
-    this.value += n * this.step;
+    this.value = this._normalize(this.value + n * this.step);
   }
 
   /**
@@ -465,7 +475,7 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
    * the step factor.
    */
   public stepDown(n = 1): void {
-    this.value -= n * this.step;
+    this.value = this._normalize(this.value - n * this.step);
   }
 
   //#endregion

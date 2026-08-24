@@ -660,6 +660,31 @@ describe('Rating component', () => {
       expect(rating.value).to.be.at.most(rating.max);
     });
 
+    it('keeps a high precision value as it is', async () => {
+      const rating = await fixture<IgcRatingComponent>(
+        html`<igc-rating></igc-rating>`
+      );
+
+      rating.value = 2.555123456789;
+      await elementUpdated(rating);
+
+      expect(rating.value).to.equal(2.555123456789);
+      expect(getRatingWrapper(rating).getAttribute('aria-valuenow')).to.equal(
+        '2.555123456789'
+      );
+    });
+
+    it('keeps the decimals of the value when it steps', async () => {
+      const rating = await fixture<IgcRatingComponent>(
+        html`<igc-rating value="2.555" step="0.1"></igc-rating>`
+      );
+
+      rating.stepUp();
+      await elementUpdated(rating);
+
+      expect(rating.value).to.equal(2.655);
+    });
+
     it('falls back on a non-numeric `max` and `step`', async () => {
       const rating = await fixture<IgcRatingComponent>(
         html`<igc-rating></igc-rating>`
@@ -700,6 +725,19 @@ describe('Rating component', () => {
       expect(slider.hasAttribute('aria-labelledby')).to.be.false;
       await expect(rating).to.be.accessible();
       await expect(rating).shadowDom.to.be.accessible();
+    });
+
+    it('names the slider after a change of the host `aria-label`', async () => {
+      const rating = await fixture<IgcRatingComponent>(
+        html`<igc-rating aria-label="Score"></igc-rating>`
+      );
+
+      rating.setAttribute('aria-label', 'Rating');
+      await elementUpdated(rating);
+
+      expect(getRatingWrapper(rating).getAttribute('aria-label')).to.equal(
+        'Rating'
+      );
     });
 
     it('exposes the readonly state', async () => {
