@@ -44,7 +44,7 @@ const metadata: Meta<IgcRatingComponent> = {
     step: {
       type: 'number',
       description:
-        'The minimum value change allowed.\n\nValid values are in the interval between 0 and 1 inclusive.',
+        'The minimum value change allowed.\n\nValid values are in the interval between 0.001 and 1 inclusive.\nThe component clamps a value outside of the interval to the closest bound.',
       control: 'number',
       table: { defaultValue: { summary: '1' } },
     },
@@ -67,7 +67,8 @@ const metadata: Meta<IgcRatingComponent> = {
     },
     hoverPreview: {
       type: 'boolean',
-      description: 'Sets hover preview behavior for the component',
+      description:
+        'Whether to show a preview of the value when hovering over the symbols.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
@@ -134,7 +135,8 @@ interface IgcRatingArgs {
   /**
    * The minimum value change allowed.
    *
-   * Valid values are in the interval between 0 and 1 inclusive.
+   * Valid values are in the interval between 0.001 and 1 inclusive.
+   * The component clamps a value outside of the interval to the closest bound.
    */
   step: number;
   /** The label of the control. */
@@ -148,7 +150,7 @@ interface IgcRatingArgs {
   valueFormat: string;
   /** The value of the component */
   value: number;
-  /** Sets hover preview behavior for the component */
+  /** Whether to show a preview of the value when hovering over the symbols. */
   hoverPreview: boolean;
   /** Makes the control a readonly field. */
   readOnly: boolean;

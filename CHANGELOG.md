@@ -89,6 +89,18 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - The component now resolves time-only date strings against the current local date and not the UTC date. Before, the parsed date moved by one day near midnight in some time zones.
   - `week-start` stayed stale until a subsequent update corrected the view. The component now resolves and renders `week-start` correctly on the initial render.
   - Keyboard navigation over a large number of disabled dates could hang the browser. The navigation is now a no-op in this condition.
+- #### Carousel
+  - A pointer over a carousel, or focus inside it, started the rotation of a carousel that you paused through `pause()`. The component now starts the rotation again only if an interaction paused it.
+  - A change of `interval` set the playing state and left the paused state as it was, thus `isPlaying` and `isPaused` were both `true`. A clear of `interval` also reported the carousel as playing, without a rotation. Both states now describe the rotation correctly.
+  - An interaction that changes nothing - a key press at the last slide with `disableLoop` - left a timer that ran without a rotation, and nothing cleared it.
+  - A key press at the last slide with `disableLoop` moved the focus to an indicator on the next slide change that came from `select()`, `next()` or `prev()`.
+  - A carousel with fewer projected `igc-carousel-indicator` elements than slides threw a `TypeError` during render. The indicators now map to the slides by position, for any count of each.
+  - The removal of the active slide left the carousel with no active slide. The slide that takes its position now becomes active.
+  - The component set `aria-controls` on the host, where it described nothing. Each projected indicator now carries it, and points at the slide that it selects.
+  - Slides that entered an empty carousel after its first render stayed inactive, thus the carousel showed nothing. The authored active slide, or the first slide, now becomes active.
+  - A change of `interval` on a carousel that left the DOM started a timer that no rotation used. Only a return to the DOM now starts the timer again.
+  - A carousel that left the DOM before its first render completed threw an unhandled `TypeError` from the gestures controller. The controller now verifies that the element is still present.
+  - The documentation of the component now includes the `indicator` slot.
 - #### Chat
   - With `adoptRootStyles` enabled the component ignored the stylesheets that entered the document after the initial adoption. Thus custom renderers whose styles are injected during view creation - Angular component styles, for example - showed unstyled content. The component now tracks the document stylesheets while the option is on, and applies each addition or removal to the shadow roots that adopted them, including stylesheet links that load later. [#2328](https://github.com/IgniteUI/igniteui-webcomponents/issues/2328)
   - Adoption of the document styles no longer removes the theme styles of the message and the input parts. Before, the adoption built the stylesheet list from the static styles of the component only.
@@ -112,6 +124,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - #### Icon
   - An icon that renders through a reference stayed blank when you registered the target icon later, because the component reacted only to registrations that match its own `name` and `collection` and not to the resolved target. It now resolves again on each change of the registry.
   - `igc-icon` declares `role="img"` only when it has an accessible name: the `<title>` of the icon, or an `aria-label` or `aria-labelledby` on the host. Before, a decorative icon appeared in the accessibility tree as an image without a name.
+- #### Rating
+  - Keyboard input, `stepUp()` and `stepDown()` produced values such as `0.30000000000000004` with a fractional `step`. The value, the `igcChange` payload and `aria-valuenow` now hold the exact value. `stepUp(n)` and `stepDown(n)` also move by `n` steps, and not to the next step above the result.
+  - `aria-valuetext` reported a value rounded up to the next step, thus it disagreed with `aria-valuenow` for a fractional value such as `2.5` with `step` of `1`.
+  - A non-numeric `max` or `step` attribute produced `NaN`: the component rendered no symbols and announced `NaN of 5`. Both now fall back to a valid number.
+  - The slider had no accessible name without a `label`. The component now forwards the `aria-label` of the host, and sets `aria-labelledby` only when it renders a label.
+  - The component now exposes its `readonly` and `disabled` state through `aria-readonly` and `aria-disabled`.
+  - A change of the `aria-label` of the host after the first render left the accessible name of the slider as it was.
+  - `igcHover` did not fire when the pointer left the component, and then entered again over the same symbol.
 - #### Select
   - `ArrowUp` on a closed select that had a selection cleared the selection and showed the placeholder, instead of a move to the previous item. The component set the item that keyboard navigation moves from only through its own selection path. Thus a selection through the `value` property, or through a `selected` attribute on an item, left that item unset, and a backward step from "no item" went off the start of the list. Navigation now always starts from the current selection. If there is no item to move to, the selection does not change.
   - Type-ahead threw a `TypeError` on the first character that you type, on a select that had a selection.
