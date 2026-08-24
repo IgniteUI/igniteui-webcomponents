@@ -1273,6 +1273,56 @@ describe('Carousel', () => {
       expect(carousel.isPaused).to.be.false;
     });
 
+    it('should keep an explicit pause after the interaction ends', async () => {
+      await startRotation();
+
+      carousel.dispatchEvent(new PointerEvent('pointerenter'));
+      await elementUpdated(carousel);
+
+      carousel.pause();
+      carousel.dispatchEvent(new PointerEvent('pointerleave'));
+      await elementUpdated(carousel);
+
+      expect(carousel.isPlaying).to.be.false;
+      expect(carousel.isPaused).to.be.true;
+    });
+
+    it('should keep the rotation paused when the interval changes during an interaction', async () => {
+      await startRotation();
+
+      carousel.dispatchEvent(new PointerEvent('pointerenter'));
+      await elementUpdated(carousel);
+
+      await startRotation(500);
+
+      expect(carousel.isPlaying).to.be.false;
+      expect(clock.countTimers()).to.equal(0);
+
+      carousel.dispatchEvent(new PointerEvent('pointerleave'));
+      await elementUpdated(carousel);
+
+      expect(carousel.isPlaying).to.be.true;
+    });
+
+    it('should not start a timer while detached', async () => {
+      const parent = carousel.parentElement!;
+      carousel.remove();
+
+      carousel.interval = 1000;
+      await elementUpdated(carousel);
+
+      const eventSpy = spy(carousel, 'emitEvent');
+      await clock.tickAsync(3500);
+
+      expect(eventSpy).not.calledWith('igcSlideChanged');
+      expect(clock.countTimers()).to.equal(0);
+
+      parent.append(carousel);
+      await elementUpdated(carousel);
+
+      expect(clock.countTimers()).to.equal(1);
+    });
+
     it('should not leave a timer behind at the `disableLoop` end stop', async () => {
       carousel.disableLoop = true;
       await startRotation();
@@ -1369,6 +1419,24 @@ describe('Carousel', () => {
 
       expect(indicators[1].active).to.be.false;
       expect(indicators[1].hasAttribute('aria-controls')).to.be.false;
+    });
+
+    it('should not activate a projected indicator without a slide', async () => {
+      const el = await fixture<IgcCarouselComponent>(
+        createCarousel({ indicators: 2, slides: 1 })
+      );
+      await nextFrame();
+
+      el.slides[0].remove();
+      await elementUpdated(el);
+      await nextFrame();
+
+      const indicators = Array.from(
+        el.querySelectorAll(IgcCarouselIndicatorComponent.tagName)
+      );
+
+      expect(el.total).to.equal(0);
+      expect(indicators.some((indicator) => indicator.active)).to.be.false;
     });
 
     it('should not steal focus on a programmatic change after a no-op key press', async () => {

@@ -226,10 +226,10 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
    */
   @property({ type: Number })
   public set value(number: number) {
-    const value = this.hasUpdated
-      ? clamp(asNumber(number), 0, this.max)
-      : Math.max(asNumber(number), 0);
-    this._formValue.setValueAndFormState(this._normalize(value));
+    const value = this._normalize(asNumber(number));
+    this._formValue.setValueAndFormState(
+      this.hasUpdated ? clamp(value, 0, this.max) : Math.max(value, 0)
+    );
   }
 
   public get value(): number {
@@ -400,11 +400,12 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
   }
 
   /**
-   * Removes the floating point noise that the step arithmetic introduces. Thus
+   * Removes the floating point noise that the step arithmetic introduces. The
+   * significant digits stay, thus a fractional value keeps its precision, and
    * the value, the event payload and `aria-valuenow` stay readable.
    */
   private _normalize(value: number): number {
-    return roundPrecise(value, numberOfDecimals(this.step) + 2);
+    return Number.parseFloat(value.toPrecision(12));
   }
 
   private _updateProjectedSymbols(): void {

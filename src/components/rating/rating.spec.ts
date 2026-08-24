@@ -639,6 +639,27 @@ describe('Rating component', () => {
       );
     });
 
+    it('keeps a fractional value with an integer step', async () => {
+      const rating = await fixture<IgcRatingComponent>(
+        html`<igc-rating value="2.555" step="1"></igc-rating>`
+      );
+
+      expect(rating.value).to.equal(2.555);
+    });
+
+    it('keeps the value inside a fractional `max`', async () => {
+      const rating = await fixture<IgcRatingComponent>(
+        html`<igc-rating></igc-rating>`
+      );
+
+      rating.max = 2.555;
+      rating.value = 2.555;
+      await elementUpdated(rating);
+
+      expect(rating.value).to.equal(2.555);
+      expect(rating.value).to.be.at.most(rating.max);
+    });
+
     it('falls back on a non-numeric `max` and `step`', async () => {
       const rating = await fixture<IgcRatingComponent>(
         html`<igc-rating></igc-rating>`
@@ -666,6 +687,7 @@ describe('Rating component', () => {
       expect(slider.getAttribute('aria-labelledby')).to.equal('rating-label');
       expect(slider.hasAttribute('aria-label')).to.be.false;
       await expect(rating).to.be.accessible();
+      await expect(rating).shadowDom.to.be.accessible();
     });
 
     it('names the slider through the host `aria-label`', async () => {
@@ -677,6 +699,7 @@ describe('Rating component', () => {
       expect(slider.getAttribute('aria-label')).to.equal('Score');
       expect(slider.hasAttribute('aria-labelledby')).to.be.false;
       await expect(rating).to.be.accessible();
+      await expect(rating).shadowDom.to.be.accessible();
     });
 
     it('exposes the readonly state', async () => {
@@ -688,6 +711,7 @@ describe('Rating component', () => {
       expect(slider.getAttribute('aria-readonly')).to.equal('true');
       expect(slider.getAttribute('tabindex')).to.equal('0');
       await expect(rating).to.be.accessible();
+      await expect(rating).shadowDom.to.be.accessible();
     });
 
     it('exposes the disabled state', async () => {
@@ -698,6 +722,8 @@ describe('Rating component', () => {
 
       expect(slider.getAttribute('aria-disabled')).to.equal('true');
       expect(slider.getAttribute('tabindex')).to.equal('-1');
+      await expect(rating).to.be.accessible();
+      await expect(rating).shadowDom.to.be.accessible();
     });
   });
 
