@@ -1,9 +1,8 @@
-import { html, nothing, type TemplateResult } from 'lit';
+import { html } from 'lit';
 import { property } from 'lit/decorators.js';
-import { ifDefined } from 'lit/directives/if-defined.js';
-import { live } from 'lit/directives/live.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { partMap } from '#internals/part-map.js';
+import { renderToggleShell } from '#internals/templates/toggle-shell.js';
 import { createIdGenerator } from '#internals/utils/strings.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import IgcValidationContainerComponent from '../validation-container/validation-container.js';
@@ -58,10 +57,6 @@ export default class IgcCheckboxComponent extends IgcCheckboxBaseComponent {
     super._handleClick(event);
   }
 
-  protected _renderValidatorContainer(): TemplateResult {
-    return IgcValidationContainerComponent.create(this);
-  }
-
   protected _renderStandard() {
     return html`
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
@@ -83,36 +78,21 @@ export default class IgcCheckboxComponent extends IgcCheckboxBaseComponent {
 
   protected override render() {
     const labelledBy = this.getAttribute('aria-labelledby');
-    const describedBy = this._slots.hasAssignedElements('helper-text')
-      ? 'helper-text'
-      : nothing;
     const checked = this.checked;
 
     return html`
-      <label
-        part=${partMap({
+      ${renderToggleShell({
+        type: 'checkbox',
+        inputId: this._inputId,
+        labelId: this._labelId,
+        baseParts: {
           base: true,
           checked,
           focused: this._focusRingManager.focused,
-        })}
-        for=${this._inputId}
-      >
-        <input
-          id=${this._inputId}
-          type="checkbox"
-          name=${ifDefined(this.name)}
-          value=${ifDefined(this.value)}
-          ?required=${this.required}
-          ?disabled=${this.disabled}
-          .checked=${live(checked)}
-          .indeterminate=${live(this.indeterminate)}
-          aria-labelledby=${labelledBy ? labelledBy : this._labelId}
-          aria-describedby=${describedBy}
-          @keydown=${this._handleEnterKeydown}
-          @click=${this._handleClick}
-          @blur=${this._handleBlur}
-        />
-        <span part=${partMap({ control: true, checked })}>
+        },
+        controlParts: { control: true, checked },
+        labelParts: { label: true, checked },
+        renderControl: () => html`
           <span part=${partMap({ indicator: true, checked })}>
             ${
               this._themes.theme === 'indigo'
@@ -120,15 +100,23 @@ export default class IgcCheckboxComponent extends IgcCheckboxBaseComponent {
                 : this._renderStandard()
             }
           </span>
-        </span>
-        <span
-          id=${this._labelId}
-          part=${partMap({ label: true, checked })}
-          ?hidden=${this._hideLabel}
-          ><slot></slot>
-        </span>
-      </label>
-      ${this._renderValidatorContainer()}
+        `,
+        checked,
+        hideLabel: this._hideLabel,
+        name: this.name,
+        value: this.value,
+        required: this.required,
+        disabled: this.disabled,
+        indeterminate: this.indeterminate,
+        ariaLabelledBy: labelledBy ? labelledBy : this._labelId,
+        ariaDescribedBy: this._slots.hasAssignedElements('helper-text')
+          ? 'helper-text'
+          : undefined,
+        onClick: this._handleClick,
+        onKeyDown: this._handleEnterKeydown,
+        onBlur: this._handleBlur,
+      })}
+      ${this._renderValidationContainer()}
     `;
   }
 }

@@ -1062,7 +1062,7 @@ describe('Slider component', () => {
   describe('Initial rendering race condition', () => {
     let slider: IgcSliderComponent;
 
-    before(() => defineComponents(IgcSliderComponent));
+    before(() => defineComponents(IgcSliderComponent, IgcRangeSliderComponent));
 
     beforeEach(async () => {
       slider = await fixture<IgcSliderComponent>(
@@ -1098,6 +1098,30 @@ describe('Slider component', () => {
       await elementUpdated(slider);
 
       expect(slider.value).to.equal(100);
+    });
+
+    it('normalizes a value set before the constraint that invalidates it', async () => {
+      // Attributes are applied in markup order, so `value` is validated against
+      // the default `max` and only then does `max` narrow the scale.
+      slider = await fixture<IgcSliderComponent>(
+        html`<igc-slider value="100" max="50"></igc-slider>`
+      );
+
+      expect(slider.max).to.equal(50);
+      expect(slider.value).to.equal(50);
+    });
+
+    it('normalizes range values set before the constraint that invalidates them', async () => {
+      const rangeSlider = await fixture<IgcRangeSliderComponent>(
+        html`<igc-range-slider
+          lower="20"
+          upper="100"
+          max="50"
+        ></igc-range-slider>`
+      );
+
+      expect(rangeSlider.max).to.equal(50);
+      expect(rangeSlider.upper).to.equal(50);
     });
   });
 

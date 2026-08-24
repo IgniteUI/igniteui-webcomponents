@@ -19,7 +19,7 @@ const metadata: Meta<IgcSplitterComponent> = {
     docs: {
       description: {
         component:
-          'A splitter component that provides a resizable split-pane layout, dividing the view\ninto two panels — *start* and *end* — separated by a draggable bar.\n\nPanels can be resized by dragging the bar, using keyboard shortcuts, or collapsed/expanded\nusing the built-in collapse buttons or the programmatic `toggle()` API.\nNested splitters are supported for more complex layouts.',
+          'A splitter component that provides a resizable split-pane layout, dividing the view\ninto two panels - *start* and *end* - separated by a draggable bar.\n\nPanels can be resized by dragging the bar, using keyboard shortcuts, or collapsed/expanded\nusing the built-in collapse buttons or the programmatic `toggle()` API.\nNested splitters are supported for more complex layouts.',
       },
     },
     actions: {

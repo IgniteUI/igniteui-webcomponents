@@ -1,4 +1,10 @@
-import { html, LitElement, nothing, type TemplateResult } from 'lit';
+import {
+  html,
+  LitElement,
+  nothing,
+  type PropertyValues,
+  type TemplateResult,
+} from 'lit';
 import {
   property,
   query,
@@ -19,7 +25,8 @@ import {
   pageUpKey,
 } from '#internals/controllers/key-bindings.js';
 import { blazorDeepImport } from '#internals/decorators/blazorDeepImport.js';
-import { watch } from '#internals/decorators/watch.js';
+import { coercedProperty } from '#internals/decorators/coerced-property.js';
+import { createTimer } from '#internals/timing.js';
 import { isLTR } from '#internals/utils/dom.js';
 import { addSafeEventListener } from '#internals/utils/events.js';
 import { asNumber, asPercent, clamp } from '#internals/utils/math.js';
@@ -51,11 +58,13 @@ export class IgcSliderBaseComponent extends LitElement {
   private _max = 100;
   private _lowerBound?: number;
   private _upperBound?: number;
-  private _step = 1;
   private startValue?: number;
   private pointerCaptured = false;
-  private thumbHoverTimer: any;
   protected activeThumb?: HTMLElement;
+
+  private readonly _thumbLabelTimer = createTimer(() => {
+    this.thumbLabelsVisible = false;
+  }, 750);
 
   @state()
   protected thumbLabelsVisible = false;
@@ -193,13 +202,11 @@ export class IgcSliderBaseComponent extends LitElement {
    * @attr
    */
   @property({ type: Number })
-  public set step(value: number) {
-    this._step = this.hasLabels ? 1 : asNumber(value, this._step);
-  }
-
-  public get step(): number {
-    return this._step;
-  }
+  @coercedProperty<number, IgcSliderBaseComponent>({
+    transform: ({ value, host, previous }) =>
+      host.hasLabels ? 1 : asNumber(value, previous ?? 1),
+  })
+  public step = 1;
 
   /**
    * The number of primary ticks. It defaults to 0 which means no primary ticks are displayed.
@@ -264,13 +271,19 @@ export class IgcSliderBaseComponent extends LitElement {
   @property({ type: Number, reflect: true, attribute: 'tick-label-rotation' })
   public tickLabelRotation: SliderTickLabelRotation = 0;
 
-  @watch('min', { waitUntilFirstUpdate: true })
-  @watch('max', { waitUntilFirstUpdate: true })
-  @watch('lowerBound', { waitUntilFirstUpdate: true })
-  @watch('upperBound', { waitUntilFirstUpdate: true })
-  @watch('step', { waitUntilFirstUpdate: true })
-  protected constraintsChange() {
-    this.normalizeValue();
+  protected override willUpdate(changedProperties: PropertyValues<this>): void {
+    const constraintsChanged =
+      changedProperties.has('min') ||
+      changedProperties.has('max') ||
+      changedProperties.has('lowerBound') ||
+      changedProperties.has('upperBound') ||
+      changedProperties.has('step');
+
+    // The initial update included - attributes are applied in markup order, so
+    // a value can arrive validated against a constraint that is not final yet.
+    if (constraintsChanged) {
+      this.normalizeValue();
+    }
   }
 
   constructor() {
@@ -421,11 +434,7 @@ export class IgcSliderBaseComponent extends LitElement {
       return;
     }
 
-    if (this.thumbHoverTimer) {
-      clearTimeout(this.thumbHoverTimer);
-      this.thumbHoverTimer = null;
-    }
-
+    this._thumbLabelTimer.stop();
     this.thumbLabelsVisible = true;
   }
 
@@ -434,9 +443,7 @@ export class IgcSliderBaseComponent extends LitElement {
       return;
     }
 
-    this.thumbHoverTimer = setTimeout(() => {
-      this.thumbLabelsVisible = false;
-    }, 750);
+    this._thumbLabelTimer.start();
   }
 
   private calculateTrackUpdate(mouseX: number): number {
@@ -506,6 +513,14 @@ export class IgcSliderBaseComponent extends LitElement {
     this.activeThumb = event.target as HTMLElement;
   }
 
+  /**
+   * The `aria-valuetext` of a thumb when neither projected labels nor value
+   * formatting apply. Returning `undefined` omits the attribute.
+   */
+  protected _thumbAriaValueText(_thumbId?: string): string | undefined {
+    return undefined;
+  }
+
   protected handleThumbBlur() {
     this.activeThumb?.part.remove('focused');
     this.activeThumb = undefined;
@@ -556,7 +571,7 @@ export class IgcSliderBaseComponent extends LitElement {
       ? this.labels[value]
       : this.valueFormat || this.valueFormatOptions
         ? this.formatValue(value)
-        : undefined;
+        : this._thumbAriaValueText(thumbId);
 
     return html`
       <div

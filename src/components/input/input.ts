@@ -4,6 +4,10 @@ import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 import { ariaBindings } from '#internals/controllers/aria-projection.js';
 import { addSlotController, setSlots } from '#internals/controllers/slot.js';
+import {
+  coercedProperty,
+  type CoercedPropertyConfig,
+} from '#internals/decorators/coerced-property.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { createFormValueState } from '#internals/mixins/forms/form-value.js';
 import { partMap } from '#internals/part-map.js';
@@ -71,6 +75,14 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
   public static readonly tagName = 'igc-input';
   public static styles = [styles, shared];
 
+  /** Shared config for the constraint properties - a change revalidates. */
+  private static readonly _revalidate: CoercedPropertyConfig<
+    unknown,
+    IgcInputComponent
+  > = {
+    onChange: ({ host }) => host._validate(),
+  };
+
   /* blazorSuppress */
   public static register(): void {
     registerComponent(IgcInputComponent, IgcValidationContainerComponent);
@@ -89,13 +101,6 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
   protected override get __validators() {
     return this.type !== 'number' ? stringValidators : numberValidators;
   }
-
-  private _min?: number;
-  private _max?: number;
-  private _minLength?: number;
-  private _maxLength?: number;
-  private _pattern?: string;
-  private _step?: number;
 
   /* @tsTwoWayProperty(true, "igcChange", "detail", false) */
   /**
@@ -141,84 +146,48 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
    * @attr
    */
   @property()
-  public set pattern(value: string | undefined) {
-    this._pattern = value;
-    this._validate();
-  }
-
-  public get pattern(): string | undefined {
-    return this._pattern;
-  }
+  @coercedProperty(IgcInputComponent._revalidate)
+  public pattern?: string = undefined;
 
   /**
    * The minimum string length required by the control.
    * @attr minlength
    */
   @property({ type: Number, attribute: 'minlength' })
-  public set minLength(value: number | undefined) {
-    this._minLength = value;
-    this._validate();
-  }
-
-  public get minLength(): number | undefined {
-    return this._minLength;
-  }
+  @coercedProperty(IgcInputComponent._revalidate)
+  public minLength?: number = undefined;
 
   /**
    * The maximum string length of the control.
    * @attr maxlength
    */
   @property({ type: Number, attribute: 'maxlength' })
-  public set maxLength(value: number | undefined) {
-    this._maxLength = value;
-    this._validate();
-  }
-
-  public get maxLength(): number | undefined {
-    return this._maxLength;
-  }
+  @coercedProperty(IgcInputComponent._revalidate)
+  public maxLength?: number = undefined;
 
   /**
    * The minimum value the control accepts.
    * @attr
    */
   @property({ type: Number })
-  public set min(value: number | undefined) {
-    this._min = value;
-    this._validate();
-  }
-
-  public get min(): number | undefined {
-    return this._min;
-  }
+  @coercedProperty(IgcInputComponent._revalidate)
+  public min?: number = undefined;
 
   /**
    * The maximum value the control accepts.
    * @attr
    */
   @property({ type: Number })
-  public set max(value: number | undefined) {
-    this._max = value;
-    this._validate();
-  }
-
-  public get max(): number | undefined {
-    return this._max;
-  }
+  @coercedProperty(IgcInputComponent._revalidate)
+  public max?: number = undefined;
 
   /**
    * The granularity the value must adhere to.
    * @attr
    */
   @property({ type: Number })
-  public set step(value: number | undefined) {
-    this._step = value;
-    this._validate();
-  }
-
-  public get step(): number | undefined {
-    return this._step;
-  }
+  @coercedProperty(IgcInputComponent._revalidate)
+  public step?: number = undefined;
 
   /**
    * Whether the control should receive focus automatically.
@@ -279,15 +248,11 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
   }
 
   private _handleInput(): void {
-    this._setTouchedState();
-    this.value = this._input?.value ?? '';
-    this.emitEvent('igcInput', { detail: this.value });
+    this._commitValue(this._input?.value ?? '', 'igcInput');
   }
 
   private _handleChange(): void {
-    this._setTouchedState();
-    this.value = this._input?.value ?? '';
-    this.emitEvent('igcChange', { detail: this.value });
+    this._commitValue(this._input?.value ?? '', 'igcChange');
   }
 
   protected _renderInput() {

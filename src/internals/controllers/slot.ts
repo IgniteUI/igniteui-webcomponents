@@ -5,6 +5,7 @@ import {
   type ReactiveControllerHost,
 } from 'lit';
 import { isEmpty } from '../utils/arrays.js';
+import { normalizedTextContent } from '../utils/dom.js';
 
 type InferSlotNames<T> = T extends readonly (infer U)[] ? U : never;
 
@@ -135,6 +136,17 @@ class SlotController<T> implements ReactiveController {
     return options?.selector
       ? elements.filter((e) => e.matches(options.selector!))
       : elements;
+  }
+
+  /**
+   * Returns the combined text content of the nodes assigned to `slot`,
+   * trimmed and with consecutive whitespace collapsed.
+   *
+   * Useful for deriving an accessible label from projected content.
+   * See {@link SlotQueryOptions.flatten} for the `flatten` semantics.
+   */
+  public getAssignedText(slot: T, flatten = false): string {
+    return normalizedTextContent(this.getAssignedNodes(slot, flatten));
   }
 
   /**

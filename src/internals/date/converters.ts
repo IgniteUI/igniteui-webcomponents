@@ -1,6 +1,6 @@
 import type { DateRangeValue } from '../../components/types.js';
 import { isPlainObject, isString } from '../utils/types.js';
-import { CalendarDay } from './model.js';
+import { CalendarDay, truncateTime } from './model.js';
 
 /** Matches a string beginning with a four digit year, which is left to `Date` to parse. */
 const ISO_DATE_PATTERN = /^\d{4}/;
@@ -102,10 +102,7 @@ export function convertToDateRange(
   const start = convertToDate(parsed.start as Date | string | null);
   const end = convertToDate(parsed.end as Date | string | null);
 
-  return {
-    start: start ? CalendarDay.from(start).native : null,
-    end: end ? CalendarDay.from(end).native : null,
-  };
+  return { start: truncateTime(start), end: truncateTime(end) };
 }
 
 /** Converts a `Date` to an ISO 8601 string. */

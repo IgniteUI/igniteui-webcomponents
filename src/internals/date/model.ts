@@ -24,6 +24,18 @@ export function toCalendarDay(date: DayParameter): CalendarDay {
   return date instanceof Date ? CalendarDay.from(date) : date;
 }
 
+/** Null-preserving {@link toCalendarDay}: empty values convert to `null`. */
+export function toCalendarDayOrNull(
+  date?: DayParameter | null
+): CalendarDay | null {
+  return date ? toCalendarDay(date) : null;
+}
+
+/** Truncates the time portion of `date`, passing empty values through as `null`. */
+export function truncateTime(date?: Date | null): Date | null {
+  return date ? CalendarDay.from(date).native : null;
+}
+
 /**
  * Yields the days between `start` and `end`, stepping by `unit` and stopping short of
  * `end` unless `inclusive` is set.

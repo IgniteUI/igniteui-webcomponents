@@ -5,16 +5,25 @@ import type {
 } from 'lit';
 import type { FormValueType } from '../mixins/forms/types.js';
 
+/** A subset of the ARIA attributes exposed through `ElementInternals`. */
+type ARIAState = { [K in keyof ARIAMixin]?: ARIAMixin[K] };
+
 /** Configuration for the ElementInternalsController. */
 type ElementInternalsConfig<T extends keyof ARIAMixin = keyof ARIAMixin> = {
   /** Initial ARIA attributes to set on the element internals. */
   initialARIA?: Partial<Record<T, ARIAMixin[T]>>;
   /**
+   * ARIA attributes derived from host state, recomputed on every host update.
+   * Keep the projection cheap - it runs whether or not the properties it reads
+   * have changed.
+   */
+  aria?: () => ARIAState;
+  /**
    * Whether to also mirror the internals `role` to a `role` content attribute
    * on the host element.
    *
    * Workaround for axe, which reads content attributes only and does not see
-   * `ElementInternals` ARIA. An author-supplied `role` attribute always wins —
+   * `ElementInternals` ARIA. An author-supplied `role` attribute always wins -
    * the controller only writes the attribute when it is absent or was written
    * by the controller itself.
    */
@@ -36,6 +45,7 @@ const registry = new WeakMap<Element, ElementInternalsController>();
 class ElementInternalsController implements ReactiveController {
   private readonly _host: ReactiveControllerHost & LitElement;
   private readonly _internals: ElementInternals;
+  private readonly _aria?: () => ARIAState;
   private readonly _reflectRole: boolean;
 
   /** The last `role` content attribute value written by this controller. */
@@ -106,6 +116,7 @@ class ElementInternalsController implements ReactiveController {
   ) {
     this._host = host;
     this._internals = this._host.attachInternals();
+    this._aria = config?.aria;
     this._reflectRole = config?.reflectRole ?? false;
 
     if (config?.initialARIA) {
@@ -121,11 +132,18 @@ class ElementInternalsController implements ReactiveController {
     this._reflectRoleAttribute();
   }
 
+  /** @internal */
+  public hostUpdate(): void {
+    if (this._aria) {
+      this.setARIA(this._aria.call(this._host));
+    }
+  }
+
   /**
    * Mirrors the internals `role` onto a content attribute on the host, when
    * {@link ElementInternalsConfig.reflectRole} is enabled.
    *
-   * Deferred until the host is connected — custom elements must not gain
+   * Deferred until the host is connected - custom elements must not gain
    * attributes during construction.
    */
   private _reflectRoleAttribute(): void {
@@ -139,11 +157,15 @@ class ElementInternalsController implements ReactiveController {
     const current = host.getAttribute('role');
 
     // Write only when the attribute is absent or still holds the value this
-    // controller wrote — an attribute changed by the author is theirs to keep.
-    if (role && (current === null || current === this._reflectedRole)) {
-      host.setAttribute('role', role);
-      this._reflectedRole = role;
+    // controller wrote - an attribute changed by the author is theirs to keep.
+    if (current !== null && current !== this._reflectedRole) {
+      return;
     }
+
+    // A cleared role takes its attribute with it, or the host would keep
+    // semantics that its internals no longer report.
+    role ? host.setAttribute('role', role) : host.removeAttribute('role');
+    this._reflectedRole = role;
   }
 
   /** Sets ARIA attributes on the element's internals. */
@@ -238,7 +260,7 @@ export function addInternalsController(
 /**
  * Resolves the {@link ElementInternalsController} of the given element, if it has one.
  *
- * Internal cross-component/spec lookup. Not part of the public API — lives under
+ * Internal cross-component/spec lookup. Not part of the public API - lives under
  * `#internals` and must not be re-exported from the package entry point. Prefer this
  * over exposing `public` `@hidden @internal` members on component classes.
  */

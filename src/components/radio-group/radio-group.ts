@@ -1,4 +1,4 @@
-import { html, LitElement, type PropertyValues } from 'lit';
+import { html, LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
 import { addInternalsController } from '#internals/controllers/internals.js';
 import { createMutationController } from '#internals/controllers/mutation-observer.js';
@@ -31,11 +31,9 @@ export default class IgcRadioGroupComponent extends LitElement {
   }
 
   private readonly _internals = addInternalsController(this, {
-    initialARIA: {
-      role: 'radiogroup',
-      ariaOrientation: 'vertical',
-    },
+    initialARIA: { role: 'radiogroup' },
     reflectRole: true,
+    aria: () => ({ ariaOrientation: this.alignment }),
   });
 
   private readonly _slots = addSlotController(this, {
@@ -122,12 +120,6 @@ export default class IgcRadioGroupComponent extends LitElement {
         subtree: true,
       },
     });
-  }
-
-  protected override willUpdate(properties: PropertyValues<this>): void {
-    if (properties.has('alignment')) {
-      this._internals.setARIA({ ariaOrientation: this.alignment });
-    }
   }
 
   protected override firstUpdated(): void {

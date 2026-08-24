@@ -3,6 +3,7 @@ import {
   expect,
   fixture,
   html,
+  nextFrame,
   waitUntil,
 } from '@open-wc/testing';
 import { spy } from 'sinon';
@@ -277,6 +278,24 @@ describe('Expansion Panel', () => {
 
       expect(panel.open).to.be.false;
       expect(getDOMPart('content')).to.have.attribute('inert');
+    });
+
+    it('`show()/hide()` return false for the current state', async () => {
+      expect(await panel.hide()).to.be.false;
+      expect(await panel.show()).to.be.true;
+      expect(await panel.show()).to.be.false;
+    });
+
+    it('`hide()` returns false when superseded by a newer `show()`', async () => {
+      await panel.show();
+
+      const closing = panel.hide();
+      await nextFrame(); // Let the exit animation run before superseding it.
+      const reopening = panel.show();
+
+      expect(await closing).to.be.false;
+      expect(await reopening).to.be.true;
+      expect(panel.open).to.be.true;
     });
   });
 

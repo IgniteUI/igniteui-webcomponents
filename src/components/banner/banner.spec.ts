@@ -231,6 +231,20 @@ describe('Banner', () => {
     });
   });
 
+  describe('Interrupted Transitions', () => {
+    it('reopening during the exit animation keeps the banner open', async () => {
+      await banner.show();
+
+      const closing = banner.hide();
+      await nextFrame(); // Let the exit animation run before superseding it.
+      const reopening = banner.show();
+
+      expect(await closing).to.be.false;
+      expect(await reopening).to.be.true;
+      expect(banner.open).to.be.true;
+    });
+  });
+
   describe('Action Tests', () => {
     it('should close the banner when clicking the default button', async () => {
       const button = banner.renderRoot.querySelector('igc-button')!;

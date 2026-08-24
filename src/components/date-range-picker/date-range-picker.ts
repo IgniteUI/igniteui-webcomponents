@@ -1,7 +1,6 @@
 import {
   CalendarResourceStringsEN,
   DateRangePickerResourceStringsEN,
-  getDateFormatter,
   type ICalendarResourceStrings,
   type IDateRangePickerResourceStrings,
 } from 'igniteui-i18n-core';
@@ -13,7 +12,7 @@ import { live } from 'lit/directives/live.js';
 import { addAriaProjector } from '#internals/controllers/aria-projection.js';
 import { addSlotController, setSlots } from '#internals/controllers/slot.js';
 import { convertToDateRange } from '#internals/date/converters.js';
-import { CalendarDay } from '#internals/date/model.js';
+import { CalendarDay, truncateTime } from '#internals/date/model.js';
 import { blazorAdditionalDependencies } from '#internals/decorators/blazorAdditionalDependencies.js';
 import { shadowOptions } from '#internals/decorators/shadow-options.js';
 import { registerComponent } from '#internals/definitions/register.js';
@@ -21,7 +20,6 @@ import type { IgcDateRangePickerResourceStrings } from '#internals/i18n/EN/date-
 import {
   addI18nController,
   getDateTimeFormat,
-  getDefaultDateTimeFormat,
 } from '#internals/i18n/i18n-controller.js';
 import type { AbstractConstructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
@@ -239,7 +237,6 @@ export default class IgcDateRangePickerComponent extends EventEmitterMixin<
       CalendarResourceStringsEN
     ),
     resourceMapName: 'date-range-picker',
-    onResourceChange: this._updateDefaultMask,
   });
 
   protected override readonly _formValue = createFormValueState(this, {
@@ -249,8 +246,6 @@ export default class IgcDateRangePickerComponent extends EventEmitterMixin<
 
   protected override _visibleMonths = 2;
 
-  private _localeDisplayFormat!: string;
-  private _defaultMask!: string;
   private _placeholder?: string;
 
   /** The range reflected in the calendar, committed or still being typed. */
@@ -310,11 +305,11 @@ export default class IgcDateRangePickerComponent extends EventEmitterMixin<
   }
 
   protected override get _defaultDisplayFormat(): string | undefined {
-    return this._inputFormat ?? this._localeDisplayFormat;
+    return this._inputFormat ?? this._i18nController.localeDisplayFormat;
   }
 
   protected override get _defaultInputFormat(): string | undefined {
-    return this._defaultMask;
+    return this._i18nController.localeInputFormat;
   }
 
   protected override get _projectionTarget() {
@@ -504,10 +499,6 @@ export default class IgcDateRangePickerComponent extends EventEmitterMixin<
   protected override willUpdate(changedProperties: PropertyValues<this>): void {
     super.willUpdate(changedProperties);
 
-    if (changedProperties.has('locale')) {
-      this._updateDefaultMask();
-    }
-
     if (changedProperties.has('mode') && !this._isDropDown) {
       this.keepOpenOnSelect = true;
     }
@@ -573,13 +564,11 @@ export default class IgcDateRangePickerComponent extends EventEmitterMixin<
     }
 
     const input = event.target as IgcDateTimeInputComponent;
-    const draft = input._uncommittedValue;
-    const newValue = draft ? CalendarDay.from(draft).native : null;
+    const newValue = truncateTime(input._uncommittedValue);
     const range = this._getUpdatedDateRange(input, newValue);
 
     this._setCalendarRangeValues(range);
-    this._calendar.activeDate =
-      newValue ?? range.start ?? range.end ?? this._calendar.activeDate;
+    this._setCalendarActiveDate(newValue, range.start, range.end);
 
     this.emitEvent('igcInput', { detail: range });
   }
@@ -588,7 +577,7 @@ export default class IgcDateRangePickerComponent extends EventEmitterMixin<
     event.stopPropagation();
 
     const input = event.target as IgcDateTimeInputComponent;
-    const newValue = input.value ? CalendarDay.from(input.value).native : null;
+    const newValue = truncateTime(input.value);
 
     this._commitRange(this._getUpdatedDateRange(input, newValue));
   }
@@ -621,13 +610,6 @@ export default class IgcDateRangePickerComponent extends EventEmitterMixin<
 
   // #region Private methods
 
-  private _updateDefaultMask(): void {
-    this._defaultMask = getDefaultDateTimeFormat(this.locale);
-    this._localeDisplayFormat = getDateFormatter().getLocaleDateTimeFormat(
-      this.locale
-    );
-  }
-
   private async _syncCalendarRange(): Promise<void> {
     await this._calendar?.updateComplete;
     this._setCalendarRangeValues();
@@ -649,8 +631,7 @@ export default class IgcDateRangePickerComponent extends EventEmitterMixin<
   private _setCalendarActiveDateAndViewIndex() {
     const activeDaysViewIndex = '_activeDaysViewIndex';
 
-    this._calendar.activeDate =
-      this._firstDefinedInRange ?? this._calendar.activeDate;
+    this._setCalendarActiveDate(this._firstDefinedInRange);
     this._calendar[activeDaysViewIndex] = 0;
   }
 
@@ -696,9 +677,7 @@ export default class IgcDateRangePickerComponent extends EventEmitterMixin<
           ? [range.start]
           : [range.start, range.end];
 
-      if (this._calendar) {
-        this._calendar.activeDate = range.start;
-      }
+      this._setCalendarActiveDate(range.start);
       return;
     }
 
@@ -729,8 +708,7 @@ export default class IgcDateRangePickerComponent extends EventEmitterMixin<
 
   private _select(value: DateRangeValue | null, emitEvent = false) {
     this.value = value;
-    this._calendar.activeDate =
-      this._firstDefinedInRange ?? this._calendar.activeDate;
+    this._setCalendarActiveDate(this._firstDefinedInRange);
 
     if (emitEvent) {
       this.emitEvent('igcChange', { detail: this.value });
@@ -853,13 +831,14 @@ export default class IgcDateRangePickerComponent extends EventEmitterMixin<
         </div>
         ${this._renderInput(idEnd, DateRangePosition.End)}
       </div>
-      ${this._renderPicker(idStart)} ${this._renderHelperText()}
+      ${this._renderPicker(idStart)} ${this._renderValidationContainer()}
     `;
   }
 
   private _renderSingleInput(id: string) {
     const format =
-      getDateTimeFormat(this.displayFormat) ?? this._localeDisplayFormat;
+      getDateTimeFormat(this.displayFormat) ??
+      this._i18nController.localeDisplayFormat;
     const hasClickHandler = !(this._isDropDown || this.readOnly);
 
     return html`
@@ -885,7 +864,7 @@ export default class IgcDateRangePickerComponent extends EventEmitterMixin<
       >
         ${this._renderEditorSlots()}
       </igc-date-range-input>
-      ${this._renderHelperText()} ${this._renderPicker(id)}
+      ${this._renderValidationContainer()} ${this._renderPicker(id)}
     `;
   }
 

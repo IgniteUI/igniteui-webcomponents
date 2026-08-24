@@ -1,4 +1,5 @@
-import type { LitElement } from 'lit';
+import type { LitElement, TemplateResult } from 'lit';
+import type { ValidationContainerConfig } from '../../../components/validation-container/validation-container.js';
 import type { ElementInternalsController } from '../../controllers/internals.js';
 import type { Validator } from '../../validators.js';
 
@@ -86,6 +87,25 @@ export declare class BaseFormAssociatedElement {
   protected _setTouchedState(): void;
 
   /**
+   * Sets the **touched** state of the component and emits `eventName` - the pair every
+   * user-interaction handler must apply when it responds to input.
+   *
+   * The host must compose the event-emitter mixin somewhere in its heritage.
+   */
+  protected _emitTouchedEvent(
+    eventName: string,
+    init?: CustomEventInit
+  ): boolean;
+
+  /**
+   * Renders a validation container bound to the component, projecting its helper-text
+   * and validation message slots.
+   */
+  protected _renderValidationContainer(
+    config?: ValidationContainerConfig
+  ): TemplateResult;
+
+  /**
    * Sets the default value of the component.
    * Called in `attributeChangedCallback` (i.e. when the `value` attribute of the control is set).
    */
@@ -161,6 +181,13 @@ export declare class FormAssociatedElementInterface extends BaseFormAssociatedEl
   /** The initial value of the component. */
   public set defaultValue(value: unknown);
   public get defaultValue(): unknown;
+
+  /**
+   * Commits a user-initiated value change: sets the **touched** state **before** assigning
+   * to the public `value` setter, so the validation cycle the setter runs applies invalid
+   * styling in the same pass, then emits `eventName` with the coerced value as `detail`.
+   */
+  protected _commitValue(value: unknown, eventName: string): boolean;
 }
 
 export declare class FormAssociatedCheckboxElementInterface extends BaseFormAssociatedElement {

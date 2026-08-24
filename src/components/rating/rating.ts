@@ -18,13 +18,14 @@ import {
   type SlotChangeCallbackParameters,
   setSlots,
 } from '#internals/controllers/slot.js';
+import { coercedProperty } from '#internals/decorators/coerced-property.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import type { Constructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { FormAssociatedMixin } from '#internals/mixins/forms/associated.js';
 import { FormValueNumberTransformers } from '#internals/mixins/forms/form-transformers.js';
 import { createFormValueState } from '#internals/mixins/forms/form-value.js';
-import { isLTR } from '#internals/utils/dom.js';
+import { isLTR, pointToFraction } from '#internals/utils/dom.js';
 import { bindIf } from '#internals/utils/lit.js';
 import {
   asNumber,
@@ -130,9 +131,6 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
     transformers: FormValueNumberTransformers,
   });
 
-  private _max = 5;
-  private _step = 1;
-  private _single = false;
   private _symbols: IgcRatingSymbolComponent[] = [];
 
   @query('[part="symbols"]', true)
@@ -173,19 +171,16 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
    * @default 5
    */
   @property({ type: Number })
-  public set max(value: number) {
-    this._max = this._hasProjectedSymbols
-      ? this._symbols.length
-      : Math.max(0, value);
-
-    if (this._max < this.value) {
-      this.value = this._max;
-    }
-  }
-
-  public get max(): number {
-    return this._max;
-  }
+  @coercedProperty<number, IgcRatingComponent>({
+    transform: ({ value, host }) =>
+      host._hasProjectedSymbols ? host._symbols.length : Math.max(0, value),
+    onChange: ({ value, host }) => {
+      if (value < host.value) {
+        host.value = value;
+      }
+    },
+  })
+  public max = 5;
 
   /**
    * The minimum value change allowed.
@@ -195,13 +190,10 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
    * @default 1
    */
   @property({ type: Number })
-  public set step(value: number) {
-    this._step = this.single ? 1 : clamp(value, 0.001, 1);
-  }
-
-  public get step(): number {
-    return this._step;
-  }
+  @coercedProperty<number, IgcRatingComponent>({
+    transform: ({ value, host }) => (host.single ? 1 : clamp(value, 0.001, 1)),
+  })
+  public step = 1;
 
   /**
    * The label of the control.
@@ -258,18 +250,16 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
    * @default false
    */
   @property({ type: Boolean, reflect: true })
-  public set single(value: boolean) {
-    this._single = Boolean(value);
-
-    if (this._single) {
-      this.step = 1;
-      this.value = Math.ceil(this.value);
-    }
-  }
-
-  public get single(): boolean {
-    return this._single;
-  }
+  @coercedProperty<boolean, IgcRatingComponent>({
+    transform: ({ value }) => Boolean(value),
+    onChange: ({ value, host }) => {
+      if (value) {
+        host.step = 1;
+        host.value = Math.ceil(host.value);
+      }
+    },
+  })
+  public single = false;
 
   /**
    * Whether to reset the rating when the user selects the same value.
@@ -381,12 +371,11 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
   }
 
   private _calcNewValue(x: number): number {
-    const { width, left, right } =
-      this._container?.getBoundingClientRect() ?? new DOMRect(1, 1, 1, 1);
-    const percent = isLTR(this) ? (x - left) / width : (right - x) / width;
-    const value = this._round(this.max * percent);
+    const fraction = this._container
+      ? pointToFraction(this._container, x, isLTR(this))
+      : 0;
 
-    return clamp(value, this.step, this.max);
+    return clamp(this._round(this.max * fraction), this.step, this.max);
   }
 
   private _round(value: number): number {

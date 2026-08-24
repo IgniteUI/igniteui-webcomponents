@@ -1,4 +1,5 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
+import type { TemplateResult } from 'lit';
 import { spy } from 'sinon';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
 import { createFormAssociatedTestBed } from '#internals/testing/form-testbed.spec.js';
@@ -423,6 +424,13 @@ describe('Radio Component', () => {
       return radio.renderRoot.querySelector('input')!.tabIndex;
     }
 
+    async function radiosOf(
+      template: TemplateResult
+    ): Promise<IgcRadioComponent[]> {
+      const container = await fixture<HTMLElement>(template);
+      return Array.from(container.querySelectorAll(IgcRadioComponent.tagName));
+    }
+
     beforeEach(async () => {
       radios = Array.from(
         (
@@ -548,6 +556,83 @@ describe('Radio Component', () => {
 
       expect(joining.checked).to.be.true;
       expect(checked.checked).to.be.false;
+    });
+
+    it('keeps same-name radios of two forms in separate groups', async () => {
+      const [apple, orange, mango, peach] = await radiosOf(html`
+        <div>
+          <form>
+            <igc-radio name="fruit" value="apple">Apple</igc-radio>
+            <igc-radio name="fruit" value="orange">Orange</igc-radio>
+          </form>
+          <form>
+            <igc-radio name="fruit" value="mango">Mango</igc-radio>
+            <igc-radio name="fruit" value="peach">Peach</igc-radio>
+          </form>
+        </div>
+      `);
+
+      apple.click();
+      mango.click();
+      await Promise.all(
+        [apple, orange, mango, peach].map((radio) => elementUpdated(radio))
+      );
+
+      // A selection in one form leaves the other one alone, and each form keeps
+      // the tab stop of its own group.
+      expect(apple.checked).to.be.true;
+      expect(mango.checked).to.be.true;
+      expect(tabIndexOf(apple)).to.equal(0);
+      expect(tabIndexOf(orange)).to.equal(-1);
+      expect(tabIndexOf(mango)).to.equal(0);
+      expect(tabIndexOf(peach)).to.equal(-1);
+    });
+
+    it('restores the tab stop when the checked radio moves to another group by form', async () => {
+      const [apple, orange] = await radiosOf(html`
+        <div>
+          <form>
+            <igc-radio name="fruit" value="apple">Apple</igc-radio>
+            <igc-radio name="fruit" value="orange">Orange</igc-radio>
+          </form>
+          <form id="other"></form>
+        </div>
+      `);
+
+      apple.click();
+      await elementUpdated(apple);
+      expect(tabIndexOf(orange)).to.equal(-1);
+
+      // The group left behind loses its selection along with the radio that
+      // held it, so the radio that stays becomes its tab stop.
+      apple.setAttribute('form', 'other');
+      await Promise.all([apple, orange].map((radio) => elementUpdated(radio)));
+
+      expect(tabIndexOf(orange)).to.equal(0);
+    });
+
+    it('moves a radio to the group of its new form owner', async () => {
+      const [apple, peach, mango] = await radiosOf(html`
+        <div>
+          <form>
+            <igc-radio name="fruit" value="apple" checked>Apple</igc-radio>
+            <igc-radio name="fruit" value="peach">Peach</igc-radio>
+          </form>
+          <form id="other">
+            <igc-radio name="fruit" value="mango" checked>Mango</igc-radio>
+          </form>
+        </div>
+      `);
+
+      // The `form` attribute overrides the ancestor form as the owner.
+      peach.setAttribute('form', 'other');
+      peach.click();
+      await Promise.all(
+        [apple, peach, mango].map((radio) => elementUpdated(radio))
+      );
+
+      expect(mango.checked).to.be.false;
+      expect(apple.checked).to.be.true;
     });
   });
 

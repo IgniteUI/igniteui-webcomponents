@@ -7,11 +7,12 @@ import { property, state } from 'lit/decorators.js';
 import { ariaBindings } from '#internals/controllers/aria-projection.js';
 import { addSlotController, setSlots } from '#internals/controllers/slot.js';
 import { registerComponent } from '#internals/definitions/register.js';
-import { addI18nController } from '#internals/i18n/i18n-controller.js';
+import type { I18nControllerConfig } from '#internals/i18n/i18n-controller.js';
 import type { AbstractConstructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { FormValueFileListTransformers } from '#internals/mixins/forms/form-transformers.js';
 import { createFormValueState } from '#internals/mixins/forms/form-value.js';
+import { I18nMixin } from '#internals/mixins/i18n.js';
 import { partMap } from '#internals/part-map.js';
 import { hasFiles } from '#internals/utils/dom.js';
 import { bindIf } from '#internals/utils/lit.js';
@@ -48,6 +49,10 @@ const Slots = setSlots(
   'invalid'
 );
 
+const i18n: I18nControllerConfig<IFileInputResourceStrings> = {
+  defaultEN: FileInputResourceStringsEN,
+};
+
 /* blazorSuppress */
 /**
  * @element igc-file-input
@@ -73,10 +78,13 @@ const Slots = setSlots(
  * @csspart suffix - The suffix wrapper.
  * @csspart helper-text - The helper text wrapper.
  */
-export default class IgcFileInputComponent extends EventEmitterMixin<
-  IgcFileInputComponentEventMap,
-  AbstractConstructor<IgcInputBaseComponent>
->(IgcInputBaseComponent) {
+export default class IgcFileInputComponent extends I18nMixin(
+  EventEmitterMixin<
+    IgcFileInputComponentEventMap,
+    AbstractConstructor<IgcInputBaseComponent>
+  >(IgcInputBaseComponent),
+  i18n
+) {
   public static readonly tagName = 'igc-file-input';
   public static styles = [baseStyle, shared, styles];
 
@@ -100,10 +108,6 @@ export default class IgcFileInputComponent extends EventEmitterMixin<
   protected override readonly _formValue = createFormValueState(this, {
     initialValue: null,
     transformers: FormValueFileListTransformers,
-  });
-
-  protected readonly _i18nController = addI18nController(this, {
-    defaultEN: FileInputResourceStringsEN,
   });
 
   protected override get __validators() {
@@ -146,31 +150,6 @@ export default class IgcFileInputComponent extends EventEmitterMixin<
 
   public get value(): string {
     return this._input?.value ?? '';
-  }
-
-  /**
-   * The resource strings for localization.
-   */
-  @property({ attribute: false })
-  public set resourceStrings(value: IFileInputResourceStrings) {
-    this._i18nController.resourceStrings = value;
-  }
-
-  public get resourceStrings(): IFileInputResourceStrings {
-    return this._i18nController.resourceStrings;
-  }
-
-  /**
-   * Gets/Sets the locale used for getting language, affecting resource strings.
-   * @attr locale
-   */
-  @property()
-  public set locale(value: string) {
-    this._i18nController.locale = value;
-  }
-
-  public get locale(): string {
-    return this._i18nController.locale;
   }
 
   /**

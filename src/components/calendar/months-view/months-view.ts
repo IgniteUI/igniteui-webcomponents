@@ -40,7 +40,7 @@ export default class IgcMonthsViewComponent extends IgcYearMonthViewBaseComponen
 
   //#region Public attributes and properties
 
-  /** Sets the locale used for formatting and displaying the dates. */
+  /** The locale used to format the displayed dates. */
   @property()
   public locale = 'en';
 

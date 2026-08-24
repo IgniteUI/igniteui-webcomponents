@@ -344,6 +344,25 @@ describe('Date Time Input component', () => {
 
         expect(input.value).to.equal('01/02/1999');
       });
+
+      it('emptying the mask commits an empty value, not a defaults-filled date', async () => {
+        const eventSpy = spy(element, 'emitEvent');
+        element.value = new Date(2020, 9, 10);
+        element.focus();
+        await elementUpdated(element);
+
+        element.setSelectionRange(0, input.value.length);
+        simulateInput(input, { inputType: 'deleteContentBackward' });
+        await elementUpdated(element);
+
+        expect(input.value).to.equal('__/__/____');
+
+        element.blur();
+        await elementUpdated(element);
+
+        expect(element.value).to.be.null;
+        expect(eventSpy).calledWith('igcChange', { detail: null });
+      });
     });
 
     describe('Undo / redo', () => {

@@ -18,7 +18,7 @@ import { styles as shared } from './themes/shared/validator.common.css.js';
 import { styles } from './themes/validator.base.css.js';
 
 /** Configuration for the validation container. */
-interface ValidationContainerConfig {
+export interface ValidationContainerConfig {
   /** The id attribute for the validation container. */
   id?: string;
   /** Project the validation container to the given slot inside the host shadow DOM. */

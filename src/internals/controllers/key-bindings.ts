@@ -158,6 +158,15 @@ function normalizeKeys(keys: string | string[]): string[] {
   return asArray(keys).map((key) => key.toLowerCase());
 }
 
+/**
+ * Whether the event's key matches `key`, case-insensitively. Prefer this over
+ * comparing `event.key` directly - the key names of this module are lowercase,
+ * while real events carry the canonical casing (e.g. `Enter`).
+ */
+export function isKey(event: KeyboardEvent, key: string): boolean {
+  return event.key.toLowerCase() === key.toLowerCase();
+}
+
 function isKeydown(event: Event): boolean {
   return event.type === 'keydown';
 }

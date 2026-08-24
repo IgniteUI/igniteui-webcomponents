@@ -6,9 +6,10 @@ import { html, LitElement, type PropertyValues } from 'lit';
 import { property } from 'lit/decorators.js';
 import { blazorAdditionalDependencies } from '#internals/decorators/blazorAdditionalDependencies.js';
 import { registerComponent } from '#internals/definitions/register.js';
-import { addI18nController } from '#internals/i18n/i18n-controller.js';
+import type { I18nControllerConfig } from '#internals/i18n/i18n-controller.js';
 import type { Constructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
+import { I18nMixin } from '#internals/mixins/i18n.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import type { TreeSelection } from '../types.js';
 import { styles } from './themes/container.base.css.js';
@@ -33,6 +34,10 @@ import { IgcTreeSelectionService } from './tree.selection.js';
  */
 const ITEM_RENDER_DEPENDENCIES = ['selection', 'resourceStrings'] as const;
 
+const i18n: I18nControllerConfig<ITreeResourceStrings> = {
+  defaultEN: TreeResourceStringsEN,
+};
+
 /**
  * The tree allows users to represent hierarchical data in a tree-view structure,
  * maintaining parent-child relationships, as well as to define static tree-view structure without a corresponding data model.
@@ -49,10 +54,12 @@ const ITEM_RENDER_DEPENDENCIES = ['selection', 'resourceStrings'] as const;
  * @fires igcActiveItem - Emitted when the tree's `active` item changes.
  */
 @blazorAdditionalDependencies('IgcTreeItemComponent')
-export default class IgcTreeComponent extends EventEmitterMixin<
-  IgcTreeComponentEventMap,
-  Constructor<LitElement>
->(LitElement) {
+export default class IgcTreeComponent extends I18nMixin(
+  EventEmitterMixin<IgcTreeComponentEventMap, Constructor<LitElement>>(
+    LitElement
+  ),
+  i18n
+) {
   public static readonly tagName = 'igc-tree';
   public static styles = styles;
 
@@ -60,13 +67,6 @@ export default class IgcTreeComponent extends EventEmitterMixin<
   public static register() {
     registerComponent(IgcTreeComponent, IgcTreeItemComponent);
   }
-
-  private readonly _i18nController = addI18nController<ITreeResourceStrings>(
-    this,
-    {
-      defaultEN: TreeResourceStringsEN,
-    }
-  );
 
   /** @hidden @internal */
   public selectionService!: IgcTreeSelectionService;
@@ -94,32 +94,6 @@ export default class IgcTreeComponent extends EventEmitterMixin<
    */
   @property({ reflect: true })
   public selection: TreeSelection = 'none';
-
-  /**
-   * Gets/Sets the locale used for getting language, affecting resource strings.
-   * @attr locale
-   */
-  @property()
-  public set locale(value: string) {
-    this._i18nController.locale = value;
-  }
-
-  public get locale() {
-    return this._i18nController.locale;
-  }
-
-  /**
-   * The resource strings for localization.
-   * Currently only aria-labels of the default expand/collapse icons are localized for the tree item.
-   */
-  @property({ attribute: false })
-  public set resourceStrings(value: ITreeResourceStrings) {
-    this._i18nController.resourceStrings = value;
-  }
-
-  public get resourceStrings(): ITreeResourceStrings {
-    return this._i18nController.resourceStrings;
-  }
 
   /**
    * @hidden @internal

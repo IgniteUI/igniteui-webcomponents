@@ -183,28 +183,12 @@ export default class IgcAccordionComponent extends LitElement {
     return panels[idx + dir] || panel;
   }
 
-  private async _closePanel(p: IgcExpansionPanelComponent): Promise<void> {
-    const args = { detail: p };
-
-    if (!(p.open && p.emitEvent('igcClosing', { cancelable: true, ...args }))) {
-      return;
-    }
-
-    if (await p.hide()) {
-      p.emitEvent('igcClosed', args);
-    }
+  private _closePanel(panel: IgcExpansionPanelComponent): Promise<boolean> {
+    return panel._hide();
   }
 
-  private async _openPanel(p: IgcExpansionPanelComponent): Promise<void> {
-    const args = { detail: p };
-
-    if (p.open || !p.emitEvent('igcOpening', { cancelable: true, ...args })) {
-      return;
-    }
-
-    if (await p.show()) {
-      p.emitEvent('igcOpened', args);
-    }
+  private _openPanel(panel: IgcExpansionPanelComponent): Promise<boolean> {
+    return panel._show();
   }
 
   //#endregion

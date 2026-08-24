@@ -241,5 +241,41 @@ describe('Localization', () => {
         'Списъкът е празен'
       );
     });
+
+    it('should re-merge custom resource strings when the locale changes', async () => {
+      registerI18n(ResourceStringsBG, 'bg');
+
+      instance.resourceStrings = {
+        combo_filter_search_placeholder: 'Custom placeholder',
+      };
+      instance.locale = 'bg';
+      instance.requestUpdate();
+      await elementUpdated(instance);
+
+      const strings = instance.resourceStrings as IComboResourceStrings;
+
+      expect(strings.combo_empty_message).to.equal('Списъкът е празен');
+      expect(strings.combo_filter_search_placeholder).to.equal(
+        'Custom placeholder'
+      );
+    });
+
+    it('should pick up a global change that happened while detached', async () => {
+      registerI18n(ResourceStringsBG, 'bg');
+
+      const parent = instance.parentElement!;
+      instance.remove();
+
+      // The controller is not listening at this point.
+      setCurrentI18n('bg');
+
+      parent.append(instance);
+      await elementUpdated(instance);
+
+      const text = instance.shadowRoot?.getElementById('start')?.innerText;
+      setCurrentI18n('en');
+
+      expect(text).to.equal('Списъкът е празен');
+    });
   });
 });

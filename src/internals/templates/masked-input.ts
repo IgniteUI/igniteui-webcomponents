@@ -26,7 +26,7 @@ export interface MaskedInputOptions {
   /** When provided, sets the `tabindex` attribute. */
   tabindex?: number;
   /**
-   * Resolved ARIA bindings for the native input — the projected host state
+   * Resolved ARIA bindings for the native input - the projected host state
    * merged with the editor's own (see `AriaTargetController.resolveBindings`).
    */
   aria: ResolvedARIABindings;
