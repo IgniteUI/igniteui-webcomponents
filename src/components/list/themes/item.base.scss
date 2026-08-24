@@ -59,6 +59,7 @@
 @media (forced-colors: active) {
     :host([selected]),
     :host([selected]:last-of-type) {
-        border: rem(1px) solid Highlight;
+        outline: rem(1px) solid Highlight;
+        outline-offset: -1px;
     }
 }

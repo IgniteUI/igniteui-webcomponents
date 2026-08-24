@@ -130,3 +130,14 @@
         border-color: GrayText;
     }
 }
+
+@media (forced-colors: active) {
+    [part~='active'] {
+        outline: rem(1px) solid CanvasText;
+        outline-offset: -1px;
+    }
+
+    [part~='selected'] {
+        color: Highlight;
+    }
+}

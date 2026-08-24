@@ -112,3 +112,11 @@ $active-border-width: rem(2px) !default;
         border-top-color: transparent;
     }
 }
+
+@media (forced-colors: active) {
+    :host(:not([outlined])) {
+        igc-input {
+            border: rem(1px) solid CanvasText;
+        }
+    }
+}

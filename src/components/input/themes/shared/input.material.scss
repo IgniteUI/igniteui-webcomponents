@@ -765,4 +765,16 @@ $fs: rem(16px) !default;
     :host(:not([outlined])) [part~='container'] [part='notch'] {
         border-top: none;
     }
+
+    :host(igc-input:not([outlined])) {
+        outline: rem(1px) solid CanvasText;
+
+        [part~='container'] {
+            border-bottom: none;
+
+            &::after {
+                content: unset;
+            }
+        }
+    }
 }
