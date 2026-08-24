@@ -148,6 +148,10 @@ class GesturesController extends EventTarget implements ReactiveController {
     const { signal } = this._abortHandle;
 
     this._host.updateComplete.then(() => {
+      if (signal.aborted || !this._element) {
+        return;
+      }
+
       for (const event of Events) {
         this._element.addEventListener(event, this, { passive: true, signal });
       }

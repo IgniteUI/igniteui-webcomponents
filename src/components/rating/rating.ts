@@ -1,7 +1,8 @@
 import { html, LitElement, nothing } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
+import { ifDefined } from 'lit/directives/if-defined.js';
+import { map } from 'lit/directives/map.js';
 import { range } from 'lit/directives/range.js';
-import { repeat } from 'lit/directives/repeat.js';
 import { styleMap } from 'lit/directives/style-map.js';
 import {
   addKeybindings,
@@ -151,11 +152,9 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
   }
 
   private get _valueText(): string {
-    // Skip IEEE 754 representation for screen readers
-    const value = this._round(this.value);
     return this.valueFormat
-      ? formatString(this.valueFormat, value, this.max)
-      : `${value} of ${this.max}`;
+      ? formatString(this.valueFormat, this.value, this.max)
+      : `${this.value} of ${this.max}`;
   }
 
   //#endregion
@@ -167,13 +166,16 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
    *
    * If there are projected symbols, the maximum value will be resolved
    * based on the number of symbols.
+   *
    * @attr max
    * @default 5
    */
   @property({ type: Number })
   @coercedProperty<number, IgcRatingComponent>({
     transform: ({ value, host }) =>
-      host._hasProjectedSymbols ? host._symbols.length : Math.max(0, value),
+      host._hasProjectedSymbols
+        ? host._symbols.length
+        : Math.max(0, asNumber(value)),
     onChange: ({ value, host }) => {
       if (value < host.value) {
         host.value = value;
@@ -185,13 +187,16 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
   /**
    * The minimum value change allowed.
    *
-   * Valid values are in the interval between 0 and 1 inclusive.
+   * Valid values are in the interval between 0.001 and 1 inclusive.
+   * The component clamps a value outside of the interval to the closest bound.
+   *
    * @attr step
    * @default 1
    */
   @property({ type: Number })
   @coercedProperty<number, IgcRatingComponent>({
-    transform: ({ value, host }) => (host.single ? 1 : clamp(value, 0.001, 1)),
+    transform: ({ value, host }) =>
+      host.single ? 1 : clamp(asNumber(value, 1), 0.001, 1),
   })
   public step = 1;
 
@@ -215,6 +220,7 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
   /* @tsTwoWayProperty(true, "igcChange", "detail", false) */
   /**
    * The value of the component
+   *
    * @attr value
    * @default 0
    */
@@ -223,7 +229,7 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
     const value = this.hasUpdated
       ? clamp(asNumber(number), 0, this.max)
       : Math.max(asNumber(number), 0);
-    this._formValue.setValueAndFormState(value);
+    this._formValue.setValueAndFormState(this._normalize(value));
   }
 
   public get value(): number {
@@ -231,21 +237,26 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
   }
 
   /**
-   * Sets hover preview behavior for the component
+   * Whether to show a preview of the value when hovering over the symbols.
+   *
    * @attr hover-preview
+   * @default false
    */
   @property({ type: Boolean, reflect: true, attribute: 'hover-preview' })
   public hoverPreview = false;
 
   /**
    * Makes the control a readonly field.
+   *
    * @attr readonly
+   * @default false
    */
   @property({ type: Boolean, reflect: true, attribute: 'readonly' })
   public readOnly = false;
 
   /**
    * Toggles single selection visual mode.
+   *
    * @attr single
    * @default false
    */
@@ -263,6 +274,7 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
 
   /**
    * Whether to reset the rating when the user selects the same value.
+   *
    * @attr allow-reset
    * @default false
    */
@@ -354,6 +366,7 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
 
   private _handleHoverDisabled(): void {
     this._hoverState = false;
+    this._hoverValue = -1;
   }
 
   //#endregion
@@ -375,14 +388,23 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
       ? pointToFraction(this._container, x, isLTR(this))
       : 0;
 
-    return clamp(this._round(this.max * fraction), this.step, this.max);
+    return clamp(this._ceilToStep(this.max * fraction), this.step, this.max);
   }
 
-  private _round(value: number): number {
+  /** Rounds a value up to the next multiple of the step. */
+  private _ceilToStep(value: number): number {
     return roundPrecise(
       Math.ceil(value / this.step) * this.step,
       numberOfDecimals(this.step)
     );
+  }
+
+  /**
+   * Removes the floating point noise that the step arithmetic introduces. Thus
+   * the value, the event payload and `aria-valuenow` stay readable.
+   */
+  private _normalize(value: number): number {
+    return roundPrecise(value, numberOfDecimals(this.step) + 2);
   }
 
   private _updateProjectedSymbols(): void {
@@ -408,7 +430,7 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
   private _clipSymbol(index: number, isLTR = true) {
     const value = this._hoverState ? this._hoverValue : this.value;
     const progress = index + 1 - value;
-    const exclusive = progress === 0 || value === index + 1 ? 0 : 1;
+    const exclusive = progress === 0 ? 0 : 1;
     const selection = this.single ? exclusive : progress;
     const activate = (p: number) => clamp(p * 100, 0, 100);
 
@@ -434,7 +456,7 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
    * step factor.
    */
   public stepUp(n = 1): void {
-    this.value += this._round(n * this.step);
+    this.value += n * this.step;
   }
 
   /**
@@ -442,7 +464,7 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
    * the step factor.
    */
   public stepDown(n = 1): void {
-    this.value -= this._round(n * this.step);
+    this.value -= n * this.step;
   }
 
   //#endregion
@@ -450,35 +472,32 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
   private _renderSymbols() {
     const ltr = isLTR(this);
 
-    return html`
-      ${repeat(
-        range(this.max),
-        (i) => i,
-        (i) => {
-          const { forward, backward } = this._clipSymbol(i, ltr);
-          return html`
-            <igc-rating-symbol exportparts="symbol, full, empty">
-              <igc-icon
-                collection="default"
-                name="star_filled"
-                style=${styleMap({ clipPath: forward })}
-              ></igc-icon>
-              <igc-icon
-                collection="default"
-                name="star_outlined"
-                style=${styleMap({ clipPath: backward })}
-                slot="empty"
-              ></igc-icon>
-            </igc-rating-symbol>
-          `;
-        }
-      )}
-    `;
+    return map(range(this.max), (i) => {
+      const { forward, backward } = this._clipSymbol(i, ltr);
+
+      return html`
+        <igc-rating-symbol exportparts="symbol, full, empty">
+          <igc-icon
+            collection="default"
+            name="star_filled"
+            style=${styleMap({ clipPath: forward })}
+          ></igc-icon>
+          <igc-icon
+            collection="default"
+            name="star_outlined"
+            style=${styleMap({ clipPath: backward })}
+            slot="empty"
+          ></igc-icon>
+        </igc-rating-symbol>
+      `;
+    });
   }
 
   protected override render() {
     const hoverActive = this.hoverPreview && this._isInteractive;
     const valueLabelHidden = !this._slots.hasAssignedNodes('value-label', true);
+    const labelId = this.label ? 'rating-label' : undefined;
+    const ariaLabel = this.label ? undefined : (this.ariaLabel ?? undefined);
 
     return html`
       <label part="label" id="rating-label" ?hidden=${!this.label}
@@ -488,11 +507,14 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
         part="base"
         role="slider"
         tabindex=${this.disabled ? -1 : 0}
-        aria-labelledby="rating-label"
+        aria-labelledby=${ifDefined(labelId)}
+        aria-label=${ifDefined(ariaLabel)}
         aria-valuemin="0"
         aria-valuenow=${this.value}
         aria-valuemax=${this.max}
         aria-valuetext=${this._valueText}
+        aria-disabled=${this.disabled}
+        aria-readonly=${this.readOnly}
       >
         <div
           aria-hidden="true"
