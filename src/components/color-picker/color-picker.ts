@@ -28,6 +28,7 @@ import { partMap } from '#internals/part-map.js';
 import { isEmpty } from '#internals/utils/arrays.js';
 import {
   addSafeEventListener,
+  focusLeftHost,
   getElementFromPath,
   stopPropagation,
 } from '#internals/utils/events.js';
@@ -71,26 +72,26 @@ const Slots = setSlots(
   'helper-text'
 );
 
-/** The shape of a color string in each format, shown while the input is empty. */
+/** The color string shape of each format. Shown while the input is empty. */
 const formatPlaceholders: Record<ColorFormat, string> = {
   hex: '#rrggbb',
   rgb: 'rgb(r g b)',
   hsl: 'hsl(h s% l%)',
 };
 
-/** The alpha field's text is `<digits>%` - everything else is stripped on edit. */
+/** The alpha text is `<digits>%`. An edit removes every other character. */
 const nonDigits = /\D/g;
 
-/** The last offset the caret may take in `<digits>%` - in front of the `%`. */
+/** The last caret offset in `<digits>%`, the position in front of the `%`. */
 function caretLimit(text: string): number {
   return Math.max(text.length - 1, 0);
 }
 
 /**
- * The slice of the EyeDropper API this component uses.
+ * The part of the EyeDropper API that this component uses.
  *
- * Declared locally rather than pulled from the DOM lib - the API is not in the
- * baseline typings and is unimplemented in Firefox and Safari.
+ * The type is declared locally, because the API is not in the baseline DOM
+ * typings. Firefox and Safari do not implement it.
  */
 interface EyeDropperLike {
   open(): Promise<{ sRGBHex: string }>;
@@ -98,7 +99,7 @@ interface EyeDropperLike {
 
 type EyeDropperConstructor = new () => EyeDropperLike;
 
-/** The EyeDropper constructor, when the browser provides one. */
+/** Returns the EyeDropper constructor, if the browser provides one. */
 function getEyeDropper(): EyeDropperConstructor | undefined {
   return (globalThis as { EyeDropper?: EyeDropperConstructor }).EyeDropper;
 }
@@ -106,12 +107,13 @@ function getEyeDropper(): EyeDropperConstructor | undefined {
 /**
  * Color input component.
  *
- * Lets the user pick a color visually - via an HSV saturation/value canvas, a
- * hue slider and an optional alpha slider - or by typing a color string
- * (hex, rgb(a), hsl(a) or a named CSS color) directly. Supports pre-defined
- * swatches, the native EyeDropper API where available, and two anchor
- * presentations: a trigger button (`mode="default"`) or an editable text
- * field (`mode="input"`).
+ * The user picks a color with the HSV saturation/value canvas, the hue slider
+ * and the optional alpha slider. The user can also type a color string: hex,
+ * rgb(a), hsl(a) or a named CSS color.
+ *
+ * The component supports pre-defined swatches and the native EyeDropper API,
+ * where the browser provides one. The anchor is a trigger button
+ * (`mode="default"`) or an editable text field (`mode="input"`).
  *
  * @element igc-color-picker
  *
@@ -201,7 +203,7 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
   private _color = ColorModel.empty();
   private _oldValue = '';
 
-  /** The last value written for each host custom property mirrored from the color. */
+  /** The last value written for each host custom property. */
   private readonly _appliedProperties = new Map<string, string>();
 
   @query('#helper-text')
@@ -218,19 +220,18 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
   /**
    * The label of the component.
    *
-   * In `mode="input"` this is forwarded to the anchor input's own label
-   * instead of being rendered as a separate element.
+   * In `mode="input"` the component forwards the label to the anchor input.
+   * In `mode="default"` it renders the label as a separate element.
    * @attr label
    */
   @property()
   public label?: string;
 
   /**
-   * The value of the component, as a CSS color string (hex, rgb(a), hsl(a)
-   * or a named color).
+   * The value of the component as a CSS color string. Accepts hex, rgb(a),
+   * hsl(a) and named colors.
    *
-   * Setting an empty, whitespace-only or otherwise invalid string clears
-   * the value.
+   * An empty, whitespace-only or invalid string clears the value.
    *
    * @attr value
    */
@@ -245,10 +246,10 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
   }
 
   /**
-   * Sets the color format for the string value.
+   * Sets the color format of the string value.
    *
-   * Switching the format re-renders `value` in the new notation without
-   * changing the color, so no `igcInput` or `igcChange` is emitted.
+   * A format change renders `value` in the new notation. The color does not
+   * change, so the component emits no `igcInput` or `igcChange`.
    *
    * @attr format
    * @default 'hex'
@@ -277,8 +278,8 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
   /**
    * The mode of the color picker.
    *
-   * In `"default"` mode the anchor is a trigger button. In `"input"` mode
-   * the anchor is an editable text field with a color swatch prefix that
+   * In `"default"` mode the anchor is a trigger button. In `"input"` mode the
+   * anchor is an editable text field with a color swatch prefix. The prefix
    * also opens the picker.
    *
    * @attr mode
@@ -288,8 +289,9 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
   public mode: ColorPickerMode = 'default';
 
   /**
-   * Pre-defined color strings rendered as clickable swatches below the
-   * picker controls. Clicking a swatch commits its color as the value.
+   * Pre-defined color strings. The component renders them as clickable
+   * swatches below the picker controls. A click on a swatch commits its color
+   * as the value.
    */
   @property({ attribute: false })
   public swatches: string[] = [];
@@ -340,13 +342,6 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
       this._rootClickController.update();
     }
 
-    // `value` is rendered in the active format, so a format change re-renders
-    // it. Handled here rather than in the select's handler so that setting the
-    // property directly behaves the same.
-    //
-    // Skipped on the first update: `format` is always listed as changed there,
-    // and committing the form value would clear the pristine flag that a
-    // `defaultValue` has just established.
     if (this.hasUpdated && props.has('format')) {
       this._formValue.setValueAndFormState(this._color.asString(this.format));
     }
@@ -356,10 +351,25 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
     super.update(props);
   }
 
-  protected override updated(properties: PropertyValues<this>): void {
-    if (properties.has('open') || properties.has('value')) {
-      // Wait until the browser paints and then sync the marker position with the color.
+  protected override updated(props: PropertyValues<this>): void {
+    super.updated(props);
+
+    if (props.has('open') || props.has('value')) {
+      // Wait for the paint, then sync the marker position with the color.
       requestAnimationFrame(() => this._syncCanvasPosition());
+    }
+  }
+
+  //#endregion
+
+  //#region Form associated overrides
+
+  protected override formResetCallback(): void {
+    super.formResetCallback();
+
+    if (this._isInputMode) {
+      const input = this._anchorRef.value as IgcInputComponent;
+      input?.['formResetCallback']();
     }
   }
 
@@ -377,14 +387,14 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
     }
   }
 
-  private _handleFocusIn({ relatedTarget }: FocusEvent): void {
-    if (!this.contains(relatedTarget as Node)) {
+  private _handleFocusIn(event: FocusEvent): void {
+    if (focusLeftHost(this, event)) {
       this._oldValue = this._alphaColor;
     }
   }
 
-  private _handleFocusOut({ relatedTarget }: FocusEvent): void {
-    if (this.contains(relatedTarget as Node)) {
+  private _handleFocusOut(event: FocusEvent): void {
+    if (!focusLeftHost(this, event)) {
       return;
     }
 
@@ -419,19 +429,17 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
   }
 
   /**
-   * Rewrites the alpha field as `<digits>%` after every edit.
+   * Rewrites the alpha field as `<digits>%` after each edit.
    *
-   * The `%` is part of the value rather than a suffix element, so the browser
-   * treats it as ordinary editable text. Normalizing the *result* of an edit -
-   * rather than filtering keystrokes in `beforeinput` - is what makes it behave
-   * as a literal for every way text can reach the field: typing, paste, drop,
-   * composition, undo and autofill all arrive here, while `beforeinput` carries
-   * `data` for only the first of those.
+   * The `%` is part of the value and not a suffix element, so the browser
+   * treats it as editable text. This handler normalizes the result of an edit
+   * instead of a filter on the keystrokes in `beforeinput`. The `%` then
+   * behaves as a literal for each way that text reaches the field: typing,
+   * paste, drop, composition, undo and autofill. Of these, `beforeinput`
+   * carries `data` only for typing.
    */
   private _handleAlphaInputEdit(event: Event): void {
     const input = this._alphaInputRef.value;
-    // `igc-input` exposes no way to read the caret, so the edit is measured on
-    // the native editor and written back through the component's own API.
     const native = getElementFromPath<HTMLInputElement>('input', event);
 
     if (!input || !native) return;
@@ -441,12 +449,8 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
     const digits = native.value.replace(nonDigits, '');
     const percent = clamp(asNumber(digits), 0, 100);
 
-    // An empty field is a valid intermediate state - select-all and delete has
-    // to leave somewhere to type into. `_handleAlphaInputChange` settles it.
     const text = digits ? `${percent}%` : '';
 
-    // The caret keeps its place by digit count, so an edit in the middle of the
-    // number does not jump to the end.
     this._writeAlphaText(input, text, Math.min(typed, caretLimit(text)));
 
     if (digits) {
@@ -455,12 +459,13 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
   }
 
   /**
-   * Keeps the caret and any selection within the digits.
+   * Keeps the caret and the selection inside the digits.
    *
-   * The trailing `%` is a literal. Without this the caret lands after it on
-   * focus, on a click past the text, and after a shifted selection extends over
-   * it - hence `keyup` as well as `focusin` and `click`. Anything typed there
-   * would fall outside the number, which the parse would quietly discard.
+   * The trailing `%` is a literal. Without this handler the caret goes after
+   * the `%` on focus, on a click past the text, and after a shifted selection
+   * extends over it. The handler therefore runs on `keyup` as well as on
+   * `focusin` and `click`. Text after the `%` falls outside the number, and the
+   * parse discards it.
    */
   private _handleAlphaInputCaret(event: Event): void {
     const native = getElementFromPath<HTMLInputElement>('input', event);
@@ -477,22 +482,19 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
   /**
    * Steps the alpha by one percent.
    *
-   * Stepping from the color rather than from the field's text is what makes a
-   * held arrow key work: the keydowns repeat faster than a re-render, so
-   * reading the field would step off a stale number every time.
+   * The step applies to the color and not to the text of the field. This keeps
+   * a held arrow key correct. The key downs repeat faster than a render, so the
+   * text of the field can be stale.
    *
-   * The new text is written here rather than left to the re-render, so that the
-   * caret never moves. Assigning a value drops the caret behind the `%`, and
-   * letting the render do it would put that jump one frame after the keypress -
-   * seen as a skip forward and back.
+   * The handler writes the new text and does not leave it to the render, so
+   * that the caret does not move. A value assignment puts the caret behind the
+   * `%`. A write from the render applies one frame after the keypress, which
+   * the user sees as a jump forward and back.
    */
   private _handleAlphaInputSpin(increment: -1 | 1): void {
     const input = this._alphaInputRef.value;
     const percent = clamp(this._alphaPercent + increment, 0, 100);
 
-    // A step past either bound clamps back onto the current value. Bailing here
-    // rather than in `_setAlpha` is what keeps a held key at the bound from
-    // rewriting the field and re-running validation at the repeat rate.
     if (!input || percent === this._alphaPercent) return;
 
     this._writeAlphaText(input, `${percent}%`);
@@ -500,13 +502,9 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
   }
 
   /**
-   * Holds the caret at the `%` rather than letting it step past and be pulled
-   * back on `keyup` - the same frame-late skip described on
-   * {@link _handleAlphaInputSpin}.
-   *
-   * Only the unmodified keys are bound, so a shifted selection still extends
-   * over the `%` and is collapsed by {@link _handleAlphaInputCaret} - rarer,
-   * and cheaper than reasoning about the selection's direction here.
+   * Holds the caret at the `%`. Without this handler the caret steps past the
+   * `%`, and `keyup` pulls it back. This is the frame-late jump that
+   * {@link _handleAlphaInputSpin} describes.
    */
   private _handleAlphaInputCaretForward(event: KeyboardEvent): void {
     const native = getElementFromPath<HTMLInputElement>('input', event);
@@ -525,10 +523,6 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
 
     const input = event.target as IgcInputComponent;
 
-    // Every edit is normalized as it happens, so the only unresolved value that
-    // reaches a commit is an empty field. Alpha has no empty state, and reading
-    // it as 0 would turn the color invisible from what looks like a cleared
-    // input, so it reverts to the alpha currently on the color.
     if (!input.value) {
       input.value = `${this._alphaPercent}%`;
     }
@@ -538,8 +532,6 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
     event: CustomEvent<IgcSelectItemComponent>
   ): void {
     stopPropagation(event);
-
-    // `update()` re-renders the value in the new format.
     this.format = event.detail.value as ColorFormat;
   }
 
@@ -550,8 +542,8 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
     const value = normalizeColor(event.detail);
     const cleared = !value;
 
-    // A non-empty but invalid value reverts the input back to the currently
-    // represented color. An empty value clears it.
+    // An invalid and non-empty value reverts the input to the current color.
+    // An empty value clears the color.
     if (!cleared && !isValidColor(value, getContext())) {
       input.value = this._color.asString(this.format);
       return;
@@ -559,8 +551,6 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
 
     this._color = cleared ? ColorModel.empty() : ColorModel.parse(value);
     this._updateColor();
-    // The model was replaced directly rather than through `value`, so no
-    // `value` change is recorded and the sync in `updated()` will not run.
     this._syncCanvasPosition();
   }
 
@@ -572,7 +562,6 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
     new EyeDropper()
       .open()
       .then((result) => {
-        // Assigning `value` records the change, so `updated()` syncs the marker.
         this.value = result.sRGBHex;
         this._emitInputEvent();
       })
@@ -601,64 +590,55 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
   //#region Internal methods
 
   /**
-   * The current color, alpha included, in a notation that does not depend on
+   * The current color with its alpha, in a notation that is independent of
    * `format`.
-   *
-   * `value` is rendered in whichever format is active, so comparing it across a
-   * format switch would report a change the user never made. This moves only
-   * when the color itself does.
    */
   private get _alphaColor(): string {
     return this._color.asString('rgb', true);
   }
 
   /**
-   * The current color with its alpha channel forced to opaque.
+   * The current color with an opaque alpha channel.
    *
-   * The swatch preview paints this over one half of its surface and
-   * {@link _alphaColor} over the other, so a translucent color is shown next to
-   * what it actually is. At full alpha the two halves are identical and the
+   * The swatch preview paints this color over one half of its surface, and
+   * {@link _alphaColor} over the other half. A translucent color is then shown
+   * next to its opaque form. At full alpha the two halves are identical and the
    * split is invisible, so opaque colors need no separate branch.
    *
-   * Defined even with no value: an empty color is white, which is where the
-   * alpha ramp and the canvas marker belong before anything is picked. The
-   * anchor keeps its "no color" mark regardless - {@link _previewStyle} is
-   * driven by {@link _alphaColor}, which stays empty.
+   * This value is defined also with no color value. An empty color is white,
+   * which is where the alpha ramp and the canvas marker belong before the first
+   * pick. The anchor keeps its "no color" mark, because {@link _previewStyle}
+   * uses {@link _alphaColor}, which stays empty.
    */
   private get _opaqueColor(): string {
     return new ColorModel(this._color.toRGB()).asString('rgb');
   }
 
-  /** The alpha channel as the whole percentage both alpha controls work in. */
+  /** The alpha channel as the whole percentage that both alpha controls use. */
   private get _alphaPercent(): number {
     return Math.round(this._color.alpha * 100);
   }
 
-  /**
-   * The pure hue the saturation/value plane and the hue thumb are painted from.
-   *
-   * Defined even with no value: an empty color is white at hue 0, so the plane
-   * is drawn from red - which is where the hue slider is already pointing.
-   */
+  /** The pure hue that the saturation/value plane and the hue thumb use. */
   private get _currentColor(): string {
     return `hsl(${this._color.h} 100% 50%)`;
   }
 
   /**
-   * Mirrors the colors the stylesheet needs onto the host.
+   * Mirrors the colors that the stylesheet needs onto the host.
    *
-   * Driven from `update()` rather than from the handlers that mutate the color,
-   * so that it also runs for the first render - a picker with no value never
-   * goes through one of those handlers, and the plane would be left on the
-   * stylesheet fallback instead of the hue it actually sits at.
+   * `update()` drives this, and not the handlers that change the color. It
+   * therefore also runs for the first render. A picker with no value calls none
+   * of those handlers, and the plane would keep the stylesheet fallback instead
+   * of its actual hue.
    */
   private _applyColorProperties(): void {
-    // The model mutates in place, so Lit cannot dirty-check it - and a style
-    // write invalidates whether or not the value changed, hence the cache.
-    for (const [name, value] of [
-      ['--_current-color', this._currentColor],
-      ['--_selected-color', this._opaqueColor],
-    ]) {
+    const properties = {
+      '--_current-color': this._currentColor,
+      '--_selected-color': this._opaqueColor,
+    };
+
+    for (const [name, value] of Object.entries(properties)) {
       if (this._appliedProperties.get(name) !== value) {
         this._appliedProperties.set(name, value);
         this.style.setProperty(name, value);
@@ -667,12 +647,8 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
   }
 
   /**
-   * Replaces the alpha field's whole text and parks the caret, by default in
-   * front of the `%`.
-   *
-   * `setRangeText` is the component's only synchronous write - assigning
-   * `value` reaches the native editor a render later - and it syncs the
-   * component's own `value` back from the editor.
+   * Replaces the whole text of the alpha field and puts the caret in front of
+   * the `%` by default.
    */
   private _writeAlphaText(
     input: IgcInputComponent,
@@ -683,12 +659,6 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
     input.setSelectionRange(caret, caret);
   }
 
-  /**
-   * Commits `percent` as the color's alpha channel, clamped to 0-100.
-   *
-   * Bailing on an unchanged alpha keeps a drag that does not move the value
-   * from re-rendering and re-emitting `igcInput`.
-   */
   private _setAlpha(percent: number): void {
     const alpha = clamp(percent, 0, 100) / 100;
 
@@ -701,10 +671,6 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
     this._emitInputEvent();
   }
 
-  /**
-   * Publishes the color as the form value and schedules a render - the model
-   * mutates in place, so there is no assignment for Lit to dirty-check.
-   */
   private _updateColor(): void {
     this._formValue.setValueAndFormState(this._color.asString(this.format));
     this.requestUpdate();
@@ -771,7 +737,6 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
     `;
   }
 
-  /** An icon-only action button, named for screen readers by its hidden label. */
   private _renderIconButton(
     part: string,
     icon: string,
@@ -891,7 +856,7 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
         name="color-input"
         placeholder=${formatPlaceholders[this.format]}
         outlined
-        .value=${this._color.asString(this.format)}
+        .value=${live(this._color.asString(this.format))}
         @igcChange=${this._handleColorInputChange}
       ></igc-input>
     `;
@@ -926,7 +891,6 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
 
   //#region Anchor rendering
 
-  /** The `part` list of the anchor, in either presentation. */
   private get _anchorParts(): ReturnType<typeof partMap> {
     return partMap({
       anchor: true,
@@ -936,11 +900,11 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
   }
 
   /**
-   * The swatch preview style shared by both anchors.
+   * The swatch preview style that both anchors use.
    *
-   * `--_color-preview` paints the opaque color over the left half and
-   * `--_alpha-preview` the color with its real alpha across the whole surface,
-   * so the two must not be transposed - see the `swatch-preview` mixin.
+   * `--_color-preview` paints the opaque color over the left half.
+   * `--_alpha-preview` paints the color with its real alpha over the whole
+   * surface. Do not transpose the two. See the `swatch-preview` mixin.
    */
   private _previewStyle(): ReturnType<typeof styleMap> {
     const color = this._alphaColor;
@@ -975,15 +939,6 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
     `;
   }
 
-  /**
-   * The anchor as an editable text field, with the swatch as its prefix.
-   *
-   * The placeholder is not decoration: an empty Material input only floats its
-   * label and cuts the outline notch while it is `:placeholder-shown`, `filled`
-   * or focused. Opening the picker moves focus into the dialog - which is a
-   * sibling of the anchor, not a descendant - so without one the label would
-   * drop back over the outline for as long as the picker is open and empty.
-   */
   private _renderInputAnchor(): TemplateResult {
     return html`
       <igc-input
@@ -994,7 +949,7 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
         label=${ifDefined(this.label)}
         ?required=${this.required}
         ?disabled=${this.disabled}
-        .value=${this.value}
+        .value=${live(this.value)}
         .invalid=${this.invalid}
         @igcChange=${this._handleColorInputChange}
       >
@@ -1016,13 +971,13 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
   }
 
   private _renderAnchor(): TemplateResult {
-    return !this._isInputMode
-      ? this._renderButtonAnchor()
-      : this._renderInputAnchor();
+    return this._isInputMode
+      ? this._renderInputAnchor()
+      : this._renderButtonAnchor();
   }
 
   private _renderHelperText(): TemplateResult {
-    return IgcValidationContainerComponent.create(this, {
+    return this._renderValidationContainer({
       id: 'helper-text',
       hasHelperText: true,
     });

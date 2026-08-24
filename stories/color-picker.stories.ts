@@ -21,7 +21,7 @@ const metadata: Meta<IgcColorPickerComponent> = {
     docs: {
       description: {
         component:
-          'Color input component.\n\nLets the user pick a color visually - via an HSV saturation/value canvas, a\nhue slider and an optional alpha slider - or by typing a color string\n(hex, rgb(a), hsl(a) or a named CSS color) directly. Supports pre-defined\nswatches, the native EyeDropper API where available, and two anchor\npresentations: a trigger button (`mode="default"`) or an editable text\nfield (`mode="input"`).',
+          'Color input component.\n\nThe user picks a color with the HSV saturation/value canvas, the hue slider\nand the optional alpha slider. The user can also type a color string: hex,\nrgb(a), hsl(a) or a named CSS color.\n\nThe component supports pre-defined swatches and the native EyeDropper API,\nwhere the browser provides one. The anchor is a trigger button\n(`mode="default"`) or an editable text field (`mode="input"`).',
       },
     },
     actions: {
@@ -39,19 +39,19 @@ const metadata: Meta<IgcColorPickerComponent> = {
     label: {
       type: 'string',
       description:
-        'The label of the component.\n\nIn `mode="input"` this is forwarded to the anchor input\'s own label\ninstead of being rendered as a separate element.',
+        'The label of the component.\n\nIn `mode="input"` the component forwards the label to the anchor input.\nIn `mode="default"` it renders the label as a separate element.',
       control: 'text',
     },
     value: {
       type: 'string',
       description:
-        'The value of the component, as a CSS color string (hex, rgb(a), hsl(a)\nor a named color).\n\nSetting an empty, whitespace-only or otherwise invalid string clears\nthe value.',
+        'The value of the component as a CSS color string. Accepts hex, rgb(a),\nhsl(a) and named colors.\n\nAn empty, whitespace-only or invalid string clears the value.',
       control: 'text',
     },
     format: {
       type: { name: 'enum', value: ['hex', 'rgb', 'hsl'] },
       description:
-        'Sets the color format for the string value.\n\nSwitching the format re-renders `value` in the new notation without\nchanging the color, so no `igcInput` or `igcChange` is emitted.',
+        'Sets the color format of the string value.\n\nA format change renders `value` in the new notation. The color does not\nchange, so the component emits no `igcInput` or `igcChange`.',
       options: ['hex', 'rgb', 'hsl'],
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'hex' } },
@@ -71,7 +71,7 @@ const metadata: Meta<IgcColorPickerComponent> = {
     mode: {
       type: { name: 'enum', value: ['default', 'input'] },
       description:
-        'The mode of the color picker.\n\nIn `"default"` mode the anchor is a trigger button. In `"input"` mode\nthe anchor is an editable text field with a color swatch prefix that\nalso opens the picker.',
+        'The mode of the color picker.\n\nIn `"default"` mode the anchor is a trigger button. In `"input"` mode the\nanchor is an editable text field with a color swatch prefix. The prefix\nalso opens the picker.',
       options: ['default', 'input'],
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'default' } },
@@ -125,23 +125,22 @@ interface IgcColorPickerArgs {
   /**
    * The label of the component.
    *
-   * In `mode="input"` this is forwarded to the anchor input's own label
-   * instead of being rendered as a separate element.
+   * In `mode="input"` the component forwards the label to the anchor input.
+   * In `mode="default"` it renders the label as a separate element.
    */
   label: string;
   /**
-   * The value of the component, as a CSS color string (hex, rgb(a), hsl(a)
-   * or a named color).
+   * The value of the component as a CSS color string. Accepts hex, rgb(a),
+   * hsl(a) and named colors.
    *
-   * Setting an empty, whitespace-only or otherwise invalid string clears
-   * the value.
+   * An empty, whitespace-only or invalid string clears the value.
    */
   value: string;
   /**
-   * Sets the color format for the string value.
+   * Sets the color format of the string value.
    *
-   * Switching the format re-renders `value` in the new notation without
-   * changing the color, so no `igcInput` or `igcChange` is emitted.
+   * A format change renders `value` in the new notation. The color does not
+   * change, so the component emits no `igcInput` or `igcChange`.
    */
   format: 'hex' | 'rgb' | 'hsl';
   /** Whether to hide the format picker buttons. */
@@ -151,8 +150,8 @@ interface IgcColorPickerArgs {
   /**
    * The mode of the color picker.
    *
-   * In `"default"` mode the anchor is a trigger button. In `"input"` mode
-   * the anchor is an editable text field with a color swatch prefix that
+   * In `"default"` mode the anchor is a trigger button. In `"input"` mode the
+   * anchor is an editable text field with a color swatch prefix. The prefix
    * also opens the picker.
    */
   mode: 'default' | 'input';

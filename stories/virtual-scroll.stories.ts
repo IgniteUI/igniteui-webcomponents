@@ -47,7 +47,7 @@ const metadata: Meta<IgcVirtualScrollComponent> = {
     docs: {
       description: {
         component:
-          'A virtual scroll component that efficiently renders large lists by only\nrendering the items currently visible in the viewport.',
+          'A virtual scroll component for large lists. Only the items visible in the\nviewport are rendered.',
       },
     },
     actions: { handles: ['igcStateChange', 'igcDataRequest'] },
@@ -63,14 +63,14 @@ const metadata: Meta<IgcVirtualScrollComponent> = {
     overScan: {
       type: 'number',
       description:
-        'Number of extra items to render beyond the visible area of the viewport.\nHigher values reduce blank flashes during fast scrolling but may impact performance.',
+        'Number of extra items to render beyond the visible area of the viewport.\nHigher values reduce blank flashes during fast scrolling but can lower performance.',
       control: 'number',
       table: { defaultValue: { summary: '2' } },
     },
     estimatedItemSize: {
       type: 'number',
       description:
-        'Estimated item size in pixels used before an item is measured in the DOM.\nThe engine replaces this with the actual measured size after the first render of each item.',
+        'Estimated item size in pixels, used before an item is measured in the DOM.\nAfter the first render of an item, the engine replaces the estimate with the measured size.',
       control: 'number',
       table: { defaultValue: { summary: '50' } },
     },
@@ -85,12 +85,12 @@ interface IgcVirtualScrollArgs {
   orientation: 'vertical' | 'horizontal';
   /**
    * Number of extra items to render beyond the visible area of the viewport.
-   * Higher values reduce blank flashes during fast scrolling but may impact performance.
+   * Higher values reduce blank flashes during fast scrolling but can lower performance.
    */
   overScan: number;
   /**
-   * Estimated item size in pixels used before an item is measured in the DOM.
-   * The engine replaces this with the actual measured size after the first render of each item.
+   * Estimated item size in pixels, used before an item is measured in the DOM.
+   * After the first render of an item, the engine replaces the estimate with the measured size.
    */
   estimatedItemSize: number;
 }
