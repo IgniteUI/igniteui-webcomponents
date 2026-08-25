@@ -704,7 +704,7 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
 
     return html`
       <igc-picker-canvas
-        exportparts="marker"
+        exportparts="marker, dragging"
         part="picker-canvas"
         ${ref(this._canvasRef)}
         @igcColorPicked=${this._handleCanvasColorPicked}

@@ -26,7 +26,7 @@ async function createCanvas() {
 }
 
 function getMarker(canvas: IgcPickerCanvasComponent): HTMLDivElement {
-  return canvas.renderRoot.querySelector('[part="marker"]')!;
+  return canvas.renderRoot.querySelector('[part~="marker"]')!;
 }
 
 describe('Picker canvas', () => {

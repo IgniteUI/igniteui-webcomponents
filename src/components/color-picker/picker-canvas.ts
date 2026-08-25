@@ -1,5 +1,5 @@
 import { html, LitElement, type PropertyValues } from 'lit';
-import { property, query } from 'lit/decorators.js';
+import { property, query, state } from 'lit/decorators.js';
 import { styleMap } from 'lit/directives/style-map.js';
 import {
   addKeybindings,
@@ -11,6 +11,7 @@ import {
 import { registerComponent } from '#internals/definitions/register.js';
 import type { AbstractConstructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
+import { partMap } from '#internals/part-map.js';
 import { addSafeEventListener } from '#internals/utils/events.js';
 import { asPercent, clamp } from '#internals/utils/math.js';
 import { styles } from './themes/picker-canvas.base.css.js';
@@ -44,6 +45,7 @@ type CanvasGeometry = {
  * @fires igcColorPicked - Emitted when a color is picked on the canvas. Does not bubble.
  *
  * @csspart marker - The draggable marker indicating the picked saturation/value.
+ * @csspart dragging - Present on the marker while it is being dragged.
  */
 export default class IgcPickerCanvasComponent extends EventEmitterMixin<
   IgcPickerCanvasEventMap,
@@ -56,11 +58,15 @@ export default class IgcPickerCanvasComponent extends EventEmitterMixin<
     registerComponent(IgcPickerCanvasComponent);
   }
 
-  @query('[part="marker"]', true)
+  @query('[part~="marker"]', true)
   private readonly _marker?: HTMLDivElement;
 
   /** Geometry captured for the duration of a pointer drag. */
   private _dragGeometry?: CanvasGeometry;
+
+  /** Whether a pointer drag is currently in progress. */
+  @state()
+  private _dragging = false;
 
   @property()
   public currentColor = '';
@@ -197,12 +203,14 @@ export default class IgcPickerCanvasComponent extends EventEmitterMixin<
     this.setPointerCapture(event.pointerId);
     this.addEventListener('pointermove', this._handlePointerMove);
     this._dragGeometry = this._measure();
+    this._dragging = true;
     this._move(event);
   }
 
   private _handleLostPointerCapture(): void {
     this.removeEventListener('pointermove', this._handlePointerMove);
     this._dragGeometry = undefined;
+    this._dragging = false;
     this._marker?.focus();
   }
 
@@ -211,9 +219,13 @@ export default class IgcPickerCanvasComponent extends EventEmitterMixin<
   }
 
   public getMarkerDimensions(): { width: number; height: number } {
-    const rect = this._marker?.getBoundingClientRect();
-    return rect
-      ? { width: rect.width / 2, height: rect.height / 2 }
+    const marker = this._marker;
+
+    // Offsets rather than a client rect: the marker is scaled up while dragged
+    // and a rect would report the transformed box, shifting every position
+    // resolved against it.
+    return marker
+      ? { width: marker.offsetWidth / 2, height: marker.offsetHeight / 2 }
       : { width: 0, height: 0 };
   }
 
@@ -231,7 +243,7 @@ export default class IgcPickerCanvasComponent extends EventEmitterMixin<
     // otherwise vertical movement would be announced as "no change".
     return html`
       <div
-        part="marker"
+        part=${partMap({ marker: true, dragging: this._dragging })}
         style=${styles}
         tabindex="0"
         role="slider"
