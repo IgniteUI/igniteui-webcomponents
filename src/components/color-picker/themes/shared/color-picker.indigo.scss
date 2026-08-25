@@ -14,6 +14,7 @@ $input-theme: input-theme.$indigo;
     --_input-row-gap: #{sizable(rem(8px), rem(12px), rem(16px))};
     --_label-spacing: #{rem(8px)};
     --_picker-buttons-gap: #{sizable(rem(8px), rem(4px), rem(4px))};
+    --_picker-column-gap: #{sizable(rem(12px), rem(12px), rem(16px))};
     
     [part~='anchor'] {
         &:focus-visible {
