@@ -273,6 +273,7 @@ $input-theme: input-theme.$material;
 
         width: var(--_input-mode-trigger-size);
         height: var(--_input-mode-trigger-size);
+        border-radius: calc(var-get($theme, 'anchor-border-radius') - rem(1px));
         padding: 0;
         margin: 0;
     }
