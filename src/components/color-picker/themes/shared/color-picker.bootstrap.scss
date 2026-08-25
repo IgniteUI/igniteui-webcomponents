@@ -12,11 +12,6 @@ $theme: $bootstrap;
     --_picker-rows-grid-template-columns: #{minmax(auto, sizable(rem(174px), rem(190px), rem(212px))) 0 sizable(rem(73px), rem(80px), rem(100px))};
     --_label-spacing: #{rem(8px)};
     
-    igc-input::part(prefix),
-    igc-input::part(suffix) {
-        background: transparent !important;
-    }
-    
     [part~='anchor'] {
         &:focus-visible {
             &::after {
