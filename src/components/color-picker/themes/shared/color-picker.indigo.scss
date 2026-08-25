@@ -28,7 +28,7 @@ $input-theme: input-theme.$indigo;
     }
     
     [part='inputs-row'] {
-        grid-template-columns: min(sizable(rem(92px), rem(96px), rem(112px))) 1fr;
+        grid-template-columns: min(sizable(rem(96px), rem(104px), rem(112px))) 1fr;
     }
     
     [part='picker'] {

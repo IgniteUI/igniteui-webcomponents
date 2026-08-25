@@ -6,7 +6,7 @@ $theme: $fluent;
 :host {
     --_picker-column-gap: #{sizable(rem(12px), rem(12px), rem(16px))};
     --_swatches-spacing: #{sizable(rem(16px), rem(16px), rem(24px)) rem(16px) rem(16px) rem(16px)};
-    --_picker-buttons-gap: #{sizable(rem(8px), rem(4px), rem(4px))};
+    --_picker-buttons-gap: #{sizable(rem(12px), rem(4px), rem(4px))};
     --_picker-rows-grid-template-columns: #{1fr auto #{sizable(rem(60px), rem(68px), rem(80px))}};
     --_label-spacing: #{rem(8px)};
     
