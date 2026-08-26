@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+
+## [7.3.0] - 2026-08-26
 ### Added
 - #### Calendar
   - `igc-calendar` now exports the `label-inner`, `months-row` and `years-row` parts. The pickers export them as `calendar-label-inner`, `months-row` and `years-row`. The views rendered these parts but did not export them, thus you could not style them through the calendar.
@@ -1553,6 +1555,7 @@ Initial release of Ignite UI Web Components
 - Ripple component
 - Switch component
 
+[7.3.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/7.2.4...7.3.0
 [7.2.4]: https://github.com/IgniteUI/igniteui-webcomponents/compare/7.2.3...7.2.4
 [7.2.3]: https://github.com/IgniteUI/igniteui-webcomponents/compare/7.2.2...7.2.3
 [7.2.2]: https://github.com/IgniteUI/igniteui-webcomponents/compare/7.2.1...7.2.2

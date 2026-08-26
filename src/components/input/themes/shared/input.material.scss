@@ -11,7 +11,14 @@ $fs: rem(16px) !default;
     translate: 0 -50%;
 }
 
-%floated-styles {
+/// Cuts the notch open so the floated label can sit in the gap.
+///
+/// A mixin and not a placeholder selector: `@extend` hoists the declaration to
+/// where the placeholder is declared - the top of the file - which puts it
+/// before every state rule and makes the cascade depend on specificity alone.
+/// Included in place it stays next to the state it belongs to, and a change here
+/// reaches every state instead of the ones that happened to win.
+@mixin floated-notch() {
     border-top: $idle-border-width solid transparent;
 }
 
@@ -28,7 +35,7 @@ $fs: rem(16px) !default;
     --affix-padding: #{pad-inline(rem(12px), rem(14px), rem(16px))};
 
     input:placeholder-shown + [part='notch'] {
-        @extend %floated-styles;
+        @include floated-notch();
     }
 
     ::part(helper-text) {
@@ -313,12 +320,10 @@ $fs: rem(16px) !default;
     }
 }
 
-:host(:not([outlined], [disabled], [readonly]):state(ig-invalid)),
-:host(:not([outlined], [disabled], [readonly]):state(ig-invalid):focus-within),
-:host(:not([disabled], [outlined])[data-role='combobox']:state(ig-invalid)),
-:host(
-    :not([disabled], [outlined])[data-role='combobox']:state(ig-invalid):focus-within
-) {
+:host(:not([outlined], [disabled], :disabled, [readonly]):state(ig-invalid)),
+:host(:not([outlined], [disabled], :disabled, [readonly]):state(ig-invalid):focus-within),
+:host(:not([disabled], :disabled, [outlined])[data-role='combobox']:state(ig-invalid)),
+:host(:not([disabled], :disabled, [outlined])[data-role='combobox']:state(ig-invalid):focus-within) {
     [part~='container'] {
         border-color: var-get($theme, 'error-secondary-color');
 
@@ -479,7 +484,7 @@ $fs: rem(16px) !default;
         input[type='month']
     ) + [part='notch'],
     [part~='filled'] + [part='notch'] {
-        @extend %floated-styles;
+        @include floated-notch();
 
         [part='label'] {
             align-self: start;
@@ -504,7 +509,7 @@ $fs: rem(16px) !default;
     }
 
     [part~='filled'] + [part='notch'] {
-        @extend %floated-styles;
+        @include floated-notch();
     }
 }
 
@@ -520,7 +525,7 @@ $fs: rem(16px) !default;
     }
 
     [part='notch'] {
-        border-top: $idle-border-width solid transparent;
+        @include floated-notch();
     }
 }
 
@@ -553,7 +558,7 @@ $fs: rem(16px) !default;
 
     input:placeholder-shown + [part='notch'],
     [part~='filled'] + [part='notch'] {
-        @extend %floated-styles;
+        @include floated-notch();
     }
 }
 
@@ -599,8 +604,9 @@ $fs: rem(16px) !default;
         border: {
             width: $active-border-width;
             color: var-get($theme, 'focused-border-color');
-            top: $idle-border-width solid transparent;
         }
+
+        @include floated-notch();
     }
 
     [part='filler'] {
@@ -635,8 +641,9 @@ $fs: rem(16px) !default;
         border: {
             width: $active-border-width;
             color: var-get($theme, 'focused-border-color');
-            top: $idle-border-width solid transparent;
         }
+
+        @include floated-notch();
     }
 }
 
@@ -658,14 +665,10 @@ $fs: rem(16px) !default;
     }
 }
 
-:host(:not([type='search'], [readonly])[outlined]:state(ig-invalid)),
-:host(
-    :not([type='search'], [readonly])[outlined]:state(ig-invalid):focus-within
-),
-:host(:not([disabled])[data-role='combobox'][outlined]:state(ig-invalid)),
-:host(
-    :not([disabled])[data-role='combobox'][outlined]:state(ig-invalid):focus-within
-) {
+:host(:not([type='search'], [readonly], [disabled], :disabled)[outlined]:state(ig-invalid)),
+:host(:not([type='search'], [readonly], [disabled], :disabled)[outlined]:state( ig-invalid):focus-within),
+:host(:not([disabled], :disabled)[data-role='combobox'][outlined]:state(ig-invalid)),
+:host(:not([disabled], :disabled)[data-role='combobox'][outlined]:state(ig-invalid):focus-within) {
     [part='start'],
     [part='notch'],
     [part='filler'],
@@ -673,9 +676,15 @@ $fs: rem(16px) !default;
         border-color: var-get($theme, 'error-secondary-color');
     }
 
+    // The focused state matches the notch through these same selectors, which
+    // are more specific than `[part='notch']` above, so the error color has to
+    // be re-stated here or the notch keeps the focus color while the rest of
+    // the border turns invalid.
     input:placeholder-shown + [part='notch'],
     [part~='filled'] + [part='notch'] {
-        @extend %floated-styles;
+        border-color: var-get($theme, 'error-secondary-color');
+
+        @include floated-notch();
     }
 }
 
@@ -692,7 +701,7 @@ $fs: rem(16px) !default;
 :host(:not([type='search'])[outlined]:state(ig-invalid):focus-within),
 :host([data-role='combobox'][outlined]:state(ig-invalid):focus-within) {
     [part='notch'] {
-        border-top: $idle-border-width solid transparent;
+        @include floated-notch();
     }
 }
 
@@ -704,7 +713,7 @@ $fs: rem(16px) !default;
 ) {
     :not([part~='filled']) {
         input:not(:placeholder-shown) + [part='notch'] {
-            border-top: $idle-border-width solid transparent;
+            @include floated-notch();
         }
 
         [part='notch'] {
@@ -713,8 +722,8 @@ $fs: rem(16px) !default;
     }
 }
 
-:host(:not([disabled], [readonly]):state(ig-invalid)),
-:host(:not([disabled])[data-role='combobox']:state(ig-invalid)) {
+:host(:not([disabled], :disabled, [readonly]):state(ig-invalid)),
+:host(:not([disabled], :disabled)[data-role='combobox']:state(ig-invalid)) {
     [part='label'] {
         color: var-get($theme, 'error-secondary-color');
     }
@@ -735,7 +744,7 @@ $fs: rem(16px) !default;
 
     input:placeholder-shown + [part='notch'],
     [part~='filled'] + [part='notch'] {
-        @extend %floated-styles;
+        @include floated-notch();
     }
 }
 
@@ -757,7 +766,7 @@ $fs: rem(16px) !default;
     }
 
     [part~='filled'] + [part='notch'] {
-        @extend %floated-styles;
+        @include floated-notch();
     }
 }
 
