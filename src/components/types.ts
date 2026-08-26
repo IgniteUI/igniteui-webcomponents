@@ -26,6 +26,8 @@ export type BadgeShape = 'rounded' | 'square';
 export type ButtonGroupSelection = 'single' | 'single-required' | 'multiple';
 export type ButtonVariant = 'contained' | 'flat' | 'outlined' | 'fab';
 export type CarouselIndicatorsOrientation = 'end' | 'start';
+export type ColorFormat = 'hex' | 'rgb' | 'hsl';
+export type ColorPickerMode = 'default' | 'input';
 /* jsonAPIPlainObject */
 export type DateRangeValue = { start: Date | null; end: Date | null };
 export type DividerType = 'solid' | 'dashed';

@@ -27,7 +27,7 @@
       {
         "name": "ts-lit-plugin",
         "strict": true,
-        "globalAttributes": ["command", "commandfor", "popover"],
+        "globalAttributes": ["command", "commandfor", "popover", "inert"],
         "rules": {
           "no-incompatible-type-binding": "warning"
         }

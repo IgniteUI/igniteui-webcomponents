@@ -1,0 +1,150 @@
+@use 'styles/common/component';
+@use 'styles/utilities' as *;
+
+:host {
+    display: inline-block;
+
+    [part='color-picker'] {
+        display: inline-grid;
+        grid-template-columns: auto auto 1fr;
+        align-items: center;
+    }
+
+    ::part(helper-text) {
+        @include type-style('caption');
+        @include line-clamp(2, true, true);
+
+        overflow-wrap: anywhere;
+    }
+
+    slot[name='value-missing'] {
+        @include line-clamp(2, true, true);
+    }
+
+    input[type='range'] {
+        appearance: none;
+        width: 100%;
+    }
+
+    // The row track sizing and inline spacing are declared in the common styles,
+    // where the `--_picker-rows-*` custom properties the themes override live.
+    [part='main-row'],
+    [part='alpha-row'],
+    [part='inputs-row'] {
+        display: grid;
+
+        &:empty {
+            display: none;
+        }
+    }
+
+    [part='main-row'] {
+        margin-block-end: sizable(rem(8px), rem(12px), rem(16px));
+
+        input {
+            grid-column: 1 / span 2;
+        }
+    }
+
+    [part='alpha-row'] {
+        margin-block: var(--_alpha-row-spacing);
+
+        input {
+            grid-column: 1 / span 2;
+        }
+    }
+
+    [part='alpha-input'] {
+        min-width: fit-content;
+    }
+
+    [part='inputs-row'] {
+        padding-block-end: var(--_input-row-spacing);
+        
+        igc-input {
+            grid-column: 1 / -1;
+        }
+
+        &:has(igc-select) {
+            igc-input {
+                grid-column: 2 / -1;
+            }
+        }
+    }
+
+    [part='buttons'] {
+        display: flex;
+    }
+
+    // The track and thumb presentation is declared in the common styles - each
+    // vendor pseudo-element needs its own rule there, since a selector list
+    // containing one the engine doesn't know is discarded whole.
+    [part='hue'],
+    [part='alpha'] {
+        grid-column: 1 / span 3;
+    }
+
+    [part='picker'] {
+        display: grid;
+        width: var(--_picker-popover-size);
+        min-height: rem(192px);
+
+        &:has([part~='alpha-row']:not(:empty)) {
+            [part='main-row'] {
+                margin-block-end: 0;
+            }
+        }
+    }
+
+    [part='picker-canvas'] {
+        border-width: rem(1px);
+        border-style: solid;
+        margin-inline: rem(16px);
+        margin-block: rem(16px) sizable(rem(16px), rem(20px), rem(24px));
+    }
+
+    [part='swatches'] {
+        display: grid;
+        grid-column: 1 / -1;
+        width: 100%;
+        padding: var(--_swatches-spacing);
+        row-gap: var(--_swatches-row-gap);
+        justify-content: space-between;
+        overflow: hidden;
+    }
+
+    // Box Trigger
+    [part~='anchor'] {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        aspect-ratio: 1;
+        padding: rem(4px);
+        margin: 0;
+
+        &::before {
+            content: '';
+            user-select: none;
+            pointer-events: none;
+            width: 100%;
+            height: 100%;
+            aspect-ratio: 1;
+            box-sizing: content-box;
+        }
+    }
+
+    [part~='input-mode'] {
+        &::before {
+            display: none;
+        }
+    }
+
+    [part='label'] {
+        user-select: none;
+    }
+}
+
+:host([required]) [part='label']::after {
+    content: '*';
+}
