@@ -1,17 +1,30 @@
-# Roadmap - Ignite UI for Web Components
-
 # Current Milestone
 
-## Milestone 24 (Due Jul, 2026)
+## Milestone 25 (Due Oct, 2026)
 
-1. Color picker component
-2. Breadcrumb component
+1. Breadcrumb component
+2. Copy to clipboard component
 
 ## Going down the road
 
 1. Anchor positioning
 
 # Previous Milestone
+
+## Milestone 24, version 7.3.0 (Released Aug 26th, 2026)
+
+1. **[DONE]** Color picker component - `IgcColorPickerComponent`
+2. **[DONE]** Virtual Scroll component - `igc-virtual-scroll`; renders only the viewport plus a configurable `overScan`; vertical and horizontal orientation, RTL, fixed/estimated/variable item sizes, `scrollToIndex()`, `igcDataRequest` and `igcStateChange` events; continues to scroll correctly above the browser maximum scroll coordinate [#2222](https://github.com/IgniteUI/igniteui-webcomponents/pull/2222)
+3. **[DONE]** Combo - dropdown list now uses `igc-virtual-scroll` instead of the third-party `@lit-labs/virtualizer` package [#2222](https://github.com/IgniteUI/igniteui-webcomponents/pull/2222)
+4. **[DONE]** QR Code component — `igc-qr-code`; numeric, alphanumeric and byte encoding; explicit or auto `version` and `error-level`; optional branding logo with automatic error-correction increase; `dot-style` and `square-style`; themeable via CSS custom properties and parts [#2308](https://github.com/IgniteUI/igniteui-webcomponents/pull/2308)
+5. **[DONE]** Splitter - `startCollapsed` and `endCollapsed` properties; `igcLayoutChanged` event carrying the current layout
+6. **[DONE]** Tabs - `selectedTab` property; `select()` now also matches a tab `label`
+7. **[DONE]** Mask input, Date time input, Date range picker - standard undo/redo shortcuts with coalesced typing and deletion steps; restored steps emit `igcInput`
+8. **[DONE]** Icon - `registerIcon` and `registerIconFromText` accept a `RegisterIconOptions` object; `stripMeta` removes `<title>` and `<desc>` and keeps the title text as `aria-label` [#1822](https://github.com/IgniteUI/igniteui-webcomponents/issues/1822)
+9. **[DONE]** Accessibility - Button group `single` and `single-required` modes now expose a `radiogroup` with `radio` buttons instead of toggle buttons with `aria-pressed`
+10. **[DONE]** Calendar — `label-inner`, `months-row` and `years-row` parts are now exported
+11. **[DONE]** Chip — `outlined` property [#2307](https://github.com/IgniteUI/igniteui-webcomponents/pull/2307)
+12. **[DONE]** Date time input, Date picker, Date range picker - **behavioral change:** `value` now holds only a committed value and changes together with `igcChange`, so the components work inside externally bound templates such as `igc-grid` edit templates [#1346](https://github.com/IgniteUI/igniteui-webcomponents/issues/1346)
 
 ## Milestone 23, version 7.2.0 (Released May 27th, 2026)
 
