@@ -1,4 +1,4 @@
----
+﻿---
 name: igniteui-wc-migrate-grid-lite-to-premium
 description: Step-by-step migration guide from igniteui-grid-lite (IgcGridLite) to the premium igniteui-webcomponents-grids (IgcGridComponent), covering every import, class name, HTML tag, property, event, template, sorting, filtering, and theming API change.
 user-invocable: true
@@ -17,7 +17,7 @@ This skill automates the migration from **Grid Lite** (`igniteui-grid-lite`, MIT
 Before producing migration code:
 
 1. **Identify the current Grid Lite usage** - read the user's existing TypeScript and HTML files to understand their column configuration, cell templates, data binding, and any `dataPipelineConfiguration` usage.
-2. **Use the MCP server** - call `mcp_igniteui-cli_get_api_reference` or `mcp_igniteui-cli_get_doc` (framework: `webcomponents`) to verify current API details when in doubt.
+2. **Use the MCP server** - call `mcp_igniteui-cli_get_example` for working code examples, `mcp_igniteui-cli_get_api_reference` for API details, or `mcp_igniteui-cli_get_doc` (framework: `webcomponents`) for explanation context when in doubt.
 3. **Only then produce output** - base all code on verified references, not memory.
 
 ---

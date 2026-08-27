@@ -79,16 +79,17 @@ If the request only says "grid", choose by features:
 
 ## Component Catalogue by UI Pattern
 
-> **Use MCP to discover the live component catalogue.** Call `list_components({ framework: "webcomponents" })` — it returns all 300+ available docs with doc names, summaries, and premium status. Then call `get_doc` with the exact doc `name` field to get usage patterns, HTML examples, and slots; call `get_api_reference` with the component class name (e.g. `IgcCarouselComponent`) for the full property/method/event API.
+> **Use MCP to discover the live component catalogue.** Call `list_components({ framework: "webcomponents" })` — it returns all 300+ available docs with doc names, summaries, and premium status. Then call `get_example` for working code (props, event handlers, structure) or `get_doc` for explanation context (event lifecycle, option tradeoffs, feature interactions); call `get_api_reference` with the component class name (e.g. `IgcCarouselComponent`) for the full property/method/event API.
 >
 > ```
 > list_components({ framework: "webcomponents", filter: "<keyword>" })
+> get_example({ framework: "webcomponents", component: "<doc-name-from-list>", language: "ts" })
 > get_doc({ framework: "webcomponents", name: "<doc-name-from-list>" })
 > ```
 >
 > Use `filter` to narrow results: `"input"`, `"grid"`, `"chart"`, `"nav"`, `"date"`, `"combo"`, etc.
 
-The tables below are a **quick routing reference** for the most common UI patterns. Component tags and package assignments are stable; for usage examples call `get_doc`, for full property/method/event API call `get_api_reference`.
+The tables below are a **quick routing reference** for the most common UI patterns. Component tags and package assignments are stable; for working code examples call `get_example`, for explanation context call `get_doc`, for full property/method/event API call `get_api_reference`.
 
 ### Inputs & Forms
 
@@ -186,7 +187,7 @@ All inputs are form-associated and integrate natively with `<form>`.
 
 > Charts are provided by the **`igniteui-webcomponents-charts`** package (commercial). Use `IgcCategoryChartComponent` or `IgcFinancialChartComponent` for simpler domain-specific scenarios; use `IgcDataChartComponent` for full flexibility (mixed series, numeric/time axes, scatter, polar, etc.).
 >
-> Call `list_components({ framework: "webcomponents", filter: "chart" })` for the full chart doc list, then `get_doc` on the specific chart type before coding.
+> Call `list_components({ framework: "webcomponents", filter: "chart" })` for the full chart doc list, then `get_example` for working code or `get_doc` for explanation context on the specific chart type before coding.
 
 | UI Need | Component | Tag |
 |---|---|---|
@@ -250,7 +251,12 @@ Confirm which package provides the component:
 
 These tools serve different data sources — call the right one to avoid guessing:
 
-- **Usage patterns, HTML examples, slots** → `get_doc` serves the component's **topic-page** (prose guide, code samples, slot names, CSS examples). Use the kebab-case doc `name` returned by `list_components`:
+- **Working code (props, event handlers, structure)** → `get_example` returns concise, runnable examples. Pass `language` to cut response size:
+  ```
+  get_example({ framework: "webcomponents", component: "<doc-name>", language: "ts" })
+  ```
+
+- **Usage explanation, slots, feature context** → `get_doc` serves the component's **topic-page** (prose guide, code samples, slot names, CSS examples). Use when explanation context matters (event lifecycle, option tradeoffs, feature interactions):
   ```
   get_doc({ framework: "webcomponents", name: "<doc-name>" })
   ```
