@@ -22,6 +22,7 @@ import IgcIconComponent from '../icon/icon.js';
 import IgcPopoverComponent, {
   type PopoverPlacement,
 } from '../popover/popover.js';
+import type { PopoverScrollStrategy } from '../types.js';
 import { addTooltipController } from './controller.js';
 import { styles as shared } from './themes/shared/tooltip.common.css.js';
 import { all } from './themes/themes.js';
@@ -205,6 +206,22 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
    */
   @property()
   public placement: PopoverPlacement = 'bottom';
+
+  /**
+   * Sets the behavior of the tooltip when the parent container scrolls.
+   *
+   * If the value is `hide`, the tooltip hides while the anchor is fully out
+   * of view. `hide` is the default value.
+   *
+   * If the value is `scroll`, the tooltip stays visible and anchored.
+   *
+   * If the value is `close`, the tooltip closes on each scroll. The tooltip
+   * also closes if you set the `sticky` property. The Escape key behaves the
+   * same way.
+   * @attr scroll-strategy
+   */
+  @property({ attribute: 'scroll-strategy' })
+  public scrollStrategy: PopoverScrollStrategy = 'hide';
 
   /**
    * An element instance or an IDREF to use as the anchor for the tooltip.
@@ -511,8 +528,16 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
     }
   }
 
-  /** Sticky mode close action - closes without waiting out `hideDelay`. */
-  private _hideOnCloseClick(): void {
+  /**
+   * Closes the tooltip and emits the events. The method ignores `hideDelay`.
+   * The method also ignores the `sticky` property, unlike
+   * `_hideOnInteraction`.
+   *
+   * The close button of a sticky tooltip calls this method. The `close`
+   * scroll strategy also calls it, because that strategy closes a sticky
+   * tooltip too.
+   */
+  private _hideImmediately(): void {
     this._applyTooltipState({ show: false, withEvents: true });
   }
 
@@ -536,17 +561,17 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
         .offset=${this.offset}
         .anchor=${this._controller.anchor ?? undefined}
         .arrowOffset=${this._arrowOffset}
-        .shiftPadding=${8}
+        .scrollStrategy=${this.scrollStrategy}
         ?open=${this.open}
         flip
-        shift
+        @igcPopoverScrollClose=${this._hideImmediately}
       >
         <div ${ref(this._containerRef)} part=${partMap(parts)}>
           <slot>${this.message}</slot>
           ${
             this.sticky
               ? html`
-                  <slot name="close-button" @click=${this._hideOnCloseClick}>
+                  <slot name="close-button" @click=${this._hideImmediately}>
                     <button
                       type="button"
                       part="close-button"

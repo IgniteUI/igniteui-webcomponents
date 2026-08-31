@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/web-components-vite';
 import { html, nothing } from 'lit';
+import { range } from 'lit/directives/range.js';
 import { createRef, ref } from 'lit/directives/ref.js';
 
 import {
@@ -98,6 +99,14 @@ const metadata: Meta<IgcTooltipComponent> = {
       control: { type: 'select' },
       table: { defaultValue: { summary: 'bottom' } },
     },
+    scrollStrategy: {
+      type: { name: 'enum', value: ['scroll', 'hide', 'close'] },
+      description:
+        'Sets the behavior of the tooltip when the parent container scrolls.\n\nIf the value is `hide`, the tooltip hides while the anchor is fully out\nof view. `hide` is the default value.\n\nIf the value is `scroll`, the tooltip stays visible and anchored.\n\nIf the value is `close`, the tooltip closes on each scroll. The tooltip\nalso closes if you set the `sticky` property. The Escape key behaves the\nsame way.',
+      options: ['scroll', 'hide', 'close'],
+      control: { type: 'inline-radio' },
+      table: { defaultValue: { summary: 'hide' } },
+    },
     anchor: {
       type: { name: 'other', value: 'Element | string' },
       description:
@@ -150,6 +159,7 @@ const metadata: Meta<IgcTooltipComponent> = {
     withArrow: false,
     offset: 6,
     placement: 'bottom',
+    scrollStrategy: 'hide',
     showTriggers: 'pointerenter,focusin',
     hideTriggers: 'pointerleave,click,focusout',
     showDelay: 200,
@@ -182,6 +192,19 @@ interface IgcTooltipArgs {
     | 'left'
     | 'left-start'
     | 'left-end';
+  /**
+   * Sets the behavior of the tooltip when the parent container scrolls.
+   *
+   * If the value is `hide`, the tooltip hides while the anchor is fully out
+   * of view. `hide` is the default value.
+   *
+   * If the value is `scroll`, the tooltip stays visible and anchored.
+   *
+   * If the value is `close`, the tooltip closes on each scroll. The tooltip
+   * also closes if you set the `sticky` property. The Escape key behaves the
+   * same way.
+   */
+  scrollStrategy: 'scroll' | 'hide' | 'close';
   /** An element instance or an IDREF to use as the anchor for the tooltip. */
   anchor: Element | string;
   /**
@@ -489,7 +512,7 @@ export const Placements: Story = {
     docs: {
       description: {
         story:
-          'All twelve placements at once - every tooltip below is bound to the same anchor. `placement` picks the side and the alignment along it, `offset` sets the gap to the anchor, and `with-arrow` renders the arrow, which is nudged towards the aligned edge on the `-start` and `-end` variants. The placement is a preference, not a guarantee: the tooltip flips and shifts to stay in the viewport, so scroll the card to an edge to see it move.',
+          'All twelve placements at once - every tooltip below is bound to the same anchor. `placement` picks the side and the alignment along it, `offset` sets the gap to the anchor, and `with-arrow` renders the arrow, which is nudged towards the aligned edge on the `-start` and `-end` variants. The placement is a preference, not a guarantee: the tooltip flips to the opposite side to stay in the viewport, so scroll the card to an edge to see it move.',
       },
     },
   },
@@ -1182,4 +1205,57 @@ export const CancelingEvents: Story = {
       ></igc-tooltip>
     `;
   },
+};
+
+export const InScrollingPanel: Story = {
+  args: {
+    message: 'Publishes the draft and notifies the reviewers.',
+    sticky: true,
+    withArrow: true,
+    scrollStrategy: 'close',
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'A tooltip has its anchor inside a scrolling panel. With the default triggers the tooltip hides when the pointer leaves the anchor. This story sets `sticky`, so the tooltip stays open and you can compare the strategies. The `scroll-strategy` property sets what happens to the tooltip when the panel scrolls. If the value is `hide`, the tooltip hides while the anchor is out of view. `hide` is the default value. If the value is `scroll`, the tooltip follows the anchor. If the value is `close`, the tooltip closes on each scroll. It also closes a sticky tooltip. The Escape key behaves the same way.',
+      },
+    },
+  },
+  render: ({ message, sticky, withArrow, placement, scrollStrategy }) => html`
+    <style>
+      .panel {
+        max-width: 46rem;
+        height: 16rem;
+        overflow: auto;
+        padding: 1rem;
+        border: 1px solid var(--ig-gray-200, #e0e0e0);
+        border-radius: 4px;
+      }
+    </style>
+
+    <div class="panel">
+      <h4>Review queue</h4>
+      <p>
+        Show the tooltip, then scroll this panel to compare the scroll
+        strategies.
+      </p>
+
+      <igc-button id="scrolling-panel-anchor">Publish</igc-button>
+      <igc-tooltip
+        anchor="scrolling-panel-anchor"
+        .message=${message}
+        .sticky=${sticky}
+        .withArrow=${withArrow}
+        .placement=${placement}
+        .scrollStrategy=${scrollStrategy}
+      ></igc-tooltip>
+
+      <p>
+        ${Array.from(range(1, 24)).map(
+          () => html`Drafts wait for two approvals before publishing. `
+        )}
+      </p>
+    </div>
+  `,
 };

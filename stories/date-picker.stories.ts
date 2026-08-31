@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/web-components-vite';
 import { html } from 'lit';
+import { range } from 'lit/directives/range.js';
 
 import {
   type DateRangeDescriptor,
@@ -81,6 +82,14 @@ const metadata: Meta<IgcDatePickerComponent> = {
       options: ['dropdown', 'dialog'],
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'dropdown' } },
+    },
+    scrollStrategy: {
+      type: { name: 'enum', value: ['scroll', 'hide', 'close'] },
+      description:
+        'Sets the behavior of the component when the parent container scrolls.\n\nIf the value is `hide`, the component hides while the anchor is fully out\nof view. `hide` is the default value.\n\nIf the value is `scroll`, the component stays visible and anchored.\n\nIf the value is `close`, the component closes on each scroll.\n\nIn the `dialog` mode the picker ignores this property, because a scroll\ndoes not move a modal dialog.',
+      options: ['scroll', 'hide', 'close'],
+      control: { type: 'inline-radio' },
+      table: { defaultValue: { summary: 'hide' } },
     },
     readOnly: {
       type: 'boolean',
@@ -237,6 +246,7 @@ const metadata: Meta<IgcDatePickerComponent> = {
     disabled: false,
     invalid: false,
     mode: 'dropdown',
+    scrollStrategy: 'hide',
     readOnly: false,
     nonEditable: false,
     outlined: false,
@@ -278,6 +288,20 @@ interface IgcDatePickerArgs {
   invalid: boolean;
   /** Determines whether the calendar is opened in a dropdown or a modal dialog. */
   mode: 'dropdown' | 'dialog';
+  /**
+   * Sets the behavior of the component when the parent container scrolls.
+   *
+   * If the value is `hide`, the component hides while the anchor is fully out
+   * of view. `hide` is the default value.
+   *
+   * If the value is `scroll`, the component stays visible and anchored.
+   *
+   * If the value is `close`, the component closes on each scroll.
+   *
+   * In the `dialog` mode the picker ignores this property, because a scroll
+   * does not move a modal dialog.
+   */
+  scrollStrategy: 'scroll' | 'hide' | 'close';
   /** Makes the control a readonly field. */
   readOnly: boolean;
   /** Whether to allow typing in the input. */
@@ -632,5 +656,52 @@ export const Form: Story = {
       </fieldset>
       ${formControls()}
     </form>
+  `,
+};
+
+export const InScrollingPanel: Story = {
+  args: {
+    label: 'Delivery date',
+    scrollStrategy: 'close',
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'A date picker opens its calendar inside a scrolling panel. A panel can be a settings pane, a dialog body or a side drawer. The `scroll-strategy` property sets what happens to the calendar when the panel scrolls. If the value is `hide`, the calendar hides while the input is out of view. `hide` is the default value. If the value is `scroll`, the calendar follows the input. If the value is `close`, the calendar closes. In the `dialog` mode the calendar opens in a modal dialog and not in a popover. The picker then ignores this property. Change the `mode` control to see this behavior.',
+      },
+    },
+  },
+  render: ({ label, mode, scrollStrategy }) => html`
+    <style>
+      .panel {
+        max-width: 46rem;
+        height: 16rem;
+        overflow: auto;
+        padding: 1rem;
+        border: 1px solid var(--ig-gray-200, #e0e0e0);
+        border-radius: 4px;
+      }
+    </style>
+
+    <div class="panel">
+      <h4>Order details</h4>
+      <p>
+        Open the calendar and scroll this panel to compare the scroll
+        strategies.
+      </p>
+
+      <igc-date-picker
+        .label=${label}
+        .mode=${mode}
+        .scrollStrategy=${scrollStrategy}
+      ></igc-date-picker>
+
+      <p>
+        ${Array.from(range(1, 24)).map(
+          () => html`Orders placed before noon ship on the selected date. `
+        )}
+      </p>
+    </div>
   `,
 };

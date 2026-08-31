@@ -11,6 +11,7 @@ import {
   registerIconFromText,
 } from 'igniteui-webcomponents';
 import { html } from 'lit';
+import { range } from 'lit/directives/range.js';
 import {
   disableStoryControls,
   formControls,
@@ -115,12 +116,12 @@ const metadata: Meta<IgcSelectComponent> = {
       table: { defaultValue: { summary: 'bottom-start' } },
     },
     scrollStrategy: {
-      type: { name: 'enum', value: ['scroll', 'block', 'close'] },
+      type: { name: 'enum', value: ['scroll', 'hide', 'close'] },
       description:
-        'Determines the behavior of the component during scrolling of the parent container.',
-      options: ['scroll', 'block', 'close'],
+        'Sets the behavior of the component when the parent container scrolls.\n\nIf the value is `hide`, the component hides while the anchor is fully out\nof view. `hide` is the default value.\n\nIf the value is `scroll`, the component stays visible and anchored.\n\nIf the value is `close`, the component closes on each scroll.',
+      options: ['scroll', 'hide', 'close'],
       control: { type: 'inline-radio' },
-      table: { defaultValue: { summary: 'scroll' } },
+      table: { defaultValue: { summary: 'hide' } },
     },
     required: {
       type: 'boolean',
@@ -172,7 +173,7 @@ const metadata: Meta<IgcSelectComponent> = {
     autofocus: false,
     distance: 0,
     placement: 'bottom-start',
-    scrollStrategy: 'scroll',
+    scrollStrategy: 'hide',
     required: false,
     disabled: false,
     invalid: false,
@@ -211,8 +212,17 @@ interface IgcSelectArgs {
     | 'left'
     | 'left-start'
     | 'left-end';
-  /** Determines the behavior of the component during scrolling of the parent container. */
-  scrollStrategy: 'scroll' | 'block' | 'close';
+  /**
+   * Sets the behavior of the component when the parent container scrolls.
+   *
+   * If the value is `hide`, the component hides while the anchor is fully out
+   * of view. `hide` is the default value.
+   *
+   * If the value is `scroll`, the component stays visible and anchored.
+   *
+   * If the value is `close`, the component closes on each scroll.
+   */
+  scrollStrategy: 'scroll' | 'hide' | 'close';
   /** When set, makes the component a required field for validation. */
   required: boolean;
   /** The name of the control, submitted with the form data. */
@@ -652,4 +662,55 @@ export const Form: Story = {
       </form>
     `;
   },
+};
+
+export const InScrollingPanel: Story = {
+  args: {
+    label: 'Assign task',
+    scrollStrategy: 'close',
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'A select opens its dropdown inside a scrolling panel. A panel can be a settings pane, a dialog body or a side drawer. The `scroll-strategy` property sets what happens to the dropdown when the panel scrolls. If the value is `hide`, the dropdown hides while the input is out of view. `hide` is the default value. If the value is `scroll`, the dropdown follows the input. If the value is `close`, the dropdown closes.',
+      },
+    },
+  },
+  render: ({ label, placement, distance, scrollStrategy }) => html`
+    <style>
+      .panel {
+        max-width: 46rem;
+        height: 16rem;
+        overflow: auto;
+        padding: 1rem;
+        border: 1px solid var(--ig-gray-200, #e0e0e0);
+        border-radius: 4px;
+      }
+    </style>
+
+    <div class="panel">
+      <h4>Sprint planning</h4>
+      <p>
+        Open the dropdown and scroll this panel to compare the scroll
+        strategies.
+      </p>
+
+      <igc-select
+        .label=${label}
+        .placement=${placement}
+        .distance=${distance}
+        .scrollStrategy=${scrollStrategy}
+      >
+        <igc-select-header>Available tasks:</igc-select-header>
+        ${items}
+      </igc-select>
+
+      <p>
+        ${Array.from(range(1, 24)).map(
+          () => html`Unassigned tasks stay in the backlog until triage. `
+        )}
+      </p>
+    </div>
+  `,
 };

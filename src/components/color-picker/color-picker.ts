@@ -43,7 +43,11 @@ import IgcInputComponent from '../input/input.js';
 import IgcPopoverComponent from '../popover/popover.js';
 import type IgcSelectItemComponent from '../select/select-item.js';
 import IgcSelectComponent from '../select/select.js';
-import type { ColorFormat, ColorPickerMode } from '../types.js';
+import type {
+  ColorFormat,
+  ColorPickerMode,
+  PopoverScrollStrategy,
+} from '../types.js';
 import IgcValidationContainerComponent from '../validation-container/validation-container.js';
 import IgcVisuallyHiddenComponent from '../visually-hidden/visually-hidden.js';
 import { isValidColor, normalizeColor } from './common.js';
@@ -287,6 +291,20 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
    */
   @property({ reflect: true })
   public mode: ColorPickerMode = 'default';
+
+  /**
+   * Sets the behavior of the component when the parent container scrolls.
+   *
+   * If the value is `hide`, the component hides while the anchor is fully out
+   * of view. `hide` is the default value.
+   *
+   * If the value is `scroll`, the component stays visible and anchored.
+   *
+   * If the value is `close`, the component closes on each scroll.
+   * @attr scroll-strategy
+   */
+  @property({ attribute: 'scroll-strategy' })
+  public scrollStrategy: PopoverScrollStrategy = 'hide';
 
   /**
    * Pre-defined color strings. The component renders them as clickable
@@ -1014,7 +1032,12 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
   protected override render(): TemplateResult {
     return html`
       <div part="color-picker">
-        <igc-popover ?open=${this.open} shift flip>
+        <igc-popover
+          ?open=${this.open}
+          flip
+          .scrollStrategy=${this.scrollStrategy}
+          @igcPopoverScrollClose=${this._handleClosing}
+        >
           ${this._renderAnchor()}${this._renderPicker()}
         </igc-popover>
         ${

@@ -42,6 +42,7 @@ import type {
   ContentOrientation,
   DateRangeValue,
   PickerMode,
+  PopoverScrollStrategy,
 } from '../types.js';
 import IgcValidationContainerComponent from '../validation-container/validation-container.js';
 
@@ -277,6 +278,23 @@ export abstract class IgcDatePickerBaseComponent<
    */
   @property()
   public mode: PickerMode = 'dropdown';
+
+  /**
+   * Sets the behavior of the component when the parent container scrolls.
+   *
+   * If the value is `hide`, the component hides while the anchor is fully out
+   * of view. `hide` is the default value.
+   *
+   * If the value is `scroll`, the component stays visible and anchored.
+   *
+   * If the value is `close`, the component closes on each scroll.
+   *
+   * In the `dialog` mode the picker ignores this property, because a scroll
+   * does not move a modal dialog.
+   * @attr scroll-strategy
+   */
+  @property({ attribute: 'scroll-strategy' })
+  public scrollStrategy: PopoverScrollStrategy = 'hide';
 
   /**
    * Makes the control a readonly field.
@@ -790,7 +808,13 @@ export abstract class IgcDatePickerBaseComponent<
 
     return this._isDropDown
       ? html`
-          <igc-popover ?open=${this.open} anchor=${id} flip shift>
+          <igc-popover
+            ?open=${this.open}
+            anchor=${id}
+            flip
+            .scrollStrategy=${this.scrollStrategy}
+            @igcPopoverScrollClose=${this._handleClosing}
+          >
             <igc-focus-trap ?disabled=${isDisabled}>
               ${this._renderPickerContent(id)}
             </igc-focus-trap>

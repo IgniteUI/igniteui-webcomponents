@@ -99,12 +99,12 @@ const metadata: Meta<IgcDropdownComponent> = {
       table: { defaultValue: { summary: 'bottom-start' } },
     },
     scrollStrategy: {
-      type: { name: 'enum', value: ['scroll', 'block', 'close'] },
+      type: { name: 'enum', value: ['scroll', 'hide', 'close'] },
       description:
-        'Determines the behavior of the component during scrolling of the parent container.',
-      options: ['scroll', 'block', 'close'],
+        'Sets the behavior of the component when the parent container scrolls.\n\nIf the value is `hide`, the component hides while the anchor is fully out\nof view. `hide` is the default value.\n\nIf the value is `scroll`, the component stays visible and anchored.\n\nIf the value is `close`, the component closes on each scroll.',
+      options: ['scroll', 'hide', 'close'],
       control: { type: 'inline-radio' },
-      table: { defaultValue: { summary: 'scroll' } },
+      table: { defaultValue: { summary: 'hide' } },
     },
     flip: {
       type: 'boolean',
@@ -149,7 +149,7 @@ const metadata: Meta<IgcDropdownComponent> = {
   },
   args: {
     placement: 'bottom-start',
-    scrollStrategy: 'scroll',
+    scrollStrategy: 'hide',
     flip: false,
     distance: 0,
     sameWidth: false,
@@ -176,8 +176,17 @@ interface IgcDropdownArgs {
     | 'left'
     | 'left-start'
     | 'left-end';
-  /** Determines the behavior of the component during scrolling of the parent container. */
-  scrollStrategy: 'scroll' | 'block' | 'close';
+  /**
+   * Sets the behavior of the component when the parent container scrolls.
+   *
+   * If the value is `hide`, the component hides while the anchor is fully out
+   * of view. `hide` is the default value.
+   *
+   * If the value is `scroll`, the component stays visible and anchored.
+   *
+   * If the value is `close`, the component closes on each scroll.
+   */
+  scrollStrategy: 'scroll' | 'hide' | 'close';
   /**
    * Whether the component should be flipped to the opposite side of the target once it's about to overflow the visible area.
    * When true, once enough space is detected on its preferred side, it will flip back.
@@ -805,13 +814,13 @@ const timeZones = Array.from(range(-11, 13)).flatMap((offset) =>
 export const InScrollingPanel: Story = {
   args: {
     sameWidth: false,
-    scrollStrategy: 'block',
+    scrollStrategy: 'close',
   },
   parameters: {
     docs: {
       description: {
         story:
-          'A long list opened from inside a scrolling panel - a settings pane, a dialog body, a side drawer. The list height is capped with `::part(list)` so it scrolls on its own, and `scroll-strategy` decides what scrolling the panel underneath does to it: `scroll` lets it follow, `block` freezes the panel, `close` dismisses the list.',
+          'A long list opens inside a scrolling panel. A panel can be a settings pane, a dialog body or a side drawer. The `::part(list)` rule limits the height of the list, so the list scrolls on its own. The `scroll-strategy` property sets what happens to the list when the panel scrolls. If the value is `hide`, the list hides while the target is out of view. `hide` is the default value. If the value is `scroll`, the list follows the target. If the value is `close`, the list closes.',
       },
     },
   },

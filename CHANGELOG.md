@@ -5,6 +5,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+### Added
+- #### Combo, Color picker, Date picker, Date range picker, Tooltip
+  - `scroll-strategy` attribute: `hide` (default) hides the popover while its anchor is scrolled fully out of view, `scroll` keeps it visible and anchored, `close` closes the component on any scroll. The date pickers ignore it in `dialog` mode. A tooltip with `scroll-strategy="close"` closes even when `sticky`.
+
+### Changed
+- #### Popover
+  - Popovers now position through native CSS anchor positioning in browsers that support it (Chrome/Edge 133+, Firefox 147+, Safari 26+). Other browsers keep the previous `@floating-ui/dom` behavior, and that module now loads only there.
+  - **BREAKING**: The `PopoverScrollStrategy` type is now `'scroll' | 'hide' | 'close'`, with `hide` as the default. The `block` value is removed; `block` or any unknown value behaves as `hide`.
 
 ## [7.3.0] - 2026-08-26
 ### Added

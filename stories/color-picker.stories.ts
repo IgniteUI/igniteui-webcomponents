@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/web-components-vite';
 import { html } from 'lit';
+import { range } from 'lit/directives/range.js';
 
 import {
   IgcColorPickerComponent,
@@ -76,6 +77,14 @@ const metadata: Meta<IgcColorPickerComponent> = {
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'default' } },
     },
+    scrollStrategy: {
+      type: { name: 'enum', value: ['scroll', 'hide', 'close'] },
+      description:
+        'Sets the behavior of the component when the parent container scrolls.\n\nIf the value is `hide`, the component hides while the anchor is fully out\nof view. `hide` is the default value.\n\nIf the value is `scroll`, the component stays visible and anchored.\n\nIf the value is `close`, the component closes on each scroll.',
+      options: ['scroll', 'hide', 'close'],
+      control: { type: 'inline-radio' },
+      table: { defaultValue: { summary: 'hide' } },
+    },
     required: {
       type: 'boolean',
       description:
@@ -112,6 +121,7 @@ const metadata: Meta<IgcColorPickerComponent> = {
     hideFormats: false,
     showAlpha: false,
     mode: 'default',
+    scrollStrategy: 'hide',
     required: false,
     disabled: false,
     invalid: false,
@@ -155,6 +165,17 @@ interface IgcColorPickerArgs {
    * also opens the picker.
    */
   mode: 'default' | 'input';
+  /**
+   * Sets the behavior of the component when the parent container scrolls.
+   *
+   * If the value is `hide`, the component hides while the anchor is fully out
+   * of view. `hide` is the default value.
+   *
+   * If the value is `scroll`, the component stays visible and anchored.
+   *
+   * If the value is `close`, the component closes on each scroll.
+   */
+  scrollStrategy: 'scroll' | 'hide' | 'close';
   /** When set, makes the component a required field for validation. */
   required: boolean;
   /** The name of the control, submitted with the form data. */
@@ -546,5 +567,54 @@ export const Form: Story = {
 
       ${formControls()}
     </form>
+  `,
+};
+
+export const InScrollingPanel: Story = {
+  args: {
+    label: 'Accent color',
+    value: '#3f51b5',
+    scrollStrategy: 'close',
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'A color picker opens inside a scrolling panel. A panel can be a settings pane, a dialog body or a side drawer. The `scroll-strategy` property sets what happens to the picker when the panel scrolls. If the value is `hide`, the picker hides while the anchor is out of view. `hide` is the default value. If the value is `scroll`, the picker follows the anchor. If the value is `close`, the picker closes.',
+      },
+    },
+    actions: { handles: [] },
+  },
+  render: ({ label, value, mode, scrollStrategy }) => html`
+    <style>
+      .panel {
+        max-width: 46rem;
+        height: 16rem;
+        overflow: auto;
+        padding: 1rem;
+        border: 1px solid var(--ig-gray-200, #e0e0e0);
+        border-radius: 4px;
+      }
+    </style>
+
+    <div class="panel">
+      <h4>Appearance</h4>
+      <p>
+        Open the picker and scroll this panel to compare the scroll strategies.
+      </p>
+
+      <igc-color-picker
+        .label=${label}
+        .value=${value ?? ''}
+        .mode=${mode}
+        .scrollStrategy=${scrollStrategy}
+      ></igc-color-picker>
+
+      <p>
+        ${Array.from(range(1, 24)).map(
+          () => html`The accent color applies to buttons, links and charts. `
+        )}
+      </p>
+    </div>
   `,
 };
