@@ -269,6 +269,11 @@ export function scrollIntoView(
   );
 }
 
+/** Returns the default containing layer for floating elements such as drag and resize ghosts. */
+export function getDefaultLayer(): HTMLElement {
+  return document.body;
+}
+
 /** Applies the given CSS declarations to the inline style of the element. */
 export function setStyles(
   element: HTMLElement,

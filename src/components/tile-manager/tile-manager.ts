@@ -1,5 +1,5 @@
-import { html, LitElement } from 'lit';
-import { property } from 'lit/decorators.js';
+import { html, LitElement, type PropertyValues } from 'lit';
+import { property, state } from 'lit/decorators.js';
 import { createRef, ref } from 'lit/directives/ref.js';
 import { type StyleInfo, styleMap } from 'lit/directives/style-map.js';
 import {
@@ -58,14 +58,19 @@ export default class IgcTileManagerComponent extends LitElement {
 
   private _internalStyles: StyleInfo = {};
 
+  /** Whether any of the tiles is currently in a maximized state. */
+  @state()
+  private _hasMaximizedTile = false;
+
   /** Shared config for the properties that project into a grid CSS variable. */
-  private static _styleVariable(
-    name: string
-  ): CoercedPropertyConfig<string | undefined, IgcTileManagerComponent> {
+  private static _styleVariable<T = string | undefined>(
+    name: string,
+    transform: (value: T) => T = (value) => (value ?? undefined) as T
+  ): CoercedPropertyConfig<T, IgcTileManagerComponent> {
     return {
-      transform: ({ value }) => value ?? undefined,
+      transform: ({ value }) => transform(value),
       onChange: ({ value, host }) => {
-        Object.assign(host._internalStyles, { [name]: value });
+        Object.assign(host._internalStyles, { [name]: value || undefined });
       },
     };
   }
@@ -121,14 +126,11 @@ export default class IgcTileManagerComponent extends LitElement {
    * @default 0
    */
   @property({ type: Number, attribute: 'column-count' })
-  @coercedProperty<number, IgcTileManagerComponent>({
-    transform: ({ value }) => Math.max(0, asNumber(value)),
-    onChange: ({ value, host }) => {
-      Object.assign(host._internalStyles, {
-        '--column-count': value || undefined,
-      });
-    },
-  })
+  @coercedProperty(
+    IgcTileManagerComponent._styleVariable<number>('--column-count', (value) =>
+      Math.max(0, asNumber(value))
+    )
+  )
   public columnCount = 0;
 
   /**
@@ -182,35 +184,40 @@ export default class IgcTileManagerComponent extends LitElement {
     });
   }
 
-  protected override updated() {
-    this._tilesState.adjustTileGridPosition();
+  protected override updated(changed: PropertyValues<this>) {
+    if (changed.has('columnCount')) {
+      this._tilesState.adjustTileGridPosition();
+    }
   }
 
   protected override firstUpdated() {
     this._tilesState.assignPositions();
     this._tilesState.assignTiles();
+    this._updateMaximizedTile();
     this._context.publish();
+  }
+
+  private _updateMaximizedTile(): void {
+    this._hasMaximizedTile = this.tiles.some((tile) => tile.maximized);
   }
 
   private _observerCallback({
     changes: { added, removed },
   }: MutationControllerParams<IgcTileComponent>) {
-    const ownAdded = added.filter(
-      ({ target }) => target.closest(this.tagName) === this
-    );
-    const ownRemoved = removed.filter(
-      ({ target }) => target.closest(this.tagName) === this
-    );
+    const isOwn = ({ target }: { target: Element }) =>
+      target.closest(this.tagName) === this;
 
-    for (const remove of ownRemoved) {
-      this._tilesState.remove(remove.node);
+    for (const { node } of removed.filter(isOwn)) {
+      this._tilesState.remove(node);
     }
 
-    for (const added of ownAdded) {
-      this._tilesState.add(added.node);
+    for (const { node } of added.filter(isOwn)) {
+      this._tilesState.add(node);
     }
 
     this._tilesState.assignTiles();
+    this._tilesState.adjustTileGridPosition();
+    this._updateMaximizedTile();
   }
 
   /**
@@ -225,9 +232,10 @@ export default class IgcTileManagerComponent extends LitElement {
    */
   private _setMaximizedState(): void {
     const grid = this._grid.value;
+    this._updateMaximizedTile();
 
     if (grid) {
-      if (this.tiles.some((tile) => tile.maximized)) {
+      if (this._hasMaximizedTile) {
         if (!grid.style.minHeight) {
           grid.style.minHeight = `${grid.offsetHeight}px`;
         }
@@ -235,8 +243,6 @@ export default class IgcTileManagerComponent extends LitElement {
         grid.style.minHeight = '';
       }
     }
-
-    this.requestUpdate();
   }
 
   // #endregion
@@ -268,7 +274,7 @@ export default class IgcTileManagerComponent extends LitElement {
   protected override render() {
     const parts = {
       base: true,
-      'maximized-tile': this.tiles.some((tile) => tile.maximized),
+      'maximized-tile': this._hasMaximizedTile,
     };
 
     return html`
