@@ -56,7 +56,7 @@ import { styles as shared } from './themes/shared/color-picker.common.css.js';
 import { all } from './themes/themes.js';
 import { colorPickerValidators } from './validators.js';
 
-export interface IgcColorPickerEventMap {
+export interface IgcColorPickerComponentEventMap {
   igcOpening: CustomEvent<void>;
   igcOpened: CustomEvent<void>;
   igcClosing: CustomEvent<void>;
@@ -148,7 +148,7 @@ function getEyeDropper(): EyeDropperConstructor | undefined {
 @shadowOptions({ delegatesFocus: true })
 export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin(
   EventEmitterMixin<
-    IgcColorPickerEventMap,
+    IgcColorPickerComponentEventMap,
     AbstractConstructor<IgcBaseComboBoxComponent>
   >(IgcBaseComboBoxComponent)
 ) {
