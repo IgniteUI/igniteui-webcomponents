@@ -5,12 +5,11 @@ $theme: $indigo;
 
 :host {
     --component-size: var(--ig-size, #{var-get($theme, 'default-size')});
+    --chip-padding-inline: #{pad-inline(3px, 5px, 7px)};
 }
 
-:host button {
-    padding: 0 pad-inline(3px, 5px, 7px);
-
-    &:focus {
+:host [part='base'] {
+    &:focus-within {
         box-shadow: 0 0 0 rem(3px) var-get($theme, 'focus-shadow-color');
     }
 
@@ -20,22 +19,22 @@ $theme: $indigo;
     }
 }
 
-:host([selected]) button:not([disabled]) {
+:host([selected]:not([disabled])) [part='base'] {
     color: var-get($theme, 'selected-text-color');
     background: var-get($theme, 'selected-background');
 
-    &:focus {
+    &:focus-within {
         box-shadow: 0 0 0 rem(3px) var-get($theme, 'focus-selected-shadow-color');
     }
 }
 
-:host([selected]) button[disabled] {
+:host([selected][disabled]) [part='base'] {
     opacity: .4;
 }
 
-:host([variant='primary']) button,
-:host([selected][variant='primary']) button:not([disabled]) {
-    &:focus {
+:host([variant='primary']) [part='base'],
+:host([selected][variant='primary']:not([disabled])) [part='base'] {
+    &:focus-within {
         color: contrast-color(primary, 900);
         background: color(primary, 500);
         box-shadow: 0 0 0 rem(3px) color(primary, 400, .5);
@@ -47,14 +46,14 @@ $theme: $indigo;
     }
 }
 
-:host([variant='primary']) button[disabled],
-:host([selected][variant='primary']) button[disabled] {
+:host([variant='primary'][disabled]) [part='base'],
+:host([selected][variant='primary'][disabled]) [part='base'] {
     background: color(primary, 400, .5);
 }
 
 @mixin chip-variants($variant, $variant-color) {
-    :host([variant='#{$variant}']) button,
-    :host([selected][variant='#{$variant}']) button:not([disabled]) {
+    :host([variant='#{$variant}']) [part='base'],
+    :host([selected][variant='#{$variant}']:not([disabled])) [part='base'] {
         @if $variant != 'warning' {
             color: contrast-color($variant-color, 900);
         }
@@ -65,7 +64,7 @@ $theme: $indigo;
             background: color(error, 600);
         }
 
-        &:focus {
+        &:focus-within {
             @if $variant == 'warning' or $variant == 'info' {
                 background: color($variant-color, 500);
             } @else if $variant == 'danger' {
@@ -92,8 +91,8 @@ $theme: $indigo;
         }
     }
 
-    :host([variant='#{$variant}']) button[disabled],
-    :host([selected][variant='#{$variant}']) button[disabled] {
+    :host([variant='#{$variant}'][disabled]) [part='base'],
+    :host([selected][variant='#{$variant}'][disabled]) [part='base'] {
         @if $variant != 'primary' {
             opacity: .4;
         }
@@ -119,6 +118,6 @@ $theme: $indigo;
 @include chip-variants('warning', warn);
 @include chip-variants('danger', error);
 
-:host([outlined][variant='primary']) button[disabled] {
+:host([outlined][variant='primary'][disabled]) [part='base'] {
     opacity: .4;
 }
