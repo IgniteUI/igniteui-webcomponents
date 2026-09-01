@@ -45,6 +45,11 @@ export function stopPropagation(event: Event): void {
   event.stopPropagation();
 }
 
+/** Reusable event listener that just prevents the default action of the event. */
+export function preventDefault(event: Event): void {
+  event.preventDefault();
+}
+
 /**
  * Returns whether focus has moved outside of the given host element for
  * a `focusout`/`blur` event, that is the element gaining focus is not
