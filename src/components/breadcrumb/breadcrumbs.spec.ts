@@ -150,6 +150,20 @@ describe('Breadcrumbs', () => {
     });
   });
 
+  describe('disabled property', () => {
+    it('reflects the disabled attribute', async () => {
+      const item = await fixture<IgcBreadcrumbComponent>(
+        html`<igc-breadcrumb><a href="#">Home</a></igc-breadcrumb>`
+      );
+
+      item.disabled = true;
+      await elementUpdated(item);
+
+      expect(item.disabled).to.be.true;
+      expect(item.hasAttribute('disabled')).to.be.true;
+    });
+  });
+
   describe('Separator property', () => {
     it('defaults to tree_expand separator icon', async () => {
       const el = await fixture<IgcBreadcrumbsComponent>(

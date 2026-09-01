@@ -7,6 +7,7 @@ import { addInternalsController } from '../common/controllers/internals.js';
 import { registerComponent } from '../common/definitions/register.js';
 import IgcIconComponent from '../icon/icon.js';
 import { styles } from './themes/breadcrumb.base.css.js';
+import { styles as shared } from './themes/shared/breadcrumb.common.css.js';
 import { all } from './themes/themes.js';
 
 /**
@@ -21,11 +22,6 @@ import { all } from './themes/themes.js';
  *
  * @csspart label - The container wrapping the prefix, default, and suffix slots.
  * @csspart separator - The container wrapping the separator slot content.
- *
- * @cssproperty --ig-breadcrumb-link-color - The color of the breadcrumb link. Defaults to `--ig-primary-500`.
- * @cssproperty --ig-breadcrumb-link-color-hover - The hover color of the breadcrumb link. Defaults to `--ig-primary-700`.
- * @cssproperty --ig-breadcrumb-current-color - The color of the active (current) breadcrumb link. Defaults to `--ig-gray-900`.
- * @cssproperty --ig-breadcrumb-separator-color - The color of the separator. Defaults to `--ig-gray-500`.
  *
  * @example
  * ```html
@@ -44,7 +40,7 @@ import { all } from './themes/themes.js';
  */
 export default class IgcBreadcrumbComponent extends LitElement {
   public static readonly tagName = 'igc-breadcrumb';
-  public static override styles = [styles];
+  public static override styles = [styles, shared];
 
   /* blazorSuppress */
   public static register(): void {
@@ -84,6 +80,13 @@ export default class IgcBreadcrumbComponent extends LitElement {
    */
   @property({ type: Boolean, reflect: true })
   public current = false;
+
+  /**
+   * Sets the disabled state of the breadcrumb.
+   * @attr
+   */
+  @property({ type: Boolean, reflect: true })
+  public disabled = false;
 
   //#endregion
 

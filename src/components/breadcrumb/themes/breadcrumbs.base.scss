@@ -2,10 +2,10 @@
 @use 'styles/utilities' as *;
 
 :host {
-    --_gap: var(--ig-breadcrumbs-gap, 0.5rem);
+    --component-size: var(--ig-size, var(--ig-size-medium));
 
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: var(--_gap);
+    row-gap: rem(4px);
 }
