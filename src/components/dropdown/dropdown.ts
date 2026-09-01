@@ -19,7 +19,6 @@ import {
   type MutationControllerParams,
 } from '#internals/controllers/mutation-observer.js';
 import { addRootClickController } from '#internals/controllers/root-click.js';
-import { addRootScrollHandler } from '#internals/controllers/root-scroll.js';
 import { blazorAdditionalDependencies } from '#internals/decorators/blazorAdditionalDependencies.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import {
@@ -101,10 +100,6 @@ export default class IgcDropdownComponent extends EventEmitterMixin<
 
   private readonly _keyBindings: KeyBindingController;
 
-  private readonly _rootScrollController = addRootScrollHandler(this, {
-    hideCallback: this._handleClosing,
-  });
-
   protected override readonly _rootClickController = addRootClickController(
     this,
     {
@@ -156,11 +151,18 @@ export default class IgcDropdownComponent extends EventEmitterMixin<
   public placement: PopoverPlacement = 'bottom-start';
 
   /**
-   * Determines the behavior of the component during scrolling of the parent container.
+   * Sets the behavior of the component when the parent container scrolls.
+   *
+   * If the value is `hide`, the component hides while the anchor is fully out
+   * of view. `hide` is the default value.
+   *
+   * If the value is `scroll`, the component stays visible and anchored.
+   *
+   * If the value is `close`, the component closes on each scroll.
    * @attr scroll-strategy
    */
   @property({ attribute: 'scroll-strategy' })
-  public scrollStrategy: PopoverScrollStrategy = 'scroll';
+  public scrollStrategy: PopoverScrollStrategy = 'hide';
 
   /**
    * Whether the component should be flipped to the opposite side of the target once it's about to overflow the visible area.
@@ -257,15 +259,8 @@ export default class IgcDropdownComponent extends EventEmitterMixin<
       return;
     }
 
-    const openChanged = properties.has('open');
-    const strategyChanged = properties.has('scrollStrategy');
-
-    if (openChanged || properties.has('keepOpenOnOutsideClick')) {
+    if (properties.has('open') || properties.has('keepOpenOnOutsideClick')) {
       this._rootClickController.update();
-    }
-
-    if (openChanged || strategyChanged) {
-      this._rootScrollController.update({ resetListeners: strategyChanged });
     }
   }
 
@@ -610,7 +605,8 @@ export default class IgcDropdownComponent extends EventEmitterMixin<
       .anchor=${this._target}
       .offset=${this.distance}
       .placement=${this.placement}
-      shift
+      .scrollStrategy=${this.scrollStrategy}
+      @igcPopoverScrollClose=${this._handleClosing}
     >
       <slot
         id="dropdown-target"

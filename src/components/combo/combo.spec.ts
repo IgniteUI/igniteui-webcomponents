@@ -34,6 +34,7 @@ import {
   simulateClick,
   simulateKeyboard,
   simulatePointerDown,
+  simulateScroll,
 } from '#internals/testing/simulate.spec.js';
 import {
   runValidationContainerTests,
@@ -1613,6 +1614,45 @@ describe('Combo', () => {
 
       expect(combo.value).to.be.empty;
       expect(input.value).to.equal('');
+    });
+  });
+
+  describe('Scroll strategy', () => {
+    let container: HTMLDivElement;
+
+    beforeEach(async () => {
+      container = await fixture(html`
+        <div style="height: 1200px">
+          <igc-combo
+            .data=${cities}
+            value-key="id"
+            display-key="name"
+          ></igc-combo>
+        </div>
+      `);
+      combo = container.querySelector<IgcComboComponent<City>>(
+        IgcComboComponent.tagName
+      )!;
+    });
+
+    it('`scroll` behavior', async () => {
+      combo.scrollStrategy = 'scroll';
+      await openComboPopover(combo);
+      await simulateScroll(container, { top: 200 });
+
+      expect(combo.open).to.be.true;
+    });
+
+    it('`close` behavior', async () => {
+      const eventSpy = spy(combo, 'emitEvent');
+
+      combo.scrollStrategy = 'close';
+      await openComboPopover(combo);
+      await simulateScroll(container, { top: 200 });
+
+      expect(combo.open).to.be.false;
+      expect(eventSpy.firstCall).calledWith('igcClosing');
+      expect(eventSpy.lastCall).calledWith('igcClosed');
     });
   });
 

@@ -333,6 +333,7 @@ describe('Select', () => {
     });
 
     it('`scroll` behavior', async () => {
+      select.scrollStrategy = 'scroll';
       await openSelect();
       await simulateScroll(container, { top: 200 });
 
@@ -349,14 +350,6 @@ describe('Select', () => {
       expect(select.open).to.be.false;
       expect(eventSpy.firstCall).calledWith('igcClosing');
       expect(eventSpy.lastCall).calledWith('igcClosed');
-    });
-
-    it('`block behavior`', async () => {
-      select.scrollStrategy = 'block';
-      await openSelect();
-      await simulateScroll(container, { top: 200 });
-
-      expect(select.open).to.be.true;
     });
   });
 

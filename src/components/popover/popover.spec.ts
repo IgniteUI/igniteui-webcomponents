@@ -7,7 +7,14 @@ import {
 } from '@open-wc/testing';
 
 import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { simulateScroll } from '#internals/testing/simulate.spec.js';
 import IgcPopoverComponent, { type PopoverPlacement } from './popover.js';
+import {
+  setPopoverPositionStrategy,
+  SUPPORTS_ANCHOR_POSITIONING,
+} from './position/types.js';
+
+type PositionMode = 'native' | 'fallback';
 
 async function waitForPaint(popover: IgcPopoverComponent) {
   await elementUpdated(popover);
@@ -70,11 +77,7 @@ function createAnchorlessPopover() {
   `;
 }
 
-describe('Popover', () => {
-  before(() => {
-    defineComponents(IgcPopoverComponent);
-  });
-
+function definePositioningSuites(mode: PositionMode) {
   describe('Slotted anchor element', async () => {
     let popover: IgcPopoverComponent;
     let anchor: HTMLButtonElement;
@@ -190,9 +193,7 @@ describe('Popover', () => {
     describe('With initial open state', () => {
       beforeEach(async () => {
         const root = await fixture<HTMLElement>(createNonSlottedPopover(true));
-        popover = root.querySelector(
-          IgcPopoverComponent.tagName
-        ) as IgcPopoverComponent;
+        popover = queryPopover(root);
         anchor = root.querySelector('#btn') as HTMLButtonElement;
       });
 
@@ -220,9 +221,7 @@ describe('Popover', () => {
     describe('With initial closed state', () => {
       beforeEach(async () => {
         const root = await fixture<HTMLElement>(createNonSlottedPopover());
-        popover = root.querySelector(
-          IgcPopoverComponent.tagName
-        ) as IgcPopoverComponent;
+        popover = queryPopover(root);
         anchor = root.querySelector('#btn') as HTMLButtonElement;
       });
 
@@ -405,6 +404,22 @@ describe('Popover', () => {
 
       expect(isFloaterOpen(popover)).to.be.false;
     });
+
+    it('stays open when the anchor is removed and re-inserted in the same task', async () => {
+      await openAtButton();
+
+      const parent = anchor.parentElement as HTMLElement;
+      const sibling = anchor.nextSibling;
+
+      anchor.remove();
+      parent.insertBefore(anchor, sibling);
+      await waitForPaint(popover);
+
+      expect(isFloaterOpen(popover)).to.be.true;
+      expect(getFloater(popover).getBoundingClientRect().top).to.equal(
+        anchor.getBoundingClientRect().bottom
+      );
+    });
   });
 
   describe('Open state', () => {
@@ -437,6 +452,175 @@ describe('Popover', () => {
 
       expect(isFloaterOpen(popover)).to.be.true;
     });
+
+    it('uses the expected positioning mechanism', async () => {
+      const floater = getFloater(popover);
+
+      if (mode === 'native') {
+        expect(floater.hasAttribute('data-anchored')).to.be.true;
+        expect(floater.style.transform).to.equal('');
+      } else {
+        expect(floater.hasAttribute('data-anchored')).to.be.false;
+        expect(floater.style.transform).to.not.equal('');
+      }
+    });
+  });
+
+  describe('Placement', () => {
+    function createPlacedPopover(placement: PopoverPlacement, dir = 'ltr') {
+      return html`
+        <div dir=${dir}>
+          <button
+            id="btn"
+            type="button"
+            style="position: fixed; top: 200px; left: 200px; width: 80px; height: 40px"
+          >
+            Anchor
+          </button>
+          <igc-popover open anchor="btn" placement=${placement}>
+            <div style="width: 40px; height: 20px">M</div>
+          </igc-popover>
+        </div>
+      `;
+    }
+
+    async function placementRects(placement: PopoverPlacement, dir = 'ltr') {
+      const root = await fixture<HTMLElement>(
+        createPlacedPopover(placement, dir)
+      );
+      const popover = queryPopover(root);
+      await waitForPaint(popover);
+
+      return {
+        floater: getFloater(popover).getBoundingClientRect(),
+        anchor: root.querySelector('#btn')!.getBoundingClientRect(),
+      };
+    }
+
+    function centerX(rect: DOMRect) {
+      return rect.left + rect.width / 2;
+    }
+
+    function centerY(rect: DOMRect) {
+      return rect.top + rect.height / 2;
+    }
+
+    // Main-axis edge and cross-axis alignment relations per placement,
+    // shared by both strategies.
+    const MATRIX: Array<
+      [PopoverPlacement, (f: DOMRect, a: DOMRect) => Array<[number, number]>]
+    > = [
+      [
+        'top',
+        (f, a) => [
+          [f.bottom, a.top],
+          [centerX(f), centerX(a)],
+        ],
+      ],
+      [
+        'top-start',
+        (f, a) => [
+          [f.bottom, a.top],
+          [f.left, a.left],
+        ],
+      ],
+      [
+        'top-end',
+        (f, a) => [
+          [f.bottom, a.top],
+          [f.right, a.right],
+        ],
+      ],
+      [
+        'bottom',
+        (f, a) => [
+          [f.top, a.bottom],
+          [centerX(f), centerX(a)],
+        ],
+      ],
+      [
+        'bottom-start',
+        (f, a) => [
+          [f.top, a.bottom],
+          [f.left, a.left],
+        ],
+      ],
+      [
+        'bottom-end',
+        (f, a) => [
+          [f.top, a.bottom],
+          [f.right, a.right],
+        ],
+      ],
+      [
+        'left',
+        (f, a) => [
+          [f.right, a.left],
+          [centerY(f), centerY(a)],
+        ],
+      ],
+      [
+        'left-start',
+        (f, a) => [
+          [f.right, a.left],
+          [f.top, a.top],
+        ],
+      ],
+      [
+        'left-end',
+        (f, a) => [
+          [f.right, a.left],
+          [f.bottom, a.bottom],
+        ],
+      ],
+      [
+        'right',
+        (f, a) => [
+          [f.left, a.right],
+          [centerY(f), centerY(a)],
+        ],
+      ],
+      [
+        'right-start',
+        (f, a) => [
+          [f.left, a.right],
+          [f.top, a.top],
+        ],
+      ],
+      [
+        'right-end',
+        (f, a) => [
+          [f.left, a.right],
+          [f.bottom, a.bottom],
+        ],
+      ],
+    ];
+
+    for (const [placement, relations] of MATRIX) {
+      it(`positions \`${placement}\` against the anchor`, async () => {
+        const { floater, anchor } = await placementRects(placement);
+
+        for (const [actual, expected] of relations(floater, anchor)) {
+          expect(actual).to.be.closeTo(expected, 1);
+        }
+      });
+    }
+
+    it('aligns `-start`/`-end` placements to the inline edges in RTL', async () => {
+      const start = await placementRects('bottom-start', 'rtl');
+      expect(start.floater.right).to.be.closeTo(start.anchor.right, 1);
+      expect(start.floater.top).to.be.closeTo(start.anchor.bottom, 1);
+
+      const end = await placementRects('bottom-end', 'rtl');
+      expect(end.floater.left).to.be.closeTo(end.anchor.left, 1);
+    });
+
+    it('keeps `left`/`right` placements physical in RTL', async () => {
+      const { floater, anchor } = await placementRects('right-start', 'rtl');
+
+      expect(floater.left).to.be.closeTo(anchor.right, 1);
+      expect(floater.top).to.be.closeTo(anchor.top, 1);
+    });
   });
 
   describe('Middleware', () => {
@@ -450,7 +634,7 @@ describe('Popover', () => {
           >
             Show message
           </button>
-          <igc-popover open flip shift anchor="btn" placement=${placement}>
+          <igc-popover open flip anchor="btn" placement=${placement}>
             <div style="height: 300px; width: 100px">Message</div>
           </igc-popover>
         </div>
@@ -546,7 +730,279 @@ describe('Popover', () => {
     });
   });
 
-  describe('Positioning strategy', () => {
+  describe('Arrow element with flipping', () => {
+    afterEach(() => {
+      window.scrollTo(0, 0);
+    });
+
+    it('tracks the resolved side of a flipped placement through scrolling', async () => {
+      const root = await fixture<HTMLElement>(html`
+        <div style="height: 200vh">
+          <button
+            id="btn"
+            type="button"
+            style="position: absolute; top: calc(100vh - 24px)"
+          >
+            Show message
+          </button>
+          <igc-popover open flip anchor="btn" placement="bottom">
+            <div style="height: 100px; width: 100px">Message</div>
+            <div id="arrow" style="width: 10px; height: 10px"></div>
+          </igc-popover>
+        </div>
+      `);
+      const popover = queryPopover(root);
+
+      popover.arrow = root.querySelector('#arrow') as HTMLElement;
+      await waitForPaint(popover);
+
+      // Overflows below the viewport - flipped above the anchor.
+      expect(popover.arrow.part.contains('top')).to.be.true;
+
+      window.scrollTo(0, window.innerHeight);
+      await waitForPaint(popover);
+      await nextFrame();
+
+      // The anchor now sits near the viewport top - back below it.
+      expect(popover.arrow.part.contains('bottom')).to.be.true;
+    });
+  });
+
+  describe('Anchor visibility', () => {
+    // The scroller sits mid-viewport so the popover, which keeps tracking the
+    // clipped anchor position, stays inside the viewport - the hit-test below
+    // then reflects only the hidden state, never off-screen geometry.
+    function createClippedPopover() {
+      return html`
+        <div>
+          <div
+            id="scroller"
+            style="height: 150px; overflow: auto; margin-top: 300px"
+          >
+            <div style="height: 600px; padding-top: 25px">
+              <button id="btn" type="button">Show message</button>
+            </div>
+          </div>
+          <igc-popover open anchor="btn">
+            <p style="border: 1px solid #ccc">Message</p>
+          </igc-popover>
+        </div>
+      `;
+    }
+
+    // The native strongly-hidden state from `position-visibility` is not
+    // reflected by checkVisibility() or computed styles - hit-testing is the
+    // one observable signal, and it also covers the fallback's inline
+    // `visibility: hidden`, since hidden elements are never hit-testable.
+    function isContentHitTestable(root: HTMLElement): boolean {
+      const content = root.querySelector('p')!;
+      const rect = content.getBoundingClientRect();
+      const found = document.elementFromPoint(
+        rect.left + rect.width / 2,
+        rect.top + rect.height / 2
+      );
+      return found === content;
+    }
+
+    it('hides the popover while the anchor is fully clipped and restores it on scroll back', async () => {
+      const root = await fixture<HTMLElement>(createClippedPopover());
+      const popover = queryPopover(root);
+      const scroller = root.querySelector<HTMLElement>('#scroller')!;
+
+      await waitForPaint(popover);
+      expect(isContentHitTestable(root)).to.be.true;
+
+      // The anchor is now fully above the scroller's visible window.
+      await simulateScroll(scroller, { top: 150 });
+      await waitForPaint(popover);
+      expect(isContentHitTestable(root)).to.be.false;
+
+      await simulateScroll(scroller, { top: 0 });
+      await waitForPaint(popover);
+      expect(isContentHitTestable(root)).to.be.true;
+    });
+
+    it('`scroll` keeps the popover visible while the anchor is fully clipped', async () => {
+      const root = await fixture<HTMLElement>(createClippedPopover());
+      const popover = queryPopover(root);
+      const scroller = root.querySelector<HTMLElement>('#scroller')!;
+
+      popover.scrollStrategy = 'scroll';
+      await elementUpdated(popover);
+      await waitForPaint(popover);
+
+      await simulateScroll(scroller, { top: 150 });
+      await waitForPaint(popover);
+      expect(isContentHitTestable(root)).to.be.true;
+    });
+
+    it('switching to `scroll` while hidden restores the popover', async () => {
+      const root = await fixture<HTMLElement>(createClippedPopover());
+      const popover = queryPopover(root);
+      const scroller = root.querySelector<HTMLElement>('#scroller')!;
+
+      await simulateScroll(scroller, { top: 150 });
+      await waitForPaint(popover);
+      expect(isContentHitTestable(root)).to.be.false;
+
+      popover.scrollStrategy = 'scroll';
+      await elementUpdated(popover);
+      await waitForPaint(popover);
+      expect(isContentHitTestable(root)).to.be.true;
+    });
+
+    it('re-opens visible after closing while the anchor was clipped', async () => {
+      const root = await fixture<HTMLElement>(createClippedPopover());
+      const popover = queryPopover(root);
+      const scroller = root.querySelector<HTMLElement>('#scroller')!;
+
+      await simulateScroll(scroller, { top: 150 });
+      await waitForPaint(popover);
+      expect(isContentHitTestable(root)).to.be.false;
+
+      popover.open = false;
+      await waitForPaint(popover);
+
+      await simulateScroll(scroller, { top: 0 });
+      popover.open = true;
+      await waitForPaint(popover);
+
+      expect(isContentHitTestable(root)).to.be.true;
+    });
+  });
+}
+
+describe('Popover', () => {
+  before(() => {
+    defineComponents(IgcPopoverComponent);
+  });
+
+  for (const mode of ['native', 'fallback'] as const) {
+    const describeMode =
+      mode === 'native' && !SUPPORTS_ANCHOR_POSITIONING
+        ? describe.skip
+        : describe;
+
+    describeMode(`Positioning [${mode}]`, () => {
+      before(() => {
+        setPopoverPositionStrategy(mode === 'fallback' ? 'floating' : 'native');
+      });
+
+      after(() => {
+        setPopoverPositionStrategy();
+      });
+
+      definePositioningSuites(mode);
+    });
+  }
+
+  // Positioning-strategy-agnostic - the popover owns the document scroll
+  // listener and only notifies; whoever controls `open` closes it.
+  describe('Scroll strategy', () => {
+    let popover: IgcPopoverComponent;
+    let scroller: HTMLElement;
+    let closeRequests: number;
+
+    beforeEach(async () => {
+      scroller = await fixture<HTMLElement>(html`
+        <div style="height: 150px; overflow: auto">
+          <div style="height: 600px">
+            <igc-popover open>
+              <button id="btn" slot="anchor" type="button">Show message</button>
+              <p>Message</p>
+            </igc-popover>
+          </div>
+        </div>
+      `);
+      popover = queryPopover(scroller);
+
+      closeRequests = 0;
+      popover.addEventListener('igcPopoverScrollClose', () => {
+        closeRequests++;
+      });
+
+      await waitForPaint(popover);
+    });
+
+    it('`hide` (default) and `scroll` emit nothing on ancestor scroll', async () => {
+      await simulateScroll(scroller, { top: 200 });
+      expect(closeRequests).to.equal(0);
+      expect(popover.open).to.be.true;
+
+      popover.scrollStrategy = 'scroll';
+      await elementUpdated(popover);
+
+      await simulateScroll(scroller, { top: 400 });
+      expect(closeRequests).to.equal(0);
+      expect(popover.open).to.be.true;
+    });
+
+    it('`igcPopoverScrollClose` does not bubble up the DOM', async () => {
+      popover.scrollStrategy = 'close';
+      await elementUpdated(popover);
+
+      const documentEvents: Event[] = [];
+      const listener = (event: Event) => documentEvents.push(event);
+      document.addEventListener('igcPopoverScrollClose', listener);
+
+      try {
+        await simulateScroll(scroller, { top: 200 });
+      } finally {
+        document.removeEventListener('igcPopoverScrollClose', listener);
+      }
+
+      // The direct listener on the popover fired, the document one never did.
+      expect(closeRequests).to.be.greaterThan(0);
+      expect(documentEvents.length).to.equal(0);
+    });
+
+    it('`close` emits `igcPopoverScrollClose` on ancestor scroll while open', async () => {
+      popover.scrollStrategy = 'close';
+      await elementUpdated(popover);
+
+      await simulateScroll(scroller, { top: 200 });
+      expect(closeRequests).to.be.greaterThan(0);
+
+      // The popover does not own its open state - closing is up to the host.
+      expect(popover.open).to.be.true;
+    });
+
+    it('stops emitting when the strategy is reset while open', async () => {
+      popover.scrollStrategy = 'close';
+      await elementUpdated(popover);
+
+      await simulateScroll(scroller, { top: 200 });
+      expect(closeRequests).to.be.greaterThan(0);
+
+      popover.scrollStrategy = 'scroll';
+      await elementUpdated(popover);
+      const seen = closeRequests;
+
+      await simulateScroll(scroller, { top: 400 });
+      expect(closeRequests).to.equal(seen);
+    });
+
+    it('does not emit while closed', async () => {
+      popover.scrollStrategy = 'close';
+      popover.open = false;
+      await elementUpdated(popover);
+
+      await simulateScroll(scroller, { top: 200 });
+      expect(closeRequests).to.equal(0);
+    });
+  });
+
+  // floating-ui specific behavior - the native path has no positioning
+  // strategy concept (anchor positioning is layout-true under sticky).
+  describe('Positioning strategy [fallback]', () => {
+    before(() => {
+      setPopoverPositionStrategy('floating');
+    });
+
+    after(() => {
+      setPopoverPositionStrategy();
+    });
+
     function createStickyPopover(level: 'parent' | 'grandparent') {
       const popover = html`
         <igc-popover open anchor="btn">
@@ -570,9 +1026,7 @@ describe('Popover', () => {
 
     it('uses the `fixed` strategy with a directly sticky ancestor', async () => {
       const root = await fixture<HTMLElement>(createStickyPopover('parent'));
-      const popover = root.querySelector(
-        IgcPopoverComponent.tagName
-      ) as IgcPopoverComponent;
+      const popover = queryPopover(root);
       await waitForPaint(popover);
 
       expect(getFloater(popover).style.position).to.equal('fixed');
@@ -582,9 +1036,7 @@ describe('Popover', () => {
       const root = await fixture<HTMLElement>(
         createStickyPopover('grandparent')
       );
-      const popover = root.querySelector(
-        IgcPopoverComponent.tagName
-      ) as IgcPopoverComponent;
+      const popover = queryPopover(root);
       await waitForPaint(popover);
 
       expect(getFloater(popover).style.position).to.equal('fixed');
@@ -592,9 +1044,7 @@ describe('Popover', () => {
 
     it('uses the `absolute` strategy without a sticky ancestor', async () => {
       const root = await fixture<HTMLElement>(createNonSlottedPopover(true));
-      const popover = root.querySelector(
-        IgcPopoverComponent.tagName
-      ) as IgcPopoverComponent;
+      const popover = queryPopover(root);
       await waitForPaint(popover);
 
       expect(getFloater(popover).style.position).to.equal('absolute');

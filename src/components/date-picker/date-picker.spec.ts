@@ -22,6 +22,7 @@ import {
   simulateClick,
   simulateInput,
   simulateKeyboard,
+  simulateScroll,
 } from '#internals/testing/simulate.spec.js';
 import IgcCalendarComponent from '../calendar/calendar.js';
 import { DateRangeType } from '../calendar/types.js';
@@ -641,6 +642,51 @@ describe('Date picker', () => {
       await elementUpdated(picker);
 
       expect(dateTimeInput.readOnly).to.be.true;
+    });
+  });
+
+  describe('Scroll strategy', () => {
+    let container: HTMLDivElement;
+
+    beforeEach(async () => {
+      container = await fixture(html`
+        <div style="height: 1200px">
+          <igc-date-picker></igc-date-picker>
+        </div>
+      `);
+      picker = container.querySelector(IgcDatePickerComponent.tagName)!;
+    });
+
+    it('`scroll` behavior', async () => {
+      picker.scrollStrategy = 'scroll';
+      await picker.show();
+      await simulateScroll(container, { top: 200 });
+
+      expect(picker.open).to.be.true;
+    });
+
+    it('`close` behavior', async () => {
+      const eventSpy = spy(picker, 'emitEvent');
+
+      picker.scrollStrategy = 'close';
+      await picker.show();
+      await simulateScroll(container, { top: 200 });
+
+      expect(picker.open).to.be.false;
+      expect(eventSpy.firstCall).calledWith('igcClosing');
+      expect(eventSpy.lastCall).calledWith('igcClosed');
+    });
+
+    it('`close` is ignored in dialog mode', async () => {
+      const eventSpy = spy(picker, 'emitEvent');
+
+      picker.mode = 'dialog';
+      picker.scrollStrategy = 'close';
+      await picker.show();
+      await simulateScroll(container, { top: 200 });
+
+      expect(picker.open).to.be.true;
+      expect(eventSpy).not.to.be.called;
     });
   });
 

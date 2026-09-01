@@ -26,6 +26,7 @@ import {
   simulateClick,
   simulateInput,
   simulateKeyboard,
+  simulateScroll,
 } from '#internals/testing/simulate.spec.js';
 import IgcCalendarComponent from '../calendar/calendar.js';
 import type IgcDialogComponent from '../dialog/dialog.js';
@@ -420,6 +421,28 @@ describe('Date range picker - single input', () => {
       expect(input.value).to.equal('01/15/2025 - 01/15/2026');
     });
   });
+  describe('Scroll strategy', () => {
+    // Inherited from the picker base class - one end-to-end smoke test.
+    it('`close` behavior', async () => {
+      const container = await fixture<HTMLDivElement>(html`
+        <div style="height: 1200px">
+          <igc-date-range-picker
+            scroll-strategy="close"
+          ></igc-date-range-picker>
+        </div>
+      `);
+      picker = container.querySelector(IgcDateRangePickerComponent.tagName)!;
+      const eventSpy = spy(picker, 'emitEvent');
+
+      await picker.show();
+      await simulateScroll(container, { top: 200 });
+
+      expect(picker.open).to.be.false;
+      expect(eventSpy.firstCall).calledWith('igcClosing');
+      expect(eventSpy.lastCall).calledWith('igcClosed');
+    });
+  });
+
   describe('Methods', () => {
     it('should clear the input on invoking clear()', async () => {
       const eventSpy = spy(picker, 'emitEvent');
