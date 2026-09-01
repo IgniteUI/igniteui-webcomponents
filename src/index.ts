@@ -146,6 +146,7 @@ export type { IgcCheckboxComponentEventMap } from './components/checkbox/checkbo
 export type { IgcCheckboxComponentEventMap as IgcSwitchComponentEventMap } from './components/checkbox/checkbox-base.js';
 export type { IgcChipComponentEventMap } from './components/chip/chip.js';
 export type { IgcComboComponentEventMap } from './components/combo/types.js';
+export type { IgcColorPickerComponentEventMap } from './components/color-picker/color-picker.js';
 export type { IgcDatePickerComponentEventMap } from './components/date-picker/date-picker.js';
 export type { IgcDateRangePickerComponentEventMap } from './components/date-range-picker/date-range-picker.js';
 export type { IgcDateTimeInputComponentEventMap } from './components/date-time-input/date-time-input.js';
