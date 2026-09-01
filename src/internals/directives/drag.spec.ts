@@ -502,9 +502,17 @@ describe('Draggable directive', () => {
       const defaultGhost = getGhost()!;
 
       expect(defaultGhost).to.exist;
-      expect(defaultGhost.getBoundingClientRect()).to.eql(
-        instance.getBoundingClientRect()
-      );
+
+      // The ghost matches the dimensions of the dragged element and is
+      // positioned at the element's position relative to the layer container.
+      const layerRect = document.body.getBoundingClientRect();
+      const instanceRect = instance.getBoundingClientRect();
+      const ghostRect = defaultGhost.getBoundingClientRect();
+
+      expect(ghostRect.width).to.equal(instanceRect.width);
+      expect(ghostRect.height).to.equal(instanceRect.height);
+      expect(ghostRect.x).to.equal(instanceRect.x - layerRect.x);
+      expect(ghostRect.y).to.equal(instanceRect.y - layerRect.y);
     });
 
     it('should create a custom ghost element in "deferred" mode when a configuration is passed', async () => {

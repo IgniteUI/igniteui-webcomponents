@@ -123,13 +123,14 @@ type DragOperation = {
   targetTransform: string;
 };
 
-function createDefaultGhost({ x, y, width, height }: DOMRect): HTMLElement {
+function createDefaultGhost({ width, height }: DOMRect): HTMLElement {
   const element = document.createElement('div');
 
+  // Anchored at the layer origin; the directive positions it via `translate3d`.
   setStyles(element, {
     position: 'absolute',
-    left: `${x}px`,
-    top: `${y}px`,
+    left: '0',
+    top: '0',
     width: `${width}px`,
     height: `${height}px`,
     zIndex: '1000',

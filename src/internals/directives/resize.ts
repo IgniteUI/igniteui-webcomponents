@@ -234,6 +234,13 @@ class ResizableDirective extends AsyncDirective {
 
   // #region Internal API
 
+  /** Prevents native touch interactions from interfering with an enabled directive. */
+  private readonly _preventNativeBehavior = (event: Event): void => {
+    if (this._enabled) {
+      event.preventDefault();
+    }
+  };
+
   private _addTriggerListeners(): void {
     if (!this._host) {
       return;
@@ -244,7 +251,7 @@ class ResizableDirective extends AsyncDirective {
     this._host.addEventListener('pointerdown', this._handlePointerDown, {
       signal,
     });
-    this._host.addEventListener('touchstart', preventDefault, {
+    this._host.addEventListener('touchstart', this._preventNativeBehavior, {
       passive: false,
       signal,
     });
