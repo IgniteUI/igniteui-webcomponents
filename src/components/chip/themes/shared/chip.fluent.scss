@@ -7,13 +7,13 @@ $theme: $fluent;
     --component-size: var(--ig-size, #{var-get($theme, 'default-size')});
 }
 
-:host button {
+:host [part='base'] {
     @include type-style('subtitle-2');
 }
 
 @mixin chip-outlined-variants($variant) {
-    :host([outlined][variant='#{$variant}']) button,
-    :host([selected][outlined][variant='#{$variant}']) button:not([disabled]) {
+    :host([outlined][variant='#{$variant}']) [part='base'],
+    :host([selected][outlined][variant='#{$variant}']:not([disabled])) [part='base'] {
         background: transparent;
     }
 }
