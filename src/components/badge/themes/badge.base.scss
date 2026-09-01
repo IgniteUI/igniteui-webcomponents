@@ -23,7 +23,9 @@
     text-transform: sizable(var(--ig-caption-text-transform), var(--ig-body-2-text-transform), var(--ig-body-2-text-transform));
 }
 
-:host(:not(:empty, [dot])) [part='base'] {
+// Excluded for an icon-only badge, which renders as a circle. Match the part
+// token, not the whole attribute, so that adding a part cannot drop the padding.
+:host(:not(:empty, [dot])) [part~='base']:not([part~='icon']) {
     padding-inline: pad-inline(rem(4px), rem(6px), rem(8px));
 }
 
