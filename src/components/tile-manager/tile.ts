@@ -40,7 +40,7 @@ import { createIdGenerator } from '#internals/utils/strings.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import IgcIconButtonComponent from '../button/icon-button.js';
 import IgcDividerComponent from '../divider/divider.js';
-import type { TileManagerResizeMode } from '../types.js';
+import type { TileManagerDragMode, TileManagerResizeMode } from '../types.js';
 import { createTileDragStack, swapTiles } from './position.js';
 import { createTileResizeState } from './resize-state.js';
 import { styles as shared } from './themes/shared/tile/tile.common.css.js';
@@ -138,14 +138,15 @@ export default class IgcTileComponent extends EventEmitterMixin<
   private readonly _resizeState = createTileResizeState();
   private readonly _dragStack = createTileDragStack();
 
-  /** Shared config for the span properties - a value below 1 is coerced to 1. */
-  private static _spanVariable(
-    name: string
-  ): CoercedPropertyConfig<number, IgcTileComponent> {
+  /** Shared config for the grid placement properties, projected into a CSS variable on the host. */
+  private static _gridVariable<T extends number | null>(
+    name: string,
+    transform: (value: T) => T
+  ): CoercedPropertyConfig<T, IgcTileComponent> {
     return {
-      transform: ({ value }) => Math.max(1, asNumber(value)),
+      transform: ({ value }) => transform(value),
       onChange: ({ value, host }) => {
-        host.style.setProperty(name, value.toString());
+        host.style.setProperty(name, value != null ? value.toString() : null);
       },
     };
   }
@@ -160,16 +161,19 @@ export default class IgcTileComponent extends EventEmitterMixin<
     bottom: { part: 'trigger-bottom', direction: 'vertical' },
   };
 
-  /** Shared config for the start properties - a non-positive value removes the explicit placement. */
-  private static _startVariable(
-    name: string
-  ): CoercedPropertyConfig<number | null, IgcTileComponent> {
-    return {
-      transform: ({ value }) => Math.max(0, asNumber(value)) || null,
-      onChange: ({ value, host }) => {
-        host.style.setProperty(name, value ? value.toString() : null);
-      },
-    };
+  /** Config for the span properties - a value below 1 is coerced to 1. */
+  private static _spanVariable(name: string) {
+    return IgcTileComponent._gridVariable<number>(name, (value) =>
+      Math.max(1, asNumber(value))
+    );
+  }
+
+  /** Config for the start properties - a non-positive value removes the explicit placement. */
+  private static _startVariable(name: string) {
+    return IgcTileComponent._gridVariable<number | null>(
+      name,
+      (value) => Math.max(0, asNumber(value)) || null
+    );
   }
 
   // Tile manager context properties and helpers
@@ -195,12 +199,21 @@ export default class IgcTileComponent extends EventEmitterMixin<
     return this._tileManager?.resizeMode ?? 'none';
   }
 
+  /** Returns the tile manager current drag mode. */
+  private get _dragMode(): TileManagerDragMode {
+    return this._tileManager?.dragMode ?? 'none';
+  }
+
   protected readonly _headerRef = createRef<HTMLElement>();
 
   /** The DOM container measured and used as a resize target by the resizable directive. */
   protected readonly _containerRef = createRef<HTMLElement>();
 
-  @query('[part~="base"]', true)
+  /**
+   * Not cached: toggling `_resizeDisabled` (maximize, fullscreen, resize mode)
+   * switches the render template and recreates this element.
+   */
+  @query('[part~="base"]')
   public _tileContent!: HTMLElement;
 
   @state()
@@ -361,7 +374,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
   }
 
   private _handleDragStart = () => {
-    if (!this._emitTileDragStart()) {
+    if (!this._emitStartEvent('igcTileDragStart')) {
       return false;
     }
 
@@ -469,7 +482,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
   }
 
   private _handleResizeStart = ({ event, state }: ResizeCallbackParams) => {
-    if (!this._emitTileResizeStart()) {
+    if (!this._emitStartEvent('igcTileResizeStart')) {
       return false;
     }
 
@@ -547,18 +560,8 @@ export default class IgcTileComponent extends EventEmitterMixin<
     });
   }
 
-  private _emitTileDragStart() {
-    return this.emitEvent('igcTileDragStart', {
-      detail: this,
-      cancelable: true,
-    });
-  }
-
-  private _emitTileResizeStart() {
-    return this.emitEvent('igcTileResizeStart', {
-      detail: this,
-      cancelable: true,
-    });
+  private _emitStartEvent(name: 'igcTileDragStart' | 'igcTileResizeStart') {
+    return this.emitEvent(name, { detail: this, cancelable: true });
   }
 
   protected _renderDefaultAction(type: 'maximize' | 'fullscreen') {
@@ -604,25 +607,8 @@ export default class IgcTileComponent extends EventEmitterMixin<
           <slot name="title"></slot>
         </header>
         <section id="tile-actions" part="actions">
-          ${
-            hasMaximizeSlot
-              ? html`
-                  <slot name="maximize-action">
-                    ${this._renderDefaultAction('maximize')}
-                  </slot>
-                `
-              : nothing
-          }
-          ${
-            hasFullscreenSlot
-              ? html`
-                  <slot name="fullscreen-action">
-                    ${this._renderDefaultAction('fullscreen')}
-                  </slot>
-                `
-              : nothing
-          }
-
+          ${hasMaximizeSlot ? this._renderActionSlot('maximize') : nothing}
+          ${hasFullscreenSlot ? this._renderActionSlot('fullscreen') : nothing}
           <slot name="actions"></slot>
         </section>
       </section>
@@ -630,8 +616,14 @@ export default class IgcTileComponent extends EventEmitterMixin<
     `;
   }
 
+  private _renderActionSlot(type: 'maximize' | 'fullscreen') {
+    return html`
+      <slot name="${type}-action">${this._renderDefaultAction(type)}</slot>
+    `;
+  }
+
   private _createDragOptions(): DraggableOptions {
-    const dragMode = this._tileManager?.dragMode ?? 'none';
+    const dragMode = this._dragMode;
 
     return {
       enabled: dragMode !== 'none',
@@ -651,11 +643,10 @@ export default class IgcTileComponent extends EventEmitterMixin<
   protected _renderContent() {
     const parts = {
       base: true,
-      draggable: this._tileManager?.dragMode !== 'none',
+      draggable: this._dragMode !== 'none',
       fullscreen: this.fullscreen,
       dragging: this._isDragging,
-      resizable:
-        !this.disableResize && this._tileManager?.resizeMode !== 'none',
+      resizable: !this.disableResize && this._resizeMode !== 'none',
       resizing: this._isResizing,
       maximized: this.maximized,
     };

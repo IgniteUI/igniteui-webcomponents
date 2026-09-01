@@ -1,17 +1,29 @@
 import type { ResizeState } from '#internals/directives/resize.js';
 import { firstOf } from '#internals/utils/arrays.js';
 import { asNumber } from '#internals/utils/math.js';
-import { ResizeUtil } from './resize-util.js';
+import {
+  calculatePosition,
+  calculateResizedSpan,
+  calculateSnappedDimension,
+} from './resize-util.js';
 import type IgcTileComponent from './tile.js';
-import type {
-  ResizeProps,
-  ResizeSpanProps,
-  TileGridDimension,
-  TileGridPosition,
-  TileResizeDimensions,
-} from './types.js';
+import type { TileGridDimension, TileGridPosition } from './types.js';
 
 const CssValues = /(?<start>\d+)?\s*\/?\s*span\s*(?<span>\d+)?/gi;
+
+type ResizeAxis = 'column' | 'row';
+
+type ResizeAxisState = {
+  dimension: TileGridDimension;
+  prevDelta: number;
+  prevSnapped: number;
+};
+
+function createAxisState(
+  dimension: TileGridDimension = { entries: [], minSize: 0 }
+): ResizeAxisState {
+  return { dimension, prevDelta: 0, prevSnapped: 0 };
+}
 
 function parseTileGridRect(tile: IgcTileComponent): TileGridPosition {
   const computed = getComputedStyle(tile);
@@ -35,91 +47,46 @@ function parseTileParentGrid(gridContainer: HTMLElement) {
   const computed = getComputedStyle(gridContainer);
   const { gap, gridTemplateColumns, gridTemplateRows } = computed;
 
-  const columns = gridTemplateColumns.split(' ').map(asNumber);
-  const rows = gridTemplateRows.split(' ').map(asNumber);
-
   return {
     gap: asNumber(gap),
     columns: {
-      count: columns.length,
-      entries: columns,
+      entries: gridTemplateColumns.split(' ').map(asNumber),
       minSize: asNumber(computed.getPropertyValue('--min-col-width')),
     },
     rows: {
-      count: rows.length,
-      entries: rows,
+      entries: gridTemplateRows.split(' ').map(asNumber),
       minSize: asNumber(computed.getPropertyValue('--min-row-height')),
     },
   };
 }
 
 class TileResizeState {
-  private _initialPosition!: TileGridPosition;
-  private _resizeUtil!: ResizeUtil;
+  private _gap = 0;
 
-  protected _gap = 0;
-  protected _prevDeltaX = 0;
-  protected _prevDeltaY = 0;
-
-  protected _prevSnappedWidth = 0;
-  protected _prevSnappedHeight = 0;
-
-  protected _position: TileGridPosition = {
+  private _position: TileGridPosition = {
     column: { start: 0, span: 0 },
     row: { start: 0, span: 0 },
   };
 
-  protected _columns: TileGridDimension = {
-    count: 0,
-    entries: [],
-    minSize: 0,
+  private _axes: Record<ResizeAxis, ResizeAxisState> = {
+    column: createAxisState(),
+    row: createAxisState(),
   };
-
-  protected _rows: TileGridDimension = {
-    count: 0,
-    entries: [],
-    minSize: 0,
-  };
-
-  public resizedDimensions: TileResizeDimensions = {
-    width: null,
-    height: null,
-  };
-
-  public get gap(): number {
-    return this._gap;
-  }
-
-  public get position(): TileGridPosition {
-    return structuredClone(this._position);
-  }
-
-  public get columns(): TileGridDimension {
-    return structuredClone(this._columns);
-  }
-
-  public get rows(): TileGridDimension {
-    return structuredClone(this._rows);
-  }
 
   public calculateSnappedWidth(state: ResizeState): number {
-    const resizeProps = this.getResizeProps(state);
-    const snappedDimension =
-      this._resizeUtil.calculateSnappedDimension(resizeProps);
-
-    this._prevDeltaX = snappedDimension.newDelta;
-    this._prevSnappedWidth = snappedDimension.snappedSize;
-    return snappedDimension.snappedSize;
+    return this._calculateSnappedSize(
+      'column',
+      state.deltaX,
+      state.current.width
+    );
   }
 
   public calculateSnappedHeight(state: ResizeState): number {
-    const resizeProps = this.getResizeProps(state, true);
-    const snappedDimension =
-      this._resizeUtil.calculateSnappedDimension(resizeProps);
-
-    this._prevDeltaY = snappedDimension.newDelta;
-    this._prevSnappedHeight = snappedDimension.snappedSize;
-    return snappedDimension.snappedSize;
+    return this._calculateSnappedSize(
+      'row',
+      state.deltaY,
+      state.current.height
+    );
   }
 
   public updateState(
@@ -127,8 +94,8 @@ class TileResizeState {
     tile: IgcTileComponent,
     grid: HTMLElement
   ): void {
-    this.initState(grid, tile);
-    this.calculateTileStartPosition(grid, tileRect);
+    this._initState(grid, tile);
+    this._calculateTileStartPosition(grid, tileRect);
   }
 
   /**
@@ -136,110 +103,93 @@ class TileResizeState {
    * based on its new dimensions and starting position.
    */
   public calculateResizedGridPosition(rect: DOMRect) {
-    const colProps = this.getResizeSpanProps(rect);
-    const rowProps = this.getResizeSpanProps(rect, true);
+    const { column, row } = this._position;
 
     // REVIEW pass col minSize and allowOverflow?
-    this._position.column.span =
-      this._resizeUtil.calculateResizedSpan(colProps);
-    this._position.row.span = this._resizeUtil.calculateResizedSpan(rowProps);
+    column.span = calculateResizedSpan({
+      targetSize: rect.width,
+      tilePosition: column,
+      tileGridDimension: this._axes.column.dimension,
+      gap: this._gap,
+      isRow: false,
+    });
 
-    return {
-      colSpan: this._position.column.span,
-      rowSpan: this._position.row.span,
+    row.span = calculateResizedSpan({
+      targetSize: rect.height,
+      tilePosition: row,
+      tileGridDimension: this._axes.row.dimension,
+      gap: this._gap,
+      isRow: true,
+    });
+
+    return { colSpan: column.span, rowSpan: row.span };
+  }
+
+  private _calculateSnappedSize(
+    axis: ResizeAxis,
+    currentDelta: number,
+    currentSize: number
+  ): number {
+    const axisState = this._axes[axis];
+
+    const { snappedSize, newDelta } = calculateSnappedDimension({
+      currentDelta,
+      currentSize,
+      prevDelta: axisState.prevDelta,
+      prevSnapped: axisState.prevSnapped,
+      gridEntries: axisState.dimension.entries,
+      startIndex: this._position[axis].start,
+      gap: this._gap,
+    });
+
+    axisState.prevDelta = newDelta;
+    axisState.prevSnapped = snappedSize;
+    return snappedSize;
+  }
+
+  private _initState(grid: HTMLElement, tile: IgcTileComponent): void {
+    const { gap, columns, rows } = parseTileParentGrid(grid);
+
+    this._gap = gap;
+    this._position = parseTileGridRect(tile);
+    this._axes = {
+      column: createAxisState(columns),
+      row: createAxisState(rows),
     };
   }
 
-  private initState(grid: HTMLElement, tile: IgcTileComponent): void {
-    const { gap, columns, rows } = parseTileParentGrid(grid);
-
-    this._resizeUtil = new ResizeUtil(gap);
-    this._initialPosition = parseTileGridRect(tile);
-    this._position = structuredClone(this._initialPosition);
-
-    this._gap = gap;
-    this._columns = columns;
-    this._rows = rows;
-    this._prevDeltaX = 0;
-    this._prevDeltaY = 0;
-    this._prevSnappedWidth = 0;
-    this._prevSnappedHeight = 0;
-  }
-
-  private calculateTileStartPosition(
+  /**
+   * Resolves the tile's implicit grid start lines from its offset inside the
+   * grid container when the tile has no explicit `colStart`/`rowStart`.
+   */
+  private _calculateTileStartPosition(
     grid: HTMLElement,
     tileRect: DOMRect
   ): void {
-    if (this._position.column.start < 0) {
-      const offsetX = this.getGridOffset(grid, 'horizontal');
+    const { column, row } = this._position;
 
-      this._position.column.start = this._resizeUtil.calculatePosition(
-        tileRect.left + window.scrollX + grid.scrollLeft - offsetX,
-        this._columns.entries
-      );
+    if (column.start >= 0 && row.start >= 0) {
+      return;
     }
 
-    if (this._position.row.start < 0) {
-      const offsetY = this.getGridOffset(grid, 'vertical');
-
-      this._position.row.start = this._resizeUtil.calculatePosition(
-        tileRect.top + window.scrollY - offsetY,
-        this._rows.entries
-      );
-    }
-  }
-
-  private getGridOffset(
-    grid: HTMLElement,
-    axis: 'horizontal' | 'vertical'
-  ): number {
     const gridRect = grid.getBoundingClientRect();
     const computed = getComputedStyle(grid);
 
-    return axis === 'horizontal'
-      ? gridRect.left +
-          window.scrollX +
-          grid.scrollLeft +
-          Number.parseFloat(computed.paddingLeft)
-      : gridRect.top + window.scrollY + Number.parseFloat(computed.paddingTop);
-  }
+    if (column.start < 0) {
+      column.start = calculatePosition(
+        tileRect.left - gridRect.left - Number.parseFloat(computed.paddingLeft),
+        this._axes.column.dimension.entries,
+        this._gap
+      );
+    }
 
-  private getResizeProps(state: ResizeState, isRow = false): ResizeProps {
-    return isRow
-      ? {
-          currentDelta: state.deltaY,
-          currentSize: state.current.height,
-          prevDelta: this._prevDeltaY,
-          gridEntries: this._rows.entries,
-          startIndex: this._position.row.start,
-          prevSnapped: this._prevSnappedHeight,
-        }
-      : {
-          currentDelta: state.deltaX,
-          currentSize: state.current.width,
-          prevDelta: this._prevDeltaX,
-          gridEntries: this._columns.entries,
-          startIndex: this._position.column.start,
-          prevSnapped: this._prevSnappedWidth,
-        };
-  }
-
-  private getResizeSpanProps(rect: DOMRect, isRow = false): ResizeSpanProps {
-    return isRow
-      ? {
-          targetSize: rect.height,
-          tilePosition: this.position.row,
-          tileGridDimension: this.rows,
-          gap: this.gap,
-          isRow,
-        }
-      : {
-          targetSize: rect.width,
-          tilePosition: this.position.column,
-          tileGridDimension: this.columns,
-          gap: this.gap,
-          isRow,
-        };
+    if (row.start < 0) {
+      row.start = calculatePosition(
+        tileRect.top - gridRect.top - Number.parseFloat(computed.paddingTop),
+        this._axes.row.dimension.entries,
+        this._gap
+      );
+    }
   }
 }
 
