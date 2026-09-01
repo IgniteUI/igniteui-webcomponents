@@ -1,10 +1,4 @@
-export type TileResizeDimensions = {
-  width: number | null;
-  height: number | null;
-};
-
 export type TileGridDimension = {
-  count: number;
   entries: number[];
   minSize: number;
 };
@@ -22,6 +16,7 @@ export type ResizeProps = {
   gridEntries: number[];
   startIndex: number;
   prevSnapped: number;
+  gap: number;
 };
 
 export type ResizeSpanProps = {
