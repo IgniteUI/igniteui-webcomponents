@@ -1,13 +1,7 @@
-import {
-  defineCE,
-  elementUpdated,
-  expect,
-  fixture,
-  html,
-  unsafeStatic,
-} from '@open-wc/testing';
-import { css, LitElement } from 'lit';
+import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
+import { render } from 'lit';
 import { type SinonSpy, spy } from 'sinon';
+import { escapeKey } from '../controllers/key-bindings.js';
 import { compareStyles } from '../testing/helpers.spec.js';
 import {
   simulateKeyboard,
@@ -17,61 +11,79 @@ import {
 } from '../testing/simulate.spec.js';
 import { lastOf } from '../utils/arrays.js';
 import { getCenterPoint } from '../utils/dom.js';
-import { addDragController, type DragCallbackParameters } from './drag.js';
-import { escapeKey } from './key-bindings.js';
+import {
+  type DragCallbackParams,
+  type DraggableOptions,
+  draggable,
+} from './drag.js';
 
-describe('Drag controller', () => {
-  type DragElement = LitElement & {
-    controller: ReturnType<typeof addDragController>;
-  };
+describe('Draggable directive', () => {
+  let section: HTMLElement;
+  let instance: HTMLElement;
+  let options: DraggableOptions;
 
-  let tag: string;
-  let instance: DragElement;
+  function getCallbackArgs(fn: SinonSpy) {
+    return lastOf(lastOf(fn.args)) as DragCallbackParams;
+  }
 
-  before(() => {
-    tag = defineCE(
-      class extends LitElement {
-        public static override styles = css`
-          :host {
+  function getGhost() {
+    return document.querySelector<HTMLElement>('[data-drag-ghost]');
+  }
+
+  function renderDraggable(opts?: DraggableOptions) {
+    Object.assign(options, opts);
+
+    render(
+      html`
+        <style>
+          #drag-host {
             display: block;
             width: 200px;
             height: 200px;
           }
-        `;
 
-        public controller = addDragController(this);
-
-        protected override render() {
-          return html`<slot></slot>`;
-        }
-      }
+          .target {
+            width: 400px;
+            height: 400px;
+          }
+        </style>
+        <div id="drag-host" ${draggable(options)}>
+          <button class="no-trigger">No drag</button>
+        </div>
+        <div class="target"></div>
+      `,
+      section
     );
+
+    instance = section.querySelector<HTMLElement>('#drag-host')!;
+  }
+
+  async function createFixture(initial: DraggableOptions) {
+    options = initial;
+    section = await fixture(
+      html`<section style="width: 1000px; height: 1000px"></section>`
+    );
+    renderDraggable();
+  }
+
+  const dragStart = spy();
+
+  afterEach(() => {
+    dragStart.resetHistory();
+
+    // Remove ghost elements left behind by drag operations still active at test end.
+    for (const ghost of document.querySelectorAll('[data-drag-ghost]')) {
+      ghost.remove();
+    }
   });
 
   describe('Immediate mode - basic element dragging', () => {
-    const dragStart = spy();
-
     beforeEach(async () => {
-      const tagName = unsafeStatic(tag);
-
-      const template = html`
-        <section style="width: 1000px; height: 1000px">
-          <${tagName}></${tagName}>
-        </section>
-      `;
-
-      const root = await fixture(template);
-
-      instance = root.querySelector(tagName._$litStatic$)!;
-      instance.controller.set({ mode: 'immediate' });
-    });
-
-    afterEach(() => {
-      dragStart.resetHistory();
+      await createFixture({ mode: 'immediate' });
     });
 
     it('should not start drag operation when disabled', async () => {
-      instance.controller.set({ enabled: false, start: dragStart });
+      renderDraggable({ enabled: false, start: dragStart });
 
       simulatePointerDown(instance);
       await elementUpdated(instance);
@@ -80,7 +92,7 @@ describe('Drag controller', () => {
     });
 
     it('should not start a drag operation on a non-primary button interaction', async () => {
-      instance.controller.set({ start: dragStart });
+      renderDraggable({ start: dragStart });
 
       simulatePointerDown(instance, { button: 1 });
       await elementUpdated(instance);
@@ -90,7 +102,7 @@ describe('Drag controller', () => {
 
     it('should not start a drag operation when a skip callback returns true', async () => {
       const skip = spy(() => true);
-      instance.controller.set({ skip, start: dragStart });
+      renderDraggable({ skip, start: dragStart });
 
       simulatePointerDown(instance);
       await elementUpdated(instance);
@@ -100,7 +112,7 @@ describe('Drag controller', () => {
     });
 
     it('should apply correct internal styles on drag operation', async () => {
-      instance.controller.set({ start: dragStart });
+      renderDraggable({ start: dragStart });
       const styles = { touchAction: 'none', userSelect: 'none' };
 
       simulatePointerDown(instance);
@@ -110,19 +122,19 @@ describe('Drag controller', () => {
     });
 
     it('should not create a ghost element in "immediate" mode', async () => {
-      const ghost = spy();
-      instance.controller.set({ start: dragStart, ghost });
+      const ghostFactory = spy();
+      renderDraggable({ start: dragStart, ghostFactory });
 
       simulatePointerDown(instance);
       await elementUpdated(instance);
 
       expect(dragStart.called).is.true;
-      expect(ghost.called).is.false;
+      expect(ghostFactory.called).is.false;
     });
 
     it('should not invoke the `layer` configuration callback in "immediate" mode', async () => {
       const layer = spy();
-      instance.controller.set({ start: dragStart, layer });
+      renderDraggable({ start: dragStart, layer });
 
       simulatePointerDown(instance);
       await elementUpdated(instance);
@@ -132,7 +144,7 @@ describe('Drag controller', () => {
     });
 
     it('should invoke start callback on drag operation', async () => {
-      instance.controller.set({ start: dragStart });
+      renderDraggable({ start: dragStart });
 
       simulatePointerDown(instance);
       await elementUpdated(instance);
@@ -143,7 +155,7 @@ describe('Drag controller', () => {
 
     it('should not invoke move unless a start is invoked', async () => {
       const dragMove = spy();
-      instance.controller.set({ start: dragStart, move: dragMove });
+      renderDraggable({ start: dragStart, move: dragMove });
 
       simulatePointerMove(instance);
       await elementUpdated(instance);
@@ -154,7 +166,7 @@ describe('Drag controller', () => {
 
     it('should invoke move when moving the dragged element around the viewport', async () => {
       const dragMove = spy();
-      instance.controller.set({ start: dragStart, move: dragMove });
+      renderDraggable({ start: dragStart, move: dragMove });
 
       simulatePointerDown(instance);
       simulatePointerMove(
@@ -172,7 +184,7 @@ describe('Drag controller', () => {
 
     it('should invoke end when releasing the dragged element', async () => {
       const dragEnd = spy();
-      instance.controller.set({ start: dragStart, end: dragEnd });
+      renderDraggable({ start: dragStart, end: dragEnd });
 
       simulatePointerDown(instance);
       simulateLostPointerCapture(instance);
@@ -184,7 +196,7 @@ describe('Drag controller', () => {
 
     it('should invoke cancel when pressing Escape during a drag operation', async () => {
       const dragCancel = spy();
-      instance.controller.set({ start: dragStart, cancel: dragCancel });
+      renderDraggable({ start: dragStart, cancel: dragCancel });
 
       simulatePointerDown(instance);
       await elementUpdated(instance);
@@ -200,7 +212,7 @@ describe('Drag controller', () => {
     it('should not invoke cancel when pressing Escape outside of drag operation', async () => {
       // Sanity check since the Escape key handler is a root level dynamic listener.
       const dragCancel = spy();
-      instance.controller.set({ cancel: dragCancel });
+      renderDraggable({ cancel: dragCancel });
 
       simulateKeyboard(instance, escapeKey);
       await elementUpdated(instance);
@@ -210,39 +222,15 @@ describe('Drag controller', () => {
   });
 
   describe('Immediate mode - advanced element dragging', () => {
-    const dragStart = spy();
-
-    function getCallbackArgs(fn: SinonSpy) {
-      return lastOf(lastOf(fn.args)) as DragCallbackParameters;
-    }
-
     beforeEach(async () => {
-      const tagName = unsafeStatic(tag);
-
-      const template = html`
-        <section style="width: 1000px; height: 1000px">
-          <${tagName}>
-            <button class="no-trigger">No drag</button>
-          </${tagName}>
-          <div class="target" style="width: 400px; height: 400px"></div>
-        </section>
-      `;
-
-      const root = await fixture(template);
-
-      instance = root.querySelector(tagName._$litStatic$)!;
-      instance.controller.set({ mode: 'immediate' });
-    });
-
-    afterEach(() => {
-      dragStart.resetHistory();
+      await createFixture({ mode: 'immediate' });
     });
 
     it('should not start a drag operation when `skip` is set and returns true', async () => {
       const button = instance.querySelector('button')!;
       const skip = spy((event: PointerEvent) => event.target === button);
 
-      instance.controller.set({ start: dragStart, skip });
+      renderDraggable({ start: dragStart, skip });
 
       simulatePointerDown(button);
       await elementUpdated(instance);
@@ -263,7 +251,7 @@ describe('Drag controller', () => {
       const button = instance.querySelector('button')!;
       const trigger = spy(() => button);
 
-      instance.controller.set({ start: dragStart, trigger });
+      renderDraggable({ start: dragStart, trigger });
 
       simulatePointerDown(instance);
       await elementUpdated(instance);
@@ -277,7 +265,7 @@ describe('Drag controller', () => {
     });
 
     it('should adhere to `snapToCursor` option on drag start', async () => {
-      instance.controller.set({ start: dragStart });
+      renderDraggable({ start: dragStart });
 
       const { x: clientX, y: clientY } = getCenterPoint(instance);
       const { x, y } = instance.getBoundingClientRect();
@@ -302,8 +290,8 @@ describe('Drag controller', () => {
 
       // snapToCursor = true
 
-      instance.controller.dispose();
-      instance.controller.set({ snapToCursor: true });
+      simulateLostPointerCapture(instance);
+      renderDraggable({ snapToCursor: true });
 
       simulatePointerDown(instance, { clientX, clientY });
       await elementUpdated(instance);
@@ -323,7 +311,7 @@ describe('Drag controller', () => {
 
     it('should pass correct parameter state in the move callback', async () => {
       const move = spy();
-      instance.controller.set({ start: dragStart, move });
+      renderDraggable({ start: dragStart, move });
 
       const { x: clientX, y: clientY } = getCenterPoint(instance);
 
@@ -343,7 +331,7 @@ describe('Drag controller', () => {
 
     it('should pass correct parameter state in end callback', async () => {
       const end = spy();
-      instance.controller.set({ end });
+      renderDraggable({ end });
 
       const { x: clientX, y: clientY } = getCenterPoint(instance);
 
@@ -365,7 +353,7 @@ describe('Drag controller', () => {
 
       const { x: clientX, y: clientY } = target.getBoundingClientRect();
 
-      instance.controller.set({ matchTarget, enter });
+      renderDraggable({ matchTarget, enter });
 
       simulatePointerDown(instance);
       simulatePointerMove(instance, { clientX, clientY });
@@ -384,7 +372,7 @@ describe('Drag controller', () => {
 
       const { x: clientX, y: clientY } = target.getBoundingClientRect();
 
-      instance.controller.set({ matchTarget, enter });
+      renderDraggable({ matchTarget, enter });
 
       simulatePointerDown(instance);
       simulatePointerMove(instance, { clientX, clientY });
@@ -402,7 +390,7 @@ describe('Drag controller', () => {
 
       const { x: clientX, y: clientY } = target.getBoundingClientRect();
 
-      instance.controller.set({ matchTarget, enter, leave });
+      renderDraggable({ matchTarget, enter, leave });
 
       simulatePointerDown(instance);
       simulatePointerMove(instance, { clientX, clientY });
@@ -425,7 +413,7 @@ describe('Drag controller', () => {
       const matchTarget = spy((element: Element) => target === element);
       const over = spy();
 
-      instance.controller.set({ matchTarget, over });
+      renderDraggable({ matchTarget, over });
 
       const { x: clientX, y: clientY } = target.getBoundingClientRect();
 
@@ -446,8 +434,6 @@ describe('Drag controller', () => {
   });
 
   describe('Deferred mode - basic element dragging', () => {
-    const dragStart = spy();
-
     function createGhost() {
       const clone = instance.cloneNode() as HTMLElement;
       clone.setAttribute('data-deferred-drag-ghost', '');
@@ -455,36 +441,16 @@ describe('Drag controller', () => {
       return clone;
     }
 
-    function getDefaultGhost() {
-      const [_, defaultGhost] = document.querySelectorAll('div');
-      return defaultGhost ?? null;
-    }
-
     function getCustomGhost() {
       return document.querySelector<HTMLElement>('[data-deferred-drag-ghost]')!;
     }
 
     beforeEach(async () => {
-      const tagName = unsafeStatic(tag);
-
-      const template = html`
-        <section style="width: 1000px; height: 1000px">
-          <${tagName}></${tagName}>
-        </section>
-      `;
-
-      const root = await fixture(template);
-
-      instance = root.querySelector(tagName._$litStatic$)!;
-      instance.controller.set({ mode: 'deferred' });
-    });
-
-    afterEach(() => {
-      dragStart.resetHistory();
+      await createFixture({ mode: 'deferred' });
     });
 
     it('should not start drag operation when disabled', async () => {
-      instance.controller.set({ enabled: false, start: dragStart });
+      renderDraggable({ enabled: false, start: dragStart });
 
       simulatePointerDown(instance);
       await elementUpdated(instance);
@@ -493,7 +459,7 @@ describe('Drag controller', () => {
     });
 
     it('should not start a drag operation on a non-primary button interaction', async () => {
-      instance.controller.set({ start: dragStart });
+      renderDraggable({ start: dragStart });
 
       simulatePointerDown(instance, { button: 1 });
       await elementUpdated(instance);
@@ -503,7 +469,7 @@ describe('Drag controller', () => {
 
     it('should not start a drag operation when a skip callback returns true', async () => {
       const skip = spy(() => true);
-      instance.controller.set({ skip, start: dragStart });
+      renderDraggable({ skip, start: dragStart });
 
       simulatePointerDown(instance);
       await elementUpdated(instance);
@@ -513,7 +479,7 @@ describe('Drag controller', () => {
     });
 
     it('should apply correct internal styles on drag operation', async () => {
-      instance.controller.set({ start: dragStart });
+      renderDraggable({ start: dragStart });
       const styles = { touchAction: 'none', userSelect: 'none' };
 
       simulatePointerDown(instance);
@@ -533,7 +499,7 @@ describe('Drag controller', () => {
       simulatePointerDown(instance);
       await elementUpdated(instance);
 
-      const defaultGhost = getDefaultGhost();
+      const defaultGhost = getGhost()!;
 
       expect(defaultGhost).to.exist;
       expect(defaultGhost.getBoundingClientRect()).to.eql(
@@ -542,7 +508,7 @@ describe('Drag controller', () => {
     });
 
     it('should create a custom ghost element in "deferred" mode when a configuration is passed', async () => {
-      instance.controller.set({ ghost: createGhost });
+      renderDraggable({ ghostFactory: createGhost });
 
       simulatePointerDown(instance);
       await elementUpdated(instance);
@@ -553,28 +519,28 @@ describe('Drag controller', () => {
       expect(customGhost.localName).to.equal(instance.localName);
     });
 
-    it('should correctly fallback to the host as a container if the layer callbacks return falsy', async () => {
+    it('should correctly fallback to the document body as a container if the layer callbacks return falsy', async () => {
       const layer = spy((): HTMLElement => null as unknown as HTMLElement);
-      instance.controller.set({ layer });
+      renderDraggable({ layer });
 
       simulatePointerDown(instance);
       await elementUpdated(instance);
 
-      expect(getDefaultGhost().parentElement).to.eql(instance);
+      expect(getGhost()!.parentElement).to.eql(document.body);
     });
 
     it('should correctly place the ghost element in the configured layer container', async () => {
       const layer = spy(() => instance.parentElement!);
-      instance.controller.set({ layer });
+      renderDraggable({ layer });
 
       simulatePointerDown(instance);
       await elementUpdated(instance);
 
-      expect(getDefaultGhost().parentElement).to.eql(instance.parentElement);
+      expect(getGhost()!.parentElement).to.eql(instance.parentElement);
     });
 
     it('should invoke start callback on drag operation', async () => {
-      instance.controller.set({ start: dragStart });
+      renderDraggable({ start: dragStart });
 
       simulatePointerDown(instance);
       await elementUpdated(instance);
@@ -585,7 +551,7 @@ describe('Drag controller', () => {
 
     it('should not invoke move unless a start is invoked', async () => {
       const dragMove = spy();
-      instance.controller.set({ start: dragStart, move: dragMove });
+      renderDraggable({ start: dragStart, move: dragMove });
 
       simulatePointerMove(instance);
       await elementUpdated(instance);
@@ -596,7 +562,7 @@ describe('Drag controller', () => {
 
     it('should invoke move when moving the dragged element around the viewport', async () => {
       const dragMove = spy();
-      instance.controller.set({ start: dragStart, move: dragMove });
+      renderDraggable({ start: dragStart, move: dragMove });
 
       simulatePointerDown(instance);
       simulatePointerMove(
@@ -614,7 +580,7 @@ describe('Drag controller', () => {
 
     it('should invoke end when releasing the dragged element', async () => {
       const dragEnd = spy();
-      instance.controller.set({ start: dragStart, end: dragEnd });
+      renderDraggable({ start: dragStart, end: dragEnd });
 
       simulatePointerDown(instance);
       simulateLostPointerCapture(instance);
@@ -622,12 +588,12 @@ describe('Drag controller', () => {
 
       expect(dragStart.callCount).to.equal(1);
       expect(dragEnd.callCount).to.equal(1);
-      expect(getDefaultGhost()).is.null;
+      expect(getGhost()).is.null;
     });
 
     it('should invoke cancel when pressing Escape during a drag operation', async () => {
-      const dragCancel = spy(() => instance.controller.dispose());
-      instance.controller.set({ start: dragStart, cancel: dragCancel });
+      const dragCancel = spy();
+      renderDraggable({ start: dragStart, cancel: dragCancel });
 
       simulatePointerDown(instance);
       await elementUpdated(instance);
@@ -638,13 +604,13 @@ describe('Drag controller', () => {
       await elementUpdated(instance);
 
       expect(dragCancel.called).is.true;
-      expect(getDefaultGhost()).is.null;
+      expect(getGhost()).is.null;
     });
 
     it('should not invoke cancel when pressing Escape outside of drag operation', async () => {
       // Sanity check since the Escape key handler is a root level dynamic listener.
       const dragCancel = spy();
-      instance.controller.set({ cancel: dragCancel });
+      renderDraggable({ cancel: dragCancel });
 
       simulateKeyboard(instance, escapeKey);
       await elementUpdated(instance);
@@ -654,39 +620,15 @@ describe('Drag controller', () => {
   });
 
   describe('Deferred mode - advanced element dragging', () => {
-    const dragStart = spy();
-
-    function getCallbackArgs(fn: SinonSpy) {
-      return lastOf(lastOf(fn.args)) as DragCallbackParameters;
-    }
-
     beforeEach(async () => {
-      const tagName = unsafeStatic(tag);
-
-      const template = html`
-        <section style="width: 1000px; height: 1000px">
-          <${tagName}>
-            <button class="no-trigger">No drag</button>
-          </${tagName}>
-          <div class="target" style="width: 400px; height: 400px"></div>
-        </section>
-      `;
-
-      const root = await fixture(template);
-
-      instance = root.querySelector(tagName._$litStatic$)!;
-      instance.controller.set({ mode: 'deferred' });
-    });
-
-    afterEach(() => {
-      dragStart.resetHistory();
+      await createFixture({ mode: 'deferred' });
     });
 
     it('should not start a drag operation when `skip` is set and returns true', async () => {
       const button = instance.querySelector('button')!;
       const skip = spy((event: PointerEvent) => event.target === button);
 
-      instance.controller.set({ start: dragStart, skip });
+      renderDraggable({ start: dragStart, skip });
 
       simulatePointerDown(button);
       await elementUpdated(instance);
@@ -707,7 +649,7 @@ describe('Drag controller', () => {
       const button = instance.querySelector('button')!;
       const trigger = spy(() => button);
 
-      instance.controller.set({ start: dragStart, trigger });
+      renderDraggable({ start: dragStart, trigger });
 
       simulatePointerDown(instance);
       await elementUpdated(instance);
@@ -721,7 +663,7 @@ describe('Drag controller', () => {
     });
 
     it('should adhere to `snapToCursor` option on drag start', async () => {
-      instance.controller.set({ start: dragStart });
+      renderDraggable({ start: dragStart });
 
       const { x: clientX, y: clientY } = getCenterPoint(instance);
       const { x, y } = instance.getBoundingClientRect();
@@ -746,8 +688,8 @@ describe('Drag controller', () => {
 
       // snapToCursor = true
 
-      instance.controller.dispose();
-      instance.controller.set({ snapToCursor: true });
+      simulateLostPointerCapture(instance);
+      renderDraggable({ snapToCursor: true });
 
       simulatePointerDown(instance, { clientX, clientY });
       await elementUpdated(instance);
@@ -767,7 +709,7 @@ describe('Drag controller', () => {
 
     it('should pass correct parameter state in the move callback', async () => {
       const move = spy();
-      instance.controller.set({ start: dragStart, move });
+      renderDraggable({ start: dragStart, move });
 
       const { x: clientX, y: clientY } = getCenterPoint(instance);
 
@@ -787,7 +729,7 @@ describe('Drag controller', () => {
 
     it('should pass correct parameter state in end callback', async () => {
       const end = spy();
-      instance.controller.set({ end });
+      renderDraggable({ end });
 
       const { x: clientX, y: clientY } = getCenterPoint(instance);
 
@@ -809,7 +751,7 @@ describe('Drag controller', () => {
 
       const { x: clientX, y: clientY } = target.getBoundingClientRect();
 
-      instance.controller.set({ matchTarget, enter });
+      renderDraggable({ matchTarget, enter });
 
       simulatePointerDown(instance);
       simulatePointerMove(instance, { clientX, clientY });
@@ -828,7 +770,7 @@ describe('Drag controller', () => {
 
       const { x: clientX, y: clientY } = target.getBoundingClientRect();
 
-      instance.controller.set({ matchTarget, enter });
+      renderDraggable({ matchTarget, enter });
 
       simulatePointerDown(instance);
       simulatePointerMove(instance, { clientX, clientY });
@@ -846,7 +788,7 @@ describe('Drag controller', () => {
 
       const { x: clientX, y: clientY } = target.getBoundingClientRect();
 
-      instance.controller.set({ matchTarget, enter, leave });
+      renderDraggable({ matchTarget, enter, leave });
 
       simulatePointerDown(instance);
       simulatePointerMove(instance, { clientX, clientY });
@@ -869,7 +811,7 @@ describe('Drag controller', () => {
       const matchTarget = spy((element: Element) => target === element);
       const over = spy();
 
-      instance.controller.set({ matchTarget, over });
+      renderDraggable({ matchTarget, over });
 
       const { x: clientX, y: clientY } = target.getBoundingClientRect();
 
