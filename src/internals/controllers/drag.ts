@@ -5,9 +5,14 @@ import type {
 } from 'lit';
 import type { Ref } from 'lit/directives/ref.js';
 
-import { getDefaultLayer } from '../../components/resize-container/default-ghost.js';
 import { createAbortHandle } from '../abort-handler.js';
-import { getRoot, isLTR, roundByDPR, setStyles } from '../utils/dom.js';
+import {
+  getDefaultLayer,
+  getRoot,
+  isLTR,
+  roundByDPR,
+  setStyles,
+} from '../utils/dom.js';
 import { getElementFromPath } from '../utils/events.js';
 import { escapeKey, isKey } from './key-bindings.js';
 

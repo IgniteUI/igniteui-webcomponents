@@ -6,7 +6,6 @@ import {
   nextFrame,
 } from '@open-wc/testing';
 import { range } from 'lit/directives/range.js';
-import type Sinon from 'sinon';
 import { spy } from 'sinon';
 import { escapeKey } from '#internals/controllers/key-bindings.js';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
@@ -18,10 +17,6 @@ import {
   simulatePointerMove,
 } from '#internals/testing/simulate.spec.js';
 import { firstOf, lastOf } from '#internals/utils/arrays.js';
-import IgcResizeContainerComponent, {
-  type IgcResizeContainerComponentEventMap,
-} from '../resize-container/resize-container.js';
-import type { ResizeCallbackParams } from '../resize-container/types.js';
 import IgcTileManagerComponent from './tile-manager.js';
 import IgcTileComponent from './tile.js';
 
@@ -36,7 +31,6 @@ describe('Tile resize', () => {
   let columnSize: number;
   let rowSize: number;
 
-  /** Wait tile dragging view transition(s) to complete. */
   function getTiles() {
     return Array.from(tileManager.querySelectorAll(IgcTileComponent.tagName));
   }
@@ -118,21 +112,21 @@ describe('Tile resize', () => {
 
     it('should create new rows when resizing last row', async () => {
       const lastTile = lastOf(getTiles());
-      const DOM = getResizeContainerDOM(lastTile);
+      const DOM = getTileDOM(lastTile);
 
       expect(getRows().length).to.eql(1);
       expect(getComputedStyle(lastTile).gridRow).to.eql('auto / span 1');
 
       simulatePointerDown(DOM.adorners.bottom);
-      await elementUpdated(DOM.resizeElement);
+      await elementUpdated(lastTile);
 
       simulatePointerMove(DOM.adorners.bottom, {
         clientY: rowSize * 4,
       });
-      await elementUpdated(DOM.resizeElement);
+      await elementUpdated(lastTile);
 
       simulateLostPointerCapture(DOM.adorners.bottom);
-      await elementUpdated(DOM.resizeElement);
+      await elementUpdated(lastTile);
       await nextFrame();
 
       expect(getRows().length).to.eql(4);
@@ -140,70 +134,60 @@ describe('Tile resize', () => {
     });
 
     it('should create a ghost element on resize start', async () => {
-      const DOM = getResizeContainerDOM(firstTile);
-      const eventSpy = spy(DOM.resizeElement, 'emitEvent');
+      const DOM = getTileDOM(firstTile);
+      const eventSpy = spy(firstTile, 'emitEvent');
 
       expect(DOM.ghostElement).to.be.null;
 
       simulatePointerDown(DOM.adorners.corner);
-      await elementUpdated(DOM.resizeElement);
+      await elementUpdated(firstTile);
 
       expect(DOM.ghostElement).to.not.be.null;
-      expect(eventSpy).calledWith('igcResizeStart');
+      expect(eventSpy).calledWith('igcTileResizeStart');
     });
 
     it('should update ghost element styles during pointer move', async () => {
-      const DOM = getResizeContainerDOM(firstTile);
-      const eventSpy = spy(DOM.resizeElement, 'emitEvent');
+      const DOM = getTileDOM(firstTile);
 
       const tileRect = firstTile.getBoundingClientRect();
 
       simulatePointerDown(DOM.adorners.corner);
-      await elementUpdated(DOM.resizeElement);
+      await elementUpdated(firstTile);
 
-      expect(eventSpy).calledWith('igcResizeStart');
       expect(DOM.ghostElement.getBoundingClientRect()).to.eql(tileRect);
 
       simulatePointerMove(DOM.adorners.corner, {
         clientX: tileRect.right * 2,
         clientY: tileRect.bottom * 2,
       });
-      await elementUpdated(DOM.resizeElement);
+      await elementUpdated(firstTile);
 
-      const state = getResizeEventState(eventSpy);
+      const ghostRect = DOM.ghostElement.getBoundingClientRect();
 
-      expect(eventSpy).calledWith('igcResize');
-      expect(state.ghost).to.equal(DOM.ghostElement);
-      expect(state.initial).to.eql(tileRect);
-      assertRectsAreEqual(
-        state.current,
-        DOM.ghostElement.getBoundingClientRect()
-      );
+      expect(ghostRect.width).to.be.greaterThan(tileRect.width);
+      expect(ghostRect.height).to.be.greaterThan(tileRect.height);
     });
 
     it('Should correctly resize column with auto grid', async () => {
-      const DOM = getResizeContainerDOM(firstTile);
-      const eventSpy = spy(DOM.resizeElement, 'emitEvent');
+      const DOM = getTileDOM(firstTile);
+      const eventSpy = spy(firstTile, 'emitEvent');
 
       simulatePointerDown(DOM.adorners.side);
-      await elementUpdated(DOM.container);
+      await elementUpdated(firstTile);
 
-      expect(eventSpy).calledWith('igcResizeStart');
+      expect(eventSpy).calledWith('igcTileResizeStart');
       expect(getComputedStyle(firstTile).gridColumn).to.eql('auto / span 1');
 
       simulatePointerMove(DOM.adorners.side, {
         clientX: columnSize * 2,
       });
 
-      await elementUpdated(DOM.resizeElement);
-
-      expect(eventSpy).calledWith('igcResize');
+      await elementUpdated(firstTile);
 
       simulateLostPointerCapture(DOM.adorners.side);
-      await elementUpdated(DOM.resizeElement);
-      await nextFrame();
+      await viewTransitionComplete();
 
-      expect(eventSpy).calledWith('igcResizeEnd');
+      expect(eventSpy).calledWith('igcTileResizeEnd');
       expect(DOM.ghostElement).to.be.null;
 
       expect(getComputedStyle(firstTile).gridColumn).to.eql('auto / span 2');
@@ -213,10 +197,10 @@ describe('Tile resize', () => {
       firstTile.colSpan = 3;
       firstTile.rowSpan = 3;
 
-      const DOM = getResizeContainerDOM(firstTile);
+      const DOM = getTileDOM(firstTile);
 
       simulatePointerDown(DOM.adorners.corner);
-      await elementUpdated(DOM.container);
+      await elementUpdated(firstTile);
 
       expect(getComputedStyle(firstTile).gridColumn).to.eql('auto / span 3');
       expect(getComputedStyle(firstTile).gridRow).to.eql('auto / span 3');
@@ -226,10 +210,10 @@ describe('Tile resize', () => {
         clientY: rowSize,
       });
 
-      await elementUpdated(DOM.resizeElement);
+      await elementUpdated(firstTile);
 
       simulateLostPointerCapture(DOM.adorners.corner);
-      await elementUpdated(DOM.resizeElement);
+      await elementUpdated(firstTile);
       await nextFrame();
 
       expect(getComputedStyle(firstTile).gridColumn).to.eql('auto / span 1');
@@ -237,10 +221,10 @@ describe('Tile resize', () => {
     });
 
     it('Should correctly create/remove implicit rows and resize row with auto grid', async () => {
-      const DOM = getResizeContainerDOM(firstTile);
+      const DOM = getTileDOM(firstTile);
 
       simulatePointerDown(DOM.adorners.side);
-      await elementUpdated(DOM.container);
+      await elementUpdated(firstTile);
 
       expect(getComputedStyle(firstTile).gridColumn).to.eql('auto / span 1');
       expect(getColumns().length).to.eql(4);
@@ -250,10 +234,10 @@ describe('Tile resize', () => {
         clientX: columnSize * 4,
       });
 
-      await elementUpdated(DOM.resizeElement);
+      await elementUpdated(firstTile);
 
       simulateLostPointerCapture(DOM.adorners.side);
-      await elementUpdated(DOM.resizeElement);
+      await elementUpdated(firstTile);
       await nextFrame();
 
       expect(getComputedStyle(firstTile).gridColumn).to.eql('auto / span 4');
@@ -261,32 +245,32 @@ describe('Tile resize', () => {
       expect(getComputedStyle(firstTile).gridRow).to.eql('auto / span 1');
 
       simulatePointerDown(DOM.adorners.bottom);
-      await elementUpdated(DOM.container);
+      await elementUpdated(firstTile);
 
       simulatePointerMove(DOM.adorners.bottom, {
         clientY: rowSize * 2,
       });
 
-      await elementUpdated(DOM.resizeElement);
+      await elementUpdated(firstTile);
 
       simulateLostPointerCapture(DOM.adorners.bottom);
-      await elementUpdated(DOM.resizeElement);
+      await elementUpdated(firstTile);
       await nextFrame();
 
       expect(getComputedStyle(firstTile).gridRow).to.eql('auto / span 2');
 
       simulatePointerDown(DOM.adorners.corner);
-      await elementUpdated(DOM.container);
+      await elementUpdated(firstTile);
 
       simulatePointerMove(DOM.adorners.corner, {
         clientX: columnSize * 2 * -1,
         clientY: rowSize * 2 * -1,
       });
 
-      await elementUpdated(DOM.resizeElement);
+      await elementUpdated(firstTile);
 
       simulateLostPointerCapture(DOM.adorners.corner);
-      await elementUpdated(DOM.resizeElement);
+      await elementUpdated(firstTile);
       await nextFrame();
 
       expect(getRows().length).to.eql(1);
@@ -304,22 +288,22 @@ describe('Tile resize', () => {
     });
 
     it('Should cap resizing to max col if greater than', async () => {
-      const DOM = getResizeContainerDOM(firstTile);
+      const DOM = getTileDOM(firstTile);
 
       tileManager.columnCount = 10;
       await elementUpdated(tileManager);
 
       simulatePointerDown(DOM.adorners.side);
-      await elementUpdated(DOM.container);
+      await elementUpdated(firstTile);
 
       simulatePointerMove(DOM.adorners.side, {
         clientX: columnSize * 20,
       });
 
-      await elementUpdated(DOM.resizeElement);
+      await elementUpdated(firstTile);
 
       simulateLostPointerCapture(DOM.adorners.side);
-      await elementUpdated(DOM.resizeElement);
+      await elementUpdated(firstTile);
       await nextFrame();
 
       expect(getComputedStyle(firstTile).gridColumn).to.eql('auto / span 10');
@@ -355,7 +339,7 @@ describe('Tile resize', () => {
     });
 
     it('Should maintain column position on resize when colStart is set', async () => {
-      const DOM = getResizeContainerDOM(firstTile);
+      const DOM = getTileDOM(firstTile);
 
       tileManager.columnCount = 5;
       await elementUpdated(tileManager);
@@ -364,23 +348,23 @@ describe('Tile resize', () => {
       await elementUpdated(firstTile);
 
       simulatePointerDown(DOM.adorners.side);
-      await elementUpdated(DOM.container);
+      await elementUpdated(firstTile);
 
       simulatePointerMove(DOM.adorners.side, {
         clientX: columnSize * 3,
       });
 
-      await elementUpdated(DOM.resizeElement);
+      await elementUpdated(firstTile);
 
       simulateLostPointerCapture(DOM.adorners.side);
-      await elementUpdated(DOM.resizeElement);
+      await elementUpdated(firstTile);
       await nextFrame();
 
       expect(getComputedStyle(firstTile).gridColumn).to.eql('2 / span 4');
     });
 
     it('Should maintain row position on resize when rowStart is set', async () => {
-      const DOM = getResizeContainerDOM(firstTile);
+      const DOM = getTileDOM(firstTile);
 
       firstTile.rowStart = 2;
 
@@ -390,50 +374,50 @@ describe('Tile resize', () => {
       await elementUpdated(tileManager);
 
       simulatePointerDown(DOM.adorners.bottom);
-      await elementUpdated(DOM.container);
+      await elementUpdated(firstTile);
 
       simulatePointerMove(DOM.adorners.bottom, {
         clientY: columnSize * 2,
       });
 
-      await elementUpdated(DOM.resizeElement);
+      await elementUpdated(firstTile);
 
       simulateLostPointerCapture(DOM.adorners.bottom);
-      await elementUpdated(DOM.resizeElement);
+      await elementUpdated(firstTile);
       await nextFrame();
 
       expect(getComputedStyle(firstTile).gridRow).to.eql('2 / span 2');
     });
 
     it('should cancel resize by pressing ESC key', async () => {
-      const DOM = getResizeContainerDOM(firstTile);
-      const eventSpy = spy(DOM.resizeElement, 'emitEvent');
+      const DOM = getTileDOM(firstTile);
+      const eventSpy = spy(firstTile, 'emitEvent');
 
       const tileRect = firstTile.getBoundingClientRect();
 
       simulatePointerDown(DOM.adorners.corner);
-      await elementUpdated(DOM.resizeElement);
+      await elementUpdated(firstTile);
 
-      expect(eventSpy).calledWith('igcResizeStart');
+      expect(eventSpy).calledWith('igcTileResizeStart');
 
       simulatePointerMove(DOM.adorners.corner, {
         clientX: tileRect.right * 2,
         clientY: tileRect.bottom * 2,
       });
-      await elementUpdated(DOM.resizeElement);
+      await elementUpdated(firstTile);
 
       expect(DOM.ghostElement).not.to.be.null;
 
-      simulateKeyboard(DOM.resizeElement, escapeKey);
-      await elementUpdated(DOM.resizeElement);
+      simulateKeyboard(firstTile, escapeKey);
+      await elementUpdated(firstTile);
 
-      expect(eventSpy).calledWith('igcResizeCancel');
+      expect(eventSpy).calledWith('igcTileResizeCancel');
       expect(DOM.ghostElement).to.be.null;
       assertRectsAreEqual(firstTile.getBoundingClientRect(), tileRect);
     });
 
     it('should fire `igcTileResizeStart` when a resize operation begins', async () => {
-      const DOM = getResizeContainerDOM(firstTile);
+      const DOM = getTileDOM(firstTile);
       const eventSpy = spy(firstTile, 'emitEvent');
 
       simulatePointerDown(DOM.adorners.corner);
@@ -443,7 +427,7 @@ describe('Tile resize', () => {
     });
 
     it('should stop resize operations by canceling the `igcTileResizeStart` event', async () => {
-      const DOM = getResizeContainerDOM(firstTile);
+      const DOM = getTileDOM(firstTile);
       const eventSpy = spy(firstTile, 'emitEvent');
 
       firstTile.addEventListener('igcTileResizeStart', (event) =>
@@ -464,7 +448,7 @@ describe('Tile resize', () => {
     });
 
     it('should fire `igcTileResizeEnd` when a resize operation is performed successfully', async () => {
-      const DOM = getResizeContainerDOM(firstTile);
+      const DOM = getTileDOM(firstTile);
       const eventSpy = spy(firstTile, 'emitEvent');
 
       const { colSpan: initialColumnSpan, rowSpan: initialRowSpan } = firstTile;
@@ -492,7 +476,7 @@ describe('Tile resize', () => {
     });
 
     it('should fire `igcTileResizeCancel` when canceling a resize operation', async () => {
-      const DOM = getResizeContainerDOM(firstTile);
+      const DOM = getTileDOM(firstTile);
       const eventSpy = spy(firstTile, 'emitEvent');
 
       const tileRect = firstTile.getBoundingClientRect();
@@ -510,7 +494,7 @@ describe('Tile resize', () => {
 
       expect(DOM.ghostElement).not.to.be.null;
 
-      simulateKeyboard(DOM.resizeElement, escapeKey);
+      simulateKeyboard(firstTile, escapeKey);
       await elementUpdated(firstTile);
 
       expect(eventSpy).calledWith('igcTileResizeCancel');
@@ -518,27 +502,29 @@ describe('Tile resize', () => {
       assertRectsAreEqual(firstTile.getBoundingClientRect(), tileRect);
     });
 
-    it('should disable igc-resize behavior when `disableResize` is true', async () => {
+    it('should disable resize behavior when `disableResize` is true', async () => {
       const DOM = getTileDOM(firstTile);
 
-      expect(DOM.resizeElement).is.not.null;
+      expect(DOM.container).is.not.null;
+      expect(DOM.adorners.corner).is.not.null;
 
       firstTile.disableResize = true;
       await elementUpdated(firstTile);
 
-      expect(DOM.resizeElement).is.null;
+      expect(DOM.container).is.null;
+      expect(DOM.adorners.corner).is.null;
     });
 
     it('should update tile parts on resizing', async () => {
-      const DOM = getResizeContainerDOM(firstTile);
-      const eventSpy = spy(DOM.resizeElement, 'emitEvent');
+      const DOM = getTileDOM(firstTile);
+      const eventSpy = spy(firstTile, 'emitEvent');
 
       expect(firstTile.part.length).to.equal(0);
 
       simulatePointerDown(DOM.adorners.bottom);
-      await elementUpdated(DOM.resizeElement);
+      await elementUpdated(firstTile);
 
-      expect(eventSpy).calledWith('igcResizeStart');
+      expect(eventSpy).calledWith('igcTileResizeStart');
       expect(firstTile.part.length).to.be.greaterThan(0);
       expect(firstTile.part.contains('resizing')).to.be.true;
     });
@@ -549,53 +535,25 @@ function getTileDOM(tile: IgcTileComponent) {
   const root = tile.renderRoot;
 
   return {
-    get resizeElement() {
-      return root.querySelector(IgcResizeContainerComponent.tagName)!;
-    },
-  };
-}
-
-function getResizeContainerDOM(tile: IgcTileComponent) {
-  const resizeContainer = tile.renderRoot.querySelector(
-    IgcResizeContainerComponent.tagName
-  )!;
-  const root = resizeContainer.renderRoot;
-
-  return {
     adorners: {
       get side() {
-        return root.querySelector<HTMLElement>('[part="trigger-side"]')!;
+        return root.querySelector<HTMLElement>('[part~="trigger-side"]')!;
       },
       get corner() {
-        return root.querySelector<HTMLElement>('[part="trigger"]')!;
+        return root.querySelector<HTMLElement>('[part~="trigger"]')!;
       },
       get bottom() {
-        return root.querySelector<HTMLElement>('[part="trigger-bottom"]')!;
+        return root.querySelector<HTMLElement>('[part~="trigger-bottom"]')!;
       },
     },
     get container() {
-      return root.querySelector<HTMLElement>('[part~="resize-base"]')!;
-    },
-    get resizeElement() {
-      return resizeContainer;
+      return root.querySelector<HTMLElement>('[part~="tile-container"]')!;
     },
     /** The ghost element when in deferred mode */
     get ghostElement() {
       return document.querySelector<HTMLElement>('[data-resize-ghost]')!;
     },
   };
-}
-
-function getResizeEventState(
-  eventSpy: Sinon.SinonSpy<
-    [
-      type: keyof IgcResizeContainerComponentEventMap,
-      eventInitDict?: CustomEventInit<unknown> | undefined,
-    ],
-    boolean
-  >
-): ResizeCallbackParams['state'] {
-  return eventSpy.lastCall.lastArg.detail.state;
 }
 
 function assertRectsAreEqual(a: DOMRect, b: DOMRect, delta = 0.01) {
