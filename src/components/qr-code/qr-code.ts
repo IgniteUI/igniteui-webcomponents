@@ -3,7 +3,7 @@ import { property, state } from 'lit/decorators.js';
 import { createAbortHandle } from '#internals/abort-handler.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { bindIf } from '#internals/utils/lit.js';
-import { clamp } from '#internals/utils/math.js';
+import { clamp, numberInRangeInclusive } from '#internals/utils/math.js';
 import { createIdGenerator } from '#internals/utils/strings.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import type { QRCodeMatrixResult } from './model/matrix.js';
@@ -15,11 +15,22 @@ import {
 } from './renderer/constants.js';
 import { renderQrFinders } from './renderer/corner.js';
 import { renderQrDots } from './renderer/dots.js';
+import {
+  createSvgSnapshot,
+  downloadFile,
+  ensureExtension,
+  isExportFormat,
+  MAX_EXPORT_DIMENSION,
+  MIME_TYPES,
+  rasterizeSvg,
+  serializeSvg,
+} from './renderer/export.js';
 import { renderQrMaskAndImage } from './renderer/image.js';
 import { styles } from './themes/qr-code.base.css.js';
 import { styles as shared } from './themes/shared/qr-code.common.css.js';
 import { all } from './themes/themes.js';
 import type {
+  QrCodeExportOptions,
   QrCornerSquareStyle,
   QrDotStyle,
   QrErrorCorrectionLevel,
@@ -57,6 +68,7 @@ export default class IgcQrCodeComponent extends LitElement {
   private readonly _abortHandle = createAbortHandle();
   private readonly _maskId = nextMaskId();
   private readonly _maskUrl = `url(#${this._maskId})`;
+  private _logoReady: Promise<void> = Promise.resolve();
   private _matrixCache?: {
     value: string;
     errorLevel: QrErrorCorrectionLevel;
@@ -191,6 +203,7 @@ export default class IgcQrCodeComponent extends LitElement {
     this._abortHandle.abort();
     this._logoLoadFailed = false;
     this._logoAspectRatio = 1;
+    this._logoReady = Promise.resolve();
 
     if (!this._hasValidLogoSrc()) {
       return;
@@ -200,34 +213,30 @@ export default class IgcQrCodeComponent extends LitElement {
     const img = new Image();
     img.src = this.logoSrc!;
 
-    if (img.complete) {
+    // On error the natural dimensions are 0, so one rule covers load and error.
+    const settle = () => {
       if (img.naturalWidth && img.naturalHeight) {
         this._logoAspectRatio = img.naturalWidth / img.naturalHeight;
       } else {
         this._logoLoadFailed = true;
       }
+    };
+
+    if (img.complete) {
+      settle();
       return;
     }
 
-    img.addEventListener(
-      'load',
-      () => {
-        if (img.naturalWidth && img.naturalHeight) {
-          this._logoAspectRatio = img.naturalWidth / img.naturalHeight;
-        } else {
-          this._logoLoadFailed = true;
-        }
-      },
-      { once: true, signal }
-    );
+    this._logoReady = new Promise<void>((resolve) => {
+      const done = () => {
+        settle();
+        resolve();
+      };
 
-    img.addEventListener(
-      'error',
-      () => {
-        this._logoLoadFailed = true;
-      },
-      { once: true, signal }
-    );
+      img.addEventListener('load', done, { once: true, signal });
+      img.addEventListener('error', done, { once: true, signal });
+      signal.addEventListener('abort', () => resolve(), { once: true });
+    });
   }
 
   /**
@@ -292,6 +301,88 @@ export default class IgcQrCodeComponent extends LitElement {
     const result = generateQRCodeMatrix(value, errorLevel, this.version);
     this._matrixCache = { value, errorLevel, version: this.version, result };
     return result;
+  }
+
+  /**
+   * Returns a self-contained copy of the rendered SVG with theme colors resolved
+   * and the logo inlined. Waits for a pending logo load and render first.
+   */
+  private async _createSnapshot(): Promise<SVGSVGElement> {
+    await this._logoReady;
+    await this.updateComplete;
+
+    // The SVG is rendered only when there is a value.
+    const svg = this.renderRoot.querySelector('svg');
+    if (!svg) {
+      throw new Error('Cannot export an igc-qr-code without a value.');
+    }
+
+    return createSvgSnapshot(svg);
+  }
+
+  /* blazorSuppress */
+  /**
+   * Serializes the QR code to an `image/svg+xml` blob.
+   *
+   * Theme colors are resolved to plain `fill` attributes and a logo that is not a data URI
+   * is fetched and inlined, so the blob renders identically outside the component.
+   * A logo that cannot be fetched (for example a cross-origin URL without CORS headers) is omitted.
+   *
+   * Rejects when the component has no `value`.
+   */
+  public async toBlob(): Promise<Blob> {
+    return serializeSvg(await this._createSnapshot());
+  }
+
+  /* blazorSuppress */
+  /**
+   * Exports the QR code as an image file.
+   *
+   * The `scale` option multiplies the `size` of the component: a 256px QR code exported
+   * with `scale: 2` produces a 512x512 image. When `download` is `true` the browser
+   * download dialog opens for the file.
+   *
+   * Rejects when the component has no `value`, when `format` is not supported, when `scale`
+   * is not a positive finite number, or when the resulting image exceeds the maximum canvas size.
+   */
+  public async toImage(options?: QrCodeExportOptions): Promise<File> {
+    const { fileName, format = 'png', scale = 1, download } = options ?? {};
+
+    if (!isExportFormat(format)) {
+      throw new TypeError(`Unsupported export format: ${format}.`);
+    }
+
+    if (!Number.isFinite(scale) || scale <= 0) {
+      throw new RangeError(
+        'The export scale must be a positive finite number.'
+      );
+    }
+
+    const dimension = Math.round(this.size * scale);
+    if (!numberInRangeInclusive(dimension, 1, MAX_EXPORT_DIMENSION)) {
+      throw new RangeError(
+        `The exported image side must be between 1 and ${MAX_EXPORT_DIMENSION} pixels.`
+      );
+    }
+
+    const svg = await this._createSnapshot();
+    svg.setAttribute('width', `${dimension}`);
+    svg.setAttribute('height', `${dimension}`);
+
+    const svgBlob = serializeSvg(svg);
+    const blob =
+      format === 'svg'
+        ? svgBlob
+        : await rasterizeSvg(svgBlob, dimension, format);
+
+    const name = ensureExtension(fileName?.trim() || 'qr-code', format);
+    const file = new File([blob], name, { type: MIME_TYPES[format] });
+
+    if (download) {
+      downloadFile(file);
+    }
+
+    return file;
   }
 
   protected override render() {

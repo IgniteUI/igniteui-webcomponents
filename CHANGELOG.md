@@ -5,6 +5,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+### Added
+- #### QR code
+  - `toBlob()` serializes the rendered code to an `image/svg+xml` blob. Theme colors become plain `fill` attributes and a logo that is not a data URI is fetched and inlined, so the output renders the same outside the component.
+  - `toImage(options)` exports the code as a `File` in `svg`, `png`, `jpeg` or `webp` format. The `scale` option multiplies the component `size`, thus a 256px code with `scale: 2` gives a 512x512 image. Set `download: true` to open the browser download dialog. The `QrCodeExportFormat` and `QrCodeExportOptions` types are exported from the package entry point.
+
 ### Changed
 - #### Calendar, Date picker, Date range picker
   - When `week-start` is not set, the week starts on the first day of the week of the `locale`, as reported by `Intl.Locale.prototype.getWeekInfo()`. For example, `bg` starts on Monday and `en` stays on Sunday. An explicit `week-start` has priority. Set `weekStart` to `undefined` to return to the locale value. Browsers without `getWeekInfo()` keep the Sunday default. [#1020](https://github.com/IgniteUI/igniteui-webcomponents/issues/1020)

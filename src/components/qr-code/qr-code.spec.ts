@@ -1,4 +1,5 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
+import { restore, stub } from 'sinon';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
 import { asNumber } from '#internals/utils/math.js';
 import { configureTheme } from '#theming/config.js';
@@ -597,6 +598,265 @@ describe('IgcQrCodeComponent', () => {
         await elementUpdated(el);
 
         expect(el.renderRoot.querySelector('image')).to.be.null;
+      });
+    });
+  });
+
+  describe('Export', () => {
+    const LOGO =
+      'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
+
+    let logoUrl: string | undefined;
+
+    /** Serves the logo through an object URL so the export has to fetch and inline it. */
+    function createLogoUrl(): string {
+      const bytes = Uint8Array.from(atob(LOGO.split(',')[1]), (c) =>
+        c.charCodeAt(0)
+      );
+      logoUrl = URL.createObjectURL(new Blob([bytes], { type: 'image/png' }));
+      return logoUrl;
+    }
+
+    async function parseSvg(blob: Blob): Promise<SVGSVGElement> {
+      const doc = new DOMParser().parseFromString(
+        await blob.text(),
+        'image/svg+xml'
+      );
+      return doc.documentElement as unknown as SVGSVGElement;
+    }
+
+    async function expectRejection(
+      promise: Promise<unknown>,
+      type: new (...args: never[]) => Error
+    ): Promise<void> {
+      let error: unknown;
+      try {
+        await promise;
+      } catch (e) {
+        error = e;
+      }
+      expect(error).to.be.instanceOf(type);
+    }
+
+    afterEach(() => {
+      restore();
+      if (logoUrl) {
+        URL.revokeObjectURL(logoUrl);
+        logoUrl = undefined;
+      }
+    });
+
+    describe('toBlob()', () => {
+      it('returns an SVG blob', async () => {
+        const el = await fixture<IgcQrCodeComponent>(
+          html`<igc-qr-code value="https://example.com"></igc-qr-code>`
+        );
+
+        const blob = await el.toBlob();
+        expect(blob.type).to.include('image/svg+xml');
+
+        const svg = await parseSvg(blob);
+        expect(svg.tagName).to.equal('svg');
+        expect(svg.getAttribute('width')).to.equal('128');
+        expect(svg.querySelector('title')?.textContent).to.include(
+          'https://example.com'
+        );
+      });
+
+      it('resolves theme colors to fill attributes and strips parts', async () => {
+        const el = await fixture<IgcQrCodeComponent>(
+          html`<igc-qr-code
+            value="https://example.com"
+            style="--ig-qr-code-dark-color: rgb(10, 20, 30); --ig-qr-code-background: rgb(200, 210, 220)"
+          ></igc-qr-code>`
+        );
+
+        const blob = await el.toBlob();
+        const markup = await blob.text();
+        expect(markup).not.to.include('part=');
+        expect(markup).not.to.include('var(');
+
+        const svg = await parseSvg(blob);
+        expect(svg.querySelector('rect')?.getAttribute('fill')).to.equal(
+          'rgb(200, 210, 220)'
+        );
+        expect(
+          svg.querySelectorAll('path[fill="rgb(10, 20, 30)"]').length
+        ).to.be.greaterThan(0);
+        for (const shape of svg.querySelectorAll('rect, path')) {
+          expect(shape.getAttribute('fill')).to.match(/^rgb/);
+        }
+      });
+
+      it('keeps a data URI logo as is', async () => {
+        const el = await fixture<IgcQrCodeComponent>(
+          html`<igc-qr-code
+            value="https://example.com"
+            logo-src=${LOGO}
+          ></igc-qr-code>`
+        );
+
+        const svg = await parseSvg(await el.toBlob());
+        expect(svg.querySelector('image')?.getAttribute('href')).to.equal(LOGO);
+        expect(svg.querySelector('mask')).to.exist;
+      });
+
+      it('inlines a fetched logo as a data URI', async () => {
+        const el = await fixture<IgcQrCodeComponent>(
+          html`<igc-qr-code
+            value="https://example.com"
+            logo-src=${createLogoUrl()}
+          ></igc-qr-code>`
+        );
+
+        const svg = await parseSvg(await el.toBlob());
+        const href = svg.querySelector('image')?.getAttribute('href');
+        expect(href).to.match(/^data:image\/png/);
+        expect(svg.querySelector('g')?.getAttribute('mask')).to.match(
+          /^url\(#/
+        );
+      });
+
+      it('drops the logo and its mask when the logo cannot be fetched', async () => {
+        const fetchStub = stub(window, 'fetch').rejects(new TypeError('CORS'));
+        const el = await fixture<IgcQrCodeComponent>(
+          html`<igc-qr-code
+            value="https://example.com"
+            logo-src=${createLogoUrl()}
+          ></igc-qr-code>`
+        );
+
+        const svg = await parseSvg(await el.toBlob());
+        expect(fetchStub.calledOnce).to.be.true;
+        expect(svg.querySelector('image')).to.be.null;
+        expect(svg.querySelector('mask')).to.be.null;
+        expect(svg.querySelector('[mask]')).to.be.null;
+      });
+
+      it('rejects when there is no value', async () => {
+        const el = await fixture<IgcQrCodeComponent>(
+          html`<igc-qr-code></igc-qr-code>`
+        );
+        await expectRejection(el.toBlob(), Error);
+      });
+    });
+
+    describe('toImage()', () => {
+      let el: IgcQrCodeComponent;
+
+      beforeEach(async () => {
+        el = await fixture(
+          html`<igc-qr-code
+            value="https://example.com"
+            size="256"
+          ></igc-qr-code>`
+        );
+      });
+
+      it('exports a PNG file at the component size by default', async () => {
+        const file = await el.toImage();
+        expect(file).to.be.instanceOf(File);
+        expect(file.name).to.equal('qr-code.png');
+        expect(file.type).to.equal('image/png');
+
+        const bitmap = await createImageBitmap(file);
+        expect(bitmap.width).to.equal(256);
+        expect(bitmap.height).to.equal(256);
+        bitmap.close();
+      });
+
+      it('scales the raster output', async () => {
+        const file = await el.toImage({ scale: 2 });
+        const bitmap = await createImageBitmap(file);
+        expect(bitmap.width).to.equal(512);
+        expect(bitmap.height).to.equal(512);
+        bitmap.close();
+      });
+
+      it('exports an opaque JPEG', async () => {
+        const file = await el.toImage({ format: 'jpeg', fileName: 'code' });
+        expect(file.name).to.equal('code.jpeg');
+        expect(file.type).to.equal('image/jpeg');
+
+        const bitmap = await createImageBitmap(file);
+        const canvas = document.createElement('canvas');
+        canvas.width = bitmap.width;
+        canvas.height = bitmap.height;
+        const context = canvas.getContext('2d')!;
+        context.drawImage(bitmap, 0, 0);
+        bitmap.close();
+
+        const [, , , alpha] = context.getImageData(0, 0, 1, 1).data;
+        expect(alpha).to.equal(255);
+      });
+
+      it('exports a WebP file', async () => {
+        const file = await el.toImage({ format: 'webp' });
+        expect(file.name).to.equal('qr-code.webp');
+        expect(file.type).to.equal('image/webp');
+      });
+
+      it('exports an SVG file with scaled dimensions', async () => {
+        const file = await el.toImage({ format: 'svg', scale: 2 });
+        expect(file.name).to.equal('qr-code.svg');
+        expect(file.type).to.equal('image/svg+xml');
+
+        const svg = await parseSvg(file);
+        expect(svg.getAttribute('width')).to.equal('512');
+        expect(svg.getAttribute('height')).to.equal('512');
+        expect(svg.getAttribute('viewBox')).to.equal(
+          getSvg(el)!.getAttribute('viewBox')
+        );
+      });
+
+      it('keeps an existing matching extension in the file name', async () => {
+        expect((await el.toImage({ fileName: 'My Code.PNG' })).name).to.equal(
+          'My Code.PNG'
+        );
+        expect(
+          (await el.toImage({ fileName: 'photo.jpg', format: 'jpeg' })).name
+        ).to.equal('photo.jpg');
+        expect((await el.toImage({ fileName: 'code.svg' })).name).to.equal(
+          'code.svg.png'
+        );
+        expect((await el.toImage({ fileName: '  ' })).name).to.equal(
+          'qr-code.png'
+        );
+      });
+
+      it('triggers a download when requested', async () => {
+        const click = stub(HTMLAnchorElement.prototype, 'click');
+
+        await el.toImage({ fileName: 'ticket', download: true });
+        expect(click.calledOnce).to.be.true;
+
+        const anchor = click.thisValues[0] as HTMLAnchorElement;
+        expect(anchor.download).to.equal('ticket.png');
+        expect(anchor.href).to.match(/^blob:/);
+      });
+
+      it('does not trigger a download by default', async () => {
+        const click = stub(HTMLAnchorElement.prototype, 'click');
+
+        await el.toImage();
+        expect(click.called).to.be.false;
+      });
+
+      it('rejects invalid options', async () => {
+        await expectRejection(el.toImage({ scale: 0 }), RangeError);
+        await expectRejection(el.toImage({ scale: -1 }), RangeError);
+        await expectRejection(el.toImage({ scale: Number.NaN }), RangeError);
+        await expectRejection(el.toImage({ scale: 1000 }), RangeError);
+        await expectRejection(
+          el.toImage({ format: 'gif' as unknown as 'png' }),
+          TypeError
+        );
+      });
+
+      it('rejects when there is no value', async () => {
+        el.value = undefined;
+        await elementUpdated(el);
+        await expectRejection(el.toImage(), Error);
       });
     });
   });

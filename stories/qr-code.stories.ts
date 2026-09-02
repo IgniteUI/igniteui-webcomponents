@@ -1,9 +1,14 @@
 import type { Meta, StoryObj } from '@storybook/web-components-vite';
-import { defineComponents, IgcQrCodeComponent } from 'igniteui-webcomponents';
+import {
+  defineComponents,
+  IgcButtonComponent,
+  IgcQrCodeComponent,
+  type QrCodeExportFormat,
+} from 'igniteui-webcomponents';
 import { html } from 'lit';
 import { disableStoryControls } from './story.js';
 
-defineComponents(IgcQrCodeComponent);
+defineComponents(IgcButtonComponent, IgcQrCodeComponent);
 
 // region default
 const metadata: Meta<IgcQrCodeComponent> = {
@@ -535,4 +540,52 @@ export const Sizes: Story = {
       </div>
     </div>
   `,
+};
+
+export const Export: Story = {
+  argTypes: disableStoryControls(metadata),
+  render: () => {
+    const exportCode = (format: QrCodeExportFormat, scale: number) =>
+      document.querySelector<IgcQrCodeComponent>('#export-qr')!.toImage({
+        fileName: `ignite-ui-qr-${scale}x`,
+        format,
+        scale,
+        download: true,
+      });
+
+    return html`
+      <div
+        style="display: flex; flex-direction: column; gap: 1rem; align-items: flex-start;"
+      >
+        <igc-qr-code
+          id="export-qr"
+          value="https://www.infragistics.com/products/ignite-ui-web-components"
+          size="256"
+          dot-style="rounded"
+          square-style="rounded"
+          error-level="H"
+          logo-src="https://static.infragistics.com/marketing/Website/products/ignite-ui/shared/ignite-ui-logo-light-background-horizontal.svg"
+          logo-size="0.75"
+          logo-margin="6"
+        ></igc-qr-code>
+        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+          <igc-button @click=${() => exportCode('svg', 1)}
+            >Download SVG</igc-button
+          >
+          <igc-button @click=${() => exportCode('png', 1)}>
+            Download PNG (1x)
+          </igc-button>
+          <igc-button @click=${() => exportCode('png', 2)}>
+            Download PNG (2x)
+          </igc-button>
+          <igc-button @click=${() => exportCode('jpeg', 2)}>
+            Download JPEG (2x)
+          </igc-button>
+          <igc-button @click=${() => exportCode('webp', 4)}>
+            Download WebP (4x)
+          </igc-button>
+        </div>
+      </div>
+    `;
+  },
 };

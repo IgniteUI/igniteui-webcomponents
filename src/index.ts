@@ -218,6 +218,8 @@ export type {
   QrErrorCorrectionLevel,
   QrDotStyle,
   QrCornerSquareStyle,
+  QrCodeExportFormat,
+  QrCodeExportOptions,
 } from './components/qr-code/types.js';
 
 // Internal exports for other packages
