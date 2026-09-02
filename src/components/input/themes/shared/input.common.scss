@@ -106,7 +106,7 @@ input::-webkit-datetime-edit {
 }
 /* stylelint-enable */
 
-:host(:not([role='combobox'])[readonly]) {
+:host(:not([data-role='combobox'])[readonly]) {
     [part='prefix'],
     [part='suffix'] {
         color: var-get($theme, 'disabled-text-color');
@@ -140,7 +140,7 @@ input::-webkit-datetime-edit {
     padding-inline: var(--affix-padding);
 }
 
-:host(:not([role='combobox'])) {
+:host(:not([data-role='combobox'])) {
     ::slotted([slot='suffix']),
     ::slotted([slot='prefix']) {
         padding-inline: var(--affix-padding);

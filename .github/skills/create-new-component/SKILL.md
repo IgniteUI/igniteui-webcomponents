@@ -5,98 +5,73 @@ description: Create a new Lit web component following project conventions, inclu
 
 # Create New Component
 
-This skill guides you through creating a new Lit web component that follows all project conventions and best practices.
+Creates a new Lit web component that follows the project conventions. Read the
+[Coding Guidelines](../../CODING_GUIDELINES.md) for the rules behind the steps below.
 
-## Example Usage
+## When to Use
 
 - "Create a new progress-bar component"
 - "Add a new stepper component to the library"
-- "Create a tooltip component with accessibility support"
 
 ## Related Skills
 
 - [add-component-property](../add-component-property/) - Add properties after creating the component
 - [update-component-styles](../update-component-styles/) - Modify component styles
 
-## When to Use
-
-- User asks to "create a new component"
-- User requests a new UI element for the component library
-- User wants to add a new custom element to the project
-
-## Prerequisites
-
-Before starting, ensure:
-
-- [ ] Component name is determined (kebab-case for tag name, PascalCase for class name)
-- [ ] Basic component requirements/properties are known
-- [ ] Component type identified (simple display, form-associated, or container)
-
 ## Required Context
 
-Gather or confirm with the user:
+Confirm with the user before starting:
 
-- **Component name**: e.g., "progress-bar" → `IgcProgressBarComponent`
-- **Component purpose**: Brief description for JSDoc comments
-- **Initial properties**: Any properties the component should expose
-- **CSS parts**: What internal parts should be styleable from outside
-- **Slots**: What named/default slots are needed
+- **Name**: `progress-bar` → tag `igc-progress-bar`, class `IgcProgressBarComponent`
+- **Purpose**: one-line description used verbatim in the public API docs
+- **Public API**: initial properties, events, slots, CSS parts
+- **Kind**: plain display component, container, or form-associated control
 
 ## Steps
 
-### 1. Create Component Directory Structure
-
-Create the component folder with theme directories:
+### 1. Create the directory structure
 
 ```bash
-mkdir -p src/components/[component-name]/themes/{light,dark,shared}
+mkdir -p src/components/[name]/themes/{light,dark,shared}
 ```
 
-**Example**: For "progress-bar":
+### 2. Create the component class
 
-```bash
-mkdir -p src/components/progress-bar/themes/{light,dark,shared}
-```
+`src/components/[name]/[name].ts`:
 
-### 2. Create Component TypeScript File
-
-Create `src/components/[component-name]/[component-name].ts`:
-
-```typescript
+```ts
 import { html, LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
-import { addThemingController } from '../../theming/theming-controller.js';
-import { registerComponent } from '../common/definitions/register.js';
-import { styles } from './themes/[component-name].base.css.js';
-import { styles as shared } from './themes/shared/[component-name].common.css.js';
+import { registerComponent } from '#internals/definitions/register.js';
+import { addThemingController } from '#theming/theming-controller.js';
+import { styles } from './themes/[name].base.css.js';
+import { styles as shared } from './themes/shared/[name].common.css.js';
 import { all } from './themes/themes.js';
 
 /**
- * [Component description - one line]
+ * [One-line description of what the component is for.]
  *
- * @element igc-[component-name]
+ * @element igc-[name]
  *
  * @slot - [Default slot description]
- * @slot [slot-name] - [Named slot description if any]
  *
- * @csspart [part-name] - [Description of the CSS part]
- *
- * @cssproperty --[property-name] - [Description if using CSS custom properties]
+ * @csspart base - [Description of the CSS part]
  */
-export default class Igc[ComponentName]Component extends LitElement {
-  public static readonly tagName = 'igc-[component-name]';
+export default class Igc[Name]Component extends LitElement {
+  public static readonly tagName = 'igc-[name]';
   public static override styles = [styles, shared];
 
   /* blazorSuppress */
   public static register(): void {
-    registerComponent(Igc[ComponentName]Component);
+    registerComponent(Igc[Name]Component);
   }
 
-  //#region Public properties
+  //#region Public attributes and properties
 
   /**
    * [Property description]
-   * @attr [attribute-name]
+   * @attr some-prop
+   * @default 'default-value'
    */
   @property({ reflect: true })
   public someProp = 'default-value';
@@ -108,8 +83,6 @@ export default class Igc[ComponentName]Component extends LitElement {
     addThemingController(this, all);
   }
 
-  //#region Lit lifecycle
-
   protected override render() {
     return html`
       <div part="base">
@@ -117,170 +90,186 @@ export default class Igc[ComponentName]Component extends LitElement {
       </div>
     `;
   }
-
-  //#endregion
 }
 
 declare global {
   interface HTMLElementTagNameMap {
-    'igc-[component-name]': Igc[ComponentName]Component;
+    'igc-[name]': Igc[Name]Component;
   }
 }
 ```
 
-**Critical Points**:
+Key points:
 
-- Import paths end with `.js` extension (TypeScript ESM convention)
-- Use `@property` decorator for reactive properties
-- **Only expose primitive types** (string, number, boolean) as attributes
-- Always include `tagName` and `register()` static members with `readonly` modifier
-- **Organize code with region comments**: Internal state, Public properties, Lit lifecycle, Event handlers, Internal API, Public API
-- **Prefix internal API** (private properties/methods) with underscore: `_internalMethod()`
-- Add theming controller in constructor
-- Include comprehensive JSDoc comments — follow [Documentation Conventions](#documentation-conventions)
-- Declare global HTMLElementTagNameMap interface
-- Use explicit return types for methods
+- Cross-cutting imports go through `#internals/*`, `#theming/*` and `#animations/*`; component
+  imports stay relative. All specifiers end in `.js`.
+- `registerComponent(Self, ...dependencies)` — pass every component rendered in the template.
+- Region fences and the member order follow the
+  [component structure](../../CODING_GUIDELINES.md#components).
+- Internal API is `_`-prefixed; no native private fields (`#`).
+- Only primitives may be attributes; complex types get `attribute: false`.
+- For ARIA use `addInternalsController`; for keyboard use `addKeybindings`; for slot state use
+  `addSlotController`. See the [controllers table](../../CODING_GUIDELINES.md#controllers).
 
-### 3. Create Base SCSS File
+### 3. Create the SCSS files
 
-Create `src/components/[component-name]/themes/[component-name].base.scss`:
+SCSS resolves against the `src` and `node_modules` load paths — use package-style specifiers,
+never relative ones. Indentation in SCSS is 4 spaces.
+
+`themes/[name].base.scss` — structure and layout, theme-agnostic:
 
 ```scss
-@use '../../../styles/utilities' as *;
+@use 'styles/common/component';
+@use 'styles/utilities' as *;
 
 :host {
-  display: block;
+    display: block;
 }
 
-[part='base'] {
-  // Component styles here
+[part~='base'] {
+    // Structural styles
 }
 ```
 
-**Note**: This will be transpiled to `.ts` by the build system. Do NOT create `.ts` files manually.
-
-### 4. Create Shared Theme Files
-
-Create theme-specific SCSS files:
-
-- `themes/shared/[component-name].bootstrap.scss`
-- `themes/shared/[component-name].material.scss`
-- `themes/shared/[component-name].fluent.scss`
-- `themes/shared/[component-name].indigo.scss`
-
-**Minimal theme** (`themes/shared/[component-name].bootstrap.scss`):
+`themes/light/_themes.scss` — digest the schemas from `igniteui-theming`:
 
 ```scss
-@use '../../../../theming/functions' as *;
+@use 'styles/utilities' as *;
+@use 'igniteui-theming/sass/themes/schemas/components/light/[name]' as *;
+
+$base: digest-schema($light-[name]);
+$material: digest-schema($material-[name]);
+$bootstrap: digest-schema($bootstrap-[name]);
+$fluent: digest-schema($fluent-[name]);
+$indigo: digest-schema($indigo-[name]);
+```
+
+`themes/dark/_themes.scss` mirrors it with the dark schemas (no `$base`).
+
+Then, per theme:
+
+- `themes/light/[name].shared.scss` — emits the full variable set from `$base`
+- `themes/light/[name].{bootstrap,material,fluent,indigo}.scss` — `diff($base, $theme)`
+- `themes/dark/[name].{bootstrap,material,fluent,indigo}.scss` — `diff(light.$base, $theme)`
+- `themes/shared/[name].common.scss` — cross-theme styling that reads the variables
+- `themes/shared/[name].{bootstrap,material,fluent,indigo}.scss` — per-theme structural tweaks
+  (optional)
+
+```scss
+// themes/light/[name].bootstrap.scss
+@use 'styles/utilities' as *;
+@use 'themes' as *;
+
+$theme: $bootstrap;
 
 :host {
-  // Theme-specific styles using igniteui-theming package
+    @include css-vars-from-theme(diff($base, $theme));
 }
 ```
 
-Repeat for all four themes (bootstrap, material, fluent, indigo).
+> [!NOTE]
+> A brand-new component only has schemas once they are added to `igniteui-theming`. Until
+> then, declare the CSS variables directly in `themes/shared/[name].common.scss` and keep the
+> light/dark files empty rather than inventing values per theme.
 
-### 5. Create Theme Aggregator
+### 4. Create the theme aggregator
 
-Create `src/components/[component-name]/themes/themes.ts`:
+`themes/themes.ts` is the only hand-written TypeScript file in the directory:
 
-```typescript
+```ts
 import { css } from 'lit';
-
-import type { Themes } from '../../../theming/types.js';
-// Shared Styles
-import { styles as bootstrap } from './shared/[component-name].bootstrap.css.js';
-import { styles as material } from './shared/[component-name].material.css.js';
-import { styles as fluent } from './shared/[component-name].fluent.css.js';
-import { styles as indigo } from './shared/[component-name].indigo.css.js';
+import type { Themes } from '#theming/types.js';
+// Dark Overrides
+import { styles as bootstrapDark } from './dark/[name].bootstrap.css.js';
+import { styles as fluentDark } from './dark/[name].fluent.css.js';
+import { styles as indigoDark } from './dark/[name].indigo.css.js';
+import { styles as materialDark } from './dark/[name].material.css.js';
+// Light Overrides
+import { styles as bootstrapLight } from './light/[name].bootstrap.css.js';
+import { styles as fluentLight } from './light/[name].fluent.css.js';
+import { styles as indigoLight } from './light/[name].indigo.css.js';
+import { styles as materialLight } from './light/[name].material.css.js';
+import { styles as shared } from './light/[name].shared.css.js';
 
 const light = {
+  shared: css`
+    ${shared}
+  `,
   bootstrap: css`
-    ${bootstrap}
+    ${bootstrapLight}
   `,
   material: css`
-    ${material}
+    ${materialLight}
   `,
   fluent: css`
-    ${fluent}
+    ${fluentLight}
   `,
   indigo: css`
-    ${indigo}
+    ${indigoLight}
   `,
 };
 
 const dark = {
+  shared: css`
+    ${shared}
+  `,
   bootstrap: css`
-    ${bootstrap}
+    ${bootstrapDark}
   `,
   material: css`
-    ${material}
+    ${materialDark}
   `,
   fluent: css`
-    ${fluent}
+    ${fluentDark}
   `,
   indigo: css`
-    ${indigo}
+    ${indigoDark}
   `,
 };
 
 export const all: Themes = { light, dark };
 ```
 
-### 6. Transpile SCSS to TypeScript
-
-Run the build script to convert SCSS to Lit CSS:
+### 5. Transpile the styles
 
 ```bash
 npm run build:styles
 ```
 
-**Verify**: `.css.js` files are created next to `.scss` files.
+This generates a `.css.ts` next to each `.scss` (imported as `.css.js`). The generated files
+are **gitignored** — never edit or commit them. Only files matching
+`*.{base,common,shared,material,bootstrap,indigo,fluent}.scss` are picked up; anything else is
+silently skipped.
 
-### 7. Create Component Tests
+### 6. Write the tests
 
-Create `src/components/[component-name]/[component-name].spec.ts`:
+`src/components/[name]/[name].spec.ts`:
 
-```typescript
+```ts
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
-import { defineComponents } from '../common/definitions/defineComponents.js';
-import Igc[ComponentName]Component from './[component-name].js';
+import { defineComponents } from '#internals/definitions/defineComponents.js';
+import Igc[Name]Component from './[name].js';
 
-describe('[ComponentName]', () => {
+describe('[Name]', () => {
   before(() => {
-    defineComponents(Igc[ComponentName]Component);
+    defineComponents(Igc[Name]Component);
   });
 
   it('passes the a11y audit', async () => {
-    const el = await fixture<Igc[ComponentName]Component>(
-      html`<igc-[component-name]></igc-[component-name]>`
-    );
+    const el = await fixture<Igc[Name]Component>(html`<igc-[name]></igc-[name]>`);
 
     await expect(el).shadowDom.to.be.accessible();
     await expect(el).to.be.accessible();
   });
 
-  it('should initialize with default values', async () => {
-    const el = await fixture<Igc[ComponentName]Component>(
-      html`<igc-[component-name]></igc-[component-name]>`
-    );
+  it('is initialized with the proper default values', async () => {
+    const el = await fixture<Igc[Name]Component>(html`<igc-[name]></igc-[name]>`);
 
     expect(el.someProp).to.equal('default-value');
   });
 
-  it('should render content inside', async () => {
-    const content = 'Test Content';
-    const el = await fixture<Igc[ComponentName]Component>(
-      html`<igc-[component-name]>${content}</igc-[component-name]>`
-    );
-
-    expect(el).dom.to.have.text(content);
-  });
-
-  it('can change properties', async () => {
-    const el = await fixture<Igc[ComponentName]Component>(
-      html`<igc-[component-name]></igc-[component-name]>`
-    );
+  it('updates on property change', async () => {
+    const el = await fixture<Igc[Name]Component>(html`<igc-[name]></igc-[name]>`);
 
     el.someProp = 'new-value';
     await elementUpdated(el);
@@ -290,122 +279,79 @@ describe('[ComponentName]', () => {
 });
 ```
 
-**Testing Requirements**:
+Drive user interaction through the shared simulators (`simulateClick`, `simulateKeyboard`, …)
+from `#internals/testing/simulate.spec.js`, and use
+`createFormAssociatedTestBed` from `#internals/testing/form-testbed.spec.js` for form-associated
+controls.
 
-- Always include accessibility audit test first
-- Test default initialization
-- Test property reactivity
-- Use `elementUpdated()` after programmatic changes
+### 7. Create the Storybook story
 
-### 8. Create Storybook Story
+`stories/[name].stories.ts` — the filename must match the tag name, and the generated block
+must be fenced by `// region default` / `// endregion`:
 
-Create `stories/[component-name].stories.ts`:
-
-```typescript
+```ts
 import type { Meta, StoryObj } from '@storybook/web-components-vite';
 import { html } from 'lit';
+import { defineComponents, Igc[Name]Component } from 'igniteui-webcomponents';
 
-import {
-  Igc[ComponentName]Component,
-  defineComponents,
-} from 'igniteui-webcomponents';
+defineComponents(Igc[Name]Component);
 
-defineComponents(Igc[ComponentName]Component);
-
-const metadata: Meta<Igc[ComponentName]Component> = {
-  title: '[ComponentName]',
-  component: 'igc-[component-name]',
-  parameters: {
-    docs: {
-      description: {
-        component: '[Component description for Storybook docs]',
-      },
-    },
-  },
-  argTypes: {
-    someProp: {
-      type: 'string',
-      description: '[Property description]',
-      control: 'text',
-      table: { defaultValue: { summary: 'default-value' } },
-    },
-  },
-  args: {
-    someProp: 'default-value',
-  },
+// region default
+const metadata: Meta<Igc[Name]Component> = {
+  title: '[Name]',
+  component: 'igc-[name]',
 };
 
 export default metadata;
 
-interface Igc[ComponentName]Args {
-  /** [Property description] */
-  someProp: string;
-}
-type Story = StoryObj<Igc[ComponentName]Args>;
+type Story = StoryObj<Igc[Name]Component>;
+// endregion
 
 export const Basic: Story = {
   render: (args) => html`
-    <igc-[component-name] .someProp=${args.someProp}>
-      Content
-    </igc-[component-name]>
+    <igc-[name] .someProp=${args.someProp}>Content</igc-[name]>
   `,
 };
 ```
 
-**Story Guidelines**:
+Everything inside the region is regenerated in the next step — write only the stories.
 
-- Match argTypes to component properties
-- Use property binding (`.propName`) for non-primitives
-- Create at least one basic story
+### 8. Export and generate metadata
 
-### 9. Export Component from Main Index
+Add the export to `src/index.ts` in alphabetical order:
 
-Add to `src/index.ts` in alphabetical order:
-
-```typescript
-export { default as Igc[ComponentName]Component } from './components/[component-name]/[component-name].js';
+```ts
+export { default as Igc[Name]Component } from './components/[name]/[name].js';
 ```
 
-**Example**:
-
-```typescript
-export { default as IgcProgressBarComponent } from './components/progress-bar/progress-bar.js';
-```
-
-### 10. Type-Check and Test
-
-Run type-checking and test suite:
+Then regenerate the derived artifacts:
 
 ```bash
-# Check that the project will transpile
-npm run check-types
-
-# Run tests
-npm run test
-
-# Start Storybook to verify
-npm run storybook
+npm run cem        # custom-elements.json from the JSDoc
+npm run build:meta # the `// region default` block of the story
 ```
+
+### 9. Verify
+
+```bash
+npm run check  # aliases, dependency rules, types
+npm run lint   # oxlint, lit-analyzer, oxfmt, stylelint
+npm run test
+```
+
+Finally, add a CHANGELOG entry.
 
 ## Documentation Conventions
 
-Every JSDoc description on a public class, property, method, event, slot, CSS part or
-CSS custom property is consumed **verbatim** by downstream tooling:
+Every JSDoc description on a public class, property, method, event, slot, CSS part or CSS
+custom property is consumed **verbatim** by `custom-elements.json`, the generated story
+metadata, the published API docs and the Angular / React / Blazor wrappers. Write product
+documentation, not internal notes.
 
-- `custom-elements.json` (generated by `npm run cem`)
-- the generated `// region default` block in `stories/[name].stories.ts` (`npm run build:meta`)
-- the published API docs and the framework wrappers (Angular / React / Blazor), where the
-  custom element tag name is either wrong or meaningless
+**Never put `igc-` tag names in prose.** Refer to components by their plain-English name — "the
+carousel", "the tile manager", "toggle buttons".
 
-So descriptions must read as product documentation, not as internal notes.
-
-### Never put `igc-` tag names in prose
-
-Refer to components by their plain-English name — "the carousel", "the tile manager",
-"toggle buttons", "the select component". Never `igc-carousel`, `` `igc-toggle-button` ``
-or `<igc-chat>`.
-
-```typescript
+```ts
 // ❌ Wrong — tag names leak into the docs of every framework wrapper
 /**
  * The `igc-carousel` presents a set of `igc-carousel-slide`s.
@@ -423,207 +369,61 @@ or `<igc-chat>`.
  */
 ```
 
-Tag names are **only** allowed in:
+Tag names are allowed **only** in the `@element` tag, fenced `@example` blocks, literal
+event/attribute names that contain `igc-` (e.g. the `"igc-change-theme"` window event), and
+`@internal`/`@hidden` members or non-exported internals.
 
-- the `@element` tag itself — `@element igc-carousel`
-- fenced `@example` code blocks (real markup/JS the user would write)
-- literal event or attribute names that happen to contain `igc-` (e.g. the
-  `"igc-change-theme"` window event)
-- `@internal` / `@hidden` members and non-exported internal controllers, mixins and
-  templates, where naming the concrete element is the point
+**Describe the thing, not the attribute.** `@attr` already says it is an attribute.
 
-### Describe the thing, not the attribute
-
-The `@attr` tag already says it is an attribute. Don't repeat it in the sentence, and
-don't use `Gets/Sets`.
-
-| ❌ Avoid                                     | ✅ Prefer                                                       |
-| -------------------------------------------- | --------------------------------------------------------------- |
-| `The label attribute of the control.`         | `The label of the control.`                                     |
-| `The placeholder attribute of the control.`   | `The placeholder text of the control.`                          |
-| `The outlined attribute of the control.`      | `Whether the control has an outlined appearance.`               |
-| `The autofocus attribute of the control.`     | `Whether the control should receive focus automatically.`       |
-| `Gets/Sets the name for all child radios.`    | `The name applied to all radio buttons in the group.`           |
-| `an empty value will return an empty string`  | `an empty value returns an empty string`                        |
+| ❌ Avoid                                    | ✅ Prefer                                                 |
+| ------------------------------------------ | -------------------------------------------------------- |
+| `The label attribute of the control.`      | `The label of the control.`                               |
+| `The outlined attribute of the control.`   | `Whether the control has an outlined appearance.`         |
+| `Gets/Sets the name for all child radios.` | `The name applied to all radio buttons in the group.`     |
+| `an empty value will return an empty string` | `an empty value returns an empty string`                |
 
 - Booleans start with **"Whether …"** and describe the `true` state accurately — check the
-  implementation, don't trust the property name (`hideIndicators` is *"Whether the carousel
-  should skip rendering of the indicator controls"*, not *"should render"*).
+  implementation, don't trust the property name (`hideIndicators` is _"Whether the carousel
+  should skip rendering of the indicator controls"_).
 - Use present tense; avoid "will".
-- If a setter has side effects beyond storing the value, state the value in the first
-  sentence and the behavior in a second one.
+- Keep the description as the leading summary paragraph; don't append it to `@element`.
 - Public methods that return something get an `@returns` tag.
-
-### Tag layout
-
-Keep the description as the leading summary paragraph and let the tags carry only their
-own data. Don't append a description to `@element`:
-
-```typescript
-// ❌ Wrong
-/**
- * @element igc-select-group - A container for a group of select items.
- */
-
-// ✅ Right
-/**
- * A container for a group of select items.
- *
- * @element igc-select-group
- */
-```
-
-### Regenerate after editing docs
-
-Story metadata is generated, not hand-written. After changing any description run:
-
-```bash
-npm run cem        # regenerates custom-elements.json from the JSDoc
-npm run build:meta # rewrites the `// region default` block of each story
-```
-
-Every story is generated — there are no hand-maintained exceptions. Two failure modes will
-silently skip a story, so check for both when your descriptions don't show up:
-
-1. **Filename mismatch.** `build-stories.mjs` derives the filename from the tag name, so
-   `igc-date-picker` must live in `date-picker.stories.ts`. A mismatch logs
-   *"No story file found for …, skipping."* — easy to miss in the build output.
-2. **Missing region markers.** If the file has no `// region default` / `// endregion` pair the
-   generator finds nothing to replace and writes nothing, **with no warning at all**. Wrap the
-   region from `const metadata` through `type Story = StoryObj<…>` inclusive — it also owns
-   `export default metadata;` and the args interface.
 
 ## Validation Checklist
 
-Verify all of the following:
-
-- [ ] Component file at `src/components/[name]/[name].ts`
-- [ ] Extends `LitElement` (or appropriate mixin)
-- [ ] `tagName` and `register()` static members defined
-- [ ] JSDoc comments with `@element`, `@slot`, `@csspart`
-- [ ] No `igc-` tag names in any description prose (see [Documentation Conventions](#documentation-conventions))
-- [ ] `npm run cem && npm run build:meta` run, generated story region committed
-- [ ] Theming controller added in constructor
-- [ ] SCSS files exist in themes directory
-- [ ] `themes.ts` aggregator imports all themes
-- [ ] Test file with accessibility tests
-- [ ] Storybook story file
+- [ ] Component at `src/components/[name]/[name].ts`, single default export
+- [ ] `tagName`, `styles` and `register()` static members defined
+- [ ] Cross-cutting imports use `#internals` / `#theming` / `#animations`
+- [ ] Theming controller added in the constructor
+- [ ] JSDoc with `@element`, `@slot`, `@csspart`, `@cssproperty`, `@event` as applicable
+- [ ] No `igc-` tag names in description prose
+- [ ] `HTMLElementTagNameMap` declaration present
+- [ ] SCSS scaffold complete (base, shared, light, dark) and `themes.ts` aggregator wired
+- [ ] Spec file with the mandatory a11y audit
+- [ ] Story file named after the tag, with a `// region default` fence
 - [ ] Exported from `src/index.ts` alphabetically
-- [ ] TypeScript compiles (`npm run check-types`)
-- [ ] Tests pass (`npm run test`)
-- [ ] Component appears in Storybook
-- [ ] All theme variants render correctly
+- [ ] `npm run cem && npm run build:meta` run, generated story region committed
+- [ ] `npm run check`, `npm run lint` and `npm run test` pass
+- [ ] CHANGELOG updated
 
 ## Common Pitfalls
 
-### 1. Forgetting SCSS Transpilation
-
-**Problem**: Importing `.css.js` files that don't exist
-**Solution**: Always run `npm run build:styles` after creating SCSS files
-
-### 2. Wrong Import Extension
-
-**Problem**: Using `.ts` instead of `.js` in imports
-**Solution**: This project uses `.js` extensions for TypeScript imports (ESM standard)
-
-### 3. Exposing Non-Primitives as Attributes
-
-**Problem**: Trying to expose objects/arrays as HTML attributes
-**Solution**: Per project guidelines, only primitives (string, number, boolean) should be attributes
-
-### 4. Missing Global Declaration
-
-**Problem**: TypeScript doesn't recognize custom element tag
-**Solution**: Always include `declare global { interface HTMLElementTagNameMap {...} }`
-
-### 5. No Theming Controller
-
-**Problem**: Component doesn't respond to theme changes
-**Solution**: Add `addThemingController(this, all)` in constructor
-
-### 6. Missing `export default`
-
-**Problem**: Import errors in other files
-**Solution**: Always use `export default class` for component classes
-
-### 7. Wrong Export Order
-
-**Problem**: Exports not alphabetized in `src/index.ts`
-**Solution**: Find correct alphabetical position before adding
-
-### 8. Tag Names in Descriptions
-
-**Problem**: A description reads `The prefix wrapper of the igc-textarea.` — the tag name is
-copied verbatim into `custom-elements.json`, the Storybook docs and every framework wrapper's
-API docs, where it is wrong or meaningless
-**Solution**: Use the plain-English component name. See [Documentation Conventions](#documentation-conventions)
-
-### 9. Editing Generated Story Metadata by Hand
-
-**Problem**: A story's `// region default` block is edited directly and gets clobbered on the
-next `npm run build:meta`, or the block drifts out of sync with the source JSDoc
-**Solution**: Edit the JSDoc in the component, then run `npm run cem && npm run build:meta`
+| Symptom                                      | Cause / Fix                                                                     |
+| -------------------------------------------- | ------------------------------------------------------------------------------- |
+| Cannot resolve `./themes/*.css.js`           | `npm run build:styles` not run, or the `.scss` filename doesn't match the glob   |
+| Styles never apply in a theme                | Missing entry in `themes.ts`, or `addThemingController` not called               |
+| Component ignores theme switching            | No `addThemingController(this, all)` in the constructor                          |
+| `[part='base']` stops matching               | `partMap` emits multiple names — use `[part~='base']`                            |
+| TypeScript doesn't know the tag              | Missing `declare global { interface HTMLElementTagNameMap { … } }`               |
+| Story descriptions are stale                 | The `// region default` block was hand-edited — fix the JSDoc and regenerate     |
+| Story never updates                          | Filename doesn't match the tag name, or the region fence is missing              |
+| `npm run check` fails on imports             | A relative import into `internals`/`theming`/`animations`, or a missing alias in `scripts/_package.json` |
 
 ## Reference Examples
 
-### Simple Display Component: Badge
-
-See: `src/components/badge/badge.ts`
-
-**Characteristics**:
-
-- Extends `LitElement` directly
-- Uses `@property` decorators
-- Includes theming controller
-- Simple render with slots
-- Dynamic CSS parts with `partMap`
-
-### Form-Associated Component: Textarea
-
-See: `src/components/textarea/textarea.ts`
-
-**Characteristics**:
-
-- Uses `FormAssociatedRequiredMixin`
-- Uses `EventEmitterMixin` for events
-- `@shadowOptions({ delegatesFocus: true })`
-- Form validation support
-- Multiple slots and parts
-
-### Container Component: Card
-
-See: `src/components/card/card.ts`
-
-**Characteristics**:
-
-- Registers multiple sub-components
-- Simple container logic
-- Composition-based architecture
-
-## Architecture Notes
-
-### Key Principles
-
-- **Shadow DOM**: All components use Shadow DOM for encapsulation
-- **Composition over Inheritance**: Use slots and sub-components
-- **TypeScript Strict Mode**: Avoid `any` types
-- **No Native Private Fields**: Use `_prefix` or TypeScript `private`, not `#`
-- **Accessibility First**: Every component must pass a11y audits
-
-### Build System
-
-- SCSS transpiles to Lit `css` template literals
-- Build script handles transpilation automatically
-- Style watching: `npm run styles:watch`
-
-### Testing
-
-- Framework: `@open-wc/testing`
-- Accessibility tests are mandatory
-- Test both Light and Shadow DOM
-
-### Resources
-
-- [Lit Documentation](https://lit.dev/docs/)
-- [Coding Guidelines](../../CODING_GUIDELINES.md) - Comprehensive coding standards
-- [igniteui-theming Package](https://www.npmjs.com/package/igniteui-theming)
+| Kind                | Component                          | Shows                                                     |
+| ------------------- | ---------------------------------- | --------------------------------------------------------- |
+| Simple display      | `src/components/badge/badge.ts`    | Theming, slot controller, `partMap`, internals ARIA        |
+| Form-associated     | `src/components/input/input.ts`    | Form mixin, validators, `input-shell` template, ARIA target |
+| Composite / overlay | `src/components/select/select.ts`  | ARIA projection, keybindings, popover                      |
+| Container           | `src/components/card/card.ts`      | Registering sub-components, composition                    |

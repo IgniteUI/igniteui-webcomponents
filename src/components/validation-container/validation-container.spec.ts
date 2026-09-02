@@ -1,7 +1,7 @@
 import { elementUpdated, fixture, html } from '@open-wc/testing';
 import type { TemplateResult } from 'lit';
-import { defineComponents } from '../common/definitions/defineComponents.js';
-import { ValidityHelpers } from '../common/validity-helpers.spec.js';
+import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { ValidityHelpers } from '#internals/testing/validity-helpers.spec.js';
 import IgcInputComponent from '../input/input.js';
 
 describe('Validation container', () => {
@@ -75,5 +75,32 @@ describe('Validation container', () => {
     ValidityHelpers.hasSlots(input, valueMissingSlot).to.be.false;
 
     await ValidityHelpers.checkValidationSlots(input, 'valueMissing');
+  });
+
+  it('validation messages survive a re-render after a failed form submission', async () => {
+    const form = await fixture<HTMLFormElement>(html`
+      <form>
+        <igc-input name="input" required>
+          <div slot=${valueMissingSlot}>Value missing</div>
+        </igc-input>
+      </form>
+    `);
+
+    input = form.querySelector(IgcInputComponent.tagName)!;
+
+    form.requestSubmit();
+    await elementUpdated(input);
+
+    ValidityHelpers.hasInvalidStyles(input).to.be.true;
+    ValidityHelpers.hasSlottedContent(input, valueMissingSlot).to.be.true;
+
+    // Any subsequent host update - a slotchange, an unrelated property - used to
+    // drop the messages, since the submission only kept the control invalid for
+    // the update it scheduled itself.
+    input.requestUpdate();
+    await elementUpdated(input);
+
+    ValidityHelpers.hasInvalidStyles(input).to.be.true;
+    ValidityHelpers.hasSlottedContent(input, valueMissingSlot).to.be.true;
   });
 });

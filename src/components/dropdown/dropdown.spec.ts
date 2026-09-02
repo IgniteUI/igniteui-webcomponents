@@ -1,7 +1,6 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import { spy } from 'sinon';
-
-import IgcButtonComponent from '../button/button.js';
+import { internalsOf } from '#internals/controllers/internals.js';
 import {
   arrowDown,
   arrowUp,
@@ -10,16 +9,17 @@ import {
   escapeKey,
   homeKey,
   tabKey,
-} from '../common/controllers/key-bindings.js';
-import { defineComponents } from '../common/definitions/defineComponents.js';
+} from '#internals/controllers/key-bindings.js';
+import { defineComponents } from '#internals/definitions/defineComponents.js';
 import {
   simulateClick,
   simulateKeyboard,
   simulateScroll,
-} from '../common/utils.spec.js';
-import IgcDropdownComponent from './dropdown.js';
+} from '#internals/testing/simulate.spec.js';
+import IgcButtonComponent from '../button/button.js';
 import IgcDropdownHeaderComponent from './dropdown-header.js';
 import type IgcDropdownItemComponent from './dropdown-item.js';
+import IgcDropdownComponent from './dropdown.js';
 
 type ItemState = {
   active?: boolean;
@@ -169,7 +169,7 @@ describe('Dropdown', () => {
 
     function checkTargetARIA(state: 'true' | 'false') {
       const btn = getButton();
-      expect(btn.getAttribute('aria-haspopup')).to.equal('true');
+      expect(btn.getAttribute('aria-haspopup')).to.equal('listbox');
       expect(btn.getAttribute('aria-expanded')).to.equal(state);
     }
 
@@ -251,6 +251,131 @@ describe('Dropdown', () => {
 
       expect(dropDown.open).to.be.true;
     });
+
+    it('keyboard navigation survives a close and a reopen without a target', async () => {
+      const btn = getButton();
+
+      await openDropdown('btn');
+      await closeDropdown();
+
+      // The target of the previous invocation is still the current one
+      await openDropdown();
+
+      simulateKeyboard(btn, arrowDown, 2);
+      await elementUpdated(dropDown);
+
+      expect(getActiveItem()).to.equal(dropDown.items[1]);
+    });
+
+    it('`show()` with an unresolved target and no anchor does not open', async () => {
+      const btn = getButton();
+
+      expect(await dropDown.show('no-such-element')).to.be.false;
+      expect(dropDown.open).to.be.false;
+      expect(btn.getAttribute('aria-haspopup')).to.be.null;
+      expect(btn.getAttribute('aria-expanded')).to.be.null;
+    });
+
+    it('`show()` with an unresolved target keeps the current one', async () => {
+      await openDropdown('btn');
+      await closeDropdown();
+
+      expect(await dropDown.show('no-such-element')).to.be.true;
+      expect(dropDown.open).to.be.true;
+      checkTargetARIA('true');
+    });
+
+    it('passing another target while open moves the ARIA and the key handling', async () => {
+      const first = getButton();
+      const second = document.createElement(IgcButtonComponent.tagName);
+      second.id = 'btn-2';
+      first.after(second);
+
+      await openDropdown(first);
+      await openDropdown(second);
+
+      expect(first.getAttribute('aria-haspopup')).to.be.null;
+      expect(first.getAttribute('aria-expanded')).to.be.null;
+      expect(second.getAttribute('aria-haspopup')).to.equal('listbox');
+      expect(second.getAttribute('aria-expanded')).to.equal('true');
+
+      // The previous target no longer drives the component
+      simulateKeyboard(first, arrowDown);
+      await elementUpdated(dropDown);
+
+      expect(getActiveItem()).to.be.undefined;
+
+      simulateKeyboard(second, arrowDown);
+      await elementUpdated(dropDown);
+
+      expect(getActiveItem()).to.equal(dropDown.items[0]);
+    });
+
+    it('takes its ARIA off the target when the dropdown is removed', async () => {
+      const btn = getButton();
+
+      await openDropdown('btn');
+      simulateKeyboard(btn, arrowDown);
+      await elementUpdated(dropDown);
+
+      expect(btn.getAttribute('aria-haspopup')).to.equal('listbox');
+      expect(btn.getAttribute('aria-activedescendant')).to.not.be.null;
+
+      dropDown.remove();
+
+      expect(btn.getAttribute('aria-haspopup')).to.be.null;
+      expect(btn.getAttribute('aria-expanded')).to.be.null;
+      expect(btn.getAttribute('aria-activedescendant')).to.be.null;
+    });
+
+    it('keeps driving its target after being moved in the DOM', async () => {
+      const btn = getButton();
+      const parent = dropDown.parentElement!;
+
+      await openDropdown('btn');
+
+      dropDown.remove();
+      parent.append(dropDown);
+      await elementUpdated(dropDown);
+
+      expect(btn.getAttribute('aria-haspopup')).to.equal('listbox');
+
+      await openDropdown();
+      simulateKeyboard(btn, arrowDown);
+      await elementUpdated(dropDown);
+
+      expect(getActiveItem()).to.equal(dropDown.items[0]);
+    });
+
+    it('opening through the slotted target takes the anchor back from a detached one', async () => {
+      const dom = await fixture(html`
+        <div>
+          <igc-button id="external">External</igc-button>
+
+          <igc-dropdown>
+            <igc-button slot="target">Open</igc-button>
+            <igc-dropdown-item value="1">1</igc-dropdown-item>
+            <igc-dropdown-item value="2">2</igc-dropdown-item>
+          </igc-dropdown>
+        </div>
+      `);
+
+      dropDown = dom.querySelector(IgcDropdownComponent.tagName)!;
+      const external = dom.querySelector<IgcButtonComponent>('#external')!;
+      const slotted = getTarget();
+      const popover = dropDown.shadowRoot!.querySelector('igc-popover')!;
+
+      await openDropdown(external);
+      await closeDropdown();
+
+      slotted.click();
+      await elementUpdated(dropDown);
+
+      expect(dropDown.open).to.be.true;
+      expect(popover.anchor).to.equal(slotted);
+      expect(slotted.getAttribute('aria-expanded')).to.equal('true');
+      expect(external.getAttribute('aria-expanded')).to.be.null;
+    });
   });
 
   describe('DOM', () => {
@@ -280,6 +405,78 @@ describe('Dropdown', () => {
       // Closed state again
       await expect(dropDown).dom.to.be.accessible();
       await expect(dropDown).shadowDom.to.be.accessible();
+    });
+
+    it('is accessible with headers and groups', async () => {
+      dropDown = await fixture<IgcDropdownComponent>(
+        createAdvancedDropdown(true)
+      );
+
+      simulateKeyboard(dropDown, arrowDown);
+      await elementUpdated(dropDown);
+
+      await expect(dropDown).dom.to.be.accessible();
+      await expect(dropDown).shadowDom.to.be.accessible();
+    });
+  });
+
+  describe('Accessibility', () => {
+    beforeEach(async () => {
+      dropDown = await fixture<IgcDropdownComponent>(createBasicDropdown());
+    });
+
+    it('the target announces the popup and the active item', async () => {
+      const target = getTarget();
+
+      expect(target.getAttribute('aria-haspopup')).to.equal('listbox');
+      expect(target.getAttribute('aria-expanded')).to.equal('false');
+      expect(target.getAttribute('aria-activedescendant')).to.be.null;
+
+      await openDropdown();
+      simulateKeyboard(dropDown, arrowDown);
+      await elementUpdated(dropDown);
+
+      const active = getActiveItem()!;
+
+      expect(active.id).to.not.be.empty;
+      expect(target.getAttribute('aria-expanded')).to.equal('true');
+      expect(target.getAttribute('aria-activedescendant')).to.equal(active.id);
+
+      await closeDropdown();
+
+      expect(target.getAttribute('aria-expanded')).to.equal('false');
+      expect(target.getAttribute('aria-activedescendant')).to.be.null;
+    });
+
+    it('keeps an id the application put on an item', async () => {
+      const item = dropDown.items[0];
+      item.id = 'my-item';
+
+      await openDropdown();
+      simulateKeyboard(dropDown, arrowDown);
+      await elementUpdated(dropDown);
+
+      expect(item.id).to.equal('my-item');
+      expect(getTarget().getAttribute('aria-activedescendant')).to.equal(
+        'my-item'
+      );
+    });
+
+    it('keeps headers out of the accessibility tree', async () => {
+      dropDown = await fixture<IgcDropdownComponent>(createAdvancedDropdown());
+
+      expect(getHeaders()[0].role).to.equal('presentation');
+    });
+
+    it('names groups after their label slot', async () => {
+      dropDown = await fixture<IgcDropdownComponent>(createAdvancedDropdown());
+
+      const [first, second] = dropDown.groups;
+
+      expect(internalsOf(first)?.getARIA('ariaLabel')).to.equal(
+        'Pre development'
+      );
+      expect(internalsOf(second)?.getARIA('ariaLabel')).to.equal('Development');
     });
   });
 
@@ -350,6 +547,22 @@ describe('Dropdown', () => {
 
       expect(dropDown.selectedItem).to.be.null;
       checkItemState(item, { selected: false, active: false });
+    });
+
+    it('`clearSelection()` clears the selection and resets navigation', async () => {
+      dropDown.select(3);
+      dropDown.clearSelection();
+      await elementUpdated(dropDown);
+
+      expect(dropDown.selectedItem).to.be.null;
+      expect(getActiveItem()).to.be.undefined;
+
+      // Navigation starts over instead of resuming from the cleared item
+      await openDropdown();
+      simulateKeyboard(dropDown, arrowDown);
+      await elementUpdated(dropDown);
+
+      expect(getActiveItem()).to.equal(dropDown.items[0]);
     });
 
     it('`navigateTo()` works', async () => {
@@ -494,6 +707,37 @@ describe('Dropdown', () => {
       await elementUpdated(dropDown);
 
       expect(dropDown.open).to.be.true;
+    });
+
+    it('pressing Enter with no active item is a no-op', async () => {
+      await openDropdown();
+
+      simulateKeyboard(dropDown, enterKey);
+      await elementUpdated(dropDown);
+
+      expect(dropDown.open).to.be.true;
+      expect(dropDown.selectedItem).to.be.null;
+      expect(getActiveItem()).to.be.undefined;
+    });
+
+    it('re-selecting the same item does not emit igcChange again', async () => {
+      const targetItem = dropDown.items[3];
+
+      dropDown.keepOpenOnSelect = true;
+      await openDropdown();
+
+      const eventSpy = spy(dropDown, 'emitEvent');
+
+      simulateClick(targetItem);
+      simulateClick(targetItem);
+      await elementUpdated(dropDown);
+
+      const changes = eventSpy
+        .getCalls()
+        .filter((call) => call.firstArg === 'igcChange');
+
+      expect(changes.length).to.equal(1);
+      expect(dropDown.selectedItem).to.equal(targetItem);
     });
 
     it('pressing Escape closes the dropdown without selection', async () => {
@@ -670,6 +914,39 @@ describe('Dropdown', () => {
     });
   });
 
+  describe('Items collection changes', () => {
+    beforeEach(async () => {
+      dropDown = await fixture<IgcDropdownComponent>(createBasicDropdown());
+    });
+
+    it('drops the selection when the selected item is removed', async () => {
+      dropDown.select(1);
+      await elementUpdated(dropDown);
+
+      dropDown.selectedItem!.remove();
+      await elementUpdated(dropDown);
+
+      expect(dropDown.selectedItem).to.be.null;
+      expect(getActiveItem()).to.be.undefined;
+    });
+
+    it('navigation falls back to the selection when the active item is removed', async () => {
+      dropDown.select(1);
+      await openDropdown();
+
+      simulateKeyboard(dropDown, arrowDown, 2);
+      await elementUpdated(dropDown);
+
+      expect(getActiveItem()).to.equal(dropDown.items[3]);
+
+      getActiveItem()!.remove();
+      await elementUpdated(dropDown);
+
+      expect(getActiveItem()).to.equal(dropDown.items[1]);
+      expect(dropDown.selectedItem).to.equal(dropDown.items[1]);
+    });
+  });
+
   describe('Events', () => {
     beforeEach(async () => {
       dropDown = await fixture<IgcDropdownComponent>(createBasicDropdown());
@@ -832,7 +1109,7 @@ describe('Dropdown', () => {
       `);
     });
 
-    it('', async () => {
+    it('selects the item a click landed inside of', async () => {
       await openDropdown();
 
       const inner = document.getElementById('click-target')!;

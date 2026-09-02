@@ -39,6 +39,10 @@
     min-width: rem(46px);
 }
 
+[part='dot'] {
+    z-index: 1;
+}
+
 [part~='dot'] {
     position: relative;
     width: rem(12px);

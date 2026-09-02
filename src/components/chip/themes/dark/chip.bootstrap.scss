@@ -7,3 +7,17 @@ $theme: $bootstrap;
 :host {
     @include css-vars-from-theme(diff(light.$base, $theme));
 }
+
+@mixin chip-outlined-variants-dark($variant, $variant-color, $border-shade) {
+    :host([outlined][variant='#{$variant}']) [part='base'],
+    :host([selected][outlined][variant='#{$variant}']:not([disabled])) [part='base'] {
+        border-color: color($variant-color, $border-shade);
+        color: contrast-color(gray, 100);
+    }
+}
+
+@include chip-outlined-variants-dark('primary', primary, 300);
+@include chip-outlined-variants-dark('info', info, 600);
+@include chip-outlined-variants-dark('success', success, 200);
+@include chip-outlined-variants-dark('warning', warn, 500);
+@include chip-outlined-variants-dark('danger', error, 400);

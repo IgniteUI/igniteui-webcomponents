@@ -1,13 +1,13 @@
 import { LitElement } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
-import { addKeyboardFocusRing } from '../common/controllers/focus-ring.js';
-import { addSlotController, setSlots } from '../common/controllers/slot.js';
-import { blazorDeepImport } from '../common/decorators/blazorDeepImport.js';
-import type { Constructor } from '../common/mixins/constructor.js';
-import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { FormAssociatedCheckboxRequiredMixin } from '../common/mixins/forms/associated-required.js';
-import { FormValueBooleanTransformers } from '../common/mixins/forms/form-transformers.js';
-import { createFormValueState } from '../common/mixins/forms/form-value.js';
+import { addKeyboardFocusRing } from '#internals/controllers/focus-ring.js';
+import { addSlotController, setSlots } from '#internals/controllers/slot.js';
+import { blazorDeepImport } from '#internals/decorators/blazorDeepImport.js';
+import type { Constructor } from '#internals/mixins/constructor.js';
+import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
+import { FormAssociatedCheckboxRequiredMixin } from '#internals/mixins/forms/associated-required.js';
+import { FormValueBooleanTransformers } from '#internals/mixins/forms/form-transformers.js';
+import { createFormValueState } from '#internals/mixins/forms/form-value.js';
 import type { ToggleLabelPosition } from '../types.js';
 import { checkBoxValidators } from './validators.js';
 

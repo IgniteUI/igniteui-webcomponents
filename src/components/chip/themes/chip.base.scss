@@ -2,106 +2,127 @@
 @use 'styles/utilities' as *;
 
 :host {
+    --chip-padding-inline: #{pad-inline(rem(2px), rem(6px), rem(12px))};
+    --chip-gap: #{sizable(rem(3px), rem(6px), rem(8px))};
+
     display: inline-block;
     vertical-align: top;
 }
 
-:host button {
+:host [part='base'] {
     @include type-style('body-2');
     @include ellipsis();
 
     display: inline-flex;
     place-items: center;
     font-family: var(--ig-font-family);
-    border: rem(1px) solid;
+    border: none;
     box-shadow: none;
     cursor: pointer;
-    padding: 0 pad-inline(rem(2px), rem(6px), rem(12px));
+}
 
-    &[disabled] {
-        pointer-events: none;
+:host([disabled]) [part='base'] {
+    pointer-events: none;
+}
+
+/*
+ * The selection control. It carries the inline padding of the chip so that the
+ * padded area stays part of its hit target, and drops the button chrome so that
+ * every text and color declaration comes from the base.
+ */
+[part='action'] {
+    @include ellipsis();
+
+    display: inline-flex;
+    align-items: center;
+    align-self: stretch;
+    min-width: 0;
+    padding-inline: var(--chip-padding-inline);
+    border: none;
+    background: none;
+    color: inherit;
+    font: inherit;
+    letter-spacing: inherit;
+    text-transform: inherit;
+    cursor: inherit;
+    outline: none;
+}
+
+[part='remove'] {
+    display: inline-flex;
+    align-items: center;
+    align-self: stretch;
+    padding-inline-end: var(--chip-padding-inline);
+}
+
+/* The remove control owns the end padding and its distance from the suffix. */
+:host([removable]:not([disabled])) {
+    [part='action'] {
+        padding-inline-end: 0;
+    }
+
+    [part='suffix'] {
+        margin-inline-end: var(--chip-gap);
     }
 }
 
-:host([variant='primary']) button,
-:host([selected][variant='primary']) button:not([disabled]) {
-    background: color(primary, 500);
-    color: contrast-color(primary, 500);
+@mixin chip-variants($variant, $variant-color) {
+    :host([variant='#{$variant}']) [part='base'],
+    :host([selected][variant='#{$variant}']:not([disabled])) [part='base'] {
+        background: color($variant-color, 500);
+        color: contrast-color($variant-color, 500);
 
-    &:focus {
-        background: color(primary, 800);
-        color: contrast-color(primary, 800);
+        &:focus-within {
+            background: color($variant-color, 800);
+            color: contrast-color($variant-color, 800);
+        }
+
+        &:hover {
+            background: color($variant-color, 600);
+            color: contrast-color($variant-color, 600);
+        }
     }
 
-    &:hover {
-        background: color(primary, 600);
-        color: contrast-color(primary, 600);
-    }
-}
-
-:host([variant='info']) button,
-:host([selected][variant='info']) button:not([disabled]) {
-    background: color(info, 500);
-    color: contrast-color(info, 500);
-
-    &:focus {
-        background: color(info, 800);
-        color: contrast-color(info, 800);
-    }
-
-    &:hover {
-        background: color(info, 600);
-        color: contrast-color(info, 600);
+    :host([variant='#{$variant}'][disabled]) [part='base'],
+    :host([selected][variant='#{$variant}'][disabled]) [part='base'] {
+        background: color(gray, 200);
+        color: color(gray, 500);
     }
 }
 
-:host([variant='success']) button,
-:host([selected][variant='success']) button:not([disabled]) {
-    background: color(success, 500);
-    color: contrast-color(success, 500);
+@include chip-variants('primary', primary);
+@include chip-variants('info', info);
+@include chip-variants('success', success);
+@include chip-variants('warning', warn);
+@include chip-variants('danger', error);
 
-    &:focus {
-        background: color(success, 800);
-        color: contrast-color(success, 800);
+@mixin outlined-variant($variant, $variant-color) {
+    :host([outlined][variant='#{$variant}']) [part='base'],
+    :host([selected][outlined][variant='#{$variant}']:not([disabled])) [part='base'] {
+        background: transparent;
+
+        &:focus-within {
+            background: color($variant-color, 800, .30);
+        }
+
+        &:hover {
+            background: color($variant-color, 600, .16);
+        }
     }
 
-    &:hover {
-        background: color(success, 600);
-        color: contrast-color(success, 600);
-    }
-}
-
-:host([variant='warning']) button,
-:host([selected][variant='warning']) button:not([disabled]) {
-    background: color(warn, 500);
-    color: contrast-color(warn, 500);
-
-    &:focus {
-        background: color(warn, 800);
-        color: contrast-color(warn, 800);
-    }
-
-    &:hover {
-        background: color(warn, 600);
-        color: contrast-color(warn, 600);
+    :host([outlined][variant='#{$variant}'][disabled]) [part='base'],
+    :host([selected][outlined][variant='#{$variant}'][disabled]) [part='base'] {
+        background: color(gray, 200, .30);
+        color: color(gray, 500);
+        border-color: color(gray, 500, .30);
     }
 }
 
-:host([variant='danger']) button,
-:host([selected][variant='danger']) button:not([disabled]) {
-    background: color(error, 500);
-    color: contrast-color(error, 500);
-
-    &:focus {
-        background: color(error, 800);
-        color: contrast-color(error, 800);
-    }
-
-    &:hover {
-        background: color(error, 600);
-        color: contrast-color(error, 600);
-    }
-}
+@include outlined-variant('primary', primary);
+@include outlined-variant('info', info);
+@include outlined-variant('success', success);
+@include outlined-variant('warning', warn);
+@include outlined-variant('danger', error);
 
 [part='prefix'],
 [part='suffix'] {

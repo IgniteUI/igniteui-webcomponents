@@ -17,29 +17,35 @@ import {
   homeKey,
   spaceBar,
   tabKey,
-} from '../common/controllers/key-bindings.js';
-import { defineComponents } from '../common/definitions/defineComponents.js';
-import { first } from '../common/util.js';
+} from '#internals/controllers/key-bindings.js';
+import { defineComponents } from '#internals/definitions/defineComponents.js';
 import {
   createFormAssociatedTestBed,
-  isFocused,
+  runAriaProjectionTests,
   runExternalLabelAssociationTests,
+} from '#internals/testing/form-testbed.spec.js';
+import {
+  axeReflectedRelationsOptions,
+  isFocused,
+  suppressResizeObserverLoopError,
+} from '#internals/testing/helpers.spec.js';
+import {
   simulateBlur,
   simulateClick,
   simulateKeyboard,
   simulatePointerDown,
-  suppressResizeObserverLoopError,
-} from '../common/utils.spec.js';
+} from '#internals/testing/simulate.spec.js';
 import {
   runValidationContainerTests,
   type ValidationContainerTestsParams,
   ValidityHelpers,
-} from '../common/validity-helpers.spec.js';
+} from '#internals/testing/validity-helpers.spec.js';
+import { firstOf } from '#internals/utils/arrays.js';
 import type IgcInputComponent from '../input/input.js';
 import type IgcVirtualScrollComponent from '../virtualization/virtualization.js';
-import IgcComboComponent from './combo.js';
 import type IgcComboHeaderComponent from './combo-header.js';
 import type IgcComboItemComponent from './combo-item.js';
+import IgcComboComponent from './combo.js';
 
 describe('Combo', () => {
   type City = {
@@ -247,8 +253,62 @@ describe('Combo', () => {
       await elementUpdated(combo);
       await layoutComplete(combo);
 
-      await expect(combo).shadowDom.to.be.accessible();
-      await expect(combo).to.be.accessible();
+      await expect(combo).shadowDom.to.be.accessible(
+        axeReflectedRelationsOptions
+      );
+      await expect(combo).to.be.accessible(axeReflectedRelationsOptions);
+    });
+
+    it('picks up items appended to the data array in place', async () => {
+      const data = [...cities];
+      combo = await fixture<IgcComboComponent<City>>(
+        html`<igc-combo
+          .data=${data}
+          value-key="id"
+          display-key="name"
+        ></igc-combo>`
+      );
+      input = combo.renderRoot.querySelector(
+        'igc-input#target'
+      ) as IgcInputComponent;
+
+      // Warm both the value index and the data pipeline
+      combo.select('BG01');
+      await openComboPopover(combo);
+      expect(items(combo)).lengthOf(cities.length);
+
+      data.push({
+        id: 'BG04',
+        name: 'Burgas',
+        country: 'Bulgaria',
+        zip: '8000',
+      });
+      combo.select('BG04');
+      await comboStable(combo);
+
+      expect(combo.value).to.eql(['BG01', 'BG04']);
+      expect(items(combo)).lengthOf(cities.length + 1);
+    });
+
+    it('picks up items removed from the data array in place', async () => {
+      const data = [...cities];
+      combo = await fixture<IgcComboComponent<City>>(
+        html`<igc-combo
+          .data=${data}
+          value-key="id"
+          display-key="name"
+        ></igc-combo>`
+      );
+
+      combo.select('BG01');
+      await openComboPopover(combo);
+      expect(items(combo)).lengthOf(cities.length);
+
+      data.splice(0, 1);
+      combo.deselect('BG02');
+      await comboStable(combo);
+
+      expect(items(combo)).lengthOf(cities.length - 1);
     });
 
     it('is successfully created with default properties.', () => {
@@ -422,7 +482,7 @@ describe('Combo', () => {
     });
 
     it('should select/deselect an item by value key', async () => {
-      const item = first(cities);
+      const item = firstOf(cities);
       combo.open = true;
       combo.select([item[combo.valueKey!]]);
 
@@ -446,7 +506,7 @@ describe('Combo', () => {
       combo.open = true;
       await elementUpdated(combo);
 
-      const item = first(cities);
+      const item = firstOf(cities);
       combo.select([item]);
 
       await comboStable(combo);
@@ -531,7 +591,7 @@ describe('Combo', () => {
     });
 
     it('should not fire igcChange event on selection/deselection via methods calls', async () => {
-      const item = first(cities);
+      const item = firstOf(cities);
       combo.select([item[combo.valueKey!]]);
 
       combo.addEventListener('igcChange', (event: CustomEvent) =>
@@ -548,7 +608,7 @@ describe('Combo', () => {
         cancelable: true,
         detail: {
           newValue: ['BG01'],
-          items: [first(cities)],
+          items: [firstOf(cities)],
           type: 'selection',
         },
       };
@@ -556,9 +616,43 @@ describe('Combo', () => {
 
       await comboStable(combo);
 
-      first(items(combo)).click();
+      firstOf(items(combo)).click();
       expect(combo.value).to.eql(['BG01']);
       expect(eventSpy).calledWithExactly('igcChange', args);
+    });
+
+    it('should not repeat a value in newValue when data records share a value key', async () => {
+      const twins = [
+        { id: 'a', name: 'first-a', country: 'X', zip: '1' },
+        { id: 'b', name: 'bee', country: 'X', zip: '2' },
+        { id: 'a', name: 'second-a', country: 'X', zip: '3' },
+      ];
+      combo = await fixture<IgcComboComponent<City>>(
+        html`<igc-combo
+          .data=${twins}
+          value-key="id"
+          display-key="name"
+        ></igc-combo>`
+      );
+
+      // The value setter resolves the first match only, so just one of the
+      // two 'a' records starts out selected.
+      combo.value = ['a'];
+      await elementUpdated(combo);
+
+      let newValue: unknown;
+      combo.addEventListener('igcChange', (event: CustomEvent) => {
+        newValue = event.detail.newValue;
+      });
+
+      await openComboPopover(combo);
+
+      // Selecting the twin resolves both 'a' records, one of which is already
+      // in the selection.
+      items(combo)[2].click();
+      await elementUpdated(combo);
+
+      expect(newValue).to.eql(combo.value);
     });
 
     it('should fire igcChange deselection type event on mouse click', async () => {
@@ -567,7 +661,7 @@ describe('Combo', () => {
         cancelable: true,
         detail: {
           newValue: ['BG02', 'BG03'],
-          items: [first(cities)],
+          items: [firstOf(cities)],
           type: 'deselection',
         },
       };
@@ -578,7 +672,7 @@ describe('Combo', () => {
 
       expect(combo.value).to.eql(['BG01', 'BG02', 'BG03']);
 
-      first(items(combo)).click();
+      firstOf(items(combo)).click();
       await elementUpdated(combo);
       expect(combo.value).to.eql(['BG02', 'BG03']);
 
@@ -594,7 +688,7 @@ describe('Combo', () => {
 
       await comboStable(combo);
 
-      first(items(combo)).click();
+      firstOf(items(combo)).click();
       await elementUpdated(combo);
 
       expect(eventSpy).calledWith('igcChange');
@@ -611,11 +705,30 @@ describe('Combo', () => {
 
       await comboStable(combo);
 
-      first(items(combo)).click();
+      firstOf(items(combo)).click();
       await elementUpdated(combo);
 
       expect(eventSpy).calledWith('igcChange');
       expect(combo.value).lengthOf(2);
+    });
+
+    it('should keep the previous selection when cancelling the selection event in single selection mode', async () => {
+      combo.singleSelect = true;
+      combo.select('BG02');
+      await elementUpdated(combo);
+
+      combo.addEventListener('igcChange', (event: CustomEvent) => {
+        event.preventDefault();
+      });
+      combo.open = true;
+
+      await comboStable(combo);
+
+      firstOf(items(combo)).click();
+      await elementUpdated(combo);
+
+      expect(combo.value).to.eql(['BG02']);
+      expect(input.value).to.equal('Plovdiv');
     });
 
     it('should not stringify values in event', async () => {
@@ -644,7 +757,7 @@ describe('Combo', () => {
 
       await openComboPopover(combo);
 
-      first(items(combo)).click();
+      firstOf(items(combo)).click();
       await elementUpdated(combo);
 
       expect(combo.value).to.eql([0]);
@@ -987,7 +1100,7 @@ describe('Combo', () => {
       await filterCombo('sof');
 
       expect(items(combo)).lengthOf(1);
-      expect(first(items(combo)).innerText).to.equal('Sofia');
+      expect(firstOf(items(combo)).innerText).to.equal('Sofia');
     });
 
     it('should select the first matched item upon pressing enter after search', async () => {
@@ -998,12 +1111,12 @@ describe('Combo', () => {
 
       await filterCombo('sof');
 
-      expect(first(items(combo)).active).to.be.true;
+      expect(firstOf(items(combo)).active).to.be.true;
 
       simulateKeyboard(input, enterKey);
       await elementUpdated(combo);
 
-      expect(first(combo.value)).to.equal('BG01');
+      expect(firstOf(combo.value)).to.equal('BG01');
     });
 
     it('should select only one item at a time in single selection mode', async () => {
@@ -1018,8 +1131,8 @@ describe('Combo', () => {
       await elementUpdated(combo);
       await layoutComplete(combo);
 
-      expect(first(items(combo)).active).to.be.true;
-      expect(first(items(combo)).selected).to.be.false;
+      expect(firstOf(items(combo)).active).to.be.true;
+      expect(firstOf(items(combo)).selected).to.be.false;
 
       simulateKeyboard(options, spaceBar);
 
@@ -1138,12 +1251,12 @@ describe('Combo', () => {
       await elementUpdated(combo);
 
       const match = cities.find((i) => i.id === selection)!;
-      expect(first(combo.value)).to.equal(selection);
+      expect(firstOf(combo.value)).to.equal(selection);
 
       const selected = items(combo).filter((i) => i.selected);
 
       expect(selected).lengthOf(1);
-      expect(first(selected).innerText).to.equal(match.name);
+      expect(firstOf(selected).innerText).to.equal(match.name);
     });
 
     it('should deselect a single item using valueKey as argument with the Selection API', async () => {
@@ -1156,7 +1269,7 @@ describe('Combo', () => {
 
       await elementUpdated(combo);
 
-      expect(first(combo.value)).to.equal(selection);
+      expect(firstOf(combo.value)).to.equal(selection);
 
       combo.deselect(selection);
       await elementUpdated(combo);
@@ -1173,17 +1286,17 @@ describe('Combo', () => {
 
       await openComboPopover(combo);
 
-      const item = first(cities);
+      const item = firstOf(cities);
       combo.select(item);
 
       await elementUpdated(combo);
 
-      expect(first(combo.value)).to.equal(item);
+      expect(firstOf(combo.value)).to.equal(item);
 
       const selected = items(combo).filter((i) => i.selected);
 
       expect(selected).lengthOf(1);
-      expect(first(selected).innerText).to.equal(item.name);
+      expect(firstOf(selected).innerText).to.equal(item.name);
     });
 
     it('should deselect the item passed as argument with the Selection API', async () => {
@@ -1192,12 +1305,12 @@ describe('Combo', () => {
 
       await openComboPopover(combo);
 
-      const item = first(cities);
+      const item = firstOf(cities);
       combo.select(item);
 
       await elementUpdated(combo);
 
-      expect(first(combo.value)).to.equal(item);
+      expect(firstOf(combo.value)).to.equal(item);
 
       combo.deselect(item);
       await elementUpdated(combo);
@@ -1217,7 +1330,7 @@ describe('Combo', () => {
 
       // Verify we can only see one item in the list
       expect(items(combo)).lengthOf(1);
-      expect(first(items(combo)).innerText).to.equal('Sofia');
+      expect(firstOf(items(combo)).innerText).to.equal('Sofia');
 
       // Select an item not visible in the list using the API
       const selection = 'US01';
@@ -1225,7 +1338,7 @@ describe('Combo', () => {
       await elementUpdated(combo);
 
       // The combo value should've updated
-      expect(first(combo.value)).to.equal(selection);
+      expect(firstOf(combo.value)).to.equal(selection);
 
       // Let's verify the list of items has been updated
       searchInput.dispatchEvent(new CustomEvent('igcInput', { detail: '' }));
@@ -1240,7 +1353,7 @@ describe('Combo', () => {
       expect(selected).lengthOf(1);
 
       // It should match the one selected via the API
-      expect(first(selected).innerText).to.equal('New York');
+      expect(firstOf(selected).innerText).to.equal('New York');
     });
 
     it('should deselect item(s) even if the list of items has been filtered', async () => {
@@ -1257,8 +1370,8 @@ describe('Combo', () => {
       expect(selected).lengthOf(1);
 
       // It should match the one selected via the API
-      expect(first(selected).innerText).to.equal('New York');
-      expect(first(combo.value)).to.equal(selection);
+      expect(firstOf(selected).innerText).to.equal('New York');
+      expect(firstOf(combo.value)).to.equal(selection);
 
       // Filter the list of items
       searchInput.dispatchEvent(new CustomEvent('igcInput', { detail: 'sof' }));
@@ -1268,7 +1381,7 @@ describe('Combo', () => {
 
       // Verify we can only see one item in the list
       expect(items(combo)).lengthOf(1);
-      expect(first(items(combo)).innerText).to.equal('Sofia');
+      expect(firstOf(items(combo)).innerText).to.equal('Sofia');
 
       // Deselect the previously selected item while the list is filtered
       combo.deselect(selection);
@@ -1396,6 +1509,18 @@ describe('Combo', () => {
       expect(items(combo).length).to.equal(cities.length);
     });
 
+    it('should not filter via the main input when disableFiltering is set', async () => {
+      combo.singleSelect = true;
+      combo.disableFiltering = true;
+      await elementUpdated(combo);
+
+      await openComboPopover(combo);
+      expect(items(combo).length).to.equal(cities.length);
+
+      await filterCombo('sof');
+      expect(items(combo).length).to.equal(cities.length);
+    });
+
     it('issue 1987 - do not close the dropdown on user pointer selection', async () => {
       await openComboPopover(combo);
 
@@ -1491,6 +1616,72 @@ describe('Combo', () => {
     });
   });
 
+  describe('ARIA', () => {
+    beforeEach(async () => {
+      combo = await fixture<IgcComboComponent<City>>(
+        html`<igc-combo
+          .data=${cities}
+          value-key="id"
+          display-key="name"
+          group-key="country"
+        ></igc-combo>`
+      );
+
+      options = combo.renderRoot.querySelector(
+        '[part="list"]'
+      ) as IgcVirtualScrollComponent;
+      input = combo.renderRoot.querySelector(
+        'igc-input#target'
+      ) as IgcInputComponent;
+    });
+
+    it('should report posinset/setsize excluding group headers', async () => {
+      await openComboPopover(combo);
+
+      const rendered = items(combo);
+      expect(rendered).lengthOf(cities.length);
+      expect(headerItems(combo)).lengthOf(2);
+
+      for (const [index, item] of rendered.entries()) {
+        expect(item.getAttribute('aria-posinset')).to.equal(`${index + 1}`);
+        expect(item.getAttribute('aria-setsize')).to.equal(`${cities.length}`);
+      }
+    });
+
+    it('should renumber posinset/setsize when the options are filtered', async () => {
+      await openComboPopover(combo);
+      await filterCombo('a');
+
+      const rendered = items(combo);
+      expect(rendered.length).to.be.lessThan(cities.length);
+
+      for (const [index, item] of rendered.entries()) {
+        expect(item.getAttribute('aria-posinset')).to.equal(`${index + 1}`);
+        expect(item.getAttribute('aria-setsize')).to.equal(
+          `${rendered.length}`
+        );
+      }
+    });
+
+    it('should point aria-activedescendant at the active option and drop it on close', async () => {
+      await openComboPopover(combo);
+
+      expect(options.getAttribute('aria-activedescendant')).to.be.null;
+
+      simulateKeyboard(options, arrowDown);
+      await comboStable(combo);
+
+      const active = items(combo).find((item) => item.active)!;
+      expect(active).to.not.be.undefined;
+      expect(options.getAttribute('aria-activedescendant')).to.equal(active.id);
+
+      await combo.hide();
+      await elementUpdated(combo);
+
+      expect(options.getAttribute('aria-activedescendant')).to.be.null;
+    });
+  });
+
   describe('Form integration', () => {
     const spec = createFormAssociatedTestBed<IgcComboComponent<City>>(
       html`<igc-combo
@@ -1558,7 +1749,7 @@ describe('Combo', () => {
 
     it('is correctly reset on form reset (single)', () => {
       // Initial value is a multiple array. The combo defaults to the first item
-      const initial = [first(spec.element.value)];
+      const initial = [firstOf(spec.element.value)];
 
       spec.setProperties({ singleSelect: true });
       spec.setProperties({ value: ['US01'] });
@@ -1655,18 +1846,18 @@ describe('Combo', () => {
 
       it('correct initial state', () => {
         spec.assertIsPristine();
-        expect(spec.element.value).to.eql([first(value)]);
+        expect(spec.element.value).to.eql([firstOf(value)]);
       });
 
       it('is correctly submitted', () => {
-        spec.assertSubmitHasValue(first(value));
+        spec.assertSubmitHasValue(firstOf(value));
       });
 
       it('is correctly reset', () => {
         spec.setProperties({ value: [] });
         spec.reset();
 
-        expect(spec.element.value).to.eql([first(value)]);
+        expect(spec.element.value).to.eql([firstOf(value)]);
       });
     });
 
@@ -1721,7 +1912,7 @@ describe('Combo', () => {
       it('correct initial state (single)', () => {
         initDataDefaultValue(true);
         spec.assertIsPristine();
-        expect(spec.element.value).to.eql([first(value)]);
+        expect(spec.element.value).to.eql([firstOf(value)]);
       });
 
       it('correct initial state (multiple)', () => {
@@ -1732,7 +1923,7 @@ describe('Combo', () => {
 
       it('is correctly submitted (single)', () => {
         initDataDefaultValue(true);
-        spec.assertSubmitHasValue(first(value));
+        spec.assertSubmitHasValue(firstOf(value));
       });
 
       it('is correctly submitted (multiple)', () => {
@@ -1790,5 +1981,23 @@ describe('Combo', () => {
       (host as IgcComboComponent).renderRoot
         .querySelector<IgcInputComponent>('#target')!
         .renderRoot.querySelector('input')!,
+  });
+
+  runAriaProjectionTests({
+    tagName: IgcComboComponent.tagName,
+    getNativeInput: (host) =>
+      (host as IgcComboComponent).renderRoot
+        .querySelector<IgcInputComponent>('#target')!
+        .renderRoot.querySelector('input')!,
+    expected: { role: 'combobox', hasPopup: 'listbox' },
+    getControls: (host) => [
+      (host as IgcComboComponent).renderRoot.querySelector('#dropdown')!,
+    ],
+    getDescription: (host) => [
+      (host as IgcComboComponent).renderRoot.querySelector(
+        '#combo-helper-text'
+      )!,
+    ],
+    openProperty: 'open',
   });
 });

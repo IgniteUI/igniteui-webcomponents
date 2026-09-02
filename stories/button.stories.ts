@@ -51,7 +51,7 @@ const metadata: Meta<IgcButtonComponent> = {
   },
   argTypes: {
     variant: {
-      type: '"contained" | "flat" | "outlined" | "fab"',
+      type: { name: 'enum', value: ['contained', 'flat', 'outlined', 'fab'] },
       description:
         'The variant of the button which determines its visual appearance.\n- `contained` – filled background; highest visual emphasis (default).\n- `outlined` – transparent background with a visible border.\n- `flat` – no background or border; lowest visual emphasis.\n- `fab` – floating action button shape; typically used for primary actions.',
       options: ['contained', 'flat', 'outlined', 'fab'],
@@ -59,7 +59,7 @@ const metadata: Meta<IgcButtonComponent> = {
       table: { defaultValue: { summary: 'contained' } },
     },
     type: {
-      type: '"button" | "reset" | "submit"',
+      type: { name: 'enum', value: ['button', 'reset', 'submit'] },
       description:
         "The type of the button, which determines its behavior and semantics.\n- `'button'` – no default action; useful for custom JavaScript handlers.\n- `'submit'` – submits the associated form when clicked.\n- `'reset'` – resets the associated form fields to their initial values.\n\nIgnored when the button is rendered as a link (i.e. `href` is set).",
       options: ['button', 'reset', 'submit'],
@@ -79,7 +79,7 @@ const metadata: Meta<IgcButtonComponent> = {
       control: 'text',
     },
     target: {
-      type: '"_blank" | "_parent" | "_self" | "_top"',
+      type: { name: 'enum', value: ['_blank', '_parent', '_self', '_top'] },
       description:
         "Where to open the linked document. Only effective when `href` is set.\n- `'_self'` – current browsing context (default browser behavior).\n- `'_blank'` – new tab or window.\n- `'_parent'` – parent browsing context; falls back to `_self` if none.\n- `'_top'` – top-level browsing context; falls back to `_self` if none.",
       options: ['_blank', '_parent', '_self', '_top'],

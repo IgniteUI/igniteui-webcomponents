@@ -1,4 +1,3 @@
-import { ContextProvider } from '@lit/context';
 import {
   ChatResourceStringsEN,
   type IChatResourceStrings,
@@ -7,16 +6,17 @@ import { html, LitElement, nothing, type PropertyValues } from 'lit';
 import { property, query } from 'lit/decorators.js';
 import { cache } from 'lit/directives/cache.js';
 import { repeat } from 'lit/directives/repeat.js';
-import { addThemingController } from '../../theming/theming-controller.js';
+import { chatContext, chatUserInputContext } from '#internals/context.js';
+import { addContextProvider } from '#internals/controllers/context-provider.js';
+import { addSlotController, setSlots } from '#internals/controllers/slot.js';
+import { registerComponent } from '#internals/definitions/register.js';
+import type { IgcChatResourceStrings } from '#internals/i18n/EN/chat.resources.js';
+import { addI18nController } from '#internals/i18n/i18n-controller.js';
+import type { Constructor } from '#internals/mixins/constructor.js';
+import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
+import { isEmpty } from '#internals/utils/arrays.js';
+import { addThemingController } from '#theming/theming-controller.js';
 import IgcButtonComponent from '../button/button.js';
-import { chatContext, chatUserInputContext } from '../common/context.js';
-import { addSlotController, setSlots } from '../common/controllers/slot.js';
-import { registerComponent } from '../common/definitions/register.js';
-import type { IgcChatResourceStrings } from '../common/i18n/EN/chat.resources.js';
-import { addI18nController } from '../common/i18n/i18n-controller.js';
-import type { Constructor } from '../common/mixins/constructor.js';
-import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { isEmpty } from '../common/util.js';
 import IgcIconComponent from '../icon/icon.js';
 import IgcListComponent from '../list/list.js';
 import IgcToastComponent from '../toast/toast.js';
@@ -216,10 +216,10 @@ export default class IgcChatComponent extends EventEmitterMixin<
     );
   }
 
-  private readonly _state = new ChatState(
+  private readonly _state: ChatState = new ChatState(
     this,
-    this._updateContext,
-    this._updateUserInputContext
+    () => this._context.publish(),
+    () => this._userInputContext.publish()
   );
 
   private readonly _defaults = Object.freeze<DefaultChatRenderers>({
@@ -230,14 +230,14 @@ export default class IgcChatComponent extends EventEmitterMixin<
     slots: Slots,
   });
 
-  private readonly _context = new ContextProvider(this, {
+  private readonly _context = addContextProvider(this, {
     context: chatContext,
-    initialValue: this._state,
+    value: () => this._state,
   });
 
-  private readonly _userInputContext = new ContextProvider(this, {
+  private readonly _userInputContext = addContextProvider(this, {
     context: chatUserInputContext,
-    initialValue: this._state,
+    value: () => this._state,
   });
 
   private readonly _i18nController = addI18nController<
@@ -258,14 +258,6 @@ export default class IgcChatComponent extends EventEmitterMixin<
 
   @query('[part="message-area-container"]', true)
   private readonly _scrollContainer!: HTMLElement;
-
-  private _updateContext(): void {
-    this._context.setValue(this._state, true);
-  }
-
-  private _updateUserInputContext(): void {
-    this._userInputContext.setValue(this._state, true);
-  }
 
   /**
    * The list of chat messages currently displayed.

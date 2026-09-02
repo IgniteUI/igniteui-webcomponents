@@ -1,3 +1,5 @@
+import { github } from '@igniteui/material-icons-extended';
+import type { Meta, StoryObj } from '@storybook/web-components-vite';
 import {
   IgcFileInputComponent,
   IgcIconComponent,
@@ -5,15 +7,13 @@ import {
   registerIcon,
   registerIconFromText,
 } from 'igniteui-webcomponents';
+import { html } from 'lit';
+import { ifDefined } from 'lit/directives/if-defined.js';
 import {
   disableStoryControls,
   formControls,
   formSubmitHandler,
 } from './story.js';
-import type { Meta, StoryObj } from '@storybook/web-components-vite';
-import { github } from '@igniteui/material-icons-extended';
-import { html } from 'lit';
-import { ifDefined } from 'lit/directives/if-defined.js';
 
 defineComponents(IgcFileInputComponent, IgcIconComponent);
 registerIconFromText(github.name, github.value);
@@ -37,12 +37,6 @@ const metadata: Meta<IgcFileInputComponent> = {
         'The value of the control.\nSimilar to native file input, this property is read-only and cannot be set programmatically.',
       control: 'text',
     },
-    locale: {
-      type: 'string',
-      description:
-        'Gets/Sets the locale used for getting language, affecting resource strings.',
-      control: 'text',
-    },
     multiple: {
       type: 'boolean',
       description:
@@ -62,6 +56,12 @@ const metadata: Meta<IgcFileInputComponent> = {
       description: 'Whether the control should receive focus automatically.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
+    },
+    locale: {
+      type: 'string',
+      description:
+        "The locale used to resolve the component's resource strings.\nFalls back to the global locale when not set.",
+      control: 'text',
     },
     required: {
       type: 'boolean',
@@ -123,14 +123,17 @@ interface IgcFileInputArgs {
    * Similar to native file input, this property is read-only and cannot be set programmatically.
    */
   value: string;
-  /** Gets/Sets the locale used for getting language, affecting resource strings. */
-  locale: string;
   /** Whether the control allows the user to select more than one file. */
   multiple: boolean;
   /** The file types the control accepts, as a comma-separated list. */
   accept: string;
   /** Whether the control should receive focus automatically. */
   autofocus: boolean;
+  /**
+   * The locale used to resolve the component's resource strings.
+   * Falls back to the global locale when not set.
+   */
+  locale: string;
   /** When set, makes the component a required field for validation. */
   required: boolean;
   /** The name of the control, submitted with the form data. */

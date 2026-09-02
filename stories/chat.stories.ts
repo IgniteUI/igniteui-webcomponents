@@ -1,5 +1,4 @@
 import type { Meta, StoryObj } from '@storybook/web-components-vite';
-import { html, nothing } from 'lit';
 import {
   IgcAvatarComponent,
   IgcButtonComponent,
@@ -8,7 +7,6 @@ import {
   defineComponents,
   registerIcon,
 } from 'igniteui-webcomponents';
-import { createMarkdownRenderer } from 'igniteui-webcomponents/extras';
 import type {
   ChatRenderContext,
   IgcChatOptions,
@@ -16,6 +14,8 @@ import type {
   IgcChatMessageAttachment,
   ChatMessageRenderContext,
 } from 'igniteui-webcomponents';
+import { createMarkdownRenderer } from 'igniteui-webcomponents/extras';
+import { html, nothing } from 'lit';
 
 defineComponents(
   IgcChatComponent,

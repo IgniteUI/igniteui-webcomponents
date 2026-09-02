@@ -4,17 +4,20 @@ import {
 } from 'igniteui-i18n-core';
 import { html } from 'lit';
 import { property, state } from 'lit/decorators.js';
-import { addThemingController } from '../../theming/theming-controller.js';
+import { ariaBindings } from '#internals/controllers/aria-projection.js';
+import { addSlotController, setSlots } from '#internals/controllers/slot.js';
+import { registerComponent } from '#internals/definitions/register.js';
+import type { I18nControllerConfig } from '#internals/i18n/i18n-controller.js';
+import type { AbstractConstructor } from '#internals/mixins/constructor.js';
+import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
+import { FormValueFileListTransformers } from '#internals/mixins/forms/form-transformers.js';
+import { createFormValueState } from '#internals/mixins/forms/form-value.js';
+import { I18nMixin } from '#internals/mixins/i18n.js';
+import { partMap } from '#internals/part-map.js';
+import { hasFiles } from '#internals/utils/dom.js';
+import { bindIf } from '#internals/utils/lit.js';
+import { addThemingController } from '#theming/theming-controller.js';
 import IgcButtonComponent from '../button/button.js';
-import { addSlotController, setSlots } from '../common/controllers/slot.js';
-import { registerComponent } from '../common/definitions/register.js';
-import { addI18nController } from '../common/i18n/i18n-controller.js';
-import type { AbstractConstructor } from '../common/mixins/constructor.js';
-import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { FormValueFileListTransformers } from '../common/mixins/forms/form-transformers.js';
-import { createFormValueState } from '../common/mixins/forms/form-value.js';
-import { partMap } from '../common/part-map.js';
-import { bindIf, hasFiles } from '../common/util.js';
 import {
   IgcInputBaseComponent,
   type IgcInputComponentEventMap,
@@ -46,6 +49,10 @@ const Slots = setSlots(
   'invalid'
 );
 
+const i18n: I18nControllerConfig<IFileInputResourceStrings> = {
+  defaultEN: FileInputResourceStringsEN,
+};
+
 /* blazorSuppress */
 /**
  * @element igc-file-input
@@ -71,10 +78,13 @@ const Slots = setSlots(
  * @csspart suffix - The suffix wrapper.
  * @csspart helper-text - The helper text wrapper.
  */
-export default class IgcFileInputComponent extends EventEmitterMixin<
-  IgcFileInputComponentEventMap,
-  AbstractConstructor<IgcInputBaseComponent>
->(IgcInputBaseComponent) {
+export default class IgcFileInputComponent extends I18nMixin(
+  EventEmitterMixin<
+    IgcFileInputComponentEventMap,
+    AbstractConstructor<IgcInputBaseComponent>
+  >(IgcInputBaseComponent),
+  i18n
+) {
   public static readonly tagName = 'igc-file-input';
   public static styles = [baseStyle, shared, styles];
 
@@ -98,10 +108,6 @@ export default class IgcFileInputComponent extends EventEmitterMixin<
   protected override readonly _formValue = createFormValueState(this, {
     initialValue: null,
     transformers: FormValueFileListTransformers,
-  });
-
-  protected readonly _i18nController = addI18nController(this, {
-    defaultEN: FileInputResourceStringsEN,
   });
 
   protected override get __validators() {
@@ -147,31 +153,6 @@ export default class IgcFileInputComponent extends EventEmitterMixin<
   }
 
   /**
-   * The resource strings for localization.
-   */
-  @property({ attribute: false })
-  public set resourceStrings(value: IFileInputResourceStrings) {
-    this._i18nController.resourceStrings = value;
-  }
-
-  public get resourceStrings(): IFileInputResourceStrings {
-    return this._i18nController.resourceStrings;
-  }
-
-  /**
-   * Gets/Sets the locale used for getting language, affecting resource strings.
-   * @attr locale
-   */
-  @property()
-  public set locale(value: string) {
-    this._i18nController.locale = value;
-  }
-
-  public get locale(): string {
-    return this._i18nController.locale;
-  }
-
-  /**
    * Whether the control allows the user to select more than one file.
    *
    * @attr
@@ -203,11 +184,25 @@ export default class IgcFileInputComponent extends EventEmitterMixin<
 
   //#region Internal methods
 
+  /**
+   * A file input cannot have a default file list, so the `value` attribute
+   * never contributes a default - otherwise its string would be stored as the
+   * FileList default and submitted character-by-character after a form reset.
+   */
+  protected override _setDefaultValue(): void {
+    this._formValue.defaultValue = null;
+  }
+
+  /**
+   * Restores directly instead of through the `value` setter: the setter is
+   * deliberately inert (read-only semantics) and never updates the form state.
+   */
   protected override _restoreDefaultValue(): void {
     if (this._input) {
       this._input.value = '';
     }
-    super._restoreDefaultValue();
+    this._formValue.setValueAndFormState(this._formValue.defaultValue);
+    this.requestUpdate();
   }
 
   //#endregion
@@ -269,10 +264,10 @@ export default class IgcFileInputComponent extends EventEmitterMixin<
 
   protected override _renderInput() {
     const hasNegativeTabIndex = this.getAttribute('tabindex') === '-1';
-    const hasHelperText = this._slots.hasAssignedElements('helper-text');
 
     return html`
       <input
+        ${ariaBindings(this._ariaTarget.resolveBindings())}
         id=${this._inputId}
         part=${partMap(this._resolvePartNames('input'))}
         type="file"
@@ -282,7 +277,6 @@ export default class IgcFileInputComponent extends EventEmitterMixin<
         ?multiple=${this.multiple}
         tabindex=${bindIf(hasNegativeTabIndex, -1)}
         accept=${bindIf(this.accept, this.accept)}
-        aria-describedby=${bindIf(hasHelperText, 'helper-text')}
         @click=${this._handleClick}
         @change=${this._handleChange}
         @cancel=${this._handleCancel}

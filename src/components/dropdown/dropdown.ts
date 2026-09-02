@@ -1,7 +1,5 @@
-import { html } from 'lit';
+import { html, type PropertyValues } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
-
-import { addThemingController } from '../../theming/theming-controller.js';
 import {
   addKeybindings,
   arrowDown,
@@ -15,12 +13,15 @@ import {
   type KeyBindingController,
   type KeyBindingObserverCleanup,
   tabKey,
-} from '../common/controllers/key-bindings.js';
-import { addRootClickController } from '../common/controllers/root-click.js';
-import { addRootScrollHandler } from '../common/controllers/root-scroll.js';
-import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditionalDependencies.js';
-import { watch } from '../common/decorators/watch.js';
-import { registerComponent } from '../common/definitions/register.js';
+} from '#internals/controllers/key-bindings.js';
+import {
+  createMutationController,
+  type MutationControllerParams,
+} from '#internals/controllers/mutation-observer.js';
+import { addRootClickController } from '#internals/controllers/root-click.js';
+import { addRootScrollHandler } from '#internals/controllers/root-scroll.js';
+import { blazorAdditionalDependencies } from '#internals/decorators/blazorAdditionalDependencies.js';
+import { registerComponent } from '#internals/definitions/register.js';
 import {
   getActiveItems,
   getItems,
@@ -28,14 +29,15 @@ import {
   getPreviousActiveItem,
   IgcComboBoxBaseLikeComponent,
   setInitialSelectionState,
-} from '../common/mixins/combo-box.js';
-import type { AbstractConstructor } from '../common/mixins/constructor.js';
-import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import {
-  getElementByIdFromRoot,
-  getElementFromPath,
-  isString,
-} from '../common/util.js';
+} from '#internals/mixins/combo-box.js';
+import type { AbstractConstructor } from '#internals/mixins/constructor.js';
+import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
+import { isEmpty } from '#internals/utils/arrays.js';
+import { getElementByIdFromRoot } from '#internals/utils/dom.js';
+import { getElementFromPath } from '#internals/utils/events.js';
+import { createIdGenerator } from '#internals/utils/strings.js';
+import { isString } from '#internals/utils/types.js';
+import { addThemingController } from '#theming/theming-controller.js';
 import IgcPopoverComponent, {
   type PopoverPlacement,
 } from '../popover/popover.js';
@@ -54,6 +56,8 @@ export interface IgcDropdownComponentEventMap {
   igcClosed: CustomEvent<void>;
   igcChange: CustomEvent<IgcDropdownItemComponent>;
 }
+
+const nextItemId = createIdGenerator('igc-dropdown-item');
 
 /**
  * Represents a Dropdown component.
@@ -83,7 +87,7 @@ export default class IgcDropdownComponent extends EventEmitterMixin<
   public static styles = [styles, shared];
 
   /* blazorSuppress */
-  public static register() {
+  public static register(): void {
     registerComponent(
       IgcDropdownComponent,
       IgcDropdownGroupComponent,
@@ -93,26 +97,46 @@ export default class IgcDropdownComponent extends EventEmitterMixin<
     );
   }
 
+  //#region Internal state
+
   private readonly _keyBindings: KeyBindingController;
 
-  private _rootScrollController = addRootScrollHandler(this, {
-    hideCallback: this.handleClosing,
+  private readonly _rootScrollController = addRootScrollHandler(this, {
+    hideCallback: this._handleClosing,
   });
 
   protected override readonly _rootClickController = addRootClickController(
     this,
     {
-      onHide: this.handleClosing,
+      onHide: this._handleClosing,
     }
   );
 
-  @state()
-  protected _selectedItem: IgcDropdownItemComponent | null = null;
+  private _selectedItem: IgcDropdownItemComponent | null = null;
 
-  @state()
-  protected _activeItem!: IgcDropdownItemComponent;
+  /** The item keyboard navigation moves from. Only {@link _activateItem} assigns it. */
+  private _activeItem: IgcDropdownItemComponent | null = null;
 
-  private get _activeItems() {
+  /** The anchor passed to `show()` / `toggle()`, if any. */
+  private _explicitTarget?: HTMLElement;
+
+  /** The anchor in use - the popover is positioned against it. */
+  @state()
+  private _target?: HTMLElement;
+
+  private _targetListeners?: KeyBindingObserverCleanup;
+
+  @query('slot[name="target"]')
+  private readonly _targetSlot!: HTMLSlotElement | null;
+
+  /** The element currently assigned to the `target` slot, if any. */
+  private get _slottedTarget(): HTMLElement | undefined {
+    const [target] =
+      this._targetSlot?.assignedElements({ flatten: true }) ?? [];
+    return target as HTMLElement | undefined;
+  }
+
+  private get _activeItems(): IgcDropdownItemComponent[] {
     return Array.from(
       getActiveItems<IgcDropdownItemComponent>(
         this,
@@ -121,13 +145,9 @@ export default class IgcDropdownComponent extends EventEmitterMixin<
     );
   }
 
-  private _targetListeners!: KeyBindingObserverCleanup;
+  //#endregion
 
-  @state()
-  private _target?: HTMLElement;
-
-  @query('slot[name="target"]', true)
-  protected trigger!: HTMLSlotElement;
+  //#region Public attributes and properties
 
   /** The preferred placement of the component around the target element.
    * @attr
@@ -165,14 +185,14 @@ export default class IgcDropdownComponent extends EventEmitterMixin<
   public sameWidth = false;
 
   /** Returns the items of the dropdown. */
-  public get items() {
+  public get items(): IgcDropdownItemComponent[] {
     return Array.from(
       getItems<IgcDropdownItemComponent>(this, IgcDropdownItemComponent.tagName)
     );
   }
 
   /** Returns the group items of the dropdown. */
-  public get groups() {
+  public get groups(): IgcDropdownGroupComponent[] {
     return Array.from(
       getItems<IgcDropdownGroupComponent>(
         this,
@@ -182,28 +202,13 @@ export default class IgcDropdownComponent extends EventEmitterMixin<
   }
 
   /** Returns the selected item from the dropdown or null. */
-  public get selectedItem() {
+  public get selectedItem(): IgcDropdownItemComponent | null {
     return this._selectedItem;
   }
 
-  @watch('scrollStrategy', { waitUntilFirstUpdate: true })
-  protected scrollStrategyChanged() {
-    this._rootScrollController.update({ resetListeners: true });
-  }
+  //#endregion
 
-  @watch('open', { waitUntilFirstUpdate: true })
-  @watch('keepOpenOnOutsideClick', { waitUntilFirstUpdate: true })
-  protected openStateChange() {
-    this._updateAnchorAccessibility(this._target);
-    this._rootClickController.update();
-    this._rootScrollController.update();
-
-    if (!this.open) {
-      this._target = undefined;
-      this._targetListeners?.unsubscribe();
-      this._rootClickController.update({ target: undefined });
-    }
-  }
+  //#region Life-cycle
 
   constructor() {
     super();
@@ -214,148 +219,340 @@ export default class IgcDropdownComponent extends EventEmitterMixin<
       skip: () => !this.open,
       bindingDefaults: { preventDefault: true, repeat: true },
     })
-      .set(tabKey, this.onTabKey, {
+      .set(tabKey, this._handleTab, {
         preventDefault: false,
       })
-      .set(escapeKey, this.onEscapeKey)
-      .set(arrowUp, this.onArrowUp)
-      .set(arrowLeft, this.onArrowUp)
-      .set(arrowDown, this.onArrowDown)
-      .set(arrowRight, this.onArrowDown)
-      .set(enterKey, this.onEnterKey)
-      .set(homeKey, this.onHomeKey)
-      .set(endKey, this.onEndKey);
+      .set(escapeKey, this._handleClosing)
+      .set(arrowUp, this._handleArrowUp)
+      .set(arrowLeft, this._handleArrowUp)
+      .set(arrowDown, this._handleArrowDown)
+      .set(arrowRight, this._handleArrowDown)
+      .set(enterKey, this._commitActiveItem)
+      .set(homeKey, this._handleHome)
+      .set(endKey, this._handleEnd);
+
+    createMutationController(this, {
+      callback: this._handleItemsChange,
+      filter: [IgcDropdownItemComponent.tagName],
+      config: { childList: true, subtree: true },
+    });
   }
 
-  protected override async firstUpdated() {
+  /** @internal */
+  public override connectedCallback(): void {
+    super.connectedCallback();
+    // Re-establish what `disconnectedCallback` tore down.
+    this._observeTarget();
+    this._syncAnchorARIA();
+  }
+
+  /** @internal */
+  public override disconnectedCallback(): void {
+    this._releaseTarget();
+    super.disconnectedCallback();
+  }
+
+  protected override willUpdate(properties: PropertyValues<this>): void {
+    if (!this.hasUpdated) {
+      return;
+    }
+
+    const openChanged = properties.has('open');
+    const strategyChanged = properties.has('scrollStrategy');
+
+    if (openChanged || properties.has('keepOpenOnOutsideClick')) {
+      this._rootClickController.update();
+    }
+
+    if (openChanged || strategyChanged) {
+      this._rootScrollController.update({ resetListeners: strategyChanged });
+    }
+  }
+
+  protected override async firstUpdated(): Promise<void> {
     await this.updateComplete;
     const selected = setInitialSelectionState(this.items);
+
     if (selected) {
       this._selectItem(selected, false);
     }
   }
 
-  public override disconnectedCallback() {
-    this._targetListeners?.unsubscribe();
-    super.disconnectedCallback();
+  protected override updated(): void {
+    this._syncAnchorARIA();
   }
 
-  private handleListBoxClick(event: MouseEvent) {
+  //#endregion
+
+  //#region Event handlers
+
+  /**
+   * Re-resolves the selection whenever items enter or leave the light DOM -
+   * frameworks routinely render them after the initial paint, and a selected or
+   * navigated item may be taken out from under us.
+   */
+  private _handleItemsChange({
+    changes: { added, removed },
+  }: MutationControllerParams<IgcDropdownItemComponent>): void {
+    if (!this.hasUpdated || (isEmpty(added) && isEmpty(removed))) {
+      return;
+    }
+
+    const items = this.items;
+
+    if (this._selectedItem && !items.includes(this._selectedItem)) {
+      this._clearSelectedItem();
+    } else if (this._activeItem && !items.includes(this._activeItem)) {
+      this._activateItem(this._selectedItem);
+    }
+  }
+
+  private _handleListBoxClick(event: MouseEvent): void {
     const item = getElementFromPath(IgcDropdownItemComponent.tagName, event);
-    if (item && this._activeItems.includes(item)) {
+
+    if (item && !item.disabled) {
       this._selectItem(item);
     }
   }
 
-  private handleChange(item: IgcDropdownItemComponent) {
-    this.emitEvent('igcChange', { detail: item });
+  protected override _handleAnchorClick(): void {
+    // Opening through our own anchor hands the anchor role back to it.
+    this._explicitTarget = undefined;
+    this._updateTarget();
+
+    super._handleAnchorClick();
   }
 
-  private handleSlotChange() {
-    this._updateAnchorAccessibility();
+  private _handleClosing(): void {
+    this._hide(true);
   }
 
-  private onArrowUp() {
+  private _handleArrowUp(): void {
     this._navigateToActiveItem(
       getPreviousActiveItem(this.items, this._activeItem)
     );
   }
 
-  private onArrowDown() {
+  private _handleArrowDown(): void {
     this._navigateToActiveItem(getNextActiveItem(this.items, this._activeItem));
   }
 
-  protected onHomeKey() {
+  private _handleHome(): void {
     this._navigateToActiveItem(this._activeItems.at(0));
   }
 
-  protected onEndKey() {
+  private _handleEnd(): void {
     this._navigateToActiveItem(this._activeItems.at(-1));
   }
 
-  protected onTabKey() {
+  private _handleTab(): void {
+    this._commitActiveItem();
+
+    // Tab commits and leaves, whatever `keepOpenOnSelect` says.
+    this._hide(true);
+  }
+
+  //#endregion
+
+  //#region Internal API
+
+  /** Selects the item navigation is on, if there is one. */
+  private _commitActiveItem(): void {
     if (this._activeItem) {
       this._selectItem(this._activeItem);
     }
-    if (this.open) {
-      this._hide(true);
-    }
   }
 
-  protected onEscapeKey() {
-    this._hide(true);
-  }
-
-  protected onEnterKey() {
-    this._selectItem(this._activeItem);
-  }
-
-  protected handleClosing() {
-    this._hide(true);
-  }
-
-  private activateItem(item: IgcDropdownItemComponent) {
-    if (this._activeItem) {
+  private _activateItem(item: IgcDropdownItemComponent | null): void {
+    if (this._activeItem && this._activeItem !== item) {
       this._activeItem.active = false;
     }
 
     this._activeItem = item;
-    this._activeItem.active = true;
-  }
 
-  private _navigateToActiveItem(item?: IgcDropdownItemComponent) {
     if (item) {
-      this.activateItem(item);
-      item.scrollIntoView({ behavior: 'auto', block: 'nearest' });
+      item.active = true;
     }
+
+    this._syncAnchorARIA();
   }
 
-  private _selectItem(item: IgcDropdownItemComponent, emit = true) {
-    if (this._selectedItem) {
+  private _setSelectedItem(item: IgcDropdownItemComponent): void {
+    if (this._selectedItem && this._selectedItem !== item) {
       this._selectedItem.selected = false;
     }
 
-    this.activateItem(item);
     this._selectedItem = item;
-    this._selectedItem.selected = true;
+    item.selected = true;
+    this._activateItem(item);
+  }
 
-    if (emit) this.handleChange(this._selectedItem);
-    if (emit && !this.keepOpenOnSelect) this._hide(true);
+  private _selectItem(
+    item?: IgcDropdownItemComponent | null,
+    emit = true
+  ): IgcDropdownItemComponent | null {
+    if (!item) {
+      this._clearSelectedItem();
+      return null;
+    }
+
+    // Re-selecting the current item is not a change, but still a commit.
+    const changed = this._selectedItem !== item;
+
+    changed ? this._setSelectedItem(item) : this._activateItem(item);
+
+    if (emit) {
+      if (changed) {
+        this.emitEvent('igcChange', { detail: item });
+      }
+
+      if (!this.keepOpenOnSelect) {
+        this._hide(true);
+      }
+    }
 
     return this._selectedItem;
   }
 
-  private _updateAnchorAccessibility(anchor?: HTMLElement | null) {
-    const target =
-      anchor ?? this.trigger.assignedElements({ flatten: true }).at(0);
+  private _clearSelectedItem(): void {
+    if (this._selectedItem) {
+      this._selectedItem.selected = false;
+    }
 
-    // Find tabbable elements ?
-    if (target) {
-      target.setAttribute('aria-haspopup', 'true');
-      target.setAttribute('aria-expanded', this.open ? 'true' : 'false');
+    this._selectedItem = null;
+    this._activateItem(null);
+  }
+
+  /** Highlights `item` and, while the list is open, brings it into view. */
+  private _navigateToActiveItem(item?: IgcDropdownItemComponent | null): void {
+    if (!item) {
+      return;
+    }
+
+    this._activateItem(item);
+
+    // Closed, the list is inert and off screen.
+    if (this.open) {
+      item.scrollIntoView({ behavior: 'auto', block: 'nearest' });
     }
   }
 
-  private getItem(value: string) {
-    return this.items.find((item) => item.value === value);
+  /** Resolves an item by its `value`, or by its index in {@link items}. */
+  private _resolveItem(
+    value: string | number
+  ): IgcDropdownItemComponent | undefined {
+    return isString(value)
+      ? this.items.find((item) => item.value === value)
+      : this.items[value];
   }
 
-  private _setTarget(anchor: HTMLElement | string) {
-    const target = isString(anchor)
-      ? getElementByIdFromRoot(this, anchor)!
-      : anchor;
+  /**
+   * Moves everything bound to the anchor - key event listeners, outside click
+   * exemption and ARIA - over to the one currently in effect.
+   */
+  private _updateTarget(): void {
+    const target = this._explicitTarget ?? this._slottedTarget;
+
+    if (target === this._target) {
+      return;
+    }
+
+    this._releaseTarget();
 
     this._target = target;
-    this._targetListeners = this._keyBindings.observeElement(target);
     this._rootClickController.update({ target });
+    this._observeTarget();
+    this._syncAnchorARIA();
   }
+
+  /**
+   * Only an anchor outside of our own DOM needs listeners of its own - keyboard
+   * events on a slotted one already reach the host.
+   */
+  private _observeTarget(): void {
+    const target = this._target;
+
+    if (target && !this._targetListeners && !this.contains(target)) {
+      this._targetListeners = this._keyBindings.observeElement(target);
+    }
+  }
+
+  private _setExplicitTarget(anchor: HTMLElement | string): void {
+    const target = isString(anchor)
+      ? getElementByIdFromRoot(this, anchor)
+      : anchor;
+
+    // An id matching nothing leaves the current anchor in place.
+    if (!target) {
+      return;
+    }
+
+    this._explicitTarget = target;
+    this._updateTarget();
+  }
+
+  /**
+   * Publishes the popup state and the navigation position on the current anchor.
+   *
+   * `aria-activedescendant` goes on the anchor because that is what holds DOM
+   * focus - the list is never focused, since the key bindings are observed on
+   * the anchor itself. There is no `aria-controls` to go with it: the list it
+   * would name lives in this shadow root, which an IDREF cannot cross and ARIA
+   * element reflection only ever resolves out of, never into.
+   */
+  private _syncAnchorARIA(): void {
+    const anchor = this._target;
+
+    if (!anchor) {
+      return;
+    }
+
+    const active = this.open ? this._activeItem : null;
+
+    anchor.setAttribute('aria-haspopup', 'listbox');
+    anchor.setAttribute('aria-expanded', `${this.open}`);
+
+    if (active) {
+      // Items only need an id if they have none of their own
+      active.id ||= nextItemId();
+      anchor.setAttribute('aria-activedescendant', active.id);
+    } else {
+      anchor.removeAttribute('aria-activedescendant');
+    }
+  }
+
+  /**
+   * Stops driving the current anchor: its key event listeners go, along with
+   * everything {@link _syncAnchorARIA} wrote onto it.
+   */
+  private _releaseTarget(): void {
+    this._targetListeners?.unsubscribe();
+    this._targetListeners = undefined;
+
+    const anchor = this._target;
+
+    anchor?.removeAttribute('aria-haspopup');
+    anchor?.removeAttribute('aria-expanded');
+    anchor?.removeAttribute('aria-activedescendant');
+  }
+
+  //#endregion
+
+  //#region Public API
 
   /* blazorSuppress */
   /** Shows the component. */
   public override async show(target?: HTMLElement | string): Promise<boolean> {
     if (target) {
-      this._setTarget(target);
+      this._setExplicitTarget(target);
+
+      // A target that resolves to nothing, with no anchor to fall back on,
+      // would open a list the popover cannot place - and so cannot show.
+      if (!this._target) {
+        return false;
+      }
     }
+
     return super.show();
   }
 
@@ -376,7 +573,7 @@ export default class IgcDropdownComponent extends EventEmitterMixin<
   /* blazorSuppress */
   /** Navigates to the specified item. If it exists, returns the found item, otherwise - null. */
   public navigateTo(value: string | number): IgcDropdownItemComponent | null {
-    const item = isString(value) ? this.getItem(value) : this.items[value];
+    const item = this._resolveItem(value);
 
     if (item) {
       this._navigateToActiveItem(item);
@@ -394,17 +591,16 @@ export default class IgcDropdownComponent extends EventEmitterMixin<
   /* blazorSuppress */
   /** Selects the specified item. If it exists, returns the found item, otherwise - null. */
   public select(value: string | number): IgcDropdownItemComponent | null {
-    const item = isString(value) ? this.getItem(value) : this.items[value];
+    const item = this._resolveItem(value);
     return item ? this._selectItem(item, false) : null;
   }
 
   /**  Clears the current selection of the dropdown. */
-  public clearSelection() {
-    if (this._selectedItem) {
-      this._selectedItem.selected = false;
-    }
-    this._selectedItem = null;
+  public clearSelection(): void {
+    this._clearSelectedItem();
   }
+
+  //#endregion
 
   protected override render() {
     return html`<igc-popover
@@ -421,9 +617,9 @@ export default class IgcDropdownComponent extends EventEmitterMixin<
         name="target"
         slot="anchor"
         @click=${this._handleAnchorClick}
-        @slotchange=${this.handleSlotChange}
+        @slotchange=${this._updateTarget}
       ></slot>
-      <div part="base" @click=${this.handleListBoxClick} .inert=${!this.open}>
+      <div part="base" @click=${this._handleListBoxClick} .inert=${!this.open}>
         <div
           id="dropdown-list"
           role="listbox"

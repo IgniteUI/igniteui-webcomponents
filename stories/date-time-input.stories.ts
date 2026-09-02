@@ -1,9 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/web-components-vite';
-import { html } from 'lit';
 import {
   IgcDateTimeInputComponent,
   defineComponents,
 } from 'igniteui-webcomponents';
+import { html } from 'lit';
 import {
   disableStoryControls,
   formControls,
@@ -26,11 +26,6 @@ const metadata: Meta<IgcDateTimeInputComponent> = {
     actions: { handles: ['igcInput', 'igcChange'] },
   },
   argTypes: {
-    value: {
-      type: 'Date',
-      description: 'The value of the input.',
-      control: 'date',
-    },
     readOnly: {
       type: 'boolean',
       description: 'Makes the control a readonly field.',
@@ -95,12 +90,12 @@ const metadata: Meta<IgcDateTimeInputComponent> = {
       control: 'text',
     },
     min: {
-      type: 'Date',
+      type: 'date',
       description: 'The minimum value required for the input to remain valid.',
       control: 'date',
     },
     max: {
-      type: 'Date',
+      type: 'date',
       description: 'The maximum value required for the input to remain valid.',
       control: 'date',
     },
@@ -119,7 +114,7 @@ const metadata: Meta<IgcDateTimeInputComponent> = {
     locale: {
       type: 'string',
       description:
-        'Gets/Sets the locale used for formatting the display value.',
+        "The locale used to format the display value and to resolve the\ncomponent's resource strings. Falls back to the global locale when not set.",
       control: 'text',
     },
   },
@@ -137,8 +132,6 @@ const metadata: Meta<IgcDateTimeInputComponent> = {
 export default metadata;
 
 interface IgcDateTimeInputArgs {
-  /** The value of the input. */
-  value: Date;
   /** Makes the control a readonly field. */
   readOnly: boolean;
   /** The mask pattern of the component. */
@@ -172,12 +165,21 @@ interface IgcDateTimeInputArgs {
   displayFormat: string;
   /** Sets whether to loop over the currently spun segment. */
   spinLoop: boolean;
-  /** Gets/Sets the locale used for formatting the display value. */
+  /**
+   * The locale used to format the display value and to resolve the
+   * component's resource strings. Falls back to the global locale when not set.
+   */
   locale: string;
 }
 type Story = StoryObj<IgcDateTimeInputArgs>;
 
 // endregion
+
+/**
+ * `value` comes from a generic base component, and the analyzer records its type as
+ * the bare type parameter `T`, so it is left out of the generated args.
+ */
+type DateTimeInputStory = StoryObj<IgcDateTimeInputArgs & { value: Date }>;
 
 const stepUp = () => {
   document.querySelector(IgcDateTimeInputComponent.tagName)!.stepUp();
@@ -190,7 +192,7 @@ const clear = () => {
   document.querySelector(IgcDateTimeInputComponent.tagName)!.clear();
 };
 
-export const Default: Story = {
+export const Default: DateTimeInputStory = {
   parameters: {
     docs: {
       description: {

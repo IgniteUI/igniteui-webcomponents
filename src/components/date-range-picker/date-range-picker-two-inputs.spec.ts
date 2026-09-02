@@ -6,23 +6,25 @@ import {
   waitUntil,
 } from '@open-wc/testing';
 import { spy } from 'sinon';
-import IgcCalendarComponent from '../calendar/calendar.js';
-import { CalendarDay } from '../calendar/model.js';
 import {
   altKey,
   arrowDown,
   arrowUp,
   escapeKey,
-} from '../common/controllers/key-bindings.js';
-import { defineComponents } from '../common/definitions/defineComponents.js';
+} from '#internals/controllers/key-bindings.js';
+import { CalendarDay } from '#internals/date/model.js';
+import { defineComponents } from '#internals/definitions/defineComponents.js';
 import {
-  checkDatesEqual,
-  isFocused,
+  runAriaProjectionTests,
   runExternalLabelAssociationTests,
+} from '#internals/testing/form-testbed.spec.js';
+import { checkDatesEqual, isFocused } from '#internals/testing/helpers.spec.js';
+import {
   simulateClick,
   simulateInput,
   simulateKeyboard,
-} from '../common/utils.spec.js';
+} from '#internals/testing/simulate.spec.js';
+import IgcCalendarComponent from '../calendar/calendar.js';
 import IgcDateTimeInputComponent from '../date-time-input/date-time-input.js';
 import type IgcDialogComponent from '../dialog/dialog.js';
 import IgcDateRangeInputComponent from './date-range-input.js';
@@ -47,6 +49,39 @@ describe('Date range picker - two inputs', () => {
           IgcDateTimeInputComponent.tagName
         )!
         .renderRoot.querySelector('input')!,
+  });
+
+  // The start editor.
+  runAriaProjectionTests({
+    tagName: IgcDateRangePickerComponent.tagName,
+    hostAttributes: 'use-two-inputs',
+    getNativeInput: (host) =>
+      (host as IgcDateRangePickerComponent).renderRoot
+        .querySelector<IgcDateTimeInputComponent>(
+          IgcDateTimeInputComponent.tagName
+        )!
+        .renderRoot.querySelector('input')!,
+    expected: { hasPopup: 'dialog' },
+    getDescription: (host) => [
+      (host as IgcDateRangePickerComponent).renderRoot.querySelector(
+        '#helper-text'
+      )!,
+    ],
+  });
+
+  // The end editor receives the popup semantics as well, labels excluded.
+  runAriaProjectionTests({
+    tagName: IgcDateRangePickerComponent.tagName,
+    hostAttributes: 'use-two-inputs',
+    getNativeInput: (host) =>
+      Array.from(
+        (
+          host as IgcDateRangePickerComponent
+        ).renderRoot.querySelectorAll<IgcDateTimeInputComponent>(
+          IgcDateTimeInputComponent.tagName
+        )
+      )[1]!.renderRoot.querySelector('input')!,
+    expected: { hasPopup: 'dialog' },
   });
 
   let picker: IgcDateRangePickerComponent;
@@ -553,8 +588,17 @@ describe('Date range picker - two inputs', () => {
 
         expect(eventSpy).calledOnceWith('igcInput');
         eventSpy.resetHistory();
-        expect(dateTimeInputs[0].value).to.not.be.null;
+
+        // Spinning is an uncommitted edit - `value` follows on blur - so the spun
+        // date is only visible on the draft. See issue #1346.
+        expect(dateTimeInputs[0].value).to.be.null;
+        expect(dateTimeInputs[0]._uncommittedValue).to.not.be.null;
+        checkDatesEqual(dateTimeInputs[0]._uncommittedValue!, expectedValue);
+
+        dateTimeInputs[0].blur();
+        await elementUpdated(picker);
         checkDatesEqual(dateTimeInputs[0].value!, expectedValue);
+        eventSpy.resetHistory();
 
         picker.value = null;
         picker.nonEditable = true;
@@ -674,9 +718,14 @@ describe('Date range picker - two inputs', () => {
         expect(eventSpy).calledWith('igcInput');
         expect(eventSpy).not.calledWith('igcChange');
         eventSpy.resetHistory();
-        checkDatesEqual(dateTimeInputs[0].value!, now.native);
+        checkDatesEqual(dateTimeInputs[0]._uncommittedValue!, now.native);
         // typing a single date does not select a range in the calendar
-        checkSelectedRange(picker, { start: now.native, end: null });
+        checkSelectedRange(
+          picker,
+          { start: now.native, end: null },
+          true,
+          true
+        );
         checkDatesEqual(calendar.activeDate, now.native);
 
         dateTimeInputs[1].focus();
@@ -698,9 +747,14 @@ describe('Date range picker - two inputs', () => {
 
         expect(eventSpy).calledWith('igcInput');
         eventSpy.resetHistory();
-        checkDatesEqual(dateTimeInputs[1].value!, now.native);
+        checkDatesEqual(dateTimeInputs[1]._uncommittedValue!, now.native);
         // typing the end date as well results in a selected range of a single date
-        checkSelectedRange(picker, { start: now.native, end: now.native });
+        checkSelectedRange(
+          picker,
+          { start: now.native, end: now.native },
+          true,
+          true
+        );
         checkDatesEqual(calendar.activeDate, now.native);
 
         simulateKeyboard(dateTimeInputs[1], arrowDown);
@@ -708,13 +762,15 @@ describe('Date range picker - two inputs', () => {
 
         expect(eventSpy).calledWith('igcInput');
         eventSpy.resetHistory();
-        checkDatesEqual(dateTimeInputs[1].value!, aMonthAgo.native);
+        checkDatesEqual(dateTimeInputs[1]._uncommittedValue!, aMonthAgo.native);
         // changing the end date while typing alters the selected range
         // the active date is set to the typed date, in this case the end one
-        checkSelectedRange(picker, {
-          start: now.native,
-          end: aMonthAgo.native,
-        });
+        checkSelectedRange(
+          picker,
+          { start: now.native, end: aMonthAgo.native },
+          true,
+          true
+        );
         checkDatesEqual(calendar.activeDate, aMonthAgo.native);
 
         // on losing focus of the end input, the dates are swapped since end is earlier than start
@@ -746,7 +802,12 @@ describe('Date range picker - two inputs', () => {
           date: 24,
           year: 2025,
         }).native;
-        checkSelectedRange(picker, { start: expectedDate, end: null });
+        checkSelectedRange(
+          picker,
+          { start: expectedDate, end: null },
+          true,
+          true
+        );
         checkDatesEqual(calendar.activeDate, expectedDate);
 
         expect(eventSpy).calledWith('igcInput', {
@@ -766,7 +827,12 @@ describe('Date range picker - two inputs', () => {
           date: 25,
           year: 2025,
         }).native;
-        checkSelectedRange(picker, { start: expectedDate, end: expectedDate2 });
+        checkSelectedRange(
+          picker,
+          { start: expectedDate, end: expectedDate2 },
+          true,
+          true
+        );
         checkDatesEqual(calendar.activeDate, expectedDate2);
 
         expect(eventSpy).calledWith('igcInput', {

@@ -1,129 +1,71 @@
-import { first, last } from '../common/util.js';
-import type IgcCalendarComponent from './calendar.js';
-import IgcDaysViewComponent from './days-view/days-view.js';
-import type { CalendarDay } from './model.js';
-import IgcMonthsViewComponent from './months-view/months-view.js';
-import IgcYearsViewComponent from './years-view/years-view.js';
+import { expect } from '@open-wc/testing';
 
-export function getDayViewDOM(element: IgcDaysViewComponent) {
-  const root = element.shadowRoot!;
-  return {
-    get weekLabels() {
-      return Array.from(
-        root.querySelectorAll<HTMLSpanElement>('span[part="label"]')
-      );
-    },
-    get weekNumbers() {
-      return Array.from(
-        root.querySelectorAll<HTMLElement>('[part~="week-number"]')
-      );
-    },
-    dayRows: {
-      get all() {
-        return Array.from(
-          root.querySelectorAll<HTMLElement>('[part="days-row"]')
-        );
-      },
-      get first() {
-        return first(
-          Array.from(root.querySelectorAll<HTMLElement>('[part="days-row"]'))
-        );
-      },
-      get last() {
-        return last(
-          Array.from(root.querySelectorAll<HTMLElement>('[part="days-row"]'))
-        );
-      },
-    },
-    dates: {
-      get active() {
-        return root.querySelector<HTMLElement>('[tabindex="0"]')!;
-      },
-      get all() {
-        return Array.from(
-          root.querySelectorAll<HTMLElement>('span[part~="date-inner"]')
-        );
-      },
-      get disabled() {
-        return Array.from(
-          root.querySelectorAll<HTMLElement>(
-            'span[part~="date-inner"][part~="disabled"]'
-          )
-        );
-      },
-      get current() {
-        return root.querySelector('span[part~="current"]')!;
-      },
-    },
-  };
-}
+import { CalendarDay } from '#internals/date/model.js';
+import { isDateInRanges } from './helpers.js';
+import { DateRangeType } from './types.js';
 
-export function getCalendarDOM(element: IgcCalendarComponent) {
-  const root = element.shadowRoot!;
-  return {
-    get active() {
-      return root.activeElement;
-    },
-    header: {
-      get container() {
-        return root.querySelector<HTMLElement>('[part="header"]')!;
-      },
-      get date() {
-        return root.querySelector<HTMLElement>('[part="header-date"]')!;
-      },
-      get title() {
-        return root.querySelector<HTMLElement>('[part="header-title"]')!;
-      },
-    },
-    get content() {
-      return root.querySelector<HTMLElement>('[part~="content"]')!;
-    },
-    views: {
-      get days() {
-        return root.querySelector(IgcDaysViewComponent.tagName)!;
-      },
-      get months() {
-        return root.querySelector(IgcMonthsViewComponent.tagName)!;
-      },
-      get years() {
-        return root.querySelector(IgcYearsViewComponent.tagName)!;
-      },
-    },
-    navigation: {
-      get months() {
-        return root.querySelector<HTMLButtonElement>(
-          '[part="months-navigation"]'
-        )!;
-      },
-      get years() {
-        return root.querySelector<HTMLButtonElement>(
-          '[part="years-navigation"]'
-        )!;
-      },
-      get previous() {
-        return first(
-          Array.from(
-            root.querySelectorAll<HTMLButtonElement>(
-              '[part="navigation-button"]'
-            )
-          )
-        );
-      },
-      get next() {
-        return last(
-          Array.from(
-            root.querySelectorAll<HTMLButtonElement>(
-              '[part="navigation-button"]'
-            )
-          )
-        );
-      },
-    },
-  };
-}
+describe('Calendar helpers', () => {
+  const start = new CalendarDay({ year: 1987, month: 6, date: 17 });
 
-export function getDOMDate(date: CalendarDay, view: IgcDaysViewComponent) {
-  return getDayViewDOM(view).dates.all.find((day) =>
-    day.matches(`[data-value='${date.timestamp}']`)
-  )!;
-}
+  describe('DateRange descriptors', () => {
+    const dayBefore = start.add('day', -1).native;
+    const dayAfter = start.add('day', 1).native;
+    const [begin, end] = [
+      start.add('week', -1).native,
+      start.add('week', 1).native,
+    ];
+
+    it('After', () => {
+      expect(
+        isDateInRanges(start, [
+          { type: DateRangeType.After, dateRange: [dayBefore] },
+        ])
+      ).to.be.true;
+    });
+
+    it('Before', () => {
+      expect(
+        isDateInRanges(start, [
+          { type: DateRangeType.Before, dateRange: [dayAfter] },
+        ])
+      ).to.be.true;
+    });
+
+    it('Between', () => {
+      expect(
+        isDateInRanges(start, [
+          {
+            type: DateRangeType.Between,
+            dateRange: [begin, end],
+          },
+        ])
+      ).to.be.true;
+    });
+
+    it('Specific', () => {
+      expect(
+        isDateInRanges(start, [
+          {
+            type: DateRangeType.Specific,
+            dateRange: [],
+          },
+        ])
+      ).to.be.false;
+    });
+
+    it('Weekday', () => {
+      expect(isDateInRanges(start, [{ type: DateRangeType.Weekdays }])).to.be
+        .true;
+    });
+
+    it('Weekends', () => {
+      expect(
+        isDateInRanges(start, [
+          {
+            type: DateRangeType.Weekends,
+          },
+        ])
+      ).to.be.false;
+    });
+  });
+});

@@ -1,7 +1,7 @@
 import { html, type PropertyValues, type TemplateResult } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import { addThemingController } from '../../theming/theming-controller.js';
+import { addAriaProjector } from '#internals/controllers/aria-projection.js';
 import {
   addKeybindings,
   altKey,
@@ -15,14 +15,17 @@ import {
   homeKey,
   spaceBar,
   tabKey,
-} from '../common/controllers/key-bindings.js';
-import { addRootClickController } from '../common/controllers/root-click.js';
-import { addRootScrollHandler } from '../common/controllers/root-scroll.js';
-import { addSlotController, setSlots } from '../common/controllers/slot.js';
-import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditionalDependencies.js';
-import { shadowOptions } from '../common/decorators/shadow-options.js';
-import { watch } from '../common/decorators/watch.js';
-import { registerComponent } from '../common/definitions/register.js';
+} from '#internals/controllers/key-bindings.js';
+import {
+  createMutationController,
+  type MutationControllerParams,
+} from '#internals/controllers/mutation-observer.js';
+import { addRootClickController } from '#internals/controllers/root-click.js';
+import { addRootScrollHandler } from '#internals/controllers/root-scroll.js';
+import { addSlotController, setSlots } from '#internals/controllers/slot.js';
+import { blazorAdditionalDependencies } from '#internals/decorators/blazorAdditionalDependencies.js';
+import { shadowOptions } from '#internals/decorators/shadow-options.js';
+import { registerComponent } from '#internals/definitions/register.js';
 import {
   getActiveItems,
   getItems,
@@ -30,25 +33,30 @@ import {
   getPreviousActiveItem,
   IgcComboBoxBaseLikeComponent,
   setInitialSelectionState,
-} from '../common/mixins/combo-box.js';
-import type { AbstractConstructor } from '../common/mixins/constructor.js';
-import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { FormAssociatedRequiredMixin } from '../common/mixins/forms/associated-required.js';
-import { FormValueSelectTransformers } from '../common/mixins/forms/form-transformers.js';
-import { createFormValueState } from '../common/mixins/forms/form-value.js';
-import { partMap } from '../common/part-map.js';
+} from '#internals/mixins/combo-box.js';
+import type { AbstractConstructor } from '#internals/mixins/constructor.js';
+import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
+import { FormAssociatedRequiredMixin } from '#internals/mixins/forms/associated-required.js';
+import { FormValueSelectTransformers } from '#internals/mixins/forms/form-transformers.js';
+import { createFormValueState } from '#internals/mixins/forms/form-value.js';
+import { partMap } from '#internals/part-map.js';
+import { renderSlottedIcon } from '#internals/templates/slotted-icon.js';
+import { isEmpty } from '#internals/utils/arrays.js';
+import { isElement, normalizedTextContent } from '#internals/utils/dom.js';
 import {
   addSafeEventListener,
+  focusLeftHost,
   getElementFromPath,
-  isString,
-} from '../common/util.js';
+} from '#internals/utils/events.js';
+import { isString } from '#internals/utils/types.js';
+import { addThemingController } from '#theming/theming-controller.js';
 import IgcIconComponent from '../icon/icon.js';
 import IgcInputComponent from '../input/input.js';
 import IgcPopoverComponent, {
   type PopoverPlacement,
 } from '../popover/popover.js';
 import type { PopoverScrollStrategy } from '../types.js';
-import IgcValidationContainerComponent from '../validation-container/validation-container.js';
+import type IgcValidationContainerComponent from '../validation-container/validation-container.js';
 import IgcSelectGroupComponent from './select-group.js';
 import IgcSelectHeaderComponent from './select-header.js';
 import IgcSelectItemComponent from './select-item.js';
@@ -170,11 +178,22 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   @state()
   protected _selectedItem: IgcSelectItemComponent | null = null;
 
+  /**
+   * The item keyboard navigation moves from. Mirrors {@link _selectedItem}
+   * unless the open list has been navigated without committing a selection.
+   * Only {@link _activateItem} may assign it.
+   */
   @state()
-  protected _activeItem!: IgcSelectItemComponent;
+  protected _activeItem: IgcSelectItemComponent | null = null;
 
   @query(IgcInputComponent.tagName, true)
   protected _input!: IgcInputComponent;
+
+  @query('#dropdown')
+  protected _list!: HTMLDivElement | null;
+
+  @query('#select-helper-text')
+  protected _helperText!: IgcValidationContainerComponent | null;
 
   protected get _activeItems(): IgcSelectItemComponent[] {
     return Array.from(
@@ -274,23 +293,42 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
 
   //#endregion
 
-  //#region Life-cycle hooks and watchers
+  //#region Life-cycle hooks
 
-  @watch('scrollStrategy', { waitUntilFirstUpdate: true })
-  protected _scrollStrategyChange(): void {
-    this._rootScrollController.update({ resetListeners: true });
-  }
+  protected override willUpdate(changedProperties: PropertyValues<this>): void {
+    if (!this.hasUpdated) {
+      return;
+    }
 
-  @watch('open', { waitUntilFirstUpdate: true })
-  protected _openChange(): void {
-    this._rootClickController.update();
-    this._rootScrollController.update();
+    if (changedProperties.has('scrollStrategy')) {
+      this._rootScrollController.update({ resetListeners: true });
+    }
+
+    if (changedProperties.has('open')) {
+      this._rootClickController.update();
+      this._rootScrollController.update();
+    }
   }
 
   constructor() {
     super();
 
     addThemingController(this, all);
+
+    // Projects the host's labels and combobox semantics onto the native
+    // input inside `igc-input` (see ProjectedARIA for why the host cannot
+    // publish these itself).
+    addAriaProjector(this, {
+      target: () => this._input,
+      state: () => ({
+        role: 'combobox',
+        hasPopup: 'listbox',
+        expanded: `${this.open}`,
+        controls: this._list ? [this._list] : null,
+        describedBy: this._helperText ? [this._helperText] : null,
+        labelledBy: this._internals.labels,
+      }),
+    });
 
     addKeybindings(this, {
       skip: () => this.disabled,
@@ -309,22 +347,69 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
       .set(spaceBar, this._handleSpace)
       .set(enterKey, this._handleEnter);
 
+    createMutationController(this, {
+      callback: this._handleItemsChange,
+      filter: [IgcSelectItemComponent.tagName],
+      config: { childList: true, subtree: true },
+    });
+
     addSafeEventListener(this, 'keydown', this._handleSearch);
     addSafeEventListener(this, 'focusin', this._handleFocusIn);
     addSafeEventListener(this, 'focusout', this._handleFocusOut);
+  }
+
+  /**
+   * Re-resolves the selection whenever items enter or leave the light DOM.
+   * Consuming frameworks routinely render them after the initial paint, so
+   * `value` may name an item that does not exist yet, and a selected item may
+   * be taken out from under us.
+   */
+  private _handleItemsChange({
+    changes: { added, removed },
+  }: MutationControllerParams<IgcSelectItemComponent>): void {
+    if (!this.hasUpdated || (isEmpty(added) && isEmpty(removed))) {
+      return;
+    }
+
+    const match = this.value ? this._getItem(this.value) : undefined;
+
+    if (match) {
+      if (match !== this._selectedItem) {
+        this._setSelectedItem(match);
+      }
+      return;
+    }
+
+    // Nothing resolves the value anymore - drop the stale element references
+    // but hold on to the value itself.
+    const items = this.items;
+
+    if (this._selectedItem && !items.includes(this._selectedItem)) {
+      this._clearSelectedItem();
+    } else if (this._activeItem && !items.includes(this._activeItem)) {
+      this._activateItem(this._selectedItem);
+    }
   }
 
   protected override async firstUpdated(): Promise<void> {
     await this.updateComplete;
     const selected = setInitialSelectionState(this.items);
 
-    if (this.value && !selected) {
-      this._selectItem(this._getItem(this.value), false);
-    }
+    if (selected) {
+      // A `selected` item wins over an initial `value` and becomes what the
+      // component resets to. The default must be assigned while still pristine.
+      if (selected.value !== this.value) {
+        this.defaultValue = selected.value;
+      }
 
-    if (selected && selected.value !== this.value) {
-      this.defaultValue = selected.value;
       this._selectItem(selected, false);
+    } else if (this.value) {
+      const item = this._getItem(this.value);
+
+      // An unmatched value is kept, not discarded - its item may still arrive.
+      if (item) {
+        this._selectItem(item, false);
+      }
     }
 
     if (this.autofocus) {
@@ -334,16 +419,16 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
     this._validate();
   }
 
-  protected override updated(changedProperties: PropertyValues): void {
-    super.updated(changedProperties);
-    this._forwardLabelElements();
-  }
-
   //#endregion
 
   //#region Keyboard event handlers
 
   private _handleSearch(event: KeyboardEvent): void {
+    // A printable key held with a modifier is a shortcut, not type-ahead.
+    if (event.ctrlKey || event.metaKey || event.altKey) {
+      return;
+    }
+
     if (!/^.$/u.test(event.key)) {
       return;
     }
@@ -362,10 +447,7 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
       item.textContent?.trim().toLocaleLowerCase().startsWith(this._searchTerm)
     );
 
-    if (item) {
-      this.open ? this._activateItem(item) : this._selectItem(item);
-      this._activeItem.focus();
-    }
+    this._navigateTo(item);
   }
 
   private _handleEnter(): void {
@@ -381,13 +463,22 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   }
 
   private _handleArrowDown(): void {
-    const item = getNextActiveItem(this.items, this._activeItem);
-    this.open ? this._navigateToActiveItem(item) : this._selectItem(item);
+    this._navigateTo(getNextActiveItem(this.items, this._activeItem));
   }
 
   private _handleArrowUp(): void {
-    const item = getPreviousActiveItem(this.items, this._activeItem);
-    this.open ? this._navigateToActiveItem(item) : this._selectItem(item);
+    this._navigateTo(getPreviousActiveItem(this.items, this._activeItem));
+  }
+
+  /**
+   * Moves to `item`, committing the move as a selection while closed.
+   * Nowhere to move to is a no-op - clearing the selection is reserved for the
+   * callers that actually mean it.
+   */
+  private _navigateTo(item?: IgcSelectItemComponent): void {
+    if (item) {
+      this.open ? this._navigateToActiveItem(item) : this._selectItem(item);
+    }
   }
 
   private _handleAltArrowDown(): void {
@@ -418,13 +509,11 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   }
 
   private _handleHome(): void {
-    const item = this._activeItems.at(0);
-    this.open ? this._navigateToActiveItem(item) : this._selectItem(item);
+    this._navigateTo(this._activeItems.at(0));
   }
 
   private _handleEnd(): void {
-    const item = this._activeItems.at(-1);
-    this.open ? this._navigateToActiveItem(item) : this._selectItem(item);
+    this._navigateTo(this._activeItems.at(-1));
   }
 
   //#endregion
@@ -435,11 +524,10 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
     this._setTouchedState();
   }
 
-  private _handleFocusOut({ relatedTarget }: FocusEvent): void {
-    if (this.contains(relatedTarget as Node)) {
-      return;
+  private _handleFocusOut(event: FocusEvent): void {
+    if (focusLeftHost(this, event)) {
+      super._handleBlur();
     }
-    super._handleBlur();
   }
 
   private _handleClick(event: PointerEvent): void {
@@ -450,8 +538,7 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   }
 
   private _handleChange(item: IgcSelectItemComponent): boolean {
-    this._setTouchedState();
-    return this.emitEvent('igcChange', { detail: item });
+    return this._emitTouchedEvent('igcChange', { detail: item });
   }
 
   private _handleClosing(): void {
@@ -467,37 +554,34 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
 
   //#region Internal API
 
-  protected override _restoreDefaultValue(): void {
-    super._restoreDefaultValue();
-    this._formValue.setValueAndFormState(this._formValue.defaultValue);
-    const item = this._getItem(this._formValue.value!);
-    item ? this._setSelectedItem(item) : this._clearSelectedItem();
-  }
-
-  private _activateItem(item: IgcSelectItemComponent): void {
-    if (this._activeItem) {
+  private _activateItem(item: IgcSelectItemComponent | null): void {
+    if (this._activeItem && this._activeItem !== item) {
       this._activeItem.active = false;
     }
 
     this._activeItem = item;
-    this._activeItem.active = true;
+
+    if (item) {
+      item.active = true;
+    }
   }
 
   private _setSelectedItem(
     item: IgcSelectItemComponent
   ): IgcSelectItemComponent {
-    if (this._selectedItem) {
+    if (this._selectedItem && this._selectedItem !== item) {
       this._selectedItem.selected = false;
     }
 
     this._selectedItem = item;
-    this._selectedItem.selected = true;
+    item.selected = true;
+    this._activateItem(item);
 
-    return this._selectedItem;
+    return item;
   }
 
   private _selectItem(
-    item?: IgcSelectItemComponent,
+    item?: IgcSelectItemComponent | null,
     emit = true
   ): IgcSelectItemComponent | null {
     if (!item) {
@@ -508,27 +592,35 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
 
     const shouldFocus = emit && this.open;
     const shouldHide = emit && !this.keepOpenOnSelect;
+    // Re-selecting the current item is not a change, but it is still a commit:
+    // the list closes and focus returns just the same.
+    const changed = this._selectedItem !== item;
 
-    if (this._selectedItem === item) {
-      if (shouldFocus) this._input.focus();
-      return this._selectedItem;
+    if (changed) {
+      this._setSelectedItem(item);
+      this._updateValue(item.value);
+      if (emit) this._handleChange(item);
+    } else {
+      this._activateItem(item);
     }
 
-    const newItem = this._setSelectedItem(item);
-    this._activateItem(newItem);
-    this._updateValue(newItem.value);
-
-    if (emit) this._handleChange(newItem);
     if (shouldFocus) this._input.focus();
     if (shouldHide) this._hide(true);
 
     return this._selectedItem;
   }
 
-  private _navigateToActiveItem(item?: IgcSelectItemComponent): void {
-    if (item) {
-      this._activateItem(item);
-      this._activeItem.focus({ preventScroll: true });
+  /** Highlights `item` and, while the list is open, brings it into view. */
+  private _navigateToActiveItem(item?: IgcSelectItemComponent | null): void {
+    if (!item) {
+      return;
+    }
+
+    this._activateItem(item);
+
+    // Closed, the list is inert: focusing and scrolling it is pointless.
+    if (this.open) {
+      item.focus({ preventScroll: true });
       item.scrollIntoView({ behavior: 'auto', block: 'nearest' });
     }
   }
@@ -542,11 +634,17 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
       this._selectedItem.selected = false;
     }
     this._selectedItem = null;
+    this._activateItem(null);
   }
 
   private async _focusItemOnOpen(): Promise<void> {
     await this.updateComplete;
-    (this._selectedItem || this._activeItem)?.focus();
+
+    // Opening restarts navigation from the selection, so that the highlighted
+    // item and the one navigation continues from are always the same.
+    if (this.open) {
+      this._navigateToActiveItem(this._selectedItem ?? this._activeItem);
+    }
   }
 
   private _getItem(value: string): IgcSelectItemComponent | undefined {
@@ -554,13 +652,22 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   }
 
   /**
-   * Forwards the host's associated label elements to the inner input so that an external
-   * `<label for>` (or a wrapping `<label>`) labels the AT-exposed native input.
+   * The text shown in the input for the current selection: the selected item's
+   * main content, without what it routes to its `prefix`/`suffix` slots and
+   * without the marker comments templating engines leave among its children.
    */
-  private _forwardLabelElements(): void {
-    if (this._input) {
-      this._input._labelElements = this._internals.labels;
+  private get _displayValue(): string | undefined {
+    if (!this._selectedItem) {
+      return undefined;
     }
+
+    return normalizedTextContent(
+      Array.from(this._selectedItem.childNodes).filter((node) =>
+        isElement(node)
+          ? !node.hasAttribute('slot')
+          : node.nodeType === Node.TEXT_NODE
+      )
+    );
   }
 
   //#endregion
@@ -648,16 +755,19 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
 
     return html`
       <span slot="suffix" part=${partMap(parts)} aria-hidden="true">
-        <slot name="toggle-icon" ?hidden=${iconHidden}>
-          <igc-icon name=${iconName} collection="default"></igc-icon>
-        </slot>
+        ${renderSlottedIcon({
+          slot: 'toggle-icon',
+          icon: iconName,
+          hidden: iconHidden,
+          ariaHidden: false,
+        })}
         <slot name="toggle-icon-expanded" ?hidden=${!iconHidden}></slot>
       </span>
     `;
   }
 
   protected _renderHelperText(): TemplateResult {
-    return IgcValidationContainerComponent.create(this, {
+    return this._renderValidationContainer({
       id: 'select-helper-text',
       slot: 'anchor',
       hasHelperText: true,
@@ -665,19 +775,13 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   }
 
   protected _renderInputAnchor() {
-    const value = this.selectedItem?.textContent?.trim();
-
     return html`
       <igc-input
         id="input"
         slot="anchor"
-        role="combobox"
         readonly
-        aria-controls="dropdown"
-        aria-describedby="select-helper-text"
-        aria-expanded=${this.open}
         exportparts="container: input, input: native-input, label, prefix, suffix"
-        value=${ifDefined(value)}
+        value=${ifDefined(this._displayValue)}
         placeholder=${ifDefined(this.placeholder)}
         label=${ifDefined(this.label)}
         .disabled=${this.disabled}

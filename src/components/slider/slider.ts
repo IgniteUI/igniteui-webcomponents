@@ -1,11 +1,11 @@
 import { property } from 'lit/decorators.js';
-import { registerComponent } from '../common/definitions/register.js';
-import type { Constructor } from '../common/mixins/constructor.js';
-import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { FormAssociatedMixin } from '../common/mixins/forms/associated.js';
-import { FormValueNumberTransformers } from '../common/mixins/forms/form-transformers.js';
-import { createFormValueState } from '../common/mixins/forms/form-value.js';
-import { asNumber, asPercent, clamp } from '../common/util.js';
+import { registerComponent } from '#internals/definitions/register.js';
+import type { Constructor } from '#internals/mixins/constructor.js';
+import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
+import { FormAssociatedMixin } from '#internals/mixins/forms/associated.js';
+import { FormValueNumberTransformers } from '#internals/mixins/forms/form-transformers.js';
+import { createFormValueState } from '#internals/mixins/forms/form-value.js';
+import { asNumber, asPercent, clamp } from '#internals/utils/math.js';
 import { IgcSliderBaseComponent } from './slider-base.js';
 import IgcSliderLabelComponent from './slider-label.js';
 
@@ -82,7 +82,17 @@ export default class IgcSliderComponent extends FormAssociatedMixin(
   }
 
   protected override normalizeValue(): void {
-    this.value = this.validateValue(this.value);
+    const value = this.validateValue(this.value);
+
+    if (value === this.value) {
+      return;
+    }
+
+    // A clamp into the current scale is not an edit of the control, so the
+    // form state that it was in carries over.
+    const pristine = this._pristine;
+    this.value = value;
+    this._pristine = pristine;
   }
 
   protected override getTrackStyle() {
@@ -108,13 +118,11 @@ export default class IgcSliderComponent extends FormAssociatedMixin(
   }
 
   protected override emitInputEvent() {
-    this._setTouchedState();
-    this.emitEvent('igcInput', { detail: this.value });
+    this._emitTouchedEvent('igcInput', { detail: this.value });
   }
 
   protected override emitChangeEvent() {
-    this._setTouchedState();
-    this.emitEvent('igcChange', { detail: this.value });
+    this._emitTouchedEvent('igcChange', { detail: this.value });
   }
 
   /**

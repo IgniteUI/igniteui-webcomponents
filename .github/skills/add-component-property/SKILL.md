@@ -5,125 +5,88 @@ description: Add a reactive property to an existing Lit web component with prope
 
 # Add Component Property
 
-This skill guides you through adding a new reactive property to an existing Lit web component.
+Adds a reactive property to an existing component, with the documentation, tests and generated
+metadata that go with it.
 
-## Example Usage
+## When to Use
 
 - "Add an 'orientation' property to the divider component"
-- "Add a 'disabled' attribute to the button component"
 - "Add a 'variant' property with multiple options"
 
 ## Related Skills
 
 - [create-new-component](../create-new-component/) - Create a component first
-- [update-component-styles](../update-component-styles/) - Style changes for properties
-
-## When to Use
-
-- User asks to add a new property or attribute to a component
-- Component needs new configuration options
-- Extending component functionality with new settings
-
-## Prerequisites
-
-- [ ] Target component exists
-- [ ] Property name and type are determined
-- [ ] Default value is decided
-- [ ] Whether property should reflect to attribute is decided
+- [update-component-styles](../update-component-styles/) - Style changes driven by the property
 
 ## Required Context
 
-Gather or confirm:
-
-- **Component name**: Which component to modify
-- **Property name**: camelCase for property, kebab-case for attribute
-- **Property type**: Primitive (string, number, boolean) or complex (object, array)
-- **Default value**: What value should it have initially
-- **Reflect to attribute**: Should changes reflect to HTML attribute? (only for primitives)
-- **Property purpose**: Brief description for documentation
+- **Component**: which component to modify
+- **Name and type**: camelCase property, kebab-case attribute
+- **Default value**: booleans must default to `false`
+- **Reflection**: only for primitives that affect styling or accessibility
+- **Purpose**: the description that ships in the public API docs
 
 ## Steps
 
-### 1. Add Property to Component Class
+### 1. Declare the property
 
-Add the property with appropriate decorator to the component class:
+Place it in the `//#region Public attributes and properties` section, in the shape that matches
+its type:
 
-**For primitive types (reflect to attribute)**:
-
-```typescript
+```ts
 /**
- * [Property description]
- * @attr [attribute-name]
- * @default [default-value]
+ * The style variant of the component.
+ * @attr variant
+ * @default 'primary'
  */
 @property({ reflect: true })
-public propertyName: PropertyType = defaultValue;
-```
+public variant: StyleVariant = 'primary';
 
-**For readonly properties**:
-
-```typescript
 /**
- * [Property description - read-only]
- */
-@property({ attribute: false })
-public readonly readonlyProp: PropertyType = defaultValue;
-```
-
-**For boolean types**:
-
-```typescript
-/**
- * [Property description]
- * @attr [attribute-name]
+ * Whether user interaction with the component is disabled.
+ * @attr
  * @default false
  */
 @property({ type: Boolean, reflect: true })
-public propertyName = false;
-```
+public disabled = false;
 
-**For number types**:
-
-```typescript
 /**
- * [Property description]
- * @attr [attribute-name]
+ * The number of items rendered per page.
+ * @attr items-per-page
+ * @default 10
  */
-@property({ type: Number, reflect: true })
-public propertyName = 0;
-```
+@property({ type: Number, attribute: 'items-per-page' })
+public itemsPerPage = 10;
 
-**For complex types (no reflection)**:
-
-```typescript
-/**
- * [Property description]
- */
+/** The items rendered by the component. */
 @property({ attribute: false })
-public propertyName: ComplexType = defaultValue;
+public items: Array<Item> = [];
 ```
 
-### 2. Write the Description
+Rules that are easy to get wrong:
 
-The JSDoc description is copied **verbatim** into `custom-elements.json`, the generated
-Storybook `argTypes`/args interface, and the API docs of every framework wrapper
-(Angular / React / Blazor). Write it as product documentation:
+- **Booleans must default to `false`.** An attribute's presence equates to `true`, so a
+  `true` default cannot be turned off from markup. Rename the property instead (`enabled` →
+  `disabled`).
+- **Never reflect objects or arrays**, and give them `attribute: false` so Lit doesn't try to
+  serialize them.
+- Lit derives the attribute name automatically, but spell it out for multi-word properties and
+  for HTML look-alikes (`readOnly` → `readonly`, `minLength` → `minlength`).
+- A read-only value is a getter, not a `readonly @property`.
 
-- **No `igc-` tag names in prose.** Use the plain-English component name — "the select
-  component", "toggle buttons", "the tile manager" — not `igc-select` or
-  `` `igc-toggle-button` ``. Tag names belong only in `@element` and fenced `@example`
-  blocks.
+### 2. Write the description
+
+The JSDoc is copied **verbatim** into `custom-elements.json`, the generated Storybook metadata
+and the Angular / React / Blazor wrapper docs.
+
+- **No `igc-` tag names in prose** — "the select component", not `igc-select`.
 - **Don't restate that it is an attribute.** `@attr` already says so.
-  `The label of the control.` — not `The label attribute of the control.`
-- **Don't use `Gets/Sets`.** State what the value is; if the setter has side effects, add a
-  second sentence for the behavior.
-- **Booleans start with "Whether …"** and must describe the `true` state accurately. Verify
-  against the implementation — a `hide*`/`disable*` name inverts the sentence
-  (`hideIndicators` → *"Whether the carousel should skip rendering of the indicator
-  controls."*).
-- **Present tense**, not "will" (`an empty value returns an empty string`).
+- **No `Gets/Sets`.** State what the value is; add a second sentence for side effects.
+- **Booleans start with "Whether …"** and must describe the `true` state accurately — verify
+  against the implementation, since `hide*`/`disable*` names invert the sentence.
+- **Present tense**, not "will".
 
-```typescript
+```ts
 // ❌ Wrong
 /**
  * The outlined attribute of the control.
@@ -137,64 +100,40 @@ Storybook `argTypes`/args interface, and the API docs of every framework wrapper
  */
 ```
 
-Full reference: [create-new-component → Documentation Conventions](../create-new-component/SKILL.md#documentation-conventions)
+Full reference:
+[create-new-component → Documentation Conventions](../create-new-component/SKILL.md#documentation-conventions).
 
-### 3. Update Component Render Method
+### 3. React to the change
 
-If the property affects rendering, update the `render()` method:
+If the property only affects the template, do nothing — just use it in `render()`. If it has
+side effects or feeds derived state, use the Lit lifecycle hooks, not `@watch`:
 
-```typescript
-protected override render() {
-  return html`
-    <div part="base" class=${this.propertyName}>
-      <!-- Updated template using new property -->
-    </div>
-  `;
+```ts
+// Derived state, before rendering
+protected override willUpdate(changedProperties: PropertyValues<this>): void {
+  if (changedProperties.has('value')) {
+    this._normalized = this.value.trim();
+  }
 }
-```
 
-### 4. Add Property Change Handler (if needed)
-
-If the property requires side effects or needs to sync computed/dependent properties, use Lit's lifecycle hooks.
-
-**Preferred: Use `update()` hook** (DOM is available, best for side effects):
-
-```typescript
+// Side effects that need DOM access
 protected override update(changedProperties: PropertyValues<this>): void {
-  if (changedProperties.has('propertyName')) {
-    // Handle property change with DOM access
-    // Update dependent properties or trigger side effects
-    // Example: Update ARIA attributes, sync internal state, etc.
+  if (changedProperties.has('disabled')) {
+    this._internals.setARIA({ ariaDisabled: `${this.disabled}` });
   }
   super.update(changedProperties);
 }
 ```
 
-**If absolutely needed: Use `willUpdate()`** (before render, no DOM access):
+Always guard with `changedProperties.has()` and call `super.update()` when overriding `update`.
 
-```typescript
-protected override willUpdate(changedProperties: PropertyValues<this>): void {
-  if (changedProperties.has('propertyName')) {
-    // Handle property change before rendering
-    // Use only if you need to compute values before render
-    // No DOM access available here
-  }
-}
-```
+For a form-associated control, a property that participates in constraint validation
+(`min`, `pattern`, `maxLength`, …) must call `this._validate()` from its setter.
 
-**Best Practices**:
+### 4. Add tests
 
-- Prefer `update()` for most cases - DOM is available for queries and side effects
-- Use `willUpdate()` only when you need to compute derived state before rendering
-- Always call `super.update(changedProperties)` when overriding `update()`
-- Check `changedProperties.has()` to avoid unnecessary work
-
-### 5. Update Tests
-
-Add tests for the new property in `[component-name].spec.ts`:
-
-```typescript
-it('should have correct default value', async () => {
+```ts
+it('is initialized with the proper default value', async () => {
   const el = await fixture<IgcComponentComponent>(
     html`<igc-component></igc-component>`
   );
@@ -202,7 +141,7 @@ it('should have correct default value', async () => {
   expect(el.propertyName).to.equal(defaultValue);
 });
 
-it('can change property', async () => {
+it('updates on property change', async () => {
   const el = await fixture<IgcComponentComponent>(
     html`<igc-component></igc-component>`
   );
@@ -213,9 +152,9 @@ it('can change property', async () => {
   expect(el.propertyName).to.equal(newValue);
 });
 
-it('reflects to attribute', async () => {
+it('reflects to an attribute', async () => {
   const el = await fixture<IgcComponentComponent>(
-    html`<igc-component property-name="${value}"></igc-component>`
+    html`<igc-component property-name=${value}></igc-component>`
   );
 
   expect(el.propertyName).to.equal(value);
@@ -223,140 +162,69 @@ it('reflects to attribute', async () => {
 });
 ```
 
-### 6. Regenerate the Storybook Story Metadata
+If the property changes the rendered semantics, extend the a11y audit rather than adding a
+separate one.
 
-The `metadata` object, the `Igc[Component]Args` interface and their descriptions live inside
-a **generated** `// region default … // endregion` block in
-`stories/[component-name].stories.ts`. Do not hand-edit that block — regenerate it from the
-JSDoc you just wrote:
+### 5. Regenerate the story metadata
+
+The `argTypes`, `args` and the args interface live inside a **generated**
+`// region default … // endregion` block in `stories/[component-name].stories.ts`. Never edit
+it by hand:
 
 ```bash
-npm run cem        # regenerates custom-elements.json from the source JSDoc
-npm run build:meta # rewrites the `// region default` block of each story
+npm run cem        # custom-elements.json from the source JSDoc
+npm run build:meta # the `// region default` block of each story
 ```
 
-This produces the `argTypes` entry, the `args` default and the args-interface comment for
-the new property, all carrying the description verbatim:
+If the generated description reads badly, fix the JSDoc and regenerate. If the property doesn't
+appear at all, the story was skipped: the filename must match the tag name
+(`igc-date-picker` → `date-picker.stories.ts`) and the region fence must be present — a missing
+fence is a silent no-op.
 
-```typescript
-// region default
-argTypes: {
-  propertyName: {
-    type: 'string', // or 'boolean', 'number'
-    description: '[Property description]',
-    control: 'text', // or 'boolean', 'number', 'select'
-    table: { defaultValue: { summary: 'defaultValue' } },
-  },
-  // ... other properties
-}
-// ...
-interface IgcComponentArgs {
-  /** [Property description] */
-  propertyName: PropertyType;
-  // ... other properties
-}
-// endregion
-```
+Then wire the property into the story templates, which are hand-written:
 
-If the generated description reads badly, fix the JSDoc in the component and regenerate —
-never patch the story. Every story is generated; there are no hand-maintained exceptions.
-
-If your new property doesn't appear after regenerating, the story is being skipped silently.
-Check that the filename matches the tag name (`igc-date-picker` → `date-picker.stories.ts`) and
-that the `// region default` / `// endregion` pair is present — a missing region makes the
-generator a no-op with no warning.
-
-**Update the story template** — this part lives outside the generated region and is edited
-by hand:
-
-```typescript
+```ts
 export const Basic: Story = {
   render: (args) => html`
-    <igc-component .propertyName=${args.propertyName}> Content </igc-component>
+    <igc-component .propertyName=${args.propertyName}>Content</igc-component>
   `,
 };
 ```
 
-### 7. Verify and Test
-
-Run tests and verify in Storybook:
+### 6. Verify
 
 ```bash
-# Run tests
+npm run check
 npm run test
-
-# Check that the project will transpile
-npm run check-types
-
-# Start Storybook
-npm run storybook
 ```
 
 ## Validation Checklist
 
-- [ ] Property added with `@property` decorator
-- [ ] JSDoc comment includes `@attr` for primitives
-- [ ] Description follows the [description rules](#2-write-the-description): no `igc-` tag
-      names, no "… attribute of the control", no `Gets/Sets`, booleans start with "Whether"
-      and describe the `true` state correctly
-- [ ] Type annotation correct
-- [ ] Default value appropriate
-- [ ] `reflect: true` only for primitives
-- [ ] Tests cover default value
-- [ ] Tests cover property changes
-- [ ] Tests cover attribute reflection (if applicable)
+- [ ] Property declared in the public properties region with the right decorator options
+- [ ] Booleans default to `false`; complex types use `attribute: false`
+- [ ] `@attr` and `@default` tags present; description follows the
+      [description rules](#2-write-the-description)
+- [ ] Lifecycle hook used for side effects, `super.update()` called
+- [ ] `_validate()` called from setters affecting constraint validation
+- [ ] Tests cover default, change and reflection
 - [ ] `npm run cem && npm run build:meta` run; generated story region committed
-- [ ] Story template uses new property
-- [ ] All tests pass
-- [ ] Property works in Storybook
+- [ ] Story template uses the new property
+- [ ] `npm run check` and `npm run test` pass
+- [ ] CHANGELOG updated if the property is part of a feature or fix
 
 ## Common Pitfalls
 
-### 1. Reflecting Non-Primitive Types
-
-**Problem**: Trying to reflect objects/arrays to attributes
-**Solution**: Use `attribute: false` for complex types
-
-### 2. Wrong Attribute Name Conversion
-
-**Problem**: camelCase not mapping to kebab-case
-**Solution**: Lit auto-converts, or specify explicitly: `@property({ attribute: 'custom-name' })`
-
-### 3. Missing Type Coercion
-
-**Problem**: Boolean/number properties not converting from string attributes
-**Solution**: Use `{ type: Boolean }` or `{ type: Number }` in decorator
-
-### 4. Forgetting to Update Storybook
-
-**Problem**: New property not controllable in Storybook
-**Solution**: Run `npm run cem && npm run build:meta` to regenerate the `// region default`
-block, then wire the property into the story template by hand
-
-### 5. Hand-Editing the Generated Story Region
-
-**Problem**: The `argTypes` description is fixed directly in the story; the next
-`npm run build:meta` reverts it, or the story and the API docs disagree
-**Solution**: The JSDoc in the component is the single source of truth — fix it there and
-regenerate
-
-### 6. Tag Names in the Description
-
-**Problem**: A description like `Gets/Sets the name for all child igc-radio components.` ships
-into `custom-elements.json`, the Storybook docs and every framework wrapper's API docs
-**Solution**: `The name applied to all radio buttons in the group.` — see
-[Write the Description](#2-write-the-description)
+| Symptom                                       | Cause / Fix                                                            |
+| --------------------------------------------- | ---------------------------------------------------------------------- |
+| Attribute can't be turned off from markup     | Boolean defaults to `true` — rename so the default is `false`          |
+| `[object Object]` in the DOM                  | Complex type without `attribute: false`                                |
+| String `'false'` behaves as `true`            | Missing `{ type: Boolean }` in the decorator                           |
+| Attribute name is `propertyname`              | Multi-word property without an explicit `attribute: 'property-name'`   |
+| Story control missing after adding a property | `npm run build:meta` not run, or the story is being skipped silently   |
+| Story description reverts                     | The generated region was hand-edited — fix the JSDoc instead           |
 
 ## Reference Examples
 
-See `src/components/badge/badge.ts` for examples of:
-
-- String property with reflection: `variant`
-- Boolean property: `outlined`
-- Enum-like property: `shape`
-
-## Resources
-
-- [Lit Reactive Properties](https://lit.dev/docs/components/properties/)
-- [Lit Decorators](https://lit.dev/docs/api/decorators/)
-- [Coding Guidelines](../../CODING_GUIDELINES.md) - Comprehensive coding standards
+- `src/components/badge/badge.ts` — reflected string, boolean and union-typed properties
+- `src/components/input/input.ts` — validation-affecting setters calling `_validate()`
+- `src/components/combo/combo.ts` — complex, non-attribute properties

@@ -1,12 +1,11 @@
-import { html, nothing } from 'lit';
+import { html } from 'lit';
 import { property, query } from 'lit/decorators.js';
-import { ifDefined } from 'lit/directives/if-defined.js';
-import { styleMap } from 'lit/directives/style-map.js';
 
-import { registerComponent } from '../common/definitions/register.js';
-import type { Constructor } from '../common/mixins/constructor.js';
-import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { asNumber, asPercent } from '../common/util.js';
+import { registerComponent } from '#internals/definitions/register.js';
+import type { Constructor } from '#internals/mixins/constructor.js';
+import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
+import { getCenterPoint } from '#internals/utils/dom.js';
+import { asNumber, asPercent } from '#internals/utils/math.js';
 import { IgcSliderBaseComponent } from './slider-base.js';
 import IgcSliderLabelComponent from './slider-label.js';
 
@@ -134,22 +133,17 @@ export default class IgcRangeSliderComponent extends EventEmitterMixin<
   }
 
   protected override closestHandle(event: PointerEvent): HTMLElement {
-    const fromOffset =
-      this.thumbFrom.offsetLeft + this.thumbFrom.offsetWidth / 2;
-    const toOffset = this.thumbTo.offsetLeft + this.thumbTo.offsetWidth / 2;
-    const xPointer = event.clientX - this.getBoundingClientRect().left;
-    const match = this.closestTo(xPointer, [fromOffset, toOffset]);
+    const fromX = getCenterPoint(this.thumbFrom).x;
+    const toX = getCenterPoint(this.thumbTo).x;
+    const pointerX = event.clientX;
 
-    if (fromOffset === toOffset && toOffset < xPointer) {
-      return this.thumbTo;
+    if (fromX === toX) {
+      return toX < pointerX ? this.thumbTo : this.thumbFrom;
     }
-    if (fromOffset === toOffset && toOffset > xPointer) {
-      return this.thumbFrom;
-    }
-    if (match === fromOffset) {
-      return this.thumbFrom;
-    }
-    return this.thumbTo;
+
+    return this.closestTo(pointerX, [fromX, toX]) === fromX
+      ? this.thumbFrom
+      : this.thumbTo;
   }
 
   protected override updateValue(increment: number) {
@@ -195,71 +189,22 @@ export default class IgcRangeSliderComponent extends EventEmitterMixin<
     thumb.focus();
   }
 
-  private handleFocus(event: FocusEvent) {
-    this.activeThumb = event.target as HTMLElement;
-    const id = this.activeThumb.id;
+  /** The focused thumb announces the whole range, not just its own end. */
+  protected override handleThumbFocus(event: FocusEvent) {
+    super.handleThumbFocus(event);
 
-    for (const thumb of [this.thumbFrom, this.thumbTo]) {
-      if (thumb.id === id) continue;
-      const [activeValue, thumbVal] = [
-        asNumber(this.activeThumb.ariaValueNow),
-        asNumber(thumb.ariaValueNow),
-      ];
+    const active = event.target as HTMLElement;
+    const other = active === this.thumbFrom ? this.thumbTo : this.thumbFrom;
+    const values = [
+      asNumber(active.ariaValueNow),
+      asNumber(other.ariaValueNow),
+    ];
 
-      this.activeThumb.ariaValueText = `${this.formatValue(Math.min(activeValue, thumbVal))} - ${this.formatValue(Math.max(activeValue, thumbVal))}`;
-    }
+    active.ariaValueText = `${this.formatValue(Math.min(...values))} - ${this.formatValue(Math.max(...values))}`;
   }
 
-  protected override renderThumb(
-    value: number,
-    ariaLabel?: string,
-    thumbId?: string
-  ) {
-    const percent = `${asPercent(value - this.min, this.distance)}%`;
-    const thumbStyles = { insetInlineStart: percent };
-    const tooltipStyles = {
-      insetInlineStart: percent,
-      opacity: this.thumbLabelsVisible ? 1 : 0,
-    };
-    const ariaValueText =
-      thumbId === 'thumbFrom' ? `min ${this.lower}` : `max ${this.upper}`;
-
-    const textValue = this.hasLabels
-      ? this.labels[value]
-      : this.valueFormat || this.valueFormatOptions
-        ? this.formatValue(value)
-        : ariaValueText;
-
-    return html`
-      <div
-        part="thumb"
-        id=${ifDefined(thumbId)}
-        tabindex=${this.disabled ? -1 : 0}
-        style=${styleMap(thumbStyles)}
-        role="slider"
-        aria-valuemin=${this.lowerBound}
-        aria-valuemax=${this.upperBound}
-        aria-valuenow=${value}
-        aria-valuetext=${ifDefined(textValue)}
-        aria-label=${ifDefined(ariaLabel)}
-        aria-disabled=${this.disabled}
-        @pointerenter=${this.showThumbLabels}
-        @pointerleave=${this.hideThumbLabels}
-        @focus=${this.handleFocus}
-        @blur=${this.handleThumbBlur}
-      ></div>
-      ${
-        this.hideTooltip
-          ? nothing
-          : html`
-              <div part="thumb-label" style=${styleMap(tooltipStyles)}>
-                <div part="thumb-label-inner">
-                  ${this.hasLabels ? this.labels[value] : this.formatValue(value)}
-                </div>
-              </div>
-            `
-      }
-    `;
+  protected override _thumbAriaValueText(thumbId?: string) {
+    return thumbId === 'thumbFrom' ? `min ${this.lower}` : `max ${this.upper}`;
   }
 
   protected override renderThumbs() {

@@ -2,10 +2,13 @@
  * Date Part Classes Module
  *
  * This module provides structured classes for date/time parts used in date-time input.
- * Each part type has its own class with specific validation and spin behavior.
+ * Each date part type has its own class with specific validation and spin behavior;
+ * the time part types share one class driven by a bounds/accessor lookup.
  *
  * Classes are private to this module - only types and factory function are exported.
  */
+
+import { clamp, modulo } from '#internals/utils/math.js';
 
 //#region Types and Enums
 
@@ -32,6 +35,20 @@ export const DatePartType = {
 } as const;
 
 export type DatePartType = (typeof DatePartType)[keyof typeof DatePartType];
+
+/** The part types that make up a calendar date. */
+export const DATE_PART_TYPES = new Set<DatePartType>([
+  DatePartType.Date,
+  DatePartType.Month,
+  DatePartType.Year,
+]);
+
+/** The part types that make up a time of day. */
+export const TIME_PART_TYPES = new Set<DatePartType>([
+  DatePartType.Hours,
+  DatePartType.Minutes,
+  DatePartType.Seconds,
+]);
 
 // Spin delta defaults
 export const DEFAULT_DATE_PARTS_SPIN_DELTAS = Object.freeze<DatePartDeltas>({
@@ -132,12 +149,45 @@ export interface DateValidationContext {
 
 //#region Constants
 
-/** Time bounds for validation */
-const TIME_BOUNDS = {
-  hours: { min: 0, max: 23 },
-  minutes: { min: 0, max: 59 },
-  seconds: { min: 0, max: 59 },
-} as const;
+type TimePartType =
+  | typeof DatePartType.Hours
+  | typeof DatePartType.Minutes
+  | typeof DatePartType.Seconds;
+
+/** Per-part bounds and `Date` accessors driving the shared {@link TimePart}. */
+interface TimePartConfig {
+  /** Inclusive lower bound for validation and spinning. */
+  min: number;
+  /** Inclusive upper bound for validation and spinning. */
+  max: number;
+  get(date: Date): number;
+  set(date: Date, value: number): void;
+  /** Maps the raw value to its rendered form - 12-hour hours, say. */
+  display?(value: number, format: string): number;
+}
+
+const TIME_PART_CONFIG: Record<TimePartType, TimePartConfig> = {
+  hours: {
+    min: 0,
+    max: 23,
+    get: (date) => date.getHours(),
+    set: (date, value) => date.setHours(value),
+    display: (value, format) =>
+      format.includes('h') ? toTwelveHourFormat(value) : value,
+  },
+  minutes: {
+    min: 0,
+    max: 59,
+    get: (date) => date.getMinutes(),
+    set: (date, value) => date.setMinutes(value),
+  },
+  seconds: {
+    min: 0,
+    max: 59,
+    get: (date) => date.getSeconds(),
+    set: (date, value) => date.setSeconds(value),
+  },
+};
 
 /** Date bounds for validation */
 const DATE_BOUNDS = {
@@ -172,26 +222,18 @@ function toTwelveHourFormat(hours: number): number {
 }
 
 /**
- * Generic spin helper for time parts.
+ * Wraps a spun value around the inclusive `[min, max]` range, or clamps it to
+ * the nearest bound when looping is off.
  */
-function spinTimePart(
-  date: Date,
-  delta: number,
-  max: number,
+function wrapOrClamp(
+  value: number,
   min: number,
-  setter: (value: number) => number,
-  getter: () => number,
+  max: number,
   spinLoop: boolean
-): void {
-  let value = getter.call(date) + delta;
-
-  if (value > max) {
-    value = spinLoop ? value % (max + 1) : max;
-  } else if (value < min) {
-    value = spinLoop ? max + 1 + (value % (max + 1)) : min;
-  }
-
-  setter.call(date, value);
+): number {
+  return spinLoop
+    ? min + modulo(value - min, max - min + 1)
+    : clamp(value, min, max);
 }
 
 //#endregion
@@ -281,15 +323,7 @@ class MonthPart extends DatePartBase {
       date.setDate(maxDate);
     }
 
-    let month = date.getMonth() + delta;
-
-    if (month > max) {
-      month = spinLoop ? (month % max) - 1 : max;
-    } else if (month < min) {
-      month = spinLoop ? max + (month % max) + 1 : min;
-    }
-
-    date.setMonth(month);
+    date.setMonth(wrapOrClamp(date.getMonth() + delta, min, max, spinLoop));
   }
 
   getValue(date: Date): string {
@@ -323,15 +357,7 @@ class DateOfMonthPart extends DatePartBase {
     const maxDate = daysInMonth(date.getFullYear(), date.getMonth());
     const { min } = DATE_BOUNDS.date;
 
-    let dayOfMonth = date.getDate() + delta;
-
-    if (dayOfMonth > maxDate) {
-      dayOfMonth = spinLoop ? dayOfMonth % maxDate : maxDate;
-    } else if (dayOfMonth < min) {
-      dayOfMonth = spinLoop ? maxDate + (dayOfMonth % maxDate) : min;
-    }
-
-    date.setDate(dayOfMonth);
+    date.setDate(wrapOrClamp(date.getDate() + delta, min, maxDate, spinLoop));
   }
 
   getValue(date: Date): string {
@@ -340,91 +366,36 @@ class DateOfMonthPart extends DatePartBase {
 }
 
 /**
- * Hours part (HH, H, hh, h)
+ * Time part (HH/hh hours, mm minutes, ss seconds) - a single implementation
+ * over the per-part bounds and accessors in {@link TIME_PART_CONFIG}.
  */
-class HoursPart extends DatePartBase {
-  constructor(options: DatePartOptions) {
-    super(DatePartType.Hours, options);
+class TimePart extends DatePartBase {
+  private readonly _config: TimePartConfig;
+
+  constructor(type: TimePartType, options: DatePartOptions) {
+    super(type, options);
+    this._config = TIME_PART_CONFIG[type];
   }
 
   validate(value: number): boolean {
-    return value >= TIME_BOUNDS.hours.min && value <= TIME_BOUNDS.hours.max;
+    return value >= this._config.min && value <= this._config.max;
   }
 
   spin(delta: number, options: SpinOptions): void {
     const { date, spinLoop } = options;
-    const { min, max } = TIME_BOUNDS.hours;
-    spinTimePart(date, delta, max, min, date.setHours, date.getHours, spinLoop);
+    const { min, max, get, set } = this._config;
+
+    set(date, wrapOrClamp(get(date) + delta, min, max, spinLoop));
   }
 
   getValue(date: Date): string {
-    const isTwelveHour = this.format.includes('h');
-    const hours = isTwelveHour
-      ? toTwelveHourFormat(date.getHours())
-      : date.getHours();
-    return padValue(hours, this.format.length);
-  }
-}
+    const { get, display } = this._config;
+    const value = get(date);
 
-/**
- * Minutes part (mm, m)
- */
-class MinutesPart extends DatePartBase {
-  constructor(options: DatePartOptions) {
-    super(DatePartType.Minutes, options);
-  }
-
-  validate(value: number): boolean {
-    return value >= TIME_BOUNDS.minutes.min && value <= TIME_BOUNDS.minutes.max;
-  }
-
-  spin(delta: number, options: SpinOptions): void {
-    const { date, spinLoop } = options;
-    const { min, max } = TIME_BOUNDS.minutes;
-    spinTimePart(
-      date,
-      delta,
-      max,
-      min,
-      date.setMinutes,
-      date.getMinutes,
-      spinLoop
+    return padValue(
+      display ? display(value, this.format) : value,
+      this.format.length
     );
-  }
-
-  getValue(date: Date): string {
-    return padValue(date.getMinutes(), this.format.length);
-  }
-}
-
-/**
- * Seconds part (ss, s)
- */
-class SecondsPart extends DatePartBase {
-  constructor(options: DatePartOptions) {
-    super(DatePartType.Seconds, options);
-  }
-
-  validate(value: number): boolean {
-    return value >= TIME_BOUNDS.seconds.min && value <= TIME_BOUNDS.seconds.max;
-  }
-
-  spin(delta: number, options: SpinOptions): void {
-    const { date, spinLoop } = options;
-    const { min, max } = TIME_BOUNDS.seconds;
-    spinTimePart(
-      date,
-      delta,
-      max,
-      min,
-      date.setSeconds,
-      date.getSeconds,
-      spinLoop
-    );
-  }
-
-  getValue(date: Date): string {
-    return padValue(date.getSeconds(), this.format.length);
   }
 }
 
@@ -507,11 +478,9 @@ export function createDatePart(
     case DatePartType.Date:
       return new DateOfMonthPart(options);
     case DatePartType.Hours:
-      return new HoursPart(options);
     case DatePartType.Minutes:
-      return new MinutesPart(options);
     case DatePartType.Seconds:
-      return new SecondsPart(options);
+      return new TimePart(type, options);
     case DatePartType.AmPm:
       return new AmPmPart(options);
     case DatePartType.Literal:

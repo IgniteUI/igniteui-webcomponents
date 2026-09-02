@@ -5,8 +5,8 @@ import {
   html,
   nextFrame,
 } from '@open-wc/testing';
-import { defineComponents } from '../common/definitions/defineComponents.js';
-import { first } from '../common/util.js';
+import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { firstOf } from '#internals/utils/arrays.js';
 import IgcLinearProgressComponent from './linear-progress.js';
 
 describe('Linear progress component', () => {
@@ -75,6 +75,21 @@ describe('Linear progress component', () => {
 
       await updateProgress('hideLabel', false);
       expect(getDOM(progress).label).to.exist;
+    });
+
+    it('applies `animationDuration` changes on their own', async () => {
+      const base =
+        progress.renderRoot.querySelector<HTMLElement>('[part~="base"]')!;
+
+      expect(base.style.getPropertyValue('--_transition-duration')).to.equal(
+        '0ms'
+      );
+
+      await updateProgress('animationDuration', 1200);
+
+      expect(base.style.getPropertyValue('--_transition-duration')).to.equal(
+        '1200ms'
+      );
     });
 
     it('reflects the striped attribute', async () => {
@@ -212,21 +227,23 @@ describe('Linear progress component', () => {
       const slot = getDOM(progress).slot;
 
       expect(slot).to.exist;
-      expect(first(slot.assignedNodes()).textContent).to.equal('Custom Label');
+      expect(firstOf(slot.assignedNodes()).textContent).to.equal(
+        'Custom Label'
+      );
     });
 
     it('`hideLabel` does not affect slotted label', async () => {
       await updateProgress('hideLabel', true);
-      expect(first(getDOM(progress).slot.assignedNodes()).textContent).to.equal(
-        'Custom Label'
-      );
+      expect(
+        firstOf(getDOM(progress).slot.assignedNodes()).textContent
+      ).to.equal('Custom Label');
     });
 
     it('indeterminate does not affect slotted label', async () => {
       await updateProgress('indeterminate', true);
-      expect(first(getDOM(progress).slot.assignedNodes()).textContent).to.equal(
-        'Custom Label'
-      );
+      expect(
+        firstOf(getDOM(progress).slot.assignedNodes()).textContent
+      ).to.equal('Custom Label');
     });
   });
 
