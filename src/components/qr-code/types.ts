@@ -18,3 +18,31 @@ export type QrErrorCorrectionLevel = 'L' | 'M' | 'Q' | 'H';
  * - `numeric` - digits only; `alphanumeric` - digits + uppercase letters + a few symbols; `byte` - arbitrary UTF-8.
  */
 export type QrEncodingMode = 'numeric' | 'alphanumeric' | 'byte';
+
+/** Output format of an exported QR code. */
+export type QrCodeExportFormat = 'svg' | 'png' | 'jpeg' | 'webp';
+
+/** Options for exporting the QR code to a file. */
+export interface QrCodeExportOptions {
+  /**
+   * The name of the exported file. The extension of the format is appended when the name does not end with it.
+   * @default 'qr-code'
+   */
+  fileName?: string;
+  /**
+   * The output format.
+   * @default 'png'
+   */
+  format?: QrCodeExportFormat;
+  /**
+   * Multiplier applied to the `size` of the component. A 256px QR code with a `scale` of 2 exports as a 512x512 image.
+   * For `svg`, the multiplier applies to the `width` and `height` attributes while the `viewBox` is unchanged.
+   * @default 1
+   */
+  scale?: number;
+  /**
+   * Whether to open the browser download dialog for the exported file.
+   * @default false
+   */
+  download?: boolean;
+}
