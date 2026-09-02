@@ -27,7 +27,10 @@ import { bindIf } from '#internals/utils/lit.js';
 import { equal } from '#internals/utils/objects.js';
 import type { ThemingController } from '#theming/theming-controller.js';
 import IgcCalendarComponent, { focusActiveDate } from '../calendar/calendar.js';
-import { createDateConstraints } from '../calendar/helpers.js';
+import {
+  createDateConstraints,
+  getLocaleWeekStart,
+} from '../calendar/helpers.js';
 import type {
   CalendarHeaderOrientation,
   CalendarSelection,
@@ -117,6 +120,7 @@ export abstract class IgcDatePickerBaseComponent<
   protected _displayFormat?: string;
   protected _inputFormat?: string;
   protected _visibleMonths = 1;
+  private _weekStart?: WeekDays;
 
   protected override readonly _rootClickController = addRootClickController(
     this,
@@ -470,9 +474,22 @@ export abstract class IgcDatePickerBaseComponent<
   @property({ type: Boolean, reflect: true, attribute: 'show-week-numbers' })
   public showWeekNumbers = false;
 
-  /** Sets the start day of the week for the calendar. */
+  /**
+   * Sets the start day of the week for the calendar.
+   *
+   * @remarks
+   * When not set, the week starts on the first day of the week of the current {@link locale}.
+   * Setting `undefined` returns to the locale value.
+   * @attr week-start
+   */
   @property({ attribute: 'week-start' })
-  public weekStart: WeekDays = 'sunday';
+  public set weekStart(value: WeekDays | undefined) {
+    this._weekStart = value ?? undefined;
+  }
+
+  public get weekStart(): WeekDays {
+    return this._weekStart ?? getLocaleWeekStart(this.locale);
+  }
 
   //#endregion
 
