@@ -1,10 +1,10 @@
 import { html, LitElement, type PropertyValues } from 'lit';
 import { property } from 'lit/decorators.js';
-import { addThemingController } from '../../theming/theming-controller.js';
-import { breadcrumbsContext } from '../common/context.js';
-import { createAsyncContext } from '../common/controllers/async-consumer.js';
-import { addInternalsController } from '../common/controllers/internals.js';
-import { registerComponent } from '../common/definitions/register.js';
+import { breadcrumbsContext } from '#internals/context.js';
+import { createAsyncContext } from '#internals/controllers/async-consumer.js';
+import { addInternalsController } from '#internals/controllers/internals.js';
+import { registerComponent } from '#internals/definitions/register.js';
+import { addThemingController } from '#theming/theming-controller.js';
 import IgcIconComponent from '../icon/icon.js';
 import { styles } from './themes/breadcrumb.base.css.js';
 import { styles as shared } from './themes/shared/breadcrumb.common.css.js';

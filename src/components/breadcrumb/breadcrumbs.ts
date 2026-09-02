@@ -1,10 +1,10 @@
 import { ContextProvider } from '@lit/context';
 import { html, LitElement, type PropertyValues } from 'lit';
 import { property } from 'lit/decorators.js';
-import { addThemingController } from '../../theming/theming-controller.js';
-import { breadcrumbsContext } from '../common/context.js';
-import { addInternalsController } from '../common/controllers/internals.js';
-import { registerComponent } from '../common/definitions/register.js';
+import { breadcrumbsContext } from '#internals/context.js';
+import { addInternalsController } from '#internals/controllers/internals.js';
+import { registerComponent } from '#internals/definitions/register.js';
+import { addThemingController } from '#theming/theming-controller.js';
 import IgcBreadcrumbComponent from './breadcrumb.js';
 import { styles } from './themes/breadcrumbs.base.css.js';
 import { all } from './themes/themes.js';

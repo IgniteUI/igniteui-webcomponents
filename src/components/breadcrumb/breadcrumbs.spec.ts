@@ -1,7 +1,6 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
-
-import { defineComponents } from '../common/definitions/defineComponents.js';
-import { first, last } from '../common/util.js';
+import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { firstOf, lastOf } from '#internals/utils/arrays.js';
 import IgcBreadcrumbComponent from './breadcrumb.js';
 import IgcBreadcrumbsComponent from './breadcrumbs.js';
 
@@ -51,7 +50,7 @@ describe('Breadcrumbs', () => {
         createDefaultBreadcrumbs()
       );
 
-      const lastBreadcrumb = last(
+      const lastBreadcrumb = lastOf(
         Array.from(el.querySelectorAll(IgcBreadcrumbComponent.tagName))
       );
 
@@ -85,7 +84,7 @@ describe('Breadcrumbs', () => {
       const el = await fixture<IgcBreadcrumbsComponent>(
         createDefaultBreadcrumbs()
       );
-      const lastBreadcrumb = last(
+      const lastBreadcrumb = lastOf(
         Array.from(el.querySelectorAll(IgcBreadcrumbComponent.tagName))
       );
       const separator =
@@ -110,7 +109,7 @@ describe('Breadcrumbs', () => {
       const assigned = slot.assignedNodes();
 
       expect(assigned).to.have.lengthOf(1);
-      expect(first(assigned).textContent).to.equal('/');
+      expect(firstOf(assigned).textContent).to.equal('/');
     });
   });
 
@@ -129,7 +128,7 @@ describe('Breadcrumbs', () => {
       const assigned = slot.assignedNodes();
 
       expect(assigned).to.have.lengthOf(1);
-      expect(first(assigned).textContent).to.equal('★');
+      expect(firstOf(assigned).textContent).to.equal('★');
     });
 
     it('renders content in the suffix slot', async () => {
@@ -146,7 +145,7 @@ describe('Breadcrumbs', () => {
       const assigned = slot.assignedNodes();
 
       expect(assigned).to.have.lengthOf(1);
-      expect(first(assigned).textContent).to.equal('▸');
+      expect(firstOf(assigned).textContent).to.equal('▸');
     });
   });
 
