@@ -1,0 +1,98 @@
+@use 'styles/utilities' as *;
+@use '../light/themes' as *;
+
+$theme: $material;
+
+:host(:not([current], [disabled])) {
+    ::slotted(a){
+        color: var-get($theme, 'text-color');
+    }
+
+    ::slotted([slot='suffix']),
+    ::slotted([slot='prefix']) {
+        color: var-get($theme, 'icon-color');
+    }
+
+    [part~='label']:hover {
+        ::slotted(a){
+            color: var-get($theme, 'hover-text-color');
+        }
+
+        ::slotted([slot='suffix']),
+        ::slotted([slot='prefix']) {
+            color: var-get($theme, 'hover-icon-color');
+        } 
+    }
+
+    [part~='label']:focus-within {
+        ::slotted(a){
+            color: var-get($theme, 'focus-text-color');
+        }
+
+        ::slotted([slot='prefix']),
+        ::slotted([slot='suffix']) {
+            color: var-get($theme, 'focus-icon-color');
+        }
+    }
+
+    [part~='label']:active {
+        ::slotted(a){
+            color: var-get($theme, 'pressed-text-color');
+        }
+
+        ::slotted([slot='prefix']),
+        ::slotted([slot='suffix']) {
+            color: var-get($theme, 'pressed-icon-color');
+        }
+    }
+
+    [part~='label']:focus-within:hover {
+        ::slotted(a){
+            color: var-get($theme, 'focus-hover-text-color');
+        }
+
+        ::slotted([slot='prefix']),
+        ::slotted([slot='suffix']) {
+            color: var-get($theme, 'focus-hover-icon-color');
+        }
+    }
+
+    [part~='label']:focus-within:active {
+        ::slotted(a){
+            color: var-get($theme, 'focus-pressed-text-color');
+        }
+
+        ::slotted([slot='prefix']),
+        ::slotted([slot='suffix']) {
+            color: var-get($theme, 'focus-pressed-icon-color');
+        }
+    }
+}
+
+:host([current]) {
+    ::slotted(a) {
+        color: var-get($theme, 'current-text-color');
+        pointer-events: none;
+    }
+
+    ::slotted([slot='suffix']),
+    ::slotted([slot='prefix']) {
+        color: var-get($theme, 'current-icon-color');
+    }
+}
+
+:host([disabled]) {
+    ::slotted(a) {
+        color: var-get($theme, 'disabled-text-color');
+        pointer-events: none;
+    }
+
+    ::slotted([slot='suffix']),
+    ::slotted([slot='prefix']) {
+        color: var-get($theme, 'disabled-icon-color');
+    }
+}
+
+[part='separator'] {
+    color: var(--ig-breadcrumb-separator-color, var(--ig-gray-500));
+}

@@ -2,40 +2,30 @@
 @use 'styles/utilities' as *;
 
 :host {
-    --_link-color: var(--ig-breadcrumb-link-color, var(--ig-primary-500));
-    --_link-color-hover: var(
-        --ig-breadcrumb-link-color-hover,
-        var(--ig-primary-700)
-    );
-    --_current-color: var(--ig-breadcrumb-current-color, var(--ig-gray-900));
-    --_separator-color: var(
-        --ig-breadcrumb-separator-color,
-        var(--ig-gray-500)
-    );
-
     display: inline-flex;
     flex: 0 0 auto;
-    gap: 0.5rem;
+    align-items: center;
 
     ::slotted(a) {
-        color: var(--_link-color);
         text-decoration: none;
 
         &:hover {
-            color: var(--_link-color-hover);
             text-decoration: underline;
         }
+    }
 
-        &:focus-visible {
-            outline: 2px solid var(--_link-color);
-            outline-offset: 2px;
-            border-radius: 2px;
-        }
+    ::slotted(a:focus-visible) {
+        outline: none;
     }
 }
 
 [part='separator'] {
-    color: var(--_separator-color);
+    display: inline-flex;
+    align-items: center;
+
+    igc-icon {
+        --component-size: var(--ig-size, var(--ig-size-medium));
+    }
 
     &:dir(rtl) igc-icon,
     &:dir(rtl) ::slotted(igc-icon) {
@@ -43,10 +33,25 @@
     }
 }
 
-:host([current]) {
-    ::slotted(a) {
-        color: var(--_current-color);
-        pointer-events: none;
+[part='label'] {
+    display: inline-flex;
+    align-items: center;
+    padding-inline: pad-inline(rem(2px), rem(4px), rem(8px));
+
+    ::slotted(a){
+        padding-inline: pad-inline(rem(2px), rem(4px), rem(8px));
+        font-size: sizable(var(--ig-detail-1-font-size), var(--ig-body-2-font-size), var(--ig-body-1-font-size));
+        font-weight: sizable(var(--ig-detail-1-font-weight), var(--ig-body-2-font-weight), var(--ig-body-1-font-weight));
+        line-height: sizable(var(--ig-detail-1-line-height), var(--ig-body-2-line-height), var(--ig-body-1-line-height));
+        letter-spacing: sizable(var(--ig-detail-1-letter-spacing), var(--ig-body-2-letter-spacing), var(--ig-body-1-letter-spacing));
+        text-transform: sizable(var(--ig-detail-1-text-transform), var(--ig-body-2-text-transform), var(--ig-body-1-text-transform));
+    }
+
+    ::slotted([slot='prefix']),
+    ::slotted([slot='suffix']) {
+        --component-size: var(--ig-size, var(--ig-size-medium));
+        
+        font-size: sizable(rem(14px), rem(16px), rem(24px));
     }
 }
 

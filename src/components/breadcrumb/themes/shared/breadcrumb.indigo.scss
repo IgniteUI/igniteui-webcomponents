@@ -1,0 +1,11 @@
+@use 'styles/utilities' as *;
+@use '../light/themes' as *;
+
+$theme: $indigo;
+
+:host(:not([current])) {
+    [part~='label']:focus-within {
+        outline: rem(3px) solid var-get($theme, 'focus-border-color');
+        border-radius: rem(32px);
+    }
+}
