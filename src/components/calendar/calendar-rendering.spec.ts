@@ -645,13 +645,13 @@ describe('Calendar Rendering', () => {
     });
 
     it('falls back to sunday in engines without `Intl.Locale.prototype.getWeekInfo()`', async () => {
-      const prototype = Intl.Locale.prototype as unknown as Record<
-        string,
-        unknown
-      >;
-      const getWeekInfo = prototype.getWeekInfo;
+      const prototype = Intl.Locale.prototype;
+      const descriptor = Object.getOwnPropertyDescriptor(
+        prototype,
+        'getWeekInfo'
+      );
 
-      Reflect.deleteProperty(prototype, 'getWeekInfo');
+      expect(Reflect.deleteProperty(prototype, 'getWeekInfo')).to.be.true;
 
       try {
         calendar = await createCalendarElement(
@@ -659,7 +659,9 @@ describe('Calendar Rendering', () => {
         );
         expect(calendar.weekStart).to.equal('sunday');
       } finally {
-        prototype.getWeekInfo = getWeekInfo;
+        if (descriptor) {
+          Object.defineProperty(prototype, 'getWeekInfo', descriptor);
+        }
       }
     });
 
