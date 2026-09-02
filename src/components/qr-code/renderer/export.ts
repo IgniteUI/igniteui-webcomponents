@@ -25,7 +25,7 @@ const EXTENSIONS: Readonly<Record<QrCodeExportFormat, RegExp>> = {
 
 /** Whether `format` is one of the supported export formats. */
 export function isExportFormat(format: string): format is QrCodeExportFormat {
-  return format in MIME_TYPES;
+  return Object.hasOwn(MIME_TYPES, format);
 }
 
 /** Appends the extension of `format` to `fileName` unless it already ends with a matching one. */

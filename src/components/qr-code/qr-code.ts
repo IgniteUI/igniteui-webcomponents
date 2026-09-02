@@ -308,6 +308,9 @@ export default class IgcQrCodeComponent extends LitElement {
    * and the logo inlined. Waits for a pending logo load and render first.
    */
   private async _createSnapshot(): Promise<SVGSVGElement> {
+    // The logo load starts in `update()`, so flush a pending update before waiting
+    // on it and then let the settled aspect ratio render.
+    await this.updateComplete;
     await this._logoReady;
     await this.updateComplete;
 

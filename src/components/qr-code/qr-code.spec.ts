@@ -717,6 +717,20 @@ describe('IgcQrCodeComponent', () => {
         );
       });
 
+      it('waits for a logo assigned right before the export to settle', async () => {
+        const el = await fixture<IgcQrCodeComponent>(
+          html`<igc-qr-code value="https://example.com"></igc-qr-code>`
+        );
+
+        // The broken logo only drops out of the render once its load fails,
+        // which happens after the update that `logoSrc` schedules.
+        el.logoSrc = 'data:image/png;base64,not-a-real-png';
+        const svg = await parseSvg(await el.toBlob());
+
+        expect(svg.querySelector('image')).to.be.null;
+        expect(svg.querySelector('mask')).to.be.null;
+      });
+
       it('drops the logo and its mask when the logo cannot be fetched', async () => {
         const fetchStub = stub(window, 'fetch').rejects(new TypeError('CORS'));
         const el = await fixture<IgcQrCodeComponent>(

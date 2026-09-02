@@ -545,13 +545,22 @@ export const Sizes: Story = {
 export const Export: Story = {
   argTypes: disableStoryControls(metadata),
   render: () => {
-    const exportCode = (format: QrCodeExportFormat, scale: number) =>
-      document.querySelector<IgcQrCodeComponent>('#export-qr')!.toImage({
-        fileName: `ignite-ui-qr-${scale}x`,
-        format,
-        scale,
-        download: true,
-      });
+    const exportCode = async (format: QrCodeExportFormat, scale: number) => {
+      const qr = document.querySelector<IgcQrCodeComponent>('#export-qr')!;
+      const status = document.querySelector('#export-status')!;
+
+      try {
+        const file = await qr.toImage({
+          fileName: `ignite-ui-qr-${scale}x`,
+          format,
+          scale,
+          download: true,
+        });
+        status.textContent = `Exported ${file.name} (${file.type})`;
+      } catch (error) {
+        status.textContent = `Export failed: ${(error as Error).message}`;
+      }
+    };
 
     return html`
       <div
@@ -585,6 +594,7 @@ export const Export: Story = {
             Download WebP (4x)
           </igc-button>
         </div>
+        <span id="export-status"></span>
       </div>
     `;
   },
