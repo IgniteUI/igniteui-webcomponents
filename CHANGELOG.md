@@ -5,46 +5,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
-
-## [7.3.1] - 2026-09-01
-### Added
-- #### Color picker
-  - `IgcColorPickerComponentEventMap` is now exported from the package entry point. [#2360](https://github.com/IgniteUI/igniteui-webcomponents/pull/2360)
-
 ### Changed
-- #### Avatar
-  - The component now exposes `role="img"`. Before, it declared `image`, which is an ARIA 1.3 token that current tools do not know. [#2363](https://github.com/IgniteUI/igniteui-webcomponents/pull/2363)
-  - The accessible name now comes from `alt`, and then from `initials`. The role description is the static string `avatar`. Before, the two were inverted: the name was always the literal "avatar", and `alt` or `initials` became the role description.
-- #### Badge
-  - The role description is the static string `badge`. The visual `variant` no longer reaches assistive technology. `role="status"` is unchanged. [#2363](https://github.com/IgniteUI/igniteui-webcomponents/pull/2363)
-  - The `icon` CSS part now applies only when an `igc-icon` is the only content of the badge, as the documentation already stated.
-- #### Chip
-  - **Breaking for custom styles:** `part="base"` is now a plain wrapper. The selection control moved to the new `action` part, and the remove control to the new `remove` part. Move rules that target `::part(base)` for the interactive surface to `::part(action)`. [#2362](https://github.com/IgniteUI/igniteui-webcomponents/pull/2362)
-  - `igcRemove` is typed `CustomEvent<void>`. The type declared a boolean detail that the event never carried.
-  - The `start` and `end` slots, and the `action` and `remove` parts, are documented. Thus they reach the custom elements manifest.
-- #### Tile manager
-  - `igc-tile` renders its resize handles directly. Before, an internal element rendered them and exported the parts. The `trigger-side`, `trigger` and `trigger-bottom` parts keep their names, and the new `tile-container` part wraps the tile content together with the handles. [#2359](https://github.com/IgniteUI/igniteui-webcomponents/pull/2359)
-
-### Fixed
-- #### Avatar
-  - The `<img>` element carried no `alt` attribute when you set no alt text. This is an `image-alt` violation in the page of the consumer. The component now renders `alt=""`, thus the image counts as decorative. [#2363](https://github.com/IgniteUI/igniteui-webcomponents/pull/2363)
-  - Removed the documented `icon` CSS part. The component never rendered it.
-- #### Badge
-  - A badge that holds an `igc-icon` together with text lost its inline padding and clipped the text under `overflow: hidden`. The `icon` part became active for any slotted icon, but the padding rule matched `[part='base']` exactly and thus did not apply. [#2363](https://github.com/IgniteUI/igniteui-webcomponents/pull/2363)
-- #### Chip
-  - A removable chip failed the `nested-interactive` accessibility audit. The chip rendered its full surface as a button, and the remove icon inside it declared `role="button"` and `tabindex="0"`. The two controls are now siblings. [#2362](https://github.com/IgniteUI/igniteui-webcomponents/pull/2362)
-  - The accessible name of the chip read "Chip remove chip" or "select chip Chip", because the labels of the remove icon and of the selection icon became part of it. The name is now the content of the chip.
-  - `Space` did not toggle the selection, and `igcRemove` fired on chips that are not removable. The remove keybindings applied to the host and cancelled the activation keys of the chip. They now apply to the remove control only.
-  - Focus on the remove control now also shows the focus state of the chip.
-  - The prefix wrapper hides only when the chip is selectable and selected, and the suffix wrapper no longer hides because of `removable`.
-- #### Color picker
-  - The picker canvas did not respond to touch input. [#2357](https://github.com/IgniteUI/igniteui-webcomponents/pull/2357)
-- #### Textarea
-  - A change of `resize` away from `auto` did not release the inline height. Thus the control stayed at its last automatic height. [#2361](https://github.com/IgniteUI/igniteui-webcomponents/pull/2361)
-  - Text that you project into the default slot now becomes the default value, as with a native `<textarea>`. Before, it became the value. Thus the control was not pristine, and a form reset cleared the visible text while the light DOM still held it.
-- #### Tile manager
-  - A swap of two positioned tiles wrote a column value into `rowStart`. Thus the tiles moved to the wrong row. [#2359](https://github.com/IgniteUI/igniteui-webcomponents/pull/2359)
-  - A tile that you add next to a single positioned tile collided with it at position 0.
+- #### Calendar, Date picker, Date range picker
+  - When `week-start` is not set, the week starts on the first day of the week of the `locale`, as reported by `Intl.Locale.prototype.getWeekInfo()`. For example, `bg` starts on Monday and `en` stays on Sunday. An explicit `week-start` has priority. Set `weekStart` to `undefined` to return to the locale value. Browsers without `getWeekInfo()` keep the Sunday default. [#1020](https://github.com/IgniteUI/igniteui-webcomponents/issues/1020)
+  - The header date and the month/year navigation follow the field order of the `locale`. The header renders the weekday, month and day with one `Intl.DateTimeFormat` call. For `ja`, the header shows `7月15日(火)`, and the year button precedes the month button and shows `2025年`. The years view keeps plain numbers. In vertical header orientation, the weekday line has no trailing comma. [#1712](https://github.com/IgniteUI/igniteui-webcomponents/issues/1712)
 
 ## [7.3.0] - 2026-08-26
 ### Added

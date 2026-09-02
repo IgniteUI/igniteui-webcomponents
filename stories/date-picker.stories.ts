@@ -209,7 +209,6 @@ const metadata: Meta<IgcDatePickerComponent> = {
         'saturday',
       ],
       control: { type: 'select' },
-      table: { defaultValue: { summary: 'sunday' } },
     },
     keepOpenOnSelect: {
       type: 'boolean',
@@ -247,7 +246,6 @@ const metadata: Meta<IgcDatePickerComponent> = {
     hideHeader: false,
     hideOutsideDays: false,
     showWeekNumbers: false,
-    weekStart: 'sunday',
     keepOpenOnSelect: false,
     keepOpenOnOutsideClick: false,
     open: false,

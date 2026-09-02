@@ -1,3 +1,4 @@
+import { getDateFormatter } from 'igniteui-i18n-core';
 import {
   CalendarDay,
   calendarRange,
@@ -30,6 +31,7 @@ const WEEK_DAYS_MAP = {
   friday: 5,
   saturday: 6,
 } as const;
+const WEEK_DAY_NAMES = Object.keys(WEEK_DAYS_MAP) as WeekDays[];
 
 /** The value of the activated day/month/year element of a calendar view, or -1. */
 export function getViewElement(event: Event): number {
@@ -39,6 +41,39 @@ export function getViewElement(event: Event): number {
 
 export function getWeekDayNumber(value: WeekDays): number {
   return WEEK_DAYS_MAP[value];
+}
+
+/**
+ * The first day of the week of `locale`, as reported by `Intl.Locale.prototype.getWeekInfo()`.
+ *
+ * @remarks
+ * igniteui-i18n-core falls back to Monday in engines without the API. This overrides
+ * that with `sunday`, the documented default of the components.
+ */
+export function getLocaleWeekStart(locale: string): WeekDays {
+  if (!('getWeekInfo' in Intl.Locale.prototype)) {
+    return 'sunday';
+  }
+
+  // igniteui-i18n-core numbers the days 1 (Monday) - 7 (Sunday)
+  return WEEK_DAY_NAMES[getDateFormatter().getFirstDayOfWeek(locale) % 7];
+}
+
+/**
+ * Whether the `first` field precedes the `second` one in the formatted `parts`.
+ * A missing field counts as last.
+ */
+export function isDatePartBefore(
+  parts: Intl.DateTimeFormatPart[],
+  first: Intl.DateTimeFormatPartTypes,
+  second: Intl.DateTimeFormatPartTypes
+): boolean {
+  const indexOf = (type: Intl.DateTimeFormatPartTypes) => {
+    const index = parts.findIndex((part) => part.type === type);
+    return index < 0 ? Number.POSITIVE_INFINITY : index;
+  };
+
+  return indexOf(first) < indexOf(second);
 }
 
 export function areSameMonth(
