@@ -10,8 +10,8 @@ import {
   IgcThemeProviderComponent,
   defineComponents,
 } from 'igniteui-webcomponents';
-import { disableStoryControls } from './story.js';
 import { styles as bootstrapDarkStyles } from '../src/styles/themes/dark/bootstrap.css.js';
+import { disableStoryControls } from './story.js';
 
 // The theme file uses :root selectors for CSS custom properties. Replace them
 // with :scope so they are set on the igc-theme-provider element instead of the
@@ -44,14 +44,17 @@ const metadata: Meta<IgcThemeProviderComponent> = {
   },
   argTypes: {
     theme: {
-      type: '"material" | "bootstrap" | "indigo" | "fluent"',
+      type: {
+        name: 'enum',
+        value: ['material', 'bootstrap', 'indigo', 'fluent'],
+      },
       description: 'The theme to provide to descendant components.',
       options: ['material', 'bootstrap', 'indigo', 'fluent'],
       control: { type: 'select' },
       table: { defaultValue: { summary: 'bootstrap' } },
     },
     variant: {
-      type: '"light" | "dark"',
+      type: { name: 'enum', value: ['light', 'dark'] },
       description: 'The theme variant to provide to descendant components.',
       options: ['light', 'dark'],
       control: { type: 'inline-radio' },

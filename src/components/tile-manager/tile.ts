@@ -4,29 +4,43 @@ import { createRef, ref } from 'lit/directives/ref.js';
 import {
   setTransitionName,
   startViewTransition,
-} from '../../animations/view-transition.js';
-import { addThemingController } from '../../theming/theming-controller.js';
-import IgcIconButtonComponent from '../button/icon-button.js';
+} from '#animations/view-transition.js';
 import {
   type TileManagerContext,
   tileManagerContext,
-} from '../common/context.js';
-import { createAsyncContext } from '../common/controllers/async-consumer.js';
+} from '#internals/context.js';
+import { createAsyncContext } from '#internals/controllers/async-consumer.js';
+import { addFullscreenController } from '#internals/controllers/fullscreen.js';
+import { addSlotController, setSlots } from '#internals/controllers/slot.js';
 import {
-  addDragController,
-  type DragCallbackParameters,
-} from '../common/controllers/drag.js';
-import { addFullscreenController } from '../common/controllers/fullscreen.js';
-import { addSlotController, setSlots } from '../common/controllers/slot.js';
-import { registerComponent } from '../common/definitions/register.js';
-import type { Constructor } from '../common/mixins/constructor.js';
-import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { partMap } from '../common/part-map.js';
-import { asNumber, getElementFromPath, isLTR } from '../common/util.js';
+  coercedProperty,
+  type CoercedPropertyConfig,
+} from '#internals/decorators/coerced-property.js';
+import { registerComponent } from '#internals/definitions/register.js';
+import {
+  type DragCallbackParams,
+  type DraggableOptions,
+  type DragPointerDirection,
+  draggable,
+} from '#internals/directives/drag.js';
+import {
+  type ResizableOptions,
+  type ResizeCallbackParams,
+  type ResizeDirection,
+  resizable,
+} from '#internals/directives/resize.js';
+import type { Constructor } from '#internals/mixins/constructor.js';
+import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
+import { partMap } from '#internals/part-map.js';
+import { isLTR } from '#internals/utils/dom.js';
+import { getElementFromPath } from '#internals/utils/events.js';
+import { bindIf } from '#internals/utils/lit.js';
+import { asNumber } from '#internals/utils/math.js';
+import { createIdGenerator } from '#internals/utils/strings.js';
+import { addThemingController } from '#theming/theming-controller.js';
+import IgcIconButtonComponent from '../button/icon-button.js';
 import IgcDividerComponent from '../divider/divider.js';
-import IgcResizeContainerComponent from '../resize-container/resize-container.js';
-import type { ResizeCallbackParams } from '../resize-container/types.js';
-import type { TileManagerResizeMode } from '../types.js';
+import type { TileManagerDragMode, TileManagerResizeMode } from '../types.js';
 import { createTileDragStack, swapTiles } from './position.js';
 import { createTileResizeState } from './resize-state.js';
 import { styles as shared } from './themes/shared/tile/tile.common.css.js';
@@ -53,7 +67,7 @@ export interface IgcTileComponentEventMap {
   igcTileResizeCancel: CustomEvent<IgcTileComponent>;
 }
 
-let nextId = 1;
+const nextId = createIdGenerator('tile');
 const Slots = setSlots(
   'title',
   'maximize-action',
@@ -65,7 +79,7 @@ const Slots = setSlots(
 );
 
 /**
- * The tile component is used within the `igc-tile-manager` as a container
+ * The tile component is used within the tile manager as a container
  * for displaying various types of information.
  *
  * @element igc-tile
@@ -93,9 +107,10 @@ const Slots = setSlots(
  * @csspart title - The title container of the tile.
  * @csspart actions - The actions container of the tile header.
  * @csspart content-container - The container wrapping the tile’s main content.
- * @csspart trigger-side - The part for the side adorner of the encapsulated resize element in the tile.
- * @csspart trigger - The part for the corner adorner of the encapsulated resize element in the tile.
- * @csspart trigger-bottom - The part for the bottom adorner of the encapsulated resize element in the tile.
+ * @csspart tile-container - The wrapper around the tile content and its resize adorners.
+ * @csspart trigger-side - The side resize handle of the tile.
+ * @csspart trigger - The corner resize handle of the tile.
+ * @csspart trigger-bottom - The bottom resize handle of the tile.
  */
 export default class IgcTileComponent extends EventEmitterMixin<
   IgcTileComponentEventMap,
@@ -109,22 +124,11 @@ export default class IgcTileComponent extends EventEmitterMixin<
     registerComponent(
       IgcTileComponent,
       IgcIconButtonComponent,
-      IgcDividerComponent,
-      IgcResizeContainerComponent
+      IgcDividerComponent
     );
   }
 
   private readonly _slots = addSlotController(this, { slots: Slots });
-
-  private readonly _dragController = addDragController(this, {
-    skip: this._skipDrag,
-    matchTarget: this._match,
-    ghost: this._createDragGhost,
-    start: this._handleDragStart,
-    over: this._handleDragOver,
-    end: this._handleDragEnd,
-    cancel: this._handleDragCancel,
-  });
 
   private readonly _fullscreenController = addFullscreenController(this, {
     enter: this._emitFullScreenEvent,
@@ -134,33 +138,47 @@ export default class IgcTileComponent extends EventEmitterMixin<
   private readonly _resizeState = createTileResizeState();
   private readonly _dragStack = createTileDragStack();
 
-  private _colSpan = 1;
-  private _rowSpan = 1;
-  private _colStart: number | null = null;
-  private _rowStart: number | null = null;
-  private _position = -1;
+  /** Shared config for the grid placement properties, projected into a CSS variable on the host. */
+  private static _gridVariable<T extends number | null>(
+    name: string,
+    transform: (value: T) => T
+  ): CoercedPropertyConfig<T, IgcTileComponent> {
+    return {
+      transform: ({ value }) => transform(value),
+      onChange: ({ value, host }) => {
+        host.style.setProperty(name, value != null ? value.toString() : null);
+      },
+    };
+  }
+
+  /** Part name and resize direction for each of the tile resize adorners. */
+  private static readonly _adorners: Record<
+    AdornerType,
+    { part: string; direction: ResizeDirection }
+  > = {
+    side: { part: 'trigger-side', direction: 'horizontal' },
+    corner: { part: 'trigger', direction: 'both' },
+    bottom: { part: 'trigger-bottom', direction: 'vertical' },
+  };
+
+  /** Config for the span properties - a value below 1 is coerced to 1. */
+  private static _spanVariable(name: string) {
+    return IgcTileComponent._gridVariable<number>(name, (value) =>
+      Math.max(1, asNumber(value))
+    );
+  }
+
+  /** Config for the start properties - a non-positive value removes the explicit placement. */
+  private static _startVariable(name: string) {
+    return IgcTileComponent._gridVariable<number | null>(
+      name,
+      (value) => Math.max(0, asNumber(value)) || null
+    );
+  }
 
   // Tile manager context properties and helpers
 
-  /**
-   * Context consumer callback that sets the updated configuration of the internal drag controller
-   * based on the passed tile manager properties.
-   */
-  private _setDragConfiguration = ({
-    instance: { dragMode },
-  }: TileManagerContext) => {
-    this._dragController.set({
-      enabled: dragMode !== 'none',
-      trigger:
-        dragMode === 'tile-header' ? () => this._headerRef.value! : undefined,
-    });
-  };
-
-  private readonly _context = createAsyncContext(
-    this,
-    tileManagerContext,
-    this._setDragConfiguration
-  );
+  private readonly _context = createAsyncContext(this, tileManagerContext);
 
   /** Returns the parent tile manager context. */
   private get _tileManagerCtx(): TileManagerContext | undefined {
@@ -181,16 +199,22 @@ export default class IgcTileComponent extends EventEmitterMixin<
     return this._tileManager?.resizeMode ?? 'none';
   }
 
+  /** Returns the tile manager current drag mode. */
+  private get _dragMode(): TileManagerDragMode {
+    return this._tileManager?.dragMode ?? 'none';
+  }
+
   protected readonly _headerRef = createRef<HTMLElement>();
 
-  @query(IgcResizeContainerComponent.tagName)
-  protected readonly _resizeContainer?: IgcResizeContainerComponent;
+  /** The DOM container measured and used as a resize target by the resizable directive. */
+  protected readonly _containerRef = createRef<HTMLElement>();
 
-  @query('[part~="base"]', true)
+  /**
+   * Not cached: toggling `_resizeDisabled` (maximize, fullscreen, resize mode)
+   * switches the render template and recreates this element.
+   */
+  @query('[part~="base"]')
   public _tileContent!: HTMLElement;
-
-  @state()
-  private _maximized = false;
 
   @state()
   private _isDragging = false;
@@ -198,7 +222,16 @@ export default class IgcTileComponent extends EventEmitterMixin<
   @state()
   private _isResizing = false;
 
-  /** Whether to render the resize container based on tile and tile manager configuration. */
+  /** Whether the tile is hovered while the tile manager is in `hover` resize mode. */
+  @state()
+  private _isResizeActive = false;
+
+  /** Whether the resize adorners and the active resize outline are shown. */
+  private get _resizeAdornersVisible(): boolean {
+    return this._isResizeActive || this._resizeMode === 'always';
+  }
+
+  /** Whether to render the resize adorners based on tile and tile manager configuration. */
   private get _resizeDisabled(): boolean {
     return (
       this.disableResize ||
@@ -219,14 +252,8 @@ export default class IgcTileComponent extends EventEmitterMixin<
    * @default 1
    */
   @property({ type: Number, attribute: 'col-span' })
-  public set colSpan(value: number) {
-    this._colSpan = Math.max(1, asNumber(value));
-    this.style.setProperty('--ig-col-span', this._colSpan.toString());
-  }
-
-  public get colSpan(): number {
-    return this._colSpan;
-  }
+  @coercedProperty(IgcTileComponent._spanVariable('--ig-col-span'))
+  public colSpan = 1;
 
   /**
    * The number of rows the tile will span.
@@ -239,14 +266,8 @@ export default class IgcTileComponent extends EventEmitterMixin<
    * @default 1
    */
   @property({ type: Number, attribute: 'row-span' })
-  public set rowSpan(value: number) {
-    this._rowSpan = Math.max(1, asNumber(value));
-    this.style.setProperty('--ig-row-span', this._rowSpan.toString());
-  }
-
-  public get rowSpan(): number {
-    return this._rowSpan;
-  }
+  @coercedProperty(IgcTileComponent._spanVariable('--ig-row-span'))
+  public rowSpan = 1;
 
   /**
    * The starting column for the tile.
@@ -254,17 +275,8 @@ export default class IgcTileComponent extends EventEmitterMixin<
    * @attr col-start
    */
   @property({ type: Number, attribute: 'col-start' })
-  public set colStart(value: number | null) {
-    this._colStart = Math.max(0, asNumber(value)) || null;
-    this.style.setProperty(
-      '--ig-col-start',
-      this._colStart ? this._colStart.toString() : null
-    );
-  }
-
-  public get colStart(): number | null {
-    return this._colStart;
-  }
+  @coercedProperty(IgcTileComponent._startVariable('--ig-col-start'))
+  public colStart: number | null = null;
 
   /**
    * The starting row for the tile.
@@ -272,17 +284,8 @@ export default class IgcTileComponent extends EventEmitterMixin<
    * @attr row-start
    */
   @property({ type: Number, attribute: 'row-start' })
-  public set rowStart(value: number | null) {
-    this._rowStart = Math.max(0, asNumber(value)) || null;
-    this.style.setProperty(
-      '--ig-row-start',
-      this._rowStart ? this._rowStart.toString() : null
-    );
-  }
-
-  public get rowStart(): number | null {
-    return this._rowStart;
-  }
+  @coercedProperty(IgcTileComponent._startVariable('--ig-row-start'))
+  public rowStart: number | null = null;
 
   /**
    * Indicates whether the tile occupies the whole screen.
@@ -299,21 +302,14 @@ export default class IgcTileComponent extends EventEmitterMixin<
    * @attr maximized
    */
   @property({ type: Boolean, reflect: true })
-  public set maximized(value: boolean) {
-    this._maximized = value;
-
-    if (this._tileManagerCtx) {
-      this._tileManagerCtx.setMaximizedState();
-    }
-  }
-
-  public get maximized(): boolean {
-    return this._maximized;
-  }
+  @coercedProperty<boolean, IgcTileComponent>({
+    onChange: ({ host }) => host._tileManagerCtx?.setMaximizedState(),
+  })
+  public maximized = false;
 
   /**
    * Indicates whether to disable tile resize behavior regardless
-   * ot its tile manager parent settings.
+   * of its tile manager parent settings.
    *
    * @attr disable-resize
    * @default false
@@ -348,14 +344,13 @@ export default class IgcTileComponent extends EventEmitterMixin<
    * @attr position
    */
   @property({ type: Number })
-  public set position(value: number) {
-    this._position = asNumber(value);
-    this.style.order = this._position.toString();
-  }
-
-  public get position(): number {
-    return this._position;
-  }
+  @coercedProperty<number, IgcTileComponent>({
+    transform: ({ value }) => asNumber(value),
+    onChange: ({ value, host }) => {
+      host.style.order = value.toString();
+    },
+  })
+  public position = -1;
 
   constructor() {
     super();
@@ -365,7 +360,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
   /** @internal */
   public override connectedCallback(): void {
     super.connectedCallback();
-    this.id = this.id || `tile-${nextId++}`;
+    this.id = this.id || nextId();
     if (!this.style.viewTransitionName) {
       setTransitionName(this, `tile-transition-${this.id}`);
     }
@@ -378,21 +373,21 @@ export default class IgcTileComponent extends EventEmitterMixin<
     this.part.toggle('dragging', state);
   }
 
-  private _handleDragStart() {
-    if (!this._emitTileDragStart()) {
+  private _handleDragStart = () => {
+    if (!this._emitStartEvent('igcTileDragStart')) {
       return false;
     }
 
     this._setDragState();
     this._dragStack.push(this);
     return true;
-  }
+  };
 
-  private _handleDragOver({ event, state }: DragCallbackParameters): void {
+  private _handleDragOver = ({ event, state }: DragCallbackParams): void => {
     const match = state.element as IgcTileComponent;
 
     if (this._dragStack.peek() === match) {
-      if (this._shouldSwap(event, state, match)) {
+      if (this._shouldSwap(event, state.pointerState.direction, match)) {
         this._dragStack.pop();
         this._dragStack.push(match);
         this._performSwap(match);
@@ -402,24 +397,23 @@ export default class IgcTileComponent extends EventEmitterMixin<
 
     this._dragStack.push(match);
     this._performSwap(match);
-  }
+  };
 
-  private _handleDragCancel() {
+  private _handleDragCancel = () => {
     startViewTransition(() => {
       this._dragStack.restore();
       this._dragStack.reset();
     });
 
-    this._dragController.dispose();
     this._setDragState(false);
     this.emitEvent('igcTileDragCancel', { detail: this });
-  }
+  };
 
-  private _handleDragEnd() {
+  private _handleDragEnd = () => {
     this._setDragState(false);
     this._dragStack.reset();
     this.emitEvent('igcTileDragEnd', { detail: this });
-  }
+  };
 
   private _performSwap(match: IgcTileComponent): void {
     startViewTransition(() => swapTiles(this, match));
@@ -427,11 +421,10 @@ export default class IgcTileComponent extends EventEmitterMixin<
 
   private _shouldSwap(
     { clientX, clientY }: PointerEvent,
-    state: DragCallbackParameters['state'],
+    direction: DragPointerDirection,
     match: IgcTileComponent
   ): boolean {
     const LTR = isLTR(this);
-    const direction = state.pointerState.direction;
 
     const { left, top, width, height } = match.getBoundingClientRect();
     const relativeX = (clientX - left) / width;
@@ -457,8 +450,8 @@ export default class IgcTileComponent extends EventEmitterMixin<
     }
   }
 
-  private _skipDrag(event: PointerEvent): boolean {
-    if (this._maximized || this.fullscreen) {
+  private _skipDrag = (event: PointerEvent): boolean => {
+    if (this.maximized || this.fullscreen) {
       return true;
     }
 
@@ -468,15 +461,15 @@ export default class IgcTileComponent extends EventEmitterMixin<
         event
       )
     );
-  }
+  };
 
-  private _match(element: Element): element is IgcTileComponent {
+  private _match = (element: Element): element is IgcTileComponent => {
     return element !== this && IgcTileComponent.tagName === element.localName;
-  }
+  };
 
-  private _createDragGhost(): IgcTileComponent {
+  private _createDragGhost = (): IgcTileComponent => {
     return createTileDragGhost(this);
-  }
+  };
 
   private _createResizeGhost = (): HTMLElement => {
     return createTileGhost(this);
@@ -488,42 +481,31 @@ export default class IgcTileComponent extends EventEmitterMixin<
     this.part.toggle('resizing', state);
   }
 
-  private _handleResizeStart(event: CustomEvent<ResizeCallbackParams>) {
-    if (!this._emitTileResizeStart()) {
-      event.preventDefault();
-      return;
+  private _handleResizeStart = ({ event, state }: ResizeCallbackParams) => {
+    if (!this._emitStartEvent('igcTileResizeStart')) {
+      return false;
     }
 
-    this._resizeState.updateState(
-      event.detail.state.initial,
-      this,
-      this._cssContainer!
-    );
+    event.preventDefault();
+    this._resizeState.updateState(state.initial, this, this._cssContainer!);
     this._setResizeState();
-  }
+    return true;
+  };
 
-  private _handleResize({
-    detail: { state },
-  }: CustomEvent<ResizeCallbackParams>) {
-    const trigger = state.trigger!;
-
-    const isWidthResize = trigger.matches('[part*="side"], [part="trigger"]');
-    const isHeightResize = trigger.matches(
-      '[part*="bottom"], [part="trigger"]'
-    );
-
-    if (isWidthResize) {
+  private _handleResize(
+    { state }: ResizeCallbackParams,
+    direction: ResizeDirection
+  ): void {
+    if (direction !== 'vertical') {
       state.current.width = this._resizeState.calculateSnappedWidth(state);
     }
 
-    if (isHeightResize) {
+    if (direction !== 'horizontal') {
       state.current.height = this._resizeState.calculateSnappedHeight(state);
     }
   }
 
-  private _handleResizeEnd({
-    detail: { state },
-  }: CustomEvent<ResizeCallbackParams>) {
+  private _handleResizeEnd = ({ state }: ResizeCallbackParams) => {
     const { colSpan, rowSpan } = this._resizeState.calculateResizedGridPosition(
       state.current
     );
@@ -537,12 +519,12 @@ export default class IgcTileComponent extends EventEmitterMixin<
       this._setResizeState(false);
       this.emitEvent('igcTileResizeEnd', { detail: this });
     };
-  }
+  };
 
-  private _handleResizeCancel() {
+  private _handleResizeCancel = () => {
     this._setResizeState(false);
     this.emitEvent('igcTileResizeCancel', { detail: this });
-  }
+  };
 
   private _handleFullscreen() {
     this._fullscreenController.setState(!this.fullscreen);
@@ -578,18 +560,8 @@ export default class IgcTileComponent extends EventEmitterMixin<
     });
   }
 
-  private _emitTileDragStart() {
-    return this.emitEvent('igcTileDragStart', {
-      detail: this,
-      cancelable: true,
-    });
-  }
-
-  private _emitTileResizeStart() {
-    return this.emitEvent('igcTileResizeStart', {
-      detail: this,
-      cancelable: true,
-    });
+  private _emitStartEvent(name: 'igcTileDragStart' | 'igcTileResizeStart') {
+    return this.emitEvent(name, { detail: this, cancelable: true });
   }
 
   protected _renderDefaultAction(type: 'maximize' | 'fullscreen') {
@@ -600,7 +572,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
             this._handleFullscreen,
           ]
         : [
-            this._maximized ? 'collapse_content' : 'expand_content',
+            this.maximized ? 'collapse_content' : 'expand_content',
             this._handleMaximize,
           ];
 
@@ -635,25 +607,8 @@ export default class IgcTileComponent extends EventEmitterMixin<
           <slot name="title"></slot>
         </header>
         <section id="tile-actions" part="actions">
-          ${
-            hasMaximizeSlot
-              ? html`
-                  <slot name="maximize-action">
-                    ${this._renderDefaultAction('maximize')}
-                  </slot>
-                `
-              : nothing
-          }
-          ${
-            hasFullscreenSlot
-              ? html`
-                  <slot name="fullscreen-action">
-                    ${this._renderDefaultAction('fullscreen')}
-                  </slot>
-                `
-              : nothing
-          }
-
+          ${hasMaximizeSlot ? this._renderActionSlot('maximize') : nothing}
+          ${hasFullscreenSlot ? this._renderActionSlot('fullscreen') : nothing}
           <slot name="actions"></slot>
         </section>
       </section>
@@ -661,20 +616,43 @@ export default class IgcTileComponent extends EventEmitterMixin<
     `;
   }
 
+  private _renderActionSlot(type: 'maximize' | 'fullscreen') {
+    return html`
+      <slot name="${type}-action">${this._renderDefaultAction(type)}</slot>
+    `;
+  }
+
+  private _createDragOptions(): DraggableOptions {
+    const dragMode = this._dragMode;
+
+    return {
+      enabled: dragMode !== 'none',
+      target: () => this,
+      trigger:
+        dragMode === 'tile-header' ? () => this._headerRef.value : undefined,
+      skip: this._skipDrag,
+      matchTarget: this._match,
+      ghostFactory: this._createDragGhost,
+      start: this._handleDragStart,
+      over: this._handleDragOver,
+      end: this._handleDragEnd,
+      cancel: this._handleDragCancel,
+    };
+  }
+
   protected _renderContent() {
     const parts = {
       base: true,
-      draggable: this._tileManager?.dragMode !== 'none',
+      draggable: this._dragMode !== 'none',
       fullscreen: this.fullscreen,
       dragging: this._isDragging,
-      resizable:
-        !this.disableResize && this._tileManager?.resizeMode !== 'none',
+      resizable: !this.disableResize && this._resizeMode !== 'none',
       resizing: this._isResizing,
       maximized: this.maximized,
     };
 
     return html`
-      <div part=${partMap(parts)}>
+      <div part=${partMap(parts)} ${draggable(this._createDragOptions())}>
         ${this._renderHeader()}
         <div part="content-container">
           <slot></slot>
@@ -683,38 +661,70 @@ export default class IgcTileComponent extends EventEmitterMixin<
     `;
   }
 
-  private _renderAdornerSlot(name: AdornerType) {
-    return html`<slot name="${name}-adorner" slot="${name}-adorner"></slot>`;
+  private _handleResizePointerEnter() {
+    this._isResizeActive = true;
+  }
+
+  private _handleResizePointerLeave() {
+    this._isResizeActive = false;
+  }
+
+  private _createResizeOptions(direction: ResizeDirection): ResizableOptions {
+    return {
+      mode: 'deferred',
+      direction,
+      target: () => this._containerRef.value,
+      ghostFactory: this._createResizeGhost,
+      start: this._handleResizeStart,
+      resize: (params) => this._handleResize(params, direction),
+      end: this._handleResizeEnd,
+      cancel: this._handleResizeCancel,
+    };
+  }
+
+  private _renderAdorner(type: AdornerType) {
+    const { part, direction } = IgcTileComponent._adorners[type];
+    const parts = {
+      [part]: true,
+      custom: this._slots.hasAssignedElements(`${type}-adorner`),
+    };
+
+    return html`
+      <slot
+        name="${type}-adorner"
+        part=${partMap(parts)}
+        ${resizable(this._createResizeOptions(direction))}
+      ></slot>
+    `;
+  }
+
+  protected _renderAdorners() {
+    return this._resizeAdornersVisible
+      ? html`
+          ${this._renderAdorner('side')} ${this._renderAdorner('corner')}
+          ${this._renderAdorner('bottom')}
+        `
+      : nothing;
   }
 
   protected override render() {
-    const isActive = this._resizeMode === 'always';
+    const isHoverMode = this._resizeMode === 'hover';
+    const parts = {
+      'tile-container': true,
+      active: this._resizeAdornersVisible,
+    };
 
     return this._resizeDisabled
       ? this._renderContent()
       : html`
-          <igc-resize
-            part=${partMap({
-              resize: true,
-              'side-adorner': this._slots.hasAssignedElements('side-adorner'),
-              'corner-adorner':
-                this._slots.hasAssignedElements('corner-adorner'),
-              'bottom-adorner':
-                this._slots.hasAssignedElements('bottom-adorner'),
-            })}
-            exportparts="trigger-side, trigger, trigger-bottom"
-            mode="deferred"
-            ?active=${isActive}
-            .ghostFactory=${this._createResizeGhost}
-            @igcResizeStart=${this._handleResizeStart}
-            @igcResize=${this._handleResize}
-            @igcResizeEnd=${this._handleResizeEnd}
-            @igcResizeCancel=${this._handleResizeCancel}
+          <div
+            ${ref(this._containerRef)}
+            part=${partMap(parts)}
+            @pointerenter=${bindIf(isHoverMode, this._handleResizePointerEnter)}
+            @pointerleave=${bindIf(isHoverMode, this._handleResizePointerLeave)}
           >
-            ${this._renderContent()} ${this._renderAdornerSlot('side')}
-            ${this._renderAdornerSlot('corner')}
-            ${this._renderAdornerSlot('bottom')}
-          </igc-resize>
+            ${this._renderContent()} ${this._renderAdorners()}
+          </div>
         `;
   }
 }

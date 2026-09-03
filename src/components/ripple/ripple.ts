@@ -1,10 +1,7 @@
 import { LitElement, nothing } from 'lit';
-import { registerComponent } from '../common/definitions/register.js';
-import {
-  addSafeEventListener,
-  getScaleFactor,
-  setStyles,
-} from '../common/util.js';
+import { registerComponent } from '#internals/definitions/register.js';
+import { getScaleFactor, setStyles } from '#internals/utils/dom.js';
+import { addSafeEventListener } from '#internals/utils/events.js';
 import { styles } from './ripple.material.css.js';
 
 const rippleFrames: Keyframe[] = [
@@ -29,7 +26,7 @@ function getRippleElement(): HTMLSpanElement {
 
 /**
  * A ripple can be applied to an element to represent
- * interactive surface.
+ * an interactive surface.
  *
  * @element igc-ripple
  */

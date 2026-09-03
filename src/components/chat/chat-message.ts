@@ -3,13 +3,14 @@ import { html, LitElement, nothing, type PropertyValues } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { cache } from 'lit/directives/cache.js';
 import { until } from 'lit/directives/until.js';
-import { addThemingController } from '../../theming/theming-controller.js';
+import { chatContext } from '#internals/context.js';
+import { addAdoptedStylesController } from '#internals/controllers/adopt-styles.js';
+import { registerComponent } from '#internals/definitions/register.js';
+import { partMap } from '#internals/part-map.js';
+import { isEmpty } from '#internals/utils/arrays.js';
+import { trimmedHtml } from '#internals/utils/lit.js';
+import { addThemingController } from '#theming/theming-controller.js';
 import IgcIconButtonComponent from '../button/icon-button.js';
-import { chatContext } from '../common/context.js';
-import { addAdoptedStylesController } from '../common/controllers/adopt-styles.js';
-import { registerComponent } from '../common/definitions/register.js';
-import { partMap } from '../common/part-map.js';
-import { isEmpty, trimmedHtml } from '../common/util.js';
 import type { ChatState } from './chat-state.js';
 import IgcMessageAttachmentsComponent from './message-attachments.js';
 import { styles } from './themes/message.base.css.js';
@@ -37,7 +38,7 @@ type DefaultMessageRenderers = {
 
 /* blazorSuppress */
 /**
- * A chat message component for displaying individual messages in `<igc-chat>`.
+ * A chat message component for displaying individual messages in the chat component.
  *
  * @element igc-chat-message
  *

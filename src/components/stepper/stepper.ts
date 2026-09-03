@@ -1,30 +1,18 @@
-import { ContextProvider } from '@lit/context';
 import { html, LitElement, type PropertyValues } from 'lit';
 import { property } from 'lit/decorators.js';
-import { addThemingController } from '../../theming/theming-controller.js';
-import { addInternalsController } from '../common/controllers/internals.js';
-import {
-  addKeybindings,
-  arrowDown,
-  arrowLeft,
-  arrowRight,
-  arrowUp,
-  endKey,
-  homeKey,
-} from '../common/controllers/key-bindings.js';
-import { addSlotController, setSlots } from '../common/controllers/slot.js';
-import { registerComponent } from '../common/definitions/register.js';
-import type { Constructor } from '../common/mixins/constructor.js';
-import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
+import { addContextProvider } from '#internals/controllers/context-provider.js';
+import { addInternalsController } from '#internals/controllers/internals.js';
+import { addRovingFocusController } from '#internals/controllers/roving-focus.js';
+import { addSlotController, setSlots } from '#internals/controllers/slot.js';
+import { registerComponent } from '#internals/definitions/register.js';
+import type { Constructor } from '#internals/mixins/constructor.js';
+import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
+import { getRoot } from '#internals/utils/dom.js';
 import {
   addSafeEventListener,
-  first,
   getElementFromPath,
-  getRoot,
-  isLTR,
-  last,
-  wrap,
-} from '../common/util.js';
+} from '#internals/utils/events.js';
+import { addThemingController } from '#theming/theming-controller.js';
 import type {
   HorizontalTransitionAnimation,
   StepperOrientation,
@@ -45,6 +33,7 @@ import { styles as bootstrap } from './themes/stepper/stepper.bootstrap.css.js';
 import { styles as fluent } from './themes/stepper/stepper.fluent.css.js';
 import { styles as indigo } from './themes/stepper/stepper.indigo.css.js';
 
+/** Property changes that the stepper republishes its context for. */
 const STEPPER_SYNC_PROPERTIES: (keyof IgcStepperComponent)[] = [
   'orientation',
   'stepType',
@@ -59,7 +48,7 @@ const STEPPER_SYNC_PROPERTIES: (keyof IgcStepperComponent)[] = [
  * A stepper component that provides a wizard-like workflow by dividing content into logical steps.
  *
  * @remarks
- * The stepper component allows the user to navigate between multiple `igc-step` elements.
+ * The stepper component allows the user to navigate between multiple step children.
  * It supports horizontal and vertical orientation, linear and non-linear navigation,
  * keyboard navigation, and provides API methods to control the active step.
  *
@@ -68,7 +57,7 @@ const STEPPER_SYNC_PROPERTIES: (keyof IgcStepperComponent)[] = [
  *
  * @element igc-stepper
  *
- * @slot - Renders `igc-step` components inside the default slot.
+ * @slot - Renders the steps of the stepper inside the default slot.
  *
  * @fires igcActiveStepChanging - Emitted when the active step is about to change. Cancelable.
  * @fires igcActiveStepChanged - Emitted after the active step has changed.
@@ -120,20 +109,6 @@ export default class IgcStepperComponent extends EventEmitterMixin<
   //#region Internal state and properties
 
   private readonly _state = createStepperState();
-
-  private readonly _contextProvider = new ContextProvider(this, {
-    context: STEPPER_CONTEXT,
-    initialValue: {
-      stepper: this,
-      state: this._state,
-    },
-  });
-
-  private readonly _internals = addInternalsController(this, {
-    initialARIA: {
-      role: 'tablist',
-    },
-  });
 
   private readonly _slots = addSlotController(this, {
     slots: setSlots(),
@@ -239,32 +214,37 @@ export default class IgcStepperComponent extends EventEmitterMixin<
 
     addSafeEventListener(this, 'click', this._handleInteraction);
 
+    addInternalsController(this, {
+      initialARIA: { role: 'tablist' },
+      aria: () => ({ ariaOrientation: this.orientation }),
+    });
+
+    const context = { stepper: this, state: this._state };
+
+    addContextProvider(this, {
+      context: STEPPER_CONTEXT,
+      watch: STEPPER_SYNC_PROPERTIES,
+      value: () => context,
+    });
+
     addThemingController(this, {
       light: { bootstrap, fluent, indigo },
       dark: { bootstrap, fluent, indigo },
     });
 
-    addKeybindings(this, {
-      skip: this._skipKeyboard,
-    })
-      .set(arrowUp, this._handleArrowUp)
-      .set(arrowDown, this._handleArrowDown)
-      .set(arrowLeft, this._handleArrowLeft)
-      .set(arrowRight, this._handleArrowRight)
-      .set(homeKey, this._handleHomeKey)
-      .set(endKey, this._handleEndKey)
-      .setActivateHandler(this._handleInteraction);
+    addRovingFocusController(this, {
+      keybindings: { skip: this._skipKeyboard },
+      items: () => this._state.accessibleSteps,
+      current: () => this._getActiveStepComponent(),
+      vertical: () => !this._isHorizontal,
+      focusItem: (step) => this._getStepHeader(step)?.focus(),
+      activateItem: (step) => this._activateStep(step),
+    });
   }
 
   //#region Lifecycle hooks
 
   protected override update(properties: PropertyValues<this>): void {
-    this._syncStepperAttributes(properties);
-
-    if (properties.has('orientation')) {
-      this._internals.setARIA({ ariaOrientation: this.orientation });
-    }
-
     if (properties.has('linear')) {
       this._state.setVisitedState(this.linear);
     }
@@ -288,58 +268,6 @@ export default class IgcStepperComponent extends EventEmitterMixin<
 
   private _skipKeyboard(_: Element, event: KeyboardEvent): boolean {
     return !getElementFromPath('[data-step-header]', event);
-  }
-
-  private _handleHomeKey(): void {
-    this._getStepHeader(first(this._state.accessibleSteps))?.focus();
-  }
-
-  private _handleEndKey(): void {
-    this._getStepHeader(last(this._state.accessibleSteps))?.focus();
-  }
-
-  private _handleArrowDown(): void {
-    if (!this._isHorizontal) {
-      const step = this._getActiveStepComponent();
-
-      if (step) {
-        this._getStepHeader(this._getNextStep(step))?.focus();
-      }
-    }
-  }
-
-  private _handleArrowUp(): void {
-    if (!this._isHorizontal) {
-      const step = this._getActiveStepComponent();
-
-      if (step) {
-        this._getStepHeader(this._getPreviousStep(step))?.focus();
-      }
-    }
-  }
-
-  private _handleArrowLeft(): void {
-    const step = this._getActiveStepComponent();
-
-    if (step) {
-      const next = isLTR(this)
-        ? this._getPreviousStep(step)
-        : this._getNextStep(step);
-
-      this._getStepHeader(next)?.focus();
-    }
-  }
-
-  private _handleArrowRight(): void {
-    const step = this._getActiveStepComponent();
-
-    if (step) {
-      const next = isLTR(this)
-        ? this._getNextStep(step)
-        : this._getPreviousStep(step);
-
-      this._getStepHeader(next)?.focus();
-    }
   }
 
   //#endregion
@@ -368,12 +296,6 @@ export default class IgcStepperComponent extends EventEmitterMixin<
   //#endregion
 
   //#region Internal methods
-
-  private _syncStepperAttributes(properties: PropertyValues<this>): void {
-    if (STEPPER_SYNC_PROPERTIES.some((p) => properties.has(p))) {
-      this._contextProvider.updateObservers();
-    }
-  }
 
   private _animateSteps(
     nextStep: IgcStepComponent,
@@ -444,20 +366,6 @@ export default class IgcStepperComponent extends EventEmitterMixin<
     }
   }
 
-  private _getNextStep(step: IgcStepComponent): IgcStepComponent {
-    const steps = this._state.accessibleSteps;
-    const next = wrap(0, steps.length - 1, steps.indexOf(step) + 1);
-
-    return steps[next];
-  }
-
-  private _getPreviousStep(step: IgcStepComponent): IgcStepComponent {
-    const steps = this._state.accessibleSteps;
-    const previous = wrap(0, steps.length - 1, steps.indexOf(step) - 1);
-
-    return steps[previous];
-  }
-
   private _getActiveStepComponent(): IgcStepComponent | null {
     const active = getRoot(this).activeElement;
     return active ? active.closest(IgcStepComponent.tagName) : null;
@@ -491,7 +399,7 @@ export default class IgcStepperComponent extends EventEmitterMixin<
   }
 
   /**
-   * Resets the stepper to its initial state i.e. activates the first step.
+   * Resets the stepper to its initial state, i.e. activates the first step.
    *
    * @remarks
    * The steps' content will not be automatically reset.

@@ -87,22 +87,37 @@ igc-divider {
     --color: #{var-get($theme, 'divider-color')};
 }
 
-igc-resize {
-    --resize-indicator: #{var-get($theme, 'ghost-border')};
+[part~='active'] {
+    &::after {
+        @extend %after-element;
+
+        border-radius: var(--_border-radius);
+        border: rem(1px) solid var-get($theme, 'ghost-border');
+    }
 }
 
-igc-resize[part~='side-adorner']::part(trigger-side) {
+[part~='trigger-side'],
+[part~='trigger'],
+[part~='trigger-bottom'] {
+    width: var(--_size);
+    aspect-ratio: 1;
+    border-radius: 50%;
+    z-index: 11111;
+    background-color: var-get($theme, 'ghost-border');
+}
+
+// Custom user-provided adorners replace the default indicator visuals
+// and are aligned flush with the tile edges.
+[part~='custom'] {
     background-color: transparent;
+}
+
+[part~='trigger-side'][part~='custom'],
+[part~='trigger'][part~='custom'] {
     right: 0;
 }
 
-igc-resize[part~='corner-adorner']::part(trigger) {
-    background-color: transparent;
-    right: 0;
-    bottom: 0;
-}
-
-igc-resize[part~='bottom-adorner']::part(trigger-bottom) {
-    background-color: transparent;
+[part~='trigger'][part~='custom'],
+[part~='trigger-bottom'][part~='custom'] {
     bottom: 0;
 }

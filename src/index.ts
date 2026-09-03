@@ -15,6 +15,7 @@ export { default as IgcCarouselComponent } from './components/carousel/carousel.
 export { default as IgcCarouselIndicatorComponent } from './components/carousel/carousel-indicator.js';
 export { default as IgcCarouselSlideComponent } from './components/carousel/carousel-slide.js';
 export { default as IgcChatComponent } from './components/chat/chat.js';
+export { default as IgcColorPickerComponent } from './components/color-picker/color-picker.js';
 export { default as IgcCheckboxComponent } from './components/checkbox/checkbox.js';
 export { default as IgcCircularProgressComponent } from './components/progress/circular-progress.js';
 export { default as IgcCircularGradientComponent } from './components/progress/circular-gradient.js';
@@ -72,10 +73,21 @@ export { default as IgcStepComponent } from './components/stepper/step.js';
 export { default as IgcHighlightComponent } from './components/highlight/highlight.js';
 export { default as IgcTooltipComponent } from './components/tooltip/tooltip.js';
 export { default as IgcThemeProviderComponent } from './components/theme-provider/theme-provider.js';
+export { default as IgcQrCodeComponent } from './components/qr-code/qr-code.js';
+export { default as IgcVirtualScrollComponent } from './components/virtualization/virtualization.js';
+export type {
+  IgcVirtualScrollComponentEventMap,
+  VirtualScrollItemTemplate,
+} from './components/virtualization/virtualization.js';
+export type {
+  VirtualScrollItemContext,
+  VirtualScrollState,
+  VirtualScrollDataRequest,
+} from './components/virtualization/types.js';
 
 // definitions
-export { defineComponents } from './components/common/definitions/defineComponents.js';
-export { defineAllComponents } from './components/common/definitions/defineAllComponents.js';
+export { defineComponents } from '#internals/definitions/defineComponents.js';
+export { defineAllComponents } from '#internals/definitions/defineAllComponents.js';
 
 // icon registration
 export {
@@ -85,22 +97,22 @@ export {
 } from './components/icon/icon.registry.js';
 
 // theming configuration
-export { configureTheme } from './theming/config.js';
-export type { Theme, ThemeVariant } from './theming/types.js';
+export { configureTheme } from '#theming/config.js';
+export type { Theme, ThemeVariant } from '#theming/types.js';
 
 // localization objects
 export {
   IgcCalendarResourceStringEN,
   type IgcCalendarResourceStrings,
-} from './components/common/i18n/EN/calendar.resources.js';
+} from '#internals/i18n/EN/calendar.resources.js';
 export {
   IgcDateRangePickerResourceStringsEN,
   type IgcDateRangePickerResourceStrings,
-} from './components/common/i18n/EN/date-range-picker.resources.js';
+} from '#internals/i18n/EN/date-range-picker.resources.js';
 export {
   IgcChatResourceStringEN,
   type IgcChatResourceStrings,
-} from './components/common/i18n/EN/chat.resources.js';
+} from '#internals/i18n/EN/chat.resources.js';
 export {
   type ICalendarResourceStrings,
   type ICarouselResourceStrings,
@@ -134,6 +146,7 @@ export type { IgcCheckboxComponentEventMap } from './components/checkbox/checkbo
 export type { IgcCheckboxComponentEventMap as IgcSwitchComponentEventMap } from './components/checkbox/checkbox-base.js';
 export type { IgcChipComponentEventMap } from './components/chip/chip.js';
 export type { IgcComboComponentEventMap } from './components/combo/types.js';
+export type { IgcColorPickerComponentEventMap } from './components/color-picker/color-picker.js';
 export type { IgcDatePickerComponentEventMap } from './components/date-picker/date-picker.js';
 export type { IgcDateRangePickerComponentEventMap } from './components/date-range-picker/date-range-picker.js';
 export type { IgcDateTimeInputComponentEventMap } from './components/date-time-input/date-time-input.js';
@@ -182,6 +195,7 @@ export type { IgcRangeSliderValueEventArgs } from './components/slider/range-sli
 export type {
   IgcSplitterResizeEventArgs,
   IgcSplitterResizeEventDetail,
+  IgcSplitterLayoutChangedEventArgs,
 } from './components/splitter/splitter.js';
 export type {
   IgcActiveStepChangingEventArgs,
@@ -200,13 +214,20 @@ export type {
   RegisterIconOptions,
 } from './components/icon/registry/types.js';
 export type * from './components/chat/types.js';
+export type {
+  QrCodeExportFormat,
+  QrCodeExportOptions,
+  QrCornerSquareStyle,
+  QrDotStyle,
+  QrErrorCorrectionLevel,
+} from './components/qr-code/types.js';
 
 // Internal exports for other packages
 /** @hidden @internal */
-export { addThemingController as θaddThemingController } from './theming/theming-controller.js';
+export { addThemingController as θaddThemingController } from '#theming/theming-controller.js';
 
 /** @hidden @internal */
-export { addAdoptedStylesController as θaddAdoptedStylesController } from './components/common/controllers/adopt-styles.js';
+export { addAdoptedStylesController as θaddAdoptedStylesController } from '#internals/controllers/adopt-styles.js';
 
 /** @hidden @internal */
-export { createAbortHandle as θcreateAbortHandle } from './components/common/abort-handler.js';
+export { createAbortHandle as θcreateAbortHandle } from '#internals/abort-handler.js';

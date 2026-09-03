@@ -6,8 +6,6 @@ import {
   waitUntil,
 } from '@open-wc/testing';
 import sinon, { spy } from 'sinon';
-import IgcCalendarComponent from '../calendar/calendar.js';
-import { CalendarDay } from '../calendar/model.js';
 import {
   altKey,
   arrowDown,
@@ -16,15 +14,20 @@ import {
   arrowUp,
   ctrlKey,
   escapeKey,
-} from '../common/controllers/key-bindings.js';
-import { defineComponents } from '../common/definitions/defineComponents.js';
+} from '#internals/controllers/key-bindings.js';
+import { CalendarDay } from '#internals/date/model.js';
+import { defineComponents } from '#internals/definitions/defineComponents.js';
 import {
-  isFocused,
+  runAriaProjectionTests,
   runExternalLabelAssociationTests,
+} from '#internals/testing/form-testbed.spec.js';
+import { isFocused } from '#internals/testing/helpers.spec.js';
+import {
   simulateClick,
   simulateInput,
   simulateKeyboard,
-} from '../common/utils.spec.js';
+} from '#internals/testing/simulate.spec.js';
+import IgcCalendarComponent from '../calendar/calendar.js';
 import type IgcDialogComponent from '../dialog/dialog.js';
 import IgcDateRangeInputComponent from './date-range-input.js';
 import IgcDateRangePickerComponent from './date-range-picker.js';
@@ -46,6 +49,22 @@ describe('Date range picker - single input', () => {
           IgcDateRangeInputComponent.tagName
         )!
         .renderRoot.querySelector('input')!,
+  });
+
+  runAriaProjectionTests({
+    tagName: IgcDateRangePickerComponent.tagName,
+    getNativeInput: (host) =>
+      (host as IgcDateRangePickerComponent).renderRoot
+        .querySelector<IgcDateRangeInputComponent>(
+          IgcDateRangeInputComponent.tagName
+        )!
+        .renderRoot.querySelector('input')!,
+    expected: { hasPopup: 'dialog' },
+    getDescription: (host) => [
+      (host as IgcDateRangePickerComponent).renderRoot.querySelector(
+        '#helper-text'
+      )!,
+    ],
   });
 
   let picker: IgcDateRangePickerComponent;
@@ -1143,6 +1162,29 @@ describe('Date range picker - single input', () => {
 
         expect(picker.open).to.be.false;
         expect(eventSpy).not.called;
+      });
+    });
+
+    describe('Undo / redo', () => {
+      it('restores a typed draft in the range input', async () => {
+        rangeInput.focus();
+        await elementUpdated(picker);
+
+        const initial = input.value;
+
+        rangeInput.setSelectionRange(0, input.value.length);
+        simulateInput(input, {
+          value: '10/10/2020 - 11/11/2020',
+          inputType: 'insertText',
+        });
+        await elementUpdated(picker);
+
+        expect(input.value).to.equal('10/10/2020 - 11/11/2020');
+
+        simulateKeyboard(input, [ctrlKey, 'z']);
+        await elementUpdated(picker);
+
+        expect(input.value).to.equal(initial);
       });
     });
   });

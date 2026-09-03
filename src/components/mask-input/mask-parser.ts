@@ -1,5 +1,5 @@
 /** Options for the {@link MaskParser} */
-interface MaskOptions {
+export interface MaskOptions {
   /**
    * The mask format string (e.g., '00/00/0000' for dates, 'AAA-000' for custom IDs).
    *
@@ -12,7 +12,9 @@ interface MaskOptions {
 
   /**
    * The character used to prompt for input in unfilled mask positions.
-   * Must be a single character.
+   *
+   * Only the first character is used, and a mask flag is rejected in favor of the
+   * default - the same rules the `prompt` accessor applies.
    * @default '_'
    */
   promptCharacter?: string;
@@ -75,6 +77,17 @@ const UNICODE_DIGIT_TO_ASCII = new Map<number, string>(
   )
 );
 
+/**
+ * Narrows a prompt down to the single character the parser will actually use.
+ *
+ * Falls back to `current` when the prompt is empty or collides with a mask flag - a flag
+ * standing in for an unfilled position could not be told apart from one the user typed.
+ */
+function normalizePrompt(value: string | undefined, current: string): string {
+  const char = value ? value.substring(0, 1) : current;
+  return MASK_FLAGS.has(char) ? current : char;
+}
+
 function replaceUnicodeNumbers(text: string): string {
   const matcher = /\p{Nd}/gu;
 
@@ -99,12 +112,6 @@ function validate(char: string, flag: string): boolean {
   return MASK_PATTERNS.get(flag)?.test(char) ?? false;
 }
 
-/** Default mask parser options */
-const MaskDefaultOptions: MaskOptionsInternal = {
-  format: DEFAULT_FORMAT,
-  promptCharacter: DEFAULT_PROMPT,
-};
-
 /**
  * A class for parsing and applying masks to strings, typically for input fields.
  * It handles mask definitions, literals, character validation, and cursor positioning.
@@ -123,6 +130,13 @@ export class MaskParser {
 
   /** Cached array of required non-literal positions for validation */
   protected _requiredPositions: number[] = [];
+
+  /**
+   * Declared without an initializer on purpose. With `useDefineForClassFields: false`
+   * nothing is emitted for it, so {@link _invalidate} can safely run from the
+   * constructor - before subclass fields exist.
+   */
+  private _emptyMask?: string;
 
   /**
    * Returns a set of the all the literal positions in the mask.
@@ -144,7 +158,8 @@ export class MaskParser {
    * Returns the result of applying an empty string over the mask pattern.
    */
   public get emptyMask(): string {
-    return this.apply();
+    this._emptyMask ??= this.apply();
+    return this._emptyMask;
   }
 
   /**
@@ -176,18 +191,21 @@ export class MaskParser {
    * @remarks The prompt character cannot be a mask flag character.
    */
   public set prompt(value: string) {
-    const char = value ? value.substring(0, 1) : this._options.promptCharacter;
-
-    // Silently ignore if prompt character conflicts with mask flags
-    if (MASK_FLAGS.has(char)) {
-      return;
-    }
-
-    this._options.promptCharacter = char;
+    this._options.promptCharacter = normalizePrompt(
+      value,
+      this._options.promptCharacter
+    );
+    this._invalidate();
   }
 
   constructor(options?: MaskOptions) {
-    this._options = { ...MaskDefaultOptions, ...options };
+    this._options = {
+      format: options?.format || DEFAULT_FORMAT,
+      promptCharacter: normalizePrompt(
+        options?.promptCharacter,
+        DEFAULT_PROMPT
+      ),
+    };
     this._parseMaskLiterals();
   }
 
@@ -196,11 +214,27 @@ export class MaskParser {
   }
 
   /**
+   * The pattern the literal parser consumes. Subclasses whose public format is not itself
+   * a mask pattern - date formats, for instance - translate it here.
+   */
+  protected _toMaskFormat(format: string): string {
+    return format;
+  }
+
+  /**
+   * Drops everything derived from the mask. Runs on every mask *and* prompt change, and
+   * from the constructor, so overrides must not touch fields with initializers.
+   */
+  protected _invalidate(): void {
+    this._emptyMask = undefined;
+  }
+
+  /**
    * Parses the mask format string to identify literal characters and
    * create the escaped mask. This method is called whenever the mask format changes.
    */
   protected _parseMaskLiterals(): void {
-    const mask = this.mask;
+    const mask = this._toMaskFormat(this._options.format);
     const length = mask.length;
     const escapedMaskChars: string[] = [];
 
@@ -231,6 +265,7 @@ export class MaskParser {
     this._escapedMask = escapedMaskChars.join('');
     this._literalPositions = new Set(this._literals.keys());
     this._requiredPositions = this._computeRequiredPositions();
+    this._invalidate();
   }
 
   /**
@@ -319,7 +354,7 @@ export class MaskParser {
     const endBoundary = Math.min(end, length);
 
     // Initialize the array for the masked string or get a fresh mask with prompts and/or literals
-    const maskedChars = maskString ? [...maskString] : [...this.apply('')];
+    const maskedChars = maskString ? [...maskString] : [...this.emptyMask];
 
     const inputChars = Array.from(replaceUnicodeNumbers(value));
     const inputLength = inputChars.length;

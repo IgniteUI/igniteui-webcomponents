@@ -1,6 +1,6 @@
-import { addThemingController } from '../../theming/theming-controller.js';
-import { registerComponent } from '../common/definitions/register.js';
-import { IgcBaseOptionLikeComponent } from '../common/mixins/option.js';
+import { registerComponent } from '#internals/definitions/register.js';
+import { IgcBaseOptionLikeComponent } from '#internals/mixins/option.js';
+import { addThemingController } from '#theming/theming-controller.js';
 import { styles } from './themes/dropdown-item.base.css.js';
 import { all } from './themes/item.js';
 import { styles as shared } from './themes/shared/item/dropdown-item.common.css.js';
@@ -14,9 +14,9 @@ import { styles as shared } from './themes/shared/item/dropdown-item.common.css.
  * @slot - Renders the item's main content.
  * @slot suffix - Renders content after the item's main content.
  *
- * @csspart prefix - The prefix wrapper of the igc-dropdown-item.
- * @csspart content - The main content wrapper of the igc-dropdown-item.
- * @csspart suffix - The suffix wrapper of the igc-dropdown-item.
+ * @csspart prefix - The prefix wrapper of the dropdown item.
+ * @csspart content - The main content wrapper of the dropdown item.
+ * @csspart suffix - The suffix wrapper of the dropdown item.
  */
 export default class IgcDropdownItemComponent extends IgcBaseOptionLikeComponent {
   public static readonly tagName = 'igc-dropdown-item';

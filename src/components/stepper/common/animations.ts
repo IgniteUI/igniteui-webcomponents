@@ -1,8 +1,8 @@
-import { EaseOut } from '../../../animations/easings.js';
+import { EaseOut } from '#animations/easings.js';
 import {
   type AnimationReferenceMetadata,
   animation,
-} from '../../../animations/types.js';
+} from '#animations/types.js';
 import type {
   HorizontalTransitionAnimation,
   StepperVerticalAnimation,
@@ -14,7 +14,8 @@ const baseOptions: KeyframeAnimationOptions = {
 };
 
 export type Animation =
-  StepperVerticalAnimation | HorizontalTransitionAnimation;
+  | StepperVerticalAnimation
+  | HorizontalTransitionAnimation;
 
 export type AnimationOptions = {
   keyframe: KeyframeAnimationOptions;

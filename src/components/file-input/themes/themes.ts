@@ -1,6 +1,6 @@
 import { css } from 'lit';
 
-import type { Themes } from '../../../theming/types.js';
+import type { Themes } from '#theming/types.js';
 import { all as inputThemes } from '../../input/themes/themes.js';
 
 // Dark Overrides

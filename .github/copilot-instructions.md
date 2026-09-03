@@ -10,6 +10,7 @@ This project involves creating a library of reusable web components using the Li
 
 - Use standard ESM imports.
 - TypeScript imports end with `.js` extension.
+- Import the cross-cutting directories through their `#` subpath alias — `#internals/*`, `#theming/*`, `#animations/*` — never relatively. Everything else, including one component importing another, stays relative.
 - Internal API (properties, methods) must be prefixed with `_`.
 - Use `readonly` for immutable properties and specify explicit return types.
 - Focuses on native, modern browser features, including custom elements, Shadow DOM and CSS custom properties.

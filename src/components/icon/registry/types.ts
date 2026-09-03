@@ -1,21 +1,17 @@
-import type { Theme } from '../../../theming/types.js';
-import type { DefaultMap } from './default-map.js';
+import type { Theme } from '#theming/types.js';
 
 // Exported internal types
 
-export type IconsCollection<T> = DefaultMap<string, Map<string, T>>;
+/** Icons or references organized by collection, then by name. */
+export type IconsCollection<V> = Map<string, Map<string, V>>;
 
-export type IconCallback = (name: string, collection: string) => void;
+/** Notified when the icon registry changes. Subscribers re-resolve their own state. */
+export type IconCallback = () => void;
 export type IconThemeKey = Theme | 'default';
 
 export type SvgIcon = {
   svg: string;
   title?: string;
-};
-
-export type IconReference = {
-  alias: IconMeta;
-  target: Map<IconThemeKey, IconMeta>;
 };
 
 export type IconReferencePair = {
@@ -33,16 +29,20 @@ export enum ActionType {
 /** @hidden */
 export interface BroadcastIconsChangeMessage {
   actionType: ActionType;
-  collections?: Map<string, Map<string, SvgIcon>>;
-  references?: Map<string, Map<string, IconMeta>>;
+  collections?: IconsCollection<SvgIcon>;
+  references?: IconsCollection<IconMeta>;
   origin?: string;
 }
 
 // Exported public types
 
+/** Identifies a registered icon by its name and the collection it belongs to. */
 export interface IconMeta {
+  /** The name identifier of the icon in the collection. */
   name: string;
+  /** The name of the collection the icon is registered in. */
   collection: string;
+  /** @internal Internal use only. */
   external?: boolean;
 }
 
@@ -72,7 +72,7 @@ export interface RegisterIconOptions {
    *
    * @remarks
    * SVG `<title>` elements cause the browser to display a native tooltip when
-   * the user hovers over the icon — an undesirable side-effect when using icon
+   * the user hovers over the icon - an undesirable side-effect when using icon
    * packs such as `@igniteui/material-icons-extended` that embed accessible
    * metadata inside every icon.
    *
@@ -82,7 +82,7 @@ export interface RegisterIconOptions {
    *   `<svg>` element that pointed to the stripped elements' IDs are cleaned up
    *   so the resulting markup contains no dangling ARIA references.
    * - The **title text** is still captured and stored as `SvgIcon.title`, which
-   *   the `<igc-icon>` component continues to expose as its host `aria-label`.
+   *   the icon component continues to expose as its host `aria-label`.
    *   Accessibility is therefore preserved at the component level while the
    *   browser tooltip is suppressed at the SVG level.
    *

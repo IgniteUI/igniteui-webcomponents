@@ -1,7 +1,6 @@
 import { html, LitElement } from 'lit';
-
-import { addThemingController } from '../../theming/theming-controller.js';
-import { registerComponent } from '../common/definitions/register.js';
+import { registerComponent } from '#internals/definitions/register.js';
+import { addThemingController } from '#theming/theming-controller.js';
 import { styles } from './themes/card.header.base.css.js';
 import { all } from './themes/header.js';
 import { styles as shared } from './themes/shared/header/card.header.common.css.js';

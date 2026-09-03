@@ -13,20 +13,57 @@
 
 :host([part='resizing']),
 :host([part='dragging']) {
-    igc-resize {
-        --resize-visibility: hidden;
+    [part~='trigger-side'],
+    [part~='trigger'],
+    [part~='trigger-bottom'] {
+        visibility: hidden;
     }
 
-    igc-resize::part(active) {
-        &::after {
-            border: none;
-        }
+    [part~='active']::after {
+        border: none;
     }
 }
 
 [part~='tile-container'] {
+    position: relative;
     width: 100%;
     height: 100%;
+}
+
+%indicator {
+    --_size: #{rem(11px)};
+
+    display: inline-flex;
+    position: absolute;
+    z-index: 1;
+}
+
+[part~='trigger-side'],
+[part~='trigger'],
+[part~='trigger-bottom'] {
+    @extend %indicator;
+}
+
+[part~='trigger-side'] {
+    top: calc(50% - var(--_size));
+    right: calc(var(--_size) / 2 * -1);
+    cursor: e-resize;
+}
+
+[part~='trigger'] {
+    bottom: calc(var(--_size) / 2 * -1);
+    right: calc(var(--_size) / 2 * -1);
+    cursor: se-resize;
+}
+
+[part~='trigger-bottom'] {
+    left: calc(50% - var(--_size));
+    bottom: calc(var(--_size) / 2 * -1);
+    cursor: s-resize;
+}
+
+[part~='trigger']:focus {
+    outline: none;
 }
 
 [part~='base'] {

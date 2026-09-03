@@ -25,8 +25,8 @@ type ThemeProviderSource = 'uninitialized' | 'context' | 'global';
  *
  * It resolves the active theme from one of two sources, in order of priority:
  *
- * 1. **Context** — provided by an ancestor `<igc-theme-provider>` element via the Lit context API.
- * 2. **Global** — the application-wide theme set via `configureTheme()`.
+ * 1. **Context** - provided by an ancestor `<igc-theme-provider>` element via the Lit context API.
+ * 2. **Global** - the application-wide theme set via `configureTheme()`.
  *
  * When a context provider is present, the controller subscribes to its updates
  * and stops listening to global theme change events. When the host element is
@@ -37,9 +37,9 @@ type ThemeProviderSource = 'uninitialized' | 'context' | 'global';
  * every time the active theme or variant changes.
  *
  * @example
- * Basic usage — typically created via {@link addThemingController}:
+ * Basic usage - typically created via {@link addThemingController}:
  * ```typescript
- * import { addThemingController } from '../../theming/theming-controller.js';
+ * import { addThemingController } from '#theming/theming-controller.js';
  * import { all } from './themes/themes.js';
  *
  * export default class IgcMyComponent extends LitElement {
@@ -219,7 +219,7 @@ class ThemingController implements ReactiveController {
  * @example
  * Minimal setup in a component constructor:
  * ```typescript
- * import { addThemingController } from '../../theming/theming-controller.js';
+ * import { addThemingController } from '#theming/theming-controller.js';
  * import { all } from './themes/themes.js';
  *
  * export default class IgcMyComponent extends LitElement {

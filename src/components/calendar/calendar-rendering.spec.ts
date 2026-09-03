@@ -1,11 +1,14 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import type { TemplateResult } from 'lit';
-
-import { defineComponents } from '../common/definitions/defineComponents.js';
-import { first, last } from '../common/util.js';
+import { CalendarDay } from '#internals/date/model.js';
+import { defineComponents } from '#internals/definitions/defineComponents.js';
+import {
+  getCalendarDOM,
+  getDayViewDOM,
+  getDOMDate,
+} from '#internals/testing/calendar.spec.js';
+import { firstOf, lastOf } from '#internals/utils/arrays.js';
 import IgcCalendarComponent from './calendar.js';
-import { getCalendarDOM, getDayViewDOM, getDOMDate } from './helpers.spec.js';
-import { CalendarDay } from './model.js';
 import { type DateRangeDescriptor, DateRangeType } from './types.js';
 
 describe('Calendar Rendering', () => {
@@ -61,21 +64,21 @@ describe('Calendar Rendering', () => {
       expect(calendar).shadowDom.to.equal(
         `
       <div part="header">
-        <h5 part="header-title">
+        <div part="header-title">
           <slot name="title">Select Date</slot>
-        </h5>
-	      <h2 part="header-date">
+        </div>
+        <div part="header-date">
           <slot>
             ${headerDate}
           </slot>
-        </h2>
+        </div>
       </div>
+      <span class="aria-off-screen"></span>
       <div part="content">
         <div part="days-view-container">
           <div part="navigation">
             <div part="picker-dates">
               <button part="months-navigation"></button>
-              <span class="aria-off-screen"></span>
               <button part="years-navigation"></button>
             </div>
             <div part="navigation-buttons">
@@ -104,7 +107,9 @@ describe('Calendar Rendering', () => {
         getCalendarDOM(calendar).header.title.querySelector('slot')!;
 
       expect(titleSlot.assignedElements()).lengthOf(1);
-      expect(first(titleSlot.assignedElements()).textContent).to.equal('Title');
+      expect(firstOf(titleSlot.assignedElements()).textContent).to.equal(
+        'Title'
+      );
     });
 
     it('should render header-date slot', async () => {
@@ -116,7 +121,7 @@ describe('Calendar Rendering', () => {
         getCalendarDOM(calendar).header.date.querySelector('slot')!;
 
       expect(dateSlot.assignedElements()).lengthOf(1);
-      expect(first(dateSlot.assignedElements()).textContent).to.equal(
+      expect(firstOf(dateSlot.assignedElements()).textContent).to.equal(
         'Header date'
       );
     });
@@ -183,6 +188,54 @@ describe('Calendar Rendering', () => {
       expect(dom.content.children).lengthOf(3);
     });
 
+    it('should expose a single live region for the active period', async () => {
+      const liveRegions = () =>
+        Array.from(
+          calendar.shadowRoot!.querySelectorAll<HTMLElement>('[aria-live]')
+        );
+
+      calendar.activeDate = new CalendarDay({
+        year: 2025,
+        month: 2,
+        date: 15,
+      }).native;
+      calendar.visibleMonths = 3;
+      await elementUpdated(calendar);
+
+      expect(liveRegions()).lengthOf(1);
+      expect(firstOf(liveRegions()).innerText).to.equal('March 2025');
+
+      calendar.activeView = 'months';
+      await elementUpdated(calendar);
+
+      expect(liveRegions()).lengthOf(1);
+      expect(firstOf(liveRegions()).innerText).to.equal('2025');
+
+      // The years view announces through its visible years range instead
+      calendar.activeView = 'years';
+      await elementUpdated(calendar);
+
+      const regions = liveRegions();
+
+      expect(regions).lengthOf(1);
+      expect(firstOf(regions).part.contains('years-range')).to.be.true;
+    });
+
+    it('should expose a single tab stop with more than one visible month', async () => {
+      calendar.visibleMonths = 3;
+      await elementUpdated(calendar);
+
+      const views = Array.from(
+        calendar.shadowRoot!.querySelectorAll('igc-days-view')
+      );
+      const tabStops = views.flatMap((view) =>
+        Array.from(view.shadowRoot!.querySelectorAll('[tabindex="0"]'))
+      );
+
+      expect(views).lengthOf(3);
+      expect(tabStops).lengthOf(1);
+    });
+
     it('should render the correct active view', async () => {
       const { views } = getCalendarDOM(calendar);
 
@@ -239,9 +292,58 @@ describe('Calendar Rendering', () => {
       calendar.weekStart = 'wednesday';
       await elementUpdated(calendar);
 
-      expect(first(daysViewDOM.weekLabels)).attribute(
+      expect(firstOf(daysViewDOM.weekLabels)).attribute(
         'aria-label',
         'Wednesday'
+      );
+    });
+
+    it('should align the days grid with the initial `week-start`', async () => {
+      // March 2025 starts on a Saturday -> a Monday based week starts on Feb 24th
+      const march = new CalendarDay({ year: 2025, month: 2, date: 15 });
+
+      calendar = await createCalendarElement(
+        html`<igc-calendar
+          week-start="monday"
+          .activeDate=${march.native}
+        ></igc-calendar>`
+      );
+
+      const daysViewDOM = getDayViewDOM(getCalendarDOM(calendar).views.days);
+
+      expect(firstOf(daysViewDOM.weekLabels)).attribute('aria-label', 'Monday');
+      expect(firstOf(daysViewDOM.dates.all).dataset.value).to.equal(
+        `${new CalendarDay({ year: 2025, month: 1, date: 24 }).timestamp}`
+      );
+    });
+
+    it('should align the days grid when `weekStart` changes at runtime', async () => {
+      calendar.activeDate = new CalendarDay({
+        year: 2025,
+        month: 2,
+        date: 15,
+      }).native;
+      await elementUpdated(calendar);
+
+      const daysViewDOM = getDayViewDOM(getCalendarDOM(calendar).views.days);
+      const firstDateValue = () =>
+        firstOf(daysViewDOM.dates.all).dataset.value!;
+
+      // Default `sunday` -> Feb 23rd
+      expect(firstDateValue()).to.equal(
+        `${new CalendarDay({ year: 2025, month: 1, date: 23 }).timestamp}`
+      );
+
+      // March 1st 2025 is a Saturday and starts the first week of the grid
+      calendar.weekStart = 'saturday';
+      await elementUpdated(calendar);
+
+      expect(firstOf(daysViewDOM.weekLabels)).attribute(
+        'aria-label',
+        'Saturday'
+      );
+      expect(firstDateValue()).to.equal(
+        `${new CalendarDay({ year: 2025, month: 2, date: 1 }).timestamp}`
       );
     });
 
@@ -252,17 +354,17 @@ describe('Calendar Rendering', () => {
       calendar.weekStart = 'sunday';
       await elementUpdated(calendar);
 
-      expect(first(daysViewDOM.weekLabels).innerText).to.equal('Sun');
+      expect(firstOf(daysViewDOM.weekLabels).innerText).to.equal('Sun');
 
       calendar.formatOptions = { weekday: 'long' };
       await elementUpdated(calendar);
 
-      expect(first(daysViewDOM.weekLabels).innerText).to.equal('Sunday');
+      expect(firstOf(daysViewDOM.weekLabels).innerText).to.equal('Sunday');
 
       calendar.formatOptions = { weekday: 'narrow' };
       await elementUpdated(calendar);
 
-      expect(first(daysViewDOM.weekLabels).innerText).to.equal('S');
+      expect(firstOf(daysViewDOM.weekLabels).innerText).to.equal('S');
     });
 
     it('should change on `monthFormat`', async () => {
@@ -467,9 +569,151 @@ describe('Calendar Rendering', () => {
 
       const calendarDOM = getCalendarDOM(calendar);
       const daysViewDOM = getDayViewDOM(calendarDOM.views.days);
-      const lastWeekNumber = last(daysViewDOM.weekNumbers);
+      const lastWeekNumber = lastOf(daysViewDOM.weekNumbers);
 
       expect(lastWeekNumber.innerText).to.equal('1');
+    });
+  });
+
+  describe('Locale', () => {
+    // July 2025 starts on a Tuesday
+    const july = new CalendarDay({ year: 2025, month: 6, date: 15 });
+    const sunday = new CalendarDay({ year: 2025, month: 5, date: 29 });
+    const monday = new CalendarDay({ year: 2025, month: 5, date: 30 });
+    const saturday = new CalendarDay({ year: 2025, month: 5, date: 28 });
+
+    const daysViewDOM = () =>
+      getDayViewDOM(getCalendarDOM(calendar).views.days);
+    const firstDateValue = () =>
+      firstOf(daysViewDOM().dates.all).dataset.value!;
+    const firstLabel = () =>
+      firstOf(daysViewDOM().weekLabels).getAttribute('aria-label');
+
+    it('derives the week start from the locale when `week-start` is not set', async () => {
+      calendar = await createCalendarElement(
+        html`<igc-calendar
+          locale="bg"
+          .activeDate=${july.native}
+        ></igc-calendar>`
+      );
+
+      expect(calendar.weekStart).to.equal('monday');
+      expect(firstLabel()).to.equal('понеделник');
+      expect(firstDateValue()).to.equal(`${monday.timestamp}`);
+    });
+
+    it('re-aligns the days grid when the locale changes at runtime', async () => {
+      calendar = await createCalendarElement(
+        html`<igc-calendar .activeDate=${july.native}></igc-calendar>`
+      );
+
+      expect(calendar.weekStart).to.equal('sunday');
+      expect(firstDateValue()).to.equal(`${sunday.timestamp}`);
+
+      calendar.locale = 'de';
+      await elementUpdated(calendar);
+
+      expect(calendar.weekStart).to.equal('monday');
+      expect(firstDateValue()).to.equal(`${monday.timestamp}`);
+
+      calendar.locale = 'ar-EG';
+      await elementUpdated(calendar);
+
+      expect(calendar.weekStart).to.equal('saturday');
+      expect(firstLabel()).to.equal('السبت');
+      expect(firstDateValue()).to.equal(`${saturday.timestamp}`);
+    });
+
+    it('prefers an explicit `week-start` over the locale', async () => {
+      calendar = await createCalendarElement(
+        html`<igc-calendar
+          locale="bg"
+          week-start="sunday"
+          .activeDate=${july.native}
+        ></igc-calendar>`
+      );
+
+      expect(calendar.weekStart).to.equal('sunday');
+      expect(firstDateValue()).to.equal(`${sunday.timestamp}`);
+
+      // Returns to the locale value
+      calendar.weekStart = undefined;
+      await elementUpdated(calendar);
+
+      expect(calendar.weekStart).to.equal('monday');
+      expect(firstDateValue()).to.equal(`${monday.timestamp}`);
+    });
+
+    it('falls back to sunday in engines without `Intl.Locale.prototype.getWeekInfo()`', async () => {
+      const prototype = Intl.Locale.prototype;
+      const descriptor = Object.getOwnPropertyDescriptor(
+        prototype,
+        'getWeekInfo'
+      );
+
+      expect(Reflect.deleteProperty(prototype, 'getWeekInfo')).to.be.true;
+
+      try {
+        calendar = await createCalendarElement(
+          html`<igc-calendar locale="bg"></igc-calendar>`
+        );
+        expect(calendar.weekStart).to.equal('sunday');
+      } finally {
+        if (descriptor) {
+          Object.defineProperty(prototype, 'getWeekInfo', descriptor);
+        }
+      }
+    });
+
+    it('renders the header date in the field order of the locale', async () => {
+      calendar = await createCalendarElement(
+        html`<igc-calendar locale="ja" .value=${july.native}></igc-calendar>`
+      );
+      const dom = getCalendarDOM(calendar);
+      const lines = () =>
+        Array.from(dom.header.date.querySelector('slot')!.childNodes)
+          .filter((node) => node.nodeType === Node.TEXT_NODE)
+          .map((node) => node.textContent!.trim())
+          .filter(Boolean);
+
+      expect(dom.header.date.textContent!.trim()).to.equal('7月15日(火)');
+
+      // The month/day line precedes the weekday line
+      calendar.headerOrientation = 'vertical';
+      await elementUpdated(calendar);
+
+      expect(dom.header.date.querySelector('br')).to.exist;
+      expect(lines()).to.eql(['7月15日', '火']);
+
+      calendar.locale = 'en';
+      await elementUpdated(calendar);
+
+      expect(lines()).to.eql(['Tue', 'Jul 15']);
+    });
+
+    it('orders the month and year navigation buttons per locale', async () => {
+      calendar = await createCalendarElement(
+        html`<igc-calendar
+          locale="ja"
+          .activeDate=${july.native}
+        ></igc-calendar>`
+      );
+      const dom = getCalendarDOM(calendar);
+      const pickers = () =>
+        Array.from(dom.navigation.months.parentElement!.children).map(
+          (element) => element.getAttribute('part')
+        );
+
+      expect(pickers()).to.eql(['years-navigation', 'months-navigation']);
+      expect(dom.navigation.months.textContent!.trim()).to.equal('7月');
+      expect(dom.navigation.years.textContent!.trim()).to.equal('2025年');
+
+      calendar.locale = 'en';
+      await elementUpdated(calendar);
+
+      expect(pickers()).to.eql(['months-navigation', 'years-navigation']);
+      expect(dom.navigation.months.textContent!.trim()).to.equal('July');
+      expect(dom.navigation.years.textContent!.trim()).to.equal('2025');
     });
   });
 });

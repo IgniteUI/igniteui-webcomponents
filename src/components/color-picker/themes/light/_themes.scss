@@ -1,0 +1,8 @@
+@use 'styles/utilities' as *;
+@use 'igniteui-theming/sass/themes/schemas/components/light/color-picker' as *;
+
+$base: digest-schema($light-color-picker);
+$material: digest-schema($material-color-picker);
+$bootstrap: digest-schema($bootstrap-color-picker);
+$fluent: digest-schema($fluent-color-picker);
+$indigo: digest-schema($indigo-color-picker);

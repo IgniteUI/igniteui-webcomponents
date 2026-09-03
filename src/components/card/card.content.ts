@@ -1,14 +1,13 @@
 import { html, LitElement } from 'lit';
-
-import { addThemingController } from '../../theming/theming-controller.js';
-import { registerComponent } from '../common/definitions/register.js';
+import { registerComponent } from '#internals/definitions/register.js';
+import { addThemingController } from '#theming/theming-controller.js';
 import { styles } from './themes/card.content.base.css.js';
 import { all } from './themes/content.js';
 import { styles as shared } from './themes/shared/content/card.content.common.css.js';
 
 /**
  * A container component for the card's main text content.
- * This component should be used within an igc-card element to display the primary content.
+ * This component should be used within a card to display the primary content.
  *
  * @element igc-card-content
  *

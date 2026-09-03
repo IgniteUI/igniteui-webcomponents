@@ -1,26 +1,21 @@
-import type { Theme } from '../../theming/types.js';
+import type { Theme } from '#theming/types.js';
 import { ICON_REFERENCES } from './icon-references.js';
 import { IconsStateBroadcast } from './icon-state.broadcast.js';
 import { internalIcons } from './internal-icons-lib.js';
-import { createIconDefaultMap } from './registry/default-map.js';
 import { SvgIconParser } from './registry/parser.js';
 import type {
   IconCallback,
   IconMeta,
   IconReferencePair,
+  IconsCollection,
   RegisterIconOptions,
   SvgIcon,
 } from './registry/types.js';
 import { ActionType } from './registry/types.js';
 
 /**
- * Resolves the stripMeta argument of `registerIcon` / `registerIconFromText`.
- *
- * Accepts either the plain-string collection name **or** the
- * {@link RegisterIconOptions} object, and always returns a fully-resolved
- * options record so call-sites do not need to branch.
- *
- * @internal
+ * Normalizes the third argument of `registerIcon` / `registerIconFromText`,
+ * which is either a collection name or a {@link RegisterIconOptions} object.
  */
 function resolveIconOptions(
   collectionOrOptions?: string | RegisterIconOptions
@@ -35,67 +30,50 @@ function resolveIconOptions(
   };
 }
 
+/** Returns the named collection, creating it when absent. */
+function collectionOf<V>(
+  collections: IconsCollection<V>,
+  name: string
+): Map<string, V> {
+  let collection = collections.get(name);
+
+  if (!collection) {
+    collection = new Map();
+    collections.set(name, collection);
+  }
+
+  return collection;
+}
+
 /**
  * Global singleton registry for managing SVG icons and their references.
  *
  * @remarks
- * The IconsRegistry class handles:
- * - Registration and storage of SVG icons in collections
- * - Icon reference/alias management with theme-based resolution
- * - Notification of icon changes to subscribed components
- * - Cross-context synchronization via BroadcastChannel
- * - Batched notifications for performance optimization
+ * The registry stores SVG icons in named collections, resolves aliases against
+ * the active theme, notifies subscribers once per microtask however many icons
+ * changed, and publishes user-set state to other browsing contexts (see
+ * {@link IconsStateBroadcast}).
  *
- * This is a singleton managed via Symbol.for to ensure a single instance
- * across the entire application, even with multiple bundle instances.
- *
- * @internal This class is not directly exposed. Use the exported functions instead.
+ * @internal Not exposed directly - use the exported functions.
  */
 class IconsRegistry {
-  /** Set of callbacks subscribed to icon change notifications */
   private readonly _listeners = new Set<IconCallback>();
-
-  /** Set of pending icon:collection keys awaiting notification */
-  private readonly _pendingNotifications = new Set<string>();
-
-  /** Map of icon references/aliases by collection and name */
-  private readonly _references = createIconDefaultMap<string, IconMeta>();
-
-  /** Map of registered SVG icons by collection and name */
-  private readonly _collections = createIconDefaultMap<string, SvgIcon>().set(
-    'internal',
-    internalIcons
-  );
-
-  /** Parser for converting SVG text to icon metadata */
+  private readonly _references: IconsCollection<IconMeta> = new Map();
+  private readonly _collections: IconsCollection<SvgIcon> = new Map([
+    ['internal', internalIcons],
+  ]);
   private readonly _svgIconParser = new SvgIconParser();
-
-  /** Broadcast channel manager for cross-context synchronization */
   private readonly _broadcast = new IconsStateBroadcast(
     this._collections,
     this._references
   );
-
-  /** Flag indicating if a notification microtask is scheduled */
   private _notificationScheduled = false;
 
   /**
-   * Registers an SVG icon in the registry.
+   * Parses and stores an SVG icon, then publishes and notifies.
    *
-   * @param name - The unique name for the icon within its collection
-   * @param iconText - The SVG markup as a string
-   * @param collection - The collection to register the icon in (default: 'default')
-   * @param stripMeta - When `true`, strips `<title>` and `<desc>` elements from
-   *   the SVG before storing it (see {@link RegisterIconOptions.stripMeta}).
-   *
-   * @remarks
-   * This method:
-   * 1. Parses the SVG text into icon metadata
-   * 2. Stores the icon in the specified collection
-   * 3. Broadcasts the registration to other contexts
-   * 4. Notifies subscribed components (batched)
-   *
-   * @throws Will throw if the SVG text is malformed
+   * @param stripMeta - See {@link RegisterIconOptions.stripMeta}.
+   * @throws If the SVG text is malformed.
    */
   public register(
     name: string,
@@ -104,88 +82,63 @@ class IconsRegistry {
     stripMeta = false
   ): void {
     const svgIcon = this._svgIconParser.parse(iconText, stripMeta);
-    this._collections.getOrCreate(collection).set(name, svgIcon);
-
-    const icons = createIconDefaultMap<string, SvgIcon>();
-    icons.getOrCreate(collection).set(name, svgIcon);
+    collectionOf(this._collections, collection).set(name, svgIcon);
 
     this._broadcast.send({
       actionType: ActionType.RegisterIcon,
-      collections: icons.toPlainMap(),
+      collections: new Map([[collection, new Map([[name, svgIcon]])]]),
     });
 
-    this._notifyAll(name, collection);
+    this._notify();
   }
 
   /**
-   * Subscribes a callback to icon change notifications.
-   *
-   * @param callback - Function to call when icons are registered or updated
-   *
-   * @remarks
-   * The callback receives the icon name and collection when changes occur.
-   * Notifications are batched using microtasks for performance.
+   * Subscribes a callback to registry changes. It is invoked once per
+   * microtask, however many icons changed, so subscribers re-resolve their
+   * own state.
    */
   public subscribe(callback: IconCallback): void {
     this._listeners.add(callback);
   }
 
-  /**
-   * Unsubscribes a callback from icon change notifications.
-   *
-   * @param callback - The previously subscribed callback to remove
-   */
+  /** Unsubscribes a previously subscribed callback. */
   public unsubscribe(callback: IconCallback): void {
     this._listeners.delete(callback);
   }
 
   /**
-   * Sets an icon reference/alias.
-   *
-   * @param options - Configuration for the icon reference
+   * Aliases an icon name to another icon.
    *
    * @remarks
-   * Icon references allow icons to be aliased with different names.
-   * They can be:
-   * - User-set (external: true) - higher priority, synced across contexts
-   * - System-set (external: false) - used internally, not synced
-   *
-   * When overwrite is true, the reference is stored and subscribers are notified.
-   * When external is true, the reference is broadcast to other contexts.
+   * `overwrite` stores the reference and notifies subscribers; `external`
+   * marks it as user-set, which takes precedence over the built-in theme
+   * aliases and is published to other browsing contexts.
    */
   public setIconRef(options: IconReferencePair): void {
     const { alias, target, overwrite } = options;
-    const reference = this._references.getOrCreate(alias.collection);
 
     if (overwrite) {
-      reference.set(alias.name, {
+      collectionOf(this._references, alias.collection).set(alias.name, {
         name: target.name,
         collection: target.collection,
         external: target.external,
       });
-      this._notifyAll(alias.name, alias.collection);
+      this._notify();
     }
+
     if (target.external) {
-      const refs = createIconDefaultMap<string, IconMeta>();
-      refs.getOrCreate(alias.collection).set(alias.name, {
-        name: target.name,
-        collection: target.collection,
-      });
+      const ref = { name: target.name, collection: target.collection };
 
       this._broadcast.send({
         actionType: ActionType.UpdateIconReference,
-        references: refs.toPlainMap(),
+        references: new Map([[alias.collection, new Map([[alias.name, ref]])]]),
       });
     }
   }
 
   /**
-   * Gets the icon reference, resolving aliases based on the provided theme.
-   *
-   * @param name - The icon name or alias
-   * @param collection - The collection name
-   * @param theme - The theme to use for resolving aliases
-   * @returns The resolved icon metadata (without the internal 'external' flag)
+   * Resolves a name that may be an alias to the icon it points at, for the
+   * given theme. The result never carries the internal `external` flag.
    */
   public getIconRef(name: string, collection: string, theme?: Theme): IconMeta {
     // Check for any user-set reference first (external or internal)
@@ -197,120 +150,59 @@ class IconsRegistry {
       };
     }
 
-    // Resolve theme-based alias for default collection
+    // Resolve theme-based alias for the default collection
     if (collection === 'default' && theme) {
-      const alias = ICON_REFERENCES.find(
-        (ref) => ref.alias.name === name && ref.alias.collection === 'default'
-      );
+      const targets = ICON_REFERENCES.get(name);
+      const target = targets?.get(theme) ?? targets?.get('default');
 
-      if (alias) {
-        const target = alias.target.get(theme) ?? alias.target.get('default');
-        if (target) {
-          return target;
-        }
+      if (target) {
+        return target;
       }
     }
 
-    // Return as-is if no reference found
     return { name, collection };
   }
 
-  /**
-   * Retrieves an icon from the registry.
-   *
-   * @param name - The icon name
-   * @param collection - The collection name (default: 'default')
-   * @returns The SVG icon metadata, or undefined if not found
-   *
-   * @remarks
-   * Use `getIconRef` first to resolve aliases before calling this method.
-   */
+  /** Retrieves an icon. Resolve aliases with `getIconRef` first. */
   public get(name: string, collection = 'default'): SvgIcon | undefined {
     return this._collections.get(collection)?.get(name);
   }
 
   /**
-   * Schedules a batched notification for icon changes.
-   *
-   * @param name - The icon name that changed
-   * @param collection - The collection name
-   *
-   * @remarks
-   * Notifications are batched in a microtask queue to avoid excessive
-   * listener calls when multiple icons are registered synchronously.
-   * Duplicate icon:collection pairs are automatically deduplicated.
-   *
-   * @internal
+   * Notifies subscribers, coalescing a burst of changes in the same microtask
+   * into a single notification.
    */
-  private _notifyAll(name: string, collection: string): void {
-    const key = `${collection}:${name}`;
-    this._pendingNotifications.add(key);
-
-    if (!this._notificationScheduled) {
-      this._notificationScheduled = true;
-      queueMicrotask(() => {
-        this._flushNotifications();
-      });
+  private _notify(): void {
+    if (this._notificationScheduled) {
+      return;
     }
-  }
 
-  /**
-   * Flushes pending notifications to all subscribed listeners.
-   *
-   * @remarks
-   * This method is called as a microtask after icons are registered.
-   * It processes all pending icon:collection pairs and notifies listeners.
-   *
-   * @internal
-   */
-  private _flushNotifications(): void {
-    const notifications = Array.from(this._pendingNotifications);
-    this._pendingNotifications.clear();
-    this._notificationScheduled = false;
+    this._notificationScheduled = true;
 
-    for (const key of notifications) {
-      const [collection, ...nameParts] = key.split(':');
-      const name = nameParts.join(':');
+    queueMicrotask(() => {
+      this._notificationScheduled = false;
 
       for (const listener of this._listeners) {
-        listener(name, collection);
+        listener();
       }
-    }
+    });
   }
 }
 
-/** Global symbol key for the singleton registry instance */
 const registry = Symbol.for('igc.icons-registry.instance');
 
-/** Type augmentation for globalThis to include the registry */
 type IgcIconRegistry = typeof globalThis & {
   [registry]?: IconsRegistry;
 };
 
 /**
- * Gets the global icon registry singleton instance.
- *
- * @returns The IconsRegistry singleton
- *
- * @remarks
- * This function ensures only one instance of the registry exists globally,
- * even across multiple bundle instances. The registry is stored on globalThis
- * using a well-known Symbol.
- *
- * @example
- * ```typescript
- * const registry = getIconRegistry();
- * registry.subscribe((name, collection) => {
- *   console.log(`Icon ${name} changed in ${collection}`);
- * });
- * ```
+ * Gets the icon registry, creating it on first use. The well-known symbol on
+ * `globalThis` keeps it a single instance even across multiple bundles.
  */
-export function getIconRegistry() {
-  const _global = globalThis as IgcIconRegistry;
-  if (!_global[registry]) {
-    _global[registry] = new IconsRegistry();
-  }
-  return _global[registry];
+export function getIconRegistry(): IconsRegistry {
+  const global = globalThis as IgcIconRegistry;
+  global[registry] ??= new IconsRegistry();
+  return global[registry];
 }
 
 /**
@@ -446,7 +338,7 @@ export function registerIconFromText(
  * - Providing fallbacks for missing icons
  *
  * User-set references are marked as external and have higher priority than
- * theme-based aliases. They are also synchronized across browsing contexts.
+ * theme-based aliases. They are also published to other browsing contexts.
  *
  * @example
  * ```typescript

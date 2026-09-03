@@ -1,9 +1,8 @@
 import { html, LitElement, nothing, type PropertyValues } from 'lit';
 import { property, state } from 'lit/decorators.js';
-import { ifDefined } from 'lit/directives/if-defined.js';
-import { addThemingController } from '../../theming/theming-controller.js';
-import { addInternalsController } from '../common/controllers/internals.js';
-import { registerComponent } from '../common/definitions/register.js';
+import { addInternalsController } from '#internals/controllers/internals.js';
+import { registerComponent } from '#internals/definitions/register.js';
+import { addThemingController } from '#theming/theming-controller.js';
 import type { AvatarShape } from '../types.js';
 import { styles } from './themes/avatar.base.css.js';
 import { styles as shared } from './themes/shared/avatar.common.css.js';
@@ -15,12 +14,11 @@ import { all } from './themes/themes.js';
  *
  * @element igc-avatar
  *
- * @slot - Renders an icon inside the default slot.
+ * @slot - Renders an icon inside the default slot. Ignored when `initials` is set.
  *
  * @csspart base - The base wrapper of the avatar.
  * @csspart initials - The initials wrapper of the avatar.
  * @csspart image - The image wrapper of the avatar.
- * @csspart icon - The icon wrapper of the avatar.
  */
 export default class IgcAvatarComponent extends LitElement {
   public static readonly tagName = 'igc-avatar';
@@ -30,13 +28,6 @@ export default class IgcAvatarComponent extends LitElement {
   public static register(): void {
     registerComponent(IgcAvatarComponent);
   }
-
-  private readonly _internals = addInternalsController(this, {
-    initialARIA: {
-      role: 'image',
-      ariaLabel: 'avatar',
-    },
-  });
 
   @state()
   private _hasError = false;
@@ -72,15 +63,14 @@ export default class IgcAvatarComponent extends LitElement {
   constructor() {
     super();
     addThemingController(this, all);
+
+    addInternalsController(this, {
+      initialARIA: { role: 'img', ariaRoleDescription: 'avatar' },
+      aria: () => ({ ariaLabel: this.alt ?? this.initials ?? null }),
+    });
   }
 
   protected override willUpdate(changedProperties: PropertyValues<this>): void {
-    if (changedProperties.has('initials') || changedProperties.has('alt')) {
-      this._internals.setARIA({
-        ariaRoleDescription: this.alt ?? this.initials,
-      });
-    }
-
     if (changedProperties.has('src')) {
       this._hasError = false;
     }
@@ -103,8 +93,8 @@ export default class IgcAvatarComponent extends LitElement {
             ? html`
                 <img
                   part="image"
-                  alt=${ifDefined(this.alt)}
-                  src=${ifDefined(this.src)}
+                  alt=${this.alt ?? ''}
+                  src=${this.src}
                   @error=${this._handleError}
                 />
               `

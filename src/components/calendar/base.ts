@@ -4,33 +4,51 @@ import {
 } from 'igniteui-i18n-core';
 import { LitElement, type PropertyValues } from 'lit';
 import { property, state } from 'lit/decorators.js';
-import { blazorDeepImport } from '../common/decorators/blazorDeepImport.js';
-import { blazorIndirectRender } from '../common/decorators/blazorIndirectRender.js';
-import type { IgcCalendarResourceStrings } from '../common/i18n/EN/calendar.resources.js';
-import { addI18nController } from '../common/i18n/i18n-controller.js';
-import { first } from '../common/util.js';
-import { convertToDate, convertToDates, getWeekDayNumber } from './helpers.js';
-import { CalendarDay } from './model.js';
+import { convertToDate, convertToDates } from '#internals/date/converters.js';
+import { CalendarDay, toCalendarDayOrNull } from '#internals/date/model.js';
+import { blazorDeepImport } from '#internals/decorators/blazorDeepImport.js';
+import { blazorIndirectRender } from '#internals/decorators/blazorIndirectRender.js';
+import type { IgcCalendarResourceStrings } from '#internals/i18n/EN/calendar.resources.js';
+import type { I18nControllerConfig } from '#internals/i18n/i18n-controller.js';
+import { I18nMixin } from '#internals/mixins/i18n.js';
+import { firstOf } from '#internals/utils/arrays.js';
+import { getLocaleWeekStart, getWeekDayNumber } from './helpers.js';
 import type {
   CalendarSelection,
   DateRangeDescriptor,
   WeekDays,
 } from './types.js';
 
+const i18n: I18nControllerConfig<
+  IgcCalendarResourceStrings | ICalendarResourceStrings
+> = {
+  defaultEN: CalendarResourceStringsEN,
+  resourceMapName: 'calendar',
+};
+
 @blazorIndirectRender
 @blazorDeepImport
-export class IgcCalendarBaseComponent extends LitElement {
-  protected readonly _i18nController = addI18nController<
-    IgcCalendarResourceStrings | ICalendarResourceStrings
-  >(this, {
-    defaultEN: CalendarResourceStringsEN,
-    resourceMapName: 'calendar',
-  });
-
+export class IgcCalendarBaseComponent extends I18nMixin<
+  IgcCalendarResourceStrings | ICalendarResourceStrings,
+  typeof LitElement,
+  IgcCalendarResourceStrings & ICalendarResourceStrings
+>(LitElement, i18n) {
   private _initialActiveDateSet = false;
+  private _weekStart?: WeekDays;
 
   protected get _hasValues(): boolean {
-    return this._values && this._values.length > 0;
+    return this._values.length > 0;
+  }
+
+  /**
+   * The index of the first day of the week (Sunday = 0) as derived from {@link weekStart}.
+   *
+   * @remarks
+   * Derived on access instead of in `update()`, so that its consumers are not sensitive
+   * to the order in which the base class and its descendants update.
+   */
+  protected get _firstDayOfWeek(): number {
+    return getWeekDayNumber(this.weekStart);
   }
 
   protected get _isSingle(): boolean {
@@ -47,9 +65,6 @@ export class IgcCalendarBaseComponent extends LitElement {
 
   @state()
   protected _rangePreviewDate?: CalendarDay;
-
-  @state()
-  protected _firstDayOfWeek = 0;
 
   @state()
   protected _activeDate = CalendarDay.today;
@@ -75,8 +90,7 @@ export class IgcCalendarBaseComponent extends LitElement {
    */
   @property({ converter: convertToDate })
   public set value(value: Date | string | null | undefined) {
-    const converted = convertToDate(value);
-    this._value = converted ? CalendarDay.from(converted) : null;
+    this._value = toCalendarDayOrNull(convertToDate(value));
   }
 
   public get value(): Date | null {
@@ -86,7 +100,7 @@ export class IgcCalendarBaseComponent extends LitElement {
   /* blazorSuppress */
   /**
    * The current values of the calendar.
-   * Used when selection is set to multiple of range.
+   * Used when selection is set to multiple or range.
    *
    * @attr values
    */
@@ -105,10 +119,8 @@ export class IgcCalendarBaseComponent extends LitElement {
   @property({ attribute: 'active-date', converter: convertToDate })
   public set activeDate(value: Date | string | null | undefined) {
     this._initialActiveDateSet = true;
-    const converted = convertToDate(value);
-    this._activeDate = converted
-      ? CalendarDay.from(converted)
-      : CalendarDay.today;
+    this._activeDate =
+      toCalendarDayOrNull(convertToDate(value)) ?? CalendarDay.today;
   }
 
   public get activeDate(): Date {
@@ -133,43 +145,30 @@ export class IgcCalendarBaseComponent extends LitElement {
 
   /**
    * Gets/Sets the first day of the week.
+   *
+   * @remarks
+   * When not set, the week starts on the first day of the week of the current {@link locale}.
+   * Setting `undefined` returns to the locale value.
    * @attr week-start
-   * @default sunday
    */
   @property({ attribute: 'week-start' })
-  public weekStart: WeekDays = 'sunday';
-
-  /**
-   * Gets/Sets the locale used for formatting and displaying the dates in the component.
-   * @attr locale
-   */
-  @property()
-  public set locale(value: string) {
-    this._i18nController.locale = value;
+  public set weekStart(value: WeekDays | undefined) {
+    this._weekStart = value ?? undefined;
   }
 
-  public get locale() {
-    return this._i18nController.locale;
+  public get weekStart(): WeekDays {
+    return this._weekStart ?? getLocaleWeekStart(this.locale);
   }
 
   /**
-   * The resource strings for localization.
+   * Gets/Sets the special dates for the component.
+   *
+   * @remarks
+   * Returns `undefined` when no dates are set, which the setter accepts as well so that
+   * a round trip through the property is valid.
    */
   @property({ attribute: false })
-  public set resourceStrings(
-    value: IgcCalendarResourceStrings | ICalendarResourceStrings
-  ) {
-    this._i18nController.resourceStrings = value;
-  }
-
-  public get resourceStrings(): IgcCalendarResourceStrings &
-    ICalendarResourceStrings {
-    return this._i18nController.resourceStrings;
-  }
-
-  /** Gets/Sets the special dates for the component. */
-  @property({ attribute: false })
-  public set specialDates(value: DateRangeDescriptor[]) {
+  public set specialDates(value: DateRangeDescriptor[] | undefined) {
     this._specialDates = value ?? [];
   }
 
@@ -177,9 +176,15 @@ export class IgcCalendarBaseComponent extends LitElement {
     return this._specialDates.length ? this._specialDates : undefined;
   }
 
-  /** Gets/Sets the disabled dates for the component. */
+  /**
+   * Gets/Sets the disabled dates for the component.
+   *
+   * @remarks
+   * Returns `undefined` when no dates are set, which the setter accepts as well so that
+   * a round trip through the property is valid.
+   */
   @property({ attribute: false })
-  public set disabledDates(value: DateRangeDescriptor[]) {
+  public set disabledDates(value: DateRangeDescriptor[] | undefined) {
     this._disabledDates = value ?? [];
   }
 
@@ -188,11 +193,7 @@ export class IgcCalendarBaseComponent extends LitElement {
   }
 
   /** @internal */
-  protected override update(props: PropertyValues<this>): void {
-    if (props.has('weekStart')) {
-      this._firstDayOfWeek = getWeekDayNumber(this.weekStart);
-    }
-
+  protected override update(props: PropertyValues): void {
     if (props.has('selection') && this.hasUpdated) {
       this._rangePreviewDate = undefined;
       this._value = null;
@@ -211,7 +212,7 @@ export class IgcCalendarBaseComponent extends LitElement {
     if (this._isSingle) {
       this.activeDate = this.value ?? this.activeDate;
     } else {
-      this.activeDate = first(this.values) ?? this.activeDate;
+      this.activeDate = firstOf(this.values) ?? this.activeDate;
     }
   }
 }
