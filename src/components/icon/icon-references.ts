@@ -70,6 +70,7 @@ const ICON_ALIASES: Record<string, Partial<Record<IconThemeKey, string>>> = {
   thumb_down_inactive: { default: 'thumb_down_empty' },
   regenerate: { default: 'reload' },
   copy_content: { default: 'copy' },
+  copy_success: { default: 'chip_select', indigo: 'indigo_check' },
   collapse: { default: 'keyboard_arrow_up', indigo: 'indigo_chevron_up' },
   eye_dropper: { default: 'colorize' },
   arrow_prev: {

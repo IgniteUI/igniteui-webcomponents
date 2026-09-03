@@ -21,6 +21,7 @@ import IgcSwitchComponent from '../../components/checkbox/switch.js';
 import IgcChipComponent from '../../components/chip/chip.js';
 import IgcColorPickerComponent from '../../components/color-picker/color-picker.js';
 import IgcComboComponent from '../../components/combo/combo.js';
+import IgcCopyToClipboardComponent from '../../components/copy-to-clipboard/copy-to-clipboard.js';
 import IgcDatePickerComponent from '../../components/date-picker/date-picker.js';
 import IgcDateRangePickerComponent from '../../components/date-range-picker/date-range-picker.js';
 import IgcDateTimeInputComponent from '../../components/date-time-input/date-time-input.js';
@@ -100,6 +101,7 @@ const allComponents: IgniteComponent[] = [
   IgcColorPickerComponent,
   IgcFileInputComponent,
   IgcComboComponent,
+  IgcCopyToClipboardComponent,
   IgcDatePickerComponent,
   IgcDateRangePickerComponent,
   IgcDropdownComponent,

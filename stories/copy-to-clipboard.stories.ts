@@ -35,9 +35,9 @@ const metadata: Meta<IgcCopyToClipboardComponent> = {
       table: { defaultValue: { summary: 'false' } },
     },
     format: {
-      type: '"plain" | "preserve"',
+      type: { name: 'enum', value: ['plain', 'preserve'] },
       description:
-        'Controls how the text content is formatted when copied to the clipboard.\n- `plain`: Normalizes all whitespace into a flat body of text (default).\n- `preserve`: Retains the visual structure such as paragraphs and code indentation.',
+        'Controls how the text content is formatted when copied to the clipboard.\n- `plain`: Collapses whitespace into single spaces and block boundaries into single newlines (default).\n- `preserve`: Retains the visual structure such as paragraphs and code indentation.',
       options: ['plain', 'preserve'],
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'plain' } },
@@ -53,7 +53,7 @@ interface IgcCopyToClipboardArgs {
   disableInteraction: boolean;
   /**
    * Controls how the text content is formatted when copied to the clipboard.
-   * - `plain`: Normalizes all whitespace into a flat body of text (default).
+   * - `plain`: Collapses whitespace into single spaces and block boundaries into single newlines (default).
    * - `preserve`: Retains the visual structure such as paragraphs and code indentation.
    */
   format: 'plain' | 'preserve';
@@ -159,8 +159,7 @@ function greet(name) {
   const message = \`Hello, \${name}!\`;
   console.log(message);
   return message;
-}</pre
-          >
+}</pre>
         </div>
       </igc-copy-to-clipboard>
 
