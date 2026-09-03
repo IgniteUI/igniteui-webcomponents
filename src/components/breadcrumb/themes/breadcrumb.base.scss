@@ -37,14 +37,14 @@
     display: inline-flex;
     align-items: center;
     padding-inline: pad-inline(rem(2px), rem(4px), rem(8px));
+    font-size: sizable(var(--ig-detail-1-font-size), var(--ig-body-2-font-size), var(--ig-body-1-font-size));
+    font-weight: sizable(var(--ig-detail-1-font-weight), var(--ig-body-2-font-weight), var(--ig-body-1-font-weight));
+    line-height: sizable(var(--ig-detail-1-line-height), var(--ig-body-2-line-height), var(--ig-body-1-line-height));
+    letter-spacing: sizable(var(--ig-detail-1-letter-spacing), var(--ig-body-2-letter-spacing), var(--ig-body-1-letter-spacing));
+    text-transform: sizable(var(--ig-detail-1-text-transform), var(--ig-body-2-text-transform), var(--ig-body-1-text-transform));
 
     ::slotted(a){
         padding-inline: pad-inline(rem(2px), rem(4px), rem(8px));
-        font-size: sizable(var(--ig-detail-1-font-size), var(--ig-body-2-font-size), var(--ig-body-1-font-size));
-        font-weight: sizable(var(--ig-detail-1-font-weight), var(--ig-body-2-font-weight), var(--ig-body-1-font-weight));
-        line-height: sizable(var(--ig-detail-1-line-height), var(--ig-body-2-line-height), var(--ig-body-1-line-height));
-        letter-spacing: sizable(var(--ig-detail-1-letter-spacing), var(--ig-body-2-letter-spacing), var(--ig-body-1-letter-spacing));
-        text-transform: sizable(var(--ig-detail-1-text-transform), var(--ig-body-2-text-transform), var(--ig-body-1-text-transform));
     }
 
     ::slotted([slot='prefix']),

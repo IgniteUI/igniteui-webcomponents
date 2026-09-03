@@ -3,6 +3,12 @@
 
 $theme: $indigo;
 
+:host {
+    --ig-detail-1-font-size: #{12px};
+    --ig-detail-1-line-height: #{16px};
+    --ig-detail-1-letter-spacing: #{0px};
+}
+
 :host(:not([current])) {
     [part~='label']:focus-within {
         outline: rem(3px) solid var-get($theme, 'focus-border-color');
