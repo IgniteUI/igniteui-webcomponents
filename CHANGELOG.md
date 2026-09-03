@@ -59,6 +59,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - #### Calendar
   - `igc-calendar` now exports the `label-inner`, `months-row` and `years-row` parts. The pickers export them as `calendar-label-inner`, `months-row` and `years-row`. The views rendered these parts but did not export them, thus you could not style them through the calendar.
+- #### Color picker
+  - New `igc-color-picker` component. It provides a user interface for selecting colors, supporting various color formats and a customizable palette. [#1973](https://github.com/IgniteUI/igniteui-webcomponents/pull/1973)
 - #### Chip
   - `outlined` property. When you set it to `true`, the chip shows an outlined style. [#2307](https://github.com/IgniteUI/igniteui-webcomponents/pull/2307)
 - #### Icon
