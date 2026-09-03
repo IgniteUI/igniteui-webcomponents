@@ -9,8 +9,10 @@ $theme: $material;
     --ig-detail-1-line-height: #{rem(18px)};
     --ig-detail-1-letter-spacing: #{rem(0.3px)};
     --ig-detail-1-text-transform: none;
+    /* stylelint-disable length-zero-no-unit */
     --ig-body-2-letter-spacing: #{rem(0px)};
     --ig-body-1-letter-spacing: #{rem(0px)};
+    /* stylelint-enable length-zero-no-unit */
 }
 
 :host(:not([current], [disabled])) {
@@ -105,5 +107,5 @@ $theme: $material;
 
 [part='separator'] {
     color: var-get($theme, 'separator-color');
-    padding-inline-start: rem(4px);
+    padding-inline: rem(2px);
 }

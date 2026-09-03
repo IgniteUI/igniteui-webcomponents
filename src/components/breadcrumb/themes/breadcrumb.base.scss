@@ -36,7 +36,7 @@
 [part='label'] {
     display: inline-flex;
     align-items: center;
-    padding-inline: pad-inline(rem(2px), rem(4px), rem(8px));
+    padding-inline: pad-inline(rem(2px), rem(2px), rem(4px));
     font-size: sizable(var(--ig-detail-1-font-size), var(--ig-body-2-font-size), var(--ig-body-1-font-size));
     font-weight: sizable(var(--ig-detail-1-font-weight), var(--ig-body-2-font-weight), var(--ig-body-1-font-weight));
     line-height: sizable(var(--ig-detail-1-line-height), var(--ig-body-2-line-height), var(--ig-body-1-line-height));

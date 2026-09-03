@@ -9,3 +9,7 @@ $theme: $bootstrap;
         border-radius: rem(4px);
     }
 }
+
+[part='separator'] {
+    padding-inline: rem(4px);
+}

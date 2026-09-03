@@ -15,3 +15,7 @@ $theme: $indigo;
         border-radius: rem(32px);
     }
 }
+
+[part='separator'] {
+    padding-inline: rem(4px);
+}
