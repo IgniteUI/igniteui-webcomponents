@@ -141,6 +141,7 @@ A bare CSS import (`import '...material.css'`) lands in the document head and se
 Import the theme as an inline string (requires bundler support for `?inline`, e.g. Vite) and inject it as a `<style>` tag inside the shadow root. The exact approach depends on the framework — for a LitElement component, render it at the top of `render()`:
 
 ```typescript
+import { html } from 'lit';
 import gridTheme from 'igniteui-webcomponents-grids/grids/themes/light/material.css?inline';
 
 // LitElement example — adapt to your Shadow DOM approach (Stencil, FAST, vanilla attachShadow, etc.)

@@ -116,6 +116,7 @@ Ensure you import a theme CSS file in your entry point. Without it, components r
 **`igniteui-webcomponents-grids` inside a Shadow root:** A bare `import '...css'` lands in the document head and never reaches inside a Shadow root — the grid's internal structure and elements receive no styles and render with incorrect dimensions. Import the theme as an inline string and inject it as a `<style>` tag inside the shadow root (requires bundler support for `?inline`, e.g. Vite). For a LitElement component:
 
 ```typescript
+import { html } from 'lit';
 import gridTheme from 'igniteui-webcomponents-grids/grids/themes/light/material.css?inline';
 
 render() {
