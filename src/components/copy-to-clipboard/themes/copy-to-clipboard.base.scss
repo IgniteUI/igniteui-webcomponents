@@ -1,0 +1,26 @@
+@use 'styles/utilities' as *;
+
+:host {
+    display: block;
+    position: relative;
+}
+
+[part~='button'] {
+    position: absolute;
+    inset-block-start: rem(4px);
+    inset-inline-end: rem(4px);
+    padding: rem(4px);
+    border-radius: rem(4px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease-in-out;
+
+    @media (prefers-reduced-motion: reduce) {
+        transition: none;
+    }
+}
+
+[part~='visible'] {
+    opacity: 1;
+    pointer-events: auto;
+}
