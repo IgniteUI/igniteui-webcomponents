@@ -1,6 +1,6 @@
-const SECTION_START = "<!-- igniteui-webcomponents:supply-chain:start -->";
-const SECTION_END = "<!-- igniteui-webcomponents:supply-chain:end -->";
-const SEVERITIES = ["critical", "high", "moderate", "low", "info"];
+const SECTION_START = '<!-- igniteui-webcomponents:supply-chain:start -->';
+const SECTION_END = '<!-- igniteui-webcomponents:supply-chain:end -->';
+const SEVERITIES = ['critical', 'high', 'moderate', 'low', 'info'];
 const MAX_DIAGNOSTIC_LINES = 20;
 const MAX_LISTED_PACKAGES = 25;
 const MAX_AUDIT_REASON_LENGTH = 500;
@@ -13,20 +13,20 @@ const MAX_AUDIT_REASON_LENGTH = 500;
  */
 function sanitize(line) {
   return String(line)
-    .replace(/\u001b\[[0-9;]*m/g, "")
-    .replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g, "")
-    .replace(/^npm (?:error|warn|notice)\s+/i, "")
-    .replace(/\b(?:https?|file):\/\/[^\s"'<>]+/gi, "[URL]")
-    .replace(/(^|\s)["']?(?:[A-Za-z]:)?[\\/].*$/g, "$1")
-    .replaceAll("```", "'''")
+    .replace(/\u001b\[[0-9;]*m/g, '')
+    .replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g, '')
+    .replace(/^npm (?:error|warn|notice)\s+/i, '')
+    .replace(/\b(?:https?|file):\/\/[^\s"'<>]+/gi, '[URL]')
+    .replace(/(^|\s)["']?(?:[A-Za-z]:)?[\\/].*$/g, '$1')
+    .replaceAll('```', "'''")
     .trim();
 }
 
 function markdownText(value, maxLength = Number.POSITIVE_INFINITY) {
   return sanitize(value)
-    .replace(/\s+/g, " ")
+    .replace(/\s+/g, ' ')
     .slice(0, maxLength)
-    .replace(/([\\`*_[\]<>|])/g, "\\$1");
+    .replace(/([\\`*_[\]<>|])/g, '\\$1');
 }
 
 /**
@@ -47,36 +47,41 @@ function diagnosticLines(npmTree) {
  */
 function vulnerabilityLines(audit) {
   if (!audit.available) {
-    const reason = markdownText(audit.reason, MAX_AUDIT_REASON_LENGTH) || "npm audit returned no diagnostic";
+    const reason =
+      markdownText(audit.reason, MAX_AUDIT_REASON_LENGTH) ||
+      'npm audit returned no diagnostic';
     return [`The vulnerability scan could not be completed: ${reason}.`];
   }
 
   if (audit.counts.total === 0) {
-    return ["`npm audit` reported no known vulnerabilities in the delivered dependencies."];
+    return [
+      '`npm audit` reported no known vulnerabilities in the delivered dependencies.',
+    ];
   }
 
   const packages = [...audit.packages]
     .sort(
       (left, right) =>
-        SEVERITIES.indexOf(left.severity) - SEVERITIES.indexOf(right.severity) ||
-        left.name.localeCompare(right.name),
+        SEVERITIES.indexOf(left.severity) -
+          SEVERITIES.indexOf(right.severity) ||
+        left.name.localeCompare(right.name)
     )
     .slice(0, MAX_LISTED_PACKAGES);
 
   return [
     `\`npm audit\` reported ${audit.counts.total} known vulnerabilities in the delivered dependencies.`,
-    "",
-    "| Severity | Count |",
-    "|---|---|",
+    '',
+    '| Severity | Count |',
+    '|---|---|',
     ...SEVERITIES.filter((severity) => audit.counts[severity] > 0).map(
-      (severity) => `| ${severity} | ${audit.counts[severity]} |`,
+      (severity) => `| ${severity} | ${audit.counts[severity]} |`
     ),
-    "",
-    "| Package | Severity | Direct | Fix available |",
-    "|---|---|---|---|",
+    '',
+    '| Package | Severity | Direct | Fix available |',
+    '|---|---|---|---|',
     ...packages.map(
       (entry) =>
-        `| ${markdownText(entry.name)} | ${markdownText(entry.severity)} | ${entry.direct ? "yes" : "no"} | ${entry.fixAvailable ? "yes" : "no"} |`,
+        `| ${markdownText(entry.name)} | ${markdownText(entry.severity)} | ${entry.direct ? 'yes' : 'no'} | ${entry.fixAvailable ? 'yes' : 'no'} |`
     ),
   ];
 }
@@ -89,26 +94,32 @@ function vulnerabilityLines(audit) {
 export function formatSupplyChainNotes({ audit, npmTree }) {
   const diagnostics = diagnosticLines(npmTree);
   const lines = [
-    "## Supply chain",
-    "",
+    '## Supply chain',
+    '',
     ...vulnerabilityLines(audit),
-    "",
-    "<details>",
-    "<summary>Build-environment SBOM diagnostics (best-effort)</summary>",
-    "",
-    "The build-environment CycloneDX SBOM is a best-effort inventory of the repository toolchain. npm dependency-tree errors are tolerated there and do not affect the delivered-package SBOM.",
-    "",
+    '',
+    '<details>',
+    '<summary>Build-environment SBOM diagnostics (best-effort)</summary>',
+    '',
+    'The build-environment CycloneDX SBOM is a best-effort inventory of the repository toolchain. npm dependency-tree errors are tolerated there and do not affect the delivered-package SBOM.',
+    '',
   ];
 
   if (diagnostics.length === 0) {
-    lines.push("`npm ls` reported no dependency-tree problems.");
+    lines.push('`npm ls` reported no dependency-tree problems.');
   } else {
-    lines.push(`\`npm ls\` exited with status ${npmTree.status}.`, "", "```text", ...diagnostics, "```");
+    lines.push(
+      `\`npm ls\` exited with status ${npmTree.status}.`,
+      '',
+      '```text',
+      ...diagnostics,
+      '```'
+    );
   }
 
-  lines.push("", "</details>");
+  lines.push('', '</details>');
 
-  return `${lines.join("\n")}\n`;
+  return `${lines.join('\n')}\n`;
 }
 
 /**
