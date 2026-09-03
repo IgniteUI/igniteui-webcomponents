@@ -43,15 +43,19 @@
     letter-spacing: sizable(var(--ig-detail-1-letter-spacing), var(--ig-body-2-letter-spacing), var(--ig-body-1-letter-spacing));
     text-transform: sizable(var(--ig-detail-1-text-transform), var(--ig-body-2-text-transform), var(--ig-body-1-text-transform));
 
-    ::slotted(a){
-        padding-inline: pad-inline(rem(2px), rem(4px), rem(8px));
-    }
-
     ::slotted([slot='prefix']),
     ::slotted([slot='suffix']) {
         --component-size: var(--ig-size, var(--ig-size-medium));
         
         font-size: sizable(rem(14px), rem(16px), rem(24px));
+    }
+
+    ::slotted([slot='prefix']) {
+        padding-inline-end: pad-inline(rem(2px), rem(4px), rem(8px));
+    }
+
+    ::slotted([slot='suffix']) {
+        padding-inline-start: pad-inline(rem(2px), rem(4px), rem(8px));
     }
 }
 
