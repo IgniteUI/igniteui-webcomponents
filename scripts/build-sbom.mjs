@@ -1,40 +1,47 @@
-import { execFileSync, spawnSync } from "node:child_process";
-import { createHash } from "node:crypto";
-import fs from "node:fs";
-import { createRequire } from "node:module";
-import path from "node:path";
-import { fileURLToPath, pathToFileURL } from "node:url";
+import { execFileSync, spawnSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
+import fs from 'node:fs';
+import { createRequire } from 'node:module';
+import path from 'node:path';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
-import getArgs from "./get-args.mjs";
-import { log, logError } from "./logger.mjs";
+import getArgs from './get-args.mjs';
+import { log, logError } from './logger.mjs';
 import {
   assertDeliveredShape,
   promoteMainComponent,
-} from "./sbom-document.mjs";
-import { formatSupplyChainNotes } from "./sbom-utils.mjs";
+} from './sbom-document.mjs';
+import { formatSupplyChainNotes } from './sbom-utils.mjs';
 
-const CATEGORY = "sbom";
-const SPEC_VERSION = "1.6";
-const PACKAGE_NAME = "igniteui-webcomponents";
+const CATEGORY = 'sbom';
+const SPEC_VERSION = '1.6';
+const PACKAGE_NAME = 'igniteui-webcomponents';
 const SUPPLIER = {
-  name: "Infragistics",
-  url: ["https://www.infragistics.com"],
+  name: 'Infragistics',
+  url: ['https://www.infragistics.com'],
 };
 
 const scriptDir = path.dirname(fileURLToPath(import.meta.url));
-const repoRoot = path.resolve(scriptDir, "..");
+const repoRoot = path.resolve(scriptDir, '..');
 // Resolved by path: the package's exports map deliberately hides both the CLI and its manifest.
-const cycloneDxDir = path.join(repoRoot, "node_modules", "@cyclonedx", "cyclonedx-npm");
+const cycloneDxDir = path.join(
+  repoRoot,
+  'node_modules',
+  '@cyclonedx',
+  'cyclonedx-npm'
+);
 
 /**
  * Resolve the CycloneDX CLI from node_modules so generation never hits the network.
  * @returns {string} Absolute path to the CLI entry point.
  */
 function resolveCycloneDxCli() {
-  const cli = path.join(cycloneDxDir, "bin", "cyclonedx-npm-cli.js");
+  const cli = path.join(cycloneDxDir, 'bin', 'cyclonedx-npm-cli.js');
 
   if (!fs.existsSync(cli)) {
-    throw new Error(`@cyclonedx/cyclonedx-npm CLI not found at ${cli}. Run "npm ci" first.`);
+    throw new Error(
+      `@cyclonedx/cyclonedx-npm CLI not found at ${cli}. Run "npm ci" first.`
+    );
   }
 
   return cli;
@@ -44,7 +51,9 @@ function resolveCycloneDxCli() {
  * @returns {string} The installed version of the CycloneDX generator.
  */
 function cycloneDxToolVersion() {
-  return JSON.parse(fs.readFileSync(path.join(cycloneDxDir, "package.json"), "utf8")).version;
+  return JSON.parse(
+    fs.readFileSync(path.join(cycloneDxDir, 'package.json'), 'utf8')
+  ).version;
 }
 
 /**
@@ -55,15 +64,15 @@ function cycloneDxToolVersion() {
  * @param {'pipe'|'inherit'} [stdout] - How to handle standard output.
  * @returns {string} Captured stdout when piped, otherwise an empty string.
  */
-function run(command, args, cwd, stdout = "pipe") {
+function run(command, args, cwd, stdout = 'pipe') {
   return (
     execFileSync(command, args, {
       cwd,
-      encoding: "utf8",
+      encoding: 'utf8',
       maxBuffer: 256 * 1024 * 1024,
-      stdio: ["ignore", stdout, "inherit"],
+      stdio: ['ignore', stdout, 'inherit'],
       env: { ...process.env, npm_execpath: npmCli },
-    }) ?? ""
+    }) ?? ''
   );
 }
 
@@ -76,13 +85,17 @@ function resolveNpmCli() {
   const nodeDir = path.dirname(process.execPath);
   const candidates = [
     process.env.npm_execpath,
-    path.join(nodeDir, "node_modules", "npm", "bin", "npm-cli.js"),
-    path.join(nodeDir, "..", "lib", "node_modules", "npm", "bin", "npm-cli.js"),
+    path.join(nodeDir, 'node_modules', 'npm', 'bin', 'npm-cli.js'),
+    path.join(nodeDir, '..', 'lib', 'node_modules', 'npm', 'bin', 'npm-cli.js'),
   ];
-  const cli = candidates.find((candidate) => candidate?.endsWith(".js") && fs.existsSync(candidate));
+  const cli = candidates.find(
+    (candidate) => candidate?.endsWith('.js') && fs.existsSync(candidate)
+  );
 
   if (!cli) {
-    throw new Error("Could not locate npm-cli.js next to the running Node.js installation.");
+    throw new Error(
+      'Could not locate npm-cli.js next to the running Node.js installation.'
+    );
   }
 
   return cli;
@@ -96,7 +109,7 @@ const npmCli = resolveNpmCli();
  * @param {'pipe'|'inherit'} [stdout] - How to handle standard output.
  * @returns {string} Captured stdout when piped, otherwise an empty string.
  */
-function npm(args, cwd, stdout = "pipe") {
+function npm(args, cwd, stdout = 'pipe') {
   return run(process.execPath, [npmCli, ...args], cwd, stdout);
 }
 
@@ -106,7 +119,7 @@ function npm(args, cwd, stdout = "pipe") {
  * @returns {string} Lowercase hex digest.
  */
 function digest(file, algorithm) {
-  return createHash(algorithm).update(fs.readFileSync(file)).digest("hex");
+  return createHash(algorithm).update(fs.readFileSync(file)).digest('hex');
 }
 
 /**
@@ -125,8 +138,21 @@ function ensureDir(dir) {
  * @returns {{ name: string, path: string, sha256: string, sha512: string }} Artifact metadata.
  */
 function packArtifact(packageDir, outDir) {
-  const output = npm(["pack", packageDir, "--pack-destination", outDir, "--json"], repoRoot);
-  const name = JSON.parse(output)[0].filename;
+  const output = npm(
+    ['pack', packageDir, '--pack-destination', outDir, '--json'],
+    repoRoot
+  );
+  const parsed = JSON.parse(output);
+  // npm <12 returns a top-level array; npm 12+ returns an object keyed by package name.
+  const entry = Array.isArray(parsed) ? parsed[0] : Object.values(parsed)[0];
+
+  if (!entry?.filename) {
+    throw new Error(
+      `"npm pack --json" returned an unexpected shape:\n${output}`
+    );
+  }
+
+  const name = entry.filename;
   const tarball = path.join(outDir, name);
 
   log(CATEGORY, `packed ${name}`);
@@ -134,8 +160,8 @@ function packArtifact(packageDir, outDir) {
   return {
     name,
     path: tarball,
-    sha256: digest(tarball, "sha256"),
-    sha512: digest(tarball, "sha512"),
+    sha256: digest(tarball, 'sha256'),
+    sha512: digest(tarball, 'sha512'),
   };
 }
 
@@ -151,27 +177,27 @@ function installDeliveredClosure(artifact, workspaceDir) {
   fs.copyFileSync(artifact.path, path.join(workspaceDir, artifact.name));
 
   fs.writeFileSync(
-    path.join(workspaceDir, "package.json"),
+    path.join(workspaceDir, 'package.json'),
     `${JSON.stringify(
       {
-        name: "igniteui-webcomponents-sbom-workspace",
-        version: "0.0.0",
+        name: 'igniteui-webcomponents-sbom-workspace',
+        version: '0.0.0',
         private: true,
         dependencies: { [PACKAGE_NAME]: `file:./${artifact.name}` },
       },
       null,
-      2,
-    )}\n`,
+      2
+    )}\n`
   );
 
   // The lockfile this writes is the evidence npm audit reads back from this same tree.
   npm(
-    ["install", "--omit=dev", "--ignore-scripts", "--no-audit", "--no-fund"],
+    ['install', '--omit=dev', '--ignore-scripts', '--no-audit', '--no-fund'],
     workspaceDir,
-    "inherit",
+    'inherit'
   );
 
-  log(CATEGORY, "installed delivered dependency closure");
+  log(CATEGORY, 'installed delivered dependency closure');
   return workspaceDir;
 }
 
@@ -185,8 +211,18 @@ function generateCycloneDx(cwd, extraArgs) {
   // (alongside bomFormat and specVersion) to recognize the document as CycloneDX.
   const document = run(
     process.execPath,
-    [resolveCycloneDxCli(), "--spec-version", SPEC_VERSION, "--output-format", "JSON", "--output-file", "-", "--validate", ...extraArgs],
-    cwd,
+    [
+      resolveCycloneDxCli(),
+      '--spec-version',
+      SPEC_VERSION,
+      '--output-format',
+      'JSON',
+      '--output-file',
+      '-',
+      '--validate',
+      ...extraArgs,
+    ],
+    cwd
   );
 
   return JSON.parse(document);
@@ -208,22 +244,22 @@ function writeBom(file, bom) {
 function captureNpmTreeDiagnostics() {
   const result = spawnSync(
     process.execPath,
-    [npmCli, "ls", "--json", "--all"],
+    [npmCli, 'ls', '--json', '--all'],
     {
       cwd: repoRoot,
-      encoding: "utf8",
+      encoding: 'utf8',
       maxBuffer: 256 * 1024 * 1024,
       env: { ...process.env, npm_execpath: npmCli },
-    },
+    }
   );
   const problems = [];
 
   try {
-    const tree = JSON.parse(result.stdout || "{}");
+    const tree = JSON.parse(result.stdout || '{}');
     const pending = [tree];
     while (pending.length) {
       const entry = pending.pop();
-      if (!entry || typeof entry !== "object") {
+      if (!entry || typeof entry !== 'object') {
         continue;
       }
       if (Array.isArray(entry.problems)) {
@@ -238,7 +274,7 @@ function captureNpmTreeDiagnostics() {
   return {
     status: result.status ?? 1,
     problems,
-    stderr: [result.error?.message, result.stderr].filter(Boolean).join("\n"),
+    stderr: [result.error?.message, result.stderr].filter(Boolean).join('\n'),
   };
 }
 
@@ -250,23 +286,30 @@ function captureNpmTreeDiagnostics() {
 function captureDeliveredAudit(workspaceDir) {
   const result = spawnSync(
     process.execPath,
-    [npmCli, "audit", "--omit=dev", "--json"],
+    [npmCli, 'audit', '--omit=dev', '--json'],
     {
       cwd: workspaceDir,
-      encoding: "utf8",
+      encoding: 'utf8',
       maxBuffer: 256 * 1024 * 1024,
       env: { ...process.env, npm_execpath: npmCli },
-    },
+    }
   );
 
   try {
-    const report = JSON.parse(result.stdout || "{}");
+    const report = JSON.parse(result.stdout || '{}');
 
     if (!report.metadata?.vulnerabilities) {
-      throw new Error(report.error?.summary ?? result.stderr.trim() ?? "npm audit produced no report");
+      throw new Error(
+        report.error?.summary ??
+          result.stderr.trim() ??
+          'npm audit produced no report'
+      );
     }
 
-    log(CATEGORY, `delivered audit found ${report.metadata.vulnerabilities.total} known vulnerabilities`);
+    log(
+      CATEGORY,
+      `delivered audit found ${report.metadata.vulnerabilities.total} known vulnerabilities`
+    );
 
     return {
       available: true,
@@ -288,18 +331,27 @@ function captureDeliveredAudit(workspaceDir) {
  * @param {string} file - Path to the written document.
  */
 async function assertValidCycloneDx(file) {
-  const requireFromGenerator = createRequire(path.join(cycloneDxDir, "package.json"));
-  const libraryEntry = requireFromGenerator.resolve("@cyclonedx/cyclonedx-library");
+  const requireFromGenerator = createRequire(
+    path.join(cycloneDxDir, 'package.json')
+  );
+  const libraryEntry = requireFromGenerator.resolve(
+    '@cyclonedx/cyclonedx-library'
+  );
   const { Validation } = await import(pathToFileURL(libraryEntry));
-  const error = await new Validation.JsonValidator(SPEC_VERSION).validate(fs.readFileSync(file, "utf8"));
+  const error = await new Validation.JsonValidator(SPEC_VERSION).validate(
+    fs.readFileSync(file, 'utf8')
+  );
 
   if (error !== null) {
     throw new Error(
-      `${path.basename(file)} is not valid CycloneDX ${SPEC_VERSION}: ${JSON.stringify(error.errors ?? error)}`,
+      `${path.basename(file)} is not valid CycloneDX ${SPEC_VERSION}: ${JSON.stringify(error.errors ?? error)}`
     );
   }
 
-  log(CATEGORY, `validated ${path.basename(file)} against CycloneDX ${SPEC_VERSION}`);
+  log(
+    CATEGORY,
+    `validated ${path.basename(file)} against CycloneDX ${SPEC_VERSION}`
+  );
 }
 
 /**
@@ -308,8 +360,8 @@ async function assertValidCycloneDx(file) {
  */
 function renderNote(values) {
   const template = fs.readFileSync(
-    path.join(scriptDir, "templates", "sbom-readme.md"),
-    "utf8",
+    path.join(scriptDir, 'templates', 'sbom-readme.md'),
+    'utf8'
   );
 
   return template.replace(/{{(\w+)}}/g, (match, key) => {
@@ -322,11 +374,12 @@ function renderNote(values) {
 }
 
 const args = getArgs();
-const packageDir = path.resolve(repoRoot, args["package-dir"] ?? "dist");
-const outDir = ensureDir(path.resolve(repoRoot, args.out ?? "dist/sbom"));
+const packageDir = path.resolve(repoRoot, args['package-dir'] ?? 'dist');
+const outDir = ensureDir(path.resolve(repoRoot, args.out ?? 'dist/sbom'));
 const version =
   args.version === true || !args.version
-    ? JSON.parse(fs.readFileSync(path.join(packageDir, "package.json"), "utf8")).version
+    ? JSON.parse(fs.readFileSync(path.join(packageDir, 'package.json'), 'utf8'))
+        .version
     : args.version;
 const baseName = `igniteui-webcomponents-${version}`;
 const fileNames = {
@@ -336,13 +389,13 @@ const fileNames = {
 };
 
 try {
-  if (args["build-env"]) {
+  if (args['build-env']) {
     // The repository tree, dev dependencies included: an inventory of the toolchain, not the product.
     // Tolerates npm-ls complaints about the dev tree; the delivered document never does.
     const bom = generateCycloneDx(repoRoot, [
-      "--mc-type",
-      "application",
-      "--ignore-npm-errors",
+      '--mc-type',
+      'application',
+      '--ignore-npm-errors',
     ]);
     bom.metadata.supplier = SUPPLIER;
 
@@ -351,10 +404,18 @@ try {
     await assertValidCycloneDx(file);
   } else {
     const artifact = packArtifact(packageDir, outDir);
-    const workspaceDir = installDeliveredClosure(artifact, path.join(outDir, ".delivered"));
+    const workspaceDir = installDeliveredClosure(
+      artifact,
+      path.join(outDir, '.delivered')
+    );
     const bom = promoteMainComponent(
-      generateCycloneDx(workspaceDir, ["--mc-type", "library", "--omit", "dev"]),
-      { artifact, packageName: PACKAGE_NAME, supplier: SUPPLIER, version },
+      generateCycloneDx(workspaceDir, [
+        '--mc-type',
+        'library',
+        '--omit',
+        'dev',
+      ]),
+      { artifact, packageName: PACKAGE_NAME, supplier: SUPPLIER, version }
     );
     const componentCount = assertDeliveredShape(bom, {
       packageName: PACKAGE_NAME,
@@ -366,14 +427,23 @@ try {
     writeBom(deliveredFile, bom);
     await assertValidCycloneDx(deliveredFile);
 
-    fs.writeFileSync(`${artifact.path}.sha256`, `${artifact.sha256}  ${artifact.name}\n`);
-    fs.writeFileSync(`${artifact.path}.sha512`, `${artifact.sha512}  ${artifact.name}\n`);
+    fs.writeFileSync(
+      `${artifact.path}.sha256`,
+      `${artifact.sha256}  ${artifact.name}\n`
+    );
+    fs.writeFileSync(
+      `${artifact.path}.sha512`,
+      `${artifact.sha512}  ${artifact.name}\n`
+    );
 
     const supplyChainNotes = formatSupplyChainNotes({
       audit: captureDeliveredAudit(workspaceDir),
       npmTree: captureNpmTreeDiagnostics(),
     });
-    fs.writeFileSync(path.join(outDir, fileNames.supplyChainNotesFile), supplyChainNotes);
+    fs.writeFileSync(
+      path.join(outDir, fileNames.supplyChainNotesFile),
+      supplyChainNotes
+    );
 
     fs.writeFileSync(
       path.join(outDir, `${baseName}.sbom.README.md`),
@@ -386,10 +456,11 @@ try {
         sha512: artifact.sha512,
         cycloneDxToolVersion: cycloneDxToolVersion(),
         nodeVersion: process.version,
-        repository: process.env.GITHUB_REPOSITORY ?? "IgniteUI/igniteui-webcomponents",
-        workflow: process.env.GITHUB_WORKFLOW ?? "a local build",
+        repository:
+          process.env.GITHUB_REPOSITORY ?? 'IgniteUI/igniteui-webcomponents',
+        workflow: process.env.GITHUB_WORKFLOW ?? 'a local build',
         supplyChainNotes: supplyChainNotes.trim(),
-      }),
+      })
     );
 
     if (!args.keep) {
@@ -397,6 +468,6 @@ try {
     }
   }
 } catch (error) {
-  logError(CATEGORY, "SBOM generation failed", error);
+  logError(CATEGORY, 'SBOM generation failed', error);
   process.exitCode = 1;
 }
