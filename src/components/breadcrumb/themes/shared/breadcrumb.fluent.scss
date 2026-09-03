@@ -1,0 +1,14 @@
+@use 'styles/utilities' as *;
+@use '../light/themes' as *;
+
+$theme: $fluent;
+
+:host {
+    --ig-detail-1-letter-spacing: #{0px};
+}
+
+:host(:not([current])) {
+    [part~='label']:focus-within {
+        outline: rem(1px) solid var-get($theme, 'focus-border-color');
+    }
+}
