@@ -170,7 +170,6 @@ jobs:
   # TODO: remove this guard once npm Trusted Publishing is configured for igniteui-webcomponents on npmjs.com.
   publish:
     name: Publish to npmjs.org
-    if: false
     needs: [build, attest]
     runs-on: ubuntu-latest
     timeout-minutes: 15
