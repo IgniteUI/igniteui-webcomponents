@@ -14,14 +14,14 @@ export interface SerializedTile {
 }
 
 class TileManagerSerializer {
-  public tileManager: IgcTileManagerComponent;
+  private readonly _tileManager: IgcTileManagerComponent;
 
   constructor(tileManager: IgcTileManagerComponent) {
-    this.tileManager = tileManager;
+    this._tileManager = tileManager;
   }
 
   public save(): SerializedTile[] {
-    return this.tileManager.tiles.map((tile) => {
+    return this._tileManager.tiles.map((tile) => {
       return {
         colSpan: tile.colSpan,
         colStart: tile.colStart,
@@ -44,21 +44,19 @@ class TileManagerSerializer {
   public load(tiles: SerializedTile[]): void {
     const mapped = new Map(tiles.map((tile) => [tile.id, tile]));
 
-    for (const tile of this.tileManager.tiles) {
-      if (!mapped.has(tile.id)) {
-        continue;
+    for (const tile of this._tileManager.tiles) {
+      const serialized = mapped.get(tile.id);
+
+      if (serialized) {
+        Object.assign(tile, serialized);
       }
-
-      const serialized = mapped.get(tile.id)!;
-
-      Object.assign(tile, serialized);
     }
   }
 
   public loadFromJSON(data: string): void {
-    if (!data) return;
-
-    this.load(JSON.parse(data));
+    if (data) {
+      this.load(JSON.parse(data));
+    }
   }
 }
 

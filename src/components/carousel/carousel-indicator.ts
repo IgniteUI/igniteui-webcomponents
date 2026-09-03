@@ -2,15 +2,15 @@ import { consume } from '@lit/context';
 import { html, LitElement, type PropertyValues } from 'lit';
 import { property } from 'lit/decorators.js';
 import { styleMap } from 'lit/directives/style-map.js';
-import { carouselContext } from '../common/context.js';
-import { addInternalsController } from '../common/controllers/internals.js';
-import { registerComponent } from '../common/definitions/register.js';
-import { formatString } from '../common/util.js';
+import { carouselContext } from '#internals/context.js';
+import { addInternalsController } from '#internals/controllers/internals.js';
+import { registerComponent } from '#internals/definitions/register.js';
+import { formatString } from '#internals/utils/strings.js';
 import type IgcCarouselComponent from './carousel.js';
 import { styles } from './themes/carousel-indicator.base.css.js';
 
 /**
- * Used when a custom indicator needs to be passed to the `igc-carousel` component.
+ * Used when a custom indicator needs to be passed to the carousel component.
  *
  * @element igc-carousel-indicator
  *
@@ -30,10 +30,6 @@ export default class IgcCarouselIndicatorComponent extends LitElement {
     registerComponent(IgcCarouselIndicatorComponent);
   }
 
-  private readonly _internals = addInternalsController(this, {
-    initialARIA: { role: 'tab' },
-  });
-
   @consume({ context: carouselContext, subscribe: true })
   private readonly _carousel?: IgcCarouselComponent;
 
@@ -49,22 +45,29 @@ export default class IgcCarouselIndicatorComponent extends LitElement {
   @property({ attribute: false })
   public index = 0;
 
+  constructor() {
+    super();
+
+    addInternalsController(this, {
+      initialARIA: { role: 'tab' },
+      reflectRole: true,
+      aria: () => ({
+        ariaSelected: `${this.active}`,
+        ariaLabel: formatString(this._labelFormat, this.index + 1),
+      }),
+    });
+  }
+
   /** @internal */
   public override connectedCallback(): void {
     super.connectedCallback();
-    this.role = 'tab';
     this.slot = this.slot || 'indicator';
   }
 
   protected override willUpdate(changedProperties: PropertyValues<this>): void {
     if (changedProperties.has('active')) {
       this.tabIndex = this.active ? 0 : -1;
-      this._internals.setARIA({ ariaSelected: this.active.toString() });
     }
-
-    this._internals.setARIA({
-      ariaLabel: formatString(this._labelFormat, this.index + 1),
-    });
   }
 
   protected override render() {

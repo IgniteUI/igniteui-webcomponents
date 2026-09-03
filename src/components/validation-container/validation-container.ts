@@ -1,23 +1,24 @@
 import { html, isServer, LitElement, nothing, type TemplateResult } from 'lit';
 import { property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import { addThemingController } from '../../theming/theming-controller.js';
-import { createAbortHandle } from '../common/abort-handler.js';
-import { registerComponent } from '../common/definitions/register.js';
+import { createAbortHandle } from '#internals/abort-handler.js';
+import { registerComponent } from '#internals/definitions/register.js';
 import {
   type IgcFormControl,
   InternalInvalidEvent,
   InternalResetEvent,
-} from '../common/mixins/forms/types.js';
-import { partMap } from '../common/part-map.js';
-import { isEmpty, toKebabCase } from '../common/util.js';
+} from '#internals/mixins/forms/types.js';
+import { partMap } from '#internals/part-map.js';
+import { isEmpty } from '#internals/utils/arrays.js';
+import { toKebabCase } from '#internals/utils/strings.js';
+import { addThemingController } from '#theming/theming-controller.js';
 import IgcIconComponent from '../icon/icon.js';
 import { all as inputThemes } from '../input/themes/themes.js';
 import { styles as shared } from './themes/shared/validator.common.css.js';
 import { styles } from './themes/validator.base.css.js';
 
 /** Configuration for the validation container. */
-interface ValidationContainerConfig {
+export interface ValidationContainerConfig {
   /** The id attribute for the validation container. */
   id?: string;
   /** Project the validation container to the given slot inside the host shadow DOM. */

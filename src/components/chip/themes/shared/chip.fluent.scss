@@ -7,6 +7,19 @@ $theme: $fluent;
     --component-size: var(--ig-size, #{var-get($theme, 'default-size')});
 }
 
-:host button {
+:host [part='base'] {
     @include type-style('subtitle-2');
 }
+
+@mixin chip-outlined-variants($variant) {
+    :host([outlined][variant='#{$variant}']) [part='base'],
+    :host([selected][outlined][variant='#{$variant}']:not([disabled])) [part='base'] {
+        background: transparent;
+    }
+}
+
+@include chip-outlined-variants('primary');
+@include chip-outlined-variants('info');
+@include chip-outlined-variants('success');
+@include chip-outlined-variants('warning');
+@include chip-outlined-variants('danger');

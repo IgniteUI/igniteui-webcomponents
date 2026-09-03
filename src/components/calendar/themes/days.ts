@@ -1,6 +1,6 @@
 import { css } from 'lit';
 
-import type { Themes } from '../../../theming/types.js';
+import type { Themes } from '#theming/types.js';
 import { styles as bootstrap } from './shared/bootstrap/days-view.bootstrap.css.js';
 import { styles as fluent } from './shared/fluent/days-view.fluent.css.js';
 import { styles as indigo } from './shared/indigo/days-view.indigo.css.js';

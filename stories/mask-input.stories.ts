@@ -1,10 +1,10 @@
+import type { Meta, StoryObj } from '@storybook/web-components-vite';
 import {
   IgcIconComponent,
   IgcMaskInputComponent,
   defineComponents,
   registerIconFromText,
 } from 'igniteui-webcomponents';
-import type { Meta, StoryObj } from '@storybook/web-components-vite';
 import {
   disableStoryControls,
   formControls,
@@ -33,7 +33,7 @@ const metadata: Meta<IgcMaskInputComponent> = {
   },
   argTypes: {
     valueMode: {
-      type: '"raw" | "withFormatting"',
+      type: { name: 'enum', value: ['raw', 'withFormatting'] },
       description:
         'Dictates the behavior when retrieving the value of the control:\n\n- `raw`: Returns clean input (e.g. "5551234567")\n- `withFormatting`: Returns with mask formatting (e.g. "(555) 123-4567")\n\nEmpty values always return an empty string, regardless of the value mode.',
       options: ['raw', 'withFormatting'],
@@ -43,7 +43,7 @@ const metadata: Meta<IgcMaskInputComponent> = {
     value: {
       type: 'string',
       description:
-        'The value of the input.\n\nRegardless of the currently set `value-mode`, an empty value will return an empty string.',
+        'The value of the input.\n\nRegardless of the currently set `value-mode`, an empty value returns an empty string.',
       control: 'text',
     },
     mask: {
@@ -74,7 +74,7 @@ const metadata: Meta<IgcMaskInputComponent> = {
     },
     name: {
       type: 'string',
-      description: 'The name attribute of the control.',
+      description: 'The name of the control, submitted with the form data.',
       control: 'text',
     },
     disabled: {
@@ -97,7 +97,7 @@ const metadata: Meta<IgcMaskInputComponent> = {
     },
     placeholder: {
       type: 'string',
-      description: 'The placeholder attribute of the control.',
+      description: 'The placeholder text of the control.',
       control: 'text',
     },
     label: {
@@ -133,7 +133,7 @@ interface IgcMaskInputArgs {
   /**
    * The value of the input.
    *
-   * Regardless of the currently set `value-mode`, an empty value will return an empty string.
+   * Regardless of the currently set `value-mode`, an empty value returns an empty string.
    */
   value: string;
   /** The masked pattern of the component. */
@@ -144,7 +144,7 @@ interface IgcMaskInputArgs {
   readOnly: boolean;
   /** When set, makes the component a required field for validation. */
   required: boolean;
-  /** The name attribute of the control. */
+  /** The name of the control, submitted with the form data. */
   name: string;
   /** The disabled state of the component. */
   disabled: boolean;
@@ -152,7 +152,7 @@ interface IgcMaskInputArgs {
   invalid: boolean;
   /** Whether the control will have outlined appearance. */
   outlined: boolean;
-  /** The placeholder attribute of the control. */
+  /** The placeholder text of the control. */
   placeholder: string;
   /** The label for the control. */
   label: string;

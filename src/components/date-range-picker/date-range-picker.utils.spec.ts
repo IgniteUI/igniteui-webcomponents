@@ -1,11 +1,14 @@
 import { elementUpdated, expect } from '@open-wc/testing';
+import type { CalendarDay } from '#internals/date/model.js';
+import { formatDisplayDate } from '#internals/i18n/i18n-controller.js';
+import {
+  getCalendarDOM,
+  getDOMDate,
+} from '#internals/testing/calendar.spec.js';
+import { checkDatesEqual } from '#internals/testing/helpers.spec.js';
+import { simulateClick } from '#internals/testing/simulate.spec.js';
+import { equal } from '#internals/utils/objects.js';
 import IgcCalendarComponent from '../calendar/calendar.js';
-import { getCalendarDOM, getDOMDate } from '../calendar/helpers.spec.js';
-
-import type { CalendarDay } from '../calendar/model.js';
-import { formatDisplayDate } from '../common/i18n/i18n-controller.js';
-import { equal } from '../common/util.js';
-import { checkDatesEqual, simulateClick } from '../common/utils.spec.js';
 import IgcDateTimeInputComponent from '../date-time-input/date-time-input.js';
 import type { DateRangeValue } from '../types.js';
 import IgcDateRangeInputComponent from './date-range-input.js';
@@ -32,7 +35,12 @@ export const selectDates = async (
 export const checkSelectedRange = (
   picker: IgcDateRangePickerComponent,
   expectedValue: DateRangeValue | null,
-  useTwoInputs = true
+  useTwoInputs = true,
+  /**
+   * Set while an edit is still in progress. The inputs only commit their `value` on
+   * blur (see issue #1346), so mid-typing the draft has to be read instead.
+   */
+  uncommitted = false
 ) => {
   const calendar = picker.renderRoot.querySelector(
     IgcCalendarComponent.tagName
@@ -44,11 +52,14 @@ export const checkSelectedRange = (
     const inputs = picker.renderRoot.querySelectorAll(
       IgcDateTimeInputComponent.tagName
     );
+    const readValue = (input: IgcDateTimeInputComponent) =>
+      uncommitted ? input._uncommittedValue : input.value;
+
     if (expectedValue?.start) {
-      checkDatesEqual(inputs[0].value!, expectedValue.start);
+      checkDatesEqual(readValue(inputs[0])!, expectedValue.start);
     }
     if (expectedValue?.end) {
-      checkDatesEqual(inputs[1].value!, expectedValue.end);
+      checkDatesEqual(readValue(inputs[1])!, expectedValue.end);
     }
   } else {
     const input = getInput(picker);

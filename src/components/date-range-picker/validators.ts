@@ -1,74 +1,26 @@
 import { ValidationResourceStringsEN } from 'igniteui-i18n-core';
+import { calendarRange } from '#internals/date/model.js';
+import { isEmpty } from '#internals/utils/arrays.js';
+import { formatString } from '#internals/utils/strings.js';
 import {
-  calendarRange,
-  isDateExceedingMax,
-  isDateInRanges,
-  isDateLessThanMin,
-} from '../calendar/helpers.js';
-import { formatString, isEmpty } from '../common/util.js';
-import type { Validator } from '../common/validators.js';
+  createMaxDateTimeValidator,
+  createMinDateTimeValidator,
+  type Validator,
+} from '#internals/validators.js';
+import { isDateInRanges } from '../calendar/helpers.js';
 import type { DateRangeValue } from '../types.js';
 import type IgcDateRangePickerComponent from './date-range-picker.js';
 
-export const minDateRangeValidator: Validator<IgcDateRangePickerComponent> = {
-  key: 'rangeUnderflow',
-  message: (host) =>
-    formatString(ValidationResourceStringsEN.min_validation_error!, host.min),
-  isValid: (host) => {
-    if (!host.min) {
-      return true;
-    }
+/** The ends of the current range, each validated against the bound on its own. */
+function rangeEnds({ value }: IgcDateRangePickerComponent) {
+  return [value?.start, value?.end];
+}
 
-    const isStartInvalid =
-      host.value?.start &&
-      isDateLessThanMin(
-        host.value.start,
-        host.min,
-        host.hasTimeParts(),
-        host.hasDateParts()
-      );
-    const isEndInvalid =
-      host.value?.end &&
-      isDateLessThanMin(
-        host.value.end,
-        host.min,
-        host.hasTimeParts(),
-        host.hasDateParts()
-      );
+export const minDateRangeValidator =
+  createMinDateTimeValidator<IgcDateRangePickerComponent>(rangeEnds);
 
-    return !(isStartInvalid || isEndInvalid);
-  },
-};
-
-export const maxDateRangeValidator: Validator<IgcDateRangePickerComponent> = {
-  key: 'rangeOverflow',
-  message: (host) =>
-    formatString(ValidationResourceStringsEN.max_validation_error!, host.max),
-  isValid: (host) => {
-    if (!host.max) {
-      return true;
-    }
-
-    const isStartInvalid =
-      host.value?.start &&
-      isDateExceedingMax(
-        host.value.start,
-        host.max,
-        host.hasTimeParts(),
-        host.hasDateParts()
-      );
-    const isEndInvalid =
-      host.value?.end &&
-      isDateExceedingMax(
-        host.value.end,
-        host.max,
-        host.hasTimeParts(),
-        host.hasDateParts()
-      );
-
-    return !(isStartInvalid || isEndInvalid);
-  },
-};
+export const maxDateRangeValidator =
+  createMaxDateTimeValidator<IgcDateRangePickerComponent>(rangeEnds);
 
 export const requiredDateRangeValidator: Validator<IgcDateRangePickerComponent> =
   {

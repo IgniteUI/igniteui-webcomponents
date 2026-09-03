@@ -1,15 +1,16 @@
 import { html, LitElement, type TemplateResult } from 'lit';
 import { property, query } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import { addKeyboardFocusRing } from '../common/controllers/focus-ring.js';
-import { addIdRefResolver } from '../common/controllers/id-resolver.js';
-import { addInternalsController } from '../common/controllers/internals.js';
-import { blazorDeepImport } from '../common/decorators/blazorDeepImport.js';
-import { shadowOptions } from '../common/decorators/shadow-options.js';
-import type { Constructor } from '../common/mixins/constructor.js';
-import { EventEmitterMixin } from '../common//mixins/event-emitter.js';
-import { partMap } from '../common/part-map.js';
-import { bindIf, getElementByIdFromRoot } from '../common/util.js';
+import { addKeyboardFocusRing } from '#internals/controllers/focus-ring.js';
+import { addIdRefResolver } from '#internals/controllers/id-resolver.js';
+import { addInternalsController } from '#internals/controllers/internals.js';
+import { blazorDeepImport } from '#internals/decorators/blazorDeepImport.js';
+import { shadowOptions } from '#internals/decorators/shadow-options.js';
+import type { Constructor } from '#internals/mixins/constructor.js';
+import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
+import { partMap } from '#internals/part-map.js';
+import { getElementByIdFromRoot } from '#internals/utils/dom.js';
+import { bindIf } from '#internals/utils/lit.js';
 
 export interface IgcButtonEventMap {
   // For analyzer meta only:
@@ -19,6 +20,7 @@ export interface IgcButtonEventMap {
   blur: FocusEvent;
 }
 
+/* omitModule */
 /**
  * Abstract base class shared by `igc-button` and `igc-icon-button`.
  *
@@ -156,7 +158,7 @@ export abstract class IgcButtonBaseComponent extends EventEmitterMixin<
     return this._commandfor;
   }
 
-  /* blazorCSSuppress */
+  /* blazorSuppress */
   /* alternateType: object */
   /**
    * The target element for the invoker command. Resolved from the `commandfor` ID.
@@ -165,7 +167,7 @@ export abstract class IgcButtonBaseComponent extends EventEmitterMixin<
     return this._commandForElement;
   }
 
-  /* blazorCSSuppress */
+  /* blazorSuppress */
   /* alternateType: object */
   public set commandForElement(value: Element | null) {
     this._commandForElement = value;
@@ -176,7 +178,7 @@ export abstract class IgcButtonBaseComponent extends EventEmitterMixin<
   /* alternateType: object */
   /**
    * The `<form>` element the button is associated with.
-   * Resolved through the standard form-association mechanism — either the
+   * Resolved through the standard form-association mechanism - either the
    * closest ancestor `<form>` or the form referenced by the button's `form`
    * attribute. Returns `null` when no form is associated.
    * Relevant only when `type` is `'submit'` or `'reset'`.

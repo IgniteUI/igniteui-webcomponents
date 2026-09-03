@@ -2,12 +2,17 @@ import { html } from 'lit';
 import { property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
-import { addThemingController } from '../../theming/theming-controller.js';
-import { addSlotController, setSlots } from '../common/controllers/slot.js';
-import { registerComponent } from '../common/definitions/register.js';
-import { createFormValueState } from '../common/mixins/forms/form-value.js';
-import { partMap } from '../common/part-map.js';
-import { bindIf } from '../common/util.js';
+import { ariaBindings } from '#internals/controllers/aria-projection.js';
+import { addSlotController, setSlots } from '#internals/controllers/slot.js';
+import {
+  coercedProperty,
+  type CoercedPropertyConfig,
+} from '#internals/decorators/coerced-property.js';
+import { registerComponent } from '#internals/definitions/register.js';
+import { createFormValueState } from '#internals/mixins/forms/form-value.js';
+import { partMap } from '#internals/part-map.js';
+import { bindIf } from '#internals/utils/lit.js';
+import { addThemingController } from '#theming/theming-controller.js';
 import type {
   InputType,
   RangeTextSelectMode,
@@ -37,6 +42,9 @@ const Slots = setSlots(
 );
 
 /**
+ * A highly customizable single-line text field for entering and editing data,
+ * with support for prefix/suffix content, helper text, form integration, and built-in validation.
+ *
  * @element igc-input
  *
  * @slot prefix - Renders content before the input.
@@ -67,6 +75,14 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
   public static readonly tagName = 'igc-input';
   public static styles = [styles, shared];
 
+  /** Shared config for the constraint properties - a change revalidates. */
+  private static readonly _revalidate: CoercedPropertyConfig<
+    unknown,
+    IgcInputComponent
+  > = {
+    onChange: ({ host }) => host._validate(),
+  };
+
   /* blazorSuppress */
   public static register(): void {
     registerComponent(IgcInputComponent, IgcValidationContainerComponent);
@@ -86,13 +102,6 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
     return this.type !== 'number' ? stringValidators : numberValidators;
   }
 
-  private _min?: number;
-  private _max?: number;
-  private _minLength?: number;
-  private _maxLength?: number;
-  private _pattern?: string;
-  private _step?: number;
-
   /* @tsTwoWayProperty(true, "igcChange", "detail", false) */
   /**
    * The value of the control.
@@ -109,7 +118,7 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
 
   /* alternateName: displayType */
   /**
-   * The type attribute of the control.
+   * The type of the control.
    * @attr
    */
   @property({ reflect: true })
@@ -125,7 +134,7 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
   public readOnly = false;
 
   /**
-   * The input mode attribute of the control.
+   * A hint to the browser for which virtual keyboard layout to display.
    * See [relevant MDN article](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/inputmode)
    * @attr inputmode
    */
@@ -133,98 +142,62 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
   public override inputMode!: string;
 
   /**
-   * The pattern attribute of the control.
+   * The regular expression the value is validated against.
    * @attr
    */
   @property()
-  public set pattern(value: string | undefined) {
-    this._pattern = value;
-    this._validate();
-  }
-
-  public get pattern(): string | undefined {
-    return this._pattern;
-  }
+  @coercedProperty(IgcInputComponent._revalidate)
+  public pattern?: string = undefined;
 
   /**
    * The minimum string length required by the control.
    * @attr minlength
    */
   @property({ type: Number, attribute: 'minlength' })
-  public set minLength(value: number | undefined) {
-    this._minLength = value;
-    this._validate();
-  }
-
-  public get minLength(): number | undefined {
-    return this._minLength;
-  }
+  @coercedProperty(IgcInputComponent._revalidate)
+  public minLength?: number = undefined;
 
   /**
    * The maximum string length of the control.
    * @attr maxlength
    */
   @property({ type: Number, attribute: 'maxlength' })
-  public set maxLength(value: number | undefined) {
-    this._maxLength = value;
-    this._validate();
-  }
-
-  public get maxLength(): number | undefined {
-    return this._maxLength;
-  }
+  @coercedProperty(IgcInputComponent._revalidate)
+  public maxLength?: number = undefined;
 
   /**
-   * The min attribute of the control.
+   * The minimum value the control accepts.
    * @attr
    */
   @property({ type: Number })
-  public set min(value: number | undefined) {
-    this._min = value;
-    this._validate();
-  }
-
-  public get min(): number | undefined {
-    return this._min;
-  }
+  @coercedProperty(IgcInputComponent._revalidate)
+  public min?: number = undefined;
 
   /**
-   * The max attribute of the control.
+   * The maximum value the control accepts.
    * @attr
    */
   @property({ type: Number })
-  public set max(value: number | undefined) {
-    this._max = value;
-    this._validate();
-  }
-
-  public get max(): number | undefined {
-    return this._max;
-  }
+  @coercedProperty(IgcInputComponent._revalidate)
+  public max?: number = undefined;
 
   /**
-   * The step attribute of the control.
+   * The granularity the value must adhere to.
    * @attr
    */
   @property({ type: Number })
-  public set step(value: number | undefined) {
-    this._step = value;
-    this._validate();
-  }
-
-  public get step(): number | undefined {
-    return this._step;
-  }
+  @coercedProperty(IgcInputComponent._revalidate)
+  public step?: number = undefined;
 
   /**
-   * The autofocus attribute of the control.
+   * Whether the control should receive focus automatically.
    * @attr
    */
   @property({ type: Boolean })
   public override autofocus!: boolean;
 
   /**
-   * The autocomplete attribute of the control.
+   * A hint for the browser on how to autofill the control.
    * @attr
    */
   @property()
@@ -275,23 +248,19 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
   }
 
   private _handleInput(): void {
-    this._setTouchedState();
-    this.value = this._input?.value ?? '';
-    this.emitEvent('igcInput', { detail: this.value });
+    this._commitValue(this._input?.value ?? '', 'igcInput');
   }
 
   private _handleChange(): void {
-    this._setTouchedState();
-    this.value = this._input?.value ?? '';
-    this.emitEvent('igcChange', { detail: this.value });
+    this._commitValue(this._input?.value ?? '', 'igcChange');
   }
 
   protected _renderInput() {
     const hasNegativeTabIndex = this.getAttribute('tabindex') === '-1';
-    const hasHelperText = this._slots.hasAssignedElements('helper-text');
 
     return html`
       <input
+        ${ariaBindings(this._ariaTarget.resolveBindings())}
         id=${this._inputId}
         part=${partMap(this._resolvePartNames('input'))}
         name=${ifDefined(this.name)}
@@ -311,8 +280,6 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
         minlength=${ifDefined(this.minLength)}
         maxlength=${bindIf(!this.validateOnly, this.maxLength)}
         step=${ifDefined(this.step)}
-        .ariaLabelledByElements=${this._resolvedLabelElements}
-        aria-describedby=${bindIf(hasHelperText, 'helper-text')}
         @keydown=${this._handleEnterKeydown}
         @change=${this._handleChange}
         @input=${this._handleInput}

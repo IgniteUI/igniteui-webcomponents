@@ -1,11 +1,11 @@
 import { html, LitElement } from 'lit';
 
-import { registerComponent } from '../common/definitions/register.js';
+import { registerComponent } from '#internals/definitions/register.js';
 import { styles } from './themes/rating-symbol.base.css.js';
 
 /**
  *
- * Used when a custom icon/symbol/element needs to be passed to the igc-rating component.
+ * Used when a custom icon/symbol/element needs to be passed to the rating component.
  *
  * @element igc-rating-symbol
  *

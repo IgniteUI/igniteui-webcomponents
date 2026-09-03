@@ -1,10 +1,52 @@
 import { fileURLToPath } from 'node:url';
-import { playwrightLauncher } from '@web/test-runner-playwright';
 import { esbuildPlugin } from '@web/dev-server-esbuild';
+import { defaultReporter } from '@web/test-runner';
+import { playwrightLauncher } from '@web/test-runner-playwright';
+
+/**
+ * Chromium reports the "ResizeObserver loop completed with undelivered
+ * notifications" condition as an uncaught exception with no associated
+ * `Error` object. Test code (see `suppressResizeObserverLoopError` in
+ * `utils.spec.ts`) can prevent it from failing a test via `window.onerror`,
+ * but web-test-runner's browser log collection picks the (error-less)
+ * exception up independently of that, printing it as a bare `null` line.
+ * This reporter strips those specific single-`null`-argument log entries
+ * before the default reporter prints anything, without hiding other,
+ * legitimate `console.*` output from tests.
+ */
+function filterBenignBrowserLogs() {
+  return {
+    reportTestFileResults({ sessionsForTestFile }) {
+      for (const session of sessionsForTestFile) {
+        session.logs = session.logs.filter(
+          (args) => !(args.length === 1 && args[0] === null)
+        );
+      }
+    },
+  };
+}
+
+/**
+ * Loads `assertion-errors.spec.ts` ahead of the test framework so that every
+ * test file gets the chai patch that keeps failed assertions on non-cloneable
+ * subjects (sinon spies, DOM nodes) reportable. See the module itself for the
+ * details.
+ */
+function testRunnerHtml(testFramework) {
+  return `<!DOCTYPE html>
+<html>
+  <body>
+    <script type="module" src="/src/internals/testing/assertion-errors.spec.ts"></script>
+    <script type="module" src="${testFramework}"></script>
+  </body>
+</html>`;
+}
 
 export default /** @type {import("@web/test-runner").TestRunnerConfig} */ ({
   files: ['src/**/*.spec.ts'],
   browsers: [playwrightLauncher({ product: 'chromium', headless: true })],
+
+  testRunnerHtml,
 
   /** Compile JS for older browsers. Requires @web/dev-server-esbuild plugin */
   // esbuildTarget: 'auto',
@@ -23,6 +65,8 @@ export default /** @type {import("@web/test-runner").TestRunnerConfig} */ ({
       timeout: 3000,
     },
   },
+
+  reporters: [filterBenignBrowserLogs(), defaultReporter()],
 
   plugins: [
     esbuildPlugin({

@@ -54,7 +54,7 @@ const metadata: Meta<IgcSnackbarComponent> = {
       table: { defaultValue: { summary: 'false' } },
     },
     position: {
-      type: '"bottom" | "middle" | "top"',
+      type: { name: 'enum', value: ['bottom', 'middle', 'top'] },
       description:
         'Sets the position of the component in the viewport.\n\n`bottom` - positions the component at the bottom. This is the default.\n`middle` - positions the component at the center.\n`top` - positions the component at the top.',
       options: ['bottom', 'middle', 'top'],
@@ -62,7 +62,7 @@ const metadata: Meta<IgcSnackbarComponent> = {
       table: { defaultValue: { summary: 'bottom' } },
     },
     positioning: {
-      type: '"viewport" | "container"',
+      type: { name: 'enum', value: ['viewport', 'container'] },
       description:
         'Sets the positioning strategy of the component.\n\n`viewport` - positions the component relative to the viewport, ignoring any ancestor elements. This is the default behavior.\n`container` - positions the component relative to the nearest visible ancestor. In this mode, the component will be constrained within the bounding box of the ancestor and will be positioned according to the `position` attribute.',
       options: ['viewport', 'container'],
@@ -133,7 +133,7 @@ export const Basic: Story = {
       .displayTime=${displayTime}
       .actionText=${actionText}
       .position=${position}
-      @igcAction=${({ target }) => target.hide()}
+      @igcAction=${(e: Event) => (e.target as IgcSnackbarComponent).hide()}
       >Snackbar Message</igc-snackbar
     >
 

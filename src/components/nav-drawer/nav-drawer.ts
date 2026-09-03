@@ -3,18 +3,16 @@ import { property } from 'lit/decorators.js';
 import { cache } from 'lit/directives/cache.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { createRef, ref } from 'lit/directives/ref.js';
-import { addThemingController } from '../../theming/theming-controller.js';
-import { addCommandController } from '../common/controllers/command.js';
-import { addSlotController, setSlots } from '../common/controllers/slot.js';
-import { registerComponent } from '../common/definitions/register.js';
-import type { Constructor } from '../common/mixins/constructor.js';
-import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { partMap } from '../common/part-map.js';
-import {
-  bindIf,
-  isPopoverOpen,
-  numberInRangeInclusive,
-} from '../common/util.js';
+import { addCommandController } from '#internals/controllers/command.js';
+import { addSlotController, setSlots } from '#internals/controllers/slot.js';
+import { addToggleController } from '#internals/controllers/toggle.js';
+import { registerComponent } from '#internals/definitions/register.js';
+import type { Constructor } from '#internals/mixins/constructor.js';
+import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
+import { partMap } from '#internals/part-map.js';
+import { isPointInsideElement, isPopoverOpen } from '#internals/utils/dom.js';
+import { bindIf } from '#internals/utils/lit.js';
+import { addThemingController } from '#theming/theming-controller.js';
 import type { NavDrawerPosition } from '../types.js';
 import IgcNavDrawerHeaderItemComponent from './nav-drawer-header-item.js';
 import IgcNavDrawerItemComponent from './nav-drawer-item.js';
@@ -48,7 +46,7 @@ export interface IgcNavDrawerComponentEventMap {
  *
  * @element igc-nav-drawer
  *
- * @fires igcClosing - Emitted just before the drawer is closed by a user interaction. Cancelable —
+ * @fires igcClosing - Emitted just before the drawer is closed by a user interaction. Cancelable -
  *   call `event.preventDefault()` to abort the closing sequence.
  * @fires igcClosed - Emitted just after the drawer is closed by a user interaction.
  *
@@ -80,6 +78,14 @@ export default class IgcNavDrawerComponent extends EventEmitterMixin<
   private readonly _dialogRef = createRef<HTMLDialogElement>();
   private readonly _miniRef = createRef<HTMLElement>();
 
+  private readonly _toggleController = addToggleController(this, {
+    transition: async (open) => {
+      this.open = open;
+      await this.updateComplete;
+      return true;
+    },
+  });
+
   private readonly _slots = addSlotController(this, {
     slots: setSlots('mini'),
     onChange: this._handleMiniState,
@@ -108,11 +114,11 @@ export default class IgcNavDrawerComponent extends EventEmitterMixin<
   /**
    * Sets the position of the drawer.
    *
-   * - `start` — anchored to the inline-start edge (default).
-   * - `end` — anchored to the inline-end edge.
-   * - `top` — anchored to the block-start edge.
-   * - `bottom` — anchored to the block-end edge.
-   * - `relative` — rendered inline within the page flow; no modal backdrop.
+   * - `start` - anchored to the inline-start edge (default).
+   * - `end` - anchored to the inline-end edge.
+   * - `top` - anchored to the block-start edge.
+   * - `bottom` - anchored to the block-end edge.
+   * - `relative` - rendered inline within the page flow; no modal backdrop.
    *
    * @attr position
    * @default 'start'
@@ -132,7 +138,7 @@ export default class IgcNavDrawerComponent extends EventEmitterMixin<
   /**
    * Determines whether the drawer should remain open when the Escape key is pressed.
    *
-   * This attribute is only applicable when the drawer is in a non-relative position,
+   * This is only applicable when the drawer is in a non-relative position,
    * as the Escape key does not trigger the closing of relative drawers.
    *
    * @attr keep-open-on-escape
@@ -235,14 +241,11 @@ export default class IgcNavDrawerComponent extends EventEmitterMixin<
   }
 
   private _handleClick({ clientX, clientY, target }: PointerEvent): void {
-    if (this._dialog === target) {
-      const rect = this._dialog.getBoundingClientRect();
-      const inX = numberInRangeInclusive(clientX, rect.left, rect.right);
-      const inY = numberInRangeInclusive(clientY, rect.top, rect.bottom);
-
-      if (!(inX && inY)) {
-        this._closeWithEvent();
-      }
+    if (
+      this._dialog === target &&
+      !isPointInsideElement(this._dialog, clientX, clientY)
+    ) {
+      this._closeWithEvent();
     }
   }
 
@@ -250,20 +253,8 @@ export default class IgcNavDrawerComponent extends EventEmitterMixin<
 
   //#region Internal API
 
-  private _emitClosing(): boolean {
-    return this.emitEvent('igcClosing', { cancelable: true });
-  }
-
   private async _closeWithEvent(): Promise<boolean> {
-    if (!(this.open && this._emitClosing())) {
-      return false;
-    }
-
-    this.open = false;
-    await this.updateComplete;
-
-    this.emitEvent('igcClosed');
-    return true;
+    return this._toggleController.hide(true);
   }
 
   //#endregion
@@ -272,31 +263,17 @@ export default class IgcNavDrawerComponent extends EventEmitterMixin<
 
   /** Opens the drawer. Returns `true` if the operation was successful, `false` if the drawer was already open. */
   public async show(): Promise<boolean> {
-    if (this.open) {
-      return false;
-    }
-
-    this.open = true;
-    await this.updateComplete;
-
-    return true;
+    return this._toggleController.show();
   }
 
   /** Closes the drawer. Returns `true` if the operation was successful, `false` if the drawer was already closed. */
   public async hide(): Promise<boolean> {
-    if (!this.open) {
-      return false;
-    }
-
-    this.open = false;
-    await this.updateComplete;
-
-    return true;
+    return this._toggleController.hide();
   }
 
   /** Toggles the open state of the drawer. Delegates to `show()` or `hide()` depending on the current state. */
   public toggle(): Promise<boolean> {
-    return this.open ? this.hide() : this.show();
+    return this._toggleController.toggle();
   }
 
   //#endregion

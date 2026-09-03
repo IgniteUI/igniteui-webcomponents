@@ -1,16 +1,16 @@
-import { html, LitElement } from 'lit';
-import { property } from 'lit/decorators.js';
-
-import { addThemingController } from '../../theming/theming-controller.js';
-import { registerComponent } from '../common/definitions/register.js';
+import { html, LitElement, nothing, type TemplateResult } from 'lit';
+import { property, state } from 'lit/decorators.js';
+import { registerComponent } from '#internals/definitions/register.js';
+import { createIdGenerator } from '#internals/utils/strings.js';
+import { addThemingController } from '#theming/theming-controller.js';
 import { styles as shared } from './themes/shared/tab/tab.common.css.js';
-import { styles } from './themes/tab.base.css.js';
 import { all } from './themes/tab-themes.js';
+import { styles } from './themes/tab.base.css.js';
 
-let nextId = 1;
+const nextId = createIdGenerator('igc-tab');
 
 /**
- * A tab element slotted into an `igc-tabs` container.
+ * A tab nested in a tabs component.
  *
  * @element igc-tab
  *
@@ -34,26 +34,53 @@ export default class IgcTabComponent extends LitElement {
     registerComponent(IgcTabComponent);
   }
 
+  //#region Internal state & properties
+
+  private readonly _tabId = nextId();
+  private readonly _headerId = `${this._tabId}-header`;
+  private readonly _contentId = `${this._tabId}-content`;
+
+  @state()
+  private _posInSet = 0;
+
+  @state()
+  private _setSize = 0;
+
+  @state()
+  private _isTabStop = false;
+
+  //#endregion
+
+  //#region Public properties
+
   /**
    * The tab item label.
-   * @attr
+   * @attr label
    */
   @property()
   public label = '';
 
   /**
    * Determines whether the tab is selected.
-   * @attr
+   *
+   * @attr selected
+   * @default false
    */
   @property({ type: Boolean, reflect: true })
   public selected = false;
 
   /**
    * Determines whether the tab is disabled.
-   * @attr
+   *
+   * @attr disabled
+   * @default false
    */
   @property({ type: Boolean, reflect: true })
   public disabled = false;
+
+  //#endregion
+
+  //#region Life-cycle hooks
 
   constructor() {
     super();
@@ -63,22 +90,46 @@ export default class IgcTabComponent extends LitElement {
   /** @internal */
   public override connectedCallback(): void {
     super.connectedCallback();
-    this.id = this.id || `igc-tab-${nextId++}`;
+    this.id = this.id || this._tabId;
   }
 
-  protected override render() {
-    const headerId = `${this.id}-header`;
-    const contentId = `${this.id}-content`;
+  //#endregion
 
+  //#region Internal API
+
+  /**
+   * @hidden @internal
+   * Applied by the parent `igc-tabs` whenever the tab set or the selection changes.
+   *
+   * `isTabStop` drives the roving tabindex, keeping the tab strip reachable even
+   * when no tab is selected.
+   */
+  public _setTabState(
+    posInSet: number,
+    setSize: number,
+    isTabStop: boolean
+  ): void {
+    this._posInSet = posInSet;
+    this._setSize = setSize;
+    this._isTabStop = isTabStop;
+  }
+
+  //#endregion
+
+  //#region Render
+
+  protected override render(): TemplateResult {
     return html`
       <div
         part="tab-header"
         role="tab"
-        id=${headerId}
+        id=${this._headerId}
         aria-disabled=${this.disabled}
         aria-selected=${this.selected}
-        aria-controls=${contentId}
-        tabindex=${this.selected ? 0 : -1}
+        aria-controls=${this._contentId}
+        aria-posinset=${this._posInSet || nothing}
+        aria-setsize=${this._setSize || nothing}
+        tabindex=${this.selected || this._isTabStop ? 0 : -1}
       >
         <div part="base">
           <slot name="prefix" part="prefix"></slot>
@@ -91,14 +142,17 @@ export default class IgcTabComponent extends LitElement {
       <div
         part="tab-body"
         role="tabpanel"
-        id=${contentId}
-        aria-labelledby=${headerId}
+        id=${this._contentId}
+        aria-labelledby=${this._headerId}
+        tabindex=${this.selected ? 0 : -1}
         .inert=${!this.selected}
       >
         <slot></slot>
       </div>
     `;
   }
+
+  //#endregion
 }
 
 declare global {

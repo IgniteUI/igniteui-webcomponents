@@ -46,7 +46,7 @@ const metadata: Meta<IgcComboComponent> = {
   argTypes: {
     outlined: {
       type: 'boolean',
-      description: 'The outlined attribute of the control.',
+      description: 'Whether the control has an outlined appearance.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
@@ -59,7 +59,7 @@ const metadata: Meta<IgcComboComponent> = {
     },
     autofocus: {
       type: 'boolean',
-      description: 'The autofocus attribute of the control.',
+      description: 'Whether the control should receive focus automatically.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
@@ -72,22 +72,22 @@ const metadata: Meta<IgcComboComponent> = {
     locale: {
       type: 'string',
       description:
-        'Gets/Sets the locale used for getting language, affecting resource strings.',
+        "The locale used to resolve the component's resource strings.\nFalls back to the global locale when not set.",
       control: 'text',
     },
     label: {
       type: 'string',
-      description: 'The label attribute of the control.',
+      description: 'The label of the control.',
       control: 'text',
     },
     placeholder: {
       type: 'string',
-      description: 'The placeholder attribute of the control.',
+      description: 'The placeholder text of the control.',
       control: 'text',
     },
     placeholderSearch: {
       type: 'string',
-      description: 'The placeholder attribute of the search input.',
+      description: 'The placeholder text of the search input.',
       control: 'text',
     },
     valueKey: {
@@ -108,7 +108,7 @@ const metadata: Meta<IgcComboComponent> = {
       control: 'text',
     },
     groupSorting: {
-      type: '"asc" | "desc" | "none"',
+      type: { name: 'enum', value: ['asc', 'desc', 'none'] },
       description:
         'Sorts the items in each group by ascending or descending order.',
       options: ['asc', 'desc', 'none'],
@@ -143,7 +143,7 @@ const metadata: Meta<IgcComboComponent> = {
     },
     name: {
       type: 'string',
-      description: 'The name attribute of the control.',
+      description: 'The name of the control, submitted with the form data.',
       control: 'text',
     },
     disabled: {
@@ -184,21 +184,24 @@ const metadata: Meta<IgcComboComponent> = {
 export default metadata;
 
 interface IgcComboArgs {
-  /** The outlined attribute of the control. */
+  /** Whether the control has an outlined appearance. */
   outlined: boolean;
   /** Enables single selection mode and moves item filtering to the main input. */
   singleSelect: boolean;
-  /** The autofocus attribute of the control. */
+  /** Whether the control should receive focus automatically. */
   autofocus: boolean;
   /** Focuses the list of options when the menu opens. */
   autofocusList: boolean;
-  /** Gets/Sets the locale used for getting language, affecting resource strings. */
+  /**
+   * The locale used to resolve the component's resource strings.
+   * Falls back to the global locale when not set.
+   */
   locale: string;
-  /** The label attribute of the control. */
+  /** The label of the control. */
   label: string;
-  /** The placeholder attribute of the control. */
+  /** The placeholder text of the control. */
   placeholder: string;
-  /** The placeholder attribute of the search input. */
+  /** The placeholder text of the search input. */
   placeholderSearch: string;
   /** The key in the data source used when selecting items. */
   valueKey: string;
@@ -216,7 +219,7 @@ interface IgcComboArgs {
   disableClear: boolean;
   /** When set, makes the component a required field for validation. */
   required: boolean;
-  /** The name attribute of the control. */
+  /** The name of the control, submitted with the form data. */
   name: string;
   /** The disabled state of the component. */
   disabled: boolean;

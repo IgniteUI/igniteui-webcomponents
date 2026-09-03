@@ -1,10 +1,9 @@
 import type { ReactiveController } from 'lit';
-import { createAbortHandle } from '../common/abort-handler.js';
-import {
-  addWeakEventListener,
-  getElementByIdFromRoot,
-  isString,
-} from '../common/util.js';
+import { createAbortHandle } from '#internals/abort-handler.js';
+import { getElementByIdFromRoot } from '#internals/utils/dom.js';
+import { addWeakEventListener } from '#internals/utils/events.js';
+import { createIdGenerator } from '#internals/utils/strings.js';
+import { isString } from '#internals/utils/types.js';
 import service from './service.js';
 import type IgcTooltipComponent from './tooltip.js';
 
@@ -22,11 +21,14 @@ class TooltipController implements ReactiveController {
   private readonly _hostAbortHandle = createAbortHandle();
   private readonly _anchorAbortHandle = createAbortHandle();
 
-  private _showTriggers = new Set(['pointerenter']);
-  private _hideTriggers = new Set(['pointerleave', 'click']);
+  private _showTriggers = new Set(['pointerenter', 'focusin']);
+  private _hideTriggers = new Set(['pointerleave', 'click', 'focusout']);
 
   private _anchor: WeakRef<Element> | null = null;
   private _initialAnchor: WeakRef<Element> | null = null;
+
+  /** The element currently describing itself with this tooltip. */
+  private _describedElement: WeakRef<Element> | null = null;
 
   private _isTransient = false;
   private _open = false;
@@ -62,9 +64,8 @@ class TooltipController implements ReactiveController {
    * Returns the current tooltip anchor target if any.
    */
   public get anchor(): TooltipAnchor {
-    return this._isTransient
-      ? this._anchor?.deref()
-      : this._initialAnchor?.deref();
+    // `setAnchor` keeps this in sync with `_initialAnchor` unless transient.
+    return this._anchor?.deref();
   }
 
   /**
@@ -147,50 +148,95 @@ class TooltipController implements ReactiveController {
     }
   }
 
+  /**
+   * Points the anchor's `aria-describedby` at the tooltip, releasing the
+   * previously described element. Tokens already on the anchor are kept.
+   */
+  private _syncAnchorARIA(): void {
+    const anchor = this.anchor;
+    const previous = this._describedElement?.deref();
+
+    if (previous === anchor) {
+      return;
+    }
+
+    if (previous) {
+      this._toggleDescribedBy(previous, false);
+    }
+
+    this._describedElement = anchor ? new WeakRef(anchor) : null;
+
+    if (anchor) {
+      this._toggleDescribedBy(anchor, true);
+    }
+  }
+
+  private _toggleDescribedBy(element: Element, state: boolean): void {
+    const id = (this._host.id ||= nextTooltipId());
+    const tokens = new Set(
+      (element.getAttribute('aria-describedby') ?? '')
+        .split(/\s+/)
+        .filter(Boolean)
+    );
+
+    state ? tokens.add(id) : tokens.delete(id);
+
+    tokens.size > 0
+      ? element.setAttribute('aria-describedby', Array.from(tokens).join(' '))
+      : element.removeAttribute('aria-describedby');
+  }
+
   //#endregion
 
   //#region Event handlers
 
-  private async _handleTooltipEvent(event: Event): Promise<void> {
-    switch (event.type) {
-      case 'pointerenter':
-        await this._options.onShow.call(this._host);
-        break;
-      case 'pointerleave':
-        await this._options.onHide.call(this._host);
-        break;
-      default:
-        return;
+  private _handleTooltipEvent(event: Event): void {
+    if (event.type === 'pointerenter') {
+      this._options.onShow();
+    } else if (event.type === 'pointerleave') {
+      this._options.onHide();
     }
   }
 
-  private async _handleAnchorEvent(event: Event): Promise<void> {
-    if (
-      !this.open &&
-      !this._showTriggers.has(event.type) &&
-      event.type === 'click'
-    ) {
-      this._options.onClick.call(this._host);
+  private _handleAnchorEvent(event: Event): void {
+    const isShowTrigger = this._showTriggers.has(event.type);
+    const isHideTrigger = this._hideTriggers.has(event.type);
+
+    // Not a configured trigger, so this is the synthetic `click` listener.
+    // Clicking the anchor cancels a queued show - see issue #1828.
+    if (!(isShowTrigger || isHideTrigger)) {
+      if (event.type === 'click') {
+        this._options.onClick();
+      }
       return;
     }
 
-    if (!this._open && this._showTriggers.has(event.type)) {
-      await this._options.onShow.call(this._host);
+    // The same event drives both directions - toggle on the committed state.
+    if (isShowTrigger && isHideTrigger) {
+      this._open ? this._options.onHide() : this._options.onShow();
+      return;
     }
 
-    if (this._open && this._hideTriggers.has(event.type)) {
-      await this._options.onHide.call(this._host);
-    }
+    // Deliberately not gated on the committed state - that would swallow
+    // triggers arriving while a transition is still running. The host is
+    // already a no-op when it is heading to the requested state.
+    isShowTrigger ? this._options.onShow() : this._options.onHide();
   }
 
   /** @internal */
   public handleEvent(event: Event): void {
-    if (event.target === this._host) {
+    // The element the listener sits on, not `event.target` - a bubbling
+    // trigger such as `click` or `focusin` reports the descendant of the
+    // anchor it originated from.
+    const target = event.currentTarget;
+
+    if (target === this._host) {
       this._handleTooltipEvent(event);
-    } else if (event.target === this._anchor?.deref()) {
+    } else if (target === this._anchor?.deref()) {
       this._handleAnchorEvent(event);
-    } else if (event.target === this._initialAnchor?.deref()) {
-      this.open = false;
+    } else if (target === this._initialAnchor?.deref()) {
+      // Interacting with the initial anchor drops the transient one.
+      this._options.onReset();
       this._handleAnchorEvent(event);
     }
   }
@@ -203,6 +249,7 @@ class TooltipController implements ReactiveController {
     service.remove(this._host);
     this._anchor = null;
     this._initialAnchor = null;
+    this._syncAnchorARIA();
   }
 
   //#region Public API
@@ -220,9 +267,10 @@ class TooltipController implements ReactiveController {
       return;
     }
 
-    // Tooltip `show()` method called with a target. Set to hidden state.
+    // `show()` was called with a target while the tooltip is up - close it
+    // before it moves to the new anchor.
     if (transient && this._open) {
-      this.open = false;
+      this._options.onReset();
     }
 
     if (this._anchor?.deref() !== this._initialAnchor?.deref()) {
@@ -232,6 +280,7 @@ class TooltipController implements ReactiveController {
     this._anchor = newAnchor ? new WeakRef(newAnchor) : null;
     this._isTransient = transient;
     this._addAnchorListeners();
+    this._syncAnchorARIA();
   }
 
   public resolveAnchor(value: TooltipAnchor | string): void {
@@ -260,28 +309,17 @@ class TooltipController implements ReactiveController {
   //#endregion
 }
 
-function parseTriggers(string: string): Set<string> {
+const nextTooltipId = createIdGenerator('igc-tooltip');
+
+/** Splits the strings passed to the `show/hide-triggers` properties. */
+const triggersSeparator = /[,\s]+/;
+
+function parseTriggers(value: string): Set<string> {
+  // Removing the attribute passes `null` through the property accessor.
   return new Set(
-    (string ?? '').split(TooltipRegexes.triggers).filter((s) => s.trim())
+    (value ?? '').split(triggersSeparator).filter((trigger) => trigger.trim())
   );
 }
-
-export const TooltipRegexes = Object.freeze({
-  /** Used for parsing the strings passed in the tooltip `show/hide-trigger` properties. */
-  triggers: /[,\s]+/,
-
-  /** Matches horizontal `PopoverPlacement` start positions. */
-  horizontalStart: /^(left|right)-start$/,
-
-  /** Matches horizontal `PopoverPlacement` end positions. */
-  horizontalEnd: /^(left|right)-end$/,
-
-  /** Matches vertical `PopoverPlacement` start positions. */
-  start: /start$/,
-
-  /** Matches vertical `PopoverPlacement` end positions. */
-  end: /end$/,
-});
 
 export function addTooltipController(
   host: IgcTooltipComponent,
@@ -293,8 +331,14 @@ export function addTooltipController(
 type TooltipAnchor = Element | null | undefined;
 
 type TooltipCallbacks = {
-  onShow: (event?: Event) => unknown;
-  onHide: (event?: Event) => unknown;
-  onEscape: (event?: Event) => unknown;
-  onClick: (event?: Event) => unknown;
+  /** A show trigger fired, or the pointer entered the tooltip itself. */
+  onShow: () => unknown;
+  /** A hide trigger fired, or the pointer left the tooltip itself. */
+  onHide: () => unknown;
+  /** The `Escape` key was pressed while the tooltip is shown. */
+  onEscape: () => unknown;
+  /** The anchor was clicked with `click` bound to neither trigger set. */
+  onClick: () => unknown;
+  /** The tooltip must drop the anchor it is currently bound to. */
+  onReset: () => unknown;
 };

@@ -28,7 +28,7 @@ const metadata: Meta<IgcCarouselComponent> = {
     docs: {
       description: {
         component:
-          'The `igc-carousel` presents a set of `igc-carousel-slide`s by sequentially displaying a subset of one or more slides.',
+          'The carousel presents a set of slides by sequentially displaying a subset of one or more.',
       },
     },
     actions: { handles: ['igcSlideChanged', 'igcPlaying', 'igcPaused'] },
@@ -69,8 +69,8 @@ const metadata: Meta<IgcCarouselComponent> = {
       table: { defaultValue: { summary: 'false' } },
     },
     indicatorsOrientation: {
-      type: '"end" | "start"',
-      description: 'Sets the orientation of the indicator controls (dots).',
+      type: { name: 'enum', value: ['end', 'start'] },
+      description: 'The orientation of the indicator controls (dots).',
       options: ['end', 'start'],
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'end' } },
@@ -96,12 +96,12 @@ const metadata: Meta<IgcCarouselComponent> = {
     maximumIndicatorsCount: {
       type: 'number',
       description:
-        'Controls the maximum indicator controls (dots) that can be shown. Default value is `10`.',
+        'The maximum number of indicator controls (dots) that can be shown. Default value is `10`.',
       control: 'number',
       table: { defaultValue: { summary: '10' } },
     },
     animationType: {
-      type: '"slide" | "fade" | "none"',
+      type: { name: 'enum', value: ['slide', 'fade', 'none'] },
       description: 'The animation type.',
       options: ['slide', 'fade', 'none'],
       control: { type: 'inline-radio' },
@@ -110,7 +110,7 @@ const metadata: Meta<IgcCarouselComponent> = {
     locale: {
       type: 'string',
       description:
-        'Gets/Sets the locale used for getting language, affecting resource strings.',
+        "The locale used to resolve the component's resource strings.\nFalls back to the global locale when not set.",
       control: 'text',
     },
   },
@@ -139,7 +139,7 @@ interface IgcCarouselArgs {
   hideIndicators: boolean;
   /** Whether the carousel has vertical alignment. */
   vertical: boolean;
-  /** Sets the orientation of the indicator controls (dots). */
+  /** The orientation of the indicator controls (dots). */
   indicatorsOrientation: 'end' | 'start';
   /**
    * The format used to set the aria-label on the carousel indicators.
@@ -155,11 +155,14 @@ interface IgcCarouselArgs {
   slidesLabelFormat: string;
   /** The duration in milliseconds between changing the active slide. */
   interval: number;
-  /** Controls the maximum indicator controls (dots) that can be shown. Default value is `10`. */
+  /** The maximum number of indicator controls (dots) that can be shown. Default value is `10`. */
   maximumIndicatorsCount: number;
   /** The animation type. */
   animationType: 'slide' | 'fade' | 'none';
-  /** Gets/Sets the locale used for getting language, affecting resource strings. */
+  /**
+   * The locale used to resolve the component's resource strings.
+   * Falls back to the global locale when not set.
+   */
   locale: string;
 }
 type Story = StoryObj<IgcCarouselArgs>;

@@ -17,12 +17,12 @@
     }
 }
 
-[role='combobox'] {
+[data-role='combobox'] {
     outline-style: none;
 }
 
 :host([disabled]) {
-    [role='combobox'] {
+    [data-role='combobox'] {
         pointer-events: none;
     }
 }

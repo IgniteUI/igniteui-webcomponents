@@ -1,10 +1,10 @@
+import type { Meta, StoryObj } from '@storybook/web-components-vite';
 import {
   IgcIconComponent,
   IgcInputComponent,
   defineComponents,
   registerIconFromText,
 } from 'igniteui-webcomponents';
-import type { Meta, StoryObj } from '@storybook/web-components-vite';
 import {
   disableStoryControls,
   formControls,
@@ -27,7 +27,12 @@ const metadata: Meta<IgcInputComponent> = {
   title: 'Input',
   component: 'igc-input',
   parameters: {
-    docs: { description: { component: '' } },
+    docs: {
+      description: {
+        component:
+          'A highly customizable single-line text field for entering and editing data,\nwith support for prefix/suffix content, helper text, form integration, and built-in validation.',
+      },
+    },
     actions: { handles: ['igcInput', 'igcChange'] },
   },
   argTypes: {
@@ -37,8 +42,11 @@ const metadata: Meta<IgcInputComponent> = {
       control: 'text',
     },
     type: {
-      type: '"text" | "email" | "number" | "password" | "search" | "tel" | "url"',
-      description: 'The type attribute of the control.',
+      type: {
+        name: 'enum',
+        value: ['text', 'email', 'number', 'password', 'search', 'tel', 'url'],
+      },
+      description: 'The type of the control.',
       options: ['text', 'email', 'number', 'password', 'search', 'tel', 'url'],
       control: { type: 'select' },
       table: { defaultValue: { summary: 'text' } },
@@ -52,12 +60,12 @@ const metadata: Meta<IgcInputComponent> = {
     inputMode: {
       type: 'string',
       description:
-        'The input mode attribute of the control.\nSee [relevant MDN article](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/inputmode)',
+        'A hint to the browser for which virtual keyboard layout to display.\nSee [relevant MDN article](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/inputmode)',
       control: 'text',
     },
     pattern: {
       type: 'string',
-      description: 'The pattern attribute of the control.',
+      description: 'The regular expression the value is validated against.',
       control: 'text',
     },
     minLength: {
@@ -72,28 +80,28 @@ const metadata: Meta<IgcInputComponent> = {
     },
     min: {
       type: 'number',
-      description: 'The min attribute of the control.',
+      description: 'The minimum value the control accepts.',
       control: 'number',
     },
     max: {
       type: 'number',
-      description: 'The max attribute of the control.',
+      description: 'The maximum value the control accepts.',
       control: 'number',
     },
     step: {
       type: 'number',
-      description: 'The step attribute of the control.',
+      description: 'The granularity the value must adhere to.',
       control: 'number',
     },
     autofocus: {
       type: 'boolean',
-      description: 'The autofocus attribute of the control.',
+      description: 'Whether the control should receive focus automatically.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
     autocomplete: {
       type: 'string',
-      description: 'The autocomplete attribute of the control.',
+      description: 'A hint for the browser on how to autofill the control.',
       control: 'text',
     },
     validateOnly: {
@@ -112,7 +120,7 @@ const metadata: Meta<IgcInputComponent> = {
     },
     name: {
       type: 'string',
-      description: 'The name attribute of the control.',
+      description: 'The name of the control, submitted with the form data.',
       control: 'text',
     },
     disabled: {
@@ -135,7 +143,7 @@ const metadata: Meta<IgcInputComponent> = {
     },
     placeholder: {
       type: 'string',
-      description: 'The placeholder attribute of the control.',
+      description: 'The placeholder text of the control.',
       control: 'text',
     },
     label: {
@@ -161,30 +169,30 @@ export default metadata;
 interface IgcInputArgs {
   /** The value of the control. */
   value: string;
-  /** The type attribute of the control. */
+  /** The type of the control. */
   type: 'text' | 'email' | 'number' | 'password' | 'search' | 'tel' | 'url';
   /** Makes the control a readonly field. */
   readOnly: boolean;
   /**
-   * The input mode attribute of the control.
+   * A hint to the browser for which virtual keyboard layout to display.
    * See [relevant MDN article](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/inputmode)
    */
   inputMode: string;
-  /** The pattern attribute of the control. */
+  /** The regular expression the value is validated against. */
   pattern: string;
   /** The minimum string length required by the control. */
   minLength: number;
   /** The maximum string length of the control. */
   maxLength: number;
-  /** The min attribute of the control. */
+  /** The minimum value the control accepts. */
   min: number;
-  /** The max attribute of the control. */
+  /** The maximum value the control accepts. */
   max: number;
-  /** The step attribute of the control. */
+  /** The granularity the value must adhere to. */
   step: number;
-  /** The autofocus attribute of the control. */
+  /** Whether the control should receive focus automatically. */
   autofocus: boolean;
-  /** The autocomplete attribute of the control. */
+  /** A hint for the browser on how to autofill the control. */
   autocomplete: string;
   /**
    * Enables validation rules to be evaluated without restricting user input. This applies to the `maxLength` property for
@@ -193,7 +201,7 @@ interface IgcInputArgs {
   validateOnly: boolean;
   /** When set, makes the component a required field for validation. */
   required: boolean;
-  /** The name attribute of the control. */
+  /** The name of the control, submitted with the form data. */
   name: string;
   /** The disabled state of the component. */
   disabled: boolean;
@@ -201,7 +209,7 @@ interface IgcInputArgs {
   invalid: boolean;
   /** Whether the control will have outlined appearance. */
   outlined: boolean;
-  /** The placeholder attribute of the control. */
+  /** The placeholder text of the control. */
   placeholder: string;
   /** The label for the control. */
   label: string;

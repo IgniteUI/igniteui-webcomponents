@@ -7,9 +7,11 @@ import {
 } from '@open-wc/testing';
 import { stub } from 'sinon';
 
-import { defineComponents } from '../common/definitions/defineComponents.js';
-import { first, last } from '../common/util.js';
+import { internalsOf } from '#internals/controllers/internals.js';
+import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { firstOf, lastOf } from '#internals/utils/arrays.js';
 import IgcThemeProviderComponent from '../theme-provider/theme-provider.js';
+import { IconsStateBroadcast } from './icon-state.broadcast.js';
 import IgcIconComponent from './icon.js';
 import {
   getIconRegistry,
@@ -17,8 +19,8 @@ import {
   registerIconFromText,
   setIconRef,
 } from './icon.registry.js';
-import { IconsStateBroadcast } from './icon-state.broadcast.js';
-import { createIconDefaultMap } from './registry/default-map.js';
+import { internalIcons } from './internal-icons-lib.js';
+import { SvgIconParser } from './registry/parser.js';
 import {
   ActionType,
   type BroadcastIconsChangeMessage,
@@ -39,6 +41,12 @@ const searchSvgContent =
   '<path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>';
 const searchSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">${searchSvgContent}</svg>`;
 
+// A pack-style icon: a root <title> describing the icon plus per-shape metadata.
+const nestedMetaSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-labelledby="root-title">
+  <title id="root-title">Nested Icon</title>
+  <g><title id="shape-title">Shape</title><desc id="shape-desc">A shape</desc><path d="M1 1"/></g>
+</svg>`;
+
 function mockResponse() {
   const response = new globalThis.Response(bugSvg, {
     status: 200,
@@ -48,6 +56,26 @@ function mockResponse() {
   });
 
   return Promise.resolve(response);
+}
+
+/**
+ * Resolves once `channel` has received `count` messages.
+ * Set up the returned Promise *before* triggering the action so no
+ * message is missed, then await it after.
+ */
+function waitForMessages(
+  channel: BroadcastChannel,
+  count: number
+): Promise<void> {
+  return new Promise<void>((resolve) => {
+    let n = 0;
+    channel.addEventListener('message', function listener() {
+      if (++n >= count) {
+        channel.removeEventListener('message', listener);
+        resolve();
+      }
+    });
+  });
 }
 
 describe('Icon registry', () => {
@@ -80,6 +108,135 @@ describe('Icon registry', () => {
   it('register icons from text', async () => {
     registerIconFromText(name, bugSvg, collection);
     expect(getIconRegistry().get(name, collection)?.svg).to.not.be.undefined;
+  });
+
+  it('notifies subscribers once per microtask', async () => {
+    let calls = 0;
+    const listener = () => {
+      calls += 1;
+    };
+
+    getIconRegistry().subscribe(listener);
+
+    registerIconFromText('batch-1', bugSvg, collection);
+    registerIconFromText('batch-2', virusSvg, collection);
+    setIconRef('batch-ref', collection, { name: 'batch-1', collection });
+
+    await aTimeout(0);
+    getIconRegistry().unsubscribe(listener);
+
+    expect(calls).to.equal(1);
+  });
+
+  describe('stripMeta option', () => {
+    it('does not strip meta by default (registerIconFromText)', () => {
+      registerIconFromText(name, bugSvg, collection);
+      const icon = getIconRegistry().get(name, collection)!;
+
+      expect(icon.svg).to.include('<title');
+      expect(icon.svg).to.include('<desc');
+      expect(icon.title).to.equal('Bug Icon');
+    });
+
+    it('strips <title> and <desc> when stripMeta is true (registerIconFromText)', () => {
+      registerIconFromText(name, bugSvg, { collection, stripMeta: true });
+      const icon = getIconRegistry().get(name, collection)!;
+
+      expect(icon.svg).not.to.include('<title');
+      expect(icon.svg).not.to.include('<desc');
+    });
+
+    it('still captures title text into SvgIcon.title when stripMeta is true', () => {
+      registerIconFromText(name, bugSvg, { collection, stripMeta: true });
+      const icon = getIconRegistry().get(name, collection)!;
+
+      // Title text is preserved so the host <igc-icon> can still expose it as aria-label.
+      expect(icon.title).to.equal('Bug Icon');
+    });
+
+    it('cleans up aria-labelledby references to stripped element IDs', () => {
+      // bugSvg has aria-labelledby="brbug-desc brbug-title" on the root <svg>.
+      // After stripping, both IDs are gone so the attribute should be removed.
+      registerIconFromText(name, bugSvg, { collection, stripMeta: true });
+      const icon = getIconRegistry().get(name, collection)!;
+
+      expect(icon.svg).not.to.include('aria-labelledby');
+    });
+
+    it('retains aria-labelledby IDs that do not belong to stripped elements', () => {
+      // Construct an SVG where aria-labelledby references one external ID in
+      // addition to the title/desc IDs that will be stripped.
+      const svgWithExtraRef = [
+        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"',
+        ' aria-labelledby="extra-label brbug-title brbug-desc">',
+        '<title id="brbug-title">Bug Icon</title>',
+        '<desc id="brbug-desc">A picture showing an insect.</desc>',
+        '<path d="M0 0h24v24H0z"/>',
+        '</svg>',
+      ].join('');
+
+      registerIconFromText(name, svgWithExtraRef, {
+        collection,
+        stripMeta: true,
+      });
+      const icon = getIconRegistry().get(name, collection)!;
+
+      // Only the IDs that belonged to stripped elements are removed;
+      // 'extra-label' must survive.
+      expect(icon.svg).to.include('aria-labelledby="extra-label"');
+    });
+
+    it('strips meta when using the options-object form of registerIconFromText with a collection', () => {
+      const altCollection = `${collection}-alt`;
+      registerIconFromText(name, bugSvg, {
+        collection: altCollection,
+        stripMeta: true,
+      });
+      const icon = getIconRegistry().get(name, altCollection)!;
+
+      expect(icon).to.not.be.undefined;
+      expect(icon.svg).not.to.include('<title');
+      expect(icon.svg).not.to.include('<desc');
+      expect(icon.title).to.equal('Bug Icon');
+    });
+
+    it('strips meta when fetching via registerIcon with options object', async () => {
+      await registerIcon(name, '', { collection, stripMeta: true });
+      const icon = getIconRegistry().get(name, collection)!;
+
+      expect(icon.svg).not.to.include('<title');
+      expect(icon.svg).not.to.include('<desc');
+      expect(icon.title).to.equal('Bug Icon');
+    });
+
+    it('takes the title from the root <svg> and ignores nested ones', () => {
+      registerIconFromText(name, nestedMetaSvg, collection);
+
+      expect(getIconRegistry().get(name, collection)!.title).to.equal(
+        'Nested Icon'
+      );
+    });
+
+    it('strips nested <title> and <desc> elements as well', () => {
+      registerIconFromText(name, nestedMetaSvg, {
+        collection,
+        stripMeta: true,
+      });
+      const icon = getIconRegistry().get(name, collection)!;
+
+      expect(icon.svg).not.to.include('<title');
+      expect(icon.svg).not.to.include('<desc');
+      expect(icon.svg).not.to.include('aria-labelledby');
+      expect(icon.title).to.equal('Nested Icon');
+    });
+
+    it('old string-collection API still works without stripping', () => {
+      registerIconFromText(name, bugSvg, collection);
+      const icon = getIconRegistry().get(name, collection)!;
+
+      expect(icon.svg).to.include('<title');
+      expect(icon.title).to.equal('Bug Icon');
+    });
   });
 
   describe('Referential Icons', () => {
@@ -117,6 +274,24 @@ describe('Icon registry', () => {
 
       await elementUpdated(icon);
       verifySvg(icon, coronaVirusSvgContent);
+    });
+
+    it('renders once the target of the reference is registered', async () => {
+      setIconRef('bookmark', 'test', {
+        name: 'unregistered-target',
+        collection: 'internal',
+      });
+
+      const icon = await fixture<IgcIconComponent>(
+        html`<igc-icon name="bookmark" collection="test"></igc-icon>`
+      );
+
+      expect(icon.shadowRoot!.querySelector('svg')).to.be.null;
+
+      registerIconFromText('unregistered-target', virusSvg, 'internal');
+      await elementUpdated(icon);
+
+      verifySvg(icon, virusSvgContent);
     });
 
     it('returns the underlying icon for a given reference', async () => {
@@ -162,10 +337,11 @@ describe('Icon broadcast service', () => {
     it('correct event state when registering an icon', async () => {
       const iconName = 'bug';
 
+      const ready = waitForMessages(channel, 1);
       registerIconFromText(iconName, bugSvg, collectionName);
-      await aTimeout(0);
+      await ready;
 
-      const { actionType, collections } = first(events).data;
+      const { actionType, collections } = firstOf(events).data;
       expect(actionType).to.equal(ActionType.RegisterIcon);
       expect(collections?.has(collectionName)).to.be.true;
       expect(
@@ -180,10 +356,11 @@ describe('Icon broadcast service', () => {
         ['search', searchSvg],
       ] as const;
 
+      const ready = waitForMessages(channel, icons.length);
       for (const each of icons) {
         registerIconFromText(each[0], each[1], collectionName);
       }
-      await aTimeout(0);
+      await ready;
 
       expect(events).lengthOf(icons.length);
       for (const [idx, event] of events.entries()) {
@@ -201,15 +378,15 @@ describe('Icon broadcast service', () => {
       const refName = 'bug-reference';
       const refCollectionName = 'ref-test';
 
+      const ready = waitForMessages(channel, 2);
       registerIconFromText('reference-test', bugSvg, collectionName);
-
       setIconRef(refName, refCollectionName, {
         name: 'reference-test',
         collection: collectionName,
       });
-      await aTimeout(0);
+      await ready;
 
-      const { actionType, collections, references } = last(events).data;
+      const { actionType, collections, references } = lastOf(events).data;
 
       expect(actionType).to.equal(ActionType.UpdateIconReference);
       expect(collections).to.be.undefined;
@@ -222,14 +399,15 @@ describe('Icon broadcast service', () => {
       const refName = 'bug-reference';
       const refCollectionName = 'ref-test';
 
+      const ready = waitForMessages(channel, 2);
       registerIconFromText('reference-test', bugSvg, collectionName);
       const meta = new IconMetaClass();
       meta.name = 'reference-test';
       meta.collection = collectionName;
       setIconRef(refName, refCollectionName, meta);
-      await aTimeout(0);
+      await ready;
 
-      const { actionType, collections, references } = last(events).data;
+      const { actionType, collections, references } = lastOf(events).data;
 
       expect(actionType).to.equal(ActionType.UpdateIconReference);
       expect(collections).to.be.undefined;
@@ -256,25 +434,24 @@ describe('Icon broadcast service', () => {
     });
 
     it('when multiple broadcast services are initialized they should not send sync events to each other.', async () => {
-      const collections = createIconDefaultMap<string, SvgIcon>();
-      const references = createIconDefaultMap<string, IconMeta>();
+      const collections = new Map<string, Map<string, SvgIcon>>();
+      const references = new Map<string, Map<string, IconMeta>>();
       // 2 new broadcasts
       const broadcast1 = new IconsStateBroadcast(collections, references);
       const broadcast2 = new IconsStateBroadcast(collections, references);
       // 1 global one, initialized when you get the icon registry first time.
 
       // a peer is requesting a state sync
+      const ready = waitForMessages(channel, 3);
       channel.postMessage({ actionType: ActionType.SyncState });
-      await aTimeout(20);
+      await ready;
 
       // all icon broadcasts must respond with their state
       // 2 from broadcast service + 1 from global.
       expect(events.length).to.equal(3);
 
       // dispose of mock services.
-      // biome-ignore lint/complexity/useLiteralKeys: private access escape
       broadcast1['_dispose']();
-      // biome-ignore lint/complexity/useLiteralKeys: private access escape
       broadcast2['_dispose']();
     });
   });
@@ -282,15 +459,17 @@ describe('Icon broadcast service', () => {
   describe('Peer registry', () => {
     it('registered icon is correctly sent when a peer requests a sync states', async () => {
       const iconName = 'bug';
-      registerIconFromText(iconName, bugSvg, collectionName);
 
-      // a peer is requesting a state sync
+      // registerIconFromText fires RegisterIcon; the SyncState postMessage
+      // triggers a SyncState response from the registry - 2 messages total.
+      const ready = waitForMessages(channel, 2);
+      registerIconFromText(iconName, bugSvg, collectionName);
       channel.postMessage({ actionType: ActionType.SyncState });
-      await aTimeout(0);
+      await ready;
 
       expect(events).lengthOf(2); // [ActionType.RegisterIcon, ActionType.SyncState]
 
-      const { actionType, collections } = last(events).data;
+      const { actionType, collections } = lastOf(events).data;
       expect(actionType).to.equal(ActionType.SyncState);
       expect(collections).not.to.be.undefined;
 
@@ -309,13 +488,15 @@ describe('Icon broadcast service', () => {
         overwrite: true,
       });
 
-      // a peer is requesting a state sync
+      // setIconRef with external:false fires no broadcast; the SyncState
+      // postMessage triggers exactly one SyncState response.
+      const ready = waitForMessages(channel, 1);
       channel.postMessage({ actionType: ActionType.SyncState });
-      await aTimeout(0);
+      await ready;
 
       expect(events).lengthOf(1); // [ActionType.SyncState]
 
-      const { actionType, references } = last(events).data;
+      const { actionType, references } = lastOf(events).data;
       expect(actionType).to.equal(ActionType.SyncState);
       expect(references?.get(refCollectionName)?.get(refName)).to.be.undefined;
     });
@@ -328,12 +509,10 @@ describe('Icon BFCache (pageshow/pagehide) handling', () => {
   const collectionName = 'bfcache-test';
 
   function getChannel(service: IconsStateBroadcast) {
-    // biome-ignore lint/complexity/useLiteralKeys: private access escape
     return service['_channel'];
   }
 
   function disposeChannel(service: IconsStateBroadcast) {
-    // biome-ignore lint/complexity/useLiteralKeys: private access escape
     service['_dispose']();
   }
 
@@ -352,8 +531,8 @@ describe('Icon BFCache (pageshow/pagehide) handling', () => {
   });
 
   it('should dispose channel on pagehide event', async () => {
-    const collections = createIconDefaultMap<string, SvgIcon>();
-    const references = createIconDefaultMap<string, IconMeta>();
+    const collections = new Map<string, Map<string, SvgIcon>>();
+    const references = new Map<string, Map<string, IconMeta>>();
     const broadcast = new IconsStateBroadcast(collections, references);
 
     // Verify channel exists initially
@@ -370,8 +549,8 @@ describe('Icon BFCache (pageshow/pagehide) handling', () => {
   });
 
   it('should recreate channel on pageshow event', async () => {
-    const collections = createIconDefaultMap<string, SvgIcon>();
-    const references = createIconDefaultMap<string, IconMeta>();
+    const collections = new Map<string, Map<string, SvgIcon>>();
+    const references = new Map<string, Map<string, IconMeta>>();
     const broadcast = new IconsStateBroadcast(collections, references);
 
     // Simulate pagehide to dispose channel
@@ -391,8 +570,8 @@ describe('Icon BFCache (pageshow/pagehide) handling', () => {
   });
 
   it('should not create duplicate channel on pageshow if already exists', async () => {
-    const collections = createIconDefaultMap<string, SvgIcon>();
-    const references = createIconDefaultMap<string, IconMeta>();
+    const collections = new Map<string, Map<string, SvgIcon>>();
+    const references = new Map<string, Map<string, IconMeta>>();
     const broadcast = new IconsStateBroadcast(collections, references);
 
     // Get reference to initial channel
@@ -410,8 +589,8 @@ describe('Icon BFCache (pageshow/pagehide) handling', () => {
   });
 
   it('should handle messages after channel recreation', async () => {
-    const collections = createIconDefaultMap<string, SvgIcon>();
-    const references = createIconDefaultMap<string, IconMeta>();
+    const collections = new Map<string, Map<string, SvgIcon>>();
+    const references = new Map<string, Map<string, IconMeta>>();
     const broadcast = new IconsStateBroadcast(collections, references);
 
     // Register an icon
@@ -444,8 +623,8 @@ describe('Icon BFCache (pageshow/pagehide) handling', () => {
   });
 
   it('should not send messages when channel is disposed', async () => {
-    const collections = createIconDefaultMap<string, SvgIcon>();
-    const references = createIconDefaultMap<string, IconMeta>();
+    const collections = new Map<string, Map<string, SvgIcon>>();
+    const references = new Map<string, Map<string, IconMeta>>();
     const broadcast = new IconsStateBroadcast(collections, references);
 
     // Dispose the channel
@@ -457,7 +636,7 @@ describe('Icon BFCache (pageshow/pagehide) handling', () => {
     // Try to send a message
     broadcast.send({
       actionType: ActionType.RegisterIcon,
-      collections: createIconDefaultMap<string, SvgIcon>(),
+      collections: new Map<string, Map<string, SvgIcon>>(),
     });
 
     await aTimeout(10);
@@ -470,7 +649,7 @@ describe('Icon BFCache (pageshow/pagehide) handling', () => {
   });
 });
 
-describe('DefaultMap serialization for cross-browser compatibility', () => {
+describe('Broadcast payload serialization for cross-browser compatibility', () => {
   let channel: BroadcastChannel;
   let events: MessageEvent<BroadcastIconsChangeMessage>[] = [];
   const collectionName = 'serialization-test';
@@ -489,41 +668,14 @@ describe('DefaultMap serialization for cross-browser compatibility', () => {
     events = [];
   });
 
-  it('DefaultMap.toPlainMap() returns a plain Map instance, not DefaultMap', () => {
-    const defaultMap = createIconDefaultMap<string, SvgIcon>();
-    const plainMap = defaultMap.toPlainMap();
-
-    // Verify that plainMap is a Map but not a DefaultMap
-    expect(plainMap).to.be.instanceOf(Map);
-    expect(plainMap[Symbol.toStringTag]).to.equal('Map');
-    expect(defaultMap[Symbol.toStringTag]).to.equal('DefaultMap');
-  });
-
-  it('toPlainMap() preserves all entries from DefaultMap', () => {
-    const defaultMap = createIconDefaultMap<string, SvgIcon>();
-    const testData: SvgIcon = { svg: bugSvg };
-
-    // Add data to DefaultMap
-    const collection = defaultMap.getOrCreate('test-collection');
-    collection.set('bug', testData);
-
-    // Convert to plain Map
-    const plainMap = defaultMap.toPlainMap();
-
-    // Verify entries are preserved
-    expect(plainMap.has('test-collection')).to.be.true;
-    const plainCollection = plainMap.get('test-collection');
-    expect(plainCollection?.get('bug')).to.eql(testData);
-  });
-
   it('broadcasted collections data is sent as plain Maps', async () => {
+    const ready = waitForMessages(channel, 1);
     registerIconFromText('test-icon', bugSvg, collectionName);
-    await aTimeout(0);
+    await ready;
 
-    const { collections } = first(events).data;
+    const { collections } = firstOf(events).data;
 
     expect(collections?.[Symbol.toStringTag]).to.equal('Map');
-    // Verify the inner collection is also a Map
     const innerCollection = collections?.get(collectionName);
     expect(innerCollection?.[Symbol.toStringTag]).to.equal('Map');
     expect(innerCollection?.get('test-icon')).to.eql(
@@ -532,6 +684,7 @@ describe('DefaultMap serialization for cross-browser compatibility', () => {
   });
 
   it('broadcasted references data is sent as plain Maps', async () => {
+    const ready = waitForMessages(channel, 2);
     registerIconFromText('ref-test', bugSvg, collectionName);
     const refName = 'bug-ref';
     const refCollection = 'ref-collection';
@@ -540,12 +693,11 @@ describe('DefaultMap serialization for cross-browser compatibility', () => {
       name: 'ref-test',
       collection: collectionName,
     });
-    await aTimeout(0);
+    await ready;
 
-    const { references } = last(events).data;
+    const { references } = lastOf(events).data;
 
     expect(references?.[Symbol.toStringTag]).to.equal('Map');
-    // Verify the inner reference collection is also a Map
     const refInnerCollection = references?.get(refCollection);
     expect(refInnerCollection?.[Symbol.toStringTag]).to.equal('Map');
     expect(refInnerCollection?.get(refName)).to.eql(
@@ -554,47 +706,31 @@ describe('DefaultMap serialization for cross-browser compatibility', () => {
   });
 
   it('nested plain Maps can be structured cloned and transmitted safely', async () => {
+    const ready = waitForMessages(channel, 1);
     registerIconFromText('nested-icon', bugSvg, collectionName);
-    await aTimeout(0);
+    await ready;
 
-    const { collections } = first(events).data;
+    const { collections } = firstOf(events).data;
+    const cloned = structuredClone(collections);
+    const clonedCollection = cloned?.get(collectionName);
 
-    // Verify that nested plain Maps can be structured-cloned (as BroadcastChannel would do)
-    const clonedCollections = structuredClone(collections);
-
-    // Outer structure should remain a Map
-    expect(clonedCollections?.[Symbol.toStringTag]).to.equal('Map');
-
-    // Inner collection for the test collection should also remain a Map
-    const clonedInnerCollection = clonedCollections?.get(collectionName);
-    expect(clonedInnerCollection?.[Symbol.toStringTag]).to.equal('Map');
-
-    // The nested icon entry should be preserved after cloning
-    expect(clonedInnerCollection?.has('nested-icon')).to.be.true;
+    expect(cloned?.[Symbol.toStringTag]).to.equal('Map');
+    expect(clonedCollection?.[Symbol.toStringTag]).to.equal('Map');
+    expect(clonedCollection?.has('nested-icon')).to.be.true;
   });
+});
 
-  it('toPlainMap preserves nested Map structures for icon collections', () => {
-    const defaultMap = createIconDefaultMap<string, SvgIcon>();
+describe('Internal icons library', () => {
+  const parser = new SvgIconParser();
 
-    // Create nested DefaultMap with icons
-    const collection1 = defaultMap.getOrCreate('material');
-    collection1.set('home', { svg: bugSvg });
-    collection1.set('settings', { svg: virusSvg });
-
-    const collection2 = defaultMap.getOrCreate('bootstrap');
-    collection2.set('star', { svg: searchSvg });
-
-    // Convert to plain Map
-    const plainMap = defaultMap.toPlainMap();
-
-    // Verify structure is preserved
-    expect(plainMap.size).to.equal(2);
-    expect(plainMap.get('material')!.size).to.equal(2);
-    expect(plainMap.get('bootstrap')!.size).to.equal(1);
-
-    // Verify nested data integrity
-    expect(plainMap.get('material')?.get('home')?.svg).to.include('<svg');
-    expect(plainMap.get('bootstrap')?.get('star')?.svg).to.include('<svg');
+  it('every icon is well-formed and scales with its box', () => {
+    for (const [name, icon] of internalIcons) {
+      expect(
+        () => parser.parse(icon.svg),
+        `${name} is malformed`
+      ).to.not.throw();
+      expect(icon.svg, `${name} has no viewBox`).to.include('viewBox');
+    }
   });
 });
 
@@ -651,6 +787,17 @@ describe('Icon component', () => {
     verifySvg(icon, searchSvgContent);
   });
 
+  it('renders the SVG within its first update cycle', async () => {
+    const icon = document.createElement('igc-icon');
+    icon.name = 'bug';
+    document.body.append(icon);
+
+    await icon.updateComplete;
+
+    expect(icon.shadowRoot!.querySelector('svg')).to.not.be.null;
+    icon.remove();
+  });
+
   it('should throw descriptive error when icon cannot be registered', async () => {
     expect(() => registerIconFromText('invalid', '<div></div>')).to.throw(
       'SVG element not found or malformed SVG string.'
@@ -663,6 +810,43 @@ describe('Icon component', () => {
     );
 
     expect(icon.mirrored).to.be.true;
+  });
+
+  describe('ARIA', () => {
+    beforeEach(() => {
+      registerIconFromText(
+        'untitled',
+        '<svg viewBox="0 0 24 24"><path d="M2 2"/></svg>'
+      );
+    });
+
+    it('exposes the icon title as an image label', async () => {
+      const icon = await fixture<IgcIconComponent>(
+        html`<igc-icon name="bug"></igc-icon>`
+      );
+      const internals = internalsOf(icon)!;
+
+      expect(internals.getARIA('role')).to.equal('img');
+      expect(internals.getARIA('ariaLabel')).to.equal('Bug Icon');
+    });
+
+    it('leaves an icon without a title out of the accessibility tree', async () => {
+      const icon = await fixture<IgcIconComponent>(
+        html`<igc-icon name="untitled"></igc-icon>`
+      );
+      const internals = internalsOf(icon)!;
+
+      expect(internals.getARIA('role')).to.be.null;
+      expect(internals.getARIA('ariaLabel')).to.be.null;
+    });
+
+    it('keeps the image role when the host is labelled by the author', async () => {
+      const icon = await fixture<IgcIconComponent>(
+        html`<igc-icon name="untitled" aria-label="Custom"></igc-icon>`
+      );
+
+      expect(internalsOf(icon)!.getARIA('role')).to.equal('img');
+    });
   });
 
   describe('Multi-theme support', () => {

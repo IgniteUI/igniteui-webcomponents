@@ -1,15 +1,13 @@
-import { last, partition } from '../common/util.js';
-import type IgcTileComponent from './tile.js';
+import { lastOf, partition } from '#internals/utils/arrays.js';
 import type IgcTileManagerComponent from './tile-manager.js';
+import type IgcTileComponent from './tile.js';
 
 class TilesState {
-  private _nextEmptyPosition = 0;
-
-  public manager: IgcTileManagerComponent;
+  private readonly _manager: IgcTileManagerComponent;
 
   private get _tiles(): IgcTileComponent[] {
     return Array.from(
-      this.manager.querySelectorAll<IgcTileComponent>(':scope > igc-tile')
+      this._manager.querySelectorAll<IgcTileComponent>(':scope > igc-tile')
     );
   }
 
@@ -21,7 +19,7 @@ class TilesState {
   }
 
   constructor(manager: IgcTileManagerComponent) {
-    this.manager = manager;
+    this._manager = manager;
   }
 
   public assignPositions(): void {
@@ -51,51 +49,46 @@ class TilesState {
 
   /** Updates the default (manual) slot of the tile manager with the current tiles. */
   public assignTiles(): void {
-    this.manager.renderRoot.querySelector('slot')!.assign(...this._tiles);
+    this._manager.renderRoot.querySelector('slot')!.assign(...this._tiles);
   }
 
   public add(tile: IgcTileComponent): void {
-    const tiles = this.tiles;
-
     if (tile.position > -1) {
-      for (const each of tiles) {
+      for (const each of this.tiles) {
         if (each !== tile && each.position >= tile.position) {
           each.position++;
         }
       }
-    } else {
-      const positionedTiles = this._tiles.filter((tile) => tile.position > -1);
-
-      tile.position =
-        positionedTiles.length > 1
-          ? Math.max(...positionedTiles.map((tile) => tile.position)) + 1
-          : this._nextEmptyPosition;
-
-      this._nextEmptyPosition += 1;
+      return;
     }
+
+    const positionedTiles = this._tiles.filter((tile) => tile.position > -1);
+
+    tile.position = positionedTiles.length
+      ? Math.max(...positionedTiles.map((tile) => tile.position)) + 1
+      : 0;
   }
 
   /**
    * Checks and adjusts tile spans based on the column count of the tile manager.
    */
   public adjustTileGridPosition(): void {
-    const columnCount = this.manager.columnCount;
+    const { columnCount } = this._manager;
 
-    if (columnCount > 0) {
-      for (const tile of this.tiles) {
-        let colStart = tile.colStart || 0;
-        let colStartDelta = colStart > 0 ? 1 : 0;
-        const colSpan = tile.colSpan || 0;
+    if (columnCount < 1) {
+      return;
+    }
 
-        if (colStart > columnCount) {
-          colStart = 0;
-          colStartDelta = 0;
-          tile.colStart = 0;
-        }
+    for (const tile of this.tiles) {
+      let colStart = tile.colStart ?? 0;
 
-        if (colStart + colSpan > columnCount) {
-          tile.colSpan = columnCount - colStart + colStartDelta;
-        }
+      if (colStart > columnCount) {
+        colStart = 0;
+        tile.colStart = null;
+      }
+
+      if (colStart + tile.colSpan > columnCount) {
+        tile.colSpan = columnCount - colStart + (colStart > 0 ? 1 : 0);
       }
     }
   }
@@ -112,42 +105,29 @@ class TilesState {
 type TileDragStackEntry = {
   tile: IgcTileComponent;
   position: number;
-  column?: number | null;
-  row?: number | null;
+  colStart: number | null;
+  rowStart: number | null;
 };
 
 class TileDragStack {
   private _stack: TileDragStackEntry[] = [];
 
   public peek(): IgcTileComponent {
-    return last(this._stack).tile;
+    return lastOf(this._stack).tile;
   }
 
-  public pop(): TileDragStackEntry | undefined {
-    return this._stack.pop();
+  public pop(): void {
+    this._stack.pop();
   }
 
   public push(tile: IgcTileComponent): void {
-    this._stack.push({
-      tile,
-      position: tile.position,
-      column: tile.colStart,
-      row: tile.rowStart,
-    });
+    const { position, colStart, rowStart } = tile;
+    this._stack.push({ tile, position, colStart, rowStart });
   }
 
   public restore(): void {
-    for (const {
-      tile,
-      position,
-      column: colStart,
-      row: rowStart,
-    } of this._stack.toReversed()) {
-      Object.assign(tile, {
-        position,
-        colStart,
-        rowStart,
-      });
+    for (const { tile, ...placement } of this._stack.toReversed()) {
+      Object.assign(tile, placement);
     }
   }
 
@@ -166,6 +146,6 @@ export function createTileDragStack(): TileDragStack {
 
 export function swapTiles(a: IgcTileComponent, b: IgcTileComponent): void {
   [a.colStart, b.colStart] = [b.colStart, a.colStart];
-  [a.rowStart, b.rowStart] = [b.rowStart, a.colStart];
+  [a.rowStart, b.rowStart] = [b.rowStart, a.rowStart];
   [a.position, b.position] = [b.position, a.position];
 }

@@ -1,13 +1,13 @@
 import { property } from 'lit/decorators.js';
-import { addThemingController } from '../../theming/theming-controller.js';
-import { addSlotController, setSlots } from '../common/controllers/slot.js';
-import { registerComponent } from '../common/definitions/register.js';
-import { createFormValueState } from '../common/mixins/forms/form-value.js';
+import { addSlotController, setSlots } from '#internals/controllers/slot.js';
+import { registerComponent } from '#internals/definitions/register.js';
+import { createFormValueState } from '#internals/mixins/forms/form-value.js';
 import {
   MaskBehaviorMixin,
   type MaskSelection,
-} from '../common/mixins/mask-behavior.js';
-import { renderMaskedNativeInput } from '../common/templates/masked-input.js';
+} from '#internals/mixins/mask-behavior.js';
+import { renderMaskedNativeInput } from '#internals/templates/masked-input.js';
+import { addThemingController } from '#theming/theming-controller.js';
 import { IgcInputBaseComponent } from '../input/input-base.js';
 import { styles } from '../input/themes/input.base.css.js';
 import { styles as shared } from '../input/themes/shared/input.common.css.js';
@@ -114,7 +114,7 @@ export default class IgcMaskInputComponent extends MaskBehaviorMixin(
   /**
    * The value of the input.
    *
-   * Regardless of the currently set `value-mode`, an empty value will return an empty string.
+   * Regardless of the currently set `value-mode`, an empty value returns an empty string.
    *
    * @attr
    */
@@ -197,10 +197,14 @@ export default class IgcMaskInputComponent extends MaskBehaviorMixin(
     if (!this._formValue.value) {
       // In case of empty value, select the whole mask
       this._maskedValue = this._parser.emptyMask;
+      this._historyResync();
 
       await this.updateComplete;
       this.select();
+      return;
     }
+
+    this._historyResync();
   }
 
   protected override _handleBlur(): void {
@@ -210,38 +214,31 @@ export default class IgcMaskInputComponent extends MaskBehaviorMixin(
   }
 
   protected _handleChange(): void {
-    this._setTouchedState();
-    this.emitEvent('igcChange', { detail: this.value });
+    this._emitTouchedEvent('igcChange', { detail: this.value });
   }
 
   //#endregion
 
   //#region Internal methods
 
-  protected override _restoreDefaultValue(): void {
-    const value = this.defaultValue as string;
+  /**
+   * Commits straight to the form value instead of going through the `value` setter: the
+   * setter re-applies the parser, and `apply(parse(x))` left-packs the text - a mask with
+   * an interior hole such as `1_2-___` would collapse to `12_-___`.
+   */
+  protected override _commitMaskedValue(value: string): void {
+    this._maskedValue = value;
+    this._formValue.setValueAndFormState(this._parser.parse(value));
 
-    this._maskedValue = this._parser.apply(value);
-    this._updateMaskedValue();
-    this._formValue.setValueAndFormState(value);
+    // Reachable unfocused only through `setRangeText`, where an emptied mask must read
+    // as an empty document - as it does after a blur - rather than a row of prompts.
+    if (!this._focused) {
+      this._updateMaskedValue();
+    }
   }
 
-  protected override async _updateInput(
-    text: string,
-    { start, end }: MaskSelection
-  ): Promise<void> {
-    const result = this._parser.replace(this._maskedValue, text, start, end);
-
-    this._maskedValue = result.value;
-    this._formValue.setValueAndFormState(this._parser.parse(this._maskedValue));
-    this.requestUpdate();
-
-    if (start !== this.mask.length) {
-      this.emitEvent('igcInput', { detail: this.value });
-    }
-
-    await this.updateComplete;
-    this._input?.setSelectionRange(result.end, result.end);
+  protected override _emitInputEvent(): void {
+    this._emitTouchedEvent('igcInput', { detail: this.value });
   }
 
   protected override _syncValueFromMask(): void {
@@ -268,7 +265,6 @@ export default class IgcMaskInputComponent extends MaskBehaviorMixin(
 
   protected override _renderInput() {
     const hasNegativeTabIndex = this.getAttribute('tabindex') === '-1';
-    const hasHelperText = this._slots.hasAssignedElements('helper-text');
 
     return renderMaskedNativeInput({
       id: this._inputId,
@@ -281,9 +277,9 @@ export default class IgcMaskInputComponent extends MaskBehaviorMixin(
       autofocus: this.autofocus,
       inputMode: this.inputMode,
       tabindex: hasNegativeTabIndex ? -1 : undefined,
-      ariaDescribedBy: hasHelperText ? 'helper-text' : undefined,
-      ariaLabelledByElements: this._resolvedLabelElements,
+      aria: this._ariaTarget.resolveBindings(),
       onInput: this._handleInput,
+      onBeforeInput: this._handleBeforeInput,
       onFocus: this._handleFocus,
       onBlur: this._handleBlur,
       onClick: this._handleClick,

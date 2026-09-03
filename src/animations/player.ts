@@ -1,26 +1,22 @@
 import type { ReactiveController, ReactiveControllerHost } from 'lit';
 import type { Ref } from 'lit/directives/ref.js';
-import { isElement } from '../components/common/util.js';
+import { isElement } from '#internals/utils/dom.js';
 import type { AnimationReferenceMetadata } from './types.js';
-
-/**
- * Defines the result of an optional View Transition start.
- */
-type ViewTransitionResult = {
-  transition?: ViewTransition;
-};
 
 const LISTENER_OPTIONS = { once: true } as const;
 
 /**
  * Checks the user's preference for reduced motion.
  */
-function getPrefersReducedMotion(): boolean {
-  return globalThis?.matchMedia('(prefers-reduced-motion: reduce)').matches;
+export function getPrefersReducedMotion(): boolean {
+  return (
+    globalThis?.matchMedia?.('(prefers-reduced-motion: reduce)').matches ??
+    false
+  );
 }
 
 /**
- * A ReactiveController for managing Web Animation API (WAAPI) playback
+ * A ReactiveController for managing Web Animation API (WA-API) playback
  * on a host element or a specified target element.
  *
  * It provides methods to play, stop, and coordinate animations, including
@@ -65,18 +61,23 @@ class AnimationController implements ReactiveController {
   /** @internal */
   public hostConnected(): void {}
 
-  /** Plays a sequence of keyframes, first cancelling all existing animations on the target. */
+  /**
+   * Plays a sequence of keyframes, first cancelling all existing animations on the target.
+   *
+   * The cancellation must stay synchronous - awaiting before it would let an
+   * animation started earlier in the same tick escape and run to completion.
+   */
   public async playExclusive(
     animation: AnimationReferenceMetadata
   ): Promise<boolean> {
-    await this.cancelAll();
+    this.cancelAll();
 
     const event = await this.play(animation);
     return event.type === 'finish';
   }
 
   /**
-   * Plays a sequence of keyframes using WAAPI.
+   * Plays a sequence of keyframes using WA-API.
    * Automatically sets duration to 0 if 'prefers-reduced-motion' is set.
    */
   public async play(
@@ -101,12 +102,10 @@ class AnimationController implements ReactiveController {
   }
 
   /** Cancels all active animations on the target element. */
-  public cancelAll(): Promise<void> {
+  public cancelAll(): void {
     for (const animation of this._target.getAnimations()) {
       animation.cancel();
     }
-
-    return Promise.resolve();
   }
 }
 
@@ -120,22 +119,6 @@ export function addAnimationController(
   target?: Ref<HTMLElement> | HTMLElement
 ): AnimationController {
   return new AnimationController(host, target);
-}
-
-/**
- * Initiates a View Transition if supported by the browser and not suppressed by
- * the 'prefers-reduced-motion' setting.
- */
-export function startViewTransition(
-  callback?: ViewTransitionUpdateCallback
-): ViewTransitionResult {
-  /* c8 ignore next 4 */
-  if (getPrefersReducedMotion() || !document.startViewTransition) {
-    callback?.();
-    return {};
-  }
-
-  return { transition: document.startViewTransition(callback) };
 }
 
 export type { AnimationController };

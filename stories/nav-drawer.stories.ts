@@ -9,8 +9,8 @@ import {
   defineComponents,
   registerIcon,
 } from 'igniteui-webcomponents';
-import { range } from 'lit/directives/range.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
+import { range } from 'lit/directives/range.js';
 
 defineComponents(IgcIconComponent, IgcNavDrawerComponent, IgcButtonComponent);
 
@@ -29,9 +29,12 @@ const metadata: Meta<IgcNavDrawerComponent> = {
   },
   argTypes: {
     position: {
-      type: '"start" | "end" | "top" | "bottom" | "relative"',
+      type: {
+        name: 'enum',
+        value: ['start', 'end', 'top', 'bottom', 'relative'],
+      },
       description:
-        'Sets the position of the drawer.\n\n- `start` — anchored to the inline-start edge (default).\n- `end` — anchored to the inline-end edge.\n- `top` — anchored to the block-start edge.\n- `bottom` — anchored to the block-end edge.\n- `relative` — rendered inline within the page flow; no modal backdrop.',
+        'Sets the position of the drawer.\n\n- `start` - anchored to the inline-start edge (default).\n- `end` - anchored to the inline-end edge.\n- `top` - anchored to the block-start edge.\n- `bottom` - anchored to the block-end edge.\n- `relative` - rendered inline within the page flow; no modal backdrop.',
       options: ['start', 'end', 'top', 'bottom', 'relative'],
       control: { type: 'select' },
       table: { defaultValue: { summary: 'start' } },
@@ -45,7 +48,7 @@ const metadata: Meta<IgcNavDrawerComponent> = {
     keepOpenOnEscape: {
       type: 'boolean',
       description:
-        'Determines whether the drawer should remain open when the Escape key is pressed.\n\nThis attribute is only applicable when the drawer is in a non-relative position,\nas the Escape key does not trigger the closing of relative drawers.',
+        'Determines whether the drawer should remain open when the Escape key is pressed.\n\nThis is only applicable when the drawer is in a non-relative position,\nas the Escape key does not trigger the closing of relative drawers.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
@@ -65,11 +68,11 @@ interface IgcNavDrawerArgs {
   /**
    * Sets the position of the drawer.
    *
-   * - `start` — anchored to the inline-start edge (default).
-   * - `end` — anchored to the inline-end edge.
-   * - `top` — anchored to the block-start edge.
-   * - `bottom` — anchored to the block-end edge.
-   * - `relative` — rendered inline within the page flow; no modal backdrop.
+   * - `start` - anchored to the inline-start edge (default).
+   * - `end` - anchored to the inline-end edge.
+   * - `top` - anchored to the block-start edge.
+   * - `bottom` - anchored to the block-end edge.
+   * - `relative` - rendered inline within the page flow; no modal backdrop.
    */
   position: 'start' | 'end' | 'top' | 'bottom' | 'relative';
   /** Whether the drawer is open. */
@@ -77,7 +80,7 @@ interface IgcNavDrawerArgs {
   /**
    * Determines whether the drawer should remain open when the Escape key is pressed.
    *
-   * This attribute is only applicable when the drawer is in a non-relative position,
+   * This is only applicable when the drawer is in a non-relative position,
    * as the Escape key does not trigger the closing of relative drawers.
    */
   keepOpenOnEscape: boolean;

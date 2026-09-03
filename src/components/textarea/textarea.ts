@@ -1,31 +1,34 @@
-import {
-  html,
-  LitElement,
-  nothing,
-  type PropertyValues,
-  type TemplateResult,
-} from 'lit';
+import { html, LitElement, type PropertyValues } from 'lit';
 import { property, query } from 'lit/decorators.js';
 import { cache } from 'lit/directives/cache.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 import { styleMap } from 'lit/directives/style-map.js';
-import { addThemingController } from '../../theming/theming-controller.js';
-import { createResizeObserverController } from '../common/controllers/resize-observer.js';
+import {
+  addAriaTarget,
+  ariaBindings,
+} from '#internals/controllers/aria-projection.js';
+import { createResizeObserverController } from '#internals/controllers/resize-observer.js';
 import {
   addSlotController,
   type InferSlotNames,
   type SlotChangeCallbackParameters,
   setSlots,
-} from '../common/controllers/slot.js';
-import { shadowOptions } from '../common/decorators/shadow-options.js';
-import { registerComponent } from '../common/definitions/register.js';
-import type { Constructor } from '../common/mixins/constructor.js';
-import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { FormAssociatedRequiredMixin } from '../common/mixins/forms/associated-required.js';
-import { createFormValueState } from '../common/mixins/forms/form-value.js';
-import { partMap } from '../common/part-map.js';
-import { addSafeEventListener, asNumber } from '../common/util.js';
+} from '#internals/controllers/slot.js';
+import { shadowOptions } from '#internals/decorators/shadow-options.js';
+import { registerComponent } from '#internals/definitions/register.js';
+import type { Constructor } from '#internals/mixins/constructor.js';
+import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
+import { FormAssociatedRequiredMixin } from '#internals/mixins/forms/associated-required.js';
+import { createFormValueState } from '#internals/mixins/forms/form-value.js';
+import {
+  renderInputShell,
+  resolveInputPartNames,
+} from '#internals/templates/input-shell.js';
+import { addSafeEventListener } from '#internals/utils/events.js';
+import { asNumber } from '#internals/utils/math.js';
+import { createIdGenerator } from '#internals/utils/strings.js';
+import { addThemingController } from '#theming/theming-controller.js';
 import type {
   RangeTextSelectMode,
   SelectionRangeDirection,
@@ -47,7 +50,7 @@ export interface IgcTextareaComponentEventMap {
   blur: FocusEvent;
 }
 
-let nextId = 1;
+const nextId = createIdGenerator('textarea');
 const Slots = setSlots(
   'prefix',
   'suffix',
@@ -60,7 +63,7 @@ const Slots = setSlots(
 );
 
 /**
- * This element represents a multi-line plain-text editing control,
+ * Represents a multi-line plain-text editing control,
  * useful when you want to allow users to enter a sizeable amount of free-form text,
  * for example a comment on a review or feedback form.
  *
@@ -80,11 +83,11 @@ const Slots = setSlots(
  * @fires igcChange - Emitted when the a change to the control value is committed by the user.
  *
  * @csspart container - The main wrapper that holds all main input elements of the textarea.
- * @csspart input - The native input element of the igc-textarea.
- * @csspart label - The native label element of the igc-textarea.
- * @csspart prefix - The prefix wrapper of the igc-textarea.
- * @csspart suffix - The suffix wrapper of the igc-textarea.
- * @csspart helper-text - The helper text wrapper of the igc-textarea.
+ * @csspart input - The native input element of the textarea.
+ * @csspart label - The native label element of the textarea.
+ * @csspart prefix - The prefix wrapper of the textarea.
+ * @csspart suffix - The suffix wrapper of the textarea.
+ * @csspart helper-text - The helper text wrapper of the textarea.
  */
 @shadowOptions({ delegatesFocus: true })
 export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
@@ -102,7 +105,7 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
 
   //#region Private properties and state
 
-  private readonly _inputId = `textarea-${nextId++}`;
+  private readonly _inputId = nextId();
 
   private readonly _themes = addThemingController(this, all);
 
@@ -111,8 +114,20 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
     onChange: this._handleSlotChange,
   });
 
+  /**
+   * Receives ARIA semantics projected by a composite host onto the inner
+   * native textarea. See {@link addAriaTarget}.
+   */
+  private readonly _ariaTarget = addAriaTarget(this, {
+    labels: () => this._internals.labels,
+    description: () =>
+      this._slots.hasAssignedElements('helper-text')
+        ? this.renderRoot.querySelector('#helper-text')
+        : null,
+  });
+
   @query('textarea')
-  private readonly _input!: HTMLTextAreaElement;
+  private readonly _input?: HTMLTextAreaElement;
 
   protected override get __validators() {
     return textAreaValidators;
@@ -127,7 +142,7 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
   //#region Public properties and attributes
 
   /**
-   * Specifies what if any permission the browser has to provide for automated assistance in filling out form field values,
+   * Specifies what permission, if any, the browser has to provide automated assistance in filling out form field values,
    * as well as guidance to the browser as to the type of information expected in the field.
    * Refer to [this page](https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/autocomplete) for additional information.
    *
@@ -190,7 +205,7 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
   public outlined = false;
 
   /**
-   * The placeholder attribute of the control.
+   * The placeholder text of the control.
    *
    * @attr
    */
@@ -295,35 +310,27 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
 
   //#region Internal methods
 
-  private _setAutoHeight(): number {
-    const { borderTopWidth, borderBottomWidth } = getComputedStyle(this._input);
-    return (
-      this._input.scrollHeight +
-      asNumber(borderTopWidth) +
-      asNumber(borderBottomWidth)
-    );
-  }
-
   protected _setAreaHeight(): void {
-    if (this.resize === 'auto') {
-      this._input.style.height = 'auto';
-      this._input.style.height = `${this._setAutoHeight()}px`;
-    } else {
-      Object.assign(this._input.style, { height: undefined });
-    }
-  }
+    const input = this._input;
 
-  protected _resolvePartNames() {
-    return {
-      container: true,
-      prefixed: this._slots.hasAssignedElements('prefix', {
-        selector: ':not([hidden])',
-      }),
-      suffixed: this._slots.hasAssignedElements('suffix', {
-        selector: ':not([hidden])',
-      }),
-      filled: !!this.value,
-    };
+    if (!input) {
+      return;
+    }
+
+    if (this.resize !== 'auto') {
+      input.style.removeProperty('height');
+      return;
+    }
+
+    input.style.height = 'auto';
+
+    const { borderTopWidth, borderBottomWidth } = getComputedStyle(input);
+    const height =
+      input.scrollHeight +
+      asNumber(borderTopWidth) +
+      asNumber(borderBottomWidth);
+
+    input.style.height = `${height}px`;
   }
 
   //#endregion
@@ -333,29 +340,33 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
   private _handleSlotChange({
     isDefault,
   }: SlotChangeCallbackParameters<InferSlotNames<typeof Slots>>): void {
-    if (isDefault) {
-      const value = this._slots
-        .getAssignedNodes('[default]', true)
-        .map((node) => node.textContent?.trim())
-        .filter((node) => Boolean(node))
-        .join('\r\n');
+    if (!isDefault) {
+      return;
+    }
 
-      if (value !== this.value) {
-        this.value = value;
-      }
+    const value = this._slots
+      .getAssignedNodes('[default]', true)
+      .map((node) => node.textContent?.trim())
+      .filter(Boolean)
+      .join('\r\n');
+
+    if (value === this.value) {
+      return;
+    }
+
+    if (this._pristine) {
+      this.defaultValue = value;
+    } else {
+      this.value = value;
     }
   }
 
   protected _handleInput(): void {
-    this._setTouchedState();
-    this.value = this._input.value;
-    this.emitEvent('igcInput', { detail: this.value });
+    this._commitValue(this._input?.value ?? '', 'igcInput');
   }
 
   protected _handleChange(): void {
-    this._setTouchedState();
-    this.value = this._input.value;
-    this.emitEvent('igcChange', { detail: this.value });
+    this._commitValue(this._input?.value ?? '', 'igcChange');
   }
 
   //#endregion
@@ -364,7 +375,7 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
 
   /** Selects all text within the control. */
   public select(): void {
-    this._input.select();
+    this._input?.select();
   }
 
   /* blazorSuppress */
@@ -374,7 +385,7 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
     end: number,
     direction: SelectionRangeDirection = 'none'
   ): void {
-    this._input.setSelectionRange(start, end, direction);
+    this._input?.setSelectionRange(start, end, direction);
   }
 
   /* blazorSuppress */
@@ -385,8 +396,8 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
     end: number,
     selectMode: RangeTextSelectMode = 'preserve'
   ): void {
-    this._input.setRangeText(replacement, start, end, selectMode);
-    this.value = this._input.value;
+    this._input?.setRangeText(replacement, start, end, selectMode);
+    this.value = this._input?.value ?? '';
   }
 
   /* blazorSuppress */
@@ -395,75 +406,20 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
   public override scrollTo(x: number, y: number): void;
   public override scrollTo(x?: unknown, y?: unknown): void {
     x != null && y != null
-      ? this._input.scrollTo(x as number, y as number)
-      : this._input.scrollTo(x as ScrollToOptions);
+      ? this._input?.scrollTo(x as number, y as number)
+      : this._input?.scrollTo(x as ScrollToOptions);
   }
 
   //#endregion
 
   //#region Renderers
 
-  protected _renderSlot(name: InferSlotNames<typeof Slots>) {
-    const isHidden = !this._slots.hasAssignedElements(name, {
-      selector: ':not([hidden])',
-    });
-
-    return html`
-      <div part=${name} ?hidden=${isHidden}>
-        <slot name=${name}></slot>
-      </div>
-    `;
-  }
-
-  protected _renderLabel() {
-    return this.label
-      ? html`
-          <label part="label" for=${this.id || this._inputId}>
-            ${this.label}
-          </label>
-        `
-      : nothing;
-  }
-
-  protected _renderStandard() {
-    return html`
-      ${this._renderLabel()}
-      <div part=${partMap(this._resolvePartNames())}>
-        ${this._renderSlot('prefix')} ${this._renderInput()}
-        ${this._renderSlot('suffix')}
-      </div>
-      ${this._renderValidationContainer()}
-    `;
-  }
-
-  protected _renderMaterial() {
-    return html`
-      <div
-        part=${partMap({
-          ...this._resolvePartNames(),
-          labelled: !!this.label,
-          placeholder: !!this.placeholder,
-        })}
-      >
-        <div part="start">${this._renderSlot('prefix')}</div>
-        ${this._renderInput()}
-        <div part="notch">${this._renderLabel()}</div>
-        <div part="filler"></div>
-        <div part="end">${this._renderSlot('suffix')}</div>
-      </div>
-      ${this._renderValidationContainer()}
-    `;
-  }
-
   protected _renderInput() {
-    const describedBy = this._slots.hasAssignedElements('helper-text')
-      ? 'helper-text'
-      : nothing;
-
     return html`
       <slot style="display: none"></slot>
       <textarea
-        id=${this.id || this._inputId}
+        ${ariaBindings(this._ariaTarget.resolveBindings())}
+        id=${this._inputId}
         part="input"
         style=${styleMap({
           resize: this.resize === 'auto' ? 'none' : this.resize,
@@ -483,21 +439,25 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
         ?disabled=${this.disabled}
         ?required=${this.required}
         ?readonly=${this.readOnly}
-        aria-describedby=${describedBy}
-        .ariaLabelledByElements=${this._internals.labels}
       ></textarea>
     `;
   }
 
-  protected _renderValidationContainer(): TemplateResult {
-    return IgcValidationContainerComponent.create(this);
-  }
-
   protected override render() {
     return cache(
-      this._themes.theme === 'material'
-        ? this._renderMaterial()
-        : this._renderStandard()
+      renderInputShell(this, {
+        theme: this._themes.theme,
+        label: this.label,
+        labelId: this._inputId,
+        containerParts: resolveInputPartNames(
+          this._slots,
+          'container',
+          !!this.value
+        ),
+        materialParts: { placeholder: !!this.placeholder },
+        hideEmptyAffixes: true,
+        renderInput: this._renderInput,
+      })
     );
   }
 

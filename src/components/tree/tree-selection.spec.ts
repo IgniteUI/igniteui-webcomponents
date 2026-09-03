@@ -2,9 +2,6 @@ import { elementUpdated, expect } from '@open-wc/testing';
 import { spy } from 'sinon';
 
 import { defineComponents, type IgcCheckboxComponent } from '../../index.js';
-import type { TreeSelectionEventInit } from './tree.common.js';
-import IgcTreeComponent from './tree.js';
-import type { IgcTreeSelectionService } from './tree.selection.js';
 import IgcTreeItemComponent from './tree-item.js';
 import {
   cascadeSelectionTree,
@@ -13,6 +10,9 @@ import {
   simpleTree,
   TreeTestFunctions,
 } from './tree-utils.spec.js';
+import type { TreeSelectionEventInit } from './tree.common.js';
+import IgcTreeComponent from './tree.js';
+import type { IgcTreeSelectionService } from './tree.selection.js';
 
 describe('Tree Selection', () => {
   before(() => {
@@ -769,6 +769,71 @@ describe('Tree Selection', () => {
       TreeTestFunctions.verifyItemSelection(item212, true);
       TreeTestFunctions.verifyItemSelection(item2Children[1], true);
       TreeTestFunctions.verifyItemSelection(item2Children[2], true);
+    });
+  });
+
+  describe('Removal', () => {
+    beforeEach(async () => {
+      tree = await TreeTestFunctions.createTreeElement(cascadeSelectionTree);
+      treeSelectionService = tree.selectionService;
+    });
+
+    it('Should reconcile a removed subtree in a single pass', async () => {
+      tree.select();
+      await elementUpdated(tree);
+
+      const target = tree.items.find(
+        (item) => item.label === 'Tree Item 3.1.1'
+      )!;
+      const removed = [target, ...target.getChildren({ flatten: true })];
+      expect(removed.length).to.be.greaterThan(1);
+
+      const deselectSpy = spy(treeSelectionService, 'deselectItemsWithNoEvent');
+      target.remove();
+      await elementUpdated(tree);
+
+      // The topmost removed item covers its whole subtree; each descendant
+      // repeating the reconciliation would be redundant work.
+      expect(deselectSpy.callCount).to.equal(1);
+      expect(deselectSpy.firstCall.args[0]).to.have.members(removed);
+    });
+
+    it('Should update the ancestors of a removed subtree', async () => {
+      const parent = tree.items.find((item) => item.label === 'Tree Item 3.1')!;
+      const target = parent
+        .getChildren()
+        .find((item) => item.label === 'Tree Item 3.1.1')!;
+
+      tree.select([target]);
+      await elementUpdated(tree);
+
+      expect(treeSelectionService.isItemIndeterminate(parent)).to.be.true;
+
+      target.remove();
+      await elementUpdated(tree);
+
+      // With the only selected child gone, the parent is no longer partially
+      // selected.
+      expect(treeSelectionService.isItemIndeterminate(parent)).to.be.false;
+      expect(treeSelectionService.isItemSelected(parent)).to.be.false;
+    });
+
+    it('Should keep the selection state of a moved subtree', async () => {
+      const target = tree.items.find(
+        (item) => item.label === 'Tree Item 3.1.1'
+      )!;
+      tree.select([target]);
+      await elementUpdated(tree);
+
+      const newParent = tree.items.find(
+        (item) => item.label === 'Tree Item 2.2'
+      )!;
+      newParent.append(target);
+      await elementUpdated(tree);
+
+      TreeTestFunctions.verifyItemSelection(target, true);
+      expect(treeSelectionService.isItemIndeterminate(newParent)).to.be.false;
+      expect(treeSelectionService.isItemSelected(newParent)).to.be.true;
     });
   });
 });

@@ -26,6 +26,9 @@ See the [Storybook Here](https://igniteui.github.io/igniteui-webcomponents)
 
 | Components              | Status |         Documentation          | Released Version |    License     |
 | :---------------------- | :----: | :----------------------------: | :--------------: | :------------: |
+| Virtual Scroll          |   ✅   |       [Storybook][Storybook]   |     [7.3.0]      | [MIT](LICENSE) |
+| QR Code                 |   ✅   |       [Storybook][Storybook]   |     [7.3.0]      | [MIT](LICENSE) |
+| Color Picker            |   ✅   |       [Storybook][Storybook]   |     [7.3.0]      | [MIT](LICENSE) |
 | Splitter                |   ✅   |     [Docs][Splitter Docs]      |     [7.1.0]      | [MIT](LICENSE) |
 | Chat                    |   ✅   |       [Docs][Chat Docs]        |     [6.3.0]      | [MIT](LICENSE) |
 | Date Range Picker       |   ✅   | [Docs][Date Range Picker Docs] |     [6.1.0]      | [MIT](LICENSE) |
@@ -148,6 +151,31 @@ Refer to the documentation of your editor of choice to see if you can take advan
 | igniteui-webcomponents/igniteui-webcomponents.css-data.json  | VSCode CSS custom data             |
 | igniteui-webcomponents/igniteui-webcomponents.html-data.json | VSCode HTML custom data            |
 
+### AI agent skills
+
+The package also includes reusable skills for GitHub Copilot and other compatible AI agents. They provide task-specific guidance and current best practices for:
+
+- [Choosing the right components](skills/igniteui-wc-choose-components/SKILL.md)
+- [Integrating with React, Angular, Vue, or vanilla JavaScript](skills/igniteui-wc-integrate-with-framework/SKILL.md)
+- [Customizing component themes](skills/igniteui-wc-customize-component-theme/SKILL.md)
+- [Generating a view from an image or design](skills/igniteui-wc-generate-from-image-design/SKILL.md)
+- [Optimizing bundle size](skills/igniteui-wc-optimize-bundle-size/SKILL.md)
+- [Migrating from Grid Lite to the premium Data Grid](skills/igniteui-wc-migrate-grid-lite-to-premium/SKILL.md)
+
+After installing the package, copy the skills into your repository so your agent can discover them automatically:
+
+```sh
+# Unix/macOS
+cp -r node_modules/igniteui-webcomponents/skills/* .github/skills/
+```
+
+```powershell
+# Windows PowerShell
+Copy-Item -Recurse node_modules\igniteui-webcomponents\skills\* .github\skills\
+```
+
+See the [AI agent skills guide](skills/README.md) for example prompts, supported workflows, and additional installation locations.
+
 ## Contributing
 
 Follow the [Contribution Guidelines] to setup a development
@@ -199,6 +227,7 @@ npm run storybook:build
 
 [Ignite UI for Web Components]: https://www.infragistics.com/products/ignite-ui-web-components
 [Indigo.Design Design System]: https://www.infragistics.com/products/appbuilder/ui-toolkit
+[Storybook]: https://igniteui.github.io/igniteui-webcomponents
 [Ignite UI for WebComponents Grids]: https://www.npmjs.com/package/igniteui-webcomponents-grids
 [Dock Manager Picture]: https://github.com/IgniteUI/igniteui-webcomponents/assets/52001020/a9643f17-f1c2-4554-87aa-96c9daea13b0
 [Custom Elements Manifest]: https://github.com/webcomponents/custom-elements-manifest
@@ -282,3 +311,4 @@ npm run storybook:build
 [6.1.0]: https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/6.1.0
 [6.3.0]: https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/6.3.0
 [7.1.0]: https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/7.1.0
+[7.3.0]: https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/7.3.0
