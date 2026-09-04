@@ -145,3 +145,17 @@ textarea {
 ::slotted([slot='prefix']) {
     padding-inline: var(--affix-padding);
 }
+
+@media (forced-colors: active) {
+    :host([disabled]),
+    :host(:disabled) {
+        ::part(helper-text) {
+            color: GrayText;
+        }
+
+        ::slotted([slot='prefix']),
+        ::slotted([slot='suffix']) {
+            --color: GrayText;
+        }
+    }
+}

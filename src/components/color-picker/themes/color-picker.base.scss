@@ -148,3 +148,18 @@
 :host([required]) [part='label']::after {
     content: '*';
 }
+
+@media (forced-colors: active) {
+    :host {
+        [part~=anchor]::before,
+        [part=picker-canvas],
+        [part=hue]::-webkit-slider-runnable-track,
+        [part~=anchor][part~=input-mode] {
+            forced-color-adjust: none;
+        }
+
+        [part=hue]::-webkit-slider-runnable-track {
+            outline: rem(1px) solid CanvasText;
+        }
+    }
+}

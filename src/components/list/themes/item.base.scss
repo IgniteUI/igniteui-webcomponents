@@ -55,3 +55,11 @@
 [part='subtitle'] {
     @include type-style('body-2');
 }
+
+@media (forced-colors: active) {
+    :host([selected]),
+    :host([selected]:last-of-type) {
+        outline: rem(1px) solid Highlight;
+        outline-offset: -1px;
+    }
+}

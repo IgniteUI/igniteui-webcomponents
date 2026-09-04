@@ -225,3 +225,9 @@ $transition-duration: .25s;
         color: var-get($theme, 'disabled-text-color');
     }
 }
+
+@media (forced-colors: active) {
+    :host [part~='container']::after {
+        content: unset;
+    }
+}

@@ -62,3 +62,9 @@
         display: none;
     }
 }
+
+@media (forced-colors: active) {
+    [part='base'] {
+        border: rem(1px) solid CanvasText;
+    }
+}

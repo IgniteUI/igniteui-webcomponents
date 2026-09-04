@@ -17,3 +17,14 @@ $theme: $fluent;
         font-weight: 700;
     }
 }
+
+@media (forced-colors: active) {
+    [part~='tab-header'] {
+        border: none;
+        transition: none;
+
+        &:focus {
+            --border-color--hover: Highlight;
+        }
+    }
+}

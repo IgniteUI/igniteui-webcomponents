@@ -769,3 +769,19 @@ $fs: rem(16px) !default;
         @include floated-notch();
     }
 }
+
+@media (forced-colors: active) {
+    :host(:not([outlined])) [part~='container'] [part='notch'] {
+        border-top: none;
+    }
+
+    :host(:not([outlined])) [part~='container'] {
+        outline: rem(1px) solid CanvasText;
+        border-bottom: none;
+        border-radius: var-get($theme, 'box-border-radius');
+    
+         &::after {
+            content: unset;
+        }
+    }
+}

@@ -22,3 +22,21 @@
     min-width: rem(1px);
     width: rem(1px);
 }
+
+@media (forced-colors: active) {
+    :host(:not([vertical]))::after {
+        border: rem(3px) solid canvasText;
+    }
+
+    :host(:not([vertical])[type='dashed'])::after {
+        border-style: dashed;
+    }
+
+    :host([vertical]:not([type='dashed']))::after {
+        border-inline-start: rem(3px) solid canvasText;
+    }
+
+    :host([vertical][type='dashed']) {
+        border-inline-start: rem(1px) dashed canvasText;
+    }
+}

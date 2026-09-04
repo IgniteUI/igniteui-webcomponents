@@ -50,3 +50,27 @@
 
     margin-inline-start: pad-inline(rem(8px));
 }
+
+@media (forced-colors: active) {
+    :host(:hover),
+    :host([selected]) {
+        color: Highlight !important;
+
+        ::slotted(igc-icon) {
+            color: Highlight !important;
+        }
+    }
+
+    :host([disabled]) {
+        color: GrayText !important;
+
+        ::slotted(igc-icon) {
+            color: GrayText !important;
+        }
+    }
+
+    :host([active]) {
+        outline: rem(1px) solid CanvasText;
+        outline-offset: -1px;
+    }
+}
