@@ -16,7 +16,7 @@ Skills are structured instructions that help AI agents understand and execute co
 | [igniteui-wc-generate-from-image-design](./igniteui-wc-generate-from-image-design/SKILL.md) | Implement a view from a screenshot or mockup using Ignite UI Web Components        | Converting a design image into UI     |
 | [igniteui-wc-optimize-bundle-size](./igniteui-wc-optimize-bundle-size/SKILL.md)             | Reduce bundle size by importing only needed components and lazy loading            | Optimizing production performance     |
 | [igniteui-wc-migrate-grid-lite-to-premium](./igniteui-wc-migrate-grid-lite-to-premium/SKILL.md) | Migrate from Grid Lite to the premium Data Grid                                 | Adopting enterprise grid features     |
-| [igniteui-wc-build-grids](./igniteui-wc-build-grids/SKILL.md)                               | End-to-end setup for a data grid feature: package, theming, Shadow DOM, layout, sorting/filtering | Adding or debugging a grid in an app  |
+| [igniteui-wc-grids](./igniteui-wc-grids/SKILL.md)                               | Set up a grid: package choice, theming, Shadow DOM, layout, sorting/filtering       | Adding or debugging a grid in an app   |
 
 ## How to Use
 
