@@ -191,5 +191,9 @@ $row-gap: rem(4px);
         [part~='date'][part~='first'][part~='range'][part~='preview'] {
             border-block: 0;
         }
+
+        [part~='date'][part~='range'] {
+            --date-range-border-color: Highlight;
+        }
     }
 }

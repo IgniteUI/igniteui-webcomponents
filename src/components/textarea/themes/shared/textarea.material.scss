@@ -475,8 +475,8 @@ textarea {
 }
 
 @media (forced-colors: active) {
-    :host(:not([outlined]):focus-within) [part~='container']::after {
-        border-color: Highlight;
+    :host(:not([outlined]):focus-within) [part~='container'] {
+        outline-color: Highlight;
     }
 
     :host(:focus-within) {
@@ -508,5 +508,15 @@ textarea {
     :host([outlined]:not(:focus-within)) [part~='container'][part~='filled'] [part='notch'],
     :host([outlined]:not(:focus-within)) [part~='container'][part~='placeholder'] [part='notch'] {
         border-block-start-width: rem(1px);
+    }
+
+    :host(:not([outlined])) {
+        [part~='container'] {
+            outline: 1px solid CanvasText;
+
+            &::after {
+                content: unset;
+            }
+        }
     }
 }

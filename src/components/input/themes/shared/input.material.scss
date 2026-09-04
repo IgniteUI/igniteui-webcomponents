@@ -775,15 +775,13 @@ $fs: rem(16px) !default;
         border-top: none;
     }
 
-    :host(igc-input:not([outlined])) {
+    :host(:not([outlined])) [part~='container'] {
         outline: rem(1px) solid CanvasText;
-
-        [part~='container'] {
-            border-bottom: none;
-
-            &::after {
-                content: unset;
-            }
+        border-bottom: none;
+        border-radius: var-get($theme, 'box-border-radius');
+    
+         &::after {
+            content: unset;
         }
     }
 }

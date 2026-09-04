@@ -150,3 +150,19 @@
     margin-inline-start: auto;
     flex-shrink: 0;
 }
+
+@media (forced-colors: active) {
+    [part~='trigger'],
+    [part~='trigger-side'],
+    [part~='trigger-bottom'] {
+        border: rem(1px) solid CanvasText;
+
+        &:hover {
+            border-color: Highlight;
+        }
+    }
+
+    [part~=base]:not([part~=resizable]):hover::after {
+        --hover-border-color: Highlight;
+    }
+}

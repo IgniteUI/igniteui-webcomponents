@@ -647,7 +647,7 @@ $border-size: rem(1px);
         }
 
         [part~='date'][part~='range'][part~='selected'] {
-            border-block: rem(1px) solid CanvasText;
+            border-block: rem(1px) solid Highlight;
 
             &[part~='first'],
             &[part~='last'] {
