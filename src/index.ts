@@ -73,6 +73,7 @@ export { default as IgcStepComponent } from './components/stepper/step.js';
 export { default as IgcHighlightComponent } from './components/highlight/highlight.js';
 export { default as IgcTooltipComponent } from './components/tooltip/tooltip.js';
 export { default as IgcThemeProviderComponent } from './components/theme-provider/theme-provider.js';
+export { default as IgcCopyToClipboardComponent } from './components/copy-to-clipboard/copy-to-clipboard.js';
 export { default as IgcQrCodeComponent } from './components/qr-code/qr-code.js';
 export { default as IgcVirtualScrollComponent } from './components/virtualization/virtualization.js';
 export type {

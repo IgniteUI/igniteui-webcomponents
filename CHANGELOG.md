@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 ### Added
+- #### Copy to clipboard
+  - New `igc-copy-to-clipboard` component. It overlays a copy button on its slotted content and writes the rendered text to the clipboard. The button appears on hover or when focus enters the component.
+    - `format` selects the serialization: `plain` (default) collapses whitespace into a single body of text, and `preserve` keeps paragraph breaks and code indentation.
+    - `disable-interaction` hides the button. The `--copy` command from the Invoker Commands API still triggers the copy action.
+    - The `copy-icon`, `success-icon` and `error-icon` slots replace the default icons. A visually hidden live region announces the result of the copy action.
 - #### QR code
   - `toBlob()` serializes the rendered code to an `image/svg+xml` blob. Theme colors become plain `fill` attributes and a logo that is not a data URI is fetched and inlined, so the output renders the same outside the component.
   - `toImage(options)` exports the code as a `File` in `svg`, `png`, `jpeg` or `webp` format. The `scale` option multiplies the component `size`, thus a 256px code with `scale: 2` gives a 512x512 image. Set `download: true` to open the browser download dialog. The `QrCodeExportFormat` and `QrCodeExportOptions` types are exported from the package entry point.
