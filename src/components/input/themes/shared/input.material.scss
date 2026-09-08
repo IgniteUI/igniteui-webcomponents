@@ -779,8 +779,8 @@ $fs: rem(16px) !default;
         outline: rem(1px) solid CanvasText;
         border-bottom: none;
         border-radius: var-get($theme, 'box-border-radius');
-    
-         &::after {
+
+        &::after {
             content: unset;
         }
     }
