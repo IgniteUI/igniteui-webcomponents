@@ -194,6 +194,10 @@ slot {
 }
 
 @media (forced-colors: active) {
+    [part='tick'] {
+        --tick-color: CanvasText;
+    }
+
     [part='track'],
     [part='thumb'],
     [part='thumb-label-inner'] {
