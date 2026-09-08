@@ -134,7 +134,7 @@
 @media (forced-colors: active) {
     [part~='active'] {
         outline: rem(1px) solid CanvasText;
-        outline-offset: -1px;
+        outline-offset: rem(-1px);
     }
 
     [part~='selected'] {
