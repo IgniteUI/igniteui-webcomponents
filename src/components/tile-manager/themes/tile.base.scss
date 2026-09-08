@@ -162,7 +162,7 @@
         }
     }
 
-    [part~=base]:not([part~=resizable]):hover::after {
+    [part~='base']:not([part~='resizable']):hover::after {
         --hover-border-color: Highlight;
     }
 }
