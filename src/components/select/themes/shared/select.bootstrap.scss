@@ -76,3 +76,14 @@ $dropdown-theme: dropdown-theme.$bootstrap;
         border-inline-start: rem(1px) solid var(--border-color);
     }
 }
+
+@media (forced-colors: active) {
+    :host igc-input::part(input) {
+        border-color: CanvasText !important;
+    }
+
+    :host(:disabled) igc-input::part(input),
+    :host([disabled]) igc-input::part(input) {
+        border-color: GrayText;
+    }
+}

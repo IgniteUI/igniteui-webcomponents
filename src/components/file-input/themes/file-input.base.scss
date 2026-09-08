@@ -113,3 +113,9 @@ $theme-file-input: file-input.$base;
         background: var-get($theme-file-input, 'file-names-background--disabled')
     }
 }
+
+@media (forced-colors: active) {
+    :host [part~='file-selector-button'] {
+        padding-inline-end: rem(12px);
+    }
+}

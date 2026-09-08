@@ -148,3 +148,15 @@ textarea {
         }
     }
 }
+
+@media (forced-colors: active) {
+    :host(:focus-within) {
+        --focused-bottom-line-color: Highlight;
+    }
+
+    :host([disabled]),
+    :host(:disabled) {
+        --disabled-text-color: GrayText;
+        --disabled-bottom-line-color: GrayText;
+    }
+}

@@ -109,3 +109,9 @@ $theme-file-input: file-input.$bootstrap;
         --disabled-border-color: var(--input-border-color);
     }
 }
+
+@media (forced-colors: active) {
+    :host [part~='file-selector-button'] {
+        padding-inline-end: 0;
+    }
+}

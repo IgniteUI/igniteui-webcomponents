@@ -1,0 +1,12 @@
+@use 'styles/utilities' as *;
+@use '../light/themes' as *;
+
+$theme: $bootstrap;
+
+@media (forced-colors: active) {
+    :host {
+        [part~='fill'] {
+            border-width: rem(8px);
+        }
+    }
+}

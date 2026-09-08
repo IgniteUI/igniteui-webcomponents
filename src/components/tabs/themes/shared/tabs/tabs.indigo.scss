@@ -81,3 +81,9 @@ igc-icon-button::part(icon) {
 
     z-index: 2;
 }
+
+@media (forced-colors: active) {
+    [part~='selected-indicator'] span {
+        border-bottom: rem(3px) solid CanvasText;
+    }
+}

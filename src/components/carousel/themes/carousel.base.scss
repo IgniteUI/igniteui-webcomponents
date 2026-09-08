@@ -169,3 +169,15 @@ igc-button::part(base) {
         padding: pad-block(rem(4px)) pad-inline(rem(6px));
     }
 }
+
+@media (forced-colors: active) {
+    :host {
+        [part='dot active']::after {
+            border: rem(3px) solid CanvasText;
+        }
+
+        [part~='dot']:hover {
+            border-color: Highlight;
+        }
+    }
+}

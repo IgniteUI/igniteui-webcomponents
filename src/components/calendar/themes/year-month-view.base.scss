@@ -40,3 +40,26 @@
     margin: 0;
 }
 
+@media (forced-colors: active) {
+    :host {
+        [part~='month'] [part~='month-inner'],
+        [part~='year'] [part~='year-inner'] {
+            outline-offset: rem(-1px);
+        }
+
+        [part~='month']:hover [part~='month-inner'],
+        [part~='year']:hover [part~='year-inner'] {
+            outline: rem(1px) solid CanvasText;
+        }
+
+        [part~='current'] [part~='current'],
+        [part~='current']:hover [part~='current'] {
+            outline: rem(1px) solid LinkText;
+        }
+
+        [part~='selected'] [part~='selected'],
+        [part~='selected']:hover [part~='selected'] {
+            outline: rem(1px) solid Highlight;
+        }
+    }
+}
