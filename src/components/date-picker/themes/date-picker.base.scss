@@ -68,7 +68,7 @@
         }
 
         [part~='actions'] {
-            border: 1px solid canvastext;
+            border: rem(1px) solid CanvasText;
             border-block-start: 0;
         }
     }
