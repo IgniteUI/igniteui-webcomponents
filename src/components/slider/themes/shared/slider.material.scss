@@ -76,7 +76,7 @@ $thumb-radius: math.div($thumb-size, 2);
 }
 
 @media (forced-colors: active) {
-    [part='thumb focused'] {
+    [part~='thumb'][part~='focused'] {
         border: rem(1px) solid;
     }
 }
