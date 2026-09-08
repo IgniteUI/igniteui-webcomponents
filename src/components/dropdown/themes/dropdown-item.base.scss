@@ -71,6 +71,6 @@
 
     :host([active]) {
         outline: rem(1px) solid CanvasText;
-        outline-offset: -1px;
+        outline-offset: rem(-1px);
     }
 }
