@@ -123,7 +123,6 @@ const metadata: Meta<IgcCalendarComponent> = {
         'saturday',
       ],
       control: { type: 'select' },
-      table: { defaultValue: { summary: 'sunday' } },
     },
   },
   args: {
@@ -135,7 +134,6 @@ const metadata: Meta<IgcCalendarComponent> = {
     activeView: 'days',
     selection: 'single',
     showWeekNumbers: false,
-    weekStart: 'sunday',
   },
 };
 

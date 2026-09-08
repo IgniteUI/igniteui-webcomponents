@@ -876,4 +876,25 @@ describe('Date range picker - common tests for single and two inputs mode', () =
       });
     });
   });
+  describe('Locale week start', () => {
+    it('derives the calendar week start from the locale when `week-start` is not set', async () => {
+      picker = await fixture<IgcDateRangePickerComponent>(
+        html`<igc-date-range-picker locale="bg"></igc-date-range-picker>`
+      );
+      calendar = picker.renderRoot.querySelector(IgcCalendarComponent.tagName)!;
+
+      expect(picker.weekStart).to.equal('monday');
+      expect(calendar.weekStart).to.equal('monday');
+
+      picker.weekStart = 'friday';
+      await elementUpdated(picker);
+
+      expect(calendar.weekStart).to.equal('friday');
+
+      picker.weekStart = undefined;
+      await elementUpdated(picker);
+
+      expect(calendar.weekStart).to.equal('monday');
+    });
+  });
 });

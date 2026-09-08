@@ -108,10 +108,20 @@ import {
   IgcNoopFilteringStrategy,
 } from 'igniteui-webcomponents-grids';
 
-// Theme - change to the grids-specific path
+// Theme — import as an inline string so it can be injected into the shadow root (requires bundler support for ?inline, e.g. Vite)
 // Available: light|dark x bootstrap|material|fluent|indigo
-import 'igniteui-webcomponents-grids/grids/themes/light/bootstrap.css';
+import gridTheme from 'igniteui-webcomponents-grids/grids/themes/light/material.css?inline';
 ```
+
+> **Grid inside a Shadow root — required step:** A bare CSS import lands in the document head and never reaches inside a Shadow root — the grid's internal structure and elements get no styles. Inject the theme as a `<style>` tag inside the shadow root. For a LitElement component, at the top of `render()`:
+> ```typescript
+> render() {
+>   return html`
+>     <style>${gridTheme}</style>
+>     <igc-grid ...></igc-grid>
+>   `;
+> }
+> ```
 
 ## Step 3 - Update HTML Tags
 

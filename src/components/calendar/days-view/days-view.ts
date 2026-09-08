@@ -1,6 +1,6 @@
 import { getDateFormatter, getDisplayNamesFormatter } from 'igniteui-i18n-core';
-import { html, nothing, type PropertyValues, type TemplateResult } from 'lit';
-import { property, query, state } from 'lit/decorators.js';
+import { html, nothing, type TemplateResult } from 'lit';
+import { property, query } from 'lit/decorators.js';
 import { addInternalsController } from '#internals/controllers/internals.js';
 import { addKeybindings } from '#internals/controllers/key-bindings.js';
 import { CalendarDay, DAYS_IN_WEEK } from '#internals/date/model.js';
@@ -113,9 +113,6 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
 
   //#region Internal properties and state
 
-  @state()
-  private _dates: CalendarDay[] = [];
-
   @query('[tabindex="0"]')
   private _activeDay?: HTMLElement;
 
@@ -194,17 +191,6 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
     addThemingController(this, all);
     addKeybindings(this).setActivateHandler(this._handleInteraction);
     addSafeEventListener(this, 'click', this._handleInteraction);
-  }
-
-  /** @internal */
-  protected override update(props: PropertyValues): void {
-    if (props.has('_activeDate') || props.has('weekStart')) {
-      this._dates = Array.from(
-        generateMonth(this._activeDate, this._firstDayOfWeek)
-      );
-    }
-
-    super.update(props);
   }
 
   //#endregion
@@ -467,7 +453,7 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
     `;
   }
 
-  protected _renderHeaders() {
+  protected _renderHeaders(dates: CalendarDay[]) {
     const label = getDateFormatter().getIntlFormatter(this.locale, {
       weekday: this.weekDayFormat,
     });
@@ -480,7 +466,7 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
       : nothing;
 
     // The first week of the grid, so that the labels cannot disagree with it
-    const headers = this._dates.slice(0, DAYS_IN_WEEK).map(
+    const headers = dates.slice(0, DAYS_IN_WEEK).map(
       (day) => html`
         <span
           role="columnheader"
@@ -497,9 +483,9 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
     `;
   }
 
-  protected *_renderWeeks(): Generator<TemplateResult> {
+  protected *_renderWeeks(dates: CalendarDay[]): Generator<TemplateResult> {
     const context = this._createRenderContext();
-    const weeks = Array.from(chunk(this._dates, DAYS_IN_WEEK));
+    const weeks = Array.from(chunk(dates, DAYS_IN_WEEK));
     const lastIndex = weeks.length - 1;
 
     for (const [idx, week] of weeks.entries()) {
@@ -525,7 +511,12 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
   }
 
   protected override render() {
-    return html`${this._renderHeaders()}${this._renderWeeks()}`;
+    // Derived per render - it depends on the active date, `weekStart` and the `locale`
+    const dates = Array.from(
+      generateMonth(this._activeDate, this._firstDayOfWeek)
+    );
+
+    return html`${this._renderHeaders(dates)}${this._renderWeeks(dates)}`;
   }
 }
 

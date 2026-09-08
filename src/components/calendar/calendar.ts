@@ -33,6 +33,7 @@ import {
   areSameMonth,
   getYearRange,
   isDateInRanges,
+  isDatePartBefore,
   MONTHS_PER_ROW,
   YEARS_PER_PAGE,
   YEARS_PER_ROW,
@@ -618,11 +619,19 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
     `;
   }
 
+  /** The year with the unit of the locale - `2025年` for `ja`, `2025 г.` for `bg`. */
+  protected _formatYear(day: CalendarDay): string {
+    return getDateFormatter().formatDateTime(day.native, this.locale, {
+      year: 'numeric',
+    });
+  }
+
   protected _renderYearButtonNavigation(
     active: CalendarDay,
     viewIndex: number
   ): TemplateResult {
-    const ariaLabel = `${active.year}, ${this.resourceStrings.calendar_select_year}`;
+    const year = this._formatYear(active);
+    const ariaLabel = `${year}, ${this.resourceStrings.calendar_select_year}`;
 
     return html`
       <button
@@ -630,7 +639,7 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
         aria-label=${ariaLabel}
         @click=${() => this._navigateToYearView(viewIndex)}
       >
-        ${active.year}
+        ${year}
       </button>
     `;
   }
@@ -655,7 +664,7 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
 
     return html`
       <span class="aria-off-screen" aria-live="polite">
-        ${this._isDayView ? format(this._activeDate.native) : this._activeDate.year}
+        ${this._isDayView ? format(this._activeDate.native) : this._formatYear(this._activeDate)}
       </span>
     `;
   }
@@ -666,6 +675,24 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
     return html`
       <span part="years-range" aria-live="polite"> ${start} - ${end} </span>
     `;
+  }
+
+  /** Renders the month and year buttons of the days view in the field order of the locale. */
+  protected _renderDayViewNavigation(
+    active: CalendarDay,
+    viewIndex: number
+  ): TemplateResult[] {
+    const parts = getDateFormatter().formatDateTimeToParts(
+      active.native,
+      this.locale,
+      { year: 'numeric', month: this.formatOptions.month }
+    );
+    const yearFirst = isDatePartBefore(parts, 'year', 'month');
+
+    const month = this._renderMonthButtonNavigation(active, viewIndex);
+    const year = this._renderYearButtonNavigation(active, viewIndex);
+
+    return yearFirst ? [year, month] : [month, year];
   }
 
   protected _renderNavigation(
@@ -680,11 +707,11 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
         <div part="picker-dates">
           ${
             this._isDayView
-              ? this._renderMonthButtonNavigation(activeDate, viewIndex)
+              ? this._renderDayViewNavigation(activeDate, viewIndex)
               : nothing
           }
           ${
-            this._isDayView || this._isMonthView
+            this._isMonthView
               ? this._renderYearButtonNavigation(activeDate, viewIndex)
               : nothing
           }
@@ -723,20 +750,34 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
 
   protected _renderHeaderDateSingle(): TemplateResult {
     const date = this.value ?? CalendarDay.today.native;
+    const { locale } = this;
     const formatter = getDateFormatter();
-    const weekday = formatter.formatDateTime(date, this.locale, {
-      weekday: 'short',
-    });
-    const monthDay = formatter.formatDateTime(date, this.locale, {
+    const weekdayOptions: Intl.DateTimeFormatOptions = { weekday: 'short' };
+    const dateOptions: Intl.DateTimeFormatOptions = {
       month: 'short',
       day: 'numeric',
+    };
+
+    if (this.headerOrientation !== 'vertical') {
+      const formatted = formatter.formatDateTime(date, locale, {
+        ...weekdayOptions,
+        ...dateOptions,
+      });
+      return html`<slot name="header-date">${formatted}</slot>`;
+    }
+
+    // The weekday and the month/day on separate lines, in the field order of the locale
+    const parts = formatter.formatDateTimeToParts(date, locale, {
+      ...weekdayOptions,
+      ...dateOptions,
     });
-    const separator =
-      this.headerOrientation === 'vertical' ? html`<br />` : ' ';
+    const weekday = formatter.formatDateTime(date, locale, weekdayOptions);
+    const monthDay = formatter.formatDateTime(date, locale, dateOptions);
+    const [first, second] = isDatePartBefore(parts, 'weekday', 'month')
+      ? [weekday, monthDay]
+      : [monthDay, weekday];
 
-    const formatted = html`${weekday},${separator}${monthDay}`;
-
-    return html`<slot name="header-date">${formatted}</slot>`;
+    return html`<slot name="header-date">${first}<br />${second}</slot>`;
   }
 
   protected _renderHeaderDateRange(): TemplateResult {
@@ -777,6 +818,7 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
     const length = activeDates.length - 1;
     const format = this.formatOptions
       .weekday as Intl.DateTimeFormatOptions['weekday'];
+    const weekStart = this.weekStart;
 
     return html`${activeDates.map(
       (date, idx) => html`
@@ -806,7 +848,7 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
             .value=${this.value}
             .values=${this.values}
             .weekDayFormat=${format!}
-            .weekStart=${this.weekStart}
+            .weekStart=${weekStart}
           ></igc-days-view>
         </div>
       `
