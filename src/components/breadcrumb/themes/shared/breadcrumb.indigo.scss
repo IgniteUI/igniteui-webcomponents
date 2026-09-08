@@ -16,6 +16,13 @@ $theme: $indigo;
     }
 }
 
+:host([disabled]) {
+    ::slotted(igc-icon[slot="suffix"]),
+    ::slotted(igc-icon[slot="prefix"]) {
+        opacity: 0.2;
+    }
+}
+
 [part='separator'] {
     padding-inline: rem(4px);
 }
