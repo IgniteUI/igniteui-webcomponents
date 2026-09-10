@@ -13,6 +13,7 @@ import { styles as fluentLight } from './light/linear.progress.fluent.css.js';
 import { styles as indigoLight } from './light/linear.progress.indigo.css.js';
 import { styles as materialLight } from './light/linear.progress.material.css.js';
 import { styles as sharedLight } from './light/linear.progress.shared.css.js';
+import { styles as bootstrap } from './shared/linear.progress.bootstrap.css.js';
 // Shared Styles
 import { styles as fluent } from './shared/linear.progress.fluent.css.js';
 import { styles as indigo } from './shared/linear.progress.indigo.css.js';
@@ -22,7 +23,7 @@ const light = {
     ${sharedLight}
   `,
   bootstrap: css`
-    ${bootstrapLight}
+    ${bootstrap} ${bootstrapLight}
   `,
   material: css`
     ${materialLight}
@@ -40,7 +41,7 @@ const dark = {
     ${sharedDark}
   `,
   bootstrap: css`
-    ${bootstrapDark}
+    ${bootstrap} ${bootstrapDark}
   `,
   material: css`
     ${materialDark}

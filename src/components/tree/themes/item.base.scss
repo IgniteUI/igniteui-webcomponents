@@ -104,3 +104,17 @@
         pointer-events: none;
     }
 }
+
+@media (forced-colors: active) {
+    :host [part~='wrapper']::after {
+        outline-offset: rem(-1px);
+    }
+
+    :host [part~='wrapper'][part~='active']::after {
+        outline: rem(1px) solid CanvasText;
+    }
+
+    :host [part~='wrapper'][part~='focused']::after {
+        outline: rem(1px) solid Highlight;
+    }
+}

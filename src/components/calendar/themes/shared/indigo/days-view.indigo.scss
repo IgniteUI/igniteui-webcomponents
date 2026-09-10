@@ -688,3 +688,23 @@ $week-number-radius: var-get($theme, 'week-number-border-radius');
         background: var-get($theme, 'date-selected-range-focus-background');
     }
 }
+
+@media (forced-colors: active) {
+    [part~='week-number-inner'] {
+        border-block: none;
+
+        &::after {
+            height: rem(6px);
+            bottom: 100%;
+            border-inline: rem(1px) solid CanvasText;
+        }
+    }
+
+    [part~='days-row']:first-of-type [part~='week-number-inner'] {
+        border-block-start: rem(1px) solid CanvasText;
+    }
+
+    [part~='days-row']:last-of-type [part~='week-number-inner'] {
+        border-block-end: rem(1px) solid CanvasText;
+    }
+}

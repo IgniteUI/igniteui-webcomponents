@@ -110,3 +110,17 @@
         margin-inline-end: rem(48px);
     }
 }
+
+@media (forced-colors: active) {
+    [part='splitter-bar'] {
+        border: rem(1px) solid CanvasText;
+
+        &:focus {
+            border-color: Highlight;
+        }
+    }
+
+    [part='drag-handle'] {
+        border: rem(2px) solid CanvasText;
+    }
+}

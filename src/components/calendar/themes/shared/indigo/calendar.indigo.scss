@@ -125,3 +125,23 @@ $theme: $indigo;
 [part='header-date'] {
     @include type-style('h5');
 }
+
+@media (forced-colors: active) {
+    [part~='content'] {
+        border: rem(1px) solid CanvasText;
+    }
+
+    :host:has([part~='header']) [part~='content'] {
+        border-block-start: none;
+    }
+
+    :host([header-orientation='vertical']) {
+        [part~='content'] {
+            border-inline-start: none;
+        }
+
+        [part~='navigation'] {
+            border-block-start: rem(1px) solid CanvasText;
+        }
+    }
+}
