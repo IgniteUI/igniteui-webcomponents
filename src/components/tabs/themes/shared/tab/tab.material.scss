@@ -54,3 +54,22 @@ $theme: $material;
 ::slotted(igc-icon) {
     --size: #{rem(24px)};
 }
+
+@media (forced-colors: active) {
+    [part~='tab-header'] {
+        border: none;
+
+        &:hover {
+            outline: rem(1px) solid CanvasText;
+            outline-offset: rem(-1px);
+        }
+
+        &:focus {
+            border: none;
+        }
+
+        &::before {
+            inset: 0;
+        }
+    }
+}

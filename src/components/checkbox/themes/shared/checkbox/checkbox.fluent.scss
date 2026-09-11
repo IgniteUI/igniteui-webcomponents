@@ -243,3 +243,22 @@ $disabled-fill-color: var-get($theme, 'disabled-fill-color');
         }
     }
 }
+
+@media (forced-colors: active) {
+    :host [part~='control'] {
+        --fill-color: transparent;
+        --fill-color-hover: transparent;
+
+        border: rem(1px) solid CanvasText;
+    }
+
+    :host(:focus) [part~='control'],
+    :host(:hover) [part~='control'] {
+        border-color: Highlight;
+    }
+
+    :host([indeterminate]) [part~='control'] {
+        --fill-color: CanvasText;
+        --fill-color-hover: CanvasText;
+    }
+}

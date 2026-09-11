@@ -28,6 +28,7 @@
   "scripts": {
     "start": "npm run storybook",
     "build:publish": "npm run cem && node scripts/build.mjs",
+    "build:sbom": "node scripts/build-sbom.mjs",
     "cem": "cem analyze --config cem.config.mjs",
     "cem:watch": "cem analyze --config cem.config.mjs --watch",
     "build:styles": "node scripts/build-styles.mjs",
@@ -68,6 +69,7 @@
   },
   "devDependencies": {
     "@custom-elements-manifest/analyzer": "^0.11.0",
+    "@cyclonedx/cyclonedx-npm": "^6.0.1",
     "@igniteui/material-icons-extended": "^3.1.0",
     "@open-wc/testing": "^5.0.0",
     "@storybook/addon-a11y": "^10.5.10",

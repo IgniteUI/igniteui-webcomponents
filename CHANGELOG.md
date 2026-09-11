@@ -4,16 +4,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [7.3.2] - 2026-09-09
 ### Added
+- #### Library
+  - Each GitHub release now carries a CycloneDX 1.6 SBOM for the published package and for the build environment, together with Sigstore attestations for the build provenance and for the SBOM. The release notes link the attestations, thus you can verify the tarball that you install. [#2370](https://github.com/IgniteUI/igniteui-webcomponents/pull/2370)
 - #### QR code
-  - `toBlob()` serializes the rendered code to an `image/svg+xml` blob. Theme colors become plain `fill` attributes and a logo that is not a data URI is fetched and inlined, so the output renders the same outside the component.
+  - `toBlob()` serializes the rendered code to an `image/svg+xml` blob. Theme colors become plain `fill` attributes and a logo that is not a data URI is fetched and inlined, so the output renders the same outside the component. [#2367](https://github.com/IgniteUI/igniteui-webcomponents/pull/2367)
   - `toImage(options)` exports the code as a `File` in `svg`, `png`, `jpeg` or `webp` format. The `scale` option multiplies the component `size`, thus a 256px code with `scale: 2` gives a 512x512 image. Set `download: true` to open the browser download dialog. The `QrCodeExportFormat` and `QrCodeExportOptions` types are exported from the package entry point.
+- #### Themes
+  - All components now carry `forced-colors: active` styles in the Material, Bootstrap, Fluent and Indigo themes. Thus in Windows High Contrast mode they draw from the system palette (`CanvasText`, `Highlight`, `GrayText`, `LinkText`), and the disabled, hover, focus and selected states stay distinguishable. [#2347](https://github.com/IgniteUI/igniteui-webcomponents/pull/2347)
 
 ### Changed
 - #### Calendar, Date picker, Date range picker
   - When `week-start` is not set, the week starts on the first day of the week of the `locale`, as reported by `Intl.Locale.prototype.getWeekInfo()`. For example, `bg` starts on Monday and `en` stays on Sunday. An explicit `week-start` has priority. Set `weekStart` to `undefined` to return to the locale value. Browsers without `getWeekInfo()` keep the Sunday default. [#1020](https://github.com/IgniteUI/igniteui-webcomponents/issues/1020)
   - The header date and the month/year navigation follow the field order of the `locale`. For `ja`, the header shows `7月15日(火)`, and the year button precedes the month button and shows `2025年`. The years view keeps plain numbers. In vertical header orientation, the weekday line has no trailing comma. [#1712](https://github.com/IgniteUI/igniteui-webcomponents/issues/1712)
+
+### Fixed
+- #### Library
+  - `defineAllComponents()` did not register `igc-qr-code` and `igc-virtual-scroll`. Thus the two components stayed undefined when you relied on the bulk registration. [#2373](https://github.com/IgniteUI/igniteui-webcomponents/pull/2373)
+- #### Validation
+  - A host that starts invalid, such as `<igc-input required invalid>`, showed no validation messages. The validation container keeps its first render neutral for SSR parity and skips the projection slots until the host updates, and a host that hydrated invalid never rendered again. [#2374](https://github.com/IgniteUI/igniteui-webcomponents/pull/2374)
 
 ## [7.3.1] - 2026-09-01
 ### Added
@@ -59,6 +69,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - #### Calendar
   - `igc-calendar` now exports the `label-inner`, `months-row` and `years-row` parts. The pickers export them as `calendar-label-inner`, `months-row` and `years-row`. The views rendered these parts but did not export them, thus you could not style them through the calendar.
+- #### Color picker
+  - New `igc-color-picker` component. It provides a user interface for selecting colors, supporting various color formats and a customizable palette. [#1973](https://github.com/IgniteUI/igniteui-webcomponents/pull/1973)
 - #### Chip
   - `outlined` property. When you set it to `true`, the chip shows an outlined style. [#2307](https://github.com/IgniteUI/igniteui-webcomponents/pull/2307)
 - #### Icon
@@ -1604,6 +1616,7 @@ Initial release of Ignite UI Web Components
 - Ripple component
 - Switch component
 
+[7.3.2]: https://github.com/IgniteUI/igniteui-webcomponents/compare/7.3.1...7.3.2
 [7.3.1]: https://github.com/IgniteUI/igniteui-webcomponents/compare/7.3.0...7.3.1
 [7.3.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/7.2.4...7.3.0
 [7.2.4]: https://github.com/IgniteUI/igniteui-webcomponents/compare/7.2.3...7.2.4

@@ -40,3 +40,16 @@
     cursor: initial;
     pointer-events: none;
 }
+
+@media (forced-colors: active) {
+    [part~='base']:hover,
+    [part~='base']:focus-within {
+        outline: rem(1px) solid CanvasText;
+        outline-offset: rem(-1px);
+    }
+
+    :host([active]) [part~='base'] {
+        --item-active-icon-color: Highlight;
+        --item-active-text-color: Highlight;
+    }
+}

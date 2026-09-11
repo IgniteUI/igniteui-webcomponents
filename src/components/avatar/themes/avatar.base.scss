@@ -35,3 +35,9 @@ img {
 :host([shape='square']) [part='base'] {
     border-radius: 0;
 }
+
+@media (forced-colors: active) {
+    [part='base'] {
+        border: rem(1px) solid CanvasText;
+    }
+}

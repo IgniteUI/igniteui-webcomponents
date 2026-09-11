@@ -70,3 +70,35 @@ input[type='radio'] {
     pointer-events: none;
     user-select: none;
 }
+
+@media (forced-colors: active) {
+    [part='control checked'] {
+        &::before {
+            border: rem(10px) solid CanvasText;
+        }
+    }
+
+    :host(:hover) [part~='base'] [part='control checked'] {
+        &::before {
+            border: rem(4px) solid CanvasText;
+        }
+    }
+
+    [part='base checked focused'] {
+        outline: rem(1px) solid Highlight;
+        outline-offset: rem(4px);
+    }
+
+    :host([disabled]) [part~='base'],
+    :host(:disabled) [part~='base'] {
+        --disabled-label-color: GrayText;
+        --disabled-color: GrayText;
+
+        [part='control checked'] {
+            &::after,
+            &::before {
+                border-color: GrayText;
+            }
+        }
+    }
+}
