@@ -1,0 +1,24 @@
+@use 'styles/utilities' as *;
+@use '../light/themes' as *;
+
+$theme: $material;
+
+:host(:not([current])) {
+    [part~='label']:focus-within {
+        ::slotted(a){
+            text-decoration: underline var-get($theme, 'focus-underline-color');
+        }
+    }
+
+    [part~='label']:focus-within:hover {
+        ::slotted(a){
+            text-decoration: underline var-get($theme, 'focus-hover-underline-color');
+        }
+    }
+
+    [part~='label']:focus-within:active {
+        ::slotted(a){
+            text-decoration: underline var-get($theme, 'focus-pressed-underline-color');
+        }
+    }
+}
