@@ -236,8 +236,11 @@ export const CustomContent: Story = {
     demo(
       html`
         <igc-speech-to-text
+          locale=${ifDefined(args.locale || undefined)}
           ?continuous=${args.continuous}
           ?interim-results=${args.interimResults}
+          max-alternatives=${ifDefined(args.maxAlternatives)}
+          silence-timeout=${ifDefined(args.silenceTimeout)}
           ?disabled=${args.disabled}
           variant=${ifDefined(args.variant)}
         >

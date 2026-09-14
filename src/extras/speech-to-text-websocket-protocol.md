@@ -42,7 +42,7 @@ Client                                    Server
 2. Audio chunks follow as binary frames, one every `timeslice` milliseconds
    (250 by default), for as long as the microphone is recording.
 3. The server sends `result` messages whenever it has an interim or a final transcript.
-   It may send `error` messages at any time.
+   It may send `activity` and `error` messages at any time.
 4. When the user stops the session, the provider stops the recorder, sends the last
    audio chunk, then sends `stop`. No audio follows `stop`.
 5. The server flushes its remaining final results and answers with `end`.
@@ -131,6 +131,18 @@ transcript of the session by the component.
 
 Do not send interim results when `interimResults` is `false`; the component drops them.
 
+### `activity`
+
+Reports that speech is detected in the audio before a transcript is available. The
+component resets its `silenceTimeout` on every `result` and `activity` message. Send
+`activity` while the user is speaking, for example from the voice activity detection of
+the recognition engine, so that a long utterance is not stopped as silence. This matters
+most when `interimResults` is `false` or when transcripts arrive with a delay.
+
+```json
+{ "type": "activity" }
+```
+
 ### `error`
 
 Reports a failure. The server may continue the session after a recoverable error, or
@@ -184,7 +196,8 @@ For reference, the provider behaves as follows:
 
 - Sends `start` immediately after the connection opens, before the first audio frame.
 - Drops audio frames while the socket is not open.
-- Ignores text frames that are not valid JSON or have an unknown `type`.
+- Ignores text frames that are not valid JSON or have an unknown `type`, and `result`
+  messages whose `transcript` is not a string.
 - Ends the session on `end`, on connection close, on a connection error
   (reported as `network`) and `endTimeout` milliseconds after `stop` without `end`.
 - Releases the microphone as soon as recording stops, before `stop` is sent.

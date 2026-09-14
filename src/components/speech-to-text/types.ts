@@ -21,7 +21,8 @@ export type SpeechToTextEndReason = 'manual' | 'silence' | 'error' | 'provider';
 /**
  * Error codes reported by the speech-to-text component. The codes mirror the
  * `SpeechRecognitionErrorEvent` codes of the Web Speech API, plus `not-supported`
- * for environments without a usable provider.
+ * for environments without a usable provider. Codes the component cannot trigger,
+ * such as the grammar and phrase related ones of the Web Speech API, map to `unknown`.
  */
 export type SpeechToTextErrorCode =
   | 'not-supported'

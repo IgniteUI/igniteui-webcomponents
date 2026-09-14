@@ -222,7 +222,7 @@ export default class IgcSpeechToTextComponent extends I18nMixin(
     addThemingController(this, all);
 
     addKeybindings(this, {
-      skip: () => this._state !== 'listening',
+      skip: () => this._state === 'idle',
     }).set(escapeKey, () => this.abort());
 
     this._internals.setState('idle', true);
@@ -238,6 +238,10 @@ export default class IgcSpeechToTextComponent extends I18nMixin(
   protected override willUpdate(changedProperties: PropertyValues<this>): void {
     if (changedProperties.has('provider')) {
       this.abort();
+    }
+
+    if (changedProperties.has('silenceTimeout')) {
+      this._armSilenceTimer();
     }
   }
 
@@ -256,7 +260,7 @@ export default class IgcSpeechToTextComponent extends I18nMixin(
     return {
       onStart: () => {
         if (isCurrent()) {
-          this._handleProviderStart();
+          this._handleProviderStart(session);
         }
       },
       onResult: (result) => {
@@ -283,8 +287,14 @@ export default class IgcSpeechToTextComponent extends I18nMixin(
     };
   }
 
-  private _handleProviderStart(): void {
+  private _handleProviderStart(session: Session): void {
     this._setState('listening');
+
+    // A handler of `igcStateChange` may have ended the session already.
+    if (this._session !== session) {
+      return;
+    }
+
     this._announcement = this.resourceStrings.speechToTextListening;
     this.emitEvent('igcStart');
     this._armSilenceTimer();
@@ -308,16 +318,19 @@ export default class IgcSpeechToTextComponent extends I18nMixin(
 
   private _handleProviderEnd(session: Session): void {
     const reason = session.endReason ?? 'provider';
-
-    this._resetSession();
+    // Capture the outcome first: a handler of `igcStateChange` may start a new
+    // session, which resets the transcript.
+    const detail: SpeechToTextEndEventArgs = {
+      transcript: this.transcript,
+      reason,
+    };
 
     if (reason !== 'error') {
       this._announcement = this.resourceStrings.speechToTextStopped;
     }
 
-    this.emitEvent('igcEnd', {
-      detail: { transcript: this.transcript, reason },
-    });
+    this._resetSession();
+    this.emitEvent('igcEnd', { detail });
   }
 
   //#endregion
@@ -352,7 +365,8 @@ export default class IgcSpeechToTextComponent extends I18nMixin(
   private _end(reason: SpeechToTextEndReason, abort = false): void {
     const session = this._session;
 
-    if (!session || this._state === 'stopping') {
+    // A graceful stop is already in progress; only an abort can cut it short.
+    if (!session || (this._state === 'stopping' && !abort)) {
       return;
     }
 

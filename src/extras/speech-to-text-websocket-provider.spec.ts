@@ -271,6 +271,23 @@ describe('WebSocketSpeechToTextProvider', () => {
     });
   });
 
+  it('ignores results without a string transcript', async () => {
+    await startProvider();
+
+    socket().message(JSON.stringify({ type: 'result', transcript: 42 }));
+    socket().message(JSON.stringify({ type: 'result' }));
+
+    expect(listener.onResult).not.called;
+  });
+
+  it('forwards activity messages', async () => {
+    await startProvider();
+
+    socket().message(JSON.stringify({ type: 'activity' }));
+
+    expect(listener.onActivity).calledOnce;
+  });
+
   it('maps server errors and ignores malformed frames', async () => {
     await startProvider();
 

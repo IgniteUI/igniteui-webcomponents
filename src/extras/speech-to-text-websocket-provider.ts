@@ -60,6 +60,7 @@ export type WebSocketSpeechToTextClientMessage =
  * A message the server sends to the provider as a JSON text frame.
  *
  * - `result` carries an interim (`isFinal` false) or final transcript.
+ * - `activity` reports detected speech that has no transcript yet; it resets the silence timeout of the component.
  * - `error` reports a failure; the server may continue or follow with `end`.
  * - `end` closes the session. The provider also ends the session when the socket closes.
  */
@@ -71,6 +72,7 @@ export type WebSocketSpeechToTextServerMessage =
       confidence?: number;
       alternatives?: string[];
     }
+  | { type: 'activity' }
   | { type: 'error'; code?: SpeechToTextErrorCode; message?: string }
   | { type: 'end' };
 
@@ -146,7 +148,7 @@ export class WebSocketSpeechToTextProvider implements SpeechToTextProvider {
     return (
       typeof WebSocket === 'function' &&
       typeof MediaRecorder === 'function' &&
-      typeof navigator.mediaDevices?.getUserMedia === 'function'
+      typeof globalThis.navigator?.mediaDevices?.getUserMedia === 'function'
     );
   }
 
@@ -334,12 +336,18 @@ export class WebSocketSpeechToTextProvider implements SpeechToTextProvider {
 
     switch (message?.type) {
       case 'result':
-        listener.onResult({
-          transcript: message.transcript ?? '',
-          isFinal: Boolean(message.isFinal),
-          confidence: message.confidence,
-          alternatives: message.alternatives,
-        });
+        // A malformed result from the server must not throw inside the socket handler.
+        if (typeof message.transcript === 'string') {
+          listener.onResult({
+            transcript: message.transcript,
+            isFinal: Boolean(message.isFinal),
+            confidence: message.confidence,
+            alternatives: message.alternatives,
+          });
+        }
+        break;
+      case 'activity':
+        listener.onActivity();
         break;
       case 'error':
         listener.onError({

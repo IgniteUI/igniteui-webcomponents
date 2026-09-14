@@ -336,6 +336,53 @@ describe('Speech to text', () => {
       expect(el.state).to.equal('idle');
     });
 
+    it('aborts a session that is stopping', async () => {
+      provider.endOnStop = false;
+      await startListening();
+      el.stop();
+      expect(el.state).to.equal('stopping');
+
+      el.abort();
+
+      expect(provider.abortCalls).to.equal(1);
+      expect(el.state).to.equal('idle');
+    });
+
+    it('emits `igcStart` only while the session is still active', async () => {
+      const eventSpy = spy(el, 'emitEvent');
+      el.addEventListener('igcStateChange', ({ detail }) => {
+        if (detail === 'listening') {
+          el.stop();
+        }
+      });
+
+      await startListening();
+
+      expect(el.state).to.equal('idle');
+      expect(eventSpy).calledWith('igcEnd');
+      expect(eventSpy).not.calledWith('igcStart');
+    });
+
+    it('reports the ended session when a new one starts from the state change handler', async () => {
+      await startListening();
+      provider.final('first');
+
+      const eventSpy = spy(el, 'emitEvent');
+      el.addEventListener('igcStateChange', ({ detail }) => {
+        if (detail === 'idle' && provider.startCalls === 1) {
+          el.start();
+        }
+      });
+
+      el.stop();
+
+      expect(el.state).to.equal('listening');
+      expect(el.transcript).to.equal('');
+      expect(eventSpy).calledWith('igcEnd', {
+        detail: { transcript: 'first', reason: 'manual' },
+      });
+    });
+
     it('aborts an active session', async () => {
       await startListening();
       const eventSpy = spy(el, 'emitEvent');
@@ -570,6 +617,20 @@ describe('Speech to text', () => {
       expect(el.state).to.equal('listening');
     });
 
+    it('applies changes of the timeout while listening', async () => {
+      await startListening();
+
+      el.silenceTimeout = 1000;
+      await elementUpdated(el);
+      clock.tick(999);
+      expect(el.state).to.equal('listening');
+
+      el.silenceTimeout = 0;
+      await elementUpdated(el);
+      clock.tick(60_000);
+      expect(el.state).to.equal('listening');
+    });
+
     it('cancels the timeout on manual stop', async () => {
       el.silenceTimeout = 1000;
       await startListening();
@@ -607,6 +668,18 @@ describe('Speech to text', () => {
       await nextFrame();
       expect(provider.stopCalls).to.equal(0);
       expect(provider.abortCalls).to.equal(0);
+    });
+
+    it('aborts on Escape while starting', async () => {
+      provider.autoStart = false;
+      const pending = el.start();
+      expect(el.state).to.equal('starting');
+
+      simulateKeyboard(el, escapeKey);
+      await pending;
+
+      expect(provider.abortCalls).to.equal(1);
+      expect(el.state).to.equal('idle');
     });
 
     it('aborts on Escape while listening', async () => {
