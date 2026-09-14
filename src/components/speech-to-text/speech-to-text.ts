@@ -329,7 +329,8 @@ export default class IgcSpeechToTextComponent extends I18nMixin(
       this._announcement = this.resourceStrings.speechToTextStopped;
     }
 
-    this._resetSession();
+    this._clearSession();
+    this._setState('idle');
     this.emitEvent('igcEnd', { detail });
   }
 
@@ -348,10 +349,10 @@ export default class IgcSpeechToTextComponent extends I18nMixin(
     this.emitEvent('igcStateChange', { detail: value });
   }
 
-  private _resetSession(): void {
+  /** Drops the session bookkeeping. Callers commit the `idle` state after any work that must not see a new session. */
+  private _clearSession(): void {
     this._silenceTimer.stop();
     this._session = undefined;
-    this._setState('idle');
   }
 
   private _armSilenceTimer(): void {
@@ -373,8 +374,9 @@ export default class IgcSpeechToTextComponent extends I18nMixin(
     if (this._state === 'starting') {
       // Nothing is captured yet. Drop the session so the outcome of the pending
       // start is ignored and let the provider tear down what it has set up.
-      this._resetSession();
+      this._clearSession();
       session.provider.abort();
+      this._setState('idle');
       return;
     }
 
@@ -423,6 +425,11 @@ export default class IgcSpeechToTextComponent extends I18nMixin(
     this._session = session;
     this._setState('starting');
 
+    // A handler of `igcStateChange` may have aborted the session already.
+    if (this._session !== session) {
+      return;
+    }
+
     try {
       await provider.start(
         {
@@ -439,8 +446,9 @@ export default class IgcSpeechToTextComponent extends I18nMixin(
     } catch (error) {
       if (this._session === session) {
         const { code, message } = SpeechToTextProviderError.from(error);
-        this._resetSession();
+        this._clearSession();
         this._emitError({ code, message });
+        this._setState('idle');
       }
     }
   }

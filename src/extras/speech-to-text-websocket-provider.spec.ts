@@ -14,6 +14,7 @@ class MockSocket extends EventTarget {
   public static instances: MockSocket[] = [];
 
   public readyState = MockSocket.CONNECTING;
+  public bufferedAmount = 0;
   public binaryType = 'blob';
   public readonly sent: unknown[] = [];
 
@@ -240,6 +241,40 @@ describe('WebSocketSpeechToTextProvider', () => {
     expect((frames[0] as Blob).size).to.equal(16);
   });
 
+  it('fails with `network` when the send buffer stalls', async () => {
+    await startProvider();
+
+    socket().bufferedAmount = 1024 * 1024;
+    recorder().data(16);
+    expect(listener.onError).not.called;
+
+    socket().bufferedAmount = 1024 * 1024 + 1;
+    recorder().data(16);
+
+    expect(listener.onError).calledOnceWith({
+      code: 'network',
+      message: 'The connection to the speech service stalled.',
+    });
+    expect(listener.onEnd).calledOnce;
+    expect(socket().readyState).to.equal(MockSocket.CLOSED);
+    expect(
+      socket().sent.filter((entry) => entry instanceof Blob)
+    ).to.have.lengthOf(1);
+  });
+
+  it('honors the configured send buffer limit', async () => {
+    provider = new WebSocketSpeechToTextProvider({
+      url: 'wss://example.com/stt',
+      maxBufferedAmount: 8,
+    });
+    await startProvider();
+
+    socket().bufferedAmount = 9;
+    recorder().data(16);
+
+    expect(listener.onError).calledOnce;
+  });
+
   it('maps server results', async () => {
     await startProvider();
 
@@ -308,6 +343,19 @@ describe('WebSocketSpeechToTextProvider', () => {
       message: 'Oops',
     });
     expect(listener.onEnd).not.called;
+  });
+
+  it('replaces a non-string error message with the default one', async () => {
+    await startProvider();
+
+    socket().message(
+      JSON.stringify({ type: 'error', code: 'network', message: 42 })
+    );
+
+    expect(listener.onError).calledOnceWith({
+      code: 'network',
+      message: 'The speech service reported an error.',
+    });
   });
 
   it('ends the session on the `end` message and releases the microphone', async () => {

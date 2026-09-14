@@ -41,6 +41,13 @@ export interface WebSocketSpeechToTextProviderOptions {
    * @default 5000
    */
   endTimeout?: number;
+  /**
+   * The maximum number of bytes of audio the browser may hold in the send buffer of the socket.
+   * When the connection or the server stalls and the buffer grows past this limit, the session
+   * ends with a `network` error instead of buffering audio for the rest of the session.
+   * @default 1048576
+   */
+  maxBufferedAmount?: number;
 }
 
 /**
@@ -82,6 +89,8 @@ const MIME_CANDIDATES = [
   'audio/ogg;codecs=opus',
   'audio/mp4',
 ];
+
+const DEFAULT_MAX_BUFFERED_AMOUNT = 1024 * 1024;
 
 const DEFAULT_AUDIO: MediaTrackConstraints = {
   channelCount: 1,
@@ -206,6 +215,8 @@ export class WebSocketSpeechToTextProvider implements SpeechToTextProvider {
       this._socket = socket;
 
       const mimeType = resolveMimeType(this._options.mimeType);
+      const maxBufferedAmount =
+        this._options.maxBufferedAmount ?? DEFAULT_MAX_BUFFERED_AMOUNT;
       const recorder = new MediaRecorder(
         stream,
         mimeType ? { mimeType } : undefined
@@ -228,9 +239,20 @@ export class WebSocketSpeechToTextProvider implements SpeechToTextProvider {
       recorder.addEventListener(
         'dataavailable',
         (event) => {
-          if (event.data.size > 0 && socket.readyState === WebSocket.OPEN) {
-            socket.send(event.data);
+          if (event.data.size === 0 || socket.readyState !== WebSocket.OPEN) {
+            return;
           }
+
+          // A stalled connection keeps the socket open while the send buffer grows.
+          if (socket.bufferedAmount > maxBufferedAmount) {
+            this._fail(
+              'network',
+              'The connection to the speech service stalled.'
+            );
+            return;
+          }
+
+          socket.send(event.data);
         },
         { signal }
       );
@@ -354,7 +376,10 @@ export class WebSocketSpeechToTextProvider implements SpeechToTextProvider {
           code: isSpeechToTextErrorCode(message.code)
             ? message.code
             : 'unknown',
-          message: message.message ?? 'The speech service reported an error.',
+          message:
+            typeof message.message === 'string'
+              ? message.message
+              : 'The speech service reported an error.',
         });
         break;
       case 'end':

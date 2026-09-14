@@ -254,6 +254,22 @@ describe('Speech to text', () => {
       );
     });
 
+    it('updates the accessible name of the native button', async () => {
+      const button = getButton();
+      const native = button.renderRoot.querySelector('[part~="base"]')!;
+
+      expect(native.getAttribute('aria-label')).to.equal(
+        strings.speechToTextStart
+      );
+
+      await startListening();
+      await elementUpdated(button);
+
+      expect(native.getAttribute('aria-label')).to.equal(
+        strings.speechToTextStop
+      );
+    });
+
     it('passes the recognition options to the provider', async () => {
       el.locale = 'bg-BG';
       el.continuous = true;
@@ -416,6 +432,38 @@ describe('Speech to text', () => {
       expect(eventSpy).not.calledWith('igcEnd');
     });
 
+    it('does not start the provider when the state change handler aborts', async () => {
+      el.addEventListener('igcStateChange', ({ detail }) => {
+        if (detail === 'starting') {
+          el.abort();
+        }
+      });
+
+      await startListening();
+
+      expect(provider.startCalls).to.equal(0);
+      expect(provider.abortCalls).to.equal(1);
+      expect(el.state).to.equal('idle');
+    });
+
+    it('aborts the pending start before a new session starts from the state change handler', async () => {
+      provider.autoStart = false;
+      el.addEventListener('igcStateChange', ({ detail }) => {
+        if (detail === 'idle' && provider.startCalls === 1) {
+          el.start();
+        }
+      });
+
+      const first = el.start();
+      el.abort();
+      await first;
+
+      expect(provider.abortCalls).to.equal(1);
+      expect(provider.startCalls).to.equal(2);
+      // The abort of the first session must not end the second one.
+      expect(el.state).to.equal('starting');
+    });
+
     it('reports a session the provider ended on its own', async () => {
       await startListening();
       const eventSpy = spy(el, 'emitEvent');
@@ -554,6 +602,26 @@ describe('Speech to text', () => {
       });
       expect(eventSpy).not.calledWith('igcStart');
       expect(eventSpy).not.calledWith('igcEnd');
+    });
+
+    it('reports a failed start before the state changes to idle', async () => {
+      provider.startError = new SpeechToTextProviderError(
+        'not-allowed',
+        'Permission denied'
+      );
+      const states: string[] = [];
+      el.addEventListener('igcError', () => states.push(el.state));
+      el.addEventListener('igcStateChange', ({ detail }) => {
+        if (detail === 'idle' && provider.startCalls === 1) {
+          provider.startError = undefined;
+          el.start();
+        }
+      });
+
+      await startListening();
+
+      expect(states).to.deep.equal(['starting']);
+      expect(el.state).to.equal('listening');
     });
 
     it('maps unknown start failures to `unknown`', async () => {

@@ -187,6 +187,7 @@ provider closes the connection when it receives `end`; no further messages are p
 - Treat a connection closed before `stop` as an abort. Discard pending results.
 - Send `end` exactly once, and send nothing after it.
 - Keep `result` messages ordered. The component appends final transcripts in arrival order.
+- Consume audio frames as they arrive; see the client rules below for a stalled connection.
 - Authentication is outside this protocol. Use the WebSocket URL, sub-protocols or
   cookies as your service requires.
 
@@ -197,7 +198,11 @@ For reference, the provider behaves as follows:
 - Sends `start` immediately after the connection opens, before the first audio frame.
 - Drops audio frames while the socket is not open.
 - Ignores text frames that are not valid JSON or have an unknown `type`, and `result`
-  messages whose `transcript` is not a string.
+  messages whose `transcript` is not a string. An `error` whose `message` is not a
+  string is reported with a default message.
+- Ends the session with a `network` error when the send buffer of the socket grows past
+  `maxBufferedAmount` bytes (1 MiB by default), which happens when the connection or the
+  server stops consuming audio while the socket stays open.
 - Ends the session on `end`, on connection close, on a connection error
   (reported as `network`) and `endTimeout` milliseconds after `stop` without `end`.
 - Releases the microphone as soon as recording stops, before `stop` is sent.
