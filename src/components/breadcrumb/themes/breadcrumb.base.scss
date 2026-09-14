@@ -62,3 +62,19 @@
 :host(:last-of-type) [part='separator'] {
     display: none;
 }
+
+@media (forced-colors: active) {
+    :host([current]) {
+        --current-text-color: Highlight;
+    }
+
+    :host(:not([current])) {
+        --focus-border-color: Highlight;
+        --focus-underline-color: Highlight;
+    }
+
+    :host([disabled]) {
+        --disabled-text-color: GrayText;
+        --disabled-icon-color: GrayText;
+    }
+}
