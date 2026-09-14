@@ -109,26 +109,34 @@ describe('Date range picker - two inputs', () => {
       expect(picker).is.not.undefined;
     });
 
-    it('is accessible (closed state)', async () => {
-      await expect(picker).shadowDom.to.be.accessible();
-      await expect(picker).lightDom.to.be.accessible();
-    });
+    describe('Accessibility', () => {
+      beforeEach(async () => {
+        picker.labelStart = 'Start';
+        picker.labelEnd = 'End';
+        await elementUpdated(picker);
+      });
 
-    it('is accessible (open state) - default dropdown mode', async () => {
-      picker.open = true;
-      await elementUpdated(picker);
+      it('is accessible (closed state)', async () => {
+        await expect(picker).shadowDom.to.be.accessible();
+        await expect(picker).lightDom.to.be.accessible();
+      });
 
-      await expect(picker).shadowDom.to.be.accessible();
-      await expect(picker).lightDom.to.be.accessible();
-    });
+      it('is accessible (open state) - default dropdown mode', async () => {
+        picker.open = true;
+        await elementUpdated(picker);
 
-    it('is accessible (open state) - dialog mode', async () => {
-      picker.open = true;
-      picker.mode = 'dialog';
-      await elementUpdated(picker);
+        await expect(picker).shadowDom.to.be.accessible();
+        await expect(picker).lightDom.to.be.accessible();
+      });
 
-      await expect(picker).shadowDom.to.be.accessible();
-      await expect(picker).lightDom.to.be.accessible();
+      it('is accessible (open state) - dialog mode', async () => {
+        picker.open = true;
+        picker.mode = 'dialog';
+        await elementUpdated(picker);
+
+        await expect(picker).shadowDom.to.be.accessible();
+        await expect(picker).lightDom.to.be.accessible();
+      });
     });
 
     it('should not render title slot elements in dropdown mode', async () => {
