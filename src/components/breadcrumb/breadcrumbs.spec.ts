@@ -1,4 +1,11 @@
-import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
+import {
+  elementUpdated,
+  expect,
+  fixture,
+  html,
+  nextFrame,
+} from '@open-wc/testing';
+import { internalsOf } from '#internals/controllers/internals.js';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
 import { firstOf, lastOf } from '#internals/utils/arrays.js';
 import IgcBreadcrumbComponent from './breadcrumb.js';
@@ -26,6 +33,25 @@ describe('Breadcrumbs', () => {
       await expect(el).shadowDom.to.be.accessible();
     });
 
+    it('passes the a11y audit with disabled and custom separator items', async () => {
+      const el = await fixture<IgcBreadcrumbsComponent>(html`
+        <nav aria-label="Breadcrumb">
+          <igc-breadcrumbs>
+            <igc-breadcrumb>
+              <a href="#">Home</a>
+              <span slot="separator">/</span>
+            </igc-breadcrumb>
+            <igc-breadcrumb disabled>
+              <a href="#">Settings</a>
+              <span slot="separator">/</span>
+            </igc-breadcrumb>
+            <igc-breadcrumb current><a href="#">Users</a></igc-breadcrumb>
+          </igc-breadcrumbs>
+        </nav>
+      `);
+      await expect(el).to.be.accessible();
+    });
+
     it('initializes igc-breadcrumb with current=false by default', async () => {
       const item = await fixture<IgcBreadcrumbComponent>(
         html`<igc-breadcrumb><a href="#">Home</a></igc-breadcrumb>`
@@ -35,6 +61,22 @@ describe('Breadcrumbs', () => {
   });
 
   describe('current property', () => {
+    it('sets aria-current="page" through element internals', async () => {
+      const el = await fixture<IgcBreadcrumbsComponent>(
+        createDefaultBreadcrumbs()
+      );
+      const [first, , last] = Array.from(
+        el.querySelectorAll(IgcBreadcrumbComponent.tagName)
+      );
+
+      expect(internalsOf(first)!.getARIA('ariaCurrent')).to.be.null;
+      expect(internalsOf(last)!.getARIA('ariaCurrent')).to.equal('page');
+
+      last.current = false;
+      await elementUpdated(last);
+      expect(internalsOf(last)!.getARIA('ariaCurrent')).to.be.null;
+    });
+
     it('reflects the current attribute', async () => {
       const item = await fixture<IgcBreadcrumbComponent>(
         html`<igc-breadcrumb current><a href="#">Page</a></igc-breadcrumb>`
@@ -80,6 +122,18 @@ describe('Breadcrumbs', () => {
   });
 
   describe('Separator', () => {
+    it('hides the separator from assistive technology', async () => {
+      const el = await fixture<IgcBreadcrumbComponent>(html`
+        <igc-breadcrumb>
+          <a href="#">Home</a>
+          <span slot="separator">/</span>
+        </igc-breadcrumb>
+      `);
+      const separator = el.renderRoot.querySelector('[part="separator"]')!;
+
+      expect(separator.getAttribute('aria-hidden')).to.equal('true');
+    });
+
     it('hides the separator on the last breadcrumb item', async () => {
       const el = await fixture<IgcBreadcrumbsComponent>(
         createDefaultBreadcrumbs()
@@ -160,6 +214,76 @@ describe('Breadcrumbs', () => {
 
       expect(item.disabled).to.be.true;
       expect(item.hasAttribute('disabled')).to.be.true;
+    });
+
+    it('toggles aria-disabled through element internals', async () => {
+      const item = await fixture<IgcBreadcrumbComponent>(
+        html`<igc-breadcrumb><a href="#">Home</a></igc-breadcrumb>`
+      );
+      const internals = internalsOf(item)!;
+
+      expect(internals.getARIA('ariaDisabled')).to.be.null;
+
+      item.disabled = true;
+      await elementUpdated(item);
+      expect(internals.getARIA('ariaDisabled')).to.equal('true');
+
+      item.disabled = false;
+      await elementUpdated(item);
+      expect(internals.getARIA('ariaDisabled')).to.be.null;
+    });
+
+    it('removes slotted links from the tab sequence while disabled', async () => {
+      const item = await fixture<IgcBreadcrumbComponent>(html`
+        <igc-breadcrumb>
+          <a href="#">Home</a>
+          <span><button type="button">Menu</button></span>
+        </igc-breadcrumb>
+      `);
+      const anchor = item.querySelector('a')!;
+      const button = item.querySelector('button')!;
+
+      expect(anchor.hasAttribute('tabindex')).to.be.false;
+
+      item.disabled = true;
+      await elementUpdated(item);
+      expect(anchor.tabIndex).to.equal(-1);
+      expect(button.tabIndex).to.equal(-1);
+
+      item.disabled = false;
+      await elementUpdated(item);
+      expect(anchor.hasAttribute('tabindex')).to.be.false;
+      expect(button.hasAttribute('tabindex')).to.be.false;
+    });
+
+    it('restores an author-provided tabindex when re-enabled', async () => {
+      const item = await fixture<IgcBreadcrumbComponent>(html`
+        <igc-breadcrumb disabled>
+          <a href="#" tabindex="0">Home</a>
+        </igc-breadcrumb>
+      `);
+      const anchor = item.querySelector('a')!;
+
+      expect(anchor.tabIndex).to.equal(-1);
+
+      item.disabled = false;
+      await elementUpdated(item);
+      expect(anchor.getAttribute('tabindex')).to.equal('0');
+    });
+
+    it('applies the disabled state to links slotted after initialization', async () => {
+      const item = await fixture<IgcBreadcrumbComponent>(
+        html`<igc-breadcrumb disabled></igc-breadcrumb>`
+      );
+      const anchor = document.createElement('a');
+      anchor.href = '#';
+      anchor.textContent = 'Late';
+
+      item.append(anchor);
+      await elementUpdated(item);
+      await nextFrame();
+
+      expect(anchor.tabIndex).to.equal(-1);
     });
   });
 

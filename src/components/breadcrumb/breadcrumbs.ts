@@ -22,8 +22,6 @@ import { all } from './themes/themes.js';
  *
  * @slot - Default slot for the breadcrumb items.
  *
- * @cssproperty --ig-breadcrumbs-gap - The gap between breadcrumb items. Defaults to `0.5rem`.
- *
  * @example
  * ```html
  * <!-- Default separator (tree_expand icon) -->
