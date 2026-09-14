@@ -41,6 +41,7 @@ const ICON_ALIASES: Record<string, Partial<Record<IconThemeKey, string>>> = {
   attach_image: { default: 'document_image' },
   auto_suggest: { default: 'auto_suggest' },
   send_message: { default: 'send' },
+  mic: { default: 'mic' },
   image_thumbnail: { default: 'image' },
   table_thumbnail: { default: 'table' },
   layout_thumbnail: { default: 'layout' },

@@ -5,6 +5,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+### Added
+- #### Speech to text
+  - New `igc-speech-to-text` component: a button that turns speech into text. Recognized text arrives through `igcInterim` (interim results, opt-in with `interim-results`) and `igcResult` (final results) events, and the session ends with `igcEnd` carrying the full transcript and the reason (`manual`, `silence`, `error` or `provider`). `igcError` reports failures with Web Speech API compatible codes plus `not-supported`. The `locale` of the component selects the language of the speech, the `silence-timeout` attribute stops the session after a period without speech, Escape aborts it, and the default slot replaces the microphone icon with custom trigger content.
+  - Recognition is delegated to a `SpeechToTextProvider`. The built-in `WebSpeechProvider` wraps the Web Speech API of the browser and the component renders disabled where it is unavailable. `WebSocketSpeechToTextProvider` from `igniteui-webcomponents/extras` records the microphone with `MediaRecorder` and streams it to a WebSocket endpoint over a small JSON + binary protocol, for browsers without the API or for a recognition service you control. The protocol is documented in [src/extras/speech-to-text-websocket-protocol.md](src/extras/speech-to-text-websocket-protocol.md).
+  - Known limitation: Firefox, including Nightly and Firefox-based browsers such as Zen, ships the Web Speech API recognition interface behind the `media.webspeech.recognition.enable` preference, which is off by default. The component renders disabled there unless the preference is enabled or a custom provider is assigned.
 ### Fixed
 - #### Carousel
   - Indicators now carry their `aria-label` as a content attribute in addition to `ElementInternals`, thus accessibility tools that do not read internals report the tab name.
