@@ -217,5 +217,13 @@ describe('ElementInternals controller', () => {
 
       expect(instance).to.not.have.attribute('aria-label');
     });
+
+    it('mirrors an empty label as an empty attribute', async () => {
+      const instance = await fixture<Fixture>(html`<${tagName}></${tagName}>`);
+
+      instance.internals.setARIA({ ariaLabel: '' });
+
+      expect(instance.getAttribute('aria-label')).to.equal('');
+    });
   });
 });

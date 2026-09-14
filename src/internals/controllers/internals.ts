@@ -190,12 +190,12 @@ class ElementInternalsController implements ReactiveController {
       return;
     }
 
-    // A cleared value takes its attribute with it, or the host would keep
-    // semantics that its internals no longer report.
+    // Only a null value takes its attribute with it - an empty string is a
+    // valid ARIA value and stays mirrored as an empty attribute.
     if (current !== value) {
-      value
-        ? host.setAttribute(attribute, value)
-        : host.removeAttribute(attribute);
+      value === null
+        ? host.removeAttribute(attribute)
+        : host.setAttribute(attribute, value);
     }
 
     this._reflected.set(name, value);
