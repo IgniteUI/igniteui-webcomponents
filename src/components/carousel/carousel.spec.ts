@@ -155,6 +155,7 @@ describe('Carousel', () => {
             <div role="tablist">
               <slot name="indicator">
                 <igc-carousel-indicator
+                  aria-label="slide 1"
                   role="tab"
                   tabindex="0"
                   slot="indicator"
@@ -164,6 +165,7 @@ describe('Carousel', () => {
                   <div slot="active"></div>
                 </igc-carousel-indicator>
                 <igc-carousel-indicator
+                  aria-label="slide 2"
                   role="tab"
                   tabindex="-1"
                   slot="indicator"
@@ -173,6 +175,7 @@ describe('Carousel', () => {
                   <div slot="active"></div>
                 </igc-carousel-indicator>
                 <igc-carousel-indicator
+                  aria-label="slide 3"
                   role="tab"
                   tabindex="-1"
                   slot="indicator"
@@ -484,6 +487,7 @@ describe('Carousel', () => {
       const indicator = carousel?.querySelector('igc-carousel-indicator');
       expect(indicator).dom.to.equal(
         `<igc-carousel-indicator
+          aria-label="slide 1"
           slot="indicator"
           role="tab"
           tabindex="0"
