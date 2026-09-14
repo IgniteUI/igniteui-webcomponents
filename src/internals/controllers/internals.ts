@@ -28,7 +28,25 @@ type ElementInternalsConfig<T extends keyof ARIAMixin = keyof ARIAMixin> = {
    * by the controller itself.
    */
   reflectRole?: boolean;
+  /**
+   * Whether to also mirror the internals `ariaLabel` to an `aria-label`
+   * content attribute on the host element.
+   *
+   * Same workaround and ownership rules as {@link reflectRole}.
+   */
+  reflectLabel?: boolean;
 };
+
+/**
+ * Internals ARIA properties the controller can mirror onto host content
+ * attributes, mapped to the attribute each one reflects to.
+ */
+const reflectable = {
+  role: 'role',
+  ariaLabel: 'aria-label',
+} as const;
+
+type ReflectableARIA = keyof typeof reflectable;
 
 /**
  * Internal registry resolving a host element to its internals controller.
@@ -46,10 +64,11 @@ class ElementInternalsController implements ReactiveController {
   private readonly _host: ReactiveControllerHost & LitElement;
   private readonly _internals: ElementInternals;
   private readonly _aria?: () => ARIAState;
-  private readonly _reflectRole: boolean;
-
-  /** The last `role` content attribute value written by this controller. */
-  private _reflectedRole: string | null = null;
+  /**
+   * The internals ARIA properties mirrored onto host content attributes,
+   * each with the last attribute value this controller wrote for it.
+   */
+  private readonly _reflected = new Map<ReflectableARIA, string | null>();
 
   /**
    * Gets the closest ancestor `<form>` element or `null`.
@@ -117,7 +136,13 @@ class ElementInternalsController implements ReactiveController {
     this._host = host;
     this._internals = this._host.attachInternals();
     this._aria = config?.aria;
-    this._reflectRole = config?.reflectRole ?? false;
+
+    if (config?.reflectRole) {
+      this._reflected.set('role', null);
+    }
+    if (config?.reflectLabel) {
+      this._reflected.set('ariaLabel', null);
+    }
 
     if (config?.initialARIA) {
       this.setARIA(config.initialARIA);
@@ -129,7 +154,9 @@ class ElementInternalsController implements ReactiveController {
 
   /** @internal */
   public hostConnected(): void {
-    this._reflectRoleAttribute();
+    for (const name of this._reflected.keys()) {
+      this._reflectAttribute(name);
+    }
   }
 
   /** @internal */
@@ -140,32 +167,38 @@ class ElementInternalsController implements ReactiveController {
   }
 
   /**
-   * Mirrors the internals `role` onto a content attribute on the host, when
-   * {@link ElementInternalsConfig.reflectRole} is enabled.
+   * Mirrors a reflected internals ARIA property onto its content attribute on
+   * the host.
    *
    * Deferred until the host is connected - custom elements must not gain
    * attributes during construction.
    */
-  private _reflectRoleAttribute(): void {
+  private _reflectAttribute(name: ReflectableARIA): void {
     const host = this._host;
 
-    if (!(this._reflectRole && host.isConnected)) {
+    if (!host.isConnected) {
       return;
     }
 
-    const role = this._internals.role;
-    const current = host.getAttribute('role');
+    const attribute = reflectable[name];
+    const value = this._internals[name];
+    const current = host.getAttribute(attribute);
 
     // Write only when the attribute is absent or still holds the value this
     // controller wrote - an attribute changed by the author is theirs to keep.
-    if (current !== null && current !== this._reflectedRole) {
+    if (current !== null && current !== this._reflected.get(name)) {
       return;
     }
 
-    // A cleared role takes its attribute with it, or the host would keep
-    // semantics that its internals no longer report.
-    role ? host.setAttribute('role', role) : host.removeAttribute('role');
-    this._reflectedRole = role;
+    // Only a null value takes its attribute with it - an empty string is a
+    // valid ARIA value and stays mirrored as an empty attribute.
+    if (current !== value) {
+      value === null
+        ? host.removeAttribute(attribute)
+        : host.setAttribute(attribute, value);
+    }
+
+    this._reflected.set(name, value);
   }
 
   /** Sets ARIA attributes on the element's internals. */
@@ -174,8 +207,10 @@ class ElementInternalsController implements ReactiveController {
   ): void {
     Object.assign(this._internals, state);
 
-    if ('role' in state) {
-      this._reflectRoleAttribute();
+    for (const name of this._reflected.keys()) {
+      if (name in state) {
+        this._reflectAttribute(name);
+      }
     }
   }
 

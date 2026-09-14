@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+### Fixed
+- #### Carousel
+  - Indicators now carry their `aria-label` as a content attribute in addition to `ElementInternals`, thus accessibility tools that do not read internals report the tab name.
+- #### Date picker
+  - A `label` set after the first render did not reach the native input in dropdown mode outside the Material theme. The projected ARIA state now re-resolves against the labels of the input, thus the association updates when the label appears or goes away.
+- #### Dropdown
+  - The list is now labelled by the anchor element through `ariaLabelledByElements`. The previous `aria-labelledby` pointed at the anchor slot, which accessibility tools cannot resolve.
+
 ## [7.3.2] - 2026-09-09
 ### Added
 - #### Library

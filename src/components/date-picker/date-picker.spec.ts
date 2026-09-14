@@ -95,26 +95,49 @@ describe('Date picker', () => {
       expect(picker).is.not.undefined;
     });
 
-    it('is accessible (closed state)', async () => {
-      await expect(picker).shadowDom.to.be.accessible();
-      await expect(picker).lightDom.to.be.accessible();
+    describe('Accessibility', () => {
+      beforeEach(async () => {
+        picker.label = 'Date';
+        await elementUpdated(picker);
+      });
+
+      it('is accessible (closed state)', async () => {
+        await expect(picker).shadowDom.to.be.accessible();
+        await expect(picker).lightDom.to.be.accessible();
+      });
+
+      it('is accessible (open state) - default dropdown mode', async () => {
+        picker.open = true;
+        await elementUpdated(picker);
+
+        await expect(picker).shadowDom.to.be.accessible();
+        await expect(picker).lightDom.to.be.accessible();
+      });
+
+      it('is accessible (open state) - dialog mode', async () => {
+        picker.open = true;
+        picker.mode = 'dialog';
+        await elementUpdated(picker);
+
+        await expect(picker).shadowDom.to.be.accessible();
+        await expect(picker).lightDom.to.be.accessible();
+      });
     });
 
-    it('is accessible (open state) - default dropdown mode', async () => {
-      picker.open = true;
+    it('labels the native input with a label set after the first render', async () => {
+      const input = dateTimeInput.renderRoot.querySelector('input')!;
+
+      picker.label = 'Date';
       await elementUpdated(picker);
+      await elementUpdated(dateTimeInput);
 
-      await expect(picker).shadowDom.to.be.accessible();
-      await expect(picker).lightDom.to.be.accessible();
-    });
+      expect(input.ariaLabelledByElements).to.eql([getLabel()]);
 
-    it('is accessible (open state) - dialog mode', async () => {
-      picker.open = true;
-      picker.mode = 'dialog';
+      picker.label = '';
       await elementUpdated(picker);
+      await elementUpdated(dateTimeInput);
 
-      await expect(picker).shadowDom.to.be.accessible();
-      await expect(picker).lightDom.to.be.accessible();
+      expect(input.ariaLabelledByElements).to.be.null;
     });
 
     it('should render slotted elements - prefix, suffix, clear-icon, calendar-icon(-open), helper-text, title, header-date actions', async () => {
