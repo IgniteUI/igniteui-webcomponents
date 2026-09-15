@@ -35,18 +35,32 @@ token**.
 2. Scroll to **Personal access tokens** → **Generate new token**
 3. Name it (e.g. `mcp-agent`) and copy the value
 
+> **Never write the token itself into a project-local config file.** These files
+> (`.vscode/mcp.json`, `.cursor/mcp.json`, `.mcp.json`) are commonly committed or shared, and a
+> hard-coded token would leak into source control. Use the mechanisms below instead, and add
+> the config file to `.gitignore` if your tool has no way to keep the value out of it.
+
 ### VS Code
 
-Create or edit `.vscode/mcp.json`:
+Create or edit `.vscode/mcp.json`, using an `input` so VS Code prompts for the token instead
+of storing it in the file:
 
 ```json
 {
+  "inputs": [
+    {
+      "type": "promptString",
+      "id": "figma-access-token",
+      "description": "Figma personal access token",
+      "password": true
+    }
+  ],
   "servers": {
     "figma": {
       "command": "npx",
       "args": ["-y", "@figma/mcp@latest"],
       "env": {
-        "FIGMA_ACCESS_TOKEN": "YOUR_TOKEN_HERE"
+        "FIGMA_ACCESS_TOKEN": "${input:figma-access-token}"
       }
     }
   }
@@ -55,7 +69,10 @@ Create or edit `.vscode/mcp.json`:
 
 ### Cursor
 
-Create or edit `.cursor/mcp.json`:
+Cursor does not support prompted or environment-variable substitution inside `mcp.json` — any
+value written there is stored literally. Configure the `figma` server in your **user-level**
+`~/.cursor/mcp.json` instead of the project-local `.cursor/mcp.json`, so the token never enters
+the repo:
 
 ```json
 {
@@ -73,24 +90,11 @@ Create or edit `.cursor/mcp.json`:
 
 ### Claude Code
 
+Add the server at **user scope** so the token is stored in your local Claude config rather than
+the project's `.mcp.json`:
+
 ```bash
-claude mcp add figma -- npx -y @figma/mcp@latest --figma-access-token YOUR_TOKEN_HERE
-```
-
-Or add the entry to the project's `.mcp.json` (repo root):
-
-```json
-{
-  "mcpServers": {
-    "figma": {
-      "command": "npx",
-      "args": ["-y", "@figma/mcp@latest"],
-      "env": {
-        "FIGMA_ACCESS_TOKEN": "YOUR_TOKEN_HERE"
-      }
-    }
-  }
-}
+claude mcp add figma --scope user -- npx -y @figma/mcp@latest --figma-access-token YOUR_TOKEN_HERE
 ```
 
 ### JetBrains IDEs
@@ -98,6 +102,8 @@ Or add the entry to the project's `.mcp.json` (repo root):
 1. **Settings → Tools → AI Assistant → MCP Servers → + Add MCP Server**
 2. Command: `npx`, Arguments: `-y @figma/mcp@latest`
 3. Environment: `FIGMA_ACCESS_TOKEN=YOUR_TOKEN_HERE`
+
+   (This is stored in the IDE's user settings, not a project file.)
 
 ### Figma desktop app plugin
 
@@ -312,19 +318,28 @@ open the page without error.
 > contains `igniteui-cli` and `igniteui-theming`. Add only the `figma` and `playwright`
 > entries to the existing `"servers"` block — do not duplicate the others.
 >
-> **Fresh setup:** use the complete blocks below and replace `YOUR_TOKEN_HERE` with your
-> Figma personal access token.
+> **Fresh setup:** use the complete blocks below. As in section 1, never write the raw Figma
+> token into a project-local file — use the VS Code `input` prompt, or a user-level config for
+> Cursor/Claude Code, and add the file to `.gitignore` if it must stay project-local.
 
 ### VS Code (`.vscode/mcp.json`)
 
 ```json
 {
+  "inputs": [
+    {
+      "type": "promptString",
+      "id": "figma-access-token",
+      "description": "Figma personal access token",
+      "password": true
+    }
+  ],
   "servers": {
     "figma": {
       "command": "npx",
       "args": ["-y", "@figma/mcp@latest"],
       "env": {
-        "FIGMA_ACCESS_TOKEN": "YOUR_TOKEN_HERE"
+        "FIGMA_ACCESS_TOKEN": "${input:figma-access-token}"
       }
     },
     "igniteui-cli": {
@@ -345,16 +360,12 @@ open the page without error.
 
 ### Cursor (`.cursor/mcp.json`)
 
+Keep the `figma` entry in your **user-level** `~/.cursor/mcp.json` (see section 1) and add only
+the remaining, secret-free servers to the project-local file:
+
 ```json
 {
   "mcpServers": {
-    "figma": {
-      "command": "npx",
-      "args": ["-y", "@figma/mcp@latest"],
-      "env": {
-        "FIGMA_ACCESS_TOKEN": "YOUR_TOKEN_HERE"
-      }
-    },
     "igniteui-cli": {
       "command": "npx",
       "args": ["-y", "igniteui-cli", "mcp"]
@@ -373,16 +384,12 @@ open the page without error.
 
 ### Claude Code (`.mcp.json` in the project root)
 
+Add `figma` at **user scope** (see section 1) and keep only the remaining, secret-free servers
+in the project's `.mcp.json`:
+
 ```json
 {
   "mcpServers": {
-    "figma": {
-      "command": "npx",
-      "args": ["-y", "@figma/mcp@latest"],
-      "env": {
-        "FIGMA_ACCESS_TOKEN": "YOUR_TOKEN_HERE"
-      }
-    },
     "igniteui-cli": {
       "command": "npx",
       "args": ["-y", "igniteui-cli", "mcp"]
