@@ -1,6 +1,5 @@
 import {
   html,
-  isServer,
   LitElement,
   nothing,
   type PropertyValues,
@@ -11,16 +10,25 @@ import { createRef, ref } from 'lit/directives/ref.js';
 import { styleMap } from 'lit/directives/style-map.js';
 import { createIndexedResizeController } from '#internals/controllers/indexed-resize.js';
 import { createLayoutSettleController } from '#internals/controllers/layout-settle.js';
+import { createLightDomStylesController } from '#internals/controllers/light-dom-styles.js';
 import { createResizeObserverController } from '#internals/controllers/resize-observer.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import type { Constructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
+import { commonPrefixLength } from '#internals/utils/arrays.js';
 import { getBorderBoxSize, isLTR } from '#internals/utils/dom.js';
-import { asNumber, clamp } from '#internals/utils/math.js';
-import { scrollAndWaitForSettled } from '#internals/utils/scroll-settle.js';
-import { VirtualScrollEngine } from './engine.js';
+import { clamp } from '#internals/utils/math.js';
+import { equal } from '#internals/utils/objects.js';
 import {
-  type ScrollAlignment,
+  EMPTY_RANGE,
+  normalizeOverScan,
+  normalizeSize,
+  rangesEqual,
+  sliceRange,
+  VirtualScrollEngine,
+} from './engine.js';
+import { ScrollCorrectionController } from './scroll-correction.js';
+import {
   type VirtualScrollDataRequest,
   VirtualScrollItemContext,
   type VirtualScrollState,
@@ -37,16 +45,71 @@ export interface IgcVirtualScrollComponentEventMap {
 }
 
 const REMOTE_SCROLLING_THRESHOLD = 5;
-const MAX_SCROLL_CORRECTION_PASSES = 5;
-const SCROLL_END_TIMEOUT_MS = 2000;
 const SCROLL_OFFSET_EPSILON_PX = 1;
 /** Fallback for a non-positive `estimatedItemSize`. Equal to its default. */
 const DEFAULT_ESTIMATED_ITEM_SIZE = 50;
+const DEFAULT_OVER_SCAN = 2;
 
-const EMPTY_RANGE: VisibleRange = Object.freeze({
-  startIndex: 0,
-  endIndex: -1,
-});
+function offsetsEqual(a: number, b: number): boolean {
+  return Math.abs(a - b) < SCROLL_OFFSET_EPSILON_PX;
+}
+
+const STYLES = `
+  :where(igc-virtual-scroll) {
+    display: block;
+    position: relative;
+    overflow: auto;
+    height: 18.75rem;
+  }
+
+  :where(igc-virtual-scroll[orientation='vertical']) {
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+
+  :where(igc-virtual-scroll[orientation='horizontal']) {
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+
+  :where(igc-virtual-scroll) [part="virtualization-track"] {
+    position: relative;
+    width: 100%;
+    min-height: 100%;
+  }
+
+  :where(igc-virtual-scroll) [part="virtualization-content"] {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    will-change: transform;
+    contain: layout style paint;
+  }
+
+  :where(igc-virtual-scroll[orientation='horizontal']) [part="virtualization-track"] {
+    height: 100%;
+    width: auto;
+    min-height: unset;
+  }
+
+  :where(igc-virtual-scroll[orientation='horizontal']) [part="virtualization-content"] {
+    display: flex;
+    flex-direction: row;
+    height: 100%;
+    width: auto;
+  }
+
+  :where(igc-virtual-scroll[orientation='horizontal']) [part="virtualization-content"] > [data-vs-index] {
+    flex-shrink: 0;
+    height: 100%;
+  }
+
+  :where(igc-virtual-scroll[orientation='horizontal']):dir(rtl) [part="virtualization-content"] {
+    left: auto;
+    right: 0;
+  }
+`;
 
 /**
  * A virtual scroll component for large lists. Only the items visible in the
@@ -75,72 +138,6 @@ export default class IgcVirtualScrollComponent<
     registerComponent(IgcVirtualScrollComponent);
   }
 
-  private static _styleSheet: CSSStyleSheet | null = null;
-
-  private static _getStyleSheet(): CSSStyleSheet {
-    if (!IgcVirtualScrollComponent._styleSheet) {
-      const sheet = new CSSStyleSheet();
-      sheet.replaceSync(`
-        :where(igc-virtual-scroll) {
-          display: block;
-          position: relative;
-          overflow: auto;
-          height: 18.75rem;
-        }
-
-        :where(igc-virtual-scroll[orientation='vertical']) {
-          overflow-y: auto;
-          overflow-x: hidden;
-        }
-
-        :where(igc-virtual-scroll[orientation='horizontal']) {
-          overflow-x: auto;
-          overflow-y: hidden;
-        }
-
-        :where(igc-virtual-scroll) [part="virtualization-track"] {
-          position: relative;
-          width: 100%;
-          min-height: 100%;
-        }
-
-        :where(igc-virtual-scroll) [part="virtualization-content"] {
-          position: absolute;
-          top: 0;
-          left: 0;
-          width: 100%;
-          will-change: transform;
-          contain: layout style paint;
-        }
-
-        :where(igc-virtual-scroll[orientation='horizontal']) [part="virtualization-track"] {
-          height: 100%;
-          width: auto;
-          min-height: unset;
-        }
-
-        :where(igc-virtual-scroll[orientation='horizontal']) [part="virtualization-content"] {
-          display: flex;
-          flex-direction: row;
-          height: 100%;
-          width: auto;
-        }
-
-        :where(igc-virtual-scroll[orientation='horizontal']) [part="virtualization-content"] > [data-vs-index] {
-          flex-shrink: 0;
-          height: 100%;
-        }
-
-        :where(igc-virtual-scroll[orientation='horizontal']):dir(rtl) [part="virtualization-content"] {
-          left: auto;
-          right: 0;
-        }
-      `);
-      IgcVirtualScrollComponent._styleSheet = sheet;
-    }
-    return IgcVirtualScrollComponent._styleSheet;
-  }
-
   //#region Internal state
 
   protected readonly _engine = new VirtualScrollEngine();
@@ -150,11 +147,18 @@ export default class IgcVirtualScrollComponent<
     callback: this._handleItemResize,
   });
   private readonly _layoutSettle = createLayoutSettleController(this);
+  private readonly _scrollCorrection = new ScrollCorrectionController<number>(
+    this,
+    {
+      current: () => this._currentAxisScroll(),
+      equals: offsetsEqual,
+      scroll: (offset, behavior) => this._applyScroll(offset, behavior),
+    }
+  );
 
   private _currentRange: VisibleRange = EMPTY_RANGE;
   private _lastEmittedState: VirtualScrollState | null = null;
   private _hasPendingDataRequest = false;
-  private _scrollRequestId = 0;
 
   /**
    * The `startIndex` of the last emitted `igcDataRequest`, which is also the
@@ -249,25 +253,12 @@ export default class IgcVirtualScrollComponent<
 
   //#endregion
 
-  private _adoptStyles(): void {
-    /* c8 ignore next 3 */
-    if (isServer) {
-      return;
-    }
-
-    const root = this.getRootNode() as Document | ShadowRoot;
-    const sheet = IgcVirtualScrollComponent._getStyleSheet();
-    if (!root.adoptedStyleSheets.includes(sheet)) {
-      root.adoptedStyleSheets = [...root.adoptedStyleSheets, sheet];
-    }
-  }
-
   constructor() {
     super();
     this._engine.onSizeChange = () => this.requestUpdate();
     this._handleScroll = this._handleScroll.bind(this);
 
-    // Viewport resize observer
+    createLightDomStylesController(this, STYLES);
     createResizeObserverController(this, {
       callback: this._measureViewport,
     });
@@ -283,7 +274,6 @@ export default class IgcVirtualScrollComponent<
   /** @internal */
   public override connectedCallback(): void {
     super.connectedCallback();
-    this._adoptStyles();
     this._engine.initMaxBrowserSize(this.ownerDocument);
     this._measureViewport();
     this.addEventListener('scroll', this._handleScroll, { passive: true });
@@ -296,15 +286,6 @@ export default class IgcVirtualScrollComponent<
   }
 
   protected override willUpdate(changed: PropertyValues<this>): void {
-    // TODO: Either fix this in the theming controller or come up with some other solution.
-
-    // Verified on every update, not only in `connectedCallback`; a no-op
-    // when the sheet is already present. A host that renders this component
-    // in its own shadow root (for example, combo) can have that root's
-    // `adoptedStyleSheets` replaced by its theming logic. That drops this
-    // sheet without this element reconnecting.
-    this._adoptStyles();
-
     if (changed.has('fixedItemSize')) {
       this._engine.fixed = this.fixedItemSize;
     }
@@ -353,18 +334,7 @@ export default class IgcVirtualScrollComponent<
     // The content wrapper is absolutely positioned at the origin of a track
     // that is `domSize` px tall or wide. A translation to the first rendered
     // item's scroll offset puts that item at its virtual position.
-    let contentPosition = this._engine.getScrollOffsetForIndex(
-      range.startIndex
-    );
-    const physicalRangeSize = this._engine.getPhysicalRangeSize(
-      range.startIndex,
-      range.endIndex
-    );
-    contentPosition = clamp(
-      contentPosition,
-      0,
-      this._engine.domSize - physicalRangeSize
-    );
+    const contentPosition = this._engine.getRangeOffset(range);
     const isRTL = !isVertical && !isLTR(this);
     const contentStyle = {
       transform: isVertical
@@ -372,10 +342,7 @@ export default class IgcVirtualScrollComponent<
         : `translateX(${isRTL ? -contentPosition : contentPosition}px)`,
     };
 
-    const visibleItems =
-      range.endIndex >= range.startIndex
-        ? items.slice(range.startIndex, range.endIndex + 1)
-        : [];
+    const visibleItems = sliceRange(items, range);
 
     return html`
       <div
@@ -411,13 +378,12 @@ export default class IgcVirtualScrollComponent<
 
   /** The configured `overScan`, normalized to a non-negative integer. */
   private get _normalizedOverScan(): number {
-    return Math.max(0, Math.floor(asNumber(this.overScan, 2)));
+    return normalizeOverScan(this.overScan, DEFAULT_OVER_SCAN);
   }
 
   /** The configured `estimatedItemSize`, normalized to a positive number. */
   private get _normalizedItemSize(): number {
-    const size = asNumber(this.estimatedItemSize);
-    return size > 0 ? size : DEFAULT_ESTIMATED_ITEM_SIZE;
+    return normalizeSize(this.estimatedItemSize, DEFAULT_ESTIMATED_ITEM_SIZE);
   }
 
   /** `data`, guarded against a nullish value set by the consumer. */
@@ -441,35 +407,22 @@ export default class IgcVirtualScrollComponent<
 
   /**
    * The scroll offset that aligns `index` in the viewport according to
-   * `options`, from the engine's current size data. As more items are
-   * measured, the same input can give a different, more accurate result.
-   *
-   * For `block: 'nearest'` on an item already in view, returns the current
-   * offset, so no scroll occurs.
+   * `options`. The active axis reads `block` when vertical and `inline`,
+   * with `block` as a fallback, when horizontal.
    */
   private _getAlignedScrollOffset(
     index: number,
     options?: ScrollIntoViewOptions
   ): number {
-    const requested = this._isVertical
-      ? (options?.block ?? 'start')
-      : (options?.inline ?? options?.block ?? 'start');
-    const current = this._currentAxisScroll();
+    const position = this._isVertical
+      ? options?.block
+      : (options?.inline ?? options?.block);
 
-    if (
-      requested === 'nearest' &&
-      this._engine.isIndexInView(index, current, this._viewportSize)
-    ) {
-      return current;
-    }
-
-    const align: ScrollAlignment =
-      requested === 'center' || requested === 'end' ? requested : 'start';
-
-    return this._engine.getAlignedScrollOffset(
+    return this._engine.resolveScrollOffset(
       index,
+      this._currentAxisScroll(),
       this._viewportSize,
-      align
+      position
     );
   }
 
@@ -489,28 +442,6 @@ export default class IgcVirtualScrollComponent<
       : isLTR(this)
         ? this.scrollLeft
         : -this.scrollLeft;
-  }
-
-  /**
-   * Applies a scroll offset to the active axis and waits for the scroll,
-   * instant or smooth, to settle. An offset that does not move the scroll
-   * position resolves immediately, because no `scrollend` would follow.
-   */
-  private _scrollAndWaitForEnd(
-    offset: number,
-    behavior: ScrollBehavior
-  ): Promise<void> {
-    if (
-      Math.abs(this._currentAxisScroll() - offset) < SCROLL_OFFSET_EPSILON_PX
-    ) {
-      return Promise.resolve();
-    }
-
-    return scrollAndWaitForSettled(
-      this,
-      () => this._applyScroll(offset, behavior),
-      SCROLL_END_TIMEOUT_MS
-    );
   }
 
   private _measureViewport(): void {
@@ -533,11 +464,7 @@ export default class IgcVirtualScrollComponent<
   private _handleScroll(): void {
     this._scrollPosition = this._currentAxisScroll();
 
-    const { startIndex, endIndex } = this._computeRange();
-    if (
-      startIndex !== this._currentRange.startIndex ||
-      endIndex !== this._currentRange.endIndex
-    ) {
+    if (!rangesEqual(this._computeRange(), this._currentRange)) {
       this.requestUpdate();
     }
   }
@@ -550,18 +477,7 @@ export default class IgcVirtualScrollComponent<
    * prefix.
    */
   private _firstChangedIndex(previous: T[] | undefined): number {
-    if (!previous) {
-      return 0;
-    }
-
-    const items = this._items;
-    const shared = Math.min(previous.length, items.length);
-    for (let i = 0; i < shared; i++) {
-      if (previous[i] !== items[i]) {
-        return i;
-      }
-    }
-    return shared;
+    return previous ? commonPrefixLength(previous, this._items) : 0;
   }
 
   private _handleItemResize(index: number, entry: ResizeObserverEntry): void {
@@ -595,7 +511,6 @@ export default class IgcVirtualScrollComponent<
     const { startIndex, endIndex } = this._currentRange;
     if (endIndex < startIndex) return;
 
-    const previous = this._lastEmittedState;
     const detail: VirtualScrollState = {
       startIndex,
       endIndex,
@@ -603,13 +518,7 @@ export default class IgcVirtualScrollComponent<
       totalSize: this._engine.totalSize,
     };
 
-    if (
-      previous &&
-      previous.startIndex === detail.startIndex &&
-      previous.endIndex === detail.endIndex &&
-      previous.viewportSize === detail.viewportSize &&
-      previous.totalSize === detail.totalSize
-    ) {
+    if (equal(this._lastEmittedState, detail)) {
       return;
     }
 
@@ -676,40 +585,16 @@ export default class IgcVirtualScrollComponent<
    * corrected offset. Callers that need only the first, approximate scroll
    * can ignore it.
    */
-  public async scrollToIndex(
+  public scrollToIndex(
     index: number,
     options?: ScrollIntoViewOptions
   ): Promise<void> {
-    const maxIndex = Math.max(0, this._items.length - 1);
-    const clampedIndex = clamp(index, 0, maxIndex);
-    const behavior = options?.behavior ?? 'auto';
+    const clampedIndex = clamp(index, 0, Math.max(0, this._items.length - 1));
 
-    // A newer call supersedes a correction loop that still runs for a
-    // previous call, for example under rapid, repeated calls.
-    const requestId = ++this._scrollRequestId;
-
-    let offset = this._getAlignedScrollOffset(clampedIndex, options);
-    await this._scrollAndWaitForEnd(offset, behavior);
-
-    for (let i = 0; i < MAX_SCROLL_CORRECTION_PASSES; i++) {
-      await this.layoutComplete;
-
-      if (requestId !== this._scrollRequestId) {
-        return;
-      }
-
-      const corrected = this._getAlignedScrollOffset(clampedIndex, options);
-      if (Math.abs(corrected - offset) < SCROLL_OFFSET_EPSILON_PX) {
-        break;
-      }
-
-      offset = corrected;
-      await this._scrollAndWaitForEnd(offset, 'auto');
-
-      if (requestId !== this._scrollRequestId) {
-        return;
-      }
-    }
+    return this._scrollCorrection.run(
+      () => this._getAlignedScrollOffset(clampedIndex, options),
+      options?.behavior ?? 'auto'
+    );
   }
 
   //#endregion

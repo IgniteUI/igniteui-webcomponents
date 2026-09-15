@@ -84,6 +84,16 @@ export type {
   VirtualScrollState,
   VirtualScrollDataRequest,
 } from './components/virtualization/types.js';
+export { default as IgcVirtualGridComponent } from './components/virtualization/grid/virtual-grid.js';
+export type {
+  IgcVirtualGridComponentEventMap,
+  VirtualGridCellTemplate,
+} from './components/virtualization/grid/virtual-grid.js';
+export type {
+  VirtualGridCellContext,
+  VirtualGridColumnWidth,
+  VirtualGridState,
+} from './components/virtualization/grid/types.js';
 
 // definitions
 export { defineComponents } from '#internals/definitions/defineComponents.js';

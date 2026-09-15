@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 ### Added
+- #### Virtual grid
+  - New `igc-virtual-grid` component for two-dimensional virtualization. Only the rows and columns in view are rendered. Rows are fixed height by default, with `auto-row-height` for measured rows; column widths come from `column-width` as a number or a function of the column. `cellTemplate` receives the row, the column and both indexes. `scrollToCell`, `scrollToRow` and `scrollToColumn` align either axis, `igcStateChange` reports both windows, and the wrappers carry `row`/`gridcell` roles with `aria-rowindex` and `aria-colindex`.
 - #### Virtual scroll
   - `fixed-item-size` attribute. When set, every item has the size given by `estimated-item-size`, items are not measured in the DOM, and the offset math is constant time with no per-item state. Use it when the item template renders at one known size, for example a list of a million equal rows.
 

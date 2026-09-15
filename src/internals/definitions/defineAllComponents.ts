@@ -73,6 +73,7 @@ import IgcToastComponent from '../../components/toast/toast.js';
 import IgcTooltipComponent from '../../components/tooltip/tooltip.js';
 import IgcTreeItemComponent from '../../components/tree/tree-item.js';
 import IgcTreeComponent from '../../components/tree/tree.js';
+import IgcVirtualGridComponent from '../../components/virtualization/grid/virtual-grid.js';
 import IgcVirtualScrollComponent from '../../components/virtualization/virtualization.js';
 import { defineComponents } from './defineComponents.js';
 import type { IgniteComponent } from './register.js';
@@ -154,6 +155,7 @@ const allComponents: IgniteComponent[] = [
   IgcTooltipComponent,
   IgcQrCodeComponent,
   IgcVirtualScrollComponent,
+  IgcVirtualGridComponent,
 ];
 
 export function defineAllComponents() {

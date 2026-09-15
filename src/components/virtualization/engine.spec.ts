@@ -1,5 +1,12 @@
 import { expect } from '@open-wc/testing';
-import { VirtualScrollEngine } from './engine.js';
+import {
+  EMPTY_RANGE,
+  normalizeOverScan,
+  normalizeSize,
+  rangesEqual,
+  sliceRange,
+  VirtualScrollEngine,
+} from './engine.js';
 
 describe('VirtualScrollEngine', () => {
   const ESTIMATE = 50;
@@ -595,6 +602,76 @@ describe('VirtualScrollEngine', () => {
 
       expect(engine.totalSize).to.equal(60 + 2 * ESTIMATE);
       expect(engine.getScrollOffsetForIndex(3)).to.equal(60);
+    });
+  });
+
+  describe('Item sizes and scroll positions', () => {
+    it('getItemSize returns the current size of one item and 0 outside the list', () => {
+      const engine = createEngine(3);
+      engine.measureItem(1, 70);
+
+      expect(engine.getItemSize(0)).to.equal(ESTIMATE);
+      expect(engine.getItemSize(1)).to.equal(70);
+      expect(engine.getItemSize(3)).to.equal(0);
+      expect(engine.getItemSize(-1)).to.equal(0);
+    });
+
+    it('getRangeOffset places a range at its first item and clamps it to the track', () => {
+      const engine = createEngine(100);
+
+      expect(engine.getRangeOffset({ startIndex: 10, endIndex: 15 })).to.equal(
+        10 * ESTIMATE
+      );
+      // The last range must end at the track end, whatever its first item.
+      expect(engine.getRangeOffset({ startIndex: 98, endIndex: 99 })).to.equal(
+        98 * ESTIMATE
+      );
+    });
+
+    it('resolveScrollOffset keeps the current offset for nearest on an item in view', () => {
+      const engine = createEngine(100);
+
+      expect(engine.resolveScrollOffset(5, 100, 200, 'nearest')).to.equal(100);
+      expect(engine.resolveScrollOffset(50, 100, 200, 'nearest')).to.equal(
+        50 * ESTIMATE
+      );
+    });
+
+    it('resolveScrollOffset maps every other position onto an alignment', () => {
+      const engine = createEngine(100);
+
+      expect(engine.resolveScrollOffset(10, 0, 200)).to.equal(500);
+      expect(engine.resolveScrollOffset(10, 0, 200, 'start')).to.equal(500);
+      expect(engine.resolveScrollOffset(10, 0, 200, 'end')).to.equal(350);
+      expect(engine.resolveScrollOffset(10, 0, 200, 'center')).to.equal(425);
+    });
+  });
+
+  describe('Range helpers', () => {
+    it('compares ranges by their indexes', () => {
+      expect(rangesEqual(EMPTY_RANGE, { startIndex: 0, endIndex: -1 })).to.be
+        .true;
+      expect(rangesEqual(EMPTY_RANGE, { startIndex: 0, endIndex: 0 })).to.be
+        .false;
+    });
+
+    it('slices the items of a range and nothing for an empty one', () => {
+      const items = ['a', 'b', 'c', 'd'];
+
+      expect(sliceRange(items, { startIndex: 1, endIndex: 2 })).to.eql([
+        'b',
+        'c',
+      ]);
+      expect(sliceRange(items, EMPTY_RANGE)).to.eql([]);
+    });
+
+    it('normalizes consumer input for over-scan and sizes', () => {
+      expect(normalizeOverScan(2.7, 1)).to.equal(2);
+      expect(normalizeOverScan(-3, 1)).to.equal(0);
+      expect(normalizeOverScan('abc', 1)).to.equal(1);
+      expect(normalizeSize(30, 50)).to.equal(30);
+      expect(normalizeSize(0, 50)).to.equal(50);
+      expect(normalizeSize(Number.NaN, 50)).to.equal(50);
     });
   });
 });

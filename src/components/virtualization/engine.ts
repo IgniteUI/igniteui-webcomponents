@@ -1,5 +1,34 @@
-import { clamp } from '#internals/utils/math.js';
+import { asNumber, clamp } from '#internals/utils/math.js';
 import type { ScrollAlignment, VisibleRange } from './types.js';
+
+/** The range of an axis with nothing to render. */
+export const EMPTY_RANGE: VisibleRange = Object.freeze({
+  startIndex: 0,
+  endIndex: -1,
+});
+
+/** Whether two ranges cover the same indexes. */
+export function rangesEqual(a: VisibleRange, b: VisibleRange): boolean {
+  return a.startIndex === b.startIndex && a.endIndex === b.endIndex;
+}
+
+/** The items of `range`, or none for an empty range. */
+export function sliceRange<T>(items: readonly T[], range: VisibleRange): T[] {
+  return range.endIndex >= range.startIndex
+    ? items.slice(range.startIndex, range.endIndex + 1)
+    : [];
+}
+
+/** An over-scan count from consumer input: a non-negative integer, or `fallback`. */
+export function normalizeOverScan(value: unknown, fallback: number): number {
+  return Math.max(0, Math.floor(asNumber(value, fallback)));
+}
+
+/** An item size from consumer input: a positive number, or `fallback`. */
+export function normalizeSize(value: unknown, fallback: number): number {
+  const size = asNumber(value);
+  return size > 0 ? size : fallback;
+}
 
 /**
  * The maximum scrollable coordinate of a document does not change.
@@ -76,6 +105,8 @@ interface SizeIndex {
   readonly totalSize: number;
   /** Sum of the sizes of items [0, i): the offset at the leading edge of item i. */
   prefixSum(i: number): number;
+  /** The size of item i. Callers make sure that i is in range. */
+  sizeAt(i: number): number;
   /**
    * The 0-based index of the item that contains `offset`: the largest i where
    * `prefixSum(i) <= offset < prefixSum(i + 1)`.
@@ -196,6 +227,11 @@ class SizeTree implements SizeIndex {
     return sum;
   }
 
+  /** O(1). */
+  public sizeAt(i: number): number {
+    return this._sizes[i];
+  }
+
   /**
    * Sets the size of the item at a 0-based index and marks the item as
    * measured. Later `applyEstimate()` calls do not change measured items.
@@ -304,6 +340,10 @@ class UniformSizes implements SizeIndex {
     return i * this._size;
   }
 
+  public sizeAt(): number {
+    return this._size;
+  }
+
   public findIndexAtOffset(offset: number): number {
     if (this.length === 0 || this._size <= 0) return 0;
     return clamp(Math.floor(offset / this._size), 0, this.length - 1);
@@ -314,11 +354,12 @@ class UniformSizes implements SizeIndex {
   }
 
   /**
-   * There are no measurements to retain, so only the length matters. The
-   * size follows `applyEstimate`, as it does for a tree.
+   * There are no measurements to retain, so the retain count does not
+   * matter. A new fill size applies to every item, because there is no
+   * measured item that it could leave alone.
    */
   public cloneResized(newLength: number, fillSize: number): UniformSizes {
-    return newLength === this.length
+    return newLength === this.length && fillSize === this._size
       ? this
       : new UniformSizes(newLength, fillSize);
   }
@@ -481,6 +522,12 @@ export class VirtualScrollEngine {
     this.onSizeChange?.();
   }
 
+  /** The current virtual size in px of the item at `index`; 0 outside the list. O(1). */
+  public getItemSize(index: number): number {
+    if (!this._sizes || index < 0 || index >= this._sizes.length) return 0;
+    return this._sizes.sizeAt(index);
+  }
+
   /**
    * Returns the DOM scroll offset in px that puts the item at `index` at the
    * leading edge of the viewport.
@@ -490,6 +537,20 @@ export class VirtualScrollEngine {
 
     const clamped = Math.min(index, this._sizes.length);
     return this._sizes.prefixSum(clamped) / this._virtualRatio;
+  }
+
+  /**
+   * The DOM offset at which to place the rendered `range`: the scroll
+   * offset of its first item, clamped so that the items, which render at
+   * their real size, do not overflow past `domSize` under coordinate
+   * compression.
+   */
+  public getRangeOffset(range: VisibleRange): number {
+    return clamp(
+      this.getScrollOffsetForIndex(range.startIndex),
+      0,
+      this.domSize - this.getPhysicalRangeSize(range.startIndex, range.endIndex)
+    );
   }
 
   /**
@@ -536,6 +597,35 @@ export class VirtualScrollEngine {
   }
 
   /**
+   * The DOM scroll offset that brings the item at `index` into a
+   * `viewportSize` px viewport at `position`, given the current DOM offset.
+   *
+   * Accepts the full `ScrollLogicalPosition` set of `scrollIntoView`. For
+   * `nearest` on an item already in view, returns `currentOffset`, so no
+   * scroll occurs. Every other value maps onto a {@link ScrollAlignment}.
+   * As more items are measured, the same input can give a different, more
+   * accurate result.
+   */
+  public resolveScrollOffset(
+    index: number,
+    currentOffset: number,
+    viewportSize: number,
+    position: ScrollLogicalPosition = 'start'
+  ): number {
+    if (
+      position === 'nearest' &&
+      this.isIndexInView(index, currentOffset, viewportSize)
+    ) {
+      return currentOffset;
+    }
+
+    const align: ScrollAlignment =
+      position === 'center' || position === 'end' ? position : 'start';
+
+    return this.getAlignedScrollOffset(index, viewportSize, align);
+  }
+
+  /**
    * Whether the item at `index` is visible without more scrolling at the
    * given DOM scroll position. True when the item is fully inside the
    * viewport, or when it is larger than the viewport and covers it fully.
@@ -570,7 +660,7 @@ export class VirtualScrollEngine {
     overScan: number
   ): VisibleRange {
     if (!this._sizes || this._sizes.length === 0 || viewportSize <= 0) {
-      return { startIndex: 0, endIndex: -1 };
+      return EMPTY_RANGE;
     }
 
     // The viewport is not scaled by the virtual ratio. Items render at their
