@@ -507,12 +507,11 @@ signal that gives a clear answer:
 
 Supported values: `material`, `bootstrap`, `fluent`, `indigo`.
 
-> **Web Components resolve the active design system at runtime from CSS variables.**
+> **Web Components read the active design system from CSS variables for the initial theme.**
 > Components read `--ig-theme` and `--ig-theme-variant` (falling back to `bootstrap` /
 > `light` when absent). A generated palette alone does **not** switch the design system —
-> the pre-built theme CSS, the generated `:root` block, or a `configureTheme(ds, variant)`
-> call must set them. Getting this wrong yields correct colors with the wrong component
-> anatomy.
+> use the pre-built theme CSS or generated `:root` block for that. `configureTheme(ds, variant)`
+> switches registered components at runtime but does not rewrite those root variables.
 
 ### 3c: Generate the Global Theme
 
