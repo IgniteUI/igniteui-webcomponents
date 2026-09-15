@@ -216,11 +216,7 @@ heroBg: '/assets/images/hero-background.png',
 
 ### Tier 3 — `figma_get_screenshot` per Node
 
-**Use when:** no file key and no asset URL for a specific node.
-
-```
-figma_get_screenshot({ fileKey: "<fileKey>", nodeId: "<nodeId>", maxDimension: 2048 })
-```
+figma_get_screenshot({ nodeId: "<nodeId>", maxDimension: 2048 }) // session-bound variant; use fileKey only with addressable Figma MCP
 
 The response returns a short-lived URL plus a `curl` command — download it straight into the
 assets directory. Raise `maxDimension` for detail; the metadata reports the node's natural
