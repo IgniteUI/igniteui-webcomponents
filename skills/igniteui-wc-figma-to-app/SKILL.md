@@ -244,9 +244,7 @@ For **each** target artboard:
 ```
 figma_get_design_context({
   fileKey: "<fileKey>",
-  nodeId: "<artboardId>",
-  clientLanguages: "typescript,html,css",
-  clientFrameworks: "lit,web-components"
+  nodeId: "<artboardId>"
 })
 ```
 
