@@ -322,3 +322,17 @@ export function getVisibleAncestor(startNode: Node): HTMLElement | null {
 
   return null;
 }
+
+/**
+ * The border-box size of a resize entry along `axis`, with the content rect
+ * as the fallback for browsers without `borderBoxSize`.
+ */
+export function getBorderBoxSize(
+  entry: ResizeObserverEntry,
+  axis: 'block' | 'inline'
+): number {
+  const box = entry.borderBoxSize?.[0];
+  return axis === 'block'
+    ? (box?.blockSize ?? entry.contentRect.height)
+    : (box?.inlineSize ?? entry.contentRect.width);
+}

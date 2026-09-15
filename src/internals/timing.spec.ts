@@ -1,6 +1,6 @@
 import { expect } from '@open-wc/testing';
-import { type SinonFakeTimers, spy, useFakeTimers } from 'sinon';
-import { createTimer } from './timing.js';
+import { type SinonFakeTimers, spy, stub, useFakeTimers } from 'sinon';
+import { createTimer, nextAnimationFrame, withDeadline } from './timing.js';
 
 describe('Timing utilities', () => {
   describe('createTimer', () => {
@@ -76,6 +76,52 @@ describe('Timing utilities', () => {
       timer.start();
       timer.stop();
       expect(timer.active).to.be.false;
+    });
+  });
+
+  describe('withDeadline', () => {
+    it('resolves with the task and aborts the signal afterwards', async () => {
+      let aborted = false;
+
+      await withDeadline(1000, (signal) => {
+        signal.addEventListener('abort', () => {
+          aborted = true;
+        });
+        return Promise.resolve();
+      });
+
+      expect(aborted).to.be.true;
+    });
+
+    it('resolves at the deadline when the task never settles', async () => {
+      let aborted = false;
+
+      await withDeadline(10, (signal) => {
+        signal.addEventListener('abort', () => {
+          aborted = true;
+        });
+        return new Promise(() => {});
+      });
+
+      expect(aborted).to.be.true;
+    });
+  });
+
+  describe('nextAnimationFrame', () => {
+    it('resolves on an animation frame', async () => {
+      await nextAnimationFrame(1000);
+    });
+
+    it('resolves at the deadline when no frame is served', async () => {
+      const rafStub = stub(window, 'requestAnimationFrame').returns(0);
+
+      try {
+        await nextAnimationFrame(10);
+      } finally {
+        rafStub.restore();
+      }
+
+      expect(rafStub).to.have.been.calledOnce;
     });
   });
 });

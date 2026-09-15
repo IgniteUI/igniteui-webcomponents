@@ -65,11 +65,51 @@ function buildTree(tree: Float64Array, sizes: Float64Array): number {
 }
 
 /**
+ * The size bookkeeping behind one axis. `SizeTree` serves items that are
+ * measured one at a time. `UniformSizes` serves items that all share one
+ * size and are never measured.
+ */
+interface SizeIndex {
+  /** Number of items. */
+  readonly length: number;
+  /** Total size of all items. */
+  readonly totalSize: number;
+  /** Sum of the sizes of items [0, i): the offset at the leading edge of item i. */
+  prefixSum(i: number): number;
+  /**
+   * The 0-based index of the item that contains `offset`: the largest i where
+   * `prefixSum(i) <= offset < prefixSum(i + 1)`.
+   */
+  findIndexAtOffset(offset: number): number;
+  /**
+   * Records a measured size for the item at `index`. Returns true when the
+   * size changed.
+   */
+  update(index: number, newSize: number): boolean;
+  /**
+   * A new index of `newLength` items. Existing sizes are kept up to
+   * `retainCount`; the remainder is filled with `fillSize`. Returns `this`
+   * when the result would be identical, so the caller can skip a
+   * notification.
+   */
+  cloneResized(
+    newLength: number,
+    fillSize: number,
+    retainCount?: number
+  ): SizeIndex;
+  /**
+   * Sets `estimatedSize` on each item that is not measured. Returns true
+   * when at least one size changed.
+   */
+  applyEstimate(estimatedSize: number): boolean;
+}
+
+/**
  * Binary Indexed Tree (Fenwick tree) over item sizes. Each hot-path operation
  * is O(log N): point update (item measured), prefix sum (scroll offset), and
  * index at offset (scroll to item, through binary lifting).
  */
-class SizeTree {
+class SizeTree implements SizeIndex {
   public readonly length: number;
 
   /** A 1-indexed BIT. Each cell holds a partial range sum. */
@@ -116,6 +156,17 @@ class SizeTree {
     return SizeTree._build(
       new Float64Array(length).fill(fillSize),
       new Uint8Array(length)
+    );
+  }
+
+  /**
+   * Creates a tree from known sizes, each marked measured, so a later
+   * `applyEstimate` leaves them alone. O(N).
+   */
+  public static fromSizes(sizes: ArrayLike<number>): SizeTree {
+    return SizeTree._build(
+      Float64Array.from(sizes),
+      new Uint8Array(sizes.length).fill(1)
     );
   }
 
@@ -178,6 +229,8 @@ class SizeTree {
     fillSize: number,
     retainCount = newLength
   ): SizeTree {
+    if (newLength === this.length && retainCount >= newLength) return this;
+
     const sizes = new Float64Array(newLength).fill(fillSize);
     const measured = new Uint8Array(newLength);
     const retained = Math.max(0, Math.min(this.length, newLength, retainCount));
@@ -230,8 +283,57 @@ class SizeTree {
 }
 
 /**
- * Pure scroll-math engine for one axis of virtual scrolling. A Fenwick tree
- * holds all size state.
+ * Size index for items that all share one size. Every operation is O(1) and
+ * there is no per-item state, so it serves any item count at no memory cost.
+ * Measurements are rejected: the one size is the truth for every item.
+ */
+class UniformSizes implements SizeIndex {
+  public readonly length: number;
+  private _size: number;
+
+  constructor(length: number, size: number) {
+    this.length = length;
+    this._size = size;
+  }
+
+  public get totalSize(): number {
+    return this.length * this._size;
+  }
+
+  public prefixSum(i: number): number {
+    return i * this._size;
+  }
+
+  public findIndexAtOffset(offset: number): number {
+    if (this.length === 0 || this._size <= 0) return 0;
+    return clamp(Math.floor(offset / this._size), 0, this.length - 1);
+  }
+
+  public update(): boolean {
+    return false;
+  }
+
+  /**
+   * There are no measurements to retain, so only the length matters. The
+   * size follows `applyEstimate`, as it does for a tree.
+   */
+  public cloneResized(newLength: number, fillSize: number): UniformSizes {
+    return newLength === this.length
+      ? this
+      : new UniformSizes(newLength, fillSize);
+  }
+
+  public applyEstimate(estimatedSize: number): boolean {
+    if (this._size === estimatedSize) return false;
+    this._size = estimatedSize;
+    return true;
+  }
+}
+
+/**
+ * Pure scroll-math engine for one axis of virtual scrolling. A size index
+ * holds all size state: a Fenwick tree for measured items, or one shared
+ * size in fixed mode.
  *
  * ### Virtual and DOM coordinates
  *
@@ -253,8 +355,13 @@ export class VirtualScrollEngine {
    */
   private _virtualRatio = 1;
 
-  /** Binary Indexed Tree for O(log N) size queries and updates. */
-  private _tree: SizeTree | null = null;
+  /** Per-item sizes: a Fenwick tree, or one shared size in fixed mode. */
+  private _sizes: SizeIndex | null = null;
+
+  private _fixed = false;
+
+  /** The estimate given to the last `resize` or `updateEstimatedSize`. */
+  private _estimatedSize = 0;
 
   /**
    * Called when item sizes or the item count change.
@@ -262,9 +369,30 @@ export class VirtualScrollEngine {
    */
   public onSizeChange: (() => void) | null = null;
 
+  /**
+   * Whether every item shares one size, the current estimate, and
+   * `measureItem` is a no-op. A change in either direction discards all
+   * measured sizes: there is nothing to carry over between the two
+   * representations. `setSizes` clears it.
+   */
+  public get fixed(): boolean {
+    return this._fixed;
+  }
+
+  public set fixed(value: boolean) {
+    if (value === this._fixed) return;
+
+    this._fixed = value;
+    if (!this._sizes) return;
+
+    this._sizes = this._createIndex(this._sizes.length, this._estimatedSize);
+    this._updateVirtualRatio();
+    this.onSizeChange?.();
+  }
+
   /** Total virtual size of all items in px. */
   public get totalSize(): number {
-    return this._tree?.totalSize ?? 0;
+    return this._sizes?.totalSize ?? 0;
   }
 
   /** Total size in DOM space, clamped to the maximum browser size. */
@@ -290,18 +418,51 @@ export class VirtualScrollEngine {
     estimatedSize: number,
     retainCount = length
   ): void {
-    if (this._tree?.length === length && retainCount >= length) return;
+    this._estimatedSize = estimatedSize;
 
-    this._tree = this._tree
-      ? this._tree.cloneResized(length, estimatedSize, retainCount)
-      : SizeTree.filled(length, estimatedSize);
+    if (this._sizes) {
+      const resized = this._sizes.cloneResized(
+        length,
+        estimatedSize,
+        retainCount
+      );
+      if (resized === this._sizes) return;
+      this._sizes = resized;
+    } else {
+      this._sizes = this._createIndex(length, estimatedSize);
+    }
+
     this._updateVirtualRatio();
     this.onSizeChange?.();
   }
 
-  /** Records the measured DOM size for a single item. */
+  /** A fresh index of `length` items at `size`, in the current mode. */
+  private _createIndex(length: number, size: number): SizeIndex {
+    return this._fixed
+      ? new UniformSizes(length, size)
+      : SizeTree.filled(length, size);
+  }
+
+  /**
+   * Replaces every item size with the given values, all marked measured, so
+   * a later `updateEstimatedSize` leaves them alone. Leaves fixed mode. O(N).
+   *
+   * For sizes the caller knows up front, for example column widths, instead
+   * of one `measureItem` call per item. A later switch to `fixed` uses the
+   * estimate of the last `resize` or `updateEstimatedSize`, not these sizes.
+   */
+  public setSizes(sizes: ArrayLike<number>): void {
+    this._fixed = false;
+    this._sizes = SizeTree.fromSizes(sizes);
+    this._updateVirtualRatio();
+    this.onSizeChange?.();
+  }
+
+  /**
+   * Records the measured DOM size for a single item. Ignored in fixed mode.
+   */
   public measureItem(index: number, size: number): void {
-    if (!this._tree?.update(index, size)) return;
+    if (!this._sizes?.update(index, size)) return;
 
     this._updateVirtualRatio();
     this.onSizeChange?.();
@@ -313,7 +474,8 @@ export class VirtualScrollEngine {
    * not, because `resize` is then a no-op.
    */
   public updateEstimatedSize(estimatedSize: number): void {
-    if (!this._tree?.applyEstimate(estimatedSize)) return;
+    this._estimatedSize = estimatedSize;
+    if (!this._sizes?.applyEstimate(estimatedSize)) return;
 
     this._updateVirtualRatio();
     this.onSizeChange?.();
@@ -324,10 +486,10 @@ export class VirtualScrollEngine {
    * leading edge of the viewport.
    */
   public getScrollOffsetForIndex(index: number): number {
-    if (!this._tree || index <= 0) return 0;
+    if (!this._sizes || index <= 0) return 0;
 
-    const clamped = Math.min(index, this._tree.length);
-    return this._tree.prefixSum(clamped) / this._virtualRatio;
+    const clamped = Math.min(index, this._sizes.length);
+    return this._sizes.prefixSum(clamped) / this._virtualRatio;
   }
 
   /**
@@ -354,14 +516,14 @@ export class VirtualScrollEngine {
     viewportSize: number,
     align: ScrollAlignment
   ): number {
-    if (!this._tree || this._tree.length === 0) return 0;
+    if (!this._sizes || this._sizes.length === 0) return 0;
 
-    const clamped = clampIndex(index, this._tree.length);
-    const itemStart = this._tree.prefixSum(clamped);
+    const clamped = clampIndex(index, this._sizes.length);
+    const itemStart = this._sizes.prefixSum(clamped);
     let offset = itemStart;
 
     if (align !== 'start') {
-      const itemEnd = this._tree.prefixSum(clamped + 1);
+      const itemEnd = this._sizes.prefixSum(clamped + 1);
       const slack = viewportSize - Math.max(0, itemEnd - itemStart);
       offset -= align === 'center' ? slack / 2 : slack;
     }
@@ -384,11 +546,11 @@ export class VirtualScrollEngine {
     scrollPosition: number,
     viewportSize: number
   ): boolean {
-    if (!this._tree || this._tree.length === 0) return false;
+    if (!this._sizes || this._sizes.length === 0) return false;
 
-    const clamped = clampIndex(index, this._tree.length);
-    const itemStart = this._tree.prefixSum(clamped);
-    const itemEnd = this._tree.prefixSum(clamped + 1);
+    const clamped = clampIndex(index, this._sizes.length);
+    const itemStart = this._sizes.prefixSum(clamped);
+    const itemEnd = this._sizes.prefixSum(clamped + 1);
     const viewStart = Math.max(0, scrollPosition) * this._virtualRatio;
     const viewEnd = viewStart + viewportSize;
 
@@ -407,7 +569,7 @@ export class VirtualScrollEngine {
     viewportSize: number,
     overScan: number
   ): VisibleRange {
-    if (!this._tree || this._tree.length === 0 || viewportSize <= 0) {
+    if (!this._sizes || this._sizes.length === 0 || viewportSize <= 0) {
       return { startIndex: 0, endIndex: -1 };
     }
 
@@ -415,12 +577,12 @@ export class VirtualScrollEngine {
     // real pixel size, so a `viewportSize` px viewport always shows that many
     // virtual pixels of items, at any compression of the scroll range.
     const startOffset = Math.max(0, scrollPosition) * this._virtualRatio;
-    const first = this._tree.findIndexAtOffset(startOffset);
-    const last = this._tree.findIndexAtOffset(startOffset + viewportSize);
+    const first = this._sizes.findIndexAtOffset(startOffset);
+    const last = this._sizes.findIndexAtOffset(startOffset + viewportSize);
 
     return {
       startIndex: Math.max(0, first - overScan),
-      endIndex: Math.min(this._tree.length - 1, last + overScan),
+      endIndex: Math.min(this._sizes.length - 1, last + overScan),
     };
   }
 
@@ -430,15 +592,15 @@ export class VirtualScrollEngine {
    * items do not overflow past `domSize` under coordinate compression.
    */
   public getPhysicalRangeSize(startIndex: number, endIndex: number): number {
-    if (!this._tree) return 0;
+    if (!this._sizes) return 0;
 
     const start = Math.max(0, startIndex);
-    const end = Math.min(Math.max(endIndex + 1, start), this._tree.length);
-    return this._tree.prefixSum(end) - this._tree.prefixSum(start);
+    const end = Math.min(Math.max(endIndex + 1, start), this._sizes.length);
+    return this._sizes.prefixSum(end) - this._sizes.prefixSum(start);
   }
 
   private _updateVirtualRatio(): void {
-    const totalSize = this._tree?.totalSize ?? 0;
+    const totalSize = this._sizes?.totalSize ?? 0;
     this._virtualRatio =
       totalSize <= this._maxBrowserSize ? 1 : totalSize / this._maxBrowserSize;
   }

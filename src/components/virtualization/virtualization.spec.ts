@@ -2,6 +2,7 @@ import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import { spy, stub } from 'sinon';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
 import { suppressResizeObserverLoopError } from '#internals/testing/helpers.spec.js';
+import { simulateScroll } from '#internals/testing/simulate.spec.js';
 import type { VirtualScrollState } from './types.js';
 import IgcVirtualScrollComponent, {
   type VirtualScrollItemTemplate,
@@ -773,6 +774,90 @@ describe('VirtualScroll', () => {
       const firstRect = items[0].getBoundingClientRect();
       const secondRect = items[1].getBoundingClientRect();
       expect(firstRect.left).to.be.greaterThan(secondRect.left);
+    });
+  });
+
+  describe('Fixed item size', () => {
+    const realItemSize = 30;
+    const sizedTemplate: VirtualScrollItemTemplate<unknown> = (ctx) =>
+      html`<span style="display: block; height: ${realItemSize}px;"
+        >${ctx.value}</span
+      >`;
+
+    function trackHeight(el: IgcVirtualScrollComponent<string>): string {
+      return el.querySelector<HTMLElement>('[part="virtualization-track"]')!
+        .style.height;
+    }
+
+    async function createFixedFixture(
+      count = 100
+    ): Promise<IgcVirtualScrollComponent<string>> {
+      const el = await fixture<IgcVirtualScrollComponent<string>>(
+        html`<igc-virtual-scroll
+          fixed-item-size
+          estimated-item-size="50"
+          style="height: 300px"
+          .data=${createItems(count)}
+          .itemTemplate=${sizedTemplate}
+        ></igc-virtual-scroll>`
+      );
+
+      await el.layoutComplete;
+      await el.layoutComplete;
+      return el;
+    }
+
+    it('reflects the attribute', async () => {
+      const el = await fixture<IgcVirtualScrollComponent<string>>(
+        html`<igc-virtual-scroll fixed-item-size></igc-virtual-scroll>`
+      );
+
+      expect(el.fixedItemSize).to.be.true;
+
+      el.fixedItemSize = false;
+      await elementUpdated(el);
+
+      expect(el.hasAttribute('fixed-item-size')).to.be.false;
+    });
+
+    it('sizes the track from the estimate and ignores the rendered size', async () => {
+      const el = await createFixedFixture();
+      const measureSpy = spy(el['_engine'], 'measureItem');
+
+      await simulateScroll(el, { top: 1000 });
+      await el.layoutComplete;
+
+      expect(trackHeight(el)).to.equal('5000px');
+      expect(measureSpy).not.to.have.been.called;
+    });
+
+    it('applies a new estimated size to every item', async () => {
+      const el = await createFixedFixture();
+
+      el.estimatedItemSize = 20;
+      await el.layoutComplete;
+
+      expect(trackHeight(el)).to.equal('2000px');
+    });
+
+    it('measures the items once fixed sizing is turned off', async () => {
+      const el = await createFixedFixture();
+
+      el.fixedItemSize = false;
+      await el.layoutComplete;
+      await el.layoutComplete;
+
+      // The rendered items are 30px, not 50px, so the track shrinks by the
+      // difference for each measured item.
+      expect(Number.parseFloat(trackHeight(el))).to.be.lessThan(5000);
+    });
+
+    it('scrollToIndex lands on the exact offset without a correction pass', async () => {
+      const el = await createFixedFixture(1000);
+
+      await el.scrollToIndex(500);
+
+      expect(el.scrollTop).to.equal(500 * 50);
     });
   });
 });

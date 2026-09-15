@@ -5,6 +5,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+### Added
+- #### Virtual scroll
+  - `fixed-item-size` attribute. When set, every item has the size given by `estimated-item-size`, items are not measured in the DOM, and the offset math is constant time with no per-item state. Use it when the item template renders at one known size, for example a list of a million equal rows.
+
 ### Fixed
 - #### Carousel
   - Indicators now carry their `aria-label` as a content attribute in addition to `ElementInternals`, thus accessibility tools that do not read internals report the tab name.

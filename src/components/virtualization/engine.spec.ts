@@ -422,4 +422,179 @@ describe('VirtualScrollEngine', () => {
       expect(engine.domSize).to.equal(MAX_SIZE);
     });
   });
+
+  describe('Fixed sizes', () => {
+    function createFixedEngine(
+      length = 100,
+      size = ESTIMATE
+    ): VirtualScrollEngine {
+      const engine = new VirtualScrollEngine();
+      engine.fixed = true;
+      engine.resize(length, size);
+      return engine;
+    }
+
+    it('agrees with the measured index on every query', () => {
+      const size = 37;
+      const fixed = createFixedEngine(1000, size);
+      const measured = createEngine(1000, size);
+
+      expect(fixed.totalSize).to.equal(measured.totalSize);
+      expect(fixed.getPhysicalRangeSize(5, 20)).to.equal(
+        measured.getPhysicalRangeSize(5, 20)
+      );
+
+      for (const offset of [0, 1, 36, 37, 38, 500, 36_999, 37_000, 1e6]) {
+        expect(fixed.getVisibleRange(offset, 300, 2)).to.eql(
+          measured.getVisibleRange(offset, 300, 2)
+        );
+        expect(fixed.isIndexInView(400, offset, 300)).to.equal(
+          measured.isIndexInView(400, offset, 300)
+        );
+      }
+
+      for (const index of [0, 1, 17, 999, 1000, 5000]) {
+        expect(fixed.getScrollOffsetForIndex(index)).to.equal(
+          measured.getScrollOffsetForIndex(index)
+        );
+        for (const align of ['start', 'center', 'end'] as const) {
+          expect(fixed.getAlignedScrollOffset(index, 300, align)).to.equal(
+            measured.getAlignedScrollOffset(index, 300, align)
+          );
+        }
+      }
+    });
+
+    it('ignores measurements', () => {
+      const engine = createFixedEngine(10);
+      let notifications = 0;
+      engine.onSizeChange = () => notifications++;
+
+      engine.measureItem(3, 100);
+
+      expect(engine.totalSize).to.equal(500);
+      expect(engine.getScrollOffsetForIndex(4)).to.equal(200);
+      expect(notifications).to.equal(0);
+    });
+
+    it('applies a new estimate to every item', () => {
+      const engine = createFixedEngine(10);
+      let notifications = 0;
+      engine.onSizeChange = () => notifications++;
+
+      engine.updateEstimatedSize(20);
+      engine.updateEstimatedSize(20);
+
+      expect(engine.totalSize).to.equal(200);
+      expect(engine.getScrollOffsetForIndex(5)).to.equal(100);
+      expect(notifications).to.equal(1);
+    });
+
+    it('resizes to the new count and skips a resize to the same count', () => {
+      const engine = createFixedEngine(10);
+      let notifications = 0;
+      engine.onSizeChange = () => notifications++;
+
+      engine.resize(20, ESTIMATE);
+      expect(engine.totalSize).to.equal(1000);
+
+      // There are no measurements to discard, so a partial retain is a no-op.
+      engine.resize(20, ESTIMATE, 5);
+      expect(notifications).to.equal(1);
+    });
+
+    it('does not notify when the mode is set again or before sizing', () => {
+      const engine = new VirtualScrollEngine();
+      let notifications = 0;
+      engine.onSizeChange = () => notifications++;
+
+      engine.fixed = true;
+      engine.fixed = true;
+      expect(engine.fixed).to.be.true;
+      expect(notifications).to.equal(0);
+
+      engine.resize(10, ESTIMATE);
+      expect(engine.totalSize).to.equal(500);
+      expect(notifications).to.equal(1);
+    });
+
+    it('discards measured sizes on a switch in either direction', () => {
+      const engine = createEngine(10);
+      engine.measureItem(0, 100);
+      expect(engine.totalSize).to.equal(550);
+
+      engine.fixed = true;
+      expect(engine.totalSize).to.equal(500);
+
+      engine.fixed = false;
+      expect(engine.totalSize).to.equal(500);
+
+      engine.measureItem(0, 100);
+      expect(engine.totalSize).to.equal(550);
+    });
+
+    it('compresses the scroll range like the measured index', () => {
+      const engine = new VirtualScrollEngine();
+      engine.initMaxBrowserSize(createProbeDocument(1000).doc);
+      engine.fixed = true;
+      engine.resize(100, ESTIMATE);
+
+      expect(engine.totalSize).to.equal(5000);
+      expect(engine.domSize).to.equal(1000);
+      expect(engine.getVisibleRange(500, 100, 0)).to.eql({
+        startIndex: 50,
+        endIndex: 52,
+      });
+    });
+
+    it('stays in range with a zero size', () => {
+      const engine = createFixedEngine(10, 0);
+
+      expect(engine.totalSize).to.equal(0);
+      expect(engine.getVisibleRange(100, 300, 0)).to.eql({
+        startIndex: 0,
+        endIndex: 0,
+      });
+      expect(engine.getAlignedScrollOffset(5, 300, 'end')).to.equal(0);
+    });
+  });
+
+  describe('Explicit sizes', () => {
+    it('adopts the given sizes as measured', () => {
+      const engine = new VirtualScrollEngine();
+      let notifications = 0;
+      engine.onSizeChange = () => notifications++;
+
+      engine.setSizes([10, 20, 30]);
+
+      expect(engine.totalSize).to.equal(60);
+      expect(engine.getScrollOffsetForIndex(2)).to.equal(30);
+      expect(notifications).to.equal(1);
+
+      engine.updateEstimatedSize(100);
+      expect(engine.totalSize).to.equal(60);
+    });
+
+    it('leaves fixed mode', () => {
+      const engine = new VirtualScrollEngine();
+      engine.fixed = true;
+      engine.resize(3, ESTIMATE);
+
+      engine.setSizes(new Float64Array([10, 20, 30]));
+
+      expect(engine.fixed).to.be.false;
+      engine.measureItem(0, 15);
+      expect(engine.totalSize).to.equal(65);
+    });
+
+    it('keeps the sizes across an append', () => {
+      const engine = new VirtualScrollEngine();
+      engine.setSizes([10, 20, 30]);
+
+      engine.resize(5, ESTIMATE);
+
+      expect(engine.totalSize).to.equal(60 + 2 * ESTIMATE);
+      expect(engine.getScrollOffsetForIndex(3)).to.equal(60);
+    });
+  });
 });
