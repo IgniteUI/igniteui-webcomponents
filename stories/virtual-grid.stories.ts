@@ -7,7 +7,9 @@ import {
   IgcInputComponent,
   IgcVirtualGridComponent,
   type VirtualGridCellTemplate,
+  type VirtualGridHeaderTemplate,
   type VirtualGridState,
+  type VirtualScrollDataRequest,
   defineComponents,
 } from 'igniteui-webcomponents';
 import { disableStoryControls } from './story.js';
@@ -29,7 +31,7 @@ const metadata: Meta<IgcVirtualGridComponent> = {
           'A two-dimensional virtualization component. Only the rows and columns\nvisible in the viewport are rendered.\n\nRows are fixed height by default and columns always have a known width,\nso the offset math on both axes is arithmetic and any row count costs the\nsame. `autoRowHeight` switches rows to DOM measurement.',
       },
     },
-    actions: { handles: ['igcStateChange'] },
+    actions: { handles: ['igcStateChange', 'igcDataRequest'] },
   },
   argTypes: {
     rowHeight: {
@@ -45,6 +47,20 @@ const metadata: Meta<IgcVirtualGridComponent> = {
         "Whether rendered rows are measured in the DOM instead of all sharing\n`rowHeight`.\n\nA row's height then depends on the cells rendered in it. A tall cell in\na column that scrolls into view can grow the row and shift every row\nbelow it. For a stable layout keep rows fixed, or clamp cell content.",
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
+    },
+    pinnedColumnsStart: {
+      type: 'number',
+      description:
+        'The number of leading columns that stay in view during a horizontal\nscroll. They are the first entries of `columns`, rendered in every row\nand in the header. Give their cells an opaque background, since the\nscrollable columns pass under them.',
+      control: 'number',
+      table: { defaultValue: { summary: '0' } },
+    },
+    pinnedColumnsEnd: {
+      type: 'number',
+      description:
+        'The number of trailing columns that stay in view during a horizontal\nscroll. They are the last entries of `columns`. See `pinnedColumnsStart`.',
+      control: 'number',
+      table: { defaultValue: { summary: '0' } },
     },
     rowOverScan: {
       type: 'number',
@@ -64,6 +80,8 @@ const metadata: Meta<IgcVirtualGridComponent> = {
   args: {
     rowHeight: 40,
     autoRowHeight: false,
+    pinnedColumnsStart: 0,
+    pinnedColumnsEnd: 0,
     rowOverScan: 2,
     columnOverScan: 1,
   },
@@ -86,6 +104,18 @@ interface IgcVirtualGridArgs {
    * below it. For a stable layout keep rows fixed, or clamp cell content.
    */
   autoRowHeight: boolean;
+  /**
+   * The number of leading columns that stay in view during a horizontal
+   * scroll. They are the first entries of `columns`, rendered in every row
+   * and in the header. Give their cells an opaque background, since the
+   * scrollable columns pass under them.
+   */
+  pinnedColumnsStart: number;
+  /**
+   * The number of trailing columns that stay in view during a horizontal
+   * scroll. They are the last entries of `columns`. See `pinnedColumnsStart`.
+   */
+  pinnedColumnsEnd: number;
   /** Number of extra rows to render above and below the visible area. */
   rowOverScan: number;
   /** Number of extra columns to render before and after the visible area. */
@@ -133,6 +163,11 @@ const cellTemplate = ((ctx) =>
   Column
 > as VirtualGridCellTemplate<unknown, unknown>;
 
+const headerTemplate = ((ctx) =>
+  html`<div class="cell">
+    ${ctx.column.header}
+  </div>`) as VirtualGridHeaderTemplate<Column> as VirtualGridHeaderTemplate<unknown>;
+
 const LOREM =
   'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.';
 
@@ -165,8 +200,29 @@ const gridStyles = html`
       border-block-end: 1px solid var(--ig-gray-200, #e5e5e5);
     }
 
-    igc-virtual-grid [part='cell']:first-child {
+    igc-virtual-grid [part='header-cell'] {
+      display: flex;
+      align-items: center;
+      min-height: 40px;
+      padding-inline: 8px;
       font-weight: 600;
+      background: var(--ig-gray-100, #f2f2f2);
+      border-inline-end: 1px solid var(--ig-gray-200, #e5e5e5);
+      border-block-end: 2px solid var(--ig-gray-300, #ccc);
+    }
+
+    /* Pinned cells paint over the columns that scroll under them. */
+    igc-virtual-grid [part='cell'][data-vg-pinned] {
+      background: var(--ig-surface-500, #fff);
+    }
+
+    igc-virtual-grid
+      [data-vg-pinned='start']:not(:has(+ [data-vg-pinned='start'])) {
+      border-inline-end: 2px solid var(--ig-gray-400, #999);
+    }
+
+    igc-virtual-grid [data-vg-line='pinned-end'] {
+      border-inline-start: 2px solid var(--ig-gray-400, #999);
     }
 
     .toolbar {
@@ -251,7 +307,7 @@ export const Default: Story = {
     docs: {
       description: {
         story:
-          'One million rows by two hundred columns with fixed row heights and a uniform column width. Neither axis is measured, so the offset math is constant time and the rows exceed the browser scroll limit through coordinate compression.',
+          'One million rows by two hundred columns with fixed row heights, a uniform column width and a sticky header. Neither axis is measured, so the offset math is constant time and the rows exceed the browser scroll limit through coordinate compression.',
       },
     },
     actions: { handles: [] },
@@ -263,10 +319,13 @@ export const Default: Story = {
       column-width="120"
       row-over-scan=${args.rowOverScan}
       column-over-scan=${args.columnOverScan}
+      pinned-columns-start=${args.pinnedColumnsStart}
+      pinned-columns-end=${args.pinnedColumnsEnd}
       ?auto-row-height=${args.autoRowHeight}
       .data=${rows()}
       .columns=${COLUMNS}
       .cellTemplate=${cellTemplate}
+      .headerTemplate=${headerTemplate}
       @igcStateChange=${handleStateChange}
     ></igc-virtual-grid>
     ${readoutTemplate}
@@ -295,6 +354,82 @@ export const VariableColumnWidth: Story = {
     ></igc-virtual-grid>
     ${readoutTemplate}
   `,
+};
+
+export const PinnedColumns: Story = {
+  argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Two leading and one trailing pinned column. Pinned cells are sticky against the grid and render in every row and in the header; the scrollable window is computed over the space between them.',
+      },
+    },
+    actions: { handles: [] },
+  },
+  render: () => html`
+    ${gridStyles}
+    <igc-virtual-grid
+      pinned-columns-start="2"
+      pinned-columns-end="1"
+      .data=${rows()}
+      .columns=${COLUMNS}
+      .columnWidth=${(_: Column, index: number) => (index < 2 ? 90 : 140)}
+      .cellTemplate=${cellTemplate}
+      .headerTemplate=${headerTemplate}
+      @igcStateChange=${handleStateChange}
+    ></igc-virtual-grid>
+    ${readoutTemplate}
+  `,
+};
+
+export const InfiniteRows: Story = {
+  argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Rows loaded on demand. `igcDataRequest` fires when the rendered rows come near the end of `data`; the handler appends a page after a simulated delay and assigns a new array.',
+      },
+    },
+    actions: { handles: [] },
+  },
+  render: () => {
+    const PAGE_SIZE = 100;
+    let loading = false;
+
+    const grid = () =>
+      document.getElementById('vg-infinite') as IgcVirtualGridComponent;
+
+    const loadMore = (event: CustomEvent<VirtualScrollDataRequest>) => {
+      if (loading) {
+        return;
+      }
+      loading = true;
+
+      // Simulate network delay.
+      setTimeout(() => {
+        const { startIndex, count } = event.detail;
+        grid().data = rows(startIndex + Math.max(count, PAGE_SIZE));
+        loading = false;
+      }, 300);
+    };
+
+    return html`
+      ${gridStyles}
+      <igc-virtual-grid
+        id="vg-infinite"
+        pinned-columns-start="1"
+        .data=${rows(PAGE_SIZE)}
+        .columns=${TEXT_COLUMNS}
+        .cellTemplate=${cellTemplate}
+        .headerTemplate=${headerTemplate}
+        @igcDataRequest=${loadMore}
+        @igcStateChange=${handleStateChange}
+      ></igc-virtual-grid>
+      ${readoutTemplate}
+    `;
+  },
 };
 
 export const AutoRowHeight: Story = {
@@ -377,9 +512,11 @@ export const ScrollToCell: Story = {
       </div>
       <igc-virtual-grid
         id="vg-scroll"
+        pinned-columns-start="1"
         .data=${rows()}
         .columns=${COLUMNS}
         .cellTemplate=${cellTemplate}
+        .headerTemplate=${headerTemplate}
         @igcStateChange=${handleStateChange}
       ></igc-virtual-grid>
       ${readoutTemplate}

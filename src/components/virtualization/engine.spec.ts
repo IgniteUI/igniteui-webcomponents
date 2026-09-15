@@ -647,6 +647,39 @@ describe('VirtualScrollEngine', () => {
     });
   });
 
+  describe('Reserved size', () => {
+    const MAX_SIZE = 10_000;
+
+    it('shrinks the track by the reserved size only under compression', () => {
+      const engine = createEngineWithMaxSize(MAX_SIZE, 100);
+      engine.reservedSize = 400;
+
+      // 5000px of items fit into the 9600px left, so nothing is compressed.
+      expect(engine.domSize).to.equal(5000);
+
+      engine.resize(1000, ESTIMATE);
+      expect(engine.domSize).to.equal(MAX_SIZE - 400);
+      expect(engine.getScrollOffsetForIndex(1000)).to.equal(MAX_SIZE - 400);
+    });
+
+    it('starts compression once the items no longer fit next to the reserved size', () => {
+      // 5000px of items into 10_000px is uncompressed; into 4800px it is not.
+      const engine = createEngineWithMaxSize(MAX_SIZE, 100);
+      let changes = 0;
+      engine.onSizeChange = () => changes++;
+
+      engine.reservedSize = 5200;
+      expect(engine.domSize).to.equal(4800);
+      expect(changes).to.equal(1);
+
+      engine.reservedSize = 5200;
+      expect(changes).to.equal(1);
+
+      engine.reservedSize = -10;
+      expect(engine.domSize).to.equal(5000);
+    });
+  });
+
   describe('Range helpers', () => {
     it('compares ranges by their indexes', () => {
       expect(rangesEqual(EMPTY_RANGE, { startIndex: 0, endIndex: -1 })).to.be

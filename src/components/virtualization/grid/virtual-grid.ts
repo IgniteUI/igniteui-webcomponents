@@ -6,6 +6,7 @@ import {
   type TemplateResult,
 } from 'lit';
 import { property, state } from 'lit/decorators.js';
+import { ifDefined } from 'lit/directives/if-defined.js';
 import { createRef, ref } from 'lit/directives/ref.js';
 import { styleMap } from 'lit/directives/style-map.js';
 import { createIndexedResizeController } from '#internals/controllers/indexed-resize.js';
@@ -15,20 +16,23 @@ import { createResizeObserverController } from '#internals/controllers/resize-ob
 import { registerComponent } from '#internals/definitions/register.js';
 import type { Constructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
-import { commonPrefixLength } from '#internals/utils/arrays.js';
+import { commonPrefixLength, lastOf } from '#internals/utils/arrays.js';
 import { getBorderBoxSize, isLTR } from '#internals/utils/dom.js';
 import { asNumber } from '#internals/utils/math.js';
 import { equal } from '#internals/utils/objects.js';
+import { DataRequestTracker } from '../data-request.js';
 import {
   EMPTY_RANGE,
+  normalizeCount,
   normalizeOverScan,
   normalizeSize,
   rangesEqual,
   sliceRange,
 } from '../engine.js';
 import { ScrollCorrectionController } from '../scroll-correction.js';
-import type { VisibleRange } from '../types.js';
+import type { VirtualScrollDataRequest, VisibleRange } from '../types.js';
 import {
+  type PinnedTrack,
   type ScrollPosition,
   type ScrollTarget,
   type ViewportSize,
@@ -36,6 +40,7 @@ import {
 } from './engine.js';
 import {
   VirtualGridCellContext,
+  VirtualGridColumnContext,
   type VirtualGridColumnWidth,
   type VirtualGridState,
   type VisibleWindow,
@@ -45,8 +50,13 @@ export type VirtualGridCellTemplate<T, C> = (
   context: VirtualGridCellContext<T, C>
 ) => TemplateResult | typeof nothing;
 
+export type VirtualGridHeaderTemplate<C> = (
+  context: VirtualGridColumnContext<C>
+) => TemplateResult | typeof nothing;
+
 export interface IgcVirtualGridComponentEventMap {
   igcStateChange: CustomEvent<VirtualGridState>;
+  igcDataRequest: CustomEvent<VirtualScrollDataRequest>;
 }
 
 const SCROLL_OFFSET_EPSILON_PX = 1;
@@ -63,14 +73,19 @@ const EMPTY_WINDOW: VisibleWindow = Object.freeze({
 });
 
 /**
- * The cell wrapper role that goes with each host role. Rows are `row` for
- * all of them. A host role outside the table falls back to `grid`.
+ * The cell wrapper role that goes with each host role. Rows are `row` and
+ * header cells `columnheader` for all of them. A host role outside the
+ * table falls back to `grid`.
  */
 const CELL_ROLES: Record<string, 'gridcell' | 'cell'> = {
   grid: 'gridcell',
   treegrid: 'gridcell',
   table: 'cell',
 };
+
+type CellRole = 'gridcell' | 'cell' | 'columnheader';
+/** A named line of the row grid that a cell is placed at. */
+type GridLine = 'window-start' | 'pinned-end';
 
 function positionsEqual(a: ScrollPosition, b: ScrollPosition): boolean {
   return (
@@ -79,12 +94,23 @@ function positionsEqual(a: ScrollPosition, b: ScrollPosition): boolean {
   );
 }
 
+function px(value: number): string {
+  return `${value}px`;
+}
+
 /**
- * The column tracks and the row height are set on the track, not on the
- * translated content wrapper, so that a sibling of the wrapper, for
- * example a sticky header row, inherits them too. The first rendered cell
- * starts at the named `window-start` line, after the spacer track, so
- * tracks placed before the spacer later do not move it.
+ * The header row and the track are siblings, so the column tracks are set
+ * on both from one string, and the row height on the track alone.
+ *
+ * Every rendered row is one CSS grid: pinned start tracks, a spacer as wide
+ * as the columns scrolled past, the `window-start` line, the rendered
+ * window, a flexible track, and after the `pinned-end` line the pinned end
+ * tracks. Only the first cell of the window and of the pinned end is placed
+ * by line; the others follow it in flow.
+ *
+ * Pinned cells are sticky against the host, so a horizontal scroll never
+ * moves them and needs no script. They are painted over the cells that
+ * scroll under them, so they need an opaque background from the consumer.
  */
 const STYLES = `
   :where(igc-virtual-grid) {
@@ -109,18 +135,45 @@ const STYLES = `
     contain: layout style paint;
   }
 
-  :where(igc-virtual-grid) [part="row"] {
+  :where(igc-virtual-grid) [part="header"] {
+    position: sticky;
+    inset-block-start: 0;
+    z-index: 1;
+    min-width: 100%;
+    box-sizing: border-box;
+  }
+
+  :where(igc-virtual-grid) :is([part="row"], [part="header"]) {
     display: grid;
     grid-template-columns: var(--igc-grid-cols);
+  }
+
+  :where(igc-virtual-grid) [part="row"] {
     block-size: var(--igc-grid-row-height);
     box-sizing: border-box;
   }
 
-  :where(igc-virtual-grid) [part="row"] > [data-vg-window-start] {
+  :where(igc-virtual-grid) [data-vg-line="window-start"] {
     grid-column-start: window-start;
   }
 
-  :where(igc-virtual-grid) [part="cell"] {
+  :where(igc-virtual-grid) [data-vg-line="pinned-end"] {
+    grid-column-start: pinned-end;
+  }
+
+  :where(igc-virtual-grid) [data-vg-pinned] {
+    position: sticky;
+  }
+
+  :where(igc-virtual-grid) [data-vg-pinned="start"] {
+    inset-inline-start: 0;
+  }
+
+  :where(igc-virtual-grid) [data-vg-pinned="end"] {
+    inset-inline-end: 0;
+  }
+
+  :where(igc-virtual-grid) :is([part="cell"], [part="header-cell"]) {
     min-width: 0;
     overflow: hidden;
     box-sizing: border-box;
@@ -138,10 +191,14 @@ const STYLES = `
  * @element igc-virtual-grid
  *
  * @fires igcStateChange - Emitted when the rendered virtual window changes on either axis.
+ * @fires igcDataRequest - Emitted when the rendered rows come within a few rows of the end
+ * of `data`. Also emitted on the first render, when the loaded rows do not fill the viewport.
  *
  * @csspart virtualization-track - The full-size element that gives the host its scrollable extent.
  * @csspart virtualization-content - The wrapper that holds the rendered rows, translated into
  * position within the track.
+ * @csspart header - The sticky header row, rendered with `headerTemplate`.
+ * @csspart header-cell - A header cell. Wraps the output of `headerTemplate`.
  * @csspart row - A rendered row. A CSS grid whose tracks are the rendered columns.
  * @csspart cell - A rendered cell. Wraps the output of `cellTemplate`.
  */
@@ -167,7 +224,16 @@ export default class IgcVirtualGridComponent<
     indexKey: 'vgRow',
     callback: this._handleRowResize,
   });
+  private readonly _headerResizeController = createResizeObserverController(
+    this,
+    {
+      callback: this._handleHeaderResize,
+      target: null,
+      requestUpdate: false,
+    }
+  );
   private readonly _layoutSettle = createLayoutSettleController(this);
+  private readonly _dataRequests = new DataRequestTracker();
   private readonly _scrollCorrection =
     new ScrollCorrectionController<ScrollPosition>(this, {
       current: () => this._currentScroll(),
@@ -196,14 +262,16 @@ export default class IgcVirtualGridComponent<
    * The array of rows to virtualize.
    *
    * Compared by reference: a mutation in place (`data.push(...)`) causes no
-   * update. Assign a new array instead.
+   * update. Assign a new array instead. The `igcDataRequest` flow also
+   * expects a new array.
    */
   @property({ attribute: false })
   public data: T[] = [];
 
   /**
    * The column descriptors, in display order. The grid reads nothing from
-   * them itself; they are handed to `cellTemplate` and `columnWidth`.
+   * them itself; they are handed to `cellTemplate`, `headerTemplate` and
+   * `columnWidth`.
    *
    * Compared by reference, like `data`.
    */
@@ -221,6 +289,14 @@ export default class IgcVirtualGridComponent<
    */
   @property({ attribute: false })
   public cellTemplate: VirtualGridCellTemplate<T, C> | null = null;
+
+  /**
+   * A function that renders one header cell from a `VirtualGridColumnContext`.
+   * When set, a header row sticks to the top of the grid and shares the
+   * column tracks of the rows. Its height comes from its content.
+   */
+  @property({ attribute: false })
+  public headerTemplate: VirtualGridHeaderTemplate<C> | null = null;
 
   /**
    * The height of every row in pixels. With `autoRowHeight` set, the
@@ -253,6 +329,26 @@ export default class IgcVirtualGridComponent<
    */
   @property({ type: Number, attribute: 'column-width' })
   public columnWidth: VirtualGridColumnWidth<C> = DEFAULT_COLUMN_WIDTH;
+
+  /**
+   * The number of leading columns that stay in view during a horizontal
+   * scroll. They are the first entries of `columns`, rendered in every row
+   * and in the header. Give their cells an opaque background, since the
+   * scrollable columns pass under them.
+   * @attr pinned-columns-start
+   * @default 0
+   */
+  @property({ type: Number, attribute: 'pinned-columns-start' })
+  public pinnedColumnsStart = 0;
+
+  /**
+   * The number of trailing columns that stay in view during a horizontal
+   * scroll. They are the last entries of `columns`. See `pinnedColumnsStart`.
+   * @attr pinned-columns-end
+   * @default 0
+   */
+  @property({ type: Number, attribute: 'pinned-columns-end' })
+  public pinnedColumnsEnd = 0;
 
   /**
    * Number of extra rows to render above and below the visible area.
@@ -335,14 +431,28 @@ export default class IgcVirtualGridComponent<
           ? commonPrefixLength(previous, this._rows)
           : 0
       );
-      this.ariaRowCount = `${this._rows.length}`;
+      this._dataRequests.reset();
+    }
+
+    if (changed.has('headerTemplate')) {
+      if (!this.headerTemplate) {
+        this._engine.headerSize = 0;
+      }
+      this.ariaRowCount = `${this._rows.length + this._headerRowCount}`;
+    } else if (changed.has('data')) {
+      this.ariaRowCount = `${this._rows.length + this._headerRowCount}`;
     }
 
     if (changed.has('rowHeight')) {
       rows.updateEstimatedSize(this._normalizedRowHeight);
     }
 
-    if (changed.has('columns') || changed.has('columnWidth')) {
+    if (
+      changed.has('columns') ||
+      changed.has('columnWidth') ||
+      changed.has('pinnedColumnsStart') ||
+      changed.has('pinnedColumnsEnd')
+    ) {
       this._syncColumnSizes();
       this.ariaColCount = `${this._columns.length}`;
     }
@@ -354,6 +464,7 @@ export default class IgcVirtualGridComponent<
     this._rowResizeController.sync(
       this.autoRowHeight ? this._contentRef.value : null
     );
+    this._checkDataRequest();
     this._emitStateChange();
   }
 
@@ -362,33 +473,62 @@ export default class IgcVirtualGridComponent<
       return html`${nothing}`;
     }
 
-    const { rows: rowsEngine, columns: columnsEngine } = this._engine;
+    const engine = this._engine;
     const { rows: rowRange, columns: columnRange } = this._window;
     const cellRole = CELL_ROLES[this.role ?? 'grid'] ?? CELL_ROLES.grid;
 
-    const trackStyle = {
-      width: `${columnsEngine.domSize}px`,
-      height: `${rowsEngine.domSize}px`,
+    // The header shares the horizontal geometry of the track.
+    const headerStyle = {
+      width: px(engine.domWidth),
       '--igc-grid-cols': this._columnTracks(columnRange),
+    };
+    const trackStyle = {
+      ...headerStyle,
+      height: px(engine.rows.domSize),
       '--igc-grid-row-height': this.autoRowHeight
         ? 'auto'
-        : `${this._normalizedRowHeight}px`,
+        : px(this._normalizedRowHeight),
     };
 
     // The content wrapper sits at the origin of the track. A vertical
     // translation to the first rendered row puts that row at its virtual
     // position. The horizontal axis is not translated: each row is a grid
-    // whose first track is as wide as the columns scrolled past.
+    // whose spacer track is as wide as the columns scrolled past.
     const contentStyle = {
-      transform: `translateY(${rowsEngine.getRangeOffset(rowRange)}px)`,
+      transform: `translateY(${px(engine.rows.getRangeOffset(rowRange))})`,
     };
 
     const rowCount = this._rows.length;
     const columnCount = this._columns.length;
+    const rowIndexOffset = 1 + this._headerRowCount;
     const visibleRows = sliceRange(this._rows, rowRange);
-    const visibleColumns = sliceRange(this._columns, columnRange);
 
     return html`
+      ${
+        this.headerTemplate
+          ? html`<div
+              ${ref(this._handleHeaderRef)}
+              part="header"
+              role="row"
+              aria-rowindex="1"
+              style=${styleMap(headerStyle)}
+            >
+              ${this._renderCells(
+                columnRange,
+                'header-cell',
+                'columnheader',
+                (column, columnIndex) =>
+                  this.headerTemplate!(
+                    new VirtualGridColumnContext(
+                      column,
+                      columnIndex,
+                      columnCount
+                    )
+                  )
+              )}
+            </div>`
+          : nothing
+      }
       <div
         part="virtualization-track"
         role="presentation"
@@ -405,34 +545,111 @@ export default class IgcVirtualGridComponent<
             return html`<div
               part="row"
               role="row"
-              aria-rowindex=${rowIndex + 1}
+              aria-rowindex=${rowIndex + rowIndexOffset}
               data-vg-row=${rowIndex}
             >
-              ${visibleColumns.map((column, j) => {
-                const columnIndex = columnRange.startIndex + j;
-                const ctx = new VirtualGridCellContext(
-                  row,
-                  rowIndex,
-                  rowCount,
-                  column,
-                  columnIndex,
-                  columnCount
-                );
-                return html`<div
-                  part="cell"
-                  role=${cellRole}
-                  aria-colindex=${columnIndex + 1}
-                  data-vg-column=${columnIndex}
-                  ?data-vg-window-start=${j === 0}
-                >
-                  ${this.cellTemplate!(ctx)}
-                </div>`;
-              })}
+              ${this._renderCells(
+                columnRange,
+                'cell',
+                cellRole,
+                (column, columnIndex) =>
+                  this.cellTemplate!(
+                    new VirtualGridCellContext(
+                      row,
+                      rowIndex,
+                      rowCount,
+                      column,
+                      columnIndex,
+                      columnCount
+                    )
+                  )
+              )}
             </div>`;
           })}
         </div>
       </div>
     `;
+  }
+
+  //#endregion
+
+  //#region Rendering
+
+  /**
+   * Renders the cells of one row in track order: the pinned start columns,
+   * the scrollable window, then the pinned end columns. The first cell of
+   * the window and of the pinned end carry the grid line they start at.
+   */
+  private _renderCells(
+    range: VisibleRange,
+    part: 'cell' | 'header-cell',
+    role: CellRole,
+    content: (column: C, columnIndex: number) => TemplateResult | typeof nothing
+  ): TemplateResult[] {
+    const columns = this._columns;
+    const { start, end } = this._engine.pinned;
+    const endStart = columns.length - end.length;
+    const cells: TemplateResult[] = [];
+
+    const cell = (
+      columnIndex: number,
+      pinned: PinnedTrack | null,
+      line: GridLine | null
+    ) =>
+      html`<div
+        part=${part}
+        role=${role}
+        aria-colindex=${columnIndex + 1}
+        data-vg-column=${columnIndex}
+        data-vg-pinned=${pinned?.side ?? nothing}
+        data-vg-line=${line ?? nothing}
+        style=${ifDefined(
+          pinned
+            ? `inset-inline-${pinned.side}: ${px(pinned.inset)}`
+            : undefined
+        )}
+      >
+        ${content(columns[columnIndex], columnIndex)}
+      </div>`;
+
+    for (let i = 0; i < start.length; i++) {
+      cells.push(cell(i, start[i], null));
+    }
+    for (let i = range.startIndex; i <= range.endIndex; i++) {
+      cells.push(cell(i, null, i === range.startIndex ? 'window-start' : null));
+    }
+    for (let i = endStart; i < columns.length; i++) {
+      cells.push(
+        cell(i, end[i - endStart], i === endStart ? 'pinned-end' : null)
+      );
+    }
+
+    return cells;
+  }
+
+  /**
+   * The `grid-template-columns` value shared by the header and every row:
+   * the pinned start tracks, a spacer as wide as the scrollable columns
+   * before the window, the `window-start` line, one track per rendered
+   * column, a flexible track that fills a viewport wider than all columns
+   * together, and the pinned end tracks after their line.
+   */
+  private _columnTracks(range: VisibleRange): string {
+    const engine = this._engine;
+    const { start, end } = engine.pinned;
+    const tracks = start.map((track) => px(track.width));
+
+    tracks.push(`${px(engine.getColumnRangeOffset(range))} [window-start]`);
+    for (let i = range.startIndex; i <= range.endIndex; i++) {
+      tracks.push(px(engine.getColumnWidth(i)));
+    }
+    tracks.push('1fr');
+
+    if (end.length > 0) {
+      tracks.push('[pinned-end]', ...end.map((track) => px(track.width)));
+    }
+
+    return tracks.join(' ');
   }
 
   //#endregion
@@ -454,45 +671,35 @@ export default class IgcVirtualGridComponent<
     return normalizeSize(this.rowHeight, DEFAULT_ROW_HEIGHT);
   }
 
-  /**
-   * Pushes the column widths to the horizontal engine: one bulk assignment
-   * of known sizes for a function, a uniform index for a number.
-   */
-  private _syncColumnSizes(): void {
-    const { columns } = this._engine;
-    const width = this.columnWidth;
+  private get _overScan(): { rows: number; columns: number } {
+    return {
+      rows: normalizeOverScan(this.rowOverScan, DEFAULT_ROW_OVER_SCAN),
+      columns: normalizeOverScan(this.columnOverScan, DEFAULT_COLUMN_OVER_SCAN),
+    };
+  }
 
-    if (typeof width === 'function') {
-      columns.setSizes(
-        this._columns.map((column, i) =>
-          Math.max(0, asNumber(width(column, i)))
-        )
-      );
-    } else {
-      columns.fixed = true;
-      columns.resize(
-        this._columns.length,
-        normalizeSize(width, DEFAULT_COLUMN_WIDTH)
-      );
-    }
+  /** 1 with a header row, which counts as a row for ARIA; 0 without. */
+  private get _headerRowCount(): number {
+    return this.headerTemplate ? 1 : 0;
   }
 
   /**
-   * The `grid-template-columns` value shared by every rendered row: a
-   * spacer as wide as the columns before the window, the `window-start`
-   * line, one track per rendered column, and a flexible track that fills a
-   * viewport wider than all columns together.
+   * Hands the column widths and the pinned counts to the engine: one value
+   * per column, from the number or from the function evaluated once per
+   * column.
    */
-  private _columnTracks(range: VisibleRange): string {
-    const { columns } = this._engine;
-    const tracks = [`${columns.getRangeOffset(range)}px [window-start]`];
+  private _syncColumnSizes(): void {
+    const columns = this._columns;
+    const width = this.columnWidth;
+    const widths =
+      typeof width === 'function'
+        ? columns.map((column, i) => Math.max(0, asNumber(width(column, i))))
+        : columns.map(() => normalizeSize(width, DEFAULT_COLUMN_WIDTH));
 
-    for (let i = range.startIndex; i <= range.endIndex; i++) {
-      tracks.push(`${columns.getItemSize(i)}px`);
-    }
-    tracks.push('1fr');
-
-    return tracks.join(' ');
+    this._engine.setColumns(widths, {
+      start: normalizeCount(this.pinnedColumnsStart, columns.length),
+      end: normalizeCount(this.pinnedColumnsEnd, columns.length),
+    });
   }
 
   /**
@@ -501,13 +708,11 @@ export default class IgcVirtualGridComponent<
    */
   private _computeWindow(): VisibleWindow {
     return this.cellTemplate
-      ? this._engine.getVisibleWindow(this._scroll, this._viewport, {
-          rows: normalizeOverScan(this.rowOverScan, DEFAULT_ROW_OVER_SCAN),
-          columns: normalizeOverScan(
-            this.columnOverScan,
-            DEFAULT_COLUMN_OVER_SCAN
-          ),
-        })
+      ? this._engine.getVisibleWindow(
+          this._scroll,
+          this._viewport,
+          this._overScan
+        )
       : EMPTY_WINDOW;
   }
 
@@ -563,6 +768,20 @@ export default class IgcVirtualGridComponent<
     }
   }
 
+  /** Follows the header element across renders with one resize observer. */
+  private readonly _handleHeaderRef = (element?: Element): void => {
+    this._headerResizeController.sync(element);
+  };
+
+  /**
+   * The header is in flow before the track, so the engine reserves its
+   * height on the vertical axis and the rows scroll through the viewport
+   * below it.
+   */
+  private _handleHeaderResize(entries: ResizeObserverEntry[]): void {
+    this._engine.headerSize = getBorderBoxSize(lastOf(entries)!, 'block');
+  }
+
   /**
    * Scrolls both axes to `target`. Column widths are always known, so only
    * measured rows can move the landing point between correction passes.
@@ -581,6 +800,18 @@ export default class IgcVirtualGridComponent<
         ),
       options?.behavior ?? 'auto'
     );
+  }
+
+  private _checkDataRequest(): void {
+    const request = this._dataRequests.next(
+      this._window.rows,
+      this._rows.length,
+      this._overScan.rows
+    );
+
+    if (request) {
+      this.emitEvent('igcDataRequest', { detail: request });
+    }
   }
 
   /**
@@ -604,7 +835,7 @@ export default class IgcVirtualGridComponent<
       columnEndIndex: columns.endIndex,
       viewportWidth: this._viewport.width,
       viewportHeight: this._viewport.height,
-      totalWidth: this._engine.columns.totalSize,
+      totalWidth: this._engine.totalWidth,
       totalHeight: this._engine.rows.totalSize,
     };
 
@@ -635,9 +866,24 @@ export default class IgcVirtualGridComponent<
   }
 
   /**
+   * The wrapper element of the cell at `rowIndex`, `columnIndex`, or `null`
+   * when that cell is not rendered. Pair it with `scrollToCell` to move
+   * focus to a cell that is out of view.
+   */
+  public getCellElement(
+    rowIndex: number,
+    columnIndex: number
+  ): HTMLElement | null {
+    return this.querySelector<HTMLElement>(
+      `:scope > [part="virtualization-track"] > [part="virtualization-content"] > [data-vg-row="${rowIndex}"] > [data-vg-column="${columnIndex}"]`
+    );
+  }
+
+  /**
    * Scrolls to the cell at `rowIndex`, `columnIndex`. `options.block`
    * aligns the row and `options.inline` the column. Indexes outside the
-   * data are clamped to the last row or column.
+   * data are clamped to the last row or column. A pinned column is always
+   * in view, so the horizontal offset does not change for it.
    *
    * With `autoRowHeight`, rows outside the rendered window have only an
    * estimated height, so the first jump can miss the target row. The rows

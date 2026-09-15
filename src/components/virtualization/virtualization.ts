@@ -19,6 +19,7 @@ import { commonPrefixLength } from '#internals/utils/arrays.js';
 import { getBorderBoxSize, isLTR } from '#internals/utils/dom.js';
 import { clamp } from '#internals/utils/math.js';
 import { equal } from '#internals/utils/objects.js';
+import { DataRequestTracker } from './data-request.js';
 import {
   EMPTY_RANGE,
   normalizeOverScan,
@@ -44,7 +45,6 @@ export interface IgcVirtualScrollComponentEventMap {
   igcDataRequest: CustomEvent<VirtualScrollDataRequest>;
 }
 
-const REMOTE_SCROLLING_THRESHOLD = 5;
 const SCROLL_OFFSET_EPSILON_PX = 1;
 /** Fallback for a non-positive `estimatedItemSize`. Equal to its default. */
 const DEFAULT_ESTIMATED_ITEM_SIZE = 50;
@@ -158,17 +158,7 @@ export default class IgcVirtualScrollComponent<
 
   private _currentRange: VisibleRange = EMPTY_RANGE;
   private _lastEmittedState: VirtualScrollState | null = null;
-  private _hasPendingDataRequest = false;
-
-  /**
-   * The `startIndex` of the last emitted `igcDataRequest`, which is also the
-   * item count at that emit. See `_checkDataRequest`.
-   *
-   * Kept across a disconnect, like `_hasPendingDataRequest`: a move in the
-   * DOM does not undo what the consumer was already asked for. If only one
-   * of the two were cleared, the request loop would reopen on reconnect.
-   */
-  private _lastDataRequestIndex = -1;
+  private readonly _dataRequests = new DataRequestTracker();
 
   /**
    * The live scroll offset on the active axis. Not reactive by design:
@@ -296,7 +286,7 @@ export default class IgcVirtualScrollComponent<
         this._normalizedItemSize,
         this._firstChangedIndex(changed.get('data'))
       );
-      this._hasPendingDataRequest = false;
+      this._dataRequests.reset();
     }
 
     if (changed.has('estimatedItemSize')) {
@@ -527,32 +517,15 @@ export default class IgcVirtualScrollComponent<
   }
 
   private _checkDataRequest(): void {
-    if (this._hasPendingDataRequest) return;
+    const request = this._dataRequests.next(
+      this._currentRange,
+      this._items.length,
+      this._normalizedOverScan
+    );
 
-    const range = this._currentRange;
-    const total = this._items.length;
-
-    if (total === 0 || range.endIndex < total - REMOTE_SCROLLING_THRESHOLD) {
-      return;
+    if (request) {
+      this.emitEvent('igcDataRequest', { detail: request });
     }
-
-    // Each `data` change clears `_hasPendingDataRequest`, including one that
-    // appends nothing. Without this second guard, a consumer whose source is
-    // exhausted, and that reassigns `data` in response to a request, would
-    // receive the same request on each reassignment.
-    if (this._lastDataRequestIndex === total) {
-      return;
-    }
-
-    this._hasPendingDataRequest = true;
-    this._lastDataRequestIndex = total;
-
-    this.emitEvent('igcDataRequest', {
-      detail: {
-        startIndex: total,
-        count: Math.max(this._normalizedOverScan * 4, 20),
-      },
-    });
   }
 
   //#endregion

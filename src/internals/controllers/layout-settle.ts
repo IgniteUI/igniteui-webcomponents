@@ -1,5 +1,5 @@
 import type { ReactiveElement } from 'lit';
-import { nextAnimationFrame } from '../timing.js';
+import { delay, nextAnimationFrame } from '../timing.js';
 
 /**
  * Upper limit on follow-up render passes. A host whose measurements never
@@ -19,9 +19,13 @@ const FRAME_TIMEOUT_MS = 100;
  * schedule more renders, has reached a stable DOM.
  *
  * `updateComplete` covers one Lit render pass. This covers the follow-up
- * passes as well: after each update it yields one animation frame so that
- * observers, for example a ResizeObserver, can deliver, and it repeats while
- * the host has an update pending.
+ * passes as well: after each update it yields one animation frame and the
+ * task after it, so that observers can deliver, and it repeats while the
+ * host has an update pending.
+ *
+ * The task after the frame matters: a ResizeObserver broadcasts after the
+ * animation frame callbacks of the same frame, so a check right after the
+ * frame would miss the update a measurement schedules.
  */
 class LayoutSettleController {
   private readonly _host: ReactiveElement;
@@ -48,6 +52,7 @@ class LayoutSettleController {
 
       for (let i = 0; i < MAX_PASSES; i++) {
         await nextAnimationFrame(FRAME_TIMEOUT_MS);
+        await delay(0);
 
         if (!this._host.isUpdatePending) {
           break;

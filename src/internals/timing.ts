@@ -53,13 +53,15 @@ export function createTimer(callback: () => void, defaultDelay = 0): Timer {
 
 /**
  * Resolves after `ms`. An abort of `signal` stops the timer, so no live
- * handle remains once the other side of a race has settled.
+ * handle remains once the other side of a race has settled. With `0` and
+ * no signal it yields one task, past the rendering steps of the current
+ * frame.
  */
-function delay(ms: number, signal: AbortSignal): Promise<void> {
+export function delay(ms: number, signal?: AbortSignal): Promise<void> {
   return new Promise((resolve) => {
     const timer = createTimer(resolve, ms);
     timer.start();
-    signal.addEventListener('abort', () => timer.stop(), { once: true });
+    signal?.addEventListener('abort', () => timer.stop(), { once: true });
   });
 }
 

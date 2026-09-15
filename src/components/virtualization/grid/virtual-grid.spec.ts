@@ -5,9 +5,15 @@ import { spy } from 'sinon';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
 import { suppressResizeObserverLoopError } from '#internals/testing/helpers.spec.js';
 import { simulateScroll } from '#internals/testing/simulate.spec.js';
-import type { VirtualGridCellContext, VirtualGridState } from './types.js';
+import type { VirtualScrollDataRequest } from '../types.js';
+import type {
+  VirtualGridCellContext,
+  VirtualGridColumnContext,
+  VirtualGridState,
+} from './types.js';
 import IgcVirtualGridComponent, {
   type VirtualGridCellTemplate,
+  type VirtualGridHeaderTemplate,
 } from './virtual-grid.js';
 
 interface Row {
@@ -54,6 +60,27 @@ describe('VirtualGrid', () => {
     (ctx) => html`<span>${ctx.row.id}:${ctx.column.field}</span>`
   );
 
+  /** A 30px tall header cell. Widened like `asTemplate`. */
+  const headerTemplate = ((ctx: VirtualGridColumnContext<Column>) =>
+    html`<div style="height: 30px">
+      ${ctx.column.field}
+    </div>`) as VirtualGridHeaderTemplate<unknown>;
+
+  function header(el: Grid): HTMLElement | null {
+    return el.querySelector<HTMLElement>(':scope > [part="header"]');
+  }
+
+  function cellAt(row: HTMLElement, columnIndex: number): HTMLElement {
+    return row.querySelector<HTMLElement>(`[data-vg-column="${columnIndex}"]`)!;
+  }
+
+  /** The distance of `node` from the same edge of the grid. */
+  function offset(el: Grid, node: Element, edge: 'left' | 'top'): number {
+    return (
+      node.getBoundingClientRect()[edge] - el.getBoundingClientRect()[edge]
+    );
+  }
+
   function renderedRows(el: Grid): HTMLElement[] {
     return Array.from(el.querySelectorAll<HTMLElement>('[data-vg-row]'));
   }
@@ -87,6 +114,9 @@ describe('VirtualGrid', () => {
     autoRowHeight?: boolean;
     role?: 'grid' | 'table';
     dir?: 'ltr' | 'rtl';
+    header?: boolean;
+    pinnedStart?: number;
+    pinnedEnd?: number;
   }
 
   /** A 400 x 300 px grid of 100 px wide columns, settled. */
@@ -97,6 +127,9 @@ describe('VirtualGrid', () => {
     autoRowHeight = false,
     role,
     dir,
+    header = false,
+    pinnedStart = 0,
+    pinnedEnd = 0,
   }: GridOptions = {}): Promise<Grid> {
     const el = await fixture<Grid>(
       html`<igc-virtual-grid
@@ -104,10 +137,13 @@ describe('VirtualGrid', () => {
         role=${ifDefined(role)}
         dir=${ifDefined(dir)}
         ?auto-row-height=${autoRowHeight}
+        .pinnedColumnsStart=${pinnedStart}
+        .pinnedColumnsEnd=${pinnedEnd}
         .data=${createRows(rows)}
         .columns=${createColumns(columns)}
         .columnWidth=${100}
         .cellTemplate=${template}
+        .headerTemplate=${header ? headerTemplate : null}
       ></igc-virtual-grid>`
     );
     await el.layoutComplete;
@@ -520,6 +556,270 @@ describe('VirtualGrid', () => {
 
       await el.layoutComplete;
       expect(el.isUpdatePending).to.be.false;
+    });
+  });
+
+  describe('Header row', () => {
+    it('passes the a11y audit with a header', async () => {
+      const el = await createGrid({ rows: 10, columns: 3, header: true });
+
+      await expect(el).lightDom.to.be.accessible();
+    });
+
+    it('renders a sticky row of column headers and counts it as a row', async () => {
+      const el = await createGrid({ header: true });
+      const row = header(el)!;
+      const cells = row.querySelectorAll<HTMLElement>('[data-vg-column]');
+
+      expect(row.getAttribute('role')).to.equal('row');
+      expect(row.getAttribute('aria-rowindex')).to.equal('1');
+      expect(getComputedStyle(row).position).to.equal('sticky');
+      expect(cells).to.have.length(6);
+      expect(cells[0].getAttribute('part')).to.equal('header-cell');
+      expect(cells[0].getAttribute('role')).to.equal('columnheader');
+      expect(cells[0].getAttribute('aria-colindex')).to.equal('1');
+      expect(cells[0].textContent!.trim()).to.equal('col0');
+
+      expect(el.getAttribute('aria-rowcount')).to.equal('1001');
+      expect(renderedRows(el)[0].getAttribute('aria-rowindex')).to.equal('2');
+    });
+
+    it('passes the column, its index and the count to the header template', async () => {
+      const templateSpy = spy(headerTemplate);
+      const el = await createGrid({ columns: 3 });
+
+      el.headerTemplate = templateSpy;
+      await el.layoutComplete;
+
+      const ctx = templateSpy.firstCall
+        .args[0] as VirtualGridColumnContext<Column>;
+      expect(ctx.column).to.equal(el.columns[0]);
+      expect(ctx.columnIndex).to.equal(0);
+      expect(ctx.columnCount).to.equal(3);
+      expect(ctx.isFirstColumn).to.be.true;
+      expect(templateSpy.lastCall.args[0].isLastColumn).to.be.true;
+    });
+
+    it('reserves the header height from the row viewport', async () => {
+      const el = await createGrid({ header: true });
+
+      // 270px of rows below a 30px header: 6.75 rows, plus two of over-scan.
+      expect(renderedRowIndexes(el)).to.eql([0, 1, 2, 3, 4, 5, 6, 7, 8]);
+      expect(offset(el, renderedRows(el)[0], 'top')).to.equal(30);
+    });
+
+    it('stays at the top of the viewport while the rows scroll under it', async () => {
+      const el = await createGrid({ header: true });
+
+      await simulateScroll(el, { top: 4000 });
+
+      const row = renderedRows(el).find((r) => r.dataset.vgRow === '100')!;
+      expect(offset(el, header(el)!, 'top')).to.equal(0);
+      expect(offset(el, row, 'top')).to.equal(30);
+    });
+
+    it('shares the column tracks with the rows', async () => {
+      const el = await createGrid({ header: true });
+
+      await simulateScroll(el, { left: 1000 });
+
+      const row = header(el)!;
+      expect(row.style.getPropertyValue('--igc-grid-cols')).to.equal(
+        track(el).style.getPropertyValue('--igc-grid-cols')
+      );
+      expect(row.style.width).to.equal(track(el).style.width);
+      expect(row.firstElementChild!.getAttribute('data-vg-column')).to.equal(
+        '9'
+      );
+    });
+
+    it('aligns scrolled-to rows against the viewport below the header', async () => {
+      const el = await createGrid({ header: true });
+
+      await el.scrollToRow(500);
+      expect(el.scrollTop).to.equal(20_000);
+      expect(
+        offset(
+          el,
+          renderedRows(el).find((r) => r.dataset.vgRow === '500')!,
+          'top'
+        )
+      ).to.equal(30);
+
+      // Row 500 ends at 20040px; the 270px below the header end there.
+      await el.scrollToRow(500, { block: 'end' });
+      expect(el.scrollTop).to.equal(20_040 - 270);
+    });
+
+    it('removes the header and gives its height back to the rows', async () => {
+      const el = await createGrid({ header: true });
+
+      el.headerTemplate = null;
+      await el.layoutComplete;
+
+      expect(header(el)).to.be.null;
+      expect(el.getAttribute('aria-rowcount')).to.equal('1000');
+      expect(renderedRows(el)[0].getAttribute('aria-rowindex')).to.equal('1');
+      expect(renderedRowIndexes(el)).to.have.length(10);
+    });
+  });
+
+  describe('Pinned columns', () => {
+    it('renders pinned columns in every row outside the scrollable window', async () => {
+      const el = await createGrid({ pinnedStart: 2, pinnedEnd: 1 });
+
+      // 100px of scrollable viewport between 300px of pinned columns: one
+      // column, the one at its edge, plus one of over-scan.
+      expect(renderedColumnIndexes(el)).to.eql([0, 1, 2, 3, 4, 49]);
+      expect(track(el).style.width).to.equal('5000px');
+      expect(track(el).style.getPropertyValue('--igc-grid-cols')).to.equal(
+        '100px 100px 0px [window-start] 100px 100px 100px 1fr [pinned-end] 100px'
+      );
+
+      const row = renderedRows(el)[0];
+      expect(cellAt(row, 0).dataset.vgPinned).to.equal('start');
+      expect(cellAt(row, 1).dataset.vgPinned).to.equal('start');
+      expect(cellAt(row, 2).dataset.vgLine).to.equal('window-start');
+      expect(cellAt(row, 49).dataset.vgPinned).to.equal('end');
+      expect(cellAt(row, 49).dataset.vgLine).to.equal('pinned-end');
+    });
+
+    it('keeps pinned cells in place during a horizontal scroll', async () => {
+      const el = await createGrid({ pinnedStart: 2, pinnedEnd: 1 });
+
+      await simulateScroll(el, { left: 1000 });
+
+      const row = renderedRows(el)[0];
+      expect(renderedColumnIndexes(el)).to.eql([0, 1, 11, 12, 13, 14, 49]);
+      expect(offset(el, cellAt(row, 0), 'left')).to.equal(0);
+      expect(offset(el, cellAt(row, 1), 'left')).to.equal(100);
+      // The first column in view starts right after the pinned ones.
+      expect(offset(el, cellAt(row, 12), 'left')).to.equal(200);
+      expect(offset(el, cellAt(row, 49), 'left')).to.equal(300);
+    });
+
+    it('stacks several pinned end cells from the trailing edge', async () => {
+      const el = await createGrid({ pinnedEnd: 2 });
+
+      await simulateScroll(el, { left: 1000 });
+
+      const row = renderedRows(el)[0];
+      expect(renderedColumnIndexes(el).slice(-2)).to.eql([48, 49]);
+      expect(offset(el, cellAt(row, 48), 'left')).to.equal(200);
+      expect(offset(el, cellAt(row, 49), 'left')).to.equal(300);
+    });
+
+    it('pins header cells too', async () => {
+      const el = await createGrid({ header: true, pinnedStart: 1 });
+
+      await simulateScroll(el, { left: 1000 });
+
+      const cell = cellAt(header(el)!, 0);
+      expect(cell.dataset.vgPinned).to.equal('start');
+      expect(offset(el, cell, 'left')).to.equal(0);
+    });
+
+    it('reports the scrollable window and the full width in igcStateChange', async () => {
+      const el = await createGrid({ pinnedStart: 2, pinnedEnd: 1 });
+      const eventSpy = spy(el, 'emitEvent');
+
+      await simulateScroll(el, { left: 1000 });
+
+      const detail = eventSpy.lastCall.args[1]!
+        .detail as unknown as VirtualGridState;
+      expect(detail).to.include({
+        columnStartIndex: 11,
+        columnEndIndex: 14,
+        totalWidth: 5000,
+      });
+    });
+
+    it('scrolls to a scrollable column and not to a pinned one', async () => {
+      const el = await createGrid({ pinnedStart: 2, pinnedEnd: 1 });
+      const scrollSpy = spy(el, 'scrollTo');
+
+      await el.scrollToColumn(30);
+      expect(el.scrollLeft).to.equal(2800);
+
+      scrollSpy.resetHistory();
+      await el.scrollToColumn(0);
+      await el.scrollToColumn(49);
+      expect(scrollSpy).not.to.have.been.called;
+    });
+
+    it('clamps the pinned counts to the columns', async () => {
+      const el = await createGrid({ columns: 5 });
+
+      el.pinnedColumnsStart = 3;
+      el.pinnedColumnsEnd = 100;
+      await el.layoutComplete;
+
+      expect(renderedColumnIndexes(el)).to.eql([0, 1, 2, 3, 4]);
+      expect(track(el).style.getPropertyValue('--igc-grid-cols')).to.equal(
+        '100px 100px 100px 0px [window-start] 1fr [pinned-end] 100px 100px'
+      );
+    });
+  });
+
+  describe('Data requests', () => {
+    async function createShortGrid(rows: number): Promise<{
+      el: Grid;
+      requests: VirtualScrollDataRequest[];
+    }> {
+      const requests: VirtualScrollDataRequest[] = [];
+      const el = await fixture<Grid>(
+        html`<igc-virtual-grid
+          style="width: 400px; height: 300px"
+          .columns=${createColumns(3)}
+          .cellTemplate=${cellTemplate}
+          @igcDataRequest=${(event: CustomEvent<VirtualScrollDataRequest>) =>
+            requests.push(event.detail)}
+        ></igc-virtual-grid>`
+      );
+
+      el.data = createRows(rows);
+      await el.layoutComplete;
+      return { el, requests };
+    }
+
+    it('emits igcDataRequest when the rendered rows come near the end of data', async () => {
+      const { requests } = await createShortGrid(8);
+
+      expect(requests).to.eql([{ startIndex: 8, count: 20 }]);
+    });
+
+    it('does not repeat a request until data grows', async () => {
+      const { el, requests } = await createShortGrid(8);
+
+      el.requestUpdate();
+      await el.layoutComplete;
+      el.data = createRows(8);
+      await el.layoutComplete;
+      expect(requests).to.have.length(1);
+
+      el.data = createRows(12);
+      await el.layoutComplete;
+      expect(requests[1]).to.eql({ startIndex: 12, count: 20 });
+    });
+
+    it('does not request while the window is far from the end', async () => {
+      const { requests } = await createShortGrid(1000);
+
+      expect(requests).to.be.empty;
+    });
+  });
+
+  describe('getCellElement', () => {
+    it('returns the rendered wrapper of a cell and null for one out of view', async () => {
+      const el = await createGrid({ pinnedEnd: 1 });
+
+      const cell = el.getCellElement(3, 2)!;
+      expect(cell.dataset.vgColumn).to.equal('2');
+      expect(cell.parentElement!.dataset.vgRow).to.equal('3');
+      expect(cell.getAttribute('part')).to.equal('cell');
+      expect(el.getCellElement(0, 49)!.dataset.vgPinned).to.equal('end');
+      expect(el.getCellElement(500, 0)).to.be.null;
+      expect(el.getCellElement(0, 30)).to.be.null;
     });
   });
 

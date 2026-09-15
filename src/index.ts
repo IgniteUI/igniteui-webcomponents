@@ -88,9 +88,11 @@ export { default as IgcVirtualGridComponent } from './components/virtualization/
 export type {
   IgcVirtualGridComponentEventMap,
   VirtualGridCellTemplate,
+  VirtualGridHeaderTemplate,
 } from './components/virtualization/grid/virtual-grid.js';
 export type {
   VirtualGridCellContext,
+  VirtualGridColumnContext,
   VirtualGridColumnWidth,
   VirtualGridState,
 } from './components/virtualization/grid/types.js';

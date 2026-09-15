@@ -24,6 +24,11 @@ export function normalizeOverScan(value: unknown, fallback: number): number {
   return Math.max(0, Math.floor(asNumber(value, fallback)));
 }
 
+/** A non-negative integer count from consumer input, clamped to `max`. */
+export function normalizeCount(value: unknown, max: number): number {
+  return clamp(Math.floor(asNumber(value)), 0, max);
+}
+
 /** An item size from consumer input: a positive number, or `fallback`. */
 export function normalizeSize(value: unknown, fallback: number): number {
   const size = asNumber(value);
@@ -69,7 +74,7 @@ function getMaxBrowserSizeProbePx(doc: Document): number {
  * Clamps `index` into `[0, length - 1]`. This keeps `prefixSum(index)` and
  * `prefixSum(index + 1)` valid. Callers make sure that `length > 0`.
  */
-function clampIndex(index: number, length: number): number {
+export function clampIndex(index: number, length: number): number {
   return clamp(index, 0, length - 1);
 }
 
@@ -389,6 +394,9 @@ class UniformSizes implements SizeIndex {
 export class VirtualScrollEngine {
   private _maxBrowserSize = Number.POSITIVE_INFINITY;
 
+  /** See `reservedSize`. */
+  private _reservedSize = 0;
+
   /**
    * The ratio `totalSize / maxBrowserSize` when `totalSize` is larger than
    * the maximum DOM coordinate the browser supports; `1` otherwise.
@@ -431,6 +439,11 @@ export class VirtualScrollEngine {
     this.onSizeChange?.();
   }
 
+  /** The number of items. */
+  public get length(): number {
+    return this._sizes?.length ?? 0;
+  }
+
   /** Total virtual size of all items in px. */
   public get totalSize(): number {
     return this._sizes?.totalSize ?? 0;
@@ -438,7 +451,28 @@ export class VirtualScrollEngine {
 
   /** Total size in DOM space, clamped to the maximum browser size. */
   public get domSize(): number {
-    return this._virtualRatio !== 1 ? this._maxBrowserSize : this.totalSize;
+    return this._virtualRatio !== 1 ? this._availableSize : this.totalSize;
+  }
+
+  /**
+   * DOM px along this axis that other content takes up in the same scroll
+   * extent, for example a sticky header row in flow before the track, or
+   * pinned column tracks in every row. The track is shrunk by it under
+   * coordinate compression, so track and content together stay within the
+   * maximum size the browser can lay out.
+   */
+  public set reservedSize(px: number) {
+    const size = Math.max(0, px);
+    if (size === this._reservedSize) return;
+
+    this._reservedSize = size;
+    this._updateVirtualRatio();
+    this.onSizeChange?.();
+  }
+
+  /** The maximum DOM size the track itself can take. */
+  private get _availableSize(): number {
+    return Math.max(1, this._maxBrowserSize - this._reservedSize);
   }
 
   /** Measures the maximum browser size for the document and rescales. */
@@ -691,7 +725,7 @@ export class VirtualScrollEngine {
 
   private _updateVirtualRatio(): void {
     const totalSize = this._sizes?.totalSize ?? 0;
-    this._virtualRatio =
-      totalSize <= this._maxBrowserSize ? 1 : totalSize / this._maxBrowserSize;
+    const available = this._availableSize;
+    this._virtualRatio = totalSize <= available ? 1 : totalSize / available;
   }
 }
