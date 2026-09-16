@@ -201,7 +201,7 @@ See the [AI agent skills guide](skills/README.md) for example prompts, supported
 
 ## Accessibility
 
-The components target WCAG 2.1 level AA and follow the ARIA Authoring Practices Guide patterns for their roles. Every component specification runs axe-core audits against both the light DOM and the shadow DOM, and components are verified by hand with a keyboard and screen readers such as NVDA. Because the components render in Shadow DOM, some ARIA relations cannot be expressed with IDREF attributes; the library uses `ElementInternals` and ARIA element reflection instead, and adopts new platform capabilities as browsers ship them.
+The components target WCAG 2.1 level AA and follow the ARIA Authoring Practices Guide patterns for their roles. Component specifications run axe-core audits against the light DOM and the shadow DOM, and components are verified by hand with a keyboard and screen readers such as NVDA. Because the components render in Shadow DOM, some ARIA relations cannot be expressed with IDREF attributes; the library uses `ElementInternals` and ARIA element reflection instead, and adopts new platform capabilities as browsers ship them.
 
 Read [ACCESSIBILITY.md][Accessibility] for the conformance target, the verification process, the platform constraints, and what the host application remains responsible for.
 

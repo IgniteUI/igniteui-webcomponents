@@ -76,7 +76,7 @@ The components render inside the host page and inherit its origin, so the host a
 
 - **Chat markdown rendering.** The optional chat markdown renderer in `igniteui-webcomponents/extras` converts message text to HTML and sanitizes it with [DOMPurify](https://github.com/cure53/DOMPurify) before rendering. The `sanitizer` option replaces DOMPurify; if you supply your own, it must reject scripts, event handlers and dangerous URLs. Without the extras renderer, message text is rendered as text and not as HTML.
 - **Icons.** `registerIcon(name, url)` fetches the URL you pass and renders the response as inline SVG in the component's shadow root. Only register icons from origins you control or trust, and prefer `registerIconFromText` with SVG you have already vetted.
-- **QR code export.** Exporting a QR code with an embedded image fetches the image URL you pass to draw it on a canvas. Only supply URLs you trust.
+- **QR code logo.** Setting `logo-src` loads the image URL you pass in order to measure it, and `toBlob()` and `toImage()` fetch it again to inline it in the export. Only supply URLs you trust.
 - **Clipboard.** The color picker and chat components write to the clipboard when the user activates a copy control. Nothing is read from the clipboard.
 - **No network or storage otherwise.** The components make no network requests of their own, set no cookies and write nothing to web storage. See [PRIVACY.md](PRIVACY.md).
 - **Content Security Policy.** The library uses no `eval` or string-to-code APIs. Styles are attached through constructable stylesheets in each component's shadow root. Test your CSP against the components you use before relying on a strict policy.

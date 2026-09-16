@@ -97,7 +97,7 @@ npm run storybook:build
 
 Accessibility is a requirement, not a feature. See [ACCESSIBILITY.md](../ACCESSIBILITY.md) for the conformance target and the platform constraints that shape how the components expose semantics.
 
-- Every component specification must audit the component with axe, on both its light DOM and its shadow DOM, in each state the specification exercises: `await expect(el).to.be.accessible()` and `await expect(el).shadowDom.to.be.accessible()`.
+- New and changed component specifications must audit the component with axe, on both its light DOM and its shadow DOM, in each state the specification exercises: `await expect(el).to.be.accessible()` and `await expect(el).shadowDom.to.be.accessible()`.
 - Follow the [ARIA Authoring Practices Guide](https://www.w3.org/WAI/ARIA/apg/) pattern for the component's role, including its keyboard interaction. Add keyboard tests for it.
 - Publish semantics through `ElementInternals` and ARIA element reflection rather than IDREF attributes, so that relations work across shadow boundaries. Use the controllers under `src/internals/controllers` instead of setting ARIA attributes by hand.
 - Disable an axe rule only when it misreports semantics published through internals or element reflection, assert the real relation in the specification instead, and document the exception next to the shared options in `src/internals/testing/helpers.spec.ts`.
@@ -110,7 +110,7 @@ Runtime dependencies increase the install footprint and the attack surface of ev
 - **Discuss first.** Open an issue or a discussion before adding a runtime dependency or an optional peer dependency. Prefer a small, focused implementation in `src/internals` over a package that does more than the component needs.
 - **Licenses.** Runtime and peer dependencies must be licensed under MIT, BSD-2-Clause, BSD-3-Clause, ISC, Apache-2.0, 0BSD or an equivalent permissive license. Copyleft licenses (GPL, LGPL, AGPL, SSPL) are not accepted for anything that ships to consumers. Dual-licensed packages are accepted when one of the options is permissive.
 - **Manifests.** A runtime dependency is declared in both `package.json` and the published manifest `scripts/_package.json`. Optional peer dependencies are declared with `peerDependenciesMeta.optional: true` in the published manifest.
-- **Notices.** After changing a runtime or peer dependency, run `npm run build:notices` and commit the regenerated `THIRD-PARTY-NOTICES.md`. CI fails when the file is out of date.
+- **Notices.** After changing a runtime or peer dependency, run `npm run build:notices` and commit the regenerated `THIRD-PARTY-NOTICES.md`. CI fails when the file is out of date. Generation fails for a package that declares a license but ships no license file; copy the text from the package's source repository into `scripts/license-overrides/<package-name>` (with `/` replaced by `__` for scoped packages) and note where it came from in the pull request.
 - **Lockfile.** Commit `package-lock.json` changes together with the manifest change. Install with `npm ci`, never `npm install`, so the lockfile stays authoritative.
 - **Updates.** Dependabot raises security updates for npm packages daily and version updates for GitHub Actions weekly. Routine npm version bumps are done by maintainers in batches. GitHub Actions are pinned to a commit SHA with the version in a trailing comment; keep that format when adding or updating an action.
 - **Dev dependencies** follow the same license rules and are otherwise at the maintainers' discretion.

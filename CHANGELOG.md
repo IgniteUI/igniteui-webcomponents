@@ -5,6 +5,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+### Added
+- #### Library
+  - The npm package now ships `THIRD-PARTY-NOTICES.md` with the license texts of its runtime dependencies, generated at build time. [#2383](https://github.com/IgniteUI/igniteui-webcomponents/pull/2383)
+
 ### Fixed
 - #### Carousel
   - Indicators now carry their `aria-label` as a content attribute in addition to `ElementInternals`, thus accessibility tools that do not read internals report the tab name.

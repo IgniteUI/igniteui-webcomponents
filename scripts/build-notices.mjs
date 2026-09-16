@@ -14,6 +14,13 @@ const repoRoot = path.resolve(scriptDir, '..');
 const nodeModules = path.join(repoRoot, 'node_modules');
 
 /**
+ * Reviewed license texts for packages that declare a license but ship no
+ * license file. One file per package, named after the package with `/`
+ * replaced by `__`, copied verbatim from the package's source repository.
+ */
+const overridesDir = path.join(scriptDir, 'license-overrides');
+
+/**
  * @param {string} file - Path to a JSON file.
  * @returns {any} Parsed content.
  */
@@ -79,35 +86,54 @@ function licenseExpression(manifest) {
 
 /**
  * Every license-like file shipped at the package root, in a stable order.
+ * Falls back to the reviewed override when the package ships none.
  * @param {string} name - Package name.
- * @returns {{ name: string, text: string }[]} License files and their content.
+ * @returns {{ name: string, text: string, override: boolean }[]} License texts.
  */
 function licenseFiles(name) {
   const dir = path.join(nodeModules, name);
-
-  return fs
+  const files = fs
     .readdirSync(dir)
     .filter((entry) => LICENSE_FILE_PATTERN.test(entry))
     .sort()
     .map((entry) => ({
       name: entry,
       text: fs.readFileSync(path.join(dir, entry), 'utf8').trim(),
+      override: false,
     }));
+
+  if (files.length > 0) {
+    return files;
+  }
+
+  const override = path.join(overridesDir, name.replaceAll('/', '__'));
+
+  if (!fs.existsSync(override)) {
+    throw new Error(
+      `${name} ships no license file and no reviewed copy exists at ${path.relative(repoRoot, override)}. ` +
+        'Copy the license text from the package repository into that file.'
+    );
+  }
+
+  log(CATEGORY, `${name} ships no license file; using the reviewed copy`);
+
+  return [
+    {
+      name: 'LICENSE',
+      text: fs.readFileSync(override, 'utf8').trim(),
+      override: true,
+    },
+  ];
 }
 
 /**
  * @param {string} name - Package name.
  * @param {string} range - Declared version range.
- * @param {'dependency' | 'optional peer dependency'} kind - Relationship.
+ * @param {'dependency' | 'peer dependency' | 'optional peer dependency'} kind - Relationship.
  * @returns {object} Notice entry.
  */
 function collect(name, range, kind) {
   const manifest = readInstalledManifest(name);
-  const files = licenseFiles(name);
-
-  if (files.length === 0) {
-    log(CATEGORY, `${name} ships no license file; recording its SPDX id only`);
-  }
 
   return {
     name,
@@ -115,7 +141,7 @@ function collect(name, range, kind) {
     kind,
     license: licenseExpression(manifest),
     url: sourceUrl(manifest),
-    files,
+    files: licenseFiles(name),
   };
 }
 
@@ -132,7 +158,7 @@ function render(entries) {
     'with their license terms, so that anyone redistributing an application built with this library can',
     'meet the attribution requirements of those licenses.',
     '',
-    'Only direct runtime dependencies and optional peer dependencies are listed. They are not bundled',
+    'Only direct runtime dependencies and peer dependencies are listed. They are not bundled',
     'into this package; a consuming application resolves them from npm. The full transitive dependency',
     'closure, with license identifiers for every package, is recorded in the CycloneDX SBOM attached to',
     'each [GitHub release](https://github.com/IgniteUI/igniteui-webcomponents/releases).',
@@ -161,15 +187,13 @@ function render(entries) {
     }
     lines.push('');
 
-    if (entry.files.length === 0) {
-      lines.push(
-        `The package ships no license file. Its manifest declares \`${entry.license}\`; refer to the source repository for the license text.`,
-        ''
-      );
-      continue;
-    }
-
     for (const file of entry.files) {
+      if (file.override) {
+        lines.push(
+          `The package ships no license file. Its manifest declares \`${entry.license}\`; the text below is reproduced from the source repository.`,
+          ''
+        );
+      }
       if (entry.files.length > 1) {
         lines.push(`#### ${file.name}`, '');
       }
@@ -191,7 +215,13 @@ try {
       collect(name, range, 'dependency')
     ),
     ...Object.entries(manifest.peerDependencies ?? {}).map(([name, range]) =>
-      collect(name, range, 'optional peer dependency')
+      collect(
+        name,
+        range,
+        manifest.peerDependenciesMeta?.[name]?.optional
+          ? 'optional peer dependency'
+          : 'peer dependency'
+      )
     ),
   ].sort((left, right) => left.name.localeCompare(right.name));
 
