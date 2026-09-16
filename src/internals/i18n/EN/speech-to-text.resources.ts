@@ -3,17 +3,17 @@
  */
 export interface IgcSpeechToTextResourceStrings {
   /** The label of the button while idle. */
-  speechToTextStart: string;
+  speechToTextStart?: string;
   /** The label of the button while listening. */
-  speechToTextStop: string;
+  speechToTextStop?: string;
   /** The label of the button when no provider is available. */
-  speechToTextUnsupported: string;
+  speechToTextUnsupported?: string;
   /** Announced to assistive technology when listening starts. */
-  speechToTextListening: string;
+  speechToTextListening?: string;
   /** Announced to assistive technology when listening stops. */
-  speechToTextStopped: string;
+  speechToTextStopped?: string;
   /** Announced to assistive technology, followed by the error message, when an error occurs. */
-  speechToTextError: string;
+  speechToTextError?: string;
 }
 
 export const IgcSpeechToTextResourceStringsEN: IgcSpeechToTextResourceStrings =

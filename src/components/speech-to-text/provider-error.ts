@@ -1,22 +1,26 @@
+import { isString } from '#internals/utils/types.js';
 import type { SpeechToTextErrorCode } from './types.js';
 
-const ERROR_CODES: ReadonlySet<string> = new Set<SpeechToTextErrorCode>([
-  'not-supported',
-  'not-allowed',
-  'no-speech',
-  'audio-capture',
-  'network',
-  'aborted',
-  'language-not-supported',
-  'service-not-allowed',
-  'unknown',
-]);
+// An object literal keeps the set in sync with the union: a missing or an extra key is a type error.
+const ERROR_CODES: ReadonlySet<string> = new Set(
+  Object.keys({
+    'not-supported': true,
+    'not-allowed': true,
+    'no-speech': true,
+    'audio-capture': true,
+    network: true,
+    aborted: true,
+    'language-not-supported': true,
+    'service-not-allowed': true,
+    unknown: true,
+  } satisfies Record<SpeechToTextErrorCode, true>)
+);
 
 /** Whether `value` is one of the error codes the speech-to-text component reports. */
 export function isSpeechToTextErrorCode(
   value: unknown
 ): value is SpeechToTextErrorCode {
-  return typeof value === 'string' && ERROR_CODES.has(value);
+  return isString(value) && ERROR_CODES.has(value);
 }
 
 /* blazorSuppress */

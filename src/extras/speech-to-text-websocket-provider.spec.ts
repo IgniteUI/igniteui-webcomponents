@@ -244,11 +244,11 @@ describe('WebSocketSpeechToTextProvider', () => {
   it('fails with `network` when the send buffer stalls', async () => {
     await startProvider();
 
-    socket().bufferedAmount = 1024 * 1024;
+    socket().bufferedAmount = 1024 * 1024 - 16;
     recorder().data(16);
     expect(listener.onError).not.called;
 
-    socket().bufferedAmount = 1024 * 1024 + 1;
+    socket().bufferedAmount = 1024 * 1024 - 15;
     recorder().data(16);
 
     expect(listener.onError).calledOnceWith({
@@ -269,10 +269,13 @@ describe('WebSocketSpeechToTextProvider', () => {
     });
     await startProvider();
 
-    socket().bufferedAmount = 9;
     recorder().data(16);
 
-    expect(listener.onError).calledOnce;
+    expect(listener.onError).calledOnceWith({
+      code: 'network',
+      message: 'The connection to the speech service stalled.',
+    });
+    expect(socket().sent.filter((entry) => entry instanceof Blob)).to.be.empty;
   });
 
   it('maps server results', async () => {
@@ -375,6 +378,28 @@ describe('WebSocketSpeechToTextProvider', () => {
 
     expect(listener.onEnd).calledOnce;
     expect(tracks[0].stop).calledOnce;
+  });
+
+  it('reports a close without `end` as `network`', async () => {
+    await startProvider();
+
+    socket().close();
+
+    expect(listener.onError).calledOnceWith({
+      code: 'network',
+      message: 'The connection to the speech service closed unexpectedly.',
+    });
+    expect(listener.onError).calledBefore(listener.onEnd);
+  });
+
+  it('does not report the close that follows a socket error', async () => {
+    await startProvider();
+
+    socket().fail();
+    socket().close();
+
+    expect(listener.onError).calledOnce;
+    expect(listener.onEnd).calledOnce;
   });
 
   it('reports a socket error as `network` and ends', async () => {

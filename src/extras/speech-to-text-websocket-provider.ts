@@ -1,5 +1,6 @@
 import { createAbortHandle } from '#internals/abort-handler.js';
 import { createTimer } from '#internals/timing.js';
+import { isFunction, isString } from '#internals/utils/types.js';
 import {
   isSpeechToTextErrorCode,
   SpeechToTextProviderError,
@@ -69,7 +70,7 @@ export type WebSocketSpeechToTextClientMessage =
  * - `result` carries an interim (`isFinal` false) or final transcript.
  * - `activity` reports detected speech that has no transcript yet; it resets the silence timeout of the component.
  * - `error` reports a failure; the server may continue or follow with `end`.
- * - `end` closes the session. The provider also ends the session when the socket closes.
+ * - `end` closes the session. A connection closed before `end` is reported as a `network` error.
  */
 export type WebSocketSpeechToTextServerMessage =
   | {
@@ -90,6 +91,8 @@ const MIME_CANDIDATES = [
   'audio/mp4',
 ];
 
+const DEFAULT_TIMESLICE = 250;
+const DEFAULT_END_TIMEOUT = 5000;
 const DEFAULT_MAX_BUFFERED_AMOUNT = 1024 * 1024;
 
 const DEFAULT_AUDIO: MediaTrackConstraints = {
@@ -155,9 +158,9 @@ export class WebSocketSpeechToTextProvider implements SpeechToTextProvider {
   /** Whether WebSockets, `MediaRecorder` and microphone capture are available in the current environment. */
   public static get isSupported(): boolean {
     return (
-      typeof WebSocket === 'function' &&
-      typeof MediaRecorder === 'function' &&
-      typeof globalThis.navigator?.mediaDevices?.getUserMedia === 'function'
+      isFunction(globalThis.WebSocket) &&
+      isFunction(globalThis.MediaRecorder) &&
+      isFunction(globalThis.navigator?.mediaDevices?.getUserMedia)
     );
   }
 
@@ -228,7 +231,17 @@ export class WebSocketSpeechToTextProvider implements SpeechToTextProvider {
         (event) => this._handleMessage(event, listener),
         { signal }
       );
-      socket.addEventListener('close', () => this._finish(), { signal });
+      // Teardown detaches this listener before it closes the socket, so only
+      // a close initiated by the server or the network arrives here.
+      socket.addEventListener(
+        'close',
+        () =>
+          this._fail(
+            'network',
+            'The connection to the speech service closed unexpectedly.'
+          ),
+        { signal }
+      );
       socket.addEventListener(
         'error',
         () =>
@@ -244,7 +257,7 @@ export class WebSocketSpeechToTextProvider implements SpeechToTextProvider {
           }
 
           // A stalled connection keeps the socket open while the send buffer grows.
-          if (socket.bufferedAmount > maxBufferedAmount) {
+          if (socket.bufferedAmount + event.data.size > maxBufferedAmount) {
             this._fail(
               'network',
               'The connection to the speech service stalled.'
@@ -271,7 +284,7 @@ export class WebSocketSpeechToTextProvider implements SpeechToTextProvider {
         mimeType: recorder.mimeType || mimeType,
       });
 
-      recorder.start(this._options.timeslice ?? 250);
+      recorder.start(this._options.timeslice ?? DEFAULT_TIMESLICE);
       listener.onStart();
     } catch (error) {
       // An abort while starting has already torn the session down.
@@ -344,7 +357,7 @@ export class WebSocketSpeechToTextProvider implements SpeechToTextProvider {
     event: MessageEvent,
     listener: SpeechToTextProviderListener
   ): void {
-    if (typeof event.data !== 'string') {
+    if (!isString(event.data)) {
       return;
     }
 
@@ -358,8 +371,8 @@ export class WebSocketSpeechToTextProvider implements SpeechToTextProvider {
 
     switch (message?.type) {
       case 'result':
-        // A malformed result from the server must not throw inside the socket handler.
-        if (typeof message.transcript === 'string') {
+        // Drop results without a transcript.
+        if (isString(message.transcript)) {
           listener.onResult({
             transcript: message.transcript,
             isFinal: Boolean(message.isFinal),
@@ -376,10 +389,9 @@ export class WebSocketSpeechToTextProvider implements SpeechToTextProvider {
           code: isSpeechToTextErrorCode(message.code)
             ? message.code
             : 'unknown',
-          message:
-            typeof message.message === 'string'
-              ? message.message
-              : 'The speech service reported an error.',
+          message: isString(message.message)
+            ? message.message
+            : 'The speech service reported an error.',
         });
         break;
       case 'end':
@@ -391,7 +403,7 @@ export class WebSocketSpeechToTextProvider implements SpeechToTextProvider {
   private _handleRecorderStop(): void {
     stopTracks(this._stream);
     this._send({ type: 'stop' });
-    this._endTimer.start(this._options.endTimeout ?? 5000);
+    this._endTimer.start(this._options.endTimeout ?? DEFAULT_END_TIMEOUT);
   }
 
   private _fail(code: SpeechToTextErrorCode, message: string): void {
@@ -424,7 +436,7 @@ export class WebSocketSpeechToTextProvider implements SpeechToTextProvider {
       return;
     }
 
-    // The recorder exists only once `start()` has announced the session.
+    // Without a recorder, `start()` is still pending and rejects instead.
     const started = this._recorder !== undefined;
     this._teardown();
 

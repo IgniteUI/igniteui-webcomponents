@@ -240,7 +240,9 @@ export class WebSpeechProvider implements SpeechToTextProvider {
       };
 
       if (result.length > 1) {
-        args.alternatives = Array.from(result, (a) => a.transcript).slice(1);
+        args.alternatives = Array.from(result)
+          .slice(1)
+          .map((alternative) => alternative.transcript);
       }
 
       listener.onResult(args);

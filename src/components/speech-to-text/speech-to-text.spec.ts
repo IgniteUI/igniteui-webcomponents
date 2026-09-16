@@ -726,7 +726,7 @@ describe('Speech to text', () => {
       expect(el.state).to.equal('idle');
     });
 
-    it('ignores clicks while starting', async () => {
+    it('aborts on click while starting', async () => {
       provider.autoStart = false;
       simulateClick(getButton());
       await nextFrame();
@@ -735,7 +735,22 @@ describe('Speech to text', () => {
       simulateClick(getButton());
       await nextFrame();
       expect(provider.stopCalls).to.equal(0);
+      expect(provider.abortCalls).to.equal(1);
+      expect(el.state).to.equal('idle');
+    });
+
+    it('ignores clicks while stopping', async () => {
+      provider.endOnStop = false;
+      await startListening();
+      simulateClick(getButton());
+      await nextFrame();
+      expect(el.state).to.equal('stopping');
+
+      simulateClick(getButton());
+      await nextFrame();
+      expect(provider.stopCalls).to.equal(1);
       expect(provider.abortCalls).to.equal(0);
+      expect(el.state).to.equal('stopping');
     });
 
     it('aborts on Escape while starting', async () => {

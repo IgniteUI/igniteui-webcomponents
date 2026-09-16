@@ -50,9 +50,10 @@ Client                                    Server
    `endTimeout` milliseconds (5000 by default) after `stop`, the provider ends the
    session locally and closes the connection.
 
-The provider also ends the session when the server closes the connection, and reports
-a `network` error if the connection fails. An abort by the user closes the connection
-without sending `stop`; treat a connection closed before `stop` as an aborted session.
+If the connection fails, or if the server closes it before it sends `end`, the provider
+reports a `network` error and ends the session. When the user aborts, the provider closes
+the connection without sending `stop`; treat a connection closed before `stop` as an
+aborted session.
 
 ## Client messages
 
@@ -169,6 +170,7 @@ Error codes, mirroring the Web Speech API:
 | `language-not-supported` | The requested `lang` is not supported. |
 | `service-not-allowed`    | The client is not allowed to use the service. |
 | `not-allowed`            | The request was rejected, for example because of missing authorization. |
+| `not-supported`          | The service cannot serve the session, for example because it does not support the announced `mimeType`. |
 | `unknown`                | Any other failure. |
 
 ### `end`
@@ -185,7 +187,8 @@ provider closes the connection when it receives `end`; no further messages are p
 
 - Ignore binary frames received before `start` and text frames that are not valid JSON.
 - Treat a connection closed before `stop` as an abort. Discard pending results.
-- Send `end` exactly once, and send nothing after it.
+- Send `end` exactly once, and send nothing after it. Close the connection only after
+  `end`; the provider reports an earlier close as a `network` error.
 - Keep `result` messages ordered. The component appends final transcripts in arrival order.
 - Consume audio frames as they arrive; see the client rules below for a stalled connection.
 - Authentication is outside this protocol. Use the WebSocket URL, sub-protocols or
@@ -195,7 +198,6 @@ provider closes the connection when it receives `end`; no further messages are p
 
 For reference, the provider behaves as follows:
 
-- Sends `start` immediately after the connection opens, before the first audio frame.
 - Drops audio frames while the socket is not open.
 - Ignores text frames that are not valid JSON or have an unknown `type`, and `result`
   messages whose `transcript` is not a string. An `error` whose `message` is not a
@@ -203,6 +205,4 @@ For reference, the provider behaves as follows:
 - Ends the session with a `network` error when the send buffer of the socket grows past
   `maxBufferedAmount` bytes (1 MiB by default), which happens when the connection or the
   server stops consuming audio while the socket stays open.
-- Ends the session on `end`, on connection close, on a connection error
-  (reported as `network`) and `endTimeout` milliseconds after `stop` without `end`.
 - Releases the microphone as soon as recording stops, before `stop` is sent.

@@ -212,7 +212,9 @@ export default class IgcSpeechToTextComponent extends I18nMixin(
 
   /** Whether the active provider can run in the current environment. */
   public get supported(): boolean {
-    return this._resolvedProvider.isSupported;
+    return this.provider
+      ? this.provider.isSupported
+      : WebSpeechProvider.isSupported;
   }
 
   //#endregion
@@ -254,36 +256,27 @@ export default class IgcSpeechToTextComponent extends I18nMixin(
 
   //#region Provider listener
 
+  /** Creates the listener of `session`. Callbacks that arrive after the session ended are ignored. */
   private _createListener(session: Session): SpeechToTextProviderListener {
-    const isCurrent = () => this._session === session;
+    const guard =
+      <T extends unknown[]>(handler: (...args: T) => void) =>
+      (...args: T) => {
+        if (this._session === session) {
+          handler(...args);
+        }
+      };
 
     return {
-      onStart: () => {
-        if (isCurrent()) {
-          this._handleProviderStart(session);
-        }
-      },
-      onResult: (result) => {
-        if (isCurrent()) {
-          this._handleProviderResult(result);
-        }
-      },
-      onError: (error) => {
-        if (isCurrent()) {
-          session.endReason = 'error';
-          this._emitError(error);
-        }
-      },
-      onEnd: () => {
-        if (isCurrent()) {
-          this._handleProviderEnd(session);
-        }
-      },
-      onActivity: () => {
-        if (isCurrent()) {
-          this._armSilenceTimer();
-        }
-      },
+      onStart: guard(() => this._handleProviderStart(session)),
+      onResult: guard((result: SpeechToTextResultEventArgs) =>
+        this._handleProviderResult(result)
+      ),
+      onError: guard((error: SpeechToTextErrorEventArgs) => {
+        session.endReason = 'error';
+        this._emitError(error);
+      }),
+      onEnd: guard(() => this._handleProviderEnd(session)),
+      onActivity: guard(() => this._armSilenceTimer()),
     };
   }
 
@@ -349,7 +342,7 @@ export default class IgcSpeechToTextComponent extends I18nMixin(
     this.emitEvent('igcStateChange', { detail: value });
   }
 
-  /** Drops the session bookkeeping. Callers commit the `idle` state after any work that must not see a new session. */
+  /** Stops the silence timer and drops the session. */
   private _clearSession(): void {
     this._silenceTimer.stop();
     this._session = undefined;
@@ -469,12 +462,13 @@ export default class IgcSpeechToTextComponent extends I18nMixin(
   }
 
   /**
-   * Starts a session when idle, or stops the active one.
+   * Starts a session when idle, stops the active one, or aborts a session that is still starting.
+   * Does nothing while a session is stopping, so a repeated stop does not discard the pending results.
    */
   public async toggle(): Promise<void> {
     if (this._state === 'idle') {
       await this.start();
-    } else if (this._state === 'listening') {
+    } else {
       this.stop();
     }
   }
