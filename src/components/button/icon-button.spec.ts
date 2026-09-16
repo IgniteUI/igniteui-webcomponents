@@ -116,6 +116,16 @@ describe('IconButton component', () => {
       );
     });
 
+    it('forwards changes of the aria-label attribute', async () => {
+      const native = el.renderRoot.querySelector('button')!;
+      expect(native.getAttribute('aria-label')).to.equal('Icon button');
+
+      el.setAttribute('aria-label', 'Changed');
+      await elementUpdated(el);
+
+      expect(native.getAttribute('aria-label')).to.equal('Changed');
+    });
+
     it('sets href property successfully', async () => {
       el.href = 'https://test.com';
       await elementUpdated(el);

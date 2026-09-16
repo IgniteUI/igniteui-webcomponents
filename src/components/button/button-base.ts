@@ -4,6 +4,7 @@ import { ifDefined } from 'lit/directives/if-defined.js';
 import { addKeyboardFocusRing } from '#internals/controllers/focus-ring.js';
 import { addIdRefResolver } from '#internals/controllers/id-resolver.js';
 import { addInternalsController } from '#internals/controllers/internals.js';
+import { createMutationController } from '#internals/controllers/mutation-observer.js';
 import { blazorDeepImport } from '#internals/decorators/blazorDeepImport.js';
 import { shadowOptions } from '#internals/decorators/shadow-options.js';
 import type { Constructor } from '#internals/mixins/constructor.js';
@@ -56,6 +57,16 @@ export abstract class IgcButtonBaseComponent extends EventEmitterMixin<
   private readonly _nativeButton?: HTMLButtonElement | HTMLAnchorElement;
 
   //#endregion
+
+  constructor() {
+    super();
+
+    // `aria-label` is forwarded to the native element in the shadow root.
+    createMutationController(this, {
+      callback: () => this.requestUpdate(),
+      config: { attributeFilter: ['aria-label'] },
+    });
+  }
 
   //#region Public properties
 

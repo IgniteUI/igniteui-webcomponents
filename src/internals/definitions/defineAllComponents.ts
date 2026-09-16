@@ -60,6 +60,7 @@ import IgcRangeSliderComponent from '../../components/slider/range-slider.js';
 import IgcSliderLabelComponent from '../../components/slider/slider-label.js';
 import IgcSliderComponent from '../../components/slider/slider.js';
 import IgcSnackbarComponent from '../../components/snackbar/snackbar.js';
+import IgcSpeechToTextComponent from '../../components/speech-to-text/speech-to-text.js';
 import IgcSplitterComponent from '../../components/splitter/splitter.js';
 import IgcStepComponent from '../../components/stepper/step.js';
 import IgcStepperComponent from '../../components/stepper/stepper.js';
@@ -144,6 +145,7 @@ const allComponents: IgniteComponent[] = [
   IgcLinearProgressComponent,
   IgcCircularGradientComponent,
   IgcSnackbarComponent,
+  IgcSpeechToTextComponent,
   IgcDateTimeInputComponent,
   IgcSplitterComponent,
   IgcStepperComponent,

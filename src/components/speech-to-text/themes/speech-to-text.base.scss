@@ -1,0 +1,40 @@
+@use 'styles/common/component';
+@use 'styles/utilities' as *;
+
+:host {
+    position: relative;
+    display: inline-flex;
+    vertical-align: middle;
+}
+
+[part~='indicator'] {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    box-shadow: 0 0 0 rem(2px) var(--indicator-color);
+    opacity: 0;
+    pointer-events: none;
+}
+
+:host(:state(listening)) [part~='indicator'] {
+    animation: pulse 1.5s ease-out infinite;
+}
+
+@keyframes pulse {
+    from {
+        transform: scale(1);
+        opacity: 1;
+    }
+
+    to {
+        transform: scale(1.4);
+        opacity: 0;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    :host(:state(listening)) [part~='indicator'] {
+        animation: none;
+        opacity: 1;
+    }
+}
