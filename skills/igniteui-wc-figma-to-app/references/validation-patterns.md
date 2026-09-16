@@ -187,7 +187,7 @@ icon-only buttons need `aria-label`.
 
 ```
 playwright_browser_evaluate({
-  function: "() => { const tags = ['igc-input','igc-textarea','igc-mask-input','igc-date-time-input','igc-file-input','igc-select','igc-combo','igc-date-picker','igc-date-range-picker']; const out = {}; tags.forEach(t => { const els = [...document.querySelectorAll(t)]; if (els.length) out[t] = { count: els.length, outlined: els.filter(e => e.hasAttribute('outlined')).length }; }); return out; }"
+  function: "() => { const tags = ['igc-input','igc-textarea','igc-mask-input','igc-date-time-input','igc-file-input','igc-select','igc-combo','igc-date-picker','igc-date-range-picker']; const out = {}; tags.forEach(t => { const els = deepQueryAll(t); if (els.length) out[t] = { count: els.length, outlined: els.filter(e => e.hasAttribute('outlined')).length }; }); return out; }"
 })
 ```
 
