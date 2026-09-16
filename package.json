@@ -27,7 +27,8 @@
   },
   "scripts": {
     "start": "npm run storybook",
-    "build:publish": "npm run cem && node scripts/build.mjs",
+    "build:publish": "npm run cem && npm run build:notices && node scripts/build.mjs",
+    "build:notices": "node scripts/build-notices.mjs",
     "build:sbom": "node scripts/build-sbom.mjs",
     "cem": "cem analyze --config cem.config.mjs",
     "cem:watch": "cem analyze --config cem.config.mjs --watch",
@@ -40,6 +41,7 @@
     "check-scripts": "tsc -p scripts/tsconfig.json",
     "check-stories": "tsc -p scripts/tsconfig.stories.json",
     "check-aliases": "node scripts/check-import-aliases.mjs",
+    "check-notices": "node scripts/build-notices.mjs --check",
     "check": "concurrently -g \"npm:check-*\"",
     "clean": "rimraf ./dist ./docs --glob \"src/**/*.css.ts\"",
     "lint": "concurrently -g \"npm:lint:*\"",

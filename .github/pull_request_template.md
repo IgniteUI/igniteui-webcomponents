@@ -31,4 +31,8 @@ Closes #
 - [ ] My code follows the project's coding standards
 - [ ] I have tested my changes locally
 - [ ] I have updated documentation if needed
+- [ ] I have added a `CHANGELOG.md` entry under `[Unreleased]`
 - [ ] Breaking changes are documented in the description
+- [ ] Accessibility: axe audits pass on the light and shadow DOM, and keyboard interaction is covered by tests
+- [ ] Dependencies: no new runtime or peer dependency, or its license was reviewed and `THIRD-PARTY-NOTICES.md` was regenerated
+- [ ] Security: the change adds no network access, storage, telemetry or unsanitized HTML rendering
