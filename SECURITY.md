@@ -83,4 +83,4 @@ The components render inside the host page and inherit its origin, so the host a
 
 ## Dependencies
 
-Runtime dependencies are kept to a minimum and are listed in [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md). Dependabot raises security updates for npm dependencies daily and version updates for GitHub Actions weekly. CI runs CodeQL analysis and the OpenSSF Scorecard; results are visible in the repository's Security tab. The release workflow pins every action to a commit SHA and grants each job only the permissions it needs.
+Runtime dependencies are kept to a minimum and are listed in [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md). Dependabot raises security updates for npm dependencies daily and version updates for GitHub Actions weekly. GitHub's CodeQL default setup analyzes every push and pull request, and the OpenSSF Scorecard runs weekly; results are visible in the repository's Security tab. The release workflow pins every action to a commit SHA and grants each job only the permissions it needs.

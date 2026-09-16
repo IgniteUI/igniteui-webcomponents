@@ -5,7 +5,6 @@
 </h1>
 
 [![Node.js CI](https://github.com/IgniteUI/igniteui-webcomponents/workflows/Node.js%20CI/badge.svg)](https://github.com/IgniteUI/igniteui-webcomponents/actions/workflows/node.js.yml)
-[![CodeQL](https://github.com/IgniteUI/igniteui-webcomponents/actions/workflows/codeql.yml/badge.svg)](https://github.com/IgniteUI/igniteui-webcomponents/actions/workflows/codeql.yml)
 [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/IgniteUI/igniteui-webcomponents/badge)](https://scorecard.dev/viewer/?uri=github.com/IgniteUI/igniteui-webcomponents)
 [![Coverage Status](https://coveralls.io/repos/github/IgniteUI/igniteui-webcomponents/badge.svg)](https://coveralls.io/github/IgniteUI/igniteui-webcomponents)
 [![npm version](https://badge.fury.io/js/igniteui-webcomponents.svg)](https://badge.fury.io/js/igniteui-webcomponents)
@@ -210,7 +209,7 @@ Read [ACCESSIBILITY.md][Accessibility] for the conformance target, the verificat
 
 Security fixes are released for the latest major version, and critical fixes are backported to the previous major. Report vulnerabilities privately through [GitHub private vulnerability reporting](https://github.com/IgniteUI/igniteui-webcomponents/security/advisories/new), never in a public issue.
 
-Every release ships with supply-chain evidence attached to the [GitHub release](https://github.com/IgniteUI/igniteui-webcomponents/releases): the published tarball with its digests, a CycloneDX SBOM, and signed provenance and SBOM attestations that you can check with `gh attestation verify`. CI runs CodeQL and the OpenSSF Scorecard, and Dependabot keeps dependencies and actions patched.
+Every release ships with supply-chain evidence attached to the [GitHub release](https://github.com/IgniteUI/igniteui-webcomponents/releases): the published tarball with its digests, a CycloneDX SBOM, and signed provenance and SBOM attestations that you can check with `gh attestation verify`. GitHub's CodeQL default setup scans every push and pull request, the OpenSSF Scorecard runs weekly, and Dependabot keeps dependencies and actions patched.
 
 Read [SECURITY.md][Security] for the support policy, the reporting process, response targets, verification steps, and security considerations for consumers.
 
