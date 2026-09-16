@@ -69,6 +69,8 @@ import IgcTextareaComponent from '../../components/textarea/textarea.js';
 import IgcThemeProviderComponent from '../../components/theme-provider/theme-provider.js';
 import IgcTileManagerComponent from '../../components/tile-manager/tile-manager.js';
 import IgcTileComponent from '../../components/tile-manager/tile.js';
+import IgcTimelineItemComponent from '../../components/timeline/item.js';
+import IgcTimelineComponent from '../../components/timeline/timeline.js';
 import IgcToastComponent from '../../components/toast/toast.js';
 import IgcTooltipComponent from '../../components/tooltip/tooltip.js';
 import IgcTreeItemComponent from '../../components/tree/tree-item.js';
@@ -151,6 +153,8 @@ const allComponents: IgniteComponent[] = [
   IgcTextareaComponent,
   IgcTileComponent,
   IgcTileManagerComponent,
+  IgcTimelineComponent,
+  IgcTimelineItemComponent,
   IgcTooltipComponent,
   IgcQrCodeComponent,
   IgcVirtualScrollComponent,

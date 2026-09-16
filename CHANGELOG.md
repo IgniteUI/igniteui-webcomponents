@@ -5,6 +5,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+### Added
+- #### Timeline
+  - New `igc-timeline` and `igc-timeline-item` components. Items line up along a vertical or horizontal connector, with the main content in the default slot, side content in the `opposite` slot and a custom marker in the `indicator` slot. The timeline `position` attribute (`alternate`, `start`, `end`) sets the side of the content for all items and an item `position` overrides it. `complete` fills the indicator and draws the connector to the next item solid, and `active` emphasizes the indicator and exposes the item as `aria-current`. The layout uses CSS subgrid, thus the connector stays aligned across items of different size and the side column takes only the space it needs.
+
 ### Fixed
 - #### Carousel
   - Indicators now carry their `aria-label` as a content attribute in addition to `ElementInternals`, thus accessibility tools that do not read internals report the tab name.

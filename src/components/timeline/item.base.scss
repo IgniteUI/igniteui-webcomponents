@@ -1,27 +1,50 @@
 @use 'styles/common/component';
 
-// ---- Vertical (default) ------------------------------------------------
+// Layout is resolved by the item from the parent timeline and exposed as
+// custom states:
+//   :state(ig-horizontal)         - the timeline is horizontal
+//   :state(ig-start)              - the main content renders on the start side
+//   :state(ig-previous-complete)  - the preceding item is `complete`
+// The connector is split in two halves. `::before` runs towards the previous
+// item and `::after` towards the next one, so that a segment between two
+// items is drawn solid when the earlier of the two is complete.
+
+$muted: color-mix(in oklab, currentcolor 20%, transparent);
+$strong: color-mix(in oklab, currentcolor 70%, transparent);
 
 :host {
+    --_gap: var(--connector-gap, 0.875rem);
+    --_indicator-size: 2.5rem;
+    --_indicator-fill: transparent;
+    --_indicator-border: color-mix(in oklab, currentcolor 40%, transparent);
+    --_indicator-shadow: var(
+        --indicator-shadow,
+        0 0 0 4px color-mix(in oklab, currentcolor 8%, transparent)
+    );
+    --_connector-before: var(--connector-background, #{$muted});
+    --_connector-after: var(--connector-background, #{$muted});
+
     display: grid;
-    grid-template-columns: 1fr var(--connector-column, 3rem) 1fr;
+
+    // Inside a timeline the item lays out on the shared tracks. Outside one
+    // `subgrid` resolves to `none` and the implicit tracks take over.
+    grid-template-columns: subgrid;
+    grid-auto-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    grid-column: 1 / -1;
     align-items: center;
-    min-height: var(--item-min-height, 5rem);
-    flex-shrink: 0;
 }
 
-// Explicit grid-row: 1 on every part so auto-placement never shifts them
-// to a new row regardless of DOM source order.
-[part='opposite'] {
+// ---- Vertical (default) ------------------------------------------------
+
+[part~='opposite'] {
     grid-column: 1;
     grid-row: 1;
     text-align: end;
-    padding-inline-end: 0.875rem;
-    padding-block: 0.875rem;
-    align-self: center;
+    padding-inline-end: var(--_gap);
+    padding-block: var(--_gap);
 }
 
-[part='connector'] {
+[part~='connector'] {
     grid-column: 2;
     grid-row: 1;
     align-self: stretch;
@@ -34,134 +57,88 @@
         content: '';
         flex: 1;
         width: var(--connector-width, 2px);
-        background: var(
-            --connector-background,
-            linear-gradient(
-                to bottom,
-                color-mix(in oklab, currentColor 15%, transparent),
-                color-mix(in oklab, currentColor 35%, transparent)
-            )
-        );
         min-height: 0.75rem;
+    }
+
+    &::before {
+        background: var(--_connector-before);
+    }
+
+    &::after {
+        background: var(--_connector-after);
     }
 }
 
-[part='indicator'] {
+[part~='indicator'] {
     flex-shrink: 0;
-    width: var(--indicator-size, 2.5rem);
-    height: var(--indicator-size, 2.5rem);
+    display: grid;
+    place-items: center;
+    width: var(--indicator-size, var(--_indicator-size));
+    height: var(--indicator-size, var(--_indicator-size));
     border-radius: 50%;
     border: var(--indicator-border-width, 2px) solid
-        var(
-            --indicator-border-color,
-            color-mix(in oklab, currentColor 40%, transparent)
-        );
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: var(--indicator-background, transparent);
-    box-shadow: var(
-        --indicator-shadow,
-        0 0 0 4px color-mix(in oklab, currentColor 8%, transparent)
-    );
-    transition:
-        transform 0.25s ease,
-        box-shadow 0.25s ease;
-    z-index: 1;
+        var(--indicator-border-color, var(--_indicator-border));
+    background: var(--indicator-background, var(--_indicator-fill));
+    color: var(--indicator-color, inherit);
+    box-shadow: var(--_indicator-shadow);
+
+    &[part~='empty'] {
+        --_indicator-size: 1rem;
+    }
 }
 
-:host(:hover) [part='indicator'] {
-    transform: scale(1.12);
-    box-shadow: var(
-        --indicator-shadow-hover,
-        0 0 0 6px color-mix(in oklab, currentColor 14%, transparent)
-    );
-}
-
-[part='content'] {
+[part~='content'] {
     grid-column: 3;
     grid-row: 1;
     text-align: start;
-    padding-inline-start: 0.875rem;
-    padding-block: 0.875rem;
-    align-self: center;
+    padding-inline-start: var(--_gap);
+    padding-block: var(--_gap);
 }
 
-// Auto-alternating layout for even vertical items (not forced by position attr)
-:host(:nth-child(even):not([position], [data-orientation='horizontal'])) {
-    [part='opposite'] {
-        grid-column: 3;
-        text-align: start;
-        padding-inline: 0.875rem 0;
-    }
+// An empty opposite slot takes no space, so a timeline without side content
+// has no blank track.
+[part~='opposite'][part~='empty'] {
+    display: none;
+}
 
-    [part='content'] {
+:host(:state(ig-start)) {
+    [part~='content'] {
         grid-column: 1;
         text-align: end;
-        padding-inline: 0 0.875rem;
-    }
-}
-
-// Manual position overrides
-:host([position='start']) {
-    [part='content'] {
-        grid-column: 1;
-        text-align: end;
-        padding-inline: 0 0.875rem;
+        padding-inline: 0 var(--_gap);
     }
 
-    [part='opposite'] {
+    [part~='opposite'] {
         grid-column: 3;
         text-align: start;
-        padding-inline: 0.875rem 0;
+        padding-inline: var(--_gap) 0;
     }
-}
-
-:host([position='end']) {
-    [part='content'] {
-        grid-column: 3;
-        text-align: start;
-        padding-inline: 0.875rem 0;
-    }
-
-    [part='opposite'] {
-        grid-column: 1;
-        text-align: end;
-        padding-inline: 0 0.875rem;
-    }
-}
-
-// Trim connector ends for the outermost items
-:host(:first-child) [part='connector']::before {
-    visibility: hidden;
-}
-
-:host(:last-child) [part='connector']::after {
-    visibility: hidden;
 }
 
 // ---- Horizontal --------------------------------------------------------
 
-:host([data-orientation='horizontal']) {
-    grid-template-columns: 1fr;
-    grid-template-rows: 1fr var(--connector-row, 3rem) 1fr;
-    min-height: unset;
-    min-width: var(--item-min-width, 5rem);
+:host(:state(ig-horizontal)) {
+    grid-template-columns: none;
+    grid-auto-columns: auto;
+    grid-template-rows: subgrid;
+    grid-auto-rows: minmax(0, 1fr) auto minmax(0, 1fr);
+    grid-column: auto;
+    grid-row: 1 / -1;
 
-    [part='opposite'] {
+    [part~='opposite'] {
         grid-row: 1;
         grid-column: 1;
         align-self: end;
         text-align: center;
-        padding-inline: 0.875rem;
-        padding-block: 0 0.875rem;
+        padding-inline: var(--_gap);
+        padding-block: 0 var(--_gap);
     }
 
-    [part='connector'] {
+    [part~='connector'] {
         grid-row: 2;
         grid-column: 1;
         flex-direction: row;
-        align-self: center;
+        place-self: center stretch;
 
         &::before,
         &::after {
@@ -169,23 +146,79 @@
             height: var(--connector-width, 2px);
             min-height: unset;
             min-width: 0.75rem;
-            background: var(
-                --connector-background,
-                linear-gradient(
-                    to right,
-                    color-mix(in oklab, currentColor 15%, transparent),
-                    color-mix(in oklab, currentColor 35%, transparent)
-                )
-            );
         }
     }
 
-    [part='content'] {
+    [part~='content'] {
         grid-row: 3;
         grid-column: 1;
         align-self: start;
         text-align: center;
-        padding-inline: 0.875rem;
-        padding-block: 0.875rem 0;
+        padding-inline: var(--_gap);
+        padding-block: var(--_gap) 0;
+    }
+}
+
+:host(:state(ig-horizontal):state(ig-start)) {
+    [part~='content'] {
+        grid-row: 1;
+        align-self: end;
+        padding-block: 0 var(--_gap);
+    }
+
+    [part~='opposite'] {
+        grid-row: 3;
+        align-self: start;
+        padding-block: var(--_gap) 0;
+    }
+}
+
+// The connector does not extend past the outermost items.
+:host(:first-of-type) [part~='connector']::before,
+:host(:last-of-type) [part~='connector']::after {
+    visibility: hidden;
+}
+
+// ---- States ------------------------------------------------------------
+
+:host([complete]) {
+    --_indicator-fill: color-mix(in oklab, currentcolor 12%, transparent);
+    --_indicator-border: #{$strong};
+    --_connector-after: var(--connector-background-complete, #{$strong});
+
+    // A dot has nothing inside, so it fills solid.
+    [part~='indicator'][part~='empty'] {
+        --_indicator-fill: #{$strong};
+    }
+}
+
+:host(:state(ig-previous-complete)) {
+    --_connector-before: var(--connector-background-complete, #{$strong});
+}
+
+:host([active]) {
+    --_indicator-border: currentcolor;
+    --_indicator-shadow: var(
+        --indicator-shadow-active,
+        0 0 0 6px color-mix(in oklab, currentcolor 16%, transparent)
+    );
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    [part~='indicator'] {
+        transition:
+            background-color 0.25s ease,
+            border-color 0.25s ease,
+            box-shadow 0.25s ease;
+    }
+
+    :host([active]) [part~='indicator'] {
+        animation: igc-timeline-pulse 2.4s ease-in-out infinite;
+    }
+
+    @keyframes igc-timeline-pulse {
+        50% {
+            box-shadow: 0 0 0 10px transparent;
+        }
     }
 }

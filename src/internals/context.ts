@@ -5,6 +5,7 @@ import type IgcToggleButtonComponent from '../components/button-group/toggle-but
 import type IgcCarouselComponent from '../components/carousel/carousel.js';
 import type { ChatState } from '../components/chat/chat-state.js';
 import type IgcTileManagerComponent from '../components/tile-manager/tile-manager.js';
+import type IgcTimelineComponent from '../components/timeline/timeline.js';
 
 export type ButtonGroupContext = {
   /** The igc-button-group instance. */
@@ -37,6 +38,10 @@ const tileManagerContext = createContext<TileManagerContext>(
   Symbol('tile-manager-context')
 );
 
+const timelineContext = createContext<IgcTimelineComponent>(
+  Symbol('timeline-context')
+);
+
 const chatContext = createContext<ChatState>(Symbol('chat-context'));
 const chatUserInputContext = createContext<ChatState>(
   Symbol('chat-user-input-context')
@@ -48,4 +53,5 @@ export {
   chatContext,
   chatUserInputContext,
   tileManagerContext,
+  timelineContext,
 };

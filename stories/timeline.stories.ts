@@ -22,19 +22,38 @@ const metadata: Meta<IgcTimelineComponent> = {
   },
   argTypes: {
     orientation: {
-      type: '"vertical" | "horizontal"',
-      options: ['vertical', 'horizontal'],
+      type: { name: 'enum', value: ['horizontal', 'vertical'] },
+      description: 'The axis along which the items are laid out.',
+      options: ['horizontal', 'vertical'],
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'vertical' } },
     },
+    position: {
+      type: { name: 'enum', value: ['alternate', 'start', 'end'] },
+      description:
+        'The side of the connector line on which the main content of the items is\nrendered. The `opposite` slot content always renders on the other side.\n\nIn vertical orientation `start` and `end` refer to the inline axis, in\nhorizontal orientation to the block axis. `alternate` switches sides on\nevery item. An item with its own `position` set ignores this value.',
+      options: ['alternate', 'start', 'end'],
+      control: { type: 'inline-radio' },
+      table: { defaultValue: { summary: 'alternate' } },
+    },
   },
-  args: { orientation: 'vertical' },
+  args: { orientation: 'vertical', position: 'alternate' },
 };
 
 export default metadata;
 
 interface IgcTimelineArgs {
-  orientation: 'vertical' | 'horizontal';
+  /** The axis along which the items are laid out. */
+  orientation: 'horizontal' | 'vertical';
+  /**
+   * The side of the connector line on which the main content of the items is
+   * rendered. The `opposite` slot content always renders on the other side.
+   *
+   * In vertical orientation `start` and `end` refer to the inline axis, in
+   * horizontal orientation to the block axis. `alternate` switches sides on
+   * every item. An item with its own `position` set ignores this value.
+   */
+  position: 'alternate' | 'start' | 'end';
 }
 type Story = StoryObj<IgcTimelineArgs>;
 
@@ -45,13 +64,60 @@ const indicatorStyle = (bg: string, border: string) =>
 
 export const Basic: Story = {
   render: (args) => html`
-    <igc-timeline orientation=${args.orientation}>
+    <igc-timeline orientation=${args.orientation} position=${args.position}>
       <igc-timeline-item>Item 1</igc-timeline-item>
       <igc-timeline-item>Item 2</igc-timeline-item>
       <igc-timeline-item>Item 3</igc-timeline-item>
       <igc-timeline-item>Item 4</igc-timeline-item>
       <igc-timeline-item>Item 5</igc-timeline-item>
       <igc-timeline-item>Item 6</igc-timeline-item>
+    </igc-timeline>
+  `,
+};
+
+export const OrderTracking: Story = {
+  args: { position: 'end' },
+  render: (args) => html`
+    <style>
+      .ot-step {
+        font-weight: 600;
+        margin: 0;
+      }
+      .ot-note {
+        font-size: 0.84rem;
+        opacity: 0.6;
+        margin: 0.15rem 0 0;
+      }
+      .ot-time {
+        font-size: 0.78rem;
+        opacity: 0.5;
+        white-space: nowrap;
+      }
+    </style>
+    <igc-timeline orientation=${args.orientation} position=${args.position}>
+      <igc-timeline-item complete>
+        <time slot="opposite" class="ot-time">Mon, 09:12</time>
+        <p class="ot-step">Order placed</p>
+        <p class="ot-note">Confirmation sent to your inbox</p>
+      </igc-timeline-item>
+      <igc-timeline-item complete>
+        <time slot="opposite" class="ot-time">Mon, 16:40</time>
+        <p class="ot-step">Packed</p>
+        <p class="ot-note">2 items, 1 parcel</p>
+      </igc-timeline-item>
+      <igc-timeline-item active>
+        <time slot="opposite" class="ot-time">Tue, 07:05</time>
+        <p class="ot-step">In transit</p>
+        <p class="ot-note">Left the regional hub</p>
+      </igc-timeline-item>
+      <igc-timeline-item>
+        <time slot="opposite" class="ot-time">Wed</time>
+        <p class="ot-step">Out for delivery</p>
+      </igc-timeline-item>
+      <igc-timeline-item>
+        <time slot="opposite" class="ot-time">Wed</time>
+        <p class="ot-step">Delivered</p>
+      </igc-timeline-item>
     </igc-timeline>
   `,
 };
@@ -80,7 +146,7 @@ export const DailySchedule: Story = {
         line-height: 1;
       }
     </style>
-    <igc-timeline orientation=${args.orientation}>
+    <igc-timeline orientation=${args.orientation} position=${args.position}>
       <igc-timeline-item style=${indicatorStyle('#546e7a', '#37474f')}>
         <span slot="opposite" class="tl-time">8:00 am</span>
         <span slot="indicator" class="tl-icon">☕</span>
@@ -180,8 +246,9 @@ export const ProjectMilestones: Story = {
         font-style: italic;
       }
     </style>
-    <igc-timeline orientation=${args.orientation}>
+    <igc-timeline orientation=${args.orientation} position=${args.position}>
       <igc-timeline-item
+        complete
         style="--indicator-background: #43a047; --indicator-border-color: #2e7d32; --indicator-shadow: 0 0 0 5px color-mix(in oklab, #43a047 18%, transparent);"
       >
         <span slot="indicator">✓</span>
@@ -229,7 +296,7 @@ export const ProjectMilestones: Story = {
 };
 
 export const Changelog: Story = {
-  args: { orientation: 'vertical' },
+  args: { orientation: 'vertical', position: 'end' },
   render: (args) => html`
     <style>
       .cl-version {
@@ -271,9 +338,8 @@ export const Changelog: Story = {
         line-height: 1.5;
       }
     </style>
-    <igc-timeline orientation=${args.orientation}>
+    <igc-timeline orientation=${args.orientation} position=${args.position}>
       <igc-timeline-item
-        position="end"
         style="--indicator-background: #43a047; --indicator-border-color: #2e7d32; --indicator-shadow: 0 0 0 5px color-mix(in oklab, #43a047 15%, transparent);"
       >
         <span slot="indicator">🚀</span>
@@ -301,7 +367,6 @@ export const Changelog: Story = {
       </igc-timeline-item>
 
       <igc-timeline-item
-        position="end"
         style="--indicator-background: #1e88e5; --indicator-border-color: #1565c0; --indicator-shadow: 0 0 0 5px color-mix(in oklab, #1e88e5 15%, transparent);"
       >
         <span slot="indicator">✨</span>
@@ -325,7 +390,6 @@ export const Changelog: Story = {
       </igc-timeline-item>
 
       <igc-timeline-item
-        position="end"
         style="--indicator-background: #f57c00; --indicator-border-color: #e65100; --indicator-shadow: 0 0 0 5px color-mix(in oklab, #f57c00 15%, transparent);"
       >
         <span slot="indicator">🔧</span>
@@ -351,7 +415,6 @@ export const Changelog: Story = {
       </igc-timeline-item>
 
       <igc-timeline-item
-        position="end"
         style="--indicator-background: #8e24aa; --indicator-border-color: #6a1b9a; --indicator-shadow: 0 0 0 5px color-mix(in oklab, #8e24aa 15%, transparent);"
       >
         <span slot="indicator">⚡</span>
