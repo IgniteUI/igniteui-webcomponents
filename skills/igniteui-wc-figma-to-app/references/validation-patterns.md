@@ -194,7 +194,7 @@ playwright_browser_evaluate({
 Compare against the variant detected in Phase 1d. If the design uses border-style inputs
 everywhere, every control should report `outlined === count`.
 
-### Property-binding audit (charts, grids, combos)
+### Property-binding audit (collection-bound charts, grids, combos)
 
 ```
 playwright_browser_evaluate({
@@ -206,6 +206,8 @@ playwright_browser_evaluate({
 as a property. `brushCollections: null` on a chart means none of its documented
 `brushes` / `outlines` arrays were assigned, so it is still using the default palette instead
 of the Figma series colors. `height: 0` means the element or its grid track has no height.
+Use this audit for the collection-bound host tags in the selected plan; gauges and maps need
+their own host-specific validation once you know which properties the chosen component binds.
 
 ### Measure the gap between two elements
 
