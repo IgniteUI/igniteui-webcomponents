@@ -1,0 +1,224 @@
+@use 'styles/common/component';
+
+// Layout is resolved by the item from the parent timeline and exposed as
+// custom states:
+//   :state(ig-horizontal)         - the timeline is horizontal
+//   :state(ig-start)              - the main content renders on the start side
+//   :state(ig-previous-complete)  - the preceding item is `complete`
+// The connector is split in two halves. `::before` runs towards the previous
+// item and `::after` towards the next one, so that a segment between two
+// items is drawn solid when the earlier of the two is complete.
+
+$muted: color-mix(in oklab, currentcolor 20%, transparent);
+$strong: color-mix(in oklab, currentcolor 70%, transparent);
+
+:host {
+    --_gap: var(--connector-gap, 0.875rem);
+    --_indicator-size: 2.5rem;
+    --_indicator-fill: transparent;
+    --_indicator-border: color-mix(in oklab, currentcolor 40%, transparent);
+    --_indicator-shadow: var(
+        --indicator-shadow,
+        0 0 0 4px color-mix(in oklab, currentcolor 8%, transparent)
+    );
+    --_connector-before: var(--connector-background, #{$muted});
+    --_connector-after: var(--connector-background, #{$muted});
+
+    display: grid;
+
+    // Inside a timeline the item lays out on the shared tracks. Outside one
+    // `subgrid` resolves to `none` and the implicit tracks take over.
+    grid-template-columns: subgrid;
+    grid-auto-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    grid-column: 1 / -1;
+    align-items: center;
+}
+
+// ---- Vertical (default) ------------------------------------------------
+
+[part~='opposite'] {
+    grid-column: 1;
+    grid-row: 1;
+    text-align: end;
+    padding-inline-end: var(--_gap);
+    padding-block: var(--_gap);
+}
+
+[part~='connector'] {
+    grid-column: 2;
+    grid-row: 1;
+    align-self: stretch;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    &::before,
+    &::after {
+        content: '';
+        flex: 1;
+        width: var(--connector-width, 2px);
+        min-height: 0.75rem;
+    }
+
+    &::before {
+        background: var(--_connector-before);
+    }
+
+    &::after {
+        background: var(--_connector-after);
+    }
+}
+
+[part~='indicator'] {
+    flex-shrink: 0;
+    display: grid;
+    place-items: center;
+    width: var(--indicator-size, var(--_indicator-size));
+    height: var(--indicator-size, var(--_indicator-size));
+    border-radius: 50%;
+    border: var(--indicator-border-width, 2px) solid
+        var(--indicator-border-color, var(--_indicator-border));
+    background: var(--indicator-background, var(--_indicator-fill));
+    color: var(--indicator-color, inherit);
+    box-shadow: var(--_indicator-shadow);
+
+    &[part~='empty'] {
+        --_indicator-size: 1rem;
+    }
+}
+
+[part~='content'] {
+    grid-column: 3;
+    grid-row: 1;
+    text-align: start;
+    padding-inline-start: var(--_gap);
+    padding-block: var(--_gap);
+}
+
+// An empty opposite slot takes no space, so a timeline without side content
+// has no blank track.
+[part~='opposite'][part~='empty'] {
+    display: none;
+}
+
+:host(:state(ig-start)) {
+    [part~='content'] {
+        grid-column: 1;
+        text-align: end;
+        padding-inline: 0 var(--_gap);
+    }
+
+    [part~='opposite'] {
+        grid-column: 3;
+        text-align: start;
+        padding-inline: var(--_gap) 0;
+    }
+}
+
+// ---- Horizontal --------------------------------------------------------
+
+:host(:state(ig-horizontal)) {
+    grid-template-columns: none;
+    grid-auto-columns: auto;
+    grid-template-rows: subgrid;
+    grid-auto-rows: minmax(0, 1fr) auto minmax(0, 1fr);
+    grid-column: auto;
+    grid-row: 1 / -1;
+
+    [part~='opposite'] {
+        grid-row: 1;
+        grid-column: 1;
+        align-self: end;
+        text-align: center;
+        padding-inline: var(--_gap);
+        padding-block: 0 var(--_gap);
+    }
+
+    [part~='connector'] {
+        grid-row: 2;
+        grid-column: 1;
+        flex-direction: row;
+        place-self: center stretch;
+
+        &::before,
+        &::after {
+            width: auto;
+            height: var(--connector-width, 2px);
+            min-height: unset;
+            min-width: 0.75rem;
+        }
+    }
+
+    [part~='content'] {
+        grid-row: 3;
+        grid-column: 1;
+        align-self: start;
+        text-align: center;
+        padding-inline: var(--_gap);
+        padding-block: var(--_gap) 0;
+    }
+}
+
+:host(:state(ig-horizontal):state(ig-start)) {
+    [part~='content'] {
+        grid-row: 1;
+        align-self: end;
+        padding-block: 0 var(--_gap);
+    }
+
+    [part~='opposite'] {
+        grid-row: 3;
+        align-self: start;
+        padding-block: var(--_gap) 0;
+    }
+}
+
+// The connector does not extend past the outermost items.
+:host(:first-of-type) [part~='connector']::before,
+:host(:last-of-type) [part~='connector']::after {
+    visibility: hidden;
+}
+
+// ---- States ------------------------------------------------------------
+
+:host([complete]) {
+    --_indicator-fill: color-mix(in oklab, currentcolor 12%, transparent);
+    --_indicator-border: #{$strong};
+    --_connector-after: var(--connector-background-complete, #{$strong});
+
+    // A dot has nothing inside, so it fills solid.
+    [part~='indicator'][part~='empty'] {
+        --_indicator-fill: #{$strong};
+    }
+}
+
+:host(:state(ig-previous-complete)) {
+    --_connector-before: var(--connector-background-complete, #{$strong});
+}
+
+:host([active]) {
+    --_indicator-border: currentcolor;
+    --_indicator-shadow: var(
+        --indicator-shadow-active,
+        0 0 0 6px color-mix(in oklab, currentcolor 16%, transparent)
+    );
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    [part~='indicator'] {
+        transition:
+            background-color 0.25s ease,
+            border-color 0.25s ease,
+            box-shadow 0.25s ease;
+    }
+
+    :host([active]) [part~='indicator'] {
+        animation: igc-timeline-pulse 2.4s ease-in-out infinite;
+    }
+
+    @keyframes igc-timeline-pulse {
+        50% {
+            box-shadow: 0 0 0 10px transparent;
+        }
+    }
+}

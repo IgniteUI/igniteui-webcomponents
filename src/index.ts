@@ -84,6 +84,8 @@ export type {
   VirtualScrollState,
   VirtualScrollDataRequest,
 } from './components/virtualization/types.js';
+export { default as IgcTimelineComponent } from './components/timeline/timeline.js';
+export { default as IgcTimelineItemComponent } from './components/timeline/item.js';
 
 // definitions
 export { defineComponents } from '#internals/definitions/defineComponents.js';

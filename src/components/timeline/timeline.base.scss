@@ -1,0 +1,51 @@
+@use 'styles/common/component';
+
+// The timeline owns the shared tracks. Every item spans all of them and lays
+// its parts out through `subgrid`, so the connector column (or row) is aligned
+// across items and the `opposite` track sizes to its widest content.
+// Track order is always: opposite-side, connector, content-side. Which slot
+// lands on which side is decided per item (see item.base.scss).
+
+:host {
+    --_tracks: minmax(0, 1fr) auto minmax(0, 1fr);
+
+    display: grid;
+    grid-template-columns: var(--_tracks);
+    grid-auto-rows: minmax(var(--item-min-height, 5rem), auto);
+}
+
+:host([position='start']) {
+    --_tracks: minmax(0, 1fr) auto auto;
+}
+
+:host([position='end']) {
+    --_tracks: auto auto minmax(0, 1fr);
+}
+
+:host([orientation='horizontal']) {
+    grid-auto-flow: column;
+    grid-template-columns: none;
+    grid-auto-columns: minmax(var(--item-min-width, 8rem), 1fr);
+    grid-template-rows: var(--_tracks);
+    grid-auto-rows: auto;
+    overflow-x: auto;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    ::slotted(igc-timeline-item) {
+        transition:
+            opacity 0.4s ease,
+            translate 0.4s ease;
+
+        @starting-style {
+            opacity: 0;
+            translate: 0 1.25rem;
+        }
+    }
+
+    :host([orientation='horizontal']) ::slotted(igc-timeline-item) {
+        @starting-style {
+            translate: 1.25rem 0;
+        }
+    }
+}

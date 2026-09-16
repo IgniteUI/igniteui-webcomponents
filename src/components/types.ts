@@ -62,4 +62,7 @@ export type TabsAlignment = 'start' | 'end' | 'center' | 'justify';
 export type TextareaResize = 'vertical' | 'auto' | 'none';
 export type TileManagerDragMode = 'none' | 'tile-header' | 'tile';
 export type TileManagerResizeMode = 'none' | 'hover' | 'always';
+export type TimelineItemPosition = 'start' | 'end';
+export type TimelineOrientation = 'horizontal' | 'vertical';
+export type TimelinePosition = 'alternate' | 'start' | 'end';
 //#endregion
