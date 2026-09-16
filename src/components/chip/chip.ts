@@ -5,13 +5,19 @@ import {
 import { html, LitElement, nothing } from 'lit';
 import { property } from 'lit/decorators.js';
 import { createRef, ref } from 'lit/directives/ref.js';
-import { addThemingController } from '../../theming/theming-controller.js';
-import { addKeybindings } from '../common/controllers/key-bindings.js';
-import { addSlotController, setSlots } from '../common/controllers/slot.js';
-import { registerComponent } from '../common/definitions/register.js';
-import { addI18nController } from '../common/i18n/i18n-controller.js';
-import type { Constructor } from '../common/mixins/constructor.js';
-import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
+import { addKeybindings } from '#internals/controllers/key-bindings.js';
+import {
+  addSlotController,
+  type InferSlotNames,
+  setSlots,
+} from '#internals/controllers/slot.js';
+import { registerComponent } from '#internals/definitions/register.js';
+import type { I18nControllerConfig } from '#internals/i18n/i18n-controller.js';
+import type { Constructor } from '#internals/mixins/constructor.js';
+import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
+import { I18nMixin } from '#internals/mixins/i18n.js';
+import { renderSlottedIcon } from '#internals/templates/slotted-icon.js';
+import { addThemingController } from '#theming/theming-controller.js';
 import IgcIconComponent from '../icon/icon.js';
 import type { StyleVariant } from '../types.js';
 import { styles } from './themes/chip.base.css.js';
@@ -19,9 +25,15 @@ import { styles as shared } from './themes/shared/chip.common.css.js';
 import { all } from './themes/themes.js';
 
 export interface IgcChipComponentEventMap {
-  igcRemove: CustomEvent<boolean>;
+  igcRemove: CustomEvent<void>;
   igcSelect: CustomEvent<boolean>;
 }
+
+const Slots = setSlots('start', 'prefix', 'suffix', 'end');
+
+const i18n: I18nControllerConfig<IChipResourceStrings> = {
+  defaultEN: ChipResourceStringsEN,
+};
 
 /**
  * Chips help people enter information, make selections, filter content, or trigger actions.
@@ -30,22 +42,28 @@ export interface IgcChipComponentEventMap {
  *
  * @slot - Renders content in the default slot of the chip.
  * @slot prefix - Renders content at the start of the chip, before the default content.
+ * @slot start - Renders content at the start of the chip, before the prefix content.
  * @slot suffix - Renders content at the end of the chip after the default content.
+ * @slot end - Renders content at the end of the chip, before the suffix content.
  * @slot select - Content to render when the chip in selected state.
  * @slot remove - Content to override the default remove chip icon.
  *
- * @fires igcRemove - Emits an event when the chip component is removed. Returns the removed chip component.
+ * @fires igcRemove - Emits an event when the chip component is removed.
  * @fires igcSelect - Emits event when the chip component is selected/deselected and any related animations and transitions also end.
  *
  * @csspart base - The base wrapper of the chip.
+ * @csspart action - The selection control of the chip, wrapping the chip content.
  * @csspart content - The wrapper element around the default slot of the chip.
  * @csspart prefix - The prefix container of the chip.
  * @csspart suffix - The suffix container of the chip.
+ * @csspart remove - The container of the remove control of the chip.
  */
-export default class IgcChipComponent extends EventEmitterMixin<
-  IgcChipComponentEventMap,
-  Constructor<LitElement>
->(LitElement) {
+export default class IgcChipComponent extends I18nMixin(
+  EventEmitterMixin<IgcChipComponentEventMap, Constructor<LitElement>>(
+    LitElement
+  ),
+  i18n
+) {
   public static readonly tagName = 'igc-chip';
   public static styles = [styles, shared];
 
@@ -55,79 +73,61 @@ export default class IgcChipComponent extends EventEmitterMixin<
   }
 
   private readonly _removePartRef = createRef<HTMLSlotElement>();
-
-  private readonly _slots = addSlotController(this, {
-    slots: setSlots('prefix', 'suffix', 'start', 'end', 'select', 'remove'),
-  });
+  private readonly _slots = addSlotController(this, { slots: Slots });
 
   /**
-   * Sets the disabled state for the chip.
-   * @attr
+   * Whether the chip is disabled or not.
+   *
+   * @attr disabled
+   * @default false
    */
   @property({ type: Boolean, reflect: true })
   public disabled = false;
 
   /**
-   * Defines if the chip is removable or not.
-   * @attr
+   * Whether the chip is removable or not.
+   *
+   * @attr removable
+   * @default false
    */
   @property({ type: Boolean, reflect: true })
   public removable = false;
 
   /**
-   * Defines if the chip is selectable or not.
-   * @attr
+   * Whether the chip is outlined or not.
+   *
+   * @attr outlined
+   * @default false
+   */
+  @property({ type: Boolean, reflect: true })
+  public outlined = false;
+
+  /**
+   * Whether the chip is selectable or not.
+   *
+   * @attr selectable
+   * @default false
    */
   @property({ type: Boolean, reflect: true })
   public selectable = false;
 
   /* @tsTwoWayProperty(true, "igcSelect", "detail", false) */
   /**
-   * Defines if the chip is selected or not.
-   * @attr
+   * Whether the chip is selected or not.
+   *
+   * @attr selected
+   * @default false
    */
   @property({ type: Boolean, reflect: true })
   public selected = false;
 
   /**
    * A property that sets the color variant of the chip component.
-   * @attr
+   *
+   * @attr variant
    */
   @property({ reflect: true })
-  public variant!: StyleVariant;
-
-  /**
-   * Gets/Sets the locale used for getting language, affecting resource strings.
-   * @attr locale
-   */
-  @property()
-  public set locale(value: string) {
-    this._i18nController.locale = value;
-  }
-
-  public get locale() {
-    return this._i18nController.locale;
-  }
-
-  /**
-   * The resource strings for localization.
-   * Currently only aria-labels for the default select/remove icons are localized.
-   */
-  @property({ attribute: false })
-  public set resourceStrings(value: IChipResourceStrings) {
-    this._i18nController.resourceStrings = value;
-  }
-
-  public get resourceStrings(): IChipResourceStrings {
-    return this._i18nController.resourceStrings;
-  }
-
-  private readonly _i18nController = addI18nController<IChipResourceStrings>(
-    this,
-    {
-      defaultEN: ChipResourceStringsEN,
-    }
-  );
+  public variant?: StyleVariant;
 
   constructor() {
     super();
@@ -136,8 +136,13 @@ export default class IgcChipComponent extends EventEmitterMixin<
 
     addKeybindings(this, {
       ref: this._removePartRef,
+      skip: () => !this._removePartRef.value,
       bindingDefaults: { triggers: ['keyup'] },
     }).setActivateHandler(this._handleRemove);
+  }
+
+  private _hasSlotted(...slots: InferSlotNames<typeof Slots>[]): boolean {
+    return slots.some((slot) => this._slots.hasAssignedElements(slot));
   }
 
   protected _handleSelect(): void {
@@ -153,26 +158,18 @@ export default class IgcChipComponent extends EventEmitterMixin<
   }
 
   protected _renderPrefix() {
-    const isVisible =
-      this._slots.hasAssignedElements('prefix') ||
-      this._slots.hasAssignedElements('start');
-
-    const selectSlot =
-      this.selectable && this.selected
-        ? html`
-            <slot name="select">
-              <igc-icon
-                name="selected"
-                collection="default"
-                aria-label=${this.resourceStrings.chip_select ?? 'select chip'}
-              ></igc-icon>
-            </slot>
-          `
-        : nothing;
+    const showSelected = this.selectable && this.selected;
 
     return html`
-      <span part="prefix" ?hidden=${!isVisible && !this.selected}>
-        ${selectSlot}
+      <span
+        part="prefix"
+        ?hidden=${!showSelected && !this._hasSlotted('start', 'prefix')}
+      >
+        ${
+          showSelected
+            ? renderSlottedIcon({ slot: 'select', icon: 'selected' })
+            : nothing
+        }
         <slot name="start"></slot>
         <slot name="prefix"></slot>
       </span>
@@ -180,34 +177,34 @@ export default class IgcChipComponent extends EventEmitterMixin<
   }
 
   protected _renderSuffix() {
-    const isVisible =
-      this._slots.hasAssignedElements('suffix') ||
-      this._slots.hasAssignedElements('end');
-
-    const removeSlot =
-      this.removable && !this.disabled
-        ? html`
-            <slot
-              ${ref(this._removePartRef)}
-              name="remove"
-              @click=${this._handleRemove}
-            >
-              <igc-icon
-                name="remove"
-                collection="default"
-                tabindex="0"
-                role="button"
-                aria-label=${this.resourceStrings.chip_remove ?? 'remove chip'}
-              ></igc-icon>
-            </slot>
-          `
-        : nothing;
-
     return html`
-      <span part="suffix" ?hidden=${!isVisible && !this.removable}>
+      <span part="suffix" ?hidden=${!this._hasSlotted('end', 'suffix')}>
         <slot name="end"></slot>
         <slot name="suffix"></slot>
-        ${removeSlot}
+      </span>
+    `;
+  }
+
+  protected _renderRemove() {
+    if (!this.removable || this.disabled) {
+      return nothing;
+    }
+
+    return html`
+      <span part="remove">
+        <slot
+          ${ref(this._removePartRef)}
+          name="remove"
+          @click=${this._handleRemove}
+        >
+          <igc-icon
+            name="remove"
+            collection="default"
+            tabindex="0"
+            role="button"
+            aria-label=${this.resourceStrings.chip_remove}
+          ></igc-icon>
+        </slot>
       </span>
     `;
   }
@@ -216,18 +213,22 @@ export default class IgcChipComponent extends EventEmitterMixin<
     const ariaPressed = this.selectable ? this.selected.toString() : null;
 
     return html`
-      <button
-        part="base"
-        .ariaPressed=${ariaPressed}
-        ?disabled=${this.disabled}
-        @click=${this._handleSelect}
-      >
-        ${this._renderPrefix()}
-        <span part="content">
-          <slot></slot>
-        </span>
-        ${this._renderSuffix()}
-      </button>
+      <div part="base">
+        <button
+          part="action"
+          type="button"
+          .ariaPressed=${ariaPressed}
+          ?disabled=${this.disabled}
+          @click=${this._handleSelect}
+        >
+          ${this._renderPrefix()}
+          <span part="content">
+            <slot></slot>
+          </span>
+          ${this._renderSuffix()}
+        </button>
+        ${this._renderRemove()}
+      </div>
     `;
   }
 }

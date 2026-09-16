@@ -30,3 +30,15 @@
 [part~='empty'] {
     display: none !important;
 }
+
+@media (forced-colors: active) {
+    :host {
+        [part~='validation-message'] {
+            color: GrayText;
+        }
+
+        igc-icon {
+            color: GrayText !important;
+        }
+    }
+}

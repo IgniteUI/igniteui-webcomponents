@@ -9,8 +9,8 @@ import {
   defineComponents,
   registerIcon,
 } from 'igniteui-webcomponents';
-import { range } from 'lit/directives/range.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
+import { range } from 'lit/directives/range.js';
 
 defineComponents(IgcIconComponent, IgcNavDrawerComponent, IgcButtonComponent);
 
@@ -22,16 +22,19 @@ const metadata: Meta<IgcNavDrawerComponent> = {
     docs: {
       description: {
         component:
-          'A side navigation container that provides\nquick access between views within an application.\n\n\nWhen content is provided in the `mini` slot, a compact icon-only variant is\ndisplayed alongside the main drawer.',
+          'A side navigation container that provides\nquick access between views within an application.\n\nFor non-relative positions (`start`, `end`, `top`, `bottom`) the drawer is\nrendered as a native `<dialog>` element, providing modal semantics, automatic\nfocus trapping, and a backdrop. For the `relative` position it is rendered\ninline as a `<nav>` landmark.\n\nWhen content is provided in the `mini` slot, a compact icon-only variant is\nalways displayed alongside the main drawer (hidden only while the full drawer\nis open).\n\nThe component integrates with the\n[Invoker Commands API](https://developer.mozilla.org/en-US/docs/Web/API/Invoker_Commands_API):\nan Ignite button or a native `<button>` with `command="--show"` / `"--hide"` / `"--toggle"`\nand `commandfor` pointing to this element will call the corresponding method\ndeclaratively without any JavaScript.',
       },
     },
     actions: { handles: ['igcClosing', 'igcClosed'] },
   },
   argTypes: {
     position: {
-      type: '"start" | "end" | "top" | "bottom" | "relative"',
+      type: {
+        name: 'enum',
+        value: ['start', 'end', 'top', 'bottom', 'relative'],
+      },
       description:
-        'Sets the position of the drawer.\n\n- `start` — anchored to the inline-start edge (default).\n- `end` — anchored to the inline-end edge.\n- `top` — anchored to the block-start edge.\n- `bottom` — anchored to the block-end edge.\n- `relative` — rendered inline within the page flow; no modal backdrop.',
+        'Sets the position of the drawer.\n\n- `start` - anchored to the inline-start edge (default).\n- `end` - anchored to the inline-end edge.\n- `top` - anchored to the block-start edge.\n- `bottom` - anchored to the block-end edge.\n- `relative` - rendered inline within the page flow; no modal backdrop.',
       options: ['start', 'end', 'top', 'bottom', 'relative'],
       control: { type: 'select' },
       table: { defaultValue: { summary: 'start' } },
@@ -45,7 +48,7 @@ const metadata: Meta<IgcNavDrawerComponent> = {
     keepOpenOnEscape: {
       type: 'boolean',
       description:
-        'Determines whether the drawer should remain open when the Escape key is pressed.\n\nThis attribute is only applicable when the drawer is in a non-relative position,\nas the Escape key does not trigger the closing of relative drawers.',
+        'Determines whether the drawer should remain open when the Escape key is pressed.\n\nThis is only applicable when the drawer is in a non-relative position,\nas the Escape key does not trigger the closing of relative drawers.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
@@ -65,11 +68,11 @@ interface IgcNavDrawerArgs {
   /**
    * Sets the position of the drawer.
    *
-   * - `start` — anchored to the inline-start edge (default).
-   * - `end` — anchored to the inline-end edge.
-   * - `top` — anchored to the block-start edge.
-   * - `bottom` — anchored to the block-end edge.
-   * - `relative` — rendered inline within the page flow; no modal backdrop.
+   * - `start` - anchored to the inline-start edge (default).
+   * - `end` - anchored to the inline-end edge.
+   * - `top` - anchored to the block-start edge.
+   * - `bottom` - anchored to the block-end edge.
+   * - `relative` - rendered inline within the page flow; no modal backdrop.
    */
   position: 'start' | 'end' | 'top' | 'bottom' | 'relative';
   /** Whether the drawer is open. */
@@ -77,7 +80,7 @@ interface IgcNavDrawerArgs {
   /**
    * Determines whether the drawer should remain open when the Escape key is pressed.
    *
-   * This attribute is only applicable when the drawer is in a non-relative position,
+   * This is only applicable when the drawer is in a non-relative position,
    * as the Escape key does not trigger the closing of relative drawers.
    */
   keepOpenOnEscape: boolean;
@@ -106,11 +109,6 @@ registerIcon(
   'https://unpkg.com/material-design-icons@3.0.1/action/svg/production/ic_search_24px.svg'
 );
 
-const getDrawer = (ev: Event) =>
-  (ev.target as HTMLElement)
-    .closest('.main')
-    ?.querySelector('igc-nav-drawer') as IgcNavDrawerComponent | null;
-
 const handleClick = (ev: PointerEvent) => {
   const drawerItem = (ev.target as HTMLElement).closest(
     'igc-nav-drawer-item'
@@ -128,10 +126,6 @@ const handleClick = (ev: PointerEvent) => {
       });
   }
 };
-
-const handleOpen = (ev: MouseEvent) => getDrawer(ev)?.show();
-const handleClose = (ev: MouseEvent) => getDrawer(ev)?.hide();
-const handleToggle = (ev: MouseEvent) => getDrawer(ev)?.toggle();
 
 const commonStyles = html`
   <style>
@@ -204,9 +198,13 @@ const createMiniContent = () => html`
 
 // Create a function for control buttons — always show Open / Toggle / Close
 const createControlButtons = () => html`
-  <igc-button @click=${handleOpen}>Open</igc-button>
-  <igc-button variant="outlined" @click=${handleToggle}>Toggle</igc-button>
-  <igc-button variant="outlined" @click=${handleClose}>Close</igc-button>
+  <igc-button command="--show" commandfor="nav-drawer">Open</igc-button>
+  <igc-button variant="outlined" command="--toggle" commandfor="nav-drawer"
+    >Toggle</igc-button
+  >
+  <igc-button variant="outlined" command="--hide" commandfor="nav-drawer"
+    >Close</igc-button
+  >
 `;
 
 // Main template function
@@ -225,6 +223,7 @@ const createTemplate = (options: {
 
     <div class="ig-scrollbar main">
       <igc-nav-drawer
+        id="nav-drawer"
         label=${ifDefined(options.headerText ?? undefined)}
         .open=${open}
         .position=${position}

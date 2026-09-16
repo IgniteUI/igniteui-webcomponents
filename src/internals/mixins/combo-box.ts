@@ -1,0 +1,167 @@
+import { LitElement } from 'lit';
+import { property } from 'lit/decorators.js';
+import type { RootClickController } from '../controllers/root-click.js';
+import {
+  addToggleController,
+  type ToggleEventMap,
+} from '../controllers/toggle.js';
+import { lastOf } from '../utils/arrays.js';
+import { iterNodes } from '../utils/dom.js';
+import type { UnpackCustomEvent } from './event-emitter.js';
+
+/* blazorIndirectRender */
+/* omitModule */
+export abstract class IgcBaseComboBoxComponent extends LitElement {
+  /* blazorSuppress */
+  declare public emitEvent: <
+    K extends keyof ToggleEventMap,
+    D extends UnpackCustomEvent<ToggleEventMap[K]>,
+  >(
+    event: K,
+    eventInitDict?: CustomEventInit<D>
+  ) => boolean;
+
+  protected abstract _rootClickController: RootClickController;
+  private readonly _toggleController = addToggleController(this);
+
+  /**
+   * Sets the open state of the component.
+   * @attr open
+   * @default false
+   */
+  @property({ type: Boolean, reflect: true })
+  public open = false;
+
+  protected _handleAnchorClick(): void {
+    this.open ? this._hide(true) : this._show(true);
+  }
+
+  protected _hide(emitEvent = false): Promise<boolean> {
+    return this._toggleController.hide(emitEvent);
+  }
+
+  protected _show(emitEvent = false): Promise<boolean> {
+    return this._toggleController.show(emitEvent);
+  }
+
+  /** Shows the component. */
+  public async show(): Promise<boolean> {
+    return this._show();
+  }
+
+  /** Hides the component. */
+  public async hide(): Promise<boolean> {
+    return this._hide();
+  }
+
+  /** Toggles the open state of the component. */
+  public async toggle(): Promise<boolean> {
+    return this.open ? this.hide() : this.show();
+  }
+}
+
+/* blazorIndirectRender */
+/* omitModule */
+export abstract class IgcComboBoxBaseLikeComponent extends IgcBaseComboBoxComponent {
+  /**
+   * Whether the component dropdown should be kept open on selection.
+   * @attr keep-open-on-select
+   * @default false
+   */
+  @property({ type: Boolean, reflect: true, attribute: 'keep-open-on-select' })
+  public keepOpenOnSelect = false;
+
+  /**
+   * Whether the component dropdown should be kept open on clicking outside of it.
+   * @attr keep-open-on-outside-click
+   * @default false
+   */
+  @property({
+    type: Boolean,
+    reflect: true,
+    attribute: 'keep-open-on-outside-click',
+  })
+  public keepOpenOnOutsideClick = false;
+}
+
+export function getItems<T extends HTMLElement>(
+  root: Node,
+  tagName: string
+): Generator<T> {
+  return iterNodes<T>(root, {
+    show: 'SHOW_ELEMENT',
+    filter: (item) => item.matches(tagName),
+  });
+}
+
+export function getActiveItems<T extends HTMLElement & { disabled: boolean }>(
+  root: Node,
+  tagName: string
+): Generator<T> {
+  return iterNodes<T>(root, {
+    show: 'SHOW_ELEMENT',
+    filter: (item) => item.matches(tagName) && !item.disabled,
+  });
+}
+
+/**
+ * Both navigation helpers accept a missing or detached `from`, in which case
+ * the search runs from the edge of the collection. They return `undefined` only
+ * when there is nothing to navigate to at all.
+ */
+function indexOfItem<T extends HTMLElement>(
+  items: T[],
+  from: T | null | undefined,
+  fallback: number
+): number {
+  const index = from ? items.indexOf(from) : -1;
+  return index < 0 ? fallback : index;
+}
+
+/**
+ * Returns the first non-disabled item after `from`, or `from` itself when it is
+ * already the last one.
+ */
+export function getNextActiveItem<
+  T extends HTMLElement & { disabled: boolean },
+>(items: T[], from?: T | null): T | undefined {
+  const current = indexOfItem(items, from, -1);
+
+  for (let i = current + 1; i < items.length; i++) {
+    if (!items[i].disabled) {
+      return items[i];
+    }
+  }
+
+  return items[current];
+}
+
+/**
+ * Returns the first non-disabled item before `from`, or `from` itself when it
+ * is already the first one.
+ */
+export function getPreviousActiveItem<
+  T extends HTMLElement & { disabled: boolean },
+>(items: T[], from?: T | null): T | undefined {
+  const current = indexOfItem(items, from, items.length);
+
+  for (let i = current - 1; i >= 0; i--) {
+    if (!items[i].disabled) {
+      return items[i];
+    }
+  }
+
+  return items[current];
+}
+
+export function setInitialSelectionState<
+  T extends HTMLElement & { selected: boolean },
+>(items: T[]): T | null {
+  const lastSelected = lastOf(items.filter((item) => item.selected));
+
+  for (const item of items) {
+    item.selected = item === lastSelected;
+  }
+
+  return lastSelected ?? null;
+}

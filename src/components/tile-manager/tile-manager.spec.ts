@@ -1,18 +1,13 @@
-import {
-  elementUpdated,
-  expect,
-  fixture,
-  html,
-  nextFrame,
-} from '@open-wc/testing';
+import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import { range } from 'lit/directives/range.js';
 import { match, restore, spy, stub } from 'sinon';
+import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { viewTransitionComplete } from '#internals/testing/helpers.spec.js';
+import { simulateClick } from '#internals/testing/simulate.spec.js';
+import { firstOf } from '#internals/utils/arrays.js';
 import IgcIconButtonComponent from '../button/icon-button.js';
-import { defineComponents } from '../common/definitions/defineComponents.js';
-import { first } from '../common/util.js';
-import { simulateClick } from '../common/utils.spec.js';
-import IgcTileComponent from './tile.js';
 import IgcTileManagerComponent from './tile-manager.js';
+import IgcTileComponent from './tile.js';
 
 describe('Tile Manager component', () => {
   before(() => {
@@ -20,11 +15,6 @@ describe('Tile Manager component', () => {
   });
 
   let tileManager: IgcTileManagerComponent;
-
-  async function viewTransitionComplete() {
-    await nextFrame();
-    await nextFrame();
-  }
 
   function getTileManagerBase() {
     return tileManager.renderRoot.querySelector<HTMLElement>('[part="base"]')!;
@@ -261,6 +251,72 @@ describe('Tile Manager component', () => {
     });
   });
 
+  describe('Maximize', () => {
+    beforeEach(async () => {
+      tileManager = await fixture<IgcTileManagerComponent>(createTileManager());
+    });
+
+    it('issue 2029 - preserves grid container height when maximizing the only tile with the maximum row-span', async () => {
+      const grid = getTileManagerBase();
+      const tile = tileManager.tiles[0];
+
+      // Make the first tile the sole contributor to the tallest row track.
+      tile.rowSpan = 30;
+      await elementUpdated(tileManager);
+
+      const initialHeight = grid.offsetHeight;
+      expect(grid.style.minHeight).to.equal('');
+
+      tile.maximized = true;
+      await elementUpdated(tileManager);
+
+      // The grid height is locked so the maximized tile's content is not clipped.
+      expect(grid.style.minHeight).to.equal(`${initialHeight}px`);
+      expect(grid.offsetHeight).to.equal(initialHeight);
+    });
+
+    it('issue 2029 - releases the locked grid height once no tile is maximized', async () => {
+      const grid = getTileManagerBase();
+      const tile = tileManager.tiles[0];
+
+      tile.rowSpan = 30;
+      await elementUpdated(tileManager);
+
+      tile.maximized = true;
+      await elementUpdated(tileManager);
+      expect(grid.style.minHeight).to.not.equal('');
+
+      tile.maximized = false;
+      await elementUpdated(tileManager);
+      expect(grid.style.minHeight).to.equal('');
+    });
+
+    it('issue 2029 - keeps the grid height locked while any tile remains maximized', async () => {
+      const grid = getTileManagerBase();
+      const [firstTile, secondTile] = tileManager.tiles;
+
+      firstTile.maximized = true;
+      await elementUpdated(tileManager);
+
+      const lockedHeight = grid.style.minHeight;
+      expect(lockedHeight).to.not.equal('');
+
+      secondTile.maximized = true;
+      await elementUpdated(tileManager);
+
+      // The lock is retained (and not re-measured) while another tile is still maximized.
+      expect(grid.style.minHeight).to.equal(lockedHeight);
+
+      firstTile.maximized = false;
+      await elementUpdated(tileManager);
+      expect(grid.style.minHeight).to.equal(lockedHeight);
+
+      secondTile.maximized = false;
+      await elementUpdated(tileManager);
+      expect(grid.style.minHeight).to.equal('');
+    });
+  });
+
   describe('Manual slot assignment', () => {
     beforeEach(async () => {
       tileManager = await fixture<IgcTileManagerComponent>(html`
@@ -478,16 +534,22 @@ describe('Tile Manager component', () => {
       });
     });
 
+    const adornerParts: Record<string, string> = {
+      'side-adorner': 'trigger-side',
+      'corner-adorner': 'trigger',
+      'bottom-adorner': 'trigger-bottom',
+    };
+
     adornerTests.forEach(({ slotName, expectedText }) => {
-      it(`should correctly project adorners into the igc-resize ${slotName} slot`, async () => {
+      it(`should project adorners into the ${slotName} resize trigger slot`, async () => {
         const tile1 = tileManager.tiles[0];
-        const resize = tile1.shadowRoot?.querySelector(
-          'igc-resize'
-        ) as HTMLElement;
-        const resizeSlot = resize.shadowRoot!.querySelector<HTMLSlotElement>(
+        const resizeSlot = tile1.shadowRoot!.querySelector<HTMLSlotElement>(
           `slot[name="${slotName}"]`
         );
+
         expect(resizeSlot).to.exist;
+        expect(resizeSlot!.part.contains(adornerParts[slotName])).to.be.true;
+        expect(resizeSlot!.part.contains('custom')).to.be.true;
         expect(
           resizeSlot!
             .assignedNodes({ flatten: true })
@@ -497,13 +559,14 @@ describe('Tile Manager component', () => {
       });
     });
 
-    it('should disable igc-resize component when resize mode is "none"', async () => {
+    it('should disable resize behavior when resize mode is "none"', async () => {
       const tile = tileManager.tiles[0];
 
       tileManager.resizeMode = 'none';
       await elementUpdated(tileManager);
 
-      expect(tile.renderRoot.querySelector('igc-resize')).is.null;
+      expect(tile.renderRoot.querySelector('[part~="tile-container"]')).is.null;
+      expect(tile.renderRoot.querySelector('[part~="trigger"]')).is.null;
     });
   });
 
@@ -512,7 +575,7 @@ describe('Tile Manager component', () => {
 
     beforeEach(async () => {
       tileManager = await fixture<IgcTileManagerComponent>(createTileManager());
-      tile = first(tileManager.tiles);
+      tile = firstOf(tileManager.tiles);
 
       // Mock `requestFullscreen`
       tile.requestFullscreen = stub().callsFake(() => {
@@ -982,7 +1045,7 @@ describe('Tile Manager component', () => {
     });
 
     it('should set proper CSS order based on position', async () => {
-      const firstTile = first(getTiles());
+      const firstTile = firstOf(getTiles());
       firstTile.position = 6;
 
       await elementUpdated(tileManager);

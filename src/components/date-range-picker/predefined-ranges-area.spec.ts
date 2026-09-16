@@ -1,10 +1,10 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 
 import { spy } from 'sinon';
-import { CalendarDay } from '../calendar/model.js';
+import { CalendarDay } from '#internals/date/model.js';
+import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { simulateClick } from '#internals/testing/simulate.spec.js';
 import IgcChipComponent from '../chip/chip.js';
-import { defineComponents } from '../common/definitions/defineComponents.js';
-import { simulateClick } from '../common/utils.spec.js';
 import type { CustomDateRange } from './date-range-picker.js';
 import IgcPredefinedRangesAreaComponent from './predefined-ranges-area.js';
 
@@ -39,7 +39,6 @@ describe('Predefined Area', () => {
   ];
 
   function getPredefinedRanges() {
-    // biome-ignore lint/complexity/useLiteralKeys: Because reasons
     return component['_predefinedRanges'];
   }
 
@@ -89,6 +88,21 @@ describe('Predefined Area', () => {
       expect(ranges).lengthOf(chips.length);
       expect(chips.every((chip, idx) => chip.innerText === ranges[idx].label))
         .to.be.true;
+    });
+
+    it('renders the default predefined ranges without an explicit `resourceStrings`', async () => {
+      component = await fixture<IgcPredefinedRangesAreaComponent>(
+        html`<igc-predefined-ranges-area
+          use-predefined-ranges
+        ></igc-predefined-ranges-area>`
+      );
+
+      expect(getChips().map((chip) => chip.innerText)).eql([
+        'Last 7 Days',
+        'Current Month',
+        'Last 30 Days',
+        'Year to Date',
+      ]);
     });
 
     it('is correctly initialized and rendered with predefined ranges and custom ranges', async () => {

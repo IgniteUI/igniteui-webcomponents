@@ -48,7 +48,7 @@ const metadata: Meta<IgcTreeComponent> = {
       table: { defaultValue: { summary: 'false' } },
     },
     selection: {
-      type: '"none" | "multiple" | "cascade"',
+      type: { name: 'enum', value: ['none', 'multiple', 'cascade'] },
       description: 'The selection state of the tree.',
       options: ['none', 'multiple', 'cascade'],
       control: { type: 'inline-radio' },
@@ -57,7 +57,7 @@ const metadata: Meta<IgcTreeComponent> = {
     locale: {
       type: 'string',
       description:
-        'Gets/Sets the locale used for getting language, affecting resource strings.',
+        "The locale used to resolve the component's resource strings.\nFalls back to the global locale when not set.",
       control: 'text',
     },
   },
@@ -77,7 +77,10 @@ interface IgcTreeArgs {
   toggleNodeOnClick: boolean;
   /** The selection state of the tree. */
   selection: 'none' | 'multiple' | 'cascade';
-  /** Gets/Sets the locale used for getting language, affecting resource strings. */
+  /**
+   * The locale used to resolve the component's resource strings.
+   * Falls back to the global locale when not set.
+   */
   locale: string;
 }
 type Story = StoryObj<IgcTreeArgs>;

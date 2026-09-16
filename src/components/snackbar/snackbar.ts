@@ -1,11 +1,11 @@
 import { html, nothing } from 'lit';
 import { property } from 'lit/decorators.js';
-import { addThemingController } from '../../theming/theming-controller.js';
+import { registerComponent } from '#internals/definitions/register.js';
+import { IgcBaseAlertLikeComponent } from '#internals/mixins/alert.js';
+import type { AbstractConstructor } from '#internals/mixins/constructor.js';
+import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
+import { addThemingController } from '#theming/theming-controller.js';
 import IgcButtonComponent from '../button/button.js';
-import { registerComponent } from '../common/definitions/register.js';
-import { IgcBaseAlertLikeComponent } from '../common/mixins/alert.js';
-import type { AbstractConstructor } from '../common/mixins/constructor.js';
-import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { styles as shared } from './themes/shared/snackbar.common.css.js';
 import { styles } from './themes/snackbar.base.css.js';
 import { all } from './themes/themes.js';
@@ -18,10 +18,16 @@ export interface IgcSnackbarComponentEventMap {
  * A snackbar component is used to provide feedback about an operation
  * by showing a brief message at the bottom of the screen.
  *
+ * The component integrates with the
+ * [Invoker Commands API](https://developer.mozilla.org/en-US/docs/Web/API/Invoker_Commands_API):
+ * an Ignite button or a native `<button>` with `command="--show"` / `"--hide"` /
+ * `"--toggle"` and `commandfor` pointing to this element will call the
+ * corresponding method declaratively without any JavaScript.
+ *
  * @element igc-snackbar
  *
  * @slot - Default slot to render the snackbar content.
- * @slot action - Renders the action part of the snackbar. Usually an interactive element (button)
+ * @slot action - Renders the action part of the snackbar. Usually an interactive element (button).
  *
  * @fires igcAction - Emitted when the snackbar action button is clicked.
  *
@@ -47,7 +53,7 @@ export default class IgcSnackbarComponent extends EventEmitterMixin<
    * @attr action-text
    */
   @property({ attribute: 'action-text' })
-  public actionText!: string;
+  public actionText?: string;
 
   constructor() {
     super();
@@ -66,13 +72,15 @@ export default class IgcSnackbarComponent extends EventEmitterMixin<
         </span>
 
         <slot name="action" part="action-container" @click=${this._handleClick}>
-          ${this.actionText
-            ? html`
-                <igc-button type="button" part="action" variant="flat">
-                  ${this.actionText}
-                </igc-button>
-              `
-            : nothing}
+          ${
+            this.actionText
+              ? html`
+                  <igc-button type="button" part="action" variant="flat">
+                    ${this.actionText}
+                  </igc-button>
+                `
+              : nothing
+          }
         </slot>
       </div>
     `;

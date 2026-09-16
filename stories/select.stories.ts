@@ -4,13 +4,13 @@ import {
   github,
 } from '@igniteui/material-icons-extended';
 import type { Meta, StoryObj } from '@storybook/web-components-vite';
-import { html } from 'lit';
 import {
   IgcIconComponent,
   IgcSelectComponent,
   defineComponents,
   registerIconFromText,
 } from 'igniteui-webcomponents';
+import { html } from 'lit';
 import {
   disableStoryControls,
   formControls,
@@ -46,18 +46,18 @@ const metadata: Meta<IgcSelectComponent> = {
   argTypes: {
     value: {
       type: 'string',
-      description: 'The value attribute of the control.',
+      description: 'The value of the control.',
       control: 'text',
     },
     outlined: {
       type: 'boolean',
-      description: 'The outlined attribute of the control.',
+      description: 'Whether the control has an outlined appearance.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
     autofocus: {
       type: 'boolean',
-      description: 'The autofocus attribute of the control.',
+      description: 'Whether the control should receive focus automatically.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
@@ -69,16 +69,32 @@ const metadata: Meta<IgcSelectComponent> = {
     },
     label: {
       type: 'string',
-      description: 'The label attribute of the control.',
+      description: 'The label of the control.',
       control: 'text',
     },
     placeholder: {
       type: 'string',
-      description: 'The placeholder attribute of the control.',
+      description: 'The placeholder text of the control.',
       control: 'text',
     },
     placement: {
-      type: '"top" | "top-start" | "top-end" | "bottom" | "bottom-start" | "bottom-end" | "right" | "right-start" | "right-end" | "left" | "left-start" | "left-end"',
+      type: {
+        name: 'enum',
+        value: [
+          'top',
+          'top-start',
+          'top-end',
+          'bottom',
+          'bottom-start',
+          'bottom-end',
+          'right',
+          'right-start',
+          'right-end',
+          'left',
+          'left-start',
+          'left-end',
+        ],
+      },
       description:
         'The preferred placement of the select dropdown around its input.',
       options: [
@@ -99,7 +115,7 @@ const metadata: Meta<IgcSelectComponent> = {
       table: { defaultValue: { summary: 'bottom-start' } },
     },
     scrollStrategy: {
-      type: '"scroll" | "block" | "close"',
+      type: { name: 'enum', value: ['scroll', 'block', 'close'] },
       description:
         'Determines the behavior of the component during scrolling of the parent container.',
       options: ['scroll', 'block', 'close'],
@@ -115,7 +131,7 @@ const metadata: Meta<IgcSelectComponent> = {
     },
     name: {
       type: 'string',
-      description: 'The name attribute of the control.',
+      description: 'The name of the control, submitted with the form data.',
       control: 'text',
     },
     disabled: {
@@ -169,17 +185,17 @@ const metadata: Meta<IgcSelectComponent> = {
 export default metadata;
 
 interface IgcSelectArgs {
-  /** The value attribute of the control. */
+  /** The value of the control. */
   value: string;
-  /** The outlined attribute of the control. */
+  /** Whether the control has an outlined appearance. */
   outlined: boolean;
-  /** The autofocus attribute of the control. */
+  /** Whether the control should receive focus automatically. */
   autofocus: boolean;
   /** The distance of the select dropdown from its input. */
   distance: number;
-  /** The label attribute of the control. */
+  /** The label of the control. */
   label: string;
-  /** The placeholder attribute of the control. */
+  /** The placeholder text of the control. */
   placeholder: string;
   /** The preferred placement of the select dropdown around its input. */
   placement:
@@ -199,7 +215,7 @@ interface IgcSelectArgs {
   scrollStrategy: 'scroll' | 'block' | 'close';
   /** When set, makes the component a required field for validation. */
   required: boolean;
-  /** The name attribute of the control. */
+  /** The name of the control, submitted with the form data. */
   name: string;
   /** The disabled state of the component. */
   disabled: boolean;

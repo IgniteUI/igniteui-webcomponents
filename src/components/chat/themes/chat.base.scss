@@ -180,3 +180,9 @@ igc-list-item::part(title) {
       transform: scale(1.1);
     }
 }
+
+@media (forced-colors: active) {
+    [part~='header'] {
+        border-block-end: rem(1px) solid CanvasText;
+    }
+}

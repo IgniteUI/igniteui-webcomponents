@@ -1,6 +1,6 @@
 import { css } from 'lit';
 
-import type { Themes } from '../../../theming/types.js';
+import type { Themes } from '#theming/types.js';
 // Shared Styles
 import { styles as bootstrap } from './shared/tile/tile.bootstrap.css.js';
 import { styles as fluent } from './shared/tile/tile.fluent.css.js';

@@ -42,3 +42,9 @@
 :host(:not([open])) {
     display: none;
 }
+
+@media (forced-colors: active) {
+    :host {
+        border: rem(1px) solid CanvasText;
+    }
+}

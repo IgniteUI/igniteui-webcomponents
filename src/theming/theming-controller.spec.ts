@@ -8,7 +8,7 @@ import {
   unsafeStatic,
 } from '@open-wc/testing';
 import { css, LitElement, html as litHtml } from 'lit';
-import { defineComponents } from '../components/common/definitions/defineComponents.js';
+import { defineComponents } from '#internals/definitions/defineComponents.js';
 import IgcThemeProviderComponent from '../components/theme-provider/theme-provider.js';
 import { configureTheme } from './config.js';
 import {

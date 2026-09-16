@@ -1,4 +1,3 @@
-import { ContextProvider } from '@lit/context';
 import {
   ChatResourceStringsEN,
   type IChatResourceStrings,
@@ -7,16 +6,17 @@ import { html, LitElement, nothing, type PropertyValues } from 'lit';
 import { property, query } from 'lit/decorators.js';
 import { cache } from 'lit/directives/cache.js';
 import { repeat } from 'lit/directives/repeat.js';
-import { addThemingController } from '../../theming/theming-controller.js';
+import { chatContext, chatUserInputContext } from '#internals/context.js';
+import { addContextProvider } from '#internals/controllers/context-provider.js';
+import { addSlotController, setSlots } from '#internals/controllers/slot.js';
+import { registerComponent } from '#internals/definitions/register.js';
+import type { IgcChatResourceStrings } from '#internals/i18n/EN/chat.resources.js';
+import { addI18nController } from '#internals/i18n/i18n-controller.js';
+import type { Constructor } from '#internals/mixins/constructor.js';
+import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
+import { isEmpty } from '#internals/utils/arrays.js';
+import { addThemingController } from '#theming/theming-controller.js';
 import IgcButtonComponent from '../button/button.js';
-import { chatContext, chatUserInputContext } from '../common/context.js';
-import { addSlotController, setSlots } from '../common/controllers/slot.js';
-import { registerComponent } from '../common/definitions/register.js';
-import type { IgcChatResourceStrings } from '../common/i18n/EN/chat.resources.js';
-import { addI18nController } from '../common/i18n/i18n-controller.js';
-import type { Constructor } from '../common/mixins/constructor.js';
-import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { isEmpty } from '../common/util.js';
 import IgcIconComponent from '../icon/icon.js';
 import IgcListComponent from '../list/list.js';
 import IgcToastComponent from '../toast/toast.js';
@@ -30,6 +30,7 @@ import { all } from './themes/themes.js';
 import type {
   ChatRenderContext,
   ChatTemplateRenderer,
+  IgcChatDraftMessage,
   IgcChatMessage,
   IgcChatMessageAttachment,
   IgcChatMessageReaction,
@@ -41,7 +42,7 @@ type DefaultChatRenderers = {
 };
 
 /**
- * Defines the custom events dispatched by the `<igc-chat>` component.
+ * Defines the custom events dispatched by the chat component.
  */
 export interface IgcChatComponentEventMap {
   /**
@@ -59,22 +60,26 @@ export interface IgcChatComponentEventMap {
    */
   igcAttachmentClick: CustomEvent<IgcChatMessageAttachment>;
 
+  /* blazorSuppress */
   /**
    * Dispatched when attachment(s) are added either through drag & drop or through
    * the default file input.
    */
   igcAttachmentAdded: CustomEvent<IgcChatMessageAttachment[]>;
 
+  /* blazorSuppress */
   /**
    * Dispatched when an attachment is removed by the user.
    */
   igcAttachmentRemoved: CustomEvent<IgcChatMessageAttachment>;
 
+  /* blazorSuppress */
   /**
    * Dispatched during an attachment drag operation.
    */
   igcAttachmentDrag: CustomEvent<void>;
 
+  /* blazorSuppress */
   /**
    * Dispatched when an attachment is dropped (e.g., in a drag-and-drop operation).
    */
@@ -113,6 +118,8 @@ const Slots = setSlots(
   'typing-indicator'
 );
 
+/* blazorIndirectRender */
+/* blazorSupportsVisualChildren */
 /**
  * A chat UI component for displaying messages, attachments, and input interaction.
  *
@@ -209,10 +216,10 @@ export default class IgcChatComponent extends EventEmitterMixin<
     );
   }
 
-  private readonly _state = new ChatState(
+  private readonly _state: ChatState = new ChatState(
     this,
-    this._updateContext,
-    this._updateUserInputContext
+    () => this._context.publish(),
+    () => this._userInputContext.publish()
   );
 
   private readonly _defaults = Object.freeze<DefaultChatRenderers>({
@@ -223,14 +230,14 @@ export default class IgcChatComponent extends EventEmitterMixin<
     slots: Slots,
   });
 
-  private readonly _context = new ContextProvider(this, {
+  private readonly _context = addContextProvider(this, {
     context: chatContext,
-    initialValue: this._state,
+    value: () => this._state,
   });
 
-  private readonly _userInputContext = new ContextProvider(this, {
+  private readonly _userInputContext = addContextProvider(this, {
     context: chatUserInputContext,
-    initialValue: this._state,
+    value: () => this._state,
   });
 
   private readonly _i18nController = addI18nController<
@@ -252,14 +259,6 @@ export default class IgcChatComponent extends EventEmitterMixin<
   @query('[part="message-area-container"]', true)
   private readonly _scrollContainer!: HTMLElement;
 
-  private _updateContext(): void {
-    this._context.setValue(this._state, true);
-  }
-
-  private _updateUserInputContext(): void {
-    this._userInputContext.setValue(this._state, true);
-  }
-
   /**
    * The list of chat messages currently displayed.
    * Use this property to set or update the message history.
@@ -278,10 +277,7 @@ export default class IgcChatComponent extends EventEmitterMixin<
    * Includes the draft text and any attachments.
    */
   @property({ attribute: false })
-  public set draftMessage(value: {
-    text: string;
-    attachments?: IgcChatMessageAttachment[];
-  }) {
+  public set draftMessage(value: IgcChatDraftMessage) {
     if (this._state && value) {
       this._state.inputValue = value.text;
       this._state.inputAttachments = value.attachments || [];
@@ -289,10 +285,7 @@ export default class IgcChatComponent extends EventEmitterMixin<
     }
   }
 
-  public get draftMessage(): {
-    text: string;
-    attachments?: IgcChatMessageAttachment[];
-  } {
+  public get draftMessage(): IgcChatDraftMessage {
     return {
       text: this._state.inputValue,
       attachments: this._state.inputAttachments,
@@ -312,6 +305,7 @@ export default class IgcChatComponent extends EventEmitterMixin<
     return this._state.options;
   }
 
+  /* blazorSuppress */
   /**
    * The resource strings of the chat.
    */
@@ -322,6 +316,7 @@ export default class IgcChatComponent extends EventEmitterMixin<
     this._i18nController.resourceStrings = value;
   }
 
+  /* blazorSuppress */
   public get resourceStrings(): IgcChatResourceStrings & IChatResourceStrings {
     return this._i18nController.resourceStrings;
   }
@@ -428,15 +423,17 @@ export default class IgcChatComponent extends EventEmitterMixin<
             `;
           }
         )}
-        ${this._state.options?.isTyping
-          ? html`
-              <div part="typing-indicator">
-                <slot name="typing-indicator"
-                  >${this._renderLoadingTemplate()}</slot
-                >
-              </div>
-            `
-          : nothing}
+        ${
+          this._state.options?.isTyping
+            ? html`
+                <div part="typing-indicator">
+                  <slot name="typing-indicator"
+                    >${this._renderLoadingTemplate()}</slot
+                  >
+                </div>
+              `
+            : nothing
+        }
       </div>
     `;
   }
@@ -517,9 +514,11 @@ export default class IgcChatComponent extends EventEmitterMixin<
               ? this._renderMessages()
               : this._renderEmptyState()
           )}
-          ${this._state.suggestionsPosition === 'below-messages'
-            ? suggestions
-            : nothing}
+          ${
+            this._state.suggestionsPosition === 'below-messages'
+              ? suggestions
+              : nothing
+          }
         </div>
 
         <div part="input-area-container">
@@ -541,9 +540,11 @@ export default class IgcChatComponent extends EventEmitterMixin<
                 send-button"
           >
           </igc-chat-input>
-          ${this._state.suggestionsPosition === 'below-input'
-            ? suggestions
-            : nothing}
+          ${
+            this._state.suggestionsPosition === 'below-input'
+              ? suggestions
+              : nothing
+          }
         </div>
       </div>
     `;

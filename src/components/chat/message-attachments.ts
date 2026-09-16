@@ -4,12 +4,12 @@ import { property } from 'lit/decorators.js';
 import { cache } from 'lit/directives/cache.js';
 import { repeat } from 'lit/directives/repeat.js';
 import { until } from 'lit/directives/until.js';
-import { addThemingController } from '../../theming/theming-controller.js';
+import { chatContext } from '#internals/context.js';
+import { registerComponent } from '#internals/definitions/register.js';
+import { partMap } from '#internals/part-map.js';
+import { trimmedHtml } from '#internals/utils/lit.js';
+import { addThemingController } from '#theming/theming-controller.js';
 import IgcIconButtonComponent from '../button/icon-button.js';
-import { chatContext } from '../common/context.js';
-import { registerComponent } from '../common/definitions/register.js';
-import { partMap } from '../common/part-map.js';
-import { trimmedHtml } from '../common/util.js';
 import IgcIconComponent from '../icon/icon.js';
 import type { ChatState } from './chat-state.js';
 import { all } from './themes/attachments.js';
@@ -52,6 +52,7 @@ type DefaultAttachmentRenderers = {
  * @csspart image-attachment - Part for the image element inside an image attachment.
  *
  * @fires igcAttachmentClick - Fired when an attachment header is toggled (clicked).
+ * @hidden @internal
  */
 export default class IgcMessageAttachmentsComponent extends LitElement {
   public static readonly tagName = 'igc-message-attachments';
@@ -109,9 +110,11 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
       : 'document_thumbnail';
 
     return html`
-      ${!isCurrentUser
-        ? html`<igc-icon name=${iconName} part="attachment-icon"></igc-icon>`
-        : nothing}
+      ${
+        !isCurrentUser
+          ? html`<igc-icon name=${iconName} part="attachment-icon"></igc-icon>`
+          : nothing
+      }
       <span part="file-name">${attachment.name}</span>
     `;
   }

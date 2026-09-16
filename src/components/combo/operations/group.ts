@@ -37,7 +37,7 @@ export default class GroupDataOperation<T extends object> {
             [groupKey as Keys<T>]: key,
           } as T,
           header: true,
-          dataIndex: -1,
+          position: -1,
         },
         ...(grouped.get(key) ?? []),
       ];

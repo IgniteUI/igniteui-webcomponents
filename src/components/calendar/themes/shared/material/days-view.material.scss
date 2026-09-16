@@ -476,3 +476,21 @@ $week-number-radius: var-get($theme, 'week-number-border-radius');
         background: var-get($theme, 'date-selected-range-focus-background');
     }
 }
+
+@media (forced-colors: active) {
+    [part~='special'] [part~='special'] {
+        border-width: rem(2px);
+    }
+
+    [part~='week-number-inner']::after {
+        height: rem(6px);
+        bottom: 100%;
+    }
+
+    [part~='date'][part~='range'][part~='selected'] {
+        &[part~='first'],
+        &[part~='last'] {
+            border-block: 0;
+        }
+    }
+}

@@ -6,15 +6,16 @@ import {
   nextFrame,
 } from '@open-wc/testing';
 import { type SinonFakeTimers, spy, useFakeTimers } from 'sinon';
+import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { finishAnimationsFor } from '#internals/testing/helpers.spec.js';
+import { runInvokerCommandsTests } from '#internals/testing/invoker-commands.spec.js';
+import { isPopoverOpen } from '#internals/utils/dom.js';
 import IgcButtonComponent from '../button/button.js';
-import { defineComponents } from '../common/definitions/defineComponents.js';
-import { isPopoverOpen } from '../common/util.js';
-import { finishAnimationsFor } from '../common/utils.spec.js';
 import IgcSnackbarComponent from './snackbar.js';
 
 describe('Snackbar', () => {
   before(() => {
-    defineComponents(IgcSnackbarComponent);
+    defineComponents(IgcSnackbarComponent, IgcButtonComponent);
   });
 
   const defaultActionText = 'Action';
@@ -280,5 +281,15 @@ describe('Snackbar', () => {
       button.click();
       expect(eventSpy).calledOnceWithExactly('igcAction');
     });
+  });
+
+  runInvokerCommandsTests({
+    tagName: IgcSnackbarComponent.tagName,
+    commandFor: 'invoker-snackbar',
+    template: html`
+      <igc-snackbar id="invoker-snackbar" keep-open
+        >${defaultContent}</igc-snackbar
+      >
+    `,
   });
 });

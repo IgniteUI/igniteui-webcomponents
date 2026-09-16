@@ -3,8 +3,12 @@
 
 $theme: $base;
 
+// The text color is mirrored in a custom property so that autofilled inputs can
+// pick it up through `-webkit-text-fill-color`. See input.base.scss
 [part~='input'] {
-    color: var-get($theme, 'idle-text-color');
+    --input-text-color: #{var-get($theme, 'idle-text-color')};
+
+    color: var(--input-text-color);
 }
 
 [part='prefix'] {
@@ -19,7 +23,9 @@ $theme: $base;
 
 [part~='filled'] {
     [part~='input'] {
-        color: var-get($theme, 'filled-text-color');
+        --input-text-color: #{var-get($theme, 'filled-text-color')};
+
+        color: var(--input-text-color);
     }
 
     [part='prefix'] {
@@ -31,6 +37,10 @@ $theme: $base;
         color: var-get($theme, 'input-suffix-color--filled');
         background: var-get($theme, 'input-suffix-background--filled');
     }
+}
+
+input::-webkit-datetime-edit {
+    color: inherit;
 }
 
 [part~='input']::placeholder {
@@ -45,24 +55,28 @@ $theme: $base;
 }
 
 :host(:focus-within),
-:host(:not([readonly],[disabled]):hover) {
+:host(:not([readonly], [disabled]):hover) {
     [part~='input']::placeholder {
         color: var-get($theme, 'hover-placeholder-color');
     }
 }
 
-:host(:not([readonly],[disabled]):hover) {
+:host(:not([readonly], [disabled]):hover) {
     [part~='filled'] {
         [part~='input'] {
-            color: var-get($theme, 'filled-text-hover-color');
+            --input-text-color: #{var-get($theme, 'filled-text-hover-color')};
+
+            color: var(--input-text-color);
         }
     }
 }
 
-:host(:not([readonly],[disabled]):focus-within) {
+:host(:not([readonly], [disabled]):focus-within) {
     [part~='filled'] {
         [part~='input'] {
-            color: var-get($theme, 'focused-text-color');
+            --input-text-color: #{var-get($theme, 'focused-text-color')};
+
+            color: var(--input-text-color);
         }
     }
 }
@@ -92,15 +106,15 @@ $theme: $base;
 }
 /* stylelint-enable */
 
-:host(:not([role='combobox'])[readonly]) {
+:host(:not([data-role='combobox'])[readonly]) {
     [part='prefix'],
     [part='suffix'] {
         color: var-get($theme, 'disabled-text-color');
     }
 }
 
-:host(:not([disabled],[readonly]):state(ig-invalid)),
-:host(:not(:disabled,[readonly]):state(ig-invalid)) {
+:host(:not([disabled], [readonly]):state(ig-invalid)),
+:host(:not(:disabled, [readonly]):state(ig-invalid)) {
     ::part(helper-text) {
         color: var-get($theme, 'error-secondary-color');
     }
@@ -126,7 +140,7 @@ $theme: $base;
     padding-inline: var(--affix-padding);
 }
 
-:host(:not([role='combobox'])) {
+:host(:not([data-role='combobox'])) {
     ::slotted([slot='suffix']),
     ::slotted([slot='prefix']) {
         padding-inline: var(--affix-padding);

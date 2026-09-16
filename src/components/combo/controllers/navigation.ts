@@ -12,9 +12,9 @@ import {
   shiftKey,
   spaceBar,
   tabKey,
-} from '../../common/controllers/key-bindings.js';
+} from '#internals/controllers/key-bindings.js';
 import type IgcInputComponent from '../../input/input.js';
-import type IgcComboListComponent from '../combo-list.js';
+import type IgcVirtualScrollComponent from '../../virtualization/virtualization.js';
 import type { ComboHost } from '../types.js';
 import type { DataState } from './data.js';
 
@@ -24,7 +24,7 @@ type ComboNavigationConfig = {
   /** The search input of the combo component. */
   search: Ref<IgcInputComponent>;
   /** The combo virtualized dropdown list. */
-  list: Ref<IgcComboListComponent>;
+  list: Ref<IgcVirtualScrollComponent>;
   interactions: {
     show: () => Promise<boolean>;
     hide: () => Promise<boolean>;
@@ -49,12 +49,12 @@ export class ComboNavigationController<T extends object> {
     return this._config.search.value;
   }
 
-  private get _list(): IgcComboListComponent | undefined {
+  private get _list(): IgcVirtualScrollComponent | undefined {
     return this._config.list.value;
   }
 
   private get _firstItem(): number {
-    return this._state.dataState.findIndex((rec) => !rec.header);
+    return this._state.firstItemIndex;
   }
 
   private get _lastItem(): number {
@@ -186,17 +186,13 @@ export class ComboNavigationController<T extends object> {
   };
 
   private _onHome = (): void => {
-    const previous = this.active;
-    this.active = this._firstItem;
+    this._setActive(this._firstItem);
     this._scrollToActive();
-    this._host.requestUpdate('_activeIndex', previous);
   };
 
   private _onEnd = (): void => {
-    const previous = this.active;
-    this.active = this._lastItem;
+    this._setActive(this._lastItem);
     this._scrollToActive();
-    this._host.requestUpdate('_activeIndex', previous);
   };
 
   private _onArrowUp = (): void => {
@@ -213,8 +209,19 @@ export class ComboNavigationController<T extends object> {
 
   //#region Internal helper methods
 
+  /**
+   * The single write path for the active index. The host mirrors this through
+   * its own `_activeIndex` accessor, so it has to be told which property
+   * changed and what it changed from.
+   */
+  private _setActive(index: number): void {
+    const previous = this.active;
+    this.active = index;
+    this._host.requestUpdate('_activeIndex', previous);
+  }
+
   private _scrollToActive(behavior?: ScrollBehavior): void {
-    this._list?.element(this.active)?.scrollIntoView({
+    this._list?.scrollToIndex(this.active, {
       block: 'center',
       behavior: behavior ?? 'auto',
     });
@@ -246,9 +253,7 @@ export class ComboNavigationController<T extends object> {
     }
 
     if (next !== -1) {
-      const previous = this.active;
-      this.active = next;
-      this._host.requestUpdate('_activeIndex', previous);
+      this._setActive(next);
     }
   }
 

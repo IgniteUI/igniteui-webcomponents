@@ -13,7 +13,7 @@ const metadata: Meta<IgcDividerComponent> = {
     docs: {
       description: {
         component:
-          'The igc-divider allows the content author to easily create a horizontal/vertical rule as a break between content to better organize information on a page.',
+          'The divider allows the content author to easily create a horizontal/vertical\nrule as a break between content, to better organize information on a page.',
       },
     },
   },
@@ -32,7 +32,7 @@ const metadata: Meta<IgcDividerComponent> = {
       table: { defaultValue: { summary: 'false' } },
     },
     type: {
-      type: '"solid" | "dashed"',
+      type: { name: 'enum', value: ['solid', 'dashed'] },
       description: 'Whether to render a solid or a dashed divider line.',
       options: ['solid', 'dashed'],
       control: { type: 'inline-radio' },

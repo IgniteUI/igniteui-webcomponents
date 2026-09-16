@@ -1,8 +1,8 @@
 import { html, LitElement } from 'lit';
-import { addThemingController } from '../../theming/theming-controller.js';
-import { addKeyboardFocusRing } from '../common/controllers/focus-ring.js';
-import { registerComponent } from '../common/definitions/register.js';
-import { partMap } from '../common/part-map.js';
+import { addKeyboardFocusRing } from '#internals/controllers/focus-ring.js';
+import { registerComponent } from '#internals/definitions/register.js';
+import { partMap } from '#internals/part-map.js';
+import { addThemingController } from '#theming/theming-controller.js';
 import IgcCarouselIndicatorComponent from './carousel-indicator.js';
 import { styles } from './themes/carousel-indicator-container.base.css.js';
 import { all } from './themes/indicator-container.js';

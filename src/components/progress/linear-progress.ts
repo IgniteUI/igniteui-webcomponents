@@ -1,10 +1,10 @@
 import { html } from 'lit';
 import { property } from 'lit/decorators.js';
 import { styleMap } from 'lit/directives/style-map.js';
-import { addThemingController } from '../../theming/theming-controller.js';
-import { addSlotController, setSlots } from '../common/controllers/slot.js';
-import { registerComponent } from '../common/definitions/register.js';
-import { partMap } from '../common/part-map.js';
+import { addSlotController, setSlots } from '#internals/controllers/slot.js';
+import { registerComponent } from '#internals/definitions/register.js';
+import { partMap } from '#internals/part-map.js';
+import { addThemingController } from '#theming/theming-controller.js';
 import type { LinearProgressLabelAlign } from '../types.js';
 import { IgcProgressBaseComponent } from './base.js';
 import { styles } from './themes/linear/linear.progress.base.css.js';
@@ -19,17 +19,17 @@ import { all } from './themes/linear/themes.js';
  *
  * @slot - The text area container.
  *
- * @csspart track - The igc-linear-progress track area.
- * @csspart fill - The igc-linear-progress indicator area.
- * @csspart striped - The igc-linear-progress striped indicator.
- * @csspart label - The igc-linear-progress label.
- * @csspart value - The igc-linear-progress label value.
- * @csspart indeterminate - The igc-linear-progress indeterminate state.
- * @csspart primary - The igc-linear-progress indicator primary state.
- * @csspart danger - The igc-linear-progress indicator error state.
- * @csspart warning - The igc-linear-progress indicator warning state.
- * @csspart info - The igc-linear-progress indicator info state.
- * @csspart success - The igc-linear-progress indicator success state.
+ * @csspart track - The linear progress track area.
+ * @csspart fill - The linear progress indicator area.
+ * @csspart striped - The linear progress striped indicator.
+ * @csspart label - The linear progress label.
+ * @csspart value - The linear progress label value.
+ * @csspart indeterminate - The linear progress indeterminate state.
+ * @csspart primary - The linear progress indicator primary state.
+ * @csspart danger - The linear progress indicator error state.
+ * @csspart warning - The linear progress indicator warning state.
+ * @csspart info - The linear progress indicator info state.
+ * @csspart success - The linear progress indicator success state.
  */
 export default class IgcLinearProgressComponent extends IgcProgressBaseComponent {
   public static readonly tagName = 'igc-linear-progress';

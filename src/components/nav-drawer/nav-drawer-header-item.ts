@@ -1,13 +1,12 @@
 import { html, LitElement } from 'lit';
-
-import { addThemingController } from '../../theming/theming-controller.js';
-import { registerComponent } from '../common/definitions/register.js';
+import { registerComponent } from '#internals/definitions/register.js';
+import { addThemingController } from '#theming/theming-controller.js';
 import { styles } from './themes/header-item.base.css.js';
 import { all } from './themes/header-item.js';
 import { styles as shared } from './themes/shared/header-item/header-item.common.css.js';
 
 /**
- * A wrapper for navigation drawer's header.
+ * Represents a navigation drawer header item.
  * @element igc-nav-drawer-header-item
  *
  * @slot - Renders the header content

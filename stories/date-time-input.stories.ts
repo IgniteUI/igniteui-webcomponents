@@ -1,9 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/web-components-vite';
-import { html } from 'lit';
 import {
   IgcDateTimeInputComponent,
   defineComponents,
 } from 'igniteui-webcomponents';
+import { html } from 'lit';
 import {
   disableStoryControls,
   formControls,
@@ -26,45 +26,6 @@ const metadata: Meta<IgcDateTimeInputComponent> = {
     actions: { handles: ['igcInput', 'igcChange'] },
   },
   argTypes: {
-    value: {
-      type: 'string | Date',
-      description: 'The value of the input.',
-      options: ['string', 'Date'],
-      control: 'text',
-    },
-    min: {
-      type: 'Date',
-      description: 'The minimum value required for the input to remain valid.',
-      control: 'date',
-    },
-    max: {
-      type: 'Date',
-      description: 'The maximum value required for the input to remain valid.',
-      control: 'date',
-    },
-    inputFormat: {
-      type: 'string',
-      description: 'The date format to apply on the input.',
-      control: 'text',
-    },
-    displayFormat: {
-      type: 'string',
-      description:
-        'Format to display the value in when not editing.\nDefaults to the locale format if not set.',
-      control: 'text',
-    },
-    spinLoop: {
-      type: 'boolean',
-      description: 'Sets whether to loop over the currently spun segment.',
-      control: 'boolean',
-      table: { defaultValue: { summary: 'true' } },
-    },
-    locale: {
-      type: 'string',
-      description:
-        'Gets/Sets the locale used for formatting the display value.',
-      control: 'text',
-    },
     readOnly: {
       type: 'boolean',
       description: 'Makes the control a readonly field.',
@@ -73,9 +34,8 @@ const metadata: Meta<IgcDateTimeInputComponent> = {
     },
     mask: {
       type: 'string',
-      description: 'The masked pattern of the component.',
+      description: 'The mask pattern of the component.',
       control: 'text',
-      table: { defaultValue: { summary: 'CCCCCCCCCC' } },
     },
     prompt: {
       type: 'string',
@@ -93,7 +53,7 @@ const metadata: Meta<IgcDateTimeInputComponent> = {
     },
     name: {
       type: 'string',
-      description: 'The name attribute of the control.',
+      description: 'The name of the control, submitted with the form data.',
       control: 'text',
     },
     disabled: {
@@ -116,7 +76,7 @@ const metadata: Meta<IgcDateTimeInputComponent> = {
     },
     placeholder: {
       type: 'string',
-      description: 'The placeholder attribute of the control.',
+      description: 'The placeholder text of the control.',
       control: 'text',
     },
     label: {
@@ -124,48 +84,63 @@ const metadata: Meta<IgcDateTimeInputComponent> = {
       description: 'The label for the control.',
       control: 'text',
     },
+    inputFormat: {
+      type: 'string',
+      description: 'The date format to apply on the input.',
+      control: 'text',
+    },
+    min: {
+      type: 'date',
+      description: 'The minimum value required for the input to remain valid.',
+      control: 'date',
+    },
+    max: {
+      type: 'date',
+      description: 'The maximum value required for the input to remain valid.',
+      control: 'date',
+    },
+    displayFormat: {
+      type: 'string',
+      description:
+        'Format to display the value in when not editing.\nDefaults to the locale format if not set.',
+      control: 'text',
+    },
+    spinLoop: {
+      type: 'boolean',
+      description: 'Sets whether to loop over the currently spun segment.',
+      control: 'boolean',
+      table: { defaultValue: { summary: 'true' } },
+    },
+    locale: {
+      type: 'string',
+      description:
+        "The locale used to format the display value and to resolve the\ncomponent's resource strings. Falls back to the global locale when not set.",
+      control: 'text',
+    },
   },
   args: {
-    spinLoop: true,
     readOnly: false,
-    mask: 'CCCCCCCCCC',
     prompt: '_',
     required: false,
     disabled: false,
     invalid: false,
     outlined: false,
+    spinLoop: true,
   },
 };
 
 export default metadata;
 
 interface IgcDateTimeInputArgs {
-  /** The value of the input. */
-  value: string | Date;
-  /** The minimum value required for the input to remain valid. */
-  min: Date;
-  /** The maximum value required for the input to remain valid. */
-  max: Date;
-  /** The date format to apply on the input. */
-  inputFormat: string;
-  /**
-   * Format to display the value in when not editing.
-   * Defaults to the locale format if not set.
-   */
-  displayFormat: string;
-  /** Sets whether to loop over the currently spun segment. */
-  spinLoop: boolean;
-  /** Gets/Sets the locale used for formatting the display value. */
-  locale: string;
   /** Makes the control a readonly field. */
   readOnly: boolean;
-  /** The masked pattern of the component. */
+  /** The mask pattern of the component. */
   mask: string;
   /** The prompt symbol to use for unfilled parts of the mask pattern. */
   prompt: string;
   /** When set, makes the component a required field for validation. */
   required: boolean;
-  /** The name attribute of the control. */
+  /** The name of the control, submitted with the form data. */
   name: string;
   /** The disabled state of the component. */
   disabled: boolean;
@@ -173,14 +148,38 @@ interface IgcDateTimeInputArgs {
   invalid: boolean;
   /** Whether the control will have outlined appearance. */
   outlined: boolean;
-  /** The placeholder attribute of the control. */
+  /** The placeholder text of the control. */
   placeholder: string;
   /** The label for the control. */
   label: string;
+  /** The date format to apply on the input. */
+  inputFormat: string;
+  /** The minimum value required for the input to remain valid. */
+  min: Date;
+  /** The maximum value required for the input to remain valid. */
+  max: Date;
+  /**
+   * Format to display the value in when not editing.
+   * Defaults to the locale format if not set.
+   */
+  displayFormat: string;
+  /** Sets whether to loop over the currently spun segment. */
+  spinLoop: boolean;
+  /**
+   * The locale used to format the display value and to resolve the
+   * component's resource strings. Falls back to the global locale when not set.
+   */
+  locale: string;
 }
 type Story = StoryObj<IgcDateTimeInputArgs>;
 
 // endregion
+
+/**
+ * `value` comes from a generic base component, and the analyzer records its type as
+ * the bare type parameter `T`, so it is left out of the generated args.
+ */
+type DateTimeInputStory = StoryObj<IgcDateTimeInputArgs & { value: Date }>;
 
 const stepUp = () => {
   document.querySelector(IgcDateTimeInputComponent.tagName)!.stepUp();
@@ -193,7 +192,7 @@ const clear = () => {
   document.querySelector(IgcDateTimeInputComponent.tagName)!.clear();
 };
 
-export const Default: Story = {
+export const Default: DateTimeInputStory = {
   parameters: {
     docs: {
       description: {

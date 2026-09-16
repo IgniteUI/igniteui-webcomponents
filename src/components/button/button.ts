@@ -1,8 +1,7 @@
 import { html } from 'lit';
 import { property } from 'lit/decorators.js';
-
-import { addThemingController } from '../../theming/theming-controller.js';
-import { registerComponent } from '../common/definitions/register.js';
+import { registerComponent } from '#internals/definitions/register.js';
+import { addThemingController } from '#theming/theming-controller.js';
 import type { ButtonVariant } from '../types.js';
 import { IgcButtonBaseComponent } from './button-base.js';
 import { styles } from './themes/button/button.base.css.js';
@@ -13,15 +12,19 @@ import { all } from './themes/button/themes.js';
  * Represents a clickable button, used to submit forms or anywhere in a
  * document for accessible, standard button functionality.
  *
+ * The button supports multiple visual variants, can render as an anchor
+ * (`<a>`) element when the `href` attribute is set, and is fully
+ * form-associated, acting as a native `submit` or `reset` control.
+ *
  * @element igc-button
  *
  * @slot - Renders the label of the button.
  * @slot prefix - Renders content before the label of the button.
  * @slot suffix - Renders content after the label of the button.
  *
- * @csspart base - The native button element of the igc-button component.
- * @csspart prefix - The prefix container of the igc-button component.
- * @csspart suffix - The suffix container of the igc-button component.
+ * @csspart base - The native button element of the button component.
+ * @csspart prefix - The prefix container of the button component.
+ * @csspart suffix - The suffix container of the button component.
  */
 export default class IgcButtonComponent extends IgcButtonBaseComponent {
   public static readonly tagName = 'igc-button';
@@ -33,8 +36,13 @@ export default class IgcButtonComponent extends IgcButtonBaseComponent {
   }
 
   /**
-   * Sets the variant of the button.
-   * @attr
+   * The variant of the button which determines its visual appearance.
+   * - `contained` – filled background; highest visual emphasis (default).
+   * - `outlined` – transparent background with a visible border.
+   * - `flat` – no background or border; lowest visual emphasis.
+   * - `fab` – floating action button shape; typically used for primary actions.
+   * @attr variant
+   * @default 'contained'
    */
   @property({ reflect: true })
   public variant: ButtonVariant = 'contained';
@@ -44,7 +52,7 @@ export default class IgcButtonComponent extends IgcButtonBaseComponent {
     addThemingController(this, all);
   }
 
-  protected renderContent() {
+  protected _renderContent() {
     return html`
       <slot name="prefix"></slot>
       <slot></slot>

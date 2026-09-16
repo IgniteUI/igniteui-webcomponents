@@ -11,7 +11,14 @@ $fs: rem(16px) !default;
     translate: 0 -50%;
 }
 
-%floated-styles {
+/// Cuts the notch open so the floated label can sit in the gap.
+///
+/// A mixin and not a placeholder selector: `@extend` hoists the declaration to
+/// where the placeholder is declared - the top of the file - which puts it
+/// before every state rule and makes the cascade depend on specificity alone.
+/// Included in place it stays next to the state it belongs to, and a change here
+/// reaches every state instead of the ones that happened to win.
+@mixin floated-notch() {
     border-top: $idle-border-width solid transparent;
 }
 
@@ -28,7 +35,7 @@ $fs: rem(16px) !default;
     --affix-padding: #{pad-inline(rem(12px), rem(14px), rem(16px))};
 
     input:placeholder-shown + [part='notch'] {
-        @extend %floated-styles;
+        @include floated-notch();
     }
 
     ::part(helper-text) {
@@ -44,7 +51,14 @@ $fs: rem(16px) !default;
     }
 }
 
-input:placeholder-shown + [part='notch'] [part='label'],
+:is(
+    input:placeholder-shown,
+    input[type='date'],
+    input[type='time'],
+    input[type='datetime-local'],
+    input[type='week'],
+    input[type='month']
+) + [part='notch'] [part='label'],
 [part~='filled'] + [part='notch'] [part='label'] {
     @include type-style('caption');
     @extend %label;
@@ -58,7 +72,9 @@ input:placeholder-shown + [part='notch'] [part='label'],
 }
 
 [part~='input filled'] {
-    color: var-get($theme, 'filled-text-color');
+    --input-text-color: #{var-get($theme, 'filled-text-color')};
+
+    color: var(--input-text-color);
 }
 
 [part='label'] {
@@ -159,7 +175,14 @@ input:placeholder-shown + [part='notch'] [part='label'],
 
 :host([readonly]:not([outlined]):focus-within) {
     :not([part~='filled']) {
-        input:has(:not(:placeholder-shown)) + [part='notch'] [part='label'] {
+        :is(
+            input[type='date'],
+            input[type='time'],
+            input[type='datetime-local'],
+            input[type='week'],
+            input[type='month']
+        ) + [part='notch'] [part='label'],
+        input:not(:placeholder-shown)+ [part='notch'] [part='label'] {
             translate: 0;
             font-size: initial;
         }
@@ -210,7 +233,14 @@ input:placeholder-shown + [part='notch'] [part='label'],
         padding-bottom: rem(6px);
     }
 
-    input:placeholder-shown + [part='notch'] [part='label'],
+    :is(
+        input:placeholder-shown,
+        input[type='date'],
+        input[type='time'],
+        input[type='datetime-local'],
+        input[type='week'],
+        input[type='month']
+    ) + [part='notch'] [part='label'],
     [part~='filled'] + [part='notch'] [part='label'] {
         translate: 0 -73%;
     }
@@ -220,8 +250,8 @@ input:placeholder-shown + [part='notch'] [part='label'],
     :not(
         [outlined],
         [type='search'],
-        [aria-haspopup='dialog'],
-        [role='combobox']
+        [data-haspopup='dialog'],
+        [data-role='combobox']
     )[readonly]
 ) {
     [part~='container'] {
@@ -229,14 +259,12 @@ input:placeholder-shown + [part='notch'] [part='label'],
     }
 }
 
-:host(
-    :not(
-            [outlined],
-            [type='search'],
-            [aria-haspopup='dialog'],
-            [role='combobox']
-        )[readonly]:hover
-) {
+:host(:not(
+    [outlined],
+    [type='search'],
+    [data-haspopup='dialog'],
+    [data-role='combobox']
+)[readonly]:hover) {
     [part~='container'] {
         background: var-get($theme, 'box-background-focus');
         border-bottom-color: var-get($theme, 'idle-bottom-line-color');
@@ -262,8 +290,8 @@ input:placeholder-shown + [part='notch'] [part='label'],
 :host(
     :not(
             [outlined],
-            [aria-haspopup='dialog'],
-            [role='combobox']
+            [data-haspopup='dialog'],
+            [data-role='combobox']
         )[readonly]:focus-within
 ) {
     [part~='container'] {
@@ -281,8 +309,8 @@ input:placeholder-shown + [part='notch'] [part='label'],
 :host(
     :not(
             [outlined],
-            [aria-haspopup='dialog'],
-            [role='combobox']
+            [data-haspopup='dialog'],
+            [data-role='combobox']
         )[readonly]:focus-within
 ) {
     [part='label'] {
@@ -292,12 +320,10 @@ input:placeholder-shown + [part='notch'] [part='label'],
     }
 }
 
-:host(:not([outlined], [disabled], [readonly]):state(ig-invalid)),
-:host(:not([outlined], [disabled], [readonly]):state(ig-invalid):focus-within),
-:host(:not([disabled], [outlined])[role='combobox']:state(ig-invalid)),
-:host(
-    :not([disabled], [outlined])[role='combobox']:state(ig-invalid):focus-within
-) {
+:host(:not([outlined], [disabled], :disabled, [readonly]):state(ig-invalid)),
+:host(:not([outlined], [disabled], :disabled, [readonly]):state(ig-invalid):focus-within),
+:host(:not([disabled], :disabled, [outlined])[data-role='combobox']:state(ig-invalid)),
+:host(:not([disabled], :disabled, [outlined])[data-role='combobox']:state(ig-invalid):focus-within) {
     [part~='container'] {
         border-color: var-get($theme, 'error-secondary-color');
 
@@ -450,8 +476,15 @@ input:placeholder-shown + [part='notch'] [part='label'],
         }
     }
 
+    :is(
+        input[type='date'],
+        input[type='time'],
+        input[type='datetime-local'],
+        input[type='week'],
+        input[type='month']
+    ) + [part='notch'],
     [part~='filled'] + [part='notch'] {
-        @extend %floated-styles;
+        @include floated-notch();
 
         [part='label'] {
             align-self: start;
@@ -466,7 +499,7 @@ input:placeholder-shown + [part='notch'] [part='label'],
 }
 
 :host(
-    :not([aria-haspopup='dialog'], [role='combobox'])[outlined][readonly]:hover
+    :not([data-haspopup='dialog'], [data-role='combobox'])[outlined][readonly]:hover
 ) {
     [part='notch'],
     [part='start'],
@@ -476,16 +509,14 @@ input:placeholder-shown + [part='notch'] [part='label'],
     }
 
     [part~='filled'] + [part='notch'] {
-        @extend %floated-styles;
+        @include floated-notch();
     }
 }
 
-:host(
-    :not(
-            [aria-haspopup='dialog'],
-            [role='combobox']
-        )[outlined][readonly]:focus-within
-) {
+:host(:not(
+    [data-haspopup='dialog'],
+    [data-role='combobox']
+)[outlined][readonly]:focus-within) {
     [part='notch'],
     [part='start'],
     [part='end'],
@@ -494,7 +525,7 @@ input:placeholder-shown + [part='notch'] [part='label'],
     }
 
     [part='notch'] {
-        border-top: $idle-border-width solid transparent;
+        @include floated-notch();
     }
 }
 
@@ -502,13 +533,13 @@ input:placeholder-shown + [part='notch'] [part='label'],
     :not(:state(ig-invalid), [type='search'])[readonly][outlined]:focus-within
 ) {
     :not([part~='filled']) {
-        input:has(:not(:placeholder-shown)) + [part='notch'] [part='label'] {
+        input:not(:placeholder-shown) + [part='notch'] [part='label'] {
             translate: 0;
             font-size: initial;
             align-self: center;
         }
 
-        input:has(:not(:placeholder-shown)) + [part='notch'] {
+        input:not(:placeholder-shown) + [part='notch'] {
             border: {
                 width: $active-border-width;
                 color: var-get($theme, 'focused-border-color');
@@ -527,7 +558,23 @@ input:placeholder-shown + [part='notch'] [part='label'],
 
     input:placeholder-shown + [part='notch'],
     [part~='filled'] + [part='notch'] {
-        @extend %floated-styles;
+        @include floated-notch();
+    }
+}
+
+:host([outlined]:is(
+    [type='date'],
+    [type='time'],
+    [type='datetime-local'],
+    [type='week'],
+    [type='month']
+)) {
+    [part='label'] {
+        transition: none;
+    }
+
+    [part='notch'] {
+        border-block-start-color: transparent !important;
     }
 }
 
@@ -557,8 +604,9 @@ input:placeholder-shown + [part='notch'] [part='label'],
         border: {
             width: $active-border-width;
             color: var-get($theme, 'focused-border-color');
-            top: $idle-border-width solid transparent;
         }
+
+        @include floated-notch();
     }
 
     [part='filler'] {
@@ -585,16 +633,17 @@ input:placeholder-shown + [part='notch'] [part='label'],
 :host(
     :not(
             [type='search'],
-            [aria-haspopup='dialog'],
-            [role='combobox']
+            [data-haspopup='dialog'],
+            [data-role='combobox']
         )[outlined]:focus-within
 ) {
     [part='notch'] {
         border: {
             width: $active-border-width;
             color: var-get($theme, 'focused-border-color');
-            top: $idle-border-width solid transparent;
         }
+
+        @include floated-notch();
     }
 }
 
@@ -616,14 +665,10 @@ input:placeholder-shown + [part='notch'] [part='label'],
     }
 }
 
-:host(:not([type='search'], [readonly])[outlined]:state(ig-invalid)),
-:host(
-    :not([type='search'], [readonly])[outlined]:state(ig-invalid):focus-within
-),
-:host(:not([disabled])[role='combobox'][outlined]:state(ig-invalid)),
-:host(
-    :not([disabled])[role='combobox'][outlined]:state(ig-invalid):focus-within
-) {
+:host(:not([type='search'], [readonly], [disabled], :disabled)[outlined]:state(ig-invalid)),
+:host(:not([type='search'], [readonly], [disabled], :disabled)[outlined]:state( ig-invalid):focus-within),
+:host(:not([disabled], :disabled)[data-role='combobox'][outlined]:state(ig-invalid)),
+:host(:not([disabled], :disabled)[data-role='combobox'][outlined]:state(ig-invalid):focus-within) {
     [part='start'],
     [part='notch'],
     [part='filler'],
@@ -631,14 +676,20 @@ input:placeholder-shown + [part='notch'] [part='label'],
         border-color: var-get($theme, 'error-secondary-color');
     }
 
+    // The focused state matches the notch through these same selectors, which
+    // are more specific than `[part='notch']` above, so the error color has to
+    // be re-stated here or the notch keeps the focus color while the rest of
+    // the border turns invalid.
     input:placeholder-shown + [part='notch'],
     [part~='filled'] + [part='notch'] {
-        @extend %floated-styles;
+        border-color: var-get($theme, 'error-secondary-color');
+
+        @include floated-notch();
     }
 }
 
 :host(
-    :not([disabled])[role='combobox'][outlined]:state(ig-invalid):focus-within
+    :not([disabled])[data-role='combobox'][outlined]:state(ig-invalid):focus-within
 ) {
     :not([part~='filled']) {
         input:not(:placeholder-shown) + [part='notch'] {
@@ -648,21 +699,21 @@ input:placeholder-shown + [part='notch'] [part='label'],
 }
 
 :host(:not([type='search'])[outlined]:state(ig-invalid):focus-within),
-:host([role='combobox'][outlined]:state(ig-invalid):focus-within) {
+:host([data-role='combobox'][outlined]:state(ig-invalid):focus-within) {
     [part='notch'] {
-        border-top: $idle-border-width solid transparent;
+        @include floated-notch();
     }
 }
 
-:host(:not([disabled], [readonly])[role='combobox'][outlined]:focus-within),
+:host(:not([disabled], [readonly])[data-role='combobox'][outlined]:focus-within),
 :host(
-    :not([disabled], [readonly])[role='combobox'][outlined]:state(
+    :not([disabled], [readonly])[data-role='combobox'][outlined]:state(
             ig-invalid
         ):focus-within
 ) {
     :not([part~='filled']) {
         input:not(:placeholder-shown) + [part='notch'] {
-            border-top: $idle-border-width solid transparent;
+            @include floated-notch();
         }
 
         [part='notch'] {
@@ -671,8 +722,8 @@ input:placeholder-shown + [part='notch'] [part='label'],
     }
 }
 
-:host(:not([disabled], [readonly]):state(ig-invalid)),
-:host(:not([disabled])[role='combobox']:state(ig-invalid)) {
+:host(:not([disabled], :disabled, [readonly]):state(ig-invalid)),
+:host(:not([disabled], :disabled)[data-role='combobox']:state(ig-invalid)) {
     [part='label'] {
         color: var-get($theme, 'error-secondary-color');
     }
@@ -693,7 +744,7 @@ input:placeholder-shown + [part='notch'] [part='label'],
 
     input:placeholder-shown + [part='notch'],
     [part~='filled'] + [part='notch'] {
-        @extend %floated-styles;
+        @include floated-notch();
     }
 }
 
@@ -715,6 +766,22 @@ input:placeholder-shown + [part='notch'] [part='label'],
     }
 
     [part~='filled'] + [part='notch'] {
-        @extend %floated-styles;
+        @include floated-notch();
+    }
+}
+
+@media (forced-colors: active) {
+    :host(:not([outlined])) [part~='container'] [part='notch'] {
+        border-top: none;
+    }
+
+    :host(:not([outlined])) [part~='container'] {
+        outline: rem(1px) solid CanvasText;
+        border-bottom: none;
+        border-radius: var-get($theme, 'box-border-radius');
+
+        &::after {
+            content: unset;
+        }
     }
 }

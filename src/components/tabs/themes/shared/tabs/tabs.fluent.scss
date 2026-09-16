@@ -28,3 +28,9 @@ igc-icon-button[disabled]::part(base) {
         background: var-get($theme, 'indicator-color');
     }
 }
+
+@media (forced-colors: active) {
+    [part~='selected-indicator'] span {
+        border: rem(1px) solid CanvasText;
+    }
+}

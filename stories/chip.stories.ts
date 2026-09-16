@@ -23,30 +23,39 @@ const metadata: Meta<IgcChipComponent> = {
   argTypes: {
     disabled: {
       type: 'boolean',
-      description: 'Sets the disabled state for the chip.',
+      description: 'Whether the chip is disabled or not.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
     removable: {
       type: 'boolean',
-      description: 'Defines if the chip is removable or not.',
+      description: 'Whether the chip is removable or not.',
+      control: 'boolean',
+      table: { defaultValue: { summary: 'false' } },
+    },
+    outlined: {
+      type: 'boolean',
+      description: 'Whether the chip is outlined or not.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
     selectable: {
       type: 'boolean',
-      description: 'Defines if the chip is selectable or not.',
+      description: 'Whether the chip is selectable or not.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
     selected: {
       type: 'boolean',
-      description: 'Defines if the chip is selected or not.',
+      description: 'Whether the chip is selected or not.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
     variant: {
-      type: '"primary" | "info" | "success" | "warning" | "danger"',
+      type: {
+        name: 'enum',
+        value: ['primary', 'info', 'success', 'warning', 'danger'],
+      },
       description:
         'A property that sets the color variant of the chip component.',
       options: ['primary', 'info', 'success', 'warning', 'danger'],
@@ -55,13 +64,14 @@ const metadata: Meta<IgcChipComponent> = {
     locale: {
       type: 'string',
       description:
-        'Gets/Sets the locale used for getting language, affecting resource strings.',
+        "The locale used to resolve the component's resource strings.\nFalls back to the global locale when not set.",
       control: 'text',
     },
   },
   args: {
     disabled: false,
     removable: false,
+    outlined: false,
     selectable: false,
     selected: false,
   },
@@ -70,17 +80,22 @@ const metadata: Meta<IgcChipComponent> = {
 export default metadata;
 
 interface IgcChipArgs {
-  /** Sets the disabled state for the chip. */
+  /** Whether the chip is disabled or not. */
   disabled: boolean;
-  /** Defines if the chip is removable or not. */
+  /** Whether the chip is removable or not. */
   removable: boolean;
-  /** Defines if the chip is selectable or not. */
+  /** Whether the chip is outlined or not. */
+  outlined: boolean;
+  /** Whether the chip is selectable or not. */
   selectable: boolean;
-  /** Defines if the chip is selected or not. */
+  /** Whether the chip is selected or not. */
   selected: boolean;
   /** A property that sets the color variant of the chip component. */
   variant: 'primary' | 'info' | 'success' | 'warning' | 'danger';
-  /** Gets/Sets the locale used for getting language, affecting resource strings. */
+  /**
+   * The locale used to resolve the component's resource strings.
+   * Falls back to the global locale when not set.
+   */
   locale: string;
 }
 type Story = StoryObj<IgcChipArgs>;
@@ -99,6 +114,7 @@ export const Basic: Story = {
   render: ({
     disabled,
     removable,
+    outlined,
     selectable,
     selected,
     variant,
@@ -108,6 +124,7 @@ export const Basic: Story = {
       .removable=${removable}
       .selectable=${selectable}
       .selected=${selected}
+      .outlined=${outlined}
       variant=${ifDefined(variant)}
     >
       <span slot="prefix">😱</span>
@@ -128,6 +145,7 @@ export const Variants: Story = {
     },
   },
   render: () => html`
+    <h4 style="margin: 0 0 0 1rem">Default</h4>
     <div style="display: flex; flex-wrap: wrap; gap: 0.75rem; padding: 1rem;">
       <igc-chip>Default</igc-chip>
       <igc-chip variant="primary">Primary</igc-chip>
@@ -135,6 +153,15 @@ export const Variants: Story = {
       <igc-chip variant="success">Success</igc-chip>
       <igc-chip variant="warning">Warning</igc-chip>
       <igc-chip variant="danger">Danger</igc-chip>
+    </div>
+    <h4 style="margin: 1rem 0 0 1rem">Outlined</h4>
+    <div style="display: flex; flex-wrap: wrap; gap: 0.75rem; padding: 1rem;">
+      <igc-chip outlined>Default</igc-chip>
+      <igc-chip variant="primary" outlined>Primary</igc-chip>
+      <igc-chip variant="info" outlined>Info</igc-chip>
+      <igc-chip variant="success" outlined>Success</igc-chip>
+      <igc-chip variant="warning" outlined>Warning</igc-chip>
+      <igc-chip variant="danger" outlined>Danger</igc-chip>
     </div>
   `,
 };
@@ -257,13 +284,14 @@ export const States: Story = {
     docs: {
       description: {
         story:
-          'Visual overview of chip states: default, selected, disabled, disabled+selected, removable, and selectable.',
+          'Visual overview of chip states: default, outlined, selected, disabled, disabled+selected, removable, and selectable.',
       },
     },
   },
   render: () => html`
     <div style="display: flex; flex-wrap: wrap; gap: 0.75rem; padding: 1rem;">
       <igc-chip>Default</igc-chip>
+      <igc-chip outlined>Outlined</igc-chip>
       <igc-chip selectable selected>Selected</igc-chip>
       <igc-chip disabled>Disabled</igc-chip>
       <igc-chip selectable selected disabled>Disabled &amp; Selected</igc-chip>

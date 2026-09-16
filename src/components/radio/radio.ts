@@ -1,31 +1,26 @@
-import { html, LitElement, nothing, type TemplateResult } from 'lit';
+import { html, LitElement, type PropertyValues } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
-import { ifDefined } from 'lit/directives/if-defined.js';
-import { live } from 'lit/directives/live.js';
-import { addThemingController } from '../../theming/theming-controller.js';
-import { addKeyboardFocusRing } from '../common/controllers/focus-ring.js';
-import {
-  addKeybindings,
-  arrowDown,
-  arrowLeft,
-  arrowRight,
-  arrowUp,
-} from '../common/controllers/key-bindings.js';
-import { addSlotController, setSlots } from '../common/controllers/slot.js';
-import { registerComponent } from '../common/definitions/register.js';
-import type { Constructor } from '../common/mixins/constructor.js';
-import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { FormAssociatedCheckboxRequiredMixin } from '../common/mixins/forms/associated-required.js';
-import { FormValueBooleanTransformers } from '../common/mixins/forms/form-transformers.js';
-import { createFormValueState } from '../common/mixins/forms/form-value.js';
-import { partMap } from '../common/part-map.js';
-import { isDefined, isEmpty, isLTR, last, wrap } from '../common/util.js';
+import { addKeyboardFocusRing } from '#internals/controllers/focus-ring.js';
+import { addRovingFocusController } from '#internals/controllers/roving-focus.js';
+import { addSlotController, setSlots } from '#internals/controllers/slot.js';
+import { registerComponent } from '#internals/definitions/register.js';
+import type { Constructor } from '#internals/mixins/constructor.js';
+import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
+import { FormAssociatedCheckboxRequiredMixin } from '#internals/mixins/forms/associated-required.js';
+import { FormValueBooleanTransformers } from '#internals/mixins/forms/form-transformers.js';
+import { createFormValueState } from '#internals/mixins/forms/form-value.js';
+import { partMap } from '#internals/part-map.js';
+import { renderToggleShell } from '#internals/templates/toggle-shell.js';
+import { lastOf } from '#internals/utils/arrays.js';
+import { createIdGenerator } from '#internals/utils/strings.js';
+import { isString } from '#internals/utils/types.js';
+import { addThemingController } from '#theming/theming-controller.js';
 import type { ToggleLabelPosition } from '../types.js';
 import IgcValidationContainerComponent from '../validation-container/validation-container.js';
+import { addRadioGroupController, getGroupMembers } from './controller.js';
 import { styles } from './themes/radio.base.css.js';
 import { styles as shared } from './themes/shared/radio.common.css.js';
 import { all } from './themes/themes.js';
-import { getGroup } from './utils.js';
 import { radioValidators } from './validators.js';
 
 export interface IgcRadioChangeEventArgs {
@@ -42,9 +37,11 @@ export interface IgcRadioComponentEventMap {
   blur: FocusEvent;
 }
 
-let nextId = 1;
+const nextId = createIdGenerator('radio');
 
 /**
+ * The radio component allows the user to select a single option from an available set of options that are listed side by side.
+ *
  * @element igc-radio
  *
  * @slot - The radio label.
@@ -76,9 +73,18 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
     return radioValidators;
   }
 
-  private readonly _inputId = `radio-${nextId++}`;
+  private readonly _inputId = nextId();
   private readonly _labelId = `radio-label-${this._inputId}`;
   private readonly _focusRingManager = addKeyboardFocusRing(this);
+
+  /**
+   * Keeps the roving tab index of the group. The checked radio is the only tab
+   * stop. If the group has no selection, each radio is a tab stop.
+   */
+  private readonly _group = addRadioGroupController(this, (hasCheckedRadio) => {
+    this._tabIndex = !hasCheckedRadio || this.checked ? 0 : -1;
+  });
+
   private readonly _slots = addSlotController(this, {
     slots: setSlots('helper-text', 'value-missing', 'custom-error', 'invalid'),
     onChange: this._handleSlotChange,
@@ -100,24 +106,24 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
   @state()
   private _tabIndex = 0;
 
-  /** Returns all radio elements from the group, that is having the same name property. */
-  private get _radios() {
-    return getGroup(this).radios;
+  /** All radios of the group, that is having the same name property, in DOM order. */
+  private get _radios(): IgcRadioComponent[] {
+    return getGroupMembers(this);
   }
 
-  /** All sibling radio elements of the one invoking the getter. */
-  private get _siblings() {
-    return getGroup(this).siblings;
+  /** All radios of the group except the one that invokes the getter. */
+  private get _siblings(): IgcRadioComponent[] {
+    return this._radios.filter((radio) => radio !== this);
   }
 
-  /** All non-disabled radio elements from the group. */
-  private get _active() {
-    return getGroup(this).active;
+  /** All radios of the group that are not disabled. */
+  private get _activeRadios(): IgcRadioComponent[] {
+    return this._radios.filter((radio) => !radio.disabled);
   }
 
-  /** All checked radio elements from the group. */
-  private get _checkedRadios() {
-    return getGroup(this).checked;
+  /** All radios of the group that are checked. */
+  private get _checkedRadios(): IgcRadioComponent[] {
+    return this._radios.filter((radio) => radio.checked);
   }
 
   @property({ type: Boolean, reflect: true })
@@ -136,7 +142,7 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
   }
 
   /**
-   * The value attribute of the control.
+   * The value of the control.
    * @attr
    */
   @property()
@@ -158,10 +164,17 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
    */
   @property({ type: Boolean })
   public set checked(value: boolean) {
+    const previous = this.checked;
+
     this._formValue.setValueAndFormState(value);
-    this._tabIndex = this.checked ? 0 : -1;
     if (this.hasUpdated && this.checked) {
       this._updateCheckedState();
+    }
+
+    // The tab stop is a state of the group, so a change of the selection derives it
+    // again. A write of the same state leaves the group as it is.
+    if (this.checked !== previous) {
+      this._group.sync();
     }
   }
 
@@ -181,20 +194,35 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
 
     addThemingController(this, all);
 
-    addKeybindings(this, {
-      skip: () => this.disabled,
-      bindingDefaults: { preventDefault: true, repeat: true },
-    })
-      .set(arrowLeft, () => this._navigate(isLTR(this) ? -1 : 1))
-      .set(arrowRight, () => this._navigate(isLTR(this) ? 1 : -1))
-      .set(arrowUp, () => this._navigate(-1))
-      .set(arrowDown, () => this._navigate(1));
+    addRovingFocusController(this, {
+      keybindings: {
+        skip: () => this.disabled,
+        bindingDefaults: { preventDefault: true, repeat: true },
+      },
+      vertical: true,
+      homeEnd: false,
+      items: () => this._activeRadios,
+      current: () => this,
+      focusItem: (radio) => this._navigate(radio),
+    });
+  }
+
+  protected override willUpdate(properties: PropertyValues<this>): void {
+    // The name is half of the identity of a group, so a new name moves this radio to another one.
+    if (properties.has('name')) {
+      this._group.updateMembership();
+    }
+
+    // The tab stop of the group depends on which of its radios are disabled.
+    if (properties.has('disabled')) {
+      this._group.sync();
+    }
   }
 
   protected override async firstUpdated(): Promise<void> {
     await this.updateComplete;
 
-    if (this.checked && this === last(this._checkedRadios)) {
+    if (this.checked && this === lastOf(this._checkedRadios)) {
       for (const radio of this._siblings) {
         radio.checked = false;
         radio.defaultChecked = false;
@@ -209,10 +237,24 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
   }
 
   protected override _setDefaultValue(current: string | null): void {
-    this._formValue.defaultValue = isDefined(current);
+    // The base mixin passes 'true' if the `checked` attribute is present, and null
+    // if it is removed. `isDefined` would accept null as present and check the radio
+    // again on a form reset.
+    this._formValue.defaultValue = isString(current);
     for (const radio of this._siblings) {
       radio.defaultChecked = false;
     }
+  }
+
+  /**
+   * Restores the default state without the `checked` setter. That setter unchecks all
+   * siblings, which damages the state of the radios that the browser already reset in
+   * the same `form.reset()` pass.
+   */
+  protected override _restoreDefaultValue(): void {
+    const checked = this.checked;
+    this._formValue.setValueAndFormState(this.defaultChecked);
+    this.requestUpdate('checked', checked);
   }
 
   /** Simulates a click on the radio control. */
@@ -240,7 +282,7 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
     return super.reportValidity();
   }
 
-  /** Checks for validity of the control and emits the invalid event if it invalid. */
+  /** Checks for validity of the control and emits the invalid event if it's invalid. */
   public override checkValidity(): boolean {
     for (const radio of this._siblings) {
       radio._checkValidity();
@@ -249,7 +291,7 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
     return this._checkValidity();
   }
 
-  /** Checks for validity of the control and shows the browser message if it invalid. */
+  /** Checks for validity of the control and shows the browser message if it's invalid. */
   public override reportValidity(): boolean {
     for (const radio of this._siblings) {
       radio._reportValidity();
@@ -265,6 +307,7 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
   public override setCustomValidity(message: string): void {
     for (const radio of this._radios) {
       radio._validate(message);
+      radio.requestUpdate();
     }
   }
 
@@ -276,23 +319,15 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
 
   protected override formResetCallback(): void {
     super.formResetCallback();
-    this._resetTabIndexes();
+    this._group.sync();
     this.updateComplete.then(() => this._validate());
   }
 
-  /** Called after a form reset callback to restore default keyboard navigation. */
-  private _resetTabIndexes(): void {
-    const radios = this._radios;
+  protected override formAssociatedCallback(form: HTMLFormElement): void {
+    super.formAssociatedCallback(form);
 
-    if (isEmpty(this._checkedRadios)) {
-      for (const radio of radios) {
-        radio._tabIndex = 0;
-      }
-    } else {
-      for (const radio of radios) {
-        radio._tabIndex = radio.checked ? 0 : -1;
-      }
-    }
+    // The form owner is the other half, so a new one moves this radio as well.
+    this._group.updateMembership();
   }
 
   protected _handleClick(event: PointerEvent) {
@@ -313,11 +348,7 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
     });
   }
 
-  protected _navigate(idx: number): void {
-    const active = this._active;
-    const next = wrap(0, active.length - 1, active.indexOf(this) + idx);
-    const radio = active[next];
-
+  protected _navigate(radio: IgcRadioComponent): void {
     this._setTouchedState();
     radio.focus();
     radio.checked = true;
@@ -326,55 +357,43 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
     });
   }
 
-  protected _renderValidatorContainer(): TemplateResult {
-    return IgcValidationContainerComponent.create(this);
-  }
-
   protected override render() {
     const labelledBy = this.getAttribute('aria-labelledby');
-    const describedBy = this._slots.hasAssignedElements('helper-text')
-      ? 'helper-text'
-      : nothing;
     const checked = this.checked;
 
     return html`
-      <label
-        part=${partMap({
+      ${renderToggleShell({
+        type: 'radio',
+        inputId: this._inputId,
+        labelId: this._labelId,
+        baseParts: {
           base: true,
           checked,
           focused: this._focusRingManager.focused,
-        })}
-        for=${this._inputId}
-      >
-        <input
-          id=${this._inputId}
-          type="radio"
-          name=${ifDefined(this.name)}
-          value=${ifDefined(this.value)}
-          ?required=${this.required}
-          ?disabled=${this.disabled}
-          .checked=${live(checked)}
-          tabindex=${this._tabIndex}
-          aria-labelledby=${labelledBy ? labelledBy : this._labelId}
-          aria-describedby=${describedBy}
-          @click=${this._handleClick}
-          @keydown=${this._handleEnterKeydown}
-        />
-        <span part=${partMap({ control: true, checked })}>
+        },
+        controlParts: { control: true, checked },
+        labelParts: { label: true, checked },
+        renderControl: () => html`
           <span
             part=${partMap({ ripple: true, checked })}
             ?hidden=${this.disabled}
           ></span>
-        </span>
-        <span
-          id=${this._labelId}
-          part=${partMap({ label: true, checked })}
-          ?hidden=${this._hideLabel}
-        >
-          <slot></slot>
-        </span>
-      </label>
-      ${this._renderValidatorContainer()}
+        `,
+        checked,
+        hideLabel: this._hideLabel,
+        name: this.name,
+        value: this.value,
+        required: this.required,
+        disabled: this.disabled,
+        tabindex: this._tabIndex,
+        ariaLabelledBy: labelledBy ? labelledBy : this._labelId,
+        ariaDescribedBy: this._slots.hasAssignedElements('helper-text')
+          ? 'helper-text'
+          : undefined,
+        onClick: this._handleClick,
+        onKeyDown: this._handleEnterKeydown,
+      })}
+      ${this._renderValidationContainer()}
     `;
   }
 }

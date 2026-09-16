@@ -1,21 +1,14 @@
-import {
-  elementUpdated,
-  expect,
-  fixture,
-  html,
-  unsafeStatic,
-} from '@open-wc/testing';
+import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
+import { type TemplateResult } from 'lit';
 import { spy } from 'sinon';
-
-import {
-  defineComponents,
-  IgcButtonGroupComponent,
-  IgcToggleButtonComponent,
-} from '../../index.js';
+import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { simulateClick } from '#internals/testing/simulate.spec.js';
+import IgcButtonGroupComponent from './button-group.js';
+import IgcToggleButtonComponent from './toggle-button.js';
 
 describe('Button Group', () => {
   before(() => {
-    defineComponents(IgcButtonGroupComponent);
+    defineComponents(IgcButtonGroupComponent, IgcToggleButtonComponent);
   });
 
   const DIFF_OPTIONS = {
@@ -29,9 +22,9 @@ describe('Button Group', () => {
   describe('', () => {
     beforeEach(async () => {
       buttonGroup = await createButtonGroupComponent();
-      buttons = buttonGroup.querySelectorAll(
-        'igc-toggle-button'
-      ) as unknown as IgcToggleButtonComponent[];
+      buttons = Array.from(
+        buttonGroup.querySelectorAll(IgcToggleButtonComponent.tagName)
+      );
     });
 
     describe('Initialization Tests', () => {
@@ -54,11 +47,11 @@ describe('Button Group', () => {
       });
 
       it('should render proper role and attributes', () => {
-        const buttonGroupElement = buttonGroup.shadowRoot?.querySelector('div');
+        const buttonGroupElement = buttonGroup.renderRoot.querySelector('div');
 
         expect(buttonGroupElement).not.to.be.null;
         expect(buttonGroupElement).to.have.attribute('part', 'group');
-        expect(buttonGroupElement).to.have.attribute('role', 'group');
+        expect(buttonGroupElement).to.have.attribute('role', 'radiogroup');
         expect(buttonGroupElement).to.have.attribute('aria-disabled', 'false');
       });
     });
@@ -86,15 +79,22 @@ describe('Button Group', () => {
           DIFF_OPTIONS
         );
 
-        buttons.forEach((b) => {
-          expect(b.disabled).to.be.true;
-          expect(b).dom.to.equal(
-            `<igc-toggle-button disabled>${b.textContent?.trim()}</igc-toggle-button>`,
+        // The buttons inherit the disabled state of the group without having
+        // their own overwritten.
+        for (const button of buttons) {
+          await elementUpdated(button);
+
+          expect(button.disabled).to.be.false;
+          expect(button).dom.to.equal(
+            `<igc-toggle-button>${button.textContent?.trim()}</igc-toggle-button>`,
             {
               ignoreAttributes: ['value'],
             }
           );
-        });
+          expect(button.renderRoot.querySelector('button')).to.have.attribute(
+            'disabled'
+          );
+        }
 
         buttonGroup.disabled = false;
         await elementUpdated(buttonGroup);
@@ -105,15 +105,20 @@ describe('Button Group', () => {
           DIFF_OPTIONS
         );
 
-        buttons.forEach((b) => {
-          expect(b.disabled).to.be.false;
-          expect(b).dom.to.equal(
-            `<igc-toggle-button>${b.textContent?.trim()}</igc-toggle-button>`,
+        for (const button of buttons) {
+          await elementUpdated(button);
+
+          expect(button.disabled).to.be.false;
+          expect(button).dom.to.equal(
+            `<igc-toggle-button>${button.textContent?.trim()}</igc-toggle-button>`,
             {
               ignoreAttributes: ['value'],
             }
           );
-        });
+          expect(
+            button.renderRoot.querySelector('button')
+          ).not.to.have.attribute('disabled');
+        }
       });
 
       it('sets `alignment` property successfully', async () => {
@@ -146,34 +151,43 @@ describe('Button Group', () => {
     describe('Selection Tests', () => {
       it('should initialize a button group with initial selection state through attribute', async () => {
         // single mode
-        buttonGroup = await createButtonGroupComponent(`
-          <igc-button-group selected-items='["left"]'>
+        buttonGroup = await createButtonGroupComponent(html`
+          <igc-button-group .selectedItems=${['left']}>
             <igc-toggle-button value="left">Left</igc-toggle-button>
             <igc-toggle-button value="center">Center</igc-toggle-button>
             <igc-toggle-button value="right">Right</igc-toggle-button>
-          </igc-button-group>`);
+          </igc-button-group>
+        `);
 
         expect(buttonGroup.selectedItems.length).to.equal(1);
         expect(buttonGroup.selectedItems).to.have.same.members(['left']);
 
         // single-required mode
-        buttonGroup = await createButtonGroupComponent(`
-          <igc-button-group selection="single-required" selected-items='["left"]'>
+        buttonGroup = await createButtonGroupComponent(html`
+          <igc-button-group
+            selection="single-required"
+            .selectedItems=${['left']}
+          >
             <igc-toggle-button value="left">Left</igc-toggle-button>
             <igc-toggle-button value="center">Center</igc-toggle-button>
             <igc-toggle-button value="right">Right</igc-toggle-button>
-          </igc-button-group>`);
+          </igc-button-group>
+        `);
 
         expect(buttonGroup.selectedItems.length).to.equal(1);
         expect(buttonGroup.selectedItems).to.have.same.members(['left']);
 
         // multiple mode
-        buttonGroup = await createButtonGroupComponent(`
-          <igc-button-group selection="multiple" selected-items='["left", "right"]'>
+        buttonGroup = await createButtonGroupComponent(html`
+          <igc-button-group
+            selection="multiple"
+            .selectedItems=${['left', 'right']}
+          >
             <igc-toggle-button value="left">Left</igc-toggle-button>
             <igc-toggle-button value="center">Center</igc-toggle-button>
             <igc-toggle-button value="right">Right</igc-toggle-button>
-          </igc-button-group>`);
+          </igc-button-group>
+        `);
 
         expect(buttonGroup.selectedItems.length).to.equal(2);
         expect(buttonGroup.selectedItems).to.have.same.members([
@@ -184,34 +198,39 @@ describe('Button Group', () => {
 
       it('should initialize a button group with initial selection state through child attribute', async () => {
         // single mode
-        buttonGroup = await createButtonGroupComponent(`
+        buttonGroup = await createButtonGroupComponent(html`
           <igc-button-group>
             <igc-toggle-button value="left" selected>Left</igc-toggle-button>
             <igc-toggle-button value="center">Center</igc-toggle-button>
             <igc-toggle-button value="right">Right</igc-toggle-button>
-          </igc-button-group>`);
+          </igc-button-group>
+        `);
 
         expect(buttonGroup.selectedItems.length).to.equal(1);
         expect(buttonGroup.selectedItems).to.have.same.members(['left']);
 
         // single-required mode
-        buttonGroup = await createButtonGroupComponent(`
+        buttonGroup = await createButtonGroupComponent(html`
           <igc-button-group selection="single-required">
             <igc-toggle-button value="left" selected>Left</igc-toggle-button>
             <igc-toggle-button value="center">Center</igc-toggle-button>
             <igc-toggle-button value="right">Right</igc-toggle-button>
-          </igc-button-group>`);
+          </igc-button-group>
+        `);
 
         expect(buttonGroup.selectedItems.length).to.equal(1);
         expect(buttonGroup.selectedItems).to.have.same.members(['left']);
 
         // multiple mode
-        buttonGroup = await createButtonGroupComponent(`
+        buttonGroup = await createButtonGroupComponent(html`
           <igc-button-group selection="multiple">
             <igc-toggle-button value="left" selected>Left</igc-toggle-button>
-            <igc-toggle-button value="center" selected>Center</igc-toggle-button>
+            <igc-toggle-button value="center" selected
+              >Center</igc-toggle-button
+            >
             <igc-toggle-button value="right">Right</igc-toggle-button>
-          </igc-button-group>`);
+          </igc-button-group>
+        `);
 
         expect(buttonGroup.selectedItems.length).to.equal(2);
         expect(buttonGroup.selectedItems).to.have.same.members([
@@ -287,23 +306,27 @@ describe('Button Group', () => {
       it('should set the selectedItems to be the last selected button if multiple buttons are selected', async () => {
         // single mode
         // through selected-items attribute
-        buttonGroup = await createButtonGroupComponent(`
-          <igc-button-group selected-items='["right", "left"]'>
+        buttonGroup = await createButtonGroupComponent(html`
+          <igc-button-group .selectedItems=${['right', 'left']}>
             <igc-toggle-button value="left">Left</igc-toggle-button>
             <igc-toggle-button value="center">Center</igc-toggle-button>
             <igc-toggle-button value="right">Right</igc-toggle-button>
-          </igc-button-group>`);
+          </igc-button-group>
+        `);
 
         expect(buttonGroup.selectedItems.length).to.equal(1);
         expect(buttonGroup.selectedItems).to.have.same.members(['left']);
 
         // through child selected attribute
-        buttonGroup = await createButtonGroupComponent(`
+        buttonGroup = await createButtonGroupComponent(html`
           <igc-button-group>
             <igc-toggle-button value="left" selected>Left</igc-toggle-button>
-            <igc-toggle-button value="center" selected>Center</igc-toggle-button>
+            <igc-toggle-button value="center" selected
+              >Center</igc-toggle-button
+            >
             <igc-toggle-button value="right">Right</igc-toggle-button>
-          </igc-button-group>`);
+          </igc-button-group>
+        `);
 
         expect(buttonGroup.selectedItems.length).to.equal(1);
         expect(buttonGroup.selectedItems).to.have.same.members(['center']);
@@ -318,34 +341,42 @@ describe('Button Group', () => {
 
         // single-required mode
         // through selected-items attribute
-        buttonGroup = await createButtonGroupComponent(`
-          <igc-button-group selection="single-required" selected-items='["right", "left"]'>
+        buttonGroup = await createButtonGroupComponent(html`
+          <igc-button-group
+            selection="single-required"
+            .selectedItems=${['right', 'left']}
+          >
             <igc-toggle-button value="left">Left</igc-toggle-button>
             <igc-toggle-button value="center">Center</igc-toggle-button>
             <igc-toggle-button value="right">Right</igc-toggle-button>
-          </igc-button-group>`);
+          </igc-button-group>
+        `);
 
         expect(buttonGroup.selectedItems.length).to.equal(1);
         expect(buttonGroup.selectedItems).to.have.same.members(['left']);
 
         // through child selected attribute
-        buttonGroup = await createButtonGroupComponent(`
+        buttonGroup = await createButtonGroupComponent(html`
           <igc-button-group selection="single-required">
             <igc-toggle-button value="left" selected>Left</igc-toggle-button>
-            <igc-toggle-button value="center" selected>Center</igc-toggle-button>
+            <igc-toggle-button value="center" selected
+              >Center</igc-toggle-button
+            >
             <igc-toggle-button value="right">Right</igc-toggle-button>
-          </igc-button-group>`);
+          </igc-button-group>
+        `);
 
         expect(buttonGroup.selectedItems.length).to.equal(1);
         expect(buttonGroup.selectedItems).to.have.same.members(['center']);
 
         // through selectedItems property
-        buttonGroup = await createButtonGroupComponent(`
+        buttonGroup = await createButtonGroupComponent(html`
           <igc-button-group selection="single-required">
             <igc-toggle-button value="left">Left</igc-toggle-button>
             <igc-toggle-button value="center">Center</igc-toggle-button>
             <igc-toggle-button value="right">Right</igc-toggle-button>
-          </igc-button-group>`);
+          </igc-button-group>
+        `);
 
         buttonGroup.selectedItems = ['right', 'left'];
         await elementUpdated(buttonGroup);
@@ -478,35 +509,44 @@ describe('Button Group', () => {
 
       it('initial selection through child selection attribute has higher priority', async () => {
         // single mode
-        buttonGroup = await createButtonGroupComponent(`
-          <igc-button-group selected-items='["left"]'>
+        buttonGroup = await createButtonGroupComponent(html`
+          <igc-button-group .selectedItems=${['left']}>
             <igc-toggle-button value="left">Left</igc-toggle-button>
             <igc-toggle-button value="center">Center</igc-toggle-button>
             <igc-toggle-button value="right" selected>Right</igc-toggle-button>
-          </igc-button-group>`);
+          </igc-button-group>
+        `);
 
         expect(buttonGroup.selectedItems.length).to.equal(1);
         expect(buttonGroup.selectedItems).to.have.same.members(['right']);
 
         // single-required mode
-        buttonGroup = await createButtonGroupComponent(`
-          <igc-button-group selection="single-required" selected-items='["left"]'>
+        buttonGroup = await createButtonGroupComponent(html`
+          <igc-button-group
+            selection="single-required"
+            .selectedItems=${['left']}
+          >
             <igc-toggle-button value="left">Left</igc-toggle-button>
             <igc-toggle-button value="center">Center</igc-toggle-button>
             <igc-toggle-button value="right" selected>Right</igc-toggle-button>
-          </igc-button-group>`);
+          </igc-button-group>
+        `);
 
         expect(buttonGroup.selectedItems.length).to.equal(1);
         expect(buttonGroup.selectedItems).to.have.same.members(['right']);
 
         // multiple mode
-        buttonGroup = await createButtonGroupComponent(`
-          <igc-button-group selection="multiple" selected-items='["left", "center"]'>
+        buttonGroup = await createButtonGroupComponent(html`
+          <igc-button-group
+            selection="multiple"
+            .selectedItems=${['left', 'center']}
+          >
             <igc-toggle-button value="left">Left</igc-toggle-button>
             <igc-toggle-button value="center">Center</igc-toggle-button>
             <igc-toggle-button value="right" selected>Right</igc-toggle-button>
             <igc-toggle-button value="top" selected>Top</igc-toggle-button>
-          </igc-button-group>`);
+          </igc-button-group>
+        `);
 
         expect(buttonGroup.selectedItems.length).to.equal(2);
         expect(buttonGroup.selectedItems).to.have.same.members([
@@ -522,21 +562,21 @@ describe('Button Group', () => {
         expect(buttonGroup.selectedItems.length).to.equal(0);
 
         // select first button
-        buttons[0].dispatchEvent(new MouseEvent('click', { bubbles: true }));
+        simulateClick(buttons[0]);
         await elementUpdated(buttonGroup);
 
         expect(buttonGroup.selectedItems.length).to.equal(1);
         expect(buttonGroup.selectedItems).to.have.same.members(['left']);
 
         // select second button
-        buttons[1].dispatchEvent(new MouseEvent('click', { bubbles: true }));
+        simulateClick(buttons[1]);
         await elementUpdated(buttonGroup);
 
         expect(buttonGroup.selectedItems.length).to.equal(1);
         expect(buttonGroup.selectedItems).to.have.same.members(['center']);
 
         // deselect second button
-        buttons[1].dispatchEvent(new MouseEvent('click', { bubbles: true }));
+        simulateClick(buttons[1]);
         await elementUpdated(buttonGroup);
 
         expect(buttonGroup.selectedItems.length).to.equal(0);
@@ -554,7 +594,7 @@ describe('Button Group', () => {
         expect(buttonGroup.selectedItems).to.have.same.members(['left']);
 
         // deselect button
-        buttons[0].dispatchEvent(new MouseEvent('click', { bubbles: true }));
+        simulateClick(buttons[0]);
         await elementUpdated(buttonGroup);
 
         expect(buttonGroup.selectedItems.length).to.equal(1);
@@ -568,13 +608,13 @@ describe('Button Group', () => {
         expect(buttonGroup.selection).to.equal('multiple');
         expect(buttonGroup.selectedItems.length).to.equal(0);
 
-        buttons[0].dispatchEvent(new MouseEvent('click', { bubbles: true }));
+        simulateClick(buttons[0]);
         await elementUpdated(buttonGroup);
 
         expect(buttonGroup.selectedItems.length).to.equal(1);
         expect(buttonGroup.selectedItems).to.have.same.members(['left']);
 
-        buttons[1].dispatchEvent(new MouseEvent('click', { bubbles: true }));
+        simulateClick(buttons[1]);
         await elementUpdated(buttonGroup);
 
         expect(buttonGroup.selectedItems.length).to.equal(2);
@@ -590,7 +630,7 @@ describe('Button Group', () => {
 
         expect(buttonGroup.disabled).to.be.true;
 
-        const buttonGroupElement = buttonGroup.shadowRoot?.querySelector('div');
+        const buttonGroupElement = buttonGroup.renderRoot.querySelector('div');
         expect(buttonGroupElement).to.have.attribute('aria-disabled', 'true');
 
         buttons.forEach((button) => {
@@ -602,7 +642,7 @@ describe('Button Group', () => {
       it('should emit `igcSelect` event on select', async () => {
         const eventSpy = spy(buttonGroup, 'emitEvent');
 
-        buttons[0].dispatchEvent(new MouseEvent('click', { bubbles: true }));
+        simulateClick(buttons[0]);
         await elementUpdated(buttonGroup);
 
         const args = { detail: buttons[0].value };
@@ -624,7 +664,7 @@ describe('Button Group', () => {
         await elementUpdated(buttonGroup);
 
         // deselect button
-        buttons[0].dispatchEvent(new MouseEvent('click', { bubbles: true }));
+        simulateClick(buttons[0]);
         await elementUpdated(buttonGroup);
 
         const args = { detail: buttons[0].value };
@@ -642,7 +682,7 @@ describe('Button Group', () => {
         const deselectArgs = { detail: '' };
 
         // select first button
-        buttons[0].dispatchEvent(new MouseEvent('click', { bubbles: true }));
+        simulateClick(buttons[0]);
         await elementUpdated(buttonGroup);
 
         selectArgs.detail = buttons[0].value;
@@ -654,7 +694,7 @@ describe('Button Group', () => {
         ]);
 
         // select second button
-        buttons[1].dispatchEvent(new MouseEvent('click', { bubbles: true }));
+        simulateClick(buttons[1]);
         await elementUpdated(buttonGroup);
 
         selectArgs.detail = buttons[1].value;
@@ -677,7 +717,7 @@ describe('Button Group', () => {
         await elementUpdated(buttonGroup);
 
         // select first button
-        buttons[0].dispatchEvent(new MouseEvent('click', { bubbles: true }));
+        simulateClick(buttons[0]);
         await elementUpdated(buttonGroup);
 
         selectArgs.detail = buttons[0].value;
@@ -692,7 +732,7 @@ describe('Button Group', () => {
 
         // deselect first button
         // should not emit events when interacting with an already selected button
-        buttons[0].dispatchEvent(new MouseEvent('click', { bubbles: true }));
+        simulateClick(buttons[0]);
         await elementUpdated(buttonGroup);
 
         expect(eventSpy).not.calledWith('igcDeselect');
@@ -703,7 +743,7 @@ describe('Button Group', () => {
         ]);
 
         // select second button
-        buttons[1].dispatchEvent(new MouseEvent('click', { bubbles: true }));
+        simulateClick(buttons[1]);
         await elementUpdated(buttonGroup);
 
         selectArgs.detail = buttons[1].value;
@@ -726,7 +766,7 @@ describe('Button Group', () => {
         await elementUpdated(buttonGroup);
 
         // select first button
-        buttons[0].dispatchEvent(new MouseEvent('click', { bubbles: true }));
+        simulateClick(buttons[0]);
         await elementUpdated(buttonGroup);
 
         selectArgs.detail = buttons[0].value;
@@ -738,7 +778,7 @@ describe('Button Group', () => {
         ]);
 
         // select second button
-        buttons[1].dispatchEvent(new MouseEvent('click', { bubbles: true }));
+        simulateClick(buttons[1]);
         await elementUpdated(buttonGroup);
 
         selectArgs.detail = buttons[1].value;
@@ -752,7 +792,7 @@ describe('Button Group', () => {
         ]);
 
         // deselect first button
-        buttons[0].dispatchEvent(new MouseEvent('click', { bubbles: true }));
+        simulateClick(buttons[0]);
         await elementUpdated(buttonGroup);
 
         deselectArgs.detail = buttons[0].value;
@@ -766,14 +806,276 @@ describe('Button Group', () => {
     });
   });
 
-  const createButtonGroupComponent = (
-    template = `
-      <igc-button-group>
-        <igc-toggle-button value="left">Left</igc-toggle-button>
-        <igc-toggle-button value="center">Center</igc-toggle-button>
-        <igc-toggle-button value="right">Right</igc-toggle-button>
-      </igc-button-group>`
-  ) => {
-    return fixture<IgcButtonGroupComponent>(html`${unsafeStatic(template)}`);
-  };
+  describe('Selection reconciliation', () => {
+    it('moves the selection between buttons without a `value`', async () => {
+      const group = await createButtonGroupComponent(html`
+        <igc-button-group>
+          <igc-toggle-button>Left</igc-toggle-button>
+          <igc-toggle-button>Right</igc-toggle-button>
+        </igc-button-group>
+      `);
+      const items = Array.from(
+        group.querySelectorAll(IgcToggleButtonComponent.tagName)
+      );
+
+      simulateClick(items[0]);
+      await elementUpdated(group);
+
+      expect(items[0].selected).to.be.true;
+
+      simulateClick(items[1]);
+      await elementUpdated(group);
+
+      expect(items[0].selected).to.be.false;
+      expect(items[1].selected).to.be.true;
+    });
+
+    it('moves the selection between buttons sharing the same `value`', async () => {
+      const group = await createButtonGroupComponent(html`
+        <igc-button-group>
+          <igc-toggle-button value="same">Left</igc-toggle-button>
+          <igc-toggle-button value="same">Right</igc-toggle-button>
+        </igc-button-group>
+      `);
+      const items = Array.from(
+        group.querySelectorAll(IgcToggleButtonComponent.tagName)
+      );
+
+      simulateClick(items[0]);
+      await elementUpdated(group);
+
+      simulateClick(items[1]);
+      await elementUpdated(group);
+
+      expect(items[0].selected).to.be.false;
+      expect(items[1].selected).to.be.true;
+    });
+
+    it('replaces the previous selection when setting `selectedItems` (multiple)', async () => {
+      const group = await createButtonGroupComponent(html`
+        <igc-button-group selection="multiple">
+          <igc-toggle-button value="left">Left</igc-toggle-button>
+          <igc-toggle-button value="center">Center</igc-toggle-button>
+          <igc-toggle-button value="right">Right</igc-toggle-button>
+        </igc-button-group>
+      `);
+
+      group.selectedItems = ['left', 'center'];
+      await elementUpdated(group);
+
+      expect(group.selectedItems).to.have.same.members(['left', 'center']);
+
+      group.selectedItems = ['right'];
+
+      // The new selection is in effect synchronously
+      expect(group.selectedItems).to.have.same.members(['right']);
+    });
+
+    it('replaces the previous selection when setting `selectedItems` (single)', async () => {
+      const group = await createButtonGroupComponent();
+
+      group.selectedItems = ['left'];
+      await elementUpdated(group);
+
+      group.selectedItems = ['right'];
+
+      expect(group.selectedItems).to.have.same.members(['right']);
+    });
+
+    it('keeps buttons with an empty `value` in `selectedItems`', async () => {
+      const group = await createButtonGroupComponent(html`
+        <igc-button-group selection="multiple">
+          <igc-toggle-button value="" selected>Empty</igc-toggle-button>
+          <igc-toggle-button value="right" selected>Right</igc-toggle-button>
+        </igc-button-group>
+      `);
+
+      expect(group.selectedItems).to.have.same.members(['', 'right']);
+    });
+
+    it('ignores toggle buttons that are not direct children of the group', async () => {
+      const group = await createButtonGroupComponent(html`
+        <igc-button-group>
+          <igc-toggle-button value="left" selected>Left</igc-toggle-button>
+          <div>
+            <igc-toggle-button value="nested">Nested</igc-toggle-button>
+          </div>
+        </igc-button-group>
+      `);
+
+      const own = group.querySelector<IgcToggleButtonComponent>(
+        ':scope > igc-toggle-button'
+      )!;
+      const nested = group.querySelector<IgcToggleButtonComponent>(
+        ':scope > div > igc-toggle-button'
+      )!;
+
+      nested.selected = true;
+      await elementUpdated(group);
+
+      // The nested button is not part of the group and does not affect its selection
+      expect(own.selected).to.be.true;
+      expect(group.selectedItems).to.have.same.members(['left']);
+
+      simulateClick(nested);
+      await elementUpdated(group);
+
+      expect(group.selectedItems).to.have.same.members(['left']);
+    });
+  });
+
+  describe('Disabled state', () => {
+    const getNativeButton = (button: IgcToggleButtonComponent) =>
+      button.renderRoot.querySelector('button');
+
+    it('disables buttons added while the group is disabled', async () => {
+      const group = await createButtonGroupComponent(html`
+        <igc-button-group disabled>
+          <igc-toggle-button value="left">Left</igc-toggle-button>
+        </igc-button-group>
+      `);
+
+      const added = document.createElement(IgcToggleButtonComponent.tagName);
+      added.value = 'added';
+      group.appendChild(added);
+      await elementUpdated(added);
+
+      expect(getNativeButton(added)).to.have.attribute('disabled');
+
+      simulateClick(added);
+      await elementUpdated(group);
+
+      expect(group.selectedItems).to.be.empty;
+    });
+
+    it('keeps the own disabled state of its buttons intact', async () => {
+      const group = await createButtonGroupComponent(html`
+        <igc-button-group>
+          <igc-toggle-button value="left" disabled>Left</igc-toggle-button>
+          <igc-toggle-button value="right">Right</igc-toggle-button>
+        </igc-button-group>
+      `);
+      const items = Array.from(
+        group.querySelectorAll(IgcToggleButtonComponent.tagName)
+      );
+
+      group.disabled = true;
+      await elementUpdated(group);
+
+      for (const button of items) {
+        await elementUpdated(button);
+        expect(getNativeButton(button)).to.have.attribute('disabled');
+      }
+
+      group.disabled = false;
+      await elementUpdated(group);
+
+      for (const button of items) {
+        await elementUpdated(button);
+      }
+
+      expect(items[0].disabled).to.be.true;
+      expect(getNativeButton(items[0])).to.have.attribute('disabled');
+
+      expect(items[1].disabled).to.be.false;
+      expect(getNativeButton(items[1])).not.to.have.attribute('disabled');
+    });
+  });
+
+  describe('ARIA', () => {
+    const getRole = (group: IgcButtonGroupComponent) =>
+      group.renderRoot.querySelector('div')?.getAttribute('role');
+
+    const getButtonPart = (button: IgcToggleButtonComponent) =>
+      button.renderRoot.querySelector('button');
+
+    it('exposes radio semantics in the single selection modes', async () => {
+      const group = await createButtonGroupComponent(html`
+        <igc-button-group selection="single-required">
+          <igc-toggle-button value="left" selected>Left</igc-toggle-button>
+          <igc-toggle-button value="right">Right</igc-toggle-button>
+        </igc-button-group>
+      `);
+      const items = Array.from(
+        group.querySelectorAll(IgcToggleButtonComponent.tagName)
+      );
+      await elementUpdated(items[0]);
+      await elementUpdated(items[1]);
+
+      expect(getRole(group)).to.equal('radiogroup');
+
+      for (const button of items) {
+        const element = getButtonPart(button)!;
+
+        expect(element).to.have.attribute('role', 'radio');
+        expect(element).to.have.attribute(
+          'aria-checked',
+          String(button.selected)
+        );
+        expect(element).not.to.have.attribute('aria-pressed');
+      }
+
+      await expect(group).to.be.accessible();
+    });
+
+    it('exposes toggle button semantics in multiple selection mode', async () => {
+      const group = await createButtonGroupComponent(html`
+        <igc-button-group selection="multiple">
+          <igc-toggle-button value="left" selected>Left</igc-toggle-button>
+          <igc-toggle-button value="right">Right</igc-toggle-button>
+        </igc-button-group>
+      `);
+      const items = Array.from(
+        group.querySelectorAll(IgcToggleButtonComponent.tagName)
+      );
+      await elementUpdated(items[0]);
+      await elementUpdated(items[1]);
+
+      expect(getRole(group)).to.equal('group');
+
+      for (const button of items) {
+        const element = getButtonPart(button)!;
+
+        expect(element).not.to.have.attribute('role');
+        expect(element).to.have.attribute(
+          'aria-pressed',
+          String(button.selected)
+        );
+        expect(element).not.to.have.attribute('aria-checked');
+      }
+
+      await expect(group).to.be.accessible();
+    });
+
+    it('updates the semantics when the selection mode changes', async () => {
+      const group = await createButtonGroupComponent();
+      const items = Array.from(
+        group.querySelectorAll(IgcToggleButtonComponent.tagName)
+      );
+
+      expect(getRole(group)).to.equal('radiogroup');
+
+      group.selection = 'multiple';
+      await elementUpdated(group);
+      await elementUpdated(items[0]);
+
+      expect(getRole(group)).to.equal('group');
+      expect(getButtonPart(items[0])).to.have.attribute('aria-pressed');
+    });
+  });
+
+  function createButtonGroupComponent(template?: TemplateResult) {
+    return fixture<IgcButtonGroupComponent>(
+      html`${
+        template ??
+        html`
+          <igc-button-group>
+            <igc-toggle-button value="left">Left</igc-toggle-button>
+            <igc-toggle-button value="center">Center</igc-toggle-button>
+            <igc-toggle-button value="right">Right</igc-toggle-button>
+          </igc-button-group>
+        `
+      }`
+    );
+  }
 });

@@ -8,10 +8,11 @@ import {
   endKey,
   homeKey,
   shiftKey,
-} from '../common/controllers/key-bindings.js';
-import { addSlotController, setSlots } from '../common/controllers/slot.js';
-import { registerComponent } from '../common/definitions/register.js';
-import { addSafeEventListener, first, last } from '../common/util.js';
+} from '#internals/controllers/key-bindings.js';
+import { addSlotController, setSlots } from '#internals/controllers/slot.js';
+import { registerComponent } from '#internals/definitions/register.js';
+import { firstOf, lastOf } from '#internals/utils/arrays.js';
+import { addSafeEventListener } from '#internals/utils/events.js';
 import IgcExpansionPanelComponent from '../expansion-panel/expansion-panel.js';
 import { styles } from './themes/accordion.base.css.js';
 
@@ -59,7 +60,7 @@ export default class IgcAccordionComponent extends LitElement {
   public singleExpand = false;
 
   /* blazorSuppress */
-  /** Returns all of the accordions's direct igc-expansion-panel children. */
+  /** Returns all of the direct expansion panel children of the accordion. */
   public get panels(): IgcExpansionPanelComponent[] {
     return Array.from(this._panels);
   }
@@ -114,11 +115,11 @@ export default class IgcAccordionComponent extends LitElement {
   }
 
   private _navigateToFirst(): void {
-    this._getPanelHeader(first(this._interactivePanels))?.focus();
+    this._getPanelHeader(firstOf(this._interactivePanels))?.focus();
   }
 
   private _navigateToLast(): void {
-    this._getPanelHeader(last(this._interactivePanels))?.focus();
+    this._getPanelHeader(lastOf(this._interactivePanels))?.focus();
   }
 
   private _navigateToPrevious(event: KeyboardEvent): void {
@@ -169,7 +170,6 @@ export default class IgcAccordionComponent extends LitElement {
   private _getPanelHeader(
     panel: IgcExpansionPanelComponent
   ): HTMLElement | undefined {
-    // biome-ignore lint/complexity/useLiteralKeys: Direct property access instead of DOM query
     return panel['_headerRef'].value;
   }
 
@@ -183,28 +183,12 @@ export default class IgcAccordionComponent extends LitElement {
     return panels[idx + dir] || panel;
   }
 
-  private async _closePanel(p: IgcExpansionPanelComponent): Promise<void> {
-    const args = { detail: p };
-
-    if (!(p.open && p.emitEvent('igcClosing', { cancelable: true, ...args }))) {
-      return;
-    }
-
-    if (await p.hide()) {
-      p.emitEvent('igcClosed', args);
-    }
+  private _closePanel(panel: IgcExpansionPanelComponent): Promise<boolean> {
+    return panel._hide();
   }
 
-  private async _openPanel(p: IgcExpansionPanelComponent): Promise<void> {
-    const args = { detail: p };
-
-    if (p.open || !p.emitEvent('igcOpening', { cancelable: true, ...args })) {
-      return;
-    }
-
-    if (await p.show()) {
-      p.emitEvent('igcOpened', args);
-    }
+  private _openPanel(panel: IgcExpansionPanelComponent): Promise<boolean> {
+    return panel._show();
   }
 
   //#endregion

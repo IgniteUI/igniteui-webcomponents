@@ -1,16 +1,14 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
-import { CalendarDay } from '../calendar/model.js';
-import { type DateRangeDescriptor, DateRangeType } from '../calendar/types.js';
-import { defineComponents } from '../common/definitions/defineComponents.js';
-import {
-  createFormAssociatedTestBed,
-  simulateClick,
-} from '../common/utils.spec.js';
+import { CalendarDay } from '#internals/date/model.js';
+import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { createFormAssociatedTestBed } from '#internals/testing/form-testbed.spec.js';
+import { simulateClick } from '#internals/testing/simulate.spec.js';
 import {
   runValidationContainerTests,
   type ValidationContainerTestsParams,
   ValidityHelpers,
-} from '../common/validity-helpers.spec.js';
+} from '#internals/testing/validity-helpers.spec.js';
+import { type DateRangeDescriptor, DateRangeType } from '../calendar/types.js';
 import IgcDateRangeInputComponent from './date-range-input.js';
 import IgcDateRangePickerComponent, {
   type DateRangeValue,
@@ -58,6 +56,22 @@ describe('Date Range Picker Single Input - Form integration', () => {
     it('should participate in form submission if there is a value and the value adheres to the validation constraints', () => {
       spec.setProperties({ value });
       spec.assertSubmitHasKeyValue('rangePicker', null);
+    });
+
+    it('should report the required message for a partial out-of-bounds range', async () => {
+      // Regression: a partial range below `min` fails both the required and
+      // the min validators - the reported message must match the
+      // `valueMissing` flag instead of coming from the min validator.
+      spec.setProperties({
+        required: true,
+        min: today.native,
+        value: { start: today.add('day', -5).native, end: null },
+      });
+      await elementUpdated(spec.element);
+
+      expect(spec.element.validity.valueMissing).to.be.true;
+      expect(spec.element.validity.rangeUnderflow).to.be.false;
+      expect(spec.element.validationMessage).to.equal('This field is required');
     });
 
     it('is correctly reset on form reset', async () => {

@@ -1,15 +1,13 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import { spy } from 'sinon';
-import { configureTheme } from '../../theming/config.js';
-import { defineComponents } from '../common/definitions/defineComponents.js';
-import {
-  createFormAssociatedTestBed,
-  isFocused,
-} from '../common/utils.spec.js';
+import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { createFormAssociatedTestBed } from '#internals/testing/form-testbed.spec.js';
+import { isFocused } from '#internals/testing/helpers.spec.js';
 import {
   runValidationContainerTests,
   type ValidationContainerTestsParams,
-} from '../common/validity-helpers.spec.js';
+} from '#internals/testing/validity-helpers.spec.js';
+import { configureTheme } from '#theming/config.js';
 import IgcCheckboxComponent from './checkbox.js';
 
 describe('Checkbox', () => {
@@ -245,6 +243,19 @@ describe('Checkbox', () => {
       spec.reset();
 
       expect(spec.element.checked).to.be.true;
+    });
+
+    it('syncs the native input checked state after form reset', async () => {
+      // Regression: the old restore path recorded the wrong reactive property
+      // (`value` instead of `checked`) for the reset update cycle.
+      spec.setProperties({ checked: true });
+      await elementUpdated(spec.element);
+
+      spec.reset();
+      await elementUpdated(spec.element);
+
+      const input = spec.element.renderRoot.querySelector('input')!;
+      expect(input.checked).to.be.false;
     });
 
     it('is correctly submitted on pressing Enter', () => {

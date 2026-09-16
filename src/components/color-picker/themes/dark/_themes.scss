@@ -1,0 +1,7 @@
+@use 'styles/utilities' as *;
+@use 'igniteui-theming/sass/themes/schemas/components/dark/color-picker' as *;
+
+$material: digest-schema($dark-material-color-picker);
+$bootstrap: digest-schema($dark-bootstrap-color-picker);
+$fluent: digest-schema($dark-fluent-color-picker);
+$indigo: digest-schema($dark-indigo-color-picker);

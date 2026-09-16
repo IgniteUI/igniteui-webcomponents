@@ -6,15 +6,17 @@ import {
   nextFrame,
 } from '@open-wc/testing';
 import { spy } from 'sinon';
-
-import { defineComponents } from '../common/definitions/defineComponents.js';
-import { finishAnimationsFor, simulateClick } from '../common/utils.spec.js';
+import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { finishAnimationsFor } from '#internals/testing/helpers.spec.js';
+import { runInvokerCommandsTests } from '#internals/testing/invoker-commands.spec.js';
+import { simulateClick } from '#internals/testing/simulate.spec.js';
+import IgcButtonComponent from '../button/button.js';
 import IgcIconComponent from '../icon/icon.js';
 import IgcBannerComponent from './banner.js';
 
 describe('Banner', () => {
   before(() => {
-    defineComponents(IgcBannerComponent, IgcIconComponent);
+    defineComponents(IgcBannerComponent, IgcButtonComponent, IgcIconComponent);
   });
 
   const createDefaultBanner = () => html`
@@ -229,6 +231,20 @@ describe('Banner', () => {
     });
   });
 
+  describe('Interrupted Transitions', () => {
+    it('reopening during the exit animation keeps the banner open', async () => {
+      await banner.show();
+
+      const closing = banner.hide();
+      await nextFrame(); // Let the exit animation run before superseding it.
+      const reopening = banner.show();
+
+      expect(await closing).to.be.false;
+      expect(await reopening).to.be.true;
+      expect(banner.open).to.be.true;
+    });
+  });
+
   describe('Action Tests', () => {
     it('should close the banner when clicking the default button', async () => {
       const button = banner.renderRoot.querySelector('igc-button')!;
@@ -286,5 +302,13 @@ describe('Banner', () => {
       expect(eventSpy).not.calledWith('igcClosed');
       expect(banner.open).to.be.true;
     });
+  });
+
+  runInvokerCommandsTests({
+    tagName: IgcBannerComponent.tagName,
+    commandFor: 'invoker-banner',
+    template: html`
+      <igc-banner id="invoker-banner">You are currently offline.</igc-banner>
+    `,
   });
 });

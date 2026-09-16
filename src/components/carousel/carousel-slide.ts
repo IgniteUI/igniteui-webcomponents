@@ -1,20 +1,20 @@
 import { html, LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
-import { EaseInOut } from '../../animations/easings.js';
-import { addAnimationController } from '../../animations/player.js';
-import { carouselContext } from '../common/context.js';
-import { createAsyncContext } from '../common/controllers/async-consumer.js';
-import { addInternalsController } from '../common/controllers/internals.js';
-import { registerComponent } from '../common/definitions/register.js';
-import { formatString } from '../common/util.js';
+import { EaseInOut } from '#animations/easings.js';
+import { addAnimationController } from '#animations/player.js';
+import { carouselContext } from '#internals/context.js';
+import { createAsyncContext } from '#internals/controllers/async-consumer.js';
+import { addInternalsController } from '#internals/controllers/internals.js';
+import { registerComponent } from '#internals/definitions/register.js';
+import { createIdGenerator, formatString } from '#internals/utils/strings.js';
 import { animations } from './animations.js';
 import type IgcCarouselComponent from './carousel.js';
 import { styles } from './themes/carousel-slide.base.css.js';
 
-let nextId = 1;
+const nextId = createIdGenerator('igc-carousel-slide');
 
 /**
- * A single content container within a set of containers used in the context of an `igc-carousel`.
+ * A single content container within a set of containers used in the context of a carousel.
  *
  * @element igc-carousel-slide
  *
@@ -28,13 +28,6 @@ export default class IgcCarouselSlideComponent extends LitElement {
   public static register(): void {
     registerComponent(IgcCarouselSlideComponent);
   }
-
-  private readonly _internals = addInternalsController(this, {
-    initialARIA: {
-      role: 'tabpanel',
-      ariaRoleDescription: 'slide',
-    },
-  });
 
   private readonly _player = addAnimationController(this);
 
@@ -76,6 +69,20 @@ export default class IgcCarouselSlideComponent extends LitElement {
   constructor() {
     super();
 
+    addInternalsController(this, {
+      initialARIA: {
+        role: 'tabpanel',
+        ariaRoleDescription: 'slide',
+      },
+      aria: () => ({
+        ariaLabel: formatString(
+          this._labelFormat,
+          this._index + 1,
+          this._total
+        ),
+      }),
+    });
+
     // Set carousel reference once provider is ready (addresses Blazor timing issue)
     createAsyncContext(this, carouselContext, (carousel) => {
       this._carousel = carousel;
@@ -101,16 +108,10 @@ export default class IgcCarouselSlideComponent extends LitElement {
     );
   }
 
-  protected override willUpdate(): void {
-    this._internals.setARIA({
-      ariaLabel: formatString(this._labelFormat, this._index + 1, this._total),
-    });
-  }
-
   /** @internal */
   public override connectedCallback(): void {
     super.connectedCallback();
-    this.id = this.id || `igc-carousel-slide-${nextId++}`;
+    this.id = this.id || nextId();
   }
 
   protected override render() {

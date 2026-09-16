@@ -1,0 +1,20 @@
+@use 'styles/utilities' as *;
+@use '../light/themes' as *;
+
+$theme: $base;
+
+[part='background'] {
+    fill: var-get($theme, 'background');
+}
+
+[part='dots'] {
+    fill: var-get($theme, 'dark-color');
+}
+
+[part='corner-square'] {
+    fill: var-get($theme, 'corner-square-color');
+}
+
+[part='corner-dot'] {
+    fill: var-get($theme, 'corner-dot-color');
+}

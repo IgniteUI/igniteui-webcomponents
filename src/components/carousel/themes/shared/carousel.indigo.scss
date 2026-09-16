@@ -104,3 +104,11 @@ igc-carousel-indicator {
     min-width: rem(16px);
     min-height: rem(16px);
 }
+
+@media (forced-colors: active) {
+    :host {
+        [part~='dot']::after {
+            border: rem(4px) solid CanvasText;
+        }
+    }
+}

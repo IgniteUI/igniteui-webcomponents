@@ -1,6 +1,6 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 
-import { defineComponents } from '../common/definitions/defineComponents.js';
+import { defineComponents } from '#internals/definitions/defineComponents.js';
 import IgcHighlightComponent from './highlight.js';
 
 describe('Highlight', () => {
@@ -48,6 +48,51 @@ describe('Highlight', () => {
     it('is accessible', async () => {
       await expect(highlight).shadowDom.to.be.accessible();
       await expect(highlight).lightDom.to.be.accessible();
+    });
+  });
+
+  describe('Highlight stylesheet tree scope', () => {
+    function hasHighlightSheet(root: DocumentOrShadowRoot): boolean {
+      return root.adoptedStyleSheets.some((sheet) =>
+        Array.from(sheet.cssRules).some((rule) =>
+          rule.cssText.includes('::highlight(igc-highlight-')
+        )
+      );
+    }
+
+    it('is adopted by the tree scope of the slotted content, not the render root', async () => {
+      highlight = await fixture(createHighlightWithInitialMatch());
+
+      // `::highlight()` rules are tree-scoped, so they must live in the scope owning the
+      // slotted text nodes. Attaching them to the component's own shadow root renders no
+      // highlight in browsers that enforce the scoping (Firefox).
+      expect(hasHighlightSheet(document)).to.be.true;
+      expect(hasHighlightSheet(highlight.renderRoot as ShadowRoot)).to.be.false;
+    });
+
+    it('re-targets the stylesheet when the host moves to another tree scope', async () => {
+      highlight = await fixture(createHighlightWithInitialMatch());
+
+      const host = document.createElement('div');
+      const shadow = host.attachShadow({ mode: 'open' });
+      document.body.append(host);
+
+      shadow.append(highlight);
+      await elementUpdated(highlight);
+
+      expect(hasHighlightSheet(shadow)).to.be.true;
+      expect(hasHighlightSheet(document)).to.be.false;
+
+      host.remove();
+    });
+
+    it('removes the stylesheet from its tree scope on disconnect', async () => {
+      highlight = await fixture(createHighlightWithInitialMatch());
+
+      highlight.remove();
+      await elementUpdated(highlight);
+
+      expect(hasHighlightSheet(document)).to.be.false;
     });
   });
 

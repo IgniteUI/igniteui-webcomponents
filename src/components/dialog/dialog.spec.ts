@@ -6,10 +6,10 @@ import {
   waitUntil,
 } from '@open-wc/testing';
 import { spy } from 'sinon';
-
+import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { runInvokerCommandsTests } from '#internals/testing/invoker-commands.spec.js';
+import { simulateClick } from '#internals/testing/simulate.spec.js';
 import IgcButtonComponent from '../button/button.js';
-import { defineComponents } from '../common/definitions/defineComponents.js';
-import { simulateClick } from '../common/utils.spec.js';
 import IgcDialogComponent from './dialog.js';
 
 describe('Dialog', () => {
@@ -177,6 +177,40 @@ describe('Dialog', () => {
     });
   });
 
+  describe('Interrupted transitions', () => {
+    beforeEach(async () => {
+      dialog = await fixture<IgcDialogComponent>(
+        html`<igc-dialog></igc-dialog>`
+      );
+    });
+
+    it('reopening during the exit animation keeps the dialog open', async () => {
+      await dialog.show();
+
+      const closing = dialog.hide();
+      const reopening = dialog.show();
+
+      expect(await closing).to.be.false;
+      expect(await reopening).to.be.true;
+      expect(dialog.open).to.be.true;
+    });
+
+    it('does not emit `igcClosed` when the exit animation is interrupted', async () => {
+      await dialog.show();
+
+      const eventSpy = spy(dialog, 'emitEvent');
+
+      simulateClick(
+        dialog.renderRoot.querySelector(IgcButtonComponent.tagName)!
+      );
+      expect(await dialog.show()).to.be.true;
+
+      expect(dialog.open).to.be.true;
+      expect(eventSpy.firstCall).calledWith('igcClosing');
+      expect(eventSpy.calledWith('igcClosed')).to.be.false;
+    });
+  });
+
   describe('Events & Behaviors', () => {
     beforeEach(async () => {
       dialog = await fixture<IgcDialogComponent>(
@@ -277,6 +311,14 @@ describe('Dialog', () => {
       expect(dialog.open).to.be.true;
       expect(nativeDialog.open).to.be.true;
     });
+  });
+
+  runInvokerCommandsTests({
+    tagName: IgcDialogComponent.tagName,
+    commandFor: 'invoker-dialog',
+    template: html`
+      <igc-dialog id="invoker-dialog" title="Invoked dialog"></igc-dialog>
+    `,
   });
 
   describe('Form', () => {

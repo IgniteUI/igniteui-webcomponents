@@ -44,7 +44,7 @@ const metadata: Meta<IgcRatingComponent> = {
     step: {
       type: 'number',
       description:
-        'The minimum value change allowed.\n\nValid values are in the interval between 0 and 1 inclusive.',
+        'The minimum value change allowed.\n\nValid values are in the interval between 0.001 and 1 inclusive.\nThe component clamps a value outside of the interval to the closest bound.',
       control: 'number',
       table: { defaultValue: { summary: '1' } },
     },
@@ -61,13 +61,14 @@ const metadata: Meta<IgcRatingComponent> = {
     },
     value: {
       type: 'number',
-      description: 'The current value of the component',
+      description: 'The value of the component',
       control: 'number',
       table: { defaultValue: { summary: '0' } },
     },
     hoverPreview: {
       type: 'boolean',
-      description: 'Sets hover preview behavior for the component',
+      description:
+        'Whether to show a preview of the value when hovering over the symbols.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
@@ -92,7 +93,7 @@ const metadata: Meta<IgcRatingComponent> = {
     },
     name: {
       type: 'string',
-      description: 'The name attribute of the control.',
+      description: 'The name of the control, submitted with the form data.',
       control: 'text',
     },
     disabled: {
@@ -134,7 +135,8 @@ interface IgcRatingArgs {
   /**
    * The minimum value change allowed.
    *
-   * Valid values are in the interval between 0 and 1 inclusive.
+   * Valid values are in the interval between 0.001 and 1 inclusive.
+   * The component clamps a value outside of the interval to the closest bound.
    */
   step: number;
   /** The label of the control. */
@@ -146,9 +148,9 @@ interface IgcRatingArgs {
    * Important for screen-readers and useful for localization.
    */
   valueFormat: string;
-  /** The current value of the component */
+  /** The value of the component */
   value: number;
-  /** Sets hover preview behavior for the component */
+  /** Whether to show a preview of the value when hovering over the symbols. */
   hoverPreview: boolean;
   /** Makes the control a readonly field. */
   readOnly: boolean;
@@ -156,7 +158,7 @@ interface IgcRatingArgs {
   single: boolean;
   /** Whether to reset the rating when the user selects the same value. */
   allowReset: boolean;
-  /** The name attribute of the control. */
+  /** The name of the control, submitted with the form data. */
   name: string;
   /** The disabled state of the component. */
   disabled: boolean;

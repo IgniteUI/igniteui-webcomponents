@@ -53,14 +53,14 @@ const metadata: Meta<IgcTileManagerComponent> = {
   },
   argTypes: {
     resizeMode: {
-      type: '"none" | "hover" | "always"',
+      type: { name: 'enum', value: ['none', 'hover', 'always'] },
       description: 'Whether resize operations are enabled.',
       options: ['none', 'hover', 'always'],
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'none' } },
     },
     dragMode: {
-      type: '"none" | "tile-header" | "tile"',
+      type: { name: 'enum', value: ['none', 'tile-header', 'tile'] },
       description: 'Whether drag and drop operations are enabled.',
       options: ['none', 'tile-header', 'tile'],
       control: { type: 'inline-radio' },

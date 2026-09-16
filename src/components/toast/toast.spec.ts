@@ -6,13 +6,15 @@ import {
   nextFrame,
 } from '@open-wc/testing';
 import { type SinonFakeTimers, useFakeTimers } from 'sinon';
-import { defineComponents } from '../common/definitions/defineComponents.js';
-import { isPopoverOpen } from '../common/util.js';
-import { finishAnimationsFor } from '../common/utils.spec.js';
+import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { finishAnimationsFor } from '#internals/testing/helpers.spec.js';
+import { runInvokerCommandsTests } from '#internals/testing/invoker-commands.spec.js';
+import { isPopoverOpen } from '#internals/utils/dom.js';
+import IgcButtonComponent from '../button/button.js';
 import IgcToastComponent from './toast.js';
 
 describe('Toast', () => {
-  before(() => defineComponents(IgcToastComponent));
+  before(() => defineComponents(IgcToastComponent, IgcButtonComponent));
 
   let toast: IgcToastComponent;
   let clock: SinonFakeTimers;
@@ -173,5 +175,13 @@ describe('Toast', () => {
         expect(toast.style.left).to.equal('');
       });
     });
+  });
+
+  runInvokerCommandsTests({
+    tagName: IgcToastComponent.tagName,
+    commandFor: 'invoker-toast',
+    template: html`
+      <igc-toast id="invoker-toast" keep-open>Hello world</igc-toast>
+    `,
   });
 });

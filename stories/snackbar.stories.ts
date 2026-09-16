@@ -22,7 +22,7 @@ const metadata: Meta<IgcSnackbarComponent> = {
     docs: {
       description: {
         component:
-          'A snackbar component is used to provide feedback about an operation\nby showing a brief message at the bottom of the screen.',
+          'A snackbar component is used to provide feedback about an operation\nby showing a brief message at the bottom of the screen.\n\nThe component integrates with the\n[Invoker Commands API](https://developer.mozilla.org/en-US/docs/Web/API/Invoker_Commands_API):\nan Ignite button or a native `<button>` with `command="--show"` / `"--hide"` /\n`"--toggle"` and `commandfor` pointing to this element will call the\ncorresponding method declaratively without any JavaScript.',
       },
     },
     actions: { handles: ['igcAction'] },
@@ -54,7 +54,7 @@ const metadata: Meta<IgcSnackbarComponent> = {
       table: { defaultValue: { summary: 'false' } },
     },
     position: {
-      type: '"bottom" | "middle" | "top"',
+      type: { name: 'enum', value: ['bottom', 'middle', 'top'] },
       description:
         'Sets the position of the component in the viewport.\n\n`bottom` - positions the component at the bottom. This is the default.\n`middle` - positions the component at the center.\n`top` - positions the component at the top.',
       options: ['bottom', 'middle', 'top'],
@@ -62,7 +62,7 @@ const metadata: Meta<IgcSnackbarComponent> = {
       table: { defaultValue: { summary: 'bottom' } },
     },
     positioning: {
-      type: '"viewport" | "container"',
+      type: { name: 'enum', value: ['viewport', 'container'] },
       description:
         'Sets the positioning strategy of the component.\n\n`viewport` - positions the component relative to the viewport, ignoring any ancestor elements. This is the default behavior.\n`container` - positions the component relative to the nearest visible ancestor. In this mode, the component will be constrained within the bounding box of the ancestor and will be positioned according to the `position` attribute.',
       options: ['viewport', 'container'],
@@ -133,12 +133,16 @@ export const Basic: Story = {
       .displayTime=${displayTime}
       .actionText=${actionText}
       .position=${position}
-      @igcAction=${({ target }) => target.hide()}
+      @igcAction=${(e: Event) => (e.target as IgcSnackbarComponent).hide()}
       >Snackbar Message</igc-snackbar
     >
 
-    <igc-button onclick="snackbar.show()">Open snackbar</igc-button>
-    <igc-button onclick="snackbar.hide()">Close snackbar</igc-button>
+    <igc-button command="--show" commandfor="snackbar"
+      >Open snackbar</igc-button
+    >
+    <igc-button command="--hide" commandfor="snackbar"
+      >Close snackbar</igc-button
+    >
   `,
 };
 
@@ -159,7 +163,8 @@ export const SlottedAction: Story = {
       ?keep-open=${keepOpen}
       .displayTime=${displayTime}
       .position=${position}
-      @igcAction=${({ target }) => target.hide()}
+      @igcAction=${({ target }: { target: IgcSnackbarComponent }) =>
+        target.hide()}
     >
       Snackbar with slotted custom action
       <igc-button slot="action" variant="flat">
@@ -168,8 +173,12 @@ export const SlottedAction: Story = {
       </igc-button>
     </igc-snackbar>
 
-    <igc-button onclick="snackbar.show()">Open snackbar</igc-button>
-    <igc-button onclick="snackbar.hide()">Close snackbar</igc-button>
+    <igc-button command="--show" commandfor="snackbar"
+      >Open snackbar</igc-button
+    >
+    <igc-button command="--hide" commandfor="snackbar"
+      >Close snackbar</igc-button
+    >
   `,
 };
 
@@ -192,9 +201,13 @@ export const Positions: Story = {
       }
     </style>
     <div class="positions-demo">
-      <igc-button onclick="snackbarBottom.show()">Bottom (default)</igc-button>
-      <igc-button onclick="snackbarMiddle.show()">Middle</igc-button>
-      <igc-button onclick="snackbarTop.show()">Top</igc-button>
+      <igc-button command="--show" commandfor="snackbarBottom"
+        >Bottom (default)</igc-button
+      >
+      <igc-button command="--show" commandfor="snackbarMiddle"
+        >Middle</igc-button
+      >
+      <igc-button command="--show" commandfor="snackbarTop">Top</igc-button>
     </div>
 
     <igc-snackbar
@@ -281,29 +294,13 @@ export const ContainerPositioning: Story = {
       <p class="snackbar-container-demo__label">Container boundary</p>
 
       <div class="snackbar-container-demo__actions">
-        <igc-button
-          @click=${() =>
-            (
-              document.getElementById('cs-snackbar-top') as IgcSnackbarComponent
-            ).toggle()}
+        <igc-button command="--toggle" commandfor="cs-snackbar-top"
           >Toggle Top</igc-button
         >
-        <igc-button
-          @click=${() =>
-            (
-              document.getElementById(
-                'cs-snackbar-middle'
-              ) as IgcSnackbarComponent
-            ).toggle()}
+        <igc-button command="--toggle" commandfor="cs-snackbar-middle"
           >Toggle Middle</igc-button
         >
-        <igc-button
-          @click=${() =>
-            (
-              document.getElementById(
-                'cs-snackbar-bottom'
-              ) as IgcSnackbarComponent
-            ).toggle()}
+        <igc-button command="--toggle" commandfor="cs-snackbar-bottom"
           >Toggle Bottom</igc-button
         >
       </div>

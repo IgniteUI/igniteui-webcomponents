@@ -21,3 +21,9 @@
 igc-checkbox {
     pointer-events: none;
 }
+
+@media (forced-colors: active) {
+   igc-checkbox::part(control)::after {
+        border-color: CanvasText;
+    }
+}

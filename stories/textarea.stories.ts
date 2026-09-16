@@ -26,7 +26,7 @@ const metadata: Meta<IgcTextareaComponent> = {
     docs: {
       description: {
         component:
-          'This element represents a multi-line plain-text editing control,\nuseful when you want to allow users to enter a sizeable amount of free-form text,\nfor example a comment on a review or feedback form.',
+          'Represents a multi-line plain-text editing control,\nuseful when you want to allow users to enter a sizeable amount of free-form text,\nfor example a comment on a review or feedback form.',
       },
     },
     actions: { handles: ['igcInput', 'igcChange'] },
@@ -35,7 +35,7 @@ const metadata: Meta<IgcTextareaComponent> = {
     autocomplete: {
       type: 'string',
       description:
-        'Specifies what if any permission the browser has to provide for automated assistance in filling out form field values,\nas well as guidance to the browser as to the type of information expected in the field.\nRefer to [this page](https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/autocomplete) for additional information.',
+        'Specifies what permission, if any, the browser has to provide automated assistance in filling out form field values,\nas well as guidance to the browser as to the type of information expected in the field.\nRefer to [this page](https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/autocomplete) for additional information.',
       control: 'text',
     },
     autocapitalize: {
@@ -75,7 +75,7 @@ const metadata: Meta<IgcTextareaComponent> = {
     },
     placeholder: {
       type: 'string',
-      description: 'The placeholder attribute of the control.',
+      description: 'The placeholder text of the control.',
       control: 'text',
     },
     readOnly: {
@@ -85,7 +85,7 @@ const metadata: Meta<IgcTextareaComponent> = {
       table: { defaultValue: { summary: 'false' } },
     },
     resize: {
-      type: '"vertical" | "auto" | "none"',
+      type: { name: 'enum', value: ['vertical', 'auto', 'none'] },
       description:
         'Controls whether the control can be resized.\nWhen `auto` is set, the control will try to expand and fit its content.',
       options: ['vertical', 'auto', 'none'],
@@ -112,7 +112,7 @@ const metadata: Meta<IgcTextareaComponent> = {
       table: { defaultValue: { summary: 'true' } },
     },
     wrap: {
-      type: '"hard" | "soft" | "off"',
+      type: { name: 'enum', value: ['hard', 'soft', 'off'] },
       description:
         'Indicates how the control should wrap the value for form submission.\nRefer to [this page on MDN](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/textarea#attributes)\nfor explanation of the available values.',
       options: ['hard', 'soft', 'off'],
@@ -135,7 +135,7 @@ const metadata: Meta<IgcTextareaComponent> = {
     },
     name: {
       type: 'string',
-      description: 'The name attribute of the control.',
+      description: 'The name of the control, submitted with the form data.',
       control: 'text',
     },
     disabled: {
@@ -169,7 +169,7 @@ export default metadata;
 
 interface IgcTextareaArgs {
   /**
-   * Specifies what if any permission the browser has to provide for automated assistance in filling out form field values,
+   * Specifies what permission, if any, the browser has to provide automated assistance in filling out form field values,
    * as well as guidance to the browser as to the type of information expected in the field.
    * Refer to [this page](https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/autocomplete) for additional information.
    */
@@ -198,7 +198,7 @@ interface IgcTextareaArgs {
   minLength: number;
   /** Whether the control will have outlined appearance. */
   outlined: boolean;
-  /** The placeholder attribute of the control. */
+  /** The placeholder text of the control. */
   placeholder: string;
   /** Makes the control a readonly field. */
   readOnly: boolean;
@@ -229,7 +229,7 @@ interface IgcTextareaArgs {
   validateOnly: boolean;
   /** When set, makes the component a required field for validation. */
   required: boolean;
-  /** The name attribute of the control. */
+  /** The name of the control, submitted with the form data. */
   name: string;
   /** The disabled state of the component. */
   disabled: boolean;

@@ -1,11 +1,11 @@
 import { html, LitElement } from 'lit';
 
-import { registerComponent } from '../common/definitions/register.js';
+import { registerComponent } from '#internals/definitions/register.js';
 import { styles } from './themes/card.media.base.css.js';
 
 /**
  * A container component for card media content such as images, GIFs, or videos.
- * This component should be used within an igc-card element to display visual content.
+ * This component should be used within a card to display visual content.
  *
  * @element igc-card-media
  *

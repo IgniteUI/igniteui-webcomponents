@@ -1,13 +1,19 @@
 import { html } from 'lit';
-import { addThemingController } from '../../theming/theming-controller.js';
-import { registerComponent } from '../common/definitions/register.js';
-import { IgcBaseAlertLikeComponent } from '../common/mixins/alert.js';
+import { registerComponent } from '#internals/definitions/register.js';
+import { IgcBaseAlertLikeComponent } from '#internals/mixins/alert.js';
+import { addThemingController } from '#theming/theming-controller.js';
 import { styles as shared } from './themes/shared/toast.common.css.js';
 import { all } from './themes/themes.js';
 import { styles } from './themes/toast.base.css.js';
 
 /**
- * A toast component is used to show a notification
+ * A toast component is used to show a brief, non-interactive notification.
+ *
+ * The component integrates with the
+ * [Invoker Commands API](https://developer.mozilla.org/en-US/docs/Web/API/Invoker_Commands_API):
+ * an Ignite button or a native `<button>` with `command="--show"` / `"--hide"` /
+ * `"--toggle"` and `commandfor` pointing to this element will call the
+ * corresponding method declaratively without any JavaScript.
  *
  * @element igc-toast
  *

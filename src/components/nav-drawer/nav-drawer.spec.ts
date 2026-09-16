@@ -7,15 +7,21 @@ import {
 } from '@open-wc/testing';
 import type { TemplateResult } from 'lit';
 import { spy } from 'sinon';
-import { defineComponents } from '../common/definitions/defineComponents.js';
-import { isPopoverOpen } from '../common/util.js';
-import { simulateClick } from '../common/utils.spec.js';
+import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { runInvokerCommandsTests } from '#internals/testing/invoker-commands.spec.js';
+import { simulateClick } from '#internals/testing/simulate.spec.js';
+import { isPopoverOpen } from '#internals/utils/dom.js';
+import IgcButtonComponent from '../button/button.js';
 import IgcIconComponent from '../icon/icon.js';
 import IgcNavDrawerComponent from './nav-drawer.js';
 
 describe('Navigation Drawer', () => {
   before(() => {
-    defineComponents(IgcNavDrawerComponent, IgcIconComponent);
+    defineComponents(
+      IgcNavDrawerComponent,
+      IgcButtonComponent,
+      IgcIconComponent
+    );
   });
 
   let navDrawer: IgcNavDrawerComponent;
@@ -429,6 +435,16 @@ describe('Navigation Drawer', () => {
         'Expected mini popover to be hidden after removing mini content'
       );
     });
+  });
+
+  runInvokerCommandsTests({
+    tagName: IgcNavDrawerComponent.tagName,
+    commandFor: 'invoker-nav-drawer',
+    template: html`
+      <igc-nav-drawer id="invoker-nav-drawer">
+        <igc-nav-drawer-item>Home</igc-nav-drawer-item>
+      </igc-nav-drawer>
+    `,
   });
 
   async function createNavDrawer(template?: TemplateResult) {

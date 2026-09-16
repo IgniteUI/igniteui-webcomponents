@@ -5,8 +5,8 @@ import {
   html,
   nextFrame,
 } from '@open-wc/testing';
-import { defineComponents } from '../common/definitions/defineComponents.js';
-import { first } from '../common/util.js';
+import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { firstOf } from '#internals/utils/arrays.js';
 import IgcCircularGradientComponent from './circular-gradient.js';
 import IgcCircularProgressComponent from './circular-progress.js';
 
@@ -193,21 +193,23 @@ describe('Circular progress component', () => {
       const slot = getDOM(progress).slot;
 
       expect(slot).to.exist;
-      expect(first(slot.assignedNodes()).textContent).to.equal('Custom Label');
+      expect(firstOf(slot.assignedNodes()).textContent).to.equal(
+        'Custom Label'
+      );
     });
 
     it('`hideLabel` does not affect slotted label', async () => {
       await updateProgress('hideLabel', true);
-      expect(first(getDOM(progress).slot.assignedNodes()).textContent).to.equal(
-        'Custom Label'
-      );
+      expect(
+        firstOf(getDOM(progress).slot.assignedNodes()).textContent
+      ).to.equal('Custom Label');
     });
 
     it('indeterminate does not affect slotted label', async () => {
       await updateProgress('indeterminate', true);
-      expect(first(getDOM(progress).slot.assignedNodes()).textContent).to.equal(
-        'Custom Label'
-      );
+      expect(
+        firstOf(getDOM(progress).slot.assignedNodes()).textContent
+      ).to.equal('Custom Label');
     });
   });
 
@@ -232,7 +234,7 @@ describe('Circular progress component', () => {
 
       expect(gradients).to.have.lengthOf(1);
 
-      const stop = first(getDOM(progress).gradients);
+      const stop = firstOf(getDOM(progress).gradients);
       expect(stop).to.have.attribute('offset', '50%');
       expect(stop).to.have.attribute('stop-color', '#ff0079');
       expect(stop).to.have.attribute('stop-opacity', '0.8');

@@ -174,7 +174,7 @@ export async function setupMarkdownRenderer(
 }
 
 /**
- * Creates a markdown renderer specifically for igc-chat messages.
+ * Creates a markdown renderer specifically for chat messages.
  * This function wraps the renderer to work with IgcChatMessage objects
  * and returns Lit's unsafeHTML directive for rendering.
  *

@@ -1,17 +1,19 @@
 import { LitElement, nothing, type TemplateResult } from 'lit';
 import { property, query } from 'lit/decorators.js';
 import { cache } from 'lit/directives/cache.js';
-import type { ThemingController } from '../../theming/theming-controller.js';
-import type { SlotController } from '../common/controllers/slot.js';
-import { blazorDeepImport } from '../common/decorators/blazorDeepImport.js';
-import { shadowOptions } from '../common/decorators/shadow-options.js';
-import type { Constructor } from '../common/mixins/constructor.js';
-import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { FormAssociatedRequiredMixin } from '../common/mixins/forms/associated-required.js';
+import { addAriaTarget } from '#internals/controllers/aria-projection.js';
+import type { SlotController } from '#internals/controllers/slot.js';
+import { blazorDeepImport } from '#internals/decorators/blazorDeepImport.js';
+import { shadowOptions } from '#internals/decorators/shadow-options.js';
+import type { Constructor } from '#internals/mixins/constructor.js';
+import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
+import { FormAssociatedRequiredMixin } from '#internals/mixins/forms/associated-required.js';
 import {
   nextInputId,
   renderInputShell,
-} from '../common/templates/input-shell.js';
+  resolveInputPartNames,
+} from '#internals/templates/input-shell.js';
+import type { ThemingController } from '#theming/theming-controller.js';
 
 export interface IgcInputComponentEventMap {
   /* alternateName: inputOcurred */
@@ -25,6 +27,9 @@ export interface IgcInputComponentEventMap {
   blur: FocusEvent;
 }
 
+/* blazorIndirectRender */
+/* blazorSupportsVisualChildren */
+/* omitModule */
 @blazorDeepImport
 @shadowOptions({ delegatesFocus: true })
 export abstract class IgcInputBaseComponent extends FormAssociatedRequiredMixin(
@@ -40,8 +45,20 @@ export abstract class IgcInputBaseComponent extends FormAssociatedRequiredMixin(
   @query('input')
   protected readonly _input?: HTMLInputElement;
 
+  /**
+   * Receives ARIA semantics projected by a composite host (e.g. `igc-select`)
+   * onto the inner native input. See {@link addAriaTarget}.
+   */
+  protected readonly _ariaTarget = addAriaTarget(this, {
+    labels: () => this._internals.labels,
+    description: () =>
+      this._slots.hasAssignedElements('helper-text')
+        ? this.renderRoot.querySelector('#helper-text')
+        : null,
+  });
+
   /* blazorSuppress */
-  /** The value attribute of the control. */
+  /** The value of the control. */
   public abstract value: string;
 
   /**
@@ -54,7 +71,7 @@ export abstract class IgcInputBaseComponent extends FormAssociatedRequiredMixin(
   public outlined = false;
 
   /**
-   * The placeholder attribute of the control.
+   * The placeholder text of the control.
    * @attr
    */
   @property()
@@ -72,16 +89,7 @@ export abstract class IgcInputBaseComponent extends FormAssociatedRequiredMixin(
    * Used to apply conditional styling via CSS parts.
    */
   protected _resolvePartNames(base: string) {
-    return {
-      [base]: true,
-      prefixed: this._slots.hasAssignedElements('prefix', {
-        selector: '[slot="prefix"]:not([hidden])',
-      }),
-      suffixed: this._slots.hasAssignedElements('suffix', {
-        selector: '[slot="suffix"]:not([hidden])',
-      }),
-      filled: !!this.value,
-    };
+    return resolveInputPartNames(this._slots, base, !!this.value);
   }
 
   /** Selects all the text inside the input. */

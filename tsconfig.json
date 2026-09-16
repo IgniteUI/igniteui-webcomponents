@@ -27,6 +27,7 @@
       {
         "name": "ts-lit-plugin",
         "strict": true,
+        "globalAttributes": ["command", "commandfor", "popover", "inert"],
         "rules": {
           "no-incompatible-type-binding": "warning"
         }
@@ -43,6 +44,7 @@
     "excludePrivate": true,
     "excludeProtected": true,
     "excludeExternals": true,
+    "excludeNotDocumented": true,
     "name": "Ignite UI for Web Components",
     "readme": "none"
   }

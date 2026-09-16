@@ -11,9 +11,5 @@ $theme: $material;
 
 svg {
     fill: currentcolor;
-}
-
-igc-icon,
-svg {
     font-size: var-get($theme, 'size');
 }

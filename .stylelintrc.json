@@ -1,6 +1,6 @@
 {
   "extends": ["stylelint-config-standard-scss"],
-  "plugins": ["stylelint-scss", "stylelint-prettier"],
+  "plugins": ["stylelint-scss"],
   "rules": {
     "at-rule-disallowed-list": [
       "debug",

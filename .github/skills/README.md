@@ -6,6 +6,10 @@ This directory contains skills for GitHub Copilot and other LLM agents to help w
 
 Skills are structured instructions that help AI agents understand and execute project-specific workflows consistently. Each skill is a self-contained guide for a particular task.
 
+The skills describe **workflows**. The rules they enforce live in the
+[Coding Guidelines](../CODING_GUIDELINES.md) — when the two disagree, the guidelines win and
+the skill needs updating.
+
 ## Available Skills
 
 | Skill                                                 | Description                                                                        | Use When                             |

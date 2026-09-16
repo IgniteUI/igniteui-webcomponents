@@ -22,8 +22,8 @@ const config: StorybookConfig = {
         build: {
           rollupOptions: {
             output: {
-              chunkFileNames: ({ name }) =>
-                /^_/.test(name)
+              chunkFileNames: ({ name }: { name: string }) =>
+                name.startsWith('_')
                   ? `assets/${name.replace(/^_/, '')}.[hash].js`
                   : 'assets/[name].[hash].js',
             },

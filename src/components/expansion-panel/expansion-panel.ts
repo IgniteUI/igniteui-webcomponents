@@ -1,19 +1,22 @@
 import { html, LitElement, nothing } from 'lit';
 import { property } from 'lit/decorators.js';
 import { createRef, ref } from 'lit/directives/ref.js';
-import { addAnimationController } from '../../animations/player.js';
-import { growVerIn, growVerOut } from '../../animations/presets/grow/index.js';
-import { addThemingController } from '../../theming/theming-controller.js';
+import { addAnimationController } from '#animations/player.js';
+import { growVerIn, growVerOut } from '#animations/presets/grow/index.js';
 import {
   addKeybindings,
   altKey,
   arrowDown,
   arrowUp,
-} from '../common/controllers/key-bindings.js';
-import { addSlotController, setSlots } from '../common/controllers/slot.js';
-import { registerComponent } from '../common/definitions/register.js';
-import type { Constructor } from '../common/mixins/constructor.js';
-import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
+} from '#internals/controllers/key-bindings.js';
+import { addSlotController, setSlots } from '#internals/controllers/slot.js';
+import { addToggleController } from '#internals/controllers/toggle.js';
+import { registerComponent } from '#internals/definitions/register.js';
+import type { Constructor } from '#internals/mixins/constructor.js';
+import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
+import { renderSlottedIcon } from '#internals/templates/slotted-icon.js';
+import { createIdGenerator } from '#internals/utils/strings.js';
+import { addThemingController } from '#theming/theming-controller.js';
 import IgcIconComponent from '../icon/icon.js';
 import type { ExpansionPanelIndicatorPosition } from '../types.js';
 import { styles } from './themes/expansion-panel.base.css.js';
@@ -27,7 +30,7 @@ export interface IgcExpansionPanelComponentEventMap {
   igcClosed: CustomEvent<IgcExpansionPanelComponent>;
 }
 
-let nextId = 1;
+const nextId = createIdGenerator('igc-expansion-panel');
 
 /**
  * The Expansion Panel Component provides a way to display information in a toggleable way -
@@ -65,13 +68,21 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
     registerComponent(IgcExpansionPanelComponent, IgcIconComponent);
   }
 
-  private _panelId = `${IgcExpansionPanelComponent.tagName}-${nextId++}`;
+  private _panelId = nextId();
   private readonly _headerRef = createRef<HTMLElement>();
   private readonly _panelRef = createRef<HTMLElement>();
 
   private readonly _player = addAnimationController(this, this._panelRef);
   private readonly _slots = addSlotController(this, {
     slots: setSlots('title', 'subtitle', 'indicator', 'indicator-expanded'),
+  });
+
+  private readonly _toggleController = addToggleController(this, {
+    detail: () => this,
+    transition: (open) => {
+      this.open = open;
+      return this._player.playExclusive(open ? growVerIn() : growVerOut());
+    },
   });
 
   /**
@@ -120,64 +131,50 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
     this._toggle();
   }
 
-  private async _setOpenState({
-    state,
-    withEvent,
-  }: {
-    state: boolean;
-    withEvent?: boolean;
-  }): Promise<void> {
-    if (this.open === state) return;
-
-    const args = { detail: this };
-    const event = state ? 'igcOpening' : 'igcClosing';
-    const eventDone = state ? 'igcOpened' : 'igcClosed';
-    const animation = state ? growVerIn : growVerOut;
-
-    if (withEvent && !this.emitEvent(event, { cancelable: true, ...args })) {
-      return;
-    }
-
-    this.open = state;
-
-    if (await this._player.playExclusive(animation())) {
-      if (withEvent) {
-        this.emitEvent(eventDone, args);
-      }
-    }
+  private _toggle(): Promise<boolean> {
+    return this._toggleController.toggle(true);
   }
 
-  private async _toggle(): Promise<void> {
-    this.open ? await this._hide() : await this._show();
+  /**
+   * Opens the panel, emitting its toggle events.
+   * @hidden @internal
+   */
+  public _show(): Promise<boolean> {
+    return this._toggleController.show(true);
   }
 
-  private async _show(): Promise<void> {
-    await this._setOpenState({ state: true, withEvent: true });
+  /**
+   * Closes the panel, emitting its toggle events.
+   * @hidden @internal
+   */
+  public _hide(): Promise<boolean> {
+    return this._toggleController.hide(true);
   }
 
-  private async _hide(): Promise<void> {
-    await this._setOpenState({ state: false, withEvent: true });
-  }
-
-  /** Toggles the panel open/close state. */
+  /**
+   * Toggles the panel open/close state.
+   * @returns `true` when the open state was successfully changed.
+   */
   public async toggle(): Promise<boolean> {
     return this.open ? this.hide() : this.show();
   }
 
-  /** Hides the panel content. */
+  /**
+   * Hides the panel content.
+   * @returns `true` when the panel was successfully closed, or `false` if it was
+   * already closed or the transition was superseded by a newer one.
+   */
   public async hide(): Promise<boolean> {
-    if (!this.open) return false;
-
-    await this._setOpenState({ state: false });
-    return true;
+    return this._toggleController.hide();
   }
 
-  /** Shows the panel content. */
+  /**
+   * Shows the panel content.
+   * @returns `true` when the panel was successfully opened, or `false` if it was
+   * already open or the transition was superseded by a newer one.
+   */
   public async show(): Promise<boolean> {
-    if (this.open) return false;
-
-    await this._setOpenState({ state: true });
-    return true;
+    return this._toggleController.show();
   }
 
   private _renderIndicator() {
@@ -187,9 +184,12 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
 
     return html`
       <div part="indicator" aria-hidden="true">
-        <slot name="indicator" ?hidden=${indicatorHidden}>
-          <igc-icon name=${iconName} collection="default"></igc-icon>
-        </slot>
+        ${renderSlottedIcon({
+          slot: 'indicator',
+          icon: iconName,
+          hidden: indicatorHidden,
+          ariaHidden: false,
+        })}
         <slot name="indicator-expanded" ?hidden=${!indicatorHidden}></slot>
       </div>
     `;

@@ -1,16 +1,15 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
+import type { TemplateResult } from 'lit';
 import { spy } from 'sinon';
-import { defineComponents } from '../common/definitions/defineComponents.js';
-import { first, last } from '../common/util.js';
-import {
-  createFormAssociatedTestBed,
-  isFocused,
-  simulateClick,
-} from '../common/utils.spec.js';
+import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { createFormAssociatedTestBed } from '#internals/testing/form-testbed.spec.js';
+import { isFocused } from '#internals/testing/helpers.spec.js';
+import { simulateClick } from '#internals/testing/simulate.spec.js';
 import {
   runValidationContainerTests,
   type ValidationContainerTestsParams,
-} from '../common/validity-helpers.spec.js';
+} from '#internals/testing/validity-helpers.spec.js';
+import { firstOf, lastOf } from '#internals/utils/arrays.js';
 import IgcRadioComponent from './radio.js';
 
 describe('Radio Component', () => {
@@ -207,12 +206,12 @@ describe('Radio Component', () => {
       expect(radios.every((radio) => radio.invalid)).to.be.false;
 
       // checkValidity - all radios from the group should have invalid styles applied
-      expect(first(radios).reportValidity()).to.be.false;
+      expect(firstOf(radios).reportValidity()).to.be.false;
       expect(radios.every((radio) => radio.invalid)).to.be.true;
 
       // Set a checked radio - valid state, invalid styles should not be applied
-      first(radios).checked = true;
-      expect(first(radios).reportValidity()).to.be.true;
+      firstOf(radios).checked = true;
+      expect(firstOf(radios).reportValidity()).to.be.true;
       expect(radios.every((radio) => radio.invalid)).to.be.false;
     });
   });
@@ -246,12 +245,12 @@ describe('Radio Component', () => {
         radio.value = '';
       });
 
-      first(radios).checked = true;
+      firstOf(radios).checked = true;
       spec.assertSubmitHasValue('on');
     });
 
     it('is associated on submit with default value "on" (setting `checked` first)', () => {
-      first(radios).checked = true;
+      firstOf(radios).checked = true;
       radios.forEach((radio) => {
         radio.value = '';
       });
@@ -260,8 +259,8 @@ describe('Radio Component', () => {
     });
 
     it('is associated on submit with passed value', () => {
-      first(radios).checked = true;
-      spec.assertSubmitHasValue(first(radios).value);
+      firstOf(radios).checked = true;
+      spec.assertSubmitHasValue(firstOf(radios).value);
     });
 
     it('is correctly reset on form reset', () => {
@@ -272,17 +271,32 @@ describe('Radio Component', () => {
     });
 
     it('should reset to the new default value after setAttribute() call', () => {
-      first(radios).toggleAttribute('checked', true);
-      last(radios).toggleAttribute('checked', true);
-      first(radios).checked = true;
+      firstOf(radios).toggleAttribute('checked', true);
+      lastOf(radios).toggleAttribute('checked', true);
+      firstOf(radios).checked = true;
 
-      expect(last(radios).checked).to.be.false;
+      expect(lastOf(radios).checked).to.be.false;
 
       spec.reset();
-      expect(last(radios).checked).to.be.true;
-      expect(first(radios).checked).to.be.false;
+      expect(lastOf(radios).checked).to.be.true;
+      expect(firstOf(radios).checked).to.be.false;
 
-      spec.assertSubmitHasValue(last(radios).value);
+      spec.assertSubmitHasValue(lastOf(radios).value);
+    });
+
+    it('should not restore a checked state whose attribute was removed before reset', () => {
+      // Regression: removing the `checked` attribute used to leave
+      // `defaultChecked` as true, re-checking the radio on form reset.
+      const radio = firstOf(radios);
+
+      radio.toggleAttribute('checked', true);
+      expect(radio.checked).to.be.true;
+
+      radio.removeAttribute('checked');
+      expect(radio.checked).to.be.false;
+
+      spec.reset();
+      expect(radio.checked).to.be.false;
     });
 
     it('is correctly submitted on pressing Enter', () => {
@@ -358,10 +372,24 @@ describe('Radio Component', () => {
       });
 
       it('is correctly reset', () => {
-        last(radios).checked = true;
+        lastOf(radios).checked = true;
         spec.reset();
 
         expect(spec.element.checked).to.be.true;
+      });
+
+      it('preserves sibling pristine state on form reset', () => {
+        lastOf(radios).checked = true;
+        spec.reset();
+
+        expect(radios.filter((radio) => radio.checked)).to.eql([
+          firstOf(radios),
+        ]);
+
+        // All radios are pristine again after the reset, so reassigning a
+        // default must sync the live checked state.
+        lastOf(radios).defaultChecked = true;
+        expect(lastOf(radios).checked).to.be.true;
       });
     });
   });
@@ -386,6 +414,225 @@ describe('Radio Component', () => {
       spec.element.click();
       expect(spec.form.checkValidity()).to.be.true;
       spec.assertSubmitPasses();
+    });
+  });
+
+  describe('Group membership', () => {
+    let radios: IgcRadioComponent[];
+
+    function tabIndexOf(radio: IgcRadioComponent): number {
+      return radio.renderRoot.querySelector('input')!.tabIndex;
+    }
+
+    async function radiosOf(
+      template: TemplateResult
+    ): Promise<IgcRadioComponent[]> {
+      const container = await fixture<HTMLElement>(template);
+      return Array.from(container.querySelectorAll(IgcRadioComponent.tagName));
+    }
+
+    beforeEach(async () => {
+      radios = Array.from(
+        (
+          await fixture(html`
+            <div>
+              <igc-radio name="fruit" value="apple">Apple</igc-radio>
+              <igc-radio name="fruit" value="orange">Orange</igc-radio>
+              <igc-radio name="fruit" value="mango">Mango</igc-radio>
+            </div>
+          `)
+        ).querySelectorAll(IgcRadioComponent.tagName)
+      );
+    });
+
+    it('restores the tab stop when the checked radio is removed', async () => {
+      const [checked, ...remaining] = radios;
+
+      checked.click();
+      await elementUpdated(checked);
+      expect(remaining.every((radio) => tabIndexOf(radio) === -1)).to.be.true;
+
+      checked.remove();
+      await Promise.all(remaining.map((radio) => elementUpdated(radio)));
+      expect(remaining.every((radio) => tabIndexOf(radio) === 0)).to.be.true;
+    });
+
+    it('keeps the checked radio as the sole tab stop when another is removed', async () => {
+      const [checked, removed, other] = radios;
+
+      checked.click();
+      await elementUpdated(checked);
+
+      removed.remove();
+      await Promise.all([checked, other].map((radio) => elementUpdated(radio)));
+      expect(tabIndexOf(checked)).to.equal(0);
+      expect(tabIndexOf(other)).to.equal(-1);
+    });
+
+    it('restores the tab stop when the checked radio moves to another group by name', async () => {
+      const [moved, ...remaining] = radios;
+
+      moved.click();
+      await elementUpdated(moved);
+
+      moved.name = 'vegetable';
+      await Promise.all(radios.map((radio) => elementUpdated(radio)));
+
+      // The group that stays behind has no selection, so each radio is a tab stop.
+      expect(remaining.every((radio) => tabIndexOf(radio) === 0)).to.be.true;
+      // The radio that moved is the only member of its new group, and it is checked.
+      expect(tabIndexOf(moved)).to.equal(0);
+    });
+
+    it('drops a radio that has left the group from a synchronous read', async () => {
+      const [first, , moved] = radios;
+
+      moved.click();
+      await elementUpdated(moved);
+
+      // No await: the radio has its new name from this point, before it renders
+      // again. A selection in the group that it left must not change it.
+      moved.name = 'vegetable';
+      first.click();
+
+      expect(first.checked).to.be.true;
+      expect(moved.checked).to.be.true;
+    });
+
+    it('keeps the group reachable when the checked radio is disabled', async () => {
+      const [checked, ...remaining] = radios;
+
+      checked.click();
+      await elementUpdated(checked);
+      expect(remaining.every((radio) => tabIndexOf(radio) === -1)).to.be.true;
+
+      // A disabled radio is out of the tab order. Without a tab stop of their own,
+      // the radios that stay enabled make the group unreachable with the Tab key.
+      checked.disabled = true;
+      await Promise.all(radios.map((radio) => elementUpdated(radio)));
+
+      expect(remaining.every((radio) => tabIndexOf(radio) === 0)).to.be.true;
+    });
+
+    it('derives the tab stop from the default state on form reset', async () => {
+      const form = await fixture<HTMLFormElement>(html`
+        <form>
+          <igc-radio name="fruit" value="apple" checked>Apple</igc-radio>
+          <igc-radio name="fruit" value="orange">Orange</igc-radio>
+        </form>
+      `);
+      const [apple, orange] = Array.from(
+        form.querySelectorAll(IgcRadioComponent.tagName)
+      );
+
+      orange.click();
+      await elementUpdated(orange);
+      expect(tabIndexOf(orange)).to.equal(0);
+      expect(tabIndexOf(apple)).to.equal(-1);
+
+      // The reset restores the default state without the `checked` setter, so only
+      // the group itself can bring the tab stop back to the radio that it belongs to.
+      form.reset();
+      await Promise.all([apple, orange].map((radio) => elementUpdated(radio)));
+
+      expect(tabIndexOf(apple)).to.equal(0);
+      expect(tabIndexOf(orange)).to.equal(-1);
+    });
+
+    it('joins the new group of a radio on a synchronous read', async () => {
+      const [joining, checked] = Array.from(
+        (
+          await fixture(html`
+            <div>
+              <igc-radio name="vegetable" value="carrot">Carrot</igc-radio>
+              <igc-radio name="fruit" value="apple" checked>Apple</igc-radio>
+            </div>
+          `)
+        ).querySelectorAll(IgcRadioComponent.tagName)
+      );
+
+      joining.name = 'fruit';
+      joining.click();
+
+      expect(joining.checked).to.be.true;
+      expect(checked.checked).to.be.false;
+    });
+
+    it('keeps same-name radios of two forms in separate groups', async () => {
+      const [apple, orange, mango, peach] = await radiosOf(html`
+        <div>
+          <form>
+            <igc-radio name="fruit" value="apple">Apple</igc-radio>
+            <igc-radio name="fruit" value="orange">Orange</igc-radio>
+          </form>
+          <form>
+            <igc-radio name="fruit" value="mango">Mango</igc-radio>
+            <igc-radio name="fruit" value="peach">Peach</igc-radio>
+          </form>
+        </div>
+      `);
+
+      apple.click();
+      mango.click();
+      await Promise.all(
+        [apple, orange, mango, peach].map((radio) => elementUpdated(radio))
+      );
+
+      // A selection in one form leaves the other one alone, and each form keeps
+      // the tab stop of its own group.
+      expect(apple.checked).to.be.true;
+      expect(mango.checked).to.be.true;
+      expect(tabIndexOf(apple)).to.equal(0);
+      expect(tabIndexOf(orange)).to.equal(-1);
+      expect(tabIndexOf(mango)).to.equal(0);
+      expect(tabIndexOf(peach)).to.equal(-1);
+    });
+
+    it('restores the tab stop when the checked radio moves to another group by form', async () => {
+      const [apple, orange] = await radiosOf(html`
+        <div>
+          <form>
+            <igc-radio name="fruit" value="apple">Apple</igc-radio>
+            <igc-radio name="fruit" value="orange">Orange</igc-radio>
+          </form>
+          <form id="other"></form>
+        </div>
+      `);
+
+      apple.click();
+      await elementUpdated(apple);
+      expect(tabIndexOf(orange)).to.equal(-1);
+
+      // The group left behind loses its selection along with the radio that
+      // held it, so the radio that stays becomes its tab stop.
+      apple.setAttribute('form', 'other');
+      await Promise.all([apple, orange].map((radio) => elementUpdated(radio)));
+
+      expect(tabIndexOf(orange)).to.equal(0);
+    });
+
+    it('moves a radio to the group of its new form owner', async () => {
+      const [apple, peach, mango] = await radiosOf(html`
+        <div>
+          <form>
+            <igc-radio name="fruit" value="apple" checked>Apple</igc-radio>
+            <igc-radio name="fruit" value="peach">Peach</igc-radio>
+          </form>
+          <form id="other">
+            <igc-radio name="fruit" value="mango" checked>Mango</igc-radio>
+          </form>
+        </div>
+      `);
+
+      // The `form` attribute overrides the ancestor form as the owner.
+      peach.setAttribute('form', 'other');
+      peach.click();
+      await Promise.all(
+        [apple, peach, mango].map((radio) => elementUpdated(radio))
+      );
+
+      expect(mango.checked).to.be.false;
+      expect(apple.checked).to.be.true;
     });
   });
 

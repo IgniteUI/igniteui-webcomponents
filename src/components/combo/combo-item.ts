@@ -1,10 +1,10 @@
-import { html, LitElement, nothing, type PropertyValues } from 'lit';
+import { html, LitElement, nothing } from 'lit';
 import { property } from 'lit/decorators.js';
 import { cache } from 'lit/directives/cache.js';
-import { addThemingController } from '../../theming/theming-controller.js';
+import { addInternalsController } from '#internals/controllers/internals.js';
+import { registerComponent } from '#internals/definitions/register.js';
+import { addThemingController } from '#theming/theming-controller.js';
 import IgcCheckboxComponent from '../checkbox/checkbox.js';
-import { addInternalsController } from '../common/controllers/internals.js';
-import { registerComponent } from '../common/definitions/register.js';
 import { all } from '../dropdown/themes/item.js';
 import { styles as shared } from '../dropdown/themes/shared/item/dropdown-item.common.css.js';
 import { styles } from './themes/combo-item.base.css.js';
@@ -18,13 +18,6 @@ export default class IgcComboItemComponent extends LitElement {
   public static register(): void {
     registerComponent(IgcComboItemComponent, IgcCheckboxComponent);
   }
-
-  private readonly _internals = addInternalsController(this, {
-    initialARIA: {
-      role: 'option',
-      ariaSelected: 'false',
-    },
-  });
 
   @property({ attribute: false })
   public index!: number;
@@ -56,18 +49,12 @@ export default class IgcComboItemComponent extends LitElement {
   constructor() {
     super();
     addThemingController(this, all);
-  }
 
-  /** @internal */
-  public override connectedCallback(): void {
-    super.connectedCallback();
-    this.role = 'option';
-  }
-
-  protected override willUpdate(props: PropertyValues<this>): void {
-    if (props.has('selected')) {
-      this._internals.setARIA({ ariaSelected: this.selected.toString() });
-    }
+    addInternalsController(this, {
+      initialARIA: { role: 'option' },
+      reflectRole: true,
+      aria: () => ({ ariaSelected: `${this.selected}` }),
+    });
   }
 
   private _renderCheckbox() {

@@ -58,3 +58,9 @@
     max-width: rem(576px);
     width: fit-content;
 }
+
+@media (forced-colors: active) {
+    [part~='message-container'] {
+        border: rem(1px) solid CanvasText;
+    }
+}

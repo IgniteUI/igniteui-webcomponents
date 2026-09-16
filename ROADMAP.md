@@ -1,18 +1,57 @@
-# Roadmap - Ignite UI for Web Components
-
 # Current Milestone
 
-## Milestone 21 (Due Jan, 2026)
+## Milestone 25 (Due Oct, 2026)
 
-1. **[DONE]** Grids Localization
-2. **[DONE]** Grid PDF exporter service
-3. **[DONE]** Grids filtering performance improvements
+1. Breadcrumb component
+2. Copy to clipboard component
 
 ## Going down the road
 
-1. Query Builder component
+1. Anchor positioning
 
 # Previous Milestone
+
+## Milestone 24, version 7.3.0 (Released Aug 26th, 2026)
+
+1. **[DONE]** Color picker component - `IgcColorPickerComponent`
+2. **[DONE]** Virtual Scroll component - `igc-virtual-scroll`; renders only the viewport plus a configurable `overScan`; vertical and horizontal orientation, RTL, fixed/estimated/variable item sizes, `scrollToIndex()`, `igcDataRequest` and `igcStateChange` events; continues to scroll correctly above the browser maximum scroll coordinate [#2222](https://github.com/IgniteUI/igniteui-webcomponents/pull/2222)
+3. **[DONE]** Combo - dropdown list now uses `igc-virtual-scroll` instead of the third-party `@lit-labs/virtualizer` package [#2222](https://github.com/IgniteUI/igniteui-webcomponents/pull/2222)
+4. **[DONE]** QR Code component — `igc-qr-code`; numeric, alphanumeric and byte encoding; explicit or auto `version` and `error-level`; optional branding logo with automatic error-correction increase; `dot-style` and `square-style`; themeable via CSS custom properties and parts [#2308](https://github.com/IgniteUI/igniteui-webcomponents/pull/2308)
+5. **[DONE]** Splitter - `startCollapsed` and `endCollapsed` properties; `igcLayoutChanged` event carrying the current layout
+6. **[DONE]** Tabs - `selectedTab` property; `select()` now also matches a tab `label`
+7. **[DONE]** Mask input, Date time input, Date range picker - standard undo/redo shortcuts with coalesced typing and deletion steps; restored steps emit `igcInput`
+8. **[DONE]** Icon - `registerIcon` and `registerIconFromText` accept a `RegisterIconOptions` object; `stripMeta` removes `<title>` and `<desc>` and keeps the title text as `aria-label` [#1822](https://github.com/IgniteUI/igniteui-webcomponents/issues/1822)
+9. **[DONE]** Accessibility - Button group `single` and `single-required` modes now expose a `radiogroup` with `radio` buttons instead of toggle buttons with `aria-pressed`
+10. **[DONE]** Calendar — `label-inner`, `months-row` and `years-row` parts are now exported
+11. **[DONE]** Chip — `outlined` property [#2307](https://github.com/IgniteUI/igniteui-webcomponents/pull/2307)
+12. **[DONE]** Date time input, Date picker, Date range picker - **behavioral change:** `value` now holds only a committed value and changes together with `igcChange`, so the components work inside externally bound templates such as `igc-grid` edit templates [#1346](https://github.com/IgniteUI/igniteui-webcomponents/issues/1346)
+
+## Milestone 23, version 7.2.0 (Released May 27th, 2026)
+
+1. **[DONE]** Date Range Picker - support for inline editing via single input field
+2. **[DONE]** Nav Drawer - Popover API integration for non-relative positions; `keepOpenOnEscape` property; `igcClosing` and `igcClosed` events
+3. **[DONE]** Invoker Commands API - `command` and `commandfor` properties on `igc-button` and `igc-icon-button`; `igc-banner`, `igc-dialog`, `igc-nav-drawer`, `igc-snackbar`, `igc-toast` respond to `--show`, `--hide`, `--toggle` commands
+4. **[DONE]** Snackbar and Toast - new `positioning` property (`viewport` | `container`); both now render as popovers in the browser top layer
+5. **[DONE]** Agent Skills - updated and enhanced skill files
+6. **[DONE]** Form controls - Enter key submits associated form across `IgcInput`, `IgcMaskInput`, `IgcDateTimeInput`, `IgcCheckbox`, `IgcRadio`, `IgcSwitch`, `IgcDatePicker`, `IgcDateRangePicker`
+7. **[DONE]** Input - theming support for `date`, `time`, `datetime-local`, `week`, `month` input types
+
+## Milestone 22, version 7.1.0 (Released Apr 28th, 2026)
+
+1. **[DONE]** Agent Skills: Generate Web Components views from design images (`igniteui-wc-generate-from-image-design`)
+2. **[DONE]** Splitter component
+3. **[DONE]** Highlight container component
+4. **[DONE]** Grids: aligned with Angular grids v21.2.1 (bug fixes)
+
+## Milestone 21, version 7.0.0 (Released Feb 25th, 2026)
+
+1. **[DONE]** Grids Localization - Intl-based i18n engine; `igniteui-i18n-resources` package; public localization API
+2. **[DONE]** Grid PDF exporter service — `IgcGrid`, `IgcTreeGrid`, `IgcHierarchicalGrid`, `IgcPivotGrid`
+3. **[DONE]** Grids rendering performance improvements — dynamic scroll throttle; 100–150% FPS gain at 100k rows
+4. **[DONE]** Agent Skills — four skill files shipped in the npm package: `igniteui-wc-choose-components`, `igniteui-wc-integrate-with-framework`, `igniteui-wc-customize-component-theme`, `igniteui-wc-optimize-bundle-size`
+5. **[DONE]** HTML Popover API — dropdown menus and dialogs use native top-layer positioning
+6. **[DONE]** Query Builder Component
+7. **[PREVIEW]** `igc-theme-provider` component - scoped theming via Lit context API, allowing multiple themes per page
 
 ## Milestone 20, version 6.3.0, Released Nov 18th, 2025
 

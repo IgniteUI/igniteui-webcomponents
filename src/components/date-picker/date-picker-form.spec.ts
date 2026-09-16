@@ -1,26 +1,26 @@
-import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
-import { CalendarDay, toCalendarDay } from '../calendar/model.js';
-import { type DateRangeDescriptor, DateRangeType } from '../calendar/types.js';
-import { defineComponents } from '../common/definitions/defineComponents.js';
-import { equal } from '../common/util.js';
 import {
-  createFormAssociatedTestBed,
-  simulatePointerDown,
-} from '../common/utils.spec.js';
+  elementUpdated,
+  expect,
+  fixture,
+  html,
+  nextFrame,
+} from '@open-wc/testing';
+import { CalendarDay } from '#internals/date/model.js';
+import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { createFormAssociatedTestBed } from '#internals/testing/form-testbed.spec.js';
+import { checkDatesEqual } from '#internals/testing/helpers.spec.js';
+import { simulatePointerDown } from '#internals/testing/simulate.spec.js';
 import {
   runValidationContainerTests,
   type ValidationContainerTestsParams,
   ValidityHelpers,
-} from '../common/validity-helpers.spec.js';
+} from '#internals/testing/validity-helpers.spec.js';
+import { type DateRangeDescriptor, DateRangeType } from '../calendar/types.js';
 import IgcDateTimeInputComponent from '../date-time-input/date-time-input.js';
 import IgcDatePickerComponent from './date-picker.js';
 
 describe('igc-datepicker form integration', () => {
   before(() => defineComponents(IgcDatePickerComponent));
-
-  function checkDatesEqual(a: CalendarDay | Date, b: CalendarDay | Date) {
-    expect(equal(toCalendarDay(a), toCalendarDay(b))).to.be.true;
-  }
 
   describe('Initial validation', () => {
     it('should not enter in invalid state when clicking the calendar toggle part', async () => {
@@ -80,6 +80,34 @@ describe('igc-datepicker form integration', () => {
 
       checkDatesEqual(spec.element.value!, today);
       spec.assertSubmitHasValue(today.native.toISOString());
+    });
+
+    it('should clear the invalid styles of the inner editor on form reset', async () => {
+      // Regression: the inner editor is not associated with the outer form
+      // and runs its own constraint validation against the forwarded
+      // `required`, so a focus + blur before a reset left it touched and
+      // permanently styled as invalid.
+      spec.setProperties({ required: true });
+
+      const inner = spec.element.renderRoot.querySelector(
+        IgcDateTimeInputComponent.tagName
+      )!;
+      const native = inner.renderRoot.querySelector('input')!;
+
+      native.focus();
+      native.blur();
+      await elementUpdated(spec.element);
+      await elementUpdated(inner);
+
+      expect(spec.element.matches(':state(ig-invalid)')).to.be.true;
+      expect(inner.matches(':state(ig-invalid)')).to.be.true;
+
+      spec.reset();
+      await elementUpdated(spec.element);
+      await elementUpdated(inner);
+
+      expect(spec.element.matches(':state(ig-invalid)')).to.be.false;
+      expect(inner.matches(':state(ig-invalid)')).to.be.false;
     });
 
     it('should submit on pressing Enter when value is valid', () => {
@@ -384,6 +412,28 @@ describe('igc-datepicker form integration', () => {
         ];
 
       runValidationContainerTests(IgcDatePickerComponent, testParameters);
+    });
+
+    it('renders the projected messages on the first failed submission', async () => {
+      const form = await fixture<HTMLFormElement>(html`
+        <form>
+          <igc-date-picker name="datePicker" required>
+            <p slot="value-missing">This field is required!</p>
+          </igc-date-picker>
+        </form>
+      `);
+      const picker = form.querySelector(IgcDatePickerComponent.tagName)!;
+
+      form.requestSubmit();
+      await elementUpdated(picker);
+
+      // Projecting the validation slots makes the picker's own slots pick up
+      // content, and the resulting slotchange schedules another update. The
+      // messages have to survive it.
+      await nextFrame();
+
+      ValidityHelpers.hasInvalidStyles(picker).to.be.true;
+      ValidityHelpers.hasSlottedContent(picker, 'value-missing').to.be.true;
     });
   });
 });

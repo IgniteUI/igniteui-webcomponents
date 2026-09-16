@@ -1,3 +1,5 @@
+import { github } from '@igniteui/material-icons-extended';
+import type { Meta, StoryObj } from '@storybook/web-components-vite';
 import {
   IgcFileInputComponent,
   IgcIconComponent,
@@ -5,15 +7,13 @@ import {
   registerIcon,
   registerIconFromText,
 } from 'igniteui-webcomponents';
+import { html } from 'lit';
+import { ifDefined } from 'lit/directives/if-defined.js';
 import {
   disableStoryControls,
   formControls,
   formSubmitHandler,
 } from './story.js';
-import type { Meta, StoryObj } from '@storybook/web-components-vite';
-import { github } from '@igniteui/material-icons-extended';
-import { html } from 'lit';
-import { ifDefined } from 'lit/directives/if-defined.js';
 
 defineComponents(IgcFileInputComponent, IgcIconComponent);
 registerIconFromText(github.name, github.value);
@@ -37,31 +37,31 @@ const metadata: Meta<IgcFileInputComponent> = {
         'The value of the control.\nSimilar to native file input, this property is read-only and cannot be set programmatically.',
       control: 'text',
     },
-    locale: {
-      type: 'string',
-      description:
-        'Gets/Sets the locale used for getting language, affecting resource strings.',
-      control: 'text',
-    },
     multiple: {
       type: 'boolean',
       description:
-        'The multiple attribute of the control.\nUsed to indicate that a file input allows the user to select more than one file.',
+        'Whether the control allows the user to select more than one file.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
     accept: {
       type: 'string',
       description:
-        'The accept attribute of the control.\nDefines the file types as a list of comma-separated values that the file input should accept.',
+        'The file types the control accepts, as a comma-separated list.',
       control: 'text',
       table: { defaultValue: { summary: '' } },
     },
     autofocus: {
       type: 'boolean',
-      description: 'The autofocus attribute of the control.',
+      description: 'Whether the control should receive focus automatically.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
+    },
+    locale: {
+      type: 'string',
+      description:
+        "The locale used to resolve the component's resource strings.\nFalls back to the global locale when not set.",
+      control: 'text',
     },
     required: {
       type: 'boolean',
@@ -72,7 +72,7 @@ const metadata: Meta<IgcFileInputComponent> = {
     },
     name: {
       type: 'string',
-      description: 'The name attribute of the control.',
+      description: 'The name of the control, submitted with the form data.',
       control: 'text',
     },
     disabled: {
@@ -95,7 +95,7 @@ const metadata: Meta<IgcFileInputComponent> = {
     },
     placeholder: {
       type: 'string',
-      description: 'The placeholder attribute of the control.',
+      description: 'The placeholder text of the control.',
       control: 'text',
     },
     label: {
@@ -123,23 +123,20 @@ interface IgcFileInputArgs {
    * Similar to native file input, this property is read-only and cannot be set programmatically.
    */
   value: string;
-  /** Gets/Sets the locale used for getting language, affecting resource strings. */
-  locale: string;
-  /**
-   * The multiple attribute of the control.
-   * Used to indicate that a file input allows the user to select more than one file.
-   */
+  /** Whether the control allows the user to select more than one file. */
   multiple: boolean;
-  /**
-   * The accept attribute of the control.
-   * Defines the file types as a list of comma-separated values that the file input should accept.
-   */
+  /** The file types the control accepts, as a comma-separated list. */
   accept: string;
-  /** The autofocus attribute of the control. */
+  /** Whether the control should receive focus automatically. */
   autofocus: boolean;
+  /**
+   * The locale used to resolve the component's resource strings.
+   * Falls back to the global locale when not set.
+   */
+  locale: string;
   /** When set, makes the component a required field for validation. */
   required: boolean;
-  /** The name attribute of the control. */
+  /** The name of the control, submitted with the form data. */
   name: string;
   /** The disabled state of the component. */
   disabled: boolean;
@@ -147,7 +144,7 @@ interface IgcFileInputArgs {
   invalid: boolean;
   /** Whether the control will have outlined appearance. */
   outlined: boolean;
-  /** The placeholder attribute of the control. */
+  /** The placeholder text of the control. */
   placeholder: string;
   /** The label for the control. */
   label: string;

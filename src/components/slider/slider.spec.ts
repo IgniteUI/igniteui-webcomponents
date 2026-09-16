@@ -16,19 +16,19 @@ import {
   homeKey,
   pageDownKey,
   pageUpKey,
-} from '../common/controllers/key-bindings.js';
-import { defineComponents } from '../common/definitions/defineComponents.js';
-import { asPercent } from '../common/util.js';
+} from '#internals/controllers/key-bindings.js';
+import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { createFormAssociatedTestBed } from '#internals/testing/form-testbed.spec.js';
 import {
-  createFormAssociatedTestBed,
   simulateKeyboard,
   simulateLostPointerCapture,
   simulatePointerDown,
   simulatePointerMove,
-} from '../common/utils.spec.js';
+} from '#internals/testing/simulate.spec.js';
+import { asPercent } from '#internals/utils/math.js';
 import IgcRangeSliderComponent from './range-slider.js';
-import IgcSliderComponent from './slider.js';
 import type { IgcSliderBaseComponent } from './slider-base.js';
+import IgcSliderComponent from './slider.js';
 
 describe('Slider component', () => {
   describe('Regular', () => {
@@ -1062,7 +1062,7 @@ describe('Slider component', () => {
   describe('Initial rendering race condition', () => {
     let slider: IgcSliderComponent;
 
-    before(() => defineComponents(IgcSliderComponent));
+    before(() => defineComponents(IgcSliderComponent, IgcRangeSliderComponent));
 
     beforeEach(async () => {
       slider = await fixture<IgcSliderComponent>(
@@ -1098,6 +1098,30 @@ describe('Slider component', () => {
       await elementUpdated(slider);
 
       expect(slider.value).to.equal(100);
+    });
+
+    it('normalizes a value set before the constraint that invalidates it', async () => {
+      // Attributes are applied in markup order, so `value` is validated against
+      // the default `max` and only then does `max` narrow the scale.
+      slider = await fixture<IgcSliderComponent>(
+        html`<igc-slider value="100" max="50"></igc-slider>`
+      );
+
+      expect(slider.max).to.equal(50);
+      expect(slider.value).to.equal(50);
+    });
+
+    it('normalizes range values set before the constraint that invalidates them', async () => {
+      const rangeSlider = await fixture<IgcRangeSliderComponent>(
+        html`<igc-range-slider
+          lower="20"
+          upper="100"
+          max="50"
+        ></igc-range-slider>`
+      );
+
+      expect(rangeSlider.max).to.equal(50);
+      expect(rangeSlider.upper).to.equal(50);
     });
   });
 
@@ -1135,6 +1159,17 @@ describe('Slider component', () => {
 
       expect(spec.element.value).to.equal(17);
       spec.assertSubmitHasValue(spec.element.value.toString());
+    });
+
+    it('should clamp an out-of-range default value on form reset', () => {
+      // Regression: reset used to restore the raw default, bypassing the
+      // value setter clamping and rendering an out-of-bounds track.
+      spec.setAttributes({ value: 200 });
+      spec.setProperties({ value: 50 });
+      spec.reset();
+
+      expect(spec.element.value).to.equal(100);
+      spec.assertSubmitHasValue('100');
     });
 
     it('reflects disabled ancestor state', () => {

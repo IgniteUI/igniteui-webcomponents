@@ -473,3 +473,50 @@ textarea {
         border-color: var-get($theme, 'disabled-border-color');
     }
 }
+
+@media (forced-colors: active) {
+    :host(:not([outlined]):focus-within) [part~='container'] {
+        outline-color: Highlight;
+    }
+
+    :host(:focus-within) {
+        --focused-border-color: Highlight;
+
+        [part~='label'] {
+            color: Highlight;
+        }
+    }
+
+    :host([outlined]:focus-within) [part='notch'] {
+        border-block-start-color: Highlight !important;
+    }
+
+    :host([disabled]),
+    :host(:disabled) {
+        --disabled-border-color: GrayText;
+        --disabled-bottom-line-color: GrayText;
+
+        [part~='label'] {
+            color: GrayText;
+        }
+
+        [part~='notch'] {
+            border-block-start-color: GrayText !important;
+        }
+    }
+
+    :host([outlined]:not(:focus-within)) [part~='container'][part~='filled'] [part='notch'],
+    :host([outlined]:not(:focus-within)) [part~='container'][part~='placeholder'] [part='notch'] {
+        border-block-start-width: rem(1px);
+    }
+
+    :host(:not([outlined])) {
+        [part~='container'] {
+            outline: 1px solid CanvasText;
+
+            &::after {
+                content: unset;
+            }
+        }
+    }
+}

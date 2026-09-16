@@ -11,6 +11,7 @@
     "aria-valuenow",
     "aria-valuetext",
     "combobox",
+    "commandfor",
     "listbox",
     "listitem",
     "progressbar",
@@ -24,7 +25,8 @@
     "maxlength",
     "minlength",
     "inputmode",
-    "biomejs",
+    "oxfmt",
+    "oxlint",
     "blazor",
     "cssproperty",
     "csspart",
@@ -32,9 +34,9 @@
     "igniteui",
     "slotchange",
     "stylelint",
-    "webcomponents"
+    "webcomponents",
+    "noopener",
+    "noreferrer"
   ],
-  "ignoreRegExpList": [
-    "θ"
-  ],
+  "ignoreRegExpList": ["θ"]
 }
