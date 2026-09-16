@@ -2,6 +2,7 @@ import { expect } from '@open-wc/testing';
 import {
   asArray,
   chunk,
+  commonPrefixLength,
   firstOf,
   isEmpty,
   lastOf,
@@ -61,6 +62,20 @@ describe('Array utilities', () => {
       expect(asArray([1, 2, 3])).to.eql([1, 2, 3]);
       expect(asArray(undefined)).to.eql([]);
       expect(asArray(null)).to.eql([]);
+    });
+  });
+
+  describe('commonPrefixLength', () => {
+    it('should count the leading elements equal by identity', () => {
+      const shared = { id: 1 };
+      expect(commonPrefixLength([shared, 2, 3], [shared, 2, 4])).to.equal(2);
+      expect(commonPrefixLength([{ id: 1 }], [{ id: 1 }])).to.equal(0);
+    });
+
+    it('should return the shorter length when one array is a prefix of the other', () => {
+      expect(commonPrefixLength([1, 2], [1, 2, 3])).to.equal(2);
+      expect(commonPrefixLength([1, 2, 3], [1, 2])).to.equal(2);
+      expect(commonPrefixLength([], [1])).to.equal(0);
     });
   });
 

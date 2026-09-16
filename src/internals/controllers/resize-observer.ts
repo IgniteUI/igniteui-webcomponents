@@ -80,6 +80,24 @@ class ResizeObserverController implements ReactiveController {
     }
   }
 
+  /**
+   * Makes `target` the only observed element: every other one is dropped
+   * and `target` is observed if it is not already. A nullish `target`
+   * drops every element. For a host that follows one element across
+   * renders, for example through a `ref`.
+   */
+  public sync(target: Element | null | undefined): void {
+    for (const element of this._targets) {
+      if (element !== target) {
+        this.unobserve(element);
+      }
+    }
+
+    if (target && !this._targets.has(target)) {
+      this.observe(target);
+    }
+  }
+
   /** Stops observing the `target` element. */
   public unobserve(target: Element): void {
     this._targets.delete(target);

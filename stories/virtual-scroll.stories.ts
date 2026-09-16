@@ -70,12 +70,24 @@ const metadata: Meta<IgcVirtualScrollComponent> = {
     estimatedItemSize: {
       type: 'number',
       description:
-        'Estimated item size in pixels, used before an item is measured in the DOM.\nAfter the first render of an item, the engine replaces the estimate with the measured size.',
+        'Estimated item size in pixels, used before an item is measured in the DOM.\nAfter the first render of an item, the engine replaces the estimate with the measured size.\nWith `fixedItemSize` set, this is the exact size of every item.',
       control: 'number',
       table: { defaultValue: { summary: '50' } },
     },
+    fixedItemSize: {
+      type: 'boolean',
+      description:
+        'Whether every item has the size given by `estimatedItemSize`.\n\nItems are then not measured in the DOM. The offset math is constant time\nand the component keeps no per-item state, so any item count costs the\nsame. Set it when the item template renders at one known size. An item\nthat renders at another size overlaps its neighbor or leaves a gap,\nbecause nothing corrects the offsets.',
+      control: 'boolean',
+      table: { defaultValue: { summary: 'false' } },
+    },
   },
-  args: { orientation: 'vertical', overScan: 2, estimatedItemSize: 50 },
+  args: {
+    orientation: 'vertical',
+    overScan: 2,
+    estimatedItemSize: 50,
+    fixedItemSize: false,
+  },
 };
 
 export default metadata;
@@ -91,8 +103,19 @@ interface IgcVirtualScrollArgs {
   /**
    * Estimated item size in pixels, used before an item is measured in the DOM.
    * After the first render of an item, the engine replaces the estimate with the measured size.
+   * With `fixedItemSize` set, this is the exact size of every item.
    */
   estimatedItemSize: number;
+  /**
+   * Whether every item has the size given by `estimatedItemSize`.
+   *
+   * Items are then not measured in the DOM. The offset math is constant time
+   * and the component keeps no per-item state, so any item count costs the
+   * same. Set it when the item template renders at one known size. An item
+   * that renders at another size overlaps its neighbor or leaves a gap,
+   * because nothing corrects the offsets.
+   */
+  fixedItemSize: boolean;
 }
 type Story = StoryObj<IgcVirtualScrollArgs>;
 
@@ -222,6 +245,7 @@ export const Vertical: Story = {
           orientation=${args.orientation}
           over-scan=${args.overScan}
           estimated-item-size=${args.estimatedItemSize}
+          ?fixed-item-size=${args.fixedItemSize}
           .data=${people}
           .itemTemplate=${itemTemplate as VirtualScrollItemTemplate<unknown>}
           style="height: 480px;"
@@ -272,6 +296,7 @@ export const Horizontal: Story = {
         orientation=${args.orientation}
         over-scan=${args.overScan}
         estimated-item-size=${args.estimatedItemSize}
+        ?fixed-item-size=${args.fixedItemSize}
         .data=${people}
         .itemTemplate=${itemTemplate as VirtualScrollItemTemplate<unknown>}
         style="height: 220px;"
@@ -468,6 +493,7 @@ export const RemoteData: Story = {
           orientation=${args.orientation}
           over-scan=${args.overScan}
           estimated-item-size=${args.estimatedItemSize}
+          ?fixed-item-size=${args.fixedItemSize}
           .data=${items}
           .itemTemplate=${itemTemplate as VirtualScrollItemTemplate<unknown>}
           @igcDataRequest=${loadMore}
@@ -625,11 +651,73 @@ export const ScrollToIndex: Story = {
           orientation=${args.orientation}
           over-scan=${args.overScan}
           estimated-item-size=${args.estimatedItemSize}
+          ?fixed-item-size=${args.fixedItemSize}
           .data=${people}
           .itemTemplate=${itemTemplate as VirtualScrollItemTemplate<unknown>}
           style="height: 480px;"
         ></igc-virtual-scroll>
       </igc-list>
+    `;
+  },
+};
+
+const FIXED_ROWS = Array.from({ length: 1_000_000 }, (_, i) => i);
+const FIXED_ROW_FORMAT = new Intl.NumberFormat();
+const FIXED_ROW_COUNT = FIXED_ROW_FORMAT.format(FIXED_ROWS.length);
+
+export const FixedItemSize: Story = {
+  argTypes: disableStoryControls(metadata),
+  args: { fixedItemSize: true, estimatedItemSize: 40 },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'One million rows of one known size with `fixed-item-size`. Nothing is measured in the DOM, so the offset math is constant time and the item count costs no memory beyond the data itself. `scrollToIndex()` lands exactly on the first pass, because every offset is already known.',
+      },
+    },
+    actions: { handles: [] },
+  },
+  render: (args) => {
+    const vs = () =>
+      document.querySelector<IgcVirtualScrollComponent>('#fixed-size-vs');
+
+    const itemTemplate = (ctx: VirtualScrollItemContext<number>) => html`
+      <div
+        style="height: ${args.estimatedItemSize}px; display: flex; align-items: center; gap: 1rem; padding-inline: 1rem; box-sizing: border-box; border-bottom: 1px solid var(--ig-gray-200, #e0e0e0); font-variant-numeric: tabular-nums;"
+      >
+        <span style="color: var(--ig-gray-600, #757575); min-width: 6rem;"
+          >#${FIXED_ROW_FORMAT.format(ctx.value + 1)}</span
+        >
+        <span>Row ${ctx.value + 1} of ${FIXED_ROW_COUNT}</span>
+      </div>
+    `;
+
+    return html`
+      <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
+        <igc-button variant="outlined" @click=${() => vs()?.scrollToIndex(0)}
+          >First</igc-button
+        >
+        <igc-button
+          variant="outlined"
+          @click=${() => vs()?.scrollToIndex(FIXED_ROWS.length / 2)}
+          >Middle</igc-button
+        >
+        <igc-button
+          variant="outlined"
+          @click=${() => vs()?.scrollToIndex(FIXED_ROWS.length - 1)}
+          >Last</igc-button
+        >
+      </div>
+      <igc-virtual-scroll
+        id="fixed-size-vs"
+        orientation=${args.orientation}
+        over-scan=${args.overScan}
+        estimated-item-size=${args.estimatedItemSize}
+        ?fixed-item-size=${args.fixedItemSize}
+        .data=${FIXED_ROWS}
+        .itemTemplate=${itemTemplate as VirtualScrollItemTemplate<unknown>}
+        style="height: 480px; border: 1px solid var(--ig-gray-200, #e0e0e0);"
+      ></igc-virtual-scroll>
     `;
   },
 };

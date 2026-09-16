@@ -50,3 +50,53 @@ export function createTimer(callback: () => void, defaultDelay = 0): Timer {
     },
   };
 }
+
+/**
+ * Resolves after `ms`. An abort of `signal` stops the timer, so no live
+ * handle remains once the other side of a race has settled. With `0` and
+ * no signal it yields one task, past the rendering steps of the current
+ * frame.
+ */
+export function delay(ms: number, signal?: AbortSignal): Promise<void> {
+  return new Promise((resolve) => {
+    const timer = createTimer(resolve, ms);
+    timer.start();
+    signal?.addEventListener('abort', () => timer.stop(), { once: true });
+  });
+}
+
+/**
+ * Resolves with `task` or with a deadline of `ms`, whichever comes first.
+ * The signal then tears down the other, so no live timer or dangling
+ * listener remains.
+ */
+export function withDeadline(
+  ms: number,
+  task: (signal: AbortSignal) => Promise<void>
+): Promise<void> {
+  const controller = new AbortController();
+
+  return Promise.race([
+    task(controller.signal),
+    delay(ms, controller.signal),
+  ]).finally(() => controller.abort());
+}
+
+/**
+ * Resolves on the next animation frame, or after `deadlineMs` when no frame
+ * arrives. A hidden tab or a disconnected element gets no frames, and a
+ * caller that waits for layout must still settle there. That state has no
+ * layout to wait for, so an early resolve is safe.
+ */
+export function nextAnimationFrame(deadlineMs: number): Promise<void> {
+  return withDeadline(
+    deadlineMs,
+    (signal) =>
+      new Promise((resolve) => {
+        const id = requestAnimationFrame(() => resolve());
+        signal.addEventListener('abort', () => cancelAnimationFrame(id), {
+          once: true,
+        });
+      })
+  );
+}

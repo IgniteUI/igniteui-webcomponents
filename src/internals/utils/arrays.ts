@@ -87,3 +87,28 @@ export function partition<T>(
 
   return [truthy, falsy];
 }
+
+/**
+ * The number of leading positions where `a` and `b` hold the same element,
+ * compared by identity. Equal to the shorter length when one is a prefix of
+ * the other.
+ *
+ * @example
+ * ```typescript
+ * commonPrefixLength([1, 2, 3], [1, 2, 4]); // 2
+ * commonPrefixLength([1, 2], [1, 2, 3]); // 2
+ * commonPrefixLength([], [1]); // 0
+ * ```
+ */
+export function commonPrefixLength<T>(
+  a: readonly T[],
+  b: readonly T[]
+): number {
+  const shared = Math.min(a.length, b.length);
+  for (let i = 0; i < shared; i++) {
+    if (a[i] !== b[i]) {
+      return i;
+    }
+  }
+  return shared;
+}
