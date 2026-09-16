@@ -78,7 +78,7 @@ function createAnchorlessPopover() {
 }
 
 function definePositioningSuites(mode: PositionMode) {
-  describe('Slotted anchor element', async () => {
+  describe('Slotted anchor element', () => {
     let popover: IgcPopoverComponent;
     let anchor: HTMLButtonElement;
 
@@ -186,7 +186,7 @@ function definePositioningSuites(mode: PositionMode) {
     });
   });
 
-  describe('Non-slotted anchor element', async () => {
+  describe('Non-slotted anchor element', () => {
     let popover: IgcPopoverComponent;
     let anchor: HTMLButtonElement;
 
@@ -469,7 +469,7 @@ function definePositioningSuites(mode: PositionMode) {
   describe('Placement', () => {
     function createPlacedPopover(placement: PopoverPlacement, dir = 'ltr') {
       return html`
-        <div dir=${dir}>
+        <div dir=${dir as any}>
           <button
             id="btn"
             type="button"
