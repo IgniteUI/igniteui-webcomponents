@@ -110,3 +110,13 @@ $ripple-radius: calc(#{$ripple-size} / 2);
         box-shadow: var-get($theme, 'disabled-elevation');
     }
 }
+
+@media (forced-colors: active) {
+    [part~='thumb'] {
+        border: rem(10px) solid CanvasText;
+
+        &:hover {
+            border-width: rem(4px);
+        }
+    }
+}

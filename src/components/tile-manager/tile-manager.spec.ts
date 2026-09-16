@@ -534,16 +534,22 @@ describe('Tile Manager component', () => {
       });
     });
 
+    const adornerParts: Record<string, string> = {
+      'side-adorner': 'trigger-side',
+      'corner-adorner': 'trigger',
+      'bottom-adorner': 'trigger-bottom',
+    };
+
     adornerTests.forEach(({ slotName, expectedText }) => {
-      it(`should correctly project adorners into the igc-resize ${slotName} slot`, async () => {
+      it(`should project adorners into the ${slotName} resize trigger slot`, async () => {
         const tile1 = tileManager.tiles[0];
-        const resize = tile1.shadowRoot?.querySelector(
-          'igc-resize'
-        ) as HTMLElement;
-        const resizeSlot = resize.shadowRoot!.querySelector<HTMLSlotElement>(
+        const resizeSlot = tile1.shadowRoot!.querySelector<HTMLSlotElement>(
           `slot[name="${slotName}"]`
         );
+
         expect(resizeSlot).to.exist;
+        expect(resizeSlot!.part.contains(adornerParts[slotName])).to.be.true;
+        expect(resizeSlot!.part.contains('custom')).to.be.true;
         expect(
           resizeSlot!
             .assignedNodes({ flatten: true })
@@ -553,13 +559,14 @@ describe('Tile Manager component', () => {
       });
     });
 
-    it('should disable igc-resize component when resize mode is "none"', async () => {
+    it('should disable resize behavior when resize mode is "none"', async () => {
       const tile = tileManager.tiles[0];
 
       tileManager.resizeMode = 'none';
       await elementUpdated(tileManager);
 
-      expect(tile.renderRoot.querySelector('igc-resize')).is.null;
+      expect(tile.renderRoot.querySelector('[part~="tile-container"]')).is.null;
+      expect(tile.renderRoot.querySelector('[part~="trigger"]')).is.null;
     });
   });
 

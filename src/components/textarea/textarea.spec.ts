@@ -72,6 +72,22 @@ describe('Textarea component', () => {
       expect(finalHeight).lessThan(intermediateHeight);
       expect(finalHeight).to.equal(initialHeight);
     });
+
+    it('auto sizing height is released when resize changes away from `auto`', async () => {
+      await createFixture(
+        html`<igc-textarea resize="auto" rows="1"></igc-textarea>`
+      );
+
+      simulateInput(textArea, { value: [1, 2, 3, 4, 5, 6].join('\n') });
+      await elementUpdated(element);
+
+      expect(textArea.style.height).to.not.be.empty;
+
+      element.resize = 'vertical';
+      await elementUpdated(element);
+
+      expect(textArea.style.height).to.be.empty;
+    });
   });
 
   describe('Setting value through attribute and projection', () => {
@@ -380,6 +396,39 @@ describe('Textarea component', () => {
         spec.reset();
 
         expect(spec.element.value).to.equal('Hello');
+      });
+    });
+
+    describe('Projected content', () => {
+      const projected = 'Hello';
+      const spec = createFormAssociatedTestBed<IgcTextareaComponent>(
+        html`<igc-textarea name="textarea">${projected}</igc-textarea>`
+      );
+
+      beforeEach(async () => {
+        await spec.setup(IgcTextareaComponent.tagName);
+      });
+
+      it('is treated as the default value', () => {
+        spec.assertIsPristine();
+
+        expect(spec.element.value).to.equal(projected);
+        expect(spec.element.defaultValue).to.equal(projected);
+      });
+
+      it('is restored on form reset', () => {
+        spec.setProperties({ value: 'World' });
+        spec.reset();
+
+        expect(spec.element.value).to.equal(projected);
+        spec.assertSubmitHasValue(projected);
+      });
+
+      it('does not shadow a later defaultValue assignment', () => {
+        spec.setProperties({ defaultValue: 'World' });
+
+        spec.assertIsPristine();
+        expect(spec.element.value).to.equal('World');
       });
     });
 

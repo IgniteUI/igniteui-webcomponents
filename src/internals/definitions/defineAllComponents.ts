@@ -46,6 +46,7 @@ import IgcNavbarComponent from '../../components/navbar/navbar.js';
 import IgcCircularGradientComponent from '../../components/progress/circular-gradient.js';
 import IgcCircularProgressComponent from '../../components/progress/circular-progress.js';
 import IgcLinearProgressComponent from '../../components/progress/linear-progress.js';
+import IgcQrCodeComponent from '../../components/qr-code/qr-code.js';
 import IgcRadioGroupComponent from '../../components/radio-group/radio-group.js';
 import IgcRadioComponent from '../../components/radio/radio.js';
 import IgcRatingSymbolComponent from '../../components/rating/rating-symbol.js';
@@ -72,6 +73,7 @@ import IgcToastComponent from '../../components/toast/toast.js';
 import IgcTooltipComponent from '../../components/tooltip/tooltip.js';
 import IgcTreeItemComponent from '../../components/tree/tree-item.js';
 import IgcTreeComponent from '../../components/tree/tree.js';
+import IgcVirtualScrollComponent from '../../components/virtualization/virtualization.js';
 import { defineComponents } from './defineComponents.js';
 import type { IgniteComponent } from './register.js';
 
@@ -150,6 +152,8 @@ const allComponents: IgniteComponent[] = [
   IgcTileComponent,
   IgcTileManagerComponent,
   IgcTooltipComponent,
+  IgcQrCodeComponent,
+  IgcVirtualScrollComponent,
 ];
 
 export function defineAllComponents() {

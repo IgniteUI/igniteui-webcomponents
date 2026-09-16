@@ -23,31 +23,31 @@ const metadata: Meta<IgcChipComponent> = {
   argTypes: {
     disabled: {
       type: 'boolean',
-      description: 'Sets the disabled state for the chip.',
+      description: 'Whether the chip is disabled or not.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
     removable: {
       type: 'boolean',
-      description: 'Defines if the chip is removable or not.',
+      description: 'Whether the chip is removable or not.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
     outlined: {
       type: 'boolean',
-      description: 'Defines if the chip is outlined or not.',
+      description: 'Whether the chip is outlined or not.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
     selectable: {
       type: 'boolean',
-      description: 'Defines if the chip is selectable or not.',
+      description: 'Whether the chip is selectable or not.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
     selected: {
       type: 'boolean',
-      description: 'Defines if the chip is selected or not.',
+      description: 'Whether the chip is selected or not.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
@@ -80,15 +80,15 @@ const metadata: Meta<IgcChipComponent> = {
 export default metadata;
 
 interface IgcChipArgs {
-  /** Sets the disabled state for the chip. */
+  /** Whether the chip is disabled or not. */
   disabled: boolean;
-  /** Defines if the chip is removable or not. */
+  /** Whether the chip is removable or not. */
   removable: boolean;
-  /** Defines if the chip is outlined or not. */
+  /** Whether the chip is outlined or not. */
   outlined: boolean;
-  /** Defines if the chip is selectable or not. */
+  /** Whether the chip is selectable or not. */
   selectable: boolean;
-  /** Defines if the chip is selected or not. */
+  /** Whether the chip is selected or not. */
   selected: boolean;
   /** A property that sets the color variant of the chip component. */
   variant: 'primary' | 'info' | 'success' | 'warning' | 'danger';

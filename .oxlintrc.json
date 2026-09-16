@@ -42,7 +42,8 @@
     {
       "files": ["scripts/**"],
       "rules": {
-        "no-console": "off"
+        "no-console": "off",
+        "no-control-regex": "off"
       }
     }
   ]

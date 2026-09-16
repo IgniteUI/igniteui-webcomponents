@@ -12,7 +12,10 @@ import { registerComponent } from '#internals/definitions/register.js';
 import type { AbstractConstructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { partMap } from '#internals/part-map.js';
-import { addSafeEventListener } from '#internals/utils/events.js';
+import {
+  addSafeEventListener,
+  preventDefault,
+} from '#internals/utils/events.js';
 import { asPercent, clamp } from '#internals/utils/math.js';
 import { styles } from './themes/picker-canvas.base.css.js';
 
@@ -113,6 +116,7 @@ export default class IgcPickerCanvasComponent extends EventEmitterMixin<
     super();
 
     addSafeEventListener(this, 'pointerdown', this._handlePointerDown);
+    addSafeEventListener(this, 'touchmove', preventDefault, { passive: false });
     addSafeEventListener(
       this,
       'lostpointercapture',

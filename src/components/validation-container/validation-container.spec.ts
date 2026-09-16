@@ -1,8 +1,11 @@
-import { elementUpdated, fixture, html } from '@open-wc/testing';
+import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import type { TemplateResult } from 'lit';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
 import { ValidityHelpers } from '#internals/testing/validity-helpers.spec.js';
 import IgcInputComponent from '../input/input.js';
+import IgcValidationContainerComponent, {
+  type ValidationContainerConfig,
+} from './validation-container.js';
 
 describe('Validation container', () => {
   let input: IgcInputComponent;
@@ -102,5 +105,60 @@ describe('Validation container', () => {
 
     ValidityHelpers.hasInvalidStyles(input).to.be.true;
     ValidityHelpers.hasSlottedContent(input, valueMissingSlot).to.be.true;
+  });
+
+  it('projects validation messages for a host that starts out invalid', async () => {
+    await createFixture(html`
+      <igc-input required invalid>
+        <div slot=${valueMissingSlot}>Value missing</div>
+      </igc-input>
+    `);
+
+    // Wait for the second host render requested by the container.
+    await elementUpdated(input);
+
+    ValidityHelpers.hasInvalidStyles(input).to.be.true;
+    ValidityHelpers.hasSlots(input, valueMissingSlot).to.be.true;
+    ValidityHelpers.hasSlottedContent(input, valueMissingSlot).to.be.true;
+  });
+
+  describe('create()', () => {
+    const projectedHelperSlot = `slot[name='${helperSlot}']`;
+
+    async function createContainer(config?: ValidationContainerConfig) {
+      return fixture<IgcValidationContainerComponent>(
+        IgcValidationContainerComponent.create(input, config)
+      );
+    }
+
+    beforeEach(async () => {
+      await createFixture(html`<igc-input required></igc-input>`);
+    });
+
+    it('projects a helper-text slot by default', async () => {
+      const container = await createContainer();
+
+      expect(container.id).to.equal(helperSlot);
+      expect(container.querySelector(projectedHelperSlot)).not.to.be.null;
+    });
+
+    it('does not project a helper-text slot when `hasHelperText` is false', async () => {
+      const container = await createContainer({ hasHelperText: false });
+
+      expect(container.hasAttribute('id')).to.be.false;
+      expect(container.querySelector(projectedHelperSlot)).to.be.null;
+    });
+
+    it('applies the id, slot and part from the configuration', async () => {
+      const container = await createContainer({
+        id: 'custom-id',
+        slot: 'anchor',
+        part: 'custom-part',
+      });
+
+      expect(container.id).to.equal('custom-id');
+      expect(container.slot).to.equal('anchor');
+      expect(container.part.contains('custom-part')).to.be.true;
+    });
   });
 });

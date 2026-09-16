@@ -24,6 +24,7 @@ body:
         - Chip
         - Checkbox / Switch
         - Combo
+        - Color picker
         - Date-time input
         - Date picker
         - Date range picker
@@ -31,6 +32,7 @@ body:
         - Dropdown
         - Expansion panel
         - File input
+        - Highlight
         - Icon(s)
         - Icon button
         - Input
@@ -38,11 +40,13 @@ body:
         - Masked input
         - Navigation bar
         - Navigation drawer
+        - QR Code
         - Progress bar (circular/linear)
         - Radio & Radio Group
         - Rating
         - Slider (single/range)
         - Snackbar
+        - Splitter
         - Stepper
         - Tabs & Tab group
         - Textarea
@@ -51,6 +55,7 @@ body:
         - Tooltip
         - Tree
         - Theming & Styles
+        - Virtualization
         - Other/unknown (please specify in the description)
 
   - type: textarea

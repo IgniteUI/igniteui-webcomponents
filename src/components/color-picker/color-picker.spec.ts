@@ -165,6 +165,10 @@ describe('Color picker', () => {
   let picker: IgcColorPickerComponent;
 
   describe('Default', () => {
+    // The format select is labelled by a visually hidden `<label>` on purpose;
+    // axe's best-practice `label-title-only` rule expects a visible one.
+    const hiddenLabelOptions = { ignoredRules: ['label-title-only'] };
+
     beforeEach(async () => {
       picker = await createDefaultColorPicker();
     });
@@ -182,8 +186,8 @@ describe('Color picker', () => {
       picker.open = true;
       await elementUpdated(picker);
 
-      await expect(picker).shadowDom.to.be.accessible();
-      await expect(picker).lightDom.to.be.accessible();
+      await expect(picker).shadowDom.to.be.accessible(hiddenLabelOptions);
+      await expect(picker).lightDom.to.be.accessible(hiddenLabelOptions);
     });
 
     it('is accessible (alpha row)', async () => {
@@ -191,8 +195,8 @@ describe('Color picker', () => {
       picker.showAlpha = true;
       await elementUpdated(picker);
 
-      await expect(picker).shadowDom.to.be.accessible();
-      await expect(picker).lightDom.to.be.accessible();
+      await expect(picker).shadowDom.to.be.accessible(hiddenLabelOptions);
+      await expect(picker).lightDom.to.be.accessible(hiddenLabelOptions);
     });
   });
 

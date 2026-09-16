@@ -96,26 +96,49 @@ describe('Date picker', () => {
       expect(picker).is.not.undefined;
     });
 
-    it('is accessible (closed state)', async () => {
-      await expect(picker).shadowDom.to.be.accessible();
-      await expect(picker).lightDom.to.be.accessible();
+    describe('Accessibility', () => {
+      beforeEach(async () => {
+        picker.label = 'Date';
+        await elementUpdated(picker);
+      });
+
+      it('is accessible (closed state)', async () => {
+        await expect(picker).shadowDom.to.be.accessible();
+        await expect(picker).lightDom.to.be.accessible();
+      });
+
+      it('is accessible (open state) - default dropdown mode', async () => {
+        picker.open = true;
+        await elementUpdated(picker);
+
+        await expect(picker).shadowDom.to.be.accessible();
+        await expect(picker).lightDom.to.be.accessible();
+      });
+
+      it('is accessible (open state) - dialog mode', async () => {
+        picker.open = true;
+        picker.mode = 'dialog';
+        await elementUpdated(picker);
+
+        await expect(picker).shadowDom.to.be.accessible();
+        await expect(picker).lightDom.to.be.accessible();
+      });
     });
 
-    it('is accessible (open state) - default dropdown mode', async () => {
-      picker.open = true;
+    it('labels the native input with a label set after the first render', async () => {
+      const input = dateTimeInput.renderRoot.querySelector('input')!;
+
+      picker.label = 'Date';
       await elementUpdated(picker);
+      await elementUpdated(dateTimeInput);
 
-      await expect(picker).shadowDom.to.be.accessible();
-      await expect(picker).lightDom.to.be.accessible();
-    });
+      expect(input.ariaLabelledByElements).to.eql([getLabel()]);
 
-    it('is accessible (open state) - dialog mode', async () => {
-      picker.open = true;
-      picker.mode = 'dialog';
+      picker.label = '';
       await elementUpdated(picker);
+      await elementUpdated(dateTimeInput);
 
-      await expect(picker).shadowDom.to.be.accessible();
-      await expect(picker).lightDom.to.be.accessible();
+      expect(input.ariaLabelledByElements).to.be.null;
     });
 
     it('should render slotted elements - prefix, suffix, clear-icon, calendar-icon(-open), helper-text, title, header-date actions', async () => {
@@ -1233,6 +1256,27 @@ describe('Date picker', () => {
           checkDatesEqual(picker.value!, CalendarDay.today);
         });
       });
+    });
+  });
+  describe('Locale week start', () => {
+    it('derives the calendar week start from the locale when `week-start` is not set', async () => {
+      picker = await fixture<IgcDatePickerComponent>(
+        html`<igc-date-picker locale="bg"></igc-date-picker>`
+      );
+      calendar = picker.renderRoot.querySelector(IgcCalendarComponent.tagName)!;
+
+      expect(picker.weekStart).to.equal('monday');
+      expect(calendar.weekStart).to.equal('monday');
+
+      picker.weekStart = 'friday';
+      await elementUpdated(picker);
+
+      expect(calendar.weekStart).to.equal('friday');
+
+      picker.weekStart = undefined;
+      await elementUpdated(picker);
+
+      expect(calendar.weekStart).to.equal('monday');
     });
   });
 });

@@ -146,6 +146,7 @@ export type { IgcCheckboxComponentEventMap } from './components/checkbox/checkbo
 export type { IgcCheckboxComponentEventMap as IgcSwitchComponentEventMap } from './components/checkbox/checkbox-base.js';
 export type { IgcChipComponentEventMap } from './components/chip/chip.js';
 export type { IgcComboComponentEventMap } from './components/combo/types.js';
+export type { IgcColorPickerComponentEventMap } from './components/color-picker/color-picker.js';
 export type { IgcDatePickerComponentEventMap } from './components/date-picker/date-picker.js';
 export type { IgcDateRangePickerComponentEventMap } from './components/date-range-picker/date-range-picker.js';
 export type { IgcDateTimeInputComponentEventMap } from './components/date-time-input/date-time-input.js';
@@ -214,9 +215,11 @@ export type {
 } from './components/icon/registry/types.js';
 export type * from './components/chat/types.js';
 export type {
-  QrErrorCorrectionLevel,
-  QrDotStyle,
+  QrCodeExportFormat,
+  QrCodeExportOptions,
   QrCornerSquareStyle,
+  QrDotStyle,
+  QrErrorCorrectionLevel,
 } from './components/qr-code/types.js';
 
 // Internal exports for other packages

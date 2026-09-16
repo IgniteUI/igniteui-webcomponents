@@ -8,7 +8,7 @@ $theme: $material;
     --chip-size: var(--component-size);
 }
 
-:host button {
+:host [part='base'] {
     border-radius: var-get($theme, 'border-radius');
     background: var-get($theme, 'background');
     color: var-get($theme, 'text-color');
@@ -19,7 +19,7 @@ $theme: $material;
         padding-inline: pad-inline(rem(3px), rem(6px), rem(8px));
     }
 
-    &:focus {
+    &:focus-within {
         background: var-get($theme, 'focus-background');
         color: var-get($theme, 'focus-text-color');
     }
@@ -27,11 +27,6 @@ $theme: $material;
     &:hover {
         background: var-get($theme, 'hover-background');
         color: var-get($theme, 'hover-text-color');
-    }
-
-    &[disabled] {
-        background: var-get($theme, 'disabled-background');
-        color: var-get($theme, 'disabled-text-color');
     }
 
     ::slotted([slot="remove"]) {
@@ -77,11 +72,16 @@ $theme: $material;
     }
 }
 
-:host([selected]) button:not([disabled]) {
+:host([disabled]) [part='base'] {
+    background: var-get($theme, 'disabled-background');
+    color: var-get($theme, 'disabled-text-color');
+}
+
+:host([selected]:not([disabled])) [part='base'] {
     background: var-get($theme, 'selected-background');
     color: var-get($theme, 'selected-text-color');
 
-    &:focus {
+    &:focus-within {
         background: var-get($theme, 'focus-selected-background');
         color: var-get($theme, 'focus-selected-text-color');
     }
@@ -92,17 +92,17 @@ $theme: $material;
     }
 }
 
-:host([selected]) button[disabled] {
+:host([selected][disabled]) [part='base'] {
     background: var-get($theme, 'disabled-selected-background');
     color: var-get($theme, 'disabled-selected-text-color');
 }
 
-:host([outlined]) button {
+:host([outlined]) [part='base'] {
     background: var-get($theme, 'outlined-background');
     color: var-get($theme, 'outlined-text-color');
     border: rem(1px) solid var-get($theme, 'border-color');
 
-    &:focus {
+    &:focus-within {
         background: var-get($theme, 'focus-outlined-background');
         color: var-get($theme, 'focus-outlined-text-color');
         border-color: var-get($theme, 'focus-border-color');
@@ -113,20 +113,20 @@ $theme: $material;
         color: var-get($theme, 'hover-outlined-text-color');
         border-color: var-get($theme, 'hover-border-color');
     }
-
-    &[disabled] {
-        background: var-get($theme, 'disabled-outlined-background');
-        color: var-get($theme, 'disabled-outlined-text-color');
-        border-color: var-get($theme, 'disabled-border-color');
-    }
 }
 
-:host([selected][outlined]) button:not([disabled]) {
+:host([outlined][disabled]) [part='base'] {
+    background: var-get($theme, 'disabled-outlined-background');
+    color: var-get($theme, 'disabled-outlined-text-color');
+    border-color: var-get($theme, 'disabled-border-color');
+}
+
+:host([selected][outlined]:not([disabled])) [part='base'] {
     background: var-get($theme, 'selected-outlined-background');
     color: var-get($theme, 'selected-outlined-text-color');
     border-color: var-get($theme, 'selected-border-color');
 
-    &:focus {
+    &:focus-within {
         background: var-get($theme, 'focus-selected-outlined-background');
         color: var-get($theme, 'focus-selected-outlined-text-color');
         border-color: var-get($theme, 'focus-selected-border-color');
@@ -139,7 +139,7 @@ $theme: $material;
     }
 }
 
-:host([selected][outlined]) button[disabled] {
+:host([selected][outlined][disabled]) [part='base'] {
     background: var-get($theme, 'disabled-selected-outlined-background');
     color: var-get($theme, 'disabled-selected-outlined-text-color');
     border-color: var-get($theme, 'disabled-selected-border-color');

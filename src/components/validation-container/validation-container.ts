@@ -29,38 +29,39 @@ export interface ValidationContainerConfig {
   hasHelperText?: boolean;
 }
 
-const ALL_SLOTS_SELECTOR = 'slot';
-const QUERY_CONFIG: AssignedNodesOptions = { flatten: true };
-
 /**
- * Validity flags rendered as validation message slots, in a stable order so the
- * generated slots are deterministic across browsers.
+ * Validity flags and their slot names, in a stable order so the generated slots
+ * are deterministic across browsers.
  */
-const VALIDITY_KEYS: ReadonlyArray<keyof ValidityStateFlags> = [
-  'badInput',
-  'customError',
-  'patternMismatch',
-  'rangeOverflow',
-  'rangeUnderflow',
-  'stepMismatch',
-  'tooLong',
-  'tooShort',
-  'typeMismatch',
-  'valueMissing',
-];
+const VALIDITY_SLOTS: ReadonlyArray<
+  readonly [keyof ValidityStateFlags, string]
+> = (
+  [
+    'badInput',
+    'customError',
+    'patternMismatch',
+    'rangeOverflow',
+    'rangeUnderflow',
+    'stepMismatch',
+    'tooLong',
+    'tooShort',
+    'typeMismatch',
+    'valueMissing',
+  ] as const
+).map((key) => [key, toKebabCase(key)] as const);
 
 /**
- * Yields the active validation slot names for the given validity state, in a
- * stable order (`invalid` first, then each failing constraint).
+ * Yields the active validation slot names for the given validity state:
+ * `invalid` first, then each failing constraint.
  */
 function* activeValidationSlots(validity: ValidityState): Generator<string> {
   if (!validity.valid) {
     yield 'invalid';
   }
 
-  for (const key of VALIDITY_KEYS) {
+  for (const [key, slot] of VALIDITY_SLOTS) {
     if (validity[key]) {
-      yield toKebabCase(key);
+      yield slot;
     }
   }
 }
@@ -99,14 +100,17 @@ export default class IgcValidationContainerComponent extends LitElement {
       ? html`<slot name="helper-text" slot="helper-text"></slot>`
       : nothing;
 
-    // `hasUpdated` is false during SSR and the host's hydrating render, so both
-    // emit `nothing`. The real validation slots are projected post-hydration.
+    // `hasUpdated` is false during SSR and the hydrating render, so both emit
+    // `nothing` and the slots are projected on the next host render (see
+    // `firstUpdated` in the container).
     const validationSlots = host.hasUpdated
       ? Iterator.from(activeValidationSlots(host.validity))
           .map((name) => html`<slot name=${name} slot=${name}></slot>`)
           .toArray()
       : nothing;
 
+    // `?invalid` tracks host re-renders; the internal invalid/reset events cover
+    // a form reset, which restores the value without re-rendering the host.
     return html`
       <igc-validator
         id=${ifDefined(config.id)}
@@ -134,13 +138,10 @@ export default class IgcValidationContainerComponent extends LitElement {
   public invalid = false;
 
   /**
-   * The form control whose validity state is being rendered. The target's `invalid`
-   * property is reflected to the container, and its validity state is used to
-   * determine which validation message slots to render.
+   * The form control whose validity state is rendered.
    *
-   * @remarks The target must be set for the container to function, and should be
-   * set before the first update cycle for SSR compatibility. When using the
-   * `create` method, the target is set automatically.
+   * @remarks Must be set before the first update for SSR compatibility;
+   * `create` sets it automatically.
    */
   @property({ attribute: false })
   public set target(value: IgcFormControl) {
@@ -148,6 +149,8 @@ export default class IgcValidationContainerComponent extends LitElement {
       return;
     }
 
+    // Listeners are not removed on disconnect: the container lives in the
+    // target's shadow root and shares its lifetime.
     this._abortHandle.abort();
     const { signal } = this._abortHandle;
 
@@ -186,10 +189,11 @@ export default class IgcValidationContainerComponent extends LitElement {
   }
 
   /**
-   * Collects the projection state of the container slots in a single DOM pass.
+   * Collects which slots have assigned content.
    *
-   * @returns Whether every slot is empty and the set of non-empty validation
-   * slot names (i.e. excluding `helper-text`).
+   * @remarks Reads the shadow DOM from the previous commit. On the render where
+   * `invalid` flips on, the message slots do not exist yet, so every message is
+   * `empty`; their `slotchange` schedules a second render before paint.
    */
   private _collectProjectedSlots(): {
     isProjectionEmpty: boolean;
@@ -201,18 +205,15 @@ export default class IgcValidationContainerComponent extends LitElement {
       return { isProjectionEmpty: false, validation };
     }
 
-    const slots = Array.from(
-      this.renderRoot.querySelectorAll<HTMLSlotElement>(ALL_SLOTS_SELECTOR)
-    );
     let isProjectionEmpty = true;
 
-    for (const slot of slots) {
-      if (isEmpty(slot.assignedElements(QUERY_CONFIG))) {
+    for (const slot of this.renderRoot.querySelectorAll('slot')) {
+      if (isEmpty(slot.assignedElements({ flatten: true }))) {
         continue;
       }
 
       isProjectionEmpty = false;
-      if (slot.name && slot.name !== 'helper-text') {
+      if (slot.name !== 'helper-text') {
         validation.add(slot.name);
       }
     }
@@ -220,13 +221,13 @@ export default class IgcValidationContainerComponent extends LitElement {
     return { isProjectionEmpty, validation };
   }
 
-  protected _renderValidationMessage(
+  private _renderValidationMessage(
     slotName: string,
     projectedSlots: ReadonlySet<string>
   ): TemplateResult {
-    const hasProjectedIcon = projectedSlots.has(slotName);
-    const parts = { 'validation-message': true, empty: !hasProjectedIcon };
-    const icon = hasProjectedIcon
+    const hasProjectedContent = projectedSlots.has(slotName);
+    const parts = { 'validation-message': true, empty: !hasProjectedContent };
+    const icon = hasProjectedContent
       ? html`
           <igc-icon
             aria-hidden="true"
@@ -241,22 +242,20 @@ export default class IgcValidationContainerComponent extends LitElement {
     </div>`;
   }
 
-  protected _renderHelper(
-    hasValidationProjection: boolean
+  private _renderHelper(
+    projectedSlots: ReadonlySet<string>
   ): TemplateResult | typeof nothing {
-    return this.invalid && hasValidationProjection
+    return this.invalid && projectedSlots.size > 0
       ? nothing
       : html`<slot name="helper-text"></slot>`;
   }
 
   protected override firstUpdated(): void {
-    // The first render is intentionally neutral to match the SSR output during
-    // hydration. Only reconcile when the field hydrated in an invalid state, and
-    // do it off the current update cycle so we don't schedule an update as a side
-    // effect of the one in progress, projecting the real validation messages now
-    // that `hasUpdated` is true.
+    // `create` omits the validation slots until the host has updated. If the
+    // host hydrated invalid, ask it to re-render so the slots are projected;
+    // their `slotchange` then updates this container.
     if (this.invalid) {
-      queueMicrotask(() => this.requestUpdate());
+      this.target.requestUpdate();
     }
   }
 
@@ -274,7 +273,7 @@ export default class IgcValidationContainerComponent extends LitElement {
         part=${partMap({ 'helper-text': true, empty: isProjectionEmpty })}
         aria-live="polite"
       >
-        ${messages}${this._renderHelper(!isEmpty(validation))}
+        ${messages}${this._renderHelper(validation)}
       </div>
     `;
   }

@@ -359,7 +359,7 @@ describe('Tile drag and drop', () => {
 
       expect(dropTarget.position).to.equal(0);
       expect(dropTarget.colStart).to.equal(2);
-      expect(dropTarget.rowStart).to.equal(3);
+      expect(dropTarget.rowStart).to.equal(2);
     });
   });
 

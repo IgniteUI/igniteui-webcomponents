@@ -8,8 +8,8 @@ $theme: $bootstrap;
 }
 
 @mixin chip-outlined-variants-light($variant, $variant-color) {
-    :host([outlined][variant='#{$variant}']) button,
-    :host([selected][outlined][variant='#{$variant}']) button:not([disabled]) {
+    :host([outlined][variant='#{$variant}']) [part='base'],
+    :host([selected][outlined][variant='#{$variant}']:not([disabled])) [part='base'] {
         color: contrast-color($variant-color, 100);
 
         @if $variant == 'warning' or $variant == 'info' {

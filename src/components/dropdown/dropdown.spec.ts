@@ -441,6 +441,19 @@ describe('Dropdown', () => {
       expect(target.getAttribute('aria-activedescendant')).to.be.null;
     });
 
+    it('labels the list by the target element', async () => {
+      const list = dropDown.renderRoot.querySelector('[role="listbox"]')!;
+
+      expect(list.ariaLabelledByElements).to.eql([getTarget()]);
+
+      const external = document.createElement('button');
+      dropDown.append(external);
+
+      await openDropdown(external);
+
+      expect(list.ariaLabelledByElements).to.eql([external]);
+    });
+
     it('keeps an id the application put on an item', async () => {
       const item = dropDown.items[0];
       item.id = 'my-item';

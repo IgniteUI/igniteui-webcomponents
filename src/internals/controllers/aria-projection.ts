@@ -90,14 +90,19 @@ function elementsEqual(
   return a.length === b.length && a.every((element, i) => element === b[i]);
 }
 
-function projectionsEqual(a: ProjectedARIA, b: ProjectedARIA): boolean {
+function bindingsEqual(
+  a: ResolvedARIABindings | undefined,
+  b: ResolvedARIABindings
+): boolean {
   return (
+    a !== undefined &&
     a.role === b.role &&
     a.hasPopup === b.hasPopup &&
     a.expanded === b.expanded &&
     a.disabled === b.disabled &&
     a.label === b.label &&
-    (a.activeDescendant ?? null) === (b.activeDescendant ?? null) &&
+    a.describedByRef === b.describedByRef &&
+    a.activeDescendant === b.activeDescendant &&
     elementsEqual(a.controls, b.controls) &&
     elementsEqual(a.describedBy, b.describedBy) &&
     elementsEqual(a.labelledBy, b.labelledBy)
@@ -116,6 +121,8 @@ class AriaTargetController {
   private readonly _host: ControllerHost;
   private readonly _config: AriaTargetConfig;
   private _projected: ProjectedARIA = {};
+  /** The bindings last resolved for the native editor. */
+  private _resolved?: ResolvedARIABindings;
 
   constructor(host: ControllerHost, config: AriaTargetConfig) {
     this._host = host;
@@ -124,12 +131,18 @@ class AriaTargetController {
   }
 
   /**
-   * Replaces the projected state, scheduling a host render only when it
-   * actually changed so projecting on every host update stays cheap.
+   * Replaces the projected state, scheduling a host render only when the
+   * bindings it resolves to changed so projecting on every host update stays
+   * cheap. Comparing the resolved bindings rather than the projection also
+   * catches changes to the component's own labels and description, which it
+   * cannot observe itself - e.g. a composite host rendering a `<label for>`
+   * in its shadow root after the first render.
    */
   public setProjected(state: ProjectedARIA): void {
-    if (!projectionsEqual(this._projected, state)) {
-      this._projected = state;
+    const previous = this._resolved;
+    this._projected = state;
+
+    if (!bindingsEqual(previous, this.resolveBindings())) {
       this._reflectStylingHooks();
       this._host.requestUpdate();
     }
@@ -169,7 +182,7 @@ class AriaTargetController {
     const projected = this._projected;
     const description = this._config.description();
 
-    return {
+    this._resolved = {
       role: projected.role,
       hasPopup: projected.hasPopup,
       expanded: projected.expanded,
@@ -187,6 +200,8 @@ class AriaTargetController {
         : description?.id || undefined,
       activeDescendant: projected.activeDescendant ?? null,
     };
+
+    return this._resolved;
   }
 }
 

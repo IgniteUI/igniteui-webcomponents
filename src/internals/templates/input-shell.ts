@@ -43,6 +43,17 @@ export interface InputShellOptions {
   renderInput: () => TemplateResult;
   /** Optional renderer for components that need extra parts inside the container (e.g. file-input). */
   renderFileParts?: () => TemplateResult | typeof nothing;
+  /**
+   * Container part names contributed only by the material notch layout
+   * (e.g. the `placeholder` part of `igc-textarea`).
+   */
+  materialParts?: Record<string, boolean>;
+  /**
+   * Whether the prefix/suffix wrappers are hidden while their slot has no
+   * visible assigned elements, driven by the `prefixed` and `suffixed` entries
+   * of `containerParts`. Off by default, so the wrappers always render.
+   */
+  hideEmptyAffixes?: boolean;
 }
 
 function renderLabel(forId: string, label: string) {
@@ -51,12 +62,10 @@ function renderLabel(forId: string, label: string) {
     : nothing;
 }
 
-function renderPrefix() {
-  return html`<div part="prefix"><slot name="prefix"></slot></div>`;
-}
-
-function renderSuffix() {
-  return html`<div part="suffix"><slot name="suffix"></slot></div>`;
+function renderAffix(name: 'prefix' | 'suffix', hidden: boolean) {
+  return html`<div part=${name} ?hidden=${hidden}>
+    <slot name=${name}></slot>
+  </div>`;
 }
 
 /**
@@ -68,6 +77,8 @@ export function renderInputShell(
   host: IgcFormControl,
   {
     containerParts,
+    materialParts,
+    hideEmptyAffixes = false,
     renderFileParts,
     renderInput,
     theme,
@@ -78,15 +89,29 @@ export function renderInputShell(
   const validator = IgcValidationContainerComponent.create(host);
   const input = renderInput.call(host);
   const fileParts = renderFileParts?.call(host) ?? nothing;
+  const prefix = renderAffix(
+    'prefix',
+    hideEmptyAffixes && !containerParts.prefixed
+  );
+  const suffix = renderAffix(
+    'suffix',
+    hideEmptyAffixes && !containerParts.suffixed
+  );
 
   if (theme === 'material') {
     return html`
-      <div part=${partMap({ ...containerParts, labelled: !!label })}>
-        <div part="start">${renderPrefix()}</div>
+      <div
+        part=${partMap({
+          ...containerParts,
+          ...materialParts,
+          labelled: !!label,
+        })}
+      >
+        <div part="start">${prefix}</div>
         ${input}${fileParts}
         <div part="notch">${renderLabel(labelId, label)}</div>
         <div part="filler"></div>
-        <div part="end">${renderSuffix()}</div>
+        <div part="end">${suffix}</div>
       </div>
       ${validator}
     `;
@@ -95,7 +120,7 @@ export function renderInputShell(
   return html`
     ${renderLabel(labelId, label)}
     <div part=${partMap(containerParts)}>
-      ${renderPrefix()}${fileParts}${input}${renderSuffix()}
+      ${prefix}${fileParts}${input}${suffix}
     </div>
     ${validator}
   `;

@@ -12,7 +12,7 @@ import type { IgcCalendarResourceStrings } from '#internals/i18n/EN/calendar.res
 import type { I18nControllerConfig } from '#internals/i18n/i18n-controller.js';
 import { I18nMixin } from '#internals/mixins/i18n.js';
 import { firstOf } from '#internals/utils/arrays.js';
-import { getWeekDayNumber } from './helpers.js';
+import { getLocaleWeekStart, getWeekDayNumber } from './helpers.js';
 import type {
   CalendarSelection,
   DateRangeDescriptor,
@@ -34,6 +34,7 @@ export class IgcCalendarBaseComponent extends I18nMixin<
   IgcCalendarResourceStrings & ICalendarResourceStrings
 >(LitElement, i18n) {
   private _initialActiveDateSet = false;
+  private _weekStart?: WeekDays;
 
   protected get _hasValues(): boolean {
     return this._values.length > 0;
@@ -144,11 +145,20 @@ export class IgcCalendarBaseComponent extends I18nMixin<
 
   /**
    * Gets/Sets the first day of the week.
+   *
+   * @remarks
+   * When not set, the week starts on the first day of the week of the current {@link locale}.
+   * Setting `undefined` returns to the locale value.
    * @attr week-start
-   * @default sunday
    */
   @property({ attribute: 'week-start' })
-  public weekStart: WeekDays = 'sunday';
+  public set weekStart(value: WeekDays | undefined) {
+    this._weekStart = value ?? undefined;
+  }
+
+  public get weekStart(): WeekDays {
+    return this._weekStart ?? getLocaleWeekStart(this.locale);
+  }
 
   /**
    * Gets/Sets the special dates for the component.

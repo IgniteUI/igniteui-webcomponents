@@ -598,6 +598,8 @@ export default class IgcDropdownComponent extends EventEmitterMixin<
   //#endregion
 
   protected override render() {
+    const labelledBy = this._target ? [this._target] : null;
+
     return html`<igc-popover
       ?open=${this.open}
       ?flip=${this.flip}
@@ -609,7 +611,6 @@ export default class IgcDropdownComponent extends EventEmitterMixin<
       @igcPopoverScrollClose=${this._handleClosing}
     >
       <slot
-        id="dropdown-target"
         name="target"
         slot="anchor"
         @click=${this._handleAnchorClick}
@@ -620,7 +621,7 @@ export default class IgcDropdownComponent extends EventEmitterMixin<
           id="dropdown-list"
           role="listbox"
           part="list"
-          aria-labelledby="dropdown-target"
+          .ariaLabelledByElements=${labelledBy}
         >
           <slot></slot>
         </div>
