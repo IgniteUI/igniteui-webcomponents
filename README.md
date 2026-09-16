@@ -5,24 +5,74 @@
 </h1>
 
 [![Node.js CI](https://github.com/IgniteUI/igniteui-webcomponents/workflows/Node.js%20CI/badge.svg)](https://github.com/IgniteUI/igniteui-webcomponents/actions/workflows/node.js.yml)
+[![CodeQL](https://github.com/IgniteUI/igniteui-webcomponents/actions/workflows/codeql.yml/badge.svg)](https://github.com/IgniteUI/igniteui-webcomponents/actions/workflows/codeql.yml)
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/IgniteUI/igniteui-webcomponents/badge)](https://scorecard.dev/viewer/?uri=github.com/IgniteUI/igniteui-webcomponents)
 [![Coverage Status](https://coveralls.io/repos/github/IgniteUI/igniteui-webcomponents/badge.svg)](https://coveralls.io/github/IgniteUI/igniteui-webcomponents)
 [![npm version](https://badge.fury.io/js/igniteui-webcomponents.svg)](https://badge.fury.io/js/igniteui-webcomponents)
+[![License: MIT](https://img.shields.io/github/license/IgniteUI/igniteui-webcomponents)](https://github.com/IgniteUI/igniteui-webcomponents/blob/master/LICENSE)
 [![Discord](https://img.shields.io/discord/836634487483269200?logo=discord&logoColor=ffffff)](https://discord.gg/39MjrTRqds)
 
 [Ignite UI for Web Components] is a comprehensive library that includes the fastest [Data Grid] on the market, a high-performing [Hierarchical Grid], Pivot Grid, 60+ data [Charts], [Dock Manager], and more. Plus maps, gauges and other reusable feature-rich components to help you create better web apps and modern-day UX experiences.
 
-See the [Storybook Here](https://igniteui.github.io/igniteui-webcomponents)
+[Documentation][Ignite UI for Web Components] · [Storybook] · [Changelog] · [Discord](https://discord.gg/39MjrTRqds)
 
-## Browser Support
+## Table of contents
 
-| ![chrome_48x48] | ![firefox_48x48] | ![edge_48x48] | ![opera_48x48] | ![safari_48x48] |
-| --------------- | ---------------- | ------------- | -------------- | --------------- |
-| Latest ✔️       | Latest ✔️        | Latest ✔️     | Latest ✔️      | Latest ✔️       |
+- [Quick start](#quick-start)
+- [Components](#components)
+- [Browser support](#browser-support)
+- [Tooling](#tooling)
+- [Accessibility](#accessibility)
+- [Security and supply chain](#security-and-supply-chain)
+- [Privacy](#privacy)
+- [Contributing](#contributing)
+- [Support](#support)
+- [License](#license)
 
-## Overview
+## Quick start
+
+Install the `igniteui-webcomponents` package:
+
+```sh
+npm install igniteui-webcomponents
+```
+
+Import and register the components you need with the `defineComponents` function:
+
+```ts
+import {
+  defineComponents,
+  IgcAvatarComponent,
+  IgcBadgeComponent,
+} from 'igniteui-webcomponents';
+
+defineComponents(IgcAvatarComponent, IgcBadgeComponent);
+```
+
+You can also register every component at once with `defineAllComponents`:
+
+```ts
+import { defineAllComponents } from 'igniteui-webcomponents';
+
+defineAllComponents();
+```
+
+Registering all components increases the bundle size of your application, so register only the ones you use.
+
+After the components are registered, use them in your HTML:
+
+```html
+<igc-avatar initials="AZ"></igc-avatar><igc-badge></igc-badge>
+```
+
+See the [documentation][Ignite UI for Web Components] for guides on each component, theming, and framework integration.
+
+## Components
+
+All components in this package are released under the MIT License. The table lists the release in which each component first shipped.
 
 <details open>
-<summary>Components</summary>
+<summary>Component list</summary>
 
 | Components              | Status |         Documentation          | Released Version |    License     |
 | :---------------------- | :----: | :----------------------------: | :--------------: | :------------: |
@@ -79,7 +129,9 @@ See the [Storybook Here](https://igniteui.github.io/igniteui-webcomponents)
 
 </details>
 
-## Components available in Ignite UI for WebComponents Grids & Grid Lite
+### Grids, Grid Lite and Dock Manager
+
+The grids and the Dock Manager ship in separate packages. Grid Lite is MIT licensed; the others are commercial products.
 
 | Components        | Status |         Documentation          |             License              |                                 Package                                  |
 | :---------------- | :----: | :----------------------------: | :------------------------------: | :----------------------------------------------------------------------: |
@@ -89,11 +141,11 @@ See the [Storybook Here](https://igniteui.github.io/igniteui-webcomponents)
 | Hierarchical Grid |   ✅   | [Docs][Hierarchical Grid Docs] | [Commercial][Commercial License] |   [Ignite UI Web Components Grids][Ignite UI for WebComponents Grids]    |
 | Grid Lite         |   ✅   |       [Docs][Grid Lite]        |          [MIT](LICENSE)          | [Ignite UI Web Components Grid Lite][Ignite UI Web Components Grid Lite] |
 
-### The Lightweight Web Components Data Grid and Data Table
+#### The Lightweight Web Components Data Grid and Data Table
 
 The Ignite UI for Web Components Data Grid and Table are both lightweight and developed to handle high data volumes. The Web Components Grid offers powerful data visualization capabilities and superior performance on any device. With interactive features that users expect. Fast rendering. Unbeatable interactions. And the best possible user experience that you wouldn’t otherwise be able to achieve with so little code on your own.
 
-### Dock Manager - EXCLUSIVE FEATURE
+#### Dock Manager - EXCLUSIVE FEATURE
 
 ![Dock Manager Picture]
 
@@ -103,43 +155,15 @@ Provide a complete windowing experience, splitting complex layouts into smaller,
 - License - [Commercial][Commercial License]
 - Package - [igniteui-dockmanager](https://www.npmjs.com/package/igniteui-dockmanager)
 
-## Usage
+## Browser support
 
-In order to use the Ignite UI Web Components in your application you should install the `igniteui-webcomponents` package:
+| ![chrome_48x48] | ![firefox_48x48] | ![edge_48x48] | ![opera_48x48] | ![safari_48x48] |
+| --------------- | ---------------- | ------------- | -------------- | --------------- |
+| Latest ✔️       | Latest ✔️        | Latest ✔️     | Latest ✔️      | Latest ✔️       |
 
-```sh
-npm install igniteui-webcomponents
-```
+## Tooling
 
-Next you will need to import the components that you want to use. You could import one or more components using the `defineComponents` function like this:
-
-```ts
-import {
-  defineComponents,
-  IgcAvatarComponent,
-  IgcBadgeComponent,
-} from 'igniteui-webcomponents';
-
-defineComponents(IgcAvatarComponent, IgcBadgeComponent);
-```
-
-You could also import all of the components using the `defineAllComponents` function:
-
-```ts
-import { defineAllComponents } from 'igniteui-webcomponents';
-
-defineAllComponents();
-```
-
-Please note that importing all of the components will increase the bundle size of your application. That's why we recommend you to import only the components that you are actually using.
-
-After the components are imported you could use them in your html:
-
-```html
-<igc-avatar initials="AZ"></igc-avatar><igc-badge></igc-badge>
-```
-
-### Additional tooling
+### Editor metadata
 
 The package comes with its own [Custom Elements Manifest], [VSCode Custom Data Format] for VSCode and [Web Types] for JetBrains IDEs.
 Refer to the documentation of your editor of choice to see if you can take advantage of this metadata for linting, intellisense and documentation.
@@ -176,54 +200,37 @@ Copy-Item -Recurse node_modules\igniteui-webcomponents\skills\* .github\skills\
 
 See the [AI agent skills guide](skills/README.md) for example prompts, supported workflows, and additional installation locations.
 
+## Accessibility
+
+The components target WCAG 2.1 level AA and follow the ARIA Authoring Practices Guide patterns for their roles. Every component specification runs axe-core audits against both the light DOM and the shadow DOM, and components are verified by hand with a keyboard and screen readers such as NVDA. Because the components render in Shadow DOM, some ARIA relations cannot be expressed with IDREF attributes; the library uses `ElementInternals` and ARIA element reflection instead, and adopts new platform capabilities as browsers ship them.
+
+Read [ACCESSIBILITY.md][Accessibility] for the conformance target, the verification process, the platform constraints, and what the host application remains responsible for.
+
+## Security and supply chain
+
+Security fixes are released for the latest major version, and critical fixes are backported to the previous major. Report vulnerabilities privately through [GitHub private vulnerability reporting](https://github.com/IgniteUI/igniteui-webcomponents/security/advisories/new), never in a public issue.
+
+Every release ships with supply-chain evidence attached to the [GitHub release](https://github.com/IgniteUI/igniteui-webcomponents/releases): the published tarball with its digests, a CycloneDX SBOM, and signed provenance and SBOM attestations that you can check with `gh attestation verify`. CI runs CodeQL and the OpenSSF Scorecard, and Dependabot keeps dependencies and actions patched.
+
+Read [SECURITY.md][Security] for the support policy, the reporting process, response targets, verification steps, and security considerations for consumers.
+
+## Privacy
+
+The library collects no data. The components send no telemetry, set no cookies, write nothing to web storage, and load no remote code. The few browser capabilities they use, such as fetching an icon URL the host application registers or writing to the clipboard when the user clicks a copy control, are listed in [PRIVACY.md][Privacy].
+
 ## Contributing
 
-Follow the [Contribution Guidelines] to setup a development
-environment.
+Contributions are welcome. [CONTRIBUTING.md][Contribution Guidelines] covers setting up a development environment, the linting, testing and Storybook commands, and the accessibility, dependency and security requirements for a change. All contributors are expected to follow the [Code of Conduct][Code of Conduct].
 
-### Linting and Formatting
+## Support
 
-To scan the project for linting errors, run:
+See [SUPPORT.md][Support] for where to report bugs, ask questions, request components, report security or accessibility problems, and reach Infragistics support for the commercial products.
 
-```sh
-npm run lint
-```
+## License
 
-To automatically fix most linting and formatting errors, run:
+The `igniteui-webcomponents` package is released under the [MIT License][License]. Third-party runtime dependencies and their license terms are listed in [THIRD-PARTY-NOTICES.md][Third-party notices].
 
-```sh
-npm run format
-```
-
-Linting and formatting are also set to run in a pre-commit hook in the project.
-
-### Testing with Web Test Runner
-
-To run the suite of Web Test Runner tests, run:
-
-```sh
-npm run test
-```
-
-To run the tests in watch mode, run:
-
-```sh
-npm run test:watch
-```
-
-### Demoing with Storybook
-
-To start a local instance of Storybook for your component, run:
-
-```sh
-npm run storybook
-```
-
-To build a production version of Storybook, run:
-
-```sh
-npm run storybook:build
-```
+The Grids, Dock Manager and other packages marked *Commercial* above are licensed separately under the [Infragistics commercial license][Commercial License].
 
 [Ignite UI for Web Components]: https://www.infragistics.com/products/ignite-ui-web-components
 [Indigo.Design Design System]: https://www.infragistics.com/products/appbuilder/ui-toolkit
@@ -312,3 +319,11 @@ npm run storybook:build
 [6.3.0]: https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/6.3.0
 [7.1.0]: https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/7.1.0
 [7.3.0]: https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/7.3.0
+[Changelog]: https://github.com/IgniteUI/igniteui-webcomponents/blob/master/CHANGELOG.md
+[Accessibility]: https://github.com/IgniteUI/igniteui-webcomponents/blob/master/ACCESSIBILITY.md
+[Security]: https://github.com/IgniteUI/igniteui-webcomponents/blob/master/SECURITY.md
+[Privacy]: https://github.com/IgniteUI/igniteui-webcomponents/blob/master/PRIVACY.md
+[Support]: https://github.com/IgniteUI/igniteui-webcomponents/blob/master/.github/SUPPORT.md
+[Code of Conduct]: https://github.com/IgniteUI/igniteui-webcomponents/blob/master/CODE_OF_CONDUCT.md
+[License]: https://github.com/IgniteUI/igniteui-webcomponents/blob/master/LICENSE
+[Third-party notices]: https://github.com/IgniteUI/igniteui-webcomponents/blob/master/THIRD-PARTY-NOTICES.md
