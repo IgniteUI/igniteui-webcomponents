@@ -175,7 +175,7 @@ playwright_browser_evaluate({
 
 ```
 playwright_browser_evaluate({
-  function: "() => { const out = []; const walk = (root) => { root.querySelectorAll('igc-button, igc-icon-button, button, [role=button]').forEach(b => out.push((b.textContent || '').trim().replace(/\\s+/g, ' ') || b.getAttribute('aria-label') || b.getAttribute('name') || '(unlabeled)')); root.querySelectorAll('*').forEach(el => el.shadowRoot && walk(el.shadowRoot)); }; walk(document); return { count: out.length, controls: out }; }"
+  function: "() => { const out = []; const walk = (root) => { root.querySelectorAll('igc-button, igc-icon-button, button, [role=button]').forEach(b => { if (b.tagName === 'BUTTON' && b.getRootNode().host?.matches('igc-button, igc-icon-button')) return; out.push((b.textContent || '').trim().replace(/\\s+/g, ' ') || b.getAttribute('aria-label') || b.getAttribute('name') || '(unlabeled)'); }); root.querySelectorAll('*').forEach(el => el.shadowRoot && walk(el.shadowRoot)); }; walk(document); return { count: out.length, controls: out }; }"
 })
 ```
 
