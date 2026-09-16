@@ -198,13 +198,14 @@ everywhere, every control should report `outlined === count`.
 
 ```
 playwright_browser_evaluate({
-  function: "() => { const out = {}; document.querySelectorAll('igc-category-chart, igc-data-chart, igc-pie-chart, igc-grid, igc-grid-lite, igc-combo').forEach((el, i) => { out[el.tagName.toLowerCase() + '#' + i] = { dataLength: Array.isArray(el.dataSource) ? el.dataSource.length : (Array.isArray(el.data) ? el.data.length : null), brushes: el.brushes || null, height: Math.round(el.getBoundingClientRect().height) }; }); return out; }"
+  function: "() => { const defs = [ ['igc-category-chart', ['dataSource', 'data']], ['igc-data-chart', ['dataSource', 'data']], ['igc-pie-chart', ['dataSource', 'data']], ['igc-doughnut-chart', ['dataSource', 'data']], ['igc-financial-chart', ['dataSource', 'data']], ['igc-sparkline', ['dataSource', 'data']], ['igc-treemap', ['dataSource', 'data']], ['igc-funnel-chart', ['dataSource', 'data']], ['igc-grid', ['data']], ['igc-grid-lite', ['data']], ['igc-combo', ['data']] ]; const out = {}; defs.forEach(([tag, dataProps]) => { deepQueryAll(tag).forEach((el, i) => { const dataProp = dataProps.find(prop => Array.isArray(el[prop])); const brushProps = ['brushes', 'outlines'].filter(prop => Array.isArray(el[prop])); out[tag + '#' + i] = { dataLength: dataProp ? el[dataProp].length : null, brushCollections: brushProps.length ? Object.fromEntries(brushProps.map(prop => [prop, el[prop]])) : null, height: Math.round(el.getBoundingClientRect().height) }; }); }); return out; }"
 })
 ```
 
 `dataLength: null` means the collection was set as an attribute (or not at all) instead of
-as a property. `brushes: null` on a chart means it is still using the default palette, not
-the Figma series colors. `height: 0` means the element or its grid track has no height.
+as a property. `brushCollections: null` on a chart means none of its documented
+`brushes` / `outlines` arrays were assigned, so it is still using the default palette instead
+of the Figma series colors. `height: 0` means the element or its grid track has no height.
 
 ### Measure the gap between two elements
 
