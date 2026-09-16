@@ -23,6 +23,7 @@ const RELEASE_FILES = [
   'CHANGELOG.md',
   'LICENSE',
   'README.md',
+  'THIRD-PARTY-NOTICES.md',
 ];
 
 function spin(tag) {
