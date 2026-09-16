@@ -137,7 +137,7 @@ All snippets use the `function` parameter.
 
 ```
 playwright_browser_evaluate({
-  function: "() => { const tags = [...new Set([...document.querySelectorAll('*')].map(e => e.tagName.toLowerCase()).filter(t => t.startsWith('igc-')))]; const undefinedTags = tags.filter(t => !customElements.get(t)); const s = getComputedStyle(document.documentElement); return { tags, undefinedTags, theme: s.getPropertyValue('--ig-theme').trim(), variant: s.getPropertyValue('--ig-theme-variant').trim(), primary500: s.getPropertyValue('--ig-primary-500').trim(), surface500: s.getPropertyValue('--ig-surface-500').trim(), fontFamily: s.getPropertyValue('--ig-font-family').trim() }; }"
+  function: "() => { const tags = [...new Set(deepQueryAll('*').map(e => e.tagName.toLowerCase()).filter(t => t.startsWith('igc-')))]; const undefinedTags = tags.filter(t => !customElements.get(t)); const s = getComputedStyle(document.documentElement); return { tags, undefinedTags, theme: s.getPropertyValue('--ig-theme').trim(), variant: s.getPropertyValue('--ig-theme-variant').trim(), primary500: s.getPropertyValue('--ig-primary-500').trim(), surface500: s.getPropertyValue('--ig-surface-500').trim(), fontFamily: s.getPropertyValue('--ig-font-family').trim() }; }"
 })
 ```
 
