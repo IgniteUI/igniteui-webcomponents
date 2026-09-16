@@ -8,6 +8,7 @@ import {
   IgcVirtualGridComponent,
   type VirtualGridCellTemplate,
   type VirtualGridHeaderTemplate,
+  type VirtualGridRowTemplate,
   type VirtualGridState,
   type VirtualScrollDataRequest,
   defineComponents,
@@ -168,18 +169,45 @@ const headerTemplate = ((ctx) =>
     ${ctx.column.header}
   </div>`) as VirtualGridHeaderTemplate<Column> as VirtualGridHeaderTemplate<unknown>;
 
-const LOREM =
-  'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.';
+const LOREM_WORDS =
+  'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.'.split(
+    ' '
+  );
 
-const textTemplate = ((ctx) => {
-  const words = 1 + ((ctx.row * 7 + ctx.columnIndex * 3) % 18);
-  return html`<div style="padding-block: 6px; white-space: normal;">
-    ${LOREM.split(' ').slice(0, words).join(' ')}
-  </div>`;
-}) as VirtualGridCellTemplate<number, Column> as VirtualGridCellTemplate<
-  unknown,
-  unknown
->;
+function lorem(words: number): string {
+  return LOREM_WORDS.slice(0, words).join(' ');
+}
+
+function byId<T extends HTMLElement>(id: string): T {
+  return document.getElementById(id) as T;
+}
+
+/** Cells of one column hold text of a length that varies by row. */
+const wordsTemplate = ((ctx) =>
+  html`<div class="cell" style="white-space: nowrap">
+    ${lorem(ctx.columnIndex === 1 ? 1 + ((ctx.row * 7) % 12) : 1 + (ctx.row % 3))}
+  </div>`) as VirtualGridCellTemplate<
+  number,
+  Column
+> as VirtualGridCellTemplate<unknown, unknown>;
+
+const GROUP_SIZE = 25;
+
+/** Every twenty-fifth row is a group header for the rows after it. */
+const groupRowTemplate = ((ctx) =>
+  ctx.row % GROUP_SIZE === 0
+    ? html`<div class="group-row">
+        Group ${NUMBER_FORMAT.format(ctx.row / GROUP_SIZE + 1)}
+      </div>`
+    : null) as VirtualGridRowTemplate<number> as VirtualGridRowTemplate<unknown>;
+
+const textTemplate = ((ctx) =>
+  html`<div style="padding-block: 6px; white-space: normal;">
+    ${lorem(1 + ((ctx.row * 7 + ctx.columnIndex * 3) % 18))}
+  </div>`) as VirtualGridCellTemplate<
+  number,
+  Column
+> as VirtualGridCellTemplate<unknown, unknown>;
 
 const gridStyles = html`
   <style>
@@ -223,6 +251,16 @@ const gridStyles = html`
 
     igc-virtual-grid [data-vg-line='pinned-end'] {
       border-inline-start: 2px solid var(--ig-gray-400, #999);
+    }
+
+    igc-virtual-grid .group-row {
+      display: flex;
+      align-items: center;
+      height: 100%;
+      padding-inline: 8px;
+      font-weight: 600;
+      background: var(--ig-gray-100, #f2f2f2);
+      border-block-end: 1px solid var(--ig-gray-300, #ccc);
     }
 
     .toolbar {
@@ -398,8 +436,7 @@ export const InfiniteRows: Story = {
     const PAGE_SIZE = 100;
     let loading = false;
 
-    const grid = () =>
-      document.getElementById('vg-infinite') as IgcVirtualGridComponent;
+    const grid = () => byId<IgcVirtualGridComponent>('vg-infinite');
 
     const loadMore = (event: CustomEvent<VirtualScrollDataRequest>) => {
       if (loading) {
@@ -432,13 +469,84 @@ export const InfiniteRows: Story = {
   },
 };
 
+export const FullWidthRows: Story = {
+  argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Group rows through `rowTemplate`. The template runs for every rendered row: a `null` result renders the cells, any other result replaces them with one cell that spans every column and stays in view during a horizontal scroll.',
+      },
+    },
+    actions: { handles: [] },
+  },
+  render: () => html`
+    ${gridStyles}
+    <igc-virtual-grid
+      pinned-columns-start="1"
+      .data=${rows()}
+      .columns=${COLUMNS}
+      .cellTemplate=${cellTemplate}
+      .headerTemplate=${headerTemplate}
+      .rowTemplate=${groupRowTemplate}
+      @igcStateChange=${handleStateChange}
+    ></igc-virtual-grid>
+    ${readoutTemplate}
+  `,
+};
+
+export const AutoSizeColumn: Story = {
+  argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          '`autoSizeColumn` sets a column to the widest of its rendered cells, the header included. The measurement is a sample of the rows in view; the width holds until `columns` or `columnWidth` changes.',
+      },
+    },
+    actions: { handles: [] },
+  },
+  render: () => {
+    const grid = () => byId<IgcVirtualGridComponent>('vg-autosize');
+    const value = () =>
+      Number(byId<IgcInputComponent>('vg-autosize-col').value);
+
+    return html`
+      ${gridStyles}
+      <div class="toolbar">
+        <igc-input
+          id="vg-autosize-col"
+          type="number"
+          label="Column"
+          value="1"
+        ></igc-input>
+        <igc-button @click=${() => grid().autoSizeColumn(value())}
+          >Auto-size column</igc-button
+        >
+        <igc-button @click=${() => (grid().columns = [...TEXT_COLUMNS])}
+          >Reset widths</igc-button
+        >
+      </div>
+      <igc-virtual-grid
+        id="vg-autosize"
+        .data=${TEXT_ROWS}
+        .columns=${TEXT_COLUMNS}
+        .cellTemplate=${wordsTemplate}
+        .headerTemplate=${headerTemplate}
+        @igcStateChange=${handleStateChange}
+      ></igc-virtual-grid>
+      ${readoutTemplate}
+    `;
+  },
+};
+
 export const AutoRowHeight: Story = {
   argTypes: disableStoryControls(metadata),
   parameters: {
     docs: {
       description: {
         story:
-          'Ten thousand rows of wrapping text with `auto-row-height`. Each rendered row is measured by its border box and the estimate is corrected. A row can change height when a taller cell scrolls into view horizontally.',
+          'Ten thousand rows of wrapping text with `auto-row-height`. Each rendered row is measured by its border box and the estimate is corrected. When a row above the viewport is measured, the scroll offset follows it, so the rows in view do not jump. A row can change height when a taller cell scrolls into view horizontally.',
       },
     },
     actions: { handles: [] },
@@ -470,10 +578,8 @@ export const ScrollToCell: Story = {
     actions: { handles: [] },
   },
   render: () => {
-    const grid = () =>
-      document.getElementById('vg-scroll') as IgcVirtualGridComponent;
-    const value = (id: string) =>
-      Number((document.getElementById(id) as IgcInputComponent).value);
+    const grid = () => byId<IgcVirtualGridComponent>('vg-scroll');
+    const value = (id: string) => Number(byId<IgcInputComponent>(id).value);
 
     return html`
       ${gridStyles}

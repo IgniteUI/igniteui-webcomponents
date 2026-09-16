@@ -30,10 +30,42 @@ export class VirtualGridColumnContext<C> {
 }
 
 /**
+ * Context passed to the row template: the row item, its index, the row
+ * count, and edge predicates.
+ */
+export class VirtualGridRowContext<T> {
+  /** The row item of the current row. */
+  public readonly row: T;
+  /** The index of the row in `data`. */
+  public readonly rowIndex: number;
+  /** The total number of rows. */
+  public readonly rowCount: number;
+
+  constructor(row: T, rowIndex: number, rowCount: number) {
+    this.row = row;
+    this.rowIndex = rowIndex;
+    this.rowCount = rowCount;
+  }
+
+  /** Whether the row is the first one. */
+  public get isFirstRow(): boolean {
+    return this.rowIndex === 0;
+  }
+
+  /** Whether the row is the last one. */
+  public get isLastRow(): boolean {
+    return this.rowIndex === this.rowCount - 1;
+  }
+}
+
+/**
  * Context passed to the cell template: the row and column behind the cell,
  * both indexes, both counts, and edge predicates.
  */
-export class VirtualGridCellContext<T, C> extends VirtualGridColumnContext<C> {
+export class VirtualGridCellContext<T, C>
+  extends VirtualGridColumnContext<C>
+  implements VirtualGridRowContext<T>
+{
   /** The row item of the current cell. */
   public readonly row: T;
   /** The index of the row in `data`. */

@@ -89,11 +89,13 @@ export type {
   IgcVirtualGridComponentEventMap,
   VirtualGridCellTemplate,
   VirtualGridHeaderTemplate,
+  VirtualGridRowTemplate,
 } from './components/virtualization/grid/virtual-grid.js';
 export type {
   VirtualGridCellContext,
   VirtualGridColumnContext,
   VirtualGridColumnWidth,
+  VirtualGridRowContext,
   VirtualGridState,
 } from './components/virtualization/grid/types.js';
 

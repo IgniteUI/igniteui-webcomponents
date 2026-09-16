@@ -680,6 +680,57 @@ describe('VirtualScrollEngine', () => {
     });
   });
 
+  describe('Measure shift', () => {
+    it('accumulates the size delta of items measured before the anchor', () => {
+      const engine = createEngine(100);
+      // Offset 500 is the leading edge of item 10, so item 10 is the anchor.
+      engine.anchorOffset = 500;
+
+      engine.measureItem(9, 80);
+      engine.measureItem(10, 80);
+      engine.measureItem(11, 80);
+      expect(engine.takeMeasureShift()).to.equal(30);
+      expect(engine.takeMeasureShift()).to.equal(0);
+
+      engine.measureItem(0, 20);
+      expect(engine.takeMeasureShift()).to.equal(-30);
+    });
+
+    it('keeps the anchor on the same item across a batch', () => {
+      const engine = createEngine(100);
+      engine.anchorOffset = 500;
+
+      // After item 7 grows by 30, item 10 starts at 530: the offset of the
+      // anchor has moved with it, so items 8 and 9 still count.
+      engine.measureItem(7, 80);
+      engine.measureItem(8, 80);
+      engine.measureItem(9, 80);
+      expect(engine.takeMeasureShift()).to.equal(90);
+    });
+
+    it('does not shift in fixed mode or for an unchanged size', () => {
+      const engine = createEngine(100);
+      engine.anchorOffset = 500;
+
+      engine.measureItem(0, ESTIMATE);
+      expect(engine.takeMeasureShift()).to.equal(0);
+
+      engine.fixed = true;
+      engine.measureItem(0, 80);
+      expect(engine.takeMeasureShift()).to.equal(0);
+    });
+
+    it('reports the shift in DOM px under compression', () => {
+      // 100_000px of items into 10_000px: 1 DOM px is 10 virtual px.
+      const engine = createEngineWithMaxSize(10_000, 2000);
+      engine.anchorOffset = 100;
+
+      engine.measureItem(0, 150);
+      engine.measureItem(20, 150);
+      expect(engine.takeMeasureShift()).to.equal(10);
+    });
+  });
+
   describe('Range helpers', () => {
     it('compares ranges by their indexes', () => {
       expect(rangesEqual(EMPTY_RANGE, { startIndex: 0, endIndex: -1 })).to.be

@@ -95,6 +95,8 @@ export class VirtualGridEngine {
   public readonly rows = new VirtualScrollEngine();
   public readonly columns = new VirtualScrollEngine();
 
+  private _widths: number[] = [];
+  private _pinnedCounts: PinnedCounts = { start: 0, end: 0 };
   private _pinned: PinnedColumns = NO_PINNED_COLUMNS;
   private _pinnedSize = 0;
   private _headerSize = 0;
@@ -144,11 +146,36 @@ export class VirtualGridEngine {
   }
 
   /**
-   * Sets the width of every column, in display order. The first `start` and
-   * the last `end` of them are pinned, the rest go to the horizontal axis as
-   * known sizes. The counts are clamped to the columns.
+   * Sets the width of every column, in display order, and the pinned
+   * counts. The first `start` and the last `end` columns are pinned, the
+   * rest go to the horizontal axis as known sizes. The counts are clamped
+   * to the columns.
    */
   public setColumns(widths: readonly number[], pinned: PinnedCounts): void {
+    this._widths = [...widths];
+    this._pinnedCounts = pinned;
+    this._splitColumns();
+  }
+
+  /** Changes the pinned counts; the widths stay. */
+  public setPinned(pinned: PinnedCounts): void {
+    this._pinnedCounts = pinned;
+    this._splitColumns();
+  }
+
+  /** Changes the width of the column at `index`, pinned or not. */
+  public setColumnWidth(index: number, width: number): void {
+    if (index < 0 || index >= this._widths.length) {
+      return;
+    }
+    this._widths[index] = width;
+    this._splitColumns();
+  }
+
+  /** Splits the widths into the pinned tracks and the horizontal axis. */
+  private _splitColumns(): void {
+    const widths = this._widths;
+    const pinned = this._pinnedCounts;
     const count = widths.length;
     const startCount = Math.min(Math.max(0, pinned.start), count);
     const endStart =

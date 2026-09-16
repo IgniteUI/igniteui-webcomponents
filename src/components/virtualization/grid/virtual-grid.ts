@@ -32,6 +32,7 @@ import {
 import { ScrollCorrectionController } from '../scroll-correction.js';
 import type { VirtualScrollDataRequest, VisibleRange } from '../types.js';
 import {
+  type PinnedCounts,
   type PinnedTrack,
   type ScrollPosition,
   type ScrollTarget,
@@ -42,6 +43,7 @@ import {
   VirtualGridCellContext,
   VirtualGridColumnContext,
   type VirtualGridColumnWidth,
+  VirtualGridRowContext,
   type VirtualGridState,
   type VisibleWindow,
 } from './types.js';
@@ -53,6 +55,13 @@ export type VirtualGridCellTemplate<T, C> = (
 export type VirtualGridHeaderTemplate<C> = (
   context: VirtualGridColumnContext<C>
 ) => TemplateResult | typeof nothing;
+
+/**
+ * Renders a whole row, or returns `null` for a row that renders its cells.
+ */
+export type VirtualGridRowTemplate<T> = (
+  context: VirtualGridRowContext<T>
+) => TemplateResult | null;
 
 export interface IgcVirtualGridComponentEventMap {
   igcStateChange: CustomEvent<VirtualGridState>;
@@ -98,6 +107,10 @@ function px(value: number): string {
   return `${value}px`;
 }
 
+/** The selector path from the host to the rendered rows. */
+const ROWS_SELECTOR =
+  ':scope > [part="virtualization-track"] > [part="virtualization-content"] > [part="row"]';
+
 /**
  * The header row and the track are siblings, so the column tracks are set
  * on both from one string, and the row height on the track alone.
@@ -111,12 +124,18 @@ function px(value: number): string {
  * Pinned cells are sticky against the host, so a horizontal scroll never
  * moves them and needs no script. They are painted over the cells that
  * scroll under them, so they need an opaque background from the consumer.
+ * A full-width cell spans every track of its row and is sticky in the same
+ * way, sized to the viewport through `--igc-grid-viewport-width`.
+ *
+ * The grid corrects its own scroll offset when a row above the viewport is
+ * measured, so the browser's scroll anchoring is turned off.
  */
 const STYLES = `
   :where(igc-virtual-grid) {
     display: block;
     position: relative;
     overflow: auto;
+    overflow-anchor: none;
     height: 18.75rem;
   }
 
@@ -173,7 +192,15 @@ const STYLES = `
     inset-inline-end: 0;
   }
 
-  :where(igc-virtual-grid) :is([part="cell"], [part="header-cell"]) {
+  :where(igc-virtual-grid) [part="full-width-cell"] {
+    grid-column: 1 / -1;
+    position: sticky;
+    inset-inline-start: 0;
+    inline-size: var(--igc-grid-viewport-width);
+  }
+
+  :where(igc-virtual-grid)
+    :is([part="cell"], [part="header-cell"], [part="full-width-cell"]) {
     min-width: 0;
     overflow: hidden;
     box-sizing: border-box;
@@ -201,6 +228,8 @@ const STYLES = `
  * @csspart header-cell - A header cell. Wraps the output of `headerTemplate`.
  * @csspart row - A rendered row. A CSS grid whose tracks are the rendered columns.
  * @csspart cell - A rendered cell. Wraps the output of `cellTemplate`.
+ * @csspart full-width-cell - The one cell of a row rendered with `rowTemplate`. Spans every
+ * column and sticks to the viewport during a horizontal scroll.
  */
 export default class IgcVirtualGridComponent<
   T = any,
@@ -243,6 +272,14 @@ export default class IgcVirtualGridComponent<
 
   private _window: VisibleWindow = EMPTY_WINDOW;
   private _lastEmittedState: VirtualGridState | null = null;
+
+  /**
+   * The DOM px the vertical scroll offset moves by in the current update so
+   * the content at the top of the viewport stays put after the row
+   * measurements behind it. Predicted into `_scroll` before the render and
+   * applied to the host after it.
+   */
+  private _scrollShift = 0;
 
   /**
    * The live scroll offsets. Not reactive by design: `render` reads them
@@ -297,6 +334,19 @@ export default class IgcVirtualGridComponent<
    */
   @property({ attribute: false })
   public headerTemplate: VirtualGridHeaderTemplate<C> | null = null;
+
+  /**
+   * A function that renders a whole row from a `VirtualGridRowContext`, for
+   * example a group header or a detail row. Called for every rendered row
+   * before `cellTemplate`: a `null` result renders the cells of the row, any
+   * other result replaces them with one cell that spans every column and
+   * sticks to the viewport during a horizontal scroll.
+   *
+   * With fixed rows, a full-width row is as tall as any other row. Set
+   * `autoRowHeight` when it needs its own height.
+   */
+  @property({ attribute: false })
+  public rowTemplate: VirtualGridRowTemplate<T> | null = null;
 
   /**
    * The height of every row in pixels. With `autoRowHeight` set, the
@@ -447,20 +497,36 @@ export default class IgcVirtualGridComponent<
       rows.updateEstimatedSize(this._normalizedRowHeight);
     }
 
-    if (
-      changed.has('columns') ||
-      changed.has('columnWidth') ||
+    if (changed.has('columns') || changed.has('columnWidth')) {
+      this._syncColumnSizes();
+      this.ariaColCount = `${this._columns.length}`;
+    } else if (
       changed.has('pinnedColumnsStart') ||
       changed.has('pinnedColumnsEnd')
     ) {
-      this._syncColumnSizes();
-      this.ariaColCount = `${this._columns.length}`;
+      this._engine.setPinned(this._pinnedCounts);
+    }
+
+    this._scrollShift = rows.takeMeasureShift();
+    if (this._scrollShift !== 0) {
+      this._scroll = {
+        ...this._scroll,
+        top: this._scroll.top + this._scrollShift,
+      };
+      rows.anchorOffset = this._scroll.top;
     }
 
     this._window = this._computeWindow();
   }
 
   protected override updated(_changed: PropertyValues<this>): void {
+    if (this._scrollShift !== 0) {
+      // The rows are at their new offsets now, so the host follows them.
+      // The scroll event this causes finds the windows already in place.
+      this._scrollShift = 0;
+      this.scrollTop = this._scroll.top;
+    }
+
     this._rowResizeController.sync(
       this.autoRowHeight ? this._contentRef.value : null
     );
@@ -488,6 +554,7 @@ export default class IgcVirtualGridComponent<
       '--igc-grid-row-height': this.autoRowHeight
         ? 'auto'
         : px(this._normalizedRowHeight),
+      '--igc-grid-viewport-width': px(this._viewport.width),
     };
 
     // The content wrapper sits at the origin of the track. A vertical
@@ -498,9 +565,7 @@ export default class IgcVirtualGridComponent<
       transform: `translateY(${px(engine.rows.getRangeOffset(rowRange))})`,
     };
 
-    const rowCount = this._rows.length;
     const columnCount = this._columns.length;
-    const rowIndexOffset = 1 + this._headerRowCount;
     const visibleRows = sliceRange(this._rows, rowRange);
 
     return html`
@@ -540,32 +605,9 @@ export default class IgcVirtualGridComponent<
           role="presentation"
           style=${styleMap(contentStyle)}
         >
-          ${visibleRows.map((row, i) => {
-            const rowIndex = rowRange.startIndex + i;
-            return html`<div
-              part="row"
-              role="row"
-              aria-rowindex=${rowIndex + rowIndexOffset}
-              data-vg-row=${rowIndex}
-            >
-              ${this._renderCells(
-                columnRange,
-                'cell',
-                cellRole,
-                (column, columnIndex) =>
-                  this.cellTemplate!(
-                    new VirtualGridCellContext(
-                      row,
-                      rowIndex,
-                      rowCount,
-                      column,
-                      columnIndex,
-                      columnCount
-                    )
-                  )
-              )}
-            </div>`;
-          })}
+          ${visibleRows.map((row, i) =>
+            this._renderRow(row, rowRange.startIndex + i, columnRange, cellRole)
+          )}
         </div>
       </div>
     `;
@@ -574,6 +616,58 @@ export default class IgcVirtualGridComponent<
   //#endregion
 
   //#region Rendering
+
+  /**
+   * Renders one row: the cells of `columnRange`, or, when `rowTemplate`
+   * takes the row, one cell that spans every column.
+   */
+  private _renderRow(
+    row: T,
+    rowIndex: number,
+    columnRange: VisibleRange,
+    cellRole: CellRole
+  ): TemplateResult {
+    const rowCount = this._rows.length;
+    const columnCount = this._columns.length;
+    const fullWidth =
+      this.rowTemplate?.(new VirtualGridRowContext(row, rowIndex, rowCount)) ??
+      null;
+
+    return html`<div
+      part="row"
+      role="row"
+      aria-rowindex=${rowIndex + 1 + this._headerRowCount}
+      data-vg-row=${rowIndex}
+    >
+      ${
+        fullWidth !== null
+          ? html`<div
+              part="full-width-cell"
+              role=${cellRole}
+              aria-colindex="1"
+              aria-colspan=${columnCount}
+            >
+              ${fullWidth}
+            </div>`
+          : this._renderCells(
+              columnRange,
+              'cell',
+              cellRole,
+              (column, columnIndex) =>
+                this.cellTemplate!(
+                  new VirtualGridCellContext(
+                    row,
+                    rowIndex,
+                    rowCount,
+                    column,
+                    columnIndex,
+                    columnCount
+                  )
+                )
+            )
+      }
+    </div>`;
+  }
 
   /**
    * Renders the cells of one row in track order: the pinned start columns,
@@ -683,6 +777,15 @@ export default class IgcVirtualGridComponent<
     return this.headerTemplate ? 1 : 0;
   }
 
+  /** The pinned counts, clamped to the columns. */
+  private get _pinnedCounts(): PinnedCounts {
+    const count = this._columns.length;
+    return {
+      start: normalizeCount(this.pinnedColumnsStart, count),
+      end: normalizeCount(this.pinnedColumnsEnd, count),
+    };
+  }
+
   /**
    * Hands the column widths and the pinned counts to the engine: one value
    * per column, from the number or from the function evaluated once per
@@ -696,10 +799,7 @@ export default class IgcVirtualGridComponent<
         ? columns.map((column, i) => Math.max(0, asNumber(width(column, i))))
         : columns.map(() => normalizeSize(width, DEFAULT_COLUMN_WIDTH));
 
-    this._engine.setColumns(widths, {
-      start: normalizeCount(this.pinnedColumnsStart, columns.length),
-      end: normalizeCount(this.pinnedColumnsEnd, columns.length),
-    });
+    this._engine.setColumns(widths, this._pinnedCounts);
   }
 
   /**
@@ -750,6 +850,7 @@ export default class IgcVirtualGridComponent<
    */
   private _handleScroll(): void {
     this._scroll = this._currentScroll();
+    this._engine.rows.anchorOffset = this._scroll.top;
 
     const next = this._computeWindow();
     if (
@@ -867,16 +968,53 @@ export default class IgcVirtualGridComponent<
 
   /**
    * The wrapper element of the cell at `rowIndex`, `columnIndex`, or `null`
-   * when that cell is not rendered. Pair it with `scrollToCell` to move
-   * focus to a cell that is out of view.
+   * when that cell is not rendered. A row rendered with `rowTemplate` has no
+   * cells. Pair it with `scrollToCell` to move focus to a cell that is out
+   * of view.
    */
   public getCellElement(
     rowIndex: number,
     columnIndex: number
   ): HTMLElement | null {
     return this.querySelector<HTMLElement>(
-      `:scope > [part="virtualization-track"] > [part="virtualization-content"] > [data-vg-row="${rowIndex}"] > [data-vg-column="${columnIndex}"]`
+      `${ROWS_SELECTOR}[data-vg-row="${rowIndex}"] > [data-vg-column="${columnIndex}"]`
     );
+  }
+
+  /**
+   * Sets the width of the column at `columnIndex` to the widest of its
+   * rendered cells, the header cell included, and returns that width in px.
+   *
+   * The measurement is a sample: rows outside the rendered window take no
+   * part in it, so a wider cell can still scroll into view later. The width
+   * holds until `columns` or `columnWidth` changes. When no cell of the
+   * column is rendered, the width does not change and is returned as is.
+   */
+  public autoSizeColumn(columnIndex: number): number {
+    const cells = this.querySelectorAll<HTMLElement>(
+      `:scope > [part="header"] > [data-vg-column="${columnIndex}"], ${ROWS_SELECTOR} > [data-vg-column="${columnIndex}"]`
+    );
+    if (cells.length === 0) {
+      return this._engine.getColumnWidth(columnIndex);
+    }
+
+    // A cell fills its track, so its natural width shows only once the
+    // track no longer constrains it. One write pass, one read pass, one
+    // layout.
+    let width = 0;
+    for (const cell of cells) {
+      cell.style.width = 'max-content';
+    }
+    for (const cell of cells) {
+      width = Math.max(width, cell.getBoundingClientRect().width);
+    }
+    for (const cell of cells) {
+      cell.style.width = '';
+    }
+
+    width = Math.ceil(width);
+    this._engine.setColumnWidth(columnIndex, width);
+    return width;
   }
 
   /**

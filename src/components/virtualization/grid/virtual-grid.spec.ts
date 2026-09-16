@@ -9,11 +9,13 @@ import type { VirtualScrollDataRequest } from '../types.js';
 import type {
   VirtualGridCellContext,
   VirtualGridColumnContext,
+  VirtualGridRowContext,
   VirtualGridState,
 } from './types.js';
 import IgcVirtualGridComponent, {
   type VirtualGridCellTemplate,
   type VirtualGridHeaderTemplate,
+  type VirtualGridRowTemplate,
 } from './virtual-grid.js';
 
 interface Row {
@@ -74,6 +76,10 @@ describe('VirtualGrid', () => {
     return row.querySelector<HTMLElement>(`[data-vg-column="${columnIndex}"]`)!;
   }
 
+  function rowAt(el: Grid, rowIndex: number): HTMLElement | null {
+    return el.querySelector<HTMLElement>(`[data-vg-row="${rowIndex}"]`);
+  }
+
   /** The distance of `node` from the same edge of the grid. */
   function offset(el: Grid, node: Element, edge: 'left' | 'top'): number {
     return (
@@ -117,6 +123,7 @@ describe('VirtualGrid', () => {
     header?: boolean;
     pinnedStart?: number;
     pinnedEnd?: number;
+    rowTemplate?: VirtualGridRowTemplate<Row> | null;
   }
 
   /** A 400 x 300 px grid of 100 px wide columns, settled. */
@@ -130,6 +137,7 @@ describe('VirtualGrid', () => {
     header = false,
     pinnedStart = 0,
     pinnedEnd = 0,
+    rowTemplate = null,
   }: GridOptions = {}): Promise<Grid> {
     const el = await fixture<Grid>(
       html`<igc-virtual-grid
@@ -144,6 +152,7 @@ describe('VirtualGrid', () => {
         .columnWidth=${100}
         .cellTemplate=${template}
         .headerTemplate=${header ? headerTemplate : null}
+        .rowTemplate=${rowTemplate as VirtualGridRowTemplate<unknown> | null}
       ></igc-virtual-grid>`
     );
     await el.layoutComplete;
@@ -806,6 +815,175 @@ describe('VirtualGrid', () => {
       const { requests } = await createShortGrid(1000);
 
       expect(requests).to.be.empty;
+    });
+  });
+
+  describe('Full-width rows', () => {
+    /** Every fifth row is a group row. */
+    const groupRows: VirtualGridRowTemplate<Row> = (ctx) =>
+      ctx.row.id % 5 === 0
+        ? html`<div class="group">Group ${ctx.row.id / 5}</div>`
+        : null;
+
+    function fullWidthCell(row: HTMLElement): HTMLElement | null {
+      return row.querySelector<HTMLElement>('[part="full-width-cell"]');
+    }
+
+    it('passes the a11y audit', async () => {
+      const el = await createGrid({
+        rows: 10,
+        columns: 3,
+        rowTemplate: groupRows,
+      });
+
+      await expect(el).lightDom.to.be.accessible();
+    });
+
+    it('renders one spanning cell for a row the template handles and cells for the rest', async () => {
+      const el = await createGrid({ rowTemplate: groupRows, header: true });
+      const [group, plain] = renderedRows(el);
+      const cell = fullWidthCell(group)!;
+
+      expect(group.getAttribute('aria-rowindex')).to.equal('2');
+      expect(group.children).to.have.lengthOf(1);
+      expect(cell.getAttribute('role')).to.equal('gridcell');
+      expect(cell.getAttribute('aria-colindex')).to.equal('1');
+      expect(cell.getAttribute('aria-colspan')).to.equal('50');
+      expect(cell.textContent).to.contain('Group 0');
+
+      expect(fullWidthCell(plain)).to.be.null;
+      expect(plain.querySelectorAll('[data-vg-column]')).to.have.length(6);
+      expect(el.getCellElement(0, 0)).to.be.null;
+      expect(el.getCellElement(1, 0)).not.to.be.null;
+    });
+
+    it('passes the row, its index and the count to the row template', async () => {
+      const contexts: VirtualGridRowContext<Row>[] = [];
+      await createGrid({
+        rows: 3,
+        columns: 2,
+        rowTemplate: (ctx) => {
+          contexts.push(ctx);
+          return null;
+        },
+      });
+
+      expect(contexts.map((ctx) => ctx.row.id)).to.eql([0, 1, 2]);
+      expect(contexts[0]).to.include({ rowIndex: 0, rowCount: 3 });
+      expect(contexts[0].isFirstRow).to.be.true;
+      expect(contexts[2].isLastRow).to.be.true;
+    });
+
+    it('sizes the cell to the viewport and keeps it in view during a horizontal scroll', async () => {
+      const el = await createGrid({ rowTemplate: groupRows });
+      const cell = fullWidthCell(renderedRows(el)[0])!;
+
+      expect(cell.getBoundingClientRect().width).to.equal(el.clientWidth);
+      expect(offset(el, cell, 'left')).to.equal(0);
+
+      await simulateScroll(el, { left: 1000 });
+      await el.layoutComplete;
+
+      const scrolled = fullWidthCell(renderedRows(el)[0])!;
+      expect(scrolled.getBoundingClientRect().width).to.equal(el.clientWidth);
+      expect(offset(el, scrolled, 'left')).to.equal(0);
+    });
+
+    it('measures a full-width row with autoRowHeight', async () => {
+      const el = await createGrid({
+        rows: 100,
+        columns: 3,
+        autoRowHeight: true,
+        rowTemplate: (ctx) =>
+          ctx.row.id === 0 ? html`<div style="height: 70px"></div>` : null,
+      });
+
+      expect(renderedRows(el)[0].getBoundingClientRect().height).to.equal(70);
+      expect(el['_engine'].rows.getItemSize(0)).to.equal(70);
+      expect(offset(el, renderedRows(el)[1], 'top')).to.equal(70);
+    });
+  });
+
+  describe('autoSizeColumn', () => {
+    /** Column 1 has 150px content, 180px in row 3; the rest 40px. */
+    const contentWidths = asTemplate(
+      (ctx) =>
+        html`<div
+          style="width: ${ctx.columnIndex === 1 ? (ctx.row.id === 3 ? 180 : 150) : 40}px"
+        ></div>`
+    );
+
+    it('sets the column to the widest rendered cell and returns the width', async () => {
+      const el = await createGrid({ template: contentWidths, header: true });
+
+      expect(el.autoSizeColumn(1)).to.equal(180);
+      await el.layoutComplete;
+
+      expect(el['_engine'].getColumnWidth(1)).to.equal(180);
+      expect(
+        cellAt(renderedRows(el)[0], 1).getBoundingClientRect().width
+      ).to.equal(180);
+      expect(cellAt(header(el)!, 1).getBoundingClientRect().width).to.equal(
+        180
+      );
+      expect(track(el).style.width).to.equal('5080px');
+    });
+
+    it('leaves the width alone for a column that is not rendered', async () => {
+      const el = await createGrid({ template: contentWidths });
+
+      expect(el.autoSizeColumn(40)).to.equal(100);
+      expect(track(el).style.width).to.equal('5000px');
+    });
+
+    it('holds the width until the columns or the width source change', async () => {
+      const el = await createGrid({ template: contentWidths });
+      el.autoSizeColumn(1);
+      await el.layoutComplete;
+
+      el.pinnedColumnsStart = 1;
+      await el.layoutComplete;
+      expect(el['_engine'].getColumnWidth(1)).to.equal(180);
+
+      el.columnWidth = 90;
+      await el.layoutComplete;
+      expect(el['_engine'].getColumnWidth(1)).to.equal(90);
+    });
+
+    it('sizes a pinned column and moves the pinned cells after it', async () => {
+      const el = await createGrid({
+        template: contentWidths,
+        pinnedStart: 3,
+      });
+
+      el.autoSizeColumn(1);
+      await el.layoutComplete;
+
+      const row = renderedRows(el)[0];
+      expect(cellAt(row, 1).getBoundingClientRect().width).to.equal(180);
+      expect(offset(el, cellAt(row, 2), 'left')).to.equal(280);
+    });
+  });
+
+  describe('Scroll anchoring', () => {
+    const rows60 = asTemplate(() => html`<div style="height: 60px"></div>`);
+
+    it('keeps the row at the top of the viewport in place when rows above it are measured', async () => {
+      const el = await createGrid({
+        rows: 500,
+        columns: 3,
+        template: rows60,
+        autoRowHeight: true,
+      });
+
+      // Rows 0-9 are measured at 60px; the rest are estimated at 40px, so
+      // row 20 starts at 1000px and is the anchor. Its two over-scan rows
+      // above are measured at 60px after the scroll and grow by 20px each.
+      await simulateScroll(el, { top: 1000 });
+      await el.layoutComplete;
+
+      expect(el.scrollTop).to.equal(1040);
+      expect(offset(el, rowAt(el, 20)!, 'top')).to.equal(0);
     });
   });
 

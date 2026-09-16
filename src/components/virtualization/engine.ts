@@ -412,6 +412,16 @@ export class VirtualScrollEngine {
   /** The estimate given to the last `resize` or `updateEstimatedSize`. */
   private _estimatedSize = 0;
 
+  /** See `takeMeasureShift`. */
+  private _measureShift = 0;
+
+  /**
+   * The DOM scroll offset of the viewport start. A measurement of an item
+   * before the item at this offset moves that item; see `takeMeasureShift`.
+   * A host sets it on every scroll.
+   */
+  public anchorOffset = 0;
+
   /**
    * Called when item sizes or the item count change.
    * Example: `() => this.requestUpdate()`.
@@ -535,12 +545,44 @@ export class VirtualScrollEngine {
 
   /**
    * Records the measured DOM size for a single item. Ignored in fixed mode.
+   *
+   * When the item lies before the item at `anchorOffset`, the size delta
+   * is added to the pending measure shift. The anchor is resolved against
+   * the offset plus the shift so far, so the items of one measurement batch
+   * all move the same anchor.
    */
   public measureItem(index: number, size: number): void {
-    if (!this._sizes?.update(index, size)) return;
+    const sizes = this._sizes;
+    if (!sizes || this._fixed || index < 0 || index >= sizes.length) return;
 
+    const delta = size - sizes.sizeAt(index);
+    if (delta === 0) {
+      sizes.update(index, size);
+      return;
+    }
+
+    const anchor = sizes.findIndexAtOffset(
+      this._toVirtual(this.anchorOffset + this._measureShift)
+    );
+    if (index < anchor) {
+      this._measureShift += this._toDom(delta);
+    }
+
+    sizes.update(index, size);
     this._updateVirtualRatio();
     this.onSizeChange?.();
+  }
+
+  /**
+   * The DOM px the content at `anchorOffset` has moved by since the last
+   * call, through measurements of items before it, and resets it. A host
+   * that scrolls by the result keeps that content in place, so an item
+   * that grows above the viewport does not push the visible items down.
+   */
+  public takeMeasureShift(): number {
+    const shift = this._measureShift;
+    this._measureShift = 0;
+    return shift;
   }
 
   /**
@@ -570,7 +612,7 @@ export class VirtualScrollEngine {
     if (!this._sizes || index <= 0) return 0;
 
     const clamped = Math.min(index, this._sizes.length);
-    return this._sizes.prefixSum(clamped) / this._virtualRatio;
+    return this._toDom(this._sizes.prefixSum(clamped));
   }
 
   /**
@@ -624,7 +666,7 @@ export class VirtualScrollEngine {
     }
 
     return clamp(
-      offset / this._virtualRatio,
+      this._toDom(offset),
       0,
       this._getMaxScrollOffset(viewportSize)
     );
@@ -675,7 +717,7 @@ export class VirtualScrollEngine {
     const clamped = clampIndex(index, this._sizes.length);
     const itemStart = this._sizes.prefixSum(clamped);
     const itemEnd = this._sizes.prefixSum(clamped + 1);
-    const viewStart = Math.max(0, scrollPosition) * this._virtualRatio;
+    const viewStart = this._toVirtual(scrollPosition);
     const viewEnd = viewStart + viewportSize;
 
     const contained = itemStart >= viewStart && itemEnd <= viewEnd;
@@ -700,7 +742,7 @@ export class VirtualScrollEngine {
     // The viewport is not scaled by the virtual ratio. Items render at their
     // real pixel size, so a `viewportSize` px viewport always shows that many
     // virtual pixels of items, at any compression of the scroll range.
-    const startOffset = Math.max(0, scrollPosition) * this._virtualRatio;
+    const startOffset = this._toVirtual(scrollPosition);
     const first = this._sizes.findIndexAtOffset(startOffset);
     const last = this._sizes.findIndexAtOffset(startOffset + viewportSize);
 
@@ -721,6 +763,16 @@ export class VirtualScrollEngine {
     const start = Math.max(0, startIndex);
     const end = Math.min(Math.max(endIndex + 1, start), this._sizes.length);
     return this._sizes.prefixSum(end) - this._sizes.prefixSum(start);
+  }
+
+  /** A DOM scroll offset in virtual px. */
+  private _toVirtual(domOffset: number): number {
+    return Math.max(0, domOffset) * this._virtualRatio;
+  }
+
+  /** A virtual offset or size in DOM px. */
+  private _toDom(virtual: number): number {
+    return virtual / this._virtualRatio;
   }
 
   private _updateVirtualRatio(): void {
