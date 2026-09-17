@@ -1,6 +1,24 @@
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
-import { expandTypesPlugin, getTsProgram } from 'cem-plugin-expanded-types';
+import { getTsProgram, typeParserPlugin } from '@wc-toolkit/type-parser';
+
+/**
+ * The type parser writes a warning for each type it does not expand: recursive DOM
+ * interfaces, types above its property limit, and each component class it reaches as
+ * a member type. A run writes approximately 35 of them, and all of them are about
+ * expansions {@link pruneExpandedTypesPlugin} removes.
+ *
+ * The `debug` option does not gate `Logger.warn`, so no plugin option stops them, and
+ * `cem:watch` puts them in the Storybook output. Only the analyzer CLI loads this
+ * file, so the filter is safe for the full process.
+ */
+const { warn } = console;
+
+console.warn = (...args) => {
+  if (!args.some((arg) => String(arg).includes('[type-parser]'))) {
+    warn(...args);
+  }
+};
 
 /**
  * Maps each `#` subpath alias to the source directory it points at, derived
@@ -105,23 +123,64 @@ function resolveSubpathImportsPlugin() {
   };
 }
 
+/** Each member, attribute and event entry in a module. */
+function* moduleEntries(moduleDoc) {
+  for (const declaration of moduleDoc.declarations ?? []) {
+    yield* declaration.members ?? [];
+    yield* declaration.attributes ?? [];
+    yield* declaration.events ?? [];
+  }
+}
+
 /**
  * Fields wrapped by the coerced-property decorator must keep an explicit
- * `= undefined` initializer, which the analyzer records as
- * `default: "undefined"` - noise that downstream consumers (the story generator
- * among them) render as the literal string or coerce to `NaN`. These members
- * shipped without a default as accessor pairs, so drop the entry.
+ * `= undefined` initializer. The analyzer records it as `default: "undefined"`, which
+ * downstream consumers (the story generator among them) show as the literal string or
+ * change to `NaN`. These fields shipped without a default as accessor pairs, so drop
+ * the entry from the member and from the attribute that mirrors it.
  */
 function stripUndefinedDefaultsPlugin() {
   return {
     name: 'IGC - STRIP UNDEFINED DEFAULTS',
 
     moduleLinkPhase({ moduleDoc }) {
-      for (const declaration of moduleDoc.declarations ?? []) {
-        for (const member of declaration.members ?? []) {
-          if (member.default === 'undefined') {
-            delete member.default;
-          }
+      for (const entry of moduleEntries(moduleDoc)) {
+        if (entry.default === 'undefined') {
+          delete entry.default;
+        }
+      }
+    },
+  };
+}
+
+/**
+ * The type parser resolves a type through the TypeScript checker, and
+ * `parseObjectTypes: 'none'` gates only the outermost type. It therefore still expands
+ * an object it reaches through a union, an array element or a property. It also
+ * narrows literal-valued fields (`tagName: string` -> `'igc-icon'`) and splits
+ * `boolean` into `false | true`.
+ *
+ * The manifest carries `expandedType` for one consumer: the story generator reads it
+ * to turn an aliased union of literals into a set of control values. Every other
+ * expansion is noise or a worse form of `type.text`, so keep only literal unions.
+ */
+function pruneExpandedTypesPlugin() {
+  const LITERAL = /^(['"]).*\1$|^-?\d+(\.\d+)?$|^(null|undefined)$/;
+
+  const isLiteralUnion = (text) => {
+    const members = text?.split('|').map((member) => member.trim()) ?? [];
+    return (
+      members.length > 1 && members.every((member) => LITERAL.test(member))
+    );
+  };
+
+  return {
+    name: 'IGC - PRUNE EXPANDED TYPES',
+
+    moduleLinkPhase({ moduleDoc }) {
+      for (const entry of moduleEntries(moduleDoc)) {
+        if (!isLiteralUnion(entry.expandedType?.text)) {
+          delete entry.expandedType;
         }
       }
     },
@@ -143,7 +202,8 @@ export default {
 
   plugins: [
     resolveSubpathImportsPlugin(),
-    expandTypesPlugin({ hideLogs: true }),
+    typeParserPlugin({ propertyName: 'expandedType' }),
+    pruneExpandedTypesPlugin(),
     stripUndefinedDefaultsPlugin(),
   ],
 };

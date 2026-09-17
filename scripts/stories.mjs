@@ -9,12 +9,12 @@ const NULL_UNDEFINED_RE = /undefined|null/;
 const ARRAY_TYPE_RE = /\[\]/;
 const GENERIC_TYPE_RE = /<.*>/;
 
-/** A generic mixin leaks its bare type parameter — `T | null` — into the manifest. */
+/** A generic mixin leaks its bare type parameter, `T | null`, into the manifest. */
 const TYPE_PARAM_RE = /^[A-Z]\d?$/;
 
 /**
- * A `keyof` alias over the component's generic data — `Keys<T>` — is a string
- * key at the attribute level, unlike other generics which have no control.
+ * A `keyof` alias over the component's generic data, `Keys<T>`, is a string key at
+ * the attribute level. Other generics have no control.
  */
 const KEYOF_ALIAS_RE = /\bKeys<[^>]*>/g;
 
@@ -267,12 +267,14 @@ class StoriesBuilder {
       return { tsType: '' };
     }
 
-    // Only a union of literals stands for a set of values — `Element | string` is two
-    // types, not two things to pick between.
-    const literals = parts.every((part) => STRING_LITERAL_RE.test(part));
+    // Only a union of literals gives a set of values. `Element | string` is two
+    // types, not two values to select.
+    const literals = parts.every(
+      (part) => STRING_LITERAL_RE.test(part) || NUMBER_RE.test(part)
+    );
 
-    // The analyzer quotes numeric literals as though they were strings, expanding
-    // `SliderTickLabelRotation` (`0 | 90 | -90`) to `'0' | '90' | `.
+    // A numeric union is a set of numbers, not of their string forms. The analyzer
+    // writes it bare (`0 | 90 | -90`) or quoted.
     const numeric =
       literals && parts.every((part) => NUMBER_RE.test(unquote(part)));
 
