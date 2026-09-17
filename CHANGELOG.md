@@ -6,21 +6,24 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 ### Added
+- #### Breadcrumbs
+  - The new `igc-breadcrumbs` and `igc-breadcrumb` components show a navigation trail. The `igc-breadcrumbs` element has the `list` role. Its `separator` attribute gives the name of the icon between the items, and its default value is `tree_expand`. Put the element in a `<nav aria-label="...">` element, because the ARIA breadcrumb pattern needs that landmark.
+  - The `igc-breadcrumb` element has the `listitem` role. Put the content of the item, usually an anchor, in the default slot. The `prefix` and `suffix` slots add content before and after that content. The `separator` slot replaces the icon for one item. The `current` attribute sets `aria-current="page"`. The `disabled` attribute sets `aria-disabled` and removes the slotted content from the tab sequence. Assistive technology does not read the separator. The `label` and `separator` CSS parts give access to the two containers. [#1881](https://github.com/IgniteUI/igniteui-webcomponents/pull/1881)
 - #### Button group
-  - The single selection modes now follow the ARIA radio group keyboard pattern. The group is a single tab stop, and the arrow keys move both focus and the selection, skipping the disabled buttons and wrapping at both ends. The `alignment` picks the axis: `horizontal` binds ArrowLeft and ArrowRight and follows the writing direction, `vertical` binds ArrowUp and ArrowDown. Before, every button was a separate tab stop and the arrow keys did nothing, which the `radiogroup` role does not allow. The `multiple` selection mode is unchanged, as each of its buttons stays a tab stop of its own.
+  - The single selection modes now use the ARIA keyboard pattern of a radio group. The group is one tab stop. The arrow keys move the focus and the selection together, go past the disabled buttons, and wrap at the two ends. The `alignment` sets the axis: `horizontal` uses ArrowLeft and ArrowRight and obeys the writing direction, and `vertical` uses ArrowUp and ArrowDown. Before, each button was a different tab stop and the arrow keys did nothing, which the `radiogroup` role does not permit. The `multiple` selection mode does not change, because each of its buttons stays a tab stop. [#2385](https://github.com/IgniteUI/igniteui-webcomponents/pull/2385)
 
 ### Changed
 - #### Button group
-  - The `radiogroup` and `group` roles, and the disabled state, now sit on the `igc-button-group` element instead of an element inside its shadow root. Thus an `aria-label` or `aria-labelledby` that you set on the component names the group.
-  - The single selection modes now announce their `alignment` as the orientation of the radio group, thus the exposed semantics agree with the arrow keys and the layout.
+  - The `radiogroup` role, the `group` role and the disabled state are now on the `igc-button-group` element. Before, they were on an element in its shadow root. An `aria-label` or an `aria-labelledby` that you set on the component now gives the name of the group. [#2385](https://github.com/IgniteUI/igniteui-webcomponents/pull/2385)
+  - In the single selection modes, the radio group now reports the `alignment` as its orientation. Thus the semantics agree with the arrow keys and the layout.
 
 ### Fixed
 - #### Carousel
-  - Indicators now carry their `aria-label` as a content attribute in addition to `ElementInternals`, thus accessibility tools that do not read internals report the tab name.
+  - The indicators now keep their `aria-label` in a content attribute and in `ElementInternals`. Before, only `ElementInternals` had it. Thus accessibility tools that do not read internals report the name of the tab. [#2378](https://github.com/IgniteUI/igniteui-webcomponents/pull/2378)
 - #### Date picker
-  - A `label` set after the first render did not reach the native input in dropdown mode outside the Material theme. The projected ARIA state now re-resolves against the labels of the input, thus the association updates when the label appears or goes away.
+  - In dropdown mode, a `label` that you set after the first render did not go to the native input. This occurred in all themes but Material. The component now resolves the projected ARIA state again against the labels of the input. Thus the association changes when you add or remove the label. [#2378](https://github.com/IgniteUI/igniteui-webcomponents/pull/2378)
 - #### Dropdown
-  - The list is now labelled by the anchor element through `ariaLabelledByElements`. The previous `aria-labelledby` pointed at the anchor slot, which accessibility tools cannot resolve.
+  - The anchor element now gives the name of the list through `ariaLabelledByElements`. Before, `aria-labelledby` pointed to the anchor slot, which accessibility tools cannot resolve. [#2378](https://github.com/IgniteUI/igniteui-webcomponents/pull/2378)
 
 ## [7.3.2] - 2026-09-09
 ### Added
