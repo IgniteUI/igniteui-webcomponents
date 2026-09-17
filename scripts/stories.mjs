@@ -170,17 +170,17 @@ function resolveDefaultValue(tsType, value, options) {
     return tsType === 'boolean' ? false : undefined;
   }
 
+  const raw = unquote(value);
+
   switch (tsType) {
     case 'boolean':
       return value === 'true';
     case 'number':
       return Number.parseFloat(value);
     default:
-      // Follows the union it belongs to, so a numeric enum defaults to one of its
-      // members rather than to the digits spelled as a string.
-      return typeof options?.[0] === 'number'
-        ? Number(unquote(value))
-        : unquote(value);
+      // Follows the member it names, so a numeric union defaults to one of its
+      // numbers rather than to the digits spelled as a string.
+      return options?.includes(Number(raw)) ? Number(raw) : raw;
   }
 }
 
@@ -274,18 +274,15 @@ class StoriesBuilder {
     );
 
     // The analyzer writes a numeric literal bare, `0 | 90 | -90`, so a quoted member
-    // is a string. `'1' | '2'` is a choice between two strings, not between 1 and 2.
-    const numeric = literals && parts.every((part) => NUMBER_RE.test(part));
-
+    // is a string. A union holds both forms, so convert each member on its own.
     /** @type {SBEnumValues | undefined} */
     const values = literals
-      ? parts.map((part) => (numeric ? Number(part) : unquote(part)))
+      ? parts.map((part) =>
+          NUMBER_RE.test(part) ? Number(part) : unquote(part)
+        )
       : undefined;
 
-    const tsType =
-      values && numeric
-        ? values.join(' | ')
-        : parts.map((part) => part.replace(/'/g, '"')).join(' | ');
+    const tsType = parts.map((part) => part.replace(/'/g, '"')).join(' | ');
 
     return {
       tsType,
