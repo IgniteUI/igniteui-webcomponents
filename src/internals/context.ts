@@ -10,10 +10,16 @@ export type ButtonGroupContext = {
   /** The igc-button-group instance. */
   instance: IgcButtonGroupComponent;
   /**
-   * Reconciles the group with a button that has turned selected on its own,
-   * so that the single selection modes can drop the previous selection.
+   * Reconciles the group with a button whose state changed on its own: the single
+   * selection modes drop the previous selection, and the roving tab stop moves off
+   * a button that can no longer hold it.
    */
-  syncSelection: (button: IgcToggleButtonComponent) => void;
+  syncState: (button: IgcToggleButtonComponent) => void;
+  /**
+   * Whether `button` is the tab stop of the group. The single selection modes run
+   * a roving tab index, where a single button at a time is reachable by Tab.
+   */
+  isTabStop: (button: IgcToggleButtonComponent) => boolean;
 };
 
 export type TileManagerContext = {
