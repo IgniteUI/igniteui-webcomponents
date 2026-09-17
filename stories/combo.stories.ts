@@ -108,10 +108,10 @@ const metadata: Meta<IgcComboComponent> = {
       control: 'text',
     },
     groupSorting: {
-      type: { name: 'enum', value: ['asc', 'desc', 'none'] },
+      type: { name: 'enum', value: ['none', 'asc', 'desc'] },
       description:
         'Sorts the items in each group by ascending or descending order.',
-      options: ['asc', 'desc', 'none'],
+      options: ['none', 'asc', 'desc'],
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'asc' } },
     },
@@ -210,7 +210,7 @@ interface IgcComboArgs {
   /** The key in the data source used to group items in the list. */
   groupKey: string;
   /** Sorts the items in each group by ascending or descending order. */
-  groupSorting: 'asc' | 'desc' | 'none';
+  groupSorting: 'none' | 'asc' | 'desc';
   /** Enables the case sensitive search icon in the filtering input. */
   caseSensitiveIcon: boolean;
   /** Disables the filtering of the list of options. */

@@ -87,9 +87,9 @@ const metadata: Meta<IgcCalendarComponent> = {
       control: 'date',
     },
     selection: {
-      type: { name: 'enum', value: ['single', 'multiple', 'range'] },
+      type: { name: 'enum', value: ['multiple', 'single', 'range'] },
       description: 'Sets the type of selection in the component.',
-      options: ['single', 'multiple', 'range'],
+      options: ['multiple', 'single', 'range'],
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'single' } },
     },
@@ -171,7 +171,7 @@ interface IgcCalendarArgs {
   /** Get/Set the date which is shown in view and is highlighted. By default it is the current date. */
   activeDate: Date;
   /** Sets the type of selection in the component. */
-  selection: 'single' | 'multiple' | 'range';
+  selection: 'multiple' | 'single' | 'range';
   /** Whether to show the week numbers. */
   showWeekNumbers: boolean;
   /** Gets/Sets the first day of the week. */

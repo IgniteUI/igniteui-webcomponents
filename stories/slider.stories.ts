@@ -109,9 +109,9 @@ const metadata: Meta<IgcSliderComponent> = {
       table: { defaultValue: { summary: '0' } },
     },
     tickOrientation: {
-      type: { name: 'enum', value: ['end', 'mirror', 'start'] },
+      type: { name: 'enum', value: ['start', 'end', 'mirror'] },
       description: 'Changes the orientation of the ticks.',
-      options: ['end', 'mirror', 'start'],
+      options: ['start', 'end', 'mirror'],
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'end' } },
     },
@@ -141,10 +141,10 @@ const metadata: Meta<IgcSliderComponent> = {
       control: 'text',
     },
     tickLabelRotation: {
-      type: { name: 'enum', value: [0, 90] },
+      type: { name: 'enum', value: [0, 90, -90] },
       description:
         'The degrees for the rotation of the tick labels. Defaults to 0.',
-      options: [0, 90],
+      options: [0, 90, -90],
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: '0' } },
     },
@@ -222,7 +222,7 @@ interface IgcSliderArgs {
   /** The number of secondary ticks. It defaults to 0 which means no secondary ticks are displayed. */
   secondaryTicks: number;
   /** Changes the orientation of the ticks. */
-  tickOrientation: 'end' | 'mirror' | 'start';
+  tickOrientation: 'start' | 'end' | 'mirror';
   /** Hides the primary tick labels. */
   hidePrimaryLabels: boolean;
   /** Hides the secondary tick labels. */
@@ -232,7 +232,7 @@ interface IgcSliderArgs {
   /** String format used for the thumb and tick label values in the slider. */
   valueFormat: string;
   /** The degrees for the rotation of the tick labels. Defaults to 0. */
-  tickLabelRotation: 0 | 90;
+  tickLabelRotation: 0 | 90 | -90;
 }
 type Story = StoryObj<IgcSliderArgs>;
 

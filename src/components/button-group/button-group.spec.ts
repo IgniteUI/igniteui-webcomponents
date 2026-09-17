@@ -1,8 +1,19 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import { type TemplateResult } from 'lit';
 import { spy } from 'sinon';
+import { internalsOf } from '#internals/controllers/internals.js';
+import {
+  arrowDown,
+  arrowLeft,
+  arrowRight,
+  arrowUp,
+} from '#internals/controllers/key-bindings.js';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
-import { simulateClick } from '#internals/testing/simulate.spec.js';
+import { isFocused } from '#internals/testing/helpers.spec.js';
+import {
+  simulateClick,
+  simulateKeyboard,
+} from '#internals/testing/simulate.spec.js';
 import IgcButtonGroupComponent from './button-group.js';
 import IgcToggleButtonComponent from './toggle-button.js';
 
@@ -13,8 +24,15 @@ describe('Button Group', () => {
 
   const DIFF_OPTIONS = {
     ignoreTags: ['igc-toggle-button'],
-    ignoreAttributes: ['id', 'alignment'],
+    // `role` is reflected onto the host and asserted on its own under `ARIA`.
+    ignoreAttributes: ['id', 'alignment', 'role'],
   };
+
+  /** The ARIA the group publishes through its element internals. */
+  const getARIA = (group: IgcButtonGroupComponent) => ({
+    role: internalsOf(group)?.getARIA('role'),
+    ariaDisabled: internalsOf(group)?.getARIA('ariaDisabled'),
+  });
 
   let buttonGroup: IgcButtonGroupComponent;
   let buttons: IgcToggleButtonComponent[];
@@ -22,9 +40,7 @@ describe('Button Group', () => {
   describe('', () => {
     beforeEach(async () => {
       buttonGroup = await createButtonGroupComponent();
-      buttons = Array.from(
-        buttonGroup.querySelectorAll(IgcToggleButtonComponent.tagName)
-      );
+      buttons = getButtons(buttonGroup);
     });
 
     describe('Initialization Tests', () => {
@@ -51,8 +67,14 @@ describe('Button Group', () => {
 
         expect(buttonGroupElement).not.to.be.null;
         expect(buttonGroupElement).to.have.attribute('part', 'group');
-        expect(buttonGroupElement).to.have.attribute('role', 'radiogroup');
-        expect(buttonGroupElement).to.have.attribute('aria-disabled', 'false');
+
+        // The semantics of the group live on the host, so that an author's
+        // `aria-label` on the element names the radiogroup.
+        expect(getARIA(buttonGroup)).to.eql({
+          role: 'radiogroup',
+          ariaDisabled: 'false',
+        });
+        expect(buttonGroup).to.have.attribute('role', 'radiogroup');
       });
     });
 
@@ -88,7 +110,8 @@ describe('Button Group', () => {
           expect(button).dom.to.equal(
             `<igc-toggle-button>${button.textContent?.trim()}</igc-toggle-button>`,
             {
-              ignoreAttributes: ['value'],
+              // The roving tab index of the group is asserted on its own.
+              ignoreAttributes: ['value', 'tabindex'],
             }
           );
           expect(button.renderRoot.querySelector('button')).to.have.attribute(
@@ -112,7 +135,8 @@ describe('Button Group', () => {
           expect(button).dom.to.equal(
             `<igc-toggle-button>${button.textContent?.trim()}</igc-toggle-button>`,
             {
-              ignoreAttributes: ['value'],
+              // The roving tab index of the group is asserted on its own.
+              ignoreAttributes: ['value', 'tabindex'],
             }
           );
           expect(
@@ -130,7 +154,7 @@ describe('Button Group', () => {
           `<igc-button-group alignment="vertical"></igc-button-group>`,
           {
             ignoreTags: ['igc-toggle-button'],
-            ignoreAttributes: ['id'],
+            ignoreAttributes: ['id', 'role'],
           }
         );
 
@@ -142,7 +166,7 @@ describe('Button Group', () => {
           `<igc-button-group alignment="horizontal"></igc-button-group>`,
           {
             ignoreTags: ['igc-toggle-button'],
-            ignoreAttributes: ['id'],
+            ignoreAttributes: ['id', 'role'],
           }
         );
       });
@@ -630,8 +654,7 @@ describe('Button Group', () => {
 
         expect(buttonGroup.disabled).to.be.true;
 
-        const buttonGroupElement = buttonGroup.renderRoot.querySelector('div');
-        expect(buttonGroupElement).to.have.attribute('aria-disabled', 'true');
+        expect(getARIA(buttonGroup).ariaDisabled).to.equal('true');
 
         buttons.forEach((button) => {
           const style = getComputedStyle(button);
@@ -814,9 +837,7 @@ describe('Button Group', () => {
           <igc-toggle-button>Right</igc-toggle-button>
         </igc-button-group>
       `);
-      const items = Array.from(
-        group.querySelectorAll(IgcToggleButtonComponent.tagName)
-      );
+      const items = getButtons(group);
 
       simulateClick(items[0]);
       await elementUpdated(group);
@@ -837,9 +858,7 @@ describe('Button Group', () => {
           <igc-toggle-button value="same">Right</igc-toggle-button>
         </igc-button-group>
       `);
-      const items = Array.from(
-        group.querySelectorAll(IgcToggleButtonComponent.tagName)
-      );
+      const items = getButtons(group);
 
       simulateClick(items[0]);
       await elementUpdated(group);
@@ -925,9 +944,6 @@ describe('Button Group', () => {
   });
 
   describe('Disabled state', () => {
-    const getNativeButton = (button: IgcToggleButtonComponent) =>
-      button.renderRoot.querySelector('button');
-
     it('disables buttons added while the group is disabled', async () => {
       const group = await createButtonGroupComponent(html`
         <igc-button-group disabled>
@@ -955,9 +971,7 @@ describe('Button Group', () => {
           <igc-toggle-button value="right">Right</igc-toggle-button>
         </igc-button-group>
       `);
-      const items = Array.from(
-        group.querySelectorAll(IgcToggleButtonComponent.tagName)
-      );
+      const items = getButtons(group);
 
       group.disabled = true;
       await elementUpdated(group);
@@ -983,11 +997,7 @@ describe('Button Group', () => {
   });
 
   describe('ARIA', () => {
-    const getRole = (group: IgcButtonGroupComponent) =>
-      group.renderRoot.querySelector('div')?.getAttribute('role');
-
-    const getButtonPart = (button: IgcToggleButtonComponent) =>
-      button.renderRoot.querySelector('button');
+    const getRole = (group: IgcButtonGroupComponent) => getARIA(group).role;
 
     it('exposes radio semantics in the single selection modes', async () => {
       const group = await createButtonGroupComponent(html`
@@ -996,16 +1006,14 @@ describe('Button Group', () => {
           <igc-toggle-button value="right">Right</igc-toggle-button>
         </igc-button-group>
       `);
-      const items = Array.from(
-        group.querySelectorAll(IgcToggleButtonComponent.tagName)
-      );
+      const items = getButtons(group);
       await elementUpdated(items[0]);
       await elementUpdated(items[1]);
 
       expect(getRole(group)).to.equal('radiogroup');
 
       for (const button of items) {
-        const element = getButtonPart(button)!;
+        const element = getNativeButton(button)!;
 
         expect(element).to.have.attribute('role', 'radio');
         expect(element).to.have.attribute(
@@ -1018,6 +1026,21 @@ describe('Button Group', () => {
       await expect(group).to.be.accessible();
     });
 
+    it('carries the role on the host, so that an author label names the group', async () => {
+      const group = await createButtonGroupComponent(html`
+        <igc-button-group aria-label="Text alignment">
+          <igc-toggle-button value="left">Left</igc-toggle-button>
+          <igc-toggle-button value="right">Right</igc-toggle-button>
+        </igc-button-group>
+      `);
+
+      // The label and the role have to sit on the same node for the name to apply.
+      expect(group).to.have.attribute('role', 'radiogroup');
+      expect(group).to.have.attribute('aria-label', 'Text alignment');
+
+      await expect(group).to.be.accessible();
+    });
+
     it('exposes toggle button semantics in multiple selection mode', async () => {
       const group = await createButtonGroupComponent(html`
         <igc-button-group selection="multiple">
@@ -1025,16 +1048,14 @@ describe('Button Group', () => {
           <igc-toggle-button value="right">Right</igc-toggle-button>
         </igc-button-group>
       `);
-      const items = Array.from(
-        group.querySelectorAll(IgcToggleButtonComponent.tagName)
-      );
+      const items = getButtons(group);
       await elementUpdated(items[0]);
       await elementUpdated(items[1]);
 
       expect(getRole(group)).to.equal('group');
 
       for (const button of items) {
-        const element = getButtonPart(button)!;
+        const element = getNativeButton(button)!;
 
         expect(element).not.to.have.attribute('role');
         expect(element).to.have.attribute(
@@ -1047,11 +1068,29 @@ describe('Button Group', () => {
       await expect(group).to.be.accessible();
     });
 
+    it('mirrors `alignment` in aria-orientation', async () => {
+      const group = await createButtonGroupComponent();
+      const orientation = () =>
+        internalsOf(group)?.getARIA('ariaOrientation') ?? null;
+
+      // A `radiogroup` that announces no orientation is taken to be vertical.
+      expect(orientation()).to.equal('horizontal');
+
+      group.alignment = 'vertical';
+      await elementUpdated(group);
+
+      expect(orientation()).to.equal('vertical');
+
+      // There are no arrow keys in the multiple selection mode, hence no axis.
+      group.selection = 'multiple';
+      await elementUpdated(group);
+
+      expect(orientation()).to.be.null;
+    });
+
     it('updates the semantics when the selection mode changes', async () => {
       const group = await createButtonGroupComponent();
-      const items = Array.from(
-        group.querySelectorAll(IgcToggleButtonComponent.tagName)
-      );
+      const items = getButtons(group);
 
       expect(getRole(group)).to.equal('radiogroup');
 
@@ -1060,9 +1099,413 @@ describe('Button Group', () => {
       await elementUpdated(items[0]);
 
       expect(getRole(group)).to.equal('group');
-      expect(getButtonPart(items[0])).to.have.attribute('aria-pressed');
+      expect(getNativeButton(items[0])).to.have.attribute('aria-pressed');
     });
   });
+
+  describe('Keyboard navigation', () => {
+    /** The buttons of the group that are a tab stop, that is, not opted out of the tab order. */
+    const getTabStops = () =>
+      getButtons(group).filter((button) => !button.hasAttribute('tabindex'));
+
+    let group: IgcButtonGroupComponent;
+    let items: IgcToggleButtonComponent[];
+
+    async function setup(template?: TemplateResult) {
+      group = await createButtonGroupComponent(template);
+      items = getButtons(group);
+
+      for (const button of items) {
+        await elementUpdated(button);
+      }
+
+      return group;
+    }
+
+    describe('Roving tab index', () => {
+      it('keeps the first button as the only tab stop without a selection', async () => {
+        await setup();
+
+        expect(getTabStops()).to.eql([items[0]]);
+      });
+
+      it('keeps the selected button as the only tab stop', async () => {
+        await setup(html`
+          <igc-button-group>
+            <igc-toggle-button value="left">Left</igc-toggle-button>
+            <igc-toggle-button value="center" selected
+              >Center</igc-toggle-button
+            >
+            <igc-toggle-button value="right">Right</igc-toggle-button>
+          </igc-button-group>
+        `);
+
+        expect(getTabStops()).to.eql([items[1]]);
+      });
+
+      it('moves the tab stop along with the selection', async () => {
+        await setup();
+
+        simulateClick(items[2]);
+        await elementUpdated(group);
+
+        expect(getTabStops()).to.eql([items[2]]);
+      });
+
+      it('skips a disabled button when picking the tab stop', async () => {
+        await setup(html`
+          <igc-button-group>
+            <igc-toggle-button value="left" disabled>Left</igc-toggle-button>
+            <igc-toggle-button value="center">Center</igc-toggle-button>
+            <igc-toggle-button value="right">Right</igc-toggle-button>
+          </igc-button-group>
+        `);
+
+        expect(getTabStops()).to.eql([items[1]]);
+      });
+
+      it('gives up the tab stop when the button holding it turns disabled', async () => {
+        await setup();
+        expect(getTabStops()).to.eql([items[0]]);
+
+        items[0].disabled = true;
+        await elementUpdated(items[0]);
+
+        expect(getTabStops()).to.eql([items[1]]);
+      });
+
+      it('updates the tab stops for buttons added at runtime', async () => {
+        await setup();
+
+        const added = document.createElement(IgcToggleButtonComponent.tagName);
+        added.value = 'added';
+        group.insertBefore(added, items[0]);
+        await elementUpdated(group);
+        await elementUpdated(added);
+
+        expect(getTabStops()).to.eql([added]);
+      });
+
+      it('restores the tab order of a button taken out of the group', async () => {
+        await setup();
+        expect(getTabStops()).to.eql([items[0]]);
+
+        const [first, second] = items;
+        expect(second).to.have.attribute('tabindex', '-1');
+
+        second.remove();
+        await elementUpdated(group);
+
+        expect(second).not.to.have.attribute('tabindex');
+        expect(getTabStops()).to.eql([first]);
+
+        // The button is on its own now - a former group does not opt it out again.
+        second.selected = true;
+        await elementUpdated(second);
+
+        expect(second).not.to.have.attribute('tabindex');
+      });
+
+      it('keeps the tab order the author gave a button that leaves the group', async () => {
+        await setup(html`
+          <igc-button-group>
+            <igc-toggle-button value="left">Left</igc-toggle-button>
+            <igc-toggle-button value="center" tabindex="3"
+              >Center</igc-toggle-button
+            >
+          </igc-button-group>
+        `);
+
+        // The group owns the tab order of its buttons and takes this one over.
+        expect(items[1]).to.have.attribute('tabindex', '-1');
+
+        items[1].remove();
+        await elementUpdated(items[1]);
+
+        expect(items[1]).to.have.attribute('tabindex', '3');
+
+        // The former group keeps answering the context, and must not take over again.
+        items[1].selected = true;
+        await elementUpdated(items[1]);
+
+        expect(items[1]).to.have.attribute('tabindex', '3');
+      });
+
+      it('restores the tab order of a button moved to another parent', async () => {
+        await setup();
+
+        const parent = document.createElement('div');
+        group.after(parent);
+        parent.append(items[1]);
+        await elementUpdated(group);
+        await elementUpdated(items[1]);
+
+        expect(items[1]).not.to.have.attribute('tabindex');
+      });
+
+      it('takes the tab order back over when a button is re-attached', async () => {
+        await setup();
+        const [first, second] = items;
+
+        second.remove();
+        await elementUpdated(second);
+        expect(second).not.to.have.attribute('tabindex');
+
+        group.append(second);
+        await elementUpdated(group);
+        await elementUpdated(second);
+
+        expect(second).to.have.attribute('tabindex', '-1');
+        expect(getTabStops()).to.eql([first]);
+      });
+
+      it('hands a button over to the group it is moved into', async () => {
+        await setup();
+        const other = await createButtonGroupComponent(html`
+          <igc-button-group>
+            <igc-toggle-button value="first" selected>First</igc-toggle-button>
+          </igc-button-group>
+        `);
+
+        other.append(items[1]);
+        await elementUpdated(other);
+        await elementUpdated(items[1]);
+
+        expect(items[1]).to.have.attribute('tabindex', '-1');
+
+        // A state change reconciles with the new group, not with the previous one.
+        items[1].selected = true;
+        await elementUpdated(items[1]);
+        await elementUpdated(other);
+
+        expect(other.selectedItems).to.eql(['center']);
+      });
+
+      it('follows the selection mode', async () => {
+        await setup();
+
+        group.selection = 'multiple';
+        await elementUpdated(group);
+
+        expect(getTabStops()).to.eql(items);
+
+        group.selection = 'single';
+        await elementUpdated(group);
+
+        expect(getTabStops()).to.eql([items[0]]);
+      });
+    });
+
+    describe('Arrow navigation', () => {
+      it('moves focus and the selection to the next button', async () => {
+        await setup();
+        items[0].focus();
+
+        simulateKeyboard(items[0], arrowRight);
+        await elementUpdated(group);
+
+        expect(isFocused(items[1])).to.be.true;
+        expect(group.selectedItems).to.eql(['center']);
+        expect(getTabStops()).to.eql([items[1]]);
+      });
+
+      it('moves focus and the selection to the previous button', async () => {
+        await setup();
+        items[2].focus();
+        simulateClick(items[2]);
+        await elementUpdated(group);
+
+        simulateKeyboard(items[2], arrowLeft);
+        await elementUpdated(group);
+
+        expect(isFocused(items[1])).to.be.true;
+        expect(group.selectedItems).to.eql(['center']);
+      });
+
+      it('wraps around both ends of the group', async () => {
+        await setup();
+        items[0].focus();
+
+        simulateKeyboard(items[0], arrowLeft);
+        await elementUpdated(group);
+
+        expect(isFocused(items[2])).to.be.true;
+        expect(group.selectedItems).to.eql(['right']);
+
+        simulateKeyboard(items[2], arrowRight);
+        await elementUpdated(group);
+
+        expect(isFocused(items[0])).to.be.true;
+        expect(group.selectedItems).to.eql(['left']);
+      });
+
+      it('skips over disabled buttons', async () => {
+        await setup(html`
+          <igc-button-group>
+            <igc-toggle-button value="left">Left</igc-toggle-button>
+            <igc-toggle-button value="center" disabled
+              >Center</igc-toggle-button
+            >
+            <igc-toggle-button value="right">Right</igc-toggle-button>
+          </igc-button-group>
+        `);
+        items[0].focus();
+
+        simulateKeyboard(items[0], arrowRight);
+        await elementUpdated(group);
+
+        expect(isFocused(items[2])).to.be.true;
+        expect(group.selectedItems).to.eql(['right']);
+      });
+
+      it('navigates when the group sits inside another shadow root', async () => {
+        const host = await fixture<HTMLDivElement>(html`<div></div>`);
+        const root = host.attachShadow({ mode: 'open' });
+
+        root.innerHTML = `
+          <igc-button-group>
+            <igc-toggle-button value="left">Left</igc-toggle-button>
+            <igc-toggle-button value="center">Center</igc-toggle-button>
+          </igc-button-group>
+        `;
+
+        const nested = root.querySelector(IgcButtonGroupComponent.tagName)!;
+        const nestedItems = getButtons(nested);
+        await elementUpdated(nested);
+
+        for (const button of nestedItems) {
+          await elementUpdated(button);
+        }
+
+        nestedItems[0].focus();
+        simulateKeyboard(nestedItems[0], arrowRight);
+        await elementUpdated(nested);
+
+        expect(isFocused(nestedItems[1])).to.be.true;
+        expect(nested.selectedItems).to.eql(['center']);
+      });
+
+      it('emits the selection events on navigation', async () => {
+        await setup();
+        const eventSpy = spy(group, 'emitEvent');
+
+        items[0].focus();
+        simulateClick(items[0]);
+        await elementUpdated(group);
+        eventSpy.resetHistory();
+
+        simulateKeyboard(items[0], arrowRight);
+        await elementUpdated(group);
+
+        expect(eventSpy.firstCall).calledWith('igcDeselect', {
+          detail: 'left',
+        });
+        expect(eventSpy.secondCall).calledWith('igcSelect', {
+          detail: 'center',
+        });
+      });
+
+      it('never deselects the button it navigates to (single-required)', async () => {
+        await setup(html`
+          <igc-button-group selection="single-required">
+            <igc-toggle-button value="left" selected>Left</igc-toggle-button>
+            <igc-toggle-button value="right">Right</igc-toggle-button>
+          </igc-button-group>
+        `);
+        items[0].focus();
+
+        simulateKeyboard(items[0], arrowRight);
+        await elementUpdated(group);
+        simulateKeyboard(items[1], arrowRight);
+        await elementUpdated(group);
+
+        expect(isFocused(items[0])).to.be.true;
+        expect(group.selectedItems).to.eql(['left']);
+      });
+
+      it('follows the horizontal alignment', async () => {
+        await setup();
+        items[0].focus();
+
+        simulateKeyboard(items[0], arrowDown);
+        await elementUpdated(group);
+
+        expect(isFocused(items[0])).to.be.true;
+        expect(group.selectedItems).to.be.empty;
+      });
+
+      it('follows the vertical alignment', async () => {
+        await setup();
+        group.alignment = 'vertical';
+        await elementUpdated(group);
+
+        items[0].focus();
+        simulateKeyboard(items[0], arrowDown);
+        await elementUpdated(group);
+
+        expect(isFocused(items[1])).to.be.true;
+        expect(group.selectedItems).to.eql(['center']);
+
+        simulateKeyboard(items[1], arrowRight);
+        await elementUpdated(group);
+
+        expect(isFocused(items[1])).to.be.true;
+        expect(group.selectedItems).to.eql(['center']);
+
+        simulateKeyboard(items[1], arrowUp);
+        await elementUpdated(group);
+
+        expect(isFocused(items[0])).to.be.true;
+        expect(group.selectedItems).to.eql(['left']);
+      });
+
+      it('follows the writing direction', async () => {
+        await setup();
+        group.dir = 'rtl';
+        await elementUpdated(group);
+
+        items[0].focus();
+        simulateKeyboard(items[0], arrowLeft);
+        await elementUpdated(group);
+
+        expect(isFocused(items[1])).to.be.true;
+        expect(group.selectedItems).to.eql(['center']);
+      });
+
+      it('does not navigate in multiple selection mode', async () => {
+        await setup();
+        group.selection = 'multiple';
+        await elementUpdated(group);
+
+        items[0].focus();
+        simulateKeyboard(items[0], arrowRight);
+        await elementUpdated(group);
+
+        expect(isFocused(items[0])).to.be.true;
+        expect(group.selectedItems).to.be.empty;
+      });
+
+      it('does not navigate while the group is disabled', async () => {
+        await setup();
+        group.disabled = true;
+        await elementUpdated(group);
+
+        items[0].focus();
+        simulateKeyboard(items[0], arrowRight);
+        await elementUpdated(group);
+
+        expect(group.selectedItems).to.be.empty;
+      });
+    });
+  });
+
+  function getButtons(group: IgcButtonGroupComponent) {
+    return Array.from(group.querySelectorAll(IgcToggleButtonComponent.tagName));
+  }
+
+  function getNativeButton(button: IgcToggleButtonComponent) {
+    return button.renderRoot.querySelector('button');
+  }
 
   function createButtonGroupComponent(template?: TemplateResult) {
     return fixture<IgcButtonGroupComponent>(
