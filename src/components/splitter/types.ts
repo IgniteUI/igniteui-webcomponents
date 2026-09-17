@@ -1,5 +1,13 @@
 import type { StyleInfo } from 'lit/directives/style-map.js';
 
+/**
+ * Identifies one of the two panes of a splitter.
+ *
+ * - `start` — the first pane: top in a vertical splitter, inline start (left
+ *   in left-to-right layouts) in a horizontal one.
+ * - `end` — the second pane: bottom in a vertical splitter, inline end (right
+ *   in left-to-right layouts) in a horizontal one.
+ */
 type PanePosition = 'start' | 'end';
 
 interface SplitterPaneState {

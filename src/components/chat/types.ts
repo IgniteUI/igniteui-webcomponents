@@ -278,7 +278,10 @@ export interface ChatRenderers {
 export type ChatTemplateRenderer<T> = (ctx: T) => unknown;
 
 /**
- * A string literal type defining the two possible positions for chat suggestions.
+ * Where a chat renders its suggestion chips.
+ *
+ * - `below-input` — below the input area.
+ * - `below-messages` — below the message list.
  */
 export type ChatSuggestionsPosition = 'below-input' | 'below-messages';
 

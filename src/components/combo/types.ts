@@ -19,7 +19,22 @@ export type ComboRecord<T extends object> = {
 export type ComboHost<T extends object> = ReactiveControllerHost &
   IgcComboComponent<T>;
 
+/**
+ * Sort order of the groups in a combo.
+ *
+ * - `asc` — ascending.
+ * - `desc` — descending.
+ * - `none` — groups keep the order in which they appear in the data.
+ */
 export type GroupingDirection = 'asc' | 'desc' | 'none';
+
+/**
+ * Kind of change reported by a combo change event.
+ *
+ * - `selection` — one or more items were selected.
+ * - `deselection` — one or more items were deselected.
+ * - `addition` — a custom value typed by the user was added as an item.
+ */
 export type ComboChangeType = 'selection' | 'deselection' | 'addition';
 export type ComboRenderFunction<T extends object> = VirtualScrollItemTemplate<
   ComboRecord<T>
