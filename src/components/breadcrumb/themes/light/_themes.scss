@@ -1,0 +1,8 @@
+@use 'styles/utilities' as *;
+@use 'igniteui-theming/sass/themes/schemas/components/light/breadcrumb' as *;
+
+$base: digest-schema($light-breadcrumb);
+$material: digest-schema($material-breadcrumb);
+$bootstrap: digest-schema($bootstrap-breadcrumb);
+$fluent: digest-schema($fluent-breadcrumb);
+$indigo: digest-schema($indigo-breadcrumb);
