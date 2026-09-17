@@ -74,9 +74,25 @@ export default class IgcToggleButtonComponent extends LitElement {
     addThemingController(this, all);
   }
 
+  protected override willUpdate(): void {
+    const group = this._context.value;
+
+    // Outside of a group the button keeps whatever tab order it was given.
+    if (!group) {
+      return;
+    }
+
+    group.isTabStop(this)
+      ? this.removeAttribute('tabindex')
+      : this.setAttribute('tabindex', '-1');
+  }
+
   protected override updated(changedProperties: PropertyValues<this>): void {
-    if (changedProperties.has('selected') && this.selected) {
-      this._context.value?.syncSelection(this);
+    if (
+      changedProperties.has('selected') ||
+      changedProperties.has('disabled')
+    ) {
+      this._context.value?.syncState(this);
     }
   }
 

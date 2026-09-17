@@ -5,6 +5,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+### Added
+- #### Button group
+  - The single selection modes now follow the ARIA radio group keyboard pattern. The group is a single tab stop, and the arrow keys move both focus and the selection, skipping the disabled buttons and wrapping at both ends. The `alignment` picks the axis: `horizontal` binds ArrowLeft and ArrowRight and follows the writing direction, `vertical` binds ArrowUp and ArrowDown. Before, every button was a separate tab stop and the arrow keys did nothing, which the `radiogroup` role does not allow. The `multiple` selection mode is unchanged, as each of its buttons stays a tab stop of its own.
+
+### Changed
+- #### Button group
+  - The `radiogroup` and `group` roles, and the disabled state, now sit on the `igc-button-group` element instead of an element inside its shadow root. Thus an `aria-label` or `aria-labelledby` that you set on the component names the group.
+
 ### Fixed
 - #### Carousel
   - Indicators now carry their `aria-label` as a content attribute in addition to `ElementInternals`, thus accessibility tools that do not read internals report the tab name.
