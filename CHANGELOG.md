@@ -20,10 +20,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 - #### Carousel
   - The indicators now keep their `aria-label` in a content attribute and in `ElementInternals`. Before, only `ElementInternals` had it. Thus accessibility tools that do not read internals report the name of the tab. [#2378](https://github.com/IgniteUI/igniteui-webcomponents/pull/2378)
+- #### Combo, Select
+  - A click on the label of the input no longer opens the list and closes it again. One click emitted `igcOpening`, then `igcClosing` and `igcClosed`, and left the component closed, because the label click and the click that the label activation behavior dispatches on the input both reached the toggle handler.
 - #### Date picker
   - In dropdown mode, a `label` that you set after the first render did not go to the native input. This occurred in all themes but Material. The component now resolves the projected ARIA state again against the labels of the input. Thus the association changes when you add or remove the label. [#2378](https://github.com/IgniteUI/igniteui-webcomponents/pull/2378)
 - #### Dropdown
   - The anchor element now gives the name of the list through `ariaLabelledByElements`. Before, `aria-labelledby` pointed to the anchor slot, which accessibility tools cannot resolve. [#2378](https://github.com/IgniteUI/igniteui-webcomponents/pull/2378)
+- #### Input, Date time input, Date range input, File input, Mask input, Textarea
+  - A click on the label now sends one `click` event out of the component. Before, it sent two, because the label click and the click that the label activation behavior dispatches on the input both left the shadow root. A disabled component now sends none.
 
 ## [7.3.2] - 2026-09-09
 ### Added

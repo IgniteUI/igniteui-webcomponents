@@ -298,6 +298,28 @@ describe('Input component', () => {
 
         expect(eventSpy).calledOnceWithExactly('igcChange', { detail: '123' });
       });
+
+      /**
+       * The label activation behavior re-dispatches the click on the input it
+       * labels, so a single user click must not leave the shadow root twice -
+       * consumers such as `igc-combo` and `igc-select` toggle on it.
+       */
+      it('lets a single click escape the shadow root when the label is clicked', async () => {
+        await createFixture(html`<igc-input label="Label"></igc-input>`);
+
+        const label = element.renderRoot.querySelector('label')!;
+        const targets: Element[] = [];
+
+        element.addEventListener('click', (event) =>
+          targets.push(event.composedPath()[0] as Element)
+        );
+
+        label.click();
+        await elementUpdated(element);
+
+        expect(targets).to.eql([input]);
+        expect(isFocused(input)).to.be.true;
+      });
     });
   });
 
