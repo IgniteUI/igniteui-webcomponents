@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 - #### Button group
   - The `radiogroup` and `group` roles, and the disabled state, now sit on the `igc-button-group` element instead of an element inside its shadow root. Thus an `aria-label` or `aria-labelledby` that you set on the component names the group.
+  - The single selection modes now announce their `alignment` as the orientation of the radio group, thus the exposed semantics agree with the arrow keys and the layout.
 
 ### Fixed
 - #### Carousel

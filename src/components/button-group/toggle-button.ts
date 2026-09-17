@@ -74,6 +74,14 @@ export default class IgcToggleButtonComponent extends LitElement {
     addThemingController(this, all);
   }
 
+  public override disconnectedCallback(): void {
+    if (this._context.value) {
+      this.removeAttribute('tabindex');
+    }
+
+    super.disconnectedCallback();
+  }
+
   protected override willUpdate(): void {
     const group = this._context.value;
 

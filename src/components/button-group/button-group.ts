@@ -163,6 +163,7 @@ export default class IgcButtonGroupComponent extends EventEmitterMixin<
       aria: () => ({
         role: this._isMultiple ? 'group' : 'radiogroup',
         ariaDisabled: `${this.disabled}`,
+        ariaOrientation: this._isMultiple ? null : this.alignment,
       }),
     });
 
@@ -247,9 +248,17 @@ export default class IgcButtonGroupComponent extends EventEmitterMixin<
     }
   }
 
-  /** Every button is a tab stop of its own outside of the single selection modes. */
+  /**
+   * Every button is a tab stop of its own outside of the single selection modes,
+   * and so is one that has left the group - a button keeps its context after it
+   * is removed, and must not be held out of the tab order by a former group.
+   */
   private _isTabStop(button: IgcToggleButtonComponent): boolean {
-    return this._isMultiple || button === this._tabStop;
+    return (
+      this._isMultiple ||
+      button === this._tabStop ||
+      !this._buttons.includes(button)
+    );
   }
 
   /** The button holding focus, when it is one of the group. */

@@ -1068,6 +1068,26 @@ describe('Button Group', () => {
       await expect(group).to.be.accessible();
     });
 
+    it('mirrors `alignment` in aria-orientation', async () => {
+      const group = await createButtonGroupComponent();
+      const orientation = () =>
+        internalsOf(group)?.getARIA('ariaOrientation') ?? null;
+
+      // A `radiogroup` that announces no orientation is taken to be vertical.
+      expect(orientation()).to.equal('horizontal');
+
+      group.alignment = 'vertical';
+      await elementUpdated(group);
+
+      expect(orientation()).to.equal('vertical');
+
+      // There are no arrow keys in the multiple selection mode, hence no axis.
+      group.selection = 'multiple';
+      await elementUpdated(group);
+
+      expect(orientation()).to.be.null;
+    });
+
     it('updates the semantics when the selection mode changes', async () => {
       const group = await createButtonGroupComponent();
       const items = getButtons(group);
@@ -1164,6 +1184,26 @@ describe('Button Group', () => {
         await elementUpdated(added);
 
         expect(getTabStops()).to.eql([added]);
+      });
+
+      it('restores the tab order of a button taken out of the group', async () => {
+        await setup();
+        expect(getTabStops()).to.eql([items[0]]);
+
+        const [first, second] = items;
+        expect(second).to.have.attribute('tabindex', '-1');
+
+        second.remove();
+        await elementUpdated(group);
+
+        expect(second).not.to.have.attribute('tabindex');
+        expect(getTabStops()).to.eql([first]);
+
+        // The button is on its own now - a former group does not opt it out again.
+        second.selected = true;
+        await elementUpdated(second);
+
+        expect(second).not.to.have.attribute('tabindex');
       });
 
       it('follows the selection mode', async () => {
