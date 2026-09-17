@@ -273,14 +273,13 @@ class StoriesBuilder {
       (part) => STRING_LITERAL_RE.test(part) || NUMBER_RE.test(part)
     );
 
-    // A numeric union is a set of numbers, not of their string forms. The analyzer
-    // writes it bare (`0 | 90 | -90`) or quoted.
-    const numeric =
-      literals && parts.every((part) => NUMBER_RE.test(unquote(part)));
+    // The analyzer writes a numeric literal bare, `0 | 90 | -90`, so a quoted member
+    // is a string. `'1' | '2'` is a choice between two strings, not between 1 and 2.
+    const numeric = literals && parts.every((part) => NUMBER_RE.test(part));
 
     /** @type {SBEnumValues | undefined} */
     const values = literals
-      ? parts.map((part) => (numeric ? Number(unquote(part)) : unquote(part)))
+      ? parts.map((part) => (numeric ? Number(part) : unquote(part)))
       : undefined;
 
     const tsType =
