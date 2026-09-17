@@ -1223,6 +1223,12 @@ describe('Button Group', () => {
         await elementUpdated(items[1]);
 
         expect(items[1]).to.have.attribute('tabindex', '3');
+
+        // The former group keeps answering the context, and must not take over again.
+        items[1].selected = true;
+        await elementUpdated(items[1]);
+
+        expect(items[1]).to.have.attribute('tabindex', '3');
       });
 
       it('restores the tab order of a button moved to another parent', async () => {

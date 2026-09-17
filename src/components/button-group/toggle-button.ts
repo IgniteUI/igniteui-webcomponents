@@ -84,8 +84,7 @@ export default class IgcToggleButtonComponent extends LitElement {
   protected override willUpdate(): void {
     const group = this._context.value;
 
-    // Outside of a group the button keeps whatever tab order it was given.
-    if (!group) {
+    if (!group || group.instance !== this.parentElement) {
       return;
     }
 
