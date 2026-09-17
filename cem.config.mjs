@@ -11,11 +11,16 @@ import { getTsProgram, typeParserPlugin } from '@wc-toolkit/type-parser';
  * The `debug` option does not gate `Logger.warn`, so no plugin option stops them, and
  * `cem:watch` puts them in the Storybook output. Only the analyzer CLI loads this
  * file, so the filter is safe for the full process.
+ *
+ * The parser writes one other warning through the same channel, for a TypeScript
+ * config it cannot read. Match the skipped-type text alone to keep that one visible.
  */
+const SKIPPED_TYPE_WARNING = '[type-parser] - Skipped parsing type';
+
 const { warn } = console;
 
 console.warn = (...args) => {
-  if (!args.some((arg) => String(arg).includes('[type-parser]'))) {
+  if (!args.some((arg) => String(arg).includes(SKIPPED_TYPE_WARNING))) {
     warn(...args);
   }
 };
@@ -202,7 +207,10 @@ export default {
 
   plugins: [
     resolveSubpathImportsPlugin(),
-    typeParserPlugin({ propertyName: 'expandedType' }),
+    typeParserPlugin({
+      parseObjectTypes: 'none',
+      propertyName: 'expandedType',
+    }),
     pruneExpandedTypesPlugin(),
     stripUndefinedDefaultsPlugin(),
   ],
