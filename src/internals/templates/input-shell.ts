@@ -3,6 +3,7 @@ import IgcValidationContainerComponent from '../../components/validation-contain
 import type { SlotController } from '../controllers/slot.js';
 import type { IgcFormControl } from '../mixins/forms/types.js';
 import { partMap } from '../part-map.js';
+import { stopPropagation } from '../utils/events.js';
 import { createIdGenerator } from '../utils/strings.js';
 
 /** Returns a unique id for native input elements rendered by input components. */
@@ -56,9 +57,22 @@ export interface InputShellOptions {
   hideEmptyAffixes?: boolean;
 }
 
+/**
+ * A single user click on the label reaches the host twice: once as the click
+ * on the label itself and once as the synthetic click the label activation
+ * behavior re-dispatches on the input it labels. Consumers that bind a click
+ * handler on the component - `igc-combo` and `igc-select` toggle their list
+ * from it - would run it twice and immediately undo the first run.
+ *
+ * Keeping the label's own click inside the shadow root leaves exactly one
+ * click per activation to escape it. The activation behavior itself is a
+ * default action, so it still runs and still moves focus to the input.
+ */
 function renderLabel(forId: string, label: string) {
   return label
-    ? html`<label part="label" for=${forId}>${label}</label>`
+    ? html`<label part="label" for=${forId} @click=${stopPropagation}
+        >${label}</label
+      >`
     : nothing;
 }
 
