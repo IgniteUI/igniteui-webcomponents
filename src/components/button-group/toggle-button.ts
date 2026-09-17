@@ -41,6 +41,8 @@ export default class IgcToggleButtonComponent extends LitElement {
   private readonly _focusRingManager = addKeyboardFocusRing(this);
   private readonly _context = createAsyncContext(this, buttonGroupContext);
 
+  private _ownTabIndex?: string | null;
+
   @query('[part~="toggle"]', true)
   private readonly _nativeButton?: HTMLButtonElement;
 
@@ -75,10 +77,7 @@ export default class IgcToggleButtonComponent extends LitElement {
   }
 
   public override disconnectedCallback(): void {
-    if (this._context.value) {
-      this.removeAttribute('tabindex');
-    }
-
+    this._releaseTabIndex();
     super.disconnectedCallback();
   }
 
@@ -90,9 +89,26 @@ export default class IgcToggleButtonComponent extends LitElement {
       return;
     }
 
+    if (this._ownTabIndex === undefined) {
+      this._ownTabIndex = this.getAttribute('tabindex');
+    }
+
     group.isTabStop(this)
       ? this.removeAttribute('tabindex')
       : this.setAttribute('tabindex', '-1');
+  }
+
+  /** Gives the tab order a group took over back to the button. */
+  private _releaseTabIndex(): void {
+    if (this._ownTabIndex === undefined) {
+      return;
+    }
+
+    this._ownTabIndex === null
+      ? this.removeAttribute('tabindex')
+      : this.setAttribute('tabindex', this._ownTabIndex);
+
+    this._ownTabIndex = undefined;
   }
 
   protected override updated(changedProperties: PropertyValues<this>): void {

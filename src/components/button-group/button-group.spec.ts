@@ -1206,6 +1206,75 @@ describe('Button Group', () => {
         expect(second).not.to.have.attribute('tabindex');
       });
 
+      it('keeps the tab order the author gave a button that leaves the group', async () => {
+        await setup(html`
+          <igc-button-group>
+            <igc-toggle-button value="left">Left</igc-toggle-button>
+            <igc-toggle-button value="center" tabindex="3"
+              >Center</igc-toggle-button
+            >
+          </igc-button-group>
+        `);
+
+        // The group owns the tab order of its buttons and takes this one over.
+        expect(items[1]).to.have.attribute('tabindex', '-1');
+
+        items[1].remove();
+        await elementUpdated(items[1]);
+
+        expect(items[1]).to.have.attribute('tabindex', '3');
+      });
+
+      it('restores the tab order of a button moved to another parent', async () => {
+        await setup();
+
+        const parent = document.createElement('div');
+        group.after(parent);
+        parent.append(items[1]);
+        await elementUpdated(group);
+        await elementUpdated(items[1]);
+
+        expect(items[1]).not.to.have.attribute('tabindex');
+      });
+
+      it('takes the tab order back over when a button is re-attached', async () => {
+        await setup();
+        const [first, second] = items;
+
+        second.remove();
+        await elementUpdated(second);
+        expect(second).not.to.have.attribute('tabindex');
+
+        group.append(second);
+        await elementUpdated(group);
+        await elementUpdated(second);
+
+        expect(second).to.have.attribute('tabindex', '-1');
+        expect(getTabStops()).to.eql([first]);
+      });
+
+      it('hands a button over to the group it is moved into', async () => {
+        await setup();
+        const other = await createButtonGroupComponent(html`
+          <igc-button-group>
+            <igc-toggle-button value="first" selected>First</igc-toggle-button>
+          </igc-button-group>
+        `);
+
+        other.append(items[1]);
+        await elementUpdated(other);
+        await elementUpdated(items[1]);
+
+        expect(items[1]).to.have.attribute('tabindex', '-1');
+
+        // A state change reconciles with the new group, not with the previous one.
+        items[1].selected = true;
+        await elementUpdated(items[1]);
+        await elementUpdated(other);
+
+        expect(other.selectedItems).to.eql(['center']);
+      });
+
       it('follows the selection mode', async () => {
         await setup();
 
@@ -1281,6 +1350,33 @@ describe('Button Group', () => {
 
         expect(isFocused(items[2])).to.be.true;
         expect(group.selectedItems).to.eql(['right']);
+      });
+
+      it('navigates when the group sits inside another shadow root', async () => {
+        const host = await fixture<HTMLDivElement>(html`<div></div>`);
+        const root = host.attachShadow({ mode: 'open' });
+
+        root.innerHTML = `
+          <igc-button-group>
+            <igc-toggle-button value="left">Left</igc-toggle-button>
+            <igc-toggle-button value="center">Center</igc-toggle-button>
+          </igc-button-group>
+        `;
+
+        const nested = root.querySelector(IgcButtonGroupComponent.tagName)!;
+        const nestedItems = getButtons(nested);
+        await elementUpdated(nested);
+
+        for (const button of nestedItems) {
+          await elementUpdated(button);
+        }
+
+        nestedItems[0].focus();
+        simulateKeyboard(nestedItems[0], arrowRight);
+        await elementUpdated(nested);
+
+        expect(isFocused(nestedItems[1])).to.be.true;
+        expect(nested.selectedItems).to.eql(['center']);
       });
 
       it('emits the selection events on navigation', async () => {
