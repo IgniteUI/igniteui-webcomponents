@@ -51,6 +51,7 @@ export default class IgcCarouselIndicatorComponent extends LitElement {
     addInternalsController(this, {
       initialARIA: { role: 'tab' },
       reflectRole: true,
+      reflectLabel: true,
       aria: () => ({
         ariaSelected: `${this.active}`,
         ariaLabel: formatString(this._labelFormat, this.index + 1),

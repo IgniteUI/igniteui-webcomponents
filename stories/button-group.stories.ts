@@ -89,9 +89,9 @@ const metadata: Meta<IgcButtonGroupComponent> = {
       table: { defaultValue: { summary: 'horizontal' } },
     },
     selection: {
-      type: { name: 'enum', value: ['single', 'single-required', 'multiple'] },
+      type: { name: 'enum', value: ['multiple', 'single', 'single-required'] },
       description: 'Controls the mode of selection for the button group.',
-      options: ['single', 'single-required', 'multiple'],
+      options: ['multiple', 'single', 'single-required'],
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'single' } },
     },
@@ -107,7 +107,7 @@ interface IgcButtonGroupArgs {
   /** The orientation of the buttons in the group. */
   alignment: 'horizontal' | 'vertical';
   /** Controls the mode of selection for the button group. */
-  selection: 'single' | 'single-required' | 'multiple';
+  selection: 'multiple' | 'single' | 'single-required';
 }
 type Story = StoryObj<IgcButtonGroupArgs>;
 
