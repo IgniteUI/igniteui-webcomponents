@@ -53,7 +53,7 @@ export type WeekDays =
   | 'saturday';
 
 /**
- * View a calendar is currently showing.
+ * The view a calendar is currently showing.
  *
  * - `days` — days of a month.
  * - `months` — months of a year.
