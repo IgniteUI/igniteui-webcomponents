@@ -19,31 +19,29 @@
 }
 
 // -----------------------------------------------------------------------------
-// Native CSS anchor positioning.
+// Native CSS anchor positioning
 // -----------------------------------------------------------------------------
-// These rules apply only when the [data-anchored] attribute is present. The
-// native strategy sets that attribute from JavaScript. The rules do not use
-// @supports for this test. A test can force a browser with full support onto
-// the floating-ui fallback. That browser must not match these rules, because
-// the browser must then use the inline left, top and transform styles of the
-// fallback.
+// These rules apply only with the [data-anchored] attribute. The native
+// strategy sets that attribute from JavaScript. The rules do not use @supports
+// for this test, because a test can force a browser with full support onto the
+// floating-ui fallback. That browser must use the inline left, top and
+// transform styles of the fallback.
 // -----------------------------------------------------------------------------
 // The anchor is the implicit anchor of showPopover({ source }). The rules
 // cannot use anchor-name, because anchor-name is tree-scoped and cannot cross
 // the shadow boundary.
 // -----------------------------------------------------------------------------
-// All rules use the physical keywords. The container is in the top layer,
-// where the logical keywords resolve against the writing mode of the root
-// element. Current engines also do not implement the *-self-* keywords.
+// All rules use the physical keywords. The container is in the top layer, where
+// the logical keywords resolve against the writing mode of the root element.
+// Current engines also do not implement the *-self-* keywords.
 // -----------------------------------------------------------------------------
 // floating-ui resolves -start and -end from the direction of the floating
 // element. The :dir() guards select the physical side that matches this
-// behavior. :dir() follows the dir attribute only. Therefore a `direction:
-// rtl` declaration in CSS does not flip these placements.
-// -----------------------------------------------------------------------------
-// Only the top and bottom placements with -start and -end react to the
-// direction. The left and right placements with -start and -end always use
-// the physical top and bottom. floating-ui behaves the same way.
+// behavior. :dir() follows the dir attribute only. Therefore a `direction: rtl`
+// declaration in CSS does not flip these placements. Only the top and bottom
+// placements with -start and -end react to the direction. The left and right
+// placements always use the physical top and bottom. floating-ui behaves the
+// same way.
 // -----------------------------------------------------------------------------
 // Each rule sets the alignment explicitly. No rule depends on the `normal`
 // alignment of a spanning area.
@@ -54,11 +52,9 @@
     margin: 0;
 
     // Hide the popover while the anchor is fully out of view. This applies to
-    // the `hide` and the `close` scroll strategy. `hide` is the default
-    // strategy. The fallback strategy uses the hide() middleware to get the
-    // same result. Safari 26.0 and 26.1 support the anchor positioning, but
-    // they do not support position-visibility. These browsers ignore the
-    // declaration and keep the popover visible. This result is acceptable.
+    // the `hide` and the `close` strategies. The fallback uses the hide()
+    // middleware for the same result. Safari 26.0 and 26.1 ignore
+    // position-visibility and keep the popover visible. This is acceptable.
     position-visibility: anchors-visible;
 
     &[data-placement='top'] {

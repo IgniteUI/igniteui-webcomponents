@@ -1,4 +1,5 @@
-import { getRoot, isPopoverOpen, setStyles } from '#internals/utils/dom.js';
+import { getRoot, isPopoverOpen } from '#internals/utils/dom.js';
+import { toggleEventListener } from '#internals/utils/events.js';
 import { clamp } from '#internals/utils/math.js';
 import { applyArrowStyles, type PopoverSide } from './arrow.js';
 import {
@@ -7,6 +8,7 @@ import {
   type PopoverPositionStrategy,
   type PopoverPositionStrategyCallbacks,
   resolvePlacement,
+  SCROLL_LISTENER_OPTIONS,
   SUPPORTS_ANCHOR_POSITIONING,
 } from './types.js';
 
@@ -30,32 +32,18 @@ function canUseImplicitAnchor(): boolean {
   const popover = document.createElement('div');
 
   popover.popover = 'manual';
-
-  setStyles(anchor, {
-    position: 'fixed',
-    top: '0',
-    left: '0',
-    width: '1px',
-    height: '1px',
-  });
-  setStyles(popover, {
-    margin: '0',
-    inset: 'auto',
-    border: 'none',
-    padding: '0',
-    width: '1px',
-    height: '1px',
-  });
-  popover.style.setProperty('position-area', 'bottom');
+  anchor.style.cssText = 'position:fixed;top:0;left:0;width:1px;height:1px';
+  popover.style.cssText =
+    'margin:0;inset:auto;border:none;padding:0;width:1px;height:1px;position-area:bottom';
 
   try {
     document.body.append(anchor, popover);
     popover.showPopover({ source: anchor });
 
-    // If the browser anchors the popover, the popover sits directly below
-    // the anchor of 1 pixel. The tolerance allows for fractional rounding.
-    // If the browser ignores `source`, the popover sits at the centered
-    // default position, which is far away.
+    // An anchored popover sits directly below the anchor of 1 pixel. The
+    // tolerance allows for fractional rounding. If the browser ignores
+    // `source`, the popover sits at the centered default position, which is
+    // far away.
     implicitAnchorUsable =
       Math.abs(popover.getBoundingClientRect().top - 1) <= 1;
 
@@ -112,8 +100,23 @@ export class NativePositionStrategy implements PopoverPositionStrategy {
 
   private _target?: Element;
   private _container?: HTMLElement;
-  private _observer?: MutationObserver;
   private _arrowFrame = 0;
+
+  /**
+   * Detects the removal of the anchor from the DOM.
+   *
+   * The callback does nothing if the anchor leaves the DOM and returns in the
+   * same task. The implicit anchor holds an element reference, so the browser
+   * anchors the container again.
+   *
+   * The observer does not detect the removal of a shadow host above the root
+   * of the anchor. The fallback strategy does not detect it either.
+   */
+  private readonly _anchorObserver = new MutationObserver(() => {
+    if (this._target?.isConnected === false) {
+      this._callbacks.onAnchorRemoved();
+    }
+  });
 
   constructor(
     host: PopoverPositionHost,
@@ -131,23 +134,25 @@ export class NativePositionStrategy implements PopoverPositionStrategy {
 
     container.toggleAttribute('data-anchored', true);
     this._syncOffset();
-    this._observeAnchorRemoval(target);
-    this._syncArrowWatcher();
+    this._anchorObserver.observe(getRoot(target), {
+      childList: true,
+      subtree: true,
+    });
+    this._syncArrowListeners();
   }
 
   public update(): void {
     this._syncOffset();
-    this._syncArrowWatcher();
+    this._syncArrowListeners();
     this._updateArrow();
-    // Once more after layout settles - the container content may still be
-    // sizing right after showPopover.
+    // Once more after the layout settles. The content of the container can
+    // still size directly after `showPopover`.
     this._scheduleArrowUpdate();
   }
 
   public detach(): void {
-    this._observer?.disconnect();
-    this._observer = undefined;
-    this._removeArrowListeners();
+    this._anchorObserver.disconnect();
+    this._syncArrowListeners(false);
   }
 
   public clear(): void {
@@ -162,24 +167,6 @@ export class NativePositionStrategy implements PopoverPositionStrategy {
       OFFSET_PROPERTY,
       `${this._host.offset}px`
     );
-  }
-
-  private _observeAnchorRemoval(target: Element): void {
-    // If the anchor leaves the DOM and returns in the same task, this
-    // observer does nothing. The implicit anchor holds an element reference,
-    // so the browser anchors the container again.
-    // This observer does not detect the removal of a shadow host above the
-    // root of the anchor. The fallback strategy does not detect it either.
-    this._observer = new MutationObserver(() => {
-      if (!target.isConnected) {
-        this._callbacks.onAnchorRemoved();
-      }
-    });
-
-    this._observer.observe(getRoot(target), {
-      childList: true,
-      subtree: true,
-    });
   }
 
   //#region Arrow support
@@ -199,29 +186,28 @@ export class NativePositionStrategy implements PopoverPositionStrategy {
   };
 
   /**
-   * The listener reference is stable. Therefore `addEventListener` and
-   * `removeEventListener` are idempotent, and this method needs no state.
+   * Adds the invalidation listeners while the popover has an arrow. The
+   * `detach` method passes `false` to remove them for each arrow value.
    */
-  private _syncArrowWatcher(): void {
-    this._host.arrow ? this._addArrowListeners() : this._removeArrowListeners();
-  }
+  private _syncArrowListeners(active = this._host.arrow != null): void {
+    toggleEventListener(
+      window,
+      active,
+      'scroll',
+      this._handleArrowInvalidation,
+      SCROLL_LISTENER_OPTIONS
+    );
+    toggleEventListener(
+      window,
+      active,
+      'resize',
+      this._handleArrowInvalidation
+    );
 
-  private _addArrowListeners(): void {
-    window.addEventListener('scroll', this._handleArrowInvalidation, {
-      capture: true,
-      passive: true,
-    });
-    window.addEventListener('resize', this._handleArrowInvalidation);
-  }
-
-  private _removeArrowListeners(): void {
-    window.removeEventListener('scroll', this._handleArrowInvalidation, {
-      capture: true,
-    });
-    window.removeEventListener('resize', this._handleArrowInvalidation);
-
-    cancelAnimationFrame(this._arrowFrame);
-    this._arrowFrame = 0;
+    if (!active) {
+      cancelAnimationFrame(this._arrowFrame);
+      this._arrowFrame = 0;
+    }
   }
 
   private _scheduleArrowUpdate(): void {

@@ -83,17 +83,17 @@ export class FloatingPositionStrategy implements PopoverPositionStrategy {
     this._container = container;
     this._middleware = undefined;
 
-    // If the popover closes while the anchor is out of view, the container
-    // keeps `visibility: hidden`. The first `computePosition` call is
-    // asynchronous, so it clears that style too late. Reset the style here.
-    // The popover then never opens as invisible.
-    setStyles(container, { visibility: '' });
+    // Remove the inline styles of the previous open cycle. A popover that
+    // closes while the anchor is out of view keeps `visibility: hidden`. The
+    // first `computePosition` call is asynchronous, so it clears that style
+    // too late. The popover must never open as invisible.
+    const reset: Partial<CSSStyleDeclaration> = { visibility: '' };
 
     if (!this._host.sameWidth) {
-      // Remove the width that the `sameWidth` option set in a previous open
-      // cycle.
-      setStyles(container, { width: '' });
+      reset.width = '';
     }
+
+    setStyles(container, reset);
 
     this._strategy = hasStickyAncestor(target) ? 'fixed' : 'absolute';
 
@@ -152,31 +152,44 @@ export class FloatingPositionStrategy implements PopoverPositionStrategy {
   }
 
   private _createMiddleware(floating: FloatingUiModule): Middleware[] {
-    const host = this._host;
+    const { offset, flip, sameWidth, arrow, scrollStrategy } = this._host;
+    const middleware: Middleware[] = [];
 
-    const chain = [
-      host.offset !== 0 ? floating.offset(host.offset) : null,
-      host.flip ? floating.flip() : null,
-      host.sameWidth
-        ? floating.size({
-            apply: ({ rects }) => {
-              if (this._container) {
-                setStyles(this._container, {
-                  width: `${rects.reference.width}px`,
-                });
-              }
-            },
-          })
-        : null,
-      host.arrow ? floating.arrow({ element: host.arrow }) : null,
-      // This middleware matches `position-visibility: anchors-visible` of the
-      // native strategy. It hides the container while the anchor is fully out
-      // of view. The `scroll` strategy adds no middleware, which matches
-      // `position-visibility: always`.
-      host.scrollStrategy !== 'scroll' ? floating.hide() : null,
-    ];
+    if (offset !== 0) {
+      middleware.push(floating.offset(offset));
+    }
 
-    return chain.filter((entry): entry is Middleware => entry !== null);
+    if (flip) {
+      middleware.push(floating.flip());
+    }
+
+    if (sameWidth) {
+      middleware.push(
+        floating.size({
+          apply: ({ rects }) => {
+            if (this._container) {
+              setStyles(this._container, {
+                width: `${rects.reference.width}px`,
+              });
+            }
+          },
+        })
+      );
+    }
+
+    if (arrow) {
+      middleware.push(floating.arrow({ element: arrow }));
+    }
+
+    // This middleware matches `position-visibility: anchors-visible` of the
+    // native strategy. It hides the container while the anchor is fully out of
+    // view. The `scroll` strategy adds no middleware, which matches
+    // `position-visibility: always`.
+    if (scrollStrategy !== 'scroll') {
+      middleware.push(floating.hide());
+    }
+
+    return middleware;
   }
 
   private async _updatePosition(): Promise<void> {

@@ -990,6 +990,49 @@ describe('Popover', () => {
       await simulateScroll(scroller, { top: 200 });
       expect(closeRequests).to.equal(0);
     });
+
+    it('does not emit while no anchor resolves', async () => {
+      const root = await fixture<HTMLElement>(html`
+        <div style="height: 150px; overflow: auto">
+          <div style="height: 600px">
+            <igc-popover open scroll-strategy="close" anchor="missing">
+              <p>Message</p>
+            </igc-popover>
+          </div>
+        </div>
+      `);
+      const anchorless = queryPopover(root);
+
+      let events = 0;
+      anchorless.addEventListener('igcPopoverScrollClose', () => {
+        events++;
+      });
+
+      await waitForPaint(anchorless);
+      expect(isFloaterOpen(anchorless)).to.be.false;
+
+      await simulateScroll(root, { top: 200 });
+      expect(events).to.equal(0);
+    });
+
+    it('stops emitting after the anchor leaves the DOM', async () => {
+      popover.scrollStrategy = 'close';
+      await elementUpdated(popover);
+
+      await simulateScroll(scroller, { top: 100 });
+      expect(closeRequests).to.be.greaterThan(0);
+
+      (scroller.querySelector('#btn') as HTMLElement).remove();
+      await waitForPaint(popover);
+
+      // The popover hides the container, but it keeps `open`.
+      expect(isFloaterOpen(popover)).to.be.false;
+      expect(popover.open).to.be.true;
+
+      const seen = closeRequests;
+      await simulateScroll(scroller, { top: 300 });
+      expect(closeRequests).to.equal(seen);
+    });
   });
 
   // floating-ui specific behavior - the native path has no positioning

@@ -8,6 +8,7 @@ import {
 import { registerComponent } from '#internals/definitions/register.js';
 import { firstOf } from '#internals/utils/arrays.js';
 import { getElementByIdFromRoot, isPopoverOpen } from '#internals/utils/dom.js';
+import { toggleEventListener } from '#internals/utils/events.js';
 import { isString } from '#internals/utils/types.js';
 import type { PopoverScrollStrategy } from '../types.js';
 import { FloatingPositionStrategy } from './position/floating.js';
@@ -18,6 +19,7 @@ import {
 import {
   type PopoverPositionStrategy,
   resolvePlacement,
+  SCROLL_LISTENER_OPTIONS,
 } from './position/types.js';
 import { styles } from './themes/light/popover.base.css.js';
 
@@ -38,15 +40,6 @@ export type PopoverPlacement =
   | 'left-start'
   | 'left-end';
 
-/**
- * The `scroll` event is not cancelable. A passive listener does not delay the
- * scroll, so the listener uses the passive option.
- */
-const scrollListenerOptions: AddEventListenerOptions = {
-  capture: true,
-  passive: true,
-};
-
 /* blazorSuppress */
 /**
  * @element igc-popover
@@ -55,7 +48,7 @@ const scrollListenerOptions: AddEventListenerOptions = {
  * @slot anchor - The element the popover will be anchored to.
  *
  * @fires igcPopoverScrollClose - The popover emits this event when the document scrolls.
- * The popover emits it only if the popover is open and the scroll strategy is `close`.
+ * The popover emits it only while it shows against its anchor and the scroll strategy is `close`.
  * The popover does not control its own `open` state. The component that owns that state must close the popover.
  * The event does not bubble. Add the listener directly on the popover element.
  *
@@ -97,7 +90,7 @@ export default class IgcPopoverComponent extends LitElement {
   //#region Public attributes and properties
 
   /**
-   * Pass an IDREF or an DOM element reference to use as the
+   * Pass an IDREF or a DOM element reference to use as the
    * anchor target for the floating element.
    */
   @property()
@@ -175,7 +168,7 @@ export default class IgcPopoverComponent extends LitElement {
       }
 
       if (properties.has('scrollStrategy')) {
-        this._syncScrollStrategy(this.open);
+        this._syncScrollStrategy();
       }
     }
 
@@ -213,6 +206,7 @@ export default class IgcPopoverComponent extends LitElement {
     this._setOpenState(this.open);
   }
 
+  /** Stops the strategy if the container closes. */
   private _handleToggle(): void {
     if (!isPopoverOpen(this._container)) {
       this._positionStrategy?.detach();
@@ -243,10 +237,13 @@ export default class IgcPopoverComponent extends LitElement {
     return this._positionStrategy;
   }
 
+  /**
+   * Hides the container if the anchor leaves the DOM. The `open` property
+   * keeps its value, so the popover shows again when a new anchor resolves.
+   */
   private _handleAnchorRemoved(): void {
     this._target = undefined;
-    this._positionStrategy?.detach();
-    this._setPopoverState(false);
+    this._setOpenState(false);
   }
 
   /**
@@ -278,37 +275,33 @@ export default class IgcPopoverComponent extends LitElement {
       }
     }
 
-    this._setPopoverState(state);
-    this._syncScrollStrategy(state);
+    this._syncContainerState(state);
   }
 
   /**
-   * The popover adds one listener on the document. It adds the listener only
-   * when the popover is open and the scroll strategy is `close`. Every other
-   * value adds no listener.
+   * The popover keeps one `scroll` listener on the document. The listener is
+   * active only while the container shows and the scroll strategy is `close`.
    *
-   * The listener reference is stable. Therefore `addEventListener` and
-   * `removeEventListener` are idempotent, and this method needs no state.
+   * The method reads the container and not the `open` property. The container
+   * stays closed if no anchor resolves. `_handleAnchorRemoved` also closes the
+   * container while `open` keeps the value true.
    */
-  private _syncScrollStrategy(active: boolean): void {
-    active && this.scrollStrategy === 'close'
-      ? document.addEventListener(
-          'scroll',
-          this._handleRootScroll,
-          scrollListenerOptions
-        )
-      : document.removeEventListener(
-          'scroll',
-          this._handleRootScroll,
-          scrollListenerOptions
-        );
+  private _syncScrollStrategy(): void {
+    toggleEventListener(
+      document,
+      isPopoverOpen(this._container) && this.scrollStrategy === 'close',
+      'scroll',
+      this._handleRootScroll,
+      SCROLL_LISTENER_OPTIONS
+    );
   }
 
   private readonly _handleRootScroll = (): void => {
     this.dispatchEvent(new CustomEvent('igcPopoverScrollClose'));
   };
 
-  private _setPopoverState(state: boolean): void {
+  /** Shows or hides the container and then syncs the scroll listener. */
+  private _syncContainerState(state: boolean): void {
     const container = this._container;
 
     if (!container) {
@@ -324,17 +317,17 @@ export default class IgcPopoverComponent extends LitElement {
       this._positionStrategy?.native &&
       this._target !== this._shownSource
     ) {
-      // Change the anchor while the popover stays open.
-      // The browser combines the `toggle` events of a hide and a show in the
-      // same task into one open-to-open transition. Therefore
-      // `_handleToggle` does nothing here.
-      // Two limitations are known and accepted. A CSS transition on
-      // `:popover-open` of the container restarts, but the container has no
-      // such transition today. The focus inside the popover moves out and
-      // then back.
+      // Change the anchor while the popover stays open. The browser combines
+      // the `toggle` events of a hide and a show in the same task into one
+      // open-to-open transition. Therefore `_handleToggle` does nothing here.
+      // Two limitations apply. A CSS transition on `:popover-open` of the
+      // container restarts, but the container has no such transition today.
+      // The focus in the popover moves out and then back.
       this._hidePopover();
       this._showPopover();
     }
+
+    this._syncScrollStrategy();
   }
 
   private _showPopover(): void {

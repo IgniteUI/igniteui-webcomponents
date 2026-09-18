@@ -91,6 +91,27 @@ type EventTypeOf<T extends keyof HTMLElementEventMap | keyof WindowEventMap> =
   (HTMLElementEventMap & WindowEventMap)[T];
 
 /**
+ * Adds the `listener` to the `target` if `active` is true. Removes it if
+ * `active` is false.
+ *
+ * The caller must pass a stable listener reference. `addEventListener` and
+ * `removeEventListener` are then idempotent, and the caller needs no state.
+ */
+export function toggleEventListener<
+  E extends keyof HTMLElementEventMap | keyof WindowEventMap,
+>(
+  target: EventTarget,
+  active: boolean,
+  event: E,
+  listener: EventListenerOrEventListenerObject,
+  options?: AddEventListenerOptions
+): void {
+  active
+    ? target.addEventListener(event, listener, options)
+    : target.removeEventListener(event, listener, options);
+}
+
+/**
  * Safely adds an event listener to an HTMLElement, automatically handling
  * server-side rendering environments by doing nothing if `isServer` is true.
  * This function also correctly binds the `handler`'s `this` context to the `target` element

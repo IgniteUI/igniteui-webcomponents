@@ -18,6 +18,15 @@ export const SUPPORTS_ANCHOR_POSITIONING =
   // aligned placements need the span keywords, so test one of them.
   CSS.supports('position-area: top span-right');
 
+/**
+ * The capture phase catches the scroll of each ancestor element. The `scroll`
+ * event is not cancelable, so a passive listener does not delay the scroll.
+ */
+export const SCROLL_LISTENER_OPTIONS: AddEventListenerOptions = {
+  capture: true,
+  passive: true,
+};
+
 type PopoverPositionStrategyMode = 'native' | 'floating';
 
 let forcedStrategy: PopoverPositionStrategyMode | undefined;
