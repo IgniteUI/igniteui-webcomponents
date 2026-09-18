@@ -32,7 +32,21 @@ import { isString } from '#internals/utils/types.js';
 import { styles } from './themes/light/popover.base.css.js';
 
 /**
- * Describes the preferred placement of a toggle component.
+ * Preferred side and alignment of a popover (dropdown, select list, tooltip)
+ * relative to its anchor.
+ *
+ * - `top` — above the anchor, centered.
+ * - `top-start` — above the anchor, aligned to its start edge.
+ * - `top-end` — above the anchor, aligned to its end edge.
+ * - `bottom` — below the anchor, centered.
+ * - `bottom-start` — below the anchor, aligned to its start edge.
+ * - `bottom-end` — below the anchor, aligned to its end edge.
+ * - `right` — to the right of the anchor, centered.
+ * - `right-start` — to the right of the anchor, aligned to its top edge.
+ * - `right-end` — to the right of the anchor, aligned to its bottom edge.
+ * - `left` — to the left of the anchor, centered.
+ * - `left-start` — to the left of the anchor, aligned to its top edge.
+ * - `left-end` — to the left of the anchor, aligned to its bottom edge.
  */
 export type PopoverPlacement =
   | 'top'

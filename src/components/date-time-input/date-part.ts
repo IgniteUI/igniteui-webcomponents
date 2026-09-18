@@ -12,13 +12,23 @@ import { clamp, modulo } from '#internals/utils/math.js';
 
 //#region Types and Enums
 
+/**
+ * Segment of a date/time value that a date-time input can step up or down.
+ */
 export enum DatePart {
+  /** The month. */
   Month = 'month',
+  /** The year. */
   Year = 'year',
+  /** The day of the month. */
   Date = 'date',
+  /** The hours. */
   Hours = 'hours',
+  /** The minutes. */
   Minutes = 'minutes',
+  /** The seconds. */
   Seconds = 'seconds',
+  /** The AM/PM designator of a 12-hour clock. */
   AmPm = 'amPm',
 }
 
