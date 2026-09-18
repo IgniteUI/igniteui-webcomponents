@@ -6,20 +6,33 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 ### Added
+- #### Breadcrumbs
+  - The new `igc-breadcrumbs` and `igc-breadcrumb` components show a navigation trail. The `igc-breadcrumbs` element has the `list` role. Its `separator` attribute gives the name of the icon between the items, and its default value is `tree_expand`. Put the element in a `<nav aria-label="...">` element, because the ARIA breadcrumb pattern needs that landmark.
+  - The `igc-breadcrumb` element has the `listitem` role. Put the content of the item, usually an anchor, in the default slot. The `prefix` and `suffix` slots add content before and after that content. The `separator` slot replaces the icon for one item. The `current` attribute sets `aria-current="page"`. The `disabled` attribute sets `aria-disabled` and removes the slotted content from the tab sequence. Assistive technology does not read the separator. The `label` and `separator` CSS parts give access to the two containers. [#1881](https://github.com/IgniteUI/igniteui-webcomponents/pull/1881)
+- #### Button group
+  - The single selection modes now use the ARIA keyboard pattern of a radio group. The group is one tab stop. The arrow keys move the focus and the selection together, go past the disabled buttons, and wrap at the two ends. The `alignment` sets the axis: `horizontal` uses ArrowLeft and ArrowRight and obeys the writing direction, and `vertical` uses ArrowUp and ArrowDown. Before, each button was a different tab stop and the arrow keys did nothing, which the `radiogroup` role does not permit. The `multiple` selection mode does not change, because each of its buttons stays a tab stop. [#2385](https://github.com/IgniteUI/igniteui-webcomponents/pull/2385)
 - #### Combo, Color picker, Date picker, Date range picker, Tooltip
   - `scroll-strategy` attribute: `hide` (default) hides the popover while its anchor is scrolled fully out of view, `scroll` keeps it visible and anchored, `close` closes the component on any scroll. The date pickers ignore it in `dialog` mode. A tooltip with `scroll-strategy="close"` closes even when `sticky`.
 
 ### Changed
+- #### Button group
+  - The `radiogroup` role, the `group` role and the disabled state are now on the `igc-button-group` element. Before, they were on an element in its shadow root. An `aria-label` or an `aria-labelledby` that you set on the component now gives the name of the group. [#2385](https://github.com/IgniteUI/igniteui-webcomponents/pull/2385)
+  - In the single selection modes, the radio group now reports the `alignment` as its orientation. Thus the semantics agree with the arrow keys and the layout.
 - #### Popover
   - Popovers now position through native CSS anchor positioning in browsers that support it (Chrome/Edge 133+, Firefox 147+, Safari 26+). Other browsers keep the previous `@floating-ui/dom` behavior, and that module now loads only there.
   - **BREAKING**: The `PopoverScrollStrategy` type is now `'scroll' | 'hide' | 'close'`, with `hide` as the default. The `block` value is removed; `block` or any unknown value behaves as `hide`.
+
 ### Fixed
 - #### Carousel
-  - Indicators now carry their `aria-label` as a content attribute in addition to `ElementInternals`, thus accessibility tools that do not read internals report the tab name.
+  - The indicators now keep their `aria-label` in a content attribute and in `ElementInternals`. Before, only `ElementInternals` had it. Thus accessibility tools that do not read internals report the name of the tab. [#2378](https://github.com/IgniteUI/igniteui-webcomponents/pull/2378)
+- #### Combo, Select
+  - A click on the label of the input no longer opens the list and closes it again. One click emitted `igcOpening`, then `igcClosing` and `igcClosed`, and left the component closed, because the label click and the click that the label activation behavior dispatches on the input both reached the toggle handler.
 - #### Date picker
-  - A `label` set after the first render did not reach the native input in dropdown mode outside the Material theme. The projected ARIA state now re-resolves against the labels of the input, thus the association updates when the label appears or goes away.
+  - In dropdown mode, a `label` that you set after the first render did not go to the native input. This occurred in all themes but Material. The component now resolves the projected ARIA state again against the labels of the input. Thus the association changes when you add or remove the label. [#2378](https://github.com/IgniteUI/igniteui-webcomponents/pull/2378)
 - #### Dropdown
-  - The list is now labelled by the anchor element through `ariaLabelledByElements`. The previous `aria-labelledby` pointed at the anchor slot, which accessibility tools cannot resolve.
+  - The anchor element now gives the name of the list through `ariaLabelledByElements`. Before, `aria-labelledby` pointed to the anchor slot, which accessibility tools cannot resolve. [#2378](https://github.com/IgniteUI/igniteui-webcomponents/pull/2378)
+- #### Input, Date time input, Date range input, File input, Mask input, Textarea
+  - A click on the label now sends one `click` event out of the component. Before, it sent two, because the label click and the click that the label activation behavior dispatches on the input both left the shadow root. A disabled component now sends none.
 
 ## [7.3.2] - 2026-09-09
 ### Added

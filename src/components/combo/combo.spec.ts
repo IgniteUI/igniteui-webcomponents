@@ -399,6 +399,30 @@ describe('Combo', () => {
       expect(combo.open).to.be.false;
     });
 
+    it('should toggle the menu once upon clicking on the label of the input', async () => {
+      combo.label = 'Cities';
+      await elementUpdated(combo);
+
+      const label = input.renderRoot.querySelector('label')!;
+      const eventSpy = spy(combo, 'emitEvent');
+
+      label.click();
+      await elementUpdated(combo);
+
+      expect(combo.open).to.be.true;
+      expect(eventSpy).calledWith('igcOpening');
+      expect(eventSpy).not.calledWith('igcClosing');
+      expect(eventSpy).not.calledWith('igcClosed');
+
+      eventSpy.resetHistory();
+      label.click();
+      await elementUpdated(combo);
+
+      expect(combo.open).to.be.false;
+      expect(eventSpy).calledWith('igcClosing');
+      expect(eventSpy).not.calledWith('igcOpening');
+    });
+
     it('should be able to cancel the igcOpening event', async () => {
       combo.open = false;
       combo.addEventListener('igcOpening', (event: CustomEvent) => {

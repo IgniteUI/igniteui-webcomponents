@@ -54,9 +54,9 @@ const metadata: Meta<IgcVirtualScrollComponent> = {
   },
   argTypes: {
     orientation: {
-      type: { name: 'enum', value: ['vertical', 'horizontal'] },
+      type: { name: 'enum', value: ['horizontal', 'vertical'] },
       description: 'Scroll orientation of the virtual scroll.',
-      options: ['vertical', 'horizontal'],
+      options: ['horizontal', 'vertical'],
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'vertical' } },
     },
@@ -82,7 +82,7 @@ export default metadata;
 
 interface IgcVirtualScrollArgs {
   /** Scroll orientation of the virtual scroll. */
-  orientation: 'vertical' | 'horizontal';
+  orientation: 'horizontal' | 'vertical';
   /**
    * Number of extra items to render beyond the visible area of the viewport.
    * Higher values reduce blank flashes during fast scrolling but can lower performance.
