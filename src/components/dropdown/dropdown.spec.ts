@@ -137,6 +137,7 @@ describe('Dropdown', () => {
     });
 
     it('`scroll` behavior', async () => {
+      dropDown.scrollStrategy = 'scroll';
       await openDropdown();
       await simulateScroll(container, { top: 200 });
 
@@ -153,14 +154,6 @@ describe('Dropdown', () => {
       expect(dropDown.open).to.be.false;
       expect(eventSpy.firstCall).calledWith('igcClosing');
       expect(eventSpy.lastCall).calledWith('igcClosed');
-    });
-
-    it('`block behavior`', async () => {
-      dropDown.scrollStrategy = 'block';
-      await openDropdown();
-      await simulateScroll(container, { top: 200 });
-
-      expect(dropDown.open).to.be.true;
     });
   });
 

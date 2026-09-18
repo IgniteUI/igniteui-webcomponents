@@ -35,6 +35,7 @@ import { addThemingController } from '#theming/theming-controller.js';
 import IgcIconComponent from '../icon/icon.js';
 import IgcInputComponent from '../input/input.js';
 import IgcPopoverComponent from '../popover/popover.js';
+import type { PopoverScrollStrategy } from '../types.js';
 import IgcValidationContainerComponent from '../validation-container/validation-container.js';
 import type { VirtualScrollItemContext } from '../virtualization/types.js';
 import IgcVirtualScrollComponent from '../virtualization/virtualization.js';
@@ -360,6 +361,20 @@ export default class IgcComboComponent<
   public override get locale(): string {
     return super.locale;
   }
+
+  /**
+   * Sets the behavior of the component when the parent container scrolls.
+   *
+   * If the value is `hide`, the component hides while the anchor is fully out
+   * of view. `hide` is the default value.
+   *
+   * If the value is `scroll`, the component stays visible and anchored.
+   *
+   * If the value is `close`, the component closes on each scroll.
+   * @attr scroll-strategy
+   */
+  @property({ attribute: 'scroll-strategy' })
+  public scrollStrategy: PopoverScrollStrategy = 'hide';
 
   /**
    * The label of the control.
@@ -1317,7 +1332,13 @@ export default class IgcComboComponent<
 
   protected override render() {
     return html`
-      <igc-popover ?open=${this.open} flip shift same-width>
+      <igc-popover
+        ?open=${this.open}
+        flip
+        same-width
+        .scrollStrategy=${this.scrollStrategy}
+        @igcPopoverScrollClose=${this._handleClosing}
+      >
         ${this._renderMainInput()} ${this._renderList()}
       </igc-popover>
       ${this._renderHelperText()}
