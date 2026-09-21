@@ -107,10 +107,10 @@ export class DataState<T extends object> implements ReactiveController {
    * @internal
    */
   public hostUpdate(): void {
-    // Mutating the data array in place notifies neither Lit nor `invalidate()`,
-    // so a changed length is detected here to mark the pipeline dirty on its
-    // own. Replacing elements without changing the length stays undetectable
-    // and still requires reassigning `data`.
+    // A change to the data array in place notifies neither Lit nor
+    // `invalidate()`, so a changed length is found here and marks the pipeline
+    // dirty. A replaced element of the same length stays unknown and needs a
+    // new `data` array.
     if (this._isSourceOutdated()) {
       this._dirty = true;
     }
@@ -144,11 +144,11 @@ export class DataState<T extends object> implements ReactiveController {
       return;
     }
 
-    // A record's `value` and `header` are fixed for a given data item, so the
-    // indexed source only needs rebuilding when it no longer matches the host's
-    // data. Filter-only runs (every keystroke in the search input) reuse it
-    // instead of re-allocating a record per item. The derived `position` is the
-    // one field that does change per run - see `_apply`.
+    // The `value` and `header` of a record are fixed for a data item, so the
+    // indexed source is built again only if it no longer agrees with the data of
+    // the host. A filter-only run, which each keystroke starts, uses it again
+    // and allocates no records. Only the derived `position` changes per run.
+    // See `_apply`.
     if (this._isSourceOutdated()) {
       this._source = this._host.data;
       this._indexed = this._index(this._source);
@@ -162,9 +162,7 @@ export class DataState<T extends object> implements ReactiveController {
 
   //#region Internal pipeline operations
 
-  /**
-   * Initial indexing of the data - converts raw data items into ComboRecord format with metadata.
-   */
+  /** Converts the raw data items into {@link ComboRecord} objects. */
   private _index(data: T[]): ComboRecord<T>[] {
     return data.map((item, index) => ({
       value: item,
@@ -174,15 +172,14 @@ export class DataState<T extends object> implements ReactiveController {
   }
 
   /**
-   * Applies the data pipeline: filtering and grouping over the indexed source,
-   * then renumbers the visible options so that the `aria-posinset`/`aria-setsize`
-   * pair reported by the list skips group headers.
+   * Filters and groups the indexed source, then numbers the visible options
+   * again, so that the `aria-posinset` and `aria-setsize` pair of the list
+   * skips the group headers.
    *
    * @remarks
-   * `position` is derived view state and is deliberately renumbered in place.
-   * The records belong solely to this controller, and every run recomputes the
-   * field before anything reads it, so copying them per run would only add an
-   * allocation to each keystroke.
+   * `position` is derived view state, and the records belong only to this
+   * controller. Each run computes the field before a read, so it is numbered in
+   * place. A copy per run would add one allocation to each keystroke.
    */
   private _apply(records: ComboRecord<T>[]): ComboRecord<T>[] {
     const result = this._grouping.apply(

@@ -63,8 +63,9 @@ export default class IgcButtonGroupComponent extends EventEmitterMixin<
   //#region Internal state & properties
 
   /**
-   * The values set through the `selectedItems` API before there were buttons to apply
-   * them to. Read once the buttons are rendered, after which the buttons own the state.
+   * The values set through `selectedItems` before there were buttons to apply
+   * them to. Read one time when the buttons render, after which the buttons own
+   * the state.
    */
   private _selectedItems = new Set<string>();
 
@@ -179,9 +180,9 @@ export default class IgcButtonGroupComponent extends EventEmitterMixin<
       value: () => context,
     });
 
-    // The single selection modes expose radio semantics, which come with a single
-    // tab stop and arrow navigation that carries the selection along. The multiple
-    // mode is a plain group of toggle buttons, where each one is its own tab stop.
+    // The single selection modes give radio semantics: one tab stop, and arrow
+    // navigation that takes the selection with it. The multiple mode is a group
+    // of toggle buttons, and each button is its own tab stop.
     addRovingFocusController<IgcToggleButtonComponent>(this, {
       keybindings: {
         skip: () => this.disabled || this._isMultiple,
@@ -231,12 +232,13 @@ export default class IgcButtonGroupComponent extends EventEmitterMixin<
   }
 
   /**
-   * Resolves the tab stop of the group - the selected button, or the first enabled
-   * one when there is no selection, so that the group stays reachable.
+   * Finds the tab stop of the group: the selected button, or the first enabled
+   * one if there is no selection, which keeps the group reachable.
    *
-   * The buttons apply it themselves, reading it back through the context, so a tab
-   * stop that moves without any of them updating has to republish. Republishing
-   * re-renders every button, hence only on an actual move.
+   * @remarks
+   * The buttons apply the tab stop themselves and read it through the context,
+   * so a tab stop that moves while no button updates must publish again. That
+   * renders every button, so publish only on a real move.
    */
   private _updateTabStop(): void {
     const enabled = this._enabledButtons;
@@ -249,9 +251,9 @@ export default class IgcButtonGroupComponent extends EventEmitterMixin<
   }
 
   /**
-   * Every button is a tab stop of its own outside of the single selection modes,
-   * and so is one that has left the group - a button keeps its context after it
-   * is removed, and must not be held out of the tab order by a former group.
+   * Each button is its own tab stop outside the single selection modes, as is a
+   * button that left the group. A removed button keeps its context, and a
+   * former group must not hold it out of the tab order.
    */
   private _isTabStop(button: IgcToggleButtonComponent): boolean {
     return (
@@ -271,8 +273,8 @@ export default class IgcButtonGroupComponent extends EventEmitterMixin<
   }
 
   /**
-   * Moves focus to `button`, carrying the selection along the way a radio group
-   * does. The selection is only ever moved, never toggled off.
+   * Moves focus to `button` and takes the selection with it, as a radio group
+   * does. The selection moves and never turns off.
    */
   private _navigate(button: IgcToggleButtonComponent): void {
     button.focus();
@@ -290,8 +292,8 @@ export default class IgcButtonGroupComponent extends EventEmitterMixin<
   }
 
   /**
-   * Reduces a selection made outside of the group - through the children or by
-   * adding buttons that bring their own state - to a single button. The last one wins.
+   * Reduces a selection made outside the group, through the children or through
+   * added buttons with their own state, to one button. The last button wins.
    */
   private _enforceSingleSelection(): void {
     const selected = this._selectedButtons;

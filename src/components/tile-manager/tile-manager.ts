@@ -221,14 +221,13 @@ export default class IgcTileManagerComponent extends LitElement {
   }
 
   /**
-   * Locks/unlocks the grid container height in response to a tile's maximized state changing.
+   * Locks the grid height while a tile is maximized.
    *
    * @remarks
-   * Maximizing a tile removes it from the grid flow (absolute positioning), so it no longer
-   * contributes to the grid's intrinsic height. When that tile is the sole contributor to the
-   * tallest row track, the container would otherwise collapse to the remaining tiles and cut off
-   * the maximized tile's content. Capturing the current height before the layout change keeps the
-   * container stable, and it is released once no tile remains maximized.
+   * A maximized tile is absolutely positioned and adds no height to the grid.
+   * If it is the tallest tile, the grid collapses and cuts off its content.
+   * Capture the height before the layout changes, and release it when no tile
+   * is maximized.
    */
   private _setMaximizedState(): void {
     const grid = this._grid.value;

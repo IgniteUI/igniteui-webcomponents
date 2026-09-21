@@ -173,9 +173,8 @@ export default class IgcPopoverComponent extends LitElement {
   }
 
   /**
-   * Also waits for the position strategy. The fallback strategy positions
-   * asynchronously, so the container has no position when Lit finishes the
-   * update.
+   * Waits also for the position strategy. The fallback strategy positions
+   * asynchronously, so the container has no position when Lit ends the update.
    */
   protected override async getUpdateComplete(): Promise<boolean> {
     const complete = await super.getUpdateComplete();
@@ -244,8 +243,8 @@ export default class IgcPopoverComponent extends LitElement {
   };
 
   /**
-   * An unresolved IDREF keeps the current target. Thus the popover finds an
-   * anchor that renders after it, at the next open.
+   * An IDREF that does not resolve keeps the current target, so the popover
+   * finds an anchor that renders later, at the next open.
    */
   private _resolveTarget(): Element | undefined {
     if (isString(this.anchor)) {
@@ -278,8 +277,8 @@ export default class IgcPopoverComponent extends LitElement {
 
   /**
    * Binds one document `scroll` listener while the container shows and the
-   * scroll strategy is `close`. It reads the container, because the container
-   * can stay closed while `open` is true.
+   * scroll strategy is `close`. Reads the container, which can stay closed
+   * while `open` is true.
    */
   private _syncScrollStrategy(): void {
     toggleEventListener(

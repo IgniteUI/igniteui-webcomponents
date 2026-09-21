@@ -226,8 +226,8 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
    * Applies the activation of `value` to the selection of this view.
    *
    * @remarks
-   * A view inside a calendar has its selection pushed back down by it on the next render.
-   * This is what keeps a stand-alone one selecting on its own.
+   * A calendar writes the selection back to its views on the next render. This
+   * keeps a stand-alone view able to select.
    */
   private _selectDate(value: CalendarDay): boolean {
     const selection = selectDate(

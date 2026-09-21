@@ -20,18 +20,20 @@ type MaskSignature = () => string;
 const MAX_HISTORY_SIZE = 100;
 
 /**
- * The undo/redo history of a masked editor.
+ * The undo and redo history of a masked editor.
  *
- * Masked text is rendered through `.value=${live(...)}`, so every edit reassigns the
- * native input's value - which wipes the browser's own undo stack. This replaces it.
+ * @remarks
+ * `.value=${live(...)}` renders the masked text, so each edit assigns the value
+ * of the native input again and clears the undo stack of the browser. This
+ * history replaces that stack.
  *
- * It holds no timers: a run is coalesced purely from the caret geometry, so the same
- * sequence of edits always produces the same sequence of steps.
+ * It holds no timers. The caret geometry alone groups a run, so the same edits
+ * always give the same steps.
  *
- * The history is self-invalidating rather than instrumented. Anything that moves the
- * masked text without going through it - a programmatic `value`, `clear()`, a form reset -
- * is caught by comparing against the text it last observed, and a changed mask pattern is
- * caught by the signature. That is why no call site has to announce those changes.
+ * The history invalidates itself. It compares against the text it last saw to
+ * find a change that did not go through it, such as a `value` from code,
+ * `clear()` or a form reset, and the signature finds a changed mask pattern. No
+ * call site must report those changes.
  *
  * @hidden
  */
@@ -46,11 +48,11 @@ class MaskHistory {
   private _pattern = '';
 
   /**
-   * The state the most recent traversal restored.
+   * The state that the last traversal restored.
    *
-   * Holding `Ctrl + Z` fires faster than the caret can be written back to the DOM, so the
-   * live selection is not a trustworthy counterpart entry for the opposite stack. The
-   * state we know we just restored is.
+   * @remarks
+   * A held `Ctrl + Z` repeats faster than the caret reaches the DOM, so the live
+   * selection is not a reliable entry for the opposite stack. This state is.
    */
   private _lastRestored: MaskHistoryState | null = null;
 
@@ -67,9 +69,9 @@ class MaskHistory {
   }
 
   /**
-   * A run continues only while the caret stays where the previous edit left it, which is
-   * what makes a click or an arrow key break it without any extra hook. Replacing a
-   * selection is always a deliberate edit of its own.
+   * A run continues only while the caret stays where the last edit left it, so a
+   * click or an arrow key breaks it with no extra hook. A replaced selection is
+   * always its own edit.
    */
   private _shouldCoalesce(
     kind: MaskEditKind,
@@ -98,8 +100,8 @@ class MaskHistory {
   }
 
   /**
-   * Drops everything the history holds when the mask pattern changed or the text moved
-   * behind our back. Returns whether the snapshots are still usable.
+   * Drops all the history if the mask pattern changed, or if the text moved
+   * from outside. Returns whether the snapshots are still usable.
    */
   private _validate(value: string): boolean {
     const pattern = this._signature();
