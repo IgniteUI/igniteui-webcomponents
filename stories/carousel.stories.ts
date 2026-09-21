@@ -110,7 +110,7 @@ const metadata: Meta<IgcCarouselComponent> = {
     locale: {
       type: 'string',
       description:
-        "The locale used to resolve the component's resource strings.\nFalls back to the global locale when not set.",
+        'The locale for the resource strings. Falls back to the global locale.',
       control: 'text',
     },
   },
@@ -159,10 +159,7 @@ interface IgcCarouselArgs {
   maximumIndicatorsCount: number;
   /** The animation type. */
   animationType: 'slide' | 'fade' | 'none';
-  /**
-   * The locale used to resolve the component's resource strings.
-   * Falls back to the global locale when not set.
-   */
+  /** The locale for the resource strings. Falls back to the global locale. */
   locale: string;
 }
 type Story = StoryObj<IgcCarouselArgs>;

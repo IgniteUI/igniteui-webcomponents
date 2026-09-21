@@ -8,6 +8,7 @@ import { CalendarDay } from '#internals/date/model.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import type { IgcDateRangePickerResourceStrings } from '#internals/i18n/EN/date-range-picker.resources.js';
 import { addI18nController } from '#internals/i18n/i18n-controller.js';
+import { dateRangePickerResourcesMap } from '#internals/i18n/utils.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import IgcChipComponent from '../chip/chip.js';
 import type {
@@ -39,7 +40,7 @@ export default class IgcPredefinedRangesAreaComponent extends LitElement {
       DateRangePickerResourceStringsEN,
       CalendarResourceStringsEN
     ),
-    resourceMapName: 'date-range-picker',
+    resourceMap: dateRangePickerResourcesMap,
   });
 
   /* blazorSuppress */

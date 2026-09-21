@@ -2,13 +2,13 @@ import type { DateRangeValue } from '../../components/types.js';
 import { isPlainObject, isString } from '../utils/types.js';
 import { CalendarDay, truncateTime } from './model.js';
 
-/** Matches a string beginning with a four digit year, which is left to `Date` to parse. */
+/** Matches a string that starts with a four digit year. `Date` parses it. */
 const ISO_DATE_PATTERN = /^\d{4}/;
 
-/** Matches a time only string - `HH:MM` optionally followed by seconds and milliseconds. */
+/** Matches a time only string: `HH:MM`, with optional seconds and ms. */
 const TIME_PATTERN = /^\d{2}:\d{2}/;
 
-/** Whether `value` is a `Date` holding a valid time. */
+/** Returns whether `value` is a `Date` with a valid time. */
 export function isValidDate(value: unknown): value is Date {
   return value instanceof Date && !Number.isNaN(value.getTime());
 }
@@ -37,7 +37,7 @@ function parseISODate(value: string): Date | null {
   return null;
 }
 
-/** Converts `value` to a `Date`, or to `null` when it is empty or cannot be parsed. */
+/** Converts `value` to a `Date`, or `null` when empty or unparsable. */
 export function convertToDate(value?: Date | string | null): Date | null {
   if (!value) {
     return null;
@@ -47,8 +47,9 @@ export function convertToDate(value?: Date | string | null): Date | null {
 }
 
 /**
- * Converts a comma-separated string of ISO 8601 dates, or an array of dates and ISO 8601
- * strings, into an array of `Date` objects, dropping the ones which cannot be parsed.
+ * Converts a comma-separated string of ISO 8601 dates, or an array of dates
+ * and ISO 8601 strings, into an array of `Date` objects. Unparsable items
+ * are dropped.
  */
 export function convertToDates(
   value?: (Date | string)[] | string | null
@@ -72,9 +73,11 @@ export function convertToDates(
 }
 
 /**
- * Converts `value` to a `DateRangeValue`, parsing a string as JSON and truncating the
- * time of both endpoints. Malformed input converts to `null` rather than throwing, since
- * this runs as an attribute converter.
+ * Converts `value` to a `DateRangeValue`, parsing a string as JSON and
+ * truncating the time of both endpoints.
+ *
+ * @remarks
+ * Malformed input gives `null`, because this runs as an attribute converter.
  */
 export function convertToDateRange(
   value?: DateRangeValue | string | null

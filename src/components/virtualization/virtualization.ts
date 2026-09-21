@@ -9,6 +9,7 @@ import {
 import { property, state } from 'lit/decorators.js';
 import { createRef, ref } from 'lit/directives/ref.js';
 import { styleMap } from 'lit/directives/style-map.js';
+import { addHostListeners } from '#internals/controllers/host-listeners.js';
 import { createResizeObserverController } from '#internals/controllers/resize-observer.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import type { Constructor } from '#internals/mixins/constructor.js';
@@ -277,6 +278,12 @@ export default class IgcVirtualScrollComponent<
     this._engine.onSizeChange = () => this.requestUpdate();
     this._handleScroll = this._handleScroll.bind(this);
 
+    addHostListeners(this, {
+      events: ['scroll'],
+      listener: this._handleScroll,
+      options: { passive: true },
+    });
+
     // Viewport resize observer
     createResizeObserverController(this, {
       callback: this._measureViewport,
@@ -296,13 +303,6 @@ export default class IgcVirtualScrollComponent<
     this._adoptStyles();
     this._engine.initMaxBrowserSize(this.ownerDocument);
     this._measureViewport();
-    this.addEventListener('scroll', this._handleScroll, { passive: true });
-  }
-
-  /** @internal */
-  public override disconnectedCallback(): void {
-    super.disconnectedCallback();
-    this.removeEventListener('scroll', this._handleScroll);
   }
 
   protected override willUpdate(changed: PropertyValues<this>): void {

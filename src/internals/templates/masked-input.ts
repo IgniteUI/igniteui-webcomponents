@@ -17,7 +17,7 @@ export interface MaskedInputOptions {
   name?: string;
   /** Current value to render through `live()`. */
   value: string;
-  /** Pre-resolved placeholder text. Caller decides empty-string semantics. */
+  /** The resolved placeholder text. The caller defines an empty string. */
   placeholder: string;
   readOnly: boolean;
   disabled: boolean;
@@ -26,19 +26,19 @@ export interface MaskedInputOptions {
   /** When provided, sets the `tabindex` attribute. */
   tabindex?: number;
   /**
-   * Resolved ARIA bindings for the native input - the projected host state
-   * merged with the editor's own (see `AriaTargetController.resolveBindings`).
+   * The projected host state merged with the editor bindings. See
+   * `AriaTargetController.resolveBindings`.
    */
   aria: ResolvedARIABindings;
 
   // Required mask handlers
   onInput: (event: InputEvent) => void;
-  /** Wired to `beforeinput` so the component owns `historyUndo` / `historyRedo`. */
+  /** Owns `historyUndo` and `historyRedo` through `beforeinput`. */
   onBeforeInput: (event: InputEvent) => void;
   onFocus: (event: FocusEvent) => void;
   onBlur: (event: FocusEvent) => void;
   onClick: () => void;
-  /** Wired to `keydown`, `cut`, and `dragstart` to capture the current selection. */
+  /** Captures the selection on `keydown`, `cut` and `dragstart`. */
   onSetMaskSelection: (event: Event) => void;
   onCompositionStart: () => void;
   onCompositionEnd: (event: CompositionEvent) => void;
@@ -51,9 +51,8 @@ export interface MaskedInputOptions {
 }
 
 /**
- * Renders the native `<input>` element shared by mask-driven components
- * (`igc-mask-input`, `igc-date-time-input`, `igc-date-range-input`).
- * Centralizes mask event wiring so leaves only describe their extras.
+ * Renders the native `<input>` of the mask-driven components, with the mask
+ * event bindings, so a leaf component describes only its extras.
  */
 export function renderMaskedNativeInput(
   opts: MaskedInputOptions

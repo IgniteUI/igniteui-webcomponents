@@ -4,22 +4,13 @@ import {
   type ReactiveController,
   type ReactiveControllerHost,
 } from 'lit';
+import { sameItems } from '../utils/arrays.js';
 
 const observerConfig: MutationObserverInit = { childList: true, subtree: true };
 
-/** Shallow identity comparison of two stylesheet collections. */
-function isSameCollection(
-  a: readonly CSSStyleSheet[],
-  b: readonly CSSStyleSheet[]
-): boolean {
-  return a.length === b.length && a.every((sheet, index) => sheet === b[index]);
-}
-
 /**
- * Returns the rules of a stylesheet which can be re-inserted in a constructable one.
- *
- * Cross-origin stylesheets are not readable and yield no rules, as do `@import` rules,
- * which cannot be inserted in a constructable stylesheet.
+ * Returns the rules that a constructable stylesheet accepts. A cross-origin
+ * stylesheet is not readable and gives none; an `@import` rule is dropped.
  */
 function getCloneableRules(sheet: CSSStyleSheet): CSSRule[] {
   try {
@@ -32,17 +23,15 @@ function getCloneableRules(sheet: CSSStyleSheet): CSSRule[] {
 }
 
 /**
- * Tracks the stylesheets of a document and mirrors them as constructable stylesheets
- * which can be adopted by shadow roots.
+ * Tracks the stylesheets of a document as constructable clones that a shadow
+ * root adopts. All {@link AdoptedStylesController} instances of one document
+ * share a tracker.
  *
- * A single instance per document is shared by all the {@link AdoptedStylesController}
- * instances whose hosts belong to it.
- *
- * The document is observed for as long as at least one controller is adopting styles,
- * so that stylesheets appearing after the initial adoption - such as the ones injected
- * at runtime by framework renderers - are picked up and pushed to the shadow roots
- * which have already adopted. A stylesheet which has already been cloned is not read
- * again - one rewritten in place needs an explicit {@link invalidate}.
+ * @remarks
+ * The tracker observes the document while at least one controller adopts, so
+ * a stylesheet injected at runtime reaches the shadow roots that already
+ * adopted. A stylesheet that changes in place needs an {@link invalidate}
+ * call.
  */
 class DocumentStyleSheets {
   //#region Instances
@@ -52,7 +41,7 @@ class DocumentStyleSheets {
     DocumentStyleSheets
   >();
 
-  /** Returns the tracker of the given document, creating it if necessary. */
+  /** Returns the tracker of the document, and creates a missing one. */
   public static for(document: Document): DocumentStyleSheets {
     let instance = DocumentStyleSheets._instances.get(document);
 
@@ -77,11 +66,9 @@ class DocumentStyleSheets {
   private _isStale = true;
 
   /**
-   * The node under which stylesheets are expected to appear.
-   *
-   * Style injection targets the head by convention, so observing it keeps the browser
-   * from recording a mutation for every DOM change in the page. The fallbacks cover
-   * documents without a head, such as ones created through `DOMImplementation`.
+   * The node to observe for stylesheets: the head by convention, which avoids
+   * a mutation record for every DOM change in the page. The fallbacks cover a
+   * document without a head, such as one that `DOMImplementation` creates.
    */
   private get _observedRoot(): Node {
     return (
@@ -111,7 +98,7 @@ class DocumentStyleSheets {
 
   //#region Public API
 
-  /** Registers a consumer, starting the document observation if it is the first one. */
+  /** Registers a consumer. The first consumer starts the observation. */
   public subscribe(consumer: AdoptedStylesController): void {
     this._consumers.add(consumer);
 
@@ -121,7 +108,7 @@ class DocumentStyleSheets {
     }
   }
 
-  /** Unregisters a consumer, stopping the document observation if it was the last one. */
+  /** Unregisters a consumer. The last consumer stops the observation. */
   public unsubscribe(consumer: AdoptedStylesController): void {
     if (this._consumers.delete(consumer) && this._consumers.size === 0) {
       this._observer.disconnect();
@@ -129,7 +116,7 @@ class DocumentStyleSheets {
     }
   }
 
-  /** Drops the cloned stylesheets, forcing a re-clone on the next access. */
+  /** Drops the cloned stylesheets. The next access clones them again. */
   public invalidate(): void {
     this._clones = new WeakMap();
     this._isStale = true;
@@ -140,11 +127,8 @@ class DocumentStyleSheets {
   //#region Event handling
 
   /**
-   * Stylesheet links have no CSSOM representation at the time they are appended to
-   * the document, so they are picked up when they finish loading.
-   *
-   * The listener is capturing and document wide - it sees the load event of every
-   * resource - hence the check for an element which has just produced a stylesheet.
+   * Synchronizes the tracker when a stylesheet link finishes its load. A link
+   * has no CSSOM representation before that.
    *
    * @internal
    */
@@ -160,7 +144,7 @@ class DocumentStyleSheets {
 
   //#region Internal methods
 
-  /** Re-clones the document stylesheets and notifies the consumers if they have changed. */
+  /** Clones the document stylesheets again, and notifies on a change. */
   private _synchronize(): void {
     if (this._collect()) {
       for (const consumer of this._consumers) {
@@ -170,12 +154,12 @@ class DocumentStyleSheets {
   }
 
   /**
-   * Mirrors the stylesheets currently in the document.
+   * Mirrors the stylesheets that the document holds now.
    *
-   * Change is decided on the clones rather than on the document collection, so that a
-   * stylesheet which yielded nothing before - an empty one, for instance - is re-read on
-   * every pass, while a change to the document which produces the same clones, such as
-   * an unreadable stylesheet being added, leaves the consumers alone.
+   * @remarks
+   * The comparison uses the clones and not the document collection, so a
+   * stylesheet that gave nothing before is read again on every pass, and an
+   * unreadable one leaves the consumers alone.
    *
    * @returns Whether the mirrored collection has changed.
    */
@@ -192,7 +176,7 @@ class DocumentStyleSheets {
 
     this._isStale = false;
 
-    if (isSameCollection(sheets, this._sheets)) {
+    if (sameItems(sheets, this._sheets)) {
       return false;
     }
 
@@ -201,14 +185,14 @@ class DocumentStyleSheets {
   }
 
   /**
-   * Clones the given stylesheet into a constructable one, keeping the rules in their
-   * original order. Rules which cannot be inserted, such as ones with invalid syntax,
-   * are skipped.
+   * Clones the given stylesheet into a constructable one, in the original
+   * rule order, and skips a rule that the clone does not accept.
    *
-   * Nothing is cached for a stylesheet which yields no rules, so one that is appended
-   * empty and populated afterwards is picked up by a later pass.
+   * @remarks
+   * A stylesheet without rules is not cached, so a later pass picks up one
+   * that the document receives empty and fills afterwards.
    *
-   * @returns The cloned stylesheet or null when there is nothing to clone.
+   * @returns The cloned stylesheet, or null when there is nothing to clone.
    */
   private _clone(sheet: CSSStyleSheet): CSSStyleSheet | null {
     const cached = this._clones.get(sheet);
@@ -229,7 +213,7 @@ class DocumentStyleSheets {
       try {
         clone.insertRule(rule.cssText, clone.cssRules.length);
       } catch {
-        // Skip rules that cannot be cloned
+        // The clone does not accept this rule.
       }
     }
 
@@ -245,13 +229,13 @@ class DocumentStyleSheets {
 }
 
 /**
- * Reactive controller which adopts the document stylesheets into the shadow root of
- * its host, effectively bridging the style encapsulation boundary when needed.
+ * Adopts the document stylesheets into the shadow root of the host, across
+ * its style encapsulation boundary.
  *
- * The document is tracked for as long as the styles are adopted, so stylesheets added
- * to or removed from it afterwards are reflected in the shadow root as well. Only the
- * stylesheets the controller itself adopted are ever removed - the styles of the
- * component and of its theme are left intact.
+ * @remarks
+ * The controller tracks the document while the host adopts, so a later
+ * addition or removal reaches the shadow root too. It removes only the
+ * stylesheets that it adopted, and leaves component and theme styles intact.
  */
 class AdoptedStylesController implements ReactiveController {
   //#region Internal state
@@ -268,15 +252,6 @@ class AdoptedStylesController implements ReactiveController {
 
   //#endregion
 
-  //#region Public properties
-
-  /** Whether the document styles are adopted in the host's shadow root. */
-  public get hasAdoptedStyles(): boolean {
-    return this._hasAdoptedStyles;
-  }
-
-  //#endregion
-
   constructor(host: ReactiveControllerHost & LitElement) {
     this._host = host;
     host.addController(this);
@@ -285,7 +260,7 @@ class AdoptedStylesController implements ReactiveController {
   //#region ReactiveController implementation
 
   /**
-   * Restores the styles cleared on the previous disconnect.
+   * Restores the styles that the previous disconnect cleared.
    * @internal
    */
   public hostConnected(): void {
@@ -293,7 +268,7 @@ class AdoptedStylesController implements ReactiveController {
   }
 
   /**
-   * Clears the adopted styles to prevent memory leaks.
+   * Clears the adopted styles to prevent a memory leak.
    * @internal
    */
   public hostDisconnected(): void {
@@ -305,7 +280,7 @@ class AdoptedStylesController implements ReactiveController {
   //#region Public API
 
   /**
-   * Adopts or clears the document styles based on the passed condition.
+   * Adopts the document styles, or clears them, based on `condition`.
    *
    * @example
    * ```typescript
@@ -318,19 +293,20 @@ class AdoptedStylesController implements ReactiveController {
   }
 
   /**
-   * Invalidates the cloned stylesheets of the given document, so that the next adoption
-   * re-clones them. Additions and removals are picked up on their own - this is meant for
-   * changes the document cannot be observed for, such as a theme rewriting a stylesheet
-   * in place.
+   * Invalidates the cloned stylesheets of the given document.
    *
-   * @param doc - The document whose cache to invalidate. Defaults to the global document.
+   * @remarks
+   * The tracker sees an addition and a removal on its own. Use this for a
+   * change it cannot see, such as a theme that rewrites a sheet in place.
+   *
+   * @param doc - The document whose cache to invalidate.
    */
-  public invalidateCache(doc?: Document): void {
-    DocumentStyleSheets.for(doc ?? document).invalidate();
+  public invalidateCache(doc: Document): void {
+    DocumentStyleSheets.for(doc).invalidate();
   }
 
   /**
-   * Re-adopts the document styles. Invoked when the tracked stylesheets change.
+   * Adopts the document styles again. The tracker calls it on a change.
    * @internal
    */
   public updateAdoptedStyles(): void {
@@ -377,7 +353,7 @@ class AdoptedStylesController implements ReactiveController {
     this._documentStyles.unsubscribe(this);
   }
 
-  /** Returns the stylesheets of the shadow root which are not managed by this controller. */
+  /** Returns the shadow root stylesheets that this controller does not own. */
   private _getHostSheets(shadowRoot: ShadowRoot): CSSStyleSheet[] {
     return shadowRoot.adoptedStyleSheets.filter(
       (sheet) => !this._adoptedSheets.has(sheet)
@@ -388,7 +364,7 @@ class AdoptedStylesController implements ReactiveController {
 }
 
 /**
- * Creates and attaches an {@link AdoptedStylesController} to a Lit component.
+ * Creates an {@link AdoptedStylesController} and adds it to a Lit component.
  *
  * @example
  * ```typescript

@@ -4,45 +4,31 @@ import { getRoot } from '../utils/dom.js';
 
 type GroupHost = ReactiveControllerHost & Element;
 
-/** The object a group's identity is bound to - a root node, a container element. */
+/** The identity of a group: a root node or a container element. */
 type GroupScope = object;
 
 type GroupRegistryConfig<T extends GroupHost, S> = {
-  /**
-   * The group key of a host. Together with the scope it forms the identity of
-   * a group. A host with an empty key stays on its own.
-   */
+  /** The group key of a host. An empty key leaves the host on its own. */
   keyOf: (host: T) => string;
-  /**
-   * Derives the group-wide state that each member receives on sync, from the
-   * current members of the group.
-   */
+  /** Derives the state that each member receives on a sync. */
   deriveState: (members: T[]) => S;
-  /**
-   * The scope the group identity is bound to. Defaults to the host's root
-   * node (document or shadow root).
-   */
+  /** The scope of the group identity. Defaults to the host root node. */
   scopeOf?: (host: T) => GroupScope;
 };
 
-/** The membership of one host, attached to it as a reactive controller. */
+/** The membership of one host, added to it as a reactive controller. */
 interface GroupMemberController<
   T extends GroupHost,
 > extends ReactiveController {
-  /** The hosts of this member's group, in DOM order. A host with no group is on its own. */
+  /** The hosts of the group, in DOM order. A lone host gets its own group. */
   readonly members: T[];
-  /**
-   * Moves the host to the group of its current scope and key. Does nothing
-   * while both stay the same. If not, the group that the host joins and the
-   * group that it leaves both update their state.
-   */
+  /** Moves the host to the group of its scope and key, and syncs both. */
   updateMembership(): void;
-  /** Updates the state of the host group. */
   sync(): void;
 }
 
 interface GroupRegistry<T extends GroupHost, S> {
-  /** Creates and attaches a membership controller to the host. */
+  /** Creates a membership controller and adds it to the host. */
   attach(host: T, onSync: (state: S) => void): GroupMemberController<T>;
   /** Returns the hosts of the group of `member`, in DOM order. */
   membersOf(member: T): T[];
@@ -59,15 +45,12 @@ function byDocumentOrder(a: Node, b: Node): number {
 }
 
 /**
- * Creates a registry of groups whose members discover each other through a
- * shared scope and key instead of a common parent element - the way native
- * radio buttons group by their `name` within a form root.
+ * Creates a registry of groups.
  *
- * Each member holds its own entry for its life-cycle, so that a group read
- * reflects the actual membership and the members that stay behind derive their
- * state again when one leaves - a change a member cannot see on its own.
- *
- * One registry holds one kind of group; create it at module level:
+ * @remarks
+ * Members find each other through a shared scope and key, as native radio
+ * buttons group by `name` in a form root. Create one registry per kind of
+ * group, at module level.
  *
  * @example
  * ```typescript
@@ -90,7 +73,7 @@ export function createGroupRegistry<T extends GroupHost, S>(
     return config.scopeOf?.(host) ?? getRoot(host);
   }
 
-  /** Gives each member of the group the state that the group derives. */
+  /** Derives the group state and gives it to each member. */
   function syncGroup(group: Iterable<Member>): void {
     const members = Array.from(group);
     const state = config.deriveState(members.map((member) => member.host));
@@ -104,7 +87,7 @@ export function createGroupRegistry<T extends GroupHost, S>(
     public readonly host: T;
     public readonly onSync: (state: S) => void;
 
-    /** The scope the host is registered under, or null while it is not registered. */
+    /** The scope of the host, or `null` while it is not registered. */
     private _scope: GroupScope | null = null;
     private _key = '';
 
@@ -121,8 +104,7 @@ export function createGroupRegistry<T extends GroupHost, S>(
         ? Array.from(groups.get(this._scope)?.get(this._key) ?? [])
         : [];
 
-      // A host moves to its new group on its next update, so an entry can be
-      // one that has a different key or scope by now.
+      // A host moves on its next update, so an entry can hold a stale key.
       const members = entries.filter((member) => member._isCurrent);
 
       return isEmpty(members)
@@ -194,8 +176,7 @@ export function createGroupRegistry<T extends GroupHost, S>(
       if (isEmpty(group)) {
         keys?.delete(key);
       } else {
-        // The host is gone, and any state that it held goes with it. What is
-        // left of the group derives its state again.
+        // The remaining members derive their state again without this host.
         syncGroup(group);
       }
     }
@@ -209,8 +190,7 @@ export function createGroupRegistry<T extends GroupHost, S>(
     membersOf(member) {
       const controller = controllers.get(member);
 
-      // Move the member first, so that a read that comes right after a change
-      // of its key or scope resolves against the correct group.
+      // Move first, so a read after a key or scope change resolves right.
       controller?.updateMembership();
 
       return controller?.members ?? [member];

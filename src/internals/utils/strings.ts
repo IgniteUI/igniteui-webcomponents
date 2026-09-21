@@ -1,6 +1,5 @@
 /**
  * Builds a string from format specifiers and replacement parameters.
- * Will coerce non-string parameters to their string representations.
  *
  * @example
  * ```typescript
@@ -17,8 +16,8 @@ export function formatString(template: string, ...params: unknown[]): string {
 }
 
 /**
- * Splits a string into its words, treating whitespace, `-`, `_` and
- * camelCase boundaries as separators.
+ * Splits a string into words at whitespace, `-`, `_` and camelCase
+ * boundaries.
  */
 export function splitToWords(text: string) {
   const input = text.replaceAll(/[^a-zA-Z0-9\s-_]/g, '');
@@ -33,12 +32,11 @@ export function toKebabCase(text: string): string {
 }
 
 /**
- *  Escapes any potential regex syntax characters in a string, and returns a new string
- *  that can be safely used as a literal pattern for the `RegExp()` constructor.
+ * Escapes each regular expression character in a string, so that `RegExp()`
+ * reads it as a literal pattern.
  *
- *  @remarks
- *  Substitute with `RegExp.escape` once it has enough support:
- *
+ * @remarks
+ * Replace with `RegExp.escape` once browser support is sufficient:
  * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/escape#browser_compatibility
  */
 export function escapeRegex(value: string): string {
@@ -46,7 +44,7 @@ export function escapeRegex(value: string): string {
 }
 
 /**
- * Creates a generator of monotonically increasing DOM ids based on the given prefix.
+ * Creates a function that returns DOM ids with the given prefix.
  *
  * @example
  * ```typescript
@@ -78,8 +76,8 @@ function fillPool(bytes: number): void {
 }
 
 /**
- * Generates a unique string ID of the specified size using a URL-friendly alphabet.
- * The default size is 21 characters, which provides a very low probability of collisions.
+ * Generates a unique string id of the given size, from a URL-safe alphabet.
+ * The default of 21 characters makes a collision very unlikely.
  */
 export function nanoid(size = 21): string {
   const bytes = size | 0;

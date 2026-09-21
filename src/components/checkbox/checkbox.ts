@@ -116,7 +116,7 @@ export default class IgcCheckboxComponent extends IgcCheckboxBaseComponent {
         onKeyDown: this._handleEnterKeydown,
         onBlur: this._handleBlur,
       })}
-      ${this._renderValidationContainer()}
+      ${IgcValidationContainerComponent.create(this)}
     `;
   }
 }

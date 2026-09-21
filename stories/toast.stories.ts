@@ -25,28 +25,26 @@ const metadata: Meta<IgcToastComponent> = {
   argTypes: {
     open: {
       type: 'boolean',
-      description: 'Whether the component is in shown state.',
+      description: 'Sets the open state of the component.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
     displayTime: {
       type: 'number',
       description:
-        'Determines the duration in milliseconds in which the component will be visible.',
+        'Sets the time in milliseconds that the component stays visible.',
       control: 'number',
       table: { defaultValue: { summary: '4000' } },
     },
     keepOpen: {
       type: 'boolean',
-      description:
-        'Determines whether the component should close after the `displayTime` is over.',
+      description: 'Keeps the component open after the `displayTime` is over.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
     position: {
       type: { name: 'enum', value: ['bottom', 'middle', 'top'] },
-      description:
-        'Sets the position of the component in the viewport.\n\n`bottom` - positions the component at the bottom. This is the default.\n`middle` - positions the component at the center.\n`top` - positions the component at the top.',
+      description: 'Sets the position of the component in the viewport.',
       options: ['bottom', 'middle', 'top'],
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'bottom' } },
@@ -54,7 +52,7 @@ const metadata: Meta<IgcToastComponent> = {
     positioning: {
       type: { name: 'enum', value: ['viewport', 'container'] },
       description:
-        'Sets the positioning strategy of the component.\n\n`viewport` - positions the component relative to the viewport, ignoring any ancestor elements. This is the default behavior.\n`container` - positions the component relative to the nearest visible ancestor. In this mode, the component will be constrained within the bounding box of the ancestor and will be positioned according to the `position` attribute.',
+        'Sets the positioning strategy of the component.\n\n`viewport` - positions against the viewport, ignoring every ancestor.\n`container` - positions inside the bounding box of the closest visible\nancestor, at the place that `position` sets.',
       options: ['viewport', 'container'],
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'viewport' } },
@@ -72,25 +70,20 @@ const metadata: Meta<IgcToastComponent> = {
 export default metadata;
 
 interface IgcToastArgs {
-  /** Whether the component is in shown state. */
+  /** Sets the open state of the component. */
   open: boolean;
-  /** Determines the duration in milliseconds in which the component will be visible. */
+  /** Sets the time in milliseconds that the component stays visible. */
   displayTime: number;
-  /** Determines whether the component should close after the `displayTime` is over. */
+  /** Keeps the component open after the `displayTime` is over. */
   keepOpen: boolean;
-  /**
-   * Sets the position of the component in the viewport.
-   *
-   * `bottom` - positions the component at the bottom. This is the default.
-   * `middle` - positions the component at the center.
-   * `top` - positions the component at the top.
-   */
+  /** Sets the position of the component in the viewport. */
   position: 'bottom' | 'middle' | 'top';
   /**
    * Sets the positioning strategy of the component.
    *
-   * `viewport` - positions the component relative to the viewport, ignoring any ancestor elements. This is the default behavior.
-   * `container` - positions the component relative to the nearest visible ancestor. In this mode, the component will be constrained within the bounding box of the ancestor and will be positioned according to the `position` attribute.
+   * `viewport` - positions against the viewport, ignoring every ancestor.
+   * `container` - positions inside the bounding box of the closest visible
+   * ancestor, at the place that `position` sets.
    */
   positioning: 'viewport' | 'container';
 }

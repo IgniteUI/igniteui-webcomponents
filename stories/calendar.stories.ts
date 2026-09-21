@@ -71,7 +71,7 @@ const metadata: Meta<IgcCalendarComponent> = {
     locale: {
       type: 'string',
       description:
-        "The locale used to resolve the component's resource strings.\nFalls back to the global locale when not set.",
+        'The locale for the resource strings. Falls back to the global locale.',
       control: 'text',
     },
     value: {
@@ -158,10 +158,7 @@ interface IgcCalendarArgs {
   visibleMonths: number;
   /** The current active view of the component. */
   activeView: 'days' | 'months' | 'years';
-  /**
-   * The locale used to resolve the component's resource strings.
-   * Falls back to the global locale when not set.
-   */
+  /** The locale for the resource strings. Falls back to the global locale. */
   locale: string;
   /**
    * The current value of the calendar.
