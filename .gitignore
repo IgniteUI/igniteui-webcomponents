@@ -36,4 +36,7 @@ i18nRepo
 .envrc
 .direnv
 
+# Local Google service-account credentials
+tools/speech-to-text-test-server/service-account.json
+
 .vs

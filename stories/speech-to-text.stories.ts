@@ -12,6 +12,7 @@ import {
   defineComponents,
   registerIconFromText,
 } from 'igniteui-webcomponents';
+import { WebSocketSpeechToTextProvider } from 'igniteui-webcomponents/extras';
 
 defineComponents(
   IgcSpeechToTextComponent,
@@ -224,6 +225,33 @@ export const Basic: Story = {
         ></igc-speech-to-text>
       `,
       'Press the microphone and speak. Press again, or wait for the silence timeout, to stop. Escape aborts.'
+    ),
+};
+
+export const WebSocketGoogle: Story = {
+  args: {
+    interimResults: true,
+    continuous: true,
+    silenceTimeout: 5000,
+  },
+  render: (args) =>
+    demo(
+      html`
+        <igc-speech-to-text
+          .provider=${new WebSocketSpeechToTextProvider({
+            url: 'ws://localhost:5238/stt',
+            mimeType: 'audio/webm;codecs=opus',
+          })}
+          locale=${args.locale || 'en-US'}
+          ?continuous=${args.continuous}
+          ?interim-results=${args.interimResults}
+          max-alternatives=${ifDefined(args.maxAlternatives)}
+          silence-timeout=${ifDefined(args.silenceTimeout)}
+          ?disabled=${args.disabled}
+          variant=${ifDefined(args.variant)}
+        ></igc-speech-to-text>
+      `,
+      'Uses the local Google Speech WebSocket server.'
     ),
 };
 
