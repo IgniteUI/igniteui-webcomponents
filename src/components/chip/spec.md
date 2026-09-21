@@ -107,9 +107,9 @@ selection on activation. The wiki page of the component carries no design hand-o
 
 #### Selection
 
-`selectable` makes the chip toggle its `selected` state on activation, and `igcSelect` is emitted once the state
-and its animations have settled. A chip that is `selected` but not `selectable` keeps its state without the
-selection affordance.
+`selectable` makes the chip toggle its `selected` state on activation, and `igcSelect` is emitted synchronously
+with the new state in its detail, before the selection animation runs. A chip that is `selected` but not
+`selectable` keeps its state without the selection affordance.
 
 #### Removal
 
@@ -169,10 +169,12 @@ None applicable.
 
 ### Events
 
-| Event       | Detail | Cancelable | Description                                                                   |
-| ----------- | ------ | ---------- | ----------------------------------------------------------------------------- |
-| `igcSelect` | —      | no         | The chip was selected or deselected, after the related animations finished.    |
-| `igcRemove` | —      | no         | The remove control of the chip was activated.                                  |
+| Event       | Detail    | Cancelable | Description                                   |
+| ----------- | --------- | ---------- | --------------------------------------------- |
+| `igcSelect` | `boolean` | no         | The chip was selected or deselected.          |
+| `igcRemove` | —         | no         | The remove control of the chip was activated. |
+
+The detail of `igcSelect` is the new `selected` state of the chip.
 
 ### Slots
 

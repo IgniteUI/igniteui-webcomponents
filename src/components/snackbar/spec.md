@@ -29,6 +29,7 @@
     - [Public API](#public-api)
     - [Positioning tests](#positioning-tests)
     - [Events tests](#events-tests)
+    - [Not covered by the suite](#not-covered-by-the-suite)
   - [Assumptions and limitations](#assumptions-and-limitations)
   - [Accessibility](#accessibility)
     - [ARIA roles and properties](#aria-roles-and-properties)
@@ -228,13 +229,21 @@ with `@open-wc/testing` fixtures and assertions. It also runs the shared `runInv
 
 ### Positioning tests
 
-8. `position` places the component at the top, the middle and the bottom.
-9. `positioning="container"` positions inside the closest visible ancestor, and `show` resolves `false` when there
-   is none.
+8. `positioning` defaults to `viewport`, and showing the component sets no inline anchor styles.
+9. `positioning="container"` shows the component when there is a visible ancestor.
+10. Switching `positioning` between `container` and `viewport` while the component is open keeps it open, in both
+    directions.
+11. Changing `position` while in `viewport` mode sets no inline styles.
 
 ### Events tests
 
-10. `igcAction` is emitted when the action button is clicked.
+12. `igcAction` is emitted when the action button is clicked, both for the default action and for slotted content.
+
+### Not covered by the suite
+
+- The suite asserts that `viewport` positioning leaves no inline anchor styles, but does not assert where `top`,
+  `middle` and `bottom` actually place the component.
+- The `container` path with no visible ancestor, where `show` resolves `false`, has no case.
 
 ## Assumptions and limitations
 

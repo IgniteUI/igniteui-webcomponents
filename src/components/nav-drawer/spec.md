@@ -320,7 +320,10 @@ The suite lives in [`nav-drawer.spec.ts`](./nav-drawer.spec.ts) and runs in a re
   come from the platform. In the relative position it is a `nav` landmark.
 - The `label` provides the accessible name for both presentations; distinct labels let screen reader users tell
   several navigation landmarks apart.
-- Items expose their active and disabled state, and disabled items are not focusable.
+- The `active` and `disabled` properties of an item are reflected as attributes for styling only. The item renders
+  a plain container with no role, no `aria-disabled` and no focus management, so content projected into a disabled
+  item stays focusable and operable. An application that needs the state to reach assistive technology, or a
+  disabled item to be skipped by the keyboard, sets that on the content it projects.
 
 ### Keyboard support
 

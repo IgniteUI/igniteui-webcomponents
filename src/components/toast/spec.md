@@ -27,6 +27,7 @@
     - [ARIA tests](#aria-tests)
     - [API tests](#api-tests)
     - [Positioning tests](#positioning-tests)
+    - [Not covered by the suite](#not-covered-by-the-suite)
   - [Assumptions and limitations](#assumptions-and-limitations)
   - [Accessibility](#accessibility)
     - [ARIA roles and properties](#aria-roles-and-properties)
@@ -195,9 +196,17 @@ The suite lives in [`toast.spec.ts`](./toast.spec.ts) and runs in a real browser
 
 ### Positioning tests
 
-6. `position` places the component at the top, the middle and the bottom.
-7. `positioning="container"` positions inside the closest visible ancestor, and `show` resolves `false` when there
-   is none.
+6. `positioning` defaults to `viewport`, and showing the component sets no inline anchor styles.
+7. `positioning="container"` shows the component when there is a visible ancestor.
+8. Switching `positioning` between `container` and `viewport` while the component is open keeps it open, in both
+   directions.
+9. Changing `position` while in `viewport` mode sets no inline styles.
+
+### Not covered by the suite
+
+- The suite asserts that `viewport` positioning leaves no inline anchor styles, but does not assert where `top`,
+  `middle` and `bottom` actually place the component.
+- The `container` path with no visible ancestor, where `show` resolves `false`, has no case.
 
 ## Assumptions and limitations
 

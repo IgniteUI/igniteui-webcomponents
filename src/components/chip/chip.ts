@@ -49,7 +49,7 @@ const i18n: I18nControllerConfig<IChipResourceStrings> = {
  * @slot remove - Content to override the default remove chip icon.
  *
  * @fires igcRemove - Emits an event when the chip component is removed.
- * @fires igcSelect - Emits event when the chip component is selected/deselected and any related animations and transitions also end.
+ * @fires igcSelect - Emits an event when the chip component is selected or deselected.
  *
  * @csspart base - The base wrapper of the chip.
  * @csspart action - The selection control of the chip, wrapping the chip content.

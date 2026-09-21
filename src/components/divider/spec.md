@@ -178,8 +178,8 @@ The `middle` property and the `--color` and `--inset` custom properties have no 
 
 ### ARIA roles and properties
 
-- The divider is decorative. Where the break carries meaning for assistive technology, give the element a
-  `separator` role from the application.
+- The divider exposes a `separator` role, and `aria-orientation` follows the `vertical` property, so assistive
+  technology announces the break and its direction. The application does not set either of them.
 
 ### Keyboard support
 

@@ -102,8 +102,9 @@ application builds.
 
 #### Styling the ripple
 
-The duration, the easing and the color of the ripple come from the styles of the component and from the active
-theme, rather than from properties.
+The duration and the easing of the animation are fixed in the implementation and are not configurable. The color
+is read from the `--color` custom property of the ripple element, and falls back to `--ig-gray-800` of the active
+palette when the property is not set.
 
 ### Localization
 

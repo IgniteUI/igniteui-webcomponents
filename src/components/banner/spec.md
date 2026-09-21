@@ -238,7 +238,9 @@ The suite lives in [`banner.spec.ts`](./banner.spec.ts) and runs in a real brows
 
 ### ARIA roles and properties
 
-- The banner is part of the document flow, so it is reached in reading order without a live region.
+- The banner is a polite live region: it carries a `status` role with `aria-live="polite"`, so assistive
+  technology announces the message once the current utterance finishes, without interrupting the end-user.
+- It is also part of the document flow, so it stays reachable in reading order after the announcement.
 - The illustration in the `prefix` slot is decorative; give it an accessible name only when it carries meaning that
   the message does not.
 - The default action is a button with an accessible name, reachable with the keyboard.

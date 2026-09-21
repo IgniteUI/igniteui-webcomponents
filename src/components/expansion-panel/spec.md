@@ -142,10 +142,14 @@ only while the panel is expanded.
 ```typescript
 const panel = document.querySelector('igc-expansion-panel')!;
 
-panel.show();
-panel.hide();
-panel.toggle();
+await panel.show();
+await panel.hide();
+await panel.toggle();
 ```
+
+The three methods are asynchronous and resolve with `true` when the transition completed and changed the open
+state, and with `false` when it did not — the panel was already in the requested state, or a newer transition
+superseded this one.
 
 Setting the `open` property changes the state as well.
 
@@ -183,11 +187,11 @@ The keys apply while the header of the panel has focus.
 
 ### Methods
 
-| Name   | Type signature | Description                          |
-| ------ | -------------- | ------------------------------------ |
-| show   | `(): void`     | Shows the panel content.             |
-| hide   | `(): void`     | Hides the panel content.             |
-| toggle | `(): void`     | Toggles the open state of the panel. |
+| Name   | Type signature         | Description                                                           |
+| ------ | ---------------------- | --------------------------------------------------------------------- |
+| show   | `(): Promise<boolean>` | Shows the panel content. Resolves `true` when the panel was opened.   |
+| hide   | `(): Promise<boolean>` | Hides the panel content. Resolves `true` when the panel was closed.   |
+| toggle | `(): Promise<boolean>` | Toggles the open state. Resolves `true` when the state was changed.   |
 
 ### Events
 

@@ -204,11 +204,14 @@ The suite lives in [`list.spec.ts`](./list.spec.ts) and runs in a real browser t
 
 ### List with items and headers
 
-3. A list combining items and headers renders both in DOM order and passes the accessibility audit.
+3. A list that mixes headers with nested content projects every child and passes the accessibility audit.
 
 ### Not covered by the suite
 
-The `selected` property of the item has no dedicated case.
+- The fixture of the third scenario nests `igc-list` elements between the headers instead of `igc-list-item`
+  elements, and asserts only the number of projected children. A header followed by its items, and the DOM order of
+  the two, are not covered.
+- The `selected` property of the item has no dedicated case.
 
 ## Assumptions and limitations
 
@@ -223,7 +226,8 @@ The `selected` property of the item has no dedicated case.
 
 - The list exposes list semantics, and its items are exposed as list items, so assistive technology announces the
   size of the collection and the position within it.
-- Headers label the section that follows them.
+- A header exposes a `separator` role, so assistive technology announces the break between the groups of items.
+  The header labels the section that follows it.
 - Interactive content projected into an item keeps its own semantics and needs an accessible name.
 
 ### Keyboard support
