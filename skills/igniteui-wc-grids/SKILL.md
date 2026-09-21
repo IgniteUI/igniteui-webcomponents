@@ -9,7 +9,7 @@ user-invocable: true
 ## Required Workflow
 
 1. **Pick the grid type/package** using the table below; ask if ambiguous.
-2. **Use only the verified import paths in this file** (`grids/combined.js`, `themes/<variant>/<design>.css`). For anything else (toolbar, export, pivot/tree/hierarchical APIs, properties/events), look it up with `list_components` / `search_api` / `get_doc` / `get_api_reference` (`platform: "webcomponents"`) instead of guessing.
+2. **Use only the verified import paths in this file** (`grids/combined.js`, `themes/<variant>/<design>.css`). For anything else (toolbar, export, pivot/tree/hierarchical APIs, properties/events), look it up with `list_components({ framework: "webcomponents", ... })` / `get_doc({ framework: "webcomponents", name: "<doc-name>" })` / `search_api({ platform: "webcomponents", query: "<keyword>" })` / `get_api_reference({ platform: "webcomponents", component: "<ClassName>" })` instead of guessing.
 3. **Read the linked skill** for the task at hand rather than duplicating it from memory — this file only owns setup/integration.
 
 ## Related Skills
