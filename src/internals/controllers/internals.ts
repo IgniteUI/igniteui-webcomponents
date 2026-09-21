@@ -8,7 +8,7 @@ import type {
 export type FormValueType = string | File | FormData | null;
 
 /** A subset of the ARIA attributes that `ElementInternals` gives. */
-type ARIAState = { [K in keyof ARIAMixin]?: ARIAMixin[K] };
+export type ARIAState = { [K in keyof ARIAMixin]?: ARIAMixin[K] };
 
 type ElementInternalsConfig = {
   initialARIA?: ARIAState;
@@ -132,9 +132,9 @@ class ElementInternalsController implements ReactiveController {
   }
 
   /**
-   * Mirrors an internals ARIA property onto its host content attribute. It
-   * waits for the connection: a custom element must gain no attribute during
-   * its construction.
+   * Copies an internals ARIA property onto its host content attribute. Waits
+   * for the connection, because a custom element must get no attribute while it
+   * is constructed.
    */
   private _reflectAttribute(name: ReflectableARIA): void {
     const host = this._host;
@@ -239,12 +239,11 @@ export function addInternalsController(
 }
 
 /**
- * Returns the {@link ElementInternalsController} of the given element, or
- * `undefined`.
+ * The {@link ElementInternalsController} of `element`, or `undefined`.
  *
  * @remarks
- * An internal lookup for components and specs: the package entry point must
- * not re-export it. Prefer it over a `@hidden` member on a component class.
+ * An internal lookup for the components and the specs. The package entry point
+ * must not export it. Use it in place of a `@hidden` member on a component.
  */
 export function internalsOf(
   element: Element
