@@ -364,11 +364,10 @@ export default class IgcDatePickerComponent extends EventEmitterMixin<
   protected override formResetCallback(): void {
     super.formResetCallback();
 
-    // The inner editor is not associated with the outer form (shadow
-    // boundary), so the browser never resets it. Since it runs its own
-    // constraint validation against the forwarded `required`/`min`/`max`,
-    // a touched editor would otherwise keep its invalid styles after the
-    // form reset.
+    // The shadow boundary keeps the inner editor out of the outer form, so the
+    // browser never resets it. It runs its own constraint validation against the
+    // forwarded `required`, `min` and `max`, so a touched editor would keep its
+    // invalid styles after a form reset.
     this._input?.['formResetCallback']();
   }
 

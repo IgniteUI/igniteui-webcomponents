@@ -34,8 +34,8 @@ export const MODIFIER_EVENT_KEYS: Record<string, string> =
   Object.fromEntries(MODIFIER_ENTRIES);
 
 /**
- * Splits keys into modifiers (Alt, Control, Meta, Shift) and regular keys,
- * lowercased.
+ * Splits the keys into modifiers (Alt, Control, Meta, Shift) and normal keys,
+ * in lower case.
  *
  * @internal
  */
@@ -255,8 +255,8 @@ class KeyBindingController {
   }
 
   /**
-   * Whether to ignore the event: the key has no binding, the event missed the
-   * observed element, or the skip configuration matches.
+   * Whether to ignore the event. The key has no binding, the event missed the
+   * observed element, or the skip configuration agrees.
    */
   private _shouldSkip(event: KeyboardEvent, key: string): boolean {
     if (!this._allowedKeys.has(key)) {
@@ -300,8 +300,8 @@ class KeyBindingController {
   //#region Event handling
 
   /**
-   * Clears the pressed keys on a global blur. No keyup arrives when the user
-   * moves to another application or tab with a key down.
+   * Clears the pressed keys on a global blur. No keyup arrives if the user
+   * moves to a different application or tab with a key down.
    */
   private _handleGlobalBlur(): void {
     this._pressedKeys.clear();

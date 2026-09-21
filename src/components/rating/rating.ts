@@ -406,10 +406,10 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
   }
 
   /**
-   * Removes the floating point noise that the step arithmetic introduces. The
-   * decimals of the current value and of the step stay, thus a value that the
-   * consumer sets keeps its precision, and the value, the event payload and
-   * `aria-valuenow` stay readable.
+   * Removes the floating point noise of the step arithmetic. The decimals of
+   * the value and of the step stay, so a value from the consumer keeps its
+   * precision, and the value, the event payload and `aria-valuenow` stay
+   * readable.
    */
   private _normalize(value: number): number {
     return roundPrecise(

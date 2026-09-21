@@ -341,10 +341,9 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   }
 
   /**
-   * Re-resolves the selection whenever items enter or leave the light DOM.
-   * Consuming frameworks routinely render them after the initial paint, so
-   * `value` may name an item that does not exist yet, and a selected item may
-   * be taken out from under us.
+   * Resolves the selection again when an item enters or leaves the light DOM. A
+   * framework usually renders the items after the first paint, so `value` can
+   * name an item that does not exist, and a selected item can be removed.
    */
   private _handleItemsChange({
     changes: { added, removed },
@@ -453,9 +452,9 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   }
 
   /**
-   * Moves to `item`, committing the move as a selection while closed.
-   * Nowhere to move to is a no-op - clearing the selection is reserved for the
-   * callers that actually mean it.
+   * Moves to `item`, and commits the move as a selection while closed. Does
+   * nothing if there is no item, because only a caller that intends it clears
+   * the selection.
    */
   private _navigateTo(item?: IgcSelectItemComponent): void {
     if (item) {
@@ -634,9 +633,9 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   }
 
   /**
-   * The text shown in the input for the current selection: the selected item's
-   * main content, without what it routes to its `prefix`/`suffix` slots and
-   * without the marker comments templating engines leave among its children.
+   * The text in the input for the current selection: the main content of the
+   * selected item, without its `prefix` and `suffix` slots, and without the
+   * marker comments that a templating engine leaves between its children.
    */
   private get _displayValue(): string | undefined {
     if (!this._selectedItem) {

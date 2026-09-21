@@ -45,9 +45,9 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
     protected readonly _formValue!: FormValue<unknown>;
 
     /**
-     * Suppresses the invalid styling for a programmatic validation cycle. Set
-     * right before the synchronous check and cleared right after, so it never
-     * leaks into a later cycle.
+     * Hides the invalid styling for a validation cycle started from code. Set
+     * immediately before the check and cleared immediately after, so that it
+     * does not reach a later cycle.
      */
     private _isInternalValidation = false;
     private _touched = false;
@@ -370,8 +370,8 @@ export function FormAssociatedMixin<T extends Constructor<LitElement>>(
     }
 
     /**
-     * Restores the default value through the public `value` setter, so a form
-     * reset gets the same clamping, normalization and reactive bookkeeping.
+     * Restores the default value through the public `value` setter, so that a
+     * form reset gets the same clamping, normalization and reactive state.
      */
     protected override _restoreDefaultValue(): void {
       if ('value' in this) {

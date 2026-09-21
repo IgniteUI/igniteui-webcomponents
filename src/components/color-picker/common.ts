@@ -1,9 +1,9 @@
 import { asNumber } from '#internals/utils/math.js';
 import type { RGB } from './converters.js';
 
-export const RGBA_RE =
+const RGBA_RE =
   /^((rgba)|rgb)[\D]+([\d.]+)[\D]+([\d.]+)[\D]+([\d.]+)[\D]*?([\d.]+|$)/i;
-export const HEX_RE = /.{2}/g;
+const HEX_RE = /.{2}/g;
 const HEX_WITHOUT_HASH_RE = /^[0-9a-f]{3,4}$|^[0-9a-f]{6}$|^[0-9a-f]{8}$/i;
 
 export interface ParsedColor {

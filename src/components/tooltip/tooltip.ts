@@ -123,8 +123,8 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
   private _animating = false;
 
   /**
-   * The state the tooltip is heading to. A show commits `open` upfront so the
-   * popover renders; a hide commits it only once its animation is done.
+   * The state the tooltip moves to. A show commits `open` first, so that the
+   * popover renders. A hide commits it after the animation ends.
    */
   private _requestedState = false;
 
@@ -149,9 +149,9 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
   }
 
   /**
-   * Whether the consumer projected anything into the default slot. Queried
-   * without flattening, which would report the rendered `message` - the slot's
-   * own fallback content - as if it came from the consumer.
+   * Whether the consumer put content into the default slot. The query does not
+   * flatten, because a flattened query reports the rendered `message`, which is
+   * the fallback content of the slot, as content of the consumer.
    */
   private get _hasProjectedContent(): boolean {
     return this._slots
@@ -347,10 +347,9 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
   }
 
   /**
-   * Invalidates the queued and/or running transition, resolving a delayed one
-   * with `false`. The caller must settle the state it left behind.
-   *
-   * @returns Whether the aborted transition was mid-animation.
+   * Cancels the queued or running transition, and resolves a delayed one with
+   * `false`. The caller must settle the state that stays behind. Returns
+   * whether the cancelled transition was in its animation.
    */
   private _abortTransition(): boolean {
     const wasAnimating = this._animating;
@@ -381,8 +380,8 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
   }
 
   /**
-   * Drops a queued or running transition and settles on `state`, by default
-   * the state the tooltip is already committed to.
+   * Drops a queued or running transition and settles on `state`. The default is
+   * the state the tooltip is committed to.
    */
   private _cancelTransition(state = this.open): void {
     this._settleState(state, this._abortTransition());
@@ -420,9 +419,9 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
         this.open = true;
       }
 
-      // Make the tooltip ignore most interactions while the animation
-      // is running. In the rare case when the popover overlaps its anchor
-      // this will prevent looping between the anchor and tooltip handlers.
+      // Make the tooltip ignore most interactions during the animation. If the
+      // popover overlaps its anchor, this stops a loop between the anchor and the
+      // tooltip handlers.
       this.inert = true;
       this._animating = true;
 
@@ -529,13 +528,12 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
   }
 
   /**
-   * Closes the tooltip and emits the events. The method ignores `hideDelay`.
-   * The method also ignores the `sticky` property, unlike
-   * `_hideOnInteraction`.
+   * Closes the tooltip and emits the events. Ignores `hideDelay`, and also
+   * `sticky`, which `_hideOnInteraction` obeys.
    *
-   * The close button of a sticky tooltip calls this method. The `close`
-   * scroll strategy also calls it, because that strategy closes a sticky
-   * tooltip too.
+   * @remarks
+   * The close button of a sticky tooltip calls this method, as does the `close`
+   * scroll strategy, which closes a sticky tooltip too.
    */
   private _hideImmediately(): void {
     this._applyTooltipState({ show: false, withEvents: true });

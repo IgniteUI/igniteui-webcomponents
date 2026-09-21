@@ -67,8 +67,8 @@ class I18nController<T extends object> implements ReactiveController {
   private readonly _host: I18nControllerHost;
   private readonly _defaultEN: T;
   /**
-   * @deprecated since 7.2.0. Resource map to use when converting new to old
-   * and vice versa resource objects.
+   * @deprecated since 7.2.0. The map that converts between the new and the old
+   * resource objects.
    */
   private readonly _resourceMap?: ResourceMap;
   private readonly _resourceChangeCallback?: ResourceChangeCallback;
@@ -196,8 +196,8 @@ class I18nController<T extends object> implements ReactiveController {
   //#region Internal API
 
   /**
-   * Resolves the locale defaults again and applies the custom overrides on
-   * top, so the merged strings keep no value of a previous locale.
+   * Resolves the locale defaults again, then applies the custom overrides, so
+   * that the merged strings keep no value of an earlier locale.
    */
   private _refreshResourceStrings(): void {
     this._defaultResourceStrings = this._getDefaultResourceStrings();
@@ -212,12 +212,12 @@ class I18nController<T extends object> implements ReactiveController {
   }
 
   /**
-   * Gets the current, locale-specific resource strings for the component.
+   * The resource strings of the component for the current locale.
    *
    * @remarks
-   * Maps the `defaultEN` keys to the core library keys and reads each
-   * localized string from the i18n manager. Every instance resolves the same
-   * result, so it is cached. See {@link defaultStringsCache}.
+   * Maps the `defaultEN` keys to the core library keys, and reads each string
+   * from the i18n manager. Each instance gets the same result, so the result is
+   * cached. See {@link defaultStringsCache}.
    */
   private _getDefaultResourceStrings(): T {
     const coreResourceStrings = getI18nManager().getCurrentResourceStrings(
@@ -258,13 +258,13 @@ class I18nController<T extends object> implements ReactiveController {
   }
 
   /**
-   * Returns the date-time formats of the resolved locale.
+   * The date-time formats of the resolved locale.
    *
    * @remarks
-   * An `Intl` format string is expensive and the date editors read these on
-   * every render, so they are cached against the resolved locale. A global
-   * resource change clears the cache, because the shared date formatter can
-   * hold new locale data.
+   * An `Intl` format string is expensive, and the date editors read these on
+   * each render, so they are cached against the locale. A global resource
+   * change clears the cache, because the shared date formatter can then hold
+   * new locale data.
    */
   private _getDateTimeFormats(): LocaleDateTimeFormats {
     const locale = this.locale;

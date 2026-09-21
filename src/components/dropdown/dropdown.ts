@@ -267,9 +267,9 @@ export default class IgcDropdownComponent extends EventEmitterMixin<
   //#region Event handlers
 
   /**
-   * Re-resolves the selection whenever items enter or leave the light DOM -
-   * frameworks routinely render them after the initial paint, and a selected or
-   * navigated item may be taken out from under us.
+   * Resolves the selection again when an item enters or leaves the light DOM. A
+   * framework usually renders the items after the first paint, and can remove a
+   * selected or navigated item.
    */
   private _handleItemsChange({
     changes: { added, removed },
@@ -427,8 +427,8 @@ export default class IgcDropdownComponent extends EventEmitterMixin<
   }
 
   /**
-   * Moves everything bound to the anchor - key event listeners, outside click
-   * exemption and ARIA - over to the one currently in effect.
+   * Moves all that is bound to the anchor to the current one: the key event
+   * listeners, the outside-click exemption and the ARIA state.
    */
   private _updateTarget(): void {
     const target = this._explicitTarget ?? this._slottedTarget;
@@ -446,8 +446,8 @@ export default class IgcDropdownComponent extends EventEmitterMixin<
   }
 
   /**
-   * Only an anchor outside of our own DOM needs listeners of its own - keyboard
-   * events on a slotted one already reach the host.
+   * Only an anchor outside this DOM needs its own listeners. A keyboard event
+   * on a slotted anchor already reaches the host.
    */
   private _observeTarget(): void {
     const target = this._target;
@@ -472,13 +472,14 @@ export default class IgcDropdownComponent extends EventEmitterMixin<
   }
 
   /**
-   * Publishes the popup state and the navigation position on the current anchor.
+   * Publishes the popup state and the navigation position on the anchor.
    *
-   * `aria-activedescendant` goes on the anchor because that is what holds DOM
-   * focus - the list is never focused, since the key bindings are observed on
-   * the anchor itself. There is no `aria-controls` to go with it: the list it
-   * would name lives in this shadow root, which an IDREF cannot cross and ARIA
-   * element reflection only ever resolves out of, never into.
+   * @remarks
+   * `aria-activedescendant` goes on the anchor, because the anchor holds DOM
+   * focus. The list is never focused, because the key bindings listen on the
+   * anchor. No `aria-controls` goes with it: the list is in this shadow root,
+   * which an IDREF cannot cross, and ARIA element reflection resolves only out
+   * of a shadow root, never into one.
    */
   private _syncAnchorARIA(): void {
     const anchor = this._target;
@@ -502,8 +503,8 @@ export default class IgcDropdownComponent extends EventEmitterMixin<
   }
 
   /**
-   * Stops driving the current anchor: its key event listeners go, along with
-   * everything {@link _syncAnchorARIA} wrote onto it.
+   * Releases the current anchor: removes its key event listeners and all that
+   * {@link _syncAnchorARIA} wrote onto it.
    */
   private _releaseTarget(): void {
     this._targetListeners?.unsubscribe();

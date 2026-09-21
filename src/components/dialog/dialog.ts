@@ -237,9 +237,9 @@ export default class IgcDialogComponent extends EventEmitterMixin<
   }
 
   private _handleClose(): void {
-    // When a non-cancelable close event is fired (e.g., from repeated Escape presses),
-    // reopen the dialog to prevent the broken state with visible backdrop.
-    // Note that this handler is invoked only when `keepOpenOnEscape` is true.
+    // A close event that cannot be cancelled, for example from repeated Escape
+    // presses, leaves the backdrop visible. Open the dialog again. This handler
+    // runs only if `keepOpenOnEscape` is true.
     if (this.open) {
       this._dialog?.showModal();
     }

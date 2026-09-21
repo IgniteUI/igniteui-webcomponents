@@ -97,12 +97,7 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
   private _handleHeaderClick = (attachment: IgcChatMessageAttachment) => {
     this._state.emitEvent('igcAttachmentClick', { detail: attachment });
   };
-  /**
-   * Default attachment header template used when no custom template is provided.
-   * Renders the attachment icon and name.
-   * @param attachment The message attachment to render
-   * @returns TemplateResult containing the rendered attachment header
-   */
+  /** The default header of `attachment`: its icon and its name. */
   private renderHeader(attachment: IgcChatMessageAttachment) {
     const isCurrentUser = this._state.isCurrentUserMessage(this.message);
     const iconName = isImageAttachment(attachment)
@@ -119,12 +114,7 @@ export default class IgcMessageAttachmentsComponent extends LitElement {
     `;
   }
 
-  /**
-   * Default attachment content template used when no custom template is provided.
-   * Renders the attachment content based on its type.
-   * @param attachment The message attachment to render
-   * @returns TemplateResult containing the rendered attachment content
-   */
+  /** The default content of `attachment`, by attachment type. */
   private _renderContent(attachment: IgcChatMessageAttachment) {
     const iconName =
       ChatFileTypeIcons.get(getFileExtension(attachment.name)) ??
