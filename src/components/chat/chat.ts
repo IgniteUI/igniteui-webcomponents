@@ -12,6 +12,7 @@ import { addSlotController, setSlots } from '#internals/controllers/slot.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import type { IgcChatResourceStrings } from '#internals/i18n/EN/chat.resources.js';
 import { addI18nController } from '#internals/i18n/i18n-controller.js';
+import { chatResourcesMap } from '#internals/i18n/utils.js';
 import type { Constructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { isEmpty } from '#internals/utils/arrays.js';
@@ -244,7 +245,7 @@ export default class IgcChatComponent extends EventEmitterMixin<
     IgcChatResourceStrings | IChatResourceStrings
   >(this, {
     defaultEN: ChatResourceStringsEN,
-    resourceMapName: 'chat',
+    resourceMap: chatResourcesMap,
   });
 
   @query(IgcChatInputComponent.tagName)

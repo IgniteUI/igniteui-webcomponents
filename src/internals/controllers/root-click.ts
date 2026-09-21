@@ -2,43 +2,23 @@ import type { ReactiveController, ReactiveControllerHost } from 'lit';
 import { createAbortHandle } from '../abort-handler.js';
 import { isEmpty } from '../utils/arrays.js';
 
-/** Configuration options for the RootClickController */
 type RootClickControllerConfig = {
-  /**
-   * An optional callback function to execute when an outside click occurs.
-   * If not provided, the `hide()` method of the host will be called.
-   */
+  /** Runs on an outside click. Defaults to the `hide()` method of the host. */
   onHide?: () => void;
-  /**
-   * An optional additional HTMLElement that, if clicked, should not trigger the hide action.
-   * This is useful for elements like a toggle button that opens the component.
-   */
+  /** An additional element whose clicks do not hide the host. */
   target?: HTMLElement;
 };
 
-/** Interface for the host element that the RootClickController will be attached to. */
 interface RootClickControllerHost extends ReactiveControllerHost, HTMLElement {
-  /**
-   * Indicates whether the host element is currently open or visible.
-   */
   open: boolean;
-  /**
-   * If true, outside clicks will not trigger the hide action.
-   */
   keepOpenOnOutsideClick?: boolean;
-  /**
-   * A method on the host to hide or close itself.
-   * This will be called if `hideCallback` is not provided in the config.
-   */
   hide(): void;
 }
 
-let ROOT_CLICK_LISTENER_ACTIVE = false;
-
-/** Shared abort handler for the singleton document listeners. */
+/** Aborts the shared document listeners. */
 const SHARED_ABORT_HANDLER = createAbortHandle();
 
-/** Tracks which hosts had a pointerdown event inside them. */
+/** The hosts that received a pointerdown event inside them. */
 const POINTER_DOWN_HOSTS = new Set<RootClickControllerHost>();
 
 const HOST_CONFIGURATIONS = new WeakMap<
@@ -49,18 +29,18 @@ const HOST_CONFIGURATIONS = new WeakMap<
 const ACTIVE_HOSTS = new Set<RootClickControllerHost>();
 
 /**
- * Whether the event occurred "inside" the host, that is on the host itself or
- * on the additional `target` of its configuration.
+ * Whether `path` contains the host or the `target` of its configuration.
  *
- * Takes an already resolved composed path, so a single one is shared by all the
- * active hosts instead of being rebuilt for each of them.
+ * @remarks
+ * The caller builds the composed path once per event, and a scan of it beats
+ * a set for the one or two hosts that are open together.
  */
 function isInsideHost(
   path: EventTarget[],
   host: RootClickControllerHost,
   target?: HTMLElement
 ): boolean {
-  return path.some((node) => node === host || node === target);
+  return path.includes(host) || (target != null && path.includes(target));
 }
 
 function handlePointerDown(event: PointerEvent): void {
@@ -77,8 +57,7 @@ function handlePointerDown(event: PointerEvent): void {
 function handleRootClick(event: PointerEvent): void {
   const path = event.composedPath();
 
-  // Snapshot the set: hiding a host deactivates it and mutates ACTIVE_HOSTS
-  // while we are still walking it.
+  // A hidden host leaves ACTIVE_HOSTS, so the loop runs over a copy.
   for (const host of Array.from(ACTIVE_HOSTS)) {
     if (host.keepOpenOnOutsideClick || POINTER_DOWN_HOSTS.has(host)) {
       continue;
@@ -96,13 +75,12 @@ function handleRootClick(event: PointerEvent): void {
 
 /* blazorSuppress */
 /**
- * A Lit ReactiveController that manages global click listeners to hide a component
- * when a click occurs outside of the component or its specified target.
+ * Hides a component when a click occurs outside of it, or outside the
+ * configured target.
  *
- * This controller implements a singleton pattern for the document click listener,
- * meaning only one event listener is attached to `document` regardless of how many
- * instances of `RootClickController` are active. Each controller instance
- * subscribes to this single listener.
+ * @remarks
+ * The document keeps one pair of listeners for all active controllers, which
+ * act on the hosts of a shared set.
  */
 class RootClickController implements ReactiveController {
   private readonly _host: RootClickControllerHost;
@@ -121,14 +99,12 @@ class RootClickController implements ReactiveController {
     }
   }
 
-  /**
-   * Adds the host to the set of active hosts and ensures the global
-   * document click listener is active if needed.
-   */
+  /** Adds the host, and the document listeners for the first host. */
   private _addActiveHost(): void {
+    const isFirstHost = isEmpty(ACTIVE_HOSTS);
     ACTIVE_HOSTS.add(this._host);
 
-    if (!ROOT_CLICK_LISTENER_ACTIVE) {
+    if (isFirstHost) {
       const options: AddEventListenerOptions = {
         capture: true,
         signal: SHARED_ABORT_HANDLER.signal,
@@ -139,28 +115,20 @@ class RootClickController implements ReactiveController {
         passive: true,
       });
       document.addEventListener('click', handleRootClick, options);
-      ROOT_CLICK_LISTENER_ACTIVE = true;
     }
   }
 
-  /**
-   * Removes the host from the set of active hosts and removes the global
-   * document click listener if no other hosts are active.
-   */
+  /** Removes the host, and the document listeners for the last host. */
   private _removeActiveHost(): void {
     ACTIVE_HOSTS.delete(this._host);
     POINTER_DOWN_HOSTS.delete(this._host);
 
-    if (isEmpty(ACTIVE_HOSTS) && ROOT_CLICK_LISTENER_ACTIVE) {
+    if (isEmpty(ACTIVE_HOSTS)) {
       SHARED_ABORT_HANDLER.abort();
-      ROOT_CLICK_LISTENER_ACTIVE = false;
     }
   }
 
-  /**
-   * Configures the active state of the controller based on the host's `open` property.
-   * If `host.open` is true, the controller becomes active; otherwise, it becomes inactive.
-   */
+  /** Activates while the host is open and not kept open on an outside click. */
   private _configureListeners(): void {
     this._host.open && !this._host.keepOpenOnOutsideClick
       ? this._addActiveHost()
@@ -188,10 +156,7 @@ class RootClickController implements ReactiveController {
   }
 }
 
-/**
- * Creates and adds a {@link RootClickController} instance with a {@link RootClickControllerConfig | configuration}
- * to the given {@link RootClickControllerHost | host}.
- */
+/** Creates a {@link RootClickController} and adds it to `host`. */
 export function addRootClickController(
   host: RootClickControllerHost,
   config?: RootClickControllerConfig

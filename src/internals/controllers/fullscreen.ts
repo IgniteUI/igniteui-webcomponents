@@ -1,30 +1,22 @@
-import type { ReactiveController, ReactiveControllerHost } from 'lit';
+import type { ReactiveControllerHost } from 'lit';
+import { addHostListeners } from './host-listeners.js';
 
 /**
- * Callback invoked when the host element is about to enter/leave fullscreen mode.
- *
- * The callback is passed the current fullscreen `state`.
- * Returning a falsy value from the callback will stop the current fullscreen state change.
+ * Runs before the host enters or leaves fullscreen mode, with the requested
+ * `state`. A falsy return value stops the change.
  */
 type FullscreenControllerCallback = (state: boolean) => boolean;
 
-/** Configuration object for the fullscreen controller. */
 type FullscreenControllerConfiguration = {
-  /**
-   * Invoked when the host element is entering fullscreen mode.
-   * See the {@link FullscreenControllerCallback} for details.
-   */
+  /** Runs before the host enters fullscreen mode. */
   enter?: FullscreenControllerCallback;
-  /**
-   * Invoked when the host element is leaving fullscreen mode.
-   * See the {@link FullscreenControllerCallback} for details.
-   */
+  /** Runs before the host leaves fullscreen mode. */
   exit?: FullscreenControllerCallback;
 };
 
-class FullscreenController implements ReactiveController {
+class FullscreenController {
   private _host: ReactiveControllerHost & HTMLElement;
-  private _options: FullscreenControllerConfiguration = {};
+  private _options: FullscreenControllerConfiguration;
 
   private _fullscreen = false;
 
@@ -37,14 +29,12 @@ class FullscreenController implements ReactiveController {
     options?: FullscreenControllerConfiguration
   ) {
     this._host = host;
-    Object.assign(this._options, options);
-    host.addController(this);
+    this._options = { ...options };
+
+    addHostListeners(host, { events: ['fullscreenchange'], listener: this });
   }
 
-  /**
-   * Transitions the host element to/from fullscreen mode.
-   * This method **will invoke** enter/exit callbacks if present.
-   */
+  /** Moves the host element into or out of fullscreen mode. */
   public setState(fullscreen: boolean): void {
     const callback = fullscreen ? this._options.enter : this._options.exit;
 
@@ -55,8 +45,8 @@ class FullscreenController implements ReactiveController {
     this._fullscreen = fullscreen;
 
     if (fullscreen) {
-      // Rejects when the request is not user activated or the element is not
-      // allowed to go fullscreen - roll the state back so the host re-renders.
+      // The request rejects without user activation, or for an element that
+      // cannot go fullscreen. The state then rolls back.
       this._host.requestFullscreen().catch(() => {
         this._fullscreen = false;
         this._host.requestUpdate();
@@ -71,16 +61,6 @@ class FullscreenController implements ReactiveController {
     if (!document.fullscreenElement && this._fullscreen) {
       this.setState(false);
     }
-  }
-
-  /** @internal */
-  public hostConnected(): void {
-    this._host.addEventListener('fullscreenchange', this);
-  }
-
-  /** @internal */
-  public hostDisconnected(): void {
-    this._host.removeEventListener('fullscreenchange', this);
   }
 }
 

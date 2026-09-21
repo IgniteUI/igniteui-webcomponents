@@ -1,5 +1,6 @@
 import type { ReactiveController, ReactiveControllerHost } from 'lit';
 import type { PopoverScrollStrategy } from '../../components/types.js';
+import { createAbortHandle } from '../abort-handler.js';
 
 type RootScrollControllerConfig = {
   hideCallback?: () => void;
@@ -14,10 +15,6 @@ type RootScrollControllerHost = ReactiveControllerHost & {
 
 type ScrollRecord = { scrollTop: number; scrollLeft: number };
 
-/**
- * `scroll` is not cancelable, so the listener never calls `preventDefault` and
- * is registered as passive to keep it off the scrolling critical path.
- */
 const scrollListenerOptions: AddEventListenerOptions = {
   capture: true,
   passive: true,
@@ -34,6 +31,7 @@ function writeScroll(element: Element, record: ScrollRecord): void {
 
 class RootScrollController implements ReactiveController {
   private readonly _host: RootScrollControllerHost;
+  private readonly _abortHandle = createAbortHandle();
   private _config?: RootScrollControllerConfig;
   private _cache = new WeakMap<Element, ScrollRecord>();
 
@@ -57,13 +55,18 @@ class RootScrollController implements ReactiveController {
   }
 
   private _addEventListeners(): void {
-    if (this._host.scrollStrategy !== 'scroll') {
-      document.addEventListener('scroll', this, scrollListenerOptions);
+    if (this._host.scrollStrategy === 'scroll') {
+      return;
     }
+
+    document.addEventListener('scroll', this, {
+      ...scrollListenerOptions,
+      signal: this._abortHandle.signal,
+    });
   }
 
   private _removeEventListeners(): void {
-    document.removeEventListener('scroll', this, scrollListenerOptions);
+    this._abortHandle.abort();
     this._cache = new WeakMap();
   }
 

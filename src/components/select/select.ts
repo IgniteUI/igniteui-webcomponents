@@ -56,7 +56,7 @@ import IgcPopoverComponent, {
   type PopoverPlacement,
 } from '../popover/popover.js';
 import type { PopoverScrollStrategy } from '../types.js';
-import type IgcValidationContainerComponent from '../validation-container/validation-container.js';
+import IgcValidationContainerComponent from '../validation-container/validation-container.js';
 import IgcSelectGroupComponent from './select-group.js';
 import IgcSelectHeaderComponent from './select-header.js';
 import IgcSelectItemComponent from './select-item.js';
@@ -767,7 +767,7 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   }
 
   protected _renderHelperText(): TemplateResult {
-    return this._renderValidationContainer({
+    return IgcValidationContainerComponent.create(this, {
       id: 'select-helper-text',
       slot: 'anchor',
       hasHelperText: true,

@@ -1,4 +1,4 @@
-/** Returns whether the value is not `undefined`. Note that `null` is considered defined. */
+/** Returns whether the value is not `undefined`. `null` counts as defined. */
 export function isDefined<T = unknown>(value: T) {
   return value !== undefined;
 }
@@ -15,7 +15,10 @@ export function isObject(value: unknown): value is object {
   return value != null && typeof value === 'object';
 }
 
-/** Returns whether the value is a plain object (POJO) - created via `{}`, `new Object()` or `Object.create(null)`. */
+/**
+ * Returns whether the value is a plain object from `{}`, `new Object()` or
+ * `Object.create(null)`.
+ */
 export function isPlainObject(
   value: unknown
 ): value is Record<PropertyKey, unknown> {
@@ -35,6 +38,19 @@ export function isPlainObject(
     : false;
 }
 
+/**
+ * Resolves a value that the caller gives either directly or as a factory.
+ *
+ * @example
+ * ```typescript
+ * resolveValue(element); // element
+ * resolveValue(() => element); // element
+ * ```
+ */
+export function resolveValue<T>(source: T | (() => T)): T {
+  return isFunction(source) ? (source as () => T)() : source;
+}
+
 export function isRegExp(value: unknown): value is RegExp {
   return value instanceof RegExp;
 }
@@ -43,7 +59,7 @@ export function isEventListenerObject(x: unknown): x is EventListenerObject {
   return isObject(x) && 'handleEvent' in x;
 }
 
-/** Required utility type for specific props */
+/** Makes the given keys `K` of the type `T` required. */
 export type RequiredProps<T, K extends keyof T> = T & {
   [P in K]-?: T[P];
 };
