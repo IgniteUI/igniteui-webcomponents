@@ -3,9 +3,7 @@ import type {
   Constructor,
 } from '../mixins/constructor.js';
 
-/**
- * Indicates a class should not be exposed to blazor Blazor.
- */
+/** Indicates that the Blazor API must not include a class. */
 export function blazorSuppressComponent(
   _constructor: Constructor | AbstractConstructor
 ) {}

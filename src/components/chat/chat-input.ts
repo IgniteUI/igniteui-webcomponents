@@ -6,11 +6,7 @@ import { ifDefined } from 'lit/directives/if-defined.js';
 import { until } from 'lit/directives/until.js';
 import { chatContext, chatUserInputContext } from '#internals/context.js';
 import { addAdoptedStylesController } from '#internals/controllers/adopt-styles.js';
-import {
-  enterKey,
-  isKey,
-  tabKey,
-} from '#internals/controllers/key-bindings.js';
+import { enterKey, isKey, tabKey } from '#internals/controllers/keys.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { partMap } from '#internals/part-map.js';
 import { createTimer } from '#internals/timing.js';

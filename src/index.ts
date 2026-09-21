@@ -74,6 +74,8 @@ export { default as IgcHighlightComponent } from './components/highlight/highlig
 export { default as IgcTooltipComponent } from './components/tooltip/tooltip.js';
 export { default as IgcThemeProviderComponent } from './components/theme-provider/theme-provider.js';
 export { default as IgcQrCodeComponent } from './components/qr-code/qr-code.js';
+export { default as IgcBreadcrumbsComponent } from './components/breadcrumb/breadcrumbs.js';
+export { default as IgcBreadcrumbComponent } from './components/breadcrumb/breadcrumb.js';
 export { default as IgcVirtualScrollComponent } from './components/virtualization/virtualization.js';
 export type {
   IgcVirtualScrollComponentEventMap,

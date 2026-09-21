@@ -1,34 +1,23 @@
-/**
- * Returns the first element of the given array.
- *
- * @remarks
- * Assumes a non-empty array - for an empty one it returns `undefined`
- * typed as `T`.
- */
+/** Returns the first element, typed as `T` even for an empty array. */
 export function firstOf<T>(arr: T[]) {
   return arr.at(0) as T;
 }
 
-/**
- * Returns the last element of the given array.
- *
- * @remarks
- * Assumes a non-empty array - for an empty one it returns `undefined`
- * typed as `T`.
- */
+/** Returns the last element, typed as `T` even for an empty array. */
 export function lastOf<T>(arr: T[]) {
   return arr.at(-1) as T;
 }
 
 /**
- * Splits an array into chunks of a specified size and returns a generator that yields each chunk.
+ * Splits an array into chunks of the given size.
  *
  * @example
  * ```typescript
  * [...chunk([1, 2, 3, 4, 5], 2)]; // [[1, 2], [3, 4], [5]]
  * ```
  *
- * @throws If the `size` parameter is not a safe integer greater than or equal to 1.
+ * @throws If the `size` parameter is not a safe integer greater than or
+ * equal to 1.
  */
 export function* chunk<T>(arr: T[], size: number): Generator<T[]> {
   if (!Number.isSafeInteger(size) || size < 1) {
@@ -40,9 +29,7 @@ export function* chunk<T>(arr: T[], size: number): Generator<T[]> {
   }
 }
 
-/**
- * Returns whether a given collection is empty.
- */
+/** Returns whether a given collection is empty. */
 export function isEmpty<T, U extends object>(
   x: ArrayLike<T> | Set<T> | Map<U, T>
 ): boolean {
@@ -50,7 +37,7 @@ export function isEmpty<T, U extends object>(
 }
 
 /**
- * Ensures the given value is wrapped in an array. If the value is already an array, it is returned as-is. If the value is undefined, an empty array is returned.
+ * Returns the given value as an array. An empty value gives an empty array.
  *
  * @example
  * ```typescript
@@ -65,7 +52,40 @@ export function asArray<T>(value?: T | T[]): T[] {
 }
 
 /**
- * Splits an array into two based on a predicate function, returning a tuple of [truthy, falsy] arrays.
+ * Returns whether two collections hold the same items, in the same order and
+ * by identity. Two empty values match; an empty value differs from a
+ * collection.
+ *
+ * @example
+ * ```typescript
+ * sameItems([a, b], [a, b]); // true
+ * sameItems([a, b], [b, a]); // false
+ * sameItems(null, undefined); // true
+ * ```
+ */
+export function sameItems<T>(
+  a: ArrayLike<T> | null | undefined,
+  b: ArrayLike<T> | null | undefined
+): boolean {
+  if (a == null || b == null) {
+    return a == null && b == null;
+  }
+
+  if (a.length !== b.length) {
+    return false;
+  }
+
+  for (let i = 0; i < a.length; i++) {
+    if (a[i] !== b[i]) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+/**
+ * Splits an array in two with a predicate: matching items first.
  *
  * @example
  * ```typescript

@@ -1,11 +1,8 @@
 import { isServer } from 'lit';
 import { asNumber, clamp, numberInRangeInclusive } from './math.js';
-import { merge } from './objects.js';
 import { isDefined } from './types.js';
 
-/**
- * Returns whether an element has a Left-to-Right directionality.
- */
+/** Returns whether an element has a Left-to-Right directionality. */
 export function isLTR(element: HTMLElement) {
   return element.matches(':dir(ltr)');
 }
@@ -30,9 +27,8 @@ function canResolveLengths(): boolean {
           initialValue: '0px',
         });
       } catch {
-        // The descriptor is a constant, so the only realistic rejection is a
-        // duplicate registration from another bundle instance - which leaves
-        // the property just as usable.
+        // The descriptor is constant, so a rejection means another bundle
+        // instance already registered it. The property stays usable.
       }
     }
   }
@@ -43,15 +39,12 @@ function canResolveLengths(): boolean {
 /**
  * Resolves a CSS length to pixels in the context of `element`.
  *
- * A registered custom property computes to an absolute length, which lets the
- * browser do the conversion for font, viewport and container relative units
- * instead of them being read as raw numbers. Percentages are not lengths -
- * resolve those against whatever basis applies to the property at hand.
- *
- * Returns 0 for percentages, for values that are not valid lengths, and where
- * the resolution is unavailable - during server-side rendering, or without
- * support for registered custom properties. Guessing from the raw token would
- * read `5rem` as 5 pixels, so callers get an obvious zero instead.
+ * @remarks
+ * Registration makes the property compute to an absolute length, so the
+ * browser converts font, viewport and container relative units. Returns 0
+ * for percentages, for invalid lengths, during SSR and in a browser without
+ * registered custom properties. Resolve percentages against the basis of
+ * the applicable property instead.
  *
  * @example
  * ```typescript
@@ -71,7 +64,7 @@ export function resolveCssLength(element: HTMLElement, value: string): number {
   style.setProperty(LENGTH_PROPERTY, value);
   const resolved = getComputedStyle(element).getPropertyValue(LENGTH_PROPERTY);
 
-  // Restore rather than remove - the caller may be using the property itself.
+  // Restore rather than remove: the caller may use the property itself.
   if (previous) {
     style.setProperty(LENGTH_PROPERTY, previous, priority);
   } else {
@@ -94,12 +87,15 @@ function createNodeFilter<T extends Node>(predicate: (node: T) => boolean) {
 }
 
 /**
- * Iterates over the DOM subtree of `root` in document order, yielding the nodes
- * matching the passed {@link IterNodesOptions | options}.
+ * Iterates over the DOM subtree of `root` in document order, and yields the
+ * nodes that match the {@link IterNodesOptions | options}.
  *
  * @example
  * ```typescript
- * for (const button of iterNodes<HTMLButtonElement>(root, { show: 'SHOW_ELEMENT', filter: isButton })) { ... }
+ * for (const button of iterNodes<HTMLButtonElement>(root, {
+ *   show: 'SHOW_ELEMENT',
+ *   filter: isButton,
+ * })) { ... }
  * ```
  */
 export function* iterNodes<T extends Node>(
@@ -126,9 +122,8 @@ export function* iterNodes<T extends Node>(
 }
 
 /**
- * Iterates over `node` and its ancestors, crossing shadow DOM boundaries.
- *
- * Shadow roots are traversed through their host, so only elements are yielded.
+ * Iterates over `node` and its element ancestors, and crosses each shadow
+ * root through its host.
  *
  * @example
  * ```typescript
@@ -155,7 +150,7 @@ export function getRoot(
   return element.getRootNode(options) as Document | ShadowRoot;
 }
 
-/** Returns the element with the given id in the root node of `root`, if any. */
+/** Returns the element with the given id in the root node of `root`. */
 export function getElementByIdFromRoot(root: HTMLElement, id: string) {
   return getRoot(root).getElementById(id);
 }
@@ -179,11 +174,12 @@ export function getCenterPoint(element: Element): { x: number; y: number } {
 }
 
 /**
- * Maps a pointer's `clientX` coordinate to a fraction in the [0, 1] range of the
- * element's bounding box width, measured from the element's logical start edge -
- * the left edge when `ltr` is true, the right one otherwise.
+ * Maps the `clientX` coordinate of a pointer to a fraction of the element
+ * width, in the range 0 to 1.
  *
- * Returns 0 for an element without layout.
+ * @remarks
+ * Measured from the logical start edge: the left one when `ltr` is true, the
+ * right one otherwise. Returns 0 for an element that has no layout.
  *
  * @example
  * ```typescript
@@ -207,10 +203,8 @@ export function pointToFraction(
 }
 
 /**
- * Concatenates the text content of the given nodes into a single string,
- * trimmed and with consecutive whitespace collapsed.
- *
- * Useful for deriving an accessible label from projected content.
+ * Concatenates the text content of the given nodes, trimmed and with each
+ * run of whitespace collapsed into one space.
  */
 export function normalizedTextContent(nodes: Iterable<Node>): string {
   let text = '';
@@ -222,7 +216,7 @@ export function normalizedTextContent(nodes: Iterable<Node>): string {
   return text.trim().replace(/\s+/gu, ' ');
 }
 
-/** Returns whether the given client coordinates lie within the bounding box of the element. */
+/** Returns whether the given coordinates lie in the element bounding box. */
 export function isPointInsideElement(
   element: Element,
   x: number,
@@ -235,20 +229,26 @@ export function isPointInsideElement(
   );
 }
 
-/** Returns the scale factor of a given element based on its bounding client rect and offset dimensions. */
+/** Returns the scale factor of a given element. */
 export function getScaleFactor(element: HTMLElement): { x: number; y: number } {
   const { offsetWidth, offsetHeight } = element;
   const { width, height } = element.getBoundingClientRect();
   return { x: offsetWidth / width || 1, y: offsetHeight / height || 1 };
 }
 
-/** Rounds a CSS pixel value to the closest device-pixel boundary to avoid blurry rendering. */
+/**
+ * Rounds a CSS pixel value to the closest device-pixel boundary, to prevent
+ * blurry rendering.
+ */
 export function roundByDPR(value: number): number {
   const dpr = globalThis.devicePixelRatio || 1;
   return Math.round(value * dpr) / dpr;
 }
 
-/** Null-safe `Element.scrollIntoView` defaulting to the nearest block/inline position. */
+/**
+ * Calls `Element.scrollIntoView` on the element, by default to the nearest
+ * block and inline position. Does nothing for an empty element.
+ */
 export function scrollIntoView(
   element?: HTMLElement | null,
   config?: ScrollIntoViewOptions
@@ -269,17 +269,23 @@ export function scrollIntoView(
   );
 }
 
-/** Returns the default containing layer for floating elements such as drag and resize ghosts. */
+/** Returns the default containing layer for a floating element. */
 export function getDefaultLayer(): HTMLElement {
   return document.body;
 }
 
-/** Applies the given CSS declarations to the inline style of the element. */
+/**
+ * Applies the given CSS declarations to the inline style of the element.
+ *
+ * @remarks
+ * An unset declaration reads as an empty string, never `undefined`, so every
+ * given property overwrites the current one.
+ */
 export function setStyles(
   element: HTMLElement,
   styles: Partial<CSSStyleDeclaration>
 ): void {
-  merge(element.style, styles);
+  Object.assign(element.style, styles);
 }
 
 /** Returns whether the given input has at least one selected file. */
@@ -288,17 +294,20 @@ export function hasFiles(input: { files: FileList | null }): boolean {
 }
 
 /**
- * Returns whether the given element is currently an open popover or not.
- * This is useful to determine if the popover is open without relying on the `open` property, which may not be in sync with the actual popover state if the opening/closing animations are still running.
- * Note: This function only works for elements that use the `:popover-open` pseudo-class to indicate
+ * Returns whether the given element is an open popover.
+ *
+ * @remarks
+ * Prefer this over the `open` property of a component, which disagrees with
+ * the popover state while an open or close animation runs. Reads
+ * `:popover-open`, so the element must use the popover API.
  */
 export function isPopoverOpen(element?: Element): boolean {
   return element?.matches(':popover-open') ?? false;
 }
 
 /**
- * Returns whether the given element, or any of its ancestors across shadow DOM
- * boundaries, is positioned as `sticky`.
+ * Returns whether the element, or an ancestor across shadow DOM boundaries,
+ * has the `sticky` position.
  */
 export function hasStickyAncestor(element: Element): boolean {
   for (const ancestor of iterAncestors(element)) {
@@ -311,7 +320,8 @@ export function hasStickyAncestor(element: Element): boolean {
 }
 
 /**
- * Returns the nearest visible ancestor of a given node, traversing through shadow DOM boundaries if necessary. If no visible ancestor is found, returns null.
+ * Returns the nearest visible ancestor of the given node across shadow DOM
+ * boundaries, or `null`.
  */
 export function getVisibleAncestor(startNode: Node): HTMLElement | null {
   for (const ancestor of iterAncestors(startNode.parentNode)) {

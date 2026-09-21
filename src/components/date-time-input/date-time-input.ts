@@ -279,24 +279,6 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
     super.stepDown(datePart, delta);
   }
 
-  /* blazorSuppress */
-  /**
-   * Checks whether the current format includes date parts (day, month, year).
-   * @internal
-   */
-  public override hasDateParts(): boolean {
-    return this._parser.hasDateParts();
-  }
-
-  /* blazorSuppress */
-  /**
-   * Checks whether the current format includes time parts (hours, minutes, seconds).
-   * @internal
-   */
-  public override hasTimeParts(): boolean {
-    return this._parser.hasTimeParts();
-  }
-
   //#endregion
 }
 

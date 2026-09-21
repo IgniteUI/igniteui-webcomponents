@@ -24,21 +24,35 @@ export function toCalendarDay(date: DayParameter): CalendarDay {
   return date instanceof Date ? CalendarDay.from(date) : date;
 }
 
-/** Null-preserving {@link toCalendarDay}: empty values convert to `null`. */
+/**
+ * Returns the timestamp of the date portion of `value`, at midnight local
+ * time.
+ *
+ * @remarks
+ * Avoids the `CalendarDay` instance that {@link toCalendarDay} creates for a
+ * `Date`. A month view runs hundreds of these comparisons per render.
+ */
+function timestampOf(value: DayParameter): number {
+  return value instanceof Date
+    ? new Date(value.getFullYear(), value.getMonth(), value.getDate()).getTime()
+    : value.timestamp;
+}
+
+/** Returns the {@link toCalendarDay} result of `date`, or `null` if empty. */
 export function toCalendarDayOrNull(
   date?: DayParameter | null
 ): CalendarDay | null {
   return date ? toCalendarDay(date) : null;
 }
 
-/** Truncates the time portion of `date`, passing empty values through as `null`. */
+/** Truncates the time portion of `date`. An empty value gives `null`. */
 export function truncateTime(date?: Date | null): Date | null {
   return date ? CalendarDay.from(date).native : null;
 }
 
 /**
- * Yields the days between `start` and `end`, stepping by `unit` and stopping short of
- * `end` unless `inclusive` is set.
+ * Yields the days between `start` and `end`, stepped by `unit`. Stops before
+ * `end`, unless `inclusive` is `true`.
  */
 export function* calendarRange(
   options: CalendarRangeParams
@@ -54,18 +68,16 @@ export function* calendarRange(
   const isReversed = endDate.lessThan(currentDate);
   const step = isReversed ? -1 : 1;
 
-  const shouldContinue = () => {
-    if (inclusive) {
-      return isReversed
-        ? currentDate.greaterThanOrEqual(endDate)
-        : currentDate.lessThanOrEqual(endDate);
-    }
-    return isReversed
-      ? currentDate.greaterThan(endDate)
-      : currentDate.lessThan(endDate);
-  };
+  // Direction and bound are fixed, so select the comparison once.
+  const isInRange = inclusive
+    ? isReversed
+      ? CalendarDay.prototype.greaterThanOrEqual
+      : CalendarDay.prototype.lessThanOrEqual
+    : isReversed
+      ? CalendarDay.prototype.greaterThan
+      : CalendarDay.prototype.lessThan;
 
-  while (shouldContinue()) {
+  while (isInRange.call(currentDate, endDate)) {
     yield currentDate;
     currentDate = currentDate.add(unit, step);
   }
@@ -87,7 +99,6 @@ export class CalendarDay {
     return CalendarDay.from(new Date());
   }
 
-  /** Constructs a new CalendarDay instance from a Date object. */
   public static from(date: Date): CalendarDay {
     return new CalendarDay({
       year: date.getFullYear(),
@@ -107,20 +118,19 @@ export class CalendarDay {
    * ```
    */
   public static compare(first: DayParameter, second: DayParameter): number {
-    const a = toCalendarDay(first);
-    const b = toCalendarDay(second);
+    const a = timestampOf(first);
+    const b = timestampOf(second);
 
-    if (a.equalTo(b)) {
+    if (a === b) {
       return 0;
     }
-    return a.greaterThan(b) ? 1 : -1;
+    return a > b ? 1 : -1;
   }
 
   constructor(args: CalendarDayParams) {
     this._date = new Date(args.year, args.month, args.date ?? 1);
   }
 
-  /** Returns a copy of this instance. */
   public clone(): CalendarDay {
     return CalendarDay.from(this._date);
   }
@@ -131,7 +141,7 @@ export class CalendarDay {
     const month = args.month ?? this.month;
     const date = args.date ?? this.date;
 
-    // Clamp date to the last day of the month if it exceeds the month's days
+    // Clamp to the last day of the month when the date overflows it.
     if (date > 0) {
       const temp = new Date(year, month, date);
       if (temp.getMonth() !== month) {
@@ -172,17 +182,14 @@ export class CalendarDay {
     return this._date.getDay();
   }
 
-  /** Returns the full year. */
   public get year(): number {
     return this._date.getFullYear();
   }
 
-  /** Returns the month. */
   public get month(): number {
     return this._date.getMonth();
   }
 
-  /** Returns the date */
   public get date(): number {
     return this._date.getDate();
   }
@@ -196,8 +203,8 @@ export class CalendarDay {
    * Returns the ISO 8601 week number.
    *
    * @remarks
-   * Week 1 is the week containing the first Thursday of the year.
-   * Weeks start on Monday. Some years can have 53 weeks.
+   * Week 1 holds the first Thursday of the year, weeks start on Monday, and
+   * a year can have 53 weeks.
    */
   public get week(): number {
     const target = new Date(this._date);
@@ -207,7 +214,7 @@ export class CalendarDay {
 
     const yearStart = new Date(target.getFullYear(), 0, 1);
 
-    // Calculate full weeks to nearest Thursday
+    // Full weeks up to the nearest Thursday.
     const weekNo = Math.ceil(
       ((target.getTime() - yearStart.getTime()) / MILLISECONDS_PER_DAY + 1) /
         DAYS_IN_WEEK
@@ -216,44 +223,37 @@ export class CalendarDay {
     return weekNo;
   }
 
-  /** Returns the underlying native date instance. */
+  /** Returns a copy of the underlying native `Date` instance. */
   public get native(): Date {
     return new Date(this._date);
   }
 
   /**
-   * Whether the current date is a weekend day.
-   *
-   * @remarks
-   * This is naive, since it does not account for locale specifics.
+   * Returns whether the current date is a weekend day. The check is naive
+   * and ignores locale specifics.
    */
   public get weekend(): boolean {
     return this.day < WEEKDAY_MIN || this.day > WEEKDAY_MAX;
   }
 
   public equalTo(value: DayParameter): boolean {
-    const other = toCalendarDay(value).timestamp;
-    return this.timestamp === other;
+    return this.timestamp === timestampOf(value);
   }
 
   public greaterThan(value: DayParameter): boolean {
-    const other = toCalendarDay(value).timestamp;
-    return this.timestamp > other;
+    return this.timestamp > timestampOf(value);
   }
 
   public greaterThanOrEqual(value: DayParameter): boolean {
-    const other = toCalendarDay(value).timestamp;
-    return this.timestamp >= other;
+    return this.timestamp >= timestampOf(value);
   }
 
   public lessThan(value: DayParameter): boolean {
-    const other = toCalendarDay(value).timestamp;
-    return this.timestamp < other;
+    return this.timestamp < timestampOf(value);
   }
 
   public lessThanOrEqual(value: DayParameter): boolean {
-    const other = toCalendarDay(value).timestamp;
-    return this.timestamp <= other;
+    return this.timestamp <= timestampOf(value);
   }
 
   public toString(): string {

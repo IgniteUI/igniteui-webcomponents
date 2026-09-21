@@ -60,7 +60,7 @@ type PartBuilder = DatePartOptions & { type: DatePartType };
  * toMaskFormat('MM/dd/yyyy'); // '00/00/0000'
  * ```
  */
-export function toMaskFormat(dateFormat: string): string {
+function toMaskFormat(dateFormat: string): string {
   let result = '';
 
   for (const char of dateFormat) {

@@ -1,10 +1,12 @@
-import type { LitElement, TemplateResult } from 'lit';
-import type { ValidationContainerConfig } from '../../../components/validation-container/validation-container.js';
-import type { ElementInternalsController } from '../../controllers/internals.js';
+import type { LitElement } from 'lit';
+import type {
+  ElementInternalsController,
+  FormValueType,
+} from '../../controllers/internals.js';
 import type { Validator } from '../../validators.js';
 
 export type FormRestoreMode = 'autocomplete' | 'restore';
-export type FormValueType = string | File | FormData | null;
+export type { FormValueType };
 export type IgcFormControl = LitElement &
   (FormAssociatedElementInterface | FormAssociatedCheckboxElementInterface);
 
@@ -45,18 +47,14 @@ export declare class BaseFormAssociatedElement {
   /** Returns the HTMLFormElement associated with this element. */
   public get form(): HTMLFormElement | null;
 
-  /**
-   * Returns a ValidityState object which represents the different validity states
-   * the element can be in, with respect to constraint validation.
-   */
+  /** Returns a `ValidityState` object for the element. */
   public get validity(): ValidityState;
 
   /** A string containing the validation message of this element. */
   public get validationMessage(): string;
 
   /**
-   * A boolean value which returns true if the element is a submittable element
-   * that is a candidate for constraint validation.
+   * Returns `true` when the element is a candidate for constraint validation.
    */
   public get willValidate(): boolean;
 
@@ -64,114 +62,61 @@ export declare class BaseFormAssociatedElement {
 
   //#region Methods
 
-  /**
-   * Default implementation for handling the `Enter` key press on the component.
-   * Checks if the component is inside a form and if so, submits it.
-   */
+  /** Submits the parent form, if any, on `Enter`. */
   protected _handleEnterKeydown(event: KeyboardEvent): void;
 
-  /**
-   * Sets the **touched** state of the component and invokes {@link BaseFormAssociatedElement._validate | `_validate()`} method.
-   *
-   * As the naming of the method suggests, this should be invoked either on **blur** or **focusout**, depending
-   * on the DOM structure and how focus state is managed by the component.
-   */
+  /** Sets **touched**, then validates. Call this on blur or focusout. */
   protected _handleBlur(): void;
 
-  /**
-   * Sets the **touched** state of the component and **DOES NOT** invoke {@link BaseFormAssociatedElement._validate | `_validate()`} method.
-   *
-   * This should be called whenever a user interaction triggers a response, usually an event, from the component in
-   * regards to its value.
-   */
+  /** Sets **touched** without validating. Call this on a user interaction. */
   protected _setTouchedState(): void;
 
-  /**
-   * Sets the **touched** state of the component and emits `eventName` - the pair every
-   * user-interaction handler must apply when it responds to input.
-   *
-   * The host must compose the event-emitter mixin somewhere in its heritage.
-   */
+  /** Sets **touched**, then emits `eventName`. Needs the emitter mixin. */
   protected _emitTouchedEvent(
     eventName: string,
     init?: CustomEventInit
   ): boolean;
 
-  /**
-   * Renders a validation container bound to the component, projecting its helper-text
-   * and validation message slots.
-   */
-  protected _renderValidationContainer(
-    config?: ValidationContainerConfig
-  ): TemplateResult;
-
-  /**
-   * Sets the default value of the component.
-   * Called in `attributeChangedCallback` (i.e. when the `value` attribute of the control is set).
-   */
+  /** Sets the default value from a change of the `value` attribute. */
   protected _setDefaultValue(current: string | null): void;
 
-  /**
-   * Called when the associated parent form is reset.
-   */
+  /** Restores the default value on a form reset. */
   protected _restoreDefaultValue(): void;
 
-  /**
-   * Executes the component validators and updates the internal validity state.
-   */
+  /** Runs the validators and updates the internal validity state. */
   protected _validate(message?: string): void;
 
-  /**
-   * Sets the component's submission value and state.
-   */
+  /** Sets the submission value and the submission state. */
   protected _setFormValue(value: FormValueType, state?: FormValueType): void;
 
-  /**
-   * Called by the browser when it associates/disassociates the component with/from a given form element.
-   * Receives the form element as a parameter.
-   *
-   * @remarks
-   * This is not implemented currently.
-   */
+  /** Runs on form association or de-association. Not implemented. */
   protected formAssociatedCallback(form: HTMLFormElement): void;
 
   /**
-   * Called whenever the component or a parent `fieldset` elements are disabled.
-   * Receives the current disabled state.
+   * Runs when the component, or a parent `fieldset`, becomes disabled or
+   * enabled.
    */
   protected formDisabledCallback(state: boolean): void;
 
   /**
-   * Called when the form is reset.
-   * Resets the component value/checked state to the default one, internal state and validation.
-   *
-   * @remarks
-   * The default implementation calls {@link BaseFormAssociatedElement._restoreDefaultValue | `_restoreDefaultValue`}.
-   * If additional customization is needed, it is better to override that method instead of this callback.
+   * Resets the value, state and validation to the defaults. Override
+   * `_restoreDefaultValue`, not this callback.
    */
   protected formResetCallback(): void;
 
-  /**
-   * Called when the browser attempts to automatically fill out the component.
-   *
-   * @remarks
-   * This is not implemented currently.
-   */
+  /** Runs on browser auto-fill. Not implemented. */
   protected formStateRestoreCallback(
     state: FormValueType,
     mode: FormRestoreMode
   ): void;
 
-  /** Checks for validity of the control and emits the invalid event if it's invalid. */
+  /** Checks validity and emits `invalid` when the control is invalid. */
   public checkValidity(): boolean;
 
-  /** Checks for validity of the control and shows the browser message if it's invalid. */
+  /** Checks validity and shows the browser message when invalid. */
   public reportValidity(): boolean;
 
-  /**
-   * Sets a custom validation message for the control.
-   * As long as `message` is not empty, the control is considered invalid.
-   */
+  /** Sets a custom message. Invalid while `message` is not empty. */
   public setCustomValidity(message: string): void;
 
   //#endregion
@@ -183,9 +128,8 @@ export declare class FormAssociatedElementInterface extends BaseFormAssociatedEl
   public get defaultValue(): unknown;
 
   /**
-   * Commits a user-initiated value change: sets the **touched** state **before** assigning
-   * to the public `value` setter, so the validation cycle the setter runs applies invalid
-   * styling in the same pass, then emits `eventName` with the coerced value as `detail`.
+   * Commits a user value change, then emits `eventName`. Sets **touched**
+   * *before* the `value` assignment, so the setter styles invalid at once.
    */
   protected _commitValue(value: unknown, eventName: string): boolean;
 }

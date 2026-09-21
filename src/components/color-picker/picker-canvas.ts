@@ -135,9 +135,9 @@ export default class IgcPickerCanvasComponent extends EventEmitterMixin<
       this.style.color = this.currentColor;
     }
 
-    // Handed to the marker through a custom property rather than an inline
-    // style on the marker itself, so that a consumer styling `::part(marker)`
-    // can still win - an inline style could not be overridden.
+    // Given to the marker through a custom property, not an inline style on the
+    // marker, so that a consumer who styles `::part(marker)` can win. An inline
+    // style cannot be overridden.
     if (properties.has('markerColor')) {
       this.style.setProperty('--_marker-fill', this.markerColor);
     }
@@ -225,9 +225,9 @@ export default class IgcPickerCanvasComponent extends EventEmitterMixin<
   public getMarkerDimensions(): { width: number; height: number } {
     const marker = this._marker;
 
-    // Offsets rather than a client rect: the marker is scaled up while dragged
-    // and a rect would report the transformed box, shifting every position
-    // resolved against it.
+    // Offsets, not a client rect. The marker is scaled up during a drag, and a
+    // rect reports the transformed box, which moves each position found
+    // against it.
     return marker
       ? { width: marker.offsetWidth / 2, height: marker.offsetHeight / 2 }
       : { width: 0, height: 0 };
@@ -242,9 +242,9 @@ export default class IgcPickerCanvasComponent extends EventEmitterMixin<
     const saturation = Math.round(this.saturation);
     const brightness = Math.round(this.brightness);
 
-    // ARIA has no two-dimensional slider, so the marker is exposed as a single
-    // slider tracking saturation, with `aria-valuetext` carrying both axes -
-    // otherwise vertical movement would be announced as "no change".
+    // ARIA has no two-dimensional slider, so the marker is one slider that
+    // tracks saturation, and `aria-valuetext` carries both axes. Without this,
+    // a vertical move is announced as "no change".
     return html`
       <div
         part=${partMap({ marker: true, dragging: this._dragging })}

@@ -3,16 +3,13 @@ import IgcValidationContainerComponent from '../../components/validation-contain
 import type { SlotController } from '../controllers/slot.js';
 import type { IgcFormControl } from '../mixins/forms/types.js';
 import { partMap } from '../part-map.js';
+import { stopPropagation } from '../utils/events.js';
 import { createIdGenerator } from '../utils/strings.js';
 
-/** Returns a unique id for native input elements rendered by input components. */
+/** Returns a unique id for a native input element. */
 export const nextInputId = createIdGenerator('input');
 
-/**
- * Resolves the shared container part names of an input-like component based
- * on its current slotted and filled state.
- * Used to apply conditional styling via CSS parts.
- */
+/** Returns the shared container part names of an input-like component. */
 export function resolveInputPartNames(
   slots: Pick<SlotController<'prefix' | 'suffix'>, 'hasAssignedElements'>,
   base: string,
@@ -41,24 +38,32 @@ export interface InputShellOptions {
   containerParts: Record<string, boolean>;
   /** Renders the native `<input>` element. */
   renderInput: () => TemplateResult;
-  /** Optional renderer for components that need extra parts inside the container (e.g. file-input). */
+  /** Renders extra parts inside the container, as `igc-file-input` needs. */
   renderFileParts?: () => TemplateResult | typeof nothing;
-  /**
-   * Container part names contributed only by the material notch layout
-   * (e.g. the `placeholder` part of `igc-textarea`).
-   */
+  /** Container part names that only the material notch layout adds. */
   materialParts?: Record<string, boolean>;
   /**
-   * Whether the prefix/suffix wrappers are hidden while their slot has no
-   * visible assigned elements, driven by the `prefixed` and `suffixed` entries
-   * of `containerParts`. Off by default, so the wrappers always render.
+   * Hides the prefix and suffix wrappers whose `containerParts` entry is
+   * false. Off by default, so the wrappers always render.
    */
   hideEmptyAffixes?: boolean;
 }
 
+/**
+ * Renders the label of the input.
+ *
+ * @remarks
+ * A label click reaches the host twice: the label click, then the synthetic
+ * click that label activation sends to the input. That double-fires a
+ * consumer click handler and breaks the toggles of `igc-combo` and
+ * `igc-select`. The label therefore keeps its own click inside the shadow
+ * root; activation is a default action, so focus still moves to the input.
+ */
 function renderLabel(forId: string, label: string) {
   return label
-    ? html`<label part="label" for=${forId}>${label}</label>`
+    ? html`<label part="label" for=${forId} @click=${stopPropagation}
+        >${label}</label
+      >`
     : nothing;
 }
 
@@ -69,9 +74,8 @@ function renderAffix(name: 'prefix' | 'suffix', hidden: boolean) {
 }
 
 /**
- * Renders the shared input chrome (label, prefix, suffix, validator container)
- * around a leaf-provided input template, switching layouts between the
- * material notch and the standard flow.
+ * Renders the label, prefix, suffix and validation container around the input
+ * template of a leaf component, in the notch or the standard layout.
  */
 export function renderInputShell(
   host: IgcFormControl,

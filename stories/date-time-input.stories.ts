@@ -40,7 +40,7 @@ const metadata: Meta<IgcDateTimeInputComponent> = {
     prompt: {
       type: 'string',
       description:
-        'The prompt symbol to use for unfilled parts of the mask pattern.',
+        'The prompt symbol for the unfilled parts of the mask pattern.',
       control: 'text',
       table: { defaultValue: { summary: '_' } },
     },
@@ -136,7 +136,7 @@ interface IgcDateTimeInputArgs {
   readOnly: boolean;
   /** The mask pattern of the component. */
   mask: string;
-  /** The prompt symbol to use for unfilled parts of the mask pattern. */
+  /** The prompt symbol for the unfilled parts of the mask pattern. */
   prompt: string;
   /** When set, makes the component a required field for validation. */
   required: boolean;

@@ -128,8 +128,8 @@ export default class IgcCarouselComponent extends I18nMixin(
   private _hasInnerFocus = false;
 
   /**
-   * Whether an interaction - a pointer over the carousel, or focus inside it -
-   * caused the current paused state. An explicit `pause()` call does not set it.
+   * Whether an interaction caused the paused state: a pointer over the carousel,
+   * or focus in it. A `pause()` call does not set it.
    */
   private _pausedByInteraction = false;
 

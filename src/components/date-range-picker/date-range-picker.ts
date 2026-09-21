@@ -1,9 +1,3 @@
-import {
-  CalendarResourceStringsEN,
-  DateRangePickerResourceStringsEN,
-  type ICalendarResourceStrings,
-  type IDateRangePickerResourceStrings,
-} from 'igniteui-i18n-core';
 import { html, nothing, type PropertyValues, type TemplateResult } from 'lit';
 import { property, query, queryAll, state } from 'lit/decorators.js';
 import { cache } from 'lit/directives/cache.js';
@@ -16,7 +10,6 @@ import { CalendarDay, truncateTime } from '#internals/date/model.js';
 import { blazorAdditionalDependencies } from '#internals/decorators/blazorAdditionalDependencies.js';
 import { shadowOptions } from '#internals/decorators/shadow-options.js';
 import { registerComponent } from '#internals/definitions/register.js';
-import type { IgcDateRangePickerResourceStrings } from '#internals/i18n/EN/date-range-picker.resources.js';
 import {
   addI18nController,
   getDateTimeFormat,
@@ -38,9 +31,16 @@ import {
 } from '../date-picker/date-picker.base.js';
 import IgcDateTimeInputComponent from '../date-time-input/date-time-input.js';
 import type { DateRangeValue } from '../types.js';
+import IgcValidationContainerComponent from '../validation-container/validation-container.js';
 import IgcDateRangeInputComponent from './date-range-input.js';
 import { DateRangePosition } from './date-range-mask-parser.js';
 import { styles } from './date-range-picker.base.css.js';
+import {
+  dateRangeI18nConfig,
+  type DateRangePickerResourceStringsType,
+  type DateRangeResourceStrings,
+  type IgcDateRangePickerResourceStrings,
+} from './i18n.js';
 import IgcPredefinedRangesAreaComponent from './predefined-ranges-area.js';
 import { styles as shared } from './themes/shared/date-range-picker.common.css.js';
 import { all } from './themes/themes.js';
@@ -61,8 +61,7 @@ type PickerEditor = IgcDateRangeInputComponent | IgcDateTimeInputComponent;
 export type IgcDateRangePickerComponentEventMap =
   IgcPickerBaseEventMap<DateRangeValue>;
 
-export type DateRangePickerResourceStringsType =
-  IDateRangePickerResourceStrings & ICalendarResourceStrings;
+export type { DateRangePickerResourceStringsType } from './i18n.js';
 
 const nextId = createIdGenerator('date-range-picker');
 const Slots = setSlots(
@@ -224,20 +223,8 @@ export default class IgcDateRangePickerComponent extends EventEmitterMixin<
     slots: Slots,
   });
 
-  /**
-   * For now we use the core validation strings internally only, to avoid mixing with old resources by users.
-   * To Do: Update resourceStrings type when the IgcDateRangePickerResourceStrings is changed to IDateRangePickerResourceStrings
-   */
-  protected override readonly _i18nController = addI18nController<
-    IgcDateRangePickerResourceStrings | DateRangePickerResourceStringsType
-  >(this, {
-    defaultEN: Object.assign(
-      {},
-      DateRangePickerResourceStringsEN,
-      CalendarResourceStringsEN
-    ),
-    resourceMapName: 'date-range-picker',
-  });
+  protected override readonly _i18nController =
+    addI18nController<DateRangeResourceStrings>(this, dateRangeI18nConfig);
 
   protected override readonly _formValue = createFormValueState(this, {
     initialValue: { start: null, end: null },
@@ -422,11 +409,7 @@ export default class IgcDateRangePickerComponent extends EventEmitterMixin<
 
   /** The resource strings of the date range picker. */
   @property({ attribute: false })
-  public set resourceStrings(
-    value:
-      | IgcDateRangePickerResourceStrings
-      | DateRangePickerResourceStringsType
-  ) {
+  public set resourceStrings(value: DateRangeResourceStrings) {
     this._i18nController.resourceStrings = value;
   }
 
@@ -624,10 +607,8 @@ export default class IgcDateRangePickerComponent extends EventEmitterMixin<
     this.value = this._oldValue;
   }
 
-  /**
-   * Points the calendar at the current range, if any, and back to its first rendered
-   * month.
-   */
+  /** Points the calendar at the current range, and puts it in the first of the
+   * rendered months. */
   private _setCalendarActiveDateAndViewIndex() {
     const activeDaysViewIndex = '_activeDaysViewIndex';
 
@@ -636,10 +617,9 @@ export default class IgcDateRangePickerComponent extends EventEmitterMixin<
   }
 
   /**
-   * Composes the range from what the two editors currently hold.
-   *
-   * The sibling input is read through its draft rather than through the committed
-   * `value`, since an edit in progress there has not reached the picker yet.
+   * Builds the range from what the two editors hold. The other input is read
+   * through its draft, not through the committed `value`, because an edit there
+   * has not reached the picker.
    */
   private _getUpdatedDateRange(
     input: IgcDateTimeInputComponent,
@@ -653,8 +633,9 @@ export default class IgcDateRangePickerComponent extends EventEmitterMixin<
   }
 
   /**
-   * Delegates the validity methods of the editors to the range validation of the picker.
-   * The pristine check keeps a form reset, which assigns to the editors, from validating.
+   * Delegates the validity methods of the editors to the range validation of the
+   * picker. The pristine check stops a form reset, which writes to the editors,
+   * from starting a validation.
    */
   private _delegateInputsValidity() {
     for (const input of this._editors) {
@@ -666,9 +647,8 @@ export default class IgcDateRangePickerComponent extends EventEmitterMixin<
   }
 
   /**
-   * Reflects a range in the calendar. Defaults to the committed value, but the input
-   * handlers pass the uncommitted draft so that the calendar keeps following along
-   * while the user types.
+   * Shows a range in the calendar. The default is the committed value. The
+   * input handlers give the draft, so that the calendar follows the typing.
    */
   private _setCalendarRangeValues(range: DateRangeValue | null = this.value) {
     if (isCompleteDateRange(range)) {
@@ -686,8 +666,8 @@ export default class IgcDateRangePickerComponent extends EventEmitterMixin<
   }
 
   /**
-   * Commits a range entered through an editor, normalizing a reversed one, and notifies.
-   * Assigning the value reflects the range in the calendar on its own.
+   * Commits a range from an editor, corrects a reversed one, and notifies. The
+   * value assignment shows the range in the calendar.
    */
   private _commitRange(range: DateRangeValue | null): void {
     const { start, end } = (range && this._swapDates(range)) ?? {
@@ -722,8 +702,8 @@ export default class IgcDateRangePickerComponent extends EventEmitterMixin<
   // #region Rendering
 
   /**
-   * Custom actions stay in the body of the dialog, so that they do not collide
-   * with the cancel/done buttons rendered in its footer.
+   * Custom actions stay in the body of the dialog, away from the cancel and
+   * done buttons in its footer.
    */
   protected override _renderActions() {
     const hasActions = this._slots.hasAssignedElements('actions');
@@ -831,7 +811,8 @@ export default class IgcDateRangePickerComponent extends EventEmitterMixin<
         </div>
         ${this._renderInput(idEnd, DateRangePosition.End)}
       </div>
-      ${this._renderPicker(idStart)} ${this._renderValidationContainer()}
+      ${this._renderPicker(idStart)}
+      ${IgcValidationContainerComponent.create(this)}
     `;
   }
 
@@ -864,7 +845,7 @@ export default class IgcDateRangePickerComponent extends EventEmitterMixin<
       >
         ${this._renderEditorSlots()}
       </igc-date-range-input>
-      ${this._renderValidationContainer()} ${this._renderPicker(id)}
+      ${IgcValidationContainerComponent.create(this)} ${this._renderPicker(id)}
     `;
   }
 

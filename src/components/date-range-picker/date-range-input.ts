@@ -281,14 +281,6 @@ export default class IgcDateRangeInputComponent extends EventEmitterMixin<
     super.stepDown(datePart, delta);
   }
 
-  public override hasDateParts(): boolean {
-    return this._parser.hasDateParts();
-  }
-
-  public override hasTimeParts(): boolean {
-    return this._parser.hasTimeParts();
-  }
-
   // #endregion
 }
 

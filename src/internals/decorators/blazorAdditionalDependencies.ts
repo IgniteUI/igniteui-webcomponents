@@ -1,6 +1,8 @@
 /**
- * Indicates additional dependencies that should be loaded by the module of a component, even if they don't appear to be dependencies.
- * @param _additionalDependencies an alternate member name to use.
+ * Names dependencies the module of a component must also load, but does not
+ * appear to depend on.
+ *
+ * @param _additionalDependencies - The names of the additional dependencies.
  */
 export function blazorAdditionalDependencies(_additionalDependencies: string) {
   return (clazz: any) => {

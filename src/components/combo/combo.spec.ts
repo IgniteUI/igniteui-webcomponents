@@ -34,6 +34,7 @@ import {
   simulateClick,
   simulateKeyboard,
   simulatePointerDown,
+  simulateScroll,
 } from '#internals/testing/simulate.spec.js';
 import {
   runValidationContainerTests,
@@ -396,6 +397,30 @@ describe('Combo', () => {
       expect(eventSpy).calledWith('igcClosing');
       expect(eventSpy).calledWith('igcClosed');
       expect(combo.open).to.be.false;
+    });
+
+    it('should toggle the menu once upon clicking on the label of the input', async () => {
+      combo.label = 'Cities';
+      await elementUpdated(combo);
+
+      const label = input.renderRoot.querySelector('label')!;
+      const eventSpy = spy(combo, 'emitEvent');
+
+      label.click();
+      await elementUpdated(combo);
+
+      expect(combo.open).to.be.true;
+      expect(eventSpy).calledWith('igcOpening');
+      expect(eventSpy).not.calledWith('igcClosing');
+      expect(eventSpy).not.calledWith('igcClosed');
+
+      eventSpy.resetHistory();
+      label.click();
+      await elementUpdated(combo);
+
+      expect(combo.open).to.be.false;
+      expect(eventSpy).calledWith('igcClosing');
+      expect(eventSpy).not.calledWith('igcOpening');
     });
 
     it('should be able to cancel the igcOpening event', async () => {
@@ -1613,6 +1638,45 @@ describe('Combo', () => {
 
       expect(combo.value).to.be.empty;
       expect(input.value).to.equal('');
+    });
+  });
+
+  describe('Scroll strategy', () => {
+    let container: HTMLDivElement;
+
+    beforeEach(async () => {
+      container = await fixture(html`
+        <div style="height: 1200px">
+          <igc-combo
+            .data=${cities}
+            value-key="id"
+            display-key="name"
+          ></igc-combo>
+        </div>
+      `);
+      combo = container.querySelector<IgcComboComponent<City>>(
+        IgcComboComponent.tagName
+      )!;
+    });
+
+    it('`scroll` behavior', async () => {
+      combo.scrollStrategy = 'scroll';
+      await openComboPopover(combo);
+      await simulateScroll(container, { top: 200 });
+
+      expect(combo.open).to.be.true;
+    });
+
+    it('`close` behavior', async () => {
+      const eventSpy = spy(combo, 'emitEvent');
+
+      combo.scrollStrategy = 'close';
+      await openComboPopover(combo);
+      await simulateScroll(container, { top: 200 });
+
+      expect(combo.open).to.be.false;
+      expect(eventSpy.firstCall).calledWith('igcClosing');
+      expect(eventSpy.lastCall).calledWith('igcClosed');
     });
   });
 

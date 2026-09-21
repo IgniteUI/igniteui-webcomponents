@@ -138,9 +138,9 @@ export default class IgcRadioGroupComponent extends LitElement {
     this._setRadiosName();
     this._setRadiosDefaultChecked();
 
-    // The value of the group applies while no radio holds a selection of its own. This
-    // is the first render, or the moment a radio with a value that had no match comes in.
-    // The `checked` attribute then makes that selection the default state.
+    // The value of the group applies while no radio holds its own selection:
+    // the first render, or the moment a radio with an unmatched value arrives.
+    // The `checked` attribute then makes that selection the default.
     if (this._pendingValue && !radios.some((radio) => radio.checked)) {
       this._setSelectedRadio();
 
