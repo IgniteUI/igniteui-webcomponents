@@ -1,21 +1,17 @@
-import {
-  CalendarResourceStringsEN,
-  DateRangePickerResourceStringsEN,
-} from 'igniteui-i18n-core';
 import { html, LitElement, type PropertyValues } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { CalendarDay } from '#internals/date/model.js';
 import { registerComponent } from '#internals/definitions/register.js';
-import type { IgcDateRangePickerResourceStrings } from '#internals/i18n/EN/date-range-picker.resources.js';
 import { addI18nController } from '#internals/i18n/i18n-controller.js';
-import { dateRangePickerResourcesMap } from '#internals/i18n/utils.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import IgcChipComponent from '../chip/chip.js';
-import type {
-  CustomDateRange,
-  DateRangePickerResourceStringsType,
-  DateRangeValue,
-} from './date-range-picker.js';
+import type { CustomDateRange, DateRangeValue } from './date-range-picker.js';
+import {
+  dateRangeI18nConfig,
+  type DateRangePickerResourceStringsType,
+  type DateRangeResourceStrings,
+  type IgcDateRangePickerResourceStrings,
+} from './i18n.js';
 import { styles } from './predefined-ranges-area.base.css.js';
 import { all } from './themes/ranges-themes.js';
 import { styles as shared } from './themes/shared/predefined-ranges-area.common.css.js';
@@ -32,16 +28,8 @@ export default class IgcPredefinedRangesAreaComponent extends LitElement {
   public static readonly tagName = 'igc-predefined-ranges-area';
   public static override styles = [styles, shared];
 
-  private readonly _i18nController = addI18nController<
-    IgcDateRangePickerResourceStrings | DateRangePickerResourceStringsType
-  >(this, {
-    defaultEN: Object.assign(
-      {},
-      DateRangePickerResourceStringsEN,
-      CalendarResourceStringsEN
-    ),
-    resourceMap: dateRangePickerResourcesMap,
-  });
+  private readonly _i18nController =
+    addI18nController<DateRangeResourceStrings>(this, dateRangeI18nConfig);
 
   /* blazorSuppress */
   public static register(): void {
@@ -70,11 +58,7 @@ export default class IgcPredefinedRangesAreaComponent extends LitElement {
 
   /** The resource strings of the date range area component. */
   @property({ attribute: false })
-  public set resourceStrings(
-    value:
-      | IgcDateRangePickerResourceStrings
-      | DateRangePickerResourceStringsType
-  ) {
+  public set resourceStrings(value: DateRangeResourceStrings) {
     this._i18nController.resourceStrings = value;
   }
 
