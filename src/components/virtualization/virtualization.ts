@@ -611,9 +611,14 @@ export default class IgcVirtualScrollComponent<
   }
 
   /**
-   * The index of the first item whose measured size no longer agrees with its
-   * content after a `data` change. An append keeps all items. A filter or a
-   * replacement keeps only the unchanged prefix.
+   * The length of the prefix that a `data` change keeps: the first index at
+   * which the old and the new items differ, or the length of the shorter array
+   * if neither differs. Measurements below that index stay valid. An append
+   * keeps all the previous items. A filter or a replacement keeps fewer.
+   *
+   * @remarks
+   * The test is item identity. An item that changes in place keeps its
+   * measured size.
    */
   private _firstChangedIndex(previous: T[] | undefined): number {
     if (!previous) {
@@ -728,8 +733,8 @@ export default class IgcVirtualScrollComponent<
     }
 
     // Each `data` change clears `_hasPendingDataRequest`, also one that
-    // appends nothing. Without this second guard, a consumer with an empty
-    // source that assigns `data` again for each request gets that same
+    // appends nothing. Without this second guard, a consumer whose source is
+    // exhausted and that assigns `data` again for each request gets that same
     // request again.
     if (this._lastDataRequestIndex === total) {
       return;

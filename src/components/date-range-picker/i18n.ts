@@ -5,10 +5,10 @@ import {
   type IDateRangePickerResourceStrings,
 } from 'igniteui-i18n-core';
 import type { IgcDateRangePickerResourceStrings } from '#internals/i18n/EN/date-range-picker.resources.js';
-
-export type { IgcDateRangePickerResourceStrings };
 import type { I18nControllerConfig } from '#internals/i18n/i18n-controller.js';
 import { dateRangePickerResourcesMap } from '#internals/i18n/utils.js';
+
+export type { IgcDateRangePickerResourceStrings };
 
 /** The core resource strings of the date range picker and of its calendar. */
 export type DateRangePickerResourceStringsType =

@@ -52,7 +52,9 @@ class MaskHistory {
    *
    * @remarks
    * A held `Ctrl + Z` repeats faster than the caret reaches the DOM, so the live
-   * selection is not a reliable entry for the opposite stack. This state is.
+   * selection is not a reliable entry for the opposite stack. This state holds
+   * the value and the caret that the traversal wrote, so it pushes the correct
+   * entry.
    */
   private _lastRestored: MaskHistoryState | null = null;
 
