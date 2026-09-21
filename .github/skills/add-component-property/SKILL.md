@@ -1,12 +1,12 @@
 ---
 name: add-component-property
-description: Add a reactive property to an existing Lit web component with proper decorators, types, tests, and documentation
+description: Add a reactive property to an existing Lit web component with proper decorators, types, tests, specification updates, and documentation
 ---
 
 # Add Component Property
 
-Adds a reactive property to an existing component, with the documentation, tests and generated
-metadata that go with it.
+Adds a reactive property to an existing component, with the documentation, tests, specification
+update and generated metadata that go with it.
 
 ## When to Use
 
@@ -165,7 +165,38 @@ it('reflects to an attribute', async () => {
 If the property changes the rendered semantics, extend the a11y audit rather than adding a
 separate one.
 
-### 5. Regenerate the story metadata
+### 5. Update the specification
+
+A new property is a change to the public API, so `src/components/[name]/spec.md` changes with
+it. The property is not done until the spec describes it. The full rules are in
+[Specifications](../../CODING_GUIDELINES.md#specifications).
+
+Always:
+
+- Add a row to `### Properties and attributes` with the name, the attribute, whether it
+  reflects, the type, the default and the same description as the JSDoc.
+- Add the scenarios you wrote in step 4 to `## Test scenarios`, in the subsection matching the
+  `describe` block they live in, and renumber the items after them so the numbering stays
+  contiguous.
+- Bump `## Revision history` with a new row: the next version, today's date, and what changed.
+
+When applicable:
+
+- A property that adds a keyboard interaction updates `### Keyboard interactions` and
+  `### Keyboard support`.
+- A property that changes the roles or the ARIA state updates `### ARIA roles and properties`.
+- A property that introduces a behavior worth calling out gets a subsection under
+  `### Developer experience`, with a short example.
+- A property that is localizable updates `### Localization`.
+- A constraint the property brings — a value it clamps, a mode it is ignored in — belongs in
+  `## Assumptions and limitations`.
+
+Every heading you add needs a matching entry in the table of contents at the top of the file.
+
+Deprecating or removing a property is the same exercise in reverse: keep the row, mark it
+deprecated with the version and the replacement, and record it in the revision history.
+
+### 6. Regenerate the story metadata
 
 The `argTypes`, `args` and the args interface live inside a **generated**
 `// region default … // endregion` block in `stories/[component-name].stories.ts`. Never edit
@@ -191,7 +222,7 @@ export const Basic: Story = {
 };
 ```
 
-### 6. Verify
+### 7. Verify
 
 ```bash
 npm run check
@@ -207,6 +238,8 @@ npm run test
 - [ ] Lifecycle hook used for side effects, `super.update()` called
 - [ ] `_validate()` called from setters affecting constraint validation
 - [ ] Tests cover default, change and reflection
+- [ ] `spec.md` updated: API table row, test scenarios renumbered, revision history bumped, and
+      the keyboard / ARIA / limitations sections touched if the property affects them
 - [ ] `npm run cem && npm run build:meta` run; generated story region committed
 - [ ] Story template uses the new property
 - [ ] `npm run check` and `npm run test` pass
@@ -222,9 +255,12 @@ npm run test
 | Attribute name is `propertyname`              | Multi-word property without an explicit `attribute: 'property-name'`   |
 | Story control missing after adding a property | `npm run build:meta` not run, or the story is being skipped silently   |
 | Story description reverts                     | The generated region was hand-edited — fix the JSDoc instead           |
+| Spec and implementation disagree              | The property was shipped without updating `spec.md` — the spec is part of the change |
+| Spec test numbering jumps                     | Scenarios inserted without renumbering the ones after them             |
 
 ## Reference Examples
 
 - `src/components/badge/badge.ts` — reflected string, boolean and union-typed properties
 - `src/components/input/input.ts` — validation-affecting setters calling `_validate()`
 - `src/components/combo/combo.ts` — complex, non-attribute properties
+- `src/components/badge/spec.md` — a compact spec whose API tables track the properties above

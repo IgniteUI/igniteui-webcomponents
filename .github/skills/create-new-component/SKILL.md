@@ -1,6 +1,6 @@
 ---
 name: create-new-component
-description: Create a new Lit web component following project conventions, including component class, styles, tests, Storybook story, and proper exports
+description: Create a new Lit web component following project conventions, including specification, component class, styles, tests, Storybook story, and proper exports
 ---
 
 # Create New Component
@@ -35,7 +35,96 @@ Confirm with the user before starting:
 mkdir -p src/components/[name]/themes/{light,dark,shared}
 ```
 
-### 2. Create the component class
+### 2. Write the specification
+
+`src/components/[name]/spec.md` is the behavioral contract of the component, and it comes
+before the implementation — writing it is how the public API, the keyboard model and the ARIA
+semantics get decided. Copy the structure from `src/components/splitter/spec.md`, the reference
+for every spec in the repository; the rules below summarize
+[Specifications](../../CODING_GUIDELINES.md#specifications):
+
+```markdown
+# [Name] specification
+
+- [[Name] specification](#name-specification)
+  - [Revision history](#revision-history)
+  ...
+
+## Revision history
+
+| Version | Date       | Notes                 |
+| ------: | ---------- | --------------------- |
+|       1 | YYYY-MM-DD | Initial specification |
+
+## Overview
+
+### Key features
+
+### Acceptance criteria
+
+## User stories
+
+### End-user stories
+
+### Developer stories
+
+## Functionality
+
+### End-user experience
+
+### Developer experience
+
+### Localization
+
+### Keyboard interactions
+
+## API
+
+### Properties and attributes
+
+### Methods
+
+### Events
+
+### Slots
+
+### CSS Shadow parts
+
+## Test scenarios
+
+## Assumptions and limitations
+
+## Accessibility
+
+### ARIA roles and properties
+
+### Keyboard support
+
+### Right to Left support
+```
+
+Rules:
+
+- **One `spec.md` per directory.** A directory holding several components documents all of them
+  in one file, with a table or a subsection per component — the button and the icon button
+  share `button/spec.md`, the two progress indicators share `progress/spec.md`.
+- **The table of contents is hand-maintained.** Every `##` and `###` heading gets an entry, and
+  the anchors follow the GitHub slug rules (lowercase, punctuation dropped, spaces to hyphens).
+- **No ownership, approval or sign-off sections**, and no author column in the revision
+  history. A new component starts at version 1.
+- **Preserve design hand-off links.** A Figma link belongs under `### End-user experience`. Say
+  so plainly when there is none rather than leaving a placeholder.
+- **Tag names are fine here.** The prose rule against `igc-` names applies to JSDoc, which ships
+  into the framework wrappers; a spec is repository documentation and names the elements
+  directly.
+- **Link sibling specs relatively** — `[the popover](../popover/spec.md)`, and to a heading with
+  `../popover/spec.md#keyboard-interactions`.
+- **Internal components get a spec too** when they carry behavior others depend on. The
+  validation container, the popover and the focus trap each have one.
+
+Fill in `## Test scenarios` once the tests exist; see step 7.
+
+### 3. Create the component class
 
 `src/components/[name]/[name].ts`:
 
@@ -111,7 +200,7 @@ Key points:
 - For ARIA use `addInternalsController`; for keyboard use `addKeybindings`; for slot state use
   `addSlotController`. See the [controllers table](../../CODING_GUIDELINES.md#controllers).
 
-### 3. Create the SCSS files
+### 4. Create the SCSS files
 
 SCSS resolves against the `src` and `node_modules` load paths — use package-style specifiers,
 never relative ones. Indentation in SCSS is 4 spaces.
@@ -172,7 +261,7 @@ $theme: $bootstrap;
 > then, declare the CSS variables directly in `themes/shared/[name].common.scss` and keep the
 > light/dark files empty rather than inventing values per theme.
 
-### 4. Create the theme aggregator
+### 5. Create the theme aggregator
 
 `themes/themes.ts` is the only hand-written TypeScript file in the directory:
 
@@ -230,7 +319,7 @@ const dark = {
 export const all: Themes = { light, dark };
 ```
 
-### 5. Transpile the styles
+### 6. Transpile the styles
 
 ```bash
 npm run build:styles
@@ -241,7 +330,7 @@ are **gitignored** — never edit or commit them. Only files matching
 `*.{base,common,shared,material,bootstrap,indigo,fluent}.scss` are picked up; anything else is
 silently skipped.
 
-### 6. Write the tests
+### 7. Write the tests
 
 `src/components/[name]/[name].spec.ts`:
 
@@ -284,7 +373,33 @@ from `#internals/testing/simulate.spec.js`, and use
 `createFormAssociatedTestBed` from `#internals/testing/form-testbed.spec.js` for form-associated
 controls.
 
-### 7. Create the Storybook story
+Now fill in the `## Test scenarios` section of the spec. It mirrors the suite that actually
+exists: one subsection per `describe` block, keeping its name, with the scenarios numbered
+contiguously across the whole section. Name the shared runners the suite uses
+(`runValidationContainerTests`, `runAriaProjectionTests`, `runInvokerCommandsTests`, …) rather
+than restating what they assert, and list the suite files in a table when there is more than
+one:
+
+```markdown
+| Suite    | File             |
+| -------- | ---------------- |
+| `Avatar` | `avatar.spec.ts` |
+
+### Default
+
+1. The component passes the accessibility audit and is initialized with its default values.
+2. …
+
+### Not covered by the suite
+
+- The precedence of the initials over a projected icon is not covered.
+```
+
+Documented behavior that the suite does not reach goes under `### Not covered by the suite`.
+Write the gap down rather than implying coverage that is not there — an honest gap is a
+backlog item, an implied one is a false claim.
+
+### 8. Create the Storybook story
 
 `stories/[name].stories.ts` — the filename must match the tag name, and the generated block
 must be fenced by `// region default` / `// endregion`:
@@ -316,7 +431,7 @@ export const Basic: Story = {
 
 Everything inside the region is regenerated in the next step — write only the stories.
 
-### 8. Export and generate metadata
+### 9. Export and generate metadata
 
 Add the export to `src/index.ts` in alphabetical order:
 
@@ -331,7 +446,7 @@ npm run cem        # custom-elements.json from the JSDoc
 npm run build:meta # the `// region default` block of the story
 ```
 
-### 9. Verify
+### 10. Verify
 
 ```bash
 npm run check  # aliases, dependency rules, types
@@ -392,6 +507,9 @@ event/attribute names that contain `igc-` (e.g. the `"igc-change-theme"` window 
 ## Validation Checklist
 
 - [ ] Component at `src/components/[name]/[name].ts`, single default export
+- [ ] `spec.md` in the component directory, following the splitter structure, with a maintained
+      table of contents, a version 1 revision history and no ownership sections
+- [ ] The spec's API tables match the implemented public API; its test scenarios match the suite
 - [ ] `tagName`, `styles` and `register()` static members defined
 - [ ] Cross-cutting imports use `#internals` / `#theming` / `#animations`
 - [ ] Theming controller added in the constructor
@@ -418,11 +536,14 @@ event/attribute names that contain `igc-` (e.g. the `"igc-change-theme"` window 
 | Story descriptions are stale                 | The `// region default` block was hand-edited — fix the JSDoc and regenerate     |
 | Story never updates                          | Filename doesn't match the tag name, or the region fence is missing              |
 | `npm run check` fails on imports             | A relative import into `internals`/`theming`/`animations`, or a missing alias in `scripts/_package.json` |
+| Spec anchor links lead nowhere               | A heading was added without a TOC entry, or the slug drops punctuation (`Undo / redo` → `undo--redo`) |
+| Spec test scenarios don't match the suite    | The section was written from the design intent — mirror the `describe` blocks instead |
 
 ## Reference Examples
 
 | Kind                | Component                          | Shows                                                     |
 | ------------------- | ---------------------------------- | --------------------------------------------------------- |
+| Specification       | `src/components/splitter/spec.md`  | The reference structure every `spec.md` follows            |
 | Simple display      | `src/components/badge/badge.ts`    | Theming, slot controller, `partMap`, internals ARIA        |
 | Form-associated     | `src/components/input/input.ts`    | Form mixin, validators, `input-shell` template, ARIA target |
 | Composite / overlay | `src/components/select/select.ts`  | ARIA projection, keybindings, popover                      |

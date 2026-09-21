@@ -33,6 +33,7 @@ This project involves creating a library of reusable web components using the Li
 - Use Shadow DOM to encapsulate styles and markup.
 - Organize code with region comments: Internal state, Public properties, Lit lifecycle, Event handlers, Internal API, Public API.
 - Accessibility is **mandatory** - all components must pass accessibility audits and follow WCAG guidelines.
+- Every public component directory carries a `spec.md`. It is the behavioral contract: public API, keyboard interactions, ARIA, test scenarios, and documented limitations. Changing any of those means updating the spec in the same change.
 - Optimize for performance, minimizing re-renders and unnecessary DOM updates.
 - Expose component attributes **only** for "primitive" types (string, number, boolean).
 - Prefer composition over inheritance for component reuse.
@@ -57,3 +58,4 @@ This project involves creating a library of reusable web components using the Li
 - [Web Components Basics](https://developer.mozilla.org/en-US/docs/Web/Web_Components)
 - [Coding Guidelines](CODING_GUIDELINES.md) - Comprehensive coding standards and best practices
 - [Skills Directory](skills/) - Step-by-step guides for common tasks (creating components, adding properties, updating styles, reviewing PRs)
+- `src/components/[name]/spec.md` - The specification of a component. Read it before changing that component, and update it alongside the change. `src/components/splitter/spec.md` is the structural reference.

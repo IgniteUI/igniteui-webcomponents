@@ -30,7 +30,7 @@
 ```
 src/
 ├── animations/  # Animation players and presets            → #animations/*
-├── components/  # One directory per component
+├── components/  # One directory per component, each with its own spec.md
 ├── extras/      # Opt-in add-ons, published as `igniteui-webcomponents/extras`
 ├── internals/   # Shared building blocks, never public API  → #internals/*
 ├── styles/      # Global SCSS: utilities, mixins, themes
@@ -64,6 +64,7 @@ become part of the public API, it moves out of `internals` first.
 
 - Stick to a single export from the component file, that is the component class itself.
 - Testing file(s) should be also in the same directory following the `[component-name].spec.ts` pattern.
+- The specification of the component lives next to it as `src/components/[component]/spec.md`. See [Specifications](#specifications).
 - CSS styles and theming assets usually live in `src/components/[component]/themes/*`.
 - Anything else is a fair game as long as it has consistent and meaningful naming.
 
@@ -669,6 +670,11 @@ All components must include comprehensive tests in `[component-name].spec.ts`.
   5. User interactions (clicks, keyboard)
   6. Edge cases
 
+- The suite is mirrored in the `## Test scenarios` section of the component's
+  [specification](#specifications): one subsection per `describe` block, scenarios numbered
+  contiguously. Adding or removing a test updates that section in the same change, and
+  documented behavior the suite does not reach is listed under `### Not covered by the suite`.
+
 - Use `defineComponents()` in the `before()` hook to register components:
 
   ```ts
@@ -1130,7 +1136,9 @@ constructor() {
   documentation:
   - **No `igc-` tag names in prose.** Say "the carousel", not `igc-carousel`. Tag names
     belong only in the `@element` tag, fenced `@example` blocks, literal event/attribute
-    names that contain `igc-`, and `@internal`/`@hidden` members.
+    names that contain `igc-`, and `@internal`/`@hidden` members. The rule is about what
+    ships to consumers — it does not apply to [specifications](#specifications), which are
+    repository documentation.
   - **Don't restate the tag.** `@attr` already says it is an attribute — write
     "The label of the control.", not "The label attribute of the control."
   - **No `Gets/Sets`.** State what the value is; add a second sentence for side effects.
@@ -1203,6 +1211,108 @@ constructor() {
   npm run build:meta # rewrites the `// region default` block of each story
   ```
 
+## Specifications
+
+Every public component directory holds a `spec.md` — the behavioral contract of the component.
+JSDoc documents an API member in isolation; the specification documents the component as a
+whole: what it is for, how it behaves, what the keyboard and assistive technology do with it,
+what the tests cover and where it stops.
+
+[`src/components/splitter/spec.md`](../src/components/splitter/spec.md) is the structural
+reference. Every specification follows it:
+
+```markdown
+# [Name] specification
+
+- [table of contents]
+
+## Revision history
+## Overview
+### Key features
+### Acceptance criteria
+## User stories
+### End-user stories
+### Developer stories
+## Functionality
+### End-user experience
+### Developer experience
+### Localization
+### Keyboard interactions
+## API
+### Properties and attributes
+### Methods
+### Events
+### Slots
+### CSS Shadow parts
+## Test scenarios
+## Assumptions and limitations
+## Accessibility
+### ARIA roles and properties
+### Keyboard support
+### Right to Left support
+```
+
+The skeleton is a default, not a schema:
+
+- A section that does not apply is better **answered** — "None applicable." — than dropped, so
+  that a reader can tell an absent feature from an undocumented one. Dropping it is acceptable
+  where the whole area is meaningless for the component; the splitter has no
+  `## Assumptions and limitations`, and the ripple answers `### Methods` and `### Events`
+  instead.
+- Sections are **added** where a component needs them — `### CSS custom properties` for the
+  rating and the highlight, `### Terms` for the carousel.
+- A directory with several components may **restructure `## API`** into a subsection per
+  component, each with its own tables, instead of the fixed `### Methods` / `### Events` /
+  `### Slots` subsections. The card and the list do this.
+
+### Rules
+
+- **One specification per directory.** A directory holding several components documents all of
+  them in one file, with a subsection or a table row per component. The button and the icon
+  button share `button/spec.md`; the two progress indicators share `progress/spec.md`.
+- **Internal components get one too** when they carry behavior that others depend on — the
+  validation container, the popover and the focus trap each have a specification.
+- **The table of contents is hand-maintained.** Every `##` and `###` heading needs an entry, and
+  the anchors follow the GitHub slug rules: lowercase, punctuation removed, spaces to hyphens,
+  duplicates suffixed `-1`, `-2`.
+- **No ownership, approval or sign-off sections**, and no author column in the revision history.
+  Git already records who changed what.
+- **The revision history is a table** of `Version | Date | Notes`. A new component starts at
+  version 1; every later change that touches the specification adds a row.
+- **Design hand-off links are preserved.** A Figma link belongs under `### End-user experience`.
+  Where there is none, say so instead of leaving a placeholder.
+- **Tag names are allowed.** The prose ban on `igc-` names applies to JSDoc, which ships into
+  the framework wrappers. A specification is repository documentation and names elements
+  directly.
+- **Sibling specifications are linked relatively** — `[the popover](../popover/spec.md)`, or
+  `../popover/spec.md#keyboard-interactions` for a heading.
+- **Test scenarios mirror the suite that exists.** One subsection per `describe` block, keeping
+  its name, with the scenarios numbered contiguously across the whole section. Name the shared
+  runners the suite uses rather than restating what they assert.
+- **Gaps are stated, not implied.** Documented behavior that no test reaches goes under
+  `### Not covered by the suite`. An honest gap is a backlog item; an implied one is a false
+  claim.
+- **Describe the code as it is**, not as it was designed. Where the implementation has moved on,
+  the implementation wins and the specification is corrected.
+
+### Keeping it current
+
+A change to behavior is not finished until the specification describes it:
+
+| Change                                              | Section to update                                              |
+| --------------------------------------------------- | -------------------------------------------------------------- |
+| Property, method, event, slot, part, custom property | The matching `## API` table, with the same wording as the JSDoc |
+| New or changed keyboard interaction                  | `### Keyboard interactions` and `### Keyboard support`          |
+| New or changed role or ARIA state                    | `### ARIA roles and properties`                                 |
+| New behavior worth an example                        | A subsection under `### Developer experience`                   |
+| New or changed resource string                       | `### Localization`                                              |
+| New constraint, precedence rule or unsupported case  | `## Assumptions and limitations`                                |
+| New or removed tests                                 | `## Test scenarios`, renumbered contiguously                    |
+| Any of the above                                     | `## Revision history`                                           |
+
+A deprecation keeps its API row, marks it with the version and the replacement, and is recorded
+in the revision history.
+
 ## Storybook
 
 All components should have a corresponding Storybook story in `stories/[component-name].stories.ts`.
@@ -1273,6 +1383,7 @@ Run `npm run check`, `npm run lint` and `npm run test` before opening a PR.
 ## Resources
 
 - **Project Documentation:** [README.md](https://github.com/IgniteUI/igniteui-webcomponents/blob/master/README.md)
+- **Component Specifications:** `src/components/[component]/spec.md`, with [splitter](../src/components/splitter/spec.md) as the structural reference
 - **Lit Documentation:** [lit.dev](https://lit.dev/docs/)
 - **Web Components:** [MDN Web Components](https://developer.mozilla.org/en-US/docs/Web/Web_Components)
 - **Accessibility:** [WCAG Guidelines](https://www.w3.org/WAI/WCAG21/quickref/)
@@ -1280,6 +1391,7 @@ Run `npm run check`, `npm run lint` and `npm run test` before opening a PR.
 
 ## Getting Help
 
+- Read the `spec.md` of the component you are changing — it is the contract you have to keep
 - Review existing components in `src/components/` for patterns and examples
 - Read the [LLM Skills](./skills/README.md) for guided workflows
 - Ask questions in pull request reviews
@@ -1288,6 +1400,10 @@ Run `npm run check`, `npm run lint` and `npm run test` before opening a PR.
 
 Before submitting a PR for a new component, ensure:
 
+- [ ] `spec.md` written, following the [splitter structure](../src/components/splitter/spec.md),
+      with a maintained table of contents and a version 1 revision history
+- [ ] The specification's API tables match the implemented public API, and its test scenarios
+      match the suite
 - [ ] Component follows the standard structure with region fences
 - [ ] All internal APIs prefixed with underscore (`_`)
 - [ ] Theming controller added in constructor

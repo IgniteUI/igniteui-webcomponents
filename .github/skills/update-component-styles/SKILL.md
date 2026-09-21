@@ -136,6 +136,17 @@ editing them, regenerate:
 npm run cem && npm run build:meta
 ```
 
+A part or a custom property is public API, so it also goes into
+`src/components/[name]/spec.md` (see
+[Specifications](../../CODING_GUIDELINES.md#specifications)): add a row to `### CSS Shadow parts` or
+`### CSS custom properties` with the same description, add the section to the table of contents
+if the spec did not have one yet, and bump `## Revision history`. Renaming or removing one is
+the same edit plus a note in the revision history.
+
+Purely visual changes that add no part and no custom property leave the spec alone — unless
+they change documented behavior, such as a state that is now visually distinguished where the
+spec says it is not.
+
 ### 4. Transpile
 
 ```bash
@@ -169,6 +180,7 @@ still styleable from outside the component.
 - [ ] Part selectors use `[part~='…']`
 - [ ] Dark themes emit only the `diff()` against the light base
 - [ ] New parts and custom properties documented with `@csspart` / `@cssproperty`
+- [ ] New or renamed parts and custom properties reflected in `spec.md`, revision history bumped
 - [ ] `npm run build:styles` run, `npm run lint:styles` clean
 - [ ] All four themes checked in light and dark mode
 - [ ] CHANGELOG updated if the change is user-visible
@@ -184,8 +196,10 @@ still styleable from outside the component.
 | `var-get()` emits nothing                 | The key is missing from the schema                                    |
 | Dark theme looks like light               | Missing `diff(light.$base, $theme)` or a missing `themes.ts` entry    |
 | Consumers can't override a style          | Selector specificity too high, or the element isn't exposed as a part |
+| A part exists but nobody knows about it   | Documented with `@csspart` but missing from the spec's parts table    |
 
 ## Reference Examples
 
 - `src/components/badge/themes/` — compact, complete scaffold of the pattern above
 - `src/components/input/themes/` — multiple parts, notched material layout, state selectors
+- `src/components/rating/spec.md` — parts and custom properties documented side by side
