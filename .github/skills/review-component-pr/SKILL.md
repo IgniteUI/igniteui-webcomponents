@@ -1,6 +1,6 @@
 ---
 name: review-component-pr
-description: Comprehensive code review checklist for component pull requests ensuring quality, accessibility, and adherence to project conventions
+description: Comprehensive code review checklist for component pull requests ensuring quality, accessibility, specification accuracy, and adherence to project conventions
 ---
 
 # Review Component PR
@@ -17,16 +17,18 @@ the [Coding Guidelines](../../CODING_GUIDELINES.md); this skill is the pass over
 
 1. **Structure** — are all the required files there?
 2. **Public API** — properties, events, docs; this is the part that cannot be changed later
-3. **Accessibility** — mandatory, never skipped
-4. **Behavior** — lifecycle, state, forms
-5. **Styles and themes**
-6. **Tests and generated artifacts**
-7. **Build and hygiene**
+3. **Specification** — does `spec.md` still describe what the code does?
+4. **Accessibility** — mandatory, never skipped
+5. **Behavior** — lifecycle, state, forms
+6. **Styles and themes**
+7. **Tests and generated artifacts**
+8. **Build and hygiene**
 
 ## 1. Structure
 
 - [ ] Component at `src/components/[name]/[name].ts` with a single default export
-- [ ] Spec at `src/components/[name]/[name].spec.ts`
+- [ ] Test suite at `src/components/[name]/[name].spec.ts`
+- [ ] Specification at `src/components/[name]/spec.md`
 - [ ] Story at `stories/[name].stories.ts` — filename matches the tag name
 - [ ] Theme scaffold complete: `[name].base.scss`, `shared/`, `light/`, `dark/`, `themes.ts`
 - [ ] Exported from `src/index.ts` in alphabetical order
@@ -62,9 +64,36 @@ grep -rn "igc-" --include="*.ts" src/ \
   | grep -vE "@element|@example|\.spec\.ts"
 ```
 
-## 3. Accessibility
+## 3. Specification
 
-- [ ] The spec contains the mandatory a11y audit (`shadowDom` **and** light DOM)
+`spec.md` is the behavioral contract, so a diff that changes behavior and leaves it untouched is
+incomplete. Read the specification of the component before the diff — a change that contradicts
+it is either a bug or a spec update the author owes.
+
+The rules are in [Specifications](../../CODING_GUIDELINES.md#specifications), and the
+[keeping it current](../../CODING_GUIDELINES.md#keeping-it-current) table maps each kind of
+change to the section it belongs in.
+
+- [ ] A new component ships a `spec.md` following the
+      [splitter structure](../../../src/components/splitter/spec.md)
+- [ ] Added, renamed, deprecated or removed properties, methods, events, slots, CSS parts and
+      CSS custom properties are reflected in the matching API table, with the same descriptions
+      as the JSDoc
+- [ ] New or changed keyboard interactions appear in `### Keyboard interactions`
+- [ ] New or changed roles and ARIA state appear in `### ARIA roles and properties`
+- [ ] New test scenarios are in `## Test scenarios`, under the subsection matching their
+      `describe` block, numbered contiguously with the rest
+- [ ] Behavior the suite does not reach is stated under `### Not covered by the suite` rather
+      than implied to be covered
+- [ ] New constraints, precedence rules and unsupported cases are in
+      `## Assumptions and limitations`
+- [ ] `## Revision history` gained a row for this change
+- [ ] Every heading added has a table-of-contents entry, and the anchors resolve
+- [ ] Links to sibling specs are relative (`../popover/spec.md`) and resolve
+
+## 4. Accessibility
+
+- [ ] The test suite contains the mandatory a11y audit (`shadowDom` **and** light DOM)
 - [ ] Semantic elements used instead of `div`s with click handlers
 - [ ] ARIA set through `addInternalsController` (`initialARIA`, `setARIA()`) — never
       `this.role = '…'`; `reflectRole: true` when attribute-only tooling must see the role
@@ -82,7 +111,7 @@ grep -rn "igc-" --include="*.ts" src/ \
       `runAriaProjectionTests`; reflected relations are asserted by identity readback, with
       `axeReflectedRelationsOptions` suppressing the known `aria-required-attr` false positive
 
-## 4. Behavior
+## 5. Behavior
 
 - [ ] Region fences and member order follow the standard component structure
 - [ ] Internal API is `_`-prefixed; no native private fields (`#`); `readonly` on controllers
@@ -104,7 +133,7 @@ grep -rn "igc-" --include="*.ts" src/ \
 - [ ] Form controls don't reimplement touched/pristine/invalid bookkeeping; overrides of
       `formResetCallback` call `super`
 
-## 5. Styles and Themes
+## 6. Styles and Themes
 
 - [ ] Only `.scss` edited — no generated `.css.ts` in the diff
 - [ ] Load-path specifiers (`@use 'styles/utilities' as *`), no relative global imports
@@ -114,7 +143,7 @@ grep -rn "igc-" --include="*.ts" src/ \
 - [ ] `themes.ts` aggregates every theme file that was added
 - [ ] `:host` has an appropriate `display`; selector specificity kept low
 
-## 6. Tests and Generated Artifacts
+## 7. Tests and Generated Artifacts
 
 - [ ] `defineComponents()` in the `before()` hook; `elementUpdated()` after programmatic changes
 - [ ] Coverage for defaults, property/attribute reflection, events, interaction and edge cases
@@ -126,7 +155,7 @@ grep -rn "igc-" --include="*.ts" src/ \
 - [ ] Hand-written stories cover the states a user cares about
 - [ ] CHANGELOG updated
 
-## 7. Build and Hygiene
+## 8. Build and Hygiene
 
 - [ ] `npm run check` (aliases, dependency rules, types) passes
 - [ ] `npm run lint` passes — oxlint, lit-analyzer, oxfmt, stylelint
@@ -149,12 +178,16 @@ grep -rn "igc-" --include="*.ts" src/ \
 | New `@hidden` public member                    | Leaks into the compiled public API — use `internalsOf()`              |
 | Boolean property defaulting to `true`          | Cannot be turned off from markup                                      |
 | `@watch` in new code                           | Lifecycle hooks are the supported path                                |
+| API change with no `spec.md` diff              | The specification stops describing the component and starts misleading readers |
+| Spec test scenarios that no test covers        | Claims coverage that does not exist — move it under "Not covered by the suite" |
+| New spec heading missing from the TOC          | The table of contents is hand-maintained; the anchor list silently rots |
 
 ## Verdict
 
 **Request changes** when: the a11y audit is missing or failing, ARIA is set on the wrong
 element, `any` types or native private fields appear, generated artifacts are hand-edited or
-missing, themes are incomplete, or the public API is undocumented.
+missing, themes are incomplete, the public API is undocumented, or `spec.md` no longer matches
+the behavior the diff ships.
 
 **Approve** when the checklist passes, `npm run check`, `npm run lint` and `npm run test` are
 green, and the public API reads the way it will be documented for users.

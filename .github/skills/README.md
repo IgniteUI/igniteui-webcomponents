@@ -10,6 +10,11 @@ The skills describe **workflows**. The rules they enforce live in the
 [Coding Guidelines](../CODING_GUIDELINES.md) — when the two disagree, the guidelines win and
 the skill needs updating.
 
+What a single component does is described in its own `src/components/[name]/spec.md`: the
+public API, the keyboard model, the ARIA semantics, the test scenarios and the documented
+limitations. Read it before changing that component, and update it in the same change —
+`src/components/splitter/spec.md` is the structural reference.
+
 ## Available Skills
 
 | Skill                                                 | Description                                                                        | Use When                             |
