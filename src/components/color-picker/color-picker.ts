@@ -14,6 +14,7 @@ import {
   arrowUp,
   endKey,
   escapeKey,
+  isKey,
 } from '#internals/controllers/key-bindings.js';
 import { addRootClickController } from '#internals/controllers/root-click.js';
 import { addSlotController, setSlots } from '#internals/controllers/slot.js';
@@ -512,7 +513,7 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
 
     const limit = caretLimit(native.value);
 
-    if (event.key === endKey || (native.selectionEnd ?? 0) >= limit) {
+    if (isKey(event, endKey) || (native.selectionEnd ?? 0) >= limit) {
       event.preventDefault();
       native.setSelectionRange(limit, limit);
     }
@@ -1014,7 +1015,12 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
   protected override render(): TemplateResult {
     return html`
       <div part="color-picker">
-        <igc-popover ?open=${this.open} shift flip>
+        <igc-popover
+          ?open=${this.open}
+          flip
+          .scrollStrategy=${this.scrollStrategy}
+          @igcPopoverScrollClose=${this._handleClosing}
+        >
           ${this._renderAnchor()}${this._renderPicker()}
         </igc-popover>
         ${

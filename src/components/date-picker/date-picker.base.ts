@@ -807,7 +807,13 @@ export abstract class IgcDatePickerBaseComponent<
 
     return this._isDropDown
       ? html`
-          <igc-popover ?open=${this.open} anchor=${id} flip shift>
+          <igc-popover
+            ?open=${this.open}
+            anchor=${id}
+            flip
+            .scrollStrategy=${this.scrollStrategy}
+            @igcPopoverScrollClose=${this._handleClosing}
+          >
             <igc-focus-trap ?disabled=${isDisabled}>
               ${this._renderPickerContent(id)}
             </igc-focus-trap>

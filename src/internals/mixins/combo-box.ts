@@ -1,5 +1,6 @@
 import { LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
+import type { PopoverScrollStrategy } from '../../components/types.js';
 import type { RootClickController } from '../controllers/root-click.js';
 import {
   addToggleController,
@@ -31,6 +32,21 @@ export abstract class IgcBaseComboBoxComponent extends LitElement {
    */
   @property({ type: Boolean, reflect: true })
   public open = false;
+
+  /**
+   * Sets the behavior of the component when the parent container scrolls.
+   *
+   * If the value is `hide`, the component hides while the anchor is fully out
+   * of view. `hide` is the default value.
+   *
+   * If the value is `scroll`, the component stays visible and anchored.
+   *
+   * If the value is `close`, the component closes on each scroll.
+   * @attr scroll-strategy
+   * @default hide
+   */
+  @property({ attribute: 'scroll-strategy' })
+  public scrollStrategy: PopoverScrollStrategy = 'hide';
 
   protected _handleAnchorClick(): void {
     this.open ? this._hide(true) : this._show(true);

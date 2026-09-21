@@ -1,17 +1,3 @@
-import {
-  arrow,
-  autoUpdate,
-  computePosition,
-  flip,
-  inline,
-  limitShift,
-  type Middleware,
-  type MiddlewareData,
-  offset,
-  type Placement,
-  shift,
-  size,
-} from '@floating-ui/dom';
 import { html, LitElement, type PropertyValues } from 'lit';
 import { property, query } from 'lit/decorators.js';
 import {
@@ -21,14 +7,21 @@ import {
 } from '#internals/controllers/slot.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { firstOf } from '#internals/utils/arrays.js';
-import {
-  getElementByIdFromRoot,
-  hasStickyAncestor,
-  isPopoverOpen,
-  roundByDPR,
-  setStyles,
-} from '#internals/utils/dom.js';
+import { getElementByIdFromRoot, isPopoverOpen } from '#internals/utils/dom.js';
+import { toggleEventListener } from '#internals/utils/events.js';
 import { isString } from '#internals/utils/types.js';
+import type { PopoverScrollStrategy } from '../types.js';
+import { FloatingPositionStrategy } from './position/floating.js';
+import {
+  NativePositionStrategy,
+  shouldUseNativeAnchorPositioning,
+} from './position/native.js';
+import type { PopoverPositionStrategy } from './position/strategy.js';
+import {
+  type PopoverPositionStrategyMode,
+  resolvePlacement,
+  SCROLL_LISTENER_OPTIONS,
+} from './position/types.js';
 import { styles } from './themes/light/popover.base.css.js';
 
 /**
@@ -48,23 +41,17 @@ export type PopoverPlacement =
   | 'left-start'
   | 'left-end';
 
-const OPPOSITE_SIDE = {
-  top: 'bottom',
-  right: 'left',
-  bottom: 'top',
-  left: 'right',
-} as const;
-
-type PopoverSide = keyof typeof OPPOSITE_SIDE;
-
-const SIDES = Object.keys(OPPOSITE_SIDE) as PopoverSide[];
-
 /* blazorSuppress */
 /**
  * @element igc-popover
  *
  * @slot - Content of the popover.
  * @slot anchor - The element the popover will be anchored to.
+ *
+ * @fires igcPopoverScrollClose - The popover emits this event on each document scroll,
+ * but only while it shows against its anchor and the scroll strategy is `close`.
+ * The popover does not control its own `open` state, so the component that owns that state must close it.
+ * The event does not bubble, so add the listener on the popover element.
  *
  * @csspart container - The container wrapping the slotted content in the popover.
  */
@@ -79,20 +66,9 @@ export default class IgcPopoverComponent extends LitElement {
 
   //#region Internal properties and state
 
-  private _dispose?: ReturnType<typeof autoUpdate>;
   private _target?: Element;
-  private _middleware?: Middleware[];
-  private _positionId = 0;
-
-  /**
-   * The positioning strategy resolved when the popover is opened. The `fixed`
-   * strategy is used when the anchor has a `position: sticky` ancestor, otherwise
-   * the default `absolute` strategy is used. Cached here to avoid repeated DOM
-   * traversals and style reflows on every scroll/resize reposition.
-   *
-   * Also, time to migrate to CSS Anchor positioning!!!
-   */
-  private _strategy: 'absolute' | 'fixed' = 'absolute';
+  private _positionStrategy?: PopoverPositionStrategy;
+  private _positionMode?: PopoverPositionStrategyMode;
 
   private readonly _slots = addSlotController(this, {
     slots: setSlots('anchor'),
@@ -107,7 +83,7 @@ export default class IgcPopoverComponent extends LitElement {
   //#region Public attributes and properties
 
   /**
-   * Pass an IDREF or an DOM element reference to use as the
+   * Pass an IDREF or a DOM element reference to use as the
    * anchor target for the floating element.
    */
   @property()
@@ -122,13 +98,6 @@ export default class IgcPopoverComponent extends LitElement {
   /** Additional offset to apply to the arrow element if enabled. */
   @property({ type: Number, attribute: 'arrow-offset' })
   public arrowOffset = 0;
-
-  /**
-   * Improves positioning for inline reference elements that span over multiple lines.
-   * Useful for tooltips or similar components.
-   */
-  @property({ type: Boolean, reflect: true })
-  public inline = false;
 
   /**
    * When enabled this changes the placement of the floating element in order to keep it
@@ -162,17 +131,22 @@ export default class IgcPopoverComponent extends LitElement {
   public sameWidth = false;
 
   /**
-   * When enabled this tries to shift the floating element along the main axis
-   * keeping it in view, preventing overflow while maintaining the desired placement.
+   * Sets the behavior of the popover when an ancestor scroll container
+   * scrolls and the popover is open.
+   *
+   * If the value is `hide`, the popover hides while the anchor is fully out
+   * of view. The popover shows again when the anchor returns to view. `hide`
+   * is the default value.
+   *
+   * If the value is `scroll`, the popover stays visible. The popover also
+   * stays anchored while the anchor is out of view.
+   *
+   * If the value is `close`, the popover behaves as for `hide`. The popover
+   * also emits `igcPopoverScrollClose` for each scroll. The component that
+   * owns the `open` state must then close the popover.
    */
-  @property({ type: Boolean, reflect: true })
-  public shift = false;
-
-  /**
-   * Virtual padding for the resolved overflow detection offsets in pixels.
-   */
-  @property({ type: Number, attribute: 'shift-padding' })
-  public shiftPadding = 0;
+  @property({ attribute: 'scroll-strategy' })
+  public scrollStrategy: PopoverScrollStrategy = 'hide';
 
   //#endregion
 
@@ -180,16 +154,14 @@ export default class IgcPopoverComponent extends LitElement {
 
   protected override update(properties: PropertyValues<this>): void {
     if (this.hasUpdated) {
-      this._middleware = undefined;
-
-      if (properties.has('sameWidth') && !this.sameWidth) {
-        setStyles(this._container, { width: '' });
-      }
-
       if (properties.has('open') || properties.has('anchor')) {
         this._setOpenState(this.open);
       } else if (this.open) {
-        this._updatePosition();
+        this._positionStrategy?.update();
+      }
+
+      if (properties.has('scrollStrategy')) {
+        this._syncScrollStrategy();
       }
     }
 
@@ -198,6 +170,18 @@ export default class IgcPopoverComponent extends LitElement {
 
   protected override firstUpdated(): void {
     this._setOpenState(this.open);
+  }
+
+  /**
+   * Also waits for the position strategy. The fallback strategy positions
+   * asynchronously, so the container has no position when Lit finishes the
+   * update.
+   */
+  protected override async getUpdateComplete(): Promise<boolean> {
+    const complete = await super.getUpdateComplete();
+    await this._positionStrategy?.whenPositioned();
+
+    return complete;
   }
 
   /** @internal */
@@ -227,17 +211,41 @@ export default class IgcPopoverComponent extends LitElement {
     this._setOpenState(this.open);
   }
 
-  private _handleToggle(): void {
-    if (!isPopoverOpen(this._container)) {
-      this._clearDispose();
-    }
-  }
-
   //#region Internal open state API
 
+  private _getPositionStrategy(target: Element): PopoverPositionStrategy {
+    const mode = shouldUseNativeAnchorPositioning(target)
+      ? 'native'
+      : 'floating';
+
+    if (this._positionStrategy && this._positionMode === mode) {
+      return this._positionStrategy;
+    }
+
+    this._positionStrategy?.detach();
+    this._positionStrategy?.clear();
+
+    this._positionMode = mode;
+    this._positionStrategy =
+      mode === 'native'
+        ? new NativePositionStrategy(this, this._handleAnchorRemoved)
+        : new FloatingPositionStrategy(this, this._handleAnchorRemoved);
+
+    return this._positionStrategy;
+  }
+
   /**
-   * An unresolved IDREF keeps the current target, so that an anchor rendered
-   * after this popover is picked up the next time it opens.
+   * Hides the container if the anchor leaves the DOM. The `open` property
+   * keeps its value, so the popover shows again when a new anchor resolves.
+   */
+  private readonly _handleAnchorRemoved = (): void => {
+    this._target = undefined;
+    this._setOpenState(false);
+  };
+
+  /**
+   * An unresolved IDREF keeps the current target. Thus the popover finds an
+   * anchor that renders after it, at the next open.
    */
   private _resolveTarget(): Element | undefined {
     if (isString(this.anchor)) {
@@ -251,158 +259,55 @@ export default class IgcPopoverComponent extends LitElement {
   }
 
   private _setOpenState(state: boolean): void {
-    this._clearDispose();
-
     if (state) {
       this._target = this._resolveTarget();
-
-      if (this._target) {
-        this._strategy = hasStickyAncestor(this._target) ? 'fixed' : 'absolute';
-        this._dispose = autoUpdate(
-          this._target,
-          this._container,
-          this._updatePosition.bind(this)
-        );
-      }
     }
 
-    this._setPopoverState(state);
-  }
-
-  private _setPopoverState(state: boolean): void {
-    const container = this._container;
-
-    if (!container) {
-      return;
+    if (state && this._target) {
+      // `attach` also detaches the previous open cycle.
+      this._getPositionStrategy(this._target).attach(
+        this._target,
+        this._container
+      );
+    } else {
+      this._positionStrategy?.detach();
     }
 
-    const shouldOpen = state && this._target != null;
-
-    if (shouldOpen !== isPopoverOpen(container)) {
-      shouldOpen ? container.showPopover() : container.hidePopover();
-    }
+    this._syncContainerState(state);
   }
 
-  private _clearDispose(): void {
-    this._dispose?.();
-    this._dispose = undefined;
-  }
-
-  //#endregion
-
-  //#region Internal position API
-
-  private get _placement(): PopoverPlacement {
-    return this.placement ?? 'bottom-start';
-  }
-
-  private _createMiddleware(): Middleware[] {
-    const shiftMiddleware = this.shift
-      ? shift({ padding: this.shiftPadding, limiter: limitShift() })
-      : null;
-    const flipMiddleware = this.flip ? flip() : null;
-
-    // Aligned placements flip before shifting, base placements shift first.
-    // See https://floating-ui.com/docs/flip
-    const positioners = this._placement.includes('-')
-      ? [flipMiddleware, shiftMiddleware]
-      : [shiftMiddleware, flipMiddleware];
-
-    const chain = [
-      this.offset !== 0 ? offset(this.offset) : null,
-      this.inline ? inline() : null,
-      ...positioners,
-      this.sameWidth
-        ? size({
-            apply: ({ rects }) =>
-              setStyles(this._container, {
-                width: `${rects.reference.width}px`,
-              }),
-          })
-        : null,
-      this.arrow ? arrow({ element: this.arrow }) : null,
-    ];
-
-    return chain.filter((entry): entry is Middleware => entry !== null);
-  }
-
-  private async _updatePosition(): Promise<void> {
-    if (!this.open) {
-      return;
-    }
-
-    if (!this._target?.isConnected) {
-      this._target = undefined;
-      this._clearDispose();
-      this._setPopoverState(false);
-      return;
-    }
-
-    const positionId = ++this._positionId;
-    const strategy = this._strategy;
-
-    const { x, y, middlewareData, placement } = await computePosition(
-      this._target,
-      this._container,
-      {
-        placement: this._placement,
-        middleware: (this._middleware ??= this._createMiddleware()),
-        strategy,
-      }
+  /**
+   * Binds one document `scroll` listener while the container shows and the
+   * scroll strategy is `close`. It reads the container, because the container
+   * can stay closed while `open` is true.
+   */
+  private _syncScrollStrategy(): void {
+    toggleEventListener(
+      document,
+      isPopoverOpen(this._container) && this.scrollStrategy === 'close',
+      'scroll',
+      this._handleRootScroll,
+      SCROLL_LISTENER_OPTIONS
     );
-
-    if (positionId !== this._positionId || !this.open) {
-      return;
-    }
-
-    setStyles(this._container, {
-      position: strategy,
-      left: '0',
-      top: '0',
-      transform: `translate(${roundByDPR(x)}px,${roundByDPR(y)}px)`,
-    });
-
-    this._updateArrowPosition(placement, middlewareData);
   }
 
-  private _updateArrowPosition(
-    placement: Placement,
-    data: MiddlewareData
-  ): void {
-    const element = this.arrow;
+  private readonly _handleRootScroll = (): void => {
+    this.dispatchEvent(new CustomEvent('igcPopoverScrollClose'));
+  };
 
-    if (!(data.arrow && element)) {
+  /** Shows or hides the container and then syncs the scroll listener. */
+  private _syncContainerState(state: boolean): void {
+    if (!this._container) {
       return;
     }
 
-    const { x, y } = data.arrow;
-    const offset = this.arrowOffset;
-    const [side] = placement.split('-') as [PopoverSide];
-    const staticSide = OPPOSITE_SIDE[side];
-
-    if (!element.part.contains(side)) {
-      element.part.remove(...SIDES);
-      element.part.add(side);
+    if (state && this._target) {
+      this._positionStrategy?.show();
+    } else {
+      this._positionStrategy?.hide();
     }
 
-    // Measured after the part switch, since it is what gives the arrow its size.
-    const inset =
-      staticSide === 'top' || staticSide === 'bottom'
-        ? element.offsetHeight
-        : element.offsetWidth;
-
-    // Every side is reset, otherwise the inset of the previous placement is left
-    // behind and over-constrains the arrow.
-    const styles: Partial<CSSStyleDeclaration> = {
-      top: y != null ? `${roundByDPR(y + offset)}px` : '',
-      right: '',
-      bottom: '',
-      left: x != null ? `${roundByDPR(x + offset)}px` : '',
-    };
-
-    styles[staticSide] = `${-inset}px`;
-
-    setStyles(element, styles);
+    this._syncScrollStrategy();
   }
 
   //#endregion
@@ -414,7 +319,8 @@ export default class IgcPopoverComponent extends LitElement {
         id="container"
         part="container"
         popover="manual"
-        @toggle=${this._handleToggle}
+        data-placement=${resolvePlacement(this)}
+        data-scroll-strategy=${this.scrollStrategy}
       >
         <slot></slot>
       </div>

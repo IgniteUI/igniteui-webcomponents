@@ -1317,7 +1317,13 @@ export default class IgcComboComponent<
 
   protected override render() {
     return html`
-      <igc-popover ?open=${this.open} flip shift same-width>
+      <igc-popover
+        ?open=${this.open}
+        flip
+        same-width
+        .scrollStrategy=${this.scrollStrategy}
+        @igcPopoverScrollClose=${this._handleClosing}
+      >
         ${this._renderMainInput()} ${this._renderList()}
       </igc-popover>
       ${this._renderHelperText()}

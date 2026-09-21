@@ -143,7 +143,6 @@ class SlotController<T> implements ReactiveController {
   }
 
   /** @internal */
-  /** @internal */
   public hostConnected(): void {
     this._host.renderRoot.addEventListener('slotchange', this);
   }
