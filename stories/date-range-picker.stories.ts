@@ -130,14 +130,6 @@ const metadata: Meta<IgcDateRangePickerComponent> = {
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'dropdown' } },
     },
-    scrollStrategy: {
-      type: { name: 'enum', value: ['scroll', 'hide', 'close'] },
-      description:
-        'Sets the behavior of the component when the parent container scrolls.\n\nIf the value is `hide`, the component hides while the anchor is fully out\nof view. `hide` is the default value.\n\nIf the value is `scroll`, the component stays visible and anchored.\n\nIf the value is `close`, the component closes on each scroll.\n\nIn the `dialog` mode the picker ignores this property, because a scroll\ndoes not move a modal dialog.',
-      options: ['scroll', 'hide', 'close'],
-      control: { type: 'inline-radio' },
-      table: { defaultValue: { summary: 'hide' } },
-    },
     readOnly: {
       type: 'boolean',
       description: 'Makes the control a readonly field.',
@@ -280,6 +272,14 @@ const metadata: Meta<IgcDateRangePickerComponent> = {
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
+    scrollStrategy: {
+      type: { name: 'enum', value: ['scroll', 'hide', 'close'] },
+      description:
+        'Sets the behavior of the component when the parent container scrolls.\n\nIf the value is `hide`, the component hides while the anchor is fully out\nof view. `hide` is the default value.\n\nIf the value is `scroll`, the component stays visible and anchored.\n\nIf the value is `close`, the component closes on each scroll.',
+      options: ['scroll', 'hide', 'close'],
+      control: { type: 'inline-radio' },
+      table: { defaultValue: { summary: 'hide' } },
+    },
   },
   args: {
     visibleMonths: 2,
@@ -293,7 +293,6 @@ const metadata: Meta<IgcDateRangePickerComponent> = {
     disabled: false,
     invalid: false,
     mode: 'dropdown',
-    scrollStrategy: 'hide',
     readOnly: false,
     nonEditable: false,
     outlined: false,
@@ -306,6 +305,7 @@ const metadata: Meta<IgcDateRangePickerComponent> = {
     keepOpenOnSelect: false,
     keepOpenOnOutsideClick: false,
     open: false,
+    scrollStrategy: 'hide',
   },
 };
 
@@ -340,20 +340,6 @@ interface IgcDateRangePickerArgs {
   invalid: boolean;
   /** Determines whether the calendar is opened in a dropdown or a modal dialog. */
   mode: 'dropdown' | 'dialog';
-  /**
-   * Sets the behavior of the component when the parent container scrolls.
-   *
-   * If the value is `hide`, the component hides while the anchor is fully out
-   * of view. `hide` is the default value.
-   *
-   * If the value is `scroll`, the component stays visible and anchored.
-   *
-   * If the value is `close`, the component closes on each scroll.
-   *
-   * In the `dialog` mode the picker ignores this property, because a scroll
-   * does not move a modal dialog.
-   */
-  scrollStrategy: 'scroll' | 'hide' | 'close';
   /** Makes the control a readonly field. */
   readOnly: boolean;
   /** Whether to allow typing in the input. */
@@ -416,6 +402,17 @@ interface IgcDateRangePickerArgs {
   keepOpenOnOutsideClick: boolean;
   /** Sets the open state of the component. */
   open: boolean;
+  /**
+   * Sets the behavior of the component when the parent container scrolls.
+   *
+   * If the value is `hide`, the component hides while the anchor is fully out
+   * of view. `hide` is the default value.
+   *
+   * If the value is `scroll`, the component stays visible and anchored.
+   *
+   * If the value is `close`, the component closes on each scroll.
+   */
+  scrollStrategy: 'scroll' | 'hide' | 'close';
 }
 type Story = StoryObj<IgcDateRangePickerArgs>;
 

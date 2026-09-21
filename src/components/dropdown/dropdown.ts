@@ -40,7 +40,6 @@ import { addThemingController } from '#theming/theming-controller.js';
 import IgcPopoverComponent, {
   type PopoverPlacement,
 } from '../popover/popover.js';
-import type { PopoverScrollStrategy } from '../types.js';
 import IgcDropdownGroupComponent from './dropdown-group.js';
 import IgcDropdownHeaderComponent from './dropdown-header.js';
 import IgcDropdownItemComponent from './dropdown-item.js';
@@ -149,20 +148,6 @@ export default class IgcDropdownComponent extends EventEmitterMixin<
    */
   @property()
   public placement: PopoverPlacement = 'bottom-start';
-
-  /**
-   * Sets the behavior of the component when the parent container scrolls.
-   *
-   * If the value is `hide`, the component hides while the anchor is fully out
-   * of view. `hide` is the default value.
-   *
-   * If the value is `scroll`, the component stays visible and anchored.
-   *
-   * If the value is `close`, the component closes on each scroll.
-   * @attr scroll-strategy
-   */
-  @property({ attribute: 'scroll-strategy' })
-  public scrollStrategy: PopoverScrollStrategy = 'hide';
 
   /**
    * Whether the component should be flipped to the opposite side of the target once it's about to overflow the visible area.

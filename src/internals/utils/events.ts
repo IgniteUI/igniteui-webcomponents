@@ -124,27 +124,6 @@ export function toggleEventListener<
  * @remarks
  * The `this` context of `handler` is the target element.
  */
-export function toggleEventListener<
-  E extends keyof HTMLElementEventMap | keyof WindowEventMap,
->(
-  target: EventTarget,
-  active: boolean,
-  event: E,
-  listener: EventListenerOrEventListenerObject,
-  options?: AddEventListenerOptions
-): void {
-  active
-    ? target.addEventListener(event, listener, options)
-    : target.removeEventListener(event, listener, options);
-}
-
-/**
- * Adds an event listener to an element, and does nothing during server-side
- * rendering.
- *
- * @remarks
- * The `this` context of `handler` is the target element.
- */
 export function addSafeEventListener<
   E extends keyof HTMLElementEventMap | keyof WindowEventMap,
 >(

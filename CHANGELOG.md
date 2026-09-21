@@ -18,9 +18,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - #### Button group
   - The `radiogroup` role, the `group` role and the disabled state are now on the `igc-button-group` element. Before, they were on an element in its shadow root. An `aria-label` or an `aria-labelledby` that you set on the component now gives the name of the group. [#2385](https://github.com/IgniteUI/igniteui-webcomponents/pull/2385)
   - In the single selection modes, the radio group now reports the `alignment` as its orientation. Thus the semantics agree with the arrow keys and the layout.
+- #### Dropdown, Select
+  - **Behavior change**: The default of `scroll-strategy` changes from `scroll` to `hide`. Set `scroll-strategy="scroll"` to keep the previous behavior.
 - #### Popover
   - Popovers now position through native CSS anchor positioning in browsers that support it (Chrome/Edge 133+, Firefox 147+, Safari 26+). Other browsers keep the previous `@floating-ui/dom` behavior, and that module now loads only there.
-  - **BREAKING**: The `PopoverScrollStrategy` type is now `'scroll' | 'hide' | 'close'`, with `hide` as the default. The `block` value is removed; `block` or any unknown value behaves as `hide`.
 
 ### Fixed
 - #### Carousel

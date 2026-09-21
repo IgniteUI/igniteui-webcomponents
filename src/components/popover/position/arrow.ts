@@ -11,17 +11,27 @@ export type PopoverSide = keyof typeof OPPOSITE_SIDE;
 
 const SIDES = Object.keys(OPPOSITE_SIDE) as PopoverSide[];
 
+/** Returns the side of a placement, without the alignment. */
+export function getPlacementSide(placement: string): PopoverSide {
+  return placement.split('-')[0] as PopoverSide;
+}
+
+/** True if `side` is on the block axis. */
+export function isBlockSide(side: PopoverSide): boolean {
+  return side === 'top' || side === 'bottom';
+}
+
 /**
- * Sets the part and the inline styles of the arrow for the given `side`.
+ * Sets the part and the inline styles of the arrow. Both strategies call it,
+ * so the arrow gets the same styles.
  *
- * Both position strategies call this function. Therefore the arrow gets the
- * same styles for each strategy.
+ * `side` is the side of the container that touches the anchor. `distance` is
+ * the position of the arrow on the cross axis of that side.
  */
 export function applyArrowStyles(
   element: HTMLElement,
   side: PopoverSide,
-  x: number | undefined,
-  y: number | undefined,
+  distance: number,
   offset: number
 ): void {
   const staticSide = OPPOSITE_SIDE[side];
@@ -31,20 +41,17 @@ export function applyArrowStyles(
     element.part.add(side);
   }
 
-  // The part gives the arrow its size. Measure the size after the part
-  // changes.
-  const inset =
-    staticSide === 'top' || staticSide === 'bottom'
-      ? element.offsetHeight
-      : element.offsetWidth;
+  // The part gives the arrow its size. Measure after the part changes.
+  const block = isBlockSide(staticSide);
+  const inset = block ? element.offsetHeight : element.offsetWidth;
 
-  // Reset every side. If a side keeps the inset of the previous placement,
-  // that inset over-constrains the arrow.
+  // Reset all sides. A stale inset over-constrains the arrow.
   const styles: Partial<CSSStyleDeclaration> = {
-    top: y != null ? `${roundByDPR(y + offset)}px` : '',
+    top: '',
     right: '',
     bottom: '',
-    left: x != null ? `${roundByDPR(x + offset)}px` : '',
+    left: '',
+    [block ? 'left' : 'top']: `${roundByDPR(distance + offset)}px`,
   };
 
   styles[staticSide] = `${-inset}px`;

@@ -115,14 +115,6 @@ const metadata: Meta<IgcSelectComponent> = {
       control: { type: 'select' },
       table: { defaultValue: { summary: 'bottom-start' } },
     },
-    scrollStrategy: {
-      type: { name: 'enum', value: ['scroll', 'hide', 'close'] },
-      description:
-        'Sets the behavior of the component when the parent container scrolls.\n\nIf the value is `hide`, the component hides while the anchor is fully out\nof view. `hide` is the default value.\n\nIf the value is `scroll`, the component stays visible and anchored.\n\nIf the value is `close`, the component closes on each scroll.',
-      options: ['scroll', 'hide', 'close'],
-      control: { type: 'inline-radio' },
-      table: { defaultValue: { summary: 'hide' } },
-    },
     required: {
       type: 'boolean',
       description:
@@ -167,19 +159,27 @@ const metadata: Meta<IgcSelectComponent> = {
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
+    scrollStrategy: {
+      type: { name: 'enum', value: ['scroll', 'hide', 'close'] },
+      description:
+        'Sets the behavior of the component when the parent container scrolls.\n\nIf the value is `hide`, the component hides while the anchor is fully out\nof view. `hide` is the default value.\n\nIf the value is `scroll`, the component stays visible and anchored.\n\nIf the value is `close`, the component closes on each scroll.',
+      options: ['scroll', 'hide', 'close'],
+      control: { type: 'inline-radio' },
+      table: { defaultValue: { summary: 'hide' } },
+    },
   },
   args: {
     outlined: false,
     autofocus: false,
     distance: 0,
     placement: 'bottom-start',
-    scrollStrategy: 'hide',
     required: false,
     disabled: false,
     invalid: false,
     keepOpenOnSelect: false,
     keepOpenOnOutsideClick: false,
     open: false,
+    scrollStrategy: 'hide',
   },
 };
 
@@ -212,17 +212,6 @@ interface IgcSelectArgs {
     | 'right-end'
     | 'left-start'
     | 'left-end';
-  /**
-   * Sets the behavior of the component when the parent container scrolls.
-   *
-   * If the value is `hide`, the component hides while the anchor is fully out
-   * of view. `hide` is the default value.
-   *
-   * If the value is `scroll`, the component stays visible and anchored.
-   *
-   * If the value is `close`, the component closes on each scroll.
-   */
-  scrollStrategy: 'scroll' | 'hide' | 'close';
   /** When set, makes the component a required field for validation. */
   required: boolean;
   /** The name of the control, submitted with the form data. */
@@ -240,6 +229,17 @@ interface IgcSelectArgs {
   keepOpenOnOutsideClick: boolean;
   /** Sets the open state of the component. */
   open: boolean;
+  /**
+   * Sets the behavior of the component when the parent container scrolls.
+   *
+   * If the value is `hide`, the component hides while the anchor is fully out
+   * of view. `hide` is the default value.
+   *
+   * If the value is `scroll`, the component stays visible and anchored.
+   *
+   * If the value is `close`, the component closes on each scroll.
+   */
+  scrollStrategy: 'scroll' | 'hide' | 'close';
 }
 type Story = StoryObj<IgcSelectArgs>;
 

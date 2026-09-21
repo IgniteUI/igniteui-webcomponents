@@ -54,7 +54,6 @@ import IgcInputComponent from '../input/input.js';
 import IgcPopoverComponent, {
   type PopoverPlacement,
 } from '../popover/popover.js';
-import type { PopoverScrollStrategy } from '../types.js';
 import IgcValidationContainerComponent from '../validation-container/validation-container.js';
 import IgcSelectGroupComponent from './select-group.js';
 import IgcSelectHeaderComponent from './select-header.js';
@@ -259,20 +258,6 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
    */
   @property()
   public placement: PopoverPlacement = 'bottom-start';
-
-  /**
-   * Sets the behavior of the component when the parent container scrolls.
-   *
-   * If the value is `hide`, the component hides while the anchor is fully out
-   * of view. `hide` is the default value.
-   *
-   * If the value is `scroll`, the component stays visible and anchored.
-   *
-   * If the value is `close`, the component closes on each scroll.
-   * @attr scroll-strategy
-   */
-  @property({ attribute: 'scroll-strategy' })
-  public scrollStrategy: PopoverScrollStrategy = 'hide';
 
   /** Returns the items of the select component. */
   public get items(): IgcSelectItemComponent[] {

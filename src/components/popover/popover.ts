@@ -16,8 +16,9 @@ import {
   NativePositionStrategy,
   shouldUseNativeAnchorPositioning,
 } from './position/native.js';
+import type { PopoverPositionStrategy } from './position/strategy.js';
 import {
-  type PopoverPositionStrategy,
+  type PopoverPositionStrategyMode,
   resolvePlacement,
   SCROLL_LISTENER_OPTIONS,
 } from './position/types.js';
@@ -47,10 +48,10 @@ export type PopoverPlacement =
  * @slot - Content of the popover.
  * @slot anchor - The element the popover will be anchored to.
  *
- * @fires igcPopoverScrollClose - The popover emits this event when the document scrolls.
- * The popover emits it only while it shows against its anchor and the scroll strategy is `close`.
- * The popover does not control its own `open` state. The component that owns that state must close the popover.
- * The event does not bubble. Add the listener directly on the popover element.
+ * @fires igcPopoverScrollClose - The popover emits this event on each document scroll,
+ * but only while it shows against its anchor and the scroll strategy is `close`.
+ * The popover does not control its own `open` state, so the component that owns that state must close it.
+ * The event does not bubble, so add the listener on the popover element.
  *
  * @csspart container - The container wrapping the slotted content in the popover.
  */
@@ -67,15 +68,7 @@ export default class IgcPopoverComponent extends LitElement {
 
   private _target?: Element;
   private _positionStrategy?: PopoverPositionStrategy;
-
-  /**
-   * The anchor that the container currently shows against.
-   *
-   * The browser binds the implicit anchor only when `showPopover({ source })`
-   * runs. Therefore the native strategy must hide the container and show it
-   * again if the anchor changes while the popover is open.
-   */
-  private _shownSource?: Element;
+  private _positionMode?: PopoverPositionStrategyMode;
 
   private readonly _slots = addSlotController(this, {
     slots: setSlots('anchor'),
@@ -179,6 +172,18 @@ export default class IgcPopoverComponent extends LitElement {
     this._setOpenState(this.open);
   }
 
+  /**
+   * Also waits for the position strategy. The fallback strategy positions
+   * asynchronously, so the container has no position when Lit finishes the
+   * update.
+   */
+  protected override async getUpdateComplete(): Promise<boolean> {
+    const complete = await super.getUpdateComplete();
+    await this._positionStrategy?.whenPositioned();
+
+    return complete;
+  }
+
   /** @internal */
   public override connectedCallback(): void {
     super.connectedCallback();
@@ -206,33 +211,25 @@ export default class IgcPopoverComponent extends LitElement {
     this._setOpenState(this.open);
   }
 
-  /** Stops the strategy if the container closes. */
-  private _handleToggle(): void {
-    if (!isPopoverOpen(this._container)) {
-      this._positionStrategy?.detach();
-    }
-  }
-
   //#region Internal open state API
 
   private _getPositionStrategy(target: Element): PopoverPositionStrategy {
-    const useNative = shouldUseNativeAnchorPositioning(target);
-    const current = this._positionStrategy;
+    const mode = shouldUseNativeAnchorPositioning(target)
+      ? 'native'
+      : 'floating';
 
-    if (current?.native === useNative) {
-      return current;
+    if (this._positionStrategy && this._positionMode === mode) {
+      return this._positionStrategy;
     }
 
-    if (current) {
-      current.detach();
-      current.clear();
-    }
+    this._positionStrategy?.detach();
+    this._positionStrategy?.clear();
 
-    const callbacks = { onAnchorRemoved: () => this._handleAnchorRemoved() };
-
-    this._positionStrategy = useNative
-      ? new NativePositionStrategy(this, callbacks)
-      : new FloatingPositionStrategy(this, callbacks);
+    this._positionMode = mode;
+    this._positionStrategy =
+      mode === 'native'
+        ? new NativePositionStrategy(this, this._handleAnchorRemoved)
+        : new FloatingPositionStrategy(this, this._handleAnchorRemoved);
 
     return this._positionStrategy;
   }
@@ -241,14 +238,14 @@ export default class IgcPopoverComponent extends LitElement {
    * Hides the container if the anchor leaves the DOM. The `open` property
    * keeps its value, so the popover shows again when a new anchor resolves.
    */
-  private _handleAnchorRemoved(): void {
+  private readonly _handleAnchorRemoved = (): void => {
     this._target = undefined;
     this._setOpenState(false);
-  }
+  };
 
   /**
-   * An unresolved IDREF keeps the current target, so that an anchor rendered
-   * after this popover is picked up the next time it opens.
+   * An unresolved IDREF keeps the current target. Thus the popover finds an
+   * anchor that renders after it, at the next open.
    */
   private _resolveTarget(): Element | undefined {
     if (isString(this.anchor)) {
@@ -262,29 +259,27 @@ export default class IgcPopoverComponent extends LitElement {
   }
 
   private _setOpenState(state: boolean): void {
-    this._positionStrategy?.detach();
-
     if (state) {
       this._target = this._resolveTarget();
+    }
 
-      if (this._target) {
-        this._getPositionStrategy(this._target).attach(
-          this._target,
-          this._container
-        );
-      }
+    if (state && this._target) {
+      // `attach` also detaches the previous open cycle.
+      this._getPositionStrategy(this._target).attach(
+        this._target,
+        this._container
+      );
+    } else {
+      this._positionStrategy?.detach();
     }
 
     this._syncContainerState(state);
   }
 
   /**
-   * The popover keeps one `scroll` listener on the document. The listener is
-   * active only while the container shows and the scroll strategy is `close`.
-   *
-   * The method reads the container and not the `open` property. The container
-   * stays closed if no anchor resolves. `_handleAnchorRemoved` also closes the
-   * container while `open` keeps the value true.
+   * Binds one document `scroll` listener while the container shows and the
+   * scroll strategy is `close`. It reads the container, because the container
+   * can stay closed while `open` is true.
    */
   private _syncScrollStrategy(): void {
     toggleEventListener(
@@ -302,51 +297,17 @@ export default class IgcPopoverComponent extends LitElement {
 
   /** Shows or hides the container and then syncs the scroll listener. */
   private _syncContainerState(state: boolean): void {
-    const container = this._container;
-
-    if (!container) {
+    if (!this._container) {
       return;
     }
 
-    const shouldOpen = state && this._target != null;
-
-    if (shouldOpen !== isPopoverOpen(container)) {
-      shouldOpen ? this._showPopover() : this._hidePopover();
-    } else if (
-      shouldOpen &&
-      this._positionStrategy?.native &&
-      this._target !== this._shownSource
-    ) {
-      // Change the anchor while the popover stays open. The browser combines
-      // the `toggle` events of a hide and a show in the same task into one
-      // open-to-open transition. Therefore `_handleToggle` does nothing here.
-      // Two limitations apply. A CSS transition on `:popover-open` of the
-      // container restarts, but the container has no such transition today.
-      // The focus in the popover moves out and then back.
-      this._hidePopover();
-      this._showPopover();
+    if (state && this._target) {
+      this._positionStrategy?.show();
+    } else {
+      this._positionStrategy?.hide();
     }
 
     this._syncScrollStrategy();
-  }
-
-  private _showPopover(): void {
-    const container = this._container;
-    const strategy = this._positionStrategy;
-
-    if (strategy?.native) {
-      container.showPopover({ source: this._target as HTMLElement });
-      this._shownSource = this._target;
-      // The browser positions the container now. Update the arrow to match.
-      strategy.update();
-    } else {
-      container.showPopover();
-    }
-  }
-
-  private _hidePopover(): void {
-    this._shownSource = undefined;
-    this._container.hidePopover();
   }
 
   //#endregion
@@ -360,7 +321,6 @@ export default class IgcPopoverComponent extends LitElement {
         popover="manual"
         data-placement=${resolvePlacement(this)}
         data-scroll-strategy=${this.scrollStrategy}
-        @toggle=${this._handleToggle}
       >
         <slot></slot>
       </div>

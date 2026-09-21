@@ -98,14 +98,6 @@ const metadata: Meta<IgcDropdownComponent> = {
       control: { type: 'select' },
       table: { defaultValue: { summary: 'bottom-start' } },
     },
-    scrollStrategy: {
-      type: { name: 'enum', value: ['scroll', 'hide', 'close'] },
-      description:
-        'Sets the behavior of the component when the parent container scrolls.\n\nIf the value is `hide`, the component hides while the anchor is fully out\nof view. `hide` is the default value.\n\nIf the value is `scroll`, the component stays visible and anchored.\n\nIf the value is `close`, the component closes on each scroll.',
-      options: ['scroll', 'hide', 'close'],
-      control: { type: 'inline-radio' },
-      table: { defaultValue: { summary: 'hide' } },
-    },
     flip: {
       type: 'boolean',
       description:
@@ -146,16 +138,24 @@ const metadata: Meta<IgcDropdownComponent> = {
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
+    scrollStrategy: {
+      type: { name: 'enum', value: ['scroll', 'hide', 'close'] },
+      description:
+        'Sets the behavior of the component when the parent container scrolls.\n\nIf the value is `hide`, the component hides while the anchor is fully out\nof view. `hide` is the default value.\n\nIf the value is `scroll`, the component stays visible and anchored.\n\nIf the value is `close`, the component closes on each scroll.',
+      options: ['scroll', 'hide', 'close'],
+      control: { type: 'inline-radio' },
+      table: { defaultValue: { summary: 'hide' } },
+    },
   },
   args: {
     placement: 'bottom-start',
-    scrollStrategy: 'hide',
     flip: false,
     distance: 0,
     sameWidth: false,
     keepOpenOnSelect: false,
     keepOpenOnOutsideClick: false,
     open: false,
+    scrollStrategy: 'hide',
   },
 };
 
@@ -177,17 +177,6 @@ interface IgcDropdownArgs {
     | 'left-start'
     | 'left-end';
   /**
-   * Sets the behavior of the component when the parent container scrolls.
-   *
-   * If the value is `hide`, the component hides while the anchor is fully out
-   * of view. `hide` is the default value.
-   *
-   * If the value is `scroll`, the component stays visible and anchored.
-   *
-   * If the value is `close`, the component closes on each scroll.
-   */
-  scrollStrategy: 'scroll' | 'hide' | 'close';
-  /**
    * Whether the component should be flipped to the opposite side of the target once it's about to overflow the visible area.
    * When true, once enough space is detected on its preferred side, it will flip back.
    */
@@ -205,6 +194,17 @@ interface IgcDropdownArgs {
   keepOpenOnOutsideClick: boolean;
   /** Sets the open state of the component. */
   open: boolean;
+  /**
+   * Sets the behavior of the component when the parent container scrolls.
+   *
+   * If the value is `hide`, the component hides while the anchor is fully out
+   * of view. `hide` is the default value.
+   *
+   * If the value is `scroll`, the component stays visible and anchored.
+   *
+   * If the value is `close`, the component closes on each scroll.
+   */
+  scrollStrategy: 'scroll' | 'hide' | 'close';
 }
 type Story = StoryObj<IgcDropdownArgs>;
 

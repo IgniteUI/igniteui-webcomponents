@@ -10,8 +10,8 @@
     isolation: isolate;
     height: fit-content;
 
-    // `unset` computes to `auto`. The inline styles of the fallback need that
-    // value. The `position-area` rules below also need it.
+    // `unset` computes to `auto`, which the inline styles of the fallback and
+    // the `position-area` rules below both need.
     inset: unset;
     border: none;
     padding: 0;
@@ -21,133 +21,80 @@
 // -----------------------------------------------------------------------------
 // Native CSS anchor positioning
 // -----------------------------------------------------------------------------
-// These rules apply only with the [data-anchored] attribute. The native
-// strategy sets that attribute from JavaScript. The rules do not use @supports
-// for this test, because a test can force a browser with full support onto the
-// floating-ui fallback. That browser must use the inline left, top and
-// transform styles of the fallback.
-// -----------------------------------------------------------------------------
-// The anchor is the implicit anchor of showPopover({ source }). The rules
-// cannot use anchor-name, because anchor-name is tree-scoped and cannot cross
-// the shadow boundary.
-// -----------------------------------------------------------------------------
-// All rules use the physical keywords. The container is in the top layer, where
-// the logical keywords resolve against the writing mode of the root element.
-// Current engines also do not implement the *-self-* keywords.
-// -----------------------------------------------------------------------------
+// These rules apply only with the [data-anchored] attribute, which the native
+// strategy sets. A test can force a browser with full support onto the
+// fallback, so the rules must not use @supports.
+
+// The anchor is the implicit anchor of showPopover({ source }). anchor-name is
+// tree-scoped and cannot cross the shadow boundary.
+
+// All rules use the physical keywords. In the top layer the logical keywords
+// resolve against the writing mode of the root element, and current engines do
+// not implement the *-self-* keywords.
+
 // floating-ui resolves -start and -end from the direction of the floating
-// element. The :dir() guards select the physical side that matches this
-// behavior. :dir() follows the dir attribute only. Therefore a `direction: rtl`
-// declaration in CSS does not flip these placements. Only the top and bottom
-// placements with -start and -end react to the direction. The left and right
-// placements always use the physical top and bottom. floating-ui behaves the
-// same way.
-// -----------------------------------------------------------------------------
-// Each rule sets the alignment explicitly. No rule depends on the `normal`
-// alignment of a spanning area.
+// element, and the :dir() guards match that. :dir() follows the dir attribute
+// only, so `direction: rtl` in CSS does not flip these placements. The left and
+// right placements always use the physical top and bottom, as floating-ui does.
 // -----------------------------------------------------------------------------
 [data-anchored] {
     // Override the `margin: auto` that the user agent sets on [popover]. An
     // automatic margin breaks anchor-center and the alignment to an edge.
     margin: 0;
 
-    // Hide the popover while the anchor is fully out of view. This applies to
-    // the `hide` and the `close` strategies. The fallback uses the hide()
-    // middleware for the same result. Safari 26.0 and 26.1 ignore
-    // position-visibility and keep the popover visible. This is acceptable.
+    // Hide the popover while the anchor is fully out of view, for the `hide`
+    // and the `close` strategies. The fallback uses the hide() middleware.
+    // Safari 26.0 and 26.1 ignore position-visibility. This is acceptable.
     position-visibility: anchors-visible;
 
-    &[data-placement='top'] {
-        position-area: top;
-        justify-self: anchor-center;
-    }
-
-    &[data-placement='bottom'] {
-        position-area: bottom;
-        justify-self: anchor-center;
-    }
-
-    &:dir(ltr) {
-        &[data-placement='top-start'] {
-            position-area: top span-right;
-            justify-self: left;
-        }
-
-        &[data-placement='top-end'] {
-            position-area: top span-left;
-            justify-self: right;
-        }
-
-        &[data-placement='bottom-start'] {
-            position-area: bottom span-right;
-            justify-self: left;
-        }
-
-        &[data-placement='bottom-end'] {
-            position-area: bottom span-left;
-            justify-self: right;
+    // Each rule sets the alignment. No rule depends on the `normal` alignment
+    // of a spanning area.
+    @each $side in top, bottom {
+        &[data-placement='#{$side}'] {
+            position-area: #{$side};
+            justify-self: anchor-center;
         }
     }
 
-    &:dir(rtl) {
-        &[data-placement='top-start'] {
-            position-area: top span-left;
-            justify-self: right;
-        }
+    // The span keyword and the alignment are always on opposite sides.
+    @each $dir, $start, $end in (ltr right left), (rtl left right) {
+        &:dir(#{$dir}) {
+            @each $side in top, bottom {
+                &[data-placement='#{$side}-start'] {
+                    position-area: #{$side} span-#{$start};
+                    justify-self: if($start == right, left, right);
+                }
 
-        &[data-placement='top-end'] {
-            position-area: top span-right;
-            justify-self: left;
-        }
-
-        &[data-placement='bottom-start'] {
-            position-area: bottom span-left;
-            justify-self: right;
-        }
-
-        &[data-placement='bottom-end'] {
-            position-area: bottom span-right;
-            justify-self: left;
+                &[data-placement='#{$side}-end'] {
+                    position-area: #{$side} span-#{$end};
+                    justify-self: if($end == right, left, right);
+                }
+            }
         }
     }
 
-    &[data-placement='left'] {
-        position-area: left;
-        align-self: anchor-center;
+    @each $side in left, right {
+        &[data-placement='#{$side}'] {
+            position-area: #{$side};
+            align-self: anchor-center;
+        }
+
+        &[data-placement='#{$side}-start'] {
+            position-area: #{$side} span-bottom;
+            align-self: self-start;
+        }
+
+        &[data-placement='#{$side}-end'] {
+            position-area: #{$side} span-top;
+            align-self: self-end;
+        }
     }
 
-    &[data-placement='left-start'] {
-        position-area: left span-bottom;
-        align-self: self-start;
-    }
-
-    &[data-placement='left-end'] {
-        position-area: left span-top;
-        align-self: self-end;
-    }
-
-    &[data-placement='right'] {
-        position-area: right;
-        align-self: anchor-center;
-    }
-
-    &[data-placement='right-start'] {
-        position-area: right span-bottom;
-        align-self: self-start;
-    }
-
-    &[data-placement='right-end'] {
-        position-area: right span-top;
-        align-self: self-end;
-    }
-
-    // The offset uses symmetric margins on the main axis of the placement.
-    // The margin on the anchor side makes the gap. The margin on the far side
-    // has no effect on the position. The rule therefore stays correct if a
-    // flip tactic transforms the margin properties. The rules set no margin
-    // on the cross axis, because such a margin breaks the alignment of the
-    // -start and -end placements. A negative offset overlaps the anchor.
-    // floating-ui behaves the same way.
+    // Symmetric margins on the main axis make the offset. The margin on the
+    // anchor side makes the gap. The margin on the far side has no effect, so
+    // a flip tactic that transforms the margins keeps the result correct. A
+    // margin on the cross axis breaks the -start and -end alignment. A
+    // negative offset overlaps the anchor, as in floating-ui.
     &[data-placement^='top'],
     &[data-placement^='bottom'] {
         margin-top: var(--_igc-popover-offset, 0);
@@ -167,9 +114,8 @@
     position-visibility: always;
 }
 
-// The popover flips only to the opposite side on the main axis. The default
-// flip() middleware of the fallback behaves the same way. Neither one flips
-// across the axes.
+// The popover flips only to the opposite side on the main axis, as the flip()
+// middleware of the fallback does. Neither one flips across the axes.
 :host([flip]) [data-anchored] {
     &[data-placement^='top'],
     &[data-placement^='bottom'] {
@@ -183,7 +129,7 @@
 }
 
 // anchor-size() resolves against the implicit anchor. The native strategy
-// sets no inline width. Therefore no inline width overrides this rule.
+// sets no inline width, so no inline width overrides this rule.
 :host([same-width]) [data-anchored] {
     width: anchor-size(width);
 }

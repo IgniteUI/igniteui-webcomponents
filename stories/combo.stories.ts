@@ -76,14 +76,6 @@ const metadata: Meta<IgcComboComponent> = {
         "The locale used to resolve the component's resource strings.\nFalls back to the global locale when not set.",
       control: 'text',
     },
-    scrollStrategy: {
-      type: { name: 'enum', value: ['scroll', 'hide', 'close'] },
-      description:
-        'Sets the behavior of the component when the parent container scrolls.\n\nIf the value is `hide`, the component hides while the anchor is fully out\nof view. `hide` is the default value.\n\nIf the value is `scroll`, the component stays visible and anchored.\n\nIf the value is `close`, the component closes on each scroll.',
-      options: ['scroll', 'hide', 'close'],
-      control: { type: 'inline-radio' },
-      table: { defaultValue: { summary: 'hide' } },
-    },
     label: {
       type: 'string',
       description: 'The label of the control.',
@@ -173,13 +165,20 @@ const metadata: Meta<IgcComboComponent> = {
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
+    scrollStrategy: {
+      type: { name: 'enum', value: ['scroll', 'hide', 'close'] },
+      description:
+        'Sets the behavior of the component when the parent container scrolls.\n\nIf the value is `hide`, the component hides while the anchor is fully out\nof view. `hide` is the default value.\n\nIf the value is `scroll`, the component stays visible and anchored.\n\nIf the value is `close`, the component closes on each scroll.',
+      options: ['scroll', 'hide', 'close'],
+      control: { type: 'inline-radio' },
+      table: { defaultValue: { summary: 'hide' } },
+    },
   },
   args: {
     outlined: false,
     singleSelect: false,
     autofocus: false,
     autofocusList: false,
-    scrollStrategy: 'hide',
     groupSorting: 'asc',
     caseSensitiveIcon: false,
     disableFiltering: false,
@@ -188,6 +187,7 @@ const metadata: Meta<IgcComboComponent> = {
     disabled: false,
     invalid: false,
     open: false,
+    scrollStrategy: 'hide',
   },
 };
 
@@ -207,17 +207,6 @@ interface IgcComboArgs {
    * Falls back to the global locale when not set.
    */
   locale: string;
-  /**
-   * Sets the behavior of the component when the parent container scrolls.
-   *
-   * If the value is `hide`, the component hides while the anchor is fully out
-   * of view. `hide` is the default value.
-   *
-   * If the value is `scroll`, the component stays visible and anchored.
-   *
-   * If the value is `close`, the component closes on each scroll.
-   */
-  scrollStrategy: 'scroll' | 'hide' | 'close';
   /** The label of the control. */
   label: string;
   /** The placeholder text of the control. */
@@ -248,6 +237,17 @@ interface IgcComboArgs {
   invalid: boolean;
   /** Sets the open state of the component. */
   open: boolean;
+  /**
+   * Sets the behavior of the component when the parent container scrolls.
+   *
+   * If the value is `hide`, the component hides while the anchor is fully out
+   * of view. `hide` is the default value.
+   *
+   * If the value is `scroll`, the component stays visible and anchored.
+   *
+   * If the value is `close`, the component closes on each scroll.
+   */
+  scrollStrategy: 'scroll' | 'hide' | 'close';
 }
 type Story = StoryObj<IgcComboArgs>;
 

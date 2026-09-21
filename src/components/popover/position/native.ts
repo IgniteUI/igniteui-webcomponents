@@ -1,31 +1,43 @@
+import { isServer } from 'lit';
 import { getRoot, isPopoverOpen } from '#internals/utils/dom.js';
 import { toggleEventListener } from '#internals/utils/events.js';
 import { clamp } from '#internals/utils/math.js';
-import { applyArrowStyles, type PopoverSide } from './arrow.js';
+import {
+  applyArrowStyles,
+  getPlacementSide,
+  isBlockSide,
+  OPPOSITE_SIDE,
+} from './arrow.js';
+import { PopoverPositionStrategy } from './strategy.js';
 import {
   getForcedPopoverPositionStrategy,
-  type PopoverPositionHost,
-  type PopoverPositionStrategy,
-  type PopoverPositionStrategyCallbacks,
   resolvePlacement,
   SCROLL_LISTENER_OPTIONS,
-  SUPPORTS_ANCHOR_POSITIONING,
 } from './types.js';
 
 const OFFSET_PROPERTY = '--_igc-popover-offset';
 
-let implicitAnchorUsable: boolean | undefined;
+let nativeSupport: boolean | undefined;
 
 /**
- * Tests the implicit anchor of `showPopover({ source })` one time.
+ * Tests the native CSS anchor positioning one time, on the first use.
  *
- * `CSS.supports` cannot detect this feature. Chromium 125 to 132 passes the
- * CSS tests, but it ignores the `source` option. The browser then shows the
- * popover at the centered default position.
+ * `CSS.supports` cannot test the implicit anchor of `showPopover({ source })`.
+ * Chromium 125 to 132 passes the CSS tests but ignores the `source` option.
+ * The test therefore measures a real popover.
  */
-function canUseImplicitAnchor(): boolean {
-  if (implicitAnchorUsable !== undefined) {
-    return implicitAnchorUsable;
+function supportsNativeAnchoring(): boolean {
+  nativeSupport ??= probeNativeAnchoring();
+  return nativeSupport;
+}
+
+function probeNativeAnchoring(): boolean {
+  if (
+    isServer ||
+    typeof CSS === 'undefined' ||
+    !CSS.supports('anchor-name: --a')
+  ) {
+    return false;
   }
 
   const anchor = document.createElement('div');
@@ -33,38 +45,36 @@ function canUseImplicitAnchor(): boolean {
 
   popover.popover = 'manual';
   anchor.style.cssText = 'position:fixed;top:0;left:0;width:1px;height:1px';
+  // `span-right` also tests the span keywords, which the aligned placements
+  // need. An engine without them drops the declaration and fails the
+  // measurement below.
   popover.style.cssText =
-    'margin:0;inset:auto;border:none;padding:0;width:1px;height:1px;position-area:bottom';
+    'margin:0;inset:auto;border:none;padding:0;width:1px;height:1px;position-area:bottom span-right';
 
   try {
     document.body.append(anchor, popover);
     popover.showPopover({ source: anchor });
 
-    // An anchored popover sits directly below the anchor of 1 pixel. The
-    // tolerance allows for fractional rounding. If the browser ignores
-    // `source`, the popover sits at the centered default position, which is
-    // far away.
-    implicitAnchorUsable =
-      Math.abs(popover.getBoundingClientRect().top - 1) <= 1;
+    // An anchored popover sits directly below the 1 pixel anchor. The
+    // tolerance allows for rounding. A browser that ignores `source` centers
+    // the popover, far away.
+    const anchored = Math.abs(popover.getBoundingClientRect().top - 1) <= 1;
 
     popover.hidePopover();
+    return anchored;
   } catch {
-    implicitAnchorUsable = false;
+    return false;
   } finally {
     anchor.remove();
     popover.remove();
   }
-
-  return implicitAnchorUsable;
 }
 
 /**
- * True if the popover can position the `target` with the native CSS anchor
- * positioning.
+ * True if the native CSS anchor positioning can position the `target`.
  *
- * The `source` option accepts an HTMLElement. Therefore the floating-ui
- * fallback positions an anchor that is not an HTML element, for example an
- * SVG element.
+ * The `source` option accepts only an HTMLElement, so the fallback positions
+ * an anchor such as an SVG element.
  */
 export function shouldUseNativeAnchorPositioning(
   target: Element
@@ -75,78 +85,77 @@ export function shouldUseNativeAnchorPositioning(
     return forced === 'native';
   }
 
-  return (
-    SUPPORTS_ANCHOR_POSITIONING &&
-    target instanceof HTMLElement &&
-    canUseImplicitAnchor()
-  );
+  return target instanceof HTMLElement && supportsNativeAnchoring();
 }
 
 /**
  * The position strategy that uses the native CSS anchor positioning.
  *
- * The host shows the container with `showPopover({ source: target })`. This
- * call establishes the implicit anchor. The implicit anchor is necessary,
- * because `anchor-name` is tree-scoped and cannot cross the shadow boundary.
- *
- * The CSS rules then do all the positioning. The rules apply only when the
- * `data-anchored` attribute is present. This strategy owns that attribute.
+ * `showPopover({ source: target })` sets the implicit anchor. This is
+ * necessary, because `anchor-name` is tree-scoped and cannot cross the shadow
+ * boundary. The CSS rules then do all the positioning. They apply only with
+ * the `data-anchored` attribute, which this strategy owns.
  */
-export class NativePositionStrategy implements PopoverPositionStrategy {
-  public readonly native = true;
-
-  private readonly _host: PopoverPositionHost;
-  private readonly _callbacks: PopoverPositionStrategyCallbacks;
-
-  private _target?: Element;
-  private _container?: HTMLElement;
+export class NativePositionStrategy extends PopoverPositionStrategy {
+  /** The anchor that the container currently shows against. */
+  private _shownSource?: Element;
   private _arrowFrame = 0;
 
   /**
-   * Detects the removal of the anchor from the DOM.
-   *
-   * The callback does nothing if the anchor leaves the DOM and returns in the
-   * same task. The implicit anchor holds an element reference, so the browser
-   * anchors the container again.
-   *
-   * The observer does not detect the removal of a shadow host above the root
-   * of the anchor. The fallback strategy does not detect it either.
+   * Detects the removal of the anchor from the DOM. The observer does not
+   * detect the removal of a shadow host above the root of the anchor, and
+   * the fallback strategy does not detect it either.
    */
   private readonly _anchorObserver = new MutationObserver(() => {
     if (this._target?.isConnected === false) {
-      this._callbacks.onAnchorRemoved();
+      this._onAnchorRemoved();
     }
   });
 
-  constructor(
-    host: PopoverPositionHost,
-    callbacks: PopoverPositionStrategyCallbacks
-  ) {
-    this._host = host;
-    this._callbacks = callbacks;
-  }
-
-  public attach(target: Element, container: HTMLElement): void {
-    this.detach();
-
-    this._target = target;
-    this._container = container;
+  public override attach(target: Element, container: HTMLElement): void {
+    super.attach(target, container);
 
     container.toggleAttribute('data-anchored', true);
-    this._syncOffset();
     this._anchorObserver.observe(getRoot(target), {
       childList: true,
       subtree: true,
     });
-    this._syncArrowListeners();
+  }
+
+  public show(): void {
+    const container = this._container;
+    const target = this._target;
+
+    if (!(container && target)) {
+      return;
+    }
+
+    // The browser binds the implicit anchor only in `showPopover`, so a new
+    // anchor needs a hide and a show. The focus moves out and then back.
+    if (isPopoverOpen(container)) {
+      if (this._shownSource !== target) {
+        container.hidePopover();
+        container.showPopover({ source: target as HTMLElement });
+        this._shownSource = target;
+      }
+    } else {
+      container.showPopover({ source: target as HTMLElement });
+      this._shownSource = target;
+    }
+
+    this.update();
+  }
+
+  public override hide(): void {
+    this._shownSource = undefined;
+    super.hide();
   }
 
   public update(): void {
     this._syncOffset();
     this._syncArrowListeners();
-    this._updateArrow();
-    // Once more after the layout settles. The content of the container can
-    // still size directly after `showPopover`.
+    // The browser positions the container. The arrow follows in the next
+    // frame, when the content has its final size.
     this._scheduleArrowUpdate();
   }
 
@@ -172,24 +181,21 @@ export class NativePositionStrategy implements PopoverPositionStrategy {
   //#region Arrow support
 
   /**
-   * The CSS rules position the container, but the arrow needs JavaScript.
-   * CSS gives no signal about the position-try fallback that the browser
-   * applies. Also, a descendant of the container cannot reference the
-   * implicit anchor.
-   *
-   * The strategy calculates the side from the rectangles of the container
-   * and the anchor. It repeats the calculation on scroll and on resize while
-   * the popover has an arrow.
+   * The arrow needs JavaScript: CSS gives no signal about the position-try
+   * fallback, and a descendant of the container cannot reference the implicit
+   * anchor. The strategy calculates the side from the rectangles of the
+   * container and the anchor, on each scroll and resize.
    */
   private readonly _handleArrowInvalidation = (): void => {
     this._scheduleArrowUpdate();
   };
 
-  /**
-   * Adds the invalidation listeners while the popover has an arrow. The
-   * `detach` method passes `false` to remove them for each arrow value.
-   */
-  private _syncArrowListeners(active = this._host.arrow != null): void {
+  /** Keeps the invalidation listeners bound while an open popover has an arrow. */
+  private _syncArrowListeners(
+    active = this._host.arrow != null &&
+      this._container != null &&
+      isPopoverOpen(this._container)
+  ): void {
     toggleEventListener(
       window,
       active,
@@ -232,47 +238,38 @@ export class NativePositionStrategy implements PopoverPositionStrategy {
 
     const anchorRect = target.getBoundingClientRect();
     const containerRect = container.getBoundingClientRect();
-    const [base] = resolvePlacement(this._host).split('-') as [PopoverSide];
+    const placementSide = getPlacementSide(resolvePlacement(this._host));
+    const block = isBlockSide(placementSide);
 
-    // Compare the centers to find the side that the container uses after a
-    // flip fallback. This test stays correct for an offset gap and for a
-    // negative offset that overlaps the anchor.
-    if (base === 'top' || base === 'bottom') {
-      const side =
-        containerRect.top + containerRect.height / 2 <
-        anchorRect.top + anchorRect.height / 2
-          ? 'top'
-          : 'bottom';
+    // The main axis carries the placement. The cross axis centers the arrow.
+    const main = block ? 'top' : 'left';
+    const mainSize = block ? 'height' : 'width';
+    const cross = block ? 'left' : 'top';
+    const crossSize = block ? 'width' : 'height';
+    const arrowSize = block ? arrow.offsetWidth : arrow.offsetHeight;
+    const containerSize = block
+      ? container.clientWidth
+      : container.clientHeight;
 
-      // Center the arrow on the anchor. Keep the arrow inside the container.
-      const x = clamp(
-        anchorRect.left +
-          anchorRect.width / 2 -
-          containerRect.left -
-          arrow.offsetWidth / 2,
-        0,
-        container.clientWidth - arrow.offsetWidth
-      );
+    // Compare the centers to find the side after a flip fallback. This stays
+    // correct for an offset gap and for a negative offset that overlaps the
+    // anchor.
+    const nearSide =
+      containerRect[main] + containerRect[mainSize] / 2 <
+      anchorRect[main] + anchorRect[mainSize] / 2;
+    const side = nearSide ? main : OPPOSITE_SIDE[main];
 
-      applyArrowStyles(arrow, side, x, undefined, arrowOffset);
-    } else {
-      const side =
-        containerRect.left + containerRect.width / 2 <
-        anchorRect.left + anchorRect.width / 2
-          ? 'left'
-          : 'right';
+    // Center the arrow on the anchor. Keep the arrow inside the container.
+    const distance = clamp(
+      anchorRect[cross] +
+        anchorRect[crossSize] / 2 -
+        containerRect[cross] -
+        arrowSize / 2,
+      0,
+      containerSize - arrowSize
+    );
 
-      const y = clamp(
-        anchorRect.top +
-          anchorRect.height / 2 -
-          containerRect.top -
-          arrow.offsetHeight / 2,
-        0,
-        container.clientHeight - arrow.offsetHeight
-      );
-
-      applyArrowStyles(arrow, side, undefined, y, arrowOffset);
-    }
+    applyArrowStyles(arrow, side, distance, arrowOffset);
   }
 
   //#endregion
