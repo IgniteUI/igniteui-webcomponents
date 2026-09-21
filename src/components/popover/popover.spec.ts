@@ -9,10 +9,8 @@ import {
 import { defineComponents } from '#internals/definitions/defineComponents.js';
 import { simulateScroll } from '#internals/testing/simulate.spec.js';
 import IgcPopoverComponent, { type PopoverPlacement } from './popover.js';
-import {
-  setPopoverPositionStrategy,
-  SUPPORTS_ANCHOR_POSITIONING,
-} from './position/types.js';
+import { shouldUseNativeAnchorPositioning } from './position/native.js';
+import { setPopoverPositionStrategy } from './position/types.js';
 
 type PositionMode = 'native' | 'fallback';
 
@@ -877,11 +875,17 @@ describe('Popover', () => {
     defineComponents(IgcPopoverComponent);
   });
 
+  // The same predicate that the component uses. The CSS tests alone are not
+  // enough. Chromium 125 to 132 passes them, but it ignores the `source`
+  // option of `showPopover`. A forced `native` strategy bypasses the
+  // predicate, so the suite must skip itself instead.
+  const canUseNative = shouldUseNativeAnchorPositioning(
+    document.createElement('div')
+  );
+
   for (const mode of ['native', 'fallback'] as const) {
     const describeMode =
-      mode === 'native' && !SUPPORTS_ANCHOR_POSITIONING
-        ? describe.skip
-        : describe;
+      mode === 'native' && !canUseNative ? describe.skip : describe;
 
     describeMode(`Positioning [${mode}]`, () => {
       before(() => {
