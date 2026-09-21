@@ -150,14 +150,14 @@ const metadata: Meta<IgcSelectComponent> = {
     keepOpenOnSelect: {
       type: 'boolean',
       description:
-        'Whether the component dropdown should be kept open on selection.',
+        'Keeps the dropdown of the component open after the user selects an item.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
     keepOpenOnOutsideClick: {
       type: 'boolean',
       description:
-        'Whether the component dropdown should be kept open on clicking outside of it.',
+        'Keeps the dropdown of the component open when the user clicks outside of\nit.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
@@ -231,9 +231,12 @@ interface IgcSelectArgs {
   disabled: boolean;
   /** Sets the control into invalid state (visual state only). */
   invalid: boolean;
-  /** Whether the component dropdown should be kept open on selection. */
+  /** Keeps the dropdown of the component open after the user selects an item. */
   keepOpenOnSelect: boolean;
-  /** Whether the component dropdown should be kept open on clicking outside of it. */
+  /**
+   * Keeps the dropdown of the component open when the user clicks outside of
+   * it.
+   */
   keepOpenOnOutsideClick: boolean;
   /** Sets the open state of the component. */
   open: boolean;

@@ -38,8 +38,8 @@ function BaseFormAssociatedRequired<
 }
 
 /**
- * Mixes the passed class into a form associated custom element with an
- * additional `required` attribute.
+ * Turns the given class into a form-associated custom element with a
+ * `required` attribute.
  */
 export function FormAssociatedRequiredMixin<T extends Constructor<LitElement>>(
   base: T
@@ -55,8 +55,8 @@ export function FormAssociatedRequiredMixin<T extends Constructor<LitElement>>(
 }
 
 /**
- * Mixes the passed class into a form associated custom element with an
- * additional `required` attribute.
+ * Turns the given class into a form-associated custom element for a checkbox
+ * with a `required` attribute.
  */
 export function FormAssociatedCheckboxRequiredMixin<
   T extends Constructor<LitElement>,

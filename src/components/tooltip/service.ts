@@ -1,5 +1,5 @@
 import { isServer } from 'lit';
-import { escapeKey } from '#internals/controllers/key-bindings.js';
+import { escapeKey } from '#internals/controllers/keys.js';
 import { isEmpty, lastOf } from '#internals/utils/arrays.js';
 import type IgcTooltipComponent from './tooltip.js';
 

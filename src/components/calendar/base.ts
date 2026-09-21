@@ -10,6 +10,7 @@ import { blazorDeepImport } from '#internals/decorators/blazorDeepImport.js';
 import { blazorIndirectRender } from '#internals/decorators/blazorIndirectRender.js';
 import type { IgcCalendarResourceStrings } from '#internals/i18n/EN/calendar.resources.js';
 import type { I18nControllerConfig } from '#internals/i18n/i18n-controller.js';
+import { calendarResourcesMap } from '#internals/i18n/utils.js';
 import { I18nMixin } from '#internals/mixins/i18n.js';
 import { firstOf } from '#internals/utils/arrays.js';
 import { getLocaleWeekStart, getWeekDayNumber } from './helpers.js';
@@ -23,7 +24,7 @@ const i18n: I18nControllerConfig<
   IgcCalendarResourceStrings | ICalendarResourceStrings
 > = {
   defaultEN: CalendarResourceStringsEN,
-  resourceMapName: 'calendar',
+  resourceMap: calendarResourcesMap,
 };
 
 @blazorIndirectRender

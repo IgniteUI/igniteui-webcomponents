@@ -18,7 +18,7 @@ export abstract class IgcBaseAlertLikeComponent extends LitElement {
   private readonly _autoHideTimer = createTimer(() => this.hide());
 
   /**
-   * Whether the component is in shown state.
+   * Sets the open state of the component.
    *
    * @attr open
    * @default false
@@ -27,7 +27,7 @@ export abstract class IgcBaseAlertLikeComponent extends LitElement {
   public open = false;
 
   /**
-   * Determines the duration in milliseconds in which the component will be visible.
+   * Sets the time in milliseconds that the component stays visible.
    *
    * @attr display-time
    * @default 4000
@@ -36,7 +36,7 @@ export abstract class IgcBaseAlertLikeComponent extends LitElement {
   public displayTime = 4000;
 
   /**
-   * Determines whether the component should close after the `displayTime` is over.
+   * Keeps the component open after the `displayTime` is over.
    *
    * @attr keep-open
    * @default false
@@ -47,10 +47,6 @@ export abstract class IgcBaseAlertLikeComponent extends LitElement {
   /**
    * Sets the position of the component in the viewport.
    *
-   * `bottom` - positions the component at the bottom. This is the default.
-   * `middle` - positions the component at the center.
-   * `top` - positions the component at the top.
-   *
    * @attr position
    * @default 'bottom'
    */
@@ -60,8 +56,9 @@ export abstract class IgcBaseAlertLikeComponent extends LitElement {
   /**
    * Sets the positioning strategy of the component.
    *
-   * `viewport` - positions the component relative to the viewport, ignoring any ancestor elements. This is the default behavior.
-   * `container` - positions the component relative to the nearest visible ancestor. In this mode, the component will be constrained within the bounding box of the ancestor and will be positioned according to the `position` attribute.
+   * `viewport` - positions against the viewport, ignoring every ancestor.
+   * `container` - positions inside the bounding box of the closest visible
+   * ancestor, at the place that `position` sets.
    *
    * @attr positioning
    * @default 'viewport'
@@ -159,31 +156,19 @@ export abstract class IgcBaseAlertLikeComponent extends LitElement {
   }
 
   /**
-   * Opens the component.
-   *
-   * Returns a promise that resolves to `true` if the component was successfully opened, or `false`
-   * if it was already open or could not be shown (e.g., in `container` positioning mode with no visible ancestors).
+   * Opens the component. Resolves to `false` when it is already open, or
+   * when `container` positioning finds no visible ancestor.
    */
   public async show(): Promise<boolean> {
     return this.open ? false : this._setOpenState(true);
   }
 
-  /**
-   * Closes the component.
-   *
-   * Returns a promise that resolves to `true` if the component was successfully closed, or `false`
-   * if it was already closed.
-   */
+  /** Closes the component. Resolves to `false` when it is already closed. */
   public async hide(): Promise<boolean> {
     return this.open ? this._setOpenState(false) : false;
   }
 
-  /**
-   * Toggles the open state of the component.
-   *
-   * Returns a promise that resolves to `true` if the operation completed successfully, or `false`
-   * if it was already in the desired state.
-   */
+  /** Toggles the component. Resolves to `true` when the state changed. */
   public async toggle(): Promise<boolean> {
     return this.open ? this.hide() : this.show();
   }

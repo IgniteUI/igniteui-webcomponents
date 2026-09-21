@@ -7,7 +7,7 @@ import { bindIf } from '../utils/lit.js';
 export interface ToggleShellOptions {
   /** The type of the native input element. */
   type: 'checkbox' | 'radio';
-  /** The id of the native input; the wrapping label points at it through `for`. */
+  /** The id of the native input; the `for` target of the wrapping label. */
   inputId: string;
   /** The id of the label span, the fallback `aria-labelledby` target. */
   labelId: string;
@@ -28,8 +28,8 @@ export interface ToggleShellOptions {
   required: boolean;
   disabled: boolean;
   /**
-   * Current indeterminate state rendered through `live()`. When absent, the
-   * binding stays `false` and `live()` skips the property write entirely.
+   * The current indeterminate state, rendered through `live()`. Defaults to
+   * `false`, and `live()` then writes nothing.
    */
   indeterminate?: boolean;
   /** When provided, sets the `tabindex` attribute. */
@@ -45,10 +45,9 @@ export interface ToggleShellOptions {
 }
 
 /**
- * Renders the label-wrapped native input shared by the toggle controls
- * (`igc-checkbox`, `igc-switch`, `igc-radio`).
- * Centralizes the input binding set so leaves only describe their part maps
- * and control indicator.
+ * Renders the native input and its wrapping label for a toggle control, with
+ * the input bindings, so a leaf component describes only its part maps and
+ * its control indicator.
  */
 export function renderToggleShell(options: ToggleShellOptions): TemplateResult {
   return html`

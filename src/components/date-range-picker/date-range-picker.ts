@@ -21,6 +21,7 @@ import {
   addI18nController,
   getDateTimeFormat,
 } from '#internals/i18n/i18n-controller.js';
+import { dateRangePickerResourcesMap } from '#internals/i18n/utils.js';
 import type { AbstractConstructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { FormValueDateRangeTransformers } from '#internals/mixins/forms/form-transformers.js';
@@ -38,6 +39,7 @@ import {
 } from '../date-picker/date-picker.base.js';
 import IgcDateTimeInputComponent from '../date-time-input/date-time-input.js';
 import type { DateRangeValue } from '../types.js';
+import IgcValidationContainerComponent from '../validation-container/validation-container.js';
 import IgcDateRangeInputComponent from './date-range-input.js';
 import { DateRangePosition } from './date-range-mask-parser.js';
 import { styles } from './date-range-picker.base.css.js';
@@ -236,7 +238,7 @@ export default class IgcDateRangePickerComponent extends EventEmitterMixin<
       DateRangePickerResourceStringsEN,
       CalendarResourceStringsEN
     ),
-    resourceMapName: 'date-range-picker',
+    resourceMap: dateRangePickerResourcesMap,
   });
 
   protected override readonly _formValue = createFormValueState(this, {
@@ -831,7 +833,8 @@ export default class IgcDateRangePickerComponent extends EventEmitterMixin<
         </div>
         ${this._renderInput(idEnd, DateRangePosition.End)}
       </div>
-      ${this._renderPicker(idStart)} ${this._renderValidationContainer()}
+      ${this._renderPicker(idStart)}
+      ${IgcValidationContainerComponent.create(this)}
     `;
   }
 
@@ -864,7 +867,7 @@ export default class IgcDateRangePickerComponent extends EventEmitterMixin<
       >
         ${this._renderEditorSlots()}
       </igc-date-range-input>
-      ${this._renderValidationContainer()} ${this._renderPicker(id)}
+      ${IgcValidationContainerComponent.create(this)} ${this._renderPicker(id)}
     `;
   }
 

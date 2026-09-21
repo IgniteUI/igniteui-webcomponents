@@ -1,6 +1,7 @@
 import { html, LitElement } from 'lit';
 import { property, queryAssignedNodes } from 'lit/decorators.js';
 import { addInternalsController } from '../controllers/internals.js';
+import { normalizedTextContent } from '../utils/dom.js';
 
 /* omitModule */
 export abstract class IgcBaseOptionLikeComponent extends LitElement {
@@ -22,7 +23,7 @@ export abstract class IgcBaseOptionLikeComponent extends LitElement {
   protected readonly _content!: Array<Element>;
 
   protected get _contentSlotText(): string {
-    return this._content.map((node) => node.textContent).join('');
+    return normalizedTextContent(this._content);
   }
 
   /**
@@ -66,8 +67,7 @@ export abstract class IgcBaseOptionLikeComponent extends LitElement {
   }
 
   /**
-   * The current value of the item.
-   * If not specified, the element's text content is used.
+   * The value of the item. Falls back to the text content of the element.
    *
    * @attr
    */

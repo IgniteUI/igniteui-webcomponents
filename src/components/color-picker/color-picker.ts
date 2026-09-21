@@ -995,7 +995,7 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
   }
 
   private _renderHelperText(): TemplateResult {
-    return this._renderValidationContainer({
+    return IgcValidationContainerComponent.create(this, {
       id: 'helper-text',
       hasHelperText: true,
     });

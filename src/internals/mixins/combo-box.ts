@@ -5,7 +5,7 @@ import {
   addToggleController,
   type ToggleEventMap,
 } from '../controllers/toggle.js';
-import { lastOf } from '../utils/arrays.js';
+
 import { iterNodes } from '../utils/dom.js';
 import type { UnpackCustomEvent } from './event-emitter.js';
 
@@ -64,7 +64,7 @@ export abstract class IgcBaseComboBoxComponent extends LitElement {
 /* omitModule */
 export abstract class IgcComboBoxBaseLikeComponent extends IgcBaseComboBoxComponent {
   /**
-   * Whether the component dropdown should be kept open on selection.
+   * Keeps the dropdown of the component open after the user selects an item.
    * @attr keep-open-on-select
    * @default false
    */
@@ -72,7 +72,8 @@ export abstract class IgcComboBoxBaseLikeComponent extends IgcBaseComboBoxCompon
   public keepOpenOnSelect = false;
 
   /**
-   * Whether the component dropdown should be kept open on clicking outside of it.
+   * Keeps the dropdown of the component open when the user clicks outside of
+   * it.
    * @attr keep-open-on-outside-click
    * @default false
    */
@@ -84,13 +85,16 @@ export abstract class IgcComboBoxBaseLikeComponent extends IgcBaseComboBoxCompon
   public keepOpenOnOutsideClick = false;
 }
 
+/** Returns the elements of `root` matching `tagName` and `predicate`. */
 export function getItems<T extends HTMLElement>(
   root: Node,
-  tagName: string
+  tagName: string,
+  predicate?: (item: T) => boolean
 ): Generator<T> {
   return iterNodes<T>(root, {
     show: 'SHOW_ELEMENT',
-    filter: (item) => item.matches(tagName),
+    filter: (item) =>
+      item.matches(tagName) && (predicate ? predicate(item) : true),
   });
 }
 
@@ -98,70 +102,53 @@ export function getActiveItems<T extends HTMLElement & { disabled: boolean }>(
   root: Node,
   tagName: string
 ): Generator<T> {
-  return iterNodes<T>(root, {
-    show: 'SHOW_ELEMENT',
-    filter: (item) => item.matches(tagName) && !item.disabled,
-  });
+  return getItems<T>(root, tagName, (item) => !item.disabled);
 }
 
 /**
- * Both navigation helpers accept a missing or detached `from`, in which case
- * the search runs from the edge of the collection. They return `undefined` only
- * when there is nothing to navigate to at all.
+ * Returns the closest non-disabled item to `from` in the given direction. A
+ * missing or detached `from` starts at the edge; falls back to `from`, or
+ * `undefined` when there is nothing to navigate to.
  */
-function indexOfItem<T extends HTMLElement>(
+function getActiveItemFrom<T extends HTMLElement & { disabled: boolean }>(
   items: T[],
   from: T | null | undefined,
-  fallback: number
-): number {
+  step: -1 | 1
+): T | undefined {
   const index = from ? items.indexOf(from) : -1;
-  return index < 0 ? fallback : index;
+  const current = index < 0 ? (step === 1 ? -1 : items.length) : index;
+
+  for (let i = current + step; i >= 0 && i < items.length; i += step) {
+    if (!items[i].disabled) {
+      return items[i];
+    }
+  }
+
+  return items[current];
 }
 
-/**
- * Returns the first non-disabled item after `from`, or `from` itself when it is
- * already the last one.
- */
+/** Returns the first non-disabled item after `from`, else `from` itself. */
 export function getNextActiveItem<
   T extends HTMLElement & { disabled: boolean },
 >(items: T[], from?: T | null): T | undefined {
-  const current = indexOfItem(items, from, -1);
-
-  for (let i = current + 1; i < items.length; i++) {
-    if (!items[i].disabled) {
-      return items[i];
-    }
-  }
-
-  return items[current];
+  return getActiveItemFrom(items, from, 1);
 }
 
-/**
- * Returns the first non-disabled item before `from`, or `from` itself when it
- * is already the first one.
- */
+/** Returns the first non-disabled item before `from`, else `from` itself. */
 export function getPreviousActiveItem<
   T extends HTMLElement & { disabled: boolean },
 >(items: T[], from?: T | null): T | undefined {
-  const current = indexOfItem(items, from, items.length);
-
-  for (let i = current - 1; i >= 0; i--) {
-    if (!items[i].disabled) {
-      return items[i];
-    }
-  }
-
-  return items[current];
+  return getActiveItemFrom(items, from, -1);
 }
 
 export function setInitialSelectionState<
   T extends HTMLElement & { selected: boolean },
 >(items: T[]): T | null {
-  const lastSelected = lastOf(items.filter((item) => item.selected));
+  const lastSelected = items.findLast((item) => item.selected) ?? null;
 
   for (const item of items) {
     item.selected = item === lastSelected;
   }
 
-  return lastSelected ?? null;
+  return lastSelected;
 }

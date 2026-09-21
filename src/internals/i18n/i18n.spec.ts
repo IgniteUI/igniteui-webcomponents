@@ -21,6 +21,7 @@ import { LitElement } from 'lit';
 import type { DateRangePickerResourceStringsType } from '../../components/date-range-picker/date-range-picker.js';
 import type { IgcDateRangePickerResourceStrings } from './EN/date-range-picker.resources.js';
 import { addI18nController, type I18nController } from './i18n-controller.js';
+import { dateRangePickerResourcesMap } from './utils.js';
 
 class TestLocalizedClass<T extends object> extends LitElement {
   public set locale(value: string) {
@@ -86,7 +87,7 @@ describe('Localization', () => {
           IgcDateRangePickerResourceStrings | DateRangePickerResourceStringsType
         >(this, {
           defaultEN: this.defaultEN,
-          resourceMapName: 'date-range-picker',
+          resourceMap: dateRangePickerResourcesMap,
         });
 
         protected override render() {
