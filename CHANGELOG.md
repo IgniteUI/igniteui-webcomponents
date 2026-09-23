@@ -4,39 +4,53 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [7.4.0] - 2026-09-23
 ### Added
 - #### Breadcrumbs
-  - The new `igc-breadcrumbs` and `igc-breadcrumb` components show a navigation trail. The `igc-breadcrumbs` element has the `list` role. Its `separator` attribute gives the name of the icon between the items, and its default value is `tree_expand`. Put the element in a `<nav aria-label="...">` element, because the ARIA breadcrumb pattern needs that landmark.
-  - The `igc-breadcrumb` element has the `listitem` role. Put the content of the item, usually an anchor, in the default slot. The `prefix` and `suffix` slots add content before and after that content. The `separator` slot replaces the icon for one item. The `current` attribute sets `aria-current="page"`. The `disabled` attribute sets `aria-disabled` and removes the slotted content from the tab sequence. Assistive technology does not read the separator. The `label` and `separator` CSS parts give access to the two containers. [#1881](https://github.com/IgniteUI/igniteui-webcomponents/pull/1881)
+  - New `igc-breadcrumbs` and `igc-breadcrumb` components show a navigation trail. [#1881](https://github.com/IgniteUI/igniteui-webcomponents/pull/1881)
+    - `igc-breadcrumbs` has the `list` role. The `separator` attribute sets the icon between the items. The default is `tree_expand`. Put the component in a `<nav aria-label="...">` element, as the ARIA breadcrumb pattern requires.
+    - `igc-breadcrumb` has the `listitem` role. Put the item content, usually an anchor, in the default slot. The `prefix` and `suffix` slots add content before and after it. The `separator` slot replaces the icon of one item.
+    - `current` sets `aria-current="page"`. `disabled` sets `aria-disabled` and removes the slotted content from the tab sequence. Assistive technology does not read the separator.
+    - The `label` and `separator` CSS parts style the two containers.
 - #### Button group
-  - The single selection modes now use the ARIA keyboard pattern of a radio group. The group is one tab stop. The arrow keys move the focus and the selection together, go past the disabled buttons, and wrap at the two ends. The `alignment` sets the axis: `horizontal` uses ArrowLeft and ArrowRight and obeys the writing direction, and `vertical` uses ArrowUp and ArrowDown. Before, each button was a different tab stop and the arrow keys did nothing, which the `radiogroup` role does not permit. The `multiple` selection mode does not change, because each of its buttons stays a tab stop. [#2385](https://github.com/IgniteUI/igniteui-webcomponents/pull/2385)
+  - The single selection modes now use the radio group keyboard pattern. [#2385](https://github.com/IgniteUI/igniteui-webcomponents/pull/2385)
+    - The group is one tab stop.
+    - The arrow keys move the focus and the selection together. They skip disabled buttons and wrap at the two ends.
+    - `alignment="horizontal"` uses ArrowLeft and ArrowRight and follows the text direction. `alignment="vertical"` uses ArrowUp and ArrowDown.
+    - Before, each button was a tab stop and the arrow keys did nothing. The `radiogroup` role does not permit this.
+    - The `multiple` mode does not change. Each button stays a tab stop.
 - #### Combo, Color picker, Date picker, Date range picker, Dropdown, Select, Tooltip
-  - `scroll-strategy` attribute: `hide` (default) hides the popover while its anchor is scrolled fully out of view, `scroll` keeps it visible and anchored, `close` closes the component on any scroll. The date pickers ignore it in `dialog` mode. A tooltip with `scroll-strategy="close"` closes even when `sticky`.
+  - `scroll-strategy` attribute. It sets what the popup does when a container scrolls. [#2355](https://github.com/IgniteUI/igniteui-webcomponents/pull/2355)
+    - `hide` (default) hides the popup while its anchor is fully out of view.
+    - `scroll` keeps the popup visible and on its anchor.
+    - `close` closes the component on each scroll. A `sticky` tooltip also closes.
+    - The date pickers ignore the attribute in `dialog` mode.
 
 ### Changed
 - #### Button group
-  - The `radiogroup` role, the `group` role and the disabled state are now on the `igc-button-group` element. Before, they were on an element in its shadow root. An `aria-label` or an `aria-labelledby` that you set on the component now gives the name of the group. [#2385](https://github.com/IgniteUI/igniteui-webcomponents/pull/2385)
-  - In the single selection modes, the radio group now reports the `alignment` as its orientation. Thus the semantics agree with the arrow keys and the layout.
-- #### Dropdown, Select
-  - **Behavior change**: The default of `scroll-strategy` changes from `scroll` to `hide`. Set `scroll-strategy="scroll"` to keep the previous behavior.
+  - The `radiogroup` or `group` role and the disabled state are now on the `igc-button-group` host. Before, they were on an element in the shadow root. An `aria-label` or `aria-labelledby` on the host now names the group. [#2385](https://github.com/IgniteUI/igniteui-webcomponents/pull/2385)
+  - In the single selection modes, `alignment` sets the `aria-orientation` of the radio group.
+- #### Combo, Color picker, Date picker, Date range picker, Dropdown, Select, Tooltip
+  - **Behavior change:** The popup now hides while its anchor is fully scrolled out of view. Before, it stayed visible. Set `scroll-strategy="scroll"` to keep the previous behavior. [#2355](https://github.com/IgniteUI/igniteui-webcomponents/pull/2355)
+- #### Dropdown, Select, Tooltip
+  - The popup no longer moves along the viewport edge to stay in view. It only flips to the opposite side. [#2355](https://github.com/IgniteUI/igniteui-webcomponents/pull/2355)
 - #### Popover
-  - Popovers now position through native CSS anchor positioning in browsers that support it (Chrome/Edge 133+, Firefox 147+, Safari 26+). Other browsers keep the previous `@floating-ui/dom` behavior, and that module now loads only there.
+  - Popovers now use native CSS anchor positioning in browsers that support it (Chrome/Edge 133+, Firefox 147+, Safari 26+). Other browsers use `@floating-ui/dom` as before, and load it only when necessary. [#2355](https://github.com/IgniteUI/igniteui-webcomponents/pull/2355)
 
 ### Fixed
 - #### Carousel
-  - The indicators now keep their `aria-label` in a content attribute and in `ElementInternals`. Before, only `ElementInternals` had it. Thus accessibility tools that do not read internals report the name of the tab. [#2378](https://github.com/IgniteUI/igniteui-webcomponents/pull/2378)
+  - The indicators now set `aria-label` as a content attribute and in `ElementInternals`. Before, only `ElementInternals` had it, and tools that do not read internals reported no tab name. [#2378](https://github.com/IgniteUI/igniteui-webcomponents/pull/2378)
 - #### Combo, Select
-  - A click on the label of the input no longer opens the list and closes it again. One click emitted `igcOpening`, then `igcClosing` and `igcClosed`, and left the component closed, because the label click and the click that the label activation behavior dispatches on the input both reached the toggle handler.
+  - A click on the input label opened the list and closed it again. The component emitted `igcOpening`, `igcClosing` and `igcClosed`, and stayed closed. [#2390](https://github.com/IgniteUI/igniteui-webcomponents/pull/2390)
 - #### Date picker
-  - In dropdown mode, a `label` that you set after the first render did not go to the native input. This occurred in all themes but Material. The component now resolves the projected ARIA state again against the labels of the input. Thus the association changes when you add or remove the label. [#2378](https://github.com/IgniteUI/igniteui-webcomponents/pull/2378)
-  - The `container` CSS part is now exposed, so you can style the input container from outside the picker. The part was documented, but the component did not export it. [#2398](https://github.com/IgniteUI/igniteui-webcomponents/pull/2398)
+  - In dropdown mode, a `label` that you set after the first render did not go to the native input. This occurred in all themes except Material. [#2378](https://github.com/IgniteUI/igniteui-webcomponents/pull/2378)
+  - The `container` CSS part is now exported. It was documented, but not exported. [#2398](https://github.com/IgniteUI/igniteui-webcomponents/pull/2398)
 - #### Date range picker
-  - The `ranges` CSS part is now exposed, so you can style the predefined ranges area from outside the picker. The part was documented, but the component did not export it. [#2398](https://github.com/IgniteUI/igniteui-webcomponents/pull/2398)
+  - The `ranges` CSS part is now exported. It was documented, but not exported. [#2398](https://github.com/IgniteUI/igniteui-webcomponents/pull/2398)
 - #### Dropdown
-  - The anchor element now gives the name of the list through `ariaLabelledByElements`. Before, `aria-labelledby` pointed to the anchor slot, which accessibility tools cannot resolve. [#2378](https://github.com/IgniteUI/igniteui-webcomponents/pull/2378)
+  - The anchor now names the list through `ariaLabelledByElements`. Before, `aria-labelledby` pointed to the anchor slot, which tools cannot resolve. [#2378](https://github.com/IgniteUI/igniteui-webcomponents/pull/2378)
 - #### Input, Date time input, Date range input, File input, Mask input, Textarea
-  - A click on the label now sends one `click` event out of the component. Before, it sent two, because the label click and the click that the label activation behavior dispatches on the input both left the shadow root. A disabled component now sends none.
+  - A click on the label now emits one `click` event from the component. Before, it emitted two. A disabled component now emits none. [#2390](https://github.com/IgniteUI/igniteui-webcomponents/pull/2390)
 
 ## [7.3.2] - 2026-09-09
 ### Added
@@ -1650,6 +1664,7 @@ Initial release of Ignite UI Web Components
 - Ripple component
 - Switch component
 
+[7.4.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/7.3.2...7.4.0
 [7.3.2]: https://github.com/IgniteUI/igniteui-webcomponents/compare/7.3.1...7.3.2
 [7.3.1]: https://github.com/IgniteUI/igniteui-webcomponents/compare/7.3.0...7.3.1
 [7.3.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/7.2.4...7.3.0
