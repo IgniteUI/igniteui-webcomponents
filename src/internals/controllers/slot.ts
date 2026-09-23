@@ -9,26 +9,18 @@ import { normalizedTextContent } from '../utils/dom.js';
 
 type InferSlotNames<T> = T extends readonly (infer U)[] ? U : never;
 
-/**
- * Additional query options for the slot controller methods.
- */
 type SlotQueryOptions = {
   /**
-   * If set to `true`, it returns a sequence of both the elements assigned to the queried slot,
-   * as well as elements assigned to any other slots that are descendants of this slot. If no
-   * assigned elements are found, it returns the slot's fallback content.
+   * Whether the query also returns the content of the descendant slots.
+   * Defaults to `false`.
    *
    * @remarks
-   * Mind that fallback content when checking whether a consumer projected anything:
-   * for a slot rendered as `<slot>${this.label}</slot>`, a flattened query reports
-   * the rendered `label` as assigned content even though nothing was projected.
-   *
-   * Defaults to `false`.
+   * A flattened query also returns fallback content: a slot rendered as
+   * `<slot>${this.label}</slot>` reports `label` as assigned content,
+   * although the consumer projected nothing.
    */
   flatten?: boolean;
-  /**
-   * CSS selector used to filter the elements returned.
-   */
+  /** The CSS selector that filters the returned elements. */
   selector?: string;
 };
 
@@ -37,20 +29,19 @@ type SlotChangeCallback<T> = (
 ) => void;
 
 type SlotChangeCallbackParameters<T> = {
-  /** The slot name that has its assigned nodes changed. */
+  /** The name of the slot with the changed assigned nodes. */
   slot: T;
-  /** `true` if the slot is the default slot. */
   isDefault: boolean;
-  /** `true` if the callback handler is called for the initial host update. */
+  /** Whether the callback runs for the first host update. */
   isInitial: boolean;
 };
 
 type SlotControllerOptions<T> = {
-  /** An iterable collection of slot names to observe. */
+  /** The slot names to observe. */
   slots?: Iterable<T>;
-  /** Callback function which is invoked a slot's assigned nodes change. */
+  /** Callback that runs when the assigned nodes of a slot change. */
   onChange?: SlotChangeCallback<T>;
-  /** If set to `true`, the `onChange` callback is invoked once after the host is updated for the first time. */
+  /** Whether `onChange` also runs once, after the first host update. */
   initial?: boolean;
 };
 
@@ -75,13 +66,12 @@ class SlotController<T> implements ReactiveController {
   }
 
   /**
-   * The query results are cached, since the accessors below are routinely called
-   * from a host's `render`. Only a still connected slot is served from the cache -
-   * one removed by a conditional template falls back to a fresh query.
+   * Finds the slot element with the given name.
    *
-   * There is no slot to find before the host creates its render root, which happens
-   * when it connects. A query that comes earlier, such as one from an attribute that
-   * the parser applies on upgrade, reports no slot instead of an error.
+   * @remarks
+   * The result is cached, because the accessors below run from `render`. The
+   * cache serves only a connected slot. A query before the host creates its
+   * render root reports no slot and raises no error.
    */
   private _getSlot(slotName?: T): HTMLSlotElement | null {
     if (isServer) return null;
@@ -109,21 +99,14 @@ class SlotController<T> implements ReactiveController {
   }
 
   /**
-   * Returns an array of the assigned nodes for `slot`.
-   *
-   * If `flatten` is set to `true`, it returns a sequence of both the nodes assigned to the queried slot,
-   * as well as nodes assigned to any other slots that are descendants of this slot. If no
-   * assigned nodes are found, it returns the slot's fallback content.
+   * Returns the nodes assigned to `slot`. See
+   * {@link SlotQueryOptions.flatten}.
    */
   public getAssignedNodes(slot: T, flatten = false): Node[] {
     return this._getSlot(slot)?.assignedNodes({ flatten }) ?? [];
   }
 
-  /**
-   * Returns an array of the assigned elements for `slot` with additional `options`.
-   *
-   * See {@link SlotQueryOptions.flatten} and {@link SlotQueryOptions.selector} for more information.
-   */
+  /** Returns the elements assigned to `slot`, as `options` selects them. */
   public getAssignedElements<U extends Element>(
     slot: T,
     options?: SlotQueryOptions
@@ -139,38 +122,36 @@ class SlotController<T> implements ReactiveController {
   }
 
   /**
-   * Returns the combined text content of the nodes assigned to `slot`,
-   * trimmed and with consecutive whitespace collapsed.
-   *
-   * Useful for deriving an accessible label from projected content.
-   * See {@link SlotQueryOptions.flatten} for the `flatten` semantics.
+   * Returns the text content assigned to `slot`, trimmed and with collapsed
+   * whitespace.
    */
   public getAssignedText(slot: T, flatten = false): string {
     return normalizedTextContent(this.getAssignedNodes(slot, flatten));
   }
 
   /**
-   * Return whether `slot` has assigned nodes.
-   *
-   * If `flatten` is set to `true`, it returns a sequence of both the nodes assigned to the queried slot,
-   * as well as nodes assigned to any other slots that are descendants of this slot. If no
-   * assigned nodes are found, it returns the slot's fallback content - so a slot with
-   * fallback content always reports as having nodes. See {@link SlotQueryOptions.flatten}.
+   * Whether `slot` has assigned nodes. A flattened query counts fallback
+   * content, so a slot with fallback always reports nodes.
    */
   public hasAssignedNodes(slot: T, flatten = false): boolean {
     return !isEmpty(this.getAssignedNodes(slot, flatten));
   }
 
-  /**
-   * Return whether `slot` has assigned elements accepting additional `options`.
-   *
-   * See {@link SlotQueryOptions.flatten} and {@link SlotQueryOptions.selector} for more information.
-   */
+  /** Whether `slot` has assigned elements, as `options` selects them. */
   public hasAssignedElements(slot: T, options?: SlotQueryOptions): boolean {
     return !isEmpty(this.getAssignedElements(slot, options));
   }
 
   /** @internal */
+  public hostConnected(): void {
+    this._host.renderRoot.addEventListener('slotchange', this);
+  }
+
+  /** @internal */
+  public hostDisconnected(): void {
+    this._host.renderRoot.removeEventListener('slotchange', this);
+  }
+
   public handleEvent(event: Event): void {
     const slot = event.target as HTMLSlotElement;
     const name = slot.name as T;
@@ -185,16 +166,6 @@ class SlotController<T> implements ReactiveController {
       });
       this._host.requestUpdate();
     }
-  }
-
-  /** @internal */
-  public hostConnected(): void {
-    this._host.renderRoot.addEventListener('slotchange', this);
-  }
-
-  /** @internal */
-  public hostDisconnected(): void {
-    this._host.renderRoot.removeEventListener('slotchange', this);
   }
 
   /** @internal */

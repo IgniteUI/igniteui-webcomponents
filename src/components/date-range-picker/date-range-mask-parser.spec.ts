@@ -239,12 +239,13 @@ describe('DateRangeMaskParser', () => {
       const newRange = parser.spinDateRangePart(monthPart, 1, null, true);
 
       const today = CalendarDay.today.native;
+      // Spinning clamps the day to the target month's length (Aug 31 -> Sep 30),
+      // mirrored here by CalendarDay's month-rollover clamp.
+      const spun = CalendarDay.today.add('month', 1).native;
       expect(newRange.start).to.not.be.null;
       expect(newRange.start!.getFullYear()).to.equal(today.getFullYear());
-      expect(newRange.start!.getMonth()).to.equal(
-        CalendarDay.today.add('month', 1).native.getMonth()
-      );
-      expect(newRange.start!.getDate()).to.equal(today.getDate());
+      expect(newRange.start!.getMonth()).to.equal(spun.getMonth());
+      expect(newRange.start!.getDate()).to.equal(spun.getDate());
       expect(newRange.end).to.be.null;
     });
   });

@@ -132,9 +132,9 @@ export class MaskParser {
   protected _requiredPositions: number[] = [];
 
   /**
-   * Declared without an initializer on purpose. With `useDefineForClassFields: false`
-   * nothing is emitted for it, so {@link _invalidate} can safely run from the
-   * constructor - before subclass fields exist.
+   * Declared with no initializer. `useDefineForClassFields: false` emits nothing
+   * for it, so {@link _invalidate} can run from the constructor, before the
+   * subclass fields exist.
    */
   private _emptyMask?: string;
 
@@ -214,24 +214,24 @@ export class MaskParser {
   }
 
   /**
-   * The pattern the literal parser consumes. Subclasses whose public format is not itself
-   * a mask pattern - date formats, for instance - translate it here.
+   * The pattern for the literal parser. A subclass whose public format is not a
+   * mask pattern, such as a date format, converts it here.
    */
   protected _toMaskFormat(format: string): string {
     return format;
   }
 
   /**
-   * Drops everything derived from the mask. Runs on every mask *and* prompt change, and
-   * from the constructor, so overrides must not touch fields with initializers.
+   * Drops all that comes from the mask. Runs on each mask and prompt change, and
+   * from the constructor, so an override must not touch an initialized field.
    */
   protected _invalidate(): void {
     this._emptyMask = undefined;
   }
 
   /**
-   * Parses the mask format string to identify literal characters and
-   * create the escaped mask. This method is called whenever the mask format changes.
+   * Finds the literal characters of the mask format and builds the escaped
+   * mask. Runs on each mask format change.
    */
   protected _parseMaskLiterals(): void {
     const mask = this._toMaskFormat(this._options.format);
@@ -269,10 +269,8 @@ export class MaskParser {
   }
 
   /**
-   * Computes an array of positions in the escaped mask that correspond to
-   * required input flags (e.g., '0', 'L') and are not literal characters.
-   *
-   * These positions must be filled for the masked string to be valid.
+   * The positions of the escaped mask that hold a required input flag, such as
+   * '0' or 'L', and are not literals. A valid masked string fills them all.
    */
   protected _computeRequiredPositions(): number[] {
     const literalPositions = this._literalPositions;

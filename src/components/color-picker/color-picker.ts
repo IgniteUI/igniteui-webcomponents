@@ -14,6 +14,7 @@ import {
   arrowUp,
   endKey,
   escapeKey,
+  isKey,
 } from '#internals/controllers/key-bindings.js';
 import { addRootClickController } from '#internals/controllers/root-click.js';
 import { addSlotController, setSlots } from '#internals/controllers/slot.js';
@@ -429,14 +430,14 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
   }
 
   /**
-   * Rewrites the alpha field as `<digits>%` after each edit.
+   * Writes the alpha field again as `<digits>%` after each edit.
    *
-   * The `%` is part of the value and not a suffix element, so the browser
-   * treats it as editable text. This handler normalizes the result of an edit
-   * instead of a filter on the keystrokes in `beforeinput`. The `%` then
-   * behaves as a literal for each way that text reaches the field: typing,
-   * paste, drop, composition, undo and autofill. Of these, `beforeinput`
-   * carries `data` only for typing.
+   * @remarks
+   * The `%` is part of the value, not a suffix element, so the browser lets the
+   * user edit it. This handler corrects the result of an edit, and does not
+   * filter the keystrokes in `beforeinput`. The `%` is then a literal for each
+   * way that text reaches the field: typing, paste, drop, composition, undo and
+   * autofill. `beforeinput` carries `data` only for typing.
    */
   private _handleAlphaInputEdit(event: Event): void {
     const input = this._alphaInputRef.value;
@@ -459,13 +460,13 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
   }
 
   /**
-   * Keeps the caret and the selection inside the digits.
+   * Keeps the caret and the selection in the digits.
    *
-   * The trailing `%` is a literal. Without this handler the caret goes after
-   * the `%` on focus, on a click past the text, and after a shifted selection
-   * extends over it. The handler therefore runs on `keyup` as well as on
-   * `focusin` and `click`. Text after the `%` falls outside the number, and the
-   * parse discards it.
+   * @remarks
+   * The last `%` is a literal. Without this handler, the caret goes after the
+   * `%` on focus, on a click past the text, and when a shifted selection
+   * extends over it. The handler thus runs on `keyup`, `focusin` and `click`.
+   * The parse discards text after the `%`.
    */
   private _handleAlphaInputCaret(event: Event): void {
     const native = getElementFromPath<HTMLInputElement>('input', event);
@@ -482,14 +483,14 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
   /**
    * Steps the alpha by one percent.
    *
-   * The step applies to the color and not to the text of the field. This keeps
-   * a held arrow key correct. The key downs repeat faster than a render, so the
-   * text of the field can be stale.
+   * @remarks
+   * The step applies to the color, not to the text of the field, which keeps a
+   * held arrow key correct. The key downs repeat faster than a render, so the
+   * text can be stale.
    *
-   * The handler writes the new text and does not leave it to the render, so
-   * that the caret does not move. A value assignment puts the caret behind the
-   * `%`. A write from the render applies one frame after the keypress, which
-   * the user sees as a jump forward and back.
+   * The handler writes the new text itself, so that the caret does not move. A
+   * value assignment puts the caret after the `%`, and a write from the render
+   * applies one frame late, which the user sees as a jump.
    */
   private _handleAlphaInputSpin(increment: -1 | 1): void {
     const input = this._alphaInputRef.value;
@@ -512,7 +513,7 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
 
     const limit = caretLimit(native.value);
 
-    if (event.key === endKey || (native.selectionEnd ?? 0) >= limit) {
+    if (isKey(event, endKey) || (native.selectionEnd ?? 0) >= limit) {
       event.preventDefault();
       native.setSelectionRange(limit, limit);
     }
@@ -600,15 +601,16 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
   /**
    * The current color with an opaque alpha channel.
    *
-   * The swatch preview paints this color over one half of its surface, and
-   * {@link _alphaColor} over the other half. A translucent color is then shown
-   * next to its opaque form. At full alpha the two halves are identical and the
-   * split is invisible, so opaque colors need no separate branch.
+   * @remarks
+   * The swatch preview paints this color on one half of its surface, and
+   * {@link _alphaColor} on the other half, which shows a translucent color next
+   * to its opaque form. At full alpha the two halves agree and the split is
+   * invisible, so an opaque color needs no separate branch.
    *
-   * This value is defined also with no color value. An empty color is white,
-   * which is where the alpha ramp and the canvas marker belong before the first
-   * pick. The anchor keeps its "no color" mark, because {@link _previewStyle}
-   * uses {@link _alphaColor}, which stays empty.
+   * This value is defined also with no color. An empty color is white, which is
+   * where the alpha ramp and the canvas marker belong before the first pick.
+   * The anchor keeps its "no color" mark, because {@link _previewStyle} uses
+   * {@link _alphaColor}, which stays empty.
    */
   private get _opaqueColor(): string {
     return new ColorModel(this._color.toRGB()).asString('rgb');
@@ -625,12 +627,12 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
   }
 
   /**
-   * Mirrors the colors that the stylesheet needs onto the host.
+   * Copies the colors that the stylesheet needs onto the host.
    *
-   * `update()` drives this, and not the handlers that change the color. It
-   * therefore also runs for the first render. A picker with no value calls none
-   * of those handlers, and the plane would keep the stylesheet fallback instead
-   * of its actual hue.
+   * @remarks
+   * `update()` calls this, not the handlers that change the color, so it runs
+   * also for the first render. A picker with no value calls none of those
+   * handlers, and the plane would keep the stylesheet fallback.
    */
   private _applyColorProperties(): void {
     const properties = {
@@ -977,7 +979,7 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
   }
 
   private _renderHelperText(): TemplateResult {
-    return this._renderValidationContainer({
+    return IgcValidationContainerComponent.create(this, {
       id: 'helper-text',
       hasHelperText: true,
     });
@@ -1014,7 +1016,12 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
   protected override render(): TemplateResult {
     return html`
       <div part="color-picker">
-        <igc-popover ?open=${this.open} shift flip>
+        <igc-popover
+          ?open=${this.open}
+          flip
+          .scrollStrategy=${this.scrollStrategy}
+          @igcPopoverScrollClose=${this._handleClosing}
+        >
           ${this._renderAnchor()}${this._renderPicker()}
         </igc-popover>
         ${

@@ -7,19 +7,12 @@ import { isElement } from '../utils/dom.js';
 
 /** @hidden */
 export interface MutationControllerConfig<T extends Node = Node> {
-  /** The callback function to run when a mutation occurs. */
   callback: MutationControllerCallback<T>;
-  /** The underlying mutation observer configuration parameters. */
+  /** The options of the underlying `MutationObserver`. */
   config: MutationObserverInit;
-  /**
-   * The element to observe.
-   * If left out, the observer will listen on the host component itself.
-   */
+  /** The element to observe. Defaults to the host component. */
   target?: Element;
-  /**
-   * A filter configuration.
-   * See {@link MutationControllerFilter|this} for additional information.
-   */
+  /** See {@link MutationControllerFilter}. */
   filter?: MutationControllerFilter<T>;
 }
 
@@ -27,51 +20,40 @@ type MutationControllerCallback<T extends Node = Node> = (
   params: MutationControllerParams<T>
 ) => unknown;
 
-/**
- * Filter configuration to return elements that either match
- * an array of selector strings or a predicate function.
- */
+/** Keeps the nodes that match a selector list or a predicate. */
 type MutationControllerFilter<T extends Node = Node> =
   | string[]
   | ((node: T) => boolean);
 
 type MutationDOMChange<T extends Node = Node> = {
-  /** The parent of the added/removed element. */
+  /** The parent of the added element or of the removed element. */
   target: Element;
-  /** The added/removed element. */
+  /** The added element or the removed element. */
   node: T;
 };
 
 type MutationAttributeChange<T extends Node = Node> = {
-  /** The host element of the changed attribute. */
+  /** The element of the changed attribute. */
   node: T;
-  /** The changed attribute name. */
   attributeName: string | null;
 };
 
 type MutationChange<T extends Node = Node> = {
-  /** Elements that have attribute(s) changes. */
   attributes: MutationAttributeChange<T>[];
-  /** Elements that have been added. */
   added: MutationDOMChange<T>[];
-  /** Elements that have been removed. */
   removed: MutationDOMChange<T>[];
 };
 
 export type MutationControllerParams<T extends Node = Node> = {
-  /** The original mutation records from the underlying observer. */
-  records: MutationRecord[];
-  /** The aggregated changes. */
+  /** The changes that match the filter, grouped by kind. */
   changes: MutationChange<T>;
-  /** The observer controller instance. */
-  observer: MutationController<T>;
 };
 
 /**
  * Resolves a filter configuration into a node predicate.
  *
- * A list of selectors is joined once into a single selector list, so matching a
- * node is a single `matches` call instead of one per selector.
+ * @remarks
+ * The selectors join once, so a node match takes one `matches` call.
  */
 function createNodeMatcher<T extends Node = Node>(
   filter?: MutationControllerFilter<T>
@@ -163,31 +145,26 @@ class MutationController<T extends Node = Node> implements ReactiveController {
       }
     }
 
-    return { records, changes, observer: this };
+    return { changes };
   }
 
-  /**
-   * Begin receiving notifications of changes to the DOM based
-   * on the configured {@link MutationControllerConfig.target|target} and observer {@link MutationControllerConfig.config|options}.
-   */
+  /** Starts the observation of the configured target. */
   public observe(): void {
     this._observer?.observe(this._target, this._config);
   }
 
-  /** Stop watching for mutations. */
   public disconnect(): void {
     this._observer?.disconnect();
   }
 }
 
 /**
- * Creates and attaches a mutation controller with `config` to the passed in `host`.
+ * Creates a mutation controller with `config`, and adds it to `host`.
  *
- * Automatically starts/stops observing for mutation changes
- * in the respective component connect/disconnect callbacks.
- *
- * The mutation observer is disconnected before invoking the passed in callback and re-attached
- * after that in order to not loop itself in endless stream of changes.
+ * @remarks
+ * The observation runs while the host is connected. The observer disconnects
+ * for the duration of the callback, so a change that the callback makes
+ * starts no new notification.
  */
 export function createMutationController<T extends Node = Node>(
   host: ReactiveControllerHost & Element,

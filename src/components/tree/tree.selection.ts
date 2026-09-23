@@ -93,10 +93,9 @@ export class IgcTreeSelectionService {
 
   /** Called on item`s disconnectedCallback */
   public ensureStateOnItemDelete(item: IgcTreeItemComponent): void {
-    // Removing a subtree fires `disconnectedCallback` for the topmost item
-    // first and then for every descendant. That first call already covers the
-    // whole subtree below it, so a detached parent means an ancestor is
-    // handling this removal and repeating the work here would be redundant.
+    // Removing a subtree calls `disconnectedCallback` on the top item first,
+    // then on each descendant. That first call covers the subtree below it, so
+    // a detached parent means an ancestor handles this removal.
     if (item.parent && !item.parent.isConnected) {
       return;
     }

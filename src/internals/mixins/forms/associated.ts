@@ -1,10 +1,7 @@
-import { isServer, type LitElement, type TemplateResult } from 'lit';
+import { isServer, type LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
-import IgcValidationContainerComponent, {
-  type ValidationContainerConfig,
-} from '../../../components/validation-container/validation-container.js';
 import { addInternalsController } from '../../controllers/internals.js';
-import { enterKey } from '../../controllers/key-bindings.js';
+import { enterKey, isKey } from '../../controllers/keys.js';
 import { addSafeEventListener } from '../../utils/events.js';
 import { isFunction, isString } from '../../utils/types.js';
 import type { Validator } from '../../validators.js';
@@ -13,9 +10,7 @@ import type { FormValue } from './form-value.js';
 import {
   type FormAssociatedCheckboxElementInterface,
   type FormAssociatedElementInterface,
-  type FormRestoreMode,
   type FormValueType,
-  type IgcFormControl,
   InternalInvalidEvent,
   InternalResetEvent,
 } from './types.js';
@@ -23,9 +18,8 @@ import {
 const INVALID_STATE = 'ig-invalid';
 
 /**
- * Every form-associated component composes the event-emitter mixin somewhere in
- * its heritage, but this mixin cannot see it in its type chain - emits go through
- * a structural contract instead.
+ * The event emitter of the host. This mixin cannot see the event-emitter
+ * mixin in its type chain, so the emits go through this contract.
  */
 type EventEmitterLike = {
   emitEvent(name: string, init?: CustomEventInit): boolean;
@@ -36,12 +30,9 @@ const eventOptions = {
   composed: false,
 };
 
-function emitFormInvalidEvent(host: LitElement): void {
-  host.dispatchEvent(new CustomEvent(InternalInvalidEvent, eventOptions));
-}
-
-function emitFormResetEvent(host: LitElement): void {
-  host.dispatchEvent(new CustomEvent(InternalResetEvent, eventOptions));
+/** Emits one of the internal form events on the host. */
+function emitInternalFormEvent(host: LitElement, name: string): void {
+  host.dispatchEvent(new CustomEvent(name, eventOptions));
 }
 
 function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
@@ -54,10 +45,9 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
     protected readonly _formValue!: FormValue<unknown>;
 
     /**
-     * Suppresses invalid styling for a programmatic validation cycle
-     * (`checkValidity`/`_validate`). Scoped to the synchronous validity check:
-     * set immediately before it and cleared immediately after, so it never
-     * leaks into a later submission or user-interaction cycle.
+     * Hides the invalid styling for a validation cycle started from code. Set
+     * immediately before the check and cleared immediately after, so that it
+     * does not reach a later cycle.
      */
     private _isInternalValidation = false;
     private _touched = false;
@@ -68,8 +58,7 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
         return true;
       }
 
-      // A disabled control is barred from constraint validation, so it never
-      // carries invalid styling regardless of what its validators say.
+      // A disabled control cannot validate, so it never styles as invalid.
       return (
         !this._disabled &&
         this._invalid &&
@@ -119,9 +108,8 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
      * Sets the control into invalid state (visual state only).
      *
      * @remarks
-     * The property is not reflected back to the attribute. Reading it returns
-     * the effective visual state, so a touched control failing validation
-     * reads `true` even after assigning `false`.
+     * Not reflected to the attribute. Reading returns the effective state, so
+     * a touched control that fails validation reads `true` after `false`.
      * @attr
      * @default false
      */
@@ -140,10 +128,7 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
       return this._internals.form;
     }
 
-    /**
-     * Returns a ValidityState object which represents the different validity states
-     * the element can be in, with respect to constraint validation.
-     */
+    /** Returns a `ValidityState` object for the element. */
     public get validity(): ValidityState {
       return this._internals.validity;
     }
@@ -154,8 +139,8 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
     }
 
     /**
-     * A boolean value which returns true if the element is a submittable element
-     * that is a candidate for constraint validation.
+     * Returns `true` when the element is a candidate for constraint
+     * validation.
      */
     public get willValidate(): boolean {
       return this._internals.willValidate;
@@ -186,7 +171,7 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
     //#region Enter key submission handling
 
     protected _handleEnterKeydown(event: KeyboardEvent): void {
-      if (event.key !== enterKey || event.repeat) {
+      if (!isKey(event, enterKey) || event.repeat) {
         return;
       }
 
@@ -204,13 +189,10 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
       if (this._isInternalValidation) {
         this._isInternalValidation = false;
       } else {
-        // A failed submission counts as user interaction, and a lasting one: the
-        // control was asked for a value it could not provide. Keeping it touched
-        // is what makes `invalid` - and with it the validation messages the host
-        // projects - survive any later re-render, rather than holding only for
-        // the update the submission itself scheduled.
+        // A failed submission is a lasting interaction: touched keeps
+        // `invalid` and the projected messages visible across re-renders.
         this._setTouchedState();
-        emitFormInvalidEvent(this);
+        emitInternalFormEvent(this, InternalInvalidEvent);
       }
 
       this._setInvalidStyles();
@@ -219,16 +201,6 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
 
     private _setInvalidStyles(): void {
       this._internals.setState(INVALID_STATE, this._shouldApplyStyles);
-    }
-
-    /**
-     * Closes a programmatic validation cycle. If the control was invalid, the
-     * synchronous `invalid` event already cleared the flag; if it was valid no
-     * event fired, so clear it here to stop it leaking into a later submission
-     * or user-interaction cycle.
-     */
-    private _resolveInternalValidation(): void {
-      this._isInternalValidation = false;
     }
 
     private __runValidators(): {
@@ -258,9 +230,7 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
       return { validity, message };
     }
 
-    /**
-     * Executes the component validators and updates the internal validity state.
-     */
+    /** Runs the validators and updates the internal validity state. */
     protected _validate(userMessage?: string): void {
       if (isServer) return;
       const { validity, message: validatorMessage } = this.__runValidators();
@@ -268,15 +238,15 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
       let message = validatorMessage;
 
       if (hasCustomError && userMessage === undefined) {
-        // Internal validation cycle after the user has called setCustomValidity()
-        // with some message. Keep the customError flag and the passed in message.
+        // Internal cycle after `setCustomValidity(message)`. Keep the
+        // `customError` flag and the message.
         validity.customError = true;
         message = this.validationMessage;
       } else if (hasCustomError && userMessage === '') {
-        // setCustomValidity with an empty message.
+        // The caller passed an empty message to `setCustomValidity()`.
         validity.customError = false;
       } else if (userMessage && userMessage !== '') {
-        // setCustomValidity with a message.
+        // The caller passed a message to `setCustomValidity()`.
         validity.customError = true;
         message = userMessage;
       }
@@ -284,7 +254,7 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
       this._internals.setValidity(validity, message);
       this._isInternalValidation = true;
       this._invalid = !this._internals.checkValidity();
-      this._resolveInternalValidation();
+      this._isInternalValidation = false;
       this._setInvalidStyles();
     }
 
@@ -321,15 +291,6 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
       this._validate();
     }
 
-    protected _renderValidationContainer(
-      config?: ValidationContainerConfig
-    ): TemplateResult {
-      return IgcValidationContainerComponent.create(
-        this as unknown as IgcFormControl,
-        config
-      );
-    }
-
     //#endregion
 
     //#region Form associated callback hooks
@@ -349,39 +310,30 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
       this._invalid = false;
       this._isExternalInvalid = false;
       this._setInvalidStyles();
-      emitFormResetEvent(this);
+      emitInternalFormEvent(this, InternalResetEvent);
     }
-
-    /* c8 ignore next 4 */
-    protected formStateRestoreCallback(
-      _state: FormValueType,
-      _mode: FormRestoreMode
-    ): void {}
 
     //#endregion
 
     //#region Public API
 
-    /** Checks for validity of the control and shows the browser message if it's invalid. */
+    /** Checks validity and shows the browser message when invalid. */
     public reportValidity(): boolean {
       const state = this._internals.reportValidity();
       this._invalid = !state;
       return state;
     }
 
-    /** Checks for validity of the control and emits the invalid event if it's invalid. */
+    /** Checks validity and emits `invalid` when the control is invalid. */
     public checkValidity(): boolean {
       this._isInternalValidation = true;
       const state = this._internals.checkValidity();
       this._invalid = !state;
-      this._resolveInternalValidation();
+      this._isInternalValidation = false;
       return state;
     }
 
-    /**
-     * Sets a custom validation message for the control.
-     * As long as `message` is not empty, the control is considered invalid.
-     */
+    /** Sets a custom message. Invalid while `message` is not empty. */
     public setCustomValidity(message: string): void {
       this._validate(message);
       this.requestUpdate();
@@ -394,7 +346,8 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
 }
 
 /**
- * Mixes the passed in class and turns it into a form associated custom element.
+ * Turns the given class into a form-associated custom element with a
+ * `defaultValue` property.
  */
 export function FormAssociatedMixin<T extends Constructor<LitElement>>(
   base: T
@@ -417,10 +370,8 @@ export function FormAssociatedMixin<T extends Constructor<LitElement>>(
     }
 
     /**
-     * Restores the default value through the public `value` setter so any
-     * clamping/normalization the component applies (slider bounds, rating max)
-     * also applies on form reset, and the correct reactive property is
-     * recorded for the update cycle.
+     * Restores the default value through the public `value` setter, so that a
+     * form reset gets the same clamping, normalization and reactive state.
      */
     protected override _restoreDefaultValue(): void {
       if ('value' in this) {
@@ -430,7 +381,7 @@ export function FormAssociatedMixin<T extends Constructor<LitElement>>(
       }
     }
 
-    /** Touched flips first, so the setter's validation cycle sees it. */
+    /** Sets touched first, so the `value` setter validation cycle sees it. */
     protected _commitValue(value: unknown, eventName: string): boolean {
       this._setTouchedState();
 
@@ -461,7 +412,8 @@ export function FormAssociatedMixin<T extends Constructor<LitElement>>(
 }
 
 /**
- * Mixes the passed in class and turns it into a form associated custom element.
+ * Turns the given class into a form-associated checkbox custom element with
+ * a `defaultChecked` property.
  */
 export function FormAssociatedCheckboxMixin<T extends Constructor<LitElement>>(
   base: T
@@ -484,8 +436,8 @@ export function FormAssociatedCheckboxMixin<T extends Constructor<LitElement>>(
     }
 
     /**
-     * Restores the default checked state through the public `checked` setter
-     * so the correct reactive property is recorded for the update cycle.
+     * Restores the default checked state through the public `checked` setter,
+     * which records the correct reactive property for the update cycle.
      */
     protected override _restoreDefaultValue(): void {
       if ('checked' in this) {

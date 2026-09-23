@@ -3,9 +3,7 @@ import type {
   Constructor,
 } from '../mixins/constructor.js';
 
-/**
- * Indicates a class isn't imported at the root of the API, so needs to be referred to with a deep import in the wrappers.
- */
+/** The API root does not import the class; a wrapper needs a deep import. */
 export function blazorDeepImport(
   _constructor: Constructor | AbstractConstructor
 ) {}

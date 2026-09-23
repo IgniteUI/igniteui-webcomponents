@@ -70,13 +70,18 @@ describe('Animations Player', () => {
   });
 
   it('should error on infinite animations', async () => {
-    el.player
-      .play(animation(keyframes, { duration: Number.POSITIVE_INFINITY }))
-      .then(() => {})
-      .catch((err) => {
-        expect(err.message).to.equal(
-          'Promise-based animations must be finite.'
-        );
-      });
+    for (const options of [
+      { duration: Number.POSITIVE_INFINITY },
+      { duration: 100, iterations: Number.POSITIVE_INFINITY },
+    ]) {
+      const error = await el.player.play(animation(keyframes, options)).then(
+        () => null,
+        (err: Error) => err
+      );
+
+      expect(error?.message).to.equal(
+        'Promise-based animations must be finite.'
+      );
+    }
   });
 });

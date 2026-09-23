@@ -572,9 +572,9 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
 
     this._collapsedPane = target;
 
-    // `toggle()`, the expanders and Ctrl + arrow bypass the decorated accessors,
-    // and one assignment can change both flags. Request both so Lit reflects
-    // them from their getters instead of leaving one stale.
+    // `toggle()`, the expanders and Ctrl + arrow do not use the decorated
+    // accessors, and one assignment can change both flags. Request both, so that
+    // Lit reads them from their getters and leaves neither stale.
     this.requestUpdate('startCollapsed', wasStartCollapsed);
     this.requestUpdate('endCollapsed', wasEndCollapsed);
 
@@ -587,9 +587,9 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   private _setPaneSize(pane: PanePosition, value: string | undefined): void {
     this._getPaneState(pane).size = this._normalizeValue(value, 'auto');
 
-    // A size authored while collapsed outranks the pre-collapse snapshot. The
-    // whole snapshot goes - keeping the other pane's share would over-subscribe
-    // the container and leave both panes shrinking to fit.
+    // A size set while collapsed wins over the snapshot from before the
+    // collapse. Drop the full snapshot. The share of the other pane would
+    // over-subscribe the container and shrink both panes.
     if (this._collapsedPane !== null) {
       for (const target of PANES) {
         this._getPaneState(target).savedSize = undefined;
@@ -764,9 +764,9 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   }
 
   /**
-   * A complete resize for a non-pointer gesture. Sharing `_calcNewSizes` with
-   * the drag path is what keeps both panes' constraints honoured and the
-   * emitted sizes equal to the ones that actually render.
+   * A complete resize for a gesture that is not a pointer drag. `_calcNewSizes`
+   * is shared with the drag path, which keeps the constraints of both panes and
+   * makes the emitted sizes equal to the rendered ones.
    */
   private _runResize(delta: number): void {
     this._resizeStart();
@@ -968,9 +968,9 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   }
 
   /**
-   * Reads the container and bar extents once per update pass - both
-   * `_updatePanes` and `_updateBarAria` need them, and the style writes in
-   * between would force a reflow for every repeated read.
+   * Reads the container and bar extents one time per update pass. Both
+   * `_updatePanes` and `_updateBarAria` need them, and the style writes between
+   * them would force a reflow for each read.
    */
   private _measure(): { container: number; bar: number } {
     const axis = this._isHorizontal ? 'width' : 'height';

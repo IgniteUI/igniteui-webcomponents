@@ -11,7 +11,6 @@ import { FormValueBooleanTransformers } from '#internals/mixins/forms/form-trans
 import { createFormValueState } from '#internals/mixins/forms/form-value.js';
 import { partMap } from '#internals/part-map.js';
 import { renderToggleShell } from '#internals/templates/toggle-shell.js';
-import { lastOf } from '#internals/utils/arrays.js';
 import { createIdGenerator } from '#internals/utils/strings.js';
 import { isString } from '#internals/utils/types.js';
 import { addThemingController } from '#theming/theming-controller.js';
@@ -111,19 +110,23 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
     return getGroupMembers(this);
   }
 
-  /** All radios of the group except the one that invokes the getter. */
-  private get _siblings(): IgcRadioComponent[] {
-    return this._radios.filter((radio) => radio !== this);
-  }
-
   /** All radios of the group that are not disabled. */
   private get _activeRadios(): IgcRadioComponent[] {
     return this._radios.filter((radio) => !radio.disabled);
   }
 
-  /** All radios of the group that are checked. */
-  private get _checkedRadios(): IgcRadioComponent[] {
-    return this._radios.filter((radio) => radio.checked);
+  /** All radios of the group except this one. Yields, so it copies nothing. */
+  private *_siblings(): Generator<IgcRadioComponent> {
+    for (const radio of this._radios) {
+      if (radio !== this) {
+        yield radio;
+      }
+    }
+  }
+
+  /** Whether this radio is the last checked one of its group. */
+  private _isLastChecked(): boolean {
+    return this._radios.findLast((radio) => radio.checked) === this;
   }
 
   @property({ type: Boolean, reflect: true })
@@ -131,7 +134,7 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
     super.required = value;
 
     if (this.hasUpdated) {
-      for (const radio of this._siblings) {
+      for (const radio of this._siblings()) {
         radio._validate();
       }
     }
@@ -222,8 +225,8 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
   protected override async firstUpdated(): Promise<void> {
     await this.updateComplete;
 
-    if (this.checked && this === lastOf(this._checkedRadios)) {
-      for (const radio of this._siblings) {
+    if (this.checked && this._isLastChecked()) {
+      for (const radio of this._siblings()) {
         radio.checked = false;
         radio.defaultChecked = false;
       }
@@ -237,11 +240,11 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
   }
 
   protected override _setDefaultValue(current: string | null): void {
-    // The base mixin passes 'true' if the `checked` attribute is present, and null
-    // if it is removed. `isDefined` would accept null as present and check the radio
-    // again on a form reset.
+    // The base mixin gives 'true' if the `checked` attribute is there, and null
+    // if it is removed. `isDefined` accepts null as present, and would check the
+    // radio again on a form reset.
     this._formValue.defaultValue = isString(current);
-    for (const radio of this._siblings) {
+    for (const radio of this._siblings()) {
       radio.defaultChecked = false;
     }
   }
@@ -284,7 +287,7 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
 
   /** Checks for validity of the control and emits the invalid event if it's invalid. */
   public override checkValidity(): boolean {
-    for (const radio of this._siblings) {
+    for (const radio of this._siblings()) {
       radio._checkValidity();
     }
 
@@ -293,7 +296,7 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
 
   /** Checks for validity of the control and shows the browser message if it's invalid. */
   public override reportValidity(): boolean {
-    for (const radio of this._siblings) {
+    for (const radio of this._siblings()) {
       radio._reportValidity();
     }
 
@@ -312,7 +315,7 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
   }
 
   private _updateCheckedState(): void {
-    for (const radio of this._siblings) {
+    for (const radio of this._siblings()) {
       radio.checked = false;
     }
   }
@@ -393,7 +396,7 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
         onClick: this._handleClick,
         onKeyDown: this._handleEnterKeydown,
       })}
-      ${this._renderValidationContainer()}
+      ${IgcValidationContainerComponent.create(this)}
     `;
   }
 }

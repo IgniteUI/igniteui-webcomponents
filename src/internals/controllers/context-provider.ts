@@ -7,25 +7,20 @@ type ContextProviderControllerOptions<
   C extends Context<unknown, unknown>,
   H extends ProviderHost,
 > = {
-  /** The context to provide. */
   context: C;
-  /** Computes the context value published to subscribers. */
+  /** Computes the published context value. */
   value: () => ContextType<C>;
-  /**
-   * Host properties whose changes republish the context. Anything else that must
-   * republish calls {@link ContextProviderController.publish}.
-   */
+  /** The host properties that republish the context when they change. */
   watch?: readonly (keyof H)[];
 };
 
 /**
- * Provides a context from the host and keeps subscribers current: the value
- * is published when the host connects, republished before an update whenever
- * one of the watched host properties has changed, and on demand via
- * {@link ContextProviderController.publish}.
+ * Gives a context from the host, and keeps the subscribers current.
  *
- * Every publish notifies subscribers, also when the value keeps its identity -
- * hosts that share one mutable context object still propagate their changes.
+ * @remarks
+ * Every publish notifies the subscribers, also when the value keeps its
+ * identity, so a host that shares one mutable context object still
+ * propagates its changes.
  *
  * @example
  * ```typescript
@@ -67,7 +62,6 @@ class ContextProviderController<
     }
   }
 
-  /** Publishes the current value to the subscribers. */
   public publish(): void {
     for (const key of this._options.watch ?? []) {
       this._snapshot.set(key, this._host[key]);

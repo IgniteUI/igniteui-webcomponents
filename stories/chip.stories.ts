@@ -64,7 +64,7 @@ const metadata: Meta<IgcChipComponent> = {
     locale: {
       type: 'string',
       description:
-        "The locale used to resolve the component's resource strings.\nFalls back to the global locale when not set.",
+        'The locale for the resource strings. Falls back to the global locale.',
       control: 'text',
     },
   },
@@ -92,10 +92,7 @@ interface IgcChipArgs {
   selected: boolean;
   /** A property that sets the color variant of the chip component. */
   variant: 'primary' | 'info' | 'success' | 'warning' | 'danger';
-  /**
-   * The locale used to resolve the component's resource strings.
-   * Falls back to the global locale when not set.
-   */
+  /** The locale for the resource strings. Falls back to the global locale. */
   locale: string;
 }
 type Story = StoryObj<IgcChipArgs>;

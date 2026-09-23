@@ -266,8 +266,8 @@ export default class IgcTreeItemComponent extends LitElement {
 
   /**
    * @hidden @internal
-   * Appends every descendant (pre-order) into `out`. Accumulating into a single
-   * array keeps a deep tree's flatten cost linear rather than quadratic.
+   * Appends each descendant to `out` in pre-order. One shared array keeps the
+   * flatten cost of a deep tree linear, not quadratic.
    */
   public _collectDescendants(out: IgcTreeItemComponent[]): void {
     for (const child of getTreeItemChildren(this)) {
@@ -388,10 +388,10 @@ export default class IgcTreeItemComponent extends LitElement {
   }
 
   /**
-   * The element carrying the item's `treeitem` semantics: the host, or the
-   * first focusable element in the label slot when there is one, so that what
-   * the user reaches by keyboard is what gets announced. All ARIA state has to
-   * move with the role - left on a `role="none"` host it would be ignored.
+   * The element that holds the `treeitem` semantics of the item: the host, or
+   * the first focusable element of the label slot. The keyboard then reaches
+   * what the screen reader announces. All ARIA state moves with the role,
+   * because a `role="none"` host ignores it.
    */
   private get _ariaTarget(): HTMLElement {
     return this._tabbableEl?.length ? this._tabbableEl[0] : this;

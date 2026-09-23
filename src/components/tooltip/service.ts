@@ -1,6 +1,7 @@
 import { isServer } from 'lit';
-import { escapeKey } from '#internals/controllers/key-bindings.js';
+import { escapeKey, isKey } from '#internals/controllers/keys.js';
 import { isEmpty, lastOf } from '#internals/utils/arrays.js';
+import { toggleEventListener } from '#internals/utils/events.js';
 import type IgcTooltipComponent from './tooltip.js';
 
 type TooltipHideCallback = () => unknown;
@@ -15,9 +16,12 @@ class TooltipEscapeCallbacks {
       return;
     }
 
-    isEmpty(this._collection)
-      ? globalThis.removeEventListener('keydown', this)
-      : globalThis.addEventListener('keydown', this);
+    toggleEventListener(
+      globalThis,
+      !isEmpty(this._collection),
+      'keydown',
+      this
+    );
   }
 
   public add(
@@ -40,7 +44,7 @@ class TooltipEscapeCallbacks {
 
   /** @internal */
   public async handleEvent(event: KeyboardEvent): Promise<void> {
-    if (event.key !== escapeKey) {
+    if (!isKey(event, escapeKey)) {
       return;
     }
 

@@ -17,6 +17,7 @@ import {
   addI18nController,
   getDateTimeFormat,
 } from '#internals/i18n/i18n-controller.js';
+import { datePickerResourcesMap } from '#internals/i18n/utils.js';
 import type { AbstractConstructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { FormValueDateTimeTransformers } from '#internals/mixins/forms/form-transformers.js';
@@ -29,6 +30,7 @@ import type { CalendarSelection } from '../calendar/types.js';
 import type { DatePart } from '../date-time-input/date-part.js';
 import IgcDateTimeInputComponent from '../date-time-input/date-time-input.js';
 import type { RangeTextSelectMode, SelectionRangeDirection } from '../types.js';
+import IgcValidationContainerComponent from '../validation-container/validation-container.js';
 import {
   IgcDatePickerBaseComponent,
   type IgcPickerBaseEventMap,
@@ -184,7 +186,7 @@ export default class IgcDatePickerComponent extends EventEmitterMixin<
       DatePickerResourceStringsEN,
       CalendarResourceStringsEN
     ),
-    resourceMapName: 'date-picker',
+    resourceMap: datePickerResourcesMap,
   });
 
   protected override readonly _formValue = createFormValueState(this, {
@@ -362,11 +364,10 @@ export default class IgcDatePickerComponent extends EventEmitterMixin<
   protected override formResetCallback(): void {
     super.formResetCallback();
 
-    // The inner editor is not associated with the outer form (shadow
-    // boundary), so the browser never resets it. Since it runs its own
-    // constraint validation against the forwarded `required`/`min`/`max`,
-    // a touched editor would otherwise keep its invalid styles after the
-    // form reset.
+    // The shadow boundary keeps the inner editor out of the outer form, so the
+    // browser never resets it. It runs its own constraint validation against the
+    // forwarded `required`, `min` and `max`, so a touched editor would keep its
+    // invalid styles after a form reset.
     this._input?.['formResetCallback']();
   }
 
@@ -469,7 +470,7 @@ export default class IgcDatePickerComponent extends EventEmitterMixin<
     return html`
       ${this._isMaterial ? nothing : this._renderLabel(id)}
       ${this._renderInput(id)} ${this._renderPicker(id)}
-      ${this._renderValidationContainer()}
+      ${IgcValidationContainerComponent.create(this)}
     `;
   }
 

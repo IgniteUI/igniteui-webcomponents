@@ -17,13 +17,12 @@ import type IgcTreeComponent from './tree.js';
 import type { IgcTreeSelectionService } from './tree.selection.js';
 
 /**
- * Handles roving-tabindex keyboard navigation and active/focused item tracking
- * for the tree.
+ * Keyboard navigation and active/focused item tracking for the tree.
  *
- * The navigable set is never cached. It is derived on demand, only on an actual
- * keypress, by a lazy walk that prunes collapsed branches - so no work happens
- * on item mount/expand/disable, and callers needing a single item stop as soon
- * as they have it.
+ * @remarks
+ * The navigable set is not cached. A keypress derives it with a lazy walk that
+ * skips collapsed branches, so an item mount, expand or disable does no work,
+ * and a caller that needs one item stops at that item.
  *
  * @hidden @internal
  */
@@ -188,9 +187,8 @@ export class IgcTreeNavigationService {
       previous = current;
     }
 
-    // `item` is not navigable itself - it can be focused while an ancestor is
-    // collapsed out from under it. Going forward that lands on the first
-    // navigable item; going backwards it stays put.
+    // `item` is not navigable. It can hold focus while an ancestor collapses.
+    // Forward then moves to the first navigable item, and backward stays.
     return (dir === 1 ? first : undefined) ?? item;
   }
 

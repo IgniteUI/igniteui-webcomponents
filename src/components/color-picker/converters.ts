@@ -133,9 +133,9 @@ export const converter = Object.freeze({
       const lMin = Math.max(l, 0.01);
 
       l *= 2;
-      // Tests the doubled `l`, not `lMin` - the latter is captured before the
-      // doubling and never exceeds 1, which would leave the `2 - l` branch dead
-      // and push `v` past 100 for any lightness above 50%.
+      // Test the doubled `l`, not `lMin`. `lMin` is captured before the doubling
+      // and never goes above 1, which makes the `2 - l` branch dead and pushes `v`
+      // past 100 for a lightness above 50%.
       s *= l <= 1 ? l : 2 - l;
       sMin *= lMin <= 1 ? lMin : 2 - lMin;
       const v = (l + s) / 2;

@@ -3,11 +3,13 @@ import { isElement } from './dom.js';
 import { isEventListenerObject, isString } from './types.js';
 
 /**
- * Finds the first element in the event's composed path that matches the provided predicate, which can be either a string selector or a function.
+ * Finds the first element in the composed path of the event that matches the
+ * predicate.
  *
- * @param predicate - A string representing a CSS selector or a function that takes an Element and returns a boolean indicating a match.
- * @param event - The event whose composed path will be searched for the matching element.
- * @returns The first Element that matches the predicate, or undefined if no match is found.
+ * @param predicate - A CSS selector, or a function that returns whether an
+ * element matches.
+ * @param event - The event that holds the composed path.
+ * @returns The first element that matches, or `undefined`.
  *
  * @example
  * ```typescript
@@ -16,7 +18,10 @@ import { isEventListenerObject, isString } from './types.js';
  * ```
  * ```typescript
  * // Using a predicate function
- * const customElement = getElementFromPath((el) => el.tagName === 'MY-ELEMENT', event);
+ * const customElement = getElementFromPath(
+ *   (el) => el.tagName === 'MY-ELEMENT',
+ *   event
+ * );
  * ```
  */
 export function getElementFromPath<K extends keyof HTMLElementTagNameMap>(
@@ -35,33 +40,34 @@ export function getElementFromPath(
     ? (e: Element) => e.matches(predicate)
     : (e: Element) => predicate(e);
 
-  return Iterator.from(event.composedPath()).find(
-    (item) => isElement(item) && func(item)
-  ) as Element | undefined;
+  const match = event
+    .composedPath()
+    .find((item) => isElement(item) && func(item));
+
+  return match as Element | undefined;
 }
 
-/** Reusable event listener that just stops the propagation of the event. */
+/** Reusable event listener that stops the propagation of the event. */
 export function stopPropagation(event: Event): void {
   event.stopPropagation();
 }
 
-/** Reusable event listener that just prevents the default action of the event. */
+/** Reusable event listener that prevents the default action of the event. */
 export function preventDefault(event: Event): void {
   event.preventDefault();
 }
 
 /**
- * Returns whether focus has moved outside of the given host element for
- * a `focusout`/`blur` event, that is the element gaining focus is not
- * a descendant of the host.
+ * Returns whether the focus moved out of the given host element, for use
+ * with a `focusout` or `blur` event.
  */
 export function focusLeftHost(host: Element, event: FocusEvent): boolean {
   return !host.contains(event.relatedTarget as Node | null);
 }
 
 /**
- * Adds an event listener that holds only a weak reference to the passed
- * `listener`, thus not preventing it from being garbage collected.
+ * Adds an event listener that holds only a weak reference to `listener`, so
+ * the garbage collector can collect it.
  */
 export function addWeakEventListener(
   element: Element,
@@ -74,7 +80,7 @@ export function addWeakEventListener(
     const handler = weakRef.deref();
 
     if (!handler) {
-      // The listener has been garbage collected - detach the wrapper as well
+      // The listener was collected, so drop the wrapper too.
       element.removeEventListener(event, wrapped, options);
       return;
     }
@@ -91,10 +97,32 @@ type EventTypeOf<T extends keyof HTMLElementEventMap | keyof WindowEventMap> =
   (HTMLElementEventMap & WindowEventMap)[T];
 
 /**
- * Safely adds an event listener to an HTMLElement, automatically handling
- * server-side rendering environments by doing nothing if `isServer` is true.
- * This function also correctly binds the `handler`'s `this` context to the `target` element
- * and ensures proper event type inference.
+ * Adds the `listener` to the `target` if `active` is true. Removes it if
+ * `active` is false.
+ *
+ * The caller must pass a stable listener reference. `addEventListener` and
+ * `removeEventListener` are then idempotent, and the caller needs no state.
+ */
+export function toggleEventListener<
+  E extends keyof HTMLElementEventMap | keyof WindowEventMap,
+>(
+  target: EventTarget,
+  active: boolean,
+  event: E,
+  listener: EventListenerOrEventListenerObject,
+  options?: AddEventListenerOptions
+): void {
+  active
+    ? target.addEventListener(event, listener, options)
+    : target.removeEventListener(event, listener, options);
+}
+
+/**
+ * Adds an event listener to an element, and does nothing during server-side
+ * rendering.
+ *
+ * @remarks
+ * The `this` context of `handler` is the target element.
  */
 export function addSafeEventListener<
   E extends keyof HTMLElementEventMap | keyof WindowEventMap,

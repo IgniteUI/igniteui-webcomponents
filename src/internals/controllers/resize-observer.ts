@@ -8,27 +8,19 @@ type ResizeObserverControllerCallback = (
   ...args: Parameters<ResizeObserverCallback>
 ) => unknown;
 
-/**
- * Configuration for initializing a resize controller.
- * @hidden
- */
+/** @hidden */
 export interface ResizeObserverControllerConfig {
-  /** The callback function to run when a resize mutation is triggered. */
   callback: ResizeObserverControllerCallback;
-  /** Configuration options passed to the underlying ResizeObserver. */
+  /** The options of the underlying `ResizeObserver`. */
   options?: ResizeObserverOptions;
   /**
-   * The initial target element to observe for resize mutations.
-   *
-   * If not provided, the host element will be set as initial target.
-   * Pass in `null` to skip setting an initial target.
+   * The first target element to observe. Defaults to the host. Pass `null`
+   * for no first target.
    */
   target?: Element | null;
   /**
-   * Whether observing a target should request an update on the host.
-   *
-   * Defaults to `true`. Set to `false` when the host already drives its own
-   * update cycle and an extra render per observed element is wasted work.
+   * Whether an observed target requests an update on the host. Defaults to
+   * `true`. Set it to `false` when the host controls its own update cycle.
    */
   requestUpdate?: boolean;
 }
@@ -62,12 +54,10 @@ class ResizeObserverController implements ReactiveController {
     host.addController(this);
   }
 
-  /** The elements currently being observed. */
   public get targets(): ReadonlySet<Element> {
     return this._targets;
   }
 
-  /** Starts observing the `targe` element. */
   public observe(target: Element): void {
     this._targets.add(target);
     this._observer.observe(target, this._config.options);
@@ -80,7 +70,6 @@ class ResizeObserverController implements ReactiveController {
     }
   }
 
-  /** Stops observing the `target` element. */
   public unobserve(target: Element): void {
     this._targets.delete(target);
     this._observer.unobserve(target);
@@ -104,8 +93,9 @@ class ResizeObserverController implements ReactiveController {
 }
 
 /**
- * Creates a new resize controller bound to the given `host`
- * with {@link ResizeObserverControllerConfig | `config`}.
+ * Creates a resize controller with
+ * {@link ResizeObserverControllerConfig | `config`}, adds it to `host`, and
+ * observes each target while the host is connected.
  */
 export function createResizeObserverController(
   host: ReactiveControllerHost & Element,

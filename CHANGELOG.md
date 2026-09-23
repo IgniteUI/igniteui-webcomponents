@@ -11,11 +11,17 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - The `igc-breadcrumb` element has the `listitem` role. Put the content of the item, usually an anchor, in the default slot. The `prefix` and `suffix` slots add content before and after that content. The `separator` slot replaces the icon for one item. The `current` attribute sets `aria-current="page"`. The `disabled` attribute sets `aria-disabled` and removes the slotted content from the tab sequence. Assistive technology does not read the separator. The `label` and `separator` CSS parts give access to the two containers. [#1881](https://github.com/IgniteUI/igniteui-webcomponents/pull/1881)
 - #### Button group
   - The single selection modes now use the ARIA keyboard pattern of a radio group. The group is one tab stop. The arrow keys move the focus and the selection together, go past the disabled buttons, and wrap at the two ends. The `alignment` sets the axis: `horizontal` uses ArrowLeft and ArrowRight and obeys the writing direction, and `vertical` uses ArrowUp and ArrowDown. Before, each button was a different tab stop and the arrow keys did nothing, which the `radiogroup` role does not permit. The `multiple` selection mode does not change, because each of its buttons stays a tab stop. [#2385](https://github.com/IgniteUI/igniteui-webcomponents/pull/2385)
+- #### Combo, Color picker, Date picker, Date range picker, Dropdown, Select, Tooltip
+  - `scroll-strategy` attribute: `hide` (default) hides the popover while its anchor is scrolled fully out of view, `scroll` keeps it visible and anchored, `close` closes the component on any scroll. The date pickers ignore it in `dialog` mode. A tooltip with `scroll-strategy="close"` closes even when `sticky`.
 
 ### Changed
 - #### Button group
   - The `radiogroup` role, the `group` role and the disabled state are now on the `igc-button-group` element. Before, they were on an element in its shadow root. An `aria-label` or an `aria-labelledby` that you set on the component now gives the name of the group. [#2385](https://github.com/IgniteUI/igniteui-webcomponents/pull/2385)
   - In the single selection modes, the radio group now reports the `alignment` as its orientation. Thus the semantics agree with the arrow keys and the layout.
+- #### Dropdown, Select
+  - **Behavior change**: The default of `scroll-strategy` changes from `scroll` to `hide`. Set `scroll-strategy="scroll"` to keep the previous behavior.
+- #### Popover
+  - Popovers now position through native CSS anchor positioning in browsers that support it (Chrome/Edge 133+, Firefox 147+, Safari 26+). Other browsers keep the previous `@floating-ui/dom` behavior, and that module now loads only there.
 
 ### Fixed
 - #### Carousel

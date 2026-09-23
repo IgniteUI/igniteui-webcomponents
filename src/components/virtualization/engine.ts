@@ -247,9 +247,9 @@ export class VirtualScrollEngine {
   private _maxBrowserSize = Number.POSITIVE_INFINITY;
 
   /**
-   * The ratio `totalSize / maxBrowserSize` when `totalSize` is larger than
-   * the maximum DOM coordinate the browser supports; `1` otherwise.
-   * Maps virtual scroll positions to DOM scroll positions.
+   * Maps a virtual scroll position to a DOM scroll position. The ratio
+   * `totalSize / maxBrowserSize` if `totalSize` is larger than the maximum DOM
+   * coordinate of the browser, and `1` in all other cases.
    */
   private _virtualRatio = 1;
 
@@ -332,8 +332,8 @@ export class VirtualScrollEngine {
 
   /**
    * The largest DOM scroll offset the host can reach for the given viewport
-   * size. A request beyond it does nothing, so offsets given to a caller
-   * that waits for the scroll to settle are clamped to it.
+   * size. A request past it does nothing, so an offset given to a caller that
+   * waits for the scroll to settle is clamped to this value.
    */
   private _getMaxScrollOffset(viewportSize: number): number {
     return Math.max(0, this.domSize - viewportSize);
@@ -411,9 +411,9 @@ export class VirtualScrollEngine {
       return { startIndex: 0, endIndex: -1 };
     }
 
-    // The viewport is not scaled by the virtual ratio. Items render at their
-    // real pixel size, so a `viewportSize` px viewport always shows that many
-    // virtual pixels of items, at any compression of the scroll range.
+    // The virtual ratio does not scale the viewport. Items render at their real
+    // pixel size, so a `viewportSize` px viewport shows that many virtual pixels
+    // of items at any compression of the scroll range.
     const startOffset = Math.max(0, scrollPosition) * this._virtualRatio;
     const first = this._tree.findIndexAtOffset(startOffset);
     const last = this._tree.findIndexAtOffset(startOffset + viewportSize);
