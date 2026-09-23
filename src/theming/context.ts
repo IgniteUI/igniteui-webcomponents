@@ -10,6 +10,6 @@ export interface ThemeContext {
 }
 
 /**
- * Theme context provided by `<igc-theme-provider>` and consumed by the theming controller.
+ * Theme context provided by the theme provider component and consumed by the theming controller.
  */
 export const themeContext = createContext<ThemeContext>('ig-theme-context');

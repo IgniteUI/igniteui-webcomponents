@@ -24,7 +24,7 @@ type ThemeProviderSource = 'uninitialized' | 'context' | 'global';
  *
  * It resolves the active theme from one of two sources, in order of priority:
  *
- * 1. **Context** - provided by an ancestor `<igc-theme-provider>` element via the Lit context API.
+ * 1. **Context** - provided by an ancestor theme provider component via the Lit context API.
  * 2. **Global** - the application-wide theme set via `configureTheme()`.
  *
  * When a context provider is present, the controller subscribes to its updates
@@ -158,7 +158,7 @@ class ThemingController implements ReactiveController {
  *
  * This is the preferred way to add theming support to a component. The controller
  * is registered with the host's reactive controller lifecycle and automatically
- * resolves the active theme from an ancestor `<igc-theme-provider>` context or
+ * resolves the active theme from an ancestor theme provider context or
  * falls back to the application-wide theme set via `configureTheme()`.
  *
  * @param host - The Lit element that will host the controller.
