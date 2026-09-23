@@ -105,9 +105,15 @@ In a form-associated control, a property that is part of constraint validation (
 
 ### 4. Add tests
 
-Test the default value, a programmatic change after `elementUpdated()`, and the attribute
-(set and reflected). If the property changes the rendered semantics, extend the existing a11y
-audit. Do not add a separate one.
+Test the default value and a programmatic change after `elementUpdated()`. Test the attribute
+only as far as the decorator allows:
+
+- An attribute property: setting the attribute updates the property.
+- A property with `reflect: true`: a property change updates the attribute.
+- `attribute: false`: no attribute tests.
+
+If the property changes the rendered semantics, extend the existing a11y audit. Do not add a
+separate one.
 
 ### 5. Update the specification
 
@@ -146,7 +152,7 @@ npm run check && npm run test
 - [ ] Booleans default to `false`. Complex types use `attribute: false`.
 - [ ] `@attr` and `@default` present. The description follows step 2.
 - [ ] Coercion and validation use `@coercedProperty`. Lifecycle hooks are guarded.
-- [ ] Tests cover the default, a change and the attribute
+- [ ] Tests cover the default, a change and, if the decorator allows, the attribute
 - [ ] `spec.md`: API row, test scenarios renumbered, revision history row
 - [ ] `cem` and `build:meta` run. The story template uses the property.
 - [ ] `check` and `test` pass. CHANGELOG updated if the property is user-visible.

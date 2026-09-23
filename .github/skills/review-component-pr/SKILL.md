@@ -17,8 +17,9 @@ Review in this order. The public API is hard to change after release, so review 
       `src/components/[name]/`
 - [ ] `stories/[name].stories.ts`, with a filename that matches the tag
 - [ ] Complete theme scaffold, with every file in `themes.ts`
-- [ ] Exported from `src/index.ts` in alphabetical order. Nothing from `src/internals` is
-      exported.
+- [ ] Exported from `src/index.ts` in alphabetical order. No new exports from
+      `src/internals` beyond the approved list in
+      [Project Structure](../../CODING_GUIDELINES.md#project-structure).
 - [ ] `#internals` / `#theming` / `#animations` aliases for cross-cutting imports. Relative
       imports between components. `.js` specifiers.
 - [ ] A new alias is in `package.json` **and** in `scripts/_package.json`

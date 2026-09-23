@@ -54,7 +54,8 @@ structural reference.
   generated and gitignored.
 - Theme values come from `igniteui-theming`. Do not hardcode colors or sizes.
 - Match parts with `[part~='name']`.
-- Call `addThemingController(this, all)` in every component constructor.
+- Call `addThemingController(this, all)` in the constructor of every component with themed
+  styles.
 
 ## State
 

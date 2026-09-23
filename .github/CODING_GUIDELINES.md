@@ -56,8 +56,10 @@ src/
 | `timing.ts`         | `createTimer`, a restartable timeout                                                               |
 | `validators.ts`     | The shared constraint validators                                                                   |
 
-`src/index.ts` exports nothing from `src/internals`. To make a helper public, move it out of
-`internals` first.
+`src/index.ts` re-exports only a few approved symbols from `src/internals`:
+`defineComponents`, `defineAllComponents`, the deprecated EN resource shapes, and the
+`θ`-prefixed `@hidden @internal` helpers that sibling packages use. Do not add to that list.
+To make a helper public, move it out of `internals` first.
 
 ## Components
 
@@ -234,7 +236,7 @@ Before you write lifecycle code, look for a controller that already does it:
 
 | Controller                                                    | Module                                      | Use for                                                        |
 | ------------------------------------------------------------- | ------------------------------------------- | -------------------------------------------------------------- |
-| `addThemingController`                                        | `#theming/theming-controller.js`            | Theme resolution. **Required for every component.**            |
+| `addThemingController`                                        | `#theming/theming-controller.js`            | Theme resolution. **Required for every themed component.**     |
 | `addSlotController` / `setSlots`                              | `#internals/controllers/slot.js`            | Observing and querying slotted content                         |
 | `addInternalsController` / `internalsOf`                      | `#internals/controllers/internals.js`       | ElementInternals: ARIA, custom states, form value and validity |
 | `addKeybindings`                                              | `#internals/controllers/key-bindings.js`    | Keyboard interaction. The key constants are in `keys.js`.      |
@@ -357,8 +359,9 @@ themes/
   ```
 
 - Theme values come from the `igniteui-theming` schemas. `_themes.scss` digests them, and
-  `var-get()` reads them. Each light theme file emits `diff($base, $theme)`. Each dark file
-  emits `diff(light.$base, $theme)`:
+  `var-get()` reads them. `light/[component].shared.scss` emits the full `$base` variable set.
+  The per-theme overrides emit only a difference: `diff($base, $theme)` in `light/`, and
+  `diff(light.$base, $theme)` in `dark/`:
 
   ```scss
   // light/badge.bootstrap.scss
@@ -683,16 +686,21 @@ export default class IgcInputComponent extends FormAssociatedRequiredMixin(
   `form-transformers.ts` (`FormValueDateTimeTransformers`, `FormValueNumberTransformers`, …).
 
 **Updating the value.** `setValueAndFormState()` writes the value, sends it to the form and
-validates again. A set of `_formValue.value` alone updates only the component:
+validates again. Use it in the public setter and in the input handlers. A set of
+`_formValue.value` alone updates only the component, and the submitted value becomes stale:
 
 ```ts
 private _handleInput(event: InputEvent): void {
   this._formValue.setValueAndFormState((event.target as HTMLInputElement).value);
 }
 
-public set value(val: string) {
-  this._formValue.value = val;
-  this._validate();
+/**
+ * The value of the control.
+ * @attr
+ */
+@property()
+public set value(value: string) {
+  this._formValue.setValueAndFormState(value);
 }
 
 public get value(): string {
@@ -828,8 +836,9 @@ See `src/components/qr-code/qr-code.ts`.
 
 ### 5. Forgetting the theming controller
 
-Every component calls `addThemingController(this, all)` in its constructor. Without it, the
-component does not react to theme changes.
+A component with themed styles calls `addThemingController(this, all)` in its constructor.
+Without it, the component does not react to theme changes. A component with no themed styles
+does not need it, for example `slider-label.ts`, which renders only hidden light DOM.
 
 ### 6. Editing generated files
 
@@ -1080,7 +1089,7 @@ For a new component or a bug fix, update the
 - [ ] `spec.md` follows the splitter structure, with a TOC and a version 1 revision history.
       Its API tables match the code, and its test scenarios match the suite.
 - [ ] Standard structure and region fences. Internal API has the `_` prefix.
-- [ ] `addThemingController` in the constructor
+- [ ] `addThemingController` in the constructor (themed components)
 - [ ] Cross-cutting imports use the `#internals` / `#theming` / `#animations` aliases
 - [ ] The a11y audit passes
 - [ ] JSDoc for properties, events, slots and parts, with no `igc-` tag names in prose
