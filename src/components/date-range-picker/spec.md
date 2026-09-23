@@ -50,6 +50,7 @@
 | Version | Date       | Notes                 |
 | ------: | ---------- | --------------------- |
 |       1 | 2026-09-21 | Initial specification |
+|       2 | 2026-09-23 | Expose the `ranges` part and add it to the test scenarios |
 
 ## Overview
 
@@ -529,7 +530,7 @@ The suites reuse `createFormAssociatedTestBed`, `runValidationContainerTests`,
 
 ### Common suite
 
-1. Rendering and initialization of the shared structure.
+1. Rendering and initialization of the shared structure, including the exposed `ranges` part.
 2. Properties, including localization - formats, resource strings and the separator.
 3. Methods - `show`, `hide`, `toggle`, `select` and `clear`.
 4. Interactions - selection through the calendar, keyboard navigation, and interactions with the show icon.

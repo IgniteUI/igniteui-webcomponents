@@ -50,7 +50,7 @@ export interface IgcDateTimeInputComponentEventMap {
  * @slot invalid - Renders content when the component is in invalid state (validity.valid = false).
  *
  * @fires igcInput - Emitted when the control input receives user input.
- * @fires igcChange - Emitted when a change to the control's value is committed by the user.
+ * @fires igcChange - Emitted on blur, when the committed value differs from the one the editor was focused with..
  *
  * @csspart container - The main wrapper that holds all main input elements.
  * @csspart input - The native input element.

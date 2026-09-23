@@ -49,6 +49,7 @@
 | Version | Date       | Notes                 |
 | ------: | ---------- | --------------------- |
 |       1 | 2026-09-21 | Initial specification |
+|       2 | 2026-09-23 | Remove the `prefix` and `title` parts and add the `input-container` part |
 
 ## Overview
 

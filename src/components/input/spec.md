@@ -48,6 +48,7 @@
 | Version | Date       | Notes                 |
 | ------: | ---------- | --------------------- |
 |       1 | 2026-09-21 | Initial specification |
+|       2 | 2026-09-23 | Correct the `type-mismatch` slot description |
 
 ## Overview
 
@@ -351,7 +352,7 @@ The component also re-dispatches the native `focus`, `blur` and `invalid` events
 | `suffix`           | Renders content after input.                                                     |
 | `helper-text`      | Renders content below the input.                                                 |
 | `value-missing`    | Renders content when the required validation fails.                              |
-| `type-mismatch`    | Renders content when the a type url/email input pattern validation fails.        |
+| `type-mismatch`    | Renders content when the url/email type validation fails.        |
 | `pattern-mismatch` | Renders content when the pattern validation fails.                               |
 | `too-long`         | Renders content when the maxlength validation fails.                             |
 | `too-short`        | Renders content when the minlength validation fails.                             |

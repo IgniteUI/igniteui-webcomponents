@@ -30,6 +30,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - A click on the label of the input no longer opens the list and closes it again. One click emitted `igcOpening`, then `igcClosing` and `igcClosed`, and left the component closed, because the label click and the click that the label activation behavior dispatches on the input both reached the toggle handler.
 - #### Date picker
   - In dropdown mode, a `label` that you set after the first render did not go to the native input. This occurred in all themes but Material. The component now resolves the projected ARIA state again against the labels of the input. Thus the association changes when you add or remove the label. [#2378](https://github.com/IgniteUI/igniteui-webcomponents/pull/2378)
+  - The `container` CSS part is now exposed, so you can style the input container from outside the picker. The part was documented, but the component did not export it. [#2398](https://github.com/IgniteUI/igniteui-webcomponents/pull/2398)
+- #### Date range picker
+  - The `ranges` CSS part is now exposed, so you can style the predefined ranges area from outside the picker. The part was documented, but the component did not export it. [#2398](https://github.com/IgniteUI/igniteui-webcomponents/pull/2398)
 - #### Dropdown
   - The anchor element now gives the name of the list through `ariaLabelledByElements`. Before, `aria-labelledby` pointed to the anchor slot, which accessibility tools cannot resolve. [#2378](https://github.com/IgniteUI/igniteui-webcomponents/pull/2378)
 - #### Input, Date time input, Date range input, File input, Mask input, Textarea

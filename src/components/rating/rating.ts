@@ -101,8 +101,8 @@ const Slots = setSlots('symbol', 'value-label');
  * @cssproperty --symbol-size - The size of the symbols.
  * @cssproperty --symbol-full-color - The color of the filled symbol.
  * @cssproperty --symbol-empty-color - The color of the empty symbol.
- * @cssproperty --symbol-full-filter - The filter(s) used for the filled symbol when the rating is disabled.
- * @cssproperty --symbol-empty-filter - The filter(s) used for the empty symbol when the rating is disabled.
+ * @cssproperty --symbol-full-filter - The filter(s) applied to projected full symbols, other than icons, when the rating is disabled.
+ * @cssproperty --symbol-empty-filter - The filter(s) applied to projected empty symbols, other than icons, when the rating is disabled.
  */
 export default class IgcRatingComponent extends FormAssociatedMixin(
   EventEmitterMixin<IgcRatingComponentEventMap, Constructor<LitElement>>(

@@ -53,6 +53,7 @@
 | Version | Date       | Notes                 |
 | ------: | ---------- | --------------------- |
 |       1 | 2026-09-21 | Initial specification |
+|       2 | 2026-09-23 | Expose the `container` part and add its test scenario |
 
 ## Overview
 
@@ -611,97 +612,98 @@ groups below mirror the `describe` blocks.
 3. Labels the native input with a label set after the first render.
 4. Renders the slotted `prefix`, `suffix`, `clear-icon`, `calendar-icon`, `calendar-icon-open`, `helper-text`,
    `title`, `header-date` and `actions` content.
-5. Does not render the `title` slot content in dropdown mode.
-6. Is successfully initialized with a value, and with a string property binding - issue #1467.
-7. Does not set an invalid `Date` object as a value, through the attribute or through a property binding.
-8. Is successfully initialized in the open state, in dropdown and in dialog mode.
+5. Exposes the `container` part of the composed input to outside styles.
+6. Does not render the `title` slot content in dropdown mode.
+7. Is successfully initialized with a value, and with a string property binding - issue #1467.
+8. Does not set an invalid `Date` object as a value, through the attribute or through a property binding.
+9. Is successfully initialized in the open state, in dropdown and in dialog mode.
 
 ### Attributes and properties
 
-9. Sets the value through the attribute.
-10. Shows and hides the picker based on the `open` attribute.
-11. Sets the prompt character.
-12. Does not close the calendar after a selection when `keepOpenOnSelect` is set.
-13. Does not close the calendar on an outside click when `keepOpenOnOutsideClick` is set.
-14. With `nonEditable`, the value changes only through calendar selection and not through the input.
-15. With `readOnly`, the value changes neither through selection nor through typing.
-16. Sets the properties of the composed calendar and of the composed input correctly.
-17. Renders the label correctly for non-material themes.
-18. Active date - defaults to the current date, falls back to the value when only the value is set, and is settable.
-19. Localization - sets `inputFormat` and `displayFormat`, applies the predefined display formats, defaults
+10. Sets the value through the attribute.
+11. Shows and hides the picker based on the `open` attribute.
+12. Sets the prompt character.
+13. Does not close the calendar after a selection when `keepOpenOnSelect` is set.
+14. Does not close the calendar on an outside click when `keepOpenOnOutsideClick` is set.
+15. With `nonEditable`, the value changes only through calendar selection and not through the input.
+16. With `readOnly`, the value changes neither through selection nor through typing.
+17. Sets the properties of the composed calendar and of the composed input correctly.
+18. Renders the label correctly for non-material themes.
+19. Active date - defaults to the current date, falls back to the value when only the value is set, and is settable.
+20. Localization - sets `inputFormat` and `displayFormat`, applies the predefined display formats, defaults
     `inputFormat` from `Intl.DateTimeFormat` for the locale, and uses the locale format for `displayFormat` when it
     is not defined.
-20. Sets the underlying input into readonly mode in dialog mode.
-21. Derives the calendar week start from the locale when `week-start` is not set.
+21. Sets the underlying input into readonly mode in dialog mode.
+22. Derives the calendar week start from the locale when `week-start` is not set.
 
 ### Scroll strategy tests
 
-22. The `scroll` behavior keeps the calendar anchored.
-23. The `close` behavior closes the calendar on scroll.
-24. The `close` behavior is ignored in dialog mode.
+23. The `scroll` behavior keeps the calendar anchored.
+24. The `close` behavior closes the calendar on scroll.
+25. The `close` behavior is ignored in dialog mode.
 
 ### Methods tests
 
-25. `show`, `hide` and `toggle` open and close the picker without emitting events.
-26. `clear` clears the input.
-27. `stepUp` and `stepDown` are delegated to the composed date time input.
-28. `select`, `setSelectionRange` and `setRangeText` act on the input, and `setRangeText` re-applies the mask.
+26. `show`, `hide` and `toggle` open and close the picker without emitting events.
+27. `clear` clears the input.
+28. `stepUp` and `stepDown` are delegated to the composed date time input.
+29. `select`, `setSelectionRange` and `setRangeText` act on the input, and `setRangeText` re-applies the mask.
 
 ### Uncommitted edits
 
 Grouped as `Uncommitted edits - issue #1346` in the suite.
 
-29. Does not mutate `value` while typing in the input.
-30. Survives a host re-applying the bound value mid-edit.
+30. Does not mutate `value` while typing in the input.
+31. Survives a host re-applying the bound value mid-edit.
 
 ### Interactions
 
-31. <kbd>Escape</kbd> closes an open picker.
-32. <kbd>Alt</kbd> + <kbd>Arrow Down</kbd> opens and <kbd>Alt</kbd> + <kbd>Arrow Up</kbd> closes the picker, in both
+32. <kbd>Escape</kbd> closes an open picker.
+33. <kbd>Alt</kbd> + <kbd>Arrow Down</kbd> opens and <kbd>Alt</kbd> + <kbd>Arrow Up</kbd> closes the picker, in both
     modes.
-33. `igcInput` is emitted according to the `nonEditable` property.
-34. Clicking the calendar icon opens the picker in both modes.
-35. Clicking the input opens the picker in dialog mode only; clicking the label likewise.
-36. Clicking the clear icon does not open the picker, in either mode.
-37. The calendar view follows the typed value, switching to another month.
-38. Issue #1710, and issue #1884 - `igcChange` is emitted in dialog mode after clearing the value and losing focus.
+34. `igcInput` is emitted according to the `nonEditable` property.
+35. Clicking the calendar icon opens the picker in both modes.
+36. Clicking the input opens the picker in dialog mode only; clicking the label likewise.
+37. Clicking the clear icon does not open the picker, in either mode.
+38. The calendar view follows the typed value, switching to another month.
+39. Issue #1710, and issue #1884 - `igcChange` is emitted in dialog mode after clearing the value and losing focus.
 
 ### Readonly state
 
-39. Dropdown mode - the picker does not open on a calendar icon click or a keyboard shortcut, and the value is not
+40. Dropdown mode - the picker does not open on a calendar icon click or a keyboard shortcut, and the value is not
     cleared by clicking the clear icon.
-40. Dialog mode - the dialog does not open on a calendar icon, label or input click, nor on a keyboard shortcut, and
+41. Dialog mode - the dialog does not open on a calendar icon, label or input click, nor on a keyboard shortcut, and
     the value is not cleared by clicking the clear icon.
 
 ### Form integration tests
 
-41. Clicking the calendar toggle part does not put the component in an invalid state.
-42. Is form associated, and does not participate in submission with an empty or invalid value.
-43. Participates in submission when the value adheres to the constraints.
-44. Resets to its default value on form reset, resets to a new default after a `setAttribute` call, and clears the
+42. Clicking the calendar toggle part does not put the component in an invalid state.
+43. Is form associated, and does not participate in submission with an empty or invalid value.
+44. Participates in submission when the value adheres to the constraints.
+45. Resets to its default value on form reset, resets to a new default after a `setAttribute` call, and clears the
     invalid styles of the inner editor on reset.
-45. Submits on <kbd>Enter</kbd> when valid, and does not when invalid.
-46. Reflects the disabled state of an ancestor `fieldset` or form.
-47. Enforces the required, min, max - as dates and as string properties - and custom constraints.
-48. Invalidates the component when a disabled date is typed in the input.
-49. Validates synchronously.
-50. `defaultValue` - correct initial state, submission and reset; and validation for required, min, max and the
+46. Submits on <kbd>Enter</kbd> when valid, and does not when invalid.
+47. Reflects the disabled state of an ancestor `fieldset` or form.
+48. Enforces the required, min, max - as dates and as string properties - and custom constraints.
+49. Invalidates the component when a disabled date is typed in the input.
+50. Validates synchronously.
+51. `defaultValue` - correct initial state, submission and reset; and validation for required, min, max and the
     range constraints.
 
 ### Validation message slots
 
 Generated by `runValidationContainerTests`.
 
-51. Each validation slot renders for its failing constraint.
-52. The projected messages are rendered on the first failed submission.
+52. Each validation slot renders for its failing constraint.
+53. The projected messages are rendered on the first failed submission.
 
 ### ARIA projection and external labels
 
 Generated by `runExternalLabelAssociationTests` and `runAriaProjectionTests`.
 
-53. An external `label` bound through `for`, and a `label` wrapping the host, are projected onto the native input as
+54. An external `label` bound through `for`, and a `label` wrapping the host, are projected onto the native input as
     element references, and clicking it focuses the control.
-54. The host semantics - role, `aria-haspopup`, `aria-expanded` and the relations - land on the native input of the
+55. The host semantics - role, `aria-haspopup`, `aria-expanded` and the relations - land on the native input of the
     composed editor.
 
 ## Assumptions and limitations

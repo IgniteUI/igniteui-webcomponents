@@ -39,6 +39,7 @@
 | Version | Date       | Notes                 |
 | ------: | ---------- | --------------------- |
 |       1 | 2026-09-21 | Initial specification |
+|       2 | 2026-09-23 | Remove the `base` part, which the toast does not render |
 
 ## Overview
 

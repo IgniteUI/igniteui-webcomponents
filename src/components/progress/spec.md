@@ -43,6 +43,7 @@
 | Version | Date       | Notes                 |
 | ------: | ---------- | --------------------- |
 |       1 | 2026-09-21 | Initial specification |
+|       2 | 2026-09-23 | Limit the variant parts to the linear progress |
 
 ## Overview
 

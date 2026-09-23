@@ -405,7 +405,6 @@ export default class IgcChatComponent extends EventEmitterMixin<
                 .message=${message}
                 exportparts="
                   message-container,
-                  message-list,
                   message-header,
                   plain-text: message-content,
                   message-attachments: message-attachments-container,

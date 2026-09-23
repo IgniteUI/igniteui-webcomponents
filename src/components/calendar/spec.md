@@ -48,6 +48,7 @@
 | Version | Date       | Notes                 |
 | ------: | ---------- | --------------------- |
 |       1 | 2026-09-21 | Initial specification |
+|       2 | 2026-09-23 | Remove the default slot, which the calendar does not render |
 
 ## Overview
 
