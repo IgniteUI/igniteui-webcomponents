@@ -39,6 +39,7 @@
 | Version | Date       | Notes                 |
 | ------: | ---------- | --------------------- |
 |       1 | 2026-09-21 | Initial specification |
+|       2 | 2026-09-23 | Remove the `base` part, which the toast does not render |
 
 ## Overview
 
@@ -173,9 +174,7 @@ None applicable.
 
 ### CSS Shadow parts
 
-| Part   | Description                     |
-| ------ | ------------------------------- |
-| `base` | The base wrapper of the toast.  |
+None applicable.
 
 ## Test scenarios
 

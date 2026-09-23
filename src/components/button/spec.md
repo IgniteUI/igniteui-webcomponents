@@ -43,6 +43,7 @@
 | Version | Date       | Notes                 |
 | ------: | ---------- | --------------------- |
 |       1 | 2026-09-21 | Initial specification |
+|       2 | 2026-09-23 | Remove the `prefix` and `suffix` parts, which the button does not render |
 
 ## Overview
 
@@ -241,8 +242,6 @@ None of their own. The components emit the native events of the rendered `<butto
 | Component         | Part     | Description                                      |
 | ----------------- | -------- | ------------------------------------------------ |
 | `igc-button`      | `base`   | The native button or anchor element.              |
-| `igc-button`      | `prefix` | The prefix container.                             |
-| `igc-button`      | `suffix` | The suffix container.                             |
 | `igc-icon-button` | `base`   | The wrapping element of the icon button.          |
 | `igc-icon-button` | `icon`   | The icon element.                                 |
 

@@ -84,8 +84,8 @@ const Slots = setSlots(
  *
  * @element igc-tile
  *
- * @fires igcTileFullscreen - Fired when tile the fullscreen state changes.
- * @fires igcTileMaximize - Fired when tile the maximize state changes.
+ * @fires igcTileFullscreen - Fired when the fullscreen state of the tile changes.
+ * @fires igcTileMaximize - Fired when the maximize state of the tile changes.
  * @fires igcTileDragStart - Fired when a drag operation on a tile is about to begin. Cancelable.
  * @fires igcTileDragEnd - Fired when a drag operation with a tile is successfully completed.
  * @fires igcTileDragCancel - Fired when a tile drag operation is canceled by the user.

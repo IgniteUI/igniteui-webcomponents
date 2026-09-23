@@ -49,6 +49,7 @@
 | Version | Date       | Notes                 |
 | ------: | ---------- | --------------------- |
 |       1 | 2026-09-21 | Initial specification |
+|       2 | 2026-09-23 | Remove the `prefix` and `title` parts and add the `input-container` part |
 
 ## Overview
 
@@ -337,11 +338,11 @@ The component exposes a part for every region it renders. The main groups are:
 
 | Group       | Parts                                                                                                        |
 | ----------- | ------------------------------------------------------------------------------------------------------------ |
-| Container   | `chat-container`, `header`, `prefix`, `title`, `message-area-container`, `empty-state`                        |
+| Container   | `chat-container`, `header`, `message-area-container`, `empty-state`                                          |
 | Messages    | `message-list`, `message-item`, `message-container`, `message-header`, `message-content`, `message-sent`, `message-actions-container`, `message-attachments-container`, `message-attachment` |
 | Typing      | `typing-indicator`, `typing-dot`                                                                               |
 | Suggestions | `suggestions-container`, `suggestions-header`, `suggestion`, `suggestion-prefix`, `suggestion-title`           |
-| Composer    | `input-area-container`, `input-area`, `text-input`, `input-actions-container`, `input-actions-start`, `input-actions-end`, `file-upload-container`, `file-upload`, `send-button-container`, `send-button` |
+| Composer    | `input-area-container`, `input-area`, `input-container`, `text-input`, `input-actions-container`, `input-actions-start`, `input-actions-end`, `file-upload-container`, `file-upload`, `send-button-container`, `send-button` |
 | Attachments | `input-attachments-container`, `input-attachment-container`, `input-attachment-name`, `input-attachment-icon`, `attachment-header`, `attachment-content`, `attachment-icon`, `file-name` |
 
 ## Test scenarios

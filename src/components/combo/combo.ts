@@ -102,7 +102,7 @@ const i18n: I18nControllerConfig<IComboResourceStrings> = {
  * @fires igcChange - Emitted when the control's selection has changed.
  * @fires igcOpening - Emitted just before the list of options is opened.
  * @fires igcOpened - Emitted after the list of options is opened.
- * @fires igcClosing - Emitter just before the list of options is closed.
+ * @fires igcClosing - Emitted just before the list of options is closed.
  * @fires igcClosed - Emitted after the list of options is closed.
  *
  * @csspart label - The encapsulated text label of the combo.

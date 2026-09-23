@@ -43,6 +43,7 @@
 | Version | Date       | Notes                 |
 | ------: | ---------- | --------------------- |
 |       1 | 2026-09-21 | Initial specification |
+|       2 | 2026-09-23 | Limit the variant parts to the linear progress |
 
 ## Overview
 
@@ -222,13 +223,12 @@ None applicable.
 
 ### CSS Shadow parts
 
-Shared by both indicators: `track`, `fill`, `label`, `value`, `indeterminate`, and one part per variant —
-`primary`, `info`, `success`, `warning` and `danger`.
+Shared by both indicators: `track`, `fill`, `label`, `value` and `indeterminate`.
 
-| Component               | Additional parts                              |
-| ----------------------- | --------------------------------------------- |
-| `igc-linear-progress`   | `striped`                                      |
-| `igc-circular-progress` | `svg`, `gradient_start`, `gradient_end`        |
+| Component               | Additional parts                                                                          |
+| ----------------------- | ----------------------------------------------------------------------------------------- |
+| `igc-linear-progress`   | `striped`, and one part per variant: `primary`, `info`, `success`, `warning` and `danger` |
+| `igc-circular-progress` | `svg`, `gradient_start`, `gradient_end`                                                   |
 
 ## Test scenarios
 

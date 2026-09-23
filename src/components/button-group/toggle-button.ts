@@ -23,7 +23,7 @@ import { styles as shared } from './themes/shared/button/button.common.css.js';
  *
  * @element igc-toggle-button
  *
- * @slot Renders the label/content of the button.
+ * @slot - Renders the label/content of the button.
  *
  * @csspart toggle - The native button element.
  * @csspart focused - The native button element when focused through a keyboard interaction.

@@ -457,7 +457,7 @@ export default class IgcDatePickerComponent extends EventEmitterMixin<
         @igcInput=${this._handleInputEvent}
         @keydown=${this._handleEnterKeydown}
         @click=${bindIf(hasClickHandler, this._handleInputClick)}
-        exportparts="input, label, prefix, suffix"
+        exportparts="container, input, label, prefix, suffix"
       >
         ${this._renderEditorSlots()}
       </igc-date-time-input>

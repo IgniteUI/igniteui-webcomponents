@@ -48,6 +48,7 @@
 | Version | Date       | Notes                 |
 | ------: | ---------- | --------------------- |
 |       1 | 2026-09-21 | Initial specification |
+|       2 | 2026-09-23 | Remove the default slot, which the calendar does not render |
 
 ## Overview
 
@@ -337,7 +338,6 @@ None applicable. The component is driven entirely through its properties.
 
 | Name          | Description                                                            |
 | ------------- | ----------------------------------------------------------------------- |
-| (default)     | The default slot for the calendar.                                     |
 | `title`       | Renders the title of the calendar header.                              |
 | `header-date` | Renders content instead of the current date/range in the calendar header. |
 

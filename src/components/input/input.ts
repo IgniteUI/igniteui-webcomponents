@@ -51,7 +51,7 @@ const Slots = setSlots(
  * @slot suffix - Renders content after input.
  * @slot helper-text - Renders content below the input.
  * @slot value-missing - Renders content when the required validation fails.
- * @slot type-mismatch - Renders content when the a type url/email input pattern validation fails.
+ * @slot type-mismatch - Renders content when the url/email type validation fails.
  * @slot pattern-mismatch - Renders content when the pattern validation fails.
  * @slot too-long - Renders content when the maxlength validation fails.
  * @slot too-short - Renders content when the minlength validation fails.
@@ -62,7 +62,7 @@ const Slots = setSlots(
  * @slot invalid - Renders content when the component is in invalid state (validity.valid = false).
  *
  * @fires igcInput - Emitted when the control input receives user input.
- * @fires igcChange - Emitted when the control's checked state changes.
+ * @fires igcChange - Emitted when the value of the control is committed.
  *
  * @csspart container - The main wrapper that holds all main input elements.
  * @csspart input - The native input element.

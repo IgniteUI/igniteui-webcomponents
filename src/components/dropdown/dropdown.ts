@@ -65,7 +65,7 @@ const nextItemId = createIdGenerator('igc-dropdown-item');
  * @fires igcChange - Emitted when the selected item changes.
  * @fires igcOpening - Emitted just before the dropdown is opened.
  * @fires igcOpened - Emitted after the dropdown is opened.
- * @fires igcClosing - Emitter just before the dropdown is closed.
+ * @fires igcClosing - Emitted just before the dropdown is closed.
  * @fires igcClosed - Emitted after closing the dropdown.
  *
  * @slot target - Renders the dropdown's target element.
