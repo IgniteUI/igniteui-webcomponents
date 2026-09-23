@@ -70,7 +70,7 @@ const metadata: Meta<IgcVirtualScrollComponent> = {
     estimatedItemSize: {
       type: 'number',
       description:
-        'Estimated item size in pixels, used before an item is measured in the DOM.\nAfter the first render of an item, the engine replaces the estimate with the measured size.',
+        'Estimated item size in pixels, used before an item is measured in the DOM.\nAfter the first render of an item, the engine replaces the estimate with the measured size.\nThe average measured size also replaces the estimate of the items that are not measured\nyet, so the scrollbar follows the real content.',
       control: 'number',
       table: { defaultValue: { summary: '50' } },
     },
@@ -91,6 +91,8 @@ interface IgcVirtualScrollArgs {
   /**
    * Estimated item size in pixels, used before an item is measured in the DOM.
    * After the first render of an item, the engine replaces the estimate with the measured size.
+   * The average measured size also replaces the estimate of the items that are not measured
+   * yet, so the scrollbar follows the real content.
    */
   estimatedItemSize: number;
 }

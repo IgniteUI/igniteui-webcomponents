@@ -80,6 +80,7 @@ export { default as IgcVirtualScrollComponent } from './components/virtualizatio
 export type {
   IgcVirtualScrollComponentEventMap,
   VirtualScrollItemTemplate,
+  VirtualScrollKeyFunction,
 } from './components/virtualization/virtualization.js';
 export type {
   VirtualScrollItemContext,

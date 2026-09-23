@@ -17,8 +17,8 @@ import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { isLTR } from '#internals/utils/dom.js';
 import { asNumber, clamp } from '#internals/utils/math.js';
 import { VirtualScrollEngine } from './engine.js';
+import { recycle } from './recycle.js';
 import {
-  type ScrollAlignment,
   type VirtualScrollDataRequest,
   VirtualScrollItemContext,
   type VirtualScrollState,
@@ -28,6 +28,8 @@ import {
 export type VirtualScrollItemTemplate<T> = (
   context: VirtualScrollItemContext<T>
 ) => TemplateResult | typeof nothing;
+
+export type VirtualScrollKeyFunction<T> = (item: T, index: number) => unknown;
 
 export interface IgcVirtualScrollComponentEventMap {
   igcStateChange: CustomEvent<VirtualScrollState>;
@@ -171,10 +173,8 @@ export default class IgcVirtualScrollComponent<
   private _currentRange: VisibleRange = EMPTY_RANGE;
 
   /**
-   * The item index each wrapper element was last observed under. Lit keeps the
-   * wrapper elements between renders, so after a scroll one element can hold a
-   * different item at the same size, which a ResizeObserver does not report.
-   * See `_scheduleItemMeasurement`.
+   * The item index each wrapper element was last observed under. See
+   * `_scheduleItemMeasurement`.
    */
   private readonly _observedItemIndexes = new WeakMap<Element, number>();
   private _lastEmittedState: VirtualScrollState | null = null;
@@ -236,6 +236,8 @@ export default class IgcVirtualScrollComponent<
   /**
    * Estimated item size in pixels, used before an item is measured in the DOM.
    * After the first render of an item, the engine replaces the estimate with the measured size.
+   * The average measured size also replaces the estimate of the items that are not measured
+   * yet, so the scrollbar follows the real content.
    * @attr estimated-item-size
    * @default 50
    */
@@ -257,6 +259,18 @@ export default class IgcVirtualScrollComponent<
    */
   @property({ attribute: false })
   public itemTemplate: VirtualScrollItemTemplate<T> | null = null;
+
+  /* blazorSuppress */
+  /**
+   * A function that returns a unique key for an item. Receives the item and its index in `data`.
+   *
+   * An item keeps its rendered element while its key stays in the rendered window. The elements
+   * of keys that leave the window are reused for keys that enter it. Without it, the index is the
+   * key, so after a `data` change an index keeps its element and shows its new item. Set it when
+   * items move within `data`, for example on sort, insert or remove.
+   */
+  @property({ attribute: false })
+  public keyFunction: VirtualScrollKeyFunction<T> | null = null;
 
   //#endregion
 
@@ -395,13 +409,17 @@ export default class IgcVirtualScrollComponent<
           role="presentation"
           style=${styleMap(contentStyle)}
         >
-          ${visibleItems.map((item, i) => {
-            const itemIndex = range.startIndex + i;
-            const ctx = new VirtualScrollItemContext(item, itemIndex, count);
-            return html`<div role="presentation" data-vs-index=${itemIndex}>
-              ${this.itemTemplate!(ctx)}
-            </div>`;
-          })}
+          ${recycle(
+            visibleItems,
+            (item, i) => this._keyOf(item, range.startIndex + i),
+            (item, i) => {
+              const itemIndex = range.startIndex + i;
+              const ctx = new VirtualScrollItemContext(item, itemIndex, count);
+              return html`<div role="presentation" data-vs-index=${itemIndex}>
+                ${this.itemTemplate!(ctx)}
+              </div>`;
+            }
+          )}
         </div>
       </div>
     `;
@@ -431,6 +449,11 @@ export default class IgcVirtualScrollComponent<
     return this.data ?? [];
   }
 
+  /** The key that ties the item at `index` to its rendered element. */
+  private _keyOf(item: T, index: number): unknown {
+    return this.keyFunction ? this.keyFunction(item, index) : index;
+  }
+
   /**
    * The window to render for the current scroll position and viewport. Empty
    * until an `itemTemplate` is set, because nothing renders without one.
@@ -449,33 +472,20 @@ export default class IgcVirtualScrollComponent<
    * The scroll offset that aligns `index` in the viewport, as `options` gives,
    * from the current size data of the engine. The same input can give a
    * different result as more items are measured.
-   *
-   * For `block: 'nearest'` on an item in view, returns the current offset, so
-   * no scroll occurs.
    */
   private _getAlignedScrollOffset(
     index: number,
     options?: ScrollIntoViewOptions
   ): number {
-    const requested = this._isVertical
+    const position = this._isVertical
       ? (options?.block ?? 'start')
       : (options?.inline ?? options?.block ?? 'start');
-    const current = this._currentAxisScroll();
 
-    if (
-      requested === 'nearest' &&
-      this._engine.isIndexInView(index, current, this._viewportSize)
-    ) {
-      return current;
-    }
-
-    const align: ScrollAlignment =
-      requested === 'center' || requested === 'end' ? requested : 'start';
-
-    return this._engine.getAlignedScrollOffset(
+    return this._engine.resolveScrollOffset(
       index,
+      this._currentAxisScroll(),
       this._viewportSize,
-      align
+      position
     );
   }
 
@@ -649,6 +659,8 @@ export default class IgcVirtualScrollComponent<
         this._engine.measureItem(index, measured);
       }
     }
+
+    this._engine.adaptEstimate(this._currentRange.startIndex);
   }
 
   /**
@@ -658,10 +670,9 @@ export default class IgcVirtualScrollComponent<
    * @remarks
    * `observe` on an already observed element does nothing, so a new
    * measurement needs `unobserve` and then `observe`. Do this for each element
-   * whose `data-vs-index` changed. Lit keeps the wrapper elements between
-   * renders, so after a scroll one element can hold a different item at the
-   * same size. The observer does not report that, and the new index keeps its
-   * estimated size.
+   * whose `data-vs-index` changed. The wrapper elements are recycled, so after
+   * a scroll one element can hold a different item at the same size. The
+   * observer does not report that, and the new index keeps its estimated size.
    */
   private _scheduleItemMeasurement(): void {
     const content = this._contentRef.value;
@@ -819,6 +830,10 @@ export default class IgcVirtualScrollComponent<
 
   /**
    * Scrolls to the specified item index.
+   *
+   * `block` (`inline` in the horizontal orientation) positions the item as in
+   * `scrollIntoView`, and defaults to `start`. With `nearest`, the item
+   * scrolls the smallest distance that brings it into view.
    *
    * Items outside the rendered window have only an estimated size, so the
    * first jump can miss the target. The items at the landing point are then
