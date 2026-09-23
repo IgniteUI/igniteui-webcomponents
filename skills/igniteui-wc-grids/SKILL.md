@@ -5,6 +5,18 @@ description: Set up a data grid feature with Ignite UI Web Components — grid s
 user-invocable: true
 ---
 
+## USE WHEN
+- You need to add a data grid to a Web Components app.
+- A grid is rendering unstyled, mis-sized, or broken.
+- The grid lives inside a custom element or Shadow DOM.
+- You need the correct package, theme, layout, or sorting/filter setup.
+
+## DO NOT USE WHEN
+- You only need general component selection, not a grid setup.
+- The task is a Grid Lite to premium grid migration; use the migration skill instead.
+- You need a chart, list, or tree view rather than tabular data.
+- You need app-wide theming without a grid implementation.
+
 # Build a Data Grid with Ignite UI Web Components
 
 ## Required Workflow
