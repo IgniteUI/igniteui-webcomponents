@@ -1,4 +1,5 @@
 ---
+license: MIT
 name: igniteui-wc-grids
 description: Set up a data grid feature with Ignite UI Web Components — grid selection, single-design-system theming (base + grid theme), Shadow DOM theme injection, component registration, fluid layout, and sorting/filtering. Use when adding a grid to an app, or when a grid renders unstyled, mis-sized, or broken inside a custom element/Shadow DOM.
 user-invocable: true
