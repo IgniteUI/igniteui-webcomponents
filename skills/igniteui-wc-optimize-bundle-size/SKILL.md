@@ -1,6 +1,7 @@
 ---
+license: MIT
 name: igniteui-wc-optimize-bundle-size
-description: Optimize application bundle size by importing only necessary components and using tree-shaking effectively
+description: "Reduce application bundle size with Ignite UI Web Components by importing and registering only needed components, avoiding defineAllComponents and barrel imports, lazy-loading heavy components, and verifying tree-shaking with bundle analysis. WHEN TO USE: the user reports a large bundle or slow load, asks how to import components individually, wants to lazy-load grids, charts, or dock manager, or needs to audit Ignite UI imports in Vite/webpack/Rollup builds. WHEN NOT TO USE: initial package installation or framework wiring (use integrate-with-framework), choosing components (use choose-components), theming (use customize-component-theme), or general performance issues unrelated to bundle size such as runtime rendering or data virtualization."
 user-invocable: true
 ---
 

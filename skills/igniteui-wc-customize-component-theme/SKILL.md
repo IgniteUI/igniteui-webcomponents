@@ -1,6 +1,7 @@
 ---
+license: MIT
 name: igniteui-wc-customize-component-theme
-description: Customize Ignite UI Web Components styling using CSS custom properties, optional Sass, and the igniteui-theming MCP server for AI-assisted theming
+description: "Theme and style Ignite UI Web Components (and igniteui-react) apps using CSS custom properties, optional Sass, and the igniteui-theming MCP server. WHEN TO USE: the user wants to apply or switch a pre-built theme (Material, Fluent, Bootstrap, Indigo, light/dark), create a custom palette or global theme, restyle a specific component via design tokens or ::part, scope a theme to a container, adjust sizing/spacing/roundness, or toggle light/dark mode. WHEN NOT TO USE: choosing which component to use (use choose-components), building a full view from a design image or Figma file (use generate-from-image-design or figma-to-app, which include theming), installing packages or framework setup (use integrate-with-framework), or styling non-Ignite UI elements or libraries."
 user-invocable: true
 ---
 

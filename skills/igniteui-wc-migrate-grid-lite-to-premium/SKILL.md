@@ -1,6 +1,6 @@
 ---
 name: igniteui-wc-migrate-grid-lite-to-premium
-description: Step-by-step migration guide from igniteui-grid-lite (IgcGridLite) to the premium igniteui-webcomponents-grids (IgcGridComponent), covering every import, class name, HTML tag, property, event, template, sorting, filtering, and theming API change.
+description: "Step-by-step migration from igniteui-grid-lite (IgcGridLite, <igc-grid-lite>) to the premium igniteui-webcomponents-grids data grid (IgcGridComponent, <igc-grid>), covering imports, class names, HTML tags, properties, events, templates, sorting, filtering, remote data, and theming API changes. WHEN TO USE: the user wants to upgrade from Grid Lite to the premium grid, or needs enterprise features Grid Lite lacks (editing, selection, paging, grouping, summaries, Excel export, state persistence). WHEN NOT TO USE: starting a new grid from scratch (use choose-components), migrating between other grids (Tree Grid, Hierarchical Grid, Pivot Grid) or across major versions of the same package, the project uses igniteui-angular or Blazor grids, or the user only needs theming (use customize-component-theme)."
 user-invocable: true
 ---
 
