@@ -119,6 +119,27 @@ describe('Date range picker - common tests for single and two inputs mode', () =
       clear = getIcon(picker, clearIcon);
       expect(clear).not.to.be.null;
     });
+
+    it('exposes the ranges part of the predefined ranges area', async () => {
+      const style = document.createElement('style');
+      style.textContent =
+        'igc-date-range-picker::part(ranges) { --part-probe: exposed; }';
+      document.head.append(style);
+
+      try {
+        picker.usePredefinedRanges = true;
+        await elementUpdated(picker);
+
+        const ranges = picker.renderRoot
+          .querySelector(IgcPredefinedRangesAreaComponent.tagName)!
+          .renderRoot.querySelector('[part~="ranges"]')!;
+        expect(
+          getComputedStyle(ranges).getPropertyValue('--part-probe').trim()
+        ).to.equal('exposed');
+      } finally {
+        style.remove();
+      }
+    });
   });
 
   describe('Properties', () => {

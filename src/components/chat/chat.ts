@@ -150,8 +150,6 @@ const Slots = setSlots(
  *
  * @csspart chat-container - Styles the main chat container.
  * @csspart header - Styles the chat header container.
- * @csspart prefix - Styles the element before the chat title (e.g., avatar).
- * @csspart title - Styles the chat header title.
  *
  * @csspart message-area-container - Styles the container holding the messages and (optional) suggestions.
  * @csspart message-list - Styles the message list container.
@@ -169,6 +167,7 @@ const Slots = setSlots(
  *
  * @csspart input-area-container - Styles the wrapper around the chat input area.
  * @csspart input-area - Styles the main text input area.
+ * @csspart input-container - Styles the wrapper around the text input.
  * @csspart input-attachments-container - Styles the container for attachments in the input.
  * @csspart input-attachment-container - Styles a single attachment in the input area.
  * @csspart input-attachment-name - Styles the file name of an attachment.
@@ -183,7 +182,6 @@ const Slots = setSlots(
  * @csspart send-button - Styles the send button.
  *
  * @csspart message-container - Styles the container of a single message.
- * @csspart message-list (forwarded) - Styles the internal list of messages.
  * @csspart message-header - Styles the header of a message (e.g., sender, timestamp).
  * @csspart message-content - Styles the text content of a message.
  * @csspart message-attachments-container - Styles the container for message attachments.
@@ -407,7 +405,6 @@ export default class IgcChatComponent extends EventEmitterMixin<
                 .message=${message}
                 exportparts="
                   message-container,
-                  message-list,
                   message-header,
                   plain-text: message-content,
                   message-attachments: message-attachments-container,

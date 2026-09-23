@@ -46,6 +46,7 @@
 | Version | Date       | Notes                 |
 | ------: | ---------- | --------------------- |
 |       1 | 2026-09-21 | Initial specification |
+|       2 | 2026-09-23 | Describe when the `--symbol-*-filter` properties apply |
 
 ## Overview
 
@@ -253,8 +254,8 @@ Setting `value` from code does not emit `igcChange`, and neither does an interac
 | `--symbol-size`         | The size of the symbols.                |
 | `--symbol-full-color`   | The color of a filled symbol.           |
 | `--symbol-empty-color`  | The color of an empty symbol.           |
-| `--symbol-full-filter`  | The filters applied to a filled symbol. |
-| `--symbol-empty-filter` | The filters applied to an empty symbol. |
+| `--symbol-full-filter`  | The filter(s) applied to projected full symbols, other than icons, when the rating is disabled. |
+| `--symbol-empty-filter` | The filter(s) applied to projected empty symbols, other than icons, when the rating is disabled. |
 
 ## Test scenarios
 

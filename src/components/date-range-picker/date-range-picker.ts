@@ -104,8 +104,8 @@ const Slots = setSlots(
  * @slot prefix-start - Renders content before the start input (two inputs).
  * @slot prefix-end - Renders content before the end input (two inputs).
  * @slot suffix - Renders content after the input (single input).
- * @slot suffix-start - Renders content after the start input (single input).
- * @slot suffix-end - Renders content after the end input (single input).
+ * @slot suffix-start - Renders content after the start input (two inputs).
+ * @slot suffix-end - Renders content after the end input (two inputs).
  * @slot helper-text - Renders content below the input.
  * @slot bad-input - Renders content when the value is in the disabledDates ranges.
  * @slot value-missing - Renders content when the required validation fails.
@@ -147,7 +147,6 @@ const Slots = setSlots(
  * @csspart clear-icon-start - The clear icon wrapper for the start input (two inputs).
  * @csspart clear-icon-end - The clear icon wrapper for the end input (two inputs).
  * @csspart actions - The wrapper for the custom actions area.
- * @csspart clear-icon - The clear icon wrapper.
  * @csspart input - The native input element.
  * @csspart prefix - The prefix wrapper.
  * @csspart suffix - The suffix wrapper.
@@ -727,6 +726,7 @@ export default class IgcDateRangePickerComponent extends EventEmitterMixin<
             .resourceStrings=${this.resourceStrings}
             @igcRangeSelect=${({ detail }: CustomEvent<DateRangeValue>) =>
               this._select(detail, this._isDropDown)}
+            exportparts="ranges"
           >
           </igc-predefined-ranges-area>
         `

@@ -62,7 +62,6 @@ const MAX_DISABLED_DATE_SKIP = 1000;
  *
  * @element igc-calendar
  *
- * @slot - The default slot for the calendar.
  * @slot title - Renders the title of the calendar header.
  * @slot header-date - Renders content instead of the current date/range in the calendar header.
  *

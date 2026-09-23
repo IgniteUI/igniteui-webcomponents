@@ -66,7 +66,7 @@ const i18n: I18nControllerConfig<IFileInputResourceStrings> = {
  * @slot custom-error - Renders content when setCustomValidity(message) is set.
  * @slot invalid - Renders content when the component is in invalid state (validity.valid = false).
  *
- * @fires igcChange - Emitted when the control's checked state changes.
+ * @fires igcChange - Emitted when the selection of the control changes.
  * @fires igcCancel - Emitted when the control's file picker dialog is canceled.
  *
  * @csspart container - The main wrapper that holds all main input elements.

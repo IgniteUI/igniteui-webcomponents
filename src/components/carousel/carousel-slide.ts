@@ -18,7 +18,7 @@ const nextId = createIdGenerator('igc-carousel-slide');
  *
  * @element igc-carousel-slide
  *
- * @slot Default slot for the carousel slide.
+ * @slot - Default slot for the carousel slide.
  */
 export default class IgcCarouselSlideComponent extends LitElement {
   public static override styles = styles;
