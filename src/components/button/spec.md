@@ -241,8 +241,6 @@ None of their own. The components emit the native events of the rendered `<butto
 | Component         | Part     | Description                                      |
 | ----------------- | -------- | ------------------------------------------------ |
 | `igc-button`      | `base`   | The native button or anchor element.              |
-| `igc-button`      | `prefix` | The prefix container.                             |
-| `igc-button`      | `suffix` | The suffix container.                             |
 | `igc-icon-button` | `base`   | The wrapping element of the icon button.          |
 | `igc-icon-button` | `icon`   | The icon element.                                 |
 

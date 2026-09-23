@@ -80,7 +80,7 @@ const Slots = setSlots(
  * @slot invalid - Renders content when the component is in invalid state (validity.valid = false).
  *
  * @fires igcInput - Emitted when the control receives user input.
- * @fires igcChange - Emitted when the a change to the control value is committed by the user.
+ * @fires igcChange - Emitted when a change to the control value is committed by the user.
  *
  * @csspart container - The main wrapper that holds all main input elements of the textarea.
  * @csspart input - The native input element of the textarea.

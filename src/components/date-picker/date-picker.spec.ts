@@ -256,6 +256,24 @@ describe('Date picker', () => {
       }
     });
 
+    it('exposes the container part of the inner input', async () => {
+      const style = document.createElement('style');
+      style.textContent =
+        'igc-date-picker::part(container) { --part-probe: exposed; }';
+      document.head.append(style);
+
+      try {
+        const container = dateTimeInput.renderRoot.querySelector(
+          '[part~="container"]'
+        )!;
+        expect(
+          getComputedStyle(container).getPropertyValue('--part-probe').trim()
+        ).to.equal('exposed');
+      } finally {
+        style.remove();
+      }
+    });
+
     it('should not render title slot elements in dropdown mode', async () => {
       picker = await fixture<IgcDatePickerComponent>(
         html`<igc-date-picker mode="dropdown">

@@ -253,8 +253,8 @@ Setting `value` from code does not emit `igcChange`, and neither does an interac
 | `--symbol-size`         | The size of the symbols.                |
 | `--symbol-full-color`   | The color of a filled symbol.           |
 | `--symbol-empty-color`  | The color of an empty symbol.           |
-| `--symbol-full-filter`  | The filters applied to a filled symbol. |
-| `--symbol-empty-filter` | The filters applied to an empty symbol. |
+| `--symbol-full-filter`  | The filters applied to a filled symbol when the rating is disabled. |
+| `--symbol-empty-filter` | The filters applied to an empty symbol when the rating is disabled. |
 
 ## Test scenarios
 

@@ -173,9 +173,7 @@ None applicable.
 
 ### CSS Shadow parts
 
-| Part   | Description                     |
-| ------ | ------------------------------- |
-| `base` | The base wrapper of the toast.  |
+None applicable.
 
 ## Test scenarios
 

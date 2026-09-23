@@ -45,11 +45,12 @@ type DefaultAttachmentRenderers = {
  * @csspart attachments-container - Container wrapping all attachments.
  * @csspart attachment - Wrapper for a single attachment.
  * @csspart attachment-header - Wrapper for a single attachment header.
- * @csspart attachments-content - Part representing the attachment preview.
+ * @csspart attachment-content - Part representing the attachment preview.
  * @csspart attachment-icon - Icon part representing the attachment type.
  * @csspart file-name - Part representing the attachment's file name.
- * @csspart actions - Container for header action buttons.
- * @csspart image-attachment - Part for the image element inside an image attachment.
+ * @csspart details - Container for the icon and file name inside the attachment header.
+ * @csspart image-attachment-icon - The image element inside an image attachment.
+ * @csspart file-attachment-icon - The file type icon inside a file attachment.
  *
  * @fires igcAttachmentClick - Fired when an attachment header is toggled (clicked).
  * @hidden @internal

@@ -337,7 +337,6 @@ None applicable. The component is driven entirely through its properties.
 
 | Name          | Description                                                            |
 | ------------- | ----------------------------------------------------------------------- |
-| (default)     | The default slot for the calendar.                                     |
 | `title`       | Renders the title of the calendar header.                              |
 | `header-date` | Renders content instead of the current date/range in the calendar header. |
 

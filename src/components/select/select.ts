@@ -106,10 +106,10 @@ const Slots = setSlots(
  * @slot custom-error - Renders content when setCustomValidity(message) is set.
  * @slot invalid - Renders content when the component is in invalid state (validity.valid = false).
  *
- * @fires igcChange - Emitted when the control's checked state changes.
+ * @fires igcChange - Emitted when the selected item changes.
  * @fires igcOpening - Emitted just before the list of options is opened.
  * @fires igcOpened - Emitted after the list of options is opened.
- * @fires igcClosing - Emitter just before the list of options is closed.
+ * @fires igcClosing - Emitted just before the list of options is closed.
  * @fires igcClosed - Emitted after the list of options is closed.
  *
  * @csspart list - The list wrapping container for the items of the select.
