@@ -1,64 +1,43 @@
 ---
 name: review-component-pr
-description: Comprehensive code review checklist for component pull requests ensuring quality, accessibility, specification accuracy, and adherence to project conventions
+description: Code review checklist for component pull requests covering structure, public API, specification accuracy, accessibility, behavior, styles, tests, and build hygiene
 ---
 
 # Review Component PR
 
-A review checklist for pull requests that add or modify components. The rules behind it live in
-the [Coding Guidelines](../../CODING_GUIDELINES.md); this skill is the pass over a diff.
+A checklist to use on a diff. The rules are in the [Coding Guidelines](../../CODING_GUIDELINES.md).
+Read the `spec.md` of the component before the diff. A change that contradicts the spec is a
+bug, or the author must also update the spec.
 
-## When to Use
-
-- Reviewing a PR that adds or changes a component
-- Pre-merge quality gate, or a self-review before opening a PR
-
-## Review Order
-
-1. **Structure** — are all the required files there?
-2. **Public API** — properties, events, docs; this is the part that cannot be changed later
-3. **Specification** — does `spec.md` still describe what the code does?
-4. **Accessibility** — mandatory, never skipped
-5. **Behavior** — lifecycle, state, forms
-6. **Styles and themes**
-7. **Tests and generated artifacts**
-8. **Build and hygiene**
+Review in this order. The public API is hard to change after release, so review it early.
 
 ## 1. Structure
 
-- [ ] Component at `src/components/[name]/[name].ts` with a single default export
-- [ ] Test suite at `src/components/[name]/[name].spec.ts`
-- [ ] Specification at `src/components/[name]/spec.md`
-- [ ] Story at `stories/[name].stories.ts` — filename matches the tag name
-- [ ] Theme scaffold complete: `[name].base.scss`, `shared/`, `light/`, `dark/`, `themes.ts`
-- [ ] Exported from `src/index.ts` in alphabetical order
-- [ ] Cross-cutting imports use `#internals/*`, `#theming/*`, `#animations/*`; component-to-component
-      imports stay relative; every specifier ends in `.js`
-- [ ] Nothing new under `src/internals` is exported from the public entry point
+- [ ] `[name].ts` (single default export), `[name].spec.ts` and `spec.md` in
+      `src/components/[name]/`
+- [ ] `stories/[name].stories.ts`, with a filename that matches the tag
+- [ ] Complete theme scaffold, with every file in `themes.ts`
+- [ ] Exported from `src/index.ts` in alphabetical order. Nothing from `src/internals` is
+      exported.
+- [ ] `#internals` / `#theming` / `#animations` aliases for cross-cutting imports. Relative
+      imports between components. `.js` specifiers.
+- [ ] A new alias is in `package.json` **and** in `scripts/_package.json`
 
 ## 2. Public API and Documentation
 
-- [ ] `tagName`, `styles` and `register()` static members present; `register()` also registers
-      every dependency rendered in the template
-- [ ] `HTMLElementTagNameMap` declaration added
-- [ ] Only primitives are attributes; complex types use `attribute: false` and are never reflected
-- [ ] Booleans default to `false`
-- [ ] Attribute names are kebab-case, spelled out for multi-word properties
-- [ ] Events go through `EventEmitterMixin` with a typed event map; names are `igc`-prefixed
-      camelCase, cancelable ones use the `-ing` suffix and their return value is checked
-- [ ] Events are emitted from user interaction, not from property assignment or method calls
-- [ ] JSDoc carries `@element`, `@slot`, `@csspart`, `@cssproperty`, `@attr`, `@default`,
-      `@event` as applicable, with tags after the description
-- [ ] Deprecations follow `@deprecated since [SemVer]. Use the \`[new API]\` [type] instead.`
-- [ ] **No `igc-` tag names in description prose** — they ship verbatim into
-      `custom-elements.json` and every framework wrapper's docs. Allowed only in `@element`,
-      fenced `@example` blocks, literal `igc-`-containing event/attribute names, and
-      `@internal`/`@hidden` members.
-- [ ] Descriptions don't restate the tag ("The label _attribute_ of…"), don't use `Gets/Sets`,
-      and booleans start with "Whether" describing the `true` state accurately
+- [ ] `tagName`, `styles`, `register()` (with all rendered dependencies), `HTMLElementTagNameMap`
+- [ ] Only primitives are attributes. Complex types use `attribute: false` and do not reflect.
+- [ ] Booleans default to `false`. Multi-word attributes are kebab-case and explicit.
+- [ ] Events use `EventEmitterMixin` with a typed map. Names are `igc` + camelCase, cancelable
+      events end in `-ing` and the code checks their return value.
+- [ ] Events come from user interaction, not from property sets or method calls
+- [ ] JSDoc tags come after the description. `@deprecated since [SemVer]. Use the \`[new]\`
+      [type] instead.`
+- [ ] No `igc-` tag names in description prose. No "…attribute of…", no `Gets/Sets`. Booleans
+      start with "Whether" and match the `true` state.
 
 ```bash
-# Quick leak check — should return nothing outside @element/@example
+# Tag-name leak check: expect no output outside @element/@example
 grep -rn "igc-" --include="*.ts" src/ \
   | grep -E "^\S+:[0-9]+:\s*\*" \
   | grep -vE "@element|@example|\.spec\.ts"
@@ -66,130 +45,97 @@ grep -rn "igc-" --include="*.ts" src/ \
 
 ## 3. Specification
 
-`spec.md` is the behavioral contract, so a diff that changes behavior and leaves it untouched is
-incomplete. Read the specification of the component before the diff — a change that contradicts
-it is either a bug or a spec update the author owes.
+Map each change to a spec section with
+[Keeping it current](../../CODING_GUIDELINES.md#keeping-it-current).
 
-The rules are in [Specifications](../../CODING_GUIDELINES.md#specifications), and the
-[keeping it current](../../CODING_GUIDELINES.md#keeping-it-current) table maps each kind of
-change to the section it belongs in.
-
-- [ ] A new component ships a `spec.md` following the
-      [splitter structure](../../../src/components/splitter/spec.md)
-- [ ] Added, renamed, deprecated or removed properties, methods, events, slots, CSS parts and
-      CSS custom properties are reflected in the matching API table, with the same descriptions
-      as the JSDoc
-- [ ] New or changed keyboard interactions appear in `### Keyboard interactions`
-- [ ] New or changed roles and ARIA state appear in `### ARIA roles and properties`
-- [ ] New test scenarios are in `## Test scenarios`, under the subsection matching their
-      `describe` block, numbered contiguously with the rest
-- [ ] Behavior the suite does not reach is stated under `### Not covered by the suite` rather
-      than implied to be covered
-- [ ] New constraints, precedence rules and unsupported cases are in
-      `## Assumptions and limitations`
-- [ ] `## Revision history` gained a row for this change
-- [ ] Every heading added has a table-of-contents entry, and the anchors resolve
-- [ ] Links to sibling specs are relative (`../popover/spec.md`) and resolve
+- [ ] A new component has a `spec.md` in the splitter structure
+- [ ] API tables match the JSDoc for each added, renamed, deprecated or removed member
+- [ ] Keyboard, ARIA and limitations sections are updated where the behavior changed
+- [ ] Test scenarios mirror the `describe` blocks and are numbered contiguously. Gaps are
+      listed under `### Not covered by the suite`.
+- [ ] `## Revision history` has a new row
+- [ ] New headings have TOC entries. Anchors and relative sibling links resolve.
 
 ## 4. Accessibility
 
-- [ ] The test suite contains the mandatory a11y audit (`shadowDom` **and** light DOM)
-- [ ] Semantic elements used instead of `div`s with click handlers
-- [ ] ARIA set through `addInternalsController` (`initialARIA`, `setARIA()`) — never
-      `this.role = '…'`; `reflectRole: true` when attribute-only tooling must see the role
-- [ ] Keyboard interaction implemented through `addKeybindings` (Tab, arrows, Enter/Space,
-      Escape, Home/End as applicable) with visible focus indicators
-- [ ] Composite hosts wrapping an input-shaped component project their semantics with
-      `addAriaProjector` / `addAriaTarget` instead of setting `role`/`aria-*` on the host or
-      the wrapper
-- [ ] Cross-root relations use ARIA element reflection, never IDREFs
-- [ ] Theme selectors for composite anchors key off the mirrored `data-role`/`data-haspopup`
-      attributes, not `role`/`aria-*`
-- [ ] No `public` members tagged `@hidden`/`@internal` added for cross-component access — use
-      `internalsOf()`
-- [ ] Cross-root ARIA is covered by `runExternalLabelAssociationTests` /
-      `runAriaProjectionTests`; reflected relations are asserted by identity readback, with
-      `axeReflectedRelationsOptions` suppressing the known `aria-required-attr` false positive
+- [ ] The a11y audit covers `shadowDom` and the light DOM
+- [ ] Semantic elements are used, not `div`s with click handlers
+- [ ] ARIA is set through `addInternalsController` (`initialARIA`, `setARIA()`, `reflectRole`),
+      never with `this.role = …`
+- [ ] Keyboard support uses `addKeybindings` or `addRovingFocusController`. Focus is visible.
+      On a `delegatesFocus` item, the roving tab index is on the host, not on an inner element.
+- [ ] Composite hosts use `addAriaProjector` / `addAriaTarget`, with no ARIA on a
+      `delegatesFocus` host. Cross-root relations use element reflection, not IDREFs.
+- [ ] Theme selectors use `data-role` / `data-haspopup`, not `role` / `aria-*`
+- [ ] Cross-component access uses `internalsOf()`, not new `@hidden` public members
+- [ ] Cross-root ARIA is tested with `runExternalLabelAssociationTests` /
+      `runAriaProjectionTests`. Relations are checked by identity readback.
+      `axeReflectedRelationsOptions` is used only next to such a check.
 
 ## 5. Behavior
 
-- [ ] Region fences and member order follow the standard component structure
-- [ ] Internal API is `_`-prefixed; no native private fields (`#`); `readonly` on controllers
-      and other non-reassigned fields
-- [ ] No `any`; explicit return types except where obviously noise
-- [ ] Derived state computed in `willUpdate()`, side effects in `update()` with
-      `super.update()` called; guarded by `changedProperties.has()`
-- [ ] No new `@watch` usages
-- [ ] Existing controllers reused rather than reimplemented (slots, observers, root click,
-      keybindings, gestures, i18n)
-- [ ] Dynamically added listeners on `window`/`document` are removed in `disconnectedCallback`;
-      listeners in templates and on the host are not manually cleaned up
-- [ ] User-facing strings come from the i18n controller, not inlined in templates
-- [ ] Form controls: extend the right form-associated mixin, own their `_formValue` through
-      `createFormValueState`, expose validators via `__validators` (reusing
-      `#internals/validators.js`), update through `setValueAndFormState`, call `_validate()`
-      from constraint-affecting setters, and wire `_handleBlur` / `_handleEnterKeydown` on the
-      native editor
-- [ ] Form controls don't reimplement touched/pristine/invalid bookkeeping; overrides of
-      `formResetCallback` call `super`
+- [ ] Region fences and member order follow the guidelines. Internal members use `_`. No `#`
+      fields. `readonly` on fields that are not reassigned. No `any`.
+- [ ] Derived state in `willUpdate()`. DOM side effects in `update()` with `super.update()`.
+      Both guarded by `changedProperties.has()`.
+- [ ] Coercion and per-set side effects use `@coercedProperty`, not a hand-written
+      backing-field accessor pair
+- [ ] Existing internals are reused (controllers, `resizable()` / `draggable()`, `createTimer`,
+      `internals/utils`), not written again
+- [ ] Dynamic `window` / `document` listeners are removed in `disconnectedCallback`
+- [ ] User-facing strings come from `I18nMixin` / `addI18nController`, with defaults from
+      `igniteui-i18n-core`
+- [ ] Form controls: the correct mixin, `createFormValueState`, `__validators` from
+      `#internals/validators.js`, `setValueAndFormState()`, re-validation through
+      `@coercedProperty` on constraint properties, and `_handleBlur` / `_handleEnterKeydown`
+      on the native editor. No copied touched/pristine logic. `formResetCallback` overrides
+      call `super`.
 
 ## 6. Styles and Themes
 
-- [ ] Only `.scss` edited — no generated `.css.ts` in the diff
-- [ ] Load-path specifiers (`@use 'styles/utilities' as *`), no relative global imports
-- [ ] Values read through `var-get()` and the theming functions; nothing hardcoded
-- [ ] Part selectors use `[part~='…']`
-- [ ] All four themes covered in light and dark; dark files emit only the `diff()`
-- [ ] `themes.ts` aggregates every theme file that was added
-- [ ] `:host` has an appropriate `display`; selector specificity kept low
+- [ ] No generated `.css.ts` in the diff
+- [ ] Load-path specifiers. Values come from `var-get()` and the theming functions.
+- [ ] `[part~='…']` selectors. Dark files emit only the `diff()`.
+- [ ] All four themes work in light and dark mode. `:host` has a `display` value. Specificity
+      is low.
 
 ## 7. Tests and Generated Artifacts
 
-- [ ] `defineComponents()` in the `before()` hook; `elementUpdated()` after programmatic changes
-- [ ] Coverage for defaults, property/attribute reflection, events, interaction and edge cases
-- [ ] Interaction driven by the shared simulators from `#internals/testing/simulate.spec.js`,
-      not raw `click()` / hand-built events
-- [ ] Form controls tested through `createFormAssociatedTestBed` and the validity helpers
-- [ ] The story's `// region default … // endregion` block was regenerated
-      (`npm run cem && npm run build:meta`), not hand-edited, and is committed
-- [ ] Hand-written stories cover the states a user cares about
+- [ ] `defineComponents()` in `before()`. `elementUpdated()` after programmatic changes.
+- [ ] Tests cover defaults, reflection, events, interaction and edge cases
+- [ ] Interaction uses `#internals/testing/simulate.spec.js`. Forms use
+      `createFormAssociatedTestBed` and the validity helpers.
+- [ ] No spec imports another component's spec. Shared helpers are in `src/internals/testing/`.
+- [ ] The story's `// region default` block was regenerated (`cem` + `build:meta`), not edited
 - [ ] CHANGELOG updated
 
 ## 8. Build and Hygiene
 
-- [ ] `npm run check` (aliases, dependency rules, types) passes
-- [ ] `npm run lint` passes — oxlint, lit-analyzer, oxfmt, stylelint
-- [ ] `npm run test` passes
-- [ ] No leftover `console.log`/`debugger`, no commented-out code, no unexplained magic numbers
+- [ ] `npm run check`, `npm run lint` and `npm run test` pass
+- [ ] No `console.log`, `debugger` or commented-out code. No unexplained magic numbers.
 - [ ] No new heavy third-party dependency
 
 ## Frequent Findings
 
-| Finding                                        | Why it matters                                                        |
-| ---------------------------------------------- | --------------------------------------------------------------------- |
-| Missing `addThemingController`                 | The component never reacts to theme changes                           |
-| Relative import into `internals`/`theming`     | `npm run check` fails; alias is the contract                          |
-| Alias added to `package.json` only             | Breaks only for consumers of the published package                    |
-| `igc-` tag name in a description               | Ships verbatim into every framework wrapper's API docs                |
-| Hand-edited story metadata                     | Reverts on the next `npm run build:meta`                              |
-| `.css.ts` file in the diff                     | Generated and gitignored — the `.scss` is the source                  |
-| `[part='base']` with `partMap`                 | Selector silently stops matching once a second part name is emitted   |
-| ARIA on a `delegatesFocus` host                | Assistive technology reads the native editor, not the host            |
-| New `@hidden` public member                    | Leaks into the compiled public API — use `internalsOf()`              |
-| Boolean property defaulting to `true`          | Cannot be turned off from markup                                      |
-| `@watch` in new code                           | Lifecycle hooks are the supported path                                |
-| API change with no `spec.md` diff              | The specification stops describing the component and starts misleading readers |
-| Spec test scenarios that no test covers        | Claims coverage that does not exist — move it under "Not covered by the suite" |
-| New spec heading missing from the TOC          | The table of contents is hand-maintained; the anchor list silently rots |
+| Finding                                   | Why it matters                                                   |
+| ----------------------------------------- | ---------------------------------------------------------------- |
+| Missing `addThemingController`            | The component ignores theme changes                              |
+| Relative import into `internals`          | `npm run check` fails                                            |
+| Alias only in `package.json`              | Breaks only for consumers of the published package               |
+| `igc-` in a description                   | Goes into the API docs of every framework wrapper                |
+| Hand-edited story region or `.css.ts`     | Overwritten on the next build                                    |
+| `[part='base']` with `partMap`            | Stops matching when a second part name is added                  |
+| ARIA on a `delegatesFocus` host           | Assistive technology reads the native editor                     |
+| New `@hidden` public member               | Leaks into the public API. Use `internalsOf()`.                  |
+| Hand-written accessor pair for coercion   | `@coercedProperty` does this in fewer lines                      |
+| API change with no `spec.md` change       | The spec no longer describes the component                       |
+| Spec scenario with no test                | Shows coverage that does not exist                               |
 
 ## Verdict
 
-**Request changes** when: the a11y audit is missing or failing, ARIA is set on the wrong
-element, `any` types or native private fields appear, generated artifacts are hand-edited or
-missing, themes are incomplete, the public API is undocumented, or `spec.md` no longer matches
-the behavior the diff ships.
+**Request changes** if the a11y audit is missing or fails, ARIA is on the wrong element, `any`
+or `#` fields are in the code, generated files are edited or stale, themes are incomplete, the
+public API has no documentation, or `spec.md` does not match the behavior.
 
-**Approve** when the checklist passes, `npm run check`, `npm run lint` and `npm run test` are
-green, and the public API reads the way it will be documented for users.
-
-Be specific in feedback: name the file, the line and the guideline it maps to.
+**Approve** if the checklist passes and `check`, `lint` and `test` pass. Each comment must
+give the file, the line and the guideline it applies.
