@@ -1,16 +1,15 @@
 import { ContextConsumer } from '@lit/context';
 import {
   adoptStyles,
-  css,
   type LitElement,
   type ReactiveController,
   type ReactiveControllerHost,
   type ReactiveElement,
 } from 'lit';
 
-import { getTheme } from './config.js';
-import { themeContext } from './context.js';
-import { _themeChangedEmitter, CHANGED_THEME_EVENT } from './theming-event.js';
+import { _themeChangedEmitter, getTheme } from './config.js';
+import { type ThemeContext, themeContext } from './context.js';
+import { CHANGED_THEME_EVENT } from './theming-event.js';
 import type {
   Theme,
   Themes,
@@ -35,35 +34,6 @@ type ThemeProviderSource = 'uninitialized' | 'context' | 'global';
  *
  * Theme styles are applied directly to the host's shadow root via `adoptStyles`
  * every time the active theme or variant changes.
- *
- * @example
- * Basic usage - typically created via {@link addThemingController}:
- * ```typescript
- * import { addThemingController } from '#theming/theming-controller.js';
- * import { all } from './themes/themes.js';
- *
- * export default class IgcMyComponent extends LitElement {
- *   constructor() {
- *     super();
- *     addThemingController(this, all);
- *   }
- * }
- * ```
- *
- * @example
- * Accessing the current theme and variant at runtime:
- * ```typescript
- * export default class IgcMyComponent extends LitElement {
- *   private readonly _themes = addThemingController(this, all);
- *
- *   protected override render() {
- *     // Conditionally render based on active theme
- *     return this._themes.variant === 'dark'
- *       ? html`<div class="dark-layout"></div>`
- *       : html`<div class="light-layout"></div>`;
- *   }
- * }
- * ```
  */
 class ThemingController implements ReactiveController {
   //#region Internal state
@@ -71,10 +41,6 @@ class ThemingController implements ReactiveController {
   private readonly _host: ReactiveControllerHost & ReactiveElement;
   private readonly _themes: Themes;
   private readonly _options?: ThemingControllerConfig;
-  private readonly _contextConsumer: ContextConsumer<
-    typeof themeContext,
-    ReactiveElement
-  >;
 
   private _theme: Theme = 'bootstrap';
   private _variant: ThemeVariant = 'light';
@@ -105,9 +71,9 @@ class ThemingController implements ReactiveController {
     this._themes = themes;
     this._options = config;
 
-    this._host.addController(this);
-
-    this._contextConsumer = new ContextConsumer(this._host, {
+    // Registered before this controller, so a connected provider answers its
+    // context request before `hostConnected` below falls back to the global theme.
+    new ContextConsumer(this._host, {
       context: themeContext,
       callback: (value) => {
         if (value) {
@@ -116,27 +82,26 @@ class ThemingController implements ReactiveController {
       },
       subscribe: true,
     });
+
+    this._host.addController(this);
   }
 
   //#region ReactiveController implementation
 
   /** @internal */
   public hostConnected(): void {
-    // Apply the global theme initially. When the host's first update cycle begins, if a context provider is
-    // present and has set its value, the callback will be invoked and override with the context value.
-    this._applyGlobalTheme();
+    if (this._themeSource === 'uninitialized') {
+      _themeChangedEmitter.addEventListener(CHANGED_THEME_EVENT, this);
+      this._applyGlobalTheme();
+    }
   }
 
   /** @internal */
   public hostDisconnected(): void {
-    if (this._themeSource === 'global') {
-      _themeChangedEmitter.removeEventListener(CHANGED_THEME_EVENT, this);
-    }
+    _themeChangedEmitter.removeEventListener(CHANGED_THEME_EVENT, this);
 
-    // Reset to initial state so that if the host reconnects in a different part of the tree,
-    // it can properly re-resolve the theme source.
+    // Re-resolve the theme source on reconnect, which may be in another part of the tree.
     this._themeSource = 'uninitialized';
-    this._contextConsumer.value = undefined;
   }
 
   //#endregion
@@ -154,25 +119,13 @@ class ThemingController implements ReactiveController {
 
   //#region Internal methods
 
-  private _applyContextTheme(contextValue: {
-    theme: Theme;
-    variant: ThemeVariant;
-  }): void {
-    // If we were using global theme, unsubscribe from global events
-    if (this._themeSource === 'global') {
-      _themeChangedEmitter.removeEventListener(CHANGED_THEME_EVENT, this);
-    }
-
+  private _applyContextTheme({ theme, variant }: ThemeContext): void {
+    _themeChangedEmitter.removeEventListener(CHANGED_THEME_EVENT, this);
     this._themeSource = 'context';
-    this._applyTheme(contextValue.theme, contextValue.variant);
+    this._applyTheme(theme, variant);
   }
 
   private _applyGlobalTheme(): void {
-    // Subscribe to global events only on first initialization
-    if (this._themeSource === 'uninitialized') {
-      _themeChangedEmitter.addEventListener(CHANGED_THEME_EVENT, this);
-    }
-
     const { theme, themeVariant } = getTheme();
 
     this._themeSource = 'global';
@@ -190,10 +143,11 @@ class ThemingController implements ReactiveController {
 
   private _adoptStyles(): void {
     const ctor = this._host.constructor as typeof LitElement;
-    const shared = this._themes[this._variant].shared || css``;
-    const theme = this._themes[this._variant][this._theme] || css``;
-
-    adoptStyles(this._host.shadowRoot!, [...ctor.elementStyles, shared, theme]);
+    const { shared, [this._theme]: theme } = this._themes[this._variant];
+    adoptStyles(
+      this._host.shadowRoot!,
+      [...ctor.elementStyles, shared, theme].filter((s) => s !== undefined)
+    );
   }
 
   //#endregion
