@@ -27,10 +27,10 @@ user-invocable: true
 | Need | Component | Package |
 |---|---|---|
 | Read-only table, sorting/filtering only | `<igc-grid-lite>` | `igniteui-grid-lite` (MIT) |
-| Editing, selection, paging, grouping, summaries, export, toolbar | `<igc-grid>` | `igniteui-webcomponents-grids` (trial) / `@infragistics/igniteui-webcomponents-grids` (licensed) |
-| Parent-child, single schema (`managerId`/nested `children`) | `<igc-tree-grid>` | `igniteui-webcomponents-grids` |
-| Parent-child, different schema per level | `<igc-hierarchical-grid>` | `igniteui-webcomponents-grids` |
-| Cross-tab / OLAP analysis | `<igc-pivot-grid>` | `igniteui-webcomponents-grids` |
+| Editing, selection, paging, grouping, summaries, export, toolbar | `<igc-grid>` | `igniteui-webcomponents-grids` (trial) / `@infragistics/igniteui-webcomponents-grids` (licensed; replace the package name in all imports below) |
+| Parent-child, single schema (`managerId`/nested `children`) | `<igc-tree-grid>` | `igniteui-webcomponents-grids` (trial) / `@infragistics/igniteui-webcomponents-grids` (licensed) |
+| Parent-child, different schema per level | `<igc-hierarchical-grid>` | `igniteui-webcomponents-grids` (trial) / `@infragistics/igniteui-webcomponents-grids` (licensed) |
+| Cross-tab / OLAP analysis | `<igc-pivot-grid>` | `igniteui-webcomponents-grids` (trial) / `@infragistics/igniteui-webcomponents-grids` (licensed) |
 
 Never mix `igc-grid-lite` with a premium grid type for the same table — pick one. For upgrading Grid Lite to `igc-grid`, use the migration skill above.
 
