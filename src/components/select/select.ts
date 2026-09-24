@@ -297,9 +297,8 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
 
     addThemingController(this, all);
 
-    // Projects the host's labels and combobox semantics onto the native
-    // input inside `igc-input` (see ProjectedARIA for why the host cannot
-    // publish these itself).
+    // Projects the name and the combobox semantics of the host onto the native
+    // input in `igc-input`. See ProjectedARIA.
     addAriaProjector(this, {
       target: () => this._input,
       state: () => ({
@@ -308,8 +307,8 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
         expanded: `${this.open}`,
         controls: this._list ? [this._list] : null,
         describedBy: this._helperText ? [this._helperText] : null,
-        labelledBy: this._internals.labels,
       }),
+      hasOwnLabel: () => Boolean(this.label),
     });
 
     addKeybindings(this, {

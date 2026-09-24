@@ -28,9 +28,6 @@ describe('File Input component', () => {
     tagName: IgcFileInputComponent.tagName,
     getNativeInput: (host) =>
       (host as IgcFileInputComponent).renderRoot.querySelector('input')!,
-    // Chromium does not move focus into an `<input type="file">` on label
-    // activation the way it does for text editors.
-    assertFocus: false,
   });
 
   let element: IgcFileInputComponent;

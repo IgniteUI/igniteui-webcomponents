@@ -126,24 +126,16 @@ export default class IgcRangeSliderComponent extends EventEmitterMixin<
     };
   }
 
-  private closestTo(goal: number, positions: number[]): number {
-    return positions.reduce((previous, current) =>
-      Math.abs(goal - current) < Math.abs(goal - previous) ? current : previous
-    );
-  }
-
   protected override closestHandle(event: PointerEvent): HTMLElement {
     const fromX = getCenterPoint(this.thumbFrom).x;
     const toX = getCenterPoint(this.thumbTo).x;
     const pointerX = event.clientX;
+    const closerToEnd =
+      fromX === toX
+        ? toX < pointerX
+        : Math.abs(pointerX - toX) < Math.abs(pointerX - fromX);
 
-    if (fromX === toX) {
-      return toX < pointerX ? this.thumbTo : this.thumbFrom;
-    }
-
-    return this.closestTo(pointerX, [fromX, toX]) === fromX
-      ? this.thumbFrom
-      : this.thumbTo;
+    return closerToEnd ? this.thumbTo : this.thumbFrom;
   }
 
   protected override updateValue(increment: number) {
@@ -210,10 +202,10 @@ export default class IgcRangeSliderComponent extends EventEmitterMixin<
   protected override renderThumbs() {
     return html`${this.renderThumb(
       this.lower,
-      this.thumbLabelLower,
+      { label: this.thumbLabelLower },
       'thumbFrom'
     )}
-    ${this.renderThumb(this.upper, this.thumbLabelUpper, 'thumbTo')}`;
+    ${this.renderThumb(this.upper, { label: this.thumbLabelUpper }, 'thumbTo')}`;
   }
 }
 

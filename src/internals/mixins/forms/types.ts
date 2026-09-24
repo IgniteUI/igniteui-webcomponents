@@ -62,6 +62,12 @@ export declare class BaseFormAssociatedElement {
 
   //#region Methods
 
+  /**
+   * Runs when a `<label>` or a click on the host activates the component.
+   * Does nothing by default.
+   */
+  protected _handleLabelActivation(): void;
+
   /** Submits the parent form, if any, on `Enter`. */
   protected _handleEnterKeydown(event: KeyboardEvent): void;
 

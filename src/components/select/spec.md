@@ -52,9 +52,10 @@ This directory hosts four public components: [`igc-select`](#igc-select), [`igc-
 
 ## Revision history
 
-| Version | Date       | Notes                 |
-| ------: | ---------- | --------------------- |
-|       1 | 2026-09-21 | Initial specification |
+| Version | Date       | Notes                                              |
+| ------: | ---------- | -------------------------------------------------- |
+|       1 | 2026-09-21 | Initial specification                              |
+|       2 | 2026-09-24 | Describe the naming order and the host ARIA naming |
 
 ## Overview
 
@@ -206,6 +207,9 @@ nesting it. An IDREF does not cross a shadow boundary, so the select resolves it
 and projects them - together with its `role`, `aria-haspopup`, `aria-expanded`, `aria-controls` and
 `aria-activedescendant` - onto the native input of the anchor, as element references. Clicking the external label
 focuses the control.
+
+The name follows the [naming order](../input/spec.md#naming-order), so the host `aria-labelledby` and `aria-label` also
+name the control.
 
 #### Form integration
 

@@ -47,10 +47,11 @@
 
 ## Revision history
 
-| Version | Date       | Notes                 |
-| ------: | ---------- | --------------------- |
-|       1 | 2026-09-21 | Initial specification |
+| Version | Date       | Notes                                                     |
+| ------: | ---------- | --------------------------------------------------------- |
+|       1 | 2026-09-21 | Initial specification                                     |
 |       2 | 2026-09-23 | Expose the `ranges` part and add it to the test scenarios |
+|       3 | 2026-09-24 | Describe the naming order and the host ARIA naming        |
 
 ## Overview
 
@@ -309,6 +310,9 @@ light DOM, through `for` or by nesting it. An IDREF does not cross a shadow boun
 labels through `ElementInternals` and projects them - together with its own `role`, `aria-haspopup`,
 `aria-expanded` and `aria-controls` - onto the native input of the editor it wraps, as element references. Clicking
 the external label focuses the editor.
+
+The name follows the [naming order](../input/spec.md#naming-order), so the host `aria-labelledby` and `aria-label` also
+name the control.
 
 #### Form integration
 

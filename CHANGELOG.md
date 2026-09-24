@@ -17,6 +17,24 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 - #### Virtual scroll
   - `scrollToIndex` with `block: 'nearest'` now aligns an item after the viewport to the end of the viewport, as native `scrollIntoView` does. Before, it aligned each item out of view to the start, so a scroll to the next item moved a full page.
+- #### Checkbox, Switch, Radio
+  - A `<label>` element bound through `for`, or wrapping the component, now names the control and a click on it focuses and toggles the control, as for a native checkbox or radio. Before, the control had no accessible name and the click did nothing.
+  - The host `aria-labelledby` now names the control. Before, the component copied the ID into its shadow root, where it did not resolve.
+- #### Rating, Slider
+  - A `<label>` element bound through `for`, or wrapping the component, now names the control, and a click on it focuses the control.
+  - The host `aria-labelledby` now names the control. The slider now also follows a change of the host `aria-label` after the first render.
+  - The slider value tooltip is hidden from assistive technology, because `aria-valuetext` already carries the value.
+- #### Color picker
+  - In `default` mode, an external `<label>` and the host `aria-labelledby` and `aria-label` now name the trigger button. Before, it was always "Open color picker".
+  - In `input` mode, the text input no longer carries `aria-expanded`, which ARIA does not allow on a text input. The swatch button in the prefix still reflects the open state.
+- #### File input
+  - A click on an external `<label>` now focuses the native input and opens the file picker, as for a native file input. Before, the focus went to the browse button.
+- #### Combo
+  - The `label` property and an external `<label>` now name the input. Before, the selection status text ("No options selected") replaced them.
+- #### Combo, Color picker, Date picker, Date range picker, Date time input, File input, Input, Mask input, Select, Textarea
+  - The host `aria-labelledby` and `aria-label` now name the native editor. All form associated components use one naming order: the host `aria-labelledby`, then the external `<label>` elements, then the own label, then the host `aria-label`.
+  - A `<label>` element added after the first render now names the control from its first focus. Before, it did not name the control until the next render.
+  - The helper text `aria-describedby` of the input editors now stays after a re-render. Before, a re-render removed it.
 
 ## [7.4.0] - 2026-09-23
 ### Added

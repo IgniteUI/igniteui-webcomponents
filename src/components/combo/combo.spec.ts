@@ -1699,6 +1699,20 @@ describe('Combo', () => {
       ) as IgcInputComponent;
     });
 
+    it('names the input with the selection status only while no label names it', async () => {
+      const native = input.renderRoot.querySelector('input')!;
+
+      expect(native.getAttribute('aria-label')).to.equal(
+        combo.resourceStrings.combo_aria_label_no_options
+      );
+
+      combo.label = 'Cities';
+      await elementUpdated(combo);
+      await elementUpdated(input);
+
+      expect(native.hasAttribute('aria-label')).to.be.false;
+    });
+
     it('should report posinset/setsize excluding group headers', async () => {
       await openComboPopover(combo);
 
