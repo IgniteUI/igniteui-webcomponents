@@ -17,7 +17,7 @@ project:
 
 layers:
   context: true       # context/project.md
-  skills: true        # skills/ (contributor workflows)
+  skills: true        # .agents/skills/ (contributor workflows)
   commands: false     # no reusable single-shot commands defined yet
   agents: false       # no custom agents defined yet
   permissions: true   # permissions/policy.yaml
