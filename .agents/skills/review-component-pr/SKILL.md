@@ -5,7 +5,7 @@ description: Code review checklist for component pull requests covering structur
 
 # Review Component PR
 
-A checklist to use on a diff. The rules are in the [Coding Guidelines](../../CODING_GUIDELINES.md).
+A checklist to use on a diff. The rules are in the [Coding Guidelines](../../../.github/CODING_GUIDELINES.md).
 Read the `spec.md` of the component before the diff. A change that contradicts the spec is a
 bug, or the author must also update the spec.
 
@@ -19,7 +19,7 @@ Review in this order. The public API is hard to change after release, so review 
 - [ ] Complete theme scaffold, with every file in `themes.ts`
 - [ ] Exported from `src/index.ts` in alphabetical order. No new exports from
       `src/internals` beyond the approved list in
-      [Project Structure](../../CODING_GUIDELINES.md#project-structure).
+      [Project Structure](../../../.github/CODING_GUIDELINES.md#project-structure).
 - [ ] `#internals` / `#theming` / `#animations` aliases for cross-cutting imports. Relative
       imports between components. `.js` specifiers.
 - [ ] A new alias is in `package.json` **and** in `scripts/_package.json`
@@ -47,7 +47,7 @@ grep -rn "igc-" --include="*.ts" src/ \
 ## 3. Specification
 
 Map each change to a spec section with
-[Keeping it current](../../CODING_GUIDELINES.md#keeping-it-current).
+[Keeping it current](../../../.github/CODING_GUIDELINES.md#keeping-it-current).
 
 - [ ] A new component has a `spec.md` in the splitter structure
 - [ ] API tables match the JSDoc for each added, renamed, deprecated or removed member

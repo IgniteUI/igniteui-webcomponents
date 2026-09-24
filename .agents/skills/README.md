@@ -2,7 +2,7 @@
 
 Workflows for contributors to this repository. End-user skills live in [`skills/`](../../skills/).
 
-- The rules live in the [Coding Guidelines](../CODING_GUIDELINES.md). A skill says in what
+- The rules live in the [Coding Guidelines](../../.github/CODING_GUIDELINES.md). A skill says in what
   order to apply them. When a skill and the guidelines disagree, the guidelines win and the
   skill needs a fix.
 - The behavior of a component lives in its `src/components/[name]/spec.md`. Read it before
@@ -16,6 +16,7 @@ Workflows for contributors to this repository. End-user skills live in [`skills/
 | [add-component-property](./add-component-property/)   | Adding a reactive property to a component  |
 | [update-component-styles](./update-component-styles/) | Changing the SCSS or themes of a component |
 | [review-component-pr](./review-component-pr/)         | Reviewing a component pull request         |
+| [skill-authoring](./skill-authoring/)                 | Writing or updating a skill                |
 
 Reference a skill by name: "Follow the create-new-component skill to add a progress-bar
 component."
@@ -25,9 +26,14 @@ component."
 Skills use the
 [VS Code agent skills format](https://code.visualstudio.com/docs/copilot/customization/agent-skills):
 
-1. Create `.github/skills/[skill-name]/SKILL.md`. The directory name is kebab-case.
-2. Add frontmatter with `name` (same as the directory) and `description`. Optional keys:
-   `user-invokable`, `argument-hint`, `compatibility`, `disable-model-invocation`, `license`,
-   `metadata`.
+Follow the [skill-authoring](./skill-authoring/SKILL.md) skill for the frontmatter rules, the
+description format and the size budget. In short:
+
+1. Create `.agents/skills/[skill-name]/SKILL.md`. The directory name is kebab-case and
+   matches `name`.
+2. Add frontmatter with `license`, `name` and `description`. The description has
+   `WHEN TO USE:` and `WHEN NOT TO USE:` markers. Optional keys: `user-invocable`,
+   `argument-hint`, `compatibility`, `disable-model-invocation`, `metadata`.
 3. Link to the guidelines for rules. Do not copy them.
-4. Add the skill to the table above.
+4. Add the skill to the table above and to the Workflow section of
+   [`.agents/context/project.md`](../context/project.md).

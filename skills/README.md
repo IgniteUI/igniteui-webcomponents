@@ -57,9 +57,6 @@ If you identify gaps in the skills or have suggestions for improvements:
 
 1. [Open an issue](https://github.com/IgniteUI/igniteui-webcomponents/issues) describing the improvement
 2. Submit a pull request with the proposed changes
-3. Follow the skill format and structure of existing skills
-
-For skills related to **contributing to the library itself** (creating components, reviewing PRs, etc.), see [`.github/skills/`](../.github/skills/).
 
 ## Additional Resources
 
