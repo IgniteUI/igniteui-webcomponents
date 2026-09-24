@@ -39,6 +39,7 @@ skills instead of guessing (see [`.agents/skills/`](../skills/README.md)):
 - New property: [add-component-property](../skills/add-component-property/SKILL.md)
 - SCSS and themes: [update-component-styles](../skills/update-component-styles/SKILL.md)
 - Reviews: [review-component-pr](../skills/review-component-pr/SKILL.md)
+- Skills: [skill-authoring](../skills/skill-authoring/SKILL.md)
 
 Before finishing, run `npm run check`, `npm run lint` and `npm run test`. For a new
 component or a bug fix, update `CHANGELOG.md`.
