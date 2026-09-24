@@ -8,36 +8,36 @@
 
 deny:
   read:
-    - ".env"
-    - ".env.*"
-    - ".envrc"
-    - "**/.envrc"
-    - "**/.env"
-    - "**/.env.*"
-    - "*.pem"
-    - "**/*.pem"
-    - "*.key"
-    - "**/*.key"
-    - "*.pfx"
-    - "**/*.pfx"
-    - ".npmrc"
-    - "**/.npmrc"
+    - '.env'
+    - '.env.*'
+    - '.envrc'
+    - '**/.envrc'
+    - '**/.env'
+    - '**/.env.*'
+    - '*.pem'
+    - '**/*.pem'
+    - '*.key'
+    - '**/*.key'
+    - '*.pfx'
+    - '**/*.pfx'
+    - '.npmrc'
+    - '**/.npmrc'
   write:
-    - ".git/**"
-    - "node_modules/**"
-    - "dist/**"
-    - "coverage/**"
-    - "storybook-static/**"
-    - "src/**/*.css.ts"
-    - "custom-elements.json"
-    - "vscode-html-custom-data.json"
-    - "package-lock.json"
-    - "**/package-lock.json"
-    - "**/yarn.lock"
-    - "**/pnpm-lock.yaml"
+    - '.git/**'
+    - 'node_modules/**'
+    - 'dist/**'
+    - 'coverage/**'
+    - 'storybook-static/**'
+    - 'src/**/*.css.ts'
+    - 'custom-elements.json'
+    - 'vscode-html-custom-data.json'
+    - 'package-lock.json'
+    - '**/package-lock.json'
+    - '**/yarn.lock'
+    - '**/pnpm-lock.yaml'
 
 allow:
   read:
-    - "**"
+    - '**'
   write:
-    - "**"
+    - '**'
