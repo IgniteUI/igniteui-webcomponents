@@ -21,7 +21,6 @@ import {
   type MutationControllerParams,
 } from '#internals/controllers/mutation-observer.js';
 import { addRootClickController } from '#internals/controllers/root-click.js';
-import { addRootScrollHandler } from '#internals/controllers/root-scroll.js';
 import { addSlotController, setSlots } from '#internals/controllers/slot.js';
 import { blazorAdditionalDependencies } from '#internals/decorators/blazorAdditionalDependencies.js';
 import { shadowOptions } from '#internals/decorators/shadow-options.js';
@@ -55,8 +54,7 @@ import IgcInputComponent from '../input/input.js';
 import IgcPopoverComponent, {
   type PopoverPlacement,
 } from '../popover/popover.js';
-import type { PopoverScrollStrategy } from '../types.js';
-import type IgcValidationContainerComponent from '../validation-container/validation-container.js';
+import IgcValidationContainerComponent from '../validation-container/validation-container.js';
 import IgcSelectGroupComponent from './select-group.js';
 import IgcSelectHeaderComponent from './select-header.js';
 import IgcSelectItemComponent from './select-item.js';
@@ -108,10 +106,10 @@ const Slots = setSlots(
  * @slot custom-error - Renders content when setCustomValidity(message) is set.
  * @slot invalid - Renders content when the component is in invalid state (validity.valid = false).
  *
- * @fires igcChange - Emitted when the control's checked state changes.
+ * @fires igcChange - Emitted when the selection of the control changes.
  * @fires igcOpening - Emitted just before the list of options is opened.
  * @fires igcOpened - Emitted after the list of options is opened.
- * @fires igcClosing - Emitter just before the list of options is closed.
+ * @fires igcClosing - Emitted just before the list of options is closed.
  * @fires igcClosed - Emitted after the list of options is closed.
  *
  * @csspart list - The list wrapping container for the items of the select.
@@ -158,10 +156,6 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   private _lastKeyTime = 0;
 
   private readonly _slots = addSlotController(this, { slots: Slots });
-
-  private readonly _rootScrollController = addRootScrollHandler(this, {
-    hideCallback: this._handleClosing,
-  });
 
   protected override readonly _rootClickController = addRootClickController(
     this,
@@ -265,13 +259,6 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   @property()
   public placement: PopoverPlacement = 'bottom-start';
 
-  /**
-   * Determines the behavior of the component during scrolling of the parent container.
-   * @attr scroll-strategy
-   */
-  @property({ attribute: 'scroll-strategy' })
-  public scrollStrategy: PopoverScrollStrategy = 'scroll';
-
   /** Returns the items of the select component. */
   public get items(): IgcSelectItemComponent[] {
     return Array.from(
@@ -300,13 +287,8 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
       return;
     }
 
-    if (changedProperties.has('scrollStrategy')) {
-      this._rootScrollController.update({ resetListeners: true });
-    }
-
     if (changedProperties.has('open')) {
       this._rootClickController.update();
-      this._rootScrollController.update();
     }
   }
 
@@ -315,9 +297,8 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
 
     addThemingController(this, all);
 
-    // Projects the host's labels and combobox semantics onto the native
-    // input inside `igc-input` (see ProjectedARIA for why the host cannot
-    // publish these itself).
+    // Projects the name and the combobox semantics of the host onto the native
+    // input in `igc-input`. See ProjectedARIA.
     addAriaProjector(this, {
       target: () => this._input,
       state: () => ({
@@ -326,8 +307,8 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
         expanded: `${this.open}`,
         controls: this._list ? [this._list] : null,
         describedBy: this._helperText ? [this._helperText] : null,
-        labelledBy: this._internals.labels,
       }),
+      hasOwnLabel: () => Boolean(this.label),
     });
 
     addKeybindings(this, {
@@ -359,10 +340,9 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   }
 
   /**
-   * Re-resolves the selection whenever items enter or leave the light DOM.
-   * Consuming frameworks routinely render them after the initial paint, so
-   * `value` may name an item that does not exist yet, and a selected item may
-   * be taken out from under us.
+   * Resolves the selection again when an item enters or leaves the light DOM. A
+   * framework usually renders the items after the first paint, so `value` can
+   * name an item that does not exist, and a selected item can be removed.
    */
   private _handleItemsChange({
     changes: { added, removed },
@@ -471,9 +451,9 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   }
 
   /**
-   * Moves to `item`, committing the move as a selection while closed.
-   * Nowhere to move to is a no-op - clearing the selection is reserved for the
-   * callers that actually mean it.
+   * Moves to `item`, and commits the move as a selection while closed. Does
+   * nothing if there is no item, because only a caller that intends it clears
+   * the selection.
    */
   private _navigateTo(item?: IgcSelectItemComponent): void {
     if (item) {
@@ -652,9 +632,9 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   }
 
   /**
-   * The text shown in the input for the current selection: the selected item's
-   * main content, without what it routes to its `prefix`/`suffix` slots and
-   * without the marker comments templating engines leave among its children.
+   * The text in the input for the current selection: the main content of the
+   * selected item, without its `prefix` and `suffix` slots, and without the
+   * marker comments that a templating engine leaves between its children.
    */
   private get _displayValue(): string | undefined {
     if (!this._selectedItem) {
@@ -767,7 +747,7 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   }
 
   protected _renderHelperText(): TemplateResult {
-    return this._renderValidationContainer({
+    return IgcValidationContainerComponent.create(this, {
       id: 'select-helper-text',
       slot: 'anchor',
       hasHelperText: true,
@@ -820,10 +800,11 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
       <igc-popover
         ?open=${this.open}
         flip
-        shift
         same-width
         .offset=${this.distance}
         .placement=${this.placement}
+        .scrollStrategy=${this.scrollStrategy}
+        @igcPopoverScrollClose=${this._handleClosing}
       >
         ${this._renderInputAnchor()} ${this._renderDropdown()}
       </igc-popover>

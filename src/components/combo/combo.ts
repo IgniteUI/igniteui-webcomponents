@@ -102,7 +102,7 @@ const i18n: I18nControllerConfig<IComboResourceStrings> = {
  * @fires igcChange - Emitted when the control's selection has changed.
  * @fires igcOpening - Emitted just before the list of options is opened.
  * @fires igcOpened - Emitted after the list of options is opened.
- * @fires igcClosing - Emitter just before the list of options is closed.
+ * @fires igcClosing - Emitted just before the list of options is closed.
  * @fires igcClosed - Emitted after the list of options is closed.
  *
  * @csspart label - The encapsulated text label of the combo.
@@ -224,8 +224,8 @@ export default class IgcComboComponent<
       interactions: {
         show: () => this._show(true),
         hide: () => this._hide(true),
-        toggleSelection: (index: number) => this._toggleSelection(index),
-        select: (index: number) => this._selectByIndex(index),
+        toggleSelection: (index: number) => this._selectAt(index, true),
+        select: (index: number) => this._selectAt(index, false),
         clearSelection: () => this._clearSelection(),
       },
     }
@@ -561,20 +561,18 @@ export default class IgcComboComponent<
     // TODO: Either fix this in the theming controller or come up with another solution.
     // Check virtualization `willUpdate` for more details.
 
-    // The virtualized list is rendered into this component's own shadow root
-    // (light DOM child), sharing it with the theming controller below. Theme
-    // changes re-adopt this shadow root's stylesheets wholesale, which would
-    // otherwise silently drop the list's own structural stylesheet since
-    // nothing else forces it to refresh. Requesting an update lets the list
-    // re-verify (and re-adopt, if needed) its stylesheet on its next render.
+    // The virtualized list renders into the shadow root of this component and
+    // shares it with the theming controller below. A theme change adopts the
+    // stylesheets of that root again, which drops the structural stylesheet of
+    // the list, because nothing else refreshes it. The update request lets the
+    // list check and adopt its stylesheet again on its next render.
     addThemingController(this, all, {
       themeChange: () => this._listRef.value?.requestUpdate(),
     });
 
-    // Projects the host's labels and combobox semantics onto the native
-    // input inside `igc-input` (see ProjectedARIA for why the host cannot
-    // publish these itself). `aria-activedescendant` stays on the listbox,
-    // which holds DOM focus while the list is navigated.
+    // Projects the name and the combobox semantics of the host onto the native
+    // input in `igc-input`. See ProjectedARIA. `aria-activedescendant` stays
+    // on the listbox, which holds DOM focus while the list is navigated.
     addAriaProjector(this, {
       target: () => this._inputRef.value,
       state: () => ({
@@ -582,11 +580,11 @@ export default class IgcComboComponent<
         hasPopup: 'listbox',
         expanded: `${this.open}`,
         disabled: `${this.disabled}`,
-        label: this._mainAriaLabel,
         controls: this._listRef.value ? [this._listRef.value] : null,
         describedBy: this._helperText ? [this._helperText] : null,
-        labelledBy: this._internals.labels,
       }),
+      hasOwnLabel: () => Boolean(this.label),
+      fallbackLabel: () => this._mainAriaLabel,
     });
     addSafeEventListener(this, 'blur', this._handleBlur);
     addSafeEventListener(this, 'focusin', this._handleFocusIn);
@@ -692,17 +690,15 @@ export default class IgcComboComponent<
   // #region Selection helpers
 
   /**
-   * Maps every value representation in the data source to the positions of the
-   * records carrying it. Built on demand and dropped whenever `data` or
-   * `valueKey` changes.
+   * Maps each value in the data source to the positions of the records that
+   * carry it. Built on demand, and dropped when `data` or `valueKey` changes.
    *
-   * Positions (rather than records) are stored so that resolution can hand back
-   * matches in data-source order, and duplicate value keys keep resolving to
-   * every record that carries them.
+   * @remarks
+   * Positions keep the matches in data-source order, and let a duplicate value
+   * key resolve to every record that carries it.
    *
-   * The size comparison picks up in-place growth or shrink (push/splice) of the
-   * same array. Replacing elements without changing the length is not detectable
-   * here and still requires reassigning `data`.
+   * The size comparison finds in-place growth or shrink of the same array. It
+   * cannot find a replaced element, which still needs a new `data` array.
    */
   private get _dataIndex(): Map<Item<T>, number[]> {
     if (!this._index || this._indexSize !== this.data.length) {
@@ -716,13 +712,12 @@ export default class IgcComboComponent<
   }
 
   /**
-   * Resolves user-provided items (value keys or object references)
-   * to actual objects from the data source, in data-source order.
+   * Resolves user items (value keys or object references) to records of the
+   * data source, in data-source order.
    *
    * @remarks
-   * Repeating the same value in `items` resolves it once - a record cannot be
-   * selected twice, and duplicates would otherwise reach the change event
-   * payload.
+   * A repeated value resolves one time. A record cannot be selected twice, and
+   * duplicates would otherwise reach the change event payload.
    */
   private _resolveItems(items: Item<T>[]): T[] {
     const index = this._dataIndex;
@@ -752,18 +747,16 @@ export default class IgcComboComponent<
   }
 
   /**
-   * Maps data records to their value representations - the `valueKey` property
-   * of each, or the record itself when no `valueKey` is set.
+   * The value representation of a data record: its `valueKey` property, or the
+   * record when that property is not set.
    */
+  private _valueOf(item: T): ComboValue<T> {
+    return (this.valueKey ? item[this.valueKey] : undefined) ?? item;
+  }
+
+  /** Maps data records to their value representations. See {@link _valueOf}. */
   private _toValues(items: Iterable<T>): ComboValue<T>[] {
-    const { valueKey } = this;
-    const values: ComboValue<T>[] = [];
-
-    for (const item of items) {
-      values.push((valueKey ? item[valueKey] : undefined) ?? item);
-    }
-
-    return values;
+    return Array.from(items, (item) => this._valueOf(item));
   }
 
   /**
@@ -771,12 +764,12 @@ export default class IgcComboComponent<
    * value representation, walking the selection once for both projections.
    */
   private _projectSelection(): ComboValue<T>[] {
-    const { valueKey, displayKey } = this;
+    const { displayKey } = this;
     const values: ComboValue<T>[] = [];
     const display: string[] = [];
 
     for (const item of this._selected) {
-      values.push((valueKey ? item[valueKey] : undefined) ?? item);
+      values.push(this._valueOf(item));
       display.push(String((displayKey ? item[displayKey] : undefined) ?? item));
     }
 
@@ -807,13 +800,14 @@ export default class IgcComboComponent<
   }
 
   /**
-   * Adds the given `items` to, or removes them from, the current selection.
+   * Adds `items` to, or removes them from, the current selection.
    *
-   * An empty collection is a "select all" / "deselect all" request. Single
-   * selection has no "select all" - it only resets the current selection.
+   * @remarks
+   * An empty collection selects or deselects all. Single selection has no
+   * "select all" and only clears the selection.
    *
-   * When `emit` is set, the cancellable `igcChange` event is fired *before* any
-   * mutation takes place, so cancelling it leaves the selection untouched.
+   * If `emit` is set, the cancellable `igcChange` event fires before the
+   * mutation, so a cancel keeps the selection unchanged.
    *
    * @returns Whether the change was committed.
    */
@@ -933,7 +927,8 @@ export default class IgcComboComponent<
     return record && !record.header ? record.value : undefined;
   }
 
-  private _toggleSelection(index: number): void {
+  /** Selects the record at `index`. With `toggle`, deselects a selected one. */
+  private _selectAt(index: number, toggle: boolean): void {
     const record = this._recordAt(index);
 
     if (!record) {
@@ -942,22 +937,10 @@ export default class IgcComboComponent<
 
     this._updateSelection(
       this._resolveItemValue(record),
-      this._selected.has(record) ? 'deselection' : 'selection',
+      toggle && this._selected.has(record) ? 'deselection' : 'selection',
       true
     );
 
-    this._activeIndex = index;
-    this._syncValueFromSelection();
-  }
-
-  private _selectByIndex(index: number): void {
-    const record = this._recordAt(index);
-
-    if (!record) {
-      return;
-    }
-
-    this._updateSelection(this._resolveItemValue(record), 'selection', true);
     this._activeIndex = index;
     this._syncValueFromSelection();
   }
@@ -975,9 +958,8 @@ export default class IgcComboComponent<
   private _clearSingleSelection(): void {
     const [selection] = this._selected;
 
-    // The form state is reset directly rather than through
-    // `_syncValueFromSelection` so that the text the user is currently typing
-    // into the main input is left alone.
+    // Reset the form state directly, not through `_syncValueFromSelection`, to
+    // keep the text the user types in the main input.
     if (
       selection &&
       this._updateSelection(
@@ -1042,7 +1024,7 @@ export default class IgcComboComponent<
     }
 
     this._setTouchedState();
-    this._toggleSelection(target.index);
+    this._selectAt(target.index, true);
 
     if (this.singleSelect) {
       this._inputRef.value?.focus();
@@ -1309,7 +1291,7 @@ export default class IgcComboComponent<
   }
 
   private _renderHelperText(): TemplateResult {
-    return this._renderValidationContainer({
+    return IgcValidationContainerComponent.create(this, {
       id: 'combo-helper-text',
       hasHelperText: true,
     });
@@ -1317,7 +1299,13 @@ export default class IgcComboComponent<
 
   protected override render() {
     return html`
-      <igc-popover ?open=${this.open} flip shift same-width>
+      <igc-popover
+        ?open=${this.open}
+        flip
+        same-width
+        .scrollStrategy=${this.scrollStrategy}
+        @igcPopoverScrollClose=${this._handleClosing}
+      >
         ${this._renderMainInput()} ${this._renderList()}
       </igc-popover>
       ${this._renderHelperText()}

@@ -1,8 +1,11 @@
 import { CalendarResourceStringsEN } from 'igniteui-i18n-core';
-import { convertToIgcResource } from '../utils.js';
+import { calendarResourcesMap, convertToIgcResource } from '../utils.js';
 
 /* blazorSuppress */
-/** @deprecated since 7.2.0. Please use the newly provided ICalendarResourceStrings interface or set global resource strings using `registerI18n` method. */
+/**
+ * @deprecated since 7.2.0. Use the newly provided `ICalendarResourceStrings`
+ * interface, or set global resource strings with the `registerI18n` method.
+ */
 export interface IgcCalendarResourceStrings {
   selectMonth?: string;
   selectYear?: string;
@@ -20,11 +23,14 @@ export interface IgcCalendarResourceStrings {
   weekLabel?: string;
 }
 
-// Because weekLabel should be retrieved from the i18n formatter, but previously was present in resources.
-// Manually add it for now, as part of the default EN. When updating make sure to switch in source
-// the week start to be retrieved using a formatter instead of locale.
-/** @deprecated since 7.2.0. Please use the newly provided resources from the igniteui-i18n-resources package. */
+// The i18n formatter gives `weekLabel`, but an earlier version kept it in
+// the resources, so it stays in the default EN strings. A future change must
+// read the week start from the formatter, not from the locale.
+/**
+ * @deprecated since 7.2.0. Use the newly provided resources from the
+ * igniteui-i18n-resources package.
+ */
 export const IgcCalendarResourceStringEN: IgcCalendarResourceStrings = {
-  ...convertToIgcResource(CalendarResourceStringsEN, 'calendar'),
+  ...convertToIgcResource(CalendarResourceStringsEN, calendarResourcesMap),
   weekLabel: 'Wk',
 };

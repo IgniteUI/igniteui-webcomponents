@@ -15,6 +15,7 @@ import {
   simulateFocus,
   simulatePointerEnter,
   simulatePointerLeave,
+  simulateScroll,
 } from '#internals/testing/simulate.spec.js';
 import IgcTooltipComponent from './tooltip.js';
 
@@ -97,7 +98,6 @@ describe('Tooltip', () => {
         `<igc-popover
           inert
           flip
-          shift
         >
           <div part="base">
             <slot></slot>
@@ -115,7 +115,6 @@ describe('Tooltip', () => {
       expect(tooltip).shadowDom.to.equal(
         `<igc-popover
           flip
-          shift
           open
         >
           <div part="base">
@@ -426,7 +425,6 @@ describe('Tooltip', () => {
         `<igc-popover
           inert
           flip
-          shift
         >
           <div part="base">
             <slot></slot>
@@ -688,6 +686,52 @@ describe('Tooltip', () => {
 
       expect(eventSpy).calledWith('igcOpening', { cancelable: true });
       expect(eventSpy).calledWith('igcOpened', { cancelable: false });
+    });
+  });
+
+  describe('Scroll strategy', () => {
+    let container: HTMLElement;
+
+    beforeEach(async () => {
+      container = await fixture(html`
+        <div style="height: 1200px">
+          <button id="target">I have a tooltip</button>
+          <igc-tooltip anchor="target">It works!</igc-tooltip>
+        </div>
+      `);
+      tooltip = container.querySelector(IgcTooltipComponent.tagName)!;
+    });
+
+    it('`scroll` behavior', async () => {
+      tooltip.scrollStrategy = 'scroll';
+      await tooltip.show();
+      await simulateScroll(container, { top: 200 });
+      await hideComplete();
+
+      expect(tooltip.open).to.be.true;
+    });
+
+    it('`close` behavior', async () => {
+      const eventSpy = spy(tooltip, 'emitEvent');
+
+      tooltip.scrollStrategy = 'close';
+      await tooltip.show();
+      await simulateScroll(container, { top: 200 });
+      await hideComplete();
+
+      expect(tooltip.open).to.be.false;
+      expect(eventSpy.firstCall).calledWith('igcClosing');
+      expect(eventSpy.lastCall).calledWith('igcClosed');
+    });
+
+    it('`close` dismisses a sticky tooltip too', async () => {
+      tooltip.sticky = true;
+      tooltip.scrollStrategy = 'close';
+      await tooltip.show();
+      await simulateScroll(container, { top: 200 });
+      await hideComplete();
+
+      expect(tooltip.open).to.be.false;
     });
   });
 

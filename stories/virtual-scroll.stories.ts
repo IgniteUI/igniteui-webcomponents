@@ -54,9 +54,9 @@ const metadata: Meta<IgcVirtualScrollComponent> = {
   },
   argTypes: {
     orientation: {
-      type: { name: 'enum', value: ['vertical', 'horizontal'] },
+      type: { name: 'enum', value: ['horizontal', 'vertical'] },
       description: 'Scroll orientation of the virtual scroll.',
-      options: ['vertical', 'horizontal'],
+      options: ['horizontal', 'vertical'],
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'vertical' } },
     },
@@ -70,7 +70,7 @@ const metadata: Meta<IgcVirtualScrollComponent> = {
     estimatedItemSize: {
       type: 'number',
       description:
-        'Estimated item size in pixels, used before an item is measured in the DOM.\nAfter the first render of an item, the engine replaces the estimate with the measured size.',
+        'Estimated item size in pixels, used before an item is measured in the DOM.\nAfter the first render of an item, the engine replaces the estimate with the measured size.\nThe average measured size also replaces the estimate of the items that are not measured\nyet, so the scrollbar follows the real content.',
       control: 'number',
       table: { defaultValue: { summary: '50' } },
     },
@@ -82,7 +82,7 @@ export default metadata;
 
 interface IgcVirtualScrollArgs {
   /** Scroll orientation of the virtual scroll. */
-  orientation: 'vertical' | 'horizontal';
+  orientation: 'horizontal' | 'vertical';
   /**
    * Number of extra items to render beyond the visible area of the viewport.
    * Higher values reduce blank flashes during fast scrolling but can lower performance.
@@ -91,6 +91,8 @@ interface IgcVirtualScrollArgs {
   /**
    * Estimated item size in pixels, used before an item is measured in the DOM.
    * After the first render of an item, the engine replaces the estimate with the measured size.
+   * The average measured size also replaces the estimate of the items that are not measured
+   * yet, so the scrollbar follows the real content.
    */
   estimatedItemSize: number;
 }

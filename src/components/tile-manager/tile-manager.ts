@@ -41,7 +41,7 @@ import IgcTileComponent from './tile.js';
  * @cssproperty --column-count - The number of columns for the tile manager. The `column-count` attribute sets this variable.
  * @cssproperty --min-col-width - The minimum size of the columns in the tile-manager. The `min-column-width` attribute sets this variable.
  * @cssproperty --min-row-height - The minimum size of the rows in the tile-manager. The `min-row-height` attribute sets this variable.
- * @cssproperty --grid-gap - The gap size of the underlying CSS grid container. The `gap` attributes sts this variable.
+ * @cssproperty --grid-gap - The gap size of the underlying CSS grid container. The `gap` attribute sets this variable.
  *
  */
 @shadowOptions({ slotAssignment: 'manual' })
@@ -221,14 +221,13 @@ export default class IgcTileManagerComponent extends LitElement {
   }
 
   /**
-   * Locks/unlocks the grid container height in response to a tile's maximized state changing.
+   * Locks the grid height while a tile is maximized.
    *
    * @remarks
-   * Maximizing a tile removes it from the grid flow (absolute positioning), so it no longer
-   * contributes to the grid's intrinsic height. When that tile is the sole contributor to the
-   * tallest row track, the container would otherwise collapse to the remaining tiles and cut off
-   * the maximized tile's content. Capturing the current height before the layout change keeps the
-   * container stable, and it is released once no tile remains maximized.
+   * A maximized tile is absolutely positioned and adds no height to the grid.
+   * If it is the tallest tile, the grid collapses and cuts off its content.
+   * Capture the height before the layout changes, and release it when no tile
+   * is maximized.
    */
   private _setMaximizedState(): void {
     const grid = this._grid.value;

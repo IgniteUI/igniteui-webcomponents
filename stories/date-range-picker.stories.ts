@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/web-components';
 import { html } from 'lit';
+import { range } from 'lit/directives/range.js';
 
 import {
   type DateRangeDescriptor,
@@ -254,14 +255,14 @@ const metadata: Meta<IgcDateRangePickerComponent> = {
     keepOpenOnSelect: {
       type: 'boolean',
       description:
-        'Whether the component dropdown should be kept open on selection.',
+        'Keeps the dropdown of the component open after the user selects an item.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
     keepOpenOnOutsideClick: {
       type: 'boolean',
       description:
-        'Whether the component dropdown should be kept open on clicking outside of it.',
+        'Keeps the dropdown of the component open when the user clicks outside of\nit.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
@@ -270,6 +271,14 @@ const metadata: Meta<IgcDateRangePickerComponent> = {
       description: 'Sets the open state of the component.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
+    },
+    scrollStrategy: {
+      type: { name: 'enum', value: ['scroll', 'hide', 'close'] },
+      description:
+        'Sets the behavior of the component when the parent container scrolls.\n\nIf the value is `hide`, the component hides while the anchor is fully out\nof view. `hide` is the default value.\n\nIf the value is `scroll`, the component stays visible and anchored.\n\nIf the value is `close`, the component closes on each scroll.',
+      options: ['scroll', 'hide', 'close'],
+      control: { type: 'inline-radio' },
+      table: { defaultValue: { summary: 'hide' } },
     },
   },
   args: {
@@ -296,6 +305,7 @@ const metadata: Meta<IgcDateRangePickerComponent> = {
     keepOpenOnSelect: false,
     keepOpenOnOutsideClick: false,
     open: false,
+    scrollStrategy: 'hide',
   },
 };
 
@@ -383,12 +393,26 @@ interface IgcDateRangePickerArgs {
     | 'thursday'
     | 'friday'
     | 'saturday';
-  /** Whether the component dropdown should be kept open on selection. */
+  /** Keeps the dropdown of the component open after the user selects an item. */
   keepOpenOnSelect: boolean;
-  /** Whether the component dropdown should be kept open on clicking outside of it. */
+  /**
+   * Keeps the dropdown of the component open when the user clicks outside of
+   * it.
+   */
   keepOpenOnOutsideClick: boolean;
   /** Sets the open state of the component. */
   open: boolean;
+  /**
+   * Sets the behavior of the component when the parent container scrolls.
+   *
+   * If the value is `hide`, the component hides while the anchor is fully out
+   * of view. `hide` is the default value.
+   *
+   * If the value is `scroll`, the component stays visible and anchored.
+   *
+   * If the value is `close`, the component closes on each scroll.
+   */
+  scrollStrategy: 'scroll' | 'hide' | 'close';
 }
 type Story = StoryObj<IgcDateRangePickerArgs>;
 
@@ -899,5 +923,53 @@ export const FormSingleInput: Story = {
       </fieldset>
       ${formControls()}
     </form>
+  `,
+};
+
+export const InScrollingPanel: Story = {
+  args: {
+    label: 'Stay period',
+    scrollStrategy: 'close',
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'A date range picker opens its calendar inside a scrolling panel. A panel can be a settings pane, a dialog body or a side drawer. The `scroll-strategy` property sets what happens to the calendar when the panel scrolls. If the value is `hide`, the calendar hides while the input is out of view. `hide` is the default value. If the value is `scroll`, the calendar follows the input. If the value is `close`, the calendar closes. In the `dialog` mode the calendar opens in a modal dialog and not in a popover. The picker then ignores this property. Change the `mode` control to see this behavior.',
+      },
+    },
+  },
+  render: ({ label, mode, useTwoInputs, scrollStrategy }) => html`
+    <style>
+      .panel {
+        max-width: 46rem;
+        height: 16rem;
+        overflow: auto;
+        padding: 1rem;
+        border: 1px solid var(--ig-gray-200, #e0e0e0);
+        border-radius: 4px;
+      }
+    </style>
+
+    <div class="panel">
+      <h4>Booking details</h4>
+      <p>
+        Open the calendar and scroll this panel to compare the scroll
+        strategies.
+      </p>
+
+      <igc-date-range-picker
+        .label=${label}
+        .mode=${mode}
+        .useTwoInputs=${useTwoInputs}
+        .scrollStrategy=${scrollStrategy}
+      ></igc-date-range-picker>
+
+      <p>
+        ${Array.from(range(1, 24)).map(
+          () => html`Rates are calculated per night for the selected period. `
+        )}
+      </p>
+    </div>
   `,
 };

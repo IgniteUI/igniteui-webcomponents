@@ -62,7 +62,6 @@ const MAX_DISABLED_DATE_SKIP = 1000;
  *
  * @element igc-calendar
  *
- * @slot - The default slot for the calendar.
  * @slot title - Renders the title of the calendar header.
  * @slot header-date - Renders content instead of the current date/range in the calendar header.
  *
@@ -735,9 +734,9 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
       ? this.resourceStrings.calendar_select_date
       : this.resourceStrings.calendar_range_placeholder;
 
-    // A label and the value it describes, not a section of the document, so no headings -
-    // a component cannot know which level would fit the page it is placed in. The
-    // typography of both parts is set by the themes.
+    // A label and the value it describes, not a document section, so no
+    // headings. A component cannot know which level fits its page. The themes
+    // set the typography of both parts.
     return html`
       <div part="header">
         <div part="header-title">

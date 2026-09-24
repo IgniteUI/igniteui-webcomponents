@@ -1,15 +1,15 @@
-import type { LitElement, ReactiveController } from 'lit';
+import type { LitElement } from 'lit';
+import { addHostListeners } from './host-listeners.js';
 
 /**
- * A Lit reactive controller that bridges the native
+ * Connects the native
  * [Invoker Commands API](https://developer.mozilla.org/en-US/docs/Web/API/Invoker_Commands_API)
- * with a component's programmatic API.
+ * to the programmatic API of a component.
  *
- * When an `igc-button` (or any element using the `command` / `commandfor`
- * attributes) invokes a command on the host, the browser dispatches a
- * `CommandEvent` on the target element. This controller listens for that
- * event and forwards it to the registered callback for the given command
- * string.
+ * @remarks
+ * An element with the `command` and `commandfor` attributes makes the browser
+ * send a `CommandEvent` to the host, and the controller runs the callback of
+ * that command string.
  *
  * @example
  * ```ts
@@ -21,51 +21,34 @@ import type { LitElement, ReactiveController } from 'lit';
  * }
  * ```
  *
- * With the above setup, a button in the document can control the dialog
- * declaratively:
+ * A button in the document then controls the dialog declaratively:
  *
  * ```html
  * <igc-button command="open" commandfor="my-dialog">Open</igc-button>
  * <igc-dialog id="my-dialog"></igc-dialog>
  * ```
  */
-class CommandController implements ReactiveController {
+class CommandController {
   private readonly _host: LitElement;
   private readonly _commandMap = new Map<string, () => unknown>();
 
   constructor(host: LitElement) {
     this._host = host;
-    host.addController(this);
+
+    addHostListeners(host, { events: ['command'], listener: this });
   }
 
   /**
-   * Registers a command string and its corresponding handler callback.
+   * Registers a command string and its handler callback.
    *
-   * Returns `this` to allow chained calls:
-   * ```ts
-   * addCommandController(this)
-   *   .set('open', this.show)
-   *   .set('close', this.hide);
-   * ```
-   *
-   * @param command - The command string to listen for (e.g. `'open'`,
-   *   `'toggle-popover'`, or a custom `'--my-command'`).
-   * @param callback - The method to invoke when the command is received.
-   *   Called with the host as `this`.
+   * @param command - The command string to listen for, for example `'open'`,
+   *   `'toggle-popover'`, or a custom `'--my-command'`.
+   * @param callback - The method that runs when the command arrives. The
+   *   controller calls it with the host as `this`.
    */
   public set(command: string, callback: () => unknown): this {
     this._commandMap.set(command, callback);
     return this;
-  }
-
-  /** @internal */
-  public hostConnected(): void {
-    this._host.addEventListener('command', this);
-  }
-
-  /** @internal */
-  public hostDisconnected(): void {
-    this._host.removeEventListener('command', this);
   }
 
   /** @internal */
@@ -75,9 +58,7 @@ class CommandController implements ReactiveController {
   }
 }
 
-/**
- * Creates a {@link CommandController} and attaches it to the given host.
- */
+/** Creates a {@link CommandController} and adds it to the given host. */
 export function addCommandController(host: LitElement): CommandController {
   return new CommandController(host);
 }

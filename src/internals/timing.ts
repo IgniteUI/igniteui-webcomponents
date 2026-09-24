@@ -1,25 +1,16 @@
-/**
- * A restartable timeout handle. See {@link createTimer}.
- */
+/** A restartable timeout handle. See {@link createTimer}. */
 export type Timer = {
   /** Whether the timer is currently armed. */
   readonly active: boolean;
-  /**
-   * (Re)arms the timer, canceling a previously armed run.
-   *
-   * When `delay` is omitted, the default delay of the timer is used.
-   */
+  /** Arms the timer, cancels an armed run, and defaults `delay`. */
   start(delay?: number): void;
-  /** Cancels the armed run, if any. */
+  /** Cancels the armed run, if there is one. */
   stop(): void;
 };
 
 /**
- * Creates a restartable timeout around `callback`.
- *
- * Every `start` supersedes the previous one, so the callback runs at most once,
- * `delay` milliseconds after the most recent `start` - the recurring
- * "clear the stored handle, then set it again" bookkeeping is kept in one place.
+ * Creates a restartable timeout around `callback`. The callback runs one time
+ * at most, `delay` milliseconds after the most recent `start` call.
  *
  * @example
  * ```typescript

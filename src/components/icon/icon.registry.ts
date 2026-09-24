@@ -46,15 +46,15 @@ function collectionOf<V>(
 }
 
 /**
- * Global singleton registry for managing SVG icons and their references.
+ * The global registry of SVG icons and their references.
  *
  * @remarks
- * The registry stores SVG icons in named collections, resolves aliases against
- * the active theme, notifies subscribers once per microtask however many icons
- * changed, and publishes user-set state to other browsing contexts (see
- * {@link IconsStateBroadcast}).
+ * The registry keeps the icons in named collections, resolves an alias against
+ * the active theme, notifies the subscribers one time per microtask however
+ * many icons changed, and publishes user-set state to the other browsing
+ * contexts. See {@link IconsStateBroadcast}.
  *
- * @internal Not exposed directly - use the exported functions.
+ * @internal Use the exported functions.
  */
 class IconsRegistry {
   private readonly _listeners = new Set<IconCallback>();

@@ -6,11 +6,7 @@ import { ifDefined } from 'lit/directives/if-defined.js';
 import { until } from 'lit/directives/until.js';
 import { chatContext, chatUserInputContext } from '#internals/context.js';
 import { addAdoptedStylesController } from '#internals/controllers/adopt-styles.js';
-import {
-  enterKey,
-  isKey,
-  tabKey,
-} from '#internals/controllers/key-bindings.js';
+import { enterKey, isKey, tabKey } from '#internals/controllers/keys.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { partMap } from '#internals/part-map.js';
 import { createTimer } from '#internals/timing.js';
@@ -61,13 +57,12 @@ type DefaultInputRenderers = {
  *
  * @element igc-chat-input
  *
- * @slot - Default unnamed slot for rendering inside the component
  * @fires igcTypingChange - Fired when the user starts/stops typing
  * @fires igcInputFocus - Fired when the input area receives focus
  * @fires igcInputBlur - Fired when the input area loses focus
  * @fires igcAttachmentDrag - Fired when dragging a file over the input
  * @fires igcAttachmentDrop - Fired when a file is dropped into the input
- * @fires igcChange - Fired when the file input changes (delegated from the underlying file input).
+ * @fires igcInputChange - Fired when the value of the text input changes
  *
  * @csspart input-container - Container for the input section
  * @csspart input-wrapper - Wrapper around the text input

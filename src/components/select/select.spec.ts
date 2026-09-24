@@ -69,6 +69,8 @@ describe('Select', () => {
   const getInput = () =>
     select.shadowRoot!.querySelector(IgcInputComponent.tagName)!;
 
+  const getInputLabel = () => getInput().shadowRoot!.querySelector('label')!;
+
   const getSlot = (name: SelectSlots) => {
     return select.shadowRoot!.querySelector(
       `slot${name ? `[name=${name}]` : ':not([name])'}`
@@ -333,6 +335,7 @@ describe('Select', () => {
     });
 
     it('`scroll` behavior', async () => {
+      select.scrollStrategy = 'scroll';
       await openSelect();
       await simulateScroll(container, { top: 200 });
 
@@ -349,14 +352,6 @@ describe('Select', () => {
       expect(select.open).to.be.false;
       expect(eventSpy.firstCall).calledWith('igcClosing');
       expect(eventSpy.lastCall).calledWith('igcClosed');
-    });
-
-    it('`block behavior`', async () => {
-      select.scrollStrategy = 'block';
-      await openSelect();
-      await simulateScroll(container, { top: 200 });
-
-      expect(select.open).to.be.true;
     });
   });
 
@@ -1093,6 +1088,26 @@ describe('Select', () => {
       await elementUpdated(select);
 
       expect(select.open).to.be.false;
+    });
+
+    it('toggles open state once when clicking the label of the input', async () => {
+      const eventSpy = spy(select, 'emitEvent');
+
+      getInputLabel().click();
+      await elementUpdated(select);
+
+      expect(select.open).to.be.true;
+      expect(eventSpy).calledWith('igcOpening');
+      expect(eventSpy).not.calledWith('igcClosing');
+      expect(eventSpy).not.calledWith('igcClosed');
+
+      eventSpy.resetHistory();
+      getInputLabel().click();
+      await elementUpdated(select);
+
+      expect(select.open).to.be.false;
+      expect(eventSpy).calledWith('igcClosing');
+      expect(eventSpy).not.calledWith('igcOpening');
     });
 
     it('toggles open state on Enter keys', async () => {

@@ -22,6 +22,7 @@ import IgcIconComponent from '../icon/icon.js';
 import IgcPopoverComponent, {
   type PopoverPlacement,
 } from '../popover/popover.js';
+import type { PopoverScrollStrategy } from '../types.js';
 import { addTooltipController } from './controller.js';
 import { styles as shared } from './themes/shared/tooltip.common.css.js';
 import { all } from './themes/themes.js';
@@ -122,8 +123,8 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
   private _animating = false;
 
   /**
-   * The state the tooltip is heading to. A show commits `open` upfront so the
-   * popover renders; a hide commits it only once its animation is done.
+   * The state the tooltip moves to. A show commits `open` first, so that the
+   * popover renders. A hide commits it after the animation ends.
    */
   private _requestedState = false;
 
@@ -148,9 +149,9 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
   }
 
   /**
-   * Whether the consumer projected anything into the default slot. Queried
-   * without flattening, which would report the rendered `message` - the slot's
-   * own fallback content - as if it came from the consumer.
+   * Whether the consumer put content into the default slot. The query does not
+   * flatten, because a flattened query reports the rendered `message`, which is
+   * the fallback content of the slot, as content of the consumer.
    */
   private get _hasProjectedContent(): boolean {
     return this._slots
@@ -205,6 +206,22 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
    */
   @property()
   public placement: PopoverPlacement = 'bottom';
+
+  /**
+   * Sets the behavior of the tooltip when the parent container scrolls.
+   *
+   * If the value is `hide`, the tooltip hides while the anchor is fully out
+   * of view. `hide` is the default value.
+   *
+   * If the value is `scroll`, the tooltip stays visible and anchored.
+   *
+   * If the value is `close`, the tooltip closes on each scroll. The tooltip
+   * also closes if you set the `sticky` property. The Escape key behaves the
+   * same way.
+   * @attr scroll-strategy
+   */
+  @property({ attribute: 'scroll-strategy' })
+  public scrollStrategy: PopoverScrollStrategy = 'hide';
 
   /**
    * An element instance or an IDREF to use as the anchor for the tooltip.
@@ -330,10 +347,9 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
   }
 
   /**
-   * Invalidates the queued and/or running transition, resolving a delayed one
-   * with `false`. The caller must settle the state it left behind.
-   *
-   * @returns Whether the aborted transition was mid-animation.
+   * Cancels the queued or running transition, and resolves a delayed one with
+   * `false`. The caller must settle the state that stays behind. Returns
+   * whether the cancelled transition was in its animation.
    */
   private _abortTransition(): boolean {
     const wasAnimating = this._animating;
@@ -364,8 +380,8 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
   }
 
   /**
-   * Drops a queued or running transition and settles on `state`, by default
-   * the state the tooltip is already committed to.
+   * Drops a queued or running transition and settles on `state`. The default is
+   * the state the tooltip is committed to.
    */
   private _cancelTransition(state = this.open): void {
     this._settleState(state, this._abortTransition());
@@ -403,9 +419,9 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
         this.open = true;
       }
 
-      // Make the tooltip ignore most interactions while the animation
-      // is running. In the rare case when the popover overlaps its anchor
-      // this will prevent looping between the anchor and tooltip handlers.
+      // Make the tooltip ignore most interactions during the animation. If the
+      // popover overlaps its anchor, this stops a loop between the anchor and the
+      // tooltip handlers.
       this.inert = true;
       this._animating = true;
 
@@ -511,8 +527,15 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
     }
   }
 
-  /** Sticky mode close action - closes without waiting out `hideDelay`. */
-  private _hideOnCloseClick(): void {
+  /**
+   * Closes the tooltip and emits the events. Ignores `hideDelay`, and also
+   * `sticky`, which `_hideOnInteraction` obeys.
+   *
+   * @remarks
+   * The close button of a sticky tooltip calls this method, as does the `close`
+   * scroll strategy, which closes a sticky tooltip too.
+   */
+  private _hideImmediately(): void {
     this._applyTooltipState({ show: false, withEvents: true });
   }
 
@@ -536,17 +559,17 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
         .offset=${this.offset}
         .anchor=${this._controller.anchor ?? undefined}
         .arrowOffset=${this._arrowOffset}
-        .shiftPadding=${8}
+        .scrollStrategy=${this.scrollStrategy}
         ?open=${this.open}
         flip
-        shift
+        @igcPopoverScrollClose=${this._hideImmediately}
       >
         <div ${ref(this._containerRef)} part=${partMap(parts)}>
           <slot>${this.message}</slot>
           ${
             this.sticky
               ? html`
-                  <slot name="close-button" @click=${this._hideOnCloseClick}>
+                  <slot name="close-button" @click=${this._hideImmediately}>
                     <button
                       type="button"
                       part="close-button"

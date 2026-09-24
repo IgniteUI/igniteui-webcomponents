@@ -69,9 +69,9 @@ const metadata: Meta<IgcCarouselComponent> = {
       table: { defaultValue: { summary: 'false' } },
     },
     indicatorsOrientation: {
-      type: { name: 'enum', value: ['end', 'start'] },
+      type: { name: 'enum', value: ['start', 'end'] },
       description: 'The orientation of the indicator controls (dots).',
-      options: ['end', 'start'],
+      options: ['start', 'end'],
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'end' } },
     },
@@ -110,7 +110,7 @@ const metadata: Meta<IgcCarouselComponent> = {
     locale: {
       type: 'string',
       description:
-        "The locale used to resolve the component's resource strings.\nFalls back to the global locale when not set.",
+        'The locale for the resource strings. Falls back to the global locale.',
       control: 'text',
     },
   },
@@ -140,7 +140,7 @@ interface IgcCarouselArgs {
   /** Whether the carousel has vertical alignment. */
   vertical: boolean;
   /** The orientation of the indicator controls (dots). */
-  indicatorsOrientation: 'end' | 'start';
+  indicatorsOrientation: 'start' | 'end';
   /**
    * The format used to set the aria-label on the carousel indicators.
    * Instances of '{0}' will be replaced with the index of the corresponding slide.
@@ -159,10 +159,7 @@ interface IgcCarouselArgs {
   maximumIndicatorsCount: number;
   /** The animation type. */
   animationType: 'slide' | 'fade' | 'none';
-  /**
-   * The locale used to resolve the component's resource strings.
-   * Falls back to the global locale when not set.
-   */
+  /** The locale for the resource strings. Falls back to the global locale. */
   locale: string;
 }
 type Story = StoryObj<IgcCarouselArgs>;

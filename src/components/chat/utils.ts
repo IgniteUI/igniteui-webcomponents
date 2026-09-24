@@ -45,7 +45,7 @@ export function parseAcceptedFileTypes(
   };
 }
 
-export function isAcceptedFileType(
+function isAcceptedFileType(
   file: File,
   accepted: ChatAcceptedFileTypes | null
 ): boolean {

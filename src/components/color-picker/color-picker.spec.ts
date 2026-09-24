@@ -25,6 +25,7 @@ import {
   simulateClick,
   simulateInput,
   simulateKeyboard,
+  simulateScroll,
 } from '#internals/testing/simulate.spec.js';
 import {
   runValidationContainerTests,
@@ -309,6 +310,45 @@ describe('Color picker', () => {
       // it up by element reflection, since an IDREF cannot cross into its
       // shadow root.
       expect(editor.ariaLabelledByElements).to.eql([label]);
+    });
+  });
+
+  describe('Scroll strategy', () => {
+    let container: HTMLDivElement;
+
+    async function openColorPicker() {
+      picker.open = true;
+      await elementUpdated(picker);
+      await nextFrame();
+    }
+
+    beforeEach(async () => {
+      container = await fixture(html`
+        <div style="height: 1200px">
+          <igc-color-picker></igc-color-picker>
+        </div>
+      `);
+      picker = container.querySelector(IgcColorPickerComponent.tagName)!;
+    });
+
+    it('`scroll` behavior', async () => {
+      picker.scrollStrategy = 'scroll';
+      await openColorPicker();
+      await simulateScroll(container, { top: 200 });
+
+      expect(picker.open).to.be.true;
+    });
+
+    it('`close` behavior', async () => {
+      const eventSpy = spy(picker, 'emitEvent');
+
+      picker.scrollStrategy = 'close';
+      await openColorPicker();
+      await simulateScroll(container, { top: 200 });
+
+      expect(picker.open).to.be.false;
+      expect(eventSpy.firstCall).calledWith('igcClosing');
+      expect(eventSpy.lastCall).calledWith('igcClosed');
     });
   });
 
@@ -1026,6 +1066,19 @@ describe('Color picker', () => {
       expect(isFocused(anchor)).to.be.true;
     });
 
+    it('reflects the open state on the prefix swatch, not on the text input', async () => {
+      const native = getAnchorNativeInput(picker);
+
+      expect(getAnchor(picker).getAttribute('aria-expanded')).to.equal('false');
+
+      picker.open = true;
+      await elementUpdated(picker);
+      await elementUpdated(getInputAnchor());
+
+      expect(getAnchor(picker).getAttribute('aria-expanded')).to.equal('true');
+      expect(native.hasAttribute('aria-expanded')).to.be.false;
+    });
+
     it('reflects disabled onto the prefix swatch', async () => {
       picker.disabled = true;
       await elementUpdated(picker);
@@ -1301,6 +1354,16 @@ describe('Color picker', () => {
     getNativeInput: getAnchorNativeInput,
   });
 
+  describe('Default mode trigger', () => {
+    runExternalLabelAssociationTests({
+      tagName: IgcColorPickerComponent.tagName,
+      getNativeInput: (host) =>
+        (host as IgcColorPickerComponent).renderRoot.querySelector<HTMLElement>(
+          '#trigger'
+        )!,
+    });
+  });
+
   runAriaProjectionTests({
     tagName: IgcColorPickerComponent.tagName,
     hostAttributes: 'mode="input"',
@@ -1311,6 +1374,5 @@ describe('Color picker', () => {
         '#helper-text'
       )!,
     ],
-    openProperty: 'open',
   });
 });

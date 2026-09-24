@@ -1,7 +1,10 @@
 import { LitElement, type PropertyValues, type TemplateResult } from 'lit';
 import { eventOptions, property, query } from 'lit/decorators.js';
 import { cache } from 'lit/directives/cache.js';
-import { addAriaTarget } from '#internals/controllers/aria-projection.js';
+import {
+  addAriaTarget,
+  helperText,
+} from '#internals/controllers/aria-projection.js';
 import {
   addKeybindings,
   arrowDown,
@@ -36,6 +39,7 @@ import {
   DEFAULT_DATE_PARTS_SPIN_DELTAS,
   type IDatePart,
 } from './date-part.js';
+import type { DateFormatMaskParser } from './datetime-mask-parser.js';
 import { dateTimeInputValidators } from './validators.js';
 
 export type { MaskSelection };
@@ -63,6 +67,8 @@ export abstract class IgcDateTimeInputBaseComponent<
 
   protected abstract readonly _themes: ThemingController;
 
+  protected abstract override readonly _parser: DateFormatMaskParser<IDatePart>;
+
   protected readonly _slots = addSlotController(this, { slots: Slots });
 
   protected readonly _inputId = nextInputId();
@@ -71,16 +77,13 @@ export abstract class IgcDateTimeInputBaseComponent<
   protected override readonly _input?: HTMLInputElement;
 
   /**
-   * Receives ARIA semantics projected by a composite host
-   * (e.g. `igc-date-picker`) onto the inner native input.
-   * See {@link addAriaTarget}.
+   * Names and describes the native input, and applies the ARIA that a
+   * composite host, for example `igc-date-picker`, projects. See
+   * {@link addAriaTarget}.
    */
   protected readonly _ariaTarget = addAriaTarget(this, {
-    labels: () => this._internals.labels,
-    description: () =>
-      this._slots.hasAssignedElements('helper-text')
-        ? this.renderRoot.querySelector('#helper-text')
-        : null,
+    description: () => helperText(this, this._slots),
+    hasOwnLabel: () => Boolean(this.label),
   });
 
   protected override get __validators() {
@@ -104,13 +107,14 @@ export abstract class IgcDateTimeInputBaseComponent<
   }
 
   /**
-   * Whether the user has an uncommitted edit in progress.
+   * Whether the user has an uncommitted edit.
    *
-   * While set, the masked text - not the public `value` - is the source of truth:
-   * typing updates the mask only, and the parsed result reaches `value` (together
-   * with `igcChange`) when the edit is committed on blur. Keeping `value` in sync
-   * with the last emitted `igcChange` is what stops a host that two-way binds the
-   * property from clobbering a half-typed mask on an unrelated re-render.
+   * @remarks
+   * While set, the masked text is the source of truth, not the public `value`.
+   * Typing changes only the mask, and the parsed result reaches `value`, with
+   * `igcChange`, when the edit commits on blur. `value` thus agrees with the
+   * last `igcChange`, which stops a host that binds the property two ways from
+   * replacing a half-typed mask on an unrelated render.
    */
   protected _isEditing = false;
 
@@ -118,8 +122,8 @@ export abstract class IgcDateTimeInputBaseComponent<
   protected _oldValue: T | null = null;
 
   /**
-   * The value currently in the editor - the parsed draft while an edit is in
-   * progress, otherwise the committed public value.
+   * The value in the editor: the parsed draft during an edit, and the committed
+   * public value in all other cases.
    *
    * @hidden @internal
    */
@@ -382,10 +386,7 @@ export abstract class IgcDateTimeInputBaseComponent<
 
   //#region Internal API
 
-  /**
-   * Common logic for stepping up or down a date part.
-   * @internal
-   */
+  /** @internal */
   protected _performStep(
     datePart: unknown,
     delta: number | undefined,
@@ -400,8 +401,8 @@ export abstract class IgcDateTimeInputBaseComponent<
   }
 
   /**
-   * Updates the displayed mask value based on focus state.
-   * When focused, shows the editable mask. When unfocused, defers to the leaf's display formatter.
+   * Updates the displayed mask for the focus state. A focused editor shows the
+   * editable mask, an unfocused one uses the display formatter of the leaf.
    */
   protected _updateMaskDisplay(): void {
     if (!this._focused) {
@@ -425,9 +426,9 @@ export abstract class IgcDateTimeInputBaseComponent<
   }
 
   /**
-   * Applies a value produced by an interactive edit (spinning, `Ctrl + ;`).
-   * While focused this only moves the draft; outside of an editing session - e.g. a
-   * programmatic `stepUp()` - there is no blur coming to commit it.
+   * Applies a value from an interactive edit, such as a spin or `Ctrl + ;`.
+   * A focused editor moves only the draft. Outside an edit, for example a
+   * `stepUp()` from code, no blur follows to commit it.
    */
   protected _setDraftValue(value: T): void {
     if (!this._focused) {
@@ -445,16 +446,16 @@ export abstract class IgcDateTimeInputBaseComponent<
   }
 
   /**
-   * Whether the committed value is empty, i.e. gaining focus should start the
-   * edit from the empty mask rather than the formatted value.
+   * Whether the committed value is empty. Focus then starts the edit from the
+   * empty mask, not from the formatted value.
    */
   protected _isValueEmpty(): boolean {
     return !this.value;
   }
 
   /**
-   * Applies a programmatic value assignment: bails when the value is unchanged,
-   * cancels any edit in progress, and re-renders the mask from the new value.
+   * Applies a value assignment from code. Stops if the value is unchanged,
+   * cancels an edit, and renders the mask again from the new value.
    */
   protected _applyValue(value: T | null): void {
     if (equal(this._formValue.value, value)) {
@@ -467,9 +468,8 @@ export abstract class IgcDateTimeInputBaseComponent<
   }
 
   /**
-   * Reads the AM/PM designator as currently typed in the mask for the given
-   * format part, so spinning it toggles from what the user sees rather than
-   * from the underlying date.
+   * Reads the AM/PM designator as typed in the mask for the given format part,
+   * so that a spin changes what the user sees, not the date below it.
    */
   protected _readAmPmFromMask(part?: IDatePart): string | undefined {
     return part?.type === DatePartType.AmPm
@@ -485,13 +485,13 @@ export abstract class IgcDateTimeInputBaseComponent<
   }
 
   /**
-   * Commits the current draft to the public value, emitting `igcChange` when the
-   * committed value differs from the one the input was focused with.
+   * Commits the draft to the public value. Emits `igcChange` if the committed
+   * value differs from the value at focus.
    */
   protected _commitEdit(): void {
-    // Only an actual edit is re-parsed. Without this guard a mask holding a
-    // display-formatted value - a read-only or untouched input - would be read back
-    // under the input format and mangled.
+    // Only a real edit is parsed again. Without this guard, a mask that holds a
+    // display-formatted value, in a read-only or untouched input, is read under
+    // the input format and becomes wrong.
     if (this._isEditing) {
       this._isEditing = false;
 
@@ -519,9 +519,9 @@ export abstract class IgcDateTimeInputBaseComponent<
   }
 
   /**
-   * Marks the masked text as an uncommitted edit. The parsed result deliberately
-   * does not reach the public `value` here - that happens on commit - so that the
-   * property stays in sync with the last emitted `igcChange`. See {@link _isEditing}.
+   * Marks the masked text as an uncommitted edit. The parsed result reaches the
+   * public `value` at commit, not here, so that the property agrees with the
+   * last `igcChange`. See {@link _isEditing}.
    */
   protected override _syncValueFromMask(): void {
     if (this._focused) {
@@ -684,12 +684,13 @@ export abstract class IgcDateTimeInputBaseComponent<
   public abstract set value(value: T | null);
 
   /**
-   * Parses the current masked text into the leaf's value type.
+   * Parses the masked text into the value type of the leaf.
    *
-   * A `strict` parse mirrors the committed value semantics - an incomplete mask has
-   * no value yet and resolves to `null` rather than to a defaults-filled one. A lenient
-   * parse completes the missing parts from their defaults, an empty mask excepted - that
-   * one holds no value to complete and resolves to `null` as well.
+   * @remarks
+   * A `strict` parse agrees with the committed value: an incomplete mask has no
+   * value and gives `null`. A lenient parse completes the missing parts from
+   * their defaults. An empty mask has nothing to complete and gives `null` in
+   * both modes.
    */
   protected abstract _parseMask(strict: boolean): T | null;
 
@@ -710,8 +711,17 @@ export abstract class IgcDateTimeInputBaseComponent<
   protected abstract _getDatePartAtCursor(): unknown;
   protected abstract _getDefaultDatePart(): unknown;
 
-  public abstract hasDateParts(): boolean;
-  public abstract hasTimeParts(): boolean;
+  /* blazorSuppress */
+  /** Whether the current format holds a date part: day, month or year. */
+  public hasDateParts(): boolean {
+    return this._parser.hasDateParts();
+  }
+
+  /* blazorSuppress */
+  /** Whether the current format holds a time part: hours, minutes or seconds. */
+  public hasTimeParts(): boolean {
+    return this._parser.hasTimeParts();
+  }
 
   // #endregion
 }

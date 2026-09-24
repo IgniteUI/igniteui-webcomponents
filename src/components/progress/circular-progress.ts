@@ -30,11 +30,6 @@ const nextId = createIdGenerator('circular-progress');
  * @csspart label - The circular progress label.
  * @csspart value - The circular progress label value.
  * @csspart indeterminate - The circular progress indeterminate state.
- * @csspart primary - The circular progress primary state.
- * @csspart danger - The circular progress error state.
- * @csspart warning - The circular progress warning state.
- * @csspart info - The circular progress info state.
- * @csspart success - The circular progress success state.
  */
 export default class IgcCircularProgressComponent extends IgcProgressBaseComponent {
   public static readonly tagName = 'igc-circular-progress';

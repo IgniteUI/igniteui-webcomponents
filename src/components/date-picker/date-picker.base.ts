@@ -160,16 +160,14 @@ export abstract class IgcDatePickerBaseComponent<
   protected abstract readonly _themes: ThemingController;
 
   /**
-   * The localization controller of the concrete picker.
-   * Only the locale is shared - the resource strings differ per picker.
+   * The localization controller of the picker. Only the locale is shared,
+   * because the resource strings differ between the pickers.
    */
   protected abstract readonly _i18nController: { locale: string };
 
   /**
-   * The current value of the picker.
-   *
-   * The public `value` is declared by the concrete pickers, since its type,
-   * converter and form state differ between them.
+   * The current value of the picker. Each picker declares its own public
+   * `value`, because the type, the converter and the form state differ.
    */
   protected abstract get _value(): T | null;
   protected abstract set _value(value: T | null);
@@ -187,9 +185,9 @@ export abstract class IgcDatePickerBaseComponent<
   protected abstract get _selectDateLabel(): string | undefined;
 
   /**
-   * The editor the host's ARIA state is projected onto - its associated
-   * labels and the `aria-haspopup="dialog"` semantics of the picker, both of
-   * which must land on the native input assistive technology reports.
+   * The editor that gets the ARIA state of the host: the name of the host and
+   * `aria-haspopup="dialog"`. Both must reach the native input that assistive
+   * technology reads.
    */
   protected abstract get _projectionTarget(): Element | null;
 
@@ -199,10 +197,7 @@ export abstract class IgcDatePickerBaseComponent<
   /** Restores focus to the editor after a value has been selected in the calendar. */
   protected abstract _focusAndSelectInput(): void;
 
-  /**
-   * Resolves the value of the picker from the dates selected in the calendar, which come
-   * in ascending order.
-   */
+  /** The value of the picker for `dates`, which the calendar gives in ascending order. */
   protected abstract _valueFromCalendarSelection(dates: Date[]): T | null;
 
   //#endregion
@@ -220,9 +215,9 @@ export abstract class IgcDatePickerBaseComponent<
   }
 
   /**
-   * Seeds the active date of the calendar on the initial render, when the picker holds
-   * a value but no explicit active date. From then on the calendar owns its active date
-   * and `activeDate` reads it back, so this is consulted once.
+   * The active date for the first render, if the picker holds a value but no
+   * active date. The calendar then owns its active date and `activeDate` reads
+   * it back, so this is read one time.
    */
   protected get _defaultActiveDate(): Date | null {
     return this._calendarValue;
@@ -498,16 +493,15 @@ export abstract class IgcDatePickerBaseComponent<
   constructor() {
     super();
 
-    // Projects the host's labels and popup semantics onto the native input
-    // inside the editor (see ProjectedARIA for why the host cannot publish
-    // these itself).
+    // Projects the name and the popup semantics of the host onto the native
+    // input of the editor. See ProjectedARIA.
     addAriaProjector(this, {
       target: () => this._projectionTarget,
       state: () => ({
         hasPopup: 'dialog',
-        labelledBy: this._internals.labels,
         describedBy: this._helperText ? [this._helperText] : null,
       }),
+      hasOwnLabel: () => Boolean(this.label),
     });
 
     addSafeEventListener(this, 'focusout', this._handleFocusOut);
@@ -552,8 +546,9 @@ export abstract class IgcDatePickerBaseComponent<
   }
 
   /**
-   * Points the calendar at the first defined of `dates`, keeping its current
-   * active date when none is. A no-op until the calendar is rendered.
+   * Points the calendar at the first defined date of `dates`, and keeps the
+   * current active date if there is none. Does nothing before the calendar
+   * renders.
    */
   protected _setCalendarActiveDate(
     ...dates: (Date | null | undefined)[]
@@ -565,8 +560,8 @@ export abstract class IgcDatePickerBaseComponent<
   }
 
   /**
-   * Pushes the value of the picker back onto the calendar, which a read-only picker has
-   * to do directly - the binding is left with nothing to re-commit.
+   * Writes the value of the picker back onto the calendar. A read-only picker
+   * must do this itself, because the binding has nothing to commit again.
    */
   protected async _restoreCalendarSelection(): Promise<void> {
     await this._calendar.updateComplete;
@@ -707,10 +702,9 @@ export abstract class IgcDatePickerBaseComponent<
   }
 
   /**
-   * The content projected into an editor of the picker - its icons and prefix/suffix slots.
-   *
-   * The suffix distinguishes the editors of a picker which renders more than one,
-   * e.g. `-start` and `-end`.
+   * The content for an editor of the picker: its icons and its prefix and
+   * suffix slots. The suffix identifies the editor if the picker renders more
+   * than one, for example `-start` and `-end`.
    */
   protected _renderEditorSlots(suffix = '') {
     const prefixSlot = `prefix${suffix}`;
@@ -747,7 +741,7 @@ export abstract class IgcDatePickerBaseComponent<
   }
 
   protected _renderCalendar(id: string) {
-    const hideHeader = this._isDropDown ? true : this.hideHeader;
+    const hideHeader = this._isDropDown || this.hideHeader;
     const isInert = !this.open || this.disabled;
 
     return html`
@@ -807,7 +801,13 @@ export abstract class IgcDatePickerBaseComponent<
 
     return this._isDropDown
       ? html`
-          <igc-popover ?open=${this.open} anchor=${id} flip shift>
+          <igc-popover
+            ?open=${this.open}
+            anchor=${id}
+            flip
+            .scrollStrategy=${this.scrollStrategy}
+            @igcPopoverScrollClose=${this._handleClosing}
+          >
             <igc-focus-trap ?disabled=${isDisabled}>
               ${this._renderPickerContent(id)}
             </igc-focus-trap>

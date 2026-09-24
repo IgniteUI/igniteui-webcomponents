@@ -2,6 +2,7 @@ import { html, isServer, LitElement, nothing, type TemplateResult } from 'lit';
 import { property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { createAbortHandle } from '#internals/abort-handler.js';
+import { HELPER_TEXT_ID } from '#internals/controllers/aria-projection.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import {
   type IgcFormControl,
@@ -92,7 +93,7 @@ export default class IgcValidationContainerComponent extends LitElement {
   public static create(
     host: IgcFormControl,
     config: ValidationContainerConfig = {
-      id: 'helper-text',
+      id: HELPER_TEXT_ID,
       hasHelperText: true,
     }
   ): TemplateResult {
@@ -100,9 +101,8 @@ export default class IgcValidationContainerComponent extends LitElement {
       ? html`<slot name="helper-text" slot="helper-text"></slot>`
       : nothing;
 
-    // `hasUpdated` is false during SSR and the hydrating render, so both emit
-    // `nothing` and the slots are projected on the next host render (see
-    // `firstUpdated` in the container).
+    // `hasUpdated` is false during SSR and the hydrating render, so both give
+    // `nothing`, and the next host render projects the slots. See `firstUpdated`.
     const validationSlots = host.hasUpdated
       ? Iterator.from(activeValidationSlots(host.validity))
           .map((name) => html`<slot name=${name} slot=${name}></slot>`)
@@ -251,9 +251,9 @@ export default class IgcValidationContainerComponent extends LitElement {
   }
 
   protected override firstUpdated(): void {
-    // `create` omits the validation slots until the host has updated. If the
-    // host hydrated invalid, ask it to re-render so the slots are projected;
-    // their `slotchange` then updates this container.
+    // `create` omits the validation slots until the host updates. If the host
+    // hydrated invalid, make it render again to project the slots. Their
+    // `slotchange` then updates this container.
     if (this.invalid) {
       this.target.requestUpdate();
     }

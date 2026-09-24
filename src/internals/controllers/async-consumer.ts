@@ -31,9 +31,8 @@ export class AsyncContextConsumer<
     return this._consumer?.value;
   }
 
-  // If there is already an instance of a consumer (because of an attach/detach cycle),
-  // skip creating a new instance for this host - checked both before and after the
-  // await, since a reconnect can land in between.
+  // The consumer survives a disconnect, and a reconnect can land during the
+  // await, so the guard runs on both sides of it.
   public async hostConnected(): Promise<void> {
     if (this._consumer) {
       return;

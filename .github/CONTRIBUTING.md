@@ -91,6 +91,21 @@ npm run storybook:build
 - **Code Style**: Follow the [existing code style conventions](./CODING_GUIDELINES.md) used in the project. This might involve specific formatting guidelines or linting tools. Refer to the project's codebase or any existing documentation for details.
 - **Commit Messages**: Write clear and concise commit messages that describe your changes.
 - **Testing**: Ensure your contributions include relevant tests to verify their functionality and avoid introducing regressions.
+- **Specifications**: Every public component has a specification at `src/components/[name]/spec.md`. See [Component Specifications](#component-specifications) below.
+
+## Component Specifications
+
+Each component directory holds a `spec.md` describing that component: its overview and user stories, its public API, its keyboard interactions and ARIA semantics, its test scenarios, and its assumptions and limitations. The specification is the behavioral contract — it is what reviewers, consumers and future contributors read to learn what the component is supposed to do.
+
+- **A new component ships with a specification.** Write it before the implementation: deciding the public API, the keyboard model and the accessibility semantics up front is the point of the document. Copy the structure of [`src/components/splitter/spec.md`](../src/components/splitter/spec.md), which is the reference every other specification follows.
+- **A new feature updates the specification of the component it touches.** A property, method, event, slot, CSS part or CSS custom property that is added, renamed, deprecated or removed belongs in the relevant API table. A new keyboard interaction, ARIA role or state, constraint or precedence rule belongs in the corresponding section.
+- **Test scenarios mirror the suite that exists.** Each subsection matches a `describe` block, and the scenarios are numbered contiguously. Where documented behavior is not covered by a test, say so under `### Not covered by the suite` instead of implying coverage.
+- **Record the change.** Add a row to the `## Revision history` table with the next version, the date and a short note. A new component starts at version 1.
+- **Keep the table of contents current.** It is hand-maintained: every `##` and `###` heading needs an entry whose anchor resolves.
+
+Specifications do not carry ownership, approval or sign-off sections, and the revision history has no author column — `git` already records who changed what. Design hand-off links, such as Figma files, go under `### End-user experience` and are preserved across updates.
+
+A pull request that changes behavior without updating the affected specification is incomplete, and reviewers will ask for it.
 - **Changelog**: Add an entry under `[Unreleased]` in [CHANGELOG.md](../CHANGELOG.md) for every user-visible change. The file follows [Keep a Changelog](https://keepachangelog.com/), so use the `Added`, `Changed`, `Deprecated`, `Removed`, `Fixed` and `Security` categories. A fix for a vulnerability goes under `Security`, with a link to the advisory once it is published.
 
 ## Accessibility

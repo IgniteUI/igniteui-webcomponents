@@ -23,8 +23,6 @@ import { all } from './themes/button/themes.js';
  * @slot suffix - Renders content after the label of the button.
  *
  * @csspart base - The native button element of the button component.
- * @csspart prefix - The prefix container of the button component.
- * @csspart suffix - The suffix container of the button component.
  */
 export default class IgcButtonComponent extends IgcButtonBaseComponent {
   public static readonly tagName = 'igc-button';

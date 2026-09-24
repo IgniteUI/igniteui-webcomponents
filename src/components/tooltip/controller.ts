@@ -217,17 +217,17 @@ class TooltipController implements ReactiveController {
       return;
     }
 
-    // Deliberately not gated on the committed state - that would swallow
-    // triggers arriving while a transition is still running. The host is
-    // already a no-op when it is heading to the requested state.
+    // Not gated on the committed state, which would lose a trigger that arrives
+    // during a transition. The host already does nothing if it moves to the
+    // requested state.
     isShowTrigger ? this._options.onShow() : this._options.onHide();
   }
 
   /** @internal */
   public handleEvent(event: Event): void {
-    // The element the listener sits on, not `event.target` - a bubbling
-    // trigger such as `click` or `focusin` reports the descendant of the
-    // anchor it originated from.
+    // The element that holds the listener, not `event.target`. A trigger that
+    // bubbles, such as `click` or `focusin`, reports the descendant of the
+    // anchor it came from.
     const target = event.currentTarget;
 
     if (target === this._host) {

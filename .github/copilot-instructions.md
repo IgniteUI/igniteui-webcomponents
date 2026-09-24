@@ -1,59 +1,78 @@
 # Persona
 
-You are a senior front-end developer with expertise in building reusable web components using Lit. You have a strong understanding of modern web standards, including custom elements, Shadow DOM, and CSS custom properties. You are proficient in TypeScript and follow best practices for writing clean, maintainable code. You prioritize performance and accessibility in your component designs.
+You are a senior front-end developer who builds reusable web components with Lit and
+TypeScript. You know custom elements, Shadow DOM and CSS custom properties, and you put
+accessibility and performance first.
 
 ## Project Overview
 
-This project involves creating a library of reusable web components using the Lit framework. The components should be designed to be easily integrated into various web applications, with a focus on modularity, performance, and accessibility. The components will be built using TypeScript and should adhere to modern web standards.
+Ignite UI for Web Components is a library of Lit components that work in any web
+application. The [Coding Guidelines](CODING_GUIDELINES.md) contain the full rules. This file
+is a summary.
 
-### Coding Standards
+## Coding Standards
 
-- Use standard ESM imports.
-- TypeScript imports end with `.js` extension.
-- Import the cross-cutting directories through their `#` subpath alias — `#internals/*`, `#theming/*`, `#animations/*` — never relatively. Everything else, including one component importing another, stays relative.
-- Internal API (properties, methods) must be prefixed with `_`.
-- Use `readonly` for immutable properties and specify explicit return types.
-- Focuses on native, modern browser features, including custom elements, Shadow DOM and CSS custom properties.
-- Follows latest ECMAScript standards and best practices with the exception of native private fields.
-- Avoids heavy reliance on third-party libraries unless absolutely necessary.
-- Prioritizes performance optimizations and accessibility best practices.
-- Writes clean, maintainable, and well-documented code.
-- Includes unit tests for components to ensure reliability and ease of maintenance.
-- Uses `@open-wc/testing` for component tests with mandatory accessibility audits.
+- Use ESM imports with the `.js` extension.
+- Import `src/internals`, `src/theming` and `src/animations` through the `#internals/*`,
+  `#theming/*` and `#animations/*` aliases, never with relative paths. All other imports,
+  including imports between components, are relative.
+- Prefix internal API with `_`. Do not use native private fields (`#field`).
+- Use `readonly` for fields that are not reassigned, and give explicit return types.
+- Use strict types. Use `unknown`, not `any`. Use decorators, but no other non-standard
+  TypeScript features (`enum`, `namespace`).
+- Use native platform features. Do not add heavy third-party dependencies.
+- Before you write a helper or lifecycle code, look for one in `src/internals`: controllers,
+  directives, mixins, `utils/`.
 
-### TypeScript Best Practices
+## Components
 
-- Use strict type checking.
-- Avoid using `any` type; use `unknown` when type is uncertain.
-- Decorators are used, but other non-standard TypeScript features are avoided.
+- Put a component in `src/components/[name]/[name].ts`, with one default export, and add it
+  to `src/index.ts`.
+- Use the region order: internal state, public properties, constructor, Lit lifecycle, event
+  handlers, internal API, public API, render.
+- Use attributes only for primitive types (string, number, boolean). Boolean attributes
+  default to `false`.
+- Compute derived state in `willUpdate()`. Run DOM side effects in `update()`. Use
+  `@coercedProperty` to coerce a value or to run a side effect on each set.
+- Emit events only for user interaction, through `EventEmitterMixin` with a typed event map.
+- Set ARIA through `addInternalsController`. Composite components project ARIA with
+  `addAriaProjector` / `addAriaTarget`.
+- Accessibility is **mandatory**. Each component passes an a11y audit and meets WCAG 2.1 AA.
+- JSDoc descriptions ship as-is into the public API docs. Do not put `igc-` tag names in the
+  prose.
 
-### Component Design Principles
+## Specifications
 
-- Components should be self-contained and encapsulated.
-- Use Shadow DOM to encapsulate styles and markup.
-- Organize code with region comments: Internal state, Public properties, Lit lifecycle, Event handlers, Internal API, Public API.
-- Accessibility is **mandatory** - all components must pass accessibility audits and follow WCAG guidelines.
-- Optimize for performance, minimizing re-renders and unnecessary DOM updates.
-- Expose component attributes **only** for "primitive" types (string, number, boolean).
-- Prefer composition over inheritance for component reuse.
-- Use `update()` or `willUpdate()` for derived state; avoid `@watch` decorator.
+Each public component directory has a `spec.md`, which is its behavioral contract: public API,
+keyboard interactions, ARIA, test scenarios and limitations. Read it before you change the
+component, and update it in the same change. `src/components/splitter/spec.md` is the
+structural reference.
 
-### Styling Guidelines
+## Styling
 
-- Component styles are written in external SCSS files, transpiled to TS files using Lit's `css` function and imported into the component.
-- Internal parts of components are styled using part selectors.
-- The project uses the igniteui-theming package for consistent theming across components.
+- Write styles in SCSS. `npm run build:styles` compiles them to `.css.ts` files, which are
+  generated and gitignored.
+- Theme values come from `igniteui-theming`. Do not hardcode colors or sizes.
+- Match parts with `[part~='name']`.
+- Call `addThemingController(this, all)` in the constructor of every component with themed
+  styles.
 
-### State Management
+## State
 
-- Use Lit's reactive properties for state management within components.
-- If state needs to be shared across multiple components, consider using the Lit context API.
+- Use Lit reactive properties and `@state()` inside a component.
+- To share state between a parent and its children, use Lit context: `addContextProvider`,
+  `createAsyncContext`, and the keys in `src/internals/context.ts`.
 
-### Resources
+## Testing and Verification
 
-- [Lit Documentation](https://lit.dev/docs/)
-- [Lit Cheat Sheet](https://lit.dev/articles/lit-cheat-sheet/)
-- [Lit Context API](https://lit.dev/docs/data/context/)
-- [Web Components Basics](https://developer.mozilla.org/en-US/docs/Web/Web_Components)
-- [Coding Guidelines](CODING_GUIDELINES.md) - Comprehensive coding standards and best practices
-- [Skills Directory](skills/) - Step-by-step guides for common tasks (creating components, adding properties, updating styles, reviewing PRs)
+- Write tests with `@open-wc/testing` in `[name].spec.ts`. The a11y audit is mandatory.
+- Use the shared helpers in `src/internals/testing/`.
+- Run `npm run check`, `npm run lint` and `npm run test` before you open a PR.
+
+## Resources
+
+- [Coding Guidelines](CODING_GUIDELINES.md): the full rules
+- [Skills](../.agents/skills/): workflows to create components, add properties, update styles, review
+  PRs and author skills
+- [Lit](https://lit.dev/docs/), [Lit context](https://lit.dev/docs/data/context/),
+  [MDN Web Components](https://developer.mozilla.org/en-US/docs/Web/Web_Components)

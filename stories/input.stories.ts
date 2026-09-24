@@ -44,10 +44,10 @@ const metadata: Meta<IgcInputComponent> = {
     type: {
       type: {
         name: 'enum',
-        value: ['text', 'email', 'number', 'password', 'search', 'tel', 'url'],
+        value: ['number', 'text', 'email', 'password', 'search', 'tel', 'url'],
       },
       description: 'The type of the control.',
-      options: ['text', 'email', 'number', 'password', 'search', 'tel', 'url'],
+      options: ['number', 'text', 'email', 'password', 'search', 'tel', 'url'],
       control: { type: 'select' },
       table: { defaultValue: { summary: 'text' } },
     },
@@ -170,7 +170,7 @@ interface IgcInputArgs {
   /** The value of the control. */
   value: string;
   /** The type of the control. */
-  type: 'text' | 'email' | 'number' | 'password' | 'search' | 'tel' | 'url';
+  type: 'number' | 'text' | 'email' | 'password' | 'search' | 'tel' | 'url';
   /** Makes the control a readonly field. */
   readOnly: boolean;
   /**

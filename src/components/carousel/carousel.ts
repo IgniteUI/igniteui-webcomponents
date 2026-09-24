@@ -79,7 +79,7 @@ const i18n: I18nControllerConfig<ICarouselResourceStrings> = {
  *
  * @element igc-carousel
  *
- * @slot Default slot for the carousel. Any carousel slides should be projected here.
+ * @slot - Default slot for the carousel. Any carousel slides should be projected here.
  * @slot indicator - Renders the custom indicators of the carousel. An indicator element sets this slot itself.
  * @slot previous-button - Renders content inside the previous button.
  * @slot next-button - Renders content inside the next button.
@@ -128,8 +128,8 @@ export default class IgcCarouselComponent extends I18nMixin(
   private _hasInnerFocus = false;
 
   /**
-   * Whether an interaction - a pointer over the carousel, or focus inside it -
-   * caused the current paused state. An explicit `pause()` call does not set it.
+   * Whether an interaction caused the paused state: a pointer over the carousel,
+   * or focus in it. A `pause()` call does not set it.
    */
   private _pausedByInteraction = false;
 

@@ -107,6 +107,12 @@ export class IgcCheckboxBaseComponent extends FormAssociatedCheckboxRequiredMixi
     this._input.blur();
   }
 
+  /** Focuses and toggles the control, as a native checkbox label does. */
+  protected override _handleLabelActivation(): void {
+    this._input.focus();
+    this._input.click();
+  }
+
   protected _handleSlotChange(): void {
     this._hideLabel = !this._slots.hasAssignedNodes('[default]');
   }

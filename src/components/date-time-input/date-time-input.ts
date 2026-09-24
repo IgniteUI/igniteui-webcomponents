@@ -50,7 +50,7 @@ export interface IgcDateTimeInputComponentEventMap {
  * @slot invalid - Renders content when the component is in invalid state (validity.valid = false).
  *
  * @fires igcInput - Emitted when the control input receives user input.
- * @fires igcChange - Emitted when the control's checked state changes.
+ * @fires igcChange - Emitted on blur, when the committed value differs from the one the editor was focused with..
  *
  * @csspart container - The main wrapper that holds all main input elements.
  * @csspart input - The native input element.
@@ -277,24 +277,6 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
   /** Decrements a date/time portion. */
   public override stepDown(datePart?: DatePart, delta?: number): void {
     super.stepDown(datePart, delta);
-  }
-
-  /* blazorSuppress */
-  /**
-   * Checks whether the current format includes date parts (day, month, year).
-   * @internal
-   */
-  public override hasDateParts(): boolean {
-    return this._parser.hasDateParts();
-  }
-
-  /* blazorSuppress */
-  /**
-   * Checks whether the current format includes time parts (hours, minutes, seconds).
-   * @internal
-   */
-  public override hasTimeParts(): boolean {
-    return this._parser.hasTimeParts();
   }
 
   //#endregion

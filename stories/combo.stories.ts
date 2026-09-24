@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/web-components-vite';
 import { html } from 'lit';
+import { range } from 'lit/directives/range.js';
 
 import {
   type ComboItemTemplate,
@@ -108,10 +109,10 @@ const metadata: Meta<IgcComboComponent> = {
       control: 'text',
     },
     groupSorting: {
-      type: { name: 'enum', value: ['asc', 'desc', 'none'] },
+      type: { name: 'enum', value: ['none', 'asc', 'desc'] },
       description:
         'Sorts the items in each group by ascending or descending order.',
-      options: ['asc', 'desc', 'none'],
+      options: ['none', 'asc', 'desc'],
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'asc' } },
     },
@@ -164,6 +165,14 @@ const metadata: Meta<IgcComboComponent> = {
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
+    scrollStrategy: {
+      type: { name: 'enum', value: ['scroll', 'hide', 'close'] },
+      description:
+        'Sets the behavior of the component when the parent container scrolls.\n\nIf the value is `hide`, the component hides while the anchor is fully out\nof view. `hide` is the default value.\n\nIf the value is `scroll`, the component stays visible and anchored.\n\nIf the value is `close`, the component closes on each scroll.',
+      options: ['scroll', 'hide', 'close'],
+      control: { type: 'inline-radio' },
+      table: { defaultValue: { summary: 'hide' } },
+    },
   },
   args: {
     outlined: false,
@@ -178,6 +187,7 @@ const metadata: Meta<IgcComboComponent> = {
     disabled: false,
     invalid: false,
     open: false,
+    scrollStrategy: 'hide',
   },
 };
 
@@ -210,7 +220,7 @@ interface IgcComboArgs {
   /** The key in the data source used to group items in the list. */
   groupKey: string;
   /** Sorts the items in each group by ascending or descending order. */
-  groupSorting: 'asc' | 'desc' | 'none';
+  groupSorting: 'none' | 'asc' | 'desc';
   /** Enables the case sensitive search icon in the filtering input. */
   caseSensitiveIcon: boolean;
   /** Disables the filtering of the list of options. */
@@ -227,6 +237,17 @@ interface IgcComboArgs {
   invalid: boolean;
   /** Sets the open state of the component. */
   open: boolean;
+  /**
+   * Sets the behavior of the component when the parent container scrolls.
+   *
+   * If the value is `hide`, the component hides while the anchor is fully out
+   * of view. `hide` is the default value.
+   *
+   * If the value is `scroll`, the component stays visible and anchored.
+   *
+   * If the value is `close`, the component closes on each scroll.
+   */
+  scrollStrategy: 'scroll' | 'hide' | 'close';
 }
 type Story = StoryObj<IgcComboArgs>;
 
@@ -589,4 +610,56 @@ export const Form: Story = {
       </form>
     `;
   },
+};
+
+export const InScrollingPanel: Story = {
+  args: {
+    label: 'Location(s)',
+    placeholder: 'Cities of interest',
+    scrollStrategy: 'close',
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'A combo opens its list inside a scrolling panel. A panel can be a settings pane, a dialog body or a side drawer. The `scroll-strategy` property sets what happens to the list when the panel scrolls. If the value is `hide`, the list hides while the input is out of view. `hide` is the default value. If the value is `scroll`, the list follows the input. If the value is `close`, the list closes.',
+      },
+    },
+  },
+  render: ({ label, placeholder, singleSelect, scrollStrategy }) => html`
+    <style>
+      .panel {
+        max-width: 46rem;
+        height: 16rem;
+        overflow: auto;
+        padding: 1rem;
+        border: 1px solid var(--ig-gray-200, #e0e0e0);
+        border-radius: 4px;
+      }
+    </style>
+
+    <div class="panel">
+      <h4>Shipping preferences</h4>
+      <p>
+        Open the list and scroll this panel to compare the scroll strategies.
+      </p>
+
+      <igc-combo
+        value-key="id"
+        display-key="name"
+        group-key="country"
+        .data=${cities}
+        .label=${label}
+        .placeholder=${placeholder}
+        .scrollStrategy=${scrollStrategy}
+        ?single-select=${singleSelect}
+      ></igc-combo>
+
+      <p>
+        ${Array.from(range(1, 24)).map(
+          () => html`Deliveries are grouped by country and dispatched daily. `
+        )}
+      </p>
+    </div>
+  `,
 };

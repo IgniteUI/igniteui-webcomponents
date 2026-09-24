@@ -71,7 +71,7 @@ const metadata: Meta<IgcCalendarComponent> = {
     locale: {
       type: 'string',
       description:
-        "The locale used to resolve the component's resource strings.\nFalls back to the global locale when not set.",
+        'The locale for the resource strings. Falls back to the global locale.',
       control: 'text',
     },
     value: {
@@ -87,9 +87,9 @@ const metadata: Meta<IgcCalendarComponent> = {
       control: 'date',
     },
     selection: {
-      type: { name: 'enum', value: ['single', 'multiple', 'range'] },
+      type: { name: 'enum', value: ['multiple', 'single', 'range'] },
       description: 'Sets the type of selection in the component.',
-      options: ['single', 'multiple', 'range'],
+      options: ['multiple', 'single', 'range'],
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'single' } },
     },
@@ -158,10 +158,7 @@ interface IgcCalendarArgs {
   visibleMonths: number;
   /** The current active view of the component. */
   activeView: 'days' | 'months' | 'years';
-  /**
-   * The locale used to resolve the component's resource strings.
-   * Falls back to the global locale when not set.
-   */
+  /** The locale for the resource strings. Falls back to the global locale. */
   locale: string;
   /**
    * The current value of the calendar.
@@ -171,7 +168,7 @@ interface IgcCalendarArgs {
   /** Get/Set the date which is shown in view and is highlighted. By default it is the current date. */
   activeDate: Date;
   /** Sets the type of selection in the component. */
-  selection: 'single' | 'multiple' | 'range';
+  selection: 'multiple' | 'single' | 'range';
   /** Whether to show the week numbers. */
   showWeekNumbers: boolean;
   /** Gets/Sets the first day of the week. */

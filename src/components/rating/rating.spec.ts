@@ -17,7 +17,10 @@ import {
   homeKey,
 } from '#internals/controllers/key-bindings.js';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
-import { createFormAssociatedTestBed } from '#internals/testing/form-testbed.spec.js';
+import {
+  createFormAssociatedTestBed,
+  runExternalLabelAssociationTests,
+} from '#internals/testing/form-testbed.spec.js';
 import {
   simulateClick,
   simulateKeyboard,
@@ -30,6 +33,14 @@ import IgcRatingComponent from './rating.js';
 describe('Rating component', () => {
   before(() => {
     defineComponents(IgcRatingComponent);
+  });
+
+  runExternalLabelAssociationTests({
+    tagName: IgcRatingComponent.tagName,
+    getNativeInput: (host) =>
+      (host as IgcRatingComponent).renderRoot.querySelector<HTMLElement>(
+        '[part="base"]'
+      )!,
   });
 
   let el: IgcRatingComponent;

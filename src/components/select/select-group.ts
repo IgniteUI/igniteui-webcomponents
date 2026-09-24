@@ -1,19 +1,17 @@
-import { html, LitElement, type PropertyValues } from 'lit';
+import type { PropertyValues } from 'lit';
 import { property, queryAssignedElements } from 'lit/decorators.js';
-import { addInternalsController } from '#internals/controllers/internals.js';
+import type { ARIAState } from '#internals/controllers/internals.js';
 import {
   createMutationController,
   type MutationControllerParams,
 } from '#internals/controllers/mutation-observer.js';
-import { addSlotController, setSlots } from '#internals/controllers/slot.js';
 import { registerComponent } from '#internals/definitions/register.js';
+import { IgcGroupBaseComponent } from '#internals/mixins/group.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import { styles } from '../dropdown/themes/dropdown-group.base.css.js';
 import { all } from '../dropdown/themes/group.js';
 import { styles as shared } from '../dropdown/themes/shared/group/dropdown-group.common.css.js';
 import IgcSelectItemComponent from './select-item.js';
-
-const Slots = setSlots('label');
 
 /**
  * A container for a group of select items.
@@ -24,7 +22,7 @@ const Slots = setSlots('label');
  *
  * @csspart label - The native label element.
  */
-export default class IgcSelectGroupComponent extends LitElement {
+export default class IgcSelectGroupComponent extends IgcGroupBaseComponent {
   public static readonly tagName = 'igc-select-group';
   public static override styles = [styles, shared];
 
@@ -32,19 +30,6 @@ export default class IgcSelectGroupComponent extends LitElement {
   public static register(): void {
     registerComponent(IgcSelectGroupComponent);
   }
-
-  private readonly _internals = addInternalsController(this, {
-    initialARIA: {
-      role: 'group',
-    },
-    aria: () => ({ ariaDisabled: `${this.disabled}` }),
-  });
-
-  private readonly _slots = addSlotController(this, {
-    slots: Slots,
-    initial: true,
-    onChange: this._labelChange,
-  });
 
   private controlledItems!: Array<IgcSelectItemComponent>;
 
@@ -64,14 +49,14 @@ export default class IgcSelectGroupComponent extends LitElement {
   private _observerCallback({
     changes: { attributes },
   }: MutationControllerParams<IgcSelectItemComponent>) {
-    for (const { node: item } of attributes) {
-      if (!this.disabled) {
-        this.controlledItems = this.activeItems;
-      }
+    // An enabled group follows its items; a disabled one holds them disabled.
+    if (!this.disabled) {
+      this.controlledItems = this.activeItems;
+      return;
+    }
 
-      if (this.disabled && !item.disabled) {
-        item.disabled = true;
-      }
+    for (const { node: item } of attributes) {
+      item.disabled = true;
     }
   }
 
@@ -97,6 +82,10 @@ export default class IgcSelectGroupComponent extends LitElement {
     });
   }
 
+  protected override _resolveARIA(): ARIAState {
+    return { ariaDisabled: `${this.disabled}` };
+  }
+
   protected override willUpdate(changedProperties: PropertyValues<this>): void {
     if (this.hasUpdated && changedProperties.has('disabled')) {
       this.disabledChange();
@@ -114,24 +103,6 @@ export default class IgcSelectGroupComponent extends LitElement {
     for (const item of this.controlledItems) {
       item.disabled = this.disabled;
     }
-  }
-
-  /**
-   * The label is rendered into this shadow root, out of reach of an
-   * `aria-labelledby` on the host, so its text names the `group` directly.
-   */
-  private _labelChange(): void {
-    const label = this._slots.getAssignedText('label', true);
-    this._internals.setARIA({ ariaLabel: label || null });
-  }
-
-  protected override render() {
-    return html`
-      <label part="label">
-        <slot name="label"></slot>
-      </label>
-      <slot></slot>
-    `;
   }
 }
 

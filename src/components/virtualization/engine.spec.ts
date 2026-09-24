@@ -133,6 +133,128 @@ describe('VirtualScrollEngine', () => {
     });
   });
 
+  describe('Adapted estimate', () => {
+    function measureRange(
+      engine: VirtualScrollEngine,
+      start: number,
+      end: number,
+      size: number
+    ): void {
+      for (let i = start; i < end; i++) {
+        engine.measureItem(i, size);
+      }
+    }
+
+    it('replaces the estimate with the average measured size', () => {
+      const engine = createEngine(100);
+      measureRange(engine, 0, 10, 30);
+      engine.adaptEstimate(0);
+
+      expect(engine.totalSize).to.equal(100 * 30);
+    });
+
+    it('does nothing without measured items', () => {
+      const engine = createEngine(10);
+      let notified = false;
+      engine.onSizeChange = () => {
+        notified = true;
+      };
+
+      engine.adaptEstimate(0);
+
+      expect(notified).to.be.false;
+      expect(engine.totalSize).to.equal(10 * ESTIMATE);
+    });
+
+    it('applies the first average even after unmeasured items', () => {
+      const engine = createEngine(100);
+      measureRange(engine, 50, 60, 30);
+      engine.adaptEstimate(50);
+
+      expect(engine.totalSize).to.equal(100 * 30);
+    });
+
+    it('keeps the estimate while an unmeasured item precedes the window', () => {
+      const engine = createEngine(100);
+      measureRange(engine, 0, 10, 30);
+      engine.adaptEstimate(0);
+
+      // Items 10-49 are unmeasured. A new estimate would move item 50.
+      measureRange(engine, 50, 60, 60);
+      engine.adaptEstimate(50);
+
+      expect(engine.getScrollOffsetForIndex(50)).to.equal(50 * 30);
+      expect(engine.totalSize).to.equal(10 * 30 + 10 * 60 + 80 * 30);
+    });
+
+    it('adapts again once each item before the window is measured', () => {
+      const engine = createEngine(100);
+      measureRange(engine, 0, 10, 30);
+      engine.adaptEstimate(0);
+      measureRange(engine, 50, 60, 60);
+      engine.adaptEstimate(50);
+
+      engine.adaptEstimate(5);
+
+      expect(engine.totalSize).to.equal(
+        10 * 30 + 10 * 60 + 80 * ((30 + 60) / 2)
+      );
+    });
+
+    it('keeps the adapted estimate for the items of a resize', () => {
+      const engine = createEngine(10);
+      measureRange(engine, 0, 10, 30);
+      engine.adaptEstimate(0);
+
+      engine.resize(20, ESTIMATE);
+      expect(engine.totalSize).to.equal(20 * 30);
+
+      // A replacement discards the measurements, not the average.
+      engine.resize(20, ESTIMATE, 0);
+      expect(engine.totalSize).to.equal(20 * 30);
+    });
+
+    it('yields to a new configured estimate', () => {
+      const engine = createEngine(10);
+      measureRange(engine, 0, 5, 30);
+      engine.adaptEstimate(0);
+
+      engine.updateEstimatedSize(80);
+      expect(engine.totalSize).to.equal(5 * 30 + 5 * 80);
+
+      engine.resize(12, 100);
+      expect(engine.totalSize).to.equal(5 * 30 + 7 * 100);
+    });
+
+    it('averages only the sizes measured since the estimate was configured', () => {
+      const engine = createEngine(100);
+      measureRange(engine, 0, 50, 30);
+      engine.adaptEstimate(0);
+
+      // A density change: items 10-49 keep their 30px until they render
+      // again, and must not pull the estimate back.
+      engine.updateEstimatedSize(40);
+      measureRange(engine, 0, 10, 40);
+      engine.adaptEstimate(0);
+
+      expect(engine.totalSize).to.equal(10 * 40 + 40 * 30 + 50 * 40);
+    });
+
+    it('notifies when it changes the estimate', () => {
+      const engine = createEngine(10);
+      measureRange(engine, 0, 5, 30);
+
+      let count = 0;
+      engine.onSizeChange = () => {
+        count++;
+      };
+      engine.adaptEstimate(0);
+      engine.adaptEstimate(0);
+
+      expect(count).to.equal(1);
+    });
+  });
+
   describe('Resizing', () => {
     it('preserves measured sizes when items are appended', () => {
       const engine = createEngine(10);
@@ -170,6 +292,14 @@ describe('VirtualScrollEngine', () => {
 
       // Nothing is measured now, so each item follows the new estimate.
       expect(engine.totalSize).to.equal(10 * 100);
+    });
+
+    it('gives a changed estimate to each unmeasured item, retained or new', () => {
+      const engine = createEngine(10);
+      engine.measureItem(0, 30);
+      engine.resize(20, 80);
+
+      expect(engine.totalSize).to.equal(30 + 19 * 80);
     });
 
     it('is a no-op when the length matches and everything is retained', () => {
@@ -354,6 +484,71 @@ describe('VirtualScrollEngine', () => {
     });
   });
 
+  describe('Scroll offset resolution', () => {
+    it('resolves start, center and end like the alignment math', () => {
+      const engine = createEngine(100);
+
+      for (const position of ['start', 'center', 'end'] as const) {
+        expect(engine.resolveScrollOffset(10, 0, 300, position)).to.equal(
+          engine.getAlignedScrollOffset(10, 300, position)
+        );
+      }
+      expect(engine.resolveScrollOffset(10, 0, 300)).to.equal(500);
+      expect(
+        engine.resolveScrollOffset(
+          10,
+          0,
+          300,
+          'bottom' as ScrollLogicalPosition
+        )
+      ).to.equal(500);
+    });
+
+    it('keeps the offset for nearest when the item is in view', () => {
+      const engine = createEngine(100);
+
+      expect(engine.resolveScrollOffset(2, 0, 300, 'nearest')).to.equal(0);
+      expect(engine.resolveScrollOffset(25, 1100, 300, 'nearest')).to.equal(
+        1100
+      );
+    });
+
+    it('aligns an item after the viewport to the end for nearest', () => {
+      const engine = createEngine(100);
+
+      // Item 6 spans 300-350: partly below a 300px viewport at the top.
+      expect(engine.resolveScrollOffset(6, 0, 300, 'nearest')).to.equal(50);
+      // Item 20 spans 1000-1050.
+      expect(engine.resolveScrollOffset(20, 0, 300, 'nearest')).to.equal(750);
+    });
+
+    it('aligns an item before the viewport to the start for nearest', () => {
+      const engine = createEngine(100);
+
+      // Item 19 spans 950-1000: partly above a viewport at 975-1275.
+      expect(engine.resolveScrollOffset(19, 975, 300, 'nearest')).to.equal(950);
+      expect(engine.resolveScrollOffset(5, 1000, 300, 'nearest')).to.equal(250);
+    });
+
+    it('scrolls an item larger than the viewport until it covers the viewport', () => {
+      const engine = createEngine(10);
+      engine.measureItem(5, 1000); // Spans 250-1250.
+
+      // It starts inside the viewport and ends after it: align its start.
+      expect(engine.resolveScrollOffset(5, 0, 300, 'nearest')).to.equal(250);
+      // It starts before the viewport and ends inside it: align its end.
+      expect(engine.resolveScrollOffset(5, 1100, 300, 'nearest')).to.equal(950);
+      // It covers the viewport: nothing to do.
+      expect(engine.resolveScrollOffset(5, 400, 300, 'nearest')).to.equal(400);
+    });
+
+    it('keeps the offset on an empty tree', () => {
+      expect(
+        createEngine(0).resolveScrollOffset(0, 0, 300, 'nearest')
+      ).to.equal(0);
+    });
+  });
+
   describe('Coordinate compression', () => {
     const MAX_SIZE = 10_000;
     const ITEMS = 1000; // 50_000px total, a ratio of 5
@@ -399,6 +594,20 @@ describe('VirtualScrollEngine', () => {
       // The slack is 125 virtual px, which is 25 DOM px at a ratio of 5.
       expect(start).to.equal(MAX_SIZE / 2);
       expect(centered).to.equal(MAX_SIZE / 2 - 25);
+    });
+
+    it('resolves nearest in DOM space', () => {
+      const engine = createEngineWithMaxSize(MAX_SIZE, ITEMS);
+
+      // DOM offset 2000 is virtual offset 10_000. Item 300 spans
+      // 15_000-15_050, after the viewport.
+      expect(engine.resolveScrollOffset(300, 2000, 300, 'nearest')).to.equal(
+        (15_050 - 300) / 5
+      );
+      // Item 100 spans 5000-5050, before the viewport.
+      expect(engine.resolveScrollOffset(100, 2000, 300, 'nearest')).to.equal(
+        5000 / 5
+      );
     });
 
     it('probes a given document only once', () => {

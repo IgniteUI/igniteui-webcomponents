@@ -21,8 +21,6 @@ export type FormValueConfig<T> = {
   transformers?: Partial<FormValueTransformers<T>>;
 };
 
-// Transformers
-
 export const FormValueDefaultTransformers: FormValueTransformers<string> = {
   setValue: (value) => value || '',
   getValue: (value) => value,

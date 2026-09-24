@@ -66,7 +66,7 @@ const i18n: I18nControllerConfig<IFileInputResourceStrings> = {
  * @slot custom-error - Renders content when setCustomValidity(message) is set.
  * @slot invalid - Renders content when the component is in invalid state (validity.valid = false).
  *
- * @fires igcChange - Emitted when the control's checked state changes.
+ * @fires igcChange - Emitted when the selection of the control changes.
  * @fires igcCancel - Emitted when the control's file picker dialog is canceled.
  *
  * @csspart container - The main wrapper that holds all main input elements.
@@ -230,9 +230,17 @@ export default class IgcFileInputComponent extends I18nMixin(
     this._filePickerActive ? this._validate() : super._handleBlur();
   }
 
-  /* c8 ignore next 3 */
   protected _handleClick(): void {
     this._filePickerActive = true;
+  }
+
+  /**
+   * Focuses the native input and opens the file picker. Delegated focus alone
+   * goes to the browse button.
+   */
+  protected override _handleLabelActivation(): void {
+    this._input?.focus();
+    this._input?.click();
   }
 
   //#endregion

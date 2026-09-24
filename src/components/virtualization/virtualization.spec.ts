@@ -1,7 +1,9 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
+import { keyed } from 'lit/directives/keyed.js';
 import { spy, stub } from 'sinon';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
 import { suppressResizeObserverLoopError } from '#internals/testing/helpers.spec.js';
+import { simulateScroll } from '#internals/testing/simulate.spec.js';
 import type { VirtualScrollState } from './types.js';
 import IgcVirtualScrollComponent, {
   type VirtualScrollItemTemplate,
@@ -19,6 +21,28 @@ describe('VirtualScroll', () => {
 
   const itemTemplate: VirtualScrollItemTemplate<unknown> = (ctx) =>
     html`<span>${ctx.value}</span>`;
+
+  const FIXED_SIZE = 30;
+  const fixedTemplate: VirtualScrollItemTemplate<unknown> = (ctx) =>
+    html`<span style="display: block; height: ${FIXED_SIZE}px;"
+      >${ctx.value}</span
+    >`;
+
+  /** A 300px scroll of 1000 items of `FIXED_SIZE`, with an exact estimate. */
+  async function createFixedScroll(): Promise<
+    IgcVirtualScrollComponent<string>
+  > {
+    const el = await fixture<IgcVirtualScrollComponent<string>>(
+      html`<igc-virtual-scroll
+        style="height: 300px"
+        estimated-item-size=${FIXED_SIZE}
+        .data=${createItems(1000)}
+        .itemTemplate=${fixedTemplate}
+      ></igc-virtual-scroll>`
+    );
+    await el.layoutComplete;
+    return el;
+  }
 
   describe('Accessibility', () => {
     it('passes the a11y audit', async () => {
@@ -454,6 +478,29 @@ describe('VirtualScroll', () => {
       expect(el.scrollTop).to.equal(50);
     });
 
+    describe('scrollToIndex with nearest', () => {
+      it('scrolls by one item to reveal the item after the last visible one', async () => {
+        const el = await createFixedScroll();
+
+        // Items 0-9 fill the 300px viewport. Item 10 spans 300-330.
+        await el.scrollToIndex(10, { block: 'nearest' });
+
+        expect(el.scrollTop).to.equal(FIXED_SIZE);
+      });
+
+      it('aligns an item after the viewport to its end and one before it to its start', async () => {
+        const el = await createFixedScroll();
+
+        // Item 20 spans 600-630.
+        await el.scrollToIndex(20, { block: 'nearest' });
+        expect(el.scrollTop).to.equal(630 - 300);
+
+        // Item 5 spans 150-180, above the viewport at 330-630.
+        await el.scrollToIndex(5, { block: 'nearest' });
+        expect(el.scrollTop).to.equal(150);
+      });
+    });
+
     it('layoutComplete settles when no animation frames are served', async () => {
       const el = await fixture<IgcVirtualScrollComponent<string>>(
         html`<igc-virtual-scroll
@@ -654,6 +701,119 @@ describe('VirtualScroll', () => {
       expect(last.getBoundingClientRect().bottom).to.equal(
         track.getBoundingClientRect().bottom
       );
+    });
+
+    it('adapts the estimate of unmeasured items to the measured size', async () => {
+      const el = await fixture<IgcVirtualScrollComponent<string>>(
+        html`<igc-virtual-scroll
+          style="height: 300px"
+          .data=${createItems(1000)}
+          .itemTemplate=${fixedTemplate}
+        ></igc-virtual-scroll>`
+      );
+
+      await el.layoutComplete;
+      await el.layoutComplete;
+
+      const track = el.querySelector<HTMLElement>(
+        '[part="virtualization-track"]'
+      )!;
+
+      // Only the ~20 rendered items are measured.
+      expect(track.style.height).to.equal(`${1000 * FIXED_SIZE}px`);
+      expect(el.estimatedItemSize).to.equal(50);
+    });
+  });
+
+  describe('Item elements', () => {
+    function wrappers(el: IgcVirtualScrollComponent<string>): HTMLElement[] {
+      return Array.from(el.querySelectorAll<HTMLElement>('[data-vs-index]'));
+    }
+
+    function wrapperByIndex(
+      el: IgcVirtualScrollComponent<string>
+    ): Map<number, HTMLElement> {
+      return new Map(
+        wrappers(el).map((wrapper) => [
+          Number(wrapper.dataset.vsIndex),
+          wrapper,
+        ])
+      );
+    }
+
+    it('keeps the element of each item that stays in the window on a scroll', async () => {
+      const el = await createFixedScroll();
+      await simulateScroll(el, { top: 3000 });
+      const before = wrapperByIndex(el);
+
+      await simulateScroll(el, { top: 3000 + 2 * FIXED_SIZE });
+      const after = wrapperByIndex(el);
+
+      const kept = [...before.keys()].filter((index) => after.has(index));
+      expect(kept.length).to.be.greaterThan(5);
+      for (const index of kept) {
+        expect(after.get(index)).to.equal(before.get(index));
+        expect(after.get(index)!.textContent!.trim()).to.equal(`Item ${index}`);
+      }
+    });
+
+    it('creates no item elements while it scrolls once the window is full', async () => {
+      const el = await createFixedScroll();
+      await simulateScroll(el, { top: 3000 });
+      const pool = wrappers(el);
+
+      for (let step = 1; step <= 10; step++) {
+        await simulateScroll(el, { top: 3000 + step * 45 });
+      }
+      await simulateScroll(el, { top: 15_000 });
+
+      const current = wrappers(el);
+      expect(pool).to.include.members(current);
+      expect(current.map((wrapper) => Number(wrapper.dataset.vsIndex))).to.eql(
+        current.map((_, i) => Number(current[0].dataset.vsIndex) + i)
+      );
+    });
+
+    it('keeps the element of an item that moves in data with a keyFunction', async () => {
+      const el = await createFixedScroll();
+      el.keyFunction = (item) => item;
+      await elementUpdated(el);
+
+      const moved = wrapperByIndex(el).get(3)!;
+
+      el.data = ['New item', ...el.data];
+      await elementUpdated(el);
+
+      const after = wrapperByIndex(el);
+      expect(after.get(4)).to.equal(moved);
+      expect(moved.textContent!.trim()).to.equal('Item 3');
+      expect(after.get(0)!.textContent!.trim()).to.equal('New item');
+    });
+
+    it('keeps the element of an index across a data change without a keyFunction', async () => {
+      const el = await createFixedScroll();
+      const atIndex3 = wrapperByIndex(el).get(3)!;
+
+      el.data = ['New item', ...el.data];
+      await elementUpdated(el);
+
+      expect(wrapperByIndex(el).get(3)).to.equal(atIndex3);
+      expect(atIndex3.textContent!.trim()).to.equal('Item 2');
+    });
+
+    it('gives each entering item new DOM when the item template is keyed', async () => {
+      const el = await createFixedScroll();
+      el.itemTemplate = (ctx) => html`${keyed(ctx.value, fixedTemplate(ctx))}`;
+      await el.layoutComplete;
+
+      const recycled = wrapperByIndex(el).get(0)!;
+      const content = recycled.querySelector('span');
+
+      await simulateScroll(el, { top: 20 * FIXED_SIZE });
+
+      expect(recycled.isConnected).to.be.true;
+      expect(Number(recycled.dataset.vsIndex)).to.be.greaterThan(0);
+      expect(recycled.querySelector('span')).to.not.equal(content);
     });
   });
 

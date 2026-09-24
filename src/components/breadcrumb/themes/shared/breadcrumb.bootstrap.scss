@@ -1,0 +1,15 @@
+@use 'styles/utilities' as *;
+@use '../light/themes' as *;
+
+$theme: $bootstrap;
+
+:host(:not([current])) {
+    [part~='label']:focus-within {
+        outline: rem(4px) solid var-get($theme, 'focus-border-color');
+        border-radius: rem(4px);
+    }
+}
+
+[part='separator'] {
+    padding-inline: rem(4px);
+}
