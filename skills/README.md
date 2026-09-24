@@ -17,6 +17,7 @@ Skills are structured instructions that help AI agents understand and execute co
 | [igniteui-wc-figma-to-app](./igniteui-wc-figma-to-app/SKILL.md)                             | Translate Figma screens built with the Indigo.Design UI Kits into a working app   | Implementing a design from a Figma file |
 | [igniteui-wc-optimize-bundle-size](./igniteui-wc-optimize-bundle-size/SKILL.md)             | Reduce bundle size by importing only needed components and lazy loading            | Optimizing production performance     |
 | [igniteui-wc-migrate-grid-lite-to-premium](./igniteui-wc-migrate-grid-lite-to-premium/SKILL.md) | Migrate from Grid Lite to the premium Data Grid                                 | Adopting enterprise grid features     |
+| [igniteui-wc-grids](./igniteui-wc-grids/SKILL.md)                               | Set up a grid: package choice, theming, Shadow DOM, layout, sorting/filtering       | Adding or debugging a grid in an app   |
 
 ## How to Use
 
