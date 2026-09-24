@@ -1,6 +1,7 @@
 ---
+license: MIT
 name: igniteui-wc-integrate-with-framework
-description: Integrate Ignite UI Web Components packages into React, Angular, Vue, or vanilla JS applications with framework-specific configurations
+description: "Install and integrate Ignite UI Web Components packages into React, Angular, Vue 3, LitElement, or vanilla JS/HTML apps, detecting the framework and applying framework-specific setup (package choice, component registration, theme imports, schemas/config, events and property binding). WHEN TO USE: the user wants to add Ignite UI Web Components or igniteui-react to a project, set up a new app with them, fix registration/'unknown element' errors, or needs framework-specific wiring for templates, events, or forms. WHEN NOT TO USE: picking which components to use (use choose-components), customizing themes or styles (use customize-component-theme), trimming bundle size or import granularity (use optimize-bundle-size), building a view from a design (use generate-from-image-design or figma-to-app), or projects using Ignite UI for Angular/Blazor native packages instead of Web Components."
 user-invocable: true
 ---
 
