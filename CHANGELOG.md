@@ -4,6 +4,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+### Added
+- #### Virtual scroll
+  - `keyFunction` property. It returns the key of an item, so an item keeps its element while it is in the rendered window, also when it moves in `data`. Without it, the index is the key.
+
+### Changed
+- #### Virtual scroll
+  - **Behavior change:** Item elements are now recycled. An item that stays in the rendered window keeps its element, and the elements of the items that leave show the items that enter. Before, each element showed the item at its window position, so each scroll updated every rendered item. DOM state that the item template does not bind, for example the state of a checkbox without a `checked` binding, stays with the element and shows on the item that enters. The `itemTemplate` documentation shows how to bind this state or get new DOM for each item.
+  - The average measured item size now replaces `estimatedItemSize` for the items that are not measured yet, so the scrollbar follows the real content when the estimate is wrong.
+
+### Fixed
+- #### Virtual scroll
+  - `scrollToIndex` with `block: 'nearest'` now aligns an item after the viewport to the end of the viewport, as native `scrollIntoView` does. Before, it aligned each item out of view to the start, so a scroll to the next item moved a full page.
+
 ## [7.4.0] - 2026-09-23
 ### Added
 - #### Breadcrumbs
