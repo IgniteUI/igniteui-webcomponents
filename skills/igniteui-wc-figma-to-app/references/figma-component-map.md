@@ -204,7 +204,8 @@ it consistent.
 | `_Tabs`                            | `<igc-tabs>`              | `IgcTabsComponent`             | `igniteui-webcomponents` | `tabs`                | `alignment`, `activation`; `<igc-tab label="…">` children with `prefix`/`suffix` slots |
 | `_Bottom Navigation`               | —                         | —                              | —                        | —                     | **Not available in Web Components.** Use `igc-tabs` or custom markup; document the substitution. |
 | `_Stepper`                         | `<igc-stepper>`           | `IgcStepperComponent`          | `igniteui-webcomponents` | `stepper`             | `orientation`, `step-type`, `linear`, `title-position`; `<igc-step>` children     |
-| `_Breadcrumbs` / `_Breadcrumb`     | `<igc-breadcrumbs>`       | `IgcBreadcrumbsComponent`      | `igniteui-webcomponents` | confirm via `list_components` | `separator`; `<igc-breadcrumb>` children (`current`, `disabled`; slots `prefix`, `suffix`, `separator`). Wrap in `<nav aria-label="…">` |
+| `_Breadcrumbs`                     | `<igc-breadcrumbs>` | `IgcBreadcrumbsComponent` | `igniteui-webcomponents` | confirm via `list_components` | `separator`; default slot contains `<igc-breadcrumb>` children; wrap in `<nav aria-label="…">` |
+| `_Breadcrumb`                      | `<igc-breadcrumb>`  | `IgcBreadcrumbComponent`  | `igniteui-webcomponents` | confirm via `list_components` | `current`, `disabled`; slots `prefix`, `suffix`, `separator` |
 
 > A design showing a persistent, always-visible sidebar maps to
 > `<igc-nav-drawer position="relative" open>` — not the modal default. The drawer's width is
