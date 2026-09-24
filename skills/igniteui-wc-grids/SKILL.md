@@ -5,7 +5,7 @@ description: "Set up a data grid with Ignite UI Web Components, including grid s
 user-invocable: true
 ---
 
-# Build a Data Grid with Ignite UI Web Components
+# Using the Ignite UI for Web Components grids
 
 ## Required Workflow
 
