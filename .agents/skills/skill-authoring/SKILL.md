@@ -1,7 +1,7 @@
 ---
 license: MIT
 name: skill-authoring
-description: "Rules for writing or updating a SKILL.md in this repository: frontmatter validation for license, name and description, the WHEN TO USE and WHEN NOT TO USE description format, and the 500-line body budget with progressive disclosure into reference files. WHEN TO USE: creating a new skill under .agents/skills/ or skills/, or editing an existing skill's frontmatter, scope, or length. WHEN NOT TO USE: writing component code, styles, or tests (use create-new-component, add-component-property, or update-component-styles), reviewing a component pull request (use review-component-pr), or changing the coding rules themselves (edit .github/CODING_GUIDELINES.md)."
+description: "Provides rules for writing or updating a SKILL.md in this repository: frontmatter validation for license, name and description, the WHEN TO USE and WHEN NOT TO USE description format, and the 500-line body budget with progressive disclosure into reference files. WHEN TO USE: creating a new skill under .agents/skills/ or skills/, or editing an existing skill's frontmatter, scope, or length. WHEN NOT TO USE: writing component code, styles, or tests (use create-new-component, add-component-property, or update-component-styles), reviewing a component pull request (use review-component-pr), or changing the coding rules themselves (edit .github/CODING_GUIDELINES.md)."
 user-invocable: true
 ---
 
