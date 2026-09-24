@@ -32,7 +32,7 @@ description format and the size budget. In short:
 1. Create `.agents/skills/[skill-name]/SKILL.md`. The directory name is kebab-case and
    matches `name`.
 2. Add frontmatter with `license`, `name` and `description`. The description has
-   `WHEN TO USE:` and `WHEN NOT TO USE:` markers. Optional keys: `user-invokable`,
+   `WHEN TO USE:` and `WHEN NOT TO USE:` markers. Optional keys: `user-invocable`,
    `argument-hint`, `compatibility`, `disable-model-invocation`, `metadata`.
 3. Link to the guidelines for rules. Do not copy them.
 4. Add the skill to the table above and to the Workflow section of
