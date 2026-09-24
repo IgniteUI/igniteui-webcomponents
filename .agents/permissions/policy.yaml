@@ -11,6 +11,7 @@ deny:
     - ".env"
     - ".env.*"
     - ".envrc"
+    - "**/.envrc"
     - "**/.env"
     - "**/.env.*"
     - "**/*.pem"
