@@ -193,7 +193,7 @@ implementation and validation before writing any code.
 > **Rate-limit awareness:** Figma MCP limits depend on the **seat**, not only the plan
 > (as published in September 2026; verify at
 > https://developers.figma.com/docs/figma-mcp-server/rate-limits-access/):
-> **View/Collab seats** get up to 6 calls/month (20 on Starter). **Dev/Full seats** get
+> **View/Collab seats** get up to 6 calls/month on all plans. **Dev/Full seats** get
 > 200/day (Starter, Professional) or 600/day (Organization, Enterprise), with 10–20/min.
 >
 > Estimated call budget for a 5-artboard design:
