@@ -1,6 +1,7 @@
 ---
+license: MIT
 name: igniteui-wc-choose-components
-description: Identify and select the right Ignite UI Web Components for your app UI, then navigate to official docs, usage examples, and API references
+description: "Identify the right Ignite UI Web Components (igniteui-webcomponents, grids, charts, dock manager, React wrappers) for a UI requirement and point to official docs, examples, and API references. WHEN TO USE: the user asks which component fits a UI pattern (form, table, dashboard, navigation, chat, etc.), needs to compare options (e.g. Grid Lite vs. premium Grid), wants a component list for a screen, or asks which package a component lives in. WHEN NOT TO USE: implementing a view from a design image or Figma file (use generate-from-image-design or figma-to-app), installing/wiring packages into a framework (use integrate-with-framework), styling/theming (use customize-component-theme), reducing bundle size (use optimize-bundle-size), or migrating Grid Lite to the premium grid (use migrate-grid-lite-to-premium)."
 user-invocable: true
 ---
 
