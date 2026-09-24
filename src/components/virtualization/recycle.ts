@@ -115,10 +115,12 @@ class RecycleDirective extends Directive {
   private readonly _pool: ChildPart[] = [];
 
   /**
-   * The disconnected parent of the pooled parts. `insertPart` notifies the
-   * async directives in a part when it moves the part between parents with a
-   * different connected state, so a pooled part is disconnected, and a reused
-   * one is connected again.
+   * The disconnected parent of the pooled parts, in the document of the
+   * container. A part that moves to another document is adopted: its custom
+   * elements get `adoptedCallback`, and its images load again. `insertPart`
+   * notifies the async directives in a part when it moves the part between
+   * parents with a different connected state, so a pooled part is
+   * disconnected, and a reused one is connected again.
    */
   private _poolRoot?: RootPart;
 
@@ -245,9 +247,17 @@ class RecycleDirective extends Directive {
   }
 
   private _release(part: ChildPart): void {
-    this._poolRoot ??= render(nothing, document.createDocumentFragment(), {
-      isConnected: false,
-    });
+    const doc = part.parentNode.ownerDocument!;
+
+    // A new root on the first release, and after the container moves to
+    // another document. The parts in an old root move to the new document
+    // only when they are reused.
+    if (this._poolRoot?.parentNode.ownerDocument !== doc) {
+      this._poolRoot = render(nothing, doc.createDocumentFragment(), {
+        isConnected: false,
+      });
+    }
+
     insertPart(this._poolRoot, undefined, part);
     this._pool.push(part);
   }

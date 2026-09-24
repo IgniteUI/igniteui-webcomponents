@@ -308,6 +308,46 @@ describe('recycle directive', () => {
       renderKeys(range(0, 5), trackTemplate);
       expect(events).to.eql(['disconnected 4', 'reconnected 4']);
     });
+
+    describe('in another document', () => {
+      let frame: HTMLIFrameElement;
+
+      beforeEach(() => {
+        frame = document.createElement('iframe');
+        document.body.append(frame);
+      });
+
+      afterEach(() => {
+        frame.remove();
+      });
+
+      it('keeps a detached part in the document of the list', () => {
+        frame.contentDocument!.body.append(container);
+        renderKeys(range(0, 5));
+        const last = elementByKey().get(4)!;
+
+        renderKeys(range(0, 4));
+        expect(last.isConnected).to.be.false;
+        expect(last.ownerDocument).to.equal(frame.contentDocument);
+      });
+
+      it('keeps detached parts in the new document after the list moves', () => {
+        renderKeys(range(0, 5));
+        const byKey = elementByKey();
+        const third = byKey.get(3)!;
+        const last = byKey.get(4)!;
+
+        renderKeys(range(0, 4));
+        frame.contentDocument!.body.append(container);
+        renderKeys(range(0, 3));
+        expect(third.ownerDocument).to.equal(frame.contentDocument);
+
+        // The part detached before the move is reused too.
+        const added = addedElements(() => renderKeys(range(0, 5)));
+        expect(added).to.have.members([third, last]);
+        expect(last.ownerDocument).to.equal(frame.contentDocument);
+      });
+    });
   });
 
   it('takes over from and gives way to other content', () => {

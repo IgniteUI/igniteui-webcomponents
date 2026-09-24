@@ -53,6 +53,7 @@
 |       1 | 2026-09-21 | Initial specification                                                                      |
 |       2 | 2026-09-23 | Recycled item elements and `keyFunction`, adapted size estimate, `nearest` edge alignment  |
 |       3 | 2026-09-23 | Fewer element moves on large scrolls, focus kept on reorders, unbound DOM state guidance   |
+|       4 | 2026-09-24 | Detached elements stay in the document of the list                                         |
 
 ## Overview
 
@@ -171,8 +172,8 @@ can be out of date.
 
 Each item is rendered through an internal `recycle` directive and keyed by its index in `data`, or by the value
 that `keyFunction` returns. An item whose key stays in the window keeps its element. The elements of the keys that
-leave are reused for the keys that enter, and unused elements are kept detached, up to the window size, so once the
-window has reached its largest size a scroll creates no DOM nodes.
+leave are reused for the keys that enter, and unused elements are kept detached in the document of the list, up to
+the window size, so once the window has reached its largest size a scroll creates no DOM nodes.
 
 The reused elements that keep their order and have the largest total weight stay in place, and the other elements
 move. A kept element weighs twice a recycled one: a moved element needs a new style and layout, and a recycled element
@@ -415,7 +416,8 @@ integrates into the document and into a shadow root alike.
 36. A focused element in a kept item keeps the focus while the keys shift, reverse, or the other kept elements move.
 37. Removed parts disconnect their async directives; the directive takes over from and gives way to other content.
 38. **Pool**: a detached part is reused when the window grows, the pool holds at most as many parts as the window,
-    an empty window drops the pool, and pooled parts disconnect their async directives and reconnect on reuse.
+    an empty window drops the pool, pooled parts disconnect their async directives and reconnect on reuse, and a
+    detached part stays in the document of the list, also after the list moves to another document.
 39. **Unbound DOM state** moves with a recycled element to the entering key, and stays with its key in a `keyed`
     template.
 
