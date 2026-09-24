@@ -31,6 +31,7 @@
     - [Initial rendering race condition](#initial-rendering-race-condition)
     - [Form integration tests](#form-integration-tests)
     - [Default value](#default-value)
+    - [External label association](#external-label-association)
     - [Not covered by the suite](#not-covered-by-the-suite)
   - [Assumptions and limitations](#assumptions-and-limitations)
   - [Accessibility](#accessibility)

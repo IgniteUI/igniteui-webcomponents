@@ -378,6 +378,38 @@ export function runExternalLabelAssociationTests(
 
       expect(native.getAttribute('aria-label')).to.equal('Changed label');
     });
+
+    it('follows a change of the host `aria-labelledby`', async () => {
+      const { container, host, native } = await createFixture(
+        `<span id="host-label">Referenced label</span><span id="changed-label">Changed label</span>${hostMarkup(
+          'aria-labelledby="host-label"'
+        )}`
+      );
+
+      host.setAttribute('aria-labelledby', 'changed-label');
+      await elementUpdated(host);
+      await nextFrame();
+
+      expect(native.ariaLabelledByElements).to.eql([
+        container.querySelector('#changed-label'),
+      ]);
+    });
+
+    it('falls back to the external label when the host `aria-labelledby` is removed', async () => {
+      const { container, host, native } = await createFixture(
+        `<span id="host-label">Referenced label</span>${forLabel}${hostMarkup(
+          'id="labelled-host" aria-labelledby="host-label"'
+        )}`
+      );
+
+      host.removeAttribute('aria-labelledby');
+      await elementUpdated(host);
+      await nextFrame();
+
+      expect(native.ariaLabelledByElements).to.eql([
+        container.querySelector('label'),
+      ]);
+    });
   });
 }
 
