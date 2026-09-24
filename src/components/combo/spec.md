@@ -43,9 +43,10 @@
 
 ## Revision history
 
-| Version | Date       | Notes                 |
-| ------: | ---------- | --------------------- |
-|       1 | 2026-09-21 | Initial specification |
+| Version | Date       | Notes                                              |
+| ------: | ---------- | -------------------------------------------------- |
+|       1 | 2026-09-21 | Initial specification                              |
+|       2 | 2026-09-24 | Describe the naming order and the host ARIA naming |
 
 ## Overview
 
@@ -220,6 +221,10 @@ Besides the `label` property, the control can be labelled by a `label` element i
 nesting it. An IDREF does not cross a shadow boundary, so the combo resolves its labels through `ElementInternals`
 and projects them - together with its `role`, `aria-haspopup`, `aria-expanded`, `aria-controls` and
 `aria-activedescendant` - onto the native input of its anchor, as element references.
+
+The name follows the [naming order](../input/spec.md#naming-order), so the host `aria-labelledby` and `aria-label` also
+name the control. The selection status text names the input only while no `label` element, `label` property or host ARIA
+names it.
 
 #### Form integration
 

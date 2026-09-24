@@ -185,9 +185,9 @@ export abstract class IgcDatePickerBaseComponent<
   protected abstract get _selectDateLabel(): string | undefined;
 
   /**
-   * The editor that receives the ARIA state of the host: the labels of the host
-   * and the `aria-haspopup="dialog"` of the picker. Both must reach the native
-   * input that assistive technology reports.
+   * The editor that gets the ARIA state of the host: the name of the host and
+   * `aria-haspopup="dialog"`. Both must reach the native input that assistive
+   * technology reads.
    */
   protected abstract get _projectionTarget(): Element | null;
 
@@ -493,16 +493,15 @@ export abstract class IgcDatePickerBaseComponent<
   constructor() {
     super();
 
-    // Projects the host's labels and popup semantics onto the native input
-    // inside the editor (see ProjectedARIA for why the host cannot publish
-    // these itself).
+    // Projects the name and the popup semantics of the host onto the native
+    // input of the editor. See ProjectedARIA.
     addAriaProjector(this, {
       target: () => this._projectionTarget,
       state: () => ({
         hasPopup: 'dialog',
-        labelledBy: this._internals.labels,
         describedBy: this._helperText ? [this._helperText] : null,
       }),
+      hasOwnLabel: () => Boolean(this.label),
     });
 
     addSafeEventListener(this, 'focusout', this._handleFocusOut);
@@ -742,7 +741,7 @@ export abstract class IgcDatePickerBaseComponent<
   }
 
   protected _renderCalendar(id: string) {
-    const hideHeader = this._isDropDown ? true : this.hideHeader;
+    const hideHeader = this._isDropDown || this.hideHeader;
     const isInert = !this.open || this.disabled;
 
     return html`

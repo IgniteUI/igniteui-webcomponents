@@ -2,6 +2,7 @@ import { html, isServer, LitElement, nothing, type TemplateResult } from 'lit';
 import { property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { createAbortHandle } from '#internals/abort-handler.js';
+import { HELPER_TEXT_ID } from '#internals/controllers/aria-projection.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import {
   type IgcFormControl,
@@ -92,7 +93,7 @@ export default class IgcValidationContainerComponent extends LitElement {
   public static create(
     host: IgcFormControl,
     config: ValidationContainerConfig = {
-      id: 'helper-text',
+      id: HELPER_TEXT_ID,
       hasHelperText: true,
     }
   ): TemplateResult {

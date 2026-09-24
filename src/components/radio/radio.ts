@@ -1,5 +1,6 @@
 import { html, LitElement, type PropertyValues } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
+import { helperText } from '#internals/controllers/aria-projection.js';
 import { addKeyboardFocusRing } from '#internals/controllers/focus-ring.js';
 import { addRovingFocusController } from '#internals/controllers/roving-focus.js';
 import { addSlotController, setSlots } from '#internals/controllers/slot.js';
@@ -239,6 +240,12 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
     this._hideLabel = !this._slots.hasAssignedNodes('[default]', true);
   }
 
+  /** Focuses and checks the radio, as a native radio label does. */
+  protected override _handleLabelActivation(): void {
+    this._input.focus();
+    this._input.click();
+  }
+
   protected override _setDefaultValue(current: string | null): void {
     // The base mixin gives 'true' if the `checked` attribute is there, and null
     // if it is removed. `isDefined` accepts null as present, and would check the
@@ -361,11 +368,10 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
   }
 
   protected override render() {
-    const labelledBy = this.getAttribute('aria-labelledby');
     const checked = this.checked;
 
     return html`
-      ${renderToggleShell({
+      ${renderToggleShell(this, {
         type: 'radio',
         inputId: this._inputId,
         labelId: this._labelId,
@@ -382,17 +388,9 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
             ?hidden=${this.disabled}
           ></span>
         `,
-        checked,
         hideLabel: this._hideLabel,
-        name: this.name,
-        value: this.value,
-        required: this.required,
-        disabled: this.disabled,
         tabindex: this._tabIndex,
-        ariaLabelledBy: labelledBy ? labelledBy : this._labelId,
-        ariaDescribedBy: this._slots.hasAssignedElements('helper-text')
-          ? 'helper-text'
-          : undefined,
+        describedBy: helperText(this, this._slots)?.id,
         onClick: this._handleClick,
         onKeyDown: this._handleEnterKeydown,
       })}

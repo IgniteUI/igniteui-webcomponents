@@ -2,7 +2,10 @@ import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import type { TemplateResult } from 'lit';
 import { spy } from 'sinon';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
-import { createFormAssociatedTestBed } from '#internals/testing/form-testbed.spec.js';
+import {
+  createFormAssociatedTestBed,
+  runExternalLabelAssociationTests,
+} from '#internals/testing/form-testbed.spec.js';
 import { isFocused } from '#internals/testing/helpers.spec.js';
 import { simulateClick } from '#internals/testing/simulate.spec.js';
 import {
@@ -175,8 +178,12 @@ describe('Radio Component', () => {
       );
       const input = radio.renderRoot.querySelector('input') as HTMLInputElement;
 
+      // An IDREF does not cross the shadow boundary. The host binds the
+      // element by reference.
       expect(radio.getAttribute('aria-labelledby')).to.equal(labelId);
-      expect(input.getAttribute('aria-labelledby')).to.equal(labelId);
+      expect(input.ariaLabelledByElements).to.eql([
+        document.getElementById(labelId),
+      ]);
     });
 
     it('should emit click event only once', async () => {
@@ -647,5 +654,12 @@ describe('Radio Component', () => {
 
       runValidationContainerTests(IgcRadioComponent, testParameters);
     });
+  });
+
+  runExternalLabelAssociationTests({
+    tagName: IgcRadioComponent.tagName,
+    getNativeInput: (host) =>
+      (host as IgcRadioComponent).renderRoot.querySelector('input')!,
+    checkable: true,
   });
 });

@@ -1,7 +1,10 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import { spy } from 'sinon';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
-import { createFormAssociatedTestBed } from '#internals/testing/form-testbed.spec.js';
+import {
+  createFormAssociatedTestBed,
+  runExternalLabelAssociationTests,
+} from '#internals/testing/form-testbed.spec.js';
 import { isFocused } from '#internals/testing/helpers.spec.js';
 import {
   runValidationContainerTests,
@@ -402,5 +405,12 @@ describe('Checkbox', () => {
 
       runValidationContainerTests(IgcCheckboxComponent, testParameters);
     });
+  });
+
+  runExternalLabelAssociationTests({
+    tagName: IgcCheckboxComponent.tagName,
+    getNativeInput: (host) =>
+      (host as IgcCheckboxComponent).renderRoot.querySelector('input')!,
+    checkable: true,
   });
 });

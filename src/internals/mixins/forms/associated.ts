@@ -1,7 +1,9 @@
-import { isServer, type LitElement } from 'lit';
+import { isServer, type LitElement, type PropertyValues } from 'lit';
 import { property } from 'lit/decorators.js';
+import { NAMING_ATTRIBUTES } from '../../controllers/aria-projection.js';
 import { addInternalsController } from '../../controllers/internals.js';
 import { enterKey, isKey } from '../../controllers/keys.js';
+import { sameItems } from '../../utils/arrays.js';
 import { addSafeEventListener } from '../../utils/events.js';
 import { isFunction, isString } from '../../utils/types.js';
 import type { Validator } from '../../validators.js';
@@ -39,6 +41,17 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
   class BaseFormAssociatedElement extends base {
     public static readonly formAssociated = true;
 
+    /**
+     * Adds the naming attributes. The mixin base type has no static
+     * `observedAttributes`, so `Reflect.get` calls the base getter with this
+     * class as `this`.
+     * @internal
+     */
+    public static get observedAttributes(): string[] {
+      const inherited = Reflect.get(base, 'observedAttributes', this);
+      return [...(inherited as string[]), ...NAMING_ATTRIBUTES];
+    }
+
     //#region Internal state and properties
 
     protected readonly _internals = addInternalsController(this);
@@ -52,6 +65,8 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
     private _isInternalValidation = false;
     private _touched = false;
     private _isExternalInvalid = false;
+    /** The `<label>` elements at the last update. */
+    private _renderedLabels: ReadonlyArray<Element> | null = null;
 
     private get _shouldApplyStyles(): boolean {
       if (this._isExternalInvalid) {
@@ -152,6 +167,27 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
     constructor(...args: any[]) {
       super(...args);
       addSafeEventListener(this, 'invalid', this._handleInvalid);
+      addSafeEventListener(this, 'click', this._handleHostClick);
+      addSafeEventListener(this, 'focusin', this._handleFocusEnter);
+    }
+
+    /** @internal */
+    public override attributeChangedCallback(
+      name: string,
+      prev: string | null,
+      current: string | null
+    ): void {
+      super.attributeChangedCallback(name, prev, current);
+
+      if (NAMING_ATTRIBUTES.includes(name)) {
+        this.requestUpdate();
+      }
+    }
+
+    /** @internal */
+    protected override update(properties: PropertyValues): void {
+      this._renderedLabels = this._internals.labels;
+      super.update(properties);
     }
 
     /** @internal */
@@ -165,6 +201,46 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
 
       this._validate();
     }
+
+    //#endregion
+
+    //#region Labels
+
+    /**
+     * A bubbling click that starts on the host activates the component. A
+     * `<label>` sends this click. A click from code that does not bubble does
+     * not activate the component.
+     */
+    private _handleHostClick(event: MouseEvent): void {
+      if (
+        !this.disabled &&
+        event.bubbles &&
+        !event.defaultPrevented &&
+        event.composedPath()[0] === this
+      ) {
+        this._handleLabelActivation();
+      }
+    }
+
+    /**
+     * `ElementInternals.labels` sends no change event. When focus enters the
+     * host from outside, render again if the labels changed after the last
+     * update.
+     */
+    private _handleFocusEnter(event: FocusEvent): void {
+      if (
+        !this.contains(event.relatedTarget as Node | null) &&
+        !sameItems(this._internals.labels, this._renderedLabels)
+      ) {
+        this.requestUpdate();
+      }
+    }
+
+    /**
+     * Runs when a `<label>` or a click on the host activates the component. A
+     * component that delegates focus needs no override: the browser focuses it.
+     */
+    protected _handleLabelActivation(): void {}
 
     //#endregion
 

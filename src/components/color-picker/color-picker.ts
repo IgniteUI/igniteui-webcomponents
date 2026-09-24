@@ -5,7 +5,11 @@ import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 import { createRef, ref } from 'lit/directives/ref.js';
 import { styleMap } from 'lit/directives/style-map.js';
-import { addAriaProjector } from '#internals/controllers/aria-projection.js';
+import {
+  addAriaProjector,
+  ariaBindings,
+  resolveNaming,
+} from '#internals/controllers/aria-projection.js';
 import {
   addKeybindings,
   altKey,
@@ -329,12 +333,12 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
 
     addAriaProjector(this, {
       target: () => (this._isInputMode ? this._anchorRef.value : null),
+      // A text input cannot have `aria-expanded`. The prefix button has it.
       state: () => ({
         hasPopup: 'dialog',
-        expanded: `${this.open}`,
-        labelledBy: this._internals.labels,
         describedBy: this._helperText ? [this._helperText] : null,
       }),
+      hasOwnLabel: () => Boolean(this.label),
     });
   }
 
@@ -924,6 +928,7 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
     return html`
       <button
         ${ref(this._anchorRef)}
+        ${ariaBindings(resolveNaming(this, Boolean(this.label)))}
         id="trigger"
         type="button"
         aria-haspopup="dialog"

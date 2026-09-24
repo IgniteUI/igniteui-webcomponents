@@ -1,9 +1,12 @@
 import { html, LitElement, nothing } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
-import { ifDefined } from 'lit/directives/if-defined.js';
 import { map } from 'lit/directives/map.js';
 import { range } from 'lit/directives/range.js';
 import { styleMap } from 'lit/directives/style-map.js';
+import {
+  ariaBindings,
+  resolveNaming,
+} from '#internals/controllers/aria-projection.js';
 import {
   addKeybindings,
   arrowDown,
@@ -13,7 +16,6 @@ import {
   endKey,
   homeKey,
 } from '#internals/controllers/key-bindings.js';
-import { createMutationController } from '#internals/controllers/mutation-observer.js';
 import {
   addSlotController,
   type InferSlotNames,
@@ -137,6 +139,9 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
 
   @query('[part="symbols"]', true)
   private _container?: HTMLElement;
+
+  @query('[part="base"]', true)
+  private readonly _slider!: HTMLElement;
 
   @state()
   private _hoverValue = -1;
@@ -291,11 +296,6 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
 
     addThemingController(this, all);
 
-    createMutationController(this, {
-      callback: () => this.requestUpdate(),
-      config: { attributeFilter: ['aria-label'] },
-    });
-
     addKeybindings(this, {
       skip: () => !this._isInteractive,
       bindingDefaults: { repeat: true },
@@ -364,6 +364,11 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
         this.max = this._symbols.length;
       }
     }
+  }
+
+  /** Focuses the slider, as a native range input label does. */
+  protected override _handleLabelActivation(): void {
+    this._slider.focus();
   }
 
   private _handleHoverEnabled(): void {
@@ -438,24 +443,20 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
     }
   }
 
-  private _clipSymbol(index: number, isLTR = true) {
+  private _clipSymbol(index: number, ltr: boolean) {
     const value = this._hoverState ? this._hoverValue : this.value;
     const progress = index + 1 - value;
     const exclusive = progress === 0 ? 0 : 1;
     const selection = this.single ? exclusive : progress;
-    const activate = (p: number) => clamp(p * 100, 0, 100);
+    const full = clamp(selection * 100, 0, 100);
+    const empty = clamp((1 - selection) * 100, 0, 100);
 
-    const forward = `inset(0 ${activate(
-      isLTR ? selection : 1 - selection
-    )}% 0 0)`;
-    const backward = `inset(0 0 0 ${activate(
-      isLTR ? 1 - selection : selection
-    )}%)`;
-
-    return {
-      backward: isLTR ? backward : forward,
-      forward: isLTR ? forward : backward,
-    };
+    return ltr
+      ? { forward: `inset(0 ${full}% 0 0)`, backward: `inset(0 0 0 ${empty}%)` }
+      : {
+          forward: `inset(0 0 0 ${full}%)`,
+          backward: `inset(0 ${empty}% 0 0)`,
+        };
   }
 
   //#endregion
@@ -507,19 +508,16 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
   protected override render() {
     const hoverActive = this.hoverPreview && this._isInteractive;
     const valueLabelHidden = !this._slots.hasAssignedNodes('value-label', true);
-    const labelId = this.label ? 'rating-label' : undefined;
-    const ariaLabel = this.label ? undefined : (this.ariaLabel ?? undefined);
 
     return html`
       <label part="label" id="rating-label" ?hidden=${!this.label}
         >${this.label}</label
       >
       <div
+        ${ariaBindings(resolveNaming(this, Boolean(this.label) && 'rating-label'))}
         part="base"
         role="slider"
         tabindex=${this.disabled ? -1 : 0}
-        aria-labelledby=${ifDefined(labelId)}
-        aria-label=${ifDefined(ariaLabel)}
         aria-valuemin="0"
         aria-valuenow=${this.value}
         aria-valuemax=${this.max}

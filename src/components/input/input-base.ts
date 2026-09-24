@@ -1,7 +1,10 @@
 import { LitElement, nothing, type TemplateResult } from 'lit';
 import { property, query } from 'lit/decorators.js';
 import { cache } from 'lit/directives/cache.js';
-import { addAriaTarget } from '#internals/controllers/aria-projection.js';
+import {
+  addAriaTarget,
+  helperText,
+} from '#internals/controllers/aria-projection.js';
 import type { SlotController } from '#internals/controllers/slot.js';
 import { blazorDeepImport } from '#internals/decorators/blazorDeepImport.js';
 import { shadowOptions } from '#internals/decorators/shadow-options.js';
@@ -46,15 +49,12 @@ export abstract class IgcInputBaseComponent extends FormAssociatedRequiredMixin(
   protected readonly _input?: HTMLInputElement;
 
   /**
-   * Receives ARIA semantics projected by a composite host (e.g. `igc-select`)
-   * onto the inner native input. See {@link addAriaTarget}.
+   * Names and describes the native input, and applies the ARIA that a
+   * composite host, for example `igc-select`, projects. See {@link addAriaTarget}.
    */
   protected readonly _ariaTarget = addAriaTarget(this, {
-    labels: () => this._internals.labels,
-    description: () =>
-      this._slots.hasAssignedElements('helper-text')
-        ? this.renderRoot.querySelector('#helper-text')
-        : null,
+    description: () => helperText(this, this._slots),
+    hasOwnLabel: () => Boolean(this.label),
   });
 
   /* blazorSuppress */

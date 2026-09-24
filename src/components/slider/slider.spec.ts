@@ -18,7 +18,10 @@ import {
   pageUpKey,
 } from '#internals/controllers/key-bindings.js';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
-import { createFormAssociatedTestBed } from '#internals/testing/form-testbed.spec.js';
+import {
+  createFormAssociatedTestBed,
+  runExternalLabelAssociationTests,
+} from '#internals/testing/form-testbed.spec.js';
 import {
   simulateKeyboard,
   simulateLostPointerCapture,
@@ -754,6 +757,20 @@ describe('Slider component', () => {
 
       // Only one igcInput and one igcChange events should be fired
       expect(eventSpy.callCount).to.equal(2);
+    });
+  });
+
+  describe('Label association', () => {
+    before(() => {
+      defineComponents(IgcSliderComponent);
+    });
+
+    runExternalLabelAssociationTests({
+      tagName: IgcSliderComponent.tagName,
+      getNativeInput: (host) =>
+        (host as IgcSliderComponent).renderRoot.querySelector<HTMLElement>(
+          '[part="thumb"]'
+        )!,
     });
   });
 

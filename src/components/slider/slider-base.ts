@@ -14,6 +14,10 @@ import {
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { type StyleInfo, styleMap } from 'lit/directives/style-map.js';
 import {
+  type ResolvedNaming,
+  ariaBindings,
+} from '#internals/controllers/aria-projection.js';
+import {
   addKeybindings,
   arrowDown,
   arrowLeft,
@@ -60,6 +64,8 @@ export class IgcSliderBaseComponent extends LitElement {
   private _upperBound?: number;
   private startValue?: number;
   private pointerCaptured = false;
+  /** The number format of the current update. See {@link formatValue}. */
+  private _numberFormat?: Intl.NumberFormat;
   protected activeThumb?: HTMLElement;
 
   private readonly _thumbLabelTimer = createTimer(() => {
@@ -73,7 +79,7 @@ export class IgcSliderBaseComponent extends LitElement {
   protected labels: string[] = [];
 
   protected get hasLabels() {
-    return this.labels?.length > 0;
+    return this.labels.length > 0;
   }
 
   protected get distance() {
@@ -272,6 +278,9 @@ export class IgcSliderBaseComponent extends LitElement {
   public tickLabelRotation: SliderTickLabelRotation = 0;
 
   protected override willUpdate(changedProperties: PropertyValues<this>): void {
+    // `valueFormatOptions` can change in place, so each update formats anew.
+    this._numberFormat = undefined;
+
     const constraintsChanged =
       changedProperties.has('min') ||
       changedProperties.has('max') ||
@@ -314,12 +323,11 @@ export class IgcSliderBaseComponent extends LitElement {
   }
 
   private handleArrowKeys(delta: -1 | 1) {
-    const step = this.step ? this.step : 1;
-    this.handleKeyboardIncrement(step * delta);
+    this.handleKeyboardIncrement((this.step || 1) * delta);
   }
 
   private handlePageKeys(delta: -1 | 1) {
-    const step = this.step ? this.step : 1;
+    const step = this.step || 1;
     this.handleKeyboardIncrement(
       delta * Math.max((this.upperBound - this.lowerBound) / 10, step)
     );
@@ -384,7 +392,11 @@ export class IgcSliderBaseComponent extends LitElement {
   }
 
   protected formatValue(value: number) {
-    const strValue = value.toLocaleString(this.locale, this.valueFormatOptions);
+    this._numberFormat ??= new Intl.NumberFormat(
+      this.locale,
+      this.valueFormatOptions
+    );
+    const strValue = this._numberFormat.format(value);
     return this.valueFormat
       ? formatString(this.valueFormat, strValue)
       : strValue;
@@ -414,19 +426,15 @@ export class IgcSliderBaseComponent extends LitElement {
         : 0;
   }
 
-  private tickValue(idx: number) {
-    const tickCount = this.totalTickCount();
+  private tickValue(idx: number, tickCount: number) {
     const distance = this.distance;
     const labelStep = tickCount > 1 ? distance / (tickCount - 1) : distance;
-    const labelVal = labelStep * idx;
 
-    return this.min + labelVal;
+    return this.min + labelStep * idx;
   }
 
   private isPrimary(idx: number) {
-    return this.primaryTicks <= 0
-      ? false
-      : idx % (this.secondaryTicks + 1) === 0;
+    return this.primaryTicks > 0 && idx % (this.secondaryTicks + 1) === 0;
   }
 
   protected showThumbLabels() {
@@ -537,7 +545,7 @@ export class IgcSliderBaseComponent extends LitElement {
         ? primary
           ? this.labels[Math.round(i / secondaryTicks)]
           : nothing
-        : this.formatValue(this.tickValue(i));
+        : this.formatValue(this.tickValue(i, total));
 
       yield html`<div part="tick-group">
         <div part="tick" data-primary=${primary}>
@@ -559,7 +567,11 @@ export class IgcSliderBaseComponent extends LitElement {
     return html`<div part="ticks">${this._renderTicks()}</div>`;
   }
 
-  protected renderThumb(value: number, ariaLabel?: string, thumbId?: string) {
+  protected renderThumb(
+    value: number,
+    aria: Partial<ResolvedNaming>,
+    thumbId?: string
+  ) {
     const percent = `${asPercent(value - this.min, this.distance)}%`;
     const thumbStyles = { insetInlineStart: percent };
     const tooltipStyles = {
@@ -575,6 +587,7 @@ export class IgcSliderBaseComponent extends LitElement {
 
     return html`
       <div
+        ${ariaBindings(aria)}
         part="thumb"
         id=${ifDefined(thumbId)}
         tabindex=${this.disabled ? -1 : 0}
@@ -584,7 +597,6 @@ export class IgcSliderBaseComponent extends LitElement {
         aria-valuemax=${this.upperBound}
         aria-valuenow=${value}
         aria-valuetext=${ifDefined(textValue)}
-        aria-label=${ifDefined(ariaLabel)}
         aria-disabled=${this.disabled}
         @pointerenter=${this.showThumbLabels}
         @pointerleave=${this.hideThumbLabels}
@@ -595,7 +607,11 @@ export class IgcSliderBaseComponent extends LitElement {
         this.hideTooltip
           ? nothing
           : html`
-              <div part="thumb-label" style=${styleMap(tooltipStyles)}>
+              <div
+                part="thumb-label"
+                aria-hidden="true"
+                style=${styleMap(tooltipStyles)}
+              >
                 <div part="thumb-label-inner">
                   ${this.hasLabels ? this.labels[value] : this.formatValue(value)}
                 </div>
@@ -636,13 +652,13 @@ export class IgcSliderBaseComponent extends LitElement {
 
     return html`
       <div part="base">
-        ${isStart || isMirrored ? html`${this.renderTicks()}` : nothing}
+        ${isStart || isMirrored ? this.renderTicks() : nothing}
         <div part="track">
           <div part="inactive"></div>
           <div part="fill" style=${styleMap(this.getTrackStyle())}></div>
           ${this.renderSteps()}
         </div>
-        ${!isStart ? html`${this.renderTicks()}` : nothing}
+        ${isStart ? nothing : this.renderTicks()}
         <div part="thumbs">${this.renderThumbs()}</div>
         <slot @slotchange=${this.handleSlotChange}></slot>
       </div>
