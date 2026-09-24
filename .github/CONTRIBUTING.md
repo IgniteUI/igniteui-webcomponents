@@ -14,7 +14,7 @@ For detailed information on issue and pull request statuses, process for testing
 - **Clone your Fork**: Clone your forked repository to your local machine using Git. This will create a local copy of the project you can work on.
 - **Create a Branch**: Create a new branch for your specific contribution. This helps keep your changes isolated and organized.
 
-No contributor license agreement or sign-off is required. By submitting a pull request you agree that your contribution is licensed under the project's [MIT License](../LICENSE).
+No contributor license agreement or sign-off is required. As stated in the [GitHub Terms of Service](https://docs.github.com/en/site-policy/github-terms/github-terms-of-service#6-contributions-under-repository-license), your contribution is licensed under the project's [MIT License](../LICENSE), and by submitting it you agree that you have the right to license it under those terms.
 
 ## Set up
 
@@ -152,7 +152,5 @@ When you contribute code, keep the following in mind:
 - **Search Existing Issues**: Before creating a new issue, check if a similar issue has already been reported.
 - **Clear and Descriptive Titles**: Use clear and descriptive titles for your issue reports to help maintainers understand the problem quickly.
 - **Provide Details**: In your issue report, provide as much detail as possible to help diagnose the problem. This might include steps to reproduce the issue, error messages, and expected behavior.
-
-See [SUPPORT.md](./SUPPORT.md) for where questions, feature requests, security reports and commercial support requests belong.
 
 Thank you!

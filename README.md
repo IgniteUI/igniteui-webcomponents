@@ -17,8 +17,8 @@
 
 ## Table of contents
 
-- [Quick start](#quick-start)
 - [Components](#components)
+- [Quick start](#quick-start)
 - [Browser support](#browser-support)
 - [Tooling](#tooling)
 - [Accessibility](#accessibility)
@@ -27,44 +27,6 @@
 - [Contributing](#contributing)
 - [Support](#support)
 - [License](#license)
-
-## Quick start
-
-Install the `igniteui-webcomponents` package:
-
-```sh
-npm install igniteui-webcomponents
-```
-
-Import and register the components you need with the `defineComponents` function:
-
-```ts
-import {
-  defineComponents,
-  IgcAvatarComponent,
-  IgcBadgeComponent,
-} from 'igniteui-webcomponents';
-
-defineComponents(IgcAvatarComponent, IgcBadgeComponent);
-```
-
-You can also register every component at once with `defineAllComponents`:
-
-```ts
-import { defineAllComponents } from 'igniteui-webcomponents';
-
-defineAllComponents();
-```
-
-Registering all components increases the bundle size of your application, so register only the ones you use.
-
-After the components are registered, use them in your HTML:
-
-```html
-<igc-avatar initials="AZ"></igc-avatar><igc-badge></igc-badge>
-```
-
-See the [documentation][Ignite UI for Web Components] for guides on each component, theming, and framework integration.
 
 ## Components
 
@@ -153,6 +115,44 @@ Provide a complete windowing experience, splitting complex layouts into smaller,
 - [Documentation][Dock Manager]
 - License - [Commercial][Commercial License]
 - Package - [igniteui-dockmanager](https://www.npmjs.com/package/igniteui-dockmanager)
+
+## Quick start
+
+Install the `igniteui-webcomponents` package:
+
+```sh
+npm install igniteui-webcomponents
+```
+
+Import and register the components you need with the `defineComponents` function:
+
+```ts
+import {
+  defineComponents,
+  IgcAvatarComponent,
+  IgcBadgeComponent,
+} from 'igniteui-webcomponents';
+
+defineComponents(IgcAvatarComponent, IgcBadgeComponent);
+```
+
+You can also register every component at once with `defineAllComponents`:
+
+```ts
+import { defineAllComponents } from 'igniteui-webcomponents';
+
+defineAllComponents();
+```
+
+Registering all components increases the bundle size of your application, so register only the ones you use.
+
+After the components are registered, use them in your HTML:
+
+```html
+<igc-avatar initials="AZ"></igc-avatar><igc-badge></igc-badge>
+```
+
+See the [documentation][Ignite UI for Web Components] for guides on each component, theming, and framework integration.
 
 ## Browser support
 

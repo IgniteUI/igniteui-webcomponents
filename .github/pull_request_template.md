@@ -33,6 +33,4 @@ Closes #
 - [ ] I have updated documentation if needed
 - [ ] I have added a `CHANGELOG.md` entry under `[Unreleased]`
 - [ ] Breaking changes are documented in the description
-- [ ] Accessibility: axe audits pass on the light and shadow DOM, and keyboard interaction is covered by tests
-- [ ] Dependencies: no new runtime or peer dependency, or its license was reviewed and `THIRD-PARTY-NOTICES.md` was regenerated
-- [ ] Security: the change adds no network access, storage, telemetry or unsanitized HTML rendering
+- [ ] I have read the [contributing guidelines](https://github.com/IgniteUI/igniteui-webcomponents/blob/master/.github/CONTRIBUTING.md), including the accessibility, dependency and security rules

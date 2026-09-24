@@ -1,8 +1,5 @@
 blank_issues_enabled: false
 contact_links:
-  - name: 🔒 Report a security vulnerability
-    url: https://github.com/IgniteUI/igniteui-webcomponents/security/advisories/new
-    about: Report vulnerabilities privately. Never open a public issue for a security problem.
   - name: 💬 Ask a question
     url: https://github.com/IgniteUI/igniteui-webcomponents/discussions
     about: Questions, ideas and general discussion belong in GitHub Discussions.
