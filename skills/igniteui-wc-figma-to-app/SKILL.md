@@ -1,7 +1,7 @@
 ---
 license: MIT
 name: igniteui-wc-figma-to-app
-description: "Translate Figma app screens into production Ignite UI Web Components apps — whether the design was built with the Indigo.Design UI Kits, another UI kit (Material 3, Fluent 2, Bootstrap, shadcn/ui, Untitled UI, an in-house design system), or plain frames. Uses Figma MCP for design data, Ignite UI CLI MCP for component docs, Ignite UI Theming MCP for palette and component styling, and Playwright MCP for visual validation against the Figma design. WHEN TO USE: a Figma URL or artboard is shared with implementation intent, or the user says 'implement this Figma design', 'build from Figma', 'translate Figma to Web Components', or 'generate app from Figma' in an Ignite UI Web Components context. WHEN NOT TO USE: the design is a static image/screenshot/mockup rather than a Figma file (use generate-from-image-design), the user only wants theming or a component recommendation (use customize-component-theme or choose-components), or the target is Angular/Blazor Ignite UI rather than Web Components/React."
+description: "Translate Figma app screens into production Ignite UI Web Components apps — whether the design was built with the Indigo.Design UI Kits, another UI kit (Material 3, Fluent 2, Bootstrap, shadcn/ui, Untitled UI, an in-house design system), or plain frames. Uses Figma MCP for design data, Ignite UI CLI MCP for component docs, Ignite UI Theming MCP for palette and component styling, and Playwright MCP for visual validation against the Figma design. WHEN TO USE: a Figma URL or artboard is shared with implementation intent, or the user says 'implement this Figma design', 'build from Figma', 'translate Figma to Web Components', or 'generate app from Figma' in an Ignite UI Web Components context. WHEN NOT TO USE: the design is a static image/screenshot/mockup rather than a Figma file (use generate-from-image-design), the user only wants theming or a component recommendation (use customize-component-theme or choose-components), or the target is the native Ignite UI for Angular or Blazor packages (use their own skills). Web Components used inside React, Angular, or Vue apps are in scope."
 user-invocable: true
 ---
 
@@ -198,9 +198,12 @@ implementation and validation before writing any code.
 >
 > Estimated call budget for a 5-artboard design:
 > `figma_get_metadata` ×2 + `figma_get_screenshot` ×5 + `figma_get_design_context` ×5 + `figma_get_variable_defs` ×1 + `figma_get_code_connect_map` ×5 + `figma_get_libraries` ×1 = **~19 calls**.
-> **A View/Collab seat cannot complete a single session.** Tell the user before starting,
-> and suggest a Dev/Full seat, or the REST API with a personal access token for metadata
-> and assets. Strategies:
+> Skipping redundant screenshots (strategy 2) brings this down to ~14, but retries and
+> sparse-response follow-ups add more. **Compare the estimate with the user's remaining
+> quota before starting.** On a View/Collab seat (6/month on Professional and above) even
+> one artboard may not fit. The Starter View/Collab limit (20/month) covers a small design
+> with no retries. When the estimate does not fit, say so and suggest a Dev/Full seat, or
+> the REST API with a personal access token for metadata and assets. Strategies:
 > 1. Call `figma_get_variable_defs` only **once** for the root page (variables are file-scoped, not artboard-scoped).
 > 2. `figma_get_design_context` already returns a screenshot — do not also call
 >    `figma_get_screenshot` for the same node unless you need a larger `maxDimension`.

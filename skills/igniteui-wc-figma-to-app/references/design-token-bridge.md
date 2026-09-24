@@ -240,8 +240,9 @@ steps:
 | `indigo` | 24 / 28 / 32px | 24 / 28 / 32px |
 
 Pick the nearest step. Use `set_size` globally when most controls agree, or with
-`component` / `scope` when one family differs. A mismatch of 2–4px is closed with the
-component's padding or height tokens, if it has them, or accepted as an anatomy delta. The
+`component` / `scope` when one family differs. Close a remaining 2–4px mismatch with the
+component's padding or height tokens, if it has them. Otherwise leave it: Phase 5 rates a
+difference of 4px or less as Cosmetic. It is never an anatomy delta. The
 `set_spacing` rule is unchanged: never convert a Figma pixel value into a multiplier.
 
 ### B8 — States and Focus

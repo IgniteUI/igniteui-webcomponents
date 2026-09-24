@@ -236,7 +236,7 @@ The target is always Ignite UI.
 | **Alert** | Inline message (not modal) | `igc-banner`, or semantic HTML for static callouts |
 | **Toast** vs **Snackbar** | Transient message | `igc-toast` (text only) or `igc-snackbar` (with action) |
 | **Card** with complex internal layout | A surface container | `igc-card` only if header/content/actions anatomy fits; otherwise a Table B surface |
-| **Navigation rail** | Icon-only side nav | `igc-nav-drawer` with the `mini` slot |
+| **Navigation rail** | Icon-only side nav | `igc-nav-drawer position="relative"` with the `mini` slot, and **without** `open`. The rail is hidden while the drawer is open |
 | **Tab bar** at the bottom (iOS, M3 navigation bar) | App-level navigation | No bottom navigation in Web Components. Use `igc-tabs` or custom markup and document the substitution |
 
 ---

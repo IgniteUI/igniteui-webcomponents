@@ -48,7 +48,8 @@ that holds its full row (class, package, doc name, key attributes).
 | `date-picker` / `date-range-picker` / `calendar` | `<igc-date-picker>` / `<igc-date-range-picker>` / `<igc-calendar>` | Date & Time |
 | `time-picker` | `<igc-date-time-input>` with a time format | Date & Time |
 | `app-bar` | `<igc-navbar>` | Navigation |
-| `side-nav` / navigation rail | `<igc-nav-drawer position="relative" open>` (rail → `mini` slot) | Navigation |
+| `side-nav` (expanded, always visible) | `<igc-nav-drawer position="relative" open>` | Navigation |
+| navigation rail (icon-only) | `<igc-nav-drawer position="relative">` (**not** `open`) with the rail items in the `mini` slot. The mini rail is hidden while the drawer is open | Navigation |
 | `tabs` | `<igc-tabs>` | Navigation |
 | `breadcrumbs` | `<igc-breadcrumbs>` + `<igc-breadcrumb>` | Navigation |
 | `stepper` | `<igc-stepper>` | Navigation |
