@@ -1,21 +1,9 @@
 ---
 license: MIT
 name: igniteui-wc-grids
-description: Set up a data grid feature with Ignite UI Web Components — grid selection, single-design-system theming (base + grid theme), Shadow DOM theme injection, component registration, fluid layout, and sorting/filtering. Use when adding a grid to an app, or when a grid renders unstyled, mis-sized, or broken inside a custom element/Shadow DOM.
+description: "Set up a data grid with Ignite UI Web Components, including grid selection, single-design-system theming, Shadow DOM theme injection, component registration, fluid layout, and sorting/filtering. WHEN TO USE: adding a grid to a Web Components app, or fixing an unstyled, mis-sized, or broken grid inside a custom element or Shadow DOM, or need correct package, theme, layout, or sorting/filter setup. WHEN NOT TO USE: general component selection, Grid Lite to premium migration, non-tabular components such as charts, lists, or tree views, or app-wide theming without a grid."
 user-invocable: true
 ---
-
-## USE WHEN
-- You need to add a data grid to a Web Components app.
-- A grid is rendering unstyled, mis-sized, or broken.
-- The grid lives inside a custom element or Shadow DOM.
-- You need the correct package, theme, layout, or sorting/filter setup.
-
-## DO NOT USE WHEN
-- You only need general component selection, not a grid setup.
-- The task is a Grid Lite to premium grid migration; use the migration skill instead.
-- You need a chart, list, or tree view rather than tabular data.
-- You need app-wide theming without a grid implementation.
 
 # Build a Data Grid with Ignite UI Web Components
 
