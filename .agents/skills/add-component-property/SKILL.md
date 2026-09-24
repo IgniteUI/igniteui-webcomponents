@@ -6,8 +6,8 @@ description: Add a reactive property to an existing Lit web component with prope
 # Add Component Property
 
 Adds a reactive property together with its JSDoc, tests, spec update and generated metadata.
-The rules are in [Properties and Attributes](../../CODING_GUIDELINES.md#properties-and-attributes)
-and [API Documentation](../../CODING_GUIDELINES.md#api-documentation).
+The rules are in [Properties and Attributes](../../../.github/CODING_GUIDELINES.md#properties-and-attributes)
+and [API Documentation](../../../.github/CODING_GUIDELINES.md#api-documentation).
 
 Related: [create-new-component](../create-new-component/),
 [update-component-styles](../update-component-styles/).
@@ -118,7 +118,7 @@ separate one.
 ### 5. Update the specification
 
 A new property changes the public API, so it also changes `src/components/[name]/spec.md`.
-Use [Keeping it current](../../CODING_GUIDELINES.md#keeping-it-current):
+Use [Keeping it current](../../../.github/CODING_GUIDELINES.md#keeping-it-current):
 
 - Add a row to `### Properties and attributes` with the name, attribute, reflects, type, default,
   and the same description as the JSDoc.

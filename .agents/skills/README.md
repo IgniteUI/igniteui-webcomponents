@@ -2,7 +2,7 @@
 
 Workflows for contributors to this repository. End-user skills live in [`skills/`](../../skills/).
 
-- The rules live in the [Coding Guidelines](../CODING_GUIDELINES.md). A skill says in what
+- The rules live in the [Coding Guidelines](../../.github/CODING_GUIDELINES.md). A skill says in what
   order to apply them. When a skill and the guidelines disagree, the guidelines win and the
   skill needs a fix.
 - The behavior of a component lives in its `src/components/[name]/spec.md`. Read it before
@@ -25,7 +25,7 @@ component."
 Skills use the
 [VS Code agent skills format](https://code.visualstudio.com/docs/copilot/customization/agent-skills):
 
-1. Create `.github/skills/[skill-name]/SKILL.md`. The directory name is kebab-case.
+1. Create `.agents/skills/[skill-name]/SKILL.md`. The directory name is kebab-case.
 2. Add frontmatter with `name` (same as the directory) and `description`. Optional keys:
    `user-invokable`, `argument-hint`, `compatibility`, `disable-model-invocation`, `license`,
    `metadata`.

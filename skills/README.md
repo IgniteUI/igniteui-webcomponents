@@ -58,7 +58,7 @@ If you identify gaps in the skills or have suggestions for improvements:
 2. Submit a pull request with the proposed changes
 3. Follow the skill format and structure of existing skills
 
-For skills related to **contributing to the library itself** (creating components, reviewing PRs, etc.), see [`.github/skills/`](../.github/skills/).
+For skills related to **contributing to the library itself** (creating components, reviewing PRs, etc.), see [`.agents/skills/`](../.agents/skills/).
 
 ## Additional Resources
 

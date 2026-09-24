@@ -1079,7 +1079,7 @@ For a new component or a bug fix, update the
 - [README.md](https://github.com/IgniteUI/igniteui-webcomponents/blob/master/README.md)
 - Component specifications: `src/components/[component]/spec.md`, with the
   [splitter](../src/components/splitter/spec.md) as the reference
-- [LLM Skills](./skills/README.md) for guided workflows
+- [LLM Skills](../.agents/skills/README.md) for guided workflows
 - [Lit](https://lit.dev/docs/), [MDN Web Components](https://developer.mozilla.org/en-US/docs/Web/Web_Components),
   [WCAG](https://www.w3.org/WAI/WCAG21/quickref/),
   [TypeScript Handbook](https://www.typescriptlang.org/docs/handbook/intro.html)

@@ -72,7 +72,7 @@ structural reference.
 ## Resources
 
 - [Coding Guidelines](CODING_GUIDELINES.md): the full rules
-- [Skills](skills/): workflows to create components, add properties, update styles and review
+- [Skills](../.agents/skills/): workflows to create components, add properties, update styles and review
   PRs
 - [Lit](https://lit.dev/docs/), [Lit context](https://lit.dev/docs/data/context/),
   [MDN Web Components](https://developer.mozilla.org/en-US/docs/Web/Web_Components)

@@ -7,7 +7,7 @@ description: Update component styling following the SCSS to Lit CSS workflow wit
 
 Changes component styles through the SCSS → Lit CSS build and the `igniteui-theming` schemas.
 The directory layout and rules are in
-[Styles and Theming](../../CODING_GUIDELINES.md#styles-and-theming).
+[Styles and Theming](../../../.github/CODING_GUIDELINES.md#styles-and-theming).
 
 Related: [create-new-component](../create-new-component/) for a new theme scaffold.
 
@@ -60,7 +60,7 @@ $theme: $bootstrap;
 - Keep specificity low. Document the custom properties that consumers can set, and prefix
   internal ones with `--_`.
 - Key composite-anchor selectors off `data-role` / `data-haspopup`, not `role` / `aria-*`
-  (see [ARIA across shadow boundaries](../../CODING_GUIDELINES.md#aria-across-shadow-boundaries)).
+  (see [ARIA across shadow boundaries](../../../.github/CODING_GUIDELINES.md#aria-across-shadow-boundaries)).
 - `var-get()` resolves only keys that are in the schema. For a new key, add it to
   `igniteui-theming`, or declare a local variable in `shared/[component].common.scss`.
 

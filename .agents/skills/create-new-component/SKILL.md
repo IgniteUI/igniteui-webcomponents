@@ -6,7 +6,7 @@ description: Create a new Lit web component following project conventions, inclu
 # Create New Component
 
 Scaffolds a component. The rules behind each step are in the
-[Coding Guidelines](../../CODING_GUIDELINES.md).
+[Coding Guidelines](../../../.github/CODING_GUIDELINES.md).
 
 Related: [add-component-property](../add-component-property/),
 [update-component-styles](../update-component-styles/).
@@ -26,7 +26,7 @@ Confirm with the user before you start:
 
 Write `src/components/[name]/spec.md` first. It decides the public API, the keyboard model and
 the ARIA semantics. Copy the structure of `src/components/splitter/spec.md` and follow
-[Specifications](../../CODING_GUIDELINES.md#specifications): one spec per directory, a
+[Specifications](../../../.github/CODING_GUIDELINES.md#specifications): one spec per directory, a
 hand-maintained table of contents, a revision history that starts at version 1, and no
 ownership sections. Fill in `## Test scenarios` in step 6.
 
@@ -95,18 +95,18 @@ declare global {
 ```
 
 - Pass every component that the template renders to `registerComponent(Self, ...deps)`.
-- Follow the [region layout](../../CODING_GUIDELINES.md#components) and the
-  [import rules](../../CODING_GUIDELINES.md#imports).
+- Follow the [region layout](../../../.github/CODING_GUIDELINES.md#components) and the
+  [import rules](../../../.github/CODING_GUIDELINES.md#imports).
 - Before you write lifecycle code, look for a controller in the
-  [controllers table](../../CODING_GUIDELINES.md#controllers) or in `src/internals`. Examples:
+  [controllers table](../../../.github/CODING_GUIDELINES.md#controllers) or in `src/internals`. Examples:
   `addRovingFocusController`, `addToggleController`, `addHostListeners`, and the `resizable()` /
   `draggable()` directives.
 - Write JSDoc as product documentation. See
-  [API Documentation](../../CODING_GUIDELINES.md#api-documentation).
+  [API Documentation](../../../.github/CODING_GUIDELINES.md#api-documentation).
 
 ### 3. Create the SCSS files
 
-The layout is in [Styles and Theming](../../CODING_GUIDELINES.md#styles-and-theming).
+The layout is in [Styles and Theming](../../../.github/CODING_GUIDELINES.md#styles-and-theming).
 `src/components/badge/themes/` is a complete example. Use 4-space indentation and load-path
 specifiers.
 
@@ -262,7 +262,7 @@ describe('[Name]', () => {
 ```
 
 Use the shared helpers in `#internals/testing/` for interaction and forms (see
-[Testing](../../CODING_GUIDELINES.md#testing)). Do not import one component spec from another,
+[Testing](../../../.github/CODING_GUIDELINES.md#testing)). Do not import one component spec from another,
 because that runs the imported suite again.
 
 Then fill in the `## Test scenarios` section of the spec: one subsection per `describe` block,
@@ -272,7 +272,7 @@ that the suite does not test under `### Not covered by the suite`.
 ### 7. Create the Storybook story
 
 Create `stories/[name].stories.ts`. The filename must match the tag name. See
-[Storybook](../../CODING_GUIDELINES.md#storybook) for the full template.
+[Storybook](../../../.github/CODING_GUIDELINES.md#storybook) for the full template.
 
 ```ts
 import type { Meta, StoryObj } from '@storybook/web-components-vite';

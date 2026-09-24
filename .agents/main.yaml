@@ -1,0 +1,30 @@
+# Agentic Collaboration Standard (ACS) manifest.
+# Spec: https://github.com/jackby03/agentic-collaboration-standard/tree/main/spec/v1
+# Schema: https://raw.githubusercontent.com/jackby03/agentic-collaboration-standard/main/schemas/v1/manifest.schema.json
+#
+# .github/CODING_GUIDELINES.md holds the full coding rules and
+# .github/copilot-instructions.md their summary. Both win over this folder.
+# The skills in .agents/skills/ are for contributors to this repository. The
+# end-user skills that ship with the package live in skills/ at the root.
+
+version: "1.0"
+
+project:
+  name: "igniteui-webcomponents"
+  description: "Ignite UI for Web Components: a library of accessible, themable UI components (inputs, date pickers, navigation, layout, chat and more) built with Lit and TypeScript and usable in any web framework."
+  language: typescript
+  framework: lit
+
+layers:
+  context: true       # context/project.md
+  skills: true        # skills/ (contributor workflows)
+  commands: false     # no reusable single-shot commands defined yet
+  agents: false       # no custom agents defined yet
+  permissions: true   # permissions/policy.yaml
+
+compatible_with:
+  - github-copilot
+  - claude-code
+  - cursor
+  - codex
+  - any

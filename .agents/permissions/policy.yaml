@@ -1,0 +1,39 @@
+# ACS Permission Policy v1.0
+# Spec: https://github.com/jackby03/agentic-collaboration-standard/blob/main/spec/v1/08-permissions.md
+#
+# Evaluation order: deny rules first, then allow rules, then default deny.
+# Mirrors the rules in .github/CODING_GUIDELINES.md. package.json stays writable
+# because a new import alias must be added to it (and to scripts/_package.json);
+# lock files and build output are denied.
+
+deny:
+  read:
+    - ".env"
+    - ".env.*"
+    - ".envrc"
+    - "**/.env"
+    - "**/.env.*"
+    - "**/*.pem"
+    - "**/*.key"
+    - "**/*.pfx"
+    - ".npmrc"
+    - "**/.npmrc"
+  write:
+    - ".git/**"
+    - "node_modules/**"
+    - "dist/**"
+    - "coverage/**"
+    - "storybook-static/**"
+    - "src/**/*.css.ts"
+    - "custom-elements.json"
+    - "vscode-html-custom-data.json"
+    - "package-lock.json"
+    - "**/package-lock.json"
+    - "**/yarn.lock"
+    - "**/pnpm-lock.yaml"
+
+allow:
+  read:
+    - "**"
+  write:
+    - "**"
