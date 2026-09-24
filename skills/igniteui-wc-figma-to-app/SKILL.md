@@ -1,18 +1,26 @@
 ---
+license: MIT
 name: igniteui-wc-figma-to-app
-description: Translate Figma app screens designed with the Indigo.Design UI Kits into production Ignite UI for Web Components applications. The Indigo.Design UI Kits are Figma component libraries available in four design-system variants — Material, Fluent, Bootstrap, and Indigo — each with light and dark themes. Designers build their own app frames in Figma using these kit libraries, and every kit component instance maps to an Ignite UI Web Components control. The active kit variant also determines the design system used in the app theme. Uses the Figma MCP for design data, the Ignite UI CLI MCP for component docs, the Ignite UI Theming MCP for palette and component-level styling, and the Playwright MCP for visual validation against the original Figma design. Triggers on "implement this Figma design", "build from Figma", "translate Figma to Web Components", "implement this artboard", "generate app from Figma", or when a Figma URL is shared with implementation intent in an Ignite UI Web Components context.
+description: "Translate Figma app screens into production Ignite UI Web Components apps — whether the design was built with the Indigo.Design UI Kits, another UI kit (Material 3, Fluent 2, Bootstrap, shadcn/ui, Untitled UI, an in-house design system), or plain frames. Uses Figma MCP for design data, Ignite UI CLI MCP for component docs, Ignite UI Theming MCP for palette and component styling, and Playwright MCP for visual validation against the Figma design. WHEN TO USE: a Figma URL or artboard is shared with implementation intent, or the user says 'implement this Figma design', 'build from Figma', 'translate Figma to Web Components', or 'generate app from Figma' in an Ignite UI Web Components context. WHEN NOT TO USE: the design is a static image/screenshot/mockup rather than a Figma file (use generate-from-image-design), the user only wants theming or a component recommendation (use customize-component-theme or choose-components), or the target is the native Ignite UI for Angular or Blazor packages (use their own skills). Web Components used inside React, Angular, or Vue apps are in scope."
 user-invocable: true
 ---
 
 # Ignite UI for Web Components — Figma to App
 
-Translate Figma app screens built with the **Indigo.Design UI Kits** into production
-Web Components applications. Designers create their own frames in Figma using the
-Indigo.Design component libraries as shared libraries — these kits come in four
-design-system variants (**Material**, **Fluent**, **Bootstrap**, **Indigo**) with light
-and dark themes each. Every component instance in the design maps to an Ignite UI Web
-Components control, and the active kit variant directly determines which design system
-to configure in the app theme.
+Translate Figma app screens into production Web Components applications built with
+Ignite UI. The skill accepts designs from three kinds of source. A single file often mixes
+them, so every component is classified individually (Phase 1f):
+
+| Tier | Source | How it maps to Ignite UI |
+| --- | --- | --- |
+| **A** | The Infragistics **Indigo.Design UI Kits** (Material, Fluent, Bootstrap, Indigo variants, light and dark) | Directly, by kit layer name. The kit variant *is* the Ignite UI design system. |
+| **B** | Any other component library: public kits such as Material 3, Fluent 2, Bootstrap, shadcn/ui, Untitled UI, or Ant, and in-house design systems | Variant properties are normalized to a canonical role, then mapped. The theme is fitted to a closest baseline design system. |
+| **C** | Plain frames, groups, and detached instances | The role is inferred from structure and visuals, with lower confidence, and the user confirms it. |
+
+Tier A gives the highest fidelity for the least effort. Tiers B and C reach high fidelity
+through token overrides, and record the remaining **anatomy deltas** (structural
+differences between the design's components and Ignite UI's) for the user to approve
+instead of hiding them.
 
 This skill orchestrates four MCP servers: **Figma** (design data), **Ignite UI CLI**
 (component docs), **Ignite UI Theming** (styles), and **Playwright** (visual validation).
@@ -32,6 +40,7 @@ memory. Every tag name, attribute, slot, and import path must come from `get_doc
 `get_api_reference` results, or from the reference files of the sibling
 `igniteui-wc-choose-components` skill — never guessed.
 
+Read [references/design-provenance.md](references/design-provenance.md) before Phase 1f.
 Read [references/figma-component-map.md](references/figma-component-map.md) before Phase 2.
 Read [references/design-token-bridge.md](references/design-token-bridge.md) before Phase 3.
 Read [references/asset-extraction.md](references/asset-extraction.md) before Phase 1h.
@@ -181,13 +190,20 @@ Wait for confirmation before calling. Never batch session-bound calls.
 **Goal:** understand the full design structure and capture all data needed for
 implementation and validation before writing any code.
 
-> **Rate-limit awareness:** Figma MCP calls count against plan quotas
-> (indicative, subject to change — verify against the user's current Figma plan:
-> Starter **6 calls/month**, Organization 200/day, Enterprise 600/day).
+> **Rate-limit awareness:** Figma MCP limits depend on the **seat**, not only the plan
+> (as published in September 2026; verify at
+> https://developers.figma.com/docs/figma-mcp-server/rate-limits-access/):
+> **View/Collab seats** get up to 6 calls/month on all plans. **Dev/Full seats** get
+> 200/day (Starter, Professional) or 600/day (Organization, Enterprise), with 10–20/min.
 >
 > Estimated call budget for a 5-artboard design:
-> `figma_get_metadata` ×2 + `figma_get_screenshot` ×5 + `figma_get_design_context` ×5 + `figma_get_variable_defs` ×1 + `figma_get_code_connect_map` ×5 = **~18 calls**.
-> **Starter plan users will exceed their monthly quota in a single session.** Strategies:
+> `figma_get_metadata` ×2 + `figma_get_screenshot` ×5 + `figma_get_design_context` ×5 + `figma_get_variable_defs` ×1 + `figma_get_code_connect_map` ×5 + `figma_get_libraries` ×1 = **~19 calls**.
+> Skipping redundant screenshots (strategy 2) brings this down to ~14, but retries and
+> sparse-response follow-ups add more. **Compare the estimate with the user's remaining
+> quota before starting.** On a View/Collab seat (6/month on Professional and above) even
+> one artboard may not fit. The Starter View/Collab limit (20/month) covers a small design
+> with no retries. When the estimate does not fit, say so and suggest a Dev/Full seat, or
+> the REST API with a personal access token for metadata and assets. Strategies:
 > 1. Call `figma_get_variable_defs` only **once** for the root page (variables are file-scoped, not artboard-scoped).
 > 2. `figma_get_design_context` already returns a screenshot — do not also call
 >    `figma_get_screenshot` for the same node unless you need a larger `maxDimension`.
@@ -250,24 +266,33 @@ figma_get_design_context({
 
 From the React+Tailwind output, extract:
 
-- **Component layer names** (`data-name` attributes in the JSX) — match against
-  `references/figma-component-map.md`
+- **Component layer names and props** — the `data-name` attributes and any component props
+  or variant values in the JSX. Phase 1f classifies and normalizes them.
 - **Layout structure** — `flex`, `grid`, `gap-*`, `p-*`, `w-*`, `h-*` classes on containers
 - **Typography** — `font-['...']`, `text-[...]`, weight classes
 - **Surface colors** — `bg-[#XXXXXX]` on container `<div>` elements that wrap major
   sections (these become plain `<div>` wrappers in the view, not Ignite UI components)
 - **Border / roundness** — `rounded-[...]`, `border`, `border-[...]` on containers and cards
-- **Input variant indicators** — hidden zero-size nodes (`size-[0.5px]`) whose `data-name`
-  contains a component type (e.g. `"Date Picker Type"`, `"Combo Input"`). These are the
-  Indigo.Design kit's **variant indicator nodes**; their name encodes which input variant
-  (border/line/box) is active. See the input-variant note in Phase 4 — Web Components
-  expose this as the boolean `outlined` attribute, not a three-way type.
+- **Input variant indicators** *(Tier A only)* — hidden zero-size nodes (`size-[0.5px]`)
+  whose `data-name` contains a component type (e.g. `"Date Picker Type"`, `"Combo Input"`).
+  These are the Indigo.Design kit's **variant indicator nodes**, and their name encodes
+  which input variant (border/line/box) is active. For other kits, read the field style
+  from its variant property or visuals (outlined / filled / underlined, label floating or
+  above). See the input-variant note in Phase 4: Web Components expose this as the boolean
+  `outlined` attribute, not a three-way type.
 - **Chart series colors** — for any chart layer, note the fill colors on its series paths
+- **Color census** — which colors appear on which kinds of element: high-emphasis button
+  fills, page and card backgrounds, borders, primary and secondary text, error states. For
+  Tier B/C designs, Phase 3 seeds the palette from this (see
+  `design-token-bridge.md § B2`), not from variable names.
+- **Measured control heights** — button, input, and list-row heights. Phase 3 uses them to
+  pick `--ig-size`.
 - **Action controls** — list every button, icon button, and toolbar action visible in the
   artboard; this is your authoritative inventory — do not add actions not present in the design
-- **Active kit variant** — look for library component references whose source file name
-  contains "Material", "Fluent", "Bootstrap", or "Indigo". If not found here, defer to
-  Phase 1e variable names and [references/design-token-bridge.md](references/design-token-bridge.md).
+- **Provenance signals** — library/source file names (e.g. `Indigo.Design UI Kit for
+  Material`, `Material 3 Design Kit`, `shadcn/ui`), naming conventions (`_Button/…` vs
+  `Button` with `Variant=…`), and un-componentized frames. Phase 1f turns them into a tier
+  for each instance.
 
 Record all surface containers in the **Surfaces Spec** (Table B in Phase 1g).
 
@@ -289,17 +314,39 @@ The response maps variable names to values, e.g.:
 ```
 
 Use `references/design-token-bridge.md` to map color and typography variables to Ignite UI
-theming inputs in Phase 3. Do **not** attempt to map Figma spacing or sizing values — see
+theming inputs in Phase 3. Third-party kits name variables differently
+(`md.sys.color.primary`, `Colors/Brand/600`, `colorBrandBackground`, `primary-foreground`,
+…). Record them as-is. Phase 3 matches them to roles by **usage** (the Phase 1d color
+census), not by name. Files without variables are normal for Tier C designs. The color
+census then provides every seed. Do **not** attempt to map Figma spacing or sizing values — see
 `references/design-token-bridge.md § Spacing, Sizing, and Roundness` for why.
 
-### 1f: Check for Existing Code Connect Mappings
+### 1f: Classify Provenance and Normalize Components
 
-```
-figma_get_code_connect_map({ fileKey: "<fileKey>", nodeId: "<artboardId>" })
-```
+Read [references/design-provenance.md](references/design-provenance.md) in full.
 
-If mappings exist, they confirm which components correspond to which Figma nodes — use
-them to validate or augment your Phase 2 component mapping.
+1. Call `figma_get_libraries` **once per file**, if the connected server exposes it. The
+   subscribed library names (`Indigo.Design UI Kit for Material`, `Material 3 Design Kit`,
+   `shadcn/ui`, an in-house library) are the fastest provenance signal.
+2. Check for Code Connect mappings:
+
+   ```
+   figma_get_code_connect_map({ fileKey: "<fileKey>", nodeId: "<artboardId>" })
+   ```
+
+   Mappings are strong evidence of a component's **role and props**. They may point at
+   **another library** (e.g. a shadcn kit connected to `@/components/ui/button`). Never copy
+   their imports or tags: the target is always Ignite UI.
+
+3. Classify **every** component-like layer as **Tier A** (Indigo.Design kit), **Tier B**
+   (any other component library), or **Tier C** (un-componentized). Classify per instance,
+   not per file.
+4. Normalize Tier B instances to a canonical role + emphasis/style + measured height, using
+   their variant properties. When names are ambiguous and a file key and token are
+   available, read exact `componentProperties` from the REST API
+   (`design-provenance.md § Step 1`).
+5. Infer Tier C roles from structure and visuals. Mark them **low confidence**.
+6. Record the dominant tier. It selects the Phase 3 theming path (A or B).
 
 ### 1g: Build the Decomposition Table
 
@@ -307,11 +354,12 @@ Before writing any code, produce **two tables** for **each artboard**.
 
 #### Table A — Ignite UI Components
 
-| Figma Layer Name           | Visual Role        | Ignite UI Tag / Class                  | Package                  | Design Tokens Used  | Data Type       |
-| -------------------------- | ------------------ | -------------------------------------- | ------------------------ | ------------------- | --------------- |
-| _e.g._ `_NavBar`           | Top navigation bar | `<igc-navbar>` / `IgcNavbarComponent`  | `igniteui-webcomponents` | `color/primary/500` | n/a             |
-| _e.g._ `_Grid/Default`     | Data table         | `<igc-grid>` / `IgcGridComponent`      | `igniteui-webcomponents-grids` | `color/surface` | Tabular records |
-| _e.g._ `_Button/Contained` | Primary CTA        | `<igc-button variant="contained">`     | `igniteui-webcomponents` | `color/primary/500` | n/a             |
+| Figma Layer Name | Tier | Canonical Role + Props | Ignite UI Tag / Class | Package | Confidence | Anatomy Deltas | Data Type |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| _e.g._ `_NavBar` | A | `app-bar` | `<igc-navbar>` / `IgcNavbarComponent` | `igniteui-webcomponents` | high | — | n/a |
+| _e.g._ `_Grid/Default` | A | `data-table` | `<igc-grid>` / `IgcGridComponent` | `igniteui-webcomponents-grids` | high | — | Tabular records |
+| _e.g._ `Button` (`Variant=outline, Size=sm`) | B | `button` · medium · 32px | `<igc-button variant="outlined">` | `igniteui-webcomponents` | high | casing, radius → tokens | n/a |
+| _e.g._ `Frame 427` | C | `tag` · pill · 24px | `<igc-badge>` | `igniteui-webcomponents` | low | confirm with user | n/a |
 
 The **Package** column is not optional in Web Components: general UI, grids, charts, and
 dock manager ship as separate packages with trial and `@infragistics` licensed variants.
@@ -337,7 +385,9 @@ container divs in the Phase 1d output.
 > on the page background (transparent), do **not** add a surface wrapper. Always derive
 > surface structure from the design context of the specific artboard being implemented.
 
-Present both tables to the user for review before proceeding.
+Present both tables to the user for review before proceeding. List **low-confidence**
+mappings first and ask the user to confirm or correct them. A wrong role is the most
+expensive mistake to fix after Phase 4.
 
 ### 1h: Extract Image Assets
 
@@ -350,8 +400,9 @@ acceptable.
 
 From the decomposition tables, identify every layer that is a **static image asset**
 (photo, background, logo, custom icon, illustration) rather than an Ignite UI component.
-Do **not** extract Indigo.Design UI Kit component instances, and do not extract icons that
-`igc-icon` can render from a registered collection.
+Do **not** extract component instances that Table A maps to a component, whatever kit they
+come from. Do not extract icons that `igc-icon` can render from a registerable icon package
+(see `figma-component-map.md § Icons`, which also covers third-party kit icon sets).
 
 **Use the four-tier decision tree from `asset-extraction.md`:**
 
@@ -433,9 +484,25 @@ After reading all docs, confirm or revise the Phase 1g table with:
   `igniteui-webcomponents-core` for charts and gauges
 - Any additional theme CSS a package requires (the grid packages ship their own)
 
-If new packages are required, identify exact packages and versions, then **ask for approval
-before installing**. Present this updated plan to the user and wait for confirmation before
-Phase 3.
+**Anatomy delta ledger (Tier B and C).** For every mapped component whose anatomy differs
+from the design in a way that tokens, `::part(...)`, or slotted content **cannot** close,
+add a ledger entry:
+
+| Component | Design shows | Ignite UI renders | Options | Decision |
+| --- | --- | --- | --- | --- |
+| _e.g._ Text fields (shadcn) | Label above the field | Label above (baseline `bootstrap`) | — | none needed |
+| _e.g._ M3 segmented button | Check icon on the selected segment | `igc-toggle-button`, no check icon | Slot an `igc-icon` in the selected item / accept | ask |
+| _e.g._ Bottom sheet | Sheet sliding from the bottom | No sheet component | `igc-dialog` styled / custom markup | ask |
+
+Do not ledger differences that tokens *can* close: color, radius, border, casing, height,
+and spacing are implementation work, not deltas. For every interactive control, prefer the
+Ignite UI component with a recorded delta over hand-built markup. The component's keyboard,
+focus, ARIA, and form behavior are worth more than a pixel-exact but inert copy.
+Approved entries are classified **Accepted** in Phase 5.
+
+If new packages are required (including an icon package for a third-party kit), identify
+exact packages and versions, then **ask for approval before installing**. Present this
+updated plan, with the ledger, to the user and wait for confirmation before Phase 3.
 
 ---
 
@@ -480,8 +547,15 @@ value. Otherwise use the artboard background color: near-black (`#121212`, `#1a1
 
 ### 3b: Resolve the Design System
 
-To determine the design system, use this **strict precedence order**. Stop at the first
-signal that gives a clear answer:
+**Choose the path from the dominant Phase 1f tier** (see
+`design-token-bridge.md § Two Paths`):
+
+- **Path B (mostly Tier B/C):** the design system is the **closest baseline**, not a match.
+  Choose it with the anatomy rubric in `design-token-bridge.md § B1`. Text-field label
+  placement is decisive, then control heights. A design whose fields have labels *above*
+  them should not get `material`. Then continue to 3c, where you apply B2–B8.
+- **Path A (mostly Tier A):** use this **strict precedence order**. Stop at the first
+  signal that gives a clear answer:
 
 1. **Explicit user request** — "make it Material", "use Fluent", etc.
 2. **Library source name in design context** — the `figma_get_design_context` or
@@ -513,14 +587,23 @@ Supported values: `material`, `bootstrap`, `fluent`, `indigo`.
 
 ### 3c: Generate the Global Theme
 
-Extract the following from Phase 1e variables using
+Extract the following using
 [references/design-token-bridge.md](references/design-token-bridge.md):
 
 ```
+Path A (Indigo.Design kits) — from Phase 1e variables:
 primaryColor    ← from "color/primary/500" or "primary/500"
 secondaryColor  ← from "color/secondary/500" or "secondary/500"
 surfaceColor    ← from "color/surface" or "surface/default"
 fontFamily      ← from "typography/font-family" or "typography/body/font-family"
+
+Path B (any other kit, or none) — from the Phase 1d color census (§ B2):
+primaryColor    ← color painted on high-emphasis buttons / active indicators
+secondaryColor  ← a second accent actually used, else = primary
+                  (material baseline: controls use secondary — seed it with the button color)
+surfaceColor    ← page background
+fontFamily      ← family of the text styles in use
+customScale     ← kit type ramp by role (§ B3), incl. button textTransform (§ B4)
 ```
 
 Read the theming guidance resources before generating, so you extract only values the
@@ -636,14 +719,21 @@ For **every** Ignite UI component in your plan, run this loop:
    follow the related-theme chain from step 1 and theme each child with its scoped selector.
    Styling only the parent leaves the dropdown or calendar off-theme.
 
+**Path B additions to this loop** (see `design-token-bridge.md § B5–B8`): include the
+component's **radius** tokens at the measured px value, its **border** and
+**shadow/elevation** tokens as the design shows them, and its hover/focus/disabled **state**
+tokens from the kit's state variants, in the same `create_component_theme` call. Choose
+`--ig-size` from the measured control heights (§ B7) before tuning individual components.
+
 When a specific component needs a different density or spacing from the global default, use
 `theming_set_size` or `theming_set_spacing` with the `component` parameter — this scopes
 `--ig-size` or `--ig-spacing` to that component's selector rather than applying globally.
 For compound components, use `scope` with a sub-component selector. Only apply these
 globally (`:root`) when the entire app has a clearly distinct density. Leave
-`theming_set_roundness` at its default unless the user explicitly requests a change. Never
-derive multiplier values from Figma pixel values — see
-`references/design-token-bridge.md § Spacing, Sizing, and Roundness`.
+`theming_set_roundness` at its default unless the user explicitly requests a change. For
+Path B, express radius through per-component tokens instead, because one global factor
+cannot reproduce a kit's radii. Never derive multiplier values from Figma pixel values —
+see `references/design-token-bridge.md § Spacing, Sizing, and Roundness`.
 
 ### 3e: Chart Series Colors
 
@@ -706,9 +796,11 @@ on the element, not as attributes).
     types; Web Components expose a single boolean **`outlined`** attribute on `igc-input`,
     `igc-textarea`, `igc-select`, `igc-combo`, `igc-date-picker`, `igc-date-range-picker`,
     and the other input-base components. Map `_Input/Border` → `outlined`; map `_Input/Line`
-    and `_Input/Box` → default (no `outlined`). There is **no** global injection token
-    equivalent — set the attribute on each control, and close any remaining gap with
-    `input-group` component tokens rather than internal CSS.
+    and `_Input/Box` → default (no `outlined`). For other kits, map the normalized style:
+    **outlined** → `outlined`; **filled** / **underlined** → default. Label placement comes
+    from the baseline design system (3b), not from an attribute. There is **no** global
+    injection token equivalent — set the attribute on each control, and close any remaining
+    gap with `input-group` component tokens rather than internal CSS.
 13. **Layout surfaces:** for every entry in the Phase 1g Surfaces table, add a CSS class
     with the recorded `background`, `border-radius`, `padding`, `border`, and `box-shadow`.
     Never leave a section transparent if the Figma surface has a background; never add a
@@ -839,6 +931,11 @@ Compare all returned values against the Figma spec from Phase 1d.
 | **Major**    | Wrong component | Figma shows dropdown, code has text input | Auto-fix                    |
 | **Minor**    | Spacing off     | 24px gap in Figma, 16px in code           | Auto-fix if straightforward |
 | **Cosmetic** | Color shade     | `#333` vs `#2d2d2d`                       | Report only                 |
+| **Accepted** | Ledgered delta  | Approved Phase 2d anatomy delta           | Report only; not a retry    |
+
+Only deltas recorded and approved in Phase 2d are **Accepted**. Color, radius, border,
+casing, and height differences on a Tier B/C design are fixable with tokens and keep their
+normal severity (see `validation-patterns.md`).
 
 For each mismatch, produce:
 
@@ -881,6 +978,14 @@ Check that:
 
 - **Phase 0 is not optional.** Never skip MCP verification, and establish which Figma MCP
   variant is connected before Phase 1.
+- **Classify provenance per instance (Phase 1f).** Do not assume the Indigo.Design kits.
+  A third-party kit's names and variables are evidence to normalize, not to copy.
+- **Never import from Code Connect of another library.** Code Connect snippets that point
+  at shadcn, MUI, or an in-house package confirm the role only. The code is always Ignite UI.
+- **Seed the palette from usage on Path B.** Use the color painted on the component, not
+  the variable named `…/500`. On a `material` baseline, controls use `secondary`.
+- **Ledger what tokens cannot fix; fix what they can.** Structural anatomy deltas go to the
+  user in Phase 2d. Color, radius, casing, and height mismatches get fixed.
 - **Phase 2b before code.** Never write a tag, attribute, or slot you have not read from a
   doc or API entry. Doc names are not tag names.
 - **Register what you use.** An unregistered element fails silently.

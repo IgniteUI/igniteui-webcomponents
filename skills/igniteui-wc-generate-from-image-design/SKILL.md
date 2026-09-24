@@ -1,6 +1,7 @@
 ---
+license: MIT
 name: igniteui-wc-generate-from-image-design
-description: Implement application views from design images using Ignite UI Web Components. Uses MCP servers (igniteui-cli, igniteui-theming) to discover components, generate themes, and follow best practices. Triggers when the user provides a design image (screenshot, mockup, wireframe) and wants it built as a working view with Ignite UI Web Components. Also triggers when the user asks to "implement this design", "build this UI", "convert this mockup", or "create a page from this image" in an Ignite UI Web Components project.
+description: "Implement application views from design images (screenshots, mockups, wireframes) using Ignite UI Web Components, with the igniteui-cli and igniteui-theming MCP servers for component discovery, theme generation, and best practices. WHEN TO USE: the user provides a design image and wants it built as a working view, or asks to 'implement this design', 'build this UI', 'convert this mockup', or 'create a page from this image' in an Ignite UI Web Components project. WHEN NOT TO USE: the design source is a Figma file or URL (use figma-to-app), no image is provided and the user only needs component suggestions (use choose-components), the task is only theming or restyling existing views (use customize-component-theme), or the task is package installation/framework setup (use integrate-with-framework)."
 user-invocable: true
 ---
 
