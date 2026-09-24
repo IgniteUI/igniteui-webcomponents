@@ -24,6 +24,13 @@ user-invocable: true
 
 Never mix `igc-grid-lite` with a premium grid type for the same table — pick one. For upgrading Grid Lite to `igc-grid`, use the migration skill above.
 
+For Grid Lite, import the `igniteui-grid-lite` package and its elements directly. Load only the base Ignite UI theme; do not import the premium grid package or grid theme:
+
+```typescript
+import { IgcGridLite, IgcGridLiteColumn } from 'igniteui-grid-lite';
+import 'igniteui-webcomponents/themes/light/material.css';
+```
+
 ## Theming Setup
 
 - **Pick exactly one design system** (`material` | `bootstrap` | `fluent` | `indigo`) **and one variant** (`light` | `dark`) for the whole app. Never load two design systems together, and never load both a light and a dark file at once — toggle between the matching light/dark pair of the *same* design system instead.
@@ -39,6 +46,8 @@ Never mix `igc-grid-lite` with a premium grid type for the same table — pick o
 - These are document-level imports — they style the light DOM only. If the grid renders inside a Shadow root, see **Shadow DOM** below; a bare import never crosses into a shadow root.
 
 ## Registering Components
+
+For premium grids, use the package registration entry point:
 
 ```typescript
 // Side-effect import — registers igc-grid, igc-column, igc-paginator, etc.
@@ -60,6 +69,10 @@ import { html, LitElement } from 'lit';
 import gridTheme from 'igniteui-webcomponents-grids/grids/themes/light/material.css?inline';
 
 class MyGridPanel extends LitElement {
+  private readonly data: Array<{ name: string }> = [
+    { name: 'Ada Lovelace' },
+  ];
+
   render() {
     return html`
       <style>${gridTheme}</style>
@@ -71,7 +84,7 @@ class MyGridPanel extends LitElement {
 }
 ```
 
-If the grid looks broken, fix the missing theme injection — do not mask the symptom with fallback CSS overrides.
+The ?inline suffix is Vite-specific. In other bundlers, use their equivalent method for raw-string CSS imports. If the grid looks broken, fix the missing theme injection — do not mask the symptom with fallback CSS overrides.
 
 ## Fluid Layout
 
@@ -80,7 +93,7 @@ Let the grid fill its container instead of hardcoding pixel heights:
 ```css
 .app-shell { display: flex; flex-direction: column; block-size: 100vh; }
 .app-header { flex: 0 0 auto; }                 /* fixed-height header */
-.app-content { flex: 1 1 auto; min-height: 0; }  /* min-height: 0 lets this row shrink instead of overflow */
+.app-content { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; }  /* min-height: 0 lets this row shrink instead of overflow */
 igc-grid { flex: 1 1 auto; min-height: 0; block-size: 100%; }
 ```
 
