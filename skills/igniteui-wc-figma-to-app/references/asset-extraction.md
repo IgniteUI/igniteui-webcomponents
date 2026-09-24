@@ -60,8 +60,9 @@ export FIGMA_TOKEN="your-personal-access-token"   # same token the MCP server us
 | **Image fill**   | A photo, texture, or raster image dragged/pasted into Figma, stored as an IMAGE fill    | Layer has a fill of type `IMAGE`; `imageRef` in node data | REST API Method A → original source file |
 | **Vector asset** | A logo, icon, or illustration drawn in Figma with vector tools                           | Node type `VECTOR`, `BOOLEAN_OPERATION`, or `GROUP`     | REST API Method B → clean SVG            |
 
-Do **not** confuse either with Indigo.Design UI Kit component instances — those become
-Ignite UI components, not extracted assets.
+Do **not** confuse either with component instances — from the Indigo.Design UI Kits or any
+other kit — that Phase 1f mapped to a canonical role. Those become Ignite UI components,
+not extracted assets.
 
 ---
 
@@ -81,9 +82,11 @@ Ignite UI components, not extracted assets.
 
 > **Ignore these** — do NOT extract them as image assets:
 >
-> - Any layer named `_Button`, `_Input`, `_Grid`, `_Card`, etc. (kit component instances)
-> - Icon glyphs available from a registerable collection (Material, Material Icons Extended)
->   — register them with `registerIconFromText` and render `<igc-icon>` instead
+> - Any layer that Table A maps to a component (`_Button`, `_Input`, `Button`, `Text field`,
+>   … — kit component instances from any kit)
+> - Icon glyphs available from a registerable package (Material Icons Extended, Material
+>   Symbols, Lucide, Fluent, …; see `figma-component-map.md § Icons`). Register them with
+>   `registerIconFromText` and render `<igc-icon>` instead
 > - Artboard/frame boundaries themselves
 
 ### Size heuristic
@@ -357,7 +360,7 @@ cannot. See `figma-component-map.md § Icons` for the Material Icons Extended se
 | Using a node screenshot for an SVG logo                      | Rasterized logo, no scaling, no theming                          | Tier 1 Method B with `format=svg`                                                     |
 | Exporting PNG at `scale=1`                                   | Blurry on HiDPI screens                                          | Always `scale=2`                                                                      |
 | `svg_outline_text=true` (the default)                        | Text converted to paths; larger file; no accessibility           | Set `svg_outline_text=false`                                                          |
-| Extracting kit component instances as images                 | A static picture instead of a working component                  | Check `figma-component-map.md` — those are components                                 |
+| Extracting kit component instances as images                 | A static picture instead of a working component                  | Check Table A / `figma-component-map.md` — those are components, whatever kit they came from |
 | Extracting registerable icons as PNGs                        | Icons cannot inherit theme color                                 | Register the SVG and use `<igc-icon>`                                                 |
 | Extracting background colors or gradients as images          | Bundle bloat, breaks theming                                     | Colors → palette variables and component tokens                                       |
 | Not creating asset directories before `curl`                 | Silent failures or files in the wrong place                      | `mkdir -p` first                                                                      |

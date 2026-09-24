@@ -14,7 +14,7 @@ Skills are structured instructions that help AI agents understand and execute co
 | [igniteui-wc-integrate-with-framework](./igniteui-wc-integrate-with-framework/SKILL.md)     | Integrate components into React, Angular, Vue, or vanilla JS applications          | Setting up components in your project |
 | [igniteui-wc-customize-component-theme](./igniteui-wc-customize-component-theme/SKILL.md)   | Customize styling using CSS custom properties, parts, and theming system           | Applying custom brand colors/styles   |
 | [igniteui-wc-generate-from-image-design](./igniteui-wc-generate-from-image-design/SKILL.md) | Implement a view from a screenshot or mockup using Ignite UI Web Components        | Converting a design image into UI     |
-| [igniteui-wc-figma-to-app](./igniteui-wc-figma-to-app/SKILL.md)                             | Translate Figma screens built with the Indigo.Design UI Kits into a working app   | Implementing a design from a Figma file |
+| [igniteui-wc-figma-to-app](./igniteui-wc-figma-to-app/SKILL.md)                             | Translate Figma screens from any UI kit (Indigo.Design, third-party, or plain frames) into a working app | Implementing a design from a Figma file |
 | [igniteui-wc-optimize-bundle-size](./igniteui-wc-optimize-bundle-size/SKILL.md)             | Reduce bundle size by importing only needed components and lazy loading            | Optimizing production performance     |
 | [igniteui-wc-migrate-grid-lite-to-premium](./igniteui-wc-migrate-grid-lite-to-premium/SKILL.md) | Migrate from Grid Lite to the premium Data Grid                                 | Adopting enterprise grid features     |
 

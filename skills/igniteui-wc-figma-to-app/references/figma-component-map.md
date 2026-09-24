@@ -1,19 +1,81 @@
-# Indigo.Design UI Kit → Ignite UI Web Components Map
+# Figma Components → Ignite UI Web Components Map
 
 > **Part of the [`igniteui-wc-figma-to-app`](../SKILL.md) skill.**
 >
-> The **Indigo.Design UI Kits** are Figma component libraries (Material, Fluent, Bootstrap,
-> Indigo variants) that designers use to build their app screens. Every component instance
-> in a design file is drawn from one of these libraries and maps to an Ignite UI Web
-> Components control.
+> Use this file in Phase 2a to resolve every row of the Phase 1g Table A to a tag,
+> component class, package, and `get_doc` name. It has two entry points:
 >
-> Use this file in Phase 2a to map Figma layer names — as they appear in the kit library —
-> to tags, component classes, packages, and `get_doc` names. When a layer name is not in
-> this table, call `list_components` then `get_doc` on the closest match.
+> - **Canonical Role Index** (next section). Use it for **Tier B and Tier C** layers:
+>   components from any other UI kit, or un-componentized frames, after they are
+>   normalized with [design-provenance.md](design-provenance.md).
+> - **Kit Component Name** tables (the sections after it). Use them for **Tier A** layers
+>   from the Infragistics **Indigo.Design UI Kits** (Material, Fluent, Bootstrap, Indigo
+>   variants), whose layer names map to Ignite UI directly.
+>
+> When a role or layer name is in neither, call `list_components` then `get_doc` on the
+> closest match.
 
 ---
 
-## How to Use This File
+## Canonical Role Index
+
+Normalized roles from `design-provenance.md` → the Ignite UI tag, and the section below
+that holds its full row (class, package, doc name, key attributes).
+
+| Canonical role (+ normalized props) | Ignite UI Web Components | Section |
+| --- | --- | --- |
+| `button` · high | `<igc-button variant="contained">` | Button Components |
+| `button` · medium (outlined) | `<igc-button variant="outlined">` | Button Components |
+| `button` · medium (tonal / secondary fill) | `<igc-button variant="contained">` + `contained-button` tokens using the secondary palette | Button Components |
+| `button` · low | `<igc-button variant="flat">` | Button Components |
+| `button` · link | `<igc-button variant="flat" href="…">`, or a plain `<a>` styled as a link | Button Components |
+| `button` · elevated | `<igc-button variant="contained">` + elevation via tokens | Button Components |
+| `button` · danger | Same variant + tokens bound to `--ig-error-*` | Button Components |
+| `icon-button` | `<igc-icon-button variant="flat\|outlined\|contained">` | Button Components |
+| `fab` | `<igc-button variant="fab">` | Button Components |
+| `toggle-group` | `<igc-button-group>` + `<igc-toggle-button>` | Button Components |
+| `text-field` · outlined | `<igc-input outlined>` | Form Controls |
+| `text-field` · filled / underlined | `<igc-input>` (close the look with `input-group` tokens) | Form Controls |
+| `textarea` | `<igc-textarea>` | Form Controls |
+| `select` | `<igc-select>` | Form Controls |
+| `combobox` (single, searchable) | `<igc-combo single-select>` | Form Controls |
+| `combobox` (multi / tags) | `<igc-combo>` | Form Controls |
+| `checkbox` / `radio` / `switch` | `<igc-checkbox>` / `<igc-radio-group>`+`<igc-radio>` / `<igc-switch>` | Form Controls |
+| `slider` / `range-slider` | `<igc-slider>` / `<igc-range-slider>` | Form Controls |
+| `rating` | `<igc-rating>` | Form Controls |
+| `file-upload` | `<igc-file-input>` | Form Controls |
+| `color-picker` | `<igc-color-picker>` | Form Controls |
+| `date-picker` / `date-range-picker` / `calendar` | `<igc-date-picker>` / `<igc-date-range-picker>` / `<igc-calendar>` | Date & Time |
+| `time-picker` | `<igc-date-time-input>` with a time format | Date & Time |
+| `app-bar` | `<igc-navbar>` | Navigation |
+| `side-nav` / navigation rail | `<igc-nav-drawer position="relative" open>` (rail → `mini` slot) | Navigation |
+| `tabs` | `<igc-tabs>` | Navigation |
+| `breadcrumbs` | `<igc-breadcrumbs>` + `<igc-breadcrumb>` | Navigation |
+| `stepper` | `<igc-stepper>` | Navigation |
+| `menu` | `<igc-dropdown>` | Form Controls |
+| `accordion` / `expansion-panel` | `<igc-accordion>` / `<igc-expansion-panel>` | Layout |
+| `card` | `<igc-card>` (only when header/media/content/actions anatomy fits) | Data Display |
+| `list` | `<igc-list>` | Data Display |
+| `tree` | `<igc-tree>` | Data Display |
+| `data-table` (simple, read-only) | `<igc-grid-lite>` | Grids |
+| `data-table` (editing, grouping, paging, summaries…) | `<igc-grid>` and family | Grids |
+| `avatar` | `<igc-avatar>` | Data Display |
+| `tag` / `count-badge` | `<igc-badge>` | Data Display |
+| `chip` | `<igc-chip>` | Data Display |
+| `progress-linear` / `progress-circular` | `<igc-linear-progress>` / `<igc-circular-progress>` | Data Display |
+| `divider` | `<igc-divider>` | Data Display |
+| `carousel` | `<igc-carousel>` | Data Display |
+| `dialog` | `<igc-dialog>` | Feedback / Overlay |
+| `toast` (text only) / (with action) | `<igc-toast>` / `<igc-snackbar>` | Feedback / Overlay |
+| `inline-alert` | `<igc-banner>` | Feedback / Overlay |
+| `tooltip` | `<igc-tooltip>` | Feedback / Overlay |
+| `qr-code` | `<igc-qr-code>` | Data Display |
+| `chart-*` / `gauge-*` / `map` | See the DV table | Charts, Gauges, and Maps |
+| `bottom-nav`, `sheet`, `skeleton`, `pagination` (standalone) | No direct component | Components With No Web Components Equivalent |
+
+---
+
+## How to Use the Kit Tables
 
 1. Find the kit component name (as it appears in the Figma layers panel or the
    Indigo.Design kit library) in the **Kit Component Name** column.
@@ -114,6 +176,7 @@ it consistent.
 | `_Slider`                      | `<igc-slider>`            | `IgcSliderComponent`            | `igniteui-webcomponents` | `slider`            | `min`, `max`, `step`, `value`, `discrete-track`                              |
 | `_Range Slider`                | `<igc-range-slider>`      | `IgcRangeSliderComponent`       | `igniteui-webcomponents` | `slider`            | `lower`, `upper`                                                            |
 | `_Rating`                      | `<igc-rating>`            | `IgcRatingComponent`            | `igniteui-webcomponents` | `rating`            | `value`, `max`, `step`, `single`, `allow-reset`, `hover-preview`, `readonly`; slots `symbol`, `value-label`; `igcChange` event                          |
+| `_Color Picker`                | `<igc-color-picker>`      | `IgcColorPickerComponent`       | `igniteui-webcomponents` | confirm via `list_components` | `value`, `format`, `label`, `mode`, `show-alpha`, `hide-formats`             |
 
 ---
 
@@ -140,6 +203,7 @@ it consistent.
 | `_Tabs`                            | `<igc-tabs>`              | `IgcTabsComponent`             | `igniteui-webcomponents` | `tabs`                | `alignment`, `activation`; `<igc-tab label="…">` children with `prefix`/`suffix` slots |
 | `_Bottom Navigation`               | —                         | —                              | —                        | —                     | **Not available in Web Components.** Use `igc-tabs` or custom markup; document the substitution. |
 | `_Stepper`                         | `<igc-stepper>`           | `IgcStepperComponent`          | `igniteui-webcomponents` | `stepper`             | `orientation`, `step-type`, `linear`, `title-position`; `<igc-step>` children     |
+| `_Breadcrumbs` / `_Breadcrumb`     | `<igc-breadcrumbs>`       | `IgcBreadcrumbsComponent`      | `igniteui-webcomponents` | confirm via `list_components` | `separator`; `<igc-breadcrumb>` children (`current`, `disabled`; slots `prefix`, `suffix`, `separator`). Wrap in `<nav aria-label="…">` |
 
 > A design showing a persistent, always-visible sidebar maps to
 > `<igc-nav-drawer position="relative" open>` — not the modal default. The drawer's width is
@@ -176,6 +240,7 @@ it consistent.
 | `_Circular Progress`                 | `<igc-circular-progress>`  | `IgcCircularProgressComponent`    | `igniteui-webcomponents` | `circular-progress`  | `value`, `max`, `indeterminate` — theme key `progress-circular`           |
 | `_Divider`                           | `<igc-divider>`            | `IgcDividerComponent`             | `igniteui-webcomponents` | `divider`            | `type` (`solid\|dashed`), `vertical`, `middle`                            |
 | `_Chat`                              | `<igc-chat>`               | `IgcChatComponent`                | `igniteui-webcomponents` | `chat`               | `.messages`, `.options` assigned as properties                            |
+| `_QR Code`                          | `<igc-qr-code>`            | `IgcQrCodeComponent`              | `igniteui-webcomponents` | confirm via `list_components` | `value`, `size`, `error-level`, `logo-src`, `dot-style`, `square-style` |
 | `_Paginator`                         | `<igc-paginator>`          | grid package                      | `igniteui-webcomponents-grids` | search `grid-paging` | Part of the grid packages, not a standalone core component           |
 
 ---
@@ -295,14 +360,46 @@ name when the design reuses a glyph under a different label.
 
 Registered icons are never extracted as image assets — see `asset-extraction.md`.
 
+### Icons from other kits
+
+Third-party kits come with their own icon sets. Identify the set from the icon instance
+names (`lucide/chevron-down`, `ic_fluent_…`, `Icon / arrow-right`, `Symbols/…`), from the
+component descriptions, or from the kit fingerprint in `design-provenance.md`. Then register
+glyphs **from that set's SVG package**, so names, weights, and stroke widths match the
+design:
+
+| Icon set | SVG source package (confirm name, version, and license before installing) |
+| --- | --- |
+| Material Symbols | `@material-symbols/svg-400` (pick the weight/fill the design uses) |
+| Fluent System Icons | `@fluentui/svg-icons` |
+| Lucide (shadcn/ui kits) | `lucide-static` |
+| Bootstrap Icons | `bootstrap-icons` |
+| Heroicons | `heroicons` |
+| Phosphor | `@phosphor-icons/core` |
+| Ant Design Icons | `@ant-design/icons-svg` |
+
+```typescript
+import chevronDown from 'lucide-static/icons/chevron-down.svg?raw';
+registerIconFromText('chevron-down', chevronDown, 'lucide');
+```
+
+```html
+<igc-icon name="chevron-down" collection="lucide"></igc-icon>
+```
+
+Register only the glyphs the design uses: importing a whole set inflates the bundle. When the
+set is paid (for example Untitled UI Icons Pro) or unknown, or is not licensed for the web
+(SF Symbols), extract the used glyphs as SVG with Tier 1 Method B from `asset-extraction.md`
+and register those instead. Tell the user which icons came from a licensed set.
+
 ---
 
-## Components in the Kit With No Web Components Equivalent
+## Components With No Web Components Equivalent
 
 Check this list before assuming a 1:1 mapping exists. When you hit one, substitute and
 document the substitution in a code comment and in the Phase 2d plan.
 
-| Kit component     | Status in Web Components | Substitute                                                        |
+| Kit component / role | Status in Web Components | Substitute                                                      |
 | ----------------- | ------------------------- | ------------------------------------------------------------------ |
 | `_Bottom Navigation` | Not available          | `igc-tabs`, or custom markup styled from the design                |
 | `_Time Picker`    | Not available as a picker | `igc-date-time-input` with a time input format                     |
@@ -310,6 +407,9 @@ document the substitution in a code comment and in the Phase 2d plan.
 | `_Action Strip`   | Not available             | Slotted icon buttons positioned over the row/card                   |
 | `_Chips Area`     | Not a component           | A flex container around `igc-chip` elements                         |
 | `_Query Builder`  | Grid packages only        | `query-builder` doc — confirm availability for the installed package |
+| Sheet / side sheet (other kits) | Not available           | `igc-nav-drawer` for navigation; `igc-dialog` or custom markup for content panels |
+| Skeleton loader (other kits) | Not available             | Custom markup with a CSS shimmer bound to palette variables          |
+| Standalone pagination (other kits) | Grid packages only (`igc-paginator`) | `igc-paginator` when paging a grid; otherwise custom markup with `igc-icon-button`s |
 
 ---
 
@@ -317,7 +417,9 @@ document the substitution in a code comment and in the Phase 2d plan.
 
 When you encounter a Figma layer that is **not in this file**:
 
-1. Extract the visual pattern (is it a list? a form field? a card?).
+1. Normalize it with [design-provenance.md](design-provenance.md) (Tier B variant
+   properties, or Tier C structure) and retry the Canonical Role Index. Otherwise,
+   extract the visual pattern (is it a list? a form field? a card?).
 2. Call `list_components({ framework: "webcomponents", filter: "<keyword>" })` and scan for
    the closest match.
 3. Call `get_doc` (and `get_api_reference` when you need the full API) before writing code.

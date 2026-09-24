@@ -133,7 +133,10 @@ figma_get_screenshot({})
 Call `figma_get_metadata` (with `fileKey` if required). It should return the top-level page
 list or the node XML.
 
-> **Rate limits:** Starter plan: 6 calls/month · Organization: 200/day · Enterprise: 600/day.
+> **Rate limits** (per seat; verify at
+> https://developers.figma.com/docs/figma-mcp-server/rate-limits-access/): View/Collab seats
+> get up to 6 calls/month (20 on Starter). Dev/Full seats get 200/day on Starter and
+> Professional, and 600/day on Organization and Enterprise, with per-minute caps of 10–20.
 > Use `figma_get_metadata` for structural discovery and `figma_get_design_context` only for
 > the artboards you will implement.
 
