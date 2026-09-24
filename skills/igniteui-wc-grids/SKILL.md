@@ -10,7 +10,7 @@ user-invocable: true
 ## Required Workflow
 
 1. **Pick the grid type/package** using the table below; ask if ambiguous.
-2. **Use only the verified import paths in this file** (`grids/combined.js`, `themes/<variant>/<design>.css`). For anything else (toolbar, export, pivot/tree/hierarchical APIs, properties/events), look it up with `list_components({ framework: "webcomponents", ... })` / `get_doc({ framework: "webcomponents", name: "<doc-name>" })` / `search_api({ platform: "webcomponents", query: "<keyword>" })` / `get_api_reference({ platform: "webcomponents", component: "<ClassName>" })` instead of guessing.
+2. **Use only the verified import paths in this file** (`igniteui-webcomponents-grids`, `grids/combined.js`, `themes/<variant>/<design>.css`). For anything else (toolbar, export, pivot/tree/hierarchical APIs, properties/events), look it up with `list_components({ framework: "webcomponents", ... })` / `get_doc({ framework: "webcomponents", name: "<doc-name>" })` / `search_api({ platform: "webcomponents", query: "<keyword>" })` / `get_api_reference({ platform: "webcomponents", component: "<ClassName>" })` instead of guessing.
 
 ## Choosing the Grid
 
@@ -47,16 +47,18 @@ import 'igniteui-webcomponents/themes/light/material.css';
 
 ## Registering Components
 
-For premium grids, use the package registration entry point:
+For premium grids, register only the selected grid type:
 
 ```typescript
-// Side-effect import — registers igc-grid, igc-column, igc-paginator, etc.
-import 'igniteui-webcomponents-grids/grids/combined.js';
+import { IgcGridComponent } from 'igniteui-webcomponents-grids';
+IgcGridComponent.register();
 
 // Base package — register only what you use, not defineAllComponents()
 import { defineComponents, IgcButtonComponent } from 'igniteui-webcomponents';
 defineComponents(IgcButtonComponent);
 ```
+
+Use the corresponding `Igc*GridComponent.register()` method for tree, hierarchical, or pivot grids. Use `igniteui-webcomponents-grids/grids/combined.js` only when the application intentionally uses all premium grid types.
 
 Built-in grid glyphs (sort direction, filter, expand/collapse) come from the library's internal SVG icon collection and render automatically once the grid module above is registered — no icon font and no manual `registerIcon`/`registerIconFromText` call is needed for them. Only register icons for custom glyphs the app adds itself.
 
@@ -124,7 +126,7 @@ igc-grid { flex: 1 1 auto; min-height: 0; block-size: 100%; }
 1. One design system, one variant, everywhere — never mix design systems or light/dark files.
 2. Always load both the base theme and the grid theme for that same design system + variant.
 3. Inject the grid theme into every Shadow root that renders `<igc-grid>`/`<igc-tree-grid>`/`<igc-hierarchical-grid>`/`<igc-pivot-grid>`.
-4. Register only the grid type and components actually used — no `defineAllComponents()`, no "just in case" bundles.
+4. Register only the selected grid type and components actually used — no `defineAllComponents()`, no "just in case" bundles.
 5. Never guess deep import paths or APIs beyond what's verified here — look them up.
 6. Fluid layout by default: `min-height: 0` + `flex`/`grid` sizing; fixed pixel heights only when explicitly required.
 7. `allow-filtering="true"` on the grid + `sortable`/`filterable` per column to enable sorting/filtering UI.
