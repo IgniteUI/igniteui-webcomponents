@@ -7,6 +7,7 @@ import { styleMap } from 'lit/directives/style-map.js';
 import {
   addAriaTarget,
   ariaBindings,
+  helperText,
 } from '#internals/controllers/aria-projection.js';
 import { createResizeObserverController } from '#internals/controllers/resize-observer.js';
 import {
@@ -114,16 +115,10 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
     onChange: this._handleSlotChange,
   });
 
-  /**
-   * Receives ARIA semantics projected by a composite host onto the inner
-   * native textarea. See {@link addAriaTarget}.
-   */
+  /** Names and describes the native textarea. See {@link addAriaTarget}. */
   private readonly _ariaTarget = addAriaTarget(this, {
-    labels: () => this._internals.labels,
-    description: () =>
-      this._slots.hasAssignedElements('helper-text')
-        ? this.renderRoot.querySelector('#helper-text')
-        : null,
+    description: () => helperText(this, this._slots),
+    hasOwnLabel: () => Boolean(this.label),
   });
 
   @query('textarea')

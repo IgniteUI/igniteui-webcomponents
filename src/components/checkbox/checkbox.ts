@@ -1,5 +1,6 @@
 import { html } from 'lit';
 import { property } from 'lit/decorators.js';
+import { helperText } from '#internals/controllers/aria-projection.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { partMap } from '#internals/part-map.js';
 import { renderToggleShell } from '#internals/templates/toggle-shell.js';
@@ -77,11 +78,10 @@ export default class IgcCheckboxComponent extends IgcCheckboxBaseComponent {
   }
 
   protected override render() {
-    const labelledBy = this.getAttribute('aria-labelledby');
     const checked = this.checked;
 
     return html`
-      ${renderToggleShell({
+      ${renderToggleShell(this, {
         type: 'checkbox',
         inputId: this._inputId,
         labelId: this._labelId,
@@ -101,17 +101,9 @@ export default class IgcCheckboxComponent extends IgcCheckboxBaseComponent {
             }
           </span>
         `,
-        checked,
         hideLabel: this._hideLabel,
-        name: this.name,
-        value: this.value,
-        required: this.required,
-        disabled: this.disabled,
         indeterminate: this.indeterminate,
-        ariaLabelledBy: labelledBy ? labelledBy : this._labelId,
-        ariaDescribedBy: this._slots.hasAssignedElements('helper-text')
-          ? 'helper-text'
-          : undefined,
+        describedBy: helperText(this, this._slots)?.id,
         onClick: this._handleClick,
         onKeyDown: this._handleEnterKeydown,
         onBlur: this._handleBlur,

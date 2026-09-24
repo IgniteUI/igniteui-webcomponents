@@ -224,8 +224,8 @@ export default class IgcComboComponent<
       interactions: {
         show: () => this._show(true),
         hide: () => this._hide(true),
-        toggleSelection: (index: number) => this._toggleSelection(index),
-        select: (index: number) => this._selectByIndex(index),
+        toggleSelection: (index: number) => this._selectAt(index, true),
+        select: (index: number) => this._selectAt(index, false),
         clearSelection: () => this._clearSelection(),
       },
     }
@@ -570,10 +570,9 @@ export default class IgcComboComponent<
       themeChange: () => this._listRef.value?.requestUpdate(),
     });
 
-    // Projects the host's labels and combobox semantics onto the native
-    // input inside `igc-input` (see ProjectedARIA for why the host cannot
-    // publish these itself). `aria-activedescendant` stays on the listbox,
-    // which holds DOM focus while the list is navigated.
+    // Projects the name and the combobox semantics of the host onto the native
+    // input in `igc-input`. See ProjectedARIA. `aria-activedescendant` stays
+    // on the listbox, which holds DOM focus while the list is navigated.
     addAriaProjector(this, {
       target: () => this._inputRef.value,
       state: () => ({
@@ -581,11 +580,11 @@ export default class IgcComboComponent<
         hasPopup: 'listbox',
         expanded: `${this.open}`,
         disabled: `${this.disabled}`,
-        label: this._mainAriaLabel,
         controls: this._listRef.value ? [this._listRef.value] : null,
         describedBy: this._helperText ? [this._helperText] : null,
-        labelledBy: this._internals.labels,
       }),
+      hasOwnLabel: () => Boolean(this.label),
+      fallbackLabel: () => this._mainAriaLabel,
     });
     addSafeEventListener(this, 'blur', this._handleBlur);
     addSafeEventListener(this, 'focusin', this._handleFocusIn);
@@ -748,18 +747,16 @@ export default class IgcComboComponent<
   }
 
   /**
-   * Maps data records to their value representations - the `valueKey` property
-   * of each, or the record itself when no `valueKey` is set.
+   * The value representation of a data record: its `valueKey` property, or the
+   * record when that property is not set.
    */
+  private _valueOf(item: T): ComboValue<T> {
+    return (this.valueKey ? item[this.valueKey] : undefined) ?? item;
+  }
+
+  /** Maps data records to their value representations. See {@link _valueOf}. */
   private _toValues(items: Iterable<T>): ComboValue<T>[] {
-    const { valueKey } = this;
-    const values: ComboValue<T>[] = [];
-
-    for (const item of items) {
-      values.push((valueKey ? item[valueKey] : undefined) ?? item);
-    }
-
-    return values;
+    return Array.from(items, (item) => this._valueOf(item));
   }
 
   /**
@@ -767,12 +764,12 @@ export default class IgcComboComponent<
    * value representation, walking the selection once for both projections.
    */
   private _projectSelection(): ComboValue<T>[] {
-    const { valueKey, displayKey } = this;
+    const { displayKey } = this;
     const values: ComboValue<T>[] = [];
     const display: string[] = [];
 
     for (const item of this._selected) {
-      values.push((valueKey ? item[valueKey] : undefined) ?? item);
+      values.push(this._valueOf(item));
       display.push(String((displayKey ? item[displayKey] : undefined) ?? item));
     }
 
@@ -930,7 +927,8 @@ export default class IgcComboComponent<
     return record && !record.header ? record.value : undefined;
   }
 
-  private _toggleSelection(index: number): void {
+  /** Selects the record at `index`. With `toggle`, deselects a selected one. */
+  private _selectAt(index: number, toggle: boolean): void {
     const record = this._recordAt(index);
 
     if (!record) {
@@ -939,22 +937,10 @@ export default class IgcComboComponent<
 
     this._updateSelection(
       this._resolveItemValue(record),
-      this._selected.has(record) ? 'deselection' : 'selection',
+      toggle && this._selected.has(record) ? 'deselection' : 'selection',
       true
     );
 
-    this._activeIndex = index;
-    this._syncValueFromSelection();
-  }
-
-  private _selectByIndex(index: number): void {
-    const record = this._recordAt(index);
-
-    if (!record) {
-      return;
-    }
-
-    this._updateSelection(this._resolveItemValue(record), 'selection', true);
     this._activeIndex = index;
     this._syncValueFromSelection();
   }
@@ -1038,7 +1024,7 @@ export default class IgcComboComponent<
     }
 
     this._setTouchedState();
-    this._toggleSelection(target.index);
+    this._selectAt(target.index, true);
 
     if (this.singleSelect) {
       this._inputRef.value?.focus();

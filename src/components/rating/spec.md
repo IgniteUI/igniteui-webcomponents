@@ -43,10 +43,11 @@
 
 ## Revision history
 
-| Version | Date       | Notes                 |
-| ------: | ---------- | --------------------- |
-|       1 | 2026-09-21 | Initial specification |
-|       2 | 2026-09-23 | Describe when the `--symbol-*-filter` properties apply |
+| Version | Date       | Notes                                                                                |
+| ------: | ---------- | ------------------------------------------------------------------------------------ |
+|       1 | 2026-09-21 | Initial specification                                                                |
+|       2 | 2026-09-23 | Describe when the `--symbol-*-filter` properties apply                               |
+|       3 | 2026-09-24 | Label external `label` elements and host `aria-labelledby`, focus from a label click |
 
 ## Overview
 
@@ -310,7 +311,9 @@ Setting `value` from code does not emit `igcChange`, and neither does an interac
 
 22. The control is named through the `label` attribute, through the host `aria-label`, and after a change of that
     attribute at runtime.
-23. The read-only and the disabled states are exposed to assistive technology.
+23. The read-only and the disabled states are exposed to assistive technology. `runExternalLabelAssociationTests` adds
+    the external `label` association through `for`, by nesting and after the first render, the focus on a label click,
+    an axe audit with only an external `label`, and the host `aria-labelledby`.
 
 ### Hover
 
@@ -335,8 +338,10 @@ Setting `value` from code does not emit `igcChange`, and neither does an interac
 
 - The symbols container has `role="slider"`, with `aria-valuemin`, `aria-valuenow` and `aria-valuemax` for the
   range, and `aria-valuetext` composed from `valueFormat`.
-- The control is named by its `label`, or by the `aria-label` of the host when there is no label; a change of that
-  attribute at runtime is picked up.
+- The slider takes its name in the [naming order](../input/spec.md#naming-order): the host `aria-labelledby`, an
+  external `label` element bound through `for` or by nesting, the `label` property, and the `aria-label` of the host. A
+  change of the host ARIA at runtime is picked up.
+- A click on an external `label` focuses the slider.
 - `aria-disabled` and `aria-readonly` expose the two states.
 - The rendered symbols are hidden from assistive technology; the slider and its value text carry the semantics.
 

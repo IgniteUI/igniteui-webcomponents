@@ -1,4 +1,5 @@
 import { property } from 'lit/decorators.js';
+import { resolveNaming } from '#internals/controllers/aria-projection.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import type { Constructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
@@ -141,8 +142,13 @@ export default class IgcSliderComponent extends FormAssociatedMixin(
     this.value = this.value - stepDecrement * this.step;
   }
 
+  /** Focuses the thumb, as a native range input label does. */
+  protected override _handleLabelActivation(): void {
+    this.thumb.focus();
+  }
+
   protected override renderThumbs() {
-    return this.renderThumb(this.value, this.ariaLabel!);
+    return this.renderThumb(this.value, resolveNaming(this, false));
   }
 }
 

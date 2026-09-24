@@ -230,9 +230,17 @@ export default class IgcFileInputComponent extends I18nMixin(
     this._filePickerActive ? this._validate() : super._handleBlur();
   }
 
-  /* c8 ignore next 3 */
   protected _handleClick(): void {
     this._filePickerActive = true;
+  }
+
+  /**
+   * Focuses the native input and opens the file picker. Delegated focus alone
+   * goes to the browse button.
+   */
+  protected override _handleLabelActivation(): void {
+    this._input?.focus();
+    this._input?.click();
   }
 
   //#endregion

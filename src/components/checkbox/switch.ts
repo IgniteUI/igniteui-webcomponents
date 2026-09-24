@@ -43,10 +43,9 @@ export default class IgcSwitchComponent extends IgcCheckboxBaseComponent {
   }
 
   protected override render() {
-    const labelledBy = this.getAttribute('aria-labelledby');
     const checked = this.checked;
 
-    return renderToggleShell({
+    return renderToggleShell(this, {
       type: 'checkbox',
       inputId: this._inputId,
       labelId: this._labelId,
@@ -59,13 +58,7 @@ export default class IgcSwitchComponent extends IgcCheckboxBaseComponent {
       labelParts: { label: true, checked },
       renderControl: () =>
         html`<span part=${partMap({ thumb: true, checked })}></span>`,
-      checked,
       hideLabel: this._hideLabel,
-      name: this.name,
-      value: this.value,
-      required: this.required,
-      disabled: this.disabled,
-      ariaLabelledBy: labelledBy ? labelledBy : this._labelId,
       onClick: this._handleClick,
       onKeyDown: this._handleEnterKeydown,
       onBlur: this._handleBlur,

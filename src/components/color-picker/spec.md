@@ -43,9 +43,11 @@
 
 ## Revision history
 
-| Version | Date       | Notes                 |
-| ------: | ---------- | --------------------- |
-|       1 | 2026-09-21 | Initial specification |
+| Version | Date       | Notes                                              |
+| ------: | ---------- | -------------------------------------------------- |
+|       1 | 2026-09-21 | Initial specification                              |
+|       2 | 2026-09-24 | Describe the naming order and the host ARIA naming |
+|       3 | 2026-09-24 | Keep `aria-expanded` off the input mode text input |
 
 ## Overview
 
@@ -233,7 +235,12 @@ custom validity. Validation messages are rendered through the shared validator c
 
 In `input` mode the anchor is an [`igc-input`](../input/spec.md), so an external `label` in the light DOM - bound
 through `for` or wrapping the host - is resolved through `ElementInternals` and projected onto its native input as
-an element reference. The picker projects its own `aria-haspopup` and expanded state through the same channel.
+an element reference. The picker projects its own `aria-haspopup` through the same channel. The open state stays on
+the swatch button in the prefix as `aria-expanded`, because a text input has no role that allows it.
+
+The name follows the [naming order](../input/spec.md#naming-order), so the host `aria-labelledby` and `aria-label` also
+name the control. In `default` mode the trigger button takes its name in the same order, so an external `label` or the
+host ARIA replaces the "Open color picker" text.
 
 #### Programmatic control
 
@@ -438,6 +445,8 @@ The component suite reuses `createFormAssociatedTestBed`, `runValidationContaine
   [`igc-input`](../input/spec.md) exposing `label` directly (input mode). Both set `aria-haspopup="dialog"` and
   reference the validation and helper text container through `aria-describedby`, so helper and validation messages
   are announced.
+- The trigger button of the default mode and the swatch button of the input mode reflect the open state through
+  `aria-expanded`. The text input of the input mode does not carry it.
 - The hue and alpha sliders are native range inputs labelled through `aria-label`.
 - The gradient canvas marker is focusable and operable with the arrow keys.
 - The format switcher is a select with a visually-hidden label, and the color value input carries one as well.

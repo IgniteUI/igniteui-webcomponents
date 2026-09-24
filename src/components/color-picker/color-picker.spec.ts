@@ -1066,6 +1066,19 @@ describe('Color picker', () => {
       expect(isFocused(anchor)).to.be.true;
     });
 
+    it('reflects the open state on the prefix swatch, not on the text input', async () => {
+      const native = getAnchorNativeInput(picker);
+
+      expect(getAnchor(picker).getAttribute('aria-expanded')).to.equal('false');
+
+      picker.open = true;
+      await elementUpdated(picker);
+      await elementUpdated(getInputAnchor());
+
+      expect(getAnchor(picker).getAttribute('aria-expanded')).to.equal('true');
+      expect(native.hasAttribute('aria-expanded')).to.be.false;
+    });
+
     it('reflects disabled onto the prefix swatch', async () => {
       picker.disabled = true;
       await elementUpdated(picker);
@@ -1341,6 +1354,16 @@ describe('Color picker', () => {
     getNativeInput: getAnchorNativeInput,
   });
 
+  describe('Default mode trigger', () => {
+    runExternalLabelAssociationTests({
+      tagName: IgcColorPickerComponent.tagName,
+      getNativeInput: (host) =>
+        (host as IgcColorPickerComponent).renderRoot.querySelector<HTMLElement>(
+          '#trigger'
+        )!,
+    });
+  });
+
   runAriaProjectionTests({
     tagName: IgcColorPickerComponent.tagName,
     hostAttributes: 'mode="input"',
@@ -1351,6 +1374,5 @@ describe('Color picker', () => {
         '#helper-text'
       )!,
     ],
-    openProperty: 'open',
   });
 });
