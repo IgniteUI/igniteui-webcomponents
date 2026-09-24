@@ -38,7 +38,7 @@ Never mix `igc-grid-lite` with a premium grid type for the same table — pick o
 ## Theming Setup
 
 - **Pick exactly one design system** (`material` | `bootstrap` | `fluent` | `indigo`) **and one variant** (`light` | `dark`) for the whole app. Never load two design systems together, and never load both a light and a dark file at once — toggle between the matching light/dark pair of the *same* design system instead.
-- **Load both the base theme and the grid theme**, same design system + variant — the grid package ships its own theme file for its internal structure (headers, cells, sort/filter icons, resize handles):
+- **For premium grids only** (`igc-grid`, `igc-tree-grid`, `igc-hierarchical-grid`, `igc-pivot-grid`), load both the base theme and the grid theme, same design system + variant — the grid package ships its own theme file for its internal structure (headers, cells, sort/filter icons, resize handles):
 
   ```typescript
   import 'igniteui-webcomponents/themes/light/material.css';
