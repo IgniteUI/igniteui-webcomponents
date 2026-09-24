@@ -1,7 +1,7 @@
 ---
 license: MIT
 name: igniteui-wc-grids
-description: "Set up a data grid with Ignite UI Web Components, including grid selection, single-design-system theming, Shadow DOM theme injection, component registration, fluid layout, and sorting/filtering. WHEN TO USE: adding a grid to a Web Components app, or fixing an unstyled, mis-sized, or broken grid inside a custom element or Shadow DOM, or need correct package, theme, layout, or sorting/filter setup. WHEN NOT TO USE: general component selection, Grid Lite to premium migration, non-tabular components such as charts, lists, or tree views, or app-wide theming without a grid."
+description: "Set up a data grid with Ignite UI Web Components, including grid selection, single-design-system theming, Shadow DOM theme injection, component registration, fluid layout, and sorting/filtering. WHEN TO USE: adding a grid to a Web Components app, or fixing an unstyled, mis-sized, or broken grid inside a custom element or Shadow DOM, or needing correct package, theme, layout, or sorting/filter setup. WHEN NOT TO USE: general component selection (use choose-components), Grid Lite to premium migration (use migrate-grid-lite-to-premium), framework wiring (use integrate-with-framework), app-wide theming (use customize-component-theme), bundle optimization (use optimize-bundle-size), or non-tabular components such as charts, lists, or tree views."
 user-invocable: true
 ---
 
@@ -11,17 +11,6 @@ user-invocable: true
 
 1. **Pick the grid type/package** using the table below; ask if ambiguous.
 2. **Use only the verified import paths in this file** (`grids/combined.js`, `themes/<variant>/<design>.css`). For anything else (toolbar, export, pivot/tree/hierarchical APIs, properties/events), look it up with `list_components({ framework: "webcomponents", ... })` / `get_doc({ framework: "webcomponents", name: "<doc-name>" })` / `search_api({ platform: "webcomponents", query: "<keyword>" })` / `get_api_reference({ platform: "webcomponents", component: "<ClassName>" })` instead of guessing.
-3. **Read the linked skill** for the task at hand rather than duplicating it from memory — this file only owns setup/integration.
-
-## Related Skills
-
-| Task | Skill |
-|---|---|
-| Full grid-type decision guide | [igniteui-wc-choose-components](../igniteui-wc-choose-components/SKILL.md) |
-| Column APIs, sorting/filtering events, editing, paging, groupBy, toolbar, export | [igniteui-wc-migrate-grid-lite-to-premium](../igniteui-wc-migrate-grid-lite-to-premium/SKILL.md) |
-| Palette/typography/component-token customization | [igniteui-wc-customize-component-theme](../igniteui-wc-customize-component-theme/SKILL.md) |
-| React/Angular/Vue/vanilla-JS wiring | [igniteui-wc-integrate-with-framework](../igniteui-wc-integrate-with-framework/SKILL.md) |
-| Trimming imports after the grid works | [igniteui-wc-optimize-bundle-size](../igniteui-wc-optimize-bundle-size/SKILL.md) |
 
 ## Choosing the Grid
 
