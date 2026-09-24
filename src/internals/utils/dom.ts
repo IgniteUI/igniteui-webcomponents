@@ -142,12 +142,12 @@ export function* iterAncestors(node?: Node | null): Generator<Element> {
   }
 }
 
-/** Returns the root node (document or shadow root) of the given element. */
+/** Returns the root node (document or shadow root) of the given node. */
 export function getRoot(
-  element: Element,
+  node: Node,
   options?: GetRootNodeOptions
 ): Document | ShadowRoot {
-  return element.getRootNode(options) as Document | ShadowRoot;
+  return node.getRootNode(options) as Document | ShadowRoot;
 }
 
 /** Returns the element with the given id in the root node of `root`. */

@@ -1,6 +1,7 @@
 import { expect, html } from '@open-wc/testing';
 import { nothing, render } from 'lit';
 import { AsyncDirective, directive } from 'lit/async-directive.js';
+import { keyed } from 'lit/directives/keyed.js';
 import { recycle } from './recycle.js';
 
 describe('recycle directive', () => {
@@ -133,6 +134,45 @@ describe('recycle directive', () => {
     expect(up).to.have.ordered.members([middle.get(11), middle.get(10)]);
   });
 
+  it('moves the kept elements only when they are fewer than half the recycled ones', () => {
+    renderKeys(range(0, 10));
+    let before = elementByKey();
+
+    // Four keys stay and six leave: the recycled elements move.
+    let added = addedElements(() => renderKeys(range(6, 16)));
+    expect(added).to.have.ordered.members(
+      [5, 4, 3, 2, 1, 0].map((key) => before.get(key))
+    );
+
+    // Two keys stay and eight leave: the kept elements move.
+    before = elementByKey();
+    added = addedElements(() => renderKeys(range(14, 24)));
+    expect(renderedKeys()).to.eql(range(14, 24));
+    expect(added).to.have.ordered.members([before.get(15), before.get(14)]);
+  });
+
+  it('puts the items in key order for random changes of keys', () => {
+    let seed = 1;
+    const random = (max: number) => {
+      seed = (seed * 1_664_525 + 1_013_904_223) >>> 0;
+      return Math.floor((seed / 2 ** 32) * max);
+    };
+
+    for (let step = 0; step < 200; step++) {
+      const start = random(30);
+      const keys = range(start, start + random(20));
+      if (random(4) === 0) {
+        for (let i = keys.length - 1; i > 0; i--) {
+          const j = random(i + 1);
+          [keys[i], keys[j]] = [keys[j], keys[i]];
+        }
+      }
+
+      renderKeys(keys);
+      expect(renderedKeys()).to.eql(keys);
+    }
+  });
+
   it('creates no elements once the window has its full size', () => {
     renderKeys(range(0, 10));
     const pool = elements();
@@ -190,6 +230,26 @@ describe('recycle directive', () => {
     expect(document.activeElement).to.equal(button);
 
     renderKeys(range(1, 11));
+    expect(document.activeElement).to.equal(button);
+  });
+
+  it('keeps the focused kept element in place when the kept elements move', () => {
+    renderKeys(range(0, 10));
+    const button = elementByKey().get(9)!.querySelector('button')!;
+    button.focus();
+
+    renderKeys(range(8, 18));
+    expect(renderedKeys()).to.eql(range(8, 18));
+    expect(document.activeElement).to.equal(button);
+  });
+
+  it('keeps the focus in a kept item when the keys reverse', () => {
+    renderKeys(range(0, 10));
+    const button = elementByKey().get(3)!.querySelector('button')!;
+    button.focus();
+
+    renderKeys(range(0, 10).reverse());
+    expect(renderedKeys()).to.eql(range(0, 10).reverse());
     expect(document.activeElement).to.equal(button);
   });
 
@@ -275,5 +335,33 @@ describe('recycle directive', () => {
     renderValue('empty');
     expect(elements()).to.be.empty;
     expect(list().textContent!.trim()).to.equal('empty');
+  });
+
+  describe('Unbound DOM state', () => {
+    const checkboxTemplate = (key: number) =>
+      html`<li data-key=${key}><input type="checkbox" /></li>`;
+
+    function checkbox(key: number): HTMLInputElement {
+      return elementByKey().get(key)!.querySelector('input')!;
+    }
+
+    it('moves with a recycled element to the key that enters', () => {
+      renderKeys(range(0, 3), checkboxTemplate);
+      checkbox(0).checked = true;
+
+      renderKeys(range(1, 4), checkboxTemplate);
+      expect(checkbox(3).checked).to.be.true;
+    });
+
+    it('stays with its key when the template is keyed', () => {
+      const template = (key: number) =>
+        html`${keyed(key, checkboxTemplate(key))}`;
+      renderKeys(range(0, 3), template);
+      checkbox(0).checked = true;
+
+      renderKeys(range(1, 4), template);
+      expect(checkbox(3).checked).to.be.false;
+      expect(renderedKeys()).to.eql([1, 2, 3]);
+    });
   });
 });

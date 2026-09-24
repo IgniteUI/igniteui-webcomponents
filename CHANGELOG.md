@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 - #### Virtual scroll
-  - **Behavior change:** Item elements are now recycled. An item that stays in the rendered window keeps its element, and the elements of the items that leave show the items that enter. Before, each element showed the item at its window position, so each scroll updated every rendered item. DOM state that the item template does not bind stays with the element.
+  - **Behavior change:** Item elements are now recycled. An item that stays in the rendered window keeps its element, and the elements of the items that leave show the items that enter. Before, each element showed the item at its window position, so each scroll updated every rendered item. DOM state that the item template does not bind, for example the state of a checkbox without a `checked` binding, stays with the element and shows on the item that enters. The `itemTemplate` documentation shows how to bind this state or get new DOM for each item.
   - The average measured item size now replaces `estimatedItemSize` for the items that are not measured yet, so the scrollbar follows the real content when the estimate is wrong.
 
 ### Fixed

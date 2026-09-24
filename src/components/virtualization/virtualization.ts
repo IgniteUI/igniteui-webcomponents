@@ -256,6 +256,15 @@ export default class IgcVirtualScrollComponent<
    * infer an item's position from the markup. Templates that render a role
    * with set semantics (`option`, `listitem`, `row`, ...) should map the
    * context's `index` and `count` onto `aria-posinset` and `aria-setsize`.
+   *
+   * Item elements are recycled (see `keyFunction`), so DOM state that the
+   * template does not bind moves to another item, for example the state of a
+   * checkbox without a `checked` binding. Bind all item state. Lit compares a
+   * binding with the value that it set last, not with the element, so bind
+   * state that the user changes with Lit's `live` directive. Also write user
+   * changes back to the item, or they are lost when the item leaves the window.
+   * To get new DOM for each item, wrap the content in Lit's `keyed` directive
+   * with the item key: `` html`${keyed(ctx.value.id, content)}` ``.
    */
   @property({ attribute: false })
   public itemTemplate: VirtualScrollItemTemplate<T> | null = null;

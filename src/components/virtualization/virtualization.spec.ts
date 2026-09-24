@@ -1,4 +1,5 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
+import { keyed } from 'lit/directives/keyed.js';
 import { spy, stub } from 'sinon';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
 import { suppressResizeObserverLoopError } from '#internals/testing/helpers.spec.js';
@@ -798,6 +799,21 @@ describe('VirtualScroll', () => {
 
       expect(wrapperByIndex(el).get(3)).to.equal(atIndex3);
       expect(atIndex3.textContent!.trim()).to.equal('Item 2');
+    });
+
+    it('gives each entering item new DOM when the item template is keyed', async () => {
+      const el = await createFixedScroll();
+      el.itemTemplate = (ctx) => html`${keyed(ctx.value, fixedTemplate(ctx))}`;
+      await el.layoutComplete;
+
+      const recycled = wrapperByIndex(el).get(0)!;
+      const content = recycled.querySelector('span');
+
+      await simulateScroll(el, { top: 20 * FIXED_SIZE });
+
+      expect(recycled.isConnected).to.be.true;
+      expect(Number(recycled.dataset.vsIndex)).to.be.greaterThan(0);
+      expect(recycled.querySelector('span')).to.not.equal(content);
     });
   });
 

@@ -8,42 +8,69 @@ import {
 } from 'lit/directive-helpers.js';
 import { Directive, directive } from 'lit/directive.js';
 import type { ItemTemplate, KeyFn } from 'lit/directives/repeat.js';
+import { getRoot } from '#internals/utils/dom.js';
 
 /**
- * Returns the positions in `values` of one longest strictly increasing
- * subsequence, in ascending order. O(n log n).
+ * The weight of a kept part when the reconciliation selects the parts that do
+ * not move. A recycled part weighs 1. A moved element needs a new style and
+ * layout, but a recycled element needs a new layout for its new item anyway.
+ * So on a scroll, the kept parts move only when they are fewer than half the
+ * recycled parts.
  */
-function longestIncreasingSubsequence(values: readonly number[]): number[] {
-  // `tails[k]` is the position of the smallest last value of an increasing
-  // subsequence of length `k + 1`.
-  const tails: number[] = [];
+const KEPT_WEIGHT = 2;
+
+/**
+ * Marks the entries of the increasing subsequence of `values` with the largest
+ * total weight. The values are distinct integers in `[0, size)`, or negative
+ * for the entries to skip. O(n log size).
+ */
+function heaviestIncreasingSubsequence(
+  values: Int32Array,
+  weights: Int32Array,
+  size: number
+): Uint8Array {
+  // A Fenwick tree over the values. Each node holds the weight of the heaviest
+  // subsequence that ends at a value in its range, and the entry of its last
+  // value.
+  const heaviest = new Int32Array(size + 1);
+  const endsAt = new Int32Array(size + 1);
   const previous = new Int32Array(values.length);
+  const marked = new Uint8Array(values.length);
+  let best = 0;
+  let last = -1;
 
   for (let i = 0; i < values.length; i++) {
-    let low = 0;
-    let high = tails.length;
+    if (values[i] < 0) {
+      continue;
+    }
 
-    while (low < high) {
-      const middle = (low + high) >>> 1;
-      if (values[tails[middle]] < values[i]) {
-        low = middle + 1;
-      } else {
-        high = middle;
+    let total = 0;
+    let before = -1;
+    for (let node = values[i]; node > 0; node -= node & -node) {
+      if (heaviest[node] > total) {
+        total = heaviest[node];
+        before = endsAt[node];
       }
     }
 
-    previous[i] = low > 0 ? tails[low - 1] : -1;
-    tails[low] = i;
+    total += weights[i];
+    previous[i] = before;
+    for (let node = values[i] + 1; node <= size; node += node & -node) {
+      if (total > heaviest[node]) {
+        heaviest[node] = total;
+        endsAt[node] = i;
+      }
+    }
+    if (total > best) {
+      best = total;
+      last = i;
+    }
   }
 
-  const result: number[] = new Array(tails.length);
-  let position = tails.at(-1) ?? -1;
-
-  for (let k = tails.length - 1; k >= 0; k--) {
-    result[k] = position;
-    position = previous[position];
+  for (let i = last; i >= 0; i = previous[i]) {
+    marked[i] = 1;
   }
-  return result;
+  return marked;
 }
 
 /**
@@ -54,6 +81,30 @@ function removeItemPart(part: ChildPart): void {
   clearPart(part);
   (part.startNode as ChildNode).remove();
   (part.endNode as ChildNode).remove();
+}
+
+/** Returns the position of the part in `parts` that holds the focus, or -1. */
+function focusedPosition(
+  containerPart: ChildPart,
+  parts: readonly ChildPart[]
+): number {
+  const container = containerPart.parentNode;
+  let node: Node | null = getRoot(container).activeElement;
+
+  while (node && node.parentNode !== container) {
+    node = node.parentNode;
+  }
+  if (!node) {
+    return -1;
+  }
+
+  return parts.findIndex((part) => {
+    let n = part.startNode!.nextSibling;
+    while (n && n !== part.endNode && n !== node) {
+      n = n.nextSibling;
+    }
+    return n === node;
+  });
 }
 
 class RecycleDirective extends Directive {
@@ -111,9 +162,11 @@ class RecycleDirective extends Directive {
    *    is created only when both run out.
    * 3. The parts that no key takes go to the pool, so a window that changes
    *    size by an item or two creates no DOM.
-   * 4. The kept parts in the longest subsequence that keeps its old order do
-   *    not move, so a kept item that holds the focus keeps it. Each other
-   *    part moves in front of its successor, unless it is already there.
+   * 4. The reused parts in the heaviest subsequence that keeps its old order
+   *    do not move, see `KEPT_WEIGHT`. A kept part that holds the focus
+   *    weighs more than all the other parts together, so it does not move and
+   *    keeps the focus. Each other part moves in front of its successor,
+   *    unless it is already there.
    */
   private _reconcile(
     containerPart: ChildPart,
@@ -123,42 +176,50 @@ class RecycleDirective extends Directive {
   ): ChildPart[] {
     const count = keys.length;
     const parts: (ChildPart | undefined)[] = new Array(count);
+    // The old DOM position (-1 for a pooled or new part) and the weight of the
+    // part at each new position.
+    const from = new Int32Array(count).fill(-1);
+    const weights = new Int32Array(count);
     const claimed = new Uint8Array(oldParts.length);
     const oldPositions = new Map<unknown, number>();
+    const focused = focusedPosition(containerPart, oldParts);
 
     for (let i = this._keys.length - 1; i >= 0; i--) {
       oldPositions.set(this._keys[i], i);
     }
-
-    // The old DOM positions and the new positions of the kept parts.
-    const keptFrom: number[] = [];
-    const keptAt: number[] = [];
 
     for (let i = 0; i < count; i++) {
       const position = oldPositions.get(keys[i]);
 
       if (position !== undefined && !claimed[position]) {
         claimed[position] = 1;
-        parts[i] = oldParts[position];
-        keptFrom.push(position);
-        keptAt.push(i);
+        from[i] = position;
+        weights[i] = position === focused ? KEPT_WEIGHT * count : KEPT_WEIGHT;
       }
     }
 
-    const spare = oldParts.filter((_, i) => !claimed[i]);
-    let taken = 0;
-
+    let spare = 0;
     for (let i = 0; i < count; i++) {
-      parts[i] ??= spare[taken++] ?? this._pool.pop();
-    }
-    for (const part of spare.slice(taken)) {
-      this._release(part);
+      if (from[i] < 0) {
+        while (claimed[spare]) spare++;
+        if (spare < oldParts.length) {
+          claimed[spare] = 1;
+          from[i] = spare;
+          weights[i] = 1;
+        }
+      }
+      parts[i] = from[i] < 0 ? this._pool.pop() : oldParts[from[i]];
     }
 
-    const stable = new Uint8Array(count);
-    for (const k of longestIncreasingSubsequence(keptFrom)) {
-      stable[keptAt[k]] = 1;
-    }
+    oldParts.forEach((part, position) => {
+      if (!claimed[position]) this._release(part);
+    });
+
+    const stable = heaviestIncreasingSubsequence(
+      from,
+      weights,
+      oldParts.length
+    );
 
     let next: ChildPart | undefined;
     for (let i = count - 1; i >= 0; i--) {

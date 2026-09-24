@@ -52,6 +52,7 @@
 | ------: | ---------- | ------------------------------------------------------------------------------------------ |
 |       1 | 2026-09-21 | Initial specification                                                                      |
 |       2 | 2026-09-23 | Recycled item elements and `keyFunction`, adapted size estimate, `nearest` edge alignment  |
+|       3 | 2026-09-23 | Fewer element moves on large scrolls, focus kept on reorders, unbound DOM state guidance   |
 
 ## Overview
 
@@ -169,16 +170,32 @@ can be out of date.
 #### Item elements and keys
 
 Each item is rendered through an internal `recycle` directive and keyed by its index in `data`, or by the value
-that `keyFunction` returns. An item whose key stays in the window keeps its element, which moves only if the order of
-the kept keys changes. The elements of the keys that leave are reused for the keys that enter, and unused elements
-are kept detached, up to the window size, so once the window has reached its largest size a scroll creates no DOM
-nodes.
+that `keyFunction` returns. An item whose key stays in the window keeps its element. The elements of the keys that
+leave are reused for the keys that enter, and unused elements are kept detached, up to the window size, so once the
+window has reached its largest size a scroll creates no DOM nodes.
+
+The reused elements that keep their order and have the largest total weight stay in place, and the other elements
+move. A kept element weighs twice a recycled one: a moved element needs a new style and layout, and a recycled element
+needs a new layout for its new item anyway. On a scroll, the kept elements move instead of the recycled ones only when
+they are fewer than half the recycled ones, that is, on a scroll by more than two thirds of the window. A kept element
+that holds the focus does not move, so it keeps the focus. The browser's `moveBefore`, which keeps the state of a
+moved element, is not used: in Chromium it makes the style recalculation of a moved element slower, and Safari does
+not have it.
 
 With the default index keys, an index keeps its element after a `data` change and shows its new item. A
 `keyFunction` keeps the element with the item instead, which suits sorting, inserting and removing:
 
 ```ts
 scroll.keyFunction = (person) => person.id;
+```
+
+Because elements are recycled, templates must bind all item state. Lit compares a binding with the value that it set
+last, not with the element, so a property that the user changes, such as `checked` or `value`, must be bound with
+`live`. The change must also be written back to the item, or it is lost when the item leaves the window. A template
+that needs new DOM for each item, as `repeat` gives, wraps its content in `keyed` with the item key:
+
+```ts
+scroll.itemTemplate = (ctx) => html`${keyed(ctx.value.id, html`<person-card .person=${ctx.value}></person-card>`)}`;
 ```
 
 #### Scrolling to an index
@@ -349,6 +366,7 @@ integrates into the document and into a shadow root alike.
 19. An item that stays in the window on a scroll keeps its element.
 20. Once the window has its full size, a scroll creates no item elements, and the elements stay in index order.
 21. With a `keyFunction`, an item that moves in `data` keeps its element; without one, an index keeps its element.
+    An item template in `keyed` gives each entering item new DOM in a recycled element.
 
 ### RTL tests
 
@@ -388,14 +406,18 @@ integrates into the document and into a shadow root alike.
 ### Recycle directive tests
 
 33. Items render in order; the element of a key that stays is kept; a full replacement of the keys reuses every
-    element without a DOM move; a shift moves only the recycled elements.
+    element without a DOM move; a shift moves only the recycled elements, unless the kept elements are fewer than
+    half the recycled ones.
 34. No element is created once the window has its full size, each item keeps exactly two markers, and no comment
     node leaks.
-35. Any change of keys, including reversals, shuffles, growth, shrinkage and duplicate keys, gives key order.
-36. A focused element in a kept item keeps the focus while the keys shift.
+35. Any change of keys, including reversals, shuffles, growth, shrinkage, duplicate keys and random changes, gives key
+    order.
+36. A focused element in a kept item keeps the focus while the keys shift, reverse, or the other kept elements move.
 37. Removed parts disconnect their async directives; the directive takes over from and gives way to other content.
 38. **Pool**: a detached part is reused when the window grows, the pool holds at most as many parts as the window,
     an empty window drops the pool, and pooled parts disconnect their async directives and reconnect on reuse.
+39. **Unbound DOM state** moves with a recycled element to the entering key, and stays with its key in a `keyed`
+    template.
 
 ### Not covered by the suite
 
@@ -413,8 +435,12 @@ integrates into the document and into a shadow root alike.
   template.
 - Item elements are recycled. An element that leaves the window is reused for an item that enters it, so DOM state
   that the template does not bind, such as an unbound input value or a scroll offset inside the item, moves to the
-  new item.
-- An element that holds the focus loses it when its item leaves the window and the element is recycled.
+  new item. See [Item elements and keys](#item-elements-and-keys).
+- When the item that holds the focus leaves the window, its element is recycled. The element loses the focus if it
+  moves, and keeps it, with the new item, if it does not.
+- A kept element that moves, on a reorder or on a scroll by more than two thirds of the window, loses transient DOM
+  state such as a running CSS transition or the loaded page of an `iframe`. Form state and the element itself stay
+  with the item.
 - The adapted estimate is an average: when the first items differ in size from the rest, the scrollbar is less
   accurate until more items are measured.
 - Items are measured by their border box, so margins on an item accumulate as drift.
