@@ -2,23 +2,15 @@
 
 > **Part of the [`igniteui-wc-figma-to-app`](../SKILL.md) skill.**
 >
-> Use this file in Phase 5 for the measurement-driven validation loop. Read it in full
-> before calling any Playwright tool.
+> Use this file in Phase 5 for the measurement-driven validation loop. Read it in full before calling any Playwright tool.
 
 ---
 
 ## Core Philosophy
 
-**Measure, don't eyeball.** The goal is not visual regression (did this change since last
-week?) but design fidelity (does this match the Figma spec?). Screenshots give you the
-gestalt; `playwright_browser_evaluate` gives you the numbers; numbers drive corrections.
+**Measure, don't eyeball.** The goal is not visual regression (did this change since last week?) but design fidelity (does this match the Figma spec?). Screenshots give you the gestalt; `playwright_browser_evaluate` gives you the numbers; numbers drive corrections.
 
-**The Web Components twist:** almost everything you want to measure lives inside a shadow
-root. `document.querySelector('igc-card .title')` returns `null` — not because the element
-is missing, but because the selector cannot cross the boundary. Every snippet below is
-shadow-aware and inlines the helpers it uses. Use them instead of writing ad-hoc
-selectors. A view built as a Lit component is itself a shadow root, so reach its content
-with a `host >>> selector` path (e.g. `app-dashboard >>> .kpi-card`).
+**The Web Components twist:** almost everything you want to measure lives inside a shadow root. `document.querySelector('igc-card .title')` returns `null` — not because the element is missing, but because the selector cannot cross the boundary. Every snippet below is shadow-aware and inlines the helpers it uses. Use them instead of writing ad-hoc selectors. A view built as a Lit component is itself a shadow root, so reach its content with a `host >>> selector` path (e.g. `app-dashboard >>> .kpi-card`).
 
 ---
 
@@ -50,8 +42,7 @@ with a `host >>> selector` path (e.g. `app-dashboard >>> .kpi-card`).
 
 ### 1. Viewport reset after resize
 
-After `playwright_browser_resize`, the browser may navigate itself to `about:blank`, and
-subsequent screenshots and measurements come back empty.
+After `playwright_browser_resize`, the browser may navigate itself to `about:blank`, and subsequent screenshots and measurements come back empty.
 
 ```
 playwright_browser_resize({ width: 1440, height: 900 })
@@ -73,10 +64,7 @@ playwright_browser_evaluate({ function: "() => document.title" })
 
 ### 3. Measuring before the components have upgraded
 
-Custom elements upgrade asynchronously, and Lit renders on a microtask. Measuring too early
-returns pre-upgrade box metrics (often `height: 0`). Wait for the registered elements to
-render. The snippet only waits on tags that are already defined, with a 3-second cap, so an
-unregistered tag cannot hang it; it is returned in `undefinedTags` instead:
+Custom elements upgrade asynchronously, and Lit renders on a microtask. Measuring too early returns pre-upgrade box metrics (often `height: 0`). Wait for the registered elements to render. The snippet only waits on tags that are already defined, with a 3-second cap, so an unregistered tag cannot hang it; it is returned in `undefinedTags` instead:
 
 ```
 playwright_browser_evaluate({
@@ -86,8 +74,7 @@ playwright_browser_evaluate({
 
 ### 4. An unregistered element fails silently
 
-A missing `defineComponents(...)` produces **no console error** — the tag renders as an
-empty inline box. Run the registration audit before blaming CSS.
+A missing `defineComponents(...)` produces **no console error** — the tag renders as an empty inline box. Run the registration audit before blaming CSS.
 
 ### 5. Dev server must be running
 
@@ -96,15 +83,13 @@ playwright_browser_navigate({ url: "http://localhost:5173" })
 playwright_browser_console_messages()
 ```
 
-`ERR_CONNECTION_REFUSED` or a blank page means the Vite dev server is not running — ask the
-user to run `npm start`. Note the port: Vite defaults to **5173**.
+`ERR_CONNECTION_REFUSED` or a blank page means the Vite dev server is not running — ask the user to run `npm start`. Note the port: Vite defaults to **5173**.
 
 ---
 
 ## The Deep-Query Helper
 
-Every measurement snippet below assumes this helper. It walks shadow roots, so a selector
-like `igc-card >>> [part="header"]` resolves.
+Every measurement snippet below assumes this helper. It walks shadow roots, so a selector like `igc-card >>> [part="header"]` resolves.
 
 ```javascript
 // Every snippet below already inlines the helpers it uses. Paste these into new snippets.
@@ -126,10 +111,7 @@ const deepQueryAll = (sel, root = document) => {
 };
 ```
 
-Prefer measuring the **host element** (`igc-card`) for box metrics — width, height,
-position, margin — and pierce only for internals that the design calls out (header height,
-row padding). When you must pierce, target documented `::part(...)` names from `get_doc`,
-never internal class names.
+Prefer measuring the **host element** (`igc-card`) for box metrics — width, height, position, margin — and pierce only for internals that the design calls out (header height, row padding). When you must pierce, target documented `::part(...)` names from `get_doc`, never internal class names.
 
 ---
 
@@ -145,9 +127,7 @@ playwright_browser_evaluate({
 })
 ```
 
-Assert: `undefinedTags` is empty; `theme` and `variant` match the design system and variant
-resolved in Phase 3. An empty `theme` means no theme CSS is loaded — components silently
-fall back to `bootstrap` / `light`.
+Assert: `undefinedTags` is empty; `theme` and `variant` match the design system and variant resolved in Phase 3. An empty `theme` means no theme CSS is loaded — components silently fall back to `bootstrap` / `light`.
 
 ### Measure a single element (shadow-aware)
 
@@ -157,8 +137,7 @@ playwright_browser_evaluate({
 })
 ```
 
-> A host element with `display: inline` (the Lit default) reports a misleading box. If width
-> or height look wrong, check for a missing `:host { display: block }` before chasing padding.
+> A host element with `display: inline` (the Lit default) reports a misleading box. If width or height look wrong, check for a missing `:host { display: block }` before chasing padding.
 
 ### Surfaces audit (mandatory — every page, every Phase 1g surface)
 
@@ -183,9 +162,7 @@ playwright_browser_evaluate({
 })
 ```
 
-Compare against the Phase 1d inventory. Any control not in the design context output is
-fabricated and must be removed. `(unlabeled)` entries are also an accessibility failure —
-icon-only buttons need `aria-label`.
+Compare against the Phase 1d inventory. Any control not in the design context output is fabricated and must be removed. `(unlabeled)` entries are also an accessibility failure — icon-only buttons need `aria-label`.
 
 ### Input variant audit (every page with form controls)
 
@@ -195,8 +172,7 @@ playwright_browser_evaluate({
 })
 ```
 
-Compare against the variant detected in Phase 1d. If the design uses border-style inputs
-everywhere, every control should report `outlined === count`.
+Compare against the variant detected in Phase 1d. If the design uses border-style inputs everywhere, every control should report `outlined === count`.
 
 ### Property-binding audit (collection-bound charts, grids, combos)
 
@@ -206,14 +182,7 @@ playwright_browser_evaluate({
 })
 ```
 
-`dataLength: null` means the collection was set as an attribute (or not at all) instead of
-as a property. An empty `brushes` list on a chart means no series colors were assigned, so
-it is still using the default palette instead of the Figma series colors. The brush members
-differ per chart: `brushes` / `outlines` on most charts, `brush` on `igc-sparkline`,
-`fillBrushes` on `igc-treemap`, and `brushes` / `outlines` on each `igc-ring-series` child of
-`igc-doughnut-chart` (not on the host). `height: 0` means the element or its grid track has no height.
-Use this audit for the collection-bound host tags in the selected plan; gauges and maps need
-their own host-specific validation once you know which properties the chosen component binds.
+`dataLength: null` means the collection was set as an attribute (or not at all) instead of as a property. An empty `brushes` list on a chart means no series colors were assigned, so it is still using the default palette instead of the Figma series colors. The brush members differ per chart: `brushes` / `outlines` on most charts, `brush` on `igc-sparkline`, `fillBrushes` on `igc-treemap`, and `brushes` / `outlines` on each `igc-ring-series` child of `igc-doughnut-chart` (not on the host). `height: 0` means the element or its grid track has no height. Use this audit for the collection-bound host tags in the selected plan; gauges and maps need their own host-specific validation once you know which properties the chosen component binds.
 
 ### Measure the gap between two elements
 
@@ -247,8 +216,7 @@ playwright_browser_evaluate({
 })
 ```
 
-Use the reported `part` names — they are the supported styling surface when a design token
-does not exist for a detail the design requires.
+Use the reported `part` names — they are the supported styling surface when a design token does not exist for a detail the design requires.
 
 ---
 
@@ -270,20 +238,11 @@ does not exist for a detail the design requires.
 | **Cosmetic** | Size off by ≤ 4px          | Spacing or control height within 4px, or font size within 2px, from rounding or sub-pixel layout | Report only |
 | **Accepted** | Approved anatomy delta     | Matches a delta-ledger entry the user approved (e.g. an M3 segmented button's check icon, a sheet rendered as a dialog) | Report only. Do not "fix" it; it does not count toward the 3-retry rule |
 
-**Exit condition for an artboard:** no Critical, Major, or Minor issues remain. Only
-Cosmetic and Accepted items may be left, and both go into the final report.
+**Exit condition for an artboard:** no Critical, Major, or Minor issues remain. Only Cosmetic and Accepted items may be left, and both go into the final report.
 
-> **Accepted needs the user's approval.** A delta is Accepted only after the user approves
-> its ledger entry. Most entries come from Phase 2d. When Phase 5 finds a difference that
-> tokens, documented `::part(...)` selectors, or slotted content cannot close, add it to the
-> ledger and ask the user. Once they approve it, it is Accepted from then on. Until then,
-> classify it normally, and never downgrade it silently.
+> **Accepted needs the user's approval.** A delta is Accepted only after the user approves its ledger entry. Most entries come from Phase 2d. When Phase 5 finds a difference that tokens, documented `::part(...)` selectors, or slotted content cannot close, add it to the ledger and ask the user. Once they approve it, it is Accepted from then on. Until then, classify it normally, and never downgrade it silently.
 >
-> **Third-party kits (Path B):** color, radius, border, casing, and height mismatches are
-> almost always fixable with component tokens or the `--ig-<style>-<property>` typography
-> overrides. They are Major, never Accepted. Only *structural* differences (a label
-> position the baseline cannot move, an adornment the component does not render, a
-> behavior pattern with no equivalent) qualify for the ledger.
+> **Third-party kits (Path B):** color, radius, border, casing, and height mismatches are almost always fixable with component tokens or the `--ig-<style>-<property>` typography overrides. They are Major, never Accepted. Only *structural* differences (a label position the baseline cannot move, an adornment the component does not render, a behavior pattern with no equivalent) qualify for the ledger.
 
 ### Mismatch report format
 
@@ -382,9 +341,7 @@ Choose the multiplier by visual judgment — never by mapping a Figma pixel valu
 
 ### Typography correction
 
-Fix the type style, not an internal class. Every type style is a set of
-`--ig-<style>-<property>` variables on `:root` that the components read (see
-`design-token-bridge.md § B4`):
+Fix the type style, not an internal class. Every type style is a set of `--ig-<style>-<property>` variables on `:root` that the components read (see `design-token-bridge.md § B4`):
 
 ```css
 /* Example: the page heading renders at 28px, the design shows 24px. Native <h1> elements
@@ -394,13 +351,9 @@ Fix the type style, not an internal class. Every type style is a set of
 }
 ```
 
-If the text belongs to a component, find which type style it uses in the component's doc,
-or use its typography-related design tokens from `theming_get_component_design_tokens`.
-Or style content you slot into it.
+If the text belongs to a component, find which type style it uses in the component's doc, or use its typography-related design tokens from `theming_get_component_design_tokens`. Or style content you slot into it.
 
-Inside a Lit view's shadow root, document CSS such as `.ig-typography h1` does not reach
-native headings. Apply the variables in the view's `static styles` yourself, for example
-`h1 { font-size: var(--ig-h1-font-size); font-weight: var(--ig-h1-font-weight); line-height: var(--ig-h1-line-height); }`.
+Inside a Lit view's shadow root, document CSS such as `.ig-typography h1` does not reach native headings. Apply the variables in the view's `static styles` yourself, for example `h1 { font-size: var(--ig-h1-font-size); font-weight: var(--ig-h1-font-weight); line-height: var(--ig-h1-line-height); }`.
 
 ### Color correction
 
@@ -410,11 +363,8 @@ background: var(--ig-primary-500);
 color: var(--ig-primary-500-contrast);
 ```
 
-Use `get_color({ color: "primary", variant: "500", contrast: true })` when unsure of the
-exact variable name.
+Use `get_color({ color: "primary", variant: "500", contrast: true })` when unsure of the exact variable name.
 
 ### Missing element
 
-If an element is in Figma but absent from the DOM, check in this order: registration
-(`customElements.get`) → import path → the slot name it should occupy → then go back to
-Phase 2 and re-read the component doc. A wrong slot name renders nothing and reports nothing.
+If an element is in Figma but absent from the DOM, check in this order: registration (`customElements.get`) → import path → the slot name it should occupy → then go back to Phase 2 and re-read the component doc. A wrong slot name renders nothing and reports nothing.
