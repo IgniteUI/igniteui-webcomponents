@@ -66,7 +66,7 @@ const metadata: Meta<IgcCheckboxComponent> = {
       table: { defaultValue: { summary: 'false' } },
     },
     labelPosition: {
-      type: '"after" | "before"',
+      type: { name: 'enum', value: ['after', 'before'] },
       description: 'The label position of the control.',
       options: ['after', 'before'],
       control: { type: 'inline-radio' },

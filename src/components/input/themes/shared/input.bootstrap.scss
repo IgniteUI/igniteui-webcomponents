@@ -156,7 +156,7 @@ $theme: $bootstrap;
     }
 }
 
-:host(:not([aria-haspopup='dialog'],[role='combobox'])[readonly]) {
+:host(:not([data-haspopup='dialog'],[data-role='combobox'])[readonly]) {
     [part='prefix'],
     [part='suffix'],
     [part~='container'] {
@@ -165,14 +165,14 @@ $theme: $bootstrap;
 }
 
 :host(:not([disabled],[readonly]):state(ig-invalid)),
-:host(:not([disabled])[role='combobox']:state(ig-invalid)) {
+:host(:not([disabled])[data-role='combobox']:state(ig-invalid)) {
     [part~='input'] {
         border-color: var-get($theme, 'error-secondary-color');
     }
 }
 
 :host(:not([disabled],[readonly]):state(ig-invalid):focus-within),
-:host(:not([disabled])[role='combobox']:state(ig-invalid):focus-within) {
+:host(:not([disabled])[data-role='combobox']:state(ig-invalid):focus-within) {
     [part~='input'] {
         box-shadow: 0 0 0 rem(4px) var-get($theme, 'error-shadow-color');
     }
@@ -217,8 +217,8 @@ $theme: $bootstrap;
     }
 }
 
-:host(:not(:disabled, [role='combobox'])),
-:host(:not([disabled], [role='combobox'])) {
+:host(:not(:disabled, [data-role='combobox'])),
+:host(:not([disabled], [data-role='combobox'])) {
     ::slotted([slot='suffix']) {
         border-inline-end: rem(1px) solid var(--border-color);
     }
@@ -228,8 +228,8 @@ $theme: $bootstrap;
     }
 }
 
-:host(:disabled:not([role='combobox'])),
-:host([disabled]:not([role='combobox'])) {
+:host(:disabled:not([data-role='combobox'])),
+:host([disabled]:not([data-role='combobox'])) {
     ::slotted([slot='suffix']) {
         border-inline-end: rem(1px) solid var(--disabled-border-color);
     }

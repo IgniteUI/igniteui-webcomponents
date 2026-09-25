@@ -64,7 +64,7 @@
     min-width: rem(24px);
 }
 
-[part='indicator rtl'] {
+:host(:dir(rtl)) [part~='indicator'] {
     transform: scaleX(-1);
 }
 
@@ -102,5 +102,19 @@
 :host([disabled]) {
     [part~='wrapper'] {
         pointer-events: none;
+    }
+}
+
+@media (forced-colors: active) {
+    :host [part~='wrapper']::after {
+        outline-offset: rem(-1px);
+    }
+
+    :host [part~='wrapper'][part~='active']::after {
+        outline: rem(1px) solid CanvasText;
+    }
+
+    :host [part~='wrapper'][part~='focused']::after {
+        outline: rem(1px) solid Highlight;
     }
 }

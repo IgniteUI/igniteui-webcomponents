@@ -1,0 +1,20 @@
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "trailingComma": "es5",
+  "tabWidth": 2,
+  "singleQuote": true,
+  "arrowParens": "always",
+  "printWidth": 80,
+  "sortImports": {
+    "newlinesBetween": false,
+    "partitionByNewline": true
+  },
+  "sortPackageJson": false,
+  "ignorePatterns": [
+    "**/*.scss",
+    "**/*.md",
+    "**/*.json",
+    "**/*.yml",
+    "src/**/*.css.ts"
+  ]
+}

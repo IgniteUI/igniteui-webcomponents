@@ -1,7 +1,8 @@
 import type { IChatResourceStrings } from 'igniteui-i18n-core';
-import type { IgcChatResourceStrings } from '../common/i18n/EN/chat.resources.js';
-import type { UnpackCustomEvent } from '../common/mixins/event-emitter.js';
-import { isEmpty, nanoid } from '../common/util.js';
+import type { IgcChatResourceStrings } from '#internals/i18n/EN/chat.resources.js';
+import type { UnpackCustomEvent } from '#internals/mixins/event-emitter.js';
+import { isEmpty } from '#internals/utils/arrays.js';
+import { nanoid } from '#internals/utils/strings.js';
 import IgcToastComponent from '../toast/toast.js';
 import IgcTooltipComponent from '../tooltip/tooltip.js';
 import type IgcChatComponent from './chat.js';
@@ -146,7 +147,7 @@ export class ChatState {
   }
 
   /**
-   * Returns whether the default chat input textarea has a trimmed value payload.
+   * Whether the default chat textarea holds a value that is not only spaces.
    * @internal
    */
   public get hasInputValue(): boolean {
@@ -154,7 +155,7 @@ export class ChatState {
   }
 
   /**
-   * Returns whether the default file input of the chat has any attached files.
+   * Whether the default file input of the chat holds files.
    * @internal
    */
   public get hasInputAttachments(): boolean {
@@ -258,8 +259,8 @@ export class ChatState {
   //#endregion
 
   /**
-   * Updates the internal cache for accepted file types.
-   * Parses the acceptedFiles string option into extensions, mimeTypes, and wildcard types.
+   * Parses the `acceptedFiles` option into extensions, MIME types and wildcard
+   * types, and caches the result.
    */
   private _setAcceptedTypesCache(): void {
     this._acceptedTypesCache = this.options?.acceptedFiles
@@ -285,9 +286,8 @@ export class ChatState {
   //#region Public API
 
   /**
-   * Adds a new chat message.
-   * Emits 'igcMessageCreated' event which can be canceled to prevent adding.
-   * Clears input value and attachments on success.
+   * Adds a chat message. Emits the cancellable `igcMessageCreated` event. On
+   * success, clears the input value and the attachments.
    * @internal
    */
   public addMessageWithEvent(message: Partial<IgcChatMessage>): void {
@@ -301,8 +301,8 @@ export class ChatState {
   }
 
   /**
-   * Adds files as attachments to the input.
-   * Emits 'igcAttachmentChange' event which can be canceled to prevent adding.
+   * Adds `files` to the input as attachments. Emits the cancellable
+   * `igcAttachmentChange` event.
    * @internal
    */
   public attachFilesWithEvent(files: File[]): void {

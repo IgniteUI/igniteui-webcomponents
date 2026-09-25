@@ -36,7 +36,10 @@ const metadata: Meta<IgcCircularProgressComponent> = {
       table: { defaultValue: { summary: '0' } },
     },
     variant: {
-      type: '"primary" | "info" | "success" | "warning" | "danger"',
+      type: {
+        name: 'enum',
+        value: ['primary', 'info', 'success', 'warning', 'danger'],
+      },
       description: 'The variant of the control.',
       options: ['primary', 'info', 'success', 'warning', 'danger'],
       control: { type: 'select' },

@@ -4,13 +4,14 @@ import {
   github,
 } from '@igniteui/material-icons-extended';
 import type { Meta, StoryObj } from '@storybook/web-components-vite';
-import { html } from 'lit';
 import {
   IgcIconComponent,
   IgcSelectComponent,
   defineComponents,
   registerIconFromText,
 } from 'igniteui-webcomponents';
+import { html } from 'lit';
+import { range } from 'lit/directives/range.js';
 import {
   disableStoryControls,
   formControls,
@@ -78,33 +79,41 @@ const metadata: Meta<IgcSelectComponent> = {
       control: 'text',
     },
     placement: {
-      type: '"top" | "top-start" | "top-end" | "bottom" | "bottom-start" | "bottom-end" | "right" | "right-start" | "right-end" | "left" | "left-start" | "left-end"',
+      type: {
+        name: 'enum',
+        value: [
+          'bottom',
+          'top',
+          'top-start',
+          'top-end',
+          'bottom-start',
+          'bottom-end',
+          'left',
+          'right',
+          'right-start',
+          'right-end',
+          'left-start',
+          'left-end',
+        ],
+      },
       description:
         'The preferred placement of the select dropdown around its input.',
       options: [
+        'bottom',
         'top',
         'top-start',
         'top-end',
-        'bottom',
         'bottom-start',
         'bottom-end',
+        'left',
         'right',
         'right-start',
         'right-end',
-        'left',
         'left-start',
         'left-end',
       ],
       control: { type: 'select' },
       table: { defaultValue: { summary: 'bottom-start' } },
-    },
-    scrollStrategy: {
-      type: '"scroll" | "block" | "close"',
-      description:
-        'Determines the behavior of the component during scrolling of the parent container.',
-      options: ['scroll', 'block', 'close'],
-      control: { type: 'inline-radio' },
-      table: { defaultValue: { summary: 'scroll' } },
     },
     required: {
       type: 'boolean',
@@ -133,14 +142,14 @@ const metadata: Meta<IgcSelectComponent> = {
     keepOpenOnSelect: {
       type: 'boolean',
       description:
-        'Whether the component dropdown should be kept open on selection.',
+        'Keeps the dropdown of the component open after the user selects an item.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
     keepOpenOnOutsideClick: {
       type: 'boolean',
       description:
-        'Whether the component dropdown should be kept open on clicking outside of it.',
+        'Keeps the dropdown of the component open when the user clicks outside of\nit.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
@@ -150,19 +159,27 @@ const metadata: Meta<IgcSelectComponent> = {
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
+    scrollStrategy: {
+      type: { name: 'enum', value: ['scroll', 'hide', 'close'] },
+      description:
+        'Sets the behavior of the component when the parent container scrolls.\n\nIf the value is `hide`, the component hides while the anchor is fully out\nof view. `hide` is the default value.\n\nIf the value is `scroll`, the component stays visible and anchored.\n\nIf the value is `close`, the component closes on each scroll.',
+      options: ['scroll', 'hide', 'close'],
+      control: { type: 'inline-radio' },
+      table: { defaultValue: { summary: 'hide' } },
+    },
   },
   args: {
     outlined: false,
     autofocus: false,
     distance: 0,
     placement: 'bottom-start',
-    scrollStrategy: 'scroll',
     required: false,
     disabled: false,
     invalid: false,
     keepOpenOnSelect: false,
     keepOpenOnOutsideClick: false,
     open: false,
+    scrollStrategy: 'hide',
   },
 };
 
@@ -183,20 +200,18 @@ interface IgcSelectArgs {
   placeholder: string;
   /** The preferred placement of the select dropdown around its input. */
   placement:
+    | 'bottom'
     | 'top'
     | 'top-start'
     | 'top-end'
-    | 'bottom'
     | 'bottom-start'
     | 'bottom-end'
+    | 'left'
     | 'right'
     | 'right-start'
     | 'right-end'
-    | 'left'
     | 'left-start'
     | 'left-end';
-  /** Determines the behavior of the component during scrolling of the parent container. */
-  scrollStrategy: 'scroll' | 'block' | 'close';
   /** When set, makes the component a required field for validation. */
   required: boolean;
   /** The name of the control, submitted with the form data. */
@@ -205,12 +220,26 @@ interface IgcSelectArgs {
   disabled: boolean;
   /** Sets the control into invalid state (visual state only). */
   invalid: boolean;
-  /** Whether the component dropdown should be kept open on selection. */
+  /** Keeps the dropdown of the component open after the user selects an item. */
   keepOpenOnSelect: boolean;
-  /** Whether the component dropdown should be kept open on clicking outside of it. */
+  /**
+   * Keeps the dropdown of the component open when the user clicks outside of
+   * it.
+   */
   keepOpenOnOutsideClick: boolean;
   /** Sets the open state of the component. */
   open: boolean;
+  /**
+   * Sets the behavior of the component when the parent container scrolls.
+   *
+   * If the value is `hide`, the component hides while the anchor is fully out
+   * of view. `hide` is the default value.
+   *
+   * If the value is `scroll`, the component stays visible and anchored.
+   *
+   * If the value is `close`, the component closes on each scroll.
+   */
+  scrollStrategy: 'scroll' | 'hide' | 'close';
 }
 type Story = StoryObj<IgcSelectArgs>;
 
@@ -636,4 +665,55 @@ export const Form: Story = {
       </form>
     `;
   },
+};
+
+export const InScrollingPanel: Story = {
+  args: {
+    label: 'Assign task',
+    scrollStrategy: 'close',
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'A select opens its dropdown inside a scrolling panel. A panel can be a settings pane, a dialog body or a side drawer. The `scroll-strategy` property sets what happens to the dropdown when the panel scrolls. If the value is `hide`, the dropdown hides while the input is out of view. `hide` is the default value. If the value is `scroll`, the dropdown follows the input. If the value is `close`, the dropdown closes.',
+      },
+    },
+  },
+  render: ({ label, placement, distance, scrollStrategy }) => html`
+    <style>
+      .panel {
+        max-width: 46rem;
+        height: 16rem;
+        overflow: auto;
+        padding: 1rem;
+        border: 1px solid var(--ig-gray-200, #e0e0e0);
+        border-radius: 4px;
+      }
+    </style>
+
+    <div class="panel">
+      <h4>Sprint planning</h4>
+      <p>
+        Open the dropdown and scroll this panel to compare the scroll
+        strategies.
+      </p>
+
+      <igc-select
+        .label=${label}
+        .placement=${placement}
+        .distance=${distance}
+        .scrollStrategy=${scrollStrategy}
+      >
+        <igc-select-header>Available tasks:</igc-select-header>
+        ${items}
+      </igc-select>
+
+      <p>
+        ${Array.from(range(1, 24)).map(
+          () => html`Unassigned tasks stay in the backlog until triage. `
+        )}
+      </p>
+    </div>
+  `,
 };

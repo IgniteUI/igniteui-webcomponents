@@ -1,108 +1,58 @@
 import { ValidationResourceStringsEN } from 'igniteui-i18n-core';
+import { calendarRange } from '#internals/date/model.js';
+import { isEmpty } from '#internals/utils/arrays.js';
+import { formatString } from '#internals/utils/strings.js';
 import {
-  calendarRange,
-  isDateExceedingMax,
-  isDateInRanges,
-  isDateLessThanMin,
-} from '../calendar/helpers.js';
-import { formatString, isEmpty } from '../common/util.js';
-import type { Validator } from '../common/validators.js';
+  createMaxDateTimeValidator,
+  createMinDateTimeValidator,
+  type Validator,
+} from '#internals/validators.js';
+import { isDateInRanges } from '../calendar/helpers.js';
 import type { DateRangeValue } from '../types.js';
 import type IgcDateRangePickerComponent from './date-range-picker.js';
 
-export const minDateRangeValidator: Validator<IgcDateRangePickerComponent> = {
-  key: 'rangeUnderflow',
-  message: (host) =>
-    formatString(ValidationResourceStringsEN.min_validation_error!, host.min),
+/** The ends of the current range, each validated against the bound on its own. */
+function rangeEnds({ value }: IgcDateRangePickerComponent) {
+  return [value?.start, value?.end];
+}
+
+const minDateRangeValidator =
+  createMinDateTimeValidator<IgcDateRangePickerComponent>(rangeEnds);
+
+const maxDateRangeValidator =
+  createMaxDateTimeValidator<IgcDateRangePickerComponent>(rangeEnds);
+
+const requiredDateRangeValidator: Validator<IgcDateRangePickerComponent> = {
+  key: 'valueMissing',
+  message: ValidationResourceStringsEN.required_validation_error!,
   isValid: (host) => {
-    if (!host.min) {
-      return true;
-    }
-
-    const isStartInvalid =
-      host.value?.start &&
-      isDateLessThanMin(
-        host.value.start,
-        host.min,
-        host.hasTimeParts(),
-        host.hasDateParts()
-      );
-    const isEndInvalid =
-      host.value?.end &&
-      isDateLessThanMin(
-        host.value.end,
-        host.min,
-        host.hasTimeParts(),
-        host.hasDateParts()
-      );
-
-    return !(isStartInvalid || isEndInvalid);
+    return host.required ? isCompleteDateRange(host.value) : true;
   },
 };
 
-export const maxDateRangeValidator: Validator<IgcDateRangePickerComponent> = {
-  key: 'rangeOverflow',
+const badInputDateRangeValidator: Validator<IgcDateRangePickerComponent> = {
+  key: 'badInput',
   message: (host) =>
-    formatString(ValidationResourceStringsEN.max_validation_error!, host.max),
+    formatString(
+      ValidationResourceStringsEN.disabled_date_validation_error!,
+      host.value
+    ),
   isValid: (host) => {
-    if (!host.max) {
+    const { value, disabledDates } = host;
+
+    if (
+      !isCompleteDateRange(value) ||
+      !disabledDates ||
+      isEmpty(disabledDates)
+    ) {
       return true;
     }
 
-    const isStartInvalid =
-      host.value?.start &&
-      isDateExceedingMax(
-        host.value.start,
-        host.max,
-        host.hasTimeParts(),
-        host.hasDateParts()
-      );
-    const isEndInvalid =
-      host.value?.end &&
-      isDateExceedingMax(
-        host.value.end,
-        host.max,
-        host.hasTimeParts(),
-        host.hasDateParts()
-      );
-
-    return !(isStartInvalid || isEndInvalid);
+    return Array.from(
+      calendarRange({ start: value.start, end: value.end, inclusive: true })
+    ).every((date) => !isDateInRanges(date, disabledDates));
   },
 };
-
-export const requiredDateRangeValidator: Validator<IgcDateRangePickerComponent> =
-  {
-    key: 'valueMissing',
-    message: ValidationResourceStringsEN.required_validation_error!,
-    isValid: (host) => {
-      return host.required ? isCompleteDateRange(host.value) : true;
-    },
-  };
-
-export const badInputDateRangeValidator: Validator<IgcDateRangePickerComponent> =
-  {
-    key: 'badInput',
-    message: (host) =>
-      formatString(
-        ValidationResourceStringsEN.disabled_date_validation_error!,
-        host.value
-      ),
-    isValid: (host) => {
-      const { value, disabledDates } = host;
-
-      if (
-        !isCompleteDateRange(value) ||
-        !disabledDates ||
-        isEmpty(disabledDates)
-      ) {
-        return true;
-      }
-
-      return Array.from(
-        calendarRange({ start: value.start, end: value.end, inclusive: true })
-      ).every((date) => !isDateInRanges(date, disabledDates));
-    },
-  };
 
 export const dateRangeValidators: Validator<IgcDateRangePickerComponent>[] = [
   requiredDateRangeValidator,

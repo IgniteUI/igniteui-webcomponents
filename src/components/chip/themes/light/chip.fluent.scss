@@ -6,3 +6,25 @@ $theme: $fluent;
 :host {
     @include css-vars-from-theme(diff($base, $theme));
 }
+
+@mixin chip-outlined-variants-light($variant, $variant-color) {
+    :host([outlined][variant='#{$variant}']) [part='base'],
+    :host([selected][outlined][variant='#{$variant}']:not([disabled])) [part='base'] {
+        border-color: color($variant-color, 600);
+        color: contrast-color($variant-color, 100);
+
+        &:focus-within {
+            background: color($variant-color, 800, .30);
+        }
+
+        &:hover {
+            background: color($variant-color, 600, .16);
+        }
+    }
+}
+
+@include chip-outlined-variants-light('primary', primary);
+@include chip-outlined-variants-light('info', info);
+@include chip-outlined-variants-light('success', success);
+@include chip-outlined-variants-light('warning', warn);
+@include chip-outlined-variants-light('danger', error);

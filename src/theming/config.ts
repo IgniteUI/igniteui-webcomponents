@@ -1,47 +1,72 @@
 import { isServer } from 'lit';
 import {
   CHANGE_THEME_EVENT,
+  CHANGED_THEME_EVENT,
   type ChangeThemeEventDetail,
 } from './theming-event.js';
 import type { Theme, ThemeVariant } from './types.js';
-import { getAllCssVariables } from './utils.js';
+
+const THEMES = new Set<unknown>(['bootstrap', 'material', 'indigo', 'fluent']);
+const THEME_VARIANTS = new Set<unknown>(['light', 'dark']);
 
 let theme: Theme;
 let themeVariant: ThemeVariant;
 
+function isOfTypeTheme(value: unknown): value is Theme {
+  return THEMES.has(value);
+}
+
+function isOfTypeThemeVariant(value: unknown): value is ThemeVariant {
+  return THEME_VARIANTS.has(value);
+}
+
+function setTheme(value: Theme, variant: ThemeVariant): void {
+  theme = value;
+  themeVariant = variant;
+}
+
 /**
- * Dispatch an "igc-change-theme" event to `window` with the given detail.
+ * Relays "igc-change-theme" events from `window` to the theming controllers.
+ * It also syncs the module state from the event detail, so an event from another
+ * copy of the library changes the theme here too.
  */
-function dispatchThemingEvent(detail: ChangeThemeEventDetail): void {
-  if (!isServer) {
-    globalThis.dispatchEvent(new CustomEvent(CHANGE_THEME_EVENT, { detail }));
+class ThemeChangedEmitter extends EventTarget {
+  constructor() {
+    super();
+    if (!isServer) {
+      globalThis.addEventListener(CHANGE_THEME_EVENT, this);
+    }
+  }
+
+  /** @internal */
+  public handleEvent({ detail }: CustomEvent<ChangeThemeEventDetail>): void {
+    if (
+      isOfTypeTheme(detail?.theme) &&
+      isOfTypeThemeVariant(detail?.themeVariant)
+    ) {
+      setTheme(detail.theme, detail.themeVariant);
+      this.dispatchEvent(new CustomEvent(CHANGED_THEME_EVENT));
+    }
   }
 }
 
-function isOfTypeTheme(theme: string): theme is Theme {
-  return ['bootstrap', 'material', 'indigo', 'fluent'].includes(theme);
-}
+export const _themeChangedEmitter = new ThemeChangedEmitter();
 
-function isOfTypeThemeVariant(variant: string): variant is ThemeVariant {
-  return ['light', 'dark'].includes(variant);
-}
-
-export function getTheme() {
+export function getTheme(): ChangeThemeEventDetail {
   if (!(theme && themeVariant)) {
-    const cssVars = getAllCssVariables();
-    const foundTheme = cssVars.igTheme;
-    const foundVariant = cssVars.igThemeVariant;
+    const rootStyles = isServer
+      ? undefined
+      : getComputedStyle(document.documentElement);
+    const foundTheme = rootStyles?.getPropertyValue('--ig-theme').trim();
+    const foundVariant = rootStyles
+      ?.getPropertyValue('--ig-theme-variant')
+      .trim();
 
     theme = isOfTypeTheme(foundTheme) ? foundTheme : 'bootstrap';
     themeVariant = isOfTypeThemeVariant(foundVariant) ? foundVariant : 'light';
   }
 
   return { theme, themeVariant };
-}
-
-export function setTheme(value: Theme, variant: ThemeVariant): void {
-  theme = value;
-  themeVariant = variant;
 }
 
 /**
@@ -56,7 +81,15 @@ export function setTheme(value: Theme, variant: ThemeVariant): void {
  */
 export function configureTheme(t: Theme, v: ThemeVariant = 'light'): void {
   if (isOfTypeTheme(t) && isOfTypeThemeVariant(v)) {
+    // Also set by the emitter's window listener, but that listener does not exist on the server.
     setTheme(t, v);
-    dispatchThemingEvent({ theme, themeVariant });
+
+    if (!isServer) {
+      globalThis.dispatchEvent(
+        new CustomEvent(CHANGE_THEME_EVENT, {
+          detail: { theme, themeVariant },
+        })
+      );
+    }
   }
 }

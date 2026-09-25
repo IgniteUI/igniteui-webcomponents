@@ -69,9 +69,9 @@ const metadata: Meta<IgcCarouselComponent> = {
       table: { defaultValue: { summary: 'false' } },
     },
     indicatorsOrientation: {
-      type: '"end" | "start"',
-      description: 'Sets the orientation of the indicator controls (dots).',
-      options: ['end', 'start'],
+      type: { name: 'enum', value: ['start', 'end'] },
+      description: 'The orientation of the indicator controls (dots).',
+      options: ['start', 'end'],
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'end' } },
     },
@@ -101,7 +101,7 @@ const metadata: Meta<IgcCarouselComponent> = {
       table: { defaultValue: { summary: '10' } },
     },
     animationType: {
-      type: '"slide" | "fade" | "none"',
+      type: { name: 'enum', value: ['slide', 'fade', 'none'] },
       description: 'The animation type.',
       options: ['slide', 'fade', 'none'],
       control: { type: 'inline-radio' },
@@ -110,7 +110,7 @@ const metadata: Meta<IgcCarouselComponent> = {
     locale: {
       type: 'string',
       description:
-        'Gets/Sets the locale used for getting language, affecting resource strings.',
+        'The locale for the resource strings. Falls back to the global locale.',
       control: 'text',
     },
   },
@@ -139,8 +139,8 @@ interface IgcCarouselArgs {
   hideIndicators: boolean;
   /** Whether the carousel has vertical alignment. */
   vertical: boolean;
-  /** Sets the orientation of the indicator controls (dots). */
-  indicatorsOrientation: 'end' | 'start';
+  /** The orientation of the indicator controls (dots). */
+  indicatorsOrientation: 'start' | 'end';
   /**
    * The format used to set the aria-label on the carousel indicators.
    * Instances of '{0}' will be replaced with the index of the corresponding slide.
@@ -159,7 +159,7 @@ interface IgcCarouselArgs {
   maximumIndicatorsCount: number;
   /** The animation type. */
   animationType: 'slide' | 'fade' | 'none';
-  /** Gets/Sets the locale used for getting language, affecting resource strings. */
+  /** The locale for the resource strings. Falls back to the global locale. */
   locale: string;
 }
 type Story = StoryObj<IgcCarouselArgs>;

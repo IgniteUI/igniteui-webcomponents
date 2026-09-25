@@ -1,18 +1,13 @@
-import {
-  elementUpdated,
-  expect,
-  fixture,
-  html,
-  nextFrame,
-} from '@open-wc/testing';
+import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import { range } from 'lit/directives/range.js';
 import { match, restore, spy, stub } from 'sinon';
+import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { viewTransitionComplete } from '#internals/testing/helpers.spec.js';
+import { simulateClick } from '#internals/testing/simulate.spec.js';
+import { firstOf } from '#internals/utils/arrays.js';
 import IgcIconButtonComponent from '../button/icon-button.js';
-import { defineComponents } from '../common/definitions/defineComponents.js';
-import { first } from '../common/util.js';
-import { simulateClick } from '../common/utils.spec.js';
-import IgcTileComponent from './tile.js';
 import IgcTileManagerComponent from './tile-manager.js';
+import IgcTileComponent from './tile.js';
 
 describe('Tile Manager component', () => {
   before(() => {
@@ -20,11 +15,6 @@ describe('Tile Manager component', () => {
   });
 
   let tileManager: IgcTileManagerComponent;
-
-  async function viewTransitionComplete() {
-    await nextFrame();
-    await nextFrame();
-  }
 
   function getTileManagerBase() {
     return tileManager.renderRoot.querySelector<HTMLElement>('[part="base"]')!;
@@ -544,16 +534,22 @@ describe('Tile Manager component', () => {
       });
     });
 
+    const adornerParts: Record<string, string> = {
+      'side-adorner': 'trigger-side',
+      'corner-adorner': 'trigger',
+      'bottom-adorner': 'trigger-bottom',
+    };
+
     adornerTests.forEach(({ slotName, expectedText }) => {
-      it(`should correctly project adorners into the igc-resize ${slotName} slot`, async () => {
+      it(`should project adorners into the ${slotName} resize trigger slot`, async () => {
         const tile1 = tileManager.tiles[0];
-        const resize = tile1.shadowRoot?.querySelector(
-          'igc-resize'
-        ) as HTMLElement;
-        const resizeSlot = resize.shadowRoot!.querySelector<HTMLSlotElement>(
+        const resizeSlot = tile1.shadowRoot!.querySelector<HTMLSlotElement>(
           `slot[name="${slotName}"]`
         );
+
         expect(resizeSlot).to.exist;
+        expect(resizeSlot!.part.contains(adornerParts[slotName])).to.be.true;
+        expect(resizeSlot!.part.contains('custom')).to.be.true;
         expect(
           resizeSlot!
             .assignedNodes({ flatten: true })
@@ -563,13 +559,14 @@ describe('Tile Manager component', () => {
       });
     });
 
-    it('should disable igc-resize component when resize mode is "none"', async () => {
+    it('should disable resize behavior when resize mode is "none"', async () => {
       const tile = tileManager.tiles[0];
 
       tileManager.resizeMode = 'none';
       await elementUpdated(tileManager);
 
-      expect(tile.renderRoot.querySelector('igc-resize')).is.null;
+      expect(tile.renderRoot.querySelector('[part~="tile-container"]')).is.null;
+      expect(tile.renderRoot.querySelector('[part~="trigger"]')).is.null;
     });
   });
 
@@ -578,7 +575,7 @@ describe('Tile Manager component', () => {
 
     beforeEach(async () => {
       tileManager = await fixture<IgcTileManagerComponent>(createTileManager());
-      tile = first(tileManager.tiles);
+      tile = firstOf(tileManager.tiles);
 
       // Mock `requestFullscreen`
       tile.requestFullscreen = stub().callsFake(() => {
@@ -1048,7 +1045,7 @@ describe('Tile Manager component', () => {
     });
 
     it('should set proper CSS order based on position', async () => {
-      const firstTile = first(getTiles());
+      const firstTile = firstOf(getTiles());
       firstTile.position = 6;
 
       await elementUpdated(tileManager);

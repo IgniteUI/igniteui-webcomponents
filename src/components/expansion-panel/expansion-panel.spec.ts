@@ -3,6 +3,7 @@ import {
   expect,
   fixture,
   html,
+  nextFrame,
   waitUntil,
 } from '@open-wc/testing';
 import { spy } from 'sinon';
@@ -13,14 +14,21 @@ import {
   arrowUp,
   enterKey,
   spaceBar,
-} from '../common/controllers/key-bindings.js';
-import { defineComponents } from '../common/definitions/defineComponents.js';
-import { simulateClick, simulateKeyboard } from '../common/utils.spec.js';
+} from '#internals/controllers/key-bindings.js';
+import { defineComponents } from '#internals/definitions/defineComponents.js';
+import {
+  simulateClick,
+  simulateKeyboard,
+} from '#internals/testing/simulate.spec.js';
 import type IgcIconComponent from '../icon/icon.js';
 import IgcExpansionPanelComponent from './expansion-panel.js';
 
 type ExpansionSlots =
-  '' | 'title' | 'subtitle' | 'indicator' | 'indicator-expanded';
+  | ''
+  | 'title'
+  | 'subtitle'
+  | 'indicator'
+  | 'indicator-expanded';
 
 type ExpansionParts = 'header' | 'title' | 'subtitle' | 'content' | 'indicator';
 
@@ -270,6 +278,24 @@ describe('Expansion Panel', () => {
 
       expect(panel.open).to.be.false;
       expect(getDOMPart('content')).to.have.attribute('inert');
+    });
+
+    it('`show()/hide()` return false for the current state', async () => {
+      expect(await panel.hide()).to.be.false;
+      expect(await panel.show()).to.be.true;
+      expect(await panel.show()).to.be.false;
+    });
+
+    it('`hide()` returns false when superseded by a newer `show()`', async () => {
+      await panel.show();
+
+      const closing = panel.hide();
+      await nextFrame(); // Let the exit animation run before superseding it.
+      const reopening = panel.show();
+
+      expect(await closing).to.be.false;
+      expect(await reopening).to.be.true;
+      expect(panel.open).to.be.true;
     });
   });
 

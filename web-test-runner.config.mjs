@@ -1,6 +1,6 @@
 import { fileURLToPath } from 'node:url';
-import { defaultReporter } from '@web/test-runner';
 import { esbuildPlugin } from '@web/dev-server-esbuild';
+import { defaultReporter } from '@web/test-runner';
 import { playwrightLauncher } from '@web/test-runner-playwright';
 
 /**
@@ -26,9 +26,27 @@ function filterBenignBrowserLogs() {
   };
 }
 
+/**
+ * Loads `assertion-errors.spec.ts` ahead of the test framework so that every
+ * test file gets the chai patch that keeps failed assertions on non-cloneable
+ * subjects (sinon spies, DOM nodes) reportable. See the module itself for the
+ * details.
+ */
+function testRunnerHtml(testFramework) {
+  return `<!DOCTYPE html>
+<html>
+  <body>
+    <script type="module" src="/src/internals/testing/assertion-errors.spec.ts"></script>
+    <script type="module" src="${testFramework}"></script>
+  </body>
+</html>`;
+}
+
 export default /** @type {import("@web/test-runner").TestRunnerConfig} */ ({
   files: ['src/**/*.spec.ts'],
   browsers: [playwrightLauncher({ product: 'chromium', headless: true })],
+
+  testRunnerHtml,
 
   /** Compile JS for older browsers. Requires @web/dev-server-esbuild plugin */
   // esbuildTarget: 'auto',

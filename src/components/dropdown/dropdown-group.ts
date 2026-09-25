@@ -1,9 +1,7 @@
-import { html, LitElement } from 'lit';
 import { queryAssignedElements } from 'lit/decorators.js';
-
-import { addThemingController } from '../../theming/theming-controller.js';
-import { addInternalsController } from '../common/controllers/internals.js';
-import { registerComponent } from '../common/definitions/register.js';
+import { registerComponent } from '#internals/definitions/register.js';
+import { IgcGroupBaseComponent } from '#internals/mixins/group.js';
+import { addThemingController } from '#theming/theming-controller.js';
 import IgcDropdownItemComponent from './dropdown-item.js';
 import { styles } from './themes/dropdown-group.base.css.js';
 import { all } from './themes/group.js';
@@ -19,8 +17,8 @@ import { styles as shared } from './themes/shared/group/dropdown-group.common.cs
  *
  * @csspart label - The native label element.
  */
-export default class IgcDropdownGroupComponent extends LitElement {
-  public static readonly tagName: string = 'igc-dropdown-group';
+export default class IgcDropdownGroupComponent extends IgcGroupBaseComponent {
+  public static readonly tagName = 'igc-dropdown-group';
   public static override styles = [styles, shared];
 
   /* blazorSuppress */
@@ -40,21 +38,6 @@ export default class IgcDropdownGroupComponent extends LitElement {
     super();
 
     addThemingController(this, all);
-
-    addInternalsController(this, {
-      initialARIA: {
-        role: 'group',
-      },
-    });
-  }
-
-  protected override render() {
-    return html`
-      <label part="label">
-        <slot name="label"></slot>
-      </label>
-      <slot></slot>
-    `;
   }
 }
 

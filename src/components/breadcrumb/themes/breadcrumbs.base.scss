@@ -1,0 +1,11 @@
+@use 'styles/common/component';
+@use 'styles/utilities' as *;
+
+:host {
+    --component-size: var(--ig-size, var(--ig-size-medium));
+
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    row-gap: rem(4px);
+}

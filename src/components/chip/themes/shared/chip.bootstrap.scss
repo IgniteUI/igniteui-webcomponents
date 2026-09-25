@@ -7,25 +7,24 @@ $theme: $bootstrap;
     --component-size: var(--ig-size, #{var-get($theme, 'default-size')});
 }
 
-:host button {
-    &:focus {
-        outline: rem(4px) solid var-get($theme, 'focus-outline-color');
+:host [part='base'] {
+    &:focus-within {
+        outline: rem(4px) solid var-get($theme, 'focus-shadow-color');
     }
 }
 
-:host([selected]) button:not([disabled]) {
-    &:focus {
-        outline: rem(4px) solid var-get($theme, 'focus-selected-outline-color');
+:host([selected]:not([disabled])) [part='base'] {
+    &:focus-within {
+        outline: rem(4px) solid var-get($theme, 'focus-selected-shadow-color');
     }
 }
 
 @mixin chip-variants($variant, $variant-color) {
-    :host([variant='#{$variant}']) button,
-    :host([selected][variant='#{$variant}']) button:not([disabled]) {
+    :host([variant='#{$variant}']) [part='base'],
+    :host([selected][variant='#{$variant}']:not([disabled])) [part='base'] {
         color: contrast-color($variant-color, 700);
-        border-color: transparent;
 
-        &:focus {
+        &:focus-within {
             background: color($variant-color, 500);
             color: contrast-color($variant-color, 700);
             outline: rem(4px) solid color($variant-color, 500, 0.38);
@@ -43,3 +42,24 @@ $theme: $bootstrap;
 @include chip-variants('success', success);
 @include chip-variants('warning', warn);
 @include chip-variants('danger', error);
+
+@mixin chip-outlined-variants($variant, $variant-color) {
+    :host([outlined][variant='#{$variant}']) [part='base'],
+    :host([selected][outlined][variant='#{$variant}']:not([disabled])) [part='base'] {
+        background: transparent;
+
+        &:hover {
+            background: color($variant-color, 600, .30);
+        }
+
+        &:focus-within {
+            background: transparent;
+        }
+    }
+}
+
+@include chip-outlined-variants('primary', primary);
+@include chip-outlined-variants('info', info);
+@include chip-outlined-variants('success', success);
+@include chip-outlined-variants('warning', warn);
+@include chip-outlined-variants('danger', error);

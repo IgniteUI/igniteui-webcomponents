@@ -8,7 +8,7 @@ import {
   unsafeStatic,
 } from '@open-wc/testing';
 import { css, LitElement, html as litHtml } from 'lit';
-import { defineComponents } from '../components/common/definitions/defineComponents.js';
+import { defineComponents } from '#internals/definitions/defineComponents.js';
 import IgcThemeProviderComponent from '../components/theme-provider/theme-provider.js';
 import { configureTheme } from './config.js';
 import {
@@ -254,6 +254,25 @@ describe('Theming Controller', () => {
 
       expect(el.themingController.theme).to.equal('material');
       expect(el.themingController.variant).to.equal('dark');
+    });
+
+    it('should apply only the context theme when connected inside a theme provider', async () => {
+      const tag = unsafeStatic(themedTag);
+      const container = await fixture<HTMLDivElement>(html`
+        <div>
+          <igc-theme-provider theme="fluent" variant="dark">
+            <${tag}></${tag}>
+          </igc-theme-provider>
+        </div>
+      `);
+
+      const el = container.querySelector(
+        themedTag
+      ) as ThemedTestComponentElement;
+      await elementUpdated(el);
+
+      expect(el.themeChangeCallCount).to.equal(1);
+      expect(el.lastTheme).to.equal('fluent');
     });
 
     it('should update when theme provider theme changes', async () => {

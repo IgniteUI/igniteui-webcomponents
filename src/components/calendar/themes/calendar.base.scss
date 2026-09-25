@@ -168,3 +168,9 @@
 .aria-off-screen {
     @include hide-default();
 }
+
+@media (forced-colors: active) {
+    [part~='header'] {
+        border: rem(1px) solid CanvasText;
+    }
+}

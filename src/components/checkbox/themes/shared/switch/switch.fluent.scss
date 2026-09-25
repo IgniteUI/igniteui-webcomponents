@@ -72,3 +72,9 @@ $theme: $fluent;
         border-color: var-get($theme, 'track-on-disabled-color');
     }
 }
+
+@media (forced-colors: active) {
+    [part~='thumb'] {
+        border: rem(6px) solid CanvasText;
+    }
+}

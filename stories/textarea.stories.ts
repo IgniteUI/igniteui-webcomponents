@@ -85,10 +85,10 @@ const metadata: Meta<IgcTextareaComponent> = {
       table: { defaultValue: { summary: 'false' } },
     },
     resize: {
-      type: '"vertical" | "auto" | "none"',
+      type: { name: 'enum', value: ['vertical', 'none', 'auto'] },
       description:
         'Controls whether the control can be resized.\nWhen `auto` is set, the control will try to expand and fit its content.',
-      options: ['vertical', 'auto', 'none'],
+      options: ['vertical', 'none', 'auto'],
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'vertical' } },
     },
@@ -112,7 +112,7 @@ const metadata: Meta<IgcTextareaComponent> = {
       table: { defaultValue: { summary: 'true' } },
     },
     wrap: {
-      type: '"hard" | "soft" | "off"',
+      type: { name: 'enum', value: ['hard', 'soft', 'off'] },
       description:
         'Indicates how the control should wrap the value for form submission.\nRefer to [this page on MDN](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/textarea#attributes)\nfor explanation of the available values.',
       options: ['hard', 'soft', 'off'],
@@ -206,7 +206,7 @@ interface IgcTextareaArgs {
    * Controls whether the control can be resized.
    * When `auto` is set, the control will try to expand and fit its content.
    */
-  resize: 'vertical' | 'auto' | 'none';
+  resize: 'vertical' | 'none' | 'auto';
   /**
    * The number of visible text lines for the control. If it is specified, it must be a positive integer.
    * If it is not specified, the default value is 3.

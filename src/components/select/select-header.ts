@@ -1,7 +1,7 @@
 import { html, LitElement } from 'lit';
-
-import { addThemingController } from '../../theming/theming-controller.js';
-import { registerComponent } from '../common/definitions/register.js';
+import { addInternalsController } from '#internals/controllers/internals.js';
+import { registerComponent } from '#internals/definitions/register.js';
+import { addThemingController } from '#theming/theming-controller.js';
 import { styles } from '../dropdown/themes/dropdown-header.base.css.js';
 import { all } from '../dropdown/themes/header.js';
 import { styles as shared } from '../dropdown/themes/shared/header/dropdown-header.common.css.js';
@@ -24,6 +24,13 @@ export default class IgcSelectHeaderComponent extends LitElement {
 
   constructor() {
     super();
+
+    // A `listbox` may only own `option` and `group` nodes, so this purely
+    // visual separator is taken out of the accessibility tree.
+    addInternalsController(this, {
+      initialARIA: { role: 'presentation' },
+      reflectRole: true,
+    });
     addThemingController(this, all);
   }
 

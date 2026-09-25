@@ -1,10 +1,11 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import { spy } from 'sinon';
-import { defineComponents } from '../common/definitions/defineComponents.js';
+import { defineComponents } from '#internals/definitions/defineComponents.js';
 import {
   createFormAssociatedTestBed,
-  isFocused,
-} from '../common/utils.spec.js';
+  runExternalLabelAssociationTests,
+} from '#internals/testing/form-testbed.spec.js';
+import { isFocused } from '#internals/testing/helpers.spec.js';
 import IgcSwitchComponent from './switch.js';
 
 describe('Switch', () => {
@@ -270,5 +271,12 @@ describe('Switch', () => {
         spec.assertSubmitPasses();
       });
     });
+  });
+
+  runExternalLabelAssociationTests({
+    tagName: IgcSwitchComponent.tagName,
+    getNativeInput: (host) =>
+      (host as IgcSwitchComponent).renderRoot.querySelector('input')!,
+    checkable: true,
   });
 });

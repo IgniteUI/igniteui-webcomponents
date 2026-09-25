@@ -1,21 +1,17 @@
-import {
-  CalendarResourceStringsEN,
-  DateRangePickerResourceStringsEN,
-} from 'igniteui-i18n-core';
-import { html, LitElement } from 'lit';
+import { html, LitElement, type PropertyValues } from 'lit';
 import { property, state } from 'lit/decorators.js';
-import { addThemingController } from '../../theming/theming-controller.js';
-import { CalendarDay } from '../calendar/model.js';
+import { CalendarDay } from '#internals/date/model.js';
+import { registerComponent } from '#internals/definitions/register.js';
+import { addI18nController } from '#internals/i18n/i18n-controller.js';
+import { addThemingController } from '#theming/theming-controller.js';
 import IgcChipComponent from '../chip/chip.js';
-import { watch } from '../common/decorators/watch.js';
-import { registerComponent } from '../common/definitions/register.js';
-import type { IgcDateRangePickerResourceStrings } from '../common/i18n/EN/date-range-picker.resources.js';
-import { addI18nController } from '../common/i18n/i18n-controller.js';
-import type {
-  CustomDateRange,
-  DateRangePickerResourceStringsType,
-  DateRangeValue,
-} from './date-range-picker.js';
+import type { CustomDateRange, DateRangeValue } from './date-range-picker.js';
+import {
+  dateRangeI18nConfig,
+  type DateRangePickerResourceStringsType,
+  type DateRangeResourceStrings,
+  type IgcDateRangePickerResourceStrings,
+} from './i18n.js';
 import { styles } from './predefined-ranges-area.base.css.js';
 import { all } from './themes/ranges-themes.js';
 import { styles as shared } from './themes/shared/predefined-ranges-area.common.css.js';
@@ -32,16 +28,8 @@ export default class IgcPredefinedRangesAreaComponent extends LitElement {
   public static readonly tagName = 'igc-predefined-ranges-area';
   public static override styles = [styles, shared];
 
-  private readonly _i18nController = addI18nController<
-    IgcDateRangePickerResourceStrings | DateRangePickerResourceStringsType
-  >(this, {
-    defaultEN: Object.assign(
-      {},
-      DateRangePickerResourceStringsEN,
-      CalendarResourceStringsEN
-    ),
-    resourceMapName: 'date-range-picker',
-  });
+  private readonly _i18nController =
+    addI18nController<DateRangeResourceStrings>(this, dateRangeI18nConfig);
 
   /* blazorSuppress */
   public static register(): void {
@@ -70,10 +58,7 @@ export default class IgcPredefinedRangesAreaComponent extends LitElement {
 
   /** The resource strings of the date range area component. */
   @property({ attribute: false })
-  public set resourceStrings(
-    value:
-      IgcDateRangePickerResourceStrings | DateRangePickerResourceStringsType
-  ) {
+  public set resourceStrings(value: DateRangeResourceStrings) {
     this._i18nController.resourceStrings = value;
   }
 
@@ -87,9 +72,10 @@ export default class IgcPredefinedRangesAreaComponent extends LitElement {
     addThemingController(this, all);
   }
 
-  @watch('resourceStrings')
-  protected _updatePredefinedRanges(): void {
-    this._predefinedRanges = getPredefinedRanges(this.resourceStrings);
+  protected override willUpdate(changedProperties: PropertyValues<this>): void {
+    if (changedProperties.has('resourceStrings')) {
+      this._predefinedRanges = getPredefinedRanges(this.resourceStrings);
+    }
   }
 
   private _handleRangeSelect(range: DateRangeValue): void {
@@ -122,7 +108,10 @@ declare global {
 }
 
 type PredefinedRangeKey =
-  'last7Days' | 'currentMonth' | 'last30Days' | 'yearToDate';
+  | 'last7Days'
+  | 'currentMonth'
+  | 'last30Days'
+  | 'yearToDate';
 
 function getPredefinedRanges(
   resourceStrings: DateRangePickerResourceStringsType

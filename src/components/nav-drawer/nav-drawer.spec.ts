@@ -7,10 +7,11 @@ import {
 } from '@open-wc/testing';
 import type { TemplateResult } from 'lit';
 import { spy } from 'sinon';
+import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { runInvokerCommandsTests } from '#internals/testing/invoker-commands.spec.js';
+import { simulateClick } from '#internals/testing/simulate.spec.js';
+import { isPopoverOpen } from '#internals/utils/dom.js';
 import IgcButtonComponent from '../button/button.js';
-import { defineComponents } from '../common/definitions/defineComponents.js';
-import { isPopoverOpen } from '../common/util.js';
-import { simulateClick } from '../common/utils.spec.js';
 import IgcIconComponent from '../icon/icon.js';
 import IgcNavDrawerComponent from './nav-drawer.js';
 
@@ -436,90 +437,14 @@ describe('Navigation Drawer', () => {
     });
   });
 
-  describe('Invoker Commands API', () => {
-    afterEach(async () => {
-      if (navDrawer.open) {
-        await navDrawer.hide();
-      }
-    });
-
-    describe('with igc-button', () => {
-      let invoker: IgcButtonComponent;
-
-      beforeEach(async () => {
-        const container = await fixture<HTMLElement>(html`
-          <div>
-            <igc-button command="--show" commandfor="invoker-nav-drawer"
-              >Open</igc-button
-            >
-            <igc-nav-drawer id="invoker-nav-drawer">
-              <igc-nav-drawer-item>Home</igc-nav-drawer-item>
-            </igc-nav-drawer>
-          </div>
-        `);
-
-        invoker = container.querySelector<IgcButtonComponent>('igc-button')!;
-        navDrawer =
-          container.querySelector<IgcNavDrawerComponent>('igc-nav-drawer')!;
-      });
-
-      it('`--show` opens the drawer', async () => {
-        expect(navDrawer.open).to.be.false;
-
-        invoker.click();
-        await waitUntil(() => navDrawer.open);
-
-        expect(navDrawer.open).to.be.true;
-      });
-
-      it('`--hide` closes an open drawer', async () => {
-        await navDrawer.show();
-        expect(navDrawer.open).to.be.true;
-
-        invoker.command = '--hide';
-        await elementUpdated(invoker);
-
-        invoker.click();
-        await waitUntil(() => !navDrawer.open);
-
-        expect(navDrawer.open).to.be.false;
-      });
-
-      it('`--toggle` opens a closed drawer', async () => {
-        expect(navDrawer.open).to.be.false;
-
-        invoker.command = '--toggle';
-        await elementUpdated(invoker);
-
-        invoker.click();
-        await waitUntil(() => navDrawer.open);
-
-        expect(navDrawer.open).to.be.true;
-      });
-
-      it('`--toggle` closes an open drawer', async () => {
-        await navDrawer.show();
-        expect(navDrawer.open).to.be.true;
-
-        invoker.command = '--toggle';
-        await elementUpdated(invoker);
-
-        invoker.click();
-        await waitUntil(() => !navDrawer.open);
-
-        expect(navDrawer.open).to.be.false;
-      });
-
-      it('a disabled igc-button does not invoke commands', async () => {
-        invoker.disabled = true;
-        await elementUpdated(invoker);
-
-        invoker.click();
-        await elementUpdated(navDrawer);
-
-        expect(navDrawer.open).to.be.false;
-      });
-    });
+  runInvokerCommandsTests({
+    tagName: IgcNavDrawerComponent.tagName,
+    commandFor: 'invoker-nav-drawer',
+    template: html`
+      <igc-nav-drawer id="invoker-nav-drawer">
+        <igc-nav-drawer-item>Home</igc-nav-drawer-item>
+      </igc-nav-drawer>
+    `,
   });
 
   async function createNavDrawer(template?: TemplateResult) {

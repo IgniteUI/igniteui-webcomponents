@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/web-components';
 import { html } from 'lit';
+import { range } from 'lit/directives/range.js';
 
 import {
   type DateRangeDescriptor,
@@ -8,11 +9,11 @@ import {
   IgcDateRangePickerComponent,
   defineComponents,
 } from 'igniteui-webcomponents';
-import { CalendarDay } from '../src/components/calendar/model.js';
 import type {
   CustomDateRange,
   DateRangeValue,
 } from '../src/components/date-range-picker/date-range-picker.js';
+import { CalendarDay } from '../src/internals/date/model.js';
 import {
   disableStoryControls,
   formControls,
@@ -45,17 +46,14 @@ const metadata: Meta<IgcDateRangePickerComponent> = {
   },
   argTypes: {
     value: {
-      type: 'DateRangeValue',
+      type: { name: 'other', value: 'DateRangeValue' },
       description: 'The value of the picker',
-      control: 'date',
     },
-    mode: {
-      type: '"dropdown" | "dialog"',
-      description:
-        'Determines whether the calendar is opened in a dropdown or a modal dialog',
-      options: ['dropdown', 'dialog'],
-      control: { type: 'inline-radio' },
-      table: { defaultValue: { summary: 'dropdown' } },
+    visibleMonths: {
+      type: 'number',
+      description: 'The number of months displayed in the calendar.',
+      control: 'number',
+      table: { defaultValue: { summary: '2' } },
     },
     useTwoInputs: {
       type: 'boolean',
@@ -70,34 +68,6 @@ const metadata: Meta<IgcDateRangePickerComponent> = {
         'Whether the control will show chips with predefined ranges.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
-    },
-    locale: {
-      type: 'string',
-      description: 'The locale settings used to display the value.',
-      control: 'text',
-    },
-    readOnly: {
-      type: 'boolean',
-      description: 'Makes the control a readonly field.',
-      control: 'boolean',
-      table: { defaultValue: { summary: 'false' } },
-    },
-    nonEditable: {
-      type: 'boolean',
-      description: 'Whether to allow typing in the input.',
-      control: 'boolean',
-      table: { defaultValue: { summary: 'false' } },
-    },
-    outlined: {
-      type: 'boolean',
-      description: 'Whether the control will have outlined appearance.',
-      control: 'boolean',
-      table: { defaultValue: { summary: 'false' } },
-    },
-    label: {
-      type: 'string',
-      description: 'The label of the control (single input).',
-      control: 'text',
     },
     labelStart: {
       type: 'string',
@@ -128,96 +98,6 @@ const metadata: Meta<IgcDateRangePickerComponent> = {
       control: 'text',
       table: { defaultValue: { summary: '' } },
     },
-    prompt: {
-      type: 'string',
-      description: 'The prompt symbol to use for unfilled parts of the mask.',
-      control: 'text',
-      table: { defaultValue: { summary: '_' } },
-    },
-    displayFormat: {
-      type: 'string',
-      description:
-        'Format to display the value in when not editing.\nDefaults to the locale format if not set.',
-      control: 'text',
-    },
-    inputFormat: {
-      type: 'string',
-      description:
-        'The date format to apply on the inputs.\nDefaults to the current locale Intl.DateTimeFormat',
-      control: 'text',
-    },
-    min: {
-      type: 'Date',
-      description:
-        'The minimum value required for the date range picker to remain valid.',
-      control: 'date',
-    },
-    max: {
-      type: 'Date',
-      description:
-        'The maximum value required for the date range picker to remain valid.',
-      control: 'date',
-    },
-    visibleMonths: {
-      type: 'number',
-      description: 'The number of months displayed in the calendar.',
-      control: 'number',
-    },
-    headerOrientation: {
-      type: '"horizontal" | "vertical"',
-      description: 'The orientation of the calendar header.',
-      options: ['horizontal', 'vertical'],
-      control: { type: 'inline-radio' },
-      table: { defaultValue: { summary: 'horizontal' } },
-    },
-    orientation: {
-      type: '"horizontal" | "vertical"',
-      description:
-        "The orientation of the multiple months displayed in the calendar's days view.",
-      options: ['horizontal', 'vertical'],
-      control: { type: 'inline-radio' },
-      table: { defaultValue: { summary: 'horizontal' } },
-    },
-    hideHeader: {
-      type: 'boolean',
-      description: 'Determines whether the calendar hides its header.',
-      control: 'boolean',
-      table: { defaultValue: { summary: 'false' } },
-    },
-    activeDate: {
-      type: 'Date',
-      description:
-        'Gets/Sets the date which is shown in the calendar picker and is highlighted.\nBy default it is the current date.',
-      control: 'date',
-    },
-    showWeekNumbers: {
-      type: 'boolean',
-      description: 'Whether to show the number of the week in the calendar.',
-      control: 'boolean',
-      table: { defaultValue: { summary: 'false' } },
-    },
-    hideOutsideDays: {
-      type: 'boolean',
-      description:
-        'Controls the visibility of the dates that do not belong to the current month.',
-      control: 'boolean',
-      table: { defaultValue: { summary: 'false' } },
-    },
-    weekStart: {
-      type: '"sunday" | "monday" | "tuesday" | "wednesday" | "thursday" | "friday" | "saturday"',
-      description: 'Sets the start day of the week for the calendar.',
-      options: [
-        'sunday',
-        'monday',
-        'tuesday',
-        'wednesday',
-        'thursday',
-        'friday',
-        'saturday',
-      ],
-      control: { type: 'select' },
-      table: { defaultValue: { summary: 'sunday' } },
-    },
     required: {
       type: 'boolean',
       description:
@@ -242,17 +122,147 @@ const metadata: Meta<IgcDateRangePickerComponent> = {
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
+    mode: {
+      type: { name: 'enum', value: ['dropdown', 'dialog'] },
+      description:
+        'Determines whether the calendar is opened in a dropdown or a modal dialog.',
+      options: ['dropdown', 'dialog'],
+      control: { type: 'inline-radio' },
+      table: { defaultValue: { summary: 'dropdown' } },
+    },
+    readOnly: {
+      type: 'boolean',
+      description: 'Makes the control a readonly field.',
+      control: 'boolean',
+      table: { defaultValue: { summary: 'false' } },
+    },
+    nonEditable: {
+      type: 'boolean',
+      description: 'Whether to allow typing in the input.',
+      control: 'boolean',
+      table: { defaultValue: { summary: 'false' } },
+    },
+    outlined: {
+      type: 'boolean',
+      description: 'Whether the control will have outlined appearance.',
+      control: 'boolean',
+      table: { defaultValue: { summary: 'false' } },
+    },
+    label: {
+      type: 'string',
+      description: 'The label of the picker.',
+      control: 'text',
+    },
+    prompt: {
+      type: 'string',
+      description: 'The prompt symbol to use for unfilled parts of the mask.',
+      control: 'text',
+      table: { defaultValue: { summary: '_' } },
+    },
+    displayFormat: {
+      type: 'string',
+      description:
+        'Format to display the value in when not editing.\nDefaults to the locale format if not set.',
+      control: 'text',
+    },
+    inputFormat: {
+      type: 'string',
+      description:
+        'The date format to apply on the input.\nDefaults to the current locale Intl.DateTimeFormat',
+      control: 'text',
+    },
+    locale: {
+      type: 'string',
+      description:
+        "The locale used to format the display value and to resolve the\ncomponent's resource strings. Falls back to the global locale when not set.",
+      control: 'text',
+    },
+    min: {
+      type: 'date',
+      description: 'The minimum value required for the picker to remain valid.',
+      control: 'date',
+    },
+    max: {
+      type: 'date',
+      description: 'The maximum value required for the picker to remain valid.',
+      control: 'date',
+    },
+    activeDate: {
+      type: 'date',
+      description:
+        'Gets/Sets the date which is shown in the calendar picker and is highlighted.\nBy default it is the current date.',
+      control: 'date',
+    },
+    headerOrientation: {
+      type: { name: 'enum', value: ['horizontal', 'vertical'] },
+      description: 'The orientation of the calendar header.',
+      options: ['horizontal', 'vertical'],
+      control: { type: 'inline-radio' },
+      table: { defaultValue: { summary: 'horizontal' } },
+    },
+    orientation: {
+      type: { name: 'enum', value: ['horizontal', 'vertical'] },
+      description:
+        "The orientation of the multiple months displayed in the calendar's days view.",
+      options: ['horizontal', 'vertical'],
+      control: { type: 'inline-radio' },
+      table: { defaultValue: { summary: 'horizontal' } },
+    },
+    hideHeader: {
+      type: 'boolean',
+      description: 'Determines whether the calendar hides its header.',
+      control: 'boolean',
+      table: { defaultValue: { summary: 'false' } },
+    },
+    hideOutsideDays: {
+      type: 'boolean',
+      description:
+        'Controls the visibility of the dates that do not belong to the current month.',
+      control: 'boolean',
+      table: { defaultValue: { summary: 'false' } },
+    },
+    showWeekNumbers: {
+      type: 'boolean',
+      description: 'Whether to show the number of the week in the calendar.',
+      control: 'boolean',
+      table: { defaultValue: { summary: 'false' } },
+    },
+    weekStart: {
+      type: {
+        name: 'enum',
+        value: [
+          'sunday',
+          'monday',
+          'tuesday',
+          'wednesday',
+          'thursday',
+          'friday',
+          'saturday',
+        ],
+      },
+      description: 'Sets the start day of the week for the calendar.',
+      options: [
+        'sunday',
+        'monday',
+        'tuesday',
+        'wednesday',
+        'thursday',
+        'friday',
+        'saturday',
+      ],
+      control: { type: 'select' },
+    },
     keepOpenOnSelect: {
       type: 'boolean',
       description:
-        'Whether the component dropdown should be kept open on selection.',
+        'Keeps the dropdown of the component open after the user selects an item.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
     keepOpenOnOutsideClick: {
       type: 'boolean',
       description:
-        'Whether the component dropdown should be kept open on clicking outside of it.',
+        'Keeps the dropdown of the component open when the user clicks outside of\nit.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
@@ -262,31 +272,40 @@ const metadata: Meta<IgcDateRangePickerComponent> = {
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
+    scrollStrategy: {
+      type: { name: 'enum', value: ['scroll', 'hide', 'close'] },
+      description:
+        'Sets the behavior of the component when the parent container scrolls.\n\nIf the value is `hide`, the component hides while the anchor is fully out\nof view. `hide` is the default value.\n\nIf the value is `scroll`, the component stays visible and anchored.\n\nIf the value is `close`, the component closes on each scroll.',
+      options: ['scroll', 'hide', 'close'],
+      control: { type: 'inline-radio' },
+      table: { defaultValue: { summary: 'hide' } },
+    },
   },
   args: {
-    mode: 'dropdown',
+    visibleMonths: 2,
     useTwoInputs: false,
     usePredefinedRanges: false,
-    readOnly: false,
-    nonEditable: false,
-    outlined: false,
     labelStart: '',
     labelEnd: '',
     placeholderStart: '',
     placeholderEnd: '',
+    required: false,
+    disabled: false,
+    invalid: false,
+    mode: 'dropdown',
+    readOnly: false,
+    nonEditable: false,
+    outlined: false,
     prompt: '_',
     headerOrientation: 'horizontal',
     orientation: 'horizontal',
     hideHeader: false,
-    showWeekNumbers: false,
     hideOutsideDays: false,
-    weekStart: 'sunday',
-    required: false,
-    disabled: false,
-    invalid: false,
+    showWeekNumbers: false,
     keepOpenOnSelect: false,
     keepOpenOnOutsideClick: false,
     open: false,
+    scrollStrategy: 'hide',
   },
 };
 
@@ -295,22 +314,12 @@ export default metadata;
 interface IgcDateRangePickerArgs {
   /** The value of the picker */
   value: DateRangeValue;
-  /** Determines whether the calendar is opened in a dropdown or a modal dialog */
-  mode: 'dropdown' | 'dialog';
+  /** The number of months displayed in the calendar. */
+  visibleMonths: number;
   /** Use two inputs to display the date range values. Makes the input editable in dropdown mode. */
   useTwoInputs: boolean;
   /** Whether the control will show chips with predefined ranges. */
   usePredefinedRanges: boolean;
-  /** The locale settings used to display the value. */
-  locale: string;
-  /** Makes the control a readonly field. */
-  readOnly: boolean;
-  /** Whether to allow typing in the input. */
-  nonEditable: boolean;
-  /** Whether the control will have outlined appearance. */
-  outlined: boolean;
-  /** The label of the control (single input). */
-  label: string;
   /** The label of the start input. */
   labelStart: string;
   /** The label of the end input. */
@@ -321,6 +330,24 @@ interface IgcDateRangePickerArgs {
   placeholderStart: string;
   /** The placeholder text of the end input. */
   placeholderEnd: string;
+  /** When set, makes the component a required field for validation. */
+  required: boolean;
+  /** The name of the control, submitted with the form data. */
+  name: string;
+  /** The disabled state of the component. */
+  disabled: boolean;
+  /** Sets the control into invalid state (visual state only). */
+  invalid: boolean;
+  /** Determines whether the calendar is opened in a dropdown or a modal dialog. */
+  mode: 'dropdown' | 'dialog';
+  /** Makes the control a readonly field. */
+  readOnly: boolean;
+  /** Whether to allow typing in the input. */
+  nonEditable: boolean;
+  /** Whether the control will have outlined appearance. */
+  outlined: boolean;
+  /** The label of the picker. */
+  label: string;
   /** The prompt symbol to use for unfilled parts of the mask. */
   prompt: string;
   /**
@@ -329,31 +356,34 @@ interface IgcDateRangePickerArgs {
    */
   displayFormat: string;
   /**
-   * The date format to apply on the inputs.
+   * The date format to apply on the input.
    * Defaults to the current locale Intl.DateTimeFormat
    */
   inputFormat: string;
-  /** The minimum value required for the date range picker to remain valid. */
+  /**
+   * The locale used to format the display value and to resolve the
+   * component's resource strings. Falls back to the global locale when not set.
+   */
+  locale: string;
+  /** The minimum value required for the picker to remain valid. */
   min: Date;
-  /** The maximum value required for the date range picker to remain valid. */
+  /** The maximum value required for the picker to remain valid. */
   max: Date;
-  /** The number of months displayed in the calendar. */
-  visibleMonths: number;
+  /**
+   * Gets/Sets the date which is shown in the calendar picker and is highlighted.
+   * By default it is the current date.
+   */
+  activeDate: Date;
   /** The orientation of the calendar header. */
   headerOrientation: 'horizontal' | 'vertical';
   /** The orientation of the multiple months displayed in the calendar's days view. */
   orientation: 'horizontal' | 'vertical';
   /** Determines whether the calendar hides its header. */
   hideHeader: boolean;
-  /**
-   * Gets/Sets the date which is shown in the calendar picker and is highlighted.
-   * By default it is the current date.
-   */
-  activeDate: Date;
-  /** Whether to show the number of the week in the calendar. */
-  showWeekNumbers: boolean;
   /** Controls the visibility of the dates that do not belong to the current month. */
   hideOutsideDays: boolean;
+  /** Whether to show the number of the week in the calendar. */
+  showWeekNumbers: boolean;
   /** Sets the start day of the week for the calendar. */
   weekStart:
     | 'sunday'
@@ -363,20 +393,26 @@ interface IgcDateRangePickerArgs {
     | 'thursday'
     | 'friday'
     | 'saturday';
-  /** When set, makes the component a required field for validation. */
-  required: boolean;
-  /** The name of the control, submitted with the form data. */
-  name: string;
-  /** The disabled state of the component. */
-  disabled: boolean;
-  /** Sets the control into invalid state (visual state only). */
-  invalid: boolean;
-  /** Whether the component dropdown should be kept open on selection. */
+  /** Keeps the dropdown of the component open after the user selects an item. */
   keepOpenOnSelect: boolean;
-  /** Whether the component dropdown should be kept open on clicking outside of it. */
+  /**
+   * Keeps the dropdown of the component open when the user clicks outside of
+   * it.
+   */
   keepOpenOnOutsideClick: boolean;
   /** Sets the open state of the component. */
   open: boolean;
+  /**
+   * Sets the behavior of the component when the parent container scrolls.
+   *
+   * If the value is `hide`, the component hides while the anchor is fully out
+   * of view. `hide` is the default value.
+   *
+   * If the value is `scroll`, the component stays visible and anchored.
+   *
+   * If the value is `close`, the component closes on each scroll.
+   */
+  scrollStrategy: 'scroll' | 'hide' | 'close';
 }
 type Story = StoryObj<IgcDateRangePickerArgs>;
 
@@ -887,5 +923,53 @@ export const FormSingleInput: Story = {
       </fieldset>
       ${formControls()}
     </form>
+  `,
+};
+
+export const InScrollingPanel: Story = {
+  args: {
+    label: 'Stay period',
+    scrollStrategy: 'close',
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'A date range picker opens its calendar inside a scrolling panel. A panel can be a settings pane, a dialog body or a side drawer. The `scroll-strategy` property sets what happens to the calendar when the panel scrolls. If the value is `hide`, the calendar hides while the input is out of view. `hide` is the default value. If the value is `scroll`, the calendar follows the input. If the value is `close`, the calendar closes. In the `dialog` mode the calendar opens in a modal dialog and not in a popover. The picker then ignores this property. Change the `mode` control to see this behavior.',
+      },
+    },
+  },
+  render: ({ label, mode, useTwoInputs, scrollStrategy }) => html`
+    <style>
+      .panel {
+        max-width: 46rem;
+        height: 16rem;
+        overflow: auto;
+        padding: 1rem;
+        border: 1px solid var(--ig-gray-200, #e0e0e0);
+        border-radius: 4px;
+      }
+    </style>
+
+    <div class="panel">
+      <h4>Booking details</h4>
+      <p>
+        Open the calendar and scroll this panel to compare the scroll
+        strategies.
+      </p>
+
+      <igc-date-range-picker
+        .label=${label}
+        .mode=${mode}
+        .useTwoInputs=${useTwoInputs}
+        .scrollStrategy=${scrollStrategy}
+      ></igc-date-range-picker>
+
+      <p>
+        ${Array.from(range(1, 24)).map(
+          () => html`Rates are calculated per night for the selected period. `
+        )}
+      </p>
+    </div>
   `,
 };

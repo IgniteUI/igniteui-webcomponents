@@ -27,14 +27,14 @@ const metadata: Meta<IgcTabsComponent> = {
   },
   argTypes: {
     alignment: {
-      type: '"start" | "end" | "center" | "justify"',
+      type: { name: 'enum', value: ['start', 'end', 'center', 'justify'] },
       description: 'Determines the alignment of the tabs header strip.',
       options: ['start', 'end', 'center', 'justify'],
       control: { type: 'select' },
       table: { defaultValue: { summary: 'start' } },
     },
     activation: {
-      type: '"auto" | "manual"',
+      type: { name: 'enum', value: ['auto', 'manual'] },
       description:
         "Determines the activation behavior of the tabs.\n\nWhen set to 'auto', the tab will be selected when it receives focus.\nWhen set to 'manual', the tab will only be selected when it is clicked or activated with the keyboard.",
       options: ['auto', 'manual'],

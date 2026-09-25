@@ -47,30 +47,30 @@ const metadata: Meta<IgcVirtualScrollComponent> = {
     docs: {
       description: {
         component:
-          'A virtual scroll component that efficiently renders large lists by only\nrendering the items currently visible in the viewport.',
+          'A virtual scroll component for large lists. Only the items visible in the\nviewport are rendered.',
       },
     },
     actions: { handles: ['igcStateChange', 'igcDataRequest'] },
   },
   argTypes: {
     orientation: {
-      type: '"vertical" | "horizontal"',
+      type: { name: 'enum', value: ['horizontal', 'vertical'] },
       description: 'Scroll orientation of the virtual scroll.',
-      options: ['vertical', 'horizontal'],
+      options: ['horizontal', 'vertical'],
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'vertical' } },
     },
     overScan: {
       type: 'number',
       description:
-        'Number of extra items to render beyond the visible area of the viewport.\nHigher values reduce blank flashes during fast scrolling but may impact performance.',
+        'Number of extra items to render beyond the visible area of the viewport.\nHigher values reduce blank flashes during fast scrolling but can lower performance.',
       control: 'number',
       table: { defaultValue: { summary: '2' } },
     },
     estimatedItemSize: {
       type: 'number',
       description:
-        'Estimated item size in pixels used before an item is measured in the DOM.\nThe engine replaces this with the actual measured size after the first render of each item.',
+        'Estimated item size in pixels, used before an item is measured in the DOM.\nAfter the first render of an item, the engine replaces the estimate with the measured size.\nThe average measured size also replaces the estimate of the items that are not measured\nyet, so the scrollbar follows the real content.',
       control: 'number',
       table: { defaultValue: { summary: '50' } },
     },
@@ -82,15 +82,17 @@ export default metadata;
 
 interface IgcVirtualScrollArgs {
   /** Scroll orientation of the virtual scroll. */
-  orientation: 'vertical' | 'horizontal';
+  orientation: 'horizontal' | 'vertical';
   /**
    * Number of extra items to render beyond the visible area of the viewport.
-   * Higher values reduce blank flashes during fast scrolling but may impact performance.
+   * Higher values reduce blank flashes during fast scrolling but can lower performance.
    */
   overScan: number;
   /**
-   * Estimated item size in pixels used before an item is measured in the DOM.
-   * The engine replaces this with the actual measured size after the first render of each item.
+   * Estimated item size in pixels, used before an item is measured in the DOM.
+   * After the first render of an item, the engine replaces the estimate with the measured size.
+   * The average measured size also replaces the estimate of the items that are not measured
+   * yet, so the scrollbar follows the real content.
    */
   estimatedItemSize: number;
 }

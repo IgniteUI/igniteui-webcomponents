@@ -1,7 +1,7 @@
 import { html } from 'lit';
-import { addThemingController } from '../../theming/theming-controller.js';
-import { registerComponent } from '../common/definitions/register.js';
-import { IgcBaseAlertLikeComponent } from '../common/mixins/alert.js';
+import { registerComponent } from '#internals/definitions/register.js';
+import { IgcBaseAlertLikeComponent } from '#internals/mixins/alert.js';
+import { addThemingController } from '#theming/theming-controller.js';
 import { styles as shared } from './themes/shared/toast.common.css.js';
 import { all } from './themes/themes.js';
 import { styles } from './themes/toast.base.css.js';
@@ -18,8 +18,6 @@ import { styles } from './themes/toast.base.css.js';
  * @element igc-toast
  *
  * @slot - Default slot for the toast content.
- *
- * @csspart base - The base wrapper of the toast.
  */
 export default class IgcToastComponent extends IgcBaseAlertLikeComponent {
   public static readonly tagName = 'igc-toast';

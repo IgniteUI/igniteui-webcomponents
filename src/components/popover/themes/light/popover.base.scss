@@ -9,8 +9,127 @@
     overflow: visible;
     isolation: isolate;
     height: fit-content;
+
+    // `unset` computes to `auto`, which the inline styles of the fallback and
+    // the `position-area` rules below both need.
     inset: unset;
     border: none;
     padding: 0;
     background: transparent;
+}
+
+// -----------------------------------------------------------------------------
+// Native CSS anchor positioning
+// -----------------------------------------------------------------------------
+// These rules apply only with the [data-anchored] attribute, which the native
+// strategy sets. A test can force a browser with full support onto the
+// fallback, so the rules must not use @supports.
+
+// The anchor is the implicit anchor of showPopover({ source }). anchor-name is
+// tree-scoped and cannot cross the shadow boundary.
+
+// All rules use the physical keywords. In the top layer the logical keywords
+// resolve against the writing mode of the root element, and current engines do
+// not implement the *-self-* keywords.
+
+// floating-ui resolves -start and -end from the direction of the floating
+// element, and the :dir() guards match that. :dir() follows the dir attribute
+// only, so `direction: rtl` in CSS does not flip these placements. The left and
+// right placements always use the physical top and bottom, as floating-ui does.
+// -----------------------------------------------------------------------------
+[data-anchored] {
+    // Override the `margin: auto` that the user agent sets on [popover]. An
+    // automatic margin breaks anchor-center and the alignment to an edge.
+    margin: 0;
+
+    // Hide the popover while the anchor is fully out of view, for the `hide`
+    // and the `close` strategies. The fallback uses the hide() middleware.
+    // Safari 26.0 and 26.1 ignore position-visibility. This is acceptable.
+    position-visibility: anchors-visible;
+
+    // Each rule sets the alignment. No rule depends on the `normal` alignment
+    // of a spanning area.
+    @each $side in top, bottom {
+        &[data-placement='#{$side}'] {
+            position-area: #{$side};
+            justify-self: anchor-center;
+        }
+    }
+
+    // The span keyword and the alignment are always on opposite sides.
+    @each $dir, $start, $end in (ltr right left), (rtl left right) {
+        &:dir(#{$dir}) {
+            @each $side in top, bottom {
+                &[data-placement='#{$side}-start'] {
+                    position-area: #{$side} span-#{$start};
+                    justify-self: if($start == right, left, right);
+                }
+
+                &[data-placement='#{$side}-end'] {
+                    position-area: #{$side} span-#{$end};
+                    justify-self: if($end == right, left, right);
+                }
+            }
+        }
+    }
+
+    @each $side in left, right {
+        &[data-placement='#{$side}'] {
+            position-area: #{$side};
+            align-self: anchor-center;
+        }
+
+        &[data-placement='#{$side}-start'] {
+            position-area: #{$side} span-bottom;
+            align-self: self-start;
+        }
+
+        &[data-placement='#{$side}-end'] {
+            position-area: #{$side} span-top;
+            align-self: self-end;
+        }
+    }
+
+    // Symmetric margins on the main axis make the offset. The margin on the
+    // anchor side makes the gap. The margin on the far side has no effect, so
+    // a flip tactic that transforms the margins keeps the result correct. A
+    // margin on the cross axis breaks the -start and -end alignment. A
+    // negative offset overlaps the anchor, as in floating-ui.
+    &[data-placement^='top'],
+    &[data-placement^='bottom'] {
+        margin-top: var(--_igc-popover-offset, 0);
+        margin-bottom: var(--_igc-popover-offset, 0);
+    }
+
+    &[data-placement^='left'],
+    &[data-placement^='right'] {
+        margin-left: var(--_igc-popover-offset, 0);
+        margin-right: var(--_igc-popover-offset, 0);
+    }
+}
+
+// The `scroll` strategy does not hide the popover. The popover follows the
+// anchor while the anchor is fully out of view.
+[data-anchored][data-scroll-strategy='scroll'] {
+    position-visibility: always;
+}
+
+// The popover flips only to the opposite side on the main axis, as the flip()
+// middleware of the fallback does. Neither one flips across the axes.
+:host([flip]) [data-anchored] {
+    &[data-placement^='top'],
+    &[data-placement^='bottom'] {
+        position-try-fallbacks: flip-block;
+    }
+
+    &[data-placement^='left'],
+    &[data-placement^='right'] {
+        position-try-fallbacks: flip-inline;
+    }
+}
+
+// anchor-size() resolves against the implicit anchor. The native strategy
+// sets no inline width, so no inline width overrides this rule.
+:host([same-width]) [data-anchored] {
+    width: anchor-size(width);
 }

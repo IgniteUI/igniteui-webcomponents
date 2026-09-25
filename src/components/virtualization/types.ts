@@ -1,6 +1,6 @@
 /**
- * Context for the item template in the virtual scroll component.
- * Provides the item data, its index, and utility properties for template rendering.
+ * Context passed to the item template: the item data, its index, and utility
+ * properties for rendering.
  */
 export class VirtualScrollItemContext<T> {
   /** The current item in the virtual scroll */
@@ -27,6 +27,20 @@ export class VirtualScrollItemContext<T> {
   }
 }
 
+/**
+ * How `scrollToIndex` positions the requested item in the viewport.
+ * The subset of `ScrollLogicalPosition` that the engine supports.
+ */
+export type ScrollAlignment = 'start' | 'center' | 'end';
+
+/** The currently visible (and over-scanned) range of items. */
+export interface VisibleRange {
+  /** Index of the first rendered item (inclusive) */
+  startIndex: number;
+  /** Index of the last rendered item (inclusive) */
+  endIndex: number;
+}
+
 /** Snapshot of the currently rendered virtual window */
 export interface VirtualScrollState {
   /** The index of the first item currently rendered in the viewport. */
@@ -40,8 +54,9 @@ export interface VirtualScrollState {
 }
 
 /**
- * Request for more data to be loaded in the virtual scroll, typically emitted when the user scrolls near the end of the currently loaded items.
- * The consumer of the virtual scroll component can listen to this event and load more data as needed.
+ * A request for more data, emitted when the rendered window comes near the
+ * end of the loaded items. Consumers listen for it and append the requested
+ * items.
  */
 export interface VirtualScrollDataRequest {
   /**

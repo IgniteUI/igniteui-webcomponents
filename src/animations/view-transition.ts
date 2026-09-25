@@ -4,7 +4,8 @@ import {
   type DirectiveParameters,
   directive,
 } from 'lit/async-directive.js';
-import { isFunction } from '../components/common/util.js';
+import { sameItems } from '#internals/utils/arrays.js';
+import { isFunction } from '#internals/utils/types.js';
 import { getPrefersReducedMotion } from './player.js';
 
 type ScopedViewTransitionElement = HTMLElement & {
@@ -23,29 +24,7 @@ function hasScopedViewTransition(
   return 'startViewTransition' in node && isFunction(node.startViewTransition);
 }
 
-/**
- * Starts a document view transition and skips it if the user has requested reduced motion.
- */
-export function startViewTransition(
-  callback: ViewTransitionUpdateCallback
-): ViewTransition {
-  const init = globalThis.document?.startViewTransition;
-
-  /* c8 ignore next 11 */
-  if (!init) {
-    callback();
-    const resolved = Promise.resolve();
-
-    return {
-      finished: resolved,
-      ready: resolved,
-      updateCallbackDone: resolved,
-      skipTransition: () => {},
-    } as ViewTransition;
-  }
-
-  const transition = init.call(globalThis.document, callback);
-
+function skipOnReducedMotion(transition: ViewTransition): ViewTransition {
   if (getPrefersReducedMotion()) {
     transition.skipTransition();
   }
@@ -54,23 +33,39 @@ export function startViewTransition(
 }
 
 /**
+ * Starts a document view transition and skips it if the user has requested reduced motion.
+ */
+export function startViewTransition(
+  callback: ViewTransitionUpdateCallback
+): ViewTransition {
+  const init = globalThis.document?.startViewTransition;
+
+  /* c8 ignore next 10 */
+  if (!init) {
+    const done = Promise.resolve(callback()).then(() => {});
+
+    return {
+      finished: done,
+      ready: done,
+      updateCallbackDone: done,
+      skipTransition: () => {},
+    } as ViewTransition;
+  }
+
+  return skipOnReducedMotion(init.call(globalThis.document, callback));
+}
+
+/**
  * Starts a scoped view transition on the specified target element and skips it if the user has requested reduced motion.
+ * Returns null, without calling `callback`, if the target does not support scoped view transitions.
  */
 export function startScopedViewTransition(
-  target: HTMLElement,
+  target: Node,
   callback: ViewTransitionUpdateCallback
 ): ViewTransition | null {
-  if (!hasScopedViewTransition(target)) {
-    return null;
-  }
-
-  const transition = target.startViewTransition(callback);
-
-  if (getPrefersReducedMotion()) {
-    transition.skipTransition();
-  }
-
-  return transition;
+  return hasScopedViewTransition(target)
+    ? skipOnReducedMotion(target.startViewTransition(callback))
+    : null;
 }
 
 /**
@@ -102,15 +97,17 @@ export function getActiveViewTransition(): ViewTransition | null {
 export function getActiveScopedViewTransition(
   target: Node
 ): ViewTransition | null {
-  if (!hasScopedViewTransition(target)) {
-    return null;
-  }
+  return hasScopedViewTransition(target)
+    ? (target.activeViewTransition ?? null)
+    : null;
+}
 
-  return target.activeViewTransition ?? null;
+function isSameTemplate(a: TemplateResult, b: TemplateResult): boolean {
+  return a.strings === b.strings && sameItems(a.values, b.values);
 }
 
 class ScopedViewTransitionDirective extends AsyncDirective {
-  private _isFirstRender = true;
+  private _template?: TemplateResult;
 
   public override render(template: TemplateResult): TemplateResult {
     return template;
@@ -119,40 +116,32 @@ class ScopedViewTransitionDirective extends AsyncDirective {
   public override update(
     part: ChildPart,
     [template]: DirectiveParameters<this>
-  ) {
-    if (this._isFirstRender) {
-      this._isFirstRender = false;
+  ): TemplateResult | typeof noChange {
+    const previous = this._template;
+    this._template = template;
+
+    if (!previous || isSameTemplate(previous, template)) {
       return this.render(template);
     }
 
-    const parent = part.parentNode;
-
-    if (!hasScopedViewTransition(parent)) {
-      return this.render(template);
-    }
-
-    const transition = parent.startViewTransition(() => {
+    const transition = startScopedViewTransition(part.parentNode, () => {
       this.setValue(template);
+      // Let nested elements render before the new state is captured.
       return new Promise((resolve) => requestAnimationFrame(resolve));
     });
 
-    if (getPrefersReducedMotion()) {
-      transition.skipTransition();
-    }
-
-    return noChange;
+    return transition ? noChange : this.render(template);
   }
 }
 
 /**
- * A directive that enables scoped view transitions for a template.
- *
- * When applied, it will start a view transition whenever the template is updated,
- * provided that the parent node supports view transitions.
- * If the user has requested reduced motion, the transition will be skipped.
+ * A directive that starts a scoped view transition on the parent element each time
+ * the template changes. The first render and renders with an unchanged template
+ * (same strings and values) do not start a transition.
+ * If the user has requested reduced motion, the transition is skipped.
  *
  * @remarks
- * This directive is intended to be used with Lit templates inside a component that supports view transitions.
- * It will not work if the parent node does not support view transitions (e.g., if the parent is not a document or element that implements the ViewTransition interface).
+ * The parent node must implement `Element.startViewTransition()`. Otherwise the
+ * template is rendered directly, without a transition.
  */
 export const scopedViewTransition = directive(ScopedViewTransitionDirective);

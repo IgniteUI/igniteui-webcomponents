@@ -6,8 +6,6 @@ import {
   waitUntil,
 } from '@open-wc/testing';
 import sinon, { spy } from 'sinon';
-import IgcCalendarComponent from '../calendar/calendar.js';
-import { CalendarDay } from '../calendar/model.js';
 import {
   altKey,
   arrowDown,
@@ -16,15 +14,21 @@ import {
   arrowUp,
   ctrlKey,
   escapeKey,
-} from '../common/controllers/key-bindings.js';
-import { defineComponents } from '../common/definitions/defineComponents.js';
+} from '#internals/controllers/key-bindings.js';
+import { CalendarDay } from '#internals/date/model.js';
+import { defineComponents } from '#internals/definitions/defineComponents.js';
 import {
-  isFocused,
+  runAriaProjectionTests,
   runExternalLabelAssociationTests,
+} from '#internals/testing/form-testbed.spec.js';
+import { isFocused } from '#internals/testing/helpers.spec.js';
+import {
   simulateClick,
   simulateInput,
   simulateKeyboard,
-} from '../common/utils.spec.js';
+  simulateScroll,
+} from '#internals/testing/simulate.spec.js';
+import IgcCalendarComponent from '../calendar/calendar.js';
 import type IgcDialogComponent from '../dialog/dialog.js';
 import IgcDateRangeInputComponent from './date-range-input.js';
 import IgcDateRangePickerComponent from './date-range-picker.js';
@@ -46,6 +50,22 @@ describe('Date range picker - single input', () => {
           IgcDateRangeInputComponent.tagName
         )!
         .renderRoot.querySelector('input')!,
+  });
+
+  runAriaProjectionTests({
+    tagName: IgcDateRangePickerComponent.tagName,
+    getNativeInput: (host) =>
+      (host as IgcDateRangePickerComponent).renderRoot
+        .querySelector<IgcDateRangeInputComponent>(
+          IgcDateRangeInputComponent.tagName
+        )!
+        .renderRoot.querySelector('input')!,
+    expected: { hasPopup: 'dialog' },
+    getDescription: (host) => [
+      (host as IgcDateRangePickerComponent).renderRoot.querySelector(
+        '#helper-text'
+      )!,
+    ],
   });
 
   let picker: IgcDateRangePickerComponent;
@@ -78,26 +98,33 @@ describe('Date range picker - single input', () => {
       expect(picker).is.not.undefined;
     });
 
-    it('is accessible (closed state)', async () => {
-      await expect(picker).shadowDom.to.be.accessible();
-      await expect(picker).lightDom.to.be.accessible();
-    });
+    describe('Accessibility', () => {
+      beforeEach(async () => {
+        picker.label = 'Date range';
+        await elementUpdated(picker);
+      });
 
-    it('is accessible (open state) - default dropdown mode', async () => {
-      picker.open = true;
-      await elementUpdated(picker);
+      it('is accessible (closed state)', async () => {
+        await expect(picker).shadowDom.to.be.accessible();
+        await expect(picker).lightDom.to.be.accessible();
+      });
 
-      await expect(picker).shadowDom.to.be.accessible();
-      await expect(picker).lightDom.to.be.accessible();
-    });
+      it('is accessible (open state) - default dropdown mode', async () => {
+        picker.open = true;
+        await elementUpdated(picker);
 
-    it('is accessible (open state) - dialog mode', async () => {
-      picker.open = true;
-      picker.mode = 'dialog';
-      await elementUpdated(picker);
+        await expect(picker).shadowDom.to.be.accessible();
+        await expect(picker).lightDom.to.be.accessible();
+      });
 
-      await expect(picker).shadowDom.to.be.accessible();
-      await expect(picker).lightDom.to.be.accessible();
+      it('is accessible (open state) - dialog mode', async () => {
+        picker.open = true;
+        picker.mode = 'dialog';
+        await elementUpdated(picker);
+
+        await expect(picker).shadowDom.to.be.accessible();
+        await expect(picker).lightDom.to.be.accessible();
+      });
     });
 
     it('should not render title slot elements in dropdown mode', async () => {
@@ -401,6 +428,28 @@ describe('Date range picker - single input', () => {
       expect(input.value).to.equal('01/15/2025 - 01/15/2026');
     });
   });
+  describe('Scroll strategy', () => {
+    // Inherited from the picker base class - one end-to-end smoke test.
+    it('`close` behavior', async () => {
+      const container = await fixture<HTMLDivElement>(html`
+        <div style="height: 1200px">
+          <igc-date-range-picker
+            scroll-strategy="close"
+          ></igc-date-range-picker>
+        </div>
+      `);
+      picker = container.querySelector(IgcDateRangePickerComponent.tagName)!;
+      const eventSpy = spy(picker, 'emitEvent');
+
+      await picker.show();
+      await simulateScroll(container, { top: 200 });
+
+      expect(picker.open).to.be.false;
+      expect(eventSpy.firstCall).calledWith('igcClosing');
+      expect(eventSpy.lastCall).calledWith('igcClosed');
+    });
+  });
+
   describe('Methods', () => {
     it('should clear the input on invoking clear()', async () => {
       const eventSpy = spy(picker, 'emitEvent');
@@ -1143,6 +1192,29 @@ describe('Date range picker - single input', () => {
 
         expect(picker.open).to.be.false;
         expect(eventSpy).not.called;
+      });
+    });
+
+    describe('Undo / redo', () => {
+      it('restores a typed draft in the range input', async () => {
+        rangeInput.focus();
+        await elementUpdated(picker);
+
+        const initial = input.value;
+
+        rangeInput.setSelectionRange(0, input.value.length);
+        simulateInput(input, {
+          value: '10/10/2020 - 11/11/2020',
+          inputType: 'insertText',
+        });
+        await elementUpdated(picker);
+
+        expect(input.value).to.equal('10/10/2020 - 11/11/2020');
+
+        simulateKeyboard(input, [ctrlKey, 'z']);
+        await elementUpdated(picker);
+
+        expect(input.value).to.equal(initial);
       });
     });
   });

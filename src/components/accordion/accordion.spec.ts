@@ -7,9 +7,12 @@ import {
   endKey,
   homeKey,
   shiftKey,
-} from '../common/controllers/key-bindings.js';
-import { defineComponents } from '../common/definitions/defineComponents.js';
-import { simulateClick, simulateKeyboard } from '../common/utils.spec.js';
+} from '#internals/controllers/key-bindings.js';
+import { defineComponents } from '#internals/definitions/defineComponents.js';
+import {
+  simulateClick,
+  simulateKeyboard,
+} from '#internals/testing/simulate.spec.js';
 import IgcExpansionPanelComponent from '../expansion-panel/expansion-panel.js';
 import IgcAccordionComponent from './accordion.js';
 

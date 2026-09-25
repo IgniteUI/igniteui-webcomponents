@@ -37,3 +37,13 @@ export type CalendarSelection = 'single' | 'multiple' | 'range';
 export interface IgcCalendarComponentEventMap {
   igcChange: CustomEvent<Date | Date[]>;
 }
+
+/**
+ * The events emitted by the individual views of the calendar.
+ *
+ * @remarks
+ * Unlike the calendar itself, a view always changes by a single date.
+ */
+export interface IgcCalendarViewComponentEventMap {
+  igcChange: CustomEvent<Date>;
+}

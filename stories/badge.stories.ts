@@ -53,7 +53,10 @@ const metadata: Meta<IgcBadgeComponent> = {
   },
   argTypes: {
     variant: {
-      type: '"primary" | "info" | "success" | "warning" | "danger"',
+      type: {
+        name: 'enum',
+        value: ['primary', 'info', 'success', 'warning', 'danger'],
+      },
       description: 'The type (style variant) of the badge.',
       options: ['primary', 'info', 'success', 'warning', 'danger'],
       control: { type: 'select' },
@@ -66,9 +69,9 @@ const metadata: Meta<IgcBadgeComponent> = {
       table: { defaultValue: { summary: 'false' } },
     },
     shape: {
-      type: '"rounded" | "square"',
+      type: { name: 'enum', value: ['square', 'rounded'] },
       description: 'The shape of the badge.',
-      options: ['rounded', 'square'],
+      options: ['square', 'rounded'],
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'rounded' } },
     },
@@ -91,7 +94,7 @@ interface IgcBadgeArgs {
   /** Sets whether to draw an outlined version of the badge. */
   outlined: boolean;
   /** The shape of the badge. */
-  shape: 'rounded' | 'square';
+  shape: 'square' | 'rounded';
   /**
    * Sets whether to render a dot type badge.
    * When enabled, the badge appears as a small dot without any content.

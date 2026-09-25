@@ -1,6 +1,6 @@
 import { css } from 'lit';
 
-import type { Themes } from '../../../theming/types.js';
+import type { Themes } from '#theming/types.js';
 import { styles as bootstrap } from './shared/bootstrap/year-month-view.bootstrap.css.js';
 import { styles as fluent } from './shared/fluent/year-month-view.fluent.css.js';
 import { styles as indigo } from './shared/indigo/year-month-view.indigo.css.js';

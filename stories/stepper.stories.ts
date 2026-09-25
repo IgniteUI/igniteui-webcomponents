@@ -27,14 +27,14 @@ const metadata: Meta<IgcStepperComponent> = {
   },
   argTypes: {
     orientation: {
-      type: '"horizontal" | "vertical"',
+      type: { name: 'enum', value: ['horizontal', 'vertical'] },
       description: 'The orientation of the stepper.',
       options: ['horizontal', 'vertical'],
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'horizontal' } },
     },
     stepType: {
-      type: '"full" | "indicator" | "title"',
+      type: { name: 'enum', value: ['full', 'indicator', 'title'] },
       description: 'The visual type of the steps.',
       options: ['full', 'indicator', 'title'],
       control: { type: 'inline-radio' },
@@ -53,14 +53,14 @@ const metadata: Meta<IgcStepperComponent> = {
       table: { defaultValue: { summary: 'false' } },
     },
     verticalAnimation: {
-      type: '"grow" | "fade" | "none"',
+      type: { name: 'enum', value: ['fade', 'none', 'grow'] },
       description: 'The animation type when in vertical mode.',
-      options: ['grow', 'fade', 'none'],
+      options: ['fade', 'none', 'grow'],
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'grow' } },
     },
     horizontalAnimation: {
-      type: '"slide" | "fade" | "none"',
+      type: { name: 'enum', value: ['slide', 'fade', 'none'] },
       description: 'The animation type when in horizontal mode.',
       options: ['slide', 'fade', 'none'],
       control: { type: 'inline-radio' },
@@ -74,9 +74,9 @@ const metadata: Meta<IgcStepperComponent> = {
       table: { defaultValue: { summary: '320' } },
     },
     titlePosition: {
-      type: '"auto" | "bottom" | "top" | "end" | "start"',
+      type: { name: 'enum', value: ['bottom', 'top', 'start', 'end', 'auto'] },
       description: 'The position of the steps title.',
-      options: ['auto', 'bottom', 'top', 'end', 'start'],
+      options: ['bottom', 'top', 'start', 'end', 'auto'],
       control: { type: 'select' },
       table: { defaultValue: { summary: 'auto' } },
     },
@@ -105,13 +105,13 @@ interface IgcStepperArgs {
   /** Whether the content is displayed above the steps. */
   contentTop: boolean;
   /** The animation type when in vertical mode. */
-  verticalAnimation: 'grow' | 'fade' | 'none';
+  verticalAnimation: 'fade' | 'none' | 'grow';
   /** The animation type when in horizontal mode. */
   horizontalAnimation: 'slide' | 'fade' | 'none';
   /** The animation duration in either vertical or horizontal mode in milliseconds. */
   animationDuration: number;
   /** The position of the steps title. */
-  titlePosition: 'auto' | 'bottom' | 'top' | 'end' | 'start';
+  titlePosition: 'bottom' | 'top' | 'start' | 'end' | 'auto';
 }
 type Story = StoryObj<IgcStepperArgs>;
 

@@ -1,8 +1,8 @@
 import { html, LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
-import { addThemingController } from '../../theming/theming-controller.js';
-import { addInternalsController } from '../common/controllers/internals.js';
-import { registerComponent } from '../common/definitions/register.js';
+import { addInternalsController } from '#internals/controllers/internals.js';
+import { registerComponent } from '#internals/definitions/register.js';
+import { addThemingController } from '#theming/theming-controller.js';
 import type { DividerType } from '../types.js';
 import { styles } from './themes/divider.base.css.js';
 import { styles as shared } from './themes/shared/divider.common.css.js';
@@ -27,31 +27,13 @@ export default class IgcDividerComponent extends LitElement {
     registerComponent(IgcDividerComponent);
   }
 
-  private readonly _internals = addInternalsController(this, {
-    initialARIA: {
-      role: 'separator',
-      ariaOrientation: 'vertical',
-    },
-  });
-
-  private _vertical = false;
-
   /**
    * Whether to render a vertical divider line.
    * @attr
    * @default false
    */
   @property({ type: Boolean, reflect: true })
-  public set vertical(value: boolean) {
-    this._vertical = Boolean(value);
-    this._internals.setARIA({
-      ariaOrientation: this._vertical ? 'vertical' : 'horizontal',
-    });
-  }
-
-  public get vertical(): boolean {
-    return this._vertical;
-  }
+  public vertical = false;
 
   /**
    * When set and inset is provided, it will shrink the divider line from both sides.
@@ -73,6 +55,13 @@ export default class IgcDividerComponent extends LitElement {
   constructor() {
     super();
     addThemingController(this, all);
+
+    addInternalsController(this, {
+      initialARIA: { role: 'separator' },
+      aria: () => ({
+        ariaOrientation: this.vertical ? 'vertical' : 'horizontal',
+      }),
+    });
   }
 
   protected override render() {

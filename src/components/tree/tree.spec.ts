@@ -1,10 +1,8 @@
 import { aTimeout, elementUpdated, expect, waitUntil } from '@open-wc/testing';
 import { spy } from 'sinon';
-
+import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { scrolledIntoView } from '#internals/testing/helpers.spec.js';
 import type IgcCheckboxComponent from '../checkbox/checkbox.js';
-import { defineComponents } from '../common/definitions/defineComponents.js';
-import { scrolledIntoView } from '../common/utils.spec.js';
-import IgcTreeComponent from './tree.js';
 import type IgcTreeItemComponent from './tree-item.js';
 import {
   activeItemsTree,
@@ -20,6 +18,7 @@ import {
   simpleTree,
   TreeTestFunctions,
 } from './tree-utils.spec.js';
+import IgcTreeComponent from './tree.js';
 
 describe('Tree', () => {
   before(() => {
@@ -64,6 +63,19 @@ describe('Tree', () => {
         )[0] as HTMLSlotElement;
         expect(childrenSlot).not.to.be.null;
       });
+    });
+
+    it('Should report the full ancestor path of an item, root first', async () => {
+      tree = await TreeTestFunctions.createTreeElement(simpleHierarchyTree);
+
+      const root = tree.items[0];
+      const child = root.getChildren()[0];
+      const grandChild = child.getChildren()[1];
+
+      expect(root.path).to.eql([root]);
+      expect(child.path).to.eql([root, child]);
+      expect(grandChild.path).to.eql([root, child, grandChild]);
+      expect(grandChild.path.at(-1)).to.equal(grandChild);
     });
 
     it('Should support multiple levels of nesting', async () => {
@@ -793,6 +805,65 @@ describe('Tree', () => {
       expect(cb.checked).to.be.true;
     });
 
+    it('Should toggle an item exactly once on indicator click after `toggleNodeOnClick` is enabled at runtime', async () => {
+      // Enabling `toggleNodeOnClick` on its own must not leave a stale
+      // indicator handler behind: the click would then be handled both by the
+      // indicator and by the bubbling item click, cancelling itself out.
+      tree.toggleNodeOnClick = true;
+      await elementUpdated(tree);
+
+      expect(topLevelItems[0].expanded).to.be.false;
+
+      const indicator = TreeTestFunctions.getSlot(
+        topLevelItems[0],
+        SLOTS.indicator
+      );
+      indicator.dispatchEvent(
+        new MouseEvent('click', { bubbles: true, composed: true })
+      );
+      await elementUpdated(tree);
+
+      TreeTestFunctions.verifyExpansionState(topLevelItems[0], true);
+      await waitUntil(() => eventSpy.calledWith('igcItemExpanded'));
+
+      // Exactly one expansion, and nothing collapsed it back.
+      expect(eventSpy.withArgs('igcItemExpanding').callCount).to.equal(1);
+      expect(eventSpy.withArgs('igcItemExpanded').callCount).to.equal(1);
+      expect(eventSpy.calledWith('igcItemCollapsing')).to.be.false;
+    });
+
+    it('Should toggle an item on indicator click after `toggleNodeOnClick` is disabled at runtime', async () => {
+      tree.toggleNodeOnClick = true;
+      await elementUpdated(tree);
+
+      // Any unrelated re-render while `toggleNodeOnClick` is enabled used to
+      // drop the indicator handler for good, since turning the flag back off
+      // does not re-render the item.
+      topLevelItems[0].requestUpdate();
+      await elementUpdated(tree);
+
+      tree.toggleNodeOnClick = false;
+      await elementUpdated(tree);
+
+      expect(topLevelItems[0].expanded).to.be.false;
+
+      const indicator = TreeTestFunctions.getSlot(
+        topLevelItems[0],
+        SLOTS.indicator
+      );
+      indicator.dispatchEvent(
+        new MouseEvent('click', { bubbles: true, composed: true })
+      );
+      await elementUpdated(tree);
+
+      TreeTestFunctions.verifyExpansionState(topLevelItems[0], true);
+      await waitUntil(() => eventSpy.calledWith('igcItemExpanded'));
+
+      expect(eventSpy.withArgs('igcItemExpanding').callCount).to.equal(1);
+      expect(eventSpy.withArgs('igcItemExpanded').callCount).to.equal(1);
+      expect(eventSpy.calledWith('igcItemCollapsing')).to.be.false;
+    });
+
     it('Should toggle item state when item.toggle() is called', async () => {
       expect(topLevelItems[1].expanded).to.be.true;
 
@@ -1294,6 +1365,127 @@ describe('Tree', () => {
 
       expect(initiallyExpandedItem).to.have.attribute('aria-expanded', 'false');
     });
+
+    it('Should not advertise selection when `selection` is `none`', async () => {
+      expect(tree.selection).to.equal('none');
+      expect(tree).not.to.have.attribute('aria-multiselectable');
+
+      for (const item of tree.items) {
+        expect(item, item.label).not.to.have.attribute('aria-selected');
+      }
+    });
+
+    it("Should reflect an item's selection state in aria-selected", async () => {
+      tree.selection = 'multiple';
+      await elementUpdated(tree);
+
+      expect(tree).to.have.attribute('aria-multiselectable', 'true');
+      expect(topLevelItems[0]).to.have.attribute('aria-selected', 'false');
+
+      tree.select([topLevelItems[0]]);
+      await elementUpdated(tree);
+
+      expect(topLevelItems[0]).to.have.attribute('aria-selected', 'true');
+
+      tree.deselect([topLevelItems[0]]);
+      await elementUpdated(tree);
+
+      expect(topLevelItems[0]).to.have.attribute('aria-selected', 'false');
+    });
+
+    it('Should drop aria-selected when selection is turned back off', async () => {
+      tree.selection = 'cascade';
+      await elementUpdated(tree);
+      expect(topLevelItems[0]).to.have.attribute('aria-selected');
+
+      tree.selection = 'none';
+      await elementUpdated(tree);
+
+      expect(tree).not.to.have.attribute('aria-multiselectable');
+      expect(topLevelItems[0]).not.to.have.attribute('aria-selected');
+    });
+
+    it("Should reflect an item's disabled state in aria-disabled", async () => {
+      const disabled = tree.items.find((item) => item.disabled)!;
+      expect(disabled).to.have.attribute('aria-disabled', 'true');
+
+      // Absent rather than "false" for enabled items.
+      expect(topLevelItems[0]).not.to.have.attribute('aria-disabled');
+
+      topLevelItems[0].disabled = true;
+      await elementUpdated(tree);
+      expect(topLevelItems[0]).to.have.attribute('aria-disabled', 'true');
+
+      topLevelItems[0].disabled = false;
+      await elementUpdated(tree);
+      expect(topLevelItems[0]).not.to.have.attribute('aria-disabled');
+    });
+
+    it('Should move ARIA state onto the focusable label element along with the role', async () => {
+      tree.selection = 'multiple';
+      await elementUpdated(tree);
+
+      const item = topLevelItems[1].getChildren()[0].getChildren()[0];
+      const anchor = TreeTestFunctions.getSlot(
+        item,
+        SLOTS.label
+      ).assignedElements()[0].children[0] as HTMLElement;
+
+      expect(item).to.have.attribute('role', 'none');
+      expect(anchor).to.have.attribute('role', 'treeitem');
+
+      // State left on a role="none" host would be ignored by assistive tech.
+      expect(anchor).to.have.attribute('aria-selected', 'false');
+      expect(item).not.to.have.attribute('aria-selected');
+
+      tree.select([item]);
+      await elementUpdated(tree);
+
+      expect(anchor).to.have.attribute('aria-selected', 'true');
+      expect(item).not.to.have.attribute('aria-selected');
+    });
+
+    it('Should be accessible', async () => {
+      await expect(tree).to.be.accessible();
+
+      tree.expand();
+      await elementUpdated(tree);
+      await expect(tree).to.be.accessible();
+    });
+
+    /**
+     * `aria-hidden-focus` is a known, pre-existing violation, not something
+     * these trees get wrong: the selection checkbox is deliberately hidden from
+     * assistive tech (selection is conveyed by `aria-selected` on the item), but
+     * `igc-checkbox` does not forward the host's `tabindex="-1"` to its inner
+     * `<input>`, so that input stays in the tab order inside an `aria-hidden`
+     * container. Fixing it means changing `igc-checkbox`. Only this one rule is
+     * suppressed, so every other check still runs against these states.
+     */
+    const SELECTION_A11Y_OPTIONS = {
+      ignoredRules: ['aria-hidden-focus'],
+    };
+
+    it('Should be accessible with selection enabled', async () => {
+      for (const selection of ['multiple', 'cascade'] as const) {
+        tree.selection = selection;
+        tree.expand();
+        await elementUpdated(tree);
+        await expect(tree).to.be.accessible(SELECTION_A11Y_OPTIONS);
+
+        tree.select();
+        await elementUpdated(tree);
+        await expect(tree).to.be.accessible(SELECTION_A11Y_OPTIONS);
+      }
+    });
+
+    it('Should be accessible with disabled items', async () => {
+      tree = await TreeTestFunctions.createTreeElement(disabledItemsTree);
+      tree.expand();
+      await elementUpdated(tree);
+
+      await expect(tree).to.be.accessible(SELECTION_A11Y_OPTIONS);
+    });
   });
 
   describe('RTL', () => {
@@ -1306,6 +1498,22 @@ describe('Tree', () => {
       eventSpy = spy(tree, 'emitEvent');
       tree.dir = 'rtl';
       await elementUpdated(tree);
+    });
+
+    it('Should mirror the expand indicator after the direction changes at runtime', async () => {
+      const indicator = topLevelItems[0].renderRoot.querySelector(
+        'div[part~="indicator"]'
+      )!;
+
+      // scaleX(-1)
+      expect(getComputedStyle(indicator).transform).to.equal(
+        'matrix(-1, 0, 0, 1, 0, 0)'
+      );
+
+      tree.dir = 'ltr';
+      await elementUpdated(tree);
+
+      expect(getComputedStyle(indicator).transform).to.equal('none');
     });
 
     it('Should collapse expanded tree items on Arrow Right key press when the direction is RTL', async () => {

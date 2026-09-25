@@ -1,4 +1,10 @@
-import { html, LitElement, nothing, type TemplateResult } from 'lit';
+import {
+  html,
+  LitElement,
+  nothing,
+  type PropertyValues,
+  type TemplateResult,
+} from 'lit';
 import {
   property,
   query,
@@ -7,8 +13,10 @@ import {
 } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { type StyleInfo, styleMap } from 'lit/directives/style-map.js';
-
-import { addThemingController } from '../../theming/theming-controller.js';
+import {
+  type ResolvedNaming,
+  ariaBindings,
+} from '#internals/controllers/aria-projection.js';
 import {
   addKeybindings,
   arrowDown,
@@ -19,18 +27,16 @@ import {
   homeKey,
   pageDownKey,
   pageUpKey,
-} from '../common/controllers/key-bindings.js';
-import { blazorDeepImport } from '../common/decorators/blazorDeepImport.js';
-import { watch } from '../common/decorators/watch.js';
-import {
-  addSafeEventListener,
-  asNumber,
-  asPercent,
-  clamp,
-  formatString,
-  isDefined,
-  isLTR,
-} from '../common/util.js';
+} from '#internals/controllers/key-bindings.js';
+import { blazorDeepImport } from '#internals/decorators/blazorDeepImport.js';
+import { coercedProperty } from '#internals/decorators/coerced-property.js';
+import { createTimer } from '#internals/timing.js';
+import { isLTR } from '#internals/utils/dom.js';
+import { addSafeEventListener } from '#internals/utils/events.js';
+import { asNumber, asPercent, clamp } from '#internals/utils/math.js';
+import { formatString } from '#internals/utils/strings.js';
+import { isDefined } from '#internals/utils/types.js';
+import { addThemingController } from '#theming/theming-controller.js';
 import type {
   SliderTickLabelRotation,
   SliderTickOrientation,
@@ -56,11 +62,15 @@ export class IgcSliderBaseComponent extends LitElement {
   private _max = 100;
   private _lowerBound?: number;
   private _upperBound?: number;
-  private _step = 1;
   private startValue?: number;
   private pointerCaptured = false;
-  private thumbHoverTimer: any;
+  /** The number format of the current update. See {@link formatValue}. */
+  private _numberFormat?: Intl.NumberFormat;
   protected activeThumb?: HTMLElement;
+
+  private readonly _thumbLabelTimer = createTimer(() => {
+    this.thumbLabelsVisible = false;
+  }, 750);
 
   @state()
   protected thumbLabelsVisible = false;
@@ -69,7 +79,7 @@ export class IgcSliderBaseComponent extends LitElement {
   protected labels: string[] = [];
 
   protected get hasLabels() {
-    return this.labels?.length > 0;
+    return this.labels.length > 0;
   }
 
   protected get distance() {
@@ -198,13 +208,11 @@ export class IgcSliderBaseComponent extends LitElement {
    * @attr
    */
   @property({ type: Number })
-  public set step(value: number) {
-    this._step = this.hasLabels ? 1 : asNumber(value, this._step);
-  }
-
-  public get step(): number {
-    return this._step;
-  }
+  @coercedProperty<number, IgcSliderBaseComponent>({
+    transform: ({ value, host, previous }) =>
+      host.hasLabels ? 1 : asNumber(value, previous ?? 1),
+  })
+  public step = 1;
 
   /**
    * The number of primary ticks. It defaults to 0 which means no primary ticks are displayed.
@@ -269,13 +277,22 @@ export class IgcSliderBaseComponent extends LitElement {
   @property({ type: Number, reflect: true, attribute: 'tick-label-rotation' })
   public tickLabelRotation: SliderTickLabelRotation = 0;
 
-  @watch('min', { waitUntilFirstUpdate: true })
-  @watch('max', { waitUntilFirstUpdate: true })
-  @watch('lowerBound', { waitUntilFirstUpdate: true })
-  @watch('upperBound', { waitUntilFirstUpdate: true })
-  @watch('step', { waitUntilFirstUpdate: true })
-  protected constraintsChange() {
-    this.normalizeValue();
+  protected override willUpdate(changedProperties: PropertyValues<this>): void {
+    // `valueFormatOptions` can change in place, so each update formats anew.
+    this._numberFormat = undefined;
+
+    const constraintsChanged =
+      changedProperties.has('min') ||
+      changedProperties.has('max') ||
+      changedProperties.has('lowerBound') ||
+      changedProperties.has('upperBound') ||
+      changedProperties.has('step');
+
+    // The initial update included - attributes are applied in markup order, so
+    // a value can arrive validated against a constraint that is not final yet.
+    if (constraintsChanged) {
+      this.normalizeValue();
+    }
   }
 
   constructor() {
@@ -306,12 +323,11 @@ export class IgcSliderBaseComponent extends LitElement {
   }
 
   private handleArrowKeys(delta: -1 | 1) {
-    const step = this.step ? this.step : 1;
-    this.handleKeyboardIncrement(step * delta);
+    this.handleKeyboardIncrement((this.step || 1) * delta);
   }
 
   private handlePageKeys(delta: -1 | 1) {
-    const step = this.step ? this.step : 1;
+    const step = this.step || 1;
     this.handleKeyboardIncrement(
       delta * Math.max((this.upperBound - this.lowerBound) / 10, step)
     );
@@ -376,7 +392,11 @@ export class IgcSliderBaseComponent extends LitElement {
   }
 
   protected formatValue(value: number) {
-    const strValue = value.toLocaleString(this.locale, this.valueFormatOptions);
+    this._numberFormat ??= new Intl.NumberFormat(
+      this.locale,
+      this.valueFormatOptions
+    );
+    const strValue = this._numberFormat.format(value);
     return this.valueFormat
       ? formatString(this.valueFormat, strValue)
       : strValue;
@@ -406,19 +426,15 @@ export class IgcSliderBaseComponent extends LitElement {
         : 0;
   }
 
-  private tickValue(idx: number) {
-    const tickCount = this.totalTickCount();
+  private tickValue(idx: number, tickCount: number) {
     const distance = this.distance;
     const labelStep = tickCount > 1 ? distance / (tickCount - 1) : distance;
-    const labelVal = labelStep * idx;
 
-    return this.min + labelVal;
+    return this.min + labelStep * idx;
   }
 
   private isPrimary(idx: number) {
-    return this.primaryTicks <= 0
-      ? false
-      : idx % (this.secondaryTicks + 1) === 0;
+    return this.primaryTicks > 0 && idx % (this.secondaryTicks + 1) === 0;
   }
 
   protected showThumbLabels() {
@@ -426,11 +442,7 @@ export class IgcSliderBaseComponent extends LitElement {
       return;
     }
 
-    if (this.thumbHoverTimer) {
-      clearTimeout(this.thumbHoverTimer);
-      this.thumbHoverTimer = null;
-    }
-
+    this._thumbLabelTimer.stop();
     this.thumbLabelsVisible = true;
   }
 
@@ -439,9 +451,7 @@ export class IgcSliderBaseComponent extends LitElement {
       return;
     }
 
-    this.thumbHoverTimer = setTimeout(() => {
-      this.thumbLabelsVisible = false;
-    }, 750);
+    this._thumbLabelTimer.start();
   }
 
   private calculateTrackUpdate(mouseX: number): number {
@@ -511,6 +521,14 @@ export class IgcSliderBaseComponent extends LitElement {
     this.activeThumb = event.target as HTMLElement;
   }
 
+  /**
+   * The `aria-valuetext` of a thumb when neither projected labels nor value
+   * formatting apply. Returning `undefined` omits the attribute.
+   */
+  protected _thumbAriaValueText(_thumbId?: string): string | undefined {
+    return undefined;
+  }
+
   protected handleThumbBlur() {
     this.activeThumb?.part.remove('focused');
     this.activeThumb = undefined;
@@ -527,7 +545,7 @@ export class IgcSliderBaseComponent extends LitElement {
         ? primary
           ? this.labels[Math.round(i / secondaryTicks)]
           : nothing
-        : this.formatValue(this.tickValue(i));
+        : this.formatValue(this.tickValue(i, total));
 
       yield html`<div part="tick-group">
         <div part="tick" data-primary=${primary}>
@@ -549,7 +567,11 @@ export class IgcSliderBaseComponent extends LitElement {
     return html`<div part="ticks">${this._renderTicks()}</div>`;
   }
 
-  protected renderThumb(value: number, ariaLabel?: string, thumbId?: string) {
+  protected renderThumb(
+    value: number,
+    aria: Partial<ResolvedNaming>,
+    thumbId?: string
+  ) {
     const percent = `${asPercent(value - this.min, this.distance)}%`;
     const thumbStyles = { insetInlineStart: percent };
     const tooltipStyles = {
@@ -561,10 +583,11 @@ export class IgcSliderBaseComponent extends LitElement {
       ? this.labels[value]
       : this.valueFormat || this.valueFormatOptions
         ? this.formatValue(value)
-        : undefined;
+        : this._thumbAriaValueText(thumbId);
 
     return html`
       <div
+        ${ariaBindings(aria)}
         part="thumb"
         id=${ifDefined(thumbId)}
         tabindex=${this.disabled ? -1 : 0}
@@ -574,7 +597,6 @@ export class IgcSliderBaseComponent extends LitElement {
         aria-valuemax=${this.upperBound}
         aria-valuenow=${value}
         aria-valuetext=${ifDefined(textValue)}
-        aria-label=${ifDefined(ariaLabel)}
         aria-disabled=${this.disabled}
         @pointerenter=${this.showThumbLabels}
         @pointerleave=${this.hideThumbLabels}
@@ -585,7 +607,11 @@ export class IgcSliderBaseComponent extends LitElement {
         this.hideTooltip
           ? nothing
           : html`
-              <div part="thumb-label" style=${styleMap(tooltipStyles)}>
+              <div
+                part="thumb-label"
+                aria-hidden="true"
+                style=${styleMap(tooltipStyles)}
+              >
                 <div part="thumb-label-inner">
                   ${this.hasLabels ? this.labels[value] : this.formatValue(value)}
                 </div>
@@ -626,13 +652,13 @@ export class IgcSliderBaseComponent extends LitElement {
 
     return html`
       <div part="base">
-        ${isStart || isMirrored ? html`${this.renderTicks()}` : nothing}
+        ${isStart || isMirrored ? this.renderTicks() : nothing}
         <div part="track">
           <div part="inactive"></div>
           <div part="fill" style=${styleMap(this.getTrackStyle())}></div>
           ${this.renderSteps()}
         </div>
-        ${!isStart ? html`${this.renderTicks()}` : nothing}
+        ${isStart ? nothing : this.renderTicks()}
         <div part="thumbs">${this.renderThumbs()}</div>
         <slot @slotchange=${this.handleSlotChange}></slot>
       </div>

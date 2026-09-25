@@ -1,16 +1,17 @@
 import { html, svg } from 'lit';
 import { styleMap } from 'lit/directives/style-map.js';
-import { addThemingController } from '../../theming/theming-controller.js';
-import { addSlotController, setSlots } from '../common/controllers/slot.js';
-import { registerComponent } from '../common/definitions/register.js';
-import { partMap } from '../common/part-map.js';
+import { addSlotController, setSlots } from '#internals/controllers/slot.js';
+import { registerComponent } from '#internals/definitions/register.js';
+import { partMap } from '#internals/part-map.js';
+import { createIdGenerator } from '#internals/utils/strings.js';
+import { addThemingController } from '#theming/theming-controller.js';
 import { IgcProgressBaseComponent } from './base.js';
 import IgcCircularGradientComponent from './circular-gradient.js';
 import { styles } from './themes/circular/circular.progress.base.css.js';
 import { styles as shared } from './themes/circular/shared/circular.progress.common.css.js';
 import { all } from './themes/circular/themes.js';
 
-let nextId = 1;
+const nextId = createIdGenerator('circular-progress');
 
 /**
  * A circular progress indicator used to express unspecified wait time or display
@@ -29,11 +30,6 @@ let nextId = 1;
  * @csspart label - The circular progress label.
  * @csspart value - The circular progress label value.
  * @csspart indeterminate - The circular progress indeterminate state.
- * @csspart primary - The circular progress primary state.
- * @csspart danger - The circular progress error state.
- * @csspart warning - The circular progress warning state.
- * @csspart info - The circular progress info state.
- * @csspart success - The circular progress success state.
  */
 export default class IgcCircularProgressComponent extends IgcProgressBaseComponent {
   public static readonly tagName = 'igc-circular-progress';
@@ -47,7 +43,7 @@ export default class IgcCircularProgressComponent extends IgcProgressBaseCompone
     );
   }
 
-  private readonly _gradientId = `circular-progress-${nextId++}`;
+  private readonly _gradientId = nextId();
   protected override readonly _slots = addSlotController(this, {
     slots: setSlots('gradient'),
   });

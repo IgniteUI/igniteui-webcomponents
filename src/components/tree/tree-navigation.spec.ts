@@ -2,11 +2,16 @@ import { elementUpdated, expect, waitUntil } from '@open-wc/testing';
 import { spy } from 'sinon';
 
 import { defineComponents } from '../../index.js';
+import IgcTreeItemComponent from './tree-item.js';
+import {
+  disabledItemsTree,
+  navigationTree,
+  SLOTS,
+  TreeTestFunctions,
+} from './tree-utils.spec.js';
 import type { TreeSelectionEventInit } from './tree.common.js';
 import IgcTreeComponent from './tree.js';
 import type { IgcTreeNavigationService } from './tree.navigation.js';
-import IgcTreeItemComponent from './tree-item.js';
-import { navigationTree, SLOTS, TreeTestFunctions } from './tree-utils.spec.js';
 
 describe('Tree Navigation', () => {
   before(() => {
@@ -23,6 +28,166 @@ describe('Tree Navigation', () => {
     treeNavService = tree.navService;
     topLevelItems = tree.items.filter((i) => i.level === 0);
     eventSpy = spy(tree, 'emitEvent');
+  });
+
+  describe('Initial focus', () => {
+    it('Should not move DOM focus into the tree when it is added to the document', async () => {
+      const outside = document.createElement('button');
+      document.body.append(outside);
+      outside.focus();
+      expect(document.activeElement).to.equal(outside);
+
+      const added = await TreeTestFunctions.createTreeElement(navigationTree);
+
+      // Connecting a tree seeds the roving tabindex, but must not steal focus
+      // from whatever the user was already on.
+      expect(document.activeElement).to.equal(outside);
+      expect(added.contains(document.activeElement)).to.be.false;
+
+      outside.remove();
+    });
+
+    it('Should seed the roving tabindex on the first non-disabled item', async () => {
+      const first = tree.items.find((i) => !i.disabled)!;
+
+      expect(treeNavService.focusedItem).to.equal(first);
+      expect(first.tabIndex).to.equal(0);
+      // Active state is a separate concern and must not be implied by focus.
+      expect(treeNavService.activeItem).to.be.null;
+    });
+
+    it('Should focus the seeded item once the user tabs into the tree', async () => {
+      const first = tree.items.find((i) => !i.disabled)!;
+
+      first.focus();
+      await elementUpdated(tree);
+
+      expect(document.activeElement).to.equal(first);
+      expect(treeNavService.focusedItem).to.equal(first);
+    });
+  });
+
+  describe('Navigable set semantics', () => {
+    let disabledTree: IgcTreeComponent;
+
+    const labels = (items: IgcTreeItemComponent[]) => items.map((i) => i.label);
+
+    const press = (key: string) =>
+      disabledTree.dispatchEvent(
+        new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true })
+      );
+
+    beforeEach(async () => {
+      disabledTree =
+        await TreeTestFunctions.createTreeElement(disabledItemsTree);
+    });
+
+    it('Should skip a disabled item but still navigate into its subtree', async () => {
+      // "Tree Item 1" and "Tree Item 1.1" are both disabled and expanded, so
+      // neither is navigable, but their enabled descendants are.
+      press('Home');
+      await elementUpdated(disabledTree);
+
+      expect(disabledTree.navService.focusedItem?.label).to.equal(
+        'Tree Item 1.1.1'
+      );
+    });
+
+    it('Should not navigate into a collapsed subtree', async () => {
+      // "Tree Item 1.2" is disabled and collapsed, so neither it nor its
+      // children take part; the walk continues at the next top level item.
+      press('Home');
+      await elementUpdated(disabledTree);
+      press('ArrowDown');
+      await elementUpdated(disabledTree);
+
+      expect(disabledTree.navService.focusedItem?.label).to.equal(
+        'Tree Item 1.1.2'
+      );
+
+      press('ArrowDown');
+      await elementUpdated(disabledTree);
+
+      expect(disabledTree.navService.focusedItem?.label).to.equal(
+        'Tree Item 2'
+      );
+    });
+
+    it('Should walk the navigable set in document order', async () => {
+      const visited: string[] = [];
+
+      press('Home');
+      await elementUpdated(disabledTree);
+      visited.push(disabledTree.navService.focusedItem!.label);
+
+      for (let i = 0; i < 12; i++) {
+        press('ArrowDown');
+        await elementUpdated(disabledTree);
+        const current = disabledTree.navService.focusedItem!.label;
+        if (current === visited.at(-1)) {
+          break; // reached the end of the navigable set
+        }
+        visited.push(current);
+      }
+
+      const expected = labels(
+        disabledTree.items.filter((item) => {
+          if (item.disabled) return false;
+          for (let a = item.parent; a; a = a.parent) {
+            if (!a.expanded) return false;
+          }
+          return true;
+        })
+      );
+
+      expect(visited).to.eql(expected);
+    });
+
+    it('Should move to the first navigable item when the focused item is collapsed out of view', async () => {
+      // Focus a descendant, then collapse its ancestor so the focused item is
+      // no longer part of the navigable set.
+      press('Home');
+      await elementUpdated(disabledTree);
+      const focused = disabledTree.navService.focusedItem!;
+      expect(focused.label).to.equal('Tree Item 1.1.1');
+
+      focused.parent!.expanded = false;
+      await elementUpdated(disabledTree);
+
+      press('ArrowDown');
+      await elementUpdated(disabledTree);
+      expect(disabledTree.navService.focusedItem?.label).to.equal(
+        'Tree Item 2'
+      );
+    });
+
+    it('Should stay put on Arrow Up when the focused item is collapsed out of view', async () => {
+      press('Home');
+      await elementUpdated(disabledTree);
+      const focused = disabledTree.navService.focusedItem!;
+
+      focused.parent!.expanded = false;
+      await elementUpdated(disabledTree);
+
+      press('ArrowUp');
+      await elementUpdated(disabledTree);
+      expect(disabledTree.navService.focusedItem).to.equal(focused);
+    });
+
+    it('Should land on the last navigable item on End', async () => {
+      press('End');
+      await elementUpdated(disabledTree);
+
+      const navigable = disabledTree.items.filter((item) => {
+        if (item.disabled) return false;
+        for (let a = item.parent; a; a = a.parent) {
+          if (!a.expanded) return false;
+        }
+        return true;
+      });
+
+      expect(disabledTree.navService.focusedItem).to.equal(navigable.at(-1));
+    });
   });
 
   it('Should focus and activate the first tree item on Home key press and the last tree item on End key press', async () => {

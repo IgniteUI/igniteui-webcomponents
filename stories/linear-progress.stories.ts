@@ -30,14 +30,24 @@ const metadata: Meta<IgcLinearProgressComponent> = {
       table: { defaultValue: { summary: 'false' } },
     },
     labelAlign: {
-      type: '"top-start" | "top" | "top-end" | "bottom-start" | "bottom" | "bottom-end"',
+      type: {
+        name: 'enum',
+        value: [
+          'bottom',
+          'top',
+          'top-start',
+          'top-end',
+          'bottom-start',
+          'bottom-end',
+        ],
+      },
       description: 'The position for the default label of the control.',
       options: [
-        'top-start',
+        'bottom',
         'top',
+        'top-start',
         'top-end',
         'bottom-start',
-        'bottom',
         'bottom-end',
       ],
       control: { type: 'select' },
@@ -56,7 +66,10 @@ const metadata: Meta<IgcLinearProgressComponent> = {
       table: { defaultValue: { summary: '0' } },
     },
     variant: {
-      type: '"primary" | "info" | "success" | "warning" | "danger"',
+      type: {
+        name: 'enum',
+        value: ['primary', 'info', 'success', 'warning', 'danger'],
+      },
       description: 'The variant of the control.',
       options: ['primary', 'info', 'success', 'warning', 'danger'],
       control: { type: 'select' },
@@ -106,7 +119,12 @@ interface IgcLinearProgressArgs {
   striped: boolean;
   /** The position for the default label of the control. */
   labelAlign:
-    'top-start' | 'top' | 'top-end' | 'bottom-start' | 'bottom' | 'bottom-end';
+    | 'bottom'
+    | 'top'
+    | 'top-start'
+    | 'top-end'
+    | 'bottom-start'
+    | 'bottom-end';
   /** Maximum value of the control. */
   max: number;
   /** The value of the control. */

@@ -1,12 +1,7 @@
-import {
-  elementUpdated,
-  expect,
-  fixture,
-  html,
-  unsafeStatic,
-} from '@open-wc/testing';
-
-import { defineComponents, IgcToggleButtonComponent } from '../../index.js';
+import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
+import type { TemplateResult } from 'lit';
+import { defineComponents } from '#internals/definitions/defineComponents.js';
+import IgcToggleButtonComponent from './toggle-button.js';
 
 describe('Toggle Button', () => {
   before(() => {
@@ -56,15 +51,17 @@ describe('Toggle Button', () => {
     });
 
     it('sets `value` property successfully', async () => {
-      button = await createButtonComponent(`
-        <igc-toggle-button value="button-1">Click</igc-toggle-button>`);
+      button = await createButtonComponent(html`
+        <igc-toggle-button value="button-1">Click</igc-toggle-button>
+      `);
 
       expect(button.value).to.equal('button-1');
     });
 
     it('sets `selected` property successfully', async () => {
-      button = await createButtonComponent(`
-        <igc-toggle-button selected>Click</igc-toggle-button>`);
+      button = await createButtonComponent(html`
+        <igc-toggle-button selected>Click</igc-toggle-button>
+      `);
 
       expect(button.selected).to.be.true;
 
@@ -86,8 +83,9 @@ describe('Toggle Button', () => {
     });
 
     it('sets `disabled` property successfully', async () => {
-      button = await createButtonComponent(`
-        <igc-toggle-button disabled>Click</igc-toggle-button>`);
+      button = await createButtonComponent(html`
+        <igc-toggle-button disabled>Click</igc-toggle-button>
+      `);
 
       expect(button.disabled).to.be.true;
       expect(button).shadowDom.to.equal('<button disabled />', DIFF_OPTIONS);
@@ -112,8 +110,9 @@ describe('Toggle Button', () => {
     });
 
     it('sets `aria-label` successfully', async () => {
-      button = await createButtonComponent(`
-        <igc-toggle-button aria-label="button-1">Click</igc-toggle-button>`);
+      button = await createButtonComponent(html`
+        <igc-toggle-button aria-label="button-1">Click</igc-toggle-button>
+      `);
 
       expect(button.ariaLabel).to.equal('button-1');
       expect(button).shadowDom.to.equal(
@@ -128,7 +127,7 @@ describe('Toggle Button', () => {
 
       expect(document.activeElement).to.equal(button);
 
-      const buttonElement = button.shadowRoot?.children[0];
+      const buttonElement = button.renderRoot.children[0];
       expect(button.shadowRoot?.activeElement).to.equal(buttonElement);
     });
 
@@ -157,9 +156,9 @@ describe('Toggle Button', () => {
     });
   });
 
-  const createButtonComponent = (
-    template = '<igc-toggle-button>Click</igc-toggle-button>'
-  ) => {
-    return fixture<IgcToggleButtonComponent>(html`${unsafeStatic(template)}`);
-  };
+  function createButtonComponent(template?: TemplateResult) {
+    return fixture<IgcToggleButtonComponent>(
+      template ?? html`<igc-toggle-button>Click</igc-toggle-button>`
+    );
+  }
 });

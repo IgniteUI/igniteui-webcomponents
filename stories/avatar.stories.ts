@@ -50,7 +50,7 @@ const metadata: Meta<IgcAvatarComponent> = {
       control: 'text',
     },
     shape: {
-      type: '"square" | "circle" | "rounded"',
+      type: { name: 'enum', value: ['square', 'circle', 'rounded'] },
       description: 'The shape of the avatar.',
       options: ['square', 'circle', 'rounded'],
       control: { type: 'inline-radio' },

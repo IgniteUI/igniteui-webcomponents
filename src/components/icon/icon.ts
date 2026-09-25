@@ -1,18 +1,17 @@
-import { html, LitElement, nothing, type PropertyValues } from 'lit';
+import { html, isServer, LitElement, nothing, type PropertyValues } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { unsafeSVG } from 'lit/directives/unsafe-svg.js';
-
-import { addThemingController } from '../../theming/theming-controller.js';
-import { addInternalsController } from '../common/controllers/internals.js';
-import { blazorInclude } from '../common/decorators/blazorInclude.js';
-import { registerComponent } from '../common/definitions/register.js';
+import { addInternalsController } from '#internals/controllers/internals.js';
+import { blazorInclude } from '#internals/decorators/blazorInclude.js';
+import { registerComponent } from '#internals/definitions/register.js';
+import { addThemingController } from '#theming/theming-controller.js';
 import {
   getIconRegistry,
   registerIcon as registerIcon_impl,
   registerIconFromText as registerIconFromText_impl,
   setIconRef as setIconRef_impl,
 } from './icon.registry.js';
-import type { IconCallback, IconMeta } from './registry/types.js';
+import type { IconMeta } from './registry/types.js';
 import { styles } from './themes/icon.base.css.js';
 import { styles as shared } from './themes/shared/icon.common.css.js';
 import { all } from './themes/themes.js';
@@ -62,15 +61,19 @@ export default class IgcIconComponent extends LitElement {
     registerComponent(IgcIconComponent);
   }
 
-  private readonly _internals = addInternalsController(this, {
-    initialARIA: { role: 'img' },
-  });
+  private readonly _internals = addInternalsController(this);
 
   private readonly _theming = addThemingController(this, all, {
     themeChange: this._getIcon,
   });
 
-  private _boundIconLoaded?: IconCallback;
+  private readonly _onRegistryChange = (): void => this._getIcon();
+
+  /**
+   * Set while a server-rendered host is hydrating, during which `render()`
+   * withholds the SVG so both renders match.
+   */
+  private _hydrating = false;
 
   @state()
   private _svg = '';
@@ -123,16 +126,19 @@ export default class IgcIconComponent extends LitElement {
   /** @internal */
   public override connectedCallback(): void {
     super.connectedCallback();
-    this._boundIconLoaded = this._iconLoaded.bind(this);
-    getIconRegistry().subscribe(this._boundIconLoaded);
+    getIconRegistry().subscribe(this._onRegistryChange);
   }
 
   /** @internal */
   public override disconnectedCallback(): void {
-    if (this._boundIconLoaded) {
-      getIconRegistry().unsubscribe(this._boundIconLoaded);
-    }
+    getIconRegistry().unsubscribe(this._onRegistryChange);
     super.disconnectedCallback();
+  }
+
+  /** @internal */
+  protected override createRenderRoot(): HTMLElement | DocumentFragment {
+    this._hydrating = this.shadowRoot !== null;
+    return super.createRenderRoot();
   }
 
   protected override update(props: PropertyValues<this>): void {
@@ -144,58 +150,42 @@ export default class IgcIconComponent extends LitElement {
   }
 
   protected override firstUpdated(): void {
-    // During SSR and the client's first (hydrating) render `hasUpdated` is
-    // `false`, so the SVG is withheld and both renders match. Once hydration
-    // has settled, reconcile so the icon content is projected. Deferring via
-    // `queueMicrotask` keeps it off the current update cycle (avoids Lit's
-    // change-in-update warning).
-    if (this._svg) {
-      queueMicrotask(() => this.requestUpdate());
+    if (this._hydrating) {
+      this._hydrating = false;
+
+      // Off the current update cycle - avoids Lit's change-in-update warning.
+      if (this._svg) {
+        queueMicrotask(() => this.requestUpdate());
+      }
     }
   }
 
-  /**
-   * Callback invoked when an icon is registered or updated in the registry.
-   * Re-fetches the icon if it matches this component's name and collection.
-   *
-   * @param name - The name of the registered icon
-   * @param collection - The collection of the registered icon
-   */
-  private _iconLoaded(name: string, collection: string): void {
-    if (this.name === name && this.collection === collection) {
-      this._getIcon();
-    }
-  }
-
-  /**
-   * Fetches and updates the icon from the registry.
-   *
-   * @remarks
-   * This method:
-   * 1. Resolves the icon reference based on the current theme
-   * 2. Retrieves the SVG content from the registry
-   * 3. Updates the component's rendered SVG
-   * 4. Sets the appropriate ARIA label from the icon's title
-   *
-   */
   private _getIcon(): void {
-    const { name, collection } = getIconRegistry().getIconRef(
+    const registry = getIconRegistry();
+    const { name, collection } = registry.getIconRef(
       this.name,
       this.collection,
       this._theming.theme
     );
-    const { svg = '', title = null } =
-      getIconRegistry().get(name, collection) ?? {};
+    const { svg = '', title } = registry.get(name, collection) ?? {};
+
+    // An unnamed icon is decorative, and an unnamed `img` is only noise.
+    const labelled =
+      Boolean(title) ||
+      this.hasAttribute('aria-label') ||
+      this.hasAttribute('aria-labelledby');
 
     this._svg = svg;
-    this._internals.setARIA({ ariaLabel: title });
+    this._internals.setARIA({
+      role: labelled ? 'img' : null,
+      ariaLabel: title ?? null,
+    });
   }
 
   protected override render() {
-    // Withhold the SVG until after hydration so the server render and the
-    // client's first hydrating render are structurally identical. See
-    // `firstUpdated` for the post-hydration reconcile.
-    return this.hasUpdated ? html`${unsafeSVG(this._svg)}` : nothing;
+    return isServer || this._hydrating
+      ? nothing
+      : html`${unsafeSVG(this._svg)}`;
   }
 
   /* c8 ignore next 8 */

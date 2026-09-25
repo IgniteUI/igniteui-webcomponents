@@ -1,5 +1,5 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
-import { defineComponents } from '../common/definitions/defineComponents.js';
+import { defineComponents } from '#internals/definitions/defineComponents.js';
 import type IgcCardActionsComponent from './card.actions.js';
 import type IgcCardContentComponent from './card.content.js';
 import type IgcCardHeaderComponent from './card.header.js';

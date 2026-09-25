@@ -180,3 +180,17 @@ $theme: $bootstrap;
         box-shadow: none;
     }
 }
+
+@media (forced-colors: active) {
+    :host [part~='control'] {
+        --fill-color: transparent;
+        --fill-color-hover: transparent;
+
+        border: rem(1px) solid CanvasText;
+    }
+
+    :host(:focus) [part~='control'],
+    :host(:hover) [part~='control'] {
+        border-color: Highlight;
+    }
+}

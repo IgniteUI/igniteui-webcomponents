@@ -4,19 +4,39 @@ import {
 } from 'igniteui-i18n-core';
 import { html, LitElement, type PropertyValues } from 'lit';
 import { property } from 'lit/decorators.js';
-import { addThemingController } from '../../theming/theming-controller.js';
-import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditionalDependencies.js';
-import { registerComponent } from '../common/definitions/register.js';
-import { addI18nController } from '../common/i18n/i18n-controller.js';
-import type { Constructor } from '../common/mixins/constructor.js';
-import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
+import { blazorAdditionalDependencies } from '#internals/decorators/blazorAdditionalDependencies.js';
+import { registerComponent } from '#internals/definitions/register.js';
+import type { I18nControllerConfig } from '#internals/i18n/i18n-controller.js';
+import type { Constructor } from '#internals/mixins/constructor.js';
+import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
+import { I18nMixin } from '#internals/mixins/i18n.js';
+import { addThemingController } from '#theming/theming-controller.js';
 import type { TreeSelection } from '../types.js';
 import { styles } from './themes/container.base.css.js';
 import { all } from './themes/container.js';
-import type { IgcTreeComponentEventMap } from './tree.common.js';
+import IgcTreeItemComponent from './tree-item.js';
+import {
+  getTreeItemChildren,
+  type IgcTreeComponentEventMap,
+  setAriaState,
+} from './tree.common.js';
 import { IgcTreeNavigationService } from './tree.navigation.js';
 import { IgcTreeSelectionService } from './tree.selection.js';
-import IgcTreeItemComponent from './tree-item.js';
+
+/**
+ * Tree properties that items read while rendering. The tree is not a reactive
+ * source for them, so changing one has to re-render the items by hand or they
+ * keep rendering stale output.
+ *
+ * Prefer reading tree state at event time over extending this - a handler
+ * always sees the current value and costs no re-render. Direction is handled in
+ * CSS via `:dir()` for the same reason.
+ */
+const ITEM_RENDER_DEPENDENCIES = ['selection', 'resourceStrings'] as const;
+
+const i18n: I18nControllerConfig<ITreeResourceStrings> = {
+  defaultEN: TreeResourceStringsEN,
+};
 
 /**
  * The tree allows users to represent hierarchical data in a tree-view structure,
@@ -34,10 +54,12 @@ import IgcTreeItemComponent from './tree-item.js';
  * @fires igcActiveItem - Emitted when the tree's `active` item changes.
  */
 @blazorAdditionalDependencies('IgcTreeItemComponent')
-export default class IgcTreeComponent extends EventEmitterMixin<
-  IgcTreeComponentEventMap,
-  Constructor<LitElement>
->(LitElement) {
+export default class IgcTreeComponent extends I18nMixin(
+  EventEmitterMixin<IgcTreeComponentEventMap, Constructor<LitElement>>(
+    LitElement
+  ),
+  i18n
+) {
   public static readonly tagName = 'igc-tree';
   public static styles = styles;
 
@@ -45,13 +67,6 @@ export default class IgcTreeComponent extends EventEmitterMixin<
   public static register() {
     registerComponent(IgcTreeComponent, IgcTreeItemComponent);
   }
-
-  private readonly _i18nController = addI18nController<ITreeResourceStrings>(
-    this,
-    {
-      defaultEN: TreeResourceStringsEN,
-    }
-  );
 
   /** @hidden @internal */
   public selectionService!: IgcTreeSelectionService;
@@ -81,29 +96,11 @@ export default class IgcTreeComponent extends EventEmitterMixin<
   public selection: TreeSelection = 'none';
 
   /**
-   * Gets/Sets the locale used for getting language, affecting resource strings.
-   * @attr locale
+   * @hidden @internal
+   * The tree's top-most items, i.e. its direct `igc-tree-item` light-DOM children.
    */
-  @property()
-  public set locale(value: string) {
-    this._i18nController.locale = value;
-  }
-
-  public get locale() {
-    return this._i18nController.locale;
-  }
-
-  /**
-   * The resource strings for localization.
-   * Currently only aria-labels of the default expand/collapse icons are localized for the tree item.
-   */
-  @property({ attribute: false })
-  public set resourceStrings(value: ITreeResourceStrings) {
-    this._i18nController.resourceStrings = value;
-  }
-
-  public get resourceStrings(): ITreeResourceStrings {
-    return this._i18nController.resourceStrings;
+  public get _rootItems(): IgcTreeItemComponent[] {
+    return getTreeItemChildren(this);
   }
 
   /* blazorSuppress */
@@ -111,13 +108,15 @@ export default class IgcTreeComponent extends EventEmitterMixin<
    * Returns all of the tree's items.
    */
   public get items(): IgcTreeItemComponent[] {
+    // A shared accumulator, rather than spreading each root's flattened
+    // descendants, which would copy every subtree an extra time.
     const result: IgcTreeItemComponent[] = [];
-    for (const el of this.children) {
-      if (el.tagName.toLowerCase() === IgcTreeItemComponent.tagName) {
-        const item = el as IgcTreeItemComponent;
-        result.push(item, ...item.getChildren({ flatten: true }));
-      }
+
+    for (const item of this._rootItems) {
+      result.push(item);
+      item._collectDescendants(result);
     }
+
     return result;
   }
 
@@ -132,16 +131,20 @@ export default class IgcTreeComponent extends EventEmitterMixin<
 
   public override connectedCallback(): void {
     super.connectedCallback();
-    this.setAttribute('role', 'tree');
+    this._syncAria();
     const items = this.items;
+
     // set init to true for all items which are rendered along with the tree
     for (const item of items) {
       item.init = true;
     }
+
+    // Seed the roving tabindex without moving DOM focus - connecting a tree must
+    // not pull focus away from wherever the user currently is.
     const firstNotDisabledItem = items.find((i) => !i.disabled);
     if (firstNotDisabledItem) {
       firstNotDisabledItem.tabIndex = 0;
-      this.navService.focusItem(firstNotDisabledItem);
+      this.navService.focusItem(firstNotDisabledItem, false);
     }
   }
 
@@ -149,39 +152,48 @@ export default class IgcTreeComponent extends EventEmitterMixin<
     super.willUpdate(changed);
 
     if (this.hasUpdated && changed.has('selection')) {
-      this._selectionModeChange();
+      this.selectionService.clearItemsSelection();
     }
 
     if (changed.has('singleBranchExpand')) {
       this._singleBranchExpandChange();
     }
 
-    if (changed.has('selection') || changed.has('resourceStrings')) {
+    if (ITEM_RENDER_DEPENDENCIES.some((prop) => changed.has(prop))) {
       for (const item of this.items) {
         item.requestUpdate();
       }
     }
   }
 
-  private _selectionModeChange(): void {
-    this.selectionService.clearItemsSelection();
+  protected override updated(changed: PropertyValues<this>): void {
+    super.updated(changed);
+    this._syncAria();
+  }
+
+  private _syncAria(): void {
+    this.setAttribute('role', 'tree');
+
+    // A tree that cannot be selected should not advertise itself as selectable.
+    setAriaState(
+      this,
+      'aria-multiselectable',
+      this.selection === 'none' ? null : 'true'
+    );
   }
 
   private _singleBranchExpandChange(): void {
-    if (this.singleBranchExpand) {
-      // if activeItem -> do not collapse its branch
-      if (this.navService.activeItem) {
-        const path = this.navService.activeItem.path;
-        const remainExpanded = new Set(path.splice(0, path.length - 1));
-        this.items.forEach((item) => {
-          if (!remainExpanded.has(item)) {
-            item.collapseWithEvent();
-          }
-        });
-      } else {
-        for (const item of this.items) {
-          item.collapseWithEvent();
-        }
+    if (!this.singleBranchExpand) {
+      return;
+    }
+
+    // The active item's branch stays open; everything else collapses.
+    const active = this.navService.activeItem;
+    const keepExpanded = new Set(active ? active.path.slice(0, -1) : []);
+
+    for (const item of this.items) {
+      if (!keepExpanded.has(item)) {
+        item.collapseWithEvent();
       }
     }
   }
@@ -189,12 +201,8 @@ export default class IgcTreeComponent extends EventEmitterMixin<
   /* blazorSuppress */
   /** @hidden @internal */
   public expandToItem(item: IgcTreeItemComponent): void {
-    if (item?.parent) {
-      item.path.forEach((i) => {
-        if (i !== item && !i.expanded) {
-          i.expanded = true;
-        }
-      });
+    for (const ancestor of item.path.slice(0, -1)) {
+      ancestor.expanded = true;
     }
   }
 
@@ -204,15 +212,16 @@ export default class IgcTreeComponent extends EventEmitterMixin<
     /* alternateType: TreeItemCollection */
     items?: IgcTreeItemComponent[]
   ): void {
-    if (!items) {
-      this.selectionService.selectItemsWithNoEvent(
-        this.selection === 'cascade'
-          ? this.items.filter((item) => item.level === 0)
-          : this.items
-      );
-    } else {
+    if (items) {
       this.selectionService.selectItemsWithNoEvent(items);
+      return;
     }
+
+    // Cascading down from the roots already covers every descendant, so there
+    // is no need to walk the whole tree to build the list.
+    this.selectionService.selectItemsWithNoEvent(
+      this.selection === 'cascade' ? this._rootItems : this.items
+    );
   }
 
   /* blazorSuppress */
@@ -233,10 +242,9 @@ export default class IgcTreeComponent extends EventEmitterMixin<
     /* alternateType: TreeItemCollection */
     items?: IgcTreeItemComponent[]
   ): void {
-    const _items = items || this.items;
-    _items.forEach((item) => {
+    for (const item of items ?? this.items) {
       item.expanded = true;
-    });
+    }
   }
 
   /* blazorSuppress */
@@ -248,10 +256,9 @@ export default class IgcTreeComponent extends EventEmitterMixin<
     /* alternateType: TreeItemCollection */
     items?: IgcTreeItemComponent[]
   ): void {
-    const _items = items || this.items;
-    _items.forEach((item) => {
+    for (const item of items ?? this.items) {
       item.expanded = false;
-    });
+    }
   }
 
   protected override render() {

@@ -1,4 +1,3 @@
-import { ContextProvider } from '@lit/context';
 import {
   ChatResourceStringsEN,
   type IChatResourceStrings,
@@ -7,16 +6,18 @@ import { html, LitElement, nothing, type PropertyValues } from 'lit';
 import { property, query } from 'lit/decorators.js';
 import { cache } from 'lit/directives/cache.js';
 import { repeat } from 'lit/directives/repeat.js';
-import { addThemingController } from '../../theming/theming-controller.js';
+import { chatContext, chatUserInputContext } from '#internals/context.js';
+import { addContextProvider } from '#internals/controllers/context-provider.js';
+import { addSlotController, setSlots } from '#internals/controllers/slot.js';
+import { registerComponent } from '#internals/definitions/register.js';
+import type { IgcChatResourceStrings } from '#internals/i18n/EN/chat.resources.js';
+import { addI18nController } from '#internals/i18n/i18n-controller.js';
+import { chatResourcesMap } from '#internals/i18n/utils.js';
+import type { Constructor } from '#internals/mixins/constructor.js';
+import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
+import { isEmpty } from '#internals/utils/arrays.js';
+import { addThemingController } from '#theming/theming-controller.js';
 import IgcButtonComponent from '../button/button.js';
-import { chatContext, chatUserInputContext } from '../common/context.js';
-import { addSlotController, setSlots } from '../common/controllers/slot.js';
-import { registerComponent } from '../common/definitions/register.js';
-import type { IgcChatResourceStrings } from '../common/i18n/EN/chat.resources.js';
-import { addI18nController } from '../common/i18n/i18n-controller.js';
-import type { Constructor } from '../common/mixins/constructor.js';
-import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { isEmpty } from '../common/util.js';
 import IgcIconComponent from '../icon/icon.js';
 import IgcListComponent from '../list/list.js';
 import IgcToastComponent from '../toast/toast.js';
@@ -149,8 +150,6 @@ const Slots = setSlots(
  *
  * @csspart chat-container - Styles the main chat container.
  * @csspart header - Styles the chat header container.
- * @csspart prefix - Styles the element before the chat title (e.g., avatar).
- * @csspart title - Styles the chat header title.
  *
  * @csspart message-area-container - Styles the container holding the messages and (optional) suggestions.
  * @csspart message-list - Styles the message list container.
@@ -168,6 +167,7 @@ const Slots = setSlots(
  *
  * @csspart input-area-container - Styles the wrapper around the chat input area.
  * @csspart input-area - Styles the main text input area.
+ * @csspart input-container - Styles the wrapper around the text input.
  * @csspart input-attachments-container - Styles the container for attachments in the input.
  * @csspart input-attachment-container - Styles a single attachment in the input area.
  * @csspart input-attachment-name - Styles the file name of an attachment.
@@ -182,7 +182,6 @@ const Slots = setSlots(
  * @csspart send-button - Styles the send button.
  *
  * @csspart message-container - Styles the container of a single message.
- * @csspart message-list (forwarded) - Styles the internal list of messages.
  * @csspart message-header - Styles the header of a message (e.g., sender, timestamp).
  * @csspart message-content - Styles the text content of a message.
  * @csspart message-attachments-container - Styles the container for message attachments.
@@ -216,10 +215,10 @@ export default class IgcChatComponent extends EventEmitterMixin<
     );
   }
 
-  private readonly _state = new ChatState(
+  private readonly _state: ChatState = new ChatState(
     this,
-    this._updateContext,
-    this._updateUserInputContext
+    () => this._context.publish(),
+    () => this._userInputContext.publish()
   );
 
   private readonly _defaults = Object.freeze<DefaultChatRenderers>({
@@ -230,21 +229,21 @@ export default class IgcChatComponent extends EventEmitterMixin<
     slots: Slots,
   });
 
-  private readonly _context = new ContextProvider(this, {
+  private readonly _context = addContextProvider(this, {
     context: chatContext,
-    initialValue: this._state,
+    value: () => this._state,
   });
 
-  private readonly _userInputContext = new ContextProvider(this, {
+  private readonly _userInputContext = addContextProvider(this, {
     context: chatUserInputContext,
-    initialValue: this._state,
+    value: () => this._state,
   });
 
   private readonly _i18nController = addI18nController<
     IgcChatResourceStrings | IChatResourceStrings
   >(this, {
     defaultEN: ChatResourceStringsEN,
-    resourceMapName: 'chat',
+    resourceMap: chatResourcesMap,
   });
 
   @query(IgcChatInputComponent.tagName)
@@ -258,14 +257,6 @@ export default class IgcChatComponent extends EventEmitterMixin<
 
   @query('[part="message-area-container"]', true)
   private readonly _scrollContainer!: HTMLElement;
-
-  private _updateContext(): void {
-    this._context.setValue(this._state, true);
-  }
-
-  private _updateUserInputContext(): void {
-    this._userInputContext.setValue(this._state, true);
-  }
 
   /**
    * The list of chat messages currently displayed.
@@ -414,7 +405,6 @@ export default class IgcChatComponent extends EventEmitterMixin<
                 .message=${message}
                 exportparts="
                   message-container,
-                  message-list,
                   message-header,
                   plain-text: message-content,
                   message-attachments: message-attachments-container,

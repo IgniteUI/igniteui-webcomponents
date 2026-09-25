@@ -1,61 +1,54 @@
 import { expect } from '@open-wc/testing';
-import { DateParts, DateTimeMaskParser } from './datetime-mask-parser.js';
+import { DatePartType } from './date-part.js';
+import { DateTimeMaskParser } from './datetime-mask-parser.js';
 
 describe('DateTimeMaskParser', () => {
   describe('Format Parsing', () => {
     it('parses MM/dd/yyyy format correctly', () => {
       const parser = new DateTimeMaskParser({ format: 'MM/dd/yyyy' });
 
-      expect(parser.dateParts).to.have.lengthOf(5); // MM, /, dd, /, yyyy
+      expect(parser.parts).to.have.lengthOf(5); // MM, /, dd, /, yyyy
 
-      const parts = parser.dateParts.filter(
-        (p) => p.type !== DateParts.Literal
-      );
+      const parts = parser.parts.filter((p) => p.type !== DatePartType.Literal);
       expect(parts).to.have.lengthOf(3);
-      expect(parts[0].type).to.equal(DateParts.Month);
-      expect(parts[1].type).to.equal(DateParts.Date);
-      expect(parts[2].type).to.equal(DateParts.Year);
+      expect(parts[0].type).to.equal(DatePartType.Month);
+      expect(parts[1].type).to.equal(DatePartType.Date);
+      expect(parts[2].type).to.equal(DatePartType.Year);
     });
 
     it('parses HH:mm:ss format correctly', () => {
       const parser = new DateTimeMaskParser({ format: 'HH:mm:ss' });
 
-      const parts = parser.dateParts.filter(
-        (p) => p.type !== DateParts.Literal
-      );
+      const parts = parser.parts.filter((p) => p.type !== DatePartType.Literal);
       expect(parts).to.have.lengthOf(3);
-      expect(parts[0].type).to.equal(DateParts.Hours);
-      expect(parts[1].type).to.equal(DateParts.Minutes);
-      expect(parts[2].type).to.equal(DateParts.Seconds);
+      expect(parts[0].type).to.equal(DatePartType.Hours);
+      expect(parts[1].type).to.equal(DatePartType.Minutes);
+      expect(parts[2].type).to.equal(DatePartType.Seconds);
     });
 
     it('parses format with AM/PM correctly', () => {
       const parser = new DateTimeMaskParser({ format: 'hh:mm tt' });
 
-      const parts = parser.dateParts.filter(
-        (p) => p.type !== DateParts.Literal
-      );
+      const parts = parser.parts.filter((p) => p.type !== DatePartType.Literal);
       expect(parts).to.have.lengthOf(3);
-      expect(parts[0].type).to.equal(DateParts.Hours);
-      expect(parts[1].type).to.equal(DateParts.Minutes);
-      expect(parts[2].type).to.equal(DateParts.AmPm);
+      expect(parts[0].type).to.equal(DatePartType.Hours);
+      expect(parts[1].type).to.equal(DatePartType.Minutes);
+      expect(parts[2].type).to.equal(DatePartType.AmPm);
     });
 
     it('identifies date part positions correctly', () => {
       const parser = new DateTimeMaskParser({ format: 'MM/dd/yyyy' });
 
-      const monthPart = parser.dateParts.find(
-        (p) => p.type === DateParts.Month
-      );
+      const monthPart = parser.parts.find((p) => p.type === DatePartType.Month);
       expect(monthPart!.start).to.equal(0);
       expect(monthPart!.end).to.equal(2);
       expect(monthPart!.format).to.equal('MM');
 
-      const datePart = parser.dateParts.find((p) => p.type === DateParts.Date);
+      const datePart = parser.parts.find((p) => p.type === DatePartType.Date);
       expect(datePart!.start).to.equal(3);
       expect(datePart!.end).to.equal(5);
 
-      const yearPart = parser.dateParts.find((p) => p.type === DateParts.Year);
+      const yearPart = parser.parts.find((p) => p.type === DatePartType.Year);
       expect(yearPart!.start).to.equal(6);
       expect(yearPart!.end).to.equal(10);
     });
@@ -151,6 +144,15 @@ describe('DateTimeMaskParser', () => {
       expect(amDate!.getHours()).to.equal(9);
     });
 
+    it('handles an AM/PM marker in a format without hours', () => {
+      const parser = new DateTimeMaskParser({ format: 'MM/dd/yyyy tt' });
+      const date = parser.parseDate('12/25/2023 PM');
+
+      expect(date).to.not.be.null;
+      expect(date!.getDate()).to.equal(25);
+      expect(date!.getHours()).to.equal(0);
+    });
+
     it('returns null for invalid month', () => {
       const parser = new DateTimeMaskParser({ format: 'MM/dd/yyyy' });
       expect(parser.parseDate('13/25/2023')).to.be.null;
@@ -176,11 +178,16 @@ describe('DateTimeMaskParser', () => {
     it('gets date part at cursor position', () => {
       const parser = new DateTimeMaskParser({ format: 'MM/dd/yyyy' });
 
-      expect(parser.getDatePartAtPosition(0)?.type).to.equal(DateParts.Month);
-      expect(parser.getDatePartAtPosition(1)?.type).to.equal(DateParts.Month);
-      expect(parser.getDatePartAtPosition(2)).to.be.undefined; // Literal /
-      expect(parser.getDatePartAtPosition(3)?.type).to.equal(DateParts.Date);
-      expect(parser.getDatePartAtPosition(6)?.type).to.equal(DateParts.Year);
+      expect(parser.getPartForCursor(0)?.type).to.equal(DatePartType.Month);
+      expect(parser.getPartForCursor(1)?.type).to.equal(DatePartType.Month);
+
+      // The end of a part is inclusive - a caret there still belongs to it.
+      expect(parser.getPartForCursor(2)?.type).to.equal(DatePartType.Month);
+
+      expect(parser.getPartForCursor(3)?.type).to.equal(DatePartType.Date);
+      expect(parser.getPartForCursor(6)?.type).to.equal(DatePartType.Year);
+      expect(parser.getPartForCursor(10)?.type).to.equal(DatePartType.Year);
+      expect(parser.getPartForCursor(11)).to.be.undefined;
     });
 
     it('identifies date vs time parts', () => {
@@ -199,17 +206,17 @@ describe('DateTimeMaskParser', () => {
 
     it('gets first date part', () => {
       const parser = new DateTimeMaskParser({ format: 'MM/dd/yyyy' });
-      const first = parser.getFirstDatePart();
+      const first = parser.getFirstPart();
 
       expect(first).to.not.be.undefined;
-      expect(first!.type).to.equal(DateParts.Month);
+      expect(first!.type).to.equal(DatePartType.Month);
     });
 
     it('gets part by type', () => {
       const parser = new DateTimeMaskParser({ format: 'MM/dd/yyyy' });
 
-      expect(parser.getPartByType(DateParts.Year)?.format).to.equal('yyyy');
-      expect(parser.getPartByType(DateParts.AmPm)).to.be.undefined;
+      expect(parser.getPartByType(DatePartType.Year)?.format).to.equal('yyyy');
+      expect(parser.getPartByType(DatePartType.AmPm)).to.be.undefined;
     });
   });
 

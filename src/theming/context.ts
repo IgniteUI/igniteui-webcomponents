@@ -10,28 +10,6 @@ export interface ThemeContext {
 }
 
 /**
- * Context for providing theme information to descendant components.
- *
- * Components can consume this context to receive theme information from a theme provider
- * instead of relying on global theming events.
- *
- * @example
- * ```ts
- * // In a component
- * import { ContextConsumer } from '@lit/context';
- * import { themeContext } from './context.js';
- *
- * class MyComponent extends LitElement {
- *   private _themeConsumer = new ContextConsumer(this, {
- *     context: themeContext,
- *     subscribe: true
- *   });
- *
- *   render() {
- *     const theme = this._themeConsumer.value;
- *     // ...
- *   }
- * }
- * ```
+ * Theme context provided by the theme provider component and consumed by the theming controller.
  */
 export const themeContext = createContext<ThemeContext>('ig-theme-context');

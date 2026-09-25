@@ -28,7 +28,7 @@ const metadata: Meta<IgcRadioGroupComponent> = {
   },
   argTypes: {
     alignment: {
-      type: '"horizontal" | "vertical"',
+      type: { name: 'enum', value: ['horizontal', 'vertical'] },
       description: 'Alignment of the radio controls inside this group.',
       options: ['horizontal', 'vertical'],
       control: { type: 'inline-radio' },

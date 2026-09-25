@@ -7,18 +7,18 @@ import {
 } from '@open-wc/testing';
 import type { TemplateResult } from 'lit';
 import { spy } from 'sinon';
-import { configureTheme } from '../../theming/config.js';
-import { defineComponents } from '../common/definitions/defineComponents.js';
+import { defineComponents } from '#internals/definitions/defineComponents.js';
 import {
   createFormAssociatedTestBed,
-  isFocused,
   runExternalLabelAssociationTests,
-  simulateInput,
-} from '../common/utils.spec.js';
+} from '#internals/testing/form-testbed.spec.js';
+import { isFocused } from '#internals/testing/helpers.spec.js';
+import { simulateInput } from '#internals/testing/simulate.spec.js';
 import {
   runValidationContainerTests,
   type ValidationContainerTestsParams,
-} from '../common/validity-helpers.spec.js';
+} from '#internals/testing/validity-helpers.spec.js';
+import { configureTheme } from '#theming/config.js';
 import IgcInputComponent from './input.js';
 
 describe('Input component', () => {
@@ -297,6 +297,28 @@ describe('Input component', () => {
         input.dispatchEvent(new Event('change'));
 
         expect(eventSpy).calledOnceWithExactly('igcChange', { detail: '123' });
+      });
+
+      /**
+       * The label activation behavior re-dispatches the click on the input it
+       * labels, so a single user click must not leave the shadow root twice -
+       * consumers such as `igc-combo` and `igc-select` toggle on it.
+       */
+      it('lets a single click escape the shadow root when the label is clicked', async () => {
+        await createFixture(html`<igc-input label="Label"></igc-input>`);
+
+        const label = element.renderRoot.querySelector('label')!;
+        const targets: Element[] = [];
+
+        element.addEventListener('click', (event) =>
+          targets.push(event.composedPath()[0] as Element)
+        );
+
+        label.click();
+        await elementUpdated(element);
+
+        expect(targets).to.eql([input]);
+        expect(isFocused(input)).to.be.true;
       });
     });
   });

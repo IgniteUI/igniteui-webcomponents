@@ -1,23 +1,29 @@
 import { html, LitElement, nothing, type PropertyValues } from 'lit';
 import { property, query } from 'lit/decorators.js';
 import { createRef, ref } from 'lit/directives/ref.js';
-import { EaseOut } from '../../animations/easings.js';
-import { addAnimationController } from '../../animations/player.js';
-import { fadeOut } from '../../animations/presets/fade/index.js';
-import { scaleInCenter } from '../../animations/presets/scale/index.js';
-import { addThemingController } from '../../theming/theming-controller.js';
-import { addInternalsController } from '../common/controllers/internals.js';
-import { addSlotController, setSlots } from '../common/controllers/slot.js';
-import { registerComponent } from '../common/definitions/register.js';
-import type { Constructor } from '../common/mixins/constructor.js';
-import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { partMap } from '../common/part-map.js';
-import { asNumber, isLTR } from '../common/util.js';
+import { EaseOut } from '#animations/easings.js';
+import { addAnimationController } from '#animations/player.js';
+import { fadeOut } from '#animations/presets/fade/index.js';
+import { scaleInCenter } from '#animations/presets/scale/index.js';
+import { addInternalsController } from '#internals/controllers/internals.js';
+import { addSlotController, setSlots } from '#internals/controllers/slot.js';
+import {
+  coercedProperty,
+  type CoercedPropertyConfig,
+} from '#internals/decorators/coerced-property.js';
+import { registerComponent } from '#internals/definitions/register.js';
+import type { Constructor } from '#internals/mixins/constructor.js';
+import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
+import { partMap } from '#internals/part-map.js';
+import { isElement, isLTR } from '#internals/utils/dom.js';
+import { asNumber } from '#internals/utils/math.js';
+import { addThemingController } from '#theming/theming-controller.js';
 import IgcIconComponent from '../icon/icon.js';
 import IgcPopoverComponent, {
   type PopoverPlacement,
 } from '../popover/popover.js';
-import { addTooltipController, TooltipRegexes } from './controller.js';
+import type { PopoverScrollStrategy } from '../types.js';
+import { addTooltipController } from './controller.js';
 import { styles as shared } from './themes/shared/tooltip.common.css.js';
 import { all } from './themes/themes.js';
 import { styles } from './themes/tooltip.base.css.js';
@@ -28,6 +34,9 @@ export interface IgcTooltipComponentEventMap {
   igcClosing: CustomEvent<void>;
   igcClosed: CustomEvent<void>;
 }
+
+/** Additional offset applied to the arrow element for aligned placements. */
+const ARROW_OFFSET = 8;
 
 type TooltipStateOptions = {
   show: boolean;
@@ -46,6 +55,7 @@ type TooltipStateOptions = {
  *
  * @csspart base - The wrapping container of the tooltip content.
  * @csspart simple-text - The container where the message property of the tooltip is rendered.
+ * @csspart close-button - The default sticky-mode close button.
  *
  * @fires igcOpening - Emitted before the tooltip begins to open. Can be canceled to prevent opening.
  * @fires igcOpened - Emitted after the tooltip has successfully opened and is visible.
@@ -59,6 +69,14 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
   public static readonly tagName = 'igc-tooltip';
   public static styles = [styles, shared];
 
+  /** Shared config for the delay properties - a negative delay is no delay. */
+  private static readonly _delay: CoercedPropertyConfig<
+    number,
+    IgcTooltipComponent
+  > = {
+    transform: ({ value }) => Math.max(0, asNumber(value)),
+  };
+
   /* blazorSuppress */
   public static register(): void {
     registerComponent(
@@ -68,19 +86,13 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
     );
   }
 
-  private readonly _internals = addInternalsController(this, {
-    initialARIA: {
-      role: 'tooltip',
-      ariaAtomic: 'true',
-      ariaLive: 'polite',
-    },
-  });
-
   private readonly _controller = addTooltipController(this, {
-    onShow: this._showOnInteraction,
-    onHide: this._hideOnInteraction,
-    onEscape: this._hideOnEscape,
-    onClick: this._stopTimeoutAndAnimation,
+    onShow: () => this._showOnInteraction(),
+    onHide: () => this._hideOnInteraction(),
+    onEscape: () => this._hideOnEscape(),
+    onClick: () => this._cancelTransition(),
+    // The controller dropped the anchor the tooltip is bound to.
+    onReset: () => this._cancelTransition(false),
   });
 
   private readonly _containerRef = createRef<HTMLElement>();
@@ -99,38 +111,57 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
     easing: EaseOut.Sine,
   });
 
-  private _timeoutId?: number;
-  private _autoHideDelay = 180;
-  private _showDelay = 200;
-  private _hideDelay = 300;
+  /** The queued, not yet committed transition, if a delay is in effect. */
+  private _pending?: {
+    timer: ReturnType<typeof setTimeout>;
+    resolve: (value: boolean) => void;
+  };
+
+  /** A commit that finishes with a stale id has been superseded. */
+  private _transitionId = 0;
+
+  private _animating = false;
+
+  /**
+   * The state the tooltip moves to. A show commits `open` first, so that the
+   * popover renders. A hide commits it after the animation ends.
+   */
+  private _requestedState = false;
+
+  @query('igc-popover', true)
+  private readonly _popover!: IgcPopoverComponent;
 
   @query('#arrow')
-  private _arrowElement!: HTMLElement;
+  private readonly _arrowElement!: HTMLElement;
 
-  private get _arrowOffset() {
-    if (this.placement.includes('-')) {
-      // Horizontal start | end placement
+  private get _arrowOffset(): number {
+    const [side, alignment] = this.placement.split('-');
 
-      if (TooltipRegexes.horizontalStart.test(this.placement)) {
-        return -8;
-      }
-
-      if (TooltipRegexes.horizontalEnd.test(this.placement)) {
-        return 8;
-      }
-
-      // Vertical start | end placement
-
-      if (TooltipRegexes.start.test(this.placement)) {
-        return isLTR(this) ? -8 : 8;
-      }
-
-      if (TooltipRegexes.end.test(this.placement)) {
-        return isLTR(this) ? 8 : -8;
-      }
+    if (!alignment) {
+      return 0;
     }
 
-    return 0;
+    const offset = alignment === 'start' ? -ARROW_OFFSET : ARROW_OFFSET;
+    const isHorizontal = side === 'left' || side === 'right';
+
+    // Only the vertical placements follow the writing direction.
+    return isHorizontal || isLTR(this) ? offset : -offset;
+  }
+
+  /**
+   * Whether the consumer put content into the default slot. The query does not
+   * flatten, because a flattened query reports the rendered `message`, which is
+   * the fallback content of the slot, as content of the consumer.
+   */
+  private get _hasProjectedContent(): boolean {
+    return this._slots
+      .getAssignedNodes('[default]')
+      .some(
+        (node) =>
+          isElement(node) ||
+          (node.nodeType === Node.TEXT_NODE &&
+            Boolean(node.textContent?.trim()))
+      );
   }
 
   /**
@@ -141,6 +172,7 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
    */
   @property({ type: Boolean, reflect: true })
   public set open(value: boolean) {
+    this._requestedState = value;
     this._controller.open = value;
   }
 
@@ -176,10 +208,26 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
   public placement: PopoverPlacement = 'bottom';
 
   /**
+   * Sets the behavior of the tooltip when the parent container scrolls.
+   *
+   * If the value is `hide`, the tooltip hides while the anchor is fully out
+   * of view. `hide` is the default value.
+   *
+   * If the value is `scroll`, the tooltip stays visible and anchored.
+   *
+   * If the value is `close`, the tooltip closes on each scroll. The tooltip
+   * also closes if you set the `sticky` property. The Escape key behaves the
+   * same way.
+   * @attr scroll-strategy
+   */
+  @property({ attribute: 'scroll-strategy' })
+  public scrollStrategy: PopoverScrollStrategy = 'hide';
+
+  /**
    * An element instance or an IDREF to use as the anchor for the tooltip.
    *
    * @remarks
-   * Trying to bind to an IDREF that does not exist in the current DOM root at will not work.
+   * Trying to bind to an IDREF that does not exist in the current DOM root will not work.
    * In such scenarios, it is better to get a DOM reference and pass it to the tooltip instance.
    *
    * @attr anchor
@@ -192,7 +240,7 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
    * Expects a comma separated string of different event triggers.
    *
    * @attr show-triggers
-   * @default pointerenter
+   * @default pointerenter,focusin
    */
   @property({ attribute: 'show-triggers' })
   public set showTriggers(value: string) {
@@ -208,7 +256,7 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
    * Expects a comma separated string of different event triggers.
    *
    * @attr hide-triggers
-   * @default pointerleave, click
+   * @default pointerleave,click,focusout
    */
   @property({ attribute: 'hide-triggers' })
   public set hideTriggers(value: string) {
@@ -226,13 +274,8 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
    * @default 200
    */
   @property({ attribute: 'show-delay', type: Number })
-  public set showDelay(value: number) {
-    this._showDelay = Math.max(0, asNumber(value));
-  }
-
-  public get showDelay(): number {
-    return this._showDelay;
-  }
+  @coercedProperty(IgcTooltipComponent._delay)
+  public showDelay = 200;
 
   /**
    * Specifies the number of milliseconds that should pass before hiding the tooltip.
@@ -241,13 +284,8 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
    * @default 300
    */
   @property({ attribute: 'hide-delay', type: Number })
-  public set hideDelay(value: number) {
-    this._hideDelay = Math.max(0, asNumber(value));
-  }
-
-  public get hideDelay(): number {
-    return this._hideDelay;
-  }
+  @coercedProperty(IgcTooltipComponent._delay)
+  public hideDelay = 300;
 
   /**
    * Specifies plain text as the tooltip content.
@@ -269,24 +307,36 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
   constructor() {
     super();
     addThemingController(this, all);
+
+    addInternalsController(this, {
+      initialARIA: {
+        role: 'tooltip',
+        ariaAtomic: 'true',
+        ariaLive: 'polite',
+      },
+      aria: () => ({ role: this.sticky ? 'status' : 'tooltip' }),
+    });
   }
 
   protected override firstUpdated(): void {
     if (this.open) {
       this.updateComplete.then(() => {
         this._player.playExclusive(this._showAnimation);
-        this.requestUpdate();
       });
+    }
+  }
+
+  protected override updated(changedProperties: PropertyValues<this>): void {
+    // The arrow is created by the render that just committed, so the popover
+    // can only be handed it afterwards.
+    if (changedProperties.has('withArrow')) {
+      this._popover.arrow = this.withArrow ? this._arrowElement : null;
     }
   }
 
   protected override willUpdate(changedProperties: PropertyValues<this>): void {
     if (changedProperties.has('anchor')) {
       this._controller.resolveAnchor(this.anchor);
-    }
-
-    if (changedProperties.has('sticky')) {
-      this._internals.setARIA({ role: this.sticky ? 'status' : 'tooltip' });
     }
   }
 
@@ -296,33 +346,95 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
     });
   }
 
+  /**
+   * Cancels the queued or running transition, and resolves a delayed one with
+   * `false`. The caller must settle the state that stays behind. Returns
+   * whether the cancelled transition was in its animation.
+   */
+  private _abortTransition(): boolean {
+    const wasAnimating = this._animating;
+
+    this._transitionId++;
+    this._animating = false;
+
+    clearTimeout(this._pending?.timer);
+    this._pending?.resolve(false);
+    this._pending = undefined;
+
+    return wasAnimating;
+  }
+
+  /** Lands the tooltip on `state` after its transition was aborted. */
+  private _settleState(state: boolean, wasAnimating: boolean): void {
+    this._requestedState = state;
+
+    if (wasAnimating) {
+      this._player.cancelAll();
+      this.inert = false;
+    }
+
+    // Via the accessor - it drives the reflection and the render.
+    if (this.open !== state) {
+      this.open = state;
+    }
+  }
+
+  /**
+   * Drops a queued or running transition and settles on `state`. The default is
+   * the state the tooltip is committed to.
+   */
+  private _cancelTransition(state = this.open): void {
+    this._settleState(state, this._abortTransition());
+  }
+
   private async _applyTooltipState({
     show,
     withDelay = false,
     withEvents = false,
   }: TooltipStateOptions): Promise<boolean> {
-    if (show === this.open) {
+    if (show === this._requestedState) {
       return false;
     }
 
-    if (withEvents && !this._emitEvent(show ? 'igcOpening' : 'igcClosing')) {
+    // Supersede whatever transition is queued or already running.
+    const wasAnimating = this._abortTransition();
+    this._requestedState = show;
+
+    // A superseded transition that never animated leaves the tooltip already
+    // in the requested state.
+    if (show === this.open && !wasAnimating) {
       return false;
     }
+
+    // Vetoed - the first guard proves we were at `!show`.
+    if (withEvents && !this._emitEvent(show ? 'igcOpening' : 'igcClosing')) {
+      this._settleState(!show, wasAnimating);
+      return false;
+    }
+
+    const id = this._transitionId;
 
     const commitStateChange = async () => {
       if (show) {
         this.open = true;
       }
 
-      // Make the tooltip ignore most interactions while the animation
-      // is running. In the rare case when the popover overlaps its anchor
-      // this will prevent looping between the anchor and tooltip handlers.
+      // Make the tooltip ignore most interactions during the animation. If the
+      // popover overlaps its anchor, this stops a loop between the anchor and the
+      // tooltip handlers.
       this.inert = true;
+      this._animating = true;
 
       const animationComplete = await this._player.playExclusive(
         show ? this._showAnimation : this._hideAnimation
       );
 
+      // Superseded while animating - the newer transition owns the state now.
+      if (id !== this._transitionId) {
+        return false;
+      }
+
+      this._animating = false;
       this.inert = false;
       this.open = show;
 
@@ -333,39 +445,57 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
       return animationComplete;
     };
 
-    if (withDelay) {
-      clearTimeout(this._timeoutId);
-
-      return new Promise(() => {
-        this._timeoutId = setTimeout(
-          async () => await commitStateChange(),
-          show ? this.showDelay : this.hideDelay
-        );
-      });
+    if (!withDelay) {
+      return commitStateChange();
     }
 
-    return commitStateChange();
+    return new Promise<boolean>((resolve) => {
+      const timer = setTimeout(
+        () => {
+          this._pending = undefined;
+          commitStateChange().then(resolve);
+        },
+        show ? this.showDelay : this.hideDelay
+      );
+
+      this._pending = { timer, resolve };
+    });
   }
 
   /**
-   *  Shows the tooltip if not already showing.
-   *  If a target is provided, sets it as a transient anchor.
+   * Shows the tooltip if not already showing.
+   * If a target is provided, sets it as a transient anchor.
+   *
+   * @remarks
+   * Bypasses `showDelay` and does not emit `igcOpening`/`igcOpened`.
+   * Resolves with whether the tooltip transitioned to a shown state.
    */
   public async show(target?: Element | string): Promise<boolean> {
     if (target) {
-      this._stopTimeoutAndAnimation();
+      this._cancelTransition();
       this._controller.setAnchor(target, true);
     }
 
     return await this._applyTooltipState({ show: true });
   }
 
-  /** Hides the tooltip if not already hidden. */
+  /**
+   * Hides the tooltip if not already hidden.
+   *
+   * @remarks
+   * Bypasses `hideDelay` and does not emit `igcClosing`/`igcClosed`.
+   * Resolves with whether the tooltip transitioned to a hidden state.
+   */
   public async hide(): Promise<boolean> {
     return await this._applyTooltipState({ show: false });
   }
 
-  /** Toggles the tooltip between shown/hidden state */
+  /**
+   * Toggles the tooltip between shown/hidden state.
+   *
+   * @remarks
+   * Resolves with whether the tooltip transitioned to the opposite state.
+   */
   public async toggle(): Promise<boolean> {
     return await (this.open ? this.hide() : this.show());
   }
@@ -387,39 +517,39 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
   }
 
   private _showOnInteraction(): void {
-    this._stopTimeoutAndAnimation();
+    this._cancelTransition();
     this._showWithEvent();
-  }
-
-  private _stopTimeoutAndAnimation(): void {
-    clearTimeout(this._timeoutId);
-    this._player.cancelAll();
-  }
-
-  private _setAutoHide(): void {
-    this._stopTimeoutAndAnimation();
-
-    this._timeoutId = setTimeout(
-      this._hideWithEvent.bind(this),
-      this._autoHideDelay
-    );
   }
 
   private _hideOnInteraction(): void {
     if (!this.sticky) {
-      this._setAutoHide();
+      this._hideWithEvent();
     }
   }
 
+  /**
+   * Closes the tooltip and emits the events. Ignores `hideDelay`, and also
+   * `sticky`, which `_hideOnInteraction` obeys.
+   *
+   * @remarks
+   * The close button of a sticky tooltip calls this method, as does the `close`
+   * scroll strategy, which closes a sticky tooltip too.
+   */
+  private _hideImmediately(): void {
+    this._applyTooltipState({ show: false, withEvents: true });
+  }
+
   private async _hideOnEscape(): Promise<void> {
-    await this.hide();
-    this._emitEvent('igcClosed');
+    // `hide()` is silent, so announce the close here - if there was one.
+    if (await this.hide()) {
+      this._emitEvent('igcClosed');
+    }
   }
 
   protected override render() {
     const parts = {
       base: true,
-      'simple-text': !this._slots.hasAssignedNodes('[default]', true),
+      'simple-text': !this._hasProjectedContent,
     };
 
     return html`
@@ -428,24 +558,29 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
         .placement=${this.placement}
         .offset=${this.offset}
         .anchor=${this._controller.anchor ?? undefined}
-        .arrow=${this.withArrow ? this._arrowElement : null}
         .arrowOffset=${this._arrowOffset}
-        .shiftPadding=${8}
+        .scrollStrategy=${this.scrollStrategy}
         ?open=${this.open}
         flip
-        shift
+        @igcPopoverScrollClose=${this._hideImmediately}
       >
         <div ${ref(this._containerRef)} part=${partMap(parts)}>
           <slot>${this.message}</slot>
           ${
             this.sticky
               ? html`
-                  <slot name="close-button" @click=${this._setAutoHide}>
-                    <igc-icon
-                      name="input_clear"
-                      collection="default"
-                      aria-hidden="true"
-                    ></igc-icon>
+                  <slot name="close-button" @click=${this._hideImmediately}>
+                    <button
+                      type="button"
+                      part="close-button"
+                      aria-label="Close"
+                    >
+                      <igc-icon
+                        name="input_clear"
+                        collection="default"
+                        aria-hidden="true"
+                      ></igc-icon>
+                    </button>
                   </slot>
                 `
               : nothing

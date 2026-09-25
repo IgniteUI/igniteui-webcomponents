@@ -1,5 +1,5 @@
 @use 'styles/utilities' as *;
 
-[part="base"] {
+[part~="base"] {
     @include type-style('subtitle-2');
 }
