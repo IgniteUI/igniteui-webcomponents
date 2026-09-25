@@ -74,11 +74,13 @@ playwright_browser_evaluate({ function: "() => document.title" })
 ### 3. Measuring before the components have upgraded
 
 Custom elements upgrade asynchronously, and Lit renders on a microtask. Measuring too early
-returns pre-upgrade box metrics (often `height: 0`). Wait for definition and render:
+returns pre-upgrade box metrics (often `height: 0`). Wait for the registered elements to
+render. The snippet only waits on tags that are already defined, with a 3-second cap, so an
+unregistered tag cannot hang it; it is returned in `undefinedTags` instead:
 
 ```
 playwright_browser_evaluate({
-  function: "async () => { const deepQueryAll = (sel, root = document) => { const out = []; const walk = (node) => { out.push(...node.querySelectorAll(sel)); node.querySelectorAll('*').forEach(el => el.shadowRoot && walk(el.shadowRoot)); }; walk(root); return out; }; const tags = [...new Set(deepQueryAll('*').map(e => e.tagName.toLowerCase()).filter(t => t.startsWith('igc-')))]; await Promise.all(tags.map(t => customElements.whenDefined(t))); const els = deepQueryAll('*').filter(e => e.tagName.startsWith('IGC-')); await Promise.all(els.map(e => e.updateComplete).filter(Boolean)); await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))); return { upgraded: tags.length }; }"
+  function: "async () => { const deepQueryAll = (sel, root = document) => { const out = []; const walk = (node) => { out.push(...node.querySelectorAll(sel)); node.querySelectorAll('*').forEach(el => el.shadowRoot && walk(el.shadowRoot)); }; walk(root); return out; }; const els = deepQueryAll('*').filter(e => e.tagName.startsWith('IGC-')); const tags = [...new Set(els.map(e => e.tagName.toLowerCase()))]; const undefinedTags = tags.filter(t => !customElements.get(t)); const timeout = new Promise(r => setTimeout(r, 3000)); await Promise.race([Promise.all(els.filter(e => customElements.get(e.tagName.toLowerCase())).map(e => e.updateComplete).filter(Boolean)), timeout]); await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))); return { upgraded: tags.length - undefinedTags.length, undefinedTags }; }"
 })
 ```
 
