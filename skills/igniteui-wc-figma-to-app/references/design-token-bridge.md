@@ -466,9 +466,10 @@ When multiple Figma variables could map to the same theming input:
 Do **not** call theming tools for:
 
 - Chart, gauge, and map components → configure via properties; series colors via `get_chart_series_colors`
-- Dock Manager → theme key `dock-manager` (selector `igc-dockmanager`); it also exposes its own CSS custom properties
 - Pure layout CSS (margins, grid columns, flex gaps) → write it directly in the view's styles
 - Icon colors → set `color` on the `igc-icon` host or its parent
+
+Dock Manager **is** themed with the tools: use the theme key `dock-manager` (selector `igc-dockmanager`) like any other component. It also exposes its own CSS custom properties.
 
 ---
 

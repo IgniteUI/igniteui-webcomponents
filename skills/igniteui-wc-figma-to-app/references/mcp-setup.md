@@ -15,7 +15,7 @@
 | **Ignite UI Theming** (`igniteui-theming`) | Palette + component-level theming code              | `theming_detect_platform`                      |
 | **Playwright**                             | Browser automation, screenshots, DOM measurement    | `playwright_browser_navigate` to `about:blank` |
 
-> **Fast path for the two Ignite UI servers:** run `npx -y igniteui-cli ai-config` in the project root. It configures `igniteui-cli` **and** `igniteui-theming` and copies the Agent Skills, preserving existing entries. Projects created with `npx igniteui-cli new --framework=webcomponents` already have both wired in `.vscode/mcp.json` — they normally need only Figma and Playwright added.
+> **Fast path for the two Ignite UI servers:** run `npx -y igniteui-cli ai-config` in the project root. It configures `igniteui-cli` **and** `igniteui-theming` and copies the Agent Skills, preserving existing entries. Projects created with `npx igniteui-cli new --framework=webcomponents` already have both, in the config file of the assistant chosen with `--assistants` (`.mcp.json` by default) — they normally need only Figma and Playwright added.
 
 ---
 
@@ -282,7 +282,7 @@ Ask: *"Navigate the browser to `about:blank`."* `playwright_browser_navigate` sh
 
 ## Combined JSON Config (All Four Servers)
 
-> **If your project was created with `npx igniteui-cli new`:** `.vscode/mcp.json` already contains `igniteui-cli` and `igniteui-theming`. Add only the `figma` and `playwright` entries to the existing `"servers"` block — do not duplicate the others.
+> **If your project was created with `npx igniteui-cli new`:** `igniteui-cli` and `igniteui-theming` are already in your client's config file (the one chosen with `--assistants`; `.mcp.json` by default). Add only the Figma and Playwright entries below — do not duplicate the others.
 >
 > **Fresh setup:** use the complete blocks below. They use Figma's **remote** server; for the desktop server, replace the `figma` entry with the desktop entry from section 1 (`http://127.0.0.1:3845/mcp`). No Figma token belongs in these files.
 

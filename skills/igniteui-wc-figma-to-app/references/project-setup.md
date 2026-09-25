@@ -17,7 +17,7 @@ Check whether the current working directory contains a valid Web Components + Ig
 - Note the package layout: `igniteui-webcomponents` (MIT). Commercial packages — `igniteui-webcomponents-grids` (trial) / `@infragistics/igniteui-webcomponents-grids` (licensed) , `igniteui-webcomponents-charts` (trial) / `@infragistics/igniteui-webcomponents-charts` (licensed), `igniteui-webcomponents-core` (trial) / `@infragistics/igniteui-webcomponents-core` (licensed), `igniteui-dockmanager` (trial) / `@infragistics/igniteui-dockmanager` (licensed).
 - Note the host setup: plain Lit/vanilla app, or a framework wrapper (React/Angular/Vue). If a wrapper is in play, registration and event binding follow [`igniteui-wc-integrate-with-framework`](../../igniteui-wc-integrate-with-framework/SKILL.md), not the raw `defineComponents` pattern.
 - Note whether **Sass** is configured (a `.scss` entry file, `sass` in `devDependencies`, or a bundler Sass plugin). This decides the Phase 3 output format — CSS or Sass.
-- **Check the MCP configuration for all four required server entries** — a Figma entry (`figma` or `figma-desktop`), `igniteui-cli`, `igniteui-theming`, and `playwright`, in the config file your client reads (`.vscode/mcp.json`, `.cursor/mcp.json`, or `.mcp.json`). If `igniteui-cli` or `igniteui-theming` is missing, run `npx -y igniteui-cli ai-config` (or `ig ai-config` when `igniteui-cli` is installed globally) from the project root yourself — it configures both servers and copies the Agent Skills, preserving existing entries. Add a missing Figma entry and `playwright` from [mcp-setup.md](mcp-setup.md). Projects scaffolded with `npx igniteui-cli new` already have `igniteui-cli` **and** `igniteui-theming` wired; they typically lack Figma and Playwright. A reload is required before newly configured servers' tools appear: ask the user to reload, then stop.
+- **Check the MCP configuration for all four required server entries** — a Figma entry (`figma` or `figma-desktop`), `igniteui-cli`, `igniteui-theming`, and `playwright`, in the config file your client reads (`.mcp.json`, `.vscode/mcp.json`, `.cursor/mcp.json`, …). If `igniteui-cli` or `igniteui-theming` is missing, run `npx -y igniteui-cli ai-config` (or `ig ai-config` when `igniteui-cli` is installed globally) from the project root yourself — it configures both servers and copies the Agent Skills, preserving existing entries. Add a missing Figma entry and `playwright` from [mcp-setup.md](mcp-setup.md). Projects scaffolded with `npx igniteui-cli new` already have `igniteui-cli` **and** `igniteui-theming` wired; they typically lack Figma and Playwright. A reload is required before newly configured servers' tools appear: ask the user to reload, then stop.
 - Inform the user: "Found existing Ignite UI Web Components project. Proceeding with the Figma workflow."
 
 ## If no valid project is found
@@ -26,7 +26,7 @@ Present this message and wait for the user's choice:
 
 > "No Ignite UI Web Components project found in the current directory. Would you like me to scaffold a new one using the Ignite UI CLI before implementing the Figma design?
 >
-> `npx -y igniteui-cli new` creates a Vite + Lit + TypeScript project pre-configured with `igniteui-webcomponents`, a starter theme, and the Ignite UI CLI and Theming MCP servers wired into `.vscode/mcp.json`. No global install required.
+> `npx -y igniteui-cli new` creates a Vite + Lit + TypeScript project pre-configured with `igniteui-webcomponents`, a starter theme, and the Ignite UI CLI and Theming MCP servers configured for your coding assistant. No global install required.
 >
 > Alternatively, point me at an existing project directory."
 
@@ -45,18 +45,20 @@ If the user confirms scaffolding:
 3. Create the project:
 
    ```bash
-   npx -y igniteui-cli new <project-name> --framework=webcomponents --type=igc-ts --template=<empty|side-nav|side-nav-mini>
+   npx -y igniteui-cli new <project-name> --framework=webcomponents --type=igc-ts --template=<empty|side-nav|side-nav-mini> --assistants=<generic|vscode|cursor|gemini|junie> --agents=<generic|claude|copilot|cursor|…>
    ```
+
+   `--assistants` picks the MCP config file: `generic` → `.mcp.json` (the default; Claude Code, GitHub Copilot, and others), `vscode` → `.vscode/mcp.json`, `cursor` → `.cursor/mcp.json`, `gemini` → `.gemini/settings.json`, `junie` → `.junie/mcp/mcp.json`. `--agents` picks where the Agent Skills are copied (`generic` → `.agents/skills`, `claude` → `.claude/skills`, `copilot` → `.github/skills`, …). Pass both: without them the CLI asks interactively.
 
    This produces a standard Vite workspace and additionally:
    - Installs and configures `igniteui-webcomponents` and `lit`, with a starter theme: a `<link>` in `index.html` to `themes/light/bootstrap.css` or `themes/light/material.css`, depending on the template (Phase 3a treats it as "no theme")
    - Wires `@vaadin/router` routing in `src/app/app-routing.ts`
-   - Generates `.vscode/mcp.json` with the `igniteui-cli` **and** `igniteui-theming` MCP server entries already set
+   - Runs the `ai-config` setup: adds the `igniteui-cli` **and** `igniteui-theming` MCP servers to the chosen assistant's config file, and copies the Agent Skills for the chosen agents
    - Copies static assets from `src/assets` via `vite-plugin-static-copy`
 
 4. `cd <project-name>`.
 
-5. Add the Figma and Playwright entries from [mcp-setup.md](mcp-setup.md), in the config file **your client reads**: `.vscode/mcp.json` (VS Code), `.cursor/mcp.json` (Cursor), or `.mcp.json` (Claude Code). For clients other than VS Code, also run `npx -y igniteui-cli ai-config` in the new folder so the Ignite UI entries land in that client's config.
+5. Add the Figma and Playwright entries from [mcp-setup.md](mcp-setup.md) to the same config file the scaffold wrote (the one for `--assistants`).
 
 6. Confirm the project builds:
    ```bash
