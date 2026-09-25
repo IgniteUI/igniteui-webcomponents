@@ -8,6 +8,12 @@
 > rules, compound components — the source of truth is
 > [`igniteui-wc-customize-component-theme`](../../igniteui-wc-customize-component-theme/SKILL.md).
 
+> **Tool names:** like SKILL.md, this file refers to theming tools by their base name. Match by
+> the tool's base name (`create_palette`, `create_theme`, `create_component_theme`, …) on
+> the connected `igniteui-theming` server; your client may show them as
+> `mcp__igniteui-theming__create_palette` or similar. The `licensed` parameter is for
+> Angular only — do not pass it for Web Components.
+
 ---
 
 ## Two Paths
@@ -578,7 +584,6 @@ create_component_theme({
   platform: "webcomponents",
   designSystem: "<resolved>",
   variant: "<light|dark>",
-  licensed: <true if @infragistics>,
   tokens: {
     "background": "var(--ig-surface-100)",
     "foreground-color": "var(--ig-gray-900)"

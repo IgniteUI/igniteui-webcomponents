@@ -6,6 +6,12 @@
 > full, together with [`design-token-bridge.md`](design-token-bridge.md), before calling any
 > theming tool.
 
+> **Tool names:** like SKILL.md, this file writes theming tools as `theming_<tool>`. Match by
+> the tool's base name (`create_palette`, `create_theme`, `create_component_theme`, …) on
+> the connected `igniteui-theming` server; your client may show them as
+> `mcp__igniteui-theming__create_palette` or similar. The `licensed` parameter is for
+> Angular only — do not pass it for Web Components.
+
 **Goal:** produce theming code that matches the Figma design's visual language, using the
 kit variables from Phase 1e (Path A) or the color census and measurements from Phase 1d
 (Path B).
@@ -151,7 +157,6 @@ theming_read_resource({ uri: "theming://platforms/webcomponents" }) // platform 
      surface: surfaceColor,
      variant: "<light|dark>",
      platform: "webcomponents",
-     licensed: <true if @infragistics package>,
      output: "css"
    })
    ```
@@ -184,7 +189,6 @@ theming_create_theme({
   includeTypography: true,
   includeElevations: true,
   includeSpacing: true,
-  licensed: <true if @infragistics package>,
   output: "sass"
 })
 ```
@@ -244,7 +248,7 @@ For **every** Ignite UI component in your plan, run this loop:
 2. Find the values for this component's surfaces (background, text, border, hover state).
    **Path A:** from the Phase 1e kit variables. **Path B:** from the Phase 1d color census
    and measurements. Variables, when they exist, only confirm them.
-3. `theming_create_component_theme({ component: "<theme-key>", platform: "webcomponents", designSystem: "<3b result>", variant: "<light|dark>", licensed: <true if @infragistics>, tokens: { <only differing tokens> }, output: "css" | "sass" })`.
+3. `theming_create_component_theme({ component: "<theme-key>", platform: "webcomponents", designSystem: "<3b result>", variant: "<light|dark>", tokens: { <only differing tokens> }, output: "css" | "sass" })`.
    Always pass `designSystem` and `variant`: the tool defaults to Material light and would
    compute the theme against the wrong schema.
 4. Apply the generated block exactly as returned — to the component selector or to the

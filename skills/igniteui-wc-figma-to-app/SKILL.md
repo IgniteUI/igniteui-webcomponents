@@ -83,7 +83,8 @@ Check whether the working directory contains a `package.json` that lists
 `igniteui-webcomponents`, and a `src/` entry
 module.
 
-- **Project found:** note the package layout (trial or `@infragistics` licensed), the host
+- **Project found:** note the package layout (`igniteui-webcomponents` is MIT; grids, charts,
+  and dock manager come as trial or `@infragistics` licensed packages), the host
   setup (plain Lit/vanilla, or a React/Angular/Vue wrapper), and whether Sass is configured
   (it decides the Phase 3 output format). Confirm the MCP configuration has all four
   server entries.
@@ -190,7 +191,8 @@ pinning, or other advanced feature states.
 After reading all docs, confirm or revise the Phase 1g table with:
 
 - Exact tags (e.g. `<igc-grid>`, `<igc-navbar>`) and component classes
-- The **package** each component comes from, and trial vs. `@infragistics` licensed paths
+- The **package** each component comes from, and for the commercial packages (grids,
+  charts, dock manager) whether the project uses the trial or the `@infragistics` licensed one
 - The **registration** each one needs — see the registration cheat sheet in
   `figma-component-map.md` (`defineComponents(...)`, `IgcXxxComponent.register()`,
   `IgcGridLite.register()`, `ModuleManager.register(...)`, and `defineComponents` from

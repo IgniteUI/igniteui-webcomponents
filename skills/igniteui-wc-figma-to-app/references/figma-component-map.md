@@ -126,7 +126,10 @@ that holds its full row (class, package, doc name, key attributes).
 | `igniteui-webcomponents-charts` / `-gauges` / `-maps` | `ModuleManager.register(IgcCategoryChartModule, …)` from `igniteui-webcomponents-core` |
 | `igniteui-dockmanager` | `defineComponents(IgcDockManagerComponent)` from `igniteui-dockmanager` (`defineCustomElements()` is deprecated since 2.0.0) |
 
-Licensed projects use the same names prefixed with `@infragistics/` (e.g. `@infragistics/igniteui-webcomponents-grids`, `@infragistics/igniteui-dockmanager`). Resolve the layout once in Phase 0b and keep
+Licensed projects use the same names prefixed with `@infragistics/` (e.g.
+`@infragistics/igniteui-webcomponents-grids`, `@infragistics/igniteui-dockmanager`).
+`igniteui-webcomponents` itself is MIT and has no licensed variant. Resolve the layout once
+in Phase 0b and keep
 it consistent.
 
 ---

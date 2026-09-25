@@ -12,7 +12,7 @@ project:
 
 ```
 1. Does package.json exist?
-2. Does it list "igniteui-webcomponents" OR "@infragistics/igniteui-webcomponents" in dependencies?
+2. Does it list "igniteui-webcomponents" in dependencies?
 3. Is there a src/ directory with an entry module (src/index.ts, src/main.ts, or similar)?
 ```
 

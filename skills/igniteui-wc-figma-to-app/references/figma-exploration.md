@@ -260,8 +260,9 @@ Before writing any code, produce **two tables** for **each artboard**.
 | _e.g._ `Segmented button` | B | M3 Design Kit | `toggle-group` · 40px | `<igc-button-group>` | `igniteui-webcomponents` | high | radius, colors | check icon on the selected segment | n/a |
 | _e.g._ `Frame 427` | C | — | `tag` · pill · 24px | `<igc-badge>` | `igniteui-webcomponents` | low | radius, colors | — (confirm the role) | n/a |
 
-The **Package** column is not optional in Web Components: general UI, grids, charts, and
-dock manager ship as separate packages with trial and `@infragistics` licensed variants.
+The **Package** column is not optional in Web Components: general UI (`igniteui-webcomponents`,
+MIT), grids, charts, and dock manager ship as separate packages, and the commercial ones
+come in trial and `@infragistics` licensed variants.
 
 - **Token Work** lists what Phase 3 must set: colors, radius, borders, casing, size. These
   are implementation work. They are **never** anatomy deltas and never become Accepted.
