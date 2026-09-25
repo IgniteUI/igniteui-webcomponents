@@ -53,7 +53,7 @@
     }
 
     50% {
-        box-shadow: 0 0 10px 4px rgb(180 180 180 / 60%);
+        box-shadow: 0 0 rem(10px) rem(4px) var(--_shape-color);
     }
 }
 
@@ -82,34 +82,32 @@
     height: fit-content;
 }
 
-:host([loading]) [part='content'] {
+:host([loading]) [part~='content'] {
     opacity: 0;
-    pointer-events: none;
-    user-select: none;
 }
 
-:host(:state(revealing)) [part='content'] {
+// Keep the duration in sync with REVEAL_DURATION_MS in skeleton.ts.
+:host(:state(revealing)) [part~='content'] {
     animation: reveal-content 0.6s ease-out both;
-    will-change: opacity, transform;
 }
 
-[part='overlay'] {
+[part~='overlay'] {
     position: absolute;
     inset: 0;
-    background-color: var(--ig-skeleton-overlay-color, #eee);
+    opacity: 0;
     pointer-events: none;
-    user-select: none;
-    border-radius: var(--border-radius, var(--_fallback-radius, 0));
+    border-radius: var(--border-radius, var(--_fallback-radius));
     transition: opacity 0.3s ease-out;
+}
+
+:host([loading]) [part~='overlay'] {
+    opacity: 0.5;
 }
 
 [part~='shape'] {
     position: absolute;
     contain: strict;
-    background-color: var(--ig-skeleton-shape-color, #cdcdcd);
-    pointer-events: none;
-    user-select: none;
-    will-change: opacity, transform;
+    border-radius: var(--border-radius, var(--_fallback-radius));
 }
 
 [part~='pulse'] {
@@ -121,16 +119,8 @@
 }
 
 [part~='shimmer'] {
-    background: linear-gradient(
-        90deg,
-        var(--ig-skeleton-shape-color, #cdcdcd) 25%,
-        color-mix(in srgb, var(--ig-skeleton-shape-color, #cdcdcd) 60%, white)
-            50%,
-        var(--ig-skeleton-shape-color, #cdcdcd) 75%
-    );
     background-size: 200% 100%;
     animation: shimmer 1.5s linear infinite;
-    will-change: background-position;
 }
 
 [part~='wave'] {
@@ -139,19 +129,11 @@
 
 [part~='glow'] {
     animation: glow 1.5s ease-in-out infinite;
-    will-change: box-shadow;
 }
 
 @media (prefers-reduced-motion: reduce) {
-    [part~='pulse'],
-    [part~='breathe'],
-    [part~='shimmer'],
-    [part~='wave'],
-    [part~='glow'] {
-        animation: none;
-    }
-
-    :host(:state(revealing)) [part='content'] {
+    [part~='shape'],
+    :host(:state(revealing)) [part~='content'] {
         animation: none;
     }
 }

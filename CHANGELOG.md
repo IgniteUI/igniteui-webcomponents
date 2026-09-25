@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 ### Added
+- #### Skeleton
+  - New `igc-skeleton` component shows a placeholder while its content loads. Set `loading` to hide the content and draw an animated shape over each visible leaf element and run of text. The `animation` attribute selects `pulse`, `breathe` (the default), `shimmer`, `wave` or `glow`. When loading ends, the content fades in and the host has the `revealing` custom state.
+  - While loading, the content is inert and the host has `aria-busy="true"`.
 - #### Virtual scroll
   - `keyFunction` property. It returns the key of an item, so an item keeps its element while it is in the rendered window, also when it moves in `data`. Without it, the index is the key.
 
