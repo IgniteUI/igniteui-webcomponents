@@ -98,11 +98,11 @@ Use the Web Components slot anatomy:
 ```
 
 ### Nav drawer width
-Width is controlled by two CSS custom properties exposed on the host — they are **not** design tokens and won't appear in `get_component_design_tokens`. Override them directly:
+Width comes from the `navdrawer` design tokens `size` and `size--mini`, exposed as `--ig-nav-drawer-size` (default 15rem) and `--ig-nav-drawer-size--mini` (default depends on the design system). Set them with `create_component_theme("navdrawer", …)`, or directly:
 ```css
 igc-nav-drawer {
-  --menu-full-width: 280px;  /* default: 240px */
-  --menu-mini-width: 56px;   /* no default — collapses to content width if unset */
+  --ig-nav-drawer-size: 280px;
+  --ig-nav-drawer-size--mini: 56px;
 }
 ```
 
