@@ -32,9 +32,9 @@ mkdir -p src/assets/images src/assets/icons     # or public/images public/icons
 
 ## Step 1 — Acquire the Figma File Key (Required for the REST API)
 
-The Figma REST API needs a **file key** — the identifier in every Figma file URL. If the
-connected Figma MCP is the addressable variant, you already have it from Phase 0c. If not,
-ask:
+The Figma REST API needs a **file key** — the identifier in every Figma file URL — and a
+**personal access token**. Reuse the file key from Phase 1 when you have it (the remote
+Figma server always has one). If not, ask:
 
 > "To extract image assets at the highest quality, I need the Figma file key.
 > In the Figma desktop app: right-click the file tab → **Copy link**.
@@ -48,8 +48,12 @@ echo "https://www.figma.com/design/ABCDEF1234567890/My-App" \
   | sed -E 's|.*/design/([^/]+)/.*|\1|'
 # → ABCDEF1234567890
 export FILE_KEY="ABCDEF1234567890"
-export FIGMA_TOKEN="your-personal-access-token"   # same token the MCP server uses
+export FIGMA_TOKEN="your-personal-access-token"   # REST API only — see below
 ```
+
+The Figma MCP servers do **not** use a personal access token, so this is a separate token
+(see `mcp-setup.md § Personal access token`). Ask the user to export it in the agent's
+shell, and never write it into a project file.
 
 ---
 
@@ -106,20 +110,25 @@ directly downloadable URL. Note them — Tier 2 depends on them, and they are sh
 ## Step 3 — Extract at the Highest Available Fidelity
 
 ```
-Do you have the FILE_KEY?
+Do you have BOTH the FILE_KEY and a FIGMA_TOKEN?
 ├─ YES → Tier 1 (REST API). Always the best.
 └─ NO  → Did figma_get_design_context return an asset URL for this node?
+          (desktop server: http://localhost:3845/assets/…; remote server: short-lived https URLs)
           ├─ YES → Tier 2 (download that URL now).
           └─ NO  → Can you render the node on its own?
                     ├─ YES → Tier 3 (figma_get_screenshot per node).
                     └─ NO  → Tier 4 (CSS placeholder + TODO — last resort only).
 ```
 
-**After Phase 4, if you used Tier 2 or Tier 3 for any asset:**
+The remote server also offers `figma_download_assets` (up to 20 nodes per call, exports and
+original images). If it is in the tool list, use it for Tier 2 when there is no
+FIGMA_TOKEN.
+
+**At the end of Phase 1h, if you used Tier 2 or Tier 3 for any asset:**
 
 > Tell the user: "The following assets were extracted at reduced quality because the Figma
-> file key was not available: [list]. To replace them with the original source files, run
-> the Tier 1 REST API commands once you have the file key."
+> REST API was not available (no file key or no personal access token): [list]. To replace
+> them with the original source files, run the Tier 1 REST API commands once you have both."
 
 ---
 
@@ -193,7 +202,7 @@ done
 
 ### Tier 2 — Download the Design Context Asset URLs
 
-**Use when:** no file key, but `figma_get_design_context` returned asset URLs for the node.
+**Use when:** Tier 1 is unavailable, but `figma_get_design_context` returned asset URLs for the node.
 
 ```bash
 curl -sL "<asset-url-from-design-context>" -o src/assets/images/hero-background.png
@@ -207,11 +216,12 @@ Where the URLs appear in the response:
   `<img src={imgXxx} />` or `background-image`
 
 **Limitations:** these are renderer outputs, not originals — vectors may come back
-rasterized, and the URLs expire (a desktop-session URL dies when Figma closes). Download
+rasterized, and the URLs expire (a desktop-server URL dies when the Figma desktop app
+closes; a remote-server URL expires after a short time). Download
 before doing anything else, rename descriptively, and flag them in the manifest:
 
 ```typescript
-// TODO: re-export via Tier 1 REST API once FILE_KEY is available
+// TODO: re-export via Tier 1 REST API once FILE_KEY and FIGMA_TOKEN are available
 heroBg: '/assets/images/hero-background.png',
 ```
 
@@ -219,12 +229,19 @@ heroBg: '/assets/images/hero-background.png',
 
 ### Tier 3 — `figma_get_screenshot` per Node
 
-figma_get_screenshot({ nodeId: "<nodeId>", maxDimension: 2048 }) // session-bound variant; use fileKey only with addressable Figma MCP
+Address the node the same way as in Phase 1 (`figma-exploration.md § Before the First Call`):
 
-The response returns a short-lived URL plus a `curl` command — download it straight into the
-assets directory. Raise `maxDimension` for detail; the metadata reports the node's natural
-size so you can tell whether the render was clamped. On the session-bound Figma MCP variant,
-ask the user to select the node first.
+```
+// Remote server
+figma_get_screenshot({ fileKey: "<fileKey>", nodeId: "<nodeId>", maxDimension: 2048 })
+// Desktop server: the node ID (check the image), or ask the user to select the layer
+figma_get_screenshot({ nodeId: "<nodeId>", maxDimension: 2048 })
+figma_get_screenshot({})
+```
+
+If the response is a URL, download it straight into the assets directory (it is
+short-lived); if the image comes back inline, save it from there. Raise `maxDimension` for
+detail.
 
 **Limitations:** a render, not a source file; vectors are rasterized; may include
 surrounding canvas. Label them:
@@ -243,7 +260,7 @@ extraction felt difficult.
 
 ```css
 .hero-banner {
-  /* TODO: replace with real asset — extraction blocked (no file key, no session URL) */
+  /* TODO: replace with real asset — extraction blocked (no REST token and no design-context asset URL) */
   background: linear-gradient(135deg, #0d1b3e 0%, #1a0533 100%);
 }
 ```
@@ -352,11 +369,11 @@ cannot. See `figma-component-map.md § Icons` for the Material Icons Extended se
 | Pitfall                                                      | Consequence                                                      | Fix                                                                                 |
 | ------------------------------------------------------------ | ---------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
 | Skipping asset extraction (gradient placeholders)            | Implementation looks nothing like the design; Phase 5 fails      | Always use at least Tier 2 or Tier 3 — never skip                                    |
-| Not asking for the file key before starting                  | Falls back to Tier 2/3 when Tier 1 was possible                  | Resolve the file key in Phase 0c / Step 1                                            |
+| Not asking for the file key before starting                  | Falls back to Tier 2/3 when Tier 1 was possible                  | Reuse the Phase 1 file key, or ask for it in Step 1, and ask for a REST token      |
 | Leaving design-context or CDN URLs in source code            | URLs expire in hours to 30 days; production breaks               | Download during the session; reference only local paths                              |
 | Naming assets by node ID (`node-123-456.png`)                | Unmaintainable                                                   | Name by purpose: `hero-background.jpg`, `company-logo.svg`                            |
 | Relative `url()` inside a Lit `css` template                 | 404s on nested routes — the URL resolves against the document     | Use `/assets/...` or a bundler import                                                |
-| Putting assets in `src/` in a stock Vite app                 | Not served or copied; 404 at runtime                             | Use `public/`, or import the asset so the bundler emits it                            |
+| Putting assets in `src/` in a stock Vite app                 | Served in dev, but not emitted by `vite build` unless imported or copied (the Ignite UI CLI scaffold copies `src/assets`); 404 in production | Use `public/`, or import the asset so the bundler emits it                            |
 | Using a node screenshot for an SVG logo                      | Rasterized logo, no scaling, no theming                          | Tier 1 Method B with `format=svg`                                                     |
 | Exporting PNG at `scale=1`                                   | Blurry on HiDPI screens                                          | Always `scale=2`                                                                      |
 | `svg_outline_text=true` (the default)                        | Text converted to paths; larger file; no accessibility           | Set `svg_outline_text=false`                                                          |

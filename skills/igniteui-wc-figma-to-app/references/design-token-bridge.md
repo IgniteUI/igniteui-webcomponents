@@ -18,10 +18,20 @@ Which path you take depends on the provenance tiers recorded in Phase 1f
 | Path | When | What sets the look |
 | --- | --- | --- |
 | **A — Indigo.Design UI Kit** | Most components are Tier A | The kit variant **is** an Ignite UI design system. Palette and font come from the kit variables. Component proportions are already calibrated, so leave size, spacing, and roundness at their defaults. |
-| **B — Any other kit, or no kit** | Most components are Tier B or C | The design system is only the **closest baseline**. Fidelity comes from palette seeds inferred from usage, a custom type scale, per-component radius tokens, and a measured `--ig-size`. See [Path B](#path-b--any-other-kit-or-no-kit). |
+| **B — Any other kit, or no kit** | Most components are Tier B or C | The design system is only the **closest baseline**. Fidelity comes from palette seeds inferred from usage, type-style overrides, per-component radius tokens, and a measured `--ig-size`. See [Path B](#path-b--any-other-kit-or-no-kit). |
 
-In a mixed file, the majority decides the global theme. Components that belong to the
-minority tier get Path B treatment through component tokens scoped to their selectors.
+**Mixed files.** Count only the Table A rows that map to an Ignite UI component. Decorative
+Tier C frames that stay plain HTML do not count. The larger group chooses the path for the
+global theme; on a tie, ask the user. Then style the other group through component themes
+scoped to **those instances only**:
+
+- Put a class on the minority instances (for example `class="kit-b"`), and pass it as
+  `selector` to `create_component_theme`. Do not scope by the tag alone: a Tier A and a
+  Tier B button are both `igc-button`, so that would restyle both.
+- Tier B/C instances in a Path A app get the Path B token work (B2, B5–B8) in those scoped
+  component themes.
+- Tier A instances in a Path B app get their **kit's** design system: pass that kit's
+  `designSystem` to their scoped component themes. Do not give them Path B treatment.
 
 ---
 
@@ -42,16 +52,17 @@ kits come in four design-system variants, each with light and dark themes:
 design system for the whole app. Use these signals in **strict precedence order** — stop
 at the first clear match:
 
-1. **Library source name** — `figma_get_design_context` / `figma_get_metadata` may
+1. **Explicit user request** — "make it Material", "use Fluent", etc.
+2. **Library source name** — `figma_get_design_context` / `figma_get_metadata` may
    reference the source library file name.
-2. **Variable collection name** — `figma_get_variable_defs` may return collection names
+3. **Variable collection name** — `figma_get_variable_defs` may return collection names
    that include the design system (e.g. `Material/color/primary`).
-3. **Elevation variable structure** — inspect `Elevations/*`:
+4. **Elevation variable structure** — inspect `Elevations/*`:
    - **Three-layer DROP_SHADOW** (umbra + penumbra + ambient, `Elevations/Shadow 01-03`) → **Material**
    - **Single-layer DROP_SHADOW** → Indigo, Fluent, or Bootstrap
-4. **Palette shade naming** — `primary/500`, `primary/100`–`primary/900` follows the
+5. **Palette shade naming** — `primary/500`, `primary/100`–`primary/900` follows the
    Material 100–900 convention → likely **Material**.
-5. **Visual heuristics** — see the [Design System Detection table](#design-system-detection-from-figma).
+6. **Visual heuristics** — see the [Design System Detection table](#design-system-detection-from-figma).
 
 > **Never use font name as a primary signal.** "Titillium Web" is the default body font in
 > the Indigo.Design UI Kit for Material — it is not exclusive to any kit variant.
@@ -84,7 +95,7 @@ Components read the design system **at runtime from CSS variables** and fall bac
 `bootstrap` / `light` when they are absent. A correct palette with a missing
 `--ig-theme` gives you the right colors on the wrong component anatomy.
 
-**Every theming tool accepts `output: "css" | "sass"`, defaulting to CSS.** Choose once in
+**Every theming tool that generates code (`create_*`, `set_size`, `set_spacing`, `set_roundness`) accepts `output: "css" | "sass"`, defaulting to CSS.** Choose once in
 Phase 3 based on whether the project has Sass, and stay consistent. The Web Components Sass
 API is `@use 'igniteui-theming'` with individual `palette()`, `typography()`, `elevations()`,
 and `spacing()` mixins — the Angular `core()` / `theme()` mixins do not exist here.
@@ -140,6 +151,12 @@ and take each seed from where it is **used**:
 | `gray` | Omit at first. Pass it only if the generated grays visibly diverge from the design's borders and secondary text. |
 | `error` / `warn` / `success` / `info` | Destructive buttons, error-state fields, alert and status colors |
 
+In the **CSS path** these all go to `create_palette`, which takes `gray` and the status
+colors. In the **Sass path**, `create_theme` takes only `primaryColor`, `secondaryColor`, and
+`surfaceColor`: to set `gray` or a status color, also call `create_palette` (or
+`create_custom_palette`) and place its output **after** the theme output, so its `:root`
+palette variables override the generated ones.
+
 **Seed-shade rule.** Ignite UI components paint their main fills with the **500** shade of a
 palette color. Pass the color that is *visible on the component* as the seed, whatever the
 kit calls it. Examples: Untitled UI buttons use `Brand/600`, Tailwind-style kits use
@@ -167,7 +184,7 @@ Align the kit's stops by lightness, not by label (Tailwind and Untitled UI have 
 `950` stops that Ignite UI does not). Derive the accent shades from the neighboring stops.
 Use `mode: "shades"` for every color whose ramp the design does not show.
 
-**Dark variant.** Decide it from the page background exactly as in Path A. Material 3 tonal
+**Dark variant.** Decide it from the page background, as in [Light vs Dark Mode Detection](#light-vs-dark-mode-detection). Material 3 tonal
 surfaces (`surface-container-low` … `-highest`) are multiple surface depths. Handle them
 with B6, not with a lighter `surface` seed.
 
@@ -177,8 +194,8 @@ with B6, not with a lighter `surface` seed.
    `font-['…']` classes). Load it in the app. Kits often use Inter, Geist, Roboto Flex, or
    SF Pro. SF Pro is licensed for Apple platforms only, so substitute a web font and say so.
 2. **Scale:** map the kit's ramp to Ignite UI type styles **by role and size ranking**, not
-   by name, and pass only the styles that differ through `create_typography`'s
-   `customScale`:
+   by name. Override only the styles that differ (see [B4](#b4--button-casing-and-other-type-driven-anatomy)
+   for how):
 
 | Kit role (examples) | Ignite UI type style |
 | --- | --- |
@@ -194,9 +211,36 @@ with B6, not with a lighter `surface` seed.
 
 The `material` and `indigo` type presets set `button` to `text-transform: uppercase`.
 `fluent` uses `capitalize`. Nearly every current third-party kit, Material 3 included, uses
-sentence case. Unless the design shows uppercase labels, include
-`button: { textTransform: "none" }` (plus the measured size and weight) in `customScale`.
-Measure the result in Phase 5.
+sentence case. Unless the design shows uppercase labels, set the button's text transform
+to `none`, together with its measured size and weight.
+
+**How to override type styles.** The theme's typography writes every property of every type
+style to a CSS variable on `:root`, named `--ig-<style>-<property>`, and the components read
+those variables inside their shadow roots. Add a `:root` block **after** the theme import or
+theme output that sets only the values that differ:
+
+```css
+/* After the theme import in styles.css */
+:root {
+  --ig-button-text-transform: none;
+  --ig-button-font-size: 0.875rem;
+  --ig-button-font-weight: 500;
+  --ig-h1-font-size: 2.25rem;
+  --ig-body-1-line-height: 1.5rem;
+}
+```
+
+Property names are `font-family`, `font-size`, `font-weight`, `font-style`, `line-height`,
+`letter-spacing`, `text-transform`, `margin-top`, and `margin-bottom`.
+
+Ignite UI components read these variables inside their own shadow roots, so the overrides
+reach them. Inside a Lit view's shadow root, document CSS such as `.ig-typography h1` does not reach
+native headings. Apply the variables in the view's `static styles` yourself, for example
+`h1 { font-size: var(--ig-h1-font-size); font-weight: var(--ig-h1-font-weight); line-height: var(--ig-h1-line-height); }`.
+
+> **Do not rely on `customScale`.** `create_typography` accepts a `customScale` argument,
+> but `igniteui-theming` 29.0.0 drops it from the generated code (CSS and Sass) without a
+> warning. Use the variable overrides above, and measure the result in Phase 5.
 
 ### B5 — Radius: Per-Component Tokens, Not a Global Factor
 
@@ -229,18 +273,24 @@ the component's colors. A pill shape is half the control height, or a large valu
 
 ### B7 — Density
 
-Choose `--ig-size` by comparing the **measured control heights** with the baseline's size
-steps:
+Choose `--ig-size` **per component family**. Compare the measured height of each family
+(buttons, inputs, list rows, …) with that family's size steps in the baseline. Each
+component has its **own default step**. For example, on `material` the button default is
+large (36px) while the input default is medium (48px). So a design with 36px buttons and
+48px inputs already matches both defaults and needs no change. The steps (default in
+bold):
 
 | Design system | Button small / medium / large | Input small / medium / large |
 | --- | --- | --- |
-| `material` | 24 / 30 / 36px | 40 / 48 / 56px |
-| `fluent` | 24 / 32 / 38px | 32 / 40 / 48px |
-| `bootstrap` | 32 / 38 / 48px | 32 / 38 / 48px |
-| `indigo` | 24 / 28 / 32px | 24 / 28 / 32px |
+| `material` | 24 / 30 / **36px** | 40 / **48** / 56px |
+| `fluent` | 24 / **32** / 38px | 32 / **40** / 48px |
+| `bootstrap` | 32 / **38** / 48px | 32 / **38** / 48px |
+| `indigo` | 24 / **28** / 32px | 24 / **28** / 32px |
 
-Pick the nearest step. Use `set_size` globally when most controls agree, or with
-`component` / `scope` when one family differs. Close a remaining 2–4px mismatch with the
+For other families, read the steps and the default from `get_component_design_tokens`. For
+each family whose nearest step differs from its default, call `set_size` with that
+`component`. Set `--ig-size` globally only when **every** family moves in the same
+direction. Close a remaining 2–4px mismatch with the
 component's padding or height tokens, if it has them. Otherwise leave it: Phase 5 rates a
 difference of 4px or less as Cosmetic. It is never an anatomy delta. The
 `set_spacing` rule is unchanged: never convert a Figma pixel value into a multiplier.
@@ -335,10 +385,10 @@ transparency — instead of hand-writing variable names.
 | `typography/heading/font-family` | `fontFamily`                           | Use if the heading font differs       |
 | `font/primary`                   | `fontFamily`                           | Alternative naming                    |
 
-`create_typography` also accepts `designSystem` (which type scale to start from) and
-`customScale` (per-style overrides of `fontSize`, `fontWeight`, `lineHeight`,
-`letterSpacing`, `textTransform`, margins) — use `customScale` only when the design's type
-ramp genuinely differs from the design system's.
+`create_typography` also accepts `designSystem` (which type scale to start from). Its
+`customScale` argument is currently ignored by the generators; override individual type
+styles with the `--ig-<style>-<property>` variables instead (see
+[B4](#b4--button-casing-and-other-type-driven-anatomy)).
 
 In a CSS-only project, apply typography as plain CSS `font-family` / `font-size` /
 `font-weight` rules, or the CSS output of `create_typography`. **Do not emit Sass
@@ -363,9 +413,9 @@ as `set_spacing({ spacing: 16 })` would produce a 1600% increase.
 
 | Tool             | Use only when                                                                                                   | Never because                                                    |
 | ---------------- | ---------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
-| `set_size`       | The design consistently uses a noticeably tighter or looser component density than the design system default    | A Figma spacing variable happens to be named "compact"           |
+| `set_size`       | Path A: the design consistently uses a noticeably tighter or looser density than the design system default. Path B: per family, as in B7 | A Figma spacing variable happens to be named "compact"           |
 | `set_spacing`    | Explicitly requested, or required to match a specific density contract; start at the default                    | A Figma `spacing/*` pixel value looks like the multiplier number |
-| `set_roundness`  | The entire app has a clearly distinct border-radius language (fully squared vs fully rounded)                   | A Figma `border-radius/md = 8` maps numerically to a multiplier  |
+| `set_roundness`  | The user explicitly asks for it. For Path B, use per-component radius tokens instead (B5)                        | A Figma `border-radius/md = 8` maps numerically to a multiplier  |
 
 ### The correct adjustment path
 
@@ -410,7 +460,7 @@ was designed.
 | -------------------------------------------------------- | ------------------------------------------------------------------------ |
 | Dark artboard background (`#121212`, `#1a1a1a`, similar) | `variant: "dark"` + the dark theme CSS (`themes/dark/<ds>.css`)          |
 | Light artboard background (`#fff`, `#f5f5f5`, similar)   | `variant: "light"` + the light theme CSS                                 |
-| Multiple artboards — one light, one dark                 | Generate both; switch with a class, `prefers-color-scheme`, or `configureTheme` |
+| Multiple artboards — one light, one dark                 | Ask the user which variant is primary. Generate it as the global theme and run Phase 5 against it. Then add the other variant (the other pre-built theme or a second theme output) under a class or `prefers-color-scheme`, and call `configureTheme` with the same design system and variant when switching at runtime (see `theme-generation.md § 3c`). Validate it against its own artboard |
 | `color/mode` variable present                            | Its value (`light` or `dark`) is the authoritative signal                |
 
 Surface color must match the variant: a light surface with `variant: "dark"` produces
@@ -426,7 +476,7 @@ unreadable components and a luminance warning from the palette tools. Read the w
 | Figma Visual Signal                                                | Likely Design System       | `designSystem` Value |
 | ------------------------------------------------------------------ | -------------------------- | -------------------- |
 | Three-layer `DROP_SHADOW` on elevation variables (`Shadow 01-03`)  | Material Design            | `"material"`         |
-| Prominent single-layer shadows, rounded cards, ripple effects      | Material Design            | `"material"`         |
+| Prominent layered shadows, rounded cards, ripple effects           | Material Design            | `"material"`         |
 | Flat surfaces, sharp corners, Segoe/Inter font                     | Microsoft Fluent           | `"fluent"`           |
 | Component borders, Bootstrap-like grid                             | Bootstrap                  | `"bootstrap"`        |
 | Purple/indigo accents, rounded corners, single shadow              | Infragistics Indigo        | `"indigo"`           |
@@ -446,7 +496,7 @@ Theme keys are **not** tag names. Pass the key to `get_component_design_tokens` 
 
 | Component in the design | Theme key           | Selector it generates for        |
 | ----------------------- | ------------------- | --------------------------------- |
-| Text input / any input  | `input-group`       | `igc-input`                       |
+| Text input              | `input-group`       | `igc-input` (other fields get it through their related themes; `igc-textarea` uses `textarea`) |
 | Navigation drawer       | `navdrawer`         | `igc-nav-drawer`                  |
 | Linear progress bar     | `progress-linear`   | `igc-linear-progress`             |
 | Circular progress       | `progress-circular` | `igc-circular-progress`           |
@@ -464,9 +514,10 @@ Most other components use their obvious key (`card`, `list`, `navbar`, `chip`, `
 `checkbox`, `radio`, `carousel`, `chat`, `expansion-panel`, `accordion`, `splitter`,
 `file-input`, `date-time-input`, `textarea`, `icon`, `ripple`, `highlight`).
 
-**Keys with no Web Components equivalent** — do not call the theming tools for these:
-`action-strip`, `bottom-nav`, `column-actions`, `overlay`, `query-builder`, `time-picker`,
-`date-range-start`, `date-range-end`. Sub-part keys (`card-header`, `list-item`, `step`,
+**Keys with no standalone Web Components selector in the theming tool** — do not call the
+theming tools for these: `action-strip`, `bottom-nav`, `column-actions`, `overlay`,
+`query-builder`, `time-picker`, `date-range-start`, `date-range-end`. (`action-strip` and
+`column-actions` are themed through the `grid` theme, which derives them.) Sub-part keys (`card-header`, `list-item`, `step`,
 `tab-item`, `accordion-header`, `expansion-panel-header`, `drop-down-item`,
 `nav-drawer-item`) have no standalone selector either — style them through the parent's
 tokens, their documented `::part(...)`, or slotted content.
@@ -481,6 +532,11 @@ The result lists every token with name, type, and description — and, for compo
 components, the **related themes** you must also theme.
 
 ### Step 3: Match Figma variables to token names
+
+> **Path B:** third-party kits rarely have component variables in this form, and Tier C
+> files usually have none. Take the component's colors, radius, borders, and state colors
+> from the Phase 1d color census and measurements (B2, B5–B8). Use variables, when they
+> exist, only to confirm them.
 
 Kit component variables follow `<component>/<role>/<state>`:
 
@@ -537,8 +593,7 @@ region instead of every instance in the app.
 
 ### Step 5: Compound components
 
-`combo`, `select`, `date-picker`, `date-range-picker`, `grid`, and `banner` render internal
-children with their own themes. Theme each related theme returned in Step 1 using the
+Compound components — any component whose `get_component_design_tokens` result lists related themes (for example `combo`, `select`, the date pickers, `card`, `navbar`, `dialog`, `banner`, and the grids) — render internal children with their own themes. Theme each related theme returned in Step 1 using the
 parent's selector as the wrapper. Styling only the parent leaves dropdown surfaces,
 calendars, and action buttons off-theme — a guaranteed Phase 5 failure.
 
@@ -555,9 +610,10 @@ get_chart_series_colors({ customBrushes: ["#9DE772", "#6DB1FF"] }) // validate t
 get_chart_series_colors({ mode: "color-blind" })                  // accessible alternative palette
 ```
 
-Assign the result to the chart's `brushes` / `outlines` **properties** (arrays, not
-attributes). Without an explicit assignment the chart uses its own default palette and will
-not match the design.
+Assign the result to the chart's brush **properties**: `brushes` / `outlines` on most
+charts, `brush` on `igc-sparkline`, `fillBrushes` on `igc-treemap`, and `brushes` /
+`outlines` on each `igc-ring-series` of a doughnut chart. Without an explicit assignment the
+chart uses its own default palette and will not match the design.
 
 ---
 
@@ -578,7 +634,7 @@ Do **not** call theming tools for:
 
 - Chart, gauge, and map components → configure via properties; series colors via
   `get_chart_series_colors`
-- Dock Manager → it exposes its own CSS custom properties
+- Dock Manager → theme key `dock-manager` (selector `igc-dockmanager`); it also exposes its own CSS custom properties
 - Pure layout CSS (margins, grid columns, flex gaps) → write it directly in the view's styles
 - Icon colors → set `color` on the `igc-icon` host or its parent
 

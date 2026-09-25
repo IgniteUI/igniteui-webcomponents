@@ -26,7 +26,7 @@ that holds its full row (class, package, doc name, key attributes).
 | --- | --- | --- |
 | `button` · high | `<igc-button variant="contained">` | Button Components |
 | `button` · medium (outlined) | `<igc-button variant="outlined">` | Button Components |
-| `button` · medium (tonal / secondary fill) | `<igc-button variant="contained">` + `contained-button` tokens using the secondary palette | Button Components |
+| `button` · medium (tonal / secondary fill) | `<igc-button variant="contained">` + `contained-button` tokens set to the **measured** tonal fill and text colors (usually a light shade such as `var(--ig-primary-100)`). Do not use the plain `secondary` palette: on a `material` baseline it holds the brand color, so tonal buttons would look like high-emphasis ones | Button Components |
 | `button` · low | `<igc-button variant="flat">` | Button Components |
 | `button` · link | `<igc-button variant="flat" href="…">`, or a plain `<a>` styled as a link | Button Components |
 | `button` · elevated | `<igc-button variant="contained">` + elevation via tokens | Button Components |
@@ -122,9 +122,9 @@ that holds its full row (class, package, doc name, key attributes).
 | --- | --- |
 | `igniteui-webcomponents` | `defineComponents(IgcNavbarComponent, IgcCardComponent, …)` |
 | `igniteui-webcomponents-grids` | `IgcGridComponent.register()` (per grid type) |
-| `igniteui-grid-lite` | per the Grid Lite docs — confirm with `get_doc` |
+| `igniteui-grid-lite` | `IgcGridLite.register()`, or `import 'igniteui-grid-lite/define'`; the column tag is `igc-grid-lite-column` |
 | `igniteui-webcomponents-charts` / `-gauges` / `-maps` | `ModuleManager.register(IgcCategoryChartModule, …)` from `igniteui-webcomponents-core` |
-| `igniteui-dockmanager` | `defineCustomElements()` per the dock-manager docs |
+| `igniteui-dockmanager` | `defineComponents(IgcDockManagerComponent)` from `igniteui-dockmanager` (`defineCustomElements()` is deprecated since 2.0.0) |
 
 Licensed projects use the same names prefixed with `@infragistics/` (e.g.
 `@infragistics/igniteui-webcomponents-grids`). Resolve the layout once in Phase 0b and keep
@@ -151,7 +151,7 @@ it consistent.
 ## Form Controls
 
 > **Input variants.** The kits express `line` / `box` / `border` input types. Web Components
-> expose a single boolean **`outlined`** attribute (inherited from the shared input base) on
+> expose a single boolean **`outlined`** attribute on
 > `igc-input`, `igc-textarea`, `igc-mask-input`, `igc-date-time-input`, `igc-file-input`,
 > `igc-select`, `igc-combo`, `igc-date-picker`, and `igc-date-range-picker`.
 > Map `_Input/Border` → `outlined`; `_Input/Line` and `_Input/Box` → default.
@@ -165,7 +165,7 @@ it consistent.
 | `_Input/Border`                | `<igc-input outlined>`    | `IgcInputComponent`             | `igniteui-webcomponents` | `input`             | `outlined`                                                                  |
 | `_Input/Search`                | `<igc-input type="search">` | `IgcInputComponent`           | `igniteui-webcomponents` | `input`             | Add a search `igc-icon` in the `prefix` slot                                |
 | `_Text Area`                   | `<igc-textarea>`          | `IgcTextareaComponent`          | `igniteui-webcomponents` | `text-area`         | `label`, `rows`, `resize`, `outlined`                                       |
-| `_Masked Input`                | `<igc-mask-input>`        | `IgcMaskInputComponent`         | `igniteui-webcomponents` | `mask-input`        | `mask`, `prompt-char`, `value-mode`                                         |
+| `_Masked Input`                | `<igc-mask-input>`        | `IgcMaskInputComponent`         | `igniteui-webcomponents` | `mask-input`        | `mask`, `prompt`, `value-mode`                                         |
 | `_File Upload`                 | `<igc-file-input>`        | `IgcFileInputComponent`         | `igniteui-webcomponents` | `file-input`        | `multiple`, `accept`, `label`                                               |
 | `_Combo` / `_ComboBox`         | `<igc-combo>`             | `IgcComboComponent`             | `igniteui-webcomponents` | `combo` → `overview` | `.data`, `display-key`, `value-key`, `group-key`, `single-select`, `outlined` |
 | `_Simple Combo`                | `<igc-combo single-select>` | `IgcComboComponent`           | `igniteui-webcomponents` | `single-selection`  | `single-select` — theme key is `simple-combo`                               |
@@ -190,8 +190,8 @@ it consistent.
 | `_Time Picker`       | `<igc-date-time-input>`     | `IgcDateTimeInputComponent`     | `igniteui-webcomponents` | `date-time-input`   | **No dedicated time picker in Web Components** — use a time `input-format` |
 | `_Calendar`          | `<igc-calendar>`            | `IgcCalendarComponent`          | `igniteui-webcomponents` | `calendar`          | `selection` (`single\|multiple\|range`), `value`, `values`, `visible-months`, `week-start`, `show-week-numbers`, `header-orientation` |
 
-> Date pickers and the calendar are **compound** — their dropdown/calendar surface is a
-> separate theme. Follow the related-theme chain from `get_component_design_tokens`.
+> The date pickers are **compound** — their dropdown and calendar surfaces are separate
+> themes. Follow the related-theme chain from `get_component_design_tokens`.
 
 ---
 
@@ -208,9 +208,10 @@ it consistent.
 | `_Breadcrumb`                      | `<igc-breadcrumb>`  | `IgcBreadcrumbComponent`  | `igniteui-webcomponents` | confirm via `list_components` | `current`, `disabled`; slots `prefix`, `suffix`, `separator` |
 
 > A design showing a persistent, always-visible sidebar maps to
-> `<igc-nav-drawer position="relative" open>` — not the modal default. The drawer's width is
-> controlled by the `--menu-full-width` / `--menu-mini-width` custom properties on the host,
-> which are **not** design tokens and will not appear in `get_component_design_tokens`.
+> `<igc-nav-drawer position="relative" open>` — not the modal default. The drawer's width
+> comes from the `navdrawer` design tokens `size` and `size--mini`, exposed as
+> `--ig-nav-drawer-size` (default 15rem) and `--ig-nav-drawer-size--mini`. Set them through
+> `create_component_theme` like any other token.
 
 ---
 
@@ -312,7 +313,7 @@ Grid rules that differ from Angular:
 DV specifics worth knowing before Phase 4:
 
 - Gauge and chart **attributes are kebab-case** (`minimum-value`, `maximum-value`,
-  `chart-type`, `data-source`), while collection-valued members are properties.
+  `chart-type`), while collection-valued members such as `dataSource` are properties.
 - `plotAreaBackground` and `areaFillOpacity` are inherited from parent classes and will not
   appear in `get_api_reference` for `IgcCategoryChartComponent` — find them with `search_api`.
 - Category charts show markers by default; if the design has none, set the documented
@@ -406,7 +407,7 @@ document the substitution in a code comment and in the Phase 2d plan.
 | `_Bottom Navigation` | Not available          | `igc-tabs`, or custom markup styled from the design                |
 | `_Time Picker`    | Not available as a picker | `igc-date-time-input` with a time input format                     |
 | `_Autocomplete`   | Not available             | `igc-combo` with filtering, or `igc-input` + `igc-dropdown`         |
-| `_Action Strip`   | Not available             | Slotted icon buttons positioned over the row/card                   |
+| `_Action Strip`   | Grid packages only (`igc-action-strip`) | Inside grids, use `igc-action-strip`; elsewhere, slotted icon buttons positioned over the row/card |
 | `_Chips Area`     | Not a component           | A flex container around `igc-chip` elements                         |
 | `_Query Builder`  | Grid packages only        | `query-builder` doc — confirm availability for the installed package |
 | Sheet / side sheet (other kits) | Not available           | `igc-nav-drawer` for navigation; `igc-dialog` or custom markup for content panels |
