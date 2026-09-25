@@ -18,10 +18,7 @@ project:
 
 ## If a valid project is found
 
-- Note the package layout: `igniteui-webcomponents` (open source / trial) or
-  `@infragistics/igniteui-webcomponents` (licensed). The same split applies to the
-  commercial packages — `igniteui-webcomponents-grids`, `igniteui-webcomponents-charts`,
-  `igniteui-webcomponents-core`, `igniteui-dockmanager`.
+- Note the package layout: `igniteui-webcomponents` (MIT). Commercial packages — `igniteui-webcomponents-grids` (trial) / `@infragistics/igniteui-webcomponents-grids` (licensed) , `igniteui-webcomponents-charts` (trial) / `@infragistics/igniteui-webcomponents-charts` (licensed), `igniteui-webcomponents-core` (trial) / `@infragistics/igniteui-webcomponents-core` (licensed), `igniteui-dockmanager` (trial) / `@infragistics/igniteui-dockmanager` (licensed).
 - Note the host setup: plain Lit/vanilla app, or a framework wrapper (React/Angular/Vue).
   If a wrapper is in play, registration and event binding follow
   [`igniteui-wc-integrate-with-framework`](../../igniteui-wc-integrate-with-framework/SKILL.md),
