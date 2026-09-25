@@ -1,0 +1,24 @@
+@use 'styles/utilities' as *;
+
+:host {
+    --_overlay-color: var(--ig-skeleton-overlay-color, #{color(gray, 100)});
+    --_shape-color: var(--ig-skeleton-shape-color, #{color(gray, 300)});
+    --_highlight-color: var(--ig-skeleton-highlight-color, #{color(gray, 50)});
+}
+
+[part~='overlay'] {
+    background-color: var(--_overlay-color);
+}
+
+[part~='shape'] {
+    background-color: var(--_shape-color);
+}
+
+[part~='shimmer'] {
+    background-image: linear-gradient(
+        90deg,
+        var(--_shape-color) 25%,
+        var(--_highlight-color) 50%,
+        var(--_shape-color) 75%
+    );
+}

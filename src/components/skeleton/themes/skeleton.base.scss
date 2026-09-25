@@ -1,0 +1,139 @@
+@use 'styles/common/component';
+@use 'styles/utilities' as *;
+
+@keyframes breathe {
+    0%,
+    100% {
+        opacity: 0.6;
+        transform: scale(1);
+    }
+
+    50% {
+        opacity: 1;
+        transform: scale(1.02);
+    }
+}
+
+@keyframes pulse {
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.4;
+    }
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: -200% 0;
+    }
+
+    100% {
+        background-position: 200% 0;
+    }
+}
+
+@keyframes wave {
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-6px);
+    }
+}
+
+@keyframes glow {
+    0%,
+    100% {
+        box-shadow: none;
+    }
+
+    50% {
+        box-shadow: 0 0 rem(10px) rem(4px) var(--_shape-color);
+    }
+}
+
+@keyframes reveal-content {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+:host {
+    --_fallback-radius: clamp(
+        0rem,
+        var(--ig-radius-factor, 0.25) * 1.5rem,
+        1.5rem
+    );
+
+    display: block;
+    position: relative;
+    width: fit-content;
+    height: fit-content;
+}
+
+:host([loading]) [part~='content'] {
+    opacity: 0;
+}
+
+// Keep the duration in sync with REVEAL_DURATION_MS in skeleton.ts.
+:host(:state(revealing)) [part~='content'] {
+    animation: reveal-content 0.6s ease-out both;
+}
+
+[part~='overlay'] {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    pointer-events: none;
+    border-radius: var(--border-radius, var(--_fallback-radius));
+    transition: opacity 0.3s ease-out;
+}
+
+:host([loading]) [part~='overlay'] {
+    opacity: 0.5;
+}
+
+[part~='shape'] {
+    position: absolute;
+    contain: strict;
+    border-radius: var(--border-radius, var(--_fallback-radius));
+}
+
+[part~='pulse'] {
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+[part~='breathe'] {
+    animation: breathe 1.5s ease-in-out infinite;
+}
+
+[part~='shimmer'] {
+    background-size: 200% 100%;
+    animation: shimmer 1.5s linear infinite;
+}
+
+[part~='wave'] {
+    animation: wave 1s ease-in-out var(--_wave-delay, 0s) infinite;
+}
+
+[part~='glow'] {
+    animation: glow 1.5s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    [part~='shape'],
+    :host(:state(revealing)) [part~='content'] {
+        animation: none;
+    }
+}
