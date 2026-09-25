@@ -31,4 +31,6 @@ Closes #
 - [ ] My code follows the project's coding standards
 - [ ] I have tested my changes locally
 - [ ] I have updated documentation if needed
+- [ ] I have added a `CHANGELOG.md` entry under `[Unreleased]`
 - [ ] Breaking changes are documented in the description
+- [ ] I have read the [contributing guidelines](https://github.com/IgniteUI/igniteui-webcomponents/blob/master/.github/CONTRIBUTING.md), including the accessibility, dependency and security rules
