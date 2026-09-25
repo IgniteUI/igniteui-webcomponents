@@ -2,31 +2,24 @@
 
 > **Part of the [`igniteui-wc-figma-to-app`](../SKILL.md) skill.**
 >
-> Use this file in Phase 2a to resolve every row of the Phase 1g Table A to a tag,
-> component class, package, and `get_doc` name. It has two entry points:
+> Use this file in Phase 2a to resolve every row of the Phase 1g Table A to a tag, component class, package, and `get_doc` name. It has two entry points:
 >
-> - **Canonical Role Index** (next section). Use it for **Tier B and Tier C** layers:
->   components from any other UI kit, or un-componentized frames, after they are
->   normalized with [design-provenance.md](design-provenance.md).
-> - **Kit Component Name** tables (the sections after it). Use them for **Tier A** layers
->   from the Infragistics **Indigo.Design UI Kits** (Material, Fluent, Bootstrap, Indigo
->   variants), whose layer names map to Ignite UI directly.
+> - **Canonical Role Index** (next section). Use it for **Tier B and Tier C** layers: components from any other UI kit, or un-componentized frames, after they are normalized with [design-provenance.md](design-provenance.md).
+> - **Kit Component Name** tables (the sections after it). Use them for **Tier A** layers from the Infragistics **Indigo.Design UI Kits** (Material, Fluent, Bootstrap, Indigo variants), whose layer names map to Ignite UI directly.
 >
-> When a role or layer name is in neither, call `list_components` then `get_doc` on the
-> closest match.
+> When a role or layer name is in neither, call `list_components` then `get_doc` on the closest match.
 
 ---
 
 ## Canonical Role Index
 
-Normalized roles from `design-provenance.md` → the Ignite UI tag, and the section below
-that holds its full row (class, package, doc name, key attributes).
+Normalized roles from `design-provenance.md` → the Ignite UI tag, and the section below that holds its full row (class, package, doc name, key attributes).
 
 | Canonical role (+ normalized props) | Ignite UI Web Components | Section |
 | --- | --- | --- |
 | `button` · high | `<igc-button variant="contained">` | Button Components |
 | `button` · medium (outlined) | `<igc-button variant="outlined">` | Button Components |
-| `button` · medium (tonal / secondary fill) | `<igc-button variant="contained">` + `contained-button` tokens using the secondary palette | Button Components |
+| `button` · medium (tonal / secondary fill) | `<igc-button variant="contained">` + `contained-button` tokens set to the **measured** tonal fill and text colors (usually a light shade such as `var(--ig-primary-100)`). Do not use the plain `secondary` palette: on a `material` baseline it holds the brand color, so tonal buttons would look like high-emphasis ones | Button Components |
 | `button` · low | `<igc-button variant="flat">` | Button Components |
 | `button` · link | `<igc-button variant="flat" href="…">`, or a plain `<a>` styled as a link | Button Components |
 | `button` · elevated | `<igc-button variant="contained">` + elevation via tokens | Button Components |
@@ -78,25 +71,17 @@ that holds its full row (class, package, doc name, key attributes).
 
 ## How to Use the Kit Tables
 
-1. Find the kit component name (as it appears in the Figma layers panel or the
-   Indigo.Design kit library) in the **Kit Component Name** column.
+1. Find the kit component name (as it appears in the Figma layers panel or the Indigo.Design kit library) in the **Kit Component Name** column.
 2. Read the **Tag**, **Class**, and **Package** columns for the markup and imports.
-3. Call `get_doc({ framework: "webcomponents", name: "<doc name>" })` for usage patterns
-   and slots, then `get_api_reference({ platform: "webcomponents", component: "<Class>" })`
-   for the full property/method/event API.
-4. Consult **Key attributes / slots** for the properties most commonly configured from
-   Figma variants. These are starting points, not a substitute for the docs.
+3. Call `get_doc({ framework: "webcomponents", name: "<doc name>" })` for usage patterns and slots, then `get_api_reference({ platform: "webcomponents", component: "<Class>" })` for the full property/method/event API.
+4. Consult **Key attributes / slots** for the properties most commonly configured from Figma variants. These are starting points, not a substitute for the docs.
 
-> The kit component names are identical across all four kit variants (Material, Fluent,
-> Bootstrap, Indigo). The kit variant determines the theme, not the component name.
+> The kit component names are identical across all four kit variants (Material, Fluent, Bootstrap, Indigo). The kit variant determines the theme, not the component name.
 
 ### Doc-name rules you will hit immediately
 
-- **Doc names are topic-page names, not tag names.** `navigation-drawer`, `text-area`,
-  `data-grid`, `circular-progress`.
-- **`get_doc` normalizes and aliases input.** It strips the `Igc` prefix and the
-  `Component` suffix, so `IgcCarouselComponent` resolves to `carousel`. It also aliases
-  these Web Components names:
+- **Doc names are topic-page names, not tag names.** `navigation-drawer`, `text-area`, `data-grid`, `circular-progress`.
+- **`get_doc` normalizes and aliases input.** It strips the `Igc` prefix and the `Component` suffix, so `IgcCarouselComponent` resolves to `carousel`. It also aliases these Web Components names:
 
   | You pass | Resolves to |
   | --- | --- |
@@ -111,10 +96,8 @@ that holds its full row (class, package, doc name, key attributes).
   | `range-slider` | `slider` |
   | `geographic-map` | `geo-map` |
 
-- Combo has several topic pages (`overview`, `features`, `single-selection`, `templates`);
-  read `overview` first, then the specific one the design needs.
-- Always confirm against a live `list_components({ framework: "webcomponents" })` — the
-  catalog is the source of truth, this table is a shortcut.
+- Combo has several topic pages (`overview`, `features`, `single-selection`, `templates`); read `overview` first, then the specific one the design needs.
+- Always confirm against a live `list_components({ framework: "webcomponents" })` — the catalog is the source of truth, this table is a shortcut.
 
 ### Registration cheat sheet
 
@@ -122,13 +105,11 @@ that holds its full row (class, package, doc name, key attributes).
 | --- | --- |
 | `igniteui-webcomponents` | `defineComponents(IgcNavbarComponent, IgcCardComponent, …)` |
 | `igniteui-webcomponents-grids` | `IgcGridComponent.register()` (per grid type) |
-| `igniteui-grid-lite` | per the Grid Lite docs — confirm with `get_doc` |
+| `igniteui-grid-lite` | `IgcGridLite.register()`, or `import 'igniteui-grid-lite/define'`; the column tag is `igc-grid-lite-column` |
 | `igniteui-webcomponents-charts` / `-gauges` / `-maps` | `ModuleManager.register(IgcCategoryChartModule, …)` from `igniteui-webcomponents-core` |
-| `igniteui-dockmanager` | `defineCustomElements()` per the dock-manager docs |
+| `igniteui-dockmanager` | `defineComponents(IgcDockManagerComponent)` from `igniteui-dockmanager` (`defineCustomElements()` is deprecated since 2.0.0) |
 
-Licensed projects use the same names prefixed with `@infragistics/` (e.g.
-`@infragistics/igniteui-webcomponents-grids`). Resolve the layout once in Phase 0b and keep
-it consistent.
+Licensed projects use the same names prefixed with `@infragistics/` (e.g. `@infragistics/igniteui-webcomponents-grids`, `@infragistics/igniteui-dockmanager`). `igniteui-webcomponents` itself is MIT and has no licensed variant. Resolve the layout once in Phase 0b and keep it consistent.
 
 ---
 
@@ -143,21 +124,13 @@ it consistent.
 | `_Icon Button/*`                       | `<igc-icon-button variant="flat">`     | `IgcIconButtonComponent` | `igniteui-webcomponents` | `icon-button` | `variant` (`flat\|contained\|outlined`), `name`, `collection` |
 | `_Button Group`                        | `<igc-button-group>`                   | `IgcButtonGroupComponent` | `igniteui-webcomponents` | `button-group` | `selection`, `alignment`; `<igc-toggle-button>` children |
 
-> `variant` is an **attribute** on the element itself — there is no directive equivalent of
-> Angular's `igxButton`. Icon-only buttons need an `aria-label` for the Phase 5g check.
+> `variant` is an **attribute** on the element itself — there is no directive equivalent of Angular's `igxButton`. Icon-only buttons need an `aria-label` for the Phase 5g check.
 
 ---
 
 ## Form Controls
 
-> **Input variants.** The kits express `line` / `box` / `border` input types. Web Components
-> expose a single boolean **`outlined`** attribute (inherited from the shared input base) on
-> `igc-input`, `igc-textarea`, `igc-mask-input`, `igc-date-time-input`, `igc-file-input`,
-> `igc-select`, `igc-combo`, `igc-date-picker`, and `igc-date-range-picker`.
-> Map `_Input/Border` → `outlined`; `_Input/Line` and `_Input/Box` → default.
-> There is **no** global injection-token equivalent of Angular's `IGX_INPUT_GROUP_TYPE` —
-> set the attribute per control, and close residual differences with `input-group`
-> component tokens (Phase 3d), never with internal class selectors.
+> **Input variants.** The kits express `line` / `box` / `border` input types. Web Components expose a single boolean **`outlined`** attribute on `igc-input`, `igc-textarea`, `igc-mask-input`, `igc-date-time-input`, `igc-file-input`, `igc-select`, `igc-combo`, `igc-date-picker`, and `igc-date-range-picker`. Map `_Input/Border` → `outlined`; `_Input/Line` and `_Input/Box` → default. There is **no** global injection-token equivalent of Angular's `IGX_INPUT_GROUP_TYPE` — set the attribute per control, and close residual differences with `input-group` component tokens (Phase 3d), never with internal class selectors.
 
 | Kit Component Name             | Tag                       | Class                           | Package                  | Doc                 | Key attributes / slots                                                     |
 | ------------------------------ | ------------------------- | ------------------------------- | ------------------------ | ------------------- | --------------------------------------------------------------------------- |
@@ -165,7 +138,7 @@ it consistent.
 | `_Input/Border`                | `<igc-input outlined>`    | `IgcInputComponent`             | `igniteui-webcomponents` | `input`             | `outlined`                                                                  |
 | `_Input/Search`                | `<igc-input type="search">` | `IgcInputComponent`           | `igniteui-webcomponents` | `input`             | Add a search `igc-icon` in the `prefix` slot                                |
 | `_Text Area`                   | `<igc-textarea>`          | `IgcTextareaComponent`          | `igniteui-webcomponents` | `text-area`         | `label`, `rows`, `resize`, `outlined`                                       |
-| `_Masked Input`                | `<igc-mask-input>`        | `IgcMaskInputComponent`         | `igniteui-webcomponents` | `mask-input`        | `mask`, `prompt-char`, `value-mode`                                         |
+| `_Masked Input`                | `<igc-mask-input>`        | `IgcMaskInputComponent`         | `igniteui-webcomponents` | `mask-input`        | `mask`, `prompt`, `value-mode`                                         |
 | `_File Upload`                 | `<igc-file-input>`        | `IgcFileInputComponent`         | `igniteui-webcomponents` | `file-input`        | `multiple`, `accept`, `label`                                               |
 | `_Combo` / `_ComboBox`         | `<igc-combo>`             | `IgcComboComponent`             | `igniteui-webcomponents` | `combo` → `overview` | `.data`, `display-key`, `value-key`, `group-key`, `single-select`, `outlined` |
 | `_Simple Combo`                | `<igc-combo single-select>` | `IgcComboComponent`           | `igniteui-webcomponents` | `single-selection`  | `single-select` — theme key is `simple-combo`                               |
@@ -190,8 +163,7 @@ it consistent.
 | `_Time Picker`       | `<igc-date-time-input>`     | `IgcDateTimeInputComponent`     | `igniteui-webcomponents` | `date-time-input`   | **No dedicated time picker in Web Components** — use a time `input-format` |
 | `_Calendar`          | `<igc-calendar>`            | `IgcCalendarComponent`          | `igniteui-webcomponents` | `calendar`          | `selection` (`single\|multiple\|range`), `value`, `values`, `visible-months`, `week-start`, `show-week-numbers`, `header-orientation` |
 
-> Date pickers and the calendar are **compound** — their dropdown/calendar surface is a
-> separate theme. Follow the related-theme chain from `get_component_design_tokens`.
+> The date pickers are **compound** — their dropdown and calendar surfaces are separate themes. Follow the related-theme chain from `get_component_design_tokens`.
 
 ---
 
@@ -207,10 +179,7 @@ it consistent.
 | `_Breadcrumbs`                     | `<igc-breadcrumbs>` | `IgcBreadcrumbsComponent` | `igniteui-webcomponents` | confirm via `list_components` | `separator`; default slot contains `<igc-breadcrumb>` children; wrap in `<nav aria-label="…">` |
 | `_Breadcrumb`                      | `<igc-breadcrumb>`  | `IgcBreadcrumbComponent`  | `igniteui-webcomponents` | confirm via `list_components` | `current`, `disabled`; slots `prefix`, `suffix`, `separator` |
 
-> A design showing a persistent, always-visible sidebar maps to
-> `<igc-nav-drawer position="relative" open>` — not the modal default. The drawer's width is
-> controlled by the `--menu-full-width` / `--menu-mini-width` custom properties on the host,
-> which are **not** design tokens and will not appear in `get_component_design_tokens`.
+> A design showing a persistent, always-visible sidebar maps to `<igc-nav-drawer position="relative" open>` — not the modal default. The drawer's width comes from the `navdrawer` design tokens `size` and `size--mini`, exposed as `--ig-nav-drawer-size` (default 15rem) and `--ig-nav-drawer-size--mini`. Set them through `create_component_theme` like any other token.
 
 ---
 
@@ -272,27 +241,18 @@ it consistent.
 Grid rules that differ from Angular:
 
 - Register per grid type: `IgcGridComponent.register()`.
-- The grid packages ship their **own theme CSS** —
-  `igniteui-webcomponents-grids/grids/themes/<variant>/<design-system>.css` — in addition to
-  the core theme. Inside a Lit component, import it `?inline` and inject it into the shadow
-  root; at app level, import it normally.
+- The grid packages ship their **own theme CSS** — `igniteui-webcomponents-grids/grids/themes/<variant>/<design-system>.css` — in addition to the core theme. Inside a Lit component, import it `?inline` and inject it into the shadow root; at app level, import it normally.
 - `data` is a property, not an attribute: `.data=${rows}` / `grid.data = rows`.
 - Leave at least one `<igc-column>` without a `width` so it fills the remaining space.
-- Feature docs are separate pages (`grid-editing`, `grid-filtering`, `grid-paging`, …) —
-  fetch the ones the artboard actually shows.
+- Feature docs are separate pages (`grid-editing`, `grid-filtering`, `grid-paging`, …) — fetch the ones the artboard actually shows.
 
 ---
 
 ## Charts, Gauges, and Maps
 
-> These are DV components. They have **no design tokens** — do not call
-> `get_component_design_tokens` for them. Configure everything through properties, and take
-> series colors from `theming_get_chart_series_colors` plus the Figma values captured in
-> Phase 1d.
+> These are DV components. They have **no design tokens** — do not call `get_component_design_tokens` for them. Configure everything through properties, and take series colors from `theming_get_chart_series_colors` plus the Figma values captured in Phase 1d.
 >
-> Registration for all three packages goes through
-> `ModuleManager.register(IgcXxxModule, …)` imported from `igniteui-webcomponents-core`.
-> Array and function values must be **assigned as properties**, never as attributes.
+> Registration for all three packages goes through `ModuleManager.register(IgcXxxModule, …)` imported from `igniteui-webcomponents-core`. Array and function values must be **assigned as properties**, never as attributes.
 
 | Kit Component Name                                        | Tag                       | Class                        | Package                          | Doc                                          |
 | --------------------------------------------------------- | ------------------------- | ---------------------------- | -------------------------------- | --------------------------------------------- |
@@ -311,12 +271,9 @@ Grid rules that differ from Angular:
 
 DV specifics worth knowing before Phase 4:
 
-- Gauge and chart **attributes are kebab-case** (`minimum-value`, `maximum-value`,
-  `chart-type`, `data-source`), while collection-valued members are properties.
-- `plotAreaBackground` and `areaFillOpacity` are inherited from parent classes and will not
-  appear in `get_api_reference` for `IgcCategoryChartComponent` — find them with `search_api`.
-- Category charts show markers by default; if the design has none, set the documented
-  no-marker value.
+- Gauge and chart **attributes are kebab-case** (`minimum-value`, `maximum-value`, `chart-type`), while collection-valued members such as `dataSource` are properties.
+- `plotAreaBackground` and `areaFillOpacity` are inherited from parent classes and will not appear in `get_api_reference` for `IgcCategoryChartComponent` — find them with `search_api`.
+- Category charts show markers by default; if the design has none, set the documented no-marker value.
 - Give charts an explicit height (and their grid track a `min-height`) or they collapse.
 
 ---
@@ -335,8 +292,7 @@ registerIconFromText('home', '<svg …></svg>', 'material');
 await registerIcon('search', 'https://example.com/icons/search.svg');
 ```
 
-For the Material Icons Extended set used by the Indigo.Design UI Kit for Material — Figma
-component descriptions carry the suffix **"material extended"**:
+For the Material Icons Extended set used by the Indigo.Design UI Kit for Material — Figma component descriptions carry the suffix **"material extended"**:
 
 ```bash
 npm install @igniteui/material-icons-extended
@@ -355,20 +311,13 @@ for (const icon of all) {
 <igc-icon name="credit-cards"></igc-icon>
 ```
 
-**Detection in Phase 1d:** scan `data-name` values and component descriptions for
-"material extended". If found, add the package to the required list and get approval before
-Phase 4. `setIconRef(name, collection, meta)` lets you alias one registered icon to another
-name when the design reuses a glyph under a different label.
+**Detection in Phase 1d:** scan `data-name` values and component descriptions for "material extended". If found, add the package to the required list and get approval before Phase 4. `setIconRef(name, collection, meta)` lets you alias one registered icon to another name when the design reuses a glyph under a different label.
 
 Registered icons are never extracted as image assets — see `asset-extraction.md`.
 
 ### Icons from other kits
 
-Third-party kits come with their own icon sets. Identify the set from the icon instance
-names (`lucide/chevron-down`, `ic_fluent_…`, `Icon / arrow-right`, `Symbols/…`), from the
-component descriptions, or from the kit fingerprint in `design-provenance.md`. Then register
-glyphs **from that set's SVG package**, so names, weights, and stroke widths match the
-design:
+Third-party kits come with their own icon sets. Identify the set from the icon instance names (`lucide/chevron-down`, `ic_fluent_…`, `Icon / arrow-right`, `Symbols/…`), from the component descriptions, or from the kit fingerprint in `design-provenance.md`. Then register glyphs **from that set's SVG package**, so names, weights, and stroke widths match the design:
 
 | Icon set | SVG source package (confirm name, version, and license before installing) |
 | --- | --- |
@@ -389,24 +338,20 @@ registerIconFromText('chevron-down', chevronDown, 'lucide');
 <igc-icon name="chevron-down" collection="lucide"></igc-icon>
 ```
 
-Register only the glyphs the design uses: importing a whole set inflates the bundle. When the
-set is paid (for example Untitled UI Icons Pro) or unknown, or is not licensed for the web
-(SF Symbols), extract the used glyphs as SVG with Tier 1 Method B from `asset-extraction.md`
-and register those instead. Tell the user which icons came from a licensed set.
+Register only the glyphs the design uses: importing a whole set inflates the bundle. When the set is paid (for example Untitled UI Icons Pro) or unknown, or is not licensed for the web (SF Symbols), extract the used glyphs as SVG with Tier 1 Method B from `asset-extraction.md` and register those instead. Tell the user which icons came from a licensed set.
 
 ---
 
 ## Components With No Web Components Equivalent
 
-Check this list before assuming a 1:1 mapping exists. When you hit one, substitute and
-document the substitution in a code comment and in the Phase 2d plan.
+Check this list before assuming a 1:1 mapping exists. When you hit one, substitute and document the substitution in a code comment and in the Phase 2d plan.
 
 | Kit component / role | Status in Web Components | Substitute                                                      |
 | ----------------- | ------------------------- | ------------------------------------------------------------------ |
 | `_Bottom Navigation` | Not available          | `igc-tabs`, or custom markup styled from the design                |
 | `_Time Picker`    | Not available as a picker | `igc-date-time-input` with a time input format                     |
 | `_Autocomplete`   | Not available             | `igc-combo` with filtering, or `igc-input` + `igc-dropdown`         |
-| `_Action Strip`   | Not available             | Slotted icon buttons positioned over the row/card                   |
+| `_Action Strip`   | Grid packages only (`igc-action-strip`) | Inside grids, use `igc-action-strip`; elsewhere, slotted icon buttons positioned over the row/card |
 | `_Chips Area`     | Not a component           | A flex container around `igc-chip` elements                         |
 | `_Query Builder`  | Grid packages only        | `query-builder` doc — confirm availability for the installed package |
 | Sheet / side sheet (other kits) | Not available           | `igc-nav-drawer` for navigation; `igc-dialog` or custom markup for content panels |
@@ -419,11 +364,7 @@ document the substitution in a code comment and in the Phase 2d plan.
 
 When you encounter a Figma layer that is **not in this file**:
 
-1. Normalize it with [design-provenance.md](design-provenance.md) (Tier B variant
-   properties, or Tier C structure) and retry the Canonical Role Index. Otherwise,
-   extract the visual pattern (is it a list? a form field? a card?).
-2. Call `list_components({ framework: "webcomponents", filter: "<keyword>" })` and scan for
-   the closest match.
+1. Normalize it with [design-provenance.md](design-provenance.md) (Tier B variant properties, or Tier C structure) and retry the Canonical Role Index. Otherwise, extract the visual pattern (is it a list? a form field? a card?).
+2. Call `list_components({ framework: "webcomponents", filter: "<keyword>" })` and scan for the closest match.
 3. Call `get_doc` (and `get_api_reference` when you need the full API) before writing code.
-4. If no Ignite UI component matches after a genuine attempt, use plain semantic HTML and
-   document the reason in a code comment.
+4. If no Ignite UI component matches after a genuine attempt, use plain semantic HTML and document the reason in a code comment.
