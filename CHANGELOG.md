@@ -4,37 +4,42 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [7.4.1] - 2026-09-25
 ### Added
+- #### AI-Assisted Development
+  - New `igniteui-wc-grids` skill. It helps an agent pick the grid package, register the grid, apply one theme, inject the theme into a Shadow DOM, set the layout and set up sorting and filtering. [#2376](https://github.com/IgniteUI/igniteui-webcomponents/pull/2376)
 - #### Virtual scroll
-  - `keyFunction` property. It returns the key of an item, so an item keeps its element while it is in the rendered window, also when it moves in `data`. Without it, the index is the key.
+  - `keyFunction` property. It returns the key of an item, so an item keeps its element while it is in the rendered window, also when it moves in `data`. Without it, the index is the key. [#2401](https://github.com/IgniteUI/igniteui-webcomponents/pull/2401)
 
 ### Changed
+- #### AI-Assisted Development
+  - All skills now declare the MIT license, and their descriptions state when to use them and when to use a different skill. [#2400](https://github.com/IgniteUI/igniteui-webcomponents/pull/2400)
+  - The `igniteui-wc-figma-to-app` skill now supports Figma files from any UI kit, not only the Indigo.Design UI Kits. Its guidance now agrees with the current Figma, theming and component APIs, and its steps are in separate reference files, so an agent loads less text. [#2400](https://github.com/IgniteUI/igniteui-webcomponents/pull/2400) [#2404](https://github.com/IgniteUI/igniteui-webcomponents/pull/2404)
 - #### Virtual scroll
-  - **Behavior change:** Item elements are now recycled. An item that stays in the rendered window keeps its element, and the elements of the items that leave show the items that enter. Before, each element showed the item at its window position, so each scroll updated every rendered item. DOM state that the item template does not bind, for example the state of a checkbox without a `checked` binding, stays with the element and shows on the item that enters. The `itemTemplate` documentation shows how to bind this state or get new DOM for each item.
-  - The average measured item size now replaces `estimatedItemSize` for the items that are not measured yet, so the scrollbar follows the real content when the estimate is wrong.
+  - **Behavior change:** Item elements are now recycled. An item that stays in the rendered window keeps its element, and the elements of the items that leave show the items that enter. Before, each element showed the item at its window position, so each scroll updated every rendered item. DOM state that the item template does not bind, for example the state of a checkbox without a `checked` binding, stays with the element and shows on the item that enters. The `itemTemplate` documentation shows how to bind this state or get new DOM for each item. [#2401](https://github.com/IgniteUI/igniteui-webcomponents/pull/2401)
+  - The average measured item size now replaces `estimatedItemSize` for the items that are not measured yet, so the scrollbar follows the real content when the estimate is wrong. [#2401](https://github.com/IgniteUI/igniteui-webcomponents/pull/2401)
 
 ### Fixed
 - #### Virtual scroll
-  - `scrollToIndex` with `block: 'nearest'` now aligns an item after the viewport to the end of the viewport, as native `scrollIntoView` does. Before, it aligned each item out of view to the start, so a scroll to the next item moved a full page.
+  - `scrollToIndex` with `block: 'nearest'` now aligns an item after the viewport to the end of the viewport, as native `scrollIntoView` does. Before, it aligned each item out of view to the start, so a scroll to the next item moved a full page. [#2401](https://github.com/IgniteUI/igniteui-webcomponents/pull/2401)
 - #### Checkbox, Switch, Radio
-  - A `<label>` element bound through `for`, or wrapping the component, now names the control and a click on it focuses and toggles the control, as for a native checkbox or radio. Before, the control had no accessible name and the click did nothing.
-  - The host `aria-labelledby` now names the control. Before, the component copied the ID into its shadow root, where it did not resolve.
+  - A `<label>` element bound through `for`, or wrapping the component, now names the control and a click on it focuses and toggles the control, as for a native checkbox or radio. Before, the control had no accessible name and the click did nothing. [#2402](https://github.com/IgniteUI/igniteui-webcomponents/pull/2402)
+  - The host `aria-labelledby` now names the control. Before, the component copied the ID into its shadow root, where it did not resolve. [#2402](https://github.com/IgniteUI/igniteui-webcomponents/pull/2402)
 - #### Rating, Slider
-  - A `<label>` element bound through `for`, or wrapping the component, now names the control, and a click on it focuses the control.
-  - The host `aria-labelledby` now names the control. The slider now also follows a change of the host `aria-label` after the first render.
-  - The slider value tooltip is hidden from assistive technology, because `aria-valuetext` already carries the value.
+  - A `<label>` element bound through `for`, or wrapping the component, now names the control, and a click on it focuses the control. [#2402](https://github.com/IgniteUI/igniteui-webcomponents/pull/2402)
+  - The host `aria-labelledby` now names the control. The slider now also follows a change of the host `aria-label` after the first render. [#2402](https://github.com/IgniteUI/igniteui-webcomponents/pull/2402)
+  - The slider value tooltip is hidden from assistive technology, because `aria-valuetext` already carries the value. [#2402](https://github.com/IgniteUI/igniteui-webcomponents/pull/2402)
 - #### Color picker
-  - In `default` mode, an external `<label>` and the host `aria-labelledby` and `aria-label` now name the trigger button. Before, it was always "Open color picker".
-  - In `input` mode, the text input no longer carries `aria-expanded`, which ARIA does not allow on a text input. The swatch button in the prefix still reflects the open state.
+  - In `default` mode, an external `<label>` and the host `aria-labelledby` and `aria-label` now name the trigger button. Before, it was always "Open color picker". [#2402](https://github.com/IgniteUI/igniteui-webcomponents/pull/2402)
+  - In `input` mode, the text input no longer carries `aria-expanded`, which ARIA does not allow on a text input. The swatch button in the prefix still reflects the open state. [#2402](https://github.com/IgniteUI/igniteui-webcomponents/pull/2402)
 - #### File input
-  - A click on an external `<label>` now focuses the native input and opens the file picker, as for a native file input. Before, the focus went to the browse button.
+  - A click on an external `<label>` now focuses the native input and opens the file picker, as for a native file input. Before, the focus went to the browse button. [#2402](https://github.com/IgniteUI/igniteui-webcomponents/pull/2402)
 - #### Combo
-  - The `label` property and an external `<label>` now name the input. Before, the selection status text ("No options selected") replaced them.
+  - The `label` property and an external `<label>` now name the input. Before, the selection status text ("No options selected") replaced them. [#2402](https://github.com/IgniteUI/igniteui-webcomponents/pull/2402)
 - #### Combo, Color picker, Date picker, Date range picker, Date time input, File input, Input, Mask input, Select, Textarea
-  - The host `aria-labelledby` and `aria-label` now name the native editor. All form associated components use one naming order: the host `aria-labelledby`, then the external `<label>` elements, then the own label, then the host `aria-label`.
-  - A `<label>` element added after the first render now names the control from its first focus. Before, it did not name the control until the next render.
-  - The helper text `aria-describedby` of the input editors now stays after a re-render. Before, a re-render removed it.
+  - The host `aria-labelledby` and `aria-label` now name the native editor. All form associated components use one naming order: the host `aria-labelledby`, then the external `<label>` elements, then the own label, then the host `aria-label`. [#2402](https://github.com/IgniteUI/igniteui-webcomponents/pull/2402)
+  - A `<label>` element added after the first render now names the control from its first focus. Before, it did not name the control until the next render. [#2402](https://github.com/IgniteUI/igniteui-webcomponents/pull/2402)
+  - The helper text `aria-describedby` of the input editors now stays after a re-render. Before, a re-render removed it. [#2402](https://github.com/IgniteUI/igniteui-webcomponents/pull/2402)
 
 ## [7.4.0] - 2026-09-23
 ### Added
@@ -1696,6 +1701,7 @@ Initial release of Ignite UI Web Components
 - Ripple component
 - Switch component
 
+[7.4.1]: https://github.com/IgniteUI/igniteui-webcomponents/compare/7.4.0...7.4.1
 [7.4.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/7.3.2...7.4.0
 [7.3.2]: https://github.com/IgniteUI/igniteui-webcomponents/compare/7.3.1...7.3.2
 [7.3.1]: https://github.com/IgniteUI/igniteui-webcomponents/compare/7.3.0...7.3.1
