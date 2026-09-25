@@ -274,7 +274,7 @@ Key constraints:
    Grids use `IgcGridComponent.register()`, Grid Lite `IgcGridLite.register()`, charts and
    gauges `ModuleManager.register(IgcCategoryChartModule, …)` from
    `igniteui-webcomponents-core`, and the dock manager `defineComponents(IgcDockManagerComponent)`
-   from `igniteui-dockmanager`.
+   from `igniteui-dockmanager` (trial) or `@infragistics/igniteui-dockmanager` (licensed).
    In a framework-wrapped app, follow
    [`igniteui-wc-integrate-with-framework`](../igniteui-wc-integrate-with-framework/SKILL.md)
    instead. Registering components you do not use inflates the bundle — see
