@@ -80,7 +80,7 @@ ask the user to reload, then stop.
 ### 0b: Detect or Scaffold a Web Components Project
 
 Check whether the working directory contains a `package.json` that lists
-`igniteui-webcomponents` or `@infragistics/igniteui-webcomponents`, and a `src/` entry
+`igniteui-webcomponents`, and a `src/` entry
 module.
 
 - **Project found:** note the package layout (trial or `@infragistics` licensed), the host
