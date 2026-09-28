@@ -52,6 +52,42 @@ describe('DateTimeMaskParser', () => {
       expect(yearPart!.start).to.equal(6);
       expect(yearPart!.end).to.equal(10);
     });
+
+    it('widens a year format other than yy to yyyy in the mask and the parts', () => {
+      const parser = new DateTimeMaskParser({ format: 'd.M.yyy' });
+
+      expect(parser.mask).to.equal('d.M.yyyy');
+      expect(parser.emptyMask).to.equal('_._.____');
+
+      parser.mask = 'y/MM';
+      expect(parser.mask).to.equal('yyyy/MM');
+
+      const month = parser.parts.find((p) => p.type === DatePartType.Month);
+      expect(month!.start).to.equal(5);
+      expect(month!.end).to.equal(7);
+
+      parser.mask = 'DD.MM.YYYY';
+      expect(parser.mask).to.equal('DD.MM.YYYY');
+      parser.mask = 'yyY';
+      expect(parser.mask).to.equal('yyYYYY');
+    });
+
+    it('keeps a literal that is a mask flag literal', () => {
+      const parser = new DateTimeMaskParser({ format: 'dd.MM.yyyy A #0' });
+
+      expect(parser.emptyMask).to.equal('__.__.____ A #0');
+      expect(parser.apply('25122025')).to.equal('25.12.2025 A #0');
+      expect(parser.parseDate('25.12.2025 A #0')!.getFullYear()).to.equal(2025);
+    });
+
+    it('keeps UTF-16 part positions after an astral literal', () => {
+      const parser = new DateTimeMaskParser({ format: '📅 MM/dd' });
+
+      const month = parser.parts.find((p) => p.type === DatePartType.Month);
+      expect(month!.start).to.equal(3);
+      expect(month!.end).to.equal(5);
+      expect(parser.parseDate('📅 12/25')!.getMonth()).to.equal(11);
+    });
   });
 
   describe('Mask Application', () => {
@@ -171,6 +207,37 @@ describe('DateTimeMaskParser', () => {
 
       const date2 = parser.parseDate('12/25/99');
       expect(date2!.getFullYear()).to.equal(1999);
+    });
+
+    it('keeps a four-digit year below 100 as typed', () => {
+      const parser = new DateTimeMaskParser({ format: 'MM/dd/yyyy' });
+
+      expect(parser.parseDate('01/01/0049')!.getFullYear()).to.equal(49);
+      expect(parser.parseDate('01/01/0075')!.getFullYear()).to.equal(75);
+    });
+
+    it('uses the calendar of a year below 100 for the days of the month', () => {
+      const parser = new DateTimeMaskParser({ format: 'MM/dd/yyyy' });
+
+      // Year 0 is a leap year, and 1900 is not.
+      expect(parser.parseDate('02/29/0000')!.getFullYear()).to.equal(0);
+      expect(parser.parseDate('02/29/0004')!.getFullYear()).to.equal(4);
+      expect(parser.parseDate('02/29/0001')).to.be.null;
+    });
+
+    it('applies the century threshold to each year part by its own digits', () => {
+      const parser = new DateTimeMaskParser({ format: 'yyyy (yy)' });
+
+      // The last year part sets the year. The threshold applies to its two digits.
+      expect(parser.parseDate('2024 (24)')!.getFullYear()).to.equal(2024);
+      expect(parser.parseDate('24__ (99)')!.getFullYear()).to.equal(1999);
+    });
+
+    it('applies the century threshold to a partially typed yyyy year', () => {
+      const parser = new DateTimeMaskParser({ format: 'MM/dd/yyyy' });
+
+      expect(parser.parseDate('01/01/24__')!.getFullYear()).to.equal(2024);
+      expect(parser.parseDate('01/01/75__')!.getFullYear()).to.equal(1975);
     });
   });
 

@@ -53,8 +53,8 @@ export function asArray<T>(value?: T | T[]): T[] {
 
 /**
  * Returns whether two collections hold the same items, in the same order and
- * by identity. Two empty values match; an empty value differs from a
- * collection.
+ * by identity (`Object.is`). Two empty values match; an empty value differs
+ * from a collection.
  *
  * @example
  * ```typescript
@@ -76,7 +76,7 @@ export function sameItems<T>(
   }
 
   for (let i = 0; i < a.length; i++) {
-    if (a[i] !== b[i]) {
+    if (!Object.is(a[i], b[i])) {
       return false;
     }
   }

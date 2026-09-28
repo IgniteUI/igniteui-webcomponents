@@ -2041,7 +2041,7 @@ describe('Combo', () => {
   });
 
   describe('Validation message slots', () => {
-    it('', () => {
+    it('', async () => {
       const testParameters: ValidationContainerTestsParams<IgcComboComponent>[] =
         [
           { slots: ['valueMissing'], props: { required: true } }, // value-missing slot
@@ -2049,7 +2049,7 @@ describe('Combo', () => {
           { slots: ['invalid'], props: { required: true } }, // invalid slot
         ];
 
-      runValidationContainerTests(IgcComboComponent, testParameters);
+      await runValidationContainerTests(IgcComboComponent, testParameters);
     });
   });
 

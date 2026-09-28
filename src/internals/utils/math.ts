@@ -61,7 +61,15 @@ export function numberInRangeInclusive(
  * ```
  */
 export function asNumber(value: unknown, fallback = 0): number {
-  const parsed = Number.parseFloat(value as string);
+  let parsed: number;
+
+  try {
+    parsed = Number.parseFloat(value as string);
+  } catch {
+    // A symbol, or an object with no string conversion.
+    return fallback;
+  }
+
   return Number.isFinite(parsed) ? parsed : fallback;
 }
 

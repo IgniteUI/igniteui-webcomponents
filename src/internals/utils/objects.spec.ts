@@ -129,6 +129,11 @@ describe('equal', () => {
     expect(equal(date1, date2)).to.be.true;
   });
 
+  it('should return true for two invalid Dates', () => {
+    expect(equal(new Date(Number.NaN), new Date('invalid'))).to.be.true;
+    expect(equal(new Date(Number.NaN), new Date(0))).to.be.false;
+  });
+
   it('should return false for Dates with different time values', () => {
     const date1 = new Date('2025-04-22T12:00:00.000Z');
     const date2 = new Date('2025-04-22T12:01:00.000Z');

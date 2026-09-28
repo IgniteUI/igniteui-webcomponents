@@ -804,8 +804,8 @@ export const EC_BLOCKS_TABLE: ECBlock[][] = [
     {
       ecPerBlock: 28,
       groups: [
-        { numBlocks: 19, dataCW: 45 },
-        { numBlocks: 10, dataCW: 46 },
+        { numBlocks: 19, dataCW: 47 },
+        { numBlocks: 10, dataCW: 48 },
       ],
     },
     {
@@ -835,8 +835,8 @@ export const EC_BLOCKS_TABLE: ECBlock[][] = [
     {
       ecPerBlock: 28,
       groups: [
-        { numBlocks: 2, dataCW: 45 },
-        { numBlocks: 29, dataCW: 46 },
+        { numBlocks: 2, dataCW: 46 },
+        { numBlocks: 29, dataCW: 47 },
       ],
     },
     {
@@ -860,8 +860,8 @@ export const EC_BLOCKS_TABLE: ECBlock[][] = [
     {
       ecPerBlock: 28,
       groups: [
-        { numBlocks: 10, dataCW: 45 },
-        { numBlocks: 23, dataCW: 46 },
+        { numBlocks: 10, dataCW: 46 },
+        { numBlocks: 23, dataCW: 47 },
       ],
     },
     {
@@ -891,8 +891,8 @@ export const EC_BLOCKS_TABLE: ECBlock[][] = [
     {
       ecPerBlock: 28,
       groups: [
-        { numBlocks: 14, dataCW: 45 },
-        { numBlocks: 21, dataCW: 46 },
+        { numBlocks: 14, dataCW: 46 },
+        { numBlocks: 21, dataCW: 47 },
       ],
     },
     {
@@ -922,8 +922,8 @@ export const EC_BLOCKS_TABLE: ECBlock[][] = [
     {
       ecPerBlock: 28,
       groups: [
-        { numBlocks: 14, dataCW: 45 },
-        { numBlocks: 23, dataCW: 46 },
+        { numBlocks: 14, dataCW: 46 },
+        { numBlocks: 23, dataCW: 47 },
       ],
     },
     {
@@ -953,8 +953,8 @@ export const EC_BLOCKS_TABLE: ECBlock[][] = [
     {
       ecPerBlock: 28,
       groups: [
-        { numBlocks: 12, dataCW: 45 },
-        { numBlocks: 26, dataCW: 46 },
+        { numBlocks: 12, dataCW: 47 },
+        { numBlocks: 26, dataCW: 48 },
       ],
     },
     {
@@ -984,8 +984,8 @@ export const EC_BLOCKS_TABLE: ECBlock[][] = [
     {
       ecPerBlock: 28,
       groups: [
-        { numBlocks: 6, dataCW: 45 },
-        { numBlocks: 34, dataCW: 46 },
+        { numBlocks: 6, dataCW: 47 },
+        { numBlocks: 34, dataCW: 48 },
       ],
     },
     {
@@ -1015,8 +1015,8 @@ export const EC_BLOCKS_TABLE: ECBlock[][] = [
     {
       ecPerBlock: 28,
       groups: [
-        { numBlocks: 29, dataCW: 45 },
-        { numBlocks: 14, dataCW: 46 },
+        { numBlocks: 29, dataCW: 46 },
+        { numBlocks: 14, dataCW: 47 },
       ],
     },
     {
@@ -1046,8 +1046,8 @@ export const EC_BLOCKS_TABLE: ECBlock[][] = [
     {
       ecPerBlock: 28,
       groups: [
-        { numBlocks: 13, dataCW: 45 },
-        { numBlocks: 32, dataCW: 46 },
+        { numBlocks: 13, dataCW: 46 },
+        { numBlocks: 32, dataCW: 47 },
       ],
     },
     {
@@ -1077,8 +1077,8 @@ export const EC_BLOCKS_TABLE: ECBlock[][] = [
     {
       ecPerBlock: 28,
       groups: [
-        { numBlocks: 40, dataCW: 45 },
-        { numBlocks: 7, dataCW: 46 },
+        { numBlocks: 40, dataCW: 47 },
+        { numBlocks: 7, dataCW: 48 },
       ],
     },
     {
@@ -1108,8 +1108,8 @@ export const EC_BLOCKS_TABLE: ECBlock[][] = [
     {
       ecPerBlock: 28,
       groups: [
-        { numBlocks: 18, dataCW: 45 },
-        { numBlocks: 31, dataCW: 46 },
+        { numBlocks: 18, dataCW: 47 },
+        { numBlocks: 31, dataCW: 48 },
       ],
     },
     {

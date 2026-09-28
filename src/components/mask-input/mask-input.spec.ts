@@ -1141,6 +1141,20 @@ describe('Masked input', () => {
       spec.assertSubmitPasses();
     });
 
+    it('treats an empty optional control as valid for any mask', () => {
+      for (const mask of ['000', '##-##', 'LLL', 'AA', '&&']) {
+        spec.setProperties({ mask, value: '' });
+        spec.assertSubmitPasses();
+        expect(spec.element.validity.badInput, mask).to.be.false;
+      }
+    });
+
+    it('reports a value that fits no position of a letter mask as bad input', () => {
+      spec.setProperties({ mask: 'LLL', value: '12' });
+      spec.assertSubmitFails();
+      expect(spec.element.validity.badInput).to.be.true;
+    });
+
     it('fulfils custom constraint', () => {
       spec.element.setCustomValidity('invalid');
       spec.assertSubmitFails();
@@ -1231,12 +1245,12 @@ describe('Masked input', () => {
       const testParameters: ValidationContainerTestsParams<IgcMaskInputComponent>[] =
         [
           { slots: ['valueMissing'], props: { required: true } }, // value-missing slot
-          { slots: ['badInput'], props: { mask: '00-00' } }, // bad-input slot
+          { slots: ['badInput'], props: { mask: '00-00', value: '1' } }, // bad-input slot
           { slots: ['customError'] }, // custom-error slot
           { slots: ['invalid'], props: { required: true } }, // invalid slot
         ];
 
-      runValidationContainerTests(IgcMaskInputComponent, testParameters);
+      await runValidationContainerTests(IgcMaskInputComponent, testParameters);
     });
   });
 

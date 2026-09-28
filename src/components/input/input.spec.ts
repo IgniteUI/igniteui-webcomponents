@@ -770,7 +770,7 @@ describe('Input component', () => {
           },
         ];
 
-      runValidationContainerTests(IgcInputComponent, testParameters);
+      await runValidationContainerTests(IgcInputComponent, testParameters);
     });
   });
 

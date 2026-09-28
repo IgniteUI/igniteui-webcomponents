@@ -27,23 +27,67 @@ function filterBenignBrowserLogs() {
 }
 
 /**
+ * Reads an integer of at least `min` from the environment variable `name`. Returns
+ * `fallback` when the variable is unset or empty. Throws for other values.
+ */
+function readInteger(name, { min = 1, fallback } = {}) {
+  const raw = process.env[name]?.trim();
+
+  if (!raw) {
+    return fallback;
+  }
+
+  const value = Number(raw);
+
+  if (!Number.isSafeInteger(value)) {
+    throw new Error(`${name} must be an integer, got "${raw}".`);
+  }
+
+  if (value < min) {
+    throw new Error(`${name} must be at least ${min}, got "${raw}".`);
+  }
+
+  return value;
+}
+
+/**
+ * The fast-check settings from `FC_SEED` and `FC_NUM_RUNS`. `FC_SEED=random` picks a new
+ * seed. See CONTRIBUTING.md.
+ */
+function fastCheckSettings() {
+  return {
+    seed:
+      process.env.FC_SEED?.trim() === 'random'
+        ? Math.floor(Math.random() * 0x7fffffff)
+        : readInteger('FC_SEED', { min: -Infinity }),
+    numRuns: readInteger('FC_NUM_RUNS'),
+  };
+}
+
+const fastCheck = JSON.stringify(fastCheckSettings());
+
+/**
  * Loads `assertion-errors.spec.ts` ahead of the test framework so that every
  * test file gets the chai patch that keeps failed assertions on non-cloneable
  * subjects (sinon spies, DOM nodes) reportable. See the module itself for the
  * details.
+ *
+ * Also sets the {@link fastCheckSettings} for `fast-check-setup.spec.ts`.
  */
 function testRunnerHtml(testFramework) {
   return `<!DOCTYPE html>
 <html>
   <body>
     <script type="module" src="/src/internals/testing/assertion-errors.spec.ts"></script>
+    <script>globalThis.__FAST_CHECK__ = ${fastCheck};</script>
     <script type="module" src="${testFramework}"></script>
   </body>
 </html>`;
 }
 
 export default /** @type {import("@web/test-runner").TestRunnerConfig} */ ({
-  files: ['src/**/*.spec.ts'],
+  // The helpers in `src/internals/testing` are not test files.
+  files: ['src/**/*.spec.ts', '!src/internals/testing/**'],
   browsers: [playwrightLauncher({ product: 'chromium', headless: true })],
 
   testRunnerHtml,
@@ -62,7 +106,7 @@ export default /** @type {import("@web/test-runner").TestRunnerConfig} */ ({
 
   testFramework: {
     config: {
-      timeout: 3000,
+      timeout: readInteger('TEST_TIMEOUT', { fallback: 3000 }),
     },
   },
 

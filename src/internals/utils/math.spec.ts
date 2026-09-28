@@ -83,6 +83,12 @@ describe('Math utilities', () => {
       expect(asNumber(2.71)).to.equal(2.71);
     });
 
+    it('should return the fallback for values without a string conversion', () => {
+      expect(asNumber(Symbol('x'), 3)).to.equal(3);
+      expect(asNumber(Object.create(null), 3)).to.equal(3);
+      expect(asNumber({ toString: '' }, 3)).to.equal(3);
+    });
+
     it('should return the fallback for non-parseable input', () => {
       expect(asNumber('five')).to.equal(0);
       expect(asNumber('five', 5)).to.equal(5);

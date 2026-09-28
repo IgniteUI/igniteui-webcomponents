@@ -68,6 +68,17 @@ export function compareStyles(
 /**
  * Compares two date values
  */
+/** Asserts that each number of `actual` is within `delta` of the same number of `expected`. */
+export function expectCloseTo(
+  actual: ArrayLike<number>,
+  expected: ArrayLike<number>,
+  delta: number
+): void {
+  for (let i = 0; i < expected.length; i++) {
+    expect(actual[i], `index ${i}`).to.be.closeTo(expected[i], delta);
+  }
+}
+
 export function checkDatesEqual(a: CalendarDay | Date, b: CalendarDay | Date) {
   expect(toCalendarDay(a).equalTo(toCalendarDay(b))).to.be.true;
 }

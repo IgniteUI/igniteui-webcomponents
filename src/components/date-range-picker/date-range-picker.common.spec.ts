@@ -55,6 +55,32 @@ describe('Date range picker - common tests for single and two inputs mode', () =
   });
 
   describe('Rendering and initialization', () => {
+    it('accepts a value and bounds set before the first render', async () => {
+      const today = CalendarDay.today;
+
+      for (const useTwoInputs of [false, true]) {
+        const element = document.createElement(
+          IgcDateRangePickerComponent.tagName
+        ) as IgcDateRangePickerComponent;
+
+        // Validation runs on each set, before any editor exists.
+        expect(() =>
+          Object.assign(element, {
+            useTwoInputs,
+            value: { start: today.native, end: today.add('day', 1).native },
+            max: today.add('day', -1).native,
+            min: today.add('day', -5).native,
+          })
+        ).not.to.throw();
+
+        document.body.append(element);
+        await elementUpdated(element);
+
+        expect(element.validity.rangeOverflow).to.be.true;
+        element.remove();
+      }
+    });
+
     it('should be successfully initialized in open state in dropdown mode', async () => {
       picker = await fixture<IgcDateRangePickerComponent>(
         html`<igc-date-range-picker open></igc-date-range-picker>`

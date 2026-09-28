@@ -107,6 +107,8 @@ Map each change to a spec section with
 - [ ] Interaction uses `#internals/testing/simulate.spec.js`. Forms use
       `createFormAssociatedTestBed` and the validity helpers.
 - [ ] No spec imports another component's spec. Shared helpers are in `src/internals/testing/`.
+- [ ] A new or changed parser, converter or serializer has property-based tests in
+      `[module].property.spec.ts`
 - [ ] The story's `// region default` block was regenerated (`cem` + `build:meta`), not edited
 - [ ] CHANGELOG updated
 

@@ -1842,7 +1842,7 @@ describe('Select', () => {
           { slots: ['invalid'], props: { required: true } }, // invalid slot
         ];
 
-      runValidationContainerTests(IgcSelectComponent, testParameters);
+      await runValidationContainerTests(IgcSelectComponent, testParameters);
     });
   });
 

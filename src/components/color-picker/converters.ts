@@ -185,7 +185,9 @@ export const converter = Object.freeze({
       l = (2 - s) * v;
       const lMin = (2 - s) * vMin;
       sl = s * vMin;
-      sl /= lMin <= 1 ? lMin : 2 - lMin;
+      // Expanded `2 - lMin`. The short form cancels to 0 for a value near 100
+      // and a tiny saturation.
+      sl /= lMin <= 1 ? lMin : 2 * (1 - vMin) + s * vMin;
       sl = sl || 0;
       l /= 2;
 

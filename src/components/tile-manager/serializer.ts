@@ -1,3 +1,4 @@
+import { isPlainObject } from '#internals/utils/types.js';
 import type IgcTileManagerComponent from './tile-manager.js';
 
 export interface SerializedTile {
@@ -13,6 +14,22 @@ export interface SerializedTile {
   id: string | null;
 }
 
+/** The tile properties of a layout. The type makes the list complete. */
+const SERIALIZED: Record<keyof SerializedTile, true> = {
+  colSpan: true,
+  colStart: true,
+  disableFullscreen: true,
+  disableMaximize: true,
+  disableResize: true,
+  maximized: true,
+  position: true,
+  rowSpan: true,
+  rowStart: true,
+  id: true,
+};
+
+const SERIALIZED_KEYS = Object.keys(SERIALIZED) as Array<keyof SerializedTile>;
+
 class TileManagerSerializer {
   private readonly _tileManager: IgcTileManagerComponent;
 
@@ -22,18 +39,13 @@ class TileManagerSerializer {
 
   public save(): SerializedTile[] {
     return this._tileManager.tiles.map((tile) => {
-      return {
-        colSpan: tile.colSpan,
-        colStart: tile.colStart,
-        disableFullscreen: tile.disableFullscreen,
-        disableMaximize: tile.disableMaximize,
-        disableResize: tile.disableResize,
-        maximized: tile.maximized,
-        position: tile.position,
-        rowSpan: tile.rowSpan,
-        rowStart: tile.rowStart,
-        id: tile.id,
-      };
+      const saved = {} as Record<keyof SerializedTile, unknown>;
+
+      for (const key of SERIALIZED_KEYS) {
+        saved[key] = tile[key];
+      }
+
+      return saved as SerializedTile;
     });
   }
 
@@ -41,14 +53,28 @@ class TileManagerSerializer {
     return JSON.stringify(this.save());
   }
 
+  /**
+   * Applies a layout to the tiles with the same `id`. The layout is not trusted. Copies
+   * only the serialized properties, and ignores values that are not tile objects.
+   */
   public load(tiles: SerializedTile[]): void {
-    const mapped = new Map(tiles.map((tile) => [tile.id, tile]));
+    if (!Array.isArray(tiles)) {
+      return;
+    }
+
+    const mapped = new Map(
+      tiles.filter(isPlainObject).map((tile) => [tile.id, tile])
+    );
 
     for (const tile of this._tileManager.tiles) {
       const serialized = mapped.get(tile.id);
 
       if (serialized) {
-        Object.assign(tile, serialized);
+        for (const key of SERIALIZED_KEYS) {
+          if (Object.hasOwn(serialized, key)) {
+            Reflect.set(tile, key, serialized[key]);
+          }
+        }
       }
     }
   }

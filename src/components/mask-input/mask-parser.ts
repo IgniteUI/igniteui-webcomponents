@@ -82,10 +82,16 @@ const UNICODE_DIGIT_TO_ASCII = new Map<number, string>(
  *
  * Falls back to `current` when the prompt is empty or collides with a mask flag - a flag
  * standing in for an unfilled position could not be told apart from one the user typed.
+ * Also falls back when the prompt starts with an astral character.
  */
 function normalizePrompt(value: string | undefined, current: string): string {
   const char = value ? value.substring(0, 1) : current;
-  return MASK_FLAGS.has(char) ? current : char;
+  return MASK_FLAGS.has(char) || isSurrogate(char) ? current : char;
+}
+
+/** Returns whether `char` starts with a UTF-16 surrogate, half of an astral character. */
+function isSurrogate(char: string): boolean {
+  return (char.charCodeAt(0) & 0xf800) === 0xd800;
 }
 
 function replaceUnicodeNumbers(text: string): string {
@@ -108,8 +114,34 @@ const MASK_PATTERNS = new Map<string, RegExp>([
   ['#', /[\p{Number}\-+]/u], // Numeric and sign characters (+, -)
 ]);
 
-function validate(char: string, flag: string): boolean {
-  return MASK_PATTERNS.get(flag)?.test(char) ?? false;
+/**
+ * Returns whether `char` fits the mask position of `flag`. A position holds one UTF-16 code
+ * unit, so an astral character never fits. A missing position fits no flag.
+ */
+function validate(char: string | undefined, flag: string): boolean {
+  return (
+    char !== undefined &&
+    !isSurrogate(char) &&
+    (MASK_PATTERNS.get(flag)?.test(char) ?? false)
+  );
+}
+
+/**
+ * Escapes each mask flag in `text`, so that a mask pattern reads all of it as literal text.
+ *
+ * @example
+ * ```ts
+ * escapeMaskFlags(' at '); // ' \\at '
+ * ```
+ */
+export function escapeMaskFlags(text: string): string {
+  let result = '';
+
+  for (const char of text) {
+    result += MASK_FLAGS.has(char) ? `${ESCAPE_CHAR}${char}` : char;
+  }
+
+  return result;
 }
 
 /**
@@ -351,8 +383,9 @@ export class MaskParser {
     const prompt = this.prompt;
     const endBoundary = Math.min(end, length);
 
-    // Initialize the array for the masked string or get a fresh mask with prompts and/or literals
-    const maskedChars = maskString ? [...maskString] : [...this.emptyMask];
+    // Split the masked string by UTF-16 code unit, like the DOM selection. Split the input
+    // by code point, so that an astral character is rejected whole.
+    const maskedChars = (maskString || this.emptyMask).split('');
 
     const inputChars = Array.from(replaceUnicodeNumbers(value));
     const inputLength = inputChars.length;
@@ -461,8 +494,9 @@ export class MaskParser {
       return result.join('');
     }
 
-    // Normalize Unicode digits to ASCII
-    const normalizedInput = replaceUnicodeNumbers(input);
+    // Normalize Unicode digits to ASCII. Split by code point, so that an astral character
+    // is one invalid character.
+    const normalizedInput = Array.from(replaceUnicodeNumbers(input));
     const inputLength = normalizedInput.length;
     let inputIndex = 0;
 

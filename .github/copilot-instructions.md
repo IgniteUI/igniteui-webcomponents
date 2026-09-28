@@ -67,6 +67,8 @@ structural reference.
 
 - Write tests with `@open-wc/testing` in `[name].spec.ts`. The a11y audit is mandatory.
 - Use the shared helpers in `src/internals/testing/`.
+- A parser, converter or serializer also gets property-based tests with fast-check in
+  `[name].property.spec.ts`.
 - Run `npm run check`, `npm run lint` and `npm run test` before you open a PR.
 
 ## Resources

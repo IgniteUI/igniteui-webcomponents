@@ -40,6 +40,10 @@ The components make no network requests of their own. `registerIcon` fetches the
 
 The icon registry opens the `BroadcastChannel` `ignite-ui-icon-channel` and publishes the icons the application registers to other browsing contexts of the same origin. It never applies state it receives, so another context cannot inject an icon. Nothing leaves the origin.
 
+### Untrusted serialized layouts
+
+`loadLayout` on the tile manager treats a layout as untrusted, because applications keep it in web storage or on a server. It copies only the serialized tile properties (spans, positions, flags and `id`) to the tiles with a matching `id`. It ignores all other keys, such as `innerHTML` or an own `__proto__`, a value that is not an array, and an entry that is not an object. Invalid JSON throws a `SyntaxError`. Property-based tests send generated and hostile layouts to it.
+
 ### Clipboard
 
 The color picker and the chat message actions write to the clipboard only when the user activates a copy control. The components never read the clipboard, so pasted content reaches them only as ordinary user input.
