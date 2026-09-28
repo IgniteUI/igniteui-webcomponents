@@ -395,6 +395,21 @@ describe('equal', () => {
     expect(equal(create(1), create(2))).to.be.false;
   });
 
+  it('should not throw when only one null-prototype object has valueOf or toString', () => {
+    const bare = Object.create(null);
+    const withValueOf = Object.assign(Object.create(null), {
+      valueOf: () => 1,
+    });
+    const withToString = Object.assign(Object.create(null), {
+      toString: () => 'a',
+    });
+
+    expect(equal(withValueOf, bare)).to.be.false;
+    expect(equal(withToString, bare)).to.be.false;
+    expect(equal(bare, withValueOf)).to.be.false;
+    expect(equal(bare, withToString)).to.be.false;
+  });
+
   it('should still terminate on circular references', () => {
     const a: Record<string, unknown> = { name: 'a' };
     const b: Record<string, unknown> = { name: 'a' };

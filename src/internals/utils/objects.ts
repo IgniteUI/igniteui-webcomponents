@@ -51,11 +51,11 @@ function compare(a: object, b: object, visited: Visited): boolean {
     return true;
   }
 
-  // Null-prototype objects have neither method.
+  // Null-prototype objects may lack either method, on either side.
   if (isFunction(a.valueOf) && a.valueOf !== Object.prototype.valueOf)
-    return a.valueOf() === b.valueOf();
+    return isFunction(b.valueOf) && a.valueOf() === b.valueOf();
   if (isFunction(a.toString) && a.toString !== Object.prototype.toString)
-    return a.toString() === b.toString();
+    return isFunction(b.toString) && a.toString() === b.toString();
 
   const keys = Object.keys(a) as (keyof typeof a)[];
 
