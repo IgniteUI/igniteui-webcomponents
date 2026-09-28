@@ -127,7 +127,7 @@ Runtime dependencies increase the install footprint and the attack surface of ev
 - **Manifests.** A runtime dependency is declared in both `package.json` and the published manifest `scripts/_package.json`. Optional peer dependencies are declared with `peerDependenciesMeta.optional: true` in the published manifest.
 - **Notices.** After changing a runtime or peer dependency, run `npm run build:notices` and commit the regenerated `THIRD-PARTY-NOTICES.md`. CI fails when the file is out of date. Generation fails for a package that declares a license but ships no license file; copy the text from the package's source repository into `scripts/license-overrides/<package-name>` (with `/` replaced by `__` for scoped packages) and note where it came from in the pull request.
 - **Lockfile.** Commit `package-lock.json` changes together with the manifest change. Install with `npm ci`, never `npm install`, so the lockfile stays authoritative.
-- **Updates.** Dependabot raises security updates for npm packages daily and version updates for GitHub Actions weekly. Routine npm version bumps are done by maintainers in batches. GitHub Actions are pinned to a commit SHA with the version in a trailing comment; keep that format when adding or updating an action.
+- **Updates.** Routine npm version bumps are done by maintainers in batches, so do not open a pull request only to bump a dependency. Pin a GitHub Action to a commit SHA with the version in a trailing comment when you add or update it. See [SECURITY.md](../SECURITY.md#dependencies) for how updates are raised.
 - **Dev dependencies** follow the same license rules and are otherwise at the maintainers' discretion.
 
 ## Security
