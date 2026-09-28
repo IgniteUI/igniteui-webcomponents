@@ -72,6 +72,24 @@ To run the tests in watch mode, run:
 npm run test:watch
 ```
 
+### Property-based tests
+
+Parsers, converters and serializers that take user or stored input also have property-based (fuzz) tests with [fast-check](https://fast-check.dev/), in `[module].property.spec.ts`. They run with the rest of the suite. fast-check shrinks a failure to a minimal counterexample.
+
+`npm run test` uses a fixed seed, so a run fails only for a counterexample that your change causes. Each week, the [Fuzz workflow](workflows/fuzz.yml) uses a random seed and more runs. To do the same locally, set:
+
+| Variable       | Effect                                                      |
+| -------------- | ----------------------------------------------------------- |
+| `FC_SEED`      | The seed. `random` picks a new one.                         |
+| `FC_NUM_RUNS`  | The number of runs for each property. The default is 100.   |
+| `TEST_TIMEOUT` | The test timeout in milliseconds, for a high `FC_NUM_RUNS`. |
+
+```sh
+FC_SEED=random FC_NUM_RUNS=1000 TEST_TIMEOUT=120000 npx wtr --files "src/**/*.property.spec.ts"
+```
+
+A failed property shows its seed and counterexample. To replay it, use the same seed and run count: `FC_SEED=<seed> FC_NUM_RUNS=<runs> npx wtr --files <spec>`. The weekly run uses 1000. Fix the code, and add the counterexample to the example-based suite. Change a property only if the property is wrong.
+
 ### Demoing with Storybook
 
 To start a local instance of Storybook for your component, run:

@@ -1,7 +1,7 @@
 import type { QrEncodingMode, QrErrorCorrectionLevel } from '../types.js';
 import { getDataCodewordsCount, interleaveBlocks } from './error-correction.js';
 
-const EC_LEVEL_INDEX = { L: 0, M: 1, Q: 2, H: 3 } as const;
+export const EC_LEVEL_INDEX = { L: 0, M: 1, Q: 2, H: 3 } as const;
 const ALPHANUMERIC_MAP = new Map<string, number>(
   [...'0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ $%*+-./:'].map((char, index) => [
     char,

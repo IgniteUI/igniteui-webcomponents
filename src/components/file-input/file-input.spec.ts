@@ -280,6 +280,6 @@ describe('Validation message slots', () => {
         { slots: ['customError'] },
       ];
 
-    runValidationContainerTests(IgcFileInputComponent, testParameters);
+    await runValidationContainerTests(IgcFileInputComponent, testParameters);
   });
 });

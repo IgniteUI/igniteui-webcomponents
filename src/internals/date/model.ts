@@ -20,6 +20,28 @@ const MILLISECONDS_PER_DAY = 86400000;
 const WEEKDAY_MIN = 1; // Monday
 const WEEKDAY_MAX = 5; // Friday
 
+/**
+ * Returns a local date. Unlike the `Date` constructor, it keeps the years 0 to 99.
+ */
+export function createDate(
+  year: number,
+  month = 0,
+  date = 1,
+  hours = 0,
+  minutes = 0,
+  seconds = 0
+): Date {
+  const result = new Date(2000, 0, 1);
+  result.setFullYear(year, month, date);
+  result.setHours(hours, minutes, seconds, 0);
+  return result;
+}
+
+/** Returns the number of days in `month` (zero-based) of `year`. */
+export function daysInMonth(year: number, month: number): number {
+  return createDate(year, month + 1, 0).getDate();
+}
+
 export function toCalendarDay(date: DayParameter): CalendarDay {
   return date instanceof Date ? CalendarDay.from(date) : date;
 }
@@ -34,7 +56,11 @@ export function toCalendarDay(date: DayParameter): CalendarDay {
  */
 function timestampOf(value: DayParameter): number {
   return value instanceof Date
-    ? new Date(value.getFullYear(), value.getMonth(), value.getDate()).getTime()
+    ? createDate(
+        value.getFullYear(),
+        value.getMonth(),
+        value.getDate()
+      ).getTime()
     : value.timestamp;
 }
 
@@ -128,7 +154,7 @@ export class CalendarDay {
   }
 
   constructor(args: CalendarDayParams) {
-    this._date = new Date(args.year, args.month, args.date ?? 1);
+    this._date = createDate(args.year, args.month, args.date);
   }
 
   public clone(): CalendarDay {
@@ -143,10 +169,9 @@ export class CalendarDay {
 
     // Clamp to the last day of the month when the date overflows it.
     if (date > 0) {
-      const temp = new Date(year, month, date);
+      const temp = createDate(year, month, date);
       if (temp.getMonth() !== month) {
-        const lastDayOfMonth = new Date(year, month + 1, 0).getDate();
-        return new CalendarDay({ year, month, date: lastDayOfMonth });
+        return new CalendarDay({ year, month, date: daysInMonth(year, month) });
       }
     }
 
@@ -212,7 +237,7 @@ export class CalendarDay {
     const dayNum = target.getDay() || 7;
     target.setDate(target.getDate() + 4 - dayNum);
 
-    const yearStart = new Date(target.getFullYear(), 0, 1);
+    const yearStart = createDate(target.getFullYear());
 
     // Full weeks up to the nearest Thursday.
     const weekNo = Math.ceil(

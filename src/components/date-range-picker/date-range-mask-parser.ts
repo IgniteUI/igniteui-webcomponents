@@ -8,9 +8,11 @@ import {
 import {
   DateFormatMaskParser,
   DateTimeMaskParser,
-  DEFAULT_DATETIME_FORMAT,
 } from '../date-time-input/datetime-mask-parser.js';
-import type { MaskOptions } from '../mask-input/mask-parser.js';
+import {
+  escapeMaskFlags,
+  type MaskOptions,
+} from '../mask-input/mask-parser.js';
 import type { DateRangeValue } from '../types.js';
 
 //#region Types and Enums
@@ -100,10 +102,10 @@ export class DateRangeMaskParser extends DateFormatMaskParser<IDateRangePart> {
   private _separator: string;
 
   /** Start position of the separator in the mask */
-  private _separatorStart: number;
+  private _separatorStart!: number;
 
   /** End position of the separator in the mask */
-  private _separatorEnd: number;
+  private _separatorEnd!: number;
 
   /**
    * Gets the separator string used between start and end dates.
@@ -113,17 +115,44 @@ export class DateRangeMaskParser extends DateFormatMaskParser<IDateRangePart> {
   }
 
   constructor(options?: DateRangeMaskOptions) {
-    const format = options?.format || DEFAULT_DATETIME_FORMAT;
     const separator = options?.separator || DEFAULT_SEPARATOR;
     const promptCharacter = options?.promptCharacter;
+    const startParser = new DateTimeMaskParser({
+      format: options?.format,
+      promptCharacter,
+    });
+    const format = startParser.mask;
 
     super({ format: `${format}${separator}${format}`, promptCharacter });
 
-    this._startParser = new DateTimeMaskParser({ format, promptCharacter });
+    this._startParser = startParser;
     this._endParser = new DateTimeMaskParser({ format, promptCharacter });
     this._separator = separator;
+    this._setSeparatorBounds();
+
+    // Parse again. The base constructor ran before the separator was set.
+    this._parseMaskLiterals();
+  }
+
+  private _setSeparatorBounds(): void {
     this._separatorStart = this._startParser.mask.length;
-    this._separatorEnd = this._separatorStart + separator.length;
+    this._separatorEnd = this._separatorStart + this._separator.length;
+  }
+
+  /**
+   * Converts each date like a single date format, and escapes the separator, so that its
+   * letters stay literal. Returns an empty pattern while the base constructor runs.
+   */
+  protected override _toMaskFormat(format: string): string {
+    if (this._separator === undefined) {
+      return '';
+    }
+
+    return (
+      super._toMaskFormat(format.slice(0, this._separatorStart)) +
+      escapeMaskFlags(this._separator) +
+      super._toMaskFormat(format.slice(this._separatorEnd))
+    );
   }
 
   protected override _buildParts(): IDateRangePart[] {
@@ -146,11 +175,10 @@ export class DateRangeMaskParser extends DateFormatMaskParser<IDateRangePart> {
   public override set mask(value: string) {
     this._startParser.mask = value;
     this._endParser.mask = value;
+    this._setSeparatorBounds();
 
-    this._separatorStart = this._startParser.mask.length;
-    this._separatorEnd = this._separatorStart + this._separator.length;
-
-    super.mask = `${value}${this._separator}${value}`;
+    const format = this._startParser.mask;
+    super.mask = `${format}${this._separator}${format}`;
   }
 
   public override get mask(): string {

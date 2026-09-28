@@ -256,9 +256,14 @@ export default class IgcMaskInputComponent extends MaskBehaviorMixin(
   //#region Public methods
 
   /* blazorSuppress */
-  /** Returns whether the current masked input is valid according to the mask pattern. */
+  /**
+   * Returns whether the current masked input is valid according to the mask pattern.
+   * An empty control is valid. The `required` validator checks it.
+   */
   public isValidMaskPattern(): boolean {
-    return this._parser.isValidString(this._maskedValue);
+    return (
+      !this._formValue.value || this._parser.isValidString(this._maskedValue)
+    );
   }
 
   //#endregion

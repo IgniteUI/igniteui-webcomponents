@@ -11,7 +11,8 @@ Read them before making changes; if they disagree with this file, they win.
 - Framework: Lit 3 custom elements with Shadow DOM, `@lit/context` for shared state
 - Positioning: `@floating-ui/dom`; localization: `igniteui-i18n-core`
 - Styles: SCSS compiled to generated `.css.ts` files, themes from `igniteui-theming`
-- Tests: Web Test Runner + Playwright, `@open-wc/testing`, mandatory a11y audits
+- Tests: Web Test Runner + Playwright, `@open-wc/testing`, mandatory a11y audits, fast-check
+  property-based (fuzz) tests in `*.property.spec.ts`
 - Docs and demos: Storybook, Custom Elements Manifest, TypeDoc
 - Tooling: oxlint, oxfmt, stylelint, lit-analyzer, dependency-cruiser
 

@@ -1523,7 +1523,10 @@ describe('Date Time Input component', () => {
           { slots: ['invalid'], props: { required: true } }, // invalid slot
         ];
 
-      runValidationContainerTests(IgcDateTimeInputComponent, testParameters);
+      await runValidationContainerTests(
+        IgcDateTimeInputComponent,
+        testParameters
+      );
     });
   });
 

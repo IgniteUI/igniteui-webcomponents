@@ -536,9 +536,11 @@ Each component has tests in `[component].spec.ts`. They cover:
   | -------------------------- | ------------------------------------------------------------------------------ |
   | `simulate.spec.js`         | `simulateClick`, `simulateKeyboard`, `simulatePointerDown`, `simulateInput`, … |
   | `form-testbed.spec.js`     | `createFormAssociatedTestBed` and the shared label and ARIA projection suites  |
-  | `validity-helpers.spec.js` | Validity assertions and `runValidationContainerTests`                          |
+  | `validity-helpers.spec.js` | Validity assertions and `runValidationContainerTests`. Await it.               |
   | `invoker-commands.spec.js` | `runInvokerCommandsTests`                                                      |
   | `helpers.spec.js`          | Animation, focus, scroll and style helpers, and `axeReflectedRelationsOptions` |
+  | `fast-check-setup.spec.js` | `fc` with the seed, `SLOW_PROPERTY_RUNS`, `orderedPair` and `withFixture`      |
+  | `date-arbitraries.spec.js` | Date arbitraries, wall clocks and `assumeWallClock` for date properties        |
 
   Use the simulated events, not `element.click()` or a hand-built `KeyboardEvent`. They send
   the full event sequence of a real user interaction.
@@ -547,6 +549,24 @@ Each component has tests in `[component].spec.ts`. They cover:
   Put shared helpers in `src/internals/testing/`.
 - The `## Test scenarios` section of the [specification](#specifications) mirrors the suite.
   When you add or remove a test, update that section in the same change.
+
+### Property-based tests
+
+A parser, converter or serializer that takes user or stored input also gets property-based
+(fuzz) tests with [fast-check](https://fast-check.dev/):
+
+- Put them in `[module].property.spec.ts` next to the module. Import `fc` from
+  `#internals/testing/fast-check-setup.spec.js`, which sets the seed.
+- Test properties that hold for all input: round-trips, invariants, and no throws. Where
+  possible, use an oracle that does not use the code under test.
+- Generate Unicode input (`fc.string({ unit: 'grapheme' })`), not only ASCII.
+- Keep each test well below the 3000 ms timeout. A property that renders components uses
+  `{ numRuns: SLOW_PROPERTY_RUNS }` and `withFixture`, which gives each run a new fixture.
+- Use `Object.is` for values that can be `NaN`. Chai `equal` uses `===`.
+- A date property with defaulted parts uses `assumeWallClock`. It skips a wall clock in a
+  daylight saving gap. CI runs in UTC and does not show these cases.
+- When a property fails, fix the code and add the counterexample to the example-based suite.
+  See [CONTRIBUTING.md](CONTRIBUTING.md#property-based-tests) to replay it.
 
 ## Properties and Attributes
 

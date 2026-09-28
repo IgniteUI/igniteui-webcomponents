@@ -4,6 +4,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+### Security
+- #### Tile manager
+  - `loadLayout` now copies only the serialized tile properties: the spans, the positions, the flags and `id`. A layout from storage or a server can no longer set `innerHTML` on a tile or replace its prototype through `__proto__`. A value that is not an array, and an entry that is not an object, are ignored.
+
+### Fixed
+- #### QR code
+  - Versions 30 to 40 at the `M` error correction level now use the data codeword counts of ISO/IEC 18004. Before, these codes had the wrong block structure.
+- #### Mask input, Date time input, Date range picker
+  - A mask position holds one UTF-16 code unit, so an astral character, such as an emoji, is now rejected as input and as a prompt. Before, it shifted the positions after it or split into two halves. A mask or input format with an astral literal now edits at the correct positions.
+- #### Mask input
+  - An empty optional control is no longer a bad input. A value that fits no position of a letter mask, such as `12` for `LLL`, is now a bad input.
+- #### Date time input, Date range picker
+  - A mask flag in the input format, such as `A` or `0`, now stays literal. The letters of a date range separator, such as the `t` of `' to '`, also stay literal.
+  - A `yyyy` year of three or four typed digits is now kept, also in the calendar: `0049` is year 49, and `02/29/0000` is valid. One or two typed digits still resolve to the 1950 to 2049 range.
+  - A `y` or `yyy` year format now widens to four characters in the mask and in the default placeholder, and keeps its case.
+- #### Date range picker
+  - Setting `min` or `max` with a value before the first render no longer throws a `TypeError`.
+- #### Color picker
+  - The HSL saturation no longer becomes infinite for a very small saturation at full value.
+
 ## [7.4.1] - 2026-09-25
 ### Added
 - #### AI-Assisted Development

@@ -942,6 +942,32 @@ describe('Tile Manager component', () => {
         tileManager.loadLayout(JSON.stringify(tilesData))
       ).not.to.throw();
     });
+
+    it('should copy only the serialized tile properties from a layout', async () => {
+      const [tile] = tileManager.tiles;
+      const content = tile.innerHTML;
+
+      tileManager.loadLayout(
+        '[{"id":"custom-id1","colSpan":4,"innerHTML":"<img src=x>","__proto__":{},"slot":"x"}]'
+      );
+      await elementUpdated(tileManager);
+
+      expect(tile.colSpan).to.equal(4);
+      expect(tile.innerHTML).to.equal(content);
+      expect(tile.slot).to.equal('');
+      expect(Object.getPrototypeOf(tile)).to.equal(IgcTileComponent.prototype);
+    });
+
+    it('should ignore a layout that is not an array of tiles', async () => {
+      const layout = tileManager.saveLayout();
+
+      for (const data of ['{}', '"text"', '5', 'null', '[null, 1, "x"]']) {
+        expect(() => tileManager.loadLayout(data)).not.to.throw();
+      }
+      await elementUpdated(tileManager);
+
+      expect(tileManager.saveLayout()).to.equal(layout);
+    });
   });
 
   describe('API', () => {

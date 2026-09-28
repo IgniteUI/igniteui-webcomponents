@@ -44,9 +44,10 @@ This directory hosts two public components: [`igc-tile-manager`](#igc-tile-manag
 
 ## Revision history
 
-| Version | Date       | Notes                 |
-| ------: | ---------- | --------------------- |
-|       1 | 2026-09-21 | Initial specification |
+| Version | Date       | Notes                                                        |
+| ------: | ---------- | ------------------------------------------------------------ |
+|       1 | 2026-09-21 | Initial specification                                        |
+|       2 | 2026-09-28 | `loadLayout` copies only the tile properties; property suite |
 
 ## Overview
 
@@ -192,6 +193,10 @@ localStorage.setItem('dashboard', layout);
 manager.loadLayout(localStorage.getItem('dashboard')!);
 ```
 
+`loadLayout` treats the layout as untrusted. It copies only the serialized tile properties (spans, positions, flags
+and `id`) to the tiles with a matching `id`. It ignores other keys, a value that is not an array, and an entry that is
+not an object. Invalid JSON throws a `SyntaxError`.
+
 ### Localization
 
 The components render no strings of their own; the titles and the content come from the application. The default
@@ -311,7 +316,7 @@ A container within the tile manager for displaying various types of information.
 
 ## Test scenarios
 
-The component is covered by three suites in this directory, all running in a real browser through
+The component is covered by four suites in this directory, all running in a real browser through
 `@web/test-runner` with `@open-wc/testing` fixtures and assertions:
 
 | Suite | Scope |
@@ -319,6 +324,7 @@ The component is covered by three suites in this directory, all running in a rea
 | [`tile-manager.spec.ts`](./tile-manager.spec.ts) | The manager: layout, spans, maximize, slots, serialization and API. |
 | [`tile-dnd.spec.ts`](./tile-dnd.spec.ts) | Drag and drop of the tiles. |
 | [`tile-resize.spec.ts`](./tile-resize.spec.ts) | Resizing of the tiles. |
+| [`serializer.property.spec.ts`](./serializer.property.spec.ts) | Property-based (fuzz) tests for the layout serialization. |
 
 The groups below mirror the `describe` blocks.
 
@@ -353,26 +359,33 @@ The groups below mirror the `describe` blocks.
 
 12. `saveLayout` returns a JSON payload describing the current tiles.
 13. `loadLayout` restores a previously saved arrangement.
+14. `loadLayout` copies only the serialized tile properties, and ignores a value that is not an array of tiles.
 
 ### API tests
 
-14. `tiles` returns the tiles sorted by their position.
+15. `tiles` returns the tiles sorted by their position.
 
 ### Positioning
 
-15. `position`, `colStart` and `rowStart` place the tiles at the expected coordinates.
+16. `position`, `colStart` and `rowStart` place the tiles at the expected coordinates.
 
 ### Drag and drop tests
 
-16. A tile drag reorders the tiles, in the tile and the header drag modes.
-17. `igcTileDragStart` is cancelable, and `igcTileDragEnd` and `igcTileDragCancel` report the outcome.
-18. Special scenarios - dragging over a maximized tile, dragging outside the manager - settle consistently.
+17. A tile drag reorders the tiles, in the tile and the header drag modes.
+18. `igcTileDragStart` is cancelable, and `igcTileDragEnd` and `igcTileDragCancel` report the outcome.
+19. Special scenarios - dragging over a maximized tile, dragging outside the manager - settle consistently.
 
 ### Resize tests
 
-19. Dragging the side, bottom and corner adorners changes the span of the tile.
-20. `igcTileResizeStart` is cancelable, and `igcTileResizeEnd` and `igcTileResizeCancel` report the outcome.
-21. `disableResize` on a tile prevents resizing regardless of the manager mode.
+20. Dragging the side, bottom and corner adorners changes the span of the tile.
+21. `igcTileResizeStart` is cancelable, and `igcTileResizeEnd` and `igcTileResizeCancel` report the outcome.
+22. `disableResize` on a tile prevents resizing regardless of the manager mode.
+
+### Serialization properties
+
+23. For generated layouts, `loadLayout` restores what `saveLayout` returned. For any layout, with keys such as
+    `innerHTML` and `__proto__`, it applies only the serialized properties, and each tile keeps its class and
+    content. A JSON value that is not a layout changes nothing.
 
 ## Assumptions and limitations
 

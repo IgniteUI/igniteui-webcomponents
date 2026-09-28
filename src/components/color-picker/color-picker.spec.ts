@@ -1336,7 +1336,7 @@ describe('Color picker', () => {
   });
 
   describe('Validation message slots', () => {
-    it('renders validation message slots', () => {
+    it('renders validation message slots', async () => {
       const testParameters: ValidationContainerTestsParams<IgcColorPickerComponent>[] =
         [
           { slots: ['valueMissing'], props: { required: true } },
@@ -1344,7 +1344,10 @@ describe('Color picker', () => {
           { slots: ['invalid'], props: { required: true } },
         ];
 
-      runValidationContainerTests(IgcColorPickerComponent, testParameters);
+      await runValidationContainerTests(
+        IgcColorPickerComponent,
+        testParameters
+      );
     });
   });
 

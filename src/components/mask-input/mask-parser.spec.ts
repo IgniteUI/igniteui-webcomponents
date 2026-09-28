@@ -482,6 +482,16 @@ describe('Mask parser', () => {
       expect(parser.isValidString('123-__5')).to.be.false;
     });
 
+    it('isValidString treats a missing required position as unfilled', () => {
+      // A position past the end of the string is not filled.
+      parser.mask = 'LLL';
+      expect(parser.isValidString('ab')).to.be.false;
+      expect(parser.isValidString('')).to.be.false;
+
+      parser.mask = '&&';
+      expect(parser.isValidString('')).to.be.false;
+    });
+
     it('isValidString with invalid characters', () => {
       parser.mask = '0000';
       expect(parser.isValidString('12ab')).to.be.false;
@@ -698,6 +708,33 @@ describe('Mask parser', () => {
       // But doesn't affect positions beyond the cleared range
       const result = parser.replace('1234-5678', 'XX', 2, 4);
       expect(result.value).to.equal('12__-5678');
+    });
+
+    it('replace keeps UTF-16 positions after an astral literal', () => {
+      parser.mask = '📞 000';
+      const result = parser.replace(parser.apply(), '12', 3, 3);
+      expect(result.value).to.equal('📞 12_');
+      expect(result.end).to.equal(5);
+    });
+
+    it('rejects an astral character whole instead of splitting it', () => {
+      parser.mask = 'C-C';
+      expect(parser.replace(parser.apply(), '😀', 0, 0).value).to.equal('_-_');
+      expect(parser.apply('😀')).to.equal('_-_');
+
+      parser.mask = 'CCC';
+      expect(parser.replace(parser.apply(), 'a😀b', 0, 0).value).to.equal(
+        'ab_'
+      );
+      // `apply` uses one position for each invalid character.
+      expect(parser.apply('a😀b')).to.equal('a_b');
+    });
+
+    it('rejects an astral prompt, whose first code unit is half a character', () => {
+      parser.prompt = '*';
+      parser.prompt = '😀';
+      expect(parser.prompt).to.equal('*');
+      expect(new MaskParser({ promptCharacter: '😀' }).prompt).to.equal('_');
     });
   });
 });

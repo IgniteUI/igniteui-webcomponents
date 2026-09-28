@@ -209,7 +209,7 @@ Read [ACCESSIBILITY.md][Accessibility] for the conformance target, the verificat
 
 Security fixes are released for the latest major version, and critical fixes are backported to the previous major. Report vulnerabilities privately through [GitHub private vulnerability reporting](https://github.com/IgniteUI/igniteui-webcomponents/security/advisories/new), never in a public issue.
 
-Every release ships with supply-chain evidence attached to the [GitHub release](https://github.com/IgniteUI/igniteui-webcomponents/releases): the published tarball with its digests, a CycloneDX SBOM, and signed provenance and SBOM attestations that you can check with `gh attestation verify`. GitHub's CodeQL default setup scans every push and pull request, the OpenSSF Scorecard runs weekly, and Dependabot keeps dependencies and actions patched.
+Every release ships with supply-chain evidence attached to the [GitHub release](https://github.com/IgniteUI/igniteui-webcomponents/releases): the published tarball with its digests, a CycloneDX SBOM, and signed provenance and SBOM attestations that you can check with `gh attestation verify`. GitHub's CodeQL default setup scans every push and pull request, the OpenSSF Scorecard runs weekly, and Dependabot keeps dependencies and actions patched. Property-based (fuzz) tests with [fast-check](https://fast-check.dev/) check the mask, date, color, QR code and layout parsers on every push and pull request, and weekly with random seeds.
 
 Read [SECURITY.md][Security] for the support policy, the reporting process, response targets and verification steps, and [THREAT-MODEL.md][Threat model] for the trust boundaries and what the host application remains responsible for.
 

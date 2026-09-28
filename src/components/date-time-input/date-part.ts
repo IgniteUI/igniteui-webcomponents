@@ -8,6 +8,7 @@
  * Classes are private to this module - only types and factory function are exported.
  */
 
+import { daysInMonth } from '#internals/date/model.js';
 import { clamp, modulo } from '#internals/utils/math.js';
 
 //#region Types and Enums
@@ -198,13 +199,6 @@ const DATE_BOUNDS = {
 //#endregion
 
 //#region Helper Functions
-
-/**
- * Gets the number of days in a specific month/year.
- */
-function daysInMonth(year: number, month: number): number {
-  return new Date(year, month + 1, 0).getDate();
-}
 
 /**
  * Pads a value with zeros to the specified length.

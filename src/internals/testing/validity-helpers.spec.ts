@@ -81,15 +81,16 @@ export const ValidityHelpers = {
   },
 } as const;
 
-export function runValidationContainerTests<T extends IgcFormControl>(
+/**
+ * Checks that a new `element` renders the validation slots of each case in `testParams`.
+ * The cases run in sequence. Await the result. A failure names the slots of its case.
+ */
+export async function runValidationContainerTests<T extends IgcFormControl>(
   element: Constructor<T> & IgniteComponent,
   testParams: ValidationContainerTestsParams<T>[]
-): void {
-  const runner = async ({
-    slots,
-    props,
-  }: ValidationContainerTestsParams<T>) => {
-    if (isEmpty(slots)) return;
+): Promise<void> {
+  for (const { slots, props } of testParams) {
+    if (isEmpty(slots)) continue;
 
     const instance = document.createElement(element.tagName) as T;
     instance.append(
@@ -101,18 +102,23 @@ export function runValidationContainerTests<T extends IgcFormControl>(
     );
     Object.assign(instance, props);
     document.body.append(instance);
-    await elementUpdated(instance);
 
-    if (slots.includes('customError')) {
-      instance.setCustomValidity('invalid');
+    try {
+      await elementUpdated(instance);
+
+      if (slots.includes('customError')) {
+        instance.setCustomValidity('invalid');
+      }
+
+      await ValidityHelpers.checkValidationSlots(instance, ...slots);
+    } catch (error) {
+      if (error instanceof Error) {
+        error.message = `[${slots.join(', ')}] ${error.message}`;
+      }
+      throw error;
+    } finally {
+      instance.remove();
     }
-
-    await ValidityHelpers.checkValidationSlots(instance, ...slots);
-    instance.remove();
-  };
-
-  for (const each of testParams) {
-    runner(each);
   }
 }
 

@@ -379,7 +379,7 @@ describe('igc-datepicker form integration', () => {
   });
 
   describe('Validation message slots', () => {
-    it('', () => {
+    it('', async () => {
       const now = CalendarDay.today;
       const tomorrow = now.add('day', 1);
       const yesterday = now.add('day', -1);
@@ -411,7 +411,7 @@ describe('igc-datepicker form integration', () => {
           { slots: ['invalid'], props: { required: true } }, // invalid slot
         ];
 
-      runValidationContainerTests(IgcDatePickerComponent, testParameters);
+      await runValidationContainerTests(IgcDatePickerComponent, testParameters);
     });
 
     it('renders the projected messages on the first failed submission', async () => {

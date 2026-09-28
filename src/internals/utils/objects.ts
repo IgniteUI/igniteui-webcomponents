@@ -55,11 +55,12 @@ function compare(a: object, b: object, visited: Visited): boolean {
     const left = customConversion(a, method);
     const right = customConversion(b, method);
 
+    // `Object.is`, so that an invalid Date (`NaN`) equals its copy.
     if (left || right)
       return (
         !!left &&
         !!right &&
-        Reflect.apply(left, a, []) === Reflect.apply(right, b, [])
+        Object.is(Reflect.apply(left, a, []), Reflect.apply(right, b, []))
       );
   }
 

@@ -458,7 +458,7 @@ describe('Date Range Picker Two Inputs - Form integration', () => {
     });
   });
   describe('Validation message slots', () => {
-    it('', () => {
+    it('', async () => {
       const now = CalendarDay.today;
 
       const testParameters: ValidationContainerTestsParams<IgcDateRangePickerComponent>[] =
@@ -494,7 +494,10 @@ describe('Date Range Picker Two Inputs - Form integration', () => {
           { slots: ['invalid'], props: { required: true } }, // invalid slot
         ];
 
-      runValidationContainerTests(IgcDateRangePickerComponent, testParameters);
+      await runValidationContainerTests(
+        IgcDateRangePickerComponent,
+        testParameters
+      );
     });
   });
   it('is correctly validated on switching between two and single inputs', async () => {

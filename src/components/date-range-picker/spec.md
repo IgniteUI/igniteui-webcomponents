@@ -52,6 +52,8 @@
 |       1 | 2026-09-21 | Initial specification                                     |
 |       2 | 2026-09-23 | Expose the `ranges` part and add it to the test scenarios |
 |       3 | 2026-09-24 | Describe the naming order and the host ARIA naming        |
+|       4 | 2026-09-28 | Add the property-based range mask parser suite            |
+|       5 | 2026-09-28 | Validate a value and bounds set before the first render   |
 
 ## Overview
 
@@ -515,7 +517,7 @@ On top of the input and calendar parts it re-exports, the picker exposes:
 
 ## Test scenarios
 
-The component is covered by seven suites in this directory, all running in a real browser through
+The component is covered by eight suites in this directory, all running in a real browser through
 `@web/test-runner` with `@open-wc/testing` fixtures and assertions:
 
 | Suite | Scope |
@@ -527,6 +529,7 @@ The component is covered by seven suites in this directory, all running in a rea
 | [`date-range-picker-two-inputs.form.spec.ts`](./date-range-picker-two-inputs.form.spec.ts) | Form integration for the two inputs mode. |
 | [`predefined-ranges-area.spec.ts`](./predefined-ranges-area.spec.ts) | The internal range chips component. |
 | [`date-range-mask-parser.spec.ts`](./date-range-mask-parser.spec.ts) | The range mask parser on its own. |
+| [`date-range-mask-parser.property.spec.ts`](./date-range-mask-parser.property.spec.ts) | Property-based (fuzz) tests for the range mask parser. |
 
 The suites reuse `createFormAssociatedTestBed`, `runValidationContainerTests`,
 `runExternalLabelAssociationTests` and the `simulate*` helpers from
@@ -534,7 +537,8 @@ The suites reuse `createFormAssociatedTestBed`, `runValidationContainerTests`,
 
 ### Common suite
 
-1. Rendering and initialization of the shared structure, including the exposed `ranges` part.
+1. Rendering and initialization of the shared structure, including the exposed `ranges` part, and a value and bounds
+   set before the first render.
 2. Properties, including localization - formats, resource strings and the separator.
 3. Methods - `show`, `hide`, `toggle`, `select` and `clear`.
 4. Interactions - selection through the calendar, keyboard navigation, and interactions with the show icon.
@@ -577,7 +581,13 @@ Each display mode has its own form suite, with the same groups.
 
 ### Range mask parser
 
-25. Initialization, range parsing, range formatting, part queries, spinning, prompt updates and mask updates.
+25. Initialization (a literal separator and a widened year format), range parsing, range formatting, part queries,
+    spinning, prompt updates and mask updates.
+
+### Range mask parser properties
+
+26. For generated formats, separators and dates: the round-trip, each side parsed like a single date, the layout
+    around the separator after a mask change, and no throw or invalid date for any string.
 
 ## Assumptions and limitations
 

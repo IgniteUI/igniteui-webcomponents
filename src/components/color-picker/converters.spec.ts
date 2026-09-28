@@ -1,19 +1,16 @@
 import { expect } from '@open-wc/testing';
 
+import { expectCloseTo } from '#internals/testing/helpers.spec.js';
 import { converter, type HSL, type HSV, type RGB } from './converters.js';
 
 /** Tolerance for the accumulated float error of a conversion round-trip. */
 const EPSILON = 0.5;
 
-function expectTupleCloseTo(
+const expectTupleCloseTo = (
   actual: RGB | HSL | HSV,
   expected: RGB | HSL | HSV,
   epsilon = EPSILON
-): void {
-  for (const [index, value] of expected.entries()) {
-    expect(actual[index], `component ${index}`).to.be.closeTo(value, epsilon);
-  }
-}
+) => expectCloseTo(actual, expected, epsilon);
 
 /** A hue sweep dense enough to cross every branch of the conversions. */
 const hues = Array.from({ length: 24 }, (_, i) => i * 15);
@@ -107,6 +104,14 @@ describe('Color converters', () => {
       expectTupleCloseTo(converter.hsv.hsl([0, 100, 100]), [0, 100, 50]);
       expectTupleCloseTo(converter.hsv.hsl([0, 50, 100]), [0, 100, 75]);
       expectTupleCloseTo(converter.hsv.hsl([120, 100, 50]), [120, 100, 25]);
+    });
+
+    it('keeps the saturation finite for a tiny saturation at full value', () => {
+      const [, s, l] = converter.hsv.hsl([0, 1e-17, 100]);
+
+      expect(Number.isFinite(s)).to.be.true;
+      expect(s).to.be.within(0, 100);
+      expect(l).to.be.closeTo(100, EPSILON);
     });
   });
 

@@ -512,7 +512,7 @@ describe('Date Range Picker Single Input - Form integration', () => {
     });
   });
   describe('Validation message slots', () => {
-    it('', () => {
+    it('', async () => {
       const now = CalendarDay.today;
       const tomorrow = now.add('day', 1);
       const yesterday = now.add('day', -1);
@@ -550,7 +550,10 @@ describe('Date Range Picker Single Input - Form integration', () => {
           { slots: ['invalid'], props: { required: true } }, // invalid slot
         ];
 
-      runValidationContainerTests(IgcDateRangePickerComponent, testParameters);
+      await runValidationContainerTests(
+        IgcDateRangePickerComponent,
+        testParameters
+      );
     });
   });
 });

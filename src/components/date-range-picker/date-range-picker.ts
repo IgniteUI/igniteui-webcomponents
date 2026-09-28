@@ -30,6 +30,10 @@ import {
   pickerDependencies,
 } from '../date-picker/date-picker.base.js';
 import IgcDateTimeInputComponent from '../date-time-input/date-time-input.js';
+import {
+  formatHasDateParts,
+  formatHasTimeParts,
+} from '../date-time-input/datetime-mask-parser.js';
 import type { DateRangeValue } from '../types.js';
 import IgcValidationContainerComponent from '../validation-container/validation-container.js';
 import IgcDateRangeInputComponent from './date-range-input.js';
@@ -510,13 +514,13 @@ export default class IgcDateRangePickerComponent extends EventEmitterMixin<
   /* blazorSuppress */
   /** @internal */
   public hasDateParts(): boolean {
-    return this._startEditor.hasDateParts();
+    return formatHasDateParts(this.inputFormat);
   }
 
   /* blazorSuppress */
   /** @internal */
   public hasTimeParts(): boolean {
-    return this._startEditor.hasTimeParts();
+    return formatHasTimeParts(this.inputFormat);
   }
 
   /** Selects a date range value in the picker */

@@ -143,6 +143,12 @@ describe('QR model - error correction', () => {
     it('returns 9 for V1/H', () => {
       expect(getDataCodewordsCount(1, 3)).to.equal(9);
     });
+
+    it('returns the ISO/IEC 18004 capacities for V30-V40/M', () => {
+      expect(getDataCodewordsCount(30, 1)).to.equal(1373);
+      expect(getDataCodewordsCount(31, 1)).to.equal(1455);
+      expect(getDataCodewordsCount(40, 1)).to.equal(2334);
+    });
   });
 
   describe('calculateECC', () => {

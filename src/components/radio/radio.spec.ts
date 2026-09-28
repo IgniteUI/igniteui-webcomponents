@@ -652,7 +652,7 @@ describe('Radio Component', () => {
           { slots: ['invalid'], props: { required: true } }, // invalid slot
         ];
 
-      runValidationContainerTests(IgcRadioComponent, testParameters);
+      await runValidationContainerTests(IgcRadioComponent, testParameters);
     });
   });
 

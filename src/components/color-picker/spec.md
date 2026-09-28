@@ -48,6 +48,7 @@
 |       1 | 2026-09-21 | Initial specification                              |
 |       2 | 2026-09-24 | Describe the naming order and the host ARIA naming |
 |       3 | 2026-09-24 | Keep `aria-expanded` off the input mode text input |
+|       4 | 2026-09-28 | Add the property-based color suite                 |
 
 ## Overview
 
@@ -371,7 +372,7 @@ All of the above are skipped while the component is `disabled`.
 
 ## Test scenarios
 
-The component is covered by five suites in this directory, all running in a real browser through
+The component is covered by six suites in this directory, all running in a real browser through
 `@web/test-runner` with `@open-wc/testing` fixtures and assertions:
 
 | Suite | Scope |
@@ -381,6 +382,7 @@ The component is covered by five suites in this directory, all running in a real
 | [`model.spec.ts`](./model.spec.ts) | The color model. |
 | [`common.spec.ts`](./common.spec.ts) | Color string parsing and validation. |
 | [`converters.spec.ts`](./converters.spec.ts) | The color space converters. |
+| [`color.property.spec.ts`](./color.property.spec.ts) | Property-based (fuzz) tests for the converters, the parser and the model. |
 
 The component suite reuses `createFormAssociatedTestBed`, `runValidationContainerTests`,
 `runExternalLabelAssociationTests`, `runAriaProjectionTests` and the `simulate*` helpers from
@@ -421,7 +423,16 @@ The component suite reuses `createFormAssociatedTestBed`, `runValidationContaine
 
 ### Converters
 
-23. The conversions between RGB, HSL, HSV and hex, in both directions, including round-trips.
+23. The conversions between RGB, HSL, HSV and hex, in both directions, including round-trips. The saturation stays
+    finite for a tiny saturation at full value.
+
+### Color properties
+
+24. Converters - the exact hex round-trip, the HSL and HSV round-trips, HSL to RGB directly and through HSV, and
+    every converted channel in range.
+25. Parsing - `parseColor` never throws and returns channels in range. A string that is not a color gives opaque black
+    and an empty model. A model string in each format parses back to the same color.
+26. Model - every color space stays in range for any sequence of channel writes, and a clone equals its source.
 
 ## Assumptions and limitations
 

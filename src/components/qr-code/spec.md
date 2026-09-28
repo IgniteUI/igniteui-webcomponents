@@ -46,9 +46,10 @@
 
 ## Revision history
 
-| Version | Date       | Notes                 |
-| ------: | ---------- | --------------------- |
-|       1 | 2026-09-21 | Initial specification |
+| Version | Date       | Notes                                                    |
+| ------: | ---------- | -------------------------------------------------------- |
+|       1 | 2026-09-21 | Initial specification                                    |
+|       2 | 2026-09-28 | Add the property-based model suite; V30-V40/M table fix  |
 
 ## Overview
 
@@ -286,9 +287,10 @@ None. The SVG is rendered entirely from the properties of the component.
 
 ## Test scenarios
 
-| Suite                  | File              |
-| ---------------------- | ----------------- |
-| `IgcQrCodeComponent`   | `qr-code.spec.ts` |
+| Suite                | File                                                                   |
+| -------------------- | ---------------------------------------------------------------------- |
+| `IgcQrCodeComponent` | `qr-code.spec.ts`                                                      |
+| QR model properties  | [`model/qr-model.property.spec.ts`](./model/qr-model.property.spec.ts) |
 
 ### Accessibility tests
 
@@ -345,10 +347,17 @@ None. The SVG is rendered entirely from the properties of the component.
 22. An existing matching extension in the file name is kept, and the download dialog opens only when requested.
 23. Both methods reject without a value, and `toImage()` rejects invalid options.
 
+### QR model properties
+
+24. Each version and error correction level holds as many codewords as the symbol has room for, checked against the
+    module count of ISO/IEC 18004.
+25. Generated numeric, alphanumeric and byte data encodes into the smallest version that holds it, with the
+    codeword count of that version, and the encoding mode matches the characters of the data.
+26. The matrix is square, with the side length of its version, and data over the capacity of a version throws the
+    capacity error.
+
 ### Not covered by the suite
 
-- The encoding mode selection and the automatic version choice are covered indirectly, through the rendering and
-  the error correction tests, rather than asserted per mode.
 - `margin` is not asserted on its own.
 
 ## Assumptions and limitations
