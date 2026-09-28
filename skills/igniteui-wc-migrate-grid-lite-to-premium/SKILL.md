@@ -205,7 +205,7 @@ date/time columns work.
 column.sortConfiguration = { comparer: (a, b) => a.length - b.length };
 
 // After (Premium Grid) - object implementing sort()
-import { SortingDirection } from 'igniteui-webcomponents-grids/grids';
+import { SortingDirection } from 'igniteui-webcomponents-grids';
 
 class LengthSort {
   sort(data: any[], fieldName: string, dir: SortingDirection, _ignoreCase: boolean,
