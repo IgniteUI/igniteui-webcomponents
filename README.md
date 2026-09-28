@@ -227,7 +227,7 @@ See [SUPPORT.md][Support] for where to report bugs, ask questions, request compo
 
 ## License
 
-The `igniteui-webcomponents` package is released under the [MIT License][License]. Third-party runtime dependencies and their license terms are listed in [THIRD-PARTY-NOTICES.md][Third-party notices].
+The `igniteui-webcomponents` package is released under the [MIT License][License].
 
 The Grids, Dock Manager and other packages marked *Commercial* above are licensed separately under the [Infragistics commercial license][Commercial License].
 
@@ -325,4 +325,3 @@ The Grids, Dock Manager and other packages marked *Commercial* above are license
 [Support]: https://github.com/IgniteUI/igniteui-webcomponents/blob/master/.github/SUPPORT.md
 [Code of Conduct]: https://github.com/IgniteUI/igniteui-webcomponents/blob/master/CODE_OF_CONDUCT.md
 [License]: https://github.com/IgniteUI/igniteui-webcomponents/blob/master/LICENSE
-[Third-party notices]: https://github.com/IgniteUI/igniteui-webcomponents/blob/master/THIRD-PARTY-NOTICES.md

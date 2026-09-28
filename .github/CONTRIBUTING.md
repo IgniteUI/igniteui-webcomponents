@@ -56,7 +56,7 @@ Linting and formatting also run in a pre-commit hook.
 npm run check
 ```
 
-This runs every `check-*` script: type checks for the sources, scripts and stories, the import-boundary check, the import-alias check and the third-party notices check.
+This runs every `check-*` script: type checks for the sources, scripts and stories, the import-boundary check and the import-alias check.
 
 ### Testing with Web Test Runner
 
@@ -125,7 +125,6 @@ Runtime dependencies increase the install footprint and the attack surface of ev
 - **Discuss first.** Open an issue or a discussion before adding a runtime dependency or an optional peer dependency. Prefer a small, focused implementation in `src/internals` over a package that does more than the component needs.
 - **Licenses.** Runtime and peer dependencies must be licensed under MIT, BSD-2-Clause, BSD-3-Clause, ISC, Apache-2.0, 0BSD or an equivalent permissive license. Copyleft licenses (GPL, LGPL, AGPL, SSPL) are not accepted for anything that ships to consumers. Dual-licensed packages are accepted when one of the options is permissive.
 - **Manifests.** A runtime dependency is declared in both `package.json` and the published manifest `scripts/_package.json`. Optional peer dependencies are declared with `peerDependenciesMeta.optional: true` in the published manifest.
-- **Notices.** After changing a runtime or peer dependency, run `npm run build:notices` and commit the regenerated `THIRD-PARTY-NOTICES.md`. CI fails when the file is out of date. Generation fails for a package that declares a license but ships no license file; copy the text from the package's source repository into `scripts/license-overrides/<package-name>` (with `/` replaced by `__` for scoped packages) and note where it came from in the pull request.
 - **Lockfile.** Commit `package-lock.json` changes together with the manifest change. Install with `npm ci`, never `npm install`, so the lockfile stays authoritative.
 - **Updates.** Routine npm version bumps are done by maintainers in batches, so do not open a pull request only to bump a dependency. Pin a GitHub Action to a commit SHA with the version in a trailing comment when you add or update it. See [SECURITY.md](../SECURITY.md#dependencies) for how updates are raised.
 - **Dev dependencies** follow the same license rules and are otherwise at the maintainers' discretion.
