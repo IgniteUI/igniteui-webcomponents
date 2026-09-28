@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 💬 Ask a question
+    url: https://github.com/IgniteUI/igniteui-webcomponents/discussions
+    about: Questions, ideas and general discussion belong in GitHub Discussions.
+  - name: 🗨️ Discord community
+    url: https://discord.gg/39MjrTRqds
+    about: Chat with other users and the team.
+  - name: 🏢 Infragistics support
+    url: https://www.infragistics.com/about-us/contact-us
+    about: Support for commercial Ignite UI products such as the Grids and Dock Manager.
