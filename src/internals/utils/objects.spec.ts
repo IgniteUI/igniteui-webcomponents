@@ -368,6 +368,72 @@ describe('equal', () => {
     expect(equal(a, mismatched)).to.be.false;
   });
 
+  it('should match Set elements one to one', () => {
+    expect(equal(new Set([{ x: 1 }, { x: 1 }]), new Set([{ x: 1 }, { x: 2 }])))
+      .to.be.false;
+    expect(equal(new Set([{ x: 1 }, { x: 1 }]), new Set([{ x: 1 }, { x: 1 }])))
+      .to.be.true;
+  });
+
+  it('should match Map entries one to one', () => {
+    const left = new Map([
+      [{ k: 1 }, 'v'],
+      [{ k: 1 }, 'v'],
+    ]);
+    const right = new Map([
+      [{ k: 1 }, 'v'],
+      [{ k: 2 }, 'v'],
+    ]);
+    expect(equal(left, right)).to.be.false;
+  });
+
+  it('should give the same result in both directions', () => {
+    const valueOf = Object.create({ valueOf: () => 1 });
+    // A `toString` that mimics the default one still differs from it.
+    const toString = Object.create({ toString: () => '[object Object]' });
+
+    expect(equal({}, valueOf)).to.be.false;
+    expect(equal(valueOf, {})).to.be.false;
+    expect(equal({}, toString)).to.be.false;
+    expect(equal(toString, {})).to.be.false;
+  });
+
+  it('should not treat objects pending in different pairs as equal', () => {
+    // `a` and `d` are both pending when they meet, but they differ.
+    const a: Record<string, unknown> = {};
+    const b: Record<string, unknown> = {};
+    const c: Record<string, unknown> = { q: a };
+    const d: Record<string, unknown> = {};
+    a.p = c;
+    b.p = d;
+    d.q = d;
+
+    expect(equal(a, b)).to.be.false;
+  });
+
+  it('should compare null-prototype objects', () => {
+    const create = (value: number) =>
+      Object.assign(Object.create(null), { a: value });
+
+    expect(equal(create(1), create(1))).to.be.true;
+    expect(equal(create(1), create(2))).to.be.false;
+  });
+
+  it('should not throw when only one null-prototype object has valueOf or toString', () => {
+    const bare = Object.create(null);
+    const withValueOf = Object.assign(Object.create(null), {
+      valueOf: () => 1,
+    });
+    const withToString = Object.assign(Object.create(null), {
+      toString: () => 'a',
+    });
+
+    expect(equal(withValueOf, bare)).to.be.false;
+    expect(equal(withToString, bare)).to.be.false;
+    expect(equal(bare, withValueOf)).to.be.false;
+    expect(equal(bare, withToString)).to.be.false;
+  });
+
   it('should still terminate on circular references', () => {
     const a: Record<string, unknown> = { name: 'a' };
     const b: Record<string, unknown> = { name: 'a' };
