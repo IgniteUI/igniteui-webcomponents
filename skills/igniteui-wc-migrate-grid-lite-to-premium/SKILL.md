@@ -183,20 +183,37 @@ const column = document.querySelector('igc-column[field="name"]') as IgcColumnCo
 | `dataType` | `dataType` | Premium adds `dateTime`, `time`, `currency`, `percent` |
 | `filteringCaseSensitive` | `filteringIgnoreCase` | **Logic inverted** - `true` becomes `false` |
 | `sortingCaseSensitive` | `sortingIgnoreCase` | **Logic inverted** - `true` becomes `false` |
-| `sortConfiguration: { comparer }` | `sortStrategy: IgcSortingStrategy` | Class-based (see below) |
+| `sortConfiguration: { comparer }` | `sortStrategy` | Object with a `sort(...)` method (see below) - no base class to extend |
 | _(none)_ | `editable`, `pinned`, `groupable`, `hasSummary`, `disableHiding`, `disablePinning`, `selectable`, `searchable`, `formatter`, `minWidth`, `maxWidth` | Premium-only |
 
 **Custom sort strategy migration:**
+
+The Premium Grid has no exported base class for sort strategies: `IgcSortingStrategy` is
+exported as a type only, and the built-in default strategy is internal. A column's `sortStrategy` is any object with this method:
+
+```typescript
+sort(data: any[], fieldName: string, dir: SortingDirection, ignoreCase: boolean,
+     valueResolver: (record: any, fieldName: string, isDate?: boolean, isTime?: boolean) => any): any[]
+```
+
+It receives the whole data array and returns it sorted. Read cell values through
+`valueResolver`, not `record[fieldName]`, so nested fields (e.g. `address.city`) and
+date/time columns work.
 
 ```typescript
 // Before (Grid Lite) - function comparer on column
 column.sortConfiguration = { comparer: (a, b) => a.length - b.length };
 
-// After (Premium Grid) - class extending DefaultSortingStrategy
-import { DefaultSortingStrategy } from 'igniteui-webcomponents-grids';
+// After (Premium Grid) - object implementing sort()
+import { SortingDirection } from 'igniteui-webcomponents-grids/grids';
 
-class LengthSort extends DefaultSortingStrategy {
-  override compareValues(a: string, b: string) { return a.length - b.length; }
+class LengthSort {
+  sort(data: any[], fieldName: string, dir: SortingDirection, _ignoreCase: boolean,
+       valueResolver: (record: any, fieldName: string, isDate?: boolean, isTime?: boolean) => any) {
+    const factor = dir === SortingDirection.Desc ? -1 : 1;
+    const len = (record: any) => String(valueResolver(record, fieldName) ?? '').length;
+    return [...data].sort((a, b) => factor * (len(a) - len(b)));
+  }
 }
 column.sortStrategy = new LengthSort();
 ```
