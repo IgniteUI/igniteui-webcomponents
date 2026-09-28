@@ -368,6 +368,33 @@ describe('equal', () => {
     expect(equal(a, mismatched)).to.be.false;
   });
 
+  it('should match Set elements one to one', () => {
+    expect(equal(new Set([{ x: 1 }, { x: 1 }]), new Set([{ x: 1 }, { x: 2 }])))
+      .to.be.false;
+    expect(equal(new Set([{ x: 1 }, { x: 1 }]), new Set([{ x: 1 }, { x: 1 }])))
+      .to.be.true;
+  });
+
+  it('should match Map entries one to one', () => {
+    const left = new Map([
+      [{ k: 1 }, 'v'],
+      [{ k: 1 }, 'v'],
+    ]);
+    const right = new Map([
+      [{ k: 1 }, 'v'],
+      [{ k: 2 }, 'v'],
+    ]);
+    expect(equal(left, right)).to.be.false;
+  });
+
+  it('should compare null-prototype objects', () => {
+    const create = (value: number) =>
+      Object.assign(Object.create(null), { a: value });
+
+    expect(equal(create(1), create(1))).to.be.true;
+    expect(equal(create(1), create(2))).to.be.false;
+  });
+
   it('should still terminate on circular references', () => {
     const a: Record<string, unknown> = { name: 'a' };
     const b: Record<string, unknown> = { name: 'a' };
