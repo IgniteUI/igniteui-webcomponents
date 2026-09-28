@@ -387,6 +387,30 @@ describe('equal', () => {
     expect(equal(left, right)).to.be.false;
   });
 
+  it('should give the same result in both directions', () => {
+    const valueOf = Object.create({ valueOf: () => 1 });
+    // A `toString` that mimics the default one still differs from it.
+    const toString = Object.create({ toString: () => '[object Object]' });
+
+    expect(equal({}, valueOf)).to.be.false;
+    expect(equal(valueOf, {})).to.be.false;
+    expect(equal({}, toString)).to.be.false;
+    expect(equal(toString, {})).to.be.false;
+  });
+
+  it('should not treat objects pending in different pairs as equal', () => {
+    // `a` and `d` are both pending when they meet, but they differ.
+    const a: Record<string, unknown> = {};
+    const b: Record<string, unknown> = {};
+    const c: Record<string, unknown> = { q: a };
+    const d: Record<string, unknown> = {};
+    a.p = c;
+    b.p = d;
+    d.q = d;
+
+    expect(equal(a, b)).to.be.false;
+  });
+
   it('should compare null-prototype objects', () => {
     const create = (value: number) =>
       Object.assign(Object.create(null), { a: value });

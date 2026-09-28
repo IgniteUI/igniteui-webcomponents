@@ -1,15 +1,15 @@
 import { isFunction, isObject, isRegExp } from './types.js';
 
-/** The object pairs the comparison visits at this moment, to stop cycles. */
+/** The object pairs under comparison at this moment. */
 type Visited = WeakMap<object, WeakSet<object>>;
 
 /**
  * Returns whether two values are deeply equal. Handles arrays, Maps, Sets,
  * RegExps, plain objects and circular references.
  */
-export function equal<T>(
+export function equal(
   a: unknown,
-  b: T,
+  b: unknown,
   visited: Visited = new WeakMap()
 ): boolean {
   if (Object.is(a, b)) return true;
@@ -17,9 +17,8 @@ export function equal<T>(
   if (!isObject(a) || !isObject(b)) return false;
   if (a.constructor !== b.constructor) return false;
 
-  // Record the pair, not each object on its own: the Map and Set branches
-  // below test candidates they expect to fail, and single-object records
-  // would make a later comparison of the same pair return `true`.
+  // A pending pair counts as equal, which stops cycles. Track pairs, not
+  // objects: `a` can meet another partner while it is still pending.
   const pending = visited.get(a) ?? new WeakSet();
   if (pending.has(b)) return true;
   visited.set(a, pending.add(b));
@@ -27,7 +26,6 @@ export function equal<T>(
   try {
     return compare(a, b, visited);
   } finally {
-    // Release the pair, including on an early return in `compare`.
     pending.delete(b);
   }
 }
@@ -51,23 +49,42 @@ function compare(a: object, b: object, visited: Visited): boolean {
     return true;
   }
 
-  // Null-prototype objects may lack either method, on either side.
-  if (isFunction(a.valueOf) && a.valueOf !== Object.prototype.valueOf)
-    return isFunction(b.valueOf) && a.valueOf() === b.valueOf();
-  if (isFunction(a.toString) && a.toString !== Object.prototype.toString)
-    return isFunction(b.toString) && a.toString() === b.toString();
+  // A custom conversion on one side only makes the objects unequal, which
+  // keeps `equal` an equivalence relation.
+  for (const method of ['valueOf', 'toString'] as const) {
+    const left = customConversion(a, method);
+    const right = customConversion(b, method);
 
-  const keys = Object.keys(a) as (keyof typeof a)[];
+    if (left || right)
+      return (
+        !!left &&
+        !!right &&
+        Reflect.apply(left, a, []) === Reflect.apply(right, b, [])
+      );
+  }
+
+  const x = a as Record<string, unknown>;
+  const y = b as Record<string, unknown>;
+  const keys = Object.keys(x);
 
   return (
-    keys.length === Object.keys(b).length &&
-    keys.every((key) => Object.hasOwn(b, key) && equal(a[key], b[key], visited))
+    keys.length === Object.keys(y).length &&
+    keys.every((key) => Object.hasOwn(y, key) && equal(x[key], y[key], visited))
   );
 }
 
+/** Returns `value[method]` unless it is missing or the default. */
+function customConversion(
+  value: object,
+  method: 'valueOf' | 'toString'
+): CallableFunction | undefined {
+  const fn = (value as Record<string, unknown>)[method];
+  return isFunction(fn) && fn !== Object.prototype[method] ? fn : undefined;
+}
+
 /**
- * Pairs each item of `left` with a distinct equal item of `right`.
- * A greedy match suffices, since `equal` is transitive.
+ * Pairs each item of `left` with a distinct equal item of `right`. Greedy
+ * suffices, since `equal` is an equivalence relation.
  */
 function matchOneToOne(
   left: Iterable<unknown>,
