@@ -138,6 +138,7 @@ When you contribute code, keep the following in mind:
 - Treat every value that reaches a component from the host page as untrusted. Render text as text; when a feature must render HTML, sanitize it and make the sanitizer replaceable, as the chat markdown renderer does.
 - Do not add network requests, storage access or telemetry. The library's [privacy commitments](../PRIVACY.md) depend on this.
 - Do not introduce `eval`, `new Function`, string-based timers or other string-to-code paths.
+- Update [THREAT-MODEL.md](../THREAT-MODEL.md) when a change adds a new way for data to reach the DOM, a new network request, a new browser capability or a new release step.
 - Changes to the workflows under `.github/workflows` or to the scripts that build and publish the package are reviewed for supply-chain impact. Keep job permissions minimal and actions pinned.
 
 ## Contributing Code

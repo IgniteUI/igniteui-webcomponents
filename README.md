@@ -211,7 +211,7 @@ Security fixes are released for the latest major version, and critical fixes are
 
 Every release ships with supply-chain evidence attached to the [GitHub release](https://github.com/IgniteUI/igniteui-webcomponents/releases): the published tarball with its digests, a CycloneDX SBOM, and signed provenance and SBOM attestations that you can check with `gh attestation verify`. GitHub's CodeQL default setup scans every push and pull request, the OpenSSF Scorecard runs weekly, and Dependabot keeps dependencies and actions patched.
 
-Read [SECURITY.md][Security] for the support policy, the reporting process, response targets, verification steps, and security considerations for consumers.
+Read [SECURITY.md][Security] for the support policy, the reporting process, response targets and verification steps, and [THREAT-MODEL.md][Threat model] for the trust boundaries and what the host application remains responsible for.
 
 ## Privacy
 
@@ -322,6 +322,7 @@ The Grids, Dock Manager and other packages marked *Commercial* above are license
 [Accessibility]: https://github.com/IgniteUI/igniteui-webcomponents/blob/master/ACCESSIBILITY.md
 [Security]: https://github.com/IgniteUI/igniteui-webcomponents/blob/master/SECURITY.md
 [Privacy]: https://github.com/IgniteUI/igniteui-webcomponents/blob/master/PRIVACY.md
+[Threat model]: https://github.com/IgniteUI/igniteui-webcomponents/blob/master/THREAT-MODEL.md
 [Support]: https://github.com/IgniteUI/igniteui-webcomponents/blob/master/.github/SUPPORT.md
 [Code of Conduct]: https://github.com/IgniteUI/igniteui-webcomponents/blob/master/CODE_OF_CONDUCT.md
 [License]: https://github.com/IgniteUI/igniteui-webcomponents/blob/master/LICENSE
