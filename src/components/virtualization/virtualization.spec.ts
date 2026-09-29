@@ -28,6 +28,34 @@ describe('VirtualScroll', () => {
       >${ctx.value}</span
     >`;
 
+  /** An item template of blocks that are `size` px tall. */
+  function heightTemplate(size: number): VirtualScrollItemTemplate<unknown> {
+    return (ctx) =>
+      html`<span style="display: block; height: ${size}px;"
+        >${ctx.value}</span
+      >`;
+  }
+
+  type EdgeAlignment = 'start' | 'center' | 'end';
+
+  /** The distance in px from the item at `index` to the `block` alignment. */
+  function edgeDistance(
+    el: IgcVirtualScrollComponent<string>,
+    index: number,
+    block: EdgeAlignment
+  ): number {
+    const view = el.getBoundingClientRect();
+    const item = el
+      .querySelector(`[data-vs-index="${index}"]`)!
+      .getBoundingClientRect();
+
+    return {
+      start: item.top - view.top,
+      center: (item.top + item.bottom - view.top - view.bottom) / 2,
+      end: item.bottom - view.bottom,
+    }[block];
+  }
+
   /** A 300px scroll of 1000 items of `FIXED_SIZE`, with an exact estimate. */
   async function createFixedScroll(): Promise<
     IgcVirtualScrollComponent<string>
@@ -265,7 +293,7 @@ describe('VirtualScroll', () => {
           estimated-item-size="50"
           over-scan="0"
           .data=${createItems(500)}
-          .itemTemplate=${itemTemplate}
+          .itemTemplate=${heightTemplate(50)}
         ></igc-virtual-scroll>`
       );
 
@@ -447,6 +475,41 @@ describe('VirtualScroll', () => {
       expect(Math.min(...renderedIndices2)).to.equal(
         Math.max(0, targetIndex - el.overScan)
       );
+    });
+
+    it('puts the requested item at the requested edge when the item sizes vary', async () => {
+      // 20 to 110px. The rendered items differ from the adapted average, so
+      // only a correction after their measurement aligns the item.
+      const sizeOf = (index: number) => 20 + ((index * 37) % 7) * 15;
+      const variedTemplate: VirtualScrollItemTemplate<unknown> = (ctx) =>
+        html`<span style="display: block; height: ${sizeOf(ctx.index)}px;"
+          >${ctx.value}</span
+        >`;
+
+      const el = await fixture<IgcVirtualScrollComponent<string>>(
+        html`<igc-virtual-scroll
+          style="height: 300px"
+          .data=${createItems(2000)}
+          .itemTemplate=${variedTemplate}
+        ></igc-virtual-scroll>`
+      );
+
+      await el.layoutComplete;
+
+      const cases: [number, EdgeAlignment][] = [
+        [1234, 'start'],
+        [700, 'center'],
+        [1600, 'end'],
+      ];
+
+      for (const [index, block] of cases) {
+        await el.scrollToIndex(index, { block });
+
+        expect(
+          edgeDistance(el, index, block),
+          `${block} of item ${index}`
+        ).to.be.closeTo(0, 1);
+      }
     });
 
     it('scrollToIndex with nearest leaves an item that already fills the viewport alone', async () => {
@@ -814,6 +877,100 @@ describe('VirtualScroll', () => {
       expect(recycled.isConnected).to.be.true;
       expect(Number(recycled.dataset.vsIndex)).to.be.greaterThan(0);
       expect(recycled.querySelector('span')).to.not.equal(content);
+    });
+  });
+
+  describe('Coordinate compression', () => {
+    // 1,000,000 items of 50px are 50,000,000px, more than a browser can
+    // scroll, so the component compresses the virtual space. At DOM offsets of
+    // millions of px, the browser keeps positions to about 1px, so the checks
+    // allow 2px. Without the compression fix, items were off by 20 to 35px.
+    const COUNT = 1_000_000;
+    const PRECISION = 2;
+    const ITEM_SIZE = 50;
+    // Built on first use and shared: `data` is compared by reference and never
+    // changed, and each copy is 1,000,000 strings.
+    let hugeData: string[] | undefined;
+
+    async function createHugeScroll(
+      overScan = 2
+    ): Promise<IgcVirtualScrollComponent<string>> {
+      const el = await fixture<IgcVirtualScrollComponent<string>>(
+        html`<igc-virtual-scroll
+          style="height: 300px"
+          estimated-item-size=${ITEM_SIZE}
+          over-scan=${overScan}
+          .data=${(hugeData ??= createItems(COUNT))}
+          .itemTemplate=${heightTemplate(ITEM_SIZE)}
+        ></igc-virtual-scroll>`
+      );
+      await el.layoutComplete;
+      return el;
+    }
+
+    it('compresses the scroll size to the browser maximum', async () => {
+      const el = await createHugeScroll();
+
+      expect(el.scrollHeight).to.be.below(COUNT * ITEM_SIZE);
+    });
+
+    it('puts the requested item at the requested edge', async () => {
+      const el = await createHugeScroll();
+      // The last case keeps the last item in the over-scan, where the
+      // rendered items extend past the end of the track.
+      const cases: [number, EdgeAlignment][] = [
+        [777_777, 'start'],
+        [300_000, 'center'],
+        [555_555, 'end'],
+        [COUNT - 2, 'end'],
+      ];
+
+      for (const [index, block] of cases) {
+        await el.scrollToIndex(index, { block });
+
+        expect(
+          edgeDistance(el, index, block),
+          `${block} of item ${index}`
+        ).to.be.closeTo(0, PRECISION);
+      }
+    });
+
+    it('shows the last item at the end of the scroll range', async () => {
+      // Without over-scan, only the viewport renders, so the extra items
+      // cannot hide a scroll range that stops short of the end.
+      const el = await createHugeScroll(0);
+
+      await simulateScroll(el, { top: el.scrollHeight });
+      await el.layoutComplete;
+
+      expect(edgeDistance(el, COUNT - 1, 'end')).to.be.closeTo(0, PRECISION);
+    });
+
+    it('moves the items evenly while the scroll crosses item boundaries', async () => {
+      const el = await createHugeScroll();
+      await el.scrollToIndex(500_000);
+
+      const index = 500_001;
+      const steps: number[] = [];
+      let previous = edgeDistance(el, index, 'start');
+
+      // 10 steps of 10px cross two item boundaries in DOM space.
+      for (let i = 0; i < 10; i++) {
+        await simulateScroll(el, { top: el.scrollTop + 10 });
+
+        const top = edgeDistance(el, index, 'start');
+        steps.push(previous - top);
+        previous = top;
+      }
+
+      // One DOM px scrolls the virtual scroll range over the DOM one.
+      const ratio =
+        (COUNT * ITEM_SIZE - el.clientHeight) /
+        (el.scrollHeight - el.clientHeight);
+
+      for (const step of steps) {
+        expect(step).to.be.closeTo(10 * ratio, PRECISION);
+      }
     });
   });
 
