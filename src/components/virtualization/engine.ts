@@ -257,20 +257,19 @@ class SizeTree {
  * Browsers limit how far an element can scroll. When the total item size is
  * larger than that limit, the engine compresses the *virtual* space
  * (`0…totalSize`) into the *DOM* space the browser can represent
- * (`0…domSize`) by the factor `_virtualRatio`. Each offset that crosses that
+ * (`0…domSize`). The ratio maps the scroll ranges onto each other:
+ * `(totalSize - viewportSize) / (domSize - viewportSize)`, so the last DOM
+ * scroll position shows the end of the list. Each offset that crosses that
  * boundary is scaled: incoming scroll positions are multiplied by the ratio,
- * and outgoing offsets are divided by it. Items render at their real pixel
- * size, so item sizes are always virtual.
+ * and outgoing offsets are divided by it.
+ *
+ * Items render at their real pixel size, so item sizes are always virtual.
+ * The viewport shows the virtual pixels from `scrollPosition * ratio`, so the
+ * content moves by the ratio for each DOM pixel of scroll. See
+ * `getContentOffset`.
  */
 export class VirtualScrollEngine {
   private _maxBrowserSize = Number.POSITIVE_INFINITY;
-
-  /**
-   * Maps a virtual scroll position to a DOM scroll position. The ratio
-   * `totalSize / maxBrowserSize` if `totalSize` is larger than the maximum DOM
-   * coordinate of the browser, and `1` in all other cases.
-   */
-  private _virtualRatio = 1;
 
   /** Binary Indexed Tree for O(log N) size queries and updates. */
   private _tree: SizeTree | null = null;
@@ -294,13 +293,17 @@ export class VirtualScrollEngine {
 
   /** Total size in DOM space, clamped to the maximum browser size. */
   public get domSize(): number {
-    return this._virtualRatio !== 1 ? this._maxBrowserSize : this.totalSize;
+    return Math.min(this.totalSize, this._maxBrowserSize);
   }
 
-  /** Measures the maximum browser size for the document and rescales. */
+  /** Whether the virtual space is compressed into a smaller DOM space. */
+  public get isCompressed(): boolean {
+    return this.totalSize > this._maxBrowserSize;
+  }
+
+  /** Measures the maximum browser size for the document. */
   public initMaxBrowserSize(doc: Document): void {
     this._maxBrowserSize = getMaxBrowserSizeProbePx(doc);
-    this._updateVirtualRatio();
   }
 
   /**
@@ -330,7 +333,6 @@ export class VirtualScrollEngine {
       tree.estimate = estimatedSize;
     }
     this._tree = tree;
-    this._updateVirtualRatio();
     this.onSizeChange?.();
   }
 
@@ -338,7 +340,6 @@ export class VirtualScrollEngine {
   public measureItem(index: number, size: number): void {
     if (!this._tree?.update(index, size)) return;
 
-    this._updateVirtualRatio();
     this.onSizeChange?.();
   }
 
@@ -373,13 +374,39 @@ export class VirtualScrollEngine {
 
   /**
    * Returns the DOM scroll offset in px that puts the item at `index` at the
-   * leading edge of the viewport.
+   * leading edge of a `viewportSize` px viewport. Not clamped to the
+   * reachable scroll range, see `getAlignedScrollOffset`.
    */
-  public getScrollOffsetForIndex(index: number): number {
+  public getScrollOffsetForIndex(index: number, viewportSize = 0): number {
     if (!this._tree || index <= 0) return 0;
 
     const clamped = Math.min(index, this._tree.length);
-    return this._tree.prefixSum(clamped) / this._virtualRatio;
+    return this._tree.prefixSum(clamped) / this._ratio(viewportSize);
+  }
+
+  /**
+   * Returns the DOM offset of the content wrapper, whose first item is at
+   * `startIndex`, for the given scroll state. The items then show the virtual
+   * pixels from `scrollPosition * ratio` at the leading edge of the viewport,
+   * as `getVisibleRange` and the alignment math expect.
+   *
+   * Without compression, the result is the offset of the item and does not
+   * depend on `scrollPosition`. With it, the result changes on each scroll, so
+   * the content moves by the ratio for each DOM pixel.
+   */
+  public getContentOffset(
+    startIndex: number,
+    scrollPosition: number,
+    viewportSize: number
+  ): number {
+    if (!this._tree || this._tree.length === 0) return 0;
+
+    const start = this._tree.prefixSum(
+      clampIndex(startIndex, this._tree.length)
+    );
+    return (
+      start - Math.max(0, scrollPosition) * (this._ratio(viewportSize) - 1)
+    );
   }
 
   /**
@@ -397,9 +424,8 @@ export class VirtualScrollEngine {
    * reachable scroll range.
    *
    * The slack is computed in virtual space against the item's real size and
-   * converted to DOM space once, at the end. One DOM pixel equals
-   * `_virtualRatio` virtual pixels, so mixed coordinates would scale the
-   * slack.
+   * converted to DOM space once, at the end. One DOM pixel equals `_ratio`
+   * virtual pixels, so mixed coordinates would scale the slack.
    */
   public getAlignedScrollOffset(
     index: number,
@@ -419,7 +445,7 @@ export class VirtualScrollEngine {
     }
 
     return clamp(
-      offset / this._virtualRatio,
+      offset / this._ratio(viewportSize),
       0,
       this._getMaxScrollOffset(viewportSize)
     );
@@ -466,7 +492,7 @@ export class VirtualScrollEngine {
     const clamped = clampIndex(index, this._tree.length);
     const itemStart = this._tree.prefixSum(clamped);
     const itemEnd = this._tree.prefixSum(clamped + 1);
-    const viewStart = Math.max(0, scrollPosition) * this._virtualRatio;
+    const viewStart = Math.max(0, scrollPosition) * this._ratio(viewportSize);
     const viewEnd = viewStart + viewportSize;
 
     const contained = itemStart >= viewStart && itemEnd <= viewEnd;
@@ -491,7 +517,7 @@ export class VirtualScrollEngine {
     // The virtual ratio does not scale the viewport. Items render at their real
     // pixel size, so a `viewportSize` px viewport shows that many virtual pixels
     // of items at any compression of the scroll range.
-    const startOffset = Math.max(0, scrollPosition) * this._virtualRatio;
+    const startOffset = Math.max(0, scrollPosition) * this._ratio(viewportSize);
     const first = this._tree.findIndexAtOffset(startOffset);
     const last = this._tree.findIndexAtOffset(startOffset + viewportSize);
 
@@ -502,9 +528,7 @@ export class VirtualScrollEngine {
   }
 
   /**
-   * Sum of the actual sizes of the items in [startIndex, endIndex]. The
-   * render pass uses it to clamp the content translate offset, so rendered
-   * items do not overflow past `domSize` under coordinate compression.
+   * Sum of the actual sizes of the items in [startIndex, endIndex].
    */
   public getPhysicalRangeSize(startIndex: number, endIndex: number): number {
     if (!this._tree) return 0;
@@ -534,13 +558,19 @@ export class VirtualScrollEngine {
     tree.estimate = estimatedSize;
     if (tree.totalSize === total) return;
 
-    this._updateVirtualRatio();
     this.onSizeChange?.();
   }
 
-  private _updateVirtualRatio(): void {
-    const totalSize = this._tree?.totalSize ?? 0;
-    this._virtualRatio =
-      totalSize <= this._maxBrowserSize ? 1 : totalSize / this._maxBrowserSize;
+  /**
+   * The number of virtual pixels in one DOM pixel of scroll for a
+   * `viewportSize` px viewport: `1` without compression. With it, the ratio of
+   * the virtual scroll range to the DOM one, so the largest DOM scroll offset
+   * shows the end of the list.
+   */
+  private _ratio(viewportSize: number): number {
+    const domRange = this._maxBrowserSize - viewportSize;
+    return this.isCompressed && domRange > 0
+      ? (this.totalSize - viewportSize) / domRange
+      : 1;
   }
 }

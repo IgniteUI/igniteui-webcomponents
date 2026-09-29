@@ -116,6 +116,7 @@ export default class IgcVirtualScrollComponent<
 
         :where(igc-virtual-scroll) [part="virtualization-track"] {
           position: relative;
+          overflow: clip;
           width: 100%;
           min-height: 100%;
         }
@@ -181,6 +182,9 @@ export default class IgcVirtualScrollComponent<
   private _hasPendingDataRequest = false;
   private _layoutCompletePromise: Promise<void> | null = null;
   private _scrollRequestId = 0;
+
+  /** The number of completed updates. See `_resolveLayoutComplete`. */
+  private _updateCount = 0;
 
   /**
    * The `startIndex` of the last `igcDataRequest`, which is also the item count
@@ -360,6 +364,8 @@ export default class IgcVirtualScrollComponent<
   }
 
   protected override updated(_changed: PropertyValues<this>): void {
+    this._updateCount++;
+    this._positionContent();
     this._scheduleItemMeasurement();
     this._checkDataRequest();
     this._emitStateChange();
@@ -379,28 +385,6 @@ export default class IgcVirtualScrollComponent<
       ? { height: `${this._engine.domSize}px` }
       : { width: `${this._engine.domSize}px` };
 
-    // The content wrapper is absolutely positioned at the origin of a track of
-    // `domSize` px. A translation to the scroll offset of the first rendered
-    // item puts that item at its virtual position.
-    let contentPosition = this._engine.getScrollOffsetForIndex(
-      range.startIndex
-    );
-    const physicalRangeSize = this._engine.getPhysicalRangeSize(
-      range.startIndex,
-      range.endIndex
-    );
-    contentPosition = clamp(
-      contentPosition,
-      0,
-      this._engine.domSize - physicalRangeSize
-    );
-    const isRTL = !isVertical && !isLTR(this);
-    const contentStyle = {
-      transform: isVertical
-        ? `translateY(${contentPosition}px)`
-        : `translateX(${isRTL ? -contentPosition : contentPosition}px)`,
-    };
-
     const visibleItems =
       range.endIndex >= range.startIndex
         ? items.slice(range.startIndex, range.endIndex + 1)
@@ -416,7 +400,6 @@ export default class IgcVirtualScrollComponent<
           ${ref(this._contentRef)}
           part="virtualization-content"
           role="presentation"
-          style=${styleMap(contentStyle)}
         >
           ${recycle(
             visibleItems,
@@ -609,7 +592,8 @@ export default class IgcVirtualScrollComponent<
 
   /**
    * Records the new scroll offset. Schedules a render only if the rendered
-   * window moves.
+   * window moves. Under coordinate compression, a scroll inside one window
+   * moves the content only.
    *
    * @remarks
    * `render` reads `_currentRange`, not the scroll offset. Without the guard,
@@ -626,7 +610,34 @@ export default class IgcVirtualScrollComponent<
       endIndex !== this._currentRange.endIndex
     ) {
       this.requestUpdate();
+    } else if (this._engine.isCompressed) {
+      this._positionContent();
     }
+  }
+
+  /**
+   * Translates the content wrapper, which is absolutely positioned at the
+   * origin of the track, so the rendered items are at their virtual positions.
+   *
+   * @remarks
+   * Applied outside `render`, because with coordinate compression the offset
+   * changes on each scroll, also inside one window. Over-scanned items can
+   * then extend past the end of the track. The track clips them, so they do
+   * not grow the scroll size.
+   */
+  private _positionContent(): void {
+    const content = this._contentRef.value;
+    if (!content) return;
+
+    const offset = this._engine.getContentOffset(
+      this._currentRange.startIndex,
+      this._scrollPosition,
+      this._viewportSize
+    );
+
+    content.style.transform = this._isVertical
+      ? `translateY(${offset}px)`
+      : `translateX(${isLTR(this) ? offset : -offset}px)`;
   }
 
   /**
@@ -772,17 +783,22 @@ export default class IgcVirtualScrollComponent<
   }
 
   /**
-   * Resolves on the next animation frame, or after `LAYOUT_FRAME_TIMEOUT_MS` if
-   * no frame arrives. A hidden tab or a disconnected element gets no frames,
-   * and `layoutComplete` must still settle. Such a state has no layout to wait
-   * for, so an early resolve is safe.
+   * Resolves after the next frame has delivered its `ResizeObserver`
+   * callbacks, or after `LAYOUT_FRAME_TIMEOUT_MS` if no frame arrives.
+   *
+   * A frame runs its animation frame callbacks before its layout and its
+   * `ResizeObserver` callbacks, so a resolve in the `requestAnimationFrame`
+   * callback comes before the measurements. A task queued from that callback
+   * runs after them.
    */
-  private _nextFrame(): Promise<void> {
+  private _nextMeasurement(): Promise<void> {
     return this._withDeadline(
       LAYOUT_FRAME_TIMEOUT_MS,
       (signal) =>
         new Promise((resolve) => {
-          const id = requestAnimationFrame(() => resolve());
+          const id = requestAnimationFrame(() =>
+            resolve(this._timeout(0, signal))
+          );
           signal.addEventListener('abort', () => cancelAnimationFrame(id), {
             once: true,
           });
@@ -792,18 +808,20 @@ export default class IgcVirtualScrollComponent<
 
   /**
    * Waits for the current update, then lets the ResizeObserver measurements
-   * run. If those schedule one more render, for example when a measured size
-   * replaces an estimate, the wait repeats until nothing is pending, up to a
-   * safety cap.
+   * run. If those render again, for example when a measured size replaces an
+   * estimate, the wait repeats until a frame passes with no render, up to a
+   * safety cap. A render during the wait is complete before the check, so
+   * `isUpdatePending` alone misses it.
    */
   private async _resolveLayoutComplete(): Promise<void> {
     try {
       await this.updateComplete;
 
       for (let i = 0; i < MAX_LAYOUT_SETTLE_PASSES; i++) {
-        await this._nextFrame();
+        const updates = this._updateCount;
+        await this._nextMeasurement();
 
-        if (!this.isUpdatePending) {
+        if (!this.isUpdatePending && this._updateCount === updates) {
           break;
         }
 

@@ -551,7 +551,11 @@ describe('VirtualScrollEngine', () => {
 
   describe('Coordinate compression', () => {
     const MAX_SIZE = 10_000;
-    const ITEMS = 1000; // 50_000px total, a ratio of 5
+    const ITEMS = 1000; // 50_000px total
+    const VIEWPORT = 300;
+    // The virtual scroll range over the DOM one: 49_700 / 9_700.
+    const RATIO = (50_000 - VIEWPORT) / (MAX_SIZE - VIEWPORT);
+    const EPSILON = 1e-6;
 
     it('clamps the DOM size to the maximum browser size', () => {
       const engine = createEngineWithMaxSize(MAX_SIZE, ITEMS);
@@ -570,11 +574,50 @@ describe('VirtualScrollEngine', () => {
     it('maps DOM scroll positions onto the virtual space', () => {
       const engine = createEngineWithMaxSize(MAX_SIZE, ITEMS);
 
-      // Halfway down the DOM range is halfway down the virtual range.
-      expect(engine.getVisibleRange(MAX_SIZE / 2, 300, 0).startIndex).to.equal(
-        500
+      // Halfway down the DOM scroll range (4850px) is halfway down the
+      // virtual one (24_850px), where item 497 starts. One DOM px past it
+      // stays clear of the rounding at the item boundary.
+      expect(engine.getVisibleRange(4851, VIEWPORT, 0).startIndex).to.equal(
+        497
       );
-      expect(engine.getScrollOffsetForIndex(500)).to.equal(MAX_SIZE / 2);
+      expect(engine.getScrollOffsetForIndex(497, VIEWPORT)).to.be.closeTo(
+        4850,
+        EPSILON
+      );
+    });
+
+    it('shows the end of the list at the largest DOM scroll offset', () => {
+      const engine = createEngineWithMaxSize(MAX_SIZE, ITEMS);
+      const maxOffset = MAX_SIZE - VIEWPORT;
+
+      expect(engine.getVisibleRange(maxOffset, VIEWPORT, 0).endIndex).to.equal(
+        ITEMS - 1
+      );
+      expect(
+        engine.getAlignedScrollOffset(ITEMS - 1, VIEWPORT, 'end')
+      ).to.be.closeTo(maxOffset, EPSILON);
+    });
+
+    it('places the content so the viewport shows its virtual position', () => {
+      const engine = createEngineWithMaxSize(MAX_SIZE, ITEMS);
+
+      // At DOM offset 4850, the viewport starts at virtual offset 24_850, so
+      // item 497 is at the top edge, and the items before it are at their
+      // real size above it.
+      expect(engine.getContentOffset(497, 4850, VIEWPORT)).to.be.closeTo(
+        4850,
+        EPSILON
+      );
+      expect(engine.getContentOffset(495, 4850, VIEWPORT)).to.be.closeTo(
+        4850 - 2 * ESTIMATE,
+        EPSILON
+      );
+
+      // Without compression, the offset is that of the item at any scroll.
+      const uncompressed = createEngineWithMaxSize(MAX_SIZE, 100);
+      expect(uncompressed.getContentOffset(10, 1234, VIEWPORT)).to.equal(
+        10 * ESTIMATE
+      );
     });
 
     it('sizes the rendered window by the viewport, not by the ratio', () => {
@@ -588,26 +631,26 @@ describe('VirtualScrollEngine', () => {
 
     it('converts the alignment slack into DOM space', () => {
       const engine = createEngineWithMaxSize(MAX_SIZE, ITEMS);
-      const start = engine.getAlignedScrollOffset(500, 300, 'start');
-      const centered = engine.getAlignedScrollOffset(500, 300, 'center');
+      const start = engine.getAlignedScrollOffset(500, VIEWPORT, 'start');
+      const centered = engine.getAlignedScrollOffset(500, VIEWPORT, 'center');
 
-      // The slack is 125 virtual px, which is 25 DOM px at a ratio of 5.
-      expect(start).to.equal(MAX_SIZE / 2);
-      expect(centered).to.equal(MAX_SIZE / 2 - 25);
+      // The slack is 125 virtual px, which is 125 / RATIO DOM px.
+      expect(start).to.be.closeTo(25_000 / RATIO, EPSILON);
+      expect(centered).to.be.closeTo((25_000 - 125) / RATIO, EPSILON);
     });
 
     it('resolves nearest in DOM space', () => {
       const engine = createEngineWithMaxSize(MAX_SIZE, ITEMS);
 
-      // DOM offset 2000 is virtual offset 10_000. Item 300 spans
-      // 15_000-15_050, after the viewport.
-      expect(engine.resolveScrollOffset(300, 2000, 300, 'nearest')).to.equal(
-        (15_050 - 300) / 5
-      );
+      // DOM offset 2000 is virtual offset 2000 * RATIO, about 10_247. Item
+      // 300 spans 15_000-15_050, after the viewport.
+      expect(
+        engine.resolveScrollOffset(300, 2000, VIEWPORT, 'nearest')
+      ).to.be.closeTo((15_050 - VIEWPORT) / RATIO, EPSILON);
       // Item 100 spans 5000-5050, before the viewport.
-      expect(engine.resolveScrollOffset(100, 2000, 300, 'nearest')).to.equal(
-        5000 / 5
-      );
+      expect(
+        engine.resolveScrollOffset(100, 2000, VIEWPORT, 'nearest')
+      ).to.be.closeTo(5000 / RATIO, EPSILON);
     });
 
     it('probes a given document only once', () => {
