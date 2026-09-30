@@ -766,6 +766,45 @@ describe('VirtualScroll', () => {
       );
     });
 
+    describe('after a data change that discards measurements', () => {
+      function renderedIndexes(el: IgcVirtualScrollComponent<string>) {
+        return Array.from(
+          el.querySelectorAll<HTMLElement>('[data-vs-index]'),
+          (wrapper) => Number(wrapper.dataset.vsIndex)
+        );
+      }
+
+      it('measures each rendered item again when data of the same length is swapped', async () => {
+        const el = await createFixedScroll();
+        const measureSpy = spy(el['_engine'], 'measureItem');
+
+        // Each index keeps its wrapper at an identical size, so the
+        // ResizeObserver reports nothing unless the wrapper is observed again.
+        el.data = createItems(1000).map((item) => `${item}!`);
+        await el.layoutComplete;
+
+        const measured = measureSpy.args.map(([index]) => index);
+        expect(measured).to.include.members(renderedIndexes(el));
+      });
+
+      it('measures only the rendered items from the first changed index on', async () => {
+        const el = await createFixedScroll();
+        const measureSpy = spy(el['_engine'], 'measureItem');
+        const firstChanged = 3;
+
+        el.data = el.data.map((item, i) =>
+          i < firstChanged ? item : `${item}!`
+        );
+        await el.layoutComplete;
+
+        const measured = measureSpy.args.map(([index]) => index);
+        const rendered = renderedIndexes(el);
+        expect(measured).to.have.members(
+          rendered.filter((index) => index >= firstChanged)
+        );
+      });
+    });
+
     it('adapts the estimate of unmeasured items to the measured size', async () => {
       const el = await fixture<IgcVirtualScrollComponent<string>>(
         html`<igc-virtual-scroll
