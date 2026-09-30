@@ -187,6 +187,7 @@ describe('File Input component', () => {
 
         expect(container.scrollWidth).to.be.at.most(element.offsetWidth);
         expect(names.scrollWidth).to.be.greaterThan(names.clientWidth);
+        expect(getComputedStyle(names).textOverflow).to.equal('ellipsis');
 
         configureTheme('bootstrap');
         await nextFrame();
