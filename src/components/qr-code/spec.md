@@ -50,6 +50,7 @@
 | ------: | ---------- | -------------------------------------------------------- |
 |       1 | 2026-09-21 | Initial specification                                    |
 |       2 | 2026-09-28 | Add the property-based model suite; V30-V40/M table fix  |
+|       3 | 2026-09-30 | Automatic error level, reactive label, `xlink:href` export |
 
 ## Overview
 
@@ -67,8 +68,8 @@ authentication setup URLs, contact sharing and linking printed material to digit
 - **Automatic encoding**: the most compact mode — numeric, alphanumeric or byte — and the smallest version that
   fits the value, unless a `version` is pinned.
 - **Configurable error correction** across `L`, `M`, `Q` and `H`, trading capacity for resilience.
-- **Center logo** with the modules beneath it masked out, and, when `error-level` is not set explicitly, an
-  automatic escalation to the smallest level that keeps the code scannable at the requested logo size.
+- **Center logo** with the modules beneath it masked out, and, when `error-level` is not set, an automatic
+  escalation from `M` to the smallest level that keeps the code scannable at the requested logo size.
 - **Visual customization** of the data modules and the finder-pattern corners as `square`, `circle` or `rounded`.
 - **Themeable colors** through CSS custom properties, with parts for the background, the dots and each corner
   element.
@@ -160,8 +161,11 @@ The code keeps a fixed size regardless of the length of the value, as long as th
 ```
 
 `logoSize` is a ratio of the area that can safely be obscured at the resolved error correction level, not of the
-whole code. When `error-level` is not set explicitly, the component escalates to the smallest level that
-accommodates the requested size. A logo box that collapses to zero renders no image and throws nothing.
+whole code. When `error-level` is not set, the component uses `M`, and a logo larger than the safe area of `M`
+escalates the code to the smallest level that accommodates the requested size; a logo never lowers the level below
+`M`. `errorLevel` still reads `M` in that case, and setting it to `undefined` or removing the attribute restores the
+automatic level. An explicit level, `M` included, caps the logo to the safe area of that level. A logo box that
+collapses to zero renders no image and throws nothing.
 
 Logo sources are validated: `javascript:` and `vbscript:` URLs and non-image `data:` URIs are rejected, and an
 image that fails to load leaves the code without a logo until a valid source is assigned.
@@ -193,7 +197,9 @@ scanning reliably.
 `toBlob()` serializes the code to an `image/svg+xml` blob, with the theme colors resolved to plain `fill`
 attributes and a logo that is not a data URI fetched and inlined, so that the blob renders the same outside the
 component. A logo that cannot be fetched, for example a cross-origin URL without CORS headers, is dropped together
-with its mask.
+with its mask. The logo is written as both `href` and `xlink:href`: SVG 1.1 consumers, such as Illustrator, the
+Office import, Batik and older librsvg, read only `xlink:href`, and SVG 2 gives `href` priority when both are
+present.
 
 `toImage(options)` exports a file. `scale` multiplies the `size` of the component, `format` takes `png`, `jpeg`,
 `webp` or `svg`, `fileName` names the file and gets the extension of the format appended, and `download` opens the
@@ -295,7 +301,8 @@ None. The SVG is rendered entirely from the properties of the component.
 ### Accessibility tests
 
 1. The component passes the accessibility audit when a value is set.
-2. The SVG carries a `<title>` for screen readers, which uses the `aria-label` when one is provided.
+2. The SVG carries a `<title>` for screen readers, which uses the `aria-label` when one is provided, follows a
+   change of `ariaLabel` alone, and returns to the default when the attribute is removed.
 
 ### Default property values
 
@@ -334,14 +341,16 @@ None. The SVG is rendered entirely from the properties of the component.
 15. Unsafe schemes and non-image `data:` URIs are blocked, while `data:image/` and `https://` URLs are accepted.
 16. A logo that fails to load leaves the code without one, and the component recovers once a valid source is set.
 17. A higher error correction level produces a larger code, and the logo area is capped to the safe area of the
-    resolved level.
+    resolved level. Without `error-level`, a large logo escalates the level while `errorLevel` reads `M`, a small
+    logo keeps `M`, an explicit `M` caps the logo, and removing the attribute restores the escalation.
 18. `logoMargin` reduces the visible logo, and a margin that consumes the whole logo box renders no image.
 
 ### Export
 
 19. `toBlob()` returns an SVG blob, resolves the theme colors to `fill` attributes and strips the parts.
 20. A data URI logo is kept as it is, a fetched one is inlined as a data URI, a logo assigned right before the
-    export is awaited, and one that cannot be fetched is dropped together with its mask.
+    export is awaited, and one that cannot be fetched is dropped together with its mask. The logo is written as both
+    `href` and `xlink:href`, and a code without a logo has no `xlink:href`.
 21. `toImage()` exports a PNG at the component size by default, scales the raster output, and exports an opaque
     JPEG, a WebP and an SVG with scaled dimensions.
 22. An existing matching extension in the file name is kept, and the download dialog opens only when requested.
@@ -377,7 +386,8 @@ None. The SVG is rendered entirely from the properties of the component.
 
 - The rendered `<svg>` has `role="img"`.
 - The `<svg>` holds a `<title>` describing the code, taken from `ariaLabel` when it is set and defaulting to
-  `QR code: <value>`.
+  `QR code: <value>`. The component observes the `aria-label` attribute, so a new label alone renders a new
+  `<title>`.
 
 ### Keyboard support
 

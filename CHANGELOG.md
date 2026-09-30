@@ -12,6 +12,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 - #### QR code
   - Versions 30 to 40 at the `M` error correction level now use the data codeword counts of ISO/IEC 18004. Before, these codes had the wrong block structure.
+  - Without `error-level`, a logo larger than the safe area of level `M` now raises the error correction level to the smallest one that holds the logo, as documented. Before, the default `M` always applied, so the logo shrank. An explicit `error-level`, `M` included, still caps the logo.
+  - A new `aria-label` alone now updates the `<title>` of the code. Before, the title changed only on the next change of another property.
+  - The logo in an exported SVG now also has `xlink:href`, so SVG 1.1 consumers, such as Illustrator, the Office import, Batik and older librsvg, show it. Before, they dropped the logo and left a blank area in the code.
 - #### Mask input, Date time input, Date range picker
   - A mask position holds one UTF-16 code unit, so an astral character, such as an emoji, is now rejected as input and as a prompt. Before, it shifted the positions after it or split into two halves. A mask or input format with an astral literal now edits at the correct positions.
 - #### Mask input
