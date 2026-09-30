@@ -1,4 +1,10 @@
-import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
+import {
+  elementUpdated,
+  expect,
+  fixture,
+  html,
+  nextFrame,
+} from '@open-wc/testing';
 import type { TemplateResult } from 'lit';
 import { spy } from 'sinon';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
@@ -12,6 +18,7 @@ import {
   type ValidationContainerTestsParams,
 } from '#internals/testing/validity-helpers.spec.js';
 import { firstOf } from '#internals/utils/arrays.js';
+import { configureTheme } from '#theming/config.js';
 import IgcFileInputComponent from './file-input.js';
 
 describe('File Input component', () => {
@@ -152,6 +159,39 @@ describe('File Input component', () => {
         'Choose a file'
       );
     });
+
+    for (const theme of [
+      'bootstrap',
+      'material',
+      'fluent',
+      'indigo',
+    ] as const) {
+      it(`truncates overflowing file names instead of growing (${theme})`, async () => {
+        configureTheme(theme);
+        await createFixture(
+          html`<igc-file-input multiple style="width: 300px"></igc-file-input>`
+        );
+
+        simulateFileUpload(
+          input,
+          Array.from(
+            { length: 8 },
+            (_, i) => new File([''], `a-very-long-file-name-number-${i}.txt`)
+          )
+        );
+        await elementUpdated(element);
+        await nextFrame();
+
+        const container = getDOM('[part~="container"]') as HTMLElement;
+        const names = getDOM('[part="file-names"] > span') as HTMLElement;
+
+        expect(container.scrollWidth).to.be.at.most(element.offsetWidth);
+        expect(names.scrollWidth).to.be.greaterThan(names.clientWidth);
+
+        configureTheme('bootstrap');
+        await nextFrame();
+      });
+    }
   });
 
   describe('Events', () => {
