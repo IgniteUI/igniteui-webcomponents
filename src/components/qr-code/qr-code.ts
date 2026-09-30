@@ -38,6 +38,9 @@ import type {
 
 const nextMaskId = createIdGenerator('igc-qr-code-mask');
 
+/** The native ARIA attributes that the SVG `<title>` reads. */
+const LABEL_ATTRIBUTES: readonly string[] = ['aria-label'];
+
 /**
  *
  * Generates a QR code based on the provided value and options.
@@ -65,6 +68,16 @@ export default class IgcQrCodeComponent extends LitElement {
     registerComponent(IgcQrCodeComponent);
   }
 
+  /**
+   * Adds the label attributes, so that a new label renders a new `<title>`.
+   * The spread keeps the manifest analyzer from listing them as attributes of
+   * the component.
+   * @internal
+   */
+  public static override get observedAttributes(): string[] {
+    return [...super.observedAttributes, ...LABEL_ATTRIBUTES];
+  }
+
   private readonly _abortHandle = createAbortHandle();
   private readonly _maskId = nextMaskId();
   private readonly _maskUrl = `url(#${this._maskId})`;
@@ -81,6 +94,9 @@ export default class IgcQrCodeComponent extends LitElement {
 
   @state()
   private _logoLoadFailed = false;
+
+  /** The error correction level that the application set. */
+  private _errorLevel?: QrErrorCorrectionLevel;
 
   constructor() {
     super();
@@ -111,11 +127,21 @@ export default class IgcQrCodeComponent extends LitElement {
    * The error correction level for the QR code, which determines the QR code's ability to be read if it is partially obscured or damaged.
    * Valid values are 'L', 'M', 'Q', and 'H', where 'L' provides the lowest level of error correction and 'H' provides the highest level.
    *
+   * When the level is not set, the code uses 'M'. A logo that is larger than the safe area of 'M'
+   * raises the level to the smallest level that holds the logo. To restore this behavior, set
+   * `undefined` or remove the attribute.
+   *
    * @attr error-level
    * @default 'M'
    */
   @property({ attribute: 'error-level' })
-  public errorLevel?: QrErrorCorrectionLevel = 'M';
+  public set errorLevel(value: QrErrorCorrectionLevel | null | undefined) {
+    this._errorLevel = value || undefined;
+  }
+
+  public get errorLevel(): QrErrorCorrectionLevel {
+    return this._errorLevel ?? 'M';
+  }
 
   /**
    * The size of the QR code in pixels. This determines the width and height of the generated QR code. The default value is 128 pixels.
@@ -153,8 +179,8 @@ export default class IgcQrCodeComponent extends LitElement {
    * means the logo will cover the full safe area (not the entire QR code).
    * The default value is 0.4, meaning the logo covers 40% of that safe area (~3.6% of the QR code).
    *
-   * When `error-level` is not explicitly set, the smallest error correction level that can
-   * accommodate the requested logo size is chosen automatically.
+   * When `error-level` is not set and the logo is larger than the safe area of level 'M', the
+   * component uses the smallest error correction level that holds the logo.
    *
    * @attr logo-size
    * @default 0.4
@@ -189,6 +215,20 @@ export default class IgcQrCodeComponent extends LitElement {
    */
   @property({ attribute: 'square-style' })
   public squareStyle: QrCornerSquareStyle = 'square';
+
+  /** @internal */
+  public override attributeChangedCallback(
+    name: string,
+    previous: string | null,
+    current: string | null
+  ): void {
+    super.attributeChangedCallback(name, previous, current);
+
+    // A native ARIA attribute is not a reactive property.
+    if (LABEL_ATTRIBUTES.includes(name)) {
+      this.requestUpdate();
+    }
+  }
 
   /** @internal */
   protected override update(props: PropertyValues<this>): void {
@@ -254,34 +294,33 @@ export default class IgcQrCodeComponent extends LitElement {
     return true;
   }
 
+  /**
+   * Returns the smallest level, from 'M' up, that holds a logo of `area`.
+   * A logo removes modules, so it does not lower the level below the default.
+   */
   private _pickErrorLevel(area: number): QrErrorCorrectionLevel {
-    if (area <= SAFE_AREAS.L) return 'L';
     if (area <= SAFE_AREAS.M) return 'M';
     if (area <= SAFE_AREAS.Q) return 'Q';
     return 'H';
   }
 
-  private _getErrorLevelAndArea(hasLogo: boolean) {
-    const userErrorLevel = this.errorLevel;
+  private _getErrorLevelAndArea(hasLogo: boolean): {
+    errorLevel: QrErrorCorrectionLevel;
+    area: number;
+  } {
+    const userErrorLevel = this._errorLevel;
     const size = this.logoSize;
     const sizeRatio = hasLogo ? clamp(size ?? DEFAULT_SIZE_RATIO, 0, 1) : 0;
     const targetArea = sizeRatio * MAX_SAFE_AREA;
 
-    let errorLevel: QrErrorCorrectionLevel;
-    let area: number;
-
     if (userErrorLevel) {
-      errorLevel = userErrorLevel;
-      area = Math.min(targetArea, SAFE_AREAS[userErrorLevel]);
-    } else if (targetArea > 0) {
-      errorLevel = this._pickErrorLevel(targetArea);
-      area = targetArea;
-    } else {
-      errorLevel = 'M';
-      area = 0;
+      return {
+        errorLevel: userErrorLevel,
+        area: Math.min(targetArea, SAFE_AREAS[userErrorLevel]),
+      };
     }
 
-    return { errorLevel, area };
+    return { errorLevel: this._pickErrorLevel(targetArea), area: targetArea };
   }
 
   private _getMatrix(
