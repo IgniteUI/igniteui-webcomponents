@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - Setting `min` or `max` with a value before the first render no longer throws a `TypeError`.
 - #### Color picker
   - The HSL saturation no longer becomes infinite for a very small saturation at full value.
+  - The initial `value` is now in the notation of `format` when the `value` attribute comes before the `format` attribute. Before, `value` and the form data stayed in hex until the color changed.
 - #### Virtual scroll
   - `layoutComplete` now resolves after the rendered items are measured. Before, it could resolve first, so `scrollToIndex` stopped its correction early, and an item with a size other than the estimate landed up to tens of pixels from the requested edge.
   - A list larger than the maximum scroll size of the browser now shows its last items at the end of the scroll range, and `scrollToIndex` puts the item at the requested edge. The items also move evenly during a scroll. Before, the last items could not be reached, the item landed tens of pixels off, and the items jumped by some pixels each time the rendered window changed.
