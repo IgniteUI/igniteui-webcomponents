@@ -10,6 +10,7 @@ import type { Constructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { partMap } from '#internals/part-map.js';
 import { getElementByIdFromRoot } from '#internals/utils/dom.js';
+import { addSafeEventListener } from '#internals/utils/events.js';
 import { bindIf } from '#internals/utils/lit.js';
 
 export interface IgcButtonEventMap {
@@ -191,6 +192,13 @@ export abstract class IgcButtonBaseComponent extends EventEmitterMixin<
 
   //#region Lifecycle
 
+  constructor() {
+    super();
+    addSafeEventListener(this, 'click', this._handleDisabledLinkClick, {
+      capture: true,
+    });
+  }
+
   protected override firstUpdated(): void {
     this.updateComplete.then(() => {
       if (this._commandfor) {
@@ -221,9 +229,11 @@ export abstract class IgcButtonBaseComponent extends EventEmitterMixin<
   /**
    * Keeps the click of a disabled link from the host listeners, as a disabled
    * native button does. Assistive technology can still click the anchor.
+   * It runs on the host in the capture phase, before the capture listeners
+   * that are added after the construction of the host.
    */
-  private _handleLinkClick(event: MouseEvent): void {
-    if (this.disabled) {
+  private _handleDisabledLinkClick(event: MouseEvent): void {
+    if (this.disabled && this.href != null) {
       event.preventDefault();
       event.stopImmediatePropagation();
     }
@@ -286,7 +296,6 @@ export abstract class IgcButtonBaseComponent extends EventEmitterMixin<
         target=${ifDefined(this.target)}
         download=${ifDefined(this.download)}
         rel=${ifDefined(this.rel)}
-        @click=${this._handleLinkClick}
       >
         ${this._renderContent()}
       </a>

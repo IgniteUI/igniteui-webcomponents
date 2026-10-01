@@ -226,6 +226,39 @@ describe('Button tests', () => {
       expect(clicks).to.be.empty;
     });
 
+    it('keeps the click of a disabled link from capture listeners', async () => {
+      const clicks: Event[] = [];
+
+      button.addEventListener(
+        'click',
+        (event) => {
+          // Keeps the test page in place if the link navigates.
+          event.preventDefault();
+          clicks.push(event);
+        },
+        { capture: true }
+      );
+
+      button.click();
+      expect(clicks).to.have.lengthOf(1);
+
+      button.disabled = true;
+      await elementUpdated(button);
+
+      button.click();
+      button.renderRoot.querySelector('a')!.click();
+
+      expect(clicks).to.have.lengthOf(1);
+    });
+
+    it('is accessible when the link is disabled', async () => {
+      button.disabled = true;
+      await elementUpdated(button);
+
+      await expect(button).to.be.accessible();
+      await expect(button).shadowDom.to.be.accessible();
+    });
+
     it('restores the link when it is enabled again', async () => {
       button.disabled = true;
       await elementUpdated(button);

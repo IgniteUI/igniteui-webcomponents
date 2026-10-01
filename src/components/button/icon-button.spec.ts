@@ -137,6 +137,15 @@ describe('IconButton component', () => {
       expect(el.matches(':focus')).to.be.false;
     });
 
+    it('is accessible when the link is disabled', async () => {
+      el.href = 'https://test.com';
+      el.disabled = true;
+      await elementUpdated(el);
+
+      await expect(el).to.be.accessible();
+      await expect(el).shadowDom.to.be.accessible();
+    });
+
     it('sets rel property successfully', async () => {
       el.href = 'https://test.com';
       el.rel = 'test';

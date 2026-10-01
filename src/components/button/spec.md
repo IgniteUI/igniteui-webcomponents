@@ -134,7 +134,7 @@ ignored. With `target="_blank"`, setting `rel="noopener noreferrer"` is strongly
 ```
 
 A disabled link renders the anchor without `href`, so it leaves the tab order, cannot navigate, and its click
-events do not reach the host. It gets the `href` back when it is enabled again. This also applies to a link in a
+events stop on the host in the capture phase, so host listeners do not get them. It gets the `href` back when it is enabled again. This also applies to a link in a
 disabled fieldset.
 
 #### Form integration
