@@ -14,6 +14,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - `loadLayout` now copies only the serialized tile properties: the spans, the positions, the flags and `id`. A layout from storage or a server can no longer set `innerHTML` on a tile or replace its prototype through `__proto__`. A value that is not an array, and an entry that is not an object, are ignored.
 
 ### Fixed
+- #### Linear progress, Circular progress
+  - The default `aria-valuetext` is now the percentage that the label shows. Before, it was the value with a percent sign: "50%" for 50 of 200, while the label showed 25%.
+  - The percentage now rounds correctly to two decimals: 12.996% shows as 13%, not "12.100%", and 1.005% shows as 1.01%, not 1%.
+  - A fractional `max` now gives the correct percentage, such as 50% for 0.25 of 0.5. Before, it showed 25%.
 - #### Chip
   - The chip now delegates the focus to its action control, so `focus()` and `blur()` work on the host. Before, `focus()` did nothing, so an application could not move the focus to a chip, for example after a removal.
 - #### Checkbox

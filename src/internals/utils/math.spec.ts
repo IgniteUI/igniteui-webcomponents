@@ -56,6 +56,11 @@ describe('Math utilities', () => {
       expect(numberOfDecimals(Number.NaN)).to.equal(0);
       expect(numberOfDecimals(Number.POSITIVE_INFINITY)).to.equal(0);
     });
+
+    it('should be a no-op for negative magnitudes', () => {
+      expect(roundPrecise(1.23456, -2)).to.equal(1.23456);
+      expect(roundPrecise(123, -2)).to.equal(123);
+    });
   });
 
   describe('roundPrecise', () => {
@@ -63,6 +68,31 @@ describe('Math utilities', () => {
       expect(roundPrecise(1.23456, 2)).to.equal(1.23);
       expect(roundPrecise(1.23456, 4)).to.equal(1.2346);
       expect(roundPrecise(1.23456)).to.equal(1.2);
+    });
+
+    it('should round a half up by its decimal value, not its binary value', () => {
+      // `1.005 * 100` is `100.49999999999999` in binary floating point.
+      expect(roundPrecise(1.005, 2)).to.equal(1.01);
+      expect(roundPrecise(10.005, 2)).to.equal(10.01);
+      expect(roundPrecise(1.45, 1)).to.equal(1.5);
+    });
+
+    it('should round a number in exponential notation', () => {
+      expect(roundPrecise(1.5e-7, 7)).to.equal(2e-7);
+      expect(roundPrecise(1e-7, 6)).to.equal(0);
+      expect(roundPrecise(1.5e21, 0)).to.equal(1.5e21);
+    });
+
+    it('should return an integer as it is', () => {
+      expect(roundPrecise(42, 2)).to.equal(42);
+      expect(roundPrecise(1e308, 6)).to.equal(1e308);
+    });
+
+    it('should return a number that is not finite as it is', () => {
+      expect(roundPrecise(Number.POSITIVE_INFINITY, 2)).to.equal(
+        Number.POSITIVE_INFINITY
+      );
+      expect(roundPrecise(Number.NaN, 2)).to.be.NaN;
     });
   });
 

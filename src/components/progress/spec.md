@@ -30,6 +30,7 @@
     - [Attributes and properties](#attributes-and-properties)
     - [Rendering](#rendering)
     - [Gradients](#gradients)
+    - [ARIA state](#aria-state)
     - [Issues](#issues)
     - [Not covered by the suite](#not-covered-by-the-suite)
   - [Assumptions and limitations](#assumptions-and-limitations)
@@ -44,6 +45,7 @@
 | ------: | ---------- | --------------------- |
 |       1 | 2026-09-21 | Initial specification |
 |       2 | 2026-09-23 | Limit the variant parts to the linear progress |
+|       3 | 2026-10-01 | Announce the shown percentage, round it to two decimals |
 
 ## Overview
 
@@ -128,7 +130,8 @@ design hand-off link.
 
 `value` is clamped into `0`–`max`: a negative value becomes `0` and a value above the maximum becomes the maximum.
 Lowering `max` below the current value pulls the value down with it, while raising `max` leaves the value as it
-is. Fractional values are kept as they are. A value set at initialization is not reset by the first render.
+is. Fractional values are kept as they are, also for `max`, so a value of `0.25` of `0.5` is 50%. A `max` of `0`
+shows 0%. A value set at initialization is not reset by the first render.
 
 #### Indeterminate state
 
@@ -138,9 +141,10 @@ once it becomes determinate again.
 
 #### Label
 
-The default label shows the value as a percentage. `labelFormat` replaces it, with `{0}` for the current value and
-`{1}` for the maximum. `hideLabel` hides it. Content projected in the default slot replaces the label entirely and
-is affected by neither `hideLabel` nor `indeterminate`.
+The default label shows the value as a percentage of `max`, rounded to two decimals: `12.996` shows `13%`, and
+`1.005` shows `1.01%`. `labelFormat` replaces it, with `{0}` for the current value and `{1}` for the maximum.
+`hideLabel` hides it. Content projected in the default slot replaces the label entirely and is affected by neither
+`hideLabel` nor `indeterminate`.
 
 ```html
 <igc-circular-progress label-format="{0} of {1} files"></igc-circular-progress>
@@ -248,7 +252,8 @@ Both suites are structured the same way, so the scenarios below apply to both in
 
 3. `hideLabel` toggles the default label.
 4. The `variant` attribute is reflected, and so is `striped` for the linear indicator.
-5. The value is reflected in the fill, including fractional values.
+5. The value is reflected in the fill, including fractional values, and a fraction that rounds up carries into
+   the integer.
 6. A negative value is clamped to `0`, and a value above the maximum to the maximum.
 7. Lowering `max` below the value pulls the value down; raising it leaves the value as it is.
 8. The `indeterminate` attribute is reflected and hides the default label.
@@ -265,9 +270,18 @@ Both suites are structured the same way, so the scenarios below apply to both in
 
 13. The circular indicator renders slotted gradient stops.
 
+### ARIA state
+
+14. The value text is the shown percentage of `max`, for example `25%` for `50` of `200`.
+15. The value text keeps two decimals (`1.05%`) and rounds as the label does (`13%` for `12.996`, `1.01%` for
+    `1.005`), also in the fill.
+16. The value text handles a fractional `max` (`50%` for `0.25` of `0.5`) and a `max` of `0` (`0%`).
+17. The value text is the `labelFormat` text when one is set.
+18. The indeterminate mode reports no value and no value text.
+
 ### Issues
 
-14. Issue #1083 — a value set at initialization is not reset by the first render.
+19. Issue #1083 — a value set at initialization is not reset by the first render.
 
 ### Not covered by the suite
 
@@ -291,7 +305,8 @@ Both suites are structured the same way, so the scenarios below apply to both in
 
 - Both indicators have `role="progressbar"`, with `aria-valuemin` fixed at `0` and `aria-valuemax` taken from
   `max`.
-- In the determinate mode `aria-valuenow` carries the value and `aria-valuetext` the formatted label.
+- In the determinate mode `aria-valuenow` carries the value, and `aria-valuetext` carries the text of the default
+  label: the shown percentage of `max`, or the `labelFormat` text. Content in the default slot does not change it.
 - In the indeterminate mode both are dropped, which is how an operation of unknown length is announced.
 
 ### Keyboard support
