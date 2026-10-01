@@ -128,12 +128,12 @@ describe('IconButton component', () => {
       el.disabled = true;
       await elementUpdated(el);
 
-      const anchor = el.renderRoot.querySelector('a')!;
+      const base = el.renderRoot.querySelector('[part~="base"]')!;
       el.focus();
 
-      expect(anchor.hasAttribute('href')).to.be.false;
-      expect(anchor.getAttribute('role')).to.equal('link');
-      expect(anchor.getAttribute('aria-disabled')).to.equal('true');
+      expect(base.localName).to.equal('button');
+      expect(base.getAttribute('role')).to.equal('link');
+      expect(base.matches(':disabled')).to.be.true;
       expect(el.matches(':focus')).to.be.false;
     });
 

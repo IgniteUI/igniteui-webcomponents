@@ -133,9 +133,10 @@ ignored. With `target="_blank"`, setting `rel="noopener noreferrer"` is strongly
 </igc-button>
 ```
 
-A disabled link renders the anchor without `href`, so it leaves the tab order, cannot navigate, and its click
-events stop on the host in the capture phase, so host listeners do not get them. It gets the `href` back when it is enabled again. This also applies to a link in a
-disabled fieldset.
+An anchor has no disabled state, so a disabled link renders a disabled native `<button>` with `role="link"` in
+place of the anchor. It leaves the tab order and cannot navigate. The browser dispatches no click on it, so no
+listener gets one, not even a capture listener on an ancestor. It renders the anchor again when it is enabled
+again. This also applies to a link in a disabled fieldset.
 
 #### Form integration
 
@@ -269,8 +270,9 @@ None of their own. The components emit the native events of the rendered `<butto
 5. The `disabled` and `variant` properties are reflected, and so are the link properties.
 6. The shadow DOM structure of the anchor is correct.
 7. The anchor keeps the native link role.
-8. A disabled link, also in a disabled fieldset, renders without `href`, exposes `role="link"` with
-   `aria-disabled`, cannot take focus and emits no click. It gets its `href` back when it is enabled again.
+8. A disabled link, also in a disabled fieldset, renders a disabled `<button>` with `role="link"`, cannot take
+   focus, dispatches no click, also to ancestor capture listeners, and passes the accessibility audit. It renders
+   the anchor again when it is enabled again.
 
 ### Events tests
 
@@ -296,7 +298,8 @@ None of their own. The components emit the native events of the rendered `<butto
 18. The `name`, `collection`, `mirrored`, `href`, `rel`, `target`, `download` and `disabled` properties are
     applied.
 19. Every anchor-specific property is applied to the wrapped base element.
-20. A disabled link renders without `href`, exposes `role="link"` with `aria-disabled`, and cannot take focus.
+20. A disabled link renders a disabled `<button>` with `role="link"`, cannot take focus, and passes the
+    accessibility audit.
 
 ### Not covered by the suite
 
@@ -321,8 +324,8 @@ None of their own. The components emit the native events of the rendered `<butto
 - The component renders a native `<button>` or `<a>`, so the role, the disabled semantics and the keyboard
   behavior are the native ones.
 - The `aria-label` of the host is forwarded to the rendered element, which is how an icon button gets its name.
-- A link keeps the native link role. A disabled link has no `href`, and an anchor without `href` has no role of its
-  own, so it exposes `role="link"` together with `aria-disabled="true"`.
+- A link keeps the native link role. A disabled link renders a disabled `<button>` with `role="link"`, so it
+  exposes the link role with the native disabled state.
 
 ### Keyboard support
 

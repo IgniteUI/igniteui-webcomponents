@@ -132,11 +132,11 @@ describe('Button tests', () => {
       await elementUpdated(button);
 
       expect(button).shadowDom.to.equal(
-        `<a
-          aria-disabled="${button.disabled}"
-          role="link"
-        >
-        </a>`,
+        `<button role="link" disabled type="button">
+          <slot name="prefix"></slot>
+          <slot></slot>
+          <slot name="suffix"></slot>
+        </button>`,
         ignored_DOM_parts
       );
     });
@@ -199,12 +199,12 @@ describe('Button tests', () => {
       button.disabled = true;
       await elementUpdated(button);
 
-      const anchor = button.renderRoot.querySelector('a')!;
+      const base = button.renderRoot.querySelector('[part~="base"]')!;
       button.focus();
 
-      expect(anchor.hasAttribute('href')).to.be.false;
-      expect(anchor.getAttribute('role')).to.equal('link');
-      expect(anchor.getAttribute('aria-disabled')).to.equal('true');
+      expect(base.localName).to.equal('button');
+      expect(base.getAttribute('role')).to.equal('link');
+      expect(base.matches(':disabled')).to.be.true;
       expect(isFocused(button)).to.be.false;
     });
 
@@ -221,7 +221,7 @@ describe('Button tests', () => {
       await elementUpdated(button);
 
       button.click();
-      button.renderRoot.querySelector('a')!.click();
+      button.renderRoot.querySelector<HTMLElement>('[part~="base"]')!.click();
 
       expect(clicks).to.be.empty;
     });
@@ -246,9 +246,31 @@ describe('Button tests', () => {
       await elementUpdated(button);
 
       button.click();
-      button.renderRoot.querySelector('a')!.click();
+      button.renderRoot.querySelector<HTMLElement>('[part~="base"]')!.click();
 
       expect(clicks).to.have.lengthOf(1);
+    });
+
+    it('dispatches no click of a disabled link to ancestor capture listeners', async () => {
+      const clicks: Event[] = [];
+      const listener = (event: Event) => {
+        // Keeps the test page in place if the link navigates.
+        event.preventDefault();
+        clicks.push(event);
+      };
+
+      document.addEventListener('click', listener, { capture: true });
+
+      try {
+        button.disabled = true;
+        await elementUpdated(button);
+
+        button.click();
+
+        expect(clicks).to.be.empty;
+      } finally {
+        document.removeEventListener('click', listener, { capture: true });
+      }
     });
 
     it('is accessible when the link is disabled', async () => {
@@ -286,8 +308,9 @@ describe('Button tests', () => {
 
       link.focus();
 
-      expect(link.renderRoot.querySelector('a')!.hasAttribute('href')).to.be
-        .false;
+      expect(
+        link.renderRoot.querySelector('[part~="base"]')!.matches(':disabled')
+      ).to.be.true;
       expect(isFocused(link)).to.be.false;
     });
   });

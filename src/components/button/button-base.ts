@@ -10,7 +10,6 @@ import type { Constructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { partMap } from '#internals/part-map.js';
 import { getElementByIdFromRoot } from '#internals/utils/dom.js';
-import { addSafeEventListener } from '#internals/utils/events.js';
 import { bindIf } from '#internals/utils/lit.js';
 
 export interface IgcButtonEventMap {
@@ -53,7 +52,7 @@ export abstract class IgcButtonBaseComponent extends EventEmitterMixin<
   private _commandfor: string | null = null;
   private _commandForElement: Element | null = null;
 
-  @query('[part="base"]', true)
+  @query('[part~="base"]')
   private readonly _nativeButton?: HTMLButtonElement | HTMLAnchorElement;
 
   //#endregion
@@ -78,6 +77,8 @@ export abstract class IgcButtonBaseComponent extends EventEmitterMixin<
    * The URL the button points to. When set, the component renders as an
    * `<a>` element instead of a `<button>`, enabling navigation on click.
    * Use together with `target`, `download`, and `rel` for full anchor semantics.
+   * A disabled link renders a disabled `<button>` with the link role, because an
+   * anchor has no disabled state.
    * @attr href
    */
   @property()
@@ -192,13 +193,6 @@ export abstract class IgcButtonBaseComponent extends EventEmitterMixin<
 
   //#region Lifecycle
 
-  constructor() {
-    super();
-    addSafeEventListener(this, 'click', this._handleDisabledLinkClick, {
-      capture: true,
-    });
-  }
-
   protected override firstUpdated(): void {
     this.updateComplete.then(() => {
       if (this._commandfor) {
@@ -223,19 +217,6 @@ export abstract class IgcButtonBaseComponent extends EventEmitterMixin<
       case 'reset':
         this.form?.reset();
         break;
-    }
-  }
-
-  /**
-   * Keeps the click of a disabled link from the host listeners, as a disabled
-   * native button does. Assistive technology can still click the anchor.
-   * It runs on the host in the capture phase, before the capture listeners
-   * that are added after the construction of the host.
-   */
-  private _handleDisabledLinkClick(event: MouseEvent): void {
-    if (this.disabled && this.href != null) {
-      event.preventDefault();
-      event.stopImmediatePropagation();
     }
   }
 
@@ -278,21 +259,12 @@ export abstract class IgcButtonBaseComponent extends EventEmitterMixin<
     `;
   }
 
-  /**
-   * A disabled link renders without `href`, so it leaves the tab order and
-   * cannot navigate. An anchor without `href` has no link role, so it states
-   * the role.
-   */
   private _renderLinkButton() {
-    const disabled = this.disabled;
-
     return html`
       <a
         part=${partMap({ base: true, focused: this._focusRingManager.focused })}
-        role=${ifDefined(disabled ? 'link' : undefined)}
         aria-label=${bindIf(this.ariaLabel, this.ariaLabel)}
-        aria-disabled=${ifDefined(disabled ? 'true' : undefined)}
-        href=${ifDefined(disabled ? undefined : this.href)}
+        href=${ifDefined(this.href)}
         target=${ifDefined(this.target)}
         download=${ifDefined(this.download)}
         rel=${ifDefined(this.rel)}
@@ -302,9 +274,34 @@ export abstract class IgcButtonBaseComponent extends EventEmitterMixin<
     `;
   }
 
+  /**
+   * An anchor has no disabled state, so a disabled link renders a disabled
+   * native button with the link role. It leaves the tab order, and the browser
+   * dispatches no click on it, not even to the capture listeners of ancestors.
+   */
+  private _renderDisabledLink() {
+    return html`
+      <button
+        part=${partMap({ base: true, focused: this._focusRingManager.focused })}
+        role="link"
+        aria-label=${bindIf(this.ariaLabel, this.ariaLabel)}
+        disabled
+        type="button"
+      >
+        ${this._renderContent()}
+      </button>
+    `;
+  }
+
   protected abstract _renderContent(): TemplateResult;
 
   protected override render() {
-    return this.href != null ? this._renderLinkButton() : this._renderButton();
+    if (this.href == null) {
+      return this._renderButton();
+    }
+
+    return this.disabled
+      ? this._renderDisabledLink()
+      : this._renderLinkButton();
   }
 }
