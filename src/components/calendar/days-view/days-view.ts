@@ -17,6 +17,7 @@ import { IgcCalendarBaseComponent } from '../base.js';
 import {
   areSameMonth,
   generateMonth,
+  getDateRangeLabels,
   getViewElement,
   isDateInRanges,
   isNextMonth,
@@ -395,6 +396,19 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
     };
   }
 
+  /** The labels of the descriptors that disable the day or mark it as special. */
+  private _getDayLabels(
+    day: CalendarDay,
+    { disabled, special }: DayProperties
+  ): string[] {
+    const ranges = [
+      ...(disabled ? this._disabledDates : []),
+      ...(special ? this._specialDates : []),
+    ];
+
+    return ranges.length ? getDateRangeLabels(day, ranges) : [];
+  }
+
   //#endregion
 
   //#region Public methods
@@ -411,7 +425,10 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
     props: DayProperties,
     context: DayRenderContext
   ): TemplateResult {
-    const ariaLabel = this._intlFormatDay(day, context);
+    const ariaLabel = [
+      this._intlFormatDay(day, context),
+      ...this._getDayLabels(day, props),
+    ].join(', ');
     const { changePreview, clearPreview } = this._getDayHandlers(day);
 
     return html`

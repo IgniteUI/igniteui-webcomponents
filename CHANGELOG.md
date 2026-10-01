@@ -5,11 +5,17 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+### Added
+- #### Calendar, Date picker, Date range picker
+  - `DateRangeDescriptor` has an optional `label`. The calendar adds the labels of the matching `specialDates` and `disabledDates` descriptors to the accessible name of a date, for example "Thursday, October 8, 2026, Free delivery". Before, the special state was only visual, and assistive technologies did not announce it.
+
 ### Security
 - #### Tile manager
   - `loadLayout` now copies only the serialized tile properties: the spans, the positions, the flags and `id`. A layout from storage or a server can no longer set `innerHTML` on a tile or replace its prototype through `__proto__`. A value that is not an array, and an entry that is not an object, are ignored.
 
 ### Fixed
+- #### Calendar
+  - A calendar without `activeDate` now derives the active date from its value before the first render, so it renders once. Before, it rendered a second time, and Lit in development mode warned that an update was scheduled after an update completed.
 - #### Button, Icon button
   - A button with `href` now keeps the link role of its anchor. Before, the anchor had `role="button"`, so screen readers announced a link as a button.
   - A disabled link now renders a disabled native `<button>` with `role="link"` in place of the anchor, so it leaves the tab order, cannot navigate, and dispatches no click. Before, the link stayed in the tab order, and `Enter` still followed it. The `base` part is the `<button>` while the link is disabled.
