@@ -218,6 +218,17 @@ export abstract class IgcButtonBaseComponent extends EventEmitterMixin<
     }
   }
 
+  /**
+   * Keeps the click of a disabled link from the host listeners, as a disabled
+   * native button does. Assistive technology can still click the anchor.
+   */
+  private _handleLinkClick(event: MouseEvent): void {
+    if (this.disabled) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+    }
+  }
+
   protected formDisabledCallback(state: boolean): void {
     this._disabled = state;
     this.requestUpdate();
@@ -257,17 +268,25 @@ export abstract class IgcButtonBaseComponent extends EventEmitterMixin<
     `;
   }
 
+  /**
+   * A disabled link renders without `href`, so it leaves the tab order and
+   * cannot navigate. An anchor without `href` has no link role, so it states
+   * the role.
+   */
   private _renderLinkButton() {
+    const disabled = this.disabled;
+
     return html`
       <a
         part=${partMap({ base: true, focused: this._focusRingManager.focused })}
-        role="button"
+        role=${ifDefined(disabled ? 'link' : undefined)}
         aria-label=${bindIf(this.ariaLabel, this.ariaLabel)}
-        aria-disabled=${this.disabled}
-        href=${ifDefined(this.href)}
+        aria-disabled=${ifDefined(disabled ? 'true' : undefined)}
+        href=${ifDefined(disabled ? undefined : this.href)}
         target=${ifDefined(this.target)}
         download=${ifDefined(this.download)}
         rel=${ifDefined(this.rel)}
+        @click=${this._handleLinkClick}
       >
         ${this._renderContent()}
       </a>

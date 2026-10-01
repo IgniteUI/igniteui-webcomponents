@@ -44,6 +44,7 @@
 | ------: | ---------- | --------------------- |
 |       1 | 2026-09-21 | Initial specification |
 |       2 | 2026-09-23 | Remove the `prefix` and `suffix` parts, which the button does not render |
+|       3 | 2026-10-01 | A link keeps the link role; a disabled link leaves the tab order and cannot be activated |
 
 ## Overview
 
@@ -131,6 +132,10 @@ ignored. With `target="_blank"`, setting `rel="noopener noreferrer"` is strongly
   Open in a new tab
 </igc-button>
 ```
+
+A disabled link renders the anchor without `href`, so it leaves the tab order, cannot navigate, and its click
+events do not reach the host. It gets the `href` back when it is enabled again. This also applies to a link in a
+disabled fieldset.
 
 #### Form integration
 
@@ -263,31 +268,35 @@ None of their own. The components emit the native events of the rendered `<butto
 4. A button with an `href` is initialized with its default values and passes the accessibility audit.
 5. The `disabled` and `variant` properties are reflected, and so are the link properties.
 6. The shadow DOM structure of the anchor is correct.
+7. The anchor keeps the native link role.
+8. A disabled link, also in a disabled fieldset, renders without `href`, exposes `role="link"` with
+   `aria-disabled`, cannot take focus and emits no click. It gets its `href` back when it is enabled again.
 
 ### Events tests
 
-7. The focus states are correct across the light and the shadow DOM.
+9. The focus states are correct across the light and the shadow DOM.
 
 ### Invoker Commands API
 
-8. The `command` attribute is reflected onto the native button and follows a change of the property.
-9. `commandForElement` resolves from a string id and accepts an element reference, and `commandfor` resolves a
-   target appended after the first render.
-10. A native popover is shown, hidden and toggled on repeated clicks.
-11. A native dialog is opened as modal and closed.
+10. The `command` attribute is reflected onto the native button and follows a change of the property.
+11. `commandForElement` resolves from a string id and accepts an element reference, and `commandfor` resolves a
+    target appended after the first render.
+12. A native popover is shown, hidden and toggled on repeated clicks.
+13. A native dialog is opened as modal and closed.
 
 ### Form integration tests
 
-12. The button is form associated, and submits and resets the form it belongs to.
-13. It follows the disabled state of an ancestor.
+14. The button is form associated, and submits and resets the form it belongs to.
+15. It follows the disabled state of an ancestor.
 
 ### Icon button tests
 
-14. The component renders a native button, and an anchor when `href` is set.
-15. It is created with its default values.
-16. The `name`, `collection`, `mirrored`, `href`, `rel`, `target`, `download` and `disabled` properties are
+16. The component renders a native button, and an anchor when `href` is set.
+17. It is created with its default values.
+18. The `name`, `collection`, `mirrored`, `href`, `rel`, `target`, `download` and `disabled` properties are
     applied.
-17. Every anchor-specific property is applied to the wrapped base element.
+19. Every anchor-specific property is applied to the wrapped base element.
+20. A disabled link renders without `href`, exposes `role="link"` with `aria-disabled`, and cannot take focus.
 
 ### Not covered by the suite
 
@@ -312,8 +321,8 @@ None of their own. The components emit the native events of the rendered `<butto
 - The component renders a native `<button>` or `<a>`, so the role, the disabled semantics and the keyboard
   behavior are the native ones.
 - The `aria-label` of the host is forwarded to the rendered element, which is how an icon button gets its name.
-- An anchor rendered as a disabled button exposes `role="button"` together with `aria-disabled`, since a native
-  anchor has no disabled state.
+- A link keeps the native link role. A disabled link has no `href`, and an anchor without `href` has no role of its
+  own, so it exposes `role="link"` together with `aria-disabled="true"`.
 
 ### Keyboard support
 

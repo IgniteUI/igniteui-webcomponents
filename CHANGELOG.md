@@ -10,6 +10,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - `loadLayout` now copies only the serialized tile properties: the spans, the positions, the flags and `id`. A layout from storage or a server can no longer set `innerHTML` on a tile or replace its prototype through `__proto__`. A value that is not an array, and an entry that is not an object, are ignored.
 
 ### Fixed
+- #### Button, Icon button
+  - A button with `href` now keeps the link role of its anchor. Before, the anchor had `role="button"`, so screen readers announced a link as a button.
+  - A disabled link now renders without `href`, so it leaves the tab order and cannot navigate, and its click events do not reach the host. It has `role="link"` and `aria-disabled="true"`. Before, the link stayed in the tab order, and `Enter` still followed it.
 - #### Accordion
   - The arrow keys, `Home` and `End` now skip a panel that does not render, such as a panel with the `hidden` attribute or `display: none`. Before, the focus stayed on the current panel.
 - #### QR code
