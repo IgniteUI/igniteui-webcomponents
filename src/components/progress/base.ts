@@ -8,6 +8,16 @@ import { asPercent, clamp } from '#internals/utils/math.js';
 import { formatString } from '#internals/utils/strings.js';
 import type { StyleVariant } from '../types.js';
 
+/** The percentage of `max` that the fill and the default label show. */
+interface ProgressPercentage {
+  /** The exact percentage. */
+  percentage: number;
+  /** The whole part of the percentage, rounded to hundredths. */
+  integer: number;
+  /** The hundredths of the rounded percentage, from 0 to 99. */
+  fraction: number;
+}
+
 /* omitModule */
 export abstract class IgcProgressBaseComponent extends LitElement {
   protected abstract _slots: SlotController<any>;
@@ -130,8 +140,9 @@ export abstract class IgcProgressBaseComponent extends LitElement {
       : `${integer}%`;
   }
 
-  private _getPercentage() {
-    const percentage = asPercent(this.value, Math.max(1, this.max));
+  private _getPercentage(): ProgressPercentage {
+    // A `max` of 0 also clamps the value to 0, so there is no ratio to take.
+    const percentage = this.max > 0 ? asPercent(this.value, this.max) : 0;
     // Round to the two decimals of the label first, so that a fraction that
     // rounds up, such as 12.996, carries into the integer instead of ".100".
     const hundredths = Math.round(percentage * 100);

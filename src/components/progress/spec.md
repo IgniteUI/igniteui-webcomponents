@@ -130,7 +130,8 @@ design hand-off link.
 
 `value` is clamped into `0`–`max`: a negative value becomes `0` and a value above the maximum becomes the maximum.
 Lowering `max` below the current value pulls the value down with it, while raising `max` leaves the value as it
-is. Fractional values are kept as they are. A value set at initialization is not reset by the first render.
+is. Fractional values are kept as they are, also for `max`, so a value of `0.25` of `0.5` is 50%. A `max` of `0`
+shows 0%. A value set at initialization is not reset by the first render.
 
 #### Indeterminate state
 
@@ -273,12 +274,14 @@ Both suites are structured the same way, so the scenarios below apply to both in
 14. The value text is the shown percentage of `max`, for example `25%` for a value of `50` of `200`.
 15. The value text keeps the fraction of the shown percentage, with a leading zero, for example `1.05%`, and a
     fraction that rounds up carries into the integer, for example `13%` for `12.996`.
-16. The value text is the `labelFormat` text when one is set.
-17. The indeterminate mode reports no value and no value text.
+16. The value text is the shown percentage of a fractional `max`, for example `50%` for `0.25` of `0.5`, and `0%` for a
+    `max` of `0`.
+17. The value text is the `labelFormat` text when one is set.
+18. The indeterminate mode reports no value and no value text.
 
 ### Issues
 
-18. Issue #1083 — a value set at initialization is not reset by the first render.
+19. Issue #1083 — a value set at initialization is not reset by the first render.
 
 ### Not covered by the suite
 

@@ -5,7 +5,7 @@ import {
   html,
   nextFrame,
 } from '@open-wc/testing';
-import { spy } from 'sinon';
+import { internalsOf } from '#internals/controllers/internals.js';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
 import { firstOf } from '#internals/utils/arrays.js';
 import IgcCircularGradientComponent from './circular-gradient.js';
@@ -251,52 +251,57 @@ describe('Circular progress component', () => {
   });
 
   describe('Accessibility', () => {
-    let internals: ElementInternals;
+    /** The ARIA that the progress publishes through its element internals. */
+    const getARIA = <T extends keyof ARIAMixin>(name: T) =>
+      internalsOf(progress)?.getARIA(name);
 
     beforeEach(async () => {
-      // The ARIA state of the host lives in its ElementInternals, so the spy
-      // keeps the instance that the component attaches.
-      const attachInternals = spy(HTMLElement.prototype, 'attachInternals');
-
-      try {
-        progress = await fixture<IgcCircularProgressComponent>(html`
-          <igc-circular-progress animation-duration="0"></igc-circular-progress>
-        `);
-        internals =
-          attachInternals.returnValues[
-            attachInternals.thisValues.indexOf(progress)
-          ];
-      } finally {
-        attachInternals.restore();
-      }
+      progress = await fixture<IgcCircularProgressComponent>(html`
+        <igc-circular-progress animation-duration="0"></igc-circular-progress>
+      `);
     });
 
     it('reports the shown percentage of `max` as the value text', async () => {
       await updateProgress('max', 200);
       await updateProgress('value', 50);
 
-      expect(internals.ariaValueNow).to.equal('50');
-      expect(internals.ariaValueMax).to.equal('200');
-      expect(internals.ariaValueText).to.equal('25%');
+      expect(getARIA('ariaValueNow')).to.equal('50');
+      expect(getARIA('ariaValueMax')).to.equal('200');
+      expect(getARIA('ariaValueText')).to.equal('25%');
       expect(getDOM(progress).integerLabel).to.equal('25');
     });
 
     it('reports the fraction of the shown percentage in the value text', async () => {
       await updateProgress('max', 3);
       await updateProgress('value', 1);
-      expect(internals.ariaValueText).to.equal('33.33%');
+      expect(getARIA('ariaValueText')).to.equal('33.33%');
 
       await updateProgress('max', 100);
       await updateProgress('value', 1.05);
-      expect(internals.ariaValueText).to.equal('1.05%');
+      expect(getARIA('ariaValueText')).to.equal('1.05%');
     });
 
     it('carries a fraction that rounds up into the value text', async () => {
       await updateProgress('value', 12.996);
-      expect(internals.ariaValueText).to.equal('13%');
+      expect(getARIA('ariaValueText')).to.equal('13%');
 
       await updateProgress('value', 99.996);
-      expect(internals.ariaValueText).to.equal('100%');
+      expect(getARIA('ariaValueText')).to.equal('100%');
+    });
+
+    it('reports the percentage of a fractional `max`', async () => {
+      await updateProgress('max', 0.5);
+      await updateProgress('value', 0.25);
+
+      expect(getARIA('ariaValueText')).to.equal('50%');
+      expect(getDOM(progress).integerLabel).to.equal('50');
+    });
+
+    it('reports 0% for a `max` of 0', async () => {
+      await updateProgress('max', 0);
+
+      expect(getARIA('ariaValueText')).to.equal('0%');
+      expect(getDOM(progress).integerLabel).to.equal('0');
     });
 
     it('reports the formatted label as the value text', async () => {
@@ -304,15 +309,15 @@ describe('Circular progress component', () => {
       await updateProgress('max', 10);
       await updateProgress('value', 8);
 
-      expect(internals.ariaValueText).to.equal('Task 8 of 10');
+      expect(getARIA('ariaValueText')).to.equal('Task 8 of 10');
     });
 
     it('reports no value in indeterminate mode', async () => {
       await updateProgress('value', 40);
       await updateProgress('indeterminate', true);
 
-      expect(internals.ariaValueNow).to.be.null;
-      expect(internals.ariaValueText).to.be.null;
+      expect(getARIA('ariaValueNow')).to.be.null;
+      expect(getARIA('ariaValueText')).to.be.null;
     });
   });
 
