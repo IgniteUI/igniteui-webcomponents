@@ -190,7 +190,7 @@ A container for the header section of the card.
 | `thumbnail` | Renders header media, such as an icon or a small image.            |
 | `title`     | Renders the card title, typically a heading element.               |
 | `subtitle`  | Renders the card subtitle, typically a smaller heading or text.    |
-| (default)   | Renders additional content displayed next to the title area.       |
+| (default)   | Renders additional content under the title and the subtitle.       |
 
 | Part       | Description                      |
 | ---------- | -------------------------------- |
@@ -241,7 +241,7 @@ The suite lives in [`card.spec.ts`](./card.spec.ts) and runs in a real browser t
 ### Card header
 
 3. The thumbnail, title and subtitle slots render in their containers, and the parts are applied.
-4. Additional default slot content renders next to the title area.
+4. Additional default slot content renders under the title and the subtitle.
 
 ### Card media
 
