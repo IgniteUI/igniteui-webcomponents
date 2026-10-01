@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - `loadLayout` now copies only the serialized tile properties: the spans, the positions, the flags and `id`. A layout from storage or a server can no longer set `innerHTML` on a tile or replace its prototype through `__proto__`. A value that is not an array, and an entry that is not an object, are ignored.
 
 ### Fixed
+- #### Accordion
+  - The arrow keys, `Home` and `End` now skip a panel that does not render, such as a panel with the `hidden` attribute or `display: none`. Before, the focus stayed on the current panel.
 - #### QR code
   - Versions 30 to 40 at the `M` error correction level now use the data codeword counts of ISO/IEC 18004. Before, these codes had the wrong block structure.
   - Without `error-level`, a logo larger than the safe area of level `M` now raises the error correction level to the smallest one that holds the logo, as documented. Before, the default `M` always applied, so the logo shrank. An explicit `error-level`, `M` included, still caps the logo.
