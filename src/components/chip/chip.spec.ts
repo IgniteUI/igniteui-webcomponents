@@ -311,15 +311,18 @@ describe('Chip', () => {
 
   describe('Focus', () => {
     it('moves the focus to the action control on focus()', async () => {
-      const chip = await fixture<IgcChipComponent>(
-        html`<igc-chip removable>Chip</igc-chip>`
-      );
-      const action = chip.renderRoot.querySelector('[part="action"]')!;
+      for (const template of [
+        html`<igc-chip>Chip</igc-chip>`,
+        html`<igc-chip removable>Chip</igc-chip>`,
+      ]) {
+        const chip = await fixture<IgcChipComponent>(template);
+        const action = chip.renderRoot.querySelector('[part="action"]')!;
 
-      chip.focus();
+        chip.focus();
 
-      expect(isFocused(chip)).to.be.true;
-      expect(isFocused(action)).to.be.true;
+        expect(isFocused(chip)).to.be.true;
+        expect(isFocused(action)).to.be.true;
+      }
     });
 
     it('removes the focus on blur()', async () => {
