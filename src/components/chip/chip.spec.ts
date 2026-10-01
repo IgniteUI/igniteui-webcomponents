@@ -1,6 +1,7 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import { spy } from 'sinon';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { isFocused } from '#internals/testing/helpers.spec.js';
 import IgcChipComponent from './chip.js';
 
 describe('Chip', () => {
@@ -305,6 +306,41 @@ describe('Chip', () => {
       expect(chip.selected).to.be.true;
       expect(eventSpy).calledOnce;
       expect(eventSpy.firstCall.args[0].detail).to.be.true;
+    });
+  });
+
+  describe('Focus', () => {
+    it('moves the focus to the action control on focus()', async () => {
+      const chip = await fixture<IgcChipComponent>(
+        html`<igc-chip removable>Chip</igc-chip>`
+      );
+      const action = chip.renderRoot.querySelector('[part="action"]')!;
+
+      chip.focus();
+
+      expect(isFocused(chip)).to.be.true;
+      expect(isFocused(action)).to.be.true;
+    });
+
+    it('removes the focus on blur()', async () => {
+      const chip = await fixture<IgcChipComponent>(
+        html`<igc-chip>Chip</igc-chip>`
+      );
+
+      chip.focus();
+      chip.blur();
+
+      expect(isFocused(chip)).to.be.false;
+    });
+
+    it('does not take the focus while disabled', async () => {
+      const chip = await fixture<IgcChipComponent>(
+        html`<igc-chip disabled removable>Chip</igc-chip>`
+      );
+
+      chip.focus();
+
+      expect(isFocused(chip)).to.be.false;
     });
   });
 });

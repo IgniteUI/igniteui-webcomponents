@@ -14,6 +14,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - `loadLayout` now copies only the serialized tile properties: the spans, the positions, the flags and `id`. A layout from storage or a server can no longer set `innerHTML` on a tile or replace its prototype through `__proto__`. A value that is not an array, and an entry that is not an object, are ignored.
 
 ### Fixed
+- #### Chip
+  - The chip now delegates the focus to its action control, so `focus()` and `blur()` work on the host. Before, `focus()` did nothing, so an application could not move the focus to a chip, for example after a removal.
 - #### Checkbox
   - The indicator icon is now hidden from assistive technologies. Before, each checkbox had an unnamed image next to it in the accessibility tree.
 - #### Calendar

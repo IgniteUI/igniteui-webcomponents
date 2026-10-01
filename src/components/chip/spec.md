@@ -14,6 +14,7 @@
       - [Basic initialization](#basic-initialization)
       - [Selection](#selection)
       - [Removal](#removal)
+      - [Focus](#focus)
       - [The content slots](#the-content-slots)
     - [Localization](#localization)
     - [Keyboard interactions](#keyboard-interactions)
@@ -28,6 +29,7 @@
     - [Accessibility tests](#accessibility-tests)
     - [Rendering](#rendering)
     - [Events tests](#events-tests)
+    - [Focus tests](#focus-tests)
     - [Not covered by the suite](#not-covered-by-the-suite)
   - [Assumptions and limitations](#assumptions-and-limitations)
   - [Accessibility](#accessibility)
@@ -40,6 +42,7 @@
 | Version | Date       | Notes                 |
 | ------: | ---------- | --------------------- |
 |       1 | 2026-09-21 | Initial specification |
+|       2 | 2026-10-01 | Delegate the focus    |
 
 ## Overview
 
@@ -116,6 +119,12 @@ with the new state in its detail, before the selection animation runs. A chip th
 `removable` renders a remove control inside the chip, which emits `igcRemove` when it is activated. Activating it
 does not emit `igcSelect`, and a disabled chip renders no remove control at all. A chip that is not removable does
 not intercept the activation keys.
+
+#### Focus
+
+The chip delegates the focus to its action control, so `focus()` and `blur()` work on the host, and the host
+matches `:focus` while the action control has the focus. A disabled chip takes no focus. After a removal, the chip
+that had the focus is gone, so the application moves the focus, for example to the next chip with `focus()`.
 
 #### The content slots
 
@@ -228,6 +237,12 @@ The detail of `igcSelect` is the new `selected` state of the chip.
 10. `igcRemove` is emitted when the remove control is activated, and `igcSelect` is not.
 11. A chip that is not removable does not intercept the activation keys.
 12. `igcSelect` is emitted from the action control.
+
+### Focus tests
+
+13. `focus()` moves the focus to the action control, also when the chip is removable.
+14. `blur()` removes the focus.
+15. A disabled chip does not take the focus.
 
 ### Not covered by the suite
 
