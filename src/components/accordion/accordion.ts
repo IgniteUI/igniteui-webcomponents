@@ -54,7 +54,7 @@ export default class IgcAccordionComponent extends LitElement {
    */
   private get _navigablePanels(): IgcExpansionPanelComponent[] {
     return this._interactivePanels.filter((panel) =>
-      panel.checkVisibility({ visibilityProperty: true })
+      this._getPanelHeader(panel)?.checkVisibility({ visibilityProperty: true })
     );
   }
 
