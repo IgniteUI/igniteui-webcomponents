@@ -123,6 +123,29 @@ describe('IconButton component', () => {
       expect(el).shadowDom.to.equal(`<a href="${el.href}" />`, DIFF_OPTIONS);
     });
 
+    it('takes a disabled link out of the tab order', async () => {
+      el.href = 'https://test.com';
+      el.disabled = true;
+      await elementUpdated(el);
+
+      const base = el.renderRoot.querySelector('[part~="base"]')!;
+      el.focus();
+
+      expect(base.localName).to.equal('button');
+      expect(base.getAttribute('role')).to.equal('link');
+      expect(base.matches(':disabled')).to.be.true;
+      expect(el.matches(':focus')).to.be.false;
+    });
+
+    it('is accessible when the link is disabled', async () => {
+      el.href = 'https://test.com';
+      el.disabled = true;
+      await elementUpdated(el);
+
+      await expect(el).to.be.accessible();
+      await expect(el).shadowDom.to.be.accessible();
+    });
+
     it('sets rel property successfully', async () => {
       el.href = 'https://test.com';
       el.rel = 'test';
