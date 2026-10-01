@@ -11,6 +11,7 @@ import {
   type InferSlotNames,
   setSlots,
 } from '#internals/controllers/slot.js';
+import { shadowOptions } from '#internals/decorators/shadow-options.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import type { I18nControllerConfig } from '#internals/i18n/i18n-controller.js';
 import type { Constructor } from '#internals/mixins/constructor.js';
@@ -58,6 +59,7 @@ const i18n: I18nControllerConfig<IChipResourceStrings> = {
  * @csspart suffix - The suffix container of the chip.
  * @csspart remove - The container of the remove control of the chip.
  */
+@shadowOptions({ delegatesFocus: true })
 export default class IgcChipComponent extends I18nMixin(
   EventEmitterMixin<IgcChipComponentEventMap, Constructor<LitElement>>(
     LitElement
