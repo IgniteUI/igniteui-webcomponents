@@ -14,6 +14,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - `loadLayout` now copies only the serialized tile properties: the spans, the positions, the flags and `id`. A layout from storage or a server can no longer set `innerHTML` on a tile or replace its prototype through `__proto__`. A value that is not an array, and an entry that is not an object, are ignored.
 
 ### Fixed
+- #### Checkbox
+  - The indicator icon is now hidden from assistive technologies. Before, each checkbox had an unnamed image next to it in the accessibility tree.
 - #### Calendar
   - A calendar without `activeDate` now derives the active date from its value before the first render, so it renders once. Before, it rendered a second time, and Lit in development mode warned that an update was scheduled after an update completed.
 - #### Button, Icon button
