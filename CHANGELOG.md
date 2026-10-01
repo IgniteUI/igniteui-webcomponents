@@ -14,6 +14,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - `loadLayout` now copies only the serialized tile properties: the spans, the positions, the flags and `id`. A layout from storage or a server can no longer set `innerHTML` on a tile or replace its prototype through `__proto__`. A value that is not an array, and an entry that is not an object, are ignored.
 
 ### Fixed
+- #### Combo
+  - Arrow Down no longer closes the list, or moves the focus back to the search input, when a search finds one match or none.
+  - A form reset now clears the invalid styles of a required single-selection combo that had the focus.
+- #### Input, Mask input, Date time input, File input, Textarea, Select, Combo, Date picker, Date range picker, Color picker
+  - The asterisk of a required control is no longer part of its accessible name. Before, screen readers read the label as "Email star".
 - #### Linear progress, Circular progress
   - The default `aria-valuetext` is now the percentage that the label shows. Before, it was the value with a percent sign: "50%" for 50 of 200, while the label showed 25%.
   - The percentage now rounds correctly to two decimals: 12.996% shows as 13%, not "12.100%", and 1.005% shows as 1.01%, not 1%.

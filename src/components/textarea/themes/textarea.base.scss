@@ -112,11 +112,12 @@ textarea {
 :host([required]) {
     [part~='label'] {
         &::after {
-            content: '*';
             font-size: inherit;
             vertical-align: top;
             margin-inline-start: pad-inline(rem(2px));
             display: inline-block;
+
+            @include required-asterisk();
         }
     }
 }

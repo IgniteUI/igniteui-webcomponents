@@ -47,6 +47,7 @@
 | ------: | ---------- | -------------------------------------------------- |
 |       1 | 2026-09-21 | Initial specification                              |
 |       2 | 2026-09-24 | Describe the naming order and the host ARIA naming |
+|       3 | 2026-10-01 | Correct the `igcChange` cancelability; Arrow Down at the end of the list; input reset |
 
 ## Overview
 
@@ -236,7 +237,7 @@ names it.
 ```
 
 - The selection is submitted under `name`.
-- A form reset restores `defaultValue`.
+- A form reset restores `defaultValue` and clears the invalid styles of the control and its input.
 - An invalid control blocks submission.
 
 ### Localization
@@ -268,7 +269,7 @@ While the list of options **is** visible:
 
 | Key combination                             | Result                                                                        |
 | ------------------------------------------- | ------------------------------------------------------------------------------ |
-| <kbd>Arrow Down</kbd>                       | Activates the next option.                                                    |
+| <kbd>Arrow Down</kbd>                       | Activates the next option; at the last option it does nothing.                |
 | <kbd>Arrow Up</kbd>                         | Activates the previous option; from the first option it returns to the input. |
 | <kbd>Space</kbd>                            | Selects or deselects the active option.                                       |
 | <kbd>Enter</kbd>                            | Selects the active option in single selection mode, and closes the list in all modes. |
@@ -352,7 +353,7 @@ type ComboItemTemplate<T extends object> = (props: { item: T }) => TemplateResul
 
 | Name       | Cancellable | Description                                       |
 | ---------- | ----------- | ------------------------------------------------- |
-| igcChange  | false       | Emitted when the selection of the control changes. |
+| igcChange  | true        | Emitted before the selection changes. A cancel keeps the selection. |
 | igcOpening | true        | Emitted just before the list of options is opened. |
 | igcOpened  | false       | Emitted after the list of options is opened.      |
 | igcClosing | true        | Emitted just before the list of options is closed. |
@@ -425,9 +426,9 @@ helpers from [`src/internals/testing`](../../internals/testing). The groups belo
 7. Item and group header templating.
 8. The empty message and the `empty` slot.
 9. Localization through `locale` and `resourceStrings`.
-10. Opening, closing and the keyboard navigation of the list.
+10. Opening, closing and the keyboard navigation of the list, including Arrow Down at the end of the matches.
 11. The clear action and `disableClear`.
-12. `igcChange` carries the new value, the items and the change type.
+12. `igcChange` carries the new value, the items and the change type, and a cancel keeps the selection.
 
 ### ARIA
 
@@ -440,7 +441,7 @@ helpers from [`src/internals/testing`](../../internals/testing). The groups belo
 
 ### Form integration tests
 
-15. Is form associated, submits its selection, and is reset with the form.
+15. Is form associated, submits its selection, and is reset with the form, including the single-selection input.
 16. Reflects the disabled state of an ancestor `fieldset`.
 17. Fulfils the required and custom constraints.
 
