@@ -108,8 +108,7 @@ describe('Circular progress component', () => {
       await updateProgress('value', 12.996);
 
       expect(getDOM(progress).integerLabel).to.equal('13');
-      expect(progress.renderRoot.querySelector('[part~="fraction"]')).to.be
-        .null;
+      expect(getDOM(progress).fraction).to.be.null;
     });
 
     it('clamps negative values', async () => {
@@ -251,7 +250,6 @@ describe('Circular progress component', () => {
   });
 
   describe('Accessibility', () => {
-    /** The ARIA that the progress publishes through its element internals. */
     const getARIA = <T extends keyof ARIAMixin>(name: T) =>
       internalsOf(progress)?.getARIA(name);
 
@@ -262,46 +260,30 @@ describe('Circular progress component', () => {
     });
 
     it('reports the shown percentage of `max` as the value text', async () => {
-      await updateProgress('max', 200);
-      await updateProgress('value', 50);
+      const cases: [max: number, value: number, text: string][] = [
+        [200, 50, '25%'],
+        [3, 1, '33.33%'],
+        [100, 1.05, '1.05%'],
+        [100, 12.996, '13%'],
+        [100, 99.996, '100%'],
+        [100, 1.005, '1.01%'],
+        [0.5, 0.25, '50%'],
+        [0, 0, '0%'],
+      ];
 
-      expect(getARIA('ariaValueNow')).to.equal('50');
-      expect(getARIA('ariaValueMax')).to.equal('200');
-      expect(getARIA('ariaValueText')).to.equal('25%');
-      expect(getDOM(progress).integerLabel).to.equal('25');
-    });
+      for (const [max, value, text] of cases) {
+        await updateProgress('max', max);
+        await updateProgress('value', value);
 
-    it('reports the fraction of the shown percentage in the value text', async () => {
-      await updateProgress('max', 3);
-      await updateProgress('value', 1);
-      expect(getARIA('ariaValueText')).to.equal('33.33%');
-
-      await updateProgress('max', 100);
-      await updateProgress('value', 1.05);
-      expect(getARIA('ariaValueText')).to.equal('1.05%');
-    });
-
-    it('carries a fraction that rounds up into the value text', async () => {
-      await updateProgress('value', 12.996);
-      expect(getARIA('ariaValueText')).to.equal('13%');
-
-      await updateProgress('value', 99.996);
-      expect(getARIA('ariaValueText')).to.equal('100%');
-    });
-
-    it('reports the percentage of a fractional `max`', async () => {
-      await updateProgress('max', 0.5);
-      await updateProgress('value', 0.25);
-
-      expect(getARIA('ariaValueText')).to.equal('50%');
-      expect(getDOM(progress).integerLabel).to.equal('50');
-    });
-
-    it('reports 0% for a `max` of 0', async () => {
-      await updateProgress('max', 0);
-
-      expect(getARIA('ariaValueText')).to.equal('0%');
-      expect(getDOM(progress).integerLabel).to.equal('0');
+        const message = `${value} of ${max}`;
+        expect(getARIA('ariaValueNow'), message).to.equal(String(value));
+        expect(getARIA('ariaValueMax'), message).to.equal(String(max));
+        expect(getARIA('ariaValueText'), message).to.equal(text);
+        expect(
+          Number.parseFloat(getDOM(progress).wholeLabel),
+          message
+        ).to.equal(Number.parseFloat(text));
+      }
     });
 
     it('reports the formatted label as the value text', async () => {
@@ -372,6 +354,16 @@ function getDOM(progress: IgcCircularProgressComponent) {
       return getComputedStyle(
         progress.renderRoot.querySelector('[part~="counter"]')!
       ).getPropertyValue('--_progress-integer');
+    },
+    get fraction() {
+      return progress.renderRoot.querySelector<HTMLElement>(
+        '[part~="fraction"]'
+      );
+    },
+    get wholeLabel() {
+      return getComputedStyle(
+        progress.renderRoot.querySelector('[part~="base"]')!
+      ).getPropertyValue('--_progress-whole');
     },
     get fractionLabel() {
       return getComputedStyle(

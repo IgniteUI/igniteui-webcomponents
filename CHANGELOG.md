@@ -15,9 +15,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 - #### Linear progress, Circular progress
-  - The default `aria-valuetext` is now the percentage that the label shows. Before, it was the value with a percent sign, so for a value of 50 of 200 a screen reader read "50%" while the label showed 25%.
-  - A percentage with a fraction that rounds up, such as 12.996%, now shows as 13%. Before, the label showed "12.100%".
-  - A fractional `max` now gives the correct percentage, for example 50% for a value of 0.25 of 0.5. Before, the fill and the label used a `max` of at least 1, so they showed 25%.
+  - The default `aria-valuetext` is now the percentage that the label shows. Before, it was the value with a percent sign: "50%" for 50 of 200, while the label showed 25%.
+  - The percentage now rounds correctly to two decimals: 12.996% shows as 13%, not "12.100%", and 1.005% shows as 1.01%, not 1%.
+  - A fractional `max` now gives the correct percentage, such as 50% for 0.25 of 0.5. Before, it showed 25%.
 - #### Chip
   - The chip now delegates the focus to its action control, so `focus()` and `blur()` work on the host. Before, `focus()` did nothing, so an application could not move the focus to a chip, for example after a removal.
 - #### Checkbox

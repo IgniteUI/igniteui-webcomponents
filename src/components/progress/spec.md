@@ -141,9 +141,10 @@ once it becomes determinate again.
 
 #### Label
 
-The default label shows the value as a percentage of `max`, rounded to two decimals, so `12.996` shows as `13%`. `labelFormat` replaces it, with `{0}` for the current value and
-`{1}` for the maximum. `hideLabel` hides it. Content projected in the default slot replaces the label entirely and
-is affected by neither `hideLabel` nor `indeterminate`.
+The default label shows the value as a percentage of `max`, rounded to two decimals: `12.996` shows `13%`, and
+`1.005` shows `1.01%`. `labelFormat` replaces it, with `{0}` for the current value and `{1}` for the maximum.
+`hideLabel` hides it. Content projected in the default slot replaces the label entirely and is affected by neither
+`hideLabel` nor `indeterminate`.
 
 ```html
 <igc-circular-progress label-format="{0} of {1} files"></igc-circular-progress>
@@ -271,11 +272,10 @@ Both suites are structured the same way, so the scenarios below apply to both in
 
 ### ARIA state
 
-14. The value text is the shown percentage of `max`, for example `25%` for a value of `50` of `200`.
-15. The value text keeps the fraction of the shown percentage, with a leading zero, for example `1.05%`, and a
-    fraction that rounds up carries into the integer, for example `13%` for `12.996`.
-16. The value text is the shown percentage of a fractional `max`, for example `50%` for `0.25` of `0.5`, and `0%` for a
-    `max` of `0`.
+14. The value text is the shown percentage of `max`, for example `25%` for `50` of `200`.
+15. The value text keeps two decimals (`1.05%`) and rounds as the label does (`13%` for `12.996`, `1.01%` for
+    `1.005`), also in the fill.
+16. The value text handles a fractional `max` (`50%` for `0.25` of `0.5`) and a `max` of `0` (`0%`).
 17. The value text is the `labelFormat` text when one is set.
 18. The indeterminate mode reports no value and no value text.
 

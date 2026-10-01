@@ -4,19 +4,14 @@ import type { StyleInfo } from 'lit/directives/style-map.js';
 import { addInternalsController } from '#internals/controllers/internals.js';
 import type { SlotController } from '#internals/controllers/slot.js';
 import { partMap } from '#internals/part-map.js';
-import { asPercent, clamp } from '#internals/utils/math.js';
+import {
+  asNumber,
+  asPercent,
+  clamp,
+  roundPrecise,
+} from '#internals/utils/math.js';
 import { formatString } from '#internals/utils/strings.js';
 import type { StyleVariant } from '../types.js';
-
-/** The percentage of `max` that the fill and the default label show. */
-interface ProgressPercentage {
-  /** The exact percentage. */
-  percentage: number;
-  /** The whole part of the percentage, rounded to hundredths. */
-  integer: number;
-  /** The hundredths of the rounded percentage, from 0 to 99. */
-  fraction: number;
-}
 
 /* omitModule */
 export abstract class IgcProgressBaseComponent extends LitElement {
@@ -26,13 +21,10 @@ export abstract class IgcProgressBaseComponent extends LitElement {
   protected _base!: HTMLElement;
 
   @state()
-  protected _percentage = 0;
-
-  @state()
-  protected _progress = 0;
-
-  @state()
   protected _hasFraction = false;
+
+  /** The default label text, which the CSS counters of the label also show. */
+  private _percentText = '0%';
 
   @state()
   protected _styleInfo: StyleInfo = {
@@ -129,37 +121,21 @@ export abstract class IgcProgressBaseComponent extends LitElement {
   }
 
   private get _labelText(): string {
-    if (this.labelFormat) {
-      return this._renderLabelFormat();
-    }
-
-    // The same text as the CSS counters of the default label.
-    const { integer, fraction } = this._getPercentage();
-    return fraction > 0
-      ? `${integer}.${fraction.toString().padStart(2, '0')}%`
-      : `${integer}%`;
-  }
-
-  private _getPercentage(): ProgressPercentage {
-    // A `max` of 0 also clamps the value to 0, so there is no ratio to take.
-    const percentage = this.max > 0 ? asPercent(this.value, this.max) : 0;
-    // Round to the two decimals of the label first, so that a fraction that
-    // rounds up, such as 12.996, carries into the integer instead of ".100".
-    const hundredths = Math.round(percentage * 100);
-
-    return {
-      percentage,
-      integer: Math.floor(hundredths / 100),
-      fraction: hundredths % 100,
-    };
+    return this.labelFormat ? this._renderLabelFormat() : this._percentText;
   }
 
   private _updateProgress(): void {
-    const { percentage, integer, fraction } = this._getPercentage();
+    // Avoid 0 / 0: a `max` of 0 clamps the value to 0.
+    const exact = this.max > 0 ? asPercent(this.value, this.max) : 0;
+    // Round before the split, so 12.996 shows 13%, not "12.100%".
+    const whole = roundPrecise(exact, 2).toFixed(2);
+    const [integer, fraction] = whole.split('.').map((part) => asNumber(part));
+
     this._hasFraction = fraction > 0;
+    this._percentText = `${this._hasFraction ? whole : integer}%`;
 
     this._styleInfo = {
-      '--_progress-whole': percentage.toFixed(2),
+      '--_progress-whole': whole,
       '--_progress-integer': integer,
       '--_progress-fraction': fraction,
       '--_transition-duration': `${this.animationDuration}ms`,
