@@ -38,7 +38,7 @@
 
 :host([required]) {
     [part='label']::after {
-        content: '*';
+        @include required-asterisk();
     }
 }
 

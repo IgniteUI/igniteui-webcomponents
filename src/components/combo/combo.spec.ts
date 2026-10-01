@@ -947,6 +947,40 @@ describe('Combo', () => {
       expect(combo.open).to.be.false;
     });
 
+    it('keeps the dropdown open on Arrow Down at the end of the matches in single-select mode', async () => {
+      combo.singleSelect = true;
+      await elementUpdated(combo);
+      await openComboPopover(combo);
+
+      await filterCombo('sof');
+      simulateKeyboard(input, arrowDown);
+      await elementUpdated(combo);
+
+      expect(combo.open).to.be.true;
+      expect(firstOf(items(combo)).active).to.be.true;
+
+      await filterCombo('xxx');
+      simulateKeyboard(input, arrowDown);
+      await elementUpdated(combo);
+
+      expect(combo.open).to.be.true;
+    });
+
+    it('keeps the focus in the list on Arrow Down at the only match', async () => {
+      await openComboPopover(combo);
+      searchInput.dispatchEvent(new CustomEvent('igcInput', { detail: 'sof' }));
+      await elementUpdated(combo);
+      await layoutComplete(combo);
+
+      simulateKeyboard(searchInput, arrowDown);
+      await elementUpdated(combo);
+      simulateKeyboard(list, arrowDown);
+      await elementUpdated(combo);
+
+      expect(isFocused(searchInput)).to.be.false;
+      expect(firstOf(items(combo)).active).to.be.true;
+    });
+
     it('should close the dropdown on Arrow Up in single-select mode', async () => {
       combo.singleSelect = true;
       await elementUpdated(combo);
@@ -1900,6 +1934,39 @@ describe('Combo', () => {
 
       spec.element.setCustomValidity('');
       spec.assertSubmitPasses();
+    });
+
+    it('clears the invalid styles of the single-select input on form reset', async () => {
+      spec.setAttributes({ value: '[]' });
+      spec.setProperties({ singleSelect: true, required: true });
+      await elementUpdated(spec.element);
+
+      const target =
+        spec.element.renderRoot.querySelector<IgcInputComponent>('#target')!;
+
+      simulateBlur(target.renderRoot.querySelector('input')!);
+      await elementUpdated(spec.element);
+      ValidityHelpers.hasInvalidStyles(target).to.be.true;
+
+      spec.reset();
+      await elementUpdated(spec.element);
+
+      ValidityHelpers.hasInvalidStyles(spec.element).to.be.false;
+      ValidityHelpers.hasInvalidStyles(target).to.be.false;
+    });
+
+    it('keeps the text of the single-select input on form reset', async () => {
+      spec.setProperties({ singleSelect: true });
+      await elementUpdated(spec.element);
+
+      const target =
+        spec.element.renderRoot.querySelector<IgcInputComponent>('#target')!;
+      expect(target.value).to.equal('Sofia');
+
+      spec.reset();
+      await elementUpdated(spec.element);
+
+      expect(target.value).to.equal('Sofia');
     });
   });
 

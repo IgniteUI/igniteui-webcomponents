@@ -146,7 +146,7 @@
 }
 
 :host([required]) [part='label']::after {
-    content: '*';
+    @include required-asterisk();
 }
 
 @media (forced-colors: active) {
