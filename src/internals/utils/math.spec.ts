@@ -56,6 +56,11 @@ describe('Math utilities', () => {
       expect(numberOfDecimals(Number.NaN)).to.equal(0);
       expect(numberOfDecimals(Number.POSITIVE_INFINITY)).to.equal(0);
     });
+
+    it('should be a no-op for negative magnitudes', () => {
+      expect(roundPrecise(1.23456, -2)).to.equal(1.23456);
+      expect(roundPrecise(123, -2)).to.equal(123);
+    });
   });
 
   describe('roundPrecise', () => {
