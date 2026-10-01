@@ -30,6 +30,7 @@
     - [Attributes and properties](#attributes-and-properties)
     - [Rendering](#rendering)
     - [Gradients](#gradients)
+    - [ARIA state](#aria-state)
     - [Issues](#issues)
     - [Not covered by the suite](#not-covered-by-the-suite)
   - [Assumptions and limitations](#assumptions-and-limitations)
@@ -44,6 +45,7 @@
 | ------: | ---------- | --------------------- |
 |       1 | 2026-09-21 | Initial specification |
 |       2 | 2026-09-23 | Limit the variant parts to the linear progress |
+|       3 | 2026-10-01 | Announce the shown percentage, round it to two decimals |
 
 ## Overview
 
@@ -138,7 +140,7 @@ once it becomes determinate again.
 
 #### Label
 
-The default label shows the value as a percentage. `labelFormat` replaces it, with `{0}` for the current value and
+The default label shows the value as a percentage of `max`, rounded to two decimals, so `12.996` shows as `13%`. `labelFormat` replaces it, with `{0}` for the current value and
 `{1}` for the maximum. `hideLabel` hides it. Content projected in the default slot replaces the label entirely and
 is affected by neither `hideLabel` nor `indeterminate`.
 
@@ -248,7 +250,8 @@ Both suites are structured the same way, so the scenarios below apply to both in
 
 3. `hideLabel` toggles the default label.
 4. The `variant` attribute is reflected, and so is `striped` for the linear indicator.
-5. The value is reflected in the fill, including fractional values.
+5. The value is reflected in the fill, including fractional values, and a fraction that rounds up carries into
+   the integer.
 6. A negative value is clamped to `0`, and a value above the maximum to the maximum.
 7. Lowering `max` below the value pulls the value down; raising it leaves the value as it is.
 8. The `indeterminate` attribute is reflected and hides the default label.
@@ -265,9 +268,17 @@ Both suites are structured the same way, so the scenarios below apply to both in
 
 13. The circular indicator renders slotted gradient stops.
 
+### ARIA state
+
+14. The value text is the shown percentage of `max`, for example `25%` for a value of `50` of `200`.
+15. The value text keeps the fraction of the shown percentage, with a leading zero, for example `1.05%`, and a
+    fraction that rounds up carries into the integer, for example `13%` for `12.996`.
+16. The value text is the `labelFormat` text when one is set.
+17. The indeterminate mode reports no value and no value text.
+
 ### Issues
 
-14. Issue #1083 — a value set at initialization is not reset by the first render.
+18. Issue #1083 — a value set at initialization is not reset by the first render.
 
 ### Not covered by the suite
 
@@ -291,7 +302,8 @@ Both suites are structured the same way, so the scenarios below apply to both in
 
 - Both indicators have `role="progressbar"`, with `aria-valuemin` fixed at `0` and `aria-valuemax` taken from
   `max`.
-- In the determinate mode `aria-valuenow` carries the value and `aria-valuetext` the formatted label.
+- In the determinate mode `aria-valuenow` carries the value, and `aria-valuetext` carries the text of the default
+  label: the shown percentage of `max`, or the `labelFormat` text. Content in the default slot does not change it.
 - In the indeterminate mode both are dropped, which is how an operation of unknown length is announced.
 
 ### Keyboard support

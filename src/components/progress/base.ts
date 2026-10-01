@@ -119,18 +119,38 @@ export abstract class IgcProgressBaseComponent extends LitElement {
   }
 
   private get _labelText(): string {
-    return this.labelFormat ? this._renderLabelFormat() : `${this.value}%`;
+    if (this.labelFormat) {
+      return this._renderLabelFormat();
+    }
+
+    // The same text as the CSS counters of the default label.
+    const { integer, fraction } = this._getPercentage();
+    return fraction > 0
+      ? `${integer}.${fraction.toString().padStart(2, '0')}%`
+      : `${integer}%`;
+  }
+
+  private _getPercentage() {
+    const percentage = asPercent(this.value, Math.max(1, this.max));
+    // Round to the two decimals of the label first, so that a fraction that
+    // rounds up, such as 12.996, carries into the integer instead of ".100".
+    const hundredths = Math.round(percentage * 100);
+
+    return {
+      percentage,
+      integer: Math.floor(hundredths / 100),
+      fraction: hundredths % 100,
+    };
   }
 
   private _updateProgress(): void {
-    const percentage = asPercent(this.value, Math.max(1, this.max));
-    const fractionValue = Math.round((percentage % 1) * 100);
-    this._hasFraction = fractionValue > 0;
+    const { percentage, integer, fraction } = this._getPercentage();
+    this._hasFraction = fraction > 0;
 
     this._styleInfo = {
       '--_progress-whole': percentage.toFixed(2),
-      '--_progress-integer': Math.floor(percentage),
-      '--_progress-fraction': fractionValue,
+      '--_progress-integer': integer,
+      '--_progress-fraction': fraction,
       '--_transition-duration': `${this.animationDuration}ms`,
     };
   }
