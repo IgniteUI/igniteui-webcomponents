@@ -47,6 +47,17 @@ export default class IgcAccordionComponent extends LitElement {
     return this._panels.filter((panel) => !panel.disabled);
   }
 
+  /**
+   * The interactive panels that the keyboard navigation can focus. A panel
+   * that is not rendered, for example with the `hidden` attribute, cannot
+   * take focus, so the navigation would stop at it.
+   */
+  private get _navigablePanels(): IgcExpansionPanelComponent[] {
+    return this._interactivePanels.filter((panel) =>
+      this._getPanelHeader(panel)?.checkVisibility({ visibilityProperty: true })
+    );
+  }
+
   //#endregion
 
   //#region Public attributes and properties
@@ -115,11 +126,11 @@ export default class IgcAccordionComponent extends LitElement {
   }
 
   private _navigateToFirst(): void {
-    this._getPanelHeader(firstOf(this._interactivePanels))?.focus();
+    this._getPanelHeader(firstOf(this._navigablePanels))?.focus();
   }
 
   private _navigateToLast(): void {
-    this._getPanelHeader(lastOf(this._interactivePanels))?.focus();
+    this._getPanelHeader(lastOf(this._navigablePanels))?.focus();
   }
 
   private _navigateToPrevious(event: KeyboardEvent): void {
@@ -177,7 +188,7 @@ export default class IgcAccordionComponent extends LitElement {
     panel: IgcExpansionPanelComponent,
     dir: 1 | -1 = 1
   ): IgcExpansionPanelComponent {
-    const panels = this._interactivePanels;
+    const panels = this._navigablePanels;
     const idx = panels.indexOf(panel);
 
     return panels[idx + dir] || panel;
