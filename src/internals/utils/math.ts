@@ -37,10 +37,11 @@ export function numberOfDecimals(number: number): number {
  * ```
  */
 export function roundPrecise(number: number, magnitude = 1): number {
-  if (
-    !Number.isFinite(number) ||
-    (Number.isInteger(number) && magnitude >= 0)
-  ) {
+  if (magnitude < 0) {
+    return number;
+  }
+
+  if (!Number.isFinite(number) || Number.isInteger(number)) {
     return number;
   }
 
