@@ -127,45 +127,66 @@ export function getYearRange(
   return { start, end: start + range - 1 };
 }
 
+function isDateInRange(
+  value: CalendarDay,
+  range: DateRangeDescriptor
+): boolean {
+  if (!range.dateRange?.length) {
+    return range.type === DateRangeType.Weekdays
+      ? !value.weekend
+      : range.type === DateRangeType.Weekends
+        ? value.weekend
+        : false;
+  }
+
+  const days = range.dateRange.map((day) => toCalendarDay(day));
+  const firstDay = firstOf(days);
+
+  switch (range.type) {
+    case DateRangeType.After:
+      return value.greaterThan(firstDay);
+
+    case DateRangeType.Before:
+      return value.lessThan(firstDay);
+
+    case DateRangeType.Between: {
+      const lastDay = lastOf(days);
+      const min = Math.min(firstDay.timestamp, lastDay.timestamp);
+      const max = Math.max(firstDay.timestamp, lastDay.timestamp);
+      return value.timestamp >= min && value.timestamp <= max;
+    }
+
+    case DateRangeType.Specific:
+      return days.some((day) => day.equalTo(value));
+
+    default:
+      return false;
+  }
+}
+
 export function isDateInRanges(
   date: DayParameter,
   ranges: DateRangeDescriptor[]
 ): boolean {
   const value = toCalendarDay(date);
+  return ranges.some((range) => isDateInRange(value, range));
+}
 
-  return ranges.some((range) => {
-    if (!range.dateRange?.length) {
-      return range.type === DateRangeType.Weekdays
-        ? !value.weekend
-        : range.type === DateRangeType.Weekends
-          ? value.weekend
-          : false;
+/** The labels of the descriptors in `ranges` that match `date`, in order and without duplicates. */
+export function getDateRangeLabels(
+  date: DayParameter,
+  ranges: DateRangeDescriptor[]
+): string[] {
+  const value = toCalendarDay(date);
+  const labels = new Set<string>();
+
+  for (const range of ranges) {
+    if (range.label && isDateInRange(value, range)) {
+      labels.add(range.label);
     }
+  }
 
-    const days = range.dateRange.map((day) => toCalendarDay(day));
-    const firstDay = firstOf(days);
-
-    switch (range.type) {
-      case DateRangeType.After:
-        return value.greaterThan(firstDay);
-
-      case DateRangeType.Before:
-        return value.lessThan(firstDay);
-
-      case DateRangeType.Between: {
-        const lastDay = lastOf(days);
-        const min = Math.min(firstDay.timestamp, lastDay.timestamp);
-        const max = Math.max(firstDay.timestamp, lastDay.timestamp);
-        return value.timestamp >= min && value.timestamp <= max;
-      }
-
-      case DateRangeType.Specific:
-        return days.some((day) => day.equalTo(value));
-
-      default:
-        return false;
-    }
-  });
+  return Array.from(labels);
 }
 
 export function createDateConstraints(
