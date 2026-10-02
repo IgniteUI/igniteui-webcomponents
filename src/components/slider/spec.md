@@ -45,6 +45,7 @@
 | ------: | ---------- | ------------------------------------------------------------------------------------ |
 |       1 | 2026-09-21 | Initial specification                                                                |
 |       2 | 2026-09-24 | Label external `label` elements and host `aria-labelledby`, focus from a label click |
+|       3 | 2026-10-02 | Correct the `reportValidity` description                                             |
 
 ## Overview
 
@@ -246,13 +247,13 @@ element.
 
 ### Methods
 
-| Method              | Component    | Signature                   | Description                                        |
-| ------------------- | ------------ | --------------------------- | -------------------------------------------------- |
-| `stepUp`            | `igc-slider` | `(n?: number): void`        | Increases the value by `n` steps.                   |
-| `stepDown`          | `igc-slider` | `(n?: number): void`        | Decreases the value by `n` steps.                   |
-| `checkValidity`     | `igc-slider` | `(): boolean`               | Checks the validity and emits `invalid` on failure. |
-| `reportValidity`    | `igc-slider` | `(): boolean`               | Checks the validity and shows the browser message.  |
-| `setCustomValidity` | `igc-slider` | `(message: string): void`   | Sets a custom validation message.                   |
+| Method              | Component    | Signature                 | Description                                                       |
+| ------------------- | ------------ | ------------------------- | ----------------------------------------------------------------- |
+| `stepUp`            | `igc-slider` | `(n?: number): void`      | Increases the value by `n` steps.                                 |
+| `stepDown`          | `igc-slider` | `(n?: number): void`      | Decreases the value by `n` steps.                                 |
+| `checkValidity`     | `igc-slider` | `(): boolean`             | Checks the validity and emits `invalid` on failure.               |
+| `reportValidity`    | `igc-slider` | `(): boolean`             | Checks validity, and emits `invalid` when the control is invalid. |
+| `setCustomValidity` | `igc-slider` | `(message: string): void` | Sets a custom validation message.                                 |
 
 ### Events
 

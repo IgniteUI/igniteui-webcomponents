@@ -666,13 +666,6 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
     this._input.blur();
   }
 
-  /** Checks the validity of the control and moves the focus to it if it is not valid. */
-  public override reportValidity(): boolean {
-    const valid = super.reportValidity();
-    if (!valid) this._input.focus();
-    return valid;
-  }
-
   /* blazorSuppress */
   /** Navigates to the item with the specified value. If it exists, returns the found item, otherwise - null. */
   public navigateTo(value: string): IgcSelectItemComponent | null;

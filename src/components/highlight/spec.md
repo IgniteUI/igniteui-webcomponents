@@ -41,6 +41,7 @@
 | Version | Date       | Notes                 |
 | ------: | ---------- | --------------------- |
 |       1 | 2026-09-21 | Initial specification |
+|       2 | 2026-10-02 | Whitespace matching   |
 
 ## Overview
 
@@ -107,7 +108,8 @@ The wiki page of the component carries a design hand-off heading with no link be
 #### Basic initialization
 
 Setting `searchText` starts a search over the projected content. An empty string clears the highlights.
-`caseSensitive` decides whether only the exact case matches.
+`caseSensitive` decides whether only the exact case matches. A run of whitespace in `searchText` matches any run of
+whitespace in the content, so "cold brew" also finds the two words across a line break of the HTML source.
 
 ```html
 <igc-highlight search-text="lorem" case-sensitive>
@@ -230,7 +232,7 @@ None applicable.
 ### API tests
 
 6. Changing `searchText` produces the matching number of matches.
-7. `caseSensitive` restricts the matching to the exact case.
+7. `caseSensitive` restricts the matching to the exact case, and a space matches any run of whitespace.
 8. `next()` and `previous()` move the active match, and `previous()` wraps to the last one from the first.
 9. `setActive()` sets the active match to the given index.
 10. `search()` picks up content that was added or removed after the previous search.

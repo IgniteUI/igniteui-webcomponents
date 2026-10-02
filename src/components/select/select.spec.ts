@@ -926,6 +926,15 @@ describe('Select', () => {
       ValidityHelpers.hasInvalidStyles(select).to.be.false;
     });
 
+    it('`reportValidity()` focuses an invalid select', async () => {
+      select.value = '';
+      select.required = true;
+      await elementUpdated(select);
+
+      expect(select.reportValidity()).to.be.false;
+      expect(isFocused(select)).to.be.true;
+    });
+
     it('reports validity when not required', async () => {
       select.value = '';
       select.required = false;
