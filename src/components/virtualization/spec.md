@@ -57,6 +57,7 @@
 |       4 | 2026-09-24 | Detached elements stay in the document of the list                                         |
 |       5 | 2026-09-29 | `layoutComplete` waits for the measurements, so `scrollToIndex` aligns items of any size   |
 |       6 | 2026-09-29 | Compression maps the scroll ranges, and the content follows each scroll                   |
+|       7 | 2026-09-30 | A `data` change measures the rendered items again from the first changed index             |
 
 ## Overview
 
@@ -162,6 +163,9 @@ Each rendered item is wrapped in a `<div data-vs-index="N">`, which ties a `Resi
 its index. When the measured size differs from the current one, the engine is updated and a new render is
 scheduled, so variable sizes correct themselves with no configuration. Items are measured by their border box, so
 margins accumulate as drift down the list; padding on the item, or a gap on a wrapper, avoids that.
+
+A `data` change discards the measurements from the first index at which the items differ. The rendered items from
+that index on are observed again, so they are measured again even when their elements and sizes do not change.
 
 `estimatedItemSize` applies to items that have not been measured yet; measured ones keep their measurements.
 
@@ -369,7 +373,8 @@ integrates into the document and into a shadow root alike.
 14. The track is resized when the data changes.
 15. A new `estimatedItemSize` is applied when the item count is unchanged.
 16. Measurements are retained on an append and discarded on a replacement, including a swap of data of the same
-    length.
+    length. After a replacement, the rendered items from the first changed index on are measured again, and the
+    items before it are not.
 17. The size of an item already measured in the DOM is not overridden, and a reused item element is measured
     again when it hosts a different index.
 18. The unmeasured items follow the average measured size instead of `estimatedItemSize`.

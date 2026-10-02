@@ -178,6 +178,13 @@ export default class IgcVirtualScrollComponent<
    * `_scheduleItemMeasurement`.
    */
   private readonly _observedItemIndexes = new WeakMap<Element, number>();
+
+  /**
+   * The first index whose measurement a `data` change discarded, or
+   * `Infinity`. See `_scheduleItemMeasurement`.
+   */
+  private _remeasureFrom = Number.POSITIVE_INFINITY;
+
   private _lastEmittedState: VirtualScrollState | null = null;
   private _hasPendingDataRequest = false;
   private _layoutCompletePromise: Promise<void> | null = null;
@@ -343,11 +350,13 @@ export default class IgcVirtualScrollComponent<
     this._adoptStyles();
 
     if (changed.has('data')) {
+      const firstChanged = this._firstChangedIndex(changed.get('data'));
       this._engine.resize(
         this._items.length,
         this._normalizedItemSize,
-        this._firstChangedIndex(changed.get('data'))
+        firstChanged
       );
+      this._remeasureFrom = Math.min(this._remeasureFrom, firstChanged);
       this._hasPendingDataRequest = false;
     }
 
@@ -693,11 +702,16 @@ export default class IgcVirtualScrollComponent<
    * whose `data-vs-index` changed. The wrapper elements are recycled, so after
    * a scroll one element can hold a different item at the same size. The
    * observer does not report that, and the new index keeps its estimated size.
+   *
+   * A `data` change that discards measurements keeps the wrapper and the index,
+   * so the wrappers from `_remeasureFrom` on are observed again as well.
    */
   private _scheduleItemMeasurement(): void {
     const content = this._contentRef.value;
     if (!content) return;
 
+    const remeasureFrom = this._remeasureFrom;
+    this._remeasureFrom = Number.POSITIVE_INFINITY;
     const observed = this._itemResizeController.targets;
 
     for (const element of observed) {
@@ -710,7 +724,11 @@ export default class IgcVirtualScrollComponent<
       const index = asNumber((element as HTMLElement).dataset.vsIndex, -1);
       const isObserved = observed.has(element);
 
-      if (isObserved && this._observedItemIndexes.get(element) === index) {
+      if (
+        isObserved &&
+        index < remeasureFrom &&
+        this._observedItemIndexes.get(element) === index
+      ) {
         continue;
       }
 

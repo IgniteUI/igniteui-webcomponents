@@ -52,7 +52,7 @@ export abstract class IgcButtonBaseComponent extends EventEmitterMixin<
   private _commandfor: string | null = null;
   private _commandForElement: Element | null = null;
 
-  @query('[part="base"]', true)
+  @query('[part~="base"]')
   private readonly _nativeButton?: HTMLButtonElement | HTMLAnchorElement;
 
   //#endregion
@@ -77,6 +77,8 @@ export abstract class IgcButtonBaseComponent extends EventEmitterMixin<
    * The URL the button points to. When set, the component renders as an
    * `<a>` element instead of a `<button>`, enabling navigation on click.
    * Use together with `target`, `download`, and `rel` for full anchor semantics.
+   * A disabled link renders a disabled `<button>` with the link role, because an
+   * anchor has no disabled state.
    * @attr href
    */
   @property()
@@ -261,9 +263,7 @@ export abstract class IgcButtonBaseComponent extends EventEmitterMixin<
     return html`
       <a
         part=${partMap({ base: true, focused: this._focusRingManager.focused })}
-        role="button"
         aria-label=${bindIf(this.ariaLabel, this.ariaLabel)}
-        aria-disabled=${this.disabled}
         href=${ifDefined(this.href)}
         target=${ifDefined(this.target)}
         download=${ifDefined(this.download)}
@@ -274,9 +274,34 @@ export abstract class IgcButtonBaseComponent extends EventEmitterMixin<
     `;
   }
 
+  /**
+   * An anchor has no disabled state, so a disabled link renders a disabled
+   * native button with the link role. It leaves the tab order, and the browser
+   * dispatches no click on it, not even to the capture listeners of ancestors.
+   */
+  private _renderDisabledLink() {
+    return html`
+      <button
+        part=${partMap({ base: true, focused: this._focusRingManager.focused })}
+        role="link"
+        aria-label=${bindIf(this.ariaLabel, this.ariaLabel)}
+        disabled
+        type="button"
+      >
+        ${this._renderContent()}
+      </button>
+    `;
+  }
+
   protected abstract _renderContent(): TemplateResult;
 
   protected override render() {
-    return this.href != null ? this._renderLinkButton() : this._renderButton();
+    if (this.href == null) {
+      return this._renderButton();
+    }
+
+    return this.disabled
+      ? this._renderDisabledLink()
+      : this._renderLinkButton();
   }
 }

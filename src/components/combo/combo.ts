@@ -99,7 +99,7 @@ const i18n: I18nControllerConfig<IComboResourceStrings> = {
  * @slot custom-error - Renders content when setCustomValidity(message) is set.
  * @slot invalid - Renders content when the component is in invalid state (validity.valid = false).
  *
- * @fires igcChange - Emitted when the control's selection has changed.
+ * @fires igcChange - Emitted before the control's selection changes. Cancel the event to keep the selection.
  * @fires igcOpening - Emitted just before the list of options is opened.
  * @fires igcOpened - Emitted after the list of options is opened.
  * @fires igcClosing - Emitted just before the list of options is closed.
@@ -641,6 +641,13 @@ export default class IgcComboComponent<
       // A malformed `value` attribute keeps the previous default rather than
       // discarding it - see the "invalid JSON" form integration test.
     }
+  }
+
+  protected override _restoreDefaultValue(): void {
+    super._restoreDefaultValue();
+    // A form reset never reaches the input in the shadow root, which validates
+    // the forwarded `required` on its own.
+    this._inputRef.value?.['_resetValidationState']();
   }
 
   // #endregion

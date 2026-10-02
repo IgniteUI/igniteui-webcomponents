@@ -204,16 +204,17 @@ export class IgcCalendarBaseComponent extends I18nMixin<
     super.update(props);
   }
 
-  /** @internal */
-  protected override firstUpdated(): void {
-    if (this._initialActiveDateSet) {
+  protected override willUpdate(props: PropertyValues): void {
+    super.willUpdate(props);
+
+    if (this.hasUpdated || this._initialActiveDateSet) {
       return;
     }
 
-    if (this._isSingle) {
-      this.activeDate = this.value ?? this.activeDate;
-    } else {
-      this.activeDate = firstOf(this.values) ?? this.activeDate;
+    const value = this._isSingle ? this._value : firstOf(this._values);
+
+    if (value) {
+      this._activeDate = value;
     }
   }
 }

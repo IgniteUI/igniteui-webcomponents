@@ -41,7 +41,7 @@
 
 :host([required]) {
     igc-date-time-input::part(label)::after {
-        content: '*';
+        @include required-asterisk();
     }
 }
 

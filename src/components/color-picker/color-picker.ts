@@ -347,8 +347,8 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
       this._rootClickController.update();
     }
 
-    if (this.hasUpdated && props.has('format')) {
-      this._formValue.setValueAndFormState(this._color.asString(this.format));
+    if (props.has('format')) {
+      this._serializeInFormat();
     }
 
     this._applyColorProperties();
@@ -680,6 +680,22 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
   private _updateColor(): void {
     this._formValue.setValueAndFormState(this._color.asString(this.format));
     this.requestUpdate();
+  }
+
+  /**
+   * Renders the current color in the active format.
+   *
+   * The `value` attribute can come before `format`, so the first update also
+   * runs this. The color does not change, so the pristine state stays.
+   */
+  private _serializeInFormat(): void {
+    const value = this._color.asString(this.format);
+
+    if (value !== this.value) {
+      const pristine = this._pristine;
+      this._formValue.setValueAndFormState(value);
+      this._pristine = pristine;
+    }
   }
 
   private _syncCanvasPosition(): void {

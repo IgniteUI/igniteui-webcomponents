@@ -5,13 +5,42 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+### Added
+- #### Calendar, Date picker, Date range picker
+  - `DateRangeDescriptor` has an optional `label`. The calendar adds the labels of the matching `specialDates` and `disabledDates` descriptors to the accessible name of a date, for example "Thursday, October 8, 2026, Free delivery". Before, the special state was only visual, and assistive technologies did not announce it.
+
 ### Security
 - #### Tile manager
   - `loadLayout` now copies only the serialized tile properties: the spans, the positions, the flags and `id`. A layout from storage or a server can no longer set `innerHTML` on a tile or replace its prototype through `__proto__`. A value that is not an array, and an entry that is not an object, are ignored.
 
 ### Fixed
+- #### Dialog
+  - An `aria-label` on the dialog is now its only accessible name. Before, the inner `<dialog>` also got `aria-labelledby` with the text of the label, which is not a valid ID reference.
+- #### Combo
+  - Arrow Down no longer closes the list, or moves the focus back to the search input, when a search finds one match or none.
+  - A form reset now clears the invalid styles of a required single-selection combo that had the focus.
+- #### Input, Mask input, Date time input, File input, Textarea, Select, Combo, Date picker, Date range picker, Color picker
+  - The asterisk of a required control is no longer part of its accessible name. Before, screen readers read the label as "Email star".
+- #### Linear progress, Circular progress
+  - The default `aria-valuetext` is now the percentage that the label shows. Before, it was the value with a percent sign: "50%" for 50 of 200, while the label showed 25%.
+  - The percentage now rounds correctly to two decimals: 12.996% shows as 13%, not "12.100%", and 1.005% shows as 1.01%, not 1%.
+  - A fractional `max` now gives the correct percentage, such as 50% for 0.25 of 0.5. Before, it showed 25%.
+- #### Chip
+  - The chip now delegates the focus to its action control, so `focus()` and `blur()` work on the host. Before, `focus()` did nothing, so an application could not move the focus to a chip, for example after a removal.
+- #### Checkbox
+  - The indicator icon is now hidden from assistive technologies. Before, each checkbox had an unnamed image next to it in the accessibility tree.
+- #### Calendar
+  - A calendar without `activeDate` now derives the active date from its value before the first render, so it renders once. Before, it rendered a second time, and Lit in development mode warned that an update was scheduled after an update completed.
+- #### Button, Icon button
+  - A button with `href` now keeps the link role of its anchor. Before, the anchor had `role="button"`, so screen readers announced a link as a button.
+  - A disabled link now renders a disabled native `<button>` with `role="link"` in place of the anchor, so it leaves the tab order, cannot navigate, and dispatches no click. Before, the link stayed in the tab order, and `Enter` still followed it. The `base` part is the `<button>` while the link is disabled.
+- #### Accordion
+  - The arrow keys, `Home` and `End` now skip a panel that does not render, such as a panel with the `hidden` attribute or `display: none`. Before, the focus stayed on the current panel.
 - #### QR code
   - Versions 30 to 40 at the `M` error correction level now use the data codeword counts of ISO/IEC 18004. Before, these codes had the wrong block structure.
+  - Without `error-level`, a logo larger than the safe area of level `M` now raises the error correction level to the smallest one that holds the logo, as documented. Before, the default `M` always applied, so the logo shrank. An explicit `error-level`, `M` included, still caps the logo.
+  - A new `aria-label` alone now updates the `<title>` of the code. Before, the title changed only on the next change of another property.
+  - The logo in an exported SVG now also has `xlink:href`, so SVG 1.1 consumers, such as Illustrator, the Office import, Batik and older librsvg, show it. Before, they dropped the logo and left a blank area in the code.
 - #### Mask input, Date time input, Date range picker
   - A mask position holds one UTF-16 code unit, so an astral character, such as an emoji, is now rejected as input and as a prompt. Before, it shifted the positions after it or split into two halves. A mask or input format with an astral literal now edits at the correct positions.
 - #### Mask input
@@ -24,9 +53,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - Setting `min` or `max` with a value before the first render no longer throws a `TypeError`.
 - #### Color picker
   - The HSL saturation no longer becomes infinite for a very small saturation at full value.
+  - The initial `value` is now in the notation of `format` when the `value` attribute comes before the `format` attribute. Before, `value` and the form data stayed in hex until the color changed.
 - #### Virtual scroll
   - `layoutComplete` now resolves after the rendered items are measured. Before, it could resolve first, so `scrollToIndex` stopped its correction early, and an item with a size other than the estimate landed up to tens of pixels from the requested edge.
   - A list larger than the maximum scroll size of the browser now shows its last items at the end of the scroll range, and `scrollToIndex` puts the item at the requested edge. The items also move evenly during a scroll. Before, the last items could not be reached, the item landed tens of pixels off, and the items jumped by some pixels each time the rendered window changed.
+  - A new `data` array with new items at the rendered indices now measures those items again. Before, an item element that kept its index was not measured again, so the scroll size and the item positions used the estimate until the item left the rendered window.
 
 ## [7.4.1] - 2026-09-25
 ### Added

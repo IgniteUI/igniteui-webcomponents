@@ -10,6 +10,8 @@ export const MIME_TYPES: Readonly<Record<QrCodeExportFormat, string>> = {
   webp: 'image/webp',
 };
 
+const XLINK_NAMESPACE = 'http://www.w3.org/1999/xlink';
+
 /**
  * Maximum side length in pixels of an exported raster image.
  * Browsers fail to allocate or encode canvases past this bound.
@@ -111,6 +113,29 @@ async function inlineLogo(clone: SVGSVGElement): Promise<void> {
 }
 
 /**
+ * Copies the logo `href` to `xlink:href`.
+ *
+ * `igc-qr-code` writes the logo as `<image href="data:...">`. Browsers resolve
+ * that, so the export looks right in a browser, but SVG 1.1 consumers -
+ * Illustrator, the Office import, Batik, older librsvg - read only
+ * `xlink:href` and drop the logo, which leaves a blank hole in the middle of
+ * an otherwise correct QR code. Writing both keeps either kind of consumer
+ * happy; SVG 2 gives `href` priority when the two are present.
+ *
+ * `setAttributeNS` puts the attribute in the XLink namespace, so the
+ * serializer declares `xmlns:xlink`. A plain `setAttribute` leaves the prefix
+ * undeclared, and the exported file does not parse as XML.
+ */
+function addLegacyLogoHref(clone: SVGSVGElement): void {
+  const image = clone.querySelector('image');
+  const href = image?.getAttribute('href');
+
+  if (image && href) {
+    image.setAttributeNS(XLINK_NAMESPACE, 'xlink:href', href);
+  }
+}
+
+/**
  * Creates a self-contained copy of the component SVG: theme colors are resolved
  * to presentation attributes and the logo is inlined as a data URI.
  */
@@ -120,6 +145,7 @@ export async function createSvgSnapshot(
   const clone = source.cloneNode(true) as SVGSVGElement;
   resolveStyles(source, clone);
   await inlineLogo(clone);
+  addLegacyLogoHref(clone);
   return clone;
 }
 

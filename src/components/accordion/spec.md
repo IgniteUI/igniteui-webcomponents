@@ -36,9 +36,10 @@
 
 ## Revision history
 
-| Version | Date       | Notes                 |
-| ------: | ---------- | --------------------- |
-|       1 | 2026-09-21 | Initial specification |
+| Version | Date       | Notes                                          |
+| ------: | ---------- | ---------------------------------------------- |
+|       1 | 2026-09-21 | Initial specification                          |
+|       2 | 2026-10-01 | The navigation skips panels that do not render |
 
 ## Overview
 
@@ -175,7 +176,8 @@ The keys apply while a panel header inside the accordion has focus.
 | <kbd>Shift</kbd> + <kbd>Alt</kbd> + <kbd>Arrow Down</kbd> | Expands every panel, unless single expand is on. |
 | <kbd>Shift</kbd> + <kbd>Alt</kbd> + <kbd>Arrow Up</kbd>   | Collapses every panel.                        |
 
-Disabled panels are skipped by the navigation.
+The navigation skips disabled panels, and panels that do not render, for example a panel with the `hidden`
+attribute or `display: none`.
 
 ## API
 
@@ -231,7 +233,8 @@ with `@open-wc/testing` fixtures and assertions. The groups below mirror the `de
    the last.
 8. <kbd>Alt</kbd> with the arrow keys expands and collapses the focused panel.
 9. <kbd>Shift</kbd> + <kbd>Alt</kbd> with the arrow keys expands and collapses every panel.
-10. Disabled panels are skipped by the navigation.
+10. The navigation skips disabled panels, and panels that do not render, with the arrow keys and with <kbd>Home</kbd>
+    and <kbd>End</kbd>.
 
 ### Nested
 
@@ -242,6 +245,8 @@ with `@open-wc/testing` fixtures and assertions. The groups below mirror the `de
 - Only direct `igc-expansion-panel` children are members of the accordion.
 - The accordion has no expansion events of its own; the panels emit them.
 - The accordion does not persist which panels were expanded.
+- The navigation skips a panel that does not render, but <kbd>Shift</kbd> + <kbd>Alt</kbd> with the arrow keys,
+  `showAll` and `hideAll` still expand and collapse it.
 
 ## Accessibility
 
@@ -249,7 +254,8 @@ with `@open-wc/testing` fixtures and assertions. The groups below mirror the `de
 
 - The accordion is a container; the header and region semantics come from the individual
   [expansion panels](../expansion-panel/spec.md#aria-roles-and-properties).
-- The panel headers form the navigable set, and disabled panels are announced as disabled and skipped.
+- The panel headers form the navigable set. Disabled panels are announced as disabled and skipped, and panels that
+  do not render are skipped.
 
 ### Keyboard support
 

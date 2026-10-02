@@ -150,6 +150,57 @@ describe('Accordion', () => {
       expect(panels[2].matches(':focus')).to.be.true;
     });
 
+    it('should skip a hidden panel on ArrowDown keypress', async () => {
+      panels[1].hidden = true;
+
+      simulateKeyboard(panels[0], arrowDown);
+      await elementUpdated(accordion);
+
+      expect(panels[2].matches(':focus')).to.be.true;
+    });
+
+    it('should skip a hidden panel on ArrowUp keypress', async () => {
+      panels[1].hidden = true;
+
+      simulateKeyboard(panels[2], arrowUp);
+      await elementUpdated(accordion);
+
+      expect(panels[0].matches(':focus')).to.be.true;
+    });
+
+    it('should skip a panel that its styles do not render', async () => {
+      panels[1].style.display = 'none';
+
+      simulateKeyboard(panels[0], arrowDown);
+      await elementUpdated(accordion);
+
+      expect(panels[2].matches(':focus')).to.be.true;
+    });
+
+    it('should navigate to the first rendered panel on Home keypress', async () => {
+      panels[0].hidden = true;
+
+      simulateClick(getPanelHeader(panels[2]));
+      await elementUpdated(accordion);
+
+      simulateKeyboard(panels[2], homeKey);
+      await elementUpdated(accordion);
+
+      expect(panels[1].matches(':focus')).to.be.true;
+    });
+
+    it('should navigate to the last rendered panel on End keypress', async () => {
+      panels[2].hidden = true;
+
+      simulateClick(getPanelHeader(panels[0]));
+      await elementUpdated(accordion);
+
+      simulateKeyboard(panels[0], endKey);
+      await elementUpdated(accordion);
+
+      expect(panels[1].matches(':focus')).to.be.true;
+    });
+
     it('should navigate to the panel below on ArrowDown keypress', async () => {
       for (let i = 0; i < panels.length; i++) {
         simulateKeyboard(panels[i], arrowDown);

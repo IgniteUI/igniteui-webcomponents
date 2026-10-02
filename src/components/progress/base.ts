@@ -4,7 +4,12 @@ import type { StyleInfo } from 'lit/directives/style-map.js';
 import { addInternalsController } from '#internals/controllers/internals.js';
 import type { SlotController } from '#internals/controllers/slot.js';
 import { partMap } from '#internals/part-map.js';
-import { asPercent, clamp } from '#internals/utils/math.js';
+import {
+  asNumber,
+  asPercent,
+  clamp,
+  roundPrecise,
+} from '#internals/utils/math.js';
 import { formatString } from '#internals/utils/strings.js';
 import type { StyleVariant } from '../types.js';
 
@@ -16,13 +21,10 @@ export abstract class IgcProgressBaseComponent extends LitElement {
   protected _base!: HTMLElement;
 
   @state()
-  protected _percentage = 0;
-
-  @state()
-  protected _progress = 0;
-
-  @state()
   protected _hasFraction = false;
+
+  /** The default label text, which the CSS counters of the label also show. */
+  private _percentText = '0%';
 
   @state()
   protected _styleInfo: StyleInfo = {
@@ -119,18 +121,23 @@ export abstract class IgcProgressBaseComponent extends LitElement {
   }
 
   private get _labelText(): string {
-    return this.labelFormat ? this._renderLabelFormat() : `${this.value}%`;
+    return this.labelFormat ? this._renderLabelFormat() : this._percentText;
   }
 
   private _updateProgress(): void {
-    const percentage = asPercent(this.value, Math.max(1, this.max));
-    const fractionValue = Math.round((percentage % 1) * 100);
-    this._hasFraction = fractionValue > 0;
+    // Avoid 0 / 0: a `max` of 0 clamps the value to 0.
+    const exact = this.max > 0 ? asPercent(this.value, this.max) : 0;
+    // Round before the split, so 12.996 shows 13%, not "12.100%".
+    const whole = roundPrecise(exact, 2).toFixed(2);
+    const [integer, fraction] = whole.split('.').map((part) => asNumber(part));
+
+    this._hasFraction = fraction > 0;
+    this._percentText = `${this._hasFraction ? whole : integer}%`;
 
     this._styleInfo = {
-      '--_progress-whole': percentage.toFixed(2),
-      '--_progress-integer': Math.floor(percentage),
-      '--_progress-fraction': fractionValue,
+      '--_progress-whole': whole,
+      '--_progress-integer': integer,
+      '--_progress-fraction': fraction,
       '--_transition-duration': `${this.animationDuration}ms`,
     };
   }

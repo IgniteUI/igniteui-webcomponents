@@ -381,6 +381,10 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
 
     protected formResetCallback(): void {
       this._restoreDefaultValue();
+      this._resetValidationState();
+    }
+
+    protected _resetValidationState(): void {
       this._pristine = true;
       this._touched = false;
       this._invalid = false;

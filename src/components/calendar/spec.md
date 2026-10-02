@@ -49,6 +49,7 @@
 | ------: | ---------- | --------------------- |
 |       1 | 2026-09-21 | Initial specification |
 |       2 | 2026-09-23 | Remove the default slot, which the calendar does not render |
+|       3 | 2026-10-01 | Descriptor labels; the initial active date is derived before the first render |
 
 ## Overview
 
@@ -194,7 +195,11 @@ calendar.disabledDates = [
 ];
 
 calendar.specialDates = [
-  { type: DateRangeType.Specific, dateRange: [new Date(2026, 8, 24)] },
+  {
+    type: DateRangeType.Specific,
+    dateRange: [new Date(2026, 8, 24)],
+    label: 'Free delivery',
+  },
 ];
 ```
 
@@ -211,12 +216,19 @@ enum DateRangeType {
 interface DateRangeDescriptor {
   type: DateRangeType;
   dateRange?: Date[];
+  label?: string;
 }
 ```
 
 `After` and `Before` use the first date of `dateRange`, `Between` uses the first and the last, `Specific` matches
 every listed date, and `Weekdays` and `Weekends` need no dates at all. Descriptors accumulate, and overlapping
 ranges are supported.
+
+`label` tells what the dates mean. The calendar adds it to the accessible name of each date the descriptor matches,
+after the date, for example "Thursday, September 24, 2026, Free delivery". Without a label, the special state is
+only visual, and the disabled state does not tell why. The labels of all the matching disabled and special
+descriptors are joined, without duplicates. A date of an adjacent month is never special, so it gets no special
+labels.
 
 #### Header and slots
 
@@ -421,73 +433,75 @@ The groups below mirror the `describe` blocks of those suites.
 14. Accepts the active date through an attribute.
 15. Resolves the initial active date - an explicit `activeDate` wins for single and range selection; the current
     date is used when nothing is set; otherwise it is derived from the value for single, range and multiple
-    selection.
+    selection, before the first render, so the calendar renders once.
 16. Issue #1278.
+17. Adds the labels of the matching special and disabled descriptors to the accessible name of a date, joins the
+    labels of several descriptors without duplicates, adds nothing for a descriptor without a label, and adds no
+    special label to a date of an adjacent month.
 
 ### Locale
 
-17. Derives the week start from the locale when `week-start` is not set, and prefers an explicit `week-start`.
-18. Re-aligns the days grid when the locale changes at run time.
-19. Falls back to Sunday in engines without `Intl.Locale.prototype.getWeekInfo()`.
-20. Renders the header date in the field order of the locale.
-21. Orders the month and year navigation buttons per locale.
+18. Derives the week start from the locale when `week-start` is not set, and prefers an explicit `week-start`.
+19. Re-aligns the days grid when the locale changes at run time.
+20. Falls back to Sunday in engines without `Intl.Locale.prototype.getWeekInfo()`.
+21. Renders the header date in the field order of the locale.
+22. Orders the month and year navigation buttons per locale.
 
 ### Interactions
 
-22. Is accessible (axe audit).
-23. Sets `value` and `values` through attributes and through string property bindings.
-24. Clicking the previous and next buttons navigates in the days, months and years views.
-25. Single selection, including a date outside the current month, and issue #1443.
-26. Multiple selection.
-27. Starting and cancelling a range selection, and starting and completing one.
-28. Emits `igcActiveDateChange` when the active date is selected, and `igcRangePreviewDateChange` during a range
+23. Is accessible (axe audit).
+24. Sets `value` and `values` through attributes and through string property bindings.
+25. Clicking the previous and next buttons navigates in the days, months and years views.
+26. Single selection, including a date outside the current month, and issue #1443.
+27. Multiple selection.
+28. Starting and cancelling a range selection, and starting and completing one.
+29. Emits `igcActiveDateChange` when the active date is selected, and `igcRangePreviewDateChange` during a range
     preview.
-29. Switches to the month of the activated navigation button.
-30. Moves focus along when a date outside the rendered month is selected, and keeps it in place otherwise.
-31. Disables dates for every `DateRangeType` - Before, After, Between, Specific, Weekdays and Weekends - including
+30. Switches to the month of the activated navigation button.
+31. Moves focus along when a date outside the rendered month is selected, and keeps it in place otherwise.
+32. Disables dates for every `DateRangeType` - Before, After, Between, Specific, Weekdays and Weekends - including
     equal boundaries, an inverted range, overlapping ranges and multiple descriptors.
-32. Does not select disabled dates in range selection, and creates no range when the selection is `multiple`.
+33. Does not select disabled dates in range selection, and creates no range when the selection is `multiple`.
 
 ### Selection model
 
-33. Single - selects a date, does not change when the selected date is activated again, and leaves the dates of the
+34. Single - selects a date, does not change when the selected date is activated again, and leaves the dates of the
     other modes alone.
-34. Multiple - adds a date keeping the collection sorted, removes an already selected date, and does not mutate the
+35. Multiple - adds a date keeping the collection sorted, removes an already selected date, and does not mutate the
     input.
-35. Range - starts a range from one date, expands it over every covered date, handles a backwards selection, clears
+36. Range - starts a range from one date, expands it over every covered date, handles a backwards selection, clears
     on re-activating the start, restarts from a completed range, and leaves disabled dates out.
-36. Disabled dates are never selected, while the dates around them are.
+37. Disabled dates are never selected, while the dates around them are.
 
 ### Keyboard navigation
 
-37. Focus is retained when switching to the months and to the years view.
-38. Days view - is accessible; <kbd>Page Up</kbd>, <kbd>Page Down</kbd> and their <kbd>Shift</kbd> variants move by
+38. Focus is retained when switching to the months and to the years view.
+39. Days view - is accessible; <kbd>Page Up</kbd>, <kbd>Page Down</kbd> and their <kbd>Shift</kbd> variants move by
     month and by year; the arrow keys move by day and by week; <kbd>Home</kbd> and <kbd>End</kbd> move to the start
     and the end of the month; <kbd>Enter</kbd> and <kbd>Space</kbd> select.
-39. Days view - skips disabled dates, stays put when every date in the direction of travel is disabled, and when
+40. Days view - skips disabled dates, stays put when every date in the direction of travel is disabled, and when
     both weekdays and weekends are disabled.
-40. Months view - is accessible; <kbd>Home</kbd>, <kbd>End</kbd>, <kbd>Page Up</kbd>, <kbd>Page Down</kbd> and the
+41. Months view - is accessible; <kbd>Home</kbd>, <kbd>End</kbd>, <kbd>Page Up</kbd>, <kbd>Page Down</kbd> and the
     arrow keys navigate by month and by row; <kbd>Enter</kbd> and <kbd>Space</kbd> select.
-41. Years view - is accessible; <kbd>Home</kbd>, <kbd>End</kbd> and the arrow keys navigate by year and by row;
+42. Years view - is accessible; <kbd>Home</kbd>, <kbd>End</kbd> and the arrow keys navigate by year and by row;
     <kbd>Page Up</kbd> and <kbd>Page Down</kbd> move by `yearsPerPage`; <kbd>Enter</kbd> and <kbd>Space</kbd> select.
 
 ### Year and month views
 
-42. Months view - passes the a11y audit, renders twelve months in rows of three, renders the expected parts and ARIA
+43. Months view - passes the a11y audit, renders twelve months in rows of three, renders the expected parts and ARIA
     state on a cell, marks the current month, exposes a single tab stop, follows `monthFormat` and `locale`, and
     emits `igcChange` with the activated month.
-43. Years view - passes the a11y audit, renders a page of years in rows of three, renders the expected parts and
+44. Years view - passes the a11y audit, renders a page of years in rows of three, renders the expected parts and
     ARIA state on a cell, marks the current year, follows `yearsPerPage`, and emits `igcChange` with the activated
     year.
 
 ### Helpers
 
-44. The `DateRangeDescriptor` helpers resolve the After, Before, Between, Specific, Weekday and Weekends types.
+45. The `DateRangeDescriptor` helpers resolve the After, Before, Between, Specific, Weekday and Weekends types.
 
 ### Not covered by the suites
 
-There is no dedicated case for `specialDates` rendering, or for the `resourceStrings` override; the locale group
-covers the formatting side only.
+There is no dedicated case for the `resourceStrings` override; the locale group covers the formatting side only.
 
 ## Assumptions and limitations
 
@@ -505,6 +519,8 @@ covers the formatting side only.
 - The calendar exposes a single live region that announces the active period, so navigating between months, years or
   pages of years is announced once rather than per view.
 - Date, month and year cells carry their selected and current state, and disabled cells are announced as disabled.
+- The accessible name of a date cell is the date, followed by the `label` of each matching disabled and special
+  descriptor. The special state has no ARIA equivalent, so a label is the only way to announce it.
 - The navigation buttons have accessible names resolved from the resource strings.
 - Week numbers and weekday labels are presentational and are not reachable with the arrow keys.
 

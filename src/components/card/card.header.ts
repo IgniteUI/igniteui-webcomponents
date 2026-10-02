@@ -14,7 +14,7 @@ import { styles as shared } from './themes/shared/header/card.header.common.css.
  * @slot thumbnail - Renders header media such as an icon or small image.
  * @slot title - Renders the card title (typically a heading element).
  * @slot subtitle - Renders the card subtitle (typically a smaller heading or text).
- * @slot - Renders additional content displayed next to the title area.
+ * @slot - Renders additional content under the title and the subtitle.
  *
  * @csspart header - The card header text container.
  * @csspart title - The title slot wrapper.

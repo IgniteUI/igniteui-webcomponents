@@ -207,6 +207,15 @@ describe('Input component', () => {
         expect(element.checkValidity()).to.be.true;
       });
 
+      it('keeps the required asterisk out of the accessible name', async () => {
+        await createFixture(
+          html`<igc-input required label="Email"></igc-input>`
+        );
+
+        const label = element.renderRoot.querySelector('[part="label"]')!;
+        expect(getComputedStyle(label, '::after').content).to.equal('"*" / ""');
+      });
+
       it('sets the value property', async () => {
         await createFixture(html`<igc-input value="123"></igc-input>`);
 

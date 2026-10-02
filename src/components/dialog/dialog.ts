@@ -352,7 +352,6 @@ export default class IgcDialogComponent extends EventEmitterMixin<
     const hasTitle = this._slots.hasAssignedElements('title') || !!this.title;
     const hasFooter =
       this._slots.hasAssignedElements('footer') || !this.hideDefaultAction;
-    const labelledBy = this.ariaLabel ?? this._titleId;
 
     return html`
       ${this._renderBackdrop()}
@@ -361,7 +360,7 @@ export default class IgcDialogComponent extends EventEmitterMixin<
         part=${partMap({ base: true, titled: hasTitle, footed: hasFooter })}
         role="dialog"
         aria-label=${bindIf(this.ariaLabel, this.ariaLabel)}
-        aria-labelledby=${bindIf(labelledBy, labelledBy)}
+        aria-labelledby=${bindIf(!this.ariaLabel, this._titleId)}
         @click=${this._handleClick}
         @cancel=${this._handleCancel}
         @close=${bindIf(this.keepOpenOnEscape, this._handleClose)}

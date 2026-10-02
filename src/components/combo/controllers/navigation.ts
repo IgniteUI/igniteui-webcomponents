@@ -196,6 +196,13 @@ export class ComboNavigationController<T extends object> {
   };
 
   private _onArrowUp = (): void => {
+    if (this.active === this._firstItem) {
+      this._searchInput?.checkVisibility() // Non single-select or disable-filtering combo configuration
+        ? this._searchInput?.focus() // Delegate to search input handlers
+        : this._onEscape(); // Close dropdown and move focus back to main input
+      return;
+    }
+
     this._getNextItem(-1);
     this._scrollToActive();
   };
@@ -244,13 +251,6 @@ export class ComboNavigationController<T extends object> {
 
   private _getNextItem(delta: -1 | 1): void {
     const next = this._getNearestItem(this.active, delta);
-
-    if (next === -1 && this.active === this._firstItem) {
-      this._searchInput?.checkVisibility() // Non single-select or disable-filtering combo configuration
-        ? this._searchInput?.focus() // Delegate to search input handlers
-        : this._onEscape(); // Close dropdown and move focus back to main input
-      return;
-    }
 
     if (next !== -1) {
       this._setActive(next);

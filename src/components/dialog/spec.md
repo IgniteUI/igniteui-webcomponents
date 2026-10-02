@@ -269,7 +269,7 @@ The suite lives in [`dialog.spec.ts`](./dialog.spec.ts) and runs in a real brows
 
 ### WAI-ARIA tests
 
-1. The dialog exposes a `dialog` role and is labelled by its title.
+1. The dialog exposes a `dialog` role and is labelled by its title, or only by `aria-label` when one is set.
 2. The component passes the accessibility audit in the open state.
 
 ### DOM
@@ -316,7 +316,8 @@ are verified manually rather than by the suite.
 
 - The dialog is a native `dialog` element shown modally, so the role, the focus trap, the inert page content and the
   top layer come from the platform.
-- The dialog is labelled by its title, from the `title` slot or the `title` attribute.
+- The dialog is labelled by its title, from the `title` slot or the `title` attribute. An `aria-label` on the element
+  replaces the title as the name. Use it when the header holds more than the title, such as a close button.
 - The backdrop is decorative and is not exposed to assistive technology.
 
 ### Keyboard support

@@ -92,6 +92,24 @@ describe('Checkbox', () => {
       configureTheme('bootstrap');
     });
 
+    it('should hide the indicator from assistive technologies in every theme', async () => {
+      const indicator = () =>
+        element.renderRoot
+          .querySelector('svg')!
+          .closest('[aria-hidden="true"]');
+
+      expect(indicator()).to.not.be.null;
+
+      try {
+        configureTheme('indigo');
+        await elementUpdated(element);
+
+        expect(indicator()).to.not.be.null;
+      } finally {
+        configureTheme('bootstrap');
+      }
+    });
+
     it('should set the checkbox name property correctly', async () => {
       const name = 'fruit';
 

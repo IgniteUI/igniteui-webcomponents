@@ -93,7 +93,10 @@ export default class IgcCheckboxComponent extends IgcCheckboxBaseComponent {
         controlParts: { control: true, checked },
         labelParts: { label: true, checked },
         renderControl: () => html`
-          <span part=${partMap({ indicator: true, checked })}>
+          <span
+            part=${partMap({ indicator: true, checked })}
+            aria-hidden="true"
+          >
             ${
               this._themes.theme === 'indigo'
                 ? this._renderIndigo()

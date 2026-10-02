@@ -1313,6 +1313,56 @@ describe('Color picker', () => {
     });
   });
 
+  describe('Initial format', () => {
+    const rgb = 'rgb(186 218 85)';
+
+    it('serializes a value attribute that comes before the format attribute', async () => {
+      picker = await fixture<IgcColorPickerComponent>(
+        html`<igc-color-picker value="#bada55" format="rgb"></igc-color-picker>`
+      );
+
+      expect(picker.value).to.equal(rgb);
+    });
+
+    it('serializes a value attribute that comes after the format attribute', async () => {
+      picker = await fixture<IgcColorPickerComponent>(
+        html`<igc-color-picker format="rgb" value="#bada55"></igc-color-picker>`
+      );
+
+      expect(picker.value).to.equal(rgb);
+    });
+
+    describe('with a default value set before the format', () => {
+      const spec = createFormAssociatedTestBed<IgcColorPickerComponent>(html`
+        <igc-color-picker
+          name="color-picker"
+          .defaultValue=${'#bada55'}
+          format=${'rgb'}
+        ></igc-color-picker>
+      `);
+
+      beforeEach(async () => {
+        await spec.setup(IgcColorPickerComponent.tagName);
+      });
+
+      it('stays pristine', () => {
+        spec.assertIsPristine();
+        expect(spec.element.value).to.equal(rgb);
+      });
+
+      it('submits the value in the format', () => {
+        spec.assertSubmitHasValue(rgb);
+      });
+
+      it('restores the value in the format on form reset', () => {
+        spec.setProperties({ value: '#ff0000' });
+
+        spec.reset();
+        expect(spec.element.value).to.equal(rgb);
+      });
+    });
+  });
+
   describe('Validation', () => {
     const spec = createFormAssociatedTestBed<IgcColorPickerComponent>(html`
       <igc-color-picker name="color-picker"></igc-color-picker>
