@@ -49,6 +49,7 @@
 |       2 | 2026-09-24 | Describe the naming order and the host ARIA naming |
 |       3 | 2026-09-28 | Add the property-based parser suite                |
 |       4 | 2026-09-28 | An empty control is no bad input                   |
+|       5 | 2026-10-02 | Focus after form checks; `invalid` only on checks  |
 
 ## Overview
 
@@ -271,6 +272,11 @@ The component applies two validators:
 The value submitted with the form follows `valueMode`: the raw input in `raw` mode, the formatted string in
 `withFormatting` mode. A form reset restores the default value taken from the `value` attribute.
 
+As for a native control, a failed submit or `form.reportValidity()` moves the focus to the first invalid control of
+the form, and `reportValidity()` moves it to the control when it is invalid. `form.checkValidity()` and
+`checkValidity()` do not move the focus. The `invalid` event comes only from these checks and from a failed submit,
+not while the user edits the control.
+
 ### Localization
 
 The component renders no built-in strings of its own. The mask validation message comes from the library validation
@@ -432,6 +438,9 @@ Driven by `createFormAssociatedTestBed`.
     constraint.
 34. An empty optional control is valid for any mask, and a value that fits no position of a letter mask is a bad
     input.
+
+The focus after the form checks and the `invalid` event rules come from the form-associated mixin. The
+[input suite](../input/spec.md#form-validity-checks) covers them.
 
 ### defaultValue
 

@@ -55,6 +55,7 @@
 |       1 | 2026-09-21 | Initial specification                                 |
 |       2 | 2026-09-23 | Expose the `container` part and add its test scenario |
 |       3 | 2026-09-24 | Describe the naming order and the host ARIA naming    |
+|       4 | 2026-10-02 | Focus after form checks; `invalid` only on checks     |
 
 ## Overview
 
@@ -416,6 +417,11 @@ name the control.
   editor.
 - An invalid picker blocks submission; pressing <kbd>Enter</kbd> submits the owning form only when it is valid.
 
+As for a native control, a failed submit or `form.reportValidity()` moves the focus to the first invalid control of
+the form, and `reportValidity()` moves it to the control when it is invalid. `form.checkValidity()` and
+`checkValidity()` do not move the focus. The `invalid` event comes only from these checks and from a failed submit,
+not while the user edits the control.
+
 ### Localization
 
 Everything locale-dependent is derived from the active locale:
@@ -693,6 +699,9 @@ Grouped as `Uncommitted edits - issue #1346` in the suite.
 50. Validates synchronously.
 51. `defaultValue` - correct initial state, submission and reset; and validation for required, min, max and the
     range constraints.
+
+The focus after the form checks and the `invalid` event rules come from the form-associated mixin. The
+[input suite](../input/spec.md#form-validity-checks) covers them.
 
 ### Validation message slots
 

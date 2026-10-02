@@ -596,13 +596,17 @@ describe('Input component', () => {
       expect(isFocused(inputs[1])).to.be.true;
     });
 
-    it('`form.checkValidity()` and `reportValidity()` of a control keep the focus', () => {
+    it('`form.checkValidity()` keeps the focus', () => {
       expect(spec.form.checkValidity()).to.be.false;
-      expect(inputs[2].reportValidity()).to.be.false;
       expect(isFocused(inputs[0])).to.be.true;
     });
 
-    it('a native control that is invalid first keeps the focus', () => {
+    it('`reportValidity()` of a control focuses that control', () => {
+      expect(inputs[2].reportValidity()).to.be.false;
+      expect(isFocused(inputs[2])).to.be.true;
+    });
+
+    it('a native control that is invalid first takes the focus', () => {
       const native = Object.assign(document.createElement('input'), {
         required: true,
       });
@@ -610,6 +614,29 @@ describe('Input component', () => {
 
       spec.submit();
       expect(document.activeElement).to.equal(native);
+    });
+
+    it('the first invalid control keeps the focus before an invalid native control', () => {
+      const native = Object.assign(document.createElement('input'), {
+        required: true,
+      });
+      spec.form.append(native);
+
+      spec.submit();
+      expect(isFocused(inputs[1])).to.be.true;
+    });
+
+    it('a check of another form inside `form.checkValidity()` moves the focus', async () => {
+      const other = await fixture<HTMLFormElement>(
+        html`<form><igc-input name="other" required></igc-input></form>`
+      );
+      inputs[1].addEventListener('invalid', () => other.reportValidity(), {
+        once: true,
+      });
+
+      expect(spec.form.checkValidity()).to.be.false;
+      expect(isFocused(other.querySelector(IgcInputComponent.tagName)!)).to.be
+        .true;
     });
 
     it('editing an invalid field sends no `invalid` event and keeps the focus', async () => {

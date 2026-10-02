@@ -35,6 +35,7 @@
     - [Events](#events-1)
     - [Regressions](#regressions)
     - [Form integration](#form-integration-1)
+    - [Form validity checks](#form-validity-checks)
     - [defaultValue](#defaultvalue)
     - [Validation message slots](#validation-message-slots)
     - [External label association](#external-label-association)
@@ -274,9 +275,10 @@ validity flags and slot names.
 - The value is submitted under `name`.
 - A form reset restores the value to `defaultValue`, which is taken from the `value` attribute.
 - An invalid control blocks submission and fires the native `invalid` event.
-- The control cancels the `invalid` event to hide the message of the browser. A failed submit, or
-  `form.reportValidity()`, then moves the focus to the first invalid control of the form, as for a native control.
-  `form.checkValidity()` and `reportValidity()` of the control do not move the focus.
+- The control cancels the `invalid` event to hide the message of the browser. As for a native control, a failed
+  submit or `form.reportValidity()` then moves the focus to the first invalid control of the form, also when an invalid
+  native control comes after it. `reportValidity()` moves the focus to the control when it is invalid.
+  `form.checkValidity()` and `checkValidity()` do not move the focus.
 - As for a native control, the `invalid` event comes only from `checkValidity()`, `reportValidity()`, the same methods of
   the form, and a failed submit. The validation while the user edits the field or leaves it sends no event.
 - Pressing <kbd>Enter</kbd> inside the field submits the associated form.
@@ -471,8 +473,10 @@ Driven by `createFormAssociatedTestBed`.
 
 ### Form validity checks
 
-31. A failed submit and `form.reportValidity()` focus the first invalid control, past the `fieldset` of the test bed.
-    `form.checkValidity()`, `reportValidity()` of a control, and a native control that is invalid first keep the focus.
+31. A failed submit and `form.reportValidity()` focus the first invalid control, past the `fieldset` of the test bed,
+    also before an invalid native control. `reportValidity()` focuses its control. `form.checkValidity()` keeps the
+    focus, and a check of another form inside it still moves the focus. A native control that is invalid first takes
+    the focus.
 32. Editing an invalid field sends no `invalid` event, keeps the focus and still applies the invalid styles.
     `checkValidity()`, `reportValidity()`, `form.checkValidity()` and a failed submit each send one.
 

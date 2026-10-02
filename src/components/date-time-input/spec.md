@@ -53,6 +53,7 @@
 |       1 | 2026-09-21 | Initial specification                              |
 |       2 | 2026-09-24 | Describe the naming order and the host ARIA naming |
 |       3 | 2026-09-28 | Describe the year parsing; add the property suite  |
+|       4 | 2026-10-02 | Focus after form checks; `invalid` only on checks  |
 
 ## Overview
 
@@ -476,6 +477,11 @@ name the control.
 - A form reset restores `defaultValue`, which is taken from the `value` attribute.
 - An invalid editor blocks submission, and pressing <kbd>Enter</kbd> submits the owning form only when it is valid.
 
+As for a native control, a failed submit or `form.reportValidity()` moves the focus to the first invalid control of
+the form, and `reportValidity()` moves it to the control when it is invalid. `form.checkValidity()` and
+`checkValidity()` do not move the focus. The `invalid` event comes only from these checks and from a failed submit,
+not while the user edits the control.
+
 #### Composition inside other components
 
 The component is the text-entry surface of [`igc-date-picker`](../date-picker/spec.md) and of
@@ -689,6 +695,9 @@ Driven by `createFormAssociatedTestBed`.
 36. Is correctly submitted on <kbd>Enter</kbd>, and does not submit while the value is invalid.
 37. Reflects the disabled state of an ancestor `fieldset`.
 38. Fulfils the required, min, max - both as dates and as string property bindings - and custom constraints.
+
+The focus after the form checks and the `invalid` event rules come from the form-associated mixin. The
+[input suite](../input/spec.md#form-validity-checks) covers them.
 
 ### defaultValue
 

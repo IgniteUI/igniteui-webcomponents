@@ -4,7 +4,7 @@ import { NAMING_ATTRIBUTES } from '../../controllers/aria-projection.js';
 import { addInternalsController } from '../../controllers/internals.js';
 import { enterKey, isKey } from '../../controllers/keys.js';
 import { sameItems } from '../../utils/arrays.js';
-import { addSafeEventListener } from '../../utils/events.js';
+import { addSafeEventListener, preventDefault } from '../../utils/events.js';
 import { isFunction, isString } from '../../utils/types.js';
 import type { Validator } from '../../validators.js';
 import type { Constructor } from '../constructor.js';
@@ -37,20 +37,9 @@ function emitInternalFormEvent(host: LitElement, name: string): void {
   host.dispatchEvent(new CustomEvent(name, eventOptions));
 }
 
-let isSilentCheck = false;
 let isFormCheckWrapped = false;
-
-/** Runs a validity check that does not move the focus. */
-function checkSilently(check: () => boolean): boolean {
-  const previous = isSilentCheck;
-  isSilentCheck = true;
-
-  try {
-    return check();
-  } finally {
-    isSilentCheck = previous;
-  }
-}
+/** The forms whose `checkValidity()` runs. These checks do not move the focus. */
+const checkingForms = new WeakSet<HTMLFormElement>();
 
 /**
  * A failed submit and `form.checkValidity()` send the same `invalid` events,
@@ -65,8 +54,35 @@ function wrapFormCheckValidity(): void {
   isFormCheckWrapped = true;
 
   HTMLFormElement.prototype.checkValidity = function (this: HTMLFormElement) {
-    return checkSilently(() => checkValidity.call(this));
+    if (checkingForms.has(this)) {
+      return checkValidity.call(this);
+    }
+
+    checkingForms.add(this);
+
+    try {
+      return checkValidity.call(this);
+    } finally {
+      checkingForms.delete(this);
+    }
   };
+}
+
+/**
+ * The browser focuses the first invalid control whose `invalid` event is not
+ * canceled. Cancels the events of `controls` in the current validation pass,
+ * so that an earlier control keeps the focus.
+ */
+function cancelInvalidEvents(controls: Element[]): void {
+  const controller = new AbortController();
+  const options = { once: true, signal: controller.signal };
+
+  for (const control of controls) {
+    control.addEventListener('invalid', preventDefault, options);
+  }
+
+  // The pass is synchronous. The listeners must not reach a later pass.
+  setTimeout(() => controller.abort());
 }
 
 type ListedElement = Element &
@@ -99,6 +115,8 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
 
     /** Set while `checkValidity()` of the control runs. */
     private _isInternalValidation = false;
+    /** Set while `reportValidity()` of the control runs. */
+    private _isReportingValidity = false;
     private _touched = false;
     private _isExternalInvalid = false;
     /** The `<label>` elements at the last update. */
@@ -304,15 +322,24 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
       this._setInvalidStyles();
       this.requestUpdate();
 
+      const form = this.form;
+
       // The canceled event also keeps the browser from focusing the first
       // invalid control after a failed submit.
       if (
+        form &&
         !this._isInternalValidation &&
-        !isSilentCheck &&
-        this.form &&
-        Array.from(this.form.elements).find(isInvalidControl) === this
+        !this._isReportingValidity &&
+        !checkingForms.has(form)
       ) {
-        this.focus();
+        const [first, ...later] = Array.from(form.elements).filter(
+          isInvalidControl
+        );
+
+        if (first === this) {
+          this.focus();
+          cancelInvalidEvents(later);
+        }
       }
     }
 
@@ -445,9 +472,25 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
 
     //#region Public API
 
-    /** Checks validity and shows the browser message when invalid. */
+    /**
+     * Checks validity and shows the browser message when invalid. As for a
+     * native control, an invalid control takes the focus.
+     */
     public reportValidity(): boolean {
-      const state = checkSilently(() => this._internals.reportValidity());
+      const state = this._reportValidity();
+
+      if (!state) {
+        this.focus();
+      }
+
+      return state;
+    }
+
+    /** Reports the validity without moving the focus. */
+    protected _reportValidity(): boolean {
+      this._isReportingValidity = true;
+      const state = this._internals.reportValidity();
+      this._isReportingValidity = false;
       this._invalid = !state;
       return state;
     }

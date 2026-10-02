@@ -140,10 +140,10 @@ describe('Highlight', () => {
 
       expect(highlight.size).to.equal(3);
 
-      highlight.searchText = 'cold  brew.';
+      highlight.searchText = 'cold \t brew';
       await elementUpdated(highlight);
 
-      expect(highlight.size).to.equal(0);
+      expect(highlight.size).to.equal(3);
     });
 
     it('moves to the next match when `next()` is invoked', async () => {

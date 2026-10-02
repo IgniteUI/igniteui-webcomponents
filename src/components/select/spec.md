@@ -56,6 +56,7 @@ This directory hosts four public components: [`igc-select`](#igc-select), [`igc-
 | ------: | ---------- | -------------------------------------------------- |
 |       1 | 2026-09-21 | Initial specification                              |
 |       2 | 2026-09-24 | Describe the naming order and the host ARIA naming |
+|       3 | 2026-10-02 | Focus after form checks; `invalid` only on checks  |
 
 ## Overview
 
@@ -225,6 +226,11 @@ name the control.
 - The value is submitted under `name`.
 - A form reset restores `defaultValue`, taken from the `value` attribute.
 - An invalid control blocks submission.
+
+As for a native control, a failed submit or `form.reportValidity()` moves the focus to the first invalid control of
+the form, and `reportValidity()` moves it to the control when it is invalid. `form.checkValidity()` and
+`checkValidity()` do not move the focus. The `invalid` event comes only from these checks and from a failed submit,
+not while the user edits the control.
 
 ### Localization
 
@@ -437,7 +443,7 @@ helpers from [`src/internals/testing`](../../internals/testing). The groups belo
 13. `show`, `hide` and `toggle` transition the open state.
 14. `select` and `navigateTo` work by value and by index and return the item or `null`.
 15. `clearSelection` resets the value and the selection.
-16. `focus` and `blur` move focus to and from the component.
+16. `focus` and `blur` move focus to and from the component, and `reportValidity()` focuses an invalid select.
 
 ### Groups
 

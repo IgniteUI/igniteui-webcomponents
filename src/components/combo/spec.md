@@ -48,6 +48,7 @@
 |       1 | 2026-09-21 | Initial specification                              |
 |       2 | 2026-09-24 | Describe the naming order and the host ARIA naming |
 |       3 | 2026-10-01 | Correct the `igcChange` cancelability; Arrow Down at the end of the list; input reset |
+|       4 | 2026-10-02 | Focus after form checks; `invalid` only on checks  |
 
 ## Overview
 
@@ -239,6 +240,11 @@ names it.
 - The selection is submitted under `name`.
 - A form reset restores `defaultValue` and clears the invalid styles of the control and its input.
 - An invalid control blocks submission.
+
+As for a native control, a failed submit or `form.reportValidity()` moves the focus to the first invalid control of
+the form, and `reportValidity()` moves it to the control when it is invalid. `form.checkValidity()` and
+`checkValidity()` do not move the focus. The `invalid` event comes only from these checks and from a failed submit,
+not while the user edits the control.
 
 ### Localization
 
@@ -444,6 +450,9 @@ helpers from [`src/internals/testing`](../../internals/testing). The groups belo
 15. Is form associated, submits its selection, and is reset with the form, including the single-selection input.
 16. Reflects the disabled state of an ancestor `fieldset`.
 17. Fulfils the required and custom constraints.
+
+The focus after the form checks and the `invalid` event rules come from the form-associated mixin. The
+[input suite](../input/spec.md#form-validity-checks) covers them.
 
 ### defaultValue
 
