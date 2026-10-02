@@ -155,10 +155,13 @@ class HighlightService implements ReactiveController {
   }
 
   private _createRegex(value: string): RegExp {
-    return new RegExp(
-      escapeRegex(value),
-      this._host.caseSensitive ? 'dg' : 'dgi'
-    );
+    // A run of whitespace in the search text matches any run of whitespace in
+    // the content, such as a line break in the HTML source.
+    const pattern = value
+      .split(/\s+/)
+      .map(escapeRegex)
+      .join(String.raw`\s+`);
+    return new RegExp(pattern, this._host.caseSensitive ? 'dg' : 'dgi');
   }
 
   private _updateActiveHighlight(): void {

@@ -14,6 +14,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - `loadLayout` now copies only the serialized tile properties: the spans, the positions, the flags and `id`. A layout from storage or a server can no longer set `innerHTML` on a tile or replace its prototype through `__proto__`. A value that is not an array, and an entry that is not an object, are ignored.
 
 ### Fixed
+- #### Input, Mask input, Date time input, File input, Textarea, Select, Combo, Date picker, Date range picker, Color picker, Checkbox, Switch, Radio
+  - A failed form submit, or `form.reportValidity()`, now moves the focus to the first invalid control, as for a native control. Before, the focus stayed where it was, because the controls cancel the `invalid` event to hide the message of the browser. `form.checkValidity()` and `reportValidity()` of a control do not move the focus. To tell a submit from `form.checkValidity()`, the library wraps `HTMLFormElement.prototype.checkValidity()`.
+  - The controls no longer send an `invalid` event while the user edits an invalid field or leaves it. Before, each validation sent one, unlike a native control. Now the event comes only from `checkValidity()`, `reportValidity()`, the same methods of the form, and a failed submit.
+- #### Highlight
+  - A space in `searchText` now matches any run of whitespace in the content, such as a line break in the HTML source. Before, "cold brew" did not find the two words when a line break separated them.
 - #### Dialog
   - An `aria-label` on the dialog is now its only accessible name. Before, the inner `<dialog>` also got `aria-labelledby` with the text of the label, which is not a valid ID reference.
 - #### Combo

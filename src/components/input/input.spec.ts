@@ -17,6 +17,7 @@ import { simulateInput } from '#internals/testing/simulate.spec.js';
 import {
   runValidationContainerTests,
   type ValidationContainerTestsParams,
+  ValidityHelpers,
 } from '#internals/testing/validity-helpers.spec.js';
 import { configureTheme } from '#theming/config.js';
 import IgcInputComponent from './input.js';
@@ -565,6 +566,79 @@ describe('Input component', () => {
         value: 'https://github.com/IgniteUI/igniteui-webcomponents',
       });
       spec.assertSubmitPasses();
+    });
+  });
+
+  describe('Form validity checks', () => {
+    // The fieldset of the test bed matches `:invalid` too, but it is not a control.
+    const spec = createFormAssociatedTestBed<IgcInputComponent>(html`
+      <igc-input name="first" value="valid" required></igc-input>
+      <igc-input name="second" required></igc-input>
+      <igc-input name="third" required></igc-input>
+    `);
+    let inputs: IgcInputComponent[];
+
+    beforeEach(async () => {
+      await spec.setup(IgcInputComponent.tagName);
+      inputs = Array.from(
+        spec.form.querySelectorAll(IgcInputComponent.tagName)
+      );
+      inputs[0].focus();
+    });
+
+    it('a failed submit focuses the first invalid control', () => {
+      spec.submit();
+      expect(isFocused(inputs[1])).to.be.true;
+    });
+
+    it('`form.reportValidity()` focuses the first invalid control', () => {
+      expect(spec.form.reportValidity()).to.be.false;
+      expect(isFocused(inputs[1])).to.be.true;
+    });
+
+    it('`form.checkValidity()` and `reportValidity()` of a control keep the focus', () => {
+      expect(spec.form.checkValidity()).to.be.false;
+      expect(inputs[2].reportValidity()).to.be.false;
+      expect(isFocused(inputs[0])).to.be.true;
+    });
+
+    it('a native control that is invalid first keeps the focus', () => {
+      const native = Object.assign(document.createElement('input'), {
+        required: true,
+      });
+      spec.form.prepend(native);
+
+      spec.submit();
+      expect(document.activeElement).to.equal(native);
+    });
+
+    it('editing an invalid field sends no `invalid` event and keeps the focus', async () => {
+      const [, , field] = inputs;
+      const handler = spy();
+      field.addEventListener('invalid', handler);
+
+      field.focus();
+      simulateInput(field.renderRoot.querySelector('input')!, { value: 'a' });
+      simulateInput(field.renderRoot.querySelector('input')!, { value: '' });
+      expect(isFocused(field)).to.be.true;
+
+      field.blur();
+      await elementUpdated(field);
+
+      expect(handler.called).to.be.false;
+      ValidityHelpers.hasInvalidStyles(field).to.be.true;
+    });
+
+    it('the checks and a failed submit send `invalid`', () => {
+      const handler = spy();
+      inputs[2].addEventListener('invalid', handler);
+
+      inputs[2].checkValidity();
+      inputs[2].reportValidity();
+      spec.form.checkValidity();
+      spec.submit();
+
+      expect(handler.callCount).to.equal(4);
     });
   });
 
