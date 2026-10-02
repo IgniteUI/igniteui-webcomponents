@@ -322,14 +322,14 @@ The switch exposes the same properties as the checkbox, with the exception of `i
 
 ### Shared methods
 
-| Name              | Type signature                    | Description                                                      |
-| ----------------- | --------------------------------- | ---------------------------------------------------------------- |
-| click             | `(): void`                        | Simulates a click on the control.                                |
-| focus             | `(options?: FocusOptions): void`  | Sets focus on the control.                                       |
-| blur              | `(): void`                        | Removes focus from the control.                                  |
-| checkValidity     | `(): boolean`                     | Checks validity and emits `invalid` when the control is invalid. |
-| reportValidity    | `(): boolean`                     | Checks validity and shows the browser message when invalid.      |
-| setCustomValidity | `(message: string): void`         | Sets a custom message. Invalid while `message` is not empty.     |
+| Name              | Type signature                   | Description                                                             |
+| ----------------- | -------------------------------- | ----------------------------------------------------------------------- |
+| click             | `(): void`                       | Simulates a click on the control.                                       |
+| focus             | `(options?: FocusOptions): void` | Sets focus on the control.                                              |
+| blur              | `(): void`                       | Removes focus from the control.                                         |
+| checkValidity     | `(): boolean`                    | Checks validity and emits `invalid` when the control is invalid.        |
+| reportValidity    | `(): boolean`                    | Checks validity; when invalid, emits `invalid` and focuses the control. |
+| setCustomValidity | `(message: string): void`        | Sets a custom message. Invalid while `message` is not empty.            |
 
 ### Shared events
 

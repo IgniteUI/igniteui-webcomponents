@@ -455,16 +455,16 @@ apply.
 
 ### Methods
 
-| Name              | Type signature                              | Description                                                      |
-| ----------------- | ------------------------------------------- | ---------------------------------------------------------------- |
-| show              | `(): Promise<boolean>`                      | Shows the component.                                             |
-| hide              | `(): Promise<boolean>`                      | Hides the component.                                             |
-| toggle            | `(): Promise<boolean>`                      | Toggles the open state of the component.                         |
-| select            | `(value: DateRangeValue \| null): void`     | Selects a date range value in the picker.                        |
-| clear             | `(): void`                                  | Clears the editors of the picker of any user input.              |
-| checkValidity     | `(): boolean`                               | Checks validity and emits `invalid` when the control is invalid. |
-| reportValidity    | `(): boolean`                               | Checks validity and shows the browser message when invalid.      |
-| setCustomValidity | `(message: string): void`                   | Sets a custom message. Invalid while `message` is not empty.     |
+| Name              | Type signature                          | Description                                                             |
+| ----------------- | --------------------------------------- | ----------------------------------------------------------------------- |
+| show              | `(): Promise<boolean>`                  | Shows the component.                                                    |
+| hide              | `(): Promise<boolean>`                  | Hides the component.                                                    |
+| toggle            | `(): Promise<boolean>`                  | Toggles the open state of the component.                                |
+| select            | `(value: DateRangeValue \| null): void` | Selects a date range value in the picker.                               |
+| clear             | `(): void`                              | Clears the editors of the picker of any user input.                     |
+| checkValidity     | `(): boolean`                           | Checks validity and emits `invalid` when the control is invalid.        |
+| reportValidity    | `(): boolean`                           | Checks validity; when invalid, emits `invalid` and focuses the control. |
+| setCustomValidity | `(message: string): void`               | Sets a custom message. Invalid while `message` is not empty.            |
 
 ### Events
 

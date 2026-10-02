@@ -560,21 +560,21 @@ example <kbd>Alt</kbd> + <kbd>Arrow Up</kbd> - are ignored, so they stay availab
 
 ### Methods
 
-| Name              | Type signature                                                                               | Description                                                        |
-| ----------------- | ---------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
-| stepUp            | `(datePart?: DatePart, delta?: number): void`                                                  | Increments a date/time portion.                                    |
-| stepDown          | `(datePart?: DatePart, delta?: number): void`                                                  | Decrements a date/time portion.                                    |
-| clear             | `(): void`                                                                                     | Clears the input element of user input.                            |
-| hasDateParts      | `(): boolean`                                                                                  | Whether the current format holds a day, month or year part.        |
-| hasTimeParts      | `(): boolean`                                                                                  | Whether the current format holds an hours, minutes or seconds part. |
-| select            | `(): void`                                                                                     | Selects all the text inside the input.                             |
-| setSelectionRange | `(start?: number, end?: number, direction?: SelectionRangeDirection): void`                   | Sets the text selection range of the control.                      |
-| setRangeText      | `(replacement: string, start?: number, end?: number, selectMode?: RangeTextSelectMode): void` | Replaces the selected text and re-applies the mask.                |
-| focus             | `(options?: FocusOptions): void`                                                               | Sets focus on the control.                                         |
-| blur              | `(): void`                                                                                     | Removes focus from the control.                                    |
-| checkValidity     | `(): boolean`                                                                                   | Checks validity and emits `invalid` when the control is invalid.   |
-| reportValidity    | `(): boolean`                                                                                   | Checks validity and shows the browser message when invalid.        |
-| setCustomValidity | `(message: string): void`                                                                       | Sets a custom message. Invalid while `message` is not empty.       |
+| Name              | Type signature                                                                                | Description                                                             |
+| ----------------- | --------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| stepUp            | `(datePart?: DatePart, delta?: number): void`                                                 | Increments a date/time portion.                                         |
+| stepDown          | `(datePart?: DatePart, delta?: number): void`                                                 | Decrements a date/time portion.                                         |
+| clear             | `(): void`                                                                                    | Clears the input element of user input.                                 |
+| hasDateParts      | `(): boolean`                                                                                 | Whether the current format holds a day, month or year part.             |
+| hasTimeParts      | `(): boolean`                                                                                 | Whether the current format holds an hours, minutes or seconds part.     |
+| select            | `(): void`                                                                                    | Selects all the text inside the input.                                  |
+| setSelectionRange | `(start?: number, end?: number, direction?: SelectionRangeDirection): void`                   | Sets the text selection range of the control.                           |
+| setRangeText      | `(replacement: string, start?: number, end?: number, selectMode?: RangeTextSelectMode): void` | Replaces the selected text and re-applies the mask.                     |
+| focus             | `(options?: FocusOptions): void`                                                              | Sets focus on the control.                                              |
+| blur              | `(): void`                                                                                    | Removes focus from the control.                                         |
+| checkValidity     | `(): boolean`                                                                                 | Checks validity and emits `invalid` when the control is invalid.        |
+| reportValidity    | `(): boolean`                                                                                 | Checks validity; when invalid, emits `invalid` and focuses the control. |
+| setCustomValidity | `(message: string): void`                                                                     | Sets a custom message. Invalid while `message` is not empty.            |
 
 ```typescript
 enum DatePart {

@@ -299,19 +299,19 @@ matching option is activated instead.
 
 #### Methods
 
-| Name              | Type signature                                                 | Description                                                      |
-| ----------------- | -------------------------------------------------------------- | ---------------------------------------------------------------- |
-| show              | `(): Promise<boolean>`                                         | Shows the component.                                             |
-| hide              | `(): Promise<boolean>`                                         | Hides the component.                                             |
-| toggle            | `(): Promise<boolean>`                                         | Toggles the open state of the component.                         |
-| select            | `(value: string \| number): IgcSelectItemComponent \| null`    | Selects the item with the given value or index.                  |
-| navigateTo        | `(value: string \| number): IgcSelectItemComponent \| null`    | Activates the item with the given value or index.                |
-| clearSelection    | `(): void`                                                     | Resets the current value and selection of the component.         |
-| focus             | `(options?: FocusOptions): void`                               | Sets focus on the component.                                     |
-| blur              | `(): void`                                                     | Removes focus from the component.                                |
-| checkValidity     | `(): boolean`                                                  | Checks validity and emits `invalid` when the control is invalid. |
-| reportValidity    | `(): boolean`                                                  | Checks the validity and moves focus to the control when invalid. |
-| setCustomValidity | `(message: string): void`                                      | Sets a custom message. Invalid while `message` is not empty.     |
+| Name              | Type signature                                              | Description                                                             |
+| ----------------- | ----------------------------------------------------------- | ----------------------------------------------------------------------- |
+| show              | `(): Promise<boolean>`                                      | Shows the component.                                                    |
+| hide              | `(): Promise<boolean>`                                      | Hides the component.                                                    |
+| toggle            | `(): Promise<boolean>`                                      | Toggles the open state of the component.                                |
+| select            | `(value: string \| number): IgcSelectItemComponent \| null` | Selects the item with the given value or index.                         |
+| navigateTo        | `(value: string \| number): IgcSelectItemComponent \| null` | Activates the item with the given value or index.                       |
+| clearSelection    | `(): void`                                                  | Resets the current value and selection of the component.                |
+| focus             | `(options?: FocusOptions): void`                            | Sets focus on the component.                                            |
+| blur              | `(): void`                                                  | Removes focus from the component.                                       |
+| checkValidity     | `(): boolean`                                               | Checks validity and emits `invalid` when the control is invalid.        |
+| reportValidity    | `(): boolean`                                               | Checks validity; when invalid, emits `invalid` and focuses the control. |
+| setCustomValidity | `(message: string): void`                                   | Sets a custom message. Invalid while `message` is not empty.            |
 
 #### Events
 

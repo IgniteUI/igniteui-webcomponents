@@ -626,6 +626,17 @@ describe('Input component', () => {
       expect(isFocused(inputs[1])).to.be.true;
     });
 
+    for (const method of ['reportValidity', 'requestSubmit'] as const) {
+      it(`\`form.${method}()\` inside \`form.checkValidity()\` of the same form moves the focus`, () => {
+        inputs[1].addEventListener('invalid', () => spec.form[method](), {
+          once: true,
+        });
+
+        expect(spec.form.checkValidity()).to.be.false;
+        expect(isFocused(inputs[1])).to.be.true;
+      });
+    }
+
     it('a check of another form inside `form.checkValidity()` moves the focus', async () => {
       const other = await fixture<HTMLFormElement>(
         html`<form><igc-input name="other" required></igc-input></form>`

@@ -297,7 +297,11 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
     return this._checkValidity();
   }
 
-  /** Checks for validity of the control and shows the browser message if it's invalid. */
+  /**
+   * Checks the validity of the group. An invalid radio emits `invalid` and
+   * takes the focus. It shows its own validation messages, not the message of
+   * the browser.
+   */
   public override reportValidity(): boolean {
     for (const radio of this._siblings()) {
       radio._reportValidity();

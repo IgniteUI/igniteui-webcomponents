@@ -126,8 +126,9 @@ export declare class BaseFormAssociatedElement {
   public checkValidity(): boolean;
 
   /**
-   * Checks validity and shows the browser message when invalid. As for a
-   * native control, an invalid control takes the focus.
+   * Checks validity. As for a native control, an invalid control emits
+   * `invalid` and takes the focus. It shows its own validation messages, not
+   * the message of the browser.
    */
   public reportValidity(): boolean;
 

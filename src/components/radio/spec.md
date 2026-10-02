@@ -252,14 +252,14 @@ The horizontal arrow keys follow the writing direction, so they are mirrored in 
 
 ### Methods
 
-| Name              | Type signature                    | Description                                                                          |
-| ----------------- | --------------------------------- | -------------------------------------------------------------------------------------- |
-| click             | `(): void`                        | Simulates a click on the radio control.                                              |
-| focus             | `(options?: FocusOptions): void`  | Sets focus on the radio control.                                                     |
-| blur              | `(): void`                        | Removes focus from the radio control.                                                |
-| checkValidity     | `(): boolean`                     | Checks the validity of the whole group and emits `invalid` when the control is invalid. |
-| reportValidity    | `(): boolean`                     | Checks the validity of the whole group and shows the browser message when invalid.   |
-| setCustomValidity | `(message: string): void`         | Sets a custom message on every radio of the group. Invalid while `message` is not empty. |
+| Name              | Type signature                   | Description                                                                                  |
+| ----------------- | -------------------------------- | -------------------------------------------------------------------------------------------- |
+| click             | `(): void`                       | Simulates a click on the radio control.                                                      |
+| focus             | `(options?: FocusOptions): void` | Sets focus on the radio control.                                                             |
+| blur              | `(): void`                       | Removes focus from the radio control.                                                        |
+| checkValidity     | `(): boolean`                    | Checks the validity of the whole group and emits `invalid` when the control is invalid.      |
+| reportValidity    | `(): boolean`                    | Checks the validity of the whole group; when invalid, emits `invalid` and focuses the radio. |
+| setCustomValidity | `(message: string): void`        | Sets a custom message on every radio of the group. Invalid while `message` is not empty.     |
 
 ### Events
 

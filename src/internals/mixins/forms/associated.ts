@@ -37,35 +37,51 @@ function emitInternalFormEvent(host: LitElement, name: string): void {
   host.dispatchEvent(new CustomEvent(name, eventOptions));
 }
 
-let isFormCheckWrapped = false;
-/** The forms whose `checkValidity()` runs. These checks do not move the focus. */
-const checkingForms = new WeakSet<HTMLFormElement>();
+let areFormChecksWrapped = false;
+
+type FormCheck = 'silent' | 'report';
+
+/** The validity checks that run on each form, the innermost one last. */
+const formChecks = new WeakMap<HTMLFormElement, FormCheck[]>();
+
+/** Records each call of the form `method` as a check of the given kind. */
+function trackFormMethod(
+  method: 'checkValidity' | 'reportValidity' | 'requestSubmit',
+  check: FormCheck
+): void {
+  const prototype = HTMLFormElement.prototype as unknown as Record<
+    string,
+    (...args: unknown[]) => unknown
+  >;
+  const original = prototype[method];
+
+  prototype[method] = function (this: HTMLFormElement, ...args: unknown[]) {
+    const checks = formChecks.get(this) ?? [];
+    formChecks.set(this, checks);
+    checks.push(check);
+
+    try {
+      return original.apply(this, args);
+    } finally {
+      checks.pop();
+    }
+  };
+}
 
 /**
  * A failed submit and `form.checkValidity()` send the same `invalid` events,
- * but only the submit moves the focus. The wrapper tells them apart.
+ * but only the submit moves the focus. The wrappers tell them apart, also for
+ * a check that runs inside another check of the same form.
  */
-function wrapFormCheckValidity(): void {
-  if (isServer || isFormCheckWrapped) {
+function wrapFormChecks(): void {
+  if (isServer || areFormChecksWrapped) {
     return;
   }
 
-  const { checkValidity } = HTMLFormElement.prototype;
-  isFormCheckWrapped = true;
-
-  HTMLFormElement.prototype.checkValidity = function (this: HTMLFormElement) {
-    if (checkingForms.has(this)) {
-      return checkValidity.call(this);
-    }
-
-    checkingForms.add(this);
-
-    try {
-      return checkValidity.call(this);
-    } finally {
-      checkingForms.delete(this);
-    }
-  };
+  areFormChecksWrapped = true;
+  trackFormMethod('checkValidity', 'silent');
+  trackFormMethod('reportValidity', 'report');
+  trackFormMethod('requestSubmit', 'report');
 }
 
 /**
@@ -215,7 +231,7 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
 
     constructor(...args: any[]) {
       super(...args);
-      wrapFormCheckValidity();
+      wrapFormChecks();
       addSafeEventListener(this, 'invalid', this._handleInvalid);
       addSafeEventListener(this, 'click', this._handleHostClick);
       addSafeEventListener(this, 'focusin', this._handleFocusEnter);
@@ -330,7 +346,7 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
         form &&
         !this._isInternalValidation &&
         !this._isReportingValidity &&
-        !checkingForms.has(form)
+        formChecks.get(form)?.at(-1) !== 'silent'
       ) {
         const [first, ...later] = Array.from(form.elements).filter(
           isInvalidControl
@@ -473,8 +489,9 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
     //#region Public API
 
     /**
-     * Checks validity and shows the browser message when invalid. As for a
-     * native control, an invalid control takes the focus.
+     * Checks validity. As for a native control, an invalid control emits
+     * `invalid` and takes the focus. It shows its own validation messages, not
+     * the message of the browser.
      */
     public reportValidity(): boolean {
       const state = this._reportValidity();

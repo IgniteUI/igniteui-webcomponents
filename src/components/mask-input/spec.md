@@ -325,17 +325,17 @@ The standard `autofocus` global attribute is forwarded to the inner native input
 
 ### Methods
 
-| Name               | Type signature                                                                               | Description                                                             |
-| ------------------ | ---------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| Name               | Type signature                                                                                | Description                                                              |
+| ------------------ | --------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
 | isValidMaskPattern | `(): boolean`                                                                                 | Returns whether the current masked input is valid according to the mask. |
-| select             | `(): void`                                                                                    | Selects all the text inside the input.                                  |
-| setSelectionRange  | `(start?: number, end?: number, direction?: SelectionRangeDirection): void`                   | Sets the text selection range of the control.                           |
-| setRangeText       | `(replacement: string, start?: number, end?: number, selectMode?: RangeTextSelectMode): void` | Replaces the selected text in the control and re-applies the mask.      |
-| focus              | `(options?: FocusOptions): void`                                                              | Sets focus on the control.                                              |
-| blur               | `(): void`                                                                                    | Removes focus from the control.                                         |
-| checkValidity      | `(): boolean`                                                                                  | Checks validity and emits `invalid` when the control is invalid.        |
-| reportValidity     | `(): boolean`                                                                                  | Checks validity and shows the browser message when invalid.             |
-| setCustomValidity  | `(message: string): void`                                                                      | Sets a custom message. Invalid while `message` is not empty.            |
+| select             | `(): void`                                                                                    | Selects all the text inside the input.                                   |
+| setSelectionRange  | `(start?: number, end?: number, direction?: SelectionRangeDirection): void`                   | Sets the text selection range of the control.                            |
+| setRangeText       | `(replacement: string, start?: number, end?: number, selectMode?: RangeTextSelectMode): void` | Replaces the selected text in the control and re-applies the mask.       |
+| focus              | `(options?: FocusOptions): void`                                                              | Sets focus on the control.                                               |
+| blur               | `(): void`                                                                                    | Removes focus from the control.                                          |
+| checkValidity      | `(): boolean`                                                                                 | Checks validity and emits `invalid` when the control is invalid.         |
+| reportValidity     | `(): boolean`                                                                                 | Checks validity; when invalid, emits `invalid` and focuses the control.  |
+| setCustomValidity  | `(message: string): void`                                                                     | Sets a custom message. Invalid while `message` is not empty.             |
 
 ### Events
 

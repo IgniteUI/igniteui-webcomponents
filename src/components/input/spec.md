@@ -350,18 +350,18 @@ interacted with and fails validation reads `true` even if it was never set expli
 
 ### Methods
 
-| Name              | Type signature                                                                                          | Description                                                        |
-| ----------------- | --------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
-| focus             | `(options?: FocusOptions): void`                                                                         | Sets focus on the control.                                         |
-| blur              | `(): void`                                                                                               | Removes focus from the control.                                    |
-| select            | `(): void`                                                                                               | Selects all the text inside the input.                             |
-| setSelectionRange | `(start?: number, end?: number, direction?: SelectionRangeDirection): void`                              | Sets the text selection range of the control.                      |
-| setRangeText      | `(replacement: string, start?: number, end?: number, selectMode?: RangeTextSelectMode): void`            | Replaces the selected text in the input.                           |
-| stepUp            | `(n?: number): void`                                                                                     | Increments the numeric value of the input by one or more steps.    |
-| stepDown          | `(n?: number): void`                                                                                     | Decrements the numeric value of the input by one or more steps.    |
-| checkValidity     | `(): boolean`                                                                                            | Checks validity and emits `invalid` when the control is invalid.   |
-| reportValidity    | `(): boolean`                                                                                            | Checks validity and shows the browser message when invalid.        |
-| setCustomValidity | `(message: string): void`                                                                                | Sets a custom message. Invalid while `message` is not empty.       |
+| Name              | Type signature                                                                                | Description                                                             |
+| ----------------- | --------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| focus             | `(options?: FocusOptions): void`                                                              | Sets focus on the control.                                              |
+| blur              | `(): void`                                                                                    | Removes focus from the control.                                         |
+| select            | `(): void`                                                                                    | Selects all the text inside the input.                                  |
+| setSelectionRange | `(start?: number, end?: number, direction?: SelectionRangeDirection): void`                   | Sets the text selection range of the control.                           |
+| setRangeText      | `(replacement: string, start?: number, end?: number, selectMode?: RangeTextSelectMode): void` | Replaces the selected text in the input.                                |
+| stepUp            | `(n?: number): void`                                                                          | Increments the numeric value of the input by one or more steps.         |
+| stepDown          | `(n?: number): void`                                                                          | Decrements the numeric value of the input by one or more steps.         |
+| checkValidity     | `(): boolean`                                                                                 | Checks validity and emits `invalid` when the control is invalid.        |
+| reportValidity    | `(): boolean`                                                                                 | Checks validity; when invalid, emits `invalid` and focuses the control. |
+| setCustomValidity | `(message: string): void`                                                                     | Sets a custom message. Invalid while `message` is not empty.            |
 
 ### Events
 
@@ -475,8 +475,8 @@ Driven by `createFormAssociatedTestBed`.
 
 31. A failed submit and `form.reportValidity()` focus the first invalid control, past the `fieldset` of the test bed,
     also before an invalid native control. `reportValidity()` focuses its control. `form.checkValidity()` keeps the
-    focus, and a check of another form inside it still moves the focus. A native control that is invalid first takes
-    the focus.
+    focus, and a report or a submit inside it, of the same form or of another form, still moves the focus. A native
+    control that is invalid first takes the focus.
 32. Editing an invalid field sends no `invalid` event, keeps the focus and still applies the invalid styles.
     `checkValidity()`, `reportValidity()`, `form.checkValidity()` and a failed submit each send one.
 
