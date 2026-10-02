@@ -14,6 +14,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - `loadLayout` now copies only the serialized tile properties: the spans, the positions, the flags and `id`. A layout from storage or a server can no longer set `innerHTML` on a tile or replace its prototype through `__proto__`. A value that is not an array, and an entry that is not an object, are ignored.
 
 ### Fixed
+- #### Dialog
+  - An `aria-label` on the dialog is now its only accessible name. Before, the inner `<dialog>` also got `aria-labelledby` with the text of the label, which is not a valid ID reference.
 - #### Combo
   - Arrow Down no longer closes the list, or moves the focus back to the search input, when a search finds one match or none.
   - A form reset now clears the invalid styles of a required single-selection combo that had the focus.

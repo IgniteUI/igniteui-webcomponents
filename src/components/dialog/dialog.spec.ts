@@ -44,6 +44,21 @@ describe('Dialog', () => {
       await expect(dialog).does.to.be.accessible();
       await expect(dialog).shadowDom.to.be.accessible();
     });
+
+    it('is labelled only by `aria-label` when one is set', async () => {
+      dialog = await fixture<IgcDialogComponent>(html`
+        <igc-dialog aria-label="Keyboard shortcuts" open>
+          <h2 slot="title">Keyboard shortcuts</h2>
+          <button slot="title">Close</button>
+        </igc-dialog>
+      `);
+      nativeDialog = dialog.renderRoot.querySelector('dialog')!;
+
+      expect(nativeDialog)
+        .attribute('aria-label')
+        .to.equal('Keyboard shortcuts');
+      expect(nativeDialog).not.to.have.attribute('aria-labelledby');
+    });
   });
 
   describe('DOM', () => {
