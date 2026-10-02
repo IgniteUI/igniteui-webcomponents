@@ -241,15 +241,14 @@ class TabsHelpers {
 
   /**
    * Updates the state of the tabs header strip scroll buttons - visibility and active state.
+   * Meant for layout changes: a changed tab set, a resize or a selection, since it reads the
+   * width of every tab header. The scroll handler uses `setScrollPositionState()` instead.
    * Triggers an update cycle (rerender) of the `igc-tabs` component.
    */
   public setScrollButtonState(): void {
     if (!this.container) {
       return;
     }
-
-    const { scrollLeft, scrollWidth, clientWidth } = this.container;
-    const disabled = this._scrollButtonsDisabled;
 
     // Once the strip is scrollable its scroll width includes the two scroll button
     // columns, so the overflow is judged by the tabs alone. Otherwise the buttons
@@ -263,6 +262,26 @@ class TabsHelpers {
     );
     const hasScrollButtons =
       tabsWidth > this.container.getBoundingClientRect().width + EDGE_TOLERANCE;
+
+    this._applyScrollButtonState(hasScrollButtons);
+  }
+
+  /**
+   * Updates only the active state of the scroll buttons from the scroll position of the
+   * strip. Cheap enough to run on every scroll event.
+   */
+  public setScrollPositionState(): void {
+    this._applyScrollButtonState(this._hasScrollButtons);
+  }
+
+  private _applyScrollButtonState(hasScrollButtons: boolean): void {
+    if (!this.container) {
+      return;
+    }
+
+    const { scrollLeft, scrollWidth, clientWidth } = this.container;
+    const disabled = this._scrollButtonsDisabled;
+
     const start = Math.abs(scrollLeft) <= 1;
     const end = Math.abs(Math.abs(scrollLeft) + clientWidth - scrollWidth) <= 1;
 

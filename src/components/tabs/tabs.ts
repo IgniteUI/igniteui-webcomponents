@@ -408,7 +408,7 @@ export default class IgcTabsComponent extends EventEmitterMixin<
 
   @eventOptions({ passive: true })
   protected _handleScroll(): void {
-    this._domHelpers.setScrollButtonState();
+    this._domHelpers.setScrollPositionState();
   }
 
   //#endregion
