@@ -59,9 +59,8 @@ const DEFAULT_SEPARATOR = ' - ';
 //#endregion
 
 /**
- * Re-creates one date's parts at their position within the range. Going back through the
- * factory keeps them real part instances - spreading would copy the data and lose the
- * prototype along with it.
+ * Re-creates one date's parts at their range position. The factory keeps real part
+ * instances; a spread loses the prototype.
  */
 function offsetParts(
   parts: ReadonlyArray<IDatePart>,
@@ -81,11 +80,8 @@ function offsetParts(
 }
 
 /**
- * A specialized mask parser for date range input fields.
- * Uses composition with two DateTimeMaskParser instances to handle start and end dates.
- *
- * Accepts a single date format (e.g., 'MM/dd/yyyy') which creates two parsers
- * internally, one for the start date and one for the end date.
+ * A mask parser for date range inputs. A single date format (e.g. 'MM/dd/yyyy') creates
+ * two internal DateTimeMaskParser instances, one for each end of the range.
  *
  * @example
  * ```ts
@@ -107,9 +103,7 @@ export class DateRangeMaskParser extends DateFormatMaskParser<IDateRangePart> {
   /** End position of the separator in the mask */
   private _separatorEnd!: number;
 
-  /**
-   * Gets the separator string used between start and end dates.
-   */
+  /** The separator between start and end dates. */
   public get separator(): string {
     return this._separator;
   }
@@ -140,8 +134,8 @@ export class DateRangeMaskParser extends DateFormatMaskParser<IDateRangePart> {
   }
 
   /**
-   * Converts each date like a single date format, and escapes the separator, so that its
-   * letters stay literal. Returns an empty pattern while the base constructor runs.
+   * Converts each date as a single date format and escapes the separator letters.
+   * Returns an empty pattern while the base constructor runs.
    */
   protected override _toMaskFormat(format: string): string {
     if (this._separator === undefined) {
@@ -189,10 +183,8 @@ export class DateRangeMaskParser extends DateFormatMaskParser<IDateRangePart> {
    * Sets the prompt character and updates both parsers.
    *
    * @remarks
-   * Each half of the range is parsed and formatted by its own sub-parser, so all three
-   * have to agree on the prompt. Read back through `super` rather than propagating the
-   * argument, since the base setter normalizes it to a single character and rejects one
-   * that collides with a mask flag.
+   * All three parsers must agree on the prompt. It is read back through `super`, because
+   * the base setter normalizes the value.
    */
   public override set prompt(value: string) {
     super.prompt = value;
@@ -207,10 +199,7 @@ export class DateRangeMaskParser extends DateFormatMaskParser<IDateRangePart> {
 
   //#region Date Range Parsing
 
-  /**
-   * Parses a masked string into a DateRangeValue using the two internal parsers.
-   * Returns null if the string cannot be parsed.
-   */
+  /** Parses a masked string into a DateRangeValue. Returns null if parsing fails. */
   public parseDateRange(masked: string): DateRangeValue | null {
     if (!masked || masked === this.emptyMask) {
       return null;
@@ -267,10 +256,7 @@ export class DateRangeMaskParser extends DateFormatMaskParser<IDateRangePart> {
 
   //#region Spinning Support
 
-  /**
-   * Spins a date part within the range (for stepUp/stepDown functionality).
-   * Delegates to the underlying date part's spin method.
-   */
+  /** Spins a date part within the range, for stepUp/stepDown. */
   public spinDateRangePart(
     part: IDateRangePart,
     delta: number,

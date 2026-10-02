@@ -37,8 +37,8 @@ export const checkSelectedRange = (
   expectedValue: DateRangeValue | null,
   useTwoInputs = true,
   /**
-   * Set while an edit is still in progress. The inputs only commit their `value` on
-   * blur (see issue #1346), so mid-typing the draft has to be read instead.
+   * Set while an edit is in progress. The inputs commit `value` on blur (see issue
+   * #1346), so the draft is read mid-typing.
    */
   uncommitted = false
 ) => {

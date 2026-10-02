@@ -181,7 +181,7 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
 
   private _measurement: { container: number; bar: number } | null = null;
 
-  /** Container extent at the last resize notification we acted on. */
+  /** Container extent at the last handled resize. */
   private _observedSize = -1;
 
   @query('[part~="base"]')
@@ -572,9 +572,8 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
 
     this._collapsedPane = target;
 
-    // `toggle()`, the expanders and Ctrl + arrow do not use the decorated
-    // accessors, and one assignment can change both flags. Request both, so that
-    // Lit reads them from their getters and leaves neither stale.
+    // This path skips the decorated accessors and can change both flags,
+    // so request an update for both.
     this.requestUpdate('startCollapsed', wasStartCollapsed);
     this.requestUpdate('endCollapsed', wasEndCollapsed);
 
@@ -587,9 +586,8 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   private _setPaneSize(pane: PanePosition, value: string | undefined): void {
     this._getPaneState(pane).size = this._normalizeValue(value, 'auto');
 
-    // A size set while collapsed wins over the snapshot from before the
-    // collapse. Drop the full snapshot. The share of the other pane would
-    // over-subscribe the container and shrink both panes.
+    // A size set while collapsed wins over the saved sizes. Drop both, or the
+    // saved share of the other pane over-subscribes the container.
     if (this._collapsedPane !== null) {
       for (const target of PANES) {
         this._getPaneState(target).savedSize = undefined;
@@ -620,8 +618,7 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   }
 
   private _savePaneSizes(): void {
-    // Not measurable yet (collapsed before the first render) - keep the
-    // explicit size rather than lose it to the 'auto' reset.
+    // Not measurable before the first render, so keep the authored sizes.
     if (this._getTotalSize() === 0) {
       this._startPaneState.savedSize = this._startPaneState.size;
       this._endPaneState.savedSize = this._endPaneState.size;
@@ -633,7 +630,6 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
     this._endPaneState.savedSize = `${this._asPercentOfContainer(end, 2)}%`;
   }
 
-  /* Reset sizes on collapse; restore saved sizes on expand */
   private _restoreSizesOnExpandCollapse(): void {
     if (this._collapsedPane !== null) {
       this._startPaneState.size = 'auto';
@@ -734,8 +730,8 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
     if (numericValue < 0) return fallback;
     if (trimmed.includes('%') && numericValue > 100) return fallback;
 
-    // Zero is the one length that needs no unit; any other bare number is
-    // invalid CSS and would silently drop the whole `flex` shorthand.
+    // Only zero needs no unit. Another bare number is invalid CSS and drops
+    // the whole `flex` shorthand.
     const isUnitlessZero = numericValue === 0 && UNITLESS_NUMBER.test(trimmed);
 
     return isUnitlessZero || CSS_LENGTH.test(trimmed) ? trimmed : fallback;
@@ -764,9 +760,8 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   }
 
   /**
-   * A complete resize for a gesture that is not a pointer drag. `_calcNewSizes`
-   * is shared with the drag path, which keeps the constraints of both panes and
-   * makes the emitted sizes equal to the rendered ones.
+   * Runs a full resize for a keyboard gesture. It shares `_calcNewSizes` with
+   * the drag path, so the emitted sizes equal the rendered ones.
    */
   private _runResize(delta: number): void {
     this._resizeStart();
@@ -814,8 +809,7 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
     this._emitLayoutChanged();
   }
 
-  // Both sizes render as 'auto' while collapsed, so report the pre-collapse
-  // ones instead - those are what a consumer needs to restore the layout.
+  // While collapsed, both sizes render as 'auto', so report the saved sizes.
   private _reportedSize(pane: PanePosition): string {
     const state = this._getPaneState(pane);
     return (
@@ -968,9 +962,8 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   }
 
   /**
-   * Reads the container and bar extents one time per update pass. Both
-   * `_updatePanes` and `_updateBarAria` need them, and the style writes between
-   * them would force a reflow for each read.
+   * Reads the container and bar extents once per update pass. The style writes
+   * between the reads would force a reflow for each read.
    */
   private _measure(): { container: number; bar: number } {
     const axis = this._isHorizontal ? 'width' : 'height';
@@ -1009,8 +1002,8 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   private _updatePanes(): void {
     const isCollapsed = this._collapsedPane !== null;
 
-    // A collapsed pane renders as `auto` with its constraints lifted, while the
-    // authored values stay untouched so they survive the round trip.
+    // A collapsed pane renders as `auto` without constraints. The authored
+    // values stay for the expand.
     for (const pane of PANES) {
       const { minSize, maxSize } = this._getPaneState(pane);
 
@@ -1057,8 +1050,8 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
     const otherMinPx =
       this._getConstraintInPx(this._otherPane(pane), 'min') ?? 0;
 
-    // Dropping a constraint the panes cannot both satisfy keeps content from
-    // overflowing. It is reapplied once the container grows to accommodate it.
+    // Drop a constraint that both panes cannot satisfy, to prevent overflow.
+    // It applies again when the container grows.
     return minPx + otherMinPx > total ? undefined : minSize;
   }
 

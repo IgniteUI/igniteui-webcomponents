@@ -288,6 +288,22 @@ export function setStyles(
   Object.assign(element.style, styles);
 }
 
+/** Sets an attribute, or removes it when `value` is `null` or `undefined`. */
+export function setOrRemoveAttribute(
+  element: Element,
+  name: string,
+  value?: string | null
+): void {
+  value == null
+    ? element.removeAttribute(name)
+    : element.setAttribute(name, value);
+}
+
+/** Whether the host has `tabindex="-1"`, which its native control follows. */
+export function hasNegativeTabIndex(host: Element): boolean {
+  return host.getAttribute('tabindex') === '-1';
+}
+
 /** Returns whether the given input has at least one selected file. */
 export function hasFiles(input: { files: FileList | null }): boolean {
   return input.files != null && input.files.length > 0;

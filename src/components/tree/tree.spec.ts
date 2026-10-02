@@ -1,4 +1,11 @@
-import { aTimeout, elementUpdated, expect, waitUntil } from '@open-wc/testing';
+import {
+  aTimeout,
+  elementUpdated,
+  expect,
+  fixture,
+  html,
+  waitUntil,
+} from '@open-wc/testing';
 import { spy } from 'sinon';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
 import { scrolledIntoView } from '#internals/testing/helpers.spec.js';
@@ -509,14 +516,14 @@ describe('Tree', () => {
     it('Should not recognize a tree item as a child if it is wrapped within another element (e.g. a `<div>`)', async () => {
       tree = await TreeTestFunctions.createTreeElement(itemWrappedInDivTree);
 
-      // "Tree Item 1.1" (and its own child) are nested inside a <div> inside "Tree Item 1" -
-      // they are not direct light-DOM children of it, so they are not picked up as its items.
+      // "Tree Item 1.1" and its child are inside a <div>, so they are not
+      // direct children of "Tree Item 1".
       const item1 = tree.items[0];
       expect(item1.label).to.equal('Tree Item 1');
       expect(item1.getChildren()).to.have.lengthOf(0);
 
-      // The tree's own flattened `items` collection only walks direct `igc-tree-item`
-      // children, so the wrapped items are excluded entirely from the whole tree too.
+      // `tree.items` walks only direct `igc-tree-item` children, so it also
+      // excludes the wrapped items.
       expect(tree.items).to.have.lengthOf(2);
       expect(tree.items.map((i) => i.label)).to.eql([
         'Tree Item 1',
@@ -806,9 +813,8 @@ describe('Tree', () => {
     });
 
     it('Should toggle an item exactly once on indicator click after `toggleNodeOnClick` is enabled at runtime', async () => {
-      // Enabling `toggleNodeOnClick` on its own must not leave a stale
-      // indicator handler behind: the click would then be handled both by the
-      // indicator and by the bubbling item click, cancelling itself out.
+      // A stale indicator handler and the item click both handle the click
+      // and cancel each other out.
       tree.toggleNodeOnClick = true;
       await elementUpdated(tree);
 
@@ -836,9 +842,8 @@ describe('Tree', () => {
       tree.toggleNodeOnClick = true;
       await elementUpdated(tree);
 
-      // Any unrelated re-render while `toggleNodeOnClick` is enabled used to
-      // drop the indicator handler for good, since turning the flag back off
-      // does not re-render the item.
+      // An unrelated re-render must keep the indicator handler, because turning
+      // the flag off does not re-render the item.
       topLevelItems[0].requestUpdate();
       await elementUpdated(tree);
 
@@ -1454,13 +1459,10 @@ describe('Tree', () => {
     });
 
     /**
-     * `aria-hidden-focus` is a known, pre-existing violation, not something
-     * these trees get wrong: the selection checkbox is deliberately hidden from
-     * assistive tech (selection is conveyed by `aria-selected` on the item), but
-     * `igc-checkbox` does not forward the host's `tabindex="-1"` to its inner
-     * `<input>`, so that input stays in the tab order inside an `aria-hidden`
-     * container. Fixing it means changing `igc-checkbox`. Only this one rule is
-     * suppressed, so every other check still runs against these states.
+     * `aria-hidden-focus` is a known violation. The selection checkbox is
+     * hidden from assistive tech (the item carries `aria-selected`), but
+     * `igc-checkbox` does not forward `tabindex="-1"` to its inner `<input>`.
+     * The fix belongs in `igc-checkbox`, so only this rule is suppressed.
      */
     const SELECTION_A11Y_OPTIONS = {
       ignoredRules: ['aria-hidden-focus'],
@@ -1485,6 +1487,90 @@ describe('Tree', () => {
       await elementUpdated(tree);
 
       await expect(tree).to.be.accessible(SELECTION_A11Y_OPTIONS);
+    });
+  });
+
+  describe('Host ARIA of a delegating item', () => {
+    let container: HTMLElement;
+    let item: IgcTreeItemComponent;
+    let anchor: HTMLAnchorElement;
+
+    beforeEach(async () => {
+      container = await fixture<HTMLElement>(html`
+        <div>
+          <span id="tree-name">Reports folder</span>
+          <igc-tree>
+            <igc-tree-item aria-label="Reports">
+              <a slot="label" href="#reports">Reports</a>
+            </igc-tree-item>
+            <igc-tree-item
+              label="Plain"
+              aria-label="Plain item"
+            ></igc-tree-item>
+          </igc-tree>
+        </div>
+      `);
+      item = container.querySelector('igc-tree-item')!;
+      anchor = item.querySelector('a')!;
+      await elementUpdated(item);
+    });
+
+    it('copies the host `aria-label` to the element with the role', () => {
+      expect(anchor).to.have.attribute('role', 'treeitem');
+      expect(anchor).to.have.attribute('aria-label', 'Reports');
+    });
+
+    it('copies the host `aria-labelledby` by reference', async () => {
+      item.setAttribute('aria-labelledby', 'tree-name');
+      await elementUpdated(item);
+
+      expect(anchor.ariaLabelledByElements).to.eql([
+        container.querySelector('#tree-name'),
+      ]);
+    });
+
+    it('copies the host `aria-describedby` by reference', async () => {
+      item.setAttribute('aria-describedby', 'tree-name');
+      await elementUpdated(item);
+
+      expect(anchor.ariaDescribedByElements).to.eql([
+        container.querySelector('#tree-name'),
+      ]);
+    });
+
+    it('keeps an own label of the element with the role', async () => {
+      anchor.setAttribute('aria-label', 'Own');
+      item.setAttribute('aria-label', 'Changed');
+      await elementUpdated(item);
+
+      expect(anchor).to.have.attribute('aria-label', 'Own');
+    });
+
+    it('removes the copy with the host label', async () => {
+      item.removeAttribute('aria-label');
+      await elementUpdated(item);
+
+      expect(anchor).not.to.have.attribute('aria-label');
+    });
+
+    it('moves the copy to a new element with the role', async () => {
+      const next = document.createElement('a');
+      next.slot = 'label';
+      next.href = '#next';
+      next.textContent = 'Next';
+      anchor.replaceWith(next);
+      await elementUpdated(item);
+      await aTimeout(0);
+
+      expect(next).to.have.attribute('aria-label', 'Reports');
+      expect(anchor).not.to.have.attribute('aria-label');
+    });
+
+    it('leaves the label of an item that does not delegate on the host', () => {
+      const plain = container.querySelectorAll('igc-tree-item')[1];
+
+      expect(plain).to.have.attribute('role', 'treeitem');
+      expect(plain).to.have.attribute('aria-label', 'Plain item');
     });
   });
 

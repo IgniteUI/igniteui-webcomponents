@@ -1,10 +1,8 @@
 @use 'sass:map';
 
-// We pick the properties of the calendar theme that are relevant for the date-picker component.
-// In this instance, we only need the content background and border properties that will be applied for the
-// dropdown/dialog parts respectively. Getting the meta is done so varialbes are prefixed correctly.
+// Picks the calendar theme properties that the date picker uses: the content background and the
+// border for the dropdown and dialog parts. The meta keeps the variable prefix correct.
 @function calendar-theme($theme) {
-    // Pick properties from calendar schemas that are relevant to the date-picker component
     @return (
         'content-background': map.get($theme, 'content-background'),
         'border-color': map.get($theme, 'border-color'),
@@ -31,7 +29,7 @@
     );
 }
 
-// We need to the border-color property from the calendar theme to style the igc-dialog part of the date-picker.
+// Takes the border color of the calendar theme for the igc-dialog part of the date picker.
 @function dialog-theme($theme) {
     @return (
         'border-color': map.get($theme, 'border-color'),

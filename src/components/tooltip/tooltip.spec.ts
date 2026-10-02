@@ -638,7 +638,7 @@ describe('Tooltip', () => {
       expect(result).to.be.true;
       expect(tooltip.open).to.be.false;
 
-      // the transient anchor should not reopen the tooltip once its hidden
+      // The transient anchor must not reopen the tooltip once it is hidden.
       simulatePointerEnter(transientAnchor);
       await clock.tickAsync(DEFAULT_SHOW_DELAY);
       await showComplete();

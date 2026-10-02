@@ -245,9 +245,7 @@ describe('Form Integration', () => {
   });
 
   it('ignores the value attribute as a default on form reset', () => {
-    // Regression: the value attribute string used to be stored as the
-    // FileList default and iterated into per-character FormData entries
-    // after a form reset.
+    // Regression: a reset submitted the value attribute string per character.
     spec.element.setAttribute('value', 'abc');
     spec.reset();
 

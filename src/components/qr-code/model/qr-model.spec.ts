@@ -294,8 +294,7 @@ describe('QR model - masking', () => {
   describe('selectBestMask', () => {
     it('returns a value in the range [0, 7]', () => {
       const { matrix, size } = generateQRCodeMatrix('TEST', 'M');
-      // Rebuild a clean unmasked matrix from scratch is complex;
-      // instead verify the contract on any valid matrix
+      // Verify the contract on a valid matrix.
       const functionModules = makeMatrix(size, false);
       const best = selectBestMask(matrix, functionModules);
       expect(best).to.be.within(0, 7);

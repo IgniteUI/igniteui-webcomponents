@@ -42,11 +42,11 @@ export class IgcCalendarBaseComponent extends I18nMixin<
   }
 
   /**
-   * The index of the first day of the week (Sunday = 0) as derived from {@link weekStart}.
+   * The index of the first day of the week (Sunday = 0), from {@link weekStart}.
    *
    * @remarks
-   * Derived on access instead of in `update()`, so that its consumers are not sensitive
-   * to the order in which the base class and its descendants update.
+   * Derived on access, not in `update()`, so its consumers do not depend on the
+   * update order of the base class and its descendants.
    */
   protected get _firstDayOfWeek(): number {
     return getWeekDayNumber(this.weekStart);

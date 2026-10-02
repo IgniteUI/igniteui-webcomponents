@@ -1,13 +1,13 @@
-import { isServer, type LitElement, type PropertyValues } from 'lit';
+import { isServer, type LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
-import { NAMING_ATTRIBUTES } from '../../controllers/aria-projection.js';
+import { trackLabels } from '../../controllers/aria-projection.js';
 import { addInternalsController } from '../../controllers/internals.js';
 import { enterKey, isKey } from '../../controllers/keys.js';
-import { sameItems } from '../../utils/arrays.js';
 import { addSafeEventListener, preventDefault } from '../../utils/events.js';
 import { isFunction, isString } from '../../utils/types.js';
 import type { Validator } from '../../validators.js';
 import type { Constructor } from '../constructor.js';
+import { HostAriaMixin } from '../host-aria.js';
 import type { FormValue } from './form-value.js';
 import {
   type FormAssociatedCheckboxElementInterface,
@@ -109,20 +109,13 @@ function isInvalidControl(element: ListedElement): boolean {
   return !!element.willValidate && !element.validity?.valid;
 }
 
-function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
-  class BaseFormAssociatedElement extends base {
+/** `stateKey` names the state property, whose attribute sets the default. */
+function BaseFormAssociated<T extends Constructor<LitElement>>(
+  base: T,
+  stateKey: 'value' | 'checked' = 'value'
+) {
+  class BaseFormAssociatedElement extends HostAriaMixin(base) {
     public static readonly formAssociated = true;
-
-    /**
-     * Adds the naming attributes. The mixin base type has no static
-     * `observedAttributes`, so `Reflect.get` calls the base getter with this
-     * class as `this`.
-     * @internal
-     */
-    public static get observedAttributes(): string[] {
-      const inherited = Reflect.get(base, 'observedAttributes', this);
-      return [...(inherited as string[]), ...NAMING_ATTRIBUTES];
-    }
 
     //#region Internal state and properties
 
@@ -135,8 +128,6 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
     private _isReportingValidity = false;
     private _touched = false;
     private _isExternalInvalid = false;
-    /** The `<label>` elements at the last update. */
-    private _renderedLabels: ReadonlyArray<Element> | null = null;
 
     private get _shouldApplyStyles(): boolean {
       if (this._isExternalInvalid) {
@@ -234,26 +225,7 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
       wrapFormChecks();
       addSafeEventListener(this, 'invalid', this._handleInvalid);
       addSafeEventListener(this, 'click', this._handleHostClick);
-      addSafeEventListener(this, 'focusin', this._handleFocusEnter);
-    }
-
-    /** @internal */
-    public override attributeChangedCallback(
-      name: string,
-      prev: string | null,
-      current: string | null
-    ): void {
-      super.attributeChangedCallback(name, prev, current);
-
-      if (NAMING_ATTRIBUTES.includes(name)) {
-        this.requestUpdate();
-      }
-    }
-
-    /** @internal */
-    protected override update(properties: PropertyValues): void {
-      this._renderedLabels = this._internals.labels;
-      super.update(properties);
+      trackLabels(this);
     }
 
     /** @internal */
@@ -285,20 +257,6 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
         event.composedPath()[0] === this
       ) {
         this._handleLabelActivation();
-      }
-    }
-
-    /**
-     * `ElementInternals.labels` sends no change event. When focus enters the
-     * host from outside, render again if the labels changed after the last
-     * update.
-     */
-    private _handleFocusEnter(event: FocusEvent): void {
-      if (
-        !this.contains(event.relatedTarget as Node | null) &&
-        !sameItems(this._internals.labels, this._renderedLabels)
-      ) {
-        this.requestUpdate();
       }
     }
 
@@ -442,14 +400,42 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
       return (this as unknown as EventEmitterLike).emitEvent(eventName, init);
     }
 
+    /** @internal */
+    public override attributeChangedCallback(
+      name: string,
+      prev: string | null,
+      current: string | null
+    ): void {
+      super.attributeChangedCallback(name, prev, current);
+
+      if (name === stateKey) {
+        // A boolean attribute sets its default by presence.
+        this._setDefaultValue(
+          name === 'checked' && isString(current) ? 'true' : current
+        );
+      }
+    }
+
+    /** Sets the default, also as the state of a pristine control. @internal */
+    protected _applyDefault(value: unknown): void {
+      this._formValue.defaultValue = value;
+
+      if (this._pristine) {
+        (this as unknown as Record<string, unknown>)[stateKey] =
+          this._formValue.defaultValue;
+        this._pristine = true;
+        this._validate();
+      }
+    }
+
     protected _setDefaultValue(current: string | null): void {
       this._formValue.defaultValue = current;
     }
 
+    /** Restores the default through the public setter of the state. */
     protected _restoreDefaultValue(): void {
-      const value = this._formValue.value;
-      this._formValue.setValueAndFormState(this._formValue.defaultValue);
-      this.requestUpdate('value', value);
+      (this as unknown as Record<string, unknown>)[stateKey] =
+        this._formValue.defaultValue;
     }
 
     protected _setFormValue(value: FormValueType, state?: FormValueType): void {
@@ -544,29 +530,11 @@ export function FormAssociatedMixin<T extends Constructor<LitElement>>(
     /* blazorCSSuppress */
     @property({ attribute: false })
     public set defaultValue(value: unknown) {
-      this._formValue.defaultValue = value;
-
-      if (this._pristine && 'value' in this) {
-        this.value = this.defaultValue;
-        this._pristine = true;
-        this._validate();
-      }
+      this._applyDefault(value);
     }
 
     public get defaultValue(): unknown {
       return this._formValue.defaultValue;
-    }
-
-    /**
-     * Restores the default value through the public `value` setter, so that a
-     * form reset gets the same clamping, normalization and reactive state.
-     */
-    protected override _restoreDefaultValue(): void {
-      if ('value' in this) {
-        this.value = this.defaultValue;
-      } else {
-        super._restoreDefaultValue();
-      }
     }
 
     /** Sets touched first, so the `value` setter validation cycle sees it. */
@@ -582,17 +550,6 @@ export function FormAssociatedMixin<T extends Constructor<LitElement>>(
 
       return false;
     }
-
-    public override attributeChangedCallback(
-      name: string,
-      prev: string | null,
-      current: string | null
-    ): void {
-      super.attributeChangedCallback(name, prev, current);
-      if (name === 'value') {
-        this._setDefaultValue(current);
-      }
-    }
   }
 
   return FormAssociatedElement as unknown as Constructor<FormAssociatedElementInterface> &
@@ -606,44 +563,18 @@ export function FormAssociatedMixin<T extends Constructor<LitElement>>(
 export function FormAssociatedCheckboxMixin<T extends Constructor<LitElement>>(
   base: T
 ) {
-  class FormAssociatedCheckboxElement extends BaseFormAssociated(base) {
+  class FormAssociatedCheckboxElement extends BaseFormAssociated(
+    base,
+    'checked'
+  ) {
     /* blazorCSSuppress */
     @property({ attribute: false })
     public set defaultChecked(value: boolean) {
-      this._formValue.defaultValue = value;
-
-      if (this._pristine && 'checked' in this) {
-        this.checked = this.defaultChecked;
-        this._pristine = true;
-        this._validate();
-      }
+      this._applyDefault(value);
     }
 
     public get defaultChecked(): boolean {
       return this._formValue.defaultValue as boolean;
-    }
-
-    /**
-     * Restores the default checked state through the public `checked` setter,
-     * which records the correct reactive property for the update cycle.
-     */
-    protected override _restoreDefaultValue(): void {
-      if ('checked' in this) {
-        this.checked = this.defaultChecked;
-      } else {
-        super._restoreDefaultValue();
-      }
-    }
-
-    public override attributeChangedCallback(
-      name: string,
-      prev: string | null,
-      current: string | null
-    ): void {
-      super.attributeChangedCallback(name, prev, current);
-      if (name === 'checked') {
-        this._setDefaultValue(isString(current) ? 'true' : null);
-      }
     }
   }
 

@@ -35,6 +35,7 @@ This directory hosts two public components: [`igc-stepper`](#igc-stepper) and [`
     - [Animation duration](#animation-duration)
     - [Keyboard navigation](#keyboard-navigation)
     - [Context binding](#context-binding)
+    - [Host ARIA](#host-aria)
   - [Assumptions and limitations](#assumptions-and-limitations)
   - [Accessibility](#accessibility)
     - [ARIA roles and properties](#aria-roles-and-properties)
@@ -43,9 +44,10 @@ This directory hosts two public components: [`igc-stepper`](#igc-stepper) and [`
 
 ## Revision history
 
-| Version | Date       | Notes                 |
-| ------: | ---------- | --------------------- |
-|       1 | 2026-09-21 | Initial specification |
+| Version | Date       | Notes                                                                   |
+| ------: | ---------- | ----------------------------------------------------------------------- |
+|       1 | 2026-09-21 | Initial specification                                                   |
+|       2 | 2026-10-02 | Forward the host `aria-label`, `aria-labelledby` and `aria-describedby` |
 
 ## Overview
 
@@ -352,6 +354,11 @@ with `@open-wc/testing` fixtures and assertions. The groups below mirror the `de
 21. The steps receive their configuration - orientation, step type, title position and linear mode - from the
     stepper through context, including for steps added later.
 
+### Host ARIA
+
+22. The shared `runHostAriaTests` suite: the host `aria-label`, `aria-labelledby` and `aria-describedby` reach the
+    target and follow a change, and an axe audit passes with a host label.
+
 ## Assumptions and limitations
 
 - One step is active at a time.
@@ -367,6 +374,8 @@ with `@open-wc/testing` fixtures and assertions. The groups below mirror the `de
   the strip.
 - Each header exposes its selected state and controls the content region of its step.
 - The disabled, invalid and optional states are exposed, and disabled steps are skipped by the navigation.
+- The host `aria-label`, `aria-labelledby` and `aria-describedby` of a step name and describe its `role="tab"`
+  header.
 
 ### Keyboard support
 

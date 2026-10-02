@@ -36,6 +36,21 @@ describe('Date Time Input component', () => {
     defineComponents(IgcDateTimeInputComponent);
   });
 
+  it('exposes `required` as `aria-required` on the native input', async () => {
+    const editor = await fixture<IgcDateTimeInputComponent>(
+      html`<igc-date-time-input required></igc-date-time-input>`
+    );
+    const native = editor.renderRoot.querySelector('input')!;
+
+    expect(native.getAttribute('aria-required')).to.equal('true');
+    expect(native.hasAttribute('required')).to.be.false;
+
+    editor.required = false;
+    await elementUpdated(editor);
+
+    expect(native.hasAttribute('aria-required')).to.be.false;
+  });
+
   const parser = new DateTimeMaskParser();
   const DEFAULT_PROMPT = '_';
   const DEFAULT_FORMAT = 'MM/dd/yyyy';
@@ -299,8 +314,7 @@ describe('Date Time Input component', () => {
 
         expect(input.value).to.equal('10/10/____');
 
-        // What a framework re-render does: re-commit the bound value. It is equal to
-        // the committed one, so the in-progress edit must survive it.
+        // A framework re-render re-commits an equal value. The edit must survive it.
         element.value = new Date(initial.getTime());
         await elementUpdated(element);
 
@@ -943,8 +957,7 @@ describe('Date Time Input component', () => {
       element.stepDown();
       await elementUpdated(element);
 
-      // Spinning is an uncommitted edit while the input is focused, so the draft
-      // in the mask - not the public value - is what moves.
+      // Spinning while focused is an uncommitted edit, so only the mask draft moves.
       expect(input.value).to.equal('2022/06/01');
       expect(input.selectionStart).to.eq(start);
       expect(input.selectionEnd).to.eq(end);
@@ -1131,7 +1144,7 @@ describe('Date Time Input component', () => {
       expect(element.value.getDate()).to.equal(1);
     });
 
-    //check if needed
+    // TODO: Check whether the three drag tests below are needed.
     it('dragEnter', async () => {
       input.dispatchEvent(new DragEvent('dragenter', { bubbles: true }));
       await elementUpdated(element);
@@ -1139,7 +1152,6 @@ describe('Date Time Input component', () => {
       expect(input.value).to.equal(parser.apply());
     });
 
-    //check if needed
     it('dragLeave without focus', async () => {
       input.dispatchEvent(new DragEvent('dragleave', { bubbles: true }));
       await elementUpdated(element);
@@ -1147,7 +1159,6 @@ describe('Date Time Input component', () => {
       expect(input.value).to.be.empty;
     });
 
-    //check if needed
     it('dragLeave with focus', async () => {
       element.focus();
       input.dispatchEvent(new DragEvent('dragleave', { bubbles: true }));

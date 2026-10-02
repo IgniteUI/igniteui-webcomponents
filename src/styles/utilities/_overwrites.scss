@@ -1,7 +1,5 @@
 @use 'igniteui-theming/sass/color/functions' as theming;
 @use 'igniteui-theming/sass/themes/config' as themes;
-
-// Configure the variable prefix for CSS variables
 @include themes.configure-variable-prefix('ig');
 
 @function color(

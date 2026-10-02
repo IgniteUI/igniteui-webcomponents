@@ -194,12 +194,10 @@ export default class IgcTileComponent extends EventEmitterMixin<
     return this._tileManagerCtx?.grid.value;
   }
 
-  /** Returns the tile manager current resize mode. */
   private get _resizeMode(): TileManagerResizeMode {
     return this._tileManager?.resizeMode ?? 'none';
   }
 
-  /** Returns the tile manager current drag mode. */
   private get _dragMode(): TileManagerDragMode {
     return this._tileManager?.dragMode ?? 'none';
   }
@@ -231,7 +229,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
     return this._isResizeActive || this._resizeMode === 'always';
   }
 
-  /** Whether to render the resize adorners based on tile and tile manager configuration. */
+  /** Whether the tile or the tile manager state disables resize. */
   private get _resizeDisabled(): boolean {
     return (
       this.disableResize ||

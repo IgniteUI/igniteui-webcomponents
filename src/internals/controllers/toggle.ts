@@ -28,8 +28,8 @@ type ToggleHost = LitElement & {
 /**
  * Runs the visual transition of the host to the requested state: it sets
  * `open`, plays the animations and awaits the updates. A resolved `false`
- * marks the transition as superseded, for example by a newer animation, and
- * the controller then sends no trailing "-ed" event.
+ * marks the transition as superseded, and the controller then sends no
+ * trailing "-ed" event.
  */
 type ToggleTransitionFunction = (open: boolean) => Promise<boolean> | boolean;
 
@@ -53,8 +53,8 @@ type ToggleControllerOptions = {
  * The events run only when the caller asks for them.
  *
  * The host keeps its public `open`, `show()`, `hide()` and `toggle()` members
- * and delegates to the controller. Unlike the other controllers here, the
- * host does not register it; it has no life-cycle of its own.
+ * and delegates to the controller. The controller has no life cycle, so the
+ * host does not register it.
  */
 class ToggleController {
   private readonly _host: ToggleHost;
@@ -82,8 +82,7 @@ class ToggleController {
     const host = this._host;
     const detail = this._options.detail?.call(host);
 
-    // The init omits both keys instead of a falsy value. `emitEvent` then
-    // applies its own defaults, and the init of a plain event stays empty.
+    // Omit the falsy keys, so `emitEvent` applies its own defaults.
     return host.emitEvent(name, {
       ...(cancelable && { cancelable }),
       ...(detail !== undefined && { detail }),
@@ -143,28 +142,25 @@ class ToggleController {
   }
 
   /*
-   * The methods below return the underlying promise instead of being `async`.
-   * An `async` wrapper costs extra microtask hops, which shift the timing of
-   * caller code, for example focus management, against `updateComplete`.
+   * The methods below are not `async`. An `async` wrapper adds microtask
+   * hops, which shift the timing of caller code against `updateComplete`.
    */
 
   /**
-   * Opens the host, wrapped in the `igcOpening` and `igcOpened` events when
-   * `emitEvents` is true. Returns `false` when the host is already open or
-   * moves there, when the consumer canceled the opening event, when a later
-   * request supersedes this one, or when the transition reports an
-   * interruption.
+   * Opens the host, and sends `igcOpening` and `igcOpened` when `emitEvents`
+   * is true. Returns `false` when the host is already open or opening, the
+   * opening event is canceled, a later request supersedes this one, or the
+   * transition is interrupted.
    */
   public show(emitEvents = false): Promise<boolean> {
     return this._setOpenState(true, emitEvents);
   }
 
   /**
-   * Closes the host, wrapped in the `igcClosing` and `igcClosed` events when
-   * `emitEvents` is true. Returns `false` when the host is already closed or
-   * moves there, when the consumer canceled the closing event, when a later
-   * request supersedes this one, or when the transition reports an
-   * interruption.
+   * Closes the host, and sends `igcClosing` and `igcClosed` when `emitEvents`
+   * is true. Returns `false` when the host is already closed or closing, the
+   * closing event is canceled, a later request supersedes this one, or the
+   * transition is interrupted.
    */
   public hide(emitEvents = false): Promise<boolean> {
     return this._setOpenState(false, emitEvents);

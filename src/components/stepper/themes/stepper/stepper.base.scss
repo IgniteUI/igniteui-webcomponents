@@ -1,7 +1,6 @@
 @use 'styles/common/component';
 @use 'styles/utilities' as *;
 
-// STEPPER
 :host {
     font-family: var(--ig-font-family);
     overflow: hidden;
@@ -33,7 +32,6 @@
     --step-min-width--first-step: var(--header-min-width);
 }
 
-// STEPPER [HORIZONTAL]
 :host([orientation='horizontal']) {
     --horizontal-content-disply: block;
     --vertical-separator-visibility: none;
@@ -62,12 +60,10 @@
         --body-transition-delay: 0ms;
     }
 
-    // FIRST STEP
     ::slotted(igc-step:first-of-type) {
         --horizontal-separator-visibility--first-of-type: none;
     }
 
-    // LAST STEP
     ::slotted(igc-step:last-of-type) {
         --horizontal-separator-visibility--last-of-type: none;
     }
@@ -81,18 +77,15 @@
     /* stylelint-enable */
 }
 
-// FIRST STEP
 ::slotted(igc-step:first-of-type) {
     --horizontal-separator-display--first-of-type: none;
 }
 
-// LAST STEP
 ::slotted(igc-step:last-of-type) {
     --vertical-body-disply--last-of-type: none;
     --horizontal-separator-display--last-of-type: none;
 }
 
-// NOT FULL HEADER
 :host(:not([step-type='full'])) {
     /* stylelint-disable */
     --step-min-width: calc(var(--header-min-width) + var(--separator-min-width--full) - var(--separator-min-width--header));
@@ -105,14 +98,12 @@
     }
 }
 
-// FULL HEADER
 :host([step-type='full']) {
     ::slotted(igc-step) {
         --step-separator-position: var(--separator-position);
     }
 }
 
-// CONTENT TOP
 :host([content-top]) {
     ::slotted(igc-step) {
         --header-bottom: 2;

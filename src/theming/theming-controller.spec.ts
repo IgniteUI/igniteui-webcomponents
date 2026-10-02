@@ -18,7 +18,6 @@ import {
 import { CHANGE_THEME_EVENT } from './theming-event.js';
 import type { Theme, Themes } from './types.js';
 
-// Mock themes for testing
 const mockThemes: Themes = {
   light: {
     shared: css`
@@ -142,13 +141,11 @@ describe('Theming Controller', () => {
       }
     );
 
-    // Set up default global theme for tests
     configureTheme('bootstrap', 'light');
   });
 
   describe('Global Theme', () => {
     beforeEach(() => {
-      // Reset to default theme before each test
       configureTheme('bootstrap', 'light');
     });
 
@@ -171,7 +168,6 @@ describe('Theming Controller', () => {
       expect(el.themingController.theme).to.equal('bootstrap');
       expect(el.themingController.variant).to.equal('light');
 
-      // Change global theme
       setTimeout(() => configureTheme('material', 'light'));
       await oneEvent(window, CHANGE_THEME_EVENT);
       await elementUpdated(el);
@@ -188,7 +184,6 @@ describe('Theming Controller', () => {
 
       const initialCallCount = el.themeChangeCallCount;
 
-      // Change global theme
       setTimeout(() => configureTheme('fluent', 'dark'));
       await oneEvent(window, CHANGE_THEME_EVENT);
       await elementUpdated(el);
@@ -224,14 +219,11 @@ describe('Theming Controller', () => {
 
       const initialCallCount = el.themeChangeCallCount;
 
-      // Disconnect the element
       el.remove();
 
-      // Change global theme
       setTimeout(() => configureTheme('material', 'dark'));
       await oneEvent(window, CHANGE_THEME_EVENT);
 
-      // The callback should not have been called again
       expect(el.themeChangeCallCount).to.equal(initialCallCount);
     });
   });
@@ -329,7 +321,7 @@ describe('Theming Controller', () => {
       await elementUpdated(provider);
       await elementUpdated(el);
 
-      // Theme change callback should be called even when only variant changes
+      // A variant-only change also calls the callback.
       expect(el.themeChangeCallCount).to.be.greaterThan(initialCallCount);
     });
 
@@ -351,12 +343,11 @@ describe('Theming Controller', () => {
       expect(el.themingController.theme).to.equal('material');
       expect(el.themingController.variant).to.equal('dark');
 
-      // Change global theme - should not affect component inside provider
+      // The global theme does not affect a component inside a provider.
       setTimeout(() => configureTheme('bootstrap', 'light'));
       await oneEvent(window, CHANGE_THEME_EVENT);
       await elementUpdated(el);
 
-      // Should still be material, not bootstrap
       expect(el.themingController.theme).to.equal('material');
       expect(el.themingController.variant).to.equal('dark');
     });
@@ -433,7 +424,6 @@ describe('Theming Controller', () => {
         'igc-theme-provider'
       ) as IgcThemeProviderComponent;
 
-      // Dynamically create and add component
       const el = document.createElement(
         themedTag
       ) as ThemedTestComponentElement;
@@ -446,7 +436,6 @@ describe('Theming Controller', () => {
     });
 
     it('should fall back to global theme when moved outside provider', async () => {
-      // Set a known global theme
       configureTheme('bootstrap', 'light');
 
       const tag = unsafeStatic(themedTag);
@@ -466,18 +455,15 @@ describe('Theming Controller', () => {
       )!;
       await elementUpdated(el);
 
-      // After initial render, should have provider theme
       expect(el.themingController.theme).to.equal('material');
       expect(el.themingController.variant).to.equal('dark');
 
-      // Move outside the provider
       container.appendChild(el);
       await elementUpdated(el);
 
       expect(el.themingController.theme).to.equal('bootstrap');
       expect(el.themingController.variant).to.equal('light');
 
-      // Move back inside provider scope
       provider.appendChild(el);
       await elementUpdated(el);
 
@@ -497,8 +483,6 @@ describe('Theming Controller', () => {
 
       await elementUpdated(el);
 
-      // Check that styles are adopted (we can't easily inspect adoptedStyleSheets,
-      // but we can verify the component renders without errors)
       expect(el.shadowRoot).to.not.be.null;
       expect(el.shadowRoot?.adoptedStyleSheets.length).to.be.greaterThan(0);
     });
@@ -513,12 +497,10 @@ describe('Theming Controller', () => {
 
       const initialStylesCount = el.shadowRoot?.adoptedStyleSheets.length ?? 0;
 
-      // Change theme
       setTimeout(() => configureTheme('material', 'dark'));
       await oneEvent(window, CHANGE_THEME_EVENT);
       await elementUpdated(el);
 
-      // Styles should still be adopted
       expect(el.shadowRoot?.adoptedStyleSheets.length).to.be.greaterThan(0);
       expect(el.shadowRoot?.adoptedStyleSheets.length).to.equal(
         initialStylesCount

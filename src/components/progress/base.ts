@@ -110,8 +110,8 @@ export abstract class IgcProgressBaseComponent extends LitElement {
       changedProperties.has('max') ||
       changedProperties.has('value');
 
-    // Both writes are idempotent, so they are applied unconditionally. A clamp
-    // that does change a value lands it in `changedProperties` for this pass.
+    // The writes are idempotent. A clamp that changes a value lands it in
+    // `changedProperties` for this pass.
     this.max = Math.max(0, this.max);
     this.value = clamp(this.value, 0, this.max);
 

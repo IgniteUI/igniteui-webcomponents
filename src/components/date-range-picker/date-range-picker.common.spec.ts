@@ -463,7 +463,7 @@ describe('Date range picker - common tests for single and two inputs mode', () =
           (key) => key as keyof IgcDateRangePickerResourceStrings
         );
 
-        // { ...picker.resourceStrings, ...testObject } will not work for old resources, due to resourceStrings returning mixed resources now.
+        // A spread of picker.resourceStrings fails for old resources, because it returns mixed resources.
         const testResourceStrings = testObject;
         picker.resourceStrings = testResourceStrings;
         await elementUpdated(picker);
@@ -592,7 +592,6 @@ describe('Date range picker - common tests for single and two inputs mode', () =
           expect(eventSpy).calledWith('igcClosed');
           eventSpy.resetHistory();
 
-          // dialog mode
           picker.mode = 'dialog';
           await elementUpdated(picker);
 

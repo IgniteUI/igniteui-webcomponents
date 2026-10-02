@@ -49,13 +49,12 @@ export abstract class IgcInputBaseComponent extends FormAssociatedRequiredMixin(
   protected readonly _input?: HTMLInputElement;
 
   /**
-   * Names and describes the native input, and applies the ARIA that a
-   * composite host, for example `igc-select`, projects. See {@link addAriaTarget}.
+   * Names and describes the native input, and applies the ARIA a composite
+   * host projects. See {@link addAriaTarget}.
    */
-  protected readonly _ariaTarget = addAriaTarget(this, {
-    description: () => helperText(this, this._slots),
-    hasOwnLabel: () => Boolean(this.label),
-  });
+  protected readonly _ariaTarget = addAriaTarget(this, () =>
+    helperText(this, this._slots)
+  );
 
   /* blazorSuppress */
   /** The value of the control. */
@@ -84,10 +83,7 @@ export abstract class IgcInputBaseComponent extends FormAssociatedRequiredMixin(
   @property()
   public label!: string;
 
-  /**
-   * Resolves the part names for the container based on the current state.
-   * Used to apply conditional styling via CSS parts.
-   */
+  /** Resolves the state-based part names for `base`. */
   protected _resolvePartNames(base: string) {
     return resolveInputPartNames(this._slots, base, !!this.value);
   }

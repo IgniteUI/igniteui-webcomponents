@@ -36,7 +36,7 @@ export default class IgcFocusTrapComponent extends LitElement {
   public disabled = false;
 
   /**
-   * Whether focus in currently inside the trap component.
+   * Whether focus is currently inside the trap component.
    */
   public get focused() {
     return this._focused;
@@ -104,7 +104,6 @@ const defaultSelectors = [
   'textarea',
 ];
 
-/** Returns whether the element is hidden. */
 function isHidden(node: HTMLElement) {
   return (
     node.hasAttribute('hidden') ||
@@ -114,7 +113,6 @@ function isHidden(node: HTMLElement) {
   );
 }
 
-/** Returns whether the element is disabled. */
 function isDisabled(node: HTMLElement) {
   return node.hasAttribute('disabled') || node.hasAttribute('inert');
 }
@@ -126,9 +124,6 @@ function isContentEditable(node: HTMLElement) {
   );
 }
 
-/**
- * Returns whether the element can be focused.
- */
 function isFocusable(node: HTMLElement) {
   if (isHidden(node) || isDisabled(node)) {
     return false;
@@ -145,10 +140,7 @@ function isFocusable(node: HTMLElement) {
   return defaultSelectors.some((selector) => node.matches(selector));
 }
 
-/**
- * Filter function for the tree walker instance skipping over nodes and their children
- * if the `node` is hidden/disabled or it was already visited and resides in `cache`.
- */
+/** Tree walker filter. Rejects a hidden, disabled or cached node and its subtree. */
 function shouldSkipElements(node: Node, cache?: WeakSet<HTMLElement>) {
   const element = node as HTMLElement;
 

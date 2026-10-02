@@ -158,8 +158,8 @@ describe('Mask history', () => {
       history.record('atomic', at('a__', 1));
       history.settle('ab_', 2);
 
-      // Two undos in a row. The masked text is written synchronously, but the caret is
-      // only applied after the render - a key repeat outruns it and reports a stale one.
+      // Two fast undos. The caret applies only after the render, so the second one
+      // reports a stale caret.
       const first = history.undo(at('ab_', 2))!;
       history.undo({ value: 'a__', start: 99, end: 99 });
 
@@ -197,12 +197,11 @@ describe('Mask history', () => {
       history.record('atomic', at('___', 0));
       history.settle('a__', 1);
 
-      // Something assigned `value` behind the history's back, and then the user edited.
+      // An outside `value` assignment, then a user edit.
       history.record('atomic', at('xyz', 0));
       history.settle('xyzq', 1);
 
-      // The new edit is undoable, but only back to the assigned value - the steps that
-      // preceded it describe a document that no longer exists.
+      // Undo goes back only to the assigned value.
       expect(history.undo(at('xyzq', 1))).to.eql(at('xyz', 0));
       expect(history.canUndo).to.be.false;
     });

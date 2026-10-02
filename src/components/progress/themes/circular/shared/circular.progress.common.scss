@@ -26,7 +26,6 @@ $theme: $material;
     stroke: var-get($theme, 'track-color');
 }
 
-// Mixin for Gradient Colors
 @mixin gradient-variant($variant, $color) {
     :host([variant='#{$variant}']) {
         --gradient-stop-color: #{$color};

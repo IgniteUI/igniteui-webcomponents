@@ -42,6 +42,18 @@ import {
 describe('Date range picker - single input', () => {
   before(() => defineComponents(IgcDateRangePickerComponent));
 
+  it('exposes `required` as `aria-required` on the native input', async () => {
+    const picker = await fixture<IgcDateRangePickerComponent>(
+      html`<igc-date-range-picker required></igc-date-range-picker>`
+    );
+    const editor = picker.renderRoot.querySelector('igc-date-range-input')!;
+    await elementUpdated(editor);
+
+    expect(
+      editor.renderRoot.querySelector('input')!.getAttribute('aria-required')
+    ).to.equal('true');
+  });
+
   runExternalLabelAssociationTests({
     tagName: IgcDateRangePickerComponent.tagName,
     getNativeInput: (host) =>
@@ -184,8 +196,7 @@ describe('Date range picker - single input', () => {
 
     it('should modify value only through calendar selection and not input', async () => {
       const eventSpy = spy(picker, 'emitEvent');
-      // current implementation of DRP single input is not editable;
-      // to refactor when the input is made editable
+      // A non-editable input changes the value only through the calendar.
       picker.nonEditable = true;
       await elementUpdated(picker);
 

@@ -83,10 +83,7 @@ describe('igc-datepicker form integration', () => {
     });
 
     it('should clear the invalid styles of the inner editor on form reset', async () => {
-      // Regression: the inner editor is not associated with the outer form
-      // and runs its own constraint validation against the forwarded
-      // `required`, so a focus + blur before a reset left it touched and
-      // permanently styled as invalid.
+      // Regression: a focus + blur before a reset left the inner editor invalid.
       spec.setProperties({ required: true });
 
       const inner = spec.element.renderRoot.querySelector(
@@ -427,9 +424,7 @@ describe('igc-datepicker form integration', () => {
       form.requestSubmit();
       await elementUpdated(picker);
 
-      // Projecting the validation slots makes the picker's own slots pick up
-      // content, and the resulting slotchange schedules another update. The
-      // messages have to survive it.
+      // The slot projection schedules another update. The messages must survive it.
       await nextFrame();
 
       ValidityHelpers.hasInvalidStyles(picker).to.be.true;

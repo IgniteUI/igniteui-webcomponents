@@ -1,11 +1,6 @@
 /**
- * Date Part Classes Module
- *
- * This module provides structured classes for date/time parts used in date-time input.
- * Each date part type has its own class with specific validation and spin behavior;
- * the time part types share one class driven by a bounds/accessor lookup.
- *
- * Classes are private to this module - only types and factory function are exported.
+ * Date/time part classes of the date-time input. Each date part type has its own class;
+ * the time parts share one class. Only the types and the factory are exported.
  */
 
 import { daysInMonth } from '#internals/date/model.js';
@@ -51,7 +46,6 @@ export const TIME_PART_TYPES = new Set<DatePartType>([
   DatePartType.Seconds,
 ]);
 
-// Spin delta defaults
 export const DEFAULT_DATE_PARTS_SPIN_DELTAS = Object.freeze<DatePartDeltas>({
   date: 1,
   month: 1,
@@ -200,16 +194,10 @@ const DATE_BOUNDS = {
 
 //#region Helper Functions
 
-/**
- * Pads a value with zeros to the specified length.
- */
 function padValue(value: string | number, length: number): string {
   return String(value).padStart(length, '0');
 }
 
-/**
- * Converts 24-hour format to 12-hour format.
- */
 function toTwelveHourFormat(hours: number): number {
   const h = hours % 12;
   return h === 0 ? 12 : h;
@@ -234,10 +222,7 @@ function wrapOrClamp(
 
 //#region Abstract Base Class
 
-/**
- * Abstract base class for all date parts.
- * Provides common functionality and defines the contract for concrete implementations.
- */
+/** The base class of all date parts. */
 abstract class DatePartBase implements IDatePart {
   readonly type: DatePartType;
   readonly start: number;
@@ -269,7 +254,7 @@ class YearPart extends DatePartBase {
   }
 
   validate(_value: number): boolean {
-    // Years are always valid (no upper bound)
+    // Years have no upper bound.
     return _value >= 0;
   }
 
@@ -453,8 +438,7 @@ class LiteralPart extends DatePartBase {
 //#region Factory Function
 
 /**
- * Creates a date part instance based on the type.
- * This is the only way to create date part instances outside this module.
+ * Creates a date part of `type`. The only way to create one outside this module.
  *
  * @param type - The type of date part to create
  * @param options - The options for the date part

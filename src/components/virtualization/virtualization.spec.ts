@@ -673,8 +673,8 @@ describe('VirtualScroll', () => {
 
       const resizeSpy = spy(el['_engine'], 'resize');
 
-      // An identical item count used to make `resize` a no-op. That left the
-      // previous data's measurements on the new items.
+      // An identical item count must not keep the previous data's
+      // measurements on the new items.
       el.data = createItems(20).map((item) => `${item}!`);
       await elementUpdated(el);
 
@@ -739,10 +739,9 @@ describe('VirtualScroll', () => {
 
       // Jump to the end. Lit reuses the wrapper elements for the new indices
       // at an identical size, and the ResizeObserver does not report that.
-      // Those indices used to keep their estimated size, which left a gap
-      // between the last item and the end of the track. Measurements at the
-      // bottom shrink the track, so apply the jump again until the scroll
-      // height is stable.
+      // The new indices must not keep their estimated size. Measurements at
+      // the bottom shrink the track, so jump again until the scroll height is
+      // stable.
       for (let i = 0; i < 10; i++) {
         const height = el.scrollHeight;
         el.scrollTop = el.scrollHeight;
@@ -923,7 +922,7 @@ describe('VirtualScroll', () => {
     // 1,000,000 items of 50px are 50,000,000px, more than a browser can
     // scroll, so the component compresses the virtual space. At DOM offsets of
     // millions of px, the browser keeps positions to about 1px, so the checks
-    // allow 2px. Without the compression fix, items were off by 20 to 35px.
+    // allow 2px.
     const COUNT = 1_000_000;
     const PRECISION = 2;
     const ITEM_SIZE = 50;

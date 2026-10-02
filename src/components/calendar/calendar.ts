@@ -51,7 +51,7 @@ import IgcYearsViewComponent from './years-view/years-view.js';
 
 export const focusActiveDate = Symbol();
 
-/** How many consecutive disabled days keyboard navigation will skip over before giving up. */
+/** The maximum number of consecutive disabled days that keyboard navigation skips. */
 const MAX_DISABLED_DATE_SKIP = 1000;
 
 /* blazorIndirectRender */
@@ -346,8 +346,8 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
   }
 
   /**
-   * Moves the active date to the first or the last date of the current view, skipping
-   * over the disabled dates towards the middle of it.
+   * Moves the active date to the first or last date of the view.
+   * It skips the disabled dates toward the middle.
    */
   private _activateEdgeOfView(edge: 'start' | 'end'): void {
     const isStart = edge === 'start';
@@ -429,14 +429,13 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
       return;
     }
 
-    // Resolved before the state below is updated, since the dates of the views are
-    // derived from it
+    // Read before the state changes, because the view dates derive from it.
     const renderedMonth = this._getActiveDates()[index];
 
     this._activeDaysViewIndex = index;
     this.activeDate = event.detail;
 
-    // The cell holding the tab stop is about to be replaced, so the focus has to follow
+    // The tab stop cell is about to be replaced, so the focus must move with it.
     if (!areSameMonth(this._activeDate, renderedMonth)) {
       this[focusActiveDate]();
     }
@@ -534,13 +533,11 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
   }
 
   /**
-   * Returns the first enabled date starting from `start` and moving day by day in the
-   * direction of `delta`.
+   * Returns the first enabled date from `start`, one day at a time in the direction of `delta`.
    *
    * @remarks
-   * The search is bounded, since the disabled dates can describe an open-ended range
-   * which no date in the given direction satisfies. The current active date is returned
-   * when nothing is reachable.
+   * The search is bounded, because the disabled dates can be an open-ended range.
+   * It returns the active date when no date is reachable.
    */
   private _getNextEnabledDate(start: CalendarDay, delta: number): CalendarDay {
     const disabled = this._disabledDates;
@@ -644,12 +641,11 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
   }
 
   /**
-   * Renders the off screen live region announcing the period the calendar navigated to.
+   * Renders the off-screen live region that announces the period after navigation.
    *
    * @remarks
-   * A single region for the whole calendar - one per rendered month would announce the
-   * same navigation several times over. The years view has its visible years range as a
-   * live region of its own.
+   * One region serves the whole calendar, because one per month announces the same change many times.
+   * The years view has its own live region for the years range.
    */
   protected _renderActivePeriod() {
     if (this._isYearView) {
@@ -734,9 +730,8 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
       ? this.resourceStrings.calendar_select_date
       : this.resourceStrings.calendar_range_placeholder;
 
-    // A label and the value it describes, not a document section, so no
-    // headings. A component cannot know which level fits its page. The themes
-    // set the typography of both parts.
+    // A label and its value, not headings: a component cannot know the heading
+    // level of its page. The themes set the typography.
     return html`
       <div part="header">
         <div part="header-title">

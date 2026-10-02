@@ -14,7 +14,7 @@ import {
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { type StyleInfo, styleMap } from 'lit/directives/style-map.js';
 import {
-  type ResolvedNaming,
+  type ARIABindings,
   ariaBindings,
 } from '#internals/controllers/aria-projection.js';
 import {
@@ -93,7 +93,7 @@ export class IgcSliderBaseComponent extends LitElement {
    *
    * If `labels` are provided (projected), then `min` is always set to 0.
    *
-   * If `lowerBound` ends up being less than than the current `min` value,
+   * If `lowerBound` ends up being less than the current `min` value,
    * it is automatically assigned the new `min` value.
    * @attr
    */
@@ -122,7 +122,7 @@ export class IgcSliderBaseComponent extends LitElement {
    * If `labels` are provided (projected), then `max` is always set to
    * the number of labels.
    *
-   * If `upperBound` ends up being greater than than the current `max` value,
+   * If `upperBound` ends up being greater than the current `max` value,
    * it is automatically assigned the new `max` value.
    * @attr
    */
@@ -288,8 +288,7 @@ export class IgcSliderBaseComponent extends LitElement {
       changedProperties.has('upperBound') ||
       changedProperties.has('step');
 
-    // The initial update included - attributes are applied in markup order, so
-    // a value can arrive validated against a constraint that is not final yet.
+    // Also on the first update, because attributes apply in markup order.
     if (constraintsChanged) {
       this.normalizeValue();
     }
@@ -465,8 +464,7 @@ export class IgcSliderBaseComponent extends LitElement {
     if (this.step) {
       const stepDistance = scale * this.step;
 
-      // If the thumb scale range (slider update) is less than a half step,
-      // the position stays the same.
+      // A move of less than half a step keeps the position.
       if (Math.abs(change) < stepDistance / 2) {
         return 0;
       }
@@ -567,11 +565,7 @@ export class IgcSliderBaseComponent extends LitElement {
     return html`<div part="ticks">${this._renderTicks()}</div>`;
   }
 
-  protected renderThumb(
-    value: number,
-    aria: Partial<ResolvedNaming>,
-    thumbId?: string
-  ) {
+  protected renderThumb(value: number, aria: ARIABindings, thumbId?: string) {
     const percent = `${asPercent(value - this.min, this.distance)}%`;
     const thumbStyles = { insetInlineStart: percent };
     const tooltipStyles = {

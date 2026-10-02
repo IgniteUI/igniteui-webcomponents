@@ -25,7 +25,7 @@
     position: relative;
     justify-content: center;
 
-    // Reset the context so that is possible to set background on the whole stepper
+    // A new stacking context lets the whole stepper take a background.
     z-index: 0;
 
     [part~='header'] {
@@ -116,8 +116,8 @@
     position: relative;
     overflow: hidden;
 
-    // Thous two lines here are on purpose, they make sure that step body content
-    // does not get involved in grid width calculation. They fix a very weird bug.
+    // `width: 0` and `min-width: 100%` keep the body content out of the grid
+    // width calculation. See:
     // https://stackoverflow.com/questions/73856035/css-grid-columns-changing-size-with-long-content/73858982#73858982
     width: 0;
     height: var(--vertical-body-height, auto);

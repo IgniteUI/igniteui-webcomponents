@@ -130,9 +130,8 @@ export abstract class DateFormatMaskParser<
   T extends IDatePart = IDatePart,
 > extends MaskParser {
   /**
-   * Built on first read, because {@link MaskParser} parses the mask from its constructor -
-   * before any subclass field exists. Declared without an initializer so that it survives
-   * the `_invalidate` call made from there.
+   * Built on first read, because {@link MaskParser} parses the mask in its constructor.
+   * It has no initializer, so it survives the `_invalidate` call from there.
    */
   private _parts?: T[];
 
@@ -153,10 +152,7 @@ export abstract class DateFormatMaskParser<
     this._parts = undefined;
   }
 
-  /**
-   * The part at a cursor position. The end is inclusive, so a caret resting at the end of
-   * a part still resolves to it.
-   */
+  /** The part at a cursor position. The end is inclusive, so a caret at a part end resolves to it. */
   public getPartForCursor(position: number): T | undefined {
     return this.parts.find(
       (part) =>
@@ -176,11 +172,7 @@ export abstract class DateFormatMaskParser<
     return this.parts.find((part) => part.type !== DatePartType.Literal);
   }
 
-  /**
-   * Whether the masked string holds nothing typed at all - every date/time position
-   * is still a prompt. Unlike a partially filled mask, there is no value in it to
-   * complete from the part defaults.
-   */
+  /** Whether every date/time position is still a prompt, so there is nothing to complete. */
   public isBlank(masked: string): boolean {
     return this.parts.every(
       (part) =>
@@ -284,10 +276,7 @@ export class DateTimeMaskParser extends DateFormatMaskParser {
 
   //#region Date Parsing
 
-  /**
-   * Parses a masked string into a Date object.
-   * Returns null if the string cannot be parsed into a valid date.
-   */
+  /** Parses a masked string into a Date. Returns null if it is not a valid date. */
   public parseDate(masked: string): Date | null {
     const parts = this._extractDateValues(masked);
 
@@ -305,9 +294,6 @@ export class DateTimeMaskParser extends DateFormatMaskParser {
     return this._createDateFromParts(parts);
   }
 
-  /**
-   * Extracts numeric values from the masked string for each date part.
-   */
   private _extractDateValues(
     masked: string
   ): Partial<Record<DatePartType, number>> {
@@ -334,10 +320,7 @@ export class DateTimeMaskParser extends DateFormatMaskParser {
     return parts;
   }
 
-  /**
-   * Validates that parsed date parts are within valid ranges.
-   * Only validates parts that are present in the format.
-   */
+  /** Checks that the parsed parts of the format are in range. */
   private _validateDateParts(
     parts: Partial<Record<DatePartType, number>>
   ): boolean {

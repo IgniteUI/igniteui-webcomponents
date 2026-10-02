@@ -32,7 +32,10 @@ import {
 import type { AbstractConstructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { isEmpty } from '#internals/utils/arrays.js';
-import { getElementByIdFromRoot } from '#internals/utils/dom.js';
+import {
+  getElementByIdFromRoot,
+  setOrRemoveAttribute,
+} from '#internals/utils/dom.js';
 import { getElementFromPath } from '#internals/utils/events.js';
 import { createIdGenerator } from '#internals/utils/strings.js';
 import { isString } from '#internals/utils/types.js';
@@ -267,9 +270,8 @@ export default class IgcDropdownComponent extends EventEmitterMixin<
   //#region Event handlers
 
   /**
-   * Resolves the selection again when an item enters or leaves the light DOM. A
-   * framework usually renders the items after the first paint, and can remove a
-   * selected or navigated item.
+   * Resolves the selection again when items enter or leave the light DOM, for
+   * example after a late framework render.
    */
   private _handleItemsChange({
     changes: { added, removed },
@@ -475,11 +477,9 @@ export default class IgcDropdownComponent extends EventEmitterMixin<
    * Publishes the popup state and the navigation position on the anchor.
    *
    * @remarks
-   * `aria-activedescendant` goes on the anchor, because the anchor holds DOM
-   * focus. The list is never focused, because the key bindings listen on the
-   * anchor. No `aria-controls` goes with it: the list is in this shadow root,
-   * which an IDREF cannot cross, and ARIA element reflection resolves only out
-   * of a shadow root, never into one.
+   * `aria-activedescendant` goes on the anchor, because the anchor holds focus.
+   * There is no `aria-controls`: neither an IDREF nor element reflection can
+   * reach into this shadow root.
    */
   private _syncAnchorARIA(): void {
     const anchor = this._target;
@@ -496,10 +496,8 @@ export default class IgcDropdownComponent extends EventEmitterMixin<
     if (active) {
       // Items only need an id if they have none of their own
       active.id ||= nextItemId();
-      anchor.setAttribute('aria-activedescendant', active.id);
-    } else {
-      anchor.removeAttribute('aria-activedescendant');
     }
+    setOrRemoveAttribute(anchor, 'aria-activedescendant', active?.id);
   }
 
   /**
@@ -527,8 +525,7 @@ export default class IgcDropdownComponent extends EventEmitterMixin<
     if (target) {
       this._setExplicitTarget(target);
 
-      // A target that resolves to nothing, with no anchor to fall back on,
-      // would open a list the popover cannot place - and so cannot show.
+      // The popover cannot place the list without an anchor.
       if (!this._target) {
         return false;
       }

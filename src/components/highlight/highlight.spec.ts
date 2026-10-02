@@ -63,9 +63,7 @@ describe('Highlight', () => {
     it('is adopted by the tree scope of the slotted content, not the render root', async () => {
       highlight = await fixture(createHighlightWithInitialMatch());
 
-      // `::highlight()` rules are tree-scoped, so they must live in the scope owning the
-      // slotted text nodes. Attaching them to the component's own shadow root renders no
-      // highlight in browsers that enforce the scoping (Firefox).
+      // `::highlight()` rules are tree-scoped. In the render root they show nothing in Firefox.
       expect(hasHighlightSheet(document)).to.be.true;
       expect(hasHighlightSheet(highlight.renderRoot as ShadowRoot)).to.be.false;
     });

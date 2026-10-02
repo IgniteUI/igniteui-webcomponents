@@ -377,10 +377,8 @@ describe('Select', () => {
   });
 
   describe('Navigation from an initial selection', () => {
-    // Every way a selection can be established before the user ever touches the
-    // component. Each of them must leave keyboard navigation anchored on the
-    // selected item - navigating away from "nothing" used to walk off the start
-    // of the list and wipe the selection instead.
+    // Each way to set a selection before user input. Keyboard navigation must
+    // start from the selected item.
     const initializers = [
       {
         name: 'value attribute',
@@ -1846,9 +1844,9 @@ describe('Select', () => {
     it('', async () => {
       const testParameters: ValidationContainerTestsParams<IgcSelectComponent>[] =
         [
-          { slots: ['valueMissing'], props: { required: true } }, // value-missing slot
-          { slots: ['customError'] }, // custom-error slot
-          { slots: ['invalid'], props: { required: true } }, // invalid slot
+          { slots: ['valueMissing'], props: { required: true } },
+          { slots: ['customError'] },
+          { slots: ['invalid'], props: { required: true } },
         ];
 
       await runValidationContainerTests(IgcSelectComponent, testParameters);

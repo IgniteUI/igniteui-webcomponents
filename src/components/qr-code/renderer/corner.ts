@@ -14,7 +14,7 @@ type QrCornerProperties = {
   squareStyle: QrCornerSquareStyle;
 };
 
-/** Renders a finder-pattern corner as a Lit SVG template, composing the outer square and inner dot paths. */
+/** Renders a finder-pattern corner: the outer square and the inner dot. */
 export function renderQrCorner({
   x,
   y,
@@ -50,9 +50,7 @@ type RenderFindersProperties = {
   squareStyle: QrCornerSquareStyle;
 };
 
-/**
- * Renders all three finder-pattern corners as an array of Lit SVG templates, given the QR code size, module size, margin, and styles.
- */
+/** Renders the three finder-pattern corners. */
 export function renderQrFinders({
   size,
   moduleSize,

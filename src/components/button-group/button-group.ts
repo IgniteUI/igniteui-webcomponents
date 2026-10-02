@@ -63,9 +63,8 @@ export default class IgcButtonGroupComponent extends EventEmitterMixin<
   //#region Internal state & properties
 
   /**
-   * The values set through `selectedItems` before there were buttons to apply
-   * them to. Read one time when the buttons render, after which the buttons own
-   * the state.
+   * The values set through `selectedItems` before the buttons exist.
+   * Read one time on the first render. Then the buttons own the state.
    */
   private _selectedItems = new Set<string>();
 
@@ -97,7 +96,7 @@ export default class IgcButtonGroupComponent extends EventEmitterMixin<
     return this._buttons.filter((button) => button.selected);
   }
 
-  /** The buttons that can take focus. A disabled button is skipped over. */
+  /** The buttons that can take focus. */
   private get _enabledButtons(): IgcToggleButtonComponent[] {
     return this._buttons.filter((button) => !button.disabled);
   }
@@ -139,7 +138,7 @@ export default class IgcButtonGroupComponent extends EventEmitterMixin<
    */
   @property({ attribute: 'selected-items', type: Array, reflect: false })
   public get selectedItems(): string[] {
-    // Buttons are not required to have a value, in which case they report none.
+    // A button without a value reports none.
     return this._selectedButtons
       .map((button) => button.value)
       .filter(isDefined);
@@ -180,9 +179,8 @@ export default class IgcButtonGroupComponent extends EventEmitterMixin<
       value: () => context,
     });
 
-    // The single selection modes give radio semantics: one tab stop, and arrow
-    // navigation that takes the selection with it. The multiple mode is a group
-    // of toggle buttons, and each button is its own tab stop.
+    // The single selection modes act as a radio group: one tab stop, and the
+    // arrow keys move the selection. In multiple mode each button is a tab stop.
     addRovingFocusController<IgcToggleButtonComponent>(this, {
       keybindings: {
         skip: () => this.disabled || this._isMultiple,
@@ -199,17 +197,17 @@ export default class IgcButtonGroupComponent extends EventEmitterMixin<
 
   protected override willUpdate(changedProperties: PropertyValues<this>): void {
     if (this.hasUpdated && changedProperties.has('selection')) {
-      // The selection modes are not interchangeable - the group starts over.
+      // A change of the selection mode clears the selection.
       this._applySelection([]);
     }
   }
 
   protected override firstUpdated(): void {
     if (isEmpty(this._selectedButtons)) {
-      // Nothing is selected through the children, fall back to the values passed in.
+      // No child is selected, so use the `selectedItems` values.
       this._selectFromValues(this._selectedItems);
     } else {
-      // A selection through the children takes priority over the passed in values.
+      // A child selection takes priority over the `selectedItems` values.
       this._enforceSingleSelection();
     }
 
@@ -232,13 +230,11 @@ export default class IgcButtonGroupComponent extends EventEmitterMixin<
   }
 
   /**
-   * Finds the tab stop of the group: the selected button, or the first enabled
-   * one if there is no selection, which keeps the group reachable.
+   * Sets the tab stop to the selected button, else to the first enabled one.
    *
    * @remarks
-   * The buttons apply the tab stop themselves and read it through the context,
-   * so a tab stop that moves while no button updates must publish again. That
-   * renders every button, so publish only on a real move.
+   * The buttons read the tab stop through the context, so a move must publish again.
+   * A publish renders every button, so publish only on a real move.
    */
   private _updateTabStop(): void {
     const enabled = this._enabledButtons;
@@ -251,9 +247,8 @@ export default class IgcButtonGroupComponent extends EventEmitterMixin<
   }
 
   /**
-   * Each button is its own tab stop outside the single selection modes, as is a
-   * button that left the group. A removed button keeps its context, and a
-   * former group must not hold it out of the tab order.
+   * Every button is a tab stop in multiple mode. A button that left the group
+   * keeps a stale context, so the group must not hold it out of the tab order.
    */
   private _isTabStop(button: IgcToggleButtonComponent): boolean {
     return (
@@ -273,8 +268,8 @@ export default class IgcButtonGroupComponent extends EventEmitterMixin<
   }
 
   /**
-   * Moves focus to `button` and takes the selection with it, as a radio group
-   * does. The selection moves and never turns off.
+   * Focuses `button` and moves the selection to it, as a radio group does.
+   * Navigation never clears the selection.
    */
   private _navigate(button: IgcToggleButtonComponent): void {
     button.focus();
@@ -292,8 +287,8 @@ export default class IgcButtonGroupComponent extends EventEmitterMixin<
   }
 
   /**
-   * Reduces a selection made outside the group, through the children or through
-   * added buttons with their own state, to one button. The last button wins.
+   * Reduces a selection made outside the group (children or added buttons) to one button.
+   * The last button wins.
    */
   private _enforceSingleSelection(): void {
     const selected = this._selectedButtons;
@@ -342,8 +337,8 @@ export default class IgcButtonGroupComponent extends EventEmitterMixin<
       ? this._setSelected(button, !button.selected)
       : this._handleSingleSelection(button);
 
-    // Resolved once the interaction is over - a single selection moves through an
-    // intermediate state whose tab stop is never the one it settles on.
+    // Resolve after the interaction: a single selection passes through an
+    // intermediate state with the wrong tab stop.
     this._updateTabStop();
   }
 
@@ -365,7 +360,7 @@ export default class IgcButtonGroupComponent extends EventEmitterMixin<
     this._setSelected(button, true);
   }
 
-  /** Applies a selection made through user interaction, announcing it. */
+  /** Applies a user selection and emits the matching event. */
   private _setSelected(
     button: IgcToggleButtonComponent,
     selected: boolean

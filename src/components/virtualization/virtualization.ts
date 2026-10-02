@@ -197,9 +197,9 @@ export default class IgcVirtualScrollComponent<
    * The `startIndex` of the last `igcDataRequest`, which is also the item count
    * at that emit. See `_checkDataRequest`.
    *
-   * Kept across a disconnect, as `_hasPendingDataRequest` is. A move in the DOM
-   * does not cancel what the consumer was already asked for, and clearing only
-   * one of the two opens the request loop again on reconnect.
+   * Kept across a disconnect, as `_hasPendingDataRequest` is, because a DOM move
+   * does not cancel a request. Clearing only one of the two opens the request
+   * loop again on reconnect.
    */
   private _lastDataRequestIndex = -1;
 
@@ -342,11 +342,8 @@ export default class IgcVirtualScrollComponent<
   protected override willUpdate(changed: PropertyValues<this>): void {
     // TODO: Either fix this in the theming controller or come up with some other solution.
 
-    // Checked on each update, not only in `connectedCallback`, and does
-    // nothing if the sheet is there. A host that renders this component in its
-    // own shadow root, such as combo, can replace that root's
-    // `adoptedStyleSheets` from its theming logic. That drops this sheet while
-    // the element stays connected.
+    // Checked on each update, because a host such as combo can replace its
+    // root's `adoptedStyleSheets` and drop this sheet while connected.
     this._adoptStyles();
 
     if (changed.has('data')) {
@@ -605,10 +602,9 @@ export default class IgcVirtualScrollComponent<
    * moves the content only.
    *
    * @remarks
-   * `render` reads `_currentRange`, not the scroll offset. Without the guard,
-   * a scroll inside one item runs each item template again for the same
-   * result. `willUpdate` recomputes `_currentRange` for the other triggers,
-   * so this skips only the redundant passes.
+   * `render` reads `_currentRange`, not the scroll offset, and `willUpdate`
+   * recomputes it for the other triggers. So the guard skips only redundant
+   * template runs.
    */
   private _handleScroll(): void {
     this._scrollPosition = this._currentAxisScroll();
@@ -652,8 +648,7 @@ export default class IgcVirtualScrollComponent<
   /**
    * The length of the prefix that a `data` change keeps: the first index at
    * which the old and the new items differ, or the length of the shorter array
-   * if neither differs. Measurements below that index stay valid. An append
-   * keeps all the previous items. A filter or a replacement keeps fewer.
+   * if neither differs. Measurements below that index stay valid.
    *
    * @remarks
    * The test is item identity. An item that changes in place keeps its
@@ -697,11 +692,10 @@ export default class IgcVirtualScrollComponent<
    * difference.
    *
    * @remarks
-   * `observe` on an already observed element does nothing, so a new
-   * measurement needs `unobserve` and then `observe`. Do this for each element
-   * whose `data-vs-index` changed. The wrapper elements are recycled, so after
-   * a scroll one element can hold a different item at the same size. The
-   * observer does not report that, and the new index keeps its estimated size.
+   * `observe` on an already observed element does nothing, so each element
+   * whose `data-vs-index` changed gets `unobserve` and then `observe`. A
+   * recycled wrapper can hold a different item at the same size, which the
+   * observer does not report.
    *
    * A `data` change that discards measurements keeps the wrapper and the index,
    * so the wrappers from `_remeasureFrom` on are observed again as well.
@@ -782,9 +776,8 @@ export default class IgcVirtualScrollComponent<
     }
 
     // Each `data` change clears `_hasPendingDataRequest`, also one that
-    // appends nothing. Without this second guard, a consumer whose source is
-    // exhausted and that assigns `data` again for each request gets that same
-    // request again.
+    // appends nothing. This guard stops a repeat request to an exhausted
+    // source.
     if (this._lastDataRequestIndex === total) {
       return;
     }

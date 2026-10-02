@@ -15,8 +15,6 @@ import {
   type WeekDays,
 } from './types.js';
 
-/* Constants */
-
 export const MONTHS_PER_ROW = 3;
 export const YEARS_PER_ROW = 3;
 export const YEARS_PER_PAGE = 15;

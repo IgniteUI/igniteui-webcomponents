@@ -1,5 +1,5 @@
 import { property } from 'lit/decorators.js';
-import { resolveNaming } from '#internals/controllers/aria-projection.js';
+import { hostAria } from '#internals/controllers/aria-projection.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import type { Constructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
@@ -89,8 +89,7 @@ export default class IgcSliderComponent extends FormAssociatedMixin(
       return;
     }
 
-    // A clamp into the current scale is not an edit of the control, so the
-    // form state that it was in carries over.
+    // A clamp is not a user edit, so the pristine state stays.
     const pristine = this._pristine;
     this.value = value;
     this._pristine = pristine;
@@ -148,7 +147,7 @@ export default class IgcSliderComponent extends FormAssociatedMixin(
   }
 
   protected override renderThumbs() {
-    return this.renderThumb(this.value, resolveNaming(this, false));
+    return this.renderThumb(this.value, hostAria(this));
   }
 }
 

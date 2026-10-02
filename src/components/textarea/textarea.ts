@@ -116,10 +116,9 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
   });
 
   /** Names and describes the native textarea. See {@link addAriaTarget}. */
-  private readonly _ariaTarget = addAriaTarget(this, {
-    description: () => helperText(this, this._slots),
-    hasOwnLabel: () => Boolean(this.label),
-  });
+  private readonly _ariaTarget = addAriaTarget(this, () =>
+    helperText(this, this._slots)
+  );
 
   @query('textarea')
   private readonly _input?: HTMLTextAreaElement;

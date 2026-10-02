@@ -92,10 +92,9 @@ export default class IgcTabsComponent extends EventEmitterMixin<
     target: null,
   });
 
-  /** The tabs container reference holding the tab headers. */
+  /** The container of the tab headers. */
   private readonly _headerRef = createRef<HTMLElement>();
 
-  /** The selected tab indicator reference.  */
   private readonly _indicatorRef = createRef<HTMLElement>();
 
   private readonly _domHelpers = createTabHelpers(
@@ -242,8 +241,7 @@ export default class IgcTabsComponent extends EventEmitterMixin<
     // Positions shift on any add/removal, including ones that leave the selection intact.
     this._updateTabsState();
 
-    // Only a changed tab set moves the indicator on its own - selection changes
-    // reposition it through `_setSelectedTab`.
+    // Selection changes move the indicator through `_setSelectedTab`.
     if (structural) {
       this._refreshLayout();
     } else {
@@ -268,8 +266,7 @@ export default class IgcTabsComponent extends EventEmitterMixin<
       // A tab turning selected takes over.
       this._syncSelection(selected);
     } else if (own.some(({ node }) => node === this._activeTab)) {
-      // The active tab was either deselected from the outside, which leaves the
-      // component without a selection, or disabled and has to hand over.
+      // A deselected active tab leaves no selection. A disabled one hands over.
       this._syncSelection(
         this._activeTab?.disabled ? firstOf(this._enabledTabs) : undefined
       );

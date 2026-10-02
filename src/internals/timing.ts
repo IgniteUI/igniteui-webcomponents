@@ -2,7 +2,10 @@
 export type Timer = {
   /** Whether the timer is currently armed. */
   readonly active: boolean;
-  /** Arms the timer, cancels an armed run, and defaults `delay`. */
+  /**
+   * Cancels an armed run and arms the timer again. `delay` defaults to the
+   * delay given at creation.
+   */
   start(delay?: number): void;
   /** Cancels the armed run, if there is one. */
   stop(): void;

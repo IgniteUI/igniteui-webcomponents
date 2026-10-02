@@ -17,11 +17,28 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - #### Input, Mask input, Date time input, File input, Textarea, Select, Combo, Date picker, Date range picker, Color picker, Checkbox, Switch, Radio
   - As for a native control, a failed form submit or `form.reportValidity()` now moves the focus to the first invalid control, also when an invalid native control comes after it. `reportValidity()` of an invalid control moves the focus to that control. Before, the focus stayed where it was, because the controls cancel the `invalid` event to hide the message of the browser, and only Select moved the focus on `reportValidity()`. `form.checkValidity()` does not move the focus. To tell a submit from `form.checkValidity()`, also when one runs inside the other, the library wraps `checkValidity()`, `reportValidity()` and `requestSubmit()` of `HTMLFormElement.prototype`.
   - The controls no longer send an `invalid` event while the user edits an invalid field or leaves it. Before, each validation sent one, unlike a native control. Now the event comes only from `checkValidity()`, `reportValidity()`, the same methods of the form, and a failed submit.
+- #### Input, Mask input, Date time input, File input, Textarea, Select, Combo, Date picker, Date range picker, Color picker, Checkbox, Switch, Radio, Rating, Slider
+  - A host `aria-describedby` now describes the native control, after the helper text. In the two-input date range picker, the end editor gets only the host description. So an `igc-tooltip` on the control describes it too. Before, the description stayed on the host, where screen readers did not use it.
+- #### Mask input, Date time input, Date picker, Date range picker
+  - `required` now sets `aria-required` on the native input of each editor, also in the two-input mode of the date range picker. Before, screen readers did not announce these fields as required.
+- #### Chip, Tabs, Stepper, Expansion panel, Navigation drawer, Tree
+  - The host `aria-label`, `aria-labelledby` and `aria-describedby` now name and describe the element that has the focus or the role: the action button of a chip, the header of a tab or a step, the header of an expansion panel, and the drawer. A tree item that delegates its role to a link in its label copies them to that link, unless the link has its own. In the navigation drawer, `label` still wins over the host `aria-label`. Before, these attributes stayed on the host, where screen readers did not use them.
 - #### Highlight
   - A space in `searchText` now matches any run of whitespace in the content, such as a line break in the HTML source. Before, "cold brew" did not find the two words when a line break separated them.
+- #### Input
+  - `setRangeText()` without `start` and `end` now replaces the selected text, as the native method does. Before, it inserted the text at the start of the value.
+  - `pattern` now has to match the whole value, as for a native input. Before, a match in a part of the value was enough, so `[0-9]{3}` accepted `1234`.
+- #### Icon
+  - The SVG of an icon is now hidden from assistive technologies, because the host carries the name. Before, the SVG of an icon without a title was still an unnamed image. A change of `aria-label` or `aria-labelledby` now updates the role of the icon.
 - #### Dialog
   - An `aria-label` on the dialog is now its only accessible name. Before, the inner `<dialog>` also got `aria-labelledby` with the text of the label, which is not a valid ID reference.
+  - A change of `aria-label` alone now updates the name of the dialog, and its removal gives the name back to the title. Before, the change applied only after the next change of a property, such as `open`.
+  - A host `aria-labelledby` now names the dialog, before `aria-label` and the title, and a host `aria-describedby` describes it. Before, the dialog forwarded only `aria-label`.
+- #### Button group
+  - A change of `aria-label` alone on a toggle button now updates the name of its native button. Before, the change applied only after the next change of a property.
+  - A toggle button now forwards a host `aria-labelledby` and `aria-describedby` to its native button. Before, it forwarded only `aria-label`.
 - #### Combo
+  - The native input no longer has `aria-disabled`. Its native `disabled` state is enough.
   - Arrow Down no longer closes the list, or moves the focus back to the search input, when a search finds one match or none.
   - A form reset now clears the invalid styles of a required single-selection combo that had the focus.
 - #### Input, Mask input, Date time input, File input, Textarea, Select, Combo, Date picker, Date range picker, Color picker
@@ -39,12 +56,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - #### Button, Icon button
   - A button with `href` now keeps the link role of its anchor. Before, the anchor had `role="button"`, so screen readers announced a link as a button.
   - A disabled link now renders a disabled native `<button>` with `role="link"` in place of the anchor, so it leaves the tab order, cannot navigate, and dispatches no click. Before, the link stayed in the tab order, and `Enter` still followed it. The `base` part is the `<button>` while the link is disabled.
+  - A change of the host `aria-label` alone now updates the name of the native button or link. Before, the new label applied only after the next change of a property.
+  - A host `aria-labelledby` and `aria-describedby` now reach the native button or link, and a `<label>` for the button names it. A host `aria-label` still wins over a `<label>`, as for a native button. An `igc-tooltip` on a button now describes the native button. Before, the button forwarded only `aria-label`.
 - #### Accordion
   - The arrow keys, `Home` and `End` now skip a panel that does not render, such as a panel with the `hidden` attribute or `display: none`. Before, the focus stayed on the current panel.
 - #### QR code
   - Versions 30 to 40 at the `M` error correction level now use the data codeword counts of ISO/IEC 18004. Before, these codes had the wrong block structure.
   - Without `error-level`, a logo larger than the safe area of level `M` now raises the error correction level to the smallest one that holds the logo, as documented. Before, the default `M` always applied, so the logo shrank. An explicit `error-level`, `M` included, still caps the logo.
   - A new `aria-label` alone now updates the `<title>` of the code. Before, the title changed only on the next change of another property.
+  - A host `aria-labelledby` and `aria-describedby` now name and describe the SVG. The exported SVG leaves out both relations. Before, only `aria-label` reached the code.
   - The logo in an exported SVG now also has `xlink:href`, so SVG 1.1 consumers, such as Illustrator, the Office import, Batik and older librsvg, show it. Before, they dropped the logo and left a blank area in the code.
 - #### Mask input, Date time input, Date range picker
   - A mask position holds one UTF-16 code unit, so an astral character, such as an emoji, is now rejected as input and as a prompt. Before, it shifted the positions after it or split into two halves. A mask or input format with an astral literal now edits at the correct positions.

@@ -21,6 +21,8 @@ export interface MaskedInputOptions {
   placeholder: string;
   readOnly: boolean;
   disabled: boolean;
+  /** Binds `aria-required`: the native `required` would validate the prompts. */
+  required: boolean;
   autofocus?: boolean;
   inputMode?: string;
   /** When provided, sets the `tabindex` attribute. */
@@ -70,7 +72,7 @@ export function renderMaskedNativeInput(
       ?autofocus=${opts.autofocus}
       inputmode=${ifDefined(opts.inputMode)}
       tabindex=${bindIf(opts.tabindex != null, opts.tabindex)}
-      ${ariaBindings(opts.aria)}
+      ${ariaBindings(opts.required ? { ...opts.aria, required: 'true' } : opts.aria)}
       @input=${opts.onInput}
       @beforeinput=${opts.onBeforeInput}
       @focus=${opts.onFocus}

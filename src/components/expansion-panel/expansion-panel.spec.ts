@@ -16,6 +16,7 @@ import {
   spaceBar,
 } from '#internals/controllers/key-bindings.js';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { runHostAriaTests } from '#internals/testing/host-aria.spec.js';
 import {
   simulateClick,
   simulateKeyboard,
@@ -35,6 +36,14 @@ type ExpansionParts = 'header' | 'title' | 'subtitle' | 'content' | 'indicator';
 describe('Expansion Panel', () => {
   before(() => {
     defineComponents(IgcExpansionPanelComponent);
+  });
+
+  runHostAriaTests({
+    tagName: 'igc-expansion-panel',
+    template: html`<igc-expansion-panel
+      ><span slot="title">Title</span></igc-expansion-panel
+    >`,
+    getTarget: (host) => host.renderRoot.querySelector('[part="header"]')!,
   });
 
   let panel: IgcExpansionPanelComponent;

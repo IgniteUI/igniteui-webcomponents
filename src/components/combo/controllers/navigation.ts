@@ -147,8 +147,7 @@ export class ComboNavigationController<T extends object> {
   private _onTab = async ({ shiftKey }: KeyboardEvent): Promise<void> => {
     if (this._host.open) {
       if (shiftKey) {
-        // Move focus to the main input of the combo
-        // before the Shift+Tab behavior kicks in.
+        // Focus the main input before the default Shift+Tab action.
         this._host.focus();
       }
 
@@ -197,9 +196,10 @@ export class ComboNavigationController<T extends object> {
 
   private _onArrowUp = (): void => {
     if (this.active === this._firstItem) {
-      this._searchInput?.checkVisibility() // Non single-select or disable-filtering combo configuration
-        ? this._searchInput?.focus() // Delegate to search input handlers
-        : this._onEscape(); // Close dropdown and move focus back to main input
+      // Focus the search input when it shows. Otherwise, close the list.
+      this._searchInput?.checkVisibility()
+        ? this._searchInput?.focus()
+        : this._onEscape();
       return;
     }
 
@@ -217,9 +217,8 @@ export class ComboNavigationController<T extends object> {
   //#region Internal helper methods
 
   /**
-   * The single write path for the active index. The host mirrors this through
-   * its own `_activeIndex` accessor, so it has to be told which property
-   * changed and what it changed from.
+   * The only write path for the active index. The host mirrors it as
+   * `_activeIndex`, so the update request carries the old value.
    */
   private _setActive(index: number): void {
     const previous = this.active;

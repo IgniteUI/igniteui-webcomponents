@@ -78,8 +78,9 @@ export const patternValidator: Validator<{ pattern?: string; value: string }> =
   {
     key: 'patternMismatch',
     message: ValidationResourceStringsEN.pattern_validation_error!,
+    // As for a native control, the pattern must match the whole value.
     isValid: ({ pattern, value }) =>
-      pattern && value ? new RegExp(pattern, 'u').test(value) : true,
+      pattern && value ? new RegExp(`^(?:${pattern})$`, 'u').test(value) : true,
   };
 
 export const minValidator: Validator<{

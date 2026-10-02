@@ -7,11 +7,17 @@ import {
 import { property, query } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { buttonGroupContext } from '#internals/context.js';
+import {
+  ariaBindings,
+  hostAria,
+} from '#internals/controllers/aria-projection.js';
 import { createAsyncContext } from '#internals/controllers/async-consumer.js';
 import { addKeyboardFocusRing } from '#internals/controllers/focus-ring.js';
 import { shadowOptions } from '#internals/decorators/shadow-options.js';
 import { registerComponent } from '#internals/definitions/register.js';
+import { HostAriaMixin } from '#internals/mixins/host-aria.js';
 import { partMap } from '#internals/part-map.js';
+import { setOrRemoveAttribute } from '#internals/utils/dom.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import { styles } from './themes/button.base.css.js';
 import { all } from './themes/button.js';
@@ -29,7 +35,9 @@ import { styles as shared } from './themes/shared/button/button.common.css.js';
  * @csspart focused - The native button element when focused through a keyboard interaction.
  */
 @shadowOptions({ delegatesFocus: true })
-export default class IgcToggleButtonComponent extends LitElement {
+export default class IgcToggleButtonComponent extends HostAriaMixin(
+  LitElement
+) {
   public static override styles = [styles, shared];
   public static readonly tagName = 'igc-toggle-button';
 
@@ -92,20 +100,16 @@ export default class IgcToggleButtonComponent extends LitElement {
       this._ownTabIndex = this.getAttribute('tabindex');
     }
 
-    group.isTabStop(this)
-      ? this.removeAttribute('tabindex')
-      : this.setAttribute('tabindex', '-1');
+    setOrRemoveAttribute(this, 'tabindex', group.isTabStop(this) ? null : '-1');
   }
 
-  /** Gives the tab order a group took over back to the button. */
+  /** Restores the `tabindex` that the group took over. */
   private _releaseTabIndex(): void {
     if (this._ownTabIndex === undefined) {
       return;
     }
 
-    this._ownTabIndex === null
-      ? this.removeAttribute('tabindex')
-      : this.setAttribute('tabindex', this._ownTabIndex);
+    setOrRemoveAttribute(this, 'tabindex', this._ownTabIndex);
 
     this._ownTabIndex = undefined;
   }
@@ -139,8 +143,7 @@ export default class IgcToggleButtonComponent extends LitElement {
   protected override render(): TemplateResult {
     const group = this._context.value?.instance;
 
-    // A button of a group with a single selection mode is a radio button, and it
-    // is disabled either on its own or through the group it is part of.
+    // In a single selection group the button is a radio. The group can also disable it.
     const isRadio = group != null && group.selection !== 'multiple';
     const disabled = this.disabled || Boolean(group?.disabled);
     const selectedState = this.selected ? 'true' : 'false';
@@ -154,7 +157,7 @@ export default class IgcToggleButtonComponent extends LitElement {
         type="button"
         role=${ifDefined(isRadio ? 'radio' : undefined)}
         ?disabled=${disabled}
-        .ariaLabel=${this.ariaLabel}
+        ${ariaBindings(hostAria(this))}
         aria-checked=${ifDefined(isRadio ? selectedState : undefined)}
         aria-pressed=${ifDefined(isRadio ? undefined : selectedState)}
         aria-disabled=${disabled}

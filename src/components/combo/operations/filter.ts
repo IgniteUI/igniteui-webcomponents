@@ -5,12 +5,9 @@ import type { ComboRecord, FilteringOptions } from '../types.js';
  * Filters combo records against the current search term.
  *
  * @remarks
- * Normalizing a record's searchable text (lower-casing and stripping
- * diacritics) dominates the cost of a filter pass, and every keystroke filters
- * the same records again. The normalized text is therefore memoized per record
- * and only recomputed when the normalization inputs change - records themselves
- * are replaced when the data source changes, so the weak cache drops stale
- * entries on its own.
+ * Normalization is the main cost of each keystroke, so the normalized text is
+ * cached per record until the normalization options change. A new data source
+ * replaces the records, so the weak cache drops stale entries.
  */
 export default class FilterDataOperation<T extends object> {
   private _cache = new WeakMap<ComboRecord<T>, string>();

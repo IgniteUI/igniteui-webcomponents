@@ -541,8 +541,6 @@ describe('Rating component', () => {
     });
 
     it('should clamp an out-of-range default value on form reset', () => {
-      // Regression: reset used to restore the raw default, bypassing the
-      // value setter clamping and reporting aria-valuenow beyond max.
       spec.setAttributes({ value: 10 });
       spec.setProperties({ value: 1 });
       spec.reset();

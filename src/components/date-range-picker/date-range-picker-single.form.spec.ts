@@ -59,9 +59,8 @@ describe('Date Range Picker Single Input - Form integration', () => {
     });
 
     it('should report the required message for a partial out-of-bounds range', async () => {
-      // Regression: a partial range below `min` fails both the required and
-      // the min validators - the reported message must match the
-      // `valueMissing` flag instead of coming from the min validator.
+      // Regression: a partial range below `min` fails required and min.
+      // The message must match the `valueMissing` flag.
       spec.setProperties({
         required: true,
         min: today.native,

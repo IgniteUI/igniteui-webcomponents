@@ -8,18 +8,13 @@ import { chai as untypedChai } from '@open-wc/testing/pure';
 const chai = untypedChai as typeof ChaiInstance;
 
 /**
- * Web test runner ships the results of a browser session to the Node process
- * through `structuredClone`, `actual` and `expected` of a failed assertion
- * included. Chai defaults `actual` to the assertion subject, so asserting on a
- * value that cannot be cloned - a sinon spy, a DOM node - makes the transport
- * throw a `DataCloneError` *after* the test has already failed. The session
- * result is never delivered: instead of a diff, the test file fails with a
- * `testsFinishTimeout` after two minutes and takes the collected browser logs
- * down with it.
+ * Web test runner sends session results to Node through `structuredClone`,
+ * with `actual` and `expected` of a failed assertion. A value that cannot be
+ * cloned, such as a sinon spy or a DOM node, makes the transport throw. The
+ * test file then fails with `testsFinishTimeout` and loses its browser logs.
  *
- * Substituting the inspected form of such values keeps the failure reportable.
- * Loaded through the `testRunnerHtml` option of the runner config so that it
- * applies to every test file.
+ * This module substitutes the inspected form of such values. The
+ * `testRunnerHtml` option of the runner config loads it for every test file.
  */
 
 const MAX_INSPECT_LENGTH = 512;

@@ -20,13 +20,9 @@ import {
   parseAcceptedFileTypes,
 } from './utils.js';
 
-/**
- * Internal state manager for the `<igc-chat>` component.
- *
- * Manages messages, input value, attachments, options, and event emissions.
- */
+/** Internal state manager for `<igc-chat>`. */
 export class ChatState {
-  //#region Internal properties and state /** The host `<igc-chat>` component instance */
+  //#region Internal properties and state
   private readonly _host: IgcChatComponent;
 
   private readonly _contextUpdateFn: () => unknown;
@@ -35,18 +31,12 @@ export class ChatState {
   private _actionsTooltip?: IgcTooltipComponent;
   private _actionToast?: IgcToastComponent;
 
-  /** The current list of messages */
   private _messages: IgcChatMessage[] = [];
-  /** Chat options/configuration */
   private _options?: IgcChatOptions;
 
-  /** List of current input attachments */
   private _inputAttachments: IgcChatMessageAttachment[] = [];
-  /** Current input text */
   private _inputValue = '';
-  /**
-   * Cache of accepted file types, organized into extensions, mimeTypes, and wildcardTypes
-   */
+  /** Parsed `acceptedFiles`: extensions, MIME types and wildcard types. */
   private _acceptedTypesCache: ChatAcceptedFileTypes | null = null;
 
   //#endregion
@@ -65,89 +55,59 @@ export class ChatState {
     return this._options?.disableAutoScroll ?? false;
   }
 
-  /**
-   * Gets the list of chat messages.
-   */
   public get messages(): IgcChatMessage[] {
     return this._messages;
   }
 
-  /**
-   * Sets the list of chat messages.
-   */
   public set messages(value: IgcChatMessage[]) {
     this._messages = value;
   }
 
-  /**
-   * Gets current chat options.
-   */
   public get options(): IgcChatOptions | undefined {
     return this._options;
   }
 
-  /**
-   * Sets chat options and requests host update.
-   */
   public set options(value: IgcChatOptions) {
     this._options = value;
     this._setAcceptedTypesCache();
     this._contextUpdateFn.call(this._host);
   }
 
-  /**
-   * Gets the current user ID from options or returns 'user' as fallback.
-   */
+  /** Defaults to `'user'`. */
   public get currentUserId(): string {
     return this._options?.currentUserId ?? 'user';
   }
 
-  /**
-   * Gets the current suggestionsPosition from options or returns the default value 'below-messages'.
-   */
+  /** Defaults to `'below-messages'`. */
   public get suggestionsPosition(): ChatSuggestionsPosition {
     return this._options?.suggestionsPosition ?? 'below-messages';
   }
 
-  /**
-   * Gets the current stopTypingDelay from options or returns the default value `3000`.
-   */
+  /** Defaults to `3000`. */
   public get stopTypingDelay(): number {
     return this._options?.stopTypingDelay ?? 3000;
   }
 
-  /**
-   * Gets the list of attachments currently attached to input.
-   */
   public get inputAttachments(): IgcChatMessageAttachment[] {
     return this._inputAttachments;
   }
 
-  /**
-   * Sets the input attachments and requests host update.
-   */
   public set inputAttachments(value: IgcChatMessageAttachment[]) {
     this._inputAttachments = value;
     this._userInputContextUpdateFn.call(this._host);
   }
 
-  /**
-   * Gets the current input value.
-   */
   public get inputValue(): string {
     return this._inputValue;
   }
 
-  /**
-   * Sets the current input value and requests host update.
-   */
   public set inputValue(value: string) {
     this._inputValue = value;
     this._userInputContextUpdateFn.call(this._host);
   }
 
   /**
-   * Whether the default chat textarea holds a value that is not only spaces.
+   * Whether the textarea holds more than whitespace.
    * @internal
    */
   public get hasInputValue(): boolean {
@@ -155,7 +115,7 @@ export class ChatState {
   }
 
   /**
-   * Whether the default file input of the chat holds files.
+   * Whether the input holds attachments.
    * @internal
    */
   public get hasInputAttachments(): boolean {
@@ -258,10 +218,6 @@ export class ChatState {
 
   //#endregion
 
-  /**
-   * Parses the `acceptedFiles` option into extensions, MIME types and wildcard
-   * types, and caches the result.
-   */
   private _setAcceptedTypesCache(): void {
     this._acceptedTypesCache = this.options?.acceptedFiles
       ? parseAcceptedFileTypes(this.options.acceptedFiles)
@@ -286,8 +242,8 @@ export class ChatState {
   //#region Public API
 
   /**
-   * Adds a chat message. Emits the cancellable `igcMessageCreated` event. On
-   * success, clears the input value and the attachments.
+   * Emits the cancelable `igcMessageCreated` event.
+   * On success, adds the message and clears the input.
    * @internal
    */
   public addMessageWithEvent(message: Partial<IgcChatMessage>): void {
@@ -301,8 +257,8 @@ export class ChatState {
   }
 
   /**
-   * Adds `files` to the input as attachments. Emits the cancellable
-   * `igcAttachmentChange` event.
+   * Emits the cancelable `igcAttachmentAdded` event.
+   * On success, adds the new files as attachments.
    * @internal
    */
   public attachFilesWithEvent(files: File[]): void {

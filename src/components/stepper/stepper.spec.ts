@@ -1,6 +1,7 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import { spy } from 'sinon';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { runHostAriaTests } from '#internals/testing/host-aria.spec.js';
 import {
   simulateClick,
   simulateKeyboard,
@@ -13,6 +14,17 @@ import IgcStepperComponent from './stepper.js';
 describe('Stepper', () => {
   before(() => {
     defineComponents(IgcStepperComponent, IgcIconComponent);
+  });
+
+  runHostAriaTests({
+    tagName: 'igc-step',
+    template: html`<igc-stepper
+      ><igc-step><span slot="title">Step</span></igc-step></igc-stepper
+    >`,
+    getTarget: (host) => host.renderRoot.querySelector('[data-step-header]')!,
+    // The stepper sets its `tablist` role through ElementInternals, which axe
+    // does not read.
+    ignoredRules: ['aria-required-parent'],
   });
 
   let stepper: IgcStepperComponent;
@@ -964,9 +976,7 @@ describe('Stepper', () => {
 
   describe('Context binding', () => {
     it('should correctly bind context when a step is connected before its stepper parent', async () => {
-      // Connect the step in isolation — the AsyncContextConsumer defers ContextConsumer
-      // creation until after updateComplete, but no provider exists at that point so
-      // the context remains unresolved.
+      // Connect the step alone. No provider exists, so the context stays unresolved.
       const step = document.createElement(
         IgcStepComponent.tagName
       ) as IgcStepComponent;
@@ -977,11 +987,8 @@ describe('Stepper', () => {
       // No stepper context yet — step is not active and not part of any stepper.
       expect(step.active).to.be.false;
 
-      // Create the stepper, adopt the step, and connect it to the document.
-      // The step first disconnects from body, then reconnects as a child of the
-      // stepper. On reconnect, the ContextConsumer (subscribe: true) re-dispatches
-      // a context-request event that the stepper's ContextProvider answers,
-      // completing the binding via createAsyncContext.
+      // Move the step into a new stepper. On reconnect, the step requests the
+      // context again and the stepper provides it.
       const stepperEl = document.createElement(
         IgcStepperComponent.tagName
       ) as IgcStepperComponent;

@@ -31,6 +31,7 @@ This directory hosts two public components: [`igc-tabs`](#igc-tabs) and [`igc-ta
     - [Composition](#composition)
     - [Tab component](#tab-component)
     - [Regressions](#regressions)
+    - [Host ARIA](#host-aria)
   - [Assumptions and limitations](#assumptions-and-limitations)
   - [Accessibility](#accessibility)
     - [ARIA roles and properties](#aria-roles-and-properties)
@@ -39,9 +40,10 @@ This directory hosts two public components: [`igc-tabs`](#igc-tabs) and [`igc-ta
 
 ## Revision history
 
-| Version | Date       | Notes                 |
-| ------: | ---------- | --------------------- |
-|       1 | 2026-09-21 | Initial specification |
+| Version | Date       | Notes                                                                   |
+| ------: | ---------- | ----------------------------------------------------------------------- |
+|       1 | 2026-09-21 | Initial specification                                                   |
+|       2 | 2026-10-02 | Forward the host `aria-label`, `aria-labelledby` and `aria-describedby` |
 
 ## Overview
 
@@ -302,6 +304,11 @@ The groups below mirror the `describe` blocks.
 14. Issue #1140.
 15. Issue #713.
 
+### Host ARIA
+
+16. The shared `runHostAriaTests` suite: the host `aria-label`, `aria-labelledby` and `aria-describedby` reach the
+    target and follow a change, and an axe audit passes with a host label.
+
 ## Assumptions and limitations
 
 - A tab owns both its header and its body; the two cannot be declared separately.
@@ -318,6 +325,8 @@ The groups below mirror the `describe` blocks.
   the strip.
 - Disabled tabs expose their disabled state and are skipped by the navigation.
 - The scroll buttons are presentational affordances and are not part of the tab order.
+- The host `aria-label`, `aria-labelledby` and `aria-describedby` of a tab name and describe its `role="tab"`
+  element.
 
 ### Keyboard support
 

@@ -49,10 +49,8 @@ function collectionOf<V>(
  * The global registry of SVG icons and their references.
  *
  * @remarks
- * The registry keeps the icons in named collections, resolves an alias against
- * the active theme, notifies the subscribers one time per microtask however
- * many icons changed, and publishes user-set state to the other browsing
- * contexts. See {@link IconsStateBroadcast}.
+ * It publishes user-set state to other browsing contexts.
+ * See {@link IconsStateBroadcast}.
  *
  * @internal Use the exported functions.
  */
@@ -92,16 +90,11 @@ class IconsRegistry {
     this._notify();
   }
 
-  /**
-   * Subscribes a callback to registry changes. It is invoked once per
-   * microtask, however many icons changed, so subscribers re-resolve their
-   * own state.
-   */
+  /** Subscribes a callback to registry changes, called once per microtask. */
   public subscribe(callback: IconCallback): void {
     this._listeners.add(callback);
   }
 
-  /** Unsubscribes a previously subscribed callback. */
   public unsubscribe(callback: IconCallback): void {
     this._listeners.delete(callback);
   }
@@ -110,9 +103,8 @@ class IconsRegistry {
    * Aliases an icon name to another icon.
    *
    * @remarks
-   * `overwrite` stores the reference and notifies subscribers; `external`
-   * marks it as user-set, which takes precedence over the built-in theme
-   * aliases and is published to other browsing contexts.
+   * `overwrite` stores the reference and notifies. `external` marks it as
+   * user-set: it wins over theme aliases and goes to other browsing contexts.
    */
   public setIconRef(options: IconReferencePair): void {
     const { alias, target, overwrite } = options;
@@ -137,11 +129,11 @@ class IconsRegistry {
   }
 
   /**
-   * Resolves a name that may be an alias to the icon it points at, for the
-   * given theme. The result never carries the internal `external` flag.
+   * Resolves a possible alias for the given theme.
+   * The result never carries the `external` flag.
    */
   public getIconRef(name: string, collection: string, theme?: Theme): IconMeta {
-    // Check for any user-set reference first (external or internal)
+    // A stored reference wins over the theme aliases.
     const storedRef = this._references.get(collection)?.get(name);
     if (storedRef) {
       return {
@@ -150,7 +142,6 @@ class IconsRegistry {
       };
     }
 
-    // Resolve theme-based alias for the default collection
     if (collection === 'default' && theme) {
       const targets = ICON_REFERENCES.get(name);
       const target = targets?.get(theme) ?? targets?.get('default');
@@ -163,15 +154,12 @@ class IconsRegistry {
     return { name, collection };
   }
 
-  /** Retrieves an icon. Resolve aliases with `getIconRef` first. */
+  /** Resolve aliases with `getIconRef` first. */
   public get(name: string, collection = 'default'): SvgIcon | undefined {
     return this._collections.get(collection)?.get(name);
   }
 
-  /**
-   * Notifies subscribers, coalescing a burst of changes in the same microtask
-   * into a single notification.
-   */
+  /** Coalesces the changes of one microtask into a single notification. */
   private _notify(): void {
     if (this._notificationScheduled) {
       return;
@@ -196,8 +184,8 @@ type IgcIconRegistry = typeof globalThis & {
 };
 
 /**
- * Gets the icon registry, creating it on first use. The well-known symbol on
- * `globalThis` keeps it a single instance even across multiple bundles.
+ * Gets the icon registry, creating it on first use. The `globalThis` symbol
+ * keeps one instance across bundles.
  */
 export function getIconRegistry(): IconsRegistry {
   const global = globalThis as IgcIconRegistry;

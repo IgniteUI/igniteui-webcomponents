@@ -7,6 +7,7 @@ import {
   type MaskSelection,
 } from '#internals/mixins/mask-behavior.js';
 import { renderMaskedNativeInput } from '#internals/templates/masked-input.js';
+import { hasNegativeTabIndex } from '#internals/utils/dom.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import { IgcInputBaseComponent } from '../input/input-base.js';
 import { styles } from '../input/themes/input.base.css.js';
@@ -222,16 +223,14 @@ export default class IgcMaskInputComponent extends MaskBehaviorMixin(
   //#region Internal methods
 
   /**
-   * Commits straight to the form value instead of going through the `value` setter: the
-   * setter re-applies the parser, and `apply(parse(x))` left-packs the text - a mask with
-   * an interior hole such as `1_2-___` would collapse to `12_-___`.
+   * Bypasses the `value` setter, whose `apply(parse(x))` left-packs the text:
+   * `1_2-___` would become `12_-___`.
    */
   protected override _commitMaskedValue(value: string): void {
     this._maskedValue = value;
     this._formValue.setValueAndFormState(this._parser.parse(value));
 
-    // Reachable unfocused only through `setRangeText`, where an emptied mask must read
-    // as an empty document - as it does after a blur - rather than a row of prompts.
+    // Only `setRangeText` gets here unfocused. An emptied mask then reads as empty, as after a blur.
     if (!this._focused) {
       this._updateMaskedValue();
     }
@@ -269,8 +268,6 @@ export default class IgcMaskInputComponent extends MaskBehaviorMixin(
   //#endregion
 
   protected override _renderInput() {
-    const hasNegativeTabIndex = this.getAttribute('tabindex') === '-1';
-
     return renderMaskedNativeInput({
       id: this._inputId,
       partNames: this._resolvePartNames('input'),
@@ -278,10 +275,11 @@ export default class IgcMaskInputComponent extends MaskBehaviorMixin(
       value: this._maskedValue,
       placeholder: this.placeholder ?? this._parser.escapedMask,
       readOnly: this.readOnly,
+      required: this.required,
       disabled: this.disabled,
       autofocus: this.autofocus,
       inputMode: this.inputMode,
-      tabindex: hasNegativeTabIndex ? -1 : undefined,
+      tabindex: hasNegativeTabIndex(this) ? -1 : undefined,
       aria: this._ariaTarget.resolveBindings(),
       onInput: this._handleInput,
       onBeforeInput: this._handleBeforeInput,

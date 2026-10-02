@@ -94,9 +94,8 @@ export default class IgcBadgeComponent extends LitElement {
   }
 
   /**
-   * The `icon` part is reserved for a badge whose only content is a single
-   * `igc-icon`, which renders as a circle rather than a padded pill. The filter
-   * discards the whitespace text nodes that formatted markup leaves around it.
+   * Sets the `icon` part when the only content is one `igc-icon`, which renders as a circle.
+   * The filter drops the whitespace text nodes around it.
    */
   protected _handleSlotChange(): void {
     const [content, ...rest] = this._slots

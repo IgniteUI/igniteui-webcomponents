@@ -308,7 +308,6 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
         controls: this._list ? [this._list] : null,
         describedBy: this._helperText ? [this._helperText] : null,
       }),
-      hasOwnLabel: () => Boolean(this.label),
     });
 
     addKeybindings(this, {
@@ -340,9 +339,8 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   }
 
   /**
-   * Resolves the selection again when an item enters or leaves the light DOM. A
-   * framework usually renders the items after the first paint, so `value` can
-   * name an item that does not exist, and a selected item can be removed.
+   * Resolves the selection again when items are added or removed. Frameworks
+   * often render the items after the first paint.
    */
   private _handleItemsChange({
     changes: { added, removed },
@@ -376,8 +374,8 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
     const selected = setInitialSelectionState(this.items);
 
     if (selected) {
-      // A `selected` item wins over an initial `value` and becomes what the
-      // component resets to. The default must be assigned while still pristine.
+      // A `selected` item wins over `value` and becomes the reset default.
+      // Assign the default while the control is pristine.
       if (selected.value !== this.value) {
         this.defaultValue = selected.value;
       }
@@ -451,9 +449,8 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   }
 
   /**
-   * Moves to `item`, and commits the move as a selection while closed. Does
-   * nothing if there is no item, because only a caller that intends it clears
-   * the selection.
+   * Moves to `item`. While closed, the move also selects it. A missing item
+   * does not clear the selection.
    */
   private _navigateTo(item?: IgcSelectItemComponent): void {
     if (item) {
@@ -572,8 +569,8 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
 
     const shouldFocus = emit && this.open;
     const shouldHide = emit && !this.keepOpenOnSelect;
-    // Re-selecting the current item is not a change, but it is still a commit:
-    // the list closes and focus returns just the same.
+    // Selecting the current item again is not a change, but the list still
+    // closes and the input takes the focus.
     const changed = this._selectedItem !== item;
 
     if (changed) {
@@ -620,8 +617,7 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   private async _focusItemOnOpen(): Promise<void> {
     await this.updateComplete;
 
-    // Opening restarts navigation from the selection, so that the highlighted
-    // item and the one navigation continues from are always the same.
+    // On open, navigation starts again from the selection.
     if (this.open) {
       this._navigateToActiveItem(this._selectedItem ?? this._activeItem);
     }
@@ -632,9 +628,8 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   }
 
   /**
-   * The text in the input for the current selection: the main content of the
-   * selected item, without its `prefix` and `suffix` slots, and without the
-   * marker comments that a templating engine leaves between its children.
+   * The text of the selected item for the input, without its slotted prefix and
+   * suffix and without template marker comments.
    */
   private get _displayValue(): string | undefined {
     if (!this._selectedItem) {

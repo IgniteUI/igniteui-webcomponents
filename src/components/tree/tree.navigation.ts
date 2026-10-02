@@ -21,8 +21,7 @@ import type { IgcTreeSelectionService } from './tree.selection.js';
  *
  * @remarks
  * The navigable set is not cached. A keypress derives it with a lazy walk that
- * skips collapsed branches, so an item mount, expand or disable does no work,
- * and a caller that needs one item stops at that item.
+ * skips collapsed branches, so an item mount, expand or disable costs nothing.
  *
  * @hidden @internal
  */

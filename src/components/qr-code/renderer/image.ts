@@ -12,11 +12,8 @@ type RenderQrMaskAndImageProperties = {
 };
 
 /**
- * Renders an SVG mask and image element for the QR code's logo, based on the presence of a logo,
- * its source, aspect ratio, desired area, QR code size, margin, overall SVG size, and a unique mask ID.
- *
- * The mask is a white rectangle with a black cutout where the logo will be placed, ensuring the QR code
- * remains scannable while accommodating the logo.
+ * Renders the logo image and its mask. The mask is a white rectangle with a black cutout
+ * under the logo.
  */
 export function renderQrMaskAndImage({
   hasLogo,

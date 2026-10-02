@@ -195,8 +195,7 @@ export function encodeQR(
       }
     }
 
-    // encodeData() always produces a non-empty bit sequence, so an empty
-    // `bits` here means no version (1-40) could fit the data.
+    // `encodeData()` never returns empty bits, so no version fits the data.
     if (bits.length === 0) {
       throw new Error(
         `Data too long to fit in any QR version (1-40) at error correction level '${ecLevel}'`

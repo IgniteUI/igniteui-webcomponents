@@ -51,6 +51,51 @@ describe('Date range picker - two inputs', () => {
         .renderRoot.querySelector('input')!,
   });
 
+  it('describes both native inputs by the host `aria-describedby`', async () => {
+    const container = await fixture<HTMLElement>(html`
+      <div>
+        <span id="range-hint">Pick the dates of your stay</span>
+        <igc-date-range-picker
+          use-two-inputs
+          aria-describedby="range-hint"
+        ></igc-date-range-picker>
+      </div>
+    `);
+    const picker = container.querySelector('igc-date-range-picker')!;
+    const hint = container.querySelector('#range-hint');
+    await elementUpdated(picker);
+
+    for (const editor of picker.renderRoot.querySelectorAll(
+      'igc-date-time-input'
+    )) {
+      await elementUpdated(editor);
+      expect(
+        editor.renderRoot
+          .querySelector('input')!
+          .ariaDescribedByElements?.at(-1)
+      ).to.equal(hint);
+    }
+  });
+
+  it('exposes `required` as `aria-required` on both native inputs', async () => {
+    const picker = await fixture<IgcDateRangePickerComponent>(
+      html`<igc-date-range-picker
+        use-two-inputs
+        required
+      ></igc-date-range-picker>`
+    );
+    const editors = picker.renderRoot.querySelectorAll('igc-date-time-input');
+    await elementUpdated(picker);
+
+    expect(editors).to.have.length(2);
+    for (const editor of editors) {
+      await elementUpdated(editor);
+      expect(
+        editor.renderRoot.querySelector('input')!.getAttribute('aria-required')
+      ).to.equal('true');
+    }
+  });
+
   // The start editor.
   runAriaProjectionTests({
     tagName: IgcDateRangePickerComponent.tagName,
@@ -597,8 +642,7 @@ describe('Date range picker - two inputs', () => {
         expect(eventSpy).calledOnceWith('igcInput');
         eventSpy.resetHistory();
 
-        // Spinning is an uncommitted edit - `value` follows on blur - so the spun
-        // date is only visible on the draft. See issue #1346.
+        // Spinning is an uncommitted edit, so only the draft has the date. See #1346.
         expect(dateTimeInputs[0].value).to.be.null;
         expect(dateTimeInputs[0]._uncommittedValue).to.not.be.null;
         checkDatesEqual(dateTimeInputs[0]._uncommittedValue!, expectedValue);

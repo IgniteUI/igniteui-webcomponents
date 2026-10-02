@@ -6,9 +6,8 @@ import type IgcTreeComponent from './tree.js';
 type ItemSet = Set<IgcTreeItemComponent>;
 
 /**
- * The sets being built up during a single cascade update. Passed explicitly
- * between the cascade helpers rather than kept as scratch fields on the service,
- * so no half-built state is observable outside the update that produced it.
+ * The sets that one cascade update builds. The helpers pass them explicitly,
+ * not as service fields, so half-built state is never visible.
  */
 type CascadeState = {
   selected: ItemSet;
@@ -91,11 +90,10 @@ export class IgcTreeSelectionService {
     return this._indeterminateItems.has(item);
   }
 
-  /** Called on item`s disconnectedCallback */
+  /** Called on the item's `disconnectedCallback`. */
   public ensureStateOnItemDelete(item: IgcTreeItemComponent): void {
-    // Removing a subtree calls `disconnectedCallback` on the top item first,
-    // then on each descendant. That first call covers the subtree below it, so
-    // a detached parent means an ancestor handles this removal.
+    // The top item of a removed subtree disconnects first and covers the
+    // subtree, so a detached parent means an ancestor handles this removal.
     if (item.parent && !item.parent.isConnected) {
       return;
     }
@@ -105,8 +103,7 @@ export class IgcTreeSelectionService {
       return;
     }
 
-    // Don't update the internal state of the deleted items because when moving they should keep it
-    // However update the state of their parents
+    // Deleted items keep their own state for a move. Only their parents update.
     this.deselectItemsWithNoEvent(
       [item, ...item.getChildren({ flatten: true })],
       true
@@ -239,7 +236,7 @@ export class IgcTreeSelectionService {
     const oldIndeterminate = this._indeterminateSnapshot();
     const newSelection = [...oldSelection, ...items];
 
-    // retrieve only the rows without their parents/children which has to be added to the selection
+    // The direct changes, without the cascaded parents and children.
     const newSelectionSet = new Set(newSelection);
     const removed = oldSelection.filter((i) => !newSelectionSet.has(i));
     const added = newSelection.filter((i) => !this._itemSelection.has(i));

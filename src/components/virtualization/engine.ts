@@ -256,17 +256,14 @@ class SizeTree {
  *
  * Browsers limit how far an element can scroll. When the total item size is
  * larger than that limit, the engine compresses the *virtual* space
- * (`0…totalSize`) into the *DOM* space the browser can represent
- * (`0…domSize`). The ratio maps the scroll ranges onto each other:
- * `(totalSize - viewportSize) / (domSize - viewportSize)`, so the last DOM
- * scroll position shows the end of the list. Each offset that crosses that
- * boundary is scaled: incoming scroll positions are multiplied by the ratio,
- * and outgoing offsets are divided by it.
+ * (`0…totalSize`) into the *DOM* space (`0…domSize`). The ratio
+ * `(totalSize - viewportSize) / (domSize - viewportSize)` maps the scroll
+ * ranges, so the last DOM scroll position shows the end of the list. Incoming
+ * scroll positions are multiplied by the ratio, and outgoing offsets are
+ * divided by it.
  *
  * Items render at their real pixel size, so item sizes are always virtual.
- * The viewport shows the virtual pixels from `scrollPosition * ratio`, so the
- * content moves by the ratio for each DOM pixel of scroll. See
- * `getContentOffset`.
+ * See `getContentOffset`.
  */
 export class VirtualScrollEngine {
   private _maxBrowserSize = Number.POSITIVE_INFINITY;
@@ -307,15 +304,12 @@ export class VirtualScrollEngine {
   }
 
   /**
-   * Resizes the internal sizes array to `length`. Measured sizes below
-   * `retainCount` are kept, and the other items are unmeasured. Callers that
-   * only append can keep the default `retainCount`. Callers whose data
-   * changed identity at some index must pass that index, so the stale
-   * measurements after it are discarded.
+   * Resizes the sizes array to `length` and keeps the measured sizes below
+   * `retainCount`. A caller whose data changed identity at an index passes
+   * that index, so the stale measurements after it are discarded.
    *
    * Unmeasured items take `estimatedSize`, or the adapted average while
-   * `estimatedSize` stays the same: a data change does not make it less
-   * accurate.
+   * `estimatedSize` does not change.
    */
   public resize(
     length: number,
@@ -514,9 +508,8 @@ export class VirtualScrollEngine {
       return { startIndex: 0, endIndex: -1 };
     }
 
-    // The virtual ratio does not scale the viewport. Items render at their real
-    // pixel size, so a `viewportSize` px viewport shows that many virtual pixels
-    // of items at any compression of the scroll range.
+    // The ratio does not scale the viewport: items render at their real size,
+    // so the viewport shows `viewportSize` virtual pixels at any compression.
     const startOffset = Math.max(0, scrollPosition) * this._ratio(viewportSize);
     const first = this._tree.findIndexAtOffset(startOffset);
     const last = this._tree.findIndexAtOffset(startOffset + viewportSize);
@@ -562,10 +555,8 @@ export class VirtualScrollEngine {
   }
 
   /**
-   * The number of virtual pixels in one DOM pixel of scroll for a
-   * `viewportSize` px viewport: `1` without compression. With it, the ratio of
-   * the virtual scroll range to the DOM one, so the largest DOM scroll offset
-   * shows the end of the list.
+   * Virtual pixels per DOM pixel of scroll: `1` without compression, else the
+   * ratio of the virtual scroll range to the DOM one.
    */
   private _ratio(viewportSize: number): number {
     const domRange = this._maxBrowserSize - viewportSize;

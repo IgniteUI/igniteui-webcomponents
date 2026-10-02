@@ -106,7 +106,7 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
   @state()
   private _tabIndex = 0;
 
-  /** All radios of the group, that is having the same name property, in DOM order. */
+  /** All radios of the group, in DOM order. */
   private get _radios(): IgcRadioComponent[] {
     return getGroupMembers(this);
   }
@@ -175,8 +175,7 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
       this._updateCheckedState();
     }
 
-    // The tab stop is a state of the group, so a change of the selection derives it
-    // again. A write of the same state leaves the group as it is.
+    // A change of the selection moves the tab stop of the group.
     if (this.checked !== previous) {
       this._group.sync();
     }
@@ -212,7 +211,7 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
   }
 
   protected override willUpdate(properties: PropertyValues<this>): void {
-    // The name is half of the identity of a group, so a new name moves this radio to another one.
+    // A new name moves this radio to another group.
     if (properties.has('name')) {
       this._group.updateMembership();
     }
@@ -247,9 +246,8 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
   }
 
   protected override _setDefaultValue(current: string | null): void {
-    // The base mixin gives 'true' if the `checked` attribute is there, and null
-    // if it is removed. `isDefined` accepts null as present, and would check the
-    // radio again on a form reset.
+    // The value is null when the `checked` attribute is removed. `isDefined`
+    // accepts null, which checks the radio again on a form reset.
     this._formValue.defaultValue = isString(current);
     for (const radio of this._siblings()) {
       radio.defaultChecked = false;
@@ -257,9 +255,8 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
   }
 
   /**
-   * Restores the default state without the `checked` setter. That setter unchecks all
-   * siblings, which damages the state of the radios that the browser already reset in
-   * the same `form.reset()` pass.
+   * Skips the `checked` setter, which unchecks the siblings that the same
+   * `form.reset()` pass already restored.
    */
   protected override _restoreDefaultValue(): void {
     const checked = this.checked;
@@ -336,7 +333,7 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
   protected override formAssociatedCallback(form: HTMLFormElement): void {
     super.formAssociatedCallback(form);
 
-    // The form owner is the other half, so a new one moves this radio as well.
+    // A new form owner moves this radio to another group.
     this._group.updateMembership();
   }
 
@@ -390,7 +387,7 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
         `,
         hideLabel: this._hideLabel,
         tabindex: this._tabIndex,
-        describedBy: helperText(this, this._slots)?.id,
+        description: helperText(this, this._slots),
         onClick: this._handleClick,
         onKeyDown: this._handleEnterKeydown,
       })}

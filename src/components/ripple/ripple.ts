@@ -10,7 +10,7 @@ const rippleFrames: Keyframe[] = [
 ];
 
 const rippleAnimation: KeyframeAnimationOptions = {
-  duration: 600, // --igc-ripple-duration,
+  duration: 600, // --igc-ripple-duration
   fill: 'forwards',
   easing: 'linear', // --igc-ripple-easing
 };

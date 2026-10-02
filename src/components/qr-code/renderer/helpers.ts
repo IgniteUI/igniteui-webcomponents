@@ -59,8 +59,10 @@ function roundedRectPerCorner(
   );
 }
 
-/** Returns an SVG path string for a single data module at `(x, y)` with side `s`, in the given style.
- * For `'rounded'`, adjacent module flags control which corners are rounded. */
+/**
+ * Returns the SVG path of one data module. For `'rounded'`, the neighbors select the
+ * rounded corners.
+ */
 function dotPath(
   x: number,
   y: number,
@@ -124,7 +126,7 @@ export function cornerDotPath(
   }
 }
 
-/** Returns an SVG path string (outer ring with inner cutout) for the outer square of a finder-pattern corner. */
+/** Returns the SVG path (a ring with a cutout) of the outer square of a finder corner. */
 export function cornerSquarePath(
   x: number,
   y: number,
@@ -180,11 +182,7 @@ function finderCorners(size: number): [number, number][] {
   ];
 }
 
-/**
- * Returns the set of flat module indices `(row * size + col)` occupied by the
- * three finder patterns (including their separators), used to skip those modules
- * during data rendering.
- */
+/** Returns the flat indices `(row * size + col)` of the finder patterns and their separators. */
 function getFinderPatternModules(size: number): Set<number> {
   const modules = new Set<number>();
 
@@ -203,10 +201,7 @@ function getFinderPatternModules(size: number): Set<number> {
   return modules;
 }
 
-/**
- * Generates SVG path strings for all dark data modules in the matrix,
- * skipping finder-pattern areas. Returns one path string per visible module.
- */
+/** Returns one SVG path for each dark data module outside the finder patterns. */
 export function renderDataModules(
   data: boolean[][],
   moduleSize: number,
@@ -242,10 +237,7 @@ export function renderDataModules(
   return paths;
 }
 
-/**
- * Returns the pixel top-left coordinates `{ x, y }` for each of the three
- * finder-pattern corners, ready to pass to `renderQrCorner`.
- */
+/** Returns the top-left pixel coordinates of the three finder-pattern corners. */
 export function getFinderPatterns(
   size: number,
   moduleSize: number,

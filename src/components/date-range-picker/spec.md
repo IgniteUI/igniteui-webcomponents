@@ -39,6 +39,7 @@
     - [Form integration suites](#form-integration-suites)
     - [Predefined ranges area](#predefined-ranges-area)
     - [Range mask parser](#range-mask-parser)
+    - [Host ARIA](#host-aria)
   - [Assumptions and limitations](#assumptions-and-limitations)
   - [Accessibility](#accessibility)
     - [ARIA roles and properties](#aria-roles-and-properties)
@@ -47,14 +48,15 @@
 
 ## Revision history
 
-| Version | Date       | Notes                                                     |
-| ------: | ---------- | --------------------------------------------------------- |
-|       1 | 2026-09-21 | Initial specification                                     |
-|       2 | 2026-09-23 | Expose the `ranges` part and add it to the test scenarios |
-|       3 | 2026-09-24 | Describe the naming order and the host ARIA naming        |
-|       4 | 2026-09-28 | Add the property-based range mask parser suite            |
-|       5 | 2026-09-28 | Validate a value and bounds set before the first render   |
-|       6 | 2026-10-02 | Focus after form checks; `invalid` only on checks         |
+| Version | Date       | Notes                                                                     |
+| ------: | ---------- | ------------------------------------------------------------------------- |
+|       1 | 2026-09-21 | Initial specification                                                     |
+|       2 | 2026-09-23 | Expose the `ranges` part and add it to the test scenarios                 |
+|       3 | 2026-09-24 | Describe the naming order and the host ARIA naming                        |
+|       4 | 2026-09-28 | Add the property-based range mask parser suite                            |
+|       5 | 2026-09-28 | Validate a value and bounds set before the first render                   |
+|       6 | 2026-10-02 | Focus after form checks; `invalid` only on checks                         |
+|       7 | 2026-10-02 | Forward the host `aria-describedby`; expose `required` as `aria-required` |
 
 ## Overview
 
@@ -598,6 +600,11 @@ The focus after the form checks and the `invalid` event rules come from the form
 26. For generated formats, separators and dates: the round-trip, each side parsed like a single date, the layout
     around the separator after a mask change, and no throw or invalid date for any string.
 
+### Host ARIA
+
+27. The shared host description suite: the host `aria-describedby` describes the native control after the helper
+    text, and follows a change and a removal. `required` sets `aria-required` on each editor.
+
 ## Assumptions and limitations
 
 - Typing in single input mode is not supported; the field is read-only and the range is changed through the
@@ -622,6 +629,9 @@ The focus after the form checks and the `invalid` event rules come from the form
   invalid state is reflected on both editors.
 - Within the calendar, the ARIA of the [calendar specification](../calendar/spec.md#aria-roles-and-properties)
   applies.
+- A host `aria-describedby` describes the native control after the helper text, by element reference. With two
+  inputs, the end editor gets only the host description: the helper text describes the start editor.
+- `required` is exposed as `aria-required` on the native input of each editor, also with two inputs.
 
 ### Keyboard support
 

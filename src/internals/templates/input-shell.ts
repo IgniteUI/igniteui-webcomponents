@@ -53,11 +53,9 @@ export interface InputShellOptions {
  * Renders the label of the input.
  *
  * @remarks
- * A label click reaches the host twice: the label click, then the synthetic
- * click that label activation sends to the input. That double-fires a
- * consumer click handler and breaks the toggles of `igc-combo` and
- * `igc-select`. The label therefore keeps its own click inside the shadow
- * root; activation is a default action, so focus still moves to the input.
+ * The label stops its own click. Otherwise a label click reaches the host
+ * twice, with the synthetic input click, and breaks the `igc-combo` and
+ * `igc-select` toggles. Activation is a default action, so focus still moves.
  */
 function renderLabel(forId: string, label: string) {
   return label

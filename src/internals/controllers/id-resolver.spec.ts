@@ -404,8 +404,6 @@ describe('IdRefResolverController', () => {
     });
   });
 
-  // ─── Group 7: Shadow DOM scoping ──────────────────────────────────────────
-
   describe('Shadow DOM scoping', () => {
     let shadowTag: string;
     let shadowHost: HTMLElement;

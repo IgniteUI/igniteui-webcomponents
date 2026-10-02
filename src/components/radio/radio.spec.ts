@@ -292,8 +292,7 @@ describe('Radio Component', () => {
     });
 
     it('should not restore a checked state whose attribute was removed before reset', () => {
-      // Regression: removing the `checked` attribute used to leave
-      // `defaultChecked` as true, re-checking the radio on form reset.
+      // Removing the `checked` attribute must clear `defaultChecked`.
       const radio = firstOf(radios);
 
       radio.toggleAttribute('checked', true);
@@ -647,9 +646,9 @@ describe('Radio Component', () => {
     it('', async () => {
       const testParameters: ValidationContainerTestsParams<IgcRadioComponent>[] =
         [
-          { slots: ['valueMissing'], props: { required: true } }, // value-missing slot
-          { slots: ['customError'] }, // custom-error slot
-          { slots: ['invalid'], props: { required: true } }, // invalid slot
+          { slots: ['valueMissing'], props: { required: true } },
+          { slots: ['customError'] },
+          { slots: ['invalid'], props: { required: true } },
         ];
 
       await runValidationContainerTests(IgcRadioComponent, testParameters);

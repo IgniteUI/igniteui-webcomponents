@@ -3,8 +3,8 @@
  *
  * @remarks
  * The module has no imports, so a consumer of a key name depends on nothing
- * else. The modifier table and the combination helpers live with their only
- * consumer, the key-bindings controller.
+ * else. The modifier table and the combination helpers live in the
+ * key-bindings controller.
  */
 
 /* Common keys */

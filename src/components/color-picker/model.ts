@@ -25,8 +25,7 @@ function makeCanvasContext() {
 export const getContext = makeCanvasContext();
 
 /**
- * Represents a color with support for RGB, HSL, and HSV color spaces.
- * Automatically syncs between color spaces when properties are modified.
+ * A color that keeps its RGB, HSL and HSV values in sync.
  *
  * @example
  * ```ts
@@ -38,7 +37,7 @@ export const getContext = makeCanvasContext();
  *
  * // Modify and convert
  * color.h = 120;
- * console.log(color.asString('hsl')); // 'hsla(120, 100%, 50%, 0.5)'
+ * console.log(color.asString('hsl')); // 'hsl(120 100% 50% / 0.5)'
  * ```
  */
 export class ColorModel {
@@ -54,14 +53,9 @@ export class ColorModel {
   }
 
   /**
-   * Creates an empty color, representing a missing/undefined color value.
-   * An empty color serializes to an empty string and is considered "empty"
-   * until any of its channels are modified.
-   *
-   * Backed by white rather than black: an empty color still has to be drawn,
-   * and white is HSV `[0, 0, 100]` - the origin of the saturation/value plane,
-   * where a picker with nothing selected should start. Black would put the
-   * marker in the opposite corner, on a color the user never chose.
+   * Creates an empty color. It serializes to an empty string until a channel
+   * changes. It is white, the origin of the saturation/value plane, so an
+   * empty picker starts there.
    */
   public static empty(): ColorModel {
     const color = new ColorModel([255, 255, 255], 1);
@@ -70,16 +64,12 @@ export class ColorModel {
   }
 
   /**
-   * Parses a color string and creates a ColorModel instance.
-   * Supports hex, rgb, rgba, hsl, hsla, and named color formats.
-   *
-   * Empty, whitespace-only, or otherwise invalid strings produce an empty
-   * ColorModel instead of a stale/incorrect color.
+   * Parses a hex, rgb(a), hsl(a) or named color.
+   * An empty or invalid string gives an empty color.
    */
   public static parse(color: string): ColorModel {
     const ctx = getContext();
-    // Normalized up front - validating the raw string would reject a hash-less
-    // hex before `parseColor` ever got the chance to restore its `#`.
+    // Validation rejects a hash-less hex, so normalize first.
     const normalized = normalizeColor(color);
 
     if (!isValidColor(normalized, ctx)) {
@@ -145,10 +135,7 @@ export class ColorModel {
     }
   }
 
-  /**
-   * Writes a single channel and brings the rest of the model back in sync.
-   * Every channel setter goes through here, so no space is ever left stale.
-   */
+  /** Writes one channel and syncs the other color spaces. */
   private _setChannel(
     space: ColorSpace,
     index: Channel,
@@ -239,11 +226,8 @@ export class ColorModel {
   }
 
   /**
-   * Sets the HSV saturation and value in a single atomic update, preserving
-   * the current hue and alpha. Intended for the 2D saturation/value picker
-   * area, where both components change together and setting them through the
-   * individual `s` (HSL) and `v` (HSV) setters would be both incorrect
-   * (mixing color spaces) and order-dependent.
+   * Sets the HSV saturation and value in one update and keeps the hue and alpha.
+   * The `s` (HSL) and `v` (HSV) setters mix color spaces and depend on order.
    *
    * @param saturation - HSV saturation (0-100)
    * @param value - HSV value (0-100)
@@ -291,7 +275,6 @@ export class ColorModel {
     }
   }
 
-  /** Creates a copy of this color model. */
   public clone(): ColorModel {
     const color = new ColorModel(this._rgb, this._alpha);
     color._empty = this._empty;
@@ -307,17 +290,14 @@ export class ColorModel {
     );
   }
 
-  /** Returns the RGB values as a tuple. */
   public toRGB(): RGB {
     return [...this._rgb];
   }
 
-  /** Returns the HSL values as a tuple. */
   public toHSL(): HSL {
     return [...this._hsl];
   }
 
-  /** Returns the HSV values as a tuple. */
   public toHSV(): HSV {
     return [...this._hsv];
   }

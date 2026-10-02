@@ -170,7 +170,7 @@ describe('Chat', () => {
       // Response messages have the default reactions.
       expect(getChatMessageDOM(firstMessage).defaultActionButtons).lengthOf(4);
 
-      // Current user messages does not have default reactions
+      // Current user messages have no default reactions.
       expect(getChatMessageDOM(lastMessage).defaultActionButtons).to.be.empty;
     });
 
@@ -227,7 +227,7 @@ describe('Chat', () => {
 
       expect(sendButton.disabled).to.be.true;
 
-      // When there is a text in the text area, the send button should be enabled
+      // Text enables the send button.
       let value = 'Hello!';
       textarea.value = value;
       textarea.emitEvent('igcInput', { detail: value });
@@ -235,7 +235,7 @@ describe('Chat', () => {
 
       expect(sendButton.disabled).to.be.false;
 
-      // When there is no text in the text area, the send button should be disabled
+      // No text disables the send button.
       value = '';
       textarea.value = value;
       textarea.emitEvent('igcInput', { detail: value });
@@ -243,7 +243,7 @@ describe('Chat', () => {
 
       expect(sendButton.disabled).to.be.true;
 
-      // When there are attachments, the send button should be enabled regardless of the text area content
+      // Attachments enable the send button without text.
       simulateFileUpload(fileInput, files);
       await elementUpdated(chat);
 
@@ -647,7 +647,6 @@ describe('Chat', () => {
         expect(chat.messages.length).to.equal(1);
         expect(chat.messages[0].text).to.equal('Hello!');
         expect(chat.messages[0].sender).to.equal('user');
-        // The focus should be on the input area after send button is clicked
         expect(isFocused(textarea)).to.be.true;
       });
 
@@ -677,7 +676,6 @@ describe('Chat', () => {
         expect(chat.messages[0].text).to.equal('Suggestion 1');
         expect(chat.messages[0].sender).to.equal('user');
 
-        // The focus should be on the input area after suggestion click
         expect(isFocused(getChatDOM(chat).input.textarea)).to.be.true;
       });
 
@@ -726,20 +724,17 @@ describe('Chat', () => {
         await elementUpdated(chat);
 
         const firstMessage = getChatDOM(chat).messages[0];
-        // click on like (inactive) icon
         const likeIcon =
           getChatMessageDOM(firstMessage).defaultActionButtons[1];
         simulateClick(likeIcon);
         await elementUpdated(chat);
 
         expect(likeIcon.name).to.equal('thumb_up_active');
-        // click on like (active) icon
         simulateClick(likeIcon);
         await elementUpdated(chat);
 
         expect(likeIcon.name).to.equal('thumb_up_inactive');
 
-        // click on like (inactive) icon
         simulateClick(likeIcon);
         await elementUpdated(chat);
         expect(likeIcon.name).to.equal('thumb_up_active');
@@ -750,7 +745,6 @@ describe('Chat', () => {
         await elementUpdated(chat);
 
         const firstMessage = getChatDOM(chat).messages[0];
-        // click on like (inactive) icon
         const likeIcon =
           getChatMessageDOM(firstMessage).defaultActionButtons[1];
         simulateClick(likeIcon);
@@ -759,14 +753,12 @@ describe('Chat', () => {
         const dislikeIcon =
           getChatMessageDOM(firstMessage).defaultActionButtons[2];
         expect(dislikeIcon.name).to.equal('thumb_down_inactive');
-        // click on dislike (active) icon
         simulateClick(dislikeIcon);
         await elementUpdated(chat);
 
         expect(likeIcon.name).to.equal('thumb_up_inactive');
         expect(dislikeIcon.name).to.equal('thumb_down_active');
 
-        // click on like (inactive) icon
         simulateClick(likeIcon);
         await elementUpdated(chat);
         expect(likeIcon.name).to.equal('thumb_up_active');
@@ -783,7 +775,6 @@ describe('Chat', () => {
         expect(clipboardWriteText.called).to.be.false;
         const firstMessage =
           chat.shadowRoot?.querySelectorAll('igc-chat-message')[0];
-        // click on copy icon
         const copyIcon = firstMessage?.shadowRoot?.querySelector(
           'igc-icon-button[name="copy_content"]'
         ) as HTMLElement;
@@ -878,7 +869,6 @@ describe('Chat', () => {
         expect(chat.messages[0].text).to.equal('Hello!');
         expect(chat.messages[0].sender).to.equal('user');
 
-        // The focus should be on the input area after message is sent
         expect(isFocused(textArea)).to.be.true;
       });
     });
@@ -961,8 +951,6 @@ describe('Chat', () => {
 
       chat.options = { stopTypingDelay: 2500 };
 
-      // Simulate typing some text and the event sequence following after sending a message
-
       // Fires igcTypingChange
       simulateKeyboard(textArea, 'a', 15);
       await elementUpdated(textArea);
@@ -971,8 +959,8 @@ describe('Chat', () => {
       simulateInput(internalInput, { value: 'a'.repeat(15) });
       await elementUpdated(textArea);
 
-      // Fires igcMessageCreated -> igcTypingChange -> igcInputFocus since sending a message refocuses
-      // the textarea
+      // Fires igcMessageCreated -> igcTypingChange -> igcInputFocus.
+      // A send refocuses the textarea.
       simulateKeyboard(textArea, enterKey);
       await elementUpdated(chat);
 
@@ -1166,7 +1154,6 @@ describe('Chat', () => {
       await elementUpdated(chat);
       verifyCustomStyles(true);
 
-      // Change the theme
       configureTheme('material');
 
       await elementUpdated(chat);
@@ -1182,7 +1169,6 @@ describe('Chat', () => {
       await elementUpdated(chat);
       verifyCustomStyles(false);
 
-      // Toggle to true
       chat.options = { ...chat.options, adoptRootStyles: true };
       await elementUpdated(chat);
       verifyCustomStyles(true);
@@ -1193,7 +1179,6 @@ describe('Chat', () => {
       await elementUpdated(chat);
       verifyCustomStyles(true);
 
-      // Toggle to false
       chat.options = { ...chat.options, adoptRootStyles: false };
       await elementUpdated(chat);
       verifyCustomStyles(false);
@@ -1204,17 +1189,14 @@ describe('Chat', () => {
       await elementUpdated(chat);
       verifyCustomStyles(false);
 
-      // Toggle to true
       chat.options = { ...chat.options, adoptRootStyles: true };
       await elementUpdated(chat);
       verifyCustomStyles(true);
 
-      // Toggle back to false
       chat.options = { ...chat.options, adoptRootStyles: false };
       await elementUpdated(chat);
       verifyCustomStyles(false);
 
-      // Toggle to true again
       chat.options = { ...chat.options, adoptRootStyles: true };
       await elementUpdated(chat);
       verifyCustomStyles(true);
@@ -1325,7 +1307,6 @@ function getChatDOM(chat: IgcChatComponent) {
   return {
     /** The igc-chat-input component */
     input: {
-      /** The igc-chat-input component itself */
       get self() {
         return inputArea;
       },

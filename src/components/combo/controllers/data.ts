@@ -32,11 +32,10 @@ export class DataState<T extends object> implements ReactiveController {
   //#region Public state accessors
 
   /**
-   * The current state of the data in the combo component.
+   * The current data state.
    *
    * @remarks
-   * The collection is shared with the virtualized list and may be the cached
-   * indexed source itself, so it is handed out as read-only.
+   * Read-only: the virtualized list shares it and it can be the indexed source.
    */
   public get dataState(): readonly ComboRecord<T>[] {
     return this._dataState;
@@ -47,18 +46,12 @@ export class DataState<T extends object> implements ReactiveController {
     return this._itemCount;
   }
 
-  /**
-   * The index in {@link dataState} of the first selectable option,
-   * or `-1` when there are none.
-   */
+  /** The index of the first selectable option in {@link dataState}, or `-1`. */
   public get firstItemIndex(): number {
     return this._dataState.findIndex((record) => !record.header);
   }
 
-  /**
-   * Sets the current search term used for filtering the data.
-   * Triggers a data pipeline run if the value changes.
-   */
+  /** A new value invalidates the data state. */
   public set searchTerm(value: string) {
     if (this._searchTerm !== value) {
       this._searchTerm = value;
@@ -66,17 +59,15 @@ export class DataState<T extends object> implements ReactiveController {
     }
   }
 
-  /** The current search term used for filtering the data. */
+  /** The search term that filters the data. */
   public get searchTerm(): string {
     return this._searchTerm;
   }
 
-  /** The current filtering options for the combo component. */
   public get filteringOptions(): FilteringOptions<T> {
     return this._host.filteringOptions;
   }
 
-  /** The current grouping options for the combo component. */
   public get groupingOptions(): GroupingOptions<T> {
     return {
       valueKey: this._host.valueKey,
@@ -86,7 +77,6 @@ export class DataState<T extends object> implements ReactiveController {
     };
   }
 
-  /** The current collator used for comparing values. */
   public get compareCollator(): Intl.Collator {
     return this._compareCollator;
   }
@@ -102,15 +92,12 @@ export class DataState<T extends object> implements ReactiveController {
   }
 
   /**
-   * Lit lifecycle hook - runs before rendering.
-   * Executes pipeline if any changes were batched.
+   * Runs the pipeline before render when changes are batched.
    * @internal
    */
   public hostUpdate(): void {
-    // A change to the data array in place notifies neither Lit nor
-    // `invalidate()`, so a changed length is found here and marks the pipeline
-    // dirty. A replaced element of the same length stays unknown and needs a
-    // new `data` array.
+    // An in-place change of `data` notifies neither Lit nor `invalidate()`, so
+    // check the length here. A replaced element needs a new `data` array.
     if (this._isSourceOutdated()) {
       this._dirty = true;
     }
@@ -124,10 +111,7 @@ export class DataState<T extends object> implements ReactiveController {
     return this._source !== data || this._indexed.length !== data.length;
   }
 
-  /**
-   * Marks the data state as dirty, triggering a pipeline run before next render.
-   * This batches multiple changes into a single pipeline execution.
-   */
+  /** Batches changes into one pipeline run before the next render. */
   private _markDirty(): void {
     if (!this._dirty) {
       this._dirty = true;
@@ -135,20 +119,13 @@ export class DataState<T extends object> implements ReactiveController {
     }
   }
 
-  /**
-   * Executes the data pipeline if marked dirty.
-   * Called during the update lifecycle to batch changes.
-   */
   private _runPipelineIfDirty(): void {
     if (!this._dirty) {
       return;
     }
 
-    // The `value` and `header` of a record are fixed for a data item, so the
-    // indexed source is built again only if it no longer agrees with the data of
-    // the host. A filter-only run, which each keystroke starts, uses it again
-    // and allocates no records. Only the derived `position` changes per run.
-    // See `_apply`.
+    // Record `value` and `header` are fixed, so rebuild the index only when the
+    // host data changes. A filter-only run allocates no records. See `_apply`.
     if (this._isSourceOutdated()) {
       this._source = this._host.data;
       this._indexed = this._index(this._source);
@@ -172,14 +149,12 @@ export class DataState<T extends object> implements ReactiveController {
   }
 
   /**
-   * Filters and groups the indexed source, then numbers the visible options
-   * again, so that the `aria-posinset` and `aria-setsize` pair of the list
-   * skips the group headers.
+   * Filters and groups the indexed source, then numbers the visible options,
+   * so `aria-posinset` and `aria-setsize` skip the group headers.
    *
    * @remarks
-   * `position` is derived view state, and the records belong only to this
-   * controller. Each run computes the field before a read, so it is numbered in
-   * place. A copy per run would add one allocation to each keystroke.
+   * Only this controller owns the records, so `position` changes in place.
+   * A copy per run adds an allocation on each keystroke.
    */
   private _apply(records: ComboRecord<T>[]): ComboRecord<T>[] {
     const result = this._grouping.apply(
@@ -204,17 +179,13 @@ export class DataState<T extends object> implements ReactiveController {
 
   //#region Public API for host component
 
-  /**
-   * Updates the collator when locale changes.
-   */
+  /** Updates the collator for `locale`. */
   public updateLocale(locale: string): void {
     this._compareCollator = new Intl.Collator(locale);
     this._markDirty();
   }
 
-  /**
-   * Marks data as dirty when host properties that affect data change.
-   */
+  /** Call when a host property that affects the data changes. */
   public invalidate(): void {
     this._markDirty();
   }

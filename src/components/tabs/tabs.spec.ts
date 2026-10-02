@@ -69,9 +69,8 @@ describe('Tabs component', () => {
       `);
     });
 
-    // `aria-required-children` is suppressed as a false positive: axe walks the DOM and
-    // sees each tab's panel nested in the tablist, while browsers expose the flat tree
-    // where the roles resolve correctly. Screen readers announce the tabs as expected.
+    // `aria-required-children` is a false positive: axe sees each panel nested in
+    // the tablist, but the flat tree that browsers expose resolves the roles.
     it('is accessible', async () => {
       await expect(element).to.be.accessible({
         ignoredRules: ['aria-required-children'],
@@ -236,9 +235,8 @@ describe('Tabs component', () => {
     });
 
     it('prevents the default action of the activation keys', async () => {
-      // A tab header is focusable but has no native activation behavior, so
-      // Space would scroll the page on top of selecting the tab. The event is
-      // hand-rolled because the shared helper dispatches non-cancelable ones.
+      // A tab header has no native activation, so Space would also scroll the
+      // page. The shared helper dispatches non-cancelable events, so build one here.
       const activate = (key: string) => {
         const event = new KeyboardEvent('keydown', {
           key,

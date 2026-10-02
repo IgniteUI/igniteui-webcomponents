@@ -5,6 +5,7 @@ import { createAsyncContext } from '#internals/controllers/async-consumer.js';
 import { addInternalsController } from '#internals/controllers/internals.js';
 import { addSlotController, DefaultSlot } from '#internals/controllers/slot.js';
 import { registerComponent } from '#internals/definitions/register.js';
+import { setOrRemoveAttribute } from '#internals/utils/dom.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import IgcIconComponent from '../icon/icon.js';
 import { styles } from './themes/breadcrumb.base.css.js';
@@ -152,9 +153,8 @@ export default class IgcBreadcrumbComponent extends LitElement {
   //#region Internal API
 
   /**
-   * Keeps the slotted focusable elements out of the tab sequence while the
-   * breadcrumb is disabled. `pointer-events: none` alone still leaves a
-   * disabled link reachable with Tab.
+   * Keeps the slotted tabbables out of the tab sequence while disabled.
+   * `pointer-events: none` alone does not stop Tab.
    */
   private _syncTabbable(): void {
     this._restoreTabbables();
@@ -175,11 +175,7 @@ export default class IgcBreadcrumbComponent extends LitElement {
 
   private _restoreTabbables(): void {
     for (const [element, tabindex] of this._suppressedTabbables) {
-      if (tabindex === null) {
-        element.removeAttribute('tabindex');
-      } else {
-        element.setAttribute('tabindex', tabindex);
-      }
+      setOrRemoveAttribute(element, 'tabindex', tabindex);
     }
 
     this._suppressedTabbables.clear();

@@ -10,8 +10,9 @@ import { createRef, type Ref, ref } from 'lit/directives/ref.js';
 import { addAnimationController } from '#animations/player.js';
 import { growVerIn, growVerOut } from '#animations/presets/grow/index.js';
 import { registerComponent } from '#internals/definitions/register.js';
+import { HostAriaMixin } from '#internals/mixins/host-aria.js';
 import { partMap } from '#internals/part-map.js';
-import { scrollIntoView } from '#internals/utils/dom.js';
+import { scrollIntoView, setOrRemoveAttribute } from '#internals/utils/dom.js';
 import {
   addSafeEventListener,
   getElementFromPath,
@@ -25,9 +26,9 @@ import { all } from './themes/item.js';
 import { styles as shared } from './themes/shared/item.common.css.js';
 import {
   clearTreeItemAria,
+  copyHostAria,
   getTreeItemChildren,
   hasTreeItemChildren,
-  setAriaState,
   TREE_ITEM_TAG,
   TREE_TAG,
 } from './tree.common.js';
@@ -55,7 +56,7 @@ import type { IgcTreeSelectionService } from './tree.selection.js';
  * @csspart text - The tree item displayed text.
  * @csspart select - The checkbox of the tree item when selection is enabled.
  */
-export default class IgcTreeItemComponent extends LitElement {
+export default class IgcTreeItemComponent extends HostAriaMixin(LitElement) {
   public static readonly tagName = TREE_ITEM_TAG;
   public static override styles = [styles, shared];
 
@@ -214,12 +215,11 @@ export default class IgcTreeItemComponent extends LitElement {
     this.level = this.parent ? this.parent.level + 1 : 0;
     this._syncAria();
     this._activeChange();
-    // if the item is not added/moved runtime
+    // The item renders with the tree, not added or moved at runtime.
     if (this.init) {
       this._selectedChange();
     } else {
-      // re-trigger the item selection state in order to update the collections within the selectionService
-      // and to handle correctly the itemParents recursively to the top-most ancestor
+      // Updates the selection service collections and the ancestor states.
       this._selectionService?.retriggerItemState(this);
     }
     this.init = false;
@@ -259,8 +259,7 @@ export default class IgcTreeItemComponent extends LitElement {
   protected override updated(changed: PropertyValues<this>): void {
     super.updated(changed);
 
-    // ARIA state lives outside the shadow template, so it is refreshed once per
-    // update rather than tracked per property.
+    // ARIA state is outside the shadow template, so it syncs once per update.
     this._syncAria();
   }
 
@@ -343,7 +342,7 @@ export default class IgcTreeItemComponent extends LitElement {
   private _onFocusIn(ev: Event): void {
     ev?.stopPropagation();
     if (!this.disabled) {
-      // clicking directly over tabbable element when the item is not focused
+      // A click on a tabbable element while the item is not focused.
       if (!this._focusedProgrammatically) {
         this._setTabbable(0);
       }
@@ -359,7 +358,8 @@ export default class IgcTreeItemComponent extends LitElement {
     this._setTabbable(-1);
 
     if (this._navService?.focusedItem === this) {
-      // called twice when clicking on already focused item with link (itemClick handler)
+      // Runs twice on a click on a focused item with a link (itemClick
+      // handler).
       this.setAttribute('tabindex', '0');
     }
   }
@@ -388,10 +388,9 @@ export default class IgcTreeItemComponent extends LitElement {
   }
 
   /**
-   * The element that holds the `treeitem` semantics of the item: the host, or
-   * the first focusable element of the label slot. The keyboard then reaches
-   * what the screen reader announces. All ARIA state moves with the role,
-   * because a `role="none"` host ignores it.
+   * The element with the `treeitem` role: the host, or the first focusable
+   * element of the label slot. All ARIA state moves with the role, because a
+   * `role="none"` host ignores it.
    */
   private get _ariaTarget(): HTMLElement {
     return this._tabbableEl?.length ? this._tabbableEl[0] : this;
@@ -411,19 +410,24 @@ export default class IgcTreeItemComponent extends LitElement {
     if (delegated) {
       target.setAttribute('role', 'treeitem');
       clearTreeItemAria(this);
+      copyHostAria(this, target);
     }
 
-    setAriaState(
+    setOrRemoveAttribute(
       target,
       'aria-expanded',
       this.hasChildren ? String(this.expanded) : null
     );
-    setAriaState(
+    setOrRemoveAttribute(
       target,
       'aria-selected',
       this.tree && this.tree.selection !== 'none' ? String(this.selected) : null
     );
-    setAriaState(target, 'aria-disabled', this.disabled ? 'true' : null);
+    setOrRemoveAttribute(
+      target,
+      'aria-disabled',
+      this.disabled ? 'true' : null
+    );
   }
 
   private async _toggleAnimation(dir: 'open' | 'close') {
@@ -435,7 +439,7 @@ export default class IgcTreeItemComponent extends LitElement {
     if (!oldValue) {
       return;
     }
-    // await for load on demand children
+    // Wait for load-on-demand children.
     Promise.resolve().then(() => {
       if (this._navService?.focusedItem !== this && !this._isFocused) {
         scrollIntoView(this._navService?.focusedItem?.wrapper, {
@@ -455,9 +459,8 @@ export default class IgcTreeItemComponent extends LitElement {
     if (this._navService) {
       this._navService.setActiveItem(this, false);
     }
-    // Expand and scroll to the newly active item
     this.tree?.expandToItem(this);
-    // Await for expanding
+    // Wait for the expand, then scroll to the item.
     Promise.resolve().then(() => {
       scrollIntoView(this.wrapper, { behavior: 'smooth' });
     });
@@ -478,9 +481,8 @@ export default class IgcTreeItemComponent extends LitElement {
 
   /* blazorSuppress */
   /**
-   * Returns a collection of child items.
-   * If the parameter value is true returns all tree item's direct children,
-   * otherwise - only the direct children.
+   * Returns the child items. With `flatten: true` it returns all the
+   * descendant items, otherwise only the direct children.
    */
   public getChildren(
     options: { flatten: boolean } = { flatten: false }

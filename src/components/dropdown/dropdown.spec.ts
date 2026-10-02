@@ -222,8 +222,7 @@ describe('Dropdown', () => {
 
       await openDropdown('btn');
 
-      // By default clicking on the `target` should not close the dropdown. Application scenario to
-      // hook up additional logic.
+      // By default a `target` click does not close the dropdown, so the app can add its own logic.
       simulateClick(btn);
       await elementUpdated(dropDown);
 

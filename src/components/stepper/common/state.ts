@@ -17,17 +17,15 @@ class StepperState {
 
   //#region Collection accessors
 
-  /** Returns all registered step components. */
   public get steps(): readonly IgcStepComponent[] {
     return this._steps;
   }
 
-  /** Returns the currently active step. */
   public get activeStep(): IgcStepComponent | undefined {
     return this._activeStep;
   }
 
-  /** Returns all steps that are currently accessible (not disabled or linear-disabled). */
+  /** Steps that are not disabled or linear-disabled. */
   public get accessibleSteps(): IgcStepComponent[] {
     return this._steps.filter((step) => this.isAccessible(step));
   }
@@ -36,14 +34,7 @@ class StepperState {
 
   //#region Per-step state
 
-  /**
-   * Sets the state of a given step component.
-   *
-   * If the step already has an existing state, it merges the new state with the existing one.
-   * If the step does not have an existing state, it initializes it with default values and then applies the new state.
-   *
-   * After updating the state, it requests an update on the step component to reflect the changes in the UI.
-   */
+  /** Merges `state` into the state of `step` and updates the step. */
   public set(step: IgcStepComponent, state: Partial<StepState>): void {
     this.has(step)
       ? this._state.set(step, { ...this.get(step)!, ...state })
@@ -57,25 +48,18 @@ class StepperState {
     step.requestUpdate();
   }
 
-  /** Checks if a given step component has an associated state. */
   public has(step: IgcStepComponent): boolean {
     return this._state.has(step);
   }
 
-  /** Retrieves the state of a given step component. */
   public get(step: IgcStepComponent): StepState | undefined {
     return this._state.get(step);
   }
 
-  /** Deletes the state of a given step component. */
   public delete(step: IgcStepComponent): boolean {
     return this._state.delete(step);
   }
 
-  /**
-   * Determines if a given step component is accessible based on its `disabled` state
-   * and the `linearDisabled` state from the stepper state management.
-   */
   public isAccessible(step: IgcStepComponent): boolean {
     return !(step.disabled || this.get(step)?.linearDisabled);
   }
@@ -84,7 +68,6 @@ class StepperState {
 
   //#region Active step management
 
-  /** Updates the registered steps collection. */
   public setSteps(steps: IgcStepComponent[]): void {
     this._steps = steps;
   }
@@ -140,9 +123,7 @@ class StepperState {
     }
   }
 
-  /**
-   * Sets the visited state for all steps based on the current active step and the linear mode.
-   */
+  /** Sets the linear mode and marks the steps up to the active one as visited. */
   public setVisitedState(value: boolean): void {
     const activeIndex = this._steps.indexOf(this._activeStep!);
     this.linear = value;
@@ -217,9 +198,6 @@ class StepperState {
   //#endregion
 }
 
-/**
- * Creates a new instance of the StepperState class, which manages the state of steps in a stepper component.
- */
 function createStepperState(): StepperState {
   return new StepperState();
 }

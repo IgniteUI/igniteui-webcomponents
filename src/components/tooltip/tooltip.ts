@@ -149,9 +149,8 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
   }
 
   /**
-   * Whether the consumer put content into the default slot. The query does not
-   * flatten, because a flattened query reports the rendered `message`, which is
-   * the fallback content of the slot, as content of the consumer.
+   * Whether the consumer slotted content. The query does not flatten, because a
+   * flattened query also reports the fallback `message`.
    */
   private get _hasProjectedContent(): boolean {
     return this._slots
@@ -347,9 +346,8 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
   }
 
   /**
-   * Cancels the queued or running transition, and resolves a delayed one with
-   * `false`. The caller must settle the state that stays behind. Returns
-   * whether the cancelled transition was in its animation.
+   * Cancels the queued or running transition and resolves a delayed one with
+   * `false`. The caller settles the state. Returns whether it was animating.
    */
   private _abortTransition(): boolean {
     const wasAnimating = this._animating;
@@ -380,8 +378,8 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
   }
 
   /**
-   * Drops a queued or running transition and settles on `state`. The default is
-   * the state the tooltip is committed to.
+   * Drops a queued or running transition and settles on `state`, by default
+   * the committed state.
    */
   private _cancelTransition(state = this.open): void {
     this._settleState(state, this._abortTransition());
@@ -396,7 +394,6 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
       return false;
     }
 
-    // Supersede whatever transition is queued or already running.
     const wasAnimating = this._abortTransition();
     this._requestedState = show;
 
@@ -406,7 +403,7 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
       return false;
     }
 
-    // Vetoed - the first guard proves we were at `!show`.
+    // Vetoed. The first guard proves the state was `!show`.
     if (withEvents && !this._emitEvent(show ? 'igcOpening' : 'igcClosing')) {
       this._settleState(!show, wasAnimating);
       return false;
@@ -419,9 +416,8 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
         this.open = true;
       }
 
-      // Make the tooltip ignore most interactions during the animation. If the
-      // popover overlaps its anchor, this stops a loop between the anchor and the
-      // tooltip handlers.
+      // Ignore interactions during the animation. This stops a show/hide loop
+      // when the popover overlaps its anchor.
       this.inert = true;
       this._animating = true;
 
@@ -528,12 +524,10 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
   }
 
   /**
-   * Closes the tooltip and emits the events. Ignores `hideDelay`, and also
-   * `sticky`, which `_hideOnInteraction` obeys.
+   * Closes the tooltip with events. Ignores `hideDelay` and `sticky`.
    *
    * @remarks
-   * The close button of a sticky tooltip calls this method, as does the `close`
-   * scroll strategy, which closes a sticky tooltip too.
+   * The sticky close button and the `close` scroll strategy call this method.
    */
   private _hideImmediately(): void {
     this._applyTooltipState({ show: false, withEvents: true });

@@ -15,16 +15,16 @@ import { addHostListeners } from './host-listeners.js';
  * ```ts
  * class IgcDialogComponent extends LitElement {
  *   private readonly _commands = addCommandController(this)
- *     .set('open', this.show)
- *     .set('close', this.hide)
- *     .set('toggle-popover', this.toggle);
+ *     .set('--show', this.show)
+ *     .set('--hide', this.hide)
+ *     .set('--toggle', this.toggle);
  * }
  * ```
  *
  * A button in the document then controls the dialog declaratively:
  *
  * ```html
- * <igc-button command="open" commandfor="my-dialog">Open</igc-button>
+ * <igc-button command="--show" commandfor="my-dialog">Open</igc-button>
  * <igc-dialog id="my-dialog"></igc-dialog>
  * ```
  */
@@ -41,8 +41,8 @@ class CommandController {
   /**
    * Registers a command string and its handler callback.
    *
-   * @param command - The command string to listen for, for example `'open'`,
-   *   `'toggle-popover'`, or a custom `'--my-command'`.
+   * @param command - The command string to listen for, for example the
+   *   built-in `'toggle-popover'` or a custom `'--show'`.
    * @param callback - The method that runs when the command arrives. The
    *   controller calls it with the host as `this`.
    */

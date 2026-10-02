@@ -12,9 +12,7 @@ const defaultState: GestureState = Object.freeze({ x: 0, y: 0, time: 0 });
 
 /** @hidden */
 export interface GesturesOptions {
-  /**
-   * The element that the controller observes. Defaults to the host element.
-   */
+  /** The element that the controller observes. Defaults to the host. */
   ref?: Ref<HTMLElement>;
   /** The maximum time in milliseconds of a recognized gesture. */
   thresholdTime?: number;

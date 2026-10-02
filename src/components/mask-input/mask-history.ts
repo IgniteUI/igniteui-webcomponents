@@ -6,11 +6,9 @@ type MaskHistoryState = {
 };
 
 /**
- * The granularity an edit contributes to the history.
- *
- * The three granular kinds coalesce, so a run of typed characters or of deletions
- * collapses into a single step. Everything else - paste, drop, cut, composition,
- * auto-fill, spinning a date part, `setRangeText` - is `atomic` and gets its own step.
+ * The kind of an edit. A run of one granular kind coalesces into a single step.
+ * Paste, drop, cut, composition, auto-fill, a date part spin and `setRangeText`
+ * are `atomic`: each one is its own step.
  */
 type MaskEditKind = 'insert' | 'delete-backward' | 'delete-forward' | 'atomic';
 
@@ -23,17 +21,14 @@ const MAX_HISTORY_SIZE = 100;
  * The undo and redo history of a masked editor.
  *
  * @remarks
- * `.value=${live(...)}` renders the masked text, so each edit assigns the value
- * of the native input again and clears the undo stack of the browser. This
- * history replaces that stack.
+ * `.value=${live(...)}` assigns the native value on each edit, which clears the
+ * undo stack of the browser. This history replaces that stack.
  *
- * It holds no timers. The caret geometry alone groups a run, so the same edits
- * always give the same steps.
+ * The caret geometry alone groups a run. There are no timers.
  *
- * The history invalidates itself. It compares against the text it last saw to
- * find a change that did not go through it, such as a `value` from code,
- * `clear()` or a form reset, and the signature finds a changed mask pattern. No
- * call site must report those changes.
+ * The history invalidates itself on an outside text change, such as a `value`
+ * from code, `clear()` or a form reset, and on a changed mask signature. No
+ * call site has to report those changes.
  *
  * @hidden
  */
@@ -51,10 +46,8 @@ class MaskHistory {
    * The state that the last traversal restored.
    *
    * @remarks
-   * A held `Ctrl + Z` repeats faster than the caret reaches the DOM, so the live
-   * selection is not a reliable entry for the opposite stack. This state holds
-   * the value and the caret that the traversal wrote, so it pushes the correct
-   * entry.
+   * A held `Ctrl + Z` repeats faster than the caret reaches the DOM, so the
+   * opposite stack takes this state instead of the live selection.
    */
   private _lastRestored: MaskHistoryState | null = null;
 
@@ -149,9 +142,9 @@ class MaskHistory {
   }
 
   /**
-   * Reconciles the history with the editor's current text, typically on focus where a
-   * date editor swaps the display format back for the input format. An unchanged
-   * document keeps its history, a changed one drops it, and either way the run ends.
+   * Reconciles the history with the current text, for example on focus, when a date
+   * editor swaps back to the input format. A changed text drops the history. The run
+   * always ends.
    */
   public resync(value: string): void {
     this._validate(value);
@@ -177,8 +170,7 @@ class MaskHistory {
     to: MaskHistoryState[],
     current: MaskHistoryState
   ): MaskHistoryState | null {
-    // Traversing a history whose document has moved on would restore text belonging to a
-    // value the component no longer holds.
+    // A stale history would restore the text of a value the component no longer holds.
     if (!this._validate(current.value)) {
       return null;
     }
@@ -204,9 +196,8 @@ class MaskHistory {
 /**
  * Creates a {@link MaskHistory} for a masked editor.
  *
- * @param signature - resolves the identity of the mask pattern the snapshots are taken
- * against. A callback rather than a value because the history is created by the mask
- * behavior mixin, whose fields initialize *before* the parser of the concrete component.
+ * @param signature - Resolves the identity of the mask pattern. It is a callback because
+ * the mixin fields initialize *before* the parser of the concrete component.
  *
  * @example
  * ```ts

@@ -5,7 +5,7 @@ import { range } from 'lit/directives/range.js';
 import { styleMap } from 'lit/directives/style-map.js';
 import {
   ariaBindings,
-  resolveNaming,
+  hostAria,
 } from '#internals/controllers/aria-projection.js';
 import {
   addKeybindings,
@@ -346,7 +346,7 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
     const value = this._calcNewValue(clientX);
 
     if (this._hoverValue !== value) {
-      // Since pointermove spams a lot, only emit on a value change
+      // `pointermove` fires often, so emit only on a value change.
       this._hoverValue = value;
       this.emitEvent('igcHover', { detail: this._hoverValue });
     }
@@ -411,10 +411,8 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
   }
 
   /**
-   * Removes the floating point noise of the step arithmetic. The decimals of
-   * the value and of the step stay, so a value from the consumer keeps its
-   * precision, and the value, the event payload and `aria-valuenow` stay
-   * readable.
+   * Removes the floating point noise of the step arithmetic. Keeps the decimals
+   * of the value and of the step.
    */
   private _normalize(value: number): number {
     return roundPrecise(
@@ -514,7 +512,7 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
         >${this.label}</label
       >
       <div
-        ${ariaBindings(resolveNaming(this, Boolean(this.label) && 'rating-label'))}
+        ${ariaBindings(hostAria(this, Boolean(this.label) && 'rating-label'))}
         part="base"
         role="slider"
         tabindex=${this.disabled ? -1 : 0}

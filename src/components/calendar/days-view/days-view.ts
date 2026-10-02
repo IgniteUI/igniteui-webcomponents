@@ -224,11 +224,11 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
   //#region Internal selection methods
 
   /**
-   * Applies the activation of `value` to the selection of this view.
+   * Applies `value` to the selection of this view.
    *
    * @remarks
-   * A calendar writes the selection back to its views on the next render. This
-   * keeps a stand-alone view able to select.
+   * The calendar writes its selection back to the views on the next render.
+   * This lets a stand-alone view select.
    */
   private _selectDate(value: CalendarDay): boolean {
     const selection = selectDate(
@@ -318,7 +318,7 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
 
     context.selectedRange = boundsOf(start, end);
 
-    // The endpoints of the range extend to the previewed date while it is outside of it
+    // A previewed date outside the range extends its endpoints.
     context.first = (preview?.lessThan(start) ? preview : start).timestamp;
     context.last = (preview?.greaterThan(end) ? preview : end).timestamp;
 
@@ -482,7 +482,7 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
       ? this._renderHeaderWeekNumber()
       : nothing;
 
-    // The first week of the grid, so that the labels cannot disagree with it
+    // Take the labels from the first grid week, so they always match it.
     const headers = dates.slice(0, DAYS_IN_WEEK).map(
       (day) => html`
         <span

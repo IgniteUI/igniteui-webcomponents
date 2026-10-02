@@ -31,6 +31,7 @@
     - [Invoker Commands API](#invoker-commands-api)
     - [Form integration tests](#form-integration-tests)
     - [Icon button tests](#icon-button-tests)
+    - [Host ARIA](#host-aria)
     - [Not covered by the suite](#not-covered-by-the-suite)
   - [Assumptions and limitations](#assumptions-and-limitations)
   - [Accessibility](#accessibility)
@@ -40,11 +41,13 @@
 
 ## Revision history
 
-| Version | Date       | Notes                 |
-| ------: | ---------- | --------------------- |
-|       1 | 2026-09-21 | Initial specification |
-|       2 | 2026-09-23 | Remove the `prefix` and `suffix` parts, which the button does not render |
+| Version | Date       | Notes                                                                                    |
+| ------: | ---------- | ---------------------------------------------------------------------------------------- |
+|       1 | 2026-09-21 | Initial specification                                                                    |
+|       2 | 2026-09-23 | Remove the `prefix` and `suffix` parts, which the button does not render                 |
 |       3 | 2026-10-01 | A link keeps the link role; a disabled link leaves the tab order and cannot be activated |
+|       4 | 2026-10-02 | Document the default slot of the icon button; follow a change of the host `aria-label`   |
+|       5 | 2026-10-02 | Forward the host `aria-labelledby` and `aria-describedby`; a `<label>` names the button  |
 
 ## Overview
 
@@ -235,13 +238,15 @@ None of their own. The components emit the native events of the rendered `<butto
 
 ### Slots
 
-| Component         | Name     | Description                                     |
-| ----------------- | -------- | ----------------------------------------------- |
-| `igc-button`      | default  | The label of the button.                         |
-| `igc-button`      | `prefix` | Content before the label.                        |
-| `igc-button`      | `suffix` | Content after the label.                         |
+| Component         | Name     | Description                                       |
+| ----------------- | -------- | ------------------------------------------------- |
+| `igc-button`      | default  | The label of the button.                          |
+| `igc-button`      | `prefix` | Content before the label.                         |
+| `igc-button`      | `suffix` | Content after the label.                          |
+| `igc-icon-button` | default  | Content after the icon, such as text or a ripple. |
 
-`igc-icon-button` takes no projected content; its icon comes from the registry.
+The icon of `igc-icon-button` comes from the registry. The default slot renders after the icon, and alone when the
+button has no `name` and no `mirrored`. Slotted content takes the size of the icon.
 
 ### CSS Shadow parts
 
@@ -261,7 +266,8 @@ None of their own. The components emit the native events of the rendered `<butto
 ### Button component
 
 1. The component is initialized with its default values and passes the accessibility audit.
-2. The `disabled`, `variant` and `type` properties are reflected.
+2. The `disabled`, `variant` and `type` properties are reflected, and a change of the host `aria-label` reaches the
+   native button.
 3. The shadow DOM structure is correct.
 
 ### Link button
@@ -296,10 +302,15 @@ None of their own. The components emit the native events of the rendered `<butto
 16. The component renders a native button, and an anchor when `href` is set.
 17. It is created with its default values.
 18. The `name`, `collection`, `mirrored`, `href`, `rel`, `target`, `download` and `disabled` properties are
-    applied.
+    applied, and a change of the host `aria-label` reaches the link.
 19. Every anchor-specific property is applied to the wrapped base element.
 20. A disabled link renders a disabled `<button>` with `role="link"`, cannot take focus, and passes the
     accessibility audit.
+
+### Host ARIA
+
+21. The host `aria-labelledby`, `aria-describedby`, a `<label for>`, a label added later and an `igc-tooltip` name
+    and describe the native element, also as a link and a disabled link. A host `aria-label` wins over a `<label>`.
 
 ### Not covered by the suite
 
@@ -313,9 +324,9 @@ None of their own. The components emit the native events of the rendered `<butto
 - `type` and the form behavior are ignored while the component renders as an anchor.
 - The components emit no custom events; the native events of the rendered element are what an application listens
   for.
-- `igc-icon-button` takes no projected content, so its icon must exist in the registry.
+- The icon of `igc-icon-button` must exist in the registry. Its default slot takes other content, such as text.
 - The size of a button comes from the theming mechanism rather than from a property.
-- An icon button carries no text, so it needs an `aria-label` of its own.
+- An icon button that shows only an icon needs an `aria-label` of its own.
 
 ## Accessibility
 
@@ -323,9 +334,12 @@ None of their own. The components emit the native events of the rendered `<butto
 
 - The component renders a native `<button>` or `<a>`, so the role, the disabled semantics and the keyboard
   behavior are the native ones.
-- The `aria-label` of the host is forwarded to the rendered element, which is how an icon button gets its name.
+- The `aria-label` of the host is forwarded to the rendered element, also after a change, which is how an icon
+  button gets its name. Without an `aria-label`, text in the default slot names the icon button.
 - A link keeps the native link role. A disabled link renders a disabled `<button>` with `role="link"`, so it
   exposes the link role with the native disabled state.
+- A host `aria-labelledby` and `aria-describedby` reach the native element by element reference. A `<label>` for the
+  button names it, but a host `aria-label` wins, as for a native button.
 
 ### Keyboard support
 

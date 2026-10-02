@@ -13,24 +13,22 @@ import {
   PartType,
 } from 'lit/directive.js';
 import { sameItems } from '../utils/arrays.js';
+import { setOrRemoveAttribute } from '../utils/dom.js';
+import { addSafeEventListener, focusLeftHost } from '../utils/events.js';
 import { isString } from '../utils/types.js';
 import { internalsOf } from './internals.js';
 import type { SlotController } from './slot.js';
 
 type ControllerHost = ReactiveControllerHost & LitElement;
 
-/** The host attributes that {@link resolveNaming} reads. */
-export const NAMING_ATTRIBUTES = ['aria-label', 'aria-labelledby'];
+/** Whether the component shows its own label. */
+const hasLabel = (host: object) => Boolean((host as { label?: string }).label);
 
 /** The name sources of a component, resolved by {@link resolveNaming}. */
-export type ResolvedNaming = {
-  /** The elements that name the component, bound as element references. */
-  labelledBy: ReadonlyArray<Element> | null;
-  /** The id of the own label in the shadow root, bound as an IDREF. */
-  labelledByRef?: string;
-  /** The host `aria-label` or the fallback, when no label names the component. */
-  label?: string;
-};
+type ResolvedNaming = Pick<
+  ResolvedARIABindings,
+  'labelledBy' | 'labelledByRef' | 'label'
+>;
 
 /**
  * Resolves the name of a form associated component. The first source that is
@@ -43,8 +41,8 @@ export type ResolvedNaming = {
  * @remarks
  * Assistive technology reads the native control in the shadow root, so the
  * name moves from the host to that control. `host.ariaLabelledByElements`
- * resolves the host IDREFs in the host tree. An external label replaces the
- * own label. A wrapping label contains the own label text.
+ * resolves the host IDREFs in the host tree. A wrapping label contains the
+ * own label text.
  */
 export function resolveNaming(
   host: Element,
@@ -75,24 +73,77 @@ export function resolveNaming(
   return naming;
 }
 
+/** Forwards the host name and description to its role or focus element. @internal */
+export function hostAria(
+  host: Element,
+  ownLabel: string | boolean = false,
+  description: Element | null = null
+): ARIABindings {
+  return {
+    ...resolveNaming(host, ownLabel),
+    ...descriptionBindings(host, description),
+  };
+}
+
+/** Renders the host again on focus when its `<label>`s changed. @internal */
+export function trackLabels(host: ControllerHost): void {
+  let labels: ReadonlyArray<Element> | null | undefined;
+
+  host.addController({
+    hostUpdate: () => {
+      labels = internalsOf(host)?.labels;
+    },
+  });
+  addSafeEventListener(host, 'focusin', (event) => {
+    if (
+      focusLeftHost(host, event) &&
+      !sameItems(internalsOf(host)?.labels, labels)
+    ) {
+      host.requestUpdate();
+    }
+  });
+}
+
+/** Joins element lists, or returns `null` for none. */
+function joinRelations(
+  ...lists: Array<ReadonlyArray<Element> | null | undefined>
+): ReadonlyArray<Element> | null {
+  const joined = lists.flatMap((list) => list ?? []);
+  return joined.length ? joined : null;
+}
+
+/**
+ * Describes a control by its own description, `extra`, then the host. Alone,
+ * the own description binds as an IDREF, which attribute readers also see.
+ */
+function descriptionBindings(
+  host: Element,
+  description: Element | null,
+  extra?: ReadonlyArray<Element> | null
+): Pick<ResolvedARIABindings, 'describedBy' | 'describedByRef'> {
+  const others = joinRelations(extra, host.ariaDescribedByElements);
+
+  return {
+    describedBy: others && joinRelations(description && [description], others),
+    describedByRef: description?.id || undefined,
+  };
+}
+
 /**
  * The ARIA semantics that a composite host projects onto the native editor.
  *
- * @remarks
- * The host delegates focus, so assistive technology lands on the editor of
- * the input-shaped component and reports it. Every relation travels as an
- * element reference, because an IDREF does not cross a shadow boundary.
+ * Every relation is an element reference, because an IDREF does not cross a
+ * shadow boundary.
  */
 export type ProjectedARIA = {
   role?: string;
   hasPopup?: string;
   expanded?: string;
-  disabled?: string;
+  required?: string;
   label?: string;
   controls?: ReadonlyArray<Element> | null;
   describedBy?: ReadonlyArray<Element> | null;
   labelledBy?: ReadonlyArray<Element> | null;
-  activeDescendant?: Element | null;
 };
 
 /** The id of the helper-text container of `IgcValidationContainerComponent`. */
@@ -108,43 +159,25 @@ export function helperText(
     : null;
 }
 
-type AriaTargetConfig = {
-  /** Resolves the helper-text container, or `null` when there is none. */
-  description?: () => Element | null;
-  /** Whether an own label names the editor natively, for example a `<label for>`. */
-  hasOwnLabel?: () => boolean;
-};
-
 /**
- * The binding values for a native editor element, resolved from the projected
- * state and the own ARIA of the editor, and applied by the
- * {@link ariaBindings} directive. A scalar binds as an attribute, a relation
- * through an ARIA element-reflection property.
+ * The bindings that the {@link ariaBindings} directive applies to a native
+ * editor. A scalar binds as an attribute, a relation through an ARIA
+ * element-reflection property.
  */
-export type ResolvedARIABindings = {
-  role?: string;
-  hasPopup?: string;
-  expanded?: string;
-  disabled?: string;
-  label?: string;
-  /**
-   * The IDREF of the own description in the same root. The directive binds it
-   * while `describedBy` is null, so a tool that reads only attributes, for
-   * example axe, still sees the relation.
-   */
+export type ResolvedARIABindings = Omit<
+  ProjectedARIA,
+  'controls' | 'describedBy' | 'labelledBy'
+> & {
+  /** The IDREF of the own description, bound while `describedBy` is null. */
   describedByRef?: string;
-  /** The IDREF of the own label in the same root. It binds as `describedByRef`. */
+  /** The IDREF of the own label, bound while `labelledBy` is null. */
   labelledByRef?: string;
   labelledBy: ReadonlyArray<Element> | null;
   controls: ReadonlyArray<Element> | null;
   describedBy: ReadonlyArray<Element> | null;
-  activeDescendant: Element | null;
 };
 
-/**
- * Resolves an input-shaped component to its ARIA target controller, so the
- * component needs no public member for the projection.
- */
+/** The ARIA target controller of each input-shaped component. */
 const targets = new WeakMap<Element, AriaTargetController>();
 
 /**
@@ -153,30 +186,26 @@ const targets = new WeakMap<Element, AriaTargetController>();
  * composite host projects.
  *
  * @remarks
- * Not a reactive controller. The host render resolves the bindings, and the
- * form associated mixin renders the host again when the name sources change.
+ * Not a reactive controller. The host render resolves the bindings, and
+ * `HostAriaMixin` renders the host again when the name sources change.
  */
 class AriaTargetController {
   private readonly _host: ControllerHost;
-  private readonly _config: AriaTargetConfig;
+  /** Resolves the helper-text container, or `null` when there is none. */
+  private readonly _description: () => Element | null;
   private _projected: ProjectedARIA = {};
   /** The bindings last resolved for the native editor. */
   private _resolved?: ResolvedARIABindings;
 
-  constructor(host: ControllerHost, config: AriaTargetConfig) {
+  constructor(host: ControllerHost, description: () => Element | null) {
     this._host = host;
-    this._config = config;
+    this._description = description;
     targets.set(host, this);
   }
 
   /**
-   * Replaces the projected state.
-   *
-   * @remarks
-   * A host render happens only when the resolved bindings change, so a
-   * projection on every host update stays inexpensive. The comparison uses
-   * the resolved bindings, so it also catches a change to the own labels or
-   * description, which the component cannot observe.
+   * Replaces the projected state. The host renders only when the resolved
+   * bindings change, which also catches a change of its own labels.
    */
   public setProjected(state: ProjectedARIA): void {
     const previous = this._resolved;
@@ -189,24 +218,15 @@ class AriaTargetController {
   }
 
   /**
-   * Mirrors the projected `role` and `hasPopup` onto `data-role` and
-   * `data-haspopup`.
-   *
-   * @remarks
-   * The input themes style the anchor of a composite widget from these
-   * attributes. The ARIA itself stays on the editor in the shadow root, where
-   * a `:host()` selector cannot observe it.
+   * Mirrors `role` and `hasPopup` onto `data-role` and `data-haspopup` for the
+   * themes. A `:host()` selector cannot see the ARIA of the editor.
    */
   private _reflectStylingHooks(): void {
     const host = this._host;
     const { role, hasPopup } = this._projected;
 
-    role
-      ? host.setAttribute('data-role', role)
-      : host.removeAttribute('data-role');
-    hasPopup
-      ? host.setAttribute('data-haspopup', hasPopup)
-      : host.removeAttribute('data-haspopup');
+    setOrRemoveAttribute(host, 'data-role', role || null);
+    setOrRemoveAttribute(host, 'data-haspopup', hasPopup || null);
   }
 
   /**
@@ -215,26 +235,20 @@ class AriaTargetController {
    */
   public resolveBindings(): ResolvedARIABindings {
     const projected = this._projected;
-    const description = this._config.description?.() ?? null;
+    const description = this._description();
     const naming = projected.labelledBy
       ? projected
-      : resolveNaming(this._host, this._config.hasOwnLabel?.() ?? false);
+      : resolveNaming(this._host, hasLabel(this._host));
 
     this._resolved = {
       role: projected.role,
       hasPopup: projected.hasPopup,
       expanded: projected.expanded,
-      disabled: projected.disabled,
+      required: projected.required,
       label: projected.label ?? naming.label,
       labelledBy: naming.labelledBy ?? null,
       controls: projected.controls ?? null,
-      describedBy: projected.describedBy
-        ? description
-          ? [description, ...projected.describedBy]
-          : projected.describedBy
-        : null,
-      describedByRef: description?.id || undefined,
-      activeDescendant: projected.activeDescendant ?? null,
+      ...descriptionBindings(this._host, description, projected.describedBy),
     };
 
     return this._resolved;
@@ -245,7 +259,7 @@ const scalarBindings = [
   ['role', 'role'],
   ['hasPopup', 'aria-haspopup'],
   ['expanded', 'aria-expanded'],
-  ['disabled', 'aria-disabled'],
+  ['required', 'aria-required'],
   ['label', 'aria-label'],
 ] as const;
 
@@ -267,7 +281,6 @@ function bindingsEqual(
 ): boolean {
   return (
     a !== undefined &&
-    a.activeDescendant === b.activeDescendant &&
     scalarBindings.every(([key]) => a[key] === b[key]) &&
     relationBindings.every(
       ([key, refKey]) =>
@@ -323,19 +336,11 @@ class AriaBindingsDirective extends Directive {
       }
     }
 
-    const activeDescendant = bindings.activeDescendant ?? null;
-
-    if (activeDescendant !== (previous?.activeDescendant ?? null)) {
-      element.ariaActiveDescendantElement = activeDescendant;
-    }
-
     for (const [key, attribute] of scalarBindings) {
       const value = bindings[key];
 
       if (previous?.[key] !== value) {
-        value != null
-          ? element.setAttribute(attribute, value)
-          : element.removeAttribute(attribute);
+        setOrRemoveAttribute(element, attribute, value);
       }
     }
 
@@ -354,11 +359,8 @@ type AriaProjectorConfig = {
   target: () => Element | null | undefined;
   /** Computes the ARIA state to project, after every host update. */
   state: () => ProjectedARIA;
-  /**
-   * Whether the host shows an own label. When set, the projector also
-   * projects the name of the host, see {@link resolveNaming}.
-   */
-  hasOwnLabel?: () => boolean;
+  /** Whether to also project the name of the host, by default `true`. */
+  naming?: boolean;
   /** Resolves the name to use when no other source names the host. */
   fallbackLabel?: () => string;
 };
@@ -379,16 +381,20 @@ class AriaProjectorController implements ReactiveController {
     host.addController(this);
   }
 
-  /** Computes the state, with the name of the host when it is configured. */
+  /** Computes the state, with the name and the description of the host. */
   private _state(): ProjectedARIA {
-    const { state, hasOwnLabel, fallbackLabel } = this._config;
+    const { state, naming = true, fallbackLabel } = this._config;
+    const projected = state();
+    const host = this._host;
 
-    return hasOwnLabel
-      ? {
-          ...resolveNaming(this._host, hasOwnLabel(), fallbackLabel?.()),
-          ...state(),
-        }
-      : state();
+    return {
+      ...(naming && resolveNaming(host, hasLabel(host), fallbackLabel?.())),
+      ...projected,
+      describedBy: joinRelations(
+        projected.describedBy,
+        host.ariaDescribedByElements
+      ),
+    };
   }
 
   /** @internal */
@@ -419,22 +425,15 @@ class AriaProjectorController implements ReactiveController {
   }
 }
 
-/**
- * Creates an {@link AriaTargetController} and adds it to an input-shaped
- * component. It makes the native editor of the component a valid target for
- * {@link addAriaProjector}.
- */
+/** Makes the native editor of a component a target of {@link addAriaProjector}. */
 export function addAriaTarget(
   host: ControllerHost,
-  config: AriaTargetConfig
+  description: () => Element | null
 ): AriaTargetController {
-  return new AriaTargetController(host, config);
+  return new AriaTargetController(host, description);
 }
 
-/**
- * Creates an {@link AriaProjectorController} and adds it to a composite host.
- * It projects ARIA onto the native editor of the target component.
- */
+/** Projects the ARIA of a composite host onto the native editor of its target. */
 export function addAriaProjector(
   host: ControllerHost,
   config: AriaProjectorConfig

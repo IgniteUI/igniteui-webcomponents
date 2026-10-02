@@ -1,7 +1,10 @@
 import { html, nothing, type PropertyValues, type TemplateResult } from 'lit';
 import { property, query } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import { addAriaProjector } from '#internals/controllers/aria-projection.js';
+import {
+  addAriaProjector,
+  HELPER_TEXT_ID,
+} from '#internals/controllers/aria-projection.js';
 import {
   addKeybindings,
   altKey,
@@ -83,10 +86,7 @@ export const pickerDependencies = [
   IgcValidationContainerComponent,
 ];
 
-/**
- * The subset of the slot controller which the base picker queries.
- * Kept structural so that each picker can declare its own set of slot names.
- */
+/** The slot queries of the base picker. Structural, so each picker declares its own slot names. */
 type PickerSlots = {
   hasAssignedElements(slot: string): boolean;
 };
@@ -130,7 +130,7 @@ export abstract class IgcDatePickerBaseComponent<
   @query(IgcCalendarComponent.tagName)
   protected readonly _calendar!: IgcCalendarComponent;
 
-  @query('#helper-text')
+  @query(`#${HELPER_TEXT_ID}`)
   protected readonly _helperText!: IgcValidationContainerComponent | null;
 
   protected get _isDropDown(): boolean {
@@ -159,16 +159,10 @@ export abstract class IgcDatePickerBaseComponent<
   /** The theming controller of the concrete picker. */
   protected abstract readonly _themes: ThemingController;
 
-  /**
-   * The localization controller of the picker. Only the locale is shared,
-   * because the resource strings differ between the pickers.
-   */
+  /** Only the locale is shared, because the resource strings differ between the pickers. */
   protected abstract readonly _i18nController: { locale: string };
 
-  /**
-   * The current value of the picker. Each picker declares its own public
-   * `value`, because the type, the converter and the form state differ.
-   */
+  /** Each picker declares its own public `value`, because the type, converter and form state differ. */
   protected abstract get _value(): T | null;
   protected abstract set _value(value: T | null);
 
@@ -184,17 +178,13 @@ export abstract class IgcDatePickerBaseComponent<
   /** The localized label of the calendar picker. */
   protected abstract get _selectDateLabel(): string | undefined;
 
-  /**
-   * The editor that gets the ARIA state of the host: the name of the host and
-   * `aria-haspopup="dialog"`. Both must reach the native input that assistive
-   * technology reads.
-   */
+  /** The editor whose native input gets the host name and `aria-haspopup="dialog"`. */
   protected abstract get _projectionTarget(): Element | null;
 
   /** Moves focus to the editor of the picker. */
   protected abstract _focusInput(): void;
 
-  /** Restores focus to the editor after a value has been selected in the calendar. */
+  /** Restores focus to the editor after a calendar selection. */
   protected abstract _focusAndSelectInput(): void;
 
   /** The value of the picker for `dates`, which the calendar gives in ascending order. */
@@ -214,11 +204,7 @@ export abstract class IgcDatePickerBaseComponent<
     return null;
   }
 
-  /**
-   * The active date for the first render, if the picker holds a value but no
-   * active date. The calendar then owns its active date and `activeDate` reads
-   * it back, so this is read one time.
-   */
+  /** The active date for the first render when there is a value but no active date. Read one time. */
   protected get _defaultActiveDate(): Date | null {
     return this._calendarValue;
   }
@@ -493,15 +479,14 @@ export abstract class IgcDatePickerBaseComponent<
   constructor() {
     super();
 
-    // Projects the name and the popup semantics of the host onto the native
-    // input of the editor. See ProjectedARIA.
+    // Projects the host name and popup semantics onto the editor input. See ProjectedARIA.
     addAriaProjector(this, {
       target: () => this._projectionTarget,
       state: () => ({
         hasPopup: 'dialog',
+        required: this.required ? 'true' : undefined,
         describedBy: this._helperText ? [this._helperText] : null,
       }),
-      hasOwnLabel: () => Boolean(this.label),
     });
 
     addSafeEventListener(this, 'focusout', this._handleFocusOut);
@@ -545,11 +530,7 @@ export abstract class IgcDatePickerBaseComponent<
     }
   }
 
-  /**
-   * Points the calendar at the first defined date of `dates`, and keeps the
-   * current active date if there is none. Does nothing before the calendar
-   * renders.
-   */
+  /** Points the calendar at the first defined date of `dates`. Does nothing before the calendar renders. */
   protected _setCalendarActiveDate(
     ...dates: (Date | null | undefined)[]
   ): void {
@@ -559,10 +540,7 @@ export abstract class IgcDatePickerBaseComponent<
     }
   }
 
-  /**
-   * Writes the value of the picker back onto the calendar. A read-only picker
-   * must do this itself, because the binding has nothing to commit again.
-   */
+  /** Writes the value back onto the calendar. A read-only picker has no binding change to commit it. */
   protected async _restoreCalendarSelection(): Promise<void> {
     await this._calendar.updateComplete;
 
@@ -612,14 +590,13 @@ export abstract class IgcDatePickerBaseComponent<
 
   protected _handleInputClick(event: Event): void {
     if (getElementFromPath('input', event)) {
-      // Open only if the click originates from the underlying input
+      // Open only for clicks on the underlying input.
       this._handleAnchorClick();
     }
   }
 
   protected _handleCalendarIconSlotPointerDown(event: PointerEvent): void {
-    // Keeps the `delegatesFocus` of the host from focusing the editor, which would enter
-    // an invalid state on blur as focus moves on to the calendar.
+    // Stops `delegatesFocus` from focusing the editor, which turns invalid on blur.
     event.preventDefault();
   }
 
@@ -701,11 +678,7 @@ export abstract class IgcDatePickerBaseComponent<
     `;
   }
 
-  /**
-   * The content for an editor of the picker: its icons and its prefix and
-   * suffix slots. The suffix identifies the editor if the picker renders more
-   * than one, for example `-start` and `-end`.
-   */
+  /** The icons and prefix/suffix slots of an editor. `suffix` identifies the editor, for example `-start`. */
   protected _renderEditorSlots(suffix = '') {
     const prefixSlot = `prefix${suffix}`;
     const suffixSlot = `suffix${suffix}`;
@@ -774,7 +747,7 @@ export abstract class IgcDatePickerBaseComponent<
   protected _renderActions() {
     const hasActions = this._slots.hasAssignedElements('actions');
 
-    // If in dialog mode use the dialog footer slot
+    // Dialog mode uses the dialog footer slot.
     return html`
       <div
         part="actions"

@@ -732,7 +732,6 @@ describe('Slider component', () => {
       slider.value = 50;
       await elementUpdated(slider);
 
-      // Simulate 2 presses
       simulateKeyboard(slider, homeKey, 2);
       await elementUpdated(slider);
 
@@ -749,7 +748,6 @@ describe('Slider component', () => {
       slider.value = 50;
       await elementUpdated(slider);
 
-      // Simulate 2 presses
       simulateKeyboard(slider, endKey, 2);
       await elementUpdated(slider);
 
@@ -1094,12 +1092,7 @@ describe('Slider component', () => {
     });
 
     it('is correctly initialized', async () => {
-      /**
-       * This tests for an issue where setting the lower/upper-bound attributes
-       * before the min/max ones, would incorrectly reset the *-bound attributes based
-       * on the min/max values.
-       */
-
+      // Bound attributes set before min/max must keep their values.
       expect(slider.value).to.equal(33);
       expect(slider.max).to.equal(200);
       expect(slider.min).to.equal(-200);
@@ -1118,8 +1111,7 @@ describe('Slider component', () => {
     });
 
     it('normalizes a value set before the constraint that invalidates it', async () => {
-      // Attributes are applied in markup order, so `value` is validated against
-      // the default `max` and only then does `max` narrow the scale.
+      // Attributes apply in markup order, so `value` meets the default `max` first.
       slider = await fixture<IgcSliderComponent>(
         html`<igc-slider value="100" max="50"></igc-slider>`
       );
@@ -1179,8 +1171,6 @@ describe('Slider component', () => {
     });
 
     it('should clamp an out-of-range default value on form reset', () => {
-      // Regression: reset used to restore the raw default, bypassing the
-      // value setter clamping and rendering an out-of-bounds track.
       spec.setAttributes({ value: 200 });
       spec.setProperties({ value: 50 });
       spec.reset();
@@ -1240,24 +1230,18 @@ function getDOM<T = HTMLElement>(slider: IgcSliderBaseComponent) {
   const root = slider.shadowRoot!;
 
   return {
-    /** Track element parts */
     track: {
-      /** The track element itself */
       get element() {
         return root.querySelector(`[part='track']`) as T;
       },
-      /** Track element fill part */
       get fill() {
         return root.querySelector(`[part='fill']`) as T;
       },
-      /** Track element steps part */
       get steps() {
         return root.querySelector(`[part='steps']`) as T;
       },
     },
-    /** Slider's thumb(s) */
     thumbs: {
-      /** The thumb element. */
       get current() {
         return root.querySelector(`[part='thumb']`) as T;
       },
@@ -1274,29 +1258,23 @@ function getDOM<T = HTMLElement>(slider: IgcSliderBaseComponent) {
         return root.querySelector(`[part='thumb-label']`) as T;
       },
     },
-    /** Slider ticks */
     ticks: {
-      /** All tick parts */
       get all() {
         return Array.from(root.querySelectorAll(`[part='tick']`)) as T[];
       },
-      /** Primary tick parts */
       get primary() {
         return Array.from(
           root.querySelectorAll(`[part='tick'][data-primary='true']`)
         ) as T[];
       },
-      /** Secondary tick parts */
       get secondary() {
         return Array.from(
           root.querySelectorAll(`[part='tick'][data-primary='false']`)
         ) as T[];
       },
-      /** Tick labels */
       get labels() {
         return Array.from(root.querySelectorAll(`[part='tick-label']`)) as T[];
       },
-      /** Tick labels inner part */
       get labelsInner() {
         return Array.from(
           root.querySelectorAll(`[part='tick-label-inner']`)

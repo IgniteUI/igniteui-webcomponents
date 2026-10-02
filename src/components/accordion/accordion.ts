@@ -48,9 +48,8 @@ export default class IgcAccordionComponent extends LitElement {
   }
 
   /**
-   * The interactive panels that the keyboard navigation can focus. A panel
-   * that is not rendered, for example with the `hidden` attribute, cannot
-   * take focus, so the navigation would stop at it.
+   * The interactive panels that keyboard navigation can focus.
+   * A panel that does not render (for example, `hidden`) cannot take focus.
    */
   private get _navigablePanels(): IgcExpansionPanelComponent[] {
     return this._interactivePanels.filter((panel) =>

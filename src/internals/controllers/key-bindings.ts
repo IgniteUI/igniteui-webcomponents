@@ -13,8 +13,8 @@ export * from './keys.js';
 //#region Modifiers and combination keys
 
 /**
- * Each modifier and the `KeyboardEvent` property it reads; `control` maps to
- * `ctrlKey`. The alphabetical order is what a combination key inherits.
+ * Each modifier and the `KeyboardEvent` property it reads. A combination key
+ * keeps this alphabetical order.
  */
 const MODIFIER_ENTRIES = [
   ['alt', 'altKey'],
@@ -68,7 +68,6 @@ function getActiveModifiers(event: KeyboardEvent): string[] {
   return active;
 }
 
-/** Whether `event` carries at least one active modifier. */
 function hasModifiers(event: KeyboardEvent): boolean {
   return event.altKey || event.ctrlKey || event.metaKey || event.shiftKey;
 }
@@ -239,7 +238,7 @@ class KeyBindingController {
     }
   }
 
-  /** Whether the event type matches the triggers of the binding. */
+  /** Whether the event type is a trigger. A repeated keydown needs `repeat`. */
   private _bindingMatches(binding: KeyBinding, event: KeyboardEvent): boolean {
     const triggers = binding.options?.triggers ?? ['keydown'];
 
@@ -266,8 +265,7 @@ class KeyBindingController {
     const element = this._element;
     const selector = this._skipSelector;
 
-    // The host carries the listeners. Only a `ref` puts the observed element
-    // deeper in the tree, where the path must confirm containment.
+    // The host carries the listeners, so a deeper element must be on the path.
     const needsContainmentCheck = element !== this._host;
 
     if (needsContainmentCheck || selector) {
@@ -299,21 +297,17 @@ class KeyBindingController {
 
   //#region Event handling
 
-  /**
-   * Clears the pressed keys on a global blur. No keyup arrives if the user
-   * moves to a different application or tab with a key down.
-   */
+  /** No keyup arrives when the user leaves the window with a key down. */
   private _handleGlobalBlur(): void {
     this._pressedKeys.clear();
   }
 
-  /** Handles a keyboard event on the observed element. */
   private _handleKeyEvent(event: KeyboardEvent): void {
     const key = event.key.toLowerCase();
     const isModifier = MODIFIERS.has(key);
 
     if (this._shouldSkip(event, key)) {
-      // A keyup always cleans up the key, also for an event that it skips.
+      // A skipped keyup still releases the key.
       if (!isModifier && isKeyup(event)) {
         this._pressedKeys.delete(key);
       }
@@ -327,8 +321,7 @@ class KeyBindingController {
     let binding: KeyBinding | undefined;
 
     if (!isModifier && !hasModifiers(event) && this._pressedKeys.size === 1) {
-      // Fast path: one key, no modifier. The combination is the key itself,
-      // so the lookup builds no arrays or strings.
+      // Fast path: a single key without modifiers is its own combination.
       binding = this._bindings.get(key);
     } else {
       const activeModifiers = getActiveModifiers(event);
@@ -339,9 +332,8 @@ class KeyBindingController {
       );
       binding = this._bindings.get(combination);
 
-      // Overlapping presses leave several regular keys down, so the full
-      // combination matches no single-key binding. Fall back to the current
-      // key, so its binding still runs while another key stays down.
+      // Overlapping presses leave several keys down. Fall back to the current
+      // key, so its binding still runs.
       if (!binding && this._pressedKeys.size > 1) {
         binding = this._bindings.get(
           createCombinationKey([key], activeModifiers)

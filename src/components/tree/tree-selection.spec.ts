@@ -490,7 +490,7 @@ describe('Tree Selection', () => {
       await elementUpdated(tree);
 
       TreeTestFunctions.verifyItemSelection(item11Children[1], false);
-      //al of item11 children are deselected
+      // All of item11's children are deselected
       expect(item1Children[0].indeterminate).to.be.false;
       TreeTestFunctions.verifyItemSelection(item1Children[0], false);
       TreeTestFunctions.verifyItemSelection(item1Children[1], true);
@@ -587,7 +587,7 @@ describe('Tree Selection', () => {
       item112.selected = true;
       await elementUpdated(tree);
 
-      //Deleting the only child of aselected parent should not affect its selection state
+      //Deleting the only child of a selected parent should not affect its selection state
       item11.removeChild(item112);
       TreeTestFunctions.verifyItemSelection(item11, true);
       expect(tree.items.length).to.equal(treeItemsLength - 2);

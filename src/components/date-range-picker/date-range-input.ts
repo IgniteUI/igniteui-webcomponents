@@ -153,7 +153,7 @@ export default class IgcDateRangeInputComponent extends EventEmitterMixin<
     delta: number | undefined,
     isDecrement: boolean
   ): void {
-    // If no value exists, set to today's date first
+    // With no value, start from today.
     const current = this._uncommittedValue;
 
     if (!current?.start && !current?.end) {
@@ -209,7 +209,6 @@ export default class IgcDateRangeInputComponent extends EventEmitterMixin<
       delta ?? this._datePartDeltas[range.part as keyof DatePartDeltas] ?? 1;
     const spinAmount = effectiveDelta * (isDecrement ? -1 : 1);
 
-    // For AM/PM spinning, extract the current AM/PM value from the mask
     const amPmValue = this._readAmPmFromMask(part);
 
     return this._parser.spinDateRangePart(
@@ -221,10 +220,7 @@ export default class IgcDateRangeInputComponent extends EventEmitterMixin<
     );
   }
 
-  /**
-   * Gets the date range part at the current cursor position.
-   * Returns undefined if the cursor sits outside any part - in the separator, say.
-   */
+  /** The range part at the cursor, or undefined outside any part (for example, in the separator). */
   protected override _getDatePartAtCursor(): DateRangePart | undefined {
     const part = this._parser.getPartForCursor(this._inputSelection.start);
 
@@ -233,10 +229,7 @@ export default class IgcDateRangeInputComponent extends EventEmitterMixin<
       : undefined;
   }
 
-  /**
-   * Gets the default date range part to target when the input is not focused.
-   * Returns the first date part at the start position.
-   */
+  /** The part to target when the input is not focused: the first start date part. */
   protected override _getDefaultDatePart(): DateRangePart | undefined {
     const firstPart = this._parser.getFirstDatePartForPosition(
       DateRangePosition.Start

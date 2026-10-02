@@ -204,8 +204,7 @@ describe('Combo', () => {
   const filterCombo = async (term: string) => {
     input.dispatchEvent(new CustomEvent('igcInput', { detail: term }));
     await elementUpdated(combo);
-    // _handleMainInput awaits its own updateComplete internally before
-    // setting the active index, scheduling a follow-up render.
+    // `_handleMainInput` sets the active index after its own `updateComplete`.
     await elementUpdated(combo);
     await layoutComplete(combo);
   };
@@ -660,8 +659,7 @@ describe('Combo', () => {
         ></igc-combo>`
       );
 
-      // The value setter resolves the first match only, so just one of the
-      // two 'a' records starts out selected.
+      // The value setter resolves only the first match, so one 'a' record is selected.
       combo.value = ['a'];
       await elementUpdated(combo);
 
@@ -672,8 +670,7 @@ describe('Combo', () => {
 
       await openComboPopover(combo);
 
-      // Selecting the twin resolves both 'a' records, one of which is already
-      // in the selection.
+      // The twin resolves both 'a' records. One is already selected.
       items(combo)[2].click();
       await elementUpdated(combo);
 
@@ -1387,7 +1384,6 @@ describe('Combo', () => {
       await elementUpdated(combo);
       await layoutComplete(combo);
 
-      // Verify we can only see one item in the list
       expect(items(combo)).lengthOf(1);
       expect(firstOf(items(combo)).innerText).to.equal('Sofia');
 
@@ -1396,39 +1392,29 @@ describe('Combo', () => {
       combo.select(selection);
       await elementUpdated(combo);
 
-      // The combo value should've updated
       expect(firstOf(combo.value)).to.equal(selection);
 
-      // Let's verify the list of items has been updated
+      // Clear the filter.
       searchInput.dispatchEvent(new CustomEvent('igcInput', { detail: '' }));
 
       await elementUpdated(combo);
       await layoutComplete(combo);
 
-      // Get a list of all selected items
       const selected = items(combo).filter((item) => item.selected);
 
-      // We should only see one item as selected
       expect(selected).lengthOf(1);
-
-      // It should match the one selected via the API
       expect(firstOf(selected).innerText).to.equal('New York');
     });
 
     it('should deselect item(s) even if the list of items has been filtered', async () => {
-      // Select an item via the API
       const selection = 'US01';
       combo.select(selection);
 
       await openComboPopover(combo);
 
-      // Get a list of all selected items
       let selected = items(combo).filter((item) => item.selected);
 
-      // We should only see one item as selected
       expect(selected).lengthOf(1);
-
-      // It should match the one selected via the API
       expect(firstOf(selected).innerText).to.equal('New York');
       expect(firstOf(combo.value)).to.equal(selection);
 
@@ -1438,7 +1424,6 @@ describe('Combo', () => {
       await elementUpdated(combo);
       await layoutComplete(combo);
 
-      // Verify we can only see one item in the list
       expect(items(combo)).lengthOf(1);
       expect(firstOf(items(combo)).innerText).to.equal('Sofia');
 
@@ -1446,19 +1431,16 @@ describe('Combo', () => {
       combo.deselect(selection);
       await elementUpdated(combo);
 
-      // The value should be updated
       expect(combo.value).to.be.empty;
 
-      // Verify the list of items has been updated
+      // Clear the filter.
       searchInput.dispatchEvent(new CustomEvent('igcInput', { detail: '' }));
 
       await elementUpdated(combo);
       await layoutComplete(combo);
 
-      // Get a list of all selected items again
       selected = items(combo).filter((item) => item.selected);
 
-      // No items should be selected
       expect(selected).to.be.empty;
     });
 
@@ -1583,15 +1565,13 @@ describe('Combo', () => {
     it('issue 1987 - do not close the dropdown on user pointer selection', async () => {
       await openComboPopover(combo);
 
-      // Trigger a pointerdown event inside the list element
       simulatePointerDown(list);
       await elementUpdated(combo);
 
-      // Then a click outside the list element (for example user selection with a pointer device)
+      // A pointer selection can end with a click outside the list.
       simulateClick(document.body);
       await elementUpdated(combo);
 
-      // The dropdown should remain open
       expect(combo.open).to.be.true;
     });
 
@@ -1647,7 +1627,7 @@ describe('Combo', () => {
       await filterCombo('sof');
       expect(items(combo)).lengthOf(1);
 
-      // Simulate click outside by dispatching blur without confirming a selection
+      // A blur without a selection simulates a click outside.
       simulateBlur(combo);
       await elementUpdated(combo);
 
@@ -1745,6 +1725,17 @@ describe('Combo', () => {
       await elementUpdated(input);
 
       expect(native.hasAttribute('aria-label')).to.be.false;
+    });
+
+    it('leaves the disabled state to the native input', async () => {
+      const native = input.renderRoot.querySelector('input')!;
+
+      combo.disabled = true;
+      await elementUpdated(combo);
+      await elementUpdated(input);
+
+      expect(native.disabled).to.be.true;
+      expect(native.hasAttribute('aria-disabled')).to.be.false;
     });
 
     it('should report posinset/setsize excluding group headers', async () => {
@@ -2111,9 +2102,9 @@ describe('Combo', () => {
     it('', async () => {
       const testParameters: ValidationContainerTestsParams<IgcComboComponent>[] =
         [
-          { slots: ['valueMissing'], props: { required: true } }, // value-missing slot
-          { slots: ['customError'] }, // custom-error slot
-          { slots: ['invalid'], props: { required: true } }, // invalid slot
+          { slots: ['valueMissing'], props: { required: true } },
+          { slots: ['customError'] },
+          { slots: ['invalid'], props: { required: true } },
         ];
 
       await runValidationContainerTests(IgcComboComponent, testParameters);

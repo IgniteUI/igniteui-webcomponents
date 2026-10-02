@@ -26,6 +26,21 @@ import { MaskParser } from './mask-parser.js';
 describe('Masked input', () => {
   before(() => defineComponents(IgcMaskInputComponent));
 
+  it('exposes `required` as `aria-required` on the native input', async () => {
+    const mask = await fixture<IgcMaskInputComponent>(
+      html`<igc-mask-input mask="000" required></igc-mask-input>`
+    );
+    const native = mask.renderRoot.querySelector('input')!;
+
+    expect(native.getAttribute('aria-required')).to.equal('true');
+    expect(native.hasAttribute('required')).to.be.false;
+
+    mask.required = false;
+    await elementUpdated(mask);
+
+    expect(native.hasAttribute('aria-required')).to.be.false;
+  });
+
   const parser = new MaskParser();
   const defaultPrompt = '_';
   const defaultMask = 'CCCCCCCCCC';
@@ -287,8 +302,7 @@ describe('Masked input', () => {
       element.setRangeText('', 0, 9);
       await elementUpdated(element);
 
-      // A focused editor shows the prompts it is being typed into, exactly as it does
-      // after deleting the same text by hand.
+      // A focused editor shows the prompts, as after a manual delete.
       expect(element.value).to.equal('');
       expect(input.value).to.equal(parser.emptyMask);
     });
@@ -303,8 +317,7 @@ describe('Masked input', () => {
       element.setRangeText('', 0, 9);
       await elementUpdated(element);
 
-      // Unfocused there is nothing to edit, so an empty value renders as an empty
-      // document and lets the placeholder through.
+      // An unfocused empty value renders empty and shows the placeholder.
       expect(element.value).to.equal('');
       expect(input.value).to.be.empty;
     });
@@ -522,8 +535,8 @@ describe('Masked input', () => {
       // value: 12--_45---67
       await elementUpdated(element);
 
-      // Emulate range shift on multiple backspace presses as
-      // it is not correctly reflected in test environment
+      // Emulate the range shift of repeated Backspace presses.
+      // The test environment does not reflect it.
       element.setSelectionRange(3, 4);
       simulateKeyboard(input, 'Backspace');
       simulateInput(input, {
@@ -703,8 +716,7 @@ describe('Masked input', () => {
 
     async function backspace(times = 1): Promise<void> {
       for (let i = 0; i < times; i++) {
-        // The browser has already removed the character by the time `input` fires, so the
-        // caret sits one position back.
+        // The browser removes the character before `input`, so the caret is one back.
         const caret = Math.max((input.selectionStart ?? 0) - 1, 0);
 
         simulateKeyboard(input, 'Backspace');
@@ -792,8 +804,7 @@ describe('Masked input', () => {
 
       await undo();
 
-      // A restore that round-tripped through the value setter would left-pack this
-      // to '12_-___'.
+      // The value setter would left-pack this to '12_-___'.
       expect(input.value).to.equal('1_2-___');
     });
 
@@ -1063,8 +1074,7 @@ describe('Masked input', () => {
     });
 
     it('refreshes the rendered masked value after form reset', async () => {
-      // Regression: the old restore path never requested an update, leaving
-      // the rendered masked value stale after a reset while valid.
+      // A valid reset must also update the rendered masked value.
       const bed = createFormAssociatedTestBed<IgcMaskInputComponent>(
         html`<igc-mask-input
           name="masked"
@@ -1244,10 +1254,10 @@ describe('Masked input', () => {
     it('', async () => {
       const testParameters: ValidationContainerTestsParams<IgcMaskInputComponent>[] =
         [
-          { slots: ['valueMissing'], props: { required: true } }, // value-missing slot
-          { slots: ['badInput'], props: { mask: '00-00', value: '1' } }, // bad-input slot
-          { slots: ['customError'] }, // custom-error slot
-          { slots: ['invalid'], props: { required: true } }, // invalid slot
+          { slots: ['valueMissing'], props: { required: true } },
+          { slots: ['badInput'], props: { mask: '00-00', value: '1' } },
+          { slots: ['customError'] },
+          { slots: ['invalid'], props: { required: true } },
         ];
 
       await runValidationContainerTests(IgcMaskInputComponent, testParameters);

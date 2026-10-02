@@ -83,7 +83,7 @@ export default class IgcCarouselSlideComponent extends LitElement {
       }),
     });
 
-    // Set carousel reference once provider is ready (addresses Blazor timing issue)
+    // Read the carousel when the provider is ready (Blazor timing).
     createAsyncContext(this, carouselContext, (carousel) => {
       this._carousel = carousel;
     });

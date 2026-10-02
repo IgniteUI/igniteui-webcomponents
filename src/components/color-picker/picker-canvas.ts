@@ -135,19 +135,15 @@ export default class IgcPickerCanvasComponent extends EventEmitterMixin<
       this.style.color = this.currentColor;
     }
 
-    // Given to the marker through a custom property, not an inline style on the
-    // marker, so that a consumer who styles `::part(marker)` can win. An inline
-    // style cannot be overridden.
+    // A custom property, not an inline style, so `::part(marker)` can override it.
     if (properties.has('markerColor')) {
       this.style.setProperty('--_marker-fill', this.markerColor);
     }
   }
 
   /**
-   * The canvas box and half-marker offsets every interaction measures against.
-   *
-   * Both reads force a layout, so a drag takes this once on pointerdown rather
-   * than on each of the frames it spans.
+   * Measures the canvas box and the half-marker offsets.
+   * Both reads force a layout, so a drag measures once on pointerdown.
    */
   private _measure(): CanvasGeometry {
     return {
@@ -156,10 +152,7 @@ export default class IgcPickerCanvasComponent extends EventEmitterMixin<
     };
   }
 
-  /**
-   * Clamps the marker inside the canvas and reports the position it settled on
-   * as saturation/value percentages.
-   */
+  /** Clamps the marker inside the canvas and emits its position as percentages. */
   private _commitPosition(
     x: number,
     y: number,
@@ -225,9 +218,8 @@ export default class IgcPickerCanvasComponent extends EventEmitterMixin<
   public getMarkerDimensions(): { width: number; height: number } {
     const marker = this._marker;
 
-    // Offsets, not a client rect. The marker is scaled up during a drag, and a
-    // rect reports the transformed box, which moves each position found
-    // against it.
+    // Use offsets. The marker scales up during a drag, and a client rect
+    // reports the scaled box.
     return marker
       ? { width: marker.offsetWidth / 2, height: marker.offsetHeight / 2 }
       : { width: 0, height: 0 };
@@ -242,9 +234,8 @@ export default class IgcPickerCanvasComponent extends EventEmitterMixin<
     const saturation = Math.round(this.saturation);
     const brightness = Math.round(this.brightness);
 
-    // ARIA has no two-dimensional slider, so the marker is one slider that
-    // tracks saturation, and `aria-valuetext` carries both axes. Without this,
-    // a vertical move is announced as "no change".
+    // ARIA has no 2D slider, so `aria-valuetext` carries both axes.
+    // Otherwise a vertical move is announced as "no change".
     return html`
       <div
         part=${partMap({ marker: true, dragging: this._dragging })}

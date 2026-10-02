@@ -503,8 +503,7 @@ function definePositioningSuites(mode: PositionMode) {
       return rect.top + rect.height / 2;
     }
 
-    // Main-axis edge and cross-axis alignment relations per placement,
-    // shared by both strategies.
+    // Main-axis edge and cross-axis alignment per placement, for both strategies.
     const MATRIX: Array<
       [PopoverPlacement, (f: DOMRect, a: DOMRect) => Array<[number, number]>]
     > = [
@@ -767,9 +766,8 @@ function definePositioningSuites(mode: PositionMode) {
   });
 
   describe('Anchor visibility', () => {
-    // The scroller sits mid-viewport so the popover, which keeps tracking the
-    // clipped anchor position, stays inside the viewport - the hit-test below
-    // then reflects only the hidden state, never off-screen geometry.
+    // The scroller sits mid-viewport, so the popover stays in the viewport and
+    // the hit-test reflects only the hidden state.
     function createClippedPopover() {
       return html`
         <div>
@@ -788,10 +786,8 @@ function definePositioningSuites(mode: PositionMode) {
       `;
     }
 
-    // The native strongly-hidden state from `position-visibility` is not
-    // reflected by checkVisibility() or computed styles - hit-testing is the
-    // one observable signal, and it also covers the fallback's inline
-    // `visibility: hidden`, since hidden elements are never hit-testable.
+    // checkVisibility() and computed styles miss the `position-visibility` hidden
+    // state. A hit-test detects it and the fallback `visibility: hidden` too.
     function isContentHitTestable(root: HTMLElement): boolean {
       const content = root.querySelector('p')!;
       const rect = content.getBoundingClientRect();
@@ -875,10 +871,8 @@ describe('Popover', () => {
     defineComponents(IgcPopoverComponent);
   });
 
-  // The same predicate that the component uses. The CSS tests alone are not
-  // enough. Chromium 125 to 132 passes them, but it ignores the `source`
-  // option of `showPopover`. A forced `native` strategy bypasses the
-  // predicate, so the suite must skip itself instead.
+  // The predicate of the component. A forced `native` strategy bypasses it, so
+  // the suite skips itself.
   const canUseNative = shouldUseNativeAnchorPositioning(
     document.createElement('div')
   );
@@ -900,8 +894,7 @@ describe('Popover', () => {
     });
   }
 
-  // Positioning-strategy-agnostic - the popover owns the document scroll
-  // listener and only notifies; whoever controls `open` closes it.
+  // Strategy-agnostic: the popover only notifies, and the owner of `open` closes it.
   describe('Scroll strategy', () => {
     let popover: IgcPopoverComponent;
     let scroller: HTMLElement;
@@ -1039,8 +1032,7 @@ describe('Popover', () => {
     });
   });
 
-  // floating-ui specific behavior - the native path has no positioning
-  // strategy concept (anchor positioning is layout-true under sticky).
+  // floating-ui only. The native path has no positioning strategy.
   describe('Positioning strategy [fallback]', () => {
     before(() => {
       setPopoverPositionStrategy('floating');

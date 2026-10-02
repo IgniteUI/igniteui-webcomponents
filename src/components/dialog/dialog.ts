@@ -3,12 +3,17 @@ import { property, state } from 'lit/decorators.js';
 import { createRef, ref } from 'lit/directives/ref.js';
 import { addAnimationController } from '#animations/player.js';
 import { fadeIn, fadeOut } from '#animations/presets/fade/index.js';
+import {
+  ariaBindings,
+  hostAria,
+} from '#internals/controllers/aria-projection.js';
 import { addCommandController } from '#internals/controllers/command.js';
 import { addSlotController, setSlots } from '#internals/controllers/slot.js';
 import { addToggleController } from '#internals/controllers/toggle.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import type { Constructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
+import { HostAriaMixin } from '#internals/mixins/host-aria.js';
 import { partMap } from '#internals/part-map.js';
 import { isPointInsideElement } from '#internals/utils/dom.js';
 import { bindIf } from '#internals/utils/lit.js';
@@ -67,7 +72,7 @@ const nextId = createIdGenerator('title');
 export default class IgcDialogComponent extends EventEmitterMixin<
   IgcDialogComponentEventMap,
   Constructor<LitElement>
->(LitElement) {
+>(HostAriaMixin(LitElement)) {
   public static readonly tagName = 'igc-dialog';
   public static styles = [styles, shared];
 
@@ -91,8 +96,7 @@ export default class IgcDialogComponent extends EventEmitterMixin<
     transition: async (open) => {
       if (open) {
         this.open = true;
-        // A superseded exit clears this too, but only once its animation
-        // reports the cancellation - too late for this render.
+        // A superseded exit also clears this, but too late for this render.
         this._animating = false;
         return this._player.playExclusive(fadeIn());
       }
@@ -110,9 +114,7 @@ export default class IgcDialogComponent extends EventEmitterMixin<
     },
   });
 
-  /**
-   * Backdrop animation helper.
-   */
+  /** Backdrop animation helper. */
   @state()
   private _animating = false;
 
@@ -237,9 +239,8 @@ export default class IgcDialogComponent extends EventEmitterMixin<
   }
 
   private _handleClose(): void {
-    // A close event that cannot be cancelled, for example from repeated Escape
-    // presses, leaves the backdrop visible. Open the dialog again. This handler
-    // runs only if `keepOpenOnEscape` is true.
+    // An uncancelable close, e.g. from repeated Escape presses with
+    // `keepOpenOnEscape`, leaves the backdrop visible. Reopen the dialog.
     if (this.open) {
       this._dialog?.showModal();
     }
@@ -359,8 +360,7 @@ export default class IgcDialogComponent extends EventEmitterMixin<
         ${ref(this._dialogRef)}
         part=${partMap({ base: true, titled: hasTitle, footed: hasFooter })}
         role="dialog"
-        aria-label=${bindIf(this.ariaLabel, this.ariaLabel)}
-        aria-labelledby=${bindIf(!this.ariaLabel, this._titleId)}
+        ${ariaBindings(hostAria(this, !this.ariaLabel && this._titleId))}
         @click=${this._handleClick}
         @cancel=${this._handleCancel}
         @close=${bindIf(this.keepOpenOnEscape, this._handleClose)}

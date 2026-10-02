@@ -39,6 +39,7 @@
     - [defaultValue](#defaultvalue)
     - [Validation message slots](#validation-message-slots)
     - [External label association](#external-label-association)
+    - [Host ARIA](#host-aria)
     - [Not covered by the suite](#not-covered-by-the-suite)
   - [Accessibility](#accessibility)
     - [ARIA roles and properties](#aria-roles-and-properties)
@@ -47,13 +48,15 @@
 
 ## Revision history
 
-| Version | Date       | Notes                                              |
-| ------: | ---------- | -------------------------------------------------- |
-|       1 | 2026-09-21 | Initial specification                              |
-|       2 | 2026-09-23 | Correct the `type-mismatch` slot description       |
-|       3 | 2026-09-24 | Describe the naming order and the host ARIA naming |
-|       4 | 2026-10-02 | Focus the first invalid control on a failed submit |
-|       5 | 2026-10-02 | Send `invalid` only on checks and submits          |
+| Version | Date       | Notes                                                                                      |
+| ------: | ---------- | ------------------------------------------------------------------------------------------ |
+|       1 | 2026-09-21 | Initial specification                                                                      |
+|       2 | 2026-09-23 | Correct the `type-mismatch` slot description                                               |
+|       3 | 2026-09-24 | Describe the naming order and the host ARIA naming                                         |
+|       4 | 2026-10-02 | Focus the first invalid control on a failed submit                                         |
+|       5 | 2026-10-02 | Send `invalid` only on checks and submits                                                  |
+|       6 | 2026-10-02 | `setRangeText()` without a range replaces the selection; `pattern` matches the whole value |
+|       7 | 2026-10-02 | Forward the host `aria-describedby`                                                        |
 
 ## Overview
 
@@ -238,6 +241,7 @@ The validators applied depend on the `type`:
 | all others    | `required`, `minlength`, `maxlength`, `pattern`, type check |
 
 The type check covers `email` and `url`, which set `typeMismatch` when the value is not a valid address or URL.
+As for a native control, `pattern` must match the whole value: `[0-9]{3}` accepts `123`, but not `1234`.
 
 With `validate-only`, the length and range constraints are evaluated but not enforced on the native element, so the
 end-user can type a value that violates them and see an error message instead of being silently blocked:
@@ -291,6 +295,9 @@ const input = document.querySelector('igc-input')!;
 input.select();
 input.setSelectionRange(0, 4);
 input.setRangeText('new', 0, 4, 'select');
+
+// Replaces the selection, and puts the cursor after the new text.
+input.setRangeText('{first_name}', undefined, undefined, 'end');
 
 // type="number"
 input.stepUp();
@@ -356,7 +363,7 @@ interacted with and fails validation reads `true` even if it was never set expli
 | blur              | `(): void`                                                                                    | Removes focus from the control.                                         |
 | select            | `(): void`                                                                                    | Selects all the text inside the input.                                  |
 | setSelectionRange | `(start?: number, end?: number, direction?: SelectionRangeDirection): void`                   | Sets the text selection range of the control.                           |
-| setRangeText      | `(replacement: string, start?: number, end?: number, selectMode?: RangeTextSelectMode): void` | Replaces the selected text in the input.                                |
+| setRangeText      | `(replacement: string, start?: number, end?: number, selectMode?: RangeTextSelectMode): void` | Replaces the text from `start` to `end`, or the selection without them. |
 | stepUp            | `(n?: number): void`                                                                          | Increments the numeric value of the input by one or more steps.         |
 | stepDown          | `(n?: number): void`                                                                          | Decrements the numeric value of the input by one or more steps.         |
 | checkValidity     | `(): boolean`                                                                                 | Checks validity and emits `invalid` when the control is invalid.        |
@@ -443,7 +450,7 @@ The groups below mirror the `describe` blocks of the suite.
 ### Methods
 
 15. `stepUp` and `stepDown` increment and decrement the value.
-16. `setRangeText` replaces the given range.
+16. `setRangeText` replaces the given range, and the selection when it gets no range.
 17. `focus` and `blur` move focus to and from the inner input.
 
 ### Events
@@ -485,7 +492,7 @@ Driven by `createFormAssociatedTestBed`.
 33. Form integration - correct initial state, correct submission, correct reset, submission on <kbd>Enter</kbd>, and
     no submission on <kbd>Enter</kbd> while the value is invalid.
 34. Validation - a passing and a failing case for each of required, minlength, maxlength, pattern, email schema, url
-    schema, min, max and step.
+    schema, min, max and step. A pattern that matches only a part of the value fails.
 
 ### Validation message slots
 
@@ -511,6 +518,11 @@ Generated by `runExternalLabelAssociationTests`.
     from the first focus, an axe audit passes with only an external `label`, and the host `aria-labelledby` and
     `aria-label` follow the [naming order](#naming-order).
 
+### Host ARIA
+
+45. The shared host description suite: the host `aria-describedby` describes the native control after the helper
+    text, and follows a change and a removal.
+
 ### Not covered by the suite
 
 The following documented behaviors have no dedicated case yet: `select`, `setSelectionRange`, the `validateOnly`
@@ -528,6 +540,7 @@ mode, the `outlined` property, and the forwarding of `inputmode` and `autocomple
   the current description or validation message is announced.
 - The validation message region is announced politely through the validation container.
 - The required, disabled and read-only states come from the native attributes on the inner input.
+- A host `aria-describedby` describes the native control after the helper text, by element reference.
 
 ### Keyboard support
 

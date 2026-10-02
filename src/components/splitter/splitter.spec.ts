@@ -66,8 +66,7 @@ describe('Splitter', () => {
       const bar = getSplitterPart(splitter, BAR_PART);
       expect(bar.getAttribute('role')).to.equal('separator');
 
-      // The name states what the separator does; the collapsed/expanded state
-      // is a description, so the name does not change as panes collapse.
+      // The collapsed state is in the description, so the name stays the same.
       const label = splitter.shadowRoot!.querySelector('#splitter-label')!;
       const state = splitter.shadowRoot!.querySelector('#splitter-state')!;
 
@@ -1125,8 +1124,7 @@ describe('Splitter', () => {
       }
 
       currentSizes = getPanesSizes(splitter, 'width');
-      // should stop exactly at maxSize (400px) - the pane sizes now sum to the
-      // available space, so flex-shrink no longer eats into the constraint
+      // should stop at maxSize (400px); flex-shrink does not reduce it
       expect(currentSizes.startSize).to.be.closeTo(400, 2);
 
       splitter.orientation = 'vertical';
@@ -1301,8 +1299,8 @@ describe('Splitter', () => {
       simulateKeyboard(bar, homeKey);
       await elementUpdated(splitter);
 
-      // Home/End go through the same pipeline as a drag, so the resulting unit
-      // follows the pane it is applied to - both were `auto`, hence percentages.
+      // Home/End use the drag path. Both panes were `auto`, so the result is
+      // a percentage.
       const minPercent = roundPrecise(asPercent(100, containerSize), 2);
       expect(splitter.startSize).to.equal(`${minPercent}%`);
       expect(splitter.endSize).to.equal(
@@ -1903,7 +1901,6 @@ describe('Splitter', () => {
       const initialCombinedSize = initialSizes.startSize + initialSizes.endSize;
 
       // Try to grow start pane to max, but end pane has min (150px)
-      // Result: Start pane can only grow as much as end pane allows
       const delta = 1000;
       await resize(constraintSplitter, isX ? delta : 0, isX ? 0 : delta);
 
@@ -1947,7 +1944,6 @@ describe('Splitter', () => {
       const initialCombinedSize = initialSizes.startSize + initialSizes.endSize;
 
       // Try to grow start pane to max (80%), but end pane has min (30%)
-      // Result: Start pane can only grow as much as end pane allows
       const delta = 1000;
       await resize(constraintSplitter, isX ? delta : 0, isX ? 0 : delta);
 
@@ -1995,8 +1991,8 @@ describe('Splitter', () => {
       const isX = orientation === 'horizontal';
       const axis = isX ? 'width' : 'height';
       const totalAvailable = getTotalSize(mixedConstraintSplitter, axis);
-      // `max-width: 50%` resolves against the container in CSS, and the drag
-      // math now uses that same basis.
+      // CSS resolves `max-width: 50%` against the container, and so does the
+      // drag math.
       const expectedStartMax = Math.round(
         (getContainerSize(mixedConstraintSplitter, axis) * 50) / 100
       );
@@ -2052,7 +2048,6 @@ describe('Splitter', () => {
       const initialCombinedSize = initialSizes.startSize + initialSizes.endSize;
 
       // Try to grow start pane to max, but end pane has min (150px)
-      // Result: Start pane can only grow as much as end pane allows
       const delta = 1000;
       await resize(constraintSplitter, isX ? delta : 0, isX ? 0 : delta);
 
@@ -2094,7 +2089,6 @@ describe('Splitter', () => {
       const initialCombinedSize = initialSizes.startSize + initialSizes.endSize;
 
       // Try to grow start pane to max (80%), but end pane has min (30%)
-      // Result: Start pane can only grow as much as end pane allows
       const delta = 1000;
       await resize(constraintSplitter, isX ? delta : 0, isX ? 0 : delta);
 
@@ -2412,7 +2406,7 @@ describe('Splitter', () => {
       const initialSizes = getPanesSizes(splitter, 'width');
       const initialTotal = getTotalSize(splitter, 'width');
 
-      // increase tolerance to 3px to account for rounding differences in percentage calculations across browsers
+      // 3px tolerance for cross-browser rounding of percentages
       expect(initialSizes.startSize).to.be.closeTo(initialTotal * 0.25, 3);
       expect(initialSizes.endSize).to.be.closeTo(initialTotal * 0.5, 3);
 
@@ -2505,7 +2499,7 @@ describe('Splitter', () => {
       bar.focus();
       await elementUpdated(splitter);
 
-      // arrowLeft should increase start pane size in RTL, as opposed to LTR, where arrowLeft decreases it
+      // In RTL, arrowLeft increases the start pane size
       simulateKeyboard(bar, arrowLeft);
       await elementUpdated(splitter);
 
@@ -3032,8 +3026,8 @@ describe('Splitter', () => {
 
       expect(splitter.startSize).to.equal('300px');
 
-      // The stale snapshot is dropped wholesale - keeping the end pane's share
-      // would over-subscribe the container and shrink both panes.
+      // Both saved sizes are dropped, or the end pane over-subscribes the
+      // container.
       const sizes = getPanesSizes(splitter, 'width');
       expect(sizes.startSize).to.equal(300);
       expect(sizes.startSize + sizes.endSize).to.equal(

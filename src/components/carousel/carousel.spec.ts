@@ -435,7 +435,7 @@ describe('Carousel', () => {
       expect(animation).to.be.false;
       expect(carousel.current).to.equal(2);
 
-      // select fist slide by index
+      // select first slide by index
       animation = await carousel.select(0);
       expect(animation).to.be.true;
       expect(carousel.current).to.equal(0);
@@ -803,7 +803,7 @@ describe('Carousel', () => {
         carousel.dispatchEvent(new PointerEvent('pointerenter'));
         await elementUpdated(carousel);
 
-        // loose focus
+        // lose focus
         carousel.dispatchEvent(new FocusEvent('focusout'));
         await elementUpdated(carousel);
 
@@ -860,7 +860,7 @@ describe('Carousel', () => {
         expect(carousel.isPaused).to.be.true;
         expect(carousel.current).to.equal(0);
 
-        // loose focus
+        // lose focus
         carousel.dispatchEvent(new FocusEvent('focusout'));
         await elementUpdated(carousel);
 

@@ -65,7 +65,6 @@ describe('Input component', () => {
 
         expect(element.renderRoot.querySelector('[part="notch"]')).to.exist;
 
-        // Reset theme
         configureTheme('bootstrap');
         await nextFrame();
       });
@@ -272,6 +271,21 @@ describe('Input component', () => {
         expect(element.value).to.equal('the slow brown fox');
       });
 
+      it('setRangeText() replaces the selection without a range', async () => {
+        await createFixture(
+          html`<igc-input value="the quick brown fox"></igc-input>`
+        );
+
+        element.setSelectionRange(4, 9);
+        element.setRangeText('slow');
+        expect(element.value).to.equal('the slow brown fox');
+
+        element.setSelectionRange(3, 3);
+        element.setRangeText(',', undefined, undefined, 'end');
+        expect(element.value).to.equal('the, slow brown fox');
+        expect([input.selectionStart, input.selectionEnd]).to.eql([4, 4]);
+      });
+
       it('focus() and blur()', async () => {
         await createFixture(html`<igc-input></igc-input>`);
 
@@ -310,9 +324,8 @@ describe('Input component', () => {
       });
 
       /**
-       * The label activation behavior re-dispatches the click on the input it
-       * labels, so a single user click must not leave the shadow root twice -
-       * consumers such as `igc-combo` and `igc-select` toggle on it.
+       * Label activation re-dispatches the click on the input. One user click
+       * must leave the shadow root once: `igc-combo` and `igc-select` toggle on it.
        */
       it('lets a single click escape the shadow root when the label is clicked', async () => {
         await createFixture(html`<igc-input label="Label"></igc-input>`);
@@ -424,13 +437,11 @@ describe('Input component', () => {
     it('should not enter `invalid` state when not dirty and pristine with dynamic validator props', () => {
       expect(input.invalid).to.be.false;
 
-      // Set required property on a pristine, non-touched input
-      // Invalid styles should not be applied
+      // A pristine, untouched input stays valid.
       input.required = true;
       expect(input.invalid).to.be.false;
 
-      // Transition to "touched" state
-      // Invalid styles should be applied
+      // A touched input becomes invalid.
       input.focus();
       input.blur();
       expect(input.invalid).to.be.true;
@@ -784,6 +795,16 @@ describe('Input component', () => {
         spec.assertSubmitPasses();
       });
 
+      it('fails pattern validation when the pattern matches a part of the value', () => {
+        spec.setProperties({ pattern: '[0-9]{3}', defaultValue: '1234' });
+
+        spec.assertIsPristine();
+        spec.assertSubmitFails();
+
+        spec.setProperties({ pattern: 'cat|dog', defaultValue: 'cats' });
+        spec.assertSubmitFails();
+      });
+
       it('fails email schema validation', () => {
         spec.setProperties({ type: 'email', defaultValue: '123' });
 
@@ -863,31 +884,31 @@ describe('Input component', () => {
     it('', async () => {
       const testParameters: ValidationContainerTestsParams<IgcInputComponent>[] =
         [
-          { slots: ['valueMissing'], props: { required: true } }, // value-missing slot
-          { slots: ['typeMismatch'], props: { type: 'email', value: 'a' } }, // type-mismatch slot
+          { slots: ['valueMissing'], props: { required: true } },
+          { slots: ['typeMismatch'], props: { type: 'email', value: 'a' } },
           {
             slots: ['patternMismatch'],
             props: { pattern: 'd{3}', value: 'a' },
-          }, // pattern-mismatch slot
-          { slots: ['tooLong'], props: { maxLength: 3, value: '123123' } }, // too-long slot
-          { slots: ['tooShort'], props: { minLength: 3, value: 'a' } }, // too-short slot
+          },
+          { slots: ['tooLong'], props: { maxLength: 3, value: '123123' } },
+          { slots: ['tooShort'], props: { minLength: 3, value: 'a' } },
           {
             slots: ['rangeOverflow'],
-            props: { type: 'number', max: 3, value: '5' }, // range-overflow slot
+            props: { type: 'number', max: 3, value: '5' },
           },
           {
             slots: ['rangeUnderflow'],
             props: { type: 'number', min: 3, value: '-3' },
-          }, // range-underflow
+          },
           {
             slots: ['stepMismatch'],
-            props: { type: 'number', step: 2, value: '3' }, // step-mismatch slot
+            props: { type: 'number', step: 2, value: '3' },
           },
-          { slots: ['customError'] }, // custom-error slot
-          { slots: ['invalid'], props: { required: true } }, // invalid slot
+          { slots: ['customError'] },
+          { slots: ['invalid'], props: { required: true } },
           {
             slots: ['typeMismatch', 'tooShort'],
-            props: { type: 'email', minLength: 8, value: 'a' }, // multiple validation slots
+            props: { type: 'email', minLength: 8, value: 'a' },
           },
         ];
 

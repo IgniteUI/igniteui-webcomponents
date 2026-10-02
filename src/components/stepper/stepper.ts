@@ -304,11 +304,9 @@ export default class IgcStepperComponent extends EventEmitterMixin<
     const steps = this._state.steps;
 
     if (steps.indexOf(nextStep) > steps.indexOf(currentStep)) {
-      // Animate steps in ascending/next direction
       currentStep.toggleAnimation('out');
       nextStep.toggleAnimation('in');
     } else {
-      // Animate steps in descending/previous direction
       currentStep.toggleAnimation('in', 'reverse');
       nextStep.toggleAnimation('out', 'reverse');
     }

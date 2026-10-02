@@ -124,10 +124,7 @@ interface MockInputEventConfig extends InputEventInit {
   /** The value to set on the passed input */
   value?: string;
 
-  /**
-   * Whether to skip setting the value to the input target.
-   * Useful when the test scenario cares for the handling of the event.
-   */
+  /** Skips the value assignment, so that only the event fires. */
   skipValueProperty?: boolean;
 }
 
@@ -191,9 +188,7 @@ export function simulateKeyboard(
   }
 }
 
-/**
- * Simulates scrolling for a given element.
- */
+/** Simulates scrolling for a given element. */
 export async function simulateScroll(
   node: Element,
   options?: ScrollToOptions
@@ -204,9 +199,7 @@ export async function simulateScroll(
   await nextFrame();
 }
 
-/**
- * Simulates a wheel event for a given element.
- */
+/** Simulates a wheel event for a given element. */
 export function simulateWheel(node: Element, options?: WheelEventInit): void {
   node.dispatchEvent(
     new WheelEvent('wheel', { bubbles: true, composed: true, ...options })
