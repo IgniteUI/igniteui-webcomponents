@@ -253,11 +253,6 @@ export default class IgcDateRangePickerComponent extends EventEmitterMixin<
     return this.useTwoInputs ? Array.from(this._inputs) : [this._input];
   }
 
-  /** The editor of single editor operations - the start one when the range is split. */
-  private get _startEditor(): PickerEditor {
-    return firstOf(this._editors);
-  }
-
   private get _firstDefinedInRange(): Date | null {
     return this.value?.start ?? this.value?.end ?? null;
   }
@@ -308,7 +303,7 @@ export default class IgcDateRangePickerComponent extends EventEmitterMixin<
   }
 
   protected override _focusInput(): void {
-    this._startEditor.focus();
+    firstOf(this._editors).focus();
   }
 
   protected override _focusAndSelectInput(): void {
@@ -325,8 +320,10 @@ export default class IgcDateRangePickerComponent extends EventEmitterMixin<
     }
   }
 
+  /** Points the calendar at the current range, in the first rendered month. */
   protected override _syncCalendarOnToggle(): void {
-    this._setCalendarActiveDateAndViewIndex();
+    this._setCalendarActiveDate(this._firstDefinedInRange);
+    this._calendar['_activeDaysViewIndex'] = 0;
   }
 
   protected override _clearEditors(): void {
@@ -611,14 +608,6 @@ export default class IgcDateRangePickerComponent extends EventEmitterMixin<
 
   protected _revertValue() {
     this.value = this._oldValue;
-  }
-
-  /** Points the calendar at the current range, in the first rendered month. */
-  private _setCalendarActiveDateAndViewIndex() {
-    const activeDaysViewIndex = '_activeDaysViewIndex';
-
-    this._setCalendarActiveDate(this._firstDefinedInRange);
-    this._calendar[activeDaysViewIndex] = 0;
   }
 
   /** Builds the range from both editors. The other editor is read through its uncommitted draft. */

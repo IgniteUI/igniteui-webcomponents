@@ -324,8 +324,8 @@ Setting `value` from code does not emit `igcChange`, and neither does an interac
 
 ### Host ARIA
 
-25. The shared host description suite: the host `aria-describedby` describes the native control after the helper
-    text, and follows a change and a removal.
+25. The shared host description suite: the host `aria-describedby` describes the slider element, and follows a
+    change and a removal. The rating has no helper text, so the suite checks no description order.
 
 ### Not covered by the suite
 
@@ -352,7 +352,7 @@ Setting `value` from code does not emit `igcChange`, and neither does an interac
 - A click on an external `label` focuses the slider.
 - `aria-disabled` and `aria-readonly` expose the two states.
 - The rendered symbols are hidden from assistive technology; the slider and its value text carry the semantics.
-- A host `aria-describedby` describes the native control after the helper text, by element reference.
+- A host `aria-describedby` describes the slider element, by element reference.
 
 ### Keyboard support
 

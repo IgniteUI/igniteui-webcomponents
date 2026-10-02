@@ -164,8 +164,7 @@ class RecycleDirective extends Directive {
    * 4. The reused parts in the heaviest subsequence that keeps its old order
    *    do not move, see `KEPT_WEIGHT`. A kept part that holds the focus
    *    weighs more than all the other parts together, so it does not move and
-   *    keeps the focus. Each other part moves in front of its successor,
-   *    unless it is already there.
+   *    keeps the focus.
    */
   private _reconcile(
     containerPart: ChildPart,

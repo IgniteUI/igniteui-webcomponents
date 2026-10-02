@@ -57,15 +57,9 @@ function sortModifiers(modifiers: string[]): string[] {
 
 /** Returns the modifiers active for `event`, already sorted. */
 function getActiveModifiers(event: KeyboardEvent): string[] {
-  const active: string[] = [];
-
-  for (const [name, property] of MODIFIER_ENTRIES) {
-    if (event[property]) {
-      active.push(name);
-    }
-  }
-
-  return active;
+  return MODIFIER_ENTRIES.filter(([, property]) => event[property]).map(
+    ([name]) => name
+  );
 }
 
 function hasModifiers(event: KeyboardEvent): boolean {
@@ -88,12 +82,7 @@ function createCombinationKey(keys: string[], modifiers: string[]): string {
 type KeyBindingHandler = (event: KeyboardEvent) => void;
 type KeyBindingObserverCleanup = { unsubscribe: () => void };
 
-/**
- * Whether the controller must ignore the current event.
- *
- * @param node - The target of the event.
- * @param event - The event.
- */
+/** Whether the controller must ignore the event. `node` is its target. */
 type KeyBindingSkipCallback = (node: Element, event: KeyboardEvent) => boolean;
 
 /** The event type that starts the bound handler. */
@@ -107,19 +96,6 @@ interface KeyBindingControllerOptions {
    * The key presses that the controller ignores. CSS selectors match against
    * the composed path of the event; a {@link KeyBindingSkipCallback} decides
    * per event instead. Defaults to `['input', 'textarea', 'select']`.
-   *
-   * @example
-   * ```ts
-   * {
-   *  // Skip events originating from elements with `readonly` attribute
-   *  skip: ['[readonly]']
-   * }
-   * ...
-   * {
-   * // Same as above but with a callback
-   *  skip: (node: Element) => node.hasAttribute('readonly')
-   * }
-   * ```
    */
   skip?: string[] | KeyBindingSkipCallback;
   /** Default options for every binding. A `set` call merges over them. */
@@ -146,10 +122,6 @@ interface KeyBinding {
 //#endregion
 
 //#region Internal functions and constants
-
-function isKeydown(event: Event): boolean {
-  return event.type === 'keydown';
-}
 
 function isKeyup(event: Event): boolean {
   return event.type === 'keyup';
@@ -184,10 +156,7 @@ class KeyBindingController {
   private _observedElement?: Element;
 
   private get _element(): Element {
-    if (this._observedElement) {
-      return this._observedElement;
-    }
-    return this._ref?.value || this._host;
+    return this._observedElement ?? this._ref?.value ?? this._host;
   }
 
   //#endregion
@@ -202,7 +171,6 @@ class KeyBindingController {
     this._host = host;
     this._ref = options?.ref;
 
-    // Host options merge over the defaults instead of replacing them.
     this._bindingDefaults = {
       ...defaults.bindingDefaults,
       ...options?.bindingDefaults,
@@ -224,7 +192,6 @@ class KeyBindingController {
 
   //#region Private API
 
-  /** Applies the event options of the binding to the keyboard event. */
   private _applyEventModifiers(
     binding: KeyBinding,
     event: KeyboardEvent
@@ -242,15 +209,10 @@ class KeyBindingController {
   private _bindingMatches(binding: KeyBinding, event: KeyboardEvent): boolean {
     const triggers = binding.options?.triggers ?? ['keydown'];
 
-    if (isKeydown(event) && triggers.includes('keydown')) {
-      return !event.repeat || Boolean(binding.options?.repeat);
-    }
-
-    if (isKeyup(event) && triggers.includes('keyup')) {
-      return true;
-    }
-
-    return false;
+    return (
+      triggers.includes(event.type as KeyBindingTrigger) &&
+      (isKeyup(event) || !event.repeat || !!binding.options?.repeat)
+    );
   }
 
   /**
@@ -296,11 +258,6 @@ class KeyBindingController {
   //#endregion
 
   //#region Event handling
-
-  /** No keyup arrives when the user leaves the window with a key down. */
-  private _handleGlobalBlur(): void {
-    this._pressedKeys.clear();
-  }
 
   private _handleKeyEvent(event: KeyboardEvent): void {
     const key = event.key.toLowerCase();
@@ -359,7 +316,8 @@ class KeyBindingController {
         this._handleKeyEvent(event as KeyboardEvent);
         break;
       case 'blur':
-        this._handleGlobalBlur();
+        // No keyup arrives when the user leaves the window with a key down.
+        this._pressedKeys.clear();
         break;
     }
   }
@@ -432,10 +390,6 @@ class KeyBindingController {
 
 /**
  * Creates a {@link KeyBindingController}, and adds it to the given host.
- *
- * @param element - The host element of the controller.
- * @param options - The configuration of the controller.
- * @returns The new controller.
  *
  * @example
  * ```ts

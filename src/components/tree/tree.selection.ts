@@ -1,4 +1,4 @@
-import { isEmpty } from '#internals/utils/arrays.js';
+import { isEmpty, lastOf } from '#internals/utils/arrays.js';
 import type IgcTreeItemComponent from './tree-item.js';
 import type { TreeSelectionEventInit } from './tree.common.js';
 import type IgcTreeComponent from './tree.js';
@@ -40,7 +40,7 @@ export class IgcTreeSelectionService {
 
     const items = this._tree.items;
     const selected = this._selectedSnapshot();
-    const lastSelectedIndex = items.indexOf(selected[selected.length - 1]);
+    const lastSelectedIndex = items.indexOf(lastOf(selected));
     const currentIndex = items.indexOf(item);
 
     const range = items.slice(
@@ -98,7 +98,6 @@ export class IgcTreeSelectionService {
       return;
     }
 
-    // Nothing to reconcile if no item is in a selected or indeterminate state.
     if (isEmpty(this._itemSelection) && isEmpty(this._indeterminateItems)) {
       return;
     }
@@ -179,50 +178,35 @@ export class IgcTreeSelectionService {
       return;
     }
 
-    if (this._isCascade) {
-      this._emitCascadeSelectionEvent(currSelection, added, removed);
+    if (!this._isCascade) {
+      if (this._confirmSelection(newSelection)) {
+        this._itemSelection = new Set(newSelection);
+        this._updateItemsState(currSelection);
+      }
       return;
     }
 
-    const args: TreeSelectionEventInit = {
-      detail: { newSelection },
-      cancelable: true,
-    };
-
-    if (!this._tree.emitEvent('igcSelection', args)) {
-      return;
-    }
-
-    // if newSelection is overwritten do not proceed (Blazor)
-    if (this._sameSelection(newSelection, args.detail.newSelection)) {
-      this._itemSelection = new Set(newSelection);
-      this._updateItemsState(currSelection);
-    }
-  }
-
-  private _emitCascadeSelectionEvent(
-    currSelection: IgcTreeItemComponent[],
-    added: IgcTreeItemComponent[],
-    removed: IgcTreeItemComponent[]
-  ): void {
     const oldIndeterminate = this._indeterminateSnapshot();
     const state = this._calculateCascadeState(currSelection, added, removed);
-    const newSelection = Array.from(state.selected);
 
-    const args: TreeSelectionEventInit = {
-      detail: { newSelection },
-      cancelable: true,
-    };
-
-    if (!this._tree.emitEvent('igcSelection', args)) {
-      return;
-    }
-
-    // if newSelection is overwritten do not proceed (Blazor)
-    if (this._sameSelection(newSelection, args.detail.newSelection)) {
+    if (this._confirmSelection(Array.from(state.selected))) {
       this._commit(state);
       this._updateItemsState(currSelection, oldIndeterminate);
     }
+  }
+
+  /** Emits `igcSelection` and returns whether to apply `newSelection`. */
+  private _confirmSelection(newSelection: IgcTreeItemComponent[]): boolean {
+    const args: TreeSelectionEventInit = {
+      detail: { newSelection },
+      cancelable: true,
+    };
+
+    // An overwritten `newSelection` (Blazor) does not apply.
+    return (
+      this._tree.emitEvent('igcSelection', args) &&
+      this._sameSelection(newSelection, args.detail.newSelection)
+    );
   }
 
   //#endregion
@@ -292,13 +276,9 @@ export class IgcTreeSelectionService {
   /** Applies `selected` to each item and its descendants, then reconciles ancestors. */
   private _cascadeInto(
     state: CascadeState,
-    items: IgcTreeItemComponent[] | undefined,
+    items: IgcTreeItemComponent[],
     selected: boolean
   ): void {
-    if (!items || isEmpty(items)) {
-      return;
-    }
-
     const parents: ItemSet = new Set();
 
     for (const item of items) {
@@ -364,19 +344,12 @@ export class IgcTreeSelectionService {
     select: boolean,
     indeterminate = false
   ): void {
-    if (indeterminate) {
-      state.indeterminate.add(item);
-      state.selected.delete(item);
-      return;
-    }
-
-    if (select) {
-      state.selected.add(item);
-      state.indeterminate.delete(item);
-    } else {
-      state.selected.delete(item);
-      state.indeterminate.delete(item);
-    }
+    select && !indeterminate
+      ? state.selected.add(item)
+      : state.selected.delete(item);
+    indeterminate
+      ? state.indeterminate.add(item)
+      : state.indeterminate.delete(item);
   }
 
   private _commit(state: CascadeState): void {
@@ -442,15 +415,7 @@ export class IgcTreeSelectionService {
     excluded?: IgcTreeItemComponent[]
   ): IgcTreeItemComponent[] {
     const skip = new Set(excluded);
-    const result: IgcTreeItemComponent[] = [];
-
-    for (const item of source) {
-      if (!skip.has(item)) {
-        result.push(item);
-      }
-    }
-
-    return result;
+    return Array.from(source).filter((item) => !skip.has(item));
   }
 
   private _sameSelection(

@@ -86,26 +86,23 @@ $transition: all 140ms cubic-bezier(0.455, 0.03, 0.515, 0.955);
 // The group themes set the radius variables, because they depend on the group alignment.
 :host(:first-child) {
     [part~='toggle'] {
-        // Top left radius
         border-start-start-radius: var(--vertical-radius, var(--horizontal-radius, 0));
 
-        // Bottom left radius (only in horizontal mode) else it is 0
+        // Horizontal mode only.
         border-end-start-radius: var(--horizontal-radius, 0);
 
-        // Top right radius (only in vertical mode) else it is 0
+        // Vertical mode only.
         border-start-end-radius: var(--vertical-radius, 0);
     }
 }
 
 :host(:last-child) {
     [part~='toggle'] {
-        // Top right radius (only in horizontal mode) else it is 0
+        // Horizontal mode only.
         border-start-end-radius: var(--horizontal-radius, 0);
-
-        // Bottom right radius
         border-end-end-radius: var(--vertical-radius, var(--horizontal-radius, 0));
 
-        // Bottom left radius (only in vertical mode) else it is 0
+        // Vertical mode only.
         border-end-start-radius: var(--vertical-radius, 0);
     }
 }

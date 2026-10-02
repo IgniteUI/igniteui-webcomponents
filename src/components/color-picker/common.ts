@@ -22,10 +22,7 @@ export function normalizeColor(colorString: string): string {
 
 /**
  * Parses a hex, rgb(a), hsl(a) or named color into RGB values and alpha.
- *
- * @param colorString - The color string to parse
- * @param ctx - Optional canvas context for color parsing. If not provided, returns default black color.
- * @returns Object containing RGB values and alpha channel
+ * Without a canvas context it returns black.
  */
 export function parseColor(
   colorString: string,
@@ -67,7 +64,6 @@ export function parseColor(
     const [r, g, b, a] = matches.map((part) => Number.parseInt(part, 16));
     result.value = [r, g, b];
 
-    // Handle 8-digit hex with alpha channel
     if (matches.length === 4 && a !== undefined) {
       result.alpha = a / 255;
     }
@@ -78,13 +74,8 @@ export function parseColor(
 
 /**
  * Whether a string is a valid CSS color.
- *
  * An invalid color leaves the canvas fill unchanged, so two different
  * baselines give two different results.
- *
- * @param colorString - The color string to validate
- * @param ctx - Canvas context used for parsing
- * @returns `true` if the string is a valid, non-empty CSS color
  */
 export function isValidColor(
   colorString: string,

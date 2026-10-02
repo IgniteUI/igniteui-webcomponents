@@ -359,7 +359,6 @@ describe('Mask parser', () => {
     it('prompt character conflicts with mask flag', () => {
       parser.mask = 'CCCC';
       parser.prompt = 'C';
-      // Should be ignored silently
       expect(parser.prompt).to.equal('_');
       expect(parser.apply()).to.equal('____');
     });
@@ -367,7 +366,6 @@ describe('Mask parser', () => {
     it('prompt character set to mask flag 0', () => {
       parser.mask = '0000';
       parser.prompt = '0';
-      // Should be ignored
       expect(parser.prompt).to.equal('_');
     });
 

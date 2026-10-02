@@ -751,7 +751,6 @@ describe('Date range picker - two inputs', () => {
         const now = new CalendarDay({ year: 2026, month: 3, date: 1 });
         const aMonthAgo = now.add('month', -1);
 
-        // const aMonthAgo = today.add('month', -1);
         picker.value = null;
         picker.open = true;
         await elementUpdated(picker);

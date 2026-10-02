@@ -48,7 +48,6 @@
     }
 }
 
-// Horizontal orientation (default)
 :host([orientation='horizontal']) {
     [part='base'] {
         flex-direction: row;

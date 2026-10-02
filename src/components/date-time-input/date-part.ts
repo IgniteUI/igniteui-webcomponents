@@ -101,35 +101,26 @@ export interface SpinOptions {
  * @hidden
  */
 export interface IDatePart {
-  /** The type of date part */
   readonly type: DatePartType;
   /** Start position in the masked string */
   readonly start: number;
   /** End position in the masked string */
   readonly end: number;
-  /** The format string for this part */
   readonly format: string;
 
   /**
    * Validates a numeric value for this part.
-   * @param value - The value to validate
    * @param context - Optional context (year, month) for date-dependent validation
-   * @returns true if the value is valid for this part
    */
   validate(value: number, context?: DateValidationContext): boolean;
 
   /**
    * Spins (increments/decrements) this part's value on the given date.
    * @param delta - The amount to spin (positive = up, negative = down)
-   * @param options - Spin options including the date and loop behavior
    */
   spin(delta: number, options: SpinOptions): void;
 
-  /**
-   * Extracts the value of this part from a Date object.
-   * @param date - The date to extract from
-   * @returns The formatted string value
-   */
+  /** Returns the formatted value of this part for `date`. */
   getValue(date: Date): string;
 }
 
@@ -184,7 +175,6 @@ const TIME_PART_CONFIG: Record<TimePartType, TimePartConfig> = {
   },
 };
 
-/** Date bounds for validation */
 const DATE_BOUNDS = {
   month: { min: 0, max: 11 },
   date: { min: 1, max: 31 },
@@ -222,7 +212,6 @@ function wrapOrClamp(
 
 //#region Abstract Base Class
 
-/** The base class of all date parts. */
 abstract class DatePartBase implements IDatePart {
   readonly type: DatePartType;
   readonly start: number;
@@ -245,9 +234,7 @@ abstract class DatePartBase implements IDatePart {
 
 //#region Concrete Implementations
 
-/**
- * Year part (yyyy, yy)
- */
+/** Year part (yyyy, yy) */
 class YearPart extends DatePartBase {
   constructor(options: DatePartOptions) {
     super(DatePartType.Year, options);
@@ -280,9 +267,7 @@ class YearPart extends DatePartBase {
   }
 }
 
-/**
- * Month part (MM, M)
- */
+/** Month part (MM, M) */
 class MonthPart extends DatePartBase {
   constructor(options: DatePartOptions) {
     super(DatePartType.Month, options);
@@ -310,9 +295,7 @@ class MonthPart extends DatePartBase {
   }
 }
 
-/**
- * Date (day of month) part (dd, d)
- */
+/** Date (day of month) part (dd, d) */
 class DateOfMonthPart extends DatePartBase {
   constructor(options: DatePartOptions) {
     super(DatePartType.Date, options);
@@ -378,9 +361,7 @@ class TimePart extends DatePartBase {
   }
 }
 
-/**
- * AM/PM part (tt, t)
- */
+/** AM/PM part (tt, t) */
 class AmPmPart extends DatePartBase {
   constructor(options: DatePartOptions) {
     super(DatePartType.AmPm, options);
@@ -411,9 +392,7 @@ class AmPmPart extends DatePartBase {
   }
 }
 
-/**
- * Literal part (separators like /, -, :, space, etc.)
- */
+/** Literal part (separators like /, -, :, space, etc.) */
 class LiteralPart extends DatePartBase {
   constructor(options: DatePartOptions) {
     super(DatePartType.Literal, options);
@@ -437,13 +416,7 @@ class LiteralPart extends DatePartBase {
 
 //#region Factory Function
 
-/**
- * Creates a date part of `type`. The only way to create one outside this module.
- *
- * @param type - The type of date part to create
- * @param options - The options for the date part
- * @returns A date part instance implementing IDatePart
- */
+/** Creates a date part of `type`. The only way to create one outside this module. */
 export function createDatePart(
   type: DatePartType,
   options: DatePartOptions

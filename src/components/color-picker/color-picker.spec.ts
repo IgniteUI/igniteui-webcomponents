@@ -266,7 +266,6 @@ describe('Color picker', () => {
       picker.open = true;
       await elementUpdated(picker);
 
-      // Written only from the color handlers, both stay unset until the color changes.
       expect(picker.style.getPropertyValue('--_current-color')).to.equal(
         'hsl(0 100% 50%)'
       );
@@ -745,7 +744,6 @@ describe('Color picker', () => {
       expected.setSaturationAndValue(50, 75);
 
       expect(picker.value).to.equal(expected.asString('hex'));
-      // Hue is preserved by the HSV saturation/value update.
       expect(expected.h).to.equal(ColorModel.parse('#ff0000').h);
     });
 

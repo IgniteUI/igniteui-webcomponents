@@ -1,5 +1,5 @@
 import { html, LitElement, nothing, type PropertyValues } from 'lit';
-import { property, query, state } from 'lit/decorators.js';
+import { property, state } from 'lit/decorators.js';
 import type { StyleInfo } from 'lit/directives/style-map.js';
 import { addInternalsController } from '#internals/controllers/internals.js';
 import type { SlotController } from '#internals/controllers/slot.js';
@@ -16,9 +16,6 @@ import type { StyleVariant } from '../types.js';
 /* omitModule */
 export abstract class IgcProgressBaseComponent extends LitElement {
   protected abstract _slots: SlotController<any>;
-
-  @query('[part="base"]', true)
-  protected _base!: HTMLElement;
 
   @state()
   protected _hasFraction = false;

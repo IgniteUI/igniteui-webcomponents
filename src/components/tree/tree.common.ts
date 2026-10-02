@@ -16,8 +16,10 @@ const TREE_ITEM_ARIA_STATE = [
 /** The copies of host attributes that each delegate holds, by name. */
 const copiedAria = new WeakMap<Element, Map<string, string>>();
 
-function isTreeItem(element: Element): element is IgcTreeItemComponent {
-  return element.tagName.toLowerCase() === TREE_ITEM_TAG;
+export function isTreeItem(
+  element?: Element | null
+): element is IgcTreeItemComponent {
+  return element?.tagName.toLowerCase() === TREE_ITEM_TAG;
 }
 
 /**
@@ -26,26 +28,27 @@ function isTreeItem(element: Element): element is IgcTreeItemComponent {
  * Wrapped items are not supported, so a cheap `.children` scan is enough.
  */
 export function getTreeItemChildren(parent: Element): IgcTreeItemComponent[] {
-  const result: IgcTreeItemComponent[] = [];
-
-  for (const child of parent.children) {
-    if (isTreeItem(child)) {
-      result.push(child);
-    }
-  }
-
-  return result;
+  return Array.from(parent.children).filter(isTreeItem);
 }
 
-/** Whether `parent` has at least one direct `igc-tree-item` child. */
-export function hasTreeItemChildren(parent: Element): boolean {
-  for (const child of parent.children) {
-    if (isTreeItem(child)) {
-      return true;
-    }
+/**
+ * Appends the `igc-tree-item` descendants of `parent` to `out` in pre-order.
+ * One shared array keeps the walk of a deep tree linear.
+ */
+export function collectTreeItems(
+  parent: Element,
+  out: IgcTreeItemComponent[] = []
+): IgcTreeItemComponent[] {
+  for (const child of getTreeItemChildren(parent)) {
+    out.push(child);
+    collectTreeItems(child, out);
   }
 
-  return false;
+  return out;
+}
+
+export function hasTreeItemChildren(parent: Element): boolean {
+  return Array.from(parent.children).some(isTreeItem);
 }
 
 export function clearTreeItemAria(element: Element): void {

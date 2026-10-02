@@ -3,7 +3,7 @@ import {
   type IComboResourceStrings,
 } from 'igniteui-i18n-core';
 import { html, type PropertyValues, type TemplateResult } from 'lit';
-import { property, query, state } from 'lit/decorators.js';
+import { property, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { createRef, ref } from 'lit/directives/ref.js';
 import { addAriaProjector } from '#internals/controllers/aria-projection.js';
@@ -201,16 +201,10 @@ export default class IgcComboComponent<
     },
   });
 
-  /** The primary input of the combo component. */
   private readonly _inputRef = createRef<IgcInputComponent>();
 
-  @query('#combo-helper-text')
-  private readonly _helperText!: IgcValidationContainerComponent | null;
-
-  /** The search input of the combo component. */
   private readonly _searchRef = createRef<IgcInputComponent>();
 
-  /** The combo virtualized dropdown list. */
   private readonly _listRef = createRef<IgcVirtualScrollComponent>();
 
   private readonly _state = new DataState<T>(this);
@@ -265,7 +259,6 @@ export default class IgcComboComponent<
   @state()
   private _displayValue = '';
 
-  /** The DOM id of the option rendered at `index` in the current data state. */
   private _itemId(index: number): string {
     const position = index + 1;
     return this.id ? `${this.id}-item-${position}` : `item-${position}`;
@@ -562,9 +555,8 @@ export default class IgcComboComponent<
       themeChange: () => this._listRef.value?.requestUpdate(),
     });
 
-    // Projects the host name and combobox semantics onto the native input.
-    // See ProjectedARIA. `aria-activedescendant` stays on the listbox, which
-    // has focus during list navigation.
+    // Projects combobox semantics onto the native input. `aria-activedescendant`
+    // stays on the listbox, which has focus during list navigation.
     addAriaProjector(this, {
       target: () => this._inputRef.value,
       state: () => ({
@@ -572,12 +564,11 @@ export default class IgcComboComponent<
         hasPopup: 'listbox',
         expanded: `${this.open}`,
         controls: this._listRef.value ? [this._listRef.value] : null,
-        describedBy: this._helperText ? [this._helperText] : null,
       }),
       fallbackLabel: () => this._mainAriaLabel,
     });
     addSafeEventListener(this, 'blur', this._handleBlur);
-    addSafeEventListener(this, 'focusin', this._handleFocusIn);
+    addSafeEventListener(this, 'focusin', this._setTouchedState);
   }
 
   protected override willUpdate(props: PropertyValues<this>): void {
@@ -600,20 +591,6 @@ export default class IgcComboComponent<
         this._syncSelectionFromValue();
         this._formValue.setValueAndFormState(this.value);
       });
-    }
-  }
-
-  /**
-   * Runs `callback` and restores the pristine flag.
-   * A configuration change does not make the control dirty.
-   */
-  private _withPristine(callback: () => void): void {
-    const pristine = this._pristine;
-
-    try {
-      callback();
-    } finally {
-      this._pristine = pristine;
     }
   }
 
@@ -683,12 +660,7 @@ export default class IgcComboComponent<
   // #region Selection helpers
 
   /**
-   * Maps each value to the positions of the records that carry it.
-   * Built on demand. A change of `data` or `valueKey` drops it.
-   *
-   * @remarks
-   * Positions keep data-source order and resolve a duplicate value key to
-   * each record.
+   * Maps each value to the positions of its records, in data-source order.
    * The size check finds in-place growth or shrink, but not a replaced element.
    */
   private get _dataIndex(): Map<Item<T>, number[]> {
@@ -704,30 +676,17 @@ export default class IgcComboComponent<
 
   /**
    * Resolves value keys or object references to data records, in data-source order.
-   *
-   * @remarks
    * A repeated value resolves one time, so the change event has no duplicates.
    */
   private _resolveItems(items: Item<T>[]): T[] {
     const index = this._dataIndex;
-    const positions = new Set<number>();
-
-    for (const item of items) {
-      const matches = index.get(item);
-
-      if (matches) {
-        for (const position of matches) {
-          positions.add(position);
-        }
-      }
-    }
+    const positions = new Set(items.flatMap((item) => index.get(item) ?? []));
 
     return Array.from(positions)
       .sort((a, b) => a - b)
       .map((position) => this.data[position]);
   }
 
-  /** The `valueKey` property of `record`, or `record` when `valueKey` is not set. */
   private _resolveItemValue(record: T): Item<T> {
     return this.valueKey ? record[this.valueKey] : record;
   }
@@ -737,7 +696,6 @@ export default class IgcComboComponent<
     return (this.valueKey ? item[this.valueKey] : undefined) ?? item;
   }
 
-  /** Maps data records to their value representations. See {@link _valueOf}. */
   private _toValues(items: Iterable<T>): ComboValue<T>[] {
     return Array.from(items, (item) => this._valueOf(item));
   }
@@ -777,12 +735,7 @@ export default class IgcComboComponent<
   }
 
   /**
-   * Adds `items` to, or removes them from, the current selection.
-   *
-   * @remarks
    * An empty collection selects or deselects all. Single selection only clears.
-   * With `emit`, the cancelable `igcChange` event fires before the change.
-   *
    * @returns Whether the change was committed.
    */
   private _updateSelection(
@@ -960,10 +913,6 @@ export default class IgcComboComponent<
     this._clearSingleSelection();
   }
 
-  protected _handleFocusIn(): void {
-    this._setTouchedState();
-  }
-
   protected override _handleBlur(): void {
     if (isEmpty(this._selected)) {
       this._searchTerm = '';
@@ -974,10 +923,6 @@ export default class IgcComboComponent<
 
   protected _handleSearchInput({ detail }: CustomEvent<string>): void {
     this._searchTerm = detail;
-  }
-
-  private _handleClosing(): void {
-    this._hide(true);
   }
 
   private async _itemClickHandler(event: PointerEvent): Promise<void> {

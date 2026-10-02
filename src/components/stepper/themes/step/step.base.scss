@@ -116,8 +116,7 @@
     position: relative;
     overflow: hidden;
 
-    // `width: 0` and `min-width: 100%` keep the body content out of the grid
-    // width calculation. See:
+    // `width: 0` and `min-width: 100%` keep the body content out of the grid width.
     // https://stackoverflow.com/questions/73856035/css-grid-columns-changing-size-with-long-content/73858982#73858982
     width: 0;
     height: var(--vertical-body-height, auto);

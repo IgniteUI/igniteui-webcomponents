@@ -181,7 +181,6 @@ describe('Date range picker - common tests for single and two inputs mode', () =
       await elementUpdated(picker);
       expect(picker.visibleMonths).to.equal(2);
 
-      // test with NaN or undefined
       picker.visibleMonths = Number.NaN;
       await elementUpdated(picker);
       expect(picker.visibleMonths).to.equal(2);
@@ -329,7 +328,6 @@ describe('Date range picker - common tests for single and two inputs mode', () =
         ],
       };
 
-      //test defaults
       expect(picker.value).to.deep.equal({ start: null, end: null });
       expect(picker.weekStart).to.equal('sunday');
       expect(picker.hideOutsideDays).to.equal(false);
@@ -372,13 +370,11 @@ describe('Date range picker - common tests for single and two inputs mode', () =
         expect(picker.getAttribute('display-format')).to.be.null;
         expect(picker.displayFormat).to.equal('M/d/yyyy');
 
-        // updates inputFormat according to changed locale
         picker.locale = 'fr';
         await elementUpdated(picker);
         expect(picker.inputFormat).to.equal('dd/MM/yyyy');
         expect(picker.displayFormat).to.equal(picker.inputFormat);
 
-        // sets inputFormat as attribute
         picker.setAttribute('input-format', 'dd-MM-yyyy');
         await elementUpdated(picker);
 

@@ -296,22 +296,17 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
 
     addThemingController(this, all);
 
+    const stepBy = (direction: number) =>
+      this._emitValueUpdate(this.value + direction * this.step);
+
     addKeybindings(this, {
       skip: () => !this._isInteractive,
       bindingDefaults: { repeat: true },
     })
-      .set(arrowUp, () => this._emitValueUpdate(this.value + this.step))
-      .set(arrowRight, () =>
-        this._emitValueUpdate(
-          isLTR(this) ? this.value + this.step : this.value - this.step
-        )
-      )
-      .set(arrowDown, () => this._emitValueUpdate(this.value - this.step))
-      .set(arrowLeft, () =>
-        this._emitValueUpdate(
-          isLTR(this) ? this.value - this.step : this.value + this.step
-        )
-      )
+      .set(arrowUp, () => stepBy(1))
+      .set(arrowRight, () => stepBy(isLTR(this) ? 1 : -1))
+      .set(arrowDown, () => stepBy(-1))
+      .set(arrowLeft, () => stepBy(isLTR(this) ? -1 : 1))
       .set(homeKey, () => this._emitValueUpdate(this.step))
       .set(endKey, () => this._emitValueUpdate(this.max));
   }

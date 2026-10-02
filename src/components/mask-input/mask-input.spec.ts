@@ -261,7 +261,6 @@ describe('Masked input', () => {
       expect(element.value).to.equal('1221');
       checkSelectionRange(2, 2);
 
-      // Keep passed selection range
       element.value = '1111';
       element.setRangeText('22', 0, 2, 'select'); // (22) (11)
       await elementUpdated(element);
@@ -270,7 +269,6 @@ describe('Masked input', () => {
       expect(element.value).to.equal('2211');
       checkSelectionRange(0, 2);
 
-      // Collapse range to start
       element.value = '';
       element.setRangeText('xx', 0, 4, 'start');
       await elementUpdated(element);
@@ -279,7 +277,6 @@ describe('Masked input', () => {
       expect(element.value).to.equal('xx');
       checkSelectionRange(0, 0);
 
-      // Collapse range to end
       element.value = 'xx';
       element.setRangeText('yy', 2, 5, 'end');
       await elementUpdated(element);
@@ -482,7 +479,6 @@ describe('Masked input', () => {
       // value: 12--345---67
       await elementUpdated(element);
 
-      // value: 12--345---67
       element.setSelectionRange(1, 1);
       simulateKeyboard(input, 'Delete');
       simulateInput(input, {
@@ -629,7 +625,6 @@ describe('Masked input', () => {
       await elementUpdated(element);
       syncParser();
 
-      // Emulate paste behavior
       input.value = '112222';
       input.setSelectionRange(2, 8);
 
@@ -648,7 +643,6 @@ describe('Masked input', () => {
       await elementUpdated(element);
       syncParser();
 
-      // Emulate drop behavior
       input.value = '   abc';
       input.setSelectionRange(3, 8);
 
@@ -1020,8 +1014,6 @@ describe('Masked input', () => {
       const input = spec.element.renderRoot.querySelector('input')!;
       const placeholder = 'Type something';
 
-      // Empty mask pattern as placeholder
-
       expect(input.value).to.be.empty;
       expect(input.placeholder).to.equal(spec.element.mask);
 
@@ -1030,7 +1022,6 @@ describe('Masked input', () => {
       expect(input.value).to.be.empty;
       expect(input.placeholder).to.equal(spec.element.mask);
 
-      // User provided placeholder
       await spec.setProperties({ placeholder }, true);
 
       expect(input.value).to.be.empty;
@@ -1074,7 +1065,6 @@ describe('Masked input', () => {
     });
 
     it('refreshes the rendered masked value after form reset', async () => {
-      // A valid reset must also update the rendered masked value.
       const bed = createFormAssociatedTestBed<IgcMaskInputComponent>(
         html`<igc-mask-input
           name="masked"

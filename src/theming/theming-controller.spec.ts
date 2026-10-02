@@ -343,7 +343,6 @@ describe('Theming Controller', () => {
       expect(el.themingController.theme).to.equal('material');
       expect(el.themingController.variant).to.equal('dark');
 
-      // The global theme does not affect a component inside a provider.
       setTimeout(() => configureTheme('bootstrap', 'light'));
       await oneEvent(window, CHANGE_THEME_EVENT);
       await elementUpdated(el);

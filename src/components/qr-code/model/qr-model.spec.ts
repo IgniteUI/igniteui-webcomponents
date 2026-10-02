@@ -203,7 +203,7 @@ describe('QR model - error correction', () => {
 
     describe('multi-block version (V5/M – 2 blocks of 43 data CW)', () => {
       // V5/M: EC_BLOCKS_TABLE[4][1] = { ecPerBlock: 24, groups: [{ numBlocks: 2, dataCW: 43 }] }
-      const totalDataCW = 2 * 43; // 86
+      const totalDataCW = 2 * 43;
       const data = Array.from({ length: totalDataCW }, (_, i) => i % 256);
 
       it('outputs length = data codewords + total EC codewords', () => {
@@ -228,7 +228,7 @@ describe('QR model - masking', () => {
     it('does not toggle function modules', () => {
       const matrix = makeMatrix(3, false);
       const functionModules = makeMatrix(3, false);
-      functionModules[1][1] = true; // mark (1,1) as a function module
+      functionModules[1][1] = true;
 
       // Pattern 0 toggles (row+col)%2===0 → (1,1) would normally be toggled
       const result = applyMask(matrix, functionModules, 0);
@@ -294,7 +294,6 @@ describe('QR model - masking', () => {
   describe('selectBestMask', () => {
     it('returns a value in the range [0, 7]', () => {
       const { matrix, size } = generateQRCodeMatrix('TEST', 'M');
-      // Verify the contract on a valid matrix.
       const functionModules = makeMatrix(size, false);
       const best = selectBestMask(matrix, functionModules);
       expect(best).to.be.within(0, 7);

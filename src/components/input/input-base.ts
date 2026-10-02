@@ -1,6 +1,5 @@
 import { LitElement, nothing, type TemplateResult } from 'lit';
 import { property, query } from 'lit/decorators.js';
-import { cache } from 'lit/directives/cache.js';
 import {
   addAriaTarget,
   helperText,
@@ -83,7 +82,6 @@ export abstract class IgcInputBaseComponent extends FormAssociatedRequiredMixin(
   @property()
   public label!: string;
 
-  /** Resolves the state-based part names for `base`. */
   protected _resolvePartNames(base: string) {
     return resolveInputPartNames(this._slots, base, !!this.value);
   }
@@ -112,15 +110,13 @@ export abstract class IgcInputBaseComponent extends FormAssociatedRequiredMixin(
   }
 
   protected override render() {
-    return cache(
-      renderInputShell(this, {
-        theme: this._themes.theme,
-        label: this.label,
-        labelId: this._inputId,
-        containerParts: this._resolvePartNames('container'),
-        renderInput: this._renderInput,
-        renderFileParts: this._renderFileParts,
-      })
-    );
+    return renderInputShell(this, {
+      theme: this._themes.theme,
+      label: this.label,
+      labelId: this._inputId,
+      containerParts: this._resolvePartNames('container'),
+      renderInput: this._renderInput,
+      renderFileParts: this._renderFileParts,
+    });
   }
 }

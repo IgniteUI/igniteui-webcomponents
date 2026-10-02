@@ -19,7 +19,6 @@ class AnimationController {
   private readonly _host: HTMLElement;
   private readonly _ref?: Ref<HTMLElement> | HTMLElement;
 
-  /** The passed-in element, else the resolved Ref value, else the host. */
   protected get _target(): HTMLElement {
     if (isElement(this._ref)) {
       return this._ref;

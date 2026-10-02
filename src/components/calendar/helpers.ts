@@ -42,11 +42,8 @@ export function getWeekDayNumber(value: WeekDays): number {
 }
 
 /**
- * The first day of the week of `locale`, as reported by `Intl.Locale.prototype.getWeekInfo()`.
- *
- * @remarks
- * igniteui-i18n-core falls back to Monday in engines without the API. This overrides
- * that with `sunday`, the documented default of the components.
+ * The first day of the week of `locale`. Without `Intl.Locale.prototype.getWeekInfo()`,
+ * igniteui-i18n-core returns Monday, so return `sunday`, the documented default.
  */
 export function getLocaleWeekStart(locale: string): WeekDays {
   if (!('getWeekInfo' in Intl.Locale.prototype)) {
@@ -137,25 +134,25 @@ function isDateInRange(
         : false;
   }
 
-  const days = range.dateRange.map((day) => toCalendarDay(day));
-  const firstDay = firstOf(days);
+  const first = firstOf(range.dateRange);
 
   switch (range.type) {
     case DateRangeType.After:
-      return value.greaterThan(firstDay);
+      return value.greaterThan(first);
 
     case DateRangeType.Before:
-      return value.lessThan(firstDay);
+      return value.lessThan(first);
 
     case DateRangeType.Between: {
-      const lastDay = lastOf(days);
-      const min = Math.min(firstDay.timestamp, lastDay.timestamp);
-      const max = Math.max(firstDay.timestamp, lastDay.timestamp);
-      return value.timestamp >= min && value.timestamp <= max;
+      const a = toCalendarDay(first).timestamp;
+      const b = toCalendarDay(lastOf(range.dateRange)).timestamp;
+      return (
+        value.timestamp >= Math.min(a, b) && value.timestamp <= Math.max(a, b)
+      );
     }
 
     case DateRangeType.Specific:
-      return days.some((day) => day.equalTo(value));
+      return range.dateRange.some((day) => value.equalTo(day));
 
     default:
       return false;
@@ -191,24 +188,10 @@ export function createDateConstraints(
   min: Date | null,
   max: Date | null,
   disabledDates?: DateRangeDescriptor[]
-): DateRangeDescriptor[] | undefined {
-  const constraints: DateRangeDescriptor[] = [];
-
-  if (min) {
-    constraints.push({
-      type: DateRangeType.Before,
-      dateRange: [min],
-    });
-  }
-
-  if (max) {
-    constraints.push({
-      type: DateRangeType.After,
-      dateRange: [max],
-    });
-  }
-
-  constraints.push(...(disabledDates ?? []));
-
-  return constraints.length > 0 ? constraints : undefined;
+): DateRangeDescriptor[] {
+  return [
+    ...(min ? [{ type: DateRangeType.Before, dateRange: [min] }] : []),
+    ...(max ? [{ type: DateRangeType.After, dateRange: [max] }] : []),
+    ...(disabledDates ?? []),
+  ];
 }

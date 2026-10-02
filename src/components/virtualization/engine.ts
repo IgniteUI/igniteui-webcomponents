@@ -1,15 +1,10 @@
 import { clamp } from '#internals/utils/math.js';
 import type { ScrollAlignment, VisibleRange } from './types.js';
 
-/**
- * The maximum scrollable coordinate of a document does not change.
- * All instances in one document share one probe result.
- */
+/** The max scrollable coordinate of a document is fixed, so instances share one probe. */
 const _maxBrowserSizeCache = new WeakMap<Document, number>();
 
-/**
- * Measures the maximum scrollable coordinate that the browser supports.
- */
+/** Measures the maximum scrollable coordinate that the browser supports. */
 function getMaxBrowserSizeProbePx(doc: Document): number {
   const cached = _maxBrowserSizeCache.get(doc);
   if (cached !== undefined) {
@@ -52,12 +47,9 @@ const MEASURED = 1;
 const SAMPLED = 2;
 
 /**
- * Binary Indexed Tree (Fenwick tree) over item sizes. Each hot-path operation
- * is O(log N): point update (item measured), prefix sum (scroll offset), and
- * index at offset (scroll to item, through binary lifting).
- *
- * The tree holds only the measured sizes and the number of measured items.
- * Each unmeasured item counts as `estimate`, so an estimate change is O(1).
+ * Fenwick tree over item sizes: O(log N) point update, prefix sum, and index
+ * at offset. It holds only the measured sizes and counts. Each unmeasured item
+ * counts as `estimate`, so an estimate change is O(1).
  */
 class SizeTree {
   public readonly length: number;
@@ -249,26 +241,18 @@ class SizeTree {
 }
 
 /**
- * Pure scroll-math engine for one axis of virtual scrolling. A Fenwick tree
- * holds all size state.
+ * Pure scroll-math engine for one axis of virtual scrolling.
  *
- * ### Virtual and DOM coordinates
- *
- * Browsers limit how far an element can scroll. When the total item size is
- * larger than that limit, the engine compresses the *virtual* space
- * (`0…totalSize`) into the *DOM* space (`0…domSize`). The ratio
- * `(totalSize - viewportSize) / (domSize - viewportSize)` maps the scroll
- * ranges, so the last DOM scroll position shows the end of the list. Incoming
- * scroll positions are multiplied by the ratio, and outgoing offsets are
- * divided by it.
- *
+ * Browsers limit how far an element can scroll. Past that limit the engine
+ * compresses the virtual space (`0…totalSize`) into the DOM space
+ * (`0…domSize`) by the ratio `(totalSize - viewportSize) / (domSize - viewportSize)`,
+ * so the last DOM scroll position shows the end of the list. Incoming scroll
+ * positions are multiplied by the ratio, and outgoing offsets are divided by it.
  * Items render at their real pixel size, so item sizes are always virtual.
- * See `getContentOffset`.
  */
 export class VirtualScrollEngine {
   private _maxBrowserSize = Number.POSITIVE_INFINITY;
 
-  /** Binary Indexed Tree for O(log N) size queries and updates. */
   private _tree: SizeTree | null = null;
 
   /** The estimate last given to `resize` or `updateEstimatedSize`. */
@@ -277,10 +261,7 @@ export class VirtualScrollEngine {
   /** Whether `adaptEstimate` has applied a measured average. */
   private _hasAdaptedEstimate = false;
 
-  /**
-   * Called when item sizes or the item count change.
-   * Example: `() => this.requestUpdate()`.
-   */
+  /** Called when item sizes or the item count change. */
   public onSizeChange: (() => void) | null = null;
 
   /** Total virtual size of all items in px. */
@@ -298,7 +279,6 @@ export class VirtualScrollEngine {
     return this.totalSize > this._maxBrowserSize;
   }
 
-  /** Measures the maximum browser size for the document. */
   public initMaxBrowserSize(doc: Document): void {
     this._maxBrowserSize = getMaxBrowserSizeProbePx(doc);
   }
@@ -330,7 +310,6 @@ export class VirtualScrollEngine {
     this.onSizeChange?.();
   }
 
-  /** Records the measured DOM size for a single item. */
   public measureItem(index: number, size: number): void {
     if (!this._tree?.update(index, size)) return;
 
@@ -495,10 +474,7 @@ export class VirtualScrollEngine {
     return contained || spanning;
   }
 
-  /**
-   * Returns the visible and over-scanned item range for the given scroll
-   * state.
-   */
+  /** Returns the visible and over-scanned item range for the given scroll state. */
   public getVisibleRange(
     scrollPosition: number,
     viewportSize: number,
@@ -520,9 +496,7 @@ export class VirtualScrollEngine {
     };
   }
 
-  /**
-   * Sum of the actual sizes of the items in [startIndex, endIndex].
-   */
+  /** Sum of the actual sizes of the items in [startIndex, endIndex]. */
   public getPhysicalRangeSize(startIndex: number, endIndex: number): number {
     if (!this._tree) return 0;
 

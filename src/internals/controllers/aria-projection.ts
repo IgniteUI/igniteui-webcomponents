@@ -327,11 +327,11 @@ class AriaBindingsDirective extends Directive {
       const next = bindings[key] ?? (refKey && bindings[refKey]) ?? null;
       const prev = previous?.[key] ?? (refKey && previous?.[refKey]) ?? null;
 
-      if (typeof next === 'string') {
+      if (isString(next)) {
         if (next !== prev) {
           element.setAttribute(attribute, next);
         }
-      } else if (typeof prev === 'string' || !sameItems(prev, next)) {
+      } else if (isString(prev) || !sameItems(prev, next)) {
         element[property] = next;
       }
     }
@@ -359,7 +359,7 @@ type AriaProjectorConfig = {
   target: () => Element | null | undefined;
   /** Computes the ARIA state to project, after every host update. */
   state: () => ProjectedARIA;
-  /** Whether to also project the name of the host, by default `true`. */
+  /** Whether to also project the name and the helper text of the host, by default `true`. */
   naming?: boolean;
   /** Resolves the name to use when no other source names the host. */
   fallbackLabel?: () => string;
@@ -381,16 +381,18 @@ class AriaProjectorController implements ReactiveController {
     host.addController(this);
   }
 
-  /** Computes the state, with the name and the description of the host. */
+  /** Computes the state, with the name, the helper text and the description of the host. */
   private _state(): ProjectedARIA {
     const { state, naming = true, fallbackLabel } = this._config;
     const projected = state();
     const host = this._host;
+    const helper = naming && host.renderRoot.querySelector('igc-validator');
 
     return {
       ...(naming && resolveNaming(host, hasLabel(host), fallbackLabel?.())),
       ...projected,
       describedBy: joinRelations(
+        helper ? [helper] : null,
         projected.describedBy,
         host.ariaDescribedByElements
       ),

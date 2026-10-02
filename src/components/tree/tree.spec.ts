@@ -42,13 +42,11 @@ describe('Tree', () => {
     it('Should render tree with items', async () => {
       tree = await TreeTestFunctions.createTreeElement(simpleHierarchyTree);
 
-      //tree.items should return all tree items
       expect(tree.items.length).to.equal(14);
       expect(tree).to.contain('igc-tree-item');
       const topLevelItems = tree.items.filter((i) => i.level === 0);
       expect(tree.children.length).to.equal(topLevelItems.length);
 
-      // Verify tree item slots are rendered successfully and elements are correctly displayed.
       tree.items.forEach((item) => {
         const indentationPart = item.shadowRoot?.querySelector(
           PARTS.indentation
@@ -121,7 +119,6 @@ describe('Tree', () => {
       expect(item1Children[0].path.indexOf(topLevelItems[0])).to.equal(0);
       expect(item1Children[0].path.indexOf(item1Children[0])).to.equal(1);
 
-      // item.getChildren({flatten: false}) should return only the direct children of item
       const item2Children = topLevelItems[1].getChildren();
       expect(item2Children.length).to.equal(2);
       expect(item2Children[0].level).to.equal(1);
@@ -147,7 +144,6 @@ describe('Tree', () => {
         item2GrandChildren[0].path.indexOf(item2GrandChildren[0])
       ).to.equal(2);
 
-      // item.getChildren({flatten: true}) should return all item's children
       const item2AllChildren = topLevelItems[1].getChildren({ flatten: true });
       expect(item2AllChildren.length).to.equal(6);
     });
@@ -298,7 +294,6 @@ describe('Tree', () => {
       expect(els[0].textContent).to.equal('ind');
       expect(els[0]).to.have.attribute('slot', 'indicator');
 
-      // verify the default indicator is displayed for other top item
       const indSlot2 = TreeTestFunctions.getSlot(
         topLevelItems[1],
         SLOTS.indicator
@@ -332,7 +327,6 @@ describe('Tree', () => {
       expect(els[0].textContent).to.equal('-');
       expect(els[0]).to.have.attribute('slot', 'indentation');
 
-      // verify the default indentation div is displayed for other child item
       const indentationPart12 = topLevelItems[0]
         .getChildren()[1]
         .renderRoot.querySelector(PARTS.indentation);
@@ -355,7 +349,6 @@ describe('Tree', () => {
       expect(els[0].tagName).to.equal('SPAN');
       expect(els[0].textContent).to.equal('Label via slot');
       expect(els[0]).to.have.attribute('slot', 'label');
-      // verify default label span not being displayed
       expect(item11).dom.not.to.have.descendants('span[part="text"]');
     });
 
@@ -383,7 +376,6 @@ describe('Tree', () => {
       expect(els[0]).to.have.attribute('slot', 'loading');
       expect(item21).dom.not.to.have.descendants('igc-circular-progress');
 
-      //don't display indicator slot when item is loading
       indSlot21 = TreeTestFunctions.getSlot(item21, SLOTS.indicator);
       expect(indSlot21).to.be.null;
     });
@@ -469,7 +461,6 @@ describe('Tree', () => {
       topLevelItems[2].expand();
       await elementUpdated(tree);
 
-      // Expect that the last top item is initially out of view
       const targetItem = topLevelItems[3];
       expect(scrolledIntoView(targetItem, tree)).to.be.false;
 
@@ -601,7 +592,6 @@ describe('Tree', () => {
 
       TreeTestFunctions.verifyExpansionState(topLevelItems[1], false);
 
-      // Should emit ing and ed events when item state is toggled through UI
       const collapsingArgs = {
         detail: topLevelItems[1],
         cancelable: true,
@@ -646,7 +636,6 @@ describe('Tree', () => {
 
       TreeTestFunctions.verifyExpansionState(topLevelItems[0], true);
 
-      // Should emit ing and ed events when item state is toggled through UI
       const expandingArgs = {
         detail: topLevelItems[0],
         cancelable: true,
@@ -680,7 +669,6 @@ describe('Tree', () => {
       await elementUpdated(tree);
 
       TreeTestFunctions.verifyExpansionState(topLevelItems[1], false);
-      // Should not emit event when collapsed through API
       expect(eventSpy.called).to.be.false;
     });
 
@@ -691,7 +679,6 @@ describe('Tree', () => {
       await elementUpdated(tree);
 
       TreeTestFunctions.verifyExpansionState(topLevelItems[0], true);
-      // Should not emit event when collapsed through API
       expect(eventSpy.called).to.be.false;
     });
 
@@ -702,10 +689,9 @@ describe('Tree', () => {
       await elementUpdated(tree);
 
       TreeTestFunctions.verifyExpansionState(topLevelItems[0], true);
-      // Should not emit event when collapsed through API
       expect(eventSpy.called).to.be.false;
 
-      // Should not expand with event an already expanded item
+      // `expandWithEvent()` on an expanded item does nothing.
       topLevelItems[0].expandWithEvent();
       await elementUpdated(tree);
 
@@ -720,7 +706,6 @@ describe('Tree', () => {
       await elementUpdated(tree);
 
       TreeTestFunctions.verifyExpansionState(topLevelItems[1], false);
-      // Should not emit event when collapsed through API
       expect(eventSpy.called).to.be.false;
     });
 
@@ -736,7 +721,6 @@ describe('Tree', () => {
       TreeTestFunctions.verifyExpansionState(topLevelItems[0], true);
       await waitUntil(() => eventSpy.calledWith('igcItemExpanded'));
 
-      // Should emit ing and ed events when item state is toggled through UI
       const expandingArgs = {
         detail: topLevelItems[0],
         cancelable: true,
@@ -755,7 +739,6 @@ describe('Tree', () => {
       TreeTestFunctions.verifyExpansionState(topLevelItems[0], false);
       await waitUntil(() => eventSpy.calledWith('igcItemCollapsed'));
 
-      // Should emit ing and ed events when item state is toggled through UI
       const collapsingArgs = {
         detail: topLevelItems[0],
         cancelable: true,
@@ -876,7 +859,6 @@ describe('Tree', () => {
       await elementUpdated(tree);
 
       TreeTestFunctions.verifyExpansionState(topLevelItems[1], false);
-      // Should not emit event when collapsed through API
       expect(eventSpy.called).to.be.false;
 
       topLevelItems[1].toggle();
@@ -946,7 +928,6 @@ describe('Tree', () => {
         tree.singleBranchExpand = true;
         await elementUpdated(tree);
 
-        //Level 0
         const item1IndSlot = TreeTestFunctions.getSlot(
           topLevelItems[0],
           SLOTS.indicator
@@ -968,7 +949,6 @@ describe('Tree', () => {
         TreeTestFunctions.verifyExpansionState(topLevelItems[0], false);
         TreeTestFunctions.verifyExpansionState(topLevelItems[1], true);
 
-        // Level 1
         const item2Children = topLevelItems[1].getChildren();
         // topLevelItems[1] is currently expanded
         const item21IndSlot = TreeTestFunctions.getSlot(
@@ -1000,7 +980,7 @@ describe('Tree', () => {
         tree.singleBranchExpand = true;
         await elementUpdated(tree);
 
-        //Should collapse all items when setting singleBranchExpand to true and there is no active tree item.
+        // With no active item, enabling singleBranchExpand collapses all items.
         tree.items.forEach((item) => {
           expect(item.expanded).to.be.false;
           expect(item.active).to.be.false;
@@ -1029,7 +1009,6 @@ describe('Tree', () => {
         tree.singleBranchExpand = true;
         await elementUpdated(tree);
 
-        //Level 0
         const item2IndSlot = TreeTestFunctions.getSlot(
           topLevelItems[1],
           SLOTS.indicator
@@ -1052,10 +1031,10 @@ describe('Tree', () => {
         TreeTestFunctions.verifyExpansionState(item2Children[0], true);
         TreeTestFunctions.verifyExpansionState(item2Children[1], false);
 
-        tree.expand([item2Children[1]]); // expand item22 through API
+        tree.expand([item2Children[1]]);
         await elementUpdated(tree);
 
-        TreeTestFunctions.verifyExpansionState(item2Children[0], true); // verify the other item on the same level is still expanded
+        TreeTestFunctions.verifyExpansionState(item2Children[0], true); // the sibling stays expanded
         TreeTestFunctions.verifyExpansionState(item2Children[1], true);
       });
 
@@ -1459,10 +1438,8 @@ describe('Tree', () => {
     });
 
     /**
-     * `aria-hidden-focus` is a known violation. The selection checkbox is
-     * hidden from assistive tech (the item carries `aria-selected`), but
-     * `igc-checkbox` does not forward `tabindex="-1"` to its inner `<input>`.
-     * The fix belongs in `igc-checkbox`, so only this rule is suppressed.
+     * `aria-hidden-focus` is a known violation: `igc-checkbox` does not forward
+     * `tabindex="-1"` to its inner `<input>`. The fix belongs in `igc-checkbox`.
      */
     const SELECTION_A11Y_OPTIONS = {
       ignoredRules: ['aria-hidden-focus'],

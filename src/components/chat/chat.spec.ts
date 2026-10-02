@@ -1299,73 +1299,59 @@ describe('Chat', () => {
   });
 });
 
-/** Returns an object containing the shadow DOM structure of a chat component. */
 function getChatDOM(chat: IgcChatComponent) {
   const root = chat.renderRoot!;
   const inputArea = root.querySelector(IgcChatInputComponent.tagName)!;
 
   return {
-    /** The igc-chat-input component */
     input: {
       get self() {
         return inputArea;
       },
-      /** The default textarea input of the chat. */
       get textarea() {
         return inputArea.renderRoot.querySelector(
           IgcTextareaComponent.tagName
         )!;
       },
-      /** The default file input of the chat. */
       get fileInput() {
         return inputArea.renderRoot.querySelector('input')!;
       },
-      /** The default send button of the chat. */
       get sendButton() {
         return inputArea.renderRoot.querySelector<IgcIconButtonComponent>(
           '[name="send_message"]'
         )!;
       },
-      /** The default igc-chip components representing attachments */
       get chips() {
         return Array.from(
           inputArea.renderRoot.querySelectorAll(IgcChipComponent.tagName)
         );
       },
     },
-    /** The chat header container */
     get header() {
       return root.querySelector<HTMLElement>('[part="header"]')!;
     },
-    /** The chat message container */
     get messageList() {
       return root.querySelector<HTMLElement>('[part="message-list"]')!;
     },
-    /** Rendered chat messages */
     get messages() {
       return Array.from(root.querySelectorAll(IgcChatMessageComponent.tagName));
     },
-    /** The typing indicator container of the chat */
     get typingIndicator() {
       return root.querySelector<HTMLElement>('[part="typing-indicator"]')!;
     },
-    /** The chat container when no messages are present */
     get emptyState() {
       return root.querySelector<HTMLElement>('[part="empty-state"]')!;
     },
-    /** The container of the chat suggestions */
     get suggestionsContainer() {
       return root.querySelector<HTMLElement>('[part="suggestions-container"]')!;
     },
   };
 }
 
-/** Returns an object containing the shadow DOM structure of a chat message component. */
 function getChatMessageDOM(message: IgcChatMessageComponent) {
   const root = message.renderRoot;
 
   return {
-    /** The encompassing container of the chat message component */
     get container() {
       return root.querySelector<HTMLElement>('[part~="message-container"]')!;
     },
@@ -1377,11 +1363,9 @@ function getChatMessageDOM(message: IgcChatMessageComponent) {
     get content() {
       return root.querySelector<HTMLElement>('[part="plain-text"]')!;
     },
-    /** Chat message attachments container */
     get attachmentsContainer() {
       return root.querySelector<HTMLElement>('[part="message-attachments"]')!;
     },
-    /** The attachments components of the message */
     get attachments() {
       return Array.from(
         root.querySelectorAll(IgcMessageAttachmentsComponent.tagName)
@@ -1391,7 +1375,6 @@ function getChatMessageDOM(message: IgcChatMessageComponent) {
     get actions() {
       return root.querySelector<HTMLElement>('[part="message-actions"]')!;
     },
-    /** The default reaction buttons of a chat message */
     get defaultActionButtons() {
       return Array.from(
         root.querySelectorAll<IgcIconButtonComponent>(

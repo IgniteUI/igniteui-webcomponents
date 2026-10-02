@@ -12,16 +12,15 @@ import {
   spaceBar,
 } from '#internals/controllers/key-bindings.js';
 import { isLTR, scrollIntoView } from '#internals/utils/dom.js';
+import { moveFlag } from '#internals/utils/objects.js';
 import type IgcTreeItemComponent from './tree-item.js';
 import type IgcTreeComponent from './tree.js';
 import type { IgcTreeSelectionService } from './tree.selection.js';
 
 /**
- * Keyboard navigation and active/focused item tracking for the tree.
- *
- * @remarks
- * The navigable set is not cached. A keypress derives it with a lazy walk that
- * skips collapsed branches, so an item mount, expand or disable costs nothing.
+ * Keyboard navigation and active/focused item tracking for the tree. The
+ * navigable set is not cached: a keypress derives it with a lazy walk that
+ * skips collapsed branches.
  *
  * @hidden @internal
  */
@@ -84,17 +83,11 @@ export class IgcTreeNavigationService {
       return;
     }
 
-    if (this._activeItem) {
-      this._activeItem.active = false;
-    }
-
+    moveFlag(this._activeItem, value, 'active');
     this._activeItem = value;
 
-    if (this._activeItem) {
-      this._activeItem.active = true;
-      if (shouldEmit) {
-        this.tree.emitEvent('igcActiveItem', { detail: this._activeItem });
-      }
+    if (value && shouldEmit) {
+      this.tree.emitEvent('igcActiveItem', { detail: value });
     }
   }
 

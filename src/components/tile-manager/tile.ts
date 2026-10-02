@@ -32,7 +32,7 @@ import {
 import type { Constructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { partMap } from '#internals/part-map.js';
-import { isLTR } from '#internals/utils/dom.js';
+import { isLTR, pointToFraction } from '#internals/utils/dom.js';
 import { getElementFromPath } from '#internals/utils/events.js';
 import { bindIf } from '#internals/utils/lit.js';
 import { asNumber } from '#internals/utils/math.js';
@@ -176,11 +176,8 @@ export default class IgcTileComponent extends EventEmitterMixin<
     );
   }
 
-  // Tile manager context properties and helpers
-
   private readonly _context = createAsyncContext(this, tileManagerContext);
 
-  /** Returns the parent tile manager context. */
   private get _tileManagerCtx(): TileManagerContext | undefined {
     return this._context.value;
   }
@@ -422,23 +419,15 @@ export default class IgcTileComponent extends EventEmitterMixin<
     direction: DragPointerDirection,
     match: IgcTileComponent
   ): boolean {
-    const LTR = isLTR(this);
-
-    const { left, top, width, height } = match.getBoundingClientRect();
-    const relativeX = (clientX - left) / width;
+    const relativeX = pointToFraction(match, clientX, isLTR(this));
+    const { top, height } = match.getBoundingClientRect();
     const relativeY = (clientY - top) / height;
 
     switch (direction) {
       case 'start':
-        return (
-          this.position > match.position &&
-          (LTR ? relativeX <= 0.25 : relativeX >= 0.75)
-        );
+        return this.position > match.position && relativeX <= 0.25;
       case 'end':
-        return (
-          this.position < match.position &&
-          (LTR ? relativeX >= 0.75 : relativeX <= 0.25)
-        );
+        return this.position < match.position && relativeX >= 0.75;
       case 'top':
         return this.position > match.position && relativeY <= 0.25;
       case 'bottom':
@@ -463,14 +452,6 @@ export default class IgcTileComponent extends EventEmitterMixin<
 
   private _match = (element: Element): element is IgcTileComponent => {
     return element !== this && IgcTileComponent.tagName === element.localName;
-  };
-
-  private _createDragGhost = (): IgcTileComponent => {
-    return createTileDragGhost(this);
-  };
-
-  private _createResizeGhost = (): HTMLElement => {
-    return createTileGhost(this);
   };
 
   private _setResizeState(state = true) {
@@ -630,7 +611,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
         dragMode === 'tile-header' ? () => this._headerRef.value : undefined,
       skip: this._skipDrag,
       matchTarget: this._match,
-      ghostFactory: this._createDragGhost,
+      ghostFactory: () => createTileDragGhost(this),
       start: this._handleDragStart,
       over: this._handleDragOver,
       end: this._handleDragEnd,
@@ -659,12 +640,8 @@ export default class IgcTileComponent extends EventEmitterMixin<
     `;
   }
 
-  private _handleResizePointerEnter() {
-    this._isResizeActive = true;
-  }
-
-  private _handleResizePointerLeave() {
-    this._isResizeActive = false;
+  private _handleResizeHover(event: PointerEvent): void {
+    this._isResizeActive = event.type === 'pointerenter';
   }
 
   private _createResizeOptions(direction: ResizeDirection): ResizableOptions {
@@ -672,7 +649,7 @@ export default class IgcTileComponent extends EventEmitterMixin<
       mode: 'deferred',
       direction,
       target: () => this._containerRef.value,
-      ghostFactory: this._createResizeGhost,
+      ghostFactory: () => createTileGhost(this),
       start: this._handleResizeStart,
       resize: (params) => this._handleResize(params, direction),
       end: this._handleResizeEnd,
@@ -718,8 +695,8 @@ export default class IgcTileComponent extends EventEmitterMixin<
           <div
             ${ref(this._containerRef)}
             part=${partMap(parts)}
-            @pointerenter=${bindIf(isHoverMode, this._handleResizePointerEnter)}
-            @pointerleave=${bindIf(isHoverMode, this._handleResizePointerLeave)}
+            @pointerenter=${bindIf(isHoverMode, this._handleResizeHover)}
+            @pointerleave=${bindIf(isHoverMode, this._handleResizeHover)}
           >
             ${this._renderContent()} ${this._renderAdorners()}
           </div>

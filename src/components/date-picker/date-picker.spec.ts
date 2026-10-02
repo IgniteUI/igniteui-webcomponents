@@ -520,7 +520,6 @@ describe('Date picker', () => {
         ],
       };
 
-      //test defaults
       expect(picker.value).to.be.null;
       expect(picker.weekStart).to.equal('sunday');
       expect(picker.hideOutsideDays).to.equal(false);
@@ -629,7 +628,6 @@ describe('Date picker', () => {
 
         expect(dateTimeInput.displayFormat).to.equal(testFormat);
 
-        // set via attribute
         testFormat = 'dd--MM--yyyy';
         picker.setAttribute('display-format', testFormat);
         await elementUpdated(picker);
@@ -666,13 +664,11 @@ describe('Date picker', () => {
         expect(picker.getAttribute('display-format')).to.be.null;
         expect(picker.displayFormat).to.equal('M/d/yyyy');
 
-        // updates inputFormat according to changed locale
         picker.locale = 'fr';
         await elementUpdated(picker);
         expect(picker.inputFormat).to.equal('dd/MM/yyyy');
         expect(picker.displayFormat).to.equal('dd/MM/yyyy');
 
-        // sets inputFormat as attribute
         picker.setAttribute('input-format', 'dd-MM-yyyy');
         await elementUpdated(picker);
 
@@ -1116,7 +1112,6 @@ describe('Date picker', () => {
 
       checkDatesEqual(picker.value!, targetDate);
 
-      // Open the picker and switch to months view
       await picker.show();
 
       simulateClick(calendarDOM.navigation.months);
@@ -1165,8 +1160,6 @@ describe('Date picker', () => {
     it('issue 1884 - should emit igcChange event in dialog mode after clearing the value and losing focus', async () => {
       const eventSpy = spy(picker, 'emitEvent');
 
-      // Dropdown mode
-
       picker.value = CalendarDay.today.native;
       picker.focus();
       picker.blur();
@@ -1187,7 +1180,6 @@ describe('Date picker', () => {
 
       eventSpy.resetHistory();
 
-      // Dialog mode
       picker.mode = 'dialog';
       picker.value = CalendarDay.today.native;
       picker.focus();

@@ -354,8 +354,6 @@ class DraggableDirective extends PointerOperationDirective<
 
   /**
    * Toggles the touch action and the text selection for a drag operation.
-   *
-   * @remarks
    * Browsers, Safari in particular, still select text under the pointer, so
    * `user-select` also goes on the document body.
    */

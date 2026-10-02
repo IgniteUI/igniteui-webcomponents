@@ -198,7 +198,6 @@ describe('Key bindings controller', () => {
     });
 
     it('should clear pressed keys on window blur', () => {
-      // Hold 'x', then switch away without releasing it
       dispatch(multiInstance, 'keydown', 'x');
       window.dispatchEvent(new FocusEvent('blur'));
 

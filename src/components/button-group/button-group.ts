@@ -81,7 +81,6 @@ export default class IgcButtonGroupComponent extends EventEmitterMixin<
     onChange: this._handleSlotChange,
   });
 
-  /** The toggle buttons of the group, in DOM order. */
   private get _buttons(): IgcToggleButtonComponent[] {
     return this._slots.getAssignedElements('[default]', {
       selector: IgcToggleButtonComponent.tagName,
@@ -96,7 +95,6 @@ export default class IgcButtonGroupComponent extends EventEmitterMixin<
     return this._buttons.filter((button) => button.selected);
   }
 
-  /** The buttons that can take focus. */
   private get _enabledButtons(): IgcToggleButtonComponent[] {
     return this._buttons.filter((button) => !button.disabled);
   }
@@ -204,7 +202,6 @@ export default class IgcButtonGroupComponent extends EventEmitterMixin<
 
   protected override firstUpdated(): void {
     if (isEmpty(this._selectedButtons)) {
-      // No child is selected, so use the `selectedItems` values.
       this._selectFromValues(this._selectedItems);
     } else {
       // A child selection takes priority over the `selectedItems` values.
@@ -231,9 +228,6 @@ export default class IgcButtonGroupComponent extends EventEmitterMixin<
 
   /**
    * Sets the tab stop to the selected button, else to the first enabled one.
-   *
-   * @remarks
-   * The buttons read the tab stop through the context, so a move must publish again.
    * A publish renders every button, so publish only on a real move.
    */
   private _updateTabStop(): void {
@@ -298,7 +292,6 @@ export default class IgcButtonGroupComponent extends EventEmitterMixin<
     }
   }
 
-  /** Reconciles the group with the buttons added to or removed from its slot. */
   private _handleSlotChange(): void {
     this._enforceSingleSelection();
     this._updateTabStop();

@@ -948,7 +948,6 @@ describe('Popover', () => {
         document.removeEventListener('igcPopoverScrollClose', listener);
       }
 
-      // The direct listener on the popover fired, the document one never did.
       expect(closeRequests).to.be.greaterThan(0);
       expect(documentEvents.length).to.equal(0);
     });

@@ -1,20 +1,16 @@
 import type { chai as ChaiInstance } from '@open-wc/testing';
-// @ts-expect-error - `chai` is exported at runtime, but is missing from the typings of
-// the side-effect free entry point. The default one must not be used here: it registers
-// a fixture cleanup hook only if mocha has already defined its globals, and this module
-// runs before the test framework.
+// @ts-expect-error - `chai` exists at runtime but not in the typings of the pure entry.
+// The default entry registers its fixture cleanup hook only when the mocha globals
+// exist, and this module runs before mocha.
 import { chai as untypedChai } from '@open-wc/testing/pure';
 
 const chai = untypedChai as typeof ChaiInstance;
 
 /**
- * Web test runner sends session results to Node through `structuredClone`,
- * with `actual` and `expected` of a failed assertion. A value that cannot be
- * cloned, such as a sinon spy or a DOM node, makes the transport throw. The
- * test file then fails with `testsFinishTimeout` and loses its browser logs.
- *
- * This module substitutes the inspected form of such values. The
- * `testRunnerHtml` option of the runner config loads it for every test file.
+ * Web test runner sends a failed assertion to Node through `structuredClone`.
+ * An uncloneable `actual` or `expected` (a sinon spy, a DOM node) fails the
+ * file with `testsFinishTimeout`, so this module sends its inspected form.
+ * `testRunnerHtml` in the runner config loads it for every test file.
  */
 
 const MAX_INSPECT_LENGTH = 512;

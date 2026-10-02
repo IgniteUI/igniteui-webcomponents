@@ -114,7 +114,6 @@ export default class IgcDialogComponent extends EventEmitterMixin<
     },
   });
 
-  /** Backdrop animation helper. */
   @state()
   private _animating = false;
 

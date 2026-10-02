@@ -1,10 +1,7 @@
 import { html, nothing, type PropertyValues, type TemplateResult } from 'lit';
 import { property, query } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import {
-  addAriaProjector,
-  HELPER_TEXT_ID,
-} from '#internals/controllers/aria-projection.js';
+import { addAriaProjector } from '#internals/controllers/aria-projection.js';
 import {
   addKeybindings,
   altKey,
@@ -25,6 +22,8 @@ import {
   addSafeEventListener,
   focusLeftHost,
   getElementFromPath,
+  preventDefault,
+  stopPropagation,
 } from '#internals/utils/events.js';
 import { bindIf } from '#internals/utils/lit.js';
 import { equal } from '#internals/utils/objects.js';
@@ -130,9 +129,6 @@ export abstract class IgcDatePickerBaseComponent<
   @query(IgcCalendarComponent.tagName)
   protected readonly _calendar!: IgcCalendarComponent;
 
-  @query(`#${HELPER_TEXT_ID}`)
-  protected readonly _helperText!: IgcValidationContainerComponent | null;
-
   protected get _isDropDown(): boolean {
     return this.mode === 'dropdown';
   }
@@ -153,10 +149,8 @@ export abstract class IgcDatePickerBaseComponent<
   /** The id of the editor the picker is anchored to. */
   protected abstract readonly _inputId: string;
 
-  /** The slots of the concrete picker. */
   protected abstract readonly _slots: PickerSlots;
 
-  /** The theming controller of the concrete picker. */
   protected abstract readonly _themes: ThemingController;
 
   /** Only the locale is shared, because the resource strings differ between the pickers. */
@@ -166,13 +160,10 @@ export abstract class IgcDatePickerBaseComponent<
   protected abstract get _value(): T | null;
   protected abstract set _value(value: T | null);
 
-  /** Clears any user input left in the editor(s) of the picker. */
   protected abstract _clearEditors(): void;
 
-  /** Whether the picker holds a value. */
   protected abstract get _hasValue(): boolean;
 
-  /** The selection mode of the underlying calendar. */
   protected abstract get _calendarSelection(): CalendarSelection;
 
   /** The localized label of the calendar picker. */
@@ -181,7 +172,6 @@ export abstract class IgcDatePickerBaseComponent<
   /** The editor whose native input gets the host name and `aria-haspopup="dialog"`. */
   protected abstract get _projectionTarget(): Element | null;
 
-  /** Moves focus to the editor of the picker. */
   protected abstract _focusInput(): void;
 
   /** Restores focus to the editor after a calendar selection. */
@@ -209,7 +199,6 @@ export abstract class IgcDatePickerBaseComponent<
     return this._calendarValue;
   }
 
-  /** The title of the calendar icon, if the picker provides one. */
   protected get _calendarIconTitle(): string | undefined {
     return undefined;
   }
@@ -479,13 +468,11 @@ export abstract class IgcDatePickerBaseComponent<
   constructor() {
     super();
 
-    // Projects the host name and popup semantics onto the editor input. See ProjectedARIA.
     addAriaProjector(this, {
       target: () => this._projectionTarget,
       state: () => ({
         hasPopup: 'dialog',
         required: this.required ? 'true' : undefined,
-        describedBy: this._helperText ? [this._helperText] : null,
       }),
     });
 
@@ -516,8 +503,11 @@ export abstract class IgcDatePickerBaseComponent<
   //#region Internal API
 
   protected _setDateConstraints(): void {
-    this._dateConstraints =
-      createDateConstraints(this._min, this._max, this.disabledDates) ?? [];
+    this._dateConstraints = createDateConstraints(
+      this._min,
+      this._max,
+      this.disabledDates
+    );
   }
 
   protected async _shouldCloseCalendarDropdown(): Promise<void> {
@@ -530,14 +520,12 @@ export abstract class IgcDatePickerBaseComponent<
     }
   }
 
-  /** Points the calendar at the first defined date of `dates`. Does nothing before the calendar renders. */
+  /** Points the calendar at the first defined date of `dates`. Does nothing without one, or before the calendar renders. */
   protected _setCalendarActiveDate(
     ...dates: (Date | null | undefined)[]
   ): void {
-    if (this._calendar) {
-      this._calendar.activeDate =
-        dates.find(Boolean) ?? this._calendar.activeDate;
-    }
+    const date = dates.find(Boolean);
+    if (date && this._calendar) this._calendar.activeDate = date;
   }
 
   /** Writes the value back onto the calendar. A read-only picker has no binding change to commit it. */
@@ -590,14 +578,8 @@ export abstract class IgcDatePickerBaseComponent<
 
   protected _handleInputClick(event: Event): void {
     if (getElementFromPath('input', event)) {
-      // Open only for clicks on the underlying input.
       this._handleAnchorClick();
     }
-  }
-
-  protected _handleCalendarIconSlotPointerDown(event: PointerEvent): void {
-    // Stops `delegatesFocus` from focusing the editor, which turns invalid on blur.
-    event.preventDefault();
   }
 
   protected _handleFocusOut(event: FocusEvent): void {
@@ -605,10 +587,6 @@ export abstract class IgcDatePickerBaseComponent<
       this._handleBlur();
       this._onBlur();
     }
-  }
-
-  protected _handleClosing(): void {
-    this._hide(true);
   }
 
   protected async _handleCalendarChangeEvent(
@@ -637,10 +615,6 @@ export abstract class IgcDatePickerBaseComponent<
     this._hide(true);
   }
 
-  protected _handleDialogClosed(event: Event): void {
-    event.stopPropagation();
-  }
-
   //#endregion
 
   //#region Rendering
@@ -662,11 +636,12 @@ export abstract class IgcDatePickerBaseComponent<
   protected _renderCalendarIcon(suffix = '') {
     const part = `${this.open ? 'calendar-icon-open' : 'calendar-icon'}${suffix}`;
 
+    // `preventDefault` stops `delegatesFocus` from focusing the editor, which turns invalid on blur.
     return html`
       <span
         slot="prefix"
         part=${part}
-        @pointerdown=${this._handleCalendarIconSlotPointerDown}
+        @pointerdown=${preventDefault}
         @click=${bindIf(!this.readOnly, this._handleAnchorClick)}
       >
         ${renderSlottedIcon({
@@ -747,7 +722,6 @@ export abstract class IgcDatePickerBaseComponent<
   protected _renderActions() {
     const hasActions = this._slots.hasAssignedElements('actions');
 
-    // Dialog mode uses the dialog footer slot.
     return html`
       <div
         part="actions"
@@ -794,7 +768,7 @@ export abstract class IgcDatePickerBaseComponent<
             ?close-on-outside-click=${!this.keepOpenOnOutsideClick}
             hide-default-action
             @igcClosing=${this._handleDialogClosing}
-            @igcClosed=${this._handleDialogClosed}
+            @igcClosed=${stopPropagation}
             exportparts="base: dialog-base, title, footer, overlay"
           >
             ${this._renderPickerContent(id)}${this._renderDialogFooter()}

@@ -118,14 +118,9 @@ export default class IgcDateRangeInputComponent extends EventEmitterMixin<
 
     const currentPart = this._parser.getPartForCursor(cursorPos);
 
-    const isStartOrEndPart =
-      currentPart &&
-      (currentPart.position === DateRangePosition.Start ||
-        currentPart.position === DateRangePosition.End);
-
     if (direction === 0) {
-      // Backward: if inside a start/end part, move to its start; else, move to previous part's start
-      if (isStartOrEndPart && cursorPos !== currentPart.start) {
+      // Backward.
+      if (currentPart && cursorPos !== currentPart.start) {
         return currentPart.start;
       }
       const prevPart = rangeParts.findLast(
@@ -134,8 +129,8 @@ export default class IgcDateRangeInputComponent extends EventEmitterMixin<
       return prevPart?.start ?? 0;
     }
 
-    // Forward: if inside a start/end part, move to its end; else, move to next part's end
-    if (isStartOrEndPart && cursorPos !== currentPart.end) {
+    // Forward.
+    if (currentPart && cursorPos !== currentPart.end) {
       return currentPart.end;
     }
     const nextPart = rangeParts.find(
@@ -170,20 +165,12 @@ export default class IgcDateRangeInputComponent extends EventEmitterMixin<
   }
 
   protected override _buildDisplayValue(): string {
-    if (!this.value?.start && !this.value?.end) {
-      return '';
-    }
-
-    const { start, end } = this.value;
-    const startStr = start
-      ? formatDisplayDate(start, this.locale, this.displayFormat)
-      : '';
-    const endStr = end
-      ? formatDisplayDate(end, this.locale, this.displayFormat)
-      : '';
-    return startStr && endStr
-      ? `${startStr}${this._parser.separator}${endStr}`
-      : startStr || endStr;
+    return [this.value?.start, this.value?.end]
+      .map((date) =>
+        date ? formatDisplayDate(date, this.locale, this.displayFormat) : ''
+      )
+      .filter(Boolean)
+      .join(this._parser.separator);
   }
 
   protected override _calculateSpunValue(
@@ -197,12 +184,11 @@ export default class IgcDateRangeInputComponent extends EventEmitterMixin<
       range.position
     );
 
-    const today = CalendarDay.today.native;
-    const defaultValue = { start: today, end: today };
-    const current = this._uncommittedValue;
+    // `_performStep` starts an empty range from today, so `current` is set.
+    const current = this._uncommittedValue!;
 
     if (!part) {
-      return current || defaultValue;
+      return current;
     }
 
     const effectiveDelta =

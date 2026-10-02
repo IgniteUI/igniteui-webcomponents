@@ -64,10 +64,8 @@ export default class IgcPickerCanvasComponent extends EventEmitterMixin<
   @query('[part~="marker"]', true)
   private readonly _marker?: HTMLDivElement;
 
-  /** Geometry captured for the duration of a pointer drag. */
   private _dragGeometry?: CanvasGeometry;
 
-  /** Whether a pointer drag is currently in progress. */
   @state()
   private _dragging = false;
 

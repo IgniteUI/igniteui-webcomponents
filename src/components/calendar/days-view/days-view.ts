@@ -12,6 +12,7 @@ import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { partMap } from '#internals/part-map.js';
 import { chunk, firstOf, lastOf } from '#internals/utils/arrays.js';
 import { addSafeEventListener } from '#internals/utils/events.js';
+import { bindIf } from '#internals/utils/lit.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import { IgcCalendarBaseComponent } from '../base.js';
 import {
@@ -23,7 +24,6 @@ import {
   isNextMonth,
   isPreviousMonth,
 } from '../helpers.js';
-import { selectDate } from '../selection.js';
 import { styles } from '../themes/days-view.base.css.js';
 import { all } from '../themes/days.js';
 import type { IgcCalendarViewComponentEventMap } from '../types.js';
@@ -223,30 +223,6 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
 
   //#region Internal selection methods
 
-  /**
-   * Applies `value` to the selection of this view.
-   *
-   * @remarks
-   * The calendar writes its selection back to the views on the next render.
-   * This lets a stand-alone view select.
-   */
-  private _selectDate(value: CalendarDay): boolean {
-    const selection = selectDate(
-      { value: this._value, values: this._values },
-      value,
-      { selection: this.selection, disabledDates: this._disabledDates }
-    );
-
-    if (!selection) {
-      return false;
-    }
-
-    this._value = selection.value;
-    this._values = selection.values;
-
-    return true;
-  }
-
   /** Whether `day` is selected. Disabled dates are excluded by the caller. */
   private _isSelected(day: CalendarDay, context: DayRenderContext): boolean {
     switch (this.selection) {
@@ -272,14 +248,15 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
     });
   }
 
-  private _changeRangePreview(day: CalendarDay): void {
-    if (this._values.length === 1 && !this._rangeStart!.equalTo(day)) {
-      this._setRangePreviewDate(day);
-    }
-  }
+  /** Previews the range up to a focused or hovered day, and clears the preview when it is left. */
+  private _handleDayPreview(event: Event): void {
+    if (event.type === 'focus' || event.type === 'pointerenter') {
+      const day = CalendarDay.from(new Date(getViewElement(event)));
 
-  private _clearRangePreview(): void {
-    if (this._rangePreviewDate) {
+      if (this._values.length === 1 && !this._rangeStart!.equalTo(day)) {
+        this._setRangePreviewDate(day);
+      }
+    } else if (this._rangePreviewDate) {
       this._setRangePreviewDate();
     }
   }
@@ -358,17 +335,6 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
     return formatter.format(day.native);
   }
 
-  private _getDayHandlers(day: CalendarDay) {
-    if (!this._isRange) {
-      return { changePreview: nothing, clearPreview: nothing };
-    }
-
-    return {
-      changePreview: this._changeRangePreview.bind(this, day),
-      clearPreview: this._clearRangePreview.bind(this),
-    };
-  }
-
   private _getDayProperties(
     day: CalendarDay,
     context: DayRenderContext
@@ -429,7 +395,7 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
       this._intlFormatDay(day, context),
       ...this._getDayLabels(day, props),
     ].join(', ');
-    const { changePreview, clearPreview } = this._getDayHandlers(day);
+    const preview = bindIf(this._isRange, this._handleDayPreview);
 
     return html`
       <span part=${partMap({ date: true, ...props })}>
@@ -441,10 +407,10 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
           aria-selected=${props.selected}
           data-value=${day.timestamp}
           tabindex=${this.active && day.equalTo(this._activeDate) ? 0 : -1}
-          @focus=${changePreview}
-          @blur=${clearPreview}
-          @pointerenter=${changePreview}
-          @pointerleave=${clearPreview}
+          @focus=${preview}
+          @blur=${preview}
+          @pointerenter=${preview}
+          @pointerleave=${preview}
         >
           ${day.date}
         </span>

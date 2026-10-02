@@ -21,11 +21,6 @@ $row-gap: rem(4px);
 
     // TODO: Hide the 7th row only when all its children have the hidden part.
     // This requires knowing if the calendar is in multi view.
-    // &:nth-child(7) {
-    //     > [part~='date']:has(:not([part~='hidden'])) {
-    //         display: none;
-    //     }
-    // }
 }
 
 

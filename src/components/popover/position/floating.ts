@@ -92,7 +92,6 @@ export class FloatingPositionStrategy extends PopoverPositionStrategy {
     });
   }
 
-  /** Waits for the module load and then for the position. */
   public override async whenPositioned(): Promise<void> {
     await this._pendingLoad;
     await this._pendingPosition;

@@ -350,7 +350,7 @@ export default class IgcDatePickerComponent extends EventEmitterMixin<
 
     const draft = (event.target as IgcDateTimeInputComponent)._uncommittedValue;
 
-    this._calendar.activeDate = draft ?? this._calendar.activeDate;
+    this._setCalendarActiveDate(draft);
     this.emitEvent('igcInput', { detail: draft });
   }
 

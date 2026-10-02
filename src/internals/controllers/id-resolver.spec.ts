@@ -13,7 +13,6 @@ import {
   type IdRefResolverController,
 } from './id-resolver.js';
 
-// Shared host definition (registered once)
 type HostInstance = LitElement & {
   resolver: IdRefResolverController;
   receivedIds: Set<string> | null;
@@ -21,7 +20,6 @@ type HostInstance = LitElement & {
   capturedThis: unknown;
 };
 
-// Second host definition for multi-controller tests
 type SecondHostInstance = LitElement & {
   resolver: IdRefResolverController;
   callCount: number;

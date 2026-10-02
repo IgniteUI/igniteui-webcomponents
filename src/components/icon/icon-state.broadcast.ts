@@ -13,12 +13,9 @@ type IconBroadcastEvent =
   | PageTransitionEvent;
 
 /**
- * Publishes icon registry state to other same-origin browsing contexts.
- *
- * @remarks
- * The traffic is one-way: it sends registrations and reference updates, and
- * answers a `SyncState` request with the user-set state. The peer is the
- * Ignite UI for Angular icon service.
+ * Publishes icon registry state to other same-origin browsing contexts. The traffic is
+ * one-way: it sends registrations and reference updates, and answers a `SyncState`
+ * request of the Ignite UI for Angular icon service with the user-set state.
  *
  * The channel opens on page show and closes on page hide, so a page restored
  * from the bfcache gets a working one. Under SSR the instance is inert.

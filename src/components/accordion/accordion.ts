@@ -47,10 +47,7 @@ export default class IgcAccordionComponent extends LitElement {
     return this._panels.filter((panel) => !panel.disabled);
   }
 
-  /**
-   * The interactive panels that keyboard navigation can focus.
-   * A panel that does not render (for example, `hidden`) cannot take focus.
-   */
+  /** Interactive panels that render. A `hidden` panel cannot take focus. */
   private get _navigablePanels(): IgcExpansionPanelComponent[] {
     return this._interactivePanels.filter((panel) =>
       this._getPanelHeader(panel)?.checkVisibility({ visibilityProperty: true })
@@ -85,8 +82,8 @@ export default class IgcAccordionComponent extends LitElement {
     addKeybindings(this, { skip: this._skipKeybinding })
       .set(homeKey, this._navigateToFirst)
       .set(endKey, this._navigateToLast)
-      .set(arrowUp, this._navigateToPrevious)
-      .set(arrowDown, this._navigateToNext)
+      .set(arrowUp, (event) => this._navigateBy(event, -1))
+      .set(arrowDown, (event) => this._navigateBy(event, 1))
       .set([shiftKey, altKey, arrowDown], this._expandAll)
       .set([shiftKey, altKey, arrowUp], this._collapseAll);
   }
@@ -106,11 +103,7 @@ export default class IgcAccordionComponent extends LitElement {
       return;
     }
 
-    await Promise.all(
-      this._interactivePanels
-        .filter((panel) => panel.open && panel !== current)
-        .map((panel) => this._closePanel(panel))
-    );
+    await this._closeOthers(current);
   }
 
   //#endregion
@@ -132,44 +125,28 @@ export default class IgcAccordionComponent extends LitElement {
     this._getPanelHeader(lastOf(this._navigablePanels))?.focus();
   }
 
-  private _navigateToPrevious(event: KeyboardEvent): void {
+  private _navigateBy(event: KeyboardEvent, dir: 1 | -1): void {
+    const panels = this._navigablePanels;
     const current = event.target as IgcExpansionPanelComponent;
-    const next = this._getNextPanel(current, -1);
+    const next = panels[panels.indexOf(current) + dir];
 
-    if (next !== current) {
-      this._getPanelHeader(next)?.focus();
-    }
-  }
-
-  private _navigateToNext(event: KeyboardEvent): void {
-    const current = event.target as IgcExpansionPanelComponent;
-    const next = this._getNextPanel(current, 1);
-
-    if (next !== current) {
+    if (next) {
       this._getPanelHeader(next)?.focus();
     }
   }
 
   private async _collapseAll(): Promise<void> {
-    await Promise.all(
-      this._interactivePanels.map((panel) => this._closePanel(panel))
-    );
+    await Promise.all(this._interactivePanels.map((panel) => panel._hide()));
   }
 
   private async _expandAll(event: KeyboardEvent): Promise<void> {
     const current = event.target as IgcExpansionPanelComponent;
 
     if (this.singleExpand) {
-      const closePromises = this._interactivePanels
-        .filter((panel) => panel.open && panel !== current)
-        .map((panel) => this._closePanel(panel));
-
-      await Promise.all(closePromises);
-      await this._openPanel(current);
+      await this._closeOthers(current);
+      await current._show();
     } else {
-      await Promise.all(
-        this._interactivePanels.map((panel) => this._openPanel(panel))
-      );
+      await Promise.all(this._interactivePanels.map((panel) => panel._show()));
     }
   }
 
@@ -183,22 +160,14 @@ export default class IgcAccordionComponent extends LitElement {
     return panel['_headerRef'].value;
   }
 
-  private _getNextPanel(
-    panel: IgcExpansionPanelComponent,
-    dir: 1 | -1 = 1
-  ): IgcExpansionPanelComponent {
-    const panels = this._navigablePanels;
-    const idx = panels.indexOf(panel);
-
-    return panels[idx + dir] || panel;
-  }
-
-  private _closePanel(panel: IgcExpansionPanelComponent): Promise<boolean> {
-    return panel._hide();
-  }
-
-  private _openPanel(panel: IgcExpansionPanelComponent): Promise<boolean> {
-    return panel._show();
+  private _closeOthers(
+    current: IgcExpansionPanelComponent
+  ): Promise<boolean[]> {
+    return Promise.all(
+      this._interactivePanels
+        .filter((panel) => panel.open && panel !== current)
+        .map((panel) => panel._hide())
+    );
   }
 
   //#endregion

@@ -1,3 +1,5 @@
+import { clamp } from '#internals/utils/math.js';
+
 const ONE_THIRD = 1 / 3;
 const TWO_THIRDS = 2 / 3;
 
@@ -8,9 +10,7 @@ export type HSV = [number, number, number];
 export const converter = Object.freeze({
   rgb: {
     hex: (rgb: RGB): string => {
-      const [r, g, b] = rgb.map((v) =>
-        Math.min(255, Math.max(0, Math.round(v)))
-      );
+      const [r, g, b] = rgb.map((v) => clamp(Math.round(v), 0, 255));
       const value = (r << 16) + (g << 8) + b;
       return value.toString(16).padStart(6, '0');
     },

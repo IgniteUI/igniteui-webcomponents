@@ -15,15 +15,6 @@ const rippleAnimation: KeyframeAnimationOptions = {
   easing: 'linear', // --igc-ripple-easing
 };
 
-let rippleElement: HTMLElement;
-
-function getRippleElement(): HTMLSpanElement {
-  if (!rippleElement) {
-    rippleElement = document.createElement('span');
-  }
-  return rippleElement.cloneNode() as HTMLElement;
-}
-
 /**
  * A ripple can be applied to an element to represent
  * an interactive surface.
@@ -49,13 +40,13 @@ export default class IgcRippleComponent extends LitElement {
       return;
     }
 
-    const element = getRippleElement();
+    const element = document.createElement('span');
     const { radius, top, left } = this._getDimensions(
       event.clientX,
       event.clientY
     );
 
-    const styles: Partial<CSSStyleDeclaration> = {
+    setStyles(element, {
       position: 'absolute',
       display: 'block',
       pointerEvents: 'none',
@@ -70,9 +61,7 @@ export default class IgcRippleComponent extends LitElement {
       top: `${top}px`,
       left: `${left}px`,
       background: 'var(--color, var(--ig-gray-800))',
-    };
-
-    setStyles(element, styles);
+    });
     this.renderRoot.appendChild(element);
 
     await element.animate(rippleFrames, rippleAnimation).finished;

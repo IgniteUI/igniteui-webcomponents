@@ -31,7 +31,6 @@ export class ChatState {
   private _actionsTooltip?: IgcTooltipComponent;
   private _actionToast?: IgcToastComponent;
 
-  private _messages: IgcChatMessage[] = [];
   private _options?: IgcChatOptions;
 
   private _inputAttachments: IgcChatMessageAttachment[] = [];
@@ -42,6 +41,8 @@ export class ChatState {
   //#endregion
 
   //#region Public properties
+
+  public messages: IgcChatMessage[] = [];
 
   public get host(): IgcChatComponent {
     return this._host;
@@ -55,35 +56,26 @@ export class ChatState {
     return this._options?.disableAutoScroll ?? false;
   }
 
-  public get messages(): IgcChatMessage[] {
-    return this._messages;
-  }
-
-  public set messages(value: IgcChatMessage[]) {
-    this._messages = value;
-  }
-
   public get options(): IgcChatOptions | undefined {
     return this._options;
   }
 
   public set options(value: IgcChatOptions) {
     this._options = value;
-    this._setAcceptedTypesCache();
+    this._acceptedTypesCache = value?.acceptedFiles
+      ? parseAcceptedFileTypes(value.acceptedFiles)
+      : null;
     this._contextUpdateFn.call(this._host);
   }
 
-  /** Defaults to `'user'`. */
   public get currentUserId(): string {
     return this._options?.currentUserId ?? 'user';
   }
 
-  /** Defaults to `'below-messages'`. */
   public get suggestionsPosition(): ChatSuggestionsPosition {
     return this._options?.suggestionsPosition ?? 'below-messages';
   }
 
-  /** Defaults to `3000`. */
   public get stopTypingDelay(): number {
     return this._options?.stopTypingDelay ?? 3000;
   }
@@ -187,9 +179,7 @@ export class ChatState {
     return this._host.emitEvent('igcTypingChange', { detail: state });
   }
 
-  /**
-   * @internal
-   */
+  /** @internal */
   public showActionsTooltip(target: Element, message: string): void {
     if (!this._actionsTooltip) {
       this._actionsTooltip = document.createElement(
@@ -203,9 +193,7 @@ export class ChatState {
     this._actionsTooltip.show(target);
   }
 
-  /**
-   * @internal
-   */
+  /** @internal */
   public showActionToast(content: string): void {
     if (!this._actionToast) {
       this._actionToast = document.createElement(IgcToastComponent.tagName);
@@ -218,12 +206,6 @@ export class ChatState {
 
   //#endregion
 
-  private _setAcceptedTypesCache(): void {
-    this._acceptedTypesCache = this.options?.acceptedFiles
-      ? parseAcceptedFileTypes(this.options.acceptedFiles)
-      : null;
-  }
-
   protected _createMessage(message: Partial<IgcChatMessage>): IgcChatMessage {
     return {
       id: message.id ?? nanoid(),
@@ -232,11 +214,6 @@ export class ChatState {
       timestamp: message.timestamp ?? Date.now().toString(),
       attachments: message.attachments || [],
     };
-  }
-
-  public addMessage(message: Partial<IgcChatMessage>) {
-    this.messages.push(this._createMessage(message));
-    this._host.requestUpdate('messages');
   }
 
   //#region Public API
@@ -250,7 +227,8 @@ export class ChatState {
     const newMessage = this._createMessage(message);
 
     if (this.emitMessageCreated(newMessage)) {
-      this.addMessage(newMessage);
+      this.messages.push(this._createMessage(newMessage));
+      this._host.requestUpdate('messages');
       this.inputValue = '';
       this.inputAttachments = [];
     }

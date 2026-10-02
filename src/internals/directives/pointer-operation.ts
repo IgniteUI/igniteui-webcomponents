@@ -8,7 +8,6 @@ import {
 } from 'lit/async-directive.js';
 import { createAbortHandle } from '../abort-handler.js';
 import { escapeKey, isKey } from '../controllers/keys.js';
-import { getDefaultLayer } from '../utils/dom.js';
 import { preventDefault } from '../utils/events.js';
 import { resolveValue } from '../utils/types.js';
 
@@ -129,7 +128,7 @@ export abstract class PointerOperationDirective<
   }
 
   protected _resolveLayer(): HTMLElement {
-    return this._options.layer?.() ?? getDefaultLayer();
+    return this._options.layer?.() ?? document.body;
   }
 
   protected _createGhost(initial: DOMRect): HTMLElement {

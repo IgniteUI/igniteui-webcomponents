@@ -103,7 +103,6 @@ interface EyeDropperLike {
 
 type EyeDropperConstructor = new () => EyeDropperLike;
 
-/** Returns the EyeDropper constructor, if the browser provides one. */
 function getEyeDropper(): EyeDropperConstructor | undefined {
   return (globalThis as { EyeDropper?: EyeDropperConstructor }).EyeDropper;
 }
@@ -195,10 +194,8 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
     initialValue: '',
   });
 
-  private readonly _alphaRef = createRef<HTMLInputElement>();
   private readonly _alphaInputRef = createRef<IgcInputComponent>();
   private readonly _canvasRef = createRef<IgcPickerCanvasComponent>();
-  private readonly _hueRef = createRef<HTMLInputElement>();
   private readonly _anchorRef = createRef<
     HTMLButtonElement | IgcInputComponent
   >();
@@ -333,10 +330,7 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
     addAriaProjector(this, {
       target: () => (this._isInputMode ? this._anchorRef.value : null),
       // A text input cannot have `aria-expanded`. The prefix button has it.
-      state: () => ({
-        hasPopup: 'dialog',
-        describedBy: this._helperText ? [this._helperText] : null,
-      }),
+      state: () => ({ hasPopup: 'dialog' }),
     });
   }
 
@@ -387,10 +381,6 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
 
   //#region Event handlers
 
-  private _handleClosing(): void {
-    this._hide(true);
-  }
-
   private async _handleKeyboardClosing(): Promise<void> {
     if (await this._hide(true)) {
       this._anchorRef.value?.focus();
@@ -427,7 +417,7 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
   private _handleHueValueChange(event: Event): void {
     stopPropagation(event);
 
-    this._color.h = asNumber(this._hueRef.value?.value);
+    this._color.h = asNumber((event.target as HTMLInputElement).value);
     this._updateColor();
     this._emitInputEvent();
   }
@@ -435,15 +425,12 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
   private _handleAlphaSliderValueChange(event: Event): void {
     stopPropagation(event);
 
-    this._setAlpha(asNumber(this._alphaRef.value?.value));
+    this._setAlpha(asNumber((event.target as HTMLInputElement).value));
   }
 
   /**
-   * Writes the alpha field again as `<digits>%` after each edit.
-   *
-   * @remarks
-   * The `%` is editable text. The handler corrects the result of each edit,
-   * because `beforeinput` carries `data` only for typing, not for paste, drop,
+   * Writes the alpha field again as `<digits>%` after each edit, because
+   * `beforeinput` carries `data` only for typing, not for paste, drop,
    * composition, undo or autofill.
    */
   private _handleAlphaInputEdit(event: Event): void {
@@ -467,10 +454,8 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
   }
 
   /**
-   * Keeps the caret and the selection in the digits.
-   *
-   * @remarks
-   * Runs on `keyup`, `focusin` and `click`, which can put the caret after the `%`.
+   * Keeps the caret and the selection in the digits. `keyup`, `focusin` and
+   * `click` can put the caret after the `%`.
    */
   private _handleAlphaInputCaret(event: Event): void {
     const native = getElementFromPath<HTMLInputElement>('input', event);
@@ -485,12 +470,9 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
   }
 
   /**
-   * Steps the alpha by one percent.
-   *
-   * @remarks
-   * The step uses the color, not the text: a held key repeats faster than a
-   * render, so the text can be stale. The handler writes the text itself,
-   * because a write from the render applies one frame late and the caret jumps.
+   * Steps the alpha from the color, not the text, because a held key repeats
+   * faster than a render. It writes the text itself, because a write from the
+   * render applies one frame late and the caret jumps.
    */
   private _handleAlphaInputSpin(increment: -1 | 1): void {
     const input = this._alphaInputRef.value;
@@ -596,15 +578,9 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
   }
 
   /**
-   * The current color with an opaque alpha channel.
-   *
-   * @remarks
-   * The swatch preview paints it next to {@link _alphaColor}, so a translucent
-   * color shows next to its opaque form.
-   *
-   * An empty color gives white, where the alpha ramp and the canvas marker
-   * start. The anchor keeps its "no color" mark, because {@link _previewStyle}
-   * uses {@link _alphaColor}, which stays empty.
+   * The current color with an opaque alpha. An empty color gives white, where
+   * the alpha ramp and the canvas marker start. The anchor still shows "no
+   * color", because {@link _previewStyle} uses {@link _alphaColor}.
    */
   private get _opaqueColor(): string {
     return new ColorModel(this._color.toRGB()).asString('rgb');
@@ -621,11 +597,8 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
   }
 
   /**
-   * Copies the colors that the stylesheet needs onto the host.
-   *
-   * @remarks
-   * `update()` calls this, so it also runs on the first render of a picker
-   * with no value, when no color handler runs.
+   * Copies the colors that the stylesheet needs onto the host. `update()` calls
+   * it, so it also runs on a first render with no value.
    */
   private _applyColorProperties(): void {
     const properties = {
@@ -678,9 +651,7 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
     const value = this._color.asString(this.format);
 
     if (value !== this.value) {
-      const pristine = this._pristine;
-      this._formValue.setValueAndFormState(value);
-      this._pristine = pristine;
+      this._withPristine(() => this._formValue.setValueAndFormState(value));
     }
   }
 
@@ -732,7 +703,6 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
   private _renderHueSlider(): TemplateResult {
     return html`
       <input
-        ${ref(this._hueRef)}
         aria-label="Hue"
         type="range"
         part="hue"
@@ -792,7 +762,6 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
   private _renderAlphaRow(): TemplateResult {
     return html`
       <input
-        ${ref(this._alphaRef)}
         aria-label="Alpha slider"
         type="range"
         part="alpha"
@@ -909,7 +878,6 @@ export default class IgcColorPickerComponent extends FormAssociatedRequiredMixin
 
   /**
    * The swatch preview style that both anchors use.
-   *
    * `--_color-preview` paints the opaque color over the left half.
    * `--_alpha-preview` paints the color with its real alpha over the whole
    * surface. Do not transpose the two. See the `swatch-preview` mixin.

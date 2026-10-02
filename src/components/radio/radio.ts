@@ -111,7 +111,6 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
     return getGroupMembers(this);
   }
 
-  /** All radios of the group that are not disabled. */
   private get _activeRadios(): IgcRadioComponent[] {
     return this._radios.filter((radio) => !radio.disabled);
   }
@@ -125,7 +124,6 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
     }
   }
 
-  /** Whether this radio is the last checked one of its group. */
   private _isLastChecked(): boolean {
     return this._radios.findLast((radio) => radio.checked) === this;
   }

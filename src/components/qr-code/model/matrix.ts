@@ -96,13 +96,6 @@ const VERSION_INFO_TABLE: number[] = [
   0x28c69, // V40
 ];
 
-const EC_LEVEL_FORMAT_INDEX: Record<QrErrorCorrectionLevel, number> = {
-  L: 0,
-  M: 1,
-  Q: 2,
-  H: 3,
-};
-
 function createMatrix(size: number): boolean[][] {
   return Array.from({ length: size }, () => new Array(size).fill(false));
 }
@@ -121,16 +114,10 @@ function placeFinderPattern(
       if (mr < 0 || mr >= matrix.length || mc < 0 || mc >= matrix.length) {
         continue;
       }
+      // Rings from the center: dark 3x3, light, dark, light separator.
+      const ring = Math.max(Math.abs(r - 3), Math.abs(c - 3));
       functionModules[mr][mc] = true;
-      if (r === -1 || r === 7 || c === -1 || c === 7) {
-        matrix[mr][mc] = false; // Separator (white border)
-      } else if (r === 0 || r === 6 || c === 0 || c === 6) {
-        matrix[mr][mc] = true; // Finder pattern (black)
-      } else if (r >= 2 && r <= 4 && c >= 2 && c <= 4) {
-        matrix[mr][mc] = true; // inner square (black)
-      } else {
-        matrix[mr][mc] = false; // inner area (white)
-      }
+      matrix[mr][mc] = ring !== 2 && ring !== 4;
     }
   }
 }
@@ -144,16 +131,8 @@ function placeAlignmentPattern(
 ): void {
   for (let r = -2; r <= 2; r++) {
     for (let c = -2; c <= 2; c++) {
-      const mr = row + r;
-      const mc = col + c;
-      functionModules[mr][mc] = true;
-      if (r === -2 || r === 2 || c === -2 || c === 2) {
-        matrix[mr][mc] = true; // Alignment pattern (black)
-      } else if (r === 0 && c === 0) {
-        matrix[mr][mc] = true; // center module (black)
-      } else {
-        matrix[mr][mc] = false; // other modules (white)
-      }
+      functionModules[row + r][col + c] = true;
+      matrix[row + r][col + c] = Math.max(Math.abs(r), Math.abs(c)) !== 1;
     }
   }
 }
@@ -191,22 +170,17 @@ const FORMAT_INFO_POSITIONS: [number, number][] = [
   [0, 8],
 ];
 
-/** Reserves the modules of the 15-bit format information (error correction level and mask). */
-function reserveFormatInfoAreas(
-  functionModules: boolean[][],
-  size: number
-): void {
-  for (const [r, c] of FORMAT_INFO_POSITIONS) {
-    functionModules[r][c] = true;
-  }
-
-  for (let i = 0; i < 8; i++) {
-    functionModules[8][size - 1 - i] = true;
-  }
-
-  for (let i = 0; i < 7; i++) {
-    functionModules[size - 7 + i][8] = true;
-  }
+/**
+ * Returns `[row, col, bit]` for both copies of the 15-bit format information (error
+ * correction level and mask), where `bit` 0 is the least significant.
+ */
+function formatInfoModules(size: number): [number, number, number][] {
+  const modules = FORMAT_INFO_POSITIONS.map(
+    ([r, c], i): [number, number, number] => [r, c, 14 - i]
+  );
+  for (let i = 0; i < 8; i++) modules.push([8, size - 1 - i, i]);
+  for (let i = 0; i < 7; i++) modules.push([size - 7 + i, 8, i + 7]);
+  return modules;
 }
 
 /**
@@ -296,7 +270,7 @@ export function generateQRCodeMatrix(
   requiredVersion?: number
 ): QRCodeMatrixResult {
   const encoded = encodeQR(data, ecLevel, requiredVersion);
-  const { codewords, version } = encoded;
+  const { codewords, version, ecLevelIndex } = encoded;
 
   const size = version * 4 + 17;
   const matrix = createMatrix(size);
@@ -330,7 +304,8 @@ export function generateQRCodeMatrix(
 
   reserveVersionInfoAreas(matrix, functionModules, version);
 
-  reserveFormatInfoAreas(functionModules, size);
+  const formatModules = formatInfoModules(size);
+  for (const [r, c] of formatModules) functionModules[r][c] = true;
 
   placeDataBits(matrix, functionModules, codewords);
 
@@ -338,33 +313,11 @@ export function generateQRCodeMatrix(
 
   const maskedMatrix = applyMask(matrix, functionModules, bestMask);
 
-  const ecFormatIndex = EC_LEVEL_FORMAT_INDEX[ecLevel];
-  const formatBits = FORMAT_INFO_TABLE[ecFormatIndex * 8 + bestMask];
-  writeFormatInfo(maskedMatrix, formatBits, size);
+  const formatBits = FORMAT_INFO_TABLE[ecLevelIndex * 8 + bestMask];
+  for (const [r, c, bit] of formatModules) {
+    maskedMatrix[r][c] = ((formatBits >> bit) & 1) === 1;
+  }
+  maskedMatrix[size - 8][8] = true;
 
   return { matrix: maskedMatrix, version, size };
-}
-
-function writeFormatInfo(
-  matrix: boolean[][],
-  formatBits: number,
-  size: number
-): void {
-  for (let i = 0; i < 15; i++) {
-    const bit = (formatBits >> (14 - i)) & 1;
-    const [r, c] = FORMAT_INFO_POSITIONS[i];
-    matrix[r][c] = bit === 1;
-  }
-
-  for (let i = 0; i < 8; i++) {
-    const bit = (formatBits >> i) & 1;
-    matrix[8][size - 1 - i] = bit === 1;
-  }
-
-  for (let i = 0; i < 7; i++) {
-    const bit = (formatBits >> (i + 7)) & 1;
-    matrix[size - 7 + i][8] = bit === 1;
-  }
-
-  matrix[size - 8][8] = true;
 }

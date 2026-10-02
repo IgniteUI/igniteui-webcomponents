@@ -5,23 +5,12 @@ import { createAsyncContext } from '#internals/controllers/async-consumer.js';
 import { addInternalsController } from '#internals/controllers/internals.js';
 import { addSlotController, DefaultSlot } from '#internals/controllers/slot.js';
 import { registerComponent } from '#internals/definitions/register.js';
-import { setOrRemoveAttribute } from '#internals/utils/dom.js';
+import { getTabbables, setOrRemoveAttribute } from '#internals/utils/dom.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import IgcIconComponent from '../icon/icon.js';
 import { styles } from './themes/breadcrumb.base.css.js';
 import { styles as shared } from './themes/shared/breadcrumb.common.css.js';
 import { all } from './themes/themes.js';
-
-const TabbableSelector =
-  'a[href], button, input, textarea, select, details, [tabindex]:not([tabindex="-1"])';
-
-/** Returns `root` itself, when tabbable, followed by its tabbable descendants. */
-function getTabbables(root: HTMLElement): HTMLElement[] {
-  const descendants = root.querySelectorAll<HTMLElement>(TabbableSelector);
-  return root.matches(TabbableSelector)
-    ? [root, ...descendants]
-    : [...descendants];
-}
 
 /**
  * A single item within a breadcrumb navigation trail.

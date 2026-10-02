@@ -91,7 +91,6 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
     onHide: () => this._hideOnInteraction(),
     onEscape: () => this._hideOnEscape(),
     onClick: () => this._cancelTransition(),
-    // The controller dropped the anchor the tooltip is bound to.
     onReset: () => this._cancelTransition(false),
   });
 
@@ -496,39 +495,22 @@ export default class IgcTooltipComponent extends EventEmitterMixin<
     return await (this.open ? this.hide() : this.show());
   }
 
-  protected _showWithEvent(): Promise<boolean> {
-    return this._applyTooltipState({
-      show: true,
-      withDelay: true,
-      withEvents: true,
-    });
-  }
-
-  protected _hideWithEvent(): Promise<boolean> {
-    return this._applyTooltipState({
-      show: false,
-      withDelay: true,
-      withEvents: true,
-    });
-  }
-
   private _showOnInteraction(): void {
     this._cancelTransition();
-    this._showWithEvent();
+    this._applyTooltipState({ show: true, withDelay: true, withEvents: true });
   }
 
   private _hideOnInteraction(): void {
     if (!this.sticky) {
-      this._hideWithEvent();
+      this._applyTooltipState({
+        show: false,
+        withDelay: true,
+        withEvents: true,
+      });
     }
   }
 
-  /**
-   * Closes the tooltip with events. Ignores `hideDelay` and `sticky`.
-   *
-   * @remarks
-   * The sticky close button and the `close` scroll strategy call this method.
-   */
+  /** Closes the tooltip with events. Ignores `hideDelay` and `sticky`. */
   private _hideImmediately(): void {
     this._applyTooltipState({ show: false, withEvents: true });
   }

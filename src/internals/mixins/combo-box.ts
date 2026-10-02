@@ -52,6 +52,10 @@ export abstract class IgcBaseComboBoxComponent extends LitElement {
     this.open ? this._hide(true) : this._show(true);
   }
 
+  protected _handleClosing(): void {
+    this._hide(true);
+  }
+
   protected _hide(emitEvent = false): Promise<boolean> {
     return this._toggleController.hide(emitEvent);
   }

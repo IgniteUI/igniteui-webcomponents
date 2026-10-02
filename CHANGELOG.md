@@ -27,7 +27,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - A space in `searchText` now matches any run of whitespace in the content, such as a line break in the HTML source. Before, "cold brew" did not find the two words when a line break separated them.
 - #### Input
   - `setRangeText()` without `start` and `end` now replaces the selected text, as the native method does. Before, it inserted the text at the start of the value.
-  - `pattern` now has to match the whole value, as for a native input. Before, a match in a part of the value was enough, so `[0-9]{3}` accepted `1234`.
+  - `pattern` now has to match the whole value, as for a native input. Before, a match in a part of the value was enough, so `[0-9]{3}` accepted `1234`. The pattern also compiles with the `v` flag, and an invalid pattern sets no constraint. Before, an invalid pattern threw an error in `checkValidity()`.
 - #### Icon
   - The SVG of an icon is now hidden from assistive technologies, because the host carries the name. Before, the SVG of an icon without a title was still an unnamed image. A change of `aria-label` or `aria-labelledby` now updates the role of the icon.
 - #### Dialog

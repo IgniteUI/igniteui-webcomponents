@@ -58,7 +58,6 @@ const DEFAULT_DATE_VALUES = {
   seconds: 0,
 } as const;
 
-/** Default date/time format */
 export const DEFAULT_DATETIME_FORMAT = 'MM/dd/yyyy';
 
 //#endregion
@@ -71,11 +70,6 @@ type PartBuilder = DatePartOptions & { type: DatePartType };
 /**
  * Converts a date format string into a mask pattern. Date characters become `0`, or `L`
  * for the alphabetic AM/PM marker. Other characters stay literal.
- *
- * @example
- * ```ts
- * toMaskFormat('MM/dd/yyyy'); // '00/00/0000'
- * ```
  */
 function toMaskFormat(dateFormat: string): string {
   let result = '';

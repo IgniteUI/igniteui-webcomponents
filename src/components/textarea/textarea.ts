@@ -1,6 +1,5 @@
 import { html, LitElement, type PropertyValues } from 'lit';
 import { property, query } from 'lit/decorators.js';
-import { cache } from 'lit/directives/cache.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 import { styleMap } from 'lit/directives/style-map.js';
@@ -438,21 +437,17 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
   }
 
   protected override render() {
-    return cache(
-      renderInputShell(this, {
-        theme: this._themes.theme,
-        label: this.label,
-        labelId: this._inputId,
-        containerParts: resolveInputPartNames(
-          this._slots,
-          'container',
-          !!this.value
-        ),
-        materialParts: { placeholder: !!this.placeholder },
-        hideEmptyAffixes: true,
-        renderInput: this._renderInput,
-      })
-    );
+    return renderInputShell(this, {
+      theme: this._themes.theme,
+      label: this.label,
+      labelId: this._inputId,
+      containerParts: {
+        ...resolveInputPartNames(this._slots, 'container', !!this.value),
+        placeholder: this._themes.theme === 'material' && !!this.placeholder,
+      },
+      hideEmptyAffixes: true,
+      renderInput: this._renderInput,
+    });
   }
 
   //#endregion

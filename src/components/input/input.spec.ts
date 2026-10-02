@@ -805,6 +805,24 @@ describe('Input component', () => {
         spec.assertSubmitFails();
       });
 
+      it('compiles the pattern with the `v` flag, as a native input', () => {
+        spec.setProperties({
+          pattern: '[\\p{L}--[a-z]]+',
+          defaultValue: 'ABC',
+        });
+        spec.assertSubmitPasses();
+
+        spec.setProperties({ defaultValue: 'abc' });
+        spec.assertSubmitFails();
+      });
+
+      it('sets no pattern constraint for an invalid pattern', () => {
+        spec.setProperties({ pattern: '[', defaultValue: 'abc' });
+
+        expect(() => spec.element.checkValidity()).not.to.throw();
+        spec.assertSubmitPasses();
+      });
+
       it('fails email schema validation', () => {
         spec.setProperties({ type: 'email', defaultValue: '123' });
 

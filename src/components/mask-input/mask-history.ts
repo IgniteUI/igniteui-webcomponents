@@ -18,17 +18,10 @@ type MaskSignature = () => string;
 const MAX_HISTORY_SIZE = 100;
 
 /**
- * The undo and redo history of a masked editor.
- *
- * @remarks
- * `.value=${live(...)}` assigns the native value on each edit, which clears the
- * undo stack of the browser. This history replaces that stack.
- *
- * The caret geometry alone groups a run. There are no timers.
- *
- * The history invalidates itself on an outside text change, such as a `value`
- * from code, `clear()` or a form reset, and on a changed mask signature. No
- * call site has to report those changes.
+ * The undo and redo history of a masked editor. `.value=${live(...)}` clears
+ * the browser undo stack on each edit, so this history replaces it. The caret
+ * geometry alone groups a run. An outside text change or a changed mask
+ * signature invalidates the history.
  *
  * @hidden
  */
@@ -43,11 +36,8 @@ class MaskHistory {
   private _pattern = '';
 
   /**
-   * The state that the last traversal restored.
-   *
-   * @remarks
-   * A held `Ctrl + Z` repeats faster than the caret reaches the DOM, so the
-   * opposite stack takes this state instead of the live selection.
+   * The state that the last traversal restored. A held `Ctrl + Z` repeats faster
+   * than the caret reaches the DOM, so the opposite stack takes this state.
    */
   private _lastRestored: MaskHistoryState | null = null;
 
@@ -194,15 +184,8 @@ class MaskHistory {
 }
 
 /**
- * Creates a {@link MaskHistory} for a masked editor.
- *
- * @param signature - Resolves the identity of the mask pattern. It is a callback because
- * the mixin fields initialize *before* the parser of the concrete component.
- *
- * @example
- * ```ts
- * const history = createMaskHistory(() => `${parser.mask} ${parser.prompt}`);
- * ```
+ * Creates a {@link MaskHistory} for a masked editor. `signature` is a callback,
+ * because the mixin fields initialize before the parser of the concrete component.
  */
 export function createMaskHistory(signature: MaskSignature): MaskHistory {
   return new MaskHistory(signature);

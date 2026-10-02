@@ -52,9 +52,7 @@ type ToggleControllerOptions = {
  * transition, awaits the host update, then sends `igcOpened` or `igcClosed`.
  * The events run only when the caller asks for them.
  *
- * The host keeps its public `open`, `show()`, `hide()` and `toggle()` members
- * and delegates to the controller. The controller has no life cycle, so the
- * host does not register it.
+ * The controller has no life cycle, so the host does not register it.
  */
 class ToggleController {
   private readonly _host: ToggleHost;

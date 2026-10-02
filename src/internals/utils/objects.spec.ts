@@ -1,5 +1,5 @@
 import { expect } from '@open-wc/testing';
-import { equal } from './objects.js';
+import { equal, moveFlag } from './objects.js';
 
 describe('equal', () => {
   it('should return true for strictly equal primitive values', () => {
@@ -451,5 +451,33 @@ describe('equal', () => {
     c.self = c;
     d.self = d;
     expect(equal(c, d)).to.be.false;
+  });
+});
+
+describe('moveFlag', () => {
+  it('clears the flag on the old item and sets it on the new one', () => {
+    const from = { active: true };
+    const to = { active: false };
+
+    moveFlag(from, to, 'active');
+    expect(from.active).to.be.false;
+    expect(to.active).to.be.true;
+  });
+
+  it('keeps the flag when both items are the same', () => {
+    const item = { active: true };
+
+    moveFlag(item, item, 'active');
+    expect(item.active).to.be.true;
+  });
+
+  it('accepts a missing item on either side', () => {
+    const item = { selected: true };
+
+    moveFlag(item, null, 'selected');
+    expect(item.selected).to.be.false;
+
+    moveFlag(undefined, item, 'selected');
+    expect(item.selected).to.be.true;
   });
 });

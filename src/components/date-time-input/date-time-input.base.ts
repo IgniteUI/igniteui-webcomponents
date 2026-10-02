@@ -1,6 +1,5 @@
 import { LitElement, type PropertyValues, type TemplateResult } from 'lit';
 import { eventOptions, property, query } from 'lit/decorators.js';
-import { cache } from 'lit/directives/cache.js';
 import {
   addAriaTarget,
   helperText,
@@ -30,7 +29,6 @@ import {
   resolveInputPartNames,
 } from '#internals/templates/input-shell.js';
 import { renderMaskedNativeInput } from '#internals/templates/masked-input.js';
-import { hasNegativeTabIndex } from '#internals/utils/dom.js';
 import { equal } from '#internals/utils/objects.js';
 import type { ThemingController } from '#theming/theming-controller.js';
 import type { RangeTextSelectMode } from '../types.js';
@@ -106,12 +104,8 @@ export abstract class IgcDateTimeInputBaseComponent<
   }
 
   /**
-   * Whether the user has an uncommitted edit.
-   *
-   * @remarks
-   * While set, the masked text is the source of truth. The parsed result reaches
-   * `value`, with `igcChange`, on blur. So a two-way bound host cannot replace a
-   * half-typed mask on an unrelated render.
+   * Whether the user has an uncommitted edit. While set, the masked text is the source
+   * of truth until blur, so a two-way bound host cannot replace a half-typed mask.
    */
   protected _isEditing = false;
 
@@ -354,9 +348,6 @@ export abstract class IgcDateTimeInputBaseComponent<
 
   //#region Keybindings
 
-  /**
-   * Navigates to the previous or next date part.
-   */
   protected _navigateParts(direction: number): void {
     const position = this._calculatePartNavigationPosition(
       this._input?.value ?? '',
@@ -518,9 +509,6 @@ export abstract class IgcDateTimeInputBaseComponent<
     this._updateMaskDisplay();
   }
 
-  /**
-   * Checks if all mask positions are filled (no prompt characters remain).
-   */
   protected _isMaskComplete(): boolean {
     return !this._maskedValue.includes(this.prompt);
   }
@@ -532,7 +520,6 @@ export abstract class IgcDateTimeInputBaseComponent<
     const previous = this._parser.mask;
     this._parser.mask = formatString;
 
-    // Update placeholder if not set or if it matches the old format
     if (!this.placeholder || previous === this.placeholder) {
       this.placeholder = this._parser.mask;
     }
@@ -607,16 +594,11 @@ export abstract class IgcDateTimeInputBaseComponent<
   //#region Render
 
   protected _renderInput(): TemplateResult {
-    return renderMaskedNativeInput({
+    return renderMaskedNativeInput(this, {
       id: this._inputId,
       partNames: this._resolvePartNames('input'),
-      name: this.name,
       value: this._maskedValue,
       placeholder: this.placeholder || this._parser.emptyMask,
-      readOnly: this.readOnly,
-      required: this.required,
-      disabled: this.disabled,
-      tabindex: hasNegativeTabIndex(this) ? -1 : undefined,
       aria: this._ariaTarget.resolveBindings(),
       onInput: this._handleInput,
       onBeforeInput: this._handleBeforeInput,
@@ -633,15 +615,13 @@ export abstract class IgcDateTimeInputBaseComponent<
   }
 
   protected override render() {
-    return cache(
-      renderInputShell(this, {
-        theme: this._themes.theme,
-        label: this.label,
-        labelId: this._inputId,
-        containerParts: this._resolvePartNames('container'),
-        renderInput: this._renderInput,
-      })
-    );
+    return renderInputShell(this, {
+      theme: this._themes.theme,
+      label: this.label,
+      labelId: this._inputId,
+      containerParts: this._resolvePartNames('container'),
+      renderInput: this._renderInput,
+    });
   }
 
   //#endregion
@@ -658,11 +638,9 @@ export abstract class IgcDateTimeInputBaseComponent<
   public abstract set value(value: T | null);
 
   /**
-   * Parses the masked text into the value type of the leaf.
-   *
-   * @remarks
-   * A `strict` parse gives `null` for an incomplete mask. A lenient parse fills the
-   * missing parts from their defaults. An empty mask gives `null` in both modes.
+   * Parses the masked text into the value type of the leaf. A `strict` parse gives `null`
+   * for an incomplete mask; a lenient one fills the missing parts from their defaults.
+   * An empty mask gives `null` in both modes.
    */
   protected abstract _parseMask(strict: boolean): T | null;
 

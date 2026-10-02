@@ -477,7 +477,6 @@ describe('ColorModel', () => {
       const rgb1 = color.asString('rgb');
       const hsl1 = color.asString('hsl');
 
-      // Simulate multiple conversions
       const { h, s, l } = color;
       color.h = h;
       color.s = s;
@@ -562,7 +561,6 @@ describe('ColorModel', () => {
       expect(clone.b).to.equal(original.b);
       expect(clone.alpha).to.equal(original.alpha);
 
-      // Verify it's a different instance
       clone.r = 200;
       expect(original.r).to.equal(128);
     });

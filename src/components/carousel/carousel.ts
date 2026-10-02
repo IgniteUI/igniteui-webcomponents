@@ -43,6 +43,7 @@ import { firstOf, isEmpty, lastOf } from '#internals/utils/arrays.js';
 import { isLTR, setOrRemoveAttribute } from '#internals/utils/dom.js';
 import {
   addSafeEventListener,
+  focusLeftHost,
   getElementFromPath,
 } from '#internals/utils/events.js';
 import { asNumber, wrap } from '#internals/utils/math.js';
@@ -127,10 +128,7 @@ export default class IgcCarouselComponent extends I18nMixin(
   private _hasPointerInteraction = false;
   private _hasInnerFocus = false;
 
-  /**
-   * Whether an interaction caused the paused state: a pointer over the carousel,
-   * or focus in it. A `pause()` call does not set it.
-   */
+  /** Set when a pointer or focus paused the carousel. `pause()` does not set it. */
   private _pausedByInteraction = false;
 
   private _slides: IgcCarouselSlideComponent[] = [];
@@ -166,7 +164,6 @@ export default class IgcCarouselComponent extends I18nMixin(
     return !isEmpty(this._projectedIndicators);
   }
 
-  /** The indicators that the carousel shows. */
   private get _indicators(): IgcCarouselIndicatorComponent[] {
     return this._hasProjectedIndicators
       ? this._projectedIndicators
@@ -500,9 +497,7 @@ export default class IgcCarouselComponent extends I18nMixin(
 
   private _handleFocusInteraction(event: FocusEvent): void {
     // `relatedTarget` lost the focus on focusin and gains it on focusout.
-    const node = event.relatedTarget as Node;
-
-    if (this.contains(node)) {
+    if (!focusLeftHost(this, event)) {
       return;
     }
 
@@ -563,14 +558,9 @@ export default class IgcCarouselComponent extends I18nMixin(
 
   private _handleHorizontalSwipe({ data: { direction } }: SwipeEvent): void {
     if (!this.vertical) {
-      const callback = () => {
-        if (isLTR(this)) {
-          return direction === 'left' ? this.next : this.prev;
-        }
-        return direction === 'left' ? this.prev : this.next;
-      };
-
-      this._handleInteraction(callback());
+      this._handleInteraction(
+        (direction === 'left') === isLTR(this) ? this.next : this.prev
+      );
     }
   }
 
@@ -676,9 +666,6 @@ export default class IgcCarouselComponent extends I18nMixin(
     }
   }
 
-  /**
-   * Sets the rotation state of the carousel, and starts or clears its timer.
-   */
   private _setRotation(playing: boolean, paused = false): void {
     this._playing = playing;
     this._paused = paused;
@@ -727,19 +714,14 @@ export default class IgcCarouselComponent extends I18nMixin(
     currentSlide: IgcCarouselSlideComponent,
     dir: 'next' | 'prev'
   ): Promise<void> {
-    if (dir === 'next') {
-      currentSlide.previous = true;
-      currentSlide.toggleAnimation('out');
-      this._activateSlide(nextSlide);
-      await nextSlide.toggleAnimation('in');
-      currentSlide.previous = false;
-    } else {
-      currentSlide.previous = true;
-      currentSlide.toggleAnimation('in', 'reverse');
-      this._activateSlide(nextSlide);
-      await nextSlide.toggleAnimation('out', 'reverse');
-      currentSlide.previous = false;
-    }
+    const forward = dir === 'next';
+    const direction = forward ? 'normal' : 'reverse';
+
+    currentSlide.previous = true;
+    currentSlide.toggleAnimation(forward ? 'out' : 'in', direction);
+    this._activateSlide(nextSlide);
+    await nextSlide.toggleAnimation(forward ? 'in' : 'out', direction);
+    currentSlide.previous = false;
   }
 
   //#endregion

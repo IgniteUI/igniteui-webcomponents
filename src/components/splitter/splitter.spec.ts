@@ -1111,7 +1111,6 @@ describe('Splitter', () => {
       }
 
       let currentSizes = getPanesSizes(splitter, 'width');
-      // should stop at minSize (100px)
       expect(currentSizes.startSize).to.be.closeTo(100, 1);
 
       splitter.startSize = '250px';
@@ -1124,7 +1123,7 @@ describe('Splitter', () => {
       }
 
       currentSizes = getPanesSizes(splitter, 'width');
-      // should stop at maxSize (400px); flex-shrink does not reduce it
+      // flex-shrink does not reduce the max size.
       expect(currentSizes.startSize).to.be.closeTo(400, 2);
 
       splitter.orientation = 'vertical';
@@ -1610,7 +1609,6 @@ describe('Splitter', () => {
       // Splitter bar is still visible but non-interactive
       expect(bar).to.exist;
       expect(bar.hidden).to.be.false;
-      // Bar handle is hidden
       const barHandle = getSplitterPart(splitter, DRAG_HANDLE_PART);
       expect(barHandle).to.exist;
       expect(barHandle.hidden).to.be.true;
@@ -3459,7 +3457,6 @@ describe('Splitter', () => {
       await elementUpdated(splitter);
 
       const currentSizes = getPanesSizes(splitter, 'width');
-      // start pane should not go below its minSize of 600px
       expect(currentSizes.startSize).to.equal(600);
       expect(currentSizes.endSize).to.equal(
         getTotalSize(splitter, 'width') - 600

@@ -47,7 +47,7 @@
     grid-template-rows: auto 1fr;
 
     ::slotted(igc-step) {
-        // display: contents make all direct children of the step to behave like they are direct children of the stepper
+        // The children of the step act as direct children of the stepper grid.
         display: contents;
         pointer-events: none;
 
@@ -111,8 +111,6 @@
     }
 }
 
-// ------------------------------------------
-// STEPPER [VERTICAL]
 :host(:not([orientation='horizontal'])) {
     --vertical-header-z-index: 2;
     --vertical-body-disply: block;

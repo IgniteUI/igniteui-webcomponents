@@ -28,7 +28,6 @@ describe('Button Group', () => {
     ignoreAttributes: ['id', 'alignment', 'role'],
   };
 
-  /** The ARIA the group publishes through its element internals. */
   const getARIA = (group: IgcButtonGroupComponent) => ({
     role: internalsOf(group)?.getARIA('role'),
     ariaDisabled: internalsOf(group)?.getARIA('ariaDisabled'),
@@ -748,8 +747,7 @@ describe('Button Group', () => {
 
         eventSpy.resetHistory();
 
-        // deselect first button
-        // should not emit events when interacting with an already selected button
+        // Clicking the selected button again emits no events.
         simulateClick(buttons[0]);
         await elementUpdated(buttonGroup);
 

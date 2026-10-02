@@ -73,10 +73,11 @@ export function runHostAriaTests(config: HostAriaTestConfig): void {
     });
 
     it('passes an a11y audit with a host `aria-label`', async () => {
+      const { ignoredRules } = config;
+
       await update('aria-label', 'Host name');
-      await expect(host).shadowDom.to.be.accessible({
-        ignoredRules: config.ignoredRules,
-      });
+      await expect(host).shadowDom.to.be.accessible({ ignoredRules });
+      await expect(host).to.be.accessible({ ignoredRules });
     });
   });
 }

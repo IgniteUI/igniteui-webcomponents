@@ -1,5 +1,5 @@
 import { html, LitElement, type PropertyValues } from 'lit';
-import { eventOptions, property, query, state } from 'lit/decorators.js';
+import { property, query, state } from 'lit/decorators.js';
 import { createRef, ref } from 'lit/directives/ref.js';
 import { type StyleInfo, styleMap } from 'lit/directives/style-map.js';
 import { addInternalsController } from '#internals/controllers/internals.js';
@@ -20,6 +20,7 @@ import type { Constructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { partMap } from '#internals/part-map.js';
 import { isLTR, resolveCssLength } from '#internals/utils/dom.js';
+import { preventDefault } from '#internals/utils/events.js';
 import { bindIf } from '#internals/utils/lit.js';
 import {
   asNumber,
@@ -52,7 +53,6 @@ const PANES = ['start', 'end'] as const satisfies readonly PanePosition[];
 const CSS_LENGTH =
   /^[+-]?(\d+\.?\d*|\.\d+)(%|px|em|rem|ch|ex|cap|ic|lh|rlh|vw|vh|vi|vb|vmin|vmax|cm|mm|q|in|pt|pc)$/i;
 
-/** A bare number, with no unit at all. */
 const UNITLESS_NUMBER = /^[+-]?(\d+\.?\d*|\.\d+)$/;
 
 const DEFAULT_RESIZE_STATE: SplitterResizeState = {
@@ -514,22 +514,13 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
     }
   }
 
+  /** A cancelled gesture reverts, but still reports an end for the start it emitted. */
   private _handleEndDrag(e: PointerEvent): void {
     if (e.pointerId !== this._resizeState.dragPointerId) {
       return;
     }
 
-    this._resizeEnd(this._getDragDelta(e));
-    this._endDrag();
-  }
-
-  /** A cancelled gesture reverts, but still reports an end for the start it emitted. */
-  private _handleCancelDrag(e: PointerEvent): void {
-    if (e.pointerId !== this._resizeState.dragPointerId) {
-      return;
-    }
-
-    this._resizeEnd(0);
+    this._resizeEnd(e.type === 'pointercancel' ? 0 : this._getDragDelta(e));
     this._endDrag();
   }
 
@@ -631,13 +622,10 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
   }
 
   private _restoreSizesOnExpandCollapse(): void {
-    if (this._collapsedPane !== null) {
-      this._startPaneState.size = 'auto';
-      this._endPaneState.size = 'auto';
-    } else {
-      this._startPaneState.size =
-        this._startPaneState.savedSize ?? this.startSize;
-      this._endPaneState.size = this._endPaneState.savedSize ?? this.endSize;
+    for (const pane of PANES) {
+      const state = this._getPaneState(pane);
+      state.size =
+        this._collapsedPane !== null ? 'auto' : (state.savedSize ?? state.size);
     }
   }
 
@@ -750,13 +738,9 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
     if (this._resizeDisallowed || this.orientation !== validOrientation) {
       return;
     }
-    const delta = this._resolveDelta(
-      KEYBOARD_RESIZE_STEP,
-      KEYBOARD_RESIZE_STEP,
-      direction
+    this._runResize(
+      this._resolveDelta(KEYBOARD_RESIZE_STEP, KEYBOARD_RESIZE_STEP) * direction
     );
-
-    this._runResize(delta);
   }
 
   /**
@@ -770,20 +754,11 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
     this._endDrag();
   }
 
-  @eventOptions({ passive: false })
-  private _preventDefaultForEvent(e: Event): void {
-    e.preventDefault();
-  }
-
-  private _resolveDelta(
-    deltaX: number,
-    deltaY: number,
-    direction?: -1 | 1
-  ): number {
+  private _resolveDelta(deltaX: number, deltaY: number): number {
     const isHorizontal = this._isHorizontal;
     const rtlMultiplier = isHorizontal && !isLTR(this) ? -1 : 1;
     const delta = isHorizontal ? deltaX : deltaY;
-    return delta * rtlMultiplier * (direction ?? 1);
+    return delta * rtlMultiplier;
   }
 
   /** Snaps the start pane to its minimum or maximum size. */
@@ -801,11 +776,7 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
 
   private _handleExpanderAction(pane: PanePosition): void {
     const other = this._otherPane(pane);
-    this._toggleWithEvent(this._collapsedPane === other ? other : pane);
-  }
-
-  private _toggleWithEvent(position: PanePosition): void {
-    this.toggle(position);
+    this.toggle(this._collapsedPane === other ? other : pane);
     this._emitLayoutChanged();
   }
 
@@ -1128,13 +1099,13 @@ export default class IgcSplitterComponent extends EventEmitterMixin<
         aria-describedby="splitter-state"
         aria-orientation=${this.orientation}
         style=${styleMap({ '--cursor': this._separatorCursor })}
-        @touchstart=${bindIf(canResize, this._preventDefaultForEvent)}
-        @contextmenu=${bindIf(canResize, this._preventDefaultForEvent)}
+        @touchstart=${bindIf(canResize, preventDefault)}
+        @contextmenu=${bindIf(canResize, preventDefault)}
         @pointerdown=${bindIf(canResize, this._handleBarPointerDown)}
         @pointermove=${this._handleBarPointerMove}
         @pointerup=${this._handleEndDrag}
         @lostpointercapture=${this._handleEndDrag}
-        @pointercancel=${this._handleCancelDrag}
+        @pointercancel=${this._handleEndDrag}
       >
         ${this._renderBarControls()}
       </div>

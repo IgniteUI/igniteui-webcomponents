@@ -5,7 +5,6 @@ import { converter, type HSL, type HSV, type RGB } from './converters.js';
 
 export type { ColorFormat };
 
-/** The color space a channel write is expressed in. */
 type ColorSpace = 'rgb' | 'hsl' | 'hsv';
 type Channel = 0 | 1 | 2;
 
@@ -26,19 +25,6 @@ export const getContext = makeCanvasContext();
 
 /**
  * A color that keeps its RGB, HSL and HSV values in sync.
- *
- * @example
- * ```ts
- * // Create from RGB
- * const color = new ColorModel([255, 0, 0], 0.5);
- *
- * // Parse from string
- * const parsed = ColorModel.parse('#ff0000');
- *
- * // Modify and convert
- * color.h = 120;
- * console.log(color.asString('hsl')); // 'hsl(120 100% 50% / 0.5)'
- * ```
  */
 export class ColorModel {
   private _rgb: RGB;
@@ -100,10 +86,7 @@ export class ColorModel {
     return new ColorModel(converter.hsv.rgb([h, s, v]), alpha);
   }
 
-  /**
-   * @param value - RGB values as [r, g, b] tuple (0-255 each)
-   * @param alpha - Alpha channel value (0-1)
-   */
+  /** RGB channels are 0-255 and alpha is 0-1. */
   constructor(value: RGB, alpha = 1) {
     // Copied to prevent external mutations.
     this._rgb = [value[0], value[1], value[2]];
@@ -242,9 +225,6 @@ export class ColorModel {
   /**
    * Converts the color to a CSS color string. An empty color renders as an
    * empty string.
-   *
-   * @param format - The output format ('hex', 'rgb', or 'hsl')
-   * @param forceAlpha - Whether to always include the alpha channel
    */
   public asString(format: ColorFormat, forceAlpha = false): string {
     if (this._empty) {

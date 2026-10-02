@@ -196,7 +196,6 @@ describe('Date range picker - single input', () => {
 
     it('should modify value only through calendar selection and not input', async () => {
       const eventSpy = spy(picker, 'emitEvent');
-      // A non-editable input changes the value only through the calendar.
       picker.nonEditable = true;
       await elementUpdated(picker);
 
@@ -418,8 +417,6 @@ describe('Date range picker - single input', () => {
       input.focus();
       await elementUpdated(input);
 
-      // Press arrow up without selecting a specific part
-      // Should increment the last end position part (year)
       const initialDate = new Date(2025, 0, 15); // Jan 15, 2025
       picker.value = { start: initialDate, end: initialDate };
       await elementUpdated(picker);

@@ -46,11 +46,8 @@ function collectionOf<V>(
 }
 
 /**
- * The global registry of SVG icons and their references.
- *
- * @remarks
- * It publishes user-set state to other browsing contexts.
- * See {@link IconsStateBroadcast}.
+ * The global registry of SVG icons and their references. It publishes user-set state
+ * to other browsing contexts. See {@link IconsStateBroadcast}.
  *
  * @internal Use the exported functions.
  */
@@ -100,11 +97,8 @@ class IconsRegistry {
   }
 
   /**
-   * Aliases an icon name to another icon.
-   *
-   * @remarks
-   * `overwrite` stores the reference and notifies. `external` marks it as
-   * user-set: it wins over theme aliases and goes to other browsing contexts.
+   * Aliases an icon name to another icon. `overwrite` stores the reference and notifies.
+   * `external` marks it as user-set: it wins over theme aliases and goes to other browsing contexts.
    */
   public setIconRef(options: IconReferencePair): void {
     const { alias, target, overwrite } = options;

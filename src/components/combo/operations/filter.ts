@@ -3,11 +3,8 @@ import type { ComboRecord, FilteringOptions } from '../types.js';
 
 /**
  * Filters combo records against the current search term.
- *
- * @remarks
  * Normalization is the main cost of each keystroke, so the normalized text is
- * cached per record until the normalization options change. A new data source
- * replaces the records, so the weak cache drops stale entries.
+ * cached per record. A new data source replaces the records, so the cache is weak.
  */
 export default class FilterDataOperation<T extends object> {
   private _cache = new WeakMap<ComboRecord<T>, string>();

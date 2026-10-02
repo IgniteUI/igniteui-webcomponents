@@ -906,14 +906,12 @@ describe('Combo', () => {
     it('should move focus to the filter input and the close the dropdown on subsequent Arrow Up keypress', async () => {
       await openComboPopover(combo);
 
-      // Move active state to first item and focus to the dropdown
       simulateKeyboard(searchInput, arrowDown);
       await elementUpdated(combo);
 
       expect(isFocused(list)).to.be.true;
       expect(isFocused(searchInput)).to.be.false;
 
-      // Move focus to the search input
       simulateKeyboard(list, arrowUp);
       await elementUpdated(combo);
 
@@ -932,7 +930,6 @@ describe('Combo', () => {
 
       await openComboPopover(combo);
 
-      // Activate first item
       simulateKeyboard(list, arrowDown);
       await elementUpdated(combo);
 
@@ -984,7 +981,6 @@ describe('Combo', () => {
 
       await openComboPopover(combo);
 
-      // Activate first item
       simulateKeyboard(list, arrowDown);
       await elementUpdated(combo);
 
@@ -1378,7 +1374,6 @@ describe('Combo', () => {
     it('should select item(s) even if the list of items has been filtered', async () => {
       await openComboPopover(combo);
 
-      // Filter the list of items
       searchInput.dispatchEvent(new CustomEvent('igcInput', { detail: 'sof' }));
 
       await elementUpdated(combo);
@@ -1394,7 +1389,6 @@ describe('Combo', () => {
 
       expect(firstOf(combo.value)).to.equal(selection);
 
-      // Clear the filter.
       searchInput.dispatchEvent(new CustomEvent('igcInput', { detail: '' }));
 
       await elementUpdated(combo);
@@ -1418,7 +1412,6 @@ describe('Combo', () => {
       expect(firstOf(selected).innerText).to.equal('New York');
       expect(firstOf(combo.value)).to.equal(selection);
 
-      // Filter the list of items
       searchInput.dispatchEvent(new CustomEvent('igcInput', { detail: 'sof' }));
 
       await elementUpdated(combo);
@@ -1433,7 +1426,6 @@ describe('Combo', () => {
 
       expect(combo.value).to.be.empty;
 
-      // Clear the filter.
       searchInput.dispatchEvent(new CustomEvent('igcInput', { detail: '' }));
 
       await elementUpdated(combo);

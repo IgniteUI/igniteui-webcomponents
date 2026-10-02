@@ -19,7 +19,6 @@ import {
 } from './date-part.js';
 import { IgcDateTimeInputBaseComponent } from './date-time-input.base.js';
 import { DateTimeMaskParser } from './datetime-mask-parser.js';
-import { dateTimeInputValidators } from './validators.js';
 
 export interface IgcDateTimeInputComponentEventMap {
   /* alternateName: inputOcurred */
@@ -82,10 +81,6 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
     initialValue: null,
     transformers: FormValueDateTimeTransformers,
   });
-
-  protected override get __validators() {
-    return dateTimeInputValidators;
-  }
 
   //#endregion
 
@@ -193,7 +188,6 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
     delta: number | undefined,
     isDecrement: boolean
   ): Date {
-    // Default to 1 if delta is 0 or undefined
     const effectiveDelta =
       delta || this._datePartDeltas[datePart as keyof DatePartDeltas] || 1;
 

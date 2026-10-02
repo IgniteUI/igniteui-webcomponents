@@ -48,7 +48,6 @@ describe('Textarea component', () => {
 
       expect(element.renderRoot.querySelector('[part="notch"]')).to.exist;
 
-      // Reset theme
       configureTheme('bootstrap');
       await nextFrame();
     });

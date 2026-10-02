@@ -39,7 +39,6 @@ import {
   YEARS_PER_ROW,
 } from './helpers.js';
 import IgcMonthsViewComponent from './months-view/months-view.js';
-import { selectDate } from './selection.js';
 import { styles } from './themes/calendar.base.css.js';
 import { all } from './themes/calendar.js';
 import type {
@@ -277,8 +276,8 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
       .set([shiftKey, pageDownKey], this._handleShiftPageKeys.bind(this, 1))
       .set(pageUpKey, this._handlePageKeys.bind(this, -1))
       .set(pageDownKey, this._handlePageKeys.bind(this, 1))
-      .set(homeKey, this._handleHomeKey)
-      .set(endKey, this._handleEndKey);
+      .set(homeKey, this._activateEdgeOfView.bind(this, 'start'))
+      .set(endKey, this._activateEdgeOfView.bind(this, 'end'));
   }
 
   //#endregion
@@ -319,30 +318,13 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
 
   private _handlePageKeys(delta: -1 | 1): void {
     const { unit, increment } = this._getPageStep(delta);
-
-    this._activeDate = this._getNextEnabledDate(
-      this._activeDate.add(unit, increment),
-      increment
-    );
-    this[focusActiveDate]();
+    this._moveActiveDate(this._activeDate.add(unit, increment), increment);
   }
 
   private _handleShiftPageKeys(delta: -1 | 1): void {
     if (this._isDayView) {
-      this._activeDate = this._getNextEnabledDate(
-        this._activeDate.add('year', delta),
-        delta
-      );
-      this[focusActiveDate]();
+      this._moveActiveDate(this._activeDate.add('year', delta), delta);
     }
-  }
-
-  private _handleHomeKey(): void {
-    this._activateEdgeOfView('start');
-  }
-
-  private _handleEndKey(): void {
-    this._activateEdgeOfView('end');
   }
 
   /**
@@ -376,26 +358,21 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
       }
     }
 
-    this._activeDate = this._getNextEnabledDate(target, delta);
-    this[focusActiveDate]();
+    this._moveActiveDate(target, delta);
   }
 
   //#endregion
 
   //#region Event handlers
 
-  private _handleMonthChange(event: CustomEvent<Date>): void {
+  /** Activates the month or year picked in the current view and opens `view`. */
+  private _handlePeriodChange(
+    view: CalendarActiveView,
+    event: CustomEvent<Date>
+  ): void {
     event.stopPropagation();
     this.activeDate = event.detail;
-    this.activeView = 'days';
-
-    this[focusActiveDate]();
-  }
-
-  private _handleYearChange(event: CustomEvent<Date>): void {
-    event.stopPropagation();
-    this.activeDate = event.detail;
-    this.activeView = 'months';
+    this.activeView = view;
 
     this[focusActiveDate]();
   }
@@ -403,22 +380,11 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
   private _handleValueChange(event: CustomEvent<Date>): void {
     event.stopPropagation();
 
-    const selection = selectDate(
-      { value: this._value, values: this._values },
-      CalendarDay.from(event.detail),
-      { selection: this.selection, disabledDates: this._disabledDates }
-    );
-
-    if (!selection) {
-      return;
+    if (this._selectDate(CalendarDay.from(event.detail))) {
+      this.emitEvent('igcChange', {
+        detail: this._isSingle ? (this.value as Date) : this.values,
+      });
     }
-
-    this._value = selection.value;
-    this._values = selection.values;
-
-    this.emitEvent('igcChange', {
-      detail: this._isSingle ? (this.value as Date) : this.values,
-    });
   }
 
   private _handleActiveDateChange(event: CustomEvent<Date>): void {
@@ -460,14 +426,6 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
   private _navigate(delta: 1 | -1): void {
     const { unit, increment } = this._getPageStep(delta);
     this._activeDate = this._activeDate.add(unit, increment);
-  }
-
-  private _navigatePrevious(): void {
-    this._navigate(-1);
-  }
-
-  private _navigateNext(): void {
-    this._navigate(1);
   }
 
   private _navigateToMonthView(viewIndex: number): void {
@@ -534,10 +492,7 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
 
   /**
    * Returns the first enabled date from `start`, one day at a time in the direction of `delta`.
-   *
-   * @remarks
    * The search is bounded, because the disabled dates can be an open-ended range.
-   * It returns the active date when no date is reachable.
    */
   private _getNextEnabledDate(start: CalendarDay, delta: number): CalendarDay {
     const disabled = this._disabledDates;
@@ -554,6 +509,12 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
     return this._activeDate;
   }
 
+  /** Makes the first enabled date from `start` the active one and focuses it. */
+  private _moveActiveDate(start: CalendarDay, delta: number): void {
+    this._activeDate = this._getNextEnabledDate(start, delta);
+    this[focusActiveDate]();
+  }
+
   //#endregion
 
   protected _renderNavigationButtons() {
@@ -567,7 +528,7 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
         <button
           part=${partMap(parts)}
           aria-label=${this._getNavigationLabel('previous')}
-          @click=${this._navigatePrevious}
+          @click=${() => this._navigate(-1)}
         >
           <igc-icon
             aria-hidden="true"
@@ -579,7 +540,7 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
         <button
           part=${partMap(parts)}
           aria-label=${this._getNavigationLabel('next')}
-          @click=${this._navigateNext}
+          @click=${() => this._navigate(1)}
         >
           <igc-icon
             aria-hidden="true"
@@ -641,11 +602,8 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
   }
 
   /**
-   * Renders the off-screen live region that announces the period after navigation.
-   *
-   * @remarks
-   * One region serves the whole calendar, because one per month announces the same change many times.
-   * The years view has its own live region for the years range.
+   * The off-screen live region for the period after navigation. One region serves the whole
+   * calendar, because one per month announces the same change many times. The years view has its own.
    */
   protected _renderActivePeriod() {
     if (this._isYearView) {
@@ -858,7 +816,7 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
       <igc-months-view
         part="months-view"
         exportparts="months-row, month, selected, month-inner, current"
-        @igcChange=${this._handleMonthChange}
+        @igcChange=${this._handlePeriodChange.bind(this, 'days')}
         .value=${this.activeDate}
         .locale=${this.locale}
         .monthFormat=${format!}
@@ -872,7 +830,7 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
       <igc-years-view
         part="years-view"
         exportparts="years-row, year, selected, year-inner, current"
-        @igcChange=${this._handleYearChange}
+        @igcChange=${this._handlePeriodChange.bind(this, 'months')}
         .value=${this.activeDate}
         .yearsPerPage=${YEARS_PER_PAGE}
       ></igc-years-view>

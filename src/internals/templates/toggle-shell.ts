@@ -3,10 +3,8 @@ import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 import { ariaBindings, hostAria } from '../controllers/aria-projection.js';
 import { partMap } from '../part-map.js';
-import { bindIf } from '../utils/lit.js';
 
 export interface ToggleShellOptions {
-  /** The type of the native input element. */
   type: 'checkbox' | 'radio';
   /** The id of the native input; the `for` target of the wrapping label. */
   inputId: string;
@@ -27,7 +25,6 @@ export interface ToggleShellOptions {
    * `false`, and `live()` then writes nothing.
    */
   indeterminate?: boolean;
-  /** When provided, sets the `tabindex` attribute. */
   tabindex?: number;
   /** The helper-text container that describes the native input. */
   description?: Element | null;
@@ -72,7 +69,7 @@ export function renderToggleShell(
         ?disabled=${host.disabled}
         .checked=${live(host.checked)}
         .indeterminate=${live(options.indeterminate ?? false)}
-        tabindex=${bindIf(options.tabindex != null, options.tabindex)}
+        tabindex=${ifDefined(options.tabindex)}
         @keydown=${options.onKeyDown}
         @click=${options.onClick}
         @blur=${options.onBlur ?? nothing}

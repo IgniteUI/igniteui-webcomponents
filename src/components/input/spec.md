@@ -241,7 +241,8 @@ The validators applied depend on the `type`:
 | all others    | `required`, `minlength`, `maxlength`, `pattern`, type check |
 
 The type check covers `email` and `url`, which set `typeMismatch` when the value is not a valid address or URL.
-As for a native control, `pattern` must match the whole value: `[0-9]{3}` accepts `123`, but not `1234`.
+As for a native control, `pattern` must match the whole value: `[0-9]{3}` accepts `123`, but not `1234`. The
+pattern compiles with the `v` flag, and an invalid pattern sets no constraint.
 
 With `validate-only`, the length and range constraints are evaluated but not enforced on the native element, so the
 end-user can type a value that violates them and see an error message instead of being silently blocked:
@@ -492,7 +493,8 @@ Driven by `createFormAssociatedTestBed`.
 33. Form integration - correct initial state, correct submission, correct reset, submission on <kbd>Enter</kbd>, and
     no submission on <kbd>Enter</kbd> while the value is invalid.
 34. Validation - a passing and a failing case for each of required, minlength, maxlength, pattern, email schema, url
-    schema, min, max and step. A pattern that matches only a part of the value fails.
+    schema, min, max and step. A pattern that matches only a part of the value fails, a pattern compiles with the `v`
+    flag, and an invalid pattern sets no constraint.
 
 ### Validation message slots
 

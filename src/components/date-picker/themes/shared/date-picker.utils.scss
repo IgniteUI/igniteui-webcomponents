@@ -15,8 +15,7 @@
     );
 }
 
-// We need to extract some properties from the input theme in order to style the label of the date-picker.
-// This is done because the label is a custom element in the date-picker component and is not part of the input.
+// Takes the input theme properties for the label, which the date picker renders outside the input.
 @function input-theme($theme) {
     @return (
         'idle-secondary-color': map.get($theme, 'idle-secondary-color'),

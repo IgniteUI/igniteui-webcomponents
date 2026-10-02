@@ -20,13 +20,6 @@ import { addHostListeners } from './host-listeners.js';
  *     .set('--toggle', this.toggle);
  * }
  * ```
- *
- * A button in the document then controls the dialog declaratively:
- *
- * ```html
- * <igc-button command="--show" commandfor="my-dialog">Open</igc-button>
- * <igc-dialog id="my-dialog"></igc-dialog>
- * ```
  */
 class CommandController {
   private readonly _host: LitElement;

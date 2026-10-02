@@ -264,7 +264,6 @@ describe('Stepper', () => {
     });
 
     it('should do nothing at the boundary with `next()` / `prev()`', async () => {
-      // at last step, next() does nothing
       stepper.navigateTo(4);
       await elementUpdated(stepper);
 
@@ -273,7 +272,6 @@ describe('Stepper', () => {
 
       expect(stepper.steps[4].active).to.be.true;
 
-      // at first step, prev() does nothing
       stepper.navigateTo(0);
       await elementUpdated(stepper);
 
@@ -298,7 +296,6 @@ describe('Stepper', () => {
     });
 
     it('should reset to the first accessible step and clear visited state', async () => {
-      // visit several steps
       stepper.navigateTo(1);
       await elementUpdated(stepper);
       stepper.navigateTo(2);
@@ -510,7 +507,6 @@ describe('Stepper', () => {
       stepper.steps[0].optional = false;
       await elementUpdated(stepper);
 
-      // step 1 is locked
       expect(isStepAccessible(stepper.steps[1])).to.be.false;
 
       stepper.steps[2].disabled = true;
@@ -984,7 +980,6 @@ describe('Stepper', () => {
       document.body.appendChild(step);
       await elementUpdated(step);
 
-      // No stepper context yet — step is not active and not part of any stepper.
       expect(step.active).to.be.false;
 
       // Move the step into a new stepper. On reconnect, the step requests the
@@ -997,14 +992,11 @@ describe('Stepper', () => {
       document.body.appendChild(stepperEl);
       await elementUpdated(stepperEl);
 
-      // Context is now bound — the stepper recognizes the step.
       expect(stepperEl.steps).to.include(step);
       expect(stepperEl.steps).to.have.lengthOf(1);
 
-      // The sole step is activated by default.
       expect(stepperEl.steps[0].active).to.be.true;
 
-      // Indicator reflects the correct step index (1-based).
       expect(
         getStepDOM(step).parts.indicator.querySelector('span')!.textContent
       ).to.equal('1');

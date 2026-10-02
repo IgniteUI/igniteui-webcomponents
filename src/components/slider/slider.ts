@@ -90,9 +90,7 @@ export default class IgcSliderComponent extends FormAssociatedMixin(
     }
 
     // A clamp is not a user edit, so the pristine state stays.
-    const pristine = this._pristine;
-    this.value = value;
-    this._pristine = pristine;
+    this._withPristine(() => (this.value = value));
   }
 
   protected override getTrackStyle() {

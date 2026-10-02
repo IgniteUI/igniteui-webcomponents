@@ -2,22 +2,17 @@
 @use 'styles/utilities' as *;
 @use 'vars' as *;
 
-// Animation easing curves
 $easing-curves: (
-    // Primary translate easing curves
     primary-translate-start: cubic-bezier(0.5, 0, 0.7017, 0.4958),
     primary-translate-mid: cubic-bezier(0.3024, 0.3813, 0.55, 0.9563),
 
-    // Primary scale easing curves
     primary-scale-slow-start: cubic-bezier(0.3347, 0.124, 0.7858, 1),
     primary-scale-quick-end: cubic-bezier(0.06, 0.11, 0.6, 1),
 
-    // Secondary translate easing curves
     secondary-translate-start: cubic-bezier(0.15, 0, 0.515, 0.4096),
     secondary-translate-mid: cubic-bezier(0.31, 0.284, 0.8, 0.7337),
     secondary-translate-end: cubic-bezier(0.4, 0.627, 0.6, 0.902),
 
-    // Secondary scale easing curves
     secondary-scale-slow-start: cubic-bezier(0.15, 0, 0.515, 0.4096),
     secondary-scale-mid: cubic-bezier(0.31, 0.284, 0.8, 0.7337),
     secondary-scale-smooth-end: cubic-bezier(0.4, 0.627, 0.6, 0.902)
@@ -27,7 +22,6 @@ $easing-curves: (
     @return map.get($easing-curves, $key);
 }
 
-// Primary animation
 @keyframes igc-indeterminate-primary {
     0% {
         transform: translateX(0);
@@ -68,7 +62,6 @@ $easing-curves: (
     }
 }
 
-// Secondary animation
 @keyframes igc-indeterminate-secondary {
     0% {
         animation-timing-function: timing-function('secondary-translate-start');
@@ -111,7 +104,6 @@ $easing-curves: (
     }
 }
 
-// Fluent linear animations
 @keyframes igc-indeterminate-bar-fluent {
     0% {
         transform: translateX(-100%);
@@ -159,11 +151,9 @@ $easing-curves: (
     }
 }
 
-// Fluent: Circular progress animation for indeterminate state.
-// Dynamically changes stroke-dasharray and rotates for a smooth spinning effect.
+// Fluent indeterminate circle: the dash array changes while the stroke rotates.
 @keyframes igc-indeterminate-circular-fluent {
     0% {
-        // Start the stroke at the correct position by adjusting the dasharray and dashoffset
         stroke-dasharray: calc(#{$circumference} * 0.0001), #{$circumference};
         stroke-dashoffset: calc(-1 * #{$circumference} / 4);
 
@@ -195,22 +185,17 @@ $easing-curves: (
 
     50% {
         stroke-dasharray: calc(#{$circumference} / 2), calc(#{$circumference} / 2);
-
-        // Positive offset for opposite direction
         stroke-dashoffset: calc(#{$circumference} / 4);
         transform: rotate(-360deg);
     }
 
     100% {
         stroke-dasharray: calc(#{$circumference} * 0.0001), #{$circumference};
-
-        // Positive offset for opposite direction
         stroke-dashoffset: calc(#{$circumference} / 4);
         transform: rotate(-990deg);
     }
 }
 
-// Generic animations
 @keyframes igc-rotate-center {
     0% {
         transform: rotate(0);

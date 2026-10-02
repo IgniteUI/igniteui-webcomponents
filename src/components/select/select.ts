@@ -47,6 +47,8 @@ import {
   focusLeftHost,
   getElementFromPath,
 } from '#internals/utils/events.js';
+import { bindIf } from '#internals/utils/lit.js';
+import { moveFlag } from '#internals/utils/objects.js';
 import { isString } from '#internals/utils/types.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import IgcIconComponent from '../icon/icon.js';
@@ -186,9 +188,6 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   @query('#dropdown')
   protected _list!: HTMLDivElement | null;
 
-  @query('#select-helper-text')
-  protected _helperText!: IgcValidationContainerComponent | null;
-
   protected get _activeItems(): IgcSelectItemComponent[] {
     return Array.from(
       getActiveItems<IgcSelectItemComponent>(
@@ -210,8 +209,7 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   @property()
   public set value(value: string | undefined) {
     this._updateValue(value);
-    const item = this._getItem(this._formValue.value!);
-    item ? this._setSelectedItem(item) : this._clearSelectedItem();
+    this._setSelectedItem(this._getItem(this._formValue.value!) ?? null);
   }
 
   public get value(): string | undefined {
@@ -306,7 +304,6 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
         hasPopup: 'listbox',
         expanded: `${this.open}`,
         controls: this._list ? [this._list] : null,
-        describedBy: this._helperText ? [this._helperText] : null,
       }),
     });
 
@@ -334,7 +331,7 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
     });
 
     addSafeEventListener(this, 'keydown', this._handleSearch);
-    addSafeEventListener(this, 'focusin', this._handleFocusIn);
+    addSafeEventListener(this, 'focusin', this._setTouchedState);
     addSafeEventListener(this, 'focusout', this._handleFocusOut);
   }
 
@@ -363,7 +360,7 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
     const items = this.items;
 
     if (this._selectedItem && !items.includes(this._selectedItem)) {
-      this._clearSelectedItem();
+      this._setSelectedItem(null);
     } else if (this._activeItem && !items.includes(this._activeItem)) {
       this._activateItem(this._selectedItem);
     }
@@ -497,10 +494,6 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
 
   //#region Event listeners
 
-  private _handleFocusIn(): void {
-    this._setTouchedState();
-  }
-
   private _handleFocusOut(event: FocusEvent): void {
     if (focusLeftHost(this, event)) {
       super._handleBlur();
@@ -514,14 +507,6 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
     }
   }
 
-  private _handleChange(item: IgcSelectItemComponent): boolean {
-    return this._emitTouchedEvent('igcChange', { detail: item });
-  }
-
-  private _handleClosing(): void {
-    this._hide(true);
-  }
-
   protected override _handleAnchorClick(): void {
     super._handleAnchorClick();
     this._focusItemOnOpen();
@@ -532,29 +517,14 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   //#region Internal API
 
   private _activateItem(item: IgcSelectItemComponent | null): void {
-    if (this._activeItem && this._activeItem !== item) {
-      this._activeItem.active = false;
-    }
-
+    moveFlag(this._activeItem, item, 'active');
     this._activeItem = item;
-
-    if (item) {
-      item.active = true;
-    }
   }
 
-  private _setSelectedItem(
-    item: IgcSelectItemComponent
-  ): IgcSelectItemComponent {
-    if (this._selectedItem && this._selectedItem !== item) {
-      this._selectedItem.selected = false;
-    }
-
+  private _setSelectedItem(item: IgcSelectItemComponent | null): void {
+    moveFlag(this._selectedItem, item, 'selected');
     this._selectedItem = item;
-    item.selected = true;
     this._activateItem(item);
-
-    return item;
   }
 
   private _selectItem(
@@ -562,7 +532,7 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
     emit = true
   ): IgcSelectItemComponent | null {
     if (!item) {
-      this._clearSelectedItem();
+      this._setSelectedItem(null);
       this._updateValue();
       return null;
     }
@@ -576,7 +546,7 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
     if (changed) {
       this._setSelectedItem(item);
       this._updateValue(item.value);
-      if (emit) this._handleChange(item);
+      if (emit) this._emitTouchedEvent('igcChange', { detail: item });
     } else {
       this._activateItem(item);
     }
@@ -604,14 +574,6 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
 
   private _updateValue(value?: string): void {
     this._formValue.setValueAndFormState(value!);
-  }
-
-  private _clearSelectedItem(): void {
-    if (this._selectedItem) {
-      this._selectedItem.selected = false;
-    }
-    this._selectedItem = null;
-    this._activateItem(null);
   }
 
   private async _focusItemOnOpen(): Promise<void> {
@@ -671,11 +633,7 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   /** Navigates to the specified item. If it exists, returns the found item, otherwise - null. */
   public navigateTo(value: string | number): IgcSelectItemComponent | null {
     const item = isString(value) ? this._getItem(value) : this.items[value];
-
-    if (item) {
-      this._navigateToActiveItem(item);
-    }
-
+    this._navigateToActiveItem(item);
     return item ?? null;
   }
 
@@ -695,21 +653,18 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   /**  Resets the current value and selection of the component. */
   public clearSelection(): void {
     this._updateValue();
-    this._clearSelectedItem();
+    this._setSelectedItem(null);
   }
 
   //#endregion
 
   protected _renderInputSlots() {
-    const prefix = this._slots.hasAssignedElements('prefix') ? 'prefix' : '';
-    const suffix = this._slots.hasAssignedElements('suffix') ? 'suffix' : '';
-
     return html`
-      <span slot=${prefix}>
+      <span slot=${bindIf(this._slots.hasAssignedElements('prefix'), 'prefix')}>
         <slot name="prefix"></slot>
       </span>
 
-      <span slot=${suffix}>
+      <span slot=${bindIf(this._slots.hasAssignedElements('suffix'), 'suffix')}>
         <slot name="suffix"></slot>
       </span>
     `;

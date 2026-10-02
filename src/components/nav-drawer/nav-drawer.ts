@@ -217,23 +217,16 @@ export default class IgcNavDrawerComponent extends EventEmitterMixin<
   }
 
   private _handleMiniState(): void {
-    if (this._isRelative) {
-      return;
-    }
-
     const mini = this._mini;
-    if (!mini) {
+
+    if (this._isRelative || !mini) {
       return;
     }
 
-    const popOverOpen = isPopoverOpen(mini);
+    const visible = this._hasMiniContent && !this.open;
 
-    if (!this._hasMiniContent || this.open) {
-      if (popOverOpen) {
-        mini.hidePopover();
-      }
-    } else if (!popOverOpen) {
-      mini.showPopover();
+    if (visible !== isPopoverOpen(mini)) {
+      visible ? mini.showPopover() : mini.hidePopover();
     }
   }
 

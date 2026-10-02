@@ -29,7 +29,6 @@ class FormAssociatedTestBed<T extends IgcFormControl> {
     return this._element;
   }
 
-  /** The form of the test bed. */
   public get form(): HTMLFormElement {
     return this._form;
   }
@@ -46,12 +45,7 @@ class FormAssociatedTestBed<T extends IgcFormControl> {
     this._template = template;
   }
 
-  /**
-   * Creates the fixture.
-   *
-   * @remarks
-   * Call it in `beforeEach`. `qs` selects the component.
-   */
+  /** Creates the fixture. Call it in `beforeEach`; `qs` selects the component. */
   public async setup(qs: string): Promise<void> {
     this._form = await fixture(
       html`<form><fieldset>${this._template}</fieldset></form>`
@@ -63,7 +57,6 @@ class FormAssociatedTestBed<T extends IgcFormControl> {
     this.form.querySelector('fieldset')?.toggleAttribute('disabled', state);
   }
 
-  /** Resets the form controls. */
   public reset(): void {
     this.form.reset();
   }
@@ -166,7 +159,6 @@ class FormAssociatedTestBed<T extends IgcFormControl> {
     expect(this.valid, msg).to.be.true;
   }
 
-  /** Asserts that the component is pristine. */
   public assertIsPristine(msg?: string): void {
     expect(this.element['_pristine'], msg).to.be.true;
   }

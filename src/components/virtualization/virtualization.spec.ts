@@ -28,7 +28,6 @@ describe('VirtualScroll', () => {
       >${ctx.value}</span
     >`;
 
-  /** An item template of blocks that are `size` px tall. */
   function heightTemplate(size: number): VirtualScrollItemTemplate<unknown> {
     return (ctx) =>
       html`<span style="display: block; height: ${size}px;"
@@ -527,9 +526,8 @@ describe('VirtualScroll', () => {
 
       await el.layoutComplete;
 
-      // Item 0 spans 0-400px and the viewport is 50-350px, so the item
-      // covers it fully. The item cannot fit inside the viewport, but there
-      // is also nothing to scroll to.
+      // Item 0 spans 0-400px and covers the 50-350px viewport fully, so there is
+      // nothing to scroll to.
       el.scrollTop = 50;
       el.dispatchEvent(new Event('scroll'));
       await el.layoutComplete;
@@ -737,11 +735,9 @@ describe('VirtualScroll', () => {
       await el.layoutComplete;
       await el.layoutComplete;
 
-      // Jump to the end. Lit reuses the wrapper elements for the new indices
-      // at an identical size, and the ResizeObserver does not report that.
-      // The new indices must not keep their estimated size. Measurements at
-      // the bottom shrink the track, so jump again until the scroll height is
-      // stable.
+      // Jump to the end. The reused wrappers keep an identical size, which the
+      // ResizeObserver does not report. Measurements at the bottom shrink the
+      // track, so jump again until the scroll height is stable.
       for (let i = 0; i < 10; i++) {
         const height = el.scrollHeight;
         el.scrollTop = el.scrollHeight;
@@ -1046,8 +1042,7 @@ describe('VirtualScroll', () => {
 
       const eventSpy = spy(el, 'emitEvent');
 
-      // In RTL, browsers report scrollLeft as a negative value. Simulate
-      // that: set scrollLeft, then fire a synthetic scroll event.
+      // In RTL, browsers report scrollLeft as a negative value.
       el.scrollLeft = -500;
       el.dispatchEvent(new Event('scroll'));
       await elementUpdated(el);
@@ -1070,7 +1065,6 @@ describe('VirtualScroll', () => {
       const el = await createRTLScroll();
       await elementUpdated(el);
 
-      // Simulate an RTL scroll offset.
       el.scrollLeft = -300;
       el.dispatchEvent(new Event('scroll'));
       await elementUpdated(el);

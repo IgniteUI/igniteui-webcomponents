@@ -417,7 +417,6 @@ describe('Draggable directive', () => {
       // Not called on initial drag enter
       expect(over.called).is.false;
 
-      // 5 pointer moves over the matched element
       simulatePointerMove(instance, { clientX, clientY }, { x: 5, y: 5 }, 5);
       await elementUpdated(instance);
 
@@ -816,7 +815,6 @@ describe('Draggable directive', () => {
       // Not called on initial drag enter
       expect(over.called).is.false;
 
-      // 5 pointer moves over the matched element
       simulatePointerMove(instance, { clientX, clientY }, { x: 5, y: 5 }, 5);
       await elementUpdated(instance);
 

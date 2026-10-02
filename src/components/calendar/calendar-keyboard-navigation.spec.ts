@@ -220,7 +220,6 @@ describe('Calendar keyboard interaction', () => {
       const getActiveDOM = () =>
         getDOMDate(CalendarDay.from(calendar.activeDate), daysView);
 
-      // Start on 1st of March
       calendar.activeDate = firstOfMarch.native;
       // Disable the whole month of February
       calendar.disabledDates = [

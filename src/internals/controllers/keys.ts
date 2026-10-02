@@ -3,11 +3,9 @@
  *
  * @remarks
  * The module has no imports, so a consumer of a key name depends on nothing
- * else. The modifier table and the combination helpers live in the
- * key-bindings controller.
+ * else.
  */
 
-/* Common keys */
 export const arrowLeft = 'ArrowLeft' as const;
 export const arrowRight = 'ArrowRight' as const;
 export const arrowUp = 'ArrowUp' as const;
@@ -21,7 +19,6 @@ export const pageUpKey = 'PageUp' as const;
 export const pageDownKey = 'PageDown' as const;
 export const tabKey = 'Tab' as const;
 
-/* Modifiers */
 export const altKey = 'Alt' as const;
 export const ctrlKey = 'Control' as const;
 export const metaKey = 'Meta' as const;

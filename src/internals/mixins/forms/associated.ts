@@ -306,11 +306,10 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(
         !this._isReportingValidity &&
         formChecks.get(form)?.at(-1) !== 'silent'
       ) {
-        const [first, ...later] = Array.from(form.elements).filter(
-          isInvalidControl
-        );
+        const invalid = Iterator.from(form.elements).filter(isInvalidControl);
 
-        if (first === this) {
+        if (invalid.next().value === this) {
+          const later = invalid.toArray();
           this.focus();
           cancelInvalidEvents(later);
         }
@@ -361,10 +360,8 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(
         validity.customError = true;
         message = this.validationMessage;
       } else if (hasCustomError && userMessage === '') {
-        // The caller passed an empty message to `setCustomValidity()`.
         validity.customError = false;
       } else if (userMessage && userMessage !== '') {
-        // The caller passed a message to `setCustomValidity()`.
         validity.customError = true;
         message = userMessage;
       }
@@ -398,6 +395,17 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(
     ): boolean {
       this._setTouchedState();
       return (this as unknown as EventEmitterLike).emitEvent(eventName, init);
+    }
+
+    /** Runs `callback` and restores the pristine flag. */
+    protected _withPristine(callback: () => void): void {
+      const pristine = this._pristine;
+
+      try {
+        callback();
+      } finally {
+        this._pristine = pristine;
+      }
     }
 
     /** @internal */
@@ -543,9 +551,7 @@ export function FormAssociatedMixin<T extends Constructor<LitElement>>(
 
       if ('value' in this) {
         this.value = value;
-        return (this as unknown as EventEmitterLike).emitEvent(eventName, {
-          detail: this.value,
-        });
+        return this._emitTouchedEvent(eventName, { detail: this.value });
       }
 
       return false;

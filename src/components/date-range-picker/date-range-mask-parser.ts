@@ -43,7 +43,6 @@ export interface IDateRangePart extends IDatePart {
   position: DateRangePosition;
 }
 
-/** Options for the DateRangeMaskParser */
 export interface DateRangeMaskOptions extends MaskOptions {
   /** Separator (defaults to ' - ') */
   separator?: string;
@@ -53,7 +52,6 @@ export interface DateRangeMaskOptions extends MaskOptions {
 
 //#region Constants
 
-/** Default separator between start and end dates */
 const DEFAULT_SEPARATOR = ' - ';
 
 //#endregion
@@ -82,25 +80,15 @@ function offsetParts(
 /**
  * A mask parser for date range inputs. A single date format (e.g. 'MM/dd/yyyy') creates
  * two internal DateTimeMaskParser instances, one for each end of the range.
- *
- * @example
- * ```ts
- * const parser = new DateRangeMaskParser({ format: 'MM/dd/yyyy' });
- * parser.parseDateRange('12/25/2023 - 12/31/2023'); // Returns DateRangeValue
- * parser.formatDateRange({ start: date1, end: date2 }); // Returns formatted string
- * ```
  */
 export class DateRangeMaskParser extends DateFormatMaskParser<IDateRangePart> {
   private _startParser: DateTimeMaskParser;
   private _endParser: DateTimeMaskParser;
 
-  /** The separator between start and end dates */
   private _separator: string;
 
-  /** Start position of the separator in the mask */
   private _separatorStart!: number;
 
-  /** End position of the separator in the mask */
   private _separatorEnd!: number;
 
   /** The separator between start and end dates. */

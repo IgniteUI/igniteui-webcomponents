@@ -177,7 +177,6 @@ describe('Form associated mixin tests', () => {
     expect(instance.checkValidity()).to.be.false;
     expect(hasValidityFlags(instance, 'valueMissing')).to.be.true;
 
-    // Validate `valueMissing` bringing back `tooShort`
     instance.value = '1';
 
     expect(instance.checkValidity()).to.be.false;
@@ -279,7 +278,6 @@ describe('Form associated mixin tests', () => {
   it('setCustomValidity() + other constraints', async () => {
     await createFixture();
 
-    // Set `customError` and `valueMissing`.
     instance.setCustomValidity(message);
     instance.required = true;
 
@@ -288,14 +286,12 @@ describe('Form associated mixin tests', () => {
       .true;
     expect(instance.validationMessage).to.equal(message);
 
-    // Validate `valueMissing` leaving `customError`
     instance.value = '123';
 
     expect(instance.checkValidity()).to.be.false;
     expect(hasValidityFlags(instance, 'customError')).to.be.true;
     expect(instance.validationMessage).to.equal(message);
 
-    // Bring back `valueMissing`; validation message should not change
     instance.value = '';
 
     expect(instance.checkValidity()).to.be.false;
@@ -303,7 +299,6 @@ describe('Form associated mixin tests', () => {
       .true;
     expect(instance.validationMessage).to.equal(message);
 
-    // Remove `customError`; validation message should change to the requiredValidator one
     instance.setCustomValidity('');
 
     expect(instance.checkValidity()).to.be.false;

@@ -7,7 +7,6 @@ import {
   type MaskSelection,
 } from '#internals/mixins/mask-behavior.js';
 import { renderMaskedNativeInput } from '#internals/templates/masked-input.js';
-import { hasNegativeTabIndex } from '#internals/utils/dom.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import { IgcInputBaseComponent } from '../input/input-base.js';
 import { styles } from '../input/themes/input.base.css.js';
@@ -196,7 +195,6 @@ export default class IgcMaskInputComponent extends MaskBehaviorMixin(
     }
 
     if (!this._formValue.value) {
-      // In case of empty value, select the whole mask
       this._maskedValue = this._parser.emptyMask;
       this._historyResync();
 
@@ -268,18 +266,13 @@ export default class IgcMaskInputComponent extends MaskBehaviorMixin(
   //#endregion
 
   protected override _renderInput() {
-    return renderMaskedNativeInput({
+    return renderMaskedNativeInput(this, {
       id: this._inputId,
       partNames: this._resolvePartNames('input'),
-      name: this.name,
       value: this._maskedValue,
       placeholder: this.placeholder ?? this._parser.escapedMask,
-      readOnly: this.readOnly,
-      required: this.required,
-      disabled: this.disabled,
       autofocus: this.autofocus,
       inputMode: this.inputMode,
-      tabindex: hasNegativeTabIndex(this) ? -1 : undefined,
       aria: this._ariaTarget.resolveBindings(),
       onInput: this._handleInput,
       onBeforeInput: this._handleBeforeInput,

@@ -85,11 +85,10 @@ function isSurrogate(char: string): boolean {
 }
 
 function replaceUnicodeNumbers(text: string): string {
-  const matcher = /\p{Nd}/gu;
-
-  return text.replace(matcher, (digit) => {
-    return UNICODE_DIGIT_TO_ASCII.get(digit.charCodeAt(0)) ?? digit;
-  });
+  return text.replace(
+    /\p{Nd}/gu,
+    (digit) => UNICODE_DIGIT_TO_ASCII.get(digit.charCodeAt(0)) ?? digit
+  );
 }
 
 const MASK_PATTERNS = new Map<string, RegExp>([
@@ -141,13 +140,10 @@ export class MaskParser {
   /** Literal characters by mask position, for example '(', ')' and '-'. */
   protected readonly _literals = new Map<number, string>();
 
-  /** The literal positions in `_escapedMask`. */
   protected _literalPositions = new Set<number>();
 
-  /** The mask format after processing escape characters */
   protected _escapedMask = '';
 
-  /** Cached array of required non-literal positions for validation */
   protected _requiredPositions: number[] = [];
 
   /**
@@ -290,10 +286,8 @@ export class MaskParser {
   }
 
   /**
-   * Finds the closest non-literal position *before* `start`, for backward navigation.
-   *
-   * @remarks
-   * Returns 0 when there is none.
+   * Finds the closest non-literal position *before* `start`, for backward
+   * navigation. Returns 0 when there is none.
    */
   public getPreviousNonLiteralPosition(start: number): number {
     const literalPositions = this._literalPositions;
@@ -308,10 +302,8 @@ export class MaskParser {
   }
 
   /**
-   * Finds the closest non-literal position at or *after* `start`, for forward navigation.
-   *
-   * @remarks
-   * Returns the mask length when there is none.
+   * Finds the closest non-literal position at or *after* `start`, for forward
+   * navigation. Returns the mask length when there is none.
    */
   public getNextNonLiteralPosition(start: number): number {
     const literalPositions = this._literalPositions;
@@ -326,17 +318,7 @@ export class MaskParser {
     return length;
   }
 
-  /**
-   * Replaces a range of the masked string with input, as typing or pasting does.
-   *
-   * @example
-   * ```ts
-   * const parser = new MaskParser({ format: '00/00/0000' });
-   * const current = '__/__/____';
-   * const result = parser.replace(current, '12', 0, 0);
-   * // result.value = '12/__/____', result.end = 2
-   * ```
-   */
+  /** Replaces a range of the masked string with input, as typing or pasting does. */
   public replace(
     maskString: string,
     value: string,
@@ -422,15 +404,7 @@ export class MaskParser {
     });
   }
 
-  /**
-   * Fits the input into the mask from left to right and skips invalid characters.
-   *
-   * @example
-   * ```ts
-   * const parser = new MaskParser({ format: '00/00/0000' });
-   * parser.apply('12252023'); // Returns '12/25/2023'
-   * ```
-   */
+  /** Fits the input into the mask from left to right and skips invalid characters. */
   public apply(input = ''): string {
     const literals = this._literals;
     const prompt = this.prompt;
@@ -453,11 +427,7 @@ export class MaskParser {
     const inputLength = normalizedInput.length;
     let inputIndex = 0;
 
-    for (let i = 0; i < length; i++) {
-      if (inputIndex >= inputLength) {
-        break;
-      }
-
+    for (let i = 0; i < length && inputIndex < inputLength; i++) {
       if (literals.has(i)) {
         continue;
       }

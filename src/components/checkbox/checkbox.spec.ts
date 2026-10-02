@@ -66,13 +66,11 @@ describe('Checkbox', () => {
 
       const root = element.renderRoot;
 
-      // Bootstrap, Fluent, Material
       expect(root.querySelector('svg > rect')).to.be.null;
 
       configureTheme('indigo');
       await elementUpdated(element);
 
-      // Indigo
       expect(root.querySelector('svg > rect')).to.be.not.null;
 
       configureTheme('bootstrap');
@@ -400,9 +398,9 @@ describe('Checkbox', () => {
     it('', async () => {
       const testParameters: ValidationContainerTestsParams<IgcCheckboxComponent>[] =
         [
-          { slots: ['valueMissing'], props: { required: true } }, // value-missing slot
-          { slots: ['customError'] }, // custom-error slot
-          { slots: ['invalid'], props: { required: true } }, // invalid slot
+          { slots: ['valueMissing'], props: { required: true } },
+          { slots: ['customError'] },
+          { slots: ['invalid'], props: { required: true } },
         ];
 
       await runValidationContainerTests(IgcCheckboxComponent, testParameters);

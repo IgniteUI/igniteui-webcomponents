@@ -1,4 +1,5 @@
 import type { PropertyValues } from 'lit';
+import { moveFlag } from '#internals/utils/objects.js';
 import type IgcStepComponent from '../step.js';
 
 type StepState = {
@@ -36,20 +37,15 @@ class StepperState {
 
   /** Merges `state` into the state of `step` and updates the step. */
   public set(step: IgcStepComponent, state: Partial<StepState>): void {
-    this.has(step)
-      ? this._state.set(step, { ...this.get(step)!, ...state })
-      : this._state.set(step, {
-          linearDisabled: false,
-          previousCompleted: false,
-          visited: false,
-          ...state,
-        });
+    this._state.set(step, {
+      linearDisabled: false,
+      previousCompleted: false,
+      visited: false,
+      ...this.get(step),
+      ...state,
+    });
 
     step.requestUpdate();
-  }
-
-  public has(step: IgcStepComponent): boolean {
-    return this._state.has(step);
   }
 
   public get(step: IgcStepComponent): StepState | undefined {
@@ -78,10 +74,7 @@ class StepperState {
       return;
     }
 
-    if (this._activeStep) {
-      this._activeStep.active = false;
-    }
-    step.active = true;
+    moveFlag(this._activeStep, step, 'active');
     this.set(step, { visited: true });
     this._activeStep = step;
   }
@@ -137,25 +130,16 @@ class StepperState {
 
   /** Computes and applies the linear-disabled state for all steps. */
   public setLinearState(): void {
-    if (!this.linear) {
-      for (const step of this._steps) {
-        this.set(step, { linearDisabled: false });
-      }
-      return;
-    }
+    const invalidIndex = this.linear
+      ? this._steps.findIndex(
+          (step) => !(step.disabled || step.optional) && step.invalid
+        )
+      : -1;
 
-    const invalidIndex = this._steps.findIndex(
-      (step) => !(step.disabled || step.optional) && step.invalid
-    );
-
-    if (invalidIndex > -1) {
-      for (const [index, step] of this._steps.entries()) {
-        this.set(step, { linearDisabled: index > invalidIndex });
-      }
-    } else {
-      for (const step of this._steps) {
-        this.set(step, { linearDisabled: false });
-      }
+    for (const [index, step] of this._steps.entries()) {
+      this.set(step, {
+        linearDisabled: invalidIndex > -1 && index > invalidIndex,
+      });
     }
   }
 

@@ -200,7 +200,7 @@ describe('Dropdown', () => {
     it('relevant events are fired in order', async () => {
       const eventSpy = spy(dropDown, 'emitEvent');
 
-      // No opening sequence of events since detached dropdowns are opened with API invocation
+      // A detached dropdown opens through the API, so no opening events fire.
 
       const btn = getButton();
 
@@ -228,7 +228,6 @@ describe('Dropdown', () => {
 
       expect(dropDown.open).to.be.true;
 
-      // No keep-open-on-outside-click
       simulateClick(document.body);
       await elementUpdated(dropDown);
 
@@ -237,7 +236,6 @@ describe('Dropdown', () => {
       dropDown.keepOpenOnOutsideClick = true;
       await openDropdown(btn);
 
-      // With keep-open-on-outside-click
       simulateClick(document.body);
       await elementUpdated(dropDown);
 
@@ -380,21 +378,18 @@ describe('Dropdown', () => {
     });
 
     it('is accessible', async () => {
-      // Closed state
       await expect(dropDown).dom.to.be.accessible();
       await expect(dropDown).shadowDom.to.be.accessible();
 
       dropDown.open = true;
       await elementUpdated(dropDown);
 
-      // Open state
       await expect(dropDown).dom.to.be.accessible();
       await expect(dropDown).shadowDom.to.be.accessible();
 
       dropDown.open = false;
       await elementUpdated(dropDown);
 
-      // Closed state again
       await expect(dropDown).dom.to.be.accessible();
       await expect(dropDown).shadowDom.to.be.accessible();
     });
@@ -527,7 +522,6 @@ describe('Dropdown', () => {
     });
 
     it('`select()` works', async () => {
-      // With value
       dropDown.select('Implementation');
 
       let item = dropDown.items.find((item) => item.value === 'Implementation');
@@ -539,13 +533,10 @@ describe('Dropdown', () => {
 
       expect(dropDown.selectedItem).to.be.null;
 
-      // With index
       dropDown.select(4);
 
       expect(dropDown.selectedItem).to.equal(item);
       checkItemState(item, { selected: true, active: true });
-
-      // Non-existent
 
       dropDown.clearSelection();
       dropDown.select('Non-existent');
@@ -571,7 +562,6 @@ describe('Dropdown', () => {
     });
 
     it('`navigateTo()` works', async () => {
-      // Non-existent
       dropDown.navigateTo('Non-existent');
       expect(getActiveItem()).to.be.undefined;
 
@@ -579,11 +569,9 @@ describe('Dropdown', () => {
         (item) => item.value === 'Implementation'
       )!;
 
-      // With value
       dropDown.navigateTo('Implementation');
       checkItemState(item, { active: true });
 
-      // With index
       dropDown.navigateTo(0);
       checkItemState(item, { active: false });
       checkItemState(getActiveItem()!, { active: true });
@@ -999,7 +987,6 @@ describe('Dropdown', () => {
       const eventSpy = spy(dropDown, 'emitEvent');
       let targetItem = dropDown.items[3];
 
-      // Selection through click
       await openDropdown();
 
       simulateClick(targetItem);
@@ -1014,7 +1001,6 @@ describe('Dropdown', () => {
 
       eventSpy.resetHistory();
 
-      // Selection through keyboard
       targetItem = dropDown.items[2];
 
       await openDropdown();
@@ -1051,7 +1037,6 @@ describe('Dropdown', () => {
         once: true,
       });
 
-      // No selection
       await openDropdown();
 
       simulateKeyboard(dropDown, escapeKey);
@@ -1063,7 +1048,6 @@ describe('Dropdown', () => {
 
       eventSpy.resetHistory();
 
-      // With selection
       dropDown.addEventListener('igcClosing', (e) => e.preventDefault(), {
         once: true,
       });

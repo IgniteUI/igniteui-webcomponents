@@ -12,7 +12,7 @@ const PAD_BYTES = [0xec, 0x11];
 const TEXT_ENCODER = new TextEncoder();
 
 function getAlphanumericValue(char: string): number {
-  return ALPHANUMERIC_MAP.get(char) ?? -1;
+  return ALPHANUMERIC_MAP.get(char)!;
 }
 
 function isNumeric(str: string): boolean {
@@ -20,12 +20,7 @@ function isNumeric(str: string): boolean {
 }
 
 function isAlphanumeric(str: string): boolean {
-  for (const char of str) {
-    if (!ALPHANUMERIC_MAP.has(char)) {
-      return false;
-    }
-  }
-  return true;
+  return [...str].every((char) => ALPHANUMERIC_MAP.has(char));
 }
 
 function detectEncodingMode(data: string): QrEncodingMode {
@@ -41,7 +36,7 @@ function getCharacterCountBits(mode: QrEncodingMode, version: number): number {
     case 'alphanumeric':
       return version < 10 ? 9 : version < 27 ? 11 : 13;
     case 'byte':
-      return version < 10 ? 8 : version < 27 ? 16 : 16;
+      return version < 10 ? 8 : 16;
     default:
       throw new Error(`Unsupported encoding mode: ${mode}`);
   }
@@ -119,13 +114,6 @@ function bitsToBytes(bits: number[]): number[] {
 
 function padData(data: number[], totalBytes: number): number[] {
   const result = data.slice();
-
-  if (result.length > totalBytes) {
-    throw new Error(
-      'Data exceeds maximum capacity for this version and error correction level'
-    );
-  }
-
   let padIndex = 0;
   while (result.length < totalBytes) {
     result.push(PAD_BYTES[padIndex % 2]);
@@ -164,6 +152,8 @@ export function encodeQR(
 
   const ecIndex = EC_LEVEL_INDEX[ecLevel];
   const mode = detectEncodingMode(data);
+  const fits = (v: number, candidate: number[]) =>
+    Math.ceil((candidate.length + 4) / 8) <= getDataCodewordsCount(v, ecIndex);
 
   let version = 1;
   let bits: number[];
@@ -174,9 +164,7 @@ export function encodeQR(
     }
     version = requestedVersion;
     bits = encodeData(data, mode, version);
-    if (
-      Math.ceil((bits.length + 4) / 8) > getDataCodewordsCount(version, ecIndex)
-    ) {
+    if (!fits(version, bits)) {
       throw new Error(
         `Data too long for version ${version} and error correction level ${ecLevel}`
       );
@@ -185,10 +173,7 @@ export function encodeQR(
     bits = [];
     for (let v = 1; v <= 40; v++) {
       const candidateBits = encodeData(data, mode, v);
-      if (
-        Math.ceil((candidateBits.length + 4) / 8) <=
-        getDataCodewordsCount(v, ecIndex)
-      ) {
+      if (fits(v, candidateBits)) {
         version = v;
         bits = candidateBits;
         break;

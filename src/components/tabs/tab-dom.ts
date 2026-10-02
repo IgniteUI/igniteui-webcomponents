@@ -1,5 +1,5 @@
 import type { Ref } from 'lit/directives/ref.js';
-import { getScaleFactor, isLTR, setStyles } from '#internals/utils/dom.js';
+import { isLTR, setStyles } from '#internals/utils/dom.js';
 import { asNumber } from '#internals/utils/math.js';
 import type IgcTabComponent from './tab.js';
 import type IgcTabsComponent from './tabs.js';
@@ -40,7 +40,6 @@ class TabsHelpers {
     return this._container.value;
   }
 
-  /** The selected tab indicator element. */
   public get indicator(): HTMLElement | undefined {
     return this._indicator.value;
   }
@@ -55,7 +54,6 @@ class TabsHelpers {
     return this._hasScrollButtons;
   }
 
-  /** The disabled state of the header strip scroll buttons. */
   public get scrollButtonsDisabled(): ScrollButtonsState {
     return this._scrollButtonsDisabled;
   }
@@ -242,15 +240,14 @@ class TabsHelpers {
     if (header) {
       const { offsetLeft: containerLeft, offsetWidth: containerWidth } =
         container;
-      const scaledWidth =
-        header.getBoundingClientRect().width * getScaleFactor(header).x;
+      const width = header.offsetWidth;
 
       const offset = isLTR(this._host)
         ? header.offsetLeft - containerLeft
-        : header.offsetLeft + scaledWidth - containerWidth;
+        : header.offsetLeft + width - containerWidth;
 
       Object.assign(styles, {
-        width: `${scaledWidth}px`,
+        width: `${width}px`,
         transform: `translateX(${offset}px)`,
       });
     }

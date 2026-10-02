@@ -6,10 +6,7 @@ import FilterDataOperation from './filter.js';
 
 type City = { name: string; country: string };
 
-/**
- * The filter reads only `searchTerm` and `filteringOptions`, so a plain stub
- * replaces the data state.
- */
+/** The filter reads only `searchTerm` and `filteringOptions`, so a stub is enough. */
 function stateStub(
   searchTerm: string,
   filteringOptions: FilteringOptions<City>

@@ -2,7 +2,6 @@ import type { QrCodeExportFormat } from '../types.js';
 
 type QrRasterFormat = Exclude<QrCodeExportFormat, 'svg'>;
 
-/** MIME type of each export format. */
 export const MIME_TYPES: Readonly<Record<QrCodeExportFormat, string>> = {
   svg: 'image/svg+xml',
   png: 'image/png',
@@ -25,7 +24,6 @@ const EXTENSIONS: Readonly<Record<QrCodeExportFormat, RegExp>> = {
   webp: /\.webp$/i,
 };
 
-/** Whether `format` is one of the supported export formats. */
 export function isExportFormat(format: string): format is QrCodeExportFormat {
   return Object.hasOwn(MIME_TYPES, format);
 }
@@ -64,10 +62,8 @@ async function fetchImageAsDataUrl(url: string): Promise<string | null> {
 
 /**
  * Copies the computed `fill` of each `part` element onto the clone and strips `part`,
- * so the clone renders the same outside the shadow root.
- *
- * The theme sets only `fill` on the parts. Extend this when
- * `themes/shared/qr-code.common.scss` styles more.
+ * so the clone renders the same outside the shadow root. The theme sets only `fill`;
+ * extend this when `themes/shared/qr-code.common.scss` styles more.
  */
 function resolveStyles(source: SVGSVGElement, clone: SVGSVGElement): void {
   const liveParts = source.querySelectorAll<SVGElement>('[part]');
@@ -108,11 +104,9 @@ async function inlineLogo(clone: SVGSVGElement): Promise<void> {
 }
 
 /**
- * Copies the logo `href` to `xlink:href` for SVG 1.1 consumers, such as Illustrator,
- * Office, Batik and older librsvg, which read only `xlink:href`. SVG 2 prefers `href`.
- *
- * `setAttributeNS` makes the serializer declare `xmlns:xlink`. A plain `setAttribute`
- * leaves the prefix undeclared, which is not valid XML.
+ * Copies the logo `href` to `xlink:href` for SVG 1.1 consumers (Illustrator, Office, Batik,
+ * older librsvg). `setAttributeNS` makes the serializer declare `xmlns:xlink`; a plain
+ * `setAttribute` leaves the prefix undeclared, which is not valid XML.
  */
 function addLegacyLogoHref(clone: SVGSVGElement): void {
   const image = clone.querySelector('image');

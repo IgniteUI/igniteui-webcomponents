@@ -105,7 +105,6 @@ describe('Date Time Input component', () => {
       expect(element.inputFormat).to.equal('dd.MM.yyyy');
       expect(element.displayFormat).to.equal('d.M.yyyy');
 
-      // Restore default locale
       setCurrentI18n('en');
     });
 
@@ -119,7 +118,6 @@ describe('Date Time Input component', () => {
       expect(element.displayFormat).to.equal('d.M.yyyy');
       expect(input.value).to.equal('3.3.2020');
 
-      // Restore default locale
       setCurrentI18n('en');
     });
 
@@ -144,7 +142,6 @@ describe('Date Time Input component', () => {
 
       expect(input.value).to.equal('-- 2020 -- 03 -- 03 --');
 
-      // Reset
       element.displayFormat = undefined as any;
       await elementUpdated(element);
 
@@ -1521,17 +1518,17 @@ describe('Date Time Input component', () => {
 
       const testParameters: ValidationContainerTestsParams<IgcDateTimeInputComponent>[] =
         [
-          { slots: ['valueMissing'], props: { required: true } }, // value-missing slot
+          { slots: ['valueMissing'], props: { required: true } },
           {
             slots: ['rangeOverflow'],
-            props: { value: now.native, max: yesterday.native }, // range-overflow slot
+            props: { value: now.native, max: yesterday.native },
           },
           {
             slots: ['rangeUnderflow'],
-            props: { value: now.native, min: tomorrow.native }, // range-underflow slot
+            props: { value: now.native, min: tomorrow.native },
           },
-          { slots: ['customError'] }, // custom-error slot
-          { slots: ['invalid'], props: { required: true } }, // invalid slot
+          { slots: ['customError'] },
+          { slots: ['invalid'], props: { required: true } },
         ];
 
       await runValidationContainerTests(

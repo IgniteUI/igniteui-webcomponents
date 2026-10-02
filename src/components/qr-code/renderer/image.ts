@@ -49,10 +49,9 @@ export function renderQrMaskAndImage({
   `
     : nothing;
 
-  const image =
-    hasLogo && width > 0 && height > 0
-      ? svg`<image href=${src} x=${x} y=${y} width=${width} height=${height} />`
-      : nothing;
+  const image = shouldApplyMask
+    ? svg`<image href=${src} x=${x} y=${y} width=${width} height=${height} />`
+    : nothing;
 
   return { mask, image, shouldApplyMask };
 }

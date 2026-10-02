@@ -166,7 +166,6 @@ describe('Slider component', () => {
       expect(slider.value).to.eq(50);
       expect(eventSpy).calledOnceWithExactly('igcInput', { detail: 50 });
 
-      // Simulate 10 pointer moves with stacking delta = 1/4 of the slider's width
       simulatePointerMove(slider, sliderCenterX, deltaX, 10);
       await elementUpdated(slider);
 
@@ -1225,7 +1224,6 @@ describe('Slider component', () => {
   });
 });
 
-/** Returns Shadow DOM parts of the slider component */
 function getDOM<T = HTMLElement>(slider: IgcSliderBaseComponent) {
   const root = slider.shadowRoot!;
 

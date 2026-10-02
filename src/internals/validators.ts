@@ -15,12 +15,10 @@ export interface Validator<T = any> {
   isValid: ValidatorHandler<T>;
 }
 
-/** Formats the `rangeUnderflow` message with the `min` bound. */
 function minBoundMessage(min: unknown): string {
   return formatString(ValidationResourceStringsEN.min_validation_error!, min);
 }
 
-/** Formats the `rangeOverflow` message with the `max` bound. */
 function maxBoundMessage(max: unknown): string {
   return formatString(ValidationResourceStringsEN.max_validation_error!, max);
 }
@@ -74,13 +72,24 @@ export const maxLengthValidator: Validator<{
     maxLength && value ? value.length <= asNumber(maxLength) : true,
 };
 
+/**
+ * Compiles `pattern` as a native control does: it must match the whole value,
+ * it uses the `v` flag, and an invalid pattern sets no constraint.
+ */
+function compilePattern(pattern: string): RegExp | null {
+  try {
+    return new RegExp(`^(?:${pattern})$`, 'v');
+  } catch {
+    return null;
+  }
+}
+
 export const patternValidator: Validator<{ pattern?: string; value: string }> =
   {
     key: 'patternMismatch',
     message: ValidationResourceStringsEN.pattern_validation_error!,
-    // As for a native control, the pattern must match the whole value.
     isValid: ({ pattern, value }) =>
-      pattern && value ? new RegExp(`^(?:${pattern})$`, 'u').test(value) : true,
+      pattern && value ? (compilePattern(pattern)?.test(value) ?? true) : true,
   };
 
 export const minValidator: Validator<{
@@ -197,12 +206,9 @@ function isWithinBound<T extends DatePartsHost>(
 
 /**
  * Creates a `rangeUnderflow` validator for the `min` bound of a host.
- *
- * @remarks
  * The comparison follows the host format: day granularity without time
- * parts, time-of-day granularity without date parts. `resolveValues` gives
- * the dates to compare, and empty slots are skipped, so a partial range
- * validates only the ends it has.
+ * parts, time-of-day granularity without date parts. Empty slots from
+ * `resolveValues` are skipped, so a partial range validates only its ends.
  */
 export function createMinDateTimeValidator<
   T extends DatePartsHost & { min?: Date | null },

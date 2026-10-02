@@ -17,6 +17,7 @@ import { styles } from './themes/container.base.css.js';
 import { all } from './themes/container.js';
 import IgcTreeItemComponent from './tree-item.js';
 import {
+  collectTreeItems,
   getTreeItemChildren,
   type IgcTreeComponentEventMap,
 } from './tree.common.js';
@@ -25,11 +26,8 @@ import { IgcTreeSelectionService } from './tree.selection.js';
 
 /**
  * Tree properties that items read while rendering. The tree is not a reactive
- * source for them, so a change must re-render the items by hand.
- *
- * Prefer to read tree state at event time over extending this list: a handler
- * always sees the current value and costs no re-render. Direction uses CSS
- * `:dir()` for the same reason.
+ * source for them, so a change must re-render the items by hand. Prefer to read
+ * tree state at event time over extending this list.
  */
 const ITEM_RENDER_DEPENDENCIES = ['selection', 'resourceStrings'] as const;
 
@@ -107,15 +105,7 @@ export default class IgcTreeComponent extends I18nMixin(
    * Returns all of the tree's items.
    */
   public get items(): IgcTreeItemComponent[] {
-    // A shared accumulator does not copy every subtree an extra time.
-    const result: IgcTreeItemComponent[] = [];
-
-    for (const item of this._rootItems) {
-      result.push(item);
-      item._collectDescendants(result);
-    }
-
-    return result;
+    return collectTreeItems(this);
   }
 
   constructor() {
@@ -152,8 +142,9 @@ export default class IgcTreeComponent extends I18nMixin(
       this.selectionService.clearItemsSelection();
     }
 
-    if (changed.has('singleBranchExpand')) {
-      this._singleBranchExpandChange();
+    // The active item's branch stays open; everything else collapses.
+    if (changed.has('singleBranchExpand') && this.singleBranchExpand) {
+      this._collapseOtherBranches(this.navService.activeItem);
     }
 
     if (ITEM_RENDER_DEPENDENCIES.some((prop) => changed.has(prop))) {
@@ -179,18 +170,13 @@ export default class IgcTreeComponent extends I18nMixin(
     );
   }
 
-  private _singleBranchExpandChange(): void {
-    if (!this.singleBranchExpand) {
-      return;
-    }
+  /** @hidden @internal Collapses every item except the ancestors of `item`. */
+  public _collapseOtherBranches(item: IgcTreeItemComponent | null): void {
+    const keepExpanded = new Set(item ? item.path.slice(0, -1) : []);
 
-    // The active item's branch stays open; everything else collapses.
-    const active = this.navService.activeItem;
-    const keepExpanded = new Set(active ? active.path.slice(0, -1) : []);
-
-    for (const item of this.items) {
-      if (!keepExpanded.has(item)) {
-        item.collapseWithEvent();
+    for (const other of this.items) {
+      if (!keepExpanded.has(other)) {
+        other.collapseWithEvent();
       }
     }
   }

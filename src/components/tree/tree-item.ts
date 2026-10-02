@@ -12,7 +12,11 @@ import { growVerIn, growVerOut } from '#animations/presets/grow/index.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { HostAriaMixin } from '#internals/mixins/host-aria.js';
 import { partMap } from '#internals/part-map.js';
-import { scrollIntoView, setOrRemoveAttribute } from '#internals/utils/dom.js';
+import {
+  getTabbables,
+  scrollIntoView,
+  setOrRemoveAttribute,
+} from '#internals/utils/dom.js';
 import {
   addSafeEventListener,
   getElementFromPath,
@@ -26,9 +30,11 @@ import { all } from './themes/item.js';
 import { styles as shared } from './themes/shared/item.common.css.js';
 import {
   clearTreeItemAria,
+  collectTreeItems,
   copyHostAria,
   getTreeItemChildren,
   hasTreeItemChildren,
+  isTreeItem,
   TREE_ITEM_TAG,
   TREE_TAG,
 } from './tree.common.js';
@@ -114,17 +120,6 @@ export default class IgcTreeItemComponent extends HostAriaMixin(LitElement) {
     };
   }
 
-  /** Direct `igc-tree-item` light-DOM children. */
-  private get _directChildren(): IgcTreeItemComponent[] {
-    return getTreeItemChildren(this);
-  }
-
-  private get _allChildren(): IgcTreeItemComponent[] {
-    const result: IgcTreeItemComponent[] = [];
-    this._collectDescendants(result);
-    return result;
-  }
-
   /** @hidden @internal */
   @query('#wrapper')
   public wrapper!: HTMLElement;
@@ -208,10 +203,7 @@ export default class IgcTreeItemComponent extends HostAriaMixin(LitElement) {
     super.connectedCallback();
     this._tree =
       (this.closest(TREE_TAG) as IgcTreeComponent | null) ?? undefined;
-    this.parent =
-      this.parentElement?.tagName.toLowerCase() === TREE_ITEM_TAG
-        ? (this.parentElement as IgcTreeItemComponent)
-        : null;
+    this.parent = isTreeItem(this.parentElement) ? this.parentElement : null;
     this.level = this.parent ? this.parent.level + 1 : 0;
     this._syncAria();
     this._activeChange();
@@ -234,25 +226,19 @@ export default class IgcTreeItemComponent extends HostAriaMixin(LitElement) {
   protected override willUpdate(changed: PropertyValues<this>): void {
     super.willUpdate(changed);
 
-    if (changed.has('expanded')) {
-      const oldValue = changed.get('expanded') as boolean;
-      if (oldValue !== this.expanded) {
-        this._expandedChange(oldValue);
-      }
+    const toggled = (key: 'expanded' | 'active' | 'selected') =>
+      changed.has(key) && changed.get(key) !== this[key];
+
+    if (toggled('expanded')) {
+      this._expandedChange(changed.get('expanded') as boolean);
     }
 
-    if (this.hasUpdated && changed.has('active')) {
-      const oldValue = changed.get('active') as boolean;
-      if (oldValue !== this.active) {
-        this._activeChange();
-      }
+    if (this.hasUpdated && toggled('active')) {
+      this._activeChange();
     }
 
-    if (this.hasUpdated && changed.has('selected')) {
-      const oldValue = changed.get('selected') as boolean;
-      if (oldValue !== this.selected) {
-        this._selectedChange();
-      }
+    if (this.hasUpdated && toggled('selected')) {
+      this._selectedChange();
     }
   }
 
@@ -261,18 +247,6 @@ export default class IgcTreeItemComponent extends HostAriaMixin(LitElement) {
 
     // ARIA state is outside the shadow template, so it syncs once per update.
     this._syncAria();
-  }
-
-  /**
-   * @hidden @internal
-   * Appends each descendant to `out` in pre-order. One shared array keeps the
-   * flatten cost of a deep tree linear, not quadratic.
-   */
-  public _collectDescendants(out: IgcTreeItemComponent[]): void {
-    for (const child of getTreeItemChildren(this)) {
-      out.push(child);
-      child._collectDescendants(out);
-    }
   }
 
   /**
@@ -365,17 +339,7 @@ export default class IgcTreeItemComponent extends HostAriaMixin(LitElement) {
   }
 
   private _labelChange(): void {
-    const firstElement = this._contentList[0];
-    const tabbableSelector =
-      'a[href], button, input, textarea, select, details, [tabindex]:not([tabindex="-1"])';
-
-    this._tabbableEl = [
-      ...firstElement.querySelectorAll<HTMLElement>(tabbableSelector),
-    ];
-    if (firstElement.matches(tabbableSelector)) {
-      this._tabbableEl.splice(0, 0, firstElement);
-    }
-
+    this._tabbableEl = getTabbables(this._contentList[0]);
     this._setTabbable(-1);
     this._syncAria();
   }
@@ -450,15 +414,10 @@ export default class IgcTreeItemComponent extends HostAriaMixin(LitElement) {
   }
 
   private _activeChange(): void {
-    if (
-      (this.active && this._navService?.activeItem === this) ||
-      !this.active
-    ) {
+    if (!this.active || this._navService?.activeItem === this) {
       return;
     }
-    if (this._navService) {
-      this._navService.setActiveItem(this, false);
-    }
+    this._navService?.setActiveItem(this, false);
     this.tree?.expandToItem(this);
     // Wait for the expand, then scroll to the item.
     Promise.resolve().then(() => {
@@ -487,7 +446,7 @@ export default class IgcTreeItemComponent extends HostAriaMixin(LitElement) {
   public getChildren(
     options: { flatten: boolean } = { flatten: false }
   ): IgcTreeItemComponent[] {
-    return options.flatten ? this._allChildren : this._directChildren;
+    return options.flatten ? collectTreeItems(this) : getTreeItemChildren(this);
   }
 
   /**
@@ -495,27 +454,18 @@ export default class IgcTreeItemComponent extends HostAriaMixin(LitElement) {
    * Expands the tree item.
    */
   public async expandWithEvent() {
-    if (this.expanded) {
-      return;
-    }
-    const args = {
-      detail: this,
-      cancelable: true,
-    };
-
-    const allowed = this.tree?.emitEvent('igcItemExpanding', args);
-
-    if (!allowed) {
+    if (
+      this.expanded ||
+      !this.tree?.emitEvent('igcItemExpanding', {
+        detail: this,
+        cancelable: true,
+      })
+    ) {
       return;
     }
 
     if (this.tree?.singleBranchExpand) {
-      const ancestors = new Set(this.path.slice(0, -1));
-      for (const item of this.tree.items) {
-        if (!ancestors.has(item)) {
-          item.collapseWithEvent();
-        }
-      }
+      this.tree._collapseOtherBranches(this);
     }
 
     this.expanded = true;
@@ -529,17 +479,13 @@ export default class IgcTreeItemComponent extends HostAriaMixin(LitElement) {
    * Collapses the tree item.
    */
   public async collapseWithEvent() {
-    if (!this.expanded) {
-      return;
-    }
-    const args = {
-      detail: this,
-      cancelable: true,
-    };
-
-    const allowed = this.tree?.emitEvent('igcItemCollapsing', args);
-
-    if (!allowed) {
+    if (
+      !this.expanded ||
+      !this.tree?.emitEvent('igcItemCollapsing', {
+        detail: this,
+        cancelable: true,
+      })
+    ) {
       return;
     }
 
