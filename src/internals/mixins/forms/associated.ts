@@ -4,7 +4,7 @@ import { NAMING_ATTRIBUTES } from '../../controllers/aria-projection.js';
 import { addInternalsController } from '../../controllers/internals.js';
 import { enterKey, isKey } from '../../controllers/keys.js';
 import { sameItems } from '../../utils/arrays.js';
-import { addSafeEventListener } from '../../utils/events.js';
+import { addSafeEventListener, preventDefault } from '../../utils/events.js';
 import { isFunction, isString } from '../../utils/types.js';
 import type { Validator } from '../../validators.js';
 import type { Constructor } from '../constructor.js';
@@ -37,6 +37,78 @@ function emitInternalFormEvent(host: LitElement, name: string): void {
   host.dispatchEvent(new CustomEvent(name, eventOptions));
 }
 
+let areFormChecksWrapped = false;
+
+type FormCheck = 'silent' | 'report';
+
+/** The validity checks that run on each form, the innermost one last. */
+const formChecks = new WeakMap<HTMLFormElement, FormCheck[]>();
+
+/** Records each call of the form `method` as a check of the given kind. */
+function trackFormMethod(
+  method: 'checkValidity' | 'reportValidity' | 'requestSubmit',
+  check: FormCheck
+): void {
+  const prototype = HTMLFormElement.prototype as unknown as Record<
+    string,
+    (...args: unknown[]) => unknown
+  >;
+  const original = prototype[method];
+
+  prototype[method] = function (this: HTMLFormElement, ...args: unknown[]) {
+    const checks = formChecks.get(this) ?? [];
+    formChecks.set(this, checks);
+    checks.push(check);
+
+    try {
+      return original.apply(this, args);
+    } finally {
+      checks.pop();
+    }
+  };
+}
+
+/**
+ * A failed submit and `form.checkValidity()` send the same `invalid` events,
+ * but only the submit moves the focus. The wrappers tell them apart, also for
+ * a check that runs inside another check of the same form.
+ */
+function wrapFormChecks(): void {
+  if (isServer || areFormChecksWrapped) {
+    return;
+  }
+
+  areFormChecksWrapped = true;
+  trackFormMethod('checkValidity', 'silent');
+  trackFormMethod('reportValidity', 'report');
+  trackFormMethod('requestSubmit', 'report');
+}
+
+/**
+ * The browser focuses the first invalid control whose `invalid` event is not
+ * canceled. Cancels the events of `controls` in the current validation pass,
+ * so that an earlier control keeps the focus.
+ */
+function cancelInvalidEvents(controls: Element[]): void {
+  const controller = new AbortController();
+  const options = { once: true, signal: controller.signal };
+
+  for (const control of controls) {
+    control.addEventListener('invalid', preventDefault, options);
+  }
+
+  // The pass is synchronous. The listeners must not reach a later pass.
+  setTimeout(() => controller.abort());
+}
+
+type ListedElement = Element &
+  Partial<Pick<HTMLInputElement, 'willValidate' | 'validity'>>;
+
+/** Whether the element takes part in constraint validation and fails it. */
+function isInvalidControl(element: ListedElement): boolean {
+  return !!element.willValidate && !element.validity?.valid;
+}
+
 function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
   class BaseFormAssociatedElement extends base {
     public static readonly formAssociated = true;
@@ -57,12 +129,10 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
     protected readonly _internals = addInternalsController(this);
     protected readonly _formValue!: FormValue<unknown>;
 
-    /**
-     * Hides the invalid styling for a validation cycle started from code. Set
-     * immediately before the check and cleared immediately after, so that it
-     * does not reach a later cycle.
-     */
+    /** Set while `checkValidity()` of the control runs. */
     private _isInternalValidation = false;
+    /** Set while `reportValidity()` of the control runs. */
+    private _isReportingValidity = false;
     private _touched = false;
     private _isExternalInvalid = false;
     /** The `<label>` elements at the last update. */
@@ -74,12 +144,7 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
       }
 
       // A disabled control cannot validate, so it never styles as invalid.
-      return (
-        !this._disabled &&
-        this._invalid &&
-        this._touched &&
-        !this._isInternalValidation
-      );
+      return !this._disabled && this._invalid && this._touched;
     }
 
     protected _disabled = false;
@@ -166,6 +231,7 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
 
     constructor(...args: any[]) {
       super(...args);
+      wrapFormChecks();
       addSafeEventListener(this, 'invalid', this._handleInvalid);
       addSafeEventListener(this, 'click', this._handleHostClick);
       addSafeEventListener(this, 'focusin', this._handleFocusEnter);
@@ -262,9 +328,7 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
       event.preventDefault();
       this._invalid = true;
 
-      if (this._isInternalValidation) {
-        this._isInternalValidation = false;
-      } else {
+      if (!this._isInternalValidation) {
         // A failed submission is a lasting interaction: touched keeps
         // `invalid` and the projected messages visible across re-renders.
         this._setTouchedState();
@@ -273,6 +337,26 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
 
       this._setInvalidStyles();
       this.requestUpdate();
+
+      const form = this.form;
+
+      // The canceled event also keeps the browser from focusing the first
+      // invalid control after a failed submit.
+      if (
+        form &&
+        !this._isInternalValidation &&
+        !this._isReportingValidity &&
+        formChecks.get(form)?.at(-1) !== 'silent'
+      ) {
+        const [first, ...later] = Array.from(form.elements).filter(
+          isInvalidControl
+        );
+
+        if (first === this) {
+          this.focus();
+          cancelInvalidEvents(later);
+        }
+      }
     }
 
     private _setInvalidStyles(): void {
@@ -328,9 +412,16 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
       }
 
       this._internals.setValidity(validity, message);
-      this._isInternalValidation = true;
-      this._invalid = !this._internals.checkValidity();
-      this._isInternalValidation = false;
+
+      // `checkValidity()` would send `invalid`, which a native control does
+      // not do while the user edits it.
+      this._invalid = isInvalidControl(this);
+
+      if (this._invalid) {
+        // The validation container and some inner editors render `invalid`.
+        this.requestUpdate();
+      }
+
       this._setInvalidStyles();
     }
 
@@ -397,9 +488,26 @@ function BaseFormAssociated<T extends Constructor<LitElement>>(base: T) {
 
     //#region Public API
 
-    /** Checks validity and shows the browser message when invalid. */
+    /**
+     * Checks validity. As for a native control, an invalid control emits
+     * `invalid` and takes the focus. It shows its own validation messages, not
+     * the message of the browser.
+     */
     public reportValidity(): boolean {
+      const state = this._reportValidity();
+
+      if (!state) {
+        this.focus();
+      }
+
+      return state;
+    }
+
+    /** Reports the validity without moving the focus. */
+    protected _reportValidity(): boolean {
+      this._isReportingValidity = true;
       const state = this._internals.reportValidity();
+      this._isReportingValidity = false;
       this._invalid = !state;
       return state;
     }

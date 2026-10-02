@@ -128,6 +128,24 @@ describe('Highlight', () => {
       expect(highlight.size).to.equal(1);
     });
 
+    it('matches a space in the search text with any run of whitespace', async () => {
+      // A text node keeps the whitespace, which a formatter can change in a template.
+      highlight.replaceChildren(
+        document.createTextNode(
+          'cold\n      brew, cold  \t brew, cold brew, coldbrew'
+        )
+      );
+      highlight.searchText = 'cold brew';
+      await elementUpdated(highlight);
+
+      expect(highlight.size).to.equal(3);
+
+      highlight.searchText = 'cold \t brew';
+      await elementUpdated(highlight);
+
+      expect(highlight.size).to.equal(3);
+    });
+
     it('moves to the next match when `next()` is invoked', async () => {
       highlight.searchText = 'e';
       await elementUpdated(highlight);

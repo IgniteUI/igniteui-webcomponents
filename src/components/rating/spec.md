@@ -48,6 +48,7 @@
 |       1 | 2026-09-21 | Initial specification                                                                |
 |       2 | 2026-09-23 | Describe when the `--symbol-*-filter` properties apply                               |
 |       3 | 2026-09-24 | Label external `label` elements and host `aria-labelledby`, focus from a label click |
+|       4 | 2026-10-02 | Correct the `reportValidity` description                                             |
 
 ## Overview
 
@@ -207,13 +208,13 @@ value: `{0}` is replaced with the current value and `{1}` with the maximum.
 
 ### Methods
 
-| Method              | Signature                        | Description                                                   |
-| ------------------- | -------------------------------- | ------------------------------------------------------------- |
-| `stepUp`            | `(n?: number): void`             | Increases the value by `n` steps.                              |
-| `stepDown`          | `(n?: number): void`             | Decreases the value by `n` steps.                              |
-| `checkValidity`     | `(): boolean`                    | Checks the validity and emits `invalid` when it fails.         |
-| `reportValidity`    | `(): boolean`                    | Checks the validity and shows the browser message.             |
-| `setCustomValidity` | `(message: string): void`        | Sets a custom validation message.                              |
+| Method              | Signature                 | Description                                                       |
+| ------------------- | ------------------------- | ----------------------------------------------------------------- |
+| `stepUp`            | `(n?: number): void`      | Increases the value by `n` steps.                                 |
+| `stepDown`          | `(n?: number): void`      | Decreases the value by `n` steps.                                 |
+| `checkValidity`     | `(): boolean`             | Checks the validity and emits `invalid` when it fails.            |
+| `reportValidity`    | `(): boolean`             | Checks validity, and emits `invalid` when the control is invalid. |
+| `setCustomValidity` | `(message: string): void` | Sets a custom validation message.                                 |
 
 ### Events
 
