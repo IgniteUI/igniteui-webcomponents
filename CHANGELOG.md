@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 ### Added
+- #### Tabs
+  - `header-background` theme token. It paints the whole tabs header strip, behind the tab items, and follows `item-background` unless set. Thus a translucent `item-background` composites over the header color instead of stacking on a copy of itself, and the header can be made transparent on its own. The matching `$header-background` parameter is available in the `tabs-theme` function of `igniteui-theming`.
 - #### Calendar, Date picker, Date range picker
   - `DateRangeDescriptor` has an optional `label`. The calendar adds the labels of the matching `specialDates` and `disabledDates` descriptors to the accessible name of a date, for example "Thursday, October 8, 2026, Free delivery". Before, the special state was only visual, and assistive technologies did not announce it.
 
@@ -14,6 +16,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - `loadLayout` now copies only the serialized tile properties: the spans, the positions, the flags and `id`. A layout from storage or a server can no longer set `innerHTML` on a tile or replace its prototype through `__proto__`. A value that is not an array, and an entry that is not an object, are ignored.
 
 ### Fixed
+- #### Tabs
+  - `alignment` had no effect in the Material, Fluent and Indigo themes. `center`, `end` and `justify` rendered like `start`, because the header grid did not take the width of the strip outside the Bootstrap theme.
+  - `justify` now gives every tab the same width, as the Angular tabs do. Before, each tab got its content width plus an equal share of the free space.
+  - A tab selected through its `selected` property, from markup or by a framework binding, is now scrolled into view, the same as a tab selected by click, keyboard or `select()`. The scroll is confined to the header strip and never moves the page. [#2267](https://github.com/IgniteUI/igniteui-webcomponents/issues/2267) is thus still covered.
+  - A tab added as selected that makes the strip overflow is scrolled fully into view. Before, it stayed partly hidden behind the end scroll button that had just appeared.
+  - The scroll buttons now go away when removing tabs makes the strip fit again. Before, the buttons kept themselves displayed, because the overflow was measured with their own columns included.
+  - The Material and Fluent themes paint the whole header strip, as the Angular tabs do. Before, only the area under the tab items was painted, so the strip ended at the last tab. [IgniteUI/igniteui-angular#17421](https://github.com/IgniteUI/igniteui-angular/issues/17421)
 - #### Input, Mask input, Date time input, File input, Textarea, Select, Combo, Date picker, Date range picker, Color picker, Checkbox, Switch, Radio
   - As for a native control, a failed form submit or `form.reportValidity()` now moves the focus to the first invalid control, also when an invalid native control comes after it. `reportValidity()` of an invalid control moves the focus to that control. Before, the focus stayed where it was, because the controls cancel the `invalid` event to hide the message of the browser, and only Select moved the focus on `reportValidity()`. `form.checkValidity()` does not move the focus. To tell a submit from `form.checkValidity()`, also when one runs inside the other, the library wraps `checkValidity()`, `reportValidity()` and `requestSubmit()` of `HTMLFormElement.prototype`.
   - The controls no longer send an `invalid` event while the user edits an invalid field or leaves it. Before, each validation sent one, unlike a native control. Now the event comes only from `checkValidity()`, `reportValidity()`, the same methods of the form, and a failed submit.

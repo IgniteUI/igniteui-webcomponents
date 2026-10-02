@@ -404,6 +404,27 @@ describe('Tabs component', () => {
       expect(Math.abs(90 - widths[3])).to.equal(0);
     });
 
+    it('gives every tab the same width when `alignment` is set to justify, whatever the labels', async () => {
+      const tabs = await fixture<IgcTabsComponent>(html`
+        <igc-tabs alignment="justify" style="width: 600px">
+          <igc-tab label="A">Content 1</igc-tab>
+          <igc-tab label="A longer label">Content 2</igc-tab>
+          <igc-tab label="Mid">Content 3</igc-tab>
+          <igc-tab label="An even longer tab label">Content 4</igc-tab>
+        </igc-tabs>
+      `);
+      await elementUpdated(tabs);
+
+      const expectedWidth =
+        getTabsDOM(tabs).container.offsetWidth / tabs.tabs.length;
+
+      for (const tab of tabs.tabs) {
+        expect(
+          getTabDOM(tab).header.getBoundingClientRect().width
+        ).to.be.closeTo(expectedWidth, 1);
+      }
+    });
+
     it('aligns tab headers properly when `alignment` is set to center', async () => {
       const { container } = getTabsDOM(element);
       const firstTabHeader = getTabDOM(firstOf(element.tabs)).header;
@@ -855,6 +876,168 @@ describe('Tabs component', () => {
         () => isInView(container, target),
         'The next out of view tab was not scrolled into view'
       );
+    });
+
+    it('scrolls a tab selected through its `selected` property into view', async () => {
+      element.style.width = '400px';
+      await elementUpdated(element);
+
+      const { container } = getTabsDOM(element);
+      const tab = lastOf(element.tabs)!;
+      const header = getTabDOM(tab).header;
+
+      expect(
+        isInView(container, header),
+        'The last tab is in view to begin with'
+      ).to.be.false;
+
+      // Selection driven by the DOM, the way a framework binding applies it.
+      tab.selected = true;
+      await elementUpdated(element);
+
+      await waitUntil(
+        () => isInView(container, header),
+        'The programmatically selected tab was not scrolled into view'
+      );
+      expect(getTabsDOM(element).selected).to.deep.equal([tab]);
+    });
+
+    it('scrolls a tab added as selected into view', async () => {
+      element.style.width = '400px';
+      await elementUpdated(element);
+
+      const { container } = getTabsDOM(element);
+      const tab = document.createElement(IgcTabComponent.tagName);
+      tab.label = 'Added';
+      tab.selected = true;
+
+      element.append(tab);
+      await elementUpdated(element);
+
+      await waitUntil(
+        () => isInView(container, getTabDOM(tab).header),
+        'The added selected tab was not scrolled into view'
+      );
+      expect(getTabsDOM(element).selected).to.deep.equal([tab]);
+    });
+
+    it('scrolls an added selected tab into view when it is the one that makes the strip overflow', async () => {
+      // Four tabs fit, the fifth one brings in the scroll buttons.
+      const tabs = await fixture<IgcTabsComponent>(html`
+        <igc-tabs style="width: 400px">
+          ${Array.from(range(1, 5)).map(
+            (idx) =>
+              html`<igc-tab .label=${`Tab ${idx}`}>Content ${idx}</igc-tab>`
+          )}
+        </igc-tabs>
+      `);
+      const { container } = getTabsDOM(tabs);
+
+      expect(
+        tabs.renderRoot.querySelector('[part="end-scroll-button"]'),
+        'The strip overflows to begin with'
+      ).to.be.null;
+
+      const tab = document.createElement(IgcTabComponent.tagName);
+      tab.label = 'Added';
+      tab.selected = true;
+
+      tabs.append(tab);
+      await elementUpdated(tabs);
+
+      await waitUntil(
+        () =>
+          tabs.renderRoot.querySelector('[part="end-scroll-button"]') !== null,
+        'The scroll buttons did not appear'
+      );
+      await waitUntil(
+        () => isInView(container, getTabDOM(tab).header),
+        'The added selected tab was not scrolled into view'
+      );
+    });
+
+    it('hides the scroll buttons when removing a tab makes the strip fit again', async () => {
+      // Four tabs fit in 400px, the fifth one brings in the scroll buttons.
+      const tabs = await fixture<IgcTabsComponent>(html`
+        <igc-tabs style="width: 400px">
+          ${Array.from(range(1, 6)).map(
+            (idx) =>
+              html`<igc-tab .label=${`Tab ${idx}`}>Content ${idx}</igc-tab>`
+          )}
+        </igc-tabs>
+      `);
+      const endButton = () =>
+        tabs.renderRoot.querySelector('[part="end-scroll-button"]');
+
+      await waitUntil(
+        () => endButton() !== null,
+        'The strip does not overflow'
+      );
+
+      lastOf(tabs.tabs)!.remove();
+      await elementUpdated(tabs);
+
+      await waitUntil(
+        () => endButton() === null,
+        'The scroll buttons stayed after the tabs fit again'
+      );
+    });
+
+    it('does not scroll the page when a selected tab is out of view', async () => {
+      // Push the tabs below the fold so that a document scroll would be observable.
+      const wrapper = await fixture<HTMLElement>(html`
+        <div>
+          <div style="height: 300vh"></div>
+          <igc-tabs style="width: 400px">
+            ${Array.from(range(1, 19)).map(
+              (idx) =>
+                html`<igc-tab .label=${`Item ${idx}`}>Content ${idx}</igc-tab>`
+            )}
+          </igc-tabs>
+        </div>
+      `);
+      const tabs = wrapper.querySelector(IgcTabsComponent.tagName)!;
+      const { container } = getTabsDOM(tabs);
+
+      window.scrollTo(0, 0);
+      const target = lastOf(tabs.tabs)!;
+
+      target.selected = true;
+      await elementUpdated(tabs);
+      await waitUntil(
+        () => isInView(container, getTabDOM(target).header),
+        'The programmatically selected tab was not scrolled into view'
+      );
+
+      expect(window.scrollY, 'The page was scrolled').to.equal(0);
+    });
+
+    it('reveals a tab selected in the initial markup without scrolling the page', async () => {
+      // The tabs are below the fold and the last tab is selected from the start, which is
+      // the case where the initial scroll into view used to move the document.
+      const wrapper = await fixture<HTMLElement>(html`
+        <div>
+          <div style="height: 300vh"></div>
+          <igc-tabs style="width: 400px">
+            ${Array.from(range(1, 19)).map(
+              (idx) =>
+                html`<igc-tab .label=${`Item ${idx}`} ?selected=${idx === 18}
+                  >Content ${idx}</igc-tab
+                >`
+            )}
+          </igc-tabs>
+        </div>
+      `);
+      const tabs = wrapper.querySelector(IgcTabsComponent.tagName)!;
+      const { container } = getTabsDOM(tabs);
+      const target = lastOf(tabs.tabs)!;
+
+      await waitUntil(
+        () => isInView(container, getTabDOM(target).header),
+        'The initially selected tab was not scrolled into view'
+      );
+      expect(getTabsDOM(tabs).selected).to.deep.equal([target]);
+      expect(window.scrollY, 'The page was scrolled').to.equal(0);
     });
 
     it('scrolls the previous out of view tab into view', async () => {
