@@ -255,11 +255,14 @@ class TabsHelpers {
     // columns, so the overflow is judged by the tabs alone. Otherwise the buttons
     // would keep themselves displayed after the tabs fit again, e.g. when tabs are
     // removed, and the measurement would depend on whether they are rendered yet.
+    // Subpixel widths, so that the rounding of many headers does not add up.
     const tabsWidth = this._host.tabs.reduce(
-      (width, tab) => width + (getTabHeader(tab)?.offsetWidth ?? 0),
+      (width, tab) =>
+        width + (getTabHeader(tab)?.getBoundingClientRect().width ?? 0),
       0
     );
-    const hasScrollButtons = tabsWidth > clientWidth + EDGE_TOLERANCE;
+    const hasScrollButtons =
+      tabsWidth > this.container.getBoundingClientRect().width + EDGE_TOLERANCE;
     const start = Math.abs(scrollLeft) <= 1;
     const end = Math.abs(Math.abs(scrollLeft) + clientWidth - scrollWidth) <= 1;
 

@@ -404,6 +404,27 @@ describe('Tabs component', () => {
       expect(Math.abs(90 - widths[3])).to.equal(0);
     });
 
+    it('gives every tab the same width when `alignment` is set to justify, whatever the labels', async () => {
+      const tabs = await fixture<IgcTabsComponent>(html`
+        <igc-tabs alignment="justify" style="width: 600px">
+          <igc-tab label="A">Content 1</igc-tab>
+          <igc-tab label="A longer label">Content 2</igc-tab>
+          <igc-tab label="Mid">Content 3</igc-tab>
+          <igc-tab label="An even longer tab label">Content 4</igc-tab>
+        </igc-tabs>
+      `);
+      await elementUpdated(tabs);
+
+      const expectedWidth =
+        getTabsDOM(tabs).container.offsetWidth / tabs.tabs.length;
+
+      for (const tab of tabs.tabs) {
+        expect(
+          getTabDOM(tab).header.getBoundingClientRect().width
+        ).to.be.closeTo(expectedWidth, 1);
+      }
+    });
+
     it('aligns tab headers properly when `alignment` is set to center', async () => {
       const { container } = getTabsDOM(element);
       const firstTabHeader = getTabDOM(firstOf(element.tabs)).header;
