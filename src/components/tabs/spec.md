@@ -42,7 +42,7 @@ This directory hosts two public components: [`igc-tabs`](#igc-tabs) and [`igc-ta
 | Version | Date       | Notes                 |
 | ------: | ---------- | --------------------- |
 |       1 | 2026-09-21 | Initial specification |
-|       2 | 2026-10-02 | `header` shadow part, painted with the `header-background` theme token; a tab selected through `selected` is scrolled into view; the scroll buttons are shown by the width of the tab headers |
+|       2 | 2026-10-02 | `header` shadow part, painted with the `header-background` theme token; `alignment` applies in every theme, and `justify` gives every tab the same width; a tab selected through `selected` is scrolled into view, confined to the header strip; the scroll buttons are shown by the width of the tab headers |
 
 ## Overview
 

@@ -1012,6 +1012,34 @@ describe('Tabs component', () => {
       expect(window.scrollY, 'The page was scrolled').to.equal(0);
     });
 
+    it('reveals a tab selected in the initial markup without scrolling the page', async () => {
+      // The tabs are below the fold and the last tab is selected from the start, which is
+      // the case where the initial scroll into view used to move the document.
+      const wrapper = await fixture<HTMLElement>(html`
+        <div>
+          <div style="height: 300vh"></div>
+          <igc-tabs style="width: 400px">
+            ${Array.from(range(1, 19)).map(
+              (idx) =>
+                html`<igc-tab .label=${`Item ${idx}`} ?selected=${idx === 18}
+                  >Content ${idx}</igc-tab
+                >`
+            )}
+          </igc-tabs>
+        </div>
+      `);
+      const tabs = wrapper.querySelector(IgcTabsComponent.tagName)!;
+      const { container } = getTabsDOM(tabs);
+      const target = lastOf(tabs.tabs)!;
+
+      await waitUntil(
+        () => isInView(container, getTabDOM(target).header),
+        'The initially selected tab was not scrolled into view'
+      );
+      expect(getTabsDOM(tabs).selected).to.deep.equal([target]);
+      expect(window.scrollY, 'The page was scrolled').to.equal(0);
+    });
+
     it('scrolls the previous out of view tab into view', async () => {
       element.style.width = '400px';
       await elementUpdated(element);
