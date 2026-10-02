@@ -26,7 +26,7 @@ import type { Constructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { partMap } from '#internals/part-map.js';
 import { firstOf, isEmpty } from '#internals/utils/arrays.js';
-import { getRoot, scrollIntoView } from '#internals/utils/dom.js';
+import { getRoot } from '#internals/utils/dom.js';
 import { getElementFromPath } from '#internals/utils/events.js';
 import { isString } from '#internals/utils/types.js';
 import { addThemingController } from '#theming/theming-controller.js';
@@ -42,7 +42,6 @@ type TabSelectionOptions = {
   /** The tab to select. Omitting it clears the current selection. */
   tab?: IgcTabComponent;
   shouldEmit?: boolean;
-  shouldScroll?: boolean;
 };
 
 type TabMutations = MutationControllerParams<IgcTabComponent>['changes'];
@@ -64,6 +63,7 @@ export interface IgcTabsComponentEventMap {
  *
  * @slot - Renders the `IgcTabComponents` inside default slot.
  *
+ * @csspart header - The header strip behind the tab headers.
  * @csspart start-scroll-button - The start scroll button displayed when the tabs overflow.
  * @csspart end-scroll-button - The end scroll button displayed when the tabs overflow.
  * @csspart selected-indicator - The indicator that shows which tab is selected.
@@ -327,11 +327,11 @@ export default class IgcTabsComponent extends EventEmitterMixin<
 
   /** Applies a selection driven by the DOM rather than by user interaction. */
   private _syncSelection(tab?: IgcTabComponent): void {
-    this._setSelectedTab({ tab, shouldEmit: false, shouldScroll: false });
+    this._setSelectedTab({ tab, shouldEmit: false });
   }
 
   private _setSelectedTab(options: TabSelectionOptions): void {
-    const { tab, shouldEmit = true, shouldScroll = true } = options;
+    const { tab, shouldEmit = true } = options;
 
     // An explicit `undefined` clears the selection, while a tab that cannot be
     // selected leaves the current one in place.
@@ -351,10 +351,10 @@ export default class IgcTabsComponent extends EventEmitterMixin<
       return;
     }
 
-    if (next && shouldScroll) {
-      scrollIntoView(getTabHeader(next));
-    }
-
+    // Scrolling is confined to the header strip, so it is safe for every kind of
+    // selection change - a tab selected from markup or by a property binding
+    // comes into view the same way as one picked by the user.
+    this._domHelpers.scrollTabIntoView(next);
     this._domHelpers.setIndicator(next);
 
     if (next && shouldEmit) {
@@ -367,11 +367,8 @@ export default class IgcTabsComponent extends EventEmitterMixin<
       return;
     }
 
-    const header = getTabHeader(tab);
-
-    this._domHelpers.setScrollSnap();
-    scrollIntoView(header);
-    header?.focus({ preventScroll: true });
+    this._domHelpers.scrollTabIntoView(tab);
+    getTabHeader(tab)?.focus({ preventScroll: true });
 
     if (activate || this.activation === 'auto') {
       this._setSelectedTab({ tab });
@@ -478,6 +475,7 @@ export default class IgcTabsComponent extends EventEmitterMixin<
             scrollable: this._domHelpers.hasScrollButtons,
           })}
         >
+          <div part="header"></div>
           ${this._renderScrollButton('start')}
           <slot @click=${this._handleClick}></slot>
           ${this._renderScrollButton('end')}
