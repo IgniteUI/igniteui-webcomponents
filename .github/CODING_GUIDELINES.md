@@ -46,7 +46,7 @@ src/
 | `definitions/`      | `registerComponent`, `defineComponents`, `defineAllComponents`                                     |
 | `directives/`       | The `resizable()` and `draggable()` pointer directives                                             |
 | `i18n/`             | The localization controller and the deprecated EN resource shapes                                  |
-| `mixins/`           | `EventEmitterMixin`, `I18nMixin`, the form-associated mixins, mask behavior, combo box, group, option, alert |
+| `mixins/`           | `EventEmitterMixin`, `I18nMixin`, `HostAriaMixin`, the form-associated mixins, mask behavior, combo box, group, option, alert |
 | `templates/`        | Shared render fragments: `input-shell`, `masked-input`, `toggle-shell`, `slotted-icon`             |
 | `testing/`          | Test helpers and shared suites. They are `*.spec.ts` files, and production code never imports them. |
 | `utils/`            | Helpers split by domain: `arrays`, `dom`, `events`, `lit`, `math`, `objects`, `strings`, `types`   |
@@ -241,7 +241,7 @@ Before you write lifecycle code, look for a controller that already does it:
 | `addInternalsController` / `internalsOf`                      | `#internals/controllers/internals.js`       | ElementInternals: ARIA, custom states, form value and validity |
 | `addKeybindings`                                              | `#internals/controllers/key-bindings.js`    | Keyboard interaction. The key constants are in `keys.js`.      |
 | `addRovingFocusController`                                    | `#internals/controllers/roving-focus.js`    | Arrow-key focus movement between items (roving tab index)      |
-| `addAriaTarget` / `addAriaProjector` / `ariaBindings`         | `#internals/controllers/aria-projection.js` | Projecting composite ARIA across shadow roots                  |
+| `addAriaTarget` / `addAriaProjector` / `ariaBindings` / `hostAria` | `#internals/controllers/aria-projection.js` | Projecting composite ARIA across shadow roots, and forwarding the host name and description |
 | `addToggleController`                                         | `#internals/controllers/toggle.js`          | The open/close sequence and events of toggleable hosts         |
 | `addHostListeners`                                            | `#internals/controllers/host-listeners.js`  | Listeners that exist while the host is connected               |
 | `addCommandController`                                        | `#internals/controllers/command.js`         | The Invoker Commands API (`command` / `commandfor`)            |
@@ -451,10 +451,10 @@ input-shaped component:
   `ariaBindings()` directive:
 
   ```ts
-  protected readonly _ariaTarget = addAriaTarget(this, {
-    labels: () => this._internals.labels,
-    description: () => this._helperText, // own helper-text element, or null
-  });
+  // Resolves the own helper-text element, or null.
+  protected readonly _ariaTarget = addAriaTarget(this, () =>
+    helperText(this, this._slots)
+  );
 
   protected _renderInput() {
     return html`<input ${ariaBindings(this._ariaTarget.resolveBindings())} />`;
@@ -475,21 +475,41 @@ input-shaped component:
       expanded: `${this.open}`,
       controls: this._list ? [this._list] : null,
       describedBy: this._helperText ? [this._helperText] : null,
-      labelledBy: this._internals.labels,
     }),
   });
   ```
+
+  The projector adds the name of the host (`resolveNaming`) and the host `aria-describedby`.
+  An own label is a non-empty `label`. Pass `naming: false` to project no name.
 
 - The target copies the projected `role` and `hasPopup` to `data-role` and `data-haspopup` on
   the input component. These are **styling hooks**, because `:host()` selectors cannot see
   ARIA on the native editor. Theme selectors for composite anchors use the `data-*`
   attributes, never `role` or `aria-*`.
 
+### Forwarding the host name and description
+
+The host `aria-label`, `aria-labelledby` and `aria-describedby` must reach the element in the
+shadow root that has the role or the focus:
+
+- Add `HostAriaMixin` from `#internals/mixins/host-aria.js` as the innermost mixin. It renders
+  the host again when one of these attributes changes. Override `_handleHostAriaChange()` only
+  for a synchronous update, as the icon does. Do not add an own `observedAttributes` for these
+  attributes.
+- Bind `${ariaBindings(hostAria(this))}` on that element. `hostAria(host, ownLabel, description)`
+  joins `resolveNaming` with the description: the own description first, then the host one.
+- The naming order of form controls is: host `aria-labelledby`, external `<label>`, own label,
+  host `aria-label`. A button follows the native order instead: host `aria-labelledby`, host
+  `aria-label`, `<label>`, content.
+- A form associated host also calls `trackLabels(this)`, because no event reports a new
+  `<label>`. The form mixins and the button base already do.
+
 Testing cross-root ARIA:
 
 - Use the shared suites in `src/internals/testing/form-testbed.spec.ts`:
-  `runExternalLabelAssociationTests` (an external `<label>` through `for` or nesting) and
-  `runAriaProjectionTests` (the host semantics on the native editor).
+  `runExternalLabelAssociationTests` (an external `<label>` through `for` or nesting, and the
+  host description) and `runAriaProjectionTests` (the host semantics on the native editor).
+  For other components, use `runHostAriaTests` from `src/internals/testing/host-aria.spec.ts`.
 - Check reflected relations by identity (`input.ariaControlsElements[0] === list`), not by
   the attribute. Reflection clears the attribute.
 - For the same reason, axe reports `aria-required-attr` for `aria-controls` on

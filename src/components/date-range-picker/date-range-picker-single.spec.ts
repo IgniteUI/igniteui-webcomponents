@@ -42,6 +42,18 @@ import {
 describe('Date range picker - single input', () => {
   before(() => defineComponents(IgcDateRangePickerComponent));
 
+  it('exposes `required` as `aria-required` on the native input', async () => {
+    const picker = await fixture<IgcDateRangePickerComponent>(
+      html`<igc-date-range-picker required></igc-date-range-picker>`
+    );
+    const editor = picker.renderRoot.querySelector('igc-date-range-input')!;
+    await elementUpdated(editor);
+
+    expect(
+      editor.renderRoot.querySelector('input')!.getAttribute('aria-required')
+    ).to.equal('true');
+  });
+
   runExternalLabelAssociationTests({
     tagName: IgcDateRangePickerComponent.tagName,
     getNativeInput: (host) =>
@@ -184,8 +196,6 @@ describe('Date range picker - single input', () => {
 
     it('should modify value only through calendar selection and not input', async () => {
       const eventSpy = spy(picker, 'emitEvent');
-      // current implementation of DRP single input is not editable;
-      // to refactor when the input is made editable
       picker.nonEditable = true;
       await elementUpdated(picker);
 
@@ -407,8 +417,6 @@ describe('Date range picker - single input', () => {
       input.focus();
       await elementUpdated(input);
 
-      // Press arrow up without selecting a specific part
-      // Should increment the last end position part (year)
       const initialDate = new Date(2025, 0, 15); // Jan 15, 2025
       picker.value = { start: initialDate, end: initialDate };
       await elementUpdated(picker);

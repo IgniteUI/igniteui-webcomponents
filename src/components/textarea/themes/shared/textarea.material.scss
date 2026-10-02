@@ -238,7 +238,6 @@ textarea {
     color: var-get($theme, 'input-prefix-color--filled');
 }
 
-// Outlined Textarea
 :host([outlined]) {
     --textarea-label-position: calc(50% + (#{rem(1px)}));
 

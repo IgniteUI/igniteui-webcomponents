@@ -22,11 +22,7 @@ import type {
 } from '../types.js';
 import { STEPPER_CONTEXT } from './common/context.js';
 import { createStepperState } from './common/state.js';
-import type {
-  IgcActiveStepChangedEventArgs,
-  IgcActiveStepChangingEventArgs,
-  IgcStepperComponentEventMap,
-} from './common/types.js';
+import type { IgcStepperComponentEventMap } from './common/types.js';
 import IgcStepComponent from './step.js';
 import { styles } from './themes/stepper/stepper.base.css.js';
 import { styles as bootstrap } from './themes/stepper/stepper.bootstrap.css.js';
@@ -297,34 +293,19 @@ export default class IgcStepperComponent extends EventEmitterMixin<
 
   //#region Internal methods
 
-  private _animateSteps(
-    nextStep: IgcStepComponent,
-    currentStep: IgcStepComponent
-  ): void {
-    const steps = this._state.steps;
+  private _transitionTo(step: IgcStepComponent): void {
+    const current = this._state.activeStep;
 
-    if (steps.indexOf(nextStep) > steps.indexOf(currentStep)) {
-      // Animate steps in ascending/next direction
-      currentStep.toggleAnimation('out');
-      nextStep.toggleAnimation('in');
-    } else {
-      // Animate steps in descending/previous direction
-      currentStep.toggleAnimation('in', 'reverse');
-      nextStep.toggleAnimation('out', 'reverse');
+    if (current) {
+      const steps = this._state.steps;
+      const forward = steps.indexOf(step) > steps.indexOf(current);
+      const direction = forward ? 'normal' : 'reverse';
+
+      current.toggleAnimation(forward ? 'out' : 'in', direction);
+      step.toggleAnimation(forward ? 'in' : 'out', direction);
     }
-  }
 
-  private _emitChanging(args: IgcActiveStepChangingEventArgs): boolean {
-    return this.emitEvent('igcActiveStepChanging', {
-      detail: args,
-      cancelable: true,
-    });
-  }
-
-  private _emitChanged(args: IgcActiveStepChangedEventArgs): void {
-    this.emitEvent('igcActiveStepChanged', {
-      detail: args,
-    });
+    this._state.changeActiveStep(step);
   }
 
   private _activateStep(step: IgcStepComponent, shouldEmit = true): void {
@@ -338,37 +319,32 @@ export default class IgcStepperComponent extends EventEmitterMixin<
     }
 
     const steps = this._state.steps;
-    const activeIndex = steps.indexOf(this._state.activeStep!);
     const index = steps.indexOf(step);
+    const oldIndex = steps.indexOf(this._state.activeStep!);
 
-    const args = { oldIndex: activeIndex, newIndex: index };
-
-    if (!this._emitChanging(args)) {
-      return;
+    if (
+      this.emitEvent('igcActiveStepChanging', {
+        detail: { oldIndex, newIndex: index },
+        cancelable: true,
+      })
+    ) {
+      this._transitionTo(step);
+      this.emitEvent('igcActiveStepChanged', { detail: { index } });
     }
-
-    if (this._state.activeStep) {
-      this._animateSteps(step, this._state.activeStep);
-    }
-
-    this._state.changeActiveStep(step);
-    this._emitChanged({ index });
   }
 
   private _moveToNextStep(next = true): void {
     const step = this._state.getAdjacentStep(next);
 
     if (step) {
-      if (this._state.activeStep) {
-        this._animateSteps(step, this._state.activeStep);
-      }
-      this._state.changeActiveStep(step);
+      this._transitionTo(step);
     }
   }
 
   private _getActiveStepComponent(): IgcStepComponent | null {
-    const active = getRoot(this).activeElement;
-    return active ? active.closest(IgcStepComponent.tagName) : null;
+    return (
+      getRoot(this).activeElement?.closest(IgcStepComponent.tagName) ?? null
+    );
   }
 
   private _getStepHeader(step?: IgcStepComponent): HTMLElement | null {

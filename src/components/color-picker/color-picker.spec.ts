@@ -49,10 +49,7 @@ function getAnchor(picker: IgcColorPickerComponent): HTMLElement {
   return picker.renderRoot.querySelector('[part~="anchor"]')!;
 }
 
-/**
- * The native input inside the input mode anchor - the element assistive
- * technology lands on and reports, and the target of the ARIA projection.
- */
+/** The native input of the input mode anchor, which the ARIA projection targets. */
 function getAnchorNativeInput(host: HTMLElement): HTMLInputElement {
   return (host as IgcColorPickerComponent).renderRoot
     .querySelector<IgcInputComponent>('igc-input[slot="anchor"]')!
@@ -100,8 +97,7 @@ function typeIntoAlpha(picker: IgcColorPickerComponent, text: string): void {
   const start = editor.selectionStart ?? editor.value.length;
   const end = editor.selectionEnd ?? start;
 
-  // The caret has to be in place before the event, so the value is spliced here
-  // rather than handed to the helper.
+  // The caret must be in place before the event, so splice the value here.
   editor.value = `${editor.value.slice(0, start)}${text}${editor.value.slice(end)}`;
   editor.setSelectionRange(start + text.length, start + text.length);
 
@@ -120,8 +116,8 @@ function clearAlpha(picker: IgcColorPickerComponent): void {
 }
 
 /**
- * Dispatches a cancelable `key` press on `node` and hands the event back, which
- * `simulateKeyboard` does neither of.
+ * Dispatches a cancelable `key` press on `node` and returns the event.
+ * `simulateKeyboard` does neither.
  */
 function press(node: Element, key: string): KeyboardEvent {
   const event = new KeyboardEvent('keydown', {
@@ -143,10 +139,7 @@ function getFormatSelect(picker: IgcColorPickerComponent): IgcSelectComponent {
   return picker.renderRoot.querySelector('#format-select')!;
 }
 
-/**
- * The two halves of the anchor swatch preview - the opaque color on the left
- * and the color with its real alpha across the whole surface.
- */
+/** The opaque half and the translucent whole of the anchor swatch preview. */
 function getAnchorPreview(picker: IgcColorPickerComponent): {
   opaque: string;
   alpha: string;
@@ -165,8 +158,8 @@ describe('Color picker', () => {
   let picker: IgcColorPickerComponent;
 
   describe('Default', () => {
-    // The format select is labelled by a visually hidden `<label>` on purpose;
-    // axe's best-practice `label-title-only` rule expects a visible one.
+    // The format select has a visually hidden `<label>`.
+    // The axe `label-title-only` rule expects a visible one.
     const hiddenLabelOptions = { ignoredRules: ['label-title-only'] };
 
     beforeEach(async () => {
@@ -223,6 +216,29 @@ describe('Color picker', () => {
       expect(anchor.getAttribute('aria-controls')).to.equal('picker');
     });
 
+    it('describes the anchor by the helper text without helper content', () => {
+      expect(getAnchor(picker).getAttribute('aria-describedby')).to.equal(
+        'helper-text'
+      );
+    });
+
+    it('describes the anchor by the helper text, then by the host', async () => {
+      const container = await fixture<HTMLElement>(html`
+        <div>
+          <span id="picker-hint">Brand color</span>
+          <igc-color-picker aria-describedby="picker-hint"></igc-color-picker>
+        </div>
+      `);
+      const host = container.querySelector('igc-color-picker')!;
+      await elementUpdated(host);
+      await elementUpdated(host);
+
+      expect(getAnchor(host).ariaDescribedByElements).to.eql([
+        host.renderRoot.querySelector('#helper-text'),
+        container.querySelector('#picker-hint'),
+      ]);
+    });
+
     it('reflects the open state through `aria-expanded`', async () => {
       expect(getAnchor(picker).getAttribute('aria-expanded')).to.equal('false');
 
@@ -250,8 +266,6 @@ describe('Color picker', () => {
       picker.open = true;
       await elementUpdated(picker);
 
-      // Both are unset until the color changes if they are only written from
-      // the color handlers, leaving the plane on the stylesheet fallback.
       expect(picker.style.getPropertyValue('--_current-color')).to.equal(
         'hsl(0 100% 50%)'
       );
@@ -263,8 +277,7 @@ describe('Color picker', () => {
       picker.open = true;
       await elementUpdated(picker);
 
-      // An empty color is white, so both start there rather than falling back
-      // to the pure hue the plane is drawn from.
+      // An empty color is white, not the pure hue of the plane.
       expect(picker.style.getPropertyValue('--_selected-color')).to.equal(
         'rgb(255 255 255)'
       );
@@ -283,8 +296,7 @@ describe('Color picker', () => {
       expect(canvas.saturation).to.equal(0);
       expect(canvas.brightness).to.equal(100);
 
-      // Top left of the saturation/value plane - the marker straddles the
-      // corner, so it sits at minus half its own size on both axes.
+      // The marker straddles the top left corner, at minus half its size.
       expect(canvas.x).to.equal(-width);
       expect(canvas.y).to.equal(-height);
     });
@@ -296,19 +308,16 @@ describe('Color picker', () => {
       await elementUpdated(picker);
       await nextFrame();
 
-      // Deliberately not a `spinbutton`, despite the bounded value and the
-      // arrow-key stepping: overriding the native textbox role breaks how
-      // screen readers announce typing, which is the field's primary use. The
-      // alpha slider beside it carries the natively announced range semantics.
+      // Not a `spinbutton`: that role breaks how screen readers announce typing.
+      // The alpha slider carries the range semantics.
       const editor = getAlphaEditor(picker);
       const label = picker.renderRoot.querySelector('label[for="alpha"]')!;
 
       expect(editor.role).to.be.null;
       expect(editor.getAttribute('aria-valuenow')).to.be.null;
 
-      // `<label for="alpha">` labels the `igc-input`; the native editor picks
-      // it up by element reflection, since an IDREF cannot cross into its
-      // shadow root.
+      // `<label for="alpha">` labels the `igc-input`. An IDREF cannot cross into
+      // the shadow root, so the native editor uses element reflection.
       expect(editor.ariaLabelledByElements).to.eql([label]);
     });
   });
@@ -492,8 +501,7 @@ describe('Color picker', () => {
 
       picker.dispatchEvent(new FocusEvent('focusin', { relatedTarget: null }));
 
-      // The rendered value moves from `#ff0000` to `rgb(255 0 0)`, but the
-      // color behind it is untouched.
+      // The value changes from `#ff0000` to `rgb(255 0 0)`, but the color does not.
       picker.format = 'rgb';
       await elementUpdated(picker);
       expect(picker.value).to.equal('rgb(255 0 0)');
@@ -576,7 +584,7 @@ describe('Color picker', () => {
       });
 
       it('keeps the caret in front of the % suffix', async () => {
-        // Clicking past the text is what puts the caret behind the suffix.
+        // A click past the text puts the caret after the suffix.
         const editor = getAlphaEditor(picker);
         editor.setSelectionRange(3, 3);
         simulateClick(editor);
@@ -586,8 +594,7 @@ describe('Color picker', () => {
         typeIntoAlpha(picker, '7');
         await elementUpdated(picker);
 
-        // Appending a digit to 50 exceeds the range and clamps - what matters
-        // is that the keystroke landed in the number, not after the suffix.
+        // `507` clamps to 100. The digit went into the number, not after the suffix.
         expect(editor.value).to.equal('100%');
       });
 
@@ -610,8 +617,7 @@ describe('Color picker', () => {
       });
 
       it('reverts an emptied alpha input on commit', async () => {
-        // Emptying the field is a valid intermediate state - it has to leave
-        // somewhere to type into - so nothing is committed yet.
+        // An empty field is a valid intermediate state, so nothing commits yet.
         clearAlpha(picker);
         await elementUpdated(picker);
 
@@ -649,8 +655,7 @@ describe('Color picker', () => {
 
         simulateKeyboard(getAlphaInput(picker), arrowUp);
 
-        // Synchronously, before any re-render: a value written a frame later
-        // would drop the caret behind the `%` and be seen to skip.
+        // Check synchronously. A write one frame later puts the caret after the `%`.
         expect(editor.value).to.equal('51%');
         expect([editor.selectionStart, editor.selectionEnd]).to.eql([2, 2]);
 
@@ -662,13 +667,12 @@ describe('Color picker', () => {
       it('stops the caret at the % instead of moving past it', () => {
         const editor = getAlphaEditor(picker);
 
-        // A synthetic key never moves a real caret, so what is asserted here is
-        // that the key is cancelled before the browser would have moved it -
-        // correcting afterwards is what makes the caret visibly skip.
+        // A synthetic key never moves the caret, so assert that the key is canceled.
+        // A correction after the move makes the caret skip.
         editor.setSelectionRange(2, 2);
         expect(press(editor, arrowRight).defaultPrevented).to.be.true;
 
-        // End is taken over wherever it starts, and lands on the limit.
+        // End always moves the caret to the limit.
         editor.setSelectionRange(0, 0);
         expect(press(editor, endKey).defaultPrevented).to.be.true;
         expect(editor.selectionStart).to.equal(2);
@@ -692,16 +696,14 @@ describe('Color picker', () => {
     });
 
     it('leaves arrow keys alone elsewhere while showAlpha is off', async () => {
-      // The alpha bindings are scoped to the alpha input, which does not exist
-      // here - they must not fall back to observing the whole component.
+      // The alpha input is absent. Its bindings must not fall back to the host.
       expect(press(getHueSlider(picker), arrowUp).defaultPrevented).to.be.false;
     });
 
     it('moves the hue slider when the color changes from elsewhere', async () => {
       const hue = getHueSlider(picker);
 
-      // Interacting with the slider marks its value dirty, after which the
-      // browser stops taking the value from the content attribute.
+      // A dirty slider value no longer follows the content attribute.
       hue.value = '120';
       hue.dispatchEvent(new Event('input', { bubbles: true }));
       await elementUpdated(picker);
@@ -742,7 +744,6 @@ describe('Color picker', () => {
       expected.setSaturationAndValue(50, 75);
 
       expect(picker.value).to.equal(expected.asString('hex'));
-      // Hue is preserved by the HSV saturation/value update.
       expect(expected.h).to.equal(ColorModel.parse('#ff0000').h);
     });
 
@@ -767,8 +768,7 @@ describe('Color picker', () => {
       alpha.dispatchEvent(new Event('input', { bubbles: true }));
       await elementUpdated(picker);
 
-      // The marker sits on the saturation/value plane, which has no alpha - a
-      // translucent fill would just read as the gradient underneath it.
+      // The saturation/value plane has no alpha, so the marker fill is opaque.
       expect(getCanvas(picker).markerColor).to.equal('rgb(255 0 0)');
     });
 
@@ -827,8 +827,7 @@ describe('Color picker', () => {
         'button[part="swatch"]'
       );
 
-      // The color is read from `data-color`, so a localized or otherwise
-      // overridden label must not affect which color the swatch commits.
+      // The color comes from `data-color`, so the label does not change it.
       buttons[1].ariaLabel = 'Vert';
       buttons[1].click();
       await elementUpdated(picker);
@@ -999,8 +998,8 @@ describe('Color picker', () => {
       );
       const defaultMode = getAnchorPreview(defaultModePicker);
 
-      // `--_color-preview` paints the opaque half and `--_alpha-preview` the
-      // translucent whole - transposing them inverts the swatch.
+      // `--_color-preview` is the opaque half.
+      // `--_alpha-preview` is the translucent whole.
       expect(inputMode.opaque).to.equal('rgb(255 0 0)');
       expect(inputMode.alpha).to.equal('rgb(255 0 0 / 0.5)');
       expect(inputMode).to.deep.equal(defaultMode);
@@ -1036,10 +1035,8 @@ describe('Color picker', () => {
         picker.open = true;
         await elementUpdated(picker);
 
-        // Opening moves focus into the dialog, which is a sibling of the anchor
-        // rather than a descendant, so the input is no longer `:focus-within`.
-        // The placeholder is what keeps the Material outline notch cut - without
-        // it the label drops back over the border until a color is picked.
+        // The open dialog takes the focus, so the input loses `:focus-within`.
+        // The placeholder keeps the Material outline notch cut.
         const notch =
           getInputAnchor().renderRoot.querySelector('[part="notch"]')!;
 
@@ -1054,8 +1051,7 @@ describe('Color picker', () => {
     it('renders the prefix swatch as a keyboard operable button', () => {
       const anchor = getAnchor(picker);
 
-      // A native button carries the focusability and Enter/Space activation
-      // that the previous `div` had to have bolted on.
+      // A native button gives focus and Enter/Space activation.
       expect(anchor.tagName.toLowerCase()).to.equal('button');
       expect(anchor.getAttribute('type')).to.equal('button');
       expect(anchor.getAttribute('aria-label')).to.equal('Open color picker');
@@ -1107,9 +1103,8 @@ describe('Color picker', () => {
       expect(input.value).to.equal('');
       expect(isAnchorEmpty(picker)).to.be.true;
 
-      // The input-mode swatch paints its preview on its own background rather
-      // than on `::before`, so the empty mark has to win over the transparency
-      // grid of the preview - both selectors match at the same specificity.
+      // The input-mode swatch paints on its own background, so the empty mark
+      // must win over the transparency grid at the same specificity.
       const { backgroundImage } = getComputedStyle(getAnchor(picker));
       expect(backgroundImage).to.not.contain('conic-gradient');
     });

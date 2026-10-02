@@ -29,7 +29,7 @@ export default class IgcSelectItemComponent extends IgcBaseOptionLikeComponent {
   }
 
   /**
-   * Whether the item is disabled.
+   * Whether the item is active.
    * @attr
    */
   @property({ type: Boolean, reflect: true })

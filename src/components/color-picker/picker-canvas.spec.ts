@@ -249,8 +249,7 @@ describe('Picker canvas', () => {
         );
       }
 
-      // Each read forces a layout, so a drag spanning many frames must not
-      // re-measure on every one of them.
+      // Each read forces a layout, so a drag must not measure on each frame.
       expect(rectSpy.callCount).to.equal(afterPointerDown);
 
       rectSpy.restore();

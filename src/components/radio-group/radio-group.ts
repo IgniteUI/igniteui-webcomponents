@@ -100,8 +100,7 @@ export default class IgcRadioGroupComponent extends LitElement {
   public get value(): string {
     const radios = this._radios;
 
-    // The checked radio holds the value of the group. Without radios to apply it to,
-    // the group reports the value that is still pending.
+    // Without radios, the group reports the pending value.
     return isEmpty(radios)
       ? this._pendingValue
       : (radios.find((radio) => radio.checked)?.value ?? '');
@@ -127,10 +126,8 @@ export default class IgcRadioGroupComponent extends LitElement {
   }
 
   /**
-   * Brings the group in sync with its radios. Runs after the first render and after each
-   * change of the slotted content, to adopt the radios that come in at run time. Without
-   * the name of the group, such a radio makes a group of its own, outside of the keyboard
-   * navigation and the single selection of this one.
+   * Syncs the radios after the first render and on each slot change. A radio without
+   * the group name forms a group of its own.
    */
   private _syncRadios(): void {
     const radios = this._radios;
@@ -138,9 +135,8 @@ export default class IgcRadioGroupComponent extends LitElement {
     this._setRadiosName();
     this._setRadiosDefaultChecked();
 
-    // The value of the group applies while no radio holds its own selection:
-    // the first render, or the moment a radio with an unmatched value arrives.
-    // The `checked` attribute then makes that selection the default.
+    // The pending value applies only while no radio is checked.
+    // The `checked` attribute makes that selection the default.
     if (this._pendingValue && !radios.some((radio) => radio.checked)) {
       this._setSelectedRadio();
 
@@ -190,8 +186,7 @@ export default class IgcRadioGroupComponent extends LitElement {
       applied ||= radio.checked;
     }
 
-    // A radio holds the value now, so the group reads it from that radio. A value that
-    // stays pending applies again each time the group loses its selection.
+    // The checked radio holds the value now. An unmatched value stays pending.
     if (applied) {
       this._pendingValue = '';
     }

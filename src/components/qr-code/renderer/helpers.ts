@@ -15,6 +15,14 @@ function squarePath(x: number, y: number, s: number): string {
   return `M${x},${y}h${s}v${s}h${-s}Z`;
 }
 
+function circlePath(cx: number, cy: number, r: number, sweep = 0): string {
+  return (
+    `M${cx - r},${cy}` +
+    `a${r},${r} 0 1,${sweep} ${r * 2},0` +
+    `a${r},${r} 0 1,${sweep} ${-r * 2},0z`
+  );
+}
+
 function roundedRect(
   x: number,
   y: number,
@@ -59,8 +67,10 @@ function roundedRectPerCorner(
   );
 }
 
-/** Returns an SVG path string for a single data module at `(x, y)` with side `s`, in the given style.
- * For `'rounded'`, adjacent module flags control which corners are rounded. */
+/**
+ * Returns the SVG path of one data module. For `'rounded'`, the neighbors select the
+ * rounded corners.
+ */
 function dotPath(
   x: number,
   y: number,
@@ -71,16 +81,8 @@ function dotPath(
   switch (style) {
     case 'square':
       return squarePath(x, y, s);
-    case 'circle': {
-      const cx = x + s / 2;
-      const cy = y + s / 2;
-      const r = s / 2;
-      return (
-        `M${cx - r},${cy}` +
-        `a${r},${r} 0 1,0 ${r * 2},0` +
-        `a${r},${r} 0 1,0 ${-r * 2},0z`
-      );
-    }
+    case 'circle':
+      return circlePath(x + s / 2, y + s / 2, s / 2);
     case 'rounded': {
       const R = s * 0.45;
       const n = neighbors || {
@@ -106,16 +108,8 @@ export function cornerDotPath(
   style: QrCornerDotStyle
 ): string {
   switch (style) {
-    case 'circle': {
-      const cx = x + size / 2;
-      const cy = y + size / 2;
-      const r = size / 2;
-      return (
-        `M${cx - r},${cy}` +
-        `a${r},${r} 0 1,0 ${r * 2},0` +
-        `a${r},${r} 0 1,0 ${-r * 2},0z`
-      );
-    }
+    case 'circle':
+      return circlePath(x + size / 2, y + size / 2, size / 2);
     case 'rounded': {
       return roundedRect(x, y, size, size, size * 0.3);
     }
@@ -124,7 +118,7 @@ export function cornerDotPath(
   }
 }
 
-/** Returns an SVG path string (outer ring with inner cutout) for the outer square of a finder-pattern corner. */
+/** Returns the SVG path (a ring with a cutout) of the outer square of a finder corner. */
 export function cornerSquarePath(
   x: number,
   y: number,
@@ -149,16 +143,7 @@ export function cornerSquarePath(
     default: {
       const cx = x + size / 2;
       const cy = y + size / 2;
-      const rOuter = size / 2;
-      const rInner = inner / 2;
-      return (
-        `M${cx - rOuter},${cy}` +
-        `a${rOuter},${rOuter} 0 1,0 ${rOuter * 2},0` +
-        `a${rOuter},${rOuter} 0 1,0 ${-rOuter * 2},0z` +
-        `M${cx - rInner},${cy}` +
-        `a${rInner},${rInner} 0 1,1 ${rInner * 2},0` +
-        `a${rInner},${rInner} 0 1,1 ${-rInner * 2},0z`
-      );
+      return circlePath(cx, cy, size / 2) + circlePath(cx, cy, inner / 2, 1);
     }
   }
 }
@@ -180,33 +165,7 @@ function finderCorners(size: number): [number, number][] {
   ];
 }
 
-/**
- * Returns the set of flat module indices `(row * size + col)` occupied by the
- * three finder patterns (including their separators), used to skip those modules
- * during data rendering.
- */
-function getFinderPatternModules(size: number): Set<number> {
-  const modules = new Set<number>();
-
-  for (const [startRow, startCol] of finderCorners(size)) {
-    for (let r = -1; r <= 7; r++) {
-      for (let c = -1; c <= 7; c++) {
-        const row = startRow + r;
-        const col = startCol + c;
-        if (row >= 0 && col >= 0 && row < size && col < size) {
-          modules.add(row * size + col);
-        }
-      }
-    }
-  }
-
-  return modules;
-}
-
-/**
- * Generates SVG path strings for all dark data modules in the matrix,
- * skipping finder-pattern areas. Returns one path string per visible module.
- */
+/** Returns one SVG path for each dark data module outside the finder patterns. */
 export function renderDataModules(
   data: boolean[][],
   moduleSize: number,
@@ -214,12 +173,13 @@ export function renderDataModules(
   dotStyle: QrDotStyle
 ): string[] {
   const size = data.length;
-  const finderModules = getFinderPatternModules(size);
+  const far = size - 8;
   const paths: string[] = [];
 
   for (let r = 0; r < size; r++) {
     for (let c = 0; c < size; c++) {
-      if (finderModules.has(r * size + c)) continue;
+      // The finder patterns and their separators.
+      if ((r <= 7 && (c <= 7 || c >= far)) || (r >= far && c <= 7)) continue;
       if (!data[r][c]) continue;
 
       const x = moduleToPx(c, moduleSize, marginPx);
@@ -242,10 +202,7 @@ export function renderDataModules(
   return paths;
 }
 
-/**
- * Returns the pixel top-left coordinates `{ x, y }` for each of the three
- * finder-pattern corners, ready to pass to `renderQrCorner`.
- */
+/** Returns the top-left pixel coordinates of the three finder-pattern corners. */
 export function getFinderPatterns(
   size: number,
   moduleSize: number,

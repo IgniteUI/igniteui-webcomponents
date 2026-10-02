@@ -4,6 +4,7 @@ import { unsafeSVG } from 'lit/directives/unsafe-svg.js';
 import { addInternalsController } from '#internals/controllers/internals.js';
 import { blazorInclude } from '#internals/decorators/blazorInclude.js';
 import { registerComponent } from '#internals/definitions/register.js';
+import { HostAriaMixin } from '#internals/mixins/host-aria.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import {
   getIconRegistry,
@@ -52,7 +53,7 @@ import { all } from './themes/themes.js';
  * registerIconFromText('custom-icon', customIconSvg, 'my-collection');
  * ```
  */
-export default class IgcIconComponent extends LitElement {
+export default class IgcIconComponent extends HostAriaMixin(LitElement) {
   public static readonly tagName = 'igc-icon';
   public static override styles = [styles, shared];
 
@@ -129,6 +130,11 @@ export default class IgcIconComponent extends LitElement {
     getIconRegistry().subscribe(this._onRegistryChange);
   }
 
+  /** An author label applies at once, without a render. @internal */
+  protected override _handleHostAriaChange(): void {
+    this._getIcon();
+  }
+
   /** @internal */
   public override disconnectedCallback(): void {
     getIconRegistry().unsubscribe(this._onRegistryChange);
@@ -147,6 +153,8 @@ export default class IgcIconComponent extends LitElement {
     }
 
     super.update(props);
+    // The host carries any name, so the SVG is decorative.
+    this.renderRoot.querySelector('svg')?.setAttribute('aria-hidden', 'true');
   }
 
   protected override firstUpdated(): void {

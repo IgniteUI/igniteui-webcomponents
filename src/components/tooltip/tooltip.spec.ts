@@ -169,8 +169,6 @@ describe('Tooltip', () => {
       const second = document.querySelector('#second') as HTMLButtonElement;
       const third = document.querySelector('#third') as HTMLButtonElement;
 
-      // If no anchor is provided.
-      // Considers the first preceding sibling that is an element as the target.
       simulatePointerEnter(third);
       await clock.tickAsync(DEFAULT_SHOW_DELAY);
       await showComplete();
@@ -181,7 +179,6 @@ describe('Tooltip', () => {
       await hideComplete();
       expect(tooltip.open).to.be.false;
 
-      // By providing an IDREF
       tooltip.anchor = first.id;
       await elementUpdated(tooltip);
 
@@ -195,7 +192,6 @@ describe('Tooltip', () => {
       await hideComplete();
       expect(tooltip.open).to.be.false;
 
-      // By providing an Element
       simulatePointerEnter(second);
       await clock.tickAsync(DEFAULT_SHOW_DELAY);
       await showComplete();
@@ -638,7 +634,7 @@ describe('Tooltip', () => {
       expect(result).to.be.true;
       expect(tooltip.open).to.be.false;
 
-      // the transient anchor should not reopen the tooltip once its hidden
+      // The transient anchor must not reopen the tooltip once it is hidden.
       simulatePointerEnter(transientAnchor);
       await clock.tickAsync(DEFAULT_SHOW_DELAY);
       await showComplete();
@@ -870,7 +866,6 @@ describe('Tooltip', () => {
       await showComplete();
       expect(tooltip.open).to.be.true;
 
-      // Move cursor from anchor to tooltip
       simulatePointerLeave(anchor);
       await nextFrame();
       simulatePointerEnter(tooltip);
@@ -878,7 +873,6 @@ describe('Tooltip', () => {
 
       expect(tooltip.open).to.be.true;
 
-      // Move cursor outside the tooltip
       simulatePointerLeave(tooltip);
       await clock.tickAsync(DEFAULT_HIDE_DELAY);
       await hideComplete();

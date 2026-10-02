@@ -14,6 +14,7 @@ import { calendarResourcesMap } from '#internals/i18n/utils.js';
 import { I18nMixin } from '#internals/mixins/i18n.js';
 import { firstOf } from '#internals/utils/arrays.js';
 import { getLocaleWeekStart, getWeekDayNumber } from './helpers.js';
+import { selectDate } from './selection.js';
 import type {
   CalendarSelection,
   DateRangeDescriptor,
@@ -42,11 +43,8 @@ export class IgcCalendarBaseComponent extends I18nMixin<
   }
 
   /**
-   * The index of the first day of the week (Sunday = 0) as derived from {@link weekStart}.
-   *
-   * @remarks
-   * Derived on access instead of in `update()`, so that its consumers are not sensitive
-   * to the order in which the base class and its descendants update.
+   * The index of the first day of the week (Sunday = 0). Derived on access, so it does
+   * not depend on the update order of the base class and its descendants.
    */
   protected get _firstDayOfWeek(): number {
     return getWeekDayNumber(this.weekStart);
@@ -112,7 +110,7 @@ export class IgcCalendarBaseComponent extends I18nMixin<
   }
 
   public get values(): Date[] {
-    return this._values ? this._values.map((v) => v.native) : [];
+    return this._values.map((v) => v.native);
   }
 
   /* blazorSuppress */
@@ -191,6 +189,23 @@ export class IgcCalendarBaseComponent extends I18nMixin<
 
   public get disabledDates(): DateRangeDescriptor[] | undefined {
     return this._disabledDates.length ? this._disabledDates : undefined;
+  }
+
+  /** @internal Applies the activation of `day` to the selection and returns whether it changed. */
+  protected _selectDate(day: CalendarDay): boolean {
+    const selection = selectDate(
+      { value: this._value, values: this._values },
+      day,
+      { selection: this.selection, disabledDates: this._disabledDates }
+    );
+
+    if (!selection) {
+      return false;
+    }
+
+    this._value = selection.value;
+    this._values = selection.values;
+    return true;
   }
 
   /** @internal */

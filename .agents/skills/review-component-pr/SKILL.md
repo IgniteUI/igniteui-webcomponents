@@ -63,6 +63,9 @@ Map each change to a spec section with
 - [ ] Semantic elements are used, not `div`s with click handlers
 - [ ] ARIA is set through `addInternalsController` (`initialARIA`, `setARIA()`, `reflectRole`),
       never with `this.role = …`
+- [ ] The host `aria-label`, `aria-labelledby` and `aria-describedby` reach the focused or role
+      element through `HostAriaMixin` and `ariaBindings(hostAria(this))`, with no own
+      `observedAttributes` for them
 - [ ] Keyboard support uses `addKeybindings` or `addRovingFocusController`. Focus is visible.
       On a `delegatesFocus` item, the roving tab index is on the host, not on an inner element.
 - [ ] Composite hosts use `addAriaProjector` / `addAriaTarget`, with no ARIA on a

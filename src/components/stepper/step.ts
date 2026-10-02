@@ -4,9 +4,14 @@ import { cache } from 'lit/directives/cache.js';
 import { createRef, ref } from 'lit/directives/ref.js';
 import { EaseInOut } from '#animations/easings.js';
 import { addAnimationController } from '#animations/player.js';
+import {
+  ariaBindings,
+  hostAria,
+} from '#internals/controllers/aria-projection.js';
 import { createAsyncContext } from '#internals/controllers/async-consumer.js';
 import { addSlotController, setSlots } from '#internals/controllers/slot.js';
 import { registerComponent } from '#internals/definitions/register.js';
+import { HostAriaMixin } from '#internals/mixins/host-aria.js';
 import { partMap } from '#internals/part-map.js';
 import { createIdGenerator } from '#internals/utils/strings.js';
 import { addThemingController } from '#theming/theming-controller.js';
@@ -92,7 +97,7 @@ const nextId = createIdGenerator('igc-step');
  * </igc-step>
  * ```
  */
-export default class IgcStepComponent extends LitElement {
+export default class IgcStepComponent extends HostAriaMixin(LitElement) {
   public static readonly tagName = 'igc-step';
   public static override styles = [styles, shared];
 
@@ -369,6 +374,7 @@ export default class IgcStepComponent extends LitElement {
     return html`
       <div part=${partMap(this._headerContainerParts)}>
         <div
+          ${ariaBindings(hostAria(this))}
           data-step-header
           role="tab"
           part="header"

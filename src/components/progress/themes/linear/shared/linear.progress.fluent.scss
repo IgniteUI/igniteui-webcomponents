@@ -51,14 +51,12 @@ $track-color: color(gray, 200);
     display: none;
 }
 
-// Mixin for Gradient Backgrounds
 @mixin gradient-indeterminate($part, $color-key) {
     [part~='#{$part}'][part~='indeterminate'] {
         background: linear-gradient(90deg, transparent 0%, var-get($theme, $color-key) 50%, transparent 100%);
     }
 }
 
-// Apply Gradient Backgrounds
 @each $part, $color-key in (
         'primary': 'fill-color-default',
         'danger': 'fill-color-danger',

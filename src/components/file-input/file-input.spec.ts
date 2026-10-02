@@ -185,16 +185,13 @@ describe('File Input component', () => {
     it('should update UI invalid state on blur when interacted', async () => {
       await createFixture(html`<igc-file-input required></igc-file-input>`);
 
-      // Internal invalid state, invalid UI is in initial state.
       expect(element.validity.valueMissing).to.be.true;
       expect(element.invalid).to.be.false;
 
-      // Internal invalid state, invalid UI is still in initial state.
       element.focus();
       expect(element.validity.valueMissing).to.be.true;
       expect(element.invalid).to.be.false;
 
-      // Internal invalid state, invalid UI is updated.
       element.blur();
       expect(element.validity.valueMissing).to.be.true;
       expect(element.invalid).to.be.true;
@@ -245,9 +242,7 @@ describe('Form Integration', () => {
   });
 
   it('ignores the value attribute as a default on form reset', () => {
-    // Regression: the value attribute string used to be stored as the
-    // FileList default and iterated into per-character FormData entries
-    // after a form reset.
+    // Regression: a reset submitted the value attribute string per character.
     spec.element.setAttribute('value', 'abc');
     spec.reset();
 

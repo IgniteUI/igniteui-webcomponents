@@ -33,14 +33,6 @@ export default class IgcCarouselSlideComponent extends LitElement {
 
   private _carousel?: IgcCarouselComponent;
 
-  protected get _index(): number {
-    return this._carousel ? this._carousel.slides.indexOf(this) : 0;
-  }
-
-  protected get _total(): number {
-    return this._carousel ? this._carousel.slides.length : 0;
-  }
-
   protected get _animation() {
     const animation = this._carousel?.animationType ?? 'slide';
 
@@ -49,10 +41,6 @@ export default class IgcCarouselSlideComponent extends LitElement {
     }
 
     return animation;
-  }
-
-  protected get _labelFormat(): string {
-    return this._carousel ? this._carousel.slidesLabelFormat : '';
   }
 
   /**
@@ -75,15 +63,17 @@ export default class IgcCarouselSlideComponent extends LitElement {
         ariaRoleDescription: 'slide',
       },
       aria: () => ({
-        ariaLabel: formatString(
-          this._labelFormat,
-          this._index + 1,
-          this._total
-        ),
+        ariaLabel: this._carousel
+          ? formatString(
+              this._carousel.slidesLabelFormat,
+              this._carousel.slides.indexOf(this) + 1,
+              this._carousel.total
+            )
+          : '',
       }),
     });
 
-    // Set carousel reference once provider is ready (addresses Blazor timing issue)
+    // Read the carousel when the provider is ready (Blazor timing).
     createAsyncContext(this, carouselContext, (carousel) => {
       this._carousel = carousel;
     });

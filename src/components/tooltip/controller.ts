@@ -42,7 +42,6 @@ class TooltipController implements ReactiveController {
     return this._open;
   }
 
-  /** Sets the shown state of the current tooltip. */
   public set open(value: boolean) {
     this._open = value;
 
@@ -60,27 +59,22 @@ class TooltipController implements ReactiveController {
     }
   }
 
-  /**
-   * Returns the current tooltip anchor target if any.
-   */
+  /** The current anchor target, if any. */
   public get anchor(): TooltipAnchor {
     // `setAnchor` keeps this in sync with `_initialAnchor` unless transient.
     return this._anchor?.deref();
   }
 
-  /**
-   * Returns the current set of hide triggers as a comma-separated string.
-   */
+  /** The hide triggers as a comma-separated string. */
   public get hideTriggers(): string {
     return Array.from(this._hideTriggers).join();
   }
 
   /**
-   * Sets a new set of hide triggers from a comma-separated string.
+   * Sets the hide triggers from a comma-separated string.
    *
    * @remarks
-   * If the tooltip already has an `anchor` bound it will remove the old
-   * set of triggers from it and rebind it with the new one.
+   * Rebinds the triggers on the current anchor.
    */
   public set hideTriggers(value: string) {
     this._hideTriggers = parseTriggers(value);
@@ -88,19 +82,16 @@ class TooltipController implements ReactiveController {
     this._addAnchorListeners();
   }
 
-  /**
-   * Returns the current set of show triggers as a comma-separated string.
-   */
+  /** The show triggers as a comma-separated string. */
   public get showTriggers(): string {
     return Array.from(this._showTriggers).join();
   }
 
   /**
-   * Sets a new set of show triggers from a comma-separated string.
+   * Sets the show triggers from a comma-separated string.
    *
    * @remarks
-   * If the tooltip already has an `anchor` bound it will remove the old
-   * set of triggers from it and rebind it with the new one.
+   * Rebinds the triggers on the current anchor.
    */
   public set showTriggers(value: string) {
     this._showTriggers = parseTriggers(value);
@@ -217,17 +208,14 @@ class TooltipController implements ReactiveController {
       return;
     }
 
-    // Not gated on the committed state, which would lose a trigger that arrives
-    // during a transition. The host already does nothing if it moves to the
-    // requested state.
+    // Not gated on the committed state, so a trigger during a transition is
+    // not lost. The host ignores a move to the state it already has.
     isShowTrigger ? this._options.onShow() : this._options.onHide();
   }
 
   /** @internal */
   public handleEvent(event: Event): void {
-    // The element that holds the listener, not `event.target`. A trigger that
-    // bubbles, such as `click` or `focusin`, reports the descendant of the
-    // anchor it came from.
+    // Not `event.target`, which can be a descendant of the anchor.
     const target = event.currentTarget;
 
     if (target === this._host) {
@@ -254,10 +242,7 @@ class TooltipController implements ReactiveController {
 
   //#region Public API
 
-  /**
-   * Removes all triggers from the previous `anchor` target and rebinds the current
-   * sets back to the new value if it exists.
-   */
+  /** Moves the triggers from the previous anchor to the new one, if any. */
   public setAnchor(value: TooltipAnchor | string, transient = false): void {
     const newAnchor = isString(value)
       ? getElementByIdFromRoot(this._host, value)

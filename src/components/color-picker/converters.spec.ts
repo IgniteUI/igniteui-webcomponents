@@ -45,9 +45,7 @@ describe('Color converters', () => {
       expectTupleCloseTo(converter.rgb.hsv([200, 100, 50]), [20, 75, 78.43]);
     });
 
-    // Regression: the green branch used `ONE_THIRD * rDiff` instead of
-    // `ONE_THIRD + rDiff`, which skewed the hue of every green-dominant color
-    // by roughly 80 degrees.
+    // Guards the green branch: `ONE_THIRD * rDiff` skews the hue by about 80 degrees.
     it('converts green-dominant colors', () => {
       expectTupleCloseTo(converter.rgb.hsv([0, 255, 0]), [120, 100, 100]);
       expectTupleCloseTo(converter.rgb.hsv([0, 128, 0]), [120, 100, 50.2]);
@@ -73,9 +71,8 @@ describe('Color converters', () => {
       expectTupleCloseTo(converter.hsl.hsv([0, 100, 25]), [0, 100, 50]);
     });
 
-    // Regression: the saturation scaling tested `lMin` - captured before the
-    // doubling and therefore never above 1 - instead of the doubled `l`. The
-    // `2 - l` branch was dead, so value overshot 100 above 50% lightness.
+    // Guards the saturation scaling: a test of `lMin`, not the doubled `l`,
+    // pushes the value past 100.
     it('converts colors above 50% lightness', () => {
       expectTupleCloseTo(converter.hsl.hsv([0, 100, 75]), [0, 50, 100]);
       expectTupleCloseTo(converter.hsl.hsv([210, 50, 80]), [210, 22.22, 90]);

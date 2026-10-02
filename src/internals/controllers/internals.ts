@@ -3,6 +3,7 @@ import type {
   ReactiveController,
   ReactiveControllerHost,
 } from 'lit';
+import { setOrRemoveAttribute } from '../utils/dom.js';
 
 /** The value types that `ElementInternals.setFormValue` accepts. */
 export type FormValueType = string | File | FormData | null;
@@ -73,12 +74,10 @@ class ElementInternalsController implements ReactiveController {
     return this._internals.form;
   }
 
-  /** Returns the `ValidityState` object of the element. */
   public get validity(): ValidityState {
     return this._internals.validity;
   }
 
-  /** Returns the validation message of this element. */
   public get validationMessage(): string {
     return this._internals.validationMessage;
   }
@@ -90,8 +89,10 @@ class ElementInternalsController implements ReactiveController {
 
   /** Returns the `<label>` elements of the host, or `null` when it has none. */
   public get labels(): ReadonlyArray<Element> | null {
-    const labels = this._internals.labels as NodeListOf<Element> | null;
-    return labels && labels.length > 0 ? Array.from(labels) : null;
+    const host = this._host.constructor as { formAssociated?: boolean };
+    // The getter throws for an element that is not form associated.
+    const labels = host.formAssociated ? this._internals.labels : null;
+    return labels?.length ? Array.from(labels as NodeListOf<Element>) : null;
   }
 
   constructor(
@@ -154,9 +155,7 @@ class ElementInternalsController implements ReactiveController {
 
     // Only null removes the attribute; an empty string is a valid ARIA value.
     if (current !== value) {
-      value === null
-        ? host.removeAttribute(attribute)
-        : host.setAttribute(attribute, value);
+      setOrRemoveAttribute(host, attribute, value);
     }
 
     this._reflected.set(name, value);

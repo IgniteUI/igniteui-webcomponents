@@ -2,8 +2,10 @@ import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
 import { createFormAssociatedTestBed } from '#internals/testing/form-testbed.spec.js';
 import { isFocused } from '#internals/testing/helpers.spec.js';
+import { runHostAriaTests } from '#internals/testing/host-aria.spec.js';
 import { isPopoverOpen } from '#internals/utils/dom.js';
 import IgcInputComponent from '../input/input.js';
+import IgcTooltipComponent from '../tooltip/tooltip.js';
 import IgcButtonComponent from './button.js';
 
 const Variants: Array<IgcButtonComponent['variant']> = [
@@ -16,7 +18,9 @@ const Types: Array<IgcButtonComponent['type']> = ['button', 'reset', 'submit'];
 
 describe('Button tests', () => {
   let button: IgcButtonComponent;
-  before(() => defineComponents(IgcButtonComponent, IgcInputComponent));
+  before(() =>
+    defineComponents(IgcButtonComponent, IgcInputComponent, IgcTooltipComponent)
+  );
 
   describe('Button component', () => {
     const ignored_DOM_parts = {
@@ -543,6 +547,113 @@ describe('Button tests', () => {
       spec.setAncestorDisabledState(false);
       expect(spec.element.disabled).to.be.false;
       expect(button.disabled).to.be.false;
+    });
+  });
+
+  runHostAriaTests({
+    tagName: 'igc-button',
+    template: html`<igc-button>Click</igc-button>`,
+    getTarget: (host) => host.renderRoot.querySelector('[part~="base"]')!,
+  });
+
+  describe('Naming', () => {
+    let container: HTMLElement;
+
+    const native = () => button.renderRoot.querySelector('[part~="base"]')!;
+
+    beforeEach(async () => {
+      container = await fixture<HTMLElement>(html`
+        <div>
+          <span id="name">Save</span>
+          <span id="hint">Saves the draft</span>
+          <label for="button">Save the file</label>
+          <igc-button id="button">Click</igc-button>
+        </div>
+      `);
+      button = container.querySelector('igc-button')!;
+    });
+
+    it('prefers the host `aria-labelledby` over a `<label>`', async () => {
+      button.setAttribute('aria-labelledby', 'name');
+      await elementUpdated(button);
+      expect(native().ariaLabelledByElements).to.eql([
+        container.querySelector('#name'),
+      ]);
+
+      button.removeAttribute('aria-labelledby');
+      await elementUpdated(button);
+      expect(native().ariaLabelledByElements).to.eql([
+        container.querySelector('label'),
+      ]);
+    });
+
+    it('is named by a `<label for>`', () => {
+      expect(native().ariaLabelledByElements).to.eql([
+        container.querySelector('label'),
+      ]);
+    });
+
+    it('prefers the host `aria-label` over a `<label>`, as a native button', async () => {
+      button.setAttribute('aria-label', 'Store the file');
+      await elementUpdated(button);
+
+      expect(native().getAttribute('aria-label')).to.equal('Store the file');
+      expect(native().hasAttribute('aria-labelledby')).to.be.false;
+    });
+
+    it('is named by a `<label>` that is added after the render, on focus', async () => {
+      const element = await fixture<IgcButtonComponent>(
+        html`<igc-button id="late">Click</igc-button>`
+      );
+      const label = document.createElement('label');
+      label.htmlFor = 'late';
+      label.textContent = 'Late';
+      element.before(label);
+
+      element.focus();
+      await elementUpdated(element);
+
+      expect(
+        element.renderRoot.querySelector('button')!.ariaLabelledByElements
+      ).to.eql([label]);
+      label.remove();
+    });
+
+    it('is described by a tooltip that anchors to it', async () => {
+      const tooltip = document.createElement('igc-tooltip');
+      tooltip.anchor = 'button';
+      tooltip.textContent = 'Saves the draft';
+      container.append(tooltip);
+      await elementUpdated(tooltip);
+      await elementUpdated(button);
+
+      expect(native().ariaDescribedByElements).to.eql([tooltip]);
+    });
+
+    it('keeps the host ARIA as a link and as a disabled link', async () => {
+      button.setAttribute('aria-label', 'Open');
+      button.setAttribute('aria-describedby', 'hint');
+      button.href = '/';
+      await elementUpdated(button);
+
+      expect(native().localName).to.equal('a');
+      expect(native().getAttribute('aria-label')).to.equal('Open');
+      expect(native().ariaDescribedByElements).to.eql([
+        container.querySelector('#hint'),
+      ]);
+
+      button.disabled = true;
+      await elementUpdated(button);
+
+      expect(native().getAttribute('role')).to.equal('link');
+      expect(native().getAttribute('aria-label')).to.equal('Open');
+    });
+
+    it('does not forward an empty `aria-label`', async () => {
+      button.setAttribute('aria-label', '');
+      await elementUpdated(button);
+
+      expect(native().hasAttribute('aria-label')).to.be.false;
     });
   });
 });

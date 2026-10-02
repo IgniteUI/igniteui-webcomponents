@@ -37,6 +37,7 @@
     - [Style variants](#style-variants)
     - [Logo](#logo)
     - [Export](#export)
+    - [Host ARIA](#host-aria)
     - [Not covered by the suite](#not-covered-by-the-suite)
   - [Assumptions and limitations](#assumptions-and-limitations)
   - [Accessibility](#accessibility)
@@ -46,11 +47,12 @@
 
 ## Revision history
 
-| Version | Date       | Notes                                                    |
-| ------: | ---------- | -------------------------------------------------------- |
-|       1 | 2026-09-21 | Initial specification                                    |
-|       2 | 2026-09-28 | Add the property-based model suite; V30-V40/M table fix  |
-|       3 | 2026-09-30 | Automatic error level, reactive label, `xlink:href` export |
+| Version | Date       | Notes                                                                |
+| ------: | ---------- | -------------------------------------------------------------------- |
+|       1 | 2026-09-21 | Initial specification                                                |
+|       2 | 2026-09-28 | Add the property-based model suite; V30-V40/M table fix              |
+|       3 | 2026-09-30 | Automatic error level, reactive label, `xlink:href` export           |
+|       4 | 2026-10-02 | Forward the host `aria-labelledby` and `aria-describedby` to the SVG |
 
 ## Overview
 
@@ -365,6 +367,10 @@ None. The SVG is rendered entirely from the properties of the component.
 26. The matrix is square, with the side length of its version, and data over the capacity of a version throws the
     capacity error.
 
+### Host ARIA
+
+27. The host `aria-labelledby` and `aria-describedby` reach the SVG, and the exported SVG has neither attribute.
+
 ### Not covered by the suite
 
 - `margin` is not asserted on its own.
@@ -388,6 +394,8 @@ None. The SVG is rendered entirely from the properties of the component.
 - The `<svg>` holds a `<title>` describing the code, taken from `ariaLabel` when it is set and defaulting to
   `QR code: <value>`. The component observes the `aria-label` attribute, so a new label alone renders a new
   `<title>`.
+- A host `aria-labelledby` names the SVG before its `<title>`, and a host `aria-describedby` describes it, by
+  element reference. The exported SVG leaves out both relations.
 
 ### Keyboard support
 

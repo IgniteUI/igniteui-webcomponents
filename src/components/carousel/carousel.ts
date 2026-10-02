@@ -40,9 +40,10 @@ import { I18nMixin } from '#internals/mixins/i18n.js';
 import { partMap } from '#internals/part-map.js';
 import { renderSlottedIcon } from '#internals/templates/slotted-icon.js';
 import { firstOf, isEmpty, lastOf } from '#internals/utils/arrays.js';
-import { isLTR } from '#internals/utils/dom.js';
+import { isLTR, setOrRemoveAttribute } from '#internals/utils/dom.js';
 import {
   addSafeEventListener,
+  focusLeftHost,
   getElementFromPath,
 } from '#internals/utils/events.js';
 import { asNumber, wrap } from '#internals/utils/math.js';
@@ -127,10 +128,7 @@ export default class IgcCarouselComponent extends I18nMixin(
   private _hasPointerInteraction = false;
   private _hasInnerFocus = false;
 
-  /**
-   * Whether an interaction caused the paused state: a pointer over the carousel,
-   * or focus in it. A `pause()` call does not set it.
-   */
+  /** Set when a pointer or focus paused the carousel. `pause()` does not set it. */
   private _pausedByInteraction = false;
 
   private _slides: IgcCarouselSlideComponent[] = [];
@@ -166,7 +164,6 @@ export default class IgcCarouselComponent extends I18nMixin(
     return !isEmpty(this._projectedIndicators);
   }
 
-  /** The indicators that the carousel shows. */
   private get _indicators(): IgcCarouselIndicatorComponent[] {
     return this._hasProjectedIndicators
       ? this._projectedIndicators
@@ -199,7 +196,7 @@ export default class IgcCarouselComponent extends I18nMixin(
   public disableLoop = false;
 
   /**
-   * Whether the carousel should ignore use interactions and not pause on them.
+   * Whether the carousel should ignore user interactions and not pause on them.
    *
    * @attr disable-pause-on-interaction
    * @default false
@@ -268,7 +265,7 @@ export default class IgcCarouselComponent extends I18nMixin(
 
   /**
    * The format used to set the aria-label on the carousel slides and the text displayed
-   * when the number of indicators is greater than tha maximum indicator count.
+   * when the number of indicators is greater than the maximum indicator count.
    * Instances of '{0}' will be replaced with the index of the corresponding slide.
    * Instances of '{1}' will be replaced with the total amount of slides.
    *
@@ -481,8 +478,7 @@ export default class IgcCarouselComponent extends I18nMixin(
       if (previousSlide && !this._slides.includes(previousSlide)) {
         this._reactivateSlide(previousSlide, previousIndex);
       } else if (this.hasUpdated && !this._activeSlide) {
-        // Slides came into an empty carousel after the first render. Without
-        // this, no slide is active, and the carousel shows nothing.
+        // Slides came into an empty carousel after the first render, so activate one.
         this._activateInitialSlide();
       }
     }
@@ -500,11 +496,8 @@ export default class IgcCarouselComponent extends I18nMixin(
   }
 
   private _handleFocusInteraction(event: FocusEvent): void {
-    // focusin - element that lost focus
-    // focusout - element that gained focus
-    const node = event.relatedTarget as Node;
-
-    if (this.contains(node)) {
+    // `relatedTarget` lost the focus on focusin and gains it on focusout.
+    if (!focusLeftHost(this, event)) {
       return;
     }
 
@@ -565,14 +558,9 @@ export default class IgcCarouselComponent extends I18nMixin(
 
   private _handleHorizontalSwipe({ data: { direction } }: SwipeEvent): void {
     if (!this.vertical) {
-      const callback = () => {
-        if (isLTR(this)) {
-          return direction === 'left' ? this.next : this.prev;
-        }
-        return direction === 'left' ? this.prev : this.next;
-      };
-
-      this._handleInteraction(callback());
+      this._handleInteraction(
+        (direction === 'left') === isLTR(this) ? this.next : this.prev
+      );
     }
   }
 
@@ -674,17 +662,10 @@ export default class IgcCarouselComponent extends I18nMixin(
       indicator.active = Boolean(slide) && idx === current;
       indicator.index = idx;
 
-      if (slide) {
-        indicator.setAttribute('aria-controls', slide.id);
-      } else {
-        indicator.removeAttribute('aria-controls');
-      }
+      setOrRemoveAttribute(indicator, 'aria-controls', slide?.id);
     }
   }
 
-  /**
-   * Sets the rotation state of the carousel, and starts or clears its timer.
-   */
   private _setRotation(playing: boolean, paused = false): void {
     this._playing = playing;
     this._paused = paused;
@@ -733,21 +714,14 @@ export default class IgcCarouselComponent extends I18nMixin(
     currentSlide: IgcCarouselSlideComponent,
     dir: 'next' | 'prev'
   ): Promise<void> {
-    if (dir === 'next') {
-      // Animate slides in next direction
-      currentSlide.previous = true;
-      currentSlide.toggleAnimation('out');
-      this._activateSlide(nextSlide);
-      await nextSlide.toggleAnimation('in');
-      currentSlide.previous = false;
-    } else {
-      // Animate slides in previous direction
-      currentSlide.previous = true;
-      currentSlide.toggleAnimation('in', 'reverse');
-      this._activateSlide(nextSlide);
-      await nextSlide.toggleAnimation('out', 'reverse');
-      currentSlide.previous = false;
-    }
+    const forward = dir === 'next';
+    const direction = forward ? 'normal' : 'reverse';
+
+    currentSlide.previous = true;
+    currentSlide.toggleAnimation(forward ? 'out' : 'in', direction);
+    this._activateSlide(nextSlide);
+    await nextSlide.toggleAnimation(forward ? 'in' : 'out', direction);
+    currentSlide.previous = false;
   }
 
   //#endregion

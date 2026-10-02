@@ -106,8 +106,7 @@ export default class IgcChatInputComponent extends LitElement {
       return;
     }
 
-    // The live delay may have grown since the timer was armed - defer the stop
-    // instead of dropping it.
+    // The delay can grow after the timer starts, so defer the stop.
     const remaining =
       this._userLastTypeTime + this._state.stopTypingDelay - Date.now();
 
@@ -178,10 +177,8 @@ export default class IgcChatInputComponent extends LitElement {
   private _getRenderer<U extends keyof DefaultInputRenderers>(
     name: U
   ): DefaultInputRenderers[U] {
-    return this._state.options?.renderers
-      ? ((this._state.options.renderers[name] ??
-          this._defaults[name]) as DefaultInputRenderers[U])
-      : this._defaults[name];
+    return (this._state.options?.renderers?.[name] ??
+      this._defaults[name]) as DefaultInputRenderers[U];
   }
 
   private async _sendMessage(): Promise<void> {
@@ -273,7 +270,7 @@ export default class IgcChatInputComponent extends LitElement {
     event.preventDefault();
     event.stopPropagation();
 
-    // Check if we're actually leaving the container
+    // Reset only when the pointer leaves the container.
     const container = event.currentTarget as HTMLElement;
 
     if (!isPointInsideElement(container, event.clientX, event.clientY)) {
@@ -305,11 +302,6 @@ export default class IgcChatInputComponent extends LitElement {
     }
   }
 
-  /**
-   * Default attachments area template used when no custom template is provided.
-   * Renders the list of input attachments as chips.
-   * @returns TemplateResult containing the attachments area
-   */
   private _renderAttachmentsArea(attachments: IgcChatMessageAttachment[]) {
     return html`${attachments?.map(
       (attachment) => html`
@@ -330,11 +322,6 @@ export default class IgcChatInputComponent extends LitElement {
     )} `;
   }
 
-  /**
-   * Default text area template used when no custom template is provided.
-   * Renders a text area for user input.
-   * @returns TemplateResult containing the text area
-   */
   private _renderTextArea() {
     return html`
       <igc-textarea

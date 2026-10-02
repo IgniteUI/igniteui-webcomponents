@@ -145,7 +145,7 @@ $fake-bg-position: calc(50% - (var-get($theme, 'size') / 2));
 }
 
 [part~='date-inner']:not([part~='inactive']) {
-    // This selector works only in range selection since firs and last are present only in the range selection
+    // This selector works only in range selection, because only a range has first and last dates.
     &[part~='selected'][part~='first'][part~='last'] {
         background: transparent;
         border-color: var-get($theme, 'date-range-preview-border-color');
@@ -232,7 +232,6 @@ $fake-bg-position: calc(50% - (var-get($theme, 'size') / 2));
         }
     }
 
-    // SPECIAL
     &[part~='special'] {
         &::after {
             content: '';
@@ -325,7 +324,6 @@ $fake-bg-position: calc(50% - (var-get($theme, 'size') / 2));
         }
     }
 
-    // CURRENT
     &[part~='current'] {
         color: var-get($theme, 'date-current-foreground');
 
@@ -410,7 +408,6 @@ $fake-bg-position: calc(50% - (var-get($theme, 'size') / 2));
         color: var-get($theme, 'date-selected-current-foreground');
     }
 
-    // CURRENT + SPECIAL
     &[part~='current'][part~='special'] {
         &::after {
             width: calc(var-get($theme, 'inner-size') - #{rem(4px)});
@@ -514,8 +511,6 @@ $fake-bg-position: calc(50% - (var-get($theme, 'size') / 2));
         }
     }
 
-    // RANGE
-    // special + range
     &[part~='special'][part~='range'][part~='selected']:where(:not([part~='current'], [part~='preview'])) {
         color: var-get($theme, 'date-special-range-foreground');
 

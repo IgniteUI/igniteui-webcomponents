@@ -354,11 +354,8 @@ class DraggableDirective extends PointerOperationDirective<
 
   /**
    * Toggles the touch action and the text selection for a drag operation.
-   *
-   * @remarks
-   * The `user-select` style on the dragged element is not enough. Browsers,
-   * Safari in particular, still select text in the elements under the
-   * pointer, so the style also goes on the body of the owner document.
+   * Browsers, Safari in particular, still select text under the pointer, so
+   * `user-select` also goes on the document body.
    */
   private _setDragStyles(active: boolean): void {
     const value = active ? 'none' : '';

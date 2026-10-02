@@ -11,7 +11,6 @@
     grid-auto-columns: minmax(0, 1fr);
 }
 
-// IF HORIZONTAL
 :host(:not([alignment='vertical'])) {
     --_negative-margin-horizontal: #{rem(-1px)};
 
@@ -20,7 +19,6 @@
     }
 }
 
-// IF VERTICAL
 :host([alignment='vertical']) {
     --_negative-margin-vertical: #{rem(-1px)};
 

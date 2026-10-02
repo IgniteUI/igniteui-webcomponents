@@ -1,11 +1,45 @@
 import { expect, fixture, html } from '@open-wc/testing';
 import {
+  hasNegativeTabIndex,
   normalizedTextContent,
   pointToFraction,
   resolveCssLength,
+  setOrRemoveAttribute,
 } from './dom.js';
 
 describe('DOM utilities', () => {
+  describe('setOrRemoveAttribute', () => {
+    it('sets a value, keeps an empty string, and removes on null or undefined', () => {
+      const element = document.createElement('div');
+
+      setOrRemoveAttribute(element, 'aria-label', 'Name');
+      expect(element.getAttribute('aria-label')).to.equal('Name');
+
+      setOrRemoveAttribute(element, 'aria-label', '');
+      expect(element.getAttribute('aria-label')).to.equal('');
+
+      setOrRemoveAttribute(element, 'aria-label', null);
+      expect(element.hasAttribute('aria-label')).to.be.false;
+
+      element.setAttribute('aria-label', 'Name');
+      setOrRemoveAttribute(element, 'aria-label', undefined);
+      expect(element.hasAttribute('aria-label')).to.be.false;
+    });
+  });
+
+  describe('hasNegativeTabIndex', () => {
+    it('is true only for `tabindex="-1"`', () => {
+      const element = document.createElement('div');
+      expect(hasNegativeTabIndex(element)).to.be.false;
+
+      element.setAttribute('tabindex', '0');
+      expect(hasNegativeTabIndex(element)).to.be.false;
+
+      element.setAttribute('tabindex', '-1');
+      expect(hasNegativeTabIndex(element)).to.be.true;
+    });
+  });
+
   describe('pointToFraction', () => {
     let element: HTMLDivElement;
 

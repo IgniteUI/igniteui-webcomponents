@@ -102,3 +102,13 @@ function matchOneToOne(
 
   return true;
 }
+
+/** Clears the boolean `flag` on `from` and sets it on `to`. */
+export function moveFlag<K extends string>(
+  from: { [P in K]: boolean } | null | undefined,
+  to: { [P in K]: boolean } | null | undefined,
+  flag: K
+): void {
+  if (from && from !== to) from[flag] = false;
+  if (to) to[flag] = true;
+}

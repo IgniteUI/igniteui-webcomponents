@@ -12,9 +12,7 @@ const defaultState: GestureState = Object.freeze({ x: 0, y: 0, time: 0 });
 
 /** @hidden */
 export interface GesturesOptions {
-  /**
-   * The element that the controller observes. Defaults to the host element.
-   */
+  /** The element that the controller observes. Defaults to the host. */
   ref?: Ref<HTMLElement>;
   /** The maximum time in milliseconds of a recognized gesture. */
   thresholdTime?: number;
@@ -64,7 +62,6 @@ export class SwipeEvent extends Event {
 
 class GesturesController extends EventTarget implements ReactiveController {
   private readonly _host: ReactiveControllerHost & HTMLElement;
-  private readonly _ref?: Ref<HTMLElement>;
   private readonly _abortHandle = createAbortHandle();
 
   /** The options of the controller, with the defaults applied. */
@@ -81,7 +78,7 @@ class GesturesController extends EventTarget implements ReactiveController {
   };
 
   private get _element() {
-    return this._ref ? this._ref.value! : this._host;
+    return this._options.ref ? this._options.ref.value! : this._host;
   }
 
   public get options(): GesturesOptions {
@@ -95,7 +92,6 @@ class GesturesController extends EventTarget implements ReactiveController {
     super();
 
     Object.assign(this._options, options);
-    this._ref = this._options.ref;
 
     this._host = host;
     this._host.addController(this);
@@ -195,21 +191,6 @@ class GesturesController extends EventTarget implements ReactiveController {
     }
   }
 
-  private _emit(name: SwipeEvents, data: GestureData) {
-    return this.dispatchEvent(new SwipeEvent(name, data));
-  }
-
-  private _createEventArgs() {
-    const { start, current } = this._pointerState;
-
-    return {
-      xStart: start.x,
-      xEnd: current.x,
-      yStart: start.y,
-      yEnd: current.y,
-    };
-  }
-
   private _recognize(): GestureDirection | false {
     const { start, current } = this._pointerState;
     const { thresholdTime: time, thresholdDistance: distance } = this._options;
@@ -246,13 +227,18 @@ class GesturesController extends EventTarget implements ReactiveController {
     const state = this._recognize();
 
     if (state) {
-      const args: GestureData = Object.assign(this._createEventArgs(), {
+      const { start, current } = this._pointerState;
+      const args: GestureData = {
+        xStart: start.x,
+        xEnd: current.x,
+        yStart: start.y,
+        yEnd: current.y,
         type: event.pointerType,
         direction: state,
-      });
+      };
 
-      this._emit('swipe', args);
-      this._emit(`swipe-${state}`, args);
+      this.dispatchEvent(new SwipeEvent('swipe', args));
+      this.dispatchEvent(new SwipeEvent(`swipe-${state}`, args));
     }
 
     this._resetState();

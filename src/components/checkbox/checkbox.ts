@@ -106,7 +106,7 @@ export default class IgcCheckboxComponent extends IgcCheckboxBaseComponent {
         `,
         hideLabel: this._hideLabel,
         indeterminate: this.indeterminate,
-        describedBy: helperText(this, this._slots)?.id,
+        description: helperText(this, this._slots),
         onClick: this._handleClick,
         onKeyDown: this._handleEnterKeydown,
         onBlur: this._handleBlur,

@@ -2,7 +2,7 @@ import type { QrErrorCorrectionLevel } from '../types.js';
 import { encodeQR } from './encode.js';
 import { applyMask, selectBestMask } from './mask.js';
 
-// Alignment pattern locations for each version (1-40) of QR code.
+// Alignment pattern positions for each version (1-40).
 const ALIGNMENT_PATTERN_TABLE: number[][] = [
   [], // V1
   [6, 18], // V2
@@ -46,7 +46,7 @@ const ALIGNMENT_PATTERN_TABLE: number[][] = [
   [6, 30, 58, 86, 114, 142, 170], // V40
 ];
 
-// Format information strings for each combination of error correction level and mask pattern.
+// Format information for each error correction level and mask pattern.
 const FORMAT_INFO_TABLE: number[] = [
   // L (EC level bits 01)
   0x77c4, 0x72f3, 0x7daa, 0x789d, 0x662f, 0x6318, 0x6c41, 0x6976,
@@ -58,7 +58,7 @@ const FORMAT_INFO_TABLE: number[] = [
   0x1689, 0x13be, 0x1ce7, 0x19d0, 0x0762, 0x0255, 0x0d0c, 0x083b,
 ];
 
-// Version information strings for versions 7 and above (6 bits per version).
+// The 18-bit version information for versions 7 and above.
 const VERSION_INFO_TABLE: number[] = [
   0x07c94, // V7
   0x085bc, // V8
@@ -96,23 +96,11 @@ const VERSION_INFO_TABLE: number[] = [
   0x28c69, // V40
 ];
 
-const EC_LEVEL_FORMAT_INDEX: Record<QrErrorCorrectionLevel, number> = {
-  L: 0,
-  M: 1,
-  Q: 2,
-  H: 3,
-};
-
 function createMatrix(size: number): boolean[][] {
   return Array.from({ length: size }, () => new Array(size).fill(false));
 }
 
-/**
- * Places a finder pattern at the specified position in the matrix and marks the function modules.
- * A finder pattern is a 7x7 module pattern with a specific arrangement of black and white modules,
- * surrounded by a 1-module white separator. This function updates both the main matrix and the
- * functionModules matrix to indicate which modules are part of the finder pattern and its separator.
- */
+/** Places a 7x7 finder pattern and its 1-module separator, and marks them as function modules. */
 function placeFinderPattern(
   matrix: boolean[][],
   functionModules: boolean[][],
@@ -126,26 +114,15 @@ function placeFinderPattern(
       if (mr < 0 || mr >= matrix.length || mc < 0 || mc >= matrix.length) {
         continue;
       }
+      // Rings from the center: dark 3x3, light, dark, light separator.
+      const ring = Math.max(Math.abs(r - 3), Math.abs(c - 3));
       functionModules[mr][mc] = true;
-      if (r === -1 || r === 7 || c === -1 || c === 7) {
-        matrix[mr][mc] = false; // Separator (white border)
-      } else if (r === 0 || r === 6 || c === 0 || c === 6) {
-        matrix[mr][mc] = true; // Finder pattern (black)
-      } else if (r >= 2 && r <= 4 && c >= 2 && c <= 4) {
-        matrix[mr][mc] = true; // inner square (black)
-      } else {
-        matrix[mr][mc] = false; // inner area (white)
-      }
+      matrix[mr][mc] = ring !== 2 && ring !== 4;
     }
   }
 }
 
-/**
- * Places an alignment pattern at the specified position in the matrix and marks the function modules.
- * An alignment pattern is a 5x5 module pattern with a specific arrangement of black and white modules.
- * This function updates both the main matrix and the functionModules matrix to indicate which modules
- * are part of the alignment pattern.
- */
+/** Places a 5x5 alignment pattern centered on `row`, `col`, and marks it as function modules. */
 function placeAlignmentPattern(
   matrix: boolean[][],
   functionModules: boolean[][],
@@ -154,26 +131,13 @@ function placeAlignmentPattern(
 ): void {
   for (let r = -2; r <= 2; r++) {
     for (let c = -2; c <= 2; c++) {
-      const mr = row + r;
-      const mc = col + c;
-      functionModules[mr][mc] = true;
-      if (r === -2 || r === 2 || c === -2 || c === 2) {
-        matrix[mr][mc] = true; // Alignment pattern (black)
-      } else if (r === 0 && c === 0) {
-        matrix[mr][mc] = true; // center module (black)
-      } else {
-        matrix[mr][mc] = false; // other modules (white)
-      }
+      functionModules[row + r][col + c] = true;
+      matrix[row + r][col + c] = Math.max(Math.abs(r), Math.abs(c)) !== 1;
     }
   }
 }
 
-/**
- * Places timing patterns in the matrix and marks the function modules.
- * Timing patterns are alternating black and white modules that run horizontally and vertically between the finder patterns.
- * They help the QR code reader determine the size of the modules and the overall structure of the QR code.
- * This function updates both the main matrix and the functionModules matrix to indicate which modules are part of the timing patterns.
- */
+/** Places the timing patterns between the finder patterns, and marks them as function modules. */
 function placeTimingPatterns(
   matrix: boolean[][],
   functionModules: boolean[][]
@@ -207,32 +171,21 @@ const FORMAT_INFO_POSITIONS: [number, number][] = [
 ];
 
 /**
- * Reserves the areas in the matrix for format information and marks them as function modules.
- * Format information consists of 15 bits that encode the error correction level and mask pattern.
- * These bits are placed in specific positions around the top-left finder pattern and along the timing patterns.
- * This function updates the functionModules matrix to indicate which modules are reserved for format information.
+ * Returns `[row, col, bit]` for both copies of the 15-bit format information (error
+ * correction level and mask), where `bit` 0 is the least significant.
  */
-function reserveFormatInfoAreas(
-  functionModules: boolean[][],
-  size: number
-): void {
-  for (const [r, c] of FORMAT_INFO_POSITIONS) {
-    functionModules[r][c] = true;
-  }
-
-  for (let i = 0; i < 8; i++) {
-    functionModules[8][size - 1 - i] = true;
-  }
-
-  for (let i = 0; i < 7; i++) {
-    functionModules[size - 7 + i][8] = true;
-  }
+function formatInfoModules(size: number): [number, number, number][] {
+  const modules = FORMAT_INFO_POSITIONS.map(
+    ([r, c], i): [number, number, number] => [r, c, 14 - i]
+  );
+  for (let i = 0; i < 8; i++) modules.push([8, size - 1 - i, i]);
+  for (let i = 0; i < 7; i++) modules.push([size - 7 + i, 8, i + 7]);
+  return modules;
 }
 
 /**
- * Reserves the areas in the matrix for version information (for versions 7 and above) and marks them as function modules.
- * Version information consists of 18 bits that encode the version number and is placed in specific positions near the top-right and bottom-left finder patterns.
- * This function updates both the main matrix and the functionModules matrix to indicate which modules are reserved for version information.
+ * Writes the 18-bit version information near the top-right and bottom-left finder patterns,
+ * for version 7 and above, and marks it as function modules.
  */
 function reserveVersionInfoAreas(
   matrix: boolean[][],
@@ -255,10 +208,8 @@ function reserveVersionInfoAreas(
 }
 
 /**
- * Places the data bits from the codewords into the matrix in a zig-zag pattern, skipping function modules.
- * The data bits are placed starting from the bottom-right corner of the matrix and moving upwards in a zig-zag pattern.
- * The function iterates through the codewords and places each bit in the appropriate position in the matrix, while skipping any modules that are reserved for function patterns (finder, alignment, timing, format info, version info).
- * If there are more bits than available modules, the remaining bits are treated as padding and set to 0 (white).
+ * Places the codeword bits in a zig-zag from the bottom-right corner and skips the function
+ * modules. The modules after the last bit stay light.
  */
 function placeDataBits(
   matrix: boolean[][],
@@ -312,36 +263,30 @@ export interface QRCodeMatrixResult {
   size: number;
 }
 
-/**
- * Main entry point for QR matrix generation. Encodes `data`, builds the module
- * matrix (finder, alignment, timing, data, format), and applies the optimal mask.
- */
+/** Encodes `data`, builds the module matrix and applies the best mask. */
 export function generateQRCodeMatrix(
   data: string,
   ecLevel: QrErrorCorrectionLevel = 'M',
   requiredVersion?: number
 ): QRCodeMatrixResult {
   const encoded = encodeQR(data, ecLevel, requiredVersion);
-  const { codewords, version } = encoded;
+  const { codewords, version, ecLevelIndex } = encoded;
 
   const size = version * 4 + 17;
   const matrix = createMatrix(size);
   const functionModules = createMatrix(size);
 
-  // Place finder patterns
   placeFinderPattern(matrix, functionModules, 0, 0);
   placeFinderPattern(matrix, functionModules, 0, size - 7);
   placeFinderPattern(matrix, functionModules, size - 7, 0);
 
-  // Place timing patterns
   placeTimingPatterns(matrix, functionModules);
 
-  // Dark module (fixed black module for all versions)
+  // The dark module, present in all versions.
   const darkRow = 4 * version + 9;
   matrix[darkRow][8] = true;
   functionModules[darkRow][8] = true;
 
-  // Place alignment patterns
   const alignmentPositions = ALIGNMENT_PATTERN_TABLE[version - 1];
   for (const r of alignmentPositions) {
     for (const c of alignmentPositions) {
@@ -357,49 +302,22 @@ export function generateQRCodeMatrix(
     }
   }
 
-  // Version information (for versions 7 and above)
   reserveVersionInfoAreas(matrix, functionModules, version);
 
-  // Format information
-  reserveFormatInfoAreas(functionModules, size);
+  const formatModules = formatInfoModules(size);
+  for (const [r, c] of formatModules) functionModules[r][c] = true;
 
-  // Place data bits
   placeDataBits(matrix, functionModules, codewords);
 
-  // Select best mask
   const bestMask = selectBestMask(matrix, functionModules);
 
-  // Apply the best mask to the data modules
   const maskedMatrix = applyMask(matrix, functionModules, bestMask);
 
-  // Add format information with the selected mask pattern
-  const ecFormatIndex = EC_LEVEL_FORMAT_INDEX[ecLevel];
-  const formatBits = FORMAT_INFO_TABLE[ecFormatIndex * 8 + bestMask];
-  writeFormatInfo(maskedMatrix, formatBits, size);
+  const formatBits = FORMAT_INFO_TABLE[ecLevelIndex * 8 + bestMask];
+  for (const [r, c, bit] of formatModules) {
+    maskedMatrix[r][c] = ((formatBits >> bit) & 1) === 1;
+  }
+  maskedMatrix[size - 8][8] = true;
 
   return { matrix: maskedMatrix, version, size };
-}
-
-function writeFormatInfo(
-  matrix: boolean[][],
-  formatBits: number,
-  size: number
-): void {
-  for (let i = 0; i < 15; i++) {
-    const bit = (formatBits >> (14 - i)) & 1;
-    const [r, c] = FORMAT_INFO_POSITIONS[i];
-    matrix[r][c] = bit === 1;
-  }
-
-  for (let i = 0; i < 8; i++) {
-    const bit = (formatBits >> i) & 1;
-    matrix[8][size - 1 - i] = bit === 1;
-  }
-
-  for (let i = 0; i < 7; i++) {
-    const bit = (formatBits >> (i + 7)) & 1;
-    matrix[size - 7 + i][8] = bit === 1;
-  }
-
-  matrix[size - 8][8] = true;
 }
