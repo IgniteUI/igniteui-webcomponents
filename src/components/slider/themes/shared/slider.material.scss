@@ -63,7 +63,7 @@ $thumb-radius: math.div($thumb-size, 2);
     color: var-get($theme, 'tick-label-color');
 }
 
-[part='thumb-label'] {
+[part~='thumb-label'] {
     margin-block-end: rem(10px);
 }
 

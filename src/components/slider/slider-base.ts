@@ -57,12 +57,6 @@ import { styles as shared } from './themes/shared/slider.common.css.js';
 import { styles } from './themes/slider.base.css.js';
 import { all } from './themes/themes.js';
 
-/**
- * The binary noise of a step count, relative to it. Without it, 0.35 / 0.1
- * gives 3.4999999999999996 and rounds down.
- */
-const STEP_COUNT_TOLERANCE = 4 * Number.EPSILON;
-
 /** As for `:focus-visible`, a modifier key alone does not mark keyboard focus. */
 const MODIFIER_KEYS = new Set<string>([altKey, ctrlKey, metaKey, shiftKey]);
 
@@ -476,9 +470,14 @@ export class IgcSliderBaseComponent extends LitElement {
     const decimals = Math.max(numberOfDecimals(min), numberOfDecimals(step));
     const toValue = (steps: number) =>
       roundPrecise(min + steps * step, decimals);
-    const steps = Math.round(
-      ((clamped - min) / step) * (1 + STEP_COUNT_TOLERANCE)
-    );
+
+    // Compare the decimal distances to the two nearest steps, as a native
+    // range does. In binary, 0.35 / 0.1 gives 3.4999999999999996.
+    const places = Math.max(decimals, numberOfDecimals(clamped));
+    const below = Math.floor((clamped - min) / step);
+    const down = roundPrecise(clamped - toValue(below), places);
+    const up = roundPrecise(toValue(below + 1) - clamped, places);
+    const steps = up <= down ? below + 1 : below;
 
     let snapped = toValue(steps);
 

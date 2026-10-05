@@ -1194,6 +1194,21 @@ describe('Slider component', () => {
       }
     });
 
+    it('snaps on a large or offset scale, as a native range input does', async () => {
+      const cases: Record<string, number>[] = [
+        { max: 2e15, step: 1, value: 1e15 },
+        { max: 2e15, step: 1, value: 999_999_999_999_999.4 },
+        { min: 1000.1, max: 1002, step: 0.1, value: 1001.55 },
+      ];
+
+      for (const attributes of cases) {
+        const slider = await createSlider(attributes);
+        expect(slider.value, JSON.stringify(attributes)).to.equal(
+          nativeValue(attributes)
+        );
+      }
+    });
+
     it('keeps a value on a fractional step (#2433)', async () => {
       const slider = document.createElement(IgcSliderComponent.tagName);
       Object.assign(slider, { min: 0, max: 1, step: 0.01, value: 0.5 });
