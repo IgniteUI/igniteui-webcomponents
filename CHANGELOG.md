@@ -23,6 +23,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - `required` now sets `aria-required` on the native input of each editor, also in the two-input mode of the date range picker. Before, screen readers did not announce these fields as required.
 - #### Chip, Tabs, Stepper, Expansion panel, Navigation drawer, Tree
   - The host `aria-label`, `aria-labelledby` and `aria-describedby` now name and describe the element that has the focus or the role: the action button of a chip, the header of a tab or a step, the header of an expansion panel, and the drawer. A tree item that delegates its role to a link in its label copies them to that link, unless the link has its own. In the navigation drawer, `label` still wins over the host `aria-label`. Before, these attributes stayed on the host, where screen readers did not use them.
+- #### List
+  - `igc-list-header` now has the `listitem` role. Before, it had the `separator` role. A list cannot contain a separator, and a separator hides its content from assistive technologies, so a screen reader could skip the text of the header. Screen readers now read the header and count it with the items. Put a heading in the header, so that users can move from group to group.
+  - The title and subtitle container of `igc-list-item` is now a `div`, not a `header` element. Before, Chromium exposed it as a `sectionheader` in each item. The `header` part is unchanged.
 - #### Highlight
   - A space in `searchText` now matches any run of whitespace in the content, such as a line break in the HTML source. Before, "cold brew" did not find the two words when a line break separated them.
 - #### Input
