@@ -34,6 +34,15 @@ export const MODIFIER_EVENT_KEYS: Record<string, string> =
   Object.fromEntries(MODIFIER_ENTRIES);
 
 /**
+ * Returns whether `key`, a `KeyboardEvent.key` value, is a modifier.
+ *
+ * @internal
+ */
+export function isModifierKey(key: string): boolean {
+  return MODIFIERS.has(key.toLowerCase());
+}
+
+/**
  * Splits the keys into modifiers (Alt, Control, Meta, Shift) and normal keys,
  * in lower case.
  *

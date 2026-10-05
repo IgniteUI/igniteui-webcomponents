@@ -85,6 +85,17 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - A new `data` array with new items at the rendered indices now measures those items again. Before, an item element that kept its index was not measured again, so the scroll size and the item positions used the estimate until the item left the rendered window.
 - #### Theming
   - A theme change now replaces only the theme style sheets of a component. It keeps the style sheets that other code adopted into the shadow root, after the theme style sheets. Before, a theme change removed them.
+- #### Slider, Range slider
+  - A value on a fractional step now stays where it is. Before, each change of a constraint moved it down by one step: 0.5 with `step="0.01"` became 0.47. With `step="0.1"` on a scale of 0 to 1, the arrow keys, Page Up and `stepUp()` stopped at 0.4. [#2433](https://github.com/IgniteUI/igniteui-webcomponents/issues/2433)
+  - A value now snaps to the nearest step, as for a native range input. A tie goes to the higher step, and the steps count from `min`. Before, a value went down to the step below it. The steps also counted from `lowerBound`, so the values did not match the discrete track and the ticks.
+  - The order of `value`, `lower`, `upper`, `min`, `max` and `step` no longer changes the result, as attributes or as properties set in one task. For example, `<igc-slider value="0.5" min="0" max="1" step="0.01">` gives 0.5, `<igc-slider value="150" max="200">` gives 150, and `<igc-slider min="150" max="200">` gives a `min` of 150. Before, the slider checked each value against the constraints of that moment. When an update ends with `min` above `max`, the slider keeps the previous `min` and `max`. [#2434](https://github.com/IgniteUI/igniteui-webcomponents/issues/2434)
+  - The keyboard no longer emits `igcInput` and `igcChange` when the value stays the same, for example End on the last step below `max`.
+  - A negative `step` now keeps the previous step. Before, the slider accepted it and reversed the arrow keys.
+  - When the projected `igc-slider-label` elements go, `min`, `max` and `step` return to the values that the author set.
+  - A right click no longer moves a thumb. A second pointer, such as a second finger, no longer takes over a drag, and a drag now sends one `igcChange`.
+  - The thumb label is now in the top layer. So a container that clips its overflow, such as a card or a dialog body, no longer cuts it off. The label also shows while a thumb has keyboard focus, and Escape hides it, also while the focus is elsewhere. A modifier key alone, such as Shift, no longer counts as keyboard focus.
+  - `upper` of the range slider now follows `upperBound` until it is set, and again after the attribute is removed. So `<igc-range-slider>` covers the whole scale. Before, `upper` was 0. A `lower` above `upper` from code or markup now swaps the two values, as a drag does. Before, the thumbs crossed and the fill had a negative width.
+  - Each thumb of the range slider now announces its own value: the label text, or the formatted value. Before, the focused thumb announced label indexes such as "0 - 2", and the other thumb announced English text such as "min 20". The host `aria-label` and `aria-labelledby` now name the group of the two thumbs, and the host `aria-describedby` describes both thumbs.
 
 ## [7.4.1] - 2026-09-25
 ### Added
