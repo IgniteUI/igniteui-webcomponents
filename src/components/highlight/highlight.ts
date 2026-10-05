@@ -137,18 +137,8 @@ export default class IgcHighlightComponent extends LitElement {
   constructor() {
     super();
 
-    addThemingController(this, all, {
-      themeChange: this._addStylesheet,
-    });
+    addThemingController(this, all);
   }
-
-  //#region Internal methods
-
-  private _addStylesheet(): void {
-    this._service.attachStylesheet();
-  }
-
-  //#endregion
 
   //#region Public methods
 

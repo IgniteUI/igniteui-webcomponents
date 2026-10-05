@@ -42,6 +42,7 @@ import {
   ValidityHelpers,
 } from '#internals/testing/validity-helpers.spec.js';
 import { firstOf } from '#internals/utils/arrays.js';
+import { configureTheme } from '#theming/config.js';
 import type IgcInputComponent from '../input/input.js';
 import type IgcVirtualScrollComponent from '../virtualization/virtualization.js';
 import type IgcComboHeaderComponent from './combo-header.js';
@@ -1683,6 +1684,36 @@ describe('Combo', () => {
       expect(combo.open).to.be.false;
       expect(eventSpy.firstCall).calledWith('igcClosing');
       expect(eventSpy.lastCall).calledWith('igcClosed');
+    });
+  });
+
+  describe('Theming', () => {
+    function hasListStyleSheet(): boolean {
+      return Array.from(combo.shadowRoot!.adoptedStyleSheets).some((sheet) =>
+        Array.from(sheet.cssRules).some((rule) =>
+          rule.cssText.startsWith(':where(igc-virtual-scroll)')
+        )
+      );
+    }
+
+    it('keeps the style sheet of the list on a theme change', async () => {
+      combo = await fixture<IgcComboComponent<City>>(html`
+        <igc-combo
+          .data=${cities}
+          value-key="id"
+          display-key="name"
+        ></igc-combo>
+      `);
+      expect(hasListStyleSheet()).to.be.true;
+
+      try {
+        configureTheme('material');
+        await elementUpdated(combo);
+
+        expect(hasListStyleSheet()).to.be.true;
+      } finally {
+        configureTheme('bootstrap');
+      }
     });
   });
 

@@ -547,13 +547,7 @@ export default class IgcComboComponent<
   constructor() {
     super();
 
-    // TODO: Fix this in the theming controller. See the virtualization `willUpdate`.
-
-    // A theme change adopts the shared shadow root stylesheets again and drops
-    // the list stylesheet. The update request makes the list adopt it again.
-    addThemingController(this, all, {
-      themeChange: () => this._listRef.value?.requestUpdate(),
-    });
+    addThemingController(this, all);
 
     // Projects combobox semantics onto the native input. `aria-activedescendant`
     // stays on the listbox, which has focus during list navigation.

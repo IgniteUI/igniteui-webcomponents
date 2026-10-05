@@ -505,6 +505,30 @@ describe('Theming Controller', () => {
         initialStylesCount
       );
     });
+
+    it('should keep the style sheets that it does not own on a theme change', async () => {
+      configureTheme('bootstrap', 'light');
+
+      const tag = unsafeStatic(themedTag);
+      const el = await fixture<ThemedTestComponentElement>(
+        html`<${tag}></${tag}>`
+      );
+      const root = el.shadowRoot!;
+      const [elementSheet] = root.adoptedStyleSheets;
+      const foreign = new CSSStyleSheet();
+      root.adoptedStyleSheets.push(foreign);
+
+      setTimeout(() => configureTheme('material', 'dark'));
+      await oneEvent(window, CHANGE_THEME_EVENT);
+      await elementUpdated(el);
+
+      expect(Array.from(root.adoptedStyleSheets)).to.have.ordered.members([
+        elementSheet,
+        mockThemes.dark.shared!.styleSheet,
+        mockThemes.dark.material!.styleSheet,
+        foreign,
+      ]);
+    });
   });
 
   describe('All Theme Combinations', () => {

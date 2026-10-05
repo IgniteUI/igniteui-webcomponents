@@ -474,13 +474,13 @@ input-shaped component:
       hasPopup: 'listbox',
       expanded: `${this.open}`,
       controls: this._list ? [this._list] : null,
-      describedBy: this._helperText ? [this._helperText] : null,
     }),
   });
   ```
 
-  The projector adds the name of the host (`resolveNaming`) and the host `aria-describedby`.
-  An own label is a non-empty `label`. Pass `naming: false` to project no name.
+  The projector adds the name of the host (`resolveNaming`), the `igc-validator` helper text in
+  the host's shadow root, and the host `aria-describedby`. An own label is a non-empty `label`.
+  Pass `naming: false` to project no name and no helper text.
 
 - The target copies the projected `role` and `hasPopup` to `data-role` and `data-haspopup` on
   the input component. These are **styling hooks**, because `:host()` selectors cannot see

@@ -58,6 +58,7 @@
 |       5 | 2026-09-29 | `layoutComplete` waits for the measurements, so `scrollToIndex` aligns items of any size   |
 |       6 | 2026-09-29 | Compression maps the scroll ranges, and the content follows each scroll                   |
 |       7 | 2026-09-30 | A `data` change measures the rendered items again from the first changed index             |
+|       8 | 2026-10-05 | The stylesheet comes back after other code replaces the sheets of the tree scope           |
 
 ## Overview
 
@@ -317,7 +318,8 @@ None. The items are created by the `itemTemplate` rather than projected.
 | `virtualization-content` | The wrapper of the rendered items, translated into position inside the track.     |
 
 The host styles are injected as a constructable stylesheet into the tree scope the component lives in, so it
-integrates into the document and into a shadow root alike.
+integrates into the document and into a shadow root alike. When other code replaces the adopted sheets of that
+scope, the component adopts its stylesheet again on its next update.
 
 ## Test scenarios
 
@@ -343,52 +345,53 @@ integrates into the document and into a shadow root alike.
 ### Rendering
 
 4. Nothing is rendered without an `itemTemplate`, and the track and the content elements are rendered with one.
+5. The stylesheet is adopted again on the next update after other code replaces the sheets of the tree scope.
 
 ### Events tests
 
-5. `igcStateChange` is emitted after a render with data and a template, and is not emitted again while the window
+6. `igcStateChange` is emitted after a render with data and a template, and is not emitted again while the window
    is unchanged.
-6. `igcDataRequest` is emitted when the scroll comes near the end of the data, is not repeated when the data is
+7. `igcDataRequest` is emitted when the scroll comes near the end of the data, is not repeated when the data is
    reassigned without growing, and is emitted again once the data actually grows.
 
 ### Scroll handling
 
-7. A scroll that stays inside the same window causes no render.
-8. The scroll handling is registered again after the component is reconnected.
+8. A scroll that stays inside the same window causes no render.
+9. The scroll handling is registered again after the component is reconnected.
 
 ### Public API
 
-9. `scrollToIndex` sets `scrollTop` in the vertical orientation and `scrollLeft` in the horizontal one.
-10. It settles on the last index instead of waiting out the scroll timeout, and does nothing for `block: nearest`
+10. `scrollToIndex` sets `scrollTop` in the vertical orientation and `scrollLeft` in the horizontal one.
+11. It settles on the last index instead of waiting out the scroll timeout, and does nothing for `block: nearest`
     when the item is already in view, including an item that already fills the viewport.
-11. It keeps the requested index aligned once the real item sizes differ from the estimate, including a far-away
+12. It keeps the requested index aligned once the real item sizes differ from the estimate, including a far-away
     index reached with a smooth scroll in a large list, and it puts the requested item at the requested edge when
     the item sizes vary.
-12. `layoutComplete` settles even when no animation frames are served.
-13. `scrollToIndex` with `nearest` scrolls by one item to reveal the item after the last visible one, aligns an item
+13. `layoutComplete` settles even when no animation frames are served.
+14. `scrollToIndex` with `nearest` scrolls by one item to reveal the item after the last visible one, aligns an item
     after the viewport to its end, and aligns an item before the viewport to its start.
 
 ### Engine integration
 
-14. The track is resized when the data changes.
-15. A new `estimatedItemSize` is applied when the item count is unchanged.
-16. Measurements are retained on an append and discarded on a replacement, including a swap of data of the same
+15. The track is resized when the data changes.
+16. A new `estimatedItemSize` is applied when the item count is unchanged.
+17. Measurements are retained on an append and discarded on a replacement, including a swap of data of the same
     length. After a replacement, the rendered items from the first changed index on are measured again, and the
     items before it are not.
-17. The size of an item already measured in the DOM is not overridden, and a reused item element is measured
+18. The size of an item already measured in the DOM is not overridden, and a reused item element is measured
     again when it hosts a different index.
-18. The unmeasured items follow the average measured size instead of `estimatedItemSize`.
+19. The unmeasured items follow the average measured size instead of `estimatedItemSize`.
 
 ### Item elements
 
-19. An item that stays in the window on a scroll keeps its element.
-20. Once the window has its full size, a scroll creates no item elements, and the elements stay in index order.
-21. With a `keyFunction`, an item that moves in `data` keeps its element; without one, an index keeps its element.
+20. An item that stays in the window on a scroll keeps its element.
+21. Once the window has its full size, a scroll creates no item elements, and the elements stay in index order.
+22. With a `keyFunction`, an item that moves in `data` keeps its element; without one, an index keeps its element.
     An item template in `keyed` gives each entering item new DOM in a recycled element.
 
 ### Coordinate compression tests
 
-22. A list of 1,000,000 items of 50 px has a scroll size below its virtual size, `scrollToIndex` puts the item at
+23. A list of 1,000,000 items of 50 px has a scroll size below its virtual size, `scrollToIndex` puts the item at
     the requested edge, also while the last item is in the over-scan, the largest scroll offset shows the last item
     without over-scan, and the items move by
     the ratio for each scroll step, also across item boundaries. Positions are checked to 2 px, the precision of
@@ -396,35 +399,35 @@ integrates into the document and into a shadow root alike.
 
 ### RTL tests
 
-23. `scrollToIndex` passes a negative left value to `scrollTo`, and a negative `scrollLeft` is normalized to a
+24. `scrollToIndex` passes a negative left value to `scrollTo`, and a negative `scrollLeft` is normalized to a
     positive engine offset.
-24. The content element gets a negative `translateX` when scrolled, `igcStateChange` carries valid indices, and
+25. The content element gets a negative `translateX` when scrolled, `igcStateChange` carries valid indices, and
     the first data item is rendered as the right-most one.
 
 ### Engine unit tests
 
-25. **Sizing**: new items take the estimate, an unsized engine reports zero, a measurement applies to the later
+26. **Sizing**: new items take the estimate, an unsized engine reports zero, a measurement applies to the later
     offsets, out-of-range measurements are ignored, offsets are clamped to the item count, and a range sum is
     clamped the same way.
-26. **Estimated size**: a new estimate applies only to unmeasured items, and a measurement equal to the current
+27. **Estimated size**: a new estimate applies only to unmeasured items, and a measurement equal to the current
     size still counts as a measurement.
-27. **Adapted estimate**: the average measured size replaces the estimate, the first average applies anywhere, a
+28. **Adapted estimate**: the average measured size replaces the estimate, the first average applies anywhere, a
     later one waits until each item before the window is measured, the average survives a resize and a replacement,
     a new configured estimate replaces it, only the sizes measured since then count, and a change notifies.
-28. **Resizing**: measured sizes survive an append and a removal, are discarded at and beyond the retained count
+29. **Resizing**: measured sizes survive an append and a removal, are discarded at and beyond the retained count
     and marked unmeasured again, a changed estimate reaches every unmeasured item, and a matching length with
     everything retained is a no-op.
-29. **Change notifications**: a resize, a measurement and an estimate change notify, and nothing notifies when
+30. **Change notifications**: a resize, a measurement and an estimate change notify, and nothing notifies when
     nothing changes.
-30. **Visible range**: an empty range without items or viewport, coverage of the viewport from the top, an offset
+31. **Visible range**: an empty range without items or viewport, coverage of the viewport from the top, an offset
     exactly on an item boundary, the expansion by the over-scan clamped to the item count, and measured sizes.
-31. **Alignment**: leading, centered and trailing alignment, never a negative offset, clamping to the largest
+32. **Alignment**: leading, centered and trailing alignment, never a negative offset, clamping to the largest
     reachable offset, the in-view report including an item larger than the viewport, an out-of-range index, and an
     empty tree.
-32. **Scroll offset resolution**: `start`, `center` and `end` match the alignment math, an unknown position is
+33. **Scroll offset resolution**: `start`, `center` and `end` match the alignment math, an unknown position is
     `start`, and `nearest` keeps an item in view, aligns an item after or before the viewport to the closer edge,
     scrolls an item larger than the viewport until it covers it, and keeps the offset on an empty tree.
-33. **Coordinate compression**: the DOM size clamped to the browser maximum and untouched below it, the mapping of
+34. **Coordinate compression**: the DOM size clamped to the browser maximum and untouched below it, the mapping of
     the DOM scroll range onto the virtual one, the end of the list at the largest DOM offset, the content offset
     that puts the virtual position of the viewport at its leading edge, a rendered window sized by the viewport
     rather than by the ratio,
@@ -433,19 +436,19 @@ integrates into the document and into a shadow root alike.
 
 ### Recycle directive tests
 
-34. Items render in order; the element of a key that stays is kept; a full replacement of the keys reuses every
+35. Items render in order; the element of a key that stays is kept; a full replacement of the keys reuses every
     element without a DOM move; a shift moves only the recycled elements, unless the kept elements are fewer than
     half the recycled ones.
-35. No element is created once the window has its full size, each item keeps exactly two markers, and no comment
+36. No element is created once the window has its full size, each item keeps exactly two markers, and no comment
     node leaks.
-36. Any change of keys, including reversals, shuffles, growth, shrinkage, duplicate keys and random changes, gives key
+37. Any change of keys, including reversals, shuffles, growth, shrinkage, duplicate keys and random changes, gives key
     order.
-37. A focused element in a kept item keeps the focus while the keys shift, reverse, or the other kept elements move.
-38. Removed parts disconnect their async directives; the directive takes over from and gives way to other content.
-39. **Pool**: a detached part is reused when the window grows, the pool holds at most as many parts as the window,
+38. A focused element in a kept item keeps the focus while the keys shift, reverse, or the other kept elements move.
+39. Removed parts disconnect their async directives; the directive takes over from and gives way to other content.
+40. **Pool**: a detached part is reused when the window grows, the pool holds at most as many parts as the window,
     an empty window drops the pool, pooled parts disconnect their async directives and reconnect on reuse, and a
     detached part stays in the document of the list, also after the list moves to another document.
-40. **Unbound DOM state** moves with a recycled element to the entering key, and stays with its key in a `keyed`
+41. **Unbound DOM state** moves with a recycled element to the entering key, and stays with its key in a `keyed`
     template.
 
 ### Not covered by the suite

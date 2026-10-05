@@ -335,10 +335,7 @@ export default class IgcVirtualScrollComponent<
   }
 
   protected override willUpdate(changed: PropertyValues<this>): void {
-    // TODO: Either fix this in the theming controller or come up with some other solution.
-
-    // Checked on each update, because a host such as combo can replace its
-    // root's `adoptedStyleSheets` and drop this sheet while connected.
+    // Code outside the library can replace the sheets of the root and drop this one.
     this._adoptStyles();
 
     if (changed.has('data')) {

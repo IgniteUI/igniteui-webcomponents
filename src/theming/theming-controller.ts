@@ -33,7 +33,8 @@ type ThemeProviderSource = 'uninitialized' | 'context' | 'global';
  * to the global theme.
  *
  * Theme styles are applied directly to the host's shadow root via `adoptStyles`
- * every time the active theme or variant changes.
+ * every time the active theme or variant changes. The controller replaces only
+ * its own sheets and keeps the sheets that other code adopted, after its own.
  */
 class ThemingController implements ReactiveController {
   //#region Internal state
@@ -45,6 +46,9 @@ class ThemingController implements ReactiveController {
   private _theme: Theme = 'bootstrap';
   private _variant: ThemeVariant = 'light';
   private _themeSource: ThemeProviderSource = 'uninitialized';
+
+  /** The element and theme sheets that this controller adopted last. */
+  private _sheets: ReadonlySet<CSSStyleSheet> = new Set();
 
   //#endregion
 
@@ -142,12 +146,24 @@ class ThemingController implements ReactiveController {
   }
 
   private _adoptStyles(): void {
+    const root = this._host.shadowRoot!;
     const ctor = this._host.constructor as typeof LitElement;
     const { shared, [this._theme]: theme } = this._themes[this._variant];
-    adoptStyles(
-      this._host.shadowRoot!,
-      [...ctor.elementStyles, shared, theme].filter((s) => s !== undefined)
+    const sheets = new Set(
+      [...ctor.elementStyles, shared, theme]
+        .filter((style) => style !== undefined)
+        .map((style) =>
+          style instanceof CSSStyleSheet ? style : style.styleSheet!
+        )
     );
+
+    // The sheets that other code adopted, such as a virtual scroll or a highlight.
+    const foreign = root.adoptedStyleSheets.filter(
+      (sheet) => !(sheets.has(sheet) || this._sheets.has(sheet))
+    );
+
+    adoptStyles(root, [...sheets, ...foreign]);
+    this._sheets = sheets;
   }
 
   //#endregion
