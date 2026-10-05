@@ -29,6 +29,9 @@
     - [Regular](#regular)
     - [Range](#range)
     - [Initial rendering race condition](#initial-rendering-race-condition)
+    - [Value resolution](#value-resolution)
+    - [Range ARIA](#range-aria)
+    - [Thumb label](#thumb-label)
     - [Form integration tests](#form-integration-tests)
     - [Default value](#default-value)
     - [External label association](#external-label-association)
@@ -48,6 +51,7 @@
 |       2 | 2026-09-24 | Label external `label` elements and host `aria-labelledby`, focus from a label click |
 |       3 | 2026-10-02 | Correct the `reportValidity` description                                             |
 |       4 | 2026-10-02 | Forward the host `aria-describedby`                                                  |
+|       5 | 2026-10-05 | Values in any order, nearest step, range defaults and value text, label in top layer |
 
 ## Overview
 
@@ -116,7 +120,9 @@ As a developer, I expect to be able to:
 ### End-user experience
 
 A slider renders a track, an inactive part, a filled part and one or two thumbs. A discrete track draws the steps
-as dashes. The thumb tooltip appears while the thumb is hovered, focused or dragged and fades out afterwards.
+as dashes. The thumb label shows while the pointer is on the thumb, while the user drags it, and while the thumb has
+keyboard focus. It hides 750 ms after the interaction ends, and Escape hides it at once. The label is in the top
+layer, so a container that clips its overflow does not cut it off.
 
 The wiki page of the component carries no design hand-off link.
 
@@ -131,8 +137,11 @@ The wiki page of the component carries no design hand-off link.
 #### Range slider
 
 `igc-range-slider` replaces `value` with `lower` and `upper`, and names its thumbs with `thumbLabelLower` and
-`thumbLabelUpper`. Dragging the lower thumb past the upper one moves the focus to the upper thumb and continues
-the drag there.
+`thumbLabelUpper`. `lower` starts at `0`, clamped into the bounds. `upper` follows `upperBound` until it is set, and
+again after the `upper` attribute is removed, so the default range covers the whole scale. A key press or a drag
+sets only the thumb that moves.
+Dragging the lower thumb past the upper one moves the focus to the upper thumb and continues the drag there. A
+`lower` above `upper` from code or markup swaps the two values, as a drag does.
 
 ```html
 <igc-range-slider lower="20" upper="60" thumb-label-lower="From" thumb-label-upper="To"></igc-range-slider>
@@ -140,13 +149,22 @@ the drag there.
 
 #### Scale, bounds and step
 
-`min` and `max` define the scale. Setting `min` above `max`, or `max` below `min`, is a no-op. `lowerBound` and
-`upperBound` restrict the reachable part of the scale and default to `min` and `max`; each is itself restricted by
-the scale and by the other bound. A value outside the resulting interval is normalized into it, including when it
-is assigned before the constraint that invalidates it.
+`min` and `max` define the scale. When an update ends with `min` above `max`, the slider keeps the previous `min`
+and `max`. `lowerBound` and `upperBound` restrict the reachable part of the scale and default to `min` and `max`;
+each is itself restricted by the scale and by the other bound. A value outside the resulting interval is normalized
+into it.
 
-`step` is the granularity. With `step` set to `0` the slider is continuous and accepts any value of the track,
-while the keyboard falls back to a step of `1`.
+Attributes and properties apply one at a time. Each update resolves the values as set against the final
+constraints, so the order of `value`, `lower`, `upper`, `min`, `max` and `step`, as attributes or as properties set
+in one task, has no effect: `<igc-slider value="0.5" step="0.01" max="1">` gives 0.5, and
+`<igc-slider min="150" max="200">` gives a `min` of 150. A read before the update returns the value resolved
+against the constraints of that moment. The two bounds still restrict each other when they are set, so the order
+of `lowerBound` and `upperBound` can change the result.
+
+`step` is the granularity. As for a native range input, the steps count from `min`, and a value snaps to the nearest
+step, with a tie to the higher step. When a bound is off the steps, the value stays on the nearest step inside the
+bounds. A negative step is not valid, so the previous step stays. With `step` set to `0` the slider is continuous and
+accepts any value of the track, while the keyboard falls back to a step of `1`.
 
 #### Ticks and tick labels
 
@@ -169,7 +187,8 @@ and `valueFormatOptions`, or from projected `igc-slider-label` elements.
 ```
 
 Projected labels turn the slider into a discrete one over their indices: `min` becomes `0`, `max` becomes the
-number of labels minus one, and `step` is `1`. `hideTooltip` removes the thumb tooltip entirely.
+number of labels minus one, and `step` is `1`. The values that the author set come back when the labels go.
+`hideTooltip` removes the thumb label entirely.
 
 #### Form integration
 
@@ -199,6 +218,7 @@ The keyboard operates the focused thumb.
 | <kbd>Page Down</kbd>| Decreases the value by a tenth of the range.                             |
 | <kbd>Home</kbd>     | Sets the value to the lower bound.                                       |
 | <kbd>End</kbd>      | Sets the value to the upper bound.                                       |
+| <kbd>Esc</kbd>      | Hides the thumb label. The key still reaches a dialog around the slider. |
 
 ## API
 
@@ -240,12 +260,12 @@ element.
 
 `igc-range-slider` adds:
 
-| Property          | Attribute            | Reflected | Type     | Default | Description                              |
-| ----------------- | -------------------- | --------- | -------- | ------- | ---------------------------------------- |
-| `lower`           | `lower`              | no        | `number` | `min`   | The value of the lower thumb.             |
-| `upper`           | `upper`              | no        | `number` | `max`   | The value of the upper thumb.             |
-| `thumbLabelLower` | `thumb-label-lower`  | no        | `string` | —       | The accessible name of the lower thumb.   |
-| `thumbLabelUpper` | `thumb-label-upper`  | no        | `string` | —       | The accessible name of the upper thumb.   |
+| Property          | Attribute           | Reflected | Type     | Default      | Description                             |
+| ----------------- | ------------------- | --------- | -------- | ------------ | --------------------------------------- |
+| `lower`           | `lower`             | no        | `number` | `0`          | The value of the lower thumb.           |
+| `upper`           | `upper`             | no        | `number` | `upperBound` | The value of the upper thumb.           |
+| `thumbLabelLower` | `thumb-label-lower` | no        | `string` | —            | The accessible name of the lower thumb. |
+| `thumbLabelUpper` | `thumb-label-upper` | no        | `string` | —            | The accessible name of the upper thumb. |
 
 ### Methods
 
@@ -333,34 +353,70 @@ thumb and the tick labels.
 25. The slider is correctly initialized, and a value set before the constraint that invalidates it is normalized,
     for both the single and the range values.
 
+### Value resolution
+
+26. A value snaps to the nearest step, as a native range input with the same attributes does.
+27. A value on a fractional step stays through later constraint changes (#2433), and the keyboard and `stepUp()`
+    reach the end of the scale with a fractional step.
+28. The attributes, and the properties of one task, apply in any order (#2434). A `min` above the default `max`
+    applies when `max` follows, and an update that ends with `min` above `max` keeps the previous scale. A value
+    as set that changes nothing does not apply again in a later update.
+29. The steps count from `min`, also with a bound off the steps. When no step lies between the bounds, the value
+    stays clamped, and a second pass does not change it.
+30. No events are emitted when the snapped value stays the same.
+31. A negative step keeps the previous step.
+32. Projected labels override `min`, `max` and `step`, and the values of the author come back when the labels go.
+33. A scale where `min` equals `max` renders, and a click keeps the value.
+34. On the range slider, `lower`, `upper` and `max` apply in any order, a crossed pair swaps, a value as set that
+    changes nothing does not apply again, and `upper` follows `upperBound` until it is set and after the removal of
+    its attribute. A key press on the lower thumb keeps an unset `upper`.
+
+### Range ARIA
+
+35. Each thumb gives the text of its own value from the labels, and no value text without labels or a format.
+36. The host `aria-label` and `aria-labelledby` name the group of the thumbs, also after a change and a removal.
+37. The host `aria-describedby` describes both thumbs, and an axe audit passes with a host label.
+
+### Thumb label
+
+38. A right click does not move a thumb, and a second pointer does not take over a drag (real mouse input).
+39. Keyboard focus shows the label until the blur. After a pointer focus, also on a thumb with keyboard focus, the
+    label hides when the interaction ends, and a modifier key alone does not count as keyboard focus. A blur keeps
+    the label of a thumb under the pointer (real mouse input). A disabled range slider hides the label of its focused
+    thumb, and Escape hides the label without cancelling the key.
+40. The label shows in the top layer, past a parent that clips its overflow and above a modal dialog that holds
+    the slider. It stays centered above its thumb after a move, with the native and the fallback position
+    strategies, in LTR and RTL.
+41. The range slider renders a label for each thumb, and `hideTooltip` removes the popover.
+
 ### Form integration tests
 
-26. The single-value slider is form associated and takes part in submission.
-27. A form reset restores the default value, including one set through `setAttribute()`, and clamps an
+42. The single-value slider is form associated and takes part in submission.
+43. A form reset restores the default value, including one set through `setAttribute()`, and clamps an
     out-of-range default.
-28. The control follows the disabled state of an ancestor, and fulfils custom constraints.
+44. The control follows the disabled state of an ancestor, and fulfils custom constraints.
 
 ### Default value
 
-29. The initial state, the submitted value and the reset behavior of `defaultValue` are correct.
+45. The initial state, the submitted value and the reset behavior of `defaultValue` are correct.
 
 ### External label association
 
 Generated by `runExternalLabelAssociationTests` for the single-value slider.
 
-30. An external `label` bound through `for` or by nesting names the thumb, and a click on it focuses the thumb. A
+46. An external `label` bound through `for` or by nesting names the thumb, and a click on it focuses the thumb. A
     `label` added after the first render names the thumb from the first focus, an axe audit passes with only an external
     `label`, and the host `aria-labelledby` and `aria-label` follow the naming order.
 
 ### Host ARIA
 
-31. The shared host description suite: the host `aria-describedby` describes the thumb, and follows a change and a
+47. The shared host description suite: the host `aria-describedby` describes the thumb, and follows a change and a
     removal. The slider has no helper text, so the suite checks no description order.
 
 ### Not covered by the suite
 
 - `locale` is not covered on its own; the formatting tests run against `valueFormat` and `valueFormatOptions`.
-- `thumbLabelLower` and `thumbLabelUpper` are not asserted directly.
+- The label follows the thumb in the fallback position strategy only in Chromium, which the tests force onto it.
 
 ## Assumptions and limitations
 
@@ -369,8 +425,14 @@ Generated by `runExternalLabelAssociationTests` for the single-value slider.
 - Projected `igc-slider-label` elements take over `min`, `max` and `step`, which cannot be set independently while
   they are present.
 - `discreteTrack` has no effect while `step` is `0`.
-- Setting `min` above `max`, or `max` below `min`, is silently ignored rather than reported.
-- The two thumbs of a range slider cannot cross; the drag moves to the other thumb instead.
+- An update that ends with `min` above `max` keeps the previous scale silently, rather than report it.
+- The two thumbs of a range slider cannot cross; the drag moves to the other thumb instead, and a crossed pair from
+  code swaps.
+- The thumb label does not flip below the thumb near the top of the viewport, because its arrow always points down.
+- In Indigo, the label moves up by about 3 px while the thumb grows on hover, because the label keeps its gap to
+  the box of the thumb.
+- Near the edge of the viewport, the label moves inside the viewport, so its arrow can point a few pixels off the
+  center of the thumb.
 
 ## Accessibility
 
@@ -380,12 +442,15 @@ Generated by `runExternalLabelAssociationTests` for the single-value slider.
   `aria-valuemax` from the bounds, `aria-valuenow` from its value and `aria-valuetext` from the formatted value or
   the projected label.
 - `aria-disabled` exposes the disabled state, and a disabled slider drops its thumbs out of the tab order.
-- The thumbs of a range slider are named through `thumbLabelLower` and `thumbLabelUpper`. The single thumb takes its
+- The thumbs of a range slider are named through `thumbLabelLower` and `thumbLabelUpper`. The host `aria-label` or
+  `aria-labelledby` names the group of the two thumbs, which has `role="group"`, and the host `aria-describedby`
+  describes both thumbs. Each thumb gives the text of its own value. The single thumb takes its
   name in the [naming order](../input/spec.md#naming-order): the host `aria-labelledby`, an external `label` element
   bound through `for` or by nesting, and the `aria-label` of the host. A change of the host ARIA at runtime is picked
   up, and a click on an external `label` focuses the thumb.
 - The value tooltip is hidden from assistive technology, because `aria-valuetext` already carries the value.
 - A host `aria-describedby` describes the single thumb, by element reference.
+- Escape hides the thumb label, which is content that shows on hover and on focus (WCAG 1.4.13).
 
 ### Keyboard support
 

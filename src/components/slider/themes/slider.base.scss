@@ -143,11 +143,16 @@ slot {
     transition: transform .1s ease-out, border-radius .1s ease-out;
 }
 
-[part='thumb-label'] {
-    position: absolute;
-    top: calc((#{$thumb-label-height} + #{$thumb-size}) * -1);
+// The popover places the label above the thumb, in the top layer.
+igc-popover::part(container) {
     pointer-events: none;
+}
+
+[part='thumb-label'] {
+    // The containing block of the arrow.
+    position: relative;
     height: $thumb-label-height;
+    margin-block-end: rem(12px);
     display: flex;
 }
 
@@ -160,7 +165,6 @@ slot {
     align-items: center;
     justify-content: center;
     white-space: nowrap;
-    margin-inline-start: -50%;
     padding: 0 pad-inline(rem(2px));
 
     &::after {

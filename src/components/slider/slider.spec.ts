@@ -4,7 +4,10 @@ import {
   expect,
   fixture,
   html,
+  nextFrame,
+  waitUntil,
 } from '@open-wc/testing';
+import { resetMouse, sendMouse } from '@web/test-runner-commands';
 import { spy } from 'sinon';
 
 import {
@@ -13,9 +16,12 @@ import {
   arrowRight,
   arrowUp,
   endKey,
+  escapeKey,
   homeKey,
   pageDownKey,
   pageUpKey,
+  shiftKey,
+  tabKey,
 } from '#internals/controllers/key-bindings.js';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
 import {
@@ -26,9 +32,14 @@ import {
   simulateKeyboard,
   simulateLostPointerCapture,
   simulatePointerDown,
+  simulatePointerEnter,
+  simulatePointerLeave,
   simulatePointerMove,
 } from '#internals/testing/simulate.spec.js';
+import { isPopoverOpen } from '#internals/utils/dom.js';
 import { asPercent } from '#internals/utils/math.js';
+import IgcDialogComponent from '../dialog/dialog.js';
+import { setPopoverPositionStrategy } from '../popover/position/types.js';
 import IgcRangeSliderComponent from './range-slider.js';
 import type { IgcSliderBaseComponent } from './slider-base.js';
 import IgcSliderComponent from './slider.js';
@@ -121,7 +132,7 @@ describe('Slider component', () => {
 
       slider.value = 5;
       await elementUpdated(slider);
-      expect(slider.value).to.eq(4);
+      expect(slider.value).to.eq(6);
     });
 
     it('value should be changed when clicking and dragging the slider and corresponding events are fired', async () => {
@@ -858,13 +869,13 @@ describe('Slider component', () => {
 
       slider.lower = 5;
       await elementUpdated(slider);
-      expect(slider.lower).to.eq(4);
+      expect(slider.lower).to.eq(6);
     });
 
     it('upper value should be restricted by min value', async () => {
       slider.min = 10;
       await elementUpdated(slider);
-      expect(slider.upper).to.eq(10);
+      expect(slider.upper).to.eq(100);
 
       slider.upper = 15;
       await elementUpdated(slider);
@@ -878,7 +889,7 @@ describe('Slider component', () => {
     it('upper value should be restricted by max value', async () => {
       slider.max = 10;
       await elementUpdated(slider);
-      expect(slider.upper).to.eq(0);
+      expect(slider.upper).to.eq(10);
 
       slider.upper = 9;
       await elementUpdated(slider);
@@ -892,7 +903,7 @@ describe('Slider component', () => {
     it('upper value should be restricted by lowerBound value', async () => {
       slider.lowerBound = 10;
       await elementUpdated(slider);
-      expect(slider.upper).to.eq(10);
+      expect(slider.upper).to.eq(100);
 
       slider.upper = 15;
       await elementUpdated(slider);
@@ -906,7 +917,7 @@ describe('Slider component', () => {
     it('upper value should be restricted by upperBound value', async () => {
       slider.upperBound = 10;
       await elementUpdated(slider);
-      expect(slider.upper).to.eq(0);
+      expect(slider.upper).to.eq(10);
 
       slider.upper = 9;
       await elementUpdated(slider);
@@ -923,12 +934,15 @@ describe('Slider component', () => {
 
       slider.upper = 5;
       await elementUpdated(slider);
-      expect(slider.upper).to.eq(4);
+      expect(slider.upper).to.eq(6);
     });
 
     it('closest thumb value should be changed when clicking and dragging the slider and corresponding events are fired', async () => {
       const eventSpy = spy(slider, 'emitEvent');
       const { x, width } = slider.getBoundingClientRect();
+
+      slider.upper = 0;
+      await elementUpdated(slider);
 
       simulatePointerDown(slider, { clientX: x + width * 0.5 });
       await elementUpdated(slider);
@@ -1133,6 +1147,844 @@ describe('Slider component', () => {
     });
   });
 
+  describe('Value resolution', () => {
+    before(() => defineComponents(IgcSliderComponent, IgcRangeSliderComponent));
+
+    function createSlider(attributes: Record<string, number>) {
+      const slider = document.createElement(IgcSliderComponent.tagName);
+
+      for (const [name, value] of Object.entries(attributes)) {
+        slider.setAttribute(name, String(value));
+      }
+
+      return fixture<IgcSliderComponent>(slider);
+    }
+
+    /** A native range counts the steps from its `value` without a `min`. */
+    function nativeValue(attributes: Record<string, number>): number {
+      const input = document.createElement('input');
+      input.type = 'range';
+
+      for (const [name, value] of Object.entries({ min: 0, ...attributes })) {
+        input.setAttribute(name, String(value));
+      }
+
+      return input.valueAsNumber;
+    }
+
+    it('snaps a value to the nearest step, as a native range input does', async () => {
+      const cases: Record<string, number>[] = [
+        { step: 5, value: 7 },
+        { step: 5, value: 8 },
+        { step: 5, value: 7.5 },
+        { step: 2, value: 5 },
+        { step: 1, value: 2.4999999999 },
+        { min: 3, step: 5, value: 9 },
+        { min: -10, max: 10, step: 3, value: 0 },
+        { max: 100, step: 30, value: 100 },
+        { max: 1, step: 0.1, value: 0.35 },
+        { max: 1, step: 0.01, value: 0.5 },
+      ];
+
+      for (const attributes of cases) {
+        const slider = await createSlider(attributes);
+        expect(slider.value, JSON.stringify(attributes)).to.equal(
+          nativeValue(attributes)
+        );
+      }
+    });
+
+    it('keeps a value on a fractional step (#2433)', async () => {
+      const slider = document.createElement(IgcSliderComponent.tagName);
+      Object.assign(slider, { min: 0, max: 1, step: 0.01, value: 0.5 });
+      await fixture(slider);
+
+      expect(slider.value).to.equal(0.5);
+
+      // Each constraint change resolves the value again.
+      for (const lowerBound of [0.1, 0.2, 0.3]) {
+        slider.lowerBound = lowerBound;
+        await elementUpdated(slider);
+      }
+
+      expect(slider.value).to.equal(0.5);
+    });
+
+    it('moves by a fractional step up to the end of the scale', async () => {
+      const slider = await fixture<IgcSliderComponent>(
+        html`<igc-slider max="1" step="0.1"></igc-slider>`
+      );
+      const values: number[] = [];
+
+      for (let i = 0; i < 10; i++) {
+        simulateKeyboard(slider, arrowRight);
+        await elementUpdated(slider);
+        values.push(slider.value);
+      }
+
+      expect(values).to.eql([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]);
+
+      slider.value = 0.4;
+      slider.stepUp();
+      expect(slider.value).to.equal(0.5);
+    });
+
+    it('forgets a value as set that changes nothing', async () => {
+      const slider = await fixture<IgcSliderComponent>(
+        html`<igc-slider step="10" value="50"></igc-slider>`
+      );
+
+      slider.value = 52;
+      await elementUpdated(slider);
+      slider.step = 1;
+      await elementUpdated(slider);
+      expect(slider.value).to.equal(50);
+
+      slider.value = 100;
+      await elementUpdated(slider);
+      slider.value = 150;
+      await elementUpdated(slider);
+      slider.max = 200;
+      await elementUpdated(slider);
+      expect(slider.value).to.equal(100);
+    });
+
+    it('applies the attributes in any order (#2434)', async () => {
+      const fractional = await fixture<IgcSliderComponent>(
+        html`<igc-slider value="0.5" min="0" max="1" step="0.01"></igc-slider>`
+      );
+      const aboveMax = await fixture<IgcSliderComponent>(
+        html`<igc-slider value="150" max="200"></igc-slider>`
+      );
+      const belowMin = await fixture<IgcSliderComponent>(
+        html`<igc-slider value="-5" min="-10"></igc-slider>`
+      );
+
+      expect(fractional.value).to.equal(0.5);
+      expect(aboveMax.value).to.equal(150);
+      expect(belowMin.value).to.equal(-5);
+    });
+
+    it('applies the properties of one task in any order', async () => {
+      const slider = await fixture<IgcSliderComponent>(
+        html`<igc-slider></igc-slider>`
+      );
+
+      Object.assign(slider, { value: 150, min: 120, max: 200 });
+      await elementUpdated(slider);
+
+      expect([slider.min, slider.max, slider.value]).to.eql([120, 200, 150]);
+    });
+
+    it('accepts a min above the default max when max follows', async () => {
+      const above = await fixture<IgcSliderComponent>(
+        html`<igc-slider min="150" max="200"></igc-slider>`
+      );
+      const below = await fixture<IgcSliderComponent>(
+        html`<igc-slider max="-10" min="-20"></igc-slider>`
+      );
+
+      expect([above.min, above.max, above.value]).to.eql([150, 200, 150]);
+      expect([below.min, below.max, below.value]).to.eql([-20, -10, -10]);
+    });
+
+    it('keeps the previous scale when min ends above max', async () => {
+      const slider = await fixture<IgcSliderComponent>(
+        html`<igc-slider></igc-slider>`
+      );
+
+      slider.min = 150;
+      slider.max = 120;
+      await elementUpdated(slider);
+
+      expect([slider.min, slider.max]).to.eql([0, 100]);
+    });
+
+    it('counts the steps from min, also with a bound off the steps', async () => {
+      const slider = await fixture<IgcSliderComponent>(
+        html`<igc-slider
+          step="5"
+          lower-bound="3"
+          upper-bound="97"
+          value="9"
+        ></igc-slider>`
+      );
+
+      expect(slider.value).to.equal(10);
+
+      simulateKeyboard(slider, homeKey);
+      await elementUpdated(slider);
+      expect(slider.value).to.equal(5);
+
+      simulateKeyboard(slider, endKey);
+      await elementUpdated(slider);
+      expect(slider.value).to.equal(95);
+    });
+
+    it('keeps the clamped value when no step lies between the bounds', async () => {
+      const slider = await fixture<IgcSliderComponent>(
+        html`<igc-slider
+          step="5"
+          lower-bound="11"
+          upper-bound="14"
+          value="12"
+        ></igc-slider>`
+      );
+      const eventSpy = spy(slider, 'emitEvent');
+
+      expect(slider.value).to.equal(12);
+
+      // Each pass resolves the current value again.
+      for (let i = 0; i < 3; i++) {
+        const current = slider.value;
+        slider.value = current;
+        await elementUpdated(slider);
+      }
+
+      expect(slider.value).to.equal(12);
+
+      simulateKeyboard(slider, arrowLeft);
+      await elementUpdated(slider);
+      expect(slider.value).to.equal(11);
+      expect(eventSpy.callCount).to.equal(2);
+
+      simulateKeyboard(slider, arrowLeft);
+      await elementUpdated(slider);
+      expect(eventSpy.callCount).to.equal(2);
+    });
+
+    it('emits no events when the snapped value does not change', async () => {
+      const slider = await fixture<IgcSliderComponent>(
+        html`<igc-slider step="30" value="90"></igc-slider>`
+      );
+      const eventSpy = spy(slider, 'emitEvent');
+
+      simulateKeyboard(slider, endKey);
+      simulateKeyboard(slider, arrowRight);
+      await elementUpdated(slider);
+
+      expect(slider.value).to.equal(90);
+      expect(eventSpy.callCount).to.equal(0);
+    });
+
+    it('keeps the previous step for a negative step', async () => {
+      const slider = await fixture<IgcSliderComponent>(
+        html`<igc-slider step="5" value="50"></igc-slider>`
+      );
+
+      slider.step = -5;
+      expect(slider.step).to.equal(5);
+
+      slider.setAttribute('step', '-1');
+      expect(slider.step).to.equal(5);
+
+      simulateKeyboard(slider, arrowUp);
+      await elementUpdated(slider);
+      expect(slider.value).to.equal(55);
+    });
+
+    it('restores min, max and step when the labels go', async () => {
+      const slider = await fixture<IgcSliderComponent>(
+        html`<igc-slider min="10" max="50" step="5" value="20"></igc-slider>`
+      );
+      const labels = ['Low', 'Medium', 'High'].map((text) =>
+        Object.assign(document.createElement('igc-slider-label'), {
+          textContent: text,
+        })
+      );
+
+      slider.append(...labels);
+      await waitUntil(() => slider.max === 2);
+      await elementUpdated(slider);
+
+      expect([slider.min, slider.max, slider.step]).to.eql([0, 2, 1]);
+      expect(slider.value).to.equal(2);
+
+      for (const label of labels) {
+        label.remove();
+      }
+
+      await waitUntil(() => slider.max === 50);
+      await elementUpdated(slider);
+
+      expect([slider.min, slider.max, slider.step]).to.eql([10, 50, 5]);
+      expect(slider.value).to.equal(10);
+    });
+
+    it('renders a scale where min equals max', async () => {
+      const slider = await fixture<IgcSliderComponent>(
+        html`<igc-slider max="0" discrete-track></igc-slider>`
+      );
+      const { track, thumbs } = getDOM(slider);
+      const { x, width } = slider.getBoundingClientRect();
+
+      expect(track.fill.style.width).to.equal('0%');
+      expect(thumbs.current.style.insetInlineStart).to.equal('0%');
+      expect(track.steps).to.be.null;
+
+      simulatePointerDown(slider, { clientX: x + width / 2 });
+      simulateLostPointerCapture(slider);
+      await elementUpdated(slider);
+
+      expect(slider.value).to.equal(0);
+    });
+
+    describe('Range', () => {
+      it('applies lower, upper and max in any order', async () => {
+        const slider = await fixture<IgcRangeSliderComponent>(
+          html`<igc-range-slider
+            lower="120"
+            upper="180"
+            max="200"
+          ></igc-range-slider>`
+        );
+
+        expect([slider.lower, slider.upper]).to.eql([120, 180]);
+      });
+
+      it('swaps a crossed pair', async () => {
+        const slider = await fixture<IgcRangeSliderComponent>(
+          html`<igc-range-slider upper="20" lower="80"></igc-range-slider>`
+        );
+        const { track } = getDOM(slider);
+
+        expect([slider.lower, slider.upper]).to.eql([20, 80]);
+        expect(track.fill.style.insetInlineStart).to.equal('20%');
+        expect(track.fill.style.width).to.equal('60%');
+
+        slider.lower = 90;
+        await elementUpdated(slider);
+
+        expect([slider.lower, slider.upper]).to.eql([80, 90]);
+      });
+
+      it('forgets a lower or upper value as set that changes nothing', async () => {
+        const slider = await fixture<IgcRangeSliderComponent>(
+          html`<igc-range-slider
+            step="10"
+            lower="20"
+            upper="60"
+          ></igc-range-slider>`
+        );
+
+        slider.lower = 22;
+        slider.upper = 58;
+        await elementUpdated(slider);
+        slider.step = 1;
+        await elementUpdated(slider);
+
+        expect([slider.lower, slider.upper]).to.eql([20, 60]);
+      });
+
+      it('follows upperBound again after the upper attribute is removed', async () => {
+        const slider = await fixture<IgcRangeSliderComponent>(
+          html`<igc-range-slider upper="30"></igc-range-slider>`
+        );
+
+        slider.removeAttribute('upper');
+        await elementUpdated(slider);
+        expect(slider.upper).to.equal(100);
+
+        slider.max = 50;
+        await elementUpdated(slider);
+        expect(slider.upper).to.equal(50);
+      });
+
+      it('keeps an unset upper when the lower thumb moves', async () => {
+        const slider = await fixture<IgcRangeSliderComponent>(
+          html`<igc-range-slider lower="20"></igc-range-slider>`
+        );
+
+        getDOM(slider).thumbs.lower.focus();
+        simulateKeyboard(slider, arrowRight);
+        await elementUpdated(slider);
+
+        slider.max = 200;
+        await elementUpdated(slider);
+
+        expect([slider.lower, slider.upper]).to.eql([21, 200]);
+      });
+
+      it('follows upperBound with upper until upper is set', async () => {
+        const slider = await fixture<IgcRangeSliderComponent>(
+          html`<igc-range-slider lower="20"></igc-range-slider>`
+        );
+
+        expect([slider.lower, slider.upper]).to.eql([20, 100]);
+
+        slider.max = 50;
+        await elementUpdated(slider);
+        expect(slider.upper).to.equal(50);
+
+        slider.upper = 30;
+        slider.max = 80;
+        await elementUpdated(slider);
+        expect(slider.upper).to.equal(30);
+      });
+    });
+  });
+
+  describe('Range ARIA', () => {
+    before(() => defineComponents(IgcRangeSliderComponent));
+
+    it('gives each thumb the text of its own value', async () => {
+      const slider = await fixture<IgcRangeSliderComponent>(
+        html`<igc-range-slider lower="0" upper="2">
+          <igc-slider-label>Low</igc-slider-label>
+          <igc-slider-label>Medium</igc-slider-label>
+          <igc-slider-label>High</igc-slider-label>
+        </igc-range-slider>`
+      );
+      await waitUntil(() => slider.max === 2);
+      await elementUpdated(slider);
+
+      const { thumbs } = getDOM(slider);
+
+      expect(thumbs.lower.ariaValueText).to.equal('Low');
+      expect(thumbs.upper.ariaValueText).to.equal('High');
+
+      thumbs.lower.focus();
+      await elementUpdated(slider);
+      expect(thumbs.lower.ariaValueText).to.equal('Low');
+
+      simulateKeyboard(slider, arrowRight);
+      await elementUpdated(slider);
+      expect(thumbs.lower.ariaValueText).to.equal('Medium');
+    });
+
+    it('sets no value text without labels or a format', async () => {
+      const slider = await fixture<IgcRangeSliderComponent>(
+        html`<igc-range-slider lower="20" upper="60"></igc-range-slider>`
+      );
+      const { thumbs } = getDOM(slider);
+
+      thumbs.lower.focus();
+      simulateKeyboard(slider, arrowRight);
+      await elementUpdated(slider);
+
+      expect(thumbs.lower.ariaValueText).to.be.null;
+      expect(thumbs.upper.ariaValueText).to.be.null;
+    });
+
+    it('names the group of the thumbs from the host', async () => {
+      const wrapper = await fixture<HTMLElement>(
+        html`<div>
+          <span id="price">Price range</span>
+          <igc-range-slider aria-labelledby="price"></igc-range-slider>
+        </div>`
+      );
+      const slider = wrapper.querySelector('igc-range-slider')!;
+      const label = wrapper.querySelector('#price')!;
+      await elementUpdated(slider);
+
+      const group = getDOM(slider).thumbs.group;
+
+      expect(group.getAttribute('role')).to.equal('group');
+      expect(group.ariaLabelledByElements).to.eql([label]);
+
+      slider.removeAttribute('aria-labelledby');
+      slider.setAttribute('aria-label', 'Budget');
+      await elementUpdated(slider);
+
+      expect(group.ariaLabelledByElements).to.be.null;
+      expect(group.getAttribute('aria-label')).to.equal('Budget');
+
+      slider.removeAttribute('aria-label');
+      await elementUpdated(slider);
+
+      expect(group.hasAttribute('aria-label')).to.be.false;
+      expect(group.hasAttribute('role')).to.be.false;
+    });
+
+    it('describes both thumbs with the host description', async () => {
+      const wrapper = await fixture<HTMLElement>(
+        html`<div>
+          <span id="hint">Prices include tax.</span>
+          <igc-range-slider aria-describedby="hint"></igc-range-slider>
+        </div>`
+      );
+      const slider = wrapper.querySelector('igc-range-slider')!;
+      const hint = wrapper.querySelector('#hint')!;
+      await elementUpdated(slider);
+
+      const { thumbs } = getDOM(slider);
+
+      expect(thumbs.lower.ariaDescribedByElements).to.eql([hint]);
+      expect(thumbs.upper.ariaDescribedByElements).to.eql([hint]);
+    });
+
+    it('is accessible with a host label', async () => {
+      const slider = await fixture<IgcRangeSliderComponent>(
+        html`<igc-range-slider
+          aria-label="Price"
+          thumb-label-lower="Minimum price"
+          thumb-label-upper="Maximum price"
+        ></igc-range-slider>`
+      );
+      expect(getDOM(slider).thumbs.group.getAttribute('aria-label')).to.equal(
+        'Price'
+      );
+      await expect(slider).shadowDom.to.be.accessible();
+      await expect(slider).to.be.accessible();
+    });
+  });
+
+  describe('Thumb label', () => {
+    before(() =>
+      defineComponents(
+        IgcSliderComponent,
+        IgcRangeSliderComponent,
+        IgcDialogComponent
+      )
+    );
+
+    function popover(slider: IgcSliderBaseComponent, index = 0) {
+      return slider.shadowRoot!.querySelectorAll('igc-popover')[index];
+    }
+
+    function labelShown(slider: IgcSliderBaseComponent, index = 0) {
+      return isPopoverOpen(
+        popover(slider, index).shadowRoot!.querySelector('[part="container"]')!
+      );
+    }
+
+    /** Waits until the label shows at its final position. */
+    async function labelPlaced(slider: IgcSliderBaseComponent) {
+      await elementUpdated(slider);
+      await popover(slider).updateComplete;
+      await nextFrame();
+      await nextFrame();
+    }
+
+    function tabTo(thumb: HTMLElement) {
+      thumb.focus();
+      simulateKeyboard(thumb, tabKey);
+    }
+
+    it('does not move a thumb on a right click', async () => {
+      const slider = await fixture<IgcSliderComponent>(
+        html`<igc-slider></igc-slider>`
+      );
+      const eventSpy = spy(slider, 'emitEvent');
+      const { x, width } = slider.getBoundingClientRect();
+
+      simulatePointerDown(slider, { clientX: x + width / 2, button: 2 });
+      await elementUpdated(slider);
+
+      expect(slider.value).to.equal(0);
+      expect(eventSpy.callCount).to.equal(0);
+    });
+
+    it('ignores a second pointer while a thumb is dragged', async () => {
+      const slider = await fixture<IgcSliderComponent>(
+        html`<igc-slider style="margin: 80px 40px"></igc-slider>`
+      );
+      const eventSpy = spy(slider, 'emitEvent');
+      const { x, y, width, height } = slider.getBoundingClientRect();
+      const at = (fraction: number) => x + width * fraction;
+
+      try {
+        // A real mouse press, so the slider gets the pointer capture.
+        await sendMouse({
+          type: 'move',
+          position: [Math.round(at(0.5)), Math.round(y + height / 2)],
+        });
+        await sendMouse({ type: 'down' });
+        await elementUpdated(slider);
+        expect(slider.value).to.equal(50);
+
+        simulatePointerDown(slider, { clientX: at(0.8), pointerId: 2 });
+        simulatePointerMove(slider, { clientX: at(0.9), pointerId: 2 });
+        simulateLostPointerCapture(slider, { pointerId: 2 });
+        await elementUpdated(slider);
+        expect(slider.value).to.equal(50);
+
+        await sendMouse({ type: 'up' });
+        await elementUpdated(slider);
+      } finally {
+        await resetMouse();
+      }
+
+      expect(
+        eventSpy.args.filter(([name]) => name === 'igcChange')
+      ).to.have.lengthOf(1);
+    });
+
+    it('shows the label while a thumb has keyboard focus', async () => {
+      const slider = await fixture<IgcSliderComponent>(
+        html`<igc-slider></igc-slider>`
+      );
+      const thumb = getDOM(slider).thumbs.current;
+
+      tabTo(thumb);
+      await elementUpdated(slider);
+      expect(labelShown(slider)).to.be.true;
+
+      simulateKeyboard(slider, arrowRight);
+      await elementUpdated(slider);
+      await aTimeout(800);
+      expect(labelShown(slider)).to.be.true;
+
+      thumb.blur();
+      await aTimeout(800);
+      expect(labelShown(slider)).to.be.false;
+    });
+
+    it('hides the label after a pointer focus, also after a keyboard focus', async () => {
+      const slider = await fixture<IgcSliderComponent>(
+        html`<igc-slider></igc-slider>`
+      );
+      const thumb = getDOM(slider).thumbs.current;
+      const { x, width } = thumb.getBoundingClientRect();
+
+      for (const keyboardFirst of [false, true]) {
+        if (keyboardFirst) {
+          tabTo(thumb);
+        }
+
+        simulatePointerDown(slider, { clientX: x + width / 2 });
+        simulateLostPointerCapture(slider);
+        await elementUpdated(slider);
+        await aTimeout(800);
+
+        expect(slider.shadowRoot!.activeElement).to.equal(thumb);
+        expect(labelShown(slider), `${keyboardFirst}`).to.be.false;
+      }
+    });
+
+    it('keeps the label of a hovered thumb on blur', async () => {
+      const slider = await fixture<IgcSliderComponent>(
+        html`<igc-slider style="margin: 80px 40px"></igc-slider>`
+      );
+      const thumb = getDOM(slider).thumbs.current;
+      const { x, y, width, height } = thumb.getBoundingClientRect();
+
+      try {
+        await sendMouse({
+          type: 'move',
+          position: [Math.round(x + width / 2), Math.round(y + height / 2)],
+        });
+        thumb.focus();
+        thumb.blur();
+        await aTimeout(800);
+        expect(labelShown(slider)).to.be.true;
+
+        await sendMouse({ type: 'move', position: [0, 0] });
+        await aTimeout(800);
+        expect(labelShown(slider)).to.be.false;
+      } finally {
+        await resetMouse();
+      }
+    });
+
+    it('does not count a modifier key alone as keyboard focus', async () => {
+      const slider = await fixture<IgcSliderComponent>(
+        html`<igc-slider></igc-slider>`
+      );
+      const thumb = getDOM(slider).thumbs.current;
+      const { x, width } = thumb.getBoundingClientRect();
+
+      simulatePointerDown(slider, { clientX: x + width / 2 });
+      simulateLostPointerCapture(slider);
+      thumb.dispatchEvent(
+        new KeyboardEvent('keyup', {
+          key: shiftKey,
+          bubbles: true,
+          composed: true,
+        })
+      );
+      await aTimeout(800);
+
+      expect(thumb.part.contains('focused')).to.be.false;
+      expect(labelShown(slider)).to.be.false;
+    });
+
+    it('hides the label when a focused range slider is disabled', async () => {
+      const slider = await fixture<IgcRangeSliderComponent>(
+        html`<igc-range-slider lower="20" upper="60"></igc-range-slider>`
+      );
+      const { thumbs } = getDOM(slider);
+
+      tabTo(thumbs.lower);
+      await elementUpdated(slider);
+      expect(labelShown(slider)).to.be.true;
+
+      slider.disabled = true;
+      await elementUpdated(slider);
+
+      expect(slider.shadowRoot!.activeElement).to.equal(thumbs.lower);
+      expect(labelShown(slider)).to.be.false;
+    });
+
+    it('hides the label on Escape and lets the key through', async () => {
+      const slider = await fixture<IgcSliderComponent>(
+        html`<igc-slider></igc-slider>`
+      );
+      const thumb = getDOM(slider).thumbs.current;
+
+      tabTo(thumb);
+      await elementUpdated(slider);
+      expect(labelShown(slider)).to.be.true;
+
+      // `simulateKeyboard` sends no cancelable event.
+      const event = new KeyboardEvent('keydown', {
+        key: escapeKey,
+        bubbles: true,
+        composed: true,
+        cancelable: true,
+      });
+      thumb.dispatchEvent(event);
+      thumb.dispatchEvent(
+        new KeyboardEvent('keyup', {
+          key: escapeKey,
+          bubbles: true,
+          composed: true,
+        })
+      );
+      await elementUpdated(slider);
+
+      expect(event.defaultPrevented).to.be.false;
+      expect(labelShown(slider)).to.be.false;
+      expect(slider.value).to.equal(0);
+    });
+
+    it('shows the label in the top layer on hover', async () => {
+      const slider = await fixture<IgcSliderComponent>(
+        html`<igc-slider></igc-slider>`
+      );
+      const thumb = getDOM(slider).thumbs.current;
+
+      expect(labelShown(slider)).to.be.false;
+
+      simulatePointerEnter(thumb);
+      await elementUpdated(slider);
+      expect(labelShown(slider)).to.be.true;
+
+      simulatePointerLeave(thumb);
+      await aTimeout(800);
+      expect(labelShown(slider)).to.be.false;
+    });
+
+    /**
+     * Shows the label and hit-tests it above `clip`, whose top edge would cut
+     * it off. Hit-testing skips an element that ignores the pointer, so the
+     * label takes the pointer for the test.
+     */
+    async function hitsLabelAbove(slider: IgcSliderComponent, clip: Element) {
+      const sheet = new CSSStyleSheet();
+      sheet.replaceSync(
+        'igc-popover::part(container) { pointer-events: auto; }'
+      );
+      slider.shadowRoot!.adoptedStyleSheets.push(sheet);
+
+      simulatePointerEnter(getDOM(slider).thumbs.current);
+      await labelPlaced(slider);
+
+      const [inner] = getDOM(slider).thumbs.labelsInner;
+      const { left, top, width } = inner.getBoundingClientRect();
+      const edge = clip.getBoundingClientRect().top;
+
+      expect(top, 'the label starts above the edge').to.be.lessThan(edge);
+
+      return inner.contains(
+        slider.shadowRoot!.elementFromPoint(left + width / 2, (top + edge) / 2)
+      );
+    }
+
+    it('shows the label past a parent that clips its overflow', async () => {
+      const wrapper = await fixture<HTMLElement>(
+        html`<div style="overflow: hidden; height: 48px; margin-top: 80px">
+          <igc-slider value="50"></igc-slider>
+        </div>`
+      );
+
+      expect(
+        await hitsLabelAbove(wrapper.querySelector('igc-slider')!, wrapper)
+      ).to.be.true;
+    });
+
+    it('shows the label above a modal dialog that holds the slider', async () => {
+      // Without padding, the label starts above the box of the dialog, which
+      // clips its content, and over the backdrop.
+      const dialog = await fixture<IgcDialogComponent>(
+        html`<igc-dialog style="padding: 0">
+          <igc-slider value="50"></igc-slider>
+        </igc-dialog>`
+      );
+      await dialog.show();
+
+      const box = dialog.shadowRoot!.querySelector('dialog')!;
+
+      expect(box.matches(':modal')).to.be.true;
+      expect(await hitsLabelAbove(dialog.querySelector('igc-slider')!, box)).to
+        .be.true;
+    });
+
+    for (const mode of ['native', 'floating'] as const) {
+      for (const dir of ['ltr', 'rtl'] as const) {
+        it(`keeps the label above its thumb (${mode}, ${dir})`, async () => {
+          setPopoverPositionStrategy(mode);
+
+          try {
+            const wrapper = await fixture<HTMLElement>(
+              html`<div dir=${dir} style="padding: 80px 40px; width: 400px">
+                <igc-slider value="20"></igc-slider>
+              </div>`
+            );
+            const slider = wrapper.querySelector('igc-slider')!;
+            const { thumbs } = getDOM(slider);
+
+            simulatePointerEnter(thumbs.current);
+            simulateKeyboard(slider, pageUpKey, 3);
+            await labelPlaced(slider);
+
+            const thumb = thumbs.current.getBoundingClientRect();
+            const label = thumbs.labelsInner[0].getBoundingClientRect();
+
+            expect(slider.value).to.equal(50);
+            expect(
+              Math.abs(
+                label.left + label.width / 2 - (thumb.left + thumb.width / 2)
+              )
+            ).to.be.lessThan(1);
+            expect(label.bottom).to.be.lessThan(thumb.top);
+          } finally {
+            setPopoverPositionStrategy();
+          }
+        });
+      }
+    }
+
+    it('renders a label for each thumb of a range slider', async () => {
+      const slider = await fixture<IgcRangeSliderComponent>(
+        html`<igc-range-slider lower="20" upper="60"></igc-range-slider>`
+      );
+      const { thumbs } = getDOM(slider);
+
+      simulatePointerEnter(thumbs.upper);
+      await elementUpdated(slider);
+
+      expect(
+        thumbs.labelsInner.map((label) => label.textContent?.trim())
+      ).to.eql(['20', '60']);
+      expect(labelShown(slider, 0)).to.be.true;
+      expect(labelShown(slider, 1)).to.be.true;
+    });
+
+    it('renders the popover only without hideTooltip', async () => {
+      const slider = await fixture<IgcSliderComponent>(
+        html`<igc-slider></igc-slider>`
+      );
+
+      expect(popover(slider)).to.exist;
+
+      slider.hideTooltip = true;
+      await elementUpdated(slider);
+
+      expect(popover(slider)).to.be.undefined;
+    });
+  });
+
   describe('Form integration', () => {
     const spec = createFormAssociatedTestBed<IgcSliderComponent>(
       html`<igc-slider name="slider" value="3"></igc-slider>`
@@ -1254,6 +2106,16 @@ function getDOM<T = HTMLElement>(slider: IgcSliderBaseComponent) {
       /** The label of the current thumb */
       get label() {
         return root.querySelector(`[part='thumb-label']`) as T;
+      },
+      /** The inner elements of the thumb labels */
+      get labelsInner() {
+        return Array.from(
+          root.querySelectorAll(`[part='thumb-label-inner']`)
+        ) as T[];
+      },
+      /** The group of the thumbs (range-slider) */
+      get group() {
+        return root.querySelector(`[part='thumbs']`) as T;
       },
     },
     ticks: {
