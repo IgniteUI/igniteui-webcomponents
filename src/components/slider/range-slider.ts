@@ -175,13 +175,7 @@ export default class IgcRangeSliderComponent extends EventEmitterMixin<
     return closerToEnd ? this.thumbTo : this.thumbFrom;
   }
 
-  protected override updateValue(increment: number) {
-    const value = this.validateValue(this.activeValue + increment);
-
-    if (value === this.activeValue) {
-      return false;
-    }
-
+  protected override _setActiveValue(value: number): void {
     // Only the moved thumb gets a value, so an unset `upper` still follows
     // `upperBound`.
     if (this.activeThumb === this.thumbFrom) {
@@ -195,9 +189,6 @@ export default class IgcRangeSliderComponent extends EventEmitterMixin<
       [this.lower, this.upper] = [this.upper, this.lower];
       this.toggleActiveThumb();
     }
-
-    this.emitInputEvent();
-    return true;
   }
 
   protected override emitInputEvent() {

@@ -23,7 +23,7 @@ $theme: $material;
     background: var-get($theme, 'thumb-color');
 }
 
-[part='thumb-label-inner'] {
+[part~='thumb-label-inner'] {
     color: var-get($theme, 'label-text-color');
     background: var-get($theme, 'label-background-color');
     padding: 0 pad-inline(rem(8px));

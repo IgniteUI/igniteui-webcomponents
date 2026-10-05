@@ -11,6 +11,7 @@ import {
   queryAssignedElements,
   state,
 } from 'lit/decorators.js';
+import { guard } from 'lit/directives/guard.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { type StyleInfo, styleMap } from 'lit/directives/style-map.js';
 import {
@@ -19,24 +20,25 @@ import {
 } from '#internals/controllers/aria-projection.js';
 import {
   addKeybindings,
-  altKey,
   arrowDown,
   arrowLeft,
   arrowRight,
   arrowUp,
-  ctrlKey,
   endKey,
   escapeKey,
   homeKey,
-  metaKey,
+  isKey,
+  isModifierKey,
   pageDownKey,
   pageUpKey,
-  shiftKey,
 } from '#internals/controllers/key-bindings.js';
 import { blazorDeepImport } from '#internals/decorators/blazorDeepImport.js';
 import { createTimer } from '#internals/timing.js';
-import { isLTR } from '#internals/utils/dom.js';
-import { addSafeEventListener } from '#internals/utils/events.js';
+import { isLTR, pointToFraction } from '#internals/utils/dom.js';
+import {
+  addSafeEventListener,
+  toggleEventListener,
+} from '#internals/utils/events.js';
 import {
   asNumber,
   asPercent,
@@ -44,6 +46,7 @@ import {
   numberOfDecimals,
   roundPrecise,
 } from '#internals/utils/math.js';
+import { equal } from '#internals/utils/objects.js';
 import { formatString } from '#internals/utils/strings.js';
 import { isDefined } from '#internals/utils/types.js';
 import { addThemingController } from '#theming/theming-controller.js';
@@ -56,9 +59,6 @@ import IgcSliderLabelComponent from './slider-label.js';
 import { styles as shared } from './themes/shared/slider.common.css.js';
 import { styles } from './themes/slider.base.css.js';
 import { all } from './themes/themes.js';
-
-/** As for `:focus-visible`, a modifier key alone does not mark keyboard focus. */
-const MODIFIER_KEYS = new Set<string>([altKey, ctrlKey, metaKey, shiftKey]);
 
 /** The components that both sliders render. */
 export const sliderDependencies = [
@@ -89,7 +89,8 @@ export class IgcSliderBaseComponent extends LitElement {
   private startValue?: number;
   /** The pointer that drags a thumb. */
   private _dragPointer?: number;
-  /** The number format of the current update. See {@link formatValue}. */
+  /** The locale and a copy of the options of {@link _numberFormat}. */
+  private _formatSource?: [string, Intl.NumberFormatOptions];
   private _numberFormat?: Intl.NumberFormat;
   protected activeThumb?: HTMLElement;
 
@@ -294,12 +295,23 @@ export class IgcSliderBaseComponent extends LitElement {
   public tickLabelRotation: SliderTickLabelRotation = 0;
 
   protected override willUpdate(changedProperties: PropertyValues): void {
-    // `valueFormatOptions` can change in place, so each update formats anew.
-    this._numberFormat = undefined;
+    // `valueFormatOptions` can change in place, so the update keeps a copy.
+    const formatSource: [string, Intl.NumberFormatOptions] = [
+      this.locale,
+      { ...this.valueFormatOptions },
+    ];
+    if (!equal(formatSource, this._formatSource)) {
+      this._formatSource = formatSource;
+      this._numberFormat = undefined;
+    }
 
     // A thumb of the range slider keeps the focus when the slider is disabled.
     if (changedProperties.has('disabled') && this.disabled) {
       this._dismissThumbLabels();
+    }
+
+    if (changedProperties.has('thumbLabelsVisible')) {
+      this._listenForEscape(this.thumbLabelsVisible);
     }
 
     // Only the limit that changed differs from the last scale.
@@ -345,11 +357,13 @@ export class IgcSliderBaseComponent extends LitElement {
         this.handleKeyboardIncrement(this.upperBound - this.activeValue)
       )
       .set(pageUpKey, () => this.handlePageKeys(1))
-      .set(pageDownKey, () => this.handlePageKeys(-1))
-      // Escape still reaches a dialog around the slider.
-      .set(escapeKey, () => this._dismissThumbLabels(), {
-        preventDefault: false,
-      });
+      .set(pageDownKey, () => this.handlePageKeys(-1));
+  }
+
+  public override disconnectedCallback(): void {
+    super.disconnectedCallback();
+    this._dismissThumbLabels();
+    this._listenForEscape(false);
   }
 
   private handleArrowKeys(delta: -1 | 1) {
@@ -375,9 +389,12 @@ export class IgcSliderBaseComponent extends LitElement {
     }
   }
 
-  /** A key release marks keyboard focus, which keeps the labels shown. */
+  /**
+   * A key release marks keyboard focus, which keeps the labels shown. As for
+   * `:focus-visible`, a modifier key alone does not.
+   */
   private handleKeyUp(event: KeyboardEvent) {
-    if (MODIFIER_KEYS.has(event.key)) {
+    if (isModifierKey(event.key)) {
       return;
     }
 
@@ -391,7 +408,12 @@ export class IgcSliderBaseComponent extends LitElement {
 
   /** The labels override `min`, `max` and `step` in their getters. */
   protected handleSlotChange() {
-    this.labels = this.labelElements.map((label) => label.textContent ?? '');
+    const labels = this.labelElements.map((label) => label.textContent ?? '');
+
+    // A new array with the same labels would cost one more update.
+    if (!equal(labels, this.labels)) {
+      this.labels = labels;
+    }
   }
 
   /* c8 ignore next 3 */
@@ -438,10 +460,21 @@ export class IgcSliderBaseComponent extends LitElement {
     return {};
   }
 
-  /* c8 ignore next 3 */
-  protected updateValue(_increment: number): boolean {
-    return false;
+  /** Moves the active thumb by `increment`, and returns whether it moved. */
+  protected updateValue(increment: number): boolean {
+    const value = this.validateValue(this.activeValue + increment);
+
+    if (value === this.activeValue) {
+      return false;
+    }
+
+    this._setActiveValue(value);
+    this.emitInputEvent();
+    return true;
   }
+
+  /* c8 ignore next */
+  protected _setActiveValue(_value: number): void {}
 
   /* c8 ignore next 3 */
   protected renderThumbs(): TemplateResult<1> {
@@ -564,40 +597,36 @@ export class IgcSliderBaseComponent extends LitElement {
     this.thumbLabelsVisible = false;
   }
 
-  private calculateTrackUpdate(mouseX: number): number {
-    if (!this.distance) {
-      return 0;
-    }
-
-    const { width, left } = this.activeThumb!.getBoundingClientRect();
-    const { width: trackWidth } = this.base.getBoundingClientRect();
-
-    const thumbX = left + width / 2;
-    const scale = trackWidth / this.distance;
-    const change = isLTR(this) ? mouseX - thumbX : thumbX - mouseX;
-
-    if (this.step) {
-      const stepDistance = scale * this.step;
-
-      // A move of less than half a step keeps the position.
-      if (Math.abs(change) < stepDistance / 2) {
-        return 0;
-      }
-
-      return Math.round(change / stepDistance) * this.step;
-    }
-    return change / scale;
+  /**
+   * Escape hides the labels also while the focus is elsewhere (WCAG 1.4.13).
+   * The capture phase runs before a `stopPropagation()`, and the key still
+   * reaches a dialog around the slider.
+   */
+  private _listenForEscape(active: boolean): void {
+    toggleEventListener(globalThis, active, 'keydown', this._handleEscape, {
+      capture: true,
+    });
   }
 
-  private updateSlider(mouseX: number) {
+  private readonly _handleEscape = (event: Event): void => {
+    if (isKey(event as KeyboardEvent, escapeKey)) {
+      this._dismissThumbLabels();
+    }
+  };
+
+  /** Moves the active thumb to the step nearest to the pointer. */
+  private updateSlider(clientX: number) {
     if (this.disabled || !this.activeThumb) {
       return;
     }
 
-    const increment = this.calculateTrackUpdate(mouseX);
-    if (increment !== 0) {
-      this.updateValue(increment);
-    }
+    const fraction = pointToFraction(this.base, clientX, isLTR(this));
+    const change = this.min + fraction * this.distance - this.activeValue;
+
+    // Whole steps from the value, so a value off the steps moves as on a key.
+    this.updateValue(
+      this.step ? Math.round(change / this.step) * this.step : change
+    );
   }
 
   private pointerDown(event: PointerEvent) {
@@ -637,7 +666,7 @@ export class IgcSliderBaseComponent extends LitElement {
     this._dragPointer = undefined;
     this.hideThumbLabels();
 
-    if (this.startValue! !== this.activeValue) {
+    if (this.startValue !== this.activeValue) {
       this.emitChangeEvent();
     }
     this.startValue = undefined;
@@ -688,8 +717,23 @@ export class IgcSliderBaseComponent extends LitElement {
     }
   }
 
+  /** The ticks do not depend on the value, so a drag does not render them. */
   protected renderTicks() {
-    return html`<div part="ticks">${this._renderTicks()}</div>`;
+    const deps = [
+      this.min,
+      this.max,
+      this.labels,
+      this.primaryTicks,
+      this.secondaryTicks,
+      this.hidePrimaryLabels,
+      this.hideSecondaryLabels,
+      this.valueFormat,
+      this._formatSource,
+    ];
+
+    return html`<div part="ticks">
+      ${guard(deps, () => this._renderTicks())}
+    </div>`;
   }
 
   /** Renders a thumb, and its value label in a popover in the top layer. */
@@ -724,6 +768,7 @@ export class IgcSliderBaseComponent extends LitElement {
               <igc-popover
                 anchor=${thumbId}
                 placement="top"
+                scroll-strategy="hide"
                 ?open=${this.thumbLabelsVisible}
               >
                 <div
@@ -732,7 +777,7 @@ export class IgcSliderBaseComponent extends LitElement {
                   style=${styleMap({ opacity: this.thumbLabelsVisible ? 1 : 0 })}
                 >
                   <div part="thumb-label-inner">
-                    ${label ?? this.formatValue(value)}
+                    ${textValue ?? this.formatValue(value)}
                   </div>
                 </div>
               </igc-popover>
@@ -756,10 +801,7 @@ export class IgcSliderBaseComponent extends LitElement {
             y1="1"
             x2="100%"
             y2="1"
-            stroke="currentColor"
             stroke-dasharray="0, calc(${interval}%)"
-            stroke-linecap="round"
-            stroke-width="2px"
           ></line>
         </svg>
       </div>

@@ -35,6 +35,7 @@ import {
   simulatePointerEnter,
   simulatePointerLeave,
   simulatePointerMove,
+  simulateScroll,
 } from '#internals/testing/simulate.spec.js';
 import { isPopoverOpen } from '#internals/utils/dom.js';
 import { asPercent } from '#internals/utils/math.js';
@@ -1368,6 +1369,28 @@ describe('Slider component', () => {
       expect(eventSpy.callCount).to.equal(2);
     });
 
+    it('drags by whole steps when no step lies between the bounds', async () => {
+      const slider = await fixture<IgcSliderComponent>(
+        html`<igc-slider step="5" lower-bound="1" upper-bound="4"></igc-slider>`
+      );
+      const { x, width } = slider.getBoundingClientRect();
+      const at = (value: number) => ({ clientX: x + (width * value) / 100 });
+      const values: number[] = [];
+
+      simulatePointerDown(slider, at(2.5));
+      values.push(slider.value);
+
+      for (const value of [3.2, 3.9]) {
+        simulatePointerMove(slider, at(value));
+        values.push(slider.value);
+      }
+
+      simulateLostPointerCapture(slider);
+
+      // As with the keys, the value goes to the other bound.
+      expect(values).to.eql([1, 1, 4]);
+    });
+
     it('emits no events when the snapped value does not change', async () => {
       const slider = await fixture<IgcSliderComponent>(
         html`<igc-slider step="30" value="90"></igc-slider>`
@@ -1863,6 +1886,54 @@ describe('Slider component', () => {
       expect(slider.value).to.equal(0);
     });
 
+    it('hides a hovered label on Escape while the focus is elsewhere', async () => {
+      // The parent stops the key, as a combo or a dropdown can.
+      const container = await fixture<HTMLElement>(
+        html`<div @keydown=${(event: Event) => event.stopPropagation()}>
+          <input /><igc-slider></igc-slider>
+        </div>`
+      );
+      const slider = container.querySelector(IgcSliderComponent.tagName)!;
+      const input = container.querySelector('input')!;
+
+      simulatePointerEnter(getDOM(slider).thumbs.current);
+      input.focus();
+      await elementUpdated(slider);
+      expect(labelShown(slider)).to.be.true;
+
+      simulateKeyboard(input, escapeKey);
+      await elementUpdated(slider);
+
+      expect(labelShown(slider)).to.be.false;
+    });
+
+    it('listens for Escape on the page only while the label shows', async () => {
+      const slider = await fixture<IgcSliderComponent>(
+        html`<igc-slider></igc-slider>`
+      );
+      const add = spy(globalThis, 'addEventListener');
+      const remove = spy(globalThis, 'removeEventListener');
+      const keydown = (method: typeof add) =>
+        method.getCalls().filter(({ args }) => args[0] === 'keydown').length;
+
+      try {
+        simulatePointerEnter(getDOM(slider).thumbs.current);
+        await elementUpdated(slider);
+        expect(keydown(add)).to.equal(1);
+
+        const parent = slider.parentElement!;
+        slider.remove();
+        expect(keydown(remove)).to.equal(1);
+
+        parent.append(slider);
+        await elementUpdated(slider);
+        expect(labelShown(slider)).to.be.false;
+      } finally {
+        add.restore();
+        remove.restore();
+      }
+    });
+
     it('shows the label in the top layer on hover', async () => {
       const slider = await fixture<IgcSliderComponent>(
         html`<igc-slider></igc-slider>`
@@ -1970,6 +2041,60 @@ describe('Slider component', () => {
       }
     }
 
+    for (const mode of ['native', 'floating'] as const) {
+      it(`hides the label while its thumb is scrolled out of view (${mode})`, async () => {
+        setPopoverPositionStrategy(mode);
+
+        try {
+          const scroller = await fixture<HTMLElement>(
+            html`<div style="overflow: auto; height: 60px; margin-top: 200px">
+              <igc-slider value="50"></igc-slider>
+              <div style="height: 300px"></div>
+            </div>`
+          );
+          const slider = scroller.querySelector('igc-slider')!;
+          const { thumbs } = getDOM(slider);
+          // The `focused` part stops `thumbs.current` from matching.
+          const thumb = thumbs.current;
+          const sheet = new CSSStyleSheet();
+          sheet.replaceSync(
+            'igc-popover::part(container) { pointer-events: auto; }'
+          );
+          slider.shadowRoot!.adoptedStyleSheets.push(sheet);
+
+          const labelHit = () => {
+            const [inner] = thumbs.labelsInner;
+            const { left, top, width, height } = inner.getBoundingClientRect();
+            return inner.contains(
+              slider.shadowRoot!.elementFromPoint(
+                left + width / 2,
+                top + height / 2
+              )
+            );
+          };
+
+          tabTo(thumb);
+          await labelPlaced(slider);
+          expect(labelHit()).to.be.true;
+
+          // The thumb is now above the visible part of the scroller, and the
+          // label would still be in the viewport.
+          await simulateScroll(scroller, { top: 100 });
+          await labelPlaced(slider);
+          expect(thumb.getBoundingClientRect().bottom).to.be.lessThan(
+            scroller.getBoundingClientRect().top
+          );
+          expect(labelHit()).to.be.false;
+
+          await simulateScroll(scroller, { top: 0 });
+          await labelPlaced(slider);
+          expect(labelHit()).to.be.true;
+        } finally {
+          setPopoverPositionStrategy();
+        }
+      });
+    }
+
     it('renders a label for each thumb of a range slider', async () => {
       const slider = await fixture<IgcRangeSliderComponent>(
         html`<igc-range-slider lower="20" upper="60"></igc-range-slider>`
@@ -1997,6 +2122,82 @@ describe('Slider component', () => {
       await elementUpdated(slider);
 
       expect(popover(slider)).to.be.undefined;
+    });
+
+    it('formats no value for a hidden label without a format', async () => {
+      // An invalid locale throws only when a value is formatted.
+      const slider = await fixture<IgcSliderComponent>(
+        html`<igc-slider hide-tooltip locale="en_US"></igc-slider>`
+      );
+
+      expect(getDOM(slider).thumbs.current).to.exist;
+    });
+  });
+
+  describe('Tick labels', () => {
+    before(() => defineComponents(IgcSliderComponent));
+
+    function tickTexts(slider: IgcSliderComponent) {
+      return getDOM(slider).ticks.labelsInner.map((label) =>
+        label.textContent?.trim()
+      );
+    }
+
+    it('renders the tick labels again for a new locale or format', async () => {
+      const slider = await fixture<IgcSliderComponent>(
+        html`<igc-slider max="2000" primary-ticks="2"></igc-slider>`
+      );
+      expect(tickTexts(slider)).to.eql(['0', '2,000']);
+
+      slider.locale = 'de';
+      await elementUpdated(slider);
+      expect(tickTexts(slider)).to.eql(['0', '2.000']);
+
+      // The options can also change in place.
+      slider.valueFormatOptions = { minimumFractionDigits: 1 };
+      await elementUpdated(slider);
+      slider.valueFormatOptions.minimumFractionDigits = 2;
+      slider.requestUpdate();
+      await elementUpdated(slider);
+      expect(tickTexts(slider)).to.eql(['0,00', '2.000,00']);
+    });
+
+    it('renders the ticks again for a new scale, secondary ticks or format string', async () => {
+      const slider = await fixture<IgcSliderComponent>(
+        html`<igc-slider primary-ticks="2"></igc-slider>`
+      );
+      const steps: [Partial<IgcSliderComponent>, string[]][] = [
+        [{ min: 10 }, ['10', '100']],
+        [{ max: 50 }, ['10', '50']],
+        [{ secondaryTicks: 1 }, ['10', '30', '50']],
+        [{ valueFormat: '{0}%' }, ['10%', '30%', '50%']],
+      ];
+
+      for (const [change, texts] of steps) {
+        Object.assign(slider, change);
+        await elementUpdated(slider);
+        expect(tickTexts(slider), JSON.stringify(change)).to.eql(texts);
+      }
+    });
+
+    it('renders the tick labels again for new labels of the same count', async () => {
+      const slider = await fixture<IgcSliderComponent>(
+        html`<igc-slider primary-ticks="2">
+          <igc-slider-label>Low</igc-slider-label>
+          <igc-slider-label>High</igc-slider-label>
+        </igc-slider>`
+      );
+      expect(tickTexts(slider)).to.eql(['Low', 'High']);
+
+      slider.lastElementChild!.replaceWith(
+        Object.assign(document.createElement('igc-slider-label'), {
+          textContent: 'Top',
+        })
+      );
+      await nextFrame();
+      await elementUpdated(slider);
+
+      expect(tickTexts(slider)).to.eql(['Low', 'Top']);
     });
   });
 

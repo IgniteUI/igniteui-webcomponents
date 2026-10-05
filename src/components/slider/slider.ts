@@ -103,16 +103,8 @@ export default class IgcSliderComponent extends FormAssociatedMixin(
     return { width: `${this._percentOf(this.value)}%` };
   }
 
-  protected override updateValue(increment: number) {
-    const value = this.validateValue(this.value + increment);
-
-    if (this.value === value) {
-      return false;
-    }
-
+  protected override _setActiveValue(value: number): void {
     this.value = value;
-    this.emitInputEvent();
-    return true;
   }
 
   protected override emitInputEvent() {
@@ -136,7 +128,7 @@ export default class IgcSliderComponent extends FormAssociatedMixin(
    * @param stepDecrement Optional step decrement. If no parameter is passed, it defaults to 1.
    */
   public stepDown(stepDecrement = 1) {
-    this.value = this.value - stepDecrement * this.step;
+    this.stepUp(-stepDecrement);
   }
 
   /** Focuses the thumb, as a native range input label does. */

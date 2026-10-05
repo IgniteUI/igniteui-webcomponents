@@ -4,8 +4,6 @@
 
 $thumb-size: rem(20px);
 $thumb-radius: math.div($thumb-size, 2);
-$ripple-size: rem(40px);
-$ripple-radius: math.div($ripple-size, 2);
 $thumb-label-width: rem(40px);
 $thumb-label-height: rem(30px);
 $tick-width: rem(2px);
@@ -148,7 +146,7 @@ igc-popover::part(container) {
     pointer-events: none;
 }
 
-[part='thumb-label'] {
+[part~='thumb-label'] {
     // The containing block of the arrow.
     position: relative;
     height: $thumb-label-height;
@@ -156,7 +154,7 @@ igc-popover::part(container) {
     display: flex;
 }
 
-[part='thumb-label-inner'] {
+[part~='thumb-label-inner'] {
     @include type-style('caption');
     @include border-radius(rem(2px));
 
@@ -165,7 +163,6 @@ igc-popover::part(container) {
     align-items: center;
     justify-content: center;
     white-space: nowrap;
-    padding: 0 pad-inline(rem(2px));
 
     &::after {
         content: '';
@@ -203,8 +200,8 @@ igc-popover::part(container) {
     }
 
     [part='track'],
-    [part='thumb'],
-    [part='thumb-label-inner'] {
+    [part~='thumb'],
+    [part~='thumb-label-inner'] {
         border: rem(1px) solid CanvasText;
     }
 
@@ -212,7 +209,7 @@ igc-popover::part(container) {
         border-color: Highlight;
     }
 
-    [part~='thumbs'] [part='thumb-label-inner'] {
+    [part~='thumbs'] [part~='thumb-label-inner'] {
         &::after {
             border-top: none;
         }
@@ -220,7 +217,7 @@ igc-popover::part(container) {
 
     :host(:disabled) {
         [part='track'],
-        [part~='thumbs'] [part='thumb'] {
+        [part~='thumbs'] [part~='thumb'] {
             border-color: GrayText;
         }
     }
