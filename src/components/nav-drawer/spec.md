@@ -30,10 +30,11 @@ This directory hosts three public components: [`igc-nav-drawer`](#igc-nav-drawer
   - [Test scenarios](#test-scenarios)
     - [Accessibility tests](#accessibility-tests)
     - [DOM](#dom)
+    - [Host ARIA](#host-aria)
     - [API tests](#api-tests)
     - [Events and behaviors](#events-and-behaviors)
     - [Mini slot popover](#mini-slot-popover)
-    - [Host ARIA](#host-aria)
+    - [Invoker commands](#invoker-commands-1)
   - [Assumptions and limitations](#assumptions-and-limitations)
   - [Accessibility](#accessibility)
     - [ARIA roles and properties](#aria-roles-and-properties)
@@ -46,6 +47,7 @@ This directory hosts three public components: [`igc-nav-drawer`](#igc-nav-drawer
 | ------: | ---------- | ----------------------------------------------------------------------- |
 |       1 | 2026-09-21 | Initial specification                                                   |
 |       2 | 2026-10-02 | Forward the host `aria-label`, `aria-labelledby` and `aria-describedby` |
+|       3 | 2026-10-05 | Return the focus to the mini variant; reopen a dialog closed early      |
 
 ## Overview
 
@@ -107,8 +109,9 @@ As a developer, I expect to be able to:
 ### End-user experience
 
 For an edge position the drawer slides in over the page with a backdrop, and focus is trapped inside it until it is
-dismissed. For the relative position it takes its place in the layout and pushes the content next to it. When a mini
-variant is provided, the compact rail is shown whenever the drawer is closed.
+dismissed. Then the focus goes back to the element that had it before, also when that element is in the mini variant.
+For the relative position it takes its place in the layout and pushes the content next to it. When a mini variant is
+provided, the compact rail is shown whenever the drawer is closed.
 
 ### Developer experience
 
@@ -204,7 +207,7 @@ The components render no strings of their own; the item content and the label co
 | Key combination   | Result                                                                                       |
 | ----------------- | ---------------------------------------------------------------------------------------------- |
 | <kbd>Escape</kbd> | Closes a modal drawer, unless `keep-open-on-escape` is set. It does not close a relative drawer. |
-| <kbd>Tab</kbd>    | Moves focus between the items; focus is trapped inside a modal drawer.                        |
+| <kbd>Tab</kbd>    | Moves focus between the focusable content of the items; focus stays inside a modal drawer.  |
 
 ## API
 
@@ -283,34 +286,41 @@ The suite lives in [`nav-drawer.spec.ts`](./nav-drawer.spec.ts) and runs in a re
 ### Accessibility tests
 
 1. The component passes the accessibility audit in the open and closed states.
-2. The label is applied to the dialog in the edge positions and to the navigation landmark in the relative position.
 
 ### DOM
 
-3. The drawer renders as a native dialog for the edge positions, and inline for the relative position.
-4. The items, the header items and the mini variant render in their containers.
-5. The mini variant is hidden while the drawer is open.
+2. The drawer renders as a native dialog for the edge positions, and as a `nav` landmark for the relative position.
+3. The items, the header items, the item slots and the mini variant render in their containers.
+4. The label names the dialog and the mini variant.
+
+### Host ARIA
+
+5. The host `aria-label` names the drawer without `label`, `label` wins over it, `aria-labelledby` wins over
+   `label`, relative mode follows a change, an `aria-labelledby` target added later is followed, and only the main
+   element gets the host description.
 
 ### API tests
 
 6. `show`, `hide` and `toggle` transition the open state and resolve with whether it changed.
-7. The Invoker Commands integration calls `show`, `hide` and `toggle`.
 
 ### Events and behaviors
 
-8. `igcClosing` and `igcClosed` are emitted for a user-driven close.
-9. Canceling `igcClosing` keeps the drawer open.
-10. <kbd>Escape</kbd> closes a modal drawer, and does not when `keepOpenOnEscape` is set.
-11. A relative drawer is not closed by <kbd>Escape</kbd>.
+7. An initially open drawer opens its dialog, and a change of the position while open opens or closes the dialog.
+8. <kbd>Escape</kbd> and a click on the backdrop close a modal drawer and emit `igcClosing` and `igcClosed`. A click
+   inside the dialog, and a click outside a relative drawer, do not close it.
+9. Canceling `igcClosing` keeps the drawer open, and with `keepOpenOnEscape` <kbd>Escape</kbd> does not close it.
+10. When the dialog closes while `open` stays `true`, the drawer opens the dialog again.
+11. `hide()` emits no events.
 
 ### Mini slot popover
 
-12. The mini rail behaves correctly alongside the main drawer, including the transitions between the two.
+12. The mini rail shows while the drawer is closed and hides while it is open. It follows a change of the position
+    and the mini content that is added or removed, and it does not show without content.
+13. When the drawer closes, the focus goes back to the control in the mini rail that had it before the drawer opened.
 
-### Host ARIA
+### Invoker commands
 
-13. The host `aria-label` names the drawer without `label`, `label` wins over it, `aria-labelledby` wins over
-    `label`, relative mode follows a change, and only the main element gets the host description.
+14. The shared suite checks that `--show`, `--hide` and `--toggle` call `show`, `hide` and `toggle`.
 
 ## Assumptions and limitations
 
@@ -327,10 +337,11 @@ The suite lives in [`nav-drawer.spec.ts`](./nav-drawer.spec.ts) and runs in a re
   come from the platform. In the relative position it is a `nav` landmark.
 - The `label` provides the accessible name for both presentations; distinct labels let screen reader users tell
   several navigation landmarks apart.
-- The `active` and `disabled` properties of an item are reflected as attributes for styling only. The item renders
-  a plain container with no role, no `aria-disabled` and no focus management, so content projected into a disabled
-  item stays focusable and operable. An application that needs the state to reach assistive technology, or a
-  disabled item to be skipped by the keyboard, sets that on the content it projects.
+- The `active` and `disabled` properties of an item are reflected as attributes for styling. A disabled item also
+  blocks the pointer. The item renders a plain container with no role, no `aria-disabled` and no focus management, so
+  content projected into a disabled item stays focusable and operable with the keyboard. An application that needs the
+  state to reach assistive technology, or a disabled item to be skipped by the keyboard, sets that on the content it
+  projects.
 - The host `aria-labelledby` names the drawer before `label`, and the host `aria-label` names it when `label` is not
   set. The host `aria-describedby` describes the dialog or the relative `nav`, not the mini variant.
 

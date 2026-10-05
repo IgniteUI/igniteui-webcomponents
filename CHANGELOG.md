@@ -26,6 +26,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - #### List
   - `igc-list-header` now has the `listitem` role. Before, it had the `separator` role. A list cannot contain a separator, and a separator hides its content from assistive technologies, so a screen reader could skip the text of the header. Screen readers now read the header and count it with the items. Put a heading in the header, so that users can move from group to group.
   - The title and subtitle container of `igc-list-item` is now a `div`, not a `header` element. Before, Chromium exposed it as a `sectionheader` in each item. The `header` part is unchanged.
+- #### Navigation drawer
+  - When a drawer with a `mini` variant closes, the focus now goes back to the element that had the focus when the drawer opened, such as a menu button in the rail. Before, the drawer closed its dialog while the rail was still hidden, so the focus went to the page body.
+  - When the platform closes the dialog of a drawer that stays open, for example after a second Escape when an `igcClosing` handler cancels the close, the drawer now opens the dialog again. Before, `open` stayed `true` with a closed dialog, and `show()` did nothing.
 - #### Highlight
   - A space in `searchText` now matches any run of whitespace in the content, such as a line break in the HTML source. Before, "cold brew" did not find the two words when a line break separated them.
 - #### Input

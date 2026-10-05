@@ -16,7 +16,6 @@ import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { HostAriaMixin } from '#internals/mixins/host-aria.js';
 import { partMap } from '#internals/part-map.js';
 import { isPointInsideElement, isPopoverOpen } from '#internals/utils/dom.js';
-import { bindIf } from '#internals/utils/lit.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import type { NavDrawerPosition } from '../types.js';
 import IgcNavDrawerHeaderItemComponent from './nav-drawer-header-item.js';
@@ -187,11 +186,11 @@ export default class IgcNavDrawerComponent extends EventEmitterMixin<
   }
 
   protected override update(properties: PropertyValues<this>): void {
+    // `cache` keeps the dialog while the drawer is relative. A modal dialog that leaves the
+    // document comes back open but not modal, and `showModal()` then throws, so close it first.
+    // The removal hides the mini variant, because it is a popover.
     if (properties.has('position') && this._isRelative) {
       this._dialog?.close();
-      if (isPopoverOpen(this._mini)) {
-        this._mini?.hidePopover();
-      }
     }
 
     super.update(properties);
@@ -199,22 +198,21 @@ export default class IgcNavDrawerComponent extends EventEmitterMixin<
 
   protected override updated(properties: PropertyValues<this>): void {
     if (properties.has('open') || properties.has('position')) {
-      this._handleOpenState();
-      this._handleMiniState();
+      // The dialog gives the focus back to its opener, which can be in the mini variant.
+      // So the mini variant hides after the dialog opens, and shows before it closes.
+      if (this.open) {
+        this._syncDialog();
+        this._handleMiniState();
+      } else {
+        this._handleMiniState();
+        this._syncDialog();
+      }
     }
   }
 
   //#endregion
 
   //#region Event handlers
-
-  private _handleOpenState(): void {
-    if (this._isRelative) {
-      return;
-    }
-
-    this.open ? this._dialog?.showModal() : this._dialog?.close();
-  }
 
   private _handleMiniState(): void {
     const mini = this._mini;
@@ -238,12 +236,6 @@ export default class IgcNavDrawerComponent extends EventEmitterMixin<
     }
   }
 
-  private _handleClose(): void {
-    if (this.open) {
-      this._dialog?.showModal();
-    }
-  }
-
   private _handleClick({ clientX, clientY, target }: PointerEvent): void {
     if (
       this._dialog === target &&
@@ -257,8 +249,17 @@ export default class IgcNavDrawerComponent extends EventEmitterMixin<
 
   //#region Internal API
 
-  private async _closeWithEvent(): Promise<boolean> {
+  private _closeWithEvent(): Promise<boolean> {
     return this._toggleController.hide(true);
+  }
+
+  /**
+   * Opens or closes the dialog to match `open`. It also runs on the `close` event, so a close
+   * that the drawer cannot cancel, such as a second Escape, does not leave the drawer open
+   * with a closed dialog.
+   */
+  private _syncDialog(): void {
+    this.open ? this._dialog?.showModal() : this._dialog?.close();
   }
 
   //#endregion
@@ -282,16 +283,15 @@ export default class IgcNavDrawerComponent extends EventEmitterMixin<
 
   //#endregion
 
-  private _renderMiniVariant() {
+  private _renderMiniVariant(aria: ARIABindings) {
+    const empty = !this._hasMiniContent;
+
     return html`
       <nav
         ${ref(this._miniRef)}
-        ${ariaBindings({ ...drawerAria(this), describedBy: null })}
-        part=${partMap({
-          mini: true,
-          hidden: !this._hasMiniContent,
-        })}
-        .inert=${this.open || !this._hasMiniContent}
+        ${ariaBindings({ ...aria, describedBy: null })}
+        part=${partMap({ mini: true, hidden: empty })}
+        .inert=${this.open || empty}
         .popover=${!this._isRelative ? 'manual' : null}
       >
         <slot name="mini"></slot>
@@ -307,36 +307,38 @@ export default class IgcNavDrawerComponent extends EventEmitterMixin<
     `;
   }
 
-  private _renderDialog() {
+  private _renderDialog(aria: ARIABindings) {
     return html`
       <dialog
         ${ref(this._dialogRef)}
         part="base"
         aria-modal="true"
-        ${ariaBindings(drawerAria(this))}
+        ${ariaBindings(aria)}
         @click=${this._handleClick}
         @cancel=${this._handleCancel}
-        @close=${bindIf(this.keepOpenOnEscape, this._handleClose)}
+        @close=${this._syncDialog}
       >
         ${this._renderContent()}
       </dialog>
-      ${this._renderMiniVariant()}
+      ${this._renderMiniVariant(aria)}
     `;
   }
 
-  private _renderRelative() {
+  private _renderRelative(aria: ARIABindings) {
     return html`
-      <nav part="base" ${ariaBindings(drawerAria(this))} .inert=${!this.open}>
+      <nav part="base" ${ariaBindings(aria)} .inert=${!this.open}>
         ${this._renderContent()}
       </nav>
-      ${this._renderMiniVariant()}
+      ${this._renderMiniVariant(aria)}
     `;
   }
 
   protected override render() {
-    return html`${cache(
-      this._isRelative ? this._renderRelative() : this._renderDialog()
-    )}`;
+    const aria = drawerAria(this);
+
+    return cache(
+      this._isRelative ? this._renderRelative(aria) : this._renderDialog(aria)
+    );
   }
 }
 

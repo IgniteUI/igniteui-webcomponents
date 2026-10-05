@@ -1,12 +1,13 @@
 @use 'styles/common/component';
 @use 'styles/utilities' as *;
+@use 'igniteui-theming/sass/animations/easings' as *;
 @use './light/themes' as *;
 
 $theme: $base;
 
 :host {
     --menu-height: 50vh;
-    --transition-function: cubic-bezier(0.445, 0.05, 0.55, 0.95);
+    --transition-function: #{$in-out-sine};
     --transition-duration: 0.35s;
 
     display: flex;
@@ -23,13 +24,13 @@ $theme: $base;
         height: 100%;
         min-height: 100%;
         overflow-x: hidden;
+        transition-behavior: allow-discrete;
+        transition-duration: var(--transition-duration);
+        transition-timing-function: var(--transition-function);
     }
 
     [part='mini'] {
         width: var-get($theme, 'size--mini');
-        transition-behavior: allow-discrete;
-        transition-duration: var(--transition-duration);
-        transition-timing-function: var(--transition-function);
         transition-property: display, translate, overlay;
 
         &::backdrop {
@@ -41,9 +42,6 @@ $theme: $base;
         box-sizing: border-box;
         width: var-get($theme, 'size');
         padding: unset;
-        transition-behavior: allow-discrete;
-        transition-duration: var(--transition-duration);
-        transition-timing-function: var(--transition-function);
         transition-property: translate, opacity, overlay, display;
 
         &::backdrop {
@@ -158,11 +156,6 @@ $theme: $base;
 }
 
 :host(:where([position='start'], [position='end'])) {
-    [part='base'] {
-        border-inline-end-style: solid;
-        border-inline-end-width: rem(1px);
-    }
-
     [part='base']:not(:open) {
         translate: calc(200% * var(--dir)) 0;
 
@@ -262,8 +255,6 @@ $theme: $base;
         box-shadow: none;
         border-inline-end-style: solid;
         border-inline-end-width: rem(1px);
-        transition-duration: var(--transition-duration);
-        transition-timing-function: var(--transition-function);
         transition-property: margin, border;
     }
 
@@ -271,8 +262,6 @@ $theme: $base;
         position: relative;
         border-inline-end-width: rem(1px);
         border-inline-end-style: solid;
-        transition-duration: var(--transition-duration);
-        transition-timing-function: var(--transition-function);
         transition-property: width, min-width, padding, border;
         order: -1;
         z-index: 1;

@@ -3,11 +3,13 @@ import {
   expect,
   fixture,
   html,
+  oneEvent,
   waitUntil,
 } from '@open-wc/testing';
 import type { TemplateResult } from 'lit';
 import { spy } from 'sinon';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { isFocused } from '#internals/testing/helpers.spec.js';
 import { runInvokerCommandsTests } from '#internals/testing/invoker-commands.spec.js';
 import { simulateClick } from '#internals/testing/simulate.spec.js';
 import { isPopoverOpen } from '#internals/utils/dom.js';
@@ -219,6 +221,16 @@ describe('Navigation Drawer', () => {
       expect(base().getAttribute('aria-label')).to.equal('Sections');
     });
 
+    it('follows an `aria-labelledby` target that is added to the drawer later', async () => {
+      navDrawer.setAttribute('aria-labelledby', 'drawer-title');
+      await elementUpdated(navDrawer);
+
+      const title = document.createElement('h2');
+      title.id = 'drawer-title';
+      navDrawer.append(title);
+      await waitUntil(() => base().ariaLabelledByElements?.[0] === title);
+    });
+
     it('describes only the main element by the host `aria-describedby`', async () => {
       navDrawer.setAttribute('aria-describedby', 'drawer-hint');
       await elementUpdated(navDrawer);
@@ -410,6 +422,17 @@ describe('Navigation Drawer', () => {
       expect(navDrawer.open).to.be.true;
     });
 
+    it('opens the dialog again when it closes while `open` stays true', async () => {
+      await navDrawer.show();
+
+      // As after a close request that the drawer cannot cancel.
+      nativeDialog.close();
+      await oneEvent(nativeDialog, 'close');
+
+      expect(navDrawer.open).to.be.true;
+      expect(nativeDialog.open).to.be.true;
+    });
+
     it('programmatic hide does not emit events', async () => {
       const eventSpy = spy(navDrawer, 'emitEvent');
       await navDrawer.show();
@@ -487,6 +510,24 @@ describe('Navigation Drawer', () => {
         () => isPopoverOpen(getMiniElement(navDrawer)),
         'Expected mini popover to be shown after adding mini content'
       );
+    });
+
+    it('returns the focus to the mini variant when the drawer closes', async () => {
+      navDrawer = await createNavDrawer(html`
+        <igc-nav-drawer>
+          <a href="#home">Home</a>
+          <button slot="mini">Menu</button>
+        </igc-nav-drawer>
+      `);
+
+      const button = navDrawer.querySelector('button')!;
+      button.focus();
+
+      await navDrawer.show();
+      expect(isFocused(button)).to.be.false;
+
+      await navDrawer.hide();
+      expect(isFocused(button)).to.be.true;
     });
 
     it('is hidden when all mini content is removed', async () => {

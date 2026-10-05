@@ -1,13 +1,6 @@
 @use 'styles/utilities' as *;
-@use '../../light/themes' as *;
-
-$theme: $indigo;
 
 :host {
-    [part='base']::backdrop {
-        background: var-get($overlay-indigo, 'background-color');
-    }
-
     [part='mini'],
     [part='main'] {
         padding: pad(rem(8px));
