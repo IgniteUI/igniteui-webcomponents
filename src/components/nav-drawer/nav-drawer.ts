@@ -1,14 +1,19 @@
 import { html, LitElement, type PropertyValues } from 'lit';
 import { property } from 'lit/decorators.js';
 import { cache } from 'lit/directives/cache.js';
-import { ifDefined } from 'lit/directives/if-defined.js';
 import { createRef, ref } from 'lit/directives/ref.js';
+import {
+  type ARIABindings,
+  ariaBindings,
+  hostAria,
+} from '#internals/controllers/aria-projection.js';
 import { addCommandController } from '#internals/controllers/command.js';
 import { addSlotController, setSlots } from '#internals/controllers/slot.js';
 import { addToggleController } from '#internals/controllers/toggle.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import type { Constructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
+import { HostAriaMixin } from '#internals/mixins/host-aria.js';
 import { partMap } from '#internals/part-map.js';
 import { isPointInsideElement, isPopoverOpen } from '#internals/utils/dom.js';
 import { bindIf } from '#internals/utils/lit.js';
@@ -23,6 +28,12 @@ import { styles as shared } from './themes/shared/container/nav-drawer.common.cs
 export interface IgcNavDrawerComponentEventMap {
   igcClosing: CustomEvent<void>;
   igcClosed: CustomEvent<void>;
+}
+
+/** Names the drawer by the host `aria-labelledby`, `label`, or `aria-label`. */
+function drawerAria(drawer: IgcNavDrawerComponent): ARIABindings {
+  const aria = hostAria(drawer);
+  return { ...aria, label: drawer.label ?? aria.label };
 }
 
 /**
@@ -60,7 +71,7 @@ export interface IgcNavDrawerComponentEventMap {
 export default class IgcNavDrawerComponent extends EventEmitterMixin<
   IgcNavDrawerComponentEventMap,
   Constructor<LitElement>
->(LitElement) {
+>(HostAriaMixin(LitElement)) {
   public static readonly tagName = 'igc-nav-drawer';
   public static styles = [styles, shared];
 
@@ -206,23 +217,16 @@ export default class IgcNavDrawerComponent extends EventEmitterMixin<
   }
 
   private _handleMiniState(): void {
-    if (this._isRelative) {
-      return;
-    }
-
     const mini = this._mini;
-    if (!mini) {
+
+    if (this._isRelative || !mini) {
       return;
     }
 
-    const popOverOpen = isPopoverOpen(mini);
+    const visible = this._hasMiniContent && !this.open;
 
-    if (!this._hasMiniContent || this.open) {
-      if (popOverOpen) {
-        mini.hidePopover();
-      }
-    } else if (!popOverOpen) {
-      mini.showPopover();
+    if (visible !== isPopoverOpen(mini)) {
+      visible ? mini.showPopover() : mini.hidePopover();
     }
   }
 
@@ -282,7 +286,7 @@ export default class IgcNavDrawerComponent extends EventEmitterMixin<
     return html`
       <nav
         ${ref(this._miniRef)}
-        aria-label=${ifDefined(this.label)}
+        ${ariaBindings({ ...drawerAria(this), describedBy: null })}
         part=${partMap({
           mini: true,
           hidden: !this._hasMiniContent,
@@ -309,7 +313,7 @@ export default class IgcNavDrawerComponent extends EventEmitterMixin<
         ${ref(this._dialogRef)}
         part="base"
         aria-modal="true"
-        aria-label=${ifDefined(this.label)}
+        ${ariaBindings(drawerAria(this))}
         @click=${this._handleClick}
         @cancel=${this._handleCancel}
         @close=${bindIf(this.keepOpenOnEscape, this._handleClose)}
@@ -322,7 +326,7 @@ export default class IgcNavDrawerComponent extends EventEmitterMixin<
 
   private _renderRelative() {
     return html`
-      <nav part="base" aria-label=${ifDefined(this.label)} .inert=${!this.open}>
+      <nav part="base" ${ariaBindings(drawerAria(this))} .inert=${!this.open}>
         ${this._renderContent()}
       </nav>
       ${this._renderMiniVariant()}

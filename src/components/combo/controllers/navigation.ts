@@ -19,11 +19,8 @@ import type { ComboHost } from '../types.js';
 import type { DataState } from './data.js';
 
 type ComboNavigationConfig = {
-  /** The primary input of the combo component. */
   input: Ref<IgcInputComponent>;
-  /** The search input of the combo component. */
   search: Ref<IgcInputComponent>;
-  /** The combo virtualized dropdown list. */
   list: Ref<IgcVirtualScrollComponent>;
   interactions: {
     show: () => Promise<boolean>;
@@ -78,7 +75,6 @@ export class ComboNavigationController<T extends object> {
     const bindingDefaults: KeyBindingOptions = { repeat: true };
     const skip = (): boolean => this._host.disabled;
 
-    // Combo
     addKeybindings(this._host, { skip, bindingDefaults })
       .set(tabKey, this._onTab, { preventDefault: false })
       .set([shiftKey, tabKey], this._onTab, {
@@ -86,7 +82,6 @@ export class ComboNavigationController<T extends object> {
       })
       .set(escapeKey, this._onEscape);
 
-    // Main input
     addKeybindings(this._host, {
       skip,
       ref: this._config.input,
@@ -97,7 +92,6 @@ export class ComboNavigationController<T extends object> {
       .set(arrowDown, this._onMainInputArrowDown)
       .set(enterKey, this._onEnter);
 
-    // Search input
     addKeybindings(this._host, {
       skip,
       ref: this._config.search,
@@ -106,7 +100,6 @@ export class ComboNavigationController<T extends object> {
       .set(arrowUp, this._onEscape)
       .set(arrowDown, this._onSearchArrowDown);
 
-    // List
     addKeybindings(this._host, {
       skip,
       ref: this._config.list,
@@ -147,8 +140,7 @@ export class ComboNavigationController<T extends object> {
   private _onTab = async ({ shiftKey }: KeyboardEvent): Promise<void> => {
     if (this._host.open) {
       if (shiftKey) {
-        // Move focus to the main input of the combo
-        // before the Shift+Tab behavior kicks in.
+        // Focus the main input before the default Shift+Tab action.
         this._host.focus();
       }
 
@@ -197,9 +189,10 @@ export class ComboNavigationController<T extends object> {
 
   private _onArrowUp = (): void => {
     if (this.active === this._firstItem) {
-      this._searchInput?.checkVisibility() // Non single-select or disable-filtering combo configuration
-        ? this._searchInput?.focus() // Delegate to search input handlers
-        : this._onEscape(); // Close dropdown and move focus back to main input
+      // Focus the search input when it shows. Otherwise, close the list.
+      this._searchInput?.checkVisibility()
+        ? this._searchInput?.focus()
+        : this._onEscape();
       return;
     }
 
@@ -217,9 +210,8 @@ export class ComboNavigationController<T extends object> {
   //#region Internal helper methods
 
   /**
-   * The single write path for the active index. The host mirrors this through
-   * its own `_activeIndex` accessor, so it has to be told which property
-   * changed and what it changed from.
+   * The only write path for the active index. The host mirrors it as
+   * `_activeIndex`, so the update request carries the old value.
    */
   private _setActive(index: number): void {
     const previous = this.active;
@@ -227,33 +219,19 @@ export class ComboNavigationController<T extends object> {
     this._host.requestUpdate('_activeIndex', previous);
   }
 
-  private _scrollToActive(behavior?: ScrollBehavior): void {
-    this._list?.scrollToIndex(this.active, {
-      block: 'center',
-      behavior: behavior ?? 'auto',
-    });
-
+  private _scrollToActive(): void {
+    this._list?.scrollToIndex(this.active, { block: 'center' });
     this._list?.requestUpdate();
   }
 
-  private _getNearestItem(start: number, delta: -1 | 1): number {
-    const items = this._state.dataState;
-    const length = items.length;
-
-    for (let i = start + delta; i >= 0 && i < length; i += delta) {
-      if (!items[i].header) {
-        return i;
-      }
-    }
-
-    return -1;
-  }
-
   private _getNextItem(delta: -1 | 1): void {
-    const next = this._getNearestItem(this.active, delta);
+    const items = this._state.dataState;
 
-    if (next !== -1) {
-      this._setActive(next);
+    for (let i = this.active + delta; i >= 0 && i < items.length; i += delta) {
+      if (!items[i].header) {
+        this._setActive(i);
+        return;
+      }
     }
   }
 

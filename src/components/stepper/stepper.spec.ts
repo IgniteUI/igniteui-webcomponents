@@ -1,6 +1,7 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import { spy } from 'sinon';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { runHostAriaTests } from '#internals/testing/host-aria.spec.js';
 import {
   simulateClick,
   simulateKeyboard,
@@ -13,6 +14,17 @@ import IgcStepperComponent from './stepper.js';
 describe('Stepper', () => {
   before(() => {
     defineComponents(IgcStepperComponent, IgcIconComponent);
+  });
+
+  runHostAriaTests({
+    tagName: 'igc-step',
+    template: html`<igc-stepper
+      ><igc-step><span slot="title">Step</span></igc-step></igc-stepper
+    >`,
+    getTarget: (host) => host.renderRoot.querySelector('[data-step-header]')!,
+    // The stepper sets its `tablist` role through ElementInternals, which axe
+    // does not read.
+    ignoredRules: ['aria-required-parent'],
   });
 
   let stepper: IgcStepperComponent;
@@ -252,7 +264,6 @@ describe('Stepper', () => {
     });
 
     it('should do nothing at the boundary with `next()` / `prev()`', async () => {
-      // at last step, next() does nothing
       stepper.navigateTo(4);
       await elementUpdated(stepper);
 
@@ -261,7 +272,6 @@ describe('Stepper', () => {
 
       expect(stepper.steps[4].active).to.be.true;
 
-      // at first step, prev() does nothing
       stepper.navigateTo(0);
       await elementUpdated(stepper);
 
@@ -286,7 +296,6 @@ describe('Stepper', () => {
     });
 
     it('should reset to the first accessible step and clear visited state', async () => {
-      // visit several steps
       stepper.navigateTo(1);
       await elementUpdated(stepper);
       stepper.navigateTo(2);
@@ -498,7 +507,6 @@ describe('Stepper', () => {
       stepper.steps[0].optional = false;
       await elementUpdated(stepper);
 
-      // step 1 is locked
       expect(isStepAccessible(stepper.steps[1])).to.be.false;
 
       stepper.steps[2].disabled = true;
@@ -964,9 +972,7 @@ describe('Stepper', () => {
 
   describe('Context binding', () => {
     it('should correctly bind context when a step is connected before its stepper parent', async () => {
-      // Connect the step in isolation — the AsyncContextConsumer defers ContextConsumer
-      // creation until after updateComplete, but no provider exists at that point so
-      // the context remains unresolved.
+      // Connect the step alone. No provider exists, so the context stays unresolved.
       const step = document.createElement(
         IgcStepComponent.tagName
       ) as IgcStepComponent;
@@ -974,14 +980,10 @@ describe('Stepper', () => {
       document.body.appendChild(step);
       await elementUpdated(step);
 
-      // No stepper context yet — step is not active and not part of any stepper.
       expect(step.active).to.be.false;
 
-      // Create the stepper, adopt the step, and connect it to the document.
-      // The step first disconnects from body, then reconnects as a child of the
-      // stepper. On reconnect, the ContextConsumer (subscribe: true) re-dispatches
-      // a context-request event that the stepper's ContextProvider answers,
-      // completing the binding via createAsyncContext.
+      // Move the step into a new stepper. On reconnect, the step requests the
+      // context again and the stepper provides it.
       const stepperEl = document.createElement(
         IgcStepperComponent.tagName
       ) as IgcStepperComponent;
@@ -990,14 +992,11 @@ describe('Stepper', () => {
       document.body.appendChild(stepperEl);
       await elementUpdated(stepperEl);
 
-      // Context is now bound — the stepper recognizes the step.
       expect(stepperEl.steps).to.include(step);
       expect(stepperEl.steps).to.have.lengthOf(1);
 
-      // The sole step is activated by default.
       expect(stepperEl.steps[0].active).to.be.true;
 
-      // Indicator reflects the correct step index (1-based).
       expect(
         getStepDOM(step).parts.indicator.querySelector('span')!.textContent
       ).to.equal('1');

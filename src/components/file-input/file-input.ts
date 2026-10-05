@@ -14,7 +14,7 @@ import { FormValueFileListTransformers } from '#internals/mixins/forms/form-tran
 import { createFormValueState } from '#internals/mixins/forms/form-value.js';
 import { I18nMixin } from '#internals/mixins/i18n.js';
 import { partMap } from '#internals/part-map.js';
-import { hasFiles } from '#internals/utils/dom.js';
+import { hasFiles, hasNegativeTabIndex } from '#internals/utils/dom.js';
 import { bindIf } from '#internals/utils/lit.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import IgcButtonComponent from '../button/button.js';
@@ -124,10 +124,7 @@ export default class IgcFileInputComponent extends I18nMixin(
       .join(', ');
   }
 
-  /**
-   * Indicates whether the file picker dialog is currently active.
-   * Used to manage validation on blur.
-   */
+  /** Whether the file picker dialog is open. Validation on blur depends on it. */
   @state()
   private _filePickerActive = false;
 
@@ -185,18 +182,14 @@ export default class IgcFileInputComponent extends I18nMixin(
   //#region Internal methods
 
   /**
-   * A file input cannot have a default file list, so the `value` attribute
-   * never contributes a default - otherwise its string would be stored as the
-   * FileList default and submitted character-by-character after a form reset.
+   * A file input has no default file list, so the `value` attribute gives no default.
+   * Otherwise a reset submits its string one character at a time.
    */
   protected override _setDefaultValue(): void {
     this._formValue.defaultValue = null;
   }
 
-  /**
-   * Restores directly instead of through the `value` setter: the setter is
-   * deliberately inert (read-only semantics) and never updates the form state.
-   */
+  /** Restores directly, because the read-only `value` setter never updates the form state. */
   protected override _restoreDefaultValue(): void {
     if (this._input) {
       this._input.value = '';
@@ -271,8 +264,6 @@ export default class IgcFileInputComponent extends I18nMixin(
   }
 
   protected override _renderInput() {
-    const hasNegativeTabIndex = this.getAttribute('tabindex') === '-1';
-
     return html`
       <input
         ${ariaBindings(this._ariaTarget.resolveBindings())}
@@ -283,7 +274,7 @@ export default class IgcFileInputComponent extends I18nMixin(
         ?required=${this.required}
         ?autofocus=${this.autofocus}
         ?multiple=${this.multiple}
-        tabindex=${bindIf(hasNegativeTabIndex, -1)}
+        tabindex=${bindIf(hasNegativeTabIndex(this), -1)}
         accept=${bindIf(this.accept, this.accept)}
         @click=${this._handleClick}
         @change=${this._handleChange}

@@ -48,7 +48,6 @@ describe('Textarea component', () => {
 
       expect(element.renderRoot.querySelector('[part="notch"]')).to.exist;
 
-      // Reset theme
       configureTheme('bootstrap');
       await nextFrame();
     });
@@ -171,11 +170,11 @@ describe('Textarea component', () => {
       element = await fixture(html`<igc-textarea></igc-textarea>`);
       textArea = element.renderRoot.querySelector('textarea')!;
 
-      // Switching to material creates a new internal template with another textarea...
+      // Material renders a new template with another textarea,
       configureTheme('material');
       await elementUpdated(element);
 
-      // ..thus the previously referenced non-material textarea should not match the internal query
+      // so the old textarea no longer matches the internal query
       expect(textArea !== (element as any)._input).to.be.true;
 
       configureTheme('bootstrap');
@@ -487,11 +486,11 @@ describe('Textarea component', () => {
     it('', async () => {
       const testParameters: ValidationContainerTestsParams<IgcTextareaComponent>[] =
         [
-          { slots: ['valueMissing'], props: { required: true } }, // value-missing slot
-          { slots: ['tooLong'], props: { maxLength: 3, value: '1234' } }, // too-long slot
-          { slots: ['tooShort'], props: { minLength: 3, value: '12' } }, // too-short slot
-          { slots: ['customError'] }, // custom-error slot
-          { slots: ['invalid'], props: { required: true } }, // invalid slot
+          { slots: ['valueMissing'], props: { required: true } },
+          { slots: ['tooLong'], props: { maxLength: 3, value: '1234' } },
+          { slots: ['tooShort'], props: { minLength: 3, value: '12' } },
+          { slots: ['customError'] },
+          { slots: ['invalid'], props: { required: true } },
         ];
 
       await runValidationContainerTests(IgcTextareaComponent, testParameters);

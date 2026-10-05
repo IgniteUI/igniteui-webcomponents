@@ -28,7 +28,7 @@ export function calculateSnappedDimension(
     };
   }
 
-  // If no change in delta and we have a snapped value, reuse it.
+  // Reuse the snapped value when the delta does not change.
   if (effectiveDelta === 0 && prevSnapped) {
     return { snappedSize: prevSnapped, newDelta: currentDelta };
   }

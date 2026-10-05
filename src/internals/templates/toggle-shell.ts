@@ -1,12 +1,10 @@
 import { html, nothing, type TemplateResult } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
-import { ariaBindings, resolveNaming } from '../controllers/aria-projection.js';
+import { ariaBindings, hostAria } from '../controllers/aria-projection.js';
 import { partMap } from '../part-map.js';
-import { bindIf } from '../utils/lit.js';
 
 export interface ToggleShellOptions {
-  /** The type of the native input element. */
   type: 'checkbox' | 'radio';
   /** The id of the native input; the `for` target of the wrapping label. */
   inputId: string;
@@ -27,10 +25,9 @@ export interface ToggleShellOptions {
    * `false`, and `live()` then writes nothing.
    */
   indeterminate?: boolean;
-  /** When provided, sets the `tabindex` attribute. */
   tabindex?: number;
-  /** The id of the helper-text container that describes the native input. */
-  describedBy?: string;
+  /** The helper-text container that describes the native input. */
+  description?: Element | null;
 
   onClick: (event: PointerEvent) => void;
   onKeyDown: (event: KeyboardEvent) => void;
@@ -47,18 +44,18 @@ type ToggleShellHost = HTMLElement & {
 };
 
 /**
- * Renders the native input and its wrapping label for a toggle control, with
- * the input bindings and the name, so a leaf component describes only its part
- * maps and its control indicator.
+ * Renders the native input and its wrapping label for a toggle control. A leaf
+ * component supplies only its part maps and its control indicator.
  */
 export function renderToggleShell(
   host: ToggleShellHost,
   options: ToggleShellOptions
 ): TemplateResult {
-  const aria = {
-    ...resolveNaming(host, !options.hideLabel && options.labelId),
-    describedByRef: options.describedBy,
-  };
+  const aria = hostAria(
+    host,
+    !options.hideLabel && options.labelId,
+    options.description
+  );
 
   return html`
     <label part=${partMap(options.baseParts)} for=${options.inputId}>
@@ -72,7 +69,7 @@ export function renderToggleShell(
         ?disabled=${host.disabled}
         .checked=${live(host.checked)}
         .indeterminate=${live(options.indeterminate ?? false)}
-        tabindex=${bindIf(options.tabindex != null, options.tabindex)}
+        tabindex=${ifDefined(options.tabindex)}
         @keydown=${options.onKeyDown}
         @click=${options.onClick}
         @blur=${options.onBlur ?? nothing}

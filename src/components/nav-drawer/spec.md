@@ -33,6 +33,7 @@ This directory hosts three public components: [`igc-nav-drawer`](#igc-nav-drawer
     - [API tests](#api-tests)
     - [Events and behaviors](#events-and-behaviors)
     - [Mini slot popover](#mini-slot-popover)
+    - [Host ARIA](#host-aria)
   - [Assumptions and limitations](#assumptions-and-limitations)
   - [Accessibility](#accessibility)
     - [ARIA roles and properties](#aria-roles-and-properties)
@@ -41,9 +42,10 @@ This directory hosts three public components: [`igc-nav-drawer`](#igc-nav-drawer
 
 ## Revision history
 
-| Version | Date       | Notes                 |
-| ------: | ---------- | --------------------- |
-|       1 | 2026-09-21 | Initial specification |
+| Version | Date       | Notes                                                                   |
+| ------: | ---------- | ----------------------------------------------------------------------- |
+|       1 | 2026-09-21 | Initial specification                                                   |
+|       2 | 2026-10-02 | Forward the host `aria-label`, `aria-labelledby` and `aria-describedby` |
 
 ## Overview
 
@@ -305,6 +307,11 @@ The suite lives in [`nav-drawer.spec.ts`](./nav-drawer.spec.ts) and runs in a re
 
 12. The mini rail behaves correctly alongside the main drawer, including the transitions between the two.
 
+### Host ARIA
+
+13. The host `aria-label` names the drawer without `label`, `label` wins over it, `aria-labelledby` wins over
+    `label`, relative mode follows a change, and only the main element gets the host description.
+
 ## Assumptions and limitations
 
 - The drawer holds no routing logic: the `active` state of an item is set by the application.
@@ -324,6 +331,8 @@ The suite lives in [`nav-drawer.spec.ts`](./nav-drawer.spec.ts) and runs in a re
   a plain container with no role, no `aria-disabled` and no focus management, so content projected into a disabled
   item stays focusable and operable. An application that needs the state to reach assistive technology, or a
   disabled item to be skipped by the keyboard, sets that on the content it projects.
+- The host `aria-labelledby` names the drawer before `label`, and the host `aria-label` names it when `label` is not
+  set. The host `aria-describedby` describes the dialog or the relative `nav`, not the mini variant.
 
 ### Keyboard support
 

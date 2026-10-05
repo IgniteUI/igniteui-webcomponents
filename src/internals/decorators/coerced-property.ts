@@ -14,16 +14,13 @@ export interface CoercedPropertyConfig<T, H> {
   /** Coerces every incoming value, the field initializer included. */
   transform?: (context: CoercedPropertyContext<T, H>) => T;
 
-  /**
-   * Runs after the property stores a value, but not for the field
-   * initializer, which matches a hand-written accessor pair.
-   */
+  /** Runs after the property stores a value, but not for the initializer. */
   onChange?: (context: CoercedPropertyContext<T, H>) => void;
 }
 
 /**
- * Replaces the hand-written backing-field accessor pair of a reactive
- * property with a declarative coercion and side-effect configuration.
+ * Replaces a hand-written accessor pair of a reactive property with
+ * declarative coercion and side effects.
  *
  * @remarks
  * Apply it below `@property`, so Lit keeps its wrapper for change detection
@@ -49,9 +46,8 @@ export function coercedProperty<T, H extends object = object>(
   const { transform, onChange } = config;
 
   return (prototype: object, name: PropertyKey): void => {
-    // In the canonical order there is no descriptor yet, and Lit wraps the
-    // accessor below. A `@property` applied first instead leaves its own
-    // accessor here, which this one wraps to keep change detection.
+    // A `@property` applied first leaves its accessor here. Wrap it to keep
+    // change detection.
     const wrapped = Object.getOwnPropertyDescriptor(prototype, name);
     const store = new WeakMap<object, T>();
     const initialized = new WeakSet<object>();

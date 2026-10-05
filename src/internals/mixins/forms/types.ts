@@ -83,6 +83,9 @@ export declare class BaseFormAssociatedElement {
     init?: CustomEventInit
   ): boolean;
 
+  /** Runs `callback` and restores the pristine flag. */
+  protected _withPristine(callback: () => void): void;
+
   /** Sets the default value from a change of the `value` attribute. */
   protected _setDefaultValue(current: string | null): void;
 

@@ -49,9 +49,8 @@ function refObserverCallback(
 }
 
 /**
- * Sends an event when an ID reference in a root node changes. A reference
- * count starts the observation for the first consumer, and stops it after
- * the last one releases.
+ * Sends an event when an ID in a root node changes. Its consumers share one
+ * reference-counted observer.
  */
 class IdRefChangeEmitter extends EventTarget {
   private readonly _observer?: MutationObserver;

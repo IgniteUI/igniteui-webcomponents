@@ -12,10 +12,9 @@ import { getRoot } from '#internals/utils/dom.js';
 
 /**
  * The weight of a kept part when the reconciliation selects the parts that do
- * not move. A recycled part weighs 1. A moved element needs a new style and
- * layout, but a recycled element needs a new layout for its new item anyway.
- * So on a scroll, the kept parts move only when they are fewer than half the
- * recycled parts.
+ * not move. A recycled part weighs 1. A moved element needs style and layout,
+ * and a recycled element needs layout anyway, so the kept parts move only when
+ * they are fewer than half the recycled parts.
  */
 const KEPT_WEIGHT = 2;
 
@@ -116,11 +115,9 @@ class RecycleDirective extends Directive {
 
   /**
    * The disconnected parent of the pooled parts, in the document of the
-   * container. A part that moves to another document is adopted: its custom
-   * elements get `adoptedCallback`, and its images load again. `insertPart`
-   * notifies the async directives in a part when it moves the part between
-   * parents with a different connected state, so a pooled part is
-   * disconnected, and a reused one is connected again.
+   * container, so a reuse does not adopt a part from another document.
+   * `insertPart` disconnects the async directives of a pooled part and
+   * connects them again on reuse.
    */
   private _poolRoot?: RootPart;
 
@@ -167,8 +164,7 @@ class RecycleDirective extends Directive {
    * 4. The reused parts in the heaviest subsequence that keeps its old order
    *    do not move, see `KEPT_WEIGHT`. A kept part that holds the focus
    *    weighs more than all the other parts together, so it does not move and
-   *    keeps the focus. Each other part moves in front of its successor,
-   *    unless it is already there.
+   *    keeps the focus.
    */
   private _reconcile(
     containerPart: ChildPart,
@@ -269,9 +265,7 @@ interface RecycleDirectiveFn {
 
 /**
  * Renders `items` as `repeat` does, but gives the DOM of a key that leaves to
- * a key that arrives. `repeat` destroys the part of each key that leaves and
- * creates one for each key that arrives, which in a scrolling window is DOM
- * churn on each scroll step. A reused part keeps any DOM state that the
- * template does not bind.
+ * a key that arrives, so a scroll step does not destroy and create DOM. A
+ * reused part keeps any DOM state that the template does not bind.
  */
 export const recycle = directive(RecycleDirective) as RecycleDirectiveFn;

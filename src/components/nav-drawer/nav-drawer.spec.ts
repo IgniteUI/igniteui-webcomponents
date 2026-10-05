@@ -165,6 +165,71 @@ describe('Navigation Drawer', () => {
     });
   });
 
+  describe('Host ARIA', () => {
+    let container: HTMLElement;
+    let name: HTMLElement;
+
+    const base = () =>
+      navDrawer.renderRoot.querySelector<HTMLElement>('[part~="base"]')!;
+    const mini = () =>
+      navDrawer.renderRoot.querySelector<HTMLElement>('[part~="mini"]')!;
+
+    beforeEach(async () => {
+      container = await fixture<HTMLElement>(html`
+        <div>
+          <span id="drawer-name">Site navigation</span>
+          <span id="drawer-hint">Lists the main pages</span>
+          <igc-nav-drawer aria-label="Main">
+            <div slot="mini"><igc-nav-drawer-item></igc-nav-drawer-item></div>
+            <igc-nav-drawer-item></igc-nav-drawer-item>
+          </igc-nav-drawer>
+        </div>
+      `);
+      navDrawer = container.querySelector('igc-nav-drawer')!;
+      name = container.querySelector('#drawer-name')!;
+    });
+
+    it('is named by the host `aria-label` without a `label`', () => {
+      expect(base().getAttribute('aria-label')).to.equal('Main');
+      expect(mini().getAttribute('aria-label')).to.equal('Main');
+    });
+
+    it('prefers `label` over the host `aria-label`', async () => {
+      navDrawer.label = 'Drawer';
+      await elementUpdated(navDrawer);
+
+      expect(base().getAttribute('aria-label')).to.equal('Drawer');
+    });
+
+    it('prefers the host `aria-labelledby` over `label`', async () => {
+      navDrawer.label = 'Drawer';
+      navDrawer.setAttribute('aria-labelledby', name.id);
+      await elementUpdated(navDrawer);
+
+      expect(base().ariaLabelledByElements).to.eql([name]);
+      expect(mini().ariaLabelledByElements).to.eql([name]);
+    });
+
+    it('follows a change of the host `aria-label`, also in relative mode', async () => {
+      navDrawer.position = 'relative';
+      navDrawer.setAttribute('aria-label', 'Sections');
+      await elementUpdated(navDrawer);
+
+      expect(base().localName).to.equal('nav');
+      expect(base().getAttribute('aria-label')).to.equal('Sections');
+    });
+
+    it('describes only the main element by the host `aria-describedby`', async () => {
+      navDrawer.setAttribute('aria-describedby', 'drawer-hint');
+      await elementUpdated(navDrawer);
+
+      expect(base().ariaDescribedByElements).to.eql([
+        container.querySelector('#drawer-hint'),
+      ]);
+      expect(mini().hasAttribute('aria-describedby')).to.be.false;
+    });
+  });
+
   describe('API', () => {
     beforeEach(async () => {
       navDrawer = await createNavDrawer();

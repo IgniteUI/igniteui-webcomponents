@@ -2,6 +2,7 @@ import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import { spy } from 'sinon';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
 import { isFocused } from '#internals/testing/helpers.spec.js';
+import { runHostAriaTests } from '#internals/testing/host-aria.spec.js';
 import IgcChipComponent from './chip.js';
 
 describe('Chip', () => {
@@ -11,6 +12,12 @@ describe('Chip', () => {
 
   before(() => {
     defineComponents(IgcChipComponent);
+  });
+
+  runHostAriaTests({
+    tagName: 'igc-chip',
+    template: html`<igc-chip>Chip</igc-chip>`,
+    getTarget: (host) => host.renderRoot.querySelector('[part="action"]')!,
   });
 
   it('passes the a11y audit', async () => {
@@ -275,9 +282,8 @@ describe('Chip', () => {
 
       const action = chip.renderRoot.querySelector('[part="action"]')!;
 
-      // The remove keybindings are scoped to the remove control. Left unscoped
-      // they fall back to the host and cancel the default action of the keys
-      // that activate the chip itself - `Space` selection among them.
+      // Unscoped remove keybindings fall back to the host and cancel the
+      // default action of the chip keys, such as `Space` selection.
       for (const key of ['Enter', ' ']) {
         const event = new KeyboardEvent('keyup', {
           key,

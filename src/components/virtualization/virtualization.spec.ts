@@ -28,7 +28,6 @@ describe('VirtualScroll', () => {
       >${ctx.value}</span
     >`;
 
-  /** An item template of blocks that are `size` px tall. */
   function heightTemplate(size: number): VirtualScrollItemTemplate<unknown> {
     return (ctx) =>
       html`<span style="display: block; height: ${size}px;"
@@ -178,6 +177,26 @@ describe('VirtualScroll', () => {
       expect(el.querySelector('[part="virtualization-track"]')).to.not.be.null;
       expect(el.querySelector('[part="virtualization-content"]')).to.not.be
         .null;
+    });
+
+    it('adopts its style sheet again after other code replaces the root sheets', async () => {
+      const el = await fixture<IgcVirtualScrollComponent<string>>(
+        html`<igc-virtual-scroll
+          .data=${createItems(100)}
+          .itemTemplate=${fixedTemplate}
+        ></igc-virtual-scroll>`
+      );
+      const sheets = Array.from(document.adoptedStyleSheets);
+
+      try {
+        document.adoptedStyleSheets = [];
+        el.requestUpdate();
+        await elementUpdated(el);
+
+        expect(getComputedStyle(el).overflowY).to.equal('auto');
+      } finally {
+        document.adoptedStyleSheets = sheets;
+      }
     });
   });
 
@@ -527,9 +546,8 @@ describe('VirtualScroll', () => {
 
       await el.layoutComplete;
 
-      // Item 0 spans 0-400px and the viewport is 50-350px, so the item
-      // covers it fully. The item cannot fit inside the viewport, but there
-      // is also nothing to scroll to.
+      // Item 0 spans 0-400px and covers the 50-350px viewport fully, so there is
+      // nothing to scroll to.
       el.scrollTop = 50;
       el.dispatchEvent(new Event('scroll'));
       await el.layoutComplete;
@@ -673,8 +691,8 @@ describe('VirtualScroll', () => {
 
       const resizeSpy = spy(el['_engine'], 'resize');
 
-      // An identical item count used to make `resize` a no-op. That left the
-      // previous data's measurements on the new items.
+      // An identical item count must not keep the previous data's
+      // measurements on the new items.
       el.data = createItems(20).map((item) => `${item}!`);
       await elementUpdated(el);
 
@@ -737,12 +755,9 @@ describe('VirtualScroll', () => {
       await el.layoutComplete;
       await el.layoutComplete;
 
-      // Jump to the end. Lit reuses the wrapper elements for the new indices
-      // at an identical size, and the ResizeObserver does not report that.
-      // Those indices used to keep their estimated size, which left a gap
-      // between the last item and the end of the track. Measurements at the
-      // bottom shrink the track, so apply the jump again until the scroll
-      // height is stable.
+      // Jump to the end. The reused wrappers keep an identical size, which the
+      // ResizeObserver does not report. Measurements at the bottom shrink the
+      // track, so jump again until the scroll height is stable.
       for (let i = 0; i < 10; i++) {
         const height = el.scrollHeight;
         el.scrollTop = el.scrollHeight;
@@ -923,7 +938,7 @@ describe('VirtualScroll', () => {
     // 1,000,000 items of 50px are 50,000,000px, more than a browser can
     // scroll, so the component compresses the virtual space. At DOM offsets of
     // millions of px, the browser keeps positions to about 1px, so the checks
-    // allow 2px. Without the compression fix, items were off by 20 to 35px.
+    // allow 2px.
     const COUNT = 1_000_000;
     const PRECISION = 2;
     const ITEM_SIZE = 50;
@@ -1047,8 +1062,7 @@ describe('VirtualScroll', () => {
 
       const eventSpy = spy(el, 'emitEvent');
 
-      // In RTL, browsers report scrollLeft as a negative value. Simulate
-      // that: set scrollLeft, then fire a synthetic scroll event.
+      // In RTL, browsers report scrollLeft as a negative value.
       el.scrollLeft = -500;
       el.dispatchEvent(new Event('scroll'));
       await elementUpdated(el);
@@ -1071,7 +1085,6 @@ describe('VirtualScroll', () => {
       const el = await createRTLScroll();
       await elementUpdated(el);
 
-      // Simulate an RTL scroll offset.
       el.scrollLeft = -300;
       el.dispatchEvent(new Event('scroll'));
       await elementUpdated(el);

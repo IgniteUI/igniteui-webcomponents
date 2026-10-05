@@ -62,33 +62,17 @@ describe('Checkbox', () => {
     });
 
     it('should render the correct SVG in indigo theme', async () => {
-      /**
-       * In Indigo theme the svg structure goes like this:
-       *
-       * <svg>
-       *  <rect></rect>
-       *  <path></path>
-       * </svg>
-       *
-       * while in the other themes it is:
-       *
-       * <svg>
-       *  <path></path>
-       * </svg>
-       */
+      // Indigo renders `<svg><rect/><path/></svg>`. Other themes omit the `<rect>`.
 
       const root = element.renderRoot;
 
-      // Bootstrap, Fluent, Material
       expect(root.querySelector('svg > rect')).to.be.null;
 
       configureTheme('indigo');
       await elementUpdated(element);
 
-      // Indigo
       expect(root.querySelector('svg > rect')).to.be.not.null;
 
-      // Reset back to Bootstrap
       configureTheme('bootstrap');
     });
 
@@ -267,8 +251,6 @@ describe('Checkbox', () => {
     });
 
     it('syncs the native input checked state after form reset', async () => {
-      // Regression: the old restore path recorded the wrong reactive property
-      // (`value` instead of `checked`) for the reset update cycle.
       spec.setProperties({ checked: true });
       await elementUpdated(spec.element);
 
@@ -416,9 +398,9 @@ describe('Checkbox', () => {
     it('', async () => {
       const testParameters: ValidationContainerTestsParams<IgcCheckboxComponent>[] =
         [
-          { slots: ['valueMissing'], props: { required: true } }, // value-missing slot
-          { slots: ['customError'] }, // custom-error slot
-          { slots: ['invalid'], props: { required: true } }, // invalid slot
+          { slots: ['valueMissing'], props: { required: true } },
+          { slots: ['customError'] },
+          { slots: ['invalid'], props: { required: true } },
         ];
 
       await runValidationContainerTests(IgcCheckboxComponent, testParameters);

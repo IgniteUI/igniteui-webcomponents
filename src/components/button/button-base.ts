@@ -1,6 +1,12 @@
 import { html, LitElement, type TemplateResult } from 'lit';
 import { property, query } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
+import {
+  type ARIABindings,
+  ariaBindings,
+  hostAria,
+  trackLabels,
+} from '#internals/controllers/aria-projection.js';
 import { addKeyboardFocusRing } from '#internals/controllers/focus-ring.js';
 import { addIdRefResolver } from '#internals/controllers/id-resolver.js';
 import { addInternalsController } from '#internals/controllers/internals.js';
@@ -8,9 +14,20 @@ import { blazorDeepImport } from '#internals/decorators/blazorDeepImport.js';
 import { shadowOptions } from '#internals/decorators/shadow-options.js';
 import type { Constructor } from '#internals/mixins/constructor.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
+import { HostAriaMixin } from '#internals/mixins/host-aria.js';
 import { partMap } from '#internals/part-map.js';
 import { getElementByIdFromRoot } from '#internals/utils/dom.js';
 import { bindIf } from '#internals/utils/lit.js';
+
+/** As for a native button, the host `aria-label` wins over a `<label>`. */
+function nativeAria(host: Element): ARIABindings {
+  const aria = hostAria(host);
+  const label = host.getAttribute('aria-label');
+
+  return label && !host.ariaLabelledByElements?.length
+    ? { ...aria, labelledBy: null, label }
+    : aria;
+}
 
 export interface IgcButtonEventMap {
   // For analyzer meta only:
@@ -36,7 +53,7 @@ export interface IgcButtonEventMap {
 export abstract class IgcButtonBaseComponent extends EventEmitterMixin<
   IgcButtonEventMap,
   Constructor<LitElement>
->(LitElement) {
+>(HostAriaMixin(LitElement)) {
   public static readonly formAssociated = true;
 
   //#region Internal state
@@ -193,6 +210,11 @@ export abstract class IgcButtonBaseComponent extends EventEmitterMixin<
 
   //#region Lifecycle
 
+  constructor() {
+    super();
+    trackLabels(this);
+  }
+
   protected override firstUpdated(): void {
     this.updateComplete.then(() => {
       if (this._commandfor) {
@@ -243,15 +265,20 @@ export abstract class IgcButtonBaseComponent extends EventEmitterMixin<
 
   //#endregion
 
-  private _renderButton() {
+  /**
+   * A disabled link renders a disabled native button with the link role, because an anchor has no disabled state.
+   * The browser dispatches no click on it, not even to ancestor capture listeners.
+   */
+  private _renderButton(link = false) {
     return html`
       <button
-        command=${ifDefined(this.command)}
-        .commandForElement=${this._commandForElement}
+        command=${ifDefined(link ? undefined : this.command)}
+        .commandForElement=${link ? null : this._commandForElement}
         part=${partMap({ base: true, focused: this._focusRingManager.focused })}
-        aria-label=${bindIf(this.ariaLabel, this.ariaLabel)}
+        role=${bindIf(link, 'link')}
+        ${ariaBindings(nativeAria(this))}
         ?disabled=${this.disabled}
-        type=${ifDefined(this.type)}
+        type=${ifDefined(link ? 'button' : this.type)}
         @click=${this._handleClick}
       >
         ${this._renderContent()}
@@ -263,7 +290,7 @@ export abstract class IgcButtonBaseComponent extends EventEmitterMixin<
     return html`
       <a
         part=${partMap({ base: true, focused: this._focusRingManager.focused })}
-        aria-label=${bindIf(this.ariaLabel, this.ariaLabel)}
+        ${ariaBindings(nativeAria(this))}
         href=${ifDefined(this.href)}
         target=${ifDefined(this.target)}
         download=${ifDefined(this.download)}
@@ -274,25 +301,6 @@ export abstract class IgcButtonBaseComponent extends EventEmitterMixin<
     `;
   }
 
-  /**
-   * An anchor has no disabled state, so a disabled link renders a disabled
-   * native button with the link role. It leaves the tab order, and the browser
-   * dispatches no click on it, not even to the capture listeners of ancestors.
-   */
-  private _renderDisabledLink() {
-    return html`
-      <button
-        part=${partMap({ base: true, focused: this._focusRingManager.focused })}
-        role="link"
-        aria-label=${bindIf(this.ariaLabel, this.ariaLabel)}
-        disabled
-        type="button"
-      >
-        ${this._renderContent()}
-      </button>
-    `;
-  }
-
   protected abstract _renderContent(): TemplateResult;
 
   protected override render() {
@@ -300,8 +308,6 @@ export abstract class IgcButtonBaseComponent extends EventEmitterMixin<
       return this._renderButton();
     }
 
-    return this.disabled
-      ? this._renderDisabledLink()
-      : this._renderLinkButton();
+    return this.disabled ? this._renderButton(true) : this._renderLinkButton();
   }
 }

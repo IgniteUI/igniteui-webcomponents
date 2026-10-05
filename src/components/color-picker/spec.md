@@ -35,6 +35,7 @@
     - [Picker canvas](#picker-canvas)
     - [Color model and parsing](#color-model-and-parsing)
     - [Converters](#converters)
+    - [Host ARIA](#host-aria)
   - [Assumptions and limitations](#assumptions-and-limitations)
   - [Accessibility](#accessibility)
     - [ARIA roles and properties](#aria-roles-and-properties)
@@ -51,6 +52,7 @@
 |       4 | 2026-09-28 | Add the property-based color suite                 |
 |       5 | 2026-09-30 | Serialize the initial value in the declared format |
 |       6 | 2026-10-02 | Focus after form checks; `invalid` only on checks  |
+|       7 | 2026-10-02 | Forward the host `aria-describedby`                |
 
 ## Overview
 
@@ -446,6 +448,13 @@ The focus after the form checks and the `invalid` event rules come from the form
     and an empty model. A model string in each format parses back to the same color.
 26. Model - every color space stays in range for any sequence of channel writes, and a clone equals its source.
 
+### Host ARIA
+
+27. The shared host description suite: the host `aria-describedby` describes the native control after the helper
+    text, and follows a change and a removal.
+28. In button mode, the anchor lists the helper text before the host description, also after the first
+    render.
+
 ## Assumptions and limitations
 
 - The eye dropper button is always rendered, but it is only enabled when the platform implements the `EyeDropper`
@@ -485,6 +494,7 @@ The focus after the form checks and the `invalid` event rules come from the form
 - [`input[type="range"]`](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/range)
 - [Form-associated custom elements (ElementInternals)](https://developer.mozilla.org/en-US/docs/Web/API/ElementInternals)
 - [CSS Custom State Set](https://developer.mozilla.org/en-US/docs/Web/API/CustomStateSet)
+- A host `aria-describedby` describes the native control after the helper text, by element reference.
 
 ### Keyboard support
 

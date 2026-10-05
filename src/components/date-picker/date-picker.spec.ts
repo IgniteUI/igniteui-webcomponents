@@ -32,6 +32,18 @@ import IgcDatePickerComponent from './date-picker.js';
 describe('Date picker', () => {
   before(() => defineComponents(IgcDatePickerComponent));
 
+  it('exposes `required` as `aria-required` on the native input', async () => {
+    const picker = await fixture<IgcDatePickerComponent>(
+      html`<igc-date-picker required></igc-date-picker>`
+    );
+    const editor = picker.renderRoot.querySelector('igc-date-time-input')!;
+    await elementUpdated(editor);
+
+    expect(
+      editor.renderRoot.querySelector('input')!.getAttribute('aria-required')
+    ).to.equal('true');
+  });
+
   runExternalLabelAssociationTests({
     tagName: IgcDatePickerComponent.tagName,
     getNativeInput: (host) =>
@@ -508,7 +520,6 @@ describe('Date picker', () => {
         ],
       };
 
-      //test defaults
       expect(picker.value).to.be.null;
       expect(picker.weekStart).to.equal('sunday');
       expect(picker.hideOutsideDays).to.equal(false);
@@ -591,10 +602,9 @@ describe('Date picker', () => {
         await elementUpdated(picker);
         checkDatesEqual(calendar.activeDate, tomorrowDate);
 
-        // value is null
         expect(picker.value).to.be.null;
 
-        // setting the value does not affect the activeDate, when it is explicitly set
+        // An explicit activeDate does not follow value changes.
         picker.value = after20DaysDate.native;
         await elementUpdated(picker);
 
@@ -618,7 +628,6 @@ describe('Date picker', () => {
 
         expect(dateTimeInput.displayFormat).to.equal(testFormat);
 
-        // set via attribute
         testFormat = 'dd--MM--yyyy';
         picker.setAttribute('display-format', testFormat);
         await elementUpdated(picker);
@@ -655,13 +664,11 @@ describe('Date picker', () => {
         expect(picker.getAttribute('display-format')).to.be.null;
         expect(picker.displayFormat).to.equal('M/d/yyyy');
 
-        // updates inputFormat according to changed locale
         picker.locale = 'fr';
         await elementUpdated(picker);
         expect(picker.inputFormat).to.equal('dd/MM/yyyy');
         expect(picker.displayFormat).to.equal('dd/MM/yyyy');
 
-        // sets inputFormat as attribute
         picker.setAttribute('input-format', 'dd-MM-yyyy');
         await elementUpdated(picker);
 
@@ -870,9 +877,8 @@ describe('Date picker', () => {
     });
 
     it('survives a host re-applying the bound value mid-edit', async () => {
-      // The grid edit-template scenario from the issue: change detection re-commits
-      // the bound value on every keystroke. It is equal to the committed one, so the
-      // in-progress edit must survive it.
+      // Grid edit-template case: the host re-commits an equal value on every
+      // keystroke. The in-progress edit must survive it.
       const initial = new Date(2020, 2, 3);
       picker.value = initial;
       dateTimeInput.focus();
@@ -910,7 +916,6 @@ describe('Date picker', () => {
       expect(eventSpy).calledWith('igcClosed');
       eventSpy.resetHistory();
 
-      // dialog mode
       picker.mode = 'dialog';
       await picker.show();
 
@@ -980,8 +985,7 @@ describe('Date picker', () => {
       await elementUpdated(picker);
 
       expect(eventSpy).calledOnceWith('igcInput');
-      // Spinning is an uncommitted edit - `value` follows on blur - so the typed
-      // date is only carried by the event detail. See issue #1346.
+      // Spinning is an uncommitted edit, so only the event detail has the date. See #1346.
       checkDatesEqual(
         (eventSpy.firstCall.args[1] as CustomEventInit).detail as Date,
         expectedValue
@@ -1108,7 +1112,6 @@ describe('Date picker', () => {
 
       checkDatesEqual(picker.value!, targetDate);
 
-      // Open the picker and switch to months view
       await picker.show();
 
       simulateClick(calendarDOM.navigation.months);
@@ -1157,8 +1160,6 @@ describe('Date picker', () => {
     it('issue 1884 - should emit igcChange event in dialog mode after clearing the value and losing focus', async () => {
       const eventSpy = spy(picker, 'emitEvent');
 
-      // Dropdown mode
-
       picker.value = CalendarDay.today.native;
       picker.focus();
       picker.blur();
@@ -1179,7 +1180,6 @@ describe('Date picker', () => {
 
       eventSpy.resetHistory();
 
-      // Dialog mode
       picker.mode = 'dialog';
       picker.value = CalendarDay.today.native;
       picker.focus();

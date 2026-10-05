@@ -36,7 +36,8 @@ is a summary.
   `@coercedProperty` to coerce a value or to run a side effect on each set.
 - Emit events only for user interaction, through `EventEmitterMixin` with a typed event map.
 - Set ARIA through `addInternalsController`. Composite components project ARIA with
-  `addAriaProjector` / `addAriaTarget`.
+  `addAriaProjector` / `addAriaTarget`. A component that forwards the host name or
+  description uses `HostAriaMixin` and `ariaBindings(hostAria(this))`.
 - Accessibility is **mandatory**. Each component passes an a11y audit and meets WCAG 2.1 AA.
 - JSDoc descriptions ship as-is into the public API docs. Do not put `igc-` tag names in the
   prose.

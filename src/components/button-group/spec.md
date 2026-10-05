@@ -36,6 +36,7 @@
     - [Roving tab index](#roving-tab-index)
     - [Arrow navigation](#arrow-navigation)
     - [Toggle button tests](#toggle-button-tests)
+    - [Host ARIA](#host-aria)
     - [Not covered by the suite](#not-covered-by-the-suite)
   - [Assumptions and limitations](#assumptions-and-limitations)
   - [Accessibility](#accessibility)
@@ -45,9 +46,11 @@
 
 ## Revision history
 
-| Version | Date       | Notes                 |
-| ------: | ---------- | --------------------- |
-|       1 | 2026-09-21 | Initial specification |
+| Version | Date       | Notes                                                                        |
+| ------: | ---------- | ---------------------------------------------------------------------------- |
+|       1 | 2026-09-21 | Initial specification                                                        |
+|       2 | 2026-10-02 | The toggle button follows a change of `aria-label`                           |
+|       3 | 2026-10-02 | The toggle button forwards the host `aria-labelledby` and `aria-describedby` |
 
 ## Overview
 
@@ -309,8 +312,14 @@ Emitted by `igc-button-group`, for user interaction only.
 ### Toggle button tests
 
 32. The button passes the accessibility audit, renders correctly and is initialized with its default state.
-33. The rendered attributes are correct, and `value`, `selected`, `disabled` and `aria-label` are applied.
+33. The rendered attributes are correct, and `value`, `selected`, `disabled` and `aria-label` are applied. A change
+    of
+    `aria-label` reaches the native button.
 34. `focus()`, `blur()` and `click()` behave as expected.
+
+### Host ARIA
+
+35. The toggle button forwards the host `aria-labelledby` and `aria-describedby`.
 
 ### Not covered by the suite
 
@@ -334,7 +343,8 @@ Emitted by `igc-button-group`, for user interaction only.
 - The role sits on the host, so that a label provided by the author names the group.
 - `aria-orientation` mirrors the alignment of the group.
 - Each button exposes its selected and disabled state, and is named by its projected content or by its
-  `aria-label`.
+  `aria-label`. The host `aria-label` is forwarded to the native button, also after a change.
+- The toggle button forwards the host `aria-labelledby` and `aria-describedby` to its native button.
 
 ### Keyboard support
 

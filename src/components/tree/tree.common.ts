@@ -1,3 +1,5 @@
+import { HOST_ARIA_ATTRIBUTES } from '#internals/mixins/host-aria.js';
+import { setOrRemoveAttribute } from '#internals/utils/dom.js';
 import type { RequiredProps } from '#internals/utils/types.js';
 import type IgcTreeItemComponent from './tree-item.js';
 
@@ -11,56 +13,71 @@ const TREE_ITEM_ARIA_STATE = [
   'aria-disabled',
 ] as const;
 
-function isTreeItem(element: Element): element is IgcTreeItemComponent {
-  return element.tagName.toLowerCase() === TREE_ITEM_TAG;
+/** The copies of host attributes that each delegate holds, by name. */
+const copiedAria = new WeakMap<Element, Map<string, string>>();
+
+export function isTreeItem(
+  element?: Element | null
+): element is IgcTreeItemComponent {
+  return element?.tagName.toLowerCase() === TREE_ITEM_TAG;
 }
 
 /**
  * The direct `igc-tree-item` light-DOM children of `parent`.
  *
- * Items must be nested directly - wrapping one in another element is not
- * supported - which keeps this a cheap `.children` scan rather than a
- * subtree-wide query.
+ * Wrapped items are not supported, so a cheap `.children` scan is enough.
  */
 export function getTreeItemChildren(parent: Element): IgcTreeItemComponent[] {
-  const result: IgcTreeItemComponent[] = [];
-
-  for (const child of parent.children) {
-    if (isTreeItem(child)) {
-      result.push(child);
-    }
-  }
-
-  return result;
+  return Array.from(parent.children).filter(isTreeItem);
 }
 
-/** Whether `parent` has at least one direct `igc-tree-item` child. */
+/**
+ * Appends the `igc-tree-item` descendants of `parent` to `out` in pre-order.
+ * One shared array keeps the walk of a deep tree linear.
+ */
+export function collectTreeItems(
+  parent: Element,
+  out: IgcTreeItemComponent[] = []
+): IgcTreeItemComponent[] {
+  for (const child of getTreeItemChildren(parent)) {
+    out.push(child);
+    collectTreeItems(child, out);
+  }
+
+  return out;
+}
+
 export function hasTreeItemChildren(parent: Element): boolean {
-  for (const child of parent.children) {
-    if (isTreeItem(child)) {
-      return true;
-    }
-  }
-
-  return false;
-}
-
-/** Sets an ARIA attribute, or removes it when `value` is null. */
-export function setAriaState(
-  element: Element,
-  name: string,
-  value: string | null
-): void {
-  if (value === null) {
-    element.removeAttribute(name);
-  } else {
-    element.setAttribute(name, value);
-  }
+  return Array.from(parent.children).some(isTreeItem);
 }
 
 export function clearTreeItemAria(element: Element): void {
   for (const name of TREE_ITEM_ARIA_STATE) {
     element.removeAttribute(name);
+  }
+
+  // Only the copies, see `copyHostAria`. The own values of an element stay.
+  for (const [name, value] of copiedAria.get(element) ?? []) {
+    if (element.getAttribute(name) === value) {
+      element.removeAttribute(name);
+    }
+  }
+  copiedAria.delete(element);
+}
+
+/** Copies the host ARIA to the element with the role, but keeps its own. @internal */
+export function copyHostAria(host: Element, delegate: Element): void {
+  const copied = copiedAria.get(delegate) ?? new Map<string, string>();
+  copiedAria.set(delegate, copied);
+
+  for (const name of HOST_ARIA_ATTRIBUTES) {
+    const current = delegate.getAttribute(name);
+
+    if (current === null || current === copied.get(name)) {
+      const value = host.getAttribute(name);
+      current !== value && setOrRemoveAttribute(delegate, name, value);
+      value === null ? copied.delete(name) : copied.set(name, value);
+    }
   }
 }
 

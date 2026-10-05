@@ -212,11 +212,9 @@ describe('Radio Component', () => {
       // Initial render - invalid state but no styles applied
       expect(radios.every((radio) => radio.invalid)).to.be.false;
 
-      // checkValidity - all radios from the group should have invalid styles applied
       expect(firstOf(radios).reportValidity()).to.be.false;
       expect(radios.every((radio) => radio.invalid)).to.be.true;
 
-      // Set a checked radio - valid state, invalid styles should not be applied
       firstOf(radios).checked = true;
       expect(firstOf(radios).reportValidity()).to.be.true;
       expect(radios.every((radio) => radio.invalid)).to.be.false;
@@ -292,8 +290,7 @@ describe('Radio Component', () => {
     });
 
     it('should not restore a checked state whose attribute was removed before reset', () => {
-      // Regression: removing the `checked` attribute used to leave
-      // `defaultChecked` as true, re-checking the radio on form reset.
+      // Removing the `checked` attribute must clear `defaultChecked`.
       const radio = firstOf(radios);
 
       radio.toggleAttribute('checked', true);
@@ -411,13 +408,11 @@ describe('Radio Component', () => {
     });
 
     it('synchronously validates component', () => {
-      // Invalid state
       expect(spec.form.checkValidity()).to.be.false;
       spec.assertSubmitFails();
 
       spec.reset();
 
-      // Passes
       spec.element.click();
       expect(spec.form.checkValidity()).to.be.true;
       spec.assertSubmitPasses();
@@ -647,9 +642,9 @@ describe('Radio Component', () => {
     it('', async () => {
       const testParameters: ValidationContainerTestsParams<IgcRadioComponent>[] =
         [
-          { slots: ['valueMissing'], props: { required: true } }, // value-missing slot
-          { slots: ['customError'] }, // custom-error slot
-          { slots: ['invalid'], props: { required: true } }, // invalid slot
+          { slots: ['valueMissing'], props: { required: true } },
+          { slots: ['customError'] },
+          { slots: ['invalid'], props: { required: true } },
         ];
 
       await runValidationContainerTests(IgcRadioComponent, testParameters);

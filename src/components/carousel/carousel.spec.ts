@@ -64,7 +64,6 @@ describe('Carousel', () => {
     </igc-carousel>
   `;
 
-  /** Renders a carousel with the given number of projected indicators and slides. */
   const createCarousel = ({ indicators = 0, slides = 0 }) => html`
     <igc-carousel>
       ${Array.from(
@@ -277,7 +276,6 @@ describe('Carousel', () => {
       expect(label).to.not.be.null;
       expect(label?.textContent?.trim()).to.equal('1 of 3');
 
-      // slidesLabelFormat integration
       carousel.slidesLabelFormat = 'Showing picture {0} of {1} total slides';
       await elementUpdated(carousel);
 
@@ -435,7 +433,7 @@ describe('Carousel', () => {
       expect(animation).to.be.false;
       expect(carousel.current).to.equal(2);
 
-      // select fist slide by index
+      // select first slide by index
       animation = await carousel.select(0);
       expect(animation).to.be.true;
       expect(carousel.current).to.equal(0);
@@ -567,7 +565,6 @@ describe('Carousel', () => {
         expect(carousel.current).to.equal(0);
         expect(defaultIndicators[0].active).to.be.true;
 
-        // select second slide
         simulateClick(defaultIndicators[1]);
         await waitUntil(() =>
           eventSpy.calledWith('igcSlideChanged', { detail: 1 })
@@ -578,7 +575,6 @@ describe('Carousel', () => {
         expect(defaultIndicators[1].active).to.be.true;
         expect(eventSpy.firstCall).calledWith('igcSlideChanged', { detail: 1 });
 
-        // select first slide
         simulateClick(defaultIndicators[0]);
         await waitUntil(() =>
           eventSpy.calledWith('igcSlideChanged', { detail: 0 })
@@ -780,7 +776,6 @@ describe('Carousel', () => {
         expect(carousel.isPaused).to.be.false;
         expect(divContainer.ariaLive).to.equal('off');
 
-        // hover carousel
         carousel.dispatchEvent(new PointerEvent('pointerenter'));
         await elementUpdated(carousel);
 
@@ -788,22 +783,18 @@ describe('Carousel', () => {
         expect(carousel.isPaused).to.be.true;
         expect(divContainer.ariaLive).to.equal('polite');
 
-        // focus a focusable element
         carousel.dispatchEvent(new FocusEvent('focusin'));
         carousel.dispatchEvent(new PointerEvent('pointerleave'));
         await elementUpdated(carousel);
 
-        // element focus/interaction is present
-        // -> should not start rotation on pointerleave
+        // Focus is still inside, so pointerleave does not resume the rotation.
         expect(carousel.isPlaying).to.be.false;
         expect(carousel.isPaused).to.be.true;
         expect(divContainer.ariaLive).to.equal('polite');
 
-        // hover carousel
         carousel.dispatchEvent(new PointerEvent('pointerenter'));
         await elementUpdated(carousel);
 
-        // loose focus
         carousel.dispatchEvent(new FocusEvent('focusout'));
         await elementUpdated(carousel);
 
@@ -811,7 +802,6 @@ describe('Carousel', () => {
         expect(carousel.isPaused).to.be.true;
         expect(divContainer.ariaLive).to.equal('polite');
 
-        // hover out of the carousel
         carousel.dispatchEvent(new PointerEvent('pointerleave'));
         await elementUpdated(carousel);
 
@@ -834,7 +824,6 @@ describe('Carousel', () => {
         expect(carousel.isPaused).to.be.false;
         expect(carousel.current).to.equal(0);
 
-        // hover carousel
         carousel.dispatchEvent(new PointerEvent('pointerenter'));
         await elementUpdated(carousel);
 
@@ -844,30 +833,25 @@ describe('Carousel', () => {
         expect(carousel.isPaused).to.be.true;
         expect(carousel.current).to.equal(0);
 
-        // focus a focusable element
         carousel.dispatchEvent(new FocusEvent('focusin'));
         await elementUpdated(carousel);
 
-        // hover out of the carousel
         carousel.dispatchEvent(new PointerEvent('pointerleave'));
         await elementUpdated(carousel);
 
         await clock.tickAsync(200);
 
-        // an interactive element is focused
-        // -> should not start rotation on pointerleave
+        // Focus is still inside, so pointerleave does not resume the rotation.
         expect(carousel.isPlaying).to.be.false;
         expect(carousel.isPaused).to.be.true;
         expect(carousel.current).to.equal(0);
 
-        // loose focus
         carousel.dispatchEvent(new FocusEvent('focusout'));
         await elementUpdated(carousel);
 
         await clock.tickAsync(200);
 
-        // the interactive element loses focus
-        // -> should start rotation
+        // The focus left, so the rotation resumes.
         expect(carousel.isPlaying).to.be.true;
         expect(carousel.isPaused).to.be.false;
         expect(carousel.current).to.equal(2);

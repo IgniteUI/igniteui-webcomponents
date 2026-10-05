@@ -30,6 +30,7 @@
     - [Rendering](#rendering)
     - [Events tests](#events-tests)
     - [Focus tests](#focus-tests)
+    - [Host ARIA](#host-aria)
     - [Not covered by the suite](#not-covered-by-the-suite)
   - [Assumptions and limitations](#assumptions-and-limitations)
   - [Accessibility](#accessibility)
@@ -39,10 +40,11 @@
 
 ## Revision history
 
-| Version | Date       | Notes                 |
-| ------: | ---------- | --------------------- |
-|       1 | 2026-09-21 | Initial specification |
-|       2 | 2026-10-01 | Delegate the focus    |
+| Version | Date       | Notes                                                                   |
+| ------: | ---------- | ----------------------------------------------------------------------- |
+|       1 | 2026-09-21 | Initial specification                                                   |
+|       2 | 2026-10-01 | Delegate the focus                                                      |
+|       3 | 2026-10-02 | Forward the host `aria-label`, `aria-labelledby` and `aria-describedby` |
 
 ## Overview
 
@@ -244,6 +246,11 @@ The detail of `igcSelect` is the new `selected` state of the chip.
 14. `blur()` removes the focus.
 15. A disabled chip does not take the focus.
 
+### Host ARIA
+
+16. The shared `runHostAriaTests` suite: the host `aria-label`, `aria-labelledby` and `aria-describedby` reach the
+    target and follow a change, and an axe audit passes with a host label.
+
 ### Not covered by the suite
 
 - The `start`, `end` and `select` slots are not covered.
@@ -267,6 +274,7 @@ The detail of `igcSelect` is the new `selected` state of the chip.
 - The remove control is a button with a localized label, rendered outside the action control so that the two are
   separate targets for both the pointer and assistive technology.
 - The selection indicator is kept out of the accessible name, so that the name is the label of the chip alone.
+- The host `aria-label`, `aria-labelledby` and `aria-describedby` name and describe the action button.
 
 ### Keyboard support
 

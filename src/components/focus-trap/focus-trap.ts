@@ -36,7 +36,7 @@ export default class IgcFocusTrapComponent extends LitElement {
   public disabled = false;
 
   /**
-   * Whether focus in currently inside the trap component.
+   * Whether focus is currently inside the trap component.
    */
   public get focused() {
     return this._focused;
@@ -50,16 +50,12 @@ export default class IgcFocusTrapComponent extends LitElement {
   constructor() {
     super();
 
-    addSafeEventListener(this, 'focusin', this.onFocusIn);
-    addSafeEventListener(this, 'focusout', this.onFocusOut);
-  }
-
-  private onFocusIn() {
-    this._focused = true;
-  }
-
-  private onFocusOut() {
-    this._focused = false;
+    addSafeEventListener(this, 'focusin', () => {
+      this._focused = true;
+    });
+    addSafeEventListener(this, 'focusout', () => {
+      this._focused = false;
+    });
   }
 
   public focusFirstElement() {
@@ -104,19 +100,14 @@ const defaultSelectors = [
   'textarea',
 ];
 
-/** Returns whether the element is hidden. */
-function isHidden(node: HTMLElement) {
+function isHiddenOrDisabled(node: HTMLElement) {
   return (
     node.hasAttribute('hidden') ||
     node.hasAttribute('inert') ||
+    node.hasAttribute('disabled') ||
     (node.hasAttribute('aria-hidden') &&
       node.getAttribute('aria-hidden') !== 'false')
   );
-}
-
-/** Returns whether the element is disabled. */
-function isDisabled(node: HTMLElement) {
-  return node.hasAttribute('disabled') || node.hasAttribute('inert');
 }
 
 function isContentEditable(node: HTMLElement) {
@@ -126,11 +117,8 @@ function isContentEditable(node: HTMLElement) {
   );
 }
 
-/**
- * Returns whether the element can be focused.
- */
 function isFocusable(node: HTMLElement) {
-  if (isHidden(node) || isDisabled(node)) {
+  if (isHiddenOrDisabled(node)) {
     return false;
   }
 
@@ -145,14 +133,11 @@ function isFocusable(node: HTMLElement) {
   return defaultSelectors.some((selector) => node.matches(selector));
 }
 
-/**
- * Filter function for the tree walker instance skipping over nodes and their children
- * if the `node` is hidden/disabled or it was already visited and resides in `cache`.
- */
+/** Tree walker filter. Rejects a hidden, disabled or cached node and its subtree. */
 function shouldSkipElements(node: Node, cache?: WeakSet<HTMLElement>) {
   const element = node as HTMLElement;
 
-  return isHidden(element) || isDisabled(element) || cache?.has(element)
+  return isHiddenOrDisabled(element) || cache?.has(element)
     ? NodeFilter.FILTER_REJECT
     : NodeFilter.FILTER_ACCEPT;
 }
@@ -164,44 +149,38 @@ function getSlottedElements(node: HTMLElement) {
   return { elements, parent: elements.at(0)?.parentElement };
 }
 
-/**
- * Traverses and yields all focusable elements starting at `root`.
- */
 function* getFocusableElements<T extends HTMLElement>(
   root: HTMLElement | ShadowRoot,
-  cache?: WeakSet<HTMLElement>
+  cache = new WeakSet<HTMLElement>()
 ): Generator<T> {
   if (!isDefined(globalThis.document)) {
     return;
   }
 
   let node: T;
-  const _cache = cache ?? new WeakSet<HTMLElement>();
 
   const visitor = document.createTreeWalker(
     root,
     NodeFilter.SHOW_ELEMENT,
-    (node) => shouldSkipElements(node, _cache)
+    (node) => shouldSkipElements(node, cache)
   );
 
   while ((node = visitor.nextNode() as T)) {
-    if (_cache.has(node)) {
+    if (cache.has(node)) {
       continue;
     }
 
     if (node.shadowRoot) {
-      yield* getFocusableElements(node.shadowRoot, _cache);
+      yield* getFocusableElements(node.shadowRoot, cache);
       continue;
     }
 
     if (node.tagName === 'SLOT') {
       const { elements, parent } = getSlottedElements(node);
 
-      if (elements.length > 0) {
-        for (const element of elements) {
-          yield* getFocusableElements(parent!, _cache);
-          _cache.add(element);
-        }
+      for (const element of elements) {
+        yield* getFocusableElements(parent!, cache);
+        cache.add(element);
       }
       continue;
     }

@@ -39,7 +39,6 @@ $theme: $material;
     }
 }
 
-// Generate styles for each variant
 @each $part, $color-key in (
     'primary': 'fill-color-default',
     'danger': 'fill-color-danger',

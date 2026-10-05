@@ -28,7 +28,6 @@ describe('Button Group', () => {
     ignoreAttributes: ['id', 'alignment', 'role'],
   };
 
-  /** The ARIA the group publishes through its element internals. */
   const getARIA = (group: IgcButtonGroupComponent) => ({
     role: internalsOf(group)?.getARIA('role'),
     ariaDisabled: internalsOf(group)?.getARIA('ariaDisabled'),
@@ -273,7 +272,7 @@ describe('Button Group', () => {
         expect(buttonGroup.selectedItems.length).to.equal(1);
         expect(buttonGroup.selectedItems).to.have.same.members(['left']);
 
-        // signle-required mode
+        // single-required mode
         buttonGroup.selection = 'single-required';
         await elementUpdated(buttonGroup);
 
@@ -329,7 +328,7 @@ describe('Button Group', () => {
 
       it('should set the selectedItems to be the last selected button if multiple buttons are selected', async () => {
         // single mode
-        // through selected-items attribute
+        // through a `.selectedItems` binding
         buttonGroup = await createButtonGroupComponent(html`
           <igc-button-group .selectedItems=${['right', 'left']}>
             <igc-toggle-button value="left">Left</igc-toggle-button>
@@ -364,7 +363,7 @@ describe('Button Group', () => {
         expect(buttonGroup.selectedItems).to.have.same.members(['left']);
 
         // single-required mode
-        // through selected-items attribute
+        // through a `.selectedItems` binding
         buttonGroup = await createButtonGroupComponent(html`
           <igc-button-group
             selection="single-required"
@@ -585,14 +584,12 @@ describe('Button Group', () => {
         expect(buttonGroup.selection).to.equal('single');
         expect(buttonGroup.selectedItems.length).to.equal(0);
 
-        // select first button
         simulateClick(buttons[0]);
         await elementUpdated(buttonGroup);
 
         expect(buttonGroup.selectedItems.length).to.equal(1);
         expect(buttonGroup.selectedItems).to.have.same.members(['left']);
 
-        // select second button
         simulateClick(buttons[1]);
         await elementUpdated(buttonGroup);
 
@@ -704,7 +701,6 @@ describe('Button Group', () => {
         const selectArgs = { detail: '' };
         const deselectArgs = { detail: '' };
 
-        // select first button
         simulateClick(buttons[0]);
         await elementUpdated(buttonGroup);
 
@@ -716,7 +712,6 @@ describe('Button Group', () => {
           buttons[0].value,
         ]);
 
-        // select second button
         simulateClick(buttons[1]);
         await elementUpdated(buttonGroup);
 
@@ -739,7 +734,6 @@ describe('Button Group', () => {
         buttonGroup.selection = 'single-required';
         await elementUpdated(buttonGroup);
 
-        // select first button
         simulateClick(buttons[0]);
         await elementUpdated(buttonGroup);
 
@@ -753,8 +747,7 @@ describe('Button Group', () => {
 
         eventSpy.resetHistory();
 
-        // deselect first button
-        // should not emit events when interacting with an already selected button
+        // Clicking the selected button again emits no events.
         simulateClick(buttons[0]);
         await elementUpdated(buttonGroup);
 
@@ -765,7 +758,6 @@ describe('Button Group', () => {
           buttons[0].value,
         ]);
 
-        // select second button
         simulateClick(buttons[1]);
         await elementUpdated(buttonGroup);
 
@@ -788,7 +780,6 @@ describe('Button Group', () => {
         buttonGroup.selection = 'multiple';
         await elementUpdated(buttonGroup);
 
-        // select first button
         simulateClick(buttons[0]);
         await elementUpdated(buttonGroup);
 
@@ -800,7 +791,6 @@ describe('Button Group', () => {
           buttons[0].value,
         ]);
 
-        // select second button
         simulateClick(buttons[1]);
         await elementUpdated(buttonGroup);
 
@@ -1104,7 +1094,7 @@ describe('Button Group', () => {
   });
 
   describe('Keyboard navigation', () => {
-    /** The buttons of the group that are a tab stop, that is, not opted out of the tab order. */
+    /** The buttons of the group that are tab stops (no `tabindex` attribute). */
     const getTabStops = () =>
       getButtons(group).filter((button) => !button.hasAttribute('tabindex'));
 

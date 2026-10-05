@@ -36,8 +36,7 @@ export default class IgcCarouselIndicatorContainerComponent extends LitElement {
     const target = event.relatedTarget as Element;
 
     if (target?.matches(IgcCarouselIndicatorComponent.tagName)) {
-      // Stop the event from hitting the _focusRingManager handler redrawing
-      // the keyboard focus styles
+      // Keep the focus ring manager from redrawing the keyboard focus styles.
       event.stopPropagation();
     }
   }

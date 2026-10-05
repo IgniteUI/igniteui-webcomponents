@@ -1,3 +1,5 @@
+import { clamp } from '#internals/utils/math.js';
+
 const ONE_THIRD = 1 / 3;
 const TWO_THIRDS = 2 / 3;
 
@@ -8,9 +10,7 @@ export type HSV = [number, number, number];
 export const converter = Object.freeze({
   rgb: {
     hex: (rgb: RGB): string => {
-      const [r, g, b] = rgb.map((v) =>
-        Math.min(255, Math.max(0, Math.round(v)))
-      );
+      const [r, g, b] = rgb.map((v) => clamp(Math.round(v), 0, 255));
       const value = (r << 16) + (g << 8) + b;
       return value.toString(16).padStart(6, '0');
     },
@@ -133,9 +133,8 @@ export const converter = Object.freeze({
       const lMin = Math.max(l, 0.01);
 
       l *= 2;
-      // Test the doubled `l`, not `lMin`. `lMin` is captured before the doubling
-      // and never goes above 1, which makes the `2 - l` branch dead and pushes `v`
-      // past 100 for a lightness above 50%.
+      // Test the doubled `l`, not `lMin`. `lMin` never exceeds 1, so testing
+      // it makes `2 - l` dead and pushes `v` past 100 above 50% lightness.
       s *= l <= 1 ? l : 2 - l;
       sMin *= lMin <= 1 ? lMin : 2 - lMin;
       const v = (l + s) / 2;

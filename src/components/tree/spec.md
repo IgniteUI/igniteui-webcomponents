@@ -34,6 +34,7 @@
     - [Navigation tests](#navigation-tests)
     - [ARIA tests](#aria-tests)
     - [RTL tests](#rtl-tests)
+    - [Host ARIA](#host-aria)
     - [Not covered by the suite](#not-covered-by-the-suite)
   - [Assumptions and limitations](#assumptions-and-limitations)
   - [Accessibility](#accessibility)
@@ -43,9 +44,10 @@
 
 ## Revision history
 
-| Version | Date       | Notes                 |
-| ------: | ---------- | --------------------- |
-|       1 | 2026-09-21 | Initial specification |
+| Version | Date       | Notes                                                                                    |
+| ------: | ---------- | ---------------------------------------------------------------------------------------- |
+|       1 | 2026-09-21 | Initial specification                                                                    |
+|       2 | 2026-10-02 | A delegating item copies the host `aria-label`, `aria-labelledby` and `aria-describedby` |
 
 ## Overview
 
@@ -440,6 +442,11 @@ module with the fixtures, the selectors and the assertion helpers the other thre
 57. The expand indicator mirrors after the direction changes at runtime.
 58. <kbd>→</kbd> collapses and <kbd>←</kbd> expands when the direction is right to left.
 
+### Host ARIA
+
+59. A delegating item copies the host label and `aria-labelledby`, keeps an own label of its delegate, removes the
+    copy, and moves it to a new delegate. An item that does not delegate keeps its label.
+
 ### Not covered by the suite
 
 - The `loading` state and the `loading` slot are exercised only through the slot rendering test; there is no
@@ -474,6 +481,8 @@ module with the fixtures, the selectors and the assertion helpers the other thre
 - The indentation area, the expand indicator and the selection checkbox are hidden from assistive technology; the
   indicator icon carries the localized expand or collapse label.
 - A label or a heading associated with the tree has to be linked by the developer with `aria-labelledby`.
+- A delegating item copies the host `aria-label`, `aria-labelledby` and `aria-describedby` to the element that has
+  the `treeitem` role, unless that element has its own value.
 
 ### Keyboard support
 

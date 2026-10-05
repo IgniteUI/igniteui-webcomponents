@@ -11,6 +11,7 @@ import {
 import { registerComponent } from '#internals/definitions/register.js';
 import { createFormValueState } from '#internals/mixins/forms/form-value.js';
 import { partMap } from '#internals/part-map.js';
+import { hasNegativeTabIndex } from '#internals/utils/dom.js';
 import { bindIf } from '#internals/utils/lit.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import type {
@@ -214,14 +215,22 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
   public validateOnly = false;
 
   /* blazorSuppress */
-  /** Replaces the selected text in the input. */
+  /**
+   * Replaces the text from `start` to `end` in the input. Without `start` and
+   * `end`, replaces the selected text.
+   */
   public setRangeText(
     replacement: string,
     start?: number,
     end?: number,
     selectMode: RangeTextSelectMode = 'preserve'
   ): void {
-    this._input?.setRangeText(replacement, start!, end!, selectMode);
+    this._input?.setRangeText(
+      replacement,
+      start ?? this._input.selectionStart ?? 0,
+      end ?? this._input.selectionEnd ?? 0,
+      selectMode
+    );
     this.value = this._input?.value ?? '';
   }
 
@@ -256,8 +265,6 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
   }
 
   protected _renderInput() {
-    const hasNegativeTabIndex = this.getAttribute('tabindex') === '-1';
-
     return html`
       <input
         ${ariaBindings(this._ariaTarget.resolveBindings())}
@@ -272,7 +279,7 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
         ?disabled=${this.disabled}
         ?required=${this.required}
         ?autofocus=${this.autofocus}
-        tabindex=${bindIf(hasNegativeTabIndex, -1)}
+        tabindex=${bindIf(hasNegativeTabIndex(this), -1)}
         autocomplete=${ifDefined(this.autocomplete as any)}
         inputmode=${ifDefined(this.inputMode)}
         min=${bindIf(!this.validateOnly, this.min)}

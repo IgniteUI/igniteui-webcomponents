@@ -13,7 +13,6 @@
         user-select: none;
     }
 
-    // Styles for the pane wrapper divs (startPane/endPane)
     [part~='start-pane'],
     [part~='end-pane'] {
         display: flex;
@@ -33,7 +32,6 @@
         box-sizing: border-box;
     }
 
-    // Bar styles (moved from splitter-bar.base.scss)
     [part='splitter-bar'] {
         display: flex;
         flex-shrink: 0;
@@ -50,7 +48,6 @@
     }
 }
 
-// Horizontal orientation (default)
 :host([orientation='horizontal']) {
     [part='base'] {
         flex-direction: row;
@@ -67,7 +64,6 @@
     }
 }
 
-// Vertical orientation
 :host([orientation='vertical']) {
     [part='base'] {
         flex-direction: column;
@@ -84,7 +80,6 @@
     }
 }
 
-// Collapsed states
 :host(:state(start-collapsed)) {
     [part='start-pane'] {
         display: none;

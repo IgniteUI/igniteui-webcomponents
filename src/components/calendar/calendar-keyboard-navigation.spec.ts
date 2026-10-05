@@ -50,7 +50,6 @@ describe('Calendar keyboard interaction', () => {
       const dom = getCalendarDOM(calendar);
       const button = dom.navigation.months;
 
-      // Simulate focus and activation
       button.focus();
       simulateClick(button);
 
@@ -64,7 +63,6 @@ describe('Calendar keyboard interaction', () => {
       const dom = getCalendarDOM(calendar);
       const button = dom.navigation.years;
 
-      // Simulate focus and activation
       button.focus();
       simulateClick(button);
 
@@ -222,9 +220,8 @@ describe('Calendar keyboard interaction', () => {
       const getActiveDOM = () =>
         getDOMDate(CalendarDay.from(calendar.activeDate), daysView);
 
-      // Start on 1st of March
       calendar.activeDate = firstOfMarch.native;
-      // Disabled the whole month of February
+      // Disable the whole month of February
       calendar.disabledDates = [
         {
           type: DateRangeType.Between,
@@ -596,8 +593,6 @@ describe('Calendar keyboard interaction', () => {
     });
   });
 });
-
-/* Helper Functions */
 
 function getMonthViewDOM(element: IgcMonthsViewComponent) {
   const root = element.shadowRoot!;

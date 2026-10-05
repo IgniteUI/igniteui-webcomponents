@@ -1,7 +1,12 @@
 import { html, LitElement, nothing, type PropertyValues } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { createAbortHandle } from '#internals/abort-handler.js';
+import {
+  ariaBindings,
+  hostAria,
+} from '#internals/controllers/aria-projection.js';
 import { registerComponent } from '#internals/definitions/register.js';
+import { HostAriaMixin } from '#internals/mixins/host-aria.js';
 import { bindIf } from '#internals/utils/lit.js';
 import { clamp, numberInRangeInclusive } from '#internals/utils/math.js';
 import { createIdGenerator } from '#internals/utils/strings.js';
@@ -38,9 +43,6 @@ import type {
 
 const nextMaskId = createIdGenerator('igc-qr-code-mask');
 
-/** The native ARIA attributes that the SVG `<title>` reads. */
-const LABEL_ATTRIBUTES: readonly string[] = ['aria-label'];
-
 /**
  *
  * Generates a QR code based on the provided value and options.
@@ -58,7 +60,7 @@ const LABEL_ATTRIBUTES: readonly string[] = ['aria-label'];
  * @csspart corner-square - The outer corner (finder-pattern) squares of the QR code.
  * @csspart corner-dot - The inner corner (finder-pattern) dots of the QR code.
  */
-export default class IgcQrCodeComponent extends LitElement {
+export default class IgcQrCodeComponent extends HostAriaMixin(LitElement) {
   public static readonly tagName = 'igc-qr-code';
 
   public static override styles = [styles, shared];
@@ -66,16 +68,6 @@ export default class IgcQrCodeComponent extends LitElement {
   /* blazorSuppress */
   public static register(): void {
     registerComponent(IgcQrCodeComponent);
-  }
-
-  /**
-   * Adds the label attributes, so that a new label renders a new `<title>`.
-   * The spread keeps the manifest analyzer from listing them as attributes of
-   * the component.
-   * @internal
-   */
-  public static override get observedAttributes(): string[] {
-    return [...super.observedAttributes, ...LABEL_ATTRIBUTES];
   }
 
   private readonly _abortHandle = createAbortHandle();
@@ -217,20 +209,6 @@ export default class IgcQrCodeComponent extends LitElement {
   public squareStyle: QrCornerSquareStyle = 'square';
 
   /** @internal */
-  public override attributeChangedCallback(
-    name: string,
-    previous: string | null,
-    current: string | null
-  ): void {
-    super.attributeChangedCallback(name, previous, current);
-
-    // A native ARIA attribute is not a reactive property.
-    if (LABEL_ATTRIBUTES.includes(name)) {
-      this.requestUpdate();
-    }
-  }
-
-  /** @internal */
   protected override update(props: PropertyValues<this>): void {
     if (props.has('logoSrc')) {
       this._resolveAspectRatio();
@@ -280,11 +258,8 @@ export default class IgcQrCodeComponent extends LitElement {
   }
 
   /**
-   * Determines whether a valid logo source is provided.
-   *
-   * The method checks if the `logoSrc` property is set and if it does not start with potentially unsafe schemes like 'javascript:' or 'vbscript:'.
-   * It also ensures that if the source is a data URI, it must be an image type.
-   * This validation helps prevent security risks associated with rendering untrusted content in the QR code.
+   * Rejects an empty source, the `javascript:` and `vbscript:` schemes, and a
+   * non-image data URI.
    */
   private _hasValidLogoSrc(): boolean {
     if (!this.logoSrc) return false;
@@ -453,6 +428,7 @@ export default class IgcQrCodeComponent extends LitElement {
 
     return html`
       <svg
+        ${ariaBindings(hostAria(this, true))}
         xmlns="http://www.w3.org/2000/svg"
         role="img"
         width=${this.size}

@@ -22,6 +22,8 @@ import {
   addSafeEventListener,
   focusLeftHost,
   getElementFromPath,
+  preventDefault,
+  stopPropagation,
 } from '#internals/utils/events.js';
 import { bindIf } from '#internals/utils/lit.js';
 import { equal } from '#internals/utils/objects.js';
@@ -83,10 +85,7 @@ export const pickerDependencies = [
   IgcValidationContainerComponent,
 ];
 
-/**
- * The subset of the slot controller which the base picker queries.
- * Kept structural so that each picker can declare its own set of slot names.
- */
+/** The slot queries of the base picker. Structural, so each picker declares its own slot names. */
 type PickerSlots = {
   hasAssignedElements(slot: string): boolean;
 };
@@ -130,9 +129,6 @@ export abstract class IgcDatePickerBaseComponent<
   @query(IgcCalendarComponent.tagName)
   protected readonly _calendar!: IgcCalendarComponent;
 
-  @query('#helper-text')
-  protected readonly _helperText!: IgcValidationContainerComponent | null;
-
   protected get _isDropDown(): boolean {
     return this.mode === 'dropdown';
   }
@@ -153,48 +149,32 @@ export abstract class IgcDatePickerBaseComponent<
   /** The id of the editor the picker is anchored to. */
   protected abstract readonly _inputId: string;
 
-  /** The slots of the concrete picker. */
   protected abstract readonly _slots: PickerSlots;
 
-  /** The theming controller of the concrete picker. */
   protected abstract readonly _themes: ThemingController;
 
-  /**
-   * The localization controller of the picker. Only the locale is shared,
-   * because the resource strings differ between the pickers.
-   */
+  /** Only the locale is shared, because the resource strings differ between the pickers. */
   protected abstract readonly _i18nController: { locale: string };
 
-  /**
-   * The current value of the picker. Each picker declares its own public
-   * `value`, because the type, the converter and the form state differ.
-   */
+  /** Each picker declares its own public `value`, because the type, converter and form state differ. */
   protected abstract get _value(): T | null;
   protected abstract set _value(value: T | null);
 
-  /** Clears any user input left in the editor(s) of the picker. */
   protected abstract _clearEditors(): void;
 
-  /** Whether the picker holds a value. */
   protected abstract get _hasValue(): boolean;
 
-  /** The selection mode of the underlying calendar. */
   protected abstract get _calendarSelection(): CalendarSelection;
 
   /** The localized label of the calendar picker. */
   protected abstract get _selectDateLabel(): string | undefined;
 
-  /**
-   * The editor that gets the ARIA state of the host: the name of the host and
-   * `aria-haspopup="dialog"`. Both must reach the native input that assistive
-   * technology reads.
-   */
+  /** The editor whose native input gets the host name and `aria-haspopup="dialog"`. */
   protected abstract get _projectionTarget(): Element | null;
 
-  /** Moves focus to the editor of the picker. */
   protected abstract _focusInput(): void;
 
-  /** Restores focus to the editor after a value has been selected in the calendar. */
+  /** Restores focus to the editor after a calendar selection. */
   protected abstract _focusAndSelectInput(): void;
 
   /** The value of the picker for `dates`, which the calendar gives in ascending order. */
@@ -214,16 +194,11 @@ export abstract class IgcDatePickerBaseComponent<
     return null;
   }
 
-  /**
-   * The active date for the first render, if the picker holds a value but no
-   * active date. The calendar then owns its active date and `activeDate` reads
-   * it back, so this is read one time.
-   */
+  /** The active date for the first render when there is a value but no active date. Read one time. */
   protected get _defaultActiveDate(): Date | null {
     return this._calendarValue;
   }
 
-  /** The title of the calendar icon, if the picker provides one. */
   protected get _calendarIconTitle(): string | undefined {
     return undefined;
   }
@@ -493,15 +468,12 @@ export abstract class IgcDatePickerBaseComponent<
   constructor() {
     super();
 
-    // Projects the name and the popup semantics of the host onto the native
-    // input of the editor. See ProjectedARIA.
     addAriaProjector(this, {
       target: () => this._projectionTarget,
       state: () => ({
         hasPopup: 'dialog',
-        describedBy: this._helperText ? [this._helperText] : null,
+        required: this.required ? 'true' : undefined,
       }),
-      hasOwnLabel: () => Boolean(this.label),
     });
 
     addSafeEventListener(this, 'focusout', this._handleFocusOut);
@@ -531,8 +503,11 @@ export abstract class IgcDatePickerBaseComponent<
   //#region Internal API
 
   protected _setDateConstraints(): void {
-    this._dateConstraints =
-      createDateConstraints(this._min, this._max, this.disabledDates) ?? [];
+    this._dateConstraints = createDateConstraints(
+      this._min,
+      this._max,
+      this.disabledDates
+    );
   }
 
   protected async _shouldCloseCalendarDropdown(): Promise<void> {
@@ -545,24 +520,15 @@ export abstract class IgcDatePickerBaseComponent<
     }
   }
 
-  /**
-   * Points the calendar at the first defined date of `dates`, and keeps the
-   * current active date if there is none. Does nothing before the calendar
-   * renders.
-   */
+  /** Points the calendar at the first defined date of `dates`. Does nothing without one, or before the calendar renders. */
   protected _setCalendarActiveDate(
     ...dates: (Date | null | undefined)[]
   ): void {
-    if (this._calendar) {
-      this._calendar.activeDate =
-        dates.find(Boolean) ?? this._calendar.activeDate;
-    }
+    const date = dates.find(Boolean);
+    if (date && this._calendar) this._calendar.activeDate = date;
   }
 
-  /**
-   * Writes the value of the picker back onto the calendar. A read-only picker
-   * must do this itself, because the binding has nothing to commit again.
-   */
+  /** Writes the value back onto the calendar. A read-only picker has no binding change to commit it. */
   protected async _restoreCalendarSelection(): Promise<void> {
     await this._calendar.updateComplete;
 
@@ -612,15 +578,8 @@ export abstract class IgcDatePickerBaseComponent<
 
   protected _handleInputClick(event: Event): void {
     if (getElementFromPath('input', event)) {
-      // Open only if the click originates from the underlying input
       this._handleAnchorClick();
     }
-  }
-
-  protected _handleCalendarIconSlotPointerDown(event: PointerEvent): void {
-    // Keeps the `delegatesFocus` of the host from focusing the editor, which would enter
-    // an invalid state on blur as focus moves on to the calendar.
-    event.preventDefault();
   }
 
   protected _handleFocusOut(event: FocusEvent): void {
@@ -628,10 +587,6 @@ export abstract class IgcDatePickerBaseComponent<
       this._handleBlur();
       this._onBlur();
     }
-  }
-
-  protected _handleClosing(): void {
-    this._hide(true);
   }
 
   protected async _handleCalendarChangeEvent(
@@ -660,10 +615,6 @@ export abstract class IgcDatePickerBaseComponent<
     this._hide(true);
   }
 
-  protected _handleDialogClosed(event: Event): void {
-    event.stopPropagation();
-  }
-
   //#endregion
 
   //#region Rendering
@@ -685,11 +636,12 @@ export abstract class IgcDatePickerBaseComponent<
   protected _renderCalendarIcon(suffix = '') {
     const part = `${this.open ? 'calendar-icon-open' : 'calendar-icon'}${suffix}`;
 
+    // `preventDefault` stops `delegatesFocus` from focusing the editor, which turns invalid on blur.
     return html`
       <span
         slot="prefix"
         part=${part}
-        @pointerdown=${this._handleCalendarIconSlotPointerDown}
+        @pointerdown=${preventDefault}
         @click=${bindIf(!this.readOnly, this._handleAnchorClick)}
       >
         ${renderSlottedIcon({
@@ -701,11 +653,7 @@ export abstract class IgcDatePickerBaseComponent<
     `;
   }
 
-  /**
-   * The content for an editor of the picker: its icons and its prefix and
-   * suffix slots. The suffix identifies the editor if the picker renders more
-   * than one, for example `-start` and `-end`.
-   */
+  /** The icons and prefix/suffix slots of an editor. `suffix` identifies the editor, for example `-start`. */
   protected _renderEditorSlots(suffix = '') {
     const prefixSlot = `prefix${suffix}`;
     const suffixSlot = `suffix${suffix}`;
@@ -774,7 +722,6 @@ export abstract class IgcDatePickerBaseComponent<
   protected _renderActions() {
     const hasActions = this._slots.hasAssignedElements('actions');
 
-    // If in dialog mode use the dialog footer slot
     return html`
       <div
         part="actions"
@@ -821,7 +768,7 @@ export abstract class IgcDatePickerBaseComponent<
             ?close-on-outside-click=${!this.keepOpenOnOutsideClick}
             hide-default-action
             @igcClosing=${this._handleDialogClosing}
-            @igcClosed=${this._handleDialogClosed}
+            @igcClosed=${stopPropagation}
             exportparts="base: dialog-base, title, footer, overlay"
           >
             ${this._renderPickerContent(id)}${this._renderDialogFooter()}

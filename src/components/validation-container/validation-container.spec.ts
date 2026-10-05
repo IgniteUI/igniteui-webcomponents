@@ -97,9 +97,8 @@ describe('Validation container', () => {
     ValidityHelpers.hasInvalidStyles(input).to.be.true;
     ValidityHelpers.hasSlottedContent(input, valueMissingSlot).to.be.true;
 
-    // Any subsequent host update - a slotchange, an unrelated property - used to
-    // drop the messages, since the submission only kept the control invalid for
-    // the update it scheduled itself.
+    // A later host update, such as a slotchange or an unrelated property, must
+    // keep the messages.
     input.requestUpdate();
     await elementUpdated(input);
 

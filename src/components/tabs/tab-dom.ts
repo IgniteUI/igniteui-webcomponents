@@ -1,5 +1,5 @@
 import type { Ref } from 'lit/directives/ref.js';
-import { getScaleFactor, isLTR, setStyles } from '#internals/utils/dom.js';
+import { isLTR, setStyles } from '#internals/utils/dom.js';
 import { asNumber } from '#internals/utils/math.js';
 import type IgcTabComponent from './tab.js';
 import type IgcTabsComponent from './tabs.js';
@@ -40,7 +40,6 @@ class TabsHelpers {
     return this._container.value;
   }
 
-  /** The selected tab indicator element. */
   public get indicator(): HTMLElement | undefined {
     return this._indicator.value;
   }
@@ -55,7 +54,6 @@ class TabsHelpers {
     return this._hasScrollButtons;
   }
 
-  /** The disabled state of the header strip scroll buttons. */
   public get scrollButtonsDisabled(): ScrollButtonsState {
     return this._scrollButtonsDisabled;
   }
@@ -70,10 +68,7 @@ class TabsHelpers {
     this._indicator = indicator;
   }
 
-  /**
-   * Sets the internal CSS variables used for the layout of the tabs component.
-   * Triggers an update cycle (rerender) of the `igc-tabs` component if needed.
-   */
+  /** Sets the layout CSS variables and requests a host update when they change. */
   public setStyleProperties(): void {
     const count = String(this._host.tabs.length);
     const width = this.container
@@ -116,8 +111,8 @@ class TabsHelpers {
   }
 
   /**
-   * The horizontal bounds of the strip that are not covered by the sticky scroll
-   * buttons, which is the area a tab has to fit in to count as being in view.
+   * The horizontal bounds of the strip outside the sticky scroll buttons. A tab
+   * inside these bounds is in view.
    */
   private _getVisibleBounds(container: HTMLElement): {
     min: number;
@@ -146,8 +141,7 @@ class TabsHelpers {
     const isEnd = direction === 'end';
     const { min, max } = this._getVisibleBounds(container);
 
-    // Which edge a tab overflows depends on the scroll direction and the text
-    // direction alike - scrolling towards the end moves leftwards in RTL.
+    // The overflow edge depends on the scroll direction and the text direction.
     const useRightEdge = isEnd === isLTR(this._host);
 
     const isOutOfView = (header: HTMLElement): boolean => {
@@ -161,8 +155,7 @@ class TabsHelpers {
       .map((tab) => getTabHeader(tab))
       .filter((header): header is HTMLElement => header !== null);
 
-    // Tabs are in document order, so the first match going forward and the last one
-    // going backwards are the ones closest to the visible region.
+    // Tabs are in document order, so these matches are closest to the visible region.
     const target = isEnd
       ? headers.find(isOutOfView)
       : headers.findLast(isOutOfView);
@@ -240,10 +233,10 @@ class TabsHelpers {
   }
 
   /**
-   * Updates the state of the tabs header strip scroll buttons - visibility and active state.
-   * Meant for layout changes: a changed tab set, a resize or a selection, since it reads the
-   * width of every tab header. The scroll handler uses `setScrollPositionState()` instead.
-   * Triggers an update cycle (rerender) of the `igc-tabs` component.
+   * Updates the visibility and disabled state of the scroll buttons. Requests a
+   * host update when they change. Meant for layout changes: a changed tab set, a
+   * resize or a selection, since it reads the width of every tab header. The scroll
+   * handler uses `setScrollPositionState()` instead.
    */
   public setScrollButtonState(): void {
     if (!this.container) {
@@ -320,15 +313,14 @@ class TabsHelpers {
     if (header) {
       const { offsetLeft: containerLeft, offsetWidth: containerWidth } =
         container;
-      const scaledWidth =
-        header.getBoundingClientRect().width * getScaleFactor(header).x;
+      const width = header.offsetWidth;
 
       const offset = isLTR(this._host)
         ? header.offsetLeft - containerLeft
-        : header.offsetLeft + scaledWidth - containerWidth;
+        : header.offsetLeft + width - containerWidth;
 
       Object.assign(styles, {
-        width: `${scaledWidth}px`,
+        width: `${width}px`,
         transform: `translateX(${offset}px)`,
       });
     }
