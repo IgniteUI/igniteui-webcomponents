@@ -1,42 +1,32 @@
 import type { Meta, StoryObj } from '@storybook/web-components-vite';
 import { html } from 'lit';
+import { ifDefined } from 'lit/directives/if-defined.js';
 
 import {
-  IgcAvatarComponent,
   IgcBadgeComponent,
+  IgcButtonComponent,
+  IgcIconButtonComponent,
   IgcIconComponent,
   IgcTabsComponent,
   defineComponents,
-  registerIconFromText,
 } from 'igniteui-webcomponents';
-import { disableStoryControls } from './story.js';
+import { registerMaterialIcons } from './story-icons.js';
+import { disableStoryControls, renderInto, storyStyles } from './story.js';
 
 defineComponents(
-  IgcAvatarComponent,
   IgcBadgeComponent,
+  IgcButtonComponent,
+  IgcIconButtonComponent,
   IgcIconComponent,
   IgcTabsComponent
 );
 
-registerIconFromText(
-  'home',
-  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>`
-);
-registerIconFromText(
-  'notifications',
-  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6V11c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>`
-);
-registerIconFromText(
+registerMaterialIcons(
+  'done',
   'mail',
-  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>`
-);
-registerIconFromText(
-  'person',
-  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 12c2.761 0 5-2.239 5-5s-2.239-5-5-5-5 2.239-5 5 2.239 5 5 5zm0 2c-3.337 0-10 1.676-10 5v2h20v-2c0-3.324-6.663-5-10-5z"/></svg>`
-);
-registerIconFromText(
+  'notifications',
   'shopping-cart',
-  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96C5 16.1 6.9 18 9 18h12v-2H9.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63H19c.75 0 1.41-.41 1.75-1.03l3.58-6.49A1 1 0 0 0 23.45 5H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2S15.9 22 17 22s2-.9 2-2-.9-2-2-2z"/></svg>`
+  'update'
 );
 
 // region default
@@ -107,7 +97,27 @@ type Story = StoryObj<IgcBadgeArgs>;
 
 const variants = ['primary', 'info', 'success', 'warning', 'danger'] as const;
 
-export const Basic: Story = {
+const styles = html`
+  ${storyStyles}
+  <style>
+    .bd-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.75rem;
+    }
+  </style>
+`;
+
+export const Default: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'A badge with a short text. Use the controls panel to change the `variant`, the `shape`, the outline and the `dot` mode. A dot badge hides its content.',
+      },
+    },
+  },
   render: ({ outlined, shape, variant, dot }) => html`
     <igc-badge
       ?outlined=${outlined}
@@ -115,289 +125,594 @@ export const Basic: Story = {
       variant=${variant}
       ?dot=${dot}
     >
-      <igc-icon name="home" collection="default"></igc-icon>
+      New
     </igc-badge>
   `,
 };
 
-export const Variants: Story = {
+export const Appearance: Story = {
   argTypes: disableStoryControls(metadata),
-  render: () => html`
-    <p>The badge supports five semantic color variants.</p>
-    <div
-      style="display: flex; gap: 1.5rem; align-items: flex-end; flex-wrap: wrap;"
-    >
-      ${variants.map(
-        (v, i) => html`
-          <div
-            style="display: flex; flex-direction: column; align-items: center; gap: 0.5rem;"
-          >
-            <igc-badge variant=${v}>${i + 1}</igc-badge>
-            <span style="font-size: 0.75rem; text-transform: capitalize;"
-              >${v}</span
-            >
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'All variants with the other options. `outlined` draws a ring in the color of the surface, which separates the badge from the element under it, as the tinted cells show. `square` suits a status label, and `rounded` suits a count. A dot has no content. An icon that is the only content gets the `icon` part, and the badge becomes a circle.',
+      },
+    },
+  },
+  render: () => {
+    const columns = ['Filled', 'Outlined', 'Square', 'Dot', 'Icon'];
+
+    return html`
+      <style>
+        .bd-table {
+          border-spacing: 2rem 1rem;
+          text-align: center;
+        }
+
+        .bd-tinted {
+          padding: 0.5rem;
+          border-radius: 6px;
+          background: var(--ig-gray-300);
+        }
+      </style>
+      <div style="overflow-x: auto">
+        <table class="bd-table">
+          <thead>
+            <tr>
+              <td></td>
+              ${columns.map((column) => html`<th scope="col">${column}</th>`)}
+            </tr>
+          </thead>
+          <tbody>
+            ${variants.map(
+              (variant) => html`
+                <tr>
+                  <th scope="row">${variant}</th>
+                  <td><igc-badge variant=${variant}>8</igc-badge></td>
+                  <td class="bd-tinted">
+                    <igc-badge variant=${variant} outlined>8</igc-badge>
+                  </td>
+                  <td>
+                    <igc-badge variant=${variant} shape="square">
+                      ${variant}
+                    </igc-badge>
+                  </td>
+                  <td><igc-badge variant=${variant} dot></igc-badge></td>
+                  <td>
+                    <igc-badge variant=${variant}>
+                      <igc-icon name="done"></igc-icon>
+                    </igc-badge>
+                  </td>
+                </tr>
+              `
+            )}
+          </tbody>
+        </table>
+      </div>
+    `;
+  },
+};
+
+/** Shows a count up to 99, and "99+" above that. */
+const formatCount = (count: number) => (count > 99 ? '99+' : `${count}`);
+
+export const Notifications: Story = {
+  argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'The header of a store. A badge on each icon button counts the new items, and shows "99+" above 99. A badge with a count of 0 gets the `hidden` attribute. The dot on the updates button marks new activity without a count. Click a button to mark its items as read, and use the buttons under the header to receive new items. The badge has the `status` role, so a screen reader announces a new count. A number alone means little, so a visually hidden text states what the badge counts. `pointer-events: none` lets a click on the badge reach the button.',
+      },
+    },
+  },
+  render: () => {
+    const state = { messages: 3, notifications: 12, cart: 120, updates: true };
+
+    const counter = (
+      key: 'messages' | 'notifications' | 'cart',
+      icon: string,
+      label: string,
+      unit: string,
+      variant: IgcBadgeComponent['variant']
+    ) => html`
+      <span class="bd-anchor">
+        <igc-icon-button
+          variant="flat"
+          name=${icon}
+          aria-label=${label}
+          @click=${() => {
+            state[key] = 0;
+            story.update();
+          }}
+        ></igc-icon-button>
+        <igc-badge variant=${variant} ?hidden=${state[key] === 0}>
+          ${formatCount(state[key])}<span class="sr-only"> ${unit}</span>
+        </igc-badge>
+      </span>
+    `;
+
+    const receive = (key: 'messages' | 'notifications' | 'cart') => () => {
+      state[key] += 1;
+      story.update();
+    };
+
+    const story = renderInto(
+      () => html`
+        <header class="bd-appbar">
+          <strong>Acme Store</strong>
+          <div class="bd-row">
+            ${counter('messages', 'mail', 'Messages', 'unread messages', 'primary')}
+            ${counter(
+              'notifications',
+              'notifications',
+              'Notifications',
+              'new notifications',
+              'danger'
+            )}
+            ${counter('cart', 'shopping-cart', 'Cart', 'items', 'info')}
+            <span class="bd-anchor">
+              <igc-icon-button
+                variant="flat"
+                name="update"
+                aria-label=${state.updates ? 'Updates, new activity' : 'Updates'}
+                @click=${() => {
+                  state.updates = false;
+                  story.update();
+                }}
+              ></igc-icon-button>
+              <igc-badge
+                variant="success"
+                dot
+                outlined
+                ?hidden=${!state.updates}
+              ></igc-badge>
+            </span>
           </div>
-        `
-      )}
-    </div>
-  `,
-};
-
-export const Outlined: Story = {
-  argTypes: disableStoryControls(metadata),
-  render: () => html`
-    <p>
-      The <code>outlined</code> attribute draws a border around the badge,
-      useful when placing badges over colored or patterned surfaces.
-    </p>
-    <div
-      style="display: flex; gap: 2.5rem; flex-wrap: wrap; align-items: flex-start;"
-    >
-      <div>
-        <p style="margin: 0 0 0.75rem; font-weight: 600;">Filled</p>
-        <div style="display: flex; gap: 1rem; align-items: center;">
-          ${variants.map(
-            (v, i) => html`<igc-badge variant=${v}>${i + 1}</igc-badge>`
-          )}
-        </div>
-      </div>
-      <div>
-        <p style="margin: 0 0 0.75rem; font-weight: 600;">Outlined</p>
-        <div style="display: flex; gap: 1rem; align-items: center;">
-          ${variants.map(
-            (v, i) =>
-              html`<igc-badge variant=${v} outlined>${i + 1}</igc-badge>`
-          )}
-        </div>
-      </div>
-    </div>
-  `,
-};
-
-export const Shapes: Story = {
-  argTypes: disableStoryControls(metadata),
-  render: () => html`
-    <p>
-      Badges can be <code>rounded</code> (default) for a pill-shaped label or
-      <code>square</code> for a more rectangular appearance.
-    </p>
-    <div
-      style="display: flex; gap: 2.5rem; flex-wrap: wrap; align-items: flex-start;"
-    >
-      <div>
-        <p style="margin: 0 0 0.75rem; font-weight: 600;">Rounded</p>
-        <div style="display: flex; gap: 1rem; align-items: center;">
-          ${variants.map(
-            (v, i) =>
-              html`<igc-badge variant=${v} shape="rounded">${i + 1}</igc-badge>`
-          )}
-        </div>
-      </div>
-      <div>
-        <p style="margin: 0 0 0.75rem; font-weight: 600;">Square</p>
-        <div style="display: flex; gap: 1rem; align-items: center;">
-          ${variants.map(
-            (v, i) =>
-              html`<igc-badge variant=${v} shape="square">${i + 1}</igc-badge>`
-          )}
-        </div>
-      </div>
-    </div>
-  `,
-};
-
-export const Dot: Story = {
-  argTypes: disableStoryControls(metadata),
-  render: () => html`
-    <p>
-      The <code>dot</code> attribute renders the badge as a compact indicator
-      without content — ideal for unread or online status cues.
-    </p>
-    <div
-      style="display: flex; gap: 1.5rem; align-items: flex-end; flex-wrap: wrap;"
-    >
-      ${variants.map(
-        (v) => html`
-          <div
-            style="display: flex; flex-direction: column; align-items: center; gap: 0.5rem;"
+        </header>
+        <div class="bd-row">
+          <igc-button variant="outlined" @click=${receive('messages')}>
+            Receive a message
+          </igc-button>
+          <igc-button variant="outlined" @click=${receive('notifications')}>
+            Receive a notification
+          </igc-button>
+          <igc-button variant="outlined" @click=${receive('cart')}>
+            Add to cart
+          </igc-button>
+          <igc-button
+            variant="outlined"
+            @click=${() => {
+              state.updates = true;
+              story.update();
+            }}
           >
-            <igc-badge variant=${v} dot></igc-badge>
-            <span style="font-size: 0.75rem; text-transform: capitalize;"
-              >${v}</span
-            >
-          </div>
-        `
-      )}
-    </div>
-  `,
+            Publish an update
+          </igc-button>
+        </div>
+      `
+    );
+
+    return html`
+      ${styles}
+      <style>
+        .bd-store {
+          display: grid;
+          gap: 1.5rem;
+          max-width: 48rem;
+        }
+
+        .bd-appbar {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 0.5rem 1rem;
+          border: 1px solid var(--ig-gray-300);
+          border-radius: 8px;
+        }
+
+        .bd-anchor {
+          position: relative;
+          display: inline-flex;
+        }
+
+        .bd-anchor igc-badge {
+          position: absolute;
+          inset-block-start: 0;
+          inset-inline-start: 55%;
+          pointer-events: none;
+        }
+      </style>
+      <div class="bd-store" ${story.mount}></div>
+    `;
+  },
 };
 
-export const WithIcon: Story = {
-  argTypes: disableStoryControls(metadata),
-  render: () => html`
-    <p>
-      Any content can be slotted into the badge. When an
-      <code>igc-icon</code> is the only slotted element, the
-      <code>icon</code> CSS part is activated for targeted styling.
-    </p>
-    <div
-      style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;"
-    >
-      <igc-badge variant="primary">
-        <igc-icon name="home" collection="default"></igc-icon>
-      </igc-badge>
-      <igc-badge variant="info">
-        <igc-icon name="mail" collection="default"></igc-icon>
-      </igc-badge>
-      <igc-badge variant="success">
-        <igc-icon name="notifications" collection="default"></igc-icon>
-      </igc-badge>
-      <igc-badge variant="warning">
-        <igc-icon name="person" collection="default"></igc-icon>
-      </igc-badge>
-      <igc-badge variant="danger">
-        <igc-icon name="shopping-cart" collection="default"></igc-icon>
-      </igc-badge>
-    </div>
-  `,
+const orderStatuses: Record<
+  string,
+  { variant: IgcBadgeComponent['variant']; style?: string }
+> = {
+  Draft: {
+    variant: 'primary',
+    style:
+      '--ig-badge-background-color: var(--ig-gray-300); --ig-badge-text-color: var(--ig-gray-900)',
+  },
+  Processing: { variant: 'primary' },
+  'Awaiting payment': { variant: 'warning' },
+  Shipped: { variant: 'info' },
+  Delivered: { variant: 'success' },
+  Canceled: { variant: 'danger' },
 };
 
-export const InContext: Story = {
+export const StatusLabels: Story = {
   argTypes: disableStoryControls(metadata),
-  render: () => html`
-    <p>
-      Badges are typically overlaid on a host element using
-      <code>position: absolute</code> on the badge and
-      <code>position: relative</code> on the container.
-    </p>
-    <div
-      style="display: flex; gap: 3.5rem; align-items: flex-start; flex-wrap: wrap;"
-    >
-      <div
-        style="display: flex; flex-direction: column; align-items: center; gap: 0.5rem;"
-      >
-        <div style="position: relative; display: inline-flex;">
-          <igc-icon
-            name="notifications"
-            collection="default"
-            style="font-size: 2rem;"
-          ></igc-icon>
-          <igc-badge
-            variant="danger"
-            style="position: absolute; top: 0; right: 0; transform: translate(50%, -50%);"
-            >5</igc-badge
-          >
-        </div>
-        <span style="font-size: 0.75rem;">Notifications</span>
-      </div>
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Badges as status labels in a table and in a list. The text states the status, and the `variant` only adds the color, because a color alone means nothing to assistive technologies and to users who cannot see it. `shape="square"` suits a label. The draft label sets `--ig-badge-background-color` for a neutral color. The service list uses a dot next to the text.',
+      },
+    },
+  },
+  render: () => {
+    const orders = [
+      {
+        id: '10431',
+        customer: 'Maria Garcia',
+        total: '$84.00',
+        status: 'Draft',
+      },
+      {
+        id: '10430',
+        customer: 'James Wilson',
+        total: '$129.00',
+        status: 'Processing',
+      },
+      {
+        id: '10429',
+        customer: 'Aiko Tanaka',
+        total: '$45.50',
+        status: 'Awaiting payment',
+      },
+      {
+        id: '10428',
+        customer: 'Daniel Okafor',
+        total: '$184.00',
+        status: 'Shipped',
+      },
+      {
+        id: '10427',
+        customer: 'Sofia Rossi',
+        total: '$69.00',
+        status: 'Delivered',
+      },
+      {
+        id: '10426',
+        customer: 'Liam Chen',
+        total: '$254.50',
+        status: 'Canceled',
+      },
+    ];
 
-      <div
-        style="display: flex; flex-direction: column; align-items: center; gap: 0.5rem;"
-      >
-        <div style="position: relative; display: inline-flex;">
-          <igc-icon
-            name="mail"
-            collection="default"
-            style="font-size: 2rem;"
-          ></igc-icon>
-          <igc-badge
-            variant="primary"
-            style="position: absolute; top: 0; right: 0; transform: translate(50%, -50%);"
-            >12</igc-badge
-          >
-        </div>
-        <span style="font-size: 0.75rem;">Messages</span>
-      </div>
+    const services = [
+      { name: 'Storefront', status: 'Operational', variant: 'success' },
+      { name: 'Checkout API', status: 'Operational', variant: 'success' },
+      { name: 'Search', status: 'Degraded performance', variant: 'warning' },
+      { name: 'Webhooks', status: 'Outage', variant: 'danger' },
+    ] as const;
 
-      <div
-        style="display: flex; flex-direction: column; align-items: center; gap: 0.5rem;"
-      >
-        <div style="position: relative; display: inline-flex;">
-          <igc-avatar initials="JD"></igc-avatar>
-          <igc-badge
-            variant="danger"
-            style="position: absolute; top: 0; right: 0; transform: translate(50%, -50%);"
-            >3</igc-badge
-          >
-        </div>
-        <span style="font-size: 0.75rem;">Count badge</span>
-      </div>
+    return html`
+      ${styles}
+      <style>
+        .bd-status {
+          display: grid;
+          gap: 2rem;
+          max-width: 40rem;
+        }
 
-      <div
-        style="display: flex; flex-direction: column; align-items: center; gap: 0.5rem;"
-      >
-        <div style="position: relative; display: inline-flex;">
-          <igc-avatar initials="AB"></igc-avatar>
-          <igc-badge
-            variant="success"
-            dot
-            outlined
-            style="position: absolute; bottom: 0; right: 0; transform: translate(25%, 25%);"
-          ></igc-badge>
-        </div>
-        <span style="font-size: 0.75rem;">Online (dot)</span>
-      </div>
+        .bd-status h4 {
+          margin: 0 0 0.75rem;
+        }
 
-      <div
-        style="display: flex; flex-direction: column; align-items: center; gap: 0.5rem;"
-      >
-        <div style="position: relative; display: inline-flex;">
-          <igc-icon
-            name="shopping-cart"
-            collection="default"
-            style="font-size: 2rem;"
-          ></igc-icon>
-          <igc-badge
-            variant="warning"
-            shape="square"
-            style="position: absolute; top: 0; right: 0; transform: translate(50%, -50%);"
-            >99+</igc-badge
-          >
-        </div>
-        <span style="font-size: 0.75rem;">Cart (square)</span>
+        .bd-orders {
+          width: 100%;
+          border-collapse: collapse;
+        }
+
+        .bd-orders th,
+        .bd-orders td {
+          padding: 0.5rem 0.75rem;
+          border-block-end: 1px solid var(--ig-gray-300);
+          text-align: start;
+        }
+
+        .bd-orders td:nth-child(3) {
+          text-align: end;
+        }
+
+        .bd-services {
+          display: grid;
+          gap: 0.5rem;
+          margin: 0;
+          padding: 0;
+          list-style: none;
+        }
+
+        .bd-services li {
+          display: flex;
+          justify-content: space-between;
+          gap: 1rem;
+        }
+      </style>
+      <div class="bd-status">
+        <section>
+          <h4>Recent orders</h4>
+          <table class="bd-orders">
+            <thead>
+              <tr>
+                <th scope="col">Order</th>
+                <th scope="col">Customer</th>
+                <th scope="col">Total</th>
+                <th scope="col">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${orders.map(({ id, customer, total, status }) => {
+                const { variant, style } = orderStatuses[status];
+
+                return html`
+                  <tr>
+                    <td>#${id}</td>
+                    <td>${customer}</td>
+                    <td>${total}</td>
+                    <td>
+                      <igc-badge
+                        shape="square"
+                        variant=${variant}
+                        style=${ifDefined(style)}
+                      >
+                        ${status}
+                      </igc-badge>
+                    </td>
+                  </tr>
+                `;
+              })}
+            </tbody>
+          </table>
+        </section>
+        <section>
+          <h4>Service status</h4>
+          <ul class="bd-services">
+            ${services.map(
+              ({ name, status, variant }) => html`
+                <li>
+                  <span>${name}</span>
+                  <span class="bd-row">
+                    <igc-badge dot variant=${variant}></igc-badge>
+                    ${status}
+                  </span>
+                </li>
+              `
+            )}
+          </ul>
+        </section>
       </div>
-    </div>
-  `,
+    `;
+  },
 };
 
-export const InTabs: Story = {
+export const Navigation: Story = {
   argTypes: disableStoryControls(metadata),
-  render: () => html`
-    <p>
-      Badges can be embedded in tab labels to communicate counts or status at a
-      glance within navigation.
-    </p>
-    <igc-tabs>
-      <igc-tab>
-        <span
-          slot="label"
-          style="display: flex; align-items: center; gap: 0.375rem;"
-        >
-          Inbox
-          <igc-badge variant="primary">4</igc-badge>
-        </span>
-      </igc-tab>
-      <igc-tab>
-        <span
-          slot="label"
-          style="display: flex; align-items: center; gap: 0.375rem;"
-        >
-          Notifications
-          <igc-badge variant="danger">7</igc-badge>
-        </span>
-      </igc-tab>
-      <igc-tab>
-        <span
-          slot="label"
-          style="display: flex; align-items: center; gap: 0.375rem;"
-        >
-          Updates
-          <igc-badge variant="success">New</igc-badge>
-        </span>
-      </igc-tab>
-      <igc-tab>
-        <span slot="label">Settings</span>
-      </igc-tab>
-    </igc-tabs>
-  `,
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Counts and labels in navigation. The tabs put the count in the `suffix` slot of the tab. The side navigation of a mail application counts the unread messages, and a square badge marks a feature in beta. A visually hidden text tells screen reader users what each number counts.',
+      },
+    },
+  },
+  render: () => {
+    const folders = [
+      { name: 'Inbox', count: 12, unit: 'unread', current: true },
+      { name: 'Starred', count: 0, unit: '' },
+      { name: 'Drafts', count: 2, unit: 'drafts' },
+      { name: 'Spam', count: 37, unit: 'unread' },
+    ];
+
+    return html`
+      ${styles}
+      <style>
+        .bd-navigation {
+          display: grid;
+          gap: 2rem;
+          max-width: 40rem;
+        }
+
+        .bd-folders {
+          display: grid;
+          gap: 0.25rem;
+          width: 16rem;
+          margin: 0;
+          padding: 0;
+          list-style: none;
+        }
+
+        .bd-folders a {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 0.5rem 0.75rem;
+          border-radius: 6px;
+          color: inherit;
+          text-decoration: none;
+        }
+
+        .bd-folders a:hover,
+        .bd-folders [aria-current] {
+          background: var(--ig-gray-100);
+        }
+
+        .bd-folders [aria-current] {
+          font-weight: 600;
+        }
+      </style>
+      <div class="bd-navigation">
+        <igc-tabs>
+          <igc-tab>
+            <span slot="label">Open</span>
+            <igc-badge slot="suffix">
+              24<span class="sr-only"> issues</span>
+            </igc-badge>
+            <p>The open issues of the project.</p>
+          </igc-tab>
+          <igc-tab>
+            <span slot="label">In review</span>
+            <igc-badge slot="suffix" variant="warning">
+              3<span class="sr-only"> issues</span>
+            </igc-badge>
+            <p>The issues with a pull request in review.</p>
+          </igc-tab>
+          <igc-tab>
+            <span slot="label">Closed</span>
+            <p>The closed issues of the project.</p>
+          </igc-tab>
+        </igc-tabs>
+        <nav aria-label="Folders">
+          <ul class="bd-folders">
+            ${folders.map(
+              ({ name, count, unit, current }) => html`
+                <li>
+                  <a
+                    href="#"
+                    aria-current=${ifDefined(current ? 'page' : undefined)}
+                    @click=${(event: Event) => event.preventDefault()}
+                  >
+                    ${name}
+                    <igc-badge ?hidden=${!count} variant="primary">
+                      ${count}<span class="sr-only"> ${unit}</span>
+                    </igc-badge>
+                  </a>
+                </li>
+              `
+            )}
+            <li>
+              <a href="#" @click=${(event: Event) => event.preventDefault()}>
+                Insights
+                <igc-badge shape="square" variant="info">Beta</igc-badge>
+              </a>
+            </li>
+          </ul>
+        </nav>
+      </div>
+    `;
+  },
+};
+
+export const Styling: Story = {
+  argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Issue labels in custom colors. `--ig-badge-background-color` and `--ig-badge-text-color` set the colors of a `primary` badge, and the other variants keep the colors of the theme. `--ig-badge-border-radius` sets the corners of a `square` badge. The plan tag sets a gradient on the `base` part.',
+      },
+    },
+  },
+  render: () => {
+    const labels: Record<string, [string, string]> = {
+      bug: ['#b60205', '#ffffff'],
+      enhancement: ['#a2eeef', '#0b3d3e'],
+      documentation: ['#0052cc', '#ffffff'],
+      'good first issue': ['#7057ff', '#ffffff'],
+      question: ['#fbca04', '#3d3000'],
+    };
+
+    const issues = [
+      {
+        id: 2418,
+        title: 'The date picker closes on scroll in Safari',
+        labels: ['bug'],
+      },
+      {
+        id: 2417,
+        title: 'Add a clear button to the combo',
+        labels: ['enhancement', 'good first issue'],
+      },
+      {
+        id: 2415,
+        title: 'Document the keyboard support of the tree',
+        labels: ['documentation'],
+      },
+      {
+        id: 2411,
+        title: 'How do I theme the badge per variant?',
+        labels: ['question'],
+      },
+    ];
+
+    return html`
+      ${styles}
+      <style>
+        .bd-issues {
+          display: grid;
+          max-width: 40rem;
+          margin: 0;
+          padding: 0;
+          list-style: none;
+          border: 1px solid var(--ig-gray-300);
+          border-radius: 8px;
+        }
+
+        .bd-issues li {
+          display: flex;
+          flex-wrap: wrap;
+          align-items: center;
+          gap: 0.5rem;
+          padding: 0.75rem 1rem;
+        }
+
+        .bd-issues li + li {
+          border-block-start: 1px solid var(--ig-gray-300);
+        }
+
+        .bd-label {
+          --ig-badge-border-radius: 1rem;
+        }
+
+        .bd-pro::part(base) {
+          background: linear-gradient(135deg, #6d28d9, #db2777);
+          color: #ffffff;
+          letter-spacing: 0.05em;
+        }
+      </style>
+      <ul class="bd-issues">
+        ${issues.map(
+          ({ id, title, labels: names }) => html`
+            <li>
+              <strong>${title}</strong>
+              <span class="muted">#${id}</span>
+              ${names.map((name) => {
+                const [background, color] = labels[name];
+
+                return html`
+                  <igc-badge
+                    class="bd-label"
+                    shape="square"
+                    style="--ig-badge-background-color: ${background}; --ig-badge-text-color: ${color}"
+                  >
+                    ${name}
+                  </igc-badge>
+                `;
+              })}
+            </li>
+          `
+        )}
+      </ul>
+      <p class="bd-row">
+        <strong>Account</strong>
+        <igc-badge class="bd-pro" shape="square">PRO</igc-badge>
+      </p>
+    `;
+  },
 };

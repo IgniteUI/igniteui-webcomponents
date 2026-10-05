@@ -1,40 +1,33 @@
 import type { Meta, StoryObj } from '@storybook/web-components-vite';
 import { html } from 'lit';
+import { ifDefined } from 'lit/directives/if-defined.js';
 
 import {
   IgcButtonComponent,
+  IgcDialogComponent,
   IgcIconComponent,
   IgcInputComponent,
   defineComponents,
-  registerIconFromText,
 } from 'igniteui-webcomponents';
-import { disableStoryControls } from './story.js';
+import { registerMaterialIcons } from './story-icons.js';
+import { delay, disableStoryControls, storyStyles } from './story.js';
 
-defineComponents(IgcButtonComponent, IgcIconComponent, IgcInputComponent);
+defineComponents(
+  IgcButtonComponent,
+  IgcDialogComponent,
+  IgcIconComponent,
+  IgcInputComponent
+);
 
-registerIconFromText(
-  'home',
-  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>`
-);
-registerIconFromText(
-  'add',
-  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>`
-);
-registerIconFromText(
-  'download',
-  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>`
-);
-registerIconFromText(
-  'open-in-new',
-  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 19H5V5h7V3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></svg>`
-);
-registerIconFromText(
-  'edit',
-  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>`
-);
-registerIconFromText(
+registerMaterialIcons(
+  'arrow-back',
+  'arrow-forward',
   'delete',
-  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M6 19a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>`
+  'download',
+  'edit',
+  'open-in-new',
+  'plus',
+  'share'
 );
 
 // region default
@@ -69,7 +62,7 @@ const metadata: Meta<IgcButtonComponent> = {
     href: {
       type: 'string',
       description:
-        'The URL the button points to. When set, the component renders as an\n`<a>` element instead of a `<button>`, enabling navigation on click.\nUse together with `target`, `download`, and `rel` for full anchor semantics.',
+        'The URL the button points to. When set, the component renders as an\n`<a>` element instead of a `<button>`, enabling navigation on click.\nUse together with `target`, `download`, and `rel` for full anchor semantics.\nA disabled link renders a disabled `<button>` with the link role, because an\nanchor has no disabled state.',
       control: 'text',
     },
     download: {
@@ -137,6 +130,8 @@ interface IgcButtonArgs {
    * The URL the button points to. When set, the component renders as an
    * `<a>` element instead of a `<button>`, enabling navigation on click.
    * Use together with `target`, `download`, and `rel` for full anchor semantics.
+   * A disabled link renders a disabled `<button>` with the link role, because an
+   * anchor has no disabled state.
    */
   href: string;
   /**
@@ -178,168 +173,427 @@ type Story = StoryObj<IgcButtonArgs>;
 
 // endregion
 
-export const Basic: Story = {
-  render: ({ disabled, variant, type }) => html`
-    <igc-button ?disabled=${disabled} variant=${variant} type=${type}>
-      Click me
+const styles = html`
+  ${storyStyles}
+  <style>
+    .bt-stack {
+      display: grid;
+      gap: 1.5rem;
+      max-width: 48rem;
+    }
+
+    .bt-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .bt-panel {
+      display: grid;
+      gap: 1rem;
+      padding: 1rem;
+      border: 1px solid var(--ig-gray-300);
+      border-radius: 8px;
+    }
+
+    .bt-panel h3,
+    .bt-panel p {
+      margin: 0;
+    }
+  </style>
+`;
+
+export const Default: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'A button with a label. Use the controls panel to change the variant, the type and the disabled state. Set `href` to render the button as a link, and then `target`, `rel` and `download` apply.',
+      },
+    },
+  },
+  render: ({ variant, type, disabled, href, target, rel, download }) => html`
+    <igc-button
+      variant=${variant}
+      type=${type}
+      ?disabled=${disabled}
+      href=${ifDefined(href || undefined)}
+      target=${ifDefined(target)}
+      rel=${ifDefined(rel || undefined)}
+      download=${ifDefined(download || undefined)}
+    >
+      Save changes
     </igc-button>
   `,
 };
 
-export const Variants: Story = {
+export const Appearance: Story = {
   argTypes: disableStoryControls(metadata),
-  render: () => html`
-    <p>
-      Four visual variants are available: <code>contained</code> (filled, high
-      emphasis), <code>outlined</code> (medium emphasis), <code>flat</code> (low
-      emphasis, no border), and <code>fab</code>
-      (floating action button, rounded).
-    </p>
-    <div
-      style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: center;"
-    >
-      <igc-button variant="contained">Contained</igc-button>
-      <igc-button variant="outlined">Outlined</igc-button>
-      <igc-button variant="flat">Flat</igc-button>
-      <igc-button variant="fab">
-        <igc-icon slot="prefix" name="add" collection="default"></igc-icon>
-        FAB
-      </igc-button>
-    </div>
-  `,
-};
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'The variants, with an icon in the `prefix` or the `suffix` slot, and disabled. The variants set the emphasis: use one `contained` button for the main action of a view, `outlined` for the other actions, and `flat` for the actions with the least weight, such as Cancel. `fab` is for the main action of a screen, such as Compose in a mail application. A FAB with only an icon needs an `aria-label`. The card shows the three levels together.',
+      },
+    },
+  },
+  render: () => {
+    const variants = ['contained', 'outlined', 'flat'] as const;
 
-export const WithPrefixSuffix: Story = {
-  argTypes: disableStoryControls(metadata),
-  render: () => html`
-    <p>
-      Use the <code>prefix</code> and <code>suffix</code> slots to place icons
-      or other content before and after the button label.
-    </p>
-    <div
-      style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: center;"
-    >
-      <igc-button variant="contained">
-        <igc-icon slot="prefix" name="add" collection="default"></igc-icon>
-        New item
-      </igc-button>
-      <igc-button variant="outlined">
-        <igc-icon slot="prefix" name="download" collection="default"></igc-icon>
-        Download
-      </igc-button>
-      <igc-button variant="flat">
-        Edit
-        <igc-icon slot="suffix" name="edit" collection="default"></igc-icon>
-      </igc-button>
-      <igc-button variant="outlined">
-        <igc-icon slot="prefix" name="delete" collection="default"></igc-icon>
-        Delete
-        <igc-icon slot="suffix" name="delete" collection="default"></igc-icon>
-      </igc-button>
-    </div>
-  `,
-};
+    return html`
+      ${styles}
+      <style>
+        .bt-table {
+          border-spacing: 2rem 1rem;
+          text-align: center;
+        }
 
-export const Disabled: Story = {
-  argTypes: disableStoryControls(metadata),
-  render: () => html`
-    <p>
-      The <code>disabled</code> attribute prevents interaction and applies
-      reduced-opacity styling across all variants.
-    </p>
-    <div
-      style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: center;"
-    >
-      <igc-button variant="contained" disabled>Contained</igc-button>
-      <igc-button variant="outlined" disabled>Outlined</igc-button>
-      <igc-button variant="flat" disabled>Flat</igc-button>
-      <igc-button variant="fab" disabled>
-        <igc-icon slot="prefix" name="add" collection="default"></igc-icon>
-        FAB
-      </igc-button>
-    </div>
-  `,
-};
+        .bt-table th[scope='row'] {
+          text-align: start;
+        }
 
-export const AsLink: Story = {
-  argTypes: disableStoryControls(metadata),
-  render: () => html`
-    <p>
-      Setting <code>href</code> renders the button as an
-      <code>&lt;a&gt;</code> element, supporting <code>target</code>,
-      <code>rel</code>, and <code>download</code> attributes.
-    </p>
-    <div
-      style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: center;"
-    >
-      <igc-button
-        variant="contained"
-        href="https://www.infragistics.com/products/ignite-ui-web-components"
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        <igc-icon slot="prefix" name="home" collection="default"></igc-icon>
-        Visit docs
-        <igc-icon
-          slot="suffix"
-          name="open-in-new"
-          collection="default"
-        ></igc-icon>
-      </igc-button>
-      <igc-button
-        variant="outlined"
-        href="https://www.infragistics.com/products/ignite-ui-web-components"
-        target="_blank"
-        rel="noopener noreferrer"
-        disabled
-      >
-        Disabled link
-      </igc-button>
-    </div>
-  `,
-};
+        .bt-card {
+          max-width: 28rem;
+        }
 
-export const InForm: Story = {
-  argTypes: disableStoryControls(metadata),
-  render: () => html`
-    <p>
-      Buttons with <code>type="submit"</code> and <code>type="reset"</code>
-      participate in native form submission and reset.
-    </p>
-    <form
-      style="display: flex; flex-direction: column; gap: 0.75rem; max-width: 320px;"
-      @submit=${(e: SubmitEvent) => {
-        e.preventDefault();
-        const data = new FormData(e.target as HTMLFormElement);
-        const out = document.querySelector<HTMLElement>('#form-output');
-        if (out)
-          out.textContent = JSON.stringify(Object.fromEntries(data), null, 2);
-      }}
-    >
-      <igc-input
-        label="Name"
-        name="name"
-        type="text"
-        placeholder="Enter your name"
-      ></igc-input>
-      <igc-input
-        label="Email"
-        name="email"
-        type="email"
-        placeholder="Enter your email"
-      ></igc-input>
-      <div style="display: flex; gap: 0.5rem;">
-        <igc-button type="submit" variant="contained">Submit</igc-button>
-        <igc-button type="reset" variant="outlined">Reset</igc-button>
+        .bt-card .bt-row {
+          justify-content: flex-end;
+        }
+      </style>
+      <div class="bt-stack">
+        <div style="overflow-x: auto">
+          <table class="bt-table">
+            <thead>
+              <tr>
+                <td></td>
+                <th scope="col">Label</th>
+                <th scope="col">Prefix</th>
+                <th scope="col">Suffix</th>
+                <th scope="col">Disabled</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${variants.map(
+                (variant) => html`
+                  <tr>
+                    <th scope="row">${variant}</th>
+                    <td><igc-button variant=${variant}>Save</igc-button></td>
+                    <td>
+                      <igc-button variant=${variant}>
+                        <igc-icon slot="prefix" name="plus"></igc-icon>
+                        New item
+                      </igc-button>
+                    </td>
+                    <td>
+                      <igc-button variant=${variant}>
+                        Next
+                        <igc-icon slot="suffix" name="arrow-forward"></igc-icon>
+                      </igc-button>
+                    </td>
+                    <td>
+                      <igc-button variant=${variant} disabled>Save</igc-button>
+                    </td>
+                  </tr>
+                `
+              )}
+              <tr>
+                <th scope="row">fab</th>
+                <td>
+                  <igc-button variant="fab" aria-label="Compose">
+                    <igc-icon slot="prefix" name="edit"></igc-icon>
+                  </igc-button>
+                </td>
+                <td>
+                  <igc-button variant="fab">
+                    <igc-icon slot="prefix" name="edit"></igc-icon>
+                    Compose
+                  </igc-button>
+                </td>
+                <td></td>
+                <td>
+                  <igc-button variant="fab" disabled>
+                    <igc-icon slot="prefix" name="edit"></igc-icon>
+                    Compose
+                  </igc-button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <article class="bt-panel bt-card" aria-label="Cart item">
+          <h3>Trail Runner 2, size 42</h3>
+          <p class="muted">$129.00. In stock, ships tomorrow.</p>
+          <div class="bt-row">
+            <igc-button variant="flat">
+              <igc-icon slot="prefix" name="delete"></igc-icon>
+              Remove
+            </igc-button>
+            <igc-button variant="outlined">Save for later</igc-button>
+            <igc-button>Check out</igc-button>
+          </div>
+        </article>
       </div>
-    </form>
-    <div style="margin-top: 1rem;">
-      <p style="margin: 0 0 0.25rem; font-weight: 600;">Submitted data:</p>
-      <pre
-        id="form-output"
-        style="margin: 0; padding: 0.75rem; background: var(--ig-gray-100, #f5f5f5); border-radius: 4px; font-size: 0.8rem; min-height: 3rem;"
-      >
-Submit the form to see the data here.</pre>
-    </div>
+    `;
+  },
+};
+
+const releaseNotes = `Version 7.2.0
+
+- New: a scroll area component.
+- Fixed: the accordion skips hidden panels in the keyboard navigation.
+`;
+
+export const Links: Story = {
+  argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'The release page of a product. Set `href` when the button goes to another page: the button renders an `<a>`, so the browser offers "Open in a new tab" and shows the URL. `download` saves the target as a file with the given name. With `target="_blank"`, set `rel="noopener noreferrer"`, and tell screen reader users that a new tab opens, as the visually hidden text does here.',
+      },
+    },
+  },
+  render: () => html`
+    ${styles}
+    <article class="bt-panel bt-stack" aria-labelledby="bt-release">
+      <h3 id="bt-release">Version 7.2.0</h3>
+      <p class="muted">Released on September 30, 2026.</p>
+      <div class="bt-row">
+        <igc-button
+          href="data:text/plain;charset=utf-8,${encodeURIComponent(
+            releaseNotes
+          )}"
+          download="release-notes-7.2.0.txt"
+        >
+          <igc-icon slot="prefix" name="download"></igc-icon>
+          Download the release notes
+        </igc-button>
+        <igc-button
+          variant="outlined"
+          href="https://github.com/IgniteUI/igniteui-webcomponents/releases"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          View on GitHub
+          <span class="sr-only">(opens in a new tab)</span>
+          <igc-icon slot="suffix" name="open-in-new"></igc-icon>
+        </igc-button>
+        <igc-button
+          variant="flat"
+          href="#releases"
+          @click=${(event: Event) => event.preventDefault()}
+        >
+          <igc-icon slot="prefix" name="arrow-back"></igc-icon>
+          All releases
+        </igc-button>
+      </div>
+    </article>
   `,
+};
+
+export const Form: Story = {
+  argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'A profile form. The button is a form-associated element: `type="submit"` submits the form that contains it, and `type="reset"` restores the initial values. The submit runs the constraint validation first, so clear the name and then save to see the error. While the profile saves, the handler disables the inputs and the reset button, and ignores another submit. The submit button stays enabled, because a disabled button loses the focus.',
+      },
+    },
+  },
+  render: () => {
+    let saving = false;
+
+    const save = async (event: SubmitEvent) => {
+      event.preventDefault();
+
+      if (saving) {
+        return;
+      }
+
+      const form = event.target as HTMLFormElement;
+      const fields = form.querySelectorAll<
+        IgcInputComponent | IgcButtonComponent
+      >('igc-input, [type="reset"]');
+      const label = form.querySelector('[data-label]')!;
+      const status = form.querySelector('[role="status"]')!;
+      const data = new FormData(form);
+      const disable = (disabled: boolean) => {
+        saving = disabled;
+        for (const field of fields) {
+          field.disabled = disabled;
+        }
+      };
+
+      disable(true);
+      label.textContent = 'Saving…';
+      status.textContent = '';
+
+      await delay(1200);
+
+      disable(false);
+      label.textContent = 'Save profile';
+      status.textContent = `Saved ${data.get('name')}, ${data.get('email')} at ${new Date().toLocaleTimeString()}.`;
+    };
+
+    const reset = (event: Event) => {
+      const form = event.target as HTMLFormElement;
+      form.querySelector('[role="status"]')!.textContent =
+        'The form shows the initial values again.';
+    };
+
+    return html`
+      ${styles}
+      <style>
+        .bt-form fieldset {
+          display: grid;
+          gap: 1rem;
+          max-width: 24rem;
+          margin: 0;
+          padding: 1rem;
+          border: 1px solid var(--ig-gray-300);
+          border-radius: 8px;
+        }
+      </style>
+      <form class="bt-stack bt-form" @submit=${save} @reset=${reset}>
+        <fieldset>
+          <legend>Profile</legend>
+          <igc-input
+            name="name"
+            label="Full name"
+            value="Maria Garcia"
+            required
+          ></igc-input>
+          <igc-input
+            name="email"
+            type="email"
+            label="Email"
+            value="maria@example.com"
+            required
+          ></igc-input>
+          <igc-input
+            name="title"
+            label="Job title"
+            value="Product designer"
+          ></igc-input>
+          <div class="bt-row">
+            <igc-button type="submit">
+              <span data-label>Save profile</span>
+            </igc-button>
+            <igc-button type="reset" variant="flat">Reset</igc-button>
+          </div>
+        </fieldset>
+        <p class="muted" role="status"></p>
+      </form>
+    `;
+  },
+};
+
+export const Commands: Story = {
+  argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'The header of a project page that opens a popover and a dialog without JavaScript. `command` and `commandfor` make a button an invoker. "Share" uses the built-in `toggle-popover` command on a native popover, which opens under the button through CSS anchor positioning where the browser supports it. "Delete project" uses `--show` on a dialog of the library, and the dialog buttons use `--hide`. The library components that accept commands take `--show`, `--hide` and `--toggle`. The Delete button also has a click handler, which runs before the command.',
+      },
+    },
+  },
+  render: () => {
+    const remove = (event: Event) => {
+      const page = (event.currentTarget as HTMLElement).closest('.bt-panel')!;
+
+      page.querySelector('[role="status"]')!.textContent =
+        'You deleted the project. This is a demo, so nothing changed.';
+    };
+
+    return html`
+      ${styles}
+      <style>
+        .bt-header {
+          justify-content: space-between;
+        }
+
+        .bt-share {
+          max-width: 22rem;
+          padding: 1rem;
+          border: 1px solid var(--ig-gray-300);
+          border-radius: 8px;
+        }
+
+        .bt-share p {
+          margin: 0 0 1rem;
+        }
+
+        /* A popover that a button opens takes the button as its implicit anchor. */
+        @supports (position-area: block-end) {
+          .bt-share {
+            inset: auto;
+            margin: 0.5rem 0 0;
+            position-area: block-end span-inline-start;
+          }
+        }
+      </style>
+      <section class="bt-panel bt-stack" aria-labelledby="bt-project">
+        <div class="bt-row bt-header">
+          <h3 id="bt-project">Website redesign</h3>
+          <div class="bt-row">
+            <igc-button
+              variant="outlined"
+              command="toggle-popover"
+              commandfor="bt-share"
+            >
+              <igc-icon slot="prefix" name="share"></igc-icon>
+              Share
+            </igc-button>
+            <igc-button command="--show" commandfor="bt-delete">
+              <igc-icon slot="prefix" name="delete"></igc-icon>
+              Delete project
+            </igc-button>
+          </div>
+        </div>
+        <p class="muted">24 files. Last change 2 hours ago.</p>
+        <p class="muted" role="status"></p>
+
+        <div id="bt-share" class="bt-share" popover>
+          <p>Anyone with the link can view the project.</p>
+          <igc-input
+            label="Project link"
+            value="https://acme.example/projects/website"
+            readonly
+          ></igc-input>
+          <div class="bt-row" style="margin-top: 1rem">
+            <igc-button
+              variant="flat"
+              command="hide-popover"
+              commandfor="bt-share"
+            >
+              Done
+            </igc-button>
+          </div>
+        </div>
+
+        <igc-dialog id="bt-delete" title="Delete the project?">
+          This removes the project and its 24 files. You cannot undo this.
+          <igc-button
+            slot="footer"
+            variant="flat"
+            command="--hide"
+            commandfor="bt-delete"
+          >
+            Cancel
+          </igc-button>
+          <igc-button
+            slot="footer"
+            command="--hide"
+            commandfor="bt-delete"
+            @click=${remove}
+          >
+            Delete
+          </igc-button>
+        </igc-dialog>
+      </section>
+    `;
+  },
 };
